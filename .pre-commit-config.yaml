@@ -34,7 +34,15 @@ repos:
         # Z47_OWNED
         files: '^(\.github/|bridge/|build/|docs/|src/|build\.zig|build\.zig\.zon|CONTRIBUTING\.md|pyproject\.toml|\.pre-commit-config\.yaml)'
       - id: check-toml
+        # Z47_OWNED
+        files: '^(\.github/|bridge/|build/|docs/|src/|build\.zig|build\.zig\.zon|CONTRIBUTING\.md|pyproject\.toml|\.pre-commit-config\.yaml)'
       - id: check-yaml
+        # Same scoping rule, and here it is load-bearing: upstream's .gitlab-ci.yml
+        # uses GitLab's own `!reference` tag and its CI includes are multi-document
+        # files, neither of which a plain YAML loader accepts. Unscoped, this hook
+        # does not find a z47 mistake -- it refuses an upstream resync.
+        # Z47_OWNED
+        files: '^(\.github/|bridge/|build/|docs/|src/|build\.zig|build\.zig\.zon|CONTRIBUTING\.md|pyproject\.toml|\.pre-commit-config\.yaml)'
       - id: end-of-file-fixer
         # Z47_OWNED
         files: '^(\.github/|bridge/|build/|docs/|src/|build\.zig|build\.zig\.zon|CONTRIBUTING\.md|pyproject\.toml|\.pre-commit-config\.yaml)'

@@ -75,6 +75,9 @@ const CM_NORMAL: u8 = 0;
 const CM_NIM: u8 = 2;
 const CM_PEM: u8 = 3;
 const CM_TIMER: u8 = 14;
+const CM_EIM: u8 = 13;
+// keyboardTweak.c's one table for the long press and the key label.
+extern fn alphaLongpress(item: i16) i16;
 
 const STD_HAMBURGER: [*:0]const u8 = "\xa1\xcc";
 const STD_SST: [*:0]const u8 = "\xa1\xcb";
@@ -462,15 +465,19 @@ pub fn labelCaptionAim(key: *const calcKey_t, button: ?*anyopaque, lbl_g: ?*anyo
         gtk_widget_set_name(button, "calcKey");
     }
 
-    stringToUtf8(softmenuName(@intCast(numlockReplacements(10, key.gShiftedAim, getSystemFlag(FLAG_NUMLOCK), false, true))), &lbl);
+    // The label shows what a long press gives the key, so the five function words
+    // are drawn in an equation only. alphaLongpress is that one table.
+    const gAim: i16 = if (calcMode == CM_EIM) key.gShiftedAim else alphaLongpress(key.gShiftedAim);
 
-    if (key.gShiftedAim == 0) {
+    stringToUtf8(softmenuName(@intCast(numlockReplacements(10, gAim, getSystemFlag(FLAG_NUMLOCK), false, true))), &lbl);
+
+    if (gAim == 0) {
         lbl[0] = 0;
     }
 
     gtk_label_set_label(lbl_g, &lbl);
 
-    if (key.gShiftedAim < 0) {
+    if (gAim < 0) {
         gtk_widget_set_name(lbl_g, "gShiftedUnderline");
     } else {
         gtk_widget_set_name(lbl_g, "AimfShifted");

@@ -8,4 +8,4 @@
 #define JIM_VERSION 84
 #define SIZEOF_INT 4
 
-#endif // _JIM_CONFIG_H
+#endif // !_JIM_CONFIG_H

@@ -6,7 +6,7 @@ const const_1 = consts.const_1;
 const const_2 = consts.const_2;
 const const_1on2 = consts.const_1on2;
 const const_1e_6 = consts.const_1e_6;
-const const_1e_32 = consts.const_1e_32;
+const const_4 = consts.const_4;
 const const_1e_30 = consts.const_1e_30;
 const const_1e_34 = consts.const_1e_34;
 // Zig port of the eigenvalue/eigenvector engine of src/c47/mathematics/matrix.c
@@ -847,40 +847,6 @@ fn sortEigenvalues(eig: [*]align(1) real_t, size: u16, begin_a: u16, begin_b: u1
     }
 }
 
-// Final 2x2 deflation block: eigenvalues straight onto the diagonal.
-fn solve2x2Block(a: [*]align(1) real_t, eig: [*]align(1) real_t, size: u16, is_real_symmetric: bool, realContext: *realContext_t) linksection(runtime.code_section) void {
-    const sz: usize = size;
-    var block: [8]real_t = undefined;
-    for (0..2) |i| {
-        for (0..2) |j| {
-            realCopy(&a[(i * sz + j) * 2], &block[(i * 2 + j) * 2]);
-            realCopy(&a[(i * sz + j) * 2 + 1], &block[(i * 2 + j) * 2 + 1]);
-        }
-    }
-    calculateEigenvalues22(&block, 2, &a[0], &a[1], &a[(sz + 1) * 2], &a[(sz + 1) * 2 + 1], is_real_symmetric, realContext);
-    for (0..2) |i| {
-        realCopy(&a[(i * sz + i) * 2], &eig[(i * sz + i) * 2]);
-        realCopy(&a[(i * sz + i) * 2 + 1], &eig[(i * sz + i) * 2 + 1]);
-    }
-}
-
-// Final 3x3 deflation block.
-fn solve3x3Block(a: [*]align(1) real_t, eig: [*]align(1) real_t, size: u16, is_real_symmetric: bool, realContext: *realContext_t) linksection(runtime.code_section) void {
-    const sz: usize = size;
-    var block: [18]real_t = undefined;
-    for (0..3) |i| {
-        for (0..3) |j| {
-            realCopy(&a[(i * sz + j) * 2], &block[(i * 3 + j) * 2]);
-            realCopy(&a[(i * sz + j) * 2 + 1], &block[(i * 3 + j) * 2 + 1]);
-        }
-    }
-    calculateEigenvalues33(&block, 3, &a[0], &a[1], &a[(sz + 1) * 2], &a[(sz + 1) * 2 + 1], &a[(sz + 1) * 4], &a[(sz + 1) * 4 + 1], is_real_symmetric, realContext);
-    for (0..3) |i| {
-        realCopy(&a[(i * sz + i) * 2], &eig[(i * sz + i) * 2]);
-        realCopy(&a[(i * sz + i) * 2 + 1], &eig[(i * sz + i) * 2 + 1]);
-    }
-}
-
 // True when every off-diagonal element has magnitude below tol.
 fn isMatrixDiagonal(matrix: [*]align(1) const real_t, size: u16, tol: *align(1) const real_t, realContext: *realContext_t) linksection(runtime.code_section) bool {
     const sz: usize = size;
@@ -1388,6 +1354,62 @@ pub fn calculateEigenvalues(a: [*]align(1) real_t, q: [*]align(1) real_t, r: [*]
                 }
             }
 
+            // A matrix split into 1x1 blocks and real 2x2 blocks with a complex
+            // pair is finished: real shifts only rotate such a block, and the
+            // block scan after the iteration solves it. Every element below the
+            // subdiagonal is under 1E-40, a subdiagonal under 1E-40 ends a
+            // block, and each 2x2 block has (a - d)^2 + 4bc < 0.
+            if ((iteration % 5) == 0 and !converged) {
+                var negligible: real_t = undefined;
+                var mag: real_t = undefined;
+                var split = true;
+
+                realSetOne(&negligible);
+                negligible.exponent -= blockDetectionTolerance;
+
+                var i: usize = 2;
+                while (i < sz and split) : (i += 1) {
+                    var j: usize = 0;
+                    while (j + 1 < i and split) : (j += 1) {
+                        math_runtime_helpers.complexMagnitude(@alignCast(&eig[(i * sz + j) * 2]), @alignCast(&eig[(i * sz + j) * 2 + 1]), &mag, realContext);
+                        split = math_comparison_reals.realCompareLessThan(&mag, &negligible);
+                    }
+                }
+
+                i = 0;
+                while (i + 1 < sz and split) {
+                    math_runtime_helpers.complexMagnitude(@alignCast(&eig[((i + 1) * sz + i) * 2]), @alignCast(&eig[((i + 1) * sz + i) * 2 + 1]), &mag, realContext);
+                    if (math_comparison_reals.realCompareLessThan(&mag, &negligible)) {
+                        i += 1;
+                    } else {
+                        if (i + 2 < sz) {
+                            math_runtime_helpers.complexMagnitude(@alignCast(&eig[((i + 2) * sz + i + 1) * 2]), @alignCast(&eig[((i + 2) * sz + i + 1) * 2 + 1]), &mag, realContext);
+                            split = math_comparison_reals.realCompareLessThan(&mag, &negligible);
+                        }
+                        var j: usize = 0;
+                        while (j < 4 and split) : (j += 1) {
+                            split = realIsZeroA(&eig[((i + j / 2) * sz + i + j % 2) * 2 + 1]);
+                        }
+                        if (split) {
+                            var diff: real_t = undefined;
+                            var bc: real_t = undefined;
+                            var disc: real_t = undefined;
+                            realSubtract(&eig[(i * sz + i) * 2], &eig[((i + 1) * sz + i + 1) * 2], &diff, realContext);
+                            realMultiply(&diff, &diff, &disc, realContext);
+                            realMultiply(&eig[(i * sz + i + 1) * 2], &eig[((i + 1) * sz + i) * 2], &bc, realContext);
+                            realMultiply(&bc, const_4(), &bc, realContext);
+                            realAdd(&disc, &bc, &disc, realContext);
+                            split = !realIsZeroA(&disc) and realIsNegativeA(&disc);
+                        }
+                        i += 2;
+                    }
+                }
+
+                if (split) {
+                    converged = true;
+                }
+            }
+
             {
                 var k: usize = 0;
                 while (k < sz * sz * 2) : (k += 1) realCopy(&eig[k], &a[k]);
@@ -1456,102 +1478,51 @@ pub fn calculateEigenvalues(a: [*]align(1) real_t, q: [*]align(1) real_t, r: [*]
         realCopy(&avg_diag, &rel_threshold);
         rel_threshold.exponent -= 10;
 
-        // ---- dedicated 2x2 block scan ----
-        var first_unconverged: i32 = -1;
-        var last_unconverged: i32 = -1;
+        // Each block of the final quasi-triangular eig is solved on its own,
+        // and solveEigenBlock writes the eigenvalues of a 2x2 or 3x3 block on
+        // the diagonal of a. The top-left block that deflation left at
+        // activeSize 2 or 3 is one block; below it a subdiagonal element under
+        // the threshold ends a block. A 1x1 block keeps the diagonal of a. A
+        // longer block, or a block with an element below it at the threshold or
+        // above, did not converge and is reported as no root found, unless an
+        // error is already set.
         {
+            // POST_QR_RELATIVE_BLOCK_CHECK active branch: the relative threshold.
+            var blockThreshold: real_t = undefined;
+            var mag: real_t = undefined;
+            realCopy(&rel_threshold, &blockThreshold);
+
             var i: usize = 0;
-            while (i + 1 < sz) : (i += 1) {
-                var offdiag_mag: real_t = undefined;
-                math_runtime_helpers.complexMagnitude(@alignCast(&eig[((i + 1) * sz + i) * 2]), @alignCast(&eig[((i + 1) * sz + i) * 2 + 1]), &offdiag_mag, realContext);
-                // POST_QR_RELATIVE_BLOCK_CHECK active branch: use rel_threshold
-                if (!math_comparison_reals.realCompareLessThan(&offdiag_mag, &rel_threshold)) {
-                    if (first_unconverged == -1) first_unconverged = @intCast(i);
-                    last_unconverged = @intCast(i + 1);
+            var j: usize = 0;
+            while (i < sz) : (i = j + 1) {
+                var coupled = false;
+                j = i;
+                while (j + 1 < sz) : (j += 1) { // j stops on the last row of the block that starts on row i
+                    if (i == 0 and j + 1 < activeSize and activeSize <= 3) continue;
+                    var offdiag_mag: real_t = undefined;
+                    math_runtime_helpers.complexMagnitude(@alignCast(&eig[((j + 1) * sz + j) * 2]), @alignCast(&eig[((j + 1) * sz + j) * 2 + 1]), &offdiag_mag, realContext);
+                    if (realIsZeroA(&offdiag_mag) or math_comparison_reals.realCompareLessThan(&offdiag_mag, &blockThreshold)) break;
                 }
-            }
-        }
-        if (first_unconverged != -1) {
-            const block_size = last_unconverged - first_unconverged + 1;
-            if (block_size == 2) {
-                const fu: usize = @intCast(first_unconverged);
-                var im1: real_t = undefined;
-                var im2: real_t = undefined;
-                realCopy(&eig[(fu * sz + fu) * 2 + 1], &im1);
-                realCopy(&eig[((fu + 1) * sz + (fu + 1)) * 2 + 1], &im2);
-                var is_conjugate_pair = false;
-                if (!realIsZeroA(&im1) and !realIsZeroA(&im2)) {
-                    var re_diff: real_t = undefined;
-                    var im_sum: real_t = undefined;
-                    realSubtract(&eig[(fu * sz + fu) * 2], &eig[((fu + 1) * sz + (fu + 1)) * 2], &re_diff, realContext);
-                    realAdd(&im1, &im2, &im_sum, realContext);
-                    if (math_comparison_reals.realCompareAbsLessThan(&re_diff, const_1e_32()) and math_comparison_reals.realCompareAbsLessThan(&im_sum, const_1e_32())) {
-                        is_conjugate_pair = true;
+
+                var row: usize = j + 1;
+                while (row < sz and !coupled) : (row += 1) {
+                    var col: usize = i;
+                    while (col <= j and !coupled) : (col += 1) {
+                        math_runtime_helpers.complexMagnitude(@alignCast(&eig[(row * sz + col) * 2]), @alignCast(&eig[(row * sz + col) * 2 + 1]), &mag, realContext);
+                        coupled = !realIsZeroA(&mag) and !math_comparison_reals.realCompareLessThan(&mag, &blockThreshold);
                     }
                 }
-                if (!is_conjugate_pair) {
-                    solveEigenBlock(a, eig, size, first_unconverged, first_unconverged + 1, is_real_symmetric, realContext);
-                    var i: usize = 0;
-                    while (i < 2) : (i += 1) {
-                        const pos = fu + i;
-                        realCopy(&a[(pos * sz + pos) * 2], &eig[(pos * sz + pos) * 2]);
-                        realCopy(&a[(pos * sz + pos) * 2 + 1], &eig[(pos * sz + pos) * 2 + 1]);
+                if (!coupled and (j == i + 1 or j == i + 2)) {
+                    solveEigenBlock(a, eig, size, @intCast(i), @intCast(j), is_real_symmetric, realContext);
+                } else if ((coupled or j > i + 2) and runtime.lastErrorCode == runtime.ERROR_NONE) {
+                    runtime.displayCalcErrorMessage(ERROR_NO_ROOT_FOUND, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+                    if (runtime.extra_info_on_calc_error) {
+                        var buf: [96]u8 = undefined;
+                        const m = bufPrintZ(&buf, "rows {d} to {d} are not a block of at most 3 rows apart from the rows below", .{ i, j }) catch "block too long";
+                        runtime.moreInfoOnError("In function calculateEigenvalues:", m, null, null);
                     }
-                    realSetZero(&eig[((fu + 1) * sz + fu) * 2]);
-                    realSetZero(&eig[((fu + 1) * sz + fu) * 2 + 1]);
-                    realSetZero(&eig[(fu * sz + (fu + 1)) * 2]);
-                    realSetZero(&eig[(fu * sz + (fu + 1)) * 2 + 1]);
                 }
             }
-        }
-
-        // ---- smart remaining-block detection ----
-        first_unconverged = -1;
-        last_unconverged = -1;
-        {
-            var i: usize = 0;
-            while (i + 1 < sz) : (i += 1) {
-                var offdiag_mag: real_t = undefined;
-                math_runtime_helpers.complexMagnitude(@alignCast(&eig[((i + 1) * sz + i) * 2]), @alignCast(&eig[((i + 1) * sz + i) * 2 + 1]), &offdiag_mag, realContext);
-                // POST_QR_RELATIVE_BLOCK_CHECK active branch: use rel_threshold
-                if (!math_comparison_reals.realCompareLessThan(&offdiag_mag, &rel_threshold)) {
-                    if (first_unconverged == -1) first_unconverged = @intCast(i);
-                    last_unconverged = @intCast(i + 1);
-                }
-            }
-        }
-        if (first_unconverged != -1) {
-            const block_size = last_unconverged - first_unconverged + 1;
-            if (block_size == 3 or block_size == 2) {
-                solveEigenBlock(a, eig, size, first_unconverged, last_unconverged, is_real_symmetric, realContext);
-            }
-        }
-
-        // ---- activeSize handling ----
-        if (activeSize == 1) {
-            realCopy(&a[0], &eig[0]);
-            realCopy(&a[1], &eig[1]);
-        } else if (activeSize > 1 and activeSize < size) {
-            var i: usize = 0;
-            while (i < activeSize) : (i += 1) {
-                realCopy(&a[(i * sz + i) * 2], &eig[(i * sz + i) * 2]);
-                realCopy(&a[(i * sz + i) * 2 + 1], &eig[(i * sz + i) * 2 + 1]);
-            }
-        }
-
-        if (activeSize == 3) {
-            solve3x3Block(a, eig, size, is_real_symmetric, realContext);
-        } else if (activeSize == 2) {
-            var offdiag_01: real_t = undefined;
-            var offdiag_10: real_t = undefined;
-            math_runtime_helpers.complexMagnitude(@alignCast(&eig[(1 * sz + 0) * 2]), @alignCast(&eig[(1 * sz + 0) * 2 + 1]), &offdiag_01, realContext);
-            math_runtime_helpers.complexMagnitude(@alignCast(&eig[(0 * sz + 1) * 2]), @alignCast(&eig[(0 * sz + 1) * 2 + 1]), &offdiag_10, realContext);
-            if (!math_comparison_reals.realCompareLessThan(&offdiag_01, &tol) or !math_comparison_reals.realCompareLessThan(&offdiag_10, &tol)) {
-                solve2x2Block(a, eig, size, is_real_symmetric, realContext);
-            }
-        } else if (activeSize == 1) {
-            realCopy(&a[0], &eig[0]);
-            realCopy(&a[1], &eig[1]);
         }
         shifted = false;
 
@@ -1813,6 +1784,10 @@ pub export fn fnEigenvalues(unusedParamButMandatory: u16) linksection(runtime.co
             var res: complex34Matrix_t = undefined;
             res.matrixElements = null;
             complexEigenvalues(&x, &res);
+            // After an error no result is written, as on the real path.
+            if (res.matrixElements != null and runtime.lastErrorCode != runtime.ERROR_NONE and runtime.lastErrorCode != ERROR_SOLVER_ABORT) {
+                runtime.complexMatrixFree(&res);
+            }
             if (res.matrixElements != null) {
                 runtime.convertComplex34MatrixToComplex34MatrixRegister(&res, runtime.REGISTER_X);
                 runtime.adjustResult(runtime.REGISTER_X, true, true, runtime.REGISTER_X, -1, -1);
@@ -1994,6 +1969,7 @@ fn calculateEigenvectors(matrix: *const real34Matrix_t, isComplex: bool, a: [*]a
 
     var freeUnknowns: u16 = 1;
     var duplicateEigenvalueCount: u16 = 0;
+    var pairedSlack = false;
     const utBlocks: usize = sz * 2 * realSizeInBlocks(75) * 2;
     if (allocC47Blocks(utBlocks)) |utBuf| {
         const unknownsToFill: [*]u16 = @ptrCast(utBuf);
@@ -2006,6 +1982,7 @@ fn calculateEigenvectors(matrix: *const real34Matrix_t, isComplex: bool, a: [*]a
                 duplicateEigenvalueCount = 0;
                 freeUnknowns = 1;
                 unknownsToFill[0] = 0;
+                pairedSlack = false;
             }
             const vBlocks: usize = sz * 2 * realSizeInBlocks(75) * 2;
             if (allocC47Blocks(vBlocks)) |vBuf| {
@@ -2030,7 +2007,7 @@ fn calculateEigenvectors(matrix: *const real34Matrix_t, isComplex: bool, a: [*]a
                             }
                             jj = 0;
                             while (jj < freeUnknowns) : (jj += 1) {
-                                realCopy(if (jj == ii) const_1() else const_0(), &a[(ii * stride + jj + sz) * 2]);
+                                realCopy(if ((if (pairedSlack) unknownsToFill[jj] else jj) == ii) const_1() else const_0(), &a[(ii * stride + jj + sz) * 2]);
                                 realSetZero(&a[(ii * stride + jj + sz) * 2 + 1]);
                             }
                         }
@@ -2080,7 +2057,17 @@ fn calculateEigenvectors(matrix: *const real34Matrix_t, isComplex: bool, a: [*]a
                         } else break;
                     }
                     if (unknownsToFill[freeUnknowns - 1] >= size) {
-                        freeUnknowns += 1;
+                        // No choice of fixed unknowns works with the slack on
+                        // the first rows: the same choices come again with the
+                        // slack on the rows of the fixed unknowns, which reaches
+                        // an eigenvector whose dependent row is further down,
+                        // and only then one more unknown is fixed.
+                        if (pairedSlack) {
+                            pairedSlack = false;
+                            freeUnknowns += 1;
+                        } else {
+                            pairedSlack = true;
+                        }
                         var ic: u16 = 0;
                         while (ic < size) : (ic += 1) unknownsToFill[ic] = ic;
                     }
@@ -2144,6 +2131,13 @@ fn realEigenvectors(matrix: *const real34Matrix_t, res: *real34Matrix_t, ires: ?
             realSetZero(&a[i * 2 + 1]);
         }
         calculateEigenvalues(a, q, r, eig, previousDiagonal, size, true, false, &runtime.ctxtReal75);
+        if (runtime.lastErrorCode == ERROR_NO_ROOT_FOUND) { // the eigenvalues did not converge, so no eigenvectors are returned
+            res.matrixElements = null;
+            res.header.matrixRows = 0;
+            res.header.matrixColumns = 0;
+            freeC47Blocks(bulk, bulkSize);
+            return;
+        }
         calculateEigenvectors(matrix, false, a, q, r, eig, &runtime.ctxtReal75);
 
         // Defective-matrix detection: a genuine eigenvector is never all-zero.
@@ -2243,6 +2237,13 @@ fn complexEigenvectors(matrix: *const complex34Matrix_t, res: *complex34Matrix_t
             runtime.real34ToReal(&elems[i].imag, &a[i * 2 + 1]);
         }
         calculateEigenvalues(a, q, r, eig, previousDiagonal, size, true, false, &runtime.ctxtReal75);
+        if (runtime.lastErrorCode == ERROR_NO_ROOT_FOUND) { // the eigenvalues did not converge, so no eigenvectors are returned
+            res.matrixElements = null;
+            res.header.matrixRows = 0;
+            res.header.matrixColumns = 0;
+            freeC47Blocks(bulk, bulkSize);
+            return;
+        }
         calculateEigenvectors(@ptrCast(matrix), true, a, q, r, eig, &runtime.ctxtReal75);
 
         var j: usize = 0;
@@ -2378,6 +2379,8 @@ pub export fn fnEigenvectors(unusedParamButMandatory: u16) linksection(runtime.c
                     }
                     runtime.realMatrixFree(&res);
                 } else {
+                    // The error from the eigenvalues is already displayed.
+                    if (runtime.lastErrorCode == ERROR_NO_ROOT_FOUND) return;
                     runtime.displayCalcErrorMessage(runtime.ERROR_SINGULAR_MATRIX, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
                     if (runtime.extra_info_on_calc_error) runtime.moreInfoOnError("In function fnEigenvectors:", "matrix is defective: no full set of linearly independent eigenvectors", null, null);
                     return;
@@ -2414,6 +2417,8 @@ pub export fn fnEigenvectors(unusedParamButMandatory: u16) linksection(runtime.c
                     runtime.convertComplex34MatrixToComplex34MatrixRegister(&res, runtime.REGISTER_X);
                     runtime.complexMatrixFree(&res);
                 } else {
+                    // The error from the eigenvalues is already displayed.
+                    if (runtime.lastErrorCode == ERROR_NO_ROOT_FOUND) return;
                     runtime.displayCalcErrorMessage(runtime.ERROR_SINGULAR_MATRIX, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
                     if (runtime.extra_info_on_calc_error) runtime.moreInfoOnError("In function fnEigenvectors:", "matrix is defective: no full set of linearly independent eigenvectors", null, null);
                     return;

@@ -1,3 +1,11 @@
+# The release version pattern, written once, as the input of .gitlab/ci/release-rules.yml. An input is put into the included file as text before any rule
+# is evaluated, so that file builds the firmware release rule and the docs release rule, with docs- in front, from this one pattern. A variable does not
+# work here: rules:if does not expand a variable whose value is built from another variable.
+include:
+  - local: .gitlab/ci/release-rules.yml
+    inputs:
+      version_pattern: '[0-9]{2}\.[0-9]{3}\.[0-9]{2}\.[0-9]{2}([ab][0-9]+)?(\..+)?'
+
 default:
   image: ubuntu:25.10
 
@@ -41,22 +49,26 @@ variables:
   - meson_options.txt
   - tag2ver.py
   - .gitlab-ci.yml
+  - .gitlab/ci/**/*
 
 .firmware-rules: &firmware-rules
-  - if: $CI_COMMIT_TAG
+  - if: $CI_COMMIT_TAG && $CI_COMMIT_TAG !~ /^docs-/
   - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     changes: *firmware-source-changes
   - if: $CI_COMMIT_BRANCH
     changes: *firmware-source-changes
 
-# The owner's manual. TeX Live and nothing else: no Python, no pixi, no
-# database, and no clone of this repository for the fonts, because
-# res/fonts/ is in the tree the job already has.
+# The owner's manual. TeX Live, with the Python and the Ghostscript of the
+# TeX Live image for the screen crop: no pixi, no database, and no clone of
+# this repository for the fonts, because res/fonts/ is in the tree the job
+# already has.
 .manual-source-changes: &manual-source-changes
   - docs/manual/**/*
   - docs/styles/**/*
+  - docs/tools/**/*
   - docs/refdb47/data/**/*
   - .gitlab-ci.yml
+  - .gitlab/ci/**/*
 
 macOS:
   stage: build
@@ -183,16 +195,86 @@ manual:
   variables:
     GIT_SUBMODULE_STRATEGY: none
   rules:
+    - !reference [.docs-release-rules, rules]
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       changes: *manual-source-changes
     - if: $CI_COMMIT_BRANCH
       changes: *manual-source-changes
   script:
-    - make -C docs/manual pdf
+    - make -C docs/manual pdf VARIANT=crop
   artifacts:
     expire_in: 1 week
     paths:
       - docs/manual/C47_R47_calc.pdf
+      - docs/manual/C47_R47_calcCrop.pdf
+  tags:
+    - saas-linux-small-amd64
+
+# A docs release tag is docs- followed by a firmware release version, such as docs-00.109.04.00b0.RC1, and it releases the documents under docs/ and
+# nothing else. No firmware job, no firmware upload and no firmware release runs for any tag that begins with docs-, and a docs- tag without a release
+# version after it starts no job at all. The rule is .docs-release-rules in .gitlab/ci/release-rules.yml.
+#
+# The manual job builds, on such a tag as on a branch. docs-stage builds nothing: `make -C docs release` copies the PDFs that docs/release.tsv lists, from
+# the artefacts of the manual job, into docs/release/ under their release names with a VERSION file. docs-upload and docs-release publish what it wrote.
+docs-stage:
+  stage: upload
+  image: alpine:latest
+  variables:
+    GIT_SUBMODULE_STRATEGY: none
+  extends: .docs-release-rules
+  needs:
+    - job: manual
+      artifacts: true
+  before_script:
+    - apk add --no-cache make
+  script:
+    - make -C docs release
+  artifacts:
+    expire_in: 1 week
+    paths:
+      - docs/release/
+  tags:
+    - saas-linux-small-amd64
+
+docs-upload:
+  stage: upload
+  image: curlimages/curl:latest
+  extends: .docs-release-rules
+  needs:
+    - job: docs-stage
+      artifacts: true
+  script:
+    - |
+      VERSION=$(cat docs/release/VERSION)
+      for f in docs/release/*.pdf
+      do
+        curl --fail --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file ${f} "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/c47-docs/${VERSION}/$(basename ${f})"
+      done
+  tags:
+    - saas-linux-small-amd64
+
+docs-release:
+  stage: release
+  image: gitlab/glab:latest
+  extends: .docs-release-rules
+  needs:
+    - job: docs-stage
+      artifacts: true
+    - job: docs-upload
+      artifacts: false
+  script:
+    - |
+      VERSION=$(cat docs/release/VERSION)
+      ASSETLINKS=""
+      for f in docs/release/*.pdf
+      do
+        n=$(basename ${f})
+        ASSETLINKS="${ASSETLINKS}{\"name\":\"${n}\",\"url\":\"${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/c47-docs/${VERSION}/${n}\",\"link_type\":\"package\"},"
+      done
+      ASSETLINKS="[${ASSETLINKS%,}]"
+      echo "${ASSETLINKS}"
+      glab auth login --job-token $CI_JOB_TOKEN --hostname $CI_SERVER_HOST --api-protocol $CI_SERVER_PROTOCOL
+      GITLAB_HOST=$CI_SERVER_URL glab release create ${CI_COMMIT_TAG} --name "Documents ${VERSION}" --notes "C47/R47 owner's manual ${VERSION}, on A4 and cropped for the screen." --assets-links "${ASSETLINKS}" --repo $CI_PROJECT_PATH
   tags:
     - saas-linux-small-amd64
 
@@ -200,7 +282,7 @@ upload:
   stage: upload
   image: curlimages/curl:latest
   rules:
-    - if: $CI_COMMIT_TAG
+    - if: $CI_COMMIT_TAG && $CI_COMMIT_TAG !~ /^docs-/
   script:
     - |
       for f in *.zip
@@ -213,8 +295,7 @@ upload:
 release:
   stage: release
   image: gitlab/glab:latest
-  rules:
-    - if: $CI_COMMIT_TAG =~ /^[0-9]{2}\.[0-9]{3}\.[0-9]{2}\.[0-9]{2}([abr][c0-9][0-9]?(\..*)?)?$/
+  extends: .firmware-release-rules
   script:
     - >
       PKGS="c47-dmcp-pkg?.zip"; FIRST=1

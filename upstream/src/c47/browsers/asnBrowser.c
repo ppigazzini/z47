@@ -135,7 +135,7 @@
 
     temporaryInformation = TI_NO_INFO;
   }
-  #endif // !OPTION_ASNBROWSER
+  #endif // OPTION_ASNBROWSER
 
 
 void fnAsnViewer(uint16_t unusedButMandatoryParameter) {
@@ -149,5 +149,5 @@ void fnAsnViewer(uint16_t unusedButMandatoryParameter) {
       return;
     }
   fnAsnDisplay(currentAsnScr);
-  #endif // !OPTION_ASNBROWSER
+  #endif // OPTION_ASNBROWSER
 }

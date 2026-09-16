@@ -11,10 +11,13 @@
 #include "c47.h"
 #include <jim.h>
 
+#define DSL_NUM_LEN 24                                                          // room for the longest long long plus its sign and terminator
+const char *dslNum          (char *buffer, long long value);
+
 int convertRegisterToString (calcRegister_t regist, char *buffer, size_t bufferSize);
 int dslParseParam           (Jim_Interp *interp, int16_t index, const char *arg, uint16_t *outParam);
 int dslParseFlagArg         (Jim_Interp *interp, const char *arg, uint16_t *outParam);
 int dslParseRegisterArg     (Jim_Interp *interp, int16_t op, const char *arg, uint16_t *outParam);
 int parseValueToTempRegister(Jim_Interp *interp, const char *valueArg);
 
-#endif // VALUE_H
+#endif // !VALUE_H

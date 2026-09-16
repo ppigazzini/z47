@@ -114,7 +114,7 @@ bool_t replace(uint16_t *charCode) {
       *charCode = *charCode - charCodeFromString(STD_SUP_1, 0) + charCodeFromString(STD_HP_1, 0);
     }
   }
-#endif //GENERATE_CATALOGS
+#endif //!GENERATE_CATALOGS
 
 
 
@@ -258,7 +258,7 @@ static void _calculateStringWidth(const char *str, const font_t *font, bool_t wi
     if(checkHP && font == &numericFont && HPFONT) {
       charCodeHPReplacement(&charCode);
     }
-  #endif //GENERATE_CATALOGS
+  #endif //!GENERATE_CATALOGS
 
 /*
     font = font1;                             //JM auto font change for enlarged alpha fonts vv

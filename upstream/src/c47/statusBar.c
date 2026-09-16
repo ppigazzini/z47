@@ -373,7 +373,7 @@ void drawBattery(uint16_t voltage);
      }
                                 #if defined(ANALYSE_REFRESH)
                                   print_caller(NULL);
-                                #endif // PC_BUILD && ANALYSE_REFRESH
+                                #endif // ANALYSE_REFRESH
      return xx;
   }
 

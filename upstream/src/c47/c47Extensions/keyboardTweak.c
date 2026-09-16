@@ -405,6 +405,32 @@ void resetKeytimers(void) {
 // and this is the only way fnBaseMenu() can be run, via the item ITM_BASEMENU which is created for that purpose.
 // fnBaseMenu() opens MNU_MyMenu, and due to the reasons given, MNU_MyMenu cannot be used directly, as it needs to first set some flags, hence in a way it is like an invisible pseudo-menu, opened by an item.
 
+  /********************************************//**
+   * \brief Substitutes a character for a gShiftedAim function word, for the alpha modes that are not EIM
+   *
+   * \param[in] item int16_t the gShiftedAim item of the key
+   * \return int16_t the item the long press and the key label take
+   *
+   ***********************************************/
+  //The gShiftedAim column takes the function words LOG, LN, SIN, COS and TAN, which belong in an equation and not in a name. That one column serves every alpha mode,
+  //so EIM takes it as it is and the others take a character in its place. The key label in gtkGui.c calls this as well, so the label and the long press are one table.
+  int16_t alphaLongpress(int16_t item) {
+    switch(item) {
+      case ITM_LG_SIGN:
+        return ITM_INFINITY;
+      case ITM_LN_SIGN:
+        return ITM_EulerE;
+      case ITM_SIN_SIGN:
+        return ITM_op_i_char;
+      case ITM_COS_SIGN:
+        return ITM_op_j_char;
+      case ITM_TAN_SIGN:
+        return ITM_omega;
+      default:
+        return item;
+    }
+  }
+
   void Check_MultiPresses(int16_t *result, int8_t key_no) { //Set up longpress
     int16_t longpressDelayedkey1 = 0;                                   //To Setup the timer locally for the next timed stage
             longpressDelayedkey2 = 0;                                   //To Store the next timed stage
@@ -438,6 +464,9 @@ void resetKeytimers(void) {
     else if((calcMode == CM_AIM || calcMode == CM_EIM || (calcMode == CM_PEM && getSystemFlag(FLAG_ALPHA))) && tam.mode==0) {
       tmpp_ = getSystemFlag(FLAG_USER) ? kbd_usr[key_no].primaryAim  : kbd_std[key_no].primaryAim;
       tmpg_ = getSystemFlag(FLAG_USER) ? kbd_usr[key_no].gShiftedAim : kbd_std[key_no].gShiftedAim;
+      if(calcMode != CM_EIM) {                                          //the function words are for an equation only, so AIM and PEM alpha take the character instead
+        tmpg_ = alphaLongpress(tmpg_);
+      }
       if(((key_no != 32 && tmpp_ != ITM_SHIFTf && tmpp_ != ITM_SHIFTg && tmpp_ != KEY_fg && tmpp_ != ITM_BACKSPACE) && (LongPressM == RBX_M1234 || LongPressM == RBX_M124))) { //any mathkeys
         if(!shiftF && !shiftG) {
           longpressDelayedkey1 = tmpg_;
@@ -445,13 +474,13 @@ void resetKeytimers(void) {
         }
       }
     }                                                                   //yellow and blue function keys ^^
-    #define TAMALPHA_f //select the yellow or blue text labels
+    //#define TAMALPHA_f //select the yellow or blue text labels
     else if(tam.alpha) {
       tmpp_ = getSystemFlag(FLAG_USER) ? kbd_usr[key_no].primaryAim  : kbd_std[key_no].primaryAim;
       #if defined(TAMALPHA_f)
         tmpf_ = getSystemFlag(FLAG_USER) ? kbd_usr[key_no].fShiftedAim : kbd_std[key_no].fShiftedAim;
       #else //TAMALPHA_f
-        tmpg_ = getSystemFlag(FLAG_USER) ? kbd_usr[key_no].gShiftedAim : kbd_std[key_no].gShiftedAim;
+        tmpg_ = alphaLongpress(getSystemFlag(FLAG_USER) ? kbd_usr[key_no].gShiftedAim : kbd_std[key_no].gShiftedAim);
       #endif //TAMALPHA_f
       if(   ((key_no != 32 /*EXIT*/ && tmpp_ != ITM_SHIFTf && tmpp_ != ITM_SHIFTg && tmpp_ != KEY_fg && tmpp_ != ITM_BACKSPACE) &&
             (LongPressM == RBX_M1234 || LongPressM == RBX_M124) &&  //any mathkeys

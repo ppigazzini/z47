@@ -474,7 +474,7 @@ void Sett(int16_t grp) {
     fnRefreshState();
     screenUpdatingMode = SCRUPD_AUTO;
     refreshScreen(161);
-  #endif //#!OPTION_DEVPROFILES
+  #endif //OPTION_DEVPROFILES
   }
 
 
@@ -492,7 +492,7 @@ void Sett(int16_t grp) {
     fnRefreshState();
     screenUpdatingMode = SCRUPD_AUTO;
     refreshScreen(165);
-  #endif //!OPTION_DEVPROFILES
+  #endif //OPTION_DEVPROFILES
   }
 
 
@@ -1605,7 +1605,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
         globalRegister = malloc(sizeof(registerHeader_t) * NUMBER_OF_GLOBAL_REGISTERS);
         freeMemoryRegions = malloc(sizeof(freeMemoryRegion_t) * MAX_FREE_REGIONS);
       }
-    #endif // DMCP_BUILD && OLD_HW
+    #endif // !DMCP_BUILD || !OLD_HW
 
     freeMemoryRegions[0].blockAddress = TO_C47MEMPTR(ram + allReservedVariables[LAST_RESERVED_VARIABLE - FIRST_RESERVED_VARIABLE].header.pointerToRegisterData + REAL34_SIZE_IN_BLOCKS);
     freeMemoryRegions[0].sizeInBlocks = RAM_SIZE_IN_BLOCKS - freeMemoryRegions[0].blockAddress - 1; // - 1: one block for an empty program
@@ -1673,10 +1673,8 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
       real34SetZero((real34_t *)TO_PCMEMPTR(allReservedVariables[i].header.pointerToRegisterData));
     }
 
-    // initialize the global registers
-    #if defined(DMCP_BUILD) && defined(OLD_HW)
-      memset(globalRegister, 0, sizeof(globalRegister));
-    #endif // DMCP_BUILD && OLD_HW
+    // initialize the global registers, including reserved header bits
+    memset(globalRegister, 0, sizeof(registerHeader_t) * NUMBER_OF_GLOBAL_REGISTERS);
     for(calcRegister_t regist=FIRST_GLOBAL_REGISTER; regist<=LAST_GLOBAL_REGISTER; regist++) {
       setRegisterDataType(regist, dtReal34, amNone);
       memPtr = allocC47Blocks(REAL34_SIZE_IN_BLOCKS);
@@ -1926,7 +1924,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
       if(loadTestPrograms) {
         addTestPrograms();
       }
-    #endif // !OPTION_SAMPLEPGMS
+    #endif // OPTION_SAMPLEPGMS
 
     // Equation formulae
     allFormulae = NULL;
@@ -2166,7 +2164,7 @@ void runDMCPmenu(uint16_t confirmation) {
       run_menu_item_sys(MI_DMCP_MENU);
       clearScreen(200);
     }
-  #endif //!PC_BUILD
+  #endif //DMCP_BUILD
 }
 
 void activateUSBdisk(uint16_t confirmation) {
@@ -2179,7 +2177,7 @@ void activateUSBdisk(uint16_t confirmation) {
       run_menu_item_sys(MI_MSC);
       clearScreen(201);
     }
-  #endif //!PC_BUILD
+  #endif //DMCP_BUILD
 }
 
 

@@ -43,6 +43,10 @@ upstream
 # different question against a different base. Removing an entry here because z47
 # stopped patching the file breaks the source-ownership-guard lane; that happened
 # with graphs_cov.txt on 2026-08-02.
+# Upstream's GitLab CI include directory, which the .gitlab-ci.yml already here
+# pulls its release rules from. The directory itself is newer than the diff base,
+# so every file under it reads as an addition.
+.gitlab
 BUILD.md
 dist
 distS

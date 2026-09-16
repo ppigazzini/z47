@@ -359,6 +359,12 @@ uint32_t               timeLastOp1 = 0;
 char                   lastStateFileOpened[stateFileNameVarLength+12];
 char                   fileNameSelected[stateFileNameVarLength];
 
+#if defined(PC_BUILD)
+  char                 lastFolderData[C47_PATH_MAX];
+  char                 lastFolderState[C47_PATH_MAX];
+  char                 lastFolderPrograms[C47_PATH_MAX];
+#endif // PC_BUILD
+
 char                   filename_csv[FILENAMELEN]; //JMMAX   //JM_CSV
 uint32_t               mem__32;                             //JM_CSV
 bool_t                 cancelFilename;
@@ -759,7 +765,7 @@ int convertKeyCode(int key) {
                                                     convertLongIntegerToShortIntegerRegister(li, 10, 70);
 
                                                     longIntegerFree(li);
-                                                  #endif // 1
+                                                  #endif // 0
 
     backToDMCP = false;
 
@@ -1139,7 +1145,7 @@ int convertKeyCode(int key) {
       if(38 <= key && key <=43) { // Function key
                             #if defined(DM42_POWERMARK_KEYPRESS)
                               powerMarkerMsF(1, 4000);
-                            #endif //DM42_POWERMARK_BEGIN_WHILE
+                            #endif //DM42_POWERMARK_KEYPRESS
         sprintf(charKey, "%c", key+11);
         btnFnPressed(charKey);
                             #if defined(DM42_KEYCLICK)
@@ -1150,7 +1156,7 @@ int convertKeyCode(int key) {
       else if(1 <= key && key <= 37) { // Not a function key
                             #if defined(DM42_POWERMARK_KEYPRESS)
                               powerMarkerMsF(1, 4000);
-                            #endif //DM42_POWERMARK_BEGIN_WHILE
+                            #endif //DM42_POWERMARK_KEYPRESS
         sprintf(charKey, "%02u", key - 1);
         btnPressed(charKey);
                             #if defined(DM42_KEYCLICK)
@@ -1180,7 +1186,7 @@ int convertKeyCode(int key) {
       else if(key == 0 && charKey[1] == 0) {            //JM, key=0 is release, therefore there must have been a press before that. If the press was a FN key, FN_key_pressed > 0 when it comes back here for release.
                             #if defined(DM42_POWERMARK_KEYPRESS)
                               powerMarkerMsF(1, 4000);
-                            #endif //DM42_POWERMARK_BEGIN_WHILE
+                            #endif //DM42_POWERMARK_KEYPRESS
         btnFnReleased(charKey);                                //    in short, it can only execute FN release after there was a FN press.
                             #if defined(DM42_KEYCLICK)
                               keyClick(4);
@@ -1190,7 +1196,7 @@ int convertKeyCode(int key) {
       else if(key == 0) {
                             #if defined(DM42_POWERMARK_KEYPRESS)
                               powerMarkerMsF(1, 4000);
-                            #endif //DM42_POWERMARK_BEGIN_WHILE
+                            #endif //DM42_POWERMARK_KEYPRESS
         btnReleased(charKey);
                             #if defined(DM42_KEYCLICK)
                               keyClick(2);

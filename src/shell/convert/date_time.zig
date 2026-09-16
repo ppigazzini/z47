@@ -1360,19 +1360,28 @@ pub export fn fnDate(unusedButMandatoryParameter: u16) linksection(code_section)
 pub export fn fnTime(unusedButMandatoryParameter: u16) linksection(code_section) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     var time34: real34_t = undefined;
+    var centiseconds: u32 = undefined;
 
     if (comptime dmcp_build) {
         var timeInfo: tm_t = undefined;
         var dateInfo: dt_t = undefined;
 
         rtc_read(&timeInfo, &dateInfo);
-        uInt32ToReal34(@as(u32, timeInfo.hour) * 3600 + @as(u32, timeInfo.min) * 60 + @as(u32, timeInfo.sec), &time34);
+        centiseconds = ((@as(u32, timeInfo.hour) * 60 + timeInfo.min) * 60 + timeInfo.sec) * 100 + timeInfo.csec;
     } else {
-        const epoch: i64 = time(null);
+        // One sample of the clock carries both halves: the hour, minute and second
+        // through localtime, and the centisecond of the same instant. std.c carries
+        // timeval's per-target layout, where sec is 32 bits wide on Windows and
+        // usec is on macOS, so the two fields are read out into fixed widths.
+        var now: std.c.timeval = undefined;
+        _ = std.c.gettimeofday(&now, null);
+        const epoch: i64 = @intCast(now.sec);
         const timeInfo = localtime(&epoch);
-
-        uInt32ToReal34(@as(u32, @intCast(timeInfo.hour)) * 3600 + @as(u32, @intCast(timeInfo.min)) * 60 + @as(u32, @intCast(timeInfo.sec)), &time34);
+        centiseconds = ((@as(u32, @intCast(timeInfo.hour)) * 60 + @as(u32, @intCast(timeInfo.min))) * 60 + @as(u32, @intCast(timeInfo.sec))) * 100 +
+            @as(u32, @intCast(@divTrunc(now.usec, 10_000)));
     }
+    uInt32ToReal34(centiseconds, &time34);
+    real34Divide(&time34, const34_100, &time34);
 
     liftStack();
     reallocateRegister(REGISTER_X, dtTime, 0, amNoneU);

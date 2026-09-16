@@ -56,4 +56,4 @@ void printInputPrompt         (uint16_t func, uint16_t regist);
 void printViewAview           (uint16_t func, uint16_t regist);
 void nameAlias                (uint16_t op, char *nameOp);
 
-#endif // PRINT_H
+#endif // !PRINT_H

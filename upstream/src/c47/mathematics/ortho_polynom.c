@@ -19,7 +19,7 @@ static bool_t getOrthoPolyParam(calcRegister_t regist, real_t *val, realContext_
   }
   return true;
 }
-#endif // !OPTION_ORTHO
+#endif // OPTION_ORTHO
 
 void fnOrthoPoly(uint16_t kind) {
 #if defined(OPTION_ORTHO)
@@ -47,7 +47,7 @@ void fnOrthoPoly(uint16_t kind) {
     }
   }
   adjustResult(REGISTER_X, true, false, REGISTER_X, REGISTER_Y, -1);
-#endif // !OPTION_ORTHO
+#endif // OPTION_ORTHO
 }
 
 void fnHermite(uint16_t unusedButMandatoryParameter) {

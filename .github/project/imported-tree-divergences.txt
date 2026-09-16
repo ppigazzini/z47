@@ -28,6 +28,15 @@ docs/refdb47
 docs/styles
 docs/appnote-checker-findings.md
 docs/manual-migration-proposal.md
+# The release machinery for those same documents: the Makefile that copies the
+# manual's built PDFs into a release, the table naming them, the directory it
+# writes and the uniform-crop tool the manual and the appnotes run over their
+# output. Every input it names is under a path above, so carrying it here would
+# carry a build with nothing to build.
+docs/Makefile
+docs/release.tsv
+docs/.gitignore
+docs/tools
 # Hardware-lab and benchmark harnesses: bench rigs for physical DM42 units.
 tools/hwtest
 tools/bench

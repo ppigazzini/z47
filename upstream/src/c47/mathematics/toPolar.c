@@ -10,7 +10,7 @@
 
 #if !defined PC_BUILD
   #undef CACHE_DEBUG
-#endif //PC_BUILD
+#endif //!PC_BUILD
 
 
 static void fnToPolar(uint16_t unusedButMandatoryParameter);

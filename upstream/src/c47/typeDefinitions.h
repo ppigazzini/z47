@@ -842,4 +842,4 @@ typedef enum {
   };
   typedef struct cfgFileParam cfgFileParam_t;
   #endif // PC_BUILD
-#endif // TYPEDEFINITIONS_H
+#endif // !TYPEDEFINITIONS_H

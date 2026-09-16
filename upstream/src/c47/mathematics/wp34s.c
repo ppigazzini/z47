@@ -296,7 +296,7 @@ static void doTaylorIterations(const real_t *a, real_t* angle, real_t* a2, real_
         displayCalcErrorMessage(ERROR_SOLVER_ABORT, REGISTER_T, NIM_REGISTER_LINE);
         break;
       }
-    #endif //PC_BUILD
+    #endif //!PC_BUILD
 
     #if defined(DEBUGTAYLOR)
       if(i > 1 && i % 1 == 0) { //left mod for printing interleaved status
@@ -617,7 +617,7 @@ static bool_t doAtan(real_t *a, real_t *angle, real_t *a2, real_t *t, real_t *j,
         displayCalcErrorMessage(ERROR_SOLVER_ABORT, REGISTER_T, NIM_REGISTER_LINE);
         break;
       }
-    #endif //PC_BUILD
+    #endif //!PC_BUILD
 
 
     #if defined(DEBUGTAYLOR)
@@ -2062,7 +2062,7 @@ void WP34S_Mod_Pauli(const real_t *x, const real_t *y, real_t *res, realContext_
   REAL_T_PTR(temp, 6147);
 
   doMod(x, y, res, realContext, 6147, temp);
-#endif
+#endif // DMCP_BUILD && HARDWARE_MODEL == HWM_DM42
 }
 
 
@@ -2083,9 +2083,9 @@ void WP34S_BigMod_Pauli(const real_t *x, const real_t *y, real_t *res, realConte
   REAL_T_PTR(temp, 12321);
 
   doMod(x, y, res, realContext, 12321, temp);
-#endif
+#endif // DMCP_BUILD && HARDWARE_MODEL == HWM_DM42
 }
-#endif
+#endif // 0
 
 
 // long integer handling: see longIntegerAngleReduction in registerValueConversions.c, case amRadian. A long integer angle never arrives here as an integer. There,
@@ -2115,7 +2115,7 @@ void WP34S_Mod(const real_t *x, const real_t *y, real_t *res, realContext_t *rea
     doMod(x, y, res, realContext, 6147, temp);
   }
   REAL_T_FREE(temp, 12321);
-#endif
+#endif // DMCP_BUILD && HARDWARE_MODEL == HWM_DM42
 }
 
 
@@ -2141,7 +2141,7 @@ void WP34S_BigMod(const real_t *x, const real_t *y, real_t *res, realContext_t *
     doMod(x, y, res, realContext, 12321, temp);                //printf("\n******  ****** NOT MATCHED 2pi !! ****** ******\n");
   }
   REAL_T_FREE(temp, 12321);
-#endif
+#endif // DMCP_BUILD && HARDWARE_MODEL == HWM_DM42
 }
 
 

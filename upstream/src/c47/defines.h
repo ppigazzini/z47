@@ -200,7 +200,7 @@
     #define OPTION_ELEC                  // ☑  6856 bytes // ELEC   6240 saving if VECTOR is not in; 2856 saving if VECTOR is in
             #undef  OPTION_EIGEN         // ✓ 17440 bytes // Without EIGVAL, EIGVEC, M.QR, MSQRT
             #undef  OPTION_IR_PRINTING   // ✓ 10040 bytes // Remove IR printing for old hardware
-  #endif
+  #endif // DMCP_PACKAGE1
 
   #if defined(DMCP_PACKAGE2)             // PACKAGE 2 (free 4624 ☑) // Limited2 DIST; Full X.FN menu; NO EIGEN; NO ELEC; SLOW FIN; IR PRINTING
     #define OPTION_ELLIPTIC              // ☑ 13192 bytes // Without ELLIPTIC
@@ -216,7 +216,7 @@
             #undef  OPTION_ELEC          // ✓  6816 bytes // ELEC   see below
             #undef  OPTION_EIGEN         // ✓ 17440 bytes // Without EIGVAL, EIGVEC, M.QR, MSQRT
     #define OPTION_IR_PRINTING   // ✓ 10040 bytes // Remove IR printing for old hardware
-  #endif
+  #endif // DMCP_PACKAGE2
 
   #if defined(DMCP_PACKAGE3)             // PACKAGE 3 (free 3280) // Limited0 DIST, Stripped ELLIPSE X.FN menu; EIGEN; ELEC; FAST FIN; IR PRINTING
             #undef  OPTION_ELLIPTIC      // ✓ 13112 bytes // Without ELLIPTIC
@@ -232,7 +232,7 @@
     #define OPTION_ELEC                  // ☑  6824 bytes // ELEC   see below
     #define OPTION_EIGEN                 // ☑ 17464 bytes // Without EIGVAL, EIGVEC, M.QR, MSQRT
             #undef OPTION_IR_PRINTING           // ✓ 10040 bytes // Remove IR printing for old hardware
-  #endif
+  #endif // DMCP_PACKAGE3
             // ELEC VECT  FLASH cost   free   (pkg4, 720896 total)
             //  0    0          0     32692
             //  0    1      12952     19740   VECTOR only
@@ -253,7 +253,7 @@
             #undef  OPTION_ELEC          // ✓  6816 bytes // ELEC   6240 saving if VECTOR is not in; 2856 saving if VECTOR is in
             #undef  OPTION_EIGEN         // ✓ 17440 bytes // Without EIGVAL, EIGVEC, M.QR, MSQRT
     #define OPTION_IR_PRINTING           // ✓ 10040 bytes // Remove IR printing for old hardware
-  #endif
+  #endif // DMCP_PACKAGE4_NOOPT
 
 
   //Options common to all hardware packages 1-4

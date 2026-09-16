@@ -1376,8 +1376,27 @@ pub export fn FN_cancel() callconv(.c) void {
     runtime.fnTimerStop(runtime.TO_FN_LONG);
 }
 
+// keyboardTweak.c alphaLongpress: substitutes a character for a gShiftedAim
+// function word, for the alpha modes that are not EIM.
+// The gShiftedAim column takes the function words LOG, LN, SIN, COS and TAN,
+// which belong in an equation and not in a name. That one column serves every
+// alpha mode, so EIM takes it as it is and the others take a character in its
+// place. The key label in the GTK host calls this as well, so the label and the
+// long press are one table.
+pub export fn alphaLongpress(item: i16) callconv(.c) i16 {
+    return switch (item) {
+        runtime.ITM_LG_SIGN => runtime.ITM_INFINITY,
+        runtime.ITM_LN_SIGN => runtime.ITM_EulerE,
+        runtime.ITM_SIN_SIGN => runtime.ITM_op_i_char,
+        runtime.ITM_COS_SIGN => runtime.ITM_op_j_char,
+        runtime.ITM_TAN_SIGN => runtime.ITM_omega,
+        else => item,
+    };
+}
+
 // keyboardTweak.c Check_MultiPresses (351-639): build the longpress key cycle
-// for the pressed key and arm the long-press timer (TAMALPHA_f branch taken).
+// for the pressed key and arm the long-press timer (the TAMALPHA_f branch is
+// not taken: the blue labels are what the TAM alpha long press offers).
 pub export fn Check_MultiPresses(result: [*c]i16, key_no: i8) callconv(.c) void {
     var lp1: i16 = 0;
     runtime.longpressDelayedkey2 = 0;
@@ -1390,7 +1409,7 @@ pub export fn Check_MultiPresses(result: [*c]i16, key_no: i8) callconv(.c) void 
     const ki: usize = @intCast(key_no);
     var tmpp_: i16 = if (usr) runtime.kbd_usr[ki].primary else runtime.kbdStdAt(ki).primary;
     var tmpf: i16 = 0;
-    var tmpf_: i16 = if (usr) runtime.kbd_usr[ki].fShifted else runtime.kbdStdAt(ki).fShifted;
+    const tmpf_: i16 = if (usr) runtime.kbd_usr[ki].fShifted else runtime.kbdStdAt(ki).fShifted;
     var tmpg: i16 = 0;
     var tmpg_: i16 = if (usr) runtime.kbd_usr[ki].gShifted else runtime.kbdStdAt(ki).gShifted;
 
@@ -1408,6 +1427,9 @@ pub export fn Check_MultiPresses(result: [*c]i16, key_no: i8) callconv(.c) void 
     } else if ((runtime.calcMode == runtime.CM_AIM or runtime.calcMode == runtime.CM_EIM or (runtime.calcMode == runtime.CM_PEM and runtime.getSystemFlag(runtime.FLAG_ALPHA))) and runtime.tam.mode == 0) {
         tmpp_ = if (usr) runtime.kbd_usr[ki].primaryAim else runtime.kbdStdAt(ki).primaryAim;
         tmpg_ = if (usr) runtime.kbd_usr[ki].gShiftedAim else runtime.kbdStdAt(ki).gShiftedAim;
+        if (runtime.calcMode != runtime.CM_EIM) { // the function words are for an equation only, so AIM and PEM alpha take the character instead
+            tmpg_ = alphaLongpress(tmpg_);
+        }
         if ((key_no != 32 and tmpp_ != runtime.ITM_SHIFTf and tmpp_ != runtime.ITM_SHIFTg and tmpp_ != runtime.KEY_fg and tmpp_ != runtime.ITM_BACKSPACE) and (runtime.LongPressM == runtime.RBX_M1234 or runtime.LongPressM == runtime.RBX_M124)) {
             if (!runtime.shiftF and !runtime.shiftG) {
                 lp1 = tmpg_;
@@ -1416,11 +1438,11 @@ pub export fn Check_MultiPresses(result: [*c]i16, key_no: i8) callconv(.c) void 
         }
     } else if (runtime.tam.alpha) {
         tmpp_ = if (usr) runtime.kbd_usr[ki].primaryAim else runtime.kbdStdAt(ki).primaryAim;
-        tmpf_ = if (usr) runtime.kbd_usr[ki].fShiftedAim else runtime.kbdStdAt(ki).fShiftedAim;
+        tmpg_ = alphaLongpress(if (usr) runtime.kbd_usr[ki].gShiftedAim else runtime.kbdStdAt(ki).gShiftedAim);
         if ((key_no != 32 and tmpp_ != runtime.ITM_SHIFTf and tmpp_ != runtime.ITM_SHIFTg and tmpp_ != runtime.KEY_fg and tmpp_ != runtime.ITM_BACKSPACE) and (runtime.LongPressM == runtime.RBX_M1234 or runtime.LongPressM == runtime.RBX_M124) and !((key_no == 12 or key_no == 36) and (runtime.tam.mode == runtime.TM_LABEL or runtime.tam.mode == runtime.TM_STORCL or runtime.tam.mode == runtime.TM_CMP or runtime.tam.mode == runtime.TM_KEY or runtime.tam.mode == runtime.TM_LBLONLY or runtime.tam.mode == runtime.TM_SOLVE or runtime.tam.mode == runtime.TM_MENU or runtime.tam.mode == runtime.TM_INTEGRATE or runtime.tam.mode == runtime.TM_REGISTER))) {
             if (!runtime.shiftF and !runtime.shiftG) {
-                lp1 = tmpf_;
-                tmpg = tmpf_;
+                lp1 = tmpg_;
+                tmpg = tmpg_;
             }
         }
     }

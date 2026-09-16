@@ -6333,7 +6333,7 @@ pub export fn fnScreenDump(unusedButMandatoryParameter: u16) callconv(.c) void {
         snapRowFirst = 0;
         snapRowLast = SCREEN_HEIGHT - 1;
 
-        var uint32: u32 = (@as(u32, @intCast(SCREEN_WIDTH)) / 8 * yRows) + 610;
+        var uint32: u32 = ((@as(u32, @intCast(SCREEN_WIDTH)) / 8 + 2) * yRows) + 0x82;
         _ = fwrite(&uint32, 1, 4, bmp);
         uint32 = 0;
         _ = fwrite(&uint32, 1, 4, bmp);

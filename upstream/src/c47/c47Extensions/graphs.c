@@ -1562,7 +1562,7 @@ plotmemExit: ;
         ctxtReal51.digits = s51;
         ctxtReal75.digits = s75;
       #endif //LOW_GRAPH_ACC
-  #endif // !OPTION_MOREGRAPHICS
+  #endif // OPTION_MOREGRAPHICS
 }
 
 

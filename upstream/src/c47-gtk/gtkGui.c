@@ -3610,10 +3610,13 @@ char sstmp[16];
         /*}*/       //dr - new AIM
       }
 
-      stringToUtf8(indexOfItems[numlockReplacements(10,key->gShiftedAim, getSystemFlag(FLAG_NUMLOCK), false, true)].itemSoftmenuName, lbl);
+      //The label shows what a long press gives the key, so the five function words are drawn in an equation only. alphaLongpress() in keyboardTweak.c is that one table.
+      int16_t gAim = calcMode == CM_EIM ? key->gShiftedAim : alphaLongpress(key->gShiftedAim);
+
+      stringToUtf8(indexOfItems[numlockReplacements(10,gAim, getSystemFlag(FLAG_NUMLOCK), false, true)].itemSoftmenuName, lbl);
 
       //GShift set label
-      if(key->gShiftedAim == 0) {
+      if(gAim == 0) {
         lbl[0] = 0;
       }
 
@@ -3621,7 +3624,7 @@ char sstmp[16];
       //printf("--THIS IS AIM g-position:                 %s\n",lbl);
 
       //GShift colours
-      if(key->gShiftedAim < 0) {
+      if(gAim < 0) {
         gtk_widget_set_name(lblG, "gShiftedUnderline");     //dr - new AIM
       }
       else {

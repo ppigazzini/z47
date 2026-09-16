@@ -62,4 +62,4 @@
   #define PROGRAM_KEYMAP_ID 0x00373452   // R47 keymap file
 #endif // CALCMODEL == USER_R47
 
-#endif // __PGM_MAIN_H__
+#endif // !__PGM_MAIN_H__

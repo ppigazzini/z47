@@ -1,0 +1,14 @@
+# The two release rules, both built from the one version pattern that .gitlab-ci.yml gives as the input. A tag that matches neither rule starts neither job.
+spec:
+  inputs:
+    version_pattern:
+---
+# A firmware release tag is the version itself, such as 00.109.04.00b0.RC1.
+.firmware-release-rules:
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^$[[ inputs.version_pattern ]]$/
+
+# A docs release tag is docs- followed by the version, such as docs-00.109.04.00b0.RC1.
+.docs-release-rules:
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^docs-$[[ inputs.version_pattern ]]$/

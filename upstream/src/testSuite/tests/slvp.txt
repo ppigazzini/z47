@@ -155,10 +155,10 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,4[0,1,-1,0]" RX=ReMa:"M1,2[1,0]"
 
 ;=======================================================================================================================
 ; Repeated roots: (x-1)^4 - a multiplicity-4 cluster is conditioning-limited to about 75/4 digits; these are the engine's
-; deterministic values, a conjugate-symmetric cluster of spread ~3E-18 around the true quadruple root, delivered honestly
+; deterministic values, a conjugate-symmetric cluster of spread ~1.4E-17 around the true quadruple root, delivered honestly
 ;=======================================================================================================================
 In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,5[1,-4,6,-4,1]"
-Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ReMa:"M1,5[1,-4,6,-4,1]" RX=CxMa:"M1,4[1.000000000000000002847193433484273i0,0.9999999999999999992695695413283999i7.305814482782950167230506999567649E-19,0.9999999999999999992695695413283999i-7.305814482782950167230506999567649E-19,0.9999999999999999986136674838589269i0]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ReMa:"M1,5[1,-4,6,-4,1]" RX=CxMa:"M1,4[1.000000000000000007677764405319433i0,0.9999999999999999992695695413283999i7.305814482782950167235141191142776E-19,0.9999999999999999992695695413283999i-7.305814482782950167235141191142776E-19,0.9999999999999999937830965120237671i0]"
 
 ;=======================================================================================================================
 ; Wilkinson degree 10: roots 1..10, coefficients exact in real34
@@ -186,3 +186,21 @@ Out: EC=11 FL_CPXRES=0 FL_ASLIFT=0 RL=LonI:"852" RX=ReMa:"M1,21[1,-210,20615,-12
 ; x^4 + i x^3 - 2, exact roots include i
 In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=CxMa:"M1,5[1i0,0i1,0i0,0i0,-2i0]"
 Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M1,5[1i0,0i1,0i0,0i0,-2i0]" RX=CxMa:"M1,4[-6.777262814425583794579544187249176E-40i-1.543689012692076361570855971801748,-1.115142508039937359745764636315014i-0.2281554936539618192145720140991260,1.115142508039937359745764636315014i-0.2281554936539618192145720140991260,-4.067804215061577727803136725462773E-40i1]"
+
+;=======================================================================================================================
+; Two or more complex pairs through the QR engine: each 2x2 block of the real Schur form is solved on its own. The roots
+; are exact, the order is by magnitude, and equal magnitudes come in the order the engine delivers them
+;=======================================================================================================================
+; x^4 - 6x^2 + 25 = (x^2 - 4x + 5)(x^2 + 4x + 5): roots -2 -/+ i and 2 +/- i, all of magnitude sqrt(5)
+TIMER: 004 degree 4, two complex pairs
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,5[1,0,-6,0,25]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ReMa:"M1,5[1,0,-6,0,25]" RX=CxMa:"M1,4[-2i-1,-2i1,2i1,2i-1]"
+
+; (x^2 + 1)(x^2 + 4)(x^2 + 9) = x^6 + 14x^4 + 49x^2 + 36: roots +/- 3i, -/+ 2i, +/- i
+TIMER: 005 degree 6, three complex pairs
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,7[1,0,14,0,49,0,36]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ReMa:"M1,7[1,0,14,0,49,0,36]" RX=CxMa:"M1,6[0i3,0i-3,0i-2,0i2,0i1,0i-1]"
+
+; (x^2 + 1)^2 = x^4 + 2x^2 + 1, roots +/- i twice: the 4-row block is not solved, so No root found is displayed. Replace with the roots once such a block is solved.
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,5[1,0,2,0,1]"
+Out: EC=20 FL_CPXRES=0 FL_ASLIFT=0 RL=LonI:"852" RX=ReMa:"M1,5[1,0,2,0,1]"

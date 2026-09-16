@@ -41,7 +41,6 @@ int file_selection_screen(const char * title, const char * base_dir, const char 
   }
 
   strcpy(untitled, data);
-  strcat(untitled, ext+1);
 
   if(disp_save) {
     GtkFileChooserAction action = GTK_FILE_CHOOSER_ACTION_SAVE;
@@ -71,10 +70,10 @@ int file_selection_screen(const char * title, const char * base_dir, const char 
     filename = gtk_file_chooser_get_filename (chooser);
     strcpy(data, filename);
     if(disp_save) {
-      char * fe = data+strlen(filename)-4;
+      int ll = strlen(filename);
       const char * ee = ext+1;
-      if(strcmp(fe, ee) != 0) {
-        strcat(data, ee);     //filename doesn't have the expected extension
+      if(ll < 4 || strcmp(data+ll-4, ee) != 0) {
+        strcat(data, ee);     //filename doesn't have the expected extension, or is too short to hold one
       }
     }
     g_free(filename);
@@ -84,6 +83,20 @@ int file_selection_screen(const char * title, const char * base_dir, const char 
   else {
     g_object_unref (native);
     return FILE_CANCEL;
+  }
+}
+
+
+// Keeps the folder part of a chosen file, so the next chooser of that group opens where this one was left. Both separators are checked: the GTK build runs on
+// Windows too. A name with no separator, or one directly under the root, leaves the stored folder alone and the group keeps opening on its default folder.
+static void rememberFolder(char * folder, const char * filename) {
+  int i = strlen(filename);
+  while(i > 0 && filename[i-1] != '/' && filename[i-1] != '\\') {
+    i--;
+  }
+  if(i > 1 && i <= C47_PATH_MAX) {
+    memcpy(folder, filename, i - 1);
+    folder[i - 1] = 0;
   }
 }
 
@@ -140,11 +153,17 @@ int _ioFileNameFromFilePath(ioFilePath_t path, char * filename) {
         return FILE_ERROR;
       }
       strcat(base_dir, "/" DATA_DIR);
+      if(lastFolderData[0] != 0) {
+        strcpy(base_dir, lastFolderData);
+      }
       if(path == ioPathRegExport) {
         ret = file_selection_screen("Export Register File", base_dir, "*"DATA_EXT, 1, 1, filename);
       }
       else if(path == ioPathRegImport) {
         ret = file_selection_screen("Import Register File", base_dir, "*"DATA_EXT, 0, 0, filename);
+      }
+      if(ret == FILE_OK) {
+        rememberFolder(lastFolderData, filename);
       }
       g_free(current_dir);
       return ret;
@@ -157,11 +176,17 @@ int _ioFileNameFromFilePath(ioFilePath_t path, char * filename) {
         return FILE_ERROR;
       }
       strcat(base_dir, "/" STATE_DIR);
+      if(lastFolderState[0] != 0) {
+        strcpy(base_dir, lastFolderState);
+      }
       if(path == ioPathSaveStateFile) {
         ret = file_selection_screen("Save State File", base_dir, "*"STATE_EXT, 1, 1, filename);
       }
       else if(path == ioPathLoadStateFile) {
         ret = file_selection_screen("Load State File", base_dir, "*"STATE_EXT, 0, 0, filename);
+      }
+      if(ret == FILE_OK) {
+        rememberFolder(lastFolderState, filename);
       }
       g_free(current_dir);
       return ret;
@@ -175,6 +200,9 @@ int _ioFileNameFromFilePath(ioFilePath_t path, char * filename) {
         return 0;
       }
       strcat(base_dir, "/" PROGRAMS_DIR);
+      if(lastFolderPrograms[0] != 0) {
+        strcpy(base_dir, lastFolderPrograms);
+      }
       if(path == ioPathSaveProgram) {
         // set current label name as default file name
         stringToASCII(tmpStringLabelOrVariableName, filename);
@@ -189,6 +217,9 @@ int _ioFileNameFromFilePath(ioFilePath_t path, char * filename) {
       }
       else if(path == ioPathLoadProgram) {
         ret = file_selection_screen("Load Program File", base_dir, "*"PRGM_EXT, 0, 0, filename);
+      }
+      if(ret == FILE_OK) {
+        rememberFolder(lastFolderPrograms, filename);
       }
       g_free(current_dir);
       return ret;

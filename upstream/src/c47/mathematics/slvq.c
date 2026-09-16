@@ -106,7 +106,7 @@ void fnSlvq(uint16_t unusedButMandatoryParameter) {
   #else
     fnDropZ(0);
   #endif //DISCRIMINANT
-#endif // !OPTION_SLVQ_SLVC
+#endif // OPTION_SLVQ_SLVC
 }
 
 

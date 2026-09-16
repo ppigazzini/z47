@@ -10,6 +10,9 @@
 #define DERIV_FIRST_SHIFT       1   // h starts at x/10, the coarsest step a 15 point stencil is worth taking
 #define DERIV_LAST_SHIFT       16   // and stops at x*1e-16, the step this engine used for every stencil before the ladder
 #define DERIV_TOLERANCE_DIGITS 32   // digits a sample carries, less one for the coefficient sum, which is what two estimates are compared against
+#define DERIV_WORK_REALS       (8 + MAX_F_EVAL)   // calcDeriv's heap block: eight reals, then fx
+
+_Static_assert(sizeof(real_t) == REAL_SIZE_IN_BYTES(75), "fx is indexed as a real_t array");
 
 
 #if 0
@@ -37,7 +40,7 @@ TO_QSPI static const FINITE_DIFF_COEFF *const all_second_derivatives[] = {
     &der_2_strict_lower_3,
     NULL
 };
-#endif
+#endif // 0
 
 static void calcDeriv(calcRegister_t label, const FINITE_DIFF_COEFF *const *finDiff);
 static calcRegister_t deriv_pgm_variable(calcRegister_t label, bool_t *usesDelta);
@@ -67,7 +70,7 @@ static void derivativeEquation(uint16_t order, uint8_t ti) {
   // FLAG_SOLVING suppresses the per-item undo snapshot, so the one calcDeriv takes before sampling survives to be restored, and it is what lets execProgram run a
   // body at all.
   bool_t solving = getSystemFlag(FLAG_SOLVING);
-  real_t probeValue;
+  real34_t probeValue;   // only the test result is used, and this frame is under every sample
   snap_t savedRegister;
   bool_t restore;
 
@@ -96,7 +99,7 @@ static void derivativeEquation(uint16_t order, uint8_t ti) {
   reallyRunFunction(ITM_RCL, currentSolverVariable);
   // The sampling stores each point in the variable, so its own value is kept here and put back after. A register cannot hold it: for a program the user's code runs
   // in between and reaches every temporary register, which is what used to hand the variable back holding a number out of that program.
-  restore = (currentSolverVariable != INVALID_VARIABLE) && getRegisterAsRealQuiet(currentSolverVariable, &probeValue);
+  restore = (currentSolverVariable != INVALID_VARIABLE) && getRegisterAsReal34Quiet(currentSolverVariable, &probeValue);
   if(restore) {
     saveRegisterSnapshot(currentSolverVariable, &savedRegister);
   }
@@ -130,7 +133,7 @@ void fnPgmDrv(uint16_t label) {
 // As a program step the operand is a variable, the program is the one PGMDRV named and the variable is the parameter.
 static void derivativeVariable(uint16_t variable, uint16_t order, uint8_t ti) {
   bool_t solving;
-  real_t probeValue;
+  real34_t probeValue;   // only the test result is used, and this frame is under every sample
   snap_t savedRegister;
   bool_t restore;
 
@@ -164,7 +167,7 @@ static void derivativeVariable(uint16_t variable, uint16_t order, uint8_t ti) {
   currentSolverVariable = variable;
   reallyRunFunction(ITM_STO, currentSolverVariable);   // the point comes off the stack, as SOLVE takes its guesses and ∫ its limits, and calcDeriv reads it from X
   // The sampling stores each point in the variable, so the given point is kept here and put back after, leaving the variable on the value it was differentiated at.
-  restore = getRegisterAsRealQuiet(currentSolverVariable, &probeValue);
+  restore = getRegisterAsReal34Quiet(currentSolverVariable, &probeValue);
   if(restore) {
     saveRegisterSnapshot(currentSolverVariable, &savedRegister);
   }
@@ -212,15 +215,13 @@ static bool_t deriv_formula_uses_delta(void) {
 }
 
 
-// The step the user set, which is the step variable. It is taken as it stands and the ladder is not walked at all. False means it was not there, h is left alone,
+// The step the user set, which is the step variable. It is taken unchanged and the ladder is not walked at all. False means it was not there, h is then undefined,
 // and the caller scales it per pass. Asked once per derivative, since none of this can change while the ladder runs.
 static bool_t deriv_user_step(real_t *h, bool_t usesDelta) {
   calcRegister_t deltaX;
-  real_t given;
 
   if(!usesDelta && (deltaX = findNamedVariable(STD_delta STD_SUB_d)) != INVALID_VARIABLE &&
-     getRegisterAsRealQuiet(deltaX, &given) && !realIsZero(&given) && !realIsSpecial(&given)) {
-    realCopy(&given, h);
+     getRegisterAsRealQuiet(deltaX, h) && !realIsZero(h) && !realIsSpecial(h)) {
     return true;
   }
   return false;
@@ -242,17 +243,15 @@ static int32_t deriv_last_shift(void) {
 // Do two estimates of the same derivative, taken a factor of ten apart in h, agree to better than the cancellation the finer one suffers? A sample carries 34 digits
 // and the points are h apart, so differencing them loses the digits they share and the error is about 1e-DERIV_TOLERANCE_DIGITS times ten to the shift, for each
 // order of the derivative. Agreement means the truncation of the coarser estimate is already below that, so the coarser one is the better of the two. The gap
-// between the pair is handed back for the caller to rank the pairs by, whether they agreed or not.
-static bool_t deriv_agrees(const real_t *coarse, const real_t *fine, int shift, uint8_t order, real_t *difference) {
-  real_t tolerance;
-
+// between the pair is handed back for the caller to rank the pairs by, whether they agreed or not. tolerance is the caller's working space.
+static bool_t deriv_agrees(const real_t *coarse, const real_t *fine, int shift, uint8_t order, real_t *difference, real_t *tolerance) {
   realSubtract(fine, coarse, difference, &ctxtReal39);
   if(realIsZero(difference)) {
     return true;
   }
-  realCopyAbs(fine, &tolerance);
-  tolerance.exponent += shift * order - deriv_tolerance_digits();
-  return realCompareAbsLessThan(difference, &tolerance);
+  realCopyAbs(fine, tolerance);
+  tolerance->exponent += shift * order - deriv_tolerance_digits();
+  return realCompareAbsLessThan(difference, tolerance);
 }
 
 
@@ -334,11 +333,10 @@ static void _differentiatorIteration(calcRegister_t label, calcRegister_t variab
   }
 }
 
-// Try to compute a single derivative estimate from a stencil
+// Try to compute a single derivative estimate from a stencil. r takes the weighted sum as it builds, and t is the caller's working space.
 static bool_t calcOneDeriv(const FINITE_DIFF_COEFF *stencil, const real_t fxIn[],
-                           const real_t *h, real_t *r, realContext_t *realContext) {
+                           const real_t *h, real_t *r, real_t *t, realContext_t *realContext) {
   uint16_t i, maxi = 2*stencil->n+1;
-  real_t t, s;
   const real_t * const fx = fxIn + MAX_ORDER - stencil->n;
 
   // Check if all f(x) are defined or not
@@ -349,28 +347,27 @@ static bool_t calcOneDeriv(const FINITE_DIFF_COEFF *stencil, const real_t fxIn[]
   }
 
   // All values are defined where required so calculate the weighted sum
-  realSetZero(&s);
+  realSetZero(r);
   for(i=0; i<maxi; i++) {
     if(stencil->coeff[i] != 0) {
-      int32ToReal(fdValues[stencil->coeff[i]], &t);
-      realFMA(fx+i, &t, &s, &s, realContext);
+      int32ToReal(fdValues[stencil->coeff[i]], t);
+      realFMA(fx+i, t, r, r, realContext);
     }
   }
   // Inefficiently factor in the derivative order
   // It's not a problem since the order can only be 1 or 2 currently
   // For larger orders we need to divide the result by h^order
-  uInt32ToReal(fdValues[stencil->denom], &t);
+  uInt32ToReal(fdValues[stencil->denom], t);
   for(i=0; i<stencil->order; i++) {
-    realMultiply(&t, h, &t, realContext);
+    realMultiply(t, h, t, realContext);
   }
-  realDivide(&s, &t, r, realContext);
+  realDivide(r, t, r, realContext);
   return true;
 }
 
 // Compute the function values f(x + k h), k = -MAX_ORDER .. MAX_ORDER
 static void calcFuncValues(calcRegister_t label, calcRegister_t variable, const real_t *x, real_t fx[MAX_F_EVAL], real_t *h, realContext_t *realContext) {
   int i;
-  real_t t;
 
   for(i=0; i < MAX_F_EVAL; i++) {
     if(lastErrorCode == ERROR_SOLVER_ABORT || programRunStop == PGM_WAITING || exitKeyWaiting()) {
@@ -385,8 +382,8 @@ static void calcFuncValues(calcRegister_t label, calcRegister_t variable, const 
       }
       return;
     }
-    int32ToReal(i - MAX_ORDER, &t);
-    realFMA(&t, h, x, fx + i, realContext);
+    int32ToReal(i - MAX_ORDER, fx + i);   // the multiplier sits in the sample's own slot: FMA may write its result over an operand
+    realFMA(fx + i, h, x, fx + i, realContext);
     _differentiatorIteration(label, variable, fx + i);
   }
 }
@@ -394,17 +391,31 @@ static void calcFuncValues(calcRegister_t label, calcRegister_t variable, const 
 
 // Evaluate the function at stencil points and compute "best" estimate
 static void calcDeriv(calcRegister_t label, const FINITE_DIFF_COEFF *const *finDiff) {
-  real_t x, h, probeValue, estimate, coarse, gap, best, bestGap, fx[MAX_F_EVAL];
+  // One heap block for the working reals: this frame is on the stack under every sample and every nested derivative. Freed at freeWork.
+  uint8_t *const work = allocC47Blocks(DERIV_WORK_REALS * REAL_SIZE_IN_BLOCKS(75));
+  if(work == NULL) {
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, REGISTER_X);
+    return;
+  }
+  REAL_T_IN(work, 75, 0, x);
+  REAL_T_IN(work, 75, 1, h);
+  REAL_T_IN(work, 75, 2, scratch);   // the MVAR probe, then working space for calcOneDeriv and deriv_agrees
+  REAL_T_IN(work, 75, 3, estimate);
+  REAL_T_IN(work, 75, 4, coarse);
+  REAL_T_IN(work, 75, 5, gap);
+  REAL_T_IN(work, 75, 6, best);
+  REAL_T_IN(work, 75, 7, bestGap);
+  REAL_T_IN(work, 75, 8, fx);   // MAX_F_EVAL samples
   snap_t savedRegister;
   calcRegister_t variable = INVALID_VARIABLE;
   bool_t userStep = false, usesDelta = false;
   int i, shift, stencil, coarseStencil = -1, coarseShift = 0, bestShift = 0, lastShift = deriv_last_shift();
 
-  if(!getRegisterAsReal(REGISTER_X, &x)) {
-    return;
+  if(!getRegisterAsReal(REGISTER_X, x)) {
+    goto freeWork;
   }
 
-  if(!realIsSpecial(&x)) {
+  if(!realIsSpecial(x)) {
     if(currentSolverStatus & SOLVER_STATUS_USES_FORMULA) {
       usesDelta = deriv_formula_uses_delta();
     }
@@ -414,10 +425,10 @@ static void calcDeriv(calcRegister_t label, const FINITE_DIFF_COEFF *const *finD
       lastErrorCode = ERROR_NONE;
       variable = deriv_pgm_variable(label, &usesDelta);
       if(lastErrorCode != ERROR_NONE) {   // no room for the MVAR: the user is told, rather than given the wrong answer a fall back to the stack would return
-        return;
+        goto freeWork;
       }
       lastErrorCode = probeError;
-      if(variable != INVALID_VARIABLE && !getRegisterAsRealQuiet(variable, &probeValue)) {
+      if(variable != INVALID_VARIABLE && !getRegisterAsRealQuiet(variable, scratch)) {
         variable = INVALID_VARIABLE;   // differentiate only with respect to something numeric
       }
     }
@@ -432,13 +443,13 @@ static void calcDeriv(calcRegister_t label, const FINITE_DIFF_COEFF *const *finD
         printf("f[x+%dh] = %s\n", i - MAX_ORDER, decNumberToString(fx+i, buf));
       }
       for(i=0; finDiff[i] != NULL; i++) {
-        if(calcOneDeriv(finDiff[i], fx, &h, &x, &ctxtReal39)) {
-          printf("df/dx = %s\t(%s)\n", decNumberToString(&x, buf), finDiff[i]->desc);
+        if(calcOneDeriv(finDiff[i], fx, h, x, scratch, &ctxtReal39)) {
+          printf("df/dx = %s\t(%s)\n", decNumberToString(x, buf), finDiff[i]->desc);
         }
       }
     }
-#endif
-    userStep = deriv_user_step(&h, usesDelta);
+#endif // 0
+    userStep = deriv_user_step(h, usesDelta);
 
     // Walk the step down a decade at a time. Each step gives one estimate, and two estimates from the same stencil that agree say the coarser step's truncation is
     // already lost in the noise, so the coarser one is taken: it is the one that threw away the fewest digits. A step the user set is taken as it stands, so the
@@ -452,16 +463,16 @@ static void calcDeriv(calcRegister_t label, const FINITE_DIFF_COEFF *const *finD
         saveRegisterSnapshot(variable, &savedRegister);
       }
       if(!userStep) {
-        realCopy(&x, &h);   // the step is relative to x, and at x = 0 it collapses and the weighted sum would be divided by zero
-        if(realIsZero(&h)) {
-          realCopy(const_1, &h);
+        realCopy(x, h);   // the step is relative to x, and at x = 0 it collapses and the weighted sum would be divided by zero
+        if(realIsZero(h)) {
+          realCopy(const_1, h);
         }
-        h.exponent -= shift;
+        h->exponent -= shift;
       }
 
       // Compute the function at the finite difference points
       saveForUndo();
-      calcFuncValues(label, variable, &x, fx, &h, &ctxtReal39);
+      calcFuncValues(label, variable, x, fx, h, &ctxtReal39);
       undo();
       if(variable != INVALID_VARIABLE) {   // undo() rolls back the stack only, so the sampled variable is put back here
         restoreRegisterSnapshot(variable, &savedRegister);
@@ -473,7 +484,7 @@ static void calcDeriv(calcRegister_t label, const FINITE_DIFF_COEFF *const *finD
       // Try finite differences until we get a result
       stencil = -1;
       for(i=0; finDiff[i] != NULL; i++) {
-        if(calcOneDeriv(finDiff[i], fx, &h, &estimate, &ctxtReal39)) {
+        if(calcOneDeriv(finDiff[i], fx, h, estimate, scratch, &ctxtReal39)) {
           stencil = i;
           break;
         }
@@ -485,22 +496,22 @@ static void calcDeriv(calcRegister_t label, const FINITE_DIFF_COEFF *const *finD
         continue;
       }
       if(userStep) {
-        realCopy(&estimate, &x);
+        realCopy(estimate, x);
         goto found;
       }
       if(stencil == coarseStencil) {
-        if(deriv_agrees(&coarse, &estimate, shift, finDiff[stencil]->order, &gap)) {
+        if(deriv_agrees(coarse, estimate, shift, finDiff[stencil]->order, gap, scratch)) {
           goto settled;
         }
         // The two are a decade apart, so the gap between them is smallest where the truncation of the coarser one and the cancellation of the finer one balance.
         // The coarser member of the closest pair is therefore the best the ladder saw, and it is what the answer falls back to when no pair ever agrees.
-        if(bestShift == 0 || realCompareAbsLessThan(&gap, &bestGap)) {
-          realCopy(&coarse, &best);
-          realCopy(&gap, &bestGap);
+        if(bestShift == 0 || realCompareAbsLessThan(gap, bestGap)) {
+          realCopy(coarse, best);
+          realCopy(gap, bestGap);
           bestShift = coarseShift;
         }
       }
-      realCopy(&estimate, &coarse);
+      realCopy(estimate, coarse);
       coarseStencil = stencil;
       coarseShift = shift;
     }
@@ -508,17 +519,17 @@ static void calcDeriv(calcRegister_t label, const FINITE_DIFF_COEFF *const *finD
       goto noResult;
     }
     if(bestShift != 0) {   // the ladder ran out without a pair ever agreeing, so the closest pair is as near as this function gets
-      realCopy(&best, &coarse);
+      realCopy(best, coarse);
       coarseShift = bestShift;
     }
 
 settled:                      // the coarser of the two estimates is the answer, and its own step is what the display reports
-    realCopy(&x, &h);
-    if(realIsZero(&h)) {
-      realCopy(const_1, &h);
+    realCopy(x, h);
+    if(realIsZero(h)) {
+      realCopy(const_1, h);
     }
-    h.exponent -= coarseShift;
-    realCopy(&coarse, &x);
+    h->exponent -= coarseShift;
+    realCopy(coarse, x);
     goto found;
   }
   goto noResult;
@@ -528,21 +539,23 @@ found:
     //Add string, for display at TI
     decContext c = ctxtReal4;
     c.digits = 2;
-    real_t hh;
-    realPlus(&h, &hh, &c);
+    realPlus(h, h, &c);   // h is not read again
     strcpy(errorMessage, STD_delta "=");
-    decNumberToString(&hh, errorMessage + stringByteLength(errorMessage));
+    decNumberToString(h, errorMessage + stringByteLength(errorMessage));
     strcat(errorMessage, "; ");
     goto finish;
   }
 
 noResult:;
   // No estimate possible
-  realSetNaN(&x);
+  realSetNaN(x);
   //Add string, for display at TI
   errorMessage[0] = 0;
 
 finish:
-  convertRealToResultRegister(&x, REGISTER_X, amNone);
+  convertRealToResultRegister(x, REGISTER_X, amNone);
+
+freeWork:
+  freeC47Blocks(work, DERIV_WORK_REALS * REAL_SIZE_IN_BLOCKS(75));
 }
 

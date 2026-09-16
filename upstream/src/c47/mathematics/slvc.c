@@ -174,10 +174,10 @@ void fnSlvc(uint16_t unusedButMandatoryParameter) {
       convertComplexToResultRegister(&rReal, &rImag, REGISTER_T);
     }
     adjustResult(REGISTER_T, false, true, REGISTER_T, -1, -1);
-  #else // !DISCIMINANT
+  #else // !DISCRIMINANT
     fnDropT(0);
   #endif // DISCRIMINANT
-#endif // !OPTION_SLVQ_SLVC
+#endif // OPTION_SLVQ_SLVC
 }
 
 

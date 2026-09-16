@@ -88,7 +88,7 @@ static void zeta_calc_complex(real_t *reg4, real_t *reg5, real_t *reg6, real_t *
 
   divComplexComplex(&reg8, &reg9, &q, &s, reg4, reg5, realContext);
 }
-#endif // !OPTION_ZETA_BETA
+#endif // OPTION_ZETA_BETA
 
 void ComplexZeta(const real_t *xReal, const real_t *xImag, real_t *resReal, real_t *resImag, realContext_t *realContext) {
 #if defined(OPTION_ZETA_BETA)
@@ -131,7 +131,7 @@ void ComplexZeta(const real_t *xReal, const real_t *xImag, real_t *resReal, real
 
     divComplexComplex(&reg4, &reg5, &q, &p, resReal, resImag, realContext);
   }
-#endif // !OPTION_ZETA_BETA
+#endif // OPTION_ZETA_BETA
 }
 
 #if defined(OPTION_ZETA_BETA)

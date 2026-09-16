@@ -15,4 +15,4 @@ int executeCommand(const char *command);
 
 extern const char* dslOpsFileName;
 
-#endif // DSL_H
+#endif // !DSL_H
