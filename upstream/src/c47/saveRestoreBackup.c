@@ -300,6 +300,9 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     saveStateValue(userAlphaItems,                  sizeof(userAlphaItems),                                      "userAlphaItems",                 "hexDump");
     saveStateValue(lastTemp,                        sizeof(lastTemp),                                            "lastTemp",                       "hexDump");
     saveStateValue(lastStateFileOpened,             sizeof(lastStateFileOpened),                                 "lastStateFileOpened",            "hexDump");
+    saveStateValue(lastFolderData,                  sizeof(lastFolderData),                                      "lastFolderData",                 "hexDump");
+    saveStateValue(lastFolderState,                 sizeof(lastFolderState),                                     "lastFolderState",                "hexDump");
+    saveStateValue(lastFolderPrograms,              sizeof(lastFolderPrograms),                                  "lastFolderPrograms",             "hexDump");
 
     saveStateValue(&lastI,                          sizeof(lastI),                                               "lastI",                          "int16");
     saveStateValue(&lastJ,                          sizeof(lastJ),                                               "lastJ",                          "int16");
@@ -990,6 +993,9 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     restoreStateValue(userAlphaItems,                  sizeof(userAlphaItems),                                      "userAlphaItems",                 "hexDump");
     restoreStateValue(lastTemp,                        sizeof(lastTemp),                                            "lastTemp",                       "hexDump");
     restoreStateValue(lastStateFileOpened,             sizeof(lastStateFileOpened),                                 "lastStateFileOpened",            "hexDump");
+    restoreStateValue(lastFolderData,                  sizeof(lastFolderData),                                      "lastFolderData",                 "hexDump");
+    restoreStateValue(lastFolderState,                 sizeof(lastFolderState),                                     "lastFolderState",                "hexDump");
+    restoreStateValue(lastFolderPrograms,              sizeof(lastFolderPrograms),                                  "lastFolderPrograms",             "hexDump");
 
     lastI = 0;
     lastJ = 0;

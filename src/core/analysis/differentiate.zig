@@ -209,6 +209,16 @@ const TI_DERIV_STEP: u8 = 144;
 const DERIV_FIRST_SHIFT: i32 = 1;
 const DERIV_LAST_SHIFT: i32 = 16;
 const DERIV_TOLERANCE_DIGITS: i32 = 32;
+// calcDeriv's heap block: eight reals, then fx.
+const DERIV_WORK_REALS: usize = 8 + @as(usize, @intCast(MAX_F_EVAL));
+// realType.h's REAL_SIZE_IN_BYTES(75) / REAL_SIZE_IN_BLOCKS(75).
+const REAL_SIZE_IN_BYTES_75: usize = 10 + 2 * ((((75 + 2) / 6) * 6 + 3) / 3);
+const REAL_SIZE_IN_BLOCKS_75: usize = (REAL_SIZE_IN_BYTES_75 + 3) / 4;
+comptime {
+    // fx is indexed as a real_t array.
+    if (@sizeOf(real_t) != REAL_SIZE_IN_BYTES_75) @compileError("real_t is not REAL_SIZE_IN_BYTES(75)");
+}
+const ERROR_RAM_FULL: u8 = 11;
 
 const FIRST_UC_LOCAL_LABEL: u16 = 100; // A, the first upper-case local label
 const LAST_LOCAL_LABEL: u16 = 123; // l, the last lower-case local label
@@ -382,6 +392,8 @@ extern fn checkOpCodeOfStep(step: [*c]const u8, op: u16) bool;
 extern fn findNextStep(step: [*c]u8) [*c]u8;
 extern fn boundProgramNameLength(nameStart: [*c]const u8, claimedLength: u8) u8;
 extern fn xcopy(dest: ?*anyopaque, source: ?*const anyopaque, n: u32) ?*anyopaque;
+extern fn allocC47Blocks(size_in_blocks: usize) ?*anyopaque;
+extern fn freeC47Blocks(ptr: ?*anyopaque, size_in_blocks: usize) void;
 extern fn saveRegisterSnapshot(reg: calcRegister_t, s: *snap_t) callconv(.c) void;
 extern fn restoreRegisterSnapshot(reg: calcRegister_t, s: *snap_t) callconv(.c) void;
 // registerValueConversions.h's snap_t, shared as abi.RegisterSnapshot with the
@@ -431,7 +443,7 @@ pub export fn fnPgmDrv(label: u16) linksection(runtime.code_section) callconv(.c
 // picked off a softkey. As a program step the operand is a variable, the program is the one PGMDRV named and the variable
 // is the parameter.
 fn derivativeVariable(variable: u16, order: u16, ti: u8) linksection(runtime.code_section) void {
-    var probeValue: real_t = undefined;
+    var probeValue: real34_t = undefined; // only the test result is used, and this frame is under every sample
     var savedRegister: snap_t = undefined;
 
     if ((FIRST_UC_LOCAL_LABEL <= variable and variable <= LAST_LOCAL_LABEL) or
@@ -463,7 +475,7 @@ fn derivativeVariable(variable: u16, order: u16, ti: u8) linksection(runtime.cod
     reallyRunFunction(ITM_STO, currentSolverVariable); // the point comes off the stack, as SOLVE takes its guesses, and calcDeriv reads it from X
     // The sampling stores each point in the variable, so the given point is kept here and put back after, leaving the
     // variable on the value it was differentiated at.
-    const restore = getRegisterAsRealQuiet(@bitCast(currentSolverVariable), &probeValue);
+    const restore = runtime.getRegisterAsReal34Quiet(@bitCast(currentSolverVariable), &probeValue);
     if (restore) {
         saveRegisterSnapshot(@bitCast(currentSolverVariable), &savedRegister);
     }
@@ -515,9 +527,9 @@ fn derivativeEquation(order: u16, ti: u8) linksection(runtime.code_section) void
     // The sampling stores each point in the variable, so its own value is kept here and put back after. A register cannot
     // hold it: for a program the user's code runs in between and reaches every temporary register, which is what used to
     // hand the variable back holding a number out of that program.
-    var probeValue: real_t = undefined;
+    var probeValue: real34_t = undefined; // only the test result is used, and this frame is under every sample
     var savedRegister: snap_t = undefined;
-    const restore = currentSolverVariable != INVALID_VARIABLE and getRegisterAsRealQuiet(@bitCast(currentSolverVariable), &probeValue);
+    const restore = currentSolverVariable != INVALID_VARIABLE and runtime.getRegisterAsReal34Quiet(@bitCast(currentSolverVariable), &probeValue);
     if (restore) {
         saveRegisterSnapshot(@bitCast(currentSolverVariable), &savedRegister);
     }
@@ -564,18 +576,15 @@ fn deriv_formula_uses_delta() linksection(runtime.code_section) bool_t {
     return false;
 }
 
-// The step the user set, which is the step variable. It is taken as it stands and the ladder is not walked at all. False
-// means it was not there, h is left alone, and the caller scales it per pass. Asked once per derivative, since none of this
-// can change while the ladder runs.
+// The step the user set, which is the step variable. It is taken unchanged and the ladder is not walked at all. False
+// means it was not there, h is then undefined, and the caller scales it per pass. Asked once per derivative, since none of
+// this can change while the ladder runs.
 fn deriv_user_step(h: *real_t, usesDelta: bool_t) linksection(runtime.code_section) bool_t {
-    var given: real_t = undefined;
-
     if (!usesDelta) {
         const deltaX = findNamedVariable(STD_delta_SUB_d);
-        if (@as(u16, @bitCast(deltaX)) != INVALID_VARIABLE and getRegisterAsRealQuiet(deltaX, &given) and
-            !realIsZero(&given) and !realIsSpecial(&given))
+        if (@as(u16, @bitCast(deltaX)) != INVALID_VARIABLE and getRegisterAsRealQuiet(deltaX, h) and
+            !realIsZero(h) and !realIsSpecial(h))
         {
-            realCopy(&given, h);
             return true;
         }
     }
@@ -597,17 +606,16 @@ fn deriv_last_shift() linksection(runtime.code_section) i32 {
 // finer one suffers? A sample carries 34 digits and the points are h apart, so differencing them loses the digits they
 // share and the error is about 1e-DERIV_TOLERANCE_DIGITS times ten to the shift, for each order of the derivative.
 // Agreement means the truncation of the coarser estimate is already below that, so the coarser one is the better of the
-// two. The gap between the pair is handed back for the caller to rank the pairs by, whether they agreed or not.
-fn deriv_agrees(coarse: *const real_t, fine: *const real_t, shift: i32, order: u8, difference: *real_t) linksection(runtime.code_section) bool_t {
-    var tolerance: real_t = undefined;
-
+// two. The gap between the pair is handed back for the caller to rank the pairs by, whether they agreed or not. tolerance
+// is the caller's working space.
+fn deriv_agrees(coarse: *const real_t, fine: *const real_t, shift: i32, order: u8, difference: *real_t, tolerance: *real_t) linksection(runtime.code_section) bool_t {
     realSubtract(fine, coarse, difference, &ctxtReal39);
     if (realIsZero(difference)) {
         return true;
     }
-    realCopyAbs(fine, &tolerance);
+    realCopyAbs(fine, tolerance);
     tolerance.exponent += shift * @as(i32, order) - deriv_tolerance_digits();
-    return realCompareAbsLessThan(difference, &tolerance);
+    return realCompareAbsLessThan(difference, tolerance);
 }
 
 // A program that declares MVARs takes its argument from named storage (RCL 'x'), not from the stack, so the
@@ -689,11 +697,10 @@ fn _differentiatorIteration(label: calcRegister_t, variable: calcRegister_t, r0:
     }
 }
 
-// Try to compute a single derivative estimate from a stencil
-fn calcOneDeriv(stencil: *const FINITE_DIFF_COEFF, fxIn: [*]const real_t, h: *const real_t, r: *real_t, realContext: *realContext_t) linksection(runtime.code_section) bool_t {
+// Try to compute a single derivative estimate from a stencil. r takes the weighted sum as it builds, and t is the caller's
+// working space.
+fn calcOneDeriv(stencil: *const FINITE_DIFF_COEFF, fxIn: [*]const real_t, h: *const real_t, r: *real_t, t: *real_t, realContext: *realContext_t) linksection(runtime.code_section) bool_t {
     const maxi: u16 = 2 * @as(u16, stencil.n) + 1;
-    var t: real_t = undefined;
-    var s: real_t = undefined;
     const fx: [*]const real_t = fxIn + @as(usize, @intCast(MAX_ORDER - @as(i32, stencil.n)));
 
     // Check if all f(x) are defined or not
@@ -705,27 +712,26 @@ fn calcOneDeriv(stencil: *const FINITE_DIFF_COEFF, fxIn: [*]const real_t, h: *co
     }
 
     // All values are defined where required so calculate the weighted sum
-    realSetZero(&s);
+    realSetZero(r);
     i = 0;
     while (i < maxi) : (i += 1) {
         if (stencil.coeff[i] != 0) {
-            int32ToReal(fdValues[stencil.coeff[i]], &t);
-            realFMA(&fx[i], &t, &s, &s, realContext);
+            int32ToReal(fdValues[stencil.coeff[i]], t);
+            realFMA(&fx[i], t, r, r, realContext);
         }
     }
     // Inefficiently factor in the derivative order
-    uInt32ToReal(@bitCast(fdValues[stencil.denom]), &t);
+    uInt32ToReal(@bitCast(fdValues[stencil.denom]), t);
     i = 0;
     while (i < stencil.order) : (i += 1) {
-        realMultiply(&t, h, &t, realContext);
+        realMultiply(t, h, t, realContext);
     }
-    realDivide(&s, &t, r, realContext);
+    realDivide(r, t, r, realContext);
     return true;
 }
 
 // Compute the function values f(x + k h), k = -MAX_ORDER .. MAX_ORDER
 fn calcFuncValues(label: calcRegister_t, variable: calcRegister_t, x: *const real_t, fx: [*]real_t, h: *real_t, realContext: *realContext_t) linksection(runtime.code_section) void {
-    var t: real_t = undefined;
     var i: i32 = 0;
     while (i < MAX_F_EVAL) : (i += 1) {
         if (lastErrorCode == ERROR_SOLVER_ABORT or programRunStop == PGM_WAITING or exitKeyWaiting()) {
@@ -742,23 +748,31 @@ fn calcFuncValues(label: calcRegister_t, variable: calcRegister_t, x: *const rea
             }
             return;
         }
-        int32ToReal(i - MAX_ORDER, &t);
-        realFMA(&t, h, x, &fx[@intCast(i)], realContext);
+        int32ToReal(i - MAX_ORDER, &fx[@intCast(i)]); // the multiplier sits in the sample's own slot: FMA may write its result over an operand
+        realFMA(&fx[@intCast(i)], h, x, &fx[@intCast(i)], realContext);
         _differentiatorIteration(label, variable, &fx[@intCast(i)]);
     }
 }
 
 // Evaluate the function at stencil points and compute "best" estimate
 fn calcDeriv(label: calcRegister_t, finDiff: [*]const ?*const FINITE_DIFF_COEFF) linksection(runtime.code_section) void {
-    var x: real_t = undefined;
-    var h: real_t = undefined;
-    var probeValue: real_t = undefined;
-    var estimate: real_t = undefined;
-    var coarse: real_t = undefined;
-    var gap: real_t = undefined;
-    var best: real_t = undefined;
-    var bestGap: real_t = undefined;
-    var fx: [@intCast(MAX_F_EVAL)]real_t = undefined;
+    // One heap block for the working reals: this frame is on the stack under every sample and every nested derivative.
+    const workBlocks = DERIV_WORK_REALS * REAL_SIZE_IN_BLOCKS_75;
+    const workRaw = allocC47Blocks(workBlocks) orelse {
+        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, REGISTER_X);
+        return;
+    };
+    defer freeC47Blocks(workRaw, workBlocks);
+    const work: [*]real_t = @ptrCast(@alignCast(workRaw));
+    const x = &work[0];
+    const h = &work[1];
+    const scratch = &work[2]; // the MVAR probe, then working space for calcOneDeriv and deriv_agrees
+    const estimate = &work[3];
+    const coarse = &work[4];
+    const gap = &work[5];
+    const best = &work[6];
+    const bestGap = &work[7];
+    const fx: [*]real_t = work + 8; // MAX_F_EVAL samples
     var savedRegister: snap_t = undefined;
     var variable: calcRegister_t = @bitCast(INVALID_VARIABLE);
     var userStep: bool_t = false;
@@ -768,13 +782,13 @@ fn calcDeriv(label: calcRegister_t, finDiff: [*]const ?*const FINITE_DIFF_COEFF)
     var bestShift: i32 = 0;
     const lastShift = deriv_last_shift();
 
-    if (!getRegisterAsReal(REGISTER_X, &x)) {
+    if (!getRegisterAsReal(REGISTER_X, x)) {
         return;
     }
 
     var haveResult = false;
 
-    if (!realIsSpecial(&x)) {
+    if (!realIsSpecial(x)) {
         if ((currentSolverStatus & SOLVER_STATUS_USES_FORMULA) != 0) {
             usesDelta = deriv_formula_uses_delta();
         } else {
@@ -786,12 +800,12 @@ fn calcDeriv(label: calcRegister_t, finDiff: [*]const ?*const FINITE_DIFF_COEFF)
                 return;
             }
             lastErrorCode = probeError;
-            if (variable != @as(calcRegister_t, @bitCast(INVALID_VARIABLE)) and !getRegisterAsRealQuiet(variable, &probeValue)) {
+            if (variable != @as(calcRegister_t, @bitCast(INVALID_VARIABLE)) and !getRegisterAsRealQuiet(variable, scratch)) {
                 variable = @bitCast(INVALID_VARIABLE); // differentiate only with respect to something numeric
             }
         }
 
-        userStep = deriv_user_step(&h, usesDelta);
+        userStep = deriv_user_step(h, usesDelta);
 
         // Walk the step down a decade at a time. Each step gives one estimate, and two estimates from the same stencil
         // that agree say the coarser step's truncation is already lost in the noise, so the coarser one is taken: it is
@@ -809,16 +823,16 @@ fn calcDeriv(label: calcRegister_t, finDiff: [*]const ?*const FINITE_DIFF_COEFF)
                 saveRegisterSnapshot(variable, &savedRegister);
             }
             if (!userStep) {
-                realCopy(&x, &h); // the step is relative to x, and at x = 0 it collapses and the weighted sum would be divided by zero
-                if (realIsZero(&h)) {
-                    realCopy(const_1(), &h);
+                realCopy(x, h); // the step is relative to x, and at x = 0 it collapses and the weighted sum would be divided by zero
+                if (realIsZero(h)) {
+                    realCopy(const_1(), h);
                 }
                 h.exponent -= shift;
             }
 
             // Compute the function at the finite difference points
             saveForUndo();
-            calcFuncValues(label, variable, &x, &fx, &h, &ctxtReal39);
+            calcFuncValues(label, variable, x, fx, h, &ctxtReal39);
             undo();
             if (variable != @as(calcRegister_t, @bitCast(INVALID_VARIABLE))) { // undo() rolls back the stack only, so the sampled variable is put back here
                 restoreRegisterSnapshot(variable, &savedRegister);
@@ -831,7 +845,7 @@ fn calcDeriv(label: calcRegister_t, finDiff: [*]const ?*const FINITE_DIFF_COEFF)
             var stencil: i32 = -1;
             var i: usize = 0;
             while (finDiff[i] != null) : (i += 1) {
-                if (calcOneDeriv(finDiff[i].?, &fx, &h, &estimate, &ctxtReal39)) {
+                if (calcOneDeriv(finDiff[i].?, fx, h, estimate, scratch, &ctxtReal39)) {
                     stencil = @intCast(i);
                     break;
                 }
@@ -843,25 +857,25 @@ fn calcDeriv(label: calcRegister_t, finDiff: [*]const ?*const FINITE_DIFF_COEFF)
                 continue;
             }
             if (userStep) {
-                realCopy(&estimate, &x);
+                realCopy(estimate, x);
                 haveResult = true;
                 break;
             }
             if (stencil == coarseStencil) {
-                if (deriv_agrees(&coarse, &estimate, shift, finDiff[@intCast(stencil)].?.order, &gap)) {
+                if (deriv_agrees(coarse, estimate, shift, finDiff[@intCast(stencil)].?.order, gap, scratch)) {
                     settled = true;
                     break;
                 }
                 // The two are a decade apart, so the gap between them is smallest where the truncation of the coarser one
                 // and the cancellation of the finer one balance. The coarser member of the closest pair is therefore the
                 // best the ladder saw, and it is what the answer falls back to when no pair ever agrees.
-                if (bestShift == 0 or realCompareAbsLessThan(&gap, &bestGap)) {
-                    realCopy(&coarse, &best);
-                    realCopy(&gap, &bestGap);
+                if (bestShift == 0 or realCompareAbsLessThan(gap, bestGap)) {
+                    realCopy(coarse, best);
+                    realCopy(gap, bestGap);
                     bestShift = coarseShift;
                 }
             }
-            realCopy(&estimate, &coarse);
+            realCopy(estimate, coarse);
             coarseStencil = stencil;
             coarseShift = shift;
         }
@@ -872,17 +886,17 @@ fn calcDeriv(label: calcRegister_t, finDiff: [*]const ?*const FINITE_DIFF_COEFF)
                     break :settle;
                 }
                 if (bestShift != 0) { // the ladder ran out without a pair ever agreeing, so the closest pair is as near as this function gets
-                    realCopy(&best, &coarse);
+                    realCopy(best, coarse);
                     coarseShift = bestShift;
                 }
             }
             // The coarser of the two estimates is the answer, and its own step is what the display reports.
-            realCopy(&x, &h);
-            if (realIsZero(&h)) {
-                realCopy(const_1(), &h);
+            realCopy(x, h);
+            if (realIsZero(h)) {
+                realCopy(const_1(), h);
             }
             h.exponent -= coarseShift;
-            realCopy(&coarse, &x);
+            realCopy(coarse, x);
             haveResult = true;
         }
     }
@@ -891,17 +905,16 @@ fn calcDeriv(label: calcRegister_t, finDiff: [*]const ?*const FINITE_DIFF_COEFF)
         // Add string, for display at TI
         var c: realContext_t = ctxtReal4;
         c.digits = 2;
-        var hh: real_t = undefined;
-        realPlus(&h, &hh, &c);
+        realPlus(h, h, &c); // h is not read again
         _ = strcpy(errorMessage, STD_delta_eq);
-        _ = decNumberToString(&hh, errorMessage + @as(usize, @intCast(stringByteLength(errorMessage))));
+        _ = decNumberToString(h, errorMessage + @as(usize, @intCast(stringByteLength(errorMessage))));
         _ = strcat(errorMessage, "; ");
     } else {
         // No estimate possible
-        realSetNaN(&x);
+        realSetNaN(x);
         // Add string, for display at TI
         errorMessage[0] = 0;
     }
 
-    convertRealToResultRegister(&x, REGISTER_X, amNone);
+    convertRealToResultRegister(x, REGISTER_X, amNone);
 }

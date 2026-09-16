@@ -4061,7 +4061,7 @@ pub export fn fnMenuDump(menu_arg: u16, item: u16, newFilenameformat: u16, pathI
 
         _ = fwrite("BM", 1, 2, bmp);
 
-        uint32 = (SCREEN_WIDTH / 8 * (SCREEN_HEIGHT - 171)) + 610;
+        uint32 = ((SCREEN_WIDTH / 8 + 2) * (SCREEN_HEIGHT - 171)) + 0x82;
         _ = fwrite(&uint32, 1, 4, bmp);
         uint32 = 0;
         _ = fwrite(&uint32, 1, 4, bmp);

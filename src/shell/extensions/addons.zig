@@ -989,10 +989,6 @@ inline fn moreInfoOnErr(where: [*c]const u8, hint: [*c]const u8) void {
 inline fn stringByteLength(str: [*c]const u8) i32 {
     return @intCast(strlen(str));
 }
-inline fn maxI(a: i32, b: i32) i32 {
-    return if (a > b) a else b;
-}
-
 // defines.h errorf(a): a yellow "error:" line carrying the message, then the
 // emitting function, file and line in cyan. The escape sequences are
 // COLOR_YELLOW / COLOR_DEFAULT / COLOR_CYAN verbatim, and the location comes
@@ -3756,14 +3752,11 @@ pub export fn checkForAndChange(displayString: [*c]u8, valueReal: *const real_t,
         changeToSub(@intCast(smallestDenom), &denomStr); // "/12"
     }
 
-    // Both operands index the last byte, clamped at 0. resultingIntStr is empty
-    // whenever the constant arm copies an empty wholePart (value == constant /
-    // denominator, e.g. pi/2 under FLAG_IRFRAC), and the disjunction is then true
-    // through its second operand, `resultingIntStr[0] == 0`, whatever the first
-    // one reads -- so clamping the first index changes nothing but the one-byte
-    // read below the array that an unclamped -1 would make.
-    const lastByte: usize = @intCast(maxI(0, stringByteLength(&resultingIntStr) - 1));
-    if ((resultingIntStr[lastByte] == ' ' or resultingIntStr[lastByte] == 0) and denomStr[0] == '/' and cStr[0] == 0) {
+    // resultingIntStr is empty whenever the constant arm copies an empty wholePart
+    // (value == constant / denominator, e.g. pi/2 under FLAG_IRFRAC), and there is
+    // then no last byte to read.
+    const last: i32 = stringByteLength(&resultingIntStr) - 1;
+    if ((last < 0 or resultingIntStr[@intCast(last)] == ' ' or resultingIntStr[@intCast(last)] == 0) and denomStr[0] == '/' and cStr[0] == 0) {
         abi.fmtBufZ(&tmpstr, STD_SUP_1 ++ "{s}", .{std.mem.sliceTo(denomStr[0..], 0)});
         _ = strcpy(&denomStr, &tmpstr);
     }

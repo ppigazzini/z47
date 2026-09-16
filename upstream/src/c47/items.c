@@ -621,7 +621,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
         programRunStop = PGM_WAITING;
         SET_ST(STAT_PGM_END);
       }
-    #endif
+    #endif // DMCP_BUILD
 
 
     if(programRunStop != PGM_RUNNING) {
@@ -1750,7 +1750,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
   #define ALG_fnAlgdep       itemToBeCoded
   #define ALG_fnLindep       itemToBeCoded
   #define ALG_FNCT           CAT_NONE
-#endif
+#endif // OPTION_ALGDEP
 #if defined(OPTION_XFN_1000)
   #define S18_fnEdit         fnEdit
   #define S18_fnXXfn         fnXXfn

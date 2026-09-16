@@ -6,6 +6,10 @@
  ***********************************************/
 
 #include "c47.h"
+#include <sys/time.h>
+#if defined(WIN32)
+  #include <Windows.h>
+#endif // WIN32
 
 void fnSetDateFormat(uint16_t dateFormat) {
   switch(dateFormat) {
@@ -961,19 +965,27 @@ void fnDate(uint16_t unusedButMandatoryParameter) {
 
 void fnTime(uint16_t unusedButMandatoryParameter) {
   real34_t time34;
-
+  uint32_t centiseconds;
   #if defined(DMCP_BUILD)
     tm_t timeInfo;
     dt_t dateInfo;
 
     rtc_read(&timeInfo, &dateInfo);
-    uInt32ToReal34((uint32_t)timeInfo.hour * 3600u + (uint32_t)timeInfo.min * 60u + (uint32_t)timeInfo.sec, &time34);
+    centiseconds = (((((uint32_t)timeInfo.hour * 60u) + (uint32_t)timeInfo.min) * 60u) + (uint32_t)timeInfo.sec) * 100u + (uint32_t)timeInfo.csec;
   #else // !DMCP_BUILD
-    time_t epoch = time(NULL);
-    struct tm *timeInfo = localtime(&epoch);
-
-    uInt32ToReal34((uint32_t)timeInfo->tm_hour * 3600u + (uint32_t)timeInfo->tm_min * 60u + (uint32_t)timeInfo->tm_sec, &time34);
+    #if defined(WIN32)
+      SYSTEMTIME localTime;
+      GetLocalTime(&localTime);
+      centiseconds = (((((uint32_t)localTime.wHour * 60u) + (uint32_t)localTime.wMinute) * 60u) + (uint32_t)localTime.wSecond) * 100u + (uint32_t)(localTime.wMilliseconds / 10u);
+    #else // !WIN32
+      struct timeval now;
+      gettimeofday(&now, 0);
+      struct tm *timeInfo = localtime(&now.tv_sec);
+      centiseconds = (((((uint32_t)timeInfo->tm_hour * 60u) + (uint32_t)timeInfo->tm_min) * 60u) + (uint32_t)timeInfo->tm_sec) * 100u + (uint32_t)(now.tv_usec / 1e4);
+    #endif // WIN32
   #endif // DMCP_BUILD
+  uInt32ToReal34(centiseconds, &time34);
+  real34Divide(&time34, const34_100, &time34);
 
   liftStack();
   reallocateRegister(REGISTER_X, dtTime, 0, amNone);

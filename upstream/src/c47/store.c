@@ -66,7 +66,7 @@ bool_t regInRange(uint16_t regist) {
     moreInfoOnError("In function regInRange:", errorMessage, " is not defined!", NULL);
   #else
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-  #endif
+  #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   return false;
 }
 

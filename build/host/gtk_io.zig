@@ -16,6 +16,13 @@ const RTF_PATTERN = "*.rtf";
 const PROGRAM_EXT = ".p47";
 const RTF_EXT = ".rtf";
 const FILENAME_BUFFER_LENGTH: usize = 400;
+// defines.h C47_PATH_MAX, at the 1024 fallback z47 binds every path copy to; it
+// is what a remembered folder is stored in and what base_dir has to hold.
+const C47_PATH_MAX: usize = 1024;
+// c47.c's PC_BUILD-only chooser folders. lastFolderData belongs to the register
+// import/export paths, which this host does not implement.
+extern var lastFolderState: [C47_PATH_MAX]u8;
+extern var lastFolderPrograms: [C47_PATH_MAX]u8;
 
 const GTK_FILE_CHOOSER_ACTION_OPEN: c_int = 0;
 const GTK_FILE_CHOOSER_ACTION_SAVE: c_int = 1;
@@ -144,6 +151,20 @@ fn populateProgramBaseDir(base_dir: [*c]u8, dir_name: [*c]const u8) c_int {
     return FILE_OK;
 }
 
+// Keeps the folder part of a chosen file, so the next chooser of that group opens
+// where this one was left. Both separators are checked: the GTK build runs on
+// Windows too. A name with no separator, or one directly under the root, leaves
+// the stored folder alone and the group keeps opening on its default folder.
+fn rememberFolder(folder: *[C47_PATH_MAX]u8, filename: [*c]const u8) void {
+    const name = std.mem.sliceTo(filename, 0);
+    var i = name.len;
+    while (i > 0 and name[i - 1] != '/' and name[i - 1] != '\\') : (i -= 1) {}
+    if (i > 1 and i <= C47_PATH_MAX) {
+        @memcpy(folder[0 .. i - 1], name[0 .. i - 1]);
+        folder[i - 1] = 0;
+    }
+}
+
 fn selectedFileNameSource(filename: [*c]u8) [*c]u8 {
     const length = strlen(filename);
     const min_start = if (length + 1 > STATE_FILE_NAME_VAR_LENGTH)
@@ -195,7 +216,6 @@ pub fn fileSelectionScreen(
     var untitled: [DEFAULT_SAVE_NAME_BUFFER_LENGTH]u8 = @splat(0);
 
     _ = strcpy(&untitled, filename);
-    _ = strcat(&untitled, ext + 1);
 
     const native = gtk_file_chooser_native_new(
         title,
@@ -248,7 +268,7 @@ pub fn fileSelectionScreen(
 }
 
 pub fn ioFileNameFromFilePath(path: c_int, filename: [*c]u8) c_int {
-    var base_dir: [FILENAME_BUFFER_LENGTH]u8 = @splat(0);
+    var base_dir: [C47_PATH_MAX]u8 = @splat(0);
 
     switch (path) {
         IO_PATH_MANUAL_SAVE => {
@@ -282,29 +302,44 @@ pub fn ioFileNameFromFilePath(path: c_int, filename: [*c]u8) c_int {
         IO_PATH_SAVE_STATE_FILE => {
             if (createDir(STATE_DIR) != 0) return FILE_ERROR;
             if (populateProgramBaseDir(&base_dir, STATE_DIR) != FILE_OK) return FILE_ERROR;
-            return fileSelectionScreen("Save State File", &base_dir, STATE_PATTERN, 1, 1, filename);
+            if (lastFolderState[0] != 0) _ = strcpy(&base_dir, &lastFolderState);
+            const ret = fileSelectionScreen("Save State File", &base_dir, STATE_PATTERN, 1, 1, filename);
+            if (ret == FILE_OK) rememberFolder(&lastFolderState, filename);
+            return ret;
         },
         IO_PATH_LOAD_STATE_FILE => {
             if (createDir(STATE_DIR) != 0) return FILE_ERROR;
             if (populateProgramBaseDir(&base_dir, STATE_DIR) != FILE_OK) return FILE_ERROR;
-            return fileSelectionScreen("Load State File", &base_dir, STATE_PATTERN, 0, 0, filename);
+            if (lastFolderState[0] != 0) _ = strcpy(&base_dir, &lastFolderState);
+            const ret = fileSelectionScreen("Load State File", &base_dir, STATE_PATTERN, 0, 0, filename);
+            if (ret == FILE_OK) rememberFolder(&lastFolderState, filename);
+            return ret;
         },
         IO_PATH_SAVE_PROGRAM => {
             if (createDir(PROGRAMS_DIR) != 0) return FILE_ERROR;
             if (populateProgramBaseDir(&base_dir, PROGRAMS_DIR) != FILE_OK) return FILE_ERROR;
+            if (lastFolderPrograms[0] != 0) _ = strcpy(&base_dir, &lastFolderPrograms);
             stringToASCII(tmpStringLabelOrVariableName, filename);
-            return fileSelectionScreen("Save Program File", &base_dir, PROGRAM_PATTERN, 1, 1, filename);
+            const ret = fileSelectionScreen("Save Program File", &base_dir, PROGRAM_PATTERN, 1, 1, filename);
+            if (ret == FILE_OK) rememberFolder(&lastFolderPrograms, filename);
+            return ret;
         },
         IO_PATH_EXPORT_RTF_PROGRAM => {
             if (createDir(PROGRAMS_DIR) != 0) return FILE_ERROR;
             if (populateProgramBaseDir(&base_dir, PROGRAMS_DIR) != FILE_OK) return FILE_ERROR;
+            if (lastFolderPrograms[0] != 0) _ = strcpy(&base_dir, &lastFolderPrograms);
             stringToASCII(tmpStringLabelOrVariableName, filename);
-            return fileSelectionScreen("Export Program File RTF", &base_dir, RTF_PATTERN, 1, 1, filename);
+            const ret = fileSelectionScreen("Export Program File RTF", &base_dir, RTF_PATTERN, 1, 1, filename);
+            if (ret == FILE_OK) rememberFolder(&lastFolderPrograms, filename);
+            return ret;
         },
         IO_PATH_LOAD_PROGRAM => {
             if (createDir(PROGRAMS_DIR) != 0) return FILE_ERROR;
             if (populateProgramBaseDir(&base_dir, PROGRAMS_DIR) != FILE_OK) return FILE_ERROR;
-            return fileSelectionScreen("Load Program File", &base_dir, PROGRAM_PATTERN, 0, 0, filename);
+            if (lastFolderPrograms[0] != 0) _ = strcpy(&base_dir, &lastFolderPrograms);
+            const ret = fileSelectionScreen("Load Program File", &base_dir, PROGRAM_PATTERN, 0, 0, filename);
+            if (ret == FILE_OK) rememberFolder(&lastFolderPrograms, filename);
+            return ret;
         },
         IO_PATH_SAVE_ALL_PROGRAMS => {
             if (createDir(PROGRAMS_DIR) != 0) return FILE_ERROR;

@@ -40,7 +40,7 @@
   #define ctxtTvmHi        ctxtReal51  // only some exp/log parts
   #define ctxtSolverTvmHi  ctxtReal51  // only the exp/log parts
   #define ctxtSolverTvmInv ctxtReal51  // only the inverting of i
-#endif
+#endif // DMCP_BUILD && (HARDWARE_MODEL == HWM_DM42)
 
 
 static void doubleExp(const real_t *x, real_t *exp, real_t *expm1, realContext_t *realContext) {
@@ -766,7 +766,7 @@ void fnTvmVar(uint16_t variable) {
       printRegisterToConsole(RESERVED_VARIABLE_PPERONA, "pp/a=", ", ");
       printRegisterToConsole(RESERVED_VARIABLE_CPERONA, "cp/a=", ", ");
       printf("END=%d\n", getSystemFlag(FLAG_ENDPMT));
-    #endif
+    #endif // PC_BUILD && TVMDEBUG2
 
     switch(variable) {
       case RESERVED_VARIABLE_FV:
@@ -1267,7 +1267,7 @@ void tvmEquation(calcRegister_t variable, real_t *ioVal, real_t *derivative) {
         default:                      realSetNaN(derivative);         break;  // IPONA: NaN -> Brent fallback
       }
     }
-    #endif
+    #endif // OPTION_TVM_NEWTON
     return;
   }
 

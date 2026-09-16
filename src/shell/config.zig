@@ -2225,10 +2225,11 @@ pub export fn doFnReset(confirmation: u16, autoSav: bool_t) callconv(.c) void {
             }
         }
 
-        // #if DMCP_BUILD && OLD_HW: globalRegister is the static array; memset the
-        // whole array (sizeof(globalRegister)).
+        // Initialize the global registers, including reserved header bits.
         if (comptime globalRegister_is_array) {
             _ = memset(globalRegister_array, 0, @sizeOf(registerHeader_t) * NUMBER_OF_GLOBAL_REGISTERS);
+        } else {
+            _ = memset(globalRegister_ptr.*, 0, @sizeOf(registerHeader_t) * NUMBER_OF_GLOBAL_REGISTERS);
         }
         {
             var regist: calcRegister_t = FIRST_GLOBAL_REGISTER;

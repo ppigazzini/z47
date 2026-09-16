@@ -37,6 +37,9 @@
   #define CPLX_T_FREE(name)            free(name)
 #endif  // (defined __GNUC__ && __GNUC__ + (__GNUC_MINOR__ >= 3) > 4) || (defined __clang__ && __clang_major__ >= 3)
 
+  // The slot at index slot of a block of same sized reals. It steps by REAL_SIZE_IN_BYTES(digits), not sizeof(real_t). Check the block for NULL first.
+  #define REAL_T_IN(arena, digits, slot, name)   real_t *const name=(real_t *)((arena) + REAL_SIZE_IN_BYTES(digits) * (slot))
+
   // allocC47Blocks/freeC47Blocks version
   //#define REAL_T_ALLOC(name, digits)   real_t * const name=(real_t *)allocC47Blocks(REAL_SIZE_IN_BLOCKS(digits))
   //#define REAL_T_FREE(name, digits)    freeC47Blocks(name, REAL_SIZE_IN_BLOCKS(digits));
@@ -76,7 +79,7 @@
 
   #if !defined(bool_t)
     typedef bool bool_t;
-  #endif // bool_t
+  #endif // !bool_t
 
   int32_t  realToInt32C47      (const real_t *r, bool_t *error);
   uint32_t realToUint32C47     (const real_t *r, bool_t *error);

@@ -46,7 +46,7 @@ void audioTone(uint32_t frequency) {
       free(samples);
       pa_simple_free(s);
     }
-  #endif
+  #endif // __MINGW64__
 }
 
 void fnSetVolume(uint16_t volume) {

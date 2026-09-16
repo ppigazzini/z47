@@ -71,7 +71,7 @@ uint8_t DXR = 0, DYR = 0, DXI = 0, DYI = 0;
         #endif //PC_BUILD
       }
     }
-  #endif // !OPTION_GRAPHICS
+  #endif // OPTION_GRAPHICS
 
 
   static void execute_rpn_function(void){
@@ -376,7 +376,7 @@ static void execute_rpn_function_graphAcc(void) {
     graphAccActive = savedGraphAccActive;
   #else
     execute_rpn_function();
-  #endif
+  #endif // LOW_GRAPH_ACC
 }
 
 typedef struct {
@@ -2356,7 +2356,7 @@ static inline void powCplxNat(const cplx_t *base, const uint8_t *exp, cplx_t *re
                                           #if defined(PC_BUILD)
                                                   printf("------- Kick #%d, iter:%u ", kicker, iterationCounter);
                                                   printComplexToConsole(CPLX(*temp1), "added: ", "\n");
-                                          #endif  // VERBOSE_SOLVER00 || VERBOSE_SOLVER0
+                                          #endif  // PC_BUILD
                                           #if defined(VERBOSE_SOLVER2)
                                                   printComplexToConsole(CPLX(*X2), " to ", "\n");
                                           #endif // VERBOSE_SOLVER2

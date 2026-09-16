@@ -21,6 +21,15 @@
 #include "registerValueConversions.h"
 
 /**
+ * Render a number for a message text. Jim_SetResultFormatted takes %s and %#s and nothing else, and says so at its
+ * own definition, so a %d there is read as a pointer and the run ends on the string length of it.
+ */
+const char *dslNum(char *buffer, long long value) {
+  snprintf(buffer, DSL_NUM_LEN, "%lld", value);
+  return buffer;
+}
+
+/**
  * True when the argument is not supported in scripts.
  */
 static bool_t dslUnsupportedArg(Jim_Interp *interp, const char *arg, const char *kind) {
@@ -253,7 +262,8 @@ static int dslParseNumericArg(Jim_Interp *interp, int16_t index, const char *arg
     return JIM_OK;
   }
   if(n < minVal || n > maxVal) {
-    Jim_SetResultFormatted(interp, "value out of range [%d,%d]: '%s'", minVal, maxVal, arg);
+    char lo[DSL_NUM_LEN], hi[DSL_NUM_LEN];
+    Jim_SetResultFormatted(interp, "value out of range [%s,%s]: '%s'", dslNum(lo, minVal), dslNum(hi, maxVal), arg);
     return JIM_ERR;
   }
   *outParam = (uint16_t)n;
@@ -318,9 +328,11 @@ int dslParseParam(Jim_Interp *interp, int16_t index, const char *arg, uint16_t *
         return dslParseNumericArg(interp, index, arg, outParam);
       case PARAM_MENU:
         return dslParseMenuArg(interp, arg, outParam);
-      default:
-        Jim_SetResultFormatted(interp, "parameter type %u not supported in scripts", paramMode);
+      default: {
+        char pm[DSL_NUM_LEN];
+        Jim_SetResultFormatted(interp, "parameter type %s not supported in scripts", dslNum(pm, paramMode));
         return JIM_ERR;
+      }
   }
 }
 
@@ -931,4 +943,4 @@ int parseValueToTempRegister(Jim_Interp *interp, const char *valueArg) {
   return JIM_OK;
 }
 
-#endif
+#endif // PC_BUILD

@@ -1167,6 +1167,19 @@ pub fn blockDoublepressMenu(menu_id: i16, x: i16, y: i16) bool {
     return false;
 }
 
+// alphaLongpress substitutes (keyboardTweak.c): the function words and the
+// characters the non-EIM alpha modes take in their place.
+pub const ITM_LG_SIGN: i16 = 2069;
+pub const ITM_LN_SIGN: i16 = 2070;
+pub const ITM_SIN_SIGN: i16 = 2071;
+pub const ITM_COS_SIGN: i16 = 2072;
+pub const ITM_TAN_SIGN: i16 = 2073;
+pub const ITM_INFINITY: i16 = 924;
+pub const ITM_EulerE: i16 = 1155;
+pub const ITM_op_i_char: i16 = 1159;
+pub const ITM_op_j_char: i16 = 1160;
+pub const ITM_omega: i16 = 653;
+
 // Check_MultiPresses dependencies (keyboardTweak.c 351-639).
 pub const RBX_M1234: u8 = 226;
 pub const RBX_M124: u8 = 225;

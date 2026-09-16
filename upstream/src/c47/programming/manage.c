@@ -1666,7 +1666,7 @@ void insertStepInProgram(const int16_t newFunc) {
           #if !defined(DMCP_BUILD)
             stringToUtf8(indexOfItems[func].itemCatalogName, (uint8_t *)tmpString);
             printf("insertStepInProgram: %s\n", tmpString);
-          #endif // DMCP_BUILD
+          #endif // !DMCP_BUILD
           break;
         }
 

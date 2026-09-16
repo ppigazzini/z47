@@ -147,7 +147,8 @@ static void dslRenderPendingPlot(void) {
  */
 static int runCatalogItem(Jim_Interp *interp, int16_t index, int argArgc, Jim_Obj *const *argArgv, const char *cmdName) {
   if(index < 0 || index >= LAST_ITEM) {
-    Jim_SetResultFormatted(interp, "%s: invalid catalog index %d", cmdName, index);
+    char ix[DSL_NUM_LEN];
+    Jim_SetResultFormatted(interp, "%s: invalid catalog index %s", cmdName, dslNum(ix, index));
     return JIM_ERR;
   }
 
@@ -167,7 +168,8 @@ static int runCatalogItem(Jim_Interp *interp, int16_t index, int argArgc, Jim_Ob
 
   if(!needsArgs) {
     if(argArgc != 0) {
-      Jim_SetResultFormatted(interp, "%s: wrong # args: expected 0, got %d", cmdName, argArgc);
+      char got[DSL_NUM_LEN];
+      Jim_SetResultFormatted(interp, "%s: wrong # args: expected 0, got %s", cmdName, dslNum(got, argArgc));
       return JIM_ERR;
     }
     printf("Calling argless catalog function %s, index %d\n", item.itemCatalogName, index);
@@ -178,7 +180,8 @@ static int runCatalogItem(Jim_Interp *interp, int16_t index, int argArgc, Jim_Ob
   }
 
   if(argArgc != expected) {
-    Jim_SetResultFormatted(interp, "%s: wrong # args: expected %d, got %d", cmdName, expected, argArgc);
+    char exp[DSL_NUM_LEN], got[DSL_NUM_LEN];
+    Jim_SetResultFormatted(interp, "%s: wrong # args: expected %s, got %s", cmdName, dslNum(exp, expected), dslNum(got, argArgc));
     return JIM_ERR;
   }
 
@@ -249,7 +252,8 @@ static int runCatalogFunctionByName(Jim_Interp *interp, const char *fnName, int 
   static const size_t max = sizeof(internalName) / 2;
 
   if(strlen(fnName) >= max) {
-    Jim_SetResultFormatted(interp, "%s: '%s' exceeds max length %d", cmdName, fnName, max);
+    char mx[DSL_NUM_LEN];
+    Jim_SetResultFormatted(interp, "%s: '%s' exceeds max length %s", cmdName, fnName, dslNum(mx, (long long)max));
     return JIM_ERR;
   }
   utf8ToString((const uint8_t *)fnName, internalName);
@@ -294,7 +298,8 @@ static int flagCmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
   }
 
   if(argc != 3) {
-    Jim_SetResultFormatted(interp, "flag: wrong # args: expected 1 or 2, got %d", argc - 1);
+    char got[DSL_NUM_LEN];
+    Jim_SetResultFormatted(interp, "flag: wrong # args: expected 1 or 2, got %s", dslNum(got, argc - 1));
     return JIM_ERR;
   }
 
@@ -309,7 +314,8 @@ static int flagCmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
   newValue = strtol(valueArg, NULL, 10);
 
   if(newValue != 0 && newValue != 1) {
-    Jim_SetResultFormatted(interp, "flag: value must be 0 or 1, got %ld", newValue);
+    char got[DSL_NUM_LEN];
+    Jim_SetResultFormatted(interp, "flag: value must be 0 or 1, got %s", dslNum(got, newValue));
     return JIM_ERR;
   }
 
@@ -355,7 +361,8 @@ static int regCmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
   }
 
   if(argc != 3) {
-    Jim_SetResultFormatted(interp, "reg: wrong # args: expected 1 or 2, got %d", argc - 1);
+    char got[DSL_NUM_LEN];
+    Jim_SetResultFormatted(interp, "reg: wrong # args: expected 1 or 2, got %s", dslNum(got, argc - 1));
     return JIM_ERR;
   }
 
@@ -406,7 +413,8 @@ static int varCmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
   }
 
   if(argc != 3) {
-    Jim_SetResultFormatted(interp, "var: wrong # args: expected 1 or 2, got %d", argc - 1);
+    char got[DSL_NUM_LEN];
+    Jim_SetResultFormatted(interp, "var: wrong # args: expected 1 or 2, got %s", dslNum(got, argc - 1));
     return JIM_ERR;
   }
 
@@ -464,7 +472,8 @@ static int itemCmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
     return JIM_ERR;
   }
   if(itemNr <= 0 || itemNr >= LAST_ITEM) {
-    Jim_SetResultFormatted(interp, "item: item number %lld out of range (1..%d)", (long long)itemNr, LAST_ITEM - 1);
+    char nr[DSL_NUM_LEN], hi[DSL_NUM_LEN];
+    Jim_SetResultFormatted(interp, "item: item number %s out of range (1..%s)", dslNum(nr, (long long)itemNr), dslNum(hi, LAST_ITEM - 1));
     return JIM_ERR;
   }
   int effectiveArgc = argc - 2;
@@ -487,7 +496,8 @@ static int dslJimObjToCString(Jim_Interp *interp, Jim_Obj *obj, char *buf, size_
   const char *s = Jim_GetString(obj, &len);
 
   if(len < 0 || (size_t)len >= bufSize) {
-    Jim_SetResultFormatted(interp, "%s: string too long (%d bytes, max %zu)", cmd, len, bufSize - 1);
+    char ln[DSL_NUM_LEN], mx[DSL_NUM_LEN];
+    Jim_SetResultFormatted(interp, "%s: string too long (%s bytes, max %s)", cmd, dslNum(ln, len), dslNum(mx, (long long)(bufSize - 1)));
     return JIM_ERR;
   }
   memcpy(buf, s, (size_t)len);
@@ -560,7 +570,8 @@ static int dslParseIntArg(Jim_Interp *interp, const char *cmdName, const char *a
 
   *outVal = strtol(arg, &end, 10);
   if(*outVal < minVal || *outVal > maxVal) {
-    Jim_SetResultFormatted(interp, "%s: value %ld out of range [%ld..%ld]", cmdName, *outVal, minVal, maxVal);
+    char val[DSL_NUM_LEN], lo[DSL_NUM_LEN], hi[DSL_NUM_LEN];
+    Jim_SetResultFormatted(interp, "%s: value %s out of range [%s..%s]", cmdName, dslNum(val, *outVal), dslNum(lo, minVal), dslNum(hi, maxVal));
     return JIM_ERR;
   }
 
@@ -575,7 +586,8 @@ static int dslAsnAssignSlot(Jim_Interp *interp, long fwRow, long col, bool_t fin
   int16_t menuId;
 
   if(fwRow < 0 || fwRow > 2 || col < 1 || col > 6) {
-    Jim_SetResultFormatted(interp, "asn: row must be 0..2 and column 1..6, got row %ld col %ld", fwRow, col);
+    char rw[DSL_NUM_LEN], cl[DSL_NUM_LEN];
+    Jim_SetResultFormatted(interp, "asn: row must be 0..2 and column 1..6, got row %s col %s", dslNum(rw, fwRow), dslNum(cl, col));
     return JIM_ERR;
   }
 
@@ -631,7 +643,8 @@ static int menuCmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
   char internalName[64];
 
   if(argc != 2) {
-    Jim_SetResultFormatted(interp, "menu: wrong # args: expected 1, got %d", argc - 1);
+    char got[DSL_NUM_LEN];
+    Jim_SetResultFormatted(interp, "menu: wrong # args: expected 1, got %s", dslNum(got, argc - 1));
     return JIM_ERR;
   }
 
@@ -674,7 +687,8 @@ static int asnCmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
     char labelBuf[AIM_BUFFER_LENGTH];
 
     if(argc != 3) {
-      Jim_SetResultFormatted(interp, "asn: wrong # args: expected 'asn resolve name', got %d args", argc - 1);
+      char got[DSL_NUM_LEN];
+      Jim_SetResultFormatted(interp, "asn: wrong # args: expected 'asn resolve name', got %s args", dslNum(got, argc - 1));
       return JIM_ERR;
     }
     if(dslJimObjToCString(interp, argv[2], labelBuf, sizeof(labelBuf), "asn") != JIM_OK) {
@@ -688,7 +702,8 @@ static int asnCmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
     long col;
 
     if(argc != 4) {
-      Jim_SetResultFormatted(interp, "asn: wrong # args: expected 'asn to row col', got %d args", argc - 1);
+      char got[DSL_NUM_LEN];
+      Jim_SetResultFormatted(interp, "asn: wrong # args: expected 'asn to row col', got %s args", dslNum(got, argc - 1));
       return JIM_ERR;
     }
     if(dslParseIntArg(interp, "asn", Jim_String(argv[2]), 0, 2, &fwRow) != JIM_OK) {
@@ -764,7 +779,8 @@ static int readpCmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
  */
 static int xportpCmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
   if(argc != 3) {
-    Jim_SetResultFormatted(interp, "xportp: wrong # args: expected <label> <filename>, got %d", argc - 1);
+    char got[DSL_NUM_LEN];
+    Jim_SetResultFormatted(interp, "xportp: wrong # args: expected <label> <filename>, got %s", dslNum(got, argc - 1));
     return JIM_ERR;
   }
 
@@ -774,7 +790,8 @@ static int xportpCmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
   static const size_t maxLabel = sizeof(internalLabel) / 2;
 
   if(strlen(labelName) >= maxLabel) {
-    Jim_SetResultFormatted(interp, "xportp: '%s' exceeds max length %d", labelName, maxLabel);
+    char mx[DSL_NUM_LEN];
+    Jim_SetResultFormatted(interp, "xportp: '%s' exceeds max length %s", labelName, dslNum(mx, maxLabel));
     return JIM_ERR;
   }
   utf8ToString((const uint8_t *)labelName, internalLabel);
@@ -816,7 +833,8 @@ static int xeqCmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
   // labelName is UTF-8 from Jim but findNamedLabel compares CMP_BINARY against internal-encoded labels, so non-ASCII never
   // matches (gamma 0xCE 0xB3 UTF-8 vs 0x83 0xB3 internal). Convert here as runCatalogFunctionByName does; not in findNamedLabel
   if(strlen(labelName) >= maxLabel) {
-    Jim_SetResultFormatted(interp, "xeq: '%s' exceeds max length %d", labelName, maxLabel);
+    char mx[DSL_NUM_LEN];
+    Jim_SetResultFormatted(interp, "xeq: '%s' exceeds max length %s", labelName, dslNum(mx, maxLabel));
     return JIM_ERR;
   }
   utf8ToString((const uint8_t *)labelName, internalLabel);
@@ -956,7 +974,8 @@ static int nimCmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
       } else {
         printf("\n");
         fflush(stdout);
-        Jim_SetResultFormatted(interp, "nim: unexpected '-' at position %d", (int)(p - start));
+        char pos[DSL_NUM_LEN];
+        Jim_SetResultFormatted(interp, "nim: unexpected '-' at position %s", dslNum(pos, (long long)(p - start)));
         return JIM_ERR;
       }
       continue;
@@ -975,7 +994,8 @@ static int nimCmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
     } else {
       printf("\n");
       fflush(stdout);
-      Jim_SetResultFormatted(interp, "nim: invalid character '%c' (expected 0-9, . , - e E or space)", *p);
+      char ch[2] = {*p, 0};                                                     // one character reaches the formatter as a string, not as %c
+      Jim_SetResultFormatted(interp, "nim: invalid character '%s' (expected 0-9, . , - e E or space)", ch);
       return JIM_ERR;
     }
     addItemToNimBuffer(item);
@@ -1444,4 +1464,4 @@ void cleanupDSL(void) {
   }
 }
 
-#endif
+#endif // PC_BUILD

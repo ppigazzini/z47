@@ -828,7 +828,7 @@ double auto_tick(double tick_int_f) {
     tick_int_f *= tick_int_f_mult;
 
     //printf("tick2 %f\n",tick_int_f);
-  #endif // !OPTION_GRAPHICS
+  #endif // OPTION_GRAPHICS
 
 return tick_int_f;
 }
@@ -1737,14 +1737,14 @@ void graphDrawLRline(uint16_t selection) {
             xn = xN;
             #if defined(STATDEBUG_VERBOSE) && defined(PC_BUILD)
               printf("Plotting box to x=%d y=%d\n", xn, yn);
-            #endif // STATDEBUG && PC_BUILD
+            #endif // STATDEBUG_VERBOSE && PC_BUILD
             if(fittedcurveboxes) {
               plotbox(xn, yn);
             }
             if(xo < SCREEN_WIDTH_GRAPH && xo > minN_x && yo < SCREEN_HEIGHT_GRAPH-tol && yo > minN_y) {
               #if defined(STATDEBUG_VERBOSE) && defined(PC_BUILD)
                 printf("Plotting line to x=%d y=%d\n", xn, yn);
-              #endif // STATDEBUG && PC_BUILD
+              #endif // STATDEBUG_VERBOSE && PC_BUILD
               plotline2(xo, yo, xn, yn);
             }
           }
@@ -1915,7 +1915,7 @@ void graphDrawLRline(uint16_t selection) {
         showString("L.R. error", &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc * index++ -7+2 +autoshift, vmNormal, false, false);
     }
   }
-#endif // !OPTION_GRAPHICS
+#endif // OPTION_GRAPHICS
   }
 
 
@@ -2161,7 +2161,7 @@ void fnPlotRegressionLine(uint16_t plotMode){
       break;
     }
   }
-#endif // !OPTION_GRAPHICS
+#endif // OPTION_GRAPHICS
 }
 
 

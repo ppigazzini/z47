@@ -1210,7 +1210,7 @@ return res;
       if(checkHP && font == &numericFont && HPFONT) {
         charCodeHPReplacement(&charCode);
       }
-    #endif //GENERATE_CATALOGS
+    #endif //!GENERATE_CATALOGS
 
     glyph = NULL;
 
@@ -3715,7 +3715,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
                                           printf("ILLEGAL BASE VALUE baseY<0 : baseY=%i regist=%u regist-REGISTER_X=%u cachedDisplayStack=%u displayStack=%u\n",  baseY, regist, regist-REGISTER_X, cachedDisplayStack, displayStack);
                                           #if defined(ANALYSE_REFRESH)
                                             print_caller(NULL);
-                                          #endif //PC_BUILD && ANALYSE_REFRESH
+                                          #endif //ANALYSE_REFRESH
                                         }
                                         #endif //PC_BUILD
         calcRegister_t origRegist = regist;
@@ -5975,7 +5975,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
                               #if defined(PC_BUILD) && defined(ANALYSE_REFRESH)
                                 printf(">>> BEGIN _refreshNormalScreen calcMode=%d previousCalcMode=%d screenUpdatingMode=%d\n", calcMode, previousCalcMode, screenUpdatingMode);    //JMYY
                                 print_caller(NULL);
-                              #endif // PC_BUILD &&MONITOR_CLRSCR
+                              #endif // PC_BUILD && ANALYSE_REFRESH
         graphToRemainOnScreen = false;
         if(calcMode != CM_NIM) {
           refreshNIMdone = false;
@@ -6410,7 +6410,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
       char aaa[111];
       sprintf(aaa, "Refresh #%d", source);
       print_linestr(aaa, false);
-    #endif //DMCP_REFRESH
+    #endif //REFRESH_ON_SCREEN_MONITOR
 
   }
 
@@ -6533,7 +6533,7 @@ void fnScreenDump(uint16_t unusedButMandatoryParameter) {
 
     fwrite("BM", 1, 2, bmp);        // Offset 0x00  0  BMP header
 
-    uint32 = (SCREEN_WIDTH/8 * yRows) + 610;
+    uint32 = ((SCREEN_WIDTH/8 + 2) * yRows) + 0x82;
     fwrite(&uint32, 1, 4, bmp);     // Offset 0x02  2  File size
 
     uint32 = 0;
@@ -6711,7 +6711,7 @@ void fnClLcd(uint16_t clear_mode) {
     }
     #if defined(REFRESH_ON_SCREEN_MONITOR)
       print_linestr("Start Refresh monitoring", true);
-    #endif //DMCP_REFRESH
+    #endif //REFRESH_ON_SCREEN_MONITOR
 }
 
 

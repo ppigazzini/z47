@@ -552,3 +552,6 @@ Added QRNZ to NUM font
 2026-08-30
   Added to Num Bold font:
     U+2073   E              Outline E
+
+2026-09-14
+  Changed glyph U+2073      Outline E

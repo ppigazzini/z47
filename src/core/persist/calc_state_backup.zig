@@ -107,6 +107,12 @@ extern var userMenuItems: [360]u8;
 extern var userAlphaItems: [360]u8;
 extern var lastTemp: [16]u8;
 extern var lastStateFileOpened: [32]u8;
+// c47.c declares these under PC_BUILD only: the firmware has no file chooser.
+// defines.h C47_PATH_MAX, at the 1024 fallback z47 binds every path copy to.
+const C47_PATH_MAX = 1024;
+extern var lastFolderData: [C47_PATH_MAX]u8;
+extern var lastFolderState: [C47_PATH_MAX]u8;
+extern var lastFolderPrograms: [C47_PATH_MAX]u8;
 extern var lastI: [2]u8;
 extern var lastJ: [2]u8;
 extern var lastFunc: [2]u8;
@@ -482,6 +488,11 @@ pub fn saveCalc() void {
     sv(&userAlphaItems[0], 360, "userAlphaItems", "hexDump");
     sv(&lastTemp[0], 16, "lastTemp", "hexDump");
     sv(&lastStateFileOpened[0], 32, "lastStateFileOpened", "hexDump");
+    if (comptime !is_dmcp_build) {
+        sv(&lastFolderData[0], C47_PATH_MAX, "lastFolderData", "hexDump");
+        sv(&lastFolderState[0], C47_PATH_MAX, "lastFolderState", "hexDump");
+        sv(&lastFolderPrograms[0], C47_PATH_MAX, "lastFolderPrograms", "hexDump");
+    }
     sv(&lastI[0], 2, "lastI", "int16");
     sv(&lastJ[0], 2, "lastJ", "int16");
     sv(&lastFunc[0], 2, "lastFunc", "int16");
@@ -1151,6 +1162,11 @@ pub fn restoreCalc() void {
     rv(&userAlphaItems[0], 360, "userAlphaItems", "hexDump");
     rv(&lastTemp[0], 16, "lastTemp", "hexDump");
     rv(&lastStateFileOpened[0], 32, "lastStateFileOpened", "hexDump");
+    if (comptime !is_dmcp_build) {
+        rv(&lastFolderData[0], C47_PATH_MAX, "lastFolderData", "hexDump");
+        rv(&lastFolderState[0], C47_PATH_MAX, "lastFolderState", "hexDump");
+        rv(&lastFolderPrograms[0], C47_PATH_MAX, "lastFolderPrograms", "hexDump");
+    }
     rv(&lastI[0], 2, "lastI", "int16");
     rv(&lastJ[0], 2, "lastJ", "int16");
     rv(&lastFunc[0], 2, "lastFunc", "int16");

@@ -42,6 +42,10 @@ const stateFileNameVarLength = 20;
 // defines.h: sim gets 1024 because a scripted capture name may carry a path;
 // hardware keeps 40, sized for DMCP DATA\ names in the RAM it has.
 const FILENAMELEN = if (dmcp_build) 40 else 1024;
+// defines.h C47_PATH_MAX: the host's PATH_MAX/MAX_PATH when one is visible and
+// 1024 otherwise. 1024 is the width _ioFileNameOverride is bound at, and every
+// end of a path copy has to agree, so the fallback is the value used here.
+const C47_PATH_MAX = 1024;
 const TIMER_APP_STOPPED: u32 = 0xFFFFFFFF;
 const INVALID_VARIABLE: u16 = 2199;
 
@@ -129,12 +133,21 @@ comptime {
         @export(&deadKey, .{ .name = "deadKey", .linkage = .strong });
         @export(&testDeadKeys, .{ .name = "testDeadKeys", .linkage = .strong });
         @export(&swapCtrlCode, .{ .name = "swapCtrlCode", .linkage = .strong });
+        @export(&lastFolderData, .{ .name = "lastFolderData", .linkage = .strong });
+        @export(&lastFolderState, .{ .name = "lastFolderState", .linkage = .strong });
+        @export(&lastFolderPrograms, .{ .name = "lastFolderPrograms", .linkage = .strong });
     }
 }
 var forceTamAlpha: bool = false;
 var deadKey: u32 = 0;
 var testDeadKeys: bool_t = false;
 var swapCtrlCode: bool_t = false;
+// The folder the file chooser was left in, one per group of disk functions, saved
+// in backup.cfg. Empty means the group has no folder yet, so the chooser opens on
+// the default folder.
+var lastFolderData: [C47_PATH_MAX]u8 = @splat(0);
+var lastFolderState: [C47_PATH_MAX]u8 = @splat(0);
+var lastFolderPrograms: [C47_PATH_MAX]u8 = @splat(0);
 
 pub export var fontForShortInteger: ?*const font_t = null;
 pub export var cursorFont: ?*const font_t = null;

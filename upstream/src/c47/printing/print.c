@@ -435,7 +435,7 @@ void prepareNewLine(void) {
   }
   setSystemFlag(FLAG_PRTACT);
   //finish_PRT();
-#endif // !DMCP_BUILD
+#endif // DMCP_BUILD
 }
 
 

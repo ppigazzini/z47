@@ -633,7 +633,7 @@ static void _integrate(calcRegister_t regist, const real_t *a, const real_t *b, 
               #if !defined(INTEGRATION_TWO_STAGE_EXIT)
                 displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
                 return;
-              #endif //INTEGRATION_TWO_STAGE_EXIT
+              #endif //!INTEGRATION_TWO_STAGE_EXIT
               exitSignalled = false;
               interruptedLoop = 1;
             }
@@ -983,7 +983,7 @@ static void _integrate_mm(calcRegister_t regist, const real_t *llim, const real_
               #if !defined(INTEGRATION_TWO_STAGE_EXIT)
                 displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
                 return;
-              #endif //INTEGRATION_TWO_STAGE_EXIT
+              #endif //!INTEGRATION_TWO_STAGE_EXIT
               exitSignalled = false;
               interruptedLoop = 1;
             }
@@ -1410,7 +1410,7 @@ static void dbl_exp_int_new(calcRegister_t regist, const real_t *a, const real_t
                 #if !defined(INTEGRATION_TWO_STAGE_EXIT)
                   displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
                   goto freeWork;
-                #endif //INTEGRATION_TWO_STAGE_EXIT
+                #endif //!INTEGRATION_TWO_STAGE_EXIT
                 exitSignalled = false;
                 interruptedLoop = 1;
               }
@@ -1500,7 +1500,7 @@ static void dbl_exp_int_new(calcRegister_t regist, const real_t *a, const real_t
                 #if !defined(INTEGRATION_TWO_STAGE_EXIT)
                   displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
                   goto freeWork;
-                #endif //INTEGRATION_TWO_STAGE_EXIT
+                #endif //!INTEGRATION_TWO_STAGE_EXIT
                 exitSignalled = false;
                 interruptedLoop = 1;
               }

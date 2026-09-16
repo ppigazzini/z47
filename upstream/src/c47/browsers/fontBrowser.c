@@ -240,5 +240,5 @@
     else {
       //displayBugScreen(bugScreenShowFonts);
     }
-  #endif // !OPTION_FONTBROWSER
+  #endif // OPTION_FONTBROWSER
   }

@@ -2385,7 +2385,7 @@ int64_t stringToInt64(const char *str) {
             currentStep += diff;
             firstFreeProgramByte += diff;
           }
-        #endif
+        #endif // DMCP_BUILD && OLD_HW
       }
 
       if(programsLoadMode == LM_PROGRAMS) { // .END. to END

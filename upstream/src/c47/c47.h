@@ -31,7 +31,7 @@
     #define PRIu8 "u"
     #undef PRIi8
     #define PRIi8 "i"
-  #endif // DMCP_BUILD && OLD_HW
+  #endif // DMCP_BUILD
 
   #if !defined(GENERATE_CATALOGS) && !defined(GENERATE_CONSTANTS) && !defined(GENERATE_TESTPGMS)
     #include <gmp.h>
@@ -616,6 +616,12 @@
   #define stateFileNameVarLength 20
   extern  char                  lastStateFileOpened[stateFileNameVarLength+12];
   extern  char                  fileNameSelected[stateFileNameVarLength];
+
+  #if defined(PC_BUILD)
+    extern char                 lastFolderData[C47_PATH_MAX];                    // folder the file chooser was left in, one per group of disk functions, saved in backup.cfg
+    extern char                 lastFolderState[C47_PATH_MAX];                   // empty means the group has no folder yet, so the chooser opens on the default folder
+    extern char                 lastFolderPrograms[C47_PATH_MAX];
+  #endif // PC_BUILD
 
   extern char                   filename_csv[FILENAMELEN]; //JMMAX                //JM_CSV
   extern uint32_t               mem__32;                                          //JM_CSV

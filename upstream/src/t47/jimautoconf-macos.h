@@ -108,4 +108,4 @@
 #define jim_ext_signal 1
 #define jim_ext_stdlib 1
 #define jim_ext_tclcompat 1
-#endif // _JIMAUTOCONF_H
+#endif // !_JIMAUTOCONF_H

@@ -1009,9 +1009,9 @@ Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ReMa:"M14,14[1,0,0,0,0,0,0,0,0,0,0,0,0,0,-1
 ;  ▐▌▝█▖▐▙   ▐▌   ▐▌ ▐▌▐▌ ▐▌
 ;  ▐▌ ▐▌ █▄▄▌▐▙▄▄▖▝█▄█▘ █▄█
 ;  ▝▘ ▝▀  ▀▀ ▝▀▀▀▘ ▝▀▘  ▝▀▘                                                        https://patorjk.com/software/taag/#p=display&f=Small+Mono+12&t=RCL60&x=none&v=4&h=0&w=80&we=false
-TIMER: DISABLED NO CONVERGE OSCILLATES 033 RCL60 TEST CASE 20: 5×5 integer in, complex out, companion matrix (100, -300, 200, -100, 10 coefficients) -- Not working in algo. Disabled test to pass testSuite temporarily
-;In: RT=LonI:"0" RZ=LonI:"0" RY=LonI:"0" FL_ASLIFT=0 FL_CPXRES=1 IM=2COMPL RX=ReMa:"M5,5[0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,100,-300,200,-100,10]"
-;Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ReMa:"M5,5[0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,100,-300,200,-100,10]" RY=CxMa:"M5,5[3.930973095712259496667443556797425i8.005680540385435780405924781128042,0,0,0,0,0,3.930973095712259496667443556797425i-8.005680540385435780405924781128038,0,0,0,0,0,0.8530383331319622753469193428747031i1.477364236754080833984574739166843,0,0,0,0,0,0.8530383331319622758653981820393341i-1.477364236754080833645388946395076,0,0,0,0,0,0.4319771423115564554527953614911131i-3.391857927717606015138231185488567E-19]"
+TIMER: 033 RCL60 TEST CASE 20: 5×5 integer in, complex out, companion matrix (100, -300, 200, -100, 10 coefficients), two complex pairs
+In: RT=LonI:"0" RZ=LonI:"0" RY=LonI:"0" FL_ASLIFT=0 FL_CPXRES=1 IM=2COMPL RX=ReMa:"M5,5[0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,100,-300,200,-100,10]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ReMa:"M5,5[0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,100,-300,200,-100,10]" RX=CxMa:"M1,5[3.930973095712259496667443556797425i8.005680540385435780405924781128037,3.930973095712259496667443556797425i-8.005680540385435780405924781128037,0.8530383331319622758653981820982252i1.477364236754080833645388946374897,0.8530383331319622758653981820982252i-1.477364236754080833645388946374897,0.4319771423115564549343165222086994i0]"
 ;Wolfram: Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=CxMa:"M5,5[3.930973095712259496667443556797425i8.0056805403854357804059247811280374,0,0,0,0,0,3.930973095712259496667443556797425i-8.0056805403854357804059247811280374,0,0,0,0,0,0.8530383331319622758653981820982252i1.4773642367540808336453889463748971,0,0,0,0,0,0.8530383331319622758653981820982252i-1.4773642367540808336453889463748971,0,0,0,0,0,0.4319771423115564549343165222086994]"
 ;N[Eigenvalues[{{0,1,0,0,0},{0,0,1,0,0},{0,0,0,1,0},{0,0,0,0,1},{100,-300,200,-100,10}}], 34]
 ; [0   1   0   0   0  ]
@@ -1087,6 +1087,21 @@ Out: EC=8 FL_CPXRES=0 FL_ASLIFT=0 RX=ReMa:"M4,4[0,1,0,0,0,0,1,0,0,0,0,1,1,0,0,0]
 
 
 
+TIMER: TEST ERROR CASE companion of (x^2+1)^2: the double pair +/- i leaves a 4-row block that does not split, no root found
+In: RT=LonI:"0" RZ=LonI:"0" RY=LonI:"0" FL_ASLIFT=0 FL_CPXRES=1 IM=2COMPL RX=ReMa:"M4,4[0,1,0,0,0,0,1,0,0,0,0,1,-1,0,-2,0]"
+Out: EC=20 FL_CPXRES=1 FL_ASLIFT=0 RX=ReMa:"M4,4[0,1,0,0,0,0,1,0,0,0,0,1,-1,0,-2,0]"
+; Eigenvalues +/- i twice: the 4-row block is not solved, so No root found is displayed. Replace with the eigenvalues once such a block is solved.
+
+TIMER: TEST ERROR CASE companion of (x^2+1)^2 with i added on the diagonal: the blocks stay coupled, no root found
+In: RT=LonI:"0" RZ=LonI:"0" RY=LonI:"0" FL_ASLIFT=0 FL_CPXRES=1 IM=2COMPL RX=CxMa:"M4,4[0i1,1i0,0i0,0i0,0i0,0i1,1i0,0i0,0i0,0i0,0i1,1i0,-1i0,0i0,-2i0,0i1]"
+Out: EC=20 FL_CPXRES=1 RX=CxMa:"M4,4[0i1,1i0,0i0,0i0,0i0,0i1,1i0,0i0,0i0,0i0,0i1,1i0,-1i0,0i0,-2i0,0i1]"
+; Eigenvalues 2i twice and 0 twice: an element below a block is not negligible, so No root found is displayed. Replace with the eigenvalues once such a matrix is solved.
+
+TIMER: 4x4 Jordan block with eigenvalue 0: zero diagonal, so the relative block threshold is 0
+In: RT=LonI:"0" RZ=LonI:"0" RY=LonI:"0" FL_ASLIFT=0 FL_CPXRES=1 IM=2COMPL RX=ReMa:"M4,4[0,1,0,0,0,0,1,0,0,0,0,1,0,0,0,0]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ReMa:"M4,4[0,1,0,0,0,0,1,0,0,0,0,1,0,0,0,0]" RX=ReMa:"M1,4[0,0,0,0]"
+; Every eigenvalue of a nilpotent matrix is exactly 0. With a zero threshold an exact zero below a block has to count as negligible, or No root found is displayed.
+
 ;=======================================
 ; Eigenvectors
 ;=======================================
@@ -1147,6 +1162,11 @@ TIMER: EIGVEC 004 2x2 nilpotent real, defective matrix rejected (BUG FIX VERIFIC
 In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RT=LonI:"0" RZ=LonI:"0" RY=LonI:"0" RL=ReMa:"M2,2[0,0,1,0]" RX=ReMa:"M2,2[0,0,1,0]"
 Out: EC=22 FL_CPXRES=0 FL_ASLIFT=0 RL=ReMa:"M2,2[0,0,1,0]" RX=ReMa:"M2,2[0,0,1,0]"
 ; Both eigenvalues = 0 with geometric multiplicity 1 (Jordan block).
+
+TIMER: EIGVEC ERROR companion of (x^2+1)^2: no root found from the eigenvalues, and no defective-matrix message on top of it
+In: FL_ASLIFT=0 FL_CPXRES=1 IM=2COMPL RT=LonI:"0" RZ=LonI:"0" RY=LonI:"0" RL=ReMa:"M4,4[0,1,0,0,0,0,1,0,0,0,0,1,-1,0,-2,0]" RX=ReMa:"M4,4[0,1,0,0,0,0,1,0,0,0,0,1,-1,0,-2,0]"
+Out: EC=20 FL_CPXRES=1 FL_ASLIFT=0 RL=ReMa:"M4,4[0,1,0,0,0,0,1,0,0,0,0,1,-1,0,-2,0]" RX=ReMa:"M4,4[0,1,0,0,0,0,1,0,0,0,0,1,-1,0,-2,0]"
+; Eigenvalues +/- i twice: the 4-row block is not solved, so No root found is displayed. Replace with the eigenvectors once such a block is solved.
 
 TIMER: EIGVEC 005 2X2 DIAGONAL COMPLEX, DISTINCT REAL EIGENVALUES, DIAGONAL FAST PATH
 In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=CxMa:"M2,2[1i0,0i0,0i0,2i0]"
@@ -1281,53 +1301,6 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,1[0]" RX=ReMa:"M1,1[1]"
 
 ; ===== EIGENVECTOR BUGS =========
 ; ----------------------------------------------------------------------------
-; BUG: EIGVEC-UPPER-TRIANGULAR-DROPS-COMPONENTS
-;   Symptom: For upper-triangular matrices with full off-diagonal coupling,
-;   calculateEigenvectors returns the first component correctly but zeroes
-;   trailing components. Test below: input [[1,2,3],[0,4,5],[0,0,6]], expected
-;   col 0 = (16, 25, 10)/sqrt(981), but engine returns (0.5108, 0, 0).
-;   Likely location: augmented-system back-substitution in calculateEigenvectors.
-;   Re-enable test 018 when fixed.
-; ----------------------------------------------------------------------------
-; TIMER: EIGVEC 018 3x3 upper triangular, integer distinct eigenvalues
-; In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M3,3[1,2,3,0,4,5,0,0,6]"
-; Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M3,3[1,2,3,0,4,5,0,0,6]" RX=ReMa:"M3,3[0.510840685451280742740440563794399886400,0.554700196225229122018341733456999376346,1,0.798188571017626160531938380928749822499,0.832050294337843683027512600185499064520,0,0.319275428407050464212775352371499929000,0,0]"
-; Wolfram: Eigensystem[{{1,2,3},{0,4,5},{0,0,6}}]
-; Eigenvalues: {6, 4, 1}.
-
-; ----------------------------------------------------------------------------
-; BUG: EIGVEC-BLOCK-DIAGONAL-FAILS
-;   Symptom: Block-diagonal matrices with non-trivial blocks fail eigendecomposition.
-;   The augmented system in calculateEigenvectors is genuinely singular when the
-;   matrix is reducible; cpxLinearEqn fails repeatedly (14 "attempt to invert a
-;   singular matrix" messages spam the UI), and the second block's eigenvectors
-;   are lost. Top block contributes rows 0-1; bottom block (rows 2-3) returns 0.
-;   Pre-existing engine limitation, NOT introduced by the EIGVEC fixes today.
-;   Likely fix: detect block-diagonal structure before QR and recurse on each
-;   block separately. Or use a different technique that handles reducibility.
-;   Re-enable test 020 when fixed.
-; ----------------------------------------------------------------------------
-; TIMER: EIGVEC 020 4x4 block diagonal with two 2x2 symmetric blocks
-; In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M4,4[2,1,0,0,1,2,0,0,0,0,5,2,0,0,2,5]"
-; Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M4,4[2,1,0,0,1,2,0,0,0,0,5,2,0,0,2,5]" RX=ReMa:"M4,4[0,0.707106781186547524400844362104849039285,0,-0.707106781186547524400844362104849039285,0,0.707106781186547524400844362104849039285,0,0.707106781186547524400844362104849039285,0.707106781186547524400844362104849039285,0,-0.707106781186547524400844362104849039285,0,0.707106781186547524400844362104849039285,0,0.707106781186547524400844362104849039285,0]"
-; Wolfram: Eigensystem[{{2,1,0,0},{1,2,0,0},{0,0,5,2},{0,0,2,5}}]
-; Eigenvalues: {7, 3, 3, 1}. Eigenvectors should live in their respective 2x2 blocks.
-
-; ----------------------------------------------------------------------------
-; BUG: EIGVEC-RANK-DEFICIENT-SYMMETRIC-FAILS
-; Symptom: 3x3 matrix [[1,1,0],[1,1,0],[0,0,2]] has structure of a 2x2 block
-; coupled to a 1x1 block (effectively block-diagonal). Same failure mode as
-; EIGVEC-BLOCK-DIAGONAL-FAILS. Engine returns wrong eigenvectors with some
-; rows zeroed. Likely the same fix as bug 020.
-; Re-enable test 024 when fixed.
-; ----------------------------------------------------------------------------
-; TIMER: EIGVEC 024 3x3 symmetric with one zero eigenvalue, rank-deficient diagonalisable
-; In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M3,3[1,1,0,1,1,0,0,0,2]"
-; Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M3,3[1,1,0,1,1,0,0,0,2]" RX=ReMa:"M3,3[0.707106781186547524400844362104849039285,0,-0.707106781186547524400844362104849039285,0.707106781186547524400844362104849039285,0,0.707106781186547524400844362104849039285,0,1,0]"
-; Wolfram: Eigensystem[{{1,1,0},{1,1,0},{0,0,2}}]
-; Eigenvalues: {2, 2, 0}. Rank 2 but full set of eigenvectors.
-
-; ----------------------------------------------------------------------------
 ; BUG: EIGVEC-COMPLEX-HERMITIAN-UNNORMALIZED
 ; Symptom: For complex Hermitian input [[2,i],[-i,2]] the engine returns
 ; eigenvectors (1, -i) and (1, i) instead of dividing by sqrt(2). The real
@@ -1342,6 +1315,31 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,1[0]" RX=ReMa:"M1,1[1]"
 ; Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M2,2[2i0,0i1,0i-1,2i0]" RX=CxMa:"M2,2[0.707106781186547524400844362104849039285i0,0.707106781186547524400844362104849039285i0,0i-0.707106781186547524400844362104849039285,0i0.707106781186547524400844362104849039285]"
 ; Wolfram: Eigensystem[{{2,I},{-I,2}}]
 ; Hermitian -> real eigenvalues {3, 1}.
+
+; ===== EIGENVECTORS WITH THE DEPENDENT ROW OF A - lambda I BELOW THE FIRST ROW =========
+TIMER: EIGVEC 018 3x3 upper triangular, integer distinct eigenvalues
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M3,3[1,2,3,0,4,5,0,0,6]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M3,3[1,2,3,0,4,5,0,0,6]" RX=ReMa:"M3,3[0.510840685451280742740440563794399886400,0.554700196225229122018341733456999376346,1,0.798188571017626160531938380928749822499,0.832050294337843683027512600185499064520,0,0.319275428407050464212775352371499929000,0,0]"
+; Wolfram: Eigensystem[{{1,2,3},{0,4,5},{0,0,6}}]
+; Eigenvalues: {6, 4, 1}.
+
+TIMER: EIGVEC 020 4x4 block diagonal with two 2x2 symmetric blocks
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M4,4[2,1,0,0,1,2,0,0,0,0,5,2,0,0,2,5]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M4,4[2,1,0,0,1,2,0,0,0,0,5,2,0,0,2,5]" RX=ReMa:"M4,4[0,0.707106781186547524400844362104849039285,0,0.707106781186547524400844362104849039285,0,0.707106781186547524400844362104849039285,0,-0.707106781186547524400844362104849039285,0.707106781186547524400844362104849039285,0,0.707106781186547524400844362104849039285,0,0.707106781186547524400844362104849039285,0,-0.707106781186547524400844362104849039285,0]"
+; Wolfram: Eigensystem[{{2,1,0,0},{1,2,0,0},{0,0,5,2},{0,0,2,5}}]
+; Eigenvalues: {7, 3, 3, 1}. Eigenvectors should live in their respective 2x2 blocks. Columns 3 and 4 have the sign the engine returns: the eigenvector
+; comparison rescales a column, and a zero in a column scaled by -1 is compared as -0 and fails.
+
+TIMER: EIGVEC 024 3x3 symmetric with one zero eigenvalue, rank-deficient diagonalisable
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M3,3[1,1,0,1,1,0,0,0,2]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M3,3[1,1,0,1,1,0,0,0,2]" RX=ReMa:"M3,3[0.707106781186547524400844362104849039285,0,0.707106781186547524400844362104849039285,0.707106781186547524400844362104849039285,0,-0.707106781186547524400844362104849039285,0,1,0]"
+; Wolfram: Eigensystem[{{1,1,0},{1,1,0},{0,0,2}}]
+; Eigenvalues: {2, 2, 0}. Rank 2 but full set of eigenvectors. Column 3 has the sign the engine returns, as in test 020.
+
+TIMER: EIGVEC 028 3x3 upper bidiagonal, the dependent row of A - lambda I is not the first row
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M3,3[1,1,0,0,2,1,0,0,3]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M3,3[1,1,0,0,2,1,0,0,3]" RX=ReMa:"M3,3[0.333333333333333333333333333333333333333,0.707106781186547524400844362104849039285,1,0.666666666666666666666666666666666666667,0.707106781186547524400844362104849039285,0,0.666666666666666666666666666666666666667,0,0]"
+; Eigenvalues {3, 2, 1}, eigenvectors (1, 2, 2)/3, (1, 1, 0)/sqrt(2) and (1, 0, 0).
 
 
 

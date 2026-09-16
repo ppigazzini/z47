@@ -346,5 +346,5 @@ TO_QSPI const  letteredFlagDisplay_t letteredFlagDisplay[] = {
       }
     }
     lastFlgScr = currentFlgScr;
-  #endif // !OPTION_FLAGBROWSER
+  #endif // OPTION_FLAGBROWSER
   }

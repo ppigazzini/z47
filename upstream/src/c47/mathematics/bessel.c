@@ -39,7 +39,7 @@ void fnBesselJ(uint16_t unusedButMandatoryParameter) {
   }
 
   adjustResult(REGISTER_X, true, true, REGISTER_X, REGISTER_Y, -1);
-#endif // !OPTION_BESSEL
+#endif // OPTION_BESSEL
 }
 
 void fnBesselY(uint16_t unusedButMandatoryParameter) {
@@ -82,7 +82,7 @@ void fnBesselY(uint16_t unusedButMandatoryParameter) {
   }
 
   adjustResult(REGISTER_X, true, true, REGISTER_X, REGISTER_Y, -1);
-#endif // !OPTION_BESSEL
+#endif // OPTION_BESSEL
 }
 
 
@@ -506,7 +506,7 @@ static void bessel(const real_t *alpha, const real_t *x, bool_t neg, real_t *res
   realSetNaN(res);
   return;
 }
-#endif // !OPTION_BESSEL
+#endif // OPTION_BESSEL
 
 #if defined(OPTION_BESSEL)
 void WP34S_BesselJ(const real_t *alpha, const real_t *x, real_t *res, realContext_t *realContext) {
@@ -550,7 +550,7 @@ void WP34S_BesselJ(const real_t *alpha, const real_t *x, real_t *res, realContex
     bessel(&a, x, true, res, realContext);
   }
 }
-#endif // !OPTION_BESSEL
+#endif // OPTION_BESSEL
 
 // See A&S page 360 section 9.1.11
 #if defined(OPTION_BESSEL)
@@ -649,7 +649,7 @@ static void bessel2_int_series(const real_t *n, const real_t *x, real_t *res, re
     realChangeSign(res);
   }
 }
-#endif // !OPTION_BESSEL
+#endif // OPTION_BESSEL
 
 #if defined(OPTION_BESSEL)
 void WP34S_BesselY(const real_t *alpha, const real_t *x, real_t *res, realContext_t *realContext) {
@@ -704,4 +704,4 @@ void WP34S_BesselY(const real_t *alpha, const real_t *x, real_t *res, realContex
     bessel2_int_series(alpha, x, res, realContext);
   }
 }
-#endif // !OPTION_BESSEL
+#endif // OPTION_BESSEL

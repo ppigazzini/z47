@@ -38,7 +38,7 @@ TO_QSPI const calcKey_t kbd_std_C47[37] = { //C47 Layout, in the default positio
   {72,                  ITM_1,                ITM_ASSIGN,           -MNU_KEYS,            ITM_1,                ITM_X,                ITM_x,                ITM_1,                ITM_1               },
   {73,                  ITM_2,                ITM_USERMODE,         -MNU_ALPHAFN,         ITM_2,                ITM_Y,                ITM_y,                ITM_2,                ITM_2               },
   {74,                  ITM_3,                -MNU_PFN,             -MNU_LOOP,            ITM_3,                ITM_Z,                ITM_z,                ITM_3,                ITM_3               },
-  {75,                  ITM_SUB,              -MNU_PRINT,           -MNU_IO,              ITM_MINUS,            ITM_UNDERSCORE,       ITM_EulerE,           ITM_MINUS,            ITM_SUB             },
+  {75,                  ITM_SUB,              -MNU_PRINT,           -MNU_IO,              ITM_MINUS,            ITM_UNDERSCORE,       ITM_AT,               ITM_MINUS,            ITM_SUB             },
   {81,                  ITM_EXIT1,            ITM_OFF,              ITM_SNAP,             ITM_EXIT1,            ITM_EXIT1,            ITM_OFF,              ITM_SNAP,             ITM_EXIT1           },
   {82,                  ITM_0,                ITM_VIEW,             ITM_TIMER,            ITM_0,                ITM_COLON,            ITM_SEMICOLON,        ITM_0,                ITM_0               },
   {83,                  ITM_PERIOD,           ITM_SHOW,             -MNU_INFO,            ITM_PERIOD,           ITM_COMMA,            ITM_NUMBER_SIGN,      ITM_PERIOD,           ITM_PERIOD          },
@@ -308,7 +308,7 @@ TO_QSPI const calcKey_t kbd_std_DM42[37] = {
   {72,                  ITM_1,                ITM_ASSIGN,           -MNU_KEYS,            ITM_1,                ITM_X,                ITM_x,                ITM_1,                ITM_1               },
   {73,                  ITM_2,                ITM_USERMODE,         -MNU_ALPHAFN,         ITM_2,                ITM_Y,                ITM_y,                ITM_2,                ITM_2               },
   {74,                  ITM_3,                -MNU_PFN,             -MNU_LOOP,            ITM_3,                ITM_Z,                ITM_z,                ITM_3,                ITM_3               },
-  {75,                  ITM_SUB,              -MNU_PRINT,           -MNU_IO,              ITM_MINUS,            ITM_UNDERSCORE,       ITM_MINUS,            ITM_MINUS,            ITM_SUB             },
+  {75,                  ITM_SUB,              -MNU_PRINT,           -MNU_IO,              ITM_MINUS,            ITM_UNDERSCORE,       ITM_AT,               ITM_MINUS,            ITM_SUB             },
   {81,                  ITM_EXIT1,            ITM_OFF,              ITM_SNAP,             ITM_EXIT1,            ITM_EXIT1,            ITM_OFF,              ITM_SNAP,             ITM_EXIT1           },
   {82,                  ITM_0,                -MNU_BLUE_C47,        ITM_TIMER,            ITM_0,                ITM_COLON,            ITM_SEMICOLON,        ITM_0,                ITM_0               },
   {83,                  ITM_PERIOD,           ITM_SHOW,             -MNU_INFO,            ITM_PERIOD,           ITM_COMMA,            ITM_NUMBER_SIGN,      ITM_PERIOD,           ITM_PERIOD          },
@@ -1134,7 +1134,7 @@ void createMenu(const char *name) {
                                            name,              stringByteLength(name),                                                    (int32_t)sizeof(userMenus[0].menuName));
         abortf(tmp);
       }
-      #endif // PC_PUILD
+      #endif // PC_BUILD
       xcopy(userMenus[numberOfUserMenus].menuName, name, stringByteLength(name) + 1);
       ++numberOfUserMenus;
     }

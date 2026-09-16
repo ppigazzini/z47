@@ -155,7 +155,7 @@
       sprintf(tmpString, "R%02d:", regist);
     }
   }
-  #endif // !OPTION_REGBROWSER
+  #endif // OPTION_REGBROWSER
 
   void registerBrowser(uint16_t unusedButMandatoryParameter) {
   #if defined(OPTION_REGBROWSER)
@@ -270,5 +270,5 @@
         }
       }
     }
-  #endif // !OPTION_REGBROWSER
+  #endif // OPTION_REGBROWSER
 }

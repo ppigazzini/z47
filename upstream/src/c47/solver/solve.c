@@ -740,7 +740,7 @@ retryLevel:
           #endif
           printf("\n");
         }
-      #endif
+      #endif // PC_BUILD && (SOLVERDEBUG || SOLVERDEBUG2)
 
       loop++;
       if(checkHalfSec()) {
@@ -1180,7 +1180,7 @@ retryLevel:
           }
         #else
           break;
-        #endif
+        #endif // OPTION_TVM_NEWTON
       }
       if(loop > (currentSolverStatus & SOLVER_STATUS_TVM_APPLICATION ? 2000 : 10000)) {
         result = SOLVER_RESULT_OTHER_FAILURE;

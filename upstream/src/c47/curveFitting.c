@@ -176,7 +176,7 @@ uint16_t lrCountOnes(uint16_t curveFitting) { // count the number of allowed met
   return numberOfOnes;
 #else
     return __builtin_popcount(curveFitting);
-#endif
+#endif // 0
 }
 
 

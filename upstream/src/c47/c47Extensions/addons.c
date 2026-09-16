@@ -277,7 +277,7 @@ static void _real34ToNim(const real34_t *real34, char *nimInput, char *nimDispla
 // nimDisplay : used to fill nimBufferDisplay
 
 //}
-#endif // !OPTION_EDIT_X
+#endif // OPTION_EDIT_X
 
 
 void fnEdit (uint16_t unusedParamButMandatory) {
@@ -554,7 +554,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
               goto edit_dtReal34;
               break;
             }
-#endif // !OPTION_EDIT_X
+#endif // OPTION_EDIT_X
 
             case dtString: {
               setSystemFlag(FLAG_ASLIFT);
@@ -627,7 +627,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
               cursorFont = &numericFont;
               break;
             }
-#endif // !OPTION_EDIT_X
+#endif // OPTION_EDIT_X
 
             // case dtConfig: Not relevant for EDIT
             default: {
@@ -871,7 +871,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
             //printf("**[DL]** fnEdit editingLiteralType %d aimBuffer %s\n", editingLiteralType, aimBuffer);
             //fflush(stdout);
           }
-#endif // !OPTION_EDIT_PEM
+#endif // OPTION_EDIT_PEM
           else {
             ;
           }
@@ -1053,7 +1053,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
             }
           }
         }
-#endif // !OPTION_EDIT_PEM
+#endif // OPTION_EDIT_PEM
         break;
       }
 
@@ -2995,7 +2995,7 @@ bool_t checkForAndChange(char *displayString, const real_t *valueReal, const rea
     fraction(TEMP_REGISTER_1, &sign1, &intPart, &numer, &denom, &lessEqualGreater);   //does not yet work in all the frac modes.
     //printf("aaaaaaa: %i%llu + %llu / %llu \n", sign1, intPart, numer, denom);
     int32_t smallestDenom = denom;
-#else // FRACT_ENGINE
+#else // IRFRAC_ENGINE
     //* This section uses the new special demoninator search engine
     int32_t smallestDenom = getSmallestDenom(&multConstant);                                                    //denominator
 #endif // !IRFRAC_ENGINE
@@ -3152,7 +3152,8 @@ bool_t checkForAndChange(char *displayString, const real_t *valueReal, const rea
       changeToSub(smallestDenom, denomStr);                                                                     // "/12"
     }
 
-    if((resultingIntStr[stringByteLength(resultingIntStr)-1]==' ' || resultingIntStr[max(0, stringByteLength(resultingIntStr)-1)]==0) &&  denomStr[0]=='/' && cStr[0]==0) {
+    const int32_t last = stringByteLength(resultingIntStr)-1;
+    if((last<0 || resultingIntStr[last]==' ' || resultingIntStr[last]==0) &&  denomStr[0]=='/' && cStr[0]==0) {
       sprintf(tmpstr, STD_SUP_1 "%s", denomStr);
       strcpy(denomStr, tmpstr);
     }
