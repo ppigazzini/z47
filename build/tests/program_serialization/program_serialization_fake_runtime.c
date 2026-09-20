@@ -195,6 +195,11 @@ bool_t isAtEndOfProgram(const uint8_t *step) {
   return step[0] == ((ITM_END >> 8) | 0x80) && step[1] == (ITM_END & 0xff);
 }
 
+// .END., the 0xffff sentinel the loader writes past the last program.
+bool_t isAtEndOfPrograms(const uint8_t *step) {
+  return (step == NULL) || (step[0] == 255 && step[1] == 255);
+}
+
 uint8_t boundProgramNameLength(const uint8_t *nameStart, uint8_t claimed) {
   if(nameStart >= firstFreeProgramByte) {
     return 0;
@@ -272,8 +277,13 @@ void defineFirstDisplayedStep(void) {
 void defineCurrentProgramFromCurrentStep(void) {
 }
 
+// The opcode-width walk, which is what _findLastStep needs of it: bit 7 of the
+// first byte marks a two-byte op code and every other byte is a one-byte one.
+// The lane's images are bare op codes with no parameter bytes, so this is the
+// same next step c43's own walker reaches on them; it is NOT the parameter
+// grammar, and a case carrying a parameterised step would need that instead.
 uint8_t *findNextStep(uint8_t *step) {
-  return step;
+  return step + ((step[0] & 0x80) ? 2 : 1);
 }
 
 void decodeOneStep_XPORT(const uint8_t *step) {
@@ -412,6 +422,9 @@ void programSerializationParitySeedPrograms(const uint8_t *image,
   currentLocalStepNumber = currentLocalStep;
   numberOfPrograms = 1;
   programList[0].step = 1;
+  // _findLastStep walks the last program from its own first step, so the seeded
+  // program needs the pointer the real scanLabelsAndPrograms would have written.
+  programList[0].instructionPointer = beginOfProgramMemory;
 }
 
 void programSerializationParitySetLabel(uint16_t label, uint16_t programNumber) {
