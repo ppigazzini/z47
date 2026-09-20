@@ -2998,8 +2998,10 @@ pub export fn showFunctionName(itm: i16, delayInMs: i16, arg: [*c]const u8) call
     }
 
     showFunctionNameItem = item;
+    // LPFCT, so the preview outlasts the TO_CL_LONG stage it follows. The scaled
+    // delay narrows the way the C assignment does rather than trapping.
     showFunctionNameCounter = if (comptime option_lp_dp_timing)
-        @intCast(@divTrunc(@as(i32, delayInMs) * (10000 + @as(i32, longPressFactor)), 10000)) // LPFCT
+        @truncate(@divTrunc(@as(i32, delayInMs) * (10000 + @as(i32, longPressFactor)), 10000))
     else
         delayInMs;
 
