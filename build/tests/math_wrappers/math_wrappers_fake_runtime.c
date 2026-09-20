@@ -667,12 +667,13 @@ void fractionToDisplayString(calcRegister_t regist, char *displayString) {
   snprintf(displayString, ERROR_MESSAGE_LENGTH, "fraction");
 }
 
-void shortIntegerToDisplayString(calcRegister_t regist, char *displayString, bool_t determineFont, uint8_t baseOverride) {
+void shortIntegerToDisplayString(calcRegister_t regist, char *displayString, bool_t determineFont, uint8_t baseOverride, int16_t maxWidth) {
   int16_t sign = 0;
   uint64_t value = 0;
 
   (void)determineFont;
   (void)baseOverride;
+  (void)maxWidth;
   convertShortIntegerRegisterToUInt64(regist, &sign, &value);
   snprintf(displayString, ERROR_MESSAGE_LENGTH, "%s%llu", sign ? "-" : "", (unsigned long long)value);
 }

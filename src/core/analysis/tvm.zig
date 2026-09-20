@@ -73,10 +73,10 @@ const TI_SOLVER_VARIABLE: u8 = 51;
 const TI_TVM_EFF: u8 = 115;
 const TI_TVM_IA: u8 = 116;
 const TI_AMORT_BAL: u8 = 137;
-const TI_AMORT_PRN: u8 = 138;
-const TI_AMORT_INT: u8 = 139;
-const TI_AMORT_P1: u8 = 140;
-const TI_AMORT_P2: u8 = 141;
+const TI_AMORT_PRN: u8 = 139;
+const TI_AMORT_INT: u8 = 140;
+const TI_AMORT_P1: u8 = 141;
+const TI_AMORT_P2: u8 = 142;
 
 const SOLVER_STATUS_READY_TO_EXECUTE: u16 = 0x0001;
 const SOLVER_STATUS_TVM_APPLICATION: u16 = 0x1000;

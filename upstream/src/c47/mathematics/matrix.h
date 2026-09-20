@@ -258,12 +258,12 @@
    * \param[in] prefixWidth
    * \param[in] font
    * \param[out] colWidth Column width. This must be initialized as int16_t[MATRIX_MAX_COLUMNS].
-   * \param[out] rPadWidth Right padding of each elements. This is for alignment of decimal points. This must be initialized as int16_t[MATRIX_MAX_ROWS * MATRIX_MAX_COLUMNS].
+   * \param[out] rPadWidth Right padding of each elements. This is for alignment of decimal points. This must be initialized as int16_t[MATRIX_MAX_ROWS_ON_SHOW * MATRIX_MAX_COLUMNS].
    * \param[out] digits Number of digits which will be shown. This is for adjustment in ALL mode.
    * \param[in] maxCols Maximum number of columns to allow
    * \return Width of the matrix excluding brackets
    */
-  int16_t  getRealMatrixColumnWidths      (const real34Matrix_t *matrix, int16_t prefixWidth, const font_t *font, int16_t *colWidth, int16_t *rPadWidth, int16_t *digits, uint16_t maxCols, bool_t *allElementsInColAreIntegers);
+  int16_t  getRealMatrixColumnWidths      (const real34Matrix_t *matrix, int16_t prefixWidth, bool_t regXposition, const font_t *font, int16_t *colWidth, int16_t *rPadWidth, int16_t *digits, uint16_t maxCols, bool_t *allElementsInColAreIntegers);
 
   /**
    * Displays a complex matrix.
@@ -282,13 +282,13 @@
    * \param[out] colWidth Column width. This must be initialized as int16_t[MATRIX_MAX_COLUMNS].
    * \param[out] colWidth_r Column width of real part. This must be initialized as int16_t[MATRIX_MAX_COLUMNS].
    * \param[out] colWidth_i Column width of imaginary part. This must be initialized as int16_t[MATRIX_MAX_COLUMNS].
-   * \param[out] rPadWidth_r Right padding of real part of each elements. This is for alignment of decimal points. This must be initialized as int16_t[MATRIX_MAX_ROWS * MATRIX_MAX_COLUMNS].
-   * \param[out] rPadWidth_i Right padding of imaginary part of each elements. This is for alignment of decimal points. This must be initialized as int16_t[MATRIX_MAX_ROWS * MATRIX_MAX_COLUMNS].
+   * \param[out] rPadWidth_r Right padding of real part of each elements. This is for alignment of decimal points. This must be initialized as int16_t[MATRIX_MAX_ROWS_ON_SHOW * MATRIX_MAX_COLUMNS].
+   * \param[out] rPadWidth_i Right padding of imaginary part of each elements. This is for alignment of decimal points. This must be initialized as int16_t[MATRIX_MAX_ROWS_ON_SHOW * MATRIX_MAX_COLUMNS].
    * \param[out] digits Number of digits which will be shown. This is for adjustment in ALL mode.
    * \param[in] maxCols Maximum number of columns to allow
    * \return Width of the matrix excluding brackets
    */
-  int16_t  getComplexMatrixColumnWidths   (const complex34Matrix_t *matrix, int16_t prefixWidth, const font_t *font, int16_t *colWidth, int16_t *colWidth_r, int16_t *colWidth_i,
+  int16_t  getComplexMatrixColumnWidths   (const complex34Matrix_t *matrix, int16_t prefixWidth, bool_t regXposition, const font_t *font, int16_t *colWidth, int16_t *colWidth_r, int16_t *colWidth_i,
                                             int16_t *rPadWidth_r, int16_t *rPadWidth_i, int16_t *digits, uint16_t maxCols, angularMode_t angleMode, bool_t polarMode);
 
   void     getMatrixFromRegister          (calcRegister_t regist);

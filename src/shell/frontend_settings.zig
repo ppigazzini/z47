@@ -12,6 +12,7 @@ const SETTING_SINT_MODE: c_int = 0x0083;
 
 const TI_VERSION: u8 = 10;
 const TI_WHO: u8 = 11;
+const TI_ROUNDING_MODE: u8 = 148;
 
 const CM_CONFIRMATION: u8 = 11;
 
@@ -128,6 +129,7 @@ fn applyVersion() void {
 
 fn applyRounding(value: u16) void {
     roundingMode = @truncate(value);
+    temporaryInformation = TI_ROUNDING_MODE;
 }
 
 fn applySignificantDigits(value: u16) void {

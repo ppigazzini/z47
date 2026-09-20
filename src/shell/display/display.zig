@@ -52,6 +52,7 @@ const dmcp_build: bool = frontier_build_options.dmcp_build;
 const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 const ir_printing: bool = frontier_build_options.ir_printing;
 const option_vector: bool = frontier_build_options.option_vector;
+const option_mx_show: bool = frontier_build_options.option_mx_show;
 
 // ---------------------------------------------------------------------------
 // Types (matching the C build's layout, mirrored from sibling owners)
@@ -388,6 +389,8 @@ extern var ctxtReal75: realContext_t;
 extern var currentAngularMode: angularMode_t;
 extern var temporaryInformation: u8;
 extern var showRegis: u16;
+extern var showMatrixUserDisplayFormat: u8;
+extern var showMatrixUserDisplayFormatDigits: u8;
 extern var overrideShowBottomLine: u8;
 extern var currentViewRegister: u16;
 extern var programRunStop: u8;
@@ -2399,7 +2402,8 @@ pub export fn longIntegerToHexDisplayString(regist: calcRegister_t, displayStrin
     }
 }
 
-pub export fn shortIntegerToDisplayString(regist: calcRegister_t, displayString: [*c]u8, determineFont: bool_t, baseOverride: u8) callconv(.c) void {
+// maxWidth is the room the caller has, so a temporary information prefix is not painted over.
+pub export fn shortIntegerToDisplayString(regist: calcRegister_t, displayString: [*c]u8, determineFont: bool_t, baseOverride: u8, maxWidth: i16) callconv(.c) void {
     var i: i16 = undefined;
     var j: i16 = undefined;
     var k: i16 = undefined;
@@ -2621,7 +2625,7 @@ pub export fn shortIntegerToDisplayString(regist: calcRegister_t, displayString:
         } else {
             addBaseNumber(displayString, base);
         }
-        if (frontier_char_string.stringWidth(displayString, fontForShortInteger.?, false, false) < SCREEN_WIDTH) {
+        if (frontier_char_string.stringWidth(displayString, fontForShortInteger.?, false, false) < maxWidth) {
             return;
         }
 
@@ -2650,7 +2654,7 @@ pub export fn shortIntegerToDisplayString(regist: calcRegister_t, displayString:
         } else {
             addBaseNumber(displayString, base);
         }
-        if (frontier_char_string.stringWidth(displayString, fontForShortInteger.?, false, false) < SCREEN_WIDTH) {
+        if (frontier_char_string.stringWidth(displayString, fontForShortInteger.?, false, false) < maxWidth) {
             return;
         }
 
@@ -2676,7 +2680,7 @@ pub export fn shortIntegerToDisplayString(regist: calcRegister_t, displayString:
         } else {
             addBaseNumber(displayString, base);
         }
-        if (frontier_char_string.stringWidth(displayString, fontForShortInteger.?, false, false) < SCREEN_WIDTH) {
+        if (frontier_char_string.stringWidth(displayString, fontForShortInteger.?, false, false) < maxWidth) {
             return;
         }
 
@@ -2709,7 +2713,12 @@ pub export fn shortIntegerToDisplayString(regist: calcRegister_t, displayString:
         } else {
             addBaseNumber(displayString, base);
         }
-        if (frontier_char_string.stringWidth(displayString, fontForShortInteger.?, false, false) < SCREEN_WIDTH) {
+        if (frontier_char_string.stringWidth(displayString, fontForShortInteger.?, false, false) < maxWidth) {
+            return;
+        }
+
+        if (maxWidth < SCREEN_WIDTH) { // no font fits beside the caller's prefix, so take the whole line rather than report
+            shortIntegerToDisplayString(regist, displayString, determineFont, baseOverride, SCREEN_WIDTH);
             return;
         }
 
@@ -2738,7 +2747,7 @@ pub export fn shortIntegerToDisplayString(regist: calcRegister_t, displayString:
         } else {
             addBaseNumber(displayString, base);
         }
-        if (frontier_char_string.stringWidth(displayString, fontForShortInteger.?, false, false) < SCREEN_WIDTH) {
+        if (frontier_char_string.stringWidth(displayString, fontForShortInteger.?, false, false) < maxWidth) {
             return;
         }
 
@@ -2770,7 +2779,12 @@ pub export fn shortIntegerToDisplayString(regist: calcRegister_t, displayString:
         } else {
             addBaseNumber(displayString, base);
         }
-        if (frontier_char_string.stringWidth(displayString, fontForShortInteger.?, false, false) < SCREEN_WIDTH) {
+        if (frontier_char_string.stringWidth(displayString, fontForShortInteger.?, false, false) < maxWidth) {
+            return;
+        }
+
+        if (maxWidth < SCREEN_WIDTH) { // no font fits beside the caller's prefix, so take the whole line rather than report
+            shortIntegerToDisplayString(regist, displayString, determineFont, baseOverride, SCREEN_WIDTH);
             return;
         }
 
@@ -3820,7 +3834,7 @@ fn showShortIntegerLine(showRegis_p: calcRegister_t, tag: i16, startOffset: i16,
     } else {
         tmpString[2400] = 0;
     }
-    shortIntegerToDisplayString(showRegis_p, tmpString + 2400 + @as(usize, @intCast(stringByteLength(tmpString + 2400))), 1, noBaseOverride);
+    shortIntegerToDisplayString(showRegis_p, tmpString + 2400 + @as(usize, @intCast(stringByteLength(tmpString + 2400))), 1, noBaseOverride, SCREEN_WIDTH);
     last = 2400 + @as(i16, @intCast(stringByteLength(tmpString + 2400)));
     src = 2400;
     tmpString[@intCast(startOffset)] = 0;
@@ -3869,6 +3883,11 @@ pub export fn fnC47Show(fnShow_param: u16) callconv(.c) void {
 
     displayFormat = DF_ALL;
     displayFormatDigits = 0;
+    if (comptime option_mx_show) {
+        // Stash the user format, so the matrix pages can draw in it
+        showMatrixUserDisplayFormat = savedDisplayFormat;
+        showMatrixUserDisplayFormatDigits = savedDisplayFormatDigits;
+    }
     clearSystemFlag(@intCast(FLAG_IRFRAC));
 
     switch (fnShow_param) {

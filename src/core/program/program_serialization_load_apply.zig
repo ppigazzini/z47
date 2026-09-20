@@ -14,6 +14,12 @@ pub fn applyLoadedProgram(program_size_in_bytes: u32) void {
         (runtime.firstFreeProgramByte + 1)[0] = 0xff;
         runtime.scanLabelsAndPrograms();
     }
+    if (space_owned.delEndNeeded()) {
+        runtime.firstFreeProgramByte -= 2;
+        runtime.freeProgramBytes += 2;
+        runtime.firstFreeProgramByte[0] = 0xff;
+        (runtime.firstFreeProgramByte + 1)[0] = 0xff;
+    }
 
     space_owned.addSpaceAfterPrograms(@intCast(program_size_in_bytes));
     const start_of_program = pointer_owned.offsetPointer(runtime.firstFreeProgramByte, -@as(isize, @intCast(program_size_in_bytes)));

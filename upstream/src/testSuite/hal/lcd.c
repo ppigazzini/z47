@@ -34,24 +34,25 @@ void bitblt24(uint32_t x, uint32_t dx, uint32_t y, uint32_t val, int blt_op, int
   const uint32_t lowmask = (1u << dx) - 1u;
   const uint32_t bytes_needed = (bit_off + dx + 7) / 8;
 
-  uint32_t srcbits;
-  if(fill == BLT_SET && blt_op != BLT_XOR) {
-    srcbits = (blt_op == BLT_ANDN) ? lowmask << bit_off : 0u;
-  }
-  else {
-    srcbits = (val & lowmask) << bit_off;
-  }
+  const uint32_t srcbits = (val & lowmask) << bit_off;
+  const uint32_t fillbits = (fill == BLT_SET) ? lowmask << bit_off : 0u;  // BLT_SET: the dx columns are cleared before BLT_OR and set before BLT_ANDN
   uint8_t srcbytes[4] = {
     (uint8_t)(srcbits >> 0),
     (uint8_t)(srcbits >> 8),
     (uint8_t)(srcbits >> 16),
     (uint8_t)(srcbits >> 24),
   };
+  uint8_t fillbytes[4] = {
+    (uint8_t)(fillbits >> 0),
+    (uint8_t)(fillbits >> 8),
+    (uint8_t)(fillbits >> 16),
+    (uint8_t)(fillbits >> 24),
+  };
   uint8_t *j = &lcd_buffer[y * (LCD_LINE_SIZE + 2) + byte_i + 2];
   switch(blt_op) {
-    case BLT_OR:   for(uint32_t i = 0; i < bytes_needed; i++) { j[i] |=  srcbytes[i]; } break;
+    case BLT_OR:   for(uint32_t i = 0; i < bytes_needed; i++) { j[i] = (j[i] & ~fillbytes[i]) | srcbytes[i]; } break;
     case BLT_XOR:  for(uint32_t i = 0; i < bytes_needed; i++) { j[i] ^=  srcbytes[i]; } break;
-    case BLT_ANDN: for(uint32_t i = 0; i < bytes_needed; i++) { j[i] &= ~srcbytes[i]; } break;
+    case BLT_ANDN: for(uint32_t i = 0; i < bytes_needed; i++) { j[i] = (j[i] | fillbytes[i]) & ~srcbytes[i]; } break;
     default:       return;
   }
   lcd_buffer[y * (LCD_LINE_SIZE + 2)] = 1u; // mark line dirty

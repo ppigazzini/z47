@@ -7,7 +7,6 @@
 #if defined(OPTION_IR_PRINTING)
 
   #define RETURN_IF_PRINT_OFF do { if(!getSystemFlag(FLAG_PRTACT)) { return; } } while(0)
-  #define BREAK_IF_EXIT       do { if(key_pop() == KEY_EXIT)       { break;  } } while(0)
 
   //
   // Alias table for instruction names to get nice prints
@@ -395,7 +394,13 @@
   }
 
 
+  static bool_t printExitPressed = false;   // EXIT taken at a line advance
+
   static bool_t _exitKeyPressed() {
+    if(printExitPressed) {
+      printExitPressed = false;
+      return true;
+    }
     #if defined(DMCP_BUILD)
       int key = C47PopKeyNoBuffer(!DISPLAY_WAIT_FOR_RELEASE) + 1;
       if(key == 36 || key == 33 ) {  // R/S or EXIT
@@ -472,6 +477,9 @@ void printAdvance(uint8_t nlMode) {
     printIR(nlMode ? 0x04 : '\n');
   }
   prepareNewLine();
+  if(_exitKeyPressed()) {   // once per paper line
+    printExitPressed = true;
+  }
 }
 
 
@@ -691,9 +699,13 @@ void printLine(const char *buff, int with_lf) {
 
   // Show Print SBI
   setPrinterSBI(true);
+  printExitPressed = false;   // an abort raised by the previous line has been reported by then; this line starts clean
 
   // Print line
   while((c = *((const unsigned char *)buff++)) != '\0') {
+    if(printExitPressed) {    // EXIT at the last advance: stop before the next glyph
+      break;
+    }
     w= 0;
     switch(mode) {
       case PMODE_DEFAULT:      // Mixed character and graphic printing
@@ -963,6 +975,49 @@ static void _complex34ToPrintString(real34_t *registReal34, real34_t *registImag
 }
 
 //
+//  Pad the value already built in tmpString and send it to the paper
+//
+
+static void _printTmpString(const char *label, printArea_t where) {
+  if(label == NULL && (where == LINE_FULL || (where == LINE_NOLF))) {     // Padding for PRX
+    uint16_t i, padding;
+    uint16_t glen = stringGlyphLength(tmpString);
+    if((where == LINE_NOLF) && (glen < 17)) {
+      padding = 17 - glen;
+      printTab(padding * 7 - 1);
+    }
+
+    if(glen > 17) {
+      glen = glen % 24;
+      padding = (glen <= 17 ? 17 - glen : 24 - (glen - 17));
+      for(i=0; i < padding; i++) {
+        strcat(tmpString, " ");  // pad string to ensure "***" will be right aligned
+      }
+    }
+
+    if(where == LINE_FULL) {
+      strcpy(tmpString + strlen(tmpString), "    ***");   // End line with "    ***" as on the HP-41 and 42
+    }
+  }
+
+  switch(where) {
+    case LINE_FULL:
+    case LINE_RIGHT:
+      printJustified(tmpString);
+      break;
+    case LINE_LEFT:
+      printJustifiedLeft(tmpString);
+      break;
+    case LINE_NOLF:
+    case LINE_ASIS:
+      printLine(tmpString, 0);
+      break;
+    default:
+      printJustified(tmpString);
+  }
+}
+
+//
 //  Print a single register
 //
 void printReg(uint16_t regist, const char *label, bool_t eq, printArea_t where, bool prSigma) {
@@ -1094,42 +1149,7 @@ void printReg(uint16_t regist, const char *label, bool_t eq, printArea_t where, 
       break;
   }
 
-  if(label == NULL && (where == LINE_FULL || (where == LINE_NOLF))) {     // Padding for PRX
-    uint16_t i, padding;
-    uint16_t glen = stringGlyphLength(tmpString);
-    if((where == LINE_NOLF) && (glen < 17)) {
-      padding = 17 - glen;
-      printTab(padding * 7 - 1);
-    }
-
-    if(glen > 17) {
-      glen = glen % 24;
-      padding = (glen <= 17 ? 17 - glen : 24 - (glen - 17));
-      for(i=0; i < padding; i++) {
-        strcat(tmpString, " ");  // pad string to ensure "***" will be right aligned
-      }
-    }
-
-    if(where == LINE_FULL) {
-      strcpy(tmpString + strlen(tmpString), "    ***");   // End line with "    ***" as on the HP-41 and 42
-    }
-  }
-
-  switch(where) {
-    case LINE_FULL:
-    case LINE_RIGHT:
-      printJustified(tmpString);
-      break;
-    case LINE_LEFT:
-      printJustifiedLeft(tmpString);
-      break;
-    case LINE_NOLF:
-    case LINE_ASIS:
-      printLine(tmpString, 0);
-      break;
-    default:
-      printJustified(tmpString);
-  }
+  _printTmpString(label, where);
 }
 
 
@@ -2357,6 +2377,14 @@ void fnP_All_Regs(uint16_t option) {
         printReg(REGISTER_X, NULL, false, LINE_FULL, false );  // Print register X without name header
         break;
 
+      case PRN_XFN:
+        #if defined(OPTION_XFN_1000)
+          if(registerFMAOutputPlainString(REGISTER_X, "", tmpString)) {  // every digit of X x Y + Z, the string the .d47 export writes
+            _printTmpString(NULL, LINE_FULL);                            // wraps over paper lines the way a long integer does under PRN_Xr
+          }
+        #endif // OPTION_XFN_1000
+        break;
+
       case PRN_STK:
         _printRegRange(getSystemFlag(FLAG_SSIZE8) ? REGISTER_D : REGISTER_T, REGISTER_X);
         break;
@@ -2539,6 +2567,15 @@ void fnP_All_Regs(uint16_t option) {
 
       case PRN_Xr:
         stackregister_csv_out(REGISTER_X, REGISTER_X, !ONELINE);
+        break;
+
+      case PRN_XFN:
+        #if defined(OPTION_XFN_1000)
+          if(registerFMAOutputPlainString(REGISTER_X, "", tmpString)) {
+            export_append_line(tmpString);                               // one row, every digit of X x Y + Z
+            export_append_line(CSV_NEWLINE);
+          }
+        #endif // OPTION_XFN_1000
         break;
 
       case PRN_TMP:

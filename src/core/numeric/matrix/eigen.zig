@@ -1974,7 +1974,7 @@ fn calculateEigenvectors(matrix: *const real34Matrix_t, isComplex: bool, a: [*]a
     if (allocC47Blocks(utBlocks)) |utBuf| {
         const unknownsToFill: [*]u16 = @ptrCast(utBuf);
         k = 0;
-        while (k < sz) : (k += 1) {
+        while (k < sz and runtime.lastErrorCode != runtime.ERROR_RAM_FULL) : (k += 1) { // a full RAM stops the remaining columns
             if (k > 0 and math_comparison_reals.realCompareEqual(@alignCast(&eig[(k * sz + k) * 2]), @alignCast(&eig[((k - 1) * sz + (k - 1)) * 2])) and math_comparison_reals.realCompareEqual(@alignCast(&eig[(k * sz + k) * 2 + 1]), @alignCast(&eig[((k - 1) * sz + (k - 1)) * 2 + 1]))) {
                 duplicateEigenvalueCount += 1;
                 if (freeUnknowns > size) freeUnknowns = size;
@@ -2139,6 +2139,13 @@ fn realEigenvectors(matrix: *const real34Matrix_t, res: *real34Matrix_t, ires: ?
             return;
         }
         calculateEigenvectors(matrix, false, a, q, r, eig, &runtime.ctxtReal75);
+        if (runtime.lastErrorCode == runtime.ERROR_RAM_FULL) { // RAM is full, so no eigenvectors are returned
+            res.matrixElements = null;
+            res.header.matrixRows = 0;
+            res.header.matrixColumns = 0;
+            freeC47Blocks(bulk, bulkSize);
+            return;
+        }
 
         // Defective-matrix detection: a genuine eigenvector is never all-zero.
         var j: usize = 0;
@@ -2204,6 +2211,9 @@ fn realEigenvectors(matrix: *const real34Matrix_t, res: *real34Matrix_t, ires: ?
                     while (i < sz * sz) : (i += 1) runtime.realToReal34(&r[i * 2 + 1], &iresElems[i]);
                 } else {
                     ramFull("In function realEigenvectors:", "Ram full, 1bc");
+                    if (@intFromPtr(matrix) != @intFromPtr(res)) {
+                        runtime.realMatrixFree(res);
+                    }
                 }
             }
         } else {
@@ -2212,6 +2222,9 @@ fn realEigenvectors(matrix: *const real34Matrix_t, res: *real34Matrix_t, ires: ?
         freeC47Blocks(bulk, bulkSize);
     } else {
         ramFull("In function realEigenvectors:", "Ram full, 3bf");
+        res.matrixElements = null;
+        res.header.matrixRows = 0;
+        res.header.matrixColumns = 0;
     }
 }
 
@@ -2245,6 +2258,13 @@ fn complexEigenvectors(matrix: *const complex34Matrix_t, res: *complex34Matrix_t
             return;
         }
         calculateEigenvectors(@ptrCast(matrix), true, a, q, r, eig, &runtime.ctxtReal75);
+        if (runtime.lastErrorCode == runtime.ERROR_RAM_FULL) { // RAM is full, so no eigenvectors are returned
+            res.matrixElements = null;
+            res.header.matrixRows = 0;
+            res.header.matrixColumns = 0;
+            freeC47Blocks(bulk, bulkSize);
+            return;
+        }
 
         var j: usize = 0;
         while (j < sz) : (j += 1) {
@@ -2278,6 +2298,9 @@ fn complexEigenvectors(matrix: *const complex34Matrix_t, res: *complex34Matrix_t
         freeC47Blocks(bulk, bulkSize);
     } else {
         ramFull("In function complexEigenvectors:", "Ram full, 2bg");
+        res.matrixElements = null;
+        res.header.matrixRows = 0;
+        res.header.matrixColumns = 0;
     }
 }
 
@@ -2379,8 +2402,8 @@ pub export fn fnEigenvectors(unusedParamButMandatory: u16) linksection(runtime.c
                     }
                     runtime.realMatrixFree(&res);
                 } else {
-                    // The error from the eigenvalues is already displayed.
-                    if (runtime.lastErrorCode == ERROR_NO_ROOT_FOUND) return;
+                    // The error is already displayed.
+                    if (runtime.lastErrorCode == ERROR_NO_ROOT_FOUND or runtime.lastErrorCode == runtime.ERROR_RAM_FULL) return;
                     runtime.displayCalcErrorMessage(runtime.ERROR_SINGULAR_MATRIX, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
                     if (runtime.extra_info_on_calc_error) runtime.moreInfoOnError("In function fnEigenvectors:", "matrix is defective: no full set of linearly independent eigenvectors", null, null);
                     return;
@@ -2417,8 +2440,8 @@ pub export fn fnEigenvectors(unusedParamButMandatory: u16) linksection(runtime.c
                     runtime.convertComplex34MatrixToComplex34MatrixRegister(&res, runtime.REGISTER_X);
                     runtime.complexMatrixFree(&res);
                 } else {
-                    // The error from the eigenvalues is already displayed.
-                    if (runtime.lastErrorCode == ERROR_NO_ROOT_FOUND) return;
+                    // The error is already displayed.
+                    if (runtime.lastErrorCode == ERROR_NO_ROOT_FOUND or runtime.lastErrorCode == runtime.ERROR_RAM_FULL) return;
                     runtime.displayCalcErrorMessage(runtime.ERROR_SINGULAR_MATRIX, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
                     if (runtime.extra_info_on_calc_error) runtime.moreInfoOnError("In function fnEigenvectors:", "matrix is defective: no full set of linearly independent eigenvectors", null, null);
                     return;

@@ -1150,6 +1150,8 @@ void doSave(uint16_t saveType) {
         sprintf(tmpString, "firstGregorianDay\n%"          PRIu32 "\n",     firstGregorianDay);            save(tmpString, strlen(tmpString));
         sprintf(tmpString, "denMax\n%"                     PRIu32 "\n",     denMax);                       save(tmpString, strlen(tmpString));
         sprintf(tmpString, "graMod\n%"                     PRIu8  "\n",     graMod);                       save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "longPressFactor\n%"            PRId16 "\n",     longPressFactor);              save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "doublePressFactor\n%"          PRId16 "\n",     doublePressFactor);            save(tmpString, strlen(tmpString));
         sprintf(tmpString, "lastDenominator\n%"            PRIu32 "\n",     lastDenominator);              save(tmpString, strlen(tmpString));
         sprintf(tmpString, "displayFormat\n%"              PRIu8  "\n",     displayFormat);                save(tmpString, strlen(tmpString));
         sprintf(tmpString, "displayFormatDigits\n%"        PRIu8  "\n",     displayFormatDigits);          save(tmpString, strlen(tmpString));
@@ -2582,6 +2584,18 @@ int64_t stringToInt64(const char *str) {
             graMod = toUint8(tmpString);
             if(graMod > 3) {
               graMod = 0;
+            }
+          }
+          else if(strcmp(aimBuffer, "longPressFactor") == 0) {
+            longPressFactor = toInt16(tmpString);
+            if(longPressFactor < -6000 || longPressFactor > 5000) {
+              longPressFactor = 0;
+            }
+          }
+          else if(strcmp(aimBuffer, "doublePressFactor") == 0) {
+            doublePressFactor = toInt16(tmpString);
+            if(doublePressFactor < -6000 || doublePressFactor > 5000) {
+              doublePressFactor = 0;
             }
           }
           else if(strcmp(aimBuffer, "denMax") == 0) {

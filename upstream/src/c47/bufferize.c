@@ -387,7 +387,7 @@ TO_QSPI const fInMim_t MimFunctionsType2[] =
     {ITM_RAN        },
     {ITM_RE         },
     {ITM_REexIM     },
-    {ITM_RMODEQ     },
+    {ITM_GET_RM     },
     {ITM_EX1        },
     {ITM_ROUNDI2    },
     {ITM_SETSIG2    },

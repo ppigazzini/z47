@@ -574,6 +574,8 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     saveStateValue(ram,                             TO_BYTES(RAM_SIZE_IN_BLOCKS),                                "ram",                            "hexDump");
 
     saveStateValue(&graMod,                         sizeof(graMod),                                              "graMod",                         "uint8");
+    saveStateValue(&longPressFactor,                sizeof(longPressFactor),                                     "longPressFactor",                "int16");
+    saveStateValue(&doublePressFactor,              sizeof(doublePressFactor),                                   "doublePressFactor",              "int16");
 
     // If you create a new parameter, proceed as following:
     //saveStateValue(&newParam,                       sizeof(newParam),                                            "newParam",                       "parameterType");
@@ -937,6 +939,8 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
       real34SetZero(REGISTER_REAL34_DATA(RESERVED_VARIABLE_IP));     // Old GRAMOD slot now is i%: give it a real zero, then derive it from the restored I%/a
       tvmSyncIp(RESERVED_VARIABLE_IPONA);
     }
+    restoreStateValue(&longPressFactor,                sizeof(longPressFactor),                                     "longPressFactor",                "int16"); // a file without the key leaves 0, factor 1
+    restoreStateValue(&doublePressFactor,              sizeof(doublePressFactor),                                   "doublePressFactor",              "int16");
     // The size argument is what stops the reader writing off the end, so it is the room the destination has, the way every other call here passes a sizeof().
     // These writes cannot leave their table whatever count the file carries.
     restoreStateValue(freeMemoryRegions,               sizeof(*freeMemoryRegions) * MAX_FREE_REGIONS,               "freeMemoryRegions",              "hexDump"); // as config.c allocates it
@@ -1592,5 +1596,8 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     updateMatrixHeightCache();
     screenUpdatingMode = SCRUPD_AUTO;
     refreshScreen(93);
+    if(temporaryInformation == TI_SHOWNOTHING) {   // a SHOW page is painted once and nothing holds it, so the restore paints it again, on the register it was on
+      fnC47Show(ITM_NOP);
+    }
   }
 #endif // PC_BUILD

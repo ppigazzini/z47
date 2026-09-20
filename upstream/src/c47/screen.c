@@ -13,7 +13,7 @@ static void _refreshPemScreen(void);
 
 //undefine FIXED_FN_NAME_SHIFT to let the function name move to the left edge with the shift
 //   The default is to keep the left offset as it looks prettier, arguably
-  #define FIXED_FN_NAME_SHIFT
+  #undef FIXED_FN_NAME_SHIFT
 
   #define shiftOffset        17
   #define noShiftOffset      0
@@ -1169,6 +1169,22 @@ return res;
   uint8_t  compressString = 0;
   uint8_t  raiseString = 0;
 
+  /* Draws the 32 columns of a glyph row, 24 columns to a bitblt24, cut at the right edge of the screen.
+   *
+   * \param[in] x      uint32_t Screen column of bit 31 of bits
+   * \param[in] y      uint32_t Screen row
+   * \param[in] bits   uint32_t The pixels, column x in bit 31
+   * \param[in] bltOp  int      BLT_OR for black pixels, BLT_ANDN for white ones
+   */
+  static void _showGlyphRow(uint32_t x, uint32_t y, uint32_t bits, int bltOp) {
+    while(bits != 0 && x < SCREEN_WIDTH) {
+      uint32_t dx = min(24, SCREEN_WIDTH - x);
+      bitblt24(x, dx, y, bits >> (32 - dx), bltOp, BLT_NONE);
+      bits <<= 24;
+      x += 24;
+    }
+  }
+
   uint32_t showGlyphCode(uint16_t charCode, const font_t *font, uint32_t x, uint32_t y, videoMode_t videoMode, bool_t showLeadingCols, bool_t showEndingCols, bool_t noPreClear) {
     uint32_t col, row, xGlyph, endingCols;
     int32_t  glyphId;
@@ -1253,69 +1269,110 @@ return res;
 
     bool_t numDouble = font == &numericFont && checkHP && temporaryInformation == TI_NO_INFO; //&& charCodeFromString(STD_MODE_G, 0)!=charCode && charCodeFromString(STD_MODE_G, 0)!=charCode; //this also triggers the vertical doubling
     uint16_t doubling = numDouble ? DOUBLING : DOUBLINGBASEX;      //this is the horizontal factor, 8 is normal, so 16 is double
+    uint32_t xEnd = x + boldString + (((doubling * (xGlyph + glyph->colsGlyph + endingCols)) >> mini) >> 3);        //JMmini
+    if(noShow) {
+      return xEnd;
+    }
 
     // Clearing the space needed by the glyph
     bool_t rep_enlarge = numDouble || (enlarge && combinationFonts != 0);                //JM ENLARGE
     uint32_t yNewMaxDx = (rep_enlarge ? 2 : 1) * (((glyph->rowsAboveGlyph + glyph->rowsGlyph + glyph->rowsBelowGlyph) >> mini) - (rep_enlarge ? 4 : 0));
-    if(!noShow && !noPreClear) {
+    if(!noPreClear) {
       lcd_fill_rect(x, max(0, yy), (uint32_t)(doubling * ((xGlyph + glyph->colsGlyph + endingCols) >> mini)) >> 3, max(0, (int32_t)(yNewMaxDx) + (yy<0 ? yy : 0)), (videoMode == vmNormal ? LCD_SET_VALUE : LCD_EMPTY_VALUE));  //JMmini
     }
     if(displaymode == numHalf) {
       y += (uint32_t)(glyph->rowsAboveGlyph*REDUCT_A/REDUCT_B*(rep_enlarge ? 2 : 1));
     }
     else {
-      y += glyph->rowsAboveGlyph*(rep_enlarge ? 2 : 1);
+      y += (glyph->rowsAboveGlyph*(rep_enlarge ? 2 : 1)) >> mini;
     }        //JM REDUCE and DOUBLE
     //x += xGlyph; //JM
 
-    // Choose pencil
-    void (*setPixel)(uint32_t, uint32_t) = (videoMode == vmNormal) ? &setBlackPixel : &setWhitePixel;
+    int bltOp = (videoMode == vmNormal) ? BLT_OR : BLT_ANDN;
     // Drawing the glyph
-    for(row=0; row<glyph->rowsGlyph; row++, y++) {
-      if(displaymode == numHalf) {
-        if((int)((REDUCT_A*row+REDUCT_OFF)) % REDUCT_B == 0) {
-          y--;
-        }
-      }                           //JM REDUCE
-      // Drawing the columns of the glyph
-      for(col=0; col<glyph->colsGlyph; col++) {
-        if(!(col%8)) {
-          byte = *(data++);
-          if(mini!=0) {
-            byte = (uint8_t)byte | (((uint8_t)byte) << 1);           //JMmini
+    bool_t secondRow = false;
+    uint32_t bits = 0;
+    uint32_t bits2 = 0;
+    uint32_t xOffset = 0;
+    uint32_t xRow = 0;
+    for(row=0; row<glyph->rowsGlyph; y++) {
+      if(!secondRow) {
+        if(displaymode == numHalf) {
+          if((int)((REDUCT_A*row+REDUCT_OFF)) % REDUCT_B == 0) {
+            y--;
           }
+        }                           //JM REDUCE
+        // The row, its first column in bit 31
+        if(bits2 != 0) {
+          bits = bits2;                                                 // the HP columns the first word leaves over, drawn 30 columns on
+          bits2 = 0;
+          xOffset = 30;
         }
-
-        if(byte & 0x80 && !noShow) { // MSB set
-          uint32_t x1 = x+((((doubling * (xGlyph+col)) >> mini)) >> 3);
-          uint32_t x2 = x1;
-          uint32_t y1 = min(SCREEN_HEIGHT-1, max(0, yy + (int32_t)min(yNewMaxDx,   ((y-y0) >> mini))));
-          uint32_t y2 = min(SCREEN_HEIGHT-1, max(0, yy + (int32_t)min(yNewMaxDx, 1+((y-y0) >> mini))));
-          if(x2 > 0) {
-            x2--;
-          }
-          setPixel(x1, y1);
-          if(boldString == 1) {
-            setPixel(x1+1, y1);
+        else {
+          xOffset = 0;
+          bits = 0;
+          for(col=0; col<glyph->colsGlyph; col+=8) {
+            byte = *(data++);
+            bits |= (uint32_t)(uint8_t)byte << (24 - col);
           }
           if(numDouble) {
-            setPixel(x2, y1);
-          }
-          if(rep_enlarge) {
-            setPixel(x1, y2);
-            if(numDouble) {
-              setPixel(x2, y2);
-            }
+            bits >>= xGlyph;
+            bits2 = bits << 16;                                         // the columns past the first 16, drawn 30 columns on
           }
         }
-
-        byte <<= 1;
+        xRow = x + xGlyph;
+        if(mini != 0) {
+          // Half width: a screen column takes a pair of glyph columns
+          bits |= (bits << 1) & 0xFEFEFEFEu;                            // each column also takes the next one in its byte
+          bits >>= xGlyph;
+          bits |= bits << 1;
+          for(col=1; col<16; col++) {
+            uint32_t right = 0xFFFFFFFFu >> col;
+            bits = (bits & ~right) | ((bits << 1) & right);
+          }
+          xRow = x;
+        }
+        else if(numDouble) {
+          // 15/8 width from x-1: a gap after each glyph column but 0 and 8, then each column doubled; 16 columns fill the word, the next 16 come 30 columns on
+          for(col=15; col>0; col--) {
+            if(col & 7) {
+              uint32_t right = 0xFFFFFFFFu >> (col + 1);
+              bits = (bits & ~right) | ((bits & right) >> 1);
+            }
+          }
+          bits |= bits >> 1;
+          if(x == 0 && xOffset == 0) {
+            bits <<= 1;
+            xRow = 0;
+          }
+          else {
+            xRow = x - 1 + xOffset;
+          }
+        }
       }
-      if(rep_enlarge && row!=3 && row!=6 && row!=9 && row!=12) {
-        y++; //JM ENLARGE vv do not advance the row counter for four rows, to match the row height of the enlarge font
+      // y is the screen row; a row above the screen, below it or below the cleared box is left out
+      if(bits != 0 && y - y0 <= yNewMaxDx && y < SCREEN_HEIGHT) {
+        _showGlyphRow(xRow, y, bits | (bits >> (boldString == 1)), bltOp);
+      }
+      if(rep_enlarge && !secondRow) {
+        secondRow = true;
+      }
+      else if(bits2 != 0) {
+        secondRow = false;
+        y -= 2;                                                        // the columns left over are drawn on the same two screen rows
+      }
+      else {
+        secondRow = false;
+        if(rep_enlarge && (row==3 || row==6 || row==9 || row==12)) {
+          y--; //JM ENLARGE vv do not advance the row counter for four rows, to match the row height of the enlarge font
+        }
+        else if(mini != 0 && !((glyph->rowsAboveGlyph + row) & 1)) {
+          y--;
+        }
+        row++;
       }
     }
-    return x + boldString + (((doubling * (xGlyph + glyph->colsGlyph + endingCols)) >> mini) >> 3);        //JMmini
+    return xEnd;
   }
 
 
@@ -2146,7 +2203,11 @@ return res;
       //printf("---|%s|---\n", functionName);
 
     showFunctionNameItem = item;
+    #if defined(OPTION_LP_DP_TIMING)
+    showFunctionNameCounter = delayInMs * (10000 + longPressFactor) / 10000;  // LPFCT, so the preview outlasts the TO_CL_LONG stage it follows
+    #else // OPTION_LP_DP_TIMING
     showFunctionNameCounter = delayInMs;
+    #endif // OPTION_LP_DP_TIMING
 
 
     if(tam.alpha && ((item == ITM_BACKSPACE) || (item == ITM_T_LEFT_ARROW) || (item == ITM_T_RIGHT_ARROW))) {               // For smooth display in tam.alpha
@@ -2239,10 +2300,10 @@ return res;
   }
 
 
-  static void do_viewRegName(calcRegister_t regist,  char *prefix, int16_t *prefixWidth, char* endChar) { //using "=" for VIEW
+  static void do_viewRegName(calcRegister_t regist,  char *prefix, int16_t *prefixWidth, char* endChar, bool_t shiftGap) { //using "=" for VIEW; shiftGap only where the shift indicator shares the line
     //printf("========================== %i %s regist=%i %s %i\n", lastFuncNo(), lastFuncCatalogName(), regist, prefix, *prefixWidth);
     if(lastFuncNo() == ITM_AVIEW || lastFuncNo() == ITM_PROMPT) {
-      if(isShiftOffset) {
+      if(shiftGap) {
         strcpy(prefix, "  ");
         *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
       }
@@ -2254,29 +2315,29 @@ return res;
     }
 
     if(regist < REGISTER_X) {
-      sprintf(prefix, "%sR%02" PRIu16 STD_SPACE_4_PER_EM "%s" STD_SPACE_4_PER_EM, funcNameOffset_str, regist, endChar);
+      sprintf(prefix, "%sR%02" PRIu16 STD_SPACE_4_PER_EM "%s" STD_SPACE_4_PER_EM, shiftGap ? "  " : "", regist, endChar);
     }
     else if(regist <= LAST_SPARE_REGISTER) {
-      sprintf(prefix, "%s%c" STD_SPACE_4_PER_EM "%s" STD_SPACE_4_PER_EM, funcNameOffset_str, letteredRegisterName(regist), endChar);
+      sprintf(prefix, "%s%c" STD_SPACE_4_PER_EM "%s" STD_SPACE_4_PER_EM, shiftGap ? "  " : "", letteredRegisterName(regist), endChar);
     }
     else if(regist >= FIRST_LOCAL_REGISTER && regist <= LAST_LOCAL_REGISTER) {
-      sprintf(prefix, "%sR.%02" PRIu16 STD_SPACE_4_PER_EM "%s" STD_SPACE_4_PER_EM, funcNameOffset_str, (uint16_t)(regist - FIRST_LOCAL_REGISTER), endChar);
+      sprintf(prefix, "%sR.%02" PRIu16 STD_SPACE_4_PER_EM "%s" STD_SPACE_4_PER_EM, shiftGap ? "  " : "", (uint16_t)(regist - FIRST_LOCAL_REGISTER), endChar);
     }
     else if(FIRST_NAMED_VARIABLE <= regist && regist <= LAST_NAMED_VARIABLE) {
-      if(isShiftOffset) {
+      if(shiftGap) {
         strcpy(prefix, "  ");
       }
-      strcpy(prefix + (isShiftOffset ? 2 : 0), STD_LEFT_SINGLE_QUOTE);
-      memcpy(prefix + (isShiftOffset ? 4 : 2), allNamedVariables[regist - FIRST_NAMED_VARIABLE].variableName + 1, allNamedVariables[regist - FIRST_NAMED_VARIABLE].variableName[0]);
-      sprintf(prefix + (isShiftOffset ? 4 : 2) + allNamedVariables[regist - FIRST_NAMED_VARIABLE].variableName[0], STD_RIGHT_SINGLE_QUOTE STD_SPACE_4_PER_EM "%s" STD_SPACE_4_PER_EM, endChar);
+      strcpy(prefix + (shiftGap ? 2 : 0), STD_LEFT_SINGLE_QUOTE);
+      memcpy(prefix + (shiftGap ? 4 : 2), allNamedVariables[regist - FIRST_NAMED_VARIABLE].variableName + 1, allNamedVariables[regist - FIRST_NAMED_VARIABLE].variableName[0]);
+      sprintf(prefix + (shiftGap ? 4 : 2) + allNamedVariables[regist - FIRST_NAMED_VARIABLE].variableName[0], STD_RIGHT_SINGLE_QUOTE STD_SPACE_4_PER_EM "%s" STD_SPACE_4_PER_EM, endChar);
     }
     else if(FIRST_RESERVED_VARIABLE <= regist && regist <= LAST_RESERVED_VARIABLE) {
-      if(isShiftOffset) {
+      if(shiftGap) {
         strcpy(prefix, "  ");
       }
-      strcpy(prefix + (isShiftOffset ? 2 : 0), STD_LEFT_SINGLE_QUOTE);
-      memcpy(prefix + (isShiftOffset ? 4 : 2), allReservedVariables[regist - FIRST_RESERVED_VARIABLE].reservedVariableName + 1, allReservedVariables[regist - FIRST_RESERVED_VARIABLE].reservedVariableName[0]);
-      sprintf(prefix + (isShiftOffset ? 4 : 2) + allReservedVariables[regist - FIRST_RESERVED_VARIABLE].reservedVariableName[0], STD_RIGHT_SINGLE_QUOTE STD_SPACE_4_PER_EM "%s" STD_SPACE_4_PER_EM, endChar);
+      strcpy(prefix + (shiftGap ? 2 : 0), STD_LEFT_SINGLE_QUOTE);
+      memcpy(prefix + (shiftGap ? 4 : 2), allReservedVariables[regist - FIRST_RESERVED_VARIABLE].reservedVariableName + 1, allReservedVariables[regist - FIRST_RESERVED_VARIABLE].reservedVariableName[0]);
+      sprintf(prefix + (shiftGap ? 4 : 2) + allReservedVariables[regist - FIRST_RESERVED_VARIABLE].reservedVariableName[0], STD_RIGHT_SINGLE_QUOTE STD_SPACE_4_PER_EM "%s" STD_SPACE_4_PER_EM, endChar);
     }
     else {
       sprintf(prefix, "?" STD_SPACE_4_PER_EM "%s" STD_SPACE_4_PER_EM, endChar);
@@ -2285,20 +2346,20 @@ return res;
   }
 
   static void viewRegName(char *prefix, int16_t *prefixWidth) { //using "=" for VIEW
-    do_viewRegName(currentViewRegister, prefix, prefixWidth, "=");
+    do_viewRegName(currentViewRegister, prefix, prefixWidth, "=", isShiftOffset);
   }
 
   void viewRegName2(char *prefix, int16_t *prefixWidth) { //using ":" for SHOW
-    do_viewRegName(showRegis, prefix, prefixWidth, ":" );
+    do_viewRegName(showRegis, prefix, prefixWidth, ":" , isShiftOffset);
   }
 
   static void nameRegis(calcRegister_t regist, char *prefix) {
     int16_t prefixWidth;
-    do_viewRegName(regist, prefix, &prefixWidth, "");
+    do_viewRegName(regist, prefix, &prefixWidth, "", isShiftOffset);
   }
 
   static void viewStoRcl(char *prefix, int16_t *prefixWidth) {
-    do_viewRegName(lastSTORCL(), prefix, prefixWidth, ":");
+    do_viewRegName(lastSTORCL(), prefix, prefixWidth, ":", false);   // the X line has no shift indicator on it
     if(prefix[0]=='?') {
       prefix[0] = 0;
       prefixWidth = 0;
@@ -2474,6 +2535,17 @@ void createSubstrings(uint8_t number) {
   }
 
 
+  static void _fnShowRModeTI(char * prefix, int16_t *prefixWidth) {
+    prefix[0] = 0;
+    stringCopy(prefix, getRoundModeName(roundingMode, abbreviation));
+    stringCopy(prefix + stringByteLength(prefix), ": ");
+    stringCopy(prefix + stringByteLength(prefix), getRoundModeName(roundingMode, !abbreviation));
+    stringCopy(prefix + stringByteLength(prefix), ".");
+    *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
+    screenUpdatingMode |= SCRUPD_SKIP_STACK_ONE_TIME;
+  }
+
+
   void updateMatrixHeightCache(void) {
     int16_t prefixWidth = 0;
     char prefix[200];
@@ -2498,13 +2570,13 @@ void createSubstrings(uint8_t number) {
       const uint16_t rows = matrix.header.matrixRows;
       const uint16_t cols = matrix.header.matrixColumns;
       bool_t smallFont = (rows >= 5);
-      int16_t dummyVal[MATRIX_MAX_COLUMNS * (MATRIX_MAX_ROWS + 1) + 1] = {};
+      int16_t dummyVal[MATRIX_MAX_COLUMNS * (MATRIX_MAX_ROWS_ON_SHOW + 1) + 1] = {};   // the width call fills ON_SHOW rows
 
       bool_t allElementsInColAreIntegers[MATRIX_MAX_COLUMNS] = {};
       getRealMatrixIntegerColumns(&matrix, displayFormat, cols, 0, 0, rows, min(cols, MATRIX_MAX_COLUMNS), allElementsInColAreIntegers);
       // same rule as showRealMatrix, else the height cache reserves stack lines for a width the viewer does not draw
 
-      const int16_t mtxWidth = getRealMatrixColumnWidths(&matrix, prefixWidth, &numericFont, dummyVal, dummyVal + MATRIX_MAX_COLUMNS, dummyVal + (MATRIX_MAX_ROWS + 1) * MATRIX_MAX_COLUMNS, cols > MATRIX_MAX_COLUMNS ? MATRIX_MAX_COLUMNS : cols, allElementsInColAreIntegers);
+      const int16_t mtxWidth = getRealMatrixColumnWidths(&matrix, prefixWidth, true, &numericFont, dummyVal, dummyVal + MATRIX_MAX_COLUMNS, dummyVal + (MATRIX_MAX_ROWS_ON_SHOW + 1) * MATRIX_MAX_COLUMNS, cols > MATRIX_MAX_COLUMNS ? MATRIX_MAX_COLUMNS : cols, allElementsInColAreIntegers);
       if(abs(mtxWidth) > MATRIX_LINE_WIDTH) {
         smallFont = true;
       }
@@ -2544,8 +2616,8 @@ void createSubstrings(uint8_t number) {
       const uint16_t rows = matrix.header.matrixRows;
       const uint16_t cols = matrix.header.matrixColumns;
       bool_t smallFont = (rows >= 5);
-      int16_t dummyVal[MATRIX_MAX_COLUMNS * (MATRIX_MAX_ROWS * 2 + 3) + 1] = {};
-      const int16_t mtxWidth = getComplexMatrixColumnWidths(&matrix, prefixWidth, &numericFont, dummyVal, dummyVal + MATRIX_MAX_COLUMNS, dummyVal + MATRIX_MAX_COLUMNS * 2, dummyVal + MATRIX_MAX_COLUMNS * 3, dummyVal + MATRIX_MAX_COLUMNS * (MATRIX_MAX_ROWS + 3), dummyVal + MATRIX_MAX_COLUMNS * (MATRIX_MAX_ROWS * 2 + 3), cols > MATRIX_MAX_COLUMNS ? MATRIX_MAX_COLUMNS : cols,  getComplexRegisterAngularMode(REGISTER_X), getComplexRegisterPolarMode(REGISTER_X) == amPolar);
+      int16_t dummyVal[MATRIX_MAX_COLUMNS * (MATRIX_MAX_ROWS_ON_SHOW * 2 + 3) + 1] = {};   // the width call fills ON_SHOW rows
+      const int16_t mtxWidth = getComplexMatrixColumnWidths(&matrix, prefixWidth, true, &numericFont, dummyVal, dummyVal + MATRIX_MAX_COLUMNS, dummyVal + MATRIX_MAX_COLUMNS * 2, dummyVal + MATRIX_MAX_COLUMNS * 3, dummyVal + MATRIX_MAX_COLUMNS * (MATRIX_MAX_ROWS_ON_SHOW + 3), dummyVal + MATRIX_MAX_COLUMNS * (MATRIX_MAX_ROWS_ON_SHOW * 2 + 3), cols > MATRIX_MAX_COLUMNS ? MATRIX_MAX_COLUMNS : cols,  getComplexRegisterAngularMode(REGISTER_X), getComplexRegisterPolarMode(REGISTER_X) == amPolar);
       if(mtxWidth > MATRIX_LINE_WIDTH) {
         smallFont = true;
       }
@@ -3242,28 +3314,28 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
          //handle Reg Pos Y
          if(displayStack == 1 && calcMode != CM_NIM) {
-           shortIntegerToDisplayString(Register_X, tmpString, true, _baseModeBaseY());
+           shortIntegerToDisplayString(Register_X, tmpString, true, _baseModeBaseY(), SCREEN_WIDTH);
            _showBaseModeLine(REGISTER_Y, tmpString, "  X: ", false);
          }
 
 
          //handle reg pos Z
          if((displayStack == 1 && calcMode != CM_NIM) || displayStack == 2){
-           shortIntegerToDisplayString(Register_X, tmpString, true, _baseModeBaseZ());
+           shortIntegerToDisplayString(Register_X, tmpString, true, _baseModeBaseZ(), SCREEN_WIDTH);
            _showBaseModeLine(REGISTER_Z, tmpString, "  X: ", false);
          }
 
 
          //handle reg pos T
-         if((displayStack == 1 && calcMode != CM_NIM) || displayStack == 2 || displayStack == 3) {
-           shortIntegerToDisplayString(Register_X, tmpString, true,  _baseModeBaseT());
+         if(((displayStack == 1 && calcMode != CM_NIM) || displayStack == 2 || displayStack == 3) && temporaryInformation != TI_VIEW_REGISTER) {   // a VIEW line owns the T row while it is up
+           shortIntegerToDisplayString(Register_X, tmpString, true,  _baseModeBaseT(), SCREEN_WIDTH);
            _showBaseModeLine(REGISTER_T, tmpString, "  X: ", false);
          }
 
        }
        else if(getRegisterDataType(REGISTER_X) == dtLongInteger && !solverEstimatesUsed) {
          //handle longinteger in pos T
-         if((displayStack == 1 && calcMode != CM_NIM) || displayStack == 2 || displayStack == 3) {
+         if(((displayStack == 1 && calcMode != CM_NIM) || displayStack == 2 || displayStack == 3) && temporaryInformation != TI_VIEW_REGISTER) {   // a VIEW line owns the T row while it is up
            longIntegerToHexDisplayString(REGISTER_X, tmpString, true,  _baseModeBaseT(), SCREEN_WIDTH - (isShiftOffset ? 10 : 0));
            _showBaseModeLine(REGISTER_T, tmpString, "  X:" STD_INTEGER_Z ": ", true);
          }
@@ -3403,6 +3475,11 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
           w = stringWidth(tmpString, &standardFont, true, true);
           showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
         }
+      }
+
+      else if(temporaryInformation == TI_ROUNDING_MODE && regist == REGISTER_X) {
+        _fnShowRModeTI(prefix, &prefixWidth);
+        showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + TEMPORARY_INFO_OFFSET + 6, vmNormal, true, true);
       }
 
       else if(temporaryInformation == TI_BATTV && regist == REGISTER_X) {
@@ -5042,8 +5119,8 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
           //JM REGISTER STRING LARGE FONTS
           #if defined(STACK_X_STR_LRG_FONT)
             //This is for X
-            w = stringWidthWithLimitC47(REGISTER_STRING_DATA(regist), stdnumEnlarge, nocompress, SCREEN_WIDTH, false, true);
-            if(temporaryInformation != TI_VIEW_REGISTER && regist == REGISTER_X && w < SCREEN_WIDTH) {
+            w = stringWidthWithLimitC47(REGISTER_STRING_DATA(regist), stdnumEnlarge, nocompress, SCREEN_WIDTH - prefixWidth, false, true);
+            if(origRegist != REGISTER_T && regist == REGISTER_X && w < SCREEN_WIDTH - prefixWidth) {
               lineWidth = w; //slighly incorrect if special characters are there as well.
               showStringC47(REGISTER_STRING_DATA(regist), stdnumEnlarge, nocompress, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE + 6 - checkHPoffset, vmNormal, false, true);
             }
@@ -5052,12 +5129,21 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
 
           #if defined(STACK_X_STR_MED_FONT)
             //This is for X
-            if(temporaryInformation != TI_VIEW_REGISTER && regist == REGISTER_X && (w = stringWidthWithLimitC47(REGISTER_STRING_DATA(regist), numHalf, nocompress, SCREEN_WIDTH, false, true)) < SCREEN_WIDTH) {
+            if(origRegist != REGISTER_T && regist == REGISTER_X && (w = stringWidthWithLimitC47(REGISTER_STRING_DATA(regist), numHalf, nocompress, SCREEN_WIDTH - prefixWidth, false, true)) < SCREEN_WIDTH - prefixWidth) {
               lineWidth = w;
               showStringC47(REGISTER_STRING_DATA(regist), numHalf, nocompress, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE + 6 - checkHPoffset, vmNormal, false, true);
             }
             else                                                                  //JM
           #endif //STACK_X_STR_MED_FONT
+
+          #if defined(STACK_X_STR_LRG_FONT)
+            //This is for the VIEW line, drawn after the register name and not at the right margin
+            if(temporaryInformation == TI_VIEW_REGISTER && origRegist == REGISTER_T && (w = stringWidthWithLimitC47(REGISTER_STRING_DATA(regist), stdnumEnlarge, nocompress, SCREEN_WIDTH - prefixWidth, false, true)) < SCREEN_WIDTH - prefixWidth) {
+              lineWidth = w;
+              showStringC47(REGISTER_STRING_DATA(regist), stdnumEnlarge, nocompress, prefixWidth, baseY + 2 - checkHPoffset, vmNormal, false, true);
+            }
+            else                                                                  //JM
+          #endif // STACK_X_STR_LRG_FONT
 
           #if defined(STACK_STR_MED_FONT)
             //This is for Y, Z & T
@@ -5136,26 +5222,13 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
 
 /*Main type dtShortInteger*/
         else if(getRegisterDataType(regist) == dtShortInteger) {
-          {
-            shortIntegerToDisplayString(regist, tmpString, true, noBaseOverride);
-            showString(tmpString, fontForShortInteger, SCREEN_WIDTH - stringWidth(tmpString, fontForShortInteger, false, true), baseY + (fontForShortInteger == &standardFont ? 6 : 0) - (fontForShortInteger == &numericFont ? checkHPoffset : 0), vmNormal, false, true);
-
-            if(regist == REGISTER_X) {
-              displayBaseMode(regist);
-              displayTrueFalse(regist);
-            }
-            if(temporaryInformation == TI_VIEW_REGISTER && origRegist == REGISTER_T) {
-              lcd_fill_rect(0, Y_POSITION_OF_REGISTER_T_LINE, 50, REGISTER_LINE_HEIGHT, LCD_SET_VALUE);
-            }
-          }
-
           if(!(temporaryInformation == TI_NO_INFO && currentInputVariable != INVALID_VARIABLE)) {
             prefix[0] = 0;
           }
           tmpString[0]=0;
           if(regist == REGISTER_X && (temporaryInformation == TI_DATA_LOSS || temporaryInformation == TI_DATA_NEG_OVRFL)) {
             // show Overflow indication for current X register operation
-            shortIntegerToDisplayString(regist, tmpString, true, noBaseOverride);
+            shortIntegerToDisplayString(regist, tmpString, true, noBaseOverride, SCREEN_WIDTH);
             if(temporaryInformation == TI_DATA_LOSS) {
               sprintf(prefix, "Ovrfl>%ubits:", shortIntegerWordSize);
             }
@@ -5184,15 +5257,24 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
           else if(temporaryInformation == TI_STORCL && regist == REGISTER_X) {
             viewStoRcl(prefix, &prefixWidth);
           }
-          if(prefixWidth > 0) {
+          {
+            shortIntegerToDisplayString(regist, tmpString, true, noBaseOverride, SCREEN_WIDTH - prefixWidth);
+            if(stringWidth(tmpString, fontForShortInteger, false, false) >= SCREEN_WIDTH - prefixWidth) {   // no font fits beside the temporary information, so the digits take the line and the prefix goes
+              prefixWidth = 0;
+            }
+            if(temporaryInformation == TI_VIEW_REGISTER && origRegist == REGISTER_T) {
+              lcd_fill_rect(0, Y_POSITION_OF_REGISTER_T_LINE, 50, REGISTER_LINE_HEIGHT, LCD_SET_VALUE);
+            }
+            showString(tmpString, fontForShortInteger, (temporaryInformation == TI_VIEW_REGISTER && origRegist == REGISTER_T) ? prefixWidth : SCREEN_WIDTH - stringWidth(tmpString, fontForShortInteger, false, true), baseY + (fontForShortInteger == &standardFont ? 6 : 0) - (fontForShortInteger == &numericFont ? checkHPoffset : 0), vmNormal, false, true);
+
             if(regist == REGISTER_X) {
-              showString(prefix, &standardFont, 1,
-              baseY + TEMPORARY_INFO_OFFSET, vmNormal, prefixPre, prefixPost);
+              displayBaseMode(regist);
+              displayTrueFalse(regist);
             }
-            if(tmpString[0] != 0) {
-              shortIntegerToDisplayString(regist, tmpString, true, noBaseOverride);
-            }
-            showString(tmpString, fontForShortInteger, SCREEN_WIDTH - stringWidth(tmpString, fontForShortInteger, false, true), baseY + (fontForShortInteger == &standardFont ? 6 : 0) - (fontForShortInteger == &numericFont ? checkHPoffset : 0), vmNormal, false, true);
+          }
+          if(prefixWidth > 0) {
+            showString(prefix, &standardFont, 1,
+            baseY + TEMPORARY_INFO_OFFSET, vmNormal, prefixPre, prefixPost);
           }
       }
 
@@ -5335,12 +5417,12 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
           if(prefixWidth > 0) {
             showString(prefix, &standardFont, 1, baseY + TEMPORARY_INFO_OFFSET, vmNormal, prefixPre, prefixPost);
           }
-          if(w <= SCREEN_WIDTH) {
+          if(w <= SCREEN_WIDTH - prefixWidth) {
             showString(tmpString, &numericFont, (temporaryInformation == TI_VIEW_REGISTER && origRegist == REGISTER_T) ? prefixWidth : SCREEN_WIDTH - w, baseY - checkHPoffset, vmNormal, false, true);
           }
           else {
             w = stringWidth(tmpString, &standardFont, false, true);
-            if(w > SCREEN_WIDTH) {
+            if(w > SCREEN_WIDTH - prefixWidth) {
               #if (EXTRA_INFO_ON_CALC_ERROR == 1)
                 moreInfoOnError("In function _refreshRegisterLine:", "Long integer representation too wide!", tmpString, NULL);
               #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -5369,7 +5451,13 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
           if(prefixWidth > 0) {
             showString(prefix, &standardFont, 1, baseY + TEMPORARY_INFO_OFFSET, vmNormal, prefixPre, prefixPost);
           }
-          showString(tmpString, &numericFont, (temporaryInformation == TI_VIEW_REGISTER && origRegist == REGISTER_T) ? prefixWidth : SCREEN_WIDTH - w, baseY - checkHPoffset, vmNormal, false, true);
+          if(w <= SCREEN_WIDTH - prefixWidth) {
+            showString(tmpString, &numericFont, (temporaryInformation == TI_VIEW_REGISTER && origRegist == REGISTER_T) ? prefixWidth : SCREEN_WIDTH - w, baseY - checkHPoffset, vmNormal, false, true);
+          }
+          else {
+            w = stringWidth(tmpString, &standardFont, false, true);
+            showString(tmpString, &standardFont, (temporaryInformation == TI_VIEW_REGISTER && origRegist == REGISTER_T) ? prefixWidth : SCREEN_WIDTH - w, baseY + 6, vmNormal, false, true);
+          }
         }
 
 /*Main type dtDate*/
@@ -6214,7 +6302,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
                                char sss[500] = "";
                                strcpy(sss, get_binary_bits(screenUpdatingMode, 8));
                                convertUInt64ToShortIntegerRegister(0, screenUpdatingMode, 2, TEMP_REGISTER_1 );
-                               shortIntegerToDisplayString(TEMP_REGISTER_1, ttt, false, noBaseOverride);
+                               shortIntegerToDisplayString(TEMP_REGISTER_1, ttt, false, noBaseOverride, SCREEN_WIDTH);
                                stringToASCII(ttt, sss);
                                strcpy(ttt, "");
                                if(screenUpdatingMode == 0) {
@@ -6440,7 +6528,9 @@ void fnSNAP(uint16_t unusedButMandatoryParameter) {
     testClockFrozen = true;           // the capture carries the date and time, so the test build reads a fixed clock and the stored hashes stay put
   #endif // TESTSUITE_BUILD
   if(!snapSkipRefresh && !screenHoldsDrawnPixels) {   //--snapskiprefresh, or a screen a program drew, keeps the raw graphic screen
-    screenUpdatingMode = SCRUPD_AUTO;
+    if(temporaryInformation != TI_SHOWNOTHING) {      //a SHOW page is painted once, and SCRUPD_AUTO disarms the guard in _refreshNormalScreen that keeps it on screen
+      screenUpdatingMode = SCRUPD_AUTO;
+    }
     refreshScreen(80);
   }
 

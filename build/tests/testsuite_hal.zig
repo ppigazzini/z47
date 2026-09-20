@@ -81,24 +81,22 @@ pub export fn bitblt24(x_in: u32, dx: u32, y: u32, val: u32, blt_op: c_int, fill
     const bit_off: u5 = @intCast(x & 7);
     const lowmask = (@as(u32, 1) << @as(u5, @intCast(dx))) -% 1;
     const bytes_needed = (@as(u32, bit_off) + dx + 7) / 8;
-    var srcbits: u32 = undefined;
-    if (fill == BLT_SET and blt_op != BLT_XOR) {
-        srcbits = if (blt_op == BLT_ANDN) lowmask << bit_off else 0;
-    } else {
-        srcbits = (val & lowmask) << bit_off;
-    }
+    const srcbits: u32 = (val & lowmask) << bit_off;
+    // BLT_SET: the dx columns are cleared before BLT_OR and set before BLT_ANDN
+    const fillbits: u32 = if (fill == BLT_SET) lowmask << bit_off else 0;
     const srcbytes = [4]u8{ @truncate(srcbits), @truncate(srcbits >> 8), @truncate(srcbits >> 16), @truncate(srcbits >> 24) };
+    const fillbytes = [4]u8{ @truncate(fillbits), @truncate(fillbits >> 8), @truncate(fillbits >> 16), @truncate(fillbits >> 24) };
     const base = y * (LCD_LINE_SIZE + 2) + byte_i + 2;
     var i: u32 = 0;
     switch (blt_op) {
         BLT_OR => while (i < bytes_needed) : (i += 1) {
-            lcd_buffer[base + i] |= srcbytes[i];
+            lcd_buffer[base + i] = (lcd_buffer[base + i] & ~fillbytes[i]) | srcbytes[i];
         },
         BLT_XOR => while (i < bytes_needed) : (i += 1) {
             lcd_buffer[base + i] ^= srcbytes[i];
         },
         BLT_ANDN => while (i < bytes_needed) : (i += 1) {
-            lcd_buffer[base + i] &= ~srcbytes[i];
+            lcd_buffer[base + i] = (lcd_buffer[base + i] | fillbytes[i]) & ~srcbytes[i];
         },
         else => return,
     }

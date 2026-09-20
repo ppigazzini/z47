@@ -41,6 +41,12 @@ const PRN_LOCALr: u16 = 4;
 const PRN_NAMEDr: u16 = 5;
 const PRN_Xr: u16 = 6;
 const PRN_XYr: u16 = 7;
+const PRN_XFN: u16 = 9;
+const CSV_NEWLINE = "\n";
+const option_xfn_1000: bool = frontier_build_options.option_xfn_1000;
+
+extern fn registerFMAOutputPlainString(regist: i16, prefix: [*c]const u8, displayString: [*c]u8) bool;
+extern var tmpString: [*c]u8;
 const PRN_TMP: u16 = 8;
 
 const TEMP_REGISTER_1: u16 = 135;
@@ -180,6 +186,7 @@ const PrintAllRegsContext = struct {
             PRN_ALL => self.printerOptionAll(),
             PRN_REGS => self.printerOptionRegs(),
             PRN_Xr => self.printerOptionXr(),
+            PRN_XFN => self.printerOptionXfn(),
             PRN_STK => self.printerOptionStack(),
             PRN_XYr => self.printerOptionXYr(),
             else => {},
@@ -213,6 +220,16 @@ const PrintAllRegsContext = struct {
         frontier_print.printReg(@as(u16, @intCast(REGISTER_X)), null, false, LINE_FULL, false);
     }
 
+    // Every digit of X x Y + Z, the string the .d47 export writes; it wraps over
+    // paper lines the way a long integer does under PRN_Xr.
+    fn printerOptionXfn(self: *PrintAllRegsContext) void {
+        _ = self;
+        if (comptime !option_xfn_1000) return;
+        if (registerFMAOutputPlainString(@intCast(REGISTER_X), "", tmpString)) {
+            frontier_print._printTmpString(null, LINE_FULL);
+        }
+    }
+
     fn printerOptionStack(self: *PrintAllRegsContext) void {
         _ = self;
         const stack_top: u16 = if (getSystemFlag(FLAG_SSIZE8)) REGISTER_D else REGISTER_T;
@@ -242,9 +259,19 @@ const PrintAllRegsContext = struct {
             PRN_LOCALr => self.csvOptionLocal(),
             PRN_NAMEDr => self.csvOptionNamed(),
             PRN_Xr => printAllRegsCsvOut(@as(i16, @intCast(REGISTER_X)), @as(i16, @intCast(REGISTER_X)), false),
+            PRN_XFN => csvOptionXfn(),
             PRN_TMP => printAllRegsCsvOut(@as(i16, @intCast(TEMP_REGISTER_1)), @as(i16, @intCast(TEMP_REGISTER_1)), false),
             PRN_XYr => printAllRegsCsvOut(@as(i16, @intCast(REGISTER_X)), @as(i16, @intCast(REGISTER_Y)), true),
             else => {},
+        }
+    }
+
+    // One row, every digit of X x Y + Z.
+    fn csvOptionXfn() void {
+        if (comptime !option_xfn_1000) return;
+        if (registerFMAOutputPlainString(@intCast(REGISTER_X), "", tmpString)) {
+            _ = frontier_graph_text.export_append_line(tmpString);
+            _ = frontier_graph_text.export_append_line(CSV_NEWLINE);
         }
     }
 

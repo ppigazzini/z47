@@ -82,6 +82,7 @@ const LAST_LOCAL_LABEL: u8 = 123;
 const FLAG_X: u8 = 100;
 const FLAG_K: u8 = 111;
 const FIRST_LOCAL_FLAG: u8 = 112;
+const SCREEN_WIDTH: i16 = 400; // defines.h
 const LAST_LOCAL_FLAG: u8 = 143;
 const FLAG_M: u8 = 211;
 const FLAG_W: u8 = 224;
@@ -662,7 +663,7 @@ fn decodeLiteral(literalAddress_arg: [*c]u8) void {
             reallocateRegister(TEMP_REGISTER_1, dtShortInteger, 0, literalAddress[0]);
             literalAddress += 1;
             _ = frontier_char_string.xcopy(getRegisterDataPointer(TEMP_REGISTER_1), @ptrCast(literalAddress), toBytes(SHORT_INTEGER_SIZE_IN_BLOCKS));
-            frontier_display.shortIntegerToDisplayString(TEMP_REGISTER_1, tmpString, @intFromBool(false), noBaseOverride);
+            frontier_display.shortIntegerToDisplayString(TEMP_REGISTER_1, tmpString, @intFromBool(false), noBaseOverride, SCREEN_WIDTH);
         },
 
         BINARY_REAL34 => {

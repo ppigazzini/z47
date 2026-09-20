@@ -24,6 +24,16 @@ pub fn addSpaceAfterPrograms(size: u16) void {
     runtime.freeProgramBytes -%= size;
 }
 
+// The last step of the last program, walked from that program's own first step: a
+// step whose last two bytes happen to spell END is not the END itself.
+fn findLastStep() [*c]const u8 {
+    var step = runtime.programList[@as(usize, runtime.numberOfPrograms) - 1].instructionPointer;
+    while (!(runtime.isAtEndOfProgram(step) or runtime.isAtEndOfPrograms(step))) { // END or .END.
+        step = runtime.findNextStep(step);
+    }
+    return step;
+}
+
 pub fn addEndNeeded() bool {
     if (runtime.firstFreeProgramByte <= runtime.beginOfProgramMemory) {
         return false;
@@ -31,8 +41,18 @@ pub fn addEndNeeded() bool {
     if (runtime.firstFreeProgramByte == runtime.beginOfProgramMemory + 1) {
         return true;
     }
-    if (runtime.isAtEndOfProgram(runtime.firstFreeProgramByte - 2)) {
+    if (runtime.isAtEndOfProgram(findLastStep())) {
         return false;
     }
     return true;
+}
+
+// The program memory holds one empty program -- a lone END -- which READP drops
+// before loading, rather than leaving it in front of the new one.
+pub fn delEndNeeded() bool {
+    if (runtime.firstFreeProgramByte <= runtime.beginOfProgramMemory) {
+        return false;
+    }
+    // the last program's own first step. A step ending 133 178 is not taken for a 2nd END
+    return runtime.isAtEndOfProgram(runtime.programList[@as(usize, runtime.numberOfPrograms) - 1].instructionPointer);
 }

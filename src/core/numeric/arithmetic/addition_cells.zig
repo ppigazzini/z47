@@ -445,7 +445,7 @@ pub export fn addStriCxma() callconv(.c) void {
 
 /// Y(string) + X(short integer) ==> X(string)
 pub export fn addStriShoI() callconv(.c) void {
-    runtime.shortIntegerToDisplayString(runtime.REGISTER_X, runtime.tmpString, false, no_base_override);
+    runtime.shortIntegerToDisplayString(runtime.REGISTER_X, runtime.tmpString, false, no_base_override, SCREEN_WIDTH);
     addString(runtime.tmpString);
 }
 

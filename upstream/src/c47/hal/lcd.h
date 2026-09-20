@@ -75,6 +75,7 @@ static inline void print_caller(const char *format, ...) {}
 
   /**
   * Blits dx bits from val at position x, y.
+  * Bit dx-1 of val maps to column x and bit 0 to column x+dx-1. Bits above dx-1 are ignored.
   *
   * \param[in] x       Position x
   * \param[in] dx      (1-24) Width x
@@ -85,11 +86,8 @@ static inline void print_caller(const char *format, ...) {}
   *
   * Value of fill doesn't apply for BLT_XOR.
   *
-  * BLT_NONE doesn't affect any blit operation.
-  * BLT_SET affects src value of blit operation:
-  *
-  * for BLT_OR src = 0 over width of operation (i.e. dx)
-  * for BLT_ANDN src = 1 over width of operation (i.e. dx)
+  * With BLT_NONE only the pixels where val has a 1 are written: black for BLT_OR, white for BLT_ANDN and inverted for BLT_XOR.
+  * With BLT_SET the pixels where val has a 0 are written as well: white for BLT_OR and black for BLT_ANDN.
   */
   void bitblt24 ( uint32_t x, uint32_t dx, uint32_t y, uint32_t val, int blt_op, int fill );
 

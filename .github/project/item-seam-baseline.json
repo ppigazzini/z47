@@ -1422,44 +1422,44 @@
    "9876"
   ],
   "1317": [
-   "&itemToBeCoded",
-   "9876"
+   "ext_fnSetRoundingMode",
+   "0"
   ],
   "1318": [
-   "&itemToBeCoded",
-   "9876"
+   "ext_fnSetRoundingMode",
+   "1"
   ],
   "1319": [
-   "&itemToBeCoded",
-   "9876"
+   "ext_fnSetRoundingMode",
+   "2"
   ],
   "132": [
    "ext_fnConstant",
    "4"
   ],
   "1320": [
-   "&itemToBeCoded",
-   "9876"
+   "ext_fnSetRoundingMode",
+   "3"
   ],
   "1321": [
-   "&itemToBeCoded",
-   "9876"
+   "ext_fnSetRoundingMode",
+   "4"
   ],
   "1322": [
-   "&itemToBeCoded",
-   "9876"
+   "ext_fnSetRoundingMode",
+   "5"
   ],
   "1323": [
-   "&itemToBeCoded",
-   "9876"
+   "ext_fnSetRoundingMode",
+   "6"
   ],
   "1324": [
-   "&itemToBeCoded",
+   "ext_fnSetRoundingModeM",
    "9876"
   ],
   "1325": [
-   "&itemToBeCoded",
-   "9876"
+   "ext_fnSetRoundingModeRegist",
+   "100"
   ],
   "1326": [
    "&itemToBeCoded",
@@ -1470,24 +1470,24 @@
    "9876"
   ],
   "1328": [
-   "&itemToBeCoded",
+   "if (option_lp_dp_timing) ext_fnGetLPFCT else &itemToBeCoded",
    "9876"
   ],
   "1329": [
-   "&itemToBeCoded",
-   "9876"
+   "if (option_lp_dp_timing) ext_fnSetLPFCT else &itemToBeCoded",
+   "100"
   ],
   "133": [
    "ext_fnConstant",
    "5"
   ],
   "1330": [
-   "&itemToBeCoded",
+   "if (option_lp_dp_timing) ext_fnGetDPFCT else &itemToBeCoded",
    "9876"
   ],
   "1331": [
-   "&itemToBeCoded",
-   "9876"
+   "if (option_lp_dp_timing) ext_fnSetDPFCT else &itemToBeCoded",
+   "100"
   ],
   "1332": [
    "&itemToBeCoded",
@@ -7538,8 +7538,8 @@
    "10001"
   ],
   "2694": [
-   "&itemToBeCoded",
-   "9876"
+   "if (option_xfn_1000) ext_fnP_All_Regs else &itemToBeCoded",
+   "9"
   ],
   "2695": [
    "ext_fnP_Char",

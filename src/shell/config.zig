@@ -56,6 +56,7 @@ const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 const is_testsuite_build: bool = frontier_build_options.is_testsuite_build;
 const ir_printing: bool = frontier_build_options.ir_printing;
 const option_samplepgms: bool = frontier_build_options.option_samplepgms;
+const option_lp_dp_timing: bool = frontier_build_options.option_lp_dp_timing;
 // CALCMODEL == USER_R47 (66): the R47 personality, which selects among the four
 // R47 keyboard layouts instead of the C47/DM42 pair.
 const is_r47: bool = frontier_build_options.calcmodel == 66;
@@ -193,6 +194,7 @@ const TI_DISP_JULIAN_WOY: u8 = 119;
 const TI_NO_INFO: u8 = 0;
 const TI_RESET: u8 = 8;
 const TI_BYTES: u8 = 108;
+const TI_ROUNDING_MODE: u8 = 148;
 const TI_BITS: u8 = 109;
 const TI_BATTV: u8 = 78;
 const TI_ARE_YOU_SURE: u8 = 9;
@@ -212,6 +214,22 @@ pub fn admValue() u8 {
 
 const RM_HALF_EVEN: u8 = 0;
 const RM_HALF_UP: u8 = 1;
+
+// STD_* macro byte sequences (fonts.h), for the rounding-mode abbreviations.
+const STD_ONE_HALF = "\x80\xbd";
+const STD_UP_ARROW = "\xa1\x91";
+const STD_DOWN_ARROW = "\xa1\x93";
+const STD_LEFT_ARROW = "\xa1\x90";
+const STD_RIGHT_ARROW = "\xa1\x92";
+const STD_MAT_TL = "\xa3\xa1";
+const STD_MAT_TR = "\xa3\xa4";
+const STD_MAT_BL = "\xa3\xa3";
+const STD_MAT_BR = "\xa3\xa6";
+
+// Row 7 is "In function %s: %s %hd is not defined! Must be from 0 to %hu".
+const SIZE_OF_EACH_BUG_SCREEN_MESSAGE: usize = 100;
+const bugMsgNotDefinedMustBe: usize = 7;
+const commonBugScreenMessages = @extern([*c]const [SIZE_OF_EACH_BUG_SCREEN_MESSAGE]u8, .{ .name = "commonBugScreenMessages" });
 
 // roundingModeTable[] -> enum rounding values.
 const DEC_ROUND_HALF_EVEN: c_int = 3;
@@ -324,6 +342,7 @@ const MNU_EE: i16 = 3053;
 const MNU_RIBBONS: i16 = 3115;
 const MNU_DEV: i16 = 3050;
 const MNU_YESNO: i16 = 3144;
+const MNU_RMODE: i16 = 3152;
 const MNU_HOME: i16 = 3070;
 const MNU_MyMenu: i16 = 3090;
 
@@ -725,6 +744,8 @@ extern var fractionDigits: u8;
 extern var dispBase: u8;
 extern var denMax: u32;
 extern var graMod: u8;
+extern var longPressFactor: i16;
+extern var doublePressFactor: i16;
 extern var currentAngularMode: c_int;
 extern var displayStack: u8;
 extern var cachedDisplayStack: u8;
@@ -1468,9 +1489,48 @@ pub export fn fnFreeMemory(unusedButMandatoryParameter: u16) callconv(.c) void {
     temporaryInformation = TI_BYTES;
 }
 
+// Rounding mode text, indexed by the RM_* values. The abbreviation is the glyph
+// group the flag browser and the temporary information line display.
+const RoundingModeName = struct { name: [*:0]const u8, abbreviation: [*:0]const u8 };
+const roundingModeName = [7]RoundingModeName{
+    .{ .name = "round half even", .abbreviation = STD_ONE_HALF ++ "E" }, // RM_HALF_EVEN
+    .{ .name = "round half up", .abbreviation = STD_ONE_HALF ++ STD_UP_ARROW }, // RM_HALF_UP
+    .{ .name = "round half down", .abbreviation = STD_ONE_HALF ++ STD_DOWN_ARROW }, // RM_HALF_DOWN
+    .{ .name = "round away from zero", .abbreviation = STD_LEFT_ARROW ++ "0" ++ STD_RIGHT_ARROW }, // RM_UP
+    .{ .name = "round towards zero", .abbreviation = STD_RIGHT_ARROW ++ "0" ++ STD_LEFT_ARROW }, // RM_DOWN
+    .{ .name = "ceiling", .abbreviation = STD_MAT_TL ++ "x" ++ STD_MAT_TR }, // RM_CEIL
+    .{ .name = "floor", .abbreviation = STD_MAT_BL ++ "x" ++ STD_MAT_BR }, // RM_FLOOR
+};
+
+/// The text of a rounding mode: the display glyphs when abbreviated, else the full name.
+pub export fn getRoundModeName(RM: u16, abbreviated: bool_t) callconv(.c) [*:0]const u8 {
+    if (RM >= roundingModeName.len) {
+        _ = sprintf(errorMessage, @ptrCast(&commonBugScreenMessages[bugMsgNotDefinedMustBe]), "getRoundModeName", "rounding mode", @as(c_int, RM), @as(c_int, roundingModeName.len - 1));
+        frontier_error.displayBugScreen(@ptrCast(errorMessage));
+        return "???";
+    }
+    const row = roundingModeName[RM];
+    return if (abbreviated) row.abbreviation else row.name;
+}
+
 pub export fn fnGetRoundingMode(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     frontier_addons.fnIntInputLongint(@intCast(roundingMode));
+    temporaryInformation = TI_ROUNDING_MODE;
+}
+
+pub export fn fnSetRoundingModeM(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
+    frontier_softmenus.showSoftmenu(-MNU_RMODE);
+}
+
+pub export fn fnSetRoundingModeRegist(regist: u16) callconv(.c) void {
+    var value: u32 = undefined;
+    if (frontier_register_value_conversions.getRegisterAsUint32Param(regist, &value)) {
+        frontend_settings.run(.set_rounding_mode, @intCast(@min(value, 6)));
+    } else if (lastErrorCode == ERROR_NONE) {
+        frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+    }
 }
 
 // Bound a short integer word size arriving from a file. WSIZE's tamMinMax bounds the interactive path; the
@@ -1630,6 +1690,54 @@ pub export fn fnSetGRAMOD(regist: u16) callconv(.c) void {
     } else if (lastErrorCode == ERROR_NONE) {
         frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
     }
+}
+
+// LP% and DP%: the long-press and double-press timeouts as a percentage of their
+// nominal delay. The factor held in the global is that percentage minus 100, times
+// 100, so 0 is the nominal delay and a file without the key restores it.
+fn getPressFactor(factor: i16) void {
+    var value: real_t = undefined;
+
+    liftStack();
+    int32ToReal(10000 + @as(i32, factor), &value);
+    value.exponent -= 2; // value = value / 10000 * 100
+    frontier_register_value_conversions.convertRealToResultRegister(&value, REGISTER_X, amNone);
+    setSystemFlag(FLAG_ASLIFT);
+}
+
+fn setPressFactor(regist: u16, factor: *i16) void {
+    var value: real_t = undefined;
+    if (frontier_register_value_conversions.getRegisterAsReal(@intCast(regist), &value)) {
+        value.exponent += 2; // value = value * 10000 / 100
+        const scaled = frontier_real_type.realToInt32C47(&value, null);
+        if (scaled >= 4000 and scaled <= 15000) {
+            factor.* = @intCast(scaled - 10000);
+        } else {
+            frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        }
+    }
+}
+
+pub export fn fnGetLPFCT(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
+    if (comptime !option_lp_dp_timing) return;
+    getPressFactor(longPressFactor);
+}
+
+pub export fn fnSetLPFCT(regist: u16) callconv(.c) void {
+    if (comptime !option_lp_dp_timing) return;
+    setPressFactor(regist, &longPressFactor);
+}
+
+pub export fn fnGetDPFCT(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
+    if (comptime !option_lp_dp_timing) return;
+    getPressFactor(doublePressFactor);
+}
+
+pub export fn fnSetDPFCT(regist: u16) callconv(.c) void {
+    if (comptime !option_lp_dp_timing) return;
+    setPressFactor(regist, &doublePressFactor);
 }
 
 pub export fn fnGetIntegerSignMode(unusedButMandatoryParameter: u16) callconv(.c) void {
@@ -1955,6 +2063,8 @@ pub export fn resetOtherConfigurationStuff(allowUserKeys: bool_t) callconv(.c) v
     lastIntegerBase = 0;
     decodedIntegerBase = 0;
     graMod = 0;
+    longPressFactor = 0;
+    doublePressFactor = 0;
     timeLastOp = 0;
     timeLastOp0 = 0;
     timeLastOp1 = 0;

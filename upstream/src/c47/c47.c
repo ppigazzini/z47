@@ -229,6 +229,10 @@ int16_t                alphaCursor;                  //DL
 int16_t                lastT_cursorPos = 0;
 int16_t                displayAIMbufferoffset;       //JMCURSOR
 uint16_t               showRegis;                    //JMSHOW
+#if defined(OPTION_MX_SHOW)
+  uint8_t              showMatrixUserDisplayFormat = DF_ALL; // the user format, stashed for SHOW
+  uint8_t              showMatrixUserDisplayFormatDigits = 0;
+#endif // OPTION_MX_SHOW
 uint8_t                overrideShowBottomLine;
 int16_t                ListXYposition;               //JMSHOW
 int16_t                JM_auto_doublepress_autodrop_enabled;  //JM TIMER CLRDROP //drop
@@ -312,6 +316,8 @@ calcRegister_t         graphVariabl1;
 uint32_t               firstGregorianDay;
 uint32_t               denMax;
 uint8_t                graMod;
+int16_t                longPressFactor;
+int16_t                doublePressFactor;
 uint32_t               lastDenominator = 4;
 uint32_t               lastIntegerBase;
 uint32_t               decodedIntegerBase;

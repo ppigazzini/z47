@@ -584,6 +584,8 @@ pub export fn convertOldMenuNumbers() callconv(.c) void {
 // --- OTHER_CONFIGURATION_STUFF scalars ---
 extern var firstGregorianDay: u32;
 extern var graMod: u8;
+extern var longPressFactor: i16;
+extern var doublePressFactor: i16;
 extern var denMax: u32;
 extern var lastDenominator: u32;
 extern var displayFormat: u8;
@@ -1349,6 +1351,12 @@ fn applyConfigField(loaded_version: u32, allow_user_keys: bool, saved_calc_model
     } else if (cmpName(ab, "graMod")) {
         graMod = text.toUint8(tmpString);
         if (graMod > 3) graMod = 0;
+    } else if (cmpName(ab, "longPressFactor")) {
+        longPressFactor = text.toInt16(tmpString);
+        if (longPressFactor < -6000 or longPressFactor > 5000) longPressFactor = 0;
+    } else if (cmpName(ab, "doublePressFactor")) {
+        doublePressFactor = text.toInt16(tmpString);
+        if (doublePressFactor < -6000 or doublePressFactor > 5000) doublePressFactor = 0;
     } else if (cmpName(ab, "denMax")) {
         denMax = text.toUint32(tmpString);
         if (denMax == 1 or denMax > MAX_DENMAX) denMax = MAX_DENMAX;

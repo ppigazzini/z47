@@ -1130,7 +1130,7 @@ pub extern fn timeToDisplayString(regist: calcRegister_t, display_string: [*c]u8
 pub extern fn dateToDisplayString(regist: calcRegister_t, display_string: [*c]u8) void;
 pub extern fn real34MatrixToDisplayString(regist: calcRegister_t, display_string: [*c]u8) void;
 pub extern fn complex34MatrixToDisplayString(regist: calcRegister_t, display_string: [*c]u8) void;
-pub extern fn shortIntegerToDisplayString(regist: calcRegister_t, display_string: [*c]u8, determine_font: bool, base_override: u8) void;
+pub extern fn shortIntegerToDisplayString(regist: calcRegister_t, display_string: [*c]u8, determine_font: bool, base_override: u8, max_width: i16) void;
 pub extern fn fractionToDisplayString(regist: calcRegister_t, display_string: [*c]u8) void;
 pub extern fn real34ToDisplayString(real34: *align(1) const real34_t, tag: u32, display_string: [*c]u8, font: *const font_t, max_width: i16, display_has_n_digits: i16, limit_exponent: bool, front_space: bool, limit_irfrac: c_int) void;
 pub extern fn complex34ToDisplayString(complex34: *align(1) const complex34_t, display_string: [*c]u8, font: *const font_t, max_width: i16, display_has_n_digits: i16, limit_exponent: bool, front_space: bool, limit_irfrac: c_int, tag_angle: u16, tag_polar: bool) void;

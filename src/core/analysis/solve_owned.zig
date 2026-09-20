@@ -117,7 +117,7 @@ const SOLVER_RESULT_OTHER_FAILURE: c_int = 5;
 const SOLVER_RESULT_ABORTED: c_int = 6;
 
 const TI_SOLVER_VARIABLE: u8 = 51;
-const TI_DERIV_STEP: u8 = 144;
+const TI_DERIV_STEP: u8 = 145;
 const CMP_NAME: i32 = 3;
 const STD_delta_SUB_d: [*:0]const u8 = "\x83\xb4\xa4\x9f"; // STD_delta STD_SUB_d, the derivative's step variable
 const TI_SOLVER_FAILED: u8 = 52;

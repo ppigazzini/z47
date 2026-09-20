@@ -624,7 +624,7 @@ int16_t stringByteLength(const char *value);
 int16_t stringGlyphLength(const char *value);
 void xcopy(void *destination, const void *source, size_t length);
 void fractionToDisplayString(calcRegister_t regist, char *displayString);
-void shortIntegerToDisplayString(calcRegister_t regist, char *displayString, bool_t determineFont, uint8_t baseOverride);
+void shortIntegerToDisplayString(calcRegister_t regist, char *displayString, bool_t determineFont, uint8_t baseOverride, int16_t maxWidth);
 void real34ToDisplayString(const real34_t *real34, uint32_t tag, char *displayString, const font_t *font, int16_t maxWidth, int16_t displayHasNDigits, bool_t limitExponent, bool_t frontSpace, irfracOption_t limitIrfrac);
 void complex34ToDisplayString(const complex34_t *complex34, char *displayString, const font_t *font, int16_t maxWidth, int16_t displayHasNDigits, bool_t limitExponent, bool_t frontSpace, irfracOption_t limitIrfrac, uint16_t tagAngle, bool_t tagPolar);
 void dateToDisplayString(calcRegister_t regist, char *displayString);
