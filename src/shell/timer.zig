@@ -30,6 +30,16 @@ const frontier_build_options = @import("frontier_build_options");
 const dmcp_build: bool = frontier_build_options.dmcp_build;
 const old_hw: bool = frontier_build_options.old_hw;
 const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
+const option_lp_dp_timing: bool = frontier_build_options.option_lp_dp_timing;
+
+// Timer slots (defines.h). The two long-press slots and the double-press slot are
+// the three LP% and DP% scale.
+const TO_CL_LONG: u8 = 1;
+const TO_FN_LONG: u8 = 3;
+const TO_FN_EXEC: u8 = 4;
+
+extern var longPressFactor: i16;
+extern var doublePressFactor: i16;
 
 const LIBRARY_FN_BASE: usize = if (old_hw) 0x08000201 else 0x08000301;
 
@@ -511,7 +521,13 @@ pub export fn fnTimerConfig(nr: u8, func: TimerFn, param: u16) callconv(.c) void
 // ===========================================================================
 // fnTimerStart (NOTE: the runtime extern fnTimerStart symbol is THIS definition)
 // ===========================================================================
-pub export fn fnTimerStartImpl(nr: u8, param: u16, time: u32) callconv(.c) void {
+pub export fn fnTimerStartImpl(nr: u8, param: u16, delay: u32) callconv(.c) void {
+    // LP% and DP% scale the two press timeouts; every other timer keeps its delay.
+    const time: u32 = if (comptime option_lp_dp_timing) switch (nr) {
+        TO_CL_LONG, TO_FN_LONG => @intCast(@as(u64, delay) * @as(u64, @intCast(10000 + @as(i32, longPressFactor))) / 10000),
+        TO_FN_EXEC => @intCast(@as(u64, delay) * @as(u64, @intCast(10000 + @as(i32, doublePressFactor))) / 10000),
+        else => delay,
+    } else delay;
     if (comptime dmcp_build) {
         const now: u32 = sys_current_ms();
         if (nr < TMR_NUMBER) {

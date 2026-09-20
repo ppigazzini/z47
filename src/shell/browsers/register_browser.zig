@@ -225,7 +225,7 @@ fn showRegisterInRbr(regist: calcRegister_t, registerNameWidth: i16) void {
         },
         dtShortInteger => {
             if (showContent) {
-                frontier_display.shortIntegerToDisplayString(regist, tmpString, 0, noBaseOverride);
+                frontier_display.shortIntegerToDisplayString(regist, tmpString, 0, noBaseOverride, SCREEN_WIDTH);
             } else {
                 _ = strcpy(tmpString, "64 bits " ++ STD_CORRESPONDS_TO ++ " 8 bytes");
             }

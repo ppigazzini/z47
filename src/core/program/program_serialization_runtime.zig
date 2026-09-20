@@ -1,6 +1,7 @@
 const io_owned = @import("program_serialization_io.zig");
 const build_options = @import("program_serialization_build_options");
-const line_parse = @import("abi").line_parse; // shared std-only line match / integer parse
+const abi = @import("abi");
+const line_parse = abi.line_parse; // shared std-only line match / integer parse
 
 pub const FILE_OK: c_int = 1;
 pub const FILE_CANCEL: c_int = 2;
@@ -151,6 +152,9 @@ pub const ioPathExportRTFAllPrograms: c_int = 13;
 
 pub extern var firstDisplayedLocalStepNumber: u16;
 pub extern var programListEnd: bool;
+pub extern var programList: [*c]abi.ProgramList;
+pub extern fn findNextStep(step: [*c]u8) [*c]u8;
+pub extern fn isAtEndOfPrograms(step: [*c]const u8) bool;
 pub extern var lastProgramListEnd: bool;
 
 pub inline fn tmpStringContent() []const u8 {

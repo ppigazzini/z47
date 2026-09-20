@@ -492,6 +492,10 @@
   extern int16_t                lastT_cursorPos;
   extern int16_t                displayAIMbufferoffset;       //JMCURSOR
   extern uint16_t               showRegis;                    //JMSHOW
+  #if defined(OPTION_MX_SHOW)
+    extern uint8_t              showMatrixUserDisplayFormat;  // the user format, stashed for SHOW
+    extern uint8_t              showMatrixUserDisplayFormatDigits;
+  #endif // OPTION_MX_SHOW
   extern uint8_t                overrideShowBottomLine;
   extern int16_t                ListXYposition;               //JM
   extern uint8_t                DRG_Cycling;                  //JM
@@ -570,6 +574,8 @@
   extern uint32_t               firstGregorianDay;
   extern uint32_t               denMax;
   extern uint8_t                graMod;
+  extern int16_t                longPressFactor;               // LPFCT minus 1, times 10000
+  extern int16_t                doublePressFactor;             // DPFCT minus 1, times 10000
   extern uint32_t               lastDenominator;
   extern uint32_t               lastIntegerBase;
   extern uint32_t               decodedIntegerBase;

@@ -130,7 +130,7 @@
 #define ITM_MULPI2                   118
 #define ITM_RAD2                     119
 #define ITM_LINT                     120
-#define ITM_RMODE                    121
+#define ITM_RMODE                    121 // sunsetted, can be replaced with a type PTP_NUMBER_8 only, once the >RMODE< has been in effect long enough: 2026-09-20
 #define ITM_RMD                      122
 #define ITM_LOGICALNOT               123
 #define ITM_LOGICALAND               124
@@ -1356,21 +1356,21 @@
 #define ITM_1314                    1314 // General items / any items spare (reserved: FIN12C, PGDN, the common paging key of every table screen)
 #define ITM_1315                    1315 // General items / any items spare (reserved: FIN12C, PGTOP, the common paging key of every table screen)
 #define ITM_1316                    1316 // General items / any items spare (reserved: FIN12C, PGBTM, the common paging key of every table screen)
-#define ITM_1317                    1317 // General items / any items spare
-#define ITM_1318                    1318 // General items / any items spare
-#define ITM_1319                    1319 // General items / any items spare
-#define ITM_1320                    1320 // General items / any items spare
-#define ITM_1321                    1321 // General items / any items spare
-#define ITM_1322                    1322 // General items / any items spare
-#define ITM_1323                    1323 // General items / any items spare
-#define ITM_1324                    1324 // General items / any items spare
-#define ITM_1325                    1325 // General items / any items spare
+#define ITM_RM_HALF_EVEN            1317
+#define ITM_RM_HALF_UP              1318
+#define ITM_RM_HALF_DOWN            1319
+#define ITM_RM_UP                   1320
+#define ITM_RM_DOWN                 1321
+#define ITM_RM_CEILING              1322
+#define ITM_RM_FLOOR                1323
+#define ITM_ROUNDMM                 1324
+#define ITM_SET_RM                  1325
 #define ITM_1326                    1326 // General items / any items spare
 #define ITM_1327                    1327 // General items / any items spare
-#define ITM_1328                    1328 // General items / any items spare
-#define ITM_1329                    1329 // General items / any items spare
-#define ITM_1330                    1330 // General items / any items spare
-#define ITM_1331                    1331 // General items / any items spare
+#define ITM_GET_LPFCT               1328
+#define ITM_SET_LPFCT               1329
+#define ITM_GET_DPFCT               1330
+#define ITM_SET_DPFCT               1331
 #define ITM_1332                    1332 // General items / any items spare
 #define ITM_1333                    1333 // General items / any items spare
 #define ITM_BASEMENU                1334
@@ -2066,7 +2066,7 @@
 #define ITM_DENMAX2_OLDER           2016
 #define ITM_SETSIG2_OLD             2017
 #define ITM_AVIEW                   2018
-#define ITM_RMODEQ                  2019
+#define ITM_GET_RM                  2019
 #define ITM_PROMPT                  2020
 #define ITM_USER_ARESET             2021
 #define ITM_USER_MRESET             2022
@@ -3271,7 +3271,7 @@
 #define ITM_3149                    3149 // General items / any items spare (reserved: Menus)
 #define ITM_3150                    3150 // General items / any items spare (reserved: Menus)
 #define ITM_3151                    3151 // General items / any items spare (reserved: Menus)
-#define ITM_3152                    3152 // General items / any items spare (reserved: Menus)
+#define MNU_RMODE                   3152
 #define ITM_3153                    3153 // General items / any items spare (reserved: Menus)
 #define ITM_3154                    3154 // General items / any items spare (reserved: Menus)
 #define ITM_3155                    3155 // General items / any items spare (reserved: Menus)

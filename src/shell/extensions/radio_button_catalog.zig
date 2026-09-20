@@ -16,6 +16,7 @@
 
 const builtin = @import("builtin");
 const frontier_build_options = @import("frontier_build_options");
+const option_lp_dp_timing: bool = frontier_build_options.option_lp_dp_timing;
 
 const code_section = if (frontier_build_options.dmcp_build and frontier_build_options.old_hw)
     ".qspi_data"
@@ -83,6 +84,10 @@ const RB_TV: u8 = 148;
 const RB_IP: u8 = 150;
 const RB_FP: u8 = 151;
 const RB_RX: u8 = 152;
+const RB_RM: u8 = 167; // RMODE
+
+extern var longPressFactor: i16;
+extern var doublePressFactor: i16;
 const RB_GW: u8 = 156;
 const RB_KY: u8 = 157;
 const RB_PRM: u8 = 158;
@@ -207,6 +212,9 @@ const ITM_SCR: u16 = 2191;
 const ITM_DSP: u16 = 1573;
 const ITM_SET_ADM: u16 = 2764;
 const ITM_SET_GRAMOD: u16 = 2742;
+const ITM_SET_RM: u16 = 1325;
+const ITM_SET_LPFCT: u16 = 1329;
+const ITM_SET_DPFCT: u16 = 1331;
 const ITM_SET_ISM: u16 = 2765;
 const ITM_SET_REALDF: u16 = 2767;
 const ITM_SET_DMX: u16 = 2770;
@@ -511,6 +519,13 @@ pub export const indexOfRadioCbEepromItems linksection(code_section) = [_]radioc
     .{ .itemNr = 2140, .param = 2144, .radioButton = 152 },
     .{ .itemNr = 2141, .param = 818, .radioButton = 152 },
     .{ .itemNr = 2142, .param = 2145, .radioButton = 152 },
+    .{ .itemNr = 1317, .param = 0, .radioButton = RB_RM },
+    .{ .itemNr = 1318, .param = 1, .radioButton = RB_RM },
+    .{ .itemNr = 1319, .param = 2, .radioButton = RB_RM },
+    .{ .itemNr = 1320, .param = 3, .radioButton = RB_RM },
+    .{ .itemNr = 1321, .param = 4, .radioButton = RB_RM },
+    .{ .itemNr = 1322, .param = 5, .radioButton = RB_RM },
+    .{ .itemNr = 1323, .param = 6, .radioButton = RB_RM },
     .{ .itemNr = 1990, .param = 1990, .radioButton = 244 },
     .{ .itemNr = 1995, .param = 1995, .radioButton = 244 },
     .{ .itemNr = 1991, .param = 1991, .radioButton = 244 },
@@ -674,6 +689,7 @@ pub export fn fnCbIsSet(item: i16) callconv(.c) i8 {
                 RB_FP => rb_param = gapItemRight,
                 RB_IP => rb_param = gapItemLeft,
                 RB_RX => rb_param = gapItemRadix,
+                RB_RM => rb_param = roundingMode,
                 RB_KY => {
                     rb_param = calcModel;
                     if (itemNr == ITM_USER_R47) {
@@ -818,6 +834,13 @@ pub export fn fnItemShowValue(item: i16) callconv(.c) i16 {
         ITM_DSP => result = displayFormatDigits,
         ITM_SET_ADM => result = @intCast(frontier_config.admValue()),
         ITM_SET_GRAMOD => result = graMod,
+        // the factor in percent: 3 digits fit beside the label
+        ITM_SET_LPFCT => if (option_lp_dp_timing) {
+            result = @intCast(@divTrunc(10000 + @as(i32, longPressFactor), 100));
+        },
+        ITM_SET_DPFCT => if (option_lp_dp_timing) {
+            result = @intCast(@divTrunc(10000 + @as(i32, doublePressFactor), 100));
+        },
         ITM_SET_ISM => result = shortIntegerModeValue(),
         ITM_SET_REALDF => result = displayFormat,
         ITM_SET_DMX => result = @intCast(denMax),
@@ -825,6 +848,7 @@ pub export fn fnItemShowValue(item: i16) callconv(.c) i16 {
         ITM_HIDE => result = exponentHideLimit,
         ITM_BESTF => result = @intCast(lrSelection & 0x1FF),
         ITM_RMODE => result = roundingMode,
+        ITM_SET_RM => result = roundingMode,
         ITM_HASH_JM => if (lastIntegerBase != 0) {
             result = @intCast(lastIntegerBase);
         },

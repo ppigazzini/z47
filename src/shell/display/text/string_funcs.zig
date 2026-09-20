@@ -1271,7 +1271,7 @@ fn _readDestinationRegister(regist: u16) void {
             frontier_display.complex34MatrixToDisplayString(@intCast(regist), tmpString);
         },
         dtShortInteger => {
-            frontier_display.shortIntegerToDisplayString(@intCast(regist), tmpString, 0, noBaseOverride);
+            frontier_display.shortIntegerToDisplayString(@intCast(regist), tmpString, 0, noBaseOverride, SCREEN_WIDTH);
         },
         dtReal34 => {
             frontier_display.real34ToDisplayString(reg34(@intCast(regist)), getRegisterAngularMode(@intCast(regist)), tmpString, &standardFont, SCREEN_WIDTH, NUMBER_OF_DISPLAY_DIGITS, 0, @intFromBool(STD_SPACE_PUNCTUATION_AS_BOOL), 1);

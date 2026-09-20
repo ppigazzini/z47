@@ -355,7 +355,7 @@ fn _setCaption(keyNum: u16) void {
                 frontier_display.complex34MatrixToDisplayString(stringRegister, tmpString);
             },
             dtShortInteger => {
-                frontier_display.shortIntegerToDisplayString(stringRegister, tmpString, 0, noBaseOverride);
+                frontier_display.shortIntegerToDisplayString(stringRegister, tmpString, 0, noBaseOverride, SCREEN_WIDTH);
             },
             dtReal34 => {
                 frontier_display.real34ToDisplayString(regReal34(stringRegister), getRegisterAngularMode(stringRegister), tmpString, &standardFont, SCREEN_WIDTH, NUMBER_OF_DISPLAY_DIGITS, @intFromBool(!LIMITEXP), @intFromBool(FRONTSPACE), NOIRFRAC);

@@ -197,6 +197,8 @@ fn frontierDistributionStrip(base: frontier.RuntimeObjectOptions, dmcp_package: 
     opts.option_infsums = false; // !OPTION_INFSUMS: no infinity-sum items
     opts.option_structured_pgm = false; // !OPTION_STRUCTURED_PGM: the STRUCT items report that this hardware cannot run them
     opts.option_algdep = false; // !OPTION_ALGDEP: x->POLY and V->SUM=0 bind itemToBeCoded, leave the POLY menu and are struck out
+    opts.option_mx_show = false; // !OPTION_MX_SHOW: SHOW draws 9 matrix rows in ALL at 15 digits, with no rolled out or laid flat page
+    opts.option_lp_dp_timing = false; // !OPTION_LP_DP_TIMING: LP% and DP% bind itemToBeCoded and the press timeouts keep their nominal delay
     const pkg = dmcp_package orelse return opts;
     // Each strip_* below is the inverse of the matching upstream OPTION_*, which
     // is an include flag: defined means the feature is compiled in, and its

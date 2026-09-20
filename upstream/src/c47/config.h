@@ -39,6 +39,10 @@ void     fnMenuGapRX                  (uint16_t unusedButMandatoryParameter);
 void     fnMenuGapR                   (uint16_t unusedButMandatoryParameter);
 void     fnClearAllFin                (uint16_t unusedButMandatoryParameter);
 
+#define abbreviation true
+const char *getRoundModeName              (uint16_t RM, bool_t abbreviated);
+
+
 /********************************************//**
  * \brief Sets the integer mode
  *
@@ -87,6 +91,8 @@ void     fnGetRoundingMode            (uint16_t unusedButMandatoryParameter);
  * \param[in] RM uint16_t
  ***********************************************/
 void     fnSetRoundingMode            (uint16_t RM);
+void     fnSetRoundingModeM           (uint16_t unusedButMandatoryParameter);
+void     fnSetRoundingModeRegist      (uint16_t regist);
 
 /********************************************//**
  * \brief Sets X to the value of the integer mode
@@ -205,6 +211,10 @@ void     fnGetADM                     (uint16_t unusedButMandatoryParameter);
 void     fnSetADM                     (uint16_t unusedButMandatoryParameter);
 void     fnGetGRAMOD                  (uint16_t unusedButMandatoryParameter);
 void     fnSetGRAMOD                  (uint16_t unusedButMandatoryParameter);
+void     fnGetLPFCT                   (uint16_t unusedButMandatoryParameter);
+void     fnSetLPFCT                   (uint16_t unusedButMandatoryParameter);
+void     fnGetDPFCT                   (uint16_t unusedButMandatoryParameter);
+void     fnSetDPFCT                   (uint16_t unusedButMandatoryParameter);
 void     fnSetISM                     (uint16_t unusedButMandatoryParameter);
 void     fnGetREALDF                  (uint16_t unusedButMandatoryParameter);
 void     fnSetREALDF                  (uint16_t unusedButMandatoryParameter);

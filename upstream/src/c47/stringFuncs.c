@@ -317,7 +317,7 @@ static void _readDestinationRegister(uint16_t regist) {
     }
 
     case dtShortInteger: {
-      shortIntegerToDisplayString(regist, tmpString, false, noBaseOverride);
+      shortIntegerToDisplayString(regist, tmpString, false, noBaseOverride, SCREEN_WIDTH);
       break;
     }
 

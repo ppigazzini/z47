@@ -140,6 +140,17 @@ pub const RuntimeObjectOptions = struct {
     // builds. It is therefore true everywhere, and exists as an option so the two
     // owners read the fact instead of restating it.
     option_tvm_amort: bool = true,
+    // OPTION_MX_SHOW gates the enhanced matrix SHOW pages: 11 rows instead of 9,
+    // the rolled out one-element-per-line page, the laid flat page for a wide
+    // vector, 34 digits instead of 15, the user's own format instead of ALL, and
+    // the per-line SIG fit. Same "common to packages 1-4" block as the options
+    // above, so the same per-target answer. Defaults true (host).
+    option_mx_show: bool = true,
+    // OPTION_LP_DP_TIMING gates LP% and DP%, the getter/setter pairs that scale the
+    // long-press and double-press timeouts. Without it the four items bind
+    // itemToBeCoded and carry CAT_NONE, and every timer keeps its nominal delay.
+    // Same block again, so the same per-target answer. Defaults true (host).
+    option_lp_dp_timing: bool = true,
 };
 
 fn manifestContainsPath(manifest: []const u8, needle: []const u8) bool {
@@ -245,6 +256,8 @@ pub fn addBuildOptions(
     build_options.addOption(bool, "option_structured_pgm", options.option_structured_pgm);
     build_options.addOption(bool, "option_algdep", options.option_algdep);
     build_options.addOption(bool, "option_tvm_amort", options.option_tvm_amort);
+    build_options.addOption(bool, "option_mx_show", options.option_mx_show);
+    build_options.addOption(bool, "option_lp_dp_timing", options.option_lp_dp_timing);
     // Passed in by whoever also hands the C sources -DTESTSUITE_BUILD, so the Zig
     // owners and the C half of the same executable agree on which build this is:
     // fnSNAP freezes the clock the date/time formatters read, and RESET loads the

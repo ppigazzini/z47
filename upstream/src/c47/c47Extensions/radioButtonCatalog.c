@@ -212,6 +212,13 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
   {ITM_GAPWIDPER_RX,     ITM_WPERIOD,            RB_RX},
   {ITM_GAPCOM_RX,        ITM_COMMA,              RB_RX},
   {ITM_GAPWIDCOM_RX,     ITM_WCOMMA,             RB_RX},
+  {ITM_RM_HALF_EVEN,     0,                      RB_RM},
+  {ITM_RM_HALF_UP,       1,                      RB_RM},
+  {ITM_RM_HALF_DOWN,     2,                      RB_RM},
+  {ITM_RM_UP,            3,                      RB_RM},
+  {ITM_RM_DOWN,          4,                      RB_RM},
+  {ITM_RM_CEILING,       5,                      RB_RM},
+  {ITM_RM_FLOOR,         6,                      RB_RM},
 
   {ITM_S08,              ITM_S08,                MB_MAC},
   {ITM_U08,              ITM_U08,                MB_MAC},
@@ -415,6 +422,9 @@ int8_t fnCbIsSet(int16_t item) {
         case RB_RX:  rb_param = gapItemRadix;
                      break;
 
+        case RB_RM:  rb_param = roundingMode;
+                     break;
+
         case RB_KY:  rb_param = calcModel;
                      if(itemNr == ITM_USER_R47) {
                        switch(calcModel) {
@@ -581,6 +591,10 @@ int16_t fnItemShowValue(int16_t item) {
 //    case ITM_GET_ADM:
     case ITM_SET_ADM:   result = admValue();                                        break;
     case ITM_SET_GRAMOD: result = graMod;                                          break;
+  #if defined(OPTION_LP_DP_TIMING)
+    case ITM_SET_LPFCT: result = (10000 + longPressFactor) / 100;                   break;  // factor in percent: 3 digits fit beside the label
+    case ITM_SET_DPFCT: result = (10000 + doublePressFactor) / 100;                 break;
+  #endif // OPTION_LP_DP_TIMING
 //    case ITM_GET_ISM:
     case ITM_SET_ISM:   result = shortIntegerModeValue();                           break;
 //    case ITM_GET_REALDF:
@@ -592,6 +606,7 @@ int16_t fnItemShowValue(int16_t item) {
     case ITM_HIDE:      result = exponentHideLimit;                                 break;
     case ITM_BESTF:     result = (lrSelection) & 0x1FF;                             break;
     case ITM_RMODE:     result = roundingMode;                                      break;
+    case ITM_SET_RM:    result = roundingMode;                                      break;
     case ITM_HASH_JM:   if(lastIntegerBase != 0) {
                           result = (int16_t)lastIntegerBase;
                         }

@@ -201,7 +201,7 @@ const NOPARAM: u16 = 9876;
 
 const TI_1ST_DERIVATIVE: u8 = 57;
 const TI_2ND_DERIVATIVE: u8 = 58;
-const TI_DERIV_STEP: u8 = 144;
+const TI_DERIV_STEP: u8 = 145;
 
 // h starts at x/10, the coarsest step a 15 point stencil is worth taking, and stops at x*1e-16, the step this engine used
 // for every stencil before the ladder. DERIV_TOLERANCE_DIGITS is the digits a sample carries less one for the coefficient

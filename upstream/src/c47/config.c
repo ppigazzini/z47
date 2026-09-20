@@ -691,23 +691,98 @@ void fnFreeMemory(uint16_t unusedButMandatoryParameter) {
 }
 
 
+// Rounding mode text, indexed by the RM_* values. The abbreviation is the glyph group the flag browser and the temporary information line display.
+TO_QSPI static const struct {
+  const char name[21];        // 21 bytes: 20 characters + 1 sentinel
+  const char abbreviations[6]; // 6 bytes: 5 bytes of glyphs + 1 sentinel
+} roundingModeName[7] = {
+  /* RM_HALF_EVEN */ { "round half even",      STD_ONE_HALF "E"                   },
+  /* RM_HALF_UP   */ { "round half up",        STD_ONE_HALF STD_UP_ARROW          },
+  /* RM_HALF_DOWN */ { "round half down",      STD_ONE_HALF STD_DOWN_ARROW        },
+  /* RM_UP        */ { "round away from zero", STD_LEFT_ARROW "0" STD_RIGHT_ARROW },
+  /* RM_DOWN      */ { "round towards zero",   STD_RIGHT_ARROW "0" STD_LEFT_ARROW },
+  /* RM_CEIL      */ { "ceiling",              STD_MAT_TL "x" STD_MAT_TR          },
+  /* RM_FLOOR     */ { "floor",                STD_MAT_BL "x" STD_MAT_BR          },
+};
+
+
+/********************************************//**
+ * \brief Returns the text of a rounding mode
+ *
+ * \param[in] RM uint16_t Rounding mode, an RM_* value
+ * \param[in] abbreviated bool_t true returns the display glyphs, false the full name
+ * \return char* Text of the rounding mode
+ ***********************************************/
+const char *getRoundModeName(uint16_t RM, bool_t abbreviated) {
+  if(RM >= nbrOfElements(roundingModeName)) {
+    sprintf(errorMessage, commonBugScreenMessages[bugMsgNotDefinedMustBe], "getRoundModeName", "rounding mode", RM, (uint16_t)(nbrOfElements(roundingModeName) - 1));
+    displayBugScreen(errorMessage);
+    return "???";
+  }
+  return abbreviated ? roundingModeName[RM].abbreviations : roundingModeName[RM].name;
+}
+
+
 
 void fnGetRoundingMode(uint16_t unusedButMandatoryParameter) {
   fnIntInputLongint(roundingMode);
+  temporaryInformation = TI_ROUNDING_MODE;
 }
 
 
 
 void fnSetRoundingMode(uint16_t RM) {
   roundingMode = RM;
+  temporaryInformation = TI_ROUNDING_MODE;
 }
+
+void fnSetRoundingModeM(uint16_t unusedButMandatoryParameter) {
+  showSoftmenu(-MNU_RMODE);
+}
+
+void fnSetRoundingModeRegist(uint16_t regist) {
+  uint32_t value;
+  if(getRegisterAsUint32Param(regist, &value)) {
+    fnSetRoundingMode(value > 6 ? 6 : value);
+  }
+  else if(lastErrorCode == ERROR_NONE) {
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+  }
+}
+
+// Decnumber PDF:
+// 0 DEC_ROUND_CEILING Round towards +Infinity.
+// 1 DEC_ROUND_DOWN Round towards 0 (truncation).
+// 2 DEC_ROUND_FLOOR Round towards -Infinity.
+// 3 DEC_ROUND_HALF_DOWN Round to nearest; if equidistant, round down.
+// 4 DEC_ROUND_HALF_EVEN Round to nearest; if equidistant, round so that the final digit
+// 5 is even.
+// 6 DEC_ROUND_HALF_UP Round to nearest; if equidistant, round up.
+// 7 DEC_ROUND_UP Round away from 0.
+// 8 DEC_ROUND_05UP The same as DEC_ROUND_UP, except that rounding up only occurs if the digit to be rounded up is 0 or 5 and after Overflow the result is the same as for DEC_ROUND_DOWN.
+
+// C47 definition of roundingMode
+// 0: round half even: ½ E 0.5 rounds to next even number (default, used in science).
+// 1: round half up: 0.5 rounds up (‘business-man’s rounding’ 44).
+// 2: round half down: ½ ↓ 0.5 rounds down.
+// 3: round up: ←0→ rounds away from 0.
+// 4: round down: →0← rounds towards 0.
+// 5: ceiling: ⌈x⌉ rounds towards + ∞.
+// 6: floor: ⌊x⌋ rounds towards – ∞.
+
+
 
 // "enum rounding" does not match with the specification of WP 43s rounding mode.
 // So you need roundingModeTable[roundingMode] rather than roundingMode
 // to specify rounding mode in the real number functions.
 TO_QSPI const enum rounding roundingModeTable[7] = {
-  DEC_ROUND_HALF_EVEN, DEC_ROUND_HALF_UP, DEC_ROUND_HALF_DOWN,
-  DEC_ROUND_UP, DEC_ROUND_DOWN, DEC_ROUND_CEILING, DEC_ROUND_FLOOR
+  DEC_ROUND_HALF_EVEN,
+  DEC_ROUND_HALF_UP,
+  DEC_ROUND_HALF_DOWN,
+  DEC_ROUND_UP,
+  DEC_ROUND_DOWN,
+  DEC_ROUND_CEILING,
+  DEC_ROUND_FLOOR
 };
 
 
@@ -949,6 +1024,60 @@ void fnSetGRAMOD(uint16_t regist) {
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
   }
 }
+
+
+
+#if defined(OPTION_LP_DP_TIMING)
+static void getPressFactor(int16_t factor) {
+  REAL_T_PTR(value, 75);
+
+  liftStack();
+  int32ToReal(10000 + factor, value);
+  value->exponent -= 2; // value = value / 10000 * 100
+  convertRealToResultRegister(value, REGISTER_X, amNone);
+  setSystemFlag(FLAG_ASLIFT);
+}
+
+
+
+static void setPressFactor(uint16_t regist, int16_t *factor) {
+  REAL_T_PTR(value, 75);
+  if(getRegisterAsReal(regist, value)) {
+    value->exponent += 2; // value = value * 10000 / 100
+    int32_t scaled = realToInt32C47(value, NULL);
+    if(scaled >= 4000 && scaled <= 15000) {
+      *factor = scaled - 10000;
+    }
+    else {
+      displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+    }
+  }
+}
+
+
+
+void fnGetLPFCT(uint16_t unusedButMandatoryParameter) {
+  getPressFactor(longPressFactor);
+}
+
+
+
+void fnSetLPFCT(uint16_t regist) {
+  setPressFactor(regist, &longPressFactor);
+}
+
+
+
+void fnGetDPFCT(uint16_t unusedButMandatoryParameter) {
+  getPressFactor(doublePressFactor);
+}
+
+
+
+void fnSetDPFCT(uint16_t regist) {
+  setPressFactor(regist, &doublePressFactor);
+}
+#endif // OPTION_LP_DP_TIMING
 
 
 
@@ -1527,6 +1656,8 @@ void resetOtherConfigurationStuff(bool_t allowUserKeys) {
   lastIntegerBase = 0;
   decodedIntegerBase = 0;
   graMod = 0;
+  longPressFactor = 0;
+  doublePressFactor = 0;
   timeLastOp = 0;
   timeLastOp0 = 0;
   timeLastOp1 = 0;

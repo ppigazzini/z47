@@ -56,10 +56,12 @@
 #define OPTION_ASNBROWSER              //                   // Assign Browser
 #define OPTION_FONTBROWSER             //                   // Font Browsers
 #define OPTION_SHOW                    //                   // SHOW (alternative to VIEW)
+#define OPTION_MX_SHOW                 //                   // Matrix SHOW extension
 #define OPTION_ZETA_BETA               //                   // ZETA, BETA, LNBETA
 #define OPTION_SLVQ_SLVC               //                   // SLVQ, SLVC quadratic and cubic roots
 #define OPTION_SLVP_POLY               //                   // SLVP general polynomial roots (companion matrix through the EIGEN QR solver; requires OPTION_EIGEN)
 #define OPTION_INFSUMS                 // TEMPORARY         // Infinity sum with the early stop; the plain programmable sum and product stay
+#define OPTION_LP_DP_TIMING            //                   // LP%, DP% long press and double press timing in percent
 #define OPTION_ELLIPTIC                //                   // Elliptic functions
 #define OPTION_BESSEL                  //                   // Bessel functions
 #define OPTION_ORTHO                   //                   // Orthogonal-polynomials menu (ORTHO)
@@ -284,8 +286,10 @@
             #undef  OPTION_VECTOR        // ✓ 13672 bytes // Vector 12952 saving if ELEC is not in; 9568 saving if ELEC is in
             #undef  OPTION_SLVP_POLY     // ✓  2024 bytes // SLVP general polynomial roots (companion matrix through the EIGEN QR solver)
             #undef  OPTION_INFSUMS       // ?   400 bytes // Infinity sum with the early stop; the plain programmable sum and product stay
+            #undef  OPTION_LP_DP_TIMING  // ✓   296 bytes // LP%, DP% long press and double press timing in percent
             #undef  OPTION_STRUCTURED_PGM// ✓  5873 bytes // The DM42 can include STRUCT at 10 nesting levels, 4 FOR loops, and 10 IF, 10 DO and 10 REPEAT numbers
             #undef  OPTION_ALGDEP        // ✓  3896 bytes // Without x->POLY, V->SUM=0 algebraic number identification
+            #undef  OPTION_MX_SHOW       // ✓  5408 bytes // Matrix SHOW off: 9 rows not 11, no rolled out [[...] [...]], vector on one line, 15 digits not 34, ALL not user format, no per line SIG
     #define OPTION_TVM_AMORT             // ✓  1648 bytes // Use additional AMORT in tvm
     #define OPTION_DATAFILE              // ✓  2112 bytes // Without register/variable .d47 export & import
 
@@ -1943,17 +1947,18 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TI_ELLIPSE_M                             134
 #define TI_ELLIPSE_Theta                         135
 #define TI_PRINT_COMPLETE                        136
-#define TI_AMORT_BAL                             137
-#define TI_AMORT_PRN                             138
-#define TI_AMORT_INT                             139
-#define TI_AMORT_P1                              140
-#define TI_AMORT_P2                              141
-#define TI_DATA_LOADED                           142
-#define TI_DATA_SAVED                            143
-#define TI_DERIV_STEP                            144
-// 145 and 146 are left free on purpose for !1643. These are only distinct ids, so starting at 147 costs nothing and means no merge order has to renumber
-// anything.
+#define TI_AMORT_BAL                            137
+#define TI_AMORT_BAL2                            138
+#define TI_AMORT_PRN                             139
+#define TI_AMORT_INT                             140
+#define TI_AMORT_P1                              141
+#define TI_AMORT_P2                              142
+#define TI_DATA_LOADED                           143
+#define TI_DATA_SAVED                            144
+#define TI_DERIV_STEP                            145
+
 #define TI_ALGDEP_POLY                           147
+#define TI_ROUNDING_MODE                         148
 
 #define SET_TI_TRUE_FALSE(condition)               do { temporaryInformation = TI_FALSE + (condition); } while(0) // TI_TRUE must be TI_FALSE + 1
 

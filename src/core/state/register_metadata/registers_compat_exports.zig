@@ -15,6 +15,8 @@ const codec = @import("register_descriptor_codec.zig"); // std-only descriptor b
 // product build the Zig table is the sole definition consumed by the runtime
 // helper C and the Zig variable accessors.
 
+const SCREEN_WIDTH: i16 = 400; // defines.h
+
 const register_descriptor_t = u32;
 const register_header_t = abi.RegisterHeader;
 
@@ -129,7 +131,7 @@ const noBaseOverride: u8 = 0;
 
 extern var tmpString: [*c]u8;
 extern fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void;
-extern fn shortIntegerToDisplayString(regist: stack_runtime.calcRegister_t, display_string: [*]u8, determine_font: bool, base_override: u8) void;
+extern fn shortIntegerToDisplayString(regist: stack_runtime.calcRegister_t, display_string: [*]u8, determine_font: bool, base_override: u8, max_width: i16) void;
 
 fn indirectError(error_code: u8) i16 {
     stack_runtime.displayCalcErrorMessage(error_code, stack_runtime.ERR_REGISTER_LINE, stack_runtime.REGISTER_X);
@@ -418,7 +420,7 @@ fn indirectAddressingReal(regist: stack_runtime.calcRegister_t, parameter_type: 
         if (sign == 1 or raw_value > 180) {
             const code = indirectError(ERROR_OUT_OF_RANGE);
             if (comptime extra_info) {
-                shortIntegerToDisplayString(regist, errorMessage, false, noBaseOverride);
+                shortIntegerToDisplayString(regist, errorMessage, false, noBaseOverride, SCREEN_WIDTH);
                 indirectValueHint(regist);
             }
             return code;

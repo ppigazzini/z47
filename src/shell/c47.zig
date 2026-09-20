@@ -22,6 +22,7 @@ const dr = @import("distributions/distribution_runtime.zig");
 
 const dmcp_build: bool = build_options.dmcp_build;
 const old_hw: bool = build_options.old_hw;
+const option_mx_show: bool = build_options.option_mx_show;
 
 // ---------------------------------------------------------------------------
 // Compile-time constants (from defines.h / typeDefinitions.h, probed)
@@ -161,6 +162,10 @@ pub export var keyActionProcessed: bool_t = false;
 pub export var fnKeyInCatalog: bool_t = false;
 pub export var hourGlassIconEnabled: bool_t = false;
 pub export var graMod: u8 = 0; // AGRAPH plotting mode, 0..3; a plain byte since the GRAMOD reserved variable was retired
+// LP% and DP% minus 1, times 10000: 0 is the nominal delay, 5000 is one and a
+// half times it. Held as a factor so a file without the key restores the nominal.
+pub export var longPressFactor: i16 = 0;
+pub export var doublePressFactor: i16 = 0;
 pub export var graphAccActive: bool_t = false; // graph-eqn precision reduction is active (read by a nested SOLVE)
 pub export var graphToRemainOnScreen: bool_t = false; // a graph is the on-screen content and must survive the next halt
 pub export var watchIconEnabled: bool_t = false;
@@ -383,6 +388,17 @@ pub export var alphaCursor: i16 = 0;
 pub export var lastT_cursorPos: i16 = 0;
 pub export var displayAIMbufferoffset: i16 = 0;
 pub export var showRegis: u16 = 0;
+// The user's own display format, stashed when SHOW switches to ALL so the matrix
+// pages can draw in it. DF_ALL is 5 (defines.h). Only OPTION_MX_SHOW has a page
+// that reads them, so only that build carries the two bytes.
+pub var showMatrixUserDisplayFormat: u8 = 5;
+pub var showMatrixUserDisplayFormatDigits: u8 = 0;
+comptime {
+    if (option_mx_show) {
+        @export(&showMatrixUserDisplayFormat, .{ .name = "showMatrixUserDisplayFormat", .linkage = .strong });
+        @export(&showMatrixUserDisplayFormatDigits, .{ .name = "showMatrixUserDisplayFormatDigits", .linkage = .strong });
+    }
+}
 pub export var overrideShowBottomLine: u8 = 0;
 pub export var ListXYposition: i16 = 0;
 pub export var JM_auto_doublepress_autodrop_enabled: i16 = 0;

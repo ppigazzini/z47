@@ -133,6 +133,7 @@ const FLAG_POLAR: c_int = 0x8006;
 const FLAG_MULTx: c_int = 0x801b;
 const FLAG_ENGOVR: c_int = 0x801c;
 const FLAG_M_ALL: c_int = 0x8072;
+const FLAG_SIGZEROS: c_int = 0x806a;
 const FLAG_SSIZE8: c_int = 0x8018;
 const FLAG_GROW: c_int = 0x801d;
 const FLAG_WRAPEND: c_int = 0xc01a;
@@ -211,6 +212,7 @@ const ERROR_MESSAGE_LENGTH: usize = 512;
 
 const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 const option_vector: bool = frontier_build_options.option_vector;
+const option_mx_show: bool = frontier_build_options.option_mx_show;
 
 const LINE_NOLF: u16 = 3;
 
@@ -238,9 +240,13 @@ const LCD_SET_VALUE: c_int = 0;
 
 // matrixEditor.h
 const MATRIX_LINE_WIDTH: i16 = 380;
-const MATRIX_MAX_ROWS: usize = 9; // SHOW clears the screen, and has more rows
+const MATRIX_MAX_ROWS: usize = 9; // measure cap outside SHOW
+// sizes the row scratch arrays
+const MATRIX_MAX_ROWS_ON_SHOW: usize = if (option_mx_show) 11 else 9;
 const MATRIX_MAX_ROWS_ON_VIEW: usize = 7; // VIEW keeps the stack, so it stops above the menu
 const MATRIX_MAX_ROWS_ON_STACK: usize = 5; // a matrix on the stack grows from the X line up
+// above any rendered string, so real34ToDisplayString keeps the requested digit count
+const UNSHRUNK_WIDTH: i16 = 9999;
 const MATRIX_MAX_COLUMNS: usize = 14; // max width: no radix on the elements, so single-digit columns fit 14
 
 // regXp is a `#define ... true` in matrix.h.
@@ -331,6 +337,8 @@ extern var temporaryFlagRect: bool_t;
 extern var temporaryFlagPolar: bool_t;
 extern var currentAngularMode: angularMode_t;
 extern var displayFormat: u8;
+extern var showMatrixUserDisplayFormat: u8;
+extern var showMatrixUserDisplayFormatDigits: u8;
 extern var displayFormatDigits: u8;
 extern var exponentLimit: i16;
 
@@ -371,6 +379,10 @@ extern fn clearSystemFlag(sf: c_uint) void;
 extern fn getSystemFlag(sf: c_int) bool_t;
 
 extern fn real34IsAnInteger(x: *const real34_t) bool_t;
+extern fn decQuadIsZero(d: *const real34_t) u32;
+inline fn real34IsZero(source_: *const real34_t) bool {
+    return decQuadIsZero(source_) != 0;
+}
 extern fn realCompareLessThan(n1: *const real_t, n2: *const real_t) bool_t;
 extern fn decQuadZero(r: *real34_t) *real34_t;
 extern fn decQuadDigits(d: *const real34_t) u32;
@@ -772,6 +784,322 @@ pub export fn getRealMatrixIntegerColumns(matrix: *const real34Matrix_t, dispFor
     }
 }
 
+// The SHOW page test: not used on VIEW or on the stack display.
+inline fn MX_SHOW_PAGE(prefixWidth: i16, regXposition: bool_t) bool {
+    return option_mx_show and SHOWMODE() and prefixWidth > 0 and !regXposition;
+}
+
+// The upright fit test.
+// ALL draws every significant digit a value has, so where the layout the stack line uses shows the whole
+// matrix in ALL there is nothing left for another page to open up. A column vector is measured in the
+// one-line form it takes there. The measurement is in the standard font and in ALL, with the trailing
+// radix of an integer stripped, the form an integer column is drawn in.
+// Real only. The complex path passes false for keepOneLine, so a complex matrix takes the rolled out page
+// whenever it fits, whether or not the upright page shows it whole. Replicating this needs a second
+// measuring function over complex34Matrix_t: getComplexMatrixColumnWidths measures that same width already
+// but calls showsVerticalVector itself, so it cannot be the pre-test without circularity. The gain is a
+// small complex matrix on the one line it already fits on.
+fn matrixFitsUpright(matrix: *const real34Matrix_t, prefixWidth: i16) bool {
+    if (comptime !option_mx_show) return false;
+    const rows: usize = matrix.header.matrixRows;
+    const cols: usize = matrix.header.matrixColumns;
+    const colVector = (cols == 1 and rows > 1);
+    const upRows: usize = if (colVector) 1 else rows;
+    const upCols: usize = if (colVector) rows else cols;
+    var tmpStr = std.mem.zeroes([200]u8);
+    const tmpFormat = displayFormat;
+    const tmpFormatDigits = displayFormatDigits;
+    var width: i16 = frontier_char_string.stringWidth("[" ++ STD_MAT_BR, &standardFont, true, true);
+    if (upCols > MATRIX_MAX_COLUMNS or upRows > MATRIX_MAX_ROWS_ON_SHOW) {
+        return false; // more than the upright layout draws
+    }
+    displayFormat = DF_ALL;
+    displayFormatDigits = 0;
+    var j: usize = 0;
+    while (j < upCols) : (j += 1) {
+        var widest: i16 = 0;
+        var i: usize = 0;
+        while (i < upRows) : (i += 1) {
+            frontier_display.real34ToDisplayString(&matrix.matrixElements.?[if (colVector) j else i * cols + j], amNone, &tmpStr, &standardFont, UNSHRUNK_WIDTH, 34, @intFromBool(LIMITEXP), @intFromBool(FRONTSPACE), LIMITIRFRAC);
+            if (STRIP_INTEGER_MATRIX_RADIX) {
+                frontier_char_string.stripTrailingRadix(&tmpStr);
+            }
+            const element = frontier_char_string.stringWidth(&tmpStr, &standardFont, true, true);
+            widest = if (element > widest) element else widest;
+        }
+        width += widest + frontier_char_string.stringWidth(STD_SPACE_FIGURE, &standardFont, true, true);
+    }
+    displayFormat = tmpFormat;
+    displayFormatDigits = tmpFormatDigits;
+    return width <= MATRIX_LINE_WIDTH - prefixWidth;
+}
+
+// The SHOW vertical vector test.
+// A plain vector shows one element per line, and so does a matrix whose elements plus one blank line
+// between its rows fit the page. Tagged and polar vectors keep the one-line form, and so does the stack
+// line during an active SHOW state. keepOneLine is the matrix the upright layout already shows whole.
+fn showsVerticalVector(header: *align(1) const matrixHeader_t, prefixWidth: i16, regXposition: bool_t, keepOneLine: bool) bool {
+    if (comptime !option_mx_show) return false;
+    const rows: u32 = header.matrixRows;
+    const cols: u32 = header.matrixColumns;
+    return SHOWMODE() and prefixWidth > 0 and !regXposition and !keepOneLine and
+        (if (rows == 1 or cols == 1) rows * cols >= 2 else rows * cols + rows - 1 <= MATRIX_MAX_ROWS_ON_SHOW) and
+        getTagAngularMode(header.mtag) == amNone and !is2dVectorPolar(header.mtag);
+}
+
+// The vertical vector budget: screen width less prefix, brackets and the ^T of a transposed row vector.
+fn showsVerticalVectorMaxWidth(header: *align(1) const matrixHeader_t, font: *const font_t, prefixWidth: i16) i16 {
+    return SCREEN_WIDTH - 1 - prefixWidth - frontier_char_string.stringWidth("[", font, true, true) - frontier_char_string.stringWidth(STD_MAT_BR, font, true, true) -
+        // the rolled out page sets the matrix bracket outside the row brackets
+        (if (header.matrixRows > 1 and header.matrixColumns > 1) frontier_char_string.stringWidth("[]", font, true, true) else 0) -
+        (if (header.matrixRows == 1) frontier_char_string.stringWidth(STD_SUP_BOLD_T, font, true, true) else 0);
+}
+
+// SHOW format and vector reshape.
+// M.ALL set: the optimised ALL page. M.ALL clear: the stashed user format. A row vector folds to a
+// column, marked ^T.
+fn reshapeVerticalVector(header: *align(1) const matrixHeader_t, prefixWidth: i16, regXposition: bool_t, keepOneLine: bool, rows: *c_int, cols: *c_int, colVector: *bool, transposedVector: *bool) bool {
+    const verticalVector = showsVerticalVector(header, prefixWidth, regXposition, keepOneLine);
+    colVector.* = false;
+    transposedVector.* = false;
+    if (comptime option_mx_show) {
+        if (SHOWMODE() and prefixWidth > 0) {
+            // one M.ALL page, digits 0
+            displayFormat = if (getSystemFlag(FLAG_M_ALL)) DF_ALL else showMatrixUserDisplayFormat;
+            displayFormatDigits = if (getSystemFlag(FLAG_M_ALL)) 0 else showMatrixUserDisplayFormatDigits;
+        }
+    }
+    if (verticalVector) {
+        if (rows.* == 1) { // a row vector folds, marked ^T
+            transposedVector.* = true;
+            rows.* = cols.*;
+            cols.* = 1;
+        } else if (cols.* > 1) { // a matrix rolls out row by row into one column
+            rows.* = rows.* * cols.*;
+            cols.* = 1;
+        }
+    } else if (cols.* == 1 and rows.* > 1) {
+        colVector.* = true;
+        cols.* = rows.*;
+        rows.* = 1;
+    }
+    return verticalVector;
+}
+
+// The SIG fit of one value.
+// Lowers the SIG count with the window at 34; the internal width shrink flips plain values to sci.
+// Returns true when digits shed.
+fn sigFitReal34(value: *const real34_t, tag: u8, dest: [*c]u8, font: *const font_t, budget: i16, frontSpace: bool_t) bool {
+    const tmpDigits = displayFormatDigits;
+    var ddFree: c_int = 33;
+    var dd: c_int = 33;
+    while (dd >= 1) : (dd -= 1) { // SIG n shows n+1 digits
+        displayFormatDigits = @intCast(dd);
+        frontier_display.real34ToDisplayString(value, tag, dest, font, UNSHRUNK_WIDTH, 34, @intFromBool(LIMITEXP), @intFromBool(frontSpace), LIMITIRFRAC);
+        if (strstr(dest, STD_SUB_10) == null) { // the unconstrained best count
+            ddFree = dd;
+            break;
+        }
+    }
+    var chosen: c_int = 0;
+    var fallback: c_int = 0;
+    dd = 33;
+    while (dd >= 1) : (dd -= 1) {
+        displayFormatDigits = @intCast(dd);
+        frontier_display.real34ToDisplayString(value, tag, dest, font, UNSHRUNK_WIDTH, 34, @intFromBool(LIMITEXP), @intFromBool(frontSpace), LIMITIRFRAC);
+        if (frontier_char_string.stringWidth(dest, font, true, true) <= budget) {
+            if (strstr(dest, STD_SUB_10) == null) { // plain wins over sci
+                chosen = dd;
+                break;
+            }
+            if (fallback == 0) {
+                fallback = dd; // sci-only fallback count
+            }
+        }
+    }
+    if (chosen == 0) {
+        chosen = if (fallback > 0) fallback else 1;
+        displayFormatDigits = @intCast(chosen);
+        frontier_display.real34ToDisplayString(value, tag, dest, font, UNSHRUNK_WIDTH, 34, @intFromBool(LIMITEXP), @intFromBool(frontSpace), LIMITIRFRAC);
+    }
+    displayFormatDigits = tmpDigits;
+    return chosen < ddFree; // shed when below the free fit
+}
+
+// The laid flat page test.
+// A vector, a two row matrix or a two column matrix that the upright page cannot show whole runs its
+// rows, or its columns, along the line and wraps. A column runs flat once the page cannot take every row,
+// a row once it is wider than the columns the line takes. keepOneLine is the matrix the upright layout
+// already shows whole, which needs no other page.
+fn laysFlatOnShow(header: *align(1) const matrixHeader_t, prefixWidth: i16, regXposition: bool_t, keepOneLine: bool) bool {
+    if (comptime !option_mx_show) return false;
+    const rows: u32 = header.matrixRows;
+    const cols: u32 = header.matrixColumns;
+    if (!(SHOWMODE() and prefixWidth > 0 and !regXposition) or keepOneLine or getTagAngularMode(header.mtag) != amNone or is2dVectorPolar(header.mtag)) {
+        return false;
+    }
+    if (rows == 1 or cols == 1) {
+        return rows * cols > MATRIX_MAX_ROWS_ON_SHOW; // the upright page shows them all up to its line count
+    }
+    if (rows == 2) {
+        return rows * cols + rows - 1 > MATRIX_MAX_ROWS_ON_SHOW; // wider than the rolled out page takes
+    }
+    if (cols == 2) {
+        return rows > MATRIX_MAX_ROWS_ON_SHOW;
+    }
+    return false;
+}
+
+// The width of a rendered element up to and including its radix mark, which is what the cells are
+// aligned on.
+fn flatLeftWidth(str: [*c]const u8, font: *const font_t) i16 {
+    var head = std.mem.zeroes([200]u8);
+    var used: usize = 0;
+    var scan: [*c]const u8 = str;
+    while (scan.* != 0) : (scan += 1) {
+        head[used] = scan.*;
+        used += 1;
+        if (scan.* == '.' or scan.* == ',') {
+            break;
+        }
+    }
+    head[used] = 0;
+    return frontier_char_string.stringWidth(&head, font, true, true);
+}
+
+// The laid flat page.
+// One matrix row, or one matrix column, runs along the line and wraps to the next until the page is
+// full. Every line after the first names the row or the column it carries. The brackets sit at the two
+// ends only, and a page read by column closes with the transpose mark.
+fn showRealMatrixFlat(matrix: *const real34Matrix_t, prefixWidth: i16) void {
+    if (comptime !option_mx_show) return;
+    var elem = std.mem.zeroes([200]u8);
+    const font: *const font_t = &standardFont;
+    const rows: usize = matrix.header.matrixRows;
+    const cols: usize = matrix.header.matrixColumns;
+    const byColumn = (cols == 1) or (rows > 2 and cols == 2);
+    const runs: usize = if (byColumn) cols else rows;
+    const runLength: usize = if (byColumn) rows else cols;
+    const gap: i16 = frontier_char_string.stringWidth(STD_SPACE_FIGURE, font, true, true);
+    // the row and column names sit left of the bracket
+    const labelWidth: i16 = if (runs > 1) frontier_char_string.stringWidth("r2: ", font, true, true) else 0;
+    const leftMargin: i16 = if (prefixWidth > labelWidth) prefixWidth else labelWidth;
+    const avail: i16 = SCREEN_WIDTH - 1 - leftMargin - frontier_char_string.stringWidth("[]", font, true, true) - (if (byColumn) frontier_char_string.stringWidth(STD_SUP_BOLD_T, font, true, true) else 0);
+    const tmpDisplayFormat = displayFormat;
+    const tmpDisplayFormatDigits = displayFormatDigits;
+    var maxLeft: i16 = 0;
+    var maxRight: i16 = 0;
+    var cellWidth: i16 = avail;
+    var fontHeight: i16 = STANDARD_FONT_HEIGHT_;
+    var perLine: usize = 1;
+    var linesPerRun: usize = runLength;
+    var totalLines: usize = runs * runLength;
+    var digits: i16 = 34;
+
+    // the whole page is one stream, so the integer rule is taken over all of it
+    var allIntegers: bool_t = true;
+    getRealMatrixIntegerColumns(matrix, displayFormat, @intCast(cols), 0, 0, @intCast(rows), 1, @ptrCast(&allIntegers));
+    var element: usize = 0;
+    while (allIntegers and element < rows * cols) : (element += 1) {
+        const value = &matrix.matrixElements.?[element];
+        if (!real34IsAnInteger(value) or (real34Digits(value) > 1 and real34GetExponent(value) + real34Digits(value) - 1 >= 15)) {
+            allIntegers = false;
+        }
+    }
+    if (allIntegers) {
+        displayFormat = DF_FIX;
+        displayFormatDigits = 0;
+    }
+
+    // the widest count whose whole page fits, the rule the upright page uses; below two the mantissa goes
+    digits = 34;
+    while (digits >= 2) : (digits -= 1) {
+        maxLeft = 0;
+        maxRight = 0;
+        element = 0;
+        while (element < rows * cols) : (element += 1) {
+            frontier_display.real34ToDisplayString(&matrix.matrixElements.?[element], amNone, &elem, font, UNSHRUNK_WIDTH, digits, @intFromBool(LIMITEXP), @intFromBool(FRONTSPACE), LIMITIRFRAC);
+            if (STRIP_INTEGER_MATRIX_RADIX and allIntegers) {
+                frontier_char_string.stripTrailingRadix(&elem);
+            }
+            const left = flatLeftWidth(&elem, font);
+            const whole = frontier_char_string.stringWidth(&elem, font, true, true);
+            maxLeft = if (left > maxLeft) left else maxLeft;
+            maxRight = if ((whole - left) > maxRight) (whole - left) else maxRight;
+        }
+        cellWidth = maxLeft + maxRight;
+        perLine = @intCast(@divTrunc(avail + gap, cellWidth + gap));
+        perLine = if (perLine < 1) 1 else perLine;
+        linesPerRun = (runLength + perLine - 1) / perLine;
+        totalLines = runs * linesPerRun;
+        if (displayFormat != DF_ALL or totalLines <= MATRIX_MAX_ROWS_ON_SHOW) {
+            break; // a format the user set keeps its own count, so only the ALL page searches for one
+        }
+    }
+    const overflows = totalLines > MATRIX_MAX_ROWS_ON_SHOW;
+    if (overflows) {
+        totalLines = (MATRIX_MAX_ROWS_ON_SHOW / runs) * runs; // the page ends on a whole set of rows, or of columns
+    }
+    if (totalLines > MATRIX_MAX_ROWS) {
+        fontHeight = STANDARD_FONT_HEIGHT_ - 1;
+    }
+
+    const X_POS: i16 = leftMargin;
+    var Y_POS: i16 = Y_POSITION_OF_REGISTER_T_LINE - REGISTER_LINE_HEIGHT + 1 + @as(i16, @intCast(totalLines)) * fontHeight;
+    Y_POS += (if (totalLines == 1) STANDARD_FONT_HEIGHT_ else REGISTER_LINE_HEIGHT - STANDARD_FONT_HEIGHT_);
+    lcdFillRect(screenPos(X_POS), screenPos(Y_POS - @as(i16, @intCast(totalLines - 1)) * fontHeight), @intCast(SCREEN_WIDTH - X_POS), @intCast(@as(i16, @intCast(totalLines - 1)) * fontHeight + STANDARD_FONT_HEIGHT), LCD_SET_VALUE);
+
+    var runLabel = [4]u8{ if (byColumn) 'c' else 'r', '0', ':', 0 };
+    const cellsX: i16 = X_POS + frontier_char_string.stringWidth("[", font, true, true);
+    var lastCell: i16 = 0;
+    var line: usize = 0;
+    while (line < totalLines) : (line += 1) {
+        const lineY: i16 = Y_POS - @as(i16, @intCast(totalLines - 1 - line)) * fontHeight;
+        const run = line % runs; // the rows, or the columns, alternate line by line so their elements stay side by side
+        if (line < runs) { // the matrix bracket keeps the height it has on any other page, one line per row or column
+            _ = frontier_screen.showString(if (runs == 1) "[" else if (line == 0) STD_MAT_TL else STD_MAT_BL, font, screenPos(X_POS), screenPos(lineY), 0, 1, 0);
+        }
+        if (line > 0 and runs > 1) { // a vector is one run, so there is nothing to name
+            runLabel[1] = @intCast('1' + run);
+            _ = frontier_screen.showString(&runLabel, font, 1, screenPos(lineY), 0, 1, 0);
+        }
+        var cell: usize = 0;
+        while (cell < perLine) : (cell += 1) {
+            const within = (line / runs) * perLine + cell;
+            if (within >= runLength) {
+                break;
+            }
+            if (overflows and line >= totalLines - runs and cell + 1 == perLine) { // every row, or every column, ends on its own ellipsis
+                _ = frontier_screen.showString(STD_ELLIPSIS, font, screenPos(cellsX + @as(i16, @intCast(cell)) * (cellWidth + gap)), screenPos(lineY), 0, 1, 0);
+                break;
+            }
+            frontier_display.real34ToDisplayString(&matrix.matrixElements.?[if (byColumn) within * cols + run else run * runLength + within], amNone, &elem, font, UNSHRUNK_WIDTH, digits, @intFromBool(LIMITEXP), @intFromBool(FRONTSPACE), LIMITIRFRAC);
+            if (STRIP_INTEGER_MATRIX_RADIX and allIntegers) {
+                frontier_char_string.stripTrailingRadix(&elem);
+            }
+            const elemX: i16 = cellsX + @as(i16, @intCast(cell)) * (cellWidth + gap) + maxLeft - flatLeftWidth(&elem, font);
+            _ = frontier_screen.showString(&elem, font, screenPos(elemX), screenPos(lineY), 0, 1, 0);
+        }
+    }
+    // The closing bracket keeps the same height and sits at the end of the last row, or of the last column
+    if (overflows) { // the last cell of every row holds the ellipsis, so the bracket follows that
+        lastCell = cellsX + @as(i16, @intCast(perLine - 1)) * (cellWidth + gap) + frontier_char_string.stringWidth(STD_ELLIPSIS, font, true, true);
+    } else {
+        const lastChunk = runLength - ((totalLines / runs) - 1) * perLine;
+        lastCell = cellsX + @as(i16, @intCast(if (lastChunk > perLine) perLine else lastChunk)) * (cellWidth + gap) - gap;
+    }
+    line = totalLines - runs;
+    while (line < totalLines) : (line += 1) {
+        const lineY: i16 = Y_POS - @as(i16, @intCast(totalLines - 1 - line)) * fontHeight;
+        _ = frontier_screen.showString(if (runs == 1) "]" else if (line + 1 == totalLines) STD_MAT_BR else STD_MAT_TR, font, screenPos(lastCell), screenPos(lineY), 0, 1, 0);
+    }
+    if (byColumn) {
+        _ = frontier_screen.showString(STD_SUP_BOLD_T, font, screenPos(lastCell + frontier_char_string.stringWidth("]", font, true, true)), screenPos(Y_POS), 0, 1, 0);
+    }
+    displayFormat = tmpDisplayFormat;
+    displayFormatDigits = tmpDisplayFormatDigits;
+}
+
 // A NULL `dest` draws the matrix. A non-NULL `dest` collects a one-row vector
 // into it as a string and draws nothing. Each element is formatted at the end of
 // `dest`, so `dest` is also the element scratch; tmpString is touched only when
@@ -785,9 +1113,9 @@ pub export fn showRealMatrix(matrix: *const real34Matrix_t, prefixWidth: i16, re
     var width: i16 = 0;
     var font: *const font_t = &numericFont;
     var fontHeight: i16 = NUMERIC_FONT_HEIGHT_;
-    const maxWidth: i16 = MATRIX_LINE_WIDTH_C - prefixWidth;
+    var maxWidth: i16 = MATRIX_LINE_WIDTH_C - prefixWidth;
     var colWidth = std.mem.zeroes([MATRIX_MAX_COLUMNS]i16);
-    var rPadWidth = std.mem.zeroes([MATRIX_MAX_ROWS * MATRIX_MAX_COLUMNS]i16);
+    var rPadWidth = std.mem.zeroes([MATRIX_MAX_ROWS_ON_SHOW * MATRIX_MAX_COLUMNS]i16);
     var allElementsInColAreIntegers = std.mem.zeroes([MATRIX_MAX_COLUMNS]bool_t);
     const forEditor = matrix == &openMatrixMIMPointer.realMatrix;
     const sRow: u16 = if (forEditor) scrollRow else 0;
@@ -797,18 +1125,29 @@ pub export fn showRealMatrix(matrix: *const real34Matrix_t, prefixWidth: i16, re
 
     Y_POS = Y_POSITION_OF_REGISTER_X_LINE - NUMERIC_FONT_HEIGHT_;
 
+    // Reshape and page format
     var colVector = false;
-    if (cols == 1 and rows > 1) {
-        colVector = true;
-        cols = rows;
-        rows = 1;
-    }
+    var transposedVector = false;
+    const fitsUpright = matrixFitsUpright(matrix, prefixWidth); // the upright layout shows it whole, so no other page is tried
+    const verticalVector = reshapeVerticalVector(&matrix.header, prefixWidth, regXposition, fitsUpright, &rows, &cols, &colVector, &transposedVector);
+    const showFormat: u16 = displayFormat; // restored on the font retry
+    const showPage = MX_SHOW_PAGE(prefixWidth, regXposition); // the SHOW page, never the stack line
+    const fixPage = showPage and displayFormat == DF_FIX;
 
     // One row only: a multi-row matrix, or the editor's own matrix, leaves dest
     // empty and the caller shows [n<*>n Matrix] instead.
     if (dest != null and (forEditor or rows > 1)) {
         dest[0] = 0;
         return;
+    }
+
+    if (comptime option_mx_show) {
+        if (dest == null and !forEditor and laysFlatOnShow(&matrix.header, prefixWidth, regXposition, fitsUpright)) {
+            showRealMatrixFlat(matrix, prefixWidth);
+            displayFormat = @intCast(tmpDisplayFormat);
+            displayFormatDigits = tmpDisplayFormatDigits;
+            return;
+        }
     }
 
     sCol = boundScrollColumn(forEditor, sCol, @intCast(cols));
@@ -819,15 +1158,20 @@ pub export fn showRealMatrix(matrix: *const real34Matrix_t, prefixWidth: i16, re
         _ = strcpy(dest, "[");
     }
 
+    // The row limit per context
     var maxCols: u16 = if (cols > MATRIX_MAX_COLUMNS) MATRIX_MAX_COLUMNS else @intCast(cols);
     const rowLimit: usize = if (!regXposition and prefixWidth > 0)
-        (if (SHOWMODE()) MATRIX_MAX_ROWS else MATRIX_MAX_ROWS_ON_VIEW)
+        (if (SHOWMODE()) MATRIX_MAX_ROWS_ON_SHOW else MATRIX_MAX_ROWS_ON_VIEW)
     else
         MATRIX_MAX_ROWS_ON_STACK;
     const maxRows: u16 = if (rows > rowLimit) @intCast(rowLimit) else @intCast(rows);
     if (@as(c_int, maxCols) + @as(c_int, sCol) >= cols) {
         maxCols = @intCast(cols - @as(c_int, sCol));
     }
+
+    // The rolled out page: every element on its own line, one blank line between the rows of the matrix it came from
+    const groupCols: usize = if (verticalVector and matrix.header.matrixRows >= 2 and matrix.header.matrixColumns >= 2) matrix.header.matrixColumns else 0;
+    const totalLines: usize = if (groupCols != 0) maxRows + matrix.header.matrixRows - 1 else maxRows;
 
     const matSelRow: i16 = if (colVector) getJRegisterAsInt(true) else getIRegisterAsInt(true);
     const matSelCol: i16 = if (colVector) getIRegisterAsInt(true) else getJRegisterAsInt(true);
@@ -843,10 +1187,22 @@ pub export fn showRealMatrix(matrix: *const real34Matrix_t, prefixWidth: i16, re
     // when `rows < threshold`.
     var atSmallFontLabel: bool = false;
     smallFont: while (true) {
-        if (atSmallFontLabel or rows >= (if (forEditor) @as(c_int, 4) else @as(c_int, 5))) {
+        // The font choice. SHOW fits 5 numeric rows; padded SIG takes the small font.
+        if (atSmallFontLabel or rows >= (if (showPage) @as(c_int, 6) else (if (forEditor) @as(c_int, 4) else @as(c_int, 5))) or
+            (verticalVector and displayFormat == DF_SF and getSystemFlag(FLAG_SIGZEROS)))
+        {
             font = &standardFont;
             fontHeight = STANDARD_FONT_HEIGHT_;
             Y_POS = Y_POSITION_OF_REGISTER_X_LINE - STANDARD_FONT_HEIGHT_;
+        }
+        // The vertical page layout
+        if (verticalVector) {
+            maxWidth = showsVerticalVectorMaxWidth(&matrix.header, font, prefixWidth); // same budget the column-width function fits against
+        }
+        if (comptime option_mx_show) {
+            if (totalLines > MATRIX_MAX_ROWS) {
+                fontHeight = STANDARD_FONT_HEIGHT_ - 1; // 11 rows at 19 px fit the screen
+            }
         }
 
         if (!forEditor) {
@@ -856,16 +1212,17 @@ pub export fn showRealMatrix(matrix: *const real34Matrix_t, prefixWidth: i16, re
         const leftEllipsis = (sCol > 0);
 
         if (!regXposition and prefixWidth > 0) {
-            Y_POS = Y_POSITION_OF_REGISTER_T_LINE - REGISTER_LINE_HEIGHT + 1 + @as(i16, @intCast(maxRows)) * fontHeight;
+            Y_POS = Y_POSITION_OF_REGISTER_T_LINE - REGISTER_LINE_HEIGHT + 1 + @as(i16, @intCast(totalLines)) * fontHeight;
         }
         if (!regXposition and prefixWidth > 0 and font == &standardFont) {
-            Y_POS += (if (maxRows == 1) STANDARD_FONT_HEIGHT_ else REGISTER_LINE_HEIGHT - STANDARD_FONT_HEIGHT_);
+            Y_POS += (if (totalLines == 1) STANDARD_FONT_HEIGHT_ else REGISTER_LINE_HEIGHT - STANDARD_FONT_HEIGHT_);
         }
 
-        getRealMatrixIntegerColumns(matrix, tmpDisplayFormat, @intCast(cols), sRow, sCol, maxRows, maxCols, &allElementsInColAreIntegers);
+        // Measure the column widths: the selected page format under OPTION_MX_SHOW, the user format without it
+        getRealMatrixIntegerColumns(matrix, if (option_mx_show) displayFormat else tmpDisplayFormat, @intCast(cols), sRow, sCol, maxRows, maxCols, &allElementsInColAreIntegers);
 
         var baseWidth: i16 = (if (leftEllipsis) frontier_char_string.stringWidth(STD_ELLIPSIS ++ " ", font, true, true) else 0) + (if (rightEllipsis) frontier_char_string.stringWidth(" " ++ STD_ELLIPSIS, font, true, true) else 0);
-        var mtxWidth = getRealMatrixColumnWidths(matrix, prefixWidth, font, &colWidth, &rPadWidth, &digits, maxCols, &allElementsInColAreIntegers);
+        var mtxWidth = getRealMatrixColumnWidths(matrix, prefixWidth, regXposition, font, &colWidth, &rPadWidth, &digits, maxCols, &allElementsInColAreIntegers);
         var noFix = (mtxWidth < 0);
         mtxWidth = if (mtxWidth < 0) -mtxWidth else mtxWidth;
         totalWidth = baseWidth + mtxWidth;
@@ -874,22 +1231,25 @@ pub export fn showRealMatrix(matrix: *const real34Matrix_t, prefixWidth: i16, re
             displayFormat = if (getSystemFlag(FLAG_ENGOVR)) DF_ENG else DF_SCI;
             displayFormatDigits = @intCast(digits);
         }
-        if (totalWidth > maxWidth or leftEllipsis) {
+        // Shed digits: retry small font
+        if (totalWidth > maxWidth or leftEllipsis or (showPage and font == &numericFont and digits < 34)) {
             if (font == &numericFont) {
-                displayFormat = @intCast(tmpDisplayFormat);
+                displayFormat = @intCast(showFormat);
                 displayFormatDigits = tmpDisplayFormatDigits;
                 atSmallFontLabel = true;
                 continue :smallFont;
             } else {
                 if (tmpDisplayFormat == DF_ALL or getSystemFlag(FLAG_M_ALL)) { // the user format is used unless ALL may be biased to make it fit
-                    displayFormat = DF_SCI;
+                    displayFormat = if (getSystemFlag(FLAG_ENGOVR)) DF_ENG else DF_SCI; // ENGOVR decides the exponent form everywhere
                     displayFormatDigits = 3;
                 }
-                mtxWidth = getRealMatrixColumnWidths(matrix, prefixWidth, font, &colWidth, &rPadWidth, &digits, maxCols, &allElementsInColAreIntegers);
+                // the ellipsis takes its width off the budget, else the fit is measured without it
+                mtxWidth = getRealMatrixColumnWidths(matrix, prefixWidth + baseWidth, regXposition, font, &colWidth, &rPadWidth, &digits, maxCols, &allElementsInColAreIntegers);
                 noFix = (mtxWidth < 0);
                 mtxWidth = if (mtxWidth < 0) -mtxWidth else mtxWidth;
                 totalWidth = baseWidth + mtxWidth;
-                if (totalWidth > maxWidth) {
+                // the width call fits without the ellipsis the caller adds, so an unfloored shrink strips every column
+                if (totalWidth > maxWidth and maxCols > 1) {
                     maxCols -= 1;
                     atSmallFontLabel = true;
                     continue :smallFont;
@@ -948,7 +1308,7 @@ pub export fn showRealMatrix(matrix: *const real34Matrix_t, prefixWidth: i16, re
                 }
             } else if (!regXposition and prefixWidth > 0) {
                 // Blank the area behind the matrix.
-                lcdFillRect(screenPos(X_POS), screenPos(Y_POS - @as(i16, @intCast(maxRows - 1)) * fontHeight), @intCast(frontier_char_string.stringWidth("[", font, true, true) + baseWidth + frontier_char_string.stringWidth(&endChar, font, true, true)), @intCast(if (font == &numericFont) @as(i16, @intCast(maxRows - 1)) * fontHeight + NUMERIC_FONT_HEIGHT else @as(i16, @intCast(maxRows - 1)) * fontHeight + STANDARD_FONT_HEIGHT), LCD_SET_VALUE);
+                lcdFillRect(screenPos(X_POS), screenPos(Y_POS - @as(i16, @intCast(totalLines - 1)) * fontHeight), @intCast(frontier_char_string.stringWidth("[", font, true, true) + baseWidth + frontier_char_string.stringWidth(&endChar, font, true, true) + (if (transposedVector) frontier_char_string.stringWidth(STD_SUP_BOLD_T, font, true, true) else 0)), @intCast(if (font == &numericFont) @as(i16, @intCast(totalLines - 1)) * fontHeight + NUMERIC_FONT_HEIGHT else @as(i16, @intCast(totalLines - 1)) * fontHeight + STANDARD_FONT_HEIGHT), LCD_SET_VALUE);
             } else {
                 // The stack position: a partial refresh leaves stale register text
                 // in the band the matrix covers.
@@ -963,13 +1323,28 @@ pub export fn showRealMatrix(matrix: *const real34Matrix_t, prefixWidth: i16, re
         var bb: real_t = undefined;
         var cc: real_t = undefined;
 
+        // The rolled out page labels each row after the first in the prefix column
+        const outerBracket: i16 = if (groupCols != 0) frontier_char_string.stringWidth("[", font, true, true) else 0;
+        if (toDisplay and groupCols != 0) {
+            var rowLabel = [4]u8{ 'r', '0', ':', 0 };
+            var group: usize = 1;
+            while (group < matrix.header.matrixRows) : (group += 1) {
+                rowLabel[1] = @intCast('1' + group);
+                _ = frontier_screen.showString(&rowLabel, &standardFont, 1, screenPos(Y_POS - @as(i16, @intCast(totalLines - 1 - group * (groupCols + 1))) * fontHeight), 0, 1, 0);
+            }
+        }
+
         var i: usize = 0;
         while (i < maxRows) : (i += 1) {
+            const lineFromBottom: usize = if (groupCols != 0) (totalLines - 1 - (i + i / groupCols)) else (maxRows - 1 - i);
             if (toDisplay) {
                 colX = frontier_char_string.stringWidth("[", font, true, true);
-                _ = frontier_screen.showString(if (maxRows == 1) "[" else if (i == 0) STD_MAT_TL else if (i + 1 == maxRows) STD_MAT_BL else STD_MAT_ML, font, screenPos(X_POS + 5), screenPos(Y_POS - @as(i16, @intCast(maxRows - 1 - i)) * fontHeight), 0, 0, 0);
+                _ = frontier_screen.showString(if (groupCols != 0) "[" else if (maxRows == 1) "[" else if (i == 0) STD_MAT_TL else if (i + 1 == maxRows) STD_MAT_BL else STD_MAT_ML, font, screenPos(X_POS + 5 + outerBracket), screenPos(Y_POS - @as(i16, @intCast(lineFromBottom)) * fontHeight), 0, 0, 0);
+                if (groupCols != 0 and i == 0) { // the matrix bracket opens outside the row bracket of the first element
+                    _ = frontier_screen.showString("[", font, screenPos(X_POS + 5), screenPos(Y_POS - @as(i16, @intCast(lineFromBottom)) * fontHeight), 0, 0, 0);
+                }
                 if (leftEllipsis) {
-                    _ = frontier_screen.showString(STD_ELLIPSIS ++ " ", font, screenPos(X_POS + 5 + frontier_char_string.stringWidth("[", font, true, true)), screenPos(Y_POS - @as(i16, @intCast(maxRows - 1 - i)) * fontHeight), 0, 1, 0);
+                    _ = frontier_screen.showString(STD_ELLIPSIS ++ " ", font, screenPos(X_POS + 5 + outerBracket + frontier_char_string.stringWidth("[", font, true, true)), screenPos(Y_POS - @as(i16, @intCast(lineFromBottom)) * fontHeight), 0, 1, 0);
                     colX += frontier_char_string.stringWidth(STD_ELLIPSIS ++ " ", font, true, true);
                 }
             }
@@ -1004,10 +1379,15 @@ pub export fn showRealMatrix(matrix: *const real34Matrix_t, prefixWidth: i16, re
                     var element: real34_t = undefined;
 
                     if (displayFormat != DF_ALL) {
-                        digits = 15;
+                        // SHOW opens to 34 digits; the FIX page window is 33 so e33 up takes the sci form
+                        digits = if (fixPage) 33 else (if (showPage) @as(i16, 34) else 15);
                     }
                     extractVectorElement34(matrix, @intCast(j), @intCast((i + sRow) * @as(usize, @intCast(cols)) + j + sCol), rows, cols, &element, &toBeAngle, @intCast(digits), &aa, &bb, &cc);
-                    frontier_display.real34ToDisplayString(&element, toBeAngle, elem, font, colWidth[j], digits, @intFromBool(LIMITEXP), @intFromBool(FRONTSPACE), if (cols * rows > 3) LIMITIRFRAC else LIGHTIRFRAC);
+                    if (displayFormat == DF_SF and verticalVector) {
+                        _ = sigFitReal34(&element, toBeAngle, elem, font, maxWidth - 4, FRONTSPACE); // same budget as measured
+                    } else {
+                        frontier_display.real34ToDisplayString(&element, toBeAngle, elem, font, colWidth[j], digits, @intFromBool(LIMITEXP), @intFromBool(FRONTSPACE), if (cols * rows > 3) LIMITIRFRAC else LIGHTIRFRAC);
+                    }
 
                     if (STRIP_INTEGER_MATRIX_RADIX and allElementsInColAreIntegers[j]) {
                         frontier_char_string.stripTrailingRadix(elem);
@@ -1015,7 +1395,7 @@ pub export fn showRealMatrix(matrix: *const real34Matrix_t, prefixWidth: i16, re
 
                     if (toDisplay) {
                         if (forEditor and matSelRow == @as(i16, @intCast(i + sRow)) and matSelCol == @as(i16, @intCast(j + sCol))) {
-                            lcdFillRect(screenPos(X_POS + 5 + colX), screenPos(Y_POS - @as(i16, @intCast(maxRows - 1 - i)) * fontHeight), @intCast(colWidth[j]), if (font == &numericFont) 32 else 20, LCD_EMPTY_VALUE);
+                            lcdFillRect(screenPos(X_POS + 5 + outerBracket + colX), screenPos(Y_POS - @as(i16, @intCast(lineFromBottom)) * fontHeight), @intCast(colWidth[j]), if (font == &numericFont) 32 else 20, LCD_EMPTY_VALUE);
                             vm = 1;
                         } else {
                             vm = 0;
@@ -1024,15 +1404,18 @@ pub export fn showRealMatrix(matrix: *const real34Matrix_t, prefixWidth: i16, re
                 }
                 if (toDisplay) {
                     width = frontier_char_string.stringWidth(elem, font, true, true) + 1;
-                    _ = frontier_screen.showString(elem, font, screenPos(X_POS + 5 + colX + (if ((j == maxCols) and rightEllipsis) -frontier_char_string.stringWidth(" ", font, true, true) else (colWidth[j] - width) - rPadWidth[i * MATRIX_MAX_COLUMNS + j])), screenPos(Y_POS - @as(i16, @intCast(maxRows - 1 - i)) * fontHeight), vm, 1, 0);
+                    _ = frontier_screen.showString(elem, font, screenPos(X_POS + 5 + outerBracket + colX + (if ((j == maxCols) and rightEllipsis) -frontier_char_string.stringWidth(" ", font, true, true) else (colWidth[j] - width) - rPadWidth[i * MATRIX_MAX_COLUMNS + j])), screenPos(Y_POS - @as(i16, @intCast(lineFromBottom)) * fontHeight), vm, 1, 0);
                     colX += colWidth[j] + frontier_char_string.stringWidth(STD_SPACE_FIGURE, font, true, true) - 1;
                 }
             }
 
             if (toDisplay) {
-                _ = frontier_screen.showString(if (maxRows == 1) &endChar else if (i == 0) STD_MAT_TR else if (i + 1 == maxRows) STD_MAT_BR else STD_MAT_MR, font, screenPos(X_POS + frontier_char_string.stringWidth("[", font, true, true) + baseWidth), screenPos(Y_POS - @as(i16, @intCast(maxRows - 1 - i)) * fontHeight), 0, 1, 0);
+                _ = frontier_screen.showString(if (groupCols != 0) "]" else if (maxRows == 1) &endChar else if (i == 0) STD_MAT_TR else if (i + 1 == maxRows) STD_MAT_BR else STD_MAT_MR, font, screenPos(X_POS + outerBracket + frontier_char_string.stringWidth("[", font, true, true) + baseWidth), screenPos(Y_POS - @as(i16, @intCast(lineFromBottom)) * fontHeight), 0, 1, 0);
+                if (groupCols != 0 and i + 1 == maxRows) { // the matrix bracket closes outside the row bracket of the last element
+                    _ = frontier_screen.showString("]", font, screenPos(X_POS + outerBracket + frontier_char_string.stringWidth("[]", font, true, true) + baseWidth), screenPos(Y_POS - @as(i16, @intCast(lineFromBottom)) * fontHeight), 0, 1, 0);
+                }
                 if (colVector) {
-                    _ = frontier_screen.showString(STD_SUP_BOLD_T, font, screenPos(X_POS + frontier_char_string.stringWidth("[", font, true, true) + frontier_char_string.stringWidth(&endChar, font, true, true) + baseWidth), screenPos(Y_POS - @as(i16, @intCast(maxRows - 1 - i)) * fontHeight), 0, 1, 0);
+                    _ = frontier_screen.showString(STD_SUP_BOLD_T, font, screenPos(X_POS + frontier_char_string.stringWidth("[", font, true, true) + frontier_char_string.stringWidth(&endChar, font, true, true) + baseWidth), screenPos(Y_POS - @as(i16, @intCast(lineFromBottom)) * fontHeight), 0, 1, 0);
                 }
             }
             if (dest != null) {
@@ -1043,37 +1426,70 @@ pub export fn showRealMatrix(matrix: *const real34Matrix_t, prefixWidth: i16, re
             }
         }
 
+        if (toDisplay and transposedVector) { // the ^T on the closing bracket
+            _ = frontier_screen.showString(STD_SUP_BOLD_T, font, screenPos(X_POS + frontier_char_string.stringWidth("[", font, true, true) + frontier_char_string.stringWidth(STD_MAT_BR, font, true, true) + baseWidth), screenPos(Y_POS), 0, 1, 0);
+        }
+
         break :smallFont;
     }
 
+    // Restore the format globals
     displayFormat = @intCast(tmpDisplayFormat);
     displayFormatDigits = tmpDisplayFormatDigits;
 }
 
-pub export fn getRealMatrixColumnWidths(matrix: *const real34Matrix_t, prefixWidth: i16, font: *const font_t, colWidthPtr: [*c]i16, rPadWidthPtr: [*c]i16, digitsPtr: *i16, maxColsIn: u16, allElementsInColAreIntegersPtr: [*c]bool_t) callconv(.c) i16 {
+pub export fn getRealMatrixColumnWidths(matrix: *const real34Matrix_t, prefixWidth: i16, regXposition: bool_t, font: *const font_t, colWidthPtr: [*c]i16, rPadWidthPtr: [*c]i16, digitsPtr: *i16, maxColsIn: u16, allElementsInColAreIntegersPtr: [*c]bool_t) callconv(.c) i16 {
+    // The measured page shape
     var tmpStringL = std.mem.zeroes([200]u8);
-    const colVector = matrix.header.matrixColumns == 1 and matrix.header.matrixRows > 1;
+    const showPage = MX_SHOW_PAGE(prefixWidth, regXposition); // the SHOW page, never the stack line
+    const fixPage = showPage and displayFormat == DF_FIX;
+    const verticalVector = showsVerticalVector(&matrix.header, prefixWidth, regXposition, matrixFitsUpright(matrix, prefixWidth)); // one shared column under SHOW
+    const colVector = !verticalVector and matrix.header.matrixColumns == 1 and matrix.header.matrixRows > 1;
     // A column vector is laid out as one row, so the row count collapses to 1 and
     // the element count moves into the column count below.
-    const rowsReal: c_int = if (colVector) 1 else matrix.header.matrixRows;
-    const actualCols: c_int = if (colVector) matrix.header.matrixRows else matrix.header.matrixColumns;
+    const rowsReal: c_int = if (verticalVector) @as(c_int, matrix.header.matrixRows) * @as(c_int, matrix.header.matrixColumns) else if (colVector) 1 else matrix.header.matrixRows;
+    const actualCols: c_int = if (verticalVector) 1 else if (colVector) matrix.header.matrixRows else matrix.header.matrixColumns;
     const cols: c_int = if (actualCols > @as(c_int, maxColsIn)) @as(c_int, maxColsIn) else actualCols;
-    const maxRows: c_int = if (rowsReal > MATRIX_MAX_ROWS) MATRIX_MAX_ROWS else rowsReal;
+    const rowLimit: c_int = if (showPage) MATRIX_MAX_ROWS_ON_SHOW else MATRIX_MAX_ROWS; // SHOW takes more rows
+    const maxRows: c_int = if (rowsReal > rowLimit) rowLimit else rowsReal;
     const forEditor = matrix == &openMatrixMIMPointer.realMatrix;
     const sRow: u16 = if (forEditor) scrollRow else 0;
     const sCol: u16 = if (forEditor) scrollColumn else 0;
-    const maxWidth: i16 = MATRIX_LINE_WIDTH_C - prefixWidth;
+    // The width budget
+    const maxWidth: i16 = if (verticalVector) showsVerticalVectorMaxWidth(&matrix.header, font, prefixWidth) else MATRIX_LINE_WIDTH_C - prefixWidth;
     var totalWidth: i16 = 0;
     var maxRightWidth = std.mem.zeroes([MATRIX_MAX_COLUMNS]i16);
     var maxLeftWidth = std.mem.zeroes([MATRIX_MAX_COLUMNS]i16);
     const exponentOutOfRange: i16 = 0x4000;
     var noFix = false;
     const dspDigits: i16 = displayFormatDigits;
+    var sfShed = false; // a row shed digits
 
     const maxCols: usize = maxColsIn;
 
+    // The SHOW starting count
     var startDigitCountDown: u16 = @intCast(imax(imin(@as(c_int, displayFormatDigits) * (if (displayFormat == DF_ALL) @as(c_int, 2) else @as(c_int, 1)), imax(@divTrunc(@as(c_int, 50), cols) - 2, 0)), 10));
-    if (isMatrix3dVector(rowsReal, cols)) {
+    if (showPage) {
+        startDigitCountDown = 34; // start at full precision
+        if (displayFormat == DF_SF) {
+            startDigitCountDown = 33; // SIG n shows n+1 digits
+        } else if (displayFormat == DF_FIX) { // cap FIX at 34 total digits
+            var maxE: i16 = 0;
+            var i: usize = 0;
+            while (i < maxRows) : (i += 1) {
+                var j: usize = 0;
+                while (j < maxCols) : (j += 1) {
+                    const e34 = &matrix.matrixElements.?[(i + sRow) * @as(usize, @intCast(actualCols)) + j + sCol];
+                    const e: i16 = if (real34IsZero(e34)) 0 else real34GetExponent(e34) + real34Digits(e34) - 1;
+                    // plain-renderable rows only; e33 up takes the sci form through the 33 window
+                    if (!allElementsInColAreIntegersPtr[j] and e > maxE and e <= 32) {
+                        maxE = e;
+                    }
+                }
+            }
+            startDigitCountDown = @intCast(imax(imin(33 - @as(c_int, maxE), 99), 1));
+        }
+    } else if (isMatrix3dVector(rowsReal, cols)) {
         startDigitCountDown = 5;
     } else if (isMatrix2dVector(rowsReal, cols)) {
         startDigitCountDown = 7;
@@ -1083,6 +1499,9 @@ pub export fn getRealMatrixColumnWidths(matrix: *const real34Matrix_t, prefixWid
         var k: c_int = startDigitCountDown;
         kloop: while (k >= 1) : (k -= 1) {
             if (displayFormat == DF_ALL) {
+                digitsPtr.* = @intCast(k);
+            } else if (showPage) { // the shared maximised count
+                displayFormatDigits = if (displayFormat == DF_SF and verticalVector) 34 else @intCast(k);
                 digitsPtr.* = @intCast(k);
             }
             if (displayFormat == DF_ALL and noFix and getSystemFlag(FLAG_M_ALL)) { // something like SCI
@@ -1103,8 +1522,8 @@ pub export fn getRealMatrixColumnWidths(matrix: *const real34Matrix_t, prefixWid
                     var r34Val: real34_t = undefined;
                     var toBeAngle: u8 = amNone;
                     displayVectorAngle(matrix, @intCast(j), rowsReal, cols, &toBeAngle);
-                    // An all-integer column is drawn at 15 digits, hence measured at 15 too.
-                    const calcDigits: u16 = if (displayFormat == DF_ALL and !allElementsInColAreIntegersPtr[j]) @as(u16, @intCast(k)) else 15;
+                    // Measure one element: integer columns at 15 digits, SHOW at 34; the FIX page window is 33
+                    const calcDigits: u16 = if (displayFormat == DF_ALL and !allElementsInColAreIntegersPtr[j]) @as(u16, @intCast(k)) else (if (fixPage) @as(u16, 33) else (if (showPage) @as(u16, 34) else 15));
                     // A row steps by the matrix width, not by the count of columns on screen.
                     extractVectorElement34(matrix, @intCast(j), @intCast((i + sRow) * @as(usize, @intCast(actualCols)) + j + sCol), rowsReal, cols, &r34Val, &toBeAngle, calcDigits, &aa, &bb, &cc);
 
@@ -1119,7 +1538,14 @@ pub export fn getRealMatrixColumnWidths(matrix: *const real34Matrix_t, prefixWid
                         displayFormatDigits = displayFormatDigits1;
                     }
 
-                    frontier_display.real34ToDisplayString(&r34Val, toBeAngle, &tmpStringL, font, maxWidth, @intCast(calcDigits), @intFromBool(LIMITEXP), @intFromBool(FRONTSPACE), if (cols * rowsReal > 3) LIMITIRFRAC else LIGHTIRFRAC);
+                    if (displayFormat == DF_SF and verticalVector) {
+                        if (sigFitReal34(&r34Val, toBeAngle, &tmpStringL, font, maxWidth - 4, FRONTSPACE)) { // per-row SIG self-fit
+                            sfShed = true;
+                        }
+                    } else {
+                        // no internal shrink under SHOW: it hides shed digits and flips SIG to sci; the k countdown does the fitting
+                        frontier_display.real34ToDisplayString(&r34Val, toBeAngle, &tmpStringL, font, if (showPage) UNSHRUNK_WIDTH else maxWidth, @intCast(calcDigits), @intFromBool(LIMITEXP), @intFromBool(FRONTSPACE), if (cols * rowsReal > 3) LIMITIRFRAC else LIGHTIRFRAC);
+                    }
                     if (STRIP_INTEGER_MATRIX_RADIX and allElementsInColAreIntegersPtr[j]) {
                         frontier_char_string.stripTrailingRadix(&tmpStringL);
                     }
@@ -1134,9 +1560,11 @@ pub export fn getRealMatrixColumnWidths(matrix: *const real34Matrix_t, prefixWid
                         continue :begin;
                     }
 
+                    // Align on the radix
                     var width: i16 = frontier_char_string.stringWidth(&tmpStringL, font, true, true) + 1;
                     rPadWidthPtr[i * MATRIX_MAX_COLUMNS + j] = 0;
-                    if (strstr(&tmpStringL, ".") != null or strstr(&tmpStringL, ",") != null) {
+                    // vector SIG skips the line-up
+                    if ((strstr(&tmpStringL, ".") != null or strstr(&tmpStringL, ",") != null) and !(verticalVector and displayFormat == DF_SF)) {
                         var xStr: [*c]u8 = &tmpStringL;
                         while (xStr.* != 0) : (xStr += 1) {
                             const isEngLike = (displayFormat == DF_ENG or (displayFormat == DF_ALL and getSystemFlag(FLAG_ENGOVR)));
@@ -1206,10 +1634,11 @@ pub export fn getRealMatrixColumnWidths(matrix: *const real34Matrix_t, prefixWid
                 displayFormat = DF_ALL;
                 displayFormatDigits = @intCast(dspDigits);
             }
-            if (displayFormat != DF_ALL) {
+            if (displayFormat != DF_ALL and !showPage) {
                 break :kloop;
             } else if (totalWidth <= maxWidth) {
-                digitsPtr.* = @intCast(k);
+                // nothing shed: the font retry rests
+                digitsPtr.* = if (showPage and k == startDigitCountDown and !sfShed) 34 else @intCast(k);
                 break :kloop;
             } else if (k > 1) {
                 totalWidth = 0;
@@ -1234,12 +1663,12 @@ pub export fn showComplexMatrix(matrix: *const complex34Matrix_t, prefixWidth: i
     var width: i16 = 0;
     var font: *const font_t = &numericFont;
     var fontHeight: i16 = NUMERIC_FONT_HEIGHT_;
-    const maxWidth: i16 = MATRIX_LINE_WIDTH_C - prefixWidth;
+    var maxWidth: i16 = MATRIX_LINE_WIDTH_C - prefixWidth;
     var colWidth = std.mem.zeroes([MATRIX_MAX_COLUMNS]i16);
     var colWidth_r = std.mem.zeroes([MATRIX_MAX_COLUMNS]i16);
     var colWidth_i = std.mem.zeroes([MATRIX_MAX_COLUMNS]i16);
-    var rPadWidth_r = std.mem.zeroes([MATRIX_MAX_ROWS * MATRIX_MAX_COLUMNS]i16);
-    var rPadWidth_i = std.mem.zeroes([MATRIX_MAX_ROWS * MATRIX_MAX_COLUMNS]i16);
+    var rPadWidth_r = std.mem.zeroes([MATRIX_MAX_ROWS_ON_SHOW * MATRIX_MAX_COLUMNS]i16);
+    var rPadWidth_i = std.mem.zeroes([MATRIX_MAX_ROWS_ON_SHOW * MATRIX_MAX_COLUMNS]i16);
     const forEditor = matrix == &openMatrixMIMPointer.complexMatrix;
     const sRow: u16 = if (forEditor) scrollRow else 0;
     var sCol: u16 = if (forEditor) scrollColumn else 0;
@@ -1250,21 +1679,25 @@ pub export fn showComplexMatrix(matrix: *const complex34Matrix_t, prefixWidth: i
 
     Y_POS = Y_POSITION_OF_REGISTER_X_LINE - NUMERIC_FONT_HEIGHT_;
 
+    // Reshape and page format. A complex vector has no integer form to keep, so keepOneLine is false.
     var colVector = false;
-    if (cols == 1 and rows > 1) {
-        colVector = true;
-        cols = rows;
-        rows = 1;
-    }
+    var transposedVector = false;
+    const verticalVector = reshapeVerticalVector(&matrix.header, prefixWidth, regXposition, false, &rows, &cols, &colVector, &transposedVector);
+    const showPage = MX_SHOW_PAGE(prefixWidth, regXposition); // the SHOW page, never the stack line
+    const fixPage = showPage and displayFormat == DF_FIX;
 
     sCol = boundScrollColumn(forEditor, sCol, @intCast(cols));
 
     var maxCols: c_int = if (cols > MATRIX_MAX_COLUMNS) MATRIX_MAX_COLUMNS else cols;
     const rowLimit: c_int = if (!regXposition and prefixWidth > 0) // VIEW / SHOW / stack
-        (if (SHOWMODE()) MATRIX_MAX_ROWS else MATRIX_MAX_ROWS_ON_VIEW)
+        (if (SHOWMODE()) MATRIX_MAX_ROWS_ON_SHOW else MATRIX_MAX_ROWS_ON_VIEW)
     else
         MATRIX_MAX_ROWS_ON_STACK;
     const maxRows: c_int = if (rows > rowLimit) rowLimit else rows;
+
+    // The rolled out page: every element on its own line, one blank line between the rows of the matrix it came from
+    const groupCols: usize = if (verticalVector and matrix.header.matrixRows >= 2 and matrix.header.matrixColumns >= 2) matrix.header.matrixColumns else 0;
+    const totalLines: c_int = if (groupCols != 0) maxRows + @as(c_int, matrix.header.matrixRows) - 1 else maxRows;
 
     const matSelRow: i16 = if (colVector) getJRegisterAsInt(true) else getIRegisterAsInt(true);
     const matSelCol: i16 = if (colVector) getIRegisterAsInt(true) else getJRegisterAsInt(true);
@@ -1281,11 +1714,37 @@ pub export fn showComplexMatrix(matrix: *const complex34Matrix_t, prefixWidth: i
     // block and every `goto smallFont` jumps into it, so retries always re-run
     // the standardFont/Y_POS reset. The flag reproduces that.
     var atSmallFontLabel: bool = false;
+    var sfPartWidth: i16 = 0;
     smallFont: while (true) {
-        if (atSmallFontLabel or rows >= (if (forEditor) @as(c_int, 4) else @as(c_int, 5))) {
+        // The font choice. SHOW fits 5 numeric rows; padded SIG takes the small font.
+        if (atSmallFontLabel or rows >= (if (showPage) @as(c_int, 6) else (if (forEditor) @as(c_int, 4) else @as(c_int, 5))) or
+            (verticalVector and displayFormat == DF_SF and getSystemFlag(FLAG_SIGZEROS)))
+        {
             font = &standardFont;
             fontHeight = STANDARD_FONT_HEIGHT_;
             Y_POS = Y_POSITION_OF_REGISTER_X_LINE - STANDARD_FONT_HEIGHT_ + 2;
+        }
+        // The vertical page layout: the same budget plus a figure space
+        if (verticalVector) {
+            maxWidth = showsVerticalVectorMaxWidth(&matrix.header, font, prefixWidth) + frontier_char_string.stringWidth(STD_SPACE_FIGURE, font, true, true);
+        }
+        // The SIG part budget
+        sfPartWidth = 0;
+        if (verticalVector and displayFormat == DF_SF) {
+            var unitStr = std.mem.zeroes([64]u8);
+            if (polarMode) {
+                _ = strcpy(&unitStr, STD_SPACE_4_PER_EM ++ STD_MEASURED_ANGLE ++ STD_SPACE_4_PER_EM);
+            } else {
+                _ = strcpy(&unitStr, "+");
+                _ = strcat(&unitStr, complexUnit());
+                _ = strcat(&unitStr, productSign());
+            }
+            sfPartWidth = @divTrunc(maxWidth - frontier_char_string.stringWidth(&unitStr, font, true, true) - frontier_char_string.stringWidth(STD_SPACE_FIGURE, font, true, true) - 2, 2);
+        }
+        if (comptime option_mx_show) {
+            if (totalLines > MATRIX_MAX_ROWS) {
+                fontHeight = STANDARD_FONT_HEIGHT_ - 1; // 11 rows at 19 px fit the screen
+            }
         }
 
         if (!forEditor) {
@@ -1295,15 +1754,17 @@ pub export fn showComplexMatrix(matrix: *const complex34Matrix_t, prefixWidth: i
         const leftEllipsis = (sCol > 0);
 
         if (!regXposition and prefixWidth > 0) {
-            Y_POS = Y_POSITION_OF_REGISTER_T_LINE - REGISTER_LINE_HEIGHT + 1 + @as(i16, @intCast(maxRows)) * fontHeight;
+            Y_POS = Y_POSITION_OF_REGISTER_T_LINE - REGISTER_LINE_HEIGHT + 1 + @as(i16, @intCast(totalLines)) * fontHeight;
         }
         if (!regXposition and prefixWidth > 0 and font == &standardFont) {
-            Y_POS += (if (maxRows == 1) STANDARD_FONT_HEIGHT_ else REGISTER_LINE_HEIGHT - STANDARD_FONT_HEIGHT_);
+            Y_POS += (if (totalLines == 1) STANDARD_FONT_HEIGHT_ else REGISTER_LINE_HEIGHT - STANDARD_FONT_HEIGHT_);
         }
 
+        // Measure the column widths
         var baseWidth: i16 = (if (leftEllipsis) frontier_char_string.stringWidth(STD_ELLIPSIS ++ " ", font, true, true) else 0) + (if (rightEllipsis) frontier_char_string.stringWidth(STD_ELLIPSIS, font, true, true) else 0);
-        totalWidth = baseWidth + getComplexMatrixColumnWidths(matrix, prefixWidth, font, &colWidth, &colWidth_r, &colWidth_i, &rPadWidth_r, &rPadWidth_i, &digits, @intCast(maxCols), angleMode, polarMode);
-        if (totalWidth > maxWidth or leftEllipsis) {
+        totalWidth = baseWidth + getComplexMatrixColumnWidths(matrix, prefixWidth, regXposition, font, &colWidth, &colWidth_r, &colWidth_i, &rPadWidth_r, &rPadWidth_i, &digits, @intCast(maxCols), angleMode, polarMode);
+        // Shed digits: retry small font
+        if (totalWidth > maxWidth or leftEllipsis or (showPage and font == &numericFont and digits < 34)) {
             if (font == &numericFont) {
                 atSmallFontLabel = true;
                 continue :smallFont;
@@ -1313,12 +1774,14 @@ pub export fn showComplexMatrix(matrix: *const complex34Matrix_t, prefixWidth: i
                 continue :smallFont;
             } else {
                 if (tmpDisplayFormat == DF_ALL or getSystemFlag(FLAG_M_ALL)) { // the user format is used unless ALL may be biased to make it fit
-                    displayFormat = DF_SCI;
+                    displayFormat = if (getSystemFlag(FLAG_ENGOVR)) DF_ENG else DF_SCI; // ENGOVR decides the exponent form everywhere
                     displayFormatDigits = 2;
                 }
                 clearSystemFlag(FLAG_MULTx);
-                totalWidth = baseWidth + getComplexMatrixColumnWidths(matrix, prefixWidth, font, &colWidth, &colWidth_r, &colWidth_i, &rPadWidth_r, &rPadWidth_i, &digits, @intCast(maxCols), angleMode, polarMode);
-                if (totalWidth > maxWidth) {
+                // the ellipsis takes its width off the budget
+                totalWidth = baseWidth + getComplexMatrixColumnWidths(matrix, prefixWidth + baseWidth, regXposition, font, &colWidth, &colWidth_r, &colWidth_i, &rPadWidth_r, &rPadWidth_i, &digits, @intCast(maxCols), angleMode, polarMode);
+                // the width call fits without the ellipsis the caller adds, so an unfloored shrink strips every column
+                if (totalWidth > maxWidth and maxCols > 1) {
                     maxCols -= 1;
                     atSmallFontLabel = true;
                     continue :smallFont;
@@ -1375,15 +1838,30 @@ pub export fn showComplexMatrix(matrix: *const complex34Matrix_t, prefixWidth: i
         } else {
             // The stack position: a partial refresh leaves stale register text in
             // the band the matrix covers.
-            lcdFillRect(screenPos(X_POS), screenPos(Y_POS - @as(i16, @intCast(maxRows - 1)) * fontHeight), @intCast((if (colVector) frontier_char_string.stringWidth("[]" ++ STD_SUP_BOLD_T, font, true, true) else frontier_char_string.stringWidth("[]", font, true, true)) + baseWidth), @intCast(if (font == &numericFont) @as(i16, @intCast(maxRows - 1)) * fontHeight + NUMERIC_FONT_HEIGHT else @as(i16, @intCast(maxRows - 1)) * fontHeight + STANDARD_FONT_HEIGHT), LCD_SET_VALUE);
+            lcdFillRect(screenPos(X_POS), screenPos(Y_POS - @as(i16, @intCast(totalLines - 1)) * fontHeight), @intCast((if (colVector) frontier_char_string.stringWidth("[]" ++ STD_SUP_BOLD_T, font, true, true) else frontier_char_string.stringWidth("[]", font, true, true)) + baseWidth), @intCast(if (font == &numericFont) @as(i16, @intCast(totalLines - 1)) * fontHeight + NUMERIC_FONT_HEIGHT else @as(i16, @intCast(totalLines - 1)) * fontHeight + STANDARD_FONT_HEIGHT), LCD_SET_VALUE);
+        }
+
+        // Draw the rows. The rolled out page labels each row after the first in the prefix column.
+        const outerBracket: i16 = if (groupCols != 0) frontier_char_string.stringWidth("[", font, true, true) else 0;
+        if (groupCols != 0) {
+            var rowLabel = [4]u8{ 'r', '0', ':', 0 };
+            var group: usize = 1;
+            while (group < matrix.header.matrixRows) : (group += 1) {
+                rowLabel[1] = @intCast('1' + group);
+                _ = frontier_screen.showString(&rowLabel, &standardFont, 1, screenPos(Y_POS - @as(i16, @intCast(totalLines - 1 - @as(c_int, @intCast(group * (groupCols + 1))))) * fontHeight), 0, 1, 0);
+            }
         }
 
         var i: usize = 0;
         while (i < maxRows) : (i += 1) {
+            const lineFromBottom: c_int = if (groupCols != 0) (totalLines - 1 - @as(c_int, @intCast(i + i / groupCols))) else (maxRows - 1 - @as(c_int, @intCast(i)));
             var colX: i16 = frontier_char_string.stringWidth("[", font, true, true);
-            _ = frontier_screen.showString(if (maxRows == 1) "[" else if (i == 0) STD_MAT_TL else if (i + 1 == maxRows) STD_MAT_BL else STD_MAT_ML, font, screenPos(X_POS + 1), screenPos(Y_POS - @as(i16, @intCast(maxRows - 1 - @as(c_int, @intCast(i)))) * fontHeight), 0, 1, 0);
+            _ = frontier_screen.showString(if (groupCols != 0) "[" else if (maxRows == 1) "[" else if (i == 0) STD_MAT_TL else if (i + 1 == maxRows) STD_MAT_BL else STD_MAT_ML, font, screenPos(X_POS + 1 + outerBracket), screenPos(Y_POS - @as(i16, @intCast(lineFromBottom)) * fontHeight), 0, 1, 0);
+            if (groupCols != 0 and i == 0) { // the matrix bracket opens outside the row bracket of the first element
+                _ = frontier_screen.showString("[", font, screenPos(X_POS + 1), screenPos(Y_POS - @as(i16, @intCast(lineFromBottom)) * fontHeight), 0, 1, 0);
+            }
             if (leftEllipsis) {
-                _ = frontier_screen.showString(STD_ELLIPSIS ++ " ", font, screenPos(X_POS + frontier_char_string.stringWidth("[", font, true, true)), screenPos(Y_POS - @as(i16, @intCast(maxRows - 1 - @as(c_int, @intCast(i)))) * fontHeight), 0, 1, 0);
+                _ = frontier_screen.showString(STD_ELLIPSIS ++ " ", font, screenPos(X_POS + outerBracket + frontier_char_string.stringWidth("[", font, true, true)), screenPos(Y_POS - @as(i16, @intCast(lineFromBottom)) * fontHeight), 0, 1, 0);
                 colX += frontier_char_string.stringWidth(STD_ELLIPSIS ++ " ", font, true, true);
             }
             var j: usize = 0;
@@ -1411,16 +1889,20 @@ pub export fn showComplexMatrix(matrix: *const complex34Matrix_t, prefixWidth: i
                     vm = 0;
                 } else {
                     tmpString[0] = 0;
-                    frontier_display.real34ToDisplayString(&re, amNone, tmpString, font, colWidth_r[j], if (displayFormat == DF_ALL) digits else 15, @intFromBool(LIMITEXP), @intFromBool(FRONTSPACE), LIMITIRFRAC);
+                    if (displayFormat == DF_SF and verticalVector) {
+                        _ = sigFitReal34(&re, amNone, tmpString, font, sfPartWidth, FRONTSPACE); // same budget as measured
+                    } else {
+                        frontier_display.real34ToDisplayString(&re, amNone, tmpString, font, colWidth_r[j], if (displayFormat == DF_ALL) digits else (if (fixPage) @as(i16, 33) else (if (showPage) @as(i16, 34) else 15)), @intFromBool(LIMITEXP), @intFromBool(FRONTSPACE), LIMITIRFRAC);
+                    }
                     if (forEditor and matSelRow == @as(i16, @intCast(i + sRow)) and matSelCol == @as(i16, @intCast(j + sCol))) {
-                        lcdFillRect(screenPos(X_POS + colX), screenPos(Y_POS - @as(i16, @intCast(maxRows - 1 - @as(c_int, @intCast(i)))) * fontHeight), @intCast(colWidth[j]), if (font == &numericFont) 32 else 20, LCD_EMPTY_VALUE);
+                        lcdFillRect(screenPos(X_POS + outerBracket + colX), screenPos(Y_POS - @as(i16, @intCast(lineFromBottom)) * fontHeight), @intCast(colWidth[j]), if (font == &numericFont) 32 else 20, LCD_EMPTY_VALUE);
                         vm = 1;
                     } else {
                         vm = 0;
                     }
                 }
                 width = frontier_char_string.stringWidth(tmpString, font, true, true) + 1;
-                _ = frontier_screen.showString(tmpString, font, screenPos(X_POS + colX + (if ((j == @as(usize, @intCast(maxCols))) and rightEllipsis) frontier_char_string.stringWidth(STD_SPACE_FIGURE, font, true, true) - width else (colWidth_r[j] - width) - rPadWidth_r[i * MATRIX_MAX_COLUMNS + j])), screenPos(Y_POS - @as(i16, @intCast(maxRows - 1 - @as(c_int, @intCast(i)))) * fontHeight), vm, 1, 0);
+                _ = frontier_screen.showString(tmpString, font, screenPos(X_POS + outerBracket + colX + (if ((j == @as(usize, @intCast(maxCols))) and rightEllipsis) frontier_char_string.stringWidth(STD_SPACE_FIGURE, font, true, true) - width else (colWidth_r[j] - width) - rPadWidth_r[i * MATRIX_MAX_COLUMNS + j])), screenPos(Y_POS - @as(i16, @intCast(lineFromBottom)) * fontHeight), vm, 1, 0);
                 if (strcmpEq(tmpString, STD_ELLIPSIS) == false) {
                     const neg = real34IsNegative(&im);
                     var cpxUnitWidth: i16 = 0;
@@ -1440,22 +1922,34 @@ pub export fn showComplexMatrix(matrix: *const complex34Matrix_t, prefixWidth: i
                             real34SetPositiveSign(&im);
                         }
                     }
-                    _ = frontier_screen.showString(tmpString, font, screenPos(X_POS + colX + colWidth_r[j] + (width - frontier_char_string.stringWidth(tmpString, font, true, true))), screenPos(Y_POS - @as(i16, @intCast(maxRows - 1 - @as(c_int, @intCast(i)))) * fontHeight), vm, 1, 0);
+                    _ = frontier_screen.showString(tmpString, font, screenPos(X_POS + outerBracket + colX + colWidth_r[j] + (width - frontier_char_string.stringWidth(tmpString, font, true, true))), screenPos(Y_POS - @as(i16, @intCast(lineFromBottom)) * fontHeight), vm, 1, 0);
 
-                    frontier_display.real34ToDisplayString(&im, if (polarMode) @as(u32, @bitCast(@as(i32, angleMode))) else amNone, tmpString, font, colWidth_i[j], if (displayFormat == DF_ALL) digits else 15, @intFromBool(LIMITEXP), @intFromBool(!FRONTSPACE), LIMITIRFRAC);
+                    if (displayFormat == DF_SF and verticalVector) {
+                        _ = sigFitReal34(&im, if (polarMode) @as(u8, @intCast(angleMode)) else amNone, tmpString, font, sfPartWidth, !FRONTSPACE);
+                    } else {
+                        frontier_display.real34ToDisplayString(&im, if (polarMode) @as(u32, @bitCast(@as(i32, angleMode))) else amNone, tmpString, font, colWidth_i[j], if (displayFormat == DF_ALL) digits else (if (fixPage) @as(i16, 33) else (if (showPage) @as(i16, 34) else 15)), @intFromBool(LIMITEXP), @intFromBool(!FRONTSPACE), LIMITIRFRAC);
+                    }
                     width = frontier_char_string.stringWidth(tmpString, font, true, true) + 1;
-                    _ = frontier_screen.showString(tmpString, font, screenPos(X_POS + colX + colWidth_r[j] + cpxUnitWidth + (if ((j == @as(usize, @intCast(maxCols - 1))) and rightEllipsis) @as(i16, 0) else (colWidth_i[j] - width) - rPadWidth_i[i * MATRIX_MAX_COLUMNS + j])), screenPos(Y_POS - @as(i16, @intCast(maxRows - 1 - @as(c_int, @intCast(i)))) * fontHeight), vm, 1, 0);
+                    _ = frontier_screen.showString(tmpString, font, screenPos(X_POS + outerBracket + colX + colWidth_r[j] + cpxUnitWidth + (if ((j == @as(usize, @intCast(maxCols - 1))) and rightEllipsis) @as(i16, 0) else (colWidth_i[j] - width) - rPadWidth_i[i * MATRIX_MAX_COLUMNS + j])), screenPos(Y_POS - @as(i16, @intCast(lineFromBottom)) * fontHeight), vm, 1, 0);
                 }
                 colX += colWidth[j] + frontier_char_string.stringWidth(STD_SPACE_FIGURE, font, true, true);
             }
-            _ = frontier_screen.showString(if (maxRows == 1) "]" else if (i == 0) STD_MAT_TR else if (i + 1 == maxRows) STD_MAT_BR else STD_MAT_MR, font, screenPos(X_POS + frontier_char_string.stringWidth("[", font, true, true) + baseWidth - 1), screenPos(Y_POS - @as(i16, @intCast(maxRows - 1 - @as(c_int, @intCast(i)))) * fontHeight), 0, 1, 0);
+            _ = frontier_screen.showString(if (groupCols != 0) "]" else if (maxRows == 1) "]" else if (i == 0) STD_MAT_TR else if (i + 1 == maxRows) STD_MAT_BR else STD_MAT_MR, font, screenPos(X_POS + outerBracket + frontier_char_string.stringWidth("[", font, true, true) + baseWidth - 1), screenPos(Y_POS - @as(i16, @intCast(lineFromBottom)) * fontHeight), 0, 1, 0);
+            if (groupCols != 0 and i + 1 == maxRows) { // the matrix bracket closes outside the row bracket of the last element
+                _ = frontier_screen.showString("]", font, screenPos(X_POS + outerBracket + frontier_char_string.stringWidth("[]", font, true, true) + baseWidth - 1), screenPos(Y_POS - @as(i16, @intCast(lineFromBottom)) * fontHeight), 0, 1, 0);
+            }
             if (colVector) {
-                _ = frontier_screen.showString(STD_SUP_BOLD_T, font, screenPos(X_POS + frontier_char_string.stringWidth("[]", font, true, true) + baseWidth), screenPos(Y_POS - @as(i16, @intCast(maxRows - 1 - @as(c_int, @intCast(i)))) * fontHeight), 0, 1, 0);
+                _ = frontier_screen.showString(STD_SUP_BOLD_T, font, screenPos(X_POS + frontier_char_string.stringWidth("[]", font, true, true) + baseWidth), screenPos(Y_POS - @as(i16, @intCast(lineFromBottom)) * fontHeight), 0, 1, 0);
             }
         }
+        if (transposedVector) { // the ^T on the closing bracket
+            _ = frontier_screen.showString(STD_SUP_BOLD_T, font, screenPos(X_POS + frontier_char_string.stringWidth("[", font, true, true) + frontier_char_string.stringWidth(STD_MAT_BR, font, true, true) + baseWidth - 1), screenPos(Y_POS), 0, 1, 0);
+        }
+
         break :smallFont;
     }
 
+    // Restore the format globals
     displayFormat = @intCast(tmpDisplayFormat);
     displayFormatDigits = tmpDisplayFormatDigits;
     exponentLimit = tmpExponentLimit;
@@ -1464,25 +1958,34 @@ pub export fn showComplexMatrix(matrix: *const complex34Matrix_t, prefixWidth: i
     }
 }
 
-pub export fn getComplexMatrixColumnWidths(matrix: *const complex34Matrix_t, prefixWidth: i16, font: *const font_t, colWidthPtr: [*c]i16, colWidth_rPtr: [*c]i16, colWidth_iPtr: [*c]i16, rPadWidth_rPtr: [*c]i16, rPadWidth_iPtr: [*c]i16, digitsPtr: *i16, maxColsIn: u16, angleMode: angularMode_t, polarMode: bool_t) callconv(.c) i16 {
+pub export fn getComplexMatrixColumnWidths(matrix: *const complex34Matrix_t, prefixWidth: i16, regXposition: bool_t, font: *const font_t, colWidthPtr: [*c]i16, colWidth_rPtr: [*c]i16, colWidth_iPtr: [*c]i16, rPadWidth_rPtr: [*c]i16, rPadWidth_iPtr: [*c]i16, digitsPtr: *i16, maxColsIn: u16, angleMode: angularMode_t, polarMode: bool_t) callconv(.c) i16 {
+    // The measured page shape
     var tmpStringL = std.mem.zeroes([200]u8);
-    const colVector = matrix.header.matrixColumns == 1 and matrix.header.matrixRows > 1;
-    const rows: c_int = if (colVector) 1 else matrix.header.matrixRows;
-    const actualCols: c_int = if (colVector) matrix.header.matrixRows else matrix.header.matrixColumns;
+    const showPage = MX_SHOW_PAGE(prefixWidth, regXposition); // the SHOW page, never the stack line
+    const fixPage = showPage and displayFormat == DF_FIX;
+    // one shared column under SHOW; a complex vector has no integer form to keep
+    const verticalVector = showsVerticalVector(&matrix.header, prefixWidth, regXposition, false);
+    const colVector = !verticalVector and matrix.header.matrixColumns == 1 and matrix.header.matrixRows > 1;
+    const rows: c_int = if (verticalVector) @as(c_int, matrix.header.matrixRows) * @as(c_int, matrix.header.matrixColumns) else if (colVector) 1 else matrix.header.matrixRows;
+    const actualCols: c_int = if (verticalVector) 1 else if (colVector) matrix.header.matrixRows else matrix.header.matrixColumns;
     const cols: c_int = if (actualCols > @as(c_int, maxColsIn)) @as(c_int, maxColsIn) else actualCols;
-    const maxRows: c_int = if (rows > MATRIX_MAX_ROWS) MATRIX_MAX_ROWS else rows;
+    const rowLimit: c_int = if (showPage) MATRIX_MAX_ROWS_ON_SHOW else MATRIX_MAX_ROWS; // SHOW takes more rows
+    const maxRows: c_int = if (rows > rowLimit) rowLimit else rows;
     const forEditor = matrix == &openMatrixMIMPointer.complexMatrix;
     const sRow: u16 = if (forEditor) scrollRow else 0;
     const sCol: u16 = if (forEditor) scrollColumn else 0;
-    const maxWidth: i16 = MATRIX_LINE_WIDTH_C - prefixWidth;
+    // The width budget, widened by one figure space on the vertical page
+    const maxWidth: i16 = if (verticalVector) showsVerticalVectorMaxWidth(&matrix.header, font, prefixWidth) + frontier_char_string.stringWidth(STD_SPACE_FIGURE, font, true, true) else MATRIX_LINE_WIDTH_C - prefixWidth;
     var totalWidth: i16 = 0;
     var maxRightWidth_r = std.mem.zeroes([MATRIX_MAX_COLUMNS]i16);
     var maxLeftWidth_r = std.mem.zeroes([MATRIX_MAX_COLUMNS]i16);
     var maxRightWidth_i = std.mem.zeroes([MATRIX_MAX_COLUMNS]i16);
     var maxLeftWidth_i = std.mem.zeroes([MATRIX_MAX_COLUMNS]i16);
     const exponentOutOfRange: i16 = 0x4000;
+    var sfShed = false; // a part shed digits
     const maxCols: usize = maxColsIn;
 
+    // The complex unit width
     var cpxUnitWidth: i16 = 0;
     if (polarMode) {
         _ = strcpy(&tmpStringL, STD_SPACE_4_PER_EM ++ STD_MEASURED_ANGLE ++ STD_SPACE_4_PER_EM);
@@ -1492,10 +1995,40 @@ pub export fn getComplexMatrixColumnWidths(matrix: *const complex34Matrix_t, pre
         _ = strcat(&tmpStringL, productSign());
     }
     cpxUnitWidth = frontier_char_string.stringWidth(&tmpStringL, font, true, true);
+    // half the line per part
+    const sfPartWidth: i16 = @divTrunc(maxWidth - cpxUnitWidth - frontier_char_string.stringWidth(STD_SPACE_FIGURE, font, true, true) - 2, 2);
 
-    var k: c_int = imax(imin(@as(c_int, displayFormatDigits) * (if (displayFormat == DF_ALL) @as(c_int, 2) else @as(c_int, 1)), imax(@divTrunc(@as(c_int, 50), cols) - 2, 0)), 10);
+    // The SHOW starting count
+    var startDigitCountDown: c_int = if (showPage) 34 // start at full precision
+        else imax(imin(@as(c_int, displayFormatDigits) * (if (displayFormat == DF_ALL) @as(c_int, 2) else @as(c_int, 1)), imax(@divTrunc(@as(c_int, 50), cols) - 2, 0)), 10);
+    if (showPage and displayFormat == DF_SF) {
+        startDigitCountDown = 33; // SIG n shows n+1 digits
+    } else if (showPage and displayFormat == DF_FIX) { // cap FIX at 34 total digits
+        var maxE: i16 = 0;
+        var i: usize = 0;
+        while (i < maxRows) : (i += 1) {
+            var j: usize = 0;
+            while (j < maxCols) : (j += 1) {
+                const c34 = &matrix.matrixElements.?[(i + sRow) * @as(usize, @intCast(actualCols)) + j + sCol];
+                const eRe: i16 = if (real34IsZero(&c34.real)) 0 else real34GetExponent(&c34.real) + real34Digits(&c34.real) - 1;
+                const eIm: i16 = if (real34IsZero(&c34.imag)) 0 else real34GetExponent(&c34.imag) + real34Digits(&c34.imag) - 1;
+                // plain-renderable parts only; e33 up takes the sci form through the 33 window
+                if (eRe > maxE and eRe <= 32) {
+                    maxE = eRe;
+                }
+                if (eIm > maxE and eIm <= 32) {
+                    maxE = eIm;
+                }
+            }
+        }
+        startDigitCountDown = imax(imin(33 - @as(c_int, maxE), 99), 1);
+    }
+    var k: c_int = startDigitCountDown;
     while (k >= 1) : (k -= 1) {
         if (displayFormat == DF_ALL) {
+            digitsPtr.* = @intCast(k);
+        } else if (showPage) { // the shared maximised count
+            displayFormatDigits = if (displayFormat == DF_SF and verticalVector) 34 else @intCast(k);
             digitsPtr.* = @intCast(k);
         }
         var i: usize = 0;
@@ -1518,9 +2051,18 @@ pub export fn getComplexMatrixColumnWidths(matrix: *const complex34Matrix_t, pre
                 rPadWidth_rPtr[i * MATRIX_MAX_COLUMNS + j] = 0;
                 real34SetPositiveSign(&c34Val.real);
                 var c34sign = real34IsNegative(&matrix.matrixElements.?[(i + sRow) * @as(usize, @intCast(actualCols)) + j + sCol].real);
-                frontier_display.real34ToDisplayString(&c34Val.real, amNone, &tmpStringL, font, maxWidth, if (displayFormat == DF_ALL) @as(i16, @intCast(k)) else 15, @intFromBool(LIMITEXP), @intFromBool(FRONTSPACE), LIMITIRFRAC);
+                // Measure the real part
+                if (displayFormat == DF_SF and verticalVector) {
+                    if (sigFitReal34(&c34Val.real, amNone, &tmpStringL, font, sfPartWidth, FRONTSPACE)) { // per-part SIG self-fit
+                        sfShed = true;
+                    }
+                } else {
+                    // no internal shrink under SHOW: it hides shed digits and flips SIG to sci; the k countdown does the fitting
+                    frontier_display.real34ToDisplayString(&c34Val.real, amNone, &tmpStringL, font, if (showPage) UNSHRUNK_WIDTH else maxWidth, if (displayFormat == DF_ALL) @as(i16, @intCast(k)) else (if (fixPage) @as(i16, 33) else (if (showPage) @as(i16, 34) else 15)), @intFromBool(LIMITEXP), @intFromBool(FRONTSPACE), LIMITIRFRAC);
+                }
                 var width: i16 = frontier_char_string.stringWidth(&tmpStringL, font, true, true) + 1;
-                if (strstr(&tmpStringL, ".") != null or strstr(&tmpStringL, ",") != null) {
+                // vector SIG skips the line-up
+                if ((strstr(&tmpStringL, ".") != null or strstr(&tmpStringL, ",") != null) and !(verticalVector and displayFormat == DF_SF)) {
                     var xStr: [*c]u8 = &tmpStringL;
                     while (xStr.* != 0) : (xStr += 1) {
                         const isEngLike = (displayFormat == DF_ENG or (displayFormat == DF_ALL and getSystemFlag(FLAG_ENGOVR)));
@@ -1553,9 +2095,18 @@ pub export fn getComplexMatrixColumnWidths(matrix: *const complex34Matrix_t, pre
                     c34sign = real34IsNegative(&matrix.matrixElements.?[(i + sRow) * @as(usize, @intCast(actualCols)) + j + sCol].real);
                     real34SetPositiveSign(&c34Val.imag);
                 }
-                frontier_display.real34ToDisplayString(&c34Val.imag, if (polarMode) @as(u32, @bitCast(@as(i32, angleMode))) else amNone, &tmpStringL, font, maxWidth, if (displayFormat == DF_ALL) @as(i16, @intCast(k)) else 15, @intFromBool(LIMITEXP), @intFromBool(!FRONTSPACE), LIMITIRFRAC);
+                // Measure the imaginary part
+                if (displayFormat == DF_SF and verticalVector) {
+                    if (sigFitReal34(&c34Val.imag, if (polarMode) @as(u8, @intCast(angleMode)) else amNone, &tmpStringL, font, sfPartWidth, !FRONTSPACE)) {
+                        sfShed = true;
+                    }
+                } else {
+                    // no internal shrink under SHOW: it hides shed digits and flips SIG to sci; the k countdown does the fitting
+                    frontier_display.real34ToDisplayString(&c34Val.imag, if (polarMode) @as(u32, @bitCast(@as(i32, angleMode))) else amNone, &tmpStringL, font, if (showPage) UNSHRUNK_WIDTH else maxWidth, if (displayFormat == DF_ALL) @as(i16, @intCast(k)) else (if (fixPage) @as(i16, 33) else (if (showPage) @as(i16, 34) else 15)), @intFromBool(LIMITEXP), @intFromBool(!FRONTSPACE), LIMITIRFRAC);
+                }
                 width = frontier_char_string.stringWidth(&tmpStringL, font, true, true) + 1;
-                if (strstr(&tmpStringL, ".") != null or strstr(&tmpStringL, ",") != null) {
+                // vector SIG skips the line-up
+                if ((strstr(&tmpStringL, ".") != null or strstr(&tmpStringL, ",") != null) and !(verticalVector and displayFormat == DF_SF)) {
                     var xStr: [*c]u8 = &tmpStringL;
                     while (xStr.* != 0) : (xStr += 1) {
                         const isEngLike = (displayFormat == DF_ENG or (displayFormat == DF_ALL and getSystemFlag(FLAG_ENGOVR)));
@@ -1628,10 +2179,11 @@ pub export fn getComplexMatrixColumnWidths(matrix: *const complex34Matrix_t, pre
             }
         }
         totalWidth -= frontier_char_string.stringWidth(STD_SPACE_FIGURE, font, true, true);
-        if (displayFormat != DF_ALL) {
+        if (displayFormat != DF_ALL and !showPage) {
             break;
         } else if (totalWidth <= maxWidth) {
-            digitsPtr.* = @intCast(k);
+            // nothing shed: the font retry rests
+            digitsPtr.* = if (showPage and k == startDigitCountDown and !sfShed) 34 else @intCast(k);
             break;
         } else if (k > 1) {
             totalWidth = 0;

@@ -12,7 +12,12 @@
   //#define MATRIX_LINE_WIDTH_LARGE      120
   //#define MATRIX_LINE_WIDTH_SMALL      93
   //#define MATRIX_CHAR_LEN              30
-  #define MATRIX_MAX_ROWS              9    // SHOW clears the screen, and has more rows
+  #define MATRIX_MAX_ROWS              9    // measure cap outside SHOW
+  #if defined(OPTION_MX_SHOW)
+    #define MATRIX_MAX_ROWS_ON_SHOW    11   // sizes the row scratch arrays
+  #else // !OPTION_MX_SHOW
+    #define MATRIX_MAX_ROWS_ON_SHOW    9    // sizes the row scratch arrays
+  #endif // OPTION_MX_SHOW
   #define MATRIX_MAX_ROWS_ON_VIEW      7    // VIEW keeps the stack, so it stops at the bottom of the register lines (above menu)
   #define MATRIX_MAX_ROWS_ON_STACK     5    // matrix on stack grows from the X line up
   #define MATRIX_MAX_COLUMNS           14   // max width: no radix on the elements: single digit columns fit 14

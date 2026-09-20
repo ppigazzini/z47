@@ -58,7 +58,7 @@
 
       case dtShortInteger: {
         if(showContent) {
-          shortIntegerToDisplayString(regist, tmpString, false, noBaseOverride);
+          shortIntegerToDisplayString(regist, tmpString, false, noBaseOverride, SCREEN_WIDTH);
         }
         else {
           strcpy(tmpString, "64 bits " STD_CORRESPONDS_TO " 8 bytes");

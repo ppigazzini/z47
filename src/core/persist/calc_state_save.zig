@@ -119,6 +119,8 @@ extern var pcg32_global: pcg32_random_t;
 // --- OTHER_CONFIGURATION_STUFF scalars ---
 extern var firstGregorianDay: u32;
 extern var graMod: u8;
+extern var longPressFactor: i16;
+extern var doublePressFactor: i16;
 extern var denMax: u32;
 extern var lastDenominator: u32;
 extern var displayFormat: u8;
@@ -452,6 +454,8 @@ pub fn writeSaveSections() void {
     saveField("firstGregorianDay", "%u\n", .{cu(firstGregorianDay)});
     saveField("denMax", "%u\n", .{cu(denMax)});
     saveField("graMod", "%u\n", .{cu(graMod)});
+    saveField("longPressFactor", "%d\n", .{ci(longPressFactor)});
+    saveField("doublePressFactor", "%d\n", .{ci(doublePressFactor)});
     saveField("lastDenominator", "%u\n", .{cu(lastDenominator)});
     saveField("displayFormat", "%u\n", .{cu(displayFormat)});
     saveField("displayFormatDigits", "%u\n", .{cu(displayFormatDigits)});
@@ -574,7 +578,7 @@ const ERR_REGISTER_LINE: i16 = 102; // REGISTER_Z
 const REGISTER_X_LINE: i16 = 100;
 const INVALID_VARIABLE: i16 = 2199;
 const FLAG_SSIZE8: c_int = 0x8018;
-const TI_DATA_SAVED: u16 = 143;
+const TI_DATA_SAVED: u16 = 144;
 const ERROR_CANNOT_WRITE_FILE: u8 = 55;
 const ERROR_OUT_OF_RANGE: u8 = 8;
 const SCRUPD_AUTO_MODE: u8 = 0x00;

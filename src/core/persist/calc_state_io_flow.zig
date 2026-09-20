@@ -22,7 +22,7 @@ extern var hourGlassIconEnabled: bool;
 const ioPathRegImport: c_int = 14;
 const ioModeRead: c_int = 0;
 const SCRUPD_AUTO: u8 = 0x00;
-const TI_DATA_LOADED: u16 = 142;
+const TI_DATA_LOADED: u16 = 143;
 const ERROR_CANNOT_READ_FILE: u8 = 35;
 const ERROR_INVALID_CORRUPTED_DATA: u8 = 18;
 const ERR_REGISTER_LINE: i16 = 102; // REGISTER_Z

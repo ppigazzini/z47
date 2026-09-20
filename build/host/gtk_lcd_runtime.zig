@@ -109,12 +109,9 @@ pub export fn bitblt24(x_in: u32, dx: u32, y: u32, val: u32, blt_op: c_int, fill
     const lowmask = (@as(u32, 1) << @intCast(dx)) - 1;
     const bytes_needed = (bit_off + dx + 7) / 8;
 
-    var srcbits: u32 = 0;
-    if (fill == BLT_SET and blt_op != BLT_XOR) {
-        srcbits = if (blt_op == BLT_ANDN) lowmask << @intCast(bit_off) else 0;
-    } else {
-        srcbits = (val & lowmask) << @intCast(bit_off);
-    }
+    const srcbits: u32 = (val & lowmask) << @intCast(bit_off);
+    // BLT_SET: the dx columns are cleared before BLT_OR and set before BLT_ANDN
+    const fillbits: u32 = if (fill == BLT_SET) lowmask << @intCast(bit_off) else 0;
 
     const srcbytes = [4]u8{
         @truncate(srcbits >> 0),
@@ -122,15 +119,21 @@ pub export fn bitblt24(x_in: u32, dx: u32, y: u32, val: u32, blt_op: c_int, fill
         @truncate(srcbits >> 16),
         @truncate(srcbits >> 24),
     };
+    const fillbytes = [4]u8{
+        @truncate(fillbits >> 0),
+        @truncate(fillbits >> 8),
+        @truncate(fillbits >> 16),
+        @truncate(fillbits >> 24),
+    };
 
     const base = lcd_buffer + (y * (LCD_LINE_SIZE + 2)) + byte_i + 2;
 
     var i: u32 = 0;
     while (i < bytes_needed) : (i += 1) {
         switch (blt_op) {
-            BLT_OR => base[i] |= srcbytes[i],
+            BLT_OR => base[i] = (base[i] & ~fillbytes[i]) | srcbytes[i],
             BLT_XOR => base[i] ^= srcbytes[i],
-            BLT_ANDN => base[i] &= ~srcbytes[i],
+            BLT_ANDN => base[i] = (base[i] | fillbytes[i]) & ~srcbytes[i],
             else => return,
         }
     }

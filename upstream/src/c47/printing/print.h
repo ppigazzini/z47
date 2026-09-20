@@ -23,6 +23,7 @@
 #define PRN_Xr      6
 #define PRN_XYr     7
 #define PRN_TMP     8
+#define PRN_XFN     9
 
 // Print functions
 void fnSetPrinter     (uint16_t model);

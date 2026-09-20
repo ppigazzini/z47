@@ -714,6 +714,7 @@ void drawBattery(uint16_t voltage);
     if(!(SBARUPD_Printer)) return;
     if(didSystemFlagChange(SETTING_PRINTERICON)) {
       showStringAndClear(printerIconEnabled ? STD_PRINTER : "", &standardFont, X_PRINTER, 0, X_USER_MODE - X_PRINTER, 20, vmNormal, true, false );
+      force_SBrefresh(force);
     }
   }
 

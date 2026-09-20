@@ -57,6 +57,8 @@ const old_hw: bool = frontier_build_options.old_hw;
 const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 const ir_printing: bool = frontier_build_options.ir_printing;
 const option_vector: bool = frontier_build_options.option_vector;
+const option_mx_show: bool = frontier_build_options.option_mx_show;
+const option_lp_dp_timing: bool = frontier_build_options.option_lp_dp_timing;
 const testsuite_build: bool = frontier_build_options.is_testsuite_build;
 // OPTION_TVM_AMORT gates screen.c's amort temporary-information branches. It is
 // defined for every DM42 package as well as for DMCP5 and host; the only #undef
@@ -177,7 +179,8 @@ const LCD_EMPTY_VALUE: c_int = 255;
 const TEMPORARY_INFO_OFFSET: i16 = 6;
 const MATRIX_LINE_WIDTH: i16 = 380;
 const MATRIX_MAX_COLUMNS: usize = 14;
-const MATRIX_MAX_ROWS: usize = 9;
+const MATRIX_MAX_ROWS: usize = 9; // measure cap outside SHOW
+const MATRIX_MAX_ROWS_ON_SHOW: usize = if (option_mx_show) 11 else 9; // sizes the row scratch arrays
 const SHOWLineSize: i16 = 120;
 const TMP_STR_LENGTH: usize = 2560;
 const ERROR_MESSAGE_LENGTH: usize = 512;
@@ -569,8 +572,11 @@ const TI_SA: u8 = 47;
 const TI_INACCURATE: u8 = 48;
 const TI_UNDO_DISABLED: u8 = 49;
 const TI_SOLVER_VARIABLE: u8 = 51;
-const TI_DERIV_STEP: u8 = 144;
+const TI_DERIV_STEP: u8 = 145;
 const TI_ALGDEP_POLY: u8 = 147;
+const TI_ROUNDING_MODE: u8 = 148;
+// config.h's `#define abbreviation true`: the glyph group rather than the full name.
+const abbreviation: bool = true;
 const TI_ACC: u8 = 53;
 const TI_ULIM: u8 = 54;
 const TI_LLIM: u8 = 55;
@@ -605,8 +611,8 @@ const TI_DISP_JULIAN: u8 = 83;
 const TI_FROM_DATEX: u8 = 84;
 const TI_LAST_CONST_CATNAME: u8 = 85;
 const TI_PROGRAM_LOADED: u8 = 86;
-const TI_DATA_LOADED: u8 = 142;
-const TI_DATA_SAVED: u8 = 143;
+const TI_DATA_LOADED: u8 = 143;
+const TI_DATA_SAVED: u8 = 144;
 const TI_PROGRAMS_RESTORED: u8 = 87;
 const TI_REGISTERS_RESTORED: u8 = 88;
 const TI_SETTINGS_RESTORED: u8 = 89;
@@ -658,10 +664,10 @@ const TI_ELLIPSE_M: u8 = 134;
 const TI_ELLIPSE_Theta: u8 = 135;
 const TI_PRINT_COMPLETE: u8 = 136;
 const TI_AMORT_BAL: u8 = 137;
-const TI_AMORT_PRN: u8 = 138;
-const TI_AMORT_INT: u8 = 139;
-const TI_AMORT_P1: u8 = 140;
-const TI_AMORT_P2: u8 = 141;
+const TI_AMORT_PRN: u8 = 139;
+const TI_AMORT_INT: u8 = 140;
+const TI_AMORT_P1: u8 = 141;
+const TI_AMORT_P2: u8 = 142;
 const TI_INTEGRAL_unused = {};
 
 // ---------------------------------------------------------------------------
@@ -941,6 +947,9 @@ extern var lastErrorCode: u8;
 extern var displayStack: u8;
 extern var dispBase: u8;
 extern var graMod: u8;
+extern var roundingMode: u8;
+extern var longPressFactor: i16;
+extern var doublePressFactor: i16;
 extern var currentInputVariable: u16;
 extern var currentViewRegister: u16;
 extern var showRegis: u16;
@@ -1143,14 +1152,6 @@ inline fn setWhitePixel(x: u32, y: u32) void {
 inline fn flipPixel(x: u32, y: u32) void {
     bitblt24(x, 1, y, 1, BLT_XOR, BLT_NONE);
 }
-// non-inline callconv(.c) shims for the showGlyphCode pencil function pointer.
-fn pencilBlack(x: u32, y: u32) callconv(.c) void {
-    setBlackPixel(x, y);
-}
-fn pencilWhite(x: u32, y: u32) callconv(.c) void {
-    setWhitePixel(x, y);
-}
-
 // ---------------------------------------------------------------------------
 // First-party / runtime / libc externs.
 // ---------------------------------------------------------------------------
@@ -1536,10 +1537,13 @@ inline fn COMPLEX_UNIT() [*c]const u8 {
     return if (getSystemFlag(FLAG_CPXj) != 0) STD_op_j else STD_op_i;
 }
 
-// funcNameOffset_x / isShiftOffset / funcNameOffset_str (FIXED_FN_NAME_SHIFT def)
+// funcNameOffset_x / isShiftOffset / funcNameOffset_str. FIXED_FN_NAME_SHIFT is
+// #undef'd, so the function name moves to the left edge with the shift instead of
+// keeping the offset.
 const shiftOffset: i32 = 17;
+const noShiftOffset: i32 = 0;
 inline fn funcNameOffset_x() i32 {
-    return shiftOffset;
+    return if (Y_SHIFT() != 0) shiftOffset else noShiftOffset;
 }
 inline fn isShiftOffset() bool {
     return funcNameOffset_x() == shiftOffset and !SHOWMODE();
@@ -2041,6 +2045,20 @@ pub export fn str2dec(ch: [*c]u8) callconv(.c) u16 {
     return @as(u16, ch[1]) + (@as(u16, ch[0]) << 8);
 }
 
+/// Draws the 32 columns of a glyph row, 24 columns to a bitblt24, cut at the
+/// right edge of the screen. `x` is the screen column of bit 31 of `bits`;
+/// `bltOp` is BLT_OR for black pixels and BLT_ANDN for white ones.
+fn _showGlyphRow(x_in: u32, y: u32, bits_in: u32, bltOp: c_int) void {
+    var x = x_in;
+    var bits = bits_in;
+    while (bits != 0 and x < SCREEN_WIDTH) {
+        const dx: u32 = @min(24, SCREEN_WIDTH - x);
+        bitblt24(x, dx, y, bits >> @intCast(32 - dx), bltOp, BLT_NONE);
+        bits <<= 24;
+        x +%= 24;
+    }
+}
+
 pub export fn showGlyphCode(charCode_in: u16, font_in: *const font_t, x_in: u32, y_in: u32, videoMode: videoMode_t, showLeadingCols: bool_t, showEndingCols: bool_t, noPreClear: bool_t) callconv(.c) u32 {
     var charCode = charCode_in;
     var font = font_in;
@@ -2139,75 +2157,108 @@ pub export fn showGlyphCode(charCode_in: u16, font_in: *const font_t, x_in: u32,
     // which was using 15 while rendering used 6 (glyphs rendered at ~0.75x vs ~1.875x).
     const doubling: u16 = if (numDouble) (if (checkHP()) DOUBLING_A else 6) else DOUBLINGBASEX;
 
+    const xEnd: u32 = x +% boldString +% (((@as(u32, @intCast(doubling)) *% (xGlyph +% g.colsGlyph +% endingCols)) >> @intCast(mini)) >> 3);
+    if (noShow != 0) {
+        return xEnd;
+    }
+
+    // Clearing the space needed by the glyph
     const rep_enlarge: bool = numDouble or (enlarge != 0 and combinationFonts != 0);
     const yNewMaxDx: u32 = @intCast((if (rep_enlarge) @as(i32, 2) else 1) * ((@as(i32, @intCast(@as(u32, g.rowsAboveGlyph) + g.rowsGlyph + g.rowsBelowGlyph)) >> @intCast(mini)) - (if (rep_enlarge) @as(i32, 4) else 0)));
-    if (noShow == 0 and noPreClear == 0) {
+    if (noPreClear == 0) {
         lcd_fill_rect(x, @intCast(maxI(0, yy)), @as(u32, @intCast(@as(i32, @intCast(@as(u32, @intCast(doubling)) * ((xGlyph + g.colsGlyph + endingCols) >> @intCast(mini)))) >> 3)), @intCast(maxI(0, @as(i32, @intCast(yNewMaxDx)) + (if (yy < 0) yy else 0))), if (videoMode == vmNormal) LCD_SET_VALUE else LCD_EMPTY_VALUE);
     }
     if (displaymode == numHalf) {
         y +%= @bitCast(@divTrunc(@as(i32, g.rowsAboveGlyph) * REDUCT_A(), REDUCT_B()) * (if (rep_enlarge) @as(i32, 2) else 1));
     } else {
-        y +%= @as(u32, g.rowsAboveGlyph) * (if (rep_enlarge) @as(u32, 2) else 1);
+        y +%= (@as(u32, g.rowsAboveGlyph) * (if (rep_enlarge) @as(u32, 2) else 1)) >> @intCast(mini);
     }
 
-    // Choose pencil
-    const PencilFn = *const fn (u32, u32) callconv(.c) void;
-    const setPixel: PencilFn = if (videoMode == vmNormal) &pencilBlack else &pencilWhite;
+    const bltOp: c_int = if (videoMode == vmNormal) BLT_OR else BLT_ANDN;
     // Drawing the glyph
+    var secondRow = false;
+    var bits: u32 = 0;
+    var bits2: u32 = 0;
+    var xOffset: u32 = 0;
+    var xRow: u32 = 0;
     row = 0;
-    while (row < g.rowsGlyph) : ({
-        row += 1;
-        y +%= 1;
-    }) {
-        if (displaymode == numHalf) {
-            if (@rem(REDUCT_A() * @as(i32, @intCast(row)) + REDUCT_OFF(), REDUCT_B()) == 0) {
-                y -%= 1;
-            }
-        }
-        col = 0;
-        while (col < g.colsGlyph) : (col += 1) {
-            if (col % 8 == 0) {
-                byte = data[0];
-                data += 1;
-                if (mini != 0) {
-                    byte = @bitCast(@as(u8, @bitCast(byte)) | (@as(u8, @bitCast(byte)) << 1));
+    while (row < g.rowsGlyph) : (y +%= 1) {
+        if (!secondRow) {
+            if (displaymode == numHalf) {
+                if (@rem(REDUCT_A() * @as(i32, @intCast(row)) + REDUCT_OFF(), REDUCT_B()) == 0) {
+                    y -%= 1;
                 }
             }
-
-            if (byte & @as(i8, @bitCast(@as(u8, 0x80))) != 0 and noShow == 0) {
-                const x1: u32 = x +% (((@as(u32, @intCast(doubling)) *% (xGlyph +% col)) >> @intCast(mini)) >> 3);
-                var x2: u32 = x1;
-                // min(u32 yNewMaxDx, (y-y0)>>mini) -> (int32_t) -> yy + it -> max(0,.) -> min(SCREEN_HEIGHT-1,.)
-                const rowOff: u32 = (y -% y0) >> @intCast(mini);
-                const yMin1: u32 = @min(yNewMaxDx, rowOff);
-                const yMin2: u32 = @min(yNewMaxDx, rowOff +% 1);
-                const y1: u32 = @intCast(minI(SCREEN_HEIGHT - 1, maxI(0, yy +% @as(i32, @bitCast(yMin1)))));
-                const y2: u32 = @intCast(minI(SCREEN_HEIGHT - 1, maxI(0, yy +% @as(i32, @bitCast(yMin2)))));
-                if (x2 > 0) {
-                    x2 -= 1;
-                }
-                setPixel(x1, y1);
-                if (boldString == 1) {
-                    setPixel(x1 +% 1, y1);
+            // The row, its first column in bit 31
+            if (bits2 != 0) {
+                bits = bits2; // the HP columns the first word leaves over, drawn 30 columns on
+                bits2 = 0;
+                xOffset = 30;
+            } else {
+                xOffset = 0;
+                bits = 0;
+                col = 0;
+                while (col < g.colsGlyph) : (col += 8) {
+                    byte = data[0];
+                    data += 1;
+                    bits |= @as(u32, @as(u8, @bitCast(byte))) << @intCast(24 - col);
                 }
                 if (numDouble) {
-                    setPixel(x2, y1);
-                }
-                if (rep_enlarge) {
-                    setPixel(x1, y2);
-                    if (numDouble) {
-                        setPixel(x2, y2);
-                    }
+                    bits >>= @intCast(xGlyph);
+                    bits2 = bits << 16; // the columns past the first 16, drawn 30 columns on
                 }
             }
-
-            byte = @bitCast(@as(u8, @bitCast(byte)) << 1);
+            xRow = x +% xGlyph;
+            if (mini != 0) {
+                // Half width: a screen column takes a pair of glyph columns
+                bits |= (bits << 1) & 0xFEFEFEFE; // each column also takes the next one in its byte
+                bits >>= @intCast(xGlyph);
+                bits |= bits << 1;
+                col = 1;
+                while (col < 16) : (col += 1) {
+                    const right: u32 = @as(u32, 0xFFFFFFFF) >> @intCast(col);
+                    bits = (bits & ~right) | ((bits << 1) & right);
+                }
+                xRow = x;
+            } else if (numDouble) {
+                // 15/8 width from x-1: a gap after each glyph column but 0 and 8, then each column
+                // doubled; 16 columns fill the word, the next 16 come 30 columns on
+                col = 15;
+                while (col > 0) : (col -= 1) {
+                    if (col & 7 != 0) {
+                        const right: u32 = @as(u32, 0xFFFFFFFF) >> @intCast(col + 1);
+                        bits = (bits & ~right) | ((bits & right) >> 1);
+                    }
+                }
+                bits |= bits >> 1;
+                if (x == 0 and xOffset == 0) {
+                    bits <<= 1;
+                    xRow = 0;
+                } else {
+                    xRow = x -% 1 +% xOffset;
+                }
+            }
         }
-        if (rep_enlarge and row != 3 and row != 6 and row != 9 and row != 12) {
-            y +%= 1;
+        // y is the screen row; a row above the screen, below it or below the cleared box is left out
+        if (bits != 0 and y -% y0 <= yNewMaxDx and y < SCREEN_HEIGHT) {
+            _showGlyphRow(xRow, y, bits | (bits >> @intFromBool(boldString == 1)), bltOp);
+        }
+        if (rep_enlarge and !secondRow) {
+            secondRow = true;
+        } else if (bits2 != 0) {
+            secondRow = false;
+            y -%= 2; // the columns left over are drawn on the same two screen rows
+        } else {
+            secondRow = false;
+            if (rep_enlarge and (row == 3 or row == 6 or row == 9 or row == 12)) {
+                y -%= 1; // do not advance the row counter for four rows, to match the row height of the enlarge font
+            } else if (mini != 0 and (g.rowsAboveGlyph + row) & 1 == 0) {
+                y -%= 1;
+            }
+            row += 1;
         }
     }
-    return x +% boldString +% (((@as(u32, @intCast(doubling)) *% (xGlyph +% g.colsGlyph +% endingCols)) >> @intCast(mini)) >> 3);
+    return xEnd;
 }
 
 pub export fn showGlyph(ch: [*c]const u8, font: *const font_t, x: u32, y: u32, videoMode: videoMode_t, showLeadingCols: bool_t, showEndingCols: bool_t, noPreClear: bool_t) callconv(.c) u32 {
@@ -2947,7 +2998,10 @@ pub export fn showFunctionName(itm: i16, delayInMs: i16, arg: [*c]const u8) call
     }
 
     showFunctionNameItem = item;
-    showFunctionNameCounter = delayInMs;
+    showFunctionNameCounter = if (comptime option_lp_dp_timing)
+        @intCast(@divTrunc(@as(i32, delayInMs) * (10000 + @as(i32, longPressFactor)), 10000)) // LPFCT
+    else
+        delayInMs;
 
     if (tam.alpha and ((item == ITM_BACKSPACE) or (item == ITM_T_LEFT_ARROW) or (item == ITM_T_RIGHT_ARROW))) {
         return;
@@ -3029,9 +3083,10 @@ pub export fn clearRegisterLine(regist: calcRegister_t, clearTop: bool, clearBot
     }
 }
 
-fn do_viewRegName(regist: calcRegister_t, prefix: [*c]u8, prefixWidth: *i16, endChar: [*c]const u8) void {
+// shiftGap is set only where the shift indicator shares the line.
+fn do_viewRegName(regist: calcRegister_t, prefix: [*c]u8, prefixWidth: *i16, endChar: [*c]const u8, shiftGap: bool) void {
     if (frontier_items.lastFuncNo() == ITM_AVIEW or frontier_items.lastFuncNo() == ITM_PROMPT) {
-        if (isShiftOffset()) {
+        if (shiftGap) {
             _ = strcpy(prefix, "  ");
             prefixWidth.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         } else {
@@ -3042,29 +3097,29 @@ fn do_viewRegName(regist: calcRegister_t, prefix: [*c]u8, prefixWidth: *i16, end
     }
 
     if (regist < REGISTER_X) {
-        abi.fmtCStr(prefix, "{s}R{d:0>2}" ++ STD_SPACE_4_PER_EM ++ "{s}" ++ STD_SPACE_4_PER_EM, .{ @as([*:0]const u8, funcNameOffset_str()), @as(c_uint, @intCast(regist)), @as([*:0]const u8, endChar) });
+        abi.fmtCStr(prefix, "{s}R{d:0>2}" ++ STD_SPACE_4_PER_EM ++ "{s}" ++ STD_SPACE_4_PER_EM, .{ @as([*:0]const u8, if (shiftGap) "  " else ""), @as(c_uint, @intCast(regist)), @as([*:0]const u8, endChar) });
     } else if (regist <= LAST_SPARE_REGISTER) {
-        abi.fmtCStr(prefix, "{s}{c}" ++ STD_SPACE_4_PER_EM ++ "{s}" ++ STD_SPACE_4_PER_EM, .{ @as([*:0]const u8, funcNameOffset_str()), @as(u8, @intCast(@as(c_int, letteredRegisterName(regist)))), @as([*:0]const u8, endChar) });
+        abi.fmtCStr(prefix, "{s}{c}" ++ STD_SPACE_4_PER_EM ++ "{s}" ++ STD_SPACE_4_PER_EM, .{ @as([*:0]const u8, if (shiftGap) "  " else ""), @as(u8, @intCast(@as(c_int, letteredRegisterName(regist)))), @as([*:0]const u8, endChar) });
     } else if (regist >= FIRST_LOCAL_REGISTER and regist <= LAST_LOCAL_REGISTER) {
-        abi.fmtCStr(prefix, "{s}R.{d:0>2}" ++ STD_SPACE_4_PER_EM ++ "{s}" ++ STD_SPACE_4_PER_EM, .{ @as([*:0]const u8, funcNameOffset_str()), @as(c_uint, @intCast(regist - FIRST_LOCAL_REGISTER)), @as([*:0]const u8, endChar) });
+        abi.fmtCStr(prefix, "{s}R.{d:0>2}" ++ STD_SPACE_4_PER_EM ++ "{s}" ++ STD_SPACE_4_PER_EM, .{ @as([*:0]const u8, if (shiftGap) "  " else ""), @as(c_uint, @intCast(regist - FIRST_LOCAL_REGISTER)), @as([*:0]const u8, endChar) });
     } else if (FIRST_NAMED_VARIABLE <= regist and regist <= LAST_NAMED_VARIABLE) {
-        if (isShiftOffset()) {
+        if (shiftGap) {
             _ = strcpy(prefix, "  ");
         }
-        const off1: usize = if (isShiftOffset()) 2 else 0;
+        const off1: usize = if (shiftGap) 2 else 0;
         _ = strcpy(prefix + off1, STD_LEFT_SINGLE_QUOTE);
         const nv = &allNamedVariables[@intCast(regist - FIRST_NAMED_VARIABLE)];
-        const off2: usize = if (isShiftOffset()) 4 else 2;
+        const off2: usize = if (shiftGap) 4 else 2;
         _ = memcpy(prefix + off2, &nv.variableName[1], nv.variableName[0]);
         abi.fmtCStr(prefix + off2 + nv.variableName[0], STD_RIGHT_SINGLE_QUOTE ++ STD_SPACE_4_PER_EM ++ "{s}" ++ STD_SPACE_4_PER_EM, .{@as([*:0]const u8, endChar)});
     } else if (FIRST_RESERVED_VARIABLE <= regist and regist <= LAST_RESERVED_VARIABLE) {
-        if (isShiftOffset()) {
+        if (shiftGap) {
             _ = strcpy(prefix, "  ");
         }
-        const off1: usize = if (isShiftOffset()) 2 else 0;
+        const off1: usize = if (shiftGap) 2 else 0;
         _ = strcpy(prefix + off1, STD_LEFT_SINGLE_QUOTE);
         const rv = &allReservedVariables[@intCast(regist - FIRST_RESERVED_VARIABLE)];
-        const off2: usize = if (isShiftOffset()) 4 else 2;
+        const off2: usize = if (shiftGap) 4 else 2;
         _ = memcpy(prefix + off2, &rv.reservedVariableName[1], rv.reservedVariableName[0]);
         abi.fmtCStr(prefix + off2 + rv.reservedVariableName[0], STD_RIGHT_SINGLE_QUOTE ++ STD_SPACE_4_PER_EM ++ "{s}" ++ STD_SPACE_4_PER_EM, .{@as([*:0]const u8, endChar)});
     } else {
@@ -3074,20 +3129,20 @@ fn do_viewRegName(regist: calcRegister_t, prefix: [*c]u8, prefixWidth: *i16, end
 }
 
 fn viewRegName(prefix: [*c]u8, prefixWidth: *i16) void {
-    do_viewRegName(@intCast(currentViewRegister), prefix, prefixWidth, "=");
+    do_viewRegName(@intCast(currentViewRegister), prefix, prefixWidth, "=", isShiftOffset());
 }
 
 pub export fn viewRegName2(prefix: [*c]u8, prefixWidth: *i16) callconv(.c) void {
-    do_viewRegName(@intCast(showRegis), prefix, prefixWidth, ":");
+    do_viewRegName(@intCast(showRegis), prefix, prefixWidth, ":", isShiftOffset());
 }
 
 fn nameRegis(regist: calcRegister_t, prefix: [*c]u8) void {
     var prefixWidth: i16 = undefined;
-    do_viewRegName(regist, prefix, &prefixWidth, "");
+    do_viewRegName(regist, prefix, &prefixWidth, "", isShiftOffset());
 }
 
 fn viewStoRcl(prefix: [*c]u8, prefixWidth: *i16) void {
-    do_viewRegName(frontier_items.lastSTORCL(), prefix, prefixWidth, ":");
+    do_viewRegName(frontier_items.lastSTORCL(), prefix, prefixWidth, ":", false); // the X line has no shift indicator on it
     if (prefix[0] == '?') {
         prefix[0] = 0;
         // upstream `prefixWidth = 0` reassigns the LOCAL pointer (dead store), not
@@ -3222,6 +3277,16 @@ fn _fnShowRecallTI(prefix: [*c]u8, prefixWidth: *i16) void {
     screenUpdatingMode |= SCRUPD_SKIP_STACK_ONE_TIME;
 }
 
+fn _fnShowRModeTI(prefix: [*c]u8, prefixWidth: *i16) void {
+    prefix[0] = 0;
+    _ = frontier_char_string.stringCopy(prefix, frontier_config.getRoundModeName(roundingMode, abbreviation));
+    _ = frontier_char_string.stringCopy(prefix + strlen(prefix), ": ");
+    _ = frontier_char_string.stringCopy(prefix + strlen(prefix), frontier_config.getRoundModeName(roundingMode, !abbreviation));
+    _ = frontier_char_string.stringCopy(prefix + strlen(prefix), ".");
+    prefixWidth.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+    screenUpdatingMode |= SCRUPD_SKIP_STACK_ONE_TIME;
+}
+
 pub export fn updateMatrixHeightCache() callconv(.c) void {
     var prefixWidth: i16 = 0;
     var prefix: [200]u8 = undefined;
@@ -3245,14 +3310,14 @@ pub export fn updateMatrixHeightCache() callconv(.c) void {
         const rows: u16 = matrix.header.matrixRows;
         const cols: u16 = matrix.header.matrixColumns;
         var smallFont: bool_t = @intFromBool(rows >= 5);
-        var dummyVal: [MATRIX_MAX_COLUMNS * (MATRIX_MAX_ROWS + 1) + 1]i16 = std.mem.zeroes([MATRIX_MAX_COLUMNS * (MATRIX_MAX_ROWS + 1) + 1]i16);
+        var dummyVal: [MATRIX_MAX_COLUMNS * (MATRIX_MAX_ROWS_ON_SHOW + 1) + 1]i16 = std.mem.zeroes([MATRIX_MAX_COLUMNS * (MATRIX_MAX_ROWS_ON_SHOW + 1) + 1]i16);
 
         var allElementsInColAreIntegers: [MATRIX_MAX_COLUMNS]bool_t = std.mem.zeroes([MATRIX_MAX_COLUMNS]bool_t);
         // The same rule showRealMatrix applies, or the height cache reserves stack
         // lines for a width the viewer does not draw.
         frontier_matrix_editor.getRealMatrixIntegerColumns(&matrix, displayFormat, @intCast(cols), 0, 0, @intCast(rows), @intCast(@min(cols, MATRIX_MAX_COLUMNS)), @ptrCast(&allElementsInColAreIntegers));
 
-        const mtxWidth = frontier_matrix_editor.getRealMatrixColumnWidths(&matrix, prefixWidth, &numericFont, &dummyVal, dummyVal[MATRIX_MAX_COLUMNS..].ptr, &dummyVal[(MATRIX_MAX_ROWS + 1) * MATRIX_MAX_COLUMNS], if (cols > MATRIX_MAX_COLUMNS) MATRIX_MAX_COLUMNS else cols, @ptrCast(&allElementsInColAreIntegers));
+        const mtxWidth = frontier_matrix_editor.getRealMatrixColumnWidths(&matrix, prefixWidth, true, &numericFont, &dummyVal, dummyVal[MATRIX_MAX_COLUMNS..].ptr, &dummyVal[(MATRIX_MAX_ROWS_ON_SHOW + 1) * MATRIX_MAX_COLUMNS], if (cols > MATRIX_MAX_COLUMNS) MATRIX_MAX_COLUMNS else cols, @ptrCast(&allElementsInColAreIntegers));
         if (absI(mtxWidth) > MATRIX_LINE_WIDTH) {
             smallFont = 1;
         }
@@ -3290,8 +3355,8 @@ pub export fn updateMatrixHeightCache() callconv(.c) void {
         const rows: u16 = matrix.header.matrixRows;
         const cols: u16 = matrix.header.matrixColumns;
         var smallFont: bool_t = @intFromBool(rows >= 5);
-        var dummyVal: [MATRIX_MAX_COLUMNS * (MATRIX_MAX_ROWS * 2 + 3) + 1]i16 = std.mem.zeroes([MATRIX_MAX_COLUMNS * (MATRIX_MAX_ROWS * 2 + 3) + 1]i16);
-        const mtxWidth = frontier_matrix_editor.getComplexMatrixColumnWidths(&matrix, prefixWidth, &numericFont, &dummyVal, dummyVal[MATRIX_MAX_COLUMNS..].ptr, dummyVal[MATRIX_MAX_COLUMNS * 2 ..].ptr, dummyVal[MATRIX_MAX_COLUMNS * 3 ..].ptr, dummyVal[MATRIX_MAX_COLUMNS * (MATRIX_MAX_ROWS + 3) ..].ptr, &dummyVal[MATRIX_MAX_COLUMNS * (MATRIX_MAX_ROWS * 2 + 3)], if (cols > MATRIX_MAX_COLUMNS) MATRIX_MAX_COLUMNS else cols, getComplexRegisterAngularMode(REGISTER_X), (getComplexRegisterPolarMode(REGISTER_X) == amPolar));
+        var dummyVal: [MATRIX_MAX_COLUMNS * (MATRIX_MAX_ROWS_ON_SHOW * 2 + 3) + 1]i16 = std.mem.zeroes([MATRIX_MAX_COLUMNS * (MATRIX_MAX_ROWS_ON_SHOW * 2 + 3) + 1]i16);
+        const mtxWidth = frontier_matrix_editor.getComplexMatrixColumnWidths(&matrix, prefixWidth, true, &numericFont, &dummyVal, dummyVal[MATRIX_MAX_COLUMNS..].ptr, dummyVal[MATRIX_MAX_COLUMNS * 2 ..].ptr, dummyVal[MATRIX_MAX_COLUMNS * 3 ..].ptr, dummyVal[MATRIX_MAX_COLUMNS * (MATRIX_MAX_ROWS_ON_SHOW + 3) ..].ptr, &dummyVal[MATRIX_MAX_COLUMNS * (MATRIX_MAX_ROWS_ON_SHOW * 2 + 3)], if (cols > MATRIX_MAX_COLUMNS) MATRIX_MAX_COLUMNS else cols, getComplexRegisterAngularMode(REGISTER_X), (getComplexRegisterPolarMode(REGISTER_X) == amPolar));
         if (mtxWidth > MATRIX_LINE_WIDTH) {
             smallFont = 1;
         }
@@ -3814,22 +3879,22 @@ pub export fn displayBaseMode(regist: calcRegister_t) callconv(.c) void {
         if (getRegisterDataType(REGISTER_X) == dtShortInteger) {
             // Reg Pos Y
             if (displayStack == 1 and calcMode != CM_NIM) {
-                frontier_display.shortIntegerToDisplayString(Register_X, tmpString, 1, _baseModeBaseY());
+                frontier_display.shortIntegerToDisplayString(Register_X, tmpString, 1, _baseModeBaseY(), SCREEN_WIDTH);
                 _showBaseModeLine(REGISTER_Y, tmpString, "  X: ", false);
             }
             // reg pos Z
             if ((displayStack == 1 and calcMode != CM_NIM) or displayStack == 2) {
-                frontier_display.shortIntegerToDisplayString(Register_X, tmpString, 1, _baseModeBaseZ());
+                frontier_display.shortIntegerToDisplayString(Register_X, tmpString, 1, _baseModeBaseZ(), SCREEN_WIDTH);
                 _showBaseModeLine(REGISTER_Z, tmpString, "  X: ", false);
             }
-            // reg pos T
-            if ((displayStack == 1 and calcMode != CM_NIM) or displayStack == 2 or displayStack == 3) {
-                frontier_display.shortIntegerToDisplayString(Register_X, tmpString, 1, _baseModeBaseT());
+            // reg pos T. A VIEW line owns the T row while it is up.
+            if (((displayStack == 1 and calcMode != CM_NIM) or displayStack == 2 or displayStack == 3) and temporaryInformation != TI_VIEW_REGISTER) {
+                frontier_display.shortIntegerToDisplayString(Register_X, tmpString, 1, _baseModeBaseT(), SCREEN_WIDTH);
                 _showBaseModeLine(REGISTER_T, tmpString, "  X: ", false);
             }
         } else if (getRegisterDataType(REGISTER_X) == dtLongInteger and solverEstimatesUsed == 0) {
-            // longinteger in pos T
-            if ((displayStack == 1 and calcMode != CM_NIM) or displayStack == 2 or displayStack == 3) {
+            // longinteger in pos T. A VIEW line owns the T row while it is up.
+            if (((displayStack == 1 and calcMode != CM_NIM) or displayStack == 2 or displayStack == 3) and temporaryInformation != TI_VIEW_REGISTER) {
                 frontier_display.longIntegerToHexDisplayString(REGISTER_X, tmpString, 1, _baseModeBaseT(), @intCast(@as(i32, SCREEN_WIDTH) - (if (isShiftOffset()) @as(i32, 10) else 0)));
                 _showBaseModeLine(REGISTER_T, tmpString, "  X:" ++ STD_INTEGER_Z ++ ": ", true);
             }
@@ -3953,6 +4018,9 @@ fn _refreshRegisterLine(regist_in: calcRegister_t, restoreRegisterT: bool_t) voi
                 w = frontier_char_string.stringWidth(tmpString, &standardFont, true, true);
                 _ = showString(tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - w), Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, 1, 1);
             }
+        } else if (temporaryInformation == TI_ROUNDING_MODE and regist == REGISTER_X) {
+            _fnShowRModeTI(&prefix, &prefixWidth);
+            _ = showString(&prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + TEMPORARY_INFO_OFFSET + 6, vmNormal, 1, 1);
         } else if (temporaryInformation == TI_BATTV and regist == REGISTER_X) {
             abi.fmtBufZ(&prefix, "V" ++ STD_SPACE_FIGURE ++ "=", .{});
             displayTemporaryInformationOnX(&prefix);
@@ -5342,25 +5410,12 @@ fn refreshString(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16,
 
 fn refreshShortInteger(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16, prefix: [*c]u8, prefixWidth_p: *i16, w_p: *i32, prefixPre: bool_t, prefixPost: bool_t) void {
     _ = w_p;
-    {
-        frontier_display.shortIntegerToDisplayString(regist, tmpString, 1, noBaseOverride);
-        _ = showString(tmpString, fontForShortInteger.?, @intCast(@as(i32, SCREEN_WIDTH) - frontier_char_string.stringWidth(tmpString, fontForShortInteger.?, false, true)), @intCast(@as(i32, baseY) + (if (fontForShortInteger == &standardFont) @as(i32, 6) else 0) - (if (fontForShortInteger == &numericFont) checkHPoffset() else 0)), vmNormal, 0, 1);
-
-        if (regist == REGISTER_X) {
-            displayBaseMode(regist);
-            _ = displayTrueFalse(regist);
-        }
-        if (temporaryInformation == TI_VIEW_REGISTER and origRegist == REGISTER_T) {
-            lcd_fill_rect(0, Y_POSITION_OF_REGISTER_T_LINE, 50, REGISTER_LINE_HEIGHT, LCD_SET_VALUE);
-        }
-    }
-
     if (!(temporaryInformation == TI_NO_INFO and currentInputVariable != INVALID_VARIABLE)) {
         prefix[0] = 0;
     }
     tmpString[0] = 0;
     if (regist == REGISTER_X and (temporaryInformation == TI_DATA_LOSS or temporaryInformation == TI_DATA_NEG_OVRFL)) {
-        frontier_display.shortIntegerToDisplayString(regist, tmpString, 1, noBaseOverride);
+        frontier_display.shortIntegerToDisplayString(regist, tmpString, 1, noBaseOverride, SCREEN_WIDTH);
         if (temporaryInformation == TI_DATA_LOSS) {
             abi.fmtCStr(prefix, "Ovrfl>{d}bits:", .{@as(c_uint, shortIntegerWordSize)});
         } else if (temporaryInformation == TI_DATA_NEG_OVRFL) {
@@ -5382,14 +5437,25 @@ fn refreshShortInteger(regist: calcRegister_t, origRegist: calcRegister_t, baseY
     } else if (temporaryInformation == TI_STORCL and regist == REGISTER_X) {
         viewStoRcl(prefix, prefixWidth_p);
     }
-    if (prefixWidth_p.* > 0) {
+    {
+        frontier_display.shortIntegerToDisplayString(regist, tmpString, 1, noBaseOverride, @intCast(@as(i32, SCREEN_WIDTH) - prefixWidth_p.*));
+        // no font fits beside the temporary information, so the digits take the line and the prefix goes
+        if (frontier_char_string.stringWidth(tmpString, fontForShortInteger.?, false, false) >= SCREEN_WIDTH - prefixWidth_p.*) {
+            prefixWidth_p.* = 0;
+        }
+        const viewOnT = temporaryInformation == TI_VIEW_REGISTER and origRegist == REGISTER_T;
+        if (viewOnT) {
+            lcd_fill_rect(0, Y_POSITION_OF_REGISTER_T_LINE, 50, REGISTER_LINE_HEIGHT, LCD_SET_VALUE);
+        }
+        _ = showString(tmpString, fontForShortInteger.?, @intCast(if (viewOnT) @as(i32, prefixWidth_p.*) else @as(i32, SCREEN_WIDTH) - frontier_char_string.stringWidth(tmpString, fontForShortInteger.?, false, true)), @intCast(@as(i32, baseY) + (if (fontForShortInteger == &standardFont) @as(i32, 6) else 0) - (if (fontForShortInteger == &numericFont) checkHPoffset() else 0)), vmNormal, 0, 1);
+
         if (regist == REGISTER_X) {
-            _ = showString(prefix, &standardFont, 1, @intCast(@as(i32, baseY) + TEMPORARY_INFO_OFFSET), vmNormal, prefixPre, prefixPost);
+            displayBaseMode(regist);
+            _ = displayTrueFalse(regist);
         }
-        if (tmpString[0] != 0) {
-            frontier_display.shortIntegerToDisplayString(regist, tmpString, 1, noBaseOverride);
-        }
-        _ = showString(tmpString, fontForShortInteger.?, @intCast(@as(i32, SCREEN_WIDTH) - frontier_char_string.stringWidth(tmpString, fontForShortInteger.?, false, true)), @intCast(@as(i32, baseY) + (if (fontForShortInteger == &standardFont) @as(i32, 6) else 0) - (if (fontForShortInteger == &numericFont) checkHPoffset() else 0)), vmNormal, 0, 1);
+    }
+    if (prefixWidth_p.* > 0) {
+        _ = showString(prefix, &standardFont, 1, @intCast(@as(i32, baseY) + TEMPORARY_INFO_OFFSET), vmNormal, prefixPre, prefixPost);
     }
 }
 
@@ -6676,7 +6742,11 @@ pub export fn fnSNAP(unused_but_mandatory_parameter: u16) callconv(.c) void {
     // destroys the graphic screen the capture wants: --snapskiprefresh, and a
     // screen CLLCD/PIXEL/POINT/AGRAPH painted that nothing has refreshed over.
     if (!snapSkipRefresh and !screenHoldsDrawnPixels) {
-        screenUpdatingMode = SCRUPD_AUTO;
+        // A SHOW page is painted once, and SCRUPD_AUTO disarms the guard in
+        // _refreshNormalScreen that keeps it on screen.
+        if (temporaryInformation != TI_SHOWNOTHING) {
+            screenUpdatingMode = SCRUPD_AUTO;
+        }
         refreshScreen(80);
     }
     frontier_screen_snap.z47_frontier_snap_screenshot_with_message_backup();

@@ -49,9 +49,16 @@ pub fn copySourceRegisterToDestRegister(source_register: runtime.calcRegister_t,
             break :blk 0;
         };
 
+        // Only a RAM full raised by reallocateRegister itself stops the copy, so an
+        // error the caller was already carrying is put back once it has run.
+        const lastErrorCodeMeM = stack_runtime.lastErrorCode;
+        stack_runtime.lastErrorCode = stack_runtime.ERROR_NONE;
         reallocateRegister(normalized_dest, source_type, payload_size, runtime.amNone);
         if (stack_runtime.lastErrorCode == stack_runtime.ERROR_RAM_FULL) {
             return;
+        }
+        if (stack_runtime.lastErrorCode == stack_runtime.ERROR_NONE) {
+            stack_runtime.lastErrorCode = lastErrorCodeMeM;
         }
     }
 

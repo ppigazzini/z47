@@ -48,6 +48,13 @@
     freeProgramBytes       -= size;
   }
 
+  static const uint8_t *_findLastStep(void) {
+    uint8_t *step = programList[numberOfPrograms - 1].instructionPointer;
+    while(!(isAtEndOfProgram(step) || isAtEndOfPrograms(step))) { // END or .END.
+      step = findNextStep(step);
+    }
+    return step;
+  }
 
   static bool_t _addEndNeeded(void) {
     if(firstFreeProgramByte <= beginOfProgramMemory) {
@@ -56,10 +63,20 @@
     if(firstFreeProgramByte == beginOfProgramMemory + 1) {
       return true;
     }
-    if(isAtEndOfProgram(firstFreeProgramByte - 2)) {
+    if(isAtEndOfProgram(_findLastStep())) {
       return false;
     }
     return true;
+  }
+
+  static bool_t _delEndNeeded(void) {
+    if(firstFreeProgramByte <= beginOfProgramMemory) {
+      return false;
+    }
+    if(isAtEndOfProgram(programList[numberOfPrograms - 1].instructionPointer)) {  // the last program's own first step. A step ending 133 178 not taken for a 2nd END
+      return true;
+    }
+    return false;
   }
 
 
@@ -804,6 +821,12 @@ void fnLoadProgram(uint16_t unusedButMandatoryParameter) {
       *(firstFreeProgramByte    ) = 0xffu;
       *(firstFreeProgramByte + 1) = 0xffu;
       scanLabelsAndPrograms();
+    }
+    if(_delEndNeeded()) {
+      firstFreeProgramByte -= 2;
+      freeProgramBytes += 2;
+      *(firstFreeProgramByte    ) = 0xffu;
+      *(firstFreeProgramByte + 1) = 0xffu;
     }
 
     _addSpaceAfterPrograms(pgmSizeInByte);

@@ -54,6 +54,7 @@ const abi = @import("abi"); // shared ABI bindings
 const frontier_char_string = @import("../display/text/char_string.zig");
 const frontier_display = @import("../display/display.zig");
 const frontier_screen = @import("../display/screen.zig");
+const frontier_config = @import("../config.zig");
 const realContext_t = abi.RealContext;
 
 const item_t = abi.Item;
@@ -108,28 +109,14 @@ const dtLongInteger: u32 = 0;
 const dtShortInteger: u32 = 8;
 const dtReal34: u32 = 1;
 
-const RM_HALF_EVEN: u8 = 0;
-const RM_HALF_UP: u8 = 1;
-const RM_HALF_DOWN: u8 = 2;
-const RM_UP: u8 = 3;
-const RM_DOWN: u8 = 4;
-const RM_CEIL: u8 = 5;
-const RM_FLOOR: u8 = 6;
+// config.h's `#define abbreviation true`: the glyph group rather than the full name.
+const abbreviation: bool_t = true;
 
 const DEC_ROUND_DOWN: c_int = 5;
 
 // STD_* macro byte sequences (fonts.h).
 const STD_SPACE_6_PER_EM = "\xa0\x06";
 const STD_SPACE_3_PER_EM = "\xa0\x04";
-const STD_ONE_HALF = "\x80\xbd";
-const STD_UP_ARROW = "\xa1\x91";
-const STD_DOWN_ARROW = "\xa1\x93";
-const STD_LEFT_ARROW = "\xa1\x90";
-const STD_RIGHT_ARROW = "\xa1\x92";
-const STD_MAT_TL = "\xa3\xa1";
-const STD_MAT_TR = "\xa3\xa4";
-const STD_MAT_BL = "\xa3\xa3";
-const STD_MAT_BR = "\xa3\xa6";
 const STD_INFINITY = "\xa2\x1e";
 
 // ---------------------------------------------------------------------------
@@ -381,17 +368,8 @@ pub export fn flagBrowser(init: u16) callconv(.c) void {
 
         // Rounding mode
         line += 1;
-        _ = strcpy(lineStr(line), "RMODE=");
-        switch (roundingMode) {
-            RM_HALF_EVEN => _ = strcat(lineStr(line), STD_ONE_HALF ++ "E"),
-            RM_HALF_UP => _ = strcat(lineStr(line), STD_ONE_HALF ++ STD_UP_ARROW),
-            RM_HALF_DOWN => _ = strcat(lineStr(line), STD_ONE_HALF ++ STD_DOWN_ARROW),
-            RM_UP => _ = strcat(lineStr(line), STD_LEFT_ARROW ++ "0" ++ STD_RIGHT_ARROW),
-            RM_DOWN => _ = strcat(lineStr(line), STD_RIGHT_ARROW ++ "0" ++ STD_LEFT_ARROW),
-            RM_CEIL => _ = strcat(lineStr(line), STD_MAT_TL ++ "x" ++ STD_MAT_TR),
-            RM_FLOOR => _ = strcat(lineStr(line), STD_MAT_BL ++ "x" ++ STD_MAT_BR),
-            else => _ = strcat(lineStr(line), "???"),
-        }
+        _ = strcpy(lineStr(line), "RM=");
+        _ = strcat(lineStr(line), frontier_config.getRoundModeName(roundingMode, abbreviation));
 
         // Significant digits
         _ = strcat(lineStr(line), "  SDIGS=");

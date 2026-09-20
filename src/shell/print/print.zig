@@ -793,7 +793,13 @@ fn findMartelGlyph(font: *const martelFont24_t, charCode: u16) u16 {
     return printer_glyph_search.findMartelGlyph(glyphs, font.numberOfGlyphs, charCode);
 }
 
+var printExitPressed: bool = false; // EXIT taken at a line advance
+
 fn _exitKeyPressed() bool_t {
+    if (printExitPressed) {
+        printExitPressed = false;
+        return true;
+    }
     if (comptime dmcp_build) {
         const key: c_int = frontier_addons.C47PopKeyNoBuffer(@intFromBool(!(DISPLAY_WAIT_FOR_RELEASE != 0))) + 1;
         if (key == 36 or key == 33) { // R/S or EXIT
@@ -851,6 +857,9 @@ fn printAdvance(nlMode: u8) void {
         printIR(if (nlMode != 0) 0x04 else '\n');
     }
     prepareNewLine();
+    if (_exitKeyPressed()) { // once per paper line
+        printExitPressed = true;
+    }
 }
 
 fn advanceIfTrace() void {
@@ -1027,6 +1036,7 @@ fn printLineImpl(buff_in: [*c]const u8, with_lf: c_int) void {
     var buff = buff_in;
 
     setPrinterSBI(true);
+    printExitPressed = false; // an abort raised by the previous line has been reported by then; this line starts clean
 
     var c: u8 = buff[0];
     buff += 1;
@@ -1034,6 +1044,9 @@ fn printLineImpl(buff_in: [*c]const u8, with_lf: c_int) void {
         c = buff[0];
         buff += 1;
     }) {
+        if (printExitPressed) { // EXIT at the last advance: stop before the next glyph
+            break;
+        }
         w = 0;
         if (mode == PMODE_DEFAULT) {
             if (c == 0o6 and buff[0] == 6) {
@@ -1382,7 +1395,12 @@ fn printRegImpl(regist: u16, label: [*c]const u8, eq: bool_t, where: print_area_
         },
     }
 
-    if (label == null and (where == LINE_FULL or where == LINE_NOLF)) {
+    _printTmpString(label, where);
+}
+
+// Pad the value already built in tmpString and send it to the paper.
+pub fn _printTmpString(label: [*c]const u8, where: print_area_t) void {
+    if (label == null and (where == LINE_FULL or where == LINE_NOLF)) { // Padding for PRX
         var glen: u16 = @intCast(frontier_char_string.stringGlyphLength(tmpString));
         if ((where == LINE_NOLF) and (glen < 17)) {
             const padding: u16 = 17 - glen;
@@ -1393,11 +1411,11 @@ fn printRegImpl(regist: u16, label: [*c]const u8, eq: bool_t, where: print_area_
             const padding: u16 = if (glen <= 17) 17 - glen else 24 - (glen - 17);
             var i: u16 = 0;
             while (i < padding) : (i += 1) {
-                _ = strcat(tmpString, " ");
+                _ = strcat(tmpString, " "); // pad string to ensure "***" will be right aligned
             }
         }
         if (where == LINE_FULL) {
-            _ = strcpy(tmpString + strlen(tmpString), "    ***");
+            _ = strcpy(tmpString + strlen(tmpString), "    ***"); // End line with "    ***" as on the HP-41 and 42
         }
     }
 

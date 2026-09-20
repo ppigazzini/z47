@@ -62,6 +62,8 @@ const CALCMODEL: u8 = opts.calcmodel;
 const FLAG_USER: u16 = 0x8014;
 const FLAG_AUTXEQ: u16 = 0x801f;
 const NOPARAM: u16 = 9876;
+const ITM_NOP: u16 = 1542;
+const TI_SHOWNOTHING: u8 = 93;
 const CONFIRMED: u16 = 9877;
 const ITM_RS: i16 = 1725;
 const ITM_RIBBON_R47: u16 = 2511;
@@ -93,6 +95,8 @@ const GSourceFunc = ?*const fn (?*anyopaque) callconv(.c) c_int;
 extern fn z47_startup_init_ui(argc: *c_int, argv: [*]?[*:0]u8) void;
 extern fn z47_startup_enter_mainloop() void;
 extern fn restoreCalc() void;
+extern fn fnC47Show(fnShow_param: u16) void;
+extern var temporaryInformation: u8;
 extern fn fnRESET_MyM(param: u16) void;
 extern fn fnKeysManagement(choice: u16) void;
 extern fn fnRefreshState() void;
@@ -518,6 +522,13 @@ pub export fn main(argc: c_int, argv: [*][*:0]u8) callconv(.c) c_int {
         _ = printf("Factory reset: backup.cfg not loaded\n");
     } else {
         restoreCalc();
+        // A SHOW page is painted once and nothing holds it, so the restore paints it
+        // again, on the register it was on. Upstream does this at the end of
+        // restoreCalc; z47's restoreCalc stops before the GUI tail, and this is the
+        // startup step that stands in for it.
+        if (temporaryInformation == TI_SHOWNOTHING) {
+            fnC47Show(ITM_NOP);
+        }
     }
 
     if (calcModelNew != 255) {

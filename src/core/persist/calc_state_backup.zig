@@ -86,6 +86,8 @@ extern var numberOfAllocatedMemoryRegions: i32;
 extern var globalRegister: ?*anyopaque; // pointer on host (NEW_HW)
 extern var ram: [*c]u32;
 extern var graMod: u8;
+extern var longPressFactor: i16;
+extern var doublePressFactor: i16;
 extern var globalFlags: [16]u8;
 // These four are `char *` POINTERS in c47.h (errorMessage/aimBuffer/nimBufferDisplay/
 // tamBuffer), not arrays. They must be declared as pointers so that `&X[0]` in the
@@ -773,6 +775,8 @@ pub fn saveCalc() void {
     sv(@ptrCast(ram), (geometry().ram_size_in_blocks) << 2, "ram", "hexDump");
 
     sv(&graMod, 1, "graMod", "uint8");
+    sv(&longPressFactor, 2, "longPressFactor", "int16");
+    sv(&doublePressFactor, 2, "doublePressFactor", "int16");
     ioFileClose();
 }
 
@@ -1101,6 +1105,8 @@ pub fn restoreCalc() void {
         _ = decQuadZero(@ptrFromInt(gramodSlot));
         tvmSyncIp(RESERVED_VARIABLE_IPONA);
     }
+    rv(&longPressFactor, 2, "longPressFactor", "int16"); // a file without the key leaves 0, factor 1
+    rv(&doublePressFactor, 2, "doublePressFactor", "int16");
     // The size argument is what stops the reader writing off the end, so it is the room the destination
     // has, the way every other call here passes a sizeof(). These writes cannot leave their table whatever
     // count the file carries.
