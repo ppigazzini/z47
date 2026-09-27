@@ -75,6 +75,11 @@ void fnRefreshState(void) {
   refreshStateCalls++;
 }
 
+// flags.c re-derives the shift indicator's place after every flag change; the
+// place is screen state neither implementation under test carries.
+void updateShiftOnTline(void) {
+}
+
 void reallyClearStatusBar(uint8_t info) {
   clearStatusBarCalls++;
   lastClearStatusBarInfo = info;

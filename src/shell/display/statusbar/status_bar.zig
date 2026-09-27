@@ -448,6 +448,12 @@ inline fn xShift() i32 {
     return status_bar_geometry.xShift(getSystemFlag(FLAG_SBshfR), X_SHIFT_R, X_SHIFT_L);
 }
 // Y_SHIFT
+// Where the status bar keeps the date and the time, the shift indicator goes on the T
+// line; the screen owner works that out from the flags.
+inline fn shiftOnTline() bool {
+    return frontier_screen.shiftOnTline != 0;
+}
+
 inline fn yShift() i32 {
     return status_bar_geometry.yShift(sbDate(), sbTime(), sbWoY(), sbarShift(), Y_SHIFT_LO);
 }
@@ -461,7 +467,9 @@ inline fn lowerUnderLine() i32 {
 // ---------------------------------------------------------------------------
 pub export var SBlastIntegerBaseShown: u8 = 0xFF;
 pub export var SBAlphaModeLastShown: u16 = 0xFFFF;
-var SBbatteryLastShown: u16 = 0xFFFF; // drawn battery bar level, not the raw voltage
+var SBbatteryLastShown: u16 = 0xFFFF; // the gauge level drawn, or the two bytes of the USB or low-battery glyph, not the raw voltage
+var SBasmShown: u8 = 0xFF; // what the ASM area last drew: 0 blank, 1 the buffer, 2 given over to the watch, 0xFF not known
+var SBasmTextShown: [asmBuffer.len]u8 = @splat(0);
 // C file-scope .bss globals -> zero-initialized. `= undefined` left garbage that
 // could read as a set flag before the first write.
 pub export var SBhourglassShown: [2]u8 = .{ 0, 0 };
@@ -477,6 +485,7 @@ pub export fn forceSBupdate() callconv(.c) void {
     SBbatteryLastShown = 0xFFFF;
     SBlastIntegerBaseShown = 0xFF;
     SBAlphaModeLastShown = 0xFFFF;
+    SBasmShown = 0xFF;
     SBhourglassShown[0] = 0xFF;
     SBhourglassShown[1] = 0xFF;
     oldTime[0] = 0;
@@ -557,7 +566,7 @@ pub export fn showDateTime() callconv(.c) bool_t {
     // large value that lcd_fill_rect clamps, rather than trapping here.
     lcd_fill_rect(x, 0, @bitCast(X_REAL_COMPLEX - @as(i32, @intCast(x))), 20, LCD_SET_VALUE);
 
-    if (yShift() == 0 and xShift() < 200) {
+    if (!shiftOnTline() and xShift() < 200) {
         showShiftState();
     }
     return true;
@@ -1159,6 +1168,16 @@ fn showStackSize() void {
     }
 }
 
+// Blanking and redrawing the area on every refresh dirtied all twenty lines of the bar.
+fn asmTextUnchanged() bool {
+    for (SBasmTextShown, asmBuffer) |shown, now| {
+        if (shown != now) {
+            return false;
+        }
+    }
+    return true;
+}
+
 // ===========================================================================
 // light_ASB_icon
 // ===========================================================================
@@ -1166,12 +1185,15 @@ pub export fn light_ASB_icon() callconv(.c) void {
     if (!true or graphMode()) { // SBARUPD_AlphaMode == 1
         return;
     }
-    lcd_fill_rect(@intCast(X_ALPHA_MODE), 18, 9, 2, LCD_EMPTY_VALUE);
+    const asmState: u8 = if (watchIconEnabled) 2 else 1;
+    if (SBasmShown == asmState and (watchIconEnabled or asmTextUnchanged())) {
+        return; // the area already draws this
+    }
+    SBasmShown = asmState;
+    SBasmTextShown = asmBuffer;
+    lcd_fill_rect(@intCast(X_ALPHA_MODE), 18, 9, 2, LCD_EMPTY_VALUE); // underline the alpha mode character, and show the asmBuffer as well
     if (!watchIconEnabled) {
         _ = showStringAndClear(&asmBuffer, &standardFont, @intCast(X_ASM), 0, @intCast(X_SERIAL_IO - X_ASM), 20, vmNormal, true, false);
-    }
-    if (programRunStop != PGM_RUNNING) {
-        frontier_screen.force_SBrefresh(force);
     }
 }
 
@@ -1182,12 +1204,13 @@ pub export fn kill_ASB_icon() callconv(.c) void {
     if (!true or graphMode()) {
         return;
     }
+    if (SBasmShown == 0) {
+        return; // already blank
+    }
+    SBasmShown = 0;
     lcd_fill_rect(@intCast(X_ALPHA_MODE), 18, 9, 2, LCD_SET_VALUE);
     if (!watchIconEnabled) {
         lcd_fill_rect(@intCast(X_ASM), 0, @intCast(X_SERIAL_IO - X_ASM), 20, LCD_SET_VALUE);
-    }
-    if (programRunStop != PGM_RUNNING) {
-        frontier_screen.force_SBrefresh(force);
     }
 }
 
@@ -1247,41 +1270,37 @@ fn showHideUserMode() void {
 // drawBattery
 // ===========================================================================
 pub export fn drawBattery(voltage: u16) callconv(.c) void {
-    // C: (uint16_t)(min(max(voltage-2000,0),3100) / (float)(((float)3100 - 2000.0f) / (float)DY_BATTERY))
-    const vf: f32 = @as(f32, @floatFromInt(minI(maxI(@as(i32, voltage) - 2000, 0), 3100))) / ((@as(f32, 3100) - 2000.0) / @as(f32, @floatFromInt(DY_BATTERY)));
-    const vv: u16 = @intFromFloat(vf);
+    // The bar stands between the cap and the floor, so nineteen readings from empty at 2 V
+    // to full at 3.1 V.
+    const level: u16 = @intCast((@as(u32, @min(@max(voltage, 2000), 3100)) - 2000) * @as(u32, DY_BATTERY - 2) / 1100);
 
-    // The drawn pixels depend on the bar level and the 2750 mV threshold alone,
-    // so an unchanged pair needs no repaint. Returning before the fill is what
-    // keeps the gauge from being blanked and redrawn on every refresh.
-    const drawnState: u16 = vv | (if (voltage > 2750) @as(u16, 0x100) else 0);
-    if (drawnState == SBbatteryLastShown) {
+    if (level == SBbatteryLastShown) {
         return;
     }
-    SBbatteryLastShown = drawnState;
+    SBbatteryLastShown = level;
 
-    lcd_fill_rect(@intCast(X_BATTERY), 0, 11, 20, LCD_SET_VALUE);
-    {
-        // C assigns min(vv-1, ...) to a uint16_t: when vv==0, vv-1 is -1 and
-        // truncates to 65535 (the loop then simply doesn't run). @intCast would
-        // panic on the negative in safety-on builds, so truncate like C.
-        var ii: u16 = @truncate(@as(u32, @bitCast(minI(@as(i32, vv) - 1, DY_BATTERY - 1))));
-        while (ii <= DY_BATTERY - 1) : (ii += 1) {
-            if (ii % 2 == 0) {
-                setBlackPixel(@intCast(if (ii < DY_BATTERY - 3) X_BATTERY + 0 else X_BATTERY + 2), @intCast((DY_BATTERY - 1) - @as(i32, ii)));
-                setBlackPixel(@intCast(if (ii < DY_BATTERY - 3) X_BATTERY + DX_BATTERY + 0 else X_BATTERY + DX_BATTERY - 2), @intCast((DY_BATTERY - 1) - @as(i32, ii)));
+    const xb: u32 = @intCast(X_BATTERY);
+    const dx: u32 = @intCast(DX_BATTERY);
+    const dy: u32 = @intCast(DY_BATTERY);
+    lcd_fill_rect(xb, 0, 11, dy, LCD_SET_VALUE);
+    var y: u32 = 0;
+    while (y < dy) : (y += 1) {
+        const left: u32 = if (y <= 2) 2 else 0; // the neck stands two pixels in from each side
+        const right: u32 = if (y <= 2) dx - 2 else dx;
+        if (y == 0 or y == dy - 1 or y >= dy - 1 - level) { // the cap, the floor and the bar itself are solid
+            var x: u32 = left;
+            while (x <= right) : (x += 1) {
+                setBlackPixel(xb + x, y);
             }
-        }
-    }
-    {
-        var ii: u16 = 0;
-        while (ii <= minI(@as(i32, vv), DY_BATTERY - 1)) : (ii += 1) {
-            var jj: u16 = 0;
-            while (jj <= DX_BATTERY) : (jj += 1) {
-                if (minI(@as(i32, vv), DY_BATTERY) - @as(i32, ii) > (if (voltage > 2750) @as(i32, 2) else @as(i32, 1)) or (jj > 1 and jj < DX_BATTERY - 1)) {
-                    setBlackPixel(@intCast(X_BATTERY + @as(i32, jj)), @intCast((DY_BATTERY - 1) - @as(i32, ii)));
-                }
+        } else if (y == 3) { // the shoulder, three pixels to each side
+            var x: u32 = 0;
+            while (x <= 2) : (x += 1) {
+                setBlackPixel(xb + x, y);
+                setBlackPixel(xb + dx - x, y);
             }
+        } else {
+            setBlackPixel(xb + left, y);
+            setBlackPixel(xb + right, y);
         }
     }
 }
@@ -1290,27 +1309,24 @@ pub export fn drawBattery(voltage: u16) callconv(.c) void {
 // showHideUsbLowBattery (DMCP-only)
 // ===========================================================================
 fn showHideUsbLowBatteryImpl() callconv(.c) void {
-    if (!true) { // SBARUPD_Battery == 1
-        // The area holds a glyph or is blank, so the next gauge draw repaints.
-        lcd_fill_rect(@intCast(X_BATTERY), 0, 11, 20, LCD_SET_VALUE);
-        SBbatteryLastShown = 0xFFFF;
+    if (!getSystemFlag(FLAG_USB) and sbBatVoltage()) {
+        // The rate-limited reading, so the gauge adds no ADC conversion of its own and
+        // does not dip whenever the LCD or IR draws current.
+        drawBattery(@intCast(minI(updateVbatIntegrated(false), vbatVIntegrated)));
         return;
     }
-    if (getSystemFlag(FLAG_USB)) {
-        _ = frontier_screen.showGlyph(STD_USB_SYMBOL, &standardFont, @intCast(X_BATTERY), 0, vmNormal, 1, 0, 0);
-        SBbatteryLastShown = 0xFFFF;
+    const glyph: ?[*:0]const u8 = if (getSystemFlag(FLAG_USB)) STD_USB_SYMBOL else if (getSystemFlag(FLAG_LOWBAT)) STD_BATTERY else null;
+    // Not the 0xFFFF forceSBupdate leaves for not known. A glyph's own two bytes tell the
+    // states apart: they are 0xa4xx, and drawBattery's levels stay below 0x200.
+    const state: u16 = if (glyph) |g| (@as(u16, g[0]) << 8) | @as(u16, g[1]) else 0xFFFE;
+    if (SBbatteryLastShown == state) {
+        return; // drawing the same thing again dirties all twenty lines of the bar for nothing
+    }
+    SBbatteryLastShown = state;
+    if (glyph) |g| {
+        _ = frontier_screen.showGlyph(g, &standardFont, @intCast(X_BATTERY), 0, vmNormal, 1, 0, 0);
     } else {
-        if (sbBatVoltage()) {
-            // The rate-limited reading, so the gauge adds no ADC conversion of
-            // its own and does not dip whenever the LCD or IR draws current.
-            drawBattery(@intCast(minI(updateVbatIntegrated(false), vbatVIntegrated)));
-        } else if (getSystemFlag(FLAG_LOWBAT)) {
-            _ = frontier_screen.showGlyph(STD_BATTERY, &standardFont, @intCast(X_BATTERY), 0, vmNormal, 1, 0, 0);
-            SBbatteryLastShown = 0xFFFF;
-        } else {
-            lcd_fill_rect(@intCast(X_BATTERY), 0, 11, 20, LCD_SET_VALUE);
-            SBbatteryLastShown = 0xFFFF;
-        }
+        lcd_fill_rect(@intCast(X_BATTERY), 0, 11, 20, LCD_SET_VALUE); // the space the USB and low battery glyphs share
     }
 }
 
@@ -1333,12 +1349,14 @@ pub export fn refreshStatusBar() callconv(.c) void {
         return;
     }
 
+    frontier_screen.updateShiftOnTline(); // the indicator's place below comes from this value, so it is worked out first
+
     // DEBUG_INSTEAD_STATUS_BAR == 0 -> normal branch.
     if (graphMode()) {
         lcd_fill_rect(0, 0, 158, 20, LCD_SET_VALUE);
     }
     _ = showDateTime();
-    if (yShift() == 0 and xShift() < 200) {
+    if (!shiftOnTline() and xShift() < 200) {
         showShiftState();
     }
     if (graphMode()) {
@@ -1371,7 +1389,7 @@ pub export fn refreshStatusBar() callconv(.c) void {
     }
     showHideSerialIO();
     showHidePrinter();
-    if (yShift() == 0 and xShift() > 300) {
+    if (!shiftOnTline() and xShift() > 300) {
         showShiftState();
     }
     showHideUserMode();

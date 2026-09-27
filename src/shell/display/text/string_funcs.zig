@@ -892,6 +892,135 @@ pub export fn fn42Cla(unusedButMandatoryParameter: u16) callconv(.c) void {
     fnClearAlpha(alphaRegister);
 }
 
+// ---------------------------------------------------------------------------
+// Which register the 42 alpha functions work on: a global register or a named
+// variable, chosen by number (aREG), from X (aREGX), or read back (aREG#).
+// ---------------------------------------------------------------------------
+const FIRST_NAMED_VARIABLE: u16 = 256;
+const FIRST_RESERVED_VARIABLE: u16 = 2000;
+const LAST_RESERVED_VARIABLE: u16 = 2047;
+const LAST_SPARE_REGISTER: u16 = 125;
+const INVALID_VARIABLE: i32 = 2199;
+const FAILED_INDIRECTION: i16 = 9999;
+const INDPM_REGISTER: u16 = 1;
+const ERROR_RESERVED_VARIABLE_NAME: u8 = 61;
+
+extern var numberOfNamedVariables: u16;
+extern var allNamedVariables: [*c]const abi.NamedVariableHeader;
+const allReservedVariables = @extern([*c]const abi.ReservedVariableHeader, .{ .name = "allReservedVariables" });
+extern fn indirectAddressing(regist: calcRegister_t, parameter_type: u16, min_value: i16, max_value: i16, try_allocate: bool) i16;
+extern fn getRegisterAsLongInt(reg: calcRegister_t, val: *mpz_struct, fractional: ?*bool) bool;
+
+// regKStoC / regCtoKS (defines.h static inlines): a register in C numbering
+// and in the key-stroke program code a program step or X carries.
+const ks_register_remap = @import("../../program/ks_register_remap.zig");
+const FIRST_STAT_REGISTER: i16 = 112;
+const NUMBER_OF_LOCAL_REGISTERS: i16 = 99;
+const FIRST_LOCAL_REGISTER: i16 = 7000;
+const LAST_LOCAL_REGISTER: i16 = 7098;
+const FIRST_STAT_REGISTER_IN_KS_CODE: i16 = 211;
+const LAST_SPARE_REGISTERS_IN_KS_CODE: u8 = 224;
+const FIRST_LOCAL_REGISTER_IN_KS_CODE: i16 = 112;
+const LAST_LOCAL_REGISTER_IN_KS_CODE: i16 = 210;
+
+inline fn regKStoC(regKS: u8) i16 {
+    return ks_register_remap.regKStoC(regKS, .{
+        .first_stat = FIRST_STAT_REGISTER_IN_KS_CODE,
+        .last_spare = LAST_SPARE_REGISTERS_IN_KS_CODE,
+        .first_local_ks = FIRST_LOCAL_REGISTER_IN_KS_CODE,
+        .last_local_ks = LAST_LOCAL_REGISTER_IN_KS_CODE,
+        .num_local = NUMBER_OF_LOCAL_REGISTERS,
+        .first_local = FIRST_LOCAL_REGISTER,
+    });
+}
+
+inline fn regCtoKS(regC: i16) u8 {
+    return ks_register_remap.regCtoKS(regC, .{
+        .first_stat = FIRST_STAT_REGISTER,
+        .last_spare = @intCast(LAST_SPARE_REGISTER),
+        .num_local = NUMBER_OF_LOCAL_REGISTERS,
+        .first_local = FIRST_LOCAL_REGISTER,
+        .last_local = LAST_LOCAL_REGISTER,
+        .first_local_ks = FIRST_LOCAL_REGISTER_IN_KS_CODE,
+    });
+}
+
+inline fn isNamedVariable(regist: u16) bool {
+    return regist >= FIRST_NAMED_VARIABLE and regist < FIRST_NAMED_VARIABLE + numberOfNamedVariables;
+}
+
+// A reserved variable's name, without the length byte its header carries in front of the text.
+fn reservedVariableNameToErrorMessage(regist: u16) void {
+    const name = &allReservedVariables[regist - FIRST_RESERVED_VARIABLE].reservedVariableName;
+    const length: usize = name[0];
+    abi.fmtBufZ(errorMessage[0..512], "{s}", .{name[1 .. 1 + length]});
+}
+
+fn reportAlphaRegisterOutOfRange(function_name: [*:0]const u8, regist: u16) void {
+    frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
+    if (comptime extra_info) {
+        abi.fmtBufZ(errorMessage[0..512], "{d:0>4}", .{regist});
+        c_moreInfoOnError(function_name, errorMessage, " is out of range.", null);
+    }
+}
+
+// aREG: a global register or a named variable becomes the alpha register, and is cleared.
+pub export fn fnSet42Alpha(regist: u16) callconv(.c) void {
+    if (regist <= LAST_SPARE_REGISTER or isNamedVariable(regist)) { // Global register or named variable only
+        fnClearAlpha(regist);
+        alphaRegister = regist;
+    } else if (regist >= FIRST_RESERVED_VARIABLE and regist <= LAST_RESERVED_VARIABLE) {
+        frontier_error.displayCalcErrorMessage(ERROR_RESERVED_VARIABLE_NAME, ERR_REGISTER_LINE);
+        reservedVariableNameToErrorMessage(regist);
+        if (comptime extra_info) {
+            c_moreInfoOnError("In function fnSet42Alpha:", errorMessage, " is a reserved variable.", null);
+        }
+    } else {
+        reportAlphaRegisterOutOfRange("In function fnSet42Alpha:", regist);
+    }
+}
+
+// aREGX: the alpha register named by X, a variable name or a register number in key-stroke code.
+pub export fn fnSet42AlphaX(regist: u16) callconv(.c) void {
+    if (getRegisterDataType(@intCast(regist)) == dtString) { // Named variable, created when missing
+        const xx = indirectAddressing(@intCast(regist), INDPM_REGISTER, 0, 0, true);
+        if (xx != FAILED_INDIRECTION) {
+            fnSet42Alpha(@bitCast(xx));
+        }
+        return;
+    }
+    var reg: longInteger_t = undefined;
+    if (getRegisterAsLongInt(@intCast(regist), &reg[0], null)) {
+        var xx: i32 = @as(i16, @truncate(__gmpz_get_si(&reg[0]))); // longIntegerToInt32 into the int16 the C keeps xx in
+        if (xx < 0 or xx > 255) {
+            xx = INVALID_VARIABLE; // force out of range
+        }
+        const ks_code: u8 = @truncate(@as(u32, @bitCast(xx))); // regKStoC takes the code as a byte
+        fnSet42Alpha(@bitCast(regKStoC(ks_code)));
+    }
+    longIntegerFree(&reg[0]); // getRegisterAsLongInt initialises reg on every path it takes
+}
+
+// aREG#: the alpha register onto the stack, a register as its key-stroke code, a variable as its name.
+pub export fn fnGet42Alpha(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
+    if (alphaRegister <= LAST_SPARE_REGISTER) { // Global register
+        var alphaR: longInteger_t = undefined;
+        liftStack();
+        longIntegerInit(&alphaR[0]);
+        uInt32ToLongInteger(regCtoKS(@intCast(alphaRegister)), &alphaR[0]);
+        frontier_register_value_conversions.convertLongIntegerToLongIntegerRegister(&alphaR[0], REGISTER_X);
+        longIntegerFree(&alphaR[0]);
+    } else if (isNamedVariable(alphaRegister)) { // Named variable
+        const nameLength: u16 = 16;
+        liftStack();
+        reallocateRegister(REGISTER_X, dtString, (nameLength + 3) >> 2, amNone); // TO_BLOCKS(nameLength)
+        _ = frontier_char_string.xcopy(regString(REGISTER_X), &allNamedVariables[alphaRegister - FIRST_NAMED_VARIABLE].variableName[1], nameLength);
+    } else {
+        reportAlphaRegisterOutOfRange("In function fnGet42Alpha:", alphaRegister);
+    }
+}
+
 // Cross-owner callees for the remaining 42S wrappers (display/print/items globals).
 extern var lastFunc: i16;
 const ITM_AVIEW: i16 = 2018;

@@ -110,6 +110,7 @@ extern const char commonBugScreenMessages[NUMBER_OF_BUG_SCREEN_MESSAGES][SIZE_OF
 // point: the two sides are indistinguishable to their environment.
 // ---------------------------------------------------------------------------
 void fnRefreshState(void);
+void updateShiftOnTline(void);
 void reallyClearStatusBar(uint8_t info);
 void fnChangeBaseJM(uint16_t base);
 void showAlphaModeonGui(void);

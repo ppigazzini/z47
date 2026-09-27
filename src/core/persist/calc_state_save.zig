@@ -121,6 +121,7 @@ extern var firstGregorianDay: u32;
 extern var graMod: u8;
 extern var longPressFactor: i16;
 extern var doublePressFactor: i16;
+extern var alphaRegister: u16;
 extern var denMax: u32;
 extern var lastDenominator: u32;
 extern var displayFormat: u8;
@@ -524,6 +525,7 @@ pub fn writeSaveSections() void {
         saveField("printerModel", "%u\n", .{cu(printerState[8])});
         saveField("printerLineDelay", "%u\n", .{cu(pdelay)});
     }
+    saveField("alphaRegister", "%u\n", .{cu(alphaRegister)});
 
     abi.fmtCStr(b(), "END_OTHER_PARAM\n", .{});
     save(b());
@@ -597,6 +599,8 @@ extern fn showHideHourGlass() void;
 extern fn displayCalcErrorMessage(error_code: u8, errMessageRegisterLine: i16) void;
 extern fn findNamedVariable(variableName: [*c]const u8) i16;
 extern fn getSystemFlag(sf: c_int) bool;
+extern fn getFlag(flag: u16) bool;
+const indexOfItems = @extern([*]const abi.Item, .{ .name = "indexOfItems" });
 extern var screenUpdatingMode: u8;
 extern var temporaryInformation: u8;
 extern var hourGlassIconEnabled: bool;
@@ -733,4 +737,122 @@ pub export fn fnSaveXFNRegister(unusedButMandatoryParameter: u16) callconv(.c) v
     } else {
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
     }
+}
+
+// ===========================================================================
+// Data-file flag export (the NAMED_FLAGS section).
+//
+// The three flag exports write the NAMED_FLAGS section: a count line, then one
+// line per flag, the name, a space, and 0 or 1. The name on the line is the
+// flag, so a file of one line sets one flag and leaves the others unchanged.
+// FLAG_nn is a global flag, FLAG_.nn a local one, any other name a system
+// flag's catalogue name.
+// ===========================================================================
+
+const NUMBER_OF_GLOBAL_FLAGS: u16 = 112;
+const NUMBER_OF_LOCAL_FLAGS: u16 = 32;
+const FIRST_LOCAL_FLAG: u16 = 112;
+const LAST_ITEM: u16 = 3481; // items.h
+const CAT_STATUS: u16 = 0x00f0;
+const CAT_SYFL: u16 = 8 << 4;
+
+const FlagKind = enum { global, local, system };
+
+fn isSystemFlagItem(item: *const abi.Item) bool {
+    return (item.status & CAT_STATUS) == CAT_SYFL;
+}
+
+fn doSaveFlagFile(kind: FlagKind, count: u16) void {
+    if (!acquireBuf()) return;
+    defer releaseBuf();
+
+    const ret = ioFileOpen(ioPathRegExport_PATH, ioModeWrite_MODE);
+    if (ret != FILE_OK_RC) {
+        if (ret == FILE_CANCEL_RC) {
+            screenUpdatingMode = SCRUPD_AUTO_MODE;
+            refreshScreen(2994);
+            return;
+        } else {
+            displayCalcErrorMessage(ERROR_CANNOT_WRITE_FILE, ERR_REGISTER_LINE);
+            return;
+        }
+    }
+
+    hourGlassIconEnabled = true;
+    showHideHourGlass();
+
+    abi.fmtCStr(b(), "DATA_FILE_REVISION\n{d}\n", .{cu(@as(u8, 0))});
+    save(b());
+    abi.fmtCStr(b(), "C47/R47_data_file_00\n{d}\n", .{cu(configFileVersion)});
+    save(b());
+
+    abi.fmtCStr(b(), "NAMED_FLAGS\n{d}\n", .{cu(count)});
+    save(b());
+
+    switch (kind) {
+        .system => {
+            var i: u16 = 0;
+            while (i < LAST_ITEM) : (i += 1) {
+                const item = &indexOfItems[i];
+                if (isSystemFlagItem(item)) {
+                    var flagName: [64]u8 = undefined; // room for the UTF-8 of a 15-glyph catalogue name
+                    stringToUtf8(&item.itemCatalogName, &flagName);
+                    abi.fmtCStr(b(), "{s} {d}\n", .{ std.mem.sliceTo(flagName[0..], 0), cu(@intFromBool(getSystemFlag(@intCast(item.param)))) });
+                    save(b());
+                }
+            }
+        },
+        .local => {
+            var i: u16 = 0;
+            while (i < count) : (i += 1) {
+                abi.fmtCStr(b(), "FLAG_.{d:0>2} {d}\n", .{ cu(i), cu(@intFromBool(getFlag(FIRST_LOCAL_FLAG + i))) });
+                save(b());
+            }
+        },
+        .global => {
+            var i: u16 = 0;
+            while (i < count) : (i += 1) {
+                abi.fmtCStr(b(), "FLAG_{d:0>2} {d}\n", .{ cu(i), cu(@intFromBool(getFlag(i))) });
+                save(b());
+            }
+        },
+    }
+
+    ioFileClose();
+    temporaryInformation = TI_DATA_SAVED;
+
+    screenUpdatingMode = SCRUPD_AUTO_MODE;
+    refreshScreen(2995);
+}
+
+pub export fn fnSaveGlobalFlags(N: u16) callconv(.c) void {
+    if (N >= 1 and N <= NUMBER_OF_GLOBAL_FLAGS) {
+        doSaveFlagFile(.global, N);
+    } else {
+        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
+    }
+}
+
+pub export fn fnSaveLocalFlags(N: u16) callconv(.c) void {
+    if (currentLocalFlags == null) { // no local registers, so the open program has no local flags to write
+        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
+        return;
+    }
+    if (N >= 1 and N <= NUMBER_OF_LOCAL_FLAGS) {
+        doSaveFlagFile(.local, N);
+    } else {
+        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
+    }
+}
+
+pub export fn fnSaveSystemFlags(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
+    var count: u16 = 0;
+    var i: u16 = 0;
+    while (i < LAST_ITEM) : (i += 1) { // the count must agree with the lines written, and only a named system flag is written
+        if (isSystemFlagItem(&indexOfItems[i])) {
+            count += 1;
+        }
+    }
+    doSaveFlagFile(.system, count);
 }

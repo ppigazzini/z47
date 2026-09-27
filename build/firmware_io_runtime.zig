@@ -37,6 +37,30 @@ const IO_PATH_LOAD_STATE_FILE: c_int = 7;
 const IO_PATH_SAVE_PROGRAM: c_int = 8;
 const IO_PATH_EXPORT_RTF_PROGRAM: c_int = 10;
 const IO_PATH_LOAD_PROGRAM: c_int = 11;
+const IO_PATH_REG_IMPORT: c_int = 14;
+const IO_PATH_REG_EXPORT: c_int = 15;
+
+// The directories and extensions of hal/io.h.
+const STATE_DIR = "STATE";
+const STATE_EXT = ".s47";
+const DATA_DIR = "DATA";
+const DATA_EXT = ".d47";
+const PROGRAMS_DIR = "PROGRAMS";
+const PRGM_EXT = ".p47";
+const RTF_EXT = ".rtf";
+
+// clearScreenStatusBar (screen.h) and what it reaches: the status bar strip is
+// the whole screen width, or the graph info box's width while a graph is up.
+const SCREEN_WIDTH: u32 = 400;
+const STATUS_BAR_HEIGHT: u32 = 20;
+const widthGraphInfoBox: u32 = 158;
+const LCD_SET_VALUE: c_int = 0;
+const CM_PLOT_STAT: u8 = 8;
+const CM_GRAPH: u8 = 15;
+const SCRUPD_AUTO: u8 = 0x00;
+extern var calcMode: u8;
+extern var screenUpdatingMode: u8;
+extern fn forceSBupdate() void;
 
 const IO_MODE_READ: c_int = 0;
 const IO_MODE_WRITE: c_int = 1;
@@ -46,6 +70,7 @@ const STATE_FILE_NAME_VAR_LENGTH: usize = 20;
 
 const lcd_clear_buf_offset: usize = 44;
 const lcd_refresh_offset: usize = 48;
+const lcd_fill_rect_offset: usize = 60;
 const lcd_set_line_offset: usize = 104;
 const lcd_write_text_offset: usize = 124;
 const set_reset_state_file_offset: usize = 284;
@@ -206,6 +231,25 @@ fn lcdClearBuffer() void {
     function();
 }
 
+const LcdFillRectFn = *const fn (x: u32, y: u32, dx: u32, dy: u32, val: c_int) callconv(.c) void;
+fn lcdFillRect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void {
+    const function: LcdFillRectFn = @ptrFromInt(build_options.library_fn_base + lcd_fill_rect_offset);
+    function(x, y, dx, dy, val);
+}
+
+inline fn graphMode() bool {
+    return calcMode == CM_PLOT_STAT or calcMode == CM_GRAPH;
+}
+
+// screen.h's clearScreenStatusBar macro: blank the status bar strip and mark
+// every status bar item as changed, so the next refresh paints it whole. The
+// count is the macro's call-site tag and is not used.
+fn clearScreenStatusBar(cnt: u16) void {
+    _ = cnt;
+    lcdFillRect(0, 0, if (graphMode()) widthGraphInfoBox else SCREEN_WIDTH, STATUS_BAR_HEIGHT, LCD_SET_VALUE);
+    forceSBupdate();
+}
+
 fn setResetStateFile(path: [*c]const u8) void {
     const function: SetResetStateFileFn = @ptrFromInt(build_options.library_fn_base + set_reset_state_file_offset);
     function(path);
@@ -322,8 +366,18 @@ fn lcdPutsRAt(line: c_int, text: [*c]const u8) void {
     display.inv = 0;
 }
 
+// One file selection screen: the directory is created first, the DMCP menu
+// takes the screen, and afterwards the status bar strip it drew over is
+// blanked and the screen update mode put back to automatic.
+fn fileSelectionHelper(title: [*c]const u8, base_dir: [*c]const u8, ext: [*c]const u8, sel_fn: ?*const anyopaque, is_save: c_int, filename: [*c]u8) c_int {
+    checkCreateDir(base_dir);
+    const ret = fileSelectionScreen(title, base_dir, ext, sel_fn, is_save, is_save, filename);
+    clearScreenStatusBar(204);
+    screenUpdatingMode = SCRUPD_AUTO;
+    return if (ret == MRET_EXIT) FILE_CANCEL else FILE_OK;
+}
+
 pub export fn _ioFileNameFromFilePath(path: c_int, filename: [*c]u8) callconv(.c) c_int {
-    var ret: c_int = 0;
     switch (path) {
         IO_PATH_MANUAL_SAVE => {
             checkCreateDir("SAVFILES");
@@ -345,31 +399,13 @@ pub export fn _ioFileNameFromFilePath(path: c_int, filename: [*c]u8) callconv(.c
             return FILE_OK;
         },
         IO_PATH_REG_DUMP => return FILE_OK,
-        IO_PATH_SAVE_STATE_FILE => {
-            checkCreateDir("STATE");
-            ret = fileSelectionScreen("Save Calculator State", "STATE", ".s47", @ptrCast(&save_statefile), 1, 1, filename);
-            return if (ret == MRET_EXIT) FILE_CANCEL else FILE_OK;
-        },
-        IO_PATH_LOAD_STATE_FILE => {
-            checkCreateDir("STATE");
-            ret = fileSelectionScreen("Load Calculator State", "STATE", ".s47", @ptrCast(&load_statefile), 0, 0, filename);
-            return if (ret == MRET_EXIT) FILE_CANCEL else FILE_OK;
-        },
-        IO_PATH_SAVE_PROGRAM => {
-            checkCreateDir("PROGRAMS");
-            ret = fileSelectionScreen("Save Program", "PROGRAMS", ".p47", @ptrCast(&save_programfile), 1, 1, filename);
-            return if (ret == MRET_EXIT) FILE_CANCEL else FILE_OK;
-        },
-        IO_PATH_EXPORT_RTF_PROGRAM => {
-            checkCreateDir("PROGRAMS");
-            ret = fileSelectionScreen("Export Program RTF", "PROGRAMS", ".rtf", @ptrCast(&save_programfile), 1, 1, filename);
-            return if (ret == MRET_EXIT) FILE_CANCEL else FILE_OK;
-        },
-        IO_PATH_LOAD_PROGRAM => {
-            checkCreateDir("PROGRAMS");
-            ret = fileSelectionScreen("Load Program", "PROGRAMS", ".p47", @ptrCast(&load_programfile), 0, 0, filename);
-            return if (ret == MRET_EXIT) FILE_CANCEL else FILE_OK;
-        },
+        IO_PATH_REG_EXPORT => return fileSelectionHelper("Export Register File", DATA_DIR, DATA_EXT, @ptrCast(&save_datafile), 1, filename),
+        IO_PATH_REG_IMPORT => return fileSelectionHelper("Import Register File", DATA_DIR, DATA_EXT, @ptrCast(&load_datafile), 0, filename),
+        IO_PATH_SAVE_STATE_FILE => return fileSelectionHelper("Save Calculator State", STATE_DIR, STATE_EXT, @ptrCast(&save_statefile), 1, filename),
+        IO_PATH_LOAD_STATE_FILE => return fileSelectionHelper("Load Calculator State", STATE_DIR, STATE_EXT, @ptrCast(&load_statefile), 0, filename),
+        IO_PATH_SAVE_PROGRAM => return fileSelectionHelper("Save Program", PROGRAMS_DIR, PRGM_EXT, @ptrCast(&save_programfile), 1, filename),
+        IO_PATH_EXPORT_RTF_PROGRAM => return fileSelectionHelper("Export Program RTF", PROGRAMS_DIR, RTF_EXT, @ptrCast(&save_programfile), 1, filename),
+        IO_PATH_LOAD_PROGRAM => return fileSelectionHelper("Load Program", PROGRAMS_DIR, PRGM_EXT, @ptrCast(&load_programfile), 0, filename),
         else => return FILE_ERROR,
     }
 }
@@ -508,6 +544,29 @@ pub export fn load_statefile(fpath: [*c]const u8, fname: [*c]const u8, data: ?*a
     return MRET_LOADSTATE;
 }
 
+pub export fn save_datafile(fpath: [*c]const u8, fname: [*c]const u8, data: ?*anyopaque) callconv(.c) c_int {
+    lcdPuts("Saving register(s) ...");
+    lcdPuts(fname);
+    lcdRefresh();
+
+    if (data != null) {
+        copyCString(@ptrCast(data.?), fpath);
+    }
+    return MRET_SAVESTATE;
+}
+
+pub export fn load_datafile(fpath: [*c]const u8, fname: [*c]const u8, data: ?*anyopaque) callconv(.c) c_int {
+    _ = fname;
+
+    lcdPutsRAt(6, "  Loading ...");
+    lcdRefreshWait();
+
+    if (data != null) {
+        copyCString(@ptrCast(data.?), fpath);
+    }
+    return MRET_LOADSTATE;
+}
+
 pub export fn save_programfile(fpath: [*c]const u8, fname: [*c]const u8, data: ?*anyopaque) callconv(.c) c_int {
     lcdPuts("Saving program ...");
     lcdPuts(fname);
@@ -555,10 +614,14 @@ pub export fn show_warning(str: [*c]u8) callconv(.c) void {
             break;
         }
     }
+    clearScreenStatusBar(205);
+    screenUpdatingMode = SCRUPD_AUTO;
 }
 
 pub export fn fnDiskInfo(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
     displayDiskInfo("Disk Info");
     waitForKeyPress();
+    clearScreenStatusBar(206);
+    screenUpdatingMode = SCRUPD_AUTO;
 }

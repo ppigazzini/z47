@@ -243,6 +243,11 @@ pub fn labelCaptionNormal(key: *const calcKey_t, button: ?*anyopaque, lbl_f: ?*a
         stringToUtf8(&sstmp, &lbl);
     }
 
+    // Keyboard primary-layer text replacements
+    if (strEq(&lbl, "LINPOL")) {
+        _ = strcpy(&lbl, "LNP");
+    }
+
     gtk_button_set_label(button, &lbl);
 
     if ((key.primary == ITM_AIM and getSystemFlag(FLAG_USER) and calcMode == CM_NORMAL and key.keyId == normKey00KeyID()) or
@@ -287,7 +292,10 @@ pub fn labelCaptionNormal(key: *const calcKey_t, button: ?*anyopaque, lbl_f: ?*a
             stringToUtf8(s, &lbl);
         }
     }
-    if (strEq(&lbl, "SST")) {
+    // Keyboard f-layer text replacements
+    if (strEq(&lbl, "LINPOL")) {
+        _ = strcpy(&lbl, "LNP");
+    } else if (strEq(&lbl, "SST")) {
         var tt: [20]u8 = undefined;
         _ = strcpy(&tt, STD_HAMBURGER);
         _ = strcat(&tt, if (isR47FAM()) STD_DOWN_BLOCKARROW else STD_SST);
@@ -332,7 +340,7 @@ pub fn labelCaptionNormal(key: *const calcKey_t, button: ?*anyopaque, lbl_f: ?*a
         }
         r47_longpress = true;
     } else if (key.gShifted == 0) {
-        lbl[0] = 0;
+        sstmp[0] = 0;
     } else {
         _ = strcpy(&sstmp, softmenuName(absItem(key.gShifted)));
     }
@@ -349,10 +357,11 @@ pub fn labelCaptionNormal(key: *const calcKey_t, button: ?*anyopaque, lbl_f: ?*a
             stringToUtf8(s, &lbl);
         }
     }
-    if (strEq(&lbl, "MODE#") and key.keyId == 22) {
-        _ = strcpy(&lbl, "#");
-    } else if (strEq(&lbl, "LINPOL")) {
-        _ = strcpy(&lbl, "LIN");
+    // Keyboard g-layer text replacements
+    if (strEq(&lbl, "LINPOL")) {
+        _ = strcpy(&lbl, "LNP");
+    } else if (strEq(&lbl, "MyM") or strEq(&lbl, "MyMenu")) {
+        _ = strcpy(&lbl, "CUST");
     }
     gtk_label_set_label(lbl_g, &lbl);
     if (r47_longpress) {

@@ -37,6 +37,7 @@
 //   nm -g --defined-only <registers.o> | awk '{print $3}'
 // Re-derive it that way after a resync; registers.h does not list all of them.
 #define allReservedVariables oracle_allReservedVariables
+#define registerLetter oracle_registerLetter
 #define varDescr oracle_varDescr
 
 #define getRegisterDataType oracle_getRegisterDataType

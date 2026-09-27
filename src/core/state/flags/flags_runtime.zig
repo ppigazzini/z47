@@ -162,6 +162,9 @@ pub extern var allFormulae: [*c]formulaHeader_t;
 pub extern var currentFormula: u16;
 
 pub extern fn fnRefreshState() void;
+// screen.c: a status bar setting can take the room for the shift indicator on the
+// T line, or give it back, so the flag owner asks the screen to work it out again.
+pub extern fn updateShiftOnTline() void;
 pub extern fn reallyClearStatusBar(info: u8) void;
 pub extern fn fnChangeBaseJM(base: u16) void;
 pub extern fn leaveTamModeIfEnabled() void;

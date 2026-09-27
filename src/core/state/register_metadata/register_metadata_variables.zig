@@ -33,6 +33,7 @@ const named_variable_header_t = abi.NamedVariableHeader;
 const reserved_variable_header_t = abi.ReservedVariableHeader;
 
 extern var allNamedVariables: ?[*]named_variable_header_t;
+extern var alphaRegister: u16;
 extern var allReservedVariables: [reserved_variable_count]reserved_variable_header_t;
 extern fn compareString(left: [*c]const u8, right: [*c]const u8, comparison_type: i32) i32;
 extern fn isMemoryBlockAvailable(size_in_blocks: usize, num_blocks: u16, extra_fraction: f32) bool;
@@ -365,6 +366,9 @@ pub fn deleteVariable(regist: u16) void {
 
     if (register >= runtime.FIRST_NAMED_VARIABLE and register < named_variable_limit) {
         const index: u16 = @intCast(register - runtime.FIRST_NAMED_VARIABLE);
+        if (alphaRegister == regist) {
+            alphaRegister = runtime.REGISTER_K; // Restore the default alpha register value
+        }
         runtime.removeNamedVariableRecallAssignment(index);
         memory_owned.freeRegisterData(register);
 
@@ -550,6 +554,7 @@ pub fn allocateNamedVariableOnMiss(variable_name: [*c]const u8) runtime.calcRegi
         return runtime.INVALID_VARIABLE;
     }
 
+    stack_runtime.lastErrorCode = stack_runtime.ERROR_NONE; // Clears an error code latched by an earlier function
     allocateNamedVariable(variable_name, runtime.dtReal34, runtime.real34SizeInBlocks());
     if (stack_runtime.lastErrorCode != stack_runtime.ERROR_NONE) {
         return runtime.INVALID_VARIABLE;
@@ -598,6 +603,8 @@ pub fn isFunctionAllowingNewVariable(op: u16) bool {
         runtime.ITM_FOR,
         runtime.ITM_FORYX,
         runtime.ITM_FORTOP,
+        runtime.ITM_SET_42ALPHA,
+        runtime.ITM_SET_42ALPHAX,
         => true,
         else => false,
     };

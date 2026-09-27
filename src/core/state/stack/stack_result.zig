@@ -44,7 +44,6 @@ extern fn checkTimeRange(time34: *const real34_t) void;
 extern fn checkDateRange(date34: *const real34_t) void;
 extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: runtime.calcRegister_t) void;
 extern fn fnSetFlag(flag: u16) void;
-extern fn fnRefreshState() void;
 extern fn rsdRema(digits: u16) void;
 extern fn rsdCxma(digits: u16) void;
 
@@ -349,7 +348,7 @@ pub fn adjustResult(
             return;
         }
 
-        if (set_cpx_res and one_argument_is_complex and runtime.getRegisterDataType(res) != runtime.dtString) {
+        if (set_cpx_res and one_argument_is_complex and runtime.getRegisterDataType(res) != runtime.dtString and !runtime.getSystemFlag(FLAG_CPXRES)) {
             runtime.adjustResultSetCpxRes();
         }
 
@@ -381,9 +380,10 @@ pub fn adjustResult(
         return;
     }
 
-    if (set_cpx_res and one_argument_is_complex and result_data_type != runtime.dtString) {
+    // FLAG_CPXRES is one of the refreshStateFlags, so setSystemFlag draws the whole
+    // softmenu again for its marker: the flag is written only where it changes.
+    if (set_cpx_res and one_argument_is_complex and result_data_type != runtime.dtString and !runtime.getSystemFlag(FLAG_CPXRES)) {
         fnSetFlag(FLAG_CPXRES);
-        fnRefreshState();
     }
 
     roundResultToSignificantDigits(res, result_data_type);

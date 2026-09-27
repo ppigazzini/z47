@@ -663,6 +663,8 @@ fn btnReleasedHost(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque)
                     runtime.runFunction(item);
                 }
             }
+        } else {
+            runtime.hideFunctionName(); // the program step SST or BST displays while the key is down
         }
 
         if (runtime.programRunStop == runtime.PGM_SINGLE_STEP) {

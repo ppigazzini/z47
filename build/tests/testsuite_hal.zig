@@ -54,6 +54,10 @@ pub export fn fnPlay(unusedButMandatoryParameter: u16) callconv(.c) void {
 // blitter). lcd_buffer keeps the same 52-byte row stride (a two-byte prefix
 // plus 50 data bytes) as the simulator, so screen.c/fnScreenDump address it
 // identically. Defined (as null) in shell/c47.zig; allocated lazily here.
+// The bits carry the DMCP polarity: a set bit is a white pixel, a clear bit a
+// black one, so BLT_OR draws black by clearing bits and BLT_ANDN draws white
+// by setting them; lcd_fill_rect's val is a flag, 0 (LCD_SET_VALUE) filling
+// white through BLT_ANDN and anything else filling black through BLT_OR.
 // ---------------------------------------------------------------------------
 const SCREEN_WIDTH: u32 = 400;
 const SCREEN_HEIGHT: u32 = 240;
@@ -65,6 +69,7 @@ const BLT_NONE: c_int = 0;
 const BLT_SET: c_int = 1;
 extern var lcd_buffer: [*c]u8;
 extern fn calloc(nmemb: usize, size: usize) [*c]u8;
+extern fn abort() noreturn;
 
 fn ensureLcdBuffer() void {
     if (lcd_buffer == null) {
@@ -82,7 +87,7 @@ pub export fn bitblt24(x_in: u32, dx: u32, y: u32, val: u32, blt_op: c_int, fill
     const lowmask = (@as(u32, 1) << @as(u5, @intCast(dx))) -% 1;
     const bytes_needed = (@as(u32, bit_off) + dx + 7) / 8;
     const srcbits: u32 = (val & lowmask) << bit_off;
-    // BLT_SET: the dx columns are cleared before BLT_OR and set before BLT_ANDN
+    // BLT_SET: the dx columns are written white before BLT_OR and black before BLT_ANDN
     const fillbits: u32 = if (fill == BLT_SET) lowmask << bit_off else 0;
     const srcbytes = [4]u8{ @truncate(srcbits), @truncate(srcbits >> 8), @truncate(srcbits >> 16), @truncate(srcbits >> 24) };
     const fillbytes = [4]u8{ @truncate(fillbits), @truncate(fillbits >> 8), @truncate(fillbits >> 16), @truncate(fillbits >> 24) };
@@ -90,13 +95,13 @@ pub export fn bitblt24(x_in: u32, dx: u32, y: u32, val: u32, blt_op: c_int, fill
     var i: u32 = 0;
     switch (blt_op) {
         BLT_OR => while (i < bytes_needed) : (i += 1) {
-            lcd_buffer[base + i] = (lcd_buffer[base + i] & ~fillbytes[i]) | srcbytes[i];
+            lcd_buffer[base + i] = (lcd_buffer[base + i] | fillbytes[i]) & ~srcbytes[i];
         },
         BLT_XOR => while (i < bytes_needed) : (i += 1) {
             lcd_buffer[base + i] ^= srcbytes[i];
         },
         BLT_ANDN => while (i < bytes_needed) : (i += 1) {
-            lcd_buffer[base + i] = (lcd_buffer[base + i] | fillbytes[i]) & ~srcbytes[i];
+            lcd_buffer[base + i] = (lcd_buffer[base + i] & ~fillbytes[i]) | srcbytes[i];
         },
         else => return,
     }
@@ -109,6 +114,8 @@ pub export fn lcd_fill_rect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) callco
     const endX = x +% dx;
     const endY = y +% dy;
     if (endX > SCREEN_WIDTH or endY > SCREEN_HEIGHT) return;
+    // val is a flag: 0 fills white through BLT_ANDN, anything else fills black
+    // through BLT_OR.
     const blt_op: c_int = if (val != 0) BLT_OR else BLT_ANDN;
     var col = x;
     while (col < endX) : (col += 24) {
@@ -126,7 +133,20 @@ pub export fn lcd_buffer_pixel_on(x: u32, y: u32) callconv(.c) u8 {
     const bitIndex = SCREEN_WIDTH - 1 - x;
     const byte_i = bitIndex >> 3;
     const bit_j: u3 = @intCast(bitIndex & 7);
-    return (lcd_buffer[52 * y + 2 + byte_i] >> bit_j) & 1;
+    return ((lcd_buffer[52 * y + 2 + byte_i] >> bit_j) & 1) ^ 1; // a clear bit is a black pixel
+}
+
+// The same refusal as the c47-gtk twin, so an out of range row cannot differ
+// between the two builds. Marks the line dirty, as DMCP does.
+pub export fn lcd_line_addr(row: c_int) callconv(.c) [*c]u8 {
+    ensureLcdBuffer();
+    if (row < 0 or row >= SCREEN_HEIGHT) {
+        _ = printf("row = %d, it should be >= 0 and < %d!\n", row, @as(c_int, SCREEN_HEIGHT));
+        abort();
+    }
+    const r: u32 = @intCast(row);
+    lcd_buffer[52 * r] = 1;
+    return lcd_buffer + 52 * r + 2;
 }
 // The test HAL touches no filesystem, so every directory is treated as already
 // present. softmenus.c's menu dump is the caller that makes hal/io.h:93's
@@ -138,9 +158,6 @@ pub export fn create_dir(dir: [*c]u8) callconv(.c) c_int {
 
 pub export fn _lcdRefresh() callconv(.c) void {}
 pub export fn _lcdSBRefresh() callconv(.c) void {}
-pub export fn _lcdBandRefresh(y: u32, dy: u32) callconv(.c) void {
-    _ = .{ y, dy };
-}
 pub export fn lcd_refresh_lines(ln: u8, cnt: u8) callconv(.c) void {
     _ = .{ ln, cnt };
 }

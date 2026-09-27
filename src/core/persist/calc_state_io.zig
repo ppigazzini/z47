@@ -27,6 +27,7 @@ const ERROR_CANNOT_WRITE_FILE: u8 = 55;
 
 const FLAG_USER: u16 = 32788;
 const SCRUPD_MANUAL_MENU: u8 = 4;
+const SCRUPD_AUTO: u8 = 0x00;
 const SAVING_STATE_FILE: usize = 101;
 const LOADING_STATE_FILE: usize = 100;
 const force: u8 = 1;
@@ -96,8 +97,14 @@ pub fn restoreCalc() void {
     backup_owned.restoreCalc();
 }
 
+// power_check_screen paints its own screen on DMCP and leaves the composition
+// manual, so the mode goes back to automatic whether or not the power is low.
 pub fn checkPower() bool {
-    return rom.power_check_screen();
+    const low_power = rom.power_check_screen();
+    if (comptime is_dmcp_build) {
+        screenUpdatingMode = SCRUPD_AUTO;
+    }
+    return low_power;
 }
 
 pub fn openSave(save_type: u16) c_int {

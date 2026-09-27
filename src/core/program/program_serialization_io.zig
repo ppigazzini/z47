@@ -133,8 +133,17 @@ fn copyLabelName(label_ptr: ?[*]u8) void {
     tmpStringLabelOrVariableName[len] = 0;
 }
 
+extern var screenUpdatingMode: u8;
+const SCRUPD_AUTO: u8 = 0x00;
+
+// power_check_screen paints its own screen on DMCP and leaves the composition
+// manual, so the mode goes back to automatic whether or not the power is low.
 pub fn checkPower() bool {
-    return rom.power_check_screen();
+    const low_power = rom.power_check_screen();
+    if (comptime is_dmcp_build) {
+        screenUpdatingMode = SCRUPD_AUTO;
+    }
+    return low_power;
 }
 
 pub fn selectProgram(label: u16) void {

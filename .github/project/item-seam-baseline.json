@@ -1466,8 +1466,8 @@
    "9876"
   ],
   "1327": [
-   "&itemToBeCoded",
-   "9876"
+   "ext_fnSet42AlphaX",
+   "100"
   ],
   "1328": [
    "if (option_lp_dp_timing) ext_fnGetLPFCT else &itemToBeCoded",
@@ -1490,11 +1490,11 @@
    "100"
   ],
   "1332": [
-   "&itemToBeCoded",
-   "9876"
+   "ext_fnSet42Alpha",
+   "10003"
   ],
   "1333": [
-   "&itemToBeCoded",
+   "ext_fnGet42Alpha",
    "9876"
   ],
   "1334": [
@@ -8206,15 +8206,15 @@
    "9876"
   ],
   "2844": [
-   "&itemToBeCoded",
-   "9876"
+   "ext_fnSaveGlobalFlags",
+   "10001"
   ],
   "2845": [
-   "&itemToBeCoded",
-   "9876"
+   "ext_fnSaveLocalFlags",
+   "10001"
   ],
   "2846": [
-   "&itemToBeCoded",
+   "ext_fnSaveSystemFlags",
    "9876"
   ],
   "2847": [
