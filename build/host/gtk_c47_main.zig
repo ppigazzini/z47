@@ -320,15 +320,15 @@ fn relocateToResourceDir(argv0: [*:0]const u8) void {
         for ([_][]const u8{ "", upstream_prefix }) |prefix| {
             var probe_buf: [4096]u8 = undefined;
             const probe = if (prefix.len == 0)
-                std.fmt.bufPrintZ(&probe_buf, "{s}/res/c47_pre.css", .{dir}) catch return
+                std.fmt.bufPrintSentinel(&probe_buf, "{s}/res/c47_pre.css", .{dir}, 0) catch return
             else
-                std.fmt.bufPrintZ(&probe_buf, "{s}/{s}/res/c47_pre.css", .{ dir, prefix }) catch return;
+                std.fmt.bufPrintSentinel(&probe_buf, "{s}/{s}/res/c47_pre.css", .{ dir, prefix }, 0) catch return;
             if (access(probe.ptr, 0) != 0) continue; // F_OK
             var cd_buf: [4096]u8 = undefined;
             const cd = if (prefix.len == 0)
-                std.fmt.bufPrintZ(&cd_buf, "{s}", .{dir}) catch return
+                std.fmt.bufPrintSentinel(&cd_buf, "{s}", .{dir}, 0) catch return
             else
-                std.fmt.bufPrintZ(&cd_buf, "{s}/{s}", .{ dir, prefix }) catch return;
+                std.fmt.bufPrintSentinel(&cd_buf, "{s}/{s}", .{ dir, prefix }, 0) catch return;
             _ = chdir(cd.ptr);
             return;
         }
@@ -354,7 +354,7 @@ pub export fn main(argc: c_int, argv: [*][*:0]u8) callconv(.c) c_int {
             _ = printf("Activated: %s\n", argv[arg]);
             if (arg + 1 < @as(usize, @intCast(argc)) and argv[arg + 1][0] != 0) {
                 arg += 1;
-                _ = std.fmt.bufPrintZ(&modelString, "{s}", .{std.mem.span(argv[arg])}) catch {};
+                _ = std.fmt.bufPrintSentinel(&modelString, "{s}", .{std.mem.span(argv[arg])}, 0) catch {};
                 if (arg + 1 < @as(usize, @intCast(argc)) and argv[arg + 1][0] != 0) {
                     arg += 1;
                 } else break;

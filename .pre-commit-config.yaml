@@ -56,7 +56,7 @@ repos:
         exclude: '\.(p47|sav|dat|bin|bmp|tsv)$'
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.16.1
+    rev: v0.16.9
     hooks:
       # No --force-exclude here: the upstream hook definitions already pass it,
       # and ruff rejects it twice. It is what makes pyproject.toml's
@@ -70,7 +70,7 @@ repos:
       - id: ruff-format
 
   - repo: https://github.com/astral-sh/ty-pre-commit
-    rev: v0.0.65
+    rev: v0.0.84
     hooks:
       # The hook's own entry checks the whole project (ty's cross-file
       # diagnostics make per-filename invocation wrong); [tool.ty.src] in
