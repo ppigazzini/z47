@@ -513,7 +513,7 @@ pub export fn QR_decomposition_householder(
 
         freeC47Blocks(bulk, bulkSize);
     } else {
-        runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE);
         if (runtime.extra_info_on_calc_error) {
             runtime.moreInfoOnError("In function QR_decomposition_householder:", "Ram full", null, null);
         }
@@ -1111,7 +1111,7 @@ pub fn calculateEigenvalues(a: [*]align(1) real_t, q: [*]align(1) real_t, r: [*]
     realSetZero(&progress_indicator);
 
     if (isProblematicMatrix(a, size)) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_OUT_OF_RANGE, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_OUT_OF_RANGE, runtime.ERR_REGISTER_LINE);
         if (runtime.extra_info_on_calc_error) {
             // 94 fixed characters, then up to the five digits of a uint16_t
             // matrixIndex, then the terminator bufPrintZ reserves.
@@ -1229,7 +1229,7 @@ pub fn calculateEigenvalues(a: [*]align(1) real_t, q: [*]align(1) real_t, r: [*]
             }
             if (exitKeyWaiting()) {
                 _ = progressHalfSecUpdate_Integer(force + 1, "Interrupted Iter:", iteration, halfSec_clearZ, halfSec_clearT, halfSec_disp);
-                runtime.displayCalcErrorMessage(ERROR_SOLVER_ABORT, runtime.REGISTER_T, runtime.REGISTER_X);
+                runtime.displayCalcErrorMessage(ERROR_SOLVER_ABORT, runtime.REGISTER_T);
                 if (runtime.extra_info_on_calc_error) {
                     runtime.moreInfoOnError("In function calculateEigenvalues:", "Exit while calculating", null, null);
                 }
@@ -1515,7 +1515,7 @@ pub fn calculateEigenvalues(a: [*]align(1) real_t, q: [*]align(1) real_t, r: [*]
                 if (!coupled and (j == i + 1 or j == i + 2)) {
                     solveEigenBlock(a, eig, size, @intCast(i), @intCast(j), is_real_symmetric, realContext);
                 } else if ((coupled or j > i + 2) and runtime.lastErrorCode == runtime.ERROR_NONE) {
-                    runtime.displayCalcErrorMessage(ERROR_NO_ROOT_FOUND, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+                    runtime.displayCalcErrorMessage(ERROR_NO_ROOT_FOUND, runtime.ERR_REGISTER_LINE);
                     if (runtime.extra_info_on_calc_error) {
                         var buf: [96]u8 = undefined;
                         const m = bufPrintZ(&buf, "rows {d} to {d} are not a block of at most 3 rows apart from the rows below", .{ i, j }) catch "block too long";
@@ -1577,7 +1577,7 @@ pub fn calculateEigenvalues(a: [*]align(1) real_t, q: [*]align(1) real_t, r: [*]
 // &ctxtReal75. pub-exported, dead until fnEigenvalues wires them.
 // ===========================================================================
 fn ramFull(comptime where: [*:0]const u8, comptime tag: [*:0]const u8) linksection(runtime.code_section) void {
-    runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+    runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE);
     if (runtime.extra_info_on_calc_error) {
         runtime.moreInfoOnError(where, tag, null, null);
     }
@@ -1683,7 +1683,7 @@ pub export fn fnEigenvalues(unusedParamButMandatory: u16) linksection(runtime.co
         var x: real34Matrix_t = undefined;
         runtime.linkToRealMatrixRegister(runtime.REGISTER_X, &x);
         if (x.header.matrixRows != x.header.matrixColumns) {
-            runtime.displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            runtime.displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, runtime.ERR_REGISTER_LINE);
             if (runtime.extra_info_on_calc_error) {
                 var buf: [80]u8 = undefined;
                 const m = bufPrintZ(&buf, "rectangular or single-element matrix or ({d}\x80\xd7{d})", .{ x.header.matrixRows, x.header.matrixColumns }) catch "rectangular matrix";
@@ -1767,7 +1767,7 @@ pub export fn fnEigenvalues(unusedParamButMandatory: u16) linksection(runtime.co
         var x: complex34Matrix_t = undefined;
         runtime.linkToComplexMatrixRegister(runtime.REGISTER_X, &x);
         if (x.header.matrixRows != x.header.matrixColumns) {
-            runtime.displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            runtime.displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, runtime.ERR_REGISTER_LINE);
             if (runtime.extra_info_on_calc_error) {
                 var buf: [80]u8 = undefined;
                 const m = bufPrintZ(&buf, "rectangular or single-element matrix or ({d}\x80\xd7{d})", .{ x.header.matrixRows, x.header.matrixColumns }) catch "rectangular matrix";
@@ -1807,7 +1807,7 @@ pub export fn fnEigenvalues(unusedParamButMandatory: u16) linksection(runtime.co
         if (!doneAdjusting) runtime.adjustResult(runtime.REGISTER_X, true, true, runtime.REGISTER_X, -1, -1);
         return;
     } else {
-        runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE);
         if (runtime.extra_info_on_calc_error) {
             var buf: [48]u8 = undefined;
             const m = bufPrintZ(&buf, "DataType {d}", .{dt}) catch "DataType";
@@ -1863,7 +1863,7 @@ pub export fn cpxLinearEqn(a: [*]align(1) const real_t, b: [*]align(1) const rea
         if (math_matrix_complex_core.invCpxMat(inv_a, size, realContext)) {
             math_matrix_complex_core.mulCpxMat(inv_a, @alignCast(b), size, size, 1, @alignCast(r), realContext);
         } else if (runtime.lastErrorCode != runtime.ERROR_RAM_FULL) {
-            runtime.displayCalcErrorMessage(runtime.ERROR_SINGULAR_MATRIX, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            runtime.displayCalcErrorMessage(runtime.ERROR_SINGULAR_MATRIX, runtime.ERR_REGISTER_LINE);
             if (runtime.extra_info_on_calc_error) runtime.moreInfoOnError("In function cpxLinearEqn:", "attempt to invert a singular matrix", null, null);
         }
         freeC47Blocks(inv_a, blocks);
@@ -2312,7 +2312,7 @@ fn createEigenVectorIf1x1(rows: u16, cols: u16, isComplex: bool) linksection(run
         runtime.liftStack();
         if (!runtime.initMatrixRegister(runtime.REGISTER_X, 1, 1, isComplex)) {
             runtime.fnDrop(runtime.NOPARAM);
-            runtime.displayCalcErrorMessage(runtime.ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            runtime.displayCalcErrorMessage(runtime.ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, runtime.ERR_REGISTER_LINE);
             if (runtime.extra_info_on_calc_error) runtime.moreInfoOnError("In function createEigenVectorIf1x1:", "Not enough memory for a 1\x80\xd71 matrix", null, null);
             return 255;
         }
@@ -2353,7 +2353,7 @@ pub export fn fnEigenvectors(unusedParamButMandatory: u16) linksection(runtime.c
         var x: real34Matrix_t = undefined;
         runtime.linkToRealMatrixRegister(runtime.REGISTER_X, &x);
         if (x.header.matrixRows != x.header.matrixColumns) {
-            runtime.displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            runtime.displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, runtime.ERR_REGISTER_LINE);
             if (runtime.extra_info_on_calc_error) {
                 var buf: [80]u8 = undefined;
                 const m = bufPrintZ(&buf, "rectangular or single-element matrix or ({d}\x80\xd7{d})", .{ x.header.matrixRows, x.header.matrixColumns }) catch "rectangular matrix";
@@ -2404,7 +2404,7 @@ pub export fn fnEigenvectors(unusedParamButMandatory: u16) linksection(runtime.c
                 } else {
                     // The error is already displayed.
                     if (runtime.lastErrorCode == ERROR_NO_ROOT_FOUND or runtime.lastErrorCode == runtime.ERROR_RAM_FULL) return;
-                    runtime.displayCalcErrorMessage(runtime.ERROR_SINGULAR_MATRIX, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+                    runtime.displayCalcErrorMessage(runtime.ERROR_SINGULAR_MATRIX, runtime.ERR_REGISTER_LINE);
                     if (runtime.extra_info_on_calc_error) runtime.moreInfoOnError("In function fnEigenvectors:", "matrix is defective: no full set of linearly independent eigenvectors", null, null);
                     return;
                 }
@@ -2416,7 +2416,7 @@ pub export fn fnEigenvectors(unusedParamButMandatory: u16) linksection(runtime.c
         var x: complex34Matrix_t = undefined;
         runtime.linkToComplexMatrixRegister(runtime.REGISTER_X, &x);
         if (x.header.matrixRows != x.header.matrixColumns) {
-            runtime.displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            runtime.displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, runtime.ERR_REGISTER_LINE);
             if (runtime.extra_info_on_calc_error) {
                 var buf: [80]u8 = undefined;
                 const m = bufPrintZ(&buf, "rectangular or single-element matrix or ({d}\x80\xd7{d})", .{ x.header.matrixRows, x.header.matrixColumns }) catch "rectangular matrix";
@@ -2442,7 +2442,7 @@ pub export fn fnEigenvectors(unusedParamButMandatory: u16) linksection(runtime.c
                 } else {
                     // The error is already displayed.
                     if (runtime.lastErrorCode == ERROR_NO_ROOT_FOUND or runtime.lastErrorCode == runtime.ERROR_RAM_FULL) return;
-                    runtime.displayCalcErrorMessage(runtime.ERROR_SINGULAR_MATRIX, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+                    runtime.displayCalcErrorMessage(runtime.ERROR_SINGULAR_MATRIX, runtime.ERR_REGISTER_LINE);
                     if (runtime.extra_info_on_calc_error) runtime.moreInfoOnError("In function fnEigenvectors:", "matrix is defective: no full set of linearly independent eigenvectors", null, null);
                     return;
                 }
@@ -2451,7 +2451,7 @@ pub export fn fnEigenvectors(unusedParamButMandatory: u16) linksection(runtime.c
         runtime.adjustResult(runtime.REGISTER_X, false, true, runtime.REGISTER_X, -1, -1);
         return;
     } else {
-        runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE);
         if (runtime.extra_info_on_calc_error) {
             var buf: [48]u8 = undefined;
             const m = bufPrintZ(&buf, "DataType {d}", .{dt}) catch "DataType";
@@ -2837,7 +2837,7 @@ pub export fn fnMatrixSquareRoot(unusedParamButMandatory: u16) linksection(runti
         var x: real34Matrix_t = undefined;
         runtime.linkToRealMatrixRegister(runtime.REGISTER_X, &x);
         if (x.header.matrixRows != x.header.matrixColumns) {
-            runtime.displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            runtime.displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, runtime.ERR_REGISTER_LINE);
             if (runtime.extra_info_on_calc_error) {
                 var buf: [64]u8 = undefined;
                 const m = bufPrintZ(&buf, "not a square matrix ({d}\x80\xd7{d})", .{ x.header.matrixRows, x.header.matrixColumns }) catch "not square";
@@ -2887,7 +2887,7 @@ pub export fn fnMatrixSquareRoot(unusedParamButMandatory: u16) linksection(runti
                                 runtime.complexMatrixFree(&cres);
                                 runtime.setSystemFlag(FLAG_ASLIFT);
                             } else {
-                                runtime.displayCalcErrorMessage(ERROR_NO_ROOT_FOUND, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+                                runtime.displayCalcErrorMessage(ERROR_NO_ROOT_FOUND, runtime.ERR_REGISTER_LINE);
                                 if (runtime.extra_info_on_calc_error) runtime.moreInfoOnError("In function fnMatrixSquareRoot:", "matrix has no square root, or iteration failed to converge", null, null);
                             }
                         } else {
@@ -2895,7 +2895,7 @@ pub export fn fnMatrixSquareRoot(unusedParamButMandatory: u16) linksection(runti
                         }
                     }
                 } else {
-                    runtime.displayCalcErrorMessage(ERROR_NO_ROOT_FOUND, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+                    runtime.displayCalcErrorMessage(ERROR_NO_ROOT_FOUND, runtime.ERR_REGISTER_LINE);
                     if (runtime.extra_info_on_calc_error) runtime.moreInfoOnError("In function fnMatrixSquareRoot:", "matrix has no real square root, or iteration failed to converge", null, null);
                 }
             } else {
@@ -2906,7 +2906,7 @@ pub export fn fnMatrixSquareRoot(unusedParamButMandatory: u16) linksection(runti
         var x: complex34Matrix_t = undefined;
         runtime.linkToComplexMatrixRegister(runtime.REGISTER_X, &x);
         if (x.header.matrixRows != x.header.matrixColumns) {
-            runtime.displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            runtime.displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, runtime.ERR_REGISTER_LINE);
             if (runtime.extra_info_on_calc_error) {
                 var buf: [64]u8 = undefined;
                 const m = bufPrintZ(&buf, "not a square matrix ({d}\x80\xd7{d})", .{ x.header.matrixRows, x.header.matrixColumns }) catch "not square";
@@ -2921,7 +2921,7 @@ pub export fn fnMatrixSquareRoot(unusedParamButMandatory: u16) linksection(runti
                     runtime.complexMatrixFree(&res);
                     runtime.setSystemFlag(FLAG_ASLIFT);
                 } else {
-                    runtime.displayCalcErrorMessage(ERROR_NO_ROOT_FOUND, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+                    runtime.displayCalcErrorMessage(ERROR_NO_ROOT_FOUND, runtime.ERR_REGISTER_LINE);
                     if (runtime.extra_info_on_calc_error) runtime.moreInfoOnError("In function fnMatrixSquareRoot:", "matrix has no square root, or iteration failed to converge", null, null);
                 }
             } else {
@@ -2929,7 +2929,7 @@ pub export fn fnMatrixSquareRoot(unusedParamButMandatory: u16) linksection(runti
             }
         }
     } else {
-        runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE);
         if (runtime.extra_info_on_calc_error) {
             var buf: [48]u8 = undefined;
             const m = bufPrintZ(&buf, "DataType {d}", .{dt}) catch "DataType";

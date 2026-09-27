@@ -180,7 +180,7 @@ pub export fn roundToSignificantDigits(source: *const real_t, destination: *real
 // ===========================================================================
 pub export fn rsdError(unused_but_mandatory_parameter: u16) linksection(runtime.code_section) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     if (runtime.extra_info_on_calc_error) {
         var buffer: [ERROR_MESSAGE_LENGTH]u8 = undefined;
         const type_name = std.mem.span(runtime.getRegisterDataTypeName(REGISTER_X, true, false));

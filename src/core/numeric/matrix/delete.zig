@@ -27,7 +27,7 @@ inline fn complex34Copy(source: *const complex34_t, destination: *complex34_t) v
 }
 
 fn reportRamFull(comptime function_name: [*:0]const u8) void {
-    runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE, nim_register_line);
+    runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE);
     if (runtime.extra_info_on_calc_error) {
         runtime.moreInfoOnError(function_name, "Ram full", null, null);
     }

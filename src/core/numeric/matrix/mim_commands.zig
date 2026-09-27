@@ -89,7 +89,7 @@ fn getArg(regist: calcRegister_t, arg: *real_t) bool {
         runtime.real34ToReal(runtime.registerReal34Data(regist), arg);
         runtime.realToIntegralValue(arg, arg, runtime.DEC_ROUND_DOWN, &runtime.ctxtReal39);
     } else {
-        runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
         if (runtime.extra_info_on_calc_error) {
             var buf: [80]u8 = undefined;
             const tn = runtime.getRegisterDataTypeName(regist, true, false);
@@ -155,7 +155,7 @@ fn _swapComplex(matrix: *complex34Matrix_t, isRow: bool) bool {
 }
 
 fn swapOutOfRange(isRow: bool, a: u16, b: u16, fnName: [*:0]const u8) void {
-    runtime.displayCalcErrorMessage(runtime.ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+    runtime.displayCalcErrorMessage(runtime.ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
     if (runtime.extra_info_on_calc_error) {
         var buf: [64]u8 = undefined;
         const m = runtime.bufPrintZ(&buf, "{s} {d} and/or {d} out of range", .{ if (isRow) "rows" else "columns", a, b }) catch "out of range";
@@ -304,11 +304,11 @@ fn putMatrixComplex(matrix: *complex34Matrix_t) callconv(.c) bool {
 }
 
 fn getPutRamFull(fnName: [*:0]const u8) void {
-    runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, ERR_REGISTER_LINE, REGISTER_X);
+    runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, ERR_REGISTER_LINE);
     if (runtime.extra_info_on_calc_error) runtime.moreInfoOnError(fnName, "Ram full", null, null);
 }
 fn getPutOutOfRange(a: u16, b: u16, fnName: [*:0]const u8) void {
-    runtime.displayCalcErrorMessage(runtime.ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+    runtime.displayCalcErrorMessage(runtime.ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
     if (runtime.extra_info_on_calc_error) {
         var buf: [64]u8 = undefined;
         const m = runtime.bufPrintZ(&buf, "{d} \x80\xd7 {d} out of range", .{ a, b }) catch "out of range";
@@ -316,7 +316,7 @@ fn getPutOutOfRange(a: u16, b: u16, fnName: [*:0]const u8) void {
     }
 }
 fn putWrongType(fnName: [*:0]const u8, suffix: []const u8) void {
-    runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+    runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     if (runtime.extra_info_on_calc_error) {
         var buf: [80]u8 = undefined;
         const tn = runtime.getRegisterDataTypeName(REGISTER_X, true, false);
@@ -404,7 +404,7 @@ pub export fn fnRowColSum(isRow: u16) callconv(.c) void {
             rowColSumRamFull("Ram full, 2f");
         }
     } else {
-        runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
         if (runtime.extra_info_on_calc_error) {
             var buf: [48]u8 = undefined;
             const m = runtime.bufPrintZ(&buf, "DataType {d}", .{dt}) catch "DataType";
@@ -415,7 +415,7 @@ pub export fn fnRowColSum(isRow: u16) callconv(.c) void {
 }
 
 fn rowColSumRamFull(tag: [*:0]const u8) void {
-    runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, ERR_REGISTER_LINE, REGISTER_X);
+    runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, ERR_REGISTER_LINE);
     if (runtime.extra_info_on_calc_error) runtime.moreInfoOnError("In function fnRowColSum:", tag, null, null);
 }
 
@@ -423,7 +423,7 @@ fn rowColSumRamFull(tag: [*:0]const u8) void {
 // inf-norm (max row abs-sum).
 fn _row_columnNorm(pParam: u16) void {
     if (pParam != pNorm_inf_RNORM and pParam != pNorm_1_CNORM and pParam != pNorm_0_NNZ) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
         return;
     }
 
@@ -528,7 +528,7 @@ fn writeNorm(norm: *const real_t) void {
     runtime.convertRealToReal34ResultRegister(norm, REGISTER_X);
 }
 fn normNotMatrix() void {
-    runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+    runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     if (runtime.extra_info_on_calc_error) {
         var buf: [48]u8 = undefined;
         const m = runtime.bufPrintZ(&buf, "DataType {d}", .{runtime.getRegisterDataType(REGISTER_X)}) catch "DataType";
@@ -573,6 +573,6 @@ pub export fn getMatrixFromRegister(regist: u16) callconv(.c) void {
             const m = runtime.bufPrintZ(&buf, "DataType {d}", .{dt}) catch "DataType";
             runtime.moreInfoOnError("In function getMatrixFromRegister:", m, "is not dataType dtRealMatrix.", "");
         }
-        runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     }
 }

@@ -26,7 +26,7 @@ const ITM_ISIMNZQ: u16 = 2530;
 // wrong type.
 fn typeErrorX() void {
     runtime.setTemporaryInformation(false);
-    runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_T);
+    runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE);
     if (runtime.extra_info_on_calc_error) {
         var message_buffer: [128]u8 = undefined;
         const type_name = std.mem.span(runtime.getRegisterDataTypeName(runtime.REGISTER_X, true, false));

@@ -253,10 +253,10 @@ pub export fn fnReToCx(unusedButMandatoryParameter: u16) callconv(.c) void {
                 runtime.convertComplex34MatrixToComplex34MatrixRegister(&cMat, REGISTER_X);
                 runtime.complexMatrixFree(&cMat);
             } else {
-                displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
             }
         } else {
-            displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
+            displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE);
             if (runtime.extra_info_on_calc_error) {
                 var buffer: [ERROR_MESSAGE_LENGTH]u8 = undefined;
                 const message = runtime.bufPrintZ(&buffer, "cannot Re->Cx {d}" ++ std_cross ++ "{d}-matrix and {d}" ++ std_cross ++ "{d} -matrix", .{
@@ -275,7 +275,7 @@ pub export fn fnReToCx(unusedButMandatoryParameter: u16) callconv(.c) void {
             runtime.setSystemFlag(FLAG_ASLIFT);
         }
     } else {
-        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
+        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE); // Invalid input data type for this operation
         if (runtime.extra_info_on_calc_error) {
             var buffer: [ERROR_MESSAGE_LENGTH]u8 = undefined;
             const x_name = std.mem.span(runtime.getRegisterDataTypeName(REGISTER_X, true, false));

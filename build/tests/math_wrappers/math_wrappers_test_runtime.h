@@ -204,7 +204,6 @@ typedef struct {
   uint32_t display_calc_error_calls;
   uint8_t display_calc_error_last_code;
   calcRegister_t display_calc_error_last_message_reg_line;
-  calcRegister_t display_calc_error_last_register_line;
 
   uint32_t more_info_calls;
 

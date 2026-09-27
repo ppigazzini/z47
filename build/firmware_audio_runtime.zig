@@ -60,7 +60,7 @@ extern fn convertShortIntegerRegisterToLongIntegerRegister(source: i16, destinat
 extern fn getRegisterAsLongIntQuiet(reg: i16, val: [*c]GmpInt, fractional: [*c]c_int) c_int;
 extern fn getRegisterDataType(regist: i16) u32;
 extern fn getRegisterDataPointer(regist: i16) ?*anyopaque;
-extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: i16, err_register_line: i16) void;
+extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: i16) void;
 extern var screenUpdatingMode: u8;
 extern fn __gmpz_init(x: [*c]GmpInt) void;
 extern fn __gmpz_clear(x: [*c]GmpInt) void;
@@ -145,7 +145,7 @@ fn registerToUInt32(reg: i16) ?u32 {
     }
 
     if (data_type != DT_LONG_INTEGER) {
-        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
         return null;
     }
 
@@ -241,7 +241,7 @@ pub export fn fnPlay(regist: u16) callconv(.c) void {
     const reg: i16 = @intCast(regist);
 
     if (getRegisterDataType(reg) != DT_REAL34_MATRIX) {
-        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
         return;
     }
 
@@ -254,7 +254,7 @@ pub export fn fnPlay(regist: u16) callconv(.c) void {
 
     const cols = matrixCols(matrix.header_raw);
     if (cols != 2 and cols != 3) {
-        displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE);
         return;
     }
 

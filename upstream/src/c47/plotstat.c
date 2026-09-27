@@ -1554,7 +1554,7 @@ currentKeyCode = 255;
   }
   else {
     calcMode = CM_NORMAL;
-    displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "There is no statistical data available!");
       moreInfoOnError("In function graphPlotstat:", errorMessage, NULL, NULL);
@@ -1565,7 +1565,7 @@ currentKeyCode = 255;
 
   scalePlusInfinity:
   calcMode = CM_NORMAL;
-  displayCalcErrorMessage(ERROR_OVERFLOW_PLUS_INF, ERR_REGISTER_LINE, REGISTER_X);
+  displayCalcErrorMessage(ERROR_OVERFLOW_PLUS_INF, ERR_REGISTER_LINE);
   #if (EXTRA_INFO_ON_CALC_ERROR == 1)
     sprintf(errorMessage, "Plus Infinity encountered!");
     moreInfoOnError("In function graphPlotstat:", errorMessage, NULL, NULL);
@@ -1574,7 +1574,7 @@ currentKeyCode = 255;
 
   scaleMinusInfinity:
   calcMode = CM_NORMAL;
-  displayCalcErrorMessage(ERROR_OVERFLOW_MINUS_INF, ERR_REGISTER_LINE, REGISTER_X);
+  displayCalcErrorMessage(ERROR_OVERFLOW_MINUS_INF, ERR_REGISTER_LINE);
   #if (EXTRA_INFO_ON_CALC_ERROR == 1)
     sprintf(errorMessage, "Minus Infinity encountered!");
     moreInfoOnError("In function graphPlotstat:", errorMessage, NULL, NULL);
@@ -2076,7 +2076,7 @@ void fnPlotStat(uint16_t plotMode){
   }
   else {
     calcMode = CM_NORMAL;
-    displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "There is no statistical/plot data available!");
       moreInfoOnError("In function fnPlotStat:", errorMessage, NULL, NULL);

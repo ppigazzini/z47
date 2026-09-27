@@ -54,7 +54,7 @@
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, longIntegerIsZero(loopStep) ? "Counter will not move" : "Counter will not count to destination");
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-      displayCalcErrorMessage(longIntegerIsZero(loopStep) ? ERROR_STEP_OF_ZERO : ERROR_BAD_INPUT, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(longIntegerIsZero(loopStep) ? ERROR_STEP_OF_ZERO : ERROR_BAD_INPUT, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         moreInfoOnError("In function _programmableiSumProd:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -133,7 +133,7 @@
         convertLongIntegerToLongIntegerRegister(resultLi, REGISTER_X);
       }
       else {
-        displayCalcErrorMessage(lastErrorCode, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(lastErrorCode, ERR_REGISTER_LINE);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           sprintf(errorMessage, "Error while calculating");
           moreInfoOnError("In function _programmableiSumProd:", errorMessage, NULL, NULL);
@@ -160,7 +160,7 @@
 
 static bool_t _checkRegisters(void) {
   if(getRegisterDataType(REGISTER_X) != dtLongInteger) {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Long integer expected");
       moreInfoOnError("In function _checkRegisters:", errorMessage, NULL, NULL);
@@ -168,7 +168,7 @@ static bool_t _checkRegisters(void) {
     return true;
   }
   else if(getRegisterDataType(REGISTER_Y) != dtLongInteger) {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_Y);
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Long integer expected");
       moreInfoOnError("In function _checkRegisters:", errorMessage, NULL, NULL);
@@ -176,7 +176,7 @@ static bool_t _checkRegisters(void) {
     return true;
   }
   else if(getRegisterDataType(REGISTER_Z) != dtLongInteger) {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_Z);
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Long integer expected");
       moreInfoOnError("In function _checkRegisters:", errorMessage, NULL, NULL);

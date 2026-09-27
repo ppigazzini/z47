@@ -161,7 +161,7 @@ const PrintAllRegsContext = struct {
             return true;
         }
 
-        frontier_error.displayCalcErrorMessage(lastErrorCode, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        frontier_error.displayCalcErrorMessage(lastErrorCode, ERR_REGISTER_LINE);
         return false;
     }
 
@@ -246,7 +246,7 @@ const PrintAllRegsContext = struct {
             return;
         }
 
-        frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
         reportInvalidXYrDataType(REGISTER_X, "X");
     }
 
@@ -404,7 +404,7 @@ fn printAllRegsPrinterXYrScalar() bool {
 
     const y_type = getRegisterDataType(REGISTER_Y);
     if (!isPrintableScalarType(y_type)) {
-        frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_Y);
+        frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
         reportInvalidXYrDataType(REGISTER_Y, "Y");
         return true;
     }

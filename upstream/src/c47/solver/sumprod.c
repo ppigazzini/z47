@@ -108,7 +108,7 @@
 
     real34Add(&counter, &loopStep, &moved);                 // the counter plus the step, against the counter, which is the test the FOR structure makes
     if(real34CompareEqual(&moved, &counter)) {              // a step of zero, and a step too small for the counter's digits, are the same fault
-      displayCalcErrorMessage(ERROR_STEP_OF_ZERO, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_STEP_OF_ZERO, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Counter will not move");
         moreInfoOnError("In function _programmableSumProd:", errorMessage, NULL, NULL);
@@ -120,7 +120,7 @@
           (real34CompareLessThan(&loopTo, &counter) && real34CompareGreaterEqual(&loopStep, const34_0))
         )
       ) {
-      displayCalcErrorMessage(ERROR_BAD_INPUT, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_BAD_INPUT, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Counter will not count to destination");
         moreInfoOnError("In function _programmableSumProd:", errorMessage, NULL, NULL);
@@ -175,7 +175,7 @@
             changedOverToComplex = true;     //Only latch over to complex operation if CPXRES is true, as well as either sum or new f(n) is complex
           }
           else {
-            displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+            displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
             #if (EXTRA_INFO_ON_CALC_ERROR == 1)
               sprintf(errorMessage, "f(n) returned a complex value while flag I is not set!");
               moreInfoOnError("In function _programmableSumProd:", errorMessage, NULL, NULL);
@@ -293,7 +293,7 @@
       adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
       }
       else {
-        displayCalcErrorMessage(lastErrorCode, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(lastErrorCode, ERR_REGISTER_LINE);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           sprintf(errorMessage, "Error or exit while calculating");
           moreInfoOnError("In function _programmableSumProd:", errorMessage, NULL, NULL);

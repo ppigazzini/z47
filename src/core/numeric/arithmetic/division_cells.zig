@@ -63,7 +63,7 @@ pub export fn divError() linksection(runtime.code_section) callconv(.c) void {
     const message1 = bufPrintZ(&message1_buffer, "cannot divide {s}", .{y_type_name});
     const message2 = bufPrintZ(&message2_buffer, "by {s}", .{x_type_name});
 
-    runtime.displayCalcErrorMessage(support.ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+    runtime.displayCalcErrorMessage(support.ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     runtime.moreInfoOnError("In function fnDivide:", message1, message2, null);
 }
 
@@ -78,7 +78,7 @@ pub export fn z47_math_wrappers_legacy_fnDivide(unused_but_mandatory_parameter: 
 }
 
 fn divisionDomainError(comptime function_name: [:0]const u8, comptime message: [:0]const u8) void {
-    runtime.displayCalcErrorMessage(support.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+    runtime.displayCalcErrorMessage(support.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
     runtime.moreInfoOnError(function_name, message, null, null);
 }
 
@@ -683,7 +683,7 @@ pub export fn divRemaRema() linksection(runtime.code_section) callconv(.c) void 
     runtime.linkToRealMatrixRegister(REGISTER_X, &x);
 
     if (y.header.matrixColumns != x.header.matrixRows or y.header.matrixColumns != x.header.matrixColumns or x.header.matrixRows != x.header.matrixColumns) {
-        runtime.displayCalcErrorMessage(support.ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
+        runtime.displayCalcErrorMessage(support.ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE);
         var message_buffer: [196]u8 = undefined;
         const message = bufPrintZ(
             &message_buffer,
@@ -697,7 +697,7 @@ pub export fn divRemaRema() linksection(runtime.code_section) callconv(.c) void 
             runtime.convertReal34MatrixToReal34MatrixRegister(&res, REGISTER_X);
             runtime.realMatrixFree(&res);
         } else {
-            runtime.displayCalcErrorMessage(support.ERROR_SINGULAR_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
+            runtime.displayCalcErrorMessage(support.ERROR_SINGULAR_MATRIX, ERR_REGISTER_LINE);
             runtime.moreInfoOnError("In function divRemaRema:", "cannot divide by a singular matrix", null, null);
         }
     }
@@ -842,7 +842,7 @@ pub export fn divCxmaCxma() linksection(runtime.code_section) callconv(.c) void 
     runtime.linkToComplexMatrixRegister(REGISTER_X, &x);
 
     if (y.header.matrixColumns != x.header.matrixRows or y.header.matrixColumns != x.header.matrixColumns or x.header.matrixRows != x.header.matrixColumns) {
-        runtime.displayCalcErrorMessage(support.ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
+        runtime.displayCalcErrorMessage(support.ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE);
         var message_buffer: [196]u8 = undefined;
         const message = bufPrintZ(
             &message_buffer,
@@ -856,7 +856,7 @@ pub export fn divCxmaCxma() linksection(runtime.code_section) callconv(.c) void 
             runtime.convertComplex34MatrixToComplex34MatrixRegister(&res, REGISTER_X);
             runtime.complexMatrixFree(&res);
         } else {
-            runtime.displayCalcErrorMessage(support.ERROR_SINGULAR_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
+            runtime.displayCalcErrorMessage(support.ERROR_SINGULAR_MATRIX, ERR_REGISTER_LINE);
             runtime.moreInfoOnError("In function divCxmaCxma:", "cannot divide by a singular matrix", null, null);
         }
     }

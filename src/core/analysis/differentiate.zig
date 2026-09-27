@@ -365,7 +365,7 @@ extern fn fnToReal(unused: u16) void;
 extern fn fnFillStack(unused: u16) void;
 extern fn execProgram(label: u16) void;
 extern fn reallyRunFunction(func: i16, param: u16) void;
-extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: calcRegister_t, err_register_line: calcRegister_t) void;
+extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: calcRegister_t) void;
 extern fn findNamedVariable(variable_name: [*:0]const u8) calcRegister_t;
 extern fn findProgramLabel(label: u16, caller: [*:0]const u8) calcRegister_t;
 extern fn compareString(stra: [*c]const u8, strb: [*c]const u8, comparison_type: i32) i32;
@@ -458,12 +458,12 @@ fn derivativeVariable(variable: u16, order: u16, ti: u8) linksection(runtime.cod
         return;
     }
     if (!(FIRST_NAMED_VARIABLE <= variable and variable <= LAST_NAMED_VARIABLE)) {
-        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
         runtime.infoUnexpectedParameter("In function derivativeVariable:", variable);
         return;
     }
     if (currentDerivProgram >= numberOfLabels) {
-        displayCalcErrorMessage(ERROR_NO_PROGRAM_SPECIFIED, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_NO_PROGRAM_SPECIFIED, ERR_REGISTER_LINE);
         moreInfoOnError("In function derivativeVariable:", "no program named by PGMDRV", null, null);
         return;
     }
@@ -517,7 +517,7 @@ fn derivativeEquation(order: u16, ti: u8) linksection(runtime.code_section) void
             if (!solving) {
                 clearSystemFlag(FLAG_SOLVING);
             }
-            displayCalcErrorMessage(ERROR_VARIABLE_NOT_SELECTED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+            displayCalcErrorMessage(ERROR_VARIABLE_NOT_SELECTED, ERR_REGISTER_LINE);
             moreInfoOnError("In function derivativeEquation:", "no variable selected for the derivative", null, null);
             return;
         }
@@ -759,7 +759,7 @@ fn calcDeriv(label: calcRegister_t, finDiff: [*]const ?*const FINITE_DIFF_COEFF)
     // One heap block for the working reals: this frame is on the stack under every sample and every nested derivative.
     const workBlocks = DERIV_WORK_REALS * REAL_SIZE_IN_BLOCKS_75;
     const workRaw = allocC47Blocks(workBlocks) orelse {
-        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
         return;
     };
     defer freeC47Blocks(workRaw, workBlocks);

@@ -24,21 +24,21 @@
     }
 
     if(!checkRegisterNoFP(j)) {
-      displayDomainErrorMessage(ERROR_INVALID_DISTRIBUTION_PARAM, ERR_REGISTER_LINE, REGISTER_X);
+      displayDomainErrorMessage(ERROR_INVALID_DISTRIBUTION_PARAM, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         moreInfoOnError("In function checkParamNegBinom:", "r is not an integer", NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       goto err;
     }
     else if(realIsNegative(x)) {
-      displayDomainErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+      displayDomainErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         moreInfoOnError("In function checkParamNegBinom:", "cannot calculate for x < 0", NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       goto err;
     }
     else if(realIsZero(i) || realIsNegative(i) || realCompareGreaterEqual(i, const_1) || realIsZero(j) || realIsNegative(j)) {
-      displayDomainErrorMessage(ERROR_INVALID_DISTRIBUTION_PARAM, ERR_REGISTER_LINE, REGISTER_X);
+      displayDomainErrorMessage(ERROR_INVALID_DISTRIBUTION_PARAM, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         moreInfoOnError("In function checkParamNegBinom:", "the parameters must be 0 < p < 1 and r > 0", NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -65,7 +65,7 @@
         realSetZero(&ans);
       }
       if(realIsNaN(&ans)) {
-        displayDomainErrorMessage(ERROR_INVALID_DISTRIBUTION_PARAM, ERR_REGISTER_LINE, REGISTER_X);
+        displayDomainErrorMessage(ERROR_INVALID_DISTRIBUTION_PARAM, ERR_REGISTER_LINE);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           moreInfoOnError("In function fnNegBinomialP:", "a parameter is invalid", NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -84,7 +84,7 @@
     if(checkParamNegBinom(&val, &prob, &num)) {
       cdf_NegBinomial(&val, &prob, &num, &ans, &ctxtReal39);
       if(realIsNaN(&ans)) {
-        displayDomainErrorMessage(ERROR_INVALID_DISTRIBUTION_PARAM, ERR_REGISTER_LINE, REGISTER_X);
+        displayDomainErrorMessage(ERROR_INVALID_DISTRIBUTION_PARAM, ERR_REGISTER_LINE);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           moreInfoOnError("In function fnNegBinomialL:", "a parameter is invalid", NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -103,7 +103,7 @@
     if(checkParamNegBinom(&val, &prob, &num)) {
       cdfu_NegBinomial(&val, &prob, &num, &ans, &ctxtReal39);
       if(realIsNaN(&ans)) {
-        displayDomainErrorMessage(ERROR_INVALID_DISTRIBUTION_PARAM, ERR_REGISTER_LINE, REGISTER_X);
+        displayDomainErrorMessage(ERROR_INVALID_DISTRIBUTION_PARAM, ERR_REGISTER_LINE);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           moreInfoOnError("In function fnNegBinomialR:", "a parameter is invalid", NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -121,7 +121,7 @@
 
     if(checkParamNegBinom(&val, &prob, &num)) {
       if(realCompareLessEqual(&val, const_0) || realCompareGreaterEqual(&val, const_1)) {
-        displayDomainErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+        displayDomainErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           moreInfoOnError("In function fnNegBinomialI:", "the argument must be 0 < x < 1", NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -132,7 +132,7 @@
       }
       qf_NegBinomial(&val, &prob, &num, &ans, &ctxtReal39);
       if(realIsNaN(&ans)) {
-        displayDomainErrorMessage(ERROR_NO_ROOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+        displayDomainErrorMessage(ERROR_NO_ROOT_FOUND, ERR_REGISTER_LINE);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           moreInfoOnError("In function fnNegBinomialI:", "WP34S_Qf_Binomial did not converge", NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)

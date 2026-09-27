@@ -32,7 +32,7 @@ TO_QSPI void (* const addition[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS][NUMBER_OF_
  ***********************************************/
 #if (EXTRA_INFO_ON_CALC_ERROR == 1)
   void addError(void) {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     sprintf(errorMessage, "cannot add %s", getRegisterDataTypeName(REGISTER_X, true, false));
     sprintf(errorMessage + ERROR_MESSAGE_LENGTH/2, "to %s", getRegisterDataTypeName(REGISTER_Y, true, false));
     moreInfoOnError("In function fnAdd:", errorMessage, errorMessage + ERROR_MESSAGE_LENGTH/2, NULL);
@@ -431,7 +431,7 @@ static void _addString(const char *stringToAppend) {
   int16_t len1, len2;
 
   if(stringGlyphLength(REGISTER_STRING_DATA(REGISTER_Y)) + stringGlyphLength(stringToAppend) > MAX_NUMBER_OF_GLYPHS_IN_STRING) {
-    displayCalcErrorMessage(ERROR_STRING_WOULD_BE_TOO_LONG, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_STRING_WOULD_BE_TOO_LONG, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "the resulting string would be %d (Y %d + X %d) characters long. Maximum is %d",
                                                            stringGlyphLength(REGISTER_STRING_DATA(REGISTER_Y)) + stringGlyphLength(stringToAppend),
@@ -656,7 +656,7 @@ void addRemaRema(void) {
     convertReal34MatrixToReal34MatrixRegister(&x, REGISTER_X);
   }
   else {
-    displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "cannot add %d" STD_CROSS "%d-matrix to %d" STD_CROSS "%d-matrix",
               x.header.matrixRows, x.header.matrixColumns,
@@ -927,7 +927,7 @@ void addCxmaCxma(void) {
     convertComplex34MatrixToComplex34MatrixRegister(&x, REGISTER_X);
   }
   else {
-    displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "cannot add %d" STD_CROSS "%d-matrix to %d" STD_CROSS "%d-matrix",
               x.header.matrixRows, x.header.matrixColumns,

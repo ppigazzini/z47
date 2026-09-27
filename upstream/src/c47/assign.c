@@ -640,7 +640,7 @@ void removeUserItemAssignments(int16_t userItem, char *userItemName) {
 
 void fnDeleteMenu(uint16_t id) {
   if(id >= numberOfUserMenus) {
-    displayCalcErrorMessage(ERROR_CANNOT_DELETE_PREDEF_ITEM, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_CANNOT_DELETE_PREDEF_ITEM, ERR_REGISTER_LINE);
     return;
   }
   else {
@@ -1051,7 +1051,7 @@ void initUserKeyArgument(void) {
   userKeyLabel = allocC47Blocks(TO_BLOCKS(userKeyLabelSize));
   if(userKeyLabel == NULL) {                                                    // the memset below writes through this pointer
     userKeyLabelSize = 0;
-    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function initUserKeyArgument:", "there is no memory for the key argument table", NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -1082,7 +1082,7 @@ void setUserKeyArgument(uint16_t position, const char *name) {
   char *newUserKeyLabelPtr = newUserKeyLabel;
 
   if(newUserKeyLabel == NULL) {                                                 // the pool can be empty when a state file restores a key argument, and the copies
-    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, REGISTER_X);     //   below write through this pointer. Nothing is freed yet, so the labels already
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);     //   below write through this pointer. Nothing is freed yet, so the labels already
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)                                         //   held stay as they are and only this one name is lost.
       moreInfoOnError("In function setUserKeyArgument:", "there is no memory for the key argument", name, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -1117,7 +1117,7 @@ void createMenu(const char *name) {
       }
       if(userMenus == NULL) {                                                   // the memset below writes through this pointer
         userMenus = oldUserMenus;                                               // the menus already held survive, and the old block is not orphaned
-        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           moreInfoOnError("In function createMenu:", "there is no memory for the menu", name, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -1139,7 +1139,7 @@ void createMenu(const char *name) {
       ++numberOfUserMenus;
     }
     else {
-      displayCalcErrorMessage(ERROR_ENTER_NEW_NAME, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_ENTER_NEW_NAME, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "the name %s", name);
         moreInfoOnError("In function createMenu:", errorMessage, "is already in use!", NULL);
@@ -1147,7 +1147,7 @@ void createMenu(const char *name) {
     }
   }
   else {
-    displayCalcErrorMessage(ERROR_INVALID_NAME, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_INVALID_NAME, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function createMenu:", "the menu", name, "does not follow the naming convention");
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -1314,7 +1314,7 @@ void assignGetName2(void) {
   refreshScreen(23);
 
   if(!result) {
-    displayCalcErrorMessage(ERROR_CANNOT_ASSIGN_HERE, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_CANNOT_ASSIGN_HERE, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function assignGetName2:", aimBuffer, "is invalid name.", NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)

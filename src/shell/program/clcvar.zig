@@ -410,7 +410,7 @@ fn _processOneStep(step_arg: [*c]u8) bool {
             },
 
             PTP_DISABLED => {
-                frontier_error.displayCalcErrorMessage(ERROR_NON_PROGRAMMABLE_COMMAND, ERR_REGISTER_LINE, REGISTER_X);
+                frontier_error.displayCalcErrorMessage(ERROR_NON_PROGRAMMABLE_COMMAND, ERR_REGISTER_LINE);
                 moreInfoOnError("In function _processOneStep:", "non-programmable function", @ptrCast(&indexOfItems[op].itemCatalogName), "appeared in the program!");
                 return false;
             },

@@ -382,7 +382,7 @@ pub fn implementation(comptime runtime: type) type {
                                                     if (regist != @as(i16, @intCast(runtime.INVALID_VARIABLE))) {
                                                         item = @intCast(@as(i32, regist) - runtime.FIRST_LABEL + runtime.ASSIGN_LABELS);
                                                     } else {
-                                                        runtime.displayCalcErrorMessage(runtime.ERROR_LABEL_NOT_FOUND, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+                                                        runtime.displayCalcErrorMessage(runtime.ERROR_LABEL_NOT_FOUND, runtime.ERR_REGISTER_LINE);
                                                         if (comptime runtime.extra_info_on_calc_error) {
                                                             runtime.fmtCStr(runtime.errorMessage, "string '{s}' is not a named label", .{@as([*:0]const u8, varCatalogItem)});
                                                             runtime.moreInfoOnError("In function executeFunction:", runtime.errorMessage, null, null);
@@ -396,7 +396,7 @@ pub fn implementation(comptime runtime: type) type {
                                                     if (regist != @as(i16, @intCast(runtime.INVALID_VARIABLE))) {
                                                         item = @intCast(@as(i32, regist) - runtime.FIRST_NAMED_VARIABLE + runtime.ASSIGN_NAMED_VARIABLES);
                                                     } else {
-                                                        runtime.displayCalcErrorMessage(runtime.ERROR_LABEL_NOT_FOUND, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+                                                        runtime.displayCalcErrorMessage(runtime.ERROR_LABEL_NOT_FOUND, runtime.ERR_REGISTER_LINE);
                                                         if (comptime runtime.extra_info_on_calc_error) {
                                                             runtime.fmtCStr(runtime.errorMessage, "string '{s}' is not a named variable", .{@as([*:0]const u8, varCatalogItem)});
                                                             runtime.moreInfoOnError("In function executeFunction:", runtime.errorMessage, null, null);
@@ -527,7 +527,7 @@ pub fn implementation(comptime runtime: type) type {
                         return false;
                     },
                     else => {
-                        runtime.displayCalcErrorMessage(runtime.ERROR_CANNOT_ASSIGN_HERE, runtime.ERR_REGISTER_LINE, runtime.NIM_REGISTER_LINE);
+                        runtime.displayCalcErrorMessage(runtime.ERROR_CANNOT_ASSIGN_HERE, runtime.ERR_REGISTER_LINE);
                         if (comptime runtime.extra_info_on_calc_error) {
                             runtime.moreInfoOnError("In function _assignToMenu:", "the menu", runtime.indexOfItemsCatalogName(-runtime.currentMenu()), "is write-protected.");
                         }
@@ -1699,7 +1699,7 @@ pub fn implementation(comptime runtime: type) type {
                                                 if (regist != INVALID_VARIABLE) {
                                                     item = @intCast(@as(i32, regist) - runtime.FIRST_LABEL + runtime.ASSIGN_LABELS);
                                                 } else {
-                                                    runtime.displayCalcErrorMessage(runtime.ERROR_LABEL_NOT_FOUND, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+                                                    runtime.displayCalcErrorMessage(runtime.ERROR_LABEL_NOT_FOUND, runtime.ERR_REGISTER_LINE);
                                                     if (comptime runtime.extra_info_on_calc_error) {
                                                         runtime.fmtCStr(runtime.errorMessage, "string '{s}' is not a named label", .{runtime.sliceTo(@as([*c]const u8, &label), 0)});
                                                         runtime.moreInfoOnError("In function processKeyAction:", runtime.errorMessage, null, null);
@@ -1712,7 +1712,7 @@ pub fn implementation(comptime runtime: type) type {
                                                 if (regist != INVALID_VARIABLE) {
                                                     item = @intCast(@as(i32, regist) - runtime.FIRST_NAMED_VARIABLE + runtime.ASSIGN_NAMED_VARIABLES);
                                                 } else {
-                                                    runtime.displayCalcErrorMessage(runtime.ERROR_LABEL_NOT_FOUND, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+                                                    runtime.displayCalcErrorMessage(runtime.ERROR_LABEL_NOT_FOUND, runtime.ERR_REGISTER_LINE);
                                                     if (comptime runtime.extra_info_on_calc_error) {
                                                         runtime.fmtCStr(runtime.errorMessage, "string '{s}' is not a named variable", .{runtime.sliceTo(@as([*c]const u8, &varName), 0)});
                                                         runtime.moreInfoOnError("In function processKeyAction:", runtime.errorMessage, null, null);
@@ -1784,7 +1784,7 @@ pub fn implementation(comptime runtime: type) type {
 
         // fnKeyEnter goto targets (keyboard.c labels at the tail of the function).
         fn keyEnterRamFull() void {
-            runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE, runtime.NIM_REGISTER_LINE);
+            runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE);
             runtime.fnUndo(runtime.NOPARAM);
         }
         fn keyEnterUndoDisabled() void {
@@ -1973,7 +1973,7 @@ pub fn implementation(comptime runtime: type) type {
             runtime.jm_show_calc_state("fnKeyExit");
 
             if (runtime.getSystemFlag(runtime.FLAG_INTING) or runtime.getSystemFlag(runtime.FLAG_SOLVING)) {
-                runtime.displayCalcErrorMessage(runtime.ERROR_SOLVER_ABORT, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+                runtime.displayCalcErrorMessage(runtime.ERROR_SOLVER_ABORT, runtime.ERR_REGISTER_LINE);
                 return; // Done elsewhere
             }
 
@@ -2392,9 +2392,9 @@ pub fn implementation(comptime runtime: type) type {
                     runtime.fnCxToRe(0);
                 } else {
                     if ((!polarOk and runtime.getSystemFlag(runtime.FLAG_POLAR)) or (!rectOk and !runtime.getSystemFlag(runtime.FLAG_POLAR))) {
-                        runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_POLAR_RECT, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+                        runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_POLAR_RECT, runtime.ERR_REGISTER_LINE);
                     } else {
-                        runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+                        runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE);
                     }
                     if (comptime runtime.extra_info_on_calc_error) {
                         const dtnX = runtime.getDataTypeName(@intCast(runtime.getRegisterDataType(runtime.REGISTER_X)), true, false);

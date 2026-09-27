@@ -335,7 +335,7 @@ extern var currentKeyCode: u8;
 extern var cancelFilename: bool;
 extern var cachedDisplayStack: u8;
 
-extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: calcRegister_t, err_register_line: calcRegister_t) void;
+extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: calcRegister_t) void;
 extern fn badDomainError(reg: calcRegister_t) void;
 extern fn saveLastX() bool;
 extern fn saveForUndo() void;
@@ -515,14 +515,14 @@ fn getIntArg(x: *mpz_struct, regist: calcRegister_t) bool {
 
     if (!getRegisterAsLongInt(regist, x, &fractional)) {
         if (getRegisterDataType(regist) != dtReal34Matrix) {
-            displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+            displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
             moreInfoOnError("In function getIntArg:", "The input value is invalid for storage into a longinteger!", null, null);
         }
         return false;
     }
 
     if (fractional) {
-        displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
         moreInfoOnError("In function getIntArg:", "The input value is fractional and invalid for storage into a longinteger!", null, null);
         return false;
     }
@@ -685,7 +685,7 @@ fn calculateNextPrime(currentNumber: *mpz_struct, nextPrime: *mpz_struct) void {
             // poll before the advance so an abort returns the last tested composite;
             // NEXTP on that value resumes at the first untested candidate
             if (monitorExit(&loop, "Iter: ")) {
-                displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE);
                 return;
             }
             longIntegerAddUInt(nextPrime, offsets[o % 48], nextPrime);
@@ -837,7 +837,7 @@ fn _doFnEvPFacts(param: u16) void {
                             math_multiplication_cells.mulComplexComplex(&prodR, &prodI, &factorR, &factorI, &prodR, &prodI, &runtime.ctxtReal39);
                         }
                     } else {
-                        displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+                        displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
                         moreInfoOnError("In function _doFnEvPFacts:", "cannot do complex results if CPXRES is not set", null, null);
                         return;
                     }
@@ -858,14 +858,14 @@ fn _doFnEvPFacts(param: u16) void {
             }
             adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
         } else {
-            displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+            displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
             moreInfoOnError("In function _doFnEvPFacts:", "Only 2xn matrix supported", null, null);
             // goto return10
             refreshScreen(253);
             return;
         }
     } else {
-        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
         moreInfoOnError("In function _doFnEvPFacts:", "2xn matrix required.", null, null);
         // goto return10
         refreshScreen(253);
@@ -878,7 +878,7 @@ fn _doFnEvPFacts(param: u16) void {
 
 fn doDomainAbort() void {
     // abort: in _doFnEvPFacts
-    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
     moreInfoOnError("In function _doFnEvPFacts:", "cannot do Euler sigma function due to parameter issue", null, null);
     refreshScreen(253);
 }
@@ -1012,19 +1012,19 @@ fn ensureFactorizationMatrix(reg: calcRegister_t, allowNegative: bool, doFactori
     wasAlreadyMatrix.* = isRegisterMatrixFactors(reg, &isNegative);
     if (!wasAlreadyMatrix.*) {
         if (getRegisterDataType(reg) == dtReal34Matrix) {
-            displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, reg);
+            displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
             moreInfoOnError("In function ensureFactorizationMatrix 01:", "The input value is not a valid matrix!", null, null);
             return false;
         }
         var x: mpz_struct = undefined;
         if (!getIntArg(&x, reg)) {
-            displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, reg);
+            displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
             moreInfoOnError("In function ensureFactorizationMatrix 02:", "The input value is neither a longinteger nor a valid matrix!", null, null);
             longIntegerFree(&x);
             return false;
         }
         if (longIntegerIsNegative(&x)) {
-            displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, reg);
+            displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
             moreInfoOnError("In function ensureFactorizationMatrix 03:", "The input value is negative and therefore out of the domain!", null, null);
             longIntegerFree(&x);
             return false;
@@ -1032,7 +1032,7 @@ fn ensureFactorizationMatrix(reg: calcRegister_t, allowNegative: bool, doFactori
         longIntegerFree(&x);
     }
     if (wasAlreadyMatrix.* and !allowNegative and isNegative) {
-        displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, reg);
+        displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
         moreInfoOnError("In function ensureFactorizationMatrix 04:", "The matrix input value is negative and therefore out of the domain!", null, null);
         return false;
     }
@@ -1206,7 +1206,7 @@ fn fnEulPhi(unused_but_mandatory_parameter: u16) void {
                 return;
             }
         } else {
-            displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+            displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
             moreInfoOnError("In function fnEulPhi:", "The intermediate prime factor matrix could not be found.", null, null);
             return;
         }
@@ -1564,7 +1564,7 @@ fn delCol1RealMatrixX() bool {
 
     var tmp: real34Matrix_t = undefined;
     if (!math_matrix_lifecycle.realMatrixInit(&tmp, rows, cols - 1)) {
-        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
         return false;
     }
     const tmpElems = matrixElementsPtr(&tmp);
@@ -1623,7 +1623,7 @@ fn dumpExponents(regist: calcRegister_t, faddr: *FactorAdder_t, dumpForFewerThan
     const rows: u16 = registerMatrixHeader(regist).matrixRows;
 
     if (faddr.nExpons != cols or rows != 2 or getRegisterDataType(REGISTER_X) != dtReal34Matrix) {
-        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
         moreInfoOnError("In function dumpExponents:", "Incorrect matrix counters vs. array", null, null);
         return;
     }
@@ -1656,7 +1656,7 @@ fn addFactor(factor: *mpz_struct, regist: calcRegister_t, lastAdded: *real34_t, 
             if (lastErrorCode != 0) {
                 return addFactorReturnFalse();
             }
-            displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
+            displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE);
             moreInfoOnError("In function addFactor 001:", "Not enough memory for a new matrix", null, null);
             return addFactorReturnFalse();
         }
@@ -1665,7 +1665,7 @@ fn addFactor(factor: *mpz_struct, regist: calcRegister_t, lastAdded: *real34_t, 
 
     const rows: u16 = registerMatrixHeader(regist).matrixRows;
     if (rows > 2) {
-        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
         moreInfoOnError("In function addFactor:", "Incorrect matrix dimensions", null, null);
         return addFactorReturnFalse();
     }
@@ -1679,7 +1679,7 @@ fn addFactor(factor: *mpz_struct, regist: calcRegister_t, lastAdded: *real34_t, 
         if (lastErrorCode != 0) {
             return addFactorReturnFalse();
         }
-        displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE);
         moreInfoOnError("In function addFactor 002:", "Not enough memory for a matrix", null, null);
         return addFactorReturnFalse();
     }
@@ -1709,7 +1709,7 @@ fn addFactor(factor: *mpz_struct, regist: calcRegister_t, lastAdded: *real34_t, 
             if (faddr.nExpons < MAX_FACTORS) {
                 faddr.nExpons += 1;
             } else {
-                displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+                displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
                 moreInfoOnError("In function addFactor 003:", "Maximum number of factors exceeded", null, null);
                 return addFactorReturnFalse();
             }
@@ -1720,7 +1720,7 @@ fn addFactor(factor: *mpz_struct, regist: calcRegister_t, lastAdded: *real34_t, 
                 if (lastErrorCode != 0) {
                     return addFactorReturnFalse();
                 }
-                displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
+                displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE);
                 moreInfoOnError("In function addFactor 004", "Not enough memory for a matrix", null, null);
                 return addFactorReturnFalse();
             }
@@ -2007,7 +2007,7 @@ fn performPrimeFactorization(doSaveLastX: bool) bool {
                         if (lastErrorCode != 0) {
                             break;
                         }
-                        displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
+                        displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE);
                         moreInfoOnError("In function performPrimeFactorization:  Queue overflow:", "Not enough memory for a matrix", null, null);
                         break;
                     }

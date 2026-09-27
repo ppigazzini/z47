@@ -402,7 +402,7 @@ extern fn reallyRunFunction(func: i16, param: u16) void;
 extern fn runProgram(singleStep: bool, menuLabel: u16) void;
 extern fn runFunction(item: i16) void;
 extern fn adjustResult(res: calcRegister_t, drop_y: bool, set_cpx_res: bool, op1: calcRegister_t, op2: calcRegister_t, op3: calcRegister_t) void;
-extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: calcRegister_t, err_register_line: calcRegister_t) void;
+extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: calcRegister_t) void;
 extern fn findNamedLabel(label_name: [*:0]const u8, label_type: u8) calcRegister_t;
 extern fn findOrAllocateNamedVariable(variableName: [*:0]const u8) calcRegister_t;
 extern fn letteredRegisterName(regist: calcRegister_t) u8;
@@ -445,7 +445,7 @@ pub export fn fnSolve(labelOrVariable: u16) linksection(runtime.code_section) ca
         }
         adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
     } else if ((currentSolverStatus & SOLVER_STATUS_USES_FORMULA) == 0 and (FIRST_NAMED_VARIABLE <= labelOrVariable and labelOrVariable <= LAST_NAMED_VARIABLE) and currentSolverProgram >= numberOfLabels) {
-        displayCalcErrorMessage(ERROR_NO_PROGRAM_SPECIFIED, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_NO_PROGRAM_SPECIFIED, ERR_REGISTER_LINE);
         runtime.infoLabelNotFound("In function fnSolve:", labelOrVariable);
         adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
     } else if (FIRST_NAMED_VARIABLE <= labelOrVariable and labelOrVariable <= LAST_NAMED_VARIABLE) {
@@ -491,39 +491,39 @@ pub export fn fnSolve(labelOrVariable: u16) linksection(runtime.code_section) ca
                 },
                 SOLVER_RESULT_SIGN_REVERSAL => {
                     temporaryInformation = TI_SOLVER_FAILED;
-                    displayCalcErrorMessage(ERROR_LARGE_DELTA_AND_OPPOSITE_SIGN, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                    displayCalcErrorMessage(ERROR_LARGE_DELTA_AND_OPPOSITE_SIGN, ERR_REGISTER_LINE);
                 },
                 SOLVER_RESULT_EXTREMUM => {
                     temporaryInformation = TI_SOLVER_FAILED;
-                    displayCalcErrorMessage(ERROR_SOLVER_REACHED_LOCAL_EXTREMUM, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                    displayCalcErrorMessage(ERROR_SOLVER_REACHED_LOCAL_EXTREMUM, ERR_REGISTER_LINE);
                 },
                 SOLVER_RESULT_BAD_GUESS => {
                     temporaryInformation = TI_SOLVER_FAILED;
-                    displayCalcErrorMessage(ERROR_INITIAL_GUESS_OUT_OF_DOMAIN, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                    displayCalcErrorMessage(ERROR_INITIAL_GUESS_OUT_OF_DOMAIN, ERR_REGISTER_LINE);
                 },
                 SOLVER_RESULT_CONSTANT => {
                     temporaryInformation = TI_SOLVER_FAILED;
-                    displayCalcErrorMessage(ERROR_FUNCTION_VALUES_LOOK_CONSTANT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                    displayCalcErrorMessage(ERROR_FUNCTION_VALUES_LOOK_CONSTANT, ERR_REGISTER_LINE);
                 },
                 SOLVER_RESULT_OTHER_FAILURE => {
                     temporaryInformation = TI_SOLVER_FAILED;
-                    displayCalcErrorMessage(ERROR_NO_ROOT_FOUND, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                    displayCalcErrorMessage(ERROR_NO_ROOT_FOUND, ERR_REGISTER_LINE);
                 },
                 SOLVER_RESULT_ABORTED => {
                     temporaryInformation = TI_SOLVER_FAILED;
-                    displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                    displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE);
                     programRunStop = PGM_WAITING; // R/S halts the whole program on the SOLVE step
                 },
                 else => {},
             }
             adjustResult(REGISTER_X, false, false, REGISTER_X, REGISTER_Y, -1);
         } else {
-            displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+            displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
             runtime.infoNotARealNumber("In function fnSolve:", getRegisterDataType(REGISTER_X));
             adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
         }
     } else {
-        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
         runtime.infoUnexpectedParameter("In function fnSolve:", labelOrVariable);
         adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
     }
@@ -855,7 +855,7 @@ pub export fn solver(variable: calcRegister_t, y: *align(1) const real34_t, x: *
     }
     const newtonWorkMissing = option_tvm_newton and (newton_x_p == null or prev_fx_p == null or prev_x_p == null or brent_best_x_p == null or brent_best_fx_p == null or relativeWidth_p == null or fullBracket_p == null or newton_trial_p == null or newton_fx_p == null or newton_deriv_p == null or newton_step_p == null or tol_converged_p == null);
     if (newtonWorkMissing or aa_p == null or bb_p == null or bb1_p == null or bb2_p == null or faa_p == null or fbb_p == null or fbb1_p == null or mm_p == null or ss_p == null or secantSlopeA_p == null or secantSlopeB_p == null or delta_p == null or deltaB_p == null or smb_p == null or tol_p == null or fbp1_p == null or tmp_p == null or tolAlmostZero_p == null or minBracketSpacing_p == null or prevResX_p == null or antiLevel_p == null or bracketWidth_p == null or tol1_p == null or resXr_p == null or resZr_p == null) {
-        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
         return SOLVER_RESULT_OTHER_FAILURE;
     }
     const newton_x = newtonReal(newton_x_p);
@@ -1095,7 +1095,7 @@ pub export fn solver(variable: calcRegister_t, y: *align(1) const real34_t, x: *
                 if (exitKeyWaiting() or programRunStop == PGM_WAITING) {
                     _ = progressHalfSecUpdate_Integer(force + 1, "Interrupted Iter:", loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
                     programRunStop = PGM_WAITING;
-                    displayCalcErrorMessage(ERROR_SOLVER_ABORT, REGISTER_T, NIM_REGISTER_LINE);
+                    displayCalcErrorMessage(ERROR_SOLVER_ABORT, REGISTER_T);
                     break;
                 }
 

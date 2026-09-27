@@ -1594,7 +1594,7 @@ pub export fn graphPlotstat(selection: u16) callconv(.c) void {
         }
     } else {
         calcMode = CM_NORMAL; // upstream plotstat.c:1541 -- leave graph mode, or the next refresh re-enters this same failing branch
-        frontier_error.displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE);
         if (comptime extra_info) {
             if (comptime !dmcp_build) {
                 abi.fmtBufZ(errorMessage[0..512], "There is no statistical data available!", .{});
@@ -1619,7 +1619,7 @@ inline fn showX(x: i32) u32 {
 
 fn scalePlusInfinity() void {
     calcMode = CM_NORMAL; // upstream plotstat.c:1552
-    frontier_error.displayCalcErrorMessage(ERROR_OVERFLOW_PLUS_INF, ERR_REGISTER_LINE, REGISTER_X);
+    frontier_error.displayCalcErrorMessage(ERROR_OVERFLOW_PLUS_INF, ERR_REGISTER_LINE);
     if (comptime extra_info) {
         if (comptime !dmcp_build) {
             abi.fmtBufZ(errorMessage[0..512], "Plus Infinity encountered!", .{});
@@ -1630,7 +1630,7 @@ fn scalePlusInfinity() void {
 
 fn scaleMinusInfinity() void {
     calcMode = CM_NORMAL; // upstream plotstat.c:1561
-    frontier_error.displayCalcErrorMessage(ERROR_OVERFLOW_MINUS_INF, ERR_REGISTER_LINE, REGISTER_X);
+    frontier_error.displayCalcErrorMessage(ERROR_OVERFLOW_MINUS_INF, ERR_REGISTER_LINE);
     if (comptime extra_info) {
         if (comptime !dmcp_build) {
             abi.fmtBufZ(errorMessage[0..512], "Minus Infinity encountered!", .{});

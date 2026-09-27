@@ -33,7 +33,7 @@ fn bufPrintZ(buffer: []u8, comptime format: []const u8, args: anytype) [:0]const
 }
 
 fn domainError(comptime function_name: [:0]const u8, comptime message: [:0]const u8) void {
-    runtime.displayCalcErrorMessage(support.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+    runtime.displayCalcErrorMessage(support.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
     runtime.moreInfoOnError(function_name, message, null, null);
 }
 
@@ -88,7 +88,7 @@ pub export fn idivError() linksection(runtime.code_section) callconv(.c) void {
     const message1 = bufPrintZ(&message1_buffer, "cannot IDIV {s}", .{y_type_name});
     const message2 = bufPrintZ(&message2_buffer, "by {s}", .{x_type_name});
 
-    runtime.displayCalcErrorMessage(support.ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+    runtime.displayCalcErrorMessage(support.ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     runtime.moreInfoOnError("In function fnIDiv:", message1, message2, null);
 }
 
@@ -286,7 +286,7 @@ pub export fn idivrError() linksection(runtime.code_section) callconv(.c) void {
     const message1 = bufPrintZ(&message1_buffer, "cannot IDIVR {s}", .{y_type_name});
     const message2 = bufPrintZ(&message2_buffer, "by {s}", .{x_type_name});
 
-    runtime.displayCalcErrorMessage(support.ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+    runtime.displayCalcErrorMessage(support.ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     runtime.moreInfoOnError("In function fnIDivR:", message1, message2, null);
 }
 
@@ -531,7 +531,7 @@ pub export fn idivrRealReal() linksection(runtime.code_section) callconv(.c) voi
 // ===== dblMultiplication.c =====
 
 fn dblTypeError(comptime function_name: [:0]const u8, comptime operator_glyph: []const u8, regist: runtime.calcRegister_t) void {
-    runtime.displayCalcErrorMessage(support.ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_T);
+    runtime.displayCalcErrorMessage(support.ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     var message_buffer: [160]u8 = undefined;
     const type_name = std.mem.span(support.getDataTypeName(@intCast(runtime.getRegisterDataType(regist)), false, false));
     const message = bufPrintZ(&message_buffer, "the input type {s} is not allowed for DBL" ++ operator_glyph ++ "!", .{type_name});
@@ -625,7 +625,7 @@ fn dblDivideImpl(remainder_mode: bool) void {
     var x: runtime.longInteger_t = undefined;
     runtime.convertShortIntegerRegisterToLongInteger(REGISTER_X, &x[0]);
     if (longIntegerIsZero(&x[0])) {
-        runtime.displayCalcErrorMessage(support.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_T);
+        runtime.displayCalcErrorMessage(support.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
         runtime.moreInfoOnError("In function dblDivide:", "cannot divide a short integer by 0", null, null);
         runtime.__gmpz_clear(&x[0]);
         return;
@@ -717,7 +717,7 @@ fn dblDivideImpl(remainder_mode: bool) void {
 
             runtime.clearSystemFlag(support.FLAG_OVERFLOW);
         } else {
-            runtime.displayCalcErrorMessage(support.ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_T);
+            runtime.displayCalcErrorMessage(support.ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
             runtime.moreInfoOnError("In function dblDivide:", "quotient overflow", null, null);
         }
     }
@@ -762,7 +762,7 @@ pub export fn roundError() linksection(runtime.code_section) callconv(.c) void {
     const type_name = std.mem.span(runtime.getRegisterDataTypeName(REGISTER_X, true, false));
     const message = bufPrintZ(&message_buffer, "cannot calculate ROUND for {s}", .{type_name});
 
-    runtime.displayCalcErrorMessage(support.ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+    runtime.displayCalcErrorMessage(support.ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     runtime.moreInfoOnError("In function roundError:", message, null, null);
 }
 
@@ -956,7 +956,7 @@ pub export fn decompError() linksection(runtime.code_section) callconv(.c) void 
     const type_name = std.mem.span(runtime.getRegisterDataTypeName(REGISTER_X, true, false));
     const message = bufPrintZ(&message_buffer, "cannot calculate Decomp for {s}", .{type_name});
 
-    runtime.displayCalcErrorMessage(support.ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+    runtime.displayCalcErrorMessage(support.ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     runtime.moreInfoOnError("In function fnDecomp:", message, null, null);
 }
 

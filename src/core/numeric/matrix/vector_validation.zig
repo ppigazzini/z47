@@ -16,7 +16,7 @@ pub const MatrixShapes = struct {
 };
 
 fn matrixMismatchError(function_name: [:0]const u8, comptime format: []const u8, shapes: MatrixShapes) void {
-    runtime.displayCalcErrorMessage(runtime.ERROR_MATRIX_MISMATCH, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+    runtime.displayCalcErrorMessage(runtime.ERROR_MATRIX_MISMATCH, runtime.ERR_REGISTER_LINE);
     if (runtime.extra_info_on_calc_error) {
         var message_buffer: [96]u8 = undefined;
         const message = runtime.bufPrintZ(&message_buffer, format, .{ shapes.x_rows, shapes.x_columns, shapes.y_rows, shapes.y_columns }) catch "matrix dimension mismatch";
@@ -44,7 +44,7 @@ pub fn crossDotMatrixTypeError(function_name: [:0]const u8) void {
     const message1 = runtime.bufPrintZ(&message1_buffer, "cannot raise {s}", .{y_type_name}) catch "cannot raise current Y type";
     const message2 = runtime.bufPrintZ(&message2_buffer, "to {s}", .{x_type_name}) catch "to current X type";
 
-    runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+    runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE);
     runtime.moreInfoOnError(function_name, message1, message2, null);
 }
 

@@ -75,7 +75,6 @@ typedef struct parity_runtime_state {
   bool_t aslift_flag;
   uint8_t last_error_code;
   calcRegister_t last_error_message_register;
-  calcRegister_t last_error_register;
   uint32_t adjust_result_calls;
 } parity_runtime_state_t;
 
@@ -93,7 +92,7 @@ extern parity_runtime_state_t parityRuntimeState;
 bool_t getRegisterAsRawShortInt(calcRegister_t reg, uint64_t *val, uint32_t *base);
 bool_t saveLastX(void);
 void liftStack(void);
-void displayCalcErrorMessage(uint8_t errorCode, calcRegister_t errMessageRegisterLine, calcRegister_t errRegisterLine);
+void displayCalcErrorMessage(uint8_t errorCode, calcRegister_t errMessageRegisterLine);
 void reallocateRegister(calcRegister_t regist, uint32_t dataType, uint16_t dataSizeWithoutDataLenBlocks, uint32_t tag);
 void *getRegisterDataPointer(calcRegister_t regist);
 bool_t getSystemFlag(int32_t sf);

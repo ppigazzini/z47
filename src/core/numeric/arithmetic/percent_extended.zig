@@ -4,7 +4,7 @@ const no_register = @as(runtime.calcRegister_t, -1);
 
 fn setNaNOrDomainError(result: *runtime.real_t, comptime who: [*:0]const u8, comptime why: [*:0]const u8) bool {
     if (!runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
         if (runtime.extra_info_on_calc_error) {
             runtime.moreInfoOnError(who, why, null, null);
         }
@@ -17,7 +17,7 @@ fn setNaNOrDomainError(result: *runtime.real_t, comptime who: [*:0]const u8, com
 
 fn setSignedInfinity(result: *runtime.real_t, is_negative: bool, comptime who: [*:0]const u8, comptime why: [*:0]const u8) bool {
     if (!runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
         if (runtime.extra_info_on_calc_error) {
             runtime.moreInfoOnError(who, why, null, null);
         }

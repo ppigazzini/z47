@@ -20,8 +20,8 @@ fn isOwnedStackRegister(regist: u16) bool {
 
 const real34DataPointer = abi.registerReal34Aligned;
 
-fn incDecError(regist: runtime.calcRegister_t) void {
-    runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, regist);
+fn incDecError() void {
+    runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE);
     runtime.moreInfoOnError("In function incDecError:", "Cannot increment/decrement, incompatible type.", null, null);
 }
 
@@ -108,7 +108,7 @@ fn incDecRegister(regist: runtime.calcRegister_t, operation: Operation) void {
         runtime.dtComplex34 => incDecCplx(regist, operation),
         runtime.dtTime => incDecTime(regist, operation),
         runtime.dtShortInteger => incDecShoI(regist, operation),
-        else => incDecError(regist),
+        else => incDecError(),
     }
 }
 

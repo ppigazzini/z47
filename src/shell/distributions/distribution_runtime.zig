@@ -149,7 +149,7 @@ pub extern fn saveLastX() bool;
 pub extern fn getRegisterAsReal(reg: calcRegister_t, value: *real_t) bool;
 pub extern fn convertRealToResultRegister(real: *const real_t, dest: calcRegister_t, angle_mode: angularMode_t) void;
 pub extern fn adjustResult(res: calcRegister_t, drop_y: bool, set_cpx_res: bool, op1: calcRegister_t, op2: calcRegister_t, op3: calcRegister_t) void;
-pub extern fn displayDomainErrorMessage(error_code: u8, err_message_register_line: calcRegister_t, err_register_line: calcRegister_t) void;
+pub extern fn displayDomainErrorMessage(error_code: u8, err_message_register_line: calcRegister_t) void;
 const c_moreInfoOnError = @extern(*const fn (msg1: [*:0]const u8, msg2: ?[*:0]const u8, msg3: ?[*:0]const u8, msg4: ?[*:0]const u8) callconv(.c) void, .{ .name = "moreInfoOnError" });
 pub inline fn moreInfoOnError(msg1: [*:0]const u8, msg2: ?[*:0]const u8, msg3: ?[*:0]const u8, msg4: ?[*:0]const u8) void {
     if (comptime extra_info_on_calc_error) c_moreInfoOnError(msg1, msg2, msg3, msg4);

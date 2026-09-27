@@ -1331,7 +1331,7 @@ fn _tamProcessInput(item: u16) void {
                         value = if (value2 != FAILED_INDIRECTION) value2 else INVALID_VARIABLE;
                     } else {
                         traceTamNameFailure(buffer);
-                        frontier_error.displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
+                        frontier_error.displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE);
                         if (comptime extra_info) {
                             abi.fmtBufZ(errorMessage[0..512], "string '{s}' is not a named variable", .{std.mem.span(buffer)});
                             moreInfoErr("In function _tamProcessInput:", errorMessage, null);
@@ -1361,7 +1361,7 @@ fn _tamProcessInput(item: u16) void {
                     leaveTamModeIfEnabled();
                     if (!tam.indirect) {
                         traceTamNameFailure(buffer);
-                        frontier_error.displayCalcErrorMessage(ERROR_FUNCTION_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+                        frontier_error.displayCalcErrorMessage(ERROR_FUNCTION_NOT_FOUND, ERR_REGISTER_LINE);
                         if (comptime extra_info) {
                             abi.fmtBufZ(errorMessage[0..512], "string '{s}' is neither a named label nor a function name", .{std.mem.span(buffer)});
                             moreInfoErr("In function _tamProcessInput:", errorMessage, null);
@@ -1378,7 +1378,7 @@ fn _tamProcessInput(item: u16) void {
                     }
                 } else if (calcMode != CM_PEM or (tam.function != ITM_GTO and tam.mode != TM_KEY)) {
                     traceTamNameFailure(buffer);
-                    frontier_error.displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+                    frontier_error.displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE);
                     if (comptime extra_info) {
                         abi.fmtBufZ(errorMessage[0..512], "string '{s}' is not a named label", .{std.mem.span(buffer)});
                         moreInfoErr("In function _tamProcessInput:", errorMessage, null);
@@ -1405,7 +1405,7 @@ fn _tamProcessInput(item: u16) void {
                     }
                 } else {
                     traceTamNameFailure(buffer);
-                    frontier_error.displayCalcErrorMessage(ERROR_UNDEF_MENU, ERR_REGISTER_LINE, REGISTER_X);
+                    frontier_error.displayCalcErrorMessage(ERROR_UNDEF_MENU, ERR_REGISTER_LINE);
                     if (comptime extra_info) {
                         abi.fmtBufZ(errorMessage[0..512], "string '{s}' is not a menu name", .{std.mem.span(buffer)});
                         moreInfoErr("In function _tamProcessInput:", errorMessage, null);
@@ -1423,7 +1423,7 @@ fn _tamProcessInput(item: u16) void {
                     }
                 } else {
                     traceTamNameFailure(buffer);
-                    frontier_error.displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
+                    frontier_error.displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE);
                     if (comptime extra_info) {
                         abi.fmtBufZ(errorMessage[0..512], "string '{s}' is not a named variable", .{std.mem.span(buffer)});
                         moreInfoErr("In function _tamProcessInput:", errorMessage, null);

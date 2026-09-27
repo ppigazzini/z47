@@ -293,7 +293,7 @@ extern fn fnFillStack(unused: u16) void;
 extern fn fnUndo(unused: u16) void;
 extern fn execProgram(label: u16) void;
 extern fn reallyRunFunction(func: i16, param: u16) void;
-extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: calcRegister_t, err_register_line: calcRegister_t) void;
+extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: calcRegister_t) void;
 extern fn findNamedLabel(label_name: [*:0]const u8, label_type: u8) calcRegister_t;
 extern fn findOrAllocateNamedVariable(variableName: [*:0]const u8) calcRegister_t;
 extern fn letteredRegisterName(regist: calcRegister_t) u8;
@@ -335,7 +335,7 @@ fn _fnIntegrate(labelOrVariable: u16, XY: bool_t) linksection(runtime.code_secti
             }
         }
     } else if ((currentSolverStatus & SOLVER_STATUS_USES_FORMULA) == 0 and (FIRST_NAMED_VARIABLE <= labelOrVariable and labelOrVariable <= LAST_NAMED_VARIABLE) and currentSolverProgram >= numberOfLabels) {
-        displayCalcErrorMessage(ERROR_NO_PROGRAM_SPECIFIED, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_NO_PROGRAM_SPECIFIED, ERR_REGISTER_LINE);
         runtime.infoLabelNotFound("In function _fnIntegrate:", labelOrVariable);
         adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
     } else if (FIRST_NAMED_VARIABLE <= labelOrVariable and labelOrVariable <= LAST_NAMED_VARIABLE) {
@@ -437,7 +437,7 @@ fn _fnIntegrate(labelOrVariable: u16, XY: bool_t) linksection(runtime.code_secti
         }
         adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
     } else {
-        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
         runtime.infoUnexpectedParameter("In function _fnIntegrate:", labelOrVariable);
     }
 }
@@ -613,7 +613,7 @@ fn exp_sinh_opt_d(regist: calcRegister_t, a: *align(1) const real_t, eps: *align
         runtime.freeReal(s1_p);
     }
     if (fl_p == null or fr_p == null or h2_p == null or r_p == null or h_p == null or lfl_p == null or lfr_p == null or lr_p == null or s_p == null or s1_p == null) {
-        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
         return d;
     }
     const fl = fl_p.?;
@@ -738,7 +738,7 @@ fn dbl_exp_int_new(regist: calcRegister_t, a: *align(1) const real_t, b: *align(
     if (c_p == null or d_p == null or s_p == null or v_p == null or h_p == null or y_p == null or eps_p == null or s1_p == null or s2_p == null or s3_p == null or
         p_p == null or q_p == null or fp_p == null or fm_p == null or t_p == null or eh_p == null)
     {
-        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
         return;
     }
     const c = c_p.?;
@@ -840,14 +840,14 @@ fn dbl_exp_int_new(regist: calcRegister_t, a: *align(1) const real_t, b: *align(
                 if (programRunStop == PGM_WAITING) {
                     // A nested engine aborted: stop at once rather than via the
                     // half-second path.
-                    displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                    displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE);
                     return;
                 }
                 if (exitSignalled) {
                     // INTEGRATION_TWO_STAGE_EXIT undefined: abort on the key now.
                     // Waiting for the ~0.5 s tick lets a short nested integral
                     // finish first and swallow the press.
-                    displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                    displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE);
                     return;
                 }
                 loop += 1;
@@ -856,7 +856,7 @@ fn dbl_exp_int_new(regist: calcRegister_t, a: *align(1) const real_t, b: *align(
                         _showProgress(result, const_1(), const_1(), errorp, const_0(), const_1(), realContext);
                         if (interruptedLoop == 0 and exitSignalled) { // First EXIT press
                             // INTEGRATION_TWO_STAGE_EXIT undefined:
-                            displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                            displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE);
                             return;
                         }
                     }
@@ -912,14 +912,14 @@ fn dbl_exp_int_new(regist: calcRegister_t, a: *align(1) const real_t, b: *align(
                 if (programRunStop == PGM_WAITING) {
                     // A nested engine aborted: stop at once rather than via the
                     // half-second path.
-                    displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                    displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE);
                     return;
                 }
                 if (exitSignalled) {
                     // INTEGRATION_TWO_STAGE_EXIT undefined: abort on the key now.
                     // Waiting for the ~0.5 s tick lets a short nested integral
                     // finish first and swallow the press.
-                    displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                    displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE);
                     return;
                 }
                 loop += 1;
@@ -927,7 +927,7 @@ fn dbl_exp_int_new(regist: calcRegister_t, a: *align(1) const real_t, b: *align(
                     if (progressHalfSecUpdate_Integer(timed, "Level: ", loop, !(interruptedLoop != 0), !(interruptedLoop != 0), !(interruptedLoop != 0))) {
                         _showProgress(result, const_1(), const_1(), errorp, const_0(), const_1(), realContext);
                         if (interruptedLoop == 0 and exitSignalled) { // First EXIT press
-                            displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                            displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE);
                             return;
                         }
                     }

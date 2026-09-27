@@ -174,14 +174,14 @@ fn nullOutComplex(a: *const complex34Matrix_t, b: *const complex34Matrix_t, r: *
     }
 }
 fn ramFull(fnName: [*:0]const u8, tag: [*:0]const u8) void {
-    runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, ERR_REGISTER_LINE, REGISTER_X);
+    runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, ERR_REGISTER_LINE);
     if (runtime.extra_info_on_calc_error) runtime.moreInfoOnError(fnName, tag, null, null);
 }
 /// `m` is the operand that failed the test: the coefficient matrix for the
 /// square check, the right-hand side for the column-vector check. STD_CROSS is
 /// a C47 glyph pair.
 fn mismatch(m: *const real34Matrix_t, fnName: [*:0]const u8, what: []const u8) void {
-    runtime.displayCalcErrorMessage(runtime.ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
+    runtime.displayCalcErrorMessage(runtime.ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE);
     if (runtime.extra_info_on_calc_error) {
         var buf: [80]u8 = undefined;
         const msg = runtime.bufPrintZ(&buf, "{s} ({d}\x80\xd7{d})", .{ what, m.header.matrixRows, m.header.matrixColumns }) catch "mismatch";
@@ -189,7 +189,7 @@ fn mismatch(m: *const real34Matrix_t, fnName: [*:0]const u8, what: []const u8) v
     }
 }
 fn mismatchC(m: *const complex34Matrix_t, fnName: [*:0]const u8, what: []const u8) void {
-    runtime.displayCalcErrorMessage(runtime.ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
+    runtime.displayCalcErrorMessage(runtime.ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE);
     if (runtime.extra_info_on_calc_error) {
         var buf: [80]u8 = undefined;
         const msg = runtime.bufPrintZ(&buf, "{s} ({d}\x80\xd7{d})", .{ what, m.header.matrixRows, m.header.matrixColumns }) catch "mismatch";
@@ -227,7 +227,7 @@ pub export fn fnEditLinearEquationMatrixX(unusedParamButMandatory: u16) callconv
         runtime.findNamedVariable("Mat_B") == runtime.INVALID_VARIABLE or
         runtime.findNamedVariable("Mat_X") == runtime.INVALID_VARIABLE)
     {
-        runtime.displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
+        runtime.displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE);
         if (runtime.extra_info_on_calc_error) runtime.moreInfoOnError("In function fnEditLinearEquationMatrixX:", "At least one of Mat_A, Mat_B or Mat_X is missing", null, null);
     } else if (runtime.getRegisterDataType(runtime.findNamedVariable("Mat_A")) == dtReal34Matrix and runtime.getRegisterDataType(runtime.findNamedVariable("Mat_B")) == dtReal34Matrix) {
         var a: real34Matrix_t = undefined;

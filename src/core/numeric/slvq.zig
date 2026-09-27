@@ -180,7 +180,7 @@ pub export fn fnSlvq(unused_but_mandatory_parameter: u16) linksection(runtime.co
     const realCoefs = !complexCoefs;
 
     if (realIsZero(&aReal) and realIsZero(&aImag) and realIsZero(&bReal) and realIsZero(&bImag)) {
-        displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
         moreInfoOnError("In function fnSlvq:", "cannot use 0 for Y and Z as input of SLVQ", null, null);
         return;
     }

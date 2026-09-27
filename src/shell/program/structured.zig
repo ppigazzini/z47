@@ -181,7 +181,7 @@ extern const subtraction: [NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS][NUMBER_OF_DATA
 // ---------------------------------------------------------------------------
 // Function externs
 // ---------------------------------------------------------------------------
-extern fn displayCalcErrorMessage(errorCode: u8, errMessageRegisterLine: calcRegister_t, disUsedCanBeRemoved: calcRegister_t) void;
+extern fn displayCalcErrorMessage(errorCode: u8, errMessageRegisterLine: calcRegister_t) void;
 extern fn getSystemFlag(sf: c_int) bool;
 extern fn setSystemFlag(sf: c_int) void;
 extern fn fnSkip(numberOfSteps: u16) void;
@@ -426,7 +426,7 @@ pub export fn structNoLegacySkip(step: [*c]u8) callconv(.c) bool_t {
 // is cleared first.
 fn structNotHere() void {
     temporaryInformation = TI_NO_INFO;
-    displayCalcErrorMessage(ERROR_NOT_AVAILABLE_HERE, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_NOT_AVAILABLE_HERE, ERR_REGISTER_LINE);
 }
 
 // ===========================================================================
@@ -509,7 +509,7 @@ fn structNumberMissing(structureNumber: u16) bool {
         return false;
     }
     temporaryInformation = TI_NO_INFO;
-    displayCalcErrorMessage(ERROR_STRUCTURE_NOT_NUMBERED, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_STRUCTURE_NOT_NUMBERED, ERR_REGISTER_LINE);
     return true;
 }
 
@@ -588,7 +588,7 @@ pub export fn fnIf(structureNumber: u16) callconv(.c) void {
         return;
     }
     if (temporaryInformation != TI_TRUE and temporaryInformation != TI_FALSE) {
-        displayCalcErrorMessage(ERROR_IF_WHILE_CONDITION_MISSING, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_IF_WHILE_CONDITION_MISSING, ERR_REGISTER_LINE);
         return;
     }
     if (temporaryInformation == TI_TRUE) {
@@ -599,7 +599,7 @@ pub export fn fnIf(structureNumber: u16) callconv(.c) void {
     temporaryInformation = TI_NO_INFO;
     // A false IF ends its branch at either token, whichever comes first.
     if (!structJumpToPartner(structureNumber, ITM_ENDIF, ITM_ELSE, true)) {
-        displayCalcErrorMessage(ERROR_STRUCTURE_INVALID, ERR_REGISTER_LINE, REGISTER_X); // Redundant message, cannot happen with validated program
+        displayCalcErrorMessage(ERROR_STRUCTURE_INVALID, ERR_REGISTER_LINE); // Redundant message, cannot happen with validated program
     }
 }
 
@@ -615,7 +615,7 @@ pub export fn fnElse(structureNumber: u16) callconv(.c) void {
         return;
     }
     if (!structJumpToPartner(structureNumber, ITM_ENDIF, 0, true)) {
-        displayCalcErrorMessage(ERROR_STRUCTURE_INVALID, ERR_REGISTER_LINE, REGISTER_X); // Redundant message, cannot happen with validated program
+        displayCalcErrorMessage(ERROR_STRUCTURE_INVALID, ERR_REGISTER_LINE); // Redundant message, cannot happen with validated program
     }
 }
 
@@ -655,7 +655,7 @@ pub export fn fnWhile(structureNumber: u16) callconv(.c) void {
         return;
     }
     if (temporaryInformation != TI_TRUE and temporaryInformation != TI_FALSE) {
-        displayCalcErrorMessage(ERROR_IF_WHILE_CONDITION_MISSING, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_IF_WHILE_CONDITION_MISSING, ERR_REGISTER_LINE);
         return;
     }
     if (temporaryInformation == TI_TRUE) {
@@ -665,7 +665,7 @@ pub export fn fnWhile(structureNumber: u16) callconv(.c) void {
     }
     temporaryInformation = TI_NO_INFO;
     if (!structJumpToPartner(structureNumber, ITM_ENDDO, 0, true)) {
-        displayCalcErrorMessage(ERROR_STRUCTURE_INVALID, ERR_REGISTER_LINE, REGISTER_X); // Redundant message, cannot happen with validated program
+        displayCalcErrorMessage(ERROR_STRUCTURE_INVALID, ERR_REGISTER_LINE); // Redundant message, cannot happen with validated program
     }
 }
 
@@ -691,7 +691,7 @@ pub export fn fnEnddo(structureNumber: u16) callconv(.c) void {
         _ = structJumpToLabel(doLabel);
         return;
     }
-    displayCalcErrorMessage(ERROR_STRUCTURE_INVALID, ERR_REGISTER_LINE, REGISTER_X); // Redundant message, cannot happen with validated program
+    displayCalcErrorMessage(ERROR_STRUCTURE_INVALID, ERR_REGISTER_LINE); // Redundant message, cannot happen with validated program
 }
 
 // Nothing to do. The body follows, and the UNTIL comes back to the step after this
@@ -718,7 +718,7 @@ pub export fn fnUntil(structureNumber: u16) callconv(.c) void {
         return;
     }
     if (temporaryInformation != TI_TRUE and temporaryInformation != TI_FALSE) {
-        displayCalcErrorMessage(ERROR_IF_WHILE_CONDITION_MISSING, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_IF_WHILE_CONDITION_MISSING, ERR_REGISTER_LINE);
         return;
     }
     if (temporaryInformation == TI_TRUE) {
@@ -738,7 +738,7 @@ pub export fn fnUntil(structureNumber: u16) callconv(.c) void {
         _ = structJumpToLabel(repeatLabel);
         return;
     }
-    displayCalcErrorMessage(ERROR_STRUCTURE_INVALID, ERR_REGISTER_LINE, REGISTER_X); // Redundant message, cannot happen with validated program
+    displayCalcErrorMessage(ERROR_STRUCTURE_INVALID, ERR_REGISTER_LINE); // Redundant message, cannot happen with validated program
 }
 
 // True when the pointer the FOR left still reaches that FOR. Program memory moves
@@ -1028,9 +1028,9 @@ fn forStepWentBackwards(sum: calcRegister_t, counter: calcRegister_t, stepReg: c
 // The out of range refusal adjustResult makes for every other addition. adjustResult
 // itself cannot be called here: it drops the stack and undoes the whole step, where the
 // caller borrows X and Y and puts them back.
-fn forRefuseInfinite(regist: calcRegister_t, value: *align(1) const real34_t) void {
+fn forRefuseInfinite(value: *align(1) const real34_t) void {
     if (real34IsInfinite(value)) {
-        displayCalcErrorMessage(if (real34IsPositive(value)) ERROR_OVERFLOW_PLUS_INF else ERROR_OVERFLOW_MINUS_INF, ERR_REGISTER_LINE, regist);
+        displayCalcErrorMessage(if (real34IsPositive(value)) ERROR_OVERFLOW_PLUS_INF else ERROR_OVERFLOW_MINUS_INF, ERR_REGISTER_LINE);
     }
 }
 
@@ -1057,14 +1057,14 @@ fn forStepAndTest(counter: calcRegister_t, endReg: calcRegister_t, stepReg: calc
     }
     if (!getSystemFlag(FLAG_SPCRES) and lastErrorCode == ERROR_NONE) { // out of range, which every other addition refuses under this flag
         if (getRegisterDataType(REGISTER_X) == dtReal34) {
-            forRefuseInfinite(REGISTER_X, reg34(REGISTER_X));
+            forRefuseInfinite(reg34(REGISTER_X));
         } else if (getRegisterDataType(REGISTER_X) == dtComplex34) {
-            forRefuseInfinite(REGISTER_X, reg34(REGISTER_X));
-            forRefuseInfinite(REGISTER_X, regImag34(REGISTER_X));
+            forRefuseInfinite(reg34(REGISTER_X));
+            forRefuseInfinite(regImag34(REGISTER_X));
         }
     }
     if (lastErrorCode == ERROR_NONE and forValuesEqual(REGISTER_X, TEMP_REGISTER_1)) { // the counter has grown until the step rounds away, so the end is now
-        displayCalcErrorMessage(ERROR_STEP_OF_ZERO, ERR_REGISTER_LINE, REGISTER_X); // unreachable whatever the FOR was given
+        displayCalcErrorMessage(ERROR_STEP_OF_ZERO, ERR_REGISTER_LINE); // unreachable whatever the FOR was given
     }
     const unusable = (lastErrorCode != ERROR_NONE) or forStepWentBackwards(REGISTER_X, TEMP_REGISTER_1, stepReg, descends);
     const past = unusable or forCounterPastEnd(REGISTER_X, endReg, stepReg, descends);
@@ -1102,31 +1102,31 @@ pub export fn fnFor(regist: u16) callconv(.c) void {
         return; // this FOR is running already, reached again by BST or by a GTO, so its loop carries on untouched and the stack is left alone
     }
     if (!isRegInRange(regist)) { // the quiet range test, so the counter's own message is the one that shows
-        displayCalcErrorMessage(ERROR_INVALID_COUNTER_REGISTER, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_INVALID_COUNTER_REGISTER, ERR_REGISTER_LINE);
         return;
     }
     if (!forValueCanCount(REGISTER_Z) or !forValueCanCount(REGISTER_Y) or !forValueCanCount(REGISTER_X)) {
-        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
         return;
     }
     if (forStepCannotMove(REGISTER_Z, REGISTER_X)) { // the start plus the step, against the start
-        displayCalcErrorMessage(ERROR_STEP_OF_ZERO, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_STEP_OF_ZERO, ERR_REGISTER_LINE);
         return;
     }
     if (!forHasNext()) {
-        displayCalcErrorMessage(ERROR_NEXT_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_NEXT_NOT_FOUND, ERR_REGISTER_LINE);
         return;
     }
     if (row < FOR_MAX_LOOPS) { // the row outlived its registers, which a run that ended inside the loop does, so it is free again
         forLoopTable[row].localStepNumber = 0;
     }
     if (forCounterAlreadyCounted(regist)) { // a running loop already counts in it, so neither could ever end
-        displayCalcErrorMessage(ERROR_INVALID_COUNTER_REGISTER, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_INVALID_COUNTER_REGISTER, ERR_REGISTER_LINE);
         return;
     }
     row = forFreeLoopRow();
     if (row >= FOR_MAX_LOOPS or base + FOR_LOCALS > FOR_MAX_LOCALS) {
-        displayCalcErrorMessage(ERROR_NESTING_TOO_DEEP, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_NESTING_TOO_DEEP, ERR_REGISTER_LINE);
         return;
     }
     allocateLocalRegisters(base + FOR_LOCALS);
@@ -1167,7 +1167,7 @@ pub export fn fnForYx(regist: u16) callconv(.c) void {
         return; // this FOR is running already, reached again by BST or by a GTO, so the test below it decides the pass and the stack is left alone
     }
     if (!forValueCanCount(REGISTER_Y) or !forValueCanCount(REGISTER_X)) {
-        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
         return;
     }
     const startType = getRegisterDataType(REGISTER_Y);
@@ -1246,7 +1246,7 @@ pub export fn fnForTop(regist: u16) callconv(.c) void {
         const nextStep = forNextOfThisFor(&ahead);
 
         if (nextStep == null) { // fnFor refuses a FOR with no NEXT below it, so this cannot be reached from a program that got this far
-            displayCalcErrorMessage(ERROR_NEXT_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+            displayCalcErrorMessage(ERROR_NEXT_NOT_FOUND, ERR_REGISTER_LINE);
             return;
         }
         forLoopTable[row].localStepNumber = 0; // the row goes, no pass having been run
@@ -1270,7 +1270,7 @@ pub export fn fnNext(regist: u16) callconv(.c) void {
         return;
     }
     if (!isRegInRange(regist)) {
-        displayCalcErrorMessage(ERROR_INVALID_COUNTER_REGISTER, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_INVALID_COUNTER_REGISTER, ERR_REGISTER_LINE);
         return;
     }
     forDropDeadLoops();
@@ -1281,7 +1281,7 @@ pub export fn fnNext(regist: u16) callconv(.c) void {
     // LocR or a PopLR that deleted them under the loop, and reading whatever took their
     // place would answer wrongly and say nothing.
     if (row >= FOR_MAX_LOOPS or forInnerLoopStillOpen(row) or !forLoopRegistersLive(row)) {
-        displayCalcErrorMessage(ERROR_NEXT_WITHOUT_FOR, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_NEXT_WITHOUT_FOR, ERR_REGISTER_LINE);
         return;
     }
     const base = forLoopTable[row].localRegisterBase;
@@ -1293,7 +1293,7 @@ pub export fn fnNext(regist: u16) callconv(.c) void {
     // other, so all three are tested here, where they are read. A type that cannot be
     // counted would otherwise end the loop without a word.
     if (!forValueCanCount(counterReg) or !forValueCanCount(endReg) or !forValueCanCount(stepReg)) {
-        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
         if (comptime extra_info) {
             _ = sprintf(errorMessage, "%s of this FOR", if (!forValueCanCount(counterReg))
                 @as([*:0]const u8, "the counter")
@@ -1324,7 +1324,7 @@ pub export fn fnNext(regist: u16) callconv(.c) void {
         currentLocalStepNumber = forLoopTable[row].localStepNumber;
         defineCurrentStep();
         if (structPlainOp(structOpOfStep(currentStep)) != ITM_FOR) {
-            displayCalcErrorMessage(ERROR_NEXT_WITHOUT_FOR, ERR_REGISTER_LINE, REGISTER_X);
+            displayCalcErrorMessage(ERROR_NEXT_WITHOUT_FOR, ERR_REGISTER_LINE);
             return;
         }
         forLoopStep[row] = currentStep;
@@ -1379,7 +1379,7 @@ pub export fn fnForNotChecked(regist: u16) callconv(.c) void {
     _ = regist;
     if (comptime !option_structured_pgm) return structNotHere();
     temporaryInformation = TI_NO_INFO;
-    displayCalcErrorMessage(ERROR_STRUCTURE_NOT_NUMBERED, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_STRUCTURE_NOT_NUMBERED, ERR_REGISTER_LINE);
 }
 
 // The not checked form of a FOR or a NEXT. A new step enters the program in that form.
@@ -1530,7 +1530,7 @@ fn structReportFault(localStepNumber: u16, err: u8) void {
         structGoToLocalStep(localStepNumber);
     }
     temporaryInformation = TI_NO_INFO; // a pending test display would otherwise cover the message
-    displayCalcErrorMessage(err, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(err, ERR_REGISTER_LINE);
 }
 
 inline fn faultDetail(localStepNumber: u16, detail: [*:0]const u8) void {

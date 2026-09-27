@@ -127,7 +127,7 @@ bool_t isAtEndOfProgram(const uint8_t *step);
 bool_t isAtEndOfPrograms(const uint8_t *step); // .END.
 uint8_t *findNextStep(uint8_t *step);
 uint32_t getFreeRamMemory(void);
-void displayCalcErrorMessage(uint8_t errorCode, calcRegister_t errMessageRegisterLine, calcRegister_t disUsedCanBeRemoved);
+void displayCalcErrorMessage(uint8_t errorCode, calcRegister_t errMessageRegisterLine);
 void moreInfoOnError(const char *m1, const char *m2, const char *m3, const char *m4);
 void *xcopy(void *dest, const void *source, uint32_t n);
 

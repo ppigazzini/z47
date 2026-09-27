@@ -55,7 +55,7 @@ fn complexImagPointer(data_ptr: ?*anyopaque) ?*anyopaque {
 }
 
 fn reportLocalRegisterRangeError(number_of_registers_to_allocate: u16) void {
-    stack_runtime.displayCalcErrorMessage(stack_runtime.ERROR_OUT_OF_RANGE, stack_runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+    stack_runtime.displayCalcErrorMessage(stack_runtime.ERROR_OUT_OF_RANGE, stack_runtime.ERR_REGISTER_LINE);
     runtime.reportTooManyLocalRegisters(number_of_registers_to_allocate);
 }
 

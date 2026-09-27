@@ -39,7 +39,6 @@ static bool stateEquals(const parity_runtime_state_t *left, const parity_runtime
          left->lifted_stack == right->lifted_stack &&
          left->last_error_code == right->last_error_code &&
          left->last_error_message_register == right->last_error_message_register &&
-         left->last_error_register == right->last_error_register &&
          left_ti == right_ti &&
          left_undo == right_undo;
 }
@@ -49,8 +48,8 @@ static void failCase(const char *name, unsigned int arg,
                      const parity_runtime_state_t *actual, uint8_t actual_ti, bool_t actual_undo) {
   fprintf(stderr,
           "%s(%u) parity mismatch\n"
-          "  expected: x=%#018llx base=%u l=%#018llx lbase=%u saved=%d lifted=%d err=%u/%d/%d ti=%u undo=%d\n"
-          "  actual:   x=%#018llx base=%u l=%#018llx lbase=%u saved=%d lifted=%d err=%u/%d/%d ti=%u undo=%d\n",
+          "  expected: x=%#018llx base=%u l=%#018llx lbase=%u saved=%d lifted=%d err=%u/%d ti=%u undo=%d\n"
+          "  actual:   x=%#018llx base=%u l=%#018llx lbase=%u saved=%d lifted=%d err=%u/%d ti=%u undo=%d\n",
           name,
           arg,
           (unsigned long long)expected->x_raw,
@@ -61,7 +60,6 @@ static void failCase(const char *name, unsigned int arg,
           expected->lifted_stack,
           expected->last_error_code,
           expected->last_error_message_register,
-          expected->last_error_register,
           expected_ti,
           expected_undo,
           (unsigned long long)actual->x_raw,
@@ -72,7 +70,6 @@ static void failCase(const char *name, unsigned int arg,
           actual->lifted_stack,
           actual->last_error_code,
           actual->last_error_message_register,
-          actual->last_error_register,
           actual_ti,
           actual_undo);
 }
@@ -128,13 +125,12 @@ static int runGoldenCase(const char *name, logical_shortint_fn zig_fn,
      actual_state.lifted_stack != expected_lifted_stack ||
      actual_state.last_error_code != 0 ||
      actual_state.last_error_message_register != 0 ||
-     actual_state.last_error_register != 0 ||
      temporaryInformation != 0 ||
      thereIsSomethingToUndo != true) {
     fprintf(stderr,
             "%s(%u) golden mismatch\n"
             "  expected: x=%#018llx base=%u lifted=%d\n"
-            "  actual:   x=%#018llx base=%u lifted=%d err=%u/%d/%d ti=%u undo=%d\n",
+            "  actual:   x=%#018llx base=%u lifted=%d err=%u/%d ti=%u undo=%d\n",
             name,
             arg,
             (unsigned long long)expected_x_raw,
@@ -145,7 +141,6 @@ static int runGoldenCase(const char *name, logical_shortint_fn zig_fn,
             actual_state.lifted_stack,
             actual_state.last_error_code,
             actual_state.last_error_message_register,
-            actual_state.last_error_register,
             temporaryInformation,
             thereIsSomethingToUndo);
     return 1;

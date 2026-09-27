@@ -88,7 +88,7 @@ pub export fn deltaPercentXmeanReal(xReal: *real_t, rReal: *real_t, realContext:
         if (getSystemFlag(FLAG_SPCRES)) {
             realSetNaN(rReal);
         } else {
-            displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+            displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
             moreInfoOnError("In function deltaPercentXmeanReal:", "cannot divide 0 by 0", null, null);
             return false;
         }
@@ -97,7 +97,7 @@ pub export fn deltaPercentXmeanReal(xReal: *real_t, rReal: *real_t, realContext:
             realSetPlusInfinity(rReal);
             rReal.bits |= DECNEG * @as(u8, @intFromBool(realIsZero(xReal)));
         } else {
-            displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+            displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
             moreInfoOnError("In function deltaPercentXmeanReal:", "cannot divide a real by y=0", null, null);
             return false;
         }
@@ -115,7 +115,7 @@ pub export fn fnDeltaPercentXmean(unusedButMandatoryParameter: u16) linksection(
     var rReal: real_t = undefined;
 
     if (!checkMinimumDataPoints(const_1())) {
-        displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE);
         moreInfoOnError("In function fnDeltaPercentXmean:", "There is no statistical data available!", null, null);
         return;
     }

@@ -278,7 +278,7 @@ pub export fn fnSigmaAssign(sigmaAssign: u16) callconv(.c) void {
         fnClearFlag(FLAG_USER);
     } else {
         Norm_Key_00.used = false;
-        frontier_error.displayCalcErrorMessage(ERROR_CANNOT_ASSIGN_HERE, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        frontier_error.displayCalcErrorMessage(ERROR_CANNOT_ASSIGN_HERE, ERR_REGISTER_LINE);
         moreInfoOnErr("In function fnSigmaAssign: ", "the NRM key is not available.");
     }
 }

@@ -42,7 +42,7 @@ extern fn convertRealToImag34ResultRegister(real: *const real_t, dest: runtime.c
 extern fn setLastintegerBasetoZero() void;
 extern fn checkTimeRange(time34: *const real34_t) void;
 extern fn checkDateRange(date34: *const real34_t) void;
-extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: runtime.calcRegister_t, err_register_line: runtime.calcRegister_t) void;
+extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: runtime.calcRegister_t) void;
 extern fn fnSetFlag(flag: u16) void;
 extern fn fnRefreshState() void;
 extern fn rsdRema(digits: u16) void;
@@ -115,12 +115,11 @@ fn complexMatrixElementCount(res: runtime.calcRegister_t) usize {
     return ((@as(usize, @intCast(runtime.getRegisterFullSizeInBlocks(res))) - matrix_header_size_in_blocks) / @as(usize, @intCast(complex34SizeInBlocks())));
 }
 
-fn normalizeResultRealRegister(reg: runtime.calcRegister_t, value: *align(1) real34_t) void {
+fn normalizeResultRealRegister(value: *align(1) real34_t) void {
     if (real34IsInfinite(value)) {
         displayCalcErrorMessage(
             if (real34IsNegative(value)) ERROR_OVERFLOW_MINUS_INF else ERROR_OVERFLOW_PLUS_INF,
             runtime.REGISTER_Z,
-            reg,
         );
     } else if (real34IsZero(value)) {
         real34SetPositiveSign(value);
@@ -205,29 +204,29 @@ fn tryToRealDate() bool {
 }
 
 fn reportToRealInvalidType() void {
-    displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+    displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE);
 }
 
 // Check the result register for infinities and negative zeroes, one rectangular
 // component at a time.
 fn adjustRealRegisterComponents(res: runtime.calcRegister_t, result_data_type: u32) void {
     switch (result_data_type) {
-        runtime.dtReal34, runtime.dtTime, runtime.dtDate => normalizeResultRealRegister(res, registerReal34Ptr(res)),
+        runtime.dtReal34, runtime.dtTime, runtime.dtDate => normalizeResultRealRegister(registerReal34Ptr(res)),
         runtime.dtComplex34 => {
-            normalizeResultRealRegister(res, registerReal34Ptr(res));
-            normalizeResultRealRegister(res, registerImag34Ptr(res));
+            normalizeResultRealRegister(registerReal34Ptr(res));
+            normalizeResultRealRegister(registerImag34Ptr(res));
         },
         runtime.dtReal34Matrix => {
             const elements = realMatrixElementsPtr(res);
             for (0..realMatrixElementCount(res)) |index| {
-                normalizeResultRealRegister(res, &elements[index]);
+                normalizeResultRealRegister(&elements[index]);
             }
         },
         runtime.dtComplex34Matrix => {
             const elements = complexMatrixElementsPtr(res);
             for (0..complexMatrixElementCount(res)) |index| {
-                normalizeResultRealRegister(res, &elements[index].real);
-                normalizeResultRealRegister(res, &elements[index].imag);
+                normalizeResultRealRegister(&elements[index].real);
+                normalizeResultRealRegister(&elements[index].imag);
             }
         },
         else => {},

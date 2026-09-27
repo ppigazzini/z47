@@ -6,7 +6,7 @@ pub fn invalidXError() void {
     const type_name = std.mem.span(runtime.getRegisterDataTypeName(runtime.REGISTER_X, true, false));
     const message = runtime.bufPrintZ(&message_buffer, "cannot LINPOL with {s} in X", .{type_name}) catch "cannot LINPOL with current X type";
 
-    runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+    runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE);
     runtime.moreInfoOnError("In function fnLINPOL:", message, null, null);
 }
 
@@ -20,7 +20,7 @@ pub fn differingTypeError() void {
         .{ type_name_y, type_name_z },
     ) catch "cannot LINPOL with differing data types in Y and Z";
 
-    runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_Y);
+    runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE);
     runtime.moreInfoOnError("In function fnLINPOL:", message, null, null);
 }
 
@@ -30,6 +30,6 @@ pub fn coeffTypeError(regist: runtime.calcRegister_t) void {
     const register_name = if (regist == runtime.REGISTER_Y) "Y" else "Z";
     const message = runtime.bufPrintZ(&message_buffer, "cannot LINPOL with {s} in {s}", .{ type_name, register_name }) catch "cannot LINPOL with current coefficient type";
 
-    runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, regist);
+    runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE);
     runtime.moreInfoOnError("In function fnLINPOL:", message, null, null);
 }

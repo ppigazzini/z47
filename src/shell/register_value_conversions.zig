@@ -672,7 +672,7 @@ pub export fn convertReal34RegisterToDateRegister(source: calcRegister_t, destin
         (getSystemFlag(FLAG_MDY) and !frontier_date_time.isValidDay(&part3, &part1, &part2)) or
         (getSystemFlag(FLAG_DMY) and !frontier_date_time.isValidDay(&part3, &part2, &part1)))
     {
-        frontier_error.displayCalcErrorMessage(ERROR_BAD_TIME_OR_DATE_INPUT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        frontier_error.displayCalcErrorMessage(ERROR_BAD_TIME_OR_DATE_INPUT, ERR_REGISTER_LINE);
         moreInfoOnError("In function convertReal34RegisterToDateRegister:", "Invalid date input like 30 Feb.");
         return;
     }

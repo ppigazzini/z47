@@ -610,7 +610,7 @@ void lcd_refresh(void);
 void fnChangeBase(uint16_t base);
 void fnSwapXY(uint16_t unusedButMandatoryParameter);
 void forceSystemFlag(unsigned int sf, int set);
-void displayCalcErrorMessage(uint8_t error_code, calcRegister_t err_message_register_line, calcRegister_t err_register_line);
+void displayCalcErrorMessage(uint8_t error_code, calcRegister_t err_message_register_line);
 void displayBugScreen(const char *message);
 void moreInfoOnError(const char *msg1, const char *msg2, const char *msg3, const char *msg4);
 void doNothing(void);

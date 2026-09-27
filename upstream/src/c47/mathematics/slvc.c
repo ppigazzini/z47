@@ -140,7 +140,7 @@ void fnSlvc(uint16_t unusedButMandatoryParameter) {
   if(   realIsZero(&aReal) && realIsZero(&aImag)
      && realIsZero(&bReal) && realIsZero(&bImag)
      && realIsZero(&cReal) && realIsZero(&cImag)) {
-    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function fnSlvc:", "cannot use 0 for Y, Z and T as input of SLVC", NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -209,7 +209,7 @@ void solveCoefficientVector(void) {
 
   m = (uint32_t)rows * cols;
   if((rows != 1 && cols != 1) || m < 2 || m > 4) {
-    displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "a coefficient vector holds 2 to 4 elements, not (%d" STD_CROSS "%d)", rows, cols);
       moreInfoOnError("In function solveCoefficientVector:", errorMessage, NULL, NULL);
@@ -233,7 +233,7 @@ void solveCoefficientVector(void) {
     allZero = allZero && realIsZero(&co[j][0]) && realIsZero(&co[j][1]);
   }
   if(allZero) {
-    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function solveCoefficientVector:", "every coefficient above the constant term is 0", NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -265,7 +265,7 @@ void solveCoefficientVector(void) {
   if(resultIsComplex) {                                  // the result matrix is allocated, then L, then X is overwritten: every failure leaves X and L untouched
     complex34Matrix_t res;
     if(!complexMatrixInit(&res, 1, nRoots)) {
-      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         moreInfoOnError("In function solveCoefficientVector:", "Ram full", NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -285,7 +285,7 @@ void solveCoefficientVector(void) {
   else {
     real34Matrix_t res;
     if(!realMatrixInit(&res, 1, nRoots)) {
-      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         moreInfoOnError("In function solveCoefficientVector:", "Ram full", NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)

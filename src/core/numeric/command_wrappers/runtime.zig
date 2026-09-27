@@ -456,7 +456,7 @@ pub extern fn crossComplexVectors(y: *const complex34Matrix_t, x: *const complex
 // euclidean-norm and dot owners; resolve to those Zig exports).
 pub extern fn _euclideanNormRealMatrix(matrix: *const real34Matrix_t, p_param: u16, res: *real_t, real_context: *realContext_t) void;
 pub extern fn _dotRealVectors(y: *const real34Matrix_t, x: *const real34Matrix_t, res: *real_t, real_context: *realContext_t) void;
-pub extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: calcRegister_t, err_register_line: calcRegister_t) void;
+pub extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: calcRegister_t) void;
 pub extern fn getRegisterDataTypeName(reg: calcRegister_t, article: bool, abbreviated: bool) [*:0]const u8;
 pub extern fn convertRealToResultRegister(real: *const real_t, dest: calcRegister_t, angle_mode: angularMode_t) void;
 pub extern fn convertRealToLongIntegerRegister(real: *const real_t, dest: calcRegister_t, rounding_mode: rounding_t) void;

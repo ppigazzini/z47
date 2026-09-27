@@ -42,7 +42,7 @@ pub export fn fnMatrixIdentity(unused_but_mandatory_parameter: u16) callconv(.c)
         }
         runtime.setSystemFlag(runtime.FLAG_ASLIFT);
     } else {
-        runtime.displayCalcErrorMessage(runtime.ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, runtime.ERR_REGISTER_LINE);
         if (runtime.extra_info_on_calc_error) {
             var buffer: [80]u8 = undefined;
             const message = bufPrintZ(&buffer, "Not enough memory for a {d}" ++ std_cross ++ "{d} identity matrix", .{ rows, cols }) catch "Not enough memory for an identity matrix";

@@ -897,7 +897,7 @@ pub export fn fnClP(label: u16) callconv(.c) void {
             else => {},
         }
     } else {
-        frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "label {d} is not a global label", .{@as(u32, label)});
             moreInfoErr("In function fnClP:", errorMessage, null);
@@ -2484,7 +2484,7 @@ pub export fn findProgramLabel(label: u16, caller: [*:0]const u8) callconv(.c) c
                 return @intCast(@as(i32, lbl) + FIRST_LABEL);
             }
         }
-        frontier_error.displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE);
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "there is no local label {d:0>2} in current program", .{@as(u32, label)});
             moreInfoErr(caller, errorMessage, null);
@@ -2498,7 +2498,7 @@ pub export fn findProgramLabel(label: u16, caller: [*:0]const u8) callconv(.c) c
         var buf: [2]u8 = .{ frontier_screen_snap.letteredRegisterName(@intCast(label)), 0 };
         const found = findNamedLabel(&buf, GLOBAL_LABELS);
         if (found == INVALID_VARIABLE) {
-            frontier_error.displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE);
             if (comptime extra_info) {
                 abi.fmtBufZ(errorMessage[0..512], "string '{s}' is not a named label", .{buf[0..1]});
                 moreInfoErr(caller, errorMessage, null);
@@ -2506,7 +2506,7 @@ pub export fn findProgramLabel(label: u16, caller: [*:0]const u8) callconv(.c) c
         }
         return found;
     }
-    frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+    frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
     if (comptime extra_info) {
         abi.fmtBufZ(errorMessage[0..512], "unexpected parameter {d}", .{@as(u32, label)});
         moreInfoErr(caller, errorMessage, null);

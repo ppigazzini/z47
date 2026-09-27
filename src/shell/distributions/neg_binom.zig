@@ -32,17 +32,17 @@ fn checkParamNegBinom(x: *real_t, i: *real_t, j: *real_t) linksection(dr.code_se
     }
 
     if (!dr.checkRegisterNoFP(j)) {
-        dr.displayDomainErrorMessage(dr.ERROR_INVALID_DISTRIBUTION_PARAM, dr.ERR_REGISTER_LINE, dr.REGISTER_X);
+        dr.displayDomainErrorMessage(dr.ERROR_INVALID_DISTRIBUTION_PARAM, dr.ERR_REGISTER_LINE);
         dr.moreInfoOnError("In function checkParamNegBinom:", "r is not an integer", null, null);
         dr.specialResultNaN();
         return false;
     } else if (dr.realIsNegative(x)) {
-        dr.displayDomainErrorMessage(dr.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, dr.ERR_REGISTER_LINE, dr.REGISTER_X);
+        dr.displayDomainErrorMessage(dr.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, dr.ERR_REGISTER_LINE);
         dr.moreInfoOnError("In function checkParamNegBinom:", "cannot calculate for x < 0", null, null);
         dr.specialResultNaN();
         return false;
     } else if (dr.realIsZero(i) or dr.realIsNegative(i) or dr.realCompareGreaterEqual(i, dr.const1()) or dr.realIsZero(j) or dr.realIsNegative(j)) {
-        dr.displayDomainErrorMessage(dr.ERROR_INVALID_DISTRIBUTION_PARAM, dr.ERR_REGISTER_LINE, dr.REGISTER_X);
+        dr.displayDomainErrorMessage(dr.ERROR_INVALID_DISTRIBUTION_PARAM, dr.ERR_REGISTER_LINE);
         dr.moreInfoOnError("In function checkParamNegBinom:", "the parameters must be 0 < p < 1 and r > 0", null, null);
         dr.specialResultNaN();
         return false;
@@ -53,7 +53,7 @@ fn checkParamNegBinom(x: *real_t, i: *real_t, j: *real_t) linksection(dr.code_se
 // Tail shared by P/L/R: store the answer, or report an invalid parameter on NaN.
 fn storeOrInvalid(ans: *const real_t, comptime where: [*:0]const u8) linksection(dr.code_section) void {
     if (dr.realIsNaN(ans)) {
-        dr.displayDomainErrorMessage(dr.ERROR_INVALID_DISTRIBUTION_PARAM, dr.ERR_REGISTER_LINE, dr.REGISTER_X);
+        dr.displayDomainErrorMessage(dr.ERROR_INVALID_DISTRIBUTION_PARAM, dr.ERR_REGISTER_LINE);
         dr.moreInfoOnError(where, "a parameter is invalid", null, null);
     } else {
         dr.convertRealToResultRegister(ans, dr.REGISTER_X, dr.amNone);
@@ -113,14 +113,14 @@ pub fn negBinomialI(unused_but_mandatory_parameter: u16) linksection(dr.code_sec
 
     if (checkParamNegBinom(&val, &prob, &num)) {
         if (dr.realCompareLessEqual(&val, dr.const0()) or dr.realCompareGreaterEqual(&val, dr.const1())) {
-            dr.displayDomainErrorMessage(dr.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, dr.ERR_REGISTER_LINE, dr.REGISTER_X);
+            dr.displayDomainErrorMessage(dr.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, dr.ERR_REGISTER_LINE);
             dr.moreInfoOnError("In function fnNegBinomialI:", "the argument must be 0 < x < 1", null, null);
             dr.specialResultNaN();
             return;
         }
         qfNegBinomial(&val, &prob, &num, &ans, &dr.ctxtReal39);
         if (dr.realIsNaN(&ans)) {
-            dr.displayDomainErrorMessage(dr.ERROR_NO_ROOT_FOUND, dr.ERR_REGISTER_LINE, dr.REGISTER_X);
+            dr.displayDomainErrorMessage(dr.ERROR_NO_ROOT_FOUND, dr.ERR_REGISTER_LINE);
             dr.moreInfoOnError("In function fnNegBinomialI:", "WP34S_Qf_Binomial did not converge", null, null);
             dr.specialResultNaN();
             return;

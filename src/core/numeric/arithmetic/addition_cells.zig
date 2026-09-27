@@ -114,7 +114,7 @@ fn const34_86400() *align(1) const runtime.real34_t {
 /// typeError otherwise; message reporting follows the established owner
 /// convention, moreInfoOnError is a no-op away from the PC simulator).
 pub export fn addError() callconv(.c) void {
-    runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+    runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE);
 
     var message_buffer: [96]u8 = undefined;
     var second_buffer: [96]u8 = undefined;
@@ -377,7 +377,7 @@ fn addString(string_to_append: [*c]const u8) void {
     const append_glyphs = runtime.stringGlyphLength(string_to_append);
 
     if (y_glyphs + append_glyphs > MAX_NUMBER_OF_GLYPHS_IN_STRING) {
-        runtime.displayCalcErrorMessage(ERROR_STRING_WOULD_BE_TOO_LONG, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(ERROR_STRING_WOULD_BE_TOO_LONG, runtime.ERR_REGISTER_LINE);
         // Both lengths are measured again here, after the error is raised, as
         // the C sprintf arguments are: every addStri* caller hands this
         // function the shared tmpString, which the error path may have
@@ -546,7 +546,7 @@ pub export fn addRemaRema() callconv(.c) void {
     if (x.matrixElements != null) {
         runtime.convertReal34MatrixToReal34MatrixRegister(&x, runtime.REGISTER_X);
     } else {
-        runtime.displayCalcErrorMessage(runtime.ERROR_MATRIX_MISMATCH, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_MATRIX_MISMATCH, runtime.ERR_REGISTER_LINE);
         var message_buffer: [128]u8 = undefined;
         const message = bufPrintZ(
             &message_buffer,
@@ -733,7 +733,7 @@ pub export fn addCxmaCxma() callconv(.c) void {
     if (x.matrixElements != null) {
         runtime.convertComplex34MatrixToComplex34MatrixRegister(&x, runtime.REGISTER_X);
     } else {
-        runtime.displayCalcErrorMessage(runtime.ERROR_MATRIX_MISMATCH, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_MATRIX_MISMATCH, runtime.ERR_REGISTER_LINE);
         var message_buffer: [128]u8 = undefined;
         const message = bufPrintZ(
             &message_buffer,

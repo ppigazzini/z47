@@ -456,7 +456,7 @@ void _fnExportProgram(ioFilePath_t path) {
         #if !defined(DMCP_BUILD)
           printf("Cannot export program!\n");
         #endif
-        displayCalcErrorMessage(ERROR_CANNOT_WRITE_FILE, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_CANNOT_WRITE_FILE, ERR_REGISTER_LINE);
         return;
       }
     }
@@ -519,7 +519,7 @@ static void _selectProgram(uint16_t label) {
     }
     // Invalid label
     else {
-      displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "label %" PRIu16 " is not a global label", label);
         moreInfoOnError("In function fnSaveProgram/fnExportProgram (_selectProgram):", errorMessage, NULL, NULL);
@@ -560,14 +560,16 @@ static void _restoreEditorPosition(const editorPosition_t *position) {
 void _exportProgram(uint16_t label, ioFilePath_t path) {
     editorPosition_t savedPosition;
     if(calcMode == CM_PEM) { // _selectProgram below reaches fnGoto, which inserts a GTO step rather than moving while the editor is open
-      displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE);
       return;
     }
     _saveEditorPosition(&savedPosition);
 
     #if defined(DMCP_BUILD)
       // Don't pass through if the power is insufficient
-      if(power_check_screen()) {
+      bool_t lowPower = power_check_screen();
+      screenUpdatingMode = SCRUPD_AUTO;
+      if(lowPower) {
         return;
       }
     #endif // DMCP_BUILD
@@ -577,7 +579,7 @@ void _exportProgram(uint16_t label, ioFilePath_t path) {
     // A program holding a 0 can be neither stored nor run; VALID puts the numbers in. The developer bulk export writes whatever is in memory and is
     // not the user exporting one program, so it is not refused.
     if(path != ioPathExportRTFAllPrograms && structProgramHasUnnumbered()) {
-      displayCalcErrorMessage(ERROR_STRUCTURE_NOT_NUMBERED, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_STRUCTURE_NOT_NUMBERED, ERR_REGISTER_LINE);
       _restoreEditorPosition(&savedPosition);
       return;
     }
@@ -605,7 +607,7 @@ void fnExportProgram(uint16_t label) {
 
 void _saveProgram(uint16_t label, ioFilePath_t path) {
     if(calcMode == CM_PEM) { // as in _exportProgram above: _selectProgram reaches fnGoto, which inserts a GTO step while the editor is open
-      displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE);
       return;
     }
     uint32_t programVersion = PROGRAM_VERSION;
@@ -618,7 +620,9 @@ void _saveProgram(uint16_t label, ioFilePath_t path) {
 
     #if defined(DMCP_BUILD)
       // Don't pass through if the power is insufficient
-      if(power_check_screen()) {
+      bool_t lowPower = power_check_screen();
+      screenUpdatingMode = SCRUPD_AUTO;
+      if(lowPower) {
         return;
       }
     #endif // DMCP_BUILD
@@ -631,7 +635,7 @@ void _saveProgram(uint16_t label, ioFilePath_t path) {
     // A program holding a 0 can be neither stored nor run; VALID puts the numbers in. The developer bulk export writes whatever is in memory and is
     // not the user storing one program, so it is not refused.
     if(path != ioPathSaveAllPrograms && structProgramHasUnnumbered()) {
-      displayCalcErrorMessage(ERROR_STRUCTURE_NOT_NUMBERED, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_STRUCTURE_NOT_NUMBERED, ERR_REGISTER_LINE);
       _restoreEditorPosition(&savedPosition);
       return;
     }
@@ -647,7 +651,7 @@ void _saveProgram(uint16_t label, ioFilePath_t path) {
         #if !defined(DMCP_BUILD)
           printf("Cannot save program!\n");
         #endif
-        displayCalcErrorMessage(ERROR_CANNOT_WRITE_FILE, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_CANNOT_WRITE_FILE, ERR_REGISTER_LINE);
         _restoreEditorPosition(&savedPosition);
         return;
       }
@@ -690,7 +694,7 @@ void fnSaveProgram(uint16_t label) {
 
 void fnSaveAllPrograms(uint16_t unusedButMandatoryParameter) {
   if(calcMode == CM_PEM) { // it selects each program itself, so it needs the same refusal the two above make
-    displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE);
     return;
   }
   #if defined(PC_BUILD)
@@ -745,7 +749,7 @@ void fnLoadProgram(uint16_t unusedButMandatoryParameter) {
         return;
       }
       else {
-        displayCalcErrorMessage(ERROR_CANNOT_READ_FILE, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_CANNOT_READ_FILE, ERR_REGISTER_LINE);
         return;
       }
     }
@@ -799,13 +803,13 @@ void fnLoadProgram(uint16_t unusedButMandatoryParameter) {
     // Refuse what cannot fit, before reserving anything. The second bound is the program area's own accounting: freeProgramBytes is a uint16_t,
     // and _addSpaceAfterPrograms() takes a uint16_t size, so a larger claim would reserve only its low 16 bits while the read loop writes them all.
     if((uint64_t)pgmSizeInByte + 2 > (uint64_t)freeProgramBytes + getFreeRamMemory() || (uint64_t)pgmSizeInByte + 2 > UINT16_MAX) {
-      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
       ioFileClose();
       return;
     }
     // First pass: screen the file before loading anything, so a refusal needs no rollback.
     if(_programFileRefused(pgmSizeInByte)) {
-      displayCalcErrorMessage(ERROR_INVALID_CORRUPTED_DATA, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_INVALID_CORRUPTED_DATA, ERR_REGISTER_LINE);
       ioFileClose();
       return;
     }

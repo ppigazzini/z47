@@ -42,13 +42,10 @@ bool_t lcd_buffer_pixel_on(uint32_t x, uint32_t y) {
   if(x >= SCREEN_WIDTH || y >= SCREEN_HEIGHT) {
     return false;
   }
-  const uint8_t *line_buf = lcd_buffer + 52 * y;
-  const uint32_t bitIndex = SCREEN_WIDTH - 1 - x;
-  const uint32_t byte_i = bitIndex >> 3;
-  const uint32_t bit_j = bitIndex & 7u;
-  return (line_buf[2 + byte_i] >> bit_j) & 1u;
-}
+  return screenData[(y + 1) * screenStride - SCREEN_WIDTH + x] == ON_PIXEL;   // the surface LCD_write_line writes, so a capture takes an overlay too, not
+}                                                                             //   only what the composition left in lcd_buffer
 
+static bool_t drawQueued = false;               // a queued draw waits on the frame clock, so it is still unpainted when the event queue is empty
 
 void LCD_write_line(uint8_t *line_buf) {
   if(line_buf[1] >= SCREEN_HEIGHT) {
@@ -64,12 +61,13 @@ void LCD_write_line(uint8_t *line_buf) {
   for(i=0; i<50; i++) {
     tmpChar = line_buf[i+2];
     for(j=0; j<8; j++) {
-      *(lineStart - i * 8 - j) = (tmpChar>>j&1u) ? ON_PIXEL : OFF_PIXEL;
+      *(lineStart - i * 8 - j) = (tmpChar>>j&1u) ? OFF_PIXEL : ON_PIXEL;
     }
   }
   line_buf[0] = 0u; // Mark updated
   if(!headlessMode && screen != NULL) {
     gtk_widget_queue_draw_area(screen, 0, SCREEN_HEIGHT - row - 1, 400, 1);
+    drawQueued = true;
   }
 }
 
@@ -88,6 +86,7 @@ void lcd_clear_buf(void) {
 
 void lcd_refresh(void) {
   bool_t changed = false;
+  drawQueued = false;
   for(uint8_t row = 0; row < SCREEN_HEIGHT; row++) {
     if(lcd_buffer[52 * row]) { // check dirty flag byte for line
       changed = true;
@@ -151,7 +150,7 @@ void bitblt24(uint32_t x, uint32_t dx, uint32_t y, uint32_t val, int blt_op, int
   uint8_t *j = &lcd_buffer[y * (LCD_LINE_SIZE + 2) + byte_i + 2];
   switch(blt_op) {
     case BLT_OR:   for(uint32_t i = 0; i < bytes_needed; i++) {
-                     j[i] = (j[i] & ~fillbytes[i]) | srcbytes[i];
+                     j[i] = (j[i] | fillbytes[i]) & ~srcbytes[i];
                    }
                    break;
 
@@ -161,7 +160,7 @@ void bitblt24(uint32_t x, uint32_t dx, uint32_t y, uint32_t val, int blt_op, int
                    break;
 
     case BLT_ANDN: for(uint32_t i = 0; i < bytes_needed; i++) {
-                     j[i] = (j[i] | fillbytes[i]) & ~srcbytes[i];
+                     j[i] = (j[i] & ~fillbytes[i]) | srcbytes[i];
                    }
                    break;
 
@@ -222,14 +221,10 @@ void _lcdRefresh(void) {              //called by force_refresh() and _printHalf
             print_caller(NULL);
           #endif //ANALYSE_REFRESH
   lcd_refresh();
-  // _lcdBandRefreshHelper(0, SCREEN_HEIGHT);
 }
-void _lcdBandRefresh(uint32_t y, uint32_t dy) {
-           #if defined(ANALYSE_REFRESH)
-            print_caller("y=%u, dy=%u\n", y, dy);
-           #endif //ANALYSE_REFRESH
-  lcd_refresh();
-  // _lcdBandRefreshHelper(y, dy);
+
+static gboolean pumpGuardTick(gpointer data) {
+  return TRUE;                          // kept alive so the id stays valid to remove
 }
 
 void _lcdSBRefresh(void) {
@@ -237,7 +232,13 @@ void _lcdSBRefresh(void) {
             print_caller(NULL);
           #endif //ANALYSE_REFRESH
   lcd_refresh();
-  // _lcdBandRefreshHelper(0, 20);
+  // gtk_main_level() is 0 in the batch runs (--writeexportall, --mockup, --dumpmenus, --exec, --script), which paint before gtk_main() and never release a blocked pump
+  if(drawQueued && gtk_main_level() > 0 && !headlessMode && !ui_is_active && screen != NULL && gtk_widget_get_mapped(screen)) {
+    guint pumpGuard = g_timeout_add_full(G_PRIORITY_LOW, 20, pumpGuardTick, NULL, NULL);   // 20 ms cap on the pump; below GDK_PRIORITY_REDRAW, so a ready frame paints first
+    gtk_main_iteration();
+    g_source_remove(pumpGuard);
+    refresh_gui();
+  }
 }
 
 

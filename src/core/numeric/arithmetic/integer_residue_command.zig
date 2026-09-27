@@ -99,11 +99,11 @@ fn gcdInt() callconv(.c) void {
     }
 
     if (frac_x) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
         return;
     }
     if (frac_y) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_Y);
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
         return;
     }
 
@@ -118,7 +118,7 @@ fn gcdInt() callconv(.c) void {
     // result, so X still holds the operand and gcdInt writes it back: the
     // register is reallocated as a long integer even on the refused pair.
     if (y[0]._mp_size == 0 and x[0]._mp_size == 0) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
         runtime.moreInfoOnError("In function _longIntegerGcd:", "(0, 0) is not in the function domain.", null, null);
     } else {
         runtime.__gmpz_gcd(&x[0], &y[0], &x[0]);
@@ -148,11 +148,11 @@ fn lcmInt() callconv(.c) void {
     }
 
     if (frac_x) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
         return;
     }
     if (frac_y) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_Y);
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
         return;
     }
 
@@ -177,7 +177,7 @@ fn modReal() callconv(.c) void {
     }
 
     if (runtime.realIsZero(&x_value)) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
         runtime.moreInfoOnError("In function modReal:", "cannot IDIVR a real34 by 0", null, null);
         return;
     }
@@ -200,7 +200,7 @@ fn rmdReal() callconv(.c) void {
     }
 
     if (runtime.realIsZero(&x_value)) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
         runtime.moreInfoOnError("In function rmdReal:", "cannot IDIVR a real34 by 0", null, null);
         return;
     }
@@ -239,7 +239,7 @@ fn modLonI() callconv(.c) void {
     }
 
     if (x[0]._mp_size == 0) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
         runtime.moreInfoOnError("In function modLonI:", "cannot IDIVR a long integer by 0", null, null);
         return;
     }
@@ -273,7 +273,7 @@ fn modShoI() callconv(.c) void {
     }
 
     if (x[0]._mp_size == 0) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
         runtime.moreInfoOnError("In function modShoI:", "cannot IDIVR a short integer by 0", null, null);
         return;
     }
@@ -307,7 +307,7 @@ fn rmdLonI() callconv(.c) void {
     }
 
     if (x[0]._mp_size == 0) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
         runtime.moreInfoOnError("In function rmdLonI:", "cannot IDIVR a long integer by 0", null, null);
         return;
     }
@@ -339,7 +339,7 @@ fn rmdShoI() callconv(.c) void {
     }
 
     if (x[0]._mp_size == 0) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
         runtime.moreInfoOnError("In function rmdShoI:", "cannot IDIVR a short integer by 0", null, null);
         return;
     }

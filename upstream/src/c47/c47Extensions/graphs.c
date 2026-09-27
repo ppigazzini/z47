@@ -1198,7 +1198,7 @@ void graph_plotmem(void) {
 
         if(realCompareGreaterThan(x_min, x_max) || realCompareGreaterThan(y_min, y_max)) { //the +-1E38 seeds are untouched: not one finite sample in the range, nothing to draw
           calcMode = CM_NORMAL;
-          displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+          displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
           #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             sprintf(errorMessage, "no plottable sample in the plot range");
             moreInfoOnError("In function graph_plotmem:", errorMessage, NULL, NULL);
@@ -1545,7 +1545,7 @@ void graph_plotmem(void) {
       else {
         if(plotStatMx[0] == 'S') {   // "no statistical data" only applies to a stat plot. A draw matrix ('D') with <2 points is a function plot still being built (e.g. a mistimed refresh mid-build) - not an error, draw nothing.
           calcMode = CM_NORMAL;
-          displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X);
+          displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE);
           #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             sprintf(errorMessage, "There is no statistical data available!");
             moreInfoOnError("In function graph_plotmem:", errorMessage, NULL, NULL);

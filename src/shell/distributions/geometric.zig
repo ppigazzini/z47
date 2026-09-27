@@ -39,12 +39,12 @@ fn checkParamGeometric(x: *real_t, i: *real_t) linksection(dr.code_section) bool
     }
 
     if (dr.realIsNegative(x)) {
-        dr.displayDomainErrorMessage(dr.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, dr.ERR_REGISTER_LINE, dr.REGISTER_X);
+        dr.displayDomainErrorMessage(dr.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, dr.ERR_REGISTER_LINE);
         dr.moreInfoOnError("In function checkParamGeometric:", "cannot calculate for x < 0", null, null);
         dr.specialResultNaN();
         return false;
     } else if (dr.realIsZero(i) or dr.realIsNegative(i) or dr.realGreaterThan(i, dr.const1())) {
-        dr.displayDomainErrorMessage(dr.ERROR_INVALID_DISTRIBUTION_PARAM, dr.ERR_REGISTER_LINE, dr.REGISTER_X);
+        dr.displayDomainErrorMessage(dr.ERROR_INVALID_DISTRIBUTION_PARAM, dr.ERR_REGISTER_LINE);
         dr.moreInfoOnError("In function checkParamGeometric:", "the parameter must be 0 < p \xa2\x64 1", null, null);
         dr.specialResultNaN();
         return false;
@@ -96,7 +96,7 @@ pub fn geometricI(unused_but_mandatory_parameter: u16) linksection(dr.code_secti
 
     if (checkParamGeometric(&val, &prob)) {
         if (dr.realCompareLessEqual(&val, dr.const0()) or dr.realCompareGreaterEqual(&val, dr.const1())) {
-            dr.displayDomainErrorMessage(dr.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, dr.ERR_REGISTER_LINE, dr.REGISTER_X);
+            dr.displayDomainErrorMessage(dr.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, dr.ERR_REGISTER_LINE);
             dr.moreInfoOnError("In function fnGeometricI:", "the argument must be 0 < x < 1", null, null);
             dr.specialResultNaN();
             return;

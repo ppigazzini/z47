@@ -289,7 +289,7 @@ fn cpyxLonI(combOrPerm: u16) void {
     defer longIntegerFree(&y);
 
     if (longIntegerIsNegative(&x) or longIntegerIsNegative(&y) or longIntegerCompare(&y, &x) < 0) {
-        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
         extraInfoMessage("cpyxLonILonI:", "cannot calculate Cyx/Pyx, conditions: x>=0, y>=0, and x<=y.");
     } else {
         var t: mpz_struct = undefined;
@@ -311,7 +311,7 @@ fn cpyxReal(combOrPerm: u16) void {
     }
 
     if (realIsNegative(&x) or realIsNegative(&y) or math_comparison_reals.realCompareGreaterThan(&x, &y)) {
-        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
         extraInfoMessage("cpyxRealReal:", "cannot calculate Cyx/Pyx, conditions: x>=0, y>=0, and x<=y.");
     } else {
         var t: real_t = undefined;
@@ -358,7 +358,7 @@ fn cpyxShoI(combOrPerm: u16) void {
     defer longIntegerFree(&y);
 
     if (longIntegerIsNegative(&x) or longIntegerIsNegative(&y) or longIntegerCompare(&y, &x) < 0) {
-        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
         extraInfoMessage("cpyxShoI:", "cannot calculate Cyx/Pyx, y and x must be greater or equal than zero.");
     } else {
         var t: mpz_struct = undefined;

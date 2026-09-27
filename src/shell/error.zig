@@ -423,7 +423,7 @@ comptime {
 // fnRaiseError / fnErrorMessage
 // ---------------------------------------------------------------------------
 pub export fn fnRaiseError(errorCode: u16) callconv(.c) void {
-    displayCalcErrorMessage(@truncate(errorCode), ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(@truncate(errorCode), ERR_REGISTER_LINE);
 }
 
 pub export fn fnErrorMessage(unusedButMandatoryParameter: u16) callconv(.c) void {
@@ -451,9 +451,9 @@ pub export fn fnErrorMessage(unusedButMandatoryParameter: u16) callconv(.c) void
     }
 
     if (real34CompareLessEqual(const34_1, &r) and real34CompareLessThan(&r, &maxErr)) {
-        displayCalcErrorMessage(@truncate(real34ToUInt32(&r)), ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(@truncate(real34ToUInt32(&r)), ERR_REGISTER_LINE);
     } else {
-        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "the argument is not less than {d} or is negative!", .{@as(c_uint, NUMBER_OF_ERROR_CODES)});
             moreInfoOnErr("In function fnErrorMessage:", errorMessage);
@@ -464,7 +464,7 @@ pub export fn fnErrorMessage(unusedButMandatoryParameter: u16) callconv(.c) void
 // fnErrorMessage's X-register refusal: the diagnostic names the offending data
 // type, so it is composed per call rather than shared as a literal.
 fn badDataType() void {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     if (comptime extra_info) {
         abi.fmtBufZ(errorMessage[0..512], "data type {s} cannot be used for this function!", .{std.mem.span(frontier_debug.getRegisterDataTypeName(REGISTER_X, false, false))});
         moreInfoOnErr("In function fnErrorMessage:", errorMessage);
@@ -489,7 +489,7 @@ inline fn moreInfoOnErr(where: [*:0]const u8, hint: [*:0]const u8) void {
 // as the host boundary's reportBugError hook. The engine reaches the entry point
 // intra-core; the shell owners that call it (displayDomainErrorMessage below)
 // resolve it through this extern re-declaration.
-pub extern fn displayCalcErrorMessage(errorCode: u8, errMessageRegisterLine: calcRegister_t, disUsedCanBeRemoved: calcRegister_t) callconv(.c) void;
+pub extern fn displayCalcErrorMessage(errorCode: u8, errMessageRegisterLine: calcRegister_t) callconv(.c) void;
 
 // printErrorTrace: the OPTION_IR_PRINTING tail of displayCalcErrorMessage.
 //
@@ -549,12 +549,12 @@ pub export fn reportBugError(errorCode: u8, errMessageRegisterLine: calcRegister
 // ---------------------------------------------------------------------------
 // displayDomainErrorMessage
 // ---------------------------------------------------------------------------
-pub export fn displayDomainErrorMessage(errorCode: u8, errMessageRegisterLine: calcRegister_t, disUsedCanBeRemoved: calcRegister_t) callconv(.c) void {
+pub export fn displayDomainErrorMessage(errorCode: u8, errMessageRegisterLine: calcRegister_t) callconv(.c) void {
     const running: bool = programRunStop == PGM_RUNNING;
     const spcres: bool = getSystemFlag(FLAG_SPCRES);
 
     if (!spcres or !running) {
-        displayCalcErrorMessage(errorCode, errMessageRegisterLine, disUsedCanBeRemoved);
+        displayCalcErrorMessage(errorCode, errMessageRegisterLine);
     }
     if (spcres) {
         frontier_register_value_conversions.convertRealToResultRegister(const_NaN, REGISTER_X, amNone);
@@ -693,5 +693,5 @@ pub export fn displayBugScreen(msg: [*:0]const u8) callconv(.c) void {
 // typeError (EXTRA_INFO_ON_CALC_ERROR != 1 in C; always provided here — see header).
 // ---------------------------------------------------------------------------
 pub export fn typeError() callconv(.c) void {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
 }

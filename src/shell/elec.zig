@@ -176,7 +176,7 @@ const Error = error{ArgExceedsDomain};
 fn reportError(e: Error) void {
     switch (e) {
         error.ArgExceedsDomain => {
-            frontier_error.displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
             if (comptime extra_info) {
                 moreInfoOnError("In elec transform:", "complex result and CPXRES is not set", null, null);
             }

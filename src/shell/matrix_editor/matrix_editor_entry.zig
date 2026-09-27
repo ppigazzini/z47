@@ -83,7 +83,7 @@ pub fn reloadOld() void {
 /// one. `reason` is the text that tells them apart on the console; the hint also
 /// carries the data type that was refused.
 fn reportInvalidDataType(data_type: u32, reason: [*:0]const u8) void {
-    frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     if (comptime extra_info) {
         abi.fmtBufZ(errorMessage[0..ERROR_MESSAGE_LENGTH], "DataType {d}", .{data_type});
         frontier_error.moreInfoOnErrorImpl("In function fnEditMatrix:", errorMessage, reason, "");

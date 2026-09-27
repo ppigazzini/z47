@@ -134,7 +134,7 @@ extern fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const
 extern fn shortIntegerToDisplayString(regist: stack_runtime.calcRegister_t, display_string: [*]u8, determine_font: bool, base_override: u8, max_width: i16) void;
 
 fn indirectError(error_code: u8) i16 {
-    stack_runtime.displayCalcErrorMessage(error_code, stack_runtime.ERR_REGISTER_LINE, stack_runtime.REGISTER_X);
+    stack_runtime.displayCalcErrorMessage(error_code, stack_runtime.ERR_REGISTER_LINE);
     return FAILED_INDIRECTION;
 }
 

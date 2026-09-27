@@ -2,7 +2,7 @@ const runtime = @import("command_wrappers/runtime.zig");
 
 fn typeErrorX() void {
     runtime.setTemporaryInformation(false);
-    runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_T);
+    runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE);
 }
 
 fn getConvergenceInput(

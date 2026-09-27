@@ -21,7 +21,7 @@ fn checkParamT(x: *real_t, i: *real_t) linksection(dr.code_section) bool {
         return false;
     }
     if (dr.realIsZero(i) or dr.realIsNegative(i)) {
-        dr.displayDomainErrorMessage(dr.ERROR_INVALID_DISTRIBUTION_PARAM, dr.ERR_REGISTER_LINE, dr.REGISTER_X);
+        dr.displayDomainErrorMessage(dr.ERROR_INVALID_DISTRIBUTION_PARAM, dr.ERR_REGISTER_LINE);
         dr.moreInfoOnError("In function checkParamT:", "cannot calculate for \x83\xbd \xa2\x64 0", null, null);
         dr.specialResultNaN();
         return false;
@@ -69,14 +69,14 @@ pub fn tI(unused_but_mandatory_parameter: u16) linksection(dr.code_section) void
     var dof: real_t = undefined;
     if (checkParamT(&val, &dof)) {
         if (dr.realCompareLessEqual(&val, dr.const0()) or dr.realCompareGreaterEqual(&val, dr.const1())) {
-            dr.displayDomainErrorMessage(dr.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, dr.ERR_REGISTER_LINE, dr.REGISTER_X);
+            dr.displayDomainErrorMessage(dr.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, dr.ERR_REGISTER_LINE);
             dr.moreInfoOnError("In function fnT_I:", "the argument must be 0 < x < 1", null, null);
             dr.specialResultNaN();
             return;
         }
         wp34sQfT(&val, &dof, &ans, &dr.ctxtReal39);
         if (dr.realIsNaN(&ans)) {
-            dr.displayDomainErrorMessage(dr.ERROR_NO_ROOT_FOUND, dr.ERR_REGISTER_LINE, dr.REGISTER_X);
+            dr.displayDomainErrorMessage(dr.ERROR_NO_ROOT_FOUND, dr.ERR_REGISTER_LINE);
             dr.moreInfoOnError("In function fnT_I:", "WP34S_Qf_T did not converge", null, null);
         } else {
             dr.convertRealToResultRegister(&ans, dr.REGISTER_X, dr.amNone);

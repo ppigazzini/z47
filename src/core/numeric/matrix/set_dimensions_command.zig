@@ -30,7 +30,7 @@ fn setMatrixDimensions(regist: u16, dim_mode: u16) void {
     } else if (runtime.redimMatrixRegister(@intCast(regist), @intCast(y), @intCast(x), dim_mode)) {
         // Redimensioned successfully.
     } else {
-        runtime.displayCalcErrorMessage(runtime.ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, runtime.ERR_REGISTER_LINE);
         if (runtime.extra_info_on_calc_error) {
             var buffer: [80]u8 = undefined;
             const message = bufPrintZ(&buffer, "Not enough memory for a {d}" ++ std_cross ++ "{d} matrix", .{ y, x }) catch "Not enough memory for a matrix";

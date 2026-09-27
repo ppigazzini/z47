@@ -798,7 +798,7 @@ static void executeFunction(const char *data, int16_t item_);
         return false;
       }
       default: {
-        displayCalcErrorMessage(ERROR_CANNOT_ASSIGN_HERE, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        displayCalcErrorMessage(ERROR_CANNOT_ASSIGN_HERE, ERR_REGISTER_LINE);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           moreInfoOnError("In function _assignToMenu:", "the menu", indexOfItems[-currentMenu()].itemCatalogName, "is write-protected.");
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -1163,8 +1163,19 @@ endReturnTrue:
               uint16_t nameLength = stringByteLength(itmLabel);
               xcopy(aimBuffer, itmLabel, nameLength + 1);
               tam.alpha = true;
-              addStepInProgram(tamOperation());
-              leaveTamModeIfEnabled();
+              int16_t value = findNamedVariable(aimBuffer);
+              if((tam.function == ITM_SET_42ALPHA) && (FIRST_RESERVED_VARIABLE <= value && value <= LAST_RESERVED_VARIABLE)) {
+                displayCalcErrorMessage(ERROR_RESERVED_VARIABLE_NAME, ERR_REGISTER_LINE);
+                sprintf(errorMessage, "%s", aimBuffer);
+                #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+                  moreInfoOnError("In function executeFunction:", errorMessage, " is a reserved variable.", NULL);
+                #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+                aimBuffer[0] = 0;
+              }
+              else {
+                addStepInProgram(tamOperation());
+                leaveTamModeIfEnabled();
+              }
             }
             else {
                     #if defined(VERBOSEKEYS)
@@ -1343,7 +1354,7 @@ endReturnTrue:
                         item = regist - FIRST_LABEL + ASSIGN_LABELS;
                       }
                       else {
-                        displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+                        displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE);
                         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
                           sprintf(errorMessage, "string '%s' is not a named label", varCatalogItem);
                           moreInfoOnError("In function executeFunction:", errorMessage, NULL, NULL);
@@ -1359,7 +1370,7 @@ endReturnTrue:
                         item = regist - FIRST_NAMED_VARIABLE + ASSIGN_NAMED_VARIABLES;
                       }
                       else {
-                        displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+                        displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE);
                         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
                           sprintf(errorMessage, "string '%s' is not a named variable", varCatalogItem);
                           moreInfoOnError("In function executeFunction:", errorMessage, NULL, NULL);
@@ -2234,7 +2245,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
               }
             }
             else {
-              displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
+              displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE);
               #if (EXTRA_INFO_ON_CALC_ERROR == 1)
                 sprintf(errorMessage, "string '%s' is not a named variable", funcParam);
                 moreInfoOnError("In function btnReleased:", errorMessage, NULL, NULL);
@@ -2258,7 +2269,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
               }
             }
             else {
-              displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+              displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE);
               #if (EXTRA_INFO_ON_CALC_ERROR == 1)
                 sprintf(errorMessage, "string '%s' is not a named label", funcParam);
                 moreInfoOnError("In function btnReleased:", errorMessage, NULL, NULL);
@@ -2293,6 +2304,9 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
                     #endif // PC_BUILD &&MONITOR_CLRSCR
           }
         }
+      }
+      else {
+        hideFunctionName();                       // the program step SST or BST displays while the key is down
       }
 
       if(programRunStop == PGM_SINGLE_STEP) {     // Key pressed was SST
@@ -3209,7 +3223,7 @@ RELEASE_END:
                         item = regist - FIRST_LABEL + ASSIGN_LABELS;
                       }
                       else {
-                        displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+                        displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE);
                         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
                           sprintf(errorMessage, "string '%s' is not a named label", label);
                           moreInfoOnError("In function processKeyAction:", errorMessage, NULL, NULL);
@@ -3224,7 +3238,7 @@ RELEASE_END:
                         item = regist - FIRST_NAMED_VARIABLE + ASSIGN_NAMED_VARIABLES;
                       }
                       else {
-                        displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+                        displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE);
                         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
                           sprintf(errorMessage, "string '%s' is not a named variable", var);
                           moreInfoOnError("In function processKeyAction:", errorMessage, NULL, NULL);
@@ -3433,10 +3447,12 @@ RELEASE_END:
 
 
 void fnKeyEnter(uint16_t unusedButMandatoryParameter) {
-  doRefreshSoftMenu = true;     //dr
     uint8_t effectiveCalcMode = calcMode;
     if(GRAPHMODE && programRunStop == PGM_RUNNING) {   // a program running under CM_GRAPH or CM_PLOT_STAT (e.g. plot(int) integrand, programmed HPLOT) needs normal ENTER dup, not the empty interactive-graph case
       effectiveCalcMode = CM_NORMAL;
+    }
+    if(effectiveCalcMode != CM_NORMAL) {     // in CM_NORMAL the softmenu isn't touched
+      doRefreshSoftMenu = true;
     }
     switch(effectiveCalcMode) {
       case CM_NORMAL: {
@@ -3626,7 +3642,7 @@ undo_disabled:
     return;
 
 ram_full:
-    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
                     #if defined(DEBUGUNDO)
                       printf(">>> Undo from fnKeyEnterD\n");
                     #endif // DEBUGUNDO
@@ -3672,7 +3688,7 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
                     #endif
 
     if(getSystemFlag(FLAG_INTING) || getSystemFlag(FLAG_SOLVING)) {
-      displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE);
       return; // Done elsewhere
     }
 
@@ -4169,10 +4185,10 @@ void fnKeyCC(uint16_t complex_Type) {    //JM Using 'unusedButMandatoryParameter
       }
       else {
         if( (!polarOk && getSystemFlag(FLAG_POLAR)) || (!rectOk && !getSystemFlag(FLAG_POLAR))) {
-          displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_POLAR_RECT, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
+          displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_POLAR_RECT, ERR_REGISTER_LINE); // Invalid input data type for this operation
         }
         else {
-          displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
+          displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE); // Invalid input data type for this operation
         }
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         if(!polarOk && getSystemFlag(FLAG_POLAR)) {

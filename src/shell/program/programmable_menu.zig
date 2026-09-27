@@ -207,7 +207,7 @@ fn _indirectVariable(stringAddress: [*c]u8) u16 {
             return @bitCast(realParam);
         }
     } else {
-        frontier_error.displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE);
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "string '{s}' is not a named variable", .{std.mem.span(tmpStringLabelOrVariableName)});
             moreInfoOnError("In function _indirectVariable:", errorMessage);
@@ -232,7 +232,7 @@ fn _get2ndParamOfKey(paramAddress_arg: [*c]u8) u16 {
         if (label != @as(calcRegister_t, @bitCast(INVALID_VARIABLE))) {
             return @bitCast(label);
         } else {
-            frontier_error.displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE);
             if (comptime extra_info) {
                 abi.fmtBufZ(errorMessage[0..512], "string '{s}' is not a named label", .{std.mem.span(tmpStringLabelOrVariableName)});
                 moreInfoOnError("In function _get2ndParamOfKey:", errorMessage);
@@ -258,7 +258,7 @@ pub export fn fnKeyGtoXeq(keyNum: u16) callconv(.c) void {
     var label: u16 = undefined;
 
     if (secondParam == null) { // findKey2ndParam returns NULL on a malformed/.END. step
-        frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
         return;
     }
 

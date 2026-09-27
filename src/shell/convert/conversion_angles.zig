@@ -132,7 +132,7 @@ inline fn real34IsNegative(v: *const real34_t) bool {
 // Both default arms report the same way: the error on the offending register,
 // then the hint plus a third argument naming the register's data type.
 fn cannotConvertError(reg: calcRegister_t, where: [*:0]const u8, hint: [*:0]const u8) void {
-    frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, reg);
+    frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     if (comptime extra_info) {
         abi.fmtBufZ(errorMessage[0..ERROR_MESSAGE_LENGTH], "{s} cannot be converted to an angle!", .{std.mem.span(frontier_debug.getRegisterDataTypeName(reg, true, false))});
         moreInfoOnError(where, hint, errorMessage, null);

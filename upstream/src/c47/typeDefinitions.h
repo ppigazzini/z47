@@ -498,6 +498,10 @@ typedef struct {
 } reservedVariableHeader_t;
 
 
+typedef struct {
+  char letter[2];
+} registerLetter_t;
+
 /**
  * \struct formulaHeader_t
  * Header for EQN formulae.

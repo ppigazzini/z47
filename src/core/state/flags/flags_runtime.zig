@@ -171,7 +171,7 @@ pub extern fn calcModeAim(unusedButMandatoryParameter: u16) void;
 pub extern fn deleteEquation(equation: u16) void;
 pub extern fn popSoftmenu() void;
 pub extern fn setConfirmationMode(handler: ConfirmationHandler) void;
-pub extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: calcRegister_t, err_register_line: calcRegister_t) void;
+pub extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: calcRegister_t) void;
 
 // The two global message buffers the EXTRA_INFO_ON_CALC_ERROR diagnostics format
 // into, and the C formatter one of them still needs: the bug-screen sentence
@@ -208,7 +208,7 @@ pub fn handleWriteProtectedFlag() void {
     if (programRunStop == PGM_WAITING) {
         programRunStop = PGM_STOPPED;
     }
-    displayCalcErrorMessage(ERROR_WRITE_PROTECTED_SYSTEM_FLAG, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_WRITE_PROTECTED_SYSTEM_FLAG, ERR_REGISTER_LINE);
 }
 
 pub fn enterAlphaMode() void {

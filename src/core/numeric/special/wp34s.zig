@@ -317,7 +317,7 @@ pub const checkHalfSec = abi.host.checkHalfSec; // routed through the host-callb
 pub const exitKeyWaiting = abi.host.exitKeyWaiting;
 pub const progressHalfSecUpdate_Integer = abi.host.progressHalfSecUpdate_Integer; // routed through the host-callback boundary
 extern fn monitorExit(loop: *i32, str: [*:0]const u8) bool;
-pub extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: runtime.calcRegister_t, err_register_line: runtime.calcRegister_t) void;
+pub extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: runtime.calcRegister_t) void;
 
 pub const ERROR_SOLVER_ABORT: u8 = 60;
 pub const REGISTER_T: runtime.calcRegister_t = 103;
@@ -1150,7 +1150,7 @@ pub export fn WP34S_Mod(x: *align(1) const real_t, y: *align(1) const real_t, re
         if (small) |buf| {
             doMod(x, y, res, realContext, 2139, buf);
         } else {
-            runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE);
             realSetNaN(res);
         }
     } else {
@@ -1159,7 +1159,7 @@ pub export fn WP34S_Mod(x: *align(1) const real_t, y: *align(1) const real_t, re
         if (temp) |buf| {
             doMod(x, y, res, realContext, 6147, buf);
         } else {
-            runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE);
             realSetNaN(res);
         }
     }
@@ -1173,7 +1173,7 @@ pub export fn WP34S_BigMod(x: *align(1) const real_t, y: *align(1) const real_t,
         if (small) |buf| {
             doMod(x, y, res, realContext, 2139, buf);
         } else {
-            runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE);
             realSetNaN(res);
         }
     } else {
@@ -1182,7 +1182,7 @@ pub export fn WP34S_BigMod(x: *align(1) const real_t, y: *align(1) const real_t,
         if (temp) |buf| {
             doMod(x, y, res, realContext, 12321, buf);
         } else {
-            runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE);
             realSetNaN(res);
         }
     }

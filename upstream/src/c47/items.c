@@ -9,14 +9,14 @@ void itemToBeCoded(uint16_t unusedButMandatoryParameter) {
 
   void fnOldItemError(uint16_t unusedButMandatoryParameter) {
     #if !defined(GENERATE_CATALOGS) &&  !defined(GENERATE_TESTPGMS)
-      displayCalcErrorMessage(ERROR_OLD_ITEM_TO_REPLACE, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_OLD_ITEM_TO_REPLACE, ERR_REGISTER_LINE);
     #endif // !GENERATE_CATALOGS &&  !GENERATE_TESTPGMS
   }
 
 
 //#if !defined(GENERATE_CATALOGS)
 //void fnToBeCoded(void) {
-//  displayCalcErrorMessage(ERROR_FUNCTION_TO_BE_CODED, ERR_REGISTER_LINE, REGISTER_X);
+//  displayCalcErrorMessage(ERROR_FUNCTION_TO_BE_CODED, ERR_REGISTER_LINE);
 //  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
 //    moreInfoOnError("Function to be coded", "for that data type(s)!", NULL, NULL);
 //  #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -301,7 +301,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
 
       if(lastErrorCode == ERROR_RAM_FULL) {
         if((indexOfItems[func].status & US_STATUS) == US_ENABLED || calcMode == CM_CONFIRMATION) {
-          displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+          displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
           #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             moreInfoOnError("In function reallyRunFunction:", "there is not enough memory to save for undo!", NULL, NULL);
           #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -350,7 +350,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
       #endif // DMCP_BUILD
 */
 
-    screenUpdatingMode = SCRUPD_AUTO;
+    screenUpdatingMode &= SCRUPD_MANUAL_MENU;                 // the stack and the status bar are drawn again; the menu keeps what btnReleased set for it
     }
 
     else { //PGM_RUNNING MODE
@@ -412,6 +412,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
       stackWatermarkBeforeDispatch();
       indexOfItems[func].func(param);
       stackWatermarkAfterDispatch();
+      doRefreshSoftMenu = true;                                 // a function can move a marker or a value on any softkey, not only its own
 
       #if defined(OPTION_IR_PRINTING)
         printTraceTI();
@@ -433,7 +434,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
         temporaryInformation = TI_NOT_AVAILABLE;
       }
       else if(itemERRTIVal(func) ==  _TO_ITM_ERR) {
-        displayCalcErrorMessage(notAvail, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(notAvail, ERR_REGISTER_LINE);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           sprintf(errorMessage, "Not Available");
           moreInfoOnError("In function reallyRunFunction:", errorMessage, NULL, NULL);
@@ -671,7 +672,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
             }
           }
           else {
-            displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
+            displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE);
             #if (EXTRA_INFO_ON_CALC_ERROR == 1)
               sprintf(errorMessage, "string '%s' is not a named variable", varCatalogItem);
               moreInfoOnError("In function runFunction:", errorMessage, NULL, NULL);
@@ -693,7 +694,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
             }
           }
           else {
-            displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+            displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE);
             #if (EXTRA_INFO_ON_CALC_ERROR == 1)
               sprintf(errorMessage, "string '%s' is not a named label", varCatalogItem);
               moreInfoOnError("In function runFunction:", errorMessage, NULL, NULL);
@@ -716,7 +717,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
             temporaryInformation = TI_NOT_AVAILABLE;
           }
           else if(itemERRTIVal(func) ==  _TO_ITM_ERR) {
-            displayCalcErrorMessage(notAvail, ERR_REGISTER_LINE, REGISTER_X);
+            displayCalcErrorMessage(notAvail, ERR_REGISTER_LINE);
             #if (EXTRA_INFO_ON_CALC_ERROR == 1)
               sprintf(errorMessage, "Not Available");
               moreInfoOnError("In function runFunction:", errorMessage, NULL, NULL);
@@ -785,7 +786,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
     reallyRunFunction(func, indexOfItems[func].param);
 
     if(!funcOK) {
-      displayCalcErrorMessage(ERROR_ITEM_TO_BE_CODED, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_ITEM_TO_BE_CODED, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "%" PRId16 " = %s", func, indexOfItems[func].itemCatalogName);
         moreInfoOnError("In function runFunction:", "Item not implemented", errorMessage, "to be coded");
@@ -1714,6 +1715,9 @@ bool_t isFunctionOldParam16(uint16_t func) {
   void fnSaveStackRegisters       (uint16_t unusedButMandatoryParameter) {}
   void fnSaveNRegisters           (uint16_t unusedButMandatoryParameter) {}
   void fnSaveRegister             (uint16_t unusedButMandatoryParameter) {}
+  void fnSaveGlobalFlags          (uint16_t unusedButMandatoryParameter) {}
+  void fnSaveLocalFlags           (uint16_t unusedButMandatoryParameter) {}
+  void fnSaveSystemFlags          (uint16_t unusedButMandatoryParameter) {}
   void fnLoadRegisters            (uint16_t unusedButMandatoryParameter) {}
   void fnSaveLetteredRegisters    (uint16_t unusedButMandatoryParameter) {}
   void fnSaveXFNRegister          (uint16_t unusedButMandatoryParameter) {}
@@ -1721,7 +1725,9 @@ bool_t isFunctionOldParam16(uint16_t func) {
   void fnCheckGreaterEqualPlusZero(uint16_t unusedButMandatoryParameter) {}
   void fnAlgdep                   (uint16_t unusedButMandatoryParameter) {}
   void fnLindep                   (uint16_t unusedButMandatoryParameter) {}
-
+  void fnSet42Alpha               (uint16_t unusedButMandatoryParameter) {}
+  void fnGet42Alpha               (uint16_t unusedButMandatoryParameter) {}
+  void fnSet42AlphaX              (uint16_t unusedButMandatoryParameter) {}
 
 #endif // GENERATE_CATALOGS || defined(GENERATE_TESTPGMS)
 
@@ -3112,7 +3118,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 1205 */  { fnStore,                         RESERVED_VARIABLE_UX,        STD_UP_ARROW "X",                              STD_UP_ARROW "X",                              (0 << TAM_MAX_BITS) |     0, CAT_RVAR | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 1206 */  { fnStore,                         RESERVED_VARIABLE_LX,        STD_DOWN_ARROW "X",                            STD_DOWN_ARROW "X",                            (0 << TAM_MAX_BITS) |     0, CAT_RVAR | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 1207 */  { itemToBeCoded,                   NOPARAM,                     "1207",                                        "1207",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
-  
+
 
 // Probability distributions
 /* 1208 */  { fnBinomialP,                     NOPARAM,                     "Binom" STD_SUB_p,                             "Binom" STD_SUB_p,                             (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         | RESULT_IN_X },
@@ -3240,13 +3246,13 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 1324 */  { fnSetRoundingModeM,              NOPARAM,                     "PseudoMenu",                                  "RM",                                          (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 1325 */  { fnSetRoundingModeRegist,         REGISTER_X,                  "RM",                                          "RM",                                          (0 << TAM_MAX_BITS) |    99, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         | RESULT_IN_X },
 /* 1326 */  { itemToBeCoded,                   NOPARAM,                     "1326",                                        "1326",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
-/* 1327 */  { itemToBeCoded,                   NOPARAM,                     "1327",                                        "1327",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
+/* 1327 */  { fnSet42AlphaX,                   REGISTER_X,                  STD_alpha "REGX",                              STD_alpha "REGX",                              (0 << TAM_MAX_BITS) |    99, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 1328 */  { LPDP_fnGetLP,                    NOPARAM,                     "LP%#",                                        "LP%#",                                        (0 << TAM_MAX_BITS) |     0, LPDP_CAT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         | RESULT_IN_X },
 /* 1329 */  { LPDP_fnSetLP,                    REGISTER_X,                  "LP%",                                         "LP%",                                         (0 << TAM_MAX_BITS) |    99, LPDP_CAT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         | RESULT_IN_X },
 /* 1330 */  { LPDP_fnGetDP,                    NOPARAM,                     "DP%#",                                        "DP%#",                                        (0 << TAM_MAX_BITS) |     0, LPDP_CAT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         | RESULT_IN_X },
 /* 1331 */  { LPDP_fnSetDP,                    REGISTER_X,                  "DP%",                                         "DP%",                                         (0 << TAM_MAX_BITS) |    99, LPDP_CAT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         | RESULT_IN_X },
-/* 1332 */  { itemToBeCoded,                   NOPARAM,                     "1332",                                        "1332",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
-/* 1333 */  { itemToBeCoded,                   NOPARAM,                     "1333",                                        "1333",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
+/* 1332 */  { fnSet42Alpha,                    TM_REGISTER,                 STD_alpha "REG",                               STD_alpha "REG",                               (0 << TAM_MAX_BITS) |    99, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_REGISTER     | HG_ENABLED         },
+/* 1333 */  { fnGet42Alpha,                    NOPARAM,                     STD_alpha "REG#",                              STD_alpha "REG#",                              (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         | RESULT_IN_X },
 /* 1334 */  { fnBaseMenu,                      NOPARAM,                     "MyMenu",                                      "MyM",                                         (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 1335 */  { itemToBeCoded,                   NOPARAM,                     "1335",                                        "1335",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 1336 */  { itemToBeCoded,                   NOPARAM,                     "1336",                                        "1336",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
@@ -4802,9 +4808,9 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2841 */  UNIT_CONV(constFactorSlinchKg    , divide           ,            "kg"                                 STD_RIGHT_ARROW                                                ,            "kg"                                 STD_RIGHT_ARROW                                                ),
 /* 2842 */  { itemToBeCoded,                   NOPARAM,                     "2842",                                        "2842",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 2843 */  { itemToBeCoded,                   NOPARAM,                     "2843",                                        "2843",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
-/* 2844 */  { itemToBeCoded,                   NOPARAM,                     "2844",                                        "2844",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
-/* 2845 */  { itemToBeCoded,                   NOPARAM,                     "2845",                                        "2845",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
-/* 2846 */  { itemToBeCoded,                   NOPARAM,                     "2846",                                        "2846",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
+/* 2844 */  { fnSaveGlobalFlags,              TM_VALUE,                     "EXPFLn",                                      "EXPFLn",                                      (0 << TAM_MAX_BITS) |   112, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2845 */  { fnSaveLocalFlags,               TM_VALUE,                     "EXPLFLn",                                     "EXPLFLn",                                     (0 << TAM_MAX_BITS) |    32, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2846 */  { fnSaveSystemFlags,               NOPARAM,                     "EXPSFL",                                      "EXPSFL",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 2847 */  { itemToBeCoded,                   NOPARAM,                     "2847",                                        "2847",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 2848 */  { itemToBeCoded,                   NOPARAM,                     "2848",                                        "2848",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 2849 */  { itemToBeCoded,                   NOPARAM,                     "2849",                                        "2849",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },

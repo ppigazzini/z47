@@ -90,7 +90,7 @@ bool_t getMatrixDims(calcRegister_t regist, const char *funcName, uint16_t *rows
     return true;
   }
   else {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "DataType %" PRIu32, dt);
       moreInfoOnError(funcName, errorMessage, "is not a matrix.", "");
@@ -108,7 +108,7 @@ bool_t getMatrixDims(calcRegister_t regist, const char *funcName, uint16_t *rows
       realToIntegralValue(arg, arg, DEC_ROUND_DOWN, &ctxtReal39);
     }
     else {
-      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "cannot accept %s as the argument", getRegisterDataTypeName(regist, true, false));
         moreInfoOnError("In function getArg:", errorMessage, NULL, NULL);
@@ -123,7 +123,7 @@ bool_t getSingleDimension(calcRegister_t reg, uint32_t *d) {
   bool_t res = false;
 
   if(!getRegisterAsLongInt(reg, tmp, NULL)) {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "invalid data type %s for %s", getRegisterDataTypeName(reg, true, false), reg == REGISTER_X ? "columns" : "rows");
       moreInfoOnError("In function getSingleDimension:", errorMessage, NULL, NULL);
@@ -133,7 +133,7 @@ bool_t getSingleDimension(calcRegister_t reg, uint32_t *d) {
   }
 
   if(longIntegerIsNegativeOrZero(tmp) || longIntegerCompareInt(tmp, 4096) > 0) {
-    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "invalid number of %s", reg == REGISTER_X ? "columns" : "rows");
       moreInfoOnError("In function getSingleDimension:", errorMessage, NULL, NULL);
@@ -178,7 +178,7 @@ bool_t getDimensionArg(uint32_t *rows, uint32_t *cols) {
       }
     }
     else {
-        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           sprintf(errorMessage, "%s %" PRIu16 " and/or %" PRIu16 " out of range", isRow ? "rows" : "columns", a, b);
           moreInfoOnError("In function _swapReal:", errorMessage, NULL, NULL);
@@ -212,7 +212,7 @@ bool_t getDimensionArg(uint32_t *rows, uint32_t *cols) {
       }
     }
     else {
-        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           sprintf(errorMessage, "%s %" PRIu16 " and/or %" PRIu16 " out of range", isRow ? "rows" : "columns", a, b);
           moreInfoOnError("In function swapComplex:", errorMessage, NULL, NULL);
@@ -258,7 +258,7 @@ bool_t getDimensionArg(uint32_t *rows, uint32_t *cols) {
           }
         }
         else {
-          displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+          displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
           #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             sprintf(errorMessage, "Ram full");
             moreInfoOnError("In function getMatrixReal:", errorMessage, NULL, NULL);
@@ -268,7 +268,7 @@ bool_t getDimensionArg(uint32_t *rows, uint32_t *cols) {
       }
     }
     else {
-      displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "%" PRIu16 " " STD_CROSS " %" PRIu16 " out of range", a, b);
         moreInfoOnError("In function getMatrixReal:", errorMessage, NULL, NULL);
@@ -308,7 +308,7 @@ bool_t getDimensionArg(uint32_t *rows, uint32_t *cols) {
           }
         }
         else {
-          displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+          displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
           #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             sprintf(errorMessage, "Ram full");
             moreInfoOnError("In function getMatrixComplex:", errorMessage, NULL, NULL);
@@ -317,7 +317,7 @@ bool_t getDimensionArg(uint32_t *rows, uint32_t *cols) {
       }
     }
     else {
-      displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "%" PRIu16 " " STD_CROSS " %" PRIu16 " out of range", a, b);
         moreInfoOnError("In function getMatrixComplex:", errorMessage, NULL, NULL);
@@ -338,7 +338,7 @@ bool_t getDimensionArg(uint32_t *rows, uint32_t *cols) {
     const int16_t j = getJRegisterAsInt(true);
 
     if(getRegisterDataType(REGISTER_X) != dtReal34Matrix) {
-      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "%s is not a real matrix", getRegisterDataTypeName(REGISTER_X, true, false));
         moreInfoOnError("In function putMatrixReal:", errorMessage, NULL, NULL);
@@ -355,7 +355,7 @@ bool_t getDimensionArg(uint32_t *rows, uint32_t *cols) {
       }
     }
     else {
-      displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "%" PRIu16 " " STD_CROSS " %" PRIu16 " out of range", mat.header.matrixRows, mat.header.matrixColumns);
         moreInfoOnError("In function putMatrixReal:", errorMessage, NULL, NULL);
@@ -374,7 +374,7 @@ bool_t getDimensionArg(uint32_t *rows, uint32_t *cols) {
     const int16_t j = getJRegisterAsInt(true);
 
     if(getRegisterDataType(REGISTER_X) != dtComplex34Matrix) {
-      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "%s is not a complex matrix", getRegisterDataTypeName(REGISTER_X, true, false));
         moreInfoOnError("In function putMatrixComplex:", errorMessage, NULL, NULL);
@@ -393,7 +393,7 @@ bool_t getDimensionArg(uint32_t *rows, uint32_t *cols) {
       }
     }
     else {
-      displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "%" PRIu16 " " STD_CROSS " %" PRIu16 " out of range", mat.header.matrixRows, mat.header.matrixColumns);
         moreInfoOnError("In function putMatrixComplex:", errorMessage, NULL, NULL);
@@ -421,7 +421,7 @@ void fnNewMatrix(uint16_t unusedParamButMandatory) {
     setSystemFlag(FLAG_ASLIFT);
   }
   else {
-    displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Not enough memory for a %" PRIu32 STD_CROSS "%" PRIu32 " matrix", rows, cols);
       moreInfoOnError("In function fnNewMatrix:", errorMessage, NULL, NULL);
@@ -460,7 +460,7 @@ bool_t saveStatsMatrix(void) {
         return true; //backed up
       }
       else {
-        displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           sprintf(errorMessage, "Not enough memory for STATS undo matrix: rows=%i, cols=%i", rows, cols);
           moreInfoOnError("In function saveStatsMatrix:", errorMessage, NULL, NULL);
@@ -514,7 +514,7 @@ bool_t recallStatsMatrix(void) {
         return true; //restored
       }
       else {
-        displayCalcErrorMessage(ERROR_TI_UNDO_FAILED, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_TI_UNDO_FAILED, ERR_REGISTER_LINE);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           sprintf(errorMessage, "Creation of STATS matrix from TEMP2 failed, likely due to insufficient memory: rows=%i, cols=%i", rows, cols);
           moreInfoOnError("In function recallStatsMatrix:", errorMessage, NULL, NULL);
@@ -540,7 +540,7 @@ static void _SetMatrixDimensions(uint16_t regist, uint16_t dimMode) {
   else if(redimMatrixRegister(regist, y, x, dimMode)) {
   }
   else {
-    displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Not enough memory for a %" PRIu32 STD_CROSS "%" PRIu32 " matrix", y, x);
       moreInfoOnError("In function _SetMatrixDimensions:", errorMessage, NULL, NULL);
@@ -581,7 +581,7 @@ static void getMatrixDimensionsToStack(uint16_t regist, bool_t consumeX) {
     longIntegerFree(li);
   }
   else {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType(regist));
       moreInfoOnError("In function fnGetMatrixDimensions:", errorMessage, "is not a matrix.", "");
@@ -626,7 +626,7 @@ void fnTranspose(uint16_t unusedButMandatoryParameter) {
     REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns = x.header.matrixColumns;
   }
   else {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType(REGISTER_X));
       moreInfoOnError("In function fnTranspose:", errorMessage, "is not a matrix.", "");
@@ -649,7 +649,7 @@ void fnLuDecomposition(uint16_t unusedParamButMandatory) {
     convertReal34MatrixRegisterToReal34Matrix(REGISTER_X, &x);
 
     if(x.header.matrixRows != x.header.matrixColumns) {
-      displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "not a square matrix (%d" STD_CROSS "%d)", x.header.matrixRows, x.header.matrixColumns);
         moreInfoOnError("In function fnLuDecomposition:", errorMessage, NULL, NULL);
@@ -693,7 +693,7 @@ void fnLuDecomposition(uint16_t unusedParamButMandatory) {
           realMatrixFree(&l);
         }
         else {
-          displayCalcErrorMessage(ERROR_SINGULAR_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
+          displayCalcErrorMessage(ERROR_SINGULAR_MATRIX, ERR_REGISTER_LINE);
           #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             sprintf(errorMessage, "attempt to LU-decompose a singular matrix");
             moreInfoOnError("In function fnLuDecomposition:", errorMessage, NULL, NULL);
@@ -702,7 +702,7 @@ void fnLuDecomposition(uint16_t unusedParamButMandatory) {
         freeC47Blocks(p, x.header.matrixRows * sizeof(uint16_t));
       }
       else {
-        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           sprintf(errorMessage, "Ram full, 1a");
           moreInfoOnError("In function fnLuDecomposition:", errorMessage, NULL, NULL);
@@ -720,7 +720,7 @@ void fnLuDecomposition(uint16_t unusedParamButMandatory) {
     convertComplex34MatrixRegisterToComplex34Matrix(REGISTER_X, &x);
 
     if(x.header.matrixRows != x.header.matrixColumns) {
-      displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "not a square matrix (%d" STD_CROSS "%d)", x.header.matrixRows, x.header.matrixColumns);
         moreInfoOnError("In function fnLuDecomposition:", errorMessage, NULL, NULL);
@@ -764,7 +764,7 @@ void fnLuDecomposition(uint16_t unusedParamButMandatory) {
               realMatrixFree(&pivot);
             }
             else {
-              displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+              displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
               #if (EXTRA_INFO_ON_CALC_ERROR == 1)
                 sprintf(errorMessage, "Ram full, 2b");
                 moreInfoOnError("In function fnLuDecomposition:", errorMessage, NULL, NULL);
@@ -773,7 +773,7 @@ void fnLuDecomposition(uint16_t unusedParamButMandatory) {
             complexMatrixFree(&u);
           }
           else {
-            displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+            displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
             #if (EXTRA_INFO_ON_CALC_ERROR == 1)
               sprintf(errorMessage, "Ram full, 3c");
               moreInfoOnError("In function fnLuDecomposition:", errorMessage, NULL, NULL);
@@ -782,7 +782,7 @@ void fnLuDecomposition(uint16_t unusedParamButMandatory) {
           complexMatrixFree(&l);
         }
         else {
-          displayCalcErrorMessage(ERROR_SINGULAR_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
+          displayCalcErrorMessage(ERROR_SINGULAR_MATRIX, ERR_REGISTER_LINE);
           #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             sprintf(errorMessage, "attempt to LU-decompose a singular matrix");
             moreInfoOnError("In function fnLuDecomposition:", errorMessage, NULL, NULL);
@@ -791,7 +791,7 @@ void fnLuDecomposition(uint16_t unusedParamButMandatory) {
         freeC47Blocks(p, x.header.matrixRows * sizeof(uint16_t));
       }
       else {
-        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           sprintf(errorMessage, "Ram full, 4d");
           moreInfoOnError("In function fnLuDecomposition:", errorMessage, NULL, NULL);
@@ -802,7 +802,7 @@ void fnLuDecomposition(uint16_t unusedParamButMandatory) {
     complexMatrixFree(&x);
   }
   else {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType(REGISTER_X));
       moreInfoOnError("In function fnLuDecomposition:", errorMessage, "is not a matrix.", "");
@@ -825,7 +825,7 @@ void fnDeterminant(uint16_t unusedParamButMandatory) {
     linkToRealMatrixRegister(REGISTER_X, &x);
 
     if(x.header.matrixRows != x.header.matrixColumns) {
-      displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "not a square matrix (%d" STD_CROSS "%d)",
                 x.header.matrixRows, x.header.matrixColumns);
@@ -847,7 +847,7 @@ void fnDeterminant(uint16_t unusedParamButMandatory) {
     linkToComplexMatrixRegister(REGISTER_X, &x);
 
     if(x.header.matrixRows != x.header.matrixColumns) {
-      displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "not a square matrix (%d" STD_CROSS "%d)", x.header.matrixRows, x.header.matrixColumns);
         moreInfoOnError("In function fnDeterminant:", errorMessage, NULL, NULL);
@@ -863,7 +863,7 @@ void fnDeterminant(uint16_t unusedParamButMandatory) {
     }
   }
   else {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType(REGISTER_X));
       moreInfoOnError("In function fnLuDecomposition:", errorMessage, "is not a matrix.", "");
@@ -885,7 +885,7 @@ void fnInvertMatrix(uint16_t unusedParamButMandatory) {
     linkToRealMatrixRegister(REGISTER_X, &x);
 
     if(x.header.matrixRows != x.header.matrixColumns) {
-      displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "not a square matrix (%d" STD_CROSS "%d)", x.header.matrixRows, x.header.matrixColumns);
         moreInfoOnError("In function fnInvertMatrix:", errorMessage, NULL, NULL);
@@ -900,7 +900,7 @@ void fnInvertMatrix(uint16_t unusedParamButMandatory) {
           setSystemFlag(FLAG_ASLIFT);
         }
         else {
-          displayCalcErrorMessage(ERROR_SINGULAR_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
+          displayCalcErrorMessage(ERROR_SINGULAR_MATRIX, ERR_REGISTER_LINE);
           #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             sprintf(errorMessage, "attempt to invert a singular matrix");
             moreInfoOnError("In function fnInvertMatrix:", errorMessage, NULL, NULL);
@@ -921,7 +921,7 @@ void fnInvertMatrix(uint16_t unusedParamButMandatory) {
     linkToComplexMatrixRegister(REGISTER_X, &x);
 
     if(x.header.matrixRows != x.header.matrixColumns) {
-      displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "not a square matrix (%d" STD_CROSS "%d)", x.header.matrixRows, x.header.matrixColumns);
         moreInfoOnError("In function fnInvertMatrix:", errorMessage, NULL, NULL);
@@ -936,7 +936,7 @@ void fnInvertMatrix(uint16_t unusedParamButMandatory) {
           setSystemFlag(FLAG_ASLIFT);
         }
         else {
-          displayCalcErrorMessage(ERROR_SINGULAR_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
+          displayCalcErrorMessage(ERROR_SINGULAR_MATRIX, ERR_REGISTER_LINE);
           #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             sprintf(errorMessage, "attempt to invert a singular matrix");
             moreInfoOnError("In function fnInvertMatrix:", errorMessage, NULL, NULL);
@@ -952,7 +952,7 @@ void fnInvertMatrix(uint16_t unusedParamButMandatory) {
     }
   }
   else {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType(REGISTER_X));
       moreInfoOnError("In function fnInvertMatrix:", errorMessage, "is not a matrix.", "");
@@ -974,7 +974,7 @@ void fnMatrixSquareRoot(uint16_t unusedParamButMandatory) {
     linkToRealMatrixRegister(REGISTER_X, &x);
 
     if(x.header.matrixRows != x.header.matrixColumns) {
-      displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "not a square matrix (%d" STD_CROSS "%d)", x.header.matrixRows, x.header.matrixColumns);
         moreInfoOnError("In function fnMatrixSquareRoot:", errorMessage, NULL, NULL);
@@ -1024,7 +1024,7 @@ void fnMatrixSquareRoot(uint16_t unusedParamButMandatory) {
                 setSystemFlag(FLAG_ASLIFT);
               }
               else {
-                displayCalcErrorMessage(ERROR_NO_ROOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+                displayCalcErrorMessage(ERROR_NO_ROOT_FOUND, ERR_REGISTER_LINE);
                 #if (EXTRA_INFO_ON_CALC_ERROR == 1)
                   sprintf(errorMessage, "matrix has no square root, or iteration failed to converge");
                   moreInfoOnError("In function fnMatrixSquareRoot:", errorMessage, NULL, NULL);
@@ -1041,7 +1041,7 @@ void fnMatrixSquareRoot(uint16_t unusedParamButMandatory) {
           // else: convert failed and already raised RAM_FULL
         }
         else {
-          displayCalcErrorMessage(ERROR_NO_ROOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+          displayCalcErrorMessage(ERROR_NO_ROOT_FOUND, ERR_REGISTER_LINE);
           #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             sprintf(errorMessage, "matrix has no real square root, or iteration failed to converge");
             moreInfoOnError("In function fnMatrixSquareRoot:", errorMessage, NULL, NULL);
@@ -1061,7 +1061,7 @@ void fnMatrixSquareRoot(uint16_t unusedParamButMandatory) {
     linkToComplexMatrixRegister(REGISTER_X, &x);
 
     if(x.header.matrixRows != x.header.matrixColumns) {
-      displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "not a square matrix (%d" STD_CROSS "%d)", x.header.matrixRows, x.header.matrixColumns);
         moreInfoOnError("In function fnMatrixSquareRoot:", errorMessage, NULL, NULL);
@@ -1076,7 +1076,7 @@ void fnMatrixSquareRoot(uint16_t unusedParamButMandatory) {
           setSystemFlag(FLAG_ASLIFT);
         }
         else {
-          displayCalcErrorMessage(ERROR_NO_ROOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+          displayCalcErrorMessage(ERROR_NO_ROOT_FOUND, ERR_REGISTER_LINE);
           #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             sprintf(errorMessage, "matrix has no square root, or iteration failed to converge");
             moreInfoOnError("In function fnMatrixSquareRoot:", errorMessage, NULL, NULL);
@@ -1092,7 +1092,7 @@ void fnMatrixSquareRoot(uint16_t unusedParamButMandatory) {
     }
   }
   else {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType(REGISTER_X));
       moreInfoOnError("In function fnMatrixSquareRoot:", errorMessage, "is not a (real or complex) matrix.", "");
@@ -1132,7 +1132,7 @@ static void _fnEuclideanNorm(uint16_t pParam) {
     real34Copy(&sum, REGISTER_REAL34_DATA(REGISTER_X));
   }
   else {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType(REGISTER_X));
       moreInfoOnError("In function _fnEuclideanNorm:", errorMessage, "is not a matrix.", "");
@@ -1179,7 +1179,7 @@ void fnRowColSum(uint16_t isRow) {
       realMatrixFree(&res);
     }
     else {
-      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Ram full, 1e");
         moreInfoOnError("In function fnRowColSum:", errorMessage, NULL, NULL);
@@ -1213,7 +1213,7 @@ void fnRowColSum(uint16_t isRow) {
       complexMatrixFree(&res);
     }
     else {
-      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Ram full, 2f");
         moreInfoOnError("In function fnRowColSum:", errorMessage, NULL, NULL);
@@ -1221,7 +1221,7 @@ void fnRowColSum(uint16_t isRow) {
     }
   }
   else {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType(REGISTER_X));
       moreInfoOnError("In function fnRowColSum:", errorMessage, "is not a matrix.", "");
@@ -1238,7 +1238,7 @@ void fnRowColSum(uint16_t isRow) {
 // pParam == pNorm_1_CNORM   : columnNorm
 static void _row_columnNorm(uint16_t pParam) {
   if(pParam != pNorm_inf_RNORM && pParam != pNorm_1_CNORM && pParam != pNorm_0_NNZ) {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "pParam %" PRIu32, pParam);
       moreInfoOnError("In function _row_columnNorm:", errorMessage, "incorrect operating option.", "");
@@ -1281,7 +1281,7 @@ static void _row_columnNorm(uint16_t pParam) {
       convertRealToReal34ResultRegister(&nnz, REGISTER_X);
     }
     else {
-      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType(REGISTER_X));
         moreInfoOnError("In function _row_columnNorm:", errorMessage, "is not a matrix.", "");
@@ -1347,7 +1347,7 @@ static void _row_columnNorm(uint16_t pParam) {
     convertRealToReal34ResultRegister(&norm, REGISTER_X);
   }
   else {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType(REGISTER_X));
       moreInfoOnError("In function _row_columnNorm:", errorMessage, "is not a matrix.", "");
@@ -1386,7 +1386,7 @@ void fnVectorAngle(uint16_t unusedParamButMandatory) {
     linkToRealMatrixRegister(REGISTER_Y, &y);
 
     if((realVectorSize(&y) < 2) || (realVectorSize(&x) < 2) || (realVectorSize(&y) > 3) || (realVectorSize(&x) > 3) || (realVectorSize(&y) != realVectorSize(&x))) {
-      displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "invalid numbers of elements of %d" STD_CROSS "%d-matrix to %d" STD_CROSS "%d-matrix", x.header.matrixRows, x.header.matrixColumns, y.header.matrixRows, y.header.matrixColumns);
         moreInfoOnError("In function fnVectorAngle:", errorMessage, NULL, NULL);
@@ -1400,7 +1400,7 @@ void fnVectorAngle(uint16_t unusedParamButMandatory) {
     }
   }
   else {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType(REGISTER_X));
       moreInfoOnError("In function fnVectorAngle:", errorMessage, "is not a real matrix.", "");
@@ -1425,7 +1425,7 @@ void fnIndexMatrix(uint16_t regist) {
     clearSystemFlag(FLAG_WRAPEND);
   }
   else {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
     sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType(regist));
     moreInfoOnError("In function fnIndexMatrix:", errorMessage, "is not a matrix.", "");
@@ -1479,7 +1479,7 @@ void fnEditLinearEquationMatrixB(uint16_t unusedParamButMandatory) {
 
 void fnEditLinearEquationMatrixX(uint16_t unusedParamButMandatory) {
   if(findNamedVariable("Mat_A") == INVALID_VARIABLE || findNamedVariable("Mat_B") == INVALID_VARIABLE || findNamedVariable("Mat_X") == INVALID_VARIABLE) {
-    displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "At least one of Mat_A, Mat_B or Mat_X is missing");
       moreInfoOnError("In function fnEditLinearEquationMatrixX:", errorMessage, NULL, NULL);
@@ -1548,7 +1548,7 @@ void fnQrDecomposition(uint16_t unusedParamButMandatory) {
     linkToRealMatrixRegister(REGISTER_X, &x);
 
     if(x.header.matrixRows != x.header.matrixColumns) {
-      displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "not a square matrix (%d" STD_CROSS "%d)", x.header.matrixRows, x.header.matrixColumns);
         moreInfoOnError("In function fnQrDecomposition:", errorMessage, NULL, NULL);
@@ -1570,7 +1570,7 @@ void fnQrDecomposition(uint16_t unusedParamButMandatory) {
     linkToComplexMatrixRegister(REGISTER_X, &x);
 
     if(x.header.matrixRows != x.header.matrixColumns) {
-      displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "not a square matrix (%d" STD_CROSS "%d)", x.header.matrixRows, x.header.matrixColumns);
         moreInfoOnError("In function fnQrDecomposition:", errorMessage, NULL, NULL);
@@ -1587,7 +1587,7 @@ void fnQrDecomposition(uint16_t unusedParamButMandatory) {
     }
   }
   else {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType(REGISTER_X));
       moreInfoOnError("In function fnQrDecomposition:", errorMessage, "is not a matrix.", "");
@@ -1617,7 +1617,7 @@ static void extractDiagonalToRowReal34Matrix(const real34Matrix_t *source, real3
     #endif //EIGEN_TESTOUT
   }
   else {
-    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Ram full");
       moreInfoOnError("In function extractDiagonalToRowReal34Matrix:", errorMessage, NULL, NULL);
@@ -1647,7 +1647,7 @@ static void extractDiagonalToRowComplex34Matrix(const complex34Matrix_t *source,
     #endif //EIGEN_TESTOUT
   }
   else {
-    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Ram full");
       moreInfoOnError("In function extractDiagonalToRowComplex34Matrix:", errorMessage, NULL, NULL);
@@ -1664,7 +1664,7 @@ void fnEigenvalues(uint16_t unusedParamButMandatory) {
     linkToRealMatrixRegister(REGISTER_X, &x);
 
     if(x.header.matrixRows != x.header.matrixColumns) {
-      displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "rectangular or single-element matrix or (%d" STD_CROSS "%d)", x.header.matrixRows, x.header.matrixColumns);
         moreInfoOnError("In function fnEigenvalues:", errorMessage, NULL, NULL);
@@ -1714,7 +1714,7 @@ void fnEigenvalues(uint16_t unusedParamButMandatory) {
             complexMatrixFree(&cres);
           }
           else {
-            displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+            displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
             #if (EXTRA_INFO_ON_CALC_ERROR == 1)
               sprintf(errorMessage, "Ram full");
               moreInfoOnError("In function fnEigenvalues:", errorMessage, NULL, NULL);
@@ -1757,7 +1757,7 @@ void fnEigenvalues(uint16_t unusedParamButMandatory) {
     linkToComplexMatrixRegister(REGISTER_X, &x);
 
     if(x.header.matrixRows != x.header.matrixColumns) {
-      displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "rectangular or single-element matrix or (%d" STD_CROSS "%d)", x.header.matrixRows, x.header.matrixColumns);
         moreInfoOnError("In function fnEigenvalues:", errorMessage, NULL, NULL);
@@ -1802,7 +1802,7 @@ void fnEigenvalues(uint16_t unusedParamButMandatory) {
     goto Success;
   }
   else {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType(REGISTER_X));
       moreInfoOnError("In function fnEigenvalues:", errorMessage, "is not a matrix.", "");
@@ -1831,7 +1831,7 @@ static uint8_t createEigenVectorIf1x1(uint16_t Rows, uint16_t Columns, bool_t is
     liftStack();
     if(!initMatrixRegister(REGISTER_X, 1, 1, isComplex)) {
       fnDrop(NOPARAM);
-      displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Not enough memory for a %" PRIu32 STD_CROSS "%" PRIu32 " matrix", 1, 1);
         moreInfoOnError("In function createEigenVectorIf1x1:", errorMessage, NULL, NULL);
@@ -1868,7 +1868,7 @@ void fnEigenvectors(uint16_t unusedParamButMandatory) {
     linkToRealMatrixRegister(REGISTER_X, &x);
 
     if(x.header.matrixRows != x.header.matrixColumns) {
-      displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "rectangular or single-element matrix or (%d" STD_CROSS "%d)",
                 x.header.matrixRows, x.header.matrixColumns);
@@ -1906,7 +1906,7 @@ void fnEigenvectors(uint16_t unusedParamButMandatory) {
           }
           else {
             realMatrixFree(&ires);
-            displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+            displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
             #if (EXTRA_INFO_ON_CALC_ERROR == 1)
               sprintf(errorMessage, "Ram full");
               moreInfoOnError("In function fnEigenvectors:", errorMessage, NULL, NULL);
@@ -1922,7 +1922,7 @@ void fnEigenvectors(uint16_t unusedParamButMandatory) {
         if(lastErrorCode == ERROR_NO_ROOT_FOUND || lastErrorCode == ERROR_RAM_FULL) {            // the error is already displayed
           goto ErrorExit;
         }
-        displayCalcErrorMessage(ERROR_SINGULAR_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_SINGULAR_MATRIX, ERR_REGISTER_LINE);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           sprintf(errorMessage, "matrix is defective: no full set of linearly independent eigenvectors");
           moreInfoOnError("In function fnEigenvectors:", errorMessage, NULL, NULL);
@@ -1938,7 +1938,7 @@ void fnEigenvectors(uint16_t unusedParamButMandatory) {
     linkToComplexMatrixRegister(REGISTER_X, &x);
 
     if(x.header.matrixRows != x.header.matrixColumns) {
-      displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "rectangular or single-element matrix or (%d" STD_CROSS "%d)", x.header.matrixRows, x.header.matrixColumns);
         moreInfoOnError("In function fnEigenvectors:", errorMessage, NULL, NULL);
@@ -1967,7 +1967,7 @@ void fnEigenvectors(uint16_t unusedParamButMandatory) {
         if(lastErrorCode == ERROR_NO_ROOT_FOUND || lastErrorCode == ERROR_RAM_FULL) {            // the error is already displayed
           goto ErrorExit;
         }
-        displayCalcErrorMessage(ERROR_SINGULAR_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_SINGULAR_MATRIX, ERR_REGISTER_LINE);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           sprintf(errorMessage, "matrix is defective: no full set of linearly independent eigenvectors");
           moreInfoOnError("In function fnEigenvectors:", errorMessage, NULL, NULL);
@@ -1978,7 +1978,7 @@ void fnEigenvectors(uint16_t unusedParamButMandatory) {
     goto Success;
   }
   else {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType(REGISTER_X));
       moreInfoOnError("In function fnEigenvectors:", errorMessage, "is not a matrix.", "");
@@ -2039,7 +2039,7 @@ void realMatrixIdentity(real34Matrix_t *matrix, uint16_t size) {
     }
   }
   else {
-    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Ram full");
       moreInfoOnError("In function realMatrixIdentity:", errorMessage, NULL, NULL);
@@ -2069,7 +2069,7 @@ void fnMatrixIdentity(uint16_t unusedButMandatoryParameter) {
     setSystemFlag(FLAG_ASLIFT);
   }
   else {
-    displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Not enough memory for a %" PRIu32 STD_CROSS "%" PRIu32 " identity matrix", rows, cols);
       moreInfoOnError("In function fnMatrixIdentity:", errorMessage, NULL, NULL);
@@ -2100,7 +2100,7 @@ void realMatrixRedim(real34Matrix_t *matrix, uint16_t rows, uint16_t cols) {
     matrix->matrixElements = newMatrix.matrixElements;
   }
   else {
-    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Ram full");
       moreInfoOnError("In function realMatrixRedim:", errorMessage, NULL, NULL);
@@ -2159,7 +2159,7 @@ void complexMatrixIdentity(complex34Matrix_t *matrix, uint16_t size) {
     }
   }
   else {
-    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Ram full");
       moreInfoOnError("In function complexMatrixIdentity:", errorMessage, NULL, NULL);
@@ -2186,7 +2186,7 @@ void complexMatrixRedim(complex34Matrix_t *matrix, uint16_t rows, uint16_t cols)
     matrix->matrixElements = newMatrix.matrixElements;
   }
   else {
-    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Ram full");
       moreInfoOnError("In function complexMatrixRedim:", errorMessage, NULL, NULL);
@@ -2238,7 +2238,7 @@ void getMatrixFromRegister(calcRegister_t regist) {
     sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType(regist));
     moreInfoOnError("In function getMatrixFromRegister:", errorMessage, "is not dataType dtRealMatrix.", "");
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     return;
   }
 }
@@ -2472,7 +2472,7 @@ void copyRealMatrix(const real34Matrix_t *matrix, real34Matrix_t *res) {
     }
   }
   else {
-    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Ram full");
       moreInfoOnError("In function copyRealMatrix:", errorMessage, NULL, NULL);
@@ -2491,7 +2491,7 @@ void copyComplexMatrix(const complex34Matrix_t *matrix, complex34Matrix_t *res) 
     }
   }
   else {
-    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Ram full");
       moreInfoOnError("In function copyComplexMatrix:", errorMessage, NULL, NULL);
@@ -2548,7 +2548,7 @@ void insRowRealMatrix(real34Matrix_t *matrix, uint16_t beforeRowNo, bool_t add) 
     matrix->matrixElements       = newMat.matrixElements;
   }
   else {
-    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Ram full");
       moreInfoOnError("In function insRowRealMatrix:", errorMessage, NULL, NULL);
@@ -2587,7 +2587,7 @@ void insColRealMatrix(real34Matrix_t *matrix, uint16_t beforeColNo, bool_t add) 
     matrix->matrixElements       = newMat.matrixElements;
   }
   else {
-    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Ram full");
       moreInfoOnError("In function insColRealMatrix:", errorMessage, NULL, NULL);
@@ -2623,7 +2623,7 @@ void insRowComplexMatrix(complex34Matrix_t *matrix, uint16_t beforeRowNo, bool_t
     matrix->matrixElements       = newMat.matrixElements;
   }
   else {
-    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Ram full");
       moreInfoOnError("In function insRowComplexMatrix:", errorMessage, NULL, NULL);
@@ -2663,7 +2663,7 @@ void insColComplexMatrix(complex34Matrix_t *matrix, uint16_t beforeColNo, bool_t
     matrix->matrixElements       = newMat.matrixElements;
   }
   else {
-    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Ram full");
       moreInfoOnError("In function insColComplexMatrix:", errorMessage, NULL, NULL);
@@ -2693,7 +2693,7 @@ void delRowRealMatrix(real34Matrix_t *matrix, uint16_t beforeRowNo) {
     matrix->matrixElements       = newMat.matrixElements;
   }
   else {
-    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Ram full");
       moreInfoOnError("In function delRowRealMatrix:", errorMessage, NULL, NULL);
@@ -2726,7 +2726,7 @@ void delColRealMatrix(real34Matrix_t *matrix, uint16_t beforeColNo) {
     matrix->matrixElements       = newMat.matrixElements;
   }
   else {
-    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Ram full");
       moreInfoOnError("In function delColRealMatrix:", errorMessage, NULL, NULL);
@@ -2755,7 +2755,7 @@ void delRowComplexMatrix(complex34Matrix_t *matrix, uint16_t beforeRowNo) {
     matrix->matrixElements       = newMat.matrixElements;
   }
   else {
-    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Ram full");
       moreInfoOnError("In function delRowComplexMatrix:", errorMessage, NULL, NULL);
@@ -2787,7 +2787,7 @@ void delColComplexMatrix(complex34Matrix_t *matrix, uint16_t beforeColNo) {
     matrix->matrixElements       = newMat.matrixElements;
   }
   else {
-    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Ram full");
       moreInfoOnError("In function delColComplexMatrix:", errorMessage, NULL, NULL);
@@ -2812,7 +2812,7 @@ void transposeRealMatrix(const real34Matrix_t *matrix, real34Matrix_t *res) {
       }
     }
     else {
-      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Ram full, 1g");
         moreInfoOnError("In function transposeRealMatrix:", errorMessage, NULL, NULL);
@@ -2833,7 +2833,7 @@ void transposeRealMatrix(const real34Matrix_t *matrix, real34Matrix_t *res) {
       res->header.matrixColumns = rows;
     }
     else {
-      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Ram full, 2h");
         moreInfoOnError("In function transposeRealMatrix:", errorMessage, NULL, NULL);
@@ -2857,7 +2857,7 @@ void transposeComplexMatrix(const complex34Matrix_t *matrix, complex34Matrix_t *
       }
     }
     else {
-      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Ram full, 1i");
         moreInfoOnError("In function transposeComplexMatrix:", errorMessage, NULL, NULL);
@@ -2878,7 +2878,7 @@ void transposeComplexMatrix(const complex34Matrix_t *matrix, complex34Matrix_t *
       res->header.matrixColumns = rows;
     }
     else {
-      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Ram full, 2j");
         moreInfoOnError("In function transposeComplexMatrix:", errorMessage, NULL, NULL);
@@ -2901,7 +2901,7 @@ static void addSubRealMatrices(const real34Matrix_t *y, const real34Matrix_t *x,
 
   if((y != res) && (x != res)) {
     if(!realMatrixInit(res, rows, cols)) {
-      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Ram full");
         moreInfoOnError("In function addSubRealMatrices:", errorMessage, NULL, NULL);
@@ -2953,7 +2953,7 @@ static void addSubComplexMatrices(const complex34Matrix_t *y, const complex34Mat
     }
   }
   else {
-    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Ram full");
       moreInfoOnError("In function addSubComplexMatrices:", errorMessage, NULL, NULL);
@@ -2984,7 +2984,7 @@ void multiplyRealMatrix(const real34Matrix_t *matrix, const real34_t *x, real34M
     }
   }
   else {
-    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Ram full");
       moreInfoOnError("In function multiplyRealMatrix:", errorMessage, NULL, NULL);
@@ -3007,7 +3007,7 @@ void _multiplyRealMatrix(const real34Matrix_t *matrix, const real_t *x, real34Ma
     }
   }
   else {
-    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Ram full");
       moreInfoOnError("In function _multiplyRealMatrix:", errorMessage, NULL, NULL);
@@ -3045,7 +3045,7 @@ void multiplyRealMatrices(const real34Matrix_t *y, const real34Matrix_t *x, real
     }
   }
   else {
-    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Ram full");
       moreInfoOnError("In function multiplyRealMatrices:", errorMessage, NULL, NULL);
@@ -3079,7 +3079,7 @@ void _multiplyComplexMatrix(const complex34Matrix_t *matrix, const real_t *xr, c
     }
   }
   else {
-    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Ram full");
       moreInfoOnError("In function _multiplyComplexMatrix:", errorMessage, NULL, NULL);
@@ -3180,7 +3180,7 @@ void multiplyComplexMatrices(const complex34Matrix_t *y, const complex34Matrix_t
     }
   }
   else {
-    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Ram full");
       moreInfoOnError("In function multiplyComplexMatrices:", errorMessage, NULL, NULL);
@@ -3305,7 +3305,7 @@ void crossRealVectors(const real34Matrix_t *y, const real34Matrix_t *x, real34Ma
     realToReal34(&p, res->matrixElements + 2);
   }
   else {
-    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Ram full");
       moreInfoOnError("In function crossRealVectors:", errorMessage, NULL, NULL);
@@ -3393,7 +3393,7 @@ void crossComplexVectors(const complex34Matrix_t *y, const complex34Matrix_t *x,
     realToReal34(&pi, VARIABLE_IMAG34_DATA(res->matrixElements + 2));
   }
   else {
-    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Ram full");
       moreInfoOnError("In function crossComplexVectors:", errorMessage, NULL, NULL);
@@ -3523,7 +3523,7 @@ void WP34S_LU_decomposition(const real34Matrix_t *matrix, real34Matrix_t *lu, ui
       }
     }
     else {
-      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Ram full, 1k");
         moreInfoOnError("In function WP34S_LU_decomposition:", errorMessage, NULL, NULL);
@@ -3537,7 +3537,7 @@ void WP34S_LU_decomposition(const real34Matrix_t *matrix, real34Matrix_t *lu, ui
       lu->matrixElements = NULL;
       lu->header.matrixRows = lu->header.matrixColumns = 0;
     }
-    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Ram full, 2l");
       moreInfoOnError("In function WP34S_LU_decomposition:", errorMessage, NULL, NULL);
@@ -3656,7 +3656,7 @@ void complex_LU_decomposition(const complex34Matrix_t *matrix, complex34Matrix_t
       }
     }
     else {
-      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Ram full, 1m");
         moreInfoOnError("In function complex_LU_decomposition:", errorMessage, NULL, NULL);
@@ -3670,7 +3670,7 @@ void complex_LU_decomposition(const complex34Matrix_t *matrix, complex34Matrix_t
       lu->matrixElements = NULL; // Matrix is not square
       lu->header.matrixRows = lu->header.matrixColumns = 0;
     }
-    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Ram full, 2n");
       moreInfoOnError("In function complex_LU_decomposition:", errorMessage, NULL, NULL);
@@ -3702,7 +3702,7 @@ static void _realMatrixSwap(const real34Matrix_t *matrix, real34Matrix_t *res, u
     }
   }
   else {
-    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Ram full");
       moreInfoOnError("In function _realMatrixSwap:", errorMessage, NULL, NULL);
@@ -3736,7 +3736,7 @@ static void _complexMatrixSwap(const complex34Matrix_t *matrix, complex34Matrix_
     }
   }
   else {
-    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Ram full");
       moreInfoOnError("In function _complexMatrixSwap:", errorMessage, NULL, NULL);
@@ -3782,7 +3782,7 @@ static void detCpxMat(const real_t *matrix, uint16_t size, real_t *res_r, real_t
       freeC47Blocks(p, TO_BLOCKS(size * sizeof(uint16_t)));
     }
     else {
-      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Ram full, 1o");
         moreInfoOnError("In function detCpxMat:", errorMessage, NULL, NULL);
@@ -3794,7 +3794,7 @@ static void detCpxMat(const real_t *matrix, uint16_t size, real_t *res_r, real_t
     freeC47Blocks(lu, size * size * REAL_SIZE_IN_BLOCKS(75) * 2);
   }
   else {
-    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Ram full, 2p");
       moreInfoOnError("In function detCpxMat:", errorMessage, NULL, NULL);
@@ -3825,7 +3825,7 @@ void detRealMatrix(const real34Matrix_t *matrix, real34_t *res) {
     realToReal34(&tr, res);
   }
   else {
-    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Ram full");
       moreInfoOnError("In function detRealMatrix:", errorMessage, NULL, NULL);
@@ -3857,7 +3857,7 @@ void detComplexMatrix(const complex34Matrix_t *matrix, real34_t *res_r, real34_t
     realToReal34(&ti, res_i);
   }
   else {
-    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Ram full");
       moreInfoOnError("In function detComplexMatrix:", errorMessage, NULL, NULL);
@@ -3989,7 +3989,7 @@ static bool_t invCpxMat(real_t *matrix, uint16_t n, realContext_t *realContext) 
           freeC47Blocks(b, n * REAL_SIZE_IN_BLOCKS(75) * 2);
         }
         else {
-          displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+          displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
           #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             sprintf(errorMessage, "Ram full, 1q");
             moreInfoOnError("In function invCpxMat:", errorMessage, NULL, NULL);
@@ -3998,7 +3998,7 @@ static bool_t invCpxMat(real_t *matrix, uint16_t n, realContext_t *realContext) 
         freeC47Blocks(x, n * REAL_SIZE_IN_BLOCKS(75) * 2);
       }
       else {
-        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           sprintf(errorMessage, "Ram full, 2r");
           moreInfoOnError("In function invCpxMat:", errorMessage, NULL, NULL);
@@ -4007,7 +4007,7 @@ static bool_t invCpxMat(real_t *matrix, uint16_t n, realContext_t *realContext) 
       freeC47Blocks(pivots, TO_BLOCKS(n * sizeof(uint16_t)));
     }
     else {
-      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Ram full, 3s");
         moreInfoOnError("In function invCpxMat:", errorMessage, NULL, NULL);
@@ -4016,7 +4016,7 @@ static bool_t invCpxMat(real_t *matrix, uint16_t n, realContext_t *realContext) 
     freeC47Blocks(lu, n * n * REAL_SIZE_IN_BLOCKS(75) * 2);
   }
   else {
-    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Ram full, 4t");
       moreInfoOnError("In function invCpxMat:", errorMessage, NULL, NULL);
@@ -4036,7 +4036,7 @@ void invertRealMatrix(const real34Matrix_t *matrix, real34Matrix_t *res) {
       res->matrixElements = NULL; // Matrix is not square
       res->header.matrixRows = res->header.matrixColumns = 0;
     }
-    displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE);
     return;
   }
 
@@ -4060,7 +4060,7 @@ void invertRealMatrix(const real34Matrix_t *matrix, real34Matrix_t *res) {
         }
       }
       else {
-        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           sprintf(errorMessage, "Ram full, 1u");
           moreInfoOnError("In function invertRealMatrix:", errorMessage, NULL, NULL);
@@ -4077,7 +4077,7 @@ void invertRealMatrix(const real34Matrix_t *matrix, real34Matrix_t *res) {
     freeC47Blocks(tmpMat, n * n * REAL_SIZE_IN_BLOCKS(75) * 2);
   }
   else {
-    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Ram full, 2v");
       moreInfoOnError("In function invertRealMatrix:", errorMessage, NULL, NULL);
@@ -4105,7 +4105,7 @@ static void halfSumRealMatrices(const real34Matrix_t *a, const real34Matrix_t *b
 
   if((a != res) && (b != res)) {
     if(!realMatrixInit(res, rows, cols)) {
-      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Ram full");
         moreInfoOnError("In function halfSumRealMatrices:", errorMessage, NULL, NULL);
@@ -4739,7 +4739,7 @@ void invertComplexMatrix(const complex34Matrix_t *matrix, complex34Matrix_t *res
       res->matrixElements = NULL; // Matrix is not square
       res->header.matrixRows = res->header.matrixColumns = 0;
     }
-    displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE);
     return;
   }
 
@@ -4764,7 +4764,7 @@ void invertComplexMatrix(const complex34Matrix_t *matrix, complex34Matrix_t *res
         }
       }
       else {
-        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           sprintf(errorMessage, "Ram full, 1w");
           moreInfoOnError("In function invertComplexMatrix:", errorMessage, NULL, NULL);
@@ -4781,7 +4781,7 @@ void invertComplexMatrix(const complex34Matrix_t *matrix, complex34Matrix_t *res
     freeC47Blocks(tmpMat, n * n * REAL_SIZE_IN_BLOCKS(75) * 2);
   }
   else {
-    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Ram full, 2x");
       moreInfoOnError("In function invertComplexMatrix:", errorMessage, NULL, NULL);
@@ -4802,7 +4802,7 @@ void divideRealMatrix(const real34Matrix_t *matrix, const real34_t *x, real34Mat
     }
   }
   else {
-    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Ram full");
       moreInfoOnError("In function divideRealMatrix:", errorMessage, NULL, NULL);
@@ -4822,7 +4822,7 @@ void divideByRealMatrix(const real34_t *y, const real34Matrix_t *matrix, real34M
     }
   }
   else {
-    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Ram full");
       moreInfoOnError("In function divideByRealMatrix:", errorMessage, NULL, NULL);
@@ -4845,7 +4845,7 @@ void _divideRealMatrix(const real34Matrix_t *matrix, const real_t *x, real34Matr
     }
   }
   else {
-    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Ram full");
       moreInfoOnError("In function _divideRealMatrix:", errorMessage, NULL, NULL);
@@ -4868,7 +4868,7 @@ void _divideByRealMatrix(const real_t *y, const real34Matrix_t *matrix, real34Ma
     }
   }
   else {
-    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Ram full");
       moreInfoOnError("In function _divideByRealMatrix:", errorMessage, NULL, NULL);
@@ -4912,7 +4912,7 @@ void divideRealMatrices(const real34Matrix_t *y, const real34Matrix_t *x, real34
               res->matrixElements = NULL;
               res->header.matrixRows = res->header.matrixColumns = 0;
             }
-            displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+            displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
             #if (EXTRA_INFO_ON_CALC_ERROR == 1)
               sprintf(errorMessage, "Ram full, 1y");
               moreInfoOnError("In function divideRealMatrices:", errorMessage, NULL, NULL);
@@ -4933,7 +4933,7 @@ void divideRealMatrices(const real34Matrix_t *y, const real34Matrix_t *x, real34
           res->matrixElements = NULL;
           res->header.matrixRows = res->header.matrixColumns = 0;
         }
-        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           sprintf(errorMessage, "Ram full, 2z");
           moreInfoOnError("In function divideRealMatrices:", errorMessage, NULL, NULL);
@@ -4946,7 +4946,7 @@ void divideRealMatrices(const real34Matrix_t *y, const real34Matrix_t *x, real34
         res->matrixElements = NULL;
         res->header.matrixRows = res->header.matrixColumns = 0;
       }
-      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Ram full, 3aa");
         moreInfoOnError("In function divideRealMatrices:", errorMessage, NULL, NULL);
@@ -4959,7 +4959,7 @@ void divideRealMatrices(const real34Matrix_t *y, const real34Matrix_t *x, real34
       res->matrixElements = NULL;
       res->header.matrixRows = res->header.matrixColumns = 0;
     }
-    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Ram full, 4ab");
       moreInfoOnError("In function divideRealMatrices:", errorMessage, NULL, NULL);
@@ -5003,7 +5003,7 @@ void _divideComplexMatrix(const complex34Matrix_t *matrix, const real_t *xr, con
     }
   }
   else {
-    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Ram full");
       moreInfoOnError("In function divideComplexMatrix:", errorMessage, NULL, NULL);
@@ -5028,7 +5028,7 @@ void _divideByComplexMatrix(const real_t *yr, const real_t *yi, const complex34M
     }
   }
   else {
-    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Ram full");
       moreInfoOnError("In function _divideByComplexMatrix:", errorMessage, NULL, NULL);
@@ -5073,7 +5073,7 @@ void divideComplexMatrices(const complex34Matrix_t *y, const complex34Matrix_t *
               res->matrixElements = NULL;
               res->header.matrixRows = res->header.matrixColumns = 0;
             }
-            displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+            displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
             #if (EXTRA_INFO_ON_CALC_ERROR == 1)
               sprintf(errorMessage, "Ram full, 1ac");
               moreInfoOnError("In function divideComplexMatrices:", errorMessage, NULL, NULL);
@@ -5094,7 +5094,7 @@ void divideComplexMatrices(const complex34Matrix_t *y, const complex34Matrix_t *
           res->matrixElements = NULL;
           res->header.matrixRows = res->header.matrixColumns = 0;
         }
-        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           sprintf(errorMessage, "Ram full, 2ad");
           moreInfoOnError("In function divideComplexMatrices:", errorMessage, NULL, NULL);
@@ -5107,7 +5107,7 @@ void divideComplexMatrices(const complex34Matrix_t *y, const complex34Matrix_t *
         res->matrixElements = NULL;
         res->header.matrixRows = res->header.matrixColumns = 0;
       }
-      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Ram full, 3ae");
         moreInfoOnError("In function divideComplexMatrices:", errorMessage, NULL, NULL);
@@ -5120,7 +5120,7 @@ void divideComplexMatrices(const complex34Matrix_t *y, const complex34Matrix_t *
       res->matrixElements = NULL;
       res->header.matrixRows = res->header.matrixColumns = 0;
     }
-    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Ram full, 4af");
       moreInfoOnError("In function divideComplexMatrices:", errorMessage, NULL, NULL);
@@ -5139,7 +5139,7 @@ static void cpxLinearEqn(const real_t *a, const real_t *b, real_t *r, uint16_t s
       mulCpxMat(inv_a, b, size, size, 1, r, realContext);
     }
     else if(lastErrorCode != ERROR_RAM_FULL) {
-      displayCalcErrorMessage(ERROR_SINGULAR_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_SINGULAR_MATRIX, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "attempt to invert a singular matrix");
         moreInfoOnError("In function cpxLinearEqn:", errorMessage, NULL, NULL);
@@ -5148,7 +5148,7 @@ static void cpxLinearEqn(const real_t *a, const real_t *b, real_t *r, uint16_t s
     freeC47Blocks(inv_a, size * size * REAL_SIZE_IN_BLOCKS(75) * 2);
   }
   else {
-    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Ram full");
       moreInfoOnError("In function cpxLinearEqn:", errorMessage, NULL, NULL);
@@ -5162,7 +5162,7 @@ static void cpxLinearEqn(const real_t *a, const real_t *b, real_t *r, uint16_t s
     real_t *aa, *bb, *rr;
 
     if(size != a->header.matrixRows) {
-      displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "not a square matrix (%d" STD_CROSS "%d)", a->header.matrixRows, a->header.matrixColumns);
         moreInfoOnError("In function real_matrix_linear_eqn:", errorMessage, NULL, NULL);
@@ -5170,7 +5170,7 @@ static void cpxLinearEqn(const real_t *a, const real_t *b, real_t *r, uint16_t s
       return;
     }
     if(b->header.matrixRows != size || b->header.matrixColumns != 1) {
-      displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "not a column vector or size mismatch (%d" STD_CROSS "%d)", b->header.matrixRows, b->header.matrixColumns);
         moreInfoOnError("In function real_matrix_linear_eqn:", errorMessage, NULL, NULL);
@@ -5201,7 +5201,7 @@ static void cpxLinearEqn(const real_t *a, const real_t *b, real_t *r, uint16_t s
                 r->matrixElements = NULL;
                 r->header.matrixRows = r->header.matrixColumns = 0;
               }
-              displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+              displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
               #if (EXTRA_INFO_ON_CALC_ERROR == 1)
                 sprintf(errorMessage, "Ram full, 1ag");
                 moreInfoOnError("In function real_matrix_linear_eqn:", errorMessage, NULL, NULL);
@@ -5221,7 +5221,7 @@ static void cpxLinearEqn(const real_t *a, const real_t *b, real_t *r, uint16_t s
             r->matrixElements = NULL;
             r->header.matrixRows = r->header.matrixColumns = 0;
           }
-          displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+          displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
           #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             sprintf(errorMessage, "Ram full, 2ah");
             moreInfoOnError("In function real_matrix_linear_eqn:", errorMessage, NULL, NULL);
@@ -5234,7 +5234,7 @@ static void cpxLinearEqn(const real_t *a, const real_t *b, real_t *r, uint16_t s
           r->matrixElements = NULL;
           r->header.matrixRows = r->header.matrixColumns = 0;
         }
-        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           sprintf(errorMessage, "Ram full, 3ai");
           moreInfoOnError("In function real_matrix_linear_eqn:", errorMessage, NULL, NULL);
@@ -5247,7 +5247,7 @@ static void cpxLinearEqn(const real_t *a, const real_t *b, real_t *r, uint16_t s
         r->matrixElements = NULL;
         r->header.matrixRows = r->header.matrixColumns = 0;
       }
-      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Ram full, 4aj");
         moreInfoOnError("In function real_matrix_linear_eqn:", errorMessage, NULL, NULL);
@@ -5261,7 +5261,7 @@ static void cpxLinearEqn(const real_t *a, const real_t *b, real_t *r, uint16_t s
     real_t *aa, *bb, *rr;
 
     if(size != a->header.matrixRows) {
-      displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "not a square matrix (%d" STD_CROSS "%d)", a->header.matrixRows, a->header.matrixColumns);
         moreInfoOnError("In function complex_matrix_linear_eqn:", errorMessage, NULL, NULL);
@@ -5269,7 +5269,7 @@ static void cpxLinearEqn(const real_t *a, const real_t *b, real_t *r, uint16_t s
       return;
     }
     if(b->header.matrixRows != size || b->header.matrixColumns != 1) {
-      displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "not a column vector or size mismatch (%d" STD_CROSS "%d)", b->header.matrixRows, b->header.matrixColumns);
         moreInfoOnError("In function complex_matrix_linear_eqn:", errorMessage, NULL, NULL);
@@ -5301,7 +5301,7 @@ static void cpxLinearEqn(const real_t *a, const real_t *b, real_t *r, uint16_t s
                 r->matrixElements = NULL;
                 r->header.matrixRows = r->header.matrixColumns = 0;
               }
-              displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+              displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
               #if (EXTRA_INFO_ON_CALC_ERROR == 1)
                 sprintf(errorMessage, "Ram full, 1ak");
                 moreInfoOnError("In function complex_matrix_linear_eqn:", errorMessage, NULL, NULL);
@@ -5321,7 +5321,7 @@ static void cpxLinearEqn(const real_t *a, const real_t *b, real_t *r, uint16_t s
             r->matrixElements = NULL;
             r->header.matrixRows = r->header.matrixColumns = 0;
           }
-          displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+          displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
           #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             sprintf(errorMessage, "Ram full, 2al");
             moreInfoOnError("In function complex_matrix_linear_eqn:", errorMessage, NULL, NULL);
@@ -5334,7 +5334,7 @@ static void cpxLinearEqn(const real_t *a, const real_t *b, real_t *r, uint16_t s
           r->matrixElements = NULL;
           r->header.matrixRows = r->header.matrixColumns = 0;
         }
-        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           sprintf(errorMessage, "Ram full, 3am");
           moreInfoOnError("In function complex_matrix_linear_eqn:", errorMessage, NULL, NULL);
@@ -5347,7 +5347,7 @@ static void cpxLinearEqn(const real_t *a, const real_t *b, real_t *r, uint16_t s
         r->matrixElements = NULL;
         r->header.matrixRows = r->header.matrixColumns = 0;
       }
-      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Ram full, 4an");
         moreInfoOnError("In function complex_matrix_linear_eqn:", errorMessage, NULL, NULL);
@@ -5583,7 +5583,7 @@ static void QR_decomposition_householder(const real_t *mat, uint16_t size, real_
     freeC47Blocks(bulk, bulkSize);
   }
   else {
-    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Ram full");
       moreInfoOnError("In function QR_decomposition_householder:", errorMessage, NULL, NULL);
@@ -5622,7 +5622,7 @@ void real_QR_decomposition(const real34Matrix_t *matrix, real34Matrix_t *q, real
             }
           }
           else {
-            displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+            displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
             #if (EXTRA_INFO_ON_CALC_ERROR == 1)
               sprintf(errorMessage, "Ram full, 1ao");
               moreInfoOnError("In function real_QR_decomposition:", errorMessage, NULL, NULL);
@@ -5630,7 +5630,7 @@ void real_QR_decomposition(const real34Matrix_t *matrix, real34Matrix_t *q, real
           }
         }
         else {
-          displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+          displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
           #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             sprintf(errorMessage, "Ram full, 2ap");
             moreInfoOnError("In function real_QR_decomposition:", errorMessage, NULL, NULL);
@@ -5638,7 +5638,7 @@ void real_QR_decomposition(const real34Matrix_t *matrix, real34Matrix_t *q, real
         }
       }
       else {
-        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           sprintf(errorMessage, "Ram full, 2aq");
           moreInfoOnError("In function real_QR_decomposition:", errorMessage, NULL, NULL);
@@ -5649,7 +5649,7 @@ void real_QR_decomposition(const real34Matrix_t *matrix, real34Matrix_t *q, real
       freeC47Blocks(mat, matrix->header.matrixRows * matrix->header.matrixColumns * REAL_SIZE_IN_BLOCKS(75) * 2 * 3);
     }
     else {
-      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Ram full, 3ar");
         moreInfoOnError("In function real_QR_decomposition:", errorMessage, NULL, NULL);
@@ -5690,7 +5690,7 @@ void complex_QR_decomposition(const complex34Matrix_t *matrix, complex34Matrix_t
           }
         }
         else {
-          displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+          displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
           #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             sprintf(errorMessage, "Ram full, 1as");
             moreInfoOnError("In function complex_QR_decomposition:", errorMessage, NULL, NULL);
@@ -5698,7 +5698,7 @@ void complex_QR_decomposition(const complex34Matrix_t *matrix, complex34Matrix_t
         }
       }
       else {
-        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           sprintf(errorMessage, "Ram full, 2at");
           moreInfoOnError("In function complex_QR_decomposition:", errorMessage, NULL, NULL);
@@ -5709,7 +5709,7 @@ void complex_QR_decomposition(const complex34Matrix_t *matrix, complex34Matrix_t
       freeC47Blocks(mat, matrix->header.matrixRows * matrix->header.matrixColumns * REAL_SIZE_IN_BLOCKS(75) * 2 * 3);
     }
     else {
-      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Ram full, 3au");
         moreInfoOnError("In function complex_QR_decomposition:", errorMessage, NULL, NULL);
@@ -6583,7 +6583,7 @@ void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, real_t *
                                                           #endif // EIGENDEBUG
 
   if(isProblematicMatrix(a, size)) {
-    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Cannot execute: destination matrix is out of range, or the wrong type for the Householder QR: %d", matrixIndex);
       moreInfoOnError("In function calculateEigenvalues:", errorMessage, NULL, NULL);
@@ -6767,7 +6767,7 @@ if(iteration % 20 == 0) {
         }
         if(exitKeyWaiting()) {
           progressHalfSecUpdate_Integer(force+1, "Interrupted Iter:", iteration, halfSec_clearZ, halfSec_clearT, halfSec_disp);
-          displayCalcErrorMessage(ERROR_SOLVER_ABORT, REGISTER_T, NIM_REGISTER_LINE);
+          displayCalcErrorMessage(ERROR_SOLVER_ABORT, REGISTER_T);
           #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             sprintf(errorMessage, "Exit while calculating");
             moreInfoOnError("In function calculateEigenvalues:", errorMessage, NULL, NULL);
@@ -7426,7 +7426,7 @@ if(iteration % 20 == 0) {
           solveEigenBlock(a, eig, size, i, j, is_real_symmetric, realContext);
         }
         else if((coupled || j > i + 2) && lastErrorCode == ERROR_NONE) {
-          displayCalcErrorMessage(ERROR_NO_ROOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+          displayCalcErrorMessage(ERROR_NO_ROOT_FOUND, ERR_REGISTER_LINE);
           #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             sprintf(errorMessage, "rows %d to %d are not a block of at most 3 rows apart from the rows below", i, j);
             moreInfoOnError("In function calculateEigenvalues:", errorMessage, NULL, NULL);
@@ -7767,7 +7767,7 @@ static void calculateEigenvectors(const any34Matrix_t *matrix, bool_t isComplex,
           v = NULL;
         }
         else {
-          displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+          displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
           #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             sprintf(errorMessage, "Ram full, 1av");
             moreInfoOnError("In function calculateEigenvectors:", errorMessage, NULL, NULL);
@@ -7782,7 +7782,7 @@ static void calculateEigenvectors(const any34Matrix_t *matrix, bool_t isComplex,
       unknownsToFill = NULL;
     }
     else {
-      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Ram full, 2aw");
         moreInfoOnError("In function calculateEigenvectors:", errorMessage, NULL, NULL);
@@ -7843,7 +7843,7 @@ static void realEigenvalues(const real34Matrix_t *matrix, real34Matrix_t *res, r
             }
           }
           else {
-            displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+            displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
             #if (EXTRA_INFO_ON_CALC_ERROR == 1)
               sprintf(errorMessage, "Ram full, 1ax");
               moreInfoOnError("In function realEigenvalues:", errorMessage, NULL, NULL);
@@ -7852,7 +7852,7 @@ static void realEigenvalues(const real34Matrix_t *matrix, real34Matrix_t *res, r
         }
       }
       else {
-        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           sprintf(errorMessage, "Ram full, 2ay");
           moreInfoOnError("In function realEigenvalues:", errorMessage, NULL, NULL);
@@ -7862,7 +7862,7 @@ static void realEigenvalues(const real34Matrix_t *matrix, real34Matrix_t *res, r
       freeC47Blocks(bulk, bulkSize);
     }
     else {
-      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Ram full, 3az");
         moreInfoOnError("In function realEigenvalues:", errorMessage, NULL, NULL);
@@ -7905,7 +7905,7 @@ static void complexEigenvalues(const complex34Matrix_t *matrix, complex34Matrix_
         }
       }
       else {
-        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           sprintf(errorMessage, "Ram full, 1ba");
           moreInfoOnError("In function complexEigenvalues:", errorMessage, NULL, NULL);
@@ -7915,7 +7915,7 @@ static void complexEigenvalues(const complex34Matrix_t *matrix, complex34Matrix_
       freeC47Blocks(bulk, bulkSize);
     }
     else {
-      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Ram full, 2bb");
         moreInfoOnError("In function complexEigenvalues:", errorMessage, NULL, NULL);
@@ -8017,7 +8017,7 @@ static void realEigenvectors(const real34Matrix_t *matrix, real34Matrix_t *res, 
             }
           }
           else {
-            displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+            displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
             #if (EXTRA_INFO_ON_CALC_ERROR == 1)
               sprintf(errorMessage, "Ram full, 1bc");
               moreInfoOnError("In function realEigenvectors:", errorMessage, NULL, NULL);
@@ -8029,7 +8029,7 @@ static void realEigenvectors(const real34Matrix_t *matrix, real34Matrix_t *res, 
         }
       }
       else {
-        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           sprintf(errorMessage, "Ram full, 2be");
           moreInfoOnError("In function realEigenvectors:", errorMessage, NULL, NULL);
@@ -8039,7 +8039,7 @@ static void realEigenvectors(const real34Matrix_t *matrix, real34Matrix_t *res, 
       freeC47Blocks(bulk, bulkSize);
     }
     else {
-      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Ram full, 3bf");
         moreInfoOnError("In function realEigenvectors:", errorMessage, NULL, NULL);
@@ -8112,7 +8112,7 @@ static void complexEigenvectors(const complex34Matrix_t *matrix, complex34Matrix
         }
       }
       else {
-        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           sprintf(errorMessage, "Ram full, 1");
           moreInfoOnError("In function complexEigenvectors:", errorMessage, NULL, NULL);
@@ -8122,7 +8122,7 @@ static void complexEigenvectors(const complex34Matrix_t *matrix, complex34Matrix
       freeC47Blocks(bulk, bulkSize);
     }
     else {
-      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Ram full, 2bg");
         moreInfoOnError("In function complexEigenvectors:", errorMessage, NULL, NULL);
@@ -8393,7 +8393,7 @@ void elementwiseRemaRema(void (*f)(void)) {
   convertReal34MatrixRegisterToReal34Matrix(REGISTER_X, &x);
   convertReal34MatrixRegisterToReal34Matrix(REGISTER_Y, &y);
   if(x.header.matrixRows != y.header.matrixRows || x.header.matrixColumns != y.header.matrixColumns) {
-    displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE);
     return;
   }
 
@@ -8699,7 +8699,7 @@ void elementwiseCxmaRema(void (*f)(void)) {
   convertReal34MatrixRegisterToReal34Matrix(REGISTER_X, &x);
   convertComplex34MatrixRegisterToComplex34Matrix(REGISTER_Y, &y);
   if(x.header.matrixRows != y.header.matrixRows || x.header.matrixColumns != y.header.matrixColumns) {
-    displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE);
     return;
   }
 
@@ -8726,7 +8726,7 @@ void elementwiseRemaCxma(void (*f)(void)) {
   convertReal34MatrixRegisterToReal34Matrix(REGISTER_Y, &y);
   convertComplex34MatrixRegisterToComplex34Matrix(REGISTER_X, &x);
   if(x.header.matrixRows != y.header.matrixRows || x.header.matrixColumns != y.header.matrixColumns) {
-    displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE);
     return;
   }
 
@@ -8752,7 +8752,7 @@ void elementwiseCxmaCxma(void (*f)(void)) {
   convertComplex34MatrixRegisterToComplex34Matrix(REGISTER_Y, &y);
   convertComplex34MatrixRegisterToComplex34Matrix(REGISTER_X, &x);
   if(x.header.matrixRows != y.header.matrixRows || x.header.matrixColumns != y.header.matrixColumns) {
-    displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE);
     return;
   }
 
@@ -8778,7 +8778,7 @@ void callByVectorElement(bool_t (*real_f)(real34Matrix_t *), bool_t (*complex_f)
   const int16_t j = getJRegisterAsInt(true);
 
   if(matrixIndex == INVALID_VARIABLE || !regInRange(matrixIndex)) {
-    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Cannot execute: destination register is out of range: %d", matrixIndex);
       moreInfoOnError("In function callByVectorElement:", errorMessage, NULL, NULL);
@@ -8788,7 +8788,7 @@ void callByVectorElement(bool_t (*real_f)(real34Matrix_t *), bool_t (*complex_f)
     real34Matrix_t mat;
     convertReal34MatrixRegisterToReal34Matrix(matrixIndex, &mat);
     if(i < 0 || i >= mat.header.matrixRows || j < 0 || j >= mat.header.matrixColumns) {
-      displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Cannot execute: element (%" PRId16 ", %" PRId16 ") out of range", (int16_t)(i + 1), (int16_t)(j + 1));
         moreInfoOnError("In function callByVectorElement:", errorMessage, NULL, NULL);
@@ -8805,7 +8805,7 @@ void callByVectorElement(bool_t (*real_f)(real34Matrix_t *), bool_t (*complex_f)
     complex34Matrix_t mat;
     convertComplex34MatrixRegisterToComplex34Matrix(matrixIndex, &mat);
     if(i < 0 || i >= mat.header.matrixRows || j < 0 || j >= mat.header.matrixColumns) {
-      displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Cannot execute: element (%" PRId16 ", %" PRId16 ") out of range", (int16_t)(i + 1), (int16_t)(j + 1));
         moreInfoOnError("In function callByVectorElement:", errorMessage, NULL, NULL);
@@ -8819,7 +8819,7 @@ void callByVectorElement(bool_t (*real_f)(real34Matrix_t *), bool_t (*complex_f)
     complexMatrixFree(&mat);
   }
   else {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Cannot execute: something other than a matrix is indexed %s", getRegisterDataTypeName(REGISTER_X, true, false));
       moreInfoOnError("In function callByVectorElement:", errorMessage, NULL, NULL);
@@ -8832,7 +8832,7 @@ void callByIndexedMatrix(bool_t (*real_f)(real34Matrix_t *), bool_t (*complex_f)
   const int16_t j = getJRegisterAsInt(true);
 
   if(matrixIndex == INVALID_VARIABLE || !regInRange(matrixIndex)) {
-    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Cannot execute: destination register is out of range: %d", matrixIndex);
       moreInfoOnError("In function callByIndexedMatrix:", errorMessage, NULL, NULL);
@@ -8842,7 +8842,7 @@ void callByIndexedMatrix(bool_t (*real_f)(real34Matrix_t *), bool_t (*complex_f)
     real34Matrix_t mat;
     convertReal34MatrixRegisterToReal34Matrix(matrixIndex, &mat);
     if(i < 0 || i >= mat.header.matrixRows || j < 0 || j >= mat.header.matrixColumns) {
-      displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Cannot execute: element (%" PRId16 ", %" PRId16 ") out of range", (int16_t)(i + 1), (int16_t)(j + 1));
         moreInfoOnError("In function callByIndexedMatrix:", errorMessage, NULL, NULL);
@@ -8859,7 +8859,7 @@ void callByIndexedMatrix(bool_t (*real_f)(real34Matrix_t *), bool_t (*complex_f)
     complex34Matrix_t mat;
     convertComplex34MatrixRegisterToComplex34Matrix(matrixIndex, &mat);
     if(i < 0 || i >= mat.header.matrixRows || j < 0 || j >= mat.header.matrixColumns) {
-      displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Cannot execute: element (%" PRId16 ", %" PRId16 ") out of range", (int16_t)(i + 1), (int16_t)(j + 1));
         moreInfoOnError("In function callByIndexedMatrix:", errorMessage, NULL, NULL);
@@ -8873,7 +8873,7 @@ void callByIndexedMatrix(bool_t (*real_f)(real34Matrix_t *), bool_t (*complex_f)
     complexMatrixFree(&mat);
   }
   else {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Cannot execute: something other than a matrix is indexed %s", getRegisterDataTypeName(REGISTER_X, true, false));
       moreInfoOnError("In function callByIndexedMatrix:", errorMessage, NULL, NULL);
@@ -9041,7 +9041,7 @@ SPH_ret1:
 
 
   void V3err(int err) {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_POLAR_RECT, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_POLAR_RECT, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Err %d: 2D or 3D Vector required, not %s, %ix%i", err, getRegisterDataTypeName(REGISTER_X, true, false), REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows, REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns);
       moreInfoOnError("In function V3RectoToSph/V3RectoToCyl:", errorMessage, NULL, NULL);
@@ -9120,7 +9120,7 @@ static bool columnMinMaxReal(real34Matrix_t *matrix, bool calcMax) {
       real34Copy(&res_val, REGISTER_REAL34_DATA(REGISTER_X));
     }
     else {
-      displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "rows %" PRIu16 " and/or %" PRIu16 " out of range.", i, j);
         moreInfoOnError("In function columnMinMaxReal:", errorMessage, NULL, NULL);
@@ -9140,7 +9140,7 @@ static bool columnMinMaxReal(real34Matrix_t *matrix, bool calcMax) {
   }
 
   static bool columnMinMaxComplex(complex34Matrix_t *matrix) {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Cannot apply this function to %s", getRegisterDataTypeName(REGISTER_X, true, false));
       moreInfoOnError("In function columnMinMaxComplex:", errorMessage, NULL, NULL);
@@ -9292,7 +9292,7 @@ static bool columnMinMaxReal(real34Matrix_t *matrix, bool calcMax) {
     bool_t is_3D_Register_Ready = validSPHInput || validCYLInput || valid3DRInput;
 
     if(!is_3D_Register_Ready) {
-      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_POLAR_RECT, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_POLAR_RECT, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "No valid coordinates for 3D Spherical/Cylindrical");
         moreInfoOnError("In function isStack3DReadyConvertIfNot:", errorMessage, NULL, NULL);
@@ -9416,7 +9416,7 @@ static bool columnMinMaxReal(real34Matrix_t *matrix, bool calcMax) {
       return;
     }
 
-      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "invalid data type %s and %s", getRegisterDataTypeName(REGISTER_Y, true, false), getRegisterDataTypeName(REGISTER_X, true, false));
         moreInfoOnError("In function fnComplexToVector:", errorMessage, NULL, NULL);

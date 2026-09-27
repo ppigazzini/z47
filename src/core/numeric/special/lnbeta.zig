@@ -107,7 +107,7 @@ fn _checkLnGammaArgs(resultType: *i8, xReal: *real_t, realContext: *realContext_
 
     if (realIsInfinite(xReal)) {
         if (!runtime.getSystemFlag(FLAG_SPCRES)) {
-            displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+            displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
             extraInfoMessage("_checkLnGammaArgs", "cannot use " ++ std_plus_minus ++ std_infinity ++ " as X input of lnbeta when flag SPCRES is not set");
         } else {
             math_runtime_helpers.realToReal34(if (realIsPositive(xReal)) const_plusInfinity() else const_NaN(), runtime.registerReal34Ptr(REGISTER_X));
@@ -117,7 +117,7 @@ fn _checkLnGammaArgs(resultType: *i8, xReal: *real_t, realContext: *realContext_
     } else if (math_comparison_reals.realCompareLessEqual(xReal, const_0())) { // x <= 0
         if (realIsAnInteger(xReal)) {
             if (!runtime.getSystemFlag(FLAG_SPCRES)) {
-                displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+                displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
                 extraInfoMessage("_checkLnGammaArgs", "cannot use a negative integer as X input of lnbeta when flag SPCRES is not set");
             } else {
                 reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
@@ -137,7 +137,7 @@ fn _checkLnGammaArgs(resultType: *i8, xReal: *real_t, realContext: *realContext_
                 if (runtime.getFlag(FLAG_CPXRES)) {
                     resultType.* = RESULT_TYPE_COMPLEX;
                 } else { // Domain error
-                    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+                    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
                     extraInfoMessage("_checkLnGammaArgs", "cannot use a as X input of lnbeta if gamma(X)<0 when flag I is not set");
                     result = false;
                 }

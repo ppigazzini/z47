@@ -300,7 +300,7 @@ pub export fn fn2Rcl(regist: u16) callconv(.c) void {
         setSystemFlag(FLAG_ASLIFT);
         fnRecall(regist + 0);
     } else {
-        frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "{d:0>4}", .{@as(u32, @intCast(regist))});
             moreInfoOnError("In function fn2Rcl:", errorMessage, " is not defined!");
@@ -320,7 +320,7 @@ pub export fn fn3Rcl(regist: u16) callconv(.c) void {
         setSystemFlag(FLAG_ASLIFT);
         fnRecall(regist + 0);
     } else {
-        frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "{d:0>4}", .{@as(u32, @intCast(regist))});
             moreInfoOnError("In function fn3Rcl:", errorMessage, " is not defined!");
@@ -606,7 +606,7 @@ pub export fn fnRecallConfig(regist: u16) callconv(.c) void {
         _ = configToRecall.compatibility_byte27;
         timeDisplayFormatDigits = configToRecall.timeDisplayFormatDigits;
     } else {
-        frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "data type {s} cannot be used to recall a configuration!", .{std.mem.span(frontier_debug.getRegisterDataTypeName(@intCast(regist), false, false))});
             moreInfoOnError("In function fnRecallConfig:", errorMessage, null);
@@ -622,13 +622,13 @@ pub export fn fnRecallStack(regist: u16) callconv(.c) void {
     const size: u16 = if (getSystemFlag(FLAG_SSIZE8)) 8 else 4;
 
     if (@as(i32, REGISTER_X) - @as(i32, size) <= @as(i32, regist) and @as(i32, regist) < REGISTER_X) {
-        frontier_error.displayCalcErrorMessage(ERROR_STACK_CLASH, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_STACK_CLASH, ERR_REGISTER_LINE);
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "Cannot execute RCLS, destination register would overlap the stack: {d}", .{@as(i32, regist)});
             moreInfoOnError("In function fnRecallStack:", errorMessage, null);
         }
     } else if ((@as(u16, @intCast(REGISTER_X)) <= regist and regist < FIRST_LOCAL_REGISTER) or @as(i32, regist) + @as(i32, size) > @as(i32, FIRST_LOCAL_REGISTER) + @as(i32, currentNumberOfLocalRegisters())) {
-        frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "Cannot execute RCLS, destination register is out of range: {d}", .{@as(i32, regist)});
             moreInfoOnError("In function fnRecallStack:", errorMessage, null);
@@ -721,7 +721,7 @@ pub export fn fnRecallElement(unusedButMandatoryParameter: u16) callconv(.c) voi
 
 fn _fnRecallElement(stepForward: bool) void {
     if (matrixIndex == INVALID_VARIABLE) {
-        frontier_error.displayCalcErrorMessage(ERROR_NO_MATRIX_INDEXED, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_NO_MATRIX_INDEXED, ERR_REGISTER_LINE);
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "Cannot execute RCLEL without a matrix indexed", .{});
             moreInfoOnError("In function fnRecallElement:", errorMessage, null);
@@ -740,7 +740,7 @@ fn _fnRecallElement(stepForward: bool) void {
 pub export fn fnRecallIJ(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     if (matrixIndex == INVALID_VARIABLE) {
-        frontier_error.displayCalcErrorMessage(ERROR_NO_MATRIX_INDEXED, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_NO_MATRIX_INDEXED, ERR_REGISTER_LINE);
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "Cannot execute RCLIJ without a matrix indexed", .{});
             moreInfoOnError("In function fnRecallIJ:", errorMessage, null);
@@ -811,7 +811,7 @@ pub export fn fn42AlphaRecall(regist: u16) callconv(.c) void {
             copySourceRegisterToDestRegister(SAVED_REGISTER_Y, REGISTER_Y);
             copySourceRegisterToDestRegister(SAVED_REGISTER_X, REGISTER_X);
         } else {
-            frontier_error.displayCalcErrorMessage(ERROR_NO_STRING_IN_ALPHA_REGISTER, ERR_REGISTER_LINE, REGISTER_T);
+            frontier_error.displayCalcErrorMessage(ERROR_NO_STRING_IN_ALPHA_REGISTER, ERR_REGISTER_LINE);
         }
     }
 }

@@ -21,7 +21,7 @@ double z47_math_wrappers_log(double value) {
 
 static void z47_math_wrappers_long_integer_gcd(longInteger_t liY, longInteger_t liX, longInteger_t liA) {
   if(longIntegerIsZero(liY) && longIntegerIsZero(liX)) {
-    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
 #if (EXTRA_INFO_ON_CALC_ERROR == 1)
     moreInfoOnError("In function _longIntegerGcd:", "(0, 0) is not in the function domain.", NULL, NULL);
 #endif
@@ -43,11 +43,11 @@ void z47_math_wrappers_gcd_int(void) {
   }
 
   if(fracX) {
-    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
     goto end2;
   }
   if(fracY) {
-    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_Y);
+    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
     goto end2;
   }
 
@@ -77,12 +77,12 @@ void z47_math_wrappers_lcm_int(void) {
   }
 
   if(fracX) {
-    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
     goto end2;
   }
 
   if(fracY) {
-    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_Y);
+    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
     goto end2;
   }
 
@@ -130,7 +130,7 @@ void z47_math_wrappers_fact_long_integer(void) {
   convertLongIntegerRegisterToLongInteger(REGISTER_X, x);
 
   if(longIntegerIsNegative(x)) {
-    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
 #if (EXTRA_INFO_ON_CALC_ERROR == 1)
     longIntegerRegisterToDisplayString(REGISTER_X, errorMessage, ERROR_MESSAGE_LENGTH, SCREEN_WIDTH, 50, false);
     sprintf(tmpString, "cannot calculate factorial(%s)", errorMessage);
@@ -198,7 +198,7 @@ void z47_math_wrappers_fact_short_integer(void) {
   convertShortIntegerRegisterToUInt64(REGISTER_X, &sign, &value);
 
   if(sign == 1) {
-    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
 #if (EXTRA_INFO_ON_CALC_ERROR == 1)
     longIntegerRegisterToDisplayString(REGISTER_X, errorMessage, ERROR_MESSAGE_LENGTH, SCREEN_WIDTH, 50, false);
     sprintf(tmpString, "cannot calculate factorial(%s)", errorMessage);
@@ -208,7 +208,7 @@ void z47_math_wrappers_fact_short_integer(void) {
   }
 
   if(value > 20) {
-    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
 #if (EXTRA_INFO_ON_CALC_ERROR == 1)
     longIntegerRegisterToDisplayString(REGISTER_X, errorMessage, ERROR_MESSAGE_LENGTH, SCREEN_WIDTH, 50, false);
     sprintf(tmpString, "cannot calculate factorial(%s)", errorMessage);
@@ -233,7 +233,7 @@ void z47_math_wrappers_mod_long_integer(void) {
   }
 
   if(longIntegerIsZero(x)) {
-    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
 #if (EXTRA_INFO_ON_CALC_ERROR == 1)
     moreInfoOnError("In function modLonI:", "cannot IDIVR a long integer by 0", NULL, NULL);
 #endif
@@ -267,7 +267,7 @@ void z47_math_wrappers_mod_short_integer(void) {
   }
 
   if(longIntegerIsZero(x)) {
-    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
 #if (EXTRA_INFO_ON_CALC_ERROR == 1)
     moreInfoOnError("In function modShoI:", "cannot IDIVR a short integer by 0", NULL, NULL);
 #endif
@@ -301,7 +301,7 @@ void z47_math_wrappers_mod_real(void) {
   }
 
   if(realIsZero(&x)) {
-    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
 #if (EXTRA_INFO_ON_CALC_ERROR == 1)
     moreInfoOnError("In function modReal:", "cannot IDIVR a real34 by 0", NULL, NULL);
 #endif
@@ -324,7 +324,7 @@ void z47_math_wrappers_rmd_long_integer(void) {
   }
 
   if(longIntegerIsZero(x)) {
-    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
 #if (EXTRA_INFO_ON_CALC_ERROR == 1)
     moreInfoOnError("In function rmdLonI:", "cannot IDIVR a long integer by 0", NULL, NULL);
 #endif
@@ -355,7 +355,7 @@ void z47_math_wrappers_rmd_short_integer(void) {
   }
 
   if(longIntegerIsZero(x)) {
-    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
 #if (EXTRA_INFO_ON_CALC_ERROR == 1)
     moreInfoOnError("In function rmdShoI:", "cannot IDIVR a short integer by 0", NULL, NULL);
 #endif
@@ -387,7 +387,7 @@ void z47_math_wrappers_rmd_real(void) {
   }
 
   if(realIsZero(&x)) {
-    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
 #if (EXTRA_INFO_ON_CALC_ERROR == 1)
     moreInfoOnError("In function rmdReal:", "cannot IDIVR a real34 by 0", NULL, NULL);
 #endif
@@ -941,175 +941,175 @@ const real_t *z47_math_wrappers_const_minus_infinity(void) {
 }
 
 void z47_math_wrappers_report_sinc_real_domain_error(void) {
-  displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+  displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
 #if (EXTRA_INFO_ON_CALC_ERROR == 1)
   moreInfoOnError("In function sincReal:", "cannot divide a real34 by " STD_PLUS_MINUS STD_INFINITY " when flag SPCRES is not set", NULL, NULL);
 #endif
 }
 
 void z47_math_wrappers_report_sincpi_real_domain_error(void) {
-  displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+  displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
 #if (EXTRA_INFO_ON_CALC_ERROR == 1)
   moreInfoOnError("In function sincpiReal:", "cannot divide a real34 by " STD_PLUS_MINUS STD_INFINITY " when flag SPCRES is not set", NULL, NULL);
 #endif
 }
 
 void z47_math_wrappers_report_exp_m1_real_domain_error(void) {
-  displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+  displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
 #if (EXTRA_INFO_ON_CALC_ERROR == 1)
   moreInfoOnError("In function expM1Real:", "cannot use " STD_PLUS_MINUS STD_INFINITY " as X input of exp when flag SPCRES is not set", NULL, NULL);
 #endif
 }
 
 void z47_math_wrappers_report_ln_p1_real_zero_domain_error(void) {
-  displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+  displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
 #if (EXTRA_INFO_ON_CALC_ERROR == 1)
   moreInfoOnError("In function lnP1Real:", "cannot calculate Ln(0) in Ln(1 + x)", NULL, NULL);
 #endif
 }
 
 void z47_math_wrappers_report_ln_p1_real_infinite_domain_error(void) {
-  displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+  displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
 #if (EXTRA_INFO_ON_CALC_ERROR == 1)
   moreInfoOnError("In function lnP1Real:", "cannot use " STD_PLUS_MINUS STD_INFINITY " as X input of ln(x+1) when flag SPCRES is not set", NULL, NULL);
 #endif
 }
 
 void z47_math_wrappers_report_ln_p1_real_negative_domain_error(void) {
-  displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+  displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
 #if (EXTRA_INFO_ON_CALC_ERROR == 1)
   moreInfoOnError("In function lnP1Real:", "cannot calculate Ln of a negative number when CPXRES is not set!", NULL, NULL);
 #endif
 }
 
 void z47_math_wrappers_report_ln_p1_cplx_zero_domain_error(void) {
-  displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+  displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
 #if (EXTRA_INFO_ON_CALC_ERROR == 1)
   moreInfoOnError("In function lnP1Cplx:", "cannot calculate Ln(0) in Ln(1 + x)", NULL, NULL);
 #endif
 }
 
 void z47_math_wrappers_report_exp_real_domain_error(void) {
-  displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+  displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
 #if (EXTRA_INFO_ON_CALC_ERROR == 1)
   moreInfoOnError("In function expReal:", "cannot use " STD_PLUS_MINUS STD_INFINITY " as X input of exp when flag SPCRES is not set", NULL, NULL);
 #endif
 }
 
 void z47_math_wrappers_report_arcsin_real_domain_error(void) {
-  displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+  displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
 #if (EXTRA_INFO_ON_CALC_ERROR == 1)
   moreInfoOnError("In function arcsinReal:", "|X| > 1", "and CPXRES is not set!", NULL);
 #endif
 }
 
 void z47_math_wrappers_report_arccos_real_domain_error(void) {
-  displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+  displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
 #if (EXTRA_INFO_ON_CALC_ERROR == 1)
   moreInfoOnError("In function arccosReal:", "|X| > 1", "and CPXRES is not set!", NULL);
 #endif
 }
 
 void z47_math_wrappers_report_arctan_real_domain_error(void) {
-  displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+  displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
 #if (EXTRA_INFO_ON_CALC_ERROR == 1)
   moreInfoOnError("In function arctanReal:", "X = " STD_PLUS_MINUS STD_INFINITY, NULL, NULL);
 #endif
 }
 
 void z47_math_wrappers_report_arccosh_real_domain_error(void) {
-  displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+  displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
 #if (EXTRA_INFO_ON_CALC_ERROR == 1)
   moreInfoOnError("In function arccoshReal:", "X < 1", "and CPXRES is not set!", NULL);
 #endif
 }
 
 void z47_math_wrappers_report_arctanh_real_positive_one_domain_error(void) {
-  displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+  displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
 #if (EXTRA_INFO_ON_CALC_ERROR == 1)
   moreInfoOnError("In function arctanhReal:", "X = 1", "and DANGER flag is not set!", NULL);
 #endif
 }
 
 void z47_math_wrappers_report_arctanh_real_negative_one_domain_error(void) {
-  displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+  displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
 #if (EXTRA_INFO_ON_CALC_ERROR == 1)
   moreInfoOnError("In function arctanhReal:", "X = -1", "and DANGER flag is not set!", NULL);
 #endif
 }
 
 void z47_math_wrappers_report_arctanh_real_domain_error(void) {
-  displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+  displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
 #if (EXTRA_INFO_ON_CALC_ERROR == 1)
   moreInfoOnError("In function arctanhReal:", "|X| > 1", "and CPXRES is not set!", NULL);
 #endif
 }
 
 void z47_math_wrappers_report_int_pow_real_domain_error(void) {
-  displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+  displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
 #if (EXTRA_INFO_ON_CALC_ERROR == 1)
   moreInfoOnError("In function intPowReal:", "cannot use " STD_PLUS_MINUS STD_INFINITY " as X input of 10^x when flag SPCRES is not set", NULL, NULL);
 #endif
 }
 
 void z47_math_wrappers_report_eulers_formula_complex_domain_error(void) {
-  displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+  displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
 #if (EXTRA_INFO_ON_CALC_ERROR == 1)
   moreInfoOnError("In function eulersFormulaCplx:", "cannot use " STD_PLUS_MINUS STD_INFINITY " as real or imag X input when flag SPCRES is not set", NULL, NULL);
 #endif
 }
 
 void z47_math_wrappers_report_eulers_formula_real_domain_error(void) {
-  displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+  displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
 #if (EXTRA_INFO_ON_CALC_ERROR == 1)
   moreInfoOnError("In function eulersFormulaReal:", "cannot use " STD_PLUS_MINUS STD_INFINITY " as X input when flag SPCRES is not set", NULL, NULL);
 #endif
 }
 
 void z47_math_wrappers_report_sign_real_nan_error(void) {
-  displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+  displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
 #if (EXTRA_INFO_ON_CALC_ERROR == 1)
   moreInfoOnError("In function signReal:", "cannot use NaN as X input of SIGN", NULL, NULL);
 #endif
 }
 
 void z47_math_wrappers_report_invert_real_divide_by_zero_error(void) {
-  displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+  displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
 #if (EXTRA_INFO_ON_CALC_ERROR == 1)
   moreInfoOnError("In function invertReal:", "cannot divide a real by 0", NULL, NULL);
 #endif
 }
 
 void z47_math_wrappers_report_sinh_cosh_real_domain_error(void) {
-  displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+  displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
 #if (EXTRA_INFO_ON_CALC_ERROR == 1)
   moreInfoOnError("In function sinhCoshReal:", "cannot use " STD_PLUS_MINUS STD_INFINITY " as X input of sinh when flag SPCRES is not set", NULL, NULL);
 #endif
 }
 
 void z47_math_wrappers_report_tanh_real_domain_error(void) {
-  displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+  displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
 #if (EXTRA_INFO_ON_CALC_ERROR == 1)
   moreInfoOnError("In function tanhReal:", "cannot use " STD_PLUS_MINUS STD_INFINITY " as X input of tanh when flag SPCRES is not set", NULL, NULL);
 #endif
 }
 
 void z47_math_wrappers_report_square_real_domain_error(void) {
-  displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+  displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
 #if (EXTRA_INFO_ON_CALC_ERROR == 1)
   moreInfoOnError("In function squareReal:", "cannot use " STD_PLUS_MINUS STD_INFINITY " as X input of curt when flag SPCRES is not set", NULL, NULL);
 #endif
 }
 
 void z47_math_wrappers_report_tan_real_pole_error(void) {
-  displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+  displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
 #if (EXTRA_INFO_ON_CALC_ERROR == 1)
   moreInfoOnError("In function tanReal:", "X = " STD_PLUS_MINUS "90" STD_DEGREE, NULL, NULL);
 #endif
 }
 
 void z47_math_wrappers_report_cube_real_domain_error(void) {
-  displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+  displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
 #if (EXTRA_INFO_ON_CALC_ERROR == 1)
   moreInfoOnError("In function cubeReal:", "cannot use " STD_PLUS_MINUS STD_INFINITY " as X input of curt when flag SPCRES is not set", NULL, NULL);
 #endif

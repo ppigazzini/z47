@@ -9,7 +9,7 @@
 
 static bool_t getShiftInput(uint64_t *w, uint32_t *base) {
   if(!getRegisterAsRawShortInt(REGISTER_X, w, base)) {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "cannot shift/rotate %s", getRegisterDataTypeName(REGISTER_X, true, false));
       moreInfoOnError("In function fnAsr:", errorMessage, NULL, NULL);
@@ -386,7 +386,7 @@ void fnZip(uint16_t unusedButMandatoryParameter) {
   unsigned int i, j;
 
   if(!getRegisterAsRawShortInt(REGISTER_Y, &y, &base)) {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_Y);
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "cannot shift/rotate %s", getRegisterDataTypeName(REGISTER_Y, true, false));
       moreInfoOnError("In function fnZip:", errorMessage, NULL, NULL);

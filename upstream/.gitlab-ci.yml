@@ -58,17 +58,36 @@ variables:
   - if: $CI_COMMIT_BRANCH
     changes: *firmware-source-changes
 
-# The owner's manual. TeX Live, with the Python and the Ghostscript of the
-# TeX Live image for the screen crop: no pixi, no database, and no clone of
+# The documents. TeX Live, with the Python and the Ghostscript of the TeX
+# Live image for the screen crop: no pixi, no database, and no clone of
 # this repository for the fonts, because res/fonts/ is in the tree the job
 # already has.
-.manual-source-changes: &manual-source-changes
+#
+# Two gates and two jobs, one per document tree. The manual is one
+# document made of thirty files, so any of them is the whole book; a note
+# is a document in a file of its own. Under one gate over both trees a
+# note changing a line would build the 260 page book, and that is the
+# trigger the split is here to avoid.
+.docs-manual-changes: &docs-manual-changes
   - docs/manual/**/*
   - docs/styles/**/*
   - docs/tools/**/*
   - docs/refdb47/data/**/*
+  # The checkers the manual's own targets call. A change here can turn a
+  # clean document into a failing one, or the reverse, without a line of
+  # the document moving, so the job has to run on it. `tools/**/*` in the
+  # firmware list above is the top-level directory and does not cover it.
+  - docs/refdb47/tools/**/*
   - .gitlab-ci.yml
   - .gitlab/ci/**/*
+
+# A note is built from its own .ltx and the marked-up build shows what
+# that file changed, so the file is the gate. The shared styles are in
+# the manual's list above and are not in this one: a style change leaves
+# every note source as it was, and a diff of a file against itself is an
+# unmarked copy of the note.
+.docs-appnotes-changes: &docs-appnotes-changes
+  - docs/appnotes/sources/**/*.ltx
 
 macOS:
   stage: build
@@ -189,24 +208,66 @@ codeDocs:
   script:
     - make docs
 
-manual:
+# The manual: the A4 build that releases, the screen crop beside it, and
+# the same document again with every change the branch makes to it marked
+# on the page. docs/tools/ci-diff.sh writes the third one and says there
+# why a release tag gets only the first two.
+docs-manual:
   stage: build
   image: texlive/texlive:latest
   variables:
     GIT_SUBMODULE_STRATEGY: none
+    # The marked-up build test merges the branch onto its target branch,
+    # and a merge needs a common ancestor, which a shallow clone has not.
+    GIT_DEPTH: 0
   rules:
     - !reference [.docs-release-rules, rules]
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-      changes: *manual-source-changes
+      changes: *docs-manual-changes
     - if: $CI_COMMIT_BRANCH
-      changes: *manual-source-changes
+      changes: *docs-manual-changes
   script:
     - make -C docs/manual pdf VARIANT=crop
+    - docs/tools/ci-diff.sh manual
   artifacts:
     expire_in: 1 week
     paths:
       - docs/manual/C47_R47_calc.pdf
-      - docs/manual/C47_R47_calcCrop.pdf
+      - docs/manual/C47_R47_calc_Crop.pdf
+      # Written on a branch and in a merge request. A release tag has
+      # nothing to compare against, so this one is not there and the job
+      # says so rather than failing.
+      - docs/manual/C47_R47_calc_Diff_Crop.pdf
+  tags:
+    - saas-linux-small-amd64
+
+# The application notes, and only the ones the branch changes. Each is
+# built the way it publishes, by its own build script and the same crop,
+# with the changes marked. The note's own PDF is in the repository and is
+# rebuilt by hand when it publishes, so the marked-up build is the only
+# one this job writes.
+docs-appnotes:
+  stage: build
+  image: texlive/texlive:latest
+  variables:
+    GIT_SUBMODULE_STRATEGY: none
+    GIT_DEPTH: 0
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes: *docs-appnotes-changes
+    - if: $CI_COMMIT_BRANCH
+      changes: *docs-appnotes-changes
+  before_script:
+    # A note is built by sources/build-note-100.sh, which is zsh, and the
+    # image carries no promise of one. Installed only when it is missing,
+    # so an image that has it pays nothing.
+    - command -v zsh > /dev/null || { apt-get update -qq && apt-get install -qq -y zsh; }
+  script:
+    - docs/tools/ci-diff.sh appnotes
+  artifacts:
+    expire_in: 1 week
+    paths:
+      - docs/appnotes/*_Diff_Crop.pdf
   tags:
     - saas-linux-small-amd64
 
@@ -214,8 +275,8 @@ manual:
 # nothing else. No firmware job, no firmware upload and no firmware release runs for any tag that begins with docs-, and a docs- tag without a release
 # version after it starts no job at all. The rule is .docs-release-rules in .gitlab/ci/release-rules.yml.
 #
-# The manual job builds, on such a tag as on a branch. docs-stage builds nothing: `make -C docs release` copies the PDFs that docs/release.tsv lists, from
-# the artefacts of the manual job, into docs/release/ under their release names with a VERSION file. docs-upload and docs-release publish what it wrote.
+# The docs-manual job builds, on such a tag as on a branch. docs-stage builds nothing: `make -C docs release` copies the PDFs that docs/release.tsv lists,
+# from the artefacts of docs-manual, into docs/release/ under their release names with a VERSION file. docs-upload and docs-release publish what it wrote.
 docs-stage:
   stage: upload
   image: alpine:latest
@@ -223,7 +284,7 @@ docs-stage:
     GIT_SUBMODULE_STRATEGY: none
   extends: .docs-release-rules
   needs:
-    - job: manual
+    - job: docs-manual
       artifacts: true
   before_script:
     - apk add --no-cache make

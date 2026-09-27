@@ -23,7 +23,7 @@ TO_QSPI void (* const Round[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void) = {
  ***********************************************/
 #if (EXTRA_INFO_ON_CALC_ERROR == 1)
   void roundError(void) {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     sprintf(errorMessage, "cannot calculate ROUND for %s", getRegisterDataTypeName(REGISTER_X, true, false));
     moreInfoOnError("In function roundError:", errorMessage, NULL, NULL);
   }

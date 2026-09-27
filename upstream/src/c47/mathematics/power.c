@@ -117,7 +117,7 @@ static void powLonI(void) {
   }
 
   if(longIntegerIsZero(exponent) && longIntegerIsZero(base)) {
-    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function powLonI: Cannot calculate 0^0!", NULL, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -182,7 +182,7 @@ static void powReal(void) {
             powCplx();
             return;
           }
-          displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+          displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
           #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             moreInfoOnError("In function powReal:", "cannot do complex results if CPXRES is not set", NULL, NULL);
           #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -210,7 +210,7 @@ static void powReal(void) {
       return;
     }
     else {
-      displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         moreInfoOnError("In function powReal:", "cannot do complex results if CPXRES is not set", NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -390,7 +390,7 @@ static void powCplx(void) {
   uint8_t errorCode = PowerComplex(&yReal, &yImag, &xReal, &xImag, &rReal, &rImag, &ctxtReal39);
 
   if(errorCode != ERROR_NONE) {
-    displayCalcErrorMessage(errorCode, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(errorCode, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "cannot raise %s", getRegisterDataTypeName(REGISTER_Y, true, false));
       sprintf(errorMessage + ERROR_MESSAGE_LENGTH/2, "to %s", getRegisterDataTypeName(REGISTER_X, true, false));

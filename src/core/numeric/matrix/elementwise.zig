@@ -264,7 +264,7 @@ pub export fn elementwiseRemaRema(f: VoidCallback) callconv(.c) void {
     runtime.convertReal34MatrixRegisterToReal34Matrix(REGISTER_X, &x);
     runtime.convertReal34MatrixRegisterToReal34Matrix(REGISTER_Y, &y);
     if (x.header.matrixRows != y.header.matrixRows or x.header.matrixColumns != y.header.matrixColumns) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_MATRIX_MISMATCH, runtime.ERR_REGISTER_LINE, REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_MATRIX_MISMATCH, runtime.ERR_REGISTER_LINE);
         return;
     }
     const n = numElems(x.header.matrixRows, x.header.matrixColumns);
@@ -510,7 +510,7 @@ pub export fn elementwiseCxmaRema(f: VoidCallback) callconv(.c) void {
     runtime.convertReal34MatrixRegisterToReal34Matrix(REGISTER_X, &x);
     runtime.convertComplex34MatrixRegisterToComplex34Matrix(REGISTER_Y, &y);
     if (x.header.matrixRows != y.header.matrixRows or x.header.matrixColumns != y.header.matrixColumns) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_MATRIX_MISMATCH, runtime.ERR_REGISTER_LINE, REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_MATRIX_MISMATCH, runtime.ERR_REGISTER_LINE);
         return;
     }
     const n = numElems(x.header.matrixRows, x.header.matrixColumns);
@@ -534,7 +534,7 @@ pub export fn elementwiseRemaCxma(f: VoidCallback) callconv(.c) void {
     runtime.convertReal34MatrixRegisterToReal34Matrix(REGISTER_Y, &y);
     runtime.convertComplex34MatrixRegisterToComplex34Matrix(REGISTER_X, &x);
     if (x.header.matrixRows != y.header.matrixRows or x.header.matrixColumns != y.header.matrixColumns) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_MATRIX_MISMATCH, runtime.ERR_REGISTER_LINE, REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_MATRIX_MISMATCH, runtime.ERR_REGISTER_LINE);
         return;
     }
     const n = numElems(x.header.matrixRows, x.header.matrixColumns);
@@ -558,7 +558,7 @@ pub export fn elementwiseCxmaCxma(f: VoidCallback) callconv(.c) void {
     runtime.convertComplex34MatrixRegisterToComplex34Matrix(REGISTER_Y, &y);
     runtime.convertComplex34MatrixRegisterToComplex34Matrix(REGISTER_X, &x);
     if (x.header.matrixRows != y.header.matrixRows or x.header.matrixColumns != y.header.matrixColumns) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_MATRIX_MISMATCH, runtime.ERR_REGISTER_LINE, REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_MATRIX_MISMATCH, runtime.ERR_REGISTER_LINE);
         return;
     }
     const n = numElems(x.header.matrixRows, x.header.matrixColumns);
@@ -584,7 +584,7 @@ fn dispatchIndexedElement(real_f: RealMatrixCallback, complex_f: ComplexMatrixCa
     const mi: calcRegister_t = @intCast(runtime.matrixIndex);
 
     if (mi == runtime.INVALID_VARIABLE or !regInRange(runtime.matrixIndex)) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_OUT_OF_RANGE, runtime.ERR_REGISTER_LINE, REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_OUT_OF_RANGE, runtime.ERR_REGISTER_LINE);
         if (runtime.extra_info_on_calc_error) {
             var buf: [80]u8 = undefined;
             const m = runtime.bufPrintZ(&buf, "Cannot execute: destination register is out of range: {d}", .{runtime.matrixIndex}) catch "out of range";
@@ -613,7 +613,7 @@ fn dispatchIndexedElement(real_f: RealMatrixCallback, complex_f: ComplexMatrixCa
         }
         runtime.complexMatrixFree(&mat);
     } else {
-        runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE);
         if (runtime.extra_info_on_calc_error) {
             var buf: [96]u8 = undefined;
             const tn = runtime.getRegisterDataTypeName(REGISTER_X, true, false);
@@ -624,7 +624,7 @@ fn dispatchIndexedElement(real_f: RealMatrixCallback, complex_f: ComplexMatrixCa
 }
 
 fn outOfRangeElement(i: i16, j: i16, fnName: [*:0]const u8) void {
-    runtime.displayCalcErrorMessage(runtime.ERROR_OUT_OF_RANGE, runtime.ERR_REGISTER_LINE, REGISTER_X);
+    runtime.displayCalcErrorMessage(runtime.ERROR_OUT_OF_RANGE, runtime.ERR_REGISTER_LINE);
     if (runtime.extra_info_on_calc_error) {
         var buf: [80]u8 = undefined;
         // i + 1 promotes to int and the explicit (int16_t) cast truncates it

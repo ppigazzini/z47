@@ -77,7 +77,7 @@ void fnSolve(uint16_t labelOrVariable) {
     adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
   }
   else if(!(currentSolverStatus & SOLVER_STATUS_USES_FORMULA) && (FIRST_NAMED_VARIABLE <= labelOrVariable && labelOrVariable <= LAST_NAMED_VARIABLE) && currentSolverProgram >= numberOfLabels) {
-    displayCalcErrorMessage(ERROR_NO_PROGRAM_SPECIFIED, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_NO_PROGRAM_SPECIFIED, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "label %u not found", labelOrVariable);
       moreInfoOnError("In function fnSolve:", errorMessage, NULL, NULL);
@@ -128,32 +128,32 @@ void fnSolve(uint16_t labelOrVariable) {
         }
         case SOLVER_RESULT_SIGN_REVERSAL: {
           temporaryInformation = TI_SOLVER_FAILED;
-          displayCalcErrorMessage(ERROR_LARGE_DELTA_AND_OPPOSITE_SIGN, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+          displayCalcErrorMessage(ERROR_LARGE_DELTA_AND_OPPOSITE_SIGN, ERR_REGISTER_LINE);
           break;
         }
         case SOLVER_RESULT_EXTREMUM: {
           temporaryInformation = TI_SOLVER_FAILED;
-          displayCalcErrorMessage(ERROR_SOLVER_REACHED_LOCAL_EXTREMUM, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+          displayCalcErrorMessage(ERROR_SOLVER_REACHED_LOCAL_EXTREMUM, ERR_REGISTER_LINE);
           break;
         }
         case SOLVER_RESULT_BAD_GUESS: {
           temporaryInformation = TI_SOLVER_FAILED;
-          displayCalcErrorMessage(ERROR_INITIAL_GUESS_OUT_OF_DOMAIN, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+          displayCalcErrorMessage(ERROR_INITIAL_GUESS_OUT_OF_DOMAIN, ERR_REGISTER_LINE);
           break;
         }
         case SOLVER_RESULT_CONSTANT: {
           temporaryInformation = TI_SOLVER_FAILED;
-          displayCalcErrorMessage(ERROR_FUNCTION_VALUES_LOOK_CONSTANT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+          displayCalcErrorMessage(ERROR_FUNCTION_VALUES_LOOK_CONSTANT, ERR_REGISTER_LINE);
           break;
         }
         case SOLVER_RESULT_OTHER_FAILURE: {
           temporaryInformation = TI_SOLVER_FAILED;
-          displayCalcErrorMessage(ERROR_NO_ROOT_FOUND, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+          displayCalcErrorMessage(ERROR_NO_ROOT_FOUND, ERR_REGISTER_LINE);
           break;
         }
         case SOLVER_RESULT_ABORTED: {
           temporaryInformation = TI_SOLVER_FAILED;
-          displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+          displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE);
           programRunStop = PGM_WAITING;   // R/S halts the whole program on the SOLVE step
           break;
         }
@@ -163,7 +163,7 @@ void fnSolve(uint16_t labelOrVariable) {
 
     }
     else {
-      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType(REGISTER_X));
         moreInfoOnError("In function fnSolve:", errorMessage, "is not a real number.", "");
@@ -172,7 +172,7 @@ void fnSolve(uint16_t labelOrVariable) {
     }
   }
   else {
-    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "unexpected parameter %u", labelOrVariable);
       moreInfoOnError("In function fnSolve:", errorMessage, NULL, NULL);
@@ -193,7 +193,7 @@ void fnMvarPlot(uint16_t labelOrVariable) {
     }
   }
   else if(!(currentSolverStatus & SOLVER_STATUS_USES_FORMULA) && (FIRST_NAMED_VARIABLE <= labelOrVariable && labelOrVariable <= LAST_NAMED_VARIABLE) && currentSolverProgram >= numberOfLabels) {
-    displayCalcErrorMessage(ERROR_NO_PROGRAM_SPECIFIED, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_NO_PROGRAM_SPECIFIED, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "label %u not found", labelOrVariable);
       moreInfoOnError("In function fnMvarPlot:", errorMessage, NULL, NULL);
@@ -225,7 +225,7 @@ void fnMvarPlot(uint16_t labelOrVariable) {
 
     }
     else {
-      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType(REGISTER_X));
         moreInfoOnError("In function fnMvarPlot:", errorMessage, "is not a real number.", "");
@@ -234,7 +234,7 @@ void fnMvarPlot(uint16_t labelOrVariable) {
     }
   }
   else {
-    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "unexpected parameter %u", labelOrVariable);
       moreInfoOnError("In function fnMvarPlot:", errorMessage, NULL, NULL);
@@ -537,7 +537,7 @@ int solver(calcRegister_t variable, const real34_t *y, const real34_t *x, real34
          newton_trial == NULL || newton_fx == NULL || newton_deriv == NULL || newton_step == NULL || tol_converged == NULL
        #endif //OPTION_TVM_NEWTON
        ) {
-      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
       result = SOLVER_RESULT_OTHER_FAILURE;
       goto freeWork;
     }
@@ -760,7 +760,7 @@ retryLevel:
       if(exitKeyWaiting() || (programRunStop == PGM_WAITING)) {   // key/EXIT, or a nested engine already aborted (PGM_WAITING survives, lastErrorCode does not)
           progressHalfSecUpdate_Integer(force+1, "Interrupted Iter:", loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
           programRunStop = PGM_WAITING;
-          displayCalcErrorMessage(ERROR_SOLVER_ABORT, REGISTER_T, NIM_REGISTER_LINE);
+          displayCalcErrorMessage(ERROR_SOLVER_ABORT, REGISTER_T);
         break;
       }
 

@@ -789,7 +789,7 @@ pub export fn removeUserItemAssignments(userItem: i16, userItemName: [*c]u8) cal
 // ===========================================================================
 pub export fn fnDeleteMenu(id: u16) callconv(.c) void {
     if (id >= numberOfUserMenus) {
-        frontier_error.displayCalcErrorMessage(ERROR_CANNOT_DELETE_PREDEF_ITEM, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        frontier_error.displayCalcErrorMessage(ERROR_CANNOT_DELETE_PREDEF_ITEM, ERR_REGISTER_LINE);
         return;
     } else {
         removeUserItemAssignments(-MNU_DYNAMIC, &userMenus[id].menuName);
@@ -1285,7 +1285,7 @@ pub export fn initUserKeyArgument() callconv(.c) void {
     userKeyLabel = @ptrCast(allocC47Blocks(TO_BLOCKS(userKeyLabelSize)));
     if (userKeyLabel == null) { // the memset below writes through this pointer
         userKeyLabelSize = 0;
-        frontier_error.displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
         moreInfoOnErr2("In function initUserKeyArgument:", "there is no memory for the key argument table");
         return;
     }
@@ -1328,7 +1328,7 @@ pub export fn setUserKeyArgument(position: u16, name: [*c]const u8) callconv(.c)
     // copies below write through this pointer. Nothing is freed yet, so the labels
     // already held stay as they are and only this one name is lost.
     if (newUserKeyLabel == null) {
-        frontier_error.displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
         moreInfoOnErr3("In function setUserKeyArgument:", "there is no memory for the key argument", name);
         return;
     }
@@ -1367,7 +1367,7 @@ pub export fn createMenu(name: [*c]const u8) callconv(.c) void {
             }
             if (userMenus == null) { // the memset below writes through this pointer
                 userMenus = oldUserMenus; // the menus already held survive, and the old block is not orphaned
-                frontier_error.displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, REGISTER_X);
+                frontier_error.displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
                 moreInfoOnErr3("In function createMenu:", "there is no memory for the menu", name);
                 return;
             }
@@ -1385,14 +1385,14 @@ pub export fn createMenu(name: [*c]const u8) callconv(.c) void {
             _ = frontier_char_string.xcopy(&userMenus[numberOfUserMenus].menuName, name, @intCast(stringByteLength(name) + 1));
             numberOfUserMenus += 1;
         } else {
-            frontier_error.displayCalcErrorMessage(ERROR_ENTER_NEW_NAME, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_ENTER_NEW_NAME, ERR_REGISTER_LINE);
             if (comptime extra_info) {
                 abi.fmtBufZ(errorMessage[0..512], "the name {s}", .{std.mem.span(name)});
                 if (comptime !dmcp_build) moreInfoOnError("In function createMenu:", errorMessage, "is already in use!", null);
             }
         }
     } else {
-        frontier_error.displayCalcErrorMessage(ERROR_INVALID_NAME, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_INVALID_NAME, ERR_REGISTER_LINE);
         if (comptime extra_info) {
             if (comptime !dmcp_build) moreInfoOnError("In function createMenu:", "the menu", name, "does not follow the naming convention");
         }
@@ -1559,7 +1559,7 @@ pub export fn assignGetName2() callconv(.c) void {
     frontier_screen.refreshScreen(23);
 
     if (!result) {
-        frontier_error.displayCalcErrorMessage(ERROR_CANNOT_ASSIGN_HERE, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        frontier_error.displayCalcErrorMessage(ERROR_CANNOT_ASSIGN_HERE, ERR_REGISTER_LINE);
         if (comptime extra_info) {
             if (comptime !dmcp_build) moreInfoOnError("In function assignGetName2:", aimBuffer, "is invalid name.", null);
         }

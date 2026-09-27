@@ -347,7 +347,7 @@ pub export fn z47_math_wrappers_log(value: f64) linksection(runtime.code_section
 
 fn longIntegerGcdChecked(li_y: *const mpz_struct, li_x: *const mpz_struct, li_a: *mpz_struct) linksection(runtime.code_section) void {
     if (longIntegerIsZero(li_y) and longIntegerIsZero(li_x)) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
         if (runtime.extra_info_on_calc_error) {
             runtime.moreInfoOnError("In function _longIntegerGcd:", "(0, 0) is not in the function domain.", null, null);
         }
@@ -375,11 +375,11 @@ pub export fn z47_math_wrappers_gcd_int() linksection(runtime.code_section) call
     defer runtime.__gmpz_clear(&li_x[0]);
 
     if (frac_x) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
         return;
     }
     if (frac_y) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_Y);
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
         return;
     }
 
@@ -415,11 +415,11 @@ pub export fn z47_math_wrappers_lcm_int() linksection(runtime.code_section) call
     defer runtime.__gmpz_clear(&li_x[0]);
 
     if (frac_x) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
         return;
     }
     if (frac_y) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_Y);
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
         return;
     }
 
@@ -502,7 +502,7 @@ pub export fn z47_math_wrappers_fact_long_integer() linksection(runtime.code_sec
     runtime.convertLongIntegerRegisterToLongInteger(runtime.REGISTER_X, &x[0]);
 
     if (longIntegerIsNegative(&x[0])) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
         reportFactorialArgument("In function factLonI:");
         runtime.__gmpz_clear(&x[0]);
         return;
@@ -574,13 +574,13 @@ pub export fn z47_math_wrappers_fact_short_integer() linksection(runtime.code_se
     runtime.convertShortIntegerRegisterToUInt64(runtime.REGISTER_X, &sign, &value);
 
     if (sign == 1) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
         reportFactorialArgument("In function factShoI:");
         return;
     }
 
     if (value > 20) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_OUT_OF_RANGE, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_OUT_OF_RANGE, runtime.ERR_REGISTER_LINE);
         reportFactorialArgument("In function factShoI:");
         return;
     }
@@ -605,7 +605,7 @@ pub export fn z47_math_wrappers_mod_long_integer() linksection(runtime.code_sect
     defer runtime.__gmpz_clear(&x[0]);
 
     if (longIntegerIsZero(&x[0])) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
         if (runtime.extra_info_on_calc_error) {
             runtime.moreInfoOnError("In function modLonI:", "cannot IDIVR a long integer by 0", null, null);
         }
@@ -639,7 +639,7 @@ pub export fn z47_math_wrappers_mod_short_integer() linksection(runtime.code_sec
     defer runtime.__gmpz_clear(&x[0]);
 
     if (longIntegerIsZero(&x[0])) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
         if (runtime.extra_info_on_calc_error) {
             runtime.moreInfoOnError("In function modShoI:", "cannot IDIVR a short integer by 0", null, null);
         }
@@ -672,7 +672,7 @@ pub export fn z47_math_wrappers_mod_real() linksection(runtime.code_section) cal
     }
 
     if (runtime.realIsZero(&x)) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
         if (runtime.extra_info_on_calc_error) {
             runtime.moreInfoOnError("In function modReal:", "cannot IDIVR a real34 by 0", null, null);
         }
@@ -699,7 +699,7 @@ pub export fn z47_math_wrappers_rmd_long_integer() linksection(runtime.code_sect
     defer runtime.__gmpz_clear(&x[0]);
 
     if (longIntegerIsZero(&x[0])) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
         if (runtime.extra_info_on_calc_error) {
             runtime.moreInfoOnError("In function rmdLonI:", "cannot IDIVR a long integer by 0", null, null);
         }
@@ -731,7 +731,7 @@ pub export fn z47_math_wrappers_rmd_short_integer() linksection(runtime.code_sec
     defer runtime.__gmpz_clear(&x[0]);
 
     if (longIntegerIsZero(&x[0])) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
         if (runtime.extra_info_on_calc_error) {
             runtime.moreInfoOnError("In function rmdShoI:", "cannot IDIVR a short integer by 0", null, null);
         }
@@ -762,7 +762,7 @@ pub export fn z47_math_wrappers_rmd_real() linksection(runtime.code_section) cal
     }
 
     if (runtime.realIsZero(&x)) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
         if (runtime.extra_info_on_calc_error) {
             runtime.moreInfoOnError("In function rmdReal:", "cannot IDIVR a real34 by 0", null, null);
         }

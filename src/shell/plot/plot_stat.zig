@@ -203,7 +203,7 @@ fn updateRegressionLine(ctx: *PlotStatContext) void {
 
 fn finishFailure() void {
     calcMode = CM_NORMAL;
-    frontier_error.displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X);
+    frontier_error.displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE);
     if (comptime extra_info) {
         if (comptime !dmcp_build) {
             abi.fmtBufZ(errorMessage[0..512], "There is no statistical/plot data available!", .{});

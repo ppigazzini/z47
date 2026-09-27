@@ -1800,7 +1800,7 @@ pub export fn _executeItem(item: i16, keyCode: c_int) callconv(.c) void {
                 frontier_items.reallyRunFunction(item, @intCast(variable));
             }
         } else {
-            frontier_error.displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE);
             if (comptime extra_info) {
                 abi.fmtBufZ(errorMessage[0..512], "string '{s}' is not a named variable", .{std.mem.span(funcParam)});
                 moreInfoOnError("In function _executeItem:", errorMessage, null, null);
@@ -1815,7 +1815,7 @@ pub export fn _executeItem(item: i16, keyCode: c_int) callconv(.c) void {
                 frontier_items.reallyRunFunction(item, @intCast(label));
             }
         } else {
-            frontier_error.displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE);
             if (comptime extra_info) {
                 abi.fmtBufZ(errorMessage[0..512], "string '{s}' is not a named label", .{std.mem.span(funcParam)});
                 moreInfoOnError("In function _executeItem:", errorMessage, null, null);
@@ -6498,7 +6498,7 @@ fn _getPositionFromRegister(regist: calcRegister_t, maxValuePlusOne: i16) i32 {
         int32ToReal34(maxValuePlusOne, &maxValue34);
         int32ToReal34(-@as(i32, maxValuePlusOne), &minValue34);
         if (real34CompareLessThan(REGISTER_REAL34_DATA(regist), &minValue34) != 0 or real34CompareLessEqual(&maxValue34, REGISTER_REAL34_DATA(regist)) != 0) {
-            frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
             if (comptime extra_info) {
                 real34ToString(REGISTER_REAL34_DATA(regist), errorMessage);
                 abi.fmtBufZ(tmpString[0..2560], "x {d} = {s}:", .{ @as(i32, regist), std.mem.span(@as([*:0]const u8, errorMessage)) });
@@ -6515,7 +6515,7 @@ fn _getPositionFromRegister(regist: calcRegister_t, maxValuePlusOne: i16) i32 {
         var lgInt: longInteger_t = undefined;
         frontier_register_value_conversions.convertLongIntegerRegisterToLongInteger(regist, &lgInt[0]);
         if (longIntegerCompareInt(&lgInt[0], -@as(i32, maxValuePlusOne)) < 0 or longIntegerCompareInt(&lgInt[0], maxValuePlusOne) >= 0) {
-            frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
             if (comptime extra_info) {
                 frontier_display.longIntegerToAllocatedString(&lgInt[0], errorMessage, ERROR_MESSAGE_LENGTH);
                 abi.fmtBufZ(tmpString[0..2560], "register {d} = {s}:", .{ @as(i32, regist), std.mem.span(@as([*:0]const u8, errorMessage)) });
@@ -6527,7 +6527,7 @@ fn _getPositionFromRegister(regist: calcRegister_t, maxValuePlusOne: i16) i32 {
         longIntegerToInt32(&lgInt, &value);
         longIntegerFree(&lgInt);
     } else {
-        frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "register {d} is {s}:", .{ @as(i32, regist), std.mem.span(frontier_debug.getRegisterDataTypeName(regist, true, false)) });
             moreInfoOnError("In function _getPositionFromRegister:", errorMessage, "not suited for addressing!", null);
@@ -6659,7 +6659,7 @@ pub export fn fnAGraph(regist: u16) callconv(.c) void {
 
             fnInc(REGISTER_X);
         } else {
-            frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
             if (comptime extra_info) {
                 abi.fmtBufZ(errorMessage[0..512], "register {d} is {s}:", .{ @as(i32, @as(i16, @intCast(regist))), std.mem.span(frontier_debug.getRegisterDataTypeName(@intCast(regist), true, false)) });
                 moreInfoOnError("In function fnAGraph:", errorMessage, "not suited for addressing!", null);

@@ -30,12 +30,12 @@ noinline fn checkParamGEV(x: *real_t, mu: *real_t, sigma: *real_t, xi: *real_t, 
     }
 
     if (dr.realIsNegative(x)) {
-        dr.displayDomainErrorMessage(dr.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, dr.ERR_REGISTER_LINE, dr.REGISTER_X);
+        dr.displayDomainErrorMessage(dr.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, dr.ERR_REGISTER_LINE);
         dr.moreInfoOnError("In function checkParamGEV:", "cannot calculate for x < 0", null, null);
         dr.specialResultNaN();
         return false;
     } else if (dr.realIsZero(sigma) or dr.realIsNegative(sigma)) {
-        dr.displayDomainErrorMessage(dr.ERROR_INVALID_DISTRIBUTION_PARAM, dr.ERR_REGISTER_LINE, dr.REGISTER_X);
+        dr.displayDomainErrorMessage(dr.ERROR_INVALID_DISTRIBUTION_PARAM, dr.ERR_REGISTER_LINE);
         dr.moreInfoOnError("In function checkParamGEV:", "the parameter sigma must be positive", null, null);
         dr.specialResultNaN();
         return false;
@@ -155,7 +155,7 @@ pub fn gevI(unused_but_mandatory_parameter: u16) linksection(dr.code_section) vo
     }
 
     if (!domain_okay) {
-        dr.displayDomainErrorMessage(dr.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, dr.ERR_REGISTER_LINE, dr.REGISTER_X);
+        dr.displayDomainErrorMessage(dr.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, dr.ERR_REGISTER_LINE);
         dr.moreInfoOnError("In function fnGEVI:", "the argument out of range", null, null);
         dr.specialResultNaN();
         return;

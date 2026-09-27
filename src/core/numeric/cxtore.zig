@@ -135,14 +135,14 @@ pub export fn fnCxToRe(unusedButMandatoryParameter: u16) callconv(.c) void {
                 runtime.convertReal34MatrixToReal34MatrixRegister(&iMat, REGISTER_X);
                 runtime.realMatrixFree(&iMat);
             } else {
-                displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
             }
             runtime.realMatrixFree(&rMat);
         } else {
-            displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+            displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
         }
     } else {
-        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
+        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE); // Invalid input data type for this operation
         if (runtime.extra_info_on_calc_error) {
             // ERROR_MESSAGE_LENGTH is 512 (defines.h); upstream formats this
             // hint into the shared errorMessage buffer of that size.

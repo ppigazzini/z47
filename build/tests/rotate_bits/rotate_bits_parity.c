@@ -61,7 +61,6 @@ static int snapshotsEqual(const rotate_bits_snapshot_t *left, const rotate_bits_
          left->runtime_state.aslift_flag == right->runtime_state.aslift_flag &&
          left->runtime_state.last_error_code == right->runtime_state.last_error_code &&
          left->runtime_state.last_error_message_register == right->runtime_state.last_error_message_register &&
-         left->runtime_state.last_error_register == right->runtime_state.last_error_register &&
          left->runtime_state.adjust_result_calls == right->runtime_state.adjust_result_calls;
 }
 
@@ -75,8 +74,8 @@ static int reportMismatch(const char *name,
 
   fprintf(stderr,
           "%s(%u) parity mismatch\n"
-          "  expected: ws=%u mask=%#018llx sign=%#018llx x=%#018llx/%u/%u y=%#018llx/%u/%u z=%#018llx/%u/%u l=%#018llx/%u/%u carry=%d aslift=%d saved=%d lifted=%d adjust=%u err=%u/%d/%d ti=%u undo=%d\n"
-          "  actual:   ws=%u mask=%#018llx sign=%#018llx x=%#018llx/%u/%u y=%#018llx/%u/%u z=%#018llx/%u/%u l=%#018llx/%u/%u carry=%d aslift=%d saved=%d lifted=%d adjust=%u err=%u/%d/%d ti=%u undo=%d\n",
+          "  expected: ws=%u mask=%#018llx sign=%#018llx x=%#018llx/%u/%u y=%#018llx/%u/%u z=%#018llx/%u/%u l=%#018llx/%u/%u carry=%d aslift=%d saved=%d lifted=%d adjust=%u err=%u/%d ti=%u undo=%d\n"
+          "  actual:   ws=%u mask=%#018llx sign=%#018llx x=%#018llx/%u/%u y=%#018llx/%u/%u z=%#018llx/%u/%u l=%#018llx/%u/%u carry=%d aslift=%d saved=%d lifted=%d adjust=%u err=%u/%d ti=%u undo=%d\n",
           name,
           arg,
           expected->word_size,
@@ -101,7 +100,6 @@ static int reportMismatch(const char *name,
           expected->runtime_state.adjust_result_calls,
           expected->runtime_state.last_error_code,
           expected->runtime_state.last_error_message_register,
-          expected->runtime_state.last_error_register,
           expected->temporary_information,
           expected->undo_flag,
           actual->word_size,
@@ -126,7 +124,6 @@ static int reportMismatch(const char *name,
           actual->runtime_state.adjust_result_calls,
           actual->runtime_state.last_error_code,
           actual->runtime_state.last_error_message_register,
-          actual->runtime_state.last_error_register,
           actual->temporary_information,
           actual->undo_flag);
   return 1;

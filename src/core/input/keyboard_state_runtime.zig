@@ -265,7 +265,7 @@ pub extern fn getRegisterTag(regist: i16) u32;
 pub extern fn fnSwapXY(unused: u16) void;
 pub extern fn fnReToCx(unused: u16) void;
 pub extern fn fnCxToRe(unused: u16) void;
-pub extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: i16, err_register_line: i16) void;
+pub extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: i16) void;
 pub extern fn mimAddNumber(item: i16) void;
 pub extern fn pemAddNumber(item: i16, do_insert_in_program: bool_t) void;
 pub extern fn getDataTypeName(dt: u16, article: bool_t, pad_with_blanks: bool_t) [*c]const u8;

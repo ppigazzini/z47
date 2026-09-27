@@ -32,7 +32,7 @@ static uint16_t _indirectVariable(uint8_t *stringAddress) {
       }
   }
   else {
-    displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "string '%s' is not a named variable", tmpStringLabelOrVariableName);
       moreInfoOnError("In function _indirectVariable:", errorMessage, NULL, NULL);
@@ -54,7 +54,7 @@ static uint16_t _get2ndParamOfKey(uint8_t *paramAddress) {
       return label;
     }
     else {
-      displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "string '%s' is not a named label", tmpStringLabelOrVariableName);
         moreInfoOnError("In function _get2ndParamOfKey:", errorMessage, NULL, NULL);
@@ -81,7 +81,7 @@ void fnKeyGtoXeq(uint16_t keyNum) {
   uint16_t label;
 
   if(secondParam == NULL) { // findKey2ndParam returns NULL on a malformed/.END. step
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     return;
   }
 

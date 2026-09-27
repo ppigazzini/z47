@@ -1410,7 +1410,7 @@ pub export fn fnOpenMenu(menuArg: u16) callconv(.c) void {
     }
 
     if (softmenu[@intCast(i)].menuItem == 0) {
-        frontier_error.displayCalcErrorMessage(ERROR_UNDEF_MENU, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_UNDEF_MENU, ERR_REGISTER_LINE);
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "menu '{d}' is not a valid menu item", .{@as(i32, @intCast(menuArg))});
             moreInfoOnError("In function fnOpenMenu:", errorMessage, null, null);
@@ -1450,7 +1450,7 @@ pub export fn fnOpenMenu(menuArg: u16) callconv(.c) void {
                 moreInfoOnError("In function fnOpenMenu:", errorMessage, "ignored since IGN1ER system flag was set", null);
             }
         } else {
-            frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
             if (comptime extra_info) {
                 abi.fmtBufZ(errorMessage[0..512], "Page Number {d} is not a valid page for the menu {d}", .{ @as(c_uint, menuPageNumberU()), @as(c_uint, menuArg) });
                 moreInfoOnError("In function fnOpenMenu:", errorMessage, null, null);
@@ -1581,7 +1581,7 @@ pub export fn fnGetMenu(_: u16) callconv(.c) void {
         }
         reallocateRegister(REGISTER_X, dtString, TO_BLOCKS(lenInBytes), amNone);
         if (lastErrorCode == ERROR_RAM_FULL) {
-            frontier_error.displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+            frontier_error.displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
             fnUndo(NOPARAM);
             return;
         }
@@ -1590,7 +1590,7 @@ pub export fn fnGetMenu(_: u16) callconv(.c) void {
         lenInBytes = @intCast(stringByteLength(&userMenus[@intCast(userMenuId)].menuName) + 1);
         reallocateRegister(REGISTER_X, dtString, TO_BLOCKS(lenInBytes), amNone);
         if (lastErrorCode == ERROR_RAM_FULL) {
-            frontier_error.displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+            frontier_error.displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
             fnUndo(NOPARAM);
             return;
         }
@@ -3812,7 +3812,7 @@ pub export fn showSoftmenu(id_in: i16) callconv(.c) void {
         }
 
         if (numberOfVars > 12) {
-            frontier_error.displayCalcErrorMessage(ERROR_EQUATION_TOO_COMPLEX, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+            frontier_error.displayCalcErrorMessage(ERROR_EQUATION_TOO_COMPLEX, ERR_REGISTER_LINE);
             if (comptime extra_info) {
                 moreInfoOnError("In function showSoftmenu:", "there are more than 12 variables in this equation!", null, null);
             }
@@ -3849,7 +3849,7 @@ pub export fn showSoftmenu(id_in: i16) callconv(.c) void {
             id == -%@as(i16, MNU_2NDDERIV))
         {
             id = -%@as(i16, MNU_EQN);
-            frontier_error.displayCalcErrorMessage(ERROR_VARIABLE_NOT_SELECTED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+            frontier_error.displayCalcErrorMessage(ERROR_VARIABLE_NOT_SELECTED, ERR_REGISTER_LINE);
             if (comptime extra_info) {
                 moreInfoOnError("In function showSoftmenu:", "The solver/integrator variable is not selected. Refusing access to Tools/Solver menu prior to variable selected!", null, null);
             }

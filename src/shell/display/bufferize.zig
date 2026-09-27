@@ -2312,7 +2312,7 @@ pub export fn nimFractionToReal34(source: [*c]u8, dest: *real34_t) callconv(.c) 
     i = 1;
     while (i < posSpace) : (i += 1) {
         if (source[@intCast(i)] < '0' or source[@intCast(i)] > '9') { // This should never happen
-            frontier_error.displayCalcErrorMessage(ERROR_BAD_INPUT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+            frontier_error.displayCalcErrorMessage(ERROR_BAD_INPUT, ERR_REGISTER_LINE);
             moreInfoOnErr("In function nimFractionToReal34:", "there is a non numeric character in the integer part of the fraction!");
             return;
         }
@@ -2330,7 +2330,7 @@ pub export fn nimFractionToReal34(source: [*c]u8, dest: *real34_t) callconv(.c) 
     i = posSpace + 1;
     while (i < posSlash) : (i += 1) {
         if (source[@intCast(i)] < '0' or source[@intCast(i)] > '9') { // This should never happen
-            frontier_error.displayCalcErrorMessage(ERROR_BAD_INPUT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+            frontier_error.displayCalcErrorMessage(ERROR_BAD_INPUT, ERR_REGISTER_LINE);
             moreInfoOnErr("In function nimFractionToReal34:", "there is a non numeric character in the numerator part of the fraction!");
             return;
         }
@@ -2340,7 +2340,7 @@ pub export fn nimFractionToReal34(source: [*c]u8, dest: *real34_t) callconv(.c) 
         i = posSlash + 1;
         while (i < lg) : (i += 1) {
             if (source[@intCast(i)] < '0' or source[@intCast(i)] > '9') {
-                frontier_error.displayCalcErrorMessage(ERROR_BAD_INPUT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                frontier_error.displayCalcErrorMessage(ERROR_BAD_INPUT, ERR_REGISTER_LINE);
                 moreInfoOnErr("In function nimFractionToReal34:", "there is a non numeric character in the denominator part of the fraction!");
                 return;
             }
@@ -2365,7 +2365,7 @@ pub export fn nimFractionToReal34(source: [*c]u8, dest: *real34_t) callconv(.c) 
     }
 
     if (denom == 0 and getSystemFlag(FLAG_SPCRES) == 0) {
-        frontier_error.displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        frontier_error.displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
         moreInfoOnErr3("In function nimFractionToReal34:", "the denominator of the fraction should not be 0!", "Unless D flag (Danger) is set.");
         return;
     }
@@ -2548,7 +2548,7 @@ pub export fn closeNim() callconv(.c) void {
                         ii = posHash + 1;
                         while (ii < lg) : (ii += 1) {
                             if (aimBuffer[@intCast(ii)] < '0' or aimBuffer[@intCast(ii)] > '9') {
-                                frontier_error.displayCalcErrorMessage(ERROR_INVALID_INTEGER_INPUT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                                frontier_error.displayCalcErrorMessage(ERROR_INVALID_INTEGER_INPUT, ERR_REGISTER_LINE);
                                 moreInfoOnErr("In function closeNIM:", "there is a non numeric character in the base of the integer!");
                                 break :closeNim_exit;
                             }
@@ -2556,7 +2556,7 @@ pub export fn closeNim() callconv(.c) void {
 
                         base = stringToInt32(aimBuffer + @as(usize, @intCast(posHash)) + 1);
                         if (base < 2 or base > 16) {
-                            frontier_error.displayCalcErrorMessage(ERROR_INVALID_INTEGER_INPUT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                            frontier_error.displayCalcErrorMessage(ERROR_INVALID_INTEGER_INPUT, ERR_REGISTER_LINE);
                             moreInfoOnErr("In function closeNIM:", "the base of the integer must be from 2 to 16!");
                             break :closeNim_exit;
                         }
@@ -2565,7 +2565,7 @@ pub export fn closeNim() callconv(.c) void {
                         while (ii < posHash) : (ii += 1) {
                             const digitVal: i32 = if (aimBuffer[@intCast(ii)] > '9') @as(i32, aimBuffer[@intCast(ii)]) - 'A' + 10 else @as(i32, aimBuffer[@intCast(ii)]) - '0';
                             if (digitVal >= base) {
-                                frontier_error.displayCalcErrorMessage(ERROR_INVALID_INTEGER_INPUT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                                frontier_error.displayCalcErrorMessage(ERROR_INVALID_INTEGER_INPUT, ERR_REGISTER_LINE);
                                 if (comptime extra_info) {
                                     if (comptime !dmcp_build) {
                                         abi.fmtBufZ(errorMessage[0..512], "digit {c} is not allowed in base {d}!", .{ aimBuffer[@intCast(ii)], @as(i32, base) });
@@ -2614,7 +2614,7 @@ pub export fn closeNim() callconv(.c) void {
                         }
 
                         if (longIntegerCompare(&value, &minVal) < 0 or longIntegerCompare(&value, &maxVal) > 0) {
-                            frontier_error.displayCalcErrorMessage(ERROR_WORD_SIZE_TOO_SMALL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                            frontier_error.displayCalcErrorMessage(ERROR_WORD_SIZE_TOO_SMALL, ERR_REGISTER_LINE);
                             if (comptime extra_info) {
                                 if (comptime !dmcp_build) {
                                     var strMin: [22]u8 = undefined;

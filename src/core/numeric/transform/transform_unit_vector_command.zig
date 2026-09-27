@@ -38,7 +38,7 @@ fn complexMatrixImagPtr(matrix: *runtime.complex34Matrix_t, index: usize) *runti
 }
 
 fn unitVectorError() void {
-    runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+    runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE);
     if (runtime.extra_info_on_calc_error) {
         // ERROR_MESSAGE_LENGTH is 512 (defines.h); upstream formats this hint
         // into the shared errorMessage buffer of that size, so no data-type

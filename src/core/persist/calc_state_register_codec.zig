@@ -243,7 +243,7 @@ const ERR_REGISTER_LINE: i16 = 102; // REGISTER_Z: the line displayCalcErrorMess
 // call.
 const EXTRA_INFO_ON_CALC_ERROR: bool = build_options.extra_info_on_calc_error;
 
-extern fn displayCalcErrorMessage(err: u8, errMessageRegisterLine: i16, errRegisterLine: i16) void;
+extern fn displayCalcErrorMessage(err: u8, errMessageRegisterLine: i16) void;
 extern fn moreInfoOnError(m1: [*c]const u8, m2: [*c]const u8, m3: [*c]const u8, m4: [*c]const u8) void;
 
 // xfn.h FT_EXTERNAL: the function type c43's restoreRegister passes so
@@ -662,7 +662,7 @@ pub fn restoreRegister(regist: i16, type_str: [*c]u8, value_in: [*c]u8, loaded_v
         // and an "RXFN" type code falls through to the closing arm of the chain,
         // which raises the unknown-type bug screen.
         if (regist != REGISTER_X) {
-            displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+            displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
             if (EXTRA_INFO_ON_CALC_ERROR) {
                 abi.fmtBufZ(errorMessage[0..512], "XFN import only to REGISTER_X (stack), got register {d}", .{@as(c_int, regist)});
                 moreInfoOnError("In function restoreRegister:", &errorMessage[0], null, null);

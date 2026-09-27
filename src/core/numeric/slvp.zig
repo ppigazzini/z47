@@ -170,7 +170,7 @@ pub export fn fnSlvp(unused_but_mandatory_parameter: u16) linksection(runtime.co
         rows = xc.header.matrixRows;
         cols = xc.header.matrixColumns;
     } else {
-        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
         if (runtime.extra_info_on_calc_error) {
             moreInfoOnError("In function fnSlvp:", "SLVP expects a coefficient vector in X", null, null);
         }
@@ -178,7 +178,7 @@ pub export fn fnSlvp(unused_but_mandatory_parameter: u16) linksection(runtime.co
     }
 
     if (rows != 1 and cols != 1) {
-        displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE);
         if (runtime.extra_info_on_calc_error) {
             abi.fmtBufZ(errorMessage[0..ERROR_MESSAGE_LENGTH], "SLVP needs a coefficient vector, not ({d}" ++ STD_CROSS ++ "{d})", .{ rows, cols });
             moreInfoOnError("In function fnSlvp:", errorMessage, null, null);
@@ -190,7 +190,7 @@ pub export fn fnSlvp(unused_but_mandatory_parameter: u16) linksection(runtime.co
     // m coefficient slots plus up to m-1 root slots.
     const wsSize: usize = real_size_in_blocks_75 * m * 4;
     const coefRaw = runtime.allocC47Blocks(wsSize) orelse {
-        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
         if (runtime.extra_info_on_calc_error) {
             moreInfoOnError("In function fnSlvp:", "Ram full", null, null);
         }
@@ -222,7 +222,7 @@ pub export fn fnSlvp(unused_but_mandatory_parameter: u16) linksection(runtime.co
     while (lead < m and slotIsZero(coef + lead * 2)) lead += 1;
     if (m - lead < 2) { // a constant, or nothing at all, has no roots
         runtime.freeC47Blocks(coefRaw, wsSize);
-        displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
         if (runtime.extra_info_on_calc_error) {
             moreInfoOnError("In function fnSlvp:", "the polynomial needs degree 1 or higher after leading zeros are dropped", null, null);
         }
@@ -270,7 +270,7 @@ pub export fn fnSlvp(unused_but_mandatory_parameter: u16) linksection(runtime.co
                 const bulkSize: usize = real_size_in_blocks_75 * (dz * dz * 2 * 4 + dz * 2);
                 const bulkRaw = runtime.allocC47Blocks(bulkSize) orelse {
                     runtime.freeC47Blocks(coefRaw, wsSize);
-                    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
                     if (runtime.extra_info_on_calc_error) {
                         moreInfoOnError("In function fnSlvp:", "Ram full", null, null);
                     }
@@ -388,7 +388,7 @@ pub export fn fnSlvp(unused_but_mandatory_parameter: u16) linksection(runtime.co
         var res: complex34Matrix_t = undefined;
         if (!complexMatrixInit(&res, 1, n)) {
             runtime.freeC47Blocks(coefRaw, wsSize);
-            displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+            displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
             if (runtime.extra_info_on_calc_error) {
                 moreInfoOnError("In function fnSlvp:", "Ram full", null, null);
             }
@@ -411,7 +411,7 @@ pub export fn fnSlvp(unused_but_mandatory_parameter: u16) linksection(runtime.co
         var res: real34Matrix_t = undefined;
         if (!realMatrixInit(&res, 1, n)) {
             runtime.freeC47Blocks(coefRaw, wsSize);
-            displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+            displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
             if (runtime.extra_info_on_calc_error) {
                 moreInfoOnError("In function fnSlvp:", "Ram full", null, null);
             }

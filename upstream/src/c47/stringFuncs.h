@@ -42,6 +42,10 @@
   void fn42Pra         (uint16_t unusedButMandatoryParameter);
   void fn42Prompt      (uint16_t unusedButMandatoryParameter);
 
+  void fnSet42Alpha    (uint16_t regist);
+  void fnSet42AlphaX   (uint16_t regist);
+  void fnGet42Alpha    (uint16_t unusedButMandatoryParameter);
+
   void trimLeadingSpace(char     *stringToTrim);
   void truncateAlphaRegisterTo44Char();
 #endif // !STRINGFUNCS_H

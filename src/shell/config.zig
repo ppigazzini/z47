@@ -1110,7 +1110,7 @@ pub fn z47_frontier_keys_to_user_case() void {
         fnSetFlag(FLAG_USER_u16);
     } else {
         Norm_Key_00.used = false;
-        frontier_error.displayCalcErrorMessage(ERROR_CANNOT_ASSIGN_HERE, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        frontier_error.displayCalcErrorMessage(ERROR_CANNOT_ASSIGN_HERE, ERR_REGISTER_LINE);
         moreInfoOnError("In function fnKeysManagement: TO_USER", "the NRM key is not available.");
     }
 }
@@ -1138,7 +1138,7 @@ pub fn z47_frontier_keys_from_user_case() void {
         fnClearFlag(FLAG_USER_u16);
     } else {
         Norm_Key_00.used = false;
-        frontier_error.displayCalcErrorMessage(ERROR_CANNOT_ASSIGN_HERE, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        frontier_error.displayCalcErrorMessage(ERROR_CANNOT_ASSIGN_HERE, ERR_REGISTER_LINE);
         moreInfoOnError("In function fnKeysManagement: FROM_USER", "the NRM key is not available.");
     }
 }
@@ -1529,7 +1529,7 @@ pub export fn fnSetRoundingModeRegist(regist: u16) callconv(.c) void {
     if (frontier_register_value_conversions.getRegisterAsUint32Param(regist, &value)) {
         frontend_settings.run(.set_rounding_mode, @intCast(@min(value, 6)));
     } else if (lastErrorCode == ERROR_NONE) {
-        frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
     }
 }
 
@@ -1671,10 +1671,10 @@ pub export fn fnSetADM(regist: u16) callconv(.c) void {
         if (adm_encoding.angularModeFromAdm(value)) |angularMode| {
             frontend_settings.fnAngularMode(angularMode);
         } else if (lastErrorCode == ERROR_NONE) {
-            frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
         }
     } else if (lastErrorCode == ERROR_NONE) {
-        frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
     }
 }
 
@@ -1688,7 +1688,7 @@ pub export fn fnSetGRAMOD(regist: u16) callconv(.c) void {
     if (frontier_register_value_conversions.getRegisterAsUint32Param(regist, &value) and value <= 3) {
         graMod = @intCast(value);
     } else if (lastErrorCode == ERROR_NONE) {
-        frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
     }
 }
 
@@ -1713,7 +1713,7 @@ fn setPressFactor(regist: u16, factor: *i16) void {
         if (scaled >= 4000 and scaled <= 15000) {
             factor.* = @intCast(scaled - 10000);
         } else {
-            frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
         }
     }
 }
@@ -1754,7 +1754,7 @@ pub export fn fnSetISM(regist: u16) callconv(.c) void {
             0 => shortIntegerMode = SIM_UNSIGN,
             -1 => shortIntegerMode = SIM_SIGNMT, // the four values shortIntegerModeValue() returns
             else => if (lastErrorCode == ERROR_NONE) {
-                frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+                frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
             },
         }
     }
@@ -1770,7 +1770,7 @@ pub export fn fnSetDMX(regist: u16) callconv(.c) void {
     if (frontier_register_value_conversions.getRegisterAsUint32Param(regist, &value)) {
         frontier_fractions.fnDenMax(@intCast(@min(value, MAX_DENMAX))); // fnDenMax takes a u16, so an unbounded value would wrap into range instead of clamping
     } else if (lastErrorCode == ERROR_NONE) {
-        frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
     }
 }
 
@@ -1784,7 +1784,7 @@ pub export fn fnSetREALDF(regist: u16) callconv(.c) void {
     if (frontier_register_value_conversions.getRegisterAsUint32Param(regist, &value) and value <= DF_UN) {
         displayFormat = @intCast(value);
     } else if (lastErrorCode == ERROR_NONE) {
-        frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
     }
 }
 
@@ -1798,7 +1798,7 @@ pub export fn fnSetNDEC(regist: u16) callconv(.c) void {
     if (frontier_register_value_conversions.getRegisterAsUint32Param(regist, &value)) {
         display_format.fnDisplayFormatDsp(@intCast(@min(value, DSP_MAX))); // fnDisplayFormatDsp takes a u16, so an unbounded value would wrap into range instead of clamping
     } else if (lastErrorCode == ERROR_NONE) {
-        frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
     }
 }
 

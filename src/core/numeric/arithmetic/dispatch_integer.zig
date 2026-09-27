@@ -116,7 +116,7 @@ fn tryDyadicLongIntegerDivide(with_remainder: bool) bool {
         runtime.convertShortIntegerRegisterToUInt64(runtime.REGISTER_X, &divisor_sign, &divisor_magnitude);
 
         if (divisor_magnitude == 0) {
-            runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
             integerDivideByZeroInfo(with_remainder, false, false);
         } else {
             const x_raw = shortIntegerData(runtime.REGISTER_X);
@@ -149,7 +149,7 @@ fn tryDyadicLongIntegerDivide(with_remainder: bool) bool {
     defer runtime.__gmpz_clear(&y_value[0]);
 
     if (x_value[0]._mp_size == 0) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
         integerDivideByZeroInfo(with_remainder, y_is_long, x_is_long);
     } else if (with_remainder) {
         var quotient: runtime.longInteger_t = undefined;

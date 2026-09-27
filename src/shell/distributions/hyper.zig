@@ -32,7 +32,7 @@ fn checkParamHyper(x: *real_t, k: *real_t, j: *real_t, i: *real_t) linksection(d
     if (!dr.getRegisterAsReal(dr.REGISTER_X, x) or !dr.getRegisterAsReal(dr.REGISTER_M, i) or
         !dr.getRegisterAsReal(dr.REGISTER_N, j) or !dr.getRegisterAsReal(dr.REGISTER_Q, k))
     {
-        dr.displayDomainErrorMessage(dr.ERROR_INVALID_DATA_TYPE_FOR_OP, dr.ERR_REGISTER_LINE, dr.REGISTER_X);
+        dr.displayDomainErrorMessage(dr.ERROR_INVALID_DATA_TYPE_FOR_OP, dr.ERR_REGISTER_LINE);
         dr.moreInfoOnError("In function checkParamHyper:", dr.stagedMessage("Values in register X, I, J and K must be of the real or long integer type"), null, null);
         return false;
     }
@@ -45,17 +45,17 @@ fn checkParamHyper(x: *real_t, k: *real_t, j: *real_t, i: *real_t) linksection(d
     dr.realCopy(if (dr.realLessThan(k, j)) k else j, &xmax);
 
     if (!dr.checkRegisterNoFP(i) or !dr.checkRegisterNoFP(j) or !dr.checkRegisterNoFP(k)) {
-        dr.displayDomainErrorMessage(dr.ERROR_INVALID_DISTRIBUTION_PARAM, dr.ERR_REGISTER_LINE, dr.REGISTER_X);
+        dr.displayDomainErrorMessage(dr.ERROR_INVALID_DISTRIBUTION_PARAM, dr.ERR_REGISTER_LINE);
         dr.moreInfoOnError("In function checkParamHyper:", "N, n and/or K is not an integer", null, null);
         return false;
     }
     if (dr.realIsNegative(x) or dr.realLessThan(x, &xmin) or dr.realGreaterThan(x, &xmax)) {
-        dr.displayDomainErrorMessage(dr.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, dr.ERR_REGISTER_LINE, dr.REGISTER_X);
+        dr.displayDomainErrorMessage(dr.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, dr.ERR_REGISTER_LINE);
         dr.moreInfoOnError("In function checkParamHyper:", "cannot calculate for x < max(0, n + K - N) or x > min(n, K)", null, null);
         return false;
     }
     if (dr.realIsNegative(k) or dr.realGreaterThan(k, i) or dr.realIsNegative(j) or dr.realGreaterThan(j, i) or dr.realIsNegative(i)) {
-        dr.displayDomainErrorMessage(dr.ERROR_INVALID_DISTRIBUTION_PARAM, dr.ERR_REGISTER_LINE, dr.REGISTER_X);
+        dr.displayDomainErrorMessage(dr.ERROR_INVALID_DISTRIBUTION_PARAM, dr.ERR_REGISTER_LINE);
         dr.moreInfoOnError("In function checkParamHyper:", "the parameters must be integer, and 0 \xa2\x64 K \xa2\x64 N, 0 \xa2\x64 n \xa2\x64 N, and N \xa2\x65 0", null, null);
         return false;
     }
@@ -64,7 +64,7 @@ fn checkParamHyper(x: *real_t, k: *real_t, j: *real_t, i: *real_t) linksection(d
 
 fn storeOrInvalid(ans: *const real_t, comptime where: [*:0]const u8) linksection(dr.code_section) void {
     if (dr.realIsNaN(ans)) {
-        dr.displayDomainErrorMessage(dr.ERROR_INVALID_DISTRIBUTION_PARAM, dr.ERR_REGISTER_LINE, dr.REGISTER_X);
+        dr.displayDomainErrorMessage(dr.ERROR_INVALID_DISTRIBUTION_PARAM, dr.ERR_REGISTER_LINE);
         dr.moreInfoOnError(where, "a parameter is invalid", null, null);
     } else {
         dr.convertRealToResultRegister(ans, dr.REGISTER_X, dr.amNone);
@@ -128,14 +128,14 @@ pub fn hypergeometricI(unused_but_mandatory_parameter: u16) linksection(dr.code_
 
     if (checkParamHyper(&val, &spec, &samp, &batch)) {
         if (dr.realLessThan(&val, dr.const0()) or dr.realGreaterThan(&val, dr.const1())) {
-            dr.displayDomainErrorMessage(dr.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, dr.ERR_REGISTER_LINE, dr.REGISTER_X);
+            dr.displayDomainErrorMessage(dr.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, dr.ERR_REGISTER_LINE);
             dr.moreInfoOnError("In function fnHypergeometricI:", "the argument must be 0 \xa2\x64 x \xa2\x64 1", null, null);
             dr.specialResultNaN();
             return;
         }
         qfHypergeometric(&val, &spec, &samp, &batch, &ans, &dr.ctxtReal75);
         if (dr.realIsNaN(&ans)) {
-            dr.displayDomainErrorMessage(dr.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, dr.ERR_REGISTER_LINE, dr.REGISTER_X);
+            dr.displayDomainErrorMessage(dr.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, dr.ERR_REGISTER_LINE);
             dr.moreInfoOnError("In function fnHypergeometricI:", "WP34S_Qf_Binomial did not converge", null, null);
             dr.specialResultNaN();
             return;

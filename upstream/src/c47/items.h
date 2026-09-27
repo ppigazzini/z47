@@ -1366,13 +1366,13 @@
 #define ITM_ROUNDMM                 1324
 #define ITM_SET_RM                  1325
 #define ITM_1326                    1326 // General items / any items spare
-#define ITM_1327                    1327 // General items / any items spare
+#define ITM_SET_42ALPHAX            1327
 #define ITM_GET_LPFCT               1328
 #define ITM_SET_LPFCT               1329
 #define ITM_GET_DPFCT               1330
 #define ITM_SET_DPFCT               1331
-#define ITM_1332                    1332 // General items / any items spare
-#define ITM_1333                    1333 // General items / any items spare
+#define ITM_SET_42ALPHA             1332
+#define ITM_GET_42ALPHA             1333
 #define ITM_BASEMENU                1334
 #define ITM_1335                    1335 // General items / any items spare
 #define ITM_1336                    1336 // General items / any items spare
@@ -2943,9 +2943,9 @@
 #define ITM_2842                    2842 // CONV MENU Spares
 #define ITM_2843                    2843 // CONV MENU Spares
 
-#define ITM_2844                    2844 // General items / any items spare
-#define ITM_2845                    2845 // General items / any items spare
-#define ITM_2846                    2846 // General items / any items spare
+#define ITM_EXPFLN                  2844
+#define ITM_EXPLFLN                 2845
+#define ITM_EXPSFL                  2846
 #define ITM_2847                    2847 // General items / any items spare
 #define ITM_2848                    2848 // General items / any items spare
 #define ITM_2849                    2849 // General items / any items spare

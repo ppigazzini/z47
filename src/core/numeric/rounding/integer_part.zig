@@ -5,7 +5,7 @@ const no_register = @as(runtime.calcRegister_t, -1);
 fn doIP(x: *runtime.real_t, mode: runtime.rounding_t) void {
     if (runtime.realIsSpecial(x)) {
         if (!runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
-            runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
         }
     } else {
         runtime.realToIntegralValue(x, x, mode, &runtime.ctxtReal39);

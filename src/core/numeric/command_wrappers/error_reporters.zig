@@ -14,7 +14,7 @@ const std_degree = "\x80\xb0"; // STD_DEGREE
 const std_sup_bold_x = "\x82\xE3"; // STD_SUP_BOLD_x
 
 fn reportDomainError(comptime message1: [*:0]const u8, comptime message2: ?[*:0]const u8, comptime message3: ?[*:0]const u8) linksection(runtime.code_section) void {
-    runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+    runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
     if (runtime.extra_info_on_calc_error) {
         runtime.moreInfoOnError(message1, message2, message3, null);
     }

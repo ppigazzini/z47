@@ -179,7 +179,7 @@ fn tryScalarIntegerOverRealDivide() bool {
             if (runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
                 runtime.convertRealToReal34ResultRegister(runtime.const_NaN, runtime.REGISTER_X);
             } else {
-                runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+                runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
                 runtime.moreInfoOnError(
                     if (type_y == runtime.dtLongInteger) "In function divLonIReal:" else "In function divShoIReal:",
                     "cannot divide 0 by 0",
@@ -193,7 +193,7 @@ fn tryScalarIntegerOverRealDivide() bool {
                 real34DataPointer(runtime.REGISTER_X),
             );
         } else {
-            runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
             runtime.moreInfoOnError(
                 if (type_y == runtime.dtLongInteger) "In function divLonIReal:" else "In function divShoIReal:",
                 if (type_y == runtime.dtLongInteger) "cannot divide a long integer by 0" else "cannot divide a short integer by 0",
@@ -235,7 +235,7 @@ fn tryScalarRealOverIntegerDivide() bool {
             if (runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
                 runtime.convertRealToReal34ResultRegister(runtime.const_NaN, runtime.REGISTER_X);
             } else {
-                runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+                runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
                 runtime.moreInfoOnError(
                     if (type_x == runtime.dtLongInteger) "In function divRealLonI:" else "In function divRealShoI:",
                     "cannot divide 0 by 0",
@@ -249,7 +249,7 @@ fn tryScalarRealOverIntegerDivide() bool {
                 real34DataPointer(runtime.REGISTER_X),
             );
         } else {
-            runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
             runtime.moreInfoOnError(
                 if (type_x == runtime.dtLongInteger) "In function divRealLonI:" else "In function divRealShoI:",
                 "cannot divide a real34 by 0",
@@ -287,7 +287,7 @@ fn tryScalarRealOverRealDivide() bool {
         if (runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
             runtime.convertRealToReal34ResultRegister(runtime.const_NaN, runtime.REGISTER_X);
         } else {
-            runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
             runtime.moreInfoOnError("In function divRealReal:", "cannot divide 0 by 0", null, null);
         }
     } else if (runtime.real34IsZero(real34DataPointer(runtime.REGISTER_X))) {
@@ -297,7 +297,7 @@ fn tryScalarRealOverRealDivide() bool {
                 real34DataPointer(runtime.REGISTER_X),
             );
         } else {
-            runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
             runtime.moreInfoOnError("In function divRealReal:", "cannot divide a real34 by 0", null, null);
         }
     } else {

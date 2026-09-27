@@ -5,6 +5,12 @@
 #define SCREEN_H
 
   extern bool_t blockMonitoring;
+  extern bool_t shiftOnTline;                                                                                     // set where the shift indicator is on the T line
+  void     updateShiftOnTline                 (void);
+
+  #define shiftOffset        17                                                                                   // room for the shift indicator, which is 15 px wide
+  #define noShiftOffset       2                                                                                   // the plain left indent, where the indicator is not on the line
+
   bool_t   registerFMA(calcRegister_t regist, real_t* tmp1, real_t* tmp2, real34_t* tmp3, angularMode_t* angle, realContext_t *c);
 
   void     setLastintegerBasetoZero           (void);
@@ -224,6 +230,14 @@
   void     showFunctionName                   (int16_t itm, int16_t delayInMs, const char * arg);
 
   /**
+   * Draws a text in the function name box straight to the LCD and leaves lcd_buffer as it is.
+   * A text too wide for the screen stops where an ellipsis still fits, and the ellipsis ends it. hideFunctionName takes the box down.
+   *
+   * \param[in] str  Text to draw
+   */
+  void     drawFuncName                       (const char *str);
+
+  /**
    * Hides the function name.
    * The function name in the upper left corner of the T register line is hidden
    * and the counter is cleared.
@@ -252,7 +266,7 @@
    */
   void     refreshRegisterLine                (calcRegister_t regist);
 
-  void     viewRegName2(char *prefix, int16_t *prefixWidth); //register name + ":" for SHOW
+  void     viewRegName2(char *prefix); //register name + ":" for SHOW
   void     displayNim                         (const char *nim, const char *lastBase, int16_t wLastBaseNumeric, int16_t wLastBaseStandard);
   void     clearTamBuffer                     (void);
   void     clearShiftState                    (void);

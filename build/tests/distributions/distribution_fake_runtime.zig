@@ -162,8 +162,8 @@ pub export fn saveLastX() callconv(.c) bool {
 pub export fn adjustResult(res: i16, drop_y: bool, set_cpx_res: bool, op1: i16, op2: i16, op3: i16) callconv(.c) void {
     _ = .{ res, drop_y, set_cpx_res, op1, op2, op3 };
 }
-pub export fn displayDomainErrorMessage(error_code: u8, a: i16, b: i16) callconv(.c) void {
-    _ = .{ a, b };
+pub export fn displayDomainErrorMessage(error_code: u8, a: i16) callconv(.c) void {
+    _ = a;
     last_error = error_code;
 }
 pub export fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) callconv(.c) void {

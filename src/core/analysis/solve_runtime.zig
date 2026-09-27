@@ -104,7 +104,7 @@ pub extern fn findNamedLabel(label_name: [*:0]const u8, label_type: u8) calcRegi
 pub extern fn findProgramLabel(label: u16, caller: [*:0]const u8) calcRegister_t;
 pub extern fn clearSystemFlag(flag: u32) void;
 pub extern fn setSystemFlag(flag: u32) void;
-pub extern fn displayCalcErrorMessage(error_code: u8, register_line: calcRegister_t, regist: calcRegister_t) void;
+pub extern fn displayCalcErrorMessage(error_code: u8, register_line: calcRegister_t) void;
 pub extern fn z47_solver_fnIntegrate(label_or_variable: u16) void;
 pub extern fn z47_solver_fnIntegrateYX(label_or_variable: u16) void;
 pub extern fn z47_solver_fnProgrammableSum(label: u16) void;
@@ -195,22 +195,22 @@ pub fn infoNotARealNumber(fnName: [*:0]const u8, dataType: u32) void {
 }
 
 pub inline fn reportLabelNotFound(buf: [*:0]const u8) void {
-    displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE);
     infoNotANamedLabel("In function fnPgmSlv:", buf);
 }
 
 pub inline fn reportOutOfRange(label: u16) void {
-    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
     infoUnexpectedParameter("In function fnPgmSlv:", label);
 }
 
 pub inline fn reportLabelNotFoundPgmInt(buf: [*:0]const u8) void {
-    displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE);
     infoNotANamedLabel("In function fnPgmInt:", buf);
 }
 
 pub inline fn reportOutOfRangePgmInt(label: u16) void {
-    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
     infoUnexpectedParameter("In function fnPgmInt:", label);
 }
 

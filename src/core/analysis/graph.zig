@@ -328,7 +328,7 @@ extern fn linkToRealMatrixRegister(regist: calcRegister_t, linkedMatrix: *real34
 extern fn allocateNamedMatrix(name: [*c]const u8, rows: u16, cols: u16) calcRegister_t;
 extern fn appendRowAtMatrixRegister(regist: calcRegister_t) bool;
 extern fn realMatrixInit(matrix: *real34Matrix_t, rows: u16, cols: u16) bool;
-extern fn displayCalcErrorMessage(error_code: u8, err_message_line: calcRegister_t, err_register_line: calcRegister_t) void;
+extern fn displayCalcErrorMessage(error_code: u8, err_message_line: calcRegister_t) void;
 extern fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void;
 extern fn printf(fmt: [*:0]const u8, ...) c_int;
 extern fn strcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8;
@@ -694,7 +694,7 @@ fn AddtoDrawMx() void {
         // Leave the graph screen, or the error line is never rendered and the
         // next fnPlot repaints over it.
         calcMode = CM_NORMAL;
-        displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
+        displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE); // Invalid input data type for this operation
         var buffer: [64]u8 = undefined;
         const message = runtime.bufPrintZ(&buffer, "additional matrix line not added; rows = {d}", .{rows}) catch "additional matrix line not added";
         moreInfoOnError("In function AddtoDrawMx:", message, null, null);
@@ -1303,7 +1303,7 @@ fn graph_eqn(mode: u16) void {
     // comes first, so a RAM-full refusal is raised from CM_NORMAL, where the
     // error line renders, and takes no undo snapshot.
     const wk = allocGraphWork() orelse {
-        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
         return;
     };
     defer freeGraphWork(wk);
@@ -1900,7 +1900,7 @@ pub export fn graph_stat(unusedButMandatoryParameter: u16) callconv(.c) void {
         fnPlotSQ(0);
     } else {
         calcMode = CM_NORMAL;
-        displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE);
         moreInfoOnError("In function graph_stat:", "There is no statistical/plot data available!", null, null);
     }
 }
@@ -2107,7 +2107,7 @@ fn complexSolver() void {
         freeCplx(temp3_p);
     }
     if (f_p == null or tol_p == null or tolClose_p == null or oldMagnitudeY_p == null or magnitudeY_p == null or X0_p == null or X1_p == null or X2_p == null or X2N_p == null or dX_p == null or dXold_p == null or Y0_p == null or Y1_p == null or Y2_p == null or Y2N_p == null or dY_p == null or dYold_p == null or temp0_p == null or temp1_p == null or temp2_p == null or temp3_p == null) {
-        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
         calcMode = CM_NORMAL;
         return;
     }
@@ -2400,7 +2400,7 @@ fn complexSolver() void {
 
     if (!Y2IsZero) {
         temporaryInformation = TI_SOLVER_FAILED;
-        displayCalcErrorMessage(ERROR_NO_ROOT_FOUND, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        displayCalcErrorMessage(ERROR_NO_ROOT_FOUND, ERR_REGISTER_LINE);
         convertDoubleToReal34Register(SOLVER_RESULT_OTHER_FAILURE, REGISTER_T);
     } else {
         temporaryInformation = TI_SOLVER_VARIABLE_RESULT;
@@ -2459,7 +2459,7 @@ pub export fn fnEqSolvGraph(func: u16) callconv(.c) void {
         currentSolverVariable <= LAST_NAMED_VARIABLE;
     if (!rpnProgramPlot and (currentFormula >= numberOfFormulae or allFormulae[currentFormula].pointerToFormulaData == C47_NULL)) {
         calcMode = CM_NORMAL;
-        displayCalcErrorMessage(ERROR_NO_EQUATION_DEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        displayCalcErrorMessage(ERROR_NO_EQUATION_DEFINED, ERR_REGISTER_LINE);
         moreInfoOnError("In function fnEqSolvGraph:", "no equation defined", null, null);
         return;
     }
@@ -2510,7 +2510,7 @@ pub export fn fnEqSolvGraph(func: u16) callconv(.c) void {
                     // Leave the graph screen so the error line renders, as
                     // graph_stat and fnPlotStat do.
                     calcMode = CM_NORMAL;
-                    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+                    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
                     moreInfoOnError("In function fnEqSolvGraph:", "plot range limits must be finite and distinct", null, null);
                     return;
                 }
@@ -2541,7 +2541,7 @@ pub export fn fnEqSolvGraph(func: u16) callconv(.c) void {
     } else {
         // Leave the graph screen so the error line renders.
         calcMode = CM_NORMAL;
-        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
         var buffer: [48]u8 = undefined;
         // C passes a calcRegister_t to "%u", so a negative variable number
         // prints as the unsigned reinterpretation of the promoted int.

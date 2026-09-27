@@ -48,7 +48,7 @@ fn wPosReal() callconv(.c) void {
         runtime.WP34S_ComplexLambertW(&x_value, runtime.z47_math_wrappers_const_0(), &result, &result_imag, &runtime.ctxtReal39);
         runtime.convertComplexToResultRegister(&result, &result_imag, runtime.REGISTER_X);
     } else {
-        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
         runtime.moreInfoOnError("In function wPosReal:", "X < -e^(-1)", "and CPXRES is not set!", null);
     }
 }
@@ -80,7 +80,7 @@ fn wNegReal() callconv(.c) void {
         runtime.WP34S_LambertW(&x_value, &result, true, &runtime.ctxtReal39);
         runtime.convertRealToResultRegister(&result, runtime.REGISTER_X, runtime.amNone);
     } else {
-        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
         runtime.moreInfoOnError("In function wNegReal:", "X < -e^(-1) || 0 < X", null, null);
     }
 }
@@ -100,11 +100,11 @@ fn wNegCplx() callconv(.c) void {
             runtime.WP34S_LambertW(&real_value, &result, true, &runtime.ctxtReal39);
             runtime.convertComplexToResultRegister(&result, runtime.z47_math_wrappers_const_0(), runtime.REGISTER_X);
         } else {
-            runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
             runtime.moreInfoOnError("In function wNegCplx:", "X < -e^(-1) || 0 < X", null, null);
         }
     } else {
-        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
         runtime.moreInfoOnError("In function wNegCplx:", "Cannot calculate Wm for complex number with non-zero imaginary part", null, null);
     }
 }

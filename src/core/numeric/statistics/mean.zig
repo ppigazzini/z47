@@ -154,10 +154,10 @@ pub export fn fnWeightedMeanX(unusedButMandatoryParameter: u16) linksection(runt
     var mean: real_t = undefined;
 
     if (statisticalSumsPointer == null) {
-        displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE);
         moreInfoOnError("In function fnWeightedMeanX:", "There is no statistical data available!", null, null);
     } else if (realCompareLessThan(SIGMA_Y(), const_1())) {
-        displayCalcErrorMessage(ERROR_TOO_FEW_DATA, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_TOO_FEW_DATA, ERR_REGISTER_LINE);
         moreInfoOnError("In function fnWeightedMeanX:", "There is insufficient statistical data available!", null, null);
     } else {
         liftStack();

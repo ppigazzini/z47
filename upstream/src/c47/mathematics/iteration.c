@@ -115,7 +115,7 @@ static void incDecAndCompare(uint16_t regist, uint16_t mode) {
   return;
 
 invalidType:
-  displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, regist);
+  displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
   #if (EXTRA_INFO_ON_CALC_ERROR == 1)
     sprintf(errorMessage, "incompatible type for iterator.");
     moreInfoOnError("In function incDecAndCompare:", errorMessage, NULL, NULL);

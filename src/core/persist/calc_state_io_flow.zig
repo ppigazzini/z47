@@ -13,7 +13,7 @@ extern fn liftStack() void;
 extern fn show_warning(string: [*c]u8) void;
 const refreshScreen = abi.host.requestRefresh; // routed through the host-callback boundary
 extern fn showHideHourGlass() void;
-extern fn displayCalcErrorMessage(error_code: u8, errMessageRegisterLine: i16, errRegisterLine: i16) void;
+extern fn displayCalcErrorMessage(error_code: u8, errMessageRegisterLine: i16) void;
 extern fn sprintf(str: [*c]u8, format: [*c]const u8, ...) c_int;
 extern var screenUpdatingMode: u8;
 extern var temporaryInformation: u8;
@@ -124,7 +124,7 @@ pub fn doLoad(load_mode: u16, s: u16, n: u16, d: u16, load_type: u16) void {
         programMemoryHasOverlongLabelName(beginOfProgramMemory))
     {
         fnClPAll(CONFIRMED);
-        displayCalcErrorMessage(ERROR_INVALID_CORRUPTED_DATA, ERR_REGISTER_LINE, REGISTER_X_LINE);
+        displayCalcErrorMessage(ERROR_INVALID_CORRUPTED_DATA, ERR_REGISTER_LINE);
     }
 
     runtime.closeFile();
@@ -147,7 +147,7 @@ pub fn doLoadDataFile(load_mode: u16, s: u16, n: u16, d: u16) void {
             refreshScreen(2998);
             return;
         } else {
-            displayCalcErrorMessage(ERROR_CANNOT_READ_FILE, ERR_REGISTER_LINE, REGISTER_X_LINE);
+            displayCalcErrorMessage(ERROR_CANNOT_READ_FILE, ERR_REGISTER_LINE);
             return;
         }
     }

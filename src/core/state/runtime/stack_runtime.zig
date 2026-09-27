@@ -115,7 +115,7 @@ extern fn z47_stack_runtime_statistical_sums_bytes() u32;
 
 pub const longInteger_t = [1]longIntegerValue_t;
 
-pub extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: calcRegister_t, err_register_line: calcRegister_t) void;
+pub extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: calcRegister_t) void;
 // The shared error-hint buffer and the console hint printer, both reached only
 // from the EXTRA_INFO_ON_CALC_ERROR arms below.
 extern var errorMessage: [*c]u8;
@@ -257,7 +257,7 @@ pub fn trySetSwapTargetDescriptor(reg: u16, descriptor: register_descriptor_t) b
 // register number.
 pub fn reportInvalidSwapTarget(reg: u16) void {
     if (comptime !extra_info) return;
-    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
     if (@as(i32, reg) <= LAST_LOCAL_REGISTER) {
         // stack.c subtracts in int, so a target below the local band prints negative.
         abi.fmtCStr(errorMessage, "local register .{d:0>2}", .{@as(i32, reg) - FIRST_LOCAL_REGISTER});

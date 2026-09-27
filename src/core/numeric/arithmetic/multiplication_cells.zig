@@ -62,7 +62,7 @@ pub export fn mulError() linksection(runtime.code_section) callconv(.c) void {
     const message1 = bufPrintZ(&message1_buffer, "cannot multiply {s}", .{y_type_name});
     const message2 = bufPrintZ(&message2_buffer, "by {s}", .{x_type_name});
 
-    runtime.displayCalcErrorMessage(support.ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+    runtime.displayCalcErrorMessage(support.ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     runtime.moreInfoOnError("In function fnMultiply:", message1, message2, null);
 }
 
@@ -493,7 +493,7 @@ pub export fn mulRemaRema() linksection(runtime.code_section) callconv(.c) void 
         runtime.convertReal34MatrixToReal34MatrixRegister(&res, REGISTER_X);
         runtime.realMatrixFree(&res);
     } else {
-        runtime.displayCalcErrorMessage(support.ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
+        runtime.displayCalcErrorMessage(support.ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE);
         var message_buffer: [196]u8 = undefined;
         const message = bufPrintZ(
             &message_buffer,
@@ -599,7 +599,7 @@ pub export fn mulCxmaCxma() linksection(runtime.code_section) callconv(.c) void 
         runtime.convertComplex34MatrixToComplex34MatrixRegister(&res, REGISTER_X);
         runtime.complexMatrixFree(&res);
     } else {
-        runtime.displayCalcErrorMessage(support.ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
+        runtime.displayCalcErrorMessage(support.ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE);
         var message_buffer: [196]u8 = undefined;
         const message = bufPrintZ(
             &message_buffer,

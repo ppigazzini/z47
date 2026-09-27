@@ -268,7 +268,7 @@ fn doRealAGM() callconv(.c) void {
         if (runtime.getFlag(FLAG_CPXRES)) {
             doComplexAGM();
         } else {
-            displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+            displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
             moreInfoOnError("In function doRealAGM:", "cannot use negative X and Y as input of AGM", null, null);
         }
     } else {

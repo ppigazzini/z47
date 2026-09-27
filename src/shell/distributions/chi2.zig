@@ -32,19 +32,19 @@ fn checkParamChi2(x: *real_t, i: *real_t) linksection(dr.code_section) bool {
     }
 
     if (!checkRegisterNoFP(i)) {
-        dr.displayDomainErrorMessage(dr.ERROR_INVALID_DISTRIBUTION_PARAM, dr.ERR_REGISTER_LINE, dr.REGISTER_X);
+        dr.displayDomainErrorMessage(dr.ERROR_INVALID_DISTRIBUTION_PARAM, dr.ERR_REGISTER_LINE);
         dr.moreInfoOnError("In function checkParamChi2:", "k is not an integer", null, null);
         dr.specialResultNaN();
         return false;
     }
     if (dr.realIsNegative(x)) {
-        dr.displayDomainErrorMessage(dr.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, dr.ERR_REGISTER_LINE, dr.REGISTER_X);
+        dr.displayDomainErrorMessage(dr.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, dr.ERR_REGISTER_LINE);
         dr.moreInfoOnError("In function checkParamChi2:", "cannot calculate for x < 0", null, null);
         dr.specialResultNaN();
         return false;
     }
     if (dr.realIsZero(i) or dr.realIsNegative(i)) {
-        dr.displayDomainErrorMessage(dr.ERROR_INVALID_DISTRIBUTION_PARAM, dr.ERR_REGISTER_LINE, dr.REGISTER_X);
+        dr.displayDomainErrorMessage(dr.ERROR_INVALID_DISTRIBUTION_PARAM, dr.ERR_REGISTER_LINE);
         dr.moreInfoOnError("In function checkParamChi2:", "cannot calculate for k \xa2\x64 0", null, null);
         dr.specialResultNaN();
         return false;
@@ -96,14 +96,14 @@ pub fn chi2I(unused_but_mandatory_parameter: u16) linksection(dr.code_section) v
 
     if (checkParamChi2(&val, &dof)) {
         if (dr.realCompareLessEqual(&val, dr.const0()) or dr.realCompareGreaterEqual(&val, dr.const1())) {
-            dr.displayDomainErrorMessage(dr.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, dr.ERR_REGISTER_LINE, dr.REGISTER_X);
+            dr.displayDomainErrorMessage(dr.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, dr.ERR_REGISTER_LINE);
             dr.moreInfoOnError("In function fnChi2I:", "the argument must be 0 < x < 1", null, null);
             dr.specialResultNaN();
             return;
         }
         wp34sQfChi2(&val, &dof, &ans, &dr.ctxtReal39);
         if (dr.realIsNaN(&ans)) {
-            dr.displayDomainErrorMessage(dr.ERROR_NO_ROOT_FOUND, dr.ERR_REGISTER_LINE, dr.REGISTER_X);
+            dr.displayDomainErrorMessage(dr.ERROR_NO_ROOT_FOUND, dr.ERR_REGISTER_LINE);
             dr.moreInfoOnError("In function fnChi2I:", "WP34S_Qf_Chi2 did not converge", null, null);
             dr.specialResultNaN();
             return;

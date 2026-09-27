@@ -428,7 +428,7 @@ pub export fn itemToBeCoded(unusedButMandatoryParameter: u16) callconv(.c) void 
 pub export fn fnOldItemError(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     // !GENERATE_CATALOGS && !GENERATE_TESTPGMS always true
-    frontier_error.displayCalcErrorMessage(@intCast(ERROR_OLD_ITEM_TO_REPLACE), ERR_REGISTER_LINE, REGISTER_X);
+    frontier_error.displayCalcErrorMessage(@intCast(ERROR_OLD_ITEM_TO_REPLACE), ERR_REGISTER_LINE);
 }
 
 // fnNop is owned by frontier.zig; bound here as an extern for the table.
@@ -713,7 +713,7 @@ pub export fn reallyRunFunction(func: i16, param: u16) callconv(.c) void {
 
         if (lastErrorCode == ERROR_RAM_FULL) {
             if ((indexOfItems[@intCast(func)].status & US_STATUS) == US_ENABLED or calcMode == CM_CONFIRMATION) {
-                frontier_error.displayCalcErrorMessage(@intCast(ERROR_RAM_FULL), ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                frontier_error.displayCalcErrorMessage(@intCast(ERROR_RAM_FULL), ERR_REGISTER_LINE);
                 if (comptime extra_info) {
                     moreInfoOnError("In function reallyRunFunction:", "there is not enough memory to save for undo!", null, null);
                 }
@@ -805,7 +805,7 @@ pub export fn reallyRunFunction(func: i16, param: u16) callconv(.c) void {
         if (itemERRTIVal(func) == _TO_ITM_TI) {
             temporaryInformation = TI_NOT_AVAILABLE;
         } else if (itemERRTIVal(func) == _TO_ITM_ERR) {
-            frontier_error.displayCalcErrorMessage(@intCast(notAvail), ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(@intCast(notAvail), ERR_REGISTER_LINE);
             if (comptime extra_info) {
                 abi.fmtBufZ(errorMessage[0..ERROR_MESSAGE_LENGTH], "Not Available", .{});
                 moreInfoOnError("In function reallyRunFunction:", errorMessage, null, null);
@@ -1025,7 +1025,7 @@ pub export fn runFunction(func: i16) callconv(.c) void {
                         reallyRunFunction(func, @bitCast(v));
                     }
                 } else {
-                    frontier_error.displayCalcErrorMessage(@intCast(ERROR_UNDEF_SOURCE_VAR), ERR_REGISTER_LINE, REGISTER_X);
+                    frontier_error.displayCalcErrorMessage(@intCast(ERROR_UNDEF_SOURCE_VAR), ERR_REGISTER_LINE);
                     if (comptime extra_info) {
                         abi.fmtBufZ(errorMessage[0..ERROR_MESSAGE_LENGTH], "string '{s}' is not a named variable", .{std.mem.sliceTo(varCatalogItem, 0)});
                         moreInfoOnError("In function runFunction:", errorMessage, null, null);
@@ -1045,7 +1045,7 @@ pub export fn runFunction(func: i16) callconv(.c) void {
                         reallyRunFunction(func, @bitCast(label));
                     }
                 } else {
-                    frontier_error.displayCalcErrorMessage(@intCast(ERROR_LABEL_NOT_FOUND), ERR_REGISTER_LINE, REGISTER_X);
+                    frontier_error.displayCalcErrorMessage(@intCast(ERROR_LABEL_NOT_FOUND), ERR_REGISTER_LINE);
                     if (comptime extra_info) {
                         abi.fmtBufZ(errorMessage[0..ERROR_MESSAGE_LENGTH], "string '{s}' is not a named label", .{std.mem.sliceTo(varCatalogItem, 0)});
                         moreInfoOnError("In function runFunction:", errorMessage, null, null);
@@ -1062,7 +1062,7 @@ pub export fn runFunction(func: i16) callconv(.c) void {
                 if (itemERRTIVal(func) == _TO_ITM_TI) {
                     temporaryInformation = TI_NOT_AVAILABLE;
                 } else if (itemERRTIVal(func) == _TO_ITM_ERR) {
-                    frontier_error.displayCalcErrorMessage(@intCast(notAvail), ERR_REGISTER_LINE, REGISTER_X);
+                    frontier_error.displayCalcErrorMessage(@intCast(notAvail), ERR_REGISTER_LINE);
                     if (comptime extra_info) {
                         abi.fmtBufZ(errorMessage[0..ERROR_MESSAGE_LENGTH], "Not Available", .{});
                         moreInfoOnError("In function runFunction:", errorMessage, null, null);
@@ -1107,7 +1107,7 @@ pub export fn runFunction(func: i16) callconv(.c) void {
     reallyRunFunction(func, indexOfItems[@intCast(func)].param);
 
     if (funcOK == 0) {
-        frontier_error.displayCalcErrorMessage(@intCast(ERROR_ITEM_TO_BE_CODED), ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(@intCast(ERROR_ITEM_TO_BE_CODED), ERR_REGISTER_LINE);
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..ERROR_MESSAGE_LENGTH], "{d} = {s}", .{ func, std.mem.sliceTo(@as([*:0]const u8, @ptrCast(&indexOfItems[@intCast(func)].itemCatalogName)), 0) });
             moreInfoOnError("In function runFunction:", "Item not implemented", errorMessage, "to be coded");

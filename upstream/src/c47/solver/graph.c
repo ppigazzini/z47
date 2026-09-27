@@ -232,7 +232,7 @@ uint8_t DXR = 0, DYR = 0, DXI = 0, DYI = 0;
     }
     else {
       calcMode = CM_NORMAL;
-      displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
+      displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE); // Invalid input data type for this operation
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "additional matrix line not added; rows = %i", rows);
         moreInfoOnError("In function AddtoDrawMx:", errorMessage, NULL, NULL);
@@ -1103,7 +1103,7 @@ bool_t detectTrueDiscontinuityWithAsymptote(const real_t *y0, const real_t *y1, 
        linearSlope == NULL || interpolationError == NULL || curvatureChange == NULL || newDx == NULL || improvementRatio == NULL || highResStartX == NULL ||
        cumulativeCurvatureChange == NULL || baselineCurvatureChange == NULL || savedXBeforeHighres == NULL || savedDxBeforeHighres == NULL || tmpA == NULL ||
        tmpB == NULL || asymptotes == NULL) {
-      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
       goto freeWork;
     }
     currentKeyCode = 255;
@@ -1981,7 +1981,7 @@ void graph_stat(uint16_t unusedButMandatoryParameter) {
     }
     else {
       calcMode = CM_NORMAL;
-      displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "There is no statistical/plot data available!");
         moreInfoOnError("In function graph_stat:", errorMessage, NULL, NULL);
@@ -2178,7 +2178,7 @@ static inline void powCplxNat(const cplx_t *base, const uint8_t *exp, cplx_t *re
        X0 == NULL || X1 == NULL || X2 == NULL || X2N == NULL || dX == NULL || dXold == NULL ||
        Y0 == NULL || Y1 == NULL || Y2 == NULL || Y2N == NULL || dY == NULL || dYold == NULL ||
        temp0 == NULL || temp1 == NULL || temp2 == NULL || temp3 == NULL) {
-      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
       calcMode = CM_NORMAL;
       goto freeWork;
     }
@@ -2647,7 +2647,7 @@ static inline void powCplxNat(const cplx_t *base, const uint8_t *exp, cplx_t *re
 
     if(!Y2IsZero) {
       temporaryInformation = TI_SOLVER_FAILED;
-      displayCalcErrorMessage(ERROR_NO_ROOT_FOUND, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      displayCalcErrorMessage(ERROR_NO_ROOT_FOUND, ERR_REGISTER_LINE);
       convertDoubleToReal34Register(SOLVER_RESULT_OTHER_FAILURE, REGISTER_T);
     }
     else {
@@ -2775,7 +2775,7 @@ void fnEqSolvGraph (uint16_t func) {
                                     && currentSolverVariable <= LAST_NAMED_VARIABLE;
       if(!rpnProgramPlot && (currentFormula >= numberOfFormulae || allFormulae[currentFormula].pointerToFormulaData == C47_NULL)) {
         calcMode = CM_NORMAL;
-        displayCalcErrorMessage(ERROR_NO_EQUATION_DEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        displayCalcErrorMessage(ERROR_NO_EQUATION_DEFINED, ERR_REGISTER_LINE);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           moreInfoOnError("In function fnEqSolvGraph:", "no equation defined", NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -2834,7 +2834,7 @@ void fnEqSolvGraph (uint16_t func) {
           if(getRegisterAsReal(REGISTER_X, &x) && getRegisterAsReal(REGISTER_Y, &y)) {
             if(realIsSpecial(&x) || realIsSpecial(&y) || realCompareEqual(&x, &y)) { //screen raw incoming range: keep the old UX/LX and error
               calcMode = CM_NORMAL;    //leave the graph screen so the error line renders, same as graph_stat/fnPlotStat
-              displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+              displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
               #if (EXTRA_INFO_ON_CALC_ERROR == 1)
                 moreInfoOnError("In function fnEqSolvGraph:", "plot range limits must be finite and distinct", NULL, NULL);
               #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -2870,7 +2870,7 @@ void fnEqSolvGraph (uint16_t func) {
       }
       else {
         calcMode = CM_NORMAL;
-        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           sprintf(errorMessage, "unexpected parameter %u", graphVariabl1);
           moreInfoOnError("In function fnEqSolvGraph:", errorMessage, NULL, NULL);

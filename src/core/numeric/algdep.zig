@@ -268,7 +268,7 @@ const LatticeFrame = struct {
 
 fn latticeAlloc() ?LatticeFrame {
     const raw = runtime.allocC47Blocks(lattice_blocks) orelse {
-        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
         return null;
     };
     const lattice: *Lattice = @ptrFromInt(std.mem.alignForward(usize, @intFromPtr(raw), @alignOf(Lattice)));
@@ -664,7 +664,7 @@ fn algdepSearch(L: *Lattice, x: *const real_t, maxDegree: i32, out: *Outcome) bo
     longIntegerInit(&bigN);
     defer longIntegerFree(&bigN);
     if (!realToScaledInteger(x, &bigN, &kdec)) {
-        displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
         if (comptime extra_info_on_calc_error) {
             moreInfoOnError("In function algdepSearch:", "the value in X is not finite.", null, null);
         }
@@ -776,7 +776,7 @@ fn buildPolynomialString(L: *Lattice, degree: i32) void {
 // ----------------------------------------------------------------- the commands
 
 fn reportNoRelation(function: [*:0]const u8, what: [*:0]const u8) void {
-    displayCalcErrorMessage(ERROR_NO_ROOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_NO_ROOT_FOUND, ERR_REGISTER_LINE);
     if (comptime extra_info_on_calc_error) {
         moreInfoOnError(function, what, "to the precision the input carries.", null);
     }
@@ -796,14 +796,14 @@ pub export fn fnAlgdep(maxDegree: u16) linksection(runtime.code_section) callcon
     var out: Outcome = .{ .found = false, .degree = 0, .margin = 0 };
 
     if (maxDegree < 1 or maxDegree > ALGDEP_MAX_DEGREE) {
-        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
         return;
     }
     if (!runtime.getRegisterAsReal(REGISTER_X, &x)) {
         return;
     }
     if (realIsSpecial(&x)) {
-        displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
         return;
     }
     if (!runtime.saveLastX()) { // the input is consumed, so LASTx carries it, as fnSlvq's does; a refusal is an error, and runFunction's undo()
@@ -853,7 +853,7 @@ pub export fn fnLindep(unused_but_mandatory_parameter: u16) linksection(runtime.
     var matrix: real34Matrix_t = undefined;
 
     if (runtime.getRegisterDataType(REGISTER_X) != dtReal34Matrix) {
-        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
         return;
     }
     runtime.linkToRealMatrixRegister(REGISTER_X, &matrix);
@@ -866,7 +866,7 @@ pub export fn fnLindep(unused_but_mandatory_parameter: u16) linksection(runtime.
     else
         0;
     if (count < 2 or count > ALGDEP_MAX_VECTORS) {
-        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
         if (comptime extra_info_on_calc_error) {
             moreInfoOnError("In function fnLindep:", "expects a row or column vector of 2 to 11 elements.", null, null);
         }
@@ -902,7 +902,7 @@ pub export fn fnLindep(unused_but_mandatory_parameter: u16) linksection(runtime.
     }
     longIntegerFree(&entryN);
     if (!finite) {
-        displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
         if (comptime extra_info_on_calc_error) {
             moreInfoOnError("In function fnLindep:", "every entry of the vector must be finite.", null, null);
         }

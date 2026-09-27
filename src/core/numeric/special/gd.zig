@@ -73,7 +73,7 @@ const realIsPositive = math_real_predicates.realIsPositive;
 // Cross-domain externs.
 
 fn gdError(gd: bool, errorCode: u8) void {
-    displayCalcErrorMessage(errorCode, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(errorCode, ERR_REGISTER_LINE);
     if (!runtime.extra_info_on_calc_error) {
         return;
     }

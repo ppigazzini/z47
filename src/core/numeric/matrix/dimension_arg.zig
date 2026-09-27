@@ -37,7 +37,7 @@ pub export fn getMatrixDims(regist: calcRegister_t, func_name: [*:0]const u8, ro
         cols.* = x.header.matrixColumns;
         return true;
     } else {
-        runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, nim_register_line);
+        runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE);
         if (runtime.extra_info_on_calc_error) {
             var buffer: [64]u8 = undefined;
             const message = bufPrintZ(&buffer, "DataType {d}", .{data_type}) catch "DataType";
@@ -59,7 +59,7 @@ fn singleDimension(reg: calcRegister_t, d: *u32) DimensionError!void {
     var tmp: runtime.longInteger_t = undefined;
 
     if (!runtime.getRegisterAsLongInt(reg, &tmp[0], null)) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, nim_register_line);
+        runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE);
         if (runtime.extra_info_on_calc_error) {
             var buffer: [80]u8 = undefined;
             const which = if (reg == runtime.REGISTER_X) "columns" else "rows";
@@ -73,7 +73,7 @@ fn singleDimension(reg: calcRegister_t, d: *u32) DimensionError!void {
     defer runtime.__gmpz_clear(&tmp[0]);
 
     if (!math_real_predicates.longIntegerIsPositiveAtMost(&tmp[0], MAX_DIMENSION)) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, nim_register_line);
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
         if (runtime.extra_info_on_calc_error) {
             var buffer: [64]u8 = undefined;
             const which = if (reg == runtime.REGISTER_X) "columns" else "rows";

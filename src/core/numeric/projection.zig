@@ -53,7 +53,7 @@ fn realPartComplexMatrix() void {
 
     runtime.linkToComplexMatrixRegister(runtime.REGISTER_X, &complex_matrix);
     if (!runtime.realMatrixInit(&real_matrix, complex_matrix.header.matrixRows, complex_matrix.header.matrixColumns)) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE);
         return;
     }
     defer runtime.realMatrixFree(&real_matrix);
@@ -95,7 +95,7 @@ fn imaginaryPartComplexMatrix() void {
 
     runtime.linkToComplexMatrixRegister(runtime.REGISTER_X, &complex_matrix);
     if (!runtime.realMatrixInit(&real_matrix, complex_matrix.header.matrixRows, complex_matrix.header.matrixColumns)) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE);
         return;
     }
     defer runtime.realMatrixFree(&real_matrix);
@@ -222,7 +222,7 @@ fn argComplexMatrix() void {
 
     runtime.linkToComplexMatrixRegister(runtime.REGISTER_X, &complex_matrix);
     if (!runtime.realMatrixInit(&real_matrix, complex_matrix.header.matrixRows, complex_matrix.header.matrixColumns)) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE);
         return;
     }
     defer runtime.realMatrixFree(&real_matrix);
@@ -293,7 +293,7 @@ fn magnitudeComplexMatrix() void {
 
     runtime.linkToComplexMatrixRegister(runtime.REGISTER_X, &complex_matrix);
     if (!runtime.realMatrixInit(&real_matrix, complex_matrix.header.matrixRows, complex_matrix.header.matrixColumns)) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE);
         return;
     }
     defer runtime.realMatrixFree(&real_matrix);

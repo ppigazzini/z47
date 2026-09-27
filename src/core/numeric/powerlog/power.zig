@@ -248,7 +248,7 @@ fn powLonI() linksection(runtime.code_section) callconv(.c) void {
     defer longIntegerFree(&exponent);
 
     if (longIntegerIsZero(&exponent) and longIntegerIsZero(&base)) {
-        displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
         moreInfoOnError("In function powLonI: Cannot calculate 0^0!", null, null, null);
         return;
     }
@@ -296,7 +296,7 @@ fn powReal() linksection(runtime.code_section) callconv(.c) void {
                         powCplx();
                         return;
                     }
-                    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+                    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
                     moreInfoOnError("In function powReal:", "cannot do complex results if CPXRES is not set", null, null);
                     return;
                 }
@@ -322,7 +322,7 @@ fn powReal() linksection(runtime.code_section) callconv(.c) void {
             powCplx();
             return;
         } else {
-            displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+            displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
             moreInfoOnError("In function powReal:", "cannot do complex results if CPXRES is not set", null, null);
             return;
         }
@@ -477,7 +477,7 @@ fn powCplx() linksection(runtime.code_section) callconv(.c) void {
     const errorCode: u8 = PowerComplex(&yReal, &yImag, &xReal, &xImag, &rReal, &rImag, &runtime.ctxtReal39);
 
     if (errorCode != ERROR_NONE) {
-        displayCalcErrorMessage(errorCode, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(errorCode, ERR_REGISTER_LINE);
         moreInfoOnError("In function powCplx:", "cannot raise", "to", null);
     } else {
         runtime.convertComplexToResultRegister(&rReal, &rImag, REGISTER_X);

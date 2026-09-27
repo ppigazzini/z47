@@ -22,7 +22,7 @@ fn bufPrintZ(buffer: []u8, comptime format: []const u8, args: anytype) ![:0]u8 {
 }
 
 fn reportNotSquare(rows: u16, cols: u16) void {
-    runtime.displayCalcErrorMessage(runtime.ERROR_MATRIX_MISMATCH, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+    runtime.displayCalcErrorMessage(runtime.ERROR_MATRIX_MISMATCH, runtime.ERR_REGISTER_LINE);
     if (runtime.extra_info_on_calc_error) {
         var buffer: [64]u8 = undefined;
         const message = bufPrintZ(&buffer, "not a square matrix ({d}" ++ std_cross ++ "{d})", .{ rows, cols }) catch "not a square matrix";
@@ -76,7 +76,7 @@ pub export fn fnQrDecomposition(unused_param_but_mandatory: u16) callconv(.c) vo
             runtime.complexMatrixFree(&r);
         }
     } else {
-        runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, nim_register_line);
+        runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE);
         if (runtime.extra_info_on_calc_error) {
             var buffer: [64]u8 = undefined;
             const message = bufPrintZ(&buffer, "DataType {d}", .{data_type}) catch "DataType";

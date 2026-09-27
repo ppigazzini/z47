@@ -309,7 +309,7 @@ static void fnProcessLRfind(uint16_t curveFitting, uint16_t resultType){
   }
   else {
     if(minLRDataPoints(s) == 65535) {
-      displayCalcErrorMessage(ERROR_TOO_FEW_DATA, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_TOO_FEW_DATA, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         moreInfoOnError("In function fnProcessLRfind:", "There is insufficient statistical data to do L.R., possibly due to data manipulation!", NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)

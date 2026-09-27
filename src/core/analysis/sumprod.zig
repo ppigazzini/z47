@@ -237,7 +237,7 @@ extern fn fnDrop(unused: u16) void;
 extern fn fnFillStack(unused: u16) void;
 extern fn execProgram(label: u16) void;
 extern fn adjustResult(res: calcRegister_t, drop_y: bool, set_cpx_res: bool, op1: calcRegister_t, op2: calcRegister_t, op3: calcRegister_t) void;
-extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: calcRegister_t, err_register_line: calcRegister_t) void;
+extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: calcRegister_t) void;
 extern fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void;
 const GLOBAL_LABELS: u8 = 253; // namedLabels_t: STRING_LABEL_VARIABLE
 extern fn findNamedLabel(label_name: [*:0]const u8, label_type: u8) calcRegister_t;
@@ -335,14 +335,14 @@ fn _programmableSumProd(label: u16, prod: bool_t, early: ?*EarlyAbort) linksecti
 
     real34Add(&counter, &loopStep, &moved); // the counter plus the step, against the counter, which is the test the FOR structure makes
     if (real34CompareEqual(&moved, &counter)) { // a step of zero, and a step too small for the counter's digits, are the same fault
-        displayCalcErrorMessage(ERROR_STEP_OF_ZERO, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_STEP_OF_ZERO, ERR_REGISTER_LINE);
         moreInfoOnError("In function _programmableSumProd:", "Counter will not move", null, null);
     } else if (!real34CompareEqual(&loopTo, &counter) and
         (real34IsZero(&loopStep) or // unreachable, leave a backup in case input filtering change
             (real34CompareGreaterThan(&loopTo, &counter) and real34CompareLessEqual(&loopStep, const34_0())) or
             (real34CompareLessThan(&loopTo, &counter) and real34CompareGreaterEqual(&loopStep, const34_0()))))
     {
-        displayCalcErrorMessage(ERROR_BAD_INPUT, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_BAD_INPUT, ERR_REGISTER_LINE);
         moreInfoOnError("In function _programmableSumProd:", "Counter will not count to destination", null, null);
     } else {
         currentSolverNestingDepth += 1;
@@ -390,7 +390,7 @@ fn _programmableSumProd(label: u16, prod: bool_t, early: ?*EarlyAbort) linksecti
                 if (cpxAllowed) {
                     changedOverToComplex = true; // Only latch over to complex operation if CPXRES is true, as well as either sum or new f(n) is complex
                 } else {
-                    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+                    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
                     moreInfoOnError("In function _programmableSumProd:", "f(n) returned a complex value while flag I is not set!", null, null);
                     break;
                 }
@@ -482,7 +482,7 @@ fn _programmableSumProd(label: u16, prod: bool_t, early: ?*EarlyAbort) linksecti
             }
             adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
         } else {
-            displayCalcErrorMessage(lastErrorCode, ERR_REGISTER_LINE, REGISTER_X);
+            displayCalcErrorMessage(lastErrorCode, ERR_REGISTER_LINE);
             moreInfoOnError("In function _programmableSumProd:", "Error or exit while calculating", null, null);
         }
 

@@ -30,14 +30,14 @@
     }
 
     if(realIsNegative(x)) {
-      displayDomainErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+      displayDomainErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         moreInfoOnError("In function checkParamPoisson:", "cannot calculate for x < 0", NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       goto err;
     }
     else if(realIsZero(i) || realIsNegative(i)) {
-      displayDomainErrorMessage(ERROR_INVALID_DISTRIBUTION_PARAM, ERR_REGISTER_LINE, REGISTER_X);
+      displayDomainErrorMessage(ERROR_INVALID_DISTRIBUTION_PARAM, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         moreInfoOnError("In function checkParamPoisson:", "the parameter must be " STD_lambda " > 0", NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -91,7 +91,7 @@
 
     if(checkParamPoisson(&val, &prob)) {
       if(realCompareLessEqual(&val, const_0) || realCompareGreaterEqual(&val, const_1)) {
-        displayDomainErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+        displayDomainErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           moreInfoOnError("In function fnPoissonI:", "the argument must be 0 < x < 1", NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)

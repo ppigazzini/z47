@@ -594,7 +594,7 @@ extern fn ioFileOpen(path: c_int, mode: c_int) c_int;
 extern fn ioFileClose() void;
 const refreshScreen = abi.host.requestRefresh; // routed through the host-callback boundary
 extern fn showHideHourGlass() void;
-extern fn displayCalcErrorMessage(error_code: u8, errMessageRegisterLine: i16, errRegisterLine: i16) void;
+extern fn displayCalcErrorMessage(error_code: u8, errMessageRegisterLine: i16) void;
 extern fn findNamedVariable(variableName: [*c]const u8) i16;
 extern fn getSystemFlag(sf: c_int) bool;
 extern var screenUpdatingMode: u8;
@@ -655,7 +655,7 @@ fn doSaveDataFile(beginR: ?*const u16, endR: ?*const u16, registerName: [*c]cons
             refreshScreen(2996);
             return;
         } else {
-            displayCalcErrorMessage(ERROR_CANNOT_WRITE_FILE, ERR_REGISTER_LINE, REGISTER_X_LINE);
+            displayCalcErrorMessage(ERROR_CANNOT_WRITE_FILE, ERR_REGISTER_LINE);
             return;
         }
     }
@@ -702,7 +702,7 @@ pub export fn fnSaveNRegisters(N: u16) callconv(.c) void {
         var endR: u16 = N - 1;
         doSaveDataFile(&beginR, &endR, null, !isXFN);
     } else {
-        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X_LINE);
+        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
     }
 }
 
@@ -719,7 +719,7 @@ pub export fn fnSaveRegister(regist: u16) callconv(.c) void {
         var endR: u16 = regist;
         doSaveDataFile(&beginR, &endR, null, !isXFN); // numbered or lettered register: save by number (through RW = LAST_SPARE_REGISTER)
     } else {
-        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X_LINE);
+        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
     }
 }
 
@@ -731,6 +731,6 @@ pub export fn fnSaveXFNRegister(unusedButMandatoryParameter: u16) callconv(.c) v
         var endR: u16 = regist;
         doSaveDataFile(&beginR, &endR, null, isXFN);
     } else {
-        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X_LINE);
+        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
     }
 }

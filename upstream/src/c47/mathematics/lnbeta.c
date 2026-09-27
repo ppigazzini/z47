@@ -23,7 +23,7 @@ static bool_t _checkLnGammaArgs(int8_t *resultType, real_t *xReal, realContext_t
 
   if(realIsInfinite(xReal)) {
     if(!getSystemFlag(FLAG_SPCRES)) {
-      displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
       EXTRA_INFO_MESSAGE("_checkLnGammaArgs", "cannot use " STD_PLUS_MINUS STD_INFINITY " as X input of lnbeta when flag SPCRES is not set");
     }
     else {
@@ -35,7 +35,7 @@ static bool_t _checkLnGammaArgs(int8_t *resultType, real_t *xReal, realContext_t
   else if(realCompareLessEqual(xReal, const_0)) { // x <= 0
     if(realIsAnInteger(xReal)) {
       if(!getSystemFlag(FLAG_SPCRES)) {
-        displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
         EXTRA_INFO_MESSAGE("_checkLnGammaArgs", "cannot use a negative integer as X input of lnbeta when flag SPCRES is not set");
       }
       else {
@@ -59,7 +59,7 @@ static bool_t _checkLnGammaArgs(int8_t *resultType, real_t *xReal, realContext_t
           *resultType = RESULT_TYPE_COMPLEX;
         }
         else { // Domain error
-          displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+          displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
           EXTRA_INFO_MESSAGE("_checkLnGammaArgs", "cannot use a as X input of lnbeta if gamma(X)<0 when flag I is not set");
           result = false;
         }

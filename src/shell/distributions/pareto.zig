@@ -26,13 +26,13 @@ fn checkParamGPD(x: *real_t, mu: ?*real_t, sigma: *real_t, alpha: *real_t, qf: b
     }
 
     if (dr.realIsZero(sigma) or dr.realIsNegative(sigma)) {
-        dr.displayDomainErrorMessage(dr.ERROR_INVALID_DISTRIBUTION_PARAM, dr.ERR_REGISTER_LINE, dr.REGISTER_X);
+        dr.displayDomainErrorMessage(dr.ERROR_INVALID_DISTRIBUTION_PARAM, dr.ERR_REGISTER_LINE);
         dr.moreInfoOnError("In function checkParamGPD:", "the parameter sigma must be positive", null, null);
         dr.specialResultNaN();
         return false;
     }
     if (!qf and dr.realLessThan(x, if (mu == null) sigma else mu.?)) {
-        dr.displayDomainErrorMessage(dr.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, dr.ERR_REGISTER_LINE, dr.REGISTER_X);
+        dr.displayDomainErrorMessage(dr.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, dr.ERR_REGISTER_LINE);
         dr.moreInfoOnError("In function checkParamGPD:", "cannot calculate for x < sigma/mu", null, null);
         dr.specialResultNaN();
         return false;

@@ -25,7 +25,7 @@ const complexElems = abi.matrixComplexElems;
 const constComplexElems = abi.matrixConstComplexElems;
 
 fn reportRamFull(comptime function_name: [*:0]const u8) void {
-    runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE, nim_register_line);
+    runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE);
     if (runtime.extra_info_on_calc_error) {
         runtime.moreInfoOnError(function_name, "Ram full", null, null);
     }
