@@ -1,9 +1,17 @@
 const std = @import("std");
 
+// lcd_buffer holds one bit per pixel with the DMCP polarity: a set bit is a
+// white pixel and a clear bit a black one. LCD_write_line paints it that way,
+// bitblt24's BLT_OR clears bits (draws black) and BLT_ANDN sets them (draws
+// white), and lcd_fill_rect takes its val as a flag, not as a byte: 0 selects
+// BLT_ANDN and fills white, anything else selects BLT_OR and fills black. The
+// names LCD_SET_VALUE (0, fills white) and LCD_EMPTY_VALUE (255, fills black)
+// come from dmcp.h and are the other way round from what they suggest.
 const SCREEN_WIDTH: u32 = 400;
 const SCREEN_HEIGHT: u32 = 240;
 const ON_PIXEL: u32 = 0x303030;
 const OFF_PIXEL: u32 = 0xe0e0e0;
+const G_PRIORITY_LOW: c_int = 300;
 const LCD_LINE_SIZE: u32 = 50;
 const BLT_OR: c_int = 0;
 const BLT_ANDN: c_int = 1;
@@ -17,12 +25,21 @@ extern var lcd_buffer: [*c]u8;
 extern var screenData: [*c]u32;
 extern var screenStride: c_short;
 extern var screen: ?*anyopaque;
+extern var headlessMode: bool;
+
+// A queued draw waits on the frame clock, so it is still unpainted when the
+// event queue is empty.
+var drawQueued: bool = false;
 
 extern fn abort() noreturn;
 extern fn printf(format: [*c]const u8, ...) c_int;
 extern fn gtk_widget_queue_draw_area(widget: ?*anyopaque, x: c_int, y: c_int, width: c_int, height: c_int) void;
 extern fn gtk_events_pending() c_int;
 extern fn gtk_main_iteration() c_int;
+extern fn gtk_main_level() c_uint;
+extern fn gtk_widget_get_mapped(widget: ?*anyopaque) c_int;
+extern fn g_timeout_add_full(priority: c_int, interval: c_uint, function: *const fn (?*anyopaque) callconv(.c) c_int, data: ?*anyopaque, notify: ?*const fn (?*anyopaque) callconv(.c) void) c_uint;
+extern fn g_source_remove(tag: c_uint) c_int;
 
 fn linePtr(row: u32) [*c]u8 {
     return lcd_buffer + (52 * row);
@@ -53,13 +70,16 @@ pub export fn LCD_write_line(line_buf: [*c]u8) callconv(.c) void {
         const tmp_char: u8 = line_buf[i + 2];
         var j: u32 = 0;
         while (j < 8) : (j += 1) {
-            const pixel = if (((tmp_char >> @intCast(j)) & 1) != 0) ON_PIXEL else OFF_PIXEL;
+            const pixel = if (((tmp_char >> @intCast(j)) & 1) != 0) OFF_PIXEL else ON_PIXEL;
             (line_start - (i * 8) - j)[0] = pixel;
         }
     }
 
     line_buf[0] = 0;
-    gtk_widget_queue_draw_area(screen, 0, @intCast(SCREEN_HEIGHT - row - 1), 400, 1);
+    if (!headlessMode and screen != null) {
+        gtk_widget_queue_draw_area(screen, 0, @intCast(SCREEN_HEIGHT - row - 1), 400, 1);
+        drawQueued = true;
+    }
 }
 
 pub export fn lcd_clear_buf() callconv(.c) void {
@@ -79,6 +99,7 @@ pub export fn lcd_clear_buf() callconv(.c) void {
 }
 
 pub export fn lcd_refresh() callconv(.c) void {
+    drawQueued = false;
     var row: u32 = 0;
     while (row < SCREEN_HEIGHT) : (row += 1) {
         if (linePtr(row)[0] != 0) {
@@ -110,7 +131,7 @@ pub export fn bitblt24(x_in: u32, dx: u32, y: u32, val: u32, blt_op: c_int, fill
     const bytes_needed = (bit_off + dx + 7) / 8;
 
     const srcbits: u32 = (val & lowmask) << @intCast(bit_off);
-    // BLT_SET: the dx columns are cleared before BLT_OR and set before BLT_ANDN
+    // BLT_SET: the dx columns are written white before BLT_OR and black before BLT_ANDN
     const fillbits: u32 = if (fill == BLT_SET) lowmask << @intCast(bit_off) else 0;
 
     const srcbytes = [4]u8{
@@ -131,9 +152,9 @@ pub export fn bitblt24(x_in: u32, dx: u32, y: u32, val: u32, blt_op: c_int, fill
     var i: u32 = 0;
     while (i < bytes_needed) : (i += 1) {
         switch (blt_op) {
-            BLT_OR => base[i] = (base[i] & ~fillbytes[i]) | srcbytes[i],
+            BLT_OR => base[i] = (base[i] | fillbytes[i]) & ~srcbytes[i],
             BLT_XOR => base[i] ^= srcbytes[i],
-            BLT_ANDN => base[i] = (base[i] | fillbytes[i]) & ~srcbytes[i],
+            BLT_ANDN => base[i] = (base[i] & ~fillbytes[i]) | srcbytes[i],
             else => return,
         }
     }
@@ -151,6 +172,8 @@ pub export fn lcd_fill_rect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) callco
 
     if (end_x > SCREEN_WIDTH or end_y > SCREEN_HEIGHT) return;
 
+    // val is a flag: 0 (LCD_SET_VALUE) fills white through BLT_ANDN, anything
+    // else fills black through BLT_OR.
     const blt_op: c_int = if (val != 0) BLT_OR else BLT_ANDN;
 
     var col: u32 = x;
@@ -164,20 +187,20 @@ pub export fn lcd_fill_rect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) callco
     }
 }
 
-// Reads one pixel out of the 1bpp frame buffer; the screen and menu dumps use
-// it to serialise the LCD into a BMP. bool_t is a one-byte 0/1 here.
+// Reads one pixel off the surface LCD_write_line writes, so a capture takes an
+// overlay too, not only what the composition left in lcd_buffer. The screen
+// and menu dumps use it to serialise the LCD into a BMP. bool_t is a one-byte
+// 0/1 here.
 pub export fn lcd_buffer_pixel_on(x: u32, y: u32) callconv(.c) u8 {
     if (x >= SCREEN_WIDTH or y >= SCREEN_HEIGHT) {
         return 0;
     }
-    const line_buf = lcd_buffer + 52 * y;
-    const bit_index = SCREEN_WIDTH - 1 - x;
-    const byte_i = bit_index >> 3;
-    const bit_j: u3 = @intCast(bit_index & 7);
-    return (line_buf[2 + byte_i] >> bit_j) & 1;
+    const stride: usize = @intCast(screenStride);
+    return @intFromBool(screenData[(y + 1) * stride - SCREEN_WIDTH + x] == ON_PIXEL);
 }
 
 pub export fn refresh_gui() callconv(.c) void {
+    if (headlessMode) return;
     while (gtk_events_pending() != 0) {
         if (ui_is_active != 0) break;
         _ = gtk_main_iteration();
@@ -188,12 +211,23 @@ pub export fn _lcdRefresh() callconv(.c) void {
     lcd_refresh();
 }
 
-pub export fn _lcdBandRefresh(y: u32, dy: u32) callconv(.c) void {
-    _ = y;
-    _ = dy;
-    lcd_refresh();
+// Kept alive so the id stays valid to remove.
+fn pumpGuardTick(data: ?*anyopaque) callconv(.c) c_int {
+    _ = data;
+    return 1;
 }
 
 pub export fn _lcdSBRefresh() callconv(.c) void {
     lcd_refresh();
+    // gtk_main_level() is 0 in the batch runs (--writeexportall, --mockup,
+    // --dumpmenus, --exec, --script), which paint before gtk_main() and never
+    // release a blocked pump.
+    if (drawQueued and gtk_main_level() > 0 and !headlessMode and ui_is_active == 0 and screen != null and gtk_widget_get_mapped(screen) != 0) {
+        // 20 ms cap on the pump; below GDK_PRIORITY_REDRAW, so a ready frame
+        // paints first.
+        const pumpGuard = g_timeout_add_full(G_PRIORITY_LOW, 20, pumpGuardTick, null, null);
+        _ = gtk_main_iteration();
+        _ = g_source_remove(pumpGuard);
+        refresh_gui();
+    }
 }

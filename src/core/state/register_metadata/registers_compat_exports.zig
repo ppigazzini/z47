@@ -355,6 +355,44 @@ comptime {
     @export(&allReservedVariables, .{ .name = "allReservedVariables" });
 }
 
+// registerLetter[] (registers.c): the letter each lettered register X..W is
+// named by, one entry per register from REGISTER_X to REGISTER_W in register
+// order, as a two-byte C string (registerLetter_t is that string and nothing
+// else, so the table is [26][2]u8). The softmenu owner reads it to mark the
+// alpha register's key.
+pub const registerLetter: [26][2]u8 = .{
+    .{ 'X', 0 },
+    .{ 'Y', 0 },
+    .{ 'Z', 0 },
+    .{ 'T', 0 },
+    .{ 'A', 0 },
+    .{ 'B', 0 },
+    .{ 'C', 0 },
+    .{ 'D', 0 },
+    .{ 'L', 0 },
+    .{ 'I', 0 },
+    .{ 'J', 0 },
+    .{ 'K', 0 },
+    .{ 'M', 0 },
+    .{ 'N', 0 },
+    .{ 'P', 0 },
+    .{ 'Q', 0 },
+    .{ 'R', 0 },
+    .{ 'S', 0 },
+    .{ 'E', 0 },
+    .{ 'F', 0 },
+    .{ 'G', 0 },
+    .{ 'H', 0 },
+    .{ 'O', 0 },
+    .{ 'U', 0 },
+    .{ 'V', 0 },
+    .{ 'W', 0 },
+};
+
+comptime {
+    @export(&registerLetter, .{ .name = "registerLetter" });
+}
+
 pub export fn getRegParam(f: ?*bool, s: *u16, n: *u16, d: ?*u16) u8 {
     return reg_param_product.getRegParamProduct(f, s, n, d, stack_runtime.currentLocalRegisterCount());
 }

@@ -1195,16 +1195,13 @@ extern fn refresh_gui() void;
 extern fn dmcpResetAutoOff() void;
 extern fn checkBattery() void;
 extern fn fnTimerStart(nr: u8, param: u16, time: u32) void;
-// On DMCP_BUILD these are static-inline wrappers in lcd.h over lcd_forced_refresh
-// (LIBRARY_FN_BASE+52, lft_ifc.h:59) / lcd_refresh_lines (+56); on host they are
-// real first-party symbols.
+// On DMCP_BUILD these are static-inline wrappers in lcd.h over lcd_refresh /
+// lcd_refresh_lines(0, 20); on host they are real first-party symbols.
 const c__lcdRefresh = if (!dmcp_build) @extern(*const fn () callconv(.c) void, .{ .name = "_lcdRefresh" }) else {};
 const c__lcdSBRefresh = if (!dmcp_build) @extern(*const fn () callconv(.c) void, .{ .name = "_lcdSBRefresh" }) else {};
-const c__lcdBandRefresh = if (!dmcp_build) @extern(*const fn (y: u32, dy: u32) callconv(.c) void, .{ .name = "_lcdBandRefresh" }) else {};
 inline fn _lcdRefresh() void {
     if (comptime dmcp_build) {
-        const f: *const fn () callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 52); // lcd_forced_refresh
-        f();
+        lcd_refresh();
     } else {
         c__lcdRefresh();
     }
@@ -1216,11 +1213,16 @@ inline fn _lcdSBRefresh() void {
         c__lcdSBRefresh();
     }
 }
-inline fn _lcdBandRefresh(yStart: u32, height: u32) void {
+// lcd_line_addr marks a line of lcd_buffer dirty and returns its pixel bytes: DMCP
+// ROM (LIBRARY_FN_BASE+40) on firmware, the HAL's own symbol on host.
+const LcdLineAddrFn = *const fn (row: c_int) callconv(.c) [*c]u8;
+const c_lcd_line_addr = if (!dmcp_build) @extern(LcdLineAddrFn, .{ .name = "lcd_line_addr" }) else {};
+inline fn lcd_line_addr(row: c_int) [*c]u8 {
     if (comptime dmcp_build) {
-        lcd_refresh_lines(@bitCast(yStart), @bitCast(height));
+        const f: LcdLineAddrFn = @ptrFromInt(LIBRARY_FN_BASE + 40);
+        return f(row);
     } else {
-        c__lcdBandRefresh(yStart, height);
+        return c_lcd_line_addr(row);
     }
 }
 extern fn keyBuffer_pop() void;
@@ -1537,20 +1539,41 @@ inline fn COMPLEX_UNIT() [*c]const u8 {
     return if (getSystemFlag(FLAG_CPXj) != 0) STD_op_j else STD_op_i;
 }
 
-// funcNameOffset_x / isShiftOffset / funcNameOffset_str. FIXED_FN_NAME_SHIFT is
-// #undef'd, so the function name moves to the left edge with the shift instead of
-// keeping the offset.
-const shiftOffset: i32 = 17;
-const noShiftOffset: i32 = 0;
+var shiftGlyphOnScreen: bool = false; // set where the f or g glyph is drawn, cleared where it is taken off
+var functionNameOnScreen: bool = false; // set where showFunctionName puts a name up, cleared where hideFunctionName takes it down
+var xxfnActive: bool = false; // XXFNMODEACTIVE, worked out once a refresh instead of at each of its sites
+var xxfnOnScreen: bool = false; // set where the two XFN rows are drawn over the T line, cleared where that line is redrawn without them
+
+// screen.h: shiftOffset and noShiftOffset are shared with the program editor, which
+// indents its listing by the same amounts.
+pub const shiftOffset: i32 = 17; // room for the shift indicator, which is 15 px wide
+pub const noShiftOffset: i32 = 2; // the plain left indent, where the indicator is not on the line
+
+// Where the status bar keeps the date and the time, the shift indicator goes on the
+// T line.
+pub export var shiftOnTline: bool_t = 0;
+
+// Works out whether the shift indicator sits on the T line, which the status bar
+// settings change. Called where a system flag changes, and at the start of a screen
+// or status bar refresh, the flags having been put back wholesale in between.
+pub export fn updateShiftOnTline() callconv(.c) void {
+    shiftOnTline = @intFromBool(Y_SHIFT() != 0);
+}
+
 inline fn funcNameOffset_x() i32 {
-    return if (Y_SHIFT() != 0) shiftOffset else noShiftOffset;
+    return if (shiftOnTline != 0) shiftOffset else noShiftOffset;
 }
-inline fn isShiftOffset() bool {
-    return funcNameOffset_x() == shiftOffset and !SHOWMODE();
+// Where a line's text starts.
+inline fn lineIndent(regist: calcRegister_t) i16 {
+    return if (shiftOnTline != 0 and regist == REGISTER_T) shiftOffset else noShiftOffset;
 }
-inline fn funcNameOffset_str() [*c]const u8 {
-    return if (isShiftOffset()) "  " else "";
-}
+
+// NAME BOX. CHAMFERED_FN_NAME_FRAME (round corners, three pixels off each corner) is
+// #undef'd. FUNC_FRAME_MIN_WIDTH is the minimum width a function name box takes: 80
+// is the 90th percentile of the widths of all current names as drawFuncName sizes
+// them, the text expansion in the CONV names included, so nine names in ten give a
+// box of exactly this width, comparable with the program editor's box.
+const FUNC_FRAME_MIN_WIDTH: u16 = 80;
 
 // letteredRegisterName uses registerFlagLetters[regist - FIRST_LETTERED_REGISTER]
 inline fn letteredRegisterName(regist: calcRegister_t) u8 {
@@ -1632,6 +1655,53 @@ inline fn getLine_buffer_bit(x: i32) u16 {
     return @truncate(@as(u32, @bitCast(415 - x)));
 }
 
+// One LCD line of scratch, shared by every temporary overlay.
+//
+// A line is loaded from lcd_buffer, drawn on, and pushed with LCD_write_line.
+// lcd_buffer itself is never written, so a band refresh puts the screen back. The
+// buffer is not re-entrant: no overlay draws from inside another one.
+const FUNC_FRAME_MARGIN: u16 = 8; // blank columns between a framed box's left edge and the first glyph
+
+var lcdLineBuf: [LCD_LINE_BUF_SIZE]u8 = undefined;
+
+fn lineLoad(row: u16) void {
+    @memcpy(lcdLineBuf[0..52], (lcd_buffer() + 52 * @as(usize, row))[0..52]); // 52 and not LCD_LINE_BUF_SIZE: the two bytes beyond are the next line's header
+}
+
+inline fn lineFlush() void {
+    LCD_write_line(&lcdLineBuf);
+}
+
+inline fn lineSetBlackPixel(x: u16) void {
+    if (x < SCREEN_WIDTH) {
+        const b = getLine_buffer_bit(x);
+        lcdLineBuf[b >> 3] &= ~(@as(u8, 1) << @intCast(b & 7));
+    }
+}
+
+inline fn lineSetPixelBit(x: u16, bit: bool) void { // writes a bit value, not a colour: for a pattern defined against the pixels already there
+    if (x < SCREEN_WIDTH) {
+        const b = getLine_buffer_bit(x);
+        if (bit) {
+            lcdLineBuf[b >> 3] |= @as(u8, 1) << @intCast(b & 7);
+        } else {
+            lcdLineBuf[b >> 3] &= ~(@as(u8, 1) << @intCast(b & 7));
+        }
+    }
+}
+
+fn lineSetWhiteRange(x0_in: u16, x1_in: u16) void {
+    var x0 = x0_in;
+    var x1 = x1_in;
+    if (x1 > SCREEN_WIDTH) {
+        x1 = SCREEN_WIDTH;
+    }
+    while (x0 < x1) : (x0 += 1) {
+        const b = getLine_buffer_bit(x0);
+        lcdLineBuf[b >> 3] |= @as(u8, 1) << @intCast(b & 7);
+    }
+}
+
 pub export fn underline_softkey(xSoftkeyMask_in: u16, ySoftkey: u16) callconv(.c) void {
     var xSoftkeyMask = xSoftkeyMask_in;
     if (calcMode == CM_REGISTER_BROWSER or calcMode == CM_FLAG_BROWSER or calcMode == CM_FONT_BROWSER or (getSystemFlag(FLAG_FGLNFUL) == 0 and getSystemFlag(FLAG_FGLNLIM) == 0)) {
@@ -1649,8 +1719,6 @@ pub export fn underline_softkey(xSoftkeyMask_in: u16, ySoftkey: u16) callconv(.c
     if (ySoftkey > 2) {
         return;
     }
-    var temp_line: [LCD_LINE_BUF_SIZE]u8 = undefined;
-    var tempByte: u8 = undefined;
     var xBg: [6]u8 = undefined;
     var xIndex: u8 = undefined;
     var line: u8 = undefined;
@@ -1667,27 +1735,100 @@ pub export fn underline_softkey(xSoftkeyMask_in: u16, ySoftkey: u16) callconv(.c
     // Draw shade pattern without changing lcd_buffer
     line = maxLine - lineCount + 1;
     while (line <= maxLine) : (line += 1) {
-        @memcpy(temp_line[0..LCD_LINE_BUF_SIZE], (lcd_buffer() + 52 * @as(usize, line))[0..LCD_LINE_BUF_SIZE]);
+        lineLoad(line);
         xIndex = 0;
         while (xIndex < 6) : (xIndex += 1) {
             if ((xSoftkeyMask >> @intCast(xIndex)) & 1 != 0) {
                 j = @intCast(KEY_X[xIndex] + 1);
                 j +%= @intCast(if (greyType != 0) mod(2 * @as(i32, line) - @as(i32, j), 5) else mod(@as(i32, j) + @as(i32, line), 2));
                 while (@as(i32, j) < KEY_X[xIndex + 1]) : (j +%= colIncrease) {
-                    buff_bit = getLine_buffer_bit(j);
-                    tempByte = temp_line[buff_bit / 8];
-                    if (xBg[xIndex] != 0) {
-                        tempByte = tempByte & ~(@as(u8, 1) << @intCast(mod(buff_bit, 8)));
-                    } else {
-                        tempByte = tempByte | (@as(u8, 1) << @intCast(mod(buff_bit, 8)));
-                    }
-                    temp_line[buff_bit / 8] = tempByte;
+                    lineSetPixelBit(j, xBg[xIndex] == 0); // the complement of the key face, whichever bit value that is
                 }
             }
         }
-        temp_line[0] = 0;
-        LCD_write_line(&temp_line);
+        lineFlush();
     }
+}
+
+const FUNC_FRAME_Y: u16 = @as(u16, @intCast(Y_POSITION_OF_REGISTER_T_LINE)) + 5;
+
+// Marks the name box's rows for the next lcd_refresh. No push here: lcd_buffer was
+// never written under the box, so the refresh takes the band out.
+fn hideFuncName() void {
+    var line: u16 = FUNC_FRAME_Y;
+    while (line < FUNC_FRAME_Y + @as(u16, @intCast(STANDARD_FONT_HEIGHT)) + 1) : (line += 1) {
+        _ = lcd_line_addr(line);
+    }
+}
+
+// Function name, drawn straight to the LCD in a framed box, lcd_buffer left as it is.
+// A text too wide for the screen stops where an ellipsis still fits, and the
+// ellipsis ends it. hideFunctionName takes the box down.
+pub export fn drawFuncName(str: [*c]const u8) callconv(.c) void {
+    const xStart: u16 = @intCast(funcNameOffset_x());
+    const y: u16 = FUNC_FRAME_Y;
+    const fontHeight: u16 = @intCast(STANDARD_FONT_HEIGHT);
+    const glyphs = standardFont.glyphsPtr();
+    const ellipsis: *const glyph_t = &glyphs[@intCast(frontier_fonts.findGlyphExact(&standardFont, frontier_char_string.charCodeFromString(STD_ELLIPSIS, null)))];
+    const xLimit: u16 = @as(u16, @intCast(SCREEN_WIDTH)) - FUNC_FRAME_MARGIN - ellipsis.colsBeforeGlyph - ellipsis.colsGlyph; // an ellipsis starting at or before this fits in the box
+
+    if (y + fontHeight >= SCREEN_HEIGHT) { // the bottom row of the box is the one that has to fit, not the top row
+        return;
+    }
+
+    var yRel: u16 = 0;
+    while (yRel < fontHeight + 1) : (yRel += 1) {
+        var offset: u16 = 0;
+        var xPos: u16 = xStart + FUNC_FRAME_MARGIN;
+        var lastColsAfter: u16 = 0;
+
+        lineLoad(y + yRel);
+        while (str[offset] != 0) {
+            const glyphId = frontier_fonts.findGlyphExact(&standardFont, frontier_char_string.charCodeFromString(str, &offset));
+            if (glyphId < 0) {
+                continue; // unknown code point: skipped
+            }
+            var glyph: *const glyph_t = &glyphs[@intCast(glyphId)];
+            var advance: u16 = @as(u16, glyph.colsBeforeGlyph) + glyph.colsGlyph + glyph.colsAfterGlyph;
+            if (xPos + advance > xLimit) { // no room for this glyph and an ellipsis after it: the ellipsis goes here and ends the name
+                glyph = ellipsis;
+                advance = @as(u16, glyph.colsBeforeGlyph) + glyph.colsGlyph + glyph.colsAfterGlyph;
+                offset = @intCast(stringByteLength(str));
+            }
+            const row: i16 = @as(i16, @intCast(yRel)) - 1 - glyph.rowsAboveGlyph;
+
+            lineSetWhiteRange(xPos, xPos + advance);
+            if (row >= 0 and row < glyph.rowsGlyph) {
+                const data: [*c]const u8 = glyph.data + @as(usize, @intCast(row)) * ((@as(usize, glyph.colsGlyph) + 7) >> 3);
+                var col: u16 = 0;
+                while (col < glyph.colsGlyph) : (col += 1) {
+                    if (data[col >> 3] & (@as(u8, 0x80) >> @intCast(col & 7)) != 0) {
+                        lineSetBlackPixel(xPos + glyph.colsBeforeGlyph + col);
+                    }
+                }
+            }
+            xPos += advance;
+            lastColsAfter = glyph.colsAfterGlyph;
+        }
+        xPos = xPos + FUNC_FRAME_MARGIN - lastColsAfter; // the last glyph's letter spacing is not part of the box
+        if (xPos - xStart < FUNC_FRAME_MIN_WIDTH) { // a short name keeps the box at the minimum, and the width the name does not cover is blanked here,
+            lineSetWhiteRange(xPos - FUNC_FRAME_MARGIN, xStart + FUNC_FRAME_MIN_WIDTH - FUNC_FRAME_MARGIN); //   because only the glyph cells and the two margins are
+            xPos = xStart + FUNC_FRAME_MIN_WIDTH; //   cleared to blank part of the register line showing through the widened box
+        }
+        if (yRel == 0 or yRel == fontHeight) { // the top row and the bottom row
+            var fx: u16 = xStart;
+            while (fx < xPos) : (fx += 1) {
+                lineSetBlackPixel(fx);
+            }
+        } else {
+            lineSetBlackPixel(xStart);
+            lineSetWhiteRange(xStart + 1, xStart + FUNC_FRAME_MARGIN);
+            lineSetWhiteRange(xPos - FUNC_FRAME_MARGIN, xPos - 1);
+            lineSetBlackPixel(xPos - 1);
+        }
+        lineFlush();
+    }
+    functionNameOnScreen = true;
 }
 
 pub export fn FN_handler_StepToF(time: u32) callconv(.c) void {
@@ -1969,7 +2110,7 @@ pub export fn LongpressKey_handler() callconv(.c) void {
             if (calcMode == CM_NORMAL and programRunStop == PGM_STOPPED and (isArrowUp(currentKeyCode) != 0)) {
                 aimBuffer[0] = 0;
                 frontier_next_step.fnSkip(0);
-                refreshRegisterLine(REGISTER_T);
+                hideFunctionName();
                 if (JM_auto_longpress_enabled == ITM_NOP) {
                     FN_timeouts_in_progress = 0;
                     frontier_timer.fnTimerStop(TO_FN_LONG);
@@ -1977,14 +2118,14 @@ pub export fn LongpressKey_handler() callconv(.c) void {
                 }
             } else if (calcMode == CM_NORMAL and programRunStop == PGM_SINGLE_STEP and (isArrowDown(currentKeyCode) != 0)) {
                 programRunStop = PGM_STOPPED;
-                refreshRegisterLine(REGISTER_T);
+                hideFunctionName();
                 if (JM_auto_longpress_enabled == ITM_NOP) {
                     FN_timeouts_in_progress = 0;
                     frontier_timer.fnTimerStop(TO_FN_LONG);
                     return;
                 }
             } else if (calcMode == CM_NORMAL and (programRunStop == PGM_STOPPED or programRunStop == PGM_SINGLE_STEP) and currentKeyCode == 35) {
-                refreshRegisterLine(REGISTER_T);
+                hideFunctionName();
                 lastKeyItemDetermined = 0;
                 if (JM_auto_longpress_enabled == ITM_NOP) {
                     FN_timeouts_in_progress = 0;
@@ -2783,25 +2924,6 @@ pub export fn force_SBrefresh(modeArg: u8) callconv(.c) void {
     }
 }
 
-fn force_Registerrefresh(regist: calcRegister_t, clearTop: bool, clearBottom: bool) void {
-    if (REGISTER_X <= regist and regist <= REGISTER_T) {
-        var yStart: u32 = @intCast(@as(i32, Y_POSITION_OF_REGISTER_X_LINE) - @as(i32, REGISTER_LINE_HEIGHT) * @as(i32, regist - REGISTER_X));
-        var height: u32 = 32;
-
-        if (clearTop) {
-            yStart -%= 4;
-            height += 4;
-        }
-        if (clearBottom) {
-            height += 4;
-            if (regist == REGISTER_X) {
-                height += 3;
-            }
-        }
-        _lcdBandRefresh(yStart, height);
-    }
-}
-
 fn _printHalfSecUpdate_Integer(modeArg: u8, txt: [*c]u8, loop: i32, clearZ: bool_t, clearT: bool_t, disp: bool_t) bool_t {
     var tmps: [100]u8 = undefined;
     var ret_value: bool_t = 0;
@@ -2969,7 +3091,6 @@ pub export fn showingProbMenu() callconv(.c) bool_t {
 pub export fn showFunctionName(itm: i16, delayInMs: i16, arg: [*c]const u8) callconv(.c) void {
     const item: i16 = itm;
     var functionName: [64]u8 = undefined;
-    var padding: [64]u8 = undefined;
     functionName[0] = 0;
     showFunctionNameArg = null;
 
@@ -3010,25 +3131,11 @@ pub export fn showFunctionName(itm: i16, delayInMs: i16, arg: [*c]const u8) call
     }
 
     if (functionName[0] != 0) {
-        const overLapPossible: bool = (calcMode == CM_PEM);
-        padding[0] = 0;
-        if (overLapPossible) {
-            _ = stringCopy(&padding, " ");
+        if (shiftGlyphOnScreen) { // the clear below marks those rows: push it now, so the overlay goes on a clean band
+            clearShiftState();
+            _lcdRefresh();
         }
-        const typWidth: i32 = 120;
-        _ = stringCopy(padding[@intCast(stringByteLength(&padding))..].ptr, &functionName);
-        _ = stringCopy(padding[@intCast(stringByteLength(&padding))..].ptr, "       ");
-        if (calcMode == CM_ASSIGN or ((PROBMENU() or XXFNMODEACTIVE() or @as(i32, frontier_char_string.stringWidth(&padding, &standardFont, true, true)) + 1 + @as(i32, lineTWidth) > SCREEN_WIDTH) and calcMode != CM_PEM)) {
-            clearRegisterLine(REGISTER_T, true, false);
-        }
-        clearShiftState();
-        const xx = showString(&padding, &standardFont, @intCast(funcNameOffset_x()), @intCast(@as(i32, Y_POSITION_OF_REGISTER_T_LINE) + 6), vmNormal, 1, 1);
-        if (overLapPossible) {
-            frontier_plotstat.plotrect(@intCast(funcNameOffset_x()), Y_POSITION_OF_REGISTER_T_LINE + 6, @intCast(maxI(@as(i32, @intCast(xx)), funcNameOffset_x() + typWidth)), Y_POSITION_OF_REGISTER_T_LINE + 6 + STANDARD_FONT_HEIGHT - 1);
-            if (@as(i32, @intCast(xx)) < funcNameOffset_x() + typWidth) {
-                lcd_fill_rect(xx, Y_POSITION_OF_REGISTER_T_LINE + 6 + 1, @intCast(funcNameOffset_x() + typWidth - @as(i32, @intCast(xx))), STANDARD_FONT_HEIGHT - 2, LCD_SET_VALUE);
-            }
-        }
+        drawFuncName(&functionName);
     }
     if (temporaryInformation != TI_NO_INFO) {
         // SNAP captures the screen as it stands, so the long press that runs it keeps the TI.
@@ -3041,20 +3148,13 @@ pub export fn showFunctionName(itm: i16, delayInMs: i16, arg: [*c]const u8) call
 }
 
 pub export fn hideFunctionName() callconv(.c) void {
-    if (tmpString[0] != 0 or calcMode != CM_AIM) {
-        if (calcMode != CM_PEM) {
-            if (!tam.alpha or (showFunctionNameItem != ITM_BACKSPACE and
-                showFunctionNameItem != ITM_T_LEFT_ARROW and
-                showFunctionNameItem != ITM_T_RIGHT_ARROW and
-                showFunctionNameItem != ITM_NULL))
-            {
-                refreshRegisterLineRestoreT();
-                force_Registerrefresh(REGISTER_T, true, true);
-            }
-        } else {
-            _refreshPemScreen();
+    if (functionNameOnScreen) { // lcd_buffer was never touched, so the band refresh is the whole job
+        hideFuncName();
+        if (calcMode == CM_PEM) { // the listing was never damaged: only what clearShiftState took is redrawn
+            displayShiftAndTamBuffer();
         }
     }
+    functionNameOnScreen = false;
     showFunctionNameItem = 0;
     showFunctionNameCounter = 0;
 }
@@ -3085,71 +3185,77 @@ pub export fn clearRegisterLine(regist: calcRegister_t, clearTop: bool, clearBot
     }
 }
 
-// shiftGap is set only where the shift indicator shares the line.
-fn do_viewRegName(regist: calcRegister_t, prefix: [*c]u8, prefixWidth: *i16, endChar: [*c]const u8, shiftGap: bool) void {
+// The width a register line's prefix takes, from the left edge of the line to where
+// the value may start: `indent` is where the line's text starts, which the shift
+// indicator moves on the T line. SCREEN_WIDTH less the width is the room the value
+// has.
+fn prefixWidthAt(prefix: [*c]const u8, indent: i16) i16 {
+    return frontier_char_string.stringWidth(prefix, &standardFont, true, true) + indent;
+}
+
+// The same width, for a prefix that starts where its own line starts.
+fn prefixWidthOn(prefix: [*c]const u8, regist: calcRegister_t) i16 {
+    return prefixWidthAt(prefix, lineIndent(regist));
+}
+
+// Writes a fixed prefix and returns the width it takes, which is what the value has
+// to fit beside.
+fn setPrefix(prefix: [*c]u8, text: [*c]const u8, indent: i16) i16 {
+    _ = strcpy(prefix, text);
+    return prefixWidthAt(prefix, indent);
+}
+
+// The caller measures the prefix, an empty one giving its line's indent.
+fn do_viewRegName(regist: calcRegister_t, prefix: [*c]u8, endChar: [*c]const u8) void {
     if (frontier_items.lastFuncNo() == ITM_AVIEW or frontier_items.lastFuncNo() == ITM_PROMPT) {
-        if (shiftGap) {
-            _ = strcpy(prefix, "  ");
-            prefixWidth.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
-        } else {
-            prefix[0] = 0;
-            prefixWidth.* = 1;
-        }
+        prefix[0] = 0;
         return;
     }
 
     if (regist < REGISTER_X) {
-        abi.fmtCStr(prefix, "{s}R{d:0>2}" ++ STD_SPACE_4_PER_EM ++ "{s}" ++ STD_SPACE_4_PER_EM, .{ @as([*:0]const u8, if (shiftGap) "  " else ""), @as(c_uint, @intCast(regist)), @as([*:0]const u8, endChar) });
+        abi.fmtCStr(prefix, "R{d:0>2}" ++ STD_SPACE_4_PER_EM ++ "{s}" ++ STD_SPACE_4_PER_EM, .{ @as(c_uint, @intCast(regist)), @as([*:0]const u8, endChar) });
     } else if (regist <= LAST_SPARE_REGISTER) {
-        abi.fmtCStr(prefix, "{s}{c}" ++ STD_SPACE_4_PER_EM ++ "{s}" ++ STD_SPACE_4_PER_EM, .{ @as([*:0]const u8, if (shiftGap) "  " else ""), @as(u8, @intCast(@as(c_int, letteredRegisterName(regist)))), @as([*:0]const u8, endChar) });
+        abi.fmtCStr(prefix, "{c}" ++ STD_SPACE_4_PER_EM ++ "{s}" ++ STD_SPACE_4_PER_EM, .{ @as(u8, @intCast(@as(c_int, letteredRegisterName(regist)))), @as([*:0]const u8, endChar) });
     } else if (regist >= FIRST_LOCAL_REGISTER and regist <= LAST_LOCAL_REGISTER) {
-        abi.fmtCStr(prefix, "{s}R.{d:0>2}" ++ STD_SPACE_4_PER_EM ++ "{s}" ++ STD_SPACE_4_PER_EM, .{ @as([*:0]const u8, if (shiftGap) "  " else ""), @as(c_uint, @intCast(regist - FIRST_LOCAL_REGISTER)), @as([*:0]const u8, endChar) });
+        abi.fmtCStr(prefix, "R.{d:0>2}" ++ STD_SPACE_4_PER_EM ++ "{s}" ++ STD_SPACE_4_PER_EM, .{ @as(c_uint, @intCast(regist - FIRST_LOCAL_REGISTER)), @as([*:0]const u8, endChar) });
     } else if (FIRST_NAMED_VARIABLE <= regist and regist <= LAST_NAMED_VARIABLE) {
-        if (shiftGap) {
-            _ = strcpy(prefix, "  ");
-        }
-        const off1: usize = if (shiftGap) 2 else 0;
-        _ = strcpy(prefix + off1, STD_LEFT_SINGLE_QUOTE);
+        _ = strcpy(prefix, STD_LEFT_SINGLE_QUOTE);
         const nv = &allNamedVariables[@intCast(regist - FIRST_NAMED_VARIABLE)];
-        const off2: usize = if (shiftGap) 4 else 2;
-        _ = memcpy(prefix + off2, &nv.variableName[1], nv.variableName[0]);
-        abi.fmtCStr(prefix + off2 + nv.variableName[0], STD_RIGHT_SINGLE_QUOTE ++ STD_SPACE_4_PER_EM ++ "{s}" ++ STD_SPACE_4_PER_EM, .{@as([*:0]const u8, endChar)});
+        _ = memcpy(prefix + 2, &nv.variableName[1], nv.variableName[0]);
+        abi.fmtCStr(prefix + 2 + nv.variableName[0], STD_RIGHT_SINGLE_QUOTE ++ STD_SPACE_4_PER_EM ++ "{s}" ++ STD_SPACE_4_PER_EM, .{@as([*:0]const u8, endChar)});
     } else if (FIRST_RESERVED_VARIABLE <= regist and regist <= LAST_RESERVED_VARIABLE) {
-        if (shiftGap) {
-            _ = strcpy(prefix, "  ");
-        }
-        const off1: usize = if (shiftGap) 2 else 0;
-        _ = strcpy(prefix + off1, STD_LEFT_SINGLE_QUOTE);
+        _ = strcpy(prefix, STD_LEFT_SINGLE_QUOTE);
         const rv = &allReservedVariables[@intCast(regist - FIRST_RESERVED_VARIABLE)];
-        const off2: usize = if (shiftGap) 4 else 2;
-        _ = memcpy(prefix + off2, &rv.reservedVariableName[1], rv.reservedVariableName[0]);
-        abi.fmtCStr(prefix + off2 + rv.reservedVariableName[0], STD_RIGHT_SINGLE_QUOTE ++ STD_SPACE_4_PER_EM ++ "{s}" ++ STD_SPACE_4_PER_EM, .{@as([*:0]const u8, endChar)});
+        _ = memcpy(prefix + 2, &rv.reservedVariableName[1], rv.reservedVariableName[0]);
+        abi.fmtCStr(prefix + 2 + rv.reservedVariableName[0], STD_RIGHT_SINGLE_QUOTE ++ STD_SPACE_4_PER_EM ++ "{s}" ++ STD_SPACE_4_PER_EM, .{@as([*:0]const u8, endChar)});
     } else {
         abi.fmtCStr(prefix, "?" ++ STD_SPACE_4_PER_EM ++ "{s}" ++ STD_SPACE_4_PER_EM, .{@as([*:0]const u8, endChar)});
     }
-    prefixWidth.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
 }
 
-fn viewRegName(prefix: [*c]u8, prefixWidth: *i16) void {
-    do_viewRegName(@intCast(currentViewRegister), prefix, prefixWidth, "=", isShiftOffset());
+// "=" for VIEW
+fn viewRegName(prefix: [*c]u8, prefixWidth: *i16, indent: i16) void {
+    do_viewRegName(@intCast(currentViewRegister), prefix, "=");
+    prefixWidth.* = prefixWidthAt(prefix, indent);
 }
 
-pub export fn viewRegName2(prefix: [*c]u8, prefixWidth: *i16) callconv(.c) void {
-    do_viewRegName(@intCast(showRegis), prefix, prefixWidth, ":", isShiftOffset());
+// ":" for SHOW; the callers that measure the prefix do it themselves
+pub export fn viewRegName2(prefix: [*c]u8) callconv(.c) void {
+    do_viewRegName(@intCast(showRegis), prefix, ":");
 }
 
 fn nameRegis(regist: calcRegister_t, prefix: [*c]u8) void {
-    var prefixWidth: i16 = undefined;
-    do_viewRegName(regist, prefix, &prefixWidth, "", isShiftOffset());
+    do_viewRegName(regist, prefix, "");
 }
 
 fn viewStoRcl(prefix: [*c]u8, prefixWidth: *i16) void {
-    do_viewRegName(frontier_items.lastSTORCL(), prefix, prefixWidth, ":", false); // the X line has no shift indicator on it
+    do_viewRegName(frontier_items.lastSTORCL(), prefix, ":"); // the X line has no shift indicator on it
     if (prefix[0] == '?') {
         prefix[0] = 0;
-        // upstream `prefixWidth = 0` reassigns the LOCAL pointer (dead store), not
-        // *prefixWidth -- reproduced faithfully as a no-op.
+        prefixWidth.* = 0;
+        return;
     }
+    prefixWidth.* = prefixWidthAt(prefix, noShiftOffset);
 }
 
 pub export fn createSubstrings(number: u8) callconv(.c) void {
@@ -3190,24 +3296,19 @@ fn userTI(viewRegister: i16, refreshRegist: i16, prefix: [*c]u8, prefixWidth: *i
         createSubstrings(4);
         if (refreshRegist == REGISTER_T) {
             const string1: [*c]u8 = frontier_softmenus.getNthString(tmpString, 0);
-            const off1: usize = if (isShiftOffset()) 2 else 0;
-            _ = frontier_char_string.xcopy(tmpString + off1, string1, @intCast(stringByteLength(string1) + 1));
-            if (isShiftOffset()) {
-                tmpString[0] = 32;
-                tmpString[1] = 32;
-            }
+            _ = frontier_char_string.xcopy(tmpString, string1, @intCast(stringByteLength(string1) + 1));
         } else if (refreshRegist == REGISTER_X) {
             const string1: [*c]u8 = frontier_softmenus.getNthString(tmpString, 1);
             _ = frontier_char_string.xcopy(prefix, string1, @intCast(stringByteLength(string1) + 1));
-            prefixWidth.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth.* = prefixWidthOn(prefix, refreshRegist);
         } else if (refreshRegist == REGISTER_Y) {
             const string1: [*c]u8 = frontier_softmenus.getNthString(tmpString, 2);
             _ = frontier_char_string.xcopy(prefix, string1, @intCast(stringByteLength(string1) + 1));
-            prefixWidth.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth.* = prefixWidthOn(prefix, refreshRegist);
         } else if (refreshRegist == REGISTER_Z) {
             const string1: [*c]u8 = frontier_softmenus.getNthString(tmpString, 3);
             _ = frontier_char_string.xcopy(prefix, string1, @intCast(stringByteLength(string1) + 1));
-            prefixWidth.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth.* = prefixWidthOn(prefix, refreshRegist);
         }
     }
 }
@@ -3216,35 +3317,35 @@ fn elecTI(regist: i16, prefix: [*c]u8, prefixWidth: *i16) void {
     if (temporaryInformation == TI_ABC) {
         if (regist == REGISTER_X) {
             _ = strcpy(prefix, "c" ++ STD_SPACE_FIGURE ++ ":");
-            prefixWidth.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth.* = prefixWidthOn(prefix, regist);
         } else if (regist == REGISTER_Y) {
             _ = strcpy(prefix, "b" ++ STD_SPACE_FIGURE ++ ":");
-            prefixWidth.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth.* = prefixWidthOn(prefix, regist);
         } else if (regist == REGISTER_Z) {
             _ = strcpy(prefix, "a" ++ STD_SPACE_FIGURE ++ ":");
-            prefixWidth.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth.* = prefixWidthOn(prefix, regist);
         }
     } else if (temporaryInformation == TI_ABBCCA) {
         if (regist == REGISTER_X) {
             _ = strcpy(prefix, "bc" ++ STD_SPACE_FIGURE ++ ":");
-            prefixWidth.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth.* = prefixWidthOn(prefix, regist);
         } else if (regist == REGISTER_Y) {
             _ = strcpy(prefix, "ab" ++ STD_SPACE_FIGURE ++ ":");
-            prefixWidth.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth.* = prefixWidthOn(prefix, regist);
         } else if (regist == REGISTER_Z) {
             _ = strcpy(prefix, "ca" ++ STD_SPACE_FIGURE ++ ":");
-            prefixWidth.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth.* = prefixWidthOn(prefix, regist);
         }
     } else if (temporaryInformation == TI_012) {
         if (regist == REGISTER_X) {
             _ = strcpy(prefix, "sym2" ++ STD_SPACE_FIGURE ++ ":");
-            prefixWidth.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth.* = prefixWidthOn(prefix, regist);
         } else if (regist == REGISTER_Y) {
             _ = strcpy(prefix, "sym1" ++ STD_SPACE_FIGURE ++ ":");
-            prefixWidth.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth.* = prefixWidthOn(prefix, regist);
         } else if (regist == REGISTER_Z) {
             _ = strcpy(prefix, "sym0" ++ STD_SPACE_FIGURE ++ ":");
-            prefixWidth.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth.* = prefixWidthOn(prefix, regist);
         }
     }
 }
@@ -3268,13 +3369,13 @@ fn inputRegName(prefix: [*c]u8, prefixWidth: *i16) void {
     } else {
         abi.fmtCStr(prefix, "??", .{});
     }
-    prefixWidth.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+    prefixWidth.* = prefixWidthAt(prefix, noShiftOffset);
 }
 
 fn _fnShowRecallTI(prefix: [*c]u8, prefixWidth: *i16) void {
     abi.fmtCStr(prefix, "SHOW RCL", .{});
-    viewRegName2(prefix + "SHOW RCL".len, prefixWidth);
-    prefixWidth.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+    viewRegName2(prefix + "SHOW RCL".len);
+    prefixWidth.* = prefixWidthAt(prefix, noShiftOffset);
     temporaryInformation = TI_NO_INFO;
     screenUpdatingMode |= SCRUPD_SKIP_STACK_ONE_TIME;
 }
@@ -3299,7 +3400,7 @@ pub export fn updateMatrixHeightCache() callconv(.c) void {
         var matrix: real34Matrix_t = undefined;
 
         if (temporaryInformation == TI_VIEW_REGISTER) {
-            viewRegName(&prefix, &prefixWidth);
+            viewRegName(&prefix, &prefixWidth, noShiftOffset); // the matrix height cache measures the X line
         }
         if (temporaryInformation == TI_NO_INFO and currentInputVariable != INVALID_VARIABLE) {
             inputRegName(&prefix, &prefixWidth);
@@ -3344,7 +3445,7 @@ pub export fn updateMatrixHeightCache() callconv(.c) void {
     } else if (getRegisterDataType(REGISTER_X) == dtComplex34Matrix or (calcMode == CM_MIM and getRegisterDataType(@intCast(matrixIndex)) == dtComplex34Matrix)) {
         var matrix: complex34Matrix_t = undefined;
         if (temporaryInformation == TI_VIEW_REGISTER) {
-            viewRegName(&prefix, &prefixWidth);
+            viewRegName(&prefix, &prefixWidth, noShiftOffset); // the matrix height cache measures the X line
         }
         if (temporaryInformation == TI_NO_INFO and currentInputVariable != INVALID_VARIABLE) {
             inputRegName(&prefix, &prefixWidth);
@@ -3392,7 +3493,7 @@ pub export fn displayTemporaryInformationOnX(prefix: [*c]u8) callconv(.c) void {
     var prefixWidth: i16 = undefined;
     var savedTempInformation: u8 = undefined;
 
-    prefixWidth = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+    prefixWidth = prefixWidthAt(prefix, noShiftOffset);
     savedTempInformation = temporaryInformation;
     temporaryInformation = TI_NO_INFO;
     refreshRegisterLine(REGISTER_T);
@@ -3409,19 +3510,19 @@ pub export fn displayTemporaryInformationOnX(prefix: [*c]u8) callconv(.c) void {
             frontier_display.real34ToDisplayString(REGISTER_REAL34_DATA(REGISTER_X), @intCast(getRegisterAngularMode(REGISTER_X)), tmpString, &numericFont, @intCast(@as(i32, SCREEN_WIDTH) - prefixWidth), NUMBER_OF_DISPLAY_DIGITS, LIMITEXP, FRONTSPACE, LIMITIRFRAC);
         }
         w = frontier_char_string.stringWidth(tmpString, &numericFont, false, true);
-        _ = showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, 1, 1);
+        _ = showString(prefix, &standardFont, noShiftOffset, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, 1, 1);
         _ = showString(tmpString, &numericFont, @intCast(@as(i32, SCREEN_WIDTH) - w), Y_POSITION_OF_REGISTER_X_LINE, vmNormal, 0, 1);
     } else if (getRegisterDataType(REGISTER_X) == dtComplex34) {
         clearRegisterLine(REGISTER_X, true, true);
         frontier_display.complex34ToDisplayString(REGISTER_COMPLEX34_DATA(REGISTER_X), tmpString, &numericFont, @intCast(@as(i32, SCREEN_WIDTH) - prefixWidth), NUMBER_OF_DISPLAY_DIGITS, LIMITEXP, FRONTSPACE, LIMITIRFRAC, @intCast(getComplexRegisterAngularMode(REGISTER_X)), @intFromBool(getComplexRegisterPolarMode(REGISTER_X) == amPolar));
         w = frontier_char_string.stringWidth(tmpString, &numericFont, false, true);
-        _ = showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, 1, 1);
+        _ = showString(prefix, &standardFont, noShiftOffset, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, 1, 1);
         _ = showString(tmpString, &numericFont, @intCast(@as(i32, SCREEN_WIDTH) - w), Y_POSITION_OF_REGISTER_X_LINE, vmNormal, 0, 1);
     } else if (getRegisterDataType(REGISTER_X) == dtLongInteger) {
         clearRegisterLine(REGISTER_X, true, true);
         frontier_display.longIntegerRegisterToDisplayString(REGISTER_X, tmpString, TMP_STR_LENGTH, @intCast(@as(i32, SCREEN_WIDTH) - prefixWidth), 50, 1);
         w = frontier_char_string.stringWidth(tmpString, &numericFont, false, true);
-        _ = showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, 1, 1);
+        _ = showString(prefix, &standardFont, noShiftOffset, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, 1, 1);
         if (w <= SCREEN_WIDTH - prefixWidth) {
             _ = showString(tmpString, &numericFont, @intCast(@as(i32, SCREEN_WIDTH) - w), Y_POSITION_OF_REGISTER_X_LINE, vmNormal, 0, 1);
         } else {
@@ -3433,7 +3534,7 @@ pub export fn displayTemporaryInformationOnX(prefix: [*c]u8) callconv(.c) void {
             _ = showString(tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - w), Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, 0, 1);
         }
     } else {
-        _ = showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, 1, 1);
+        _ = showString(prefix, &standardFont, noShiftOffset, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, 1, 1);
     }
 }
 
@@ -3478,7 +3579,7 @@ pub export fn _displayIJ(regist: calcRegister_t, prefix: [*c]u8, prefixWidth: *i
                     abi.fmtCStr(prefix, STD_MU ++ STD_SPACE_4_PER_EM ++ "{s}:J" ++ STD_SUB_c ++ "=", .{std.mem.sliceTo(&tmp, 0)});
                 }
             }
-            prefixWidth.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth.* = prefixWidthOn(prefix, regist);
         }
     }
 }
@@ -3614,11 +3715,10 @@ pub export fn tiVector(regist: calcRegister_t, prefix: [*c]u8, prefixWidth: *i16
         return;
     }
 
-    prefixWidth.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+    prefixWidth.* = prefixWidthOn(prefix, regist);
 }
 
 fn __displaySolver(regist: calcRegister_t, prefix: [*c]u8, prefixWidth: *i16, no: i16) void {
-    _ = regist;
     var noo: [32]u8 = undefined;
     var t: real_t = undefined;
     // C `uint16_t variableNo = currentSolverVariable - FIRST_RESERVED_VARIABLE;`
@@ -3652,7 +3752,7 @@ fn __displaySolver(regist: calcRegister_t, prefix: [*c]u8, prefixWidth: *i16, no
         _ = memcpy(prefix, &nv.variableName[1], nv.variableName[0]);
         _ = strcpy(prefix + nv.variableName[0], &noo);
     }
-    prefixWidth.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+    prefixWidth.* = prefixWidthOn(prefix, regist);
 }
 
 pub export fn _displaySolverOutput(regist: calcRegister_t, prefix: [*c]u8, prefixWidth: *i16) callconv(.c) void {
@@ -3660,16 +3760,11 @@ pub export fn _displaySolverOutput(regist: calcRegister_t, prefix: [*c]u8, prefi
         __displaySolver(regist, prefix, prefixWidth, regist - REGISTER_X + 1);
     } else if (regist == REGISTER_Z) {
         _ = strcpy(prefix, "Accuracy " ++ STD_ALMOST_EQUAL);
-        prefixWidth.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+        prefixWidth.* = prefixWidthAt(prefix, noShiftOffset);
     }
     if (regist == REGISTER_T) {
-        if (funcNameOffset_x() == shiftOffset) {
-            _ = strcpy(prefix, "  ");
-        } else {
-            prefix[0] = 0;
-        }
-        _ = strcat(prefix, "Result Code =");
-        prefixWidth.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+        _ = strcpy(prefix, "Result Code =");
+        prefixWidth.* = prefixWidthOn(prefix, regist);
     }
 }
 
@@ -3684,7 +3779,7 @@ pub export fn _displaySolverInput(regist: calcRegister_t, prefix: [*c]u8, prefix
 fn _displayDerivStep(regist: calcRegister_t, prefix: [*c]u8, prefixWidth: *i16) void {
     if (regist == REGISTER_X) {
         _ = strcpy(prefix, STD_delta ++ STD_SUB_d ++ " =");
-        prefixWidth.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+        prefixWidth.* = prefixWidthAt(prefix, noShiftOffset);
     }
 }
 
@@ -3703,7 +3798,7 @@ fn _displaySigmaPlus(regist: calcRegister_t, prefix: [*c]u8, prefixWidth: *i16, 
         if (w > 1) {
             _ = stringCopy(prefix + @as(usize, @intCast(stringByteLength(prefix))), "s");
         }
-        prefixWidth.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+        prefixWidth.* = prefixWidthOn(prefix, regist);
         if (doLine != 0) {
             drawSinglePixelFullWidthLine(Y_POSITION_OF_REGISTER_Y_LINE - 2);
         }
@@ -3775,7 +3870,7 @@ pub export fn _displayRegType(regist: calcRegister_t, prefix: [*c]u8, prefixWidt
             }
         }
         abi.fmtCStr(prefix, "{s}", .{std.mem.sliceTo(&typeStr, 0)});
-        prefixWidth.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+        prefixWidth.* = prefixWidthOn(prefix, regist);
     }
 }
 
@@ -3803,21 +3898,21 @@ fn displayTrueFalse(regist: calcRegister_t) bool_t {
     return 0;
 }
 
-const BASEMODE_OFFSET_X: i32 = 2;
 const BASEMODE_OFFSET_Y: i32 = 2;
 
 fn _showBaseModeLine(rowReg: calcRegister_t, text: [*c]const u8, prefix: [*c]const u8, enhanced: bool) void {
     const lineY: i32 = @as(i32, Y_POSITION_OF_REGISTER_X_LINE) - @as(i32, REGISTER_LINE_HEIGHT) * @as(i32, rowReg - REGISTER_X) + (if (fontForShortInteger == &standardFont) @as(i32, 6) else 0);
-    const rightEdge: i32 = if (enhanced) @as(i32, SCREEN_WIDTH) - (if (isShiftOffset()) @as(i32, 10) else 0) else SCREEN_WIDTH;
+    const indent: i32 = lineIndent(rowReg);
+    const rightEdge: i32 = if (enhanced) @as(i32, SCREEN_WIDTH) - indent else SCREEN_WIDTH;
     const firstCol: bool = if (enhanced) fontForShortInteger == &tinyFont else false;
     const textWidth: i32 = frontier_char_string.stringWidth(text, fontForShortInteger.?, firstCol, true);
     const prefixFits: bool = textWidth + frontier_char_string.stringWidth(prefix, &standardFont, false, true) <= rightEdge;
 
     if (lastErrorCode == 0 and prefixFits) {
-        _ = showString(prefix, &standardFont, @intCast(if (rowReg == REGISTER_T) BASEMODE_OFFSET_X else 0), @intCast(lineY + (if (rowReg == REGISTER_T) BASEMODE_OFFSET_Y else 0)), vmNormal, 0, 1);
+        _ = showString(prefix, &standardFont, @intCast(indent), @intCast(lineY + (if (rowReg == REGISTER_T) BASEMODE_OFFSET_Y else 0)), vmNormal, 0, 1);
     }
     if (enhanced) {
-        _ = showStringEnhanced(text, fontForShortInteger.?, @intCast(if (prefixFits) rightEdge - textWidth - 3 else (if (isShiftOffset()) @as(i32, 10) else 0)), @intCast(lineY), vmNormal, @intFromBool(firstCol), 1, NO_compress, NO_raise, DO_Show, NO_Bold, DO_LF);
+        _ = showStringEnhanced(text, fontForShortInteger.?, @intCast(if (prefixFits) rightEdge - textWidth - 3 else indent), @intCast(lineY), vmNormal, @intFromBool(firstCol), 1, NO_compress, NO_raise, DO_Show, NO_Bold, DO_LF);
     } else {
         _ = showString(text, fontForShortInteger.?, @intCast(@as(i32, SCREEN_WIDTH) - textWidth), @intCast(lineY), vmNormal, 0, 1);
     }
@@ -3882,23 +3977,23 @@ pub export fn displayBaseMode(regist: calcRegister_t) callconv(.c) void {
             // Reg Pos Y
             if (displayStack == 1 and calcMode != CM_NIM) {
                 frontier_display.shortIntegerToDisplayString(Register_X, tmpString, 1, _baseModeBaseY(), SCREEN_WIDTH);
-                _showBaseModeLine(REGISTER_Y, tmpString, "  X: ", false);
+                _showBaseModeLine(REGISTER_Y, tmpString, "X: ", false);
             }
             // reg pos Z
             if ((displayStack == 1 and calcMode != CM_NIM) or displayStack == 2) {
                 frontier_display.shortIntegerToDisplayString(Register_X, tmpString, 1, _baseModeBaseZ(), SCREEN_WIDTH);
-                _showBaseModeLine(REGISTER_Z, tmpString, "  X: ", false);
+                _showBaseModeLine(REGISTER_Z, tmpString, "X: ", false);
             }
             // reg pos T. A VIEW line owns the T row while it is up.
             if (((displayStack == 1 and calcMode != CM_NIM) or displayStack == 2 or displayStack == 3) and temporaryInformation != TI_VIEW_REGISTER) {
                 frontier_display.shortIntegerToDisplayString(Register_X, tmpString, 1, _baseModeBaseT(), SCREEN_WIDTH);
-                _showBaseModeLine(REGISTER_T, tmpString, "  X: ", false);
+                _showBaseModeLine(REGISTER_T, tmpString, "X: ", false);
             }
         } else if (getRegisterDataType(REGISTER_X) == dtLongInteger and solverEstimatesUsed == 0) {
             // longinteger in pos T. A VIEW line owns the T row while it is up.
             if (((displayStack == 1 and calcMode != CM_NIM) or displayStack == 2 or displayStack == 3) and temporaryInformation != TI_VIEW_REGISTER) {
-                frontier_display.longIntegerToHexDisplayString(REGISTER_X, tmpString, 1, _baseModeBaseT(), @intCast(@as(i32, SCREEN_WIDTH) - (if (isShiftOffset()) @as(i32, 10) else 0)));
-                _showBaseModeLine(REGISTER_T, tmpString, "  X:" ++ STD_INTEGER_Z ++ ": ", true);
+                frontier_display.longIntegerToHexDisplayString(REGISTER_X, tmpString, 1, _baseModeBaseT(), @intCast(@as(i32, SCREEN_WIDTH) - lineIndent(REGISTER_T)));
+                _showBaseModeLine(REGISTER_T, tmpString, "X:" ++ STD_INTEGER_Z ++ ": ", true);
             }
         }
 
@@ -3937,16 +4032,16 @@ pub export fn registerFMA(regist: calcRegister_t, tmp1: *real_t, tmp2: *real_t, 
 }
 
 const LRWidth: i16 = 140;
-fn displayLRtemporaryInformation(prefix1: [*c]const u8, prefix2: [*c]const u8, prefix: [*c]u8, label: [*c]const u8, prefixPre: bool_t, prefixPost: bool_t, prefixWidth: *i16) void {
+fn displayLRtemporaryInformation(prefix1: [*c]const u8, prefix2: [*c]const u8, prefix: [*c]u8, label: [*c]const u8, prefixPre: bool_t, prefixPost: bool_t, prefixWidth: *i16, indent: i16) void {
     _ = strcpy(prefix, prefix1);
     _ = strcat(prefix, frontier_debug.getCurveFitModeFormula(lrChosen));
     _ = strcat(prefix, prefix2);
-    while (frontier_char_string.stringWidth(prefix, &standardFont, prefixPre != 0, prefixPost != 0) + 1 < LRWidth) {
+    while (frontier_char_string.stringWidth(prefix, &standardFont, prefixPre != 0, prefixPost != 0) + indent < LRWidth) {
         _ = strcat(prefix, STD_SPACE_6_PER_EM);
     }
     _ = strcat(prefix, label);
     _ = strcat(prefix, STD_SPACE_4_PER_EM ++ "=" ++ STD_SPACE_HAIR);
-    prefixWidth.* = frontier_char_string.stringWidth(prefix, &standardFont, prefixPre != 0, prefixPost != 0) + 1;
+    prefixWidth.* = frontier_char_string.stringWidth(prefix, &standardFont, prefixPre != 0, prefixPost != 0) + indent;
 }
 
 const RESTORE_T: bool_t = 1;
@@ -3979,6 +4074,15 @@ fn _refreshRegisterLine(regist_in: calcRegister_t, restoreRegisterT: bool_t) voi
         }
     }
 
+    // The function name is drawn over the T line, and nothing draws it a second time:
+    // showFunctionName runs from the key handling, never from a composition. A T
+    // register drawn into that band would overwrite the name, and the next push would
+    // take it off the screen early. The register refresh returns instead, and
+    // hideFuncName marks the band when the name comes down.
+    if (functionNameOnScreen and regist == REGISTER_T) {
+        return;
+    }
+
     if (BASEMODEREGISTERX() and !SHOWMODE() and displayStack != 4 - displayStackSHOIDISP) {
         if (getRegisterDataType(REGISTER_X) == dtShortInteger) {
             fnDisplayStack(3 - _baseModeLinesBelowT());
@@ -3986,7 +4090,7 @@ fn _refreshRegisterLine(regist_in: calcRegister_t, restoreRegisterT: bool_t) voi
             fnDisplayStack(3);
         }
     } else {
-        if (XXFNMODEACTIVE()) {
+        if (xxfnActive) {
             fnDisplayStack(3);
         }
     }
@@ -4036,12 +4140,12 @@ fn _refreshRegisterLine(regist_in: calcRegister_t, restoreRegisterT: bool_t) voi
             const id = frontier_config.getConfirmationTiId();
             _ = showString(&confirmationTI[id].string, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, 1, 1);
         } else if (temporaryInformation == TI_WHO) {
-            // WHO owns the whole screen since the 6559a9c59 pin: it clears, puts the
-            // blank MNU_SHOW menu up so nothing repaints softkeys over it, then draws
+            // WHO owns the whole screen: it clears everything below the status bar, puts
+            // the blank MNU_SHOW menu up so nothing repaints softkeys over it, then draws
             // both rolls once from the X pass. The other register passes return without
             // drawing rather than repainting the same text three times.
             if (regist == REGISTER_X) {
-                clearScreenOld(0, 1, 1); // clear before the blank menu goes up: the MNU_SHOW guards in _selectiveClearScreen skip the graph rects
+                clearScreenExcludingStatusBar(203); // the region guards in _selectiveClearScreen leave part of the menu strip uncleared
                 _ = frontier_softmenus.showSoftmenu(-MNU_SHOW);
                 _ = showStringEnhanced(whoStr1, &standardFont, 1, @intCast(@as(i32, Y_POSITION_OF_REGISTER_T_LINE) + 30 - 25), vmNormal, 1, 1, NO_compress, NO_raise, DO_Show, NO_Bold, DO_LF);
                 _ = showStringEnhanced(whoStr2, &tinyFont, 1, @intCast(@as(i32, Y_POSITION_OF_REGISTER_X_LINE) + 50 - 62), vmNormal, 1, 1, NO_compress, NO_raise, DO_Show, NO_Bold, DO_LF);
@@ -4234,7 +4338,7 @@ fn _refreshRegisterLine(regist_in: calcRegister_t, restoreRegisterT: bool_t) voi
         }
     }
 
-    if (getRegisterDataType(REGISTER_X) == dtReal34Matrix or getRegisterDataType(REGISTER_X) == dtComplex34Matrix or calcMode == CM_MIM or distModeActive != 0 or BASEMODEACTIVE() or XXFNMODEACTIVE()) {
+    if (getRegisterDataType(REGISTER_X) == dtReal34Matrix or getRegisterDataType(REGISTER_X) == dtComplex34Matrix or calcMode == CM_MIM or distModeActive != 0 or BASEMODEACTIVE() or xxfnActive) {
         displayStack = origDisplayStack;
     }
 }
@@ -4245,6 +4349,7 @@ fn refreshRegisterMainBranch(regist_p: *calcRegister_t, restoreRegisterT: bool_t
     prefixWidth_p.* = 0;
     const baseY: i16 = @intCast(@as(i32, Y_POSITION_OF_REGISTER_X_LINE) - @as(i32, REGISTER_LINE_HEIGHT) * @as(i32, regist - REGISTER_X + (if (restoreRegisterT == RESTORE_T) @as(calcRegister_t, 0) else (if (temporaryInformation == TI_VIEW_REGISTER and regist == REGISTER_T) @as(calcRegister_t, 0) else (if (getRegisterDataType(REGISTER_X) == dtReal34Matrix or getRegisterDataType(REGISTER_X) == dtComplex34Matrix) @as(calcRegister_t, @intCast(4 - @as(i32, displayStack))) else 0)))));
     const origRegist: calcRegister_t = regist;
+    const indent: i16 = if (SHOWMODE()) noShiftOffset else lineIndent(origRegist); // the T line leaves room for the shift indicator, except under a SHOW screen, drawn over it
     if (temporaryInformation == TI_VIEW_REGISTER and regist == REGISTER_T) {
         if (FIRST_RESERVED_VARIABLE <= currentViewRegister and currentViewRegister < LAST_RESERVED_VARIABLE and allReservedVariables[@intCast(@as(calcRegister_t, @intCast(currentViewRegister)) - FIRST_RESERVED_VARIABLE)].header.bits.pointerToRegisterData == C47_NULL) {
             copySourceRegisterToDestRegister(@intCast(currentViewRegister), TEMP_REGISTER_1);
@@ -4259,7 +4364,7 @@ fn refreshRegisterMainBranch(regist_p: *calcRegister_t, restoreRegisterT: bool_t
     }
 
     // STATISTICAL DISTR & SOLVER
-    if (regist == REGISTER_X and lastErrorCode == 0 and calcMode != CM_PEM and
+    if (origRegist == REGISTER_X and lastErrorCode == 0 and calcMode != CM_PEM and
         ((PROBMENU()) or
             (frontier_softmenus.currentMenu() == -MNU_Solver_TOOL and solverEstimatesUsed != 0 and temporaryInformation != TI_SOLVER_VARIABLE_RESULT)))
     {
@@ -4391,7 +4496,7 @@ fn refreshRegisterMainBranch(regist_p: *calcRegister_t, restoreRegisterT: bool_t
     }
 
     // XXFN DISPLAY
-    if (regist == REGISTER_X and XXFNMODEACTIVE()) {
+    if (origRegist == REGISTER_X and xxfnActive) {
         const tmpY: i32 = @as(i32, Y_POSITION_OF_REGISTER_X_LINE) - @as(i32, REGISTER_LINE_HEIGHT) * @as(i32, REGISTER_T - REGISTER_X);
 
         var angle: angularMode_t = undefined;
@@ -4400,6 +4505,7 @@ fn refreshRegisterMainBranch(regist_p: *calcRegister_t, restoreRegisterT: bool_t
         var tmp3: real34_t = undefined;
         const FMA_X: i32 = 19 - 3;
         const FMA_T: i32 = -1 - 3;
+        const indentFMA: i32 = lineIndent(REGISTER_T); // both lines are drawn over the T line, where the shift indicator can be
         const savedDisplayFormat: u8 = displayFormat;
         const savedDisplayFormatDigits: u8 = displayFormatDigits;
         displayFormat = DF_ALL;
@@ -4407,10 +4513,10 @@ fn refreshRegisterMainBranch(regist_p: *calcRegister_t, restoreRegisterT: bool_t
 
         {
             abi.fmtBufZ(tmpString[0..2560], "X{s}Y+Z=", .{std.mem.span(PRODUCT_SIGN())});
-            const xx = showString(tmpString, &standardFont, @intCast(if (isShiftOffset()) @as(i32, 20) else 0), @intCast(tmpY + FMA_X), vmNormal, 0, 1);
+            const xx = showString(tmpString, &standardFont, @intCast(indentFMA), @intCast(tmpY + FMA_X), vmNormal, 0, 1);
             if (isXFNregisterValid3r(REGISTER_X + (if (calcMode == CM_NIM) @as(calcRegister_t, 1) else 0)) and registerFMA(REGISTER_X + (if (calcMode == CM_NIM) @as(calcRegister_t, 1) else 0), &tmp1, &tmp2, &tmp3, &angle, &ctxtReal39) != 0) {
                 tmpString[0] = 0;
-                frontier_display.real34ToDisplayString(&tmp3, @intCast(angle), tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - (if (isShiftOffset()) @as(i32, 20) else 0) - @as(i32, @intCast(xx))), 34, LIMITEXP, FRONTSPACE, NOIRFRAC);
+                frontier_display.real34ToDisplayString(&tmp3, @intCast(angle), tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - indentFMA - @as(i32, @intCast(xx))), 34, LIMITEXP, FRONTSPACE, NOIRFRAC);
             } else {
                 abi.fmtBufZ(tmpString[0..2560], "{s} ", .{errMsgRow(ERROR_INVALID_TYPE_XFN)});
             }
@@ -4418,10 +4524,10 @@ fn refreshRegisterMainBranch(regist_p: *calcRegister_t, restoreRegisterT: bool_t
         }
         if (getSystemFlag(FLAG_SSIZE8) != 0) {
             abi.fmtBufZ(tmpString[0..2560], "T{s}A+B=", .{std.mem.span(PRODUCT_SIGN())});
-            const xx = showString(tmpString, &standardFont, @intCast(if (isShiftOffset()) @as(i32, 20) else 0), @intCast(tmpY + FMA_T), vmNormal, 0, 1);
+            const xx = showString(tmpString, &standardFont, @intCast(indentFMA), @intCast(tmpY + FMA_T), vmNormal, 0, 1);
             if (isXFNregisterValid3r(REGISTER_T + (if (calcMode == CM_NIM) @as(calcRegister_t, 1) else 0)) and registerFMA(REGISTER_T + (if (calcMode == CM_NIM) @as(calcRegister_t, 1) else 0), &tmp1, &tmp2, &tmp3, &angle, &ctxtReal39) != 0) {
                 tmpString[0] = 0;
-                frontier_display.real34ToDisplayString(&tmp3, @intCast(angle), tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - (if (isShiftOffset()) @as(i32, 20) else 0) - @as(i32, @intCast(xx))), 34, LIMITEXP, FRONTSPACE, NOIRFRAC);
+                frontier_display.real34ToDisplayString(&tmp3, @intCast(angle), tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - indentFMA - @as(i32, @intCast(xx))), 34, LIMITEXP, FRONTSPACE, NOIRFRAC);
             } else {
                 abi.fmtBufZ(tmpString[0..2560], "{s} ", .{errMsgRow(ERROR_INVALID_TYPE_XFN)});
             }
@@ -4431,9 +4537,10 @@ fn refreshRegisterMainBranch(regist_p: *calcRegister_t, restoreRegisterT: bool_t
         displayFormatDigits = savedDisplayFormatDigits;
         drawSinglePixelFullWidthLine(Y_POSITION_OF_REGISTER_Z_LINE - 2);
         fnDisplayStack(3);
+        xxfnOnScreen = true;
     }
 
-    refreshRegisterDataDispatch(&regist, origRegist, restoreRegisterT, baseY, prefix, lastBase, prefixWidth_p, lineWidth_p, w_p, wLastBaseNumeric_p, wLastBaseStandard_p, prefixPre, prefixPost);
+    refreshRegisterDataDispatch(&regist, origRegist, restoreRegisterT, baseY, prefix, lastBase, prefixWidth_p, lineWidth_p, w_p, wLastBaseNumeric_p, wLastBaseStandard_p, prefixPre, prefixPost, indent);
 
     if (temporaryInformation == TI_VIEW_REGISTER and origRegist == REGISTER_X) {
         regist = REGISTER_X;
@@ -4443,7 +4550,7 @@ fn refreshRegisterMainBranch(regist_p: *calcRegister_t, restoreRegisterT: bool_t
 
 const const34_1e6_unused = {};
 
-fn refreshRegisterDataDispatch(regist_p: *calcRegister_t, origRegist: calcRegister_t, restoreRegisterT: bool_t, baseY: i16, prefix: [*c]u8, lastBase: [*c]u8, prefixWidth_p: *i16, lineWidth_p: *i16, w_p: *i32, wLastBaseNumeric_p: *i16, wLastBaseStandard_p: *i16, prefixPre: bool_t, prefixPost: bool_t) void {
+fn refreshRegisterDataDispatch(regist_p: *calcRegister_t, origRegist: calcRegister_t, restoreRegisterT: bool_t, baseY: i16, prefix: [*c]u8, lastBase: [*c]u8, prefixWidth_p: *i16, lineWidth_p: *i16, w_p: *i32, wLastBaseNumeric_p: *i16, wLastBaseStandard_p: *i16, prefixPre: bool_t, prefixPost: bool_t, indent: i16) void {
     _ = restoreRegisterT;
     const regist = regist_p.*;
 
@@ -4508,8 +4615,8 @@ fn refreshRegisterDataDispatch(regist_p: *calcRegister_t, origRegist: calcRegist
 
             lb[0] = 0;
             lb += 1;
-            wLastBaseNumeric_p.* = frontier_char_string.stringWidth(lb, &numericFont, true, true);
-            wLastBaseStandard_p.* = frontier_char_string.stringWidth(lb, &standardFont, true, true);
+            wLastBaseNumeric_p.* = frontier_char_string.stringWidth(lastBase, &numericFont, true, true);
+            wLastBaseStandard_p.* = frontier_char_string.stringWidth(lastBase, &standardFont, true, true);
         } else {
             wLastBaseNumeric_p.* = 0;
             wLastBaseStandard_p.* = 0;
@@ -4542,7 +4649,7 @@ fn refreshRegisterDataDispatch(regist_p: *calcRegister_t, origRegist: calcRegist
     // Main type dtReal34 FLAG_FRACT
     else if (getSystemFlag(FLAG_FRACT) != 0 and (getRegisterDataType(regist) == dtReal34 and (real34CompareAbsLessThan(REGISTER_REAL34_DATA(regist), const34_1e6) != 0 or real34IsZero(REGISTER_REAL34_DATA(regist))))) {
         if (temporaryInformation == TI_VIEW_REGISTER and origRegist == REGISTER_T) {
-            viewRegName(prefix, prefixWidth_p);
+            viewRegName(prefix, prefixWidth_p, indent);
         } else if (temporaryInformation == TI_VIEW_REGISTER) {
             userTI(@intCast(currentViewRegister), regist, prefix, prefixWidth_p);
         }
@@ -4554,9 +4661,9 @@ fn refreshRegisterDataDispatch(regist_p: *calcRegister_t, origRegist: calcRegist
 
         if (prefixWidth_p.* > 0) {
             if (temporaryInformation == TI_INTEGRAL and regist == REGISTER_X) {
-                _ = showString(prefix, &numericFont, 1, @intCast(@as(i32, baseY) - checkHPoffset()), vmNormal, prefixPre, prefixPost);
+                _ = showString(prefix, &numericFont, @intCast(indent), @intCast(@as(i32, baseY) - checkHPoffset()), vmNormal, prefixPre, prefixPost);
             } else {
-                _ = showString(prefix, &standardFont, 1, @intCast(@as(i32, baseY) - checkHPoffset() + TEMPORARY_INFO_OFFSET), vmNormal, prefixPre, prefixPost);
+                _ = showString(prefix, &standardFont, @intCast(indent), @intCast(@as(i32, baseY) - checkHPoffset() + TEMPORARY_INFO_OFFSET), vmNormal, prefixPre, prefixPost);
             }
         }
 
@@ -4578,37 +4685,37 @@ fn refreshRegisterDataDispatch(regist_p: *calcRegister_t, origRegist: calcRegist
     }
     // Main type dtReal34
     else if (getRegisterDataType(regist) == dtReal34) {
-        refreshReal34(regist, origRegist, baseY, prefix, prefixWidth_p, lineWidth_p, w_p, prefixPre, prefixPost);
+        refreshReal34(regist, origRegist, baseY, prefix, prefixWidth_p, lineWidth_p, w_p, prefixPre, prefixPost, indent);
     }
     // Main type dtComplex34
     else if (getRegisterDataType(regist) == dtComplex34) {
-        refreshComplex34(regist, origRegist, baseY, prefix, prefixWidth_p, lineWidth_p, w_p, prefixPre, prefixPost);
+        refreshComplex34(regist, origRegist, baseY, prefix, prefixWidth_p, lineWidth_p, w_p, prefixPre, prefixPost, indent);
     }
     // Main type dtString
     else if (getRegisterDataType(regist) == dtString) {
-        refreshString(regist, origRegist, baseY, prefix, prefixWidth_p, lineWidth_p, w_p, prefixPre, prefixPost);
+        refreshString(regist, origRegist, baseY, prefix, prefixWidth_p, lineWidth_p, w_p, prefixPre, prefixPost, indent);
     }
     // Main type dtShortInteger
     else if (getRegisterDataType(regist) == dtShortInteger) {
-        refreshShortInteger(regist, origRegist, baseY, prefix, prefixWidth_p, w_p, prefixPre, prefixPost);
+        refreshShortInteger(regist, origRegist, baseY, prefix, prefixWidth_p, w_p, prefixPre, prefixPost, indent);
     }
     // Main type dtLongInteger
     else if (getRegisterDataType(regist) == dtLongInteger) {
-        refreshLongInteger(regist, origRegist, baseY, prefix, prefixWidth_p, lineWidth_p, w_p, prefixPre, prefixPost);
+        refreshLongInteger(regist, origRegist, baseY, prefix, prefixWidth_p, lineWidth_p, w_p, prefixPre, prefixPost, indent);
     }
     // Main type dtTime
     else if (getRegisterDataType(regist) == dtTime) {
         if (temporaryInformation == TI_COPY_FROM_SHOW and regist == REGISTER_X) {
             _fnShowRecallTI(prefix, prefixWidth_p);
         } else if (temporaryInformation == TI_VIEW_REGISTER and origRegist == REGISTER_T) {
-            viewRegName(prefix, prefixWidth_p);
+            viewRegName(prefix, prefixWidth_p, indent);
         } else if (temporaryInformation == TI_VIEW_REGISTER) {
             userTI(@intCast(currentViewRegister), regist, prefix, prefixWidth_p);
         }
         frontier_display.timeToDisplayString(regist, tmpString, 0);
         w_p.* = frontier_char_string.stringWidth(tmpString, &numericFont, false, true);
         if (prefixWidth_p.* > 0) {
-            _ = showString(prefix, &standardFont, 1, @intCast(@as(i32, baseY) + TEMPORARY_INFO_OFFSET), vmNormal, prefixPre, prefixPost);
+            _ = showString(prefix, &standardFont, @intCast(indent), @intCast(@as(i32, baseY) + TEMPORARY_INFO_OFFSET), vmNormal, prefixPre, prefixPost);
         }
         _ = showString(tmpString, &numericFont, @intCast(if (temporaryInformation == TI_VIEW_REGISTER and origRegist == REGISTER_T) @as(i32, prefixWidth_p.*) else @as(i32, SCREEN_WIDTH) - w_p.*), @intCast(@as(i32, baseY) - checkHPoffset()), vmNormal, 0, 1);
     }
@@ -4621,17 +4728,14 @@ fn refreshRegisterDataDispatch(regist_p: *calcRegister_t, origRegist: calcRegist
                 if (!(temporaryInformation == TI_NO_INFO and currentInputVariable != INVALID_VARIABLE) or regist != REGISTER_X) {
                     prefix[0] = 0;
                 }
-                if (isShiftOffset() and regist == REGISTER_T) {
-                    _ = strcpy(prefix, "  ");
-                }
                 _ = strcat(prefix, &nameOfWday_en[@intCast(frontier_date_time.getJulianDayOfWeek(regist))].itemName);
-                prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+                prefixWidth_p.* = prefixWidthAt(prefix, indent);
             }
         } else if (temporaryInformation == TI_VIEW_REGISTER and origRegist == REGISTER_T) {
-            viewRegName(prefix, prefixWidth_p);
+            viewRegName(prefix, prefixWidth_p, indent);
             _ = strcat(prefix, &nameOfWday_en[@intCast(frontier_date_time.getJulianDayOfWeek(regist))].itemName);
             _ = strcat(prefix, " ");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = prefixWidthAt(prefix, indent);
         } else if (temporaryInformation == TI_VIEW_REGISTER) {
             userTI(@intCast(currentViewRegister), regist, prefix, prefixWidth_p);
         }
@@ -4639,7 +4743,7 @@ fn refreshRegisterDataDispatch(regist_p: *calcRegister_t, origRegist: calcRegist
         frontier_display.dateToDisplayString(regist, tmpString);
         w_p.* = frontier_char_string.stringWidth(tmpString, &numericFont, false, true);
         if (prefixWidth_p.* > 0) {
-            _ = showString(prefix, &standardFont, 1, @intCast(@as(i32, baseY) + TEMPORARY_INFO_OFFSET), vmNormal, prefixPre, prefixPost);
+            _ = showString(prefix, &standardFont, @intCast(indent), @intCast(@as(i32, baseY) + TEMPORARY_INFO_OFFSET), vmNormal, prefixPre, prefixPost);
         }
         _ = showString(tmpString, &numericFont, @intCast(if (temporaryInformation == TI_VIEW_REGISTER and origRegist == REGISTER_T) @as(i32, prefixWidth_p.*) else @as(i32, SCREEN_WIDTH) - w_p.*), @intCast(@as(i32, baseY) - checkHPoffset()), vmNormal, 0, 1);
     }
@@ -4649,7 +4753,7 @@ fn refreshRegisterDataDispatch(regist_p: *calcRegister_t, origRegist: calcRegist
             _fnShowRecallTI(prefix, prefixWidth_p);
         }
         if (temporaryInformation == TI_VIEW_REGISTER and origRegist == REGISTER_T) {
-            viewRegName(prefix, prefixWidth_p);
+            viewRegName(prefix, prefixWidth_p, indent);
         } else if (temporaryInformation == TI_VIEW_REGISTER) {
             userTI(@intCast(currentViewRegister), regist, prefix, prefixWidth_p);
         }
@@ -4657,17 +4761,17 @@ fn refreshRegisterDataDispatch(regist_p: *calcRegister_t, origRegist: calcRegist
         w_p.* = frontier_char_string.stringWidth(tmpString, &numericFont, false, true);
         lineWidth_p.* = @intCast(w_p.*);
         if (prefixWidth_p.* > 0) {
-            _ = showString(prefix, &standardFont, 1, @intCast(@as(i32, baseY) + TEMPORARY_INFO_OFFSET), vmNormal, prefixPre, prefixPost);
+            _ = showString(prefix, &standardFont, @intCast(indent), @intCast(@as(i32, baseY) + TEMPORARY_INFO_OFFSET), vmNormal, prefixPre, prefixPost);
         }
         _ = showString(tmpString, &numericFont, @intCast(if (temporaryInformation == TI_VIEW_REGISTER and origRegist == REGISTER_T) @as(i32, prefixWidth_p.*) else @as(i32, SCREEN_WIDTH) - w_p.*), @intCast(@as(i32, baseY) - checkHPoffset()), vmNormal, 0, 1);
     }
     // Main type dtReal34Matrix
     else if (getRegisterDataType(regist) == dtReal34Matrix) {
-        refreshRealMatrix(regist, origRegist, baseY, prefix, prefixWidth_p, lineWidth_p, w_p, prefixPre, prefixPost);
+        refreshRealMatrix(regist, origRegist, baseY, prefix, prefixWidth_p, lineWidth_p, w_p, prefixPre, prefixPost, indent);
     }
     // Main type dtComplex34Matrix
     else if (getRegisterDataType(regist) == dtComplex34Matrix) {
-        refreshComplexMatrix(regist, origRegist, baseY, prefix, prefixWidth_p, lineWidth_p, w_p, prefixPre, prefixPost);
+        refreshComplexMatrix(regist, origRegist, baseY, prefix, prefixWidth_p, lineWidth_p, w_p, prefixPre, prefixPost, indent);
     } else {
         abi.fmtBufZ(tmpString[0..2560], "Displaying {s}: to be coded!", .{std.mem.span(frontier_debug.getRegisterDataTypeName(regist, true, false))});
         _ = showString(tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - frontier_char_string.stringWidth(tmpString, &standardFont, false, true)), @intCast(@as(i32, baseY) + 6), vmNormal, 0, 1);
@@ -4676,280 +4780,217 @@ fn refreshRegisterDataDispatch(regist_p: *calcRegister_t, origRegist: calcRegist
 
 // dtReal34 prefix builder + render.
 const compact_real = {};
-fn refreshReal34(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16, prefix: [*c]u8, prefixWidth_p: *i16, lineWidth_p: *i16, w_p: *i32, prefixPre: bool_t, prefixPost: bool_t) void {
+fn refreshReal34(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16, prefix: [*c]u8, prefixWidth_p: *i16, lineWidth_p: *i16, w_p: *i32, prefixPre: bool_t, prefixPost: bool_t, indent: i16) void {
     if (temporaryInformation == TI_COPY_FROM_SHOW and regist == REGISTER_X) {
         _fnShowRecallTI(prefix, prefixWidth_p);
     } else if (temporaryInformation == TI_THETA_RADIUS) {
         if (regist == REGISTER_Y) {
-            _ = strcpy(prefix, "r =");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, "r =", indent);
         } else if (regist == REGISTER_X) {
-            _ = strcpy(prefix, STD_theta_m ++ " =");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, STD_theta_m ++ " =", indent);
         }
     } else if (temporaryInformation == TI_RADIUS_THETA) {
         if (regist == REGISTER_X) {
-            _ = strcpy(prefix, "r =");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, "r =", indent);
         } else if (regist == REGISTER_Y) {
-            _ = strcpy(prefix, STD_theta_m ++ " =");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, STD_theta_m ++ " =", indent);
         }
     } else if (temporaryInformation == TI_RADIUS_THETA_SWAPPED) {
         if (regist == REGISTER_Y) {
-            _ = strcpy(prefix, "r =");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, "r =", indent);
         } else if (regist == REGISTER_X) {
-            _ = strcpy(prefix, STD_theta_m ++ " =");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, STD_theta_m ++ " =", indent);
         }
     } else if (temporaryInformation == TI_PERC) {
         if (regist == REGISTER_X) {
-            _ = strcpy(prefix, " % :");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, " % :", indent);
         }
     } else if (temporaryInformation == TI_PERCD) {
         if (regist == REGISTER_X) {
-            _ = strcpy(prefix, STD_DELTA ++ "% :");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, STD_DELTA ++ "% :", indent);
         }
     } else if (temporaryInformation == TI_PERCD2) {
         if (regist == REGISTER_Y) {
-            _ = strcpy(prefix, " % :");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, " % :", indent);
         }
         if (regist == REGISTER_X) {
-            _ = strcpy(prefix, STD_DELTA ++ "% :");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, STD_DELTA ++ "% :", indent);
         }
     } else if (temporaryInformation == TI_X_Y) {
         if (regist == REGISTER_X) {
-            _ = strcpy(prefix, "x : Re =");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, "x : Re =", indent);
         } else if (regist == REGISTER_Y) {
-            _ = strcpy(prefix, "y : Im =");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, "y : Im =", indent);
         }
     } else if (temporaryInformation == TI_X_Y_SWAPPED) {
         if (regist == REGISTER_Y) {
-            _ = strcpy(prefix, "x : Re =");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, "x : Re =", indent);
         } else if (regist == REGISTER_X) {
-            _ = strcpy(prefix, "y : Im =");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, "y : Im =", indent);
         }
     } else if (temporaryInformation == TI_RE_IM) {
         if (regist == REGISTER_X) {
-            _ = strcpy(prefix, "Im" ++ STD_SPACE_FIGURE ++ "=");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, "Im" ++ STD_SPACE_FIGURE ++ "=", indent);
         } else if (regist == REGISTER_Y) {
-            _ = strcpy(prefix, "Re" ++ STD_SPACE_FIGURE ++ "=");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, "Re" ++ STD_SPACE_FIGURE ++ "=", indent);
         }
     } else if (temporaryInformation == TI_SUMX_SUMY) {
         if (regist == REGISTER_X) {
-            _ = strcpy(prefix, STD_SIGMA ++ "x =");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, STD_SIGMA ++ "x =", indent);
         } else if (regist == REGISTER_Y) {
-            _ = strcpy(prefix, STD_SIGMA ++ "y =");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, STD_SIGMA ++ "y =", indent);
         }
     } else if (temporaryInformation == TI_XMIN_YMIN) {
         if (regist == REGISTER_X) {
-            _ = strcpy(prefix, "x" ++ STD_SUB_m ++ STD_SUB_i ++ STD_SUB_n ++ " =");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, "x" ++ STD_SUB_m ++ STD_SUB_i ++ STD_SUB_n ++ " =", indent);
         } else if (regist == REGISTER_Y) {
-            _ = strcpy(prefix, "y" ++ STD_SUB_m ++ STD_SUB_i ++ STD_SUB_n ++ " =");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, "y" ++ STD_SUB_m ++ STD_SUB_i ++ STD_SUB_n ++ " =", indent);
         }
     } else if (temporaryInformation == TI_XMAX_YMAX) {
         if (regist == REGISTER_X) {
-            _ = strcpy(prefix, "x" ++ STD_SUB_m ++ STD_SUB_a ++ STD_SUB_x ++ " =");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, "x" ++ STD_SUB_m ++ STD_SUB_a ++ STD_SUB_x ++ " =", indent);
         } else if (regist == REGISTER_Y) {
-            _ = strcpy(prefix, "y" ++ STD_SUB_m ++ STD_SUB_a ++ STD_SUB_x ++ " =");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, "y" ++ STD_SUB_m ++ STD_SUB_a ++ STD_SUB_x ++ " =", indent);
         }
     } else if (temporaryInformation == TI_SA) {
         if (regist == REGISTER_X) {
-            _ = strcpy(prefix, "s(a" ++ STD_SUB_0 ++ ") =");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, "s(a" ++ STD_SUB_0 ++ ") =", indent);
         } else if (regist == REGISTER_Y) {
-            _ = strcpy(prefix, "s(a" ++ STD_SUB_1 ++ ") =");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, "s(a" ++ STD_SUB_1 ++ ") =", indent);
         }
     } else if (temporaryInformation == TI_MEANX_MEANY or temporaryInformation == TI_MEANX) {
         if (regist == REGISTER_X) {
-            _ = strcpy(prefix, STD_x_BAR ++ " =");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, STD_x_BAR ++ " =", indent);
         } else if (regist == REGISTER_Y and temporaryInformation != TI_MEANX) {
-            _ = strcpy(prefix, STD_y_BAR ++ " =");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, STD_y_BAR ++ " =", indent);
         }
     } else if (temporaryInformation == TI_PCTILEX_PCTILEY) {
         if (regist == REGISTER_X) {
-            _ = strcpy(prefix, "pctile" ++ STD_SUB_x ++ " =");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, "pctile" ++ STD_SUB_x ++ " =", indent);
         } else if (regist == REGISTER_Y) {
-            _ = strcpy(prefix, "pctile" ++ STD_SUB_y ++ " =");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, "pctile" ++ STD_SUB_y ++ " =", indent);
         }
     } else if (temporaryInformation == TI_MEDIANX_MEDIANY) {
         if (regist == REGISTER_X) {
-            _ = strcpy(prefix, "md" ++ STD_SUB_x ++ " =");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, "md" ++ STD_SUB_x ++ " =", indent);
         } else if (regist == REGISTER_Y) {
-            _ = strcpy(prefix, "md" ++ STD_SUB_y ++ " =");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, "md" ++ STD_SUB_y ++ " =", indent);
         }
     } else if (temporaryInformation == TI_Q1X_Q1Y) {
         if (regist == REGISTER_X) {
-            _ = strcpy(prefix, "Q" ++ STD_SUB_1 ++ STD_SPACE_3_PER_EM ++ STD_SUB_x ++ " =");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, "Q" ++ STD_SUB_1 ++ STD_SPACE_3_PER_EM ++ STD_SUB_x ++ " =", indent);
         } else if (regist == REGISTER_Y) {
-            _ = strcpy(prefix, "Q" ++ STD_SUB_1 ++ STD_SPACE_3_PER_EM ++ STD_SUB_y ++ " =");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, "Q" ++ STD_SUB_1 ++ STD_SPACE_3_PER_EM ++ STD_SUB_y ++ " =", indent);
         }
     } else if (temporaryInformation == TI_Q3X_Q3Y) {
         if (regist == REGISTER_X) {
-            _ = strcpy(prefix, "Q" ++ STD_SUB_3 ++ STD_SPACE_3_PER_EM ++ STD_SUB_x ++ " =");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, "Q" ++ STD_SUB_3 ++ STD_SPACE_3_PER_EM ++ STD_SUB_x ++ " =", indent);
         } else if (regist == REGISTER_Y) {
-            _ = strcpy(prefix, "Q" ++ STD_SUB_3 ++ STD_SPACE_3_PER_EM ++ STD_SUB_y ++ " =");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, "Q" ++ STD_SUB_3 ++ STD_SPACE_3_PER_EM ++ STD_SUB_y ++ " =", indent);
         }
     } else if (temporaryInformation == TI_MADX_MADY) {
         if (regist == REGISTER_X) {
-            _ = strcpy(prefix, "mad" ++ STD_SUB_x ++ " =");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, "mad" ++ STD_SUB_x ++ " =", indent);
         } else if (regist == REGISTER_Y) {
-            _ = strcpy(prefix, "mad" ++ STD_SUB_y ++ " =");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, "mad" ++ STD_SUB_y ++ " =", indent);
         }
     } else if (temporaryInformation == TI_IQRX_IQRY) {
         if (regist == REGISTER_X) {
-            _ = strcpy(prefix, "iqr" ++ STD_SUB_x ++ " =");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, "iqr" ++ STD_SUB_x ++ " =", indent);
         } else if (regist == REGISTER_Y) {
-            _ = strcpy(prefix, "iqr" ++ STD_SUB_y ++ " =");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, "iqr" ++ STD_SUB_y ++ " =", indent);
         }
     } else if (temporaryInformation == TI_RANGEX_RANGEY) {
         if (regist == REGISTER_X) {
-            _ = strcpy(prefix, "rg" ++ STD_SUB_x ++ " =");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, "rg" ++ STD_SUB_x ++ " =", indent);
         } else if (regist == REGISTER_Y) {
-            _ = strcpy(prefix, "rg" ++ STD_SUB_y ++ " =");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, "rg" ++ STD_SUB_y ++ " =", indent);
         }
     } else if (temporaryInformation == TI_SAMPLSTDDEV) {
         if (regist == REGISTER_X) {
-            _ = strcpy(prefix, "s" ++ STD_SUB_x ++ " =");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, "s" ++ STD_SUB_x ++ " =", indent);
         } else if (regist == REGISTER_Y) {
-            _ = strcpy(prefix, "s" ++ STD_SUB_y ++ " =");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, "s" ++ STD_SUB_y ++ " =", indent);
         }
     } else if (temporaryInformation == TI_POPLSTDDEV) {
         if (regist == REGISTER_X) {
-            _ = strcpy(prefix, STD_sigma ++ STD_SUB_x ++ " =");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, STD_sigma ++ STD_SUB_x ++ " =", indent);
         } else if (regist == REGISTER_Y) {
-            _ = strcpy(prefix, STD_sigma ++ STD_SUB_y ++ " =");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, STD_sigma ++ STD_SUB_y ++ " =", indent);
         }
     } else if (temporaryInformation == TI_STDERR) {
         if (regist == REGISTER_X) {
-            _ = strcpy(prefix, "s" ++ STD_SUB_m ++ STD_SUB_x ++ " =");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, "s" ++ STD_SUB_m ++ STD_SUB_x ++ " =", indent);
         } else if (regist == REGISTER_Y) {
-            _ = strcpy(prefix, "s" ++ STD_SUB_m ++ STD_SUB_y ++ " =");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, "s" ++ STD_SUB_m ++ STD_SUB_y ++ " =", indent);
         }
     } else if (temporaryInformation == TI_GEOMMEANX_GEOMMEANY) {
         if (regist == REGISTER_X) {
-            _ = strcpy(prefix, STD_x_BAR ++ STD_SUB_G ++ " =");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, STD_x_BAR ++ STD_SUB_G ++ " =", indent);
         } else if (regist == REGISTER_Y) {
-            _ = strcpy(prefix, STD_y_BAR ++ STD_SUB_G ++ " =");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, STD_y_BAR ++ STD_SUB_G ++ " =", indent);
         }
     } else if (temporaryInformation == TI_GEOMSAMPLSTDDEV) {
         if (regist == REGISTER_X) {
-            _ = strcpy(prefix, STD_epsilon ++ STD_SUB_x ++ " =");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, STD_epsilon ++ STD_SUB_x ++ " =", indent);
         } else if (regist == REGISTER_Y) {
-            _ = strcpy(prefix, STD_epsilon ++ STD_SUB_y ++ " =");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, STD_epsilon ++ STD_SUB_y ++ " =", indent);
         }
     } else if (temporaryInformation == TI_GEOMPOPLSTDDEV) {
         if (regist == REGISTER_X) {
-            _ = strcpy(prefix, STD_epsilon ++ STD_SUB_p ++ STD_SUB_x ++ " =");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, STD_epsilon ++ STD_SUB_p ++ STD_SUB_x ++ " =", indent);
         } else if (regist == REGISTER_Y) {
-            _ = strcpy(prefix, STD_epsilon ++ STD_SUB_p ++ STD_SUB_y ++ " =");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, STD_epsilon ++ STD_SUB_p ++ STD_SUB_y ++ " =", indent);
         }
     } else if (temporaryInformation == TI_GEOMSTDERR) {
         if (regist == REGISTER_X) {
-            _ = strcpy(prefix, STD_epsilon ++ STD_SUB_m ++ STD_SUB_x ++ " =");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, STD_epsilon ++ STD_SUB_m ++ STD_SUB_x ++ " =", indent);
         } else if (regist == REGISTER_Y) {
-            _ = strcpy(prefix, STD_epsilon ++ STD_SUB_m ++ STD_SUB_y ++ " =");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, STD_epsilon ++ STD_SUB_m ++ STD_SUB_y ++ " =", indent);
         }
     } else if (temporaryInformation == TI_WEIGHTEDMEANX) {
         if (regist == REGISTER_X) {
-            _ = strcpy(prefix, STD_x_BAR ++ STD_SUB_w ++ " =");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, STD_x_BAR ++ STD_SUB_w ++ " =", indent);
         }
     } else if (temporaryInformation == TI_WEIGHTEDSAMPLSTDDEV) {
         if (regist == REGISTER_X) {
-            _ = strcpy(prefix, "s" ++ STD_SUB_w ++ " =");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, "s" ++ STD_SUB_w ++ " =", indent);
         }
     } else if (temporaryInformation == TI_WEIGHTEDPOPLSTDDEV) {
         if (regist == REGISTER_X) {
-            _ = strcpy(prefix, STD_sigma ++ STD_SUB_w ++ " =");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, STD_sigma ++ STD_SUB_w ++ " =", indent);
         }
     } else if (temporaryInformation == TI_WEIGHTEDSTDERR) {
         if (regist == REGISTER_X) {
-            _ = strcpy(prefix, "s" ++ STD_SUB_m ++ STD_SUB_w ++ " =");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, "s" ++ STD_SUB_m ++ STD_SUB_w ++ " =", indent);
         }
     } else if (temporaryInformation == TI_STATISTIC_HISTO) {
         if (regist == REGISTER_X) {
-            _ = strcpy(prefix, STD_UP_ARROW ++ "BIN" ++ STD_SPACE_FIGURE ++ ":");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, STD_UP_ARROW ++ "BIN" ++ STD_SPACE_FIGURE ++ ":", indent);
         } else if (regist == REGISTER_Y) {
-            _ = strcpy(prefix, STD_DOWN_ARROW ++ "BIN" ++ STD_SPACE_FIGURE ++ ":");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, STD_DOWN_ARROW ++ "BIN" ++ STD_SPACE_FIGURE ++ ":", indent);
         } else if (regist == REGISTER_Z) {
-            _ = strcpy(prefix, "nBINS" ++ STD_SPACE_FIGURE ++ ":");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, "nBINS" ++ STD_SPACE_FIGURE ++ ":", indent);
         }
     } else if (temporaryInformation == TI_ROOTS3) {
         if (regist == REGISTER_X or regist == REGISTER_Y or regist == REGISTER_Z) {
-            _ = strcpy(prefix, "Root" ++ STD_SPACE_FIGURE ++ ":");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, "Root" ++ STD_SPACE_FIGURE ++ ":", indent);
         }
     } else if (temporaryInformation == TI_ROOTS2) {
         if (regist == REGISTER_X or regist == REGISTER_Y) {
-            _ = strcpy(prefix, "Root" ++ STD_SPACE_FIGURE ++ ":");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, "Root" ++ STD_SPACE_FIGURE ++ ":", indent);
         }
     } else if (temporaryInformation == TI_LR_A0) {
         if (regist == REGISTER_X) {
-            displayLRtemporaryInformation("y" ++ STD_SPACE_4_PER_EM ++ "=" ++ STD_SPACE_4_PER_EM, ":" ++ STD_SPACE_4_PER_EM, prefix, "a" ++ STD_SUB_0, prefixPre, prefixPost, prefixWidth_p);
+            displayLRtemporaryInformation("y" ++ STD_SPACE_4_PER_EM ++ "=" ++ STD_SPACE_4_PER_EM, ":" ++ STD_SPACE_4_PER_EM, prefix, "a" ++ STD_SUB_0, prefixPre, prefixPost, prefixWidth_p, indent);
         }
     } else if (temporaryInformation == TI_LR_A1) {
         if (regist == REGISTER_X) {
-            displayLRtemporaryInformation("y" ++ STD_SPACE_4_PER_EM ++ "=" ++ STD_SPACE_4_PER_EM, ":" ++ STD_SPACE_4_PER_EM, prefix, "a" ++ STD_SUB_1, prefixPre, prefixPost, prefixWidth_p);
+            displayLRtemporaryInformation("y" ++ STD_SPACE_4_PER_EM ++ "=" ++ STD_SPACE_4_PER_EM, ":" ++ STD_SPACE_4_PER_EM, prefix, "a" ++ STD_SUB_1, prefixPre, prefixPost, prefixWidth_p, indent);
         }
     } else if (temporaryInformation == TI_LR_A2) {
         if (regist == REGISTER_X) {
-            displayLRtemporaryInformation("y" ++ STD_SPACE_4_PER_EM ++ "=" ++ STD_SPACE_4_PER_EM, ":" ++ STD_SPACE_4_PER_EM, prefix, "a" ++ STD_SUB_2, prefixPre, prefixPost, prefixWidth_p);
+            displayLRtemporaryInformation("y" ++ STD_SPACE_4_PER_EM ++ "=" ++ STD_SPACE_4_PER_EM, ":" ++ STD_SPACE_4_PER_EM, prefix, "a" ++ STD_SUB_2, prefixPre, prefixPost, prefixWidth_p, indent);
         }
     }
     // L.R. Display
@@ -4958,38 +4999,38 @@ fn refreshReal34(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16,
         const lprefixPost: bool_t = 0;
         if (lrChosen == CF_CAUCHY_FITTING or lrChosen == CF_GAUSS_FITTING or lrChosen == CF_PARABOLIC_FITTING) {
             if (regist == REGISTER_X) {
-                displayLRtemporaryInformation("", "", prefix, "a" ++ STD_SUB_0, lprefixPre, lprefixPost, prefixWidth_p);
+                displayLRtemporaryInformation("", "", prefix, "a" ++ STD_SUB_0, lprefixPre, lprefixPost, prefixWidth_p, indent);
             } else if (regist == REGISTER_Y) {
                 _ = strcpy(prefix, "y" ++ STD_SPACE_4_PER_EM ++ "=" ++ STD_SPACE_4_PER_EM);
-                while (frontier_char_string.stringWidth(prefix, &standardFont, lprefixPre != 0, lprefixPost != 0) + 1 < LRWidth) {
+                while (frontier_char_string.stringWidth(prefix, &standardFont, lprefixPre != 0, lprefixPost != 0) + indent < LRWidth) {
                     _ = strcat(prefix, STD_SPACE_6_PER_EM);
                 }
                 _ = strcat(prefix, "a" ++ STD_SUB_1 ++ STD_SPACE_4_PER_EM ++ "=" ++ STD_SPACE_HAIR);
-                prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, lprefixPre != 0, lprefixPost != 0) + 1;
+                prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, lprefixPre != 0, lprefixPost != 0) + indent;
             } else if (regist == REGISTER_Z) {
                 _ = strcpy(prefix, frontier_debug.eatSpacesEnd(frontier_debug.getCurveFitModeName(lrChosen)));
                 if (frontier_curve_fitting.lrCountOnes(lrSelection) > 1) {
                     _ = strcat(prefix, if (lrChosen == 0) @as([*c]const u8, "") else STD_SUP_ASTERISK);
                 }
-                while (frontier_char_string.stringWidth(prefix, &standardFont, lprefixPre != 0, lprefixPost != 0) + 1 < LRWidth) {
+                while (frontier_char_string.stringWidth(prefix, &standardFont, lprefixPre != 0, lprefixPost != 0) + indent < LRWidth) {
                     _ = strcat(prefix, STD_SPACE_6_PER_EM);
                 }
                 _ = strcat(prefix, "a" ++ STD_SUB_2 ++ STD_SPACE_4_PER_EM ++ "=" ++ STD_SPACE_HAIR);
-                prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, lprefixPre != 0, lprefixPost != 0) + 1;
+                prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, lprefixPre != 0, lprefixPost != 0) + indent;
             }
         } else {
             if (regist == REGISTER_X) {
-                displayLRtemporaryInformation("y" ++ STD_SPACE_4_PER_EM ++ "=" ++ STD_SPACE_4_PER_EM, "", prefix, "a" ++ STD_SUB_0, lprefixPre, lprefixPost, prefixWidth_p);
+                displayLRtemporaryInformation("y" ++ STD_SPACE_4_PER_EM ++ "=" ++ STD_SPACE_4_PER_EM, "", prefix, "a" ++ STD_SUB_0, lprefixPre, lprefixPost, prefixWidth_p, indent);
             } else if (regist == REGISTER_Y) {
                 _ = strcpy(prefix, frontier_debug.eatSpacesEnd(frontier_debug.getCurveFitModeName(lrChosen)));
                 if (frontier_curve_fitting.lrCountOnes(lrSelection) > 1) {
                     _ = strcat(prefix, if (lrChosen == 0) @as([*c]const u8, "") else STD_SUP_ASTERISK);
                 }
-                while (frontier_char_string.stringWidth(prefix, &standardFont, lprefixPre != 0, lprefixPost != 0) + 1 < LRWidth) {
+                while (frontier_char_string.stringWidth(prefix, &standardFont, lprefixPre != 0, lprefixPost != 0) + indent < LRWidth) {
                     _ = strcat(prefix, STD_SPACE_6_PER_EM);
                 }
                 _ = strcat(prefix, "a" ++ STD_SUB_1 ++ STD_SPACE_4_PER_EM ++ "=" ++ STD_SPACE_HAIR);
-                prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, lprefixPre != 0, lprefixPost != 0) + 1;
+                prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, lprefixPre != 0, lprefixPost != 0) + indent;
             }
         }
     } else if (temporaryInformation == TI_CALCY) {
@@ -5003,7 +5044,7 @@ fn refreshReal34(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16,
                 _ = strcat(prefix, STD_SPACE_FIGURE);
             }
             _ = strcat(prefix, STD_y_CIRC ++ " =");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, false, false) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, false, false) + indent;
         }
     } else if (temporaryInformation == TI_CALCX) {
         if (regist == REGISTER_X) {
@@ -5016,7 +5057,7 @@ fn refreshReal34(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16,
                 _ = strcat(prefix, STD_SPACE_FIGURE);
             }
             _ = strcat(prefix, STD_x_CIRC ++ " =");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, false, false) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, false, false) + indent;
         }
     } else if (temporaryInformation == TI_CALCX2) {
         if (regist == REGISTER_X) {
@@ -5029,7 +5070,7 @@ fn refreshReal34(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16,
                 _ = strcat(prefix, STD_SPACE_FIGURE);
             }
             _ = strcat(prefix, STD_x_CIRC ++ STD_SUB_1 ++ " =");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, false, false) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, false, false) + indent;
         } else {
             if (regist == REGISTER_Y) {
                 prefix[0] = 0;
@@ -5041,7 +5082,7 @@ fn refreshReal34(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16,
                     _ = strcat(prefix, STD_SPACE_FIGURE);
                 }
                 _ = strcat(prefix, STD_x_CIRC ++ STD_SUB_2 ++ " =");
-                prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, false, false) + 1;
+                prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, false, false) + indent;
             }
         }
     } else if (temporaryInformation == TI_CORR) {
@@ -5055,28 +5096,24 @@ fn refreshReal34(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16,
                 _ = strcat(prefix, STD_SPACE_FIGURE);
             }
             _ = strcat(prefix, "r =");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, false, false) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, false, false) + indent;
         }
     } else if (temporaryInformation == TI_SMI) {
         if (regist == REGISTER_X) {
             _ = strcpy(prefix, "s" ++ STD_SUB_m ++ STD_SUB_i ++ " =");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, false, false) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, false, false) + indent;
         }
     } else if (temporaryInformation == TI_HARMMEANX_HARMMEANY) {
         if (regist == REGISTER_X) {
-            _ = strcpy(prefix, STD_x_BAR ++ STD_SUB_H ++ " =");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, STD_x_BAR ++ STD_SUB_H ++ " =", indent);
         } else if (regist == REGISTER_Y) {
-            _ = strcpy(prefix, STD_y_BAR ++ STD_SUB_H ++ " =");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, STD_y_BAR ++ STD_SUB_H ++ " =", indent);
         }
     } else if (temporaryInformation == TI_RMSMEANX_RMSMEANY) {
         if (regist == REGISTER_X) {
-            _ = strcpy(prefix, STD_x_BAR ++ STD_SUB_R ++ STD_SUB_M ++ STD_SUB_S ++ " =");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, STD_x_BAR ++ STD_SUB_R ++ STD_SUB_M ++ STD_SUB_S ++ " =", indent);
         } else if (regist == REGISTER_Y) {
-            _ = strcpy(prefix, STD_y_BAR ++ STD_SUB_R ++ STD_SUB_M ++ STD_SUB_S ++ " =");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, STD_y_BAR ++ STD_SUB_R ++ STD_SUB_M ++ STD_SUB_S ++ " =", indent);
         }
     } else if (temporaryInformation == TI_STATISTIC_SUMS) {
         _displaySigmaPlus(regist, prefix, prefixWidth_p, @intFromBool(noLine == 0));
@@ -5087,7 +5124,7 @@ fn refreshReal34(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16,
             } else {
                 abi.fmtCStr(prefix, "L.R. selected to {d:0>3}", .{@as(c_uint, lrSelection & 0x01FF)});
             }
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = prefixWidthAt(prefix, indent);
         }
     } else if (temporaryInformation == TI_SOLVER_VARIABLE_RESULT) {
         _displaySolverOutput(regist, prefix, prefixWidth_p);
@@ -5098,110 +5135,100 @@ fn refreshReal34(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16,
     } else if (temporaryInformation == TI_ELLIPSE_K) {
         if (regist == REGISTER_X) {
             abi.fmtCStr(prefix, "eccentricity e=k=" ++ STD_SQUARE_ROOT ++ "m" ++ STD_SPACE_FIGURE ++ ":", .{});
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = prefixWidthAt(prefix, indent);
         }
     } else if (temporaryInformation == TI_ELLIPSE_M) {
         if (regist == REGISTER_X) {
             abi.fmtCStr(prefix, "modulus m=k" ++ STD_SUP_2 ++ STD_SPACE_FIGURE ++ ":", .{});
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = prefixWidthAt(prefix, indent);
         }
     } else if (temporaryInformation == TI_ELLIPSE_Theta) {
         if (regist == REGISTER_X) {
             abi.fmtCStr(prefix, "eccentricity angle " ++ STD_theta_m ++ STD_SPACE_FIGURE ++ ":", .{});
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = prefixWidthAt(prefix, indent);
         }
     } else if (temporaryInformation == TI_ACC) {
         if (regist == REGISTER_X) {
             abi.fmtCStr(prefix, "ACC" ++ STD_SPACE_FIGURE ++ ":", .{});
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = prefixWidthAt(prefix, indent);
         }
     } else if (temporaryInformation == TI_ULIM) {
         if (regist == REGISTER_X) {
             abi.fmtCStr(prefix, STD_UP_ARROW ++ " Upper limit" ++ STD_SPACE_FIGURE ++ ":", .{});
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = prefixWidthAt(prefix, indent);
         }
     } else if (temporaryInformation == TI_LLIM) {
         if (regist == REGISTER_X) {
             abi.fmtCStr(prefix, STD_DOWN_ARROW ++ " Lower limit" ++ STD_SPACE_FIGURE ++ ":", .{});
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = prefixWidthAt(prefix, indent);
         }
     } else if (temporaryInformation == TI_INTEGRAL) {
         if (regist == REGISTER_X) {
             abi.fmtCStr(prefix, STD_INTEGRAL ++ STD_ALMOST_EQUAL, .{});
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &numericFont, true, true) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &numericFont, true, true) + indent;
         } else if (regist == REGISTER_Y) {
-            _ = strcpy(prefix, "Accuracy " ++ STD_ALMOST_EQUAL);
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, "Accuracy " ++ STD_ALMOST_EQUAL, indent);
         }
     } else if (temporaryInformation == TI_FUNCTION) {
         if (regist == REGISTER_X) {
             abi.fmtCStr(prefix, "f =", .{});
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = prefixWidthAt(prefix, indent);
         }
     } else if (temporaryInformation == TI_1ST_DERIVATIVE) {
         if (regist == REGISTER_X) {
             abi.fmtCStr(prefix, "{s}f'" ++ STD_ALMOST_EQUAL, .{@as([*:0]const u8, errorMessage)});
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = prefixWidthAt(prefix, indent);
         }
     } else if (temporaryInformation == TI_2ND_DERIVATIVE) {
         if (regist == REGISTER_X) {
             abi.fmtCStr(prefix, "{s}f\"" ++ STD_ALMOST_EQUAL, .{@as([*:0]const u8, errorMessage)});
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = prefixWidthAt(prefix, indent);
         }
     } else if (temporaryInformation == TI_VIEW_REGISTER and origRegist == REGISTER_T) {
-        viewRegName(prefix, prefixWidth_p);
+        viewRegName(prefix, prefixWidth_p, indent);
     } else if (temporaryInformation == TI_VIEW_REGISTER) {
         userTI(@intCast(currentViewRegister), regist, prefix, prefixWidth_p);
     } else if (temporaryInformation == TI_CONV_MENU_STR and regist == REGISTER_X) {
         _ = strcpy(prefix, " ");
         _ = strcat(prefix, errorMessage);
         _ = strcat(prefix, ":");
-        prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+        prefixWidth_p.* = prefixWidthAt(prefix, indent);
     } else if (temporaryInformation == TI_ABC or temporaryInformation == TI_ABBCCA or temporaryInformation == TI_012) {
         elecTI(regist, prefix, prefixWidth_p);
     } else if (temporaryInformation == TI_FROM_DMS) {
         if (regist == REGISTER_X) {
-            _ = strcpy(prefix, "decimal" ++ STD_DEGREE ++ ":");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, "decimal" ++ STD_DEGREE ++ ":", indent);
         }
     } else if (temporaryInformation == TI_FROM_HMS) {
         if (regist == REGISTER_X) {
-            _ = strcpy(prefix, "decimal h:");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, "decimal h:", indent);
         }
     } else if (temporaryInformation == TI_FROM_MS_TIME) {
         if (regist == REGISTER_X) {
-            _ = strcpy(prefix, "hh.mmss:");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, "hh.mmss:", indent);
         }
     } else if (temporaryInformation == TI_FROM_MS_DEG) {
         if (regist == REGISTER_X) {
-            _ = strcpy(prefix, "dd.mmss:");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, "dd.mmss:", indent);
         }
     } else if (option_tvm_amort and temporaryInformation == TI_AMORT_BAL and regist == REGISTER_X) {
-        _ = strcpy(prefix, "Balance remaining =");
-        prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+        prefixWidth_p.* = setPrefix(prefix, "Balance remaining =", indent);
     } else if (option_tvm_amort and temporaryInformation == TI_AMORT_PRN and regist == REGISTER_X) {
         abi.fmtCStr(prefix, "{s}", .{STD_SIGMA});
         _ = strcat(prefix, " of principal to P2 =");
-        prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+        prefixWidth_p.* = prefixWidthAt(prefix, indent);
     } else if (option_tvm_amort and temporaryInformation == TI_AMORT_INT and regist == REGISTER_X) {
         abi.fmtCStr(prefix, "{s}", .{STD_SIGMA});
         _ = strcat(prefix, " of interest to P2 =");
-        prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+        prefixWidth_p.* = prefixWidthAt(prefix, indent);
     } else if (option_tvm_amort and temporaryInformation == TI_AMORT_P1 and regist == REGISTER_X) {
-        _ = strcpy(prefix, "From period P1:");
-        prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+        prefixWidth_p.* = setPrefix(prefix, "From period P1:", indent);
     } else if (option_tvm_amort and temporaryInformation == TI_AMORT_P2 and regist == REGISTER_X) {
-        _ = strcpy(prefix, "To period P2:");
-        prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+        prefixWidth_p.* = setPrefix(prefix, "To period P2:", indent);
     } else if (temporaryInformation == TI_TVM_EFF and regist == REGISTER_X) {
-        _ = strcpy(prefix, "EFF%/a = EFF%YR = EAR =");
-        prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+        prefixWidth_p.* = setPrefix(prefix, "EFF%/a = EFF%YR = EAR =", indent);
     } else if (temporaryInformation == TI_TVM_IA and regist == REGISTER_X) {
-        _ = strcpy(prefix, "I%/a = I%YR = NAR =");
-        prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+        prefixWidth_p.* = setPrefix(prefix, "I%/a = I%YR = NAR =", indent);
     } else if (temporaryInformation == TI_FROM_DATEX) {
         if (regist == REGISTER_X) {
             if (getSystemFlag(FLAG_DMY) != 0) {
@@ -5211,7 +5238,7 @@ fn refreshReal34(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16,
             } else {
                 _ = strcpy(prefix, "yyyy.mmdd:");
             }
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = prefixWidthAt(prefix, indent);
         }
     } else if (temporaryInformation == TI_LAST_CONST_CATNAME or temporaryInformation == TI_SCATTER_SMI) {
         if (regist == REGISTER_X) {
@@ -5229,7 +5256,7 @@ fn refreshReal34(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16,
                 if (prefix[0] != 0) {
                     _ = strcat(prefix, " = ");
                 }
-                prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+                prefixWidth_p.* = prefixWidthAt(prefix, indent);
             }
         }
     } else if ((regist == REGISTER_X and (temporaryInformation == TI_MIJ or temporaryInformation == TI_MIJEQ)) or ((regist == REGISTER_X or regist == REGISTER_Y) and temporaryInformation == TI_IJ) or (regist == REGISTER_X and (temporaryInformation == TI_I or temporaryInformation == TI_J))) {
@@ -5245,11 +5272,11 @@ fn refreshReal34(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16,
 
     if (prefixWidth_p.* > 0 and temporaryInformation != TI_VIEW_REGISTER) {
         if (regist == REGISTER_X) {
-            _ = showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + TEMPORARY_INFO_OFFSET, vmNormal, 1, 1);
+            _ = showString(prefix, &standardFont, @intCast(indent), Y_POSITION_OF_REGISTER_X_LINE + TEMPORARY_INFO_OFFSET, vmNormal, 1, 1);
         } else if (regist == REGISTER_Y) {
-            _ = showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_Y_LINE + TEMPORARY_INFO_OFFSET, vmNormal, 1, 1);
+            _ = showString(prefix, &standardFont, @intCast(indent), Y_POSITION_OF_REGISTER_Y_LINE + TEMPORARY_INFO_OFFSET, vmNormal, 1, 1);
         } else if (regist == REGISTER_Z) {
-            _ = showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_Z_LINE + TEMPORARY_INFO_OFFSET, vmNormal, 1, 1);
+            _ = showString(prefix, &standardFont, @intCast(indent), Y_POSITION_OF_REGISTER_Z_LINE + TEMPORARY_INFO_OFFSET, vmNormal, 1, 1);
         }
     }
 
@@ -5259,15 +5286,15 @@ fn refreshReal34(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16,
     lineWidth_p.* = @intCast(w_p.*);
     if (prefixWidth_p.* > 0) {
         if (temporaryInformation == TI_INTEGRAL and regist == REGISTER_X) {
-            _ = showString(prefix, &numericFont, 1, @intCast(@as(i32, baseY) - checkHPoffset()), vmNormal, prefixPre, prefixPost);
+            _ = showString(prefix, &numericFont, @intCast(indent), @intCast(@as(i32, baseY) - checkHPoffset()), vmNormal, prefixPre, prefixPost);
         } else {
-            _ = showString(prefix, &standardFont, 1, @intCast(@as(i32, baseY) - checkHPoffset() + TEMPORARY_INFO_OFFSET), vmNormal, prefixPre, prefixPost);
+            _ = showString(prefix, &standardFont, @intCast(indent), @intCast(@as(i32, baseY) - checkHPoffset() + TEMPORARY_INFO_OFFSET), vmNormal, prefixPre, prefixPost);
         }
     }
     _ = showString(tmpString, &numericFont, @intCast(if (temporaryInformation == TI_VIEW_REGISTER and origRegist == REGISTER_T) @as(i32, prefixWidth_p.*) else @as(i32, SCREEN_WIDTH) - w_p.*), @intCast(@as(i32, baseY) - checkHPoffset()), vmNormal, 0, 1);
 }
 
-fn refreshComplex34(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16, prefix: [*c]u8, prefixWidth_p: *i16, lineWidth_p: *i16, w_p: *i32, prefixPre: bool_t, prefixPost: bool_t) void {
+fn refreshComplex34(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16, prefix: [*c]u8, prefixWidth_p: *i16, lineWidth_p: *i16, w_p: *i32, prefixPre: bool_t, prefixPost: bool_t, indent: i16) void {
     if (temporaryInformation == TI_COPY_FROM_SHOW and regist == REGISTER_X) {
         _fnShowRecallTI(prefix, prefixWidth_p);
     } else if (temporaryInformation == TI_SOLVER_VARIABLE_RESULT) {
@@ -5277,20 +5304,18 @@ fn refreshComplex34(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i
     } else if (temporaryInformation == TI_DERIV_STEP) {
         _displayDerivStep(regist, prefix, prefixWidth_p);
     } else if (temporaryInformation == TI_VIEW_REGISTER and origRegist == REGISTER_T) {
-        viewRegName(prefix, prefixWidth_p);
+        viewRegName(prefix, prefixWidth_p, indent);
     } else if (temporaryInformation == TI_VIEW_REGISTER) {
         userTI(@intCast(currentViewRegister), regist, prefix, prefixWidth_p);
     } else if (temporaryInformation == TI_ABC or temporaryInformation == TI_ABBCCA or temporaryInformation == TI_012) {
         elecTI(regist, prefix, prefixWidth_p);
     } else if (temporaryInformation == TI_ROOTS3) {
         if (regist == REGISTER_X or regist == REGISTER_Y or regist == REGISTER_Z) {
-            _ = strcpy(prefix, "Root" ++ STD_SPACE_FIGURE ++ ":");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, "Root" ++ STD_SPACE_FIGURE ++ ":", indent);
         }
     } else if (temporaryInformation == TI_ROOTS2) {
         if (regist == REGISTER_X or regist == REGISTER_Y) {
-            _ = strcpy(prefix, "Root" ++ STD_SPACE_FIGURE ++ ":");
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = setPrefix(prefix, "Root" ++ STD_SPACE_FIGURE ++ ":", indent);
         }
     } else if ((regist == REGISTER_X and (temporaryInformation == TI_MIJ or temporaryInformation == TI_MIJEQ)) or ((regist == REGISTER_X or regist == REGISTER_Y) and temporaryInformation == TI_IJ) or (regist == REGISTER_X and (temporaryInformation == TI_I or temporaryInformation == TI_J))) {
         _displayIJ(regist, prefix, prefixWidth_p);
@@ -5300,11 +5325,11 @@ fn refreshComplex34(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i
 
     if (prefixWidth_p.* > 0) {
         if (regist == REGISTER_X) {
-            _ = showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + TEMPORARY_INFO_OFFSET, vmNormal, 1, 1);
+            _ = showString(prefix, &standardFont, @intCast(indent), Y_POSITION_OF_REGISTER_X_LINE + TEMPORARY_INFO_OFFSET, vmNormal, 1, 1);
         } else if (regist == REGISTER_Y) {
-            _ = showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_Y_LINE + TEMPORARY_INFO_OFFSET, vmNormal, 1, 1);
+            _ = showString(prefix, &standardFont, @intCast(indent), Y_POSITION_OF_REGISTER_Y_LINE + TEMPORARY_INFO_OFFSET, vmNormal, 1, 1);
         } else if (regist == REGISTER_Z) {
-            _ = showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_Z_LINE + TEMPORARY_INFO_OFFSET, vmNormal, 1, 1);
+            _ = showString(prefix, &standardFont, @intCast(indent), Y_POSITION_OF_REGISTER_Z_LINE + TEMPORARY_INFO_OFFSET, vmNormal, 1, 1);
         }
     }
     frontier_display.complex34ToDisplayString(REGISTER_COMPLEX34_DATA(regist), tmpString, &numericFont, @intCast(@as(i32, SCREEN_WIDTH) - prefixWidth_p.*), NUMBER_OF_DISPLAY_DIGITS, LIMITEXP, FRONTSPACE, FULLIRFRAC, @intCast(getComplexRegisterAngularMode(regist)), @intFromBool(getComplexRegisterPolarMode(regist) == amPolar));
@@ -5312,16 +5337,16 @@ fn refreshComplex34(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i
     w_p.* = frontier_char_string.stringWidth(tmpString, &numericFont, false, true);
     lineWidth_p.* = @intCast(w_p.*);
     if (prefixWidth_p.* > 0) {
-        _ = showString(prefix, &standardFont, 1, @intCast(@as(i32, baseY) + TEMPORARY_INFO_OFFSET), vmNormal, prefixPre, prefixPost);
+        _ = showString(prefix, &standardFont, @intCast(indent), @intCast(@as(i32, baseY) + TEMPORARY_INFO_OFFSET), vmNormal, prefixPre, prefixPost);
     }
     _ = showString(tmpString, &numericFont, @intCast(if (temporaryInformation == TI_VIEW_REGISTER and origRegist == REGISTER_T) @as(i32, prefixWidth_p.*) else @as(i32, SCREEN_WIDTH) - w_p.*), @intCast(@as(i32, baseY) - checkHPoffset()), vmNormal, 0, 1);
 }
 
-fn refreshString(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16, prefix: [*c]u8, prefixWidth_p: *i16, lineWidth_p: *i16, w_p: *i32, prefixPre: bool_t, prefixPost: bool_t) void {
+fn refreshString(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16, prefix: [*c]u8, prefixWidth_p: *i16, lineWidth_p: *i16, w_p: *i32, prefixPre: bool_t, prefixPost: bool_t, indent: i16) void {
     if (temporaryInformation == TI_COPY_FROM_SHOW and regist == REGISTER_X) {
         _fnShowRecallTI(prefix, prefixWidth_p);
     } else if (temporaryInformation == TI_VIEW_REGISTER and origRegist == REGISTER_T) {
-        viewRegName(prefix, prefixWidth_p);
+        viewRegName(prefix, prefixWidth_p, indent);
     } else if (temporaryInformation == TI_VIEW_REGISTER) {
         userTI(@intCast(currentViewRegister), regist, prefix, prefixWidth_p);
     } else if (temporaryInformation == TI_STORCL and regist == REGISTER_X) {
@@ -5329,16 +5354,16 @@ fn refreshString(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16,
     } else if (temporaryInformation == TI_LASTSTATEFILE) {
         clearRegisterLine(REGISTER_Y, true, false);
         _ = strcpy(prefix, "Last full state file loaded:");
-        _ = showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_Y_LINE, vmNormal, prefixPre, prefixPost);
+        _ = showString(prefix, &standardFont, @intCast(indent), Y_POSITION_OF_REGISTER_Y_LINE, vmNormal, prefixPre, prefixPost);
         prefix[0] = 0;
         prefixWidth_p.* = 0;
-    } else if (isShiftOffset() and regist == REGISTER_T) {
-        _ = strcpy(prefix, "  ");
-        prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+    } else if (regist == REGISTER_T) {
+        prefix[0] = 0;
+        prefixWidth_p.* = indent;
     }
 
     if (prefixWidth_p.* > 0) {
-        _ = showString(prefix, &standardFont, 1, @intCast(@as(i32, baseY) + TEMPORARY_INFO_OFFSET), vmNormal, prefixPre, prefixPost);
+        _ = showString(prefix, &standardFont, @intCast(indent), @intCast(@as(i32, baseY) + TEMPORARY_INFO_OFFSET), vmNormal, prefixPre, prefixPost);
     }
 
     // STACK_X_STR_LRG_FONT (live); STACK_X_STR_MED_FONT undef; STACK_STR_MED_FONT (live).
@@ -5410,7 +5435,7 @@ fn refreshString(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16,
     _ = w_p;
 }
 
-fn refreshShortInteger(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16, prefix: [*c]u8, prefixWidth_p: *i16, w_p: *i32, prefixPre: bool_t, prefixPost: bool_t) void {
+fn refreshShortInteger(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16, prefix: [*c]u8, prefixWidth_p: *i16, w_p: *i32, prefixPre: bool_t, prefixPost: bool_t, indent: i16) void {
     _ = w_p;
     if (!(temporaryInformation == TI_NO_INFO and currentInputVariable != INVALID_VARIABLE)) {
         prefix[0] = 0;
@@ -5423,13 +5448,13 @@ fn refreshShortInteger(regist: calcRegister_t, origRegist: calcRegister_t, baseY
         } else if (temporaryInformation == TI_DATA_NEG_OVRFL) {
             abi.fmtCStr(prefix, "Ovrfl<0:", .{});
         }
-        prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+        prefixWidth_p.* = prefixWidthAt(prefix, indent);
         if (prefixWidth_p.* + frontier_char_string.stringWidth(tmpString, fontForShortInteger.?, true, true) + 1 > SCREEN_WIDTH) {
             abi.fmtCStr(prefix, "OF", .{});
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = prefixWidthAt(prefix, indent);
         }
     } else if (temporaryInformation == TI_VIEW_REGISTER and origRegist == REGISTER_T) {
-        viewRegName(prefix, prefixWidth_p);
+        viewRegName(prefix, prefixWidth_p, indent);
     } else if (temporaryInformation == TI_VIEW_REGISTER) {
         userTI(@intCast(currentViewRegister), regist, prefix, prefixWidth_p);
     } else if (temporaryInformation == TI_COPY_FROM_SHOW and regist == REGISTER_X) {
@@ -5457,11 +5482,11 @@ fn refreshShortInteger(regist: calcRegister_t, origRegist: calcRegister_t, baseY
         }
     }
     if (prefixWidth_p.* > 0) {
-        _ = showString(prefix, &standardFont, 1, @intCast(@as(i32, baseY) + TEMPORARY_INFO_OFFSET), vmNormal, prefixPre, prefixPost);
+        _ = showString(prefix, &standardFont, @intCast(indent), @intCast(@as(i32, baseY) + TEMPORARY_INFO_OFFSET), vmNormal, prefixPre, prefixPost);
     }
 }
 
-fn refreshLongInteger(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16, prefix: [*c]u8, prefixWidth_p: *i16, lineWidth_p: *i16, w_p: *i32, prefixPre: bool_t, prefixPost: bool_t) void {
+fn refreshLongInteger(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16, prefix: [*c]u8, prefixWidth_p: *i16, lineWidth_p: *i16, w_p: *i32, prefixPre: bool_t, prefixPost: bool_t, indent: i16) void {
     if (!(temporaryInformation == TI_NO_INFO and currentInputVariable != INVALID_VARIABLE)) {
         prefix[0] = 0;
     }
@@ -5487,7 +5512,7 @@ fn refreshLongInteger(regist: calcRegister_t, origRegist: calcRegister_t, baseY:
     } else if (temporaryInformation == TI_STATISTIC_SUMS) {
         _displaySigmaPlus(regist, prefix, prefixWidth_p, @intFromBool(noLine == 0));
     } else if (temporaryInformation == TI_VIEW_REGISTER and origRegist == REGISTER_T) {
-        viewRegName(prefix, prefixWidth_p);
+        viewRegName(prefix, prefixWidth_p, indent);
     } else if (temporaryInformation == TI_VIEW_REGISTER) {
         userTI(@intCast(currentViewRegister), regist, prefix, prefixWidth_p);
     } else if (temporaryInformation == TI_DAY_OF_WEEK) {
@@ -5502,33 +5527,16 @@ fn refreshLongInteger(regist: calcRegister_t, origRegist: calcRegister_t, baseY:
             }
             _ = strcpy(prefix, "[ISO day] ");
             _ = strcat(prefix, &nameOfWday_en[@intCast(day)].itemName);
-            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+            prefixWidth_p.* = prefixWidthAt(prefix, indent);
         }
     } else if (option_tvm_amort and temporaryInformation == TI_AMORT_P1 and regist == REGISTER_X) {
-        _ = strcpy(prefix, "From period P1:");
-        prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+        prefixWidth_p.* = setPrefix(prefix, "From period P1:", indent);
     } else if (option_tvm_amort and temporaryInformation == TI_AMORT_P2 and regist == REGISTER_X) {
-        _ = strcpy(prefix, "To period P2:");
-        prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+        prefixWidth_p.* = setPrefix(prefix, "To period P2:", indent);
     }
 
-    // shift longinteger prefix on by two spaces if interfering with the shift indicator
-    if (regist == REGISTER_T and isShiftOffset()) {
-        const len: i32 = @intCast(strlen(prefix));
-        if (len + 2 < 200) {
-            if (prefix[0] == 0) {
-                _ = strcpy(prefix, "  ");
-                prefixWidth_p.* += 20;
-            } else {
-                var i: i32 = len;
-                while (i >= 0) : (i -= 1) {
-                    prefix[@intCast(i + 2)] = prefix[@intCast(i)];
-                }
-                prefix[0] = ' ';
-                prefix[1] = ' ';
-                prefixWidth_p.* += 20;
-            }
-        }
+    if (regist == REGISTER_T and prefixWidth_p.* < indent) {
+        prefixWidth_p.* = indent; // an empty prefix still leaves the shift indicator its room
     }
 
     if (getSystemFlag(FLAG_DREAL) != 0) {
@@ -5567,7 +5575,7 @@ fn refreshLongInteger(regist: calcRegister_t, origRegist: calcRegister_t, baseY:
     w_p.* = frontier_char_string.stringWidth(tmpString, &numericFont, false, true);
     lineWidth_p.* = @intCast(w_p.*);
     if (prefixWidth_p.* > 0) {
-        _ = showString(prefix, &standardFont, 1, @intCast(@as(i32, baseY) + TEMPORARY_INFO_OFFSET), vmNormal, prefixPre, prefixPost);
+        _ = showString(prefix, &standardFont, @intCast(indent), @intCast(@as(i32, baseY) + TEMPORARY_INFO_OFFSET), vmNormal, prefixPre, prefixPost);
     }
     if (w_p.* <= SCREEN_WIDTH) {
         _ = showString(tmpString, &numericFont, @intCast(if (temporaryInformation == TI_VIEW_REGISTER and origRegist == REGISTER_T) @as(i32, prefixWidth_p.*) else @as(i32, SCREEN_WIDTH) - w_p.*), @intCast(@as(i32, baseY) - checkHPoffset()), vmNormal, 0, 1);
@@ -5585,7 +5593,7 @@ fn refreshLongInteger(regist: calcRegister_t, origRegist: calcRegister_t, baseY:
     }
 }
 
-fn refreshRealMatrix(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16, prefix: [*c]u8, prefixWidth_p: *i16, lineWidth_p: *i16, w_p: *i32, prefixPre: bool_t, prefixPost: bool_t) void {
+fn refreshRealMatrix(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16, prefix: [*c]u8, prefixWidth_p: *i16, lineWidth_p: *i16, w_p: *i32, prefixPre: bool_t, prefixPost: bool_t, indent: i16) void {
     const displayVector: bool = (origRegist == REGISTER_X and calcMode != CM_MIM) and temporaryInformation != TI_VIEW_REGISTER and lastErrorCode == 0 and temporaryInformation != TI_MIJ and temporaryInformation != TI_IJ and temporaryInformation != TI_I and temporaryInformation != TI_J and temporaryInformation != TI_STORCL and temporaryInformation != TI_TRUE and temporaryInformation != TI_FALSE;
     if ((origRegist == REGISTER_X and calcMode != CM_MIM) or (temporaryInformation == TI_VIEW_REGISTER and origRegist == REGISTER_T) or displayVector) {
         var matrix: real34Matrix_t = undefined;
@@ -5593,7 +5601,7 @@ fn refreshRealMatrix(regist: calcRegister_t, origRegist: calcRegister_t, baseY: 
         prefix[0] = 0;
         linkToRealMatrixRegister(regist, &matrix);
         if (temporaryInformation == TI_VIEW_REGISTER and origRegist == REGISTER_T) {
-            viewRegName(prefix, prefixWidth_p);
+            viewRegName(prefix, prefixWidth_p, indent);
         } else if ((regist == REGISTER_X and (temporaryInformation == TI_MIJ or temporaryInformation == TI_MIJEQ)) or ((regist == REGISTER_X or regist == REGISTER_Y) and temporaryInformation == TI_IJ) or (regist == REGISTER_X and (temporaryInformation == TI_I or temporaryInformation == TI_J))) {
             _displayIJ(regist, prefix, prefixWidth_p);
         } else if (temporaryInformation == TI_STORCL and regist == REGISTER_X) {
@@ -5616,14 +5624,14 @@ fn refreshRealMatrix(regist: calcRegister_t, origRegist: calcRegister_t, baseY: 
             refreshRegisterLine(TRUE_FALSE_REGISTER_LINE);
         }
         if (prefixWidth_p.* > 0) {
-            _ = showString(prefix, &standardFont, 1, @intCast(@as(i32, baseY) + TEMPORARY_INFO_OFFSET), vmNormal, prefixPre, prefixPost);
+            _ = showString(prefix, &standardFont, @intCast(indent), @intCast(@as(i32, baseY) + TEMPORARY_INFO_OFFSET), vmNormal, prefixPre, prefixPost);
         }
     } else {
         if (temporaryInformation == TI_VIEW_REGISTER) {
             userTI(@intCast(currentViewRegister), regist, prefix, prefixWidth_p);
         }
         if (prefixWidth_p.* > 0) {
-            _ = showString(prefix, &standardFont, 1, @intCast(@as(i32, baseY) + TEMPORARY_INFO_OFFSET), vmNormal, prefixPre, prefixPost);
+            _ = showString(prefix, &standardFont, @intCast(indent), @intCast(@as(i32, baseY) + TEMPORARY_INFO_OFFSET), vmNormal, prefixPre, prefixPost);
         }
 
         if ((regist == REGISTER_Z or regist == REGISTER_T) and !runningOnSimOrUSB()) {
@@ -5647,14 +5655,14 @@ fn refreshRealMatrix(regist: calcRegister_t, origRegist: calcRegister_t, baseY: 
     }
 }
 
-fn refreshComplexMatrix(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16, prefix: [*c]u8, prefixWidth_p: *i16, lineWidth_p: *i16, w_p: *i32, prefixPre: bool_t, prefixPost: bool_t) void {
+fn refreshComplexMatrix(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16, prefix: [*c]u8, prefixWidth_p: *i16, lineWidth_p: *i16, w_p: *i32, prefixPre: bool_t, prefixPost: bool_t, indent: i16) void {
     if ((origRegist == REGISTER_X and calcMode != CM_MIM) or (temporaryInformation == TI_VIEW_REGISTER and origRegist == REGISTER_T)) {
         var matrix: complex34Matrix_t = undefined;
         prefixWidth_p.* = 0;
         prefix[0] = 0;
         linkToComplexMatrixRegister(regist, &matrix);
         if (temporaryInformation == TI_VIEW_REGISTER and origRegist == REGISTER_T) {
-            viewRegName(prefix, prefixWidth_p);
+            viewRegName(prefix, prefixWidth_p, indent);
         } else if ((regist == REGISTER_X and (temporaryInformation == TI_MIJ or temporaryInformation == TI_MIJEQ)) or ((regist == REGISTER_X or regist == REGISTER_Y) and temporaryInformation == TI_IJ) or (regist == REGISTER_X and (temporaryInformation == TI_I or temporaryInformation == TI_J))) {
             _displayIJ(regist, prefix, prefixWidth_p);
         } else if (temporaryInformation == TI_STORCL and regist == REGISTER_X) {
@@ -5673,14 +5681,14 @@ fn refreshComplexMatrix(regist: calcRegister_t, origRegist: calcRegister_t, base
             refreshRegisterLine(TRUE_FALSE_REGISTER_LINE);
         }
         if (prefixWidth_p.* > 0) {
-            _ = showString(prefix, &standardFont, 1, @intCast(@as(i32, baseY) + TEMPORARY_INFO_OFFSET), vmNormal, prefixPre, prefixPost);
+            _ = showString(prefix, &standardFont, @intCast(indent), @intCast(@as(i32, baseY) + TEMPORARY_INFO_OFFSET), vmNormal, prefixPre, prefixPost);
         }
     } else {
         if (temporaryInformation == TI_VIEW_REGISTER) {
             userTI(@intCast(currentViewRegister), regist, prefix, prefixWidth_p);
         }
         if (prefixWidth_p.* > 0) {
-            _ = showString(prefix, &standardFont, 1, @intCast(@as(i32, baseY) + TEMPORARY_INFO_OFFSET), vmNormal, prefixPre, prefixPost);
+            _ = showString(prefix, &standardFont, @intCast(indent), @intCast(@as(i32, baseY) + TEMPORARY_INFO_OFFSET), vmNormal, prefixPre, prefixPost);
         }
         frontier_display.complex34MatrixToDisplayString(regist, tmpString);
         w_p.* = frontier_char_string.stringWidth(tmpString, &numericFont, false, true);
@@ -5787,7 +5795,7 @@ pub export fn clearTamBuffer() callconv(.c) void {
 
 // useSmallShifts / displayF / displayG runtime macros.
 inline fn useSmallShifts() bool {
-    return isShiftOffset() and calcMode == CM_NORMAL and
+    return shiftOnTline != 0 and !SHOWMODE() and calcMode == CM_NORMAL and
         (((!BASEMODEACTIVE() or displayStackSHOIDISP == 0) and getRegisterDataType(REGISTER_T) == dtShortInteger and getRegisterShortIntegerBase(REGISTER_T) < 4) or
             ((dispBase > 0) and (getRegisterDataType(REGISTER_X) == dtShortInteger or getRegisterDataType(REGISTER_X) == dtLongInteger)));
 }
@@ -5797,8 +5805,6 @@ inline fn displayF() [*c]const u8 {
 inline fn displayG() [*c]const u8 {
     return if (useSmallShifts()) STD_g else STD_MODE_G;
 }
-
-var shiftGlyphOnScreen: bool = false;
 
 pub export fn clearShiftState() callconv(.c) void {
     var fcol: u32 = undefined;
@@ -5812,17 +5818,23 @@ pub export fn clearShiftState() callconv(.c) void {
     getGlyphBounds(displayF(), null, &standardFont, &fcol, &frow);
     getGlyphBounds(displayG(), null, &standardFont, &gcol, &grow);
     lcd_fill_rect(@intCast(X_SHIFT()), @intCast(Y_SHIFT()), if (fcol > gcol) fcol else gcol, if (frow > grow) frow else grow, LCD_SET_VALUE); // clear the shift glyph area
-    if (calcMode == CM_MIM and matrixIndex != INVALID_VARIABLE and Y_SHIFT() != 0) { // in the matrix editor the top left border goes with it
+    if (calcMode == CM_MIM and matrixIndex != INVALID_VARIABLE and shiftOnTline != 0) { // in the matrix editor the top left border goes with it
         matrix_editor_refresh.showMatrixEditor();
     }
 }
 
 pub export fn showShiftStateF() callconv(.c) void {
+    if (functionNameOnScreen) { // a function name is displayed: it is what the glyph was taken off for
+        return;
+    }
     shiftGlyphOnScreen = true;
     _ = showGlyph(displayF(), &standardFont, @intCast(X_SHIFT()), @intCast(Y_SHIFT()), vmNormal, 1, 1, 0);
 }
 
 pub export fn showShiftStateG() callconv(.c) void {
+    if (functionNameOnScreen) { // a function name is displayed: it is what the glyph was taken off for
+        return;
+    }
     shiftGlyphOnScreen = true;
     _ = showGlyph(displayG(), &standardFont, @intCast(X_SHIFT()), @intCast(Y_SHIFT()), vmNormal, 1, 1, 0);
 }
@@ -5918,6 +5930,13 @@ inline fn clearScreenStatusBar(cnt: u16) void {
     frontier_status_bar.forceSBupdate();
 }
 
+// screen.h's clearScreenExcludingStatusBar(cnt): everything below the status bar, the
+// count being the debug trace's only.
+inline fn clearScreenExcludingStatusBar(cnt: u16) void {
+    _ = cnt;
+    lcd_fill_rect(0, 20, SCREEN_WIDTH, 220, LCD_SET_VALUE);
+}
+
 pub export fn clearScreenOld(clearStatusBar: bool_t, clearRegisterLines_arg: bool_t, clearSoftkeys: bool_t) callconv(.c) void {
     const origScreenUpdatingMode: u8 = screenUpdatingMode;
     screenUpdatingMode = SCRUPD_AUTO;
@@ -5967,6 +5986,10 @@ fn _refreshPemScreen() void {
             skippedStackLines = 1;
             return;
         }
+    }
+
+    if (functionNameOnScreen) { // nothing under the name changes while it is up, and the listing redraw would mark those rows and push the name off the screen
+        return;
     }
 
     if (comptime dmcp_build) {
@@ -6025,6 +6048,11 @@ fn _refreshNormalScreen() void {
         if (calcMode == CM_NIM) {
             refreshNIMdone = 0;
         }
+    }
+
+    if (xxfnOnScreen and !xxfnActive) {
+        xxfnOnScreen = false;
+        refreshRegisterLine(REGISTER_T); // the XFN rows and their line are drawn over the T line, and leaving the menu redraws nothing there
     }
 
     if (BASEMODEACTIVE()) {
@@ -6162,6 +6190,8 @@ fn _refreshNormalScreen() void {
 
 pub export fn refreshScreen(source: u16) callconv(.c) void {
     _ = source;
+    updateShiftOnTline(); // LOADST, a reset and UNDO put the flags back without going through setSystemFlag
+    xxfnActive = XXFNMODEACTIVE();
     screenHoldsDrawnPixels = false; // this repaint is what destroys anything CLLCD, PIXEL, POINT or AGRAPH drew
     if (calcMode != CM_AIM and calcMode != CM_NIM and calcMode != CM_PLOT_STAT and calcMode != CM_GRAPH and calcMode != CM_LISTXY and last_CM != 240) {
         last_CM = 254;
@@ -6307,7 +6337,8 @@ pub export fn refreshLcd(unusedData: ?*anyopaque) callconv(.c) c_int {
         if (showFunctionNameCounter > 0) {
             showFunctionNameCounter -= SCREEN_REFRESH_PERIOD;
             if (showFunctionNameCounter <= 0) {
-                hideFunctionName();
+                // No hide first: the new name covers the same band, and taking the old one
+                // down would mark that band for a push in between.
                 tmpString[0] = 0;
                 showFunctionName(ITM_NOP, 0, "SF:R");
             }
@@ -6339,7 +6370,8 @@ pub export fn refreshLcd(unusedData: ?*anyopaque) callconv(.c) c_int {
         if (showFunctionNameCounter > 0) {
             showFunctionNameCounter -= FAST_SCREEN_REFRESH_PERIOD;
             if (showFunctionNameCounter <= 0) {
-                hideFunctionName();
+                // No hide first: the new name covers the same band, and taking the old one
+                // down would mark that band for a push in between.
                 tmpString[0] = 0;
                 showFunctionName(ITM_NOP, 0, "SF:R");
             }

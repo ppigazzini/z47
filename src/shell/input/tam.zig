@@ -104,6 +104,7 @@ const CM_PEM = 3;
 const CM_TIMER = 14;
 const ERROR_FUNCTION_NOT_FOUND = 7;
 const ERROR_LABEL_NOT_FOUND = 6;
+const ERROR_RESERVED_VARIABLE_NAME = 61;
 const ERROR_UNDEF_MENU = 59;
 const ERROR_UNDEF_SOURCE_VAR = 36;
 const ERR_REGISTER_LINE = 102;
@@ -162,6 +163,7 @@ const ITM_42APPEND = 2776; // items.h:2881
 const ITM_42KEYG = 2795; // items.h:2900
 const ITM_42KEYX = 2796; // items.h:2901
 const ITM_LBL = 1;
+const ITM_SET_42ALPHA = 1332;
 const ITM_LBLQ = 1503;
 const ITM_MULT = 98;
 const ITM_MVAR = 1524;
@@ -744,6 +746,7 @@ fn _tamProcessInput(item: u16) void {
     const valueParameter: bool_t = (tam.function == ITM_GTOP or frontier_items.isFunctionOldParam16(@bitCast(tam.function)) != 0 or tam.function == ITM_SKIP or tam.function == ITM_BACK);
     var forcedVar: [*c]u8 = null;
 
+    lastErrorCode = 0;
     // Shuffle is handled completely differently to everything else
     if (tam.mode == TM_SHUFFLE) {
         _tamHandleShuffle(item);
@@ -1161,7 +1164,7 @@ fn _tamProcessInput(item: u16) void {
             return;
         }
     } else if (item == ITM_PERIOD) {
-        if (tam.function == ITM_LBL) {
+        if (tam.function == ITM_LBL or tam.function == ITM_SET_42ALPHA) {
             return;
         } else if (tam.function == ITM_GTOP) {
             aimBuffer[0] = 0;
@@ -1432,6 +1435,12 @@ fn _tamProcessInput(item: u16) void {
             }
         }
         if (calcMode == CM_PEM and tam.function != ITM_DELP and lastErrorCode == 0) {
+            if (tam.function == ITM_SET_42ALPHA and FIRST_RESERVED_VARIABLE <= value and value <= LAST_RESERVED_VARIABLE) {
+                frontier_error.displayCalcErrorMessage(ERROR_RESERVED_VARIABLE_NAME, ERR_REGISTER_LINE);
+                abi.fmtBufZ(errorMessage[0..512], "{s}", .{std.mem.sliceTo(allReservedVariables[@intCast(@as(i32, value) - FIRST_RESERVED_VARIABLE)].reservedVariableName[1..], 0)});
+                moreInfoErr("In function _tamProcessInput:", errorMessage, " is a reserved variable.");
+                return;
+            }
             frontier_manage.addStepInProgram(tamOperation());
         }
         if (tam.mode != TM_NEWMENU and tam.mode != TM_STRING) {

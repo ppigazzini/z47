@@ -943,6 +943,7 @@ extern var grpGroupingRight: u8;
 extern var grpGroupingHex: u8;
 extern var grpGroupingBin: u8;
 extern var fnKeyInCatalog: bool_t;
+extern var doRefreshSoftMenu: bool_t;
 extern var funcOK: bool_t;
 extern var keyActionProcessed: bool_t;
 extern var hourGlassIconEnabled: bool_t;
@@ -2291,7 +2292,6 @@ pub export fn nimFractionToReal34(source: [*c]u8, dest: *real34_t) callconv(.c) 
     var posSpace: i16 = undefined;
     var posSlash: i16 = undefined;
     var lg: i16 = undefined;
-    var integer: i32 = undefined;
     var numer: i32 = undefined;
     var denom: i32 = undefined;
     var temp: real34_t = undefined;
@@ -2349,9 +2349,6 @@ pub export fn nimFractionToReal34(source: [*c]u8, dest: *real34_t) callconv(.c) 
 
     if (posSpace != 0) {
         source[@intCast(posSpace)] = 0;
-        integer = toInt32(source + 1);
-    } else {
-        integer = 0;
     }
     source[@intCast(posSlash)] = 0;
     numer = toInt32(source + @as(usize, @intCast(posSpace)) + 1);
@@ -2373,8 +2370,10 @@ pub export fn nimFractionToReal34(source: [*c]u8, dest: *real34_t) callconv(.c) 
     int32ToReal34(numer, dest);
     int32ToReal34(denom, &temp);
     real34Divide(dest, &temp, dest);
-    int32ToReal34(integer, &temp);
-    real34Add(dest, &temp, dest);
+    if (posSpace != 0) {
+        stringToReal34(source + 1, &temp);
+        real34Add(dest, &temp, dest);
+    }
     if (source[0] == '-') {
         real34SetNegativeSign(dest);
     }
@@ -2890,6 +2889,7 @@ pub export fn addItemToBuffer(item_in: u16) callconv(.c) void {
                 _ = stringCopy(@as([*c]u8, &asmBuffer) + @as(usize, @intCast(stringByteLength(&asmBuffer))), &indexOfItems[item].itemSoftmenuName);
 
                 softmenuStack[0].firstItem = @intCast(findFirstItem(&asmBuffer));
+                doRefreshSoftMenu = 1; // the search moved the menu to another page, and btnReleased leaves it protected
                 frontier_softmenus.setCatalogLastPos();
                 fnTimerStart(TO_ASM_ACTIVE, TO_ASM_ACTIVE, 3000);
                 frontier_status_bar.light_ASB_icon();

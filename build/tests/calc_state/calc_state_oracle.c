@@ -64,6 +64,9 @@
 #define fnSaveLetteredRegisters oracle_fnSaveLetteredRegisters
 #define fnSaveNRegisters oracle_fnSaveNRegisters
 #define fnSaveRegister oracle_fnSaveRegister
+#define fnSaveGlobalFlags oracle_fnSaveGlobalFlags
+#define fnSaveLocalFlags oracle_fnSaveLocalFlags
+#define fnSaveSystemFlags oracle_fnSaveSystemFlags
 #define fnSaveDataRegisters oracle_fnSaveDataRegisters
 #define fnLoadRegisters oracle_fnLoadRegisters
 

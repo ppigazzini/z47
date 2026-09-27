@@ -6571,4 +6571,6 @@ printerModel
 0
 printerLineDelay
 0
+alphaRegister
+111
 END_OTHER_PARAM

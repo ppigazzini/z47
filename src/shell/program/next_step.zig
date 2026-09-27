@@ -96,7 +96,7 @@ const Y_POSITION_OF_REGISTER_T_LINE: u32 = 24;
 const TMP_STR_LENGTH: usize = 2560;
 const vmNormal: c_int = 0;
 
-const STD_ELLIPSIS = "\xa0\x26";
+const STD_SPACE_EM = "\xa0\x03";
 
 const LAST_ITEM: u32 = 3481;
 
@@ -326,38 +326,14 @@ pub export fn findPreviousStep(step: [*c]u8) callconv(.c) [*c]u8 {
 // _showStep (static)
 // ===========================================================================
 fn _showStep() void {
-    const tmpStep: [*c]u8 = currentStep;
-    const lblOrEnd: bool = frontier_manage.checkOpCodeOfStep(tmpStep, ITM_LBL) or isAtEndOfProgram(tmpStep) or frontier_manage.isAtEndOfPrograms(tmpStep);
-    const xPos: i16 = if (lblOrEnd) 42 else 62;
-    var maxWidth: i16 = SCREEN_WIDTH - xPos;
+    var stepNumber: [10]u8 = undefined;
 
-    abi.fmtBufZ(tmpString[0..2560], "{d:0>4}:" ++ "\xa0\x05", .{@as(u32, currentLocalStepNumber)});
-    _ = frontier_screen.showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_T_LINE + 6, vmNormal, @intFromBool(true), @intFromBool(true));
-
-    frontier_decode.decodeOneStep(tmpStep);
-    if (frontier_char_string.stringWidth(tmpString, &standardFont, true, true) >= maxWidth) {
-        var xstr: [*c]u8 = tmpString;
-        var xstrOrig: [*c]u8 = tmpString;
-        const glyph: [*c]u8 = tmpString + TMP_STR_LENGTH - 4;
-        maxWidth -= frontier_char_string.stringWidth(STD_ELLIPSIS, &standardFont, true, true);
-        while (maxWidth > 0) {
-            xstrOrig = xstr;
-            glyph[0] = xstr[0];
-            xstr += 1;
-            if (glyph[0] & 0x80 != 0) {
-                glyph[1] = xstr[0];
-                xstr += 1;
-                glyph[2] = 0;
-            } else {
-                glyph[1] = 0;
-            }
-            maxWidth -= frontier_char_string.stringWidth(glyph, &standardFont, true, true);
-        }
-        xstrOrig[0] = STD_ELLIPSIS[0];
-        xstrOrig[1] = STD_ELLIPSIS[1];
-        xstrOrig[2] = 0;
-    }
-    _ = frontier_screen.showString(tmpString, &standardFont, @intCast(xPos), Y_POSITION_OF_REGISTER_T_LINE + 6, vmNormal, @intFromBool(true), @intFromBool(true));
+    abi.fmtBufZ(&stepNumber, "{d:0>4}:" ++ STD_SPACE_EM, .{@as(u32, currentLocalStepNumber)});
+    frontier_decode.decodeOneStep(currentStep);
+    const numberLength: usize = std.mem.sliceTo(&stepNumber, 0).len;
+    _ = frontier_char_string.xcopy(tmpString + numberLength, tmpString, @intCast(std.mem.sliceTo(tmpString, 0).len + 1));
+    _ = frontier_char_string.xcopy(tmpString, &stepNumber, @intCast(numberLength));
+    frontier_screen.drawFuncName(tmpString);
 }
 
 // ===========================================================================
@@ -455,7 +431,6 @@ fn _sstInPem() void {
 
 pub export fn showStep() callconv(.c) void {
     temporaryInformation = TI_NO_INFO;
-    frontier_screen.refreshRegisterLine(REGISTER_T); // Clear previous VIEW or AVIEW data, if any
     frontier_screen.refreshRegisterLine(REGISTER_Z); // Clear previous test result, if any
     _showStep();
 }

@@ -3630,8 +3630,7 @@ inline fn isXFNShowing(r: calcRegister_t) bool {
 }
 
 fn RegName() void {
-    var tmp: i16 = undefined;
-    frontier_screen.viewRegName2(tmpString + 2100, &tmp);
+    frontier_screen.viewRegName2(tmpString + 2100);
 }
 
 fn SHOW_reset() void {
@@ -3826,11 +3825,10 @@ fn showShortIntegerLine(showRegis_p: calcRegister_t, tag: i16, startOffset: i16,
     var last: i16 = undefined;
     var d: i16 = undefined;
     var dest: i16 = undefined;
-    var prefixWidth: i16 = undefined;
     const lastSlot: i16 = startOffset + (numLines - 1) * SHOWLineSize;
     setRegisterTag(showRegis_p, @intCast(tag));
     if (showName) {
-        frontier_screen.viewRegName2(tmpString + 2400, &prefixWidth);
+        frontier_screen.viewRegName2(tmpString + 2400); // name at 2400, where the digits are put after it
     } else {
         tmpString[2400] = 0;
     }

@@ -2902,6 +2902,7 @@ pub export fn runDMCPmenu(confirmation: u16) callconv(.c) void {
             cancelFilename = true;
             _ = romRunMenuItemSys(MI_DMCP_MENU);
             clearScreen(200);
+            screenUpdatingMode = SCRUPD_AUTO;
         }
     }
 }
@@ -2915,6 +2916,7 @@ pub export fn activateUSBdisk(confirmation: u16) callconv(.c) void {
             cancelFilename = true;
             _ = romRunMenuItemSys(MI_MSC);
             clearScreen(201);
+            screenUpdatingMode = SCRUPD_AUTO;
         }
     }
 }

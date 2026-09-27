@@ -209,6 +209,17 @@ extern fn clearSystemFlag(sf: c_uint) void;
 extern fn forceSystemFlag(sf: c_uint, set: c_int) void;
 extern fn setLongPressFg(calc_model0: c_int, menu_item: i16) void;
 extern fn setLineDelay(delay: u16) void;
+extern fn fnSetFlag(flag: u16) void;
+extern fn fnClearFlag(flag: u16) void;
+extern fn utf8ToString(utf8: [*c]const u8, str: [*c]u8) void;
+extern var alphaRegister: u16;
+const indexOfItems = @extern([*]const abi.Item, .{ .name = "indexOfItems" });
+const LAST_ITEM: u16 = 3481; // items.h
+const CAT_STATUS: u16 = 0x00f0;
+const CAT_SYFL: u16 = 8 << 4;
+const FIRST_LOCAL_FLAG: i32 = 112;
+const LAST_LOCAL_FLAG: i32 = 143;
+const LAST_GLOBAL_FLAG: i32 = 111;
 
 // --- load-parsing leaf externs (canonical core C symbols) ---
 extern fn parseEquation(equation_id: u16, parse_mode: u16, buffer: [*c]u8, mvar_buffer: [*c]u8) void;
@@ -663,6 +674,54 @@ fn b2i(x: bool) c_int {
     return @intFromBool(x);
 }
 
+// One NAMED_FLAGS line: the name, a space, then 0 or 1. FLAG_nn is a global flag,
+// FLAG_.nn a local one, and any other name is a system flag's catalogue name. The
+// name on the line is the flag, so a file of one line sets one flag.
+fn restoreNamedFlag(line: [*c]u8) void {
+    @setRuntimeSafety(true); // untrusted file input -- see calc_state.zig's panic decl
+    const whole = std.mem.sliceTo(line, 0);
+    const space = std.mem.indexOfScalar(u8, whole, ' ') orelse return; // no value on the line
+    line[space] = 0;
+    const value: [*c]const u8 = line + space + 1;
+    var flag: i32 = -1;
+
+    if (std.mem.startsWith(u8, whole[0..space], "FLAG_.")) {
+        flag = FIRST_LOCAL_FLAG + text.toInt16(line + 6);
+        if (flag > LAST_LOCAL_FLAG or currentLocalFlags == null) {
+            return;
+        }
+    } else if (std.mem.startsWith(u8, whole[0..space], "FLAG_")) {
+        flag = text.toInt16(line + 5);
+        if (flag > LAST_GLOBAL_FLAG) {
+            return;
+        }
+    } else {
+        var flagName: [24]u8 = @splat(0); // the name as the file carries it, cut to what the buffer holds
+        const nameLength = @min(space, flagName.len - 1);
+        @memcpy(flagName[0..nameLength], whole[0..nameLength]);
+        var c47Name: [24]u8 = undefined;
+        utf8ToString(&flagName, &c47Name); // the file is UTF-8 and a catalogue name is C47 encoded
+        var i: u16 = 0;
+        while (i < LAST_ITEM) : (i += 1) {
+            const item = &indexOfItems[i];
+            if ((item.status & CAT_STATUS) == CAT_SYFL and compareString(&c47Name, &item.itemCatalogName, CMP_NAME) == 0) {
+                flag = item.param;
+                break;
+            }
+        }
+        if (flag == -1) {
+            return; // a name this firmware does not have
+        }
+    }
+
+    const flagNumber: u16 = @bitCast(@as(i16, @truncate(flag)));
+    if (value[0] == '1') {
+        fnSetFlag(flagNumber);
+    } else {
+        fnClearFlag(flagNumber);
+    }
+}
+
 // Program-memory pointer arithmetic, delegated to the geometry-parameterized,
 // separately-tested progmem module (`zig build state-progmem-test`).
 fn toPcmemptr(p: u32) [*c]u8 {
@@ -811,6 +870,19 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
         calc_state.readLine(tmpString, TMP_STR_LENGTH);
         if (load_mode == LM_ALL or load_mode == LM_REGISTERS) {
             currentLocalFlags.?.* = text.toUint32(tmpString);
+        }
+    } else if (cmpName(tmpString, "NAMED_FLAGS")) {
+        calc_state.readLine(tmpString, TMP_STR_LENGTH); // Number of flags
+        numberOfRegs = text.toInt16(tmpString);
+        i = 0;
+        while (i < numberOfRegs) : (i += 1) {
+            readLineSkippingComments(tmpString, TMP_STR_LENGTH); // one flag per line: the name, a space, then 0 or 1
+            if (tmpString[0] == 0) { // the section ran out: readLine() skips blank lines, so an empty read is end of file
+                break;
+            }
+            if (load_mode == LM_ALL or load_mode == LM_REGISTERS) {
+                restoreNamedFlag(tmpString);
+            }
         }
     } else if (cmpName(tmpString, "NAMED_VARIABLES")) {
         calc_state.readLine(tmpString, TMP_STR_LENGTH);
@@ -1526,6 +1598,8 @@ fn applyConfigField(loaded_version: u32, allow_user_keys: bool, saved_calc_model
         const delay = text.toUint16(tmpString);
         setPrinterDelay(delay);
         setLineDelay(delay);
+    } else if (cmpName(ab, "alphaRegister")) {
+        alphaRegister = text.toUint16(tmpString);
     } else if (cmpName(ab, "jm_LARGELI")) {
         if (loaded_version < 10000012) forceSystemFlag(FLAG_LARGELI, @intFromBool(text.toUint8(tmpString) != 0));
     } else if (cmpName(ab, "constantFractions")) {

@@ -88,6 +88,7 @@ extern var ram: [*c]u32;
 extern var graMod: u8;
 extern var longPressFactor: i16;
 extern var doublePressFactor: i16;
+extern var alphaRegister: u16;
 extern var globalFlags: [16]u8;
 // These four are `char *` POINTERS in c47.h (errorMessage/aimBuffer/nimBufferDisplay/
 // tamBuffer), not arrays. They must be declared as pointers so that `&X[0]` in the
@@ -777,6 +778,9 @@ pub fn saveCalc() void {
     sv(&graMod, 1, "graMod", "uint8");
     sv(&longPressFactor, 2, "longPressFactor", "int16");
     sv(&doublePressFactor, 2, "doublePressFactor", "int16");
+
+    sv(&alphaRegister, 2, "alphaRegister", "uint16");
+
     ioFileClose();
 }
 
@@ -1392,6 +1396,7 @@ pub fn restoreCalc() void {
     rv(&printerState[8], 4, "printerState.printer_model", "uint8");
     rv(&printerState[12], 2, "printerState.delay", "uint16");
     rv(&programmableMenu[0], 332, "programmableMenu", "hexDump");
+    rv(&alphaRegister, 2, "alphaRegister", "uint16");
     graphVariabl1 = INVALID_VARIABLE;
     rv(&graphVariabl1, 2, "graphVariabl1", "int16");
     if (backupVersion < 1013) {

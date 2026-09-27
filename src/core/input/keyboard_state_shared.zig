@@ -259,8 +259,18 @@ pub fn implementation(comptime runtime: type) type {
                                 const nameLength: u16 = @intCast(runtime.stringByteLength(itmLabel));
                                 _ = runtime.xcopy(runtime.aimBuffer, itmLabel, @as(u32, nameLength) + 1);
                                 runtime.tam.alpha = true;
-                                runtime.addStepInProgram(runtime.tamOperation());
-                                runtime.leaveTamModeIfEnabled();
+                                const value: i32 = runtime.findNamedVariable(runtime.aimBuffer);
+                                if (runtime.tam.function == runtime.ITM_SET_42ALPHA and runtime.FIRST_RESERVED_VARIABLE <= value and value <= runtime.LAST_RESERVED_VARIABLE) {
+                                    runtime.displayCalcErrorMessage(runtime.ERROR_RESERVED_VARIABLE_NAME, runtime.ERR_REGISTER_LINE);
+                                    runtime.fmtCStr(runtime.errorMessage, "{s}", .{runtime.sliceTo(runtime.aimBuffer, 0)});
+                                    if (comptime runtime.extra_info_on_calc_error) {
+                                        runtime.moreInfoOnError("In function executeFunction:", runtime.errorMessage, " is a reserved variable.", null);
+                                    }
+                                    runtime.aimBuffer[0] = 0;
+                                } else {
+                                    runtime.addStepInProgram(runtime.tamOperation());
+                                    runtime.leaveTamModeIfEnabled();
+                                }
                             } else {
                                 runtime.runFunction(item);
                             }
@@ -1793,12 +1803,14 @@ pub fn implementation(comptime runtime: type) type {
 
         pub fn keyEnter(unused_but_mandatory_parameter: u16) void {
             _ = unused_but_mandatory_parameter;
-            runtime.doRefreshSoftMenu = true;
             // A program running under CM_GRAPH or CM_PLOT_STAT (a plot(int) integrand,
             // a programmed HPLOT) needs the normal ENTER dup, not the empty
             // interactive-graph case: both modes drop ENTER on the floor, so a program
             // that reached one of them lost every stack lift its steps asked for.
             const effective_calc_mode: u8 = if (isGraphMode() and runtime.programRunStop == runtime.PGM_RUNNING) runtime.CM_NORMAL else runtime.calcMode;
+            if (effective_calc_mode != runtime.CM_NORMAL) { // in CM_NORMAL the softmenu isn't touched
+                runtime.doRefreshSoftMenu = true;
+            }
             switch (effective_calc_mode) {
                 runtime.CM_NORMAL => {
                     if (!runtime.getSystemFlag(runtime.FLAG_ERPN) or

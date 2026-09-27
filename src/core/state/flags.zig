@@ -453,6 +453,8 @@ fn systemFlagAction(system_flag: u16, action: FlagAction) void {
         },
         else => {},
     }
+
+    runtime.updateShiftOnTline(); // a status bar setting can have taken the room for the shift indicator, or given it back
 }
 
 pub export fn setSystemFlag(sf: u32) void {

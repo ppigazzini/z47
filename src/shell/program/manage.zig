@@ -999,35 +999,25 @@ pub export fn scrollPemForwards() callconv(.c) void {
 // ===========================================================================
 // pemLeftOffset (public)
 // X_SHIFT == X_SHIFT_R  -> (getSystemFlag(FLAG_SBshfR)?X_SHIFT_R:X_SHIFT_L)==X_SHIFT_R
-// i.e. getSystemFlag(FLAG_SBshfR) is true. Y_SHIFT involves several status-bar flags.
+// i.e. getSystemFlag(FLAG_SBshfR) is true. Whether the shift indicator sits on the
+// T line at all is the screen owner's shiftOnTline.
 // ===========================================================================
 const FLAG_SBshfR: i32 = 0x803B;
-const FLAG_SBdate: i32 = 0x802C;
 inline fn xShiftIsRight() bool_t {
     return getSystemFlag(FLAG_SBshfR);
 }
-// Y_SHIFT = (((!SBARUPD_Date || !(SBARUPD_Time || SBARUPD_WoY)) && !SBAR_SHIFT) ? 0 : (SBAR_SHIFT ? 0 : Y_SHIFT_LO))
-// SBAR_SHIFT = getSystemFlag(FLAG_SBshfR); SBARUPD_Date/Time/WoY = flags.
-const FLAG_SBtime: i32 = 0x802D;
-const FLAG_SBwoy: i32 = 0x8057;
-const Y_SHIFT_LO: i32 = Y_POSITION_OF_REGISTER_T_LINE;
-inline fn yShift() i32 {
-    const sbDate = getSystemFlag(FLAG_SBdate);
-    const sbTime = getSystemFlag(FLAG_SBtime);
-    const sbWoy = getSystemFlag(FLAG_SBwoy);
-    const sbarShift = getSystemFlag(FLAG_SBshfR);
-    if ((!sbDate or !(sbTime or sbWoy)) and !sbarShift) {
-        return 0;
+pub export fn pemLeftOffset(y: i32) callconv(.c) i32 {
+    if (y > Y_POSITION_OF_REGISTER_T_LINE or xShiftIsRight() or frontier_screen.shiftOnTline == 0) {
+        return frontier_screen.noShiftOffset;
     } else {
-        return if (sbarShift) 0 else Y_SHIFT_LO;
+        return frontier_screen.shiftOffset; // Offset to allow for f/g
     }
 }
-pub export fn pemLeftOffset(y: i32) callconv(.c) i32 {
-    if (y > Y_POSITION_OF_REGISTER_T_LINE or xShiftIsRight() or yShift() == 0) {
-        return 0;
-    } else {
-        return 16; // Offset to allow for f/g
-    }
+
+// The reverse-video row number is padded on its left up to the line's indent, so the
+// highlight reaches the edge the text starts from.
+inline fn padSelectedRowNumber(y: i32) void {
+    lcdFillRect(@intCast(pemLeftOffset(y) - frontier_screen.noShiftOffset), @intCast(y), @intCast(frontier_screen.noShiftOffset), 20, 1);
 }
 
 // _isAngleType (static)
@@ -1093,9 +1083,13 @@ pub export fn fnPem(unusedButMandatoryParameter: u16) callconv(.c) void {
     lastProgramListEnd = false;
 
     if (firstDisplayedLocalStepNumber == 0) {
-        _ = frontier_screen.showString("0000:" ++ STD_SPACE_4_PER_EM, &standardFont, @intCast(pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE) + 1), @intCast(Y_POSITION_OF_REGISTER_T_LINE), if ((pemCursorIsZerothStep and tam.mode == 0 and aimBuffer[0] == 0)) vmReverse else vmNormal, 0, 1);
+        const vm: c_int = if ((pemCursorIsZerothStep and tam.mode == 0 and aimBuffer[0] == 0)) vmReverse else vmNormal;
+        _ = frontier_screen.showString("0000:" ++ STD_SPACE_4_PER_EM, &standardFont, @intCast(pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE)), @intCast(Y_POSITION_OF_REGISTER_T_LINE), vm, 0, 1);
+        if (vm == vmReverse) {
+            padSelectedRowNumber(Y_POSITION_OF_REGISTER_T_LINE);
+        }
         abi.fmtBufZ(tmpString[0..2560], "{{Prgm #{d}/{d}: {d} bytes / {d} step{s}}}", .{ @as(u32, currentProgramNumber), @as(u32, numberOfPrograms), @as(u32, _getProgramSize()), @as(u32, numberOfSteps), if (numberOfSteps == 1) @as([*:0]const u8, "") else @as([*:0]const u8, "s") });
-        _ = frontier_screen.showString(tmpString, &standardFont, @intCast(pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE) + 42), @intCast(Y_POSITION_OF_REGISTER_T_LINE), vmNormal, 0, 0);
+        _ = frontier_screen.showString(tmpString, &standardFont, @intCast(pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE) + 41), @intCast(Y_POSITION_OF_REGISTER_T_LINE), vmNormal, 0, 0);
         firstLine = 1;
     } else {
         firstLine = 0;
@@ -1128,10 +1122,14 @@ pub export fn fnPem(unusedButMandatoryParameter: u16) callconv(.c) void {
         abi.fmtBufZ(tmpString[0..2560], "{d:0>4}:" ++ STD_SPACE_4_PER_EM, .{@as(u32, @intCast(@as(c_int, @intCast(@as(i32, firstDisplayedLocalStepNumber) + @as(i32, line) - lineOffset + lineOffsetTam))))});
         if (@as(i32, @intCast(firstDisplayedStepNumber)) + @as(i32, line) - lineOffset == @as(i32, @intCast(currentStepNumber))) {
             tamOverPemYPos = @intCast(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line));
-            _ = frontier_screen.showString(tmpString, &standardFont, @intCast(pemLeftOffset(@intCast(tamOverPemYPos)) + 1), tamOverPemYPos, if ((pemCursorIsZerothStep and tam.mode == 0 and aimBuffer[0] == 0) or (tam.mode != 0 and (programList[currentProgramNumber - 1].step > 0))) vmNormal else vmReverse, @intFromBool(false), @intFromBool(true));
+            const vm: c_int = if ((pemCursorIsZerothStep and tam.mode == 0 and aimBuffer[0] == 0) or (tam.mode != 0 and (programList[currentProgramNumber - 1].step > 0))) vmNormal else vmReverse;
+            _ = frontier_screen.showString(tmpString, &standardFont, @intCast(pemLeftOffset(@intCast(tamOverPemYPos))), tamOverPemYPos, vm, @intFromBool(false), @intFromBool(true));
+            if (vm == vmReverse) {
+                padSelectedRowNumber(@intCast(tamOverPemYPos));
+            }
             currentStep = step;
         } else {
-            _ = frontier_screen.showString(tmpString, &standardFont, @intCast(pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line)) + 1), @intCast(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line)), vmNormal, 0, 1);
+            _ = frontier_screen.showString(tmpString, &standardFont, @intCast(pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line))), @intCast(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line)), vmNormal, 0, 1);
         }
 
         // Automatically, when on battery (low processor) skip long processing register printing.
@@ -1174,24 +1172,24 @@ pub export fn fnPem(unusedButMandatoryParameter: u16) callconv(.c) void {
                         line += 1;
                         lineOffset += 1;
                         lineOffsetTam += 1;
-                        _ = frontier_screen.showString(tmpString, &standardFont, @intCast(pemLeftOffset(@intCast(tamOverPemYPos)) + 1), tamOverPemYPos, vmReverse, @intFromBool(false), @intFromBool(true));
+                        _ = frontier_screen.showString(tmpString, &standardFont, @intCast(pemLeftOffset(@intCast(tamOverPemYPos))), tamOverPemYPos, vmReverse, @intFromBool(false), @intFromBool(true));
                         if (line >= 7) {
                             break;
                         }
                         abi.fmtBufZ(tmpString[0..2560], "{d:0>4}:" ++ STD_SPACE_4_PER_EM, .{@as(u32, @intCast(@as(c_int, @intCast(@as(i32, firstDisplayedLocalStepNumber) + @as(i32, line) - lineOffset + lineOffsetTam))))});
-                        _ = frontier_screen.showString(tmpString, &standardFont, @intCast(pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line)) + 1), @intCast(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line)), vmNormal, 0, 1);
+                        _ = frontier_screen.showString(tmpString, &standardFont, @intCast(pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line))), @intCast(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line)), vmNormal, 0, 1);
                     }
                 } else if (@as(i32, @intCast(firstDisplayedStepNumber)) + @as(i32, line) - lineOffset == @as(i32, @intCast(currentStepNumber)) and lblOrEnd and (step[0] != ITM_LBL)) {
                     if (tam.mode != 0) {
                         line += 1;
                         lineOffset += 1;
                         lineOffsetTam += 1;
-                        _ = frontier_screen.showString(tmpString, &standardFont, @intCast(pemLeftOffset(@intCast(tamOverPemYPos)) + 1), tamOverPemYPos, vmReverse, @intFromBool(false), @intFromBool(true));
+                        _ = frontier_screen.showString(tmpString, &standardFont, @intCast(pemLeftOffset(@intCast(tamOverPemYPos))), tamOverPemYPos, vmReverse, @intFromBool(false), @intFromBool(true));
                         if (line >= 7) {
                             break;
                         }
                         abi.fmtBufZ(tmpString[0..2560], "{d:0>4}:" ++ STD_SPACE_4_PER_EM, .{@as(u32, @intCast(@as(c_int, @intCast(@as(i32, firstDisplayedLocalStepNumber) + @as(i32, line) - lineOffset + lineOffsetTam))))});
-                        _ = frontier_screen.showString(tmpString, &standardFont, @intCast(pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line)) + 1), @intCast(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line)), vmNormal, 0, 1);
+                        _ = frontier_screen.showString(tmpString, &standardFont, @intCast(pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line))), @intCast(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line)), vmNormal, 0, 1);
                     }
                 }
             }
@@ -1258,14 +1256,14 @@ pub export fn fnPem(unusedButMandatoryParameter: u16) callconv(.c) void {
             }
 
             if (comptime option_struct_indent) {
-                _ = frontier_screen.showString(tmpString, &standardFont, @intCast(pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line)) + (if (lblOrEnd) @as(i32, 42) else 42 + 10 * PEM_STRUCT_INDENT) + pemIndent), @intCast(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line)), vmNormal, 0, 0);
+                _ = frontier_screen.showString(tmpString, &standardFont, @intCast(pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line)) + (if (lblOrEnd) @as(i32, 41) else 41 + 10 * PEM_STRUCT_INDENT) + pemIndent), @intCast(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line)), vmNormal, 0, 0);
             } else {
-                _ = frontier_screen.showString(tmpString, &standardFont, @intCast(pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line)) + (if (lblOrEndOrXeq) @as(i32, 42) else if (gto) @as(i32, 82) else @as(i32, 62))), @intCast(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line)), vmNormal, 0, 0);
+                _ = frontier_screen.showString(tmpString, &standardFont, @intCast(pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line)) + (if (lblOrEndOrXeq) @as(i32, 41) else if (gto) @as(i32, 81) else @as(i32, 61))), @intCast(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line)), vmNormal, 0, 0);
             }
             offset = 300;
             while (numberOfExtraLines != 0 and line <= 5) {
                 line += 1;
-                _ = frontier_screen.showString(tmpString + @as(usize, @intCast(offset)), &standardFont, @intCast(pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line)) + 62 + pemIndent), @intCast(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line)), vmNormal, 0, 0);
+                _ = frontier_screen.showString(tmpString + @as(usize, @intCast(offset)), &standardFont, @intCast(pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line)) + 61 + pemIndent), @intCast(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line)), vmNormal, 0, 0);
                 numberOfExtraLines -= 1;
                 offset += 300;
                 lineOffset += 1;

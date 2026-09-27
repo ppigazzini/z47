@@ -43,6 +43,7 @@ const named_variable_header_t = abi.NamedVariableHeader;
 
 pub const REGISTER_X = stack_runtime.REGISTER_X;
 pub const REGISTER_Y = stack_runtime.REGISTER_Y;
+pub const REGISTER_K: calcRegister_t = 111; // the default alpha register
 pub const LAST_GLOBAL_REGISTER = stack_runtime.LAST_GLOBAL_REGISTER;
 pub const FIRST_NAMED_VARIABLE: calcRegister_t = 256;
 pub const LAST_NAMED_VARIABLE: calcRegister_t = 1999;
@@ -90,6 +91,8 @@ pub const ITM_INTEGRAL_YX: u16 = 1690;
 pub const ITM_FOR: u16 = 2927;
 pub const ITM_FORYX: u16 = 2933;
 pub const ITM_FORTOP: u16 = 2938;
+pub const ITM_SET_42ALPHAX: u16 = 1327;
+pub const ITM_SET_42ALPHA: u16 = 1332;
 
 // A running FOR counts in a register, and deleting a named variable moves every
 // variable above it down one. structured.c owns the table those loops live in.

@@ -48,6 +48,7 @@ const frontier_char_string = @import("../display/text/char_string.zig");
 const frontier_config = @import("../config.zig");
 const frontier_items = @import("../display/items/items.zig");
 const frontier_real_type = @import("../real_type.zig");
+const ks_register_remap = @import("../program/ks_register_remap.zig");
 const item_t = abi.Item;
 
 // ---------------------------------------------------------------------------
@@ -213,6 +214,15 @@ const ITM_DSP: u16 = 1573;
 const ITM_SET_ADM: u16 = 2764;
 const ITM_SET_GRAMOD: u16 = 2742;
 const ITM_SET_RM: u16 = 1325;
+const ITM_SET_42ALPHAX: u16 = 1327;
+// defines.h: the register layout regCtoKS translates through.
+const FIRST_LOCAL_REGISTER: i16 = 7000;
+const LAST_LOCAL_REGISTER: i16 = 7098;
+const FIRST_LOCAL_REGISTER_IN_KS_CODE: i16 = 112;
+const FIRST_STAT_REGISTER: i16 = 112;
+const LAST_SPARE_REGISTER: i16 = 125;
+const NUMBER_OF_LOCAL_REGISTERS: i16 = 99;
+const ITM_SET_42ALPHA: u16 = 1332;
 const ITM_SET_LPFCT: u16 = 1329;
 const ITM_SET_DPFCT: u16 = 1331;
 const ITM_SET_ISM: u16 = 2765;
@@ -279,6 +289,7 @@ extern var roundingMode: u8;
 extern var timerCraAndDeciseconds: u8;
 extern var Norm_Key_00: normKey_t;
 extern var printerState: printerState_t;
+extern var alphaRegister: u16;
 extern var statisticalSumsPointer: ?*anyopaque;
 // `indexOfItems` is a C ARRAY (const item_t indexOfItems[]); bind its address
 // with @extern, not a pointer-typed extern (which loads the data as an address).
@@ -856,11 +867,24 @@ pub export fn fnItemShowValue(item: i16) callconv(.c) i16 {
         ITM_TIMER_R_L, ITM_TIMER_R_T => result = timerCraAndDeciseconds & 0x7F,
         ITM_VOL, ITM_VOLPLUS, ITM_VOLMINUS => result = @intCast(getBeepVolume()),
         ITM_PRINTERDLAY => result = @intCast(printerState.delay),
+        ITM_SET_42ALPHA, ITM_SET_42ALPHAX => result = regCtoKS(@bitCast(alphaRegister)),
         else => if (indexOfItems[itemNr].func == &frontier_items.itemToBeCoded) {
             result = ITEM_NOT_CODED;
         },
     }
     return result;
+}
+
+// regCtoKS (defines.h static inline)
+inline fn regCtoKS(regC: i16) u8 {
+    return ks_register_remap.regCtoKS(regC, .{
+        .first_stat = FIRST_STAT_REGISTER,
+        .last_spare = LAST_SPARE_REGISTER,
+        .num_local = NUMBER_OF_LOCAL_REGISTERS,
+        .first_local = FIRST_LOCAL_REGISTER,
+        .last_local = LAST_LOCAL_REGISTER,
+        .first_local_ks = FIRST_LOCAL_REGISTER_IN_KS_CODE,
+    });
 }
 
 // calcMode is read in fnItemShowValue's PLOT_ZOOM case.

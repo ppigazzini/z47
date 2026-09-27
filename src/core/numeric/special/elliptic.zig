@@ -148,6 +148,7 @@ inline fn realSetNegativeSign(value: *real_t) void {
 }
 extern fn decNumberCopy(res: *real_t, source: *align(1) const real_t) *real_t;
 extern fn decNumberCopyAbs(res: *real_t, source: *align(1) const real_t) *real_t;
+extern fn decNumberCopySign(res: *real_t, source: *align(1) const real_t, sign_source: *align(1) const real_t) *real_t;
 extern fn decNumberMinus(res: *real_t, operand: *align(1) const real_t, ctxt: *realContext_t) *real_t;
 extern fn decNumberPlus(res: *real_t, operand: *align(1) const real_t, ctxt: *realContext_t) *real_t;
 extern fn decNumberRemainder(res: *real_t, lhs: *align(1) const real_t, rhs: *align(1) const real_t, ctxt: *realContext_t) *real_t;
@@ -156,6 +157,10 @@ inline fn realCopy(source: *align(1) const real_t, destination: *real_t) void {
 }
 inline fn realCopyAbs(source: *align(1) const real_t, destination: *real_t) void {
     _ = decNumberCopyAbs(destination, source);
+}
+// realSetSignFrom(source, destination): the destination keeps its magnitude and takes the source's sign.
+inline fn realSetSignFrom(source: *align(1) const real_t, destination: *real_t) void {
+    _ = decNumberCopySign(destination, destination, source);
 }
 // realMinus(operand, res, ctxt) => decNumberMinus(res, operand, ctxt)
 inline fn realMinus(operand: *align(1) const real_t, res: *real_t, ctxt: *realContext_t) void {
@@ -1050,13 +1055,16 @@ pub export fn ellipticF(phi: *const real_t, psi: *const real_t, m: *const real_t
             realChangeSign(res);
             realChangeSign(resi);
         }
-        if (realIsNegative(phi)) {
-            realChangeSign(res);
-            realChangeSign(resi);
+        if (!realIsZero(psi)) {
+            realSetSignFrom(&psi1, resi);
         }
         ellipticKE(m, &phi1, &psi1, null, null, realContext);
         realFMA(&phiQuotient, &phi1, res, res, realContext);
         realFMA(&phiQuotient, &psi1, resi, resi, realContext);
+        if (realIsNegative(phi)) {
+            realChangeSign(res);
+            realChangeSign(resi);
+        }
     }
 
     if (math_comparison_reals.realCompareGreaterThan(m, const_1()) and (math_comparison_reals.realCompareAbsGreaterThan(phi, const39_piOn2()) or realIsZero(psi))) {
@@ -1276,18 +1284,17 @@ pub export fn ellipticE(phi: *const real_t, psi: *const real_t, m: *const real_t
                 realChangeSign(res);
             }
 
+            if (realIsNegative(psi)) {
+                realChangeSign(resi);
+            }
+
             if (!realIsZero(&phiQuotient)) {
                 ellipticKE(m, null, null, B1, B1_I, realContext);
-                realSetPositiveSign(&phiQuotient);
                 realAdd(&phiQuotient, &phiQuotient, &phiQuotient, realContext);
                 realMultiply(&phiQuotient, B1, B1, realContext);
                 realMultiply(&phiQuotient, B1_I, B1_I, realContext);
                 realAdd(res, B1, res, realContext);
                 realAdd(resi, B1_I, resi, realContext);
-            }
-
-            if (realIsNegative(psi)) {
-                realChangeSign(resi);
             }
 
             freeC47Blocks(tv, blocks);
