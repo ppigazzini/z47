@@ -286,7 +286,7 @@ jobs:
   windows:
     runs-on: windows-latest
     steps:
-      - uses: msys2/setup-msys2@66cd2cce69caa17b53920067426061ca1de3a884
+      - uses: msys2/setup-msys2@ec48f7c5447b3140e2b088413ae3a55687bccb6e
       - name: Build
         run: zig build both
 """
