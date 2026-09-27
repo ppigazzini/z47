@@ -43,7 +43,7 @@ pub export fn fnTranspose(unused_but_mandatory_parameter: u16) callconv(.c) void
         header.matrixRows = x.header.matrixRows;
         header.matrixColumns = x.header.matrixColumns;
     } else {
-        runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, nim_register_line);
+        runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE);
         if (runtime.extra_info_on_calc_error) {
             var buffer: [64]u8 = undefined;
             const message = bufPrintZ(&buffer, "DataType {d}", .{data_type}) catch "DataType";

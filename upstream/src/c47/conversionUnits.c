@@ -904,7 +904,7 @@ static void unitConversion(const real_t * const coefficient, uint16_t multiplyDi
       convertRealToResultRegister(realIsNegative(&reX) ? const_minusInfinity : const_plusInfinity, REGISTER_X, amNone);
     }
     else {
-      displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         moreInfoOnError("In function unitConversion:", "cannot calculate divide by zero", NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)

@@ -547,7 +547,7 @@ fn getLongintegerRegisterAsReal1071(registerNo: calcRegister_t, result: *align(1
             return true;
         }
     }
-    displayCalcErrorMessage(ERROR_INPUT_DATA_TYPE_NOT_MATCHING, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_INPUT_DATA_TYPE_NOT_MATCHING, ERR_REGISTER_LINE);
     moreInfoOnError("In function fnXfn:getLongintegerRegisterAsReal1071:", "Invalid input register", null, null);
     return false;
 }
@@ -566,7 +566,7 @@ pub export fn getAngleModeForRegister3r(registerNo: calcRegister_t, angleMode: *
             return true;
         }
     } else {
-        displayCalcErrorMessage(ERROR_INPUT_DATA_TYPE_NOT_MATCHING, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_INPUT_DATA_TYPE_NOT_MATCHING, ERR_REGISTER_LINE);
         moreInfoOnError("In function fnXfn:getAngleModeForRegister3r:", "Invalid input angle register", null, null);
     }
     return false;
@@ -583,7 +583,7 @@ fn getAngleModeForArithmetic3r(registerNo: calcRegister_t, angleMode: *angularMo
             return true;
         }
     } else {
-        displayCalcErrorMessage(ERROR_INPUT_DATA_TYPE_NOT_MATCHING, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_INPUT_DATA_TYPE_NOT_MATCHING, ERR_REGISTER_LINE);
         moreInfoOnError("In function fnXfn:getAngleModeForArithmetic3r:", "Invalid input angle register", null, null);
     }
     return false;
@@ -621,17 +621,17 @@ fn readThreeRegisters(registerNo: calcRegister_t, result: *align(1) real_t, temp
 // ===========================================================================
 fn getCombinedParameter(param: c_int, registerNo: calcRegister_t, combined: *align(1) real_t, temporary: *align(1) real_t, angleMode: *angularMode_t, c: *realContext_t) linksection(runtime.code_section) bool {
     if (!getAngleModeForRegister3r(registerNo, angleMode) and getRegisterDataType(registerNo) != dtLongInteger) {
-        displayCalcErrorMessage(ERROR_INPUT_DATA_TYPE_NOT_MATCHING, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_INPUT_DATA_TYPE_NOT_MATCHING, ERR_REGISTER_LINE);
         moreInfoOnError("In function fnXfn:getCombinedParameter:", "Invalid input registers: getAngleModeForRegister3r ", null, null);
         return false;
     }
     if (!readThreeRegisters(registerNo, combined, temporary, c)) {
-        displayCalcErrorMessage(ERROR_INPUT_DATA_TYPE_NOT_MATCHING, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_INPUT_DATA_TYPE_NOT_MATCHING, ERR_REGISTER_LINE);
         moreInfoOnError("In function fnXfn:getCombinedParameter:", "Invalid input registers: readThreeRegisters", null, null);
         return false;
     }
     if (!validateExponent(combined)) {
-        displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
         if (runtime.extra_info_on_calc_error) {
             var buffer: [ERROR_MESSAGE_LENGTH]u8 = undefined;
             const message = runtime.bufPrintZ(&buffer, "Total VAR{d} = r{d}*r{d}+r{d} exceeds the maximum exponent {d} > {d}", .{
@@ -656,12 +656,12 @@ fn getSingleParameter(registerNo: calcRegister_t, combined: *align(1) real_t, an
     angleMode.* = if (registerIsNoAngle(registerNo)) amNone else getRegisterAngularMode(registerNo);
 
     if (!getLongintegerRegisterAsReal1071(registerNo, combined, c)) {
-        displayCalcErrorMessage(ERROR_INPUT_DATA_TYPE_NOT_MATCHING, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_INPUT_DATA_TYPE_NOT_MATCHING, ERR_REGISTER_LINE);
         moreInfoOnError("In function fnXfn:getSingleParameter:", "Invalid input registers: getLongintegerRegisterAsReal1071", null, null);
         return false;
     }
     if (!validateExponent(combined)) {
-        displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
         if (runtime.extra_info_on_calc_error) {
             var buffer: [ERROR_MESSAGE_LENGTH]u8 = undefined;
             const message = runtime.bufPrintZ(&buffer, "Total VAR = r{d} exceeds the maximum exponent {d} > {d}", .{
@@ -789,7 +789,7 @@ fn fnXfnIndirect(registerNo: calcRegister_t, function: u16, functionParam: u16) 
         doXfn(registerNo, function, functionType, functionAngle, functionParam, ErrorLocation);
         return;
     }
-    displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE);
     if (runtime.extra_info_on_calc_error) {
         var buffer: [ERROR_MESSAGE_LENGTH]u8 = undefined;
         const message = runtime.bufPrintZ(&buffer, "Specified register numbers out of range: {d}", .{registerNo}) catch "";
@@ -1244,7 +1244,7 @@ pub export fn processResultantLongReal(
 // The location code is the only thing that tells the four `goto noFunction`
 // sites apart, so it travels with the call as it does upstream.
 fn noFunction(function: c_int, location: c_int) linksection(runtime.code_section) void {
-    displayCalcErrorMessage(ERROR_UNDEFINED_OPCODE, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_UNDEFINED_OPCODE, ERR_REGISTER_LINE);
     if (runtime.extra_info_on_calc_error) {
         var buffer: [ERROR_MESSAGE_LENGTH]u8 = undefined;
         const message = runtime.bufPrintZ(&buffer, "Incorrect function code {d} (location {d})", .{ function, location }) catch "";

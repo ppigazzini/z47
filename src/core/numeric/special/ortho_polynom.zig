@@ -66,7 +66,7 @@ const cstR = abi.constants.cstRAligned;
 fn getOrthoPolyParam(regist: calcRegister_t, val: *real_t, realContext: *realContext_t) linksection(runtime.code_section) bool {
     _ = realContext;
     if (!getRegisterAsReal(regist, val)) {
-        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, regist);
+        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
         moreInfoOnError("In function getOrthoPolyParam:", "Incompatible type for orthogonal polynomial.", null, null);
         return false;
     }
@@ -87,7 +87,7 @@ pub export fn fnOrthoPoly(kind: u16) linksection(runtime.code_section) callconv(
         realSetZero(&z);
         if ((kind != ORTHOPOLY_LAGUERRE_L_ALPHA) or getOrthoPolyParam(REGISTER_Z, &z, &ctxtReal39)) {
             if (realIsSpecial(&y) or realIsNegative(&y) or (!realIsAnInteger(&y)) or math_comparison_reals.realCompareLessEqual(&z, const__1())) {
-                displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+                displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
                 moreInfoOnError("In function fnOrthoPoly:", "Y must be a nonnegative integer.", if (kind == ORTHOPOLY_LAGUERRE_L_ALPHA) "In addition, Z must be greater than -1." else null, null);
             } else {
                 math_wp34s.WP34S_OrthoPoly(kind, &x, &y, &z, &ans, &ctxtReal39);

@@ -88,7 +88,7 @@ static void derivativeEquation(uint16_t order, uint8_t ti) {
       if(!solving) {
         clearSystemFlag(FLAG_SOLVING);
       }
-      displayCalcErrorMessage(ERROR_VARIABLE_NOT_SELECTED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      displayCalcErrorMessage(ERROR_VARIABLE_NOT_SELECTED, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         moreInfoOnError("In function derivativeEquation:", "no variable selected for the derivative", NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -146,7 +146,7 @@ static void derivativeVariable(uint16_t variable, uint16_t order, uint8_t ti) {
     return;
   }
   if(!(FIRST_NAMED_VARIABLE <= variable && variable <= LAST_NAMED_VARIABLE)) {
-    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "unexpected parameter %u", variable);
       moreInfoOnError("In function derivativeVariable:", errorMessage, NULL, NULL);
@@ -154,7 +154,7 @@ static void derivativeVariable(uint16_t variable, uint16_t order, uint8_t ti) {
     return;
   }
   if(currentDerivProgram >= numberOfLabels) {
-    displayCalcErrorMessage(ERROR_NO_PROGRAM_SPECIFIED, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_NO_PROGRAM_SPECIFIED, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function derivativeVariable:", "no program named by PGMDRV", NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -394,7 +394,7 @@ static void calcDeriv(calcRegister_t label, const FINITE_DIFF_COEFF *const *finD
   // One heap block for the working reals: this frame is on the stack under every sample and every nested derivative. Freed at freeWork.
   uint8_t *const work = allocC47Blocks(DERIV_WORK_REALS * REAL_SIZE_IN_BLOCKS(75));
   if(work == NULL) {
-    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     return;
   }
   REAL_T_IN(work, 75, 0, x);

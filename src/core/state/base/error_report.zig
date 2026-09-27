@@ -46,10 +46,7 @@ extern var screenUpdatingMode: u8;
 // wherever the option is off, tmpString included.
 extern fn printErrorTrace(errorCode: u8) void;
 
-pub export fn displayCalcErrorMessage(errorCode: u8, errMessageRegisterLine: calcRegister_t, disUsedCanBeRemoved: calcRegister_t) callconv(.c) void {
-    // disUsedCanBeRemoved (was errRegisterLine): dead since cb79577; the param is
-    // kept because ~924 call sites still pass it.
-    _ = disUsedCanBeRemoved;
+pub export fn displayCalcErrorMessage(errorCode: u8, errMessageRegisterLine: calcRegister_t) callconv(.c) void {
     if (errorCode >= NUMBER_OF_ERROR_CODES or errorCode == 0 or
         errMessageRegisterLine > REGISTER_T or errMessageRegisterLine < REGISTER_X)
     {

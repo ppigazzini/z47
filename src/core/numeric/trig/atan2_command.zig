@@ -25,7 +25,7 @@ fn realMatrixElementPtr(matrix: *runtime.real34Matrix_t, index: usize) *runtime.
 }
 
 fn reportZeroDomain(comptime function_name: [:0]const u8) void {
-    runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+    runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
     runtime.moreInfoOnError(function_name, "X = 0 and Y = 0", null, null);
 }
 
@@ -51,7 +51,7 @@ fn atan2RemaRema() void {
     runtime.linkToRealMatrixRegister(runtime.REGISTER_X, &x_matrix);
 
     if (y_matrix.header.matrixRows != x_matrix.header.matrixRows or y_matrix.header.matrixColumns != x_matrix.header.matrixColumns) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_MATRIX_MISMATCH, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_MATRIX_MISMATCH, runtime.ERR_REGISTER_LINE);
         if (runtime.extra_info_on_calc_error) {
             var buffer: [ERROR_MESSAGE_LENGTH]u8 = undefined;
             const message = runtime.bufPrintZ(&buffer, "cannot calculate atan2 with {d}" ++ std_cross ++ "{d}-matrix and {d}" ++ std_cross ++ "{d}-matrix", .{
@@ -126,7 +126,7 @@ fn atan2RealRema() void {
 }
 
 fn atan2Error() void {
-    runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+    runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE);
     if (runtime.extra_info_on_calc_error) {
         var buffer: [ERROR_MESSAGE_LENGTH]u8 = undefined;
         const y_name = std.mem.span(runtime.getRegisterDataTypeName(runtime.REGISTER_Y, true, false));

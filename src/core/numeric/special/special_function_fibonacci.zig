@@ -114,7 +114,7 @@ fn fibLonI() callconv(.c) void {
     }
 
     if (runtime.__gmpz_cmp_ui(&value[0], 4791) > 0) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_OUT_OF_RANGE, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_OUT_OF_RANGE, runtime.ERR_REGISTER_LINE);
         reportFibonacciLimit();
         return;
     }

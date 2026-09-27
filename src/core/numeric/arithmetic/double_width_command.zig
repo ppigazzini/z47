@@ -35,7 +35,7 @@ fn initShortIntegerRegisterAsLongInteger(reg: runtime.calcRegister_t, value: *ru
 }
 
 fn reportDblMultiplyTypeError(reg: runtime.calcRegister_t) void {
-    runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_T);
+    runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE);
     _ = runtime.getRegisterDataType(reg);
     runtime.moreInfoOnError("In function fnDblMultiply:", "the input type is not allowed for DBLx!", null, null);
 }
@@ -119,18 +119,18 @@ fn dblMultiplyOwned() void {
 }
 
 fn reportDblDivideTypeError(reg: runtime.calcRegister_t) void {
-    runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_T);
+    runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE);
     _ = runtime.getRegisterDataType(reg);
     runtime.moreInfoOnError("In function dblDivide:", "the input type is not allowed for DBL divide!", null, null);
 }
 
 fn reportDblDivideZeroDivisor() void {
-    runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_T);
+    runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
     runtime.moreInfoOnError("In function dblDivide:", "cannot divide a short integer by 0", null, null);
 }
 
 fn reportDblDivideOverflow() void {
-    runtime.displayCalcErrorMessage(runtime.ERROR_OUT_OF_RANGE, runtime.ERR_REGISTER_LINE, runtime.REGISTER_T);
+    runtime.displayCalcErrorMessage(runtime.ERROR_OUT_OF_RANGE, runtime.ERR_REGISTER_LINE);
     runtime.moreInfoOnError("In function dblDivide:", "quotient overflow", null, null);
 }
 

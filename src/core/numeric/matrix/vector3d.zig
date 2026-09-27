@@ -87,7 +87,7 @@ fn isStack3DReadyConvertIfNot(mode: i16, constVector: u16) bool {
     const is_3D_Register_Ready = validSPHInput or validCYLInput or valid3DRInput;
 
     if (!is_3D_Register_Ready) {
-        runtime.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_POLAR_RECT, runtime.ERR_REGISTER_LINE, REGISTER_X);
+        runtime.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_POLAR_RECT, runtime.ERR_REGISTER_LINE);
         if (runtime.extra_info_on_calc_error) runtime.moreInfoOnError("In function isStack3DReadyConvertIfNot:", "No valid coordinates for 3D Spherical/Cylindrical", null, null);
         return false;
     }

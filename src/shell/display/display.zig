@@ -4311,7 +4311,7 @@ pub export fn fnC47Show(fnShow_param: u16) callconv(.c) void {
             break :blk_switch;
         } else {
             temporaryInformation = TI_NO_INFO;
-            frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, @intCast(showRegis));
+            frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
             if (comptime extra_info) {
                 if (comptime !dmcp_build) {
                     abi.fmtBufZ(errorMessage[0..512], "cannot SHOW {s}{s}", .{ @as([*:0]const u8, tmpString + 2100), @as([*:0]const u8, frontier_debug.getRegisterDataTypeName(@intCast(showRegis), true, false)) });

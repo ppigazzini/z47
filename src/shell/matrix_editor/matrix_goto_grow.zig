@@ -72,7 +72,7 @@ fn validateBounds(row: u16, col: u16) bool {
     const cols = frontier_matrix_editor.z47_frontier_matrix_open_cols();
 
     if (row == 0 or row > rows or col == 0 or col > cols) {
-        frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
         if (comptime extra_info) {
             // The hint prints the pair that was rejected, so the user can see
             // which of the two coordinates was out of range.

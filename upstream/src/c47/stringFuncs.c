@@ -217,7 +217,7 @@ void fnAlphaLeng(uint16_t regist) {
   longInteger_t stringSize;
 
   if(getRegisterDataType(regist) != dtString) {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "cannot get the " STD_alpha "LENG? from %s", getRegisterDataTypeName(regist, true, false));
       moreInfoOnError("In function fnAlphaLeng:", errorMessage, NULL, NULL);
@@ -241,7 +241,7 @@ void fnAlphaToX(uint16_t regist) {
   longInteger_t lgInt;
 
   if(getRegisterDataType(regist) != dtString) {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "cannot use " STD_alpha STD_RIGHT_ARROW "x on %s", getRegisterDataTypeName(regist, true, false));
       moreInfoOnError("In function fnAlphaToX:", errorMessage, NULL, NULL);
@@ -372,7 +372,7 @@ static void _doXToAlpha(uint16_t regist) {
     }
 
     default: {
-      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "cannot x" STD_RIGHT_ARROW STD_alpha " when X is %s", getRegisterDataTypeName(REGISTER_X, true, false));
         moreInfoOnError("In function _doXToAlpha:", errorMessage, NULL, NULL);
@@ -385,7 +385,7 @@ static void _doXToAlpha(uint16_t regist) {
   longIntegerSetPositiveSign(lgInt);
   //if(longIntegerCompareUInt(lgInt, standardFont.glyphs[standardFont.numberOfGlyphs - 1].charCode & 0x7fff) > 0) {
   if(longIntegerCompareUInt(lgInt, 0x8000) >= 0) {
-    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "for x" STD_RIGHT_ARROW STD_alpha ", X must be < 32768. Here X = %" PRIu32, (uint32_t)lgInt->_mp_d[0]); // OK for 32 and 64 bit limbs
       moreInfoOnError("In function _doXToAlpha:", errorMessage, NULL, NULL);
@@ -417,7 +417,7 @@ static void _doXToAlpha(uint16_t regist) {
   }
 
   if(stringGlyphLength(tmpString) >= MAX_NUMBER_OF_GLYPHS_IN_STRING) {
-    displayCalcErrorMessage(ERROR_STRING_WOULD_BE_TOO_LONG, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_STRING_WOULD_BE_TOO_LONG, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "the resulting string would be %d characters long. Maximum is %d", stringGlyphLength(tmpString) + 1, MAX_NUMBER_OF_GLYPHS_IN_STRING);
       moreInfoOnError("In function _doXToAlpha:", errorMessage, NULL, NULL);
@@ -456,7 +456,7 @@ void fnXToAlpha(uint16_t regist) {   // new version, similar to the hp-42s ATOX 
     case dtString: {
       _readDestinationRegister(regist);
       if(stringGlyphLength(tmpString) + stringGlyphLength(REGISTER_STRING_DATA(REGISTER_X)) > MAX_NUMBER_OF_GLYPHS_IN_STRING) {
-        displayCalcErrorMessage(ERROR_STRING_WOULD_BE_TOO_LONG, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_STRING_WOULD_BE_TOO_LONG, ERR_REGISTER_LINE);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           sprintf(errorMessage, "the resulting string would be %d (%d + %d) characters long. Maximum is %d",
             stringGlyphLength(tmpString) + stringGlyphLength(REGISTER_STRING_DATA(REGISTER_X)),
@@ -489,7 +489,7 @@ void fnXToAlpha(uint16_t regist) {   // new version, similar to the hp-42s ATOX 
     }
 
     default: {
-      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "cannot x" STD_RIGHT_ARROW STD_alpha " when X is %s", getRegisterDataTypeName(REGISTER_X, true, false));
         moreInfoOnError("In function fnXToAlpha:", errorMessage, NULL, NULL);
@@ -532,7 +532,7 @@ void fnXToAlphaOld(uint16_t unusedButMandatoryParameter) {   // deprecated versi
     }
 
     default: {
-      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "cannot x" STD_RIGHT_ARROW STD_alpha " when X is %s", getRegisterDataTypeName(REGISTER_X, true, false));
         moreInfoOnError("In function fnXToAlpha:", errorMessage, NULL, NULL);
@@ -545,7 +545,7 @@ void fnXToAlphaOld(uint16_t unusedButMandatoryParameter) {   // deprecated versi
   longIntegerSetPositiveSign(lgInt);
   //if(longIntegerCompareUInt(lgInt, standardFont.glyphs[standardFont.numberOfGlyphs - 1].charCode & 0x7fff) > 0) {
   if(longIntegerCompareUInt(lgInt, 0x8000) >= 0) {
-    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "for x" STD_RIGHT_ARROW STD_alpha ", X must be < 32768. Here X = %" PRIu32, (uint32_t)lgInt->_mp_d[0]); // OK for 32 and 64 bit limbs
       moreInfoOnError("In function fnXToAlpha:", errorMessage, NULL, NULL);
@@ -586,7 +586,7 @@ void fnAlphaPos(uint16_t regist) {
   bool_t found;
 
   if(getRegisterDataType(regist) != dtString) {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "cannot use " STD_alpha "POS? on %s (reg %" PRIu16 ")", getRegisterDataTypeName(regist, true, false), regist);
       moreInfoOnError("In function fnAlphaPos:", errorMessage, NULL, NULL);
@@ -649,7 +649,7 @@ void fnAlphaRR(uint16_t regist) {
   char *ptr;
 
   if(getRegisterDataType(regist) != dtString) {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "cannot use " STD_alpha "RR on %s", getRegisterDataTypeName(regist, true, false));
       moreInfoOnError("In function fnAlphaRR:", errorMessage, NULL, NULL);
@@ -692,7 +692,7 @@ void fnAlphaRR(uint16_t regist) {
     }
 
     default: {
-      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "cannot " STD_alpha "RR when X is %s", getRegisterDataTypeName(REGISTER_X, true, false));
         moreInfoOnError("In function fnAlphaRR:", errorMessage, NULL, NULL);
@@ -733,7 +733,7 @@ void fnAlphaRL(uint16_t regist) {
   char *ptr;
 
   if(getRegisterDataType(regist) != dtString) {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "cannot use " STD_alpha "RL on %s", getRegisterDataTypeName(regist, true, false));
       moreInfoOnError("In function fnAlphaRL:", errorMessage, NULL, NULL);
@@ -776,7 +776,7 @@ void fnAlphaRL(uint16_t regist) {
     }
 
     default: {
-      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "cannot " STD_alpha "RL when X is %s", getRegisterDataTypeName(REGISTER_X, true, false));
         moreInfoOnError("In function fnAlphaRL:", errorMessage, NULL, NULL);
@@ -815,7 +815,7 @@ void fnAlphaSR(uint16_t regist) {
   int16_t stringGlyphLen, steps, glyphPointer;
 
   if(getRegisterDataType(regist) != dtString) {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "cannot use " STD_alpha "SR on %s", getRegisterDataTypeName(regist, true, false));
       moreInfoOnError("In function fnAlphaSR:", errorMessage, NULL, NULL);
@@ -855,7 +855,7 @@ void fnAlphaSR(uint16_t regist) {
     }
 
     default: {
-      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "cannot " STD_alpha "SR when X is %s", getRegisterDataTypeName(REGISTER_X, true, false));
         moreInfoOnError("In function fnAlphaSR:", errorMessage, NULL, NULL);
@@ -894,7 +894,7 @@ void fnAlphaSL(uint16_t regist) {
   char *ptr;
 
   if(getRegisterDataType(regist) != dtString) {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "cannot use " STD_alpha "SL on %s", getRegisterDataTypeName(regist, true, false));
       moreInfoOnError("In function fnAlphaSL:", errorMessage, NULL, NULL);
@@ -935,7 +935,7 @@ void fnAlphaSL(uint16_t regist) {
     }
 
     default: {
-      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "cannot " STD_alpha "SL when X is %s", getRegisterDataTypeName(REGISTER_X, true, false));
         moreInfoOnError("In function fnAlphaSL:", errorMessage, NULL, NULL);
@@ -969,6 +969,76 @@ void fnAlphaSL(uint16_t regist) {
 //
 // New 42 alpha functions
 //
+void fnSet42Alpha(uint16_t regist) {
+  if((regist <= LAST_SPARE_REGISTER) || (FIRST_NAMED_VARIABLE <= regist && regist < FIRST_NAMED_VARIABLE + numberOfNamedVariables)) {  // Global register or named variable only
+    fnClearAlpha(regist);
+    alphaRegister = regist;
+  }
+  else if(FIRST_RESERVED_VARIABLE <= regist && regist <= LAST_RESERVED_VARIABLE) {
+    displayCalcErrorMessage(ERROR_RESERVED_VARIABLE_NAME, ERR_REGISTER_LINE);
+    sprintf(errorMessage, "%s", allReservedVariables[regist - FIRST_RESERVED_VARIABLE].reservedVariableName + 1);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      moreInfoOnError("In function fnSet42Alpha:", errorMessage, " is a reserved variable.", NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  }
+  else {
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "%04d", regist);
+      moreInfoOnError("In function fnSet42Alpha:", errorMessage, " is out of range.", NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  }
+}
+
+void fnSet42AlphaX(uint16_t regist) {
+  longInteger_t reg;
+  int16_t xx;
+
+  if(getRegisterDataType(regist) == dtString) {  // Named variable, created when missing
+    xx = indirectAddressing(regist, INDPM_REGISTER, 0, 0, true);
+    if(xx != FAILED_INDIRECTION) {
+      fnSet42Alpha(xx);
+    }
+    return;
+  }
+  if(!getRegisterAsLongInt(regist, reg, NULL)) {
+    goto end;
+  }
+  longIntegerToInt32(reg, xx);
+  if((xx < 0) || (xx > 255)) {
+    xx = INVALID_VARIABLE; // force out of range
+  }
+  fnSet42Alpha(regKStoC(xx));
+end:
+  longIntegerFree(reg);
+}
+
+
+void fnGet42Alpha(uint16_t unusedButMandatoryParameter) {
+  longInteger_t alphaR;
+  if(alphaRegister <= LAST_SPARE_REGISTER) {  // Global register
+    liftStack();
+    longIntegerInit(alphaR);
+    uInt32ToLongInteger(regCtoKS(alphaRegister), alphaR);
+    convertLongIntegerToLongIntegerRegister(alphaR, REGISTER_X);
+    longIntegerFree(alphaR);
+  }
+  else if(FIRST_NAMED_VARIABLE <= alphaRegister && alphaRegister < FIRST_NAMED_VARIABLE + numberOfNamedVariables) {  // Named variable
+    int16_t nameLength = 16;
+    liftStack();
+    reallocateRegister(REGISTER_X, dtString, TO_BLOCKS(nameLength), amNone);
+    xcopy(REGISTER_STRING_DATA(REGISTER_X), allNamedVariables[alphaRegister - FIRST_NAMED_VARIABLE].variableName + 1, nameLength);
+  }
+  else {
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "%04d", alphaRegister);
+      moreInfoOnError("In function fnGet42Alpha:", errorMessage, " is out of range.", NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  }
+}
+
+
 void truncateAlphaRegisterTo44Char() {
   int16_t stringGlyphLen, steps, glyphPointer;
   char *ptr;
@@ -1011,7 +1081,7 @@ void fn42AlphaRotate(uint16_t unusedButMandatoryParameter) {
   longInteger_t lgInt;
 
   if(getRegisterDataType(alphaRegister) != dtString) {
-    displayCalcErrorMessage(ERROR_NO_STRING_IN_ALPHA_REGISTER, ERR_REGISTER_LINE, REGISTER_T);
+    displayCalcErrorMessage(ERROR_NO_STRING_IN_ALPHA_REGISTER, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "cannot use 42AROT on %s", getRegisterDataTypeName(alphaRegister, true, false));
       moreInfoOnError("In function fn42AlphaRotate:", errorMessage, NULL, NULL);
@@ -1041,7 +1111,7 @@ void fn42AlphaRotate(uint16_t unusedButMandatoryParameter) {
     }
 
     default: {
-      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "cannot 42AROT when X is %s", getRegisterDataTypeName(REGISTER_X, true, false));
         moreInfoOnError("In function fn42AlphaRotate:", errorMessage, NULL, NULL);
@@ -1065,7 +1135,7 @@ void fn42AlphaShift(uint16_t unusedButMandatoryParameter) {
   char *ptr;
 
   if(getRegisterDataType(alphaRegister) != dtString) {
-    displayCalcErrorMessage(ERROR_NO_STRING_IN_ALPHA_REGISTER, ERR_REGISTER_LINE, REGISTER_T);
+    displayCalcErrorMessage(ERROR_NO_STRING_IN_ALPHA_REGISTER, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "cannot use 42ASHF on %s", getRegisterDataTypeName(alphaRegister, true, false));
       moreInfoOnError("In function fn42AlphaShift:", errorMessage, NULL, NULL);
@@ -1111,7 +1181,7 @@ void fnAlphaIP(uint16_t regist) {
     }
 
     default: {
-      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "cannot " STD_alpha "IP when X is %s", getRegisterDataTypeName(REGISTER_X, true, false));
         moreInfoOnError("In function fnAlphaIP:", errorMessage, NULL, NULL);
@@ -1206,7 +1276,7 @@ void fnAlphaLower(uint16_t regist) {
   char *ptrString;
 
   if(getRegisterDataType(regist) != dtString) {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "cannot convert %s to Lower Case", getRegisterDataTypeName(regist, true, false));
       moreInfoOnError("In function fnAlphaLower:", errorMessage, NULL, NULL);
@@ -1222,7 +1292,7 @@ void fnAlphaUpper(uint16_t regist) {
   char *ptrString;
 
   if(getRegisterDataType(regist) != dtString) {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "cannot convert %s to Upper Case", getRegisterDataTypeName(regist, true, false));
       moreInfoOnError("In function fnAlphaUpper:", errorMessage, NULL, NULL);
@@ -1352,7 +1422,7 @@ void fnAlphaRev(uint16_t regist) {
   int32_t lgString = stringGlyphLength(ptrString);
 
   if(strlen(ptrString) >= TMP_STR_LENGTH) {   // >= : the reversed copy needs strlen + 1 bytes (trailing 0) in tmpString[TMP_STR_LENGTH]
-    displayCalcErrorMessage(ERROR_INPUT_TOO_LONG, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_INPUT_TOO_LONG, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "string in regist %d is too long, size %d bytes doesn't fit in tmpString (%d bytes max)", regist, (uint16_t) strlen(ptrString), TMP_STR_LENGTH);
       moreInfoOnError("In function fnAlphaRev:", errorMessage, NULL, NULL);
@@ -1406,7 +1476,7 @@ void fnAlphaTrim(uint16_t regist) {
   ptrString = REGISTER_STRING_DATA(REGISTER_X);
   lgString = stringGlyphLength(ptrString);
   if(lgString != 1) {
-    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "for "STD_alpha "TRIM, X must be a single character. Here X = %s", ptrString);
       moreInfoOnError("In function fnAlphaTrim:", errorMessage, NULL, NULL);
@@ -1424,7 +1494,7 @@ void fnAlphaTrim(uint16_t regist) {
     pos = stringNextGlyph(ptrString, pos);
   }
   memmove(ptrString, ptrString + pos, strlen(ptrString + pos) + 1);
-  
+
   // Trim character at the end of the string
   pos = stringLastGlyph(ptrString);
   while(_isSameGlyph(glyph, ptrString + pos)) {

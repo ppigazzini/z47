@@ -502,7 +502,6 @@ static void normalizeDyadicArithmeticSnapshot(math_wrappers_snapshot_t *snapshot
   normalized.display_calc_error_calls = snapshot->display_calc_error_calls;
   normalized.display_calc_error_last_code = snapshot->display_calc_error_last_code;
   normalized.display_calc_error_last_message_reg_line = snapshot->display_calc_error_last_message_reg_line;
-  normalized.display_calc_error_last_register_line = snapshot->display_calc_error_last_register_line;
   normalized.more_info_calls = snapshot->more_info_calls;
   normalized.final_register_data_type = snapshot->final_register_data_type;
   normalized.final_register_tag = snapshot->final_register_tag;

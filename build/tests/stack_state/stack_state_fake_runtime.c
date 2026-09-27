@@ -464,9 +464,8 @@ void calcModeNormal(void) {
   calcMode = 0; // CM_NORMAL
 }
 
-void displayCalcErrorMessage(uint8_t error_code, calcRegister_t err_message_register_line, calcRegister_t err_register_line) {
+void displayCalcErrorMessage(uint8_t error_code, calcRegister_t err_message_register_line) {
   (void)err_message_register_line;
-  (void)err_register_line;
   lastErrorCode = error_code;
 }
 
@@ -759,7 +758,7 @@ bool_t z47_stack_runtime_set_swap_target_descriptor(uint16_t reg, uint32_t descr
 
 void z47_stack_runtime_report_invalid_swap_target(uint16_t reg) {
   (void)reg;
-  displayCalcErrorMessage(ERROR_OUT_OF_RANGE, REGISTER_Z, REGISTER_X);
+  displayCalcErrorMessage(ERROR_OUT_OF_RANGE, REGISTER_Z);
 }
 
 uint16_t z47_stack_runtime_statistical_sums_blocks(void) {
@@ -835,7 +834,7 @@ void z47_stack_runtime_sort_register_range(uint16_t range_start, uint16_t range_
 }
 
 void z47_stack_runtime_report_register_command_error(uint8_t error_code) {
-  displayCalcErrorMessage(error_code, REGISTER_X, REGISTER_X);
+  displayCalcErrorMessage(error_code, REGISTER_X);
 }
 
 uint8_t z47_registers_get_reg_clr_range(uint16_t *s, uint16_t *n) {

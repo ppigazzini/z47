@@ -21,7 +21,7 @@ TO_QSPI const int16_t menu_42[]          = { ITM_42STRING,                  ITM_
                                              ITM_42ALENG,                   ITM_42POSA,                 ITM_42AROT,               ITM_42ASHF,            ITM_42PROMPT,                ITM_42AIP,
                                              ITM_42KEYG,                    ITM_42KEYX,                 ITM_42VRMNU,              ITM_42PRA,             ITM_42ATOX,                  ITM_42XTOA,
 
-                                             ITM_M_DIMQ,                    ITM_42BITQ,                 ITM_42ROTXY,              ITM_NULL,              ITM_NULL,                    ITM_NULL                        };
+                                             ITM_M_DIMQ,                    ITM_42BITQ,                 ITM_42ROTXY,              ITM_NULL,              ITM_SET_42ALPHA,             ITM_GET_42ALPHA                };
 
 
 TO_QSPI const int16_t menu_BITS[]        = { ITM_LOGICALAND,                ITM_LOGICALOR,              ITM_LOGICALXOR,           ITM_LOGICALNOT,        ITM_MASKL,                   ITM_MASKR,
@@ -135,21 +135,20 @@ TO_QSPI const int16_t menu_INFO[]        = { ITM_VERS,                      ITM_
                                              ITM_GETRANGE,                  ITM_GETHIDE,                ITM_GETSDIGS,             ITM_GETFDIGS,          ITM_BESTFQ,                  ITM_NULL,
                                              ITM_GET_JUL_GREG,              ITM_GET_WOY,                ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
 
-                                             ITM_GET_ADM,                   ITM_GET_ISM,                ITM_GET_REALDF,           ITM_GET_NDEC,          ITM_GET_DMX,                  ITM_GET_GRAMOD,
-                                             ITM_SET_ADM,                   ITM_SET_ISM,                ITM_SET_REALDF,           ITM_SET_NDEC,          ITM_SET_DMX,                  ITM_SET_GRAMOD,
-                                             ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                     ITM_NULL,
+                                             ITM_GET_ADM,                   ITM_GET_ISM,                ITM_GET_REALDF,           ITM_GET_NDEC,          ITM_GET_DMX,                 ITM_GET_GRAMOD,
+                                             ITM_SET_ADM,                   ITM_SET_ISM,                ITM_SET_REALDF,           ITM_SET_NDEC,          ITM_SET_DMX,                 ITM_SET_GRAMOD,
+                                             ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
 
-                                             ITM_GET_LPFCT,                 ITM_GET_DPFCT,              ITM_NULL,                 ITM_NULL,              ITM_NULL,                     ITM_GET_RM,
-                                             ITM_SET_LPFCT,                 ITM_SET_DPFCT,              ITM_NULL,                 ITM_NULL,              ITM_NULL,                     ITM_SET_RM,
-};
+                                             ITM_GET_LPFCT,                 ITM_GET_DPFCT,              ITM_NULL,                 ITM_NULL,              ITM_GET_42ALPHA,             ITM_GET_RM,
+                                             ITM_SET_LPFCT,                 ITM_SET_DPFCT,              ITM_NULL,                 ITM_NULL,              ITM_SET_42ALPHAX,            ITM_SET_RM                    };
 
-TO_QSPI const int16_t menu_RMODE[]       = { ITM_RM_HALF_EVEN,              ITM_RM_HALF_UP,             ITM_RM_HALF_DOWN,         ITM_RM_UP,             ITM_RM_DOWN,                  ITM_RM_FLOOR,     
-                                             ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                     ITM_RM_CEILING               };
+TO_QSPI const int16_t menu_RMODE[]       = { ITM_RM_HALF_EVEN,              ITM_RM_HALF_UP,             ITM_RM_HALF_DOWN,         ITM_RM_UP,             ITM_RM_DOWN,                 ITM_RM_FLOOR,
+                                             ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_RM_CEILING                };
 
 
 TO_QSPI const int16_t menu_INTS[]        = { ITM_A,                         ITM_B,                      ITM_C,                    ITM_D,                 ITM_E,                       ITM_F,
                                              ITM_IDIV,                      ITM_RMD,                    ITM_MOD,                  ITM_XMOD,              ITM_LINT,                    ITM_LCM,
-                                             ITM_DBLDIV,                    ITM_DBLR,                   ITM_DBLMULT,              ITM_PMOD,              ITM_SINT,                    ITM_GCD                       };
+                                             ITM_DBLDIV,                    ITM_DBLR,                   ITM_DBLMULT,              ITM_PMOD,              ITM_SINT,                    ITM_GCD                        };
 
 
 TO_QSPI const int16_t menu_LOOP[]        = { ITM_DSE,                       ITM_DSZ,                    ITM_DSL,                  ITM_ISE,               ITM_ISZ,                     ITM_ISG,
@@ -805,7 +804,8 @@ TO_QSPI const int16_t menu_AUDIO[]       = { ITM_BEEP,                      ITM_
 TO_QSPI const int16_t menu_IO[]          = { ITM_WRITEP,                    ITM_SAVEST,                   ITM_SAVE,                    ITM_LOADP,                     ITM_LOADR,                    ITM_LOADV,
                                              ITM_READP,                     ITM_LOADST,                   ITM_LOAD,                    ITM_LOADSIGMA,                 ITM_LOADSS,                  -MNU_PRINT,
                                              ITM_EXPORTP,                   ITM_WRXPALL,                  ITM_SAVEAUT,                 ITM_NULL,                      ITM_SNAP,                    -MNU_AUDIO,
-                                             ITM_EXPX,                      ITM_EXPSTK,                   ITM_EXPATOW,                 ITM_EXPNREG,                   ITM_XEXPORT,                  ITM_IMPREGS               };
+                                             ITM_EXPX,                      ITM_EXPSTK,                   ITM_EXPATOW,                 ITM_EXPNREG,                   ITM_XEXPORT,                  ITM_IMPREGS,
+                                             ITM_EXPFLN,                    ITM_EXPLFLN,                  ITM_EXPSFL,                  ITM_NULL,                      ITM_NULL,                     ITM_NULL                  };
 
 #if defined(PC_BUILD)
   #define PAT  ITM_PRINT_ALL_ITEMS
@@ -1361,7 +1361,7 @@ void fnOpenMenu(uint16_t menu) {
   }
 
   if(softmenu[i].menuItem == 0) {                                              // Should never happen as menu is checked before the call fnOpenMenu
-    displayCalcErrorMessage(ERROR_UNDEF_MENU, ERR_REGISTER_LINE, REGISTER_X);  // No check for FLAG_IGN1ER to ensure this error case is reported if it happens anyway
+    displayCalcErrorMessage(ERROR_UNDEF_MENU, ERR_REGISTER_LINE);  // No check for FLAG_IGN1ER to ensure this error case is reported if it happens anyway
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "menu '%d' is not a valid menu item", menu);
       moreInfoOnError("In function fnOpenMenu:", errorMessage, NULL, NULL);
@@ -1402,7 +1402,7 @@ void fnOpenMenu(uint16_t menu) {
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
     else {
-      displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Page Number %" PRIu16 " is not a valid page for the menu %" PRIu16 "", menuPageNumber, menu);
         moreInfoOnError("In function fnOpenMenu:", errorMessage, NULL, NULL);
@@ -1532,7 +1532,7 @@ void fnGetMenu(uint16_t funusedButMandatoryParameter) {
     }
     reallocateRegister(REGISTER_X, dtString, TO_BLOCKS(lenInBytes), amNone);
     if(lastErrorCode == ERROR_RAM_FULL) {
-      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
       fnUndo(NOPARAM);
       return;
     }
@@ -1544,7 +1544,7 @@ void fnGetMenu(uint16_t funusedButMandatoryParameter) {
 
     reallocateRegister(REGISTER_X, dtString, TO_BLOCKS(lenInBytes), amNone);
     if(lastErrorCode == ERROR_RAM_FULL) {
-      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
       fnUndo(NOPARAM);
       return;
     }
@@ -1692,6 +1692,27 @@ static void _dynmenuConstructMVarsFromPgm(uint16_t label, uint16_t *numberOfByte
   }
 
 
+  static inline const char * _dynmenuLbl(userMenuItem_t *menuData) {
+    const char* lbl;
+    int16_t itemId = menuData->item;
+    if(menuData->argumentName[0] != 0) {
+      lbl = menuData->argumentName;
+    }
+    else if(itemId == ITM_NULL) { //do not include clearing NOP
+      lbl = "";
+    }
+    else {
+      const item_t *item = &indexOfItems[abs(itemId)];
+      if(item->itemCatalogName[0] == 0 || (itemId == ITM_op_j || itemId == ITM_op_j_pol || itemId == ITM_op_a || itemId == ITM_op_a2)) {
+        lbl = item->itemSoftmenuName;
+      }
+      else {
+        lbl = item->itemCatalogName;
+      }
+    }
+    return lbl;
+  }
+
 
   static void _dynmenuConstructUser(int16_t menu) {
     userMenuItem_t *menuData = (dynamicSoftmenu[menu].menuItem == -MNU_DYNAMIC) ? userMenus[currentUserMenu].menuItem : (dynamicSoftmenu[menu].menuItem == -MNU_MyAlpha) ? userAlphaItems : userMenuItems;
@@ -1699,35 +1720,13 @@ static void _dynmenuConstructMVarsFromPgm(uint16_t label, uint16_t *numberOfByte
     uint8_t *ptr;
 
     for(i = 0; i < 18; i++) {
-      if(menuData[i].argumentName[0] != 0) {
-        numberOfBytes += stringByteLength(menuData[i].argumentName) + 1;
-      }
-      else if(menuData[i].item == ITM_NOP || menuData[i].item == ITM_NULL) {
-        numberOfBytes += 1;
-      }
-      else if( indexOfItems[abs(menuData[i].item)].itemCatalogName[0] == 0 || (menuData[i].item == ITM_op_j || menuData[i].item == ITM_op_j_pol || menuData[i].item == ITM_op_a || menuData[i].item == ITM_op_a2)) {
-        numberOfBytes += stringByteLength(indexOfItems[abs(menuData[i].item)].itemSoftmenuName) + 1;
-      }
-      else {
-        numberOfBytes += stringByteLength(indexOfItems[abs(menuData[i].item)].itemCatalogName) + 1;
-      }
+      const char* lbl = _dynmenuLbl(&menuData[i]);
+      numberOfBytes += stringByteLength(lbl) + 1;
     }
     ptr = malloc(numberOfBytes);
     dynamicSoftmenu[menu].menuContent = ptr;
     for(i = 0; i < 18; i++) {
-      const char *lbl;
-      if(menuData[i].argumentName[0] != 0) {
-        lbl = menuData[i].argumentName;
-      }
-      else if(menuData[i].item == ITM_NULL) {
-        lbl = "";
-      }
-      else if(indexOfItems[abs(menuData[i].item)].itemCatalogName[0] == 0 || (menuData[i].item == ITM_op_j || menuData[i].item == ITM_op_j_pol || menuData[i].item == ITM_op_a || menuData[i].item == ITM_op_a2)) {
-        lbl = indexOfItems[abs(menuData[i].item)].itemSoftmenuName;
-      }
-      else {
-        lbl = indexOfItems[abs(menuData[i].item)].itemCatalogName;
-      }
+      const char *lbl = _dynmenuLbl(&menuData[i]);
       int16_t len = stringByteLength(lbl) + 1;
       xcopy(ptr, lbl, len);
       ptr += len;
@@ -2768,6 +2767,20 @@ static void changeSoftKey(int16_t itemNr, char * itemName, videoMode_t * vm, int
                         stringCopy(showText + stringByteLength(showText), indexOfItems[roundingMode + ITM_RM_HALF_EVEN].itemSoftmenuName);
                         *showValue = NOVAL;
                         break;
+      case ITM_SET_42ALPHA:
+      case ITM_SET_42ALPHAX:
+                        if(FIRST_LETTERED_REGISTER  <= alphaRegister && alphaRegister <= REGISTER_W){
+                          sprintf(showText + stringByteLength(showText), "%s", stringToSub((const char *)&registerLetter[alphaRegister - FIRST_LETTERED_REGISTER]));
+                          *showValue = NOVAL;
+                        }
+                        else if(FIRST_NAMED_VARIABLE <= alphaRegister && alphaRegister <= LAST_NAMED_VARIABLE) {
+                          if(itemNr%10000 == ITM_SET_42ALPHA) {
+                            sprintf(showText + stringByteLength(showText), "%s", stringToSub("var"));
+                          } else {
+                            sprintf(showText + stringByteLength(showText), "%s", stringToSub("vr"));
+                          }
+                          *showValue = NOVAL;
+                        }
 
       default: ;
       }
@@ -2806,7 +2819,6 @@ static void changeSoftKey(int16_t itemNr, char * itemName, videoMode_t * vm, int
     return;
   }
 }
-
 
 
 bool_t savedspace(int16_t itemNr) {  //strike out all SAVED_SPACE items
@@ -2880,6 +2892,9 @@ bool_t savedspace(int16_t itemNr) {  //strike out all SAVED_SPACE items
       case ITM_EXPNREG:
       case ITM_XEXPORT:
       case ITM_IMPREGS:
+      case ITM_EXPFLN :
+      case ITM_EXPLFLN:
+      case ITM_EXPSFL :
     #endif // !OPTION_DATAFILE
 
     #if !defined(OPTION_EIGEN)
@@ -4043,6 +4058,7 @@ void showSoftmenuCurrentPart(void) {
       if(menu(i) == userMenuId) { // if found, remove it
         xcopy(softmenuStack + i, softmenuStack + i + 1, (SOFTMENU_STACK_SIZE - i - 1) * sizeof(softmenuStack_t));
         memset(softmenuStack + SOFTMENU_STACK_SIZE - 1, 0, sizeof(softmenuStack_t)); // Put MyMenu in the last stack element
+        doRefreshSoftMenu = true;
         //printf("Blanking %i: %i %s | %i %s\n",i, softmenu[softmenuStack[i].softmenuId].menuItem, indexOfItems[abs(softmenu[softmenuStack[i].softmenuId].menuItem)].itemCatalogName, menu(i), indexOfItems[abs(menu(i))].itemCatalogName);
       }
     }
@@ -4200,7 +4216,7 @@ void showSoftmenuCurrentPart(void) {
       }
 
       if(numberOfVars > 12) {
-        displayCalcErrorMessage(ERROR_EQUATION_TOO_COMPLEX, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        displayCalcErrorMessage(ERROR_EQUATION_TOO_COMPLEX, ERR_REGISTER_LINE);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           moreInfoOnError("In function showSoftmenu:", "there are more than 12 variables in this equation!", NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -4245,7 +4261,7 @@ void showSoftmenuCurrentPart(void) {
          id == -MNU_1STDERIV   ||
          id == -MNU_2NDDERIV     ) {
         id = -MNU_EQN;
-        displayCalcErrorMessage(ERROR_VARIABLE_NOT_SELECTED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        displayCalcErrorMessage(ERROR_VARIABLE_NOT_SELECTED, ERR_REGISTER_LINE);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           moreInfoOnError("In function showSoftmenu:", "The solver/integrator variable is not selected. Refusing access to Tools/Solver menu prior to variable selected!", NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)

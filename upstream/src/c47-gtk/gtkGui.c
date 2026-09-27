@@ -3237,7 +3237,7 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
   else {
     //stringToUtf8(indexOfItems[max(key->primary, -key->primary)].itemSoftmenuName, lbl);
     char sstmp[16];
-    strcpy(sstmp, indexOfItems[max(key->primary, -key->primary)].itemSoftmenuName);
+    strcpy(sstmp, indexOfItems[max(key->primary, -key->primary)].itemSoftmenuName); 
     if((key->primary == ITM_op_j || key->primary == ITM_op_j_pol) && getSystemFlag(FLAG_CPXj)) {
       sstmp[1]++;
     }
@@ -3252,69 +3252,75 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
     }
   }
 
-      bool_t Norm_Key_00_used = ((calcMode == CM_NORMAL || calcMode == CM_NIM || calcMode == CM_PEM || calcMode == CM_TIMER )
+  bool_t Norm_Key_00_used = ((calcMode == CM_NORMAL || calcMode == CM_NIM || calcMode == CM_PEM || calcMode == CM_TIMER )
                                   && key->keyId == Norm_Key_00_keyID
                                   && Norm_Key_00.func != Norm_Key_00_item_in_layout
                                   && !getSystemFlag(FLAG_USER)
                                   );
 
-      if(Norm_Key_00_used) {                                       //Sigma+NRM: JChange the name inside the Sigma+ button; allow USER mode, but override the USER setting for Sigma+, except for shiftg which is not overriden
-        //stringToUtf8(indexOfItems[max(Norm_Key_00_VAR, -Norm_Key_00_VAR)].itemSoftmenuName, lbl);
-        char sstmp[16];
-        if((Norm_Key_00.funcParam[0] != 0) && ((Norm_Key_00.func == -MNU_DYNAMIC) || (Norm_Key_00.func == ITM_XEQ) || (Norm_Key_00.func == ITM_RCL)))  {
-          strcpy(sstmp, (char *)&Norm_Key_00.funcParam);       // name of a user menu, program or variable assigned to the Norm key
-        }
-        else {
-          strcpy(sstmp, indexOfItems[max(Norm_Key_00.func, -Norm_Key_00.func)].itemSoftmenuName);
-          if((Norm_Key_00.func == ITM_op_j || Norm_Key_00.func == ITM_op_j_pol) && getSystemFlag(FLAG_CPXj)) {
-            sstmp[1]++;
-          }
-          if(Norm_Key_00.func == ITM_EE_EXP_TH && getSystemFlag(FLAG_CPXj)) {
-            sstmp[3]++;
-          }
-        }
-        stringToUtf8(sstmp, lbl);
+  if(Norm_Key_00_used) {                                       //Sigma+NRM: JChange the name inside the Sigma+ button; allow USER mode, but override the USER setting for Sigma+, except for shiftg which is not overriden
+    //stringToUtf8(indexOfItems[max(Norm_Key_00_VAR, -Norm_Key_00_VAR)].itemSoftmenuName, lbl);
+    char sstmp[16];
+    if((Norm_Key_00.funcParam[0] != 0) && ((Norm_Key_00.func == -MNU_DYNAMIC) || (Norm_Key_00.func == ITM_XEQ) || (Norm_Key_00.func == ITM_RCL)))  {
+      strcpy(sstmp, (char *)&Norm_Key_00.funcParam);       // name of a user menu, program or variable assigned to the Norm key
+    }
+    else {
+      strcpy(sstmp, indexOfItems[max(Norm_Key_00.func, -Norm_Key_00.func)].itemSoftmenuName);
+      if((Norm_Key_00.func == ITM_op_j || Norm_Key_00.func == ITM_op_j_pol) && getSystemFlag(FLAG_CPXj)) {
+        sstmp[1]++;
       }
+      if(Norm_Key_00.func == ITM_EE_EXP_TH && getSystemFlag(FLAG_CPXj)) {
+        sstmp[3]++;
+      }
+    }
+    stringToUtf8(sstmp, lbl);
+  }
 
-      gtk_button_set_label(GTK_BUTTON(button), (gchar *)lbl);
-      //printf("--THIS IS NORMAL mode primary-position:   %s\n",lbl);
+  //Keyboard primary-layer text replacements
+  if(strcmp((char *)lbl, "LINPOL") == 0) {
+    strcpy((char *)lbl, "LNP");
+  }
 
-      //if(strcmp((char *)lbl, "/") == 0 && key->keyId == 55) {    //JM if "/", re-do to "÷". Presumed easier than to fix the UTf8 conversion above.
-      //  gtk_button_set_label(GTK_BUTTON(button), "÷");           //JM DIV
-      //}                                                          //JM
+  gtk_button_set_label(GTK_BUTTON(button), (gchar *)lbl);
+  //printf("--THIS IS NORMAL mode primary-position:   %s\n",lbl);
 
-      if((key->primary == ITM_AIM && getSystemFlag(FLAG_USER) && calcMode == CM_NORMAL && key->keyId == Norm_Key_00_keyID) ||                       //Sigma+NRM: Colour the alpha key gold if assigned.
-        (key->primary == Norm_Key_00_item_in_layout && calcMode == CM_NORMAL && Norm_Key_00.func == ITM_AIM && key->keyId == Norm_Key_00_keyID)) {
-        gtk_widget_set_name(button, "AlphaKey");
-      }
-      else if(key->primary == ITM_SHIFTf  || (key->primary == Norm_Key_00_item_in_layout && Norm_Key_00.func == ITM_SHIFTf && key->keyId == Norm_Key_00_keyID) ) { //Sigma+NRM: Colour the shiftf key yellow if assigned.
-        gtk_widget_set_name(button, "calcKeyF");
-      }
-      else if(key->primary == ITM_SHIFTg  || (key->primary == Norm_Key_00_item_in_layout && Norm_Key_00.func == ITM_SHIFTg && key->keyId == Norm_Key_00_keyID) ) { //Sigma+NRM: Colour the shiftg key blue if assigned.
-        gtk_widget_set_name(button, "calcKeyG");
-      }
-      else if(key->primary == KEY_fg  || (key->primary == Norm_Key_00_item_in_layout && Norm_Key_00.func == KEY_fg && key->keyId == Norm_Key_00_keyID) ) { //Sigma+NRM: Colour the shiftfg key yellow if assigned.
-        gtk_widget_set_name(button, "calcKeyFG");
-      }
-      else if((key->primary >= ITM_0 && key->primary <= ITM_9) || key->primary == ITM_PERIOD) {
-        gtk_widget_set_name(button, "calcNumericKey");
-      }
-      else if(strcmp((char *)lbl, "÷") == 0 && key->keyId == 55) {      //JM increase the font size of the operators to the numeric key size
-        gtk_widget_set_name(button, "calcNumericKey");                  //JM increase the font size of the operators
-      }                                                                 //JM increase the font size of the operators
-      else if(strcmp((char *)lbl, "×") == 0 && key->keyId == 65) {      //JM increase the font size of the operators
-        gtk_widget_set_name(button, "calcNumericKey");                  //JM increase the font size of the operators
-      }                                                                 //JM increase the font size of the operators
-      else if(strcmp((char *)lbl, "-") == 0 && key->keyId == 75) {      //JM increase the font size of the operators
-        gtk_widget_set_name(button, "calcNumericKey");                  //JM increase the font size of the operators
-      }                                                                 //JM increase the font size of the operators
-      else if(strcmp((char *)lbl, "+") == 0 && key->keyId == 85) {      //JM increase the font size of the operators
-        gtk_widget_set_name(button, "calcNumericKey");                  //JM increase the font size of the operators
-      }                                                                 //JM increase the font size of the operators
-      else {
-        gtk_widget_set_name(button, "calcKey");
-      }
-char sstmp[16];
+  //if(strcmp((char *)lbl, "/") == 0 && key->keyId == 55) {    //JM if "/", re-do to "÷". Presumed easier than to fix the UTf8 conversion above.
+  //  gtk_button_set_label(GTK_BUTTON(button), "÷");           //JM DIV
+  //}                                                          //JM
+
+  if((key->primary == ITM_AIM && getSystemFlag(FLAG_USER) && calcMode == CM_NORMAL && key->keyId == Norm_Key_00_keyID) ||                       //Sigma+NRM: Colour the alpha key gold if assigned.
+    (key->primary == Norm_Key_00_item_in_layout && calcMode == CM_NORMAL && Norm_Key_00.func == ITM_AIM && key->keyId == Norm_Key_00_keyID)) {
+    gtk_widget_set_name(button, "AlphaKey");
+  }
+  else if(key->primary == ITM_SHIFTf  || (key->primary == Norm_Key_00_item_in_layout && Norm_Key_00.func == ITM_SHIFTf && key->keyId == Norm_Key_00_keyID) ) { //Sigma+NRM: Colour the shiftf key yellow if assigned.
+    gtk_widget_set_name(button, "calcKeyF");
+  }
+  else if(key->primary == ITM_SHIFTg  || (key->primary == Norm_Key_00_item_in_layout && Norm_Key_00.func == ITM_SHIFTg && key->keyId == Norm_Key_00_keyID) ) { //Sigma+NRM: Colour the shiftg key blue if assigned.
+    gtk_widget_set_name(button, "calcKeyG");
+  }
+  else if(key->primary == KEY_fg  || (key->primary == Norm_Key_00_item_in_layout && Norm_Key_00.func == KEY_fg && key->keyId == Norm_Key_00_keyID) ) { //Sigma+NRM: Colour the shiftfg key yellow if assigned.
+    gtk_widget_set_name(button, "calcKeyFG");
+  }
+  else if((key->primary >= ITM_0 && key->primary <= ITM_9) || key->primary == ITM_PERIOD) {
+    gtk_widget_set_name(button, "calcNumericKey");
+  }
+  else if(strcmp((char *)lbl, "÷") == 0 && key->keyId == 55) {      //JM increase the font size of the operators to the numeric key size
+    gtk_widget_set_name(button, "calcNumericKey");                  //JM increase the font size of the operators
+  }                                                                 //JM increase the font size of the operators
+  else if(strcmp((char *)lbl, "×") == 0 && key->keyId == 65) {      //JM increase the font size of the operators
+    gtk_widget_set_name(button, "calcNumericKey");                  //JM increase the font size of the operators
+  }                                                                 //JM increase the font size of the operators
+  else if(strcmp((char *)lbl, "-") == 0 && key->keyId == 75) {      //JM increase the font size of the operators
+    gtk_widget_set_name(button, "calcNumericKey");                  //JM increase the font size of the operators
+  }                                                                 //JM increase the font size of the operators
+  else if(strcmp((char *)lbl, "+") == 0 && key->keyId == 85) {      //JM increase the font size of the operators
+    gtk_widget_set_name(button, "calcNumericKey");                  //JM increase the font size of the operators
+  }                                                                 //JM increase the font size of the operators
+  else {
+    gtk_widget_set_name(button, "calcKey");
+  }
+
+  char sstmp[16];
 
 //  stringToUtf8(indexOfItems[max(key->fShifted, -key->fShifted)].itemSoftmenuName, lbl);
   if(key->fShifted == 0) {
@@ -3337,7 +3343,11 @@ char sstmp[16];
     }
   }
 
-  if(strcmp((char *)lbl, "SST") == 0) {
+  //Keyboard f-layer text replacements
+  if(strcmp((char *)lbl, "LINPOL") == 0) {
+    strcpy((char *)lbl, "LNP");
+  }
+  else if(strcmp((char *)lbl, "SST") == 0) {
     char tt[20];
     strcpy(tt, STD_HAMBURGER);
     strcat(tt, isR47FAM ? STD_DOWN_BLOCKARROW : STD_SST);
@@ -3409,7 +3419,7 @@ char sstmp[16];
     R47LongpressColour = true;
   }
   else if(key->gShifted == 0) {
-    lbl[0] = 0;
+    sstmp[0] = 0;
   }
   else {
     strcpy(sstmp, indexOfItems[max(key->gShifted, -key->gShifted)].itemSoftmenuName);
@@ -3428,11 +3438,12 @@ char sstmp[16];
     }
   }
 
-  if(strcmp((char *)lbl, "MODE#") == 0 && key->keyId == 22) {
-    strcpy((char *)lbl, "#");
+  //Keyboard g-layer text replacements
+  if(strcmp((char *)lbl, "LINPOL") == 0) {
+    strcpy((char *)lbl, "LNP");
   }
-  else if(strcmp((char *)lbl, "LINPOL") == 0) {
-    strcpy((char *)lbl, "LIN");
+  else if(strcmp((char *)lbl, "MyM") == 0 || strcmp((char *)lbl, "MyMenu") == 0) {
+    strcpy((char *)lbl, "CUST");
   }
 
   gtk_label_set_label(GTK_LABEL(lblG), (gchar *)lbl);
@@ -3447,19 +3458,19 @@ char sstmp[16];
     gtk_widget_set_name(lblG, "gShifted");
   }
 
-      stringToUtf8(indexOfItems[key->primaryAim].itemSoftmenuName, lbl);
-      if(key->primaryAim == 0) {
-        lbl[0] = 0;
-      }
+  stringToUtf8(indexOfItems[key->primaryAim].itemSoftmenuName, lbl);
+  if(key->primaryAim == 0) {
+    lbl[0] = 0;
+  }
 
-      if(lbl[0] == 32 && lbl[1] == 0) {     //JM SPACE |  OPEN BOX 9251,  0xE2 0x90 0xA3  |  0xE2 0x90 0xA0 for SP.
-        lbl[0]=0xC2;          //JM SPACE the space character is not in the font. \rather use . . for space.
-        lbl[1]=0xB7;          //JM SPACE
-        lbl[2]='_';           //JM SPACE
-        lbl[3]=0xc2;          //JM SPACE
-        lbl[4]=0xb7;          //JM SPACE
-        lbl[5]=0;             //JM SPACE
-      }                       //JM SPACE
+  if(lbl[0] == 32 && lbl[1] == 0) {     //JM SPACE |  OPEN BOX 9251,  0xE2 0x90 0xA3  |  0xE2 0x90 0xA0 for SP.
+    lbl[0]=0xC2;          //JM SPACE the space character is not in the font. \rather use . . for space.
+    lbl[1]=0xB7;          //JM SPACE
+    lbl[2]='_';           //JM SPACE
+    lbl[3]=0xc2;          //JM SPACE
+    lbl[4]=0xb7;          //JM SPACE
+    lbl[5]=0;             //JM SPACE
+  }                       //JM SPACE
 
   if(debugLabelConsistency(lbl, "Normal", key, button, true)) {
     return;

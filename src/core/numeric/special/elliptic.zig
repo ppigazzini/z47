@@ -269,7 +269,7 @@ fn _calc_real_elliptic(sn: *real_t, cn: *real_t, dn: *real_t, u: *const real_t, 
     const blocks = ELLIPTIC_N * REAL_SIZE_IN_BLOCKS_75;
 
     const MU_p = allocC47Blocks(blocks) orelse {
-        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
         realSetNaN(sn);
         realSetNaN(cn);
         realSetNaN(dn);
@@ -277,7 +277,7 @@ fn _calc_real_elliptic(sn: *real_t, cn: *real_t, dn: *real_t, u: *const real_t, 
     };
     const MU = blkPtr(MU_p);
     const NU_p = allocC47Blocks(blocks) orelse {
-        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
         realSetNaN(sn);
         realSetNaN(cn);
         realSetNaN(dn);
@@ -286,7 +286,7 @@ fn _calc_real_elliptic(sn: *real_t, cn: *real_t, dn: *real_t, u: *const real_t, 
     };
     const NU = blkPtr(NU_p);
     const C_p = allocC47Blocks(blocks) orelse {
-        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
         realSetNaN(sn);
         realSetNaN(cn);
         realSetNaN(dn);
@@ -296,7 +296,7 @@ fn _calc_real_elliptic(sn: *real_t, cn: *real_t, dn: *real_t, u: *const real_t, 
     };
     const C = blkPtr(C_p);
     const D_p = allocC47Blocks(blocks) orelse {
-        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
         realSetNaN(sn);
         realSetNaN(cn);
         realSetNaN(dn);
@@ -1292,7 +1292,7 @@ pub export fn ellipticE(phi: *const real_t, psi: *const real_t, m: *const real_t
 
             freeC47Blocks(tv, blocks);
         } else {
-            displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+            displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
             realSetNaN(res);
             realSetNaN(resi);
         }
@@ -1317,14 +1317,14 @@ fn _jacobiZeta_Agm(phi: *const real_t, psi: *const real_t, m: *const real_t, res
 
     const blocks = ELLIPTIC_N * REAL_SIZE_IN_BLOCKS_75;
     const a_p = allocC47Blocks(blocks) orelse {
-        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
         realSetNaN(res);
         realSetNaN(resi);
         return;
     };
     const a = blkPtr(a_p);
     const ai_p = allocC47Blocks(blocks) orelse {
-        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
         realSetNaN(res);
         realSetNaN(resi);
         freeC47Blocks(a_p, blocks);
@@ -1332,7 +1332,7 @@ fn _jacobiZeta_Agm(phi: *const real_t, psi: *const real_t, m: *const real_t, res
     };
     const ai = blkPtr(ai_p);
     const b_p = allocC47Blocks(blocks) orelse {
-        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
         realSetNaN(res);
         realSetNaN(resi);
         freeC47Blocks(ai_p, blocks);
@@ -1341,7 +1341,7 @@ fn _jacobiZeta_Agm(phi: *const real_t, psi: *const real_t, m: *const real_t, res
     };
     const b = blkPtr(b_p);
     const bi_p = allocC47Blocks(blocks) orelse {
-        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
         realSetNaN(res);
         realSetNaN(resi);
         freeC47Blocks(b_p, blocks);
@@ -1852,35 +1852,35 @@ const EllipticError = error{
 fn reportEllipticError(e: EllipticError) void {
     switch (e) {
         error.KNeedsCpxRes => {
-            displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+            displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
             moreInfoOnError("In function fnEllipticK:", "Cannot calculate K(m) for m > 1 if CPXRES is not set", null, null);
         },
         error.ENeedsCpxRes => {
-            displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+            displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
             moreInfoOnError("In function fnEllipticE:", "Cannot calculate K(m) for m > 1 if CPXRES is not set", null, null);
         },
         error.FphiNeedsCpxRes => {
-            displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+            displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
             moreInfoOnError("In function fnEllipticFphi:", "F(φ|m) cannot return complex result without CPXRES set", null, null);
         },
         error.EphiNeedsCpxRes => {
-            displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+            displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
             moreInfoOnError("In function fnEllipticEphi:", "E(φ|m) cannot return complex result without CPXRES set", null, null);
         },
         error.ZetaNeedsCpxRes => {
-            displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+            displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
             moreInfoOnError("In function fnJacobiZeta:", "Ζ(φ|m) cannot return complex result without CPXRES set", null, null);
         },
         error.PiMOutOfRange => {
-            displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+            displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
             moreInfoOnError("In function fnEllipticPi:", "m is out of range (must in 0 ≤ m < 1)", null, null);
         },
         error.PiNeedsCpxRes => {
-            displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+            displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
             moreInfoOnError("In function fnEllipticPi:", "Π(n|m) cannot return complex result without CPXRES set", null, null);
         },
         error.PiComplexInX => {
-            displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+            displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
             if (runtime.extra_info_on_calc_error) {
                 // ERROR_MESSAGE_LENGTH is 512 (defines.h); upstream formats
                 // this hint into the shared errorMessage buffer of that size.

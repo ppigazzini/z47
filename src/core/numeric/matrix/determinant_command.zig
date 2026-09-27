@@ -38,7 +38,7 @@ pub export fn fnDeterminant(unused_param_but_mandatory: u16) callconv(.c) void {
         runtime.linkToRealMatrixRegister(runtime.REGISTER_X, &x);
 
         if (x.header.matrixRows != x.header.matrixColumns) {
-            runtime.displayCalcErrorMessage(runtime.ERROR_MATRIX_MISMATCH, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            runtime.displayCalcErrorMessage(runtime.ERROR_MATRIX_MISMATCH, runtime.ERR_REGISTER_LINE);
             if (runtime.extra_info_on_calc_error) {
                 var buffer: [64]u8 = undefined;
                 const message = bufPrintZ(&buffer, "not a square matrix ({d}" ++ std_cross ++ "{d})", .{ x.header.matrixRows, x.header.matrixColumns }) catch "not a square matrix";
@@ -58,7 +58,7 @@ pub export fn fnDeterminant(unused_param_but_mandatory: u16) callconv(.c) void {
         runtime.linkToComplexMatrixRegister(runtime.REGISTER_X, &x);
 
         if (x.header.matrixRows != x.header.matrixColumns) {
-            runtime.displayCalcErrorMessage(runtime.ERROR_MATRIX_MISMATCH, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            runtime.displayCalcErrorMessage(runtime.ERROR_MATRIX_MISMATCH, runtime.ERR_REGISTER_LINE);
             if (runtime.extra_info_on_calc_error) {
                 var buffer: [64]u8 = undefined;
                 const message = bufPrintZ(&buffer, "not a square matrix ({d}" ++ std_cross ++ "{d})", .{ x.header.matrixRows, x.header.matrixColumns }) catch "not a square matrix";
@@ -73,7 +73,7 @@ pub export fn fnDeterminant(unused_param_but_mandatory: u16) callconv(.c) void {
             }
         }
     } else {
-        runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, nim_register_line);
+        runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE);
         if (runtime.extra_info_on_calc_error) {
             var buffer: [64]u8 = undefined;
             const message = bufPrintZ(&buffer, "DataType {d}", .{data_type}) catch "DataType";

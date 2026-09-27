@@ -59,7 +59,7 @@ pub export fn fnPcSigmaDeltaPcXmean(unusedButMandatoryParameter: u16) linksectio
     var rReal: real_t = undefined;
 
     if (!checkMinimumDataPoints(const_1())) {
-        displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE);
         moreInfoOnError("In function fnPcSigmaDeltaPcXmean:", "There is no statistical data available!", null, null);
         return;
     }

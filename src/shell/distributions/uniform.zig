@@ -24,20 +24,20 @@ fn checkParamUniform(x: *real_t, low: *real_t, high: *real_t, range: ?*real_t, c
         return false;
     }
     if (dr.realIsSpecial(x) or dr.realIsSpecial(low) or dr.realIsSpecial(high)) {
-        dr.displayDomainErrorMessage(dr.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, dr.ERR_REGISTER_LINE, dr.REGISTER_X);
+        dr.displayDomainErrorMessage(dr.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, dr.ERR_REGISTER_LINE);
         dr.moreInfoOnError("In function checkParamUniform:", "given non-number inputs", null, null);
         dr.specialResultNaN();
         return false;
     }
     if (discrete != 0) {
         if (!dr.isAnInteger(low)) {
-            dr.displayDomainErrorMessage(dr.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, dr.ERR_REGISTER_LINE, dr.REGISTER_M);
+            dr.displayDomainErrorMessage(dr.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, dr.ERR_REGISTER_LINE);
             dr.moreInfoOnError("In function checkParamUniform:", "given non-integer lower limit", null, null);
             dr.specialResultNaN();
             return false;
         }
         if (!dr.isAnInteger(high)) {
-            dr.displayDomainErrorMessage(dr.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, dr.ERR_REGISTER_LINE, dr.REGISTER_N);
+            dr.displayDomainErrorMessage(dr.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, dr.ERR_REGISTER_LINE);
             dr.moreInfoOnError("In function checkParamUniform:", "given non-integer upper limit", null, null);
             dr.specialResultNaN();
             return false;
@@ -147,7 +147,7 @@ pub fn uniformI(discrete: u16) linksection(dr.code_section) void {
 
     if (checkParamUniform(&x, &low, &high, null, null, discrete)) {
         if (dr.realLessThan(&x, dr.const0()) or dr.realGreaterThan(&x, dr.const1())) {
-            dr.displayDomainErrorMessage(dr.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, dr.ERR_REGISTER_LINE, dr.REGISTER_X);
+            dr.displayDomainErrorMessage(dr.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, dr.ERR_REGISTER_LINE);
             dr.moreInfoOnError("In function fnUniformI:", "the argument must be 0 < x < 1", null, null);
             dr.specialResultNaN();
             return;

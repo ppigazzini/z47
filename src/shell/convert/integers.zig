@@ -132,7 +132,7 @@ fn fnChangeBaseCore(base: u16) error{BaseOutOfRange}!void {
 pub export fn fnChangeBase(base: u16) callconv(.c) void {
     // Single error on REGISTER_T (not X), so the report is inlined in the shim.
     fnChangeBaseCore(base) catch {
-        frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_T);
+        frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..ERROR_MESSAGE_LENGTH], "base = {d}! The base must be fron 2 to 16.", .{base});
             moreInfoOnError("In function fnChangeBase:", errorMessage, null, null);
@@ -147,7 +147,7 @@ pub export fn longIntegerMultiply(opY: *mpz_struct, opX: *mpz_struct, result: *m
     if (longIntegerBits(opY) + longIntegerBits(opX) <= MAX_LONG_INTEGER_SIZE_IN_BITS) {
         mpz_mul(result, opY, opX);
     } else {
-        frontier_error.displayCalcErrorMessage(if (longIntegerSign(opY) == longIntegerSign(opX)) ERROR_OVERFLOW_PLUS_INF else ERROR_OVERFLOW_MINUS_INF, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(if (longIntegerSign(opY) == longIntegerSign(opX)) ERROR_OVERFLOW_PLUS_INF else ERROR_OVERFLOW_MINUS_INF, ERR_REGISTER_LINE);
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..ERROR_MESSAGE_LENGTH], "Multiplying this 2 values ({d} bits " ++ STD_CROSS ++ " {d} bits) would result in a value exceeding {d} bits!", .{ @as(u64, longIntegerBits(opY)), @as(u64, longIntegerBits(opX)), @as(u16, MAX_LONG_INTEGER_SIZE_IN_BITS) });
             longIntegerToAllocatedString(opY, tmpString, TMP_STR_LENGTH / 2);
@@ -161,7 +161,7 @@ pub export fn longIntegerSquare(op: *mpz_struct, result: *mpz_struct) callconv(.
     if (longIntegerBits(op) * 2 <= MAX_LONG_INTEGER_SIZE_IN_BITS) {
         mpz_mul(result, op, op);
     } else {
-        frontier_error.displayCalcErrorMessage(ERROR_OVERFLOW_PLUS_INF, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_OVERFLOW_PLUS_INF, ERR_REGISTER_LINE);
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..ERROR_MESSAGE_LENGTH], "Squaring this value ({d} bits) would result in a value exceeding {d} bits!", .{ @as(u64, longIntegerBits(op)), @as(u16, MAX_LONG_INTEGER_SIZE_IN_BITS) });
             longIntegerToAllocatedString(op, tmpString, TMP_STR_LENGTH);
@@ -174,7 +174,7 @@ pub export fn longIntegerAdd(opY: *mpz_struct, opX: *mpz_struct, result: *mpz_st
     if (longIntegerSign(opY) != longIntegerSign(opX) or @max(longIntegerBits(opY), longIntegerBits(opX)) <= MAX_LONG_INTEGER_SIZE_IN_BITS - 1) {
         mpz_add(result, opY, opX);
     } else {
-        frontier_error.displayCalcErrorMessage(if (longIntegerSign(opY) == 0) ERROR_OVERFLOW_PLUS_INF else ERROR_OVERFLOW_MINUS_INF, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(if (longIntegerSign(opY) == 0) ERROR_OVERFLOW_PLUS_INF else ERROR_OVERFLOW_MINUS_INF, ERR_REGISTER_LINE);
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..ERROR_MESSAGE_LENGTH], "Adding this 2 values ({d} bits " ++ STD_CROSS ++ " {d} bits) would result in a value exceeding {d} bits!", .{ @as(u64, longIntegerBits(opY)), @as(u64, longIntegerBits(opX)), @as(u16, MAX_LONG_INTEGER_SIZE_IN_BITS) });
             longIntegerToAllocatedString(opY, tmpString, TMP_STR_LENGTH / 2);
@@ -188,7 +188,7 @@ pub export fn longIntegerSubtract(opY: *mpz_struct, opX: *mpz_struct, result: *m
     if (longIntegerSign(opY) == longIntegerSign(opX) or @max(longIntegerBits(opY), longIntegerBits(opX)) <= MAX_LONG_INTEGER_SIZE_IN_BITS - 1) {
         mpz_sub(result, opY, opX);
     } else {
-        frontier_error.displayCalcErrorMessage(if (longIntegerSign(opY) == 0) ERROR_OVERFLOW_PLUS_INF else ERROR_OVERFLOW_MINUS_INF, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(if (longIntegerSign(opY) == 0) ERROR_OVERFLOW_PLUS_INF else ERROR_OVERFLOW_MINUS_INF, ERR_REGISTER_LINE);
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..ERROR_MESSAGE_LENGTH], "Subtracting this 2 values ({d} bits " ++ STD_CROSS ++ " {d} bits) would result in a value exceeding {d} bits!", .{ @as(u64, longIntegerBits(opY)), @as(u64, longIntegerBits(opX)), @as(u16, MAX_LONG_INTEGER_SIZE_IN_BITS) });
             longIntegerToAllocatedString(opY, tmpString, TMP_STR_LENGTH / 2);
@@ -357,13 +357,13 @@ pub export fn WP34S_intDivide(y: u64, x: u64) callconv(.c) u64 {
 
     if (divisor == 0) {
         if (dividend == 0) {
-            frontier_error.displayCalcErrorMessage(ERROR_BAD_TIME_OR_DATE_INPUT, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_BAD_TIME_OR_DATE_INPUT, ERR_REGISTER_LINE);
             moreInfoOnError("In function WP34S_intDivide: cannot divide 0 by 0!", null, null, null);
         } else if (dividendSign != 0) {
-            frontier_error.displayCalcErrorMessage(ERROR_BAD_TIME_OR_DATE_INPUT, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_BAD_TIME_OR_DATE_INPUT, ERR_REGISTER_LINE);
             moreInfoOnError("In function WP34S_intDivide: cannot divide a negative short integer by 0!", null, null, null);
         } else {
-            frontier_error.displayCalcErrorMessage(ERROR_BAD_TIME_OR_DATE_INPUT, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_BAD_TIME_OR_DATE_INPUT, ERR_REGISTER_LINE);
             moreInfoOnError("In function WP34S_intDivide: cannot divide a positive short integer by 0!", null, null, null);
         }
         return 0;
@@ -443,7 +443,7 @@ pub export fn WP34S_intSqrt(x: u64) callconv(.c) u64 {
     var nn1: u64 = undefined;
 
     if (signValue != 0) {
-        frontier_error.displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
         moreInfoOnError("In function WP34S_intSqrt: Cannot extract the square root of a negative short integer!", null, null, null);
         return 0;
     }
@@ -505,7 +505,7 @@ pub export fn WP34S_intPower(b: u64, e: u64) callconv(.c) u64 {
     const base = WP34S_extract_value(b, &baseSign);
 
     if (exponent == 0 and base == 0) {
-        frontier_error.displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
         moreInfoOnError("In function WP34S_intPower: Cannot calculate 0^0!", null, null, null);
         setSystemFlag(FLAG_OVERFLOW);
         return 0;
@@ -581,7 +581,7 @@ pub export fn WP34S_intLog2(x: u64) callconv(.c) u64 {
     const value = WP34S_extract_value(x, &signValue);
 
     if (value == 0 or signValue != 0) {
-        frontier_error.displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
         if (comptime extra_info) {
             moreInfoOnError("In function WP34S_intLog2: Cannot calculate the log" ++ STD_SUB_2 ++ " of a number " ++ STD_LESS_EQUAL ++ " 0!", null, null, null);
         }
@@ -603,7 +603,7 @@ pub export fn WP34S_intLog10(x: u64) callconv(.c) u64 {
     const value = WP34S_extract_value(x, &signValue);
 
     if (value == 0 or signValue != 0) {
-        frontier_error.displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
         if (comptime extra_info) {
             moreInfoOnError("In function WP34S_intLog10: Cannot calculate the log" ++ STD_SUB_10 ++ " of a number " ++ STD_LESS_EQUAL ++ " 0!", null, null, null);
         }

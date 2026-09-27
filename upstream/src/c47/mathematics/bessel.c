@@ -31,7 +31,7 @@ void fnBesselJ(uint16_t unusedButMandatoryParameter) {
       convertComplexToResultRegister(&r, &a, REGISTER_X);
     }
     else {
-      displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         moreInfoOnError("In function fnBesselJ:", "negative argument for Bessel function of non-integer degree", NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -74,7 +74,7 @@ void fnBesselY(uint16_t unusedButMandatoryParameter) {
       convertComplexToResultRegister(&r, &a, REGISTER_X);
     }
     else {
-      displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         moreInfoOnError("In function fnBesselY:", "negative argument for Bessel function", NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -305,17 +305,17 @@ static void Sigma_u_k(const real_t *nu, const real_t *t_r, const real_t *t_i, in
         freeC47Blocks(coeff_next, COEFF_BUFFER_SIZE_IN_BLOCKS);
       }
       else {
-        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
       }
       freeC47Blocks(coeff_deriv, COEFF_BUFFER_SIZE_IN_BLOCKS);
     }
     else {
-      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     }
     freeC47Blocks(coeff_current, COEFF_BUFFER_SIZE_IN_BLOCKS);
   }
   else {
-    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
   }
   return;
 }
@@ -439,7 +439,7 @@ static void bessel_recur(const real_t *nu, const real_t *x, bool_t is_y, bool_t 
     realCopy(res, &jnx);
 
     if(monitorExit(&loop, "Iter: ")) {
-      displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE);
       return;
     }
   }
@@ -636,7 +636,7 @@ static void bessel2_int_series(const real_t *n, const real_t *x, real_t *res, re
     realCopy(&u, &s);
 
     if(monitorExit(&loop, "Iter: ")) {
-      displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE);
       return;
     }
   }

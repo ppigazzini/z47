@@ -178,6 +178,7 @@
   #define realReduce(operand, res, ctxt)                         decNumberReduce          (TO_REAL_T(res), TO_REAL_T(operand), ctxt)
   #define realSetNegativeSign(operand)                           (TO_REAL_T(operand)->bits) |= 0x80
   #define realSetPositiveSign(operand)                           (TO_REAL_T(operand)->bits) &= 0x7F
+  #define realSetSignFrom(source, destination)                   decNumberCopySign        (TO_REAL_T(destination), TO_REAL_T(destination), TO_REAL_T(source))
   #define realSquareRoot(operand, res, ctxt)                     decNumberSquareRoot      (TO_REAL_T(res), TO_REAL_T(operand), ctxt)
   #define realSubtract(operand1, operand2, res, ctxt)            decNumberSubtract        (TO_REAL_T(res), TO_REAL_T(operand1), TO_REAL_T(operand2), ctxt)
   #define realToReal34(source, destination)                      decQuadFromNumber        (TO_REAL34_T(destination), TO_REAL_T(source), &ctxtReal34)

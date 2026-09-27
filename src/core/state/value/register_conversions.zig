@@ -92,7 +92,7 @@ extern var tmpString: [*c]u8;
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
 extern fn getRegisterTag(regist: calcRegister_t) u32;
 extern fn getRegisterMaxDataLengthInBlocks(regist: calcRegister_t) u16;
-extern fn displayCalcErrorMessage(errorCode: u8, errMessageRegisterLine: calcRegister_t, disUsedCanBeRemoved: calcRegister_t) void;
+extern fn displayCalcErrorMessage(errorCode: u8, errMessageRegisterLine: calcRegister_t) void;
 extern fn decNumberFromString(r: *real_t, s: [*c]const u8, ctx: *realContext_t) *real_t;
 extern fn decNumberFromUInt32(r: *real_t, v: u32) *real_t;
 extern fn decNumberFMA(r: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, c: *align(1) const real_t, ctx: *realContext_t) *real_t;
@@ -348,7 +348,7 @@ pub export fn longIntegerToAllocatedString(lgInt: [*c]const mpz_struct, str: [*c
 }
 
 pub export fn badTypeError(reg: calcRegister_t) callconv(.c) void {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_T);
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     // The whole hint -- the sentence AND the sprintf into the shared errorMessage
     // buffer -- belongs to the shell: it owns the register data-type name table.
     // The hook writes the same "cannot convert Register %d from %s" into
@@ -796,7 +796,7 @@ fn longIntegerAngleReduction(regist: calcRegister_t, angularMode: angularMode_t,
                 const reducedAngleBuf2 = mallocReal2139();
                 defer free(reducedAngleBuf2);
                 if (reducedAngleBuf == null or reducedAngleBuf2 == null) {
-                    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, REGISTER_X);
+                    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
                     return;
                 }
                 const reducedAngleTmp = reducedAngleBuf.?;
@@ -808,7 +808,7 @@ fn longIntegerAngleReduction(regist: calcRegister_t, angularMode: angularMode_t,
                 convertLongIntegerRegisterToLongInteger(regist, &angle);
 
                 if (longIntegerBase10Digits(&angle) > 1000) {
-                    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
                     moreInfoOnError("In function longIntegerAngleReduction:", "Invalid integer size for angle reduction in radians: exponent too large.");
                     mpz_clear(&angle);
                     return;
@@ -1106,7 +1106,7 @@ pub export fn convertReal34MatrixRegisterToReal34Matrix(regist: calcRegister_t, 
             _ = xcopy(@ptrCast(elems), @ptrCast(regRealMatrixElems(regist)), (@as(u32, matrix.header.matrixColumns) * matrix.header.matrixRows) * REAL34_SIZE_IN_BYTES);
         }
     } else {
-        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     }
 }
 
@@ -1127,7 +1127,7 @@ pub export fn convertComplex34MatrixRegisterToComplex34Matrix(regist: calcRegist
             _ = xcopy(@ptrCast(elems), @ptrCast(regComplexMatrixElems(regist)), (@as(u32, matrix.header.matrixColumns) * matrix.header.matrixRows) * COMPLEX34_SIZE_IN_BYTES);
         }
     } else {
-        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     }
 }
 
@@ -1154,7 +1154,7 @@ pub export fn convertReal34MatrixToComplex34Matrix(source: *const real34Matrix_t
             }
         }
     } else {
-        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     }
 }
 
@@ -1235,7 +1235,7 @@ pub export fn realToDouble(vv: *const real_t, v: *f64) callconv(.c) void {
 
 pub export fn badDomainError(reg: calcRegister_t) callconv(.c) void {
     _ = reg;
-    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_T);
+    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
     // Upstream builds the fixed sentence in errorMessage and hands the buffer
     // over, so the buffer holds it afterwards; passing the literal straight
     // through would leave whatever the previous writer put there.
@@ -1427,7 +1427,7 @@ pub export fn getRegisterAsLongIntQuiet(reg: calcRegister_t, val: *mpz_struct, f
 pub export fn getRegisterAsLongInt(reg: calcRegister_t, val: *mpz_struct, fractional: ?*bool) callconv(.c) bool {
     const err = getRegisterAsLongIntQuiet(reg, val, fractional);
     if (err != ERROR_NONE) {
-        displayCalcErrorMessage(@intCast(err), ERR_REGISTER_LINE, REGISTER_T);
+        displayCalcErrorMessage(@intCast(err), ERR_REGISTER_LINE);
     }
     return err == ERROR_NONE;
 }
@@ -1481,7 +1481,7 @@ pub export fn getRegisterAsRealAngle(reg: calcRegister_t, val: *real_t, xAngular
                 xAngularMode.* = currentAngularMode;
             }
             if (xAngularMode.* == amRadian and realGetExponent(val) > 999) {
-                displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
                 moreInfoOnError("In function getRegisterAsRealAngle:", "Invalid real input size for angle reduction in radians: exponent too large.");
                 return false;
             }
@@ -1549,7 +1549,7 @@ pub export fn saveRegisterSnapshot(reg: calcRegister_t, s: *snap_t) callconv(.c)
                 _ = xcopy(s.mem, getRegisterDataPointer(reg), toBytes(s.blocks));
             } else {
                 s.blocks = 0;
-                displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE); // the value is not captured, so the restore would put back nothing
+                displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE); // the value is not captured, so the restore would put back nothing
             }
         },
     }
@@ -1597,7 +1597,7 @@ pub export fn restoreRegisterSnapshot(reg: calcRegister_t, s: *snap_t) callconv(
                 freeC47Blocks(mem, s.blocks);
                 s.mem = null;
                 if (data_ptr == null) {
-                    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
                     return; // the register keeps the type and the value it has now
                 }
             }

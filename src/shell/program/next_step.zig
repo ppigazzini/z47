@@ -553,7 +553,7 @@ pub export fn fnCase(regist: u16) callconv(.c) void {
     }
 
     if (!handled) {
-        frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "cannot use {s} for the parameter of CASE", .{std.mem.span(frontier_debug.getRegisterDataTypeName(REGISTER_X, true, false))});
             c_moreInfoOnError("In function fnCase:", errorMessage, null, null);

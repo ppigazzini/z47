@@ -10,13 +10,13 @@ fn getExponent(result: *i32) bool {
     }
 
     if (runtime.realIsNaN(&x_value)) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
         runtime.moreInfoOnError("In function getExponent:", "cannot use NaN as X input of EXPT", null, null);
         return false;
     }
 
     if (runtime.realIsInfinite(&x_value)) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
         runtime.moreInfoOnError("In function getExponent:", "cannot use \xc2\xb1\xe2\x88\x9e as an input of EXPT", null, null);
         return false;
     }
@@ -61,7 +61,7 @@ fn bnCommon(bnstar: bool) void {
 
     runtime.WP34S_Bernoulli(&x_value, &result, bnstar, &runtime.ctxtReal39);
     if (runtime.realIsNaN(&result)) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
         runtime.moreInfoOnError("In function fnBn:", if (bnstar) "k must be a non-negative integer" else "k must be a positive integer", null, null);
     } else {
         runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, runtime.amNone);

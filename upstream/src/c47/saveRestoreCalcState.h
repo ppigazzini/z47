@@ -50,6 +50,9 @@
   void     fnSaveLetteredRegisters(uint16_t unusedButMandatoryParameter);
   void     fnSaveNRegisters    (uint16_t N);
   void     fnSaveRegister      (uint16_t unusedButMandatoryParameter);
+  void     fnSaveGlobalFlags   (uint16_t N);
+  void     fnSaveLocalFlags    (uint16_t N);
+  void     fnSaveSystemFlags   (uint16_t unusedButMandatoryParameter);
   void     fnLoadRegisters     (uint16_t unusedButMandatoryParameter);
 
 

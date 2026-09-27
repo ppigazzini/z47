@@ -227,7 +227,7 @@ const char *errorMessageOf(uint8_t errorCode) {
 
 
 void fnRaiseError(uint16_t errorCode) {
-  displayCalcErrorMessage((uint8_t)errorCode, ERR_REGISTER_LINE, REGISTER_X);
+  displayCalcErrorMessage((uint8_t)errorCode, ERR_REGISTER_LINE);
 }
 
 
@@ -253,7 +253,7 @@ void fnErrorMessage(uint16_t unusedButMandatoryParameter) {
 
 
     default: {
-      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "data type %s cannot be used for this function!", getRegisterDataTypeName(REGISTER_X, false, false));
         moreInfoOnError("In function fnErrorMessage:", errorMessage, NULL, NULL);
@@ -264,10 +264,10 @@ void fnErrorMessage(uint16_t unusedButMandatoryParameter) {
   #pragma GCC diagnostic pop
 
   if(real34CompareLessEqual(const34_1, &r) && real34CompareLessThan(&r, &maxErr)) {
-    displayCalcErrorMessage((uint8_t)real34ToUInt32(&r), ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage((uint8_t)real34ToUInt32(&r), ERR_REGISTER_LINE);
   }
   else {
-    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "the argument is not less than %u or is negative!", NUMBER_OF_ERROR_CODES);
       moreInfoOnError("In function fnErrorMessage:", errorMessage, NULL, NULL);
@@ -277,10 +277,7 @@ void fnErrorMessage(uint16_t unusedButMandatoryParameter) {
 
 
 
-void displayCalcErrorMessage(uint8_t errorCode, calcRegister_t errMessageRegisterLine, calcRegister_t disUsedCanBeRemoved) {
-  // disUsedCanBeRemoved (was errRegisterLine): dead since cb79577 ("Fixed blank X register"), which removed the
-  // errorRegisterLine global and its refreshRegisterLine use. Its 100..103 validation was removed too; param can be
-  // dropped, but not dropped here due to 924 call sites!
+void displayCalcErrorMessage(uint8_t errorCode, calcRegister_t errMessageRegisterLine) {
   if(errorCode >= NUMBER_OF_ERROR_CODES || errorCode == 0) {
     sprintf(errorMessage, commonBugScreenMessages[bugMsgValueFor], "displayCalcErrorMessage", errorCode, "errorCode");
     displayBugScreen(errorMessage);
@@ -313,12 +310,12 @@ void displayCalcErrorMessage(uint8_t errorCode, calcRegister_t errMessageRegiste
 }
 
 
-void displayDomainErrorMessage(uint8_t errorCode, calcRegister_t errMessageRegisterLine, calcRegister_t disUsedCanBeRemoved) {
+void displayDomainErrorMessage(uint8_t errorCode, calcRegister_t errMessageRegisterLine) {
   const int running = programRunStop == PGM_RUNNING;
   const int spcres = getSystemFlag(FLAG_SPCRES);
 
   if(!spcres || !running) {
-    displayCalcErrorMessage(errorCode, errMessageRegisterLine, disUsedCanBeRemoved);
+    displayCalcErrorMessage(errorCode, errMessageRegisterLine);
   }
   if(spcres) {
     convertRealToResultRegister(const_NaN, REGISTER_X, amNone);
@@ -469,6 +466,6 @@ void displayDomainErrorMessage(uint8_t errorCode, calcRegister_t errMessageRegis
  ***********************************************/
 #if (EXTRA_INFO_ON_CALC_ERROR != 1)
   void typeError(void) {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
   }
 #endif // (EXTRA_INFO_ON_CALC_ERROR != 1)

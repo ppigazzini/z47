@@ -56,7 +56,7 @@ bool_t regInRange(uint16_t regist) {
       regType = "generic";
       offset = 0;
     }
-    displayCalcErrorMessage(errorType, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(errorType, ERR_REGISTER_LINE);
     if(strcmp(regType, "generic") == 0) {
       sprintf(errorMessage, "generic");
     }
@@ -65,7 +65,7 @@ bool_t regInRange(uint16_t regist) {
     }
     moreInfoOnError("In function regInRange:", errorMessage, " is not defined!", NULL);
   #else
-    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
   #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   return false;
 }
@@ -73,7 +73,7 @@ bool_t regInRange(uint16_t regist) {
 
 static bool_t _checkReadOnlyVariable(uint16_t regist) {
   if(FIRST_RESERVED_VARIABLE <= regist && regist <= LAST_RESERVED_VARIABLE && allReservedVariables[regist - FIRST_RESERVED_VARIABLE].header.readOnly == 1) {
-    displayCalcErrorMessage(ERROR_WRITE_PROTECTED_VAR, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_WRITE_PROTECTED_VAR, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "reserved variable %s", allReservedVariables[regist - FIRST_RESERVED_VARIABLE].reservedVariableName + 1);
       moreInfoOnError("In function _checkReadOnlyVariable:", errorMessage, " is write-protected!", NULL);
@@ -98,7 +98,7 @@ static bool_t _checkReadOnlyVariable(uint16_t regist) {
       real34Copy(REGISTER_REAL34_DATA(REGISTER_X), &matrix->matrixElements[i * matrix->header.matrixColumns + j]);
     }
     else {
-      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Cannot store %s in a matrix", getRegisterDataTypeName(REGISTER_X, true, false));
         moreInfoOnError("In function storeElementReal:", errorMessage, NULL, NULL);
@@ -125,7 +125,7 @@ static bool_t _checkReadOnlyVariable(uint16_t regist) {
       real34Copy(REGISTER_IMAG34_DATA(REGISTER_X), VARIABLE_IMAG34_DATA(&matrix->matrixElements[i * matrix->header.matrixColumns + j]));
     }
     else {
-      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Cannot store %s in a matrix", getRegisterDataTypeName(REGISTER_X, true, false));
         moreInfoOnError("In function storeElementReal:", errorMessage, NULL, NULL);
@@ -146,7 +146,7 @@ static bool_t _checkReadOnlyVariable(uint16_t regist) {
         return true;
       }
       else {
-        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           sprintf(errorMessage, "(%" PRIu16 ", %" PRIu16 ") out of range", rows, cols);
           moreInfoOnError("In function storeIjReal:", errorMessage, NULL, NULL);
@@ -154,7 +154,7 @@ static bool_t _checkReadOnlyVariable(uint16_t regist) {
       }
     }
     else if(lastErrorCode == ERROR_NONE){
-      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Cannot store %s as matrix index", getRegisterDataTypeName(REGISTER_X, true, false));
         moreInfoOnError("In function storeIjReal:", errorMessage, NULL, NULL);
@@ -178,7 +178,7 @@ static void _storeValue(uint16_t regist) {
           && real34IsSpecial(REGISTER_REAL34_DATA(REGISTER_X))) { //screen the plot range at the door: NaN/infinite rejected, old value kept
         copySourceRegisterToDestRegister(TEMP_REGISTER_1, REGISTER_X);
         calcMode = CM_NORMAL;                          //the range STO items live in the plot menu; leave the graph screen so the error line renders
-        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           moreInfoOnError("In function _storeValue:", "plot range limits must be finite", NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -220,7 +220,7 @@ void fn2Sto(uint16_t regist) {
     copySourceRegisterToDestRegister(REGISTER_Y, regist + 1);
   }
   else {
-    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "%04d", regist);
       moreInfoOnError("In function fn2Sto:", errorMessage, " is not defined!", NULL);
@@ -237,7 +237,7 @@ void fn3Sto(uint16_t regist) {
     copySourceRegisterToDestRegister(REGISTER_Z, regist + 2);
   }
   else {
-    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "%04d", regist);
       moreInfoOnError("In function fn3Sto:", errorMessage, " is not defined!", NULL);
@@ -469,14 +469,14 @@ void fnStoreStack(uint16_t regist) {
   uint16_t size = getSystemFlag(FLAG_SSIZE8) ? 8 : 4;
 
   if(regist + size >= REGISTER_X && regist < REGISTER_X) {
-    displayCalcErrorMessage(ERROR_STACK_CLASH, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_STACK_CLASH, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Cannot execute STOS, destination register would overlap the stack: %d", regist);
       moreInfoOnError("In function fnStoreStack:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
   else if((regist >= REGISTER_X && regist < FIRST_LOCAL_REGISTER) || regist + size > FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters) {
-    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Cannot execute STOS, destination register is out of range: %d", regist);
       moreInfoOnError("In function fnStoreStack:", errorMessage, NULL, NULL);
@@ -499,7 +499,7 @@ void fnStoreVElement(uint16_t ix) {
     return;
   }
   if(!getRegisterAsComplex(REGISTER_X, &rx, &rx) && !getRegisterAsReal(REGISTER_X, &rx)) {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType(REGISTER_X));
       moreInfoOnError("In function fnStoreVElement:", errorMessage, "is not a Real/Integer/Complex.", "");
@@ -518,7 +518,7 @@ void fnStoreVElement(uint16_t ix) {
 bool_t vectorSpanOk(uint16_t regist, uint16_t n, const char *funcName) {   // a span stays in its block: R00..R99, the stack X..D, or L..W; a local span is checked per register
   uint16_t last = regist < FIRST_LETTERED_REGISTER ? 99 : regist <= REGISTER_D ? REGISTER_D : regist <= LAST_SPARE_REGISTER ? LAST_SPARE_REGISTER : 0;
   if(last != 0 && regist + n - 1 > last) {
-    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       if(regist < FIRST_LETTERED_REGISTER) {
         sprintf(errorMessage, "a span of %" PRIu16 " registers from R%02" PRIu16 " runs past R99", n, regist);
@@ -540,7 +540,7 @@ static bool_t _registerToElement(calcRegister_t r, uint16_t ix) {               
   }
   if(!getRegisterAsComplex(r, &re, &im)) {
     if(!getRegisterAsReal(r, &re)) {
-      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "register %" PRIu16 " holds %s", r, getRegisterDataTypeName(r, true, false));
         moreInfoOnError("In function fnStoreVector:", errorMessage, "not a real, integer or complex", NULL);
@@ -588,7 +588,7 @@ void fnStoreVectorX(uint16_t regist) {
     return;
   }
   if(!initMatrixRegister(REGISTER_X, 1, cols, false)) {                   // X becomes the 1 x cols real vector that Rnn->V fills
-    displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Not enough memory for a 1" STD_CROSS "%" PRIu32 " vector", cols);
       moreInfoOnError("In function fnStoreVectorX:", errorMessage, NULL, NULL);
@@ -608,7 +608,7 @@ void fnStoreElement(uint16_t unusedButMandatoryParameter) {
 
 void _fnStoreElement(bool_t stepForward) {
     if(matrixIndex == INVALID_VARIABLE) {
-      displayCalcErrorMessage(ERROR_NO_MATRIX_INDEXED, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_NO_MATRIX_INDEXED, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Cannot execute STOEL without a matrix indexed");
         moreInfoOnError("In function _fnStoreElement:", errorMessage, NULL, NULL);
@@ -634,7 +634,7 @@ void _fnStoreElement(bool_t stepForward) {
 
 void fnStoreIJ(uint16_t unusedButMandatoryParameter) {
     if(matrixIndex == INVALID_VARIABLE) {
-      displayCalcErrorMessage(ERROR_NO_MATRIX_INDEXED, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_NO_MATRIX_INDEXED, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Cannot execute STOIJ without a matrix indexed");
         moreInfoOnError("In function fnStoreIJ:", errorMessage, NULL, NULL);
@@ -665,7 +665,7 @@ void fn42AlphaStore(uint16_t regist) {
       *dest = 0;
     }
     else {
-      displayCalcErrorMessage(ERROR_NO_STRING_IN_ALPHA_REGISTER, ERR_REGISTER_LINE, REGISTER_T);
+      displayCalcErrorMessage(ERROR_NO_STRING_IN_ALPHA_REGISTER, ERR_REGISTER_LINE);
     }
   }
 }

@@ -210,7 +210,7 @@ fn incDecAndCompare(regist: u16, mode: u16) linksection(runtime.code_section) vo
                 real34Add(registerReal34Data(@intCast(regist)), &fp, registerReal34Data(@intCast(regist)));
             } else {
                 // fallthrough to default: goto invalidType
-                return invalidType(regist);
+                return invalidType();
             }
         },
         dtTime => {
@@ -226,12 +226,12 @@ fn incDecAndCompare(regist: u16, mode: u16) linksection(runtime.code_section) vo
                 compared = if (math_comparison_reals.realCompareAbsLessThan(&v, const_3600())) 0 else 1; // |time| < 1h -> treat as zero
             } else {
                 // ISG/DSE/ISE/DSL counter format has no meaning for Time
-                return invalidType(regist);
+                return invalidType();
             }
         },
         else => {
             // goto invalidType
-            return invalidType(regist);
+            return invalidType();
         },
     }
     if (compared > 0) {
@@ -244,8 +244,8 @@ fn incDecAndCompare(regist: u16, mode: u16) linksection(runtime.code_section) vo
     return;
 }
 
-fn invalidType(regist: u16) linksection(runtime.code_section) void {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, @intCast(regist));
+fn invalidType() linksection(runtime.code_section) void {
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     moreInfoOnError("In function incDecAndCompare:", "incompatible type for iterator.", null, null);
 }
 

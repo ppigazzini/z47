@@ -18,7 +18,7 @@ extern fn setConfirmationMode(handler: *const fn (confirmation: u16) callconv(.c
 extern fn z47_registers_sort_reg(range_start: u16, range_end: u16) void;
 extern fn z47_stack_runtime_request_clear_registers_confirmation() void;
 extern fn z47_stack_runtime_do_partial_register_load(s: u16, n: u16, d: u16) void;
-extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: calcRegister_t, err_register_line: calcRegister_t) void;
+extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: calcRegister_t) void;
 
 pub fn requestClearRegistersConfirmation() void {
     if (use_fake_stack_state_harness_surface) {
@@ -47,5 +47,5 @@ pub fn sortRegisterRange(range_start: u16, range_end: u16) void {
 // differential measured a build that annotated a different register line than
 // the C it was compared against -- the one place a divergence must never live.
 pub fn reportRegisterCommandError(error_code: u8) void {
-    displayCalcErrorMessage(error_code, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(error_code, ERR_REGISTER_LINE);
 }

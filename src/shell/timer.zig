@@ -728,7 +728,7 @@ pub export fn inputHelper(regist: u16, val: *u32, overflow: *bool_t) callconv(.c
             realToUInt32(&tmp, DEC_ROUND_HALF_EVEN, val, overflow);
         },
         else => {
-            frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
             if (comptime extra_info) {
                 abi.fmtBufZ(errorMessage[0..512], "cannot recall {s} to the stopwatch", .{std.mem.span(frontier_debug.getRegisterDataTypeName(@bitCast(regist), true, false))});
                 moreInfoOnErr("In function inputHelper:", errorMessage);
@@ -1070,7 +1070,7 @@ pub export fn fnRecallTimerApp(regist: u16) callconv(.c) void {
         return;
     }
     if (overflow) {
-        frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "the {s} does not fit to uint32_t", .{std.mem.span(frontier_debug.getRegisterDataTypeName(@bitCast(regist), true, false))});
             moreInfoOnErr("In function fnRecallTimerApp:", errorMessage);

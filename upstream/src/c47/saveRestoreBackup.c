@@ -577,6 +577,8 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     saveStateValue(&longPressFactor,                sizeof(longPressFactor),                                     "longPressFactor",                "int16");
     saveStateValue(&doublePressFactor,              sizeof(doublePressFactor),                                   "doublePressFactor",              "int16");
 
+    saveStateValue(&alphaRegister,                  sizeof(alphaRegister),                                       "alphaRegister",                  "uint16");
+
     // If you create a new parameter, proceed as following:
     //saveStateValue(&newParam,                       sizeof(newParam),                                            "newParam",                       "parameterType");
 
@@ -1294,6 +1296,7 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     printerState.delay = getLineDelay();
     restoreStateValue(&printerState.delay,             sizeof(printerState.delay),                                  "printerState.delay",             "uint16");  //DL
     restoreStateValue(&programmableMenu,               sizeof(programmableMenu),                                    "programmableMenu",               "hexDump");
+    restoreStateValue(&alphaRegister,                  sizeof(alphaRegister),                                       "alphaRegister",                  "uint16");  //DL
 
     if(backupVersion < 1014) {
       setLongPressFg(calcModel, -MNU_HOME);

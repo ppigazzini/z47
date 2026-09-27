@@ -1565,7 +1565,11 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define SBARUPD_Printer                         (getSystemFlag(FLAG_SBprn  ))
 #define SBARUPD_UserMode                        ( 1                         )
 #define SBARUPD_Battery                         ( 1                         )
-#define SBARUPD_BatVoltage                      (getSystemFlag(FLAG_SBbatV ))
+#if defined(BATTERYTEST)
+  #define SBARUPD_BatVoltage                    ( 1                         )  // RNG nnnn drives the gauge in the simulator without SBbatV
+#else // !BATTERYTEST
+  #define SBARUPD_BatVoltage                    (getSystemFlag(FLAG_SBbatV ))
+#endif // BATTERYTEST
 #define SBAR_SHIFT                              (getSystemFlag(FLAG_SBshfR ))
 
 

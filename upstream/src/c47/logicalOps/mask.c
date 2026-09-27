@@ -16,7 +16,7 @@
  ***********************************************/
 void fnMaskl(uint16_t numberOfBits) {
   if(numberOfBits > shortIntegerWordSize) {
-    displayCalcErrorMessage(ERROR_WORD_SIZE_TOO_SMALL, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_WORD_SIZE_TOO_SMALL, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "cannot calculate MASKL(%d) word size is %d", numberOfBits, shortIntegerWordSize);
       moreInfoOnError("In function fnMaskl:", errorMessage, NULL, NULL);
@@ -52,7 +52,7 @@ void fnMaskl(uint16_t numberOfBits) {
  ***********************************************/
 void fnMaskr(uint16_t numberOfBits) {
   if(numberOfBits > shortIntegerWordSize) {
-    displayCalcErrorMessage(ERROR_WORD_SIZE_TOO_SMALL, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_WORD_SIZE_TOO_SMALL, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "cannot calculate MASKR(%d) word size is %d", numberOfBits, shortIntegerWordSize);
       moreInfoOnError("In function fnMaskr:", errorMessage, NULL, NULL);

@@ -98,7 +98,7 @@ fn tryToPolar2Real34Pair() bool {
     const y_valid = data_type_y == runtime.dtLongInteger or (data_type_y == runtime.dtReal34 and data_atag_y == runtime.amNone);
 
     if (!x_valid or !y_valid) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE);
         reportPairTypeError("In function fnToPolar2:");
         return true;
     }
@@ -173,7 +173,7 @@ fn tryToRect2Real34Pair() bool {
     const y_valid = data_type_y == runtime.dtLongInteger or data_type_y == runtime.dtReal34;
 
     if (!x_valid or !y_valid) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE);
         reportPairTypeError("In function fnToRect2:");
         return true;
     }
@@ -186,7 +186,7 @@ fn tryToRect2Real34Pair() bool {
     const angle_valid = angle_type == runtime.dtLongInteger or angle_type == runtime.dtReal34;
 
     if (!radius_valid or !angle_valid) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, radius_reg);
+        runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE);
         reportToRectTypeError(radius_reg, angle_reg);
         return true;
     }
@@ -244,7 +244,7 @@ fn tryToRectReal34Pair(angle_in_y: i8) bool {
     const angle_valid = angle_type == runtime.dtLongInteger or angle_type == runtime.dtReal34;
 
     if (!radius_valid or !angle_valid) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, radius_reg);
+        runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE);
         reportToRectTypeError(radius_reg, angle_reg);
         return true;
     }

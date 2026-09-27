@@ -51,7 +51,7 @@ const char *algdepPolynomialString(void) {
 static algdepLattice_t *latticeAlloc(void) {
   algdepLattice_t *L = allocC47Blocks(TO_BLOCKS(sizeof(algdepLattice_t)));
   if(L == NULL) {
-    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     return NULL;
   }
   longInteger_t *p = (longInteger_t *)L;
@@ -407,7 +407,7 @@ static bool_t algdepSearch(algdepLattice_t *L, const real_t *x, int32_t maxDegre
   longIntegerInit(bigN);
   if(!realToScaledInteger(x, bigN, &kdec)) {
     longIntegerFree(bigN);
-    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function algdepSearch:", "the value in X is not finite.", NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -516,7 +516,7 @@ static void buildPolynomialString(algdepLattice_t *L, int32_t degree) {
 // ------------------------------------------------------------------------------------------------------------------------------------------- the commands
 
 static void reportNoRelation(const char *function, const char *what) {
-  displayCalcErrorMessage(ERROR_NO_ROOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+  displayCalcErrorMessage(ERROR_NO_ROOT_FOUND, ERR_REGISTER_LINE);
   #if (EXTRA_INFO_ON_CALC_ERROR == 1)
     moreInfoOnError(function, what, "to the precision the input carries.", NULL);
   #else // EXTRA_INFO_ON_CALC_ERROR != 1
@@ -533,14 +533,14 @@ void fnAlgdep(uint16_t maxDegree) {
   algdepOutcome_t  out;
 
   if(maxDegree < 1 || maxDegree > ALGDEP_MAX_DEGREE) {
-    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
     return;
   }
   if(!getRegisterAsReal(REGISTER_X, &x)) {
     return;
   }
   if(realIsSpecial(&x)) {
-    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
     return;
   }
   if(!saveLastX()) {                                         // the input is consumed, so LASTx carries it, as fnSlvq's does; a refusal is an error, and runFunction's undo()
@@ -586,7 +586,7 @@ void fnLindep(uint16_t unusedButMandatoryParameter) {
   algdepLattice_t *L;
 
   if(getRegisterDataType(REGISTER_X) != dtReal34Matrix) {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     return;
   }
   linkToRealMatrixRegister(REGISTER_X, &matrix);
@@ -595,7 +595,7 @@ void fnLindep(uint16_t unusedButMandatoryParameter) {
                  : (matrix.header.matrixColumns == 1) ? matrix.header.matrixRows
                  : 0;
   if(count < 2 || count > ALGDEP_MAX_VECTORS) {
-    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function fnLindep:", "expects a row or column vector of 2 to 11 elements.", NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -629,7 +629,7 @@ void fnLindep(uint16_t unusedButMandatoryParameter) {
   }
   longIntegerFree(entryN);
   if(!finite) {
-    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function fnLindep:", "every entry of the vector must be finite.", NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)

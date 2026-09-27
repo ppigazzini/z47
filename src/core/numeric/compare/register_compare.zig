@@ -861,9 +861,8 @@ pub export fn z47_math_wrappers_legacy_fnXAlmostEqual(regist: u16) callconv(.c) 
 // incDec.c
 // ============================================================================
 
-fn incDecError(regist: u16, flag: u8) void {
-    _ = flag;
-    runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, asRegister(regist));
+fn incDecError() void {
+    runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE);
 
     runtime.moreInfoOnError("In function incDecError:", "Cannot increment/decrement, incompatible type.", null, null);
 }
@@ -957,7 +956,7 @@ fn incDecDispatch(regist: u16, flag: u8) void {
         runtime.dtComplex34 => incDecCplx(regist, flag),
         runtime.dtTime => incDecTime(regist, flag),
         runtime.dtShortInteger => incDecShoI(regist, flag),
-        else => incDecError(regist, flag),
+        else => incDecError(),
     }
 }
 

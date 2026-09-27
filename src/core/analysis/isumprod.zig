@@ -129,7 +129,7 @@ extern fn setSystemFlag(sf: c_uint) void;
 extern fn clearSystemFlag(sf: c_uint) void;
 extern fn fnFillStack(unused: u16) void;
 extern fn execProgram(label: u16) void;
-extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: calcRegister_t, err_register_line: calcRegister_t) void;
+extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: calcRegister_t) void;
 const GLOBAL_LABELS: u8 = 253; // namedLabels_t: STRING_LABEL_VARIABLE
 extern fn findNamedLabel(label_name: [*:0]const u8, label_type: u8) calcRegister_t;
 extern fn letteredRegisterName(regist: calcRegister_t) u8;
@@ -178,7 +178,7 @@ fn _programmableiSumProd(label: u16, prod: bool_t) linksection(runtime.code_sect
             ((longIntegerCompare(&loopTo[0], &iCounter[0]) > 0 and longIntegerCompareUInt(&loopStep[0], 0) <= 0) or
                 (longIntegerCompare(&loopTo[0], &iCounter[0]) < 0 and longIntegerCompareUInt(&loopStep[0], 0) >= 0))))
     {
-        displayCalcErrorMessage(if (stepIsZero) ERROR_STEP_OF_ZERO else ERROR_BAD_INPUT, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(if (stepIsZero) ERROR_STEP_OF_ZERO else ERROR_BAD_INPUT, ERR_REGISTER_LINE);
         runtime.moreInfoOnError("In function _programmableiSumProd:", if (stepIsZero) "Counter will not move" else "Counter will not count to destination", null, null);
         longIntegerFree(&resultLi[0]); // the error path frees the five long integers as well, since it returns without reaching the else
         longIntegerFree(&iLoop[0]);
@@ -237,7 +237,7 @@ fn _programmableiSumProd(label: u16, prod: bool_t) linksection(runtime.code_sect
         if (lastErrorCode == ERROR_NONE) {
             convertLongIntegerToLongIntegerRegister(&resultLi[0], REGISTER_X);
         } else {
-            displayCalcErrorMessage(lastErrorCode, ERR_REGISTER_LINE, REGISTER_X);
+            displayCalcErrorMessage(lastErrorCode, ERR_REGISTER_LINE);
             runtime.moreInfoOnError("In function _programmableiSumProd:", "Error while calculating", null, null);
         }
 
@@ -264,15 +264,15 @@ fn _programmableiSumProd(label: u16, prod: bool_t) linksection(runtime.code_sect
 // ===========================================================================
 fn _checkRegisters() linksection(runtime.code_section) bool_t {
     if (getRegisterDataType(REGISTER_X) != dtLongInteger) {
-        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
         runtime.moreInfoOnError("In function _checkRegisters:", "Long integer expected", null, null);
         return true;
     } else if (getRegisterDataType(REGISTER_Y) != dtLongInteger) {
-        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_Y);
+        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
         runtime.moreInfoOnError("In function _checkRegisters:", "Long integer expected", null, null);
         return true;
     } else if (getRegisterDataType(REGISTER_Z) != dtLongInteger) {
-        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_Z);
+        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
         runtime.moreInfoOnError("In function _checkRegisters:", "Long integer expected", null, null);
         return true;
     }

@@ -157,7 +157,7 @@ const REAL_SIZE_IN_BLOCKS_75: usize = 15;
 const BesselError = error{ BesselJNegArg, BesselYNegArg };
 
 fn reportBesselError(e: BesselError) void {
-    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
     switch (e) {
         error.BesselJNegArg => moreInfoOnError("In function fnBesselJ:", "negative argument for Bessel function of non-integer degree", null, null),
         error.BesselYNegArg => moreInfoOnError("In function fnBesselY:", "negative argument for Bessel function", null, null),
@@ -507,15 +507,15 @@ fn Sigma_u_k(nu: *const real_t, t_r: *const real_t, t_i: *const real_t, odd: i32
                 }
                 freeC47Blocks(coeff_next, blocks);
             } else {
-                displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
             }
             freeC47Blocks(coeff_deriv, blocks);
         } else {
-            displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+            displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
         }
         freeC47Blocks(coeff_current, blocks);
     } else {
-        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     }
     return;
 }
@@ -652,7 +652,7 @@ fn bessel_recur(nu: *const real_t, x: *const real_t, is_y: bool, descending: boo
         realCopy(res, &jnx);
 
         if (monitorExit(&loop, "Iter: ")) {
-            displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+            displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE);
             return;
         }
     }
@@ -873,7 +873,7 @@ fn bessel2_int_series(n_in: *const real_t, x: *const real_t, res: *real_t, realC
         realCopy(&u, &s);
 
         if (monitorExit(&loop, "Iter: ")) {
-            displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+            displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE);
             return;
         }
     }

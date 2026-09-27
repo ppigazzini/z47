@@ -326,7 +326,7 @@ pub export fn regInRange(regist: u16) callconv(.c) bool {
             regType = "generic";
             offset = 0;
         }
-        frontier_error.displayCalcErrorMessage(errorType, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(errorType, ERR_REGISTER_LINE);
         if (strcmp(regType, "generic") == 0) {
             abi.fmtBufZ(errorMessage[0..512], "generic", .{});
         } else {
@@ -334,7 +334,7 @@ pub export fn regInRange(regist: u16) callconv(.c) bool {
         }
         c_moreInfoOnError("In function regInRange:", errorMessage, " is not defined!", null);
     } else {
-        frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
     }
     return false;
 }
@@ -344,7 +344,7 @@ pub export fn regInRange(regist: u16) callconv(.c) bool {
 // ===========================================================================
 fn _checkReadOnlyVariable(regist: u16) bool {
     if (FIRST_RESERVED_VARIABLE <= regist and regist <= LAST_RESERVED_VARIABLE and allReservedVariables[regist - FIRST_RESERVED_VARIABLE].header.bits.readOnly == 1) {
-        frontier_error.displayCalcErrorMessage(ERROR_WRITE_PROTECTED_VAR, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_WRITE_PROTECTED_VAR, ERR_REGISTER_LINE);
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "reserved variable {s}", .{std.mem.span(@as([*c]const u8, @ptrCast(&allReservedVariables[regist - FIRST_RESERVED_VARIABLE].reservedVariableName)) + 1)});
             moreInfoOnError("In function _checkReadOnlyVariable:", errorMessage, " is write-protected!");
@@ -368,7 +368,7 @@ fn storeElementReal(matrix: *real34Matrix_t) callconv(.c) bool {
     } else if (getRegisterDataType(REGISTER_X) == dtReal34) {
         real34Copy(reg34(REGISTER_X), &matrix.matrixElements.?[idx]);
     } else {
-        frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "Cannot store {s} in a matrix", .{std.mem.span(frontier_debug.getRegisterDataTypeName(REGISTER_X, true, false))});
             moreInfoOnError("In function storeElementReal:", errorMessage, null);
@@ -394,7 +394,7 @@ fn storeElementComplex(matrix: *complex34Matrix_t) callconv(.c) bool {
         real34Copy(reg34(REGISTER_X), variableReal34(elem));
         real34Copy(regImag34(REGISTER_X), variableImag34(elem));
     } else {
-        frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "Cannot store {s} in a matrix", .{std.mem.span(frontier_debug.getRegisterDataTypeName(REGISTER_X, true, false))});
             moreInfoOnError("In function storeElementReal:", errorMessage, null);
@@ -413,7 +413,7 @@ fn storeIjReal(matrix: *real34Matrix_t) callconv(.c) bool {
             copySourceRegisterToDestRegister(REGISTER_X, REGISTER_J);
             return true;
         } else {
-            frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
             if (comptime extra_info) {
                 // The uint32_t values go through a PRIu16 conversion, which
                 // renders only their low 16 bits.
@@ -422,7 +422,7 @@ fn storeIjReal(matrix: *real34Matrix_t) callconv(.c) bool {
             }
         }
     } else if (lastErrorCode == ERROR_NONE) {
-        frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "Cannot store {s} as matrix index", .{std.mem.span(frontier_debug.getRegisterDataTypeName(REGISTER_X, true, false))});
             moreInfoOnError("In function storeIjReal:", errorMessage, null);
@@ -462,7 +462,7 @@ fn _storeValue(regist: u16) void {
                 // plot menu, so leave the graph screen for the error line to render.
                 copySourceRegisterToDestRegister(TEMP_REGISTER_1, REGISTER_X);
                 calcMode = CM_NORMAL;
-                frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+                frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
                 if (comptime extra_info) {
                     moreInfoOnError("In function _storeValue:", "plot range limits must be finite", null);
                 }
@@ -507,7 +507,7 @@ pub export fn fn2Sto(regist: u16) callconv(.c) void {
         copySourceRegisterToDestRegister(REGISTER_X, @intCast(regist + 0));
         copySourceRegisterToDestRegister(REGISTER_Y, @intCast(regist + 1));
     } else {
-        frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "{d:0>4}", .{@as(u32, @intCast(regist))});
             moreInfoOnError("In function fn2Sto:", errorMessage, " is not defined!");
@@ -525,7 +525,7 @@ pub export fn fn3Sto(regist: u16) callconv(.c) void {
         copySourceRegisterToDestRegister(REGISTER_Y, @intCast(regist + 1));
         copySourceRegisterToDestRegister(REGISTER_Z, @intCast(regist + 2));
     } else {
-        frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "{d:0>4}", .{@as(u32, @intCast(regist))});
             moreInfoOnError("In function fn3Sto:", errorMessage, " is not defined!");
@@ -819,13 +819,13 @@ pub export fn fnStoreStack(regist: u16) callconv(.c) void {
     const size: u16 = if (getSystemFlag(FLAG_SSIZE8)) 8 else 4;
 
     if (@as(i32, regist) + @as(i32, size) >= REGISTER_X and @as(i32, regist) < REGISTER_X) {
-        frontier_error.displayCalcErrorMessage(ERROR_STACK_CLASH, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_STACK_CLASH, ERR_REGISTER_LINE);
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "Cannot execute STOS, destination register would overlap the stack: {d}", .{@as(i32, regist)});
             moreInfoOnError("In function fnStoreStack:", errorMessage, null);
         }
     } else if ((regist >= @as(u16, @intCast(REGISTER_X)) and regist < FIRST_LOCAL_REGISTER) or @as(i32, regist) + @as(i32, size) > @as(i32, FIRST_LOCAL_REGISTER) + @as(i32, currentNumberOfLocalRegisters())) {
-        frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "Cannot execute STOS, destination register is out of range: {d}", .{@as(i32, regist)});
             moreInfoOnError("In function fnStoreStack:", errorMessage, null);
@@ -849,7 +849,7 @@ pub export fn fnStoreVElement(ix: u16) callconv(.c) void {
         return;
     }
     if (!frontier_register_value_conversions.getRegisterAsComplex(REGISTER_X, &rx, &rx) and !frontier_register_value_conversions.getRegisterAsReal(REGISTER_X, &rx)) {
-        frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "DataType {d}", .{@as(u32, getRegisterDataType(REGISTER_X))});
             c_moreInfoOnError("In function fnStoreVElement:", errorMessage, "is not a Real/Integer/Complex.", "");
@@ -879,7 +879,7 @@ pub export fn vectorSpanOk(regist: u16, n: u16, funcName: [*:0]const u8) callcon
     else
         0;
     if (last != 0 and @as(u32, regist) + n > @as(u32, last) + 1) {
-        frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
         if (comptime extra_info) {
             if (regist < FIRST_LETTERED_REGISTER) {
                 abi.fmtBufZ(errorMessage[0..512], "a span of {d} registers from R{d:0>2} runs past R99", .{ n, regist });
@@ -908,7 +908,7 @@ fn registerToElement(r: calcRegister_t, ix: u16) bool {
     }
     if (!frontier_register_value_conversions.getRegisterAsComplex(r, &re, &im)) {
         if (!frontier_register_value_conversions.getRegisterAsReal(r, &re)) {
-            frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
             if (comptime extra_info) {
                 abi.fmtBufZ(errorMessage[0..512], "register {d} holds {s}", .{
                     @as(u16, @intCast(r)),
@@ -966,7 +966,7 @@ pub export fn fnStoreVectorX(regist: u16) callconv(.c) void {
         return;
     }
     if (!initMatrixRegister(REGISTER_X, 1, @intCast(cols), false)) { // X becomes the 1 x cols real vector Rnn->V fills
-        frontier_error.displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE);
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "Not enough memory for a 1" ++ STD_CROSS ++ "{d} vector", .{cols});
             moreInfoOnError("In function fnStoreVectorX:", errorMessage, null);
@@ -988,7 +988,7 @@ pub export fn fnStoreElement(unusedButMandatoryParameter: u16) callconv(.c) void
 
 fn _fnStoreElement(stepForward: bool) void {
     if (matrixIndex == INVALID_VARIABLE) {
-        frontier_error.displayCalcErrorMessage(ERROR_NO_MATRIX_INDEXED, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_NO_MATRIX_INDEXED, ERR_REGISTER_LINE);
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "Cannot execute STOEL without a matrix indexed", .{});
             moreInfoOnError("In function _fnStoreElement:", errorMessage, null);
@@ -1015,7 +1015,7 @@ fn _fnStoreElement(stepForward: bool) void {
 pub export fn fnStoreIJ(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     if (matrixIndex == INVALID_VARIABLE) {
-        frontier_error.displayCalcErrorMessage(ERROR_NO_MATRIX_INDEXED, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_NO_MATRIX_INDEXED, ERR_REGISTER_LINE);
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "Cannot execute STOIJ without a matrix indexed", .{});
             moreInfoOnError("In function fnStoreIJ:", errorMessage, null);
@@ -1051,7 +1051,7 @@ pub export fn fn42AlphaStore(regist: u16) callconv(.c) void {
             }
             dest[0] = 0;
         } else {
-            frontier_error.displayCalcErrorMessage(ERROR_NO_STRING_IN_ALPHA_REGISTER, ERR_REGISTER_LINE, REGISTER_T);
+            frontier_error.displayCalcErrorMessage(ERROR_NO_STRING_IN_ALPHA_REGISTER, ERR_REGISTER_LINE);
         }
     }
 }

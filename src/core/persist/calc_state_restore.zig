@@ -57,7 +57,7 @@ const REGISTER_X: i16 = 100; // == FIRST_LETTERED_REGISTER
 const ERR_REGISTER_LINE: i16 = 102; // REGISTER_Z
 const ERROR_RAM_FULL: u8 = 11;
 const NUMBER_OF_STATISTICAL_SUMS: i16 = 28;
-extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: i16, err_register_line: i16) void;
+extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: i16) void;
 const INVALID_VARIABLE: i16 = 2199;
 
 // Lettered-register names for registers 100..125, in register-number order.
@@ -933,7 +933,7 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
             userKeyLabel = @ptrCast(allocC47Blocks(TO_BLOCKS(userKeyLabelSize)));
             if (userKeyLabel == null) { // the memset below writes through this pointer, and this section's entries then walk it
                 userKeyLabelSize = 0;
-                displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, REGISTER_X);
+                displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
             } else {
                 _ = memset(userKeyLabel, 0, TO_BYTES(TO_BLOCKS(userKeyLabelSize)));
             }
@@ -1069,7 +1069,7 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
             if (allFormulae == null) {
                 numberOfFormulae = 0;
                 currentFormula = 0;
-                displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, REGISTER_X);
+                displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
             } else {
                 numberOfFormulae = formulae;
                 currentFormula = 0;

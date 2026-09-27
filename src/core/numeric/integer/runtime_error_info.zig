@@ -8,16 +8,14 @@ pub fn invalidShortIntegerError(
     display_error: anytype,
     error_invalid_data_type_for_op: u8,
     err_register_line: calcRegister_t,
-    regist: calcRegister_t,
 ) void {
-    display_error(error_invalid_data_type_for_op, err_register_line, regist);
+    display_error(error_invalid_data_type_for_op, err_register_line);
 }
 
 pub fn wordSizeError(
     display_error: anytype,
     error_word_size_too_small: u8,
     err_register_line: calcRegister_t,
-    register_x: calcRegister_t,
 ) void {
-    display_error(error_word_size_too_small, err_register_line, register_x);
+    display_error(error_word_size_too_small, err_register_line);
 }

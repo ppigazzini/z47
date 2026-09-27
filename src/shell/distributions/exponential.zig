@@ -21,12 +21,12 @@ fn checkParamExponential(x: *real_t, lambda: *real_t) linksection(dr.code_sectio
     }
 
     if (dr.realIsNegative(x)) {
-        dr.displayDomainErrorMessage(dr.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, dr.ERR_REGISTER_LINE, dr.REGISTER_X);
+        dr.displayDomainErrorMessage(dr.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, dr.ERR_REGISTER_LINE);
         dr.moreInfoOnError("In function checkParamExponential:", "cannot calculate for x < 0", null, null);
         dr.specialResultNaN();
         return false;
     } else if (dr.realIsZero(lambda) or dr.realIsNegative(lambda)) {
-        dr.displayDomainErrorMessage(dr.ERROR_INVALID_DISTRIBUTION_PARAM, dr.ERR_REGISTER_LINE, dr.REGISTER_X);
+        dr.displayDomainErrorMessage(dr.ERROR_INVALID_DISTRIBUTION_PARAM, dr.ERR_REGISTER_LINE);
         dr.moreInfoOnError("In function checkParamExponential:", "cannot calculate for \x83\xbb \xa2\x64 0", null, null);
         dr.specialResultNaN();
         return false;
@@ -78,14 +78,14 @@ pub fn exponentialI(unused_but_mandatory_parameter: u16) linksection(dr.code_sec
 
     if (checkParamExponential(&val, &dof)) {
         if (dr.realCompareLessEqual(&val, dr.const0()) or dr.realCompareGreaterEqual(&val, dr.const1())) {
-            dr.displayDomainErrorMessage(dr.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, dr.ERR_REGISTER_LINE, dr.REGISTER_X);
+            dr.displayDomainErrorMessage(dr.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, dr.ERR_REGISTER_LINE);
             dr.moreInfoOnError("In function fnExponentialI:", "the argument must be 0 < x < 1", null, null);
             dr.specialResultNaN();
             return;
         }
         wp34sQfExpon(&val, &dof, &ans, &dr.ctxtReal39);
         if (dr.realIsNaN(&ans)) {
-            dr.displayDomainErrorMessage(dr.ERROR_NO_ROOT_FOUND, dr.ERR_REGISTER_LINE, dr.REGISTER_X);
+            dr.displayDomainErrorMessage(dr.ERROR_NO_ROOT_FOUND, dr.ERR_REGISTER_LINE);
             dr.moreInfoOnError("In function fnExponentialI:", "WP34S_Qf_Expon did not converge", null, null);
             dr.specialResultNaN();
             return;

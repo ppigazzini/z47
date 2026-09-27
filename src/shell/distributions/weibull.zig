@@ -21,12 +21,12 @@ fn checkParamWeibull(x: *real_t, shape: *real_t, scale: *real_t) linksection(dr.
     }
 
     if (dr.realIsNegative(x)) {
-        dr.displayDomainErrorMessage(dr.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, dr.ERR_REGISTER_LINE, dr.REGISTER_X);
+        dr.displayDomainErrorMessage(dr.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, dr.ERR_REGISTER_LINE);
         dr.moreInfoOnError("In function checkParamWeibull:", "cannot calculate for x < 0", null, null);
         dr.specialResultNaN();
         return false;
     } else if (dr.realIsZero(shape) or dr.realIsNegative(shape) or dr.realIsZero(scale) or dr.realIsNegative(scale)) {
-        dr.displayDomainErrorMessage(dr.ERROR_INVALID_DISTRIBUTION_PARAM, dr.ERR_REGISTER_LINE, dr.REGISTER_X);
+        dr.displayDomainErrorMessage(dr.ERROR_INVALID_DISTRIBUTION_PARAM, dr.ERR_REGISTER_LINE);
         dr.moreInfoOnError("In function checkParamWeibull:", "cannot calculate for b \xa2\x64 0 or t \xa2\x64 0", null, null);
         dr.specialResultNaN();
         return false;
@@ -82,7 +82,7 @@ pub fn weibullI(unused_but_mandatory_parameter: u16) linksection(dr.code_section
 
     if (checkParamWeibull(&val, &shape, &lifetime)) {
         if (dr.realCompareLessEqual(&val, dr.const0()) or dr.realCompareGreaterEqual(&val, dr.const1())) {
-            dr.displayDomainErrorMessage(dr.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, dr.ERR_REGISTER_LINE, dr.REGISTER_X);
+            dr.displayDomainErrorMessage(dr.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, dr.ERR_REGISTER_LINE);
             dr.moreInfoOnError("In function fnWeibullI:", "the argument must be 0 < x < 1", null, null);
             dr.specialResultNaN();
             return;

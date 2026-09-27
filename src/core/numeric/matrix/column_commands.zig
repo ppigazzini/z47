@@ -81,7 +81,7 @@ fn columnMinMaxReal(matrix: *real34Matrix_t, calcMax: bool) bool {
         runtime.reallocateRegister(REGISTER_X, runtime.dtReal34, REAL34_SIZE_IN_BYTES, runtime.amNone);
         runtime.registerReal34Data(REGISTER_X).* = res_val;
     } else {
-        runtime.displayCalcErrorMessage(runtime.ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
         if (runtime.extra_info_on_calc_error) {
             var buf: [64]u8 = undefined;
             // PRIu16 on an int16_t: a negative index, which is the branch this
@@ -102,7 +102,7 @@ fn columnMaxMatrix(matrix: *real34Matrix_t) callconv(.c) bool {
 }
 fn columnMinMaxComplex(matrix: *complex34Matrix_t) callconv(.c) bool {
     _ = matrix;
-    runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+    runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     if (runtime.extra_info_on_calc_error) {
         var buf: [80]u8 = undefined;
         const tn = runtime.getRegisterDataTypeName(REGISTER_X, true, false);

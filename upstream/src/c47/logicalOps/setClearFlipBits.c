@@ -19,7 +19,7 @@ void fnCb(uint16_t bit) { // bit from 0=LSB to shortIntegerWordSize-1=MSB
   uint32_t base;
 
   if(bit >= shortIntegerWordSize) {  // valid bits are 0=LSB .. wordsize-1=MSB; bit == wordsize previously slipped through and operated one past the word
-    displayCalcErrorMessage(ERROR_WORD_SIZE_TOO_SMALL, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_WORD_SIZE_TOO_SMALL, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "cannot calculate CB(%d) word size is %d", bit, shortIntegerWordSize);
       moreInfoOnError("In function fnCb:", errorMessage, NULL, NULL);
@@ -48,7 +48,7 @@ void fnSb(uint16_t bit) { // bit from 0=LSB to shortIntegerWordSize-1=MSB
   uint32_t base;
 
   if(bit >= shortIntegerWordSize) {  // valid bits are 0=LSB .. wordsize-1=MSB; bit == wordsize previously slipped through and operated one past the word
-    displayCalcErrorMessage(ERROR_WORD_SIZE_TOO_SMALL, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_WORD_SIZE_TOO_SMALL, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "cannot calculate SB(%d) word size is %d", bit, shortIntegerWordSize);
       moreInfoOnError("In function fnSb:", errorMessage, NULL, NULL);
@@ -77,7 +77,7 @@ void fnFb(uint16_t bit) { // bit from 0=LSB to shortIntegerWordSize-1=MSB
   uint32_t base;
 
   if(bit >= shortIntegerWordSize) {  // valid bits are 0=LSB .. wordsize-1=MSB; bit == wordsize previously slipped through and operated one past the word
-    displayCalcErrorMessage(ERROR_WORD_SIZE_TOO_SMALL, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_WORD_SIZE_TOO_SMALL, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "cannot calculate FB(%d) word size is %d", bit, shortIntegerWordSize);
       moreInfoOnError("In function fnFb:", errorMessage, NULL, NULL);
@@ -104,7 +104,7 @@ void fnBc(uint16_t bit) { // bit from 0=LSB to shortIntegerWordSize-1=MSB
   uint64_t w;
 
   if(bit >= shortIntegerWordSize) {  // valid bits are 0=LSB .. wordsize-1=MSB; bit == wordsize previously slipped through and operated one past the word
-    displayCalcErrorMessage(ERROR_WORD_SIZE_TOO_SMALL, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_WORD_SIZE_TOO_SMALL, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "cannot calculate BC?(%d) word size is %d", bit, shortIntegerWordSize);
       moreInfoOnError("In function fnBc:", errorMessage, NULL, NULL);
@@ -130,7 +130,7 @@ void fnBs(uint16_t bit) { // bit from 0=LSB to shortIntegerWordSize-1=MSB
   uint64_t w;
 
   if(bit >= shortIntegerWordSize) {  // valid bits are 0=LSB .. wordsize-1=MSB; bit == wordsize previously slipped through and operated one past the word
-    displayCalcErrorMessage(ERROR_WORD_SIZE_TOO_SMALL, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_WORD_SIZE_TOO_SMALL, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "cannot calculate BS?(%d) word size is %d", bit, shortIntegerWordSize);
       moreInfoOnError("In function fnBs:", errorMessage, NULL, NULL);

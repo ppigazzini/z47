@@ -427,7 +427,7 @@ pub export fn processCurvefitSA(SA0: *real_t, SA1: *real_t) linksection(runtime.
                 //All parameters set from processCurvefitSelectionAll
             },
             else => {
-                displayCalcErrorMessage(ERROR_NO_ERRORS_CALCULABLE, ERR_REGISTER_LINE, REGISTER_X);
+                displayCalcErrorMessage(ERROR_NO_ERRORS_CALCULABLE, ERR_REGISTER_LINE);
                 moreInfoOnError("In function processCurvefitSA:", "No errors are calculable for the selected/chosen model!", null, null);
                 return false;
             },

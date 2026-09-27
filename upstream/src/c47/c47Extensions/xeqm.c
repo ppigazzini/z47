@@ -16,7 +16,7 @@ void fnXSWAP (uint16_t mode) {
       // Programmed X.SWAP/X.EDIT: a running program has no editor buffer (the interactive branches below open or serve an editor), so operate on the stored
       // current formula directly, whatever calcMode the program started from. X.SWAP returns the old formula text in X; X.EDIT drops it.
       if(getRegisterDataType(REGISTER_X) != dtString) {
-        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
       }
       else if(stringByteLength(REGISTER_STRING_DATA(REGISTER_X)) < AIM_BUFFER_LENGTH) {
         if(numberOfFormulae == 0) {

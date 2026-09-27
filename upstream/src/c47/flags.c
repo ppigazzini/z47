@@ -263,6 +263,8 @@ doInteractionFlags:
 
     default: break;
   }
+
+  updateShiftOnTline();                                // a status bar setting can have taken the room for the shift indicator, or given it back
 }
 
 void setSystemFlag(unsigned int sf) {
@@ -449,7 +451,7 @@ void fnSetFlag(uint16_t flag) {
       if(programRunStop == PGM_WAITING) {
         programRunStop = PGM_STOPPED;
       }
-      displayCalcErrorMessage(ERROR_WRITE_PROTECTED_SYSTEM_FLAG, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_WRITE_PROTECTED_SYSTEM_FLAG, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "protected system flag (%" PRIu16 ")!", (uint16_t)(flag & 0x3fff));
         moreInfoOnError("In function fnSetFlag:", "Tying to set a write", errorMessage, NULL);
@@ -520,7 +522,7 @@ void fnClearFlag(uint16_t flag) {
       if(programRunStop == PGM_WAITING) {
         programRunStop = PGM_STOPPED;
       }
-      displayCalcErrorMessage(ERROR_WRITE_PROTECTED_SYSTEM_FLAG, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_WRITE_PROTECTED_SYSTEM_FLAG, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "protected system flag (%" PRIu16 ")!", (uint16_t)(flag & 0x3fff));
         moreInfoOnError("In function fnClearFlag:", "Tying to clear a write", errorMessage, NULL);
@@ -592,7 +594,7 @@ void fnFlipFlag(uint16_t flag) {
       if(programRunStop == PGM_WAITING) {
         programRunStop = PGM_STOPPED;
       }
-      displayCalcErrorMessage(ERROR_WRITE_PROTECTED_SYSTEM_FLAG, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_WRITE_PROTECTED_SYSTEM_FLAG, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "protected system flag (%" PRIu16 ")!", (uint16_t)(flag & 0x3fff));
         moreInfoOnError("In function fnFlipFlag:", "Tying to flip a write", errorMessage, NULL);

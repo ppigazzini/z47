@@ -167,7 +167,7 @@ fn doTaylorIterations(
         if (comptime is_dmcp_build) {
             if (exitKeyWaiting()) {
                 _ = progressHalfSecUpdate_Integer(halfSec_force + 1, "Interrupted Iter:", @intCast(iteration), halfSec_clearZ, halfSec_clearT, halfSec_disp);
-                runtime.displayCalcErrorMessage(ERROR_SOLVER_ABORT, REGISTER_T, NIM_REGISTER_LINE);
+                runtime.displayCalcErrorMessage(ERROR_SOLVER_ABORT, REGISTER_T);
                 break;
             }
         }
@@ -222,7 +222,7 @@ fn sinCosTanTaylorTemp75(
     if (work_angle_p == null or a2_p == null or t_p == null or j_p == null or
         z_p == null or sin_value_p == null or cos_value_p == null or epsilon_or_compare_p == null)
     {
-        runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE);
         return;
     }
     const work_angle = work_angle_p.?;

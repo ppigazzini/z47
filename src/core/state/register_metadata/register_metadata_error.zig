@@ -5,7 +5,7 @@ const stack_runtime = @import("../runtime/stack_runtime.zig");
 pub const REGISTER_X = stack_runtime.REGISTER_X;
 pub const REGISTER_Y = stack_runtime.REGISTER_Y;
 
-extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: stack_runtime.calcRegister_t, err_register_line: stack_runtime.calcRegister_t) void;
+extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: stack_runtime.calcRegister_t) void;
 
 // The firmware-bug reports the register accessors raise: a register id no branch
 // of the accessor can serve is a coding error, not a calculator error, so the
@@ -129,7 +129,6 @@ fn reportError(error_code: u8) void {
     displayCalcErrorMessage(
         error_code,
         stack_runtime.REGISTER_Z,
-        REGISTER_X,
     );
 }
 

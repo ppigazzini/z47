@@ -132,10 +132,9 @@ void liftStack(void) {
   copyRegister(REGISTER_X, REGISTER_Y);
 }
 
-void displayCalcErrorMessage(uint8_t errorCode, calcRegister_t errMessageRegisterLine, calcRegister_t errRegisterLine) {
+void displayCalcErrorMessage(uint8_t errorCode, calcRegister_t errMessageRegisterLine) {
   parityRuntimeState.last_error_code = errorCode;
   parityRuntimeState.last_error_message_register = errMessageRegisterLine;
-  parityRuntimeState.last_error_register = errRegisterLine;
 }
 
 void reallocateRegister(calcRegister_t regist, uint32_t dataType, uint16_t dataSizeWithoutDataLenBlocks, uint32_t tag) {

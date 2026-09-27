@@ -92,7 +92,7 @@ const PrintUserContext = struct {
         _ = self;
         if (!printUserPrinterEnabled()) {
             if (getSystemFlag(@as(c_int, @intCast(FLAG_PRTEN))) or printUserRunStateAllowsPrint()) {
-                frontier_error.displayCalcErrorMessage(ERROR_PRINTING_DISABLED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                frontier_error.displayCalcErrorMessage(ERROR_PRINTING_DISABLED, ERR_REGISTER_LINE);
                 // `#if defined(PC_BUILD)` console hint, host-only like the
                 // printf traces in the print owner.
                 if (comptime !frontier_print.is_dmcp_build) {

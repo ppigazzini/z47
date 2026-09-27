@@ -48,7 +48,6 @@ void parityResetState(uint8_t wordSize, uint64_t xRaw, uint32_t xBase) {
   parityRuntimeState.lifted_stack = false;
   parityRuntimeState.last_error_code = 0;
   parityRuntimeState.last_error_message_register = 0;
-  parityRuntimeState.last_error_register = 0;
   thereIsSomethingToUndo = true;
   temporaryInformation = 0;
 }
@@ -92,10 +91,9 @@ void liftStack(void) {
   parityRuntimeState.lifted_stack = true;
 }
 
-void displayCalcErrorMessage(uint8_t errorCode, calcRegister_t errMessageRegisterLine, calcRegister_t errRegisterLine) {
+void displayCalcErrorMessage(uint8_t errorCode, calcRegister_t errMessageRegisterLine) {
   parityRuntimeState.last_error_code = errorCode;
   parityRuntimeState.last_error_message_register = errMessageRegisterLine;
-  parityRuntimeState.last_error_register = errRegisterLine;
 }
 
 void reallocateRegister(calcRegister_t regist, uint32_t dataType, uint16_t dataSizeWithoutDataLenBlocks, uint32_t tag) {

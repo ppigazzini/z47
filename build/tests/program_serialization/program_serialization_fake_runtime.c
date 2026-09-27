@@ -225,9 +225,8 @@ uint32_t getFreeRamMemory(void) {
 
 // --- calculator surface ----------------------------------------------------
 
-void displayCalcErrorMessage(uint8_t errorCode, calcRegister_t errMessageRegisterLine, calcRegister_t disUsedCanBeRemoved) {
+void displayCalcErrorMessage(uint8_t errorCode, calcRegister_t errMessageRegisterLine) {
   (void)errMessageRegisterLine;
-  (void)disUsedCanBeRemoved;
   lastErrorKind = errorCode;
 }
 

@@ -307,7 +307,7 @@ fn unitConversion(coefficient: *align(1) const real_t, multiply_divide: u16, inv
         if (getSystemFlag(FLAG_SPCRES)) {
             frontier_register_value_conversions.convertRealToResultRegister(@alignCast(cst(if (realIsNegative(&re_x)) OFF_const_minusInfinity else OFF_const_plusInfinity)), REGISTER_X, amNone);
         } else {
-            frontier_error.displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
             if (comptime extra_info) moreInfoOnError("In function unitConversion:", "cannot calculate divide by zero", null, null);
         }
     }

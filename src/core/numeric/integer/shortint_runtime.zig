@@ -59,7 +59,7 @@ pub extern fn getRegisterAsRawShortInt(reg: calcRegister_t, val: *u64, base: ?*u
 pub extern fn getRegisterAsComplex(reg: calcRegister_t, r: *real_t, i: *real_t) bool;
 pub extern fn saveLastX() bool;
 pub extern fn liftStack() void;
-pub extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: calcRegister_t, err_register_line: calcRegister_t) void;
+pub extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: calcRegister_t) void;
 pub extern fn reallocateRegister(regist: calcRegister_t, data_type: u32, data_size_without_data_len_blocks: u16, tag: u32) void;
 pub extern fn getRegisterDataPointer(regist: calcRegister_t) ?*anyopaque;
 pub extern fn getRegisterTag(regist: calcRegister_t) u32;
@@ -162,7 +162,6 @@ pub fn invalidShortIntegerError(function_name: [*:0]const u8, regist: calcRegist
         displayCalcErrorMessage,
         ERROR_INVALID_DATA_TYPE_FOR_OP,
         ERR_REGISTER_LINE,
-        regist,
     );
     if (extra_info_on_calc_error) {
         var message: [ERROR_MESSAGE_LENGTH]u8 = undefined;
@@ -176,7 +175,6 @@ pub fn wordSizeError(function_name: [*:0]const u8, operation_name: []const u8, r
         displayCalcErrorMessage,
         ERROR_WORD_SIZE_TOO_SMALL,
         ERR_REGISTER_LINE,
-        REGISTER_X,
     );
     if (extra_info_on_calc_error) {
         var message: [ERROR_MESSAGE_LENGTH]u8 = undefined;

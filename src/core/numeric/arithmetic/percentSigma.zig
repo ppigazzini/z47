@@ -76,7 +76,7 @@ pub export fn percentSigma(xReal: *real_t, rReal: *real_t, realContext: *realCon
             realSetPlusInfinity(rReal);
             rReal.bits |= DECNEG * @as(u8, @intFromBool(realIsNegative(rReal)));
         } else {
-            displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+            displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
             moreInfoOnError("In function percentSigma:", "cannot divide a real by 0", null, null);
             return false;
         }
@@ -103,7 +103,7 @@ export fn percentSigmaReal() linksection(runtime.code_section) callconv(.c) void
 pub export fn fnPercentSigma(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     if (!checkMinimumDataPoints(const_1())) {
-        displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE);
         moreInfoOnError("In function fnPercentSigma:", "There is no statistical data available!", null, null);
         return;
     }

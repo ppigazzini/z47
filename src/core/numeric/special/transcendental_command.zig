@@ -244,7 +244,7 @@ pub fn lnReal() callconv(.c) void {
 
     if (runtime.realIsZero(&x)) {
         if (!runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
-            runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
             if (runtime.extra_info_on_calc_error) {
                 runtime.moreInfoOnError("In function lnReal:", "cannot calculate Ln(0)", null, null);
             }
@@ -254,7 +254,7 @@ pub fn lnReal() callconv(.c) void {
         copyReal(&x, runtime.z47_math_wrappers_const_minus_infinity());
     } else if (runtime.realIsInfinite(&x)) {
         if (!runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
-            runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
             if (runtime.extra_info_on_calc_error) {
                 runtime.moreInfoOnError("In function lnReal:", "cannot use " ++ std_plus_minus ++ std_infinity ++ " as X input of ln when flag SPCRES is not set", null, null);
             }
@@ -280,7 +280,7 @@ pub fn lnReal() callconv(.c) void {
     } else if (runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
         runtime.realSetNaN(&x);
     } else {
-        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
         if (runtime.extra_info_on_calc_error) {
             runtime.moreInfoOnError("In function lnReal:", "cannot calculate Ln of a negative number when CPXRES is not set!", null, null);
         }
@@ -299,7 +299,7 @@ pub fn lnCplx() callconv(.c) void {
     }
 
     if (runtime.realIsZero(&x_real) and runtime.realIsZero(&x_imag) and !runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
         if (runtime.extra_info_on_calc_error) {
             runtime.moreInfoOnError("In function lnCplx:", "cannot calculate Ln(0)", null, null);
         }

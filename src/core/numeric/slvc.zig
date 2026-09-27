@@ -269,7 +269,7 @@ const SlvcError = error{LeadingCoeffsAllZero};
 fn reportSlvcError(e: SlvcError) void {
     switch (e) {
         error.LeadingCoeffsAllZero => {
-            displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+            displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
             if (runtime.extra_info_on_calc_error) {
                 moreInfoOnError("In function fnSlvc:", "cannot use 0 for Y, Z and T as input of SLVC", null, null);
             }
@@ -498,7 +498,7 @@ pub export fn solveCoefficientVector() linksection(runtime.code_section) callcon
 
     const m: u32 = @as(u32, rows) * @as(u32, cols);
     if ((rows != 1 and cols != 1) or m < 2 or m > 4) {
-        displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE);
         if (runtime.extra_info_on_calc_error) {
             abi.fmtBufZ(errorMessage[0..ERROR_MESSAGE_LENGTH], "a coefficient vector holds 2 to 4 elements, not ({d}\x80\xd7{d})", .{ rows, cols });
             moreInfoOnError("In function solveCoefficientVector:", @ptrCast(errorMessage), null, null);
@@ -525,7 +525,7 @@ pub export fn solveCoefficientVector() linksection(runtime.code_section) callcon
         allZero = allZero and realIsZeroA(&co[j][0]) and realIsZeroA(&co[j][1]);
     }
     if (allZero) {
-        displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
         if (runtime.extra_info_on_calc_error) {
             moreInfoOnError("In function solveCoefficientVector:", "every coefficient above the constant term is 0", null, null);
         }
@@ -561,7 +561,7 @@ pub export fn solveCoefficientVector() linksection(runtime.code_section) callcon
     if (resultIsComplex) {
         var res: complex34Matrix_t = undefined;
         if (!complexMatrixInit(&res, 1, nRoots)) {
-            displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+            displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
             if (runtime.extra_info_on_calc_error) {
                 moreInfoOnError("In function solveCoefficientVector:", "Ram full", null, null);
             }
@@ -582,7 +582,7 @@ pub export fn solveCoefficientVector() linksection(runtime.code_section) callcon
     } else {
         var res: real34Matrix_t = undefined;
         if (!realMatrixInit(&res, 1, nRoots)) {
-            displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+            displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
             if (runtime.extra_info_on_calc_error) {
                 moreInfoOnError("In function solveCoefficientVector:", "Ram full", null, null);
             }

@@ -33,7 +33,7 @@ fn clearResult(res: anytype) void {
 }
 
 fn reportRamFull(comptime function_name: [*:0]const u8, comptime info: [*:0]const u8) void {
-    runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE, nim_register_line);
+    runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE);
     if (runtime.extra_info_on_calc_error) {
         runtime.moreInfoOnError(function_name, info, null, null);
     }
@@ -44,7 +44,7 @@ pub export fn invertRealMatrix(matrix: *const real34Matrix_t, res: *real34Matrix
 
     if (matrix.header.matrixRows != matrix.header.matrixColumns) {
         if (!samePtr(matrix, res)) clearResult(res);
-        runtime.displayCalcErrorMessage(runtime.ERROR_MATRIX_MISMATCH, runtime.ERR_REGISTER_LINE, nim_register_line);
+        runtime.displayCalcErrorMessage(runtime.ERROR_MATRIX_MISMATCH, runtime.ERR_REGISTER_LINE);
         return;
     }
 
@@ -87,7 +87,7 @@ pub export fn invertComplexMatrix(matrix: *const complex34Matrix_t, res: *comple
 
     if (matrix.header.matrixRows != matrix.header.matrixColumns) {
         if (!samePtr(matrix, res)) clearResult(res);
-        runtime.displayCalcErrorMessage(runtime.ERROR_MATRIX_MISMATCH, runtime.ERR_REGISTER_LINE, nim_register_line);
+        runtime.displayCalcErrorMessage(runtime.ERROR_MATRIX_MISMATCH, runtime.ERR_REGISTER_LINE);
         return;
     }
 

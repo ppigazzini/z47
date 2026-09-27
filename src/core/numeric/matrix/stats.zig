@@ -28,7 +28,7 @@ pub export fn saveStatsMatrix() callconv(.c) bool {
                 runtime.copySourceRegisterToDestRegister(reg_stats, runtime.TEMP_REGISTER_2_SAVED_STATS);
                 return true; // backed up
             } else {
-                runtime.displayCalcErrorMessage(runtime.ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+                runtime.displayCalcErrorMessage(runtime.ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, runtime.ERR_REGISTER_LINE);
                 if (runtime.extra_info_on_calc_error) {
                     var buffer: [96]u8 = undefined;
                     const message = bufPrintZ(&buffer, "Not enough memory for STATS undo matrix: rows={d}, cols={d}", .{ rows, cols }) catch "Not enough memory for STATS undo matrix";
@@ -65,7 +65,7 @@ pub export fn recallStatsMatrix() callconv(.c) bool {
                 runtime.clearRegister(runtime.TEMP_REGISTER_2_SAVED_STATS);
                 return true; // restored
             } else {
-                runtime.displayCalcErrorMessage(runtime.ERROR_TI_UNDO_FAILED, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+                runtime.displayCalcErrorMessage(runtime.ERROR_TI_UNDO_FAILED, runtime.ERR_REGISTER_LINE);
                 if (runtime.extra_info_on_calc_error) {
                     var buffer: [128]u8 = undefined;
                     const message = bufPrintZ(&buffer, "Creation of STATS matrix from TEMP2 failed, likely due to insufficient memory: rows={d}, cols={d}", .{ rows, cols }) catch "Creation of STATS matrix from TEMP2 failed";

@@ -104,7 +104,7 @@ extern fn show_warning(string: [*c]u8) void;
 const scanLabelsAndProgramsC = @extern(*const fn () callconv(.c) void, .{ .name = "scanLabelsAndPrograms" });
 extern fn goToGlobalStep(step: i32) void;
 extern fn fnGoto(label: u16) void;
-extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: i16, err_register_line: i16) void;
+extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: i16) void;
 // EXTRA_INFO_ON_CALC_ERROR: on wherever the console exists, i.e. off the
 // firmware. The hint is staged in errorMessage exactly as the C sprintf does.
 const extra_info: bool = !is_dmcp_build;
@@ -168,7 +168,7 @@ pub fn selectProgram(label: u16) void {
         return;
     }
 
-    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
     if (comptime extra_info) {
         _ = sprintf(errorMessage, "label %u is not a global label", @as(c_uint, label));
         moreInfoOnError("In function fnSaveProgram/fnExportProgram (_selectProgram):", errorMessage, null, null);
@@ -299,7 +299,7 @@ pub fn closeFile() void {
 }
 
 pub fn displayWriteError() void {
-    displayCalcErrorMessage(ERROR_CANNOT_WRITE_FILE, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_CANNOT_WRITE_FILE, ERR_REGISTER_LINE);
 }
 
 extern fn printf(fmt: [*:0]const u8, ...) c_int;
@@ -330,32 +330,32 @@ pub fn displayExportWriteError() void {
     if (comptime !is_dmcp_build) {
         _ = printf("Cannot export program!\n");
     }
-    displayCalcErrorMessage(ERROR_CANNOT_WRITE_FILE, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_CANNOT_WRITE_FILE, ERR_REGISTER_LINE);
 }
 
 pub fn displayReadError() void {
-    displayCalcErrorMessage(ERROR_CANNOT_READ_FILE, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_CANNOT_READ_FILE, ERR_REGISTER_LINE);
 }
 
 pub fn displayRamFullError() void {
-    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
 }
 
 pub fn displayCorruptedDataError() void {
-    displayCalcErrorMessage(ERROR_INVALID_CORRUPTED_DATA, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_INVALID_CORRUPTED_DATA, ERR_REGISTER_LINE);
 }
 
 // The refusal the three file writers make while the program editor is open:
 // selecting a program reaches fnGoto, which inserts a GTO step there instead of
 // moving.
 pub fn displayOperationUndefined() void {
-    displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE);
 }
 
 // A program holding a 0 partner number, or a FOR or NEXT that VALID has not
 // passed, can be neither stored nor run.
 pub fn displayStructureNotNumbered() void {
-    displayCalcErrorMessage(ERROR_STRUCTURE_NOT_NUMBERED, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_STRUCTURE_NOT_NUMBERED, ERR_REGISTER_LINE);
 }
 
 pub fn getFreeRamMemoryBytes() u32 {

@@ -111,7 +111,7 @@ fn runRegister(register_no: u16) void {
 // built through the shared errorMessage buffer, host-only like the printf
 // traces in the print owner.
 fn reportPrintingDisabled() void {
-    frontier_error.displayCalcErrorMessage(ERROR_PRINTING_DISABLED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    frontier_error.displayCalcErrorMessage(ERROR_PRINTING_DISABLED, ERR_REGISTER_LINE);
     if (comptime !frontier_print.is_dmcp_build) {
         abi.fmtBufZ(errorMessage[0..ERROR_MESSAGE_LENGTH], "Printing is disabled", .{});
         frontier_error.moreInfoOnErrorImpl("In function fnP_Sigma:", errorMessage, null, null);
@@ -121,7 +121,7 @@ fn reportPrintingDisabled() void {
 // The no-summation-data hint is the EXTRA_INFO one, and it passes its text
 // straight to moreInfoOnError rather than through errorMessage.
 fn reportMissingSigmaData() void {
-    frontier_error.displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X);
+    frontier_error.displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE);
     if (comptime extra_info) {
         frontier_error.moreInfoOnErrorImpl("In function fnP_Sigma:", "There is no statistical data available!", null, null);
     }

@@ -35,19 +35,19 @@ fn checkParamF(x: *real_t, i: *real_t, j: *real_t) linksection(dr.code_section) 
     }
 
     if (!(dr.checkRegisterNoFP(i) or dr.checkRegisterNoFP(j))) {
-        dr.displayDomainErrorMessage(dr.ERROR_INVALID_DISTRIBUTION_PARAM, dr.ERR_REGISTER_LINE, dr.REGISTER_X);
+        dr.displayDomainErrorMessage(dr.ERROR_INVALID_DISTRIBUTION_PARAM, dr.ERR_REGISTER_LINE);
         dr.moreInfoOnError("In function checkParamF:", "d1 or d2 is not an integer", null, null);
         dr.specialResultNaN();
         return false;
     }
     if (dr.realIsNegative(x)) {
-        dr.displayDomainErrorMessage(dr.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, dr.ERR_REGISTER_LINE, dr.REGISTER_X);
+        dr.displayDomainErrorMessage(dr.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, dr.ERR_REGISTER_LINE);
         dr.moreInfoOnError("In function checkParamF:", "cannot calculate for x < 0", null, null);
         dr.specialResultNaN();
         return false;
     }
     if (dr.realIsZero(i) or dr.realIsNegative(i) or dr.realIsZero(j) or dr.realIsNegative(j)) {
-        dr.displayDomainErrorMessage(dr.ERROR_INVALID_DISTRIBUTION_PARAM, dr.ERR_REGISTER_LINE, dr.REGISTER_X);
+        dr.displayDomainErrorMessage(dr.ERROR_INVALID_DISTRIBUTION_PARAM, dr.ERR_REGISTER_LINE);
         dr.moreInfoOnError("In function checkParamF:", "cannot calculate for d1 \xa2\x64 0 or d2 \xa2\x64 0", null, null);
         dr.specialResultNaN();
         return false;
@@ -99,14 +99,14 @@ pub fn fI(unused_but_mandatory_parameter: u16) linksection(dr.code_section) void
     var d2: real_t = undefined;
     if (checkParamF(&val, &d1, &d2)) {
         if (dr.realCompareLessEqual(&val, dr.const0()) or dr.realCompareGreaterEqual(&val, dr.const1())) {
-            dr.displayDomainErrorMessage(dr.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, dr.ERR_REGISTER_LINE, dr.REGISTER_X);
+            dr.displayDomainErrorMessage(dr.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, dr.ERR_REGISTER_LINE);
             dr.moreInfoOnError("In function fnF_I:", "the argument must be 0 < x < 1", null, null);
             dr.specialResultNaN();
             return;
         }
         wp34sQfF(&val, &d1, &d2, &ans, &dr.ctxtReal39);
         if (dr.realIsNaN(&ans)) {
-            dr.displayDomainErrorMessage(dr.ERROR_NO_ROOT_FOUND, dr.ERR_REGISTER_LINE, dr.REGISTER_X);
+            dr.displayDomainErrorMessage(dr.ERROR_NO_ROOT_FOUND, dr.ERR_REGISTER_LINE);
             dr.moreInfoOnError("In function fnF_I:", "WP34S_Qf_F did not converge", null, null);
             dr.specialResultNaN();
             return;

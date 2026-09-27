@@ -68,7 +68,7 @@ extern const kbd_std_R47fg_g: [37]calcKey_t;
 
 extern fn ioFileOpen(path: c_int, mode: c_int) c_int;
 extern fn ioFileClose() void;
-extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: i16, err_register_line: i16) void;
+extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: i16) void;
 extern fn fnReturn(skip: u16) void;
 extern fn getDateString(date_string: [*c]u8) void;
 extern fn printStatus(row: u8, line1: [*c]const u8, forced: u8) void;
@@ -131,11 +131,11 @@ pub fn displayWriteError() void {
     if (comptime !is_dmcp_build) {
         _ = printf("Cannot SAVE in file C47.sav!\n");
     }
-    displayCalcErrorMessage(ERROR_CANNOT_WRITE_FILE, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_CANNOT_WRITE_FILE, ERR_REGISTER_LINE);
 }
 
 pub fn displayReadError() void {
-    displayCalcErrorMessage(ERROR_CANNOT_READ_FILE, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_CANNOT_READ_FILE, ERR_REGISTER_LINE);
 }
 
 pub fn unwindAllSubroutines() void {

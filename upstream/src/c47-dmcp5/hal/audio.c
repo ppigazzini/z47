@@ -83,7 +83,7 @@ static uint32_t _getValueFromRegister(calcRegister_t regist) {
   }
 
   else {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     //errorMoreInfo("register %" PRId16 " is %s:\nnot suited for addressing!", regist, getRegisterDataTypeName(regist, true, false));
     return -1;
   }
@@ -134,7 +134,7 @@ void fnPlay(uint16_t regist) {
       linkToRealMatrixRegister(regist, &m);
       cols = m.header.matrixColumns;
       if((cols != 2) && (cols != 3)) {
-        displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE);
         //errorMoreInfo("DataType %" PRIu32 " is not a Nx2 matrix", getRegisterDataType(regist));
         return;
       }
@@ -165,7 +165,7 @@ void fnPlay(uint16_t regist) {
     }
   }
   else {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     //errorMoreInfo("DataType %" PRIu32 " is not a real matrix", getRegisterDataType(regist));
   }
 }

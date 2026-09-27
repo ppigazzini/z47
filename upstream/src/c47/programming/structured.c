@@ -113,7 +113,7 @@ bool_t structNoLegacySkip(uint8_t *step) {
 // test answer still pending, and that display would cover the message, so it is cleared first.
 static void structNotHere(void) {
   temporaryInformation = TI_NO_INFO;
-  displayCalcErrorMessage(ERROR_NOT_AVAILABLE_HERE, ERR_REGISTER_LINE, REGISTER_X);
+  displayCalcErrorMessage(ERROR_NOT_AVAILABLE_HERE, ERR_REGISTER_LINE);
 }
 
 void fnIf(uint16_t unusedButMandatoryParameter) {
@@ -249,7 +249,7 @@ static bool_t structNumberMissing(uint16_t structureNumber) {
     return false;
   }
   temporaryInformation = TI_NO_INFO;
-  displayCalcErrorMessage(ERROR_STRUCTURE_NOT_NUMBERED, ERR_REGISTER_LINE, REGISTER_X);
+  displayCalcErrorMessage(ERROR_STRUCTURE_NOT_NUMBERED, ERR_REGISTER_LINE);
   return true;
 }
 
@@ -312,7 +312,7 @@ void fnIf(uint16_t structureNumber) {
     return;
   }
   if(temporaryInformation != TI_TRUE && temporaryInformation != TI_FALSE) {
-    displayCalcErrorMessage(ERROR_IF_WHILE_CONDITION_MISSING, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_IF_WHILE_CONDITION_MISSING, ERR_REGISTER_LINE);
     return;
   }
   if(temporaryInformation == TI_TRUE) {
@@ -323,7 +323,7 @@ void fnIf(uint16_t structureNumber) {
   temporaryInformation = TI_NO_INFO;
   // A false IF ends its branch at either token, whichever comes first.
   if(!structJumpToPartner(structureNumber, ITM_ENDIF, ITM_ELSE, true)) {
-    displayCalcErrorMessage(ERROR_STRUCTURE_INVALID, ERR_REGISTER_LINE, REGISTER_X); // Redundant message, cannot happen with validated program
+    displayCalcErrorMessage(ERROR_STRUCTURE_INVALID, ERR_REGISTER_LINE); // Redundant message, cannot happen with validated program
   }
 }
 
@@ -337,7 +337,7 @@ void fnElse(uint16_t structureNumber) {
     return;
   }
   if(!structJumpToPartner(structureNumber, ITM_ENDIF, 0, true)) {
-    displayCalcErrorMessage(ERROR_STRUCTURE_INVALID, ERR_REGISTER_LINE, REGISTER_X); // Redundant message, cannot happen with validated program
+    displayCalcErrorMessage(ERROR_STRUCTURE_INVALID, ERR_REGISTER_LINE); // Redundant message, cannot happen with validated program
   }
 }
 
@@ -372,7 +372,7 @@ void fnWhile(uint16_t structureNumber) {
     return;
   }
   if(temporaryInformation != TI_TRUE && temporaryInformation != TI_FALSE) {
-    displayCalcErrorMessage(ERROR_IF_WHILE_CONDITION_MISSING, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_IF_WHILE_CONDITION_MISSING, ERR_REGISTER_LINE);
     return;
   }
   if(temporaryInformation == TI_TRUE) {
@@ -382,7 +382,7 @@ void fnWhile(uint16_t structureNumber) {
   }
   temporaryInformation = TI_NO_INFO;
   if(!structJumpToPartner(structureNumber, ITM_ENDDO, 0, true)) {
-    displayCalcErrorMessage(ERROR_STRUCTURE_INVALID, ERR_REGISTER_LINE, REGISTER_X); // Redundant message, cannot happen with validated program
+    displayCalcErrorMessage(ERROR_STRUCTURE_INVALID, ERR_REGISTER_LINE); // Redundant message, cannot happen with validated program
   }
 }
 
@@ -404,7 +404,7 @@ void fnEnddo(uint16_t structureNumber) {
     structJumpToLabel(doLabel);
     return;
   }
-  displayCalcErrorMessage(ERROR_STRUCTURE_INVALID, ERR_REGISTER_LINE, REGISTER_X); // Redundant message, cannot happen with validated program
+  displayCalcErrorMessage(ERROR_STRUCTURE_INVALID, ERR_REGISTER_LINE); // Redundant message, cannot happen with validated program
 }
 
 // Nothing to do. The body follows, and the UNTIL comes back to the step after this one.
@@ -427,7 +427,7 @@ void fnUntil(uint16_t structureNumber) {
     return;
   }
   if(temporaryInformation != TI_TRUE && temporaryInformation != TI_FALSE) {
-    displayCalcErrorMessage(ERROR_IF_WHILE_CONDITION_MISSING, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_IF_WHILE_CONDITION_MISSING, ERR_REGISTER_LINE);
     return;
   }
   if(temporaryInformation == TI_TRUE) {
@@ -445,7 +445,7 @@ void fnUntil(uint16_t structureNumber) {
     structJumpToLabel(repeatLabel);
     return;
   }
-  displayCalcErrorMessage(ERROR_STRUCTURE_INVALID, ERR_REGISTER_LINE, REGISTER_X); // Redundant message, cannot happen with validated program
+  displayCalcErrorMessage(ERROR_STRUCTURE_INVALID, ERR_REGISTER_LINE); // Redundant message, cannot happen with validated program
 }
 
 // The running FOR structures. A row is filled as a loop opens and its step set back to 0 as it closes. The row is what a NEXT trusts: it reads the two local registers only
@@ -704,7 +704,7 @@ static bool_t forStepWentBackwards(uint16_t sum, uint16_t counter, uint16_t step
 // where the caller borrows X and Y and puts them back.
 static void forRefuseInfinite(calcRegister_t regist, real34_t *value) {
   if(real34IsInfinite(value)) {
-    displayCalcErrorMessage(real34IsPositive(value) ? ERROR_OVERFLOW_PLUS_INF : ERROR_OVERFLOW_MINUS_INF, ERR_REGISTER_LINE, regist);
+    displayCalcErrorMessage(real34IsPositive(value) ? ERROR_OVERFLOW_PLUS_INF : ERROR_OVERFLOW_MINUS_INF, ERR_REGISTER_LINE);
   }
 }
 
@@ -738,7 +738,7 @@ static bool_t forStepAndTest(uint16_t counter, uint16_t endReg, uint16_t stepReg
     }
   }
   if(lastErrorCode == ERROR_NONE && forValuesEqual(REGISTER_X, TEMP_REGISTER_1)) { // the counter has grown until the step rounds away, so the end is now
-    displayCalcErrorMessage(ERROR_STEP_OF_ZERO, ERR_REGISTER_LINE, REGISTER_X);    // unreachable whatever the FOR was given
+    displayCalcErrorMessage(ERROR_STEP_OF_ZERO, ERR_REGISTER_LINE);    // unreachable whatever the FOR was given
   }
   unusable = (lastErrorCode != ERROR_NONE) || forStepWentBackwards(REGISTER_X, TEMP_REGISTER_1, stepReg, descends);
   past = unusable || forCounterPastEnd(REGISTER_X, endReg, stepReg, descends);
@@ -771,31 +771,31 @@ void fnFor(uint16_t regist) {
     return; // this FOR is running already, reached again by BST or by a GTO, so its loop carries on untouched and the stack is left alone
   }
   if(!isRegInRange(regist)) { // the quiet range test, so the counter's own message is the one that shows
-    displayCalcErrorMessage(ERROR_INVALID_COUNTER_REGISTER, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_INVALID_COUNTER_REGISTER, ERR_REGISTER_LINE);
     return;
   }
   if(!forValueCanCount(REGISTER_Z) || !forValueCanCount(REGISTER_Y) || !forValueCanCount(REGISTER_X)) {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     return;
   }
   if(forStepCannotMove(REGISTER_Z, REGISTER_X)) { // the start plus the step, against the start
-    displayCalcErrorMessage(ERROR_STEP_OF_ZERO, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_STEP_OF_ZERO, ERR_REGISTER_LINE);
     return;
   }
   if(!forHasNext()) {
-    displayCalcErrorMessage(ERROR_NEXT_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_NEXT_NOT_FOUND, ERR_REGISTER_LINE);
     return;
   }
   if(row < FOR_MAX_LOOPS) { // the row outlived its registers, which a run that ended inside the loop does, so it is free again
     forLoopTable[row].localStepNumber = 0;
   }
   if(forCounterAlreadyCounted(regist)) { // a running loop already counts in it, so neither could ever end
-    displayCalcErrorMessage(ERROR_INVALID_COUNTER_REGISTER, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_INVALID_COUNTER_REGISTER, ERR_REGISTER_LINE);
     return;
   }
   row = forFreeLoopRow();
   if(row >= FOR_MAX_LOOPS || base + FOR_LOCALS > FOR_MAX_LOCALS) {
-    displayCalcErrorMessage(ERROR_NESTING_TOO_DEEP, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_NESTING_TOO_DEEP, ERR_REGISTER_LINE);
     return;
   }
   allocateLocalRegisters(base + FOR_LOCALS);
@@ -833,7 +833,7 @@ void fnForYx(uint16_t regist) {
     return; // this FOR is running already, reached again by BST or by a GTO, so the test below it decides the pass and the stack is left alone
   }
   if(!forValueCanCount(REGISTER_Y) || !forValueCanCount(REGISTER_X)) {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     return;
   }
   const uint32_t startType = getRegisterDataType(REGISTER_Y);
@@ -911,7 +911,7 @@ void fnForTop(uint16_t regist) {
     uint8_t *nextStep = forNextOfThisFor(&ahead);
 
     if(nextStep == NULL) { // fnFor refuses a FOR with no NEXT below it, so this cannot be reached from a program that got this far
-      displayCalcErrorMessage(ERROR_NEXT_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_NEXT_NOT_FOUND, ERR_REGISTER_LINE);
       return;
     }
     forLoopTable[row].localStepNumber = 0;                                                          // the row goes, no pass having been run
@@ -932,7 +932,7 @@ void fnNext(uint16_t regist) {
     return;
   }
   if(!isRegInRange(regist)) {
-    displayCalcErrorMessage(ERROR_INVALID_COUNTER_REGISTER, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_INVALID_COUNTER_REGISTER, ERR_REGISTER_LINE);
     return;
   }
   forDropDeadLoops();
@@ -941,7 +941,7 @@ void fnNext(uint16_t regist) {
   // A loop of this level that opened at a later step is inside this one and still running, so this NEXT closes out of order. Registers that are no longer there are a
   // LocR or a PopLR that deleted them under the loop, and reading whatever took their place would answer wrongly and say nothing.
   if(row >= FOR_MAX_LOOPS || forInnerLoopStillOpen(row) || !forLoopRegistersLive(row)) {
-    displayCalcErrorMessage(ERROR_NEXT_WITHOUT_FOR, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_NEXT_WITHOUT_FOR, ERR_REGISTER_LINE);
     return;
   }
   const uint16_t base = forLoopTable[row].localRegisterBase;
@@ -949,7 +949,7 @@ void fnNext(uint16_t regist) {
   // The body may write the counter and the loop's own two registers as freely as any other, so all three are tested here, where they are read. A type that cannot be
   // counted would otherwise end the loop without a word.
   if(!forValueCanCount(regist) || !forValueCanCount(base) || !forValueCanCount(base + 1)) {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "%s of this FOR", !forValueCanCount(regist) ? "the counter" : !forValueCanCount(base) ? "the end value" : "the step");
       moreInfoOnError("In function fnNext:", errorMessage, "holds a type the loop cannot count with", NULL);
@@ -973,7 +973,7 @@ void fnNext(uint16_t regist) {
     currentLocalStepNumber = forLoopTable[row].localStepNumber;
     defineCurrentStep();
     if(structPlainOp(structOpOfStep(currentStep)) != ITM_FOR) {
-      displayCalcErrorMessage(ERROR_NEXT_WITHOUT_FOR, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_NEXT_WITHOUT_FOR, ERR_REGISTER_LINE);
       return;
     }
     forLoopStep[row] = currentStep;
@@ -1020,7 +1020,7 @@ void structClearProgramNumbers(void) {
 // edited, so the run stops with the message the numbered structures give for the same thing.
 void fnForNotChecked(uint16_t regist) {
   temporaryInformation = TI_NO_INFO;
-  displayCalcErrorMessage(ERROR_STRUCTURE_NOT_NUMBERED, ERR_REGISTER_LINE, REGISTER_X);
+  displayCalcErrorMessage(ERROR_STRUCTURE_NOT_NUMBERED, ERR_REGISTER_LINE);
 }
 
 // The not checked form of a FOR or a NEXT. A new step enters the program in that form. Everything else is itself.
@@ -1162,7 +1162,7 @@ static void structReportFault(uint16_t localStepNumber, uint16_t error) {
     structGoToLocalStep(localStepNumber);
   }
   temporaryInformation = TI_NO_INFO; // a pending test display would otherwise cover the message
-  displayCalcErrorMessage(error, ERR_REGISTER_LINE, REGISTER_X);
+  displayCalcErrorMessage(error, ERR_REGISTER_LINE);
 }
 
 // One walk of the open program, from its first step to its END. It checks the structures and, on the second call, numbers them: every structure gets its own number, in

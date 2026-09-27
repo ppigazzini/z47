@@ -434,7 +434,7 @@ fn fnProcessLRfind(curveFitting: u16, resultType: u16) void {
         }
     } else {
         if (minLRDataPoints(s) == 65535) {
-            frontier_error.displayCalcErrorMessage(ERROR_TOO_FEW_DATA, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_TOO_FEW_DATA, ERR_REGISTER_LINE);
             moreInfoOnError("In function fnProcessLRfind:", "There is insufficient statistical data to do L.R., possibly due to data manipulation!");
         } else {
             uInt32ToReal(minLRDataPoints(s), &NN);

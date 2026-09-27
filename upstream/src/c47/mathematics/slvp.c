@@ -80,7 +80,7 @@ void fnSlvp(uint16_t unusedButMandatoryParameter) {
     cols = xc.header.matrixColumns;
   }
   else {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function fnSlvp:", "SLVP expects a coefficient vector in X", NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -88,7 +88,7 @@ void fnSlvp(uint16_t unusedButMandatoryParameter) {
   }
 
   if(rows != 1 && cols != 1) {
-    displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "SLVP needs a coefficient vector, not (%d" STD_CROSS "%d)", rows, cols);
       moreInfoOnError("In function fnSlvp:", errorMessage, NULL, NULL);
@@ -99,7 +99,7 @@ void fnSlvp(uint16_t unusedButMandatoryParameter) {
 
   wsSize = (size_t)REAL_SIZE_IN_BLOCKS(75) * m * 4;                      // m coefficient slots plus up to m-1 root slots
   if(!(coef = allocC47Blocks(wsSize))) {
-    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function fnSlvp:", "Ram full", NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -126,7 +126,7 @@ void fnSlvp(uint16_t unusedButMandatoryParameter) {
   }
   if(m - lead < 2) {                                                     // a constant, or nothing at all, has no roots
     freeC47Blocks(coef, wsSize);
-    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function fnSlvp:", "the polynomial needs degree 1 or higher after leading zeros are dropped", NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -172,7 +172,7 @@ void fnSlvp(uint16_t unusedButMandatoryParameter) {
 
         if(!(bulk = allocC47Blocks(bulkSize))) {
           freeC47Blocks(coef, wsSize);
-          displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+          displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
           #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             moreInfoOnError("In function fnSlvp:", "Ram full", NULL, NULL);
           #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -263,7 +263,7 @@ void fnSlvp(uint16_t unusedButMandatoryParameter) {
       complex34Matrix_t res;
       if(!complexMatrixInit(&res, 1, n)) {
         freeC47Blocks(coef, wsSize);
-        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           moreInfoOnError("In function fnSlvp:", "Ram full", NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -285,7 +285,7 @@ void fnSlvp(uint16_t unusedButMandatoryParameter) {
       real34Matrix_t res;
       if(!realMatrixInit(&res, 1, n)) {
         freeC47Blocks(coef, wsSize);
-        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           moreInfoOnError("In function fnSlvp:", "Ram full", NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)

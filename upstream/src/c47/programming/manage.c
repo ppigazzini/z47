@@ -392,7 +392,7 @@ void fnClP(uint16_t label) {
     }
   }
   else {
-    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "label %" PRIu16 " is not a global label", label);
       moreInfoOnError("In function fnClP:", errorMessage, NULL, NULL);
@@ -484,11 +484,11 @@ void scrollPemForwards(void) {
 
 
 int32_t pemLeftOffset(int32_t y) {
-  if(y > Y_POSITION_OF_REGISTER_T_LINE || X_SHIFT == X_SHIFT_R || Y_SHIFT == 0){
-    return 0;
+  if(y > Y_POSITION_OF_REGISTER_T_LINE || X_SHIFT == X_SHIFT_R || !shiftOnTline){
+    return noShiftOffset;
   }
   else {
-    return 16; //Offset to allow for f/g
+    return shiftOffset; //Offset to allow for f/g
   }
 }
 
@@ -522,6 +522,7 @@ void fnPem(uint16_t unusedButMandatoryParameter) {
     uint16_t stepsThatWouldBeDisplayed = 7;
     uint8_t *step, *nextStep;
     bool_t lblOrEnd;
+    videoMode_t vm = vmNormal;
     #if !defined(OPTION_STRUCT_INDENT)
       bool_t lblOrEndOrXeq, gto;
     #endif // !OPTION_STRUCT_INDENT
@@ -561,9 +562,13 @@ void fnPem(uint16_t unusedButMandatoryParameter) {
     lastProgramListEnd       = false;
 
     if(firstDisplayedLocalStepNumber == 0) {
-      showString("0000:" STD_SPACE_4_PER_EM, &standardFont, pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE) + 1, Y_POSITION_OF_REGISTER_T_LINE, (pemCursorIsZerothStep && !tam.mode && aimBuffer[0] == 0) ? vmReverse : vmNormal, false, true);
+      vm = (pemCursorIsZerothStep && !tam.mode && aimBuffer[0] == 0) ? vmReverse : vmNormal;
+      showString("0000:" STD_SPACE_4_PER_EM, &standardFont, pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE), Y_POSITION_OF_REGISTER_T_LINE, vm, false, true);
+      if (vm == vmReverse) {
+        lcd_fill_rect(pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE) - noShiftOffset, Y_POSITION_OF_REGISTER_T_LINE, noShiftOffset, 20, 1);
+      }
       sprintf(tmpString, "{Prgm #%" PRIu16 "/%" PRIu16 ": %" PRIu32 " bytes / %" PRIu16 " step%s}", currentProgramNumber, numberOfPrograms, _getProgramSize(), numberOfSteps, numberOfSteps == 1 ? "" : "s");
-      showString(tmpString, &standardFont, pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE) + 42, Y_POSITION_OF_REGISTER_T_LINE, vmNormal, false, false);
+      showString(tmpString, &standardFont, pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE) + 41, Y_POSITION_OF_REGISTER_T_LINE, vmNormal, false, false);
       firstLine = 1;
     }
     else {
@@ -592,11 +597,15 @@ void fnPem(uint16_t unusedButMandatoryParameter) {
       sprintf(tmpString, "%04d:" STD_SPACE_4_PER_EM, firstDisplayedLocalStepNumber + line - lineOffset + lineOffsetTam);
       if(firstDisplayedStepNumber + line - lineOffset == currentStepNumber) {
         tamOverPemYPos = Y_POSITION_OF_REGISTER_T_LINE + 21 * line;
-        showString(tmpString, &standardFont, pemLeftOffset(tamOverPemYPos) + 1, tamOverPemYPos, ((pemCursorIsZerothStep && !tam.mode && aimBuffer[0] == 0) || (tam.mode && (programList[currentProgramNumber - 1].step > 0))) ? vmNormal : vmReverse, false, true);
+        vm = ((pemCursorIsZerothStep && !tam.mode && aimBuffer[0] == 0) || (tam.mode && (programList[currentProgramNumber - 1].step > 0))) ? vmNormal : vmReverse;
+        showString(tmpString, &standardFont, pemLeftOffset(tamOverPemYPos), tamOverPemYPos, vm, false, true);
+        if (vm == vmReverse) {
+          lcd_fill_rect(pemLeftOffset(tamOverPemYPos) - noShiftOffset, tamOverPemYPos, noShiftOffset, 20, 1);
+        }
         currentStep = step;
       }
       else {
-        showString(tmpString, &standardFont, pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE + 21 * line) + 1, Y_POSITION_OF_REGISTER_T_LINE + 21 * line, vmNormal,  false, true);
+        showString(tmpString, &standardFont, pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE + 21 * line), Y_POSITION_OF_REGISTER_T_LINE + 21 * line, vmNormal,  false, true);
       }
 
       //Automatically, when on battery (hence low processor), change to skip long processing register printing, recovering the fragmented screen here: See timer.c fnTimerEndOfActivity() , skippedStackLines
@@ -630,12 +639,12 @@ void fnPem(uint16_t unusedButMandatoryParameter) {
             line += 1;
             lineOffset += 1;
             lineOffsetTam += 1;
-            showString(tmpString, &standardFont, pemLeftOffset(tamOverPemYPos) + 1, tamOverPemYPos, vmReverse, false, true);
+            showString(tmpString, &standardFont, pemLeftOffset(tamOverPemYPos), tamOverPemYPos, vmReverse, false, true);
             if(line >= 7) {
               break;
             }
             sprintf(tmpString, "%04d:" STD_SPACE_4_PER_EM, firstDisplayedLocalStepNumber + line - lineOffset + lineOffsetTam);
-            showString(tmpString, &standardFont, pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE + 21 * line) + 1, Y_POSITION_OF_REGISTER_T_LINE + 21 * line, vmNormal, false, true);
+            showString(tmpString, &standardFont, pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE + 21 * line), Y_POSITION_OF_REGISTER_T_LINE + 21 * line, vmNormal, false, true);
           }
         }
         else if(firstDisplayedStepNumber + line - lineOffset == currentStepNumber && lblOrEnd && (*step != ITM_LBL)) {
@@ -643,12 +652,12 @@ void fnPem(uint16_t unusedButMandatoryParameter) {
             line += 1;
             lineOffset += 1;
             lineOffsetTam += 1;
-            showString(tmpString, &standardFont, pemLeftOffset(tamOverPemYPos) + 1, tamOverPemYPos, vmReverse, false, true);
+            showString(tmpString, &standardFont, pemLeftOffset(tamOverPemYPos), tamOverPemYPos, vmReverse, false, true);
             if(line >= 7) {
               break;
             }
             sprintf(tmpString, "%04d:" STD_SPACE_4_PER_EM, firstDisplayedLocalStepNumber + line - lineOffset + lineOffsetTam);
-            showString(tmpString, &standardFont, pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE + 21 * line) + 1, Y_POSITION_OF_REGISTER_T_LINE + 21 * line, vmNormal, false, true);
+            showString(tmpString, &standardFont, pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE + 21 * line), Y_POSITION_OF_REGISTER_T_LINE + 21 * line, vmNormal, false, true);
           }
         }
       }
@@ -704,14 +713,14 @@ void fnPem(uint16_t unusedButMandatoryParameter) {
       }
 
       #if defined(OPTION_STRUCT_INDENT)
-        showString(tmpString, &standardFont, pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE + 21 * line) + (lblOrEnd ? 42 : 42 + 10 * PEM_STRUCT_INDENT) + pemIndent, Y_POSITION_OF_REGISTER_T_LINE + 21 * line, vmNormal,  false, false);
+        showString(tmpString, &standardFont, pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE + 21 * line) + (lblOrEnd ? 41 : 41 + 10 * PEM_STRUCT_INDENT) + pemIndent, Y_POSITION_OF_REGISTER_T_LINE + 21 * line, vmNormal,  false, false);
       #else // OPTION_STRUCT_INDENT
-        showString(tmpString, &standardFont, pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE + 21 * line) + (lblOrEndOrXeq ? 42 : gto ? 82 : 62), Y_POSITION_OF_REGISTER_T_LINE + 21 * line, vmNormal,  false, false);
+        showString(tmpString, &standardFont, pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE + 21 * line) + (lblOrEndOrXeq ? 41 : gto ? 81 : 61), Y_POSITION_OF_REGISTER_T_LINE + 21 * line, vmNormal,  false, false);
       #endif // OPTION_STRUCT_INDENT
       offset = 300;
       while(numberOfExtraLines && line <= 5) {
         line++;
-        showString(tmpString + offset, &standardFont, pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE + 21 * (line)) + 62 + pemIndent, Y_POSITION_OF_REGISTER_T_LINE + 21 * (line), vmNormal,  false, false);
+        showString(tmpString + offset, &standardFont, pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE + 21 * (line)) + 61 + pemIndent, Y_POSITION_OF_REGISTER_T_LINE + 21 * (line), vmNormal,  false, false);
         numberOfExtraLines--;
         offset += 300;
         lineOffset++;
@@ -1992,7 +2001,7 @@ calcRegister_t findProgramLabel(uint16_t label, const char *caller) {
         return lbl + FIRST_LABEL;
       }
     }
-    displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "there is no local label %02u in current program", label);
       moreInfoOnError(caller, errorMessage, NULL, NULL);
@@ -2008,7 +2017,7 @@ calcRegister_t findProgramLabel(uint16_t label, const char *caller) {
     buf[1] = 0;
     label = findNamedLabel(buf, GLOBAL_LABELS);
     if(label == INVALID_VARIABLE) {
-      displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "string '%s' is not a named label", buf);
         moreInfoOnError(caller, errorMessage, NULL, NULL);
@@ -2016,7 +2025,7 @@ calcRegister_t findProgramLabel(uint16_t label, const char *caller) {
     }
     return label;
   }
-  displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+  displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
   #if (EXTRA_INFO_ON_CALC_ERROR == 1)
     sprintf(errorMessage, "unexpected parameter %u", label);
     moreInfoOnError(caller, errorMessage, NULL, NULL);

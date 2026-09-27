@@ -46,7 +46,7 @@ inline fn realCopy(source: *const real_t, destination: *real_t) void {
 }
 
 fn reportRamFull(comptime function_name: [*:0]const u8, comptime info: [*:0]const u8) void {
-    runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE, nim_register_line);
+    runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE);
     if (runtime.extra_info_on_calc_error) {
         runtime.moreInfoOnError(function_name, info, null, null);
     }

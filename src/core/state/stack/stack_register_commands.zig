@@ -70,7 +70,7 @@ pub fn sortRegisterRange(range_start: u16, range_end: u16) void {
 
         runtime.freeC47Blocks(block, scratch_blocks);
     } else {
-        runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE, runtime.NIM_REGISTER_LINE);
+        runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE);
     }
 }
 

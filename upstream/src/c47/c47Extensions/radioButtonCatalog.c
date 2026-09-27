@@ -618,7 +618,10 @@ int16_t fnItemShowValue(int16_t item) {
     case ITM_VOL:
     case ITM_VOLPLUS:
     case ITM_VOLMINUS:  result = getBeepVolume();                                   break; // DL
-    case ITM_PRINTERDLAY: result = printerState.delay;                              break; // DLr
+    case ITM_PRINTERDLAY: result = printerState.delay;                              break; // DL
+    case ITM_SET_42ALPHA:
+    case ITM_SET_42ALPHAX:
+                        result = regCtoKS(alphaRegister);                         break; // DL
     default:            if(indexOfItems[itemNr].func == itemToBeCoded) {
                          result = ITEM_NOT_CODED;
                         }

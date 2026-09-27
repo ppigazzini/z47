@@ -2971,7 +2971,7 @@ pub fn matrixEnsureEditorMode(where: [*:0]const u8) bool {
 /// hint names the function that refused, so the caller supplies its
 /// "In function <name>:" prefix.
 pub fn matrixModeUndefinedError(where: [*:0]const u8) void {
-    frontier_error.displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    frontier_error.displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE);
     if (comptime extra_info) {
         abi.fmtBufZ(errorMessage[0..ERROR_MESSAGE_LENGTH], "works in MIM only", .{});
         frontier_error.moreInfoOnErrorImpl(where, errorMessage, null, null);

@@ -82,7 +82,7 @@
 
 void fnEditMatrix(uint16_t regist) {
   if(isRegisterMatrixVector((regist == NOPARAM) ? REGISTER_X : regist) && getVectorRegisterPolarMode((regist == NOPARAM) ? REGISTER_X : regist) != 0) {  //refuse editing a polar vector in the matrix editor
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType((regist == NOPARAM) ? REGISTER_X : regist));
       moreInfoOnError("In function fnEditMatrix:", errorMessage, "Cannot edit polar format as a matrix.", "");
@@ -112,7 +112,7 @@ void fnEditMatrix(uint16_t regist) {
     #endif //OPTION_IR_PRINTING
   }
   else {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType(reg));
       moreInfoOnError("In function fnEditMatrix:", errorMessage, "is not a matrix.", "");
@@ -142,7 +142,7 @@ void fnOldMatrix(uint16_t unusedParamButMandatory) {
     }
   }
   else {
-    displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "works in MIM only");
       moreInfoOnError("In function fnOldMatrix:", errorMessage, NULL, NULL);
@@ -157,7 +157,7 @@ void fnGoToElement(uint16_t unusedParamButMandatory) {
     runFunction(ITM_M_GOTO_ROW);
   }
   else {
-    displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "works in MIM only");
       moreInfoOnError("In function fnGoToElement:", errorMessage, NULL, NULL);
@@ -171,7 +171,7 @@ void fnGoToRow(uint16_t row) {
     tmpRow = row;
   }
   else {
-    displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "works in MIM only");
       moreInfoOnError("In function fnGoToRow:", errorMessage, NULL, NULL);
@@ -183,7 +183,7 @@ void fnGoToRow(uint16_t row) {
 void fnGoToColumn(uint16_t col) {
   if(calcMode == CM_MIM) {
     if(tmpRow == 0 || tmpRow > openMatrixMIMPointer.header.matrixRows || col == 0 || col > openMatrixMIMPointer.header.matrixColumns) {
-      displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "(%" PRIu16 ", %" PRIu16 ") out of range", tmpRow, col);
         moreInfoOnError("In function fnGoToColumn:", errorMessage, NULL, NULL);
@@ -202,7 +202,7 @@ void fnGoToColumn(uint16_t col) {
     calcModeNormalGui();
   }
   else {
-    displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "works in MIM only");
       moreInfoOnError("In function fnGoToColumn:", errorMessage, NULL, NULL);
@@ -244,7 +244,7 @@ void _fnInsRow(bool_t add) {
     mimEnter(true);
   }
   else {
-    displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "works in MIM only");
       moreInfoOnError("In function _fnInsRow:", errorMessage, NULL, NULL);
@@ -273,7 +273,7 @@ void _fnInsCol(bool_t add) {
     mimEnter(true);
   }
   else {
-    displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "works in MIM only");
       moreInfoOnError("In function _fnInsCol:", errorMessage, NULL, NULL);
@@ -303,7 +303,7 @@ void fnDelRow(uint16_t unusedParamButMandatory) {
     mimEnter(true);
   }
   else {
-    displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "works in MIM only");
       moreInfoOnError("In function fnDelRow:", errorMessage, NULL, NULL);
@@ -326,7 +326,7 @@ void fnDelCol(uint16_t unusedParamButMandatory) {
     mimEnter(true);
   }
   else {
-    displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "works in MIM only");
       moreInfoOnError("In function fnDelCol:", errorMessage, NULL, NULL);

@@ -1448,7 +1448,7 @@ fn cmdPrintImpl(arg: u16, op: printArgument_t) void {
 
     if (!getSystemFlag(FLAG_PRTACT)) {
         if (getSystemFlag(@bitCast(FLAG_PRTEN)) or ((programRunStop != PGM_RUNNING) and (programRunStop != PGM_SINGLE_STEP))) {
-            frontier_error.displayCalcErrorMessage(ERROR_PRINTING_DISABLED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+            frontier_error.displayCalcErrorMessage(ERROR_PRINTING_DISABLED, ERR_REGISTER_LINE);
             if (comptime !dmcp_build) {
                 abi.fmtBufZ(errorMessage[0..512], "Printing is disabled", .{});
                 moreInfoOnError("In function cmdPrint:", errorMessage, null, null);
@@ -1592,7 +1592,7 @@ fn _getUnicodeValue(regist: calcRegister_t) u16 {
         var maxValue34: real34_t = undefined;
         int32ToReal34(0x8000, &maxValue34);
         if (real34CompareLessThan(reg34(regist), const34_0()) or real34CompareLessEqual(&maxValue34, reg34(regist))) {
-            frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
             if (comptime !dmcp_build) {
                 _ = real34ToString(reg34(regist), errorMessage);
                 abi.fmtBufZ(tmpString[0..2560], "x {d} = {s}:", .{ @as(i32, regist), std.mem.span(@as([*:0]const u8, errorMessage)) });
@@ -1605,7 +1605,7 @@ fn _getUnicodeValue(regist: calcRegister_t) u16 {
         var lgInt: longInteger_t = undefined;
         frontier_register_value_conversions.convertLongIntegerRegisterToLongInteger(regist, &lgInt[0]);
         if (longIntegerCompareUInt(&lgInt[0], 0) < 0 or longIntegerCompareUInt(&lgInt[0], 0x8000) >= 0) {
-            frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
             if (comptime !dmcp_build) {
                 longIntegerToAllocatedString(&lgInt[0], errorMessage, @intCast(ERROR_MESSAGE_LENGTH));
                 abi.fmtBufZ(tmpString[0..2560], "register {d} = {s}:", .{ @as(i32, regist), std.mem.span(@as([*:0]const u8, errorMessage)) });
@@ -1623,7 +1623,7 @@ fn _getUnicodeValue(regist: calcRegister_t) u16 {
         value = @bitCast(longIntegerToUInt32(&lgInt[0]));
         longIntegerFree(&lgInt[0]);
     } else {
-        frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
         if (comptime !dmcp_build) {
             abi.fmtBufZ(errorMessage[0..512], "register {d} is {s}:", .{ @as(i32, regist), std.mem.span(frontier_debug.getRegisterDataTypeName(regist, true, false)) });
             moreInfoOnError("In function _getPositionFromRegister:", errorMessage, "not suited for addressing!", null);
@@ -2319,7 +2319,7 @@ pub fn z47_frontier_print_xy_real_matrix() void {
             printRegImpl(@bitCast(TEMP_REGISTER_1), null, false, LINE_RIGHT, false);
         }
     } else {
-        frontier_error.displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE);
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..ERROR_MESSAGE_LENGTH], "cannot print xy when matrix size is {d} x {d}", .{
                 @as(c_int, x.header.matrixRows),
@@ -2357,7 +2357,7 @@ pub fn z47_frontier_print_xy_complex_matrix() void {
             printRegImpl(@bitCast(TEMP_REGISTER_1), null, false, LINE_RIGHT, false);
         }
     } else {
-        frontier_error.displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE);
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..ERROR_MESSAGE_LENGTH], "cannot print xy when matrix size is {d} x {d}", .{
                 @as(c_int, xc.header.matrixRows),

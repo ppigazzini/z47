@@ -63,11 +63,11 @@ fn complexBeta(xReal: *real_t, xImag: *real_t, yReal: *real_t, yImag: *real_t, r
     var tImag: real_t = undefined;
 
     if (math_comparison_reals.realCompareLessEqual(xReal, const_0())) {
-        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
         reportBetaError("In function complexBeta:", ") with Re(x)<=0");
         return false;
     } else if (math_comparison_reals.realCompareLessEqual(yReal, const_0())) {
-        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
         reportBetaError("In function complexBeta:", " with Re(y)<=0");
         return false;
     }
@@ -84,7 +84,7 @@ fn complexBeta(xReal: *real_t, xImag: *real_t, yReal: *real_t, yImag: *real_t, r
     runtime.divComplexComplex(rReal, rImag, &tReal, &tImag, rReal, rImag, realContext); // r = Gamma(x) * Gamma(y) / Gamma(x + y);
 
     if (realIsNaN(rImag) or realIsNaN(rReal)) {
-        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
         reportBetaError("In function complexBeta:", ") out of range");
         return false;
     }
@@ -97,11 +97,11 @@ fn realBeta(x: *real_t, y: *real_t, r: *real_t, realContext: *realContext_t) boo
     var tReal: real_t = undefined;
 
     if (math_comparison_reals.realCompareLessEqual(x, const_0())) {
-        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
         reportBetaError("In function realBeta:", ") with x<=0");
         return false;
     } else if (math_comparison_reals.realCompareLessEqual(y, const_0())) {
-        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
         reportBetaError("In function realBeta:", " with Re(y)<=0");
         return false;
     }
@@ -117,7 +117,7 @@ fn realBeta(x: *real_t, y: *real_t, r: *real_t, realContext: *realContext_t) boo
     realDivide(r, &tReal, r, realContext); // r = Gamma(x) * Gamma(y) / Gamma(x + y);
 
     if (realIsNaN(r)) {
-        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
         reportBetaError("In function realBeta:", ") out of range");
         return false;
     }

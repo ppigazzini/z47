@@ -203,12 +203,12 @@ fn getXvalues(n: *u16) linksection(runtime.code_section) ?[*]u8 {
     setStatMx();
     regStats = findNamedVariable(@ptrCast(&statMx));
     if (!isStatsMatrix(&rows, @ptrCast(&statMx))) {
-        displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE);
         return null;
     }
     const data_raw = allocC47Blocks(@as(usize, rows) * REAL_SIZE_IN_BLOCKS_75);
     if (data_raw == null) {
-        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
         return null;
     }
     const data: [*]u8 = @ptrCast(data_raw.?);

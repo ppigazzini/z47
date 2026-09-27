@@ -1334,7 +1334,7 @@ pub export fn fnEdit(unusedParamButMandatory: u16) callconv(.c) void {
     var varOrLblName: [32]u8 = undefined; // C: char varOrLblName[32]; a name's byte length (opParam2) can exceed 7 with multi-byte glyphs
 
     if (tam.mode != 0) {
-        frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
         moreInfoOnErr("In function fnEdit:", "Calculator mode or type not supported for EDIT command");
         return;
     }
@@ -1356,14 +1356,14 @@ pub export fn fnEdit(unusedParamButMandatory: u16) callconv(.c) void {
             editPem(&index, &grpGroupingLeftOld, &grpGroupingRightOld, &varOrLblName);
         },
         else => {
-            frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
             moreInfoOnErr("In function fnEdit:", "Calculator mode or type not supported for EDIT command");
         },
     }
 }
 
 fn editErr() void {
-    frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+    frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     moreInfoOnErr("In function fnEdit:", "Calculator mode or type not supported for EDIT command");
 }
 
@@ -2231,7 +2231,7 @@ pub export fn fnTo_ms(unusedButMandatoryParameter: u16) callconv(.c) void {
                 } else if (getRegisterAngularMode(REGISTER_X) == amNone) {
                     frontier_date_time.fnHRtoTM(0);
                 } else {
-                    frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+                    frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
                     moreInfoOnErr("In function fnTo_ms:", "cannot calculate specific type/tag");
                 }
             } else if (getRegisterDataType(REGISTER_X) == dtTime) {
@@ -2366,7 +2366,7 @@ pub export fn fn_cnst_op_A(option: u16) callconv(.c) void {
     frontier_register_value_conversions.convertRealToResultRegister(const_0, REGISTER_X, amNone);
 
     if (initMatrixRegister(REGISTER_X, 3, 3, 1) != 0) {} else {
-        frontier_error.displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE);
         moreInfoOnErr("In function fn_cnst_op_A:", "Not enough memory for a 1\x80\xd7" ++ "1 matrix");
         return;
     }
@@ -2471,7 +2471,7 @@ pub export fn fnExchangeStkToMx(opType: u16) callconv(.c) void {
                 fnConvertStkToMx(indexOfItems[ITM_STKtoV2].param);
             } else {
                 if (comptime !testsuite_build) {
-                    frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                    frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
                     invalidDataTypeHint("In function fnExchangeStkToMx:");
                 }
             }
@@ -2486,7 +2486,7 @@ pub export fn fnExchangeStkToMx(opType: u16) callconv(.c) void {
                 fnConvertStkToMx(VECT_CR_AUT);
             } else {
                 if (comptime !testsuite_build) {
-                    frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                    frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
                     invalidDataTypeHint("In function fnExchangeStkToMx:");
                 }
             }
@@ -2576,12 +2576,12 @@ pub export fn fnConvertStkToMx(constVector1: u16) callconv(.c) void {
             // make a SPH or CYL input, so the reading stays plain rectangular.
             valid3DRInput = 1;
         } else if (is_2D3D_Register_Ready(&ang2Dx, &ang2Dy, &ang3Dx, &ang3Dy, &ang3Dz, &validPolarInput, &valid2DRInput, &validSPHInput, &validCYLInput, &valid3DRInput, constVector) == 0) {
-            frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_POLAR_RECT, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_POLAR_RECT, ERR_REGISTER_LINE);
             moreInfoOnErr("In function fnConvertStkToMx:", "No valid coordinates for 2D/3D Rect/Polar/Spherical/Cylindrical");
             return;
         } else {
             if (constVector1 == M_CR_zyx and valid3DRInput == 0) {
-                frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+                frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
                 moreInfoOnErr("In function fnConvertStkToMx:", "No angles allowed for ELEC M");
                 return;
             }
@@ -2618,7 +2618,7 @@ pub export fn fnConvertStkToMx(constVector1: u16) callconv(.c) void {
 
     if (getRegisterDataType(REGISTER_X) != dtReal34Matrix and getRegisterDataType(REGISTER_X) != dtComplex34Matrix) {
         if (initMatrixRegister(REGISTER_X, vc.rows, vc.cols, complexCoefs) != 0) {} else {
-            frontier_error.displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE);
             moreInfoOnErr("In function fnConvertStkToMx:", "Not enough memory for a 1\x80\xd7" ++ "1 matrix");
             return;
         }
@@ -2707,7 +2707,7 @@ pub export fn fnConvertMxToStk(param1: u16) callconv(.c) void {
     // it, packing whatever is not a matrix and letting the register read report the
     // type error.
     if (!(getRegisterDataType(REGISTER_X) == dtReal34Matrix or getRegisterDataType(REGISTER_X) == dtComplex34Matrix)) {
-        frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
         invalidDataTypeHint("In function fnConvertMxToStk:");
         return;
     }
@@ -2761,7 +2761,7 @@ pub export fn fnConvertMxToStk(param1: u16) callconv(.c) void {
             constVector = (param & 0xF0) >> 4;
             const vc2 = vecCreate[constVector];
             if (constVector == 0 or !((Xrows == vc2.rows and Xcols == vc2.cols) or (Xrows == vc2.cols and Xcols == vc2.rows))) {
-                frontier_error.displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
+                frontier_error.displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE);
                 if (comptime extra_info) {
                     if (comptime !dmcp_build) {
                         abi.fmtBufZ(errorMessage[0..512], "a vector is needed, not ({d}\x80\xd7{d})", .{ Xrows, Xcols });
@@ -3355,7 +3355,7 @@ pub export fn timeToReal34(hms: u16) callconv(.c) void {
 
 pub export fn notSexa() callconv(.c) void {
     copySourceRegisterToDestRegister(REGISTER_L, REGISTER_X);
-    frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+    frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     if (comptime extra_info) {
         if (comptime !dmcp_build) {
             abi.fmtBufZ(errorMessage[0..512], "data type {s} cannot be converted!", .{std.mem.span(frontier_debug.getRegisterDataTypeName(REGISTER_X, false, false))});
@@ -3456,7 +3456,7 @@ pub export fn fnToTime(unusedButMandatoryParameter: u16) callconv(.c) void {
                 if (getRegisterAngularMode(toTimeParamReg[i]) != 0) {
                     real34ToIntegralValue(reg34(toTimeParamReg[i]), part[i], DEC_ROUND_DOWN);
                 } else {
-                    frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+                    frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
                     if (comptime extra_info) {
                         if (comptime !dmcp_build) {
                             abi.fmtBufZ(errorMessage[0..512], "data type {s} cannot be converted to a time!", .{std.mem.span(frontier_debug.getRegisterDataTypeName(toTimeParamReg[i], false, false))});
@@ -3467,7 +3467,7 @@ pub export fn fnToTime(unusedButMandatoryParameter: u16) callconv(.c) void {
                 }
             },
             else => {
-                frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+                frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
                 if (comptime extra_info) {
                     if (comptime !dmcp_build) {
                         abi.fmtBufZ(errorMessage[0..512], "data type {s} cannot be converted to a time!", .{std.mem.span(frontier_debug.getRegisterDataTypeName(toTimeParamReg[i], false, false))});

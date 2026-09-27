@@ -252,6 +252,7 @@
 
     //printf("**[DL]** _tamProcessInput item %d tam.mode %d\n", item, tam.mode);
     //fflush(stdout);
+    lastErrorCode = 0;
     // Shuffle is handled completely differently to everything else
     if(tam.mode == TM_SHUFFLE) {
       _tamHandleShuffle(item);
@@ -764,7 +765,7 @@ printf("tam.value: %d\n", tam.value);
       }
     }
     else if(item == ITM_PERIOD) {
-      if(tam.function == ITM_LBL) {
+      if((tam.function == ITM_LBL) || (tam.function == ITM_SET_42ALPHA)) {
         return;
       }
       else if(tam.function == ITM_GTOP) {
@@ -963,7 +964,7 @@ printf("tam.value: %d\n", tam.value);
                 printTraceErrorFunction(tam.function, errorMessage);
               #endif //OPTION_IR_PRINTING
 
-              displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
+              displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE);
               #if (EXTRA_INFO_ON_CALC_ERROR == 1)
                 sprintf(errorMessage, "string '%s' is not a named variable", buffer);
                 moreInfoOnError("In function _tamProcessInput:", errorMessage, NULL, NULL);
@@ -996,7 +997,7 @@ printf("tam.value: %d\n", tam.value);
                 printTraceErrorFunction(tam.function, errorMessage);
               #endif //OPTION_IR_PRINTING
 
-              displayCalcErrorMessage(ERROR_FUNCTION_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+              displayCalcErrorMessage(ERROR_FUNCTION_NOT_FOUND, ERR_REGISTER_LINE);
               #if (EXTRA_INFO_ON_CALC_ERROR == 1)
                 sprintf(errorMessage, "string '%s' is neither a named label nor a function name", buffer);
                 moreInfoOnError("In function _tamProcessInput:", errorMessage, NULL, NULL);
@@ -1018,7 +1019,7 @@ printf("tam.value: %d\n", tam.value);
               sprintf(errorMessage, "'%s'", buffer);
               printTraceErrorFunction(tam.function, errorMessage);
             #endif //OPTION_IR_PRINTING
-            displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+            displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE);
             #if (EXTRA_INFO_ON_CALC_ERROR == 1)
               sprintf(errorMessage, "string '%s' is not a named label", buffer);
               moreInfoOnError("In function _tamProcessInput:", errorMessage, NULL, NULL);
@@ -1055,7 +1056,7 @@ printf("tam.value: %d\n", tam.value);
               printTraceErrorFunction(tam.function, errorMessage);
             #endif //OPTION_IR_PRINTING
 
-            displayCalcErrorMessage(ERROR_UNDEF_MENU, ERR_REGISTER_LINE, REGISTER_X);
+            displayCalcErrorMessage(ERROR_UNDEF_MENU, ERR_REGISTER_LINE);
             #if (EXTRA_INFO_ON_CALC_ERROR == 1)
               sprintf(errorMessage, "string '%s' is not a menu name", buffer);
               moreInfoOnError("In function _tamProcessInput:", errorMessage, NULL, NULL);
@@ -1080,7 +1081,7 @@ printf("tam.value: %d\n", tam.value);
               printTraceErrorFunction(tam.function, errorMessage);
             #endif //OPTION_IR_PRINTING
 
-            displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
+            displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE);
             #if (EXTRA_INFO_ON_CALC_ERROR == 1)
               sprintf(errorMessage, "string '%s' is not a named variable", buffer);
               moreInfoOnError("In function _tamProcessInput:", errorMessage, NULL, NULL);
@@ -1089,7 +1090,17 @@ printf("tam.value: %d\n", tam.value);
         }
       }
       if(calcMode == CM_PEM && tam.function != ITM_DELP && lastErrorCode == 0) { //do not add a step of any kind if an error occurred in the processing prior to adding the step. This solves the MVAR and STO of an identified variable name problem.
-        addStepInProgram(tamOperation());
+        if((tam.function == ITM_SET_42ALPHA) && (FIRST_RESERVED_VARIABLE <= value && value <= LAST_RESERVED_VARIABLE)) {
+          displayCalcErrorMessage(ERROR_RESERVED_VARIABLE_NAME, ERR_REGISTER_LINE);
+          sprintf(errorMessage, "%s", allReservedVariables[value - FIRST_RESERVED_VARIABLE].reservedVariableName + 1);
+          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+            moreInfoOnError("In function _tamProcessInput:", errorMessage, " is a reserved variable.", NULL);
+          #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+          return;
+        }
+        else {
+          addStepInProgram(tamOperation());
+        }
       }
       if((tam.mode != TM_NEWMENU) && (tam.mode != TM_STRING)) {
         aimBuffer[0] = 0;

@@ -42,7 +42,7 @@ fn logXYArgsHandled(x_real: *const runtime.real_t, x_imag: ?*const runtime.real_
         if (runtime.getFlag(@intCast(runtime.FLAG_SPCRES))) {
             runtime.convertRealToResultRegister(runtime.z47_math_wrappers_const_plus_infinity(), runtime.REGISTER_X, runtime.amNone);
         } else {
-            runtime.displayCalcErrorMessage(runtime.ERROR_OVERFLOW_PLUS_INF, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            runtime.displayCalcErrorMessage(runtime.ERROR_OVERFLOW_PLUS_INF, runtime.ERR_REGISTER_LINE);
             extraInfoMessage("checkArgs", "cannot calculate LogXY with x=0 and y=0");
         }
         return true;
@@ -52,7 +52,7 @@ fn logXYArgsHandled(x_real: *const runtime.real_t, x_imag: ?*const runtime.real_
         if (runtime.getFlag(@intCast(runtime.FLAG_SPCRES))) {
             runtime.convertRealToResultRegister(runtime.z47_math_wrappers_const_minus_infinity(), runtime.REGISTER_X, runtime.amNone);
         } else {
-            runtime.displayCalcErrorMessage(runtime.ERROR_OVERFLOW_MINUS_INF, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            runtime.displayCalcErrorMessage(runtime.ERROR_OVERFLOW_MINUS_INF, runtime.ERR_REGISTER_LINE);
             extraInfoMessage("checkArgs", "cannot calculate LogXY with x=0 and y!=0");
         }
         return true;
@@ -62,7 +62,7 @@ fn logXYArgsHandled(x_real: *const runtime.real_t, x_imag: ?*const runtime.real_
         if (runtime.getFlag(@intCast(runtime.FLAG_SPCRES))) {
             runtime.convertRealToResultRegister(runtime.const_NaN, runtime.REGISTER_X, runtime.amNone);
         } else {
-            runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
         }
         return true;
     }
@@ -90,7 +90,7 @@ fn logxyRealCore(x_real: *const runtime.real_t, y_real: *const runtime.real_t, r
             if (runtime.getFlag(@intCast(runtime.FLAG_SPCRES))) {
                 runtime.realSetNaN(&result_real);
             } else {
-                runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+                runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
                 extraInfoMessage("logxy", "cannot calculate LogXY with x<0 or y<0 when flag I is not set");
                 return;
             }
@@ -130,7 +130,7 @@ fn logXYShortInt() callconv(.c) void {
 
     if (runtime.getRegisterDataType(runtime.REGISTER_X) == runtime.dtReal34) {
         if (runtime.real34IsNaN(runtime.registerReal34Ptr(runtime.REGISTER_X)) and !runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
-            runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
             extraInfoMessage("logxy", "cannot calculate LogXY with x=0");
             return;
         }
@@ -191,7 +191,7 @@ pub fn logxyReal(denom: *const runtime.real_t) callconv(.c) void {
 
     if (runtime.realIsZero(&a)) {
         if (!runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
-            runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
             if (runtime.extra_info_on_calc_error) {
                 runtime.moreInfoOnError("In function logxyReal:", "cannot calculate log2(0)", null, null);
             }
@@ -201,7 +201,7 @@ pub fn logxyReal(denom: *const runtime.real_t) callconv(.c) void {
         copyReal(&a, runtime.z47_math_wrappers_const_minus_infinity());
     } else if (runtime.realIsInfinite(&a)) {
         if (!runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
-            runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
             if (runtime.extra_info_on_calc_error) {
                 runtime.moreInfoOnError("In function logxyReal:", "cannot use " ++ std_plus_minus ++ std_infinity ++ " as X input of log2 when flag SPCRES is not set", null, null);
             }
@@ -233,7 +233,7 @@ pub fn logxyReal(denom: *const runtime.real_t) callconv(.c) void {
     } else if (runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
         runtime.realSetNaN(&a);
     } else {
-        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
         if (runtime.extra_info_on_calc_error) {
             runtime.moreInfoOnError("In function logxyReal:", "cannot calculate log2 of a negative number when CPXRES is not set!", null, null);
         }
@@ -253,7 +253,7 @@ pub fn logxyCplx(denom: *const runtime.real_t) callconv(.c) void {
 
     if (runtime.realIsZero(&a) and runtime.realIsZero(&b)) {
         if (!runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
-            runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
             if (runtime.extra_info_on_calc_error) {
                 runtime.moreInfoOnError("In function logxyCplx:", "cannot calculate log2(0)", null, null);
             }

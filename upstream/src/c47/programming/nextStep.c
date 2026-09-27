@@ -268,42 +268,13 @@ uint8_t *findPreviousStep(uint8_t *step) {
 
 
 static void _showStep(void) {
-    bool_t lblOrEnd;
-    uint8_t *tmpStep;
+    char stepNumber[10];
 
-    tmpStep = currentStep;
-    lblOrEnd = checkOpCodeOfStep(tmpStep, ITM_LBL) || isAtEndOfProgram(tmpStep) || isAtEndOfPrograms(tmpStep);
-    int16_t xPos = (lblOrEnd ? 42 : 62);
-    int16_t maxWidth = SCREEN_WIDTH - xPos;
-
-//    lcd_fill_rect(1, Y_POSITION_OF_REGISTER_T_LINE, xPos+1,  REGISTER_LINE_HEIGHT, LCD_SET_VALUE);
-    sprintf(tmpString, "%04" PRIu16 ":" STD_SPACE_4_PER_EM, currentLocalStepNumber);
-    showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_T_LINE + 6, vmNormal, true, true);
-
-    decodeOneStep(tmpStep);
-    if(stringWidth(tmpString, &standardFont, true, true) >= maxWidth) {
-      char *xstr = tmpString;
-      char *xstrOrig = tmpString;
-      char *glyph = tmpString + TMP_STR_LENGTH - 4;
-      maxWidth -= stringWidth(STD_ELLIPSIS, &standardFont, true, true);
-      while(maxWidth > 0) {
-        xstrOrig = xstr;
-        glyph[0] = *(xstr++);
-        if(glyph[0] & 0x80) {
-          glyph[1] = *(xstr++);
-          glyph[2] = 0;
-        }
-        else {
-          glyph[1] = 0;
-        }
-        maxWidth -= stringWidth(glyph, &standardFont, true, true);
-      }
-      xstrOrig[0] = STD_ELLIPSIS[0];
-      xstrOrig[1] = STD_ELLIPSIS[1];
-      xstrOrig[2] = 0;
-    }
-//    lcd_fill_rect(xPos, Y_POSITION_OF_REGISTER_T_LINE, stringWidth(tmpString, &standardFont, true, true)+20,  REGISTER_LINE_HEIGHT, LCD_SET_VALUE);
-    showString(tmpString, &standardFont, xPos, Y_POSITION_OF_REGISTER_T_LINE + 6, vmNormal, true, true);
+    sprintf(stepNumber, "%04" PRIu16 ":" STD_SPACE_EM, currentLocalStepNumber);
+    decodeOneStep(currentStep);
+    xcopy(tmpString + stringByteLength(stepNumber), tmpString, stringByteLength(tmpString) + 1);
+    xcopy(tmpString, stepNumber, stringByteLength(stepNumber));
+    drawFuncName(tmpString);
 }
 
 
@@ -409,7 +380,6 @@ static void _sstInPem(void) {
 
 void showStep(void) {
   temporaryInformation = TI_NO_INFO;
-  refreshRegisterLine(REGISTER_T);     // Clear previous VIEW or AVIEW data, if any
   refreshRegisterLine(REGISTER_Z);     // Clear previous test result, if any
   _showStep();
 }
@@ -509,7 +479,7 @@ void fnCase(uint16_t regist) {
       /* fallthrough */
     }
     default: {
-      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "cannot use %s for the parameter of CASE", getRegisterDataTypeName(REGISTER_X, true, false));
         moreInfoOnError("In function fnCase:", errorMessage, NULL, NULL);

@@ -214,7 +214,7 @@ fn doAtan(
         if (comptime is_dmcp_build) {
             if (exitKeyWaiting()) {
                 _ = progressHalfSecUpdate_Integer(halfSec_force + 1, "Interrupted Iter:", i, halfSec_clearZ, halfSec_clearT, halfSec_disp);
-                displayCalcErrorMessage(ERROR_SOLVER_ABORT, REGISTER_T, NIM_REGISTER_LINE);
+                displayCalcErrorMessage(ERROR_SOLVER_ABORT, REGISTER_T);
                 break;
             }
         }
@@ -443,7 +443,7 @@ fn WP34S_Atan_table_compute(x: *align(1) const real_t, angle: *align(1) real_t, 
     }
 
     if (a_p == null or u_p == null or v_p == null or c_p == null) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE);
         return;
     }
     const a = a_p.?;
@@ -581,7 +581,7 @@ fn WP34S_Atan_75_compute(x: *align(1) const real_t, angle: *align(1) real_t, rea
     if (a_p == null or b_p == null or a2_p == null or t_p == null or
         j_p == null or z_p == null or last_p == null or epsilon_p == null)
     {
-        runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE);
         realContext.digits = savedContextDigits;
         return;
     }
@@ -619,7 +619,7 @@ fn C47do_WP34S_Atan_1071temp(x: *align(1) const real_t, angle: *align(1) real_t,
         freeBigReal(epsilon);
     }
     if (a == null or b == null or a2 == null or t == null or j == null or z == null or last == null or epsilon == null) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE);
         return;
     }
     var doubles: i32 = 0;
@@ -817,7 +817,7 @@ fn C47do_WP34S_Atan2_1071temp(y: *align(1) const real_t, x: *align(1) const real
         freeBigReal(t);
     }
     if (r == null or t == null) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE);
         return;
     }
     if (!doAtan2(y, x, atan, r.?, t.?, realContext)) {
@@ -891,7 +891,7 @@ fn C47do_WP34S_Asin_1071temp(x: *align(1) const real_t, angle: *align(1) real_t,
         freeBigReal(z);
     }
     if (abx == null or z == null) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE);
         return;
     }
     if (!doAsin(x, angle, abx.?, z.?, realContext)) {
@@ -968,7 +968,7 @@ fn C47do_WP34S_Acos_1071temp(x: *align(1) const real_t, angle: *align(1) real_t,
         freeBigReal(z);
     }
     if (abx == null or z == null) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE);
         return;
     }
     if (!doAcos(x, angle, abx.?, z.?, realContext)) {

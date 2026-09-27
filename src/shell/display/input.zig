@@ -316,7 +316,7 @@ pub export fn fnVarMnu(labelIn: u16) callconv(.c) void {
     }
     const label: u16 = @intCast(resolved);
     if (!_isVarMenu(label)) {
-        frontier_error.displayCalcErrorMessage(ERROR_NO_MVAR_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_NO_MVAR_FOUND, ERR_REGISTER_LINE);
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "No MVAR menu variable instruction after the label", .{});
             moreInfoOnErr("In function fnVarMnu:", errorMessage);
@@ -337,7 +337,7 @@ pub export fn fn42VarMnu(labelIn: u16) callconv(.c) void {
     }
     const label: u16 = @intCast(resolved);
     if (!_isVarMenu(label)) {
-        frontier_error.displayCalcErrorMessage(ERROR_NO_MVAR_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_NO_MVAR_FOUND, ERR_REGISTER_LINE);
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "No MVAR menu variable instruction after the label", .{});
             moreInfoOnErr("In function fn42VarMnu:", errorMessage);
@@ -525,7 +525,7 @@ fn getKeyArg(regist: u16) u16 {
             if (getRegisterAngularMode(@bitCast(regist)) == amNone) {
                 real34ToIntegralValue(reg34(@bitCast(regist)), &arg, DEC_ROUND_DOWN);
             } else {
-                frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+                frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
                 if (comptime extra_info) {
                     abi.fmtBufZ(errorMessage[0..512], "cannot use {s} for the parameter of CASE", .{std.mem.span(frontier_debug.getRegisterDataTypeName(REGISTER_X, true, false))});
                     moreInfoOnErr("In function _getKeyArg:", errorMessage);
@@ -534,7 +534,7 @@ fn getKeyArg(regist: u16) u16 {
             }
         },
         else => {
-            frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
             if (comptime extra_info) {
                 abi.fmtBufZ(errorMessage[0..512], "cannot use {s} for the parameter of CASE", .{std.mem.span(frontier_debug.getRegisterDataTypeName(REGISTER_X, true, false))});
                 moreInfoOnErr("In function _getKeyArg:", errorMessage);
@@ -578,7 +578,7 @@ pub export fn fnKey(regist: u16) callconv(.c) void {
             __gmpz_clear(&kc[0]);
             lastKeyCode = 0;
         } else {
-            frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
             if (comptime extra_info) {
                 abi.fmtBufZ(errorMessage[0..512], "register {d} is out of range", .{@as(u32, regist)});
                 moreInfoOnErr("In function fnKey:", errorMessage);
@@ -614,7 +614,7 @@ pub export fn fnKeyType(regist: u16) callconv(.c) void {
         11, 12, 13, 14, 15, 16 => __gmpz_set_ui(&kt[0], 13),
         21, 22, 23, 24, 25, 26, 31, 32, 33, 34, 41, 42, 45, 51, 55, 61, 65, 75, 81, 84, 85 => __gmpz_set_ui(&kt[0], 12),
         else => {
-            frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
             if (comptime extra_info) {
                 abi.fmtBufZ(errorMessage[0..512], "keycode {d} is out of range", .{@as(u32, keyCode)});
                 moreInfoOnErr("In function fnKeyType:", errorMessage);
@@ -673,7 +673,7 @@ pub export fn fnPutKey(regist: u16) callconv(.c) void {
             btnClicked(null, @ptrCast(&kc));
         },
         else => {
-            frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
             if (comptime extra_info) {
                 abi.fmtBufZ(errorMessage[0..512], "keycode {d} is out of range", .{@as(u32, keyCode)});
                 moreInfoOnErr("In function fnPutKey:", errorMessage);

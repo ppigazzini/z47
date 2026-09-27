@@ -343,7 +343,7 @@ fn doTaylorIterations(
         if (comptime is_dmcp_build) {
             if (exitKeyWaiting()) {
                 _ = progressHalfSecUpdate_Integer(halfSec_force + 1, "Interrupted Iter:", i, halfSec_clearZ, halfSec_clearT, halfSec_disp);
-                displayCalcErrorMessage(ERROR_SOLVER_ABORT, REGISTER_T, NIM_REGISTER_LINE);
+                displayCalcErrorMessage(ERROR_SOLVER_ABORT, REGISTER_T);
                 break;
             }
         }
@@ -392,7 +392,7 @@ pub fn C47_WP34S_SinCosTanTaylor_temp75(a: *align(1) const real_t, swap: bool, s
     if (angle_p == null or a2_p == null or t_p == null or j_p == null or
         z_p == null or sin_p == null or cos_p == null or epsilonOrCompare_p == null)
     {
-        runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE);
         return;
     }
     const angle = angle_p.?;
@@ -452,7 +452,7 @@ fn C47_WP34S_Cvt2RadSinCosTan_1071_helper(an: *align(1) const real_t, angularMod
     const angle_p = owner.mallocBigReal(1071);
     defer owner.freeBigReal(angle_p);
     const angle = angle_p orelse {
-        runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE);
         return;
     };
 
@@ -519,7 +519,7 @@ fn C47_WP34S_SinCosTanTaylor_temp1071(a: *align(1) const real_t, swap: bool, sin
     if (angle_p == null or a2_p == null or t_p == null or j_p == null or
         z_p == null or sin_p == null or cos_p == null or epsilon_p == null)
     {
-        runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE);
         return;
     }
 

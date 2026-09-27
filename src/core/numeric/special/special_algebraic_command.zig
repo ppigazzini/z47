@@ -56,7 +56,7 @@ fn sqrt1Px2Real() callconv(.c) void {
     }
 
     if (runtime.realIsInfinite(&x) and !runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
         if (runtime.extra_info_on_calc_error) {
             runtime.moreInfoOnError("In function sqrt1Px2Real:", "cannot use " ++ std_plus_minus ++ std_infinity ++ " as X input of exp when flag SPCRES is not set", null, null);
         }

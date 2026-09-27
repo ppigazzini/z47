@@ -10,8 +10,15 @@
 static bool_t _ioWriteEnabled = false;
 static bool_t _ioReadEnabled  = false;
 
+static int _file_selection_helper(const char *title, const char *base_dir, const char *ext, file_sel_fn_t sel_fn, int isSave, char *filename) {
+  check_create_dir(base_dir);
+  int ret = file_selection_screen(title, base_dir, ext, sel_fn, isSave, isSave, filename);
+  clearScreenStatusBar(204);
+  screenUpdatingMode = SCRUPD_AUTO;
+  return (ret == MRET_EXIT ? FILE_CANCEL : FILE_OK);
+}
+
 int _ioFileNameFromFilePath(ioFilePath_t path, char * filename) {
-  int ret = 0;
   dmcpResetAutoOff();   // a long keyless program run leaves the menu auto-off timer expired, making file_selection_screen exit at once
   switch(path) {
     case ioPathManualSave:
@@ -36,33 +43,19 @@ int _ioFileNameFromFilePath(ioFilePath_t path, char * filename) {
       //strcat(filename, ".tsv");
       return FILE_OK;
     case ioPathRegExport:
-      check_create_dir(DATA_DIR);
-      ret = file_selection_screen("Export Register File", DATA_DIR, DATA_EXT, save_datafile, 1, 1, filename);
-      return (ret == MRET_EXIT ? FILE_CANCEL : FILE_OK);
+      return _file_selection_helper("Export Register File", DATA_DIR, DATA_EXT, save_datafile, 1, filename);
     case ioPathRegImport:
-      check_create_dir(DATA_DIR);
-      ret = file_selection_screen("Import Register File", DATA_DIR, DATA_EXT, load_datafile, 0, 0, filename);
-      return (ret == MRET_EXIT ? FILE_CANCEL : FILE_OK);
+      return _file_selection_helper("Import Register File", DATA_DIR, DATA_EXT, load_datafile, 0, filename);
    case ioPathSaveStateFile:
-      check_create_dir(STATE_DIR);
-      ret = file_selection_screen("Save Calculator State", STATE_DIR, STATE_EXT, save_statefile, 1, 1, filename);
-      return (ret == MRET_EXIT ? FILE_CANCEL : FILE_OK);
+      return _file_selection_helper("Save Calculator State", STATE_DIR, STATE_EXT, save_statefile, 1, filename);
    case ioPathLoadStateFile:
-      check_create_dir(STATE_DIR);
-      ret = file_selection_screen("Load Calculator State", STATE_DIR, STATE_EXT, load_statefile, 0, 0, filename);
-      return (ret == MRET_EXIT ? FILE_CANCEL : FILE_OK);
+      return _file_selection_helper("Load Calculator State", STATE_DIR, STATE_EXT, load_statefile, 0, filename);
    case ioPathSaveProgram:
-      check_create_dir(PROGRAMS_DIR);
-      ret = file_selection_screen("Save Program", PROGRAMS_DIR, PRGM_EXT, save_programfile, 1, 1, filename);
-      return (ret == MRET_EXIT ? FILE_CANCEL : FILE_OK);
+      return _file_selection_helper("Save Program", PROGRAMS_DIR, PRGM_EXT, save_programfile, 1, filename);
    case ioPathExportRTFProgram:
-      check_create_dir(PROGRAMS_DIR);
-      ret = file_selection_screen("Export Program RTF", PROGRAMS_DIR, RTF_EXT, save_programfile, 1, 1, filename);
-      return (ret == MRET_EXIT ? FILE_CANCEL : FILE_OK);
+      return _file_selection_helper("Export Program RTF", PROGRAMS_DIR, RTF_EXT, save_programfile, 1, filename);
    case ioPathLoadProgram:
-      check_create_dir(PROGRAMS_DIR);
-      ret = file_selection_screen("Load Program", PROGRAMS_DIR, PRGM_EXT, load_programfile, 0, 0, filename);
-      return (ret == MRET_EXIT ? FILE_CANCEL : FILE_OK);
+      return _file_selection_helper("Load Program", PROGRAMS_DIR, PRGM_EXT, load_programfile, 0, filename);
   default:
       return FILE_ERROR;
   }
@@ -292,9 +285,13 @@ void show_warning(char *str) {
       break;
     }
   }
+  clearScreenStatusBar(205);
+  screenUpdatingMode = SCRUPD_AUTO;
 }
 
 void fnDiskInfo(uint16_t unusedButMandatoryParameter) {
   disp_disk_info("Disk Info");
   wait_for_key_press();
+  clearScreenStatusBar(206);
+  screenUpdatingMode = SCRUPD_AUTO;
 }

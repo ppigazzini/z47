@@ -427,7 +427,7 @@ pub export fn checkDateArgument(regist: calcRegister_t, jd: *real34_t) linksecti
                 return true;
             }
             // fallthrough
-            frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
             if (comptime extra_info) {
                 errorMessageWithDataTypeOf("data type {s} cannot be converted to date!", REGISTER_X);
                 c_moreInfoOnError("In function checkDateArgument:", errorMessage, null, null);
@@ -435,7 +435,7 @@ pub export fn checkDateArgument(regist: calcRegister_t, jd: *real34_t) linksecti
             return false;
         },
         else => {
-            frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
             if (comptime extra_info) {
                 errorMessageWithDataTypeOf("data type {s} cannot be converted to date!", REGISTER_X);
                 c_moreInfoOnError("In function checkDateArgument:", errorMessage, null, null);
@@ -698,7 +698,7 @@ pub export fn getJulianDayOfWeek(regist: calcRegister_t) linksection(code_sectio
 
 pub export fn checkDateRange(date34: *const real34_t) linksection(code_section) callconv(.c) void {
     if (real34CompareGreaterEqual(date34, const34_maxDate) or real34IsNegative(date34)) {
-        frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
         moreInfoOnError("In function checkDateRange:", "value of date type is too large");
         return;
     }
@@ -752,7 +752,7 @@ pub export fn checkTimeRange(time34: *const real34_t) linksection(code_section) 
 
     real34CopyAbs(time34, &t);
     if (real34CompareGreaterEqual(&t, const34_maxTime)) {
-        frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
         moreInfoOnError("In function checkTimeRange:", "value of time type is too large");
         return;
     }
@@ -859,7 +859,7 @@ fn fnJulianToDateTimeCore() error{JulianBadType}!void {
 pub export fn fnJulianToDateTime(unusedButMandatoryParameter: u16) linksection(code_section) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     fnJulianToDateTimeCore() catch {
-        frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
         if (comptime extra_info) {
             errorMessageWithDataTypeOf("data type {s} cannot be converted to date!", REGISTER_X);
             c_moreInfoOnError("In function fnJulianToDateTime:", errorMessage, null, null);
@@ -949,7 +949,7 @@ fn fnSetFirstGregorianDayCore(param: u16) error{ SetFgdDisabled, SetFgdBadType }
 
 pub export fn fnSetFirstGregorianDay(param: u16) linksection(code_section) callconv(.c) void {
     fnSetFirstGregorianDayCore(param) catch |e| {
-        frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
         if (comptime extra_info) {
             switch (e) {
                 error.SetFgdDisabled => errorMessageWithDataTypeOf("data type {s} is disabled as input because of complicated Julian-Gregorian issue!", REGISTER_X),
@@ -1009,7 +1009,7 @@ pub export fn fnXToDateRegister(regist: calcRegister_t) linksection(code_section
     // The error register is the dynamic `regist` argument, so the report is
     // inlined in the shim rather than a shared reporter.
     fnXToDateRegisterCore(regist) catch {
-        frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, regist);
+        frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
         if (comptime extra_info) {
             errorMessageWithDataTypeOf("data type {s} cannot be converted to date!", regist);
             c_moreInfoOnError("In function fnXToDate:", errorMessage, null, null);
@@ -1120,14 +1120,14 @@ const DateError = error{ ToDateBadType, ToDateInvalidDate };
 fn reportDateError(e: DateError, badRegister: calcRegister_t) void {
     switch (e) {
         error.ToDateBadType => {
-            frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
             if (comptime extra_info) {
                 errorMessageWithDataTypeOf("data type {s} cannot be converted to a real34!", badRegister);
                 c_moreInfoOnError("In function fnToDate:", errorMessage, null, null);
             }
         },
         error.ToDateInvalidDate => {
-            frontier_error.displayCalcErrorMessage(ERROR_BAD_TIME_OR_DATE_INPUT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+            frontier_error.displayCalcErrorMessage(ERROR_BAD_TIME_OR_DATE_INPUT, ERR_REGISTER_LINE);
             moreInfoOnError("In function fnToDate:", "Invalid date input like 30 Feb.");
         },
     }
@@ -1219,7 +1219,7 @@ pub export fn fnToDate(unusedButMandatoryParameter: u16) linksection(code_sectio
 const TimeError = error{ ToHrBadType, HMStoTMBadType, HRtoTMBadType };
 
 fn reportTimeError(e: TimeError) void {
-    frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+    frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     if (comptime !extra_info) return;
     switch (e) {
         error.ToHrBadType => {
@@ -1421,7 +1421,7 @@ pub export fn fnSetTime(unusedButMandatoryParameter: u16) linksection(code_secti
 
         if (getRegisterDataType(REGISTER_X) == dtTime) {
             if (real34IsNegative(reg34(REGISTER_X)) or real34IsNaN(reg34(REGISTER_X)) or real34CompareGreaterEqual(reg34(REGISTER_X), const34_86400)) {
-                frontier_error.displayCalcErrorMessage(ERROR_BAD_TIME_OR_DATE_INPUT, ERR_REGISTER_LINE, REGISTER_X);
+                frontier_error.displayCalcErrorMessage(ERROR_BAD_TIME_OR_DATE_INPUT, ERR_REGISTER_LINE);
             } else {
                 rtc_read(&timeInfo, &dateInfo);
                 real34Multiply(reg34(REGISTER_X), const34_100, &time34);
@@ -1438,7 +1438,7 @@ pub export fn fnSetTime(unusedButMandatoryParameter: u16) linksection(code_secti
             }
         } else if (getRegisterDataType(REGISTER_X) == dtReal34) {
             if (real34IsNegative(reg34(REGISTER_X)) or real34IsNaN(reg34(REGISTER_X)) or real34CompareGreaterEqual(reg34(REGISTER_X), const34_24)) {
-                frontier_error.displayCalcErrorMessage(ERROR_BAD_TIME_OR_DATE_INPUT, ERR_REGISTER_LINE, REGISTER_X);
+                frontier_error.displayCalcErrorMessage(ERROR_BAD_TIME_OR_DATE_INPUT, ERR_REGISTER_LINE);
             } else {
                 rtc_read(&timeInfo, &dateInfo);
                 real34Multiply(reg34(REGISTER_X), const34_1e6, &time34);
@@ -1454,11 +1454,11 @@ pub export fn fnSetTime(unusedButMandatoryParameter: u16) linksection(code_secti
                 if (timeInfo.sec <= 59 and timeInfo.min <= 59 and timeInfo.hour <= 23) {
                     rtc_write(&timeInfo, &dateInfo);
                 } else {
-                    frontier_error.displayCalcErrorMessage(ERROR_BAD_TIME_OR_DATE_INPUT, ERR_REGISTER_LINE, REGISTER_X);
+                    frontier_error.displayCalcErrorMessage(ERROR_BAD_TIME_OR_DATE_INPUT, ERR_REGISTER_LINE);
                 }
             }
         } else {
-            frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
         }
     }
 }

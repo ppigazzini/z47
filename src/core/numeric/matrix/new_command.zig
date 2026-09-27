@@ -31,7 +31,7 @@ pub export fn fnNewMatrix(unused_param_but_mandatory: u16) callconv(.c) void {
     if (runtime.initMatrixRegister(runtime.REGISTER_X, @intCast(rows), @intCast(cols), false)) {
         runtime.setSystemFlag(runtime.FLAG_ASLIFT);
     } else {
-        runtime.displayCalcErrorMessage(runtime.ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, runtime.ERR_REGISTER_LINE);
         if (runtime.extra_info_on_calc_error) {
             var buffer: [80]u8 = undefined;
             const message = bufPrintZ(&buffer, "Not enough memory for a {d}" ++ std_cross ++ "{d} matrix", .{ rows, cols }) catch "Not enough memory for a matrix";

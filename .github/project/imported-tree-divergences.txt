@@ -20,14 +20,13 @@
 docs/appnotes
 # The owner's manual (LaTeX sources, its build and its contributor notes), the
 # RefDB47 reference tables with their two checkers, the LaTeX style files the
-# manual and the appnotes share, and the two migration notes that brought them
-# in. Same class as the appnotes: documents, read by nothing in the build, the
-# test corpus or CI, and upstream gates its own manual job on these paths alone.
+# manual and the appnotes share, and the authoring guide for all of them. Same
+# class as the appnotes: documents, read by nothing in the build, the test corpus
+# or CI, and upstream gates its own document jobs on these paths alone.
 docs/manual
 docs/refdb47
 docs/styles
-docs/appnote-checker-findings.md
-docs/manual-migration-proposal.md
+docs/authoring.md
 # The release machinery for those same documents: the Makefile that copies the
 # manual's built PDFs into a release, the table naming them, the directory it
 # writes and the uniform-crop tool the manual and the appnotes run over their

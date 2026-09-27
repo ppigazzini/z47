@@ -422,7 +422,7 @@ pub export fn calcModeNim(unusedButMandatoryParameter: u16) callconv(.c) void {
     }
     saveForUndo();
     if (lastErrorCode == ERROR_RAM_FULL) {
-        frontier_error.displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        frontier_error.displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
         if (comptime !dmcp_build) {
             moreInfoOnError("In function calcModeNim:", "there is not enough memory to save for undo!", null, null);
         }

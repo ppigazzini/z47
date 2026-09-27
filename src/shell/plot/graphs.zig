@@ -1551,7 +1551,7 @@ pub export fn graph_plotmem() linksection(code_section) callconv(.c) void {
             // The +-1E38 seeds are untouched: not one finite sample in the range,
             // so there is nothing to draw.
             calcMode = CM_NORMAL;
-            frontier_error.displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
             if (comptime extra_info) {
                 if (comptime !dmcp_build) {
                     abi.fmtBufZ(errorMessage[0..512], "no plottable sample in the plot range", .{});
@@ -1847,7 +1847,7 @@ pub export fn graph_plotmem() linksection(code_section) callconv(.c) void {
         // with fewer than two points is a function plot still being built (a
         // refresh landing mid-build, say) -- not an error, draw nothing.
         calcMode = CM_NORMAL;
-        frontier_error.displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE);
         if (comptime extra_info) {
             if (comptime !dmcp_build) {
                 abi.fmtBufZ(errorMessage[0..512], "There is no statistical data available!", .{});

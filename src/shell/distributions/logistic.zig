@@ -21,7 +21,7 @@ fn checkParamLogistic(x: *real_t, mu: *real_t, s: *real_t) linksection(dr.code_s
     }
 
     if (dr.realIsZero(s) or dr.realIsNegative(s)) {
-        dr.displayDomainErrorMessage(dr.ERROR_INVALID_DISTRIBUTION_PARAM, dr.ERR_REGISTER_LINE, dr.REGISTER_X);
+        dr.displayDomainErrorMessage(dr.ERROR_INVALID_DISTRIBUTION_PARAM, dr.ERR_REGISTER_LINE);
         dr.moreInfoOnError("In function checkParamLogistic:", "cannot calculate for \x83\xc3 \xa2\x64 0", null, null);
         dr.specialResultNaN();
         return false;
@@ -77,7 +77,7 @@ pub fn logisticI(unused_but_mandatory_parameter: u16) linksection(dr.code_sectio
 
     if (checkParamLogistic(&val, &mu, &s)) {
         if (dr.realCompareLessEqual(&val, dr.const0()) or dr.realCompareGreaterEqual(&val, dr.const1())) {
-            dr.displayDomainErrorMessage(dr.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, dr.ERR_REGISTER_LINE, dr.REGISTER_X);
+            dr.displayDomainErrorMessage(dr.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, dr.ERR_REGISTER_LINE);
             dr.moreInfoOnError("In function fnLogisticI:", "the argument must be 0 < x < 1", null, null);
             dr.specialResultNaN();
             return;

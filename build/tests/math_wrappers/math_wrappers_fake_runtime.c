@@ -407,7 +407,7 @@ static void restoreRegisterSurface(calcRegister_t reg, const fakeRegisterSurface
 }
 
 static void matrixMismatch(void) {
-  displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+  displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE);
 }
 
 static uint16_t matrixIndex(uint16_t row, uint16_t column, uint16_t columns) {
@@ -3383,7 +3383,7 @@ uint64_t WP34S_intDivide(uint64_t y, uint64_t x) {
   const uint64_t quotient = divisor == 0 ? 0 : dividend / divisor;
 
   if(divisor == 0) {
-	 displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+	 displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
     return 0;
   }
 
@@ -3409,7 +3409,7 @@ uint64_t WP34S_intSqrt(uint64_t x) {
   uint64_t nn1;
 
   if(signValue) {
-    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
     moreInfoOnError("In function WP34S_intSqrt:", "Cannot extract the square root of a negative short integer!", NULL, NULL);
     return 0;
   }
@@ -3597,11 +3597,10 @@ void clearSystemFlag(int32_t flag) {
   }
 }
 
-void displayCalcErrorMessage(uint8_t error_code, calcRegister_t err_message_register_line, calcRegister_t err_register_line) {
+void displayCalcErrorMessage(uint8_t error_code, calcRegister_t err_message_register_line) {
   snapshot.display_calc_error_calls++;
   snapshot.display_calc_error_last_code = error_code;
   snapshot.display_calc_error_last_message_reg_line = err_message_register_line;
-  snapshot.display_calc_error_last_register_line = err_register_line;
 }
 
 void displayBugScreen(const char *message) {
@@ -3890,7 +3889,7 @@ void longIntegerMultiply(longInteger_t opY, longInteger_t opX, longInteger_t res
   }
   else {
     displayCalcErrorMessage(mpz_sgn(opY) == mpz_sgn(opX) ? ERROR_OVERFLOW_PLUS_INF : ERROR_OVERFLOW_MINUS_INF,
-                            ERR_REGISTER_LINE, REGISTER_X);
+                            ERR_REGISTER_LINE);
   }
 }
 
@@ -3899,7 +3898,7 @@ void longIntegerSquare(longInteger_t op, longInteger_t result) {
     mpz_mul(result, op, op);
   }
   else {
-    displayCalcErrorMessage(ERROR_OVERFLOW_PLUS_INF, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_OVERFLOW_PLUS_INF, ERR_REGISTER_LINE);
   }
 }
 
@@ -3911,7 +3910,7 @@ void longIntegerAdd(longInteger_t opY, longInteger_t opX, longInteger_t result) 
   }
   else {
     displayCalcErrorMessage(mpz_sgn(opY) == 0 ? ERROR_OVERFLOW_PLUS_INF : ERROR_OVERFLOW_MINUS_INF,
-                            ERR_REGISTER_LINE, REGISTER_X);
+                            ERR_REGISTER_LINE);
   }
 }
 
@@ -3923,7 +3922,7 @@ void longIntegerSubtract(longInteger_t opY, longInteger_t opX, longInteger_t res
   }
   else {
     displayCalcErrorMessage(mpz_sgn(opY) == 0 ? ERROR_OVERFLOW_PLUS_INF : ERROR_OVERFLOW_MINUS_INF,
-                            ERR_REGISTER_LINE, REGISTER_X);
+                            ERR_REGISTER_LINE);
   }
 }
 

@@ -101,7 +101,7 @@ extern fn resetShiftState() void;
 extern fn liftStack() void;
 extern fn setEquation(equationId: u16, equationString: [*c]const u8) void;
 extern fn fnEqNew(unusedButMandatoryParameter: u16) void;
-extern fn displayCalcErrorMessage(errorCode: u8, errMessageRegisterLine: calcRegister_t, disUsedCanBeRemoved: calcRegister_t) void;
+extern fn displayCalcErrorMessage(errorCode: u8, errMessageRegisterLine: calcRegister_t) void;
 
 // ---------------------------------------------------------------------------
 // Inline wrappers (the C macros)
@@ -134,7 +134,7 @@ pub export fn fnXSWAP(mode: u16) callconv(.c) void {
         // program started from. X.SWAP returns the old formula text in X; X.EDIT
         // drops it.
         if (getRegisterDataType(REGISTER_X) != dtString) {
-            displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+            displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
         } else if (stringByteLength(regString(REGISTER_X)) < AIM_BUFFER_LENGTH) {
             if (numberOfFormulae == 0) {
                 fnEqNew(NOPARAM);

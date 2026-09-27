@@ -147,13 +147,13 @@ extern fn longIntegerAdd(opY: *mpz_struct, opX: *mpz_struct, result: *mpz_struct
 // ===========================================================================
 pub export fn opModError(mode: u16) linksection(runtime.code_section) callconv(.c) void {
     _ = mode;
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     moreInfoOnError("In function fnOpMod:", "cannot MOD", null, null);
 }
 
 fn opModOutOfDomain(mode: u16) linksection(runtime.code_section) void {
     _ = mode;
-    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
     moreInfoOnError("In function fnOpMod:", "At least one of the arguments is out of the domain: Z > 0, Y > 0, X > 1", null, null);
 }
 

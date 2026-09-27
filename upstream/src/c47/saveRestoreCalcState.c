@@ -3,11 +3,14 @@
 
 #include "c47.h"
 
-#if !defined(OPTION_DATAFILE)                                                 // stubs for .d47 register/variable export & import (real code is guarded below): EXPstk/ltr/nrg/reg/xfnx, IMPORTr
+#if !defined(OPTION_DATAFILE)                                                 // stubs for .d47 register/variable/flag export & import (real code below): EXPstk/ltr/nrg/reg, EXPFLn, IMPORTr
   void fnSaveStackRegisters   (uint16_t unusedButMandatoryParameter) {}
   void fnSaveLetteredRegisters(uint16_t unusedButMandatoryParameter) {}
   void fnSaveNRegisters       (uint16_t N) {}
   void fnSaveRegister         (uint16_t regist) {}
+  void fnSaveGlobalFlags      (uint16_t N) {}
+  void fnSaveLocalFlags       (uint16_t N) {}
+  void fnSaveSystemFlags      (uint16_t unusedButMandatoryParameter) {}
   void fnSaveXFNRegister      (uint16_t unusedButMandatoryParameter) {}
   void fnLoadRegisters        (uint16_t unusedButMandatoryParameter) {}
 #endif // !OPTION_DATAFILE
@@ -756,7 +759,7 @@ static void doSaveDataFile(uint16_t *beginR, uint16_t *endR, char *registerName,
       return;
     }
     else {
-      displayCalcErrorMessage(ERROR_CANNOT_WRITE_FILE, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_CANNOT_WRITE_FILE, ERR_REGISTER_LINE);
       return;
     }
   }
@@ -802,7 +805,7 @@ void fnSaveNRegisters(uint16_t N) {
     uint16_t endR   = N - 1;
     doSaveDataFile(&beginR, &endR, NULL, !isXFN);
   } else {
-    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "number of registers out of range: %d", N);
       moreInfoOnError("In function fnSaveNRegisters:", errorMessage, NULL, NULL);
@@ -820,7 +823,7 @@ void fnSaveRegister(uint16_t regist) {
     uint16_t endR   = regist;
     doSaveDataFile(&beginR, &endR, NULL, !isXFN);                                   // numbererd or lettered register: save by number (through RW = LAST_SPARE_REGISTER)
   } else {
-    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "register number out of range: %d", regist);
       moreInfoOnError("In function fnSaveRegister:", errorMessage, NULL, NULL);
@@ -835,12 +838,121 @@ void fnSaveXFNRegister(uint16_t unusedButMandatoryParameter) {
     uint16_t endR   = regist;
     doSaveDataFile(&beginR, &endR, NULL, isXFN);
   } else {
-    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "register number out of range: %d", regist);
       moreInfoOnError("In function fnSaveRegister:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
+}
+
+
+#define FLAG_KIND_GLOBAL  0
+#define FLAG_KIND_LOCAL   1
+#define FLAG_KIND_SYSTEM  2
+
+// The three flag exports below write the NAMED_FLAGS section: a count line, then one line per flag, the name, a space, and 0 or 1. The name on the line is the flag, so a
+// file of one line sets one flag and leaves the others unchanged. FLAG_nn is a global flag, FLAG_.nn a local one, any other name a system flag's catalogue name.
+static void doSaveFlagFile(uint16_t kind, uint16_t count) {
+  ioFilePath_t path;
+  int ret;
+  char header[40];
+  char line[40];
+  char flagName[16];
+  uint16_t i;
+
+  path = ioPathRegExport;
+  ret = ioFileOpen(path, ioModeWrite);
+  if(ret != FILE_OK) {
+    if(ret == FILE_CANCEL) {
+      screenUpdatingMode = SCRUPD_AUTO;
+      refreshScreen(2994);
+      return;
+    }
+    else {
+      displayCalcErrorMessage(ERROR_CANNOT_WRITE_FILE, ERR_REGISTER_LINE);
+      return;
+    }
+  }
+
+  hourGlassIconEnabled = true;
+  showHideHourGlass();
+
+  sprintf(header, "DATA_FILE_REVISION\n%" PRIu8 "\n", (uint8_t)0);
+  save(header, strlen(header));
+  sprintf(header, "C47/R47_data_file_00\n%" PRIu32 "\n", (uint32_t)configFileVersion);
+  save(header, strlen(header));
+
+  sprintf(line, "NAMED_FLAGS\n%" PRIu16 "\n", count);
+  save(line, strlen(line));
+
+  if(kind == FLAG_KIND_SYSTEM) {
+    for(i = 0; i < LAST_ITEM; i++) {
+      if((indexOfItems[i].status & CAT_STATUS) == CAT_SYFL) {
+        stringToUtf8((char *)indexOfItems[i].itemCatalogName, (uint8_t *)flagName);
+        sprintf(line, "%s %" PRIu8 "\n", flagName, (uint8_t)(getSystemFlag(indexOfItems[i].param) ? 1 : 0));
+        save(line, strlen(line));
+      }
+    }
+  }
+  else {
+    for(i = 0; i < count; i++) {
+      if(kind == FLAG_KIND_LOCAL) {
+        sprintf(line, "FLAG_.%02" PRIu16 " %" PRIu8 "\n", i, (uint8_t)(getFlag(FIRST_LOCAL_FLAG + i) ? 1 : 0));
+      }
+      else {
+        sprintf(line, "FLAG_%02" PRIu16 " %" PRIu8 "\n", i, (uint8_t)(getFlag(i) ? 1 : 0));
+      }
+      save(line, strlen(line));
+    }
+  }
+
+  ioFileClose();
+  temporaryInformation = TI_DATA_SAVED;
+
+  screenUpdatingMode = SCRUPD_AUTO;
+  refreshScreen(2995);
+}
+
+void fnSaveGlobalFlags(uint16_t N) {
+  if(N >= 1 && N <= NUMBER_OF_GLOBAL_FLAGS) {
+    doSaveFlagFile(FLAG_KIND_GLOBAL, N);
+  } else {
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "number of flags out of range: %d", N);
+      moreInfoOnError("In function fnSaveGlobalFlags:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  }
+}
+
+void fnSaveLocalFlags(uint16_t N) {
+  if(currentLocalFlags == NULL) {                                                // no local registers, so the open program has no local flags to write
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      moreInfoOnError("In function fnSaveLocalFlags:", "no local flags defined!", NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    return;
+  }
+  if(N >= 1 && N <= NUMBER_OF_LOCAL_FLAGS) {
+    doSaveFlagFile(FLAG_KIND_LOCAL, N);
+  } else {
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "number of flags out of range: %d", N);
+      moreInfoOnError("In function fnSaveLocalFlags:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  }
+}
+
+void fnSaveSystemFlags(uint16_t unusedButMandatoryParameter) {
+  uint16_t i, count = 0;
+  for(i = 0; i < LAST_ITEM; i++) {                                               // the count must agree with the lines written, and only a named system flag is written
+    if((indexOfItems[i].status & CAT_STATUS) == CAT_SYFL) {
+      count++;
+    }
+  }
+  doSaveFlagFile(FLAG_KIND_SYSTEM, count);
 }
 #endif // OPTION_DATAFILE
 
@@ -895,7 +1007,9 @@ void doSave(uint16_t saveType) {
 
 #if defined(DMCP_BUILD)
   // Don't pass through if the power is insufficient
-  if( power_check_screen() ) {
+  bool_t lowPower = power_check_screen();
+  screenUpdatingMode = SCRUPD_AUTO;
+  if(lowPower) {
     free(tmpString);
     return;
   }
@@ -922,7 +1036,7 @@ void doSave(uint16_t saveType) {
       #if !defined(DMCP_BUILD)
         printf("Cannot SAVE in file C47.sav!\n");
       #endif // !DMCP_BUILD
-      displayCalcErrorMessage(ERROR_CANNOT_WRITE_FILE, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_CANNOT_WRITE_FILE, ERR_REGISTER_LINE);
       free(tmpString);
       return;
     }
@@ -1210,6 +1324,7 @@ void doSave(uint16_t saveType) {
         sprintf(tmpString, "printerOn\n%"                  PRIu8  "\n",     printerState.print_on);        save(tmpString, strlen(tmpString));
         sprintf(tmpString, "printerModel\n%"               PRIu8  "\n",     printerState.printer_model);   save(tmpString, strlen(tmpString));
         sprintf(tmpString, "printerLineDelay\n%"           PRIu16 "\n",     printerState.delay);           save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "alphaRegister\n%"              PRIu16 "\n",     alphaRegister);                save(tmpString, strlen(tmpString));
         sprintf(tmpString, "END_OTHER_PARAM\n");                                                           save(tmpString, strlen(tmpString));
 
   ioFileClose();
@@ -1528,7 +1643,7 @@ int64_t stringToInt64(const char *str) {
 #if defined(OPTION_XFN_1000)
     else if(strcmp(type, "RXFN") == 0) {
       if(regist != REGISTER_X) {
-        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           sprintf(errorMessage, "XFN import only to REGISTER_X (stack), got register %d", (int)regist);
           moreInfoOnError("In function restoreRegister:", errorMessage, NULL, NULL);
@@ -1855,6 +1970,57 @@ int64_t stringToInt64(const char *str) {
     }
   }
 
+  // One NAMED_FLAGS line: the name, a space, then 0 or 1. FLAG_nn is a global flag, FLAG_.nn a local one, and any other name is a system flag's catalogue name. The name
+  // on the line is the flag, so a file of one line sets one flag.
+  static void restoreNamedFlag(char *line) {
+    char  flagName[24];
+    char  c47Name[24];
+    char *value;
+    uint16_t i;
+    int32_t flag = -1;
+
+    value = strchr(line, ' ');
+    if(value == NULL) {
+      return;                                                                    // no value on the line
+    }
+    *value = 0;
+    strncpy(flagName, line, sizeof(flagName) - 1);
+    flagName[sizeof(flagName) - 1] = 0;
+    value++;
+
+    if(strncmp(flagName, "FLAG_.", 6) == 0) {
+      flag = FIRST_LOCAL_FLAG + toInt16(flagName + 6);
+      if(flag > LAST_LOCAL_FLAG || currentLocalFlags == NULL) {
+        return;
+      }
+    }
+    else if(strncmp(flagName, "FLAG_", 5) == 0) {
+      flag = toInt16(flagName + 5);
+      if(flag > LAST_GLOBAL_FLAG) {
+        return;
+      }
+    }
+    else {
+      utf8ToString((uint8_t *)flagName, c47Name);                                // the file is UTF-8 and a catalogue name is C47 encoded
+      for(i = 0; i < LAST_ITEM; i++) {
+        if((indexOfItems[i].status & CAT_STATUS) == CAT_SYFL && compareString(c47Name, indexOfItems[i].itemCatalogName, CMP_NAME) == 0) {
+          flag = indexOfItems[i].param;
+          break;
+        }
+      }
+      if(flag == -1) {
+        return;                                                                  // a name this firmware does not have
+      }
+    }
+
+    if(*value == '1') {
+      fnSetFlag((uint16_t)flag);
+    }
+    else {
+      fnClearFlag((uint16_t)flag);
+    }
+  }
+
   uint16_t savedCalcModel = 0;
   static bool_t restoreOneSection(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d, bool_t allowUserKeys) {
     int16_t i, numberOfRegs;
@@ -1975,6 +2141,20 @@ int64_t stringToInt64(const char *str) {
           debugPrintf(4, "B", tmpString);
         #endif //LOADDEBUG
         *currentLocalFlags = toUint32(tmpString);
+      }
+    }
+
+    else if(strcmp(tmpString, "NAMED_FLAGS") == 0) {
+      readLine(tmpString, TMP_STR_LENGTH); // Number of flags
+      numberOfRegs = toInt16(tmpString);
+      for(i=0; i<numberOfRegs; i++) {
+        readLineSkippingComments(tmpString, TMP_STR_LENGTH);                     // one flag per line: the name, a space, then 0 or 1
+        if(tmpString[0] == 0) {                                                  // the section ran out: readLine() skips blank lines, so an empty read is end of file
+          break;
+        }
+        if(loadMode == LM_ALL || loadMode == LM_REGISTERS) {
+          restoreNamedFlag(tmpString);
+        }
       }
     }
 
@@ -2155,7 +2335,7 @@ int64_t stringToInt64(const char *str) {
         userKeyLabel = allocC47Blocks(TO_BLOCKS(userKeyLabelSize));
         if(userKeyLabel == NULL) {                                              // the memset below writes through this pointer, and this section's entries then index it
           userKeyLabelSize = 0;
-          displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, REGISTER_X);
+          displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
         }
         else {
           memset(userKeyLabel,   0, TO_BYTES(TO_BLOCKS(userKeyLabelSize)));
@@ -2504,7 +2684,7 @@ int64_t stringToInt64(const char *str) {
         if(allFormulae == NULL) {
           numberOfFormulae = 0;
           currentFormula = 0;
-          displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, REGISTER_X);
+          displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
         }
         else {
           numberOfFormulae = formulae;
@@ -2796,6 +2976,7 @@ int64_t stringToInt64(const char *str) {
           else if(strcmp(aimBuffer, "printerModel"                ) == 0) { printerState.printer_model    = toUint8(tmpString); }
           else if(strcmp(aimBuffer, "printerLineDelay"            ) == 0) { printerState.delay    = toUint16(tmpString); setLineDelay(printerState.delay);}
         #endif //OPTION_IR_PRINTING
+          else if(strcmp(aimBuffer, "alphaRegister"               ) == 0) { alphaRegister         = toUint16(tmpString);}
           else if(strcmp(aimBuffer, "jm_LARGELI"                  ) == 0) {
             if(loadedVersion < 10000012) {
               forceSystemFlag(FLAG_LARGELI, toUint8(tmpString) != 0);
@@ -2889,7 +3070,7 @@ static void doLoadDataFile(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d
       return;
     }
     else {
-      displayCalcErrorMessage(ERROR_CANNOT_READ_FILE, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_CANNOT_READ_FILE, ERR_REGISTER_LINE);
       return;
     }
   }
@@ -2987,7 +3168,7 @@ void doLoad(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d, uint16_t load
       return;
     }
     else {
-      displayCalcErrorMessage(ERROR_CANNOT_READ_FILE, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_CANNOT_READ_FILE, ERR_REGISTER_LINE);
       return;
     }
   }
@@ -3111,7 +3292,7 @@ void doLoad(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d, uint16_t load
   if(enableLoad && (loadMode == LM_ALL || loadMode == LM_PROGRAMS)
       && programMemoryHasOverlongLabelName(beginOfProgramMemory)) {
     fnClPAll(CONFIRMED);
-    displayCalcErrorMessage(ERROR_INVALID_CORRUPTED_DATA, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_INVALID_CORRUPTED_DATA, ERR_REGISTER_LINE);
   }
 
   ioFileClose();
@@ -3249,11 +3430,11 @@ void fnDeleteBackup(uint16_t confirmation) {
       sys_disk_write_enable(1);
       result = f_unlink(SAVE_DIR "\\" SAVE_FILE);
       if(result != FR_OK && result != FR_NO_FILE && result != FR_NO_PATH) {
-        displayCalcErrorMessage(ERROR_IO, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_IO, ERR_REGISTER_LINE);
       }
       result = f_unlink(SAVE_DIR "\\" AUTO_SAVE_FILE);
       if(result != FR_OK && result != FR_NO_FILE && result != FR_NO_PATH) {
-        displayCalcErrorMessage(ERROR_IO, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_IO, ERR_REGISTER_LINE);
       }
       sys_disk_write_enable(0);
     #else // !DMCP_BUILD
@@ -3261,7 +3442,7 @@ void fnDeleteBackup(uint16_t confirmation) {
       if(result == -1) {
         int e = errno;
         if(e != ENOENT) {
-          displayCalcErrorMessage(ERROR_IO, ERR_REGISTER_LINE, REGISTER_X);
+          displayCalcErrorMessage(ERROR_IO, ERR_REGISTER_LINE);
           #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             sprintf(errorMessage, "removing the backup failed with error code %d", e);
             moreInfoOnError("In function fnDeleteBackup:", errorMessage, NULL, NULL);

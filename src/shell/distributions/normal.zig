@@ -33,7 +33,7 @@ fn checkParamNormal(t: NormalType, x: *real_t, i: *real_t, j: *real_t) linksecti
         return false;
     }
     if (dr.realIsZero(j) or dr.realIsNegative(j)) {
-        dr.displayDomainErrorMessage(dr.ERROR_INVALID_DISTRIBUTION_PARAM, dr.ERR_REGISTER_LINE, dr.REGISTER_X);
+        dr.displayDomainErrorMessage(dr.ERROR_INVALID_DISTRIBUTION_PARAM, dr.ERR_REGISTER_LINE);
         dr.moreInfoOnError("In function checkParamNormal:", "cannot calculate for \x83\xc3 \xa2\x64 0", null, null);
         dr.specialResultNaN();
         return false;
@@ -56,7 +56,7 @@ pub fn normalP(t: NormalType) linksection(dr.code_section) void {
         if (logn and dr.realIsZero(&val)) {
             dr.setZero(&ans);
         } else if (logn and dr.realIsNegative(&val)) {
-            dr.displayDomainErrorMessage(dr.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, dr.ERR_REGISTER_LINE, dr.REGISTER_X);
+            dr.displayDomainErrorMessage(dr.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, dr.ERR_REGISTER_LINE);
             dr.moreInfoOnError("In function normalP:", "cannot calculate for x < 0", null, null);
         } else {
             if (!stdn) {
@@ -92,7 +92,7 @@ fn normalCdf(t: NormalType, comptime where: [*:0]const u8, upper: bool) linksect
         if (logn and dr.realIsZero(&val)) {
             if (upper) dr.setOne(&ans) else dr.setZero(&ans);
         } else if (logn and dr.realIsNegative(&val)) {
-            dr.displayDomainErrorMessage(dr.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, dr.ERR_REGISTER_LINE, dr.REGISTER_X);
+            dr.displayDomainErrorMessage(dr.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, dr.ERR_REGISTER_LINE);
             dr.moreInfoOnError(where, "cannot calculate for x < 0", null, null);
         } else {
             if (!stdn) {
@@ -127,7 +127,7 @@ pub fn normalI(t: NormalType) linksection(dr.code_section) void {
 
     if (checkParamNormal(t, &val, &mu, &sigma)) {
         if (dr.realCompareLessEqual(&val, dr.const0()) or dr.realCompareGreaterEqual(&val, dr.const1())) {
-            dr.displayDomainErrorMessage(dr.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, dr.ERR_REGISTER_LINE, dr.REGISTER_X);
+            dr.displayDomainErrorMessage(dr.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, dr.ERR_REGISTER_LINE);
             dr.moreInfoOnError("In function normalI:", "the argument must be 0 < x < 1", null, null);
             dr.specialResultNaN();
             return;

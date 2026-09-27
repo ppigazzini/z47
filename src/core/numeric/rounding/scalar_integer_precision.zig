@@ -34,7 +34,7 @@ fn mantLonI() void {
 
 fn mantReal() void {
     if (runtime.real34IsNaN(runtime.registerReal34Ptr(runtime.REGISTER_X))) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
         runtime.moreInfoOnError("In function mantReal:", "cannot use NaN as X input of MANT", null, null);
         return;
     }
@@ -48,13 +48,13 @@ fn mantReal() void {
 
 fn roundiReal() callconv(.c) void {
     if (runtime.real34IsNaN(runtime.registerReal34Ptr(runtime.REGISTER_X))) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
         runtime.moreInfoOnError("In function roundiReal:", "cannot use NaN as X input of ROUNDI", null, null);
         return;
     }
 
     if (runtime.real34IsInfinite(runtime.registerReal34Ptr(runtime.REGISTER_X))) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
         runtime.moreInfoOnError("In function roundiReal:", "cannot use \xc2\xb1\xe2\x88\x9e as an input of ROUNDI", null, null);
         return;
     }
@@ -65,7 +65,7 @@ fn roundiReal() callconv(.c) void {
             runtime.ERROR_OVERFLOW_PLUS_INF
         else
             runtime.ERROR_OVERFLOW_MINUS_INF;
-        runtime.displayCalcErrorMessage(error_code, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(error_code, runtime.ERR_REGISTER_LINE);
         if (runtime.extra_info_on_calc_error) {
             var buffer: [ERROR_MESSAGE_LENGTH]u8 = undefined;
             const message = runtime.bufPrintZ(&buffer, "Converting a real exponent of {d} would result in a value exceeding {d} bits!", .{ exponent, MAX_LONG_INTEGER_SIZE_IN_BITS }) catch "";
@@ -92,7 +92,7 @@ fn ulpReal() void {
     var next_value: runtime.real34_t = undefined;
 
     if (runtime.real34IsInfinite(runtime.registerReal34Ptr(runtime.REGISTER_X))) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
         runtime.moreInfoOnError("In function fnUlp:", "cannot use \xc2\xb1\xe2\x88\x9e input of ULP?", null, null);
     }
 
@@ -121,7 +121,7 @@ pub fn fnUlp(unused_but_mandatory_parameter: u16) callconv(.c) void {
         runtime.dtShortInteger => ulpShortInteger(),
         runtime.dtReal34 => ulpReal(),
         else => {
-            runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE);
             reportTypeError("In function fnUlp:", "cannot calculate ULP? with {s} in X");
             return;
         },
@@ -141,7 +141,7 @@ pub fn fnMant(unused_but_mandatory_parameter: u16) callconv(.c) void {
         runtime.dtLongInteger => mantLonI(),
         runtime.dtReal34 => mantReal(),
         else => {
-            runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE);
             reportTypeError("In function mantError:", "cannot calculate MANT for {s}");
         },
     }
@@ -161,7 +161,7 @@ pub fn fnRoundi(unused_but_mandatory_parameter: u16) callconv(.c) void {
         runtime.dtReal34 => roundiReal(),
         runtime.dtReal34Matrix => runtime.elementwiseRema(&roundiReal),
         else => {
-            runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE);
             reportTypeError("In function roundiError:", "cannot calculate ROUNDI for {s}");
         },
     }

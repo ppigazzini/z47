@@ -119,7 +119,7 @@ void calcModeNormal(void);
 void popSoftmenu(void);
 void deleteEquation(uint16_t equation);
 void setConfirmationMode(void (*func)(uint16_t));
-void displayCalcErrorMessage(uint8_t errorCode, calcRegister_t errMessageRegisterLine, calcRegister_t disUsedCanBeRemoved);
+void displayCalcErrorMessage(uint8_t errorCode, calcRegister_t errMessageRegisterLine);
 void displayBugScreen(const char *msg);
 void moreInfoOnError(const char *m1, const char *m2, const char *m3, const char *m4);
 

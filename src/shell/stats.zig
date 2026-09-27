@@ -566,7 +566,7 @@ fn subSigma(x: *const real_t, y: *const real_t) void {
 // ===========================================================================
 pub export fn checkMinimumDataPoints(n: *align(1) const real_t) callconv(.c) bool {
     if (statisticalSumsPointer == null) {
-        frontier_error.displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE);
         if (comptime extra_info) {
             moreInfoOnError("In function checkMinimumDataPoints:", "There is no statistical data available!");
         }
@@ -574,7 +574,7 @@ pub export fn checkMinimumDataPoints(n: *align(1) const real_t) callconv(.c) boo
     }
 
     if (realCompareLessThan(sigma(0), n)) {
-        frontier_error.displayCalcErrorMessage(ERROR_TOO_FEW_DATA, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_TOO_FEW_DATA, ERR_REGISTER_LINE);
         if (comptime extra_info) {
             moreInfoOnError("In function checkMinimumDataPoints:", "There is insufficient statistical data available!");
         }
@@ -613,14 +613,14 @@ pub export fn initStatisticalSums() callconv(.c) void {
         if (statisticalSumsPointer == null) {
             statisticalSumsPointer = @ptrCast(@alignCast(allocC47Blocks(@as(usize, @intCast(NUMBER_OF_STATISTICAL_SUMS)) * REAL_75_SIZE_IN_BLOCKS)));
             if (statisticalSumsPointer == null) { // no room for the sums; raise the error so no caller writes through a NULL pointer
-                frontier_error.displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                frontier_error.displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
                 return;
             }
             clearStatisticalSums();
             _ = strcpy(&statMx, "STATS"); // any stats operation restores the stats matrix. The purpose of the changed names are just to be able to exchange the matrixes for reading and graphing
         } else {
             // Asked to initialise sums that already exist.
-            frontier_error.displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+            frontier_error.displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
         }
     }
 }
@@ -734,7 +734,7 @@ fn getLastRowStatsMatrix(x: *real_t, y: *real_t) void {
         real34ToReal(@ptrCast(&lastRow[0]), x);
         real34ToReal(@ptrCast(&lastRow[1]), y);
     } else {
-        frontier_error.displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
+        frontier_error.displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE); // Invalid input data type for this operation
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "STATS matrix not found", .{});
             moreInfoOnError("In function getLastRowStatsMatrix:", errorMessage);
@@ -766,7 +766,7 @@ fn AddtoStatsMatrix(x: *real_t, y: *real_t) bool {
         realToReal34(x, @ptrCast(&lastRow[0]));
         realToReal34(y, @ptrCast(&lastRow[1]));
     } else {
-        frontier_error.displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
+        frontier_error.displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE); // Invalid input data type for this operation
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "additional matrix line not added; rows = {d}", .{@as(i32, rows)});
             moreInfoOnError("In function AddtoStatsMatrix:", errorMessage);
@@ -779,7 +779,7 @@ fn removeLastRowFromStatsMatrix() void {
     var rows: u16 = 0;
     _ = strcpy(&statMx, "STATS"); // any stats operation restores the stats matrix. The purpose of the changed names are just to be able to exchange the matrixes for reading and graphing
     if (!isStatsMatrix(&rows, &statMx)) {
-        frontier_error.displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
+        frontier_error.displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE); // Invalid input data type for this operation
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "no STATS matrix", .{});
             moreInfoOnError("In function removeLastRowFromStatsMatrix:", errorMessage);
@@ -797,7 +797,7 @@ fn removeLastRowFromStatsMatrix() void {
         }
     }
     if (regStats == INVALID_VARIABLE) {
-        frontier_error.displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
+        frontier_error.displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE); // Invalid input data type for this operation
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "matrix/line not removed", .{});
             moreInfoOnError("In function removeLastRowFromStatsMatrix:", errorMessage);
@@ -812,7 +812,7 @@ fn fnClHisto(deleteVariable: bool) calcRegister_t {
         regHisto = findNamedVariable("HISTO");
     }
     if (regHisto == INVALID_VARIABLE) {
-        frontier_error.displayCalcErrorMessage(ERROR_NO_MATRIX_INDEXED, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
+        frontier_error.displayCalcErrorMessage(ERROR_NO_MATRIX_INDEXED, ERR_REGISTER_LINE); // Invalid input data type for this operation
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "HISTO matrix not created", .{});
             moreInfoOnError("In function fnClHisto:", errorMessage);
@@ -869,7 +869,7 @@ pub export fn fnClSigma(unusedButMandatoryParameter: u16) callconv(.c) void {
         regStats = findNamedVariable(&statMx);
     }
     if (regStats == INVALID_VARIABLE) {
-        frontier_error.displayCalcErrorMessage(ERROR_NO_MATRIX_INDEXED, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
+        frontier_error.displayCalcErrorMessage(ERROR_NO_MATRIX_INDEXED, ERR_REGISTER_LINE); // Invalid input data type for this operation
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "STATS matrix not created", .{});
             moreInfoOnError("In function fnClSigma:", errorMessage);
@@ -960,7 +960,7 @@ pub export fn fnSigmaAddRem(plusMinusSelection: u16) callconv(.c) void {
                     temporaryInformation = TI_STATISTIC_SUMS;
                 }
             } else {
-                frontier_error.displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
+                frontier_error.displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE); // Invalid input data type for this operation
                 if (comptime extra_info) {
                     abi.fmtBufZ(errorMessage[0..512], "cannot use {d}\x80\xd7{d}-matrix as statistical data!", .{ @as(u32, @as(u16, matrix.header.matrixRows)), @as(i32, @as(u16, matrix.header.matrixColumns)) });
                     moreInfoOnError("In function fnSigmaAddRem:", errorMessage);
@@ -1108,7 +1108,7 @@ fn initHistoMatrix(s: *real_t) bool {
         if (rows == 0) {
             // matrixRows is a 12-bit field: 4096 rows or more wrap to 0, which
             // would make (rows - 1) index far out of bounds.
-            frontier_error.displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE);
             if (comptime extra_info) {
                 abi.fmtBufZ(errorMessage[0..512], "HISTO row count wrapped the 12-bit matrixRows field", .{});
                 moreInfoOnError("In function initHistoMatrix:", errorMessage);
@@ -1118,7 +1118,7 @@ fn initHistoMatrix(s: *real_t) bool {
         realToReal34(s, @ptrCast(&histo.matrixElements.?[@as(usize, rows - 1) * cols]));
         real34SetZero(@ptrCast(&histo.matrixElements.?[@as(usize, rows - 1) * cols + 1]));
     } else {
-        frontier_error.displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
+        frontier_error.displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE); // Invalid input data type for this operation
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "additional matrix line not added; rows = {d}", .{@as(i32, rows)});
             moreInfoOnError("In function initHistoMatrix:", errorMessage);
@@ -1209,7 +1209,7 @@ pub export fn fnConvertStatsToHisto(statsVariableToHistogram: u16) callconv(.c) 
             convertStatsMatrixToHistoMatrix(statsVariableToHistogram);
         }
     } else {
-        frontier_error.displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
+        frontier_error.displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE); // Invalid input data type for this operation
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "Wrong statistical matrix is selected: {s}!", .{std.mem.span(@as([*c]const u8, @ptrCast(&statMx)))});
             moreInfoOnError("In function fnConvertStatsToHisto:", errorMessage);
@@ -1234,7 +1234,7 @@ fn convertStatsMatrixToHistoMatrix(statsVariableToHistogram: u16) void {
         return;
     }
     if (statMx[0] != 'S') {
-        frontier_error.displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
+        frontier_error.displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE); // Invalid input data type for this operation
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "Wrong statistical matrix is selected: {s}!", .{std.mem.span(@as([*c]const u8, @ptrCast(&statMx)))});
             moreInfoOnError("In function convertStatsMatrixToHistoMatrix:", errorMessage);
@@ -1320,7 +1320,7 @@ fn convertStatsMatrixToHistoMatrix(statsVariableToHistogram: u16) void {
                 temporaryInformation = TI_STATISTIC_HISTO;
             }
         } else {
-            frontier_error.displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
+            frontier_error.displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE); // Invalid input data type for this operation
             if (comptime extra_info) {
                 abi.fmtBufZ(errorMessage[0..512], " Matrix columns not right: {s}!", .{std.mem.span(@as([*c]const u8, @ptrCast(&statMx)))});
                 moreInfoOnError("In function convertStatsMatrixToHistoMatrix:", errorMessage);
@@ -1328,7 +1328,7 @@ fn convertStatsMatrixToHistoMatrix(statsVariableToHistogram: u16) void {
             return;
         }
     } else {
-        frontier_error.displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
+        frontier_error.displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE); // Invalid input data type for this operation
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], " invalid STATS or HISTO variable!", .{});
             moreInfoOnError("In function convertStatsMatrixToHistoMatrix:", errorMessage);

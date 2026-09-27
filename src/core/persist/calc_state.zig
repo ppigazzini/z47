@@ -310,7 +310,7 @@ const FR_OK: c_uint = 0;
 const FR_NO_FILE: c_uint = 4;
 const FR_NO_PATH: c_uint = 5;
 extern fn setConfirmationMode(handler: *const fn (u16) callconv(.c) void) void;
-extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: i16, err_register_line: i16) void;
+extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: i16) void;
 extern fn moreInfoOnError(msg1: [*:0]const u8, msg2: ?[*:0]const u8, msg3: ?[*:0]const u8, msg4: ?[*:0]const u8) void;
 extern var errorMessage: [*:0]u8;
 extern fn remove(pathname: [*:0]const u8) c_int;
@@ -336,11 +336,11 @@ pub export fn fnDeleteBackup(confirmation: u16) void {
         _ = rom.sys_disk_write_enable(1);
         var result = rom.f_unlink(SAVE_DIR ++ "\\" ++ SAVE_FILE);
         if (result != FR_OK and result != FR_NO_FILE and result != FR_NO_PATH) {
-            displayCalcErrorMessage(ERROR_IO, ERR_REGISTER_LINE, REGISTER_X);
+            displayCalcErrorMessage(ERROR_IO, ERR_REGISTER_LINE);
         }
         result = rom.f_unlink(SAVE_DIR ++ "\\" ++ AUTO_SAVE_FILE);
         if (result != FR_OK and result != FR_NO_FILE and result != FR_NO_PATH) {
-            displayCalcErrorMessage(ERROR_IO, ERR_REGISTER_LINE, REGISTER_X);
+            displayCalcErrorMessage(ERROR_IO, ERR_REGISTER_LINE);
         }
         _ = rom.sys_disk_write_enable(0);
     } else {
@@ -348,7 +348,7 @@ pub export fn fnDeleteBackup(confirmation: u16) void {
         if (result == -1) {
             const e: c_int = errnoLocation().*;
             if (e != @intFromEnum(std.c.E.NOENT)) {
-                displayCalcErrorMessage(ERROR_IO, ERR_REGISTER_LINE, REGISTER_X);
+                displayCalcErrorMessage(ERROR_IO, ERR_REGISTER_LINE);
                 if (comptime calc_state_build_options.extra_info_on_calc_error) {
                     abi.fmtCStr(errorMessage, "removing the backup failed with error code {d}", .{e});
                     moreInfoOnError("In function fnDeleteBackup:", errorMessage, null, null);

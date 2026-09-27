@@ -360,7 +360,7 @@ extern fn liftStack() void;
 extern fn fnToReal(unused: u16) void;
 extern fn reallyRunFunction(func: i16, param: u16) void;
 extern fn adjustResult(res: calcRegister_t, drop_y: bool, set_cpx_res: bool, op1: calcRegister_t, op2: calcRegister_t, op3: calcRegister_t) void;
-extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: calcRegister_t, err_register_line: calcRegister_t) void;
+extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: calcRegister_t) void;
 const displayBugScreen = abi.host.showBugScreen; // routed through the host-callback boundary
 extern fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void;
 // exitKeyWaiting now routes through the host-callback boundary (abi.host),
@@ -420,7 +420,7 @@ fn tvmErrorMessage(errorCode: c_int) [*:0]const u8 {
 }
 
 fn tvmRangeError(errorCode: c_int) linksection(runtime.code_section) c_int {
-    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
     moreInfoOnError("In function tvmRangeError:", tvmErrorMessage(errorCode), " Out of range error", null);
     return errorCode;
 }
@@ -1081,7 +1081,7 @@ pub export fn fnTvmVar(variable: u16) linksection(runtime.code_section) callconv
 
                 if (iter == nIter) {
                     if (lastErrorCode != ERROR_SOLVER_ABORT) {
-                        displayCalcErrorMessage(ERROR_NO_ROOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+                        displayCalcErrorMessage(ERROR_NO_ROOT_FOUND, ERR_REGISTER_LINE);
                     }
                     moreInfoOnError("In function fnTvmVar:", "cannot compute TVM equation", "with current parameters", null);
                 }
@@ -1224,7 +1224,7 @@ pub export fn fnTvmVarIp(unusedButMandatoryParameter: u16) linksection(runtime.c
 const TvmError = error{ EffOutOfRange, EffToIOutOfRange, AmortBalOutOfRange, AmortPrnOutOfRange, AmortIntOutOfRange };
 
 fn reportTvmError(e: TvmError) void {
-    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
     switch (e) {
         error.EffOutOfRange => moreInfoOnError("In function fnEff:", "cannot compute EFF%/a ", "with parameter cp/a = 0", null),
         error.EffToIOutOfRange => moreInfoOnError("In function fnEffToI:", "cannot compute I%/a ", "with parameters n = 0 & EFF/a < 0 ", null),

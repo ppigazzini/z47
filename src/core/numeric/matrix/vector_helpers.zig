@@ -40,7 +40,7 @@ fn bufPrintZ(buffer: []u8, comptime format: []const u8, args: anytype) ![:0]u8 {
 
 pub export fn V3err(err: c_int) callconv(.c) void {
     if (comptime !runtime.option_vector) return;
-    runtime.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_POLAR_RECT, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+    runtime.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_POLAR_RECT, runtime.ERR_REGISTER_LINE);
     // EXTRA_INFO_ON_CALC_ERROR is comptime-off in the testSuite build, so this
     // mirrors the upstream #if guard exactly (the hint is host-only).
     if (runtime.extra_info_on_calc_error) {
@@ -117,7 +117,7 @@ pub export fn fnComplexToVector(opType: u16) callconv(.c) void {
     }
 
     // NIM_REGISTER_LINE is REGISTER_X (defines.h).
-    runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+    runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE);
     if (runtime.extra_info_on_calc_error) {
         var buffer: [128]u8 = undefined;
         const nameY = std.mem.span(runtime.getRegisterDataTypeName(runtime.REGISTER_Y, true, false));

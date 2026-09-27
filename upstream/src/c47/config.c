@@ -746,7 +746,7 @@ void fnSetRoundingModeRegist(uint16_t regist) {
     fnSetRoundingMode(value > 6 ? 6 : value);
   }
   else if(lastErrorCode == ERROR_NONE) {
-    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
   }
 }
 
@@ -1003,7 +1003,7 @@ void fnSetADM(uint16_t regist) {
     fnAngularMode(admToAngularMode[value]);
   }
   else if(lastErrorCode == ERROR_NONE) {
-    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
   }
 }
 
@@ -1021,7 +1021,7 @@ void fnSetGRAMOD(uint16_t regist) {
     graMod = value;
   }
   else if(lastErrorCode == ERROR_NONE) {
-    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
   }
 }
 
@@ -1049,7 +1049,7 @@ static void setPressFactor(uint16_t regist, int16_t *factor) {
       *factor = scaled - 10000;
     }
     else {
-      displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+      displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
     }
   }
 }
@@ -1097,7 +1097,7 @@ void fnSetISM(uint16_t regist) {
       case -1: shortIntegerMode = SIM_SIGNMT; break;                                             // the four values shortIntegerModeValue() returns
       default: {
         if(lastErrorCode == ERROR_NONE) {
-          displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+          displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
         }
         break;
       }
@@ -1119,7 +1119,7 @@ void fnSetDMX(uint16_t regist) {
     fnDenMax(value > MAX_DENMAX ? MAX_DENMAX : value);                                           // fnDenMax takes a uint16_t, so an unbounded value wraps into range instead of clamping
   }
   else if(lastErrorCode == ERROR_NONE) {
-    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
   }
 }
 
@@ -1137,7 +1137,7 @@ void fnSetREALDF                (uint16_t regist) {
     displayFormat = value;
   }
   else if(lastErrorCode == ERROR_NONE) {
-    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
   }
 }
 
@@ -1154,7 +1154,7 @@ void fnSetNDEC(uint16_t regist) {
     fnDisplayFormatDsp(value > DSP_MAX ? DSP_MAX : value);                                       // fnDisplayFormatDsp takes a uint16_t, so an unbounded value wraps into range instead of clamping
   }
   else if(lastErrorCode == ERROR_NONE) {
-    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
   }
 }
 
@@ -2294,6 +2294,7 @@ void runDMCPmenu(uint16_t confirmation) {
 //      #endif // PC_BUILD
       run_menu_item_sys(MI_DMCP_MENU);
       clearScreen(200);
+      screenUpdatingMode = SCRUPD_AUTO;
     }
   #endif //DMCP_BUILD
 }
@@ -2307,6 +2308,7 @@ void activateUSBdisk(uint16_t confirmation) {
       cancelFilename = true;
       run_menu_item_sys(MI_MSC);
       clearScreen(201);
+      screenUpdatingMode = SCRUPD_AUTO;
     }
   #endif //DMCP_BUILD
 }
@@ -2333,7 +2335,7 @@ void fnKeysManagement(uint16_t choice) {
         }
         else {
           Norm_Key_00.used = false;
-          displayCalcErrorMessage(ERROR_CANNOT_ASSIGN_HERE, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+          displayCalcErrorMessage(ERROR_CANNOT_ASSIGN_HERE, ERR_REGISTER_LINE);
           #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             moreInfoOnError("In function fnKeysManagement: TO_USER", "the NRM key is not available.", NULL, NULL);
           #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -2355,7 +2357,7 @@ void fnKeysManagement(uint16_t choice) {
       }
       else {
         Norm_Key_00.used = false;
-        displayCalcErrorMessage(ERROR_CANNOT_ASSIGN_HERE, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        displayCalcErrorMessage(ERROR_CANNOT_ASSIGN_HERE, ERR_REGISTER_LINE);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           moreInfoOnError("In function fnKeysManagement: FROM_USER", "the NRM key is not available.", NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)

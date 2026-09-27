@@ -80,7 +80,7 @@ fn compareTypeError(regist: runtime.calcRegister_t) void {
     const message = runtime.bufPrintZ(&message_buffer, "cannot convert Register {} from {s}", .{ regist, type_name }) catch "cannot convert Register";
 
     runtime.setTemporaryInformation(false);
-    runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_T);
+    runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE);
     runtime.moreInfoOnError("In function badTypeError:", message, null, null);
 }
 

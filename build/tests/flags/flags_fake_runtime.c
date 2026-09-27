@@ -117,10 +117,9 @@ void setConfirmationMode(void (*func)(uint16_t)) {
   clFAllConfirmationCalls++;
 }
 
-void displayCalcErrorMessage(uint8_t errorCode, calcRegister_t errMessageRegisterLine, calcRegister_t disUsedCanBeRemoved) {
+void displayCalcErrorMessage(uint8_t errorCode, calcRegister_t errMessageRegisterLine) {
   (void)errorCode;
   (void)errMessageRegisterLine;
-  (void)disUsedCanBeRemoved;
   writeProtectedErrorCalls++;
 }
 

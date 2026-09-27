@@ -43,7 +43,7 @@ pub export fn fnVectorAngle(unused_but_mandatory_parameter: u16) callconv(.c) vo
             runtime.realVectorSize(&y) > 3 or runtime.realVectorSize(&x) > 3 or
             runtime.realVectorSize(&y) != runtime.realVectorSize(&x))
         {
-            runtime.displayCalcErrorMessage(runtime.ERROR_MATRIX_MISMATCH, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            runtime.displayCalcErrorMessage(runtime.ERROR_MATRIX_MISMATCH, runtime.ERR_REGISTER_LINE);
             if (runtime.extra_info_on_calc_error) {
                 var buffer: [96]u8 = undefined;
                 const message = bufPrintZ(&buffer, "invalid numbers of elements of {d}" ++ std_cross ++ "{d}-matrix to {d}" ++ std_cross ++ "{d}-matrix", .{ x.header.matrixRows, x.header.matrixColumns, y.header.matrixRows, y.header.matrixColumns }) catch "invalid numbers of elements";
@@ -56,7 +56,7 @@ pub export fn fnVectorAngle(unused_but_mandatory_parameter: u16) callconv(.c) vo
             real34Copy(&res, runtime.registerReal34Data(runtime.REGISTER_X));
         }
     } else {
-        runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, nim_register_line);
+        runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE);
         if (runtime.extra_info_on_calc_error) {
             var buffer: [64]u8 = undefined;
             const message = bufPrintZ(&buffer, "DataType {d}", .{runtime.getRegisterDataType(runtime.REGISTER_X)}) catch "DataType";

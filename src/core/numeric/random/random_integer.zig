@@ -70,7 +70,7 @@ pub fn doIntRandomI() callconv(.c) void {
     runtime.longIntegerSubtract(max_value, min_value, &range[0]);
 
     if (runtime.__gmpz_cmp_ui(&range[0], range_limit) >= 0) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
         runtime.moreInfoOnError("In function doIntRandomI:", "cannot RANI# with |X - Y| >= 2^32", null, null);
         runtime.fnUndo(0);
         return;

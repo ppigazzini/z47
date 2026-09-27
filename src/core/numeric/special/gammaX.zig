@@ -41,7 +41,7 @@ pub export fn fnGammaX(gammaType: u16) callconv(.c) void {
     }
 
     if (!runtime.getSystemFlag(FLAG_SPCRES) and (math_comparison_reals.realCompareLessEqual(&x, const_0()) or math_comparison_reals.realCompareLessThan(&y, const_0()))) {
-        displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+        displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
         moreInfoOnError("In function fnGammaX:", "Y must be non-negative and X must be positive", null, null);
     } else {
         math_wp34s.WP34S_GammaP(&y, &x, &res, &runtime.ctxtReal39, (gammaType >> 1) != 0, (gammaType & 0x0001) != 0);

@@ -293,7 +293,7 @@ static void doTaylorIterations(const real_t *a, real_t* angle, real_t* a2, real_
     #if !defined(PC_BUILD)
       if(exitKeyWaiting()) {
         progressHalfSecUpdate_Integer(force+1, "Interrupted Iter:", i, halfSec_clearZ, halfSec_clearT, halfSec_disp);
-        displayCalcErrorMessage(ERROR_SOLVER_ABORT, REGISTER_T, NIM_REGISTER_LINE);
+        displayCalcErrorMessage(ERROR_SOLVER_ABORT, REGISTER_T);
         break;
       }
     #endif //!PC_BUILD
@@ -337,7 +337,7 @@ void C47_WP34S_SinCosTanTaylor_temp75(const real_t *a, bool_t swap, real_t *sinO
   REAL_T_ALLOC(cos,              75);
   REAL_T_ALLOC(epsilonOrCompare, 75);
   if(angle == NULL || a2 == NULL || t == NULL || j == NULL || z == NULL || sin == NULL || cos == NULL || epsilonOrCompare == NULL) {
-    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     goto freeWork;
   }
 
@@ -399,7 +399,7 @@ static void C47_WP34S_Cvt2RadSinCosTan_1071_helper(const real_t *an, angularMode
   // One 1071 digit decNumber at 724 bytes, of this function's 752 byte frame. Freed on both exits through freeWork.
   REAL_T_ALLOC(angle, 1071);
   if(angle == NULL) {
-    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     goto freeWork;
   }
 
@@ -457,7 +457,7 @@ void C47_WP34S_SinCosTanTaylor_temp1071(const real_t *a, bool_t swap, real_t *si
   REAL_T_ALLOC(cos,              1071);
   REAL_T_ALLOC(epsilonOrCompare, 1071);
   if(angle == NULL || a2 == NULL || t == NULL || j == NULL || z == NULL || sin == NULL || cos == NULL || epsilonOrCompare == NULL) {
-    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     goto freeWork;
   }
 
@@ -614,7 +614,7 @@ static bool_t doAtan(real_t *a, real_t *angle, real_t *a2, real_t *t, real_t *j,
     #if !defined(PC_BUILD)
       if(exitKeyWaiting()) {
         progressHalfSecUpdate_Integer(force+1, "Interrupted Iter:", i, halfSec_clearZ, halfSec_clearT, halfSec_disp);
-        displayCalcErrorMessage(ERROR_SOLVER_ABORT, REGISTER_T, NIM_REGISTER_LINE);
+        displayCalcErrorMessage(ERROR_SOLVER_ABORT, REGISTER_T);
         break;
       }
     #endif //!PC_BUILD
@@ -861,7 +861,7 @@ static void WP34S_Atan_table_compute(const real_t *x, real_t *angle, realContext
   #pragma GCC diagnostic ignored "-Warray-bounds"
 
   if(a == NULL || u == NULL || v == NULL || c == NULL) {
-    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     goto freeWork;
   }
 
@@ -981,7 +981,7 @@ static void WP34S_Atan_75_compute(const real_t *x, real_t *angle, realContext_t 
   }
 
   if(a == NULL || b == NULL || a2 == NULL || t == NULL || j == NULL || z == NULL || last == NULL || epsilon == NULL) {
-    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     realContext->digits = savedContextDigits;
     goto freeWork;
   }
@@ -1034,7 +1034,7 @@ static void C47do_WP34S_Atan_1071_helper(const real_t *x, real_t *angle, realCon
   REAL_T_ALLOC(last,    1071);
   REAL_T_ALLOC(epsilon, 1071);
   if(a == NULL || b == NULL || a2 == NULL || t == NULL || j == NULL || z == NULL || last == NULL || epsilon == NULL) {
-    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     goto freeWork;
   }
   int doubles = 0;
@@ -1220,7 +1220,7 @@ static void C47do_WP34S_Atan2_1071_helper(const real_t *y, const real_t *x, real
   REAL_T_ALLOC(r, 1071);
   REAL_T_ALLOC(t, 1071);
   if(r == NULL || t == NULL) {
-    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     goto freeWork;
   }
   if(!doAtan2(y, x, atan, r, t, realContext)) {
@@ -1300,7 +1300,7 @@ static void C47do_WP34S_Asin_1071_helper(const real_t *x, real_t *angle, realCon
   REAL_T_ALLOC(abx, 1071);
   REAL_T_ALLOC(z,   1071);
   if(abx == NULL || z == NULL) {
-    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     goto freeWork;
   }
   if(!doAsin(x, angle, abx, z, realContext)) {
@@ -1386,7 +1386,7 @@ static void C47do_WP34S_Acos_1071_helper(const real_t *x, real_t *angle, realCon
   REAL_T_ALLOC(abx, 1071);
   REAL_T_ALLOC(z,   1071);
   if(abx == NULL || z == NULL) {
-    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     goto freeWork;
   }
   if(!doAcos(x, angle, abx, z, realContext)) {
@@ -2098,7 +2098,7 @@ void WP34S_Mod(const real_t *x, const real_t *y, real_t *res, realContext_t *rea
 #if defined(DMCP_BUILD) && HARDWARE_MODEL == HWM_DM42
   REAL_T_ALLOC(small, 2139); // Fallback size
   if(small == NULL) {
-    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     realSetNaN(res);
   }
   else {
@@ -2108,7 +2108,7 @@ void WP34S_Mod(const real_t *x, const real_t *y, real_t *res, realContext_t *rea
 #else
   REAL_T_ALLOC(temp, 12321);
   if(temp == NULL) {
-    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     realSetNaN(res);
   }
   else {
@@ -2124,7 +2124,7 @@ void WP34S_BigMod(const real_t *x, const real_t *y, real_t *res, realContext_t *
 #if defined(DMCP_BUILD) && HARDWARE_MODEL == HWM_DM42
   REAL_T_ALLOC(small, 2139); // Fallback size
   if(small == NULL) {
-    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     realSetNaN(res);
   }
   else {
@@ -2134,7 +2134,7 @@ void WP34S_BigMod(const real_t *x, const real_t *y, real_t *res, realContext_t *
 #else
   REAL_T_ALLOC(temp, 12321);
   if(temp == NULL) {
-    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, REGISTER_X);
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     realSetNaN(res);
   }
   else {

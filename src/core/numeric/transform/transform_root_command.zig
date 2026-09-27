@@ -31,7 +31,7 @@ fn sqrtReal() callconv(.c) void {
     }
 
     if (runtime.realIsInfinite(&value) and !runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
         runtime.moreInfoOnError("In function sqrtReal:", "cannot use " ++ std_plus_minus ++ std_infinity ++ " as X input of sqrt when flag SPCRES is not set", null, null);
         return;
     }
@@ -49,7 +49,7 @@ fn sqrtReal() callconv(.c) void {
         return;
     }
 
-    runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+    runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
     runtime.moreInfoOnError("In function sqrtReal:", std_square_root ++ std_x_under_root ++ " doesn't work on a negative real when flag I is not set!", null, null);
 }
 
@@ -149,7 +149,7 @@ fn curtReal() callconv(.c) void {
     }
 
     if (runtime.realIsInfinite(&value) and !runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
         runtime.moreInfoOnError("In function curtReal:", "cannot use " ++ std_plus_minus ++ std_infinity ++ " as X input of curt when flag SPCRES is not set", null, null);
         return;
     }
@@ -236,7 +236,7 @@ pub fn squareRoot(unused_but_mandatory_parameter: u16) void {
         if (runtime.option_eigen) {
             runtime.fnMatrixSquareRoot(runtime.NOPARAM);
         } else {
-            runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE);
         }
         return;
     }
