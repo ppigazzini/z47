@@ -574,6 +574,9 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     saveStateValue(ram,                             TO_BYTES(RAM_SIZE_IN_BLOCKS),                                "ram",                            "hexDump");
 
     saveStateValue(&graMod,                         sizeof(graMod),                                              "graMod",                         "uint8");
+    #if defined(OPTION_ATEXT_FONTS)
+      saveStateValue(&graFont,                        sizeof(graFont),                                             "graFont",                        "uint8");
+    #endif // OPTION_ATEXT_FONTS
     saveStateValue(&longPressFactor,                sizeof(longPressFactor),                                     "longPressFactor",                "int16");
     saveStateValue(&doublePressFactor,              sizeof(doublePressFactor),                                   "doublePressFactor",              "int16");
 
@@ -941,6 +944,11 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
       real34SetZero(REGISTER_REAL34_DATA(RESERVED_VARIABLE_IP));     // Old GRAMOD slot now is i%: give it a real zero, then derive it from the restored I%/a
       tvmSyncIp(RESERVED_VARIABLE_IPONA);
     }
+    #if defined(OPTION_ATEXT_FONTS)
+      graFont = 20;
+      restoreStateValue(&graFont,                        sizeof(graFont),                                             "graFont",                        "uint8"); // a file without the key leaves 20, the standard font
+      graFontCheck();
+    #endif // OPTION_ATEXT_FONTS
     restoreStateValue(&longPressFactor,                sizeof(longPressFactor),                                     "longPressFactor",                "int16"); // a file without the key leaves 0, factor 1
     restoreStateValue(&doublePressFactor,              sizeof(doublePressFactor),                                   "doublePressFactor",              "int16");
     // The size argument is what stops the reader writing off the end, so it is the room the destination has, the way every other call here passes a sizeof().

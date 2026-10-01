@@ -733,7 +733,7 @@ void fnGetRoundingMode(uint16_t unusedButMandatoryParameter) {
 
 void fnSetRoundingMode(uint16_t RM) {
   roundingMode = RM;
-  temporaryInformation = TI_ROUNDING_MODE;
+  temporaryInformation = TI_ROUNDING_MODE_ONLY;                                 // a mode key of RMODE sets the mode outright, so the X content is not part of the reading
 }
 
 void fnSetRoundingModeM(uint16_t unusedButMandatoryParameter) {
@@ -742,8 +742,9 @@ void fnSetRoundingModeM(uint16_t unusedButMandatoryParameter) {
 
 void fnSetRoundingModeRegist(uint16_t regist) {
   uint32_t value;
-  if(getRegisterAsUint32Param(regist, &value)) {
-    fnSetRoundingMode(value > 6 ? 6 : value);
+  if(getRegisterAsUint32Param(regist, &value) && value <= RM_FLOOR) {           // a value above the last mode is refused, not clamped, so no reading names the wrong mode
+    fnSetRoundingMode(value);
+    temporaryInformation = TI_ROUNDING_MODE;                                    // RM takes its value from X, so the mode is confirmed against that value
   }
   else if(lastErrorCode == ERROR_NONE) {
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
@@ -1009,16 +1010,30 @@ void fnSetADM(uint16_t regist) {
 
 
 
-void fnGetGRAMOD(uint16_t unusedButMandatoryParameter) {
-  fnIntInputLongint(graMod);
+static void _getGraSetting(uint8_t setting, uint8_t ti) {
+  fnIntInputLongint(setting);
+  temporaryInformation = ti;
 }
 
 
 
-void fnSetGRAMOD(uint16_t regist) {
+void fnGetGRAMOD(uint16_t unusedButMandatoryParameter) {
+  _getGraSetting(graMod, TI_GRMOD);
+}
+
+
+
+static void _setGraSetting(uint16_t regist, uint8_t *setting, uint8_t ti) {  // GRMOD takes 0 to 4, GRFNT a code of the font table
   uint32_t value;
-  if(getRegisterAsUint32Param(regist, &value) && value <= 3) {
-    graMod = value;
+  bool_t valid = getRegisterAsUint32Param(regist, &value);
+  #if defined(OPTION_ATEXT_FONTS)
+    valid = valid && (ti == TI_GRFNT ? graFontValid(value) : value <= 4);
+  #else // !OPTION_ATEXT_FONTS
+    valid = valid && value <= 4;
+  #endif // OPTION_ATEXT_FONTS
+  if(valid) {
+    *setting = value;
+    temporaryInformation = ti;
   }
   else if(lastErrorCode == ERROR_NONE) {
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
@@ -1027,8 +1042,28 @@ void fnSetGRAMOD(uint16_t regist) {
 
 
 
+void fnSetGRAMOD(uint16_t regist) {
+  _setGraSetting(regist, &graMod, TI_GRMOD);
+}
+
+
+
+#if defined(OPTION_ATEXT_FONTS)
+void fnGetGRFNT(uint16_t unusedButMandatoryParameter) {
+  _getGraSetting(graFont, TI_GRFNT);
+}
+
+
+
+void fnSetGRFNT(uint16_t regist) {
+  _setGraSetting(regist, &graFont, TI_GRFNT);
+}
+#endif // OPTION_ATEXT_FONTS
+
+
+
 #if defined(OPTION_LP_DP_TIMING)
-static void getPressFactor(int16_t factor) {
+static void getPressFactor(int16_t factor, uint8_t ti) {
   REAL_T_PTR(value, 75);
 
   liftStack();
@@ -1036,17 +1071,19 @@ static void getPressFactor(int16_t factor) {
   value->exponent -= 2; // value = value / 10000 * 100
   convertRealToResultRegister(value, REGISTER_X, amNone);
   setSystemFlag(FLAG_ASLIFT);
+  temporaryInformation = ti;
 }
 
 
 
-static void setPressFactor(uint16_t regist, int16_t *factor) {
+static void setPressFactor(uint16_t regist, int16_t *factor, uint8_t ti) {
   REAL_T_PTR(value, 75);
   if(getRegisterAsReal(regist, value)) {
     value->exponent += 2; // value = value * 10000 / 100
     int32_t scaled = realToInt32C47(value, NULL);
     if(scaled >= 4000 && scaled <= 15000) {
       *factor = scaled - 10000;
+      temporaryInformation = ti;
     }
     else {
       displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
@@ -1057,25 +1094,25 @@ static void setPressFactor(uint16_t regist, int16_t *factor) {
 
 
 void fnGetLPFCT(uint16_t unusedButMandatoryParameter) {
-  getPressFactor(longPressFactor);
+  getPressFactor(longPressFactor, TI_LPFCT);
 }
 
 
 
 void fnSetLPFCT(uint16_t regist) {
-  setPressFactor(regist, &longPressFactor);
+  setPressFactor(regist, &longPressFactor, TI_LPFCT);
 }
 
 
 
 void fnGetDPFCT(uint16_t unusedButMandatoryParameter) {
-  getPressFactor(doublePressFactor);
+  getPressFactor(doublePressFactor, TI_DPFCT);
 }
 
 
 
 void fnSetDPFCT(uint16_t regist) {
-  setPressFactor(regist, &doublePressFactor);
+  setPressFactor(regist, &doublePressFactor, TI_DPFCT);
 }
 #endif // OPTION_LP_DP_TIMING
 
@@ -1656,6 +1693,9 @@ void resetOtherConfigurationStuff(bool_t allowUserKeys) {
   lastIntegerBase = 0;
   decodedIntegerBase = 0;
   graMod = 0;
+  #if defined(OPTION_ATEXT_FONTS)
+    graFont = 20;
+  #endif // OPTION_ATEXT_FONTS
   longPressFactor = 0;
   doublePressFactor = 0;
   timeLastOp = 0;

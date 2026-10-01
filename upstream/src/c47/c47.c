@@ -316,6 +316,7 @@ calcRegister_t         graphVariabl1;
 uint32_t               firstGregorianDay;
 uint32_t               denMax;
 uint8_t                graMod;
+uint8_t                graFont;
 int16_t                longPressFactor;
 int16_t                doublePressFactor;
 uint32_t               lastDenominator = 4;

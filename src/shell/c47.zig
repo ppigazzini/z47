@@ -161,7 +161,8 @@ pub export var funcOK: bool_t = false;
 pub export var keyActionProcessed: bool_t = false;
 pub export var fnKeyInCatalog: bool_t = false;
 pub export var hourGlassIconEnabled: bool_t = false;
-pub export var graMod: u8 = 0; // AGRAPH plotting mode, 0..3; a plain byte since the GRAMOD reserved variable was retired
+pub export var graMod: u8 = 0; // AGRAPH and ATEXT pixel operation, 0..4; a plain byte since the GRAMOD reserved variable was retired
+pub export var graFont: u8 = 0; // GRFNT: the code of the font ATEXT draws with, a row of screen.zig's aTextFonts
 // LP% and DP% minus 1, times 10000: 0 is the nominal delay, 5000 is one and a
 // half times it. Held as a factor so a file without the key restores the nominal.
 pub export var longPressFactor: i16 = 0;

@@ -57,6 +57,7 @@ const is_testsuite_build: bool = frontier_build_options.is_testsuite_build;
 const ir_printing: bool = frontier_build_options.ir_printing;
 const option_samplepgms: bool = frontier_build_options.option_samplepgms;
 const option_lp_dp_timing: bool = frontier_build_options.option_lp_dp_timing;
+const option_atext_fonts: bool = frontier_build_options.option_atext_fonts;
 // CALCMODEL == USER_R47 (66): the R47 personality, which selects among the four
 // R47 keyboard layouts instead of the C47/DM42 pair.
 const is_r47: bool = frontier_build_options.calcmodel == 66;
@@ -194,7 +195,11 @@ const TI_DISP_JULIAN_WOY: u8 = 119;
 const TI_NO_INFO: u8 = 0;
 const TI_RESET: u8 = 8;
 const TI_BYTES: u8 = 108;
-const TI_ROUNDING_MODE: u8 = 148;
+const TI_ROUNDING_MODE: u8 = 148; // X prefixed
+const TI_GRMOD: u8 = 150; // X prefixed
+const TI_GRFNT: u8 = 151; // X prefixed
+const TI_LPFCT: u8 = 152; // X prefixed
+const TI_DPFCT: u8 = 153; // X prefixed
 const TI_BITS: u8 = 109;
 const TI_BATTV: u8 = 78;
 const TI_ARE_YOU_SURE: u8 = 9;
@@ -744,6 +749,7 @@ extern var fractionDigits: u8;
 extern var dispBase: u8;
 extern var denMax: u32;
 extern var graMod: u8;
+extern var graFont: u8;
 extern var longPressFactor: i16;
 extern var doublePressFactor: i16;
 extern var currentAngularMode: c_int;
@@ -1526,8 +1532,10 @@ pub export fn fnSetRoundingModeM(unusedButMandatoryParameter: u16) callconv(.c) 
 
 pub export fn fnSetRoundingModeRegist(regist: u16) callconv(.c) void {
     var value: u32 = undefined;
-    if (frontier_register_value_conversions.getRegisterAsUint32Param(regist, &value)) {
-        frontend_settings.run(.set_rounding_mode, @intCast(@min(value, 6)));
+    // A value above the last mode is refused, not clamped, so no reading names the wrong mode.
+    if (frontier_register_value_conversions.getRegisterAsUint32Param(regist, &value) and value < roundingModeName.len) {
+        frontend_settings.run(.set_rounding_mode, @intCast(value));
+        temporaryInformation = TI_ROUNDING_MODE; // RM takes its value from X, so the mode is confirmed against that value
     } else if (lastErrorCode == ERROR_NONE) {
         frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
     }
@@ -1678,24 +1686,48 @@ pub export fn fnSetADM(regist: u16) callconv(.c) void {
     }
 }
 
-pub export fn fnGetGRAMOD(unusedButMandatoryParameter: u16) callconv(.c) void {
-    _ = unusedButMandatoryParameter;
-    frontier_addons.fnIntInputLongint(@intCast(graMod));
+fn getGraSetting(setting: u8, ti: u8) void {
+    frontier_addons.fnIntInputLongint(setting);
+    temporaryInformation = ti;
 }
 
-pub export fn fnSetGRAMOD(regist: u16) callconv(.c) void {
+pub export fn fnGetGRAMOD(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
+    getGraSetting(graMod, TI_GRMOD);
+}
+
+/// GRMOD takes 0 to 4, GRFNT a code of the font table.
+fn setGraSetting(regist: u16, setting: *u8, ti: u8) void {
     var value: u32 = undefined;
-    if (frontier_register_value_conversions.getRegisterAsUint32Param(regist, &value) and value <= 3) {
-        graMod = @intCast(value);
+    var valid = frontier_register_value_conversions.getRegisterAsUint32Param(regist, &value);
+    valid = valid and if (option_atext_fonts and ti == TI_GRFNT) frontier_screen.graFontValid(value) else value <= 4;
+    if (valid) {
+        setting.* = @intCast(value);
+        temporaryInformation = ti;
     } else if (lastErrorCode == ERROR_NONE) {
         frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
     }
 }
 
+pub export fn fnSetGRAMOD(regist: u16) callconv(.c) void {
+    setGraSetting(regist, &graMod, TI_GRMOD);
+}
+
+pub export fn fnGetGRFNT(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
+    if (comptime !option_atext_fonts) return;
+    getGraSetting(graFont, TI_GRFNT);
+}
+
+pub export fn fnSetGRFNT(regist: u16) callconv(.c) void {
+    if (comptime !option_atext_fonts) return;
+    setGraSetting(regist, &graFont, TI_GRFNT);
+}
+
 // LP% and DP%: the long-press and double-press timeouts as a percentage of their
 // nominal delay. The factor held in the global is that percentage minus 100, times
 // 100, so 0 is the nominal delay and a file without the key restores it.
-fn getPressFactor(factor: i16) void {
+fn getPressFactor(factor: i16, ti: u8) void {
     var value: real_t = undefined;
 
     liftStack();
@@ -1703,15 +1735,17 @@ fn getPressFactor(factor: i16) void {
     value.exponent -= 2; // value = value / 10000 * 100
     frontier_register_value_conversions.convertRealToResultRegister(&value, REGISTER_X, amNone);
     setSystemFlag(FLAG_ASLIFT);
+    temporaryInformation = ti;
 }
 
-fn setPressFactor(regist: u16, factor: *i16) void {
+fn setPressFactor(regist: u16, factor: *i16, ti: u8) void {
     var value: real_t = undefined;
     if (frontier_register_value_conversions.getRegisterAsReal(@intCast(regist), &value)) {
         value.exponent += 2; // value = value * 10000 / 100
         const scaled = frontier_real_type.realToInt32C47(&value, null);
         if (scaled >= 4000 and scaled <= 15000) {
             factor.* = @intCast(scaled - 10000);
+            temporaryInformation = ti;
         } else {
             frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
         }
@@ -1721,23 +1755,23 @@ fn setPressFactor(regist: u16, factor: *i16) void {
 pub export fn fnGetLPFCT(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     if (comptime !option_lp_dp_timing) return;
-    getPressFactor(longPressFactor);
+    getPressFactor(longPressFactor, TI_LPFCT);
 }
 
 pub export fn fnSetLPFCT(regist: u16) callconv(.c) void {
     if (comptime !option_lp_dp_timing) return;
-    setPressFactor(regist, &longPressFactor);
+    setPressFactor(regist, &longPressFactor, TI_LPFCT);
 }
 
 pub export fn fnGetDPFCT(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     if (comptime !option_lp_dp_timing) return;
-    getPressFactor(doublePressFactor);
+    getPressFactor(doublePressFactor, TI_DPFCT);
 }
 
 pub export fn fnSetDPFCT(regist: u16) callconv(.c) void {
     if (comptime !option_lp_dp_timing) return;
-    setPressFactor(regist, &doublePressFactor);
+    setPressFactor(regist, &doublePressFactor, TI_DPFCT);
 }
 
 pub export fn fnGetIntegerSignMode(unusedButMandatoryParameter: u16) callconv(.c) void {
@@ -2063,6 +2097,9 @@ pub export fn resetOtherConfigurationStuff(allowUserKeys: bool_t) callconv(.c) v
     lastIntegerBase = 0;
     decodedIntegerBase = 0;
     graMod = 0;
+    if (comptime option_atext_fonts) {
+        graFont = 20;
+    }
     longPressFactor = 0;
     doublePressFactor = 0;
     timeLastOp = 0;

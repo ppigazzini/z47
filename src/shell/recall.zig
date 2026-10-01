@@ -15,6 +15,7 @@
 const std = @import("std");
 const frontier_build_options = @import("frontier_build_options");
 const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
+const option_atext_fonts: bool = frontier_build_options.option_atext_fonts;
 
 // ---------------------------------------------------------------------------
 // Types
@@ -30,6 +31,7 @@ const frontier_debug = @import("debug.zig");
 const frontier_error = @import("error.zig");
 const frontier_next_step = @import("program/next_step.zig");
 const frontier_register_value_conversions = @import("register_value_conversions.zig");
+const frontier_screen = @import("display/screen.zig");
 const frontier_status_bar = @import("display/statusbar/status_bar.zig");
 const frontier_store = @import("store.zig");
 const frontier_string_funcs = @import("display/text/string_funcs.zig");
@@ -151,6 +153,7 @@ extern var grpGroupingRight: u8;
 extern var grpGroupingHex: u8;
 extern var grpGroupingBin: u8;
 extern var graMod: u8;
+extern var graFont: u8;
 extern var currentAngularMode: angularMode_t;
 extern var lrSelection: u16;
 extern var lrChosen: u16;
@@ -567,10 +570,13 @@ pub export fn fnRecallConfig(regist: u16) callconv(.c) void {
         grpGroupingBin = configToRecall.grpGroupingBin;
         grpGroupingHexBinDefault();
         graMod = configToRecall.graMod;
-        if (graMod > 3) {
+        if (graMod > 4) {
             graMod = 0;
         }
-        _ = configToRecall.compatibility_byte5;
+        if (comptime option_atext_fonts) {
+            graFont = configToRecall.graFont;
+            frontier_screen.graFontCheck();
+        }
         _ = configToRecall.compatibility_byte6;
         _ = configToRecall.compatibility_byte7;
         _ = configToRecall.compatibility_byte8;

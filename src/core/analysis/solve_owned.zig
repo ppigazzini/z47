@@ -12,7 +12,8 @@ const consts = abi.constants;
 // tvm/sumprod/integrate extern it), fnSolve, fnSolveVar. fnPgmSlv is NOT defined
 // here (solve.zig's dispatcher owns it; the renamed z47_solver_fnPgmSlv is dead).
 // The static helpers (_executeSolver, _executeSolverReal, _linearInterpolation,
-// _inverseQuadraticInterpolation, _showProgress) stay private.
+// _inverseQuadraticInterpolation, _showProgress) stay private; execSolverProgram,
+// the stacked program run _executeSolver shares with graph.c's RPN grapher, is pub.
 //
 // SOLVERDEBUG/SOLVERDEBUG2 and the PC_BUILD printf blocks are #undef'd under
 // TESTSUITE_BUILD and omitted. _showProgress paints the bracket panel through
@@ -609,6 +610,22 @@ pub export fn fnSolveVar(unusedButMandatoryParameter: u16) linksection(runtime.c
 // ===========================================================================
 // _executeSolver
 // ===========================================================================
+/// Runs the solver's program with the program, the variable and the control
+/// flags stacked around it, so a nested SOLVE cannot leak into the outer point
+/// (enables PLOT(SOLVE), SOLVE(SOLVE)). Saving only the program left the outer
+/// engine reading whichever variable and status the inner one finished with, so
+/// every later sample of the outer sweep evaluated against the wrong target.
+pub fn execSolverProgram() linksection(runtime.code_section) void {
+    const savedCurrentSolverProgram: u16 = currentSolverProgram;
+    const savedCurrentSolverVariable: u16 = currentSolverVariable;
+    const savedCurrentSolverStatus: u16 = currentSolverStatus;
+    dynamicMenuItem = -1;
+    execProgram(currentSolverProgram + FIRST_LABEL);
+    currentSolverProgram = savedCurrentSolverProgram;
+    currentSolverVariable = savedCurrentSolverVariable;
+    currentSolverStatus = savedCurrentSolverStatus;
+}
+
 fn _executeSolver(variable: calcRegister_t, val: *align(1) const real34_t, res: *align(1) real34_t) linksection(runtime.code_section) void {
     reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
     real34Copy(val, registerReal34Ptr(REGISTER_X));
@@ -625,19 +642,7 @@ fn _executeSolver(variable: calcRegister_t, val: *align(1) const real34_t, res: 
     if ((currentSolverStatus & SOLVER_STATUS_USES_FORMULA) != 0) {
         equation.parseEquation(currentFormula, 1, tmpString, tmpString + 1024);
     } else {
-        // also stack the variable + control flags so a nested SOLVE cannot leak
-        // into the outer point (enables PLOT(SOLVE), SOLVE(SOLVE)). Saving only
-        // the program left the outer engine reading whichever variable and
-        // status the inner one finished with, so every later sample of the
-        // outer sweep evaluated against the wrong target.
-        const savedCurrentSolverProgram: u16 = currentSolverProgram;
-        const savedCurrentSolverVariable: u16 = currentSolverVariable;
-        const savedCurrentSolverStatus: u16 = currentSolverStatus;
-        dynamicMenuItem = -1;
-        execProgram(currentSolverProgram + FIRST_LABEL);
-        currentSolverProgram = savedCurrentSolverProgram;
-        currentSolverVariable = savedCurrentSolverVariable;
-        currentSolverStatus = savedCurrentSolverStatus;
+        execSolverProgram();
     }
     if (lastErrorCode == ERROR_OVERFLOW_PLUS_INF) {
         realToReal34(const_plusInfinity(), res);
@@ -657,7 +662,7 @@ fn _executeSolver(variable: calcRegister_t, val: *align(1) const real34_t, res: 
     }
 }
 
-pub fn _executeSolverReal(variable: calcRegister_t, val: *const real_t, res: *real_t, deriv: ?*real_t) linksection(runtime.code_section) void {
+fn _executeSolverReal(variable: calcRegister_t, val: *const real_t, res: *real_t, deriv: ?*real_t) linksection(runtime.code_section) void {
     if ((currentSolverStatus & SOLVER_STATUS_TVM_APPLICATION) != 0) {
         // pass real_t value via ioVal, result comes back in same variable as real_t
         realCopy(val, res);

@@ -1,0 +1,31 @@
+@ GRFNT demonstration: every ATEXT font code, each line written in a different font, and GRMOD 4 on the last line.
+@ Each line puts the font code in X for GRFNT, the text in R00, and then Y and X for ATEXT. Each DROP𝑥 takes one value off the stack.
+@ Y is the bottom of the first line of the text. Codes 10 to 23 are in the left column, 30 to 41 in the right column.
+; Jaco Mostert  GRFNT demonstration
+
+LBL 'GRFNTS'
+  # GRFNT examples
+  CLLCD
+
+  10 GRFNT DROP𝑥   '10 tiny Ag19'       STO 00 DROP𝑥  210   2 ATEXT 00 DROP𝑥 DROP𝑥
+  20 GRFNT DROP𝑥   '20 standard Ag19'   STO 00 DROP𝑥  186   2 ATEXT 00 DROP𝑥 DROP𝑥
+  21 GRFNT DROP𝑥   '21 compressed Ag19' STO 00 DROP𝑥  162   2 ATEXT 00 DROP𝑥 DROP𝑥
+  22 GRFNT DROP𝑥   '22 bold Ag19'       STO 00 DROP𝑥  138   2 ATEXT 00 DROP𝑥 DROP𝑥
+  23 GRFNT DROP𝑥   '23 enlarged Ag19'   STO 00 DROP𝑥  102   2 ATEXT 00 DROP𝑥 DROP𝑥
+
+  30 GRFNT DROP𝑥   '30 Ag19'            STO 00 DROP𝑥  184 210 ATEXT 00 DROP𝑥 DROP𝑥
+  31 GRFNT DROP𝑥   '31 Ag19'            STO 00 DROP𝑥  156 210 ATEXT 00 DROP𝑥 DROP𝑥
+  32 GRFNT DROP𝑥   '32 Ag19'            STO 00 DROP𝑥  136 210 ATEXT 00 DROP𝑥 DROP𝑥
+  40 GRFNT DROP𝑥   '40 Ag19'            STO 00 DROP𝑥  100 210 ATEXT 00 DROP𝑥 DROP𝑥
+  41 GRFNT DROP𝑥   '41 Ag19'            STO 00 DROP𝑥   72 210 ATEXT 00 DROP𝑥 DROP𝑥
+
+@ GRMOD 4 clears the glyph pixels on a filled box: white text on black.
+  4 GRMOD DROP𝑥  22 GRFNT DROP𝑥  'GRMOD 4 with GRFNT 22' STO 00 DROP𝑥  40 2 ATEXT 00 DROP𝑥 DROP𝑥
+
+@ GRMOD and GRFNT return to their defaults, 0 and 20.
+  0 GRMOD DROP𝑥  20 GRFNT DROP𝑥
+
+  # Waits for a key
+  PAUSE 99
+RTN
+END

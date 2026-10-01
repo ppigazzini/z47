@@ -296,10 +296,13 @@ void fnRecallConfig(uint16_t regist) {
     recallFromDtConfigDescriptor(grpGroupingBin);
     grpGroupingHexBinDefault();
     recallFromDtConfigDescriptor(graMod);
-    if(graMod > 3) {
+    if(graMod > 4) {
       graMod = 0;
     }
-    recallFromDtConfigDescriptor(    compatibility_byte5);
+    #if defined(OPTION_ATEXT_FONTS)
+      recallFromDtConfigDescriptor(graFont);
+      graFontCheck();
+    #endif // OPTION_ATEXT_FONTS
     recallFromDtConfigDescriptor(    compatibility_byte6);
     recallFromDtConfigDescriptor(    compatibility_byte7);
     recallFromDtConfigDescriptor(    compatibility_byte8);

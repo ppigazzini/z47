@@ -35,6 +35,10 @@ pub const RuntimeObjectOptions = struct {
     // 1-4" block as OPTION_XFN_1000, so the same per-target answer. Defaults true
     // to match a host build.
     option_structured_pgm: bool = true,
+    // OPTION_ATEXT_FONTS gates graFont's line in the state file and its key in
+    // backup.cfg, both written and read. Same "common to packages 1-4" block
+    // again, so the same per-target answer. Defaults true to match a host build.
+    option_atext_fonts: bool = true,
     // EXTRA_INFO_ON_CALC_ERROR, for the scalar-state owners this object carries
     // through its core_state module. 0 on firmware and in the testSuite; default
     // true mirrors a host build.
@@ -107,6 +111,7 @@ fn addRuntimeObject(
     build_options.addOption(bool, "state_old_hw", std.mem.indexOf(u8, name_prefix, "dmcp") != null and std.mem.indexOf(u8, name_prefix, "dmcp5") == null);
     build_options.addOption(bool, "option_xfn_1000", options.option_xfn_1000);
     build_options.addOption(bool, "option_structured_pgm", options.option_structured_pgm);
+    build_options.addOption(bool, "option_atext_fonts", options.option_atext_fonts);
     // EXTRA_INFO_ON_CALC_ERROR, for the owners rooted in this object. defines.h
     // forces it to 0 for DMCP_BUILD -- which DMCP5 defines as well as the DM42 --
     // and again for TESTSUITE_BUILD; the testSuite shares the sim's target, so

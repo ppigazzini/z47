@@ -36,9 +36,17 @@ docs/Makefile
 docs/release.tsv
 docs/.gitignore
 docs/tools
-# Hardware-lab and benchmark harnesses: bench rigs for physical DM42 units.
+# Hardware-lab and benchmark harnesses: bench rigs for physical DM42 units, and
+# pgemu, which runs upstream's own built .pg5/.pgm image under an emulated
+# Cortex-M through Python's unicorn package. z47 builds its firmware from the
+# Zig owners, so neither has an image of z47's to run.
 tools/hwtest
 tools/bench
+tools/pgemu
+# Prebuilt rejig executables for macOS and Windows (23 MiB of binaries), the
+# program-listing converter rebuilt with item names its own release lacks. A
+# desktop helper for writing .p47 files; nothing in the build or CI runs it.
+tools/rejig_patched
 # Upstream's own helper scripts and generator, superseded by z47's build.
 res/SCRIPTS
 src/generateTests

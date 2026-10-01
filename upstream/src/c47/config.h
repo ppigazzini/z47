@@ -211,6 +211,8 @@ void     fnGetADM                     (uint16_t unusedButMandatoryParameter);
 void     fnSetADM                     (uint16_t unusedButMandatoryParameter);
 void     fnGetGRAMOD                  (uint16_t unusedButMandatoryParameter);
 void     fnSetGRAMOD                  (uint16_t unusedButMandatoryParameter);
+void     fnGetGRFNT                   (uint16_t unusedButMandatoryParameter);
+void     fnSetGRFNT                   (uint16_t unusedButMandatoryParameter);
 void     fnGetLPFCT                   (uint16_t unusedButMandatoryParameter);
 void     fnSetLPFCT                   (uint16_t unusedButMandatoryParameter);
 void     fnGetDPFCT                   (uint16_t unusedButMandatoryParameter);

@@ -14,6 +14,8 @@ const state_old_hw: bool = build_options.state_old_hw;
 // OPTION_STRUCTURED_PGM: the running FOR structures are saved with the calculator,
 // so a loop survives a power cycle. A build without the structures has no table.
 const option_structured_pgm: bool = build_options.option_structured_pgm;
+// OPTION_ATEXT_FONTS: the font ATEXT draws with is saved beside the GRMOD byte.
+const option_atext_fonts: bool = build_options.option_atext_fonts;
 const FOR_MAX_LOOPS: u32 = if (state_old_hw) 4 else 18;
 const FOR_LOOP_TABLE_BYTES: u32 = FOR_MAX_LOOPS * 10; // sizeof(forLoop_t) is 10 on every target
 // backup.cfg is the simulator's own state store: upstream wraps the whole file
@@ -68,6 +70,7 @@ extern fn decQuadZero(dst: [*c]u8) [*c]u8; // real34SetZero
 // The restored I%/a is the annual rate; tvm.zig converts it into the per-period i%.
 const RESERVED_VARIABLE_IPONA: i16 = 2035;
 extern fn tvmSyncIp(written: i16) void;
+extern fn graFontCheck() void; // screen.zig: a GRFNT code missing from the font table becomes 20
 const DECINF: u8 = 0x40; // decNumberIsInfinite(dn) = (dn->bits & DECINF) != 0; bits@8
 const real_t = opaque {}; // decNumber; range globals hold a *real_t (see graphs.zig)
 // REAL_SIZE_IN_BYTES(34) = 10 + sizeof(decNumberUnit=2) * (REAL_MAX_DIGITS(34)=39 / DECDPUN=3) = 36.
@@ -86,6 +89,7 @@ extern var numberOfAllocatedMemoryRegions: i32;
 extern var globalRegister: ?*anyopaque; // pointer on host (NEW_HW)
 extern var ram: [*c]u32;
 extern var graMod: u8;
+extern var graFont: u8;
 extern var longPressFactor: i16;
 extern var doublePressFactor: i16;
 extern var alphaRegister: u16;
@@ -776,6 +780,9 @@ pub fn saveCalc() void {
     sv(@ptrCast(ram), (geometry().ram_size_in_blocks) << 2, "ram", "hexDump");
 
     sv(&graMod, 1, "graMod", "uint8");
+    if (comptime option_atext_fonts) {
+        sv(&graFont, 1, "graFont", "uint8");
+    }
     sv(&longPressFactor, 2, "longPressFactor", "int16");
     sv(&doublePressFactor, 2, "doublePressFactor", "int16");
 
@@ -1108,6 +1115,11 @@ pub fn restoreCalc() void {
         // so encode a real zero there, then derive i% from the restored I%/a.
         _ = decQuadZero(@ptrFromInt(gramodSlot));
         tvmSyncIp(RESERVED_VARIABLE_IPONA);
+    }
+    if (comptime option_atext_fonts) {
+        graFont = 20;
+        rv(&graFont, 1, "graFont", "uint8"); // a file without the key leaves 20, the standard font
+        graFontCheck();
     }
     rv(&longPressFactor, 2, "longPressFactor", "int16"); // a file without the key leaves 0, factor 1
     rv(&doublePressFactor, 2, "doublePressFactor", "int16");

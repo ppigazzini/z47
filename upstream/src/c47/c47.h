@@ -574,6 +574,7 @@
   extern uint32_t               firstGregorianDay;
   extern uint32_t               denMax;
   extern uint8_t                graMod;
+  extern uint8_t                graFont;
   extern int16_t                longPressFactor;               // LPFCT minus 1, times 10000
   extern int16_t                doublePressFactor;             // DPFCT minus 1, times 10000
   extern uint32_t               lastDenominator;

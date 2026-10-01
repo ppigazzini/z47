@@ -1379,17 +1379,17 @@
 #define ITM_1337                    1337 // General items / any items spare
 #define ITM_1338                    1338 // General items / any items spare
 #define ITM_1339                    1339 // General items / any items spare
-#define ITM_1340                    1340 // General items / any items spare
-#define ITM_1341                    1341 // General items / any items spare
-#define ITM_1342                    1342 // General items / any items spare
-#define ITM_1343                    1343 // General items / any items spare
-#define ITM_1344                    1344 // General items / any items spare
-#define ITM_1345                    1345 // General items / any items spare
-#define ITM_1346                    1346 // General items / any items spare
-#define ITM_1347                    1347 // General items / any items spare
-#define ITM_1348                    1348 // General items / any items spare
-#define ITM_1349                    1349 // General items / any items spare
-#define ITM_1350                    1350 // General items / any items spare
+#define ITM_ATEXT                   1340
+#define ITM_GET_GRFNT               1341
+#define ITM_SET_GRFNT               1342
+#define ITM_1343                    1343 // General items / any items spare (reserved: graphic primitives)
+#define ITM_1344                    1344 // General items / any items spare (reserved: graphic primitives)
+#define ITM_1345                    1345 // General items / any items spare (reserved: graphic primitives)
+#define ITM_1346                    1346 // General items / any items spare (reserved: graphic primitives)
+#define ITM_1347                    1347 // General items / any items spare (reserved: graphic primitives)
+#define ITM_1348                    1348 // General items / any items spare (reserved: graphic primitives)
+#define ITM_1349                    1349 // General items / any items spare (reserved: graphic primitives)
+#define ITM_1350                    1350 // General items / any items spare (reserved: graphic primitives)
 #define ITM_1351                    1351 // General items / any items spare
 #define ITM_1352                    1352 // General items / any items spare
 #define ITM_1353                    1353 // General items / any items spare

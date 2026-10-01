@@ -1,5 +1,5 @@
 @ Plots the inverse Gudermannian function. The loop walks 101 points, works each one out from the counter
-@ rather than from a stored range, and collects the pairs in the statistics registers. TICKS is read at the
+@ rather than from a stored range, and collects the pairs in the statistics registers. TICKS# is read at the
 @ start and again at the end, so the program leaves its own run time in X as a string of seconds. The plot
 @ is drawn by PLSTAT and PLTFCNS once the sweep is finished.
 @ FRACT and IRFRAC are cleared on entry because the counter arithmetic uses integer division.
@@ -13,7 +13,7 @@ LBL ‘GudrmPL’
   CF ‘FRACT’
   CF ‘IRFRAC’
   CLΣ
-  TICKS
+  TICKS#
   STO N
   101
   STO M
@@ -44,7 +44,7 @@ LBL ‘GudrmPL’
     Σ+
     DSZ M
       GTO :LOOP:
-    TICKS
+    TICKS#
     RCL- N
     10
     ÷
