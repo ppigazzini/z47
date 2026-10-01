@@ -59,6 +59,11 @@ const ir_printing: bool = frontier_build_options.ir_printing;
 const option_vector: bool = frontier_build_options.option_vector;
 const option_mx_show: bool = frontier_build_options.option_mx_show;
 const option_lp_dp_timing: bool = frontier_build_options.option_lp_dp_timing;
+// OPTION_ATEXT gates ATEXT and the GRMOD pixel operation string drawing takes on
+// under it; OPTION_ATEXT_FONTS the GRFNT font table and the TI line naming it.
+// Both are #undef'd in the block common to DM42 packages 1-4.
+const option_atext: bool = frontier_build_options.option_atext;
+const option_atext_fonts: bool = frontier_build_options.option_atext_fonts;
 const testsuite_build: bool = frontier_build_options.is_testsuite_build;
 // OPTION_TVM_AMORT gates screen.c's amort temporary-information branches. It is
 // defined for every DM42 package as well as for DMCP5 and host; the only #undef
@@ -190,6 +195,7 @@ const NIM_BUFFER_LENGTH: usize = 200;
 const SHOWLineMax: i16 = @intCast(TMP_STR_LENGTH / @as(usize, @intCast(SHOWLineSize)));
 
 const vmNormal: videoMode_t = 0;
+const vmReverse: videoMode_t = 1;
 
 const stdNoEnlarge: c_int = 0;
 const stdEnlarge: c_int = 1;
@@ -574,7 +580,12 @@ const TI_UNDO_DISABLED: u8 = 49;
 const TI_SOLVER_VARIABLE: u8 = 51;
 const TI_DERIV_STEP: u8 = 145;
 const TI_ALGDEP_POLY: u8 = 147;
-const TI_ROUNDING_MODE: u8 = 148;
+const TI_ROUNDING_MODE: u8 = 148; // X prefixed
+const TI_ROUNDING_MODE_ONLY: u8 = 149; // X line blanked
+const TI_GRMOD: u8 = 150; // X prefixed
+const TI_GRFNT: u8 = 151; // X prefixed
+const TI_LPFCT: u8 = 152; // X prefixed
+const TI_DPFCT: u8 = 153; // X prefixed
 // config.h's `#define abbreviation true`: the glyph group rather than the full name.
 const abbreviation: bool = true;
 const TI_ACC: u8 = 53;
@@ -853,31 +864,41 @@ const STD_o_DIARESIS = "\x80\xf6";
 const STD_delta = "\x83\xb4";
 const STD_SUB_d = "\xa4\x9f";
 const STD_e_ACUTE = "\x80\xe9";
-// The contributor roll under whoStr1, in the tiny font, as of the 04Sep2026
-// upstream snapshot this pin carries. Upstream states the recount rule with the
-// string: coders are non-merge commits plus the unmerged branches, doccers the
-// manual c47-wiki repo plus c47-wiki page edits, and testers and porters are not
-// tracked in git at all. The bands are commit counts -- 400+, 100+, and the plain
-// band for the rest -- with the most commits first inside each band.
-const whoStr2: [*:0]const u8 = "Coders 400+ :" ++ spc1 ++ "Jaco Mostert," ++ spc1 ++ "Martin Lorang," ++ spc1 ++ "MihailJP," ++ spc1 ++ "Paul Dale." ++
-    "\n" ++
-    "Coders 100+ :" ++ spc1 ++ "Didier Lachieze," ++ spc1 ++ "Walter Bonin," ++ spc1 ++ "Benjamin Titmus," ++ spc1 ++ "   Pasquale Pigazzini," ++ spc1 ++
-    "David Emerson." ++
-    "\n" ++
-    "Coders      :" ++ spc1 ++ "Warren Young," ++ spc1 ++ "Bj" ++ STD_o_DIARESIS ++ "rn Jadelius," ++ spc1 ++ "Ralf Ahlbrink," ++ spc1 ++ "      Philippe Martens," ++ spc1 ++
-    "Gert Menke," ++ spc1 ++ "John Boydon," ++ spc1 ++ "Ian Abbott," ++ spc1 ++ "R" ++ STD_e_ACUTE ++ "my      Trotin," ++ spc1 ++ "fridlmue," ++ spc1 ++ "Dani Rau," ++ spc1 ++
-    "Harald Overbeek," ++ spc1 ++ "Will Rutherdale," ++ spc1 ++ "  Nigel Dowrick," ++ spc1 ++ "Sviatoslav Feshchenko," ++ spc1 ++ "H" ++ STD_a_RING ++ "kon Hansen." ++
-    "\n" ++
-    "Doccers 400+:" ++ spc1 ++ "Robbert Jan van Meenen," ++ spc1 ++ "Ralf Ahlbrink." ++
-    "\n" ++
-    "Doccers     :" ++ spc1 ++ "Hartmut Bromkamp," ++ spc1 ++ "Mike Leffel," ++ spc1 ++ "Jaco Mostert," ++ spc1 ++ "Marcel Dan," ++ spc1 ++
-    "H" ++ STD_a_RING ++ "kon Hansen," ++ spc1 ++ "Michael Peter," ++ spc1 ++ "A. Vosough," ++ spc1 ++ "Will Rutherdale," ++ spc1 ++ "Martin Lorang," ++ spc ++
-    "Warren Young," ++ spc ++ "Philippe Martens." ++ spc ++
-    "Testers:" ++ spc ++ "Barry Mead." ++ spc1 ++
-    "Porters:" ++ spc1 ++ "Marcel Dan" ++ spc ++ "(iOS, Android, Web)," ++ spc1 ++ "paletochen" ++ spc ++ "(Android)," ++ spc1 ++
-    "Pasquale Pigazzini" ++ spc ++ "(Android)." ++
-    "\n" ++
-    "(commits 04Sep2026)";
+// The contributor roll under whoStr1, in the tiny font, counted on 29Sep2026.
+// Upstream generates it with a script that justifies each line with figure and
+// four-per-em spaces, so the spacing is data: carry it token for token. The count
+// is non-merge commits with author aliases merged, over c43
+// 00.109.04.00a3.Internal 9e155644f plus the unmerged origin work of Over_score,
+// Sviatoslav, Stan Le and Malcolm, less any commit whose patch-id the base already
+// has. Coders are code-path commits; doccers are docs-path commits plus the
+// c47-wiki manual repo and its page edits, and a commit on both paths counts as
+// code. The bands are commit counts -- 400+, 100+, and the plain band for the
+// rest -- with the most commits first inside each band, except that Robbert Jan
+// leads the doccers by decision. Testers and porters are not tracked in git.
+const whoStr2: [*:0]const u8 = "Coders 400+" ++ spc ++ ":" ++ spc ++ STD_SPACE_4_PER_EM ++ "Jaco" ++ spc ++ "Mostert," ++ spc ++ "Martin" ++ spc ++ "Lorang," ++ spc ++ "MihailJP," ++ spc ++ "Paul" ++
+    STD_SPACE_FIGURE ++ "Dale." ++ "\n" ++
+    "Coders 100+" ++ spc ++ ":" ++ spc ++ STD_SPACE_4_PER_EM ++ "Didier" ++ spc ++ STD_SPACE_4_PER_EM ++ "Lachieze," ++ spc ++ STD_SPACE_4_PER_EM ++ "Benjamin" ++ spc ++
+    STD_SPACE_4_PER_EM ++ "Titmus," ++ spc ++ STD_SPACE_4_PER_EM ++ "Walter" ++ spc ++ STD_SPACE_4_PER_EM ++ "Bonin," ++ "\n" ++
+    spc ++ spc ++ "Pasquale" ++ spc ++ "Pigazzini." ++ "\n" ++
+    "Coders" ++ spc ++ spc ++ spc ++ spc ++ spc ++ spc ++ ":" ++ spc ++ STD_SPACE_4_PER_EM ++ "Bj" ++ STD_o_DIARESIS ++ "rn" ++ spc ++ spc ++ "Jadelius," ++ spc ++ spc ++ "David" ++ spc ++ spc ++
+    "Emerson," ++ spc ++ spc ++ "Warren" ++ spc ++ STD_SPACE_FIGURE ++ "Young," ++ "\n" ++
+    spc ++ spc ++ "Philippe" ++ spc ++ "Martens," ++ spc ++ "Ralf" ++ spc ++ "Ahlbrink," ++ spc ++ "Gert" ++ spc ++ "Menke," ++ spc ++ "John" ++ spc ++ "Boydon," ++ spc ++ "Ian" ++ "\n" ++
+    spc ++ spc ++ "Abbott," ++ spc ++ "R" ++ STD_e_ACUTE ++ "my" ++ STD_SPACE_FIGURE ++ "Trotin," ++ STD_SPACE_FIGURE ++ "fridlmue," ++ STD_SPACE_FIGURE ++ "Harald" ++ spc ++
+    "Overbeek," ++ STD_SPACE_FIGURE ++ "Dani" ++ STD_SPACE_FIGURE ++ "Rau," ++ STD_SPACE_FIGURE ++ "Nigel" ++ "\n" ++
+    spc ++ spc ++ "Dowrick," ++ spc ++ "Stan" ++ spc ++ "Le," ++ spc ++ "Malcolm" ++ spc ++ "Miller," ++ spc ++ "Will" ++ spc ++ "Rutherdale." ++ "\n" ++
+    "Doccers 400+" ++ ":" ++ spc ++ STD_SPACE_4_PER_EM ++ "Robbert" ++ spc ++ "Jan" ++ spc ++ "van" ++ spc ++ "Meenen," ++ spc ++ "Ralf" ++ spc ++ "Ahlbrink." ++ "\n" ++
+    "Doccers" ++ spc ++ spc ++ spc ++ spc ++ spc ++ ":" ++ spc ++ STD_SPACE_4_PER_EM ++ "Jaco" ++ spc ++ spc ++ "Mostert," ++ spc ++ spc ++ "Hartmut" ++ spc ++ spc ++ "Bromkamp," ++ spc ++ spc ++
+    "Mike" ++ spc ++ STD_SPACE_FIGURE ++ "Leffel," ++ "\n" ++
+    spc ++ spc ++ "Walter" ++ spc ++ STD_SPACE_4_PER_EM ++ "Bonin," ++ spc ++ "Marcel" ++ spc ++ STD_SPACE_4_PER_EM ++ "Dan," ++ spc ++ "H" ++ STD_a_RING ++ "kon" ++ spc ++ "Hansen," ++
+    spc ++ STD_SPACE_4_PER_EM ++ "Michael" ++ spc ++ "Peter," ++ spc ++ "David" ++ "\n" ++
+    spc ++ spc ++ "Emerson," ++ spc ++ "Will" ++ spc ++ "Rutherdale," ++ spc ++ "A." ++ spc ++ "Vosough," ++ spc ++ "Martin" ++ spc ++ "Lorang," ++ spc ++ "Philippe" ++ "\n" ++
+    spc ++ spc ++ "Martens," ++ spc ++ "Sviatoslav" ++ STD_SPACE_FIGURE ++ "Feshchenko," ++ spc ++ "Didier" ++ STD_SPACE_FIGURE ++ "Lachieze," ++ spc ++ "Warren" ++
+    STD_SPACE_FIGURE ++ "Young," ++ "\n" ++
+    spc ++ spc ++ "Malcolm" ++ spc ++ "Miller," ++ spc ++ "Dani" ++ spc ++ "Rau," ++ spc ++ "Paul" ++ spc ++ "Dale." ++ "\n" ++
+    "Testers" ++ spc ++ spc ++ spc ++ spc ++ spc ++ ":" ++ spc ++ STD_SPACE_4_PER_EM ++ "Barry" ++ spc ++ "Mead." ++ "\n" ++
+    "Porters" ++ spc ++ spc ++ spc ++ spc ++ spc ++ ":" ++ spc ++ STD_SPACE_4_PER_EM ++ "Marcel" ++ spc ++ spc ++ STD_SPACE_4_PER_EM ++ "Dan" ++ spc ++ spc ++ STD_SPACE_4_PER_EM ++
+    "(iOS," ++ spc ++ spc ++ STD_SPACE_4_PER_EM ++ "Android," ++ spc ++ spc ++ STD_SPACE_4_PER_EM ++ "Web)," ++ spc ++ spc ++ STD_SPACE_4_PER_EM ++ "paletochen" ++ "\n" ++
+    spc ++ spc ++ "(Android)," ++ spc ++ "Pasquale" ++ spc ++ "Pigazzini" ++ spc ++ "(Android)." ++ spc ++ spc ++ "(commits 29Sep2026)";
 
 // MODELTEXT: CALCMODEL == USER_R47 ? "R47" : "C47". The model comes from the
 // passed calcmodel build option -- the R47 simulator and the R47 firmware
@@ -925,6 +946,22 @@ pub export var combinationFonts: u8 = combinationFontsDefault;
 pub export var miniC: u8 = 0;
 pub export var maxiC: u8 = 0;
 pub export var noShow: bool_t = 0; // = false
+// OPTION_ATEXT: while ATEXT draws, GRMOD sets the glyph cell clear and the pixel
+// operation, and the top y of the last line a line-feed string reached is kept.
+var allowGramodInShowString: bool = false;
+var lastShowStringY: u32 = 0;
+// OPTION_ATEXT_FONTS: the line pitch of the font GRFNT selects, and whether it is
+// the bold numeric font, which ATEXT uses in place of the BOLD setting.
+var aTextLineHeight: u8 = 20;
+var aTextBold: bool = false;
+
+inline fn gramodInShowString() bool {
+    return option_atext and allowGramodInShowString;
+}
+
+inline fn numericBold() bool {
+    return if (option_atext_fonts and allowGramodInShowString) aTextBold else getSystemFlag(FLAG_BOLD) != 0;
+}
 pub export var displaymode: u8 = stdNoEnlarge;
 pub export var boldString: u8 = 0;
 pub export var compressString: u8 = 0;
@@ -947,6 +984,7 @@ extern var lastErrorCode: u8;
 extern var displayStack: u8;
 extern var dispBase: u8;
 extern var graMod: u8;
+extern var graFont: u8;
 extern var roundingMode: u8;
 extern var longPressFactor: i16;
 extern var doublePressFactor: i16;
@@ -1186,6 +1224,11 @@ extern fn findNamedVariable(name: [*c]const u8) calcRegister_t;
 extern fn processKeyAction(item: i16) void;
 extern fn fnKeyBackspace(p: u16) void;
 extern fn fnInc(regist: calcRegister_t) void;
+extern fn fnDec(regist: calcRegister_t) void;
+extern fn saveLastX() bool;
+extern fn convertLongIntegerToLongIntegerRegister(lgInt: *const mpz_struct, regist: calcRegister_t) void;
+const NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS = 10;
+extern const addition: [NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS][NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS]?*const fn () callconv(.c) void;
 extern fn openHOMEorMyM(situation: bool) void;
 extern fn resetShiftState() void;
 extern fn showShiftState() void;
@@ -1291,6 +1334,8 @@ extern fn decNumberToString(r: *const real_t, str: [*c]u8) [*c]u8;
 
 // GMP
 extern fn __gmpz_init(op: [*c]mpz_struct) void;
+// int32ToLongInteger is a static inline = mpz_set_si.
+extern fn __gmpz_set_si(rop: [*c]mpz_struct, op: c_long) void;
 extern fn __gmpz_clear(op: [*c]mpz_struct) void;
 
 // ---------------------------------------------------------------------------
@@ -2254,10 +2299,11 @@ pub export fn showGlyphCode(charCode_in: u16, font_in: *const font_t, x_in: u32,
     }
 
     glyph = null;
-    // FLAG_BOLD: probe the separate bold numeric font first (numeric font only).
-    // A miss returns -1 so it never aliases glyph 0, and font stays == numericFont
-    // so the numDouble/HP identity logic below is unaffected. (C screen.c:1164)
-    if (getSystemFlag(FLAG_BOLD) != 0 and font == &numericFont) {
+    // FLAG_BOLD, or under ATEXT the font GRFNT selects: probe the separate bold
+    // numeric font first (numeric font only). A miss returns -1 so it never aliases
+    // glyph 0, and font stays == numericFont so the numDouble/HP identity logic
+    // below is unaffected.
+    if (numericBold() and font == &numericFont) {
         const boldId = frontier_fonts.findGlyphExact(&numericFontBold, charCode);
         if (boldId >= 0) {
             glyph = &numericFontBold.glyphsPtr()[@intCast(boldId)];
@@ -2306,8 +2352,9 @@ pub export fn showGlyphCode(charCode_in: u16, font_in: *const font_t, x_in: u32,
     // Clearing the space needed by the glyph
     const rep_enlarge: bool = numDouble or (enlarge != 0 and combinationFonts != 0);
     const yNewMaxDx: u32 = @intCast((if (rep_enlarge) @as(i32, 2) else 1) * ((@as(i32, @intCast(@as(u32, g.rowsAboveGlyph) + g.rowsGlyph + g.rowsBelowGlyph)) >> @intCast(mini)) - (if (rep_enlarge) @as(i32, 4) else 0)));
-    if (noPreClear == 0) {
-        lcd_fill_rect(x, @intCast(maxI(0, yy)), @as(u32, @intCast(@as(i32, @intCast(@as(u32, @intCast(doubling)) * ((xGlyph + g.colsGlyph + endingCols) >> @intCast(mini)))) >> 3)), @intCast(maxI(0, @as(i32, @intCast(yNewMaxDx)) + (if (yy < 0) yy else 0))), if (videoMode == vmNormal) LCD_SET_VALUE else LCD_EMPTY_VALUE);
+    if (noPreClear == 0 and !(gramodInShowString() and graMod != 1 and graMod != 4)) {
+        // A reverse video box also covers the bold column.
+        lcd_fill_rect(x, @intCast(maxI(0, yy)), @as(u32, @intCast(@as(i32, @intCast(@as(u32, @intCast(doubling)) * ((xGlyph + g.colsGlyph + endingCols) >> @intCast(mini)))) >> 3)) + (if (videoMode == vmNormal) 0 else boldString), @intCast(maxI(0, @as(i32, @intCast(yNewMaxDx)) + (if (yy < 0) yy else 0))), if (videoMode == vmNormal) LCD_SET_VALUE else LCD_EMPTY_VALUE);
     }
     if (displaymode == numHalf) {
         y +%= @bitCast(@divTrunc(@as(i32, g.rowsAboveGlyph) * REDUCT_A(), REDUCT_B()) * (if (rep_enlarge) @as(i32, 2) else 1));
@@ -2315,7 +2362,13 @@ pub export fn showGlyphCode(charCode_in: u16, font_in: *const font_t, x_in: u32,
         y +%= (@as(u32, g.rowsAboveGlyph) * (if (rep_enlarge) @as(u32, 2) else 1)) >> @intCast(mini);
     }
 
-    const bltOp: c_int = if (videoMode == vmNormal) BLT_OR else BLT_ANDN;
+    // GRMOD 0 and 1 set, 2 clears and 3 inverts the glyph pixels; 4 clears them on
+    // the reverse video box.
+    const bltOp: c_int = if (gramodInShowString() and graMod != 4) switch (graMod) {
+        2 => BLT_ANDN,
+        3 => BLT_XOR,
+        else => BLT_OR,
+    } else if (videoMode == vmNormal) BLT_OR else BLT_ANDN;
     // Drawing the glyph
     var secondRow = false;
     var bits: u32 = 0;
@@ -2445,6 +2498,8 @@ noinline fn _doShowString(string: [*c]const u8, font: *const font_t, x_in: u32, 
     var sec: bool_t = undefined;
     var prevX: u32 = x;
     const orgX: u32 = x;
+    // y-pixels from one line to the next
+    const lineStep: u8 = if (option_atext_fonts and allowGramodInShowString) aTextLineHeight else if (font == &tinyFont) 8 else 20;
 
     const lg: u16 = @intCast(stringByteLength(string));
 
@@ -2470,7 +2525,7 @@ noinline fn _doShowString(string: [*c]const u8, font: *const font_t, x_in: u32, 
             if (x +% showGlyphCode(frontier_char_string.charCodeFromString(string, &tmp), font, 0, 0, videoMode, slc, sec, 0) -% compressString > SCREEN_WIDTH) {
                 x = orgX;
                 prevX = x;
-                y +%= if (font == &tinyFont) @as(u32, 8) else 20;
+                y +%= lineStep;
             }
             noShow = 0;
         }
@@ -2493,16 +2548,22 @@ noinline fn _doShowString(string: [*c]const u8, font: *const font_t, x_in: u32, 
                 prevX = x;
             }
         }
+        // A line feed, or 0xA1B5 (STD_CR, the AVIEW line break), starts a new line.
         var tmp2: u16 = ch;
-        while (LF != 0 and (frontier_char_string.charCodeFromString(string, &tmp2) == 0x0A)) {
+        while (LF != 0) {
+            const code = frontier_char_string.charCodeFromString(string, &tmp2);
+            if (code != 0x0A and code != 0xA1B5) break;
             _ = frontier_char_string.charCodeFromString(string, &ch);
             x = orgX;
             prevX = x;
-            y +%= if (font == &tinyFont) @as(u32, 8) else 20;
+            y +%= lineStep;
         }
     }
     compressString = 0;
     raiseString = 0;
+    if (comptime option_atext) {
+        lastShowStringY = y;
+    }
     return x;
 }
 
@@ -3390,6 +3451,101 @@ fn _fnShowRModeTI(prefix: [*c]u8, prefixWidth: *i16) void {
     screenUpdatingMode |= SCRUPD_SKIP_STACK_ONE_TIME;
 }
 
+// GRMOD 0 to 4.
+const grModWords: [*:0]const u8 = "set pixels\x00set pixels on cleared box\x00clear pixels\x00invert pixels\x00clear pixels on filled box";
+
+/// The word after n terminating zeros.
+fn nthWord(words: [*:0]const u8, n: u32) []const u8 {
+    var word = words;
+    var i = n;
+    while (i > 0) : (i -= 1) {
+        word += std.mem.len(word) + 1;
+    }
+    return std.mem.span(word);
+}
+
+// The fonts GRFNT selects for ATEXT. attr packs the index into aTextFontWords of
+// the size word (ATF_SIZE, 0 for none) and of the base word (ATF_BASE: 0 tiny,
+// 1 standard, 2 numeric), ATF_BOLD for every glyph column doubled and ATF_BOLDNUM
+// for the bold numeric font.
+const ATF_SIZE: u8 = 0x0f;
+const ATF_BASE: u8 = 0x30;
+const ATF_STANDARD: u8 = 0x10;
+const ATF_NUMERIC: u8 = 0x20;
+const ATF_BOLD: u8 = 0x40;
+const ATF_BOLDNUM: u8 = 0x80;
+const ATF_TINY: u8 = 5; // the mode of the tiny font, which has no display mode of its own
+
+const ATextFont = struct {
+    code: u8,
+    mode: u8, // a display mode of _setStringMode, or ATF_TINY
+    attr: u8,
+};
+
+const aTextFontWords: [*:0]const u8 = "\x00compressed \x00enlarged \x00reduced height \x00small \x00tiny\x00standard\x00numeric";
+// y-pixels from one line to the next, by mode: stdNoEnlarge to numHalf, then ATF_TINY.
+const aTextLineHeights = [_]u8{ 20, 32, 32, 16, 24, 8 };
+
+const aTextFonts = [_]ATextFont{
+    .{ .code = 10, .mode = ATF_TINY, .attr = 0 },
+    .{ .code = 20, .mode = stdNoEnlarge, .attr = ATF_STANDARD },
+    .{ .code = 21, .mode = stdNoEnlarge, .attr = ATF_STANDARD | 1 },
+    .{ .code = 22, .mode = stdNoEnlarge, .attr = ATF_STANDARD | ATF_BOLD },
+    .{ .code = 23, .mode = stdEnlarge, .attr = ATF_STANDARD | 2 },
+    .{ .code = 30, .mode = stdnumEnlarge, .attr = ATF_NUMERIC },
+    .{ .code = 31, .mode = numHalf, .attr = ATF_NUMERIC | 3 },
+    .{ .code = 32, .mode = numSmall, .attr = ATF_NUMERIC | 4 },
+    .{ .code = 40, .mode = stdnumEnlarge, .attr = ATF_NUMERIC | ATF_BOLDNUM },
+    .{ .code = 41, .mode = numHalf, .attr = ATF_NUMERIC | ATF_BOLDNUM | 3 },
+};
+
+fn aTextFont(code: u32) ?*const ATextFont {
+    for (&aTextFonts) |*font| {
+        if (font.code == code) return font;
+    }
+    return null;
+}
+
+pub fn graFontValid(code: u32) bool {
+    return aTextFont(code) != null;
+}
+
+/// A stored GRFNT code missing from the font table becomes 20, the standard font.
+pub export fn graFontCheck() callconv(.c) void {
+    if (comptime !option_atext_fonts) return;
+    if (!graFontValid(graFont)) {
+        graFont = 20;
+    }
+}
+
+/// The rounding mode read from X, GRMOD, GRFNT, LP% and DP%: the TIs written in
+/// front of the value in X.
+fn isSettingTI() bool {
+    return temporaryInformation >= TI_ROUNDING_MODE and temporaryInformation <= TI_DPFCT and temporaryInformation != TI_ROUNDING_MODE_ONLY;
+}
+
+fn _fnShowSettingTI(prefix: [*c]u8, prefixWidth: *i16) void {
+    if (temporaryInformation == TI_ROUNDING_MODE) {
+        _fnShowRModeTI(prefix, prefixWidth);
+        return;
+    }
+    if (temporaryInformation == TI_GRMOD) {
+        abi.fmtCStr(prefix, "GRMOD: {s}", .{nthWord(grModWords, graMod)});
+    } else if (option_atext_fonts and temporaryInformation == TI_GRFNT) {
+        const attr = aTextFont(graFont).?.attr;
+        abi.fmtCStr(prefix, "GRFNT: {s}{s}{s}", .{
+            if (attr & (ATF_BOLD | ATF_BOLDNUM) != 0) "bold " else "",
+            nthWord(aTextFontWords, attr & ATF_SIZE),
+            nthWord(aTextFontWords, 5 + ((attr & ATF_BASE) >> 4)),
+        });
+    } else if (option_lp_dp_timing) {
+        const longPress = temporaryInformation == TI_LPFCT;
+        abi.fmtCStr(prefix, "{s}: {s} press time in %", .{ if (longPress) "LP%" else "DP%", if (longPress) "long" else "double" });
+    }
+    prefixWidth.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+    screenUpdatingMode |= SCRUPD_SKIP_STACK_ONE_TIME;
+}
+
 pub export fn updateMatrixHeightCache() callconv(.c) void {
     var prefixWidth: i16 = 0;
     var prefix: [200]u8 = undefined;
@@ -4124,7 +4280,7 @@ fn _refreshRegisterLine(regist_in: calcRegister_t, restoreRegisterT: bool_t) voi
                 w = frontier_char_string.stringWidth(tmpString, &standardFont, true, true);
                 _ = showString(tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - w), Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, 1, 1);
             }
-        } else if (temporaryInformation == TI_ROUNDING_MODE and regist == REGISTER_X) {
+        } else if (temporaryInformation == TI_ROUNDING_MODE_ONLY and regist == REGISTER_X) {
             _fnShowRModeTI(&prefix, &prefixWidth);
             _ = showString(&prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + TEMPORARY_INFO_OFFSET + 6, vmNormal, 1, 1);
         } else if (temporaryInformation == TI_BATTV and regist == REGISTER_X) {
@@ -4147,8 +4303,8 @@ fn _refreshRegisterLine(regist_in: calcRegister_t, restoreRegisterT: bool_t) voi
             if (regist == REGISTER_X) {
                 clearScreenExcludingStatusBar(203); // the region guards in _selectiveClearScreen leave part of the menu strip uncleared
                 _ = frontier_softmenus.showSoftmenu(-MNU_SHOW);
-                _ = showStringEnhanced(whoStr1, &standardFont, 1, @intCast(@as(i32, Y_POSITION_OF_REGISTER_T_LINE) + 30 - 25), vmNormal, 1, 1, NO_compress, NO_raise, DO_Show, NO_Bold, DO_LF);
-                _ = showStringEnhanced(whoStr2, &tinyFont, 1, @intCast(@as(i32, Y_POSITION_OF_REGISTER_X_LINE) + 50 - 62), vmNormal, 1, 1, NO_compress, NO_raise, DO_Show, NO_Bold, DO_LF);
+                _ = showStringEnhanced(whoStr1, &standardFont, 1, @intCast(@as(i32, Y_POSITION_OF_REGISTER_T_LINE) + 30 - 33), vmNormal, 1, 1, NO_compress, NO_raise, DO_Show, NO_Bold, DO_LF);
+                _ = showStringEnhanced(whoStr2, &tinyFont, 1, @intCast(@as(i32, Y_POSITION_OF_REGISTER_X_LINE) + 50 - 78), vmNormal, 1, 1, NO_compress, NO_raise, DO_Show, NO_Bold, DO_LF);
                 screenUpdatingMode |= SCRUPD_MANUAL_MENU;
             }
             if (regist == REGISTER_T or regist == REGISTER_Z or regist == REGISTER_Y or regist == REGISTER_X) {
@@ -4783,6 +4939,8 @@ const compact_real = {};
 fn refreshReal34(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16, prefix: [*c]u8, prefixWidth_p: *i16, lineWidth_p: *i16, w_p: *i32, prefixPre: bool_t, prefixPost: bool_t, indent: i16) void {
     if (temporaryInformation == TI_COPY_FROM_SHOW and regist == REGISTER_X) {
         _fnShowRecallTI(prefix, prefixWidth_p);
+    } else if (isSettingTI() and regist == REGISTER_X) {
+        _fnShowSettingTI(prefix, prefixWidth_p);
     } else if (temporaryInformation == TI_THETA_RADIUS) {
         if (regist == REGISTER_Y) {
             prefixWidth_p.* = setPrefix(prefix, "r =", indent);
@@ -5497,6 +5655,8 @@ fn refreshLongInteger(regist: calcRegister_t, origRegist: calcRegister_t, baseY:
 
     if (temporaryInformation == TI_COPY_FROM_SHOW and regist == REGISTER_X) {
         _fnShowRecallTI(prefix, prefixWidth_p);
+    } else if (isSettingTI() and regist == REGISTER_X) {
+        _fnShowSettingTI(prefix, prefixWidth_p);
     } else if (temporaryInformation == TI_SOLVER_VARIABLE) {
         _displaySolverInput(regist, prefix, prefixWidth_p);
     } else if (temporaryInformation == TI_DERIV_STEP) {
@@ -6652,6 +6812,7 @@ pub export fn fnAGraph(regist: u16) callconv(.c) void {
     var y: i32 = undefined;
     const gramod: u32 = graMod;
     getPixelPos(&x, &y);
+    const negativeX = x < 0;
     x = absI(x);
     y = absI(y);
     if (lastErrorCode == ERROR_NONE) {
@@ -6684,12 +6845,20 @@ pub export fn fnAGraph(regist: u16) callconv(.c) void {
                     3 => {
                         if (val & 1 != 0) flipPixel(@intCast(x), @intCast(@as(i32, SCREEN_HEIGHT) - y - 1 - @as(i32, @intCast(i))));
                     },
+                    4 => {
+                        if (val & 1 != 0) {
+                            setWhitePixel(@intCast(x), @intCast(@as(i32, SCREEN_HEIGHT) - y - 1 - @as(i32, @intCast(i))));
+                        } else {
+                            setBlackPixel(@intCast(x), @intCast(@as(i32, SCREEN_HEIGHT) - y - 1 - @as(i32, @intCast(i))));
+                        }
+                    },
                     else => {},
                 }
                 val >>= 1;
             }
 
-            fnInc(REGISTER_X);
+            // A negative X keeps its sign and grows in magnitude.
+            if (negativeX) fnDec(REGISTER_X) else fnInc(REGISTER_X);
         } else {
             frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
             if (comptime extra_info) {
@@ -6698,6 +6867,91 @@ pub export fn fnAGraph(regist: u16) callconv(.c) void {
             }
         }
     }
+}
+
+/// ATEXT: the string in a register, drawn from the PIXEL position in the font
+/// GRFNT selects and with the pixel operation GRMOD selects. Without
+/// OPTION_ATEXT_FONTS only the standard font is offered, every line 20 y-pixels.
+/// X and Y take the offsets to where the next text would start.
+pub export fn fnAText(regist: u16) callconv(.c) void {
+    if (comptime !option_atext) return;
+    var x: i32 = undefined;
+    var y: i32 = undefined;
+    var font: ?*const font_t = &standardFont;
+    var lineHeight: u8 = 20;
+    var compress: u8 = NO_compress;
+    var bold: u8 = NO_Bold;
+
+    getPixelPos(&x, &y);
+    const negativeX = x < 0;
+    const negativeY = y < 0;
+    x = absI(x);
+    y = absI(y);
+    if (lastErrorCode != ERROR_NONE) {
+        return;
+    }
+    if (getRegisterDataType(@intCast(regist)) != dtString) {
+        frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
+        return;
+    }
+    if (!saveLastX()) {
+        return;
+    }
+    const combinationFontsM = combinationFonts;
+    if (comptime option_atext_fonts) {
+        const f = aTextFont(graFont).?;
+        aTextBold = f.attr & ATF_BOLDNUM != 0; // the BOLD setting is ignored: GRFNT alone selects the bold numeric font
+        bold = @intFromBool(f.attr & ATF_BOLD != 0);
+        compress = if (f.attr & ATF_SIZE == 1) DO_compress else NO_compress;
+        _setStringMode(if (f.mode == ATF_TINY) stdNoEnlarge else f.mode, compress, &font);
+        if (f.mode == ATF_TINY) {
+            font = &tinyFont;
+        }
+        lineHeight = aTextLineHeights[f.mode];
+        aTextLineHeight = lineHeight;
+    }
+    const top: i32 = SCREEN_HEIGHT - y - lineHeight;
+
+    screenUpdatingMode |= SCRUPD_MANUAL_STACK | SCRUPD_MANUAL_MENU | SCRUPD_MANUAL_SHIFT_STATUS;
+    screenHoldsDrawnPixels = true;
+    if (top <= Y_POSITION_OF_REGISTER_T_LINE) {
+        screenUpdatingMode |= SCRUPD_MANUAL_STATUSBAR;
+    }
+    allowGramodInShowString = true;
+    var nextX: i32 = @bitCast(showStringEnhanced(REGISTER_STRING_DATA(@intCast(regist)), font.?, @intCast(x), @bitCast(top), if (graMod == 4) vmReverse else vmNormal, 1, 1, compress, NO_raise, DO_Show, bold, DO_LF));
+    allowGramodInShowString = false;
+    if (comptime option_atext_fonts) {
+        combinationFonts = combinationFontsM;
+        _resetStringMode();
+    }
+    var nextY: i32 = SCREEN_HEIGHT -% @as(i32, @bitCast(lastShowStringY)) -% lineHeight;
+    if (nextX > SCREEN_WIDTH - 20) { // the full line test of _doShowString
+        nextX = x;
+        nextY -%= lineHeight;
+    }
+    if (nextY < 0) { // a next line below the screen hands back y 0, as a negative Y takes the other sign convention
+        nextY = 0;
+    }
+
+    // X and Y take the offsets to nextX and nextY added in their own data type, as
+    // AGRAPH does; Z is scratch and is restored. A negative X or Y keeps its sign
+    // and grows in magnitude.
+    var lgInt: longInteger_t = undefined;
+    copySourceRegisterToDestRegister(REGISTER_Z, TEMP_REGISTER_1);
+    copySourceRegisterToDestRegister(REGISTER_Y, REGISTER_Z);
+    longIntegerInit(&lgInt);
+    __gmpz_set_si(&lgInt[0], if (negativeX) x - nextX else nextX - x);
+    convertLongIntegerToLongIntegerRegister(&lgInt[0], REGISTER_Y);
+    addition[getRegisterDataType(REGISTER_X)][getRegisterDataType(REGISTER_Y)].?();
+    copySourceRegisterToDestRegister(REGISTER_Z, REGISTER_Y);
+    copySourceRegisterToDestRegister(REGISTER_X, REGISTER_Z);
+    __gmpz_set_si(&lgInt[0], if (negativeY) y - nextY else nextY - y);
+    convertLongIntegerToLongIntegerRegister(&lgInt[0], REGISTER_X);
+    addition[getRegisterDataType(REGISTER_X)][getRegisterDataType(REGISTER_Y)].?();
+    longIntegerFree(&lgInt);
+    copySourceRegisterToDestRegister(REGISTER_X, REGISTER_Y);
+    copySourceRegisterToDestRegister(REGISTER_Z, REGISTER_X);
+    copySourceRegisterToDestRegister(TEMP_REGISTER_1, REGISTER_Z);
 }
 
 pub export fn insertAlphaCursor(startAt: u16) callconv(.c) void {

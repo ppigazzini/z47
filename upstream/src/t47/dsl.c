@@ -945,6 +945,14 @@ static int nimCmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
     Jim_SetResultString(interp, "nim: missing string argument", -1);
     return JIM_ERR;
   }
+  if(temporaryInformation != TI_NO_INFO) {  // incoming digits clear the temporary information as processKeyAction does for a digit key; displayNim then caps the entry
+    if(SHOWMODE) {
+      closeShowMenu();
+    }
+    temporaryInformation = TI_NO_INFO;
+    screenUpdatingMode = SCRUPD_AUTO;
+    screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
+  }
   if(calcMode == CM_GRAPH) {  // incoming digits, change modes and go to the GRAPHS input page as the keyboard digit path does; addItemToNimBuffer opens NIM only from CM_NORMAL
     calcMode = CM_NORMAL;
     showSoftmenu(-MNU_GRAPHS);

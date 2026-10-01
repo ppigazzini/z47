@@ -1264,6 +1264,9 @@ void doSave(uint16_t saveType) {
         sprintf(tmpString, "firstGregorianDay\n%"          PRIu32 "\n",     firstGregorianDay);            save(tmpString, strlen(tmpString));
         sprintf(tmpString, "denMax\n%"                     PRIu32 "\n",     denMax);                       save(tmpString, strlen(tmpString));
         sprintf(tmpString, "graMod\n%"                     PRIu8  "\n",     graMod);                       save(tmpString, strlen(tmpString));
+        #if defined(OPTION_ATEXT_FONTS)
+          sprintf(tmpString, "graFont\n%"                    PRIu8  "\n",     graFont);                      save(tmpString, strlen(tmpString));
+        #endif // OPTION_ATEXT_FONTS
         sprintf(tmpString, "longPressFactor\n%"            PRId16 "\n",     longPressFactor);              save(tmpString, strlen(tmpString));
         sprintf(tmpString, "doublePressFactor\n%"          PRId16 "\n",     doublePressFactor);            save(tmpString, strlen(tmpString));
         sprintf(tmpString, "lastDenominator\n%"            PRIu32 "\n",     lastDenominator);              save(tmpString, strlen(tmpString));
@@ -2762,10 +2765,16 @@ int64_t stringToInt64(const char *str) {
           }
           else if(strcmp(aimBuffer, "graMod") == 0) {
             graMod = toUint8(tmpString);
-            if(graMod > 3) {
+            if(graMod > 4) {
               graMod = 0;
             }
           }
+          #if defined(OPTION_ATEXT_FONTS)
+            else if(strcmp(aimBuffer, "graFont") == 0) {
+              graFont = toUint8(tmpString);
+              graFontCheck();
+            }
+          #endif // OPTION_ATEXT_FONTS
           else if(strcmp(aimBuffer, "longPressFactor") == 0) {
             longPressFactor = toInt16(tmpString);
             if(longPressFactor < -6000 || longPressFactor > 5000) {

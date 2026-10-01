@@ -17,6 +17,7 @@
 const builtin = @import("builtin");
 const frontier_build_options = @import("frontier_build_options");
 const option_lp_dp_timing: bool = frontier_build_options.option_lp_dp_timing;
+const option_atext_fonts: bool = frontier_build_options.option_atext_fonts;
 
 const code_section = if (frontier_build_options.dmcp_build and frontier_build_options.old_hw)
     ".qspi_data"
@@ -213,6 +214,7 @@ const ITM_SCR: u16 = 2191;
 const ITM_DSP: u16 = 1573;
 const ITM_SET_ADM: u16 = 2764;
 const ITM_SET_GRAMOD: u16 = 2742;
+const ITM_SET_GRFNT: u16 = 1342;
 const ITM_SET_RM: u16 = 1325;
 const ITM_SET_42ALPHAX: u16 = 1327;
 // defines.h: the register layout regCtoKS translates through.
@@ -279,6 +281,7 @@ extern var timeDisplayFormatDigits: u8;
 extern var displayStackSHOIDISP: u8;
 extern var displayFormatDigits: u8;
 extern var graMod: u8;
+extern var graFont: u8;
 extern var exponentLimit: i16;
 extern var dispBase: u8;
 extern var significantDigits: u8;
@@ -851,6 +854,11 @@ pub export fn fnItemShowValue(item: i16) callconv(.c) i16 {
         ITM_DSP => result = displayFormatDigits,
         ITM_SET_ADM => result = @intCast(frontier_config.admValue()),
         ITM_SET_GRAMOD => result = graMod,
+        ITM_SET_GRFNT => if (option_atext_fonts) {
+            result = graFont;
+        } else if (notCoded(itemNr)) {
+            result = ITEM_NOT_CODED;
+        },
         // the factor in percent: 3 digits fit beside the label
         ITM_SET_LPFCT => if (option_lp_dp_timing) {
             result = @intCast(@divTrunc(10000 + @as(i32, longPressFactor), 100));

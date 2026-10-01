@@ -4138,7 +4138,7 @@ void fnKeyCC(uint16_t complex_Type) {    //JM Using 'unusedButMandatoryParameter
       addItemToNimBuffer(ITM_EXIT1);
     }    //JM Allow COMPLEX to be used from NIM
 
-    if(calcMode == CM_NORMAL || ((calcMode == CM_NIM) && (complex_Type == KEY_COMPLEX))) {      //JM
+    if(calcMode == CM_NORMAL || (GRAPHMODE && programRunStop == PGM_RUNNING) || ((calcMode == CM_NIM) && (complex_Type == KEY_COMPLEX))) {      //JM
 
       uint8_t sdataTypeX = getRegisterDataType(REGISTER_X);
       uint8_t sdataAtagX = getRegisterAngularMode(REGISTER_X);

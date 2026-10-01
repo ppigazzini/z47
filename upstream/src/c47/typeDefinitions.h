@@ -365,7 +365,7 @@ typedef struct {
   uint8_t        grpGroupingHex;                                           //  HEXGRP
   uint8_t        grpGroupingBin;                                           //  BINGRP
   uint8_t        graMod;                                                   //  GRAMOD
-  bool_t         compatibility_byte5;               //Spare Byte           //
+  uint8_t        graFont;                                                  //  GRFNT
   bool_t         compatibility_byte6;               //Spare Byte           //
   bool_t         compatibility_byte7;               //Spare Byte           //
   bool_t         compatibility_byte8;               //Spare Byte           //

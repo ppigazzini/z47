@@ -2369,7 +2369,7 @@ pub fn implementation(comptime runtime: type) type {
                 runtime.addItemToNimBuffer(runtime.ITM_EXIT1); // Allow COMPLEX from NIM
             }
 
-            if (runtime.calcMode == runtime.CM_NORMAL or (runtime.calcMode == runtime.CM_NIM and complex_type == key_complex)) {
+            if (runtime.calcMode == runtime.CM_NORMAL or (isGraphMode() and runtime.programRunStop == runtime.PGM_RUNNING) or (runtime.calcMode == runtime.CM_NIM and complex_type == key_complex)) {
                 var sdataTypeX: u8 = @intCast(runtime.getRegisterDataType(runtime.REGISTER_X));
                 var sdataAtagX: u8 = @intCast(runtime.getRegisterAngularMode(runtime.REGISTER_X));
                 var sdataTypeY: u8 = @intCast(runtime.getRegisterDataType(runtime.REGISTER_Y));

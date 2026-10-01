@@ -1,0 +1,85 @@
+@ ATEXT demonstration: strings at PIXEL positions, wrapping at the right edge, new line CR glyph, and the GRMOD modes.
+@ ATEXT takes the string from a register; X is the x-pixel and Y the y-pixel of the bottom left of the first line.
+@ Needs a build with OPTION_ATEXT. Run with XEQ 'ATEXTing'; PAUSE 99 at the end keeps the screen until a key is pressed, as SPIRALk does.
+; Jaco Mostert  ATEXT demonstration
+
+LBL 'ATEXTing'
+  # ATEXT examples
+
+  '123↵' STO 50  '456↵' STO 51  '789↵' STO 52  '012↵' STO 53  '345↵' STO 54
+  '678↵' STO 55  '901↵' STO 56  '234↵' STO 57  '567↵' STO 58  '890'  STO 59
+  CLLCD
+
+@ The ten texts are in R50 to R59, and R00 points to them: INCR 00, then ATEXT →00. The first starts at Y = 198 and X = 2, set here by hand.
+@ Each later text starts on the X and Y the previous ATEXT left after its CR glyph; adding 1 to 10 to Y raises each line by that many y-pixels.
+  49 STO 00 DROP𝑥  198  2
+  INCR 00  𝑥⇄𝑦 1 + 𝑥⇄𝑦  ATEXT →00
+  INCR 00  𝑥⇄𝑦 2 + 𝑥⇄𝑦  ATEXT →00
+  INCR 00  𝑥⇄𝑦 3 + 𝑥⇄𝑦  ATEXT →00
+  INCR 00  𝑥⇄𝑦 4 + 𝑥⇄𝑦  ATEXT →00
+  INCR 00  𝑥⇄𝑦 5 + 𝑥⇄𝑦  ATEXT →00
+  INCR 00  𝑥⇄𝑦 6 + 𝑥⇄𝑦  ATEXT →00
+  INCR 00  𝑥⇄𝑦 7 + 𝑥⇄𝑦  ATEXT →00
+  INCR 00  𝑥⇄𝑦 8 + 𝑥⇄𝑦  ATEXT →00
+  INCR 00  𝑥⇄𝑦 9 + 𝑥⇄𝑦  ATEXT →00
+  INCR 00  𝑥⇄𝑦 10 + 𝑥⇄𝑦  ATEXT →00
+
+  'Almost top left↵'    STO 00  218    2  ATEXT 00
+  'Almost top right'    STO 00  218  230  ATEXT 00
+  'Middle right'        STO 00  110  275  ATEXT 00
+  'Almost bottom left'  STO 00    2    2  ATEXT 00
+
+@ This text ends at x = 377. A text ending past x = 380 puts the next position one line down, and below the bottom line the next Y is 0.
+  'Almost bottom right' STO 00    2  200  ATEXT 00
+
+@ Starts at x = 250, so the text wraps back to x = 250 on the line below.
+  'Wrapping 12345678901234567'   STO 00  180  250  ATEXT 00
+
+@ The CR glyph is STD_CR forcing a new line at the same x.
+  'The CR glyph↵forces a line↵break like this' STO 00  80  90  ATEXT 00
+
+@ The second text starts at the X and Y the first one left; the program does not change them.
+  'ABC' STO 00  'Continued' STO 03  150  120  ATEXT 00  ATEXT 03
+
+@ GRMOD 0 to 3, one line each, all crossing one vertical black bar made by AGRAPH, so each mode shows on white and on black.
+@ 0 sets the glyph pixels, 1 clears the glyph box and sets them, 2 clears them, 3 flips them.
+@ The bar is 40 x-pixels wide from x = 300 and covers y = 29 to 100: a 64 bit column from y = 29 and an 8 bit column from y = 93.
+
+  0 GRMOD
+  -1  →INT 10 STO 01  29  300  XEQ 10
+  255 →INT 10 STO 01  93  300  XEQ 10
+
+@ 'GRMOD ' is always written in mode 1; the mode under test starts at its number and continues from the X and Y that ATEXT left.
+  '0: sets'   STO 03  'GRMOD ' STO 00  85  235  1 GRMOD DROP𝑥  ATEXT 00  0 GRMOD DROP𝑥  ATEXT 03
+  '1: box'    STO 03  'GRMOD ' STO 00  65  235  1 GRMOD DROP𝑥  ATEXT 00  1 GRMOD DROP𝑥  ATEXT 03
+  '2: clears' STO 03  'GRMOD ' STO 00  45  235  1 GRMOD DROP𝑥  ATEXT 00  2 GRMOD DROP𝑥  ATEXT 03
+  '3: flips'  STO 03  'GRMOD ' STO 00  25  235  1 GRMOD DROP𝑥  ATEXT 00  3 GRMOD DROP𝑥  ATEXT 03
+  0 GRMOD
+
+@ Check the top and bottom out of range non-error
+
+  'A' STO 00 220 100 ATEXT 00
+  1 20 1 FOR 'aa'
+    ATEXT 00 𝑥⇄𝑦 1 + 𝑥⇄𝑦
+  NEXT 'aa'
+
+  'V' STO 00 20 100 ATEXT 00
+  1 30 1 FOR 'aa'
+    ATEXT 00 𝑥⇄𝑦 1 - 𝑥⇄𝑦
+  NEXT 'aa'
+
+
+  # Waits for a key
+  PAUSE 99
+RTN
+
+@ 40 columns of the bit pattern in R01 from the X and Y position; AGRAPH steps X by one per column.
+LBL 10
+  # Black bar
+  40 STO 02 DROP𝑥
+  LBL 11
+    AGRAPH 01
+    DSE 02
+    GTO 11
+RTN
+END

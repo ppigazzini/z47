@@ -591,6 +591,9 @@ int16_t fnItemShowValue(int16_t item) {
 //    case ITM_GET_ADM:
     case ITM_SET_ADM:   result = admValue();                                        break;
     case ITM_SET_GRAMOD: result = graMod;                                          break;
+  #if defined(OPTION_ATEXT_FONTS)
+    case ITM_SET_GRFNT: result = graFont;                                         break;
+  #endif // OPTION_ATEXT_FONTS
   #if defined(OPTION_LP_DP_TIMING)
     case ITM_SET_LPFCT: result = (10000 + longPressFactor) / 100;                   break;  // factor in percent: 3 digits fit beside the label
     case ITM_SET_DPFCT: result = (10000 + doublePressFactor) / 100;                 break;

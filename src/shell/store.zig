@@ -163,6 +163,7 @@ extern var grpGroupingRight: u8;
 extern var grpGroupingHex: u8;
 extern var grpGroupingBin: u8;
 extern var graMod: u8;
+extern var graFont: u8;
 extern var currentAngularMode: angularMode_t;
 extern var lrSelection: u16;
 extern var lrChosen: u16;
@@ -694,7 +695,6 @@ pub export fn fnStoreConfig(regist: u16) callconv(.c) void {
     const compatibility_int1: i16 = 0;
     const compatibility_byte00: bool = false;
     const compatibility_byte1: u8 = 0;
-    const compatibility_byte5: bool = false;
     const compatibility_byte6: bool = false;
     const compatibility_byte7: bool = false;
     const compatibility_byte8: bool = false;
@@ -775,7 +775,7 @@ pub export fn fnStoreConfig(regist: u16) callconv(.c) void {
     configToStore.grpGroupingHex = grpGroupingHex;
     configToStore.grpGroupingBin = grpGroupingBin;
     configToStore.graMod = graMod;
-    configToStore.compatibility_byte5 = compatibility_byte5;
+    configToStore.graFont = graFont;
     configToStore.compatibility_byte6 = compatibility_byte6;
     configToStore.compatibility_byte7 = compatibility_byte7;
     configToStore.compatibility_byte8 = compatibility_byte8;

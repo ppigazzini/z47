@@ -1526,16 +1526,16 @@
    "6"
   ],
   "1340": [
-   "&itemToBeCoded",
-   "9876"
+   "if (option_atext) ext_fnAText else &itemToBeCoded",
+   "if (option_atext) 10003 else 9876"
   ],
   "1341": [
-   "&itemToBeCoded",
+   "if (option_atext_fonts) ext_fnGetGRFNT else &itemToBeCoded",
    "9876"
   ],
   "1342": [
-   "&itemToBeCoded",
-   "9876"
+   "if (option_atext_fonts) ext_fnSetGRFNT else &itemToBeCoded",
+   "100"
   ],
   "1343": [
    "&itemToBeCoded",

@@ -68,26 +68,50 @@ variables:
 # is a document in a file of its own. Under one gate over both trees a
 # note changing a line would build the 260 page book, and that is the
 # trigger the split is here to avoid.
+#
+# The manual's gate is what the build reads and nothing else. `make pdf'
+# is latexmk over docs/manual/tex and then the crop, so a file the
+# document never opens cannot change a page of it: docs/manual/*.md, and
+# docs/manual/tools/ with the checkers, which no job here runs, are out,
+# and so is docs/refdb47/, whose data reaches the manual only through a
+# local `make refdb47-data' that writes a file the repository has not
+# got.
 .docs-manual-changes: &docs-manual-changes
-  - docs/manual/**/*
+  # The document: the chapters, figures/, the program listings, the four
+  # menu images and .latexmkrc.
+  - docs/manual/tex/**/*
+  # latexmk's flags, TEXINPUTS, C47_FONT_DIR, the paper, the crop.
+  - docs/manual/Makefile
   - docs/styles/**/*
+  # The calculator's own faces, which the document opens by name through
+  # C47_FONT_DIR. A changed glyph changes every key the manual prints.
+  # `res/**/*' in the firmware list above is a gate for other jobs.
+  - res/fonts/**/*
+  # pdfcrop-uniform.py sets the page of the crop, ci-diff.sh and
+  # latexdiff-build.py write the marked-up build.
   - docs/tools/**/*
-  - docs/refdb47/data/**/*
-  # The checkers the manual's own targets call. A change here can turn a
-  # clean document into a failing one, or the reverse, without a line of
-  # the document moving, so the job has to run on it. `tools/**/*` in the
-  # firmware list above is the top-level directory and does not cover it.
-  - docs/refdb47/tools/**/*
   - .gitlab-ci.yml
   - .gitlab/ci/**/*
 
-# A note is built from its own .ltx and the marked-up build shows what
-# that file changed, so the file is the gate. The shared styles are in
-# the manual's list above and are not in this one: a style change leaves
-# every note source as it was, and a diff of a file against itself is an
-# unmarked copy of the note.
+# A note is built from its own source and the marked-up build shows what
+# that source changed, so the source is the gate. The shared styles are
+# in the manual's list above and are not in this one: a style change
+# leaves every note source as it was, and a diff of a file against itself
+# is an unmarked copy of the note. The screens and the program listings
+# are out for the same reason, since latexdiff marks text.
 .docs-appnotes-changes: &docs-appnotes-changes
   - docs/appnotes/sources/**/*.ltx
+  # A note's own .tex, such as AN0007's revblock.tex, which the Internal
+  # Notes includes with \input. *.ltx above does not match it, and ci-diff.sh
+  # builds the note that includes it.
+  - docs/appnotes/sources/**/*.tex
+  # The build scripts, the marked-up build's own machinery and this file.
+  # Where one of them changes and no note does, ci-diff.sh builds one note
+  # to try the note path, which is not the manual path.
+  - docs/appnotes/sources/build-note-*.sh
+  - docs/tools/**/*
+  - .gitlab-ci.yml
+  - .gitlab/ci/**/*
 
 macOS:
   stage: build
@@ -234,9 +258,10 @@ docs-manual:
     paths:
       - docs/manual/C47_R47_calc.pdf
       - docs/manual/C47_R47_calc_Crop.pdf
-      # Written on a branch and in a merge request. A release tag has
-      # nothing to compare against, so this one is not there and the job
-      # says so rather than failing.
+      # Written in a merge request, on a branch, and on the default
+      # branch, where the comparison is the revision before the push. A
+      # release tag has no predecessor in the clone, so there this file
+      # is missing and the job reports that rather than failing.
       - docs/manual/C47_R47_calc_Diff_Crop.pdf
   tags:
     - saas-linux-small-amd64

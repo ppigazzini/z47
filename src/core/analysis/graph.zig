@@ -187,6 +187,7 @@ const FLAG_PLINE: c_int = 0x8051;
 const FLAG_PLINE_U: c_uint = 0x8051;
 
 const ITM_RAD: i16 = 1557;
+const ITM_STO: i16 = 44;
 
 const SOLVER_STATUS_READY_TO_EXECUTE: u16 = 0x0001;
 const SOLVER_STATUS_RPN_GRAPHER: u16 = 0x4000;
@@ -314,6 +315,8 @@ extern fn errorMessageOf(errorCode: u8) [*c]const u8;
 // Function externs (resolve at the final link; plotstat.c is still C)
 // ---------------------------------------------------------------------------
 extern fn fnStore(r: u16) void;
+extern fn reallyRunFunction(func: i16, param: u16) void;
+extern fn fnFillStack(unusedButMandatoryParameter: u16) void;
 extern fn fnRCL(inp: i16) void;
 extern fn adjustResult(res: calcRegister_t, dropY: bool, setCpxRes: bool, errorReg: calcRegister_t, op1: calcRegister_t, op2: calcRegister_t) void;
 extern fn findNamedVariable(variableName: [*c]const u8) calcRegister_t;
@@ -601,15 +604,22 @@ fn execute_rpn_function() void {
         fnStore(@bitCast(regStats)); // place X register into x
 
         if ((currentSolverStatus & SOLVER_STATUS_RPN_GRAPHER) != 0) {
-            // RPN grapher: run the program over the plot variable at this sample.
-            var xReal: real_t = undefined;
-            var resReal: real_t = undefined;
-            real34ToReal(reg34(REGISTER_X), &xReal);
-            solve_owned._executeSolverReal(@bitCast(currentSolverVariable), &xReal, &resReal, null);
-            // The program is free to leave any type in X, so the sample is written back
-            // through a real34 X, not into whatever data area the last step left there.
-            reallocateRegister(REGISTER_X, dtReal34, 0, amNoneU);
-            realToReal34(&resReal, reg34(REGISTER_X));
+            // RPN grapher: run the program over the plot variable at this sample. A
+            // complex result stays typed so it reaches the plotter; any other type
+            // becomes real34, NaN where it has no real value.
+            reallyRunFunction(ITM_STO, currentSolverVariable);
+            fnFillStack(NOPARAM);
+            solve_owned.execSolverProgram();
+            if (getRegisterDataType(REGISTER_X) != dtComplex34) {
+                var res34: real34_t = undefined;
+                if (!runtime.getRegisterAsReal34Quiet(REGISTER_X, &res34)) {
+                    var nanR: real_t = undefined;
+                    realSetNaN(&nanR);
+                    realToReal34(&nanR, &res34);
+                }
+                reallocateRegister(REGISTER_X, dtReal34, 0, amNoneU);
+                reg34(REGISTER_X).* = res34;
+            }
         } else {
             equation.parseEquation(currentFormula, EQUATION_PARSER_XEQ, tmpString, tmpString + AIM_BUFFER_LENGTH);
         }

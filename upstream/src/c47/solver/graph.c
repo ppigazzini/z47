@@ -94,17 +94,27 @@ uint8_t DXR = 0, DYR = 0, DXI = 0, DYI = 0;
                                     #endif //VERBOSE_SOLVER0
 
     if(currentSolverStatus & SOLVER_STATUS_RPN_GRAPHER) {
-      real_t xReal, resReal;
-      real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &xReal);
-                                    #if defined(GRAPHDEBUG_MIN)
-                                      printRealToConsole(&xReal,"xReal:"," ==> ");
-                                    #endif //GRAPHDEBUG_MIN
-      _executeSolverReal(currentSolverVariable, &xReal, &resReal, NULL);
-                                    #if defined(GRAPHDEBUG_MIN)
-                                      printRealToConsole(&resReal,"resReal:","\n");
-                                    #endif //GRAPHDEBUG_MIN
-      reallocateRegister(REGISTER_X, dtReal34, 0, amNone);   // a program may leave any type in X;
-      realToReal34(&resReal, REGISTER_REAL34_DATA(REGISTER_X));
+      // a complex program result stays typed so it reaches the plotter; any other type becomes real34, NaN where it has no real value
+      reallyRunFunction(ITM_STO, currentSolverVariable);
+      fnFillStack(NOPARAM);
+      {
+        uint16_t savedCurrentSolverProgram = currentSolverProgram;
+        uint16_t savedCurrentSolverVariable = currentSolverVariable;
+        uint16_t savedCurrentSolverStatus = currentSolverStatus;
+        dynamicMenuItem = -1;
+        execProgram(currentSolverProgram + FIRST_LABEL);
+        currentSolverProgram = savedCurrentSolverProgram;
+        currentSolverVariable = savedCurrentSolverVariable;
+        currentSolverStatus = savedCurrentSolverStatus;
+      }
+      if(getRegisterDataType(REGISTER_X) != dtComplex34) {
+        real34_t res34;
+        if(!getRegisterAsReal34Quiet(REGISTER_X, &res34)) {
+          realToReal34(const_NaN, &res34);
+        }
+        reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+        real34Copy(&res34, REGISTER_REAL34_DATA(REGISTER_X));
+      }
     } else {
       parseEquation(currentFormula, EQUATION_PARSER_XEQ, tmpString, tmpString + AIM_BUFFER_LENGTH);
     }

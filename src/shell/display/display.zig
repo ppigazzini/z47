@@ -1179,8 +1179,9 @@ fn real34ToDisplayString2(real34_in: *align(1) const real34_t, displayString: [*
     // real34 is passed const but the 2TO10/UN path mutates *real34 then restores it.
     const real34: *align(1) real34_t = @constCast(real34_in);
     const exponentUNlimit1024max: i32 = if (getSystemFlag(FLAG_PFX_ALL) != 0) 7 else 5;
-    // SIG0: when set, DF_SF keeps trailing significant zeros (and rounds at the
-    // sig boundary); when clear, no trailing zeros are emitted. (defines.h FLAG_SIGZEROS)
+    // TRL0: when set, DF_SF and DF_ALL keep trailing significant zeros (and DF_SF
+    // rounds at the sig boundary); when clear, no trailing zeros are emitted.
+    // (defines.h FLAG_SIGZEROS)
     const forceSigZeroes: bool = getSystemFlag(FLAG_SIGZEROS) != 0;
 
     var charIndex: u8 = undefined;
@@ -1312,7 +1313,7 @@ fn real34ToDisplayString2(real34_in: *align(1) const real34_t, displayString: [*
                     while (tmpString100[@intCast(ii)] == '0') {
                         ii += 1;
                     }
-                    // SIG0 clear keeps full precision for the FIX stage to round; only SIG0 set truncates here.
+                    // TRL0 clear keeps full precision for the FIX stage to round; only TRL0 set truncates here.
                     if (tmpString100[@intCast(ii)] != 0 and forceSigZeroes) {
                         // Hold the sum wide and clamp it to the terminator:
                         // displayFormatDigits is not bounded by the digits present,
@@ -1500,7 +1501,7 @@ fn real34ToDisplayString2(real34_in: *align(1) const real34_t, displayString: [*
                 numDigits = 1;
                 exponent += 1;
             }
-            while (numDigits > 1 and bcd[@intCast(lastDigit)] == 0) {
+            while (!forceSigZeroes and numDigits > 1 and bcd[@intCast(lastDigit)] == 0) {
                 lastDigit -= 1;
                 numDigits -= 1;
             }
@@ -1835,7 +1836,7 @@ fn real34ToDisplayString2(real34_in: *align(1) const real34_t, displayString: [*
             digitsToDisplay = displayFormatDigits;
             digitToRound = @intCast(minI(firstDigit + @as(i16, displayFormatDigits), lastDigit));
         }
-        emitSciDigits(bcd, firstDigit, lastDigit, numDigits, exponent, @intFromBool(sign != 0), digitToRound, digitsToDisplay, frontSpace, if (displayFormat == DF_SF and !forceSigZeroes) STRIP_TRAILING_ZEROS else KEEP_TRAILING_ZEROS, displayString);
+        emitSciDigits(bcd, firstDigit, lastDigit, numDigits, exponent, @intFromBool(sign != 0), digitToRound, digitsToDisplay, frontSpace, if ((displayFormat == DF_SF or displayFormat == DF_ALL) and !forceSigZeroes) STRIP_TRAILING_ZEROS else KEEP_TRAILING_ZEROS, displayString);
         return;
     }
 
@@ -1864,9 +1865,9 @@ fn real34ToDisplayString2(real34_in: *align(1) const real34_t, displayString: [*
             exponent += 1;
         }
 
-        // SIG no-zero: clamp to the significant digits (ignore noise past numDigits),
-        // then drop trailing zeros left by the value or by rounding.
-        if (displayFormat == DF_SF and !forceSigZeroes) {
+        // SIG and ALL without TRL0: clamp to the significant digits (ignore noise
+        // past numDigits), then drop trailing zeros left by the value or by rounding.
+        if ((displayFormat == DF_SF or displayFormat == DF_ALL) and !forceSigZeroes) {
             if (digitsToDisplay > numDigits - 1) {
                 digitsToDisplay = numDigits - 1;
             }
@@ -3114,7 +3115,8 @@ pub export fn longIntegerToDisplayString(lgInt: [*c]mpz_struct, displayString: [
         }
         exponentString[0] = 0;
         exponentToDisplayString(tenExponent, &exponentString, null, 0);
-        while (frontier_char_string.stringWidth(displayString, if (allowLARGELI != 0 and getSystemFlag(FLAG_LARGELI) != 0) &numericFont else &standardFont, false, true) + frontier_char_string.stringWidth(&exponentString, if (allowLARGELI != 0 and getSystemFlag(FLAG_LARGELI) != 0) &numericFont else &standardFont, true, false) > maxWidth) {
+        // The cut stops at the first digit group when no width is left for it.
+        while (lastChar > stringStep and frontier_char_string.stringWidth(displayString, if (allowLARGELI != 0 and getSystemFlag(FLAG_LARGELI) != 0) &numericFont else &standardFont, false, true) + frontier_char_string.stringWidth(&exponentString, if (allowLARGELI != 0 and getSystemFlag(FLAG_LARGELI) != 0) &numericFont else &standardFont, true, false) > maxWidth) {
             lastChar -= stringStep;
             tenExponent += exponentStep;
             lastRemovedDigit = displayString[@intCast(lastChar + (if (sl[1] == 1) @as(i16, 1) else 2))];

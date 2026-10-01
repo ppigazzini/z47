@@ -98,6 +98,8 @@ ALLOWED: dict[str, str] = {
     "option_tvm_amort": "OPTION_TVM_AMORT",
     "option_mx_show": "OPTION_MX_SHOW",
     "option_lp_dp_timing": "OPTION_LP_DP_TIMING",
+    "option_atext": "OPTION_ATEXT",
+    "option_atext_fonts": "OPTION_ATEXT_FONTS",
     "library_fn_base": "the DMCP ROM function-table base, which moves with the XIP packaging",
     "wp34s_mod_small_buffers": "WP34S_MOD_SMALL_BUFFERS",
     "is_testsuite_build": "TESTSUITE_BUILD -- c43 uses it itself (random.c seeds 0xDeadBeef under it)",

@@ -46,3 +46,9 @@ Demonstration programs included in C47 distro
 14.  HNSKEW.txt    HNSKEW.p47     Skewed-histogram HNORM test: the window follows the fitted Gauss, peak and both tails on screen
 
 15.  FFX.txt       FFX.p47         New: extreme-scaled exponential e^(x*1E50 - 1) over MVAR x; plot and solve stress test at tiny x magnitudes in the range of -10E-50 to 10E-50
+
+16.  ATEXTing.txt  ATEXTing.p47    ATEXT demonstration: texts at five screen positions, ten texts from R50 to R59 through the pointer in R00, each
+                                   starting at the X and Y the previous ATEXT left, one wrapping at the right edge, one broken by the CR glyph,
+                                   and GRMOD 0 to 3 on white and on a black bar
+
+17.  GRFNTS.txt    GRFNTS.p47      GRFNT demonstration: every ATEXT font code, 10 to 41, each line written in a different font, and GRMOD 4 showing inverse text

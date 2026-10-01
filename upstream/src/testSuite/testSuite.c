@@ -3477,7 +3477,7 @@ void setParameter(char *p) {
           setSystemFlag(FLAG_ENDPMT);
         }
       }
-      // Generic fallback: resolve any system flag by its CAT_SYFL catalog name (e.g. SIG0, ENGOVR, FRACT), as dslParseFlagArg does
+      // Generic fallback: resolve any system flag by its CAT_SYFL catalog name (e.g. TRL0, ENGOVR, FRACT), as dslParseFlagArg does
       else {
         bool_t found = false;
         for(int16_t i = 0; i < LAST_ITEM; i++) {

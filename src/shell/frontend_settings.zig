@@ -12,7 +12,7 @@ const SETTING_SINT_MODE: c_int = 0x0083;
 
 const TI_VERSION: u8 = 10;
 const TI_WHO: u8 = 11;
-const TI_ROUNDING_MODE: u8 = 148;
+const TI_ROUNDING_MODE_ONLY: u8 = 149; // X line blanked
 
 const CM_CONFIRMATION: u8 = 11;
 
@@ -129,7 +129,7 @@ fn applyVersion() void {
 
 fn applyRounding(value: u16) void {
     roundingMode = @truncate(value);
-    temporaryInformation = TI_ROUNDING_MODE;
+    temporaryInformation = TI_ROUNDING_MODE_ONLY; // a mode key of RMODE sets the mode outright, so the X content is not part of the reading
 }
 
 fn applySignificantDigits(value: u16) void {

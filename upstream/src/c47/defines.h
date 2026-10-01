@@ -61,6 +61,8 @@
 #define OPTION_SLVQ_SLVC               //                   // SLVQ, SLVC quadratic and cubic roots
 #define OPTION_SLVP_POLY               //                   // SLVP general polynomial roots (companion matrix through the EIGEN QR solver; requires OPTION_EIGEN)
 #define OPTION_INFSUMS                 // TEMPORARY         // Infinity sum with the early stop; the plain programmable sum and product stay
+#define OPTION_ATEXT                   //                   // ATEXT: the string in a register, displayed from the PIXEL position
+#define OPTION_ATEXT_FONTS             //                   // GRFNT, GRFNT#: the ATEXT font (requires OPTION_ATEXT)
 #define OPTION_LP_DP_TIMING            //                   // LP%, DP% long press and double press timing in percent
 #define OPTION_ELLIPTIC                //                   // Elliptic functions
 #define OPTION_BESSEL                  //                   // Bessel functions
@@ -286,6 +288,8 @@
             #undef  OPTION_VECTOR        // ✓ 13672 bytes // Vector 12952 saving if ELEC is not in; 9568 saving if ELEC is in
             #undef  OPTION_SLVP_POLY     // ✓  2024 bytes // SLVP general polynomial roots (companion matrix through the EIGEN QR solver)
             #undef  OPTION_INFSUMS       // ?   400 bytes // Infinity sum with the early stop; the plain programmable sum and product stay
+            #undef  OPTION_ATEXT         // ✓   504 bytes // ATEXT: the string in a register, displayed from the PIXEL position
+            #undef  OPTION_ATEXT_FONTS   // ✓   592 bytes // GRFNT, GRFNT#: the ATEXT font
             #undef  OPTION_LP_DP_TIMING  // ✓   296 bytes // LP%, DP% long press and double press timing in percent
             #undef  OPTION_STRUCTURED_PGM// ✓  5873 bytes // The DM42 can include STRUCT at 10 nesting levels, 4 FOR loops, and 10 IF, 10 DO and 10 REPEAT numbers
             #undef  OPTION_ALGDEP        // ✓  3896 bytes // Without x->POLY, V->SUM=0 algebraic number identification
@@ -301,6 +305,11 @@
 #if !defined(OPTION_PRIME)
   #undef OPTION_FACTOR
 #endif
+
+// OPTION_ATEXT_FONTS (GRFNT) selects the font ATEXT displays with, and is undefined without OPTION_ATEXT
+#if !defined(OPTION_ATEXT)
+  #undef OPTION_ATEXT_FONTS
+#endif // !OPTION_ATEXT
 
 // OPTION_SLVP_POLY (polynomial roots) requires OPTION_EIGEN (it feeds the companion matrix to the QR eigensolver): never leave SLVP on without EIGEN
 // OPTION_EIGEN_159 is the eigen 159 digit path: without EIGEN its only callers go, leaving solveQuadraticEquation159 and solveCubicEquation159 in flash unused
@@ -1962,7 +1971,12 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TI_DERIV_STEP                            145
 
 #define TI_ALGDEP_POLY                           147
-#define TI_ROUNDING_MODE                         148
+#define TI_ROUNDING_MODE                         148  // X prefixed
+#define TI_ROUNDING_MODE_ONLY                    149  // X line blanked
+#define TI_GRMOD                                 150  // X prefixed
+#define TI_GRFNT                                 151  // X prefixed
+#define TI_LPFCT                                 152  // X prefixed
+#define TI_DPFCT                                 153  // X prefixed
 
 #define SET_TI_TRUE_FALSE(condition)               do { temporaryInformation = TI_FALSE + (condition); } while(0) // TI_TRUE must be TI_FALSE + 1
 

@@ -151,6 +151,16 @@ pub const RuntimeObjectOptions = struct {
     // itemToBeCoded and carry CAT_NONE, and every timer keeps its nominal delay.
     // Same block again, so the same per-target answer. Defaults true (host).
     option_lp_dp_timing: bool = true,
+    // OPTION_ATEXT gates ATEXT, which draws the string in a register from the
+    // PIXEL position, and the GRMOD pixel operation that string drawing takes on
+    // while ATEXT runs. Same block again, so the same per-target answer. Defaults
+    // true (host).
+    option_atext: bool = true,
+    // OPTION_ATEXT_FONTS gates GRFNT and GRFNT#, the font ATEXT draws with, and the
+    // graFont setting they hold: its TI line, its config, state-file and backup
+    // round trips. Same block again. defines.h undefines it without OPTION_ATEXT,
+    // and addBuildOptions applies that rule. Defaults true (host).
+    option_atext_fonts: bool = true,
 };
 
 fn manifestContainsPath(manifest: []const u8, needle: []const u8) bool {
@@ -258,6 +268,8 @@ pub fn addBuildOptions(
     build_options.addOption(bool, "option_tvm_amort", options.option_tvm_amort);
     build_options.addOption(bool, "option_mx_show", options.option_mx_show);
     build_options.addOption(bool, "option_lp_dp_timing", options.option_lp_dp_timing);
+    build_options.addOption(bool, "option_atext", options.option_atext);
+    build_options.addOption(bool, "option_atext_fonts", options.option_atext_fonts and options.option_atext);
     // Passed in by whoever also hands the C sources -DTESTSUITE_BUILD, so the Zig
     // owners and the C half of the same executable agree on which build this is:
     // fnSNAP freezes the clock the date/time formatters read, and RESET loads the

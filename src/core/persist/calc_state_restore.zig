@@ -27,6 +27,7 @@ const progmem = @import("calc_state_progmem.zig");
 const build_options = @import("calc_state_build_options");
 
 const state_old_hw: bool = build_options.state_old_hw;
+const option_atext_fonts: bool = build_options.option_atext_fonts;
 fn geometry() progmem.Geometry {
     return .{
         .ram_base = @intFromPtr(ram),
@@ -595,6 +596,8 @@ pub export fn convertOldMenuNumbers() callconv(.c) void {
 // --- OTHER_CONFIGURATION_STUFF scalars ---
 extern var firstGregorianDay: u32;
 extern var graMod: u8;
+extern var graFont: u8;
+extern fn graFontCheck() void; // screen.zig: a GRFNT code missing from the font table becomes 20
 extern var longPressFactor: i16;
 extern var doublePressFactor: i16;
 extern var denMax: u32;
@@ -1422,7 +1425,10 @@ fn applyConfigField(loaded_version: u32, allow_user_keys: bool, saved_calc_model
         firstGregorianDay = text.toUint32(tmpString);
     } else if (cmpName(ab, "graMod")) {
         graMod = text.toUint8(tmpString);
-        if (graMod > 3) graMod = 0;
+        if (graMod > 4) graMod = 0;
+    } else if (option_atext_fonts and cmpName(ab, "graFont")) {
+        graFont = text.toUint8(tmpString);
+        graFontCheck();
     } else if (cmpName(ab, "longPressFactor")) {
         longPressFactor = text.toInt16(tmpString);
         if (longPressFactor < -6000 or longPressFactor > 5000) longPressFactor = 0;

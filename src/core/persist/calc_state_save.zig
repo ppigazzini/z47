@@ -23,6 +23,7 @@ const progmem = @import("calc_state_progmem.zig");
 const build_options = @import("calc_state_build_options");
 
 const state_old_hw: bool = build_options.state_old_hw;
+const option_atext_fonts: bool = build_options.option_atext_fonts;
 
 const USER_R47: u16 = 66;
 const calc_model_user_id: u16 = build_options.calc_model_user_id;
@@ -119,6 +120,7 @@ extern var pcg32_global: pcg32_random_t;
 // --- OTHER_CONFIGURATION_STUFF scalars ---
 extern var firstGregorianDay: u32;
 extern var graMod: u8;
+extern var graFont: u8;
 extern var longPressFactor: i16;
 extern var doublePressFactor: i16;
 extern var alphaRegister: u16;
@@ -455,6 +457,9 @@ pub fn writeSaveSections() void {
     saveField("firstGregorianDay", "%u\n", .{cu(firstGregorianDay)});
     saveField("denMax", "%u\n", .{cu(denMax)});
     saveField("graMod", "%u\n", .{cu(graMod)});
+    if (comptime option_atext_fonts) {
+        saveField("graFont", "%u\n", .{cu(graFont)});
+    }
     saveField("longPressFactor", "%d\n", .{ci(longPressFactor)});
     saveField("doublePressFactor", "%d\n", .{ci(doublePressFactor)});
     saveField("lastDenominator", "%u\n", .{cu(lastDenominator)});

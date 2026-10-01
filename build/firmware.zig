@@ -199,6 +199,8 @@ fn frontierDistributionStrip(base: frontier.RuntimeObjectOptions, dmcp_package: 
     opts.option_algdep = false; // !OPTION_ALGDEP: x->POLY and V->SUM=0 bind itemToBeCoded, leave the POLY menu and are struck out
     opts.option_mx_show = false; // !OPTION_MX_SHOW: SHOW draws 9 matrix rows in ALL at 15 digits, with no rolled out or laid flat page
     opts.option_lp_dp_timing = false; // !OPTION_LP_DP_TIMING: LP% and DP% bind itemToBeCoded and the press timeouts keep their nominal delay
+    opts.option_atext = false; // !OPTION_ATEXT: ATEXT binds itemToBeCoded and string drawing ignores GRMOD
+    opts.option_atext_fonts = false; // !OPTION_ATEXT_FONTS: GRFNT and GRFNT# bind itemToBeCoded and graFont is never read
     const pkg = dmcp_package orelse return opts;
     // Each strip_* below is the inverse of the matching upstream OPTION_*, which
     // is an include flag: defined means the feature is compiled in, and its
@@ -284,6 +286,8 @@ fn calcStateBoardOptions(base: calc_state.RuntimeObjectOptions) calc_state.Runti
     // !OPTION_STRUCTURED_PGM: backup.cfg carries no forLoopTable block, and a
     // load has no running FOR structure to clear.
     opts.option_structured_pgm = false;
+    // !OPTION_ATEXT_FONTS: neither file carries graFont.
+    opts.option_atext_fonts = false;
     return opts;
 }
 
