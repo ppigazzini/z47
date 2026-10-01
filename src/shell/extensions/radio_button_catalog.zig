@@ -809,6 +809,12 @@ pub export fn fnRefreshState() callconv(.c) void {
 // ===========================================================================
 // fnItemShowValue
 // ===========================================================================
+/// The default case of fnItemShowValue, which an item also reaches when an
+/// OPTION_* compiles its own case out.
+fn notCoded(itemNr: u16) bool {
+    return indexOfItems[itemNr].func == &frontier_items.itemToBeCoded;
+}
+
 pub export fn fnItemShowValue(item: i16) callconv(.c) i16 {
     var result: i16 = NOVAL;
     const itemNr: u16 = @intCast(@max(item, -%item));
@@ -848,9 +854,13 @@ pub export fn fnItemShowValue(item: i16) callconv(.c) i16 {
         // the factor in percent: 3 digits fit beside the label
         ITM_SET_LPFCT => if (option_lp_dp_timing) {
             result = @intCast(@divTrunc(10000 + @as(i32, longPressFactor), 100));
+        } else if (notCoded(itemNr)) {
+            result = ITEM_NOT_CODED;
         },
         ITM_SET_DPFCT => if (option_lp_dp_timing) {
             result = @intCast(@divTrunc(10000 + @as(i32, doublePressFactor), 100));
+        } else if (notCoded(itemNr)) {
+            result = ITEM_NOT_CODED;
         },
         ITM_SET_ISM => result = shortIntegerModeValue(),
         ITM_SET_REALDF => result = displayFormat,
@@ -868,7 +878,7 @@ pub export fn fnItemShowValue(item: i16) callconv(.c) i16 {
         ITM_VOL, ITM_VOLPLUS, ITM_VOLMINUS => result = @intCast(getBeepVolume()),
         ITM_PRINTERDLAY => result = @intCast(printerState.delay),
         ITM_SET_42ALPHA, ITM_SET_42ALPHAX => result = regCtoKS(@bitCast(alphaRegister)),
-        else => if (indexOfItems[itemNr].func == &frontier_items.itemToBeCoded) {
+        else => if (notCoded(itemNr)) {
             result = ITEM_NOT_CODED;
         },
     }
