@@ -82,7 +82,7 @@ at all, each declared in `.github/project/imported-tree-divergences.txt`.
 
 Prerequisites, none of which the build vendors:
 
-- **Zig `0.16.0`** — pinned, with the CI toolchain, in `.github/zig-toolchain.env`.
+- **Zig `0.17.0`** — pinned, with the CI toolchain, in `.github/zig-toolchain.env`.
 - **Host simulator:** GTK 3, GMP, FreeType 2, and optionally PulseAudio, as
   system libraries found through `pkg-config`.
 - **Firmware:** `arm-none-eabi-gcc`, plus the two SwissMicros SDK submodules —

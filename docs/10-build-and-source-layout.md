@@ -214,9 +214,9 @@ full set.
 
 Checked-in build defaults come from these tracked files:
 
-- `../.github/zig-toolchain.env`: pins Zig `0.16.0` (plus the audited Zig master
-  snapshot used by the non-blocking compatibility lane and the setup-zig action
-  ref)
+- `../.github/zig-toolchain.env`: pins the stable Zig release (plus the audited
+  Zig master snapshot used by the non-blocking compatibility lane and the
+  setup-zig action ref)
 - `../.github/project/upstream-pin.env`: pins the imported upstream commit,
   repository URL, branch, and the imported upstream root
   (`UPSTREAM_ROOT=upstream`)

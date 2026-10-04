@@ -85,14 +85,14 @@ fn compareTypeError(regist: runtime.calcRegister_t) void {
 }
 
 fn compareResultToTemporaryInformation(result: i32, mode: Mode) void {
-    const mode_bits = @intFromEnum(mode);
+    const mode_bits = @backingInt(mode);
 
     if (result < 0) {
-        runtime.setTemporaryInformation((mode_bits & @intFromEnum(Mode.less_than)) != 0);
+        runtime.setTemporaryInformation((mode_bits & @backingInt(Mode.less_than)) != 0);
     } else if (result > 0) {
-        runtime.setTemporaryInformation((mode_bits & @intFromEnum(Mode.greater_than)) != 0);
+        runtime.setTemporaryInformation((mode_bits & @backingInt(Mode.greater_than)) != 0);
     } else {
-        runtime.setTemporaryInformation((mode_bits & @intFromEnum(Mode.equal)) != 0);
+        runtime.setTemporaryInformation((mode_bits & @backingInt(Mode.equal)) != 0);
     }
 }
 

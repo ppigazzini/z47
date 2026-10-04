@@ -347,7 +347,7 @@ pub export fn fnDeleteBackup(confirmation: u16) void {
         const result = remove(SAVE_DIR ++ "/" ++ SAVE_FILE);
         if (result == -1) {
             const e: c_int = errnoLocation().*;
-            if (e != @intFromEnum(std.c.E.NOENT)) {
+            if (e != @backingInt(std.c.E.NOENT)) {
                 displayCalcErrorMessage(ERROR_IO, ERR_REGISTER_LINE);
                 if (comptime calc_state_build_options.extra_info_on_calc_error) {
                     abi.fmtCStr(errorMessage, "removing the backup failed with error code {d}", .{e});

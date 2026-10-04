@@ -152,14 +152,14 @@ fn skipsNameMatch(comptime Z: type, comptime field: []const u8) bool {
 test "abi calc structs match upstream C field offsets" {
     @setEvalBranchQuota(20000);
     inline for (SIZE_PAIRS) |pair| {
-        inline for (@typeInfo(pair[1]).@"struct".fields) |field| {
-            if (comptime skipsNameMatch(pair[1], field.name)) continue;
-            testing.expectEqual(@offsetOf(pair[0], field.name), @offsetOf(pair[1], field.name)) catch |err| {
+        inline for (@typeInfo(pair[1]).@"struct".field_names) |field_name| {
+            if (comptime skipsNameMatch(pair[1], field_name)) continue;
+            testing.expectEqual(@offsetOf(pair[0], field_name), @offsetOf(pair[1], field_name)) catch |err| {
                 std.debug.print("offset mismatch on {s}.{s}: C={d} abi={d}\n", .{
                     pair[2],
-                    field.name,
-                    @offsetOf(pair[0], field.name),
-                    @offsetOf(pair[1], field.name),
+                    field_name,
+                    @offsetOf(pair[0], field_name),
+                    @offsetOf(pair[1], field_name),
                 });
                 return err;
             };

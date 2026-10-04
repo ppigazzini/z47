@@ -48,9 +48,8 @@ fn upstreamCwd(b: *std.Build) std.Build.LazyPath {
 /// component of UPSTREAM_ROOT, or "." when the import is mounted at the root.
 ///
 /// Steps that run from the imported root but must read or write something in z47's
-/// tree need this. Deliberately plain string arithmetic: every std.Build helper that
-/// would name the build root directly (`pathFromRoot`, `build_root`) exists on the
-/// 0.16 baseline and NOT on the monitored Zig master, and each one broke that lane.
+/// tree need this. Deliberately plain string arithmetic over UPSTREAM_ROOT: the
+/// result is relative to the step's CWD, so it holds wherever the build root sits.
 fn buildRootFromUpstreamCwd(b: *std.Build) []const u8 {
     const root = build_common.upstreamRootString(b);
     if (root.len == 0 or std.mem.eql(u8, root, ".")) return ".";
@@ -870,12 +869,10 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     const gen_saveload_golden = b.addRunArtifact(saveload_roundtrip_harness);
     gen_saveload_golden.setCwd(upstreamCwd(b));
     // Resolved file argument, not a string: the step runs from the imported root, so
-    // the path must be CWD-independent, and `addFileArg` is the only way to get one
-    // that exists on BOTH the 0.16 baseline and the monitored Zig master. It does
-    // declare the golden as an input to a step that overwrites it, which is harmless
-    // for a manual regeneration step and is what run_saveload_roundtrip above already
-    // does for the read. (`b.pathFromRoot` and `b.build_root` were each tried and each
-    // broke the master lane -- neither exists there.)
+    // the path must be CWD-independent, which `addFileArg` gives. It does declare the
+    // golden as an input to a step that overwrites it, which is harmless for a manual
+    // regeneration step and is what run_saveload_roundtrip above already does for the
+    // read.
     gen_saveload_golden.addFileArg(b.path("build/tests/calc_state/save_load_golden.sav"));
     gen_saveload_golden.addArg("--write-golden");
     const saveload_golden_step = b.step("saveload_golden", "Regenerate the save/load golden snapshot");
@@ -910,7 +907,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     // but instrumented with sancov trace-pc-guard (LLVM backend) plus a
     // PC-recording runtime, so report-zig-coverage.sh can measure which
     // Zig-owner source lines the host harness actually executes. kcov is not
-    // available in this environment and Zig 0.16 has no -fprofile-instr path, so
+    // available in this environment and Zig has no -fprofile-instr path, so
     // this is the coverage mechanism. Measurement-only: the sancov flag and the
     // handler are compiled ONLY into this dedicated binary, never a product or
     // normal-test one.
@@ -1574,8 +1571,7 @@ fn addCleanStep(b: *std.Build) void {
 
 fn addDocsStep(b: *std.Build) void {
     // The bash command runs in the build root (addBashCommandFmt sets cwd to "."),
-    // so a build-root-relative install path is what the tools want; b.pathJoin is
-    // stable across the 0.16 baseline and the monitored Zig master.
+    // so a build-root-relative install path is what the tools want.
     const docs_build_root = b.pathJoin(&.{ "zig-out", "docs/code" });
     const docs_source_root = build_common.upstreamPathString(b, "docs/code");
     const cmd = build_common.addBashCommandFmt(b,

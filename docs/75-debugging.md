@@ -72,7 +72,7 @@ also, for a time, running no sanitizer at all.
 **There is no AddressSanitizer in this tree and there cannot be one today.** Zig's
 `sanitize_c` is the UBSan knob -- built the same C with `.off`, `.trap` and
 `.full` gives 0, 0 and 34 UBSan symbols, and zero ASan symbols in every case --
-and Zig 0.16 ships no ASan runtime, so `-fsanitize=address` compiles and then
+and Zig 0.17 ships no ASan runtime, so `-fsanitize=address` compiles and then
 fails to link (`undefined symbol: __asan_report_store1`). Reaching real ASan means
 linking the host's `libclang_rt.asan`, a new host-toolchain dependency for a
 deliberately Zig-only project. Until someone takes that decision, **no lane here

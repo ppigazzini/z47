@@ -87,7 +87,7 @@ owns it.
 
 ## Zig Toolchain And Build System
 
-The pinned baseline is Zig `0.16.0` stable; the exact version, release date, and
+The baseline is a pinned stable Zig release; the exact version, release date, and
 checksum are recorded in [.github/zig-toolchain.env](../.github/zig-toolchain.env).
 
 - [Zig download page](https://ziglang.org/download/): canonical release entry
@@ -121,13 +121,20 @@ Language and toolchain:
   modes) versus unchecked (silent in every mode). This is the authority for
   which of z47's several thousand `@intCast` sites are a trap on the host and a
   silent truncation on the device.
+- [Zig 0.17.0 release notes](https://ziglang.org/download/0.17.0/release-notes.html):
+  the pinned baseline. Safety-relevant changes: `@bitCast` reinterprets the
+  logical bit representation, refuses `extern struct` and `extern union`
+  operands, and safety-checks the tag when the destination is an enum;
+  `@hasDecl` sees only public declarations, also from inside the declaring file;
+  and `heap.SafeAllocator` replaces `DebugAllocator`.
 - [Zig 0.16.0 release notes](https://ziglang.org/download/0.16.0/release-notes.html):
-  the pinned baseline. Safety-relevant changes: *forbid trivial local addresses
-  returned from functions* (now a compile error, "returning address of expired
-  local variable"), *forbid runtime vector indexes*, *forbid pointers in packed
-  structs and unions*, *forbid unused bits in packed unions*, safe stack
-  unwinding by default, and `heap.ThreadSafeAllocator` removed in favour of
-  allocators that are lock-free themselves.
+  the release before, whose changes all still hold. Safety-relevant: *forbid
+  trivial local addresses returned from functions* (now a compile error,
+  "returning address of expired local variable"), *forbid runtime vector
+  indexes*, *forbid pointers in packed structs and unions*, *forbid unused bits
+  in packed unions*, safe stack unwinding by default, and
+  `heap.ThreadSafeAllocator` removed in favour of allocators that are lock-free
+  themselves.
 - [zig.guide -- Runtime Safety](https://zig.guide/language-basics/runtime-safety/):
   the per-build-mode table of which checks are live. The practical statement of
   why `ReleaseSmall` firmware is unchecked.
@@ -136,16 +143,15 @@ Allocator-level safety:
 
 - [ziglang/zig#31186](https://codeberg.org/ziglang/zig/issues/31186): makes
   `DebugAllocator` and `ArenaAllocator` lock-free and thread-safe and deletes
-  `ThreadSafeAllocator`; also the tracking issue for the planned
-  `DebugAllocator` -> `SafeAllocator` rename with a ReleaseSafe-suitable
-  configuration. `SafeAllocator` does not exist in 0.16 -- do not write it into
-  a plan.
+  `ThreadSafeAllocator`; also the tracking issue for the
+  `DebugAllocator` -> `SafeAllocator` replacement, which shipped in 0.17 and
+  leaves `DebugAllocator` deprecated.
 - [ziglang/zig#25978](https://github.com/ziglang/zig/issues/25978):
   `std.heap.DebugAllocator` with `.safety = true` is broken on **freestanding**
   targets. This rules out the otherwise-obvious "put a checking allocator on the
   device" move, independently of the flash cost.
 - [AddressSanitizer manual poisoning](https://github.com/google/sanitizers/wiki/AddressSanitizerManualPoisoning):
-  **Read the caveat first: z47 has no AddressSanitizer.** Zig 0.16 ships no ASan
+  **Read the caveat first: z47 has no AddressSanitizer.** Zig 0.17 ships no ASan
   runtime and `-fsanitize=address` fails to link, so this API has nothing to talk
   to today; it is kept as the reference for what linking a system runtime would
   buy. See [75-debugging.md](75-debugging.md).
