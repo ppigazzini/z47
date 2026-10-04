@@ -163,7 +163,7 @@ The job then runs the `*_asan` surface (`both_asan`, `test_asan`, and
 `pgm_load_fuzz` -- the malformed `.p47` load corpus driven through the real load
 path -- the name is historical: these lanes run UBSan, not AddressSanitizer, see
 [75-debugging.md](75-debugging.md)), builds the
-published Linux archive with `zig build -Doptimize=ReleaseFast dist_linux`,
+published Linux archive with `zig build -Doptimize=fast dist_linux`,
 launches a smoke test from the unpacked archive, diffs and hashes the tracked
 generated artifacts, and uploads the Linux package artifact plus a golden
 generated-files-and-hashes artifact. Docs and firmware publication moved to their
@@ -277,7 +277,7 @@ For a narrower rerun that matches a single workflow slice:
 | Linux docs | `zig build docs` |
 | Linux firmware | `zig build dmcp && zig build dmcpr47 && zig build dmcp5 && zig build dmcp5r47` |
 | Linux firmware publication | `zig build dist_dmcp && zig build dist_dmcp_pkg1 && zig build dist_dmcp_pkg2 && zig build dist_dmcp_pkg3 && zig build dist_dmcpr47 && zig build dist_dmcp5 && zig build dist_dmcp5r47` |
-| host package | the matching `dist_<host>` target on the matching host OS; use `-Doptimize=ReleaseFast` for the published desktop archive size contract |
+| host package | the matching `dist_<host>` target on the matching host OS; use `-Doptimize=fast` for the published desktop archive size contract |
 
 See [70-tests-and-verification.md](70-tests-and-verification.md) for the
 per-owner parity lanes and the smallest rerun lane per change class.

@@ -938,7 +938,7 @@ fn plotrms(xn: i16, yn: i16) void {
 // return.
 fn fmtTmpStringCapped(comptime fmt: []const u8, args: anytype) void {
     var stage: [256]u8 = undefined;
-    const s = std.fmt.bufPrint(&stage, fmt, args) catch unreachable;
+    const s = std.mem.print(&stage, fmt, args) catch unreachable;
     const n = @min(s.len, bufLen - 1);
     @memcpy(tmpString[0..n], s[0..n]);
     tmpString[n] = 0;

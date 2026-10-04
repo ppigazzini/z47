@@ -213,13 +213,13 @@ pub fn writeLiteral(text: [*c]const u8) void {
 
 pub fn writeU32Line(value: u32) void {
     var buffer: [64]u8 = undefined;
-    const line = std.fmt.bufPrint(&buffer, "{d}\n", .{value}) catch return;
+    const line = std.mem.print(&buffer, "{d}\n", .{value}) catch return;
     ioFileWrite(line.ptr, @intCast(line.len));
 }
 
 pub fn writeU8Line(value: u8) void {
     var buffer: [32]u8 = undefined;
-    const line = std.fmt.bufPrint(&buffer, "{d}\n", .{value}) catch return;
+    const line = std.mem.print(&buffer, "{d}\n", .{value}) catch return;
     ioFileWrite(line.ptr, @intCast(line.len));
 }
 

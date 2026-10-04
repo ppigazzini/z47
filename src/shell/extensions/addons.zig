@@ -997,7 +997,7 @@ inline fn stringByteLength(str: [*c]const u8) i32 {
 // rather than through `stderr`: `stderr` is not a plain linkable symbol on
 // every host target, and flushing every stream keeps the line in order with
 // the printf telltales around it.
-inline fn errorf(message: [*:0]const u8, src: std.builtin.SourceLocation) void {
+inline fn errorf(message: [*:0]const u8, src: std.lang.SourceLocation) void {
     _ = printf(
         "\x1b[1;33merror:%s \x1b[0m \x1b[1;36m(%s %s:%d)\x1b[0m\n",
         message,

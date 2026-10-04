@@ -37,7 +37,7 @@ pub fn addSimulator(
     host_target: std.Build.ResolvedTarget,
     name: []const u8,
     artifact_name: []const u8,
-    optimize: std.builtin.OptimizeMode,
+    optimize: std.lang.Optimize,
     core_sources: []const []const u8,
     gtk_sources: []const []const u8,
     common: host_types.CommonConfig,
@@ -148,7 +148,7 @@ const ported_testsuite_hal = [_][]const u8{ "print_ir", "gui", "audio", "lcd", "
 pub fn addTestSuiteHalObject(
     b: *std.Build,
     target: std.Build.ResolvedTarget,
-    optimize: std.builtin.OptimizeMode,
+    optimize: std.lang.Optimize,
     name_prefix: []const u8,
 ) *std.Build.Step.Compile {
     return b.addObject(.{
@@ -173,7 +173,7 @@ const testsuite_main_rename = "-Dmain=z47_testsuite_main";
 pub fn addTestSuiteMainObject(
     b: *std.Build,
     target: std.Build.ResolvedTarget,
-    optimize: std.builtin.OptimizeMode,
+    optimize: std.lang.Optimize,
     name_prefix: []const u8,
 ) *std.Build.Step.Compile {
     const module = b.createModule(.{
@@ -228,7 +228,7 @@ pub fn addTestSuite(
     b: *std.Build,
     host_target: std.Build.ResolvedTarget,
     name: []const u8,
-    optimize: std.builtin.OptimizeMode,
+    optimize: std.lang.Optimize,
     core_sources: []const []const u8,
     test_sources: []const []const u8,
     common: host_types.CommonConfig,
@@ -304,7 +304,7 @@ pub fn addFullCoreHarness(
     host_target: std.Build.ResolvedTarget,
     name: []const u8,
     harness_source: []const u8,
-    optimize: std.builtin.OptimizeMode,
+    optimize: std.lang.Optimize,
     core_sources: []const []const u8,
     test_sources: []const []const u8,
     common: host_types.CommonConfig,

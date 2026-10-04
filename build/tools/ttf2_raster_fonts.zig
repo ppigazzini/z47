@@ -126,9 +126,9 @@ fn buildXlsxCommand(allocator: std.mem.Allocator, fonts_path: []const u8) std.me
 }
 
 fn parseGlyphRankLine(line: []const u8) GeneratorError!GlyphRank {
-    const first_comma = std.mem.indexOfScalar(u8, line, ',') orelse return error.InvalidCsv;
-    const second_comma = std.mem.indexOfScalarPos(u8, line, first_comma + 1, ',') orelse return error.InvalidCsv;
-    const third_comma = std.mem.indexOfScalarPos(u8, line, second_comma + 1, ',') orelse return error.InvalidCsv;
+    const first_comma = std.mem.findScalar(u8, line, ',') orelse return error.InvalidCsv;
+    const second_comma = std.mem.findScalarPos(u8, line, first_comma + 1, ',') orelse return error.InvalidCsv;
+    const third_comma = std.mem.findScalarPos(u8, line, second_comma + 1, ',') orelse return error.InvalidCsv;
 
     const code_field = line[0..first_comma];
     if (!std.mem.startsWith(u8, code_field, "U+")) return error.InvalidCsv;
@@ -350,7 +350,7 @@ fn writeHeader(output_file: *c.FILE) GeneratorError!void {
 
 fn writePaddedSigned(output_file: *c.FILE, value: i32, width: usize) GeneratorError!void {
     var buffer: [32]u8 = undefined;
-    const text = std.fmt.bufPrint(&buffer, "{d}", .{value}) catch unreachable;
+    const text = std.mem.print(&buffer, "{d}", .{value}) catch unreachable;
     if (text.len < width) {
         try writeSpaces(output_file, width - text.len);
     }
@@ -359,7 +359,7 @@ fn writePaddedSigned(output_file: *c.FILE, value: i32, width: usize) GeneratorEr
 
 fn writeUnsigned(output_file: *c.FILE, value: anytype) GeneratorError!void {
     var buffer: [32]u8 = undefined;
-    const text = std.fmt.bufPrint(&buffer, "{d}", .{value}) catch unreachable;
+    const text = std.mem.print(&buffer, "{d}", .{value}) catch unreachable;
     try writeAll(output_file, text);
 }
 
@@ -372,7 +372,7 @@ fn writeSpaces(output_file: *c.FILE, count: usize) GeneratorError!void {
 
 fn writeHex4(output_file: *c.FILE, value: u16) GeneratorError!void {
     var buffer: [4]u8 = undefined;
-    _ = std.fmt.bufPrint(&buffer, "{x:0>4}", .{value}) catch unreachable;
+    _ = std.mem.print(&buffer, "{x:0>4}", .{value}) catch unreachable;
     try writeAll(output_file, &buffer);
 }
 
@@ -385,9 +385,7 @@ fn writeHexEscape(output_file: *c.FILE, value: u8) GeneratorError!void {
 }
 
 fn allocPrintZ(allocator: std.mem.Allocator, comptime fmt: []const u8, args: anytype) std.mem.Allocator.Error![:0]u8 {
-    const text = try std.fmt.allocPrint(allocator, fmt, args);
-    defer allocator.free(text);
-    return try dupeCString(allocator, text);
+    return allocator.printSentinel(fmt, args, 0);
 }
 
 fn dupeCString(allocator: std.mem.Allocator, text: []const u8) std.mem.Allocator.Error![:0]u8 {

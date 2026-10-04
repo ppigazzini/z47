@@ -733,7 +733,7 @@ fn buildPolynomialString(L: *Lattice, degree: i32) void {
         mpzAbs(&L.t0, coeff);
         if (mpzCmpUi(&L.t0, 1) != 0 or i == 0) { // a unit coefficient is written only when it is the constant term
             longIntegerToString(&L.t0, &number);
-            const len = std.mem.indexOfScalar(u8, &number, 0) orelse number.len;
+            const len = std.mem.findScalar(u8, &number, 0) orelse number.len;
             if (at + len >= ALGDEP_POLY_LEN - 8) {
                 at = 0;
                 break;

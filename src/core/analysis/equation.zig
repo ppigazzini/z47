@@ -612,9 +612,7 @@ pub export fn setEquation(equationId: u16, equationString: [*c]const u8) linksec
 // Format into a caller-local buffer and NUL-terminate, so the shared errorMessage
 // scratch the C sprintf()s into is left alone.
 fn bufPrintZ(buffer: []u8, comptime format: []const u8, args: anytype) ![:0]u8 {
-    const slice = try std.fmt.bufPrint(buffer[0 .. buffer.len - 1], format, args);
-    buffer[slice.len] = 0;
-    return buffer[0..slice.len :0];
+    return std.mem.printSentinel(buffer, format, args, 0);
 }
 
 // ===========================================================================

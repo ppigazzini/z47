@@ -32,7 +32,7 @@ pub fn addToModule(
     b: *std.Build,
     module: *std.Build.Module,
     target: std.Build.ResolvedTarget,
-    optimize: std.builtin.OptimizeMode,
+    optimize: std.lang.Optimize,
     name_prefix: []const u8,
     c_flags: []const []const u8,
     calcmodel: u8,

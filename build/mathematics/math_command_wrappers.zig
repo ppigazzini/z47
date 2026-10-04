@@ -49,7 +49,7 @@ pub const RuntimeObjectOptions = struct {
     /// the object name.
     old_hw: bool = false,
     strip: ?bool = null,
-    unwind_tables: ?std.builtin.UnwindTables = null,
+    unwind_tables: ?std.lang.UnwindTables = null,
     stack_protector: ?bool = null,
     stack_check: ?bool = null,
     omit_frame_pointer: ?bool = null,
@@ -110,7 +110,7 @@ pub const RuntimeObjectOptions = struct {
 fn addRuntimeObject(
     b: *std.Build,
     target: std.Build.ResolvedTarget,
-    optimize: std.builtin.OptimizeMode,
+    optimize: std.lang.Optimize,
     name_prefix: []const u8,
     options: RuntimeObjectOptions,
 ) *std.Build.Step.Compile {
@@ -191,7 +191,7 @@ pub fn addBuildOptions(
 pub fn addRuntimeObjects(
     b: *std.Build,
     target: std.Build.ResolvedTarget,
-    optimize: std.builtin.OptimizeMode,
+    optimize: std.lang.Optimize,
     name_prefix: []const u8,
 ) RuntimeObjects {
     return addRuntimeObjectsWithOptions(b, target, optimize, name_prefix, .{});
@@ -200,7 +200,7 @@ pub fn addRuntimeObjects(
 pub fn addRuntimeObjectsWithOptions(
     b: *std.Build,
     target: std.Build.ResolvedTarget,
-    optimize: std.builtin.OptimizeMode,
+    optimize: std.lang.Optimize,
     name_prefix: []const u8,
     options: RuntimeObjectOptions,
 ) RuntimeObjects {
@@ -227,7 +227,7 @@ pub fn addToModule(
     b: *std.Build,
     module: *std.Build.Module,
     target: std.Build.ResolvedTarget,
-    optimize: std.builtin.OptimizeMode,
+    optimize: std.lang.Optimize,
     name_prefix: []const u8,
     c_flags: []const []const u8,
     is_testsuite_build: bool,
@@ -247,7 +247,7 @@ pub fn addToModule(
 pub fn addParityExecutable(
     b: *std.Build,
     target: std.Build.ResolvedTarget,
-    optimize: std.builtin.OptimizeMode,
+    optimize: std.lang.Optimize,
 ) *std.Build.Step.Compile {
     const runtime_object = addRuntimeObject(b, target, optimize, "parity", .{});
     const exe = b.addExecutable(.{
@@ -276,7 +276,7 @@ pub fn addParityExecutable(
 pub fn addRandomParityExecutable(
     b: *std.Build,
     target: std.Build.ResolvedTarget,
-    optimize: std.builtin.OptimizeMode,
+    optimize: std.lang.Optimize,
 ) *std.Build.Step.Compile {
     const runtime_object = addRuntimeObject(b, target, optimize, "random-parity", .{});
     const exe = b.addExecutable(.{

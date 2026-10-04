@@ -67,7 +67,7 @@ pub fn main(init: std.process.Init) !void {
         }
 
         var line_buffer: [96]u8 = undefined;
-        const line = try std.fmt.bufPrint(&line_buffer, "\",{s}\n", .{entry.reg});
+        const line = try std.mem.print(&line_buffer, "\",{s}\n", .{entry.reg});
         try writeAll(out, line);
     }
 

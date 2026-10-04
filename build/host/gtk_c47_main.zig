@@ -215,7 +215,7 @@ const win_console = struct {
 };
 
 fn attachParentConsole() void {
-    if (comptime builtin.os.tag != .windows) return;
+    if (comptime builtin.target.os.tag != .windows) return;
     if (!headlessMode) return;
     if (win_console.AttachConsole(win_console.ATTACH_PARENT_PROCESS) == 0) return;
 
@@ -230,7 +230,7 @@ fn attachParentConsole() void {
 }
 
 fn readyToExit() void {
-    if (comptime builtin.os.tag != .windows) return;
+    if (comptime builtin.target.os.tag != .windows) return;
     if (consoleAttached) {
         _ = printf("\nYou may need to press ENTER to return to the command prompt\n");
     }
@@ -297,15 +297,15 @@ fn printHelp() void {
 fn relocateToResourceDir(argv0: [*:0]const u8) void {
     var exe_buf: [4096]u8 = undefined;
     var dir: []const u8 = undefined;
-    if (builtin.os.tag == .linux) {
+    if (builtin.target.os.tag == .linux) {
         const rc = std.os.linux.readlink("/proc/self/exe", &exe_buf, exe_buf.len);
         if (rc == 0 or rc > exe_buf.len) {
-            dir = std.fs.path.dirname(std.mem.span(argv0)) orelse return;
+            dir = std.Io.Dir.path.dirname(std.mem.span(argv0)) orelse return;
         } else {
-            dir = std.fs.path.dirname(exe_buf[0..rc]) orelse return;
+            dir = std.Io.Dir.path.dirname(exe_buf[0..rc]) orelse return;
         }
     } else {
-        dir = std.fs.path.dirname(std.mem.span(argv0)) orelse return;
+        dir = std.Io.Dir.path.dirname(std.mem.span(argv0)) orelse return;
     }
     // "" when upstream is mounted at the repo root, in which case the second
     // probe is identical to the first and simply never adds a match.
@@ -320,19 +320,19 @@ fn relocateToResourceDir(argv0: [*:0]const u8) void {
         for ([_][]const u8{ "", upstream_prefix }) |prefix| {
             var probe_buf: [4096]u8 = undefined;
             const probe = if (prefix.len == 0)
-                std.fmt.bufPrintSentinel(&probe_buf, "{s}/res/c47_pre.css", .{dir}, 0) catch return
+                std.mem.printSentinel(&probe_buf, "{s}/res/c47_pre.css", .{dir}, 0) catch return
             else
-                std.fmt.bufPrintSentinel(&probe_buf, "{s}/{s}/res/c47_pre.css", .{ dir, prefix }, 0) catch return;
+                std.mem.printSentinel(&probe_buf, "{s}/{s}/res/c47_pre.css", .{ dir, prefix }, 0) catch return;
             if (access(probe.ptr, 0) != 0) continue; // F_OK
             var cd_buf: [4096]u8 = undefined;
             const cd = if (prefix.len == 0)
-                std.fmt.bufPrintSentinel(&cd_buf, "{s}", .{dir}, 0) catch return
+                std.mem.printSentinel(&cd_buf, "{s}", .{dir}, 0) catch return
             else
-                std.fmt.bufPrintSentinel(&cd_buf, "{s}/{s}", .{ dir, prefix }, 0) catch return;
+                std.mem.printSentinel(&cd_buf, "{s}/{s}", .{ dir, prefix }, 0) catch return;
             _ = chdir(cd.ptr);
             return;
         }
-        dir = std.fs.path.dirname(dir) orelse return;
+        dir = std.Io.Dir.path.dirname(dir) orelse return;
     }
 }
 
@@ -354,7 +354,7 @@ pub export fn main(argc: c_int, argv: [*][*:0]u8) callconv(.c) c_int {
             _ = printf("Activated: %s\n", argv[arg]);
             if (arg + 1 < @as(usize, @intCast(argc)) and argv[arg + 1][0] != 0) {
                 arg += 1;
-                _ = std.fmt.bufPrintSentinel(&modelString, "{s}", .{std.mem.span(argv[arg])}, 0) catch {};
+                _ = std.mem.printSentinel(&modelString, "{s}", .{std.mem.span(argv[arg])}, 0) catch {};
                 if (arg + 1 < @as(usize, @intCast(argc)) and argv[arg + 1][0] != 0) {
                     arg += 1;
                 } else break;

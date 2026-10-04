@@ -575,7 +575,7 @@ fn parseUpstreamRoot(args: *std.process.Args.Iterator) ParsedArgs {
 
 fn upstreamPath(allocator: std.mem.Allocator, upstream_root: []const u8, relative: []const u8) ![]const u8 {
     if (std.mem.eql(u8, upstream_root, ".")) return allocator.dupe(u8, relative);
-    return std.fs.path.join(allocator, &.{ upstream_root, relative });
+    return std.Io.Dir.path.join(allocator, &.{ upstream_root, relative });
 }
 
 fn preprocessSource(allocator: std.mem.Allocator, init: std.process.Init, upstream_root: []const u8) ![]u8 {
@@ -650,9 +650,9 @@ fn parseProgram(source: []const u8, allocator: std.mem.Allocator, generator: *Ge
     const start_marker = "currentStep = memory;";
     const end_marker = "testPgms = fopen(argv[1], \"wb\");";
 
-    const start = std.mem.indexOf(u8, source, start_marker) orelse return error.MissingStartMarker;
+    const start = std.mem.find(u8, source, start_marker) orelse return error.MissingStartMarker;
     const body_start = start + start_marker.len;
-    const end_rel = std.mem.indexOf(u8, source[body_start..], end_marker) orelse return error.MissingEndMarker;
+    const end_rel = std.mem.find(u8, source[body_start..], end_marker) orelse return error.MissingEndMarker;
 
     var scanner = Scanner{ .source = source[body_start .. body_start + end_rel] };
     while (true) {

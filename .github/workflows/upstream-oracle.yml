@@ -825,7 +825,7 @@ jobs:
           export PATH="$RUNNER_TEMP/xlsxio-prefix/bin:$PATH"
           export LD_LIBRARY_PATH="$RUNNER_TEMP/xlsxio-prefix/lib:$RUNNER_TEMP/xlsxio-prefix/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
           export XVFB="xvfb-run --auto-servernum"
-          zig build -Doptimize=ReleaseFast dist_linux
+          zig build -Doptimize=fast dist_linux
       - name: Run Linux simulator smoke launch
         shell: bash
         run: |
@@ -1369,7 +1369,7 @@ jobs:
           eval "$(brew shellenv)"
           export PATH="$RUNNER_TEMP/xlsxio-prefix/bin:$PATH"
           export DYLD_LIBRARY_PATH="$RUNNER_TEMP/xlsxio-prefix/lib:$RUNNER_TEMP/xlsxio-prefix/lib64${DYLD_LIBRARY_PATH:+:$DYLD_LIBRARY_PATH}"
-          zig build -Doptimize=ReleaseFast both
+          zig build -Doptimize=fast both
       - name: Run macOS simulator smoke launch
         shell: bash
         run: |
@@ -1615,7 +1615,7 @@ jobs:
           set -euo pipefail
           prefix="$(cygpath -u "$RUNNER_TEMP")/xlsxio-prefix"
           export PATH="$prefix/bin:$PATH"
-          zig build -Doptimize=ReleaseFast both
+          zig build -Doptimize=fast both
       - name: Run Windows simulator smoke launch
         shell: msys2 {0}
         run: |

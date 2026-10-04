@@ -78,7 +78,7 @@ fn addTestSuiteRun(b: *std.Build, test_suite: *std.Build.Step.Compile, list_path
 fn addMathLnComplexOracle(
     b: *std.Build,
     context: host_types.Context,
-    optimize: std.builtin.OptimizeMode,
+    optimize: std.lang.Optimize,
 ) *std.Build.Step.Compile {
     const core_c_flags = if (context.host_target.result.os.tag == .windows)
         build_common.common_c_flags_windows
@@ -162,7 +162,7 @@ fn addMathLnComplexOracle(
 fn addMathEigenOracle(
     b: *std.Build,
     context: host_types.Context,
-    optimize: std.builtin.OptimizeMode,
+    optimize: std.lang.Optimize,
 ) *std.Build.Step.Compile {
     const core_c_flags = if (context.host_target.result.os.tag == .windows)
         build_common.common_c_flags_windows
@@ -237,7 +237,7 @@ fn addMathEigenOracle(
 fn addMathRealRectangularToPolarOracle(
     b: *std.Build,
     context: host_types.Context,
-    optimize: std.builtin.OptimizeMode,
+    optimize: std.lang.Optimize,
 ) *std.Build.Step.Compile {
     const core_c_flags = if (context.host_target.result.os.tag == .windows)
         build_common.common_c_flags_windows
@@ -307,7 +307,7 @@ fn addMathRealRectangularToPolarOracle(
 fn addMathAtan2Oracle(
     b: *std.Build,
     context: host_types.Context,
-    optimize: std.builtin.OptimizeMode,
+    optimize: std.lang.Optimize,
 ) *std.Build.Step.Compile {
     const core_c_flags = if (context.host_target.result.os.tag == .windows)
         build_common.common_c_flags_windows
@@ -377,7 +377,7 @@ fn addMathAtan2Oracle(
 fn addMathAtanOracle(
     b: *std.Build,
     context: host_types.Context,
-    optimize: std.builtin.OptimizeMode,
+    optimize: std.lang.Optimize,
 ) *std.Build.Step.Compile {
     const core_c_flags = if (context.host_target.result.os.tag == .windows)
         build_common.common_c_flags_windows
@@ -447,7 +447,7 @@ fn addMathAtanOracle(
 fn addMathRealTrigPrimitivesOracle(
     b: *std.Build,
     context: host_types.Context,
-    optimize: std.builtin.OptimizeMode,
+    optimize: std.lang.Optimize,
 ) *std.Build.Step.Compile {
     const core_c_flags = if (context.host_target.result.os.tag == .windows)
         build_common.common_c_flags_windows
@@ -517,7 +517,7 @@ fn addMathRealTrigPrimitivesOracle(
 fn addMathCircularTrigOracle(
     b: *std.Build,
     context: host_types.Context,
-    optimize: std.builtin.OptimizeMode,
+    optimize: std.lang.Optimize,
 ) *std.Build.Step.Compile {
     const core_c_flags = if (context.host_target.result.os.tag == .windows)
         build_common.common_c_flags_windows
@@ -583,7 +583,7 @@ fn addMathCircularTrigOracle(
     exe.root_module.linkSystemLibrary("m", .{});
     return exe;
 }
-pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.builtin.OptimizeMode) host_types.SimulatorOutputs {
+pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.lang.Optimize) host_types.SimulatorOutputs {
     const sim = host_builders.addSimulator(
         b,
         context.host_target,
@@ -1096,7 +1096,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
         false,
     );
     const pgm_load_fuzz_cmd = b.addSystemCommand(&.{ "bash", "build/tests/pgm_run/run-pgm-load-fuzz.sh" });
-    pgm_load_fuzz_cmd.addArtifactArg(pgm_run_asan);
+    pgm_load_fuzz_cmd.addArtifactArg2(pgm_run_asan, .{});
     pgm_load_fuzz_cmd.addArg("build/tests/pgm_run/malformed");
     pgm_load_fuzz_cmd.setCwd(b.path("."));
     const pgm_load_fuzz_step = b.step("pgm_load_fuzz", "M1: run malformed .p47 files through the load path under ASAN");
@@ -1127,7 +1127,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
         false,
     );
     const state_load_fuzz_cmd = b.addSystemCommand(&.{ "bash", "build/tests/calc_state/run-state-load-fuzz.sh" });
-    state_load_fuzz_cmd.addArtifactArg(state_load_harness);
+    state_load_fuzz_cmd.addArtifactArg2(state_load_harness, .{});
     state_load_fuzz_cmd.addArg("build/tests/calc_state/malformed");
     state_load_fuzz_cmd.setCwd(b.path("."));
     const state_load_fuzz_step = b.step("state_load_fuzz", "Run malformed state files through the real restore path");

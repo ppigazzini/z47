@@ -51,7 +51,7 @@ const Scanner = struct {
                             self.index += 1;
                         }
                     } else if (next == '*') {
-                        const rel_end = std.mem.indexOf(u8, self.source[self.index + 2 ..], "*/") orelse return error.UnterminatedBlockComment;
+                        const rel_end = std.mem.find(u8, self.source[self.index + 2 ..], "*/") orelse return error.UnterminatedBlockComment;
                         self.index += rel_end + 4;
                     } else {
                         return;
@@ -214,7 +214,7 @@ const Generator = struct {
     }
 
     fn appendFormat(self: *Generator, buffer: *std.ArrayList(u8), comptime fmt: []const u8, args: anytype) !void {
-        const text = try std.fmt.allocPrint(self.allocator, fmt, args);
+        const text = try self.allocator.print(fmt, args);
         defer self.allocator.free(text);
         try buffer.appendSlice(self.allocator, text);
     }
@@ -262,7 +262,7 @@ const Generator = struct {
         const prefix: []const u8 = if (spec.exact)
             "const_"
         else blk: {
-            const text = try std.fmt.allocPrint(self.allocator, "const{d}_", .{max_digits});
+            const text = try self.allocator.print("const{d}_", .{max_digits});
             dynamic_prefix = text;
             break :blk text;
         };
@@ -347,7 +347,7 @@ pub fn main(init: std.process.Init) !void {
     }
     try generator.finish();
 
-    const header_text = try std.fmt.allocPrint(allocator,
+    const header_text = try allocator.print(
         \\// SPDX-License-Identifier: GPL-3.0-only
         \\// SPDX-FileCopyrightText: Copyright The C47 Authors
         \\
@@ -367,7 +367,7 @@ pub fn main(init: std.process.Init) !void {
     , .{ generator.external_declarations.items, generator.real_count });
     defer allocator.free(header_text);
 
-    const constants_text = try std.fmt.allocPrint(allocator,
+    const constants_text = try allocator.print(
         \\// SPDX-License-Identifier: GPL-3.0-only
         \\// SPDX-FileCopyrightText: Copyright The C47 Authors
         \\
@@ -381,7 +381,7 @@ pub fn main(init: std.process.Init) !void {
     , .{generator.real_array.items});
     defer allocator.free(constants_text);
 
-    const real_t_array_text = try std.fmt.allocPrint(allocator,
+    const real_t_array_text = try allocator.print(
         \\// SPDX-License-Identifier: GPL-3.0-only
         \\// SPDX-FileCopyrightText: Copyright The C47 Authors
         \\
@@ -421,7 +421,7 @@ fn parseUpstreamRoot(args: *std.process.Args.Iterator) ParsedArgs {
 
 fn upstreamPath(allocator: std.mem.Allocator, upstream_root: []const u8, relative: []const u8) ![]const u8 {
     if (std.mem.eql(u8, upstream_root, ".")) return allocator.dupe(u8, relative);
-    return std.fs.path.join(allocator, &.{ upstream_root, relative });
+    return std.Io.Dir.path.join(allocator, &.{ upstream_root, relative });
 }
 
 fn parseConstants(allocator: std.mem.Allocator, upstream_root: []const u8) ![]ParsedConstant {
@@ -430,10 +430,10 @@ fn parseConstants(allocator: std.mem.Allocator, upstream_root: []const u8) ![]Pa
 
     const source = try readFileAlloc(allocator, source_path);
 
-    const start = std.mem.indexOf(u8, source, "void generateAllConstants(void)") orelse return error.MissingGenerateAllConstants;
-    const body_open_rel = std.mem.indexOfScalar(u8, source[start..], '{') orelse return error.MissingFunctionBody;
+    const start = std.mem.find(u8, source, "void generateAllConstants(void)") orelse return error.MissingGenerateAllConstants;
+    const body_open_rel = std.mem.findScalar(u8, source[start..], '{') orelse return error.MissingFunctionBody;
     const body_start = start + body_open_rel + 1;
-    const main_rel = std.mem.indexOf(u8, source[body_start..], "int main(") orelse return error.MissingMain;
+    const main_rel = std.mem.find(u8, source[body_start..], "int main(") orelse return error.MissingMain;
     const preprocessed_body = try preprocessConstantsBody(allocator, source[body_start .. body_start + main_rel]);
 
     var scanner = Scanner{ .source = preprocessed_body };
@@ -549,7 +549,7 @@ fn evaluatePreprocessorCondition(condition: []const u8) !bool {
     if (trimmed.len == 0) return error.UnsupportedPreprocessorDirective;
 
     if (std.mem.startsWith(u8, trimmed, "defined(")) {
-        const close = std.mem.indexOfScalar(u8, trimmed, ')') orelse return error.UnsupportedPreprocessorDirective;
+        const close = std.mem.findScalar(u8, trimmed, ')') orelse return error.UnsupportedPreprocessorDirective;
         const name = trimAscii(trimmed[8..close]);
         return lookupPreprocessorDefined(name);
     }
@@ -559,13 +559,13 @@ fn evaluatePreprocessorCondition(condition: []const u8) !bool {
         expression = trimAscii(expression[1 .. expression.len - 1]);
     }
 
-    if (std.mem.indexOf(u8, expression, "==")) |eq| {
+    if (std.mem.find(u8, expression, "==")) |eq| {
         const name = trimAscii(expression[0..eq]);
         const rhs = trimAscii(expression[eq + 2 ..]);
         return try lookupPreprocessorInteger(name) == try std.fmt.parseInt(i64, rhs, 10);
     }
 
-    if (std.mem.indexOf(u8, expression, "!=")) |neq| {
+    if (std.mem.find(u8, expression, "!=")) |neq| {
         const name = trimAscii(expression[0..neq]);
         const rhs = trimAscii(expression[neq + 2 ..]);
         return try lookupPreprocessorInteger(name) != try std.fmt.parseInt(i64, rhs, 10);

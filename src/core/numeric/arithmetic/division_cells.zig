@@ -25,12 +25,11 @@ const REGISTER_L = runtime.REGISTER_L;
 const ERR_REGISTER_LINE = runtime.ERR_REGISTER_LINE;
 const no_register = @as(runtime.calcRegister_t, -1);
 
-// std.fmt.bufPrintZ was removed in Zig 0.17; std.fmt.bufPrint plus an explicit
-// sentinel works on both 0.16 and master. Every format below is bounded well
-// under the buffer, so the unreachable overflow arm yields the empty string
-// rather than the buffer's uninitialised bytes.
+// Every format below is bounded well under the buffer, so the unreachable
+// overflow arm yields the empty string rather than the buffer's uninitialised
+// bytes.
 fn bufPrintZ(buffer: []u8, comptime format: []const u8, args: anytype) [:0]const u8 {
-    const slice = std.fmt.bufPrint(buffer[0 .. buffer.len - 1], format, args) catch buffer[0..0];
+    const slice = std.mem.print(buffer[0 .. buffer.len - 1], format, args) catch buffer[0..0];
     buffer[slice.len] = 0;
     return buffer[0..slice.len :0];
 }

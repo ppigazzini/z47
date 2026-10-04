@@ -9,7 +9,7 @@ fn addHostTranslateC(
     b: *std.Build,
     header_path: []const u8,
     host_target: std.Build.ResolvedTarget,
-    optimize: std.builtin.OptimizeMode,
+    optimize: std.lang.Optimize,
     common: host_types.CommonConfig,
 ) *TranslateC {
     const translate_c = b.addTranslateC(.{
@@ -38,7 +38,7 @@ pub fn addVersionHeaders(b: *std.Build, ci_commit_tag: []const u8) !std.Build.La
     const vcs_tag = build_common.commandOutput(b, &.{ "git", "describe", "--match=NeVeRmAtCh", "--always", "--abbrev=8", "--dirty=-mod" }) orelse "unknown";
     const today = build_common.commandOutput(b, &.{ "date", "+%Y-%m-%d" }) orelse "1970-01-01";
 
-    const vcs_content = try std.fmt.allocPrint(b.allocator,
+    const vcs_content = try b.allocator.print(
         \\// SPDX-License-Identifier: GPL-3.0-only
         \\// SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
         \\
@@ -59,7 +59,7 @@ pub fn addVersionHeaders(b: *std.Build, ci_commit_tag: []const u8) !std.Build.La
     , .{vcs_tag});
 
     const version_content = if (ci_commit_tag.len > 0)
-        try std.fmt.allocPrint(b.allocator,
+        try b.allocator.print(
             \\// SPDX-License-Identifier: GPL-3.0-only
             \\// SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
             \\
@@ -83,7 +83,7 @@ pub fn addVersionHeaders(b: *std.Build, ci_commit_tag: []const u8) !std.Build.La
             \\
         , .{ ci_commit_tag, today, ci_commit_tag })
     else
-        try std.fmt.allocPrint(b.allocator,
+        try b.allocator.print(
             \\// SPDX-License-Identifier: GPL-3.0-only
             \\// SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
             \\
@@ -117,7 +117,7 @@ pub fn addVersionHeaders(b: *std.Build, ci_commit_tag: []const u8) !std.Build.La
 pub fn addGeneratorSteps(
     b: *std.Build,
     host_target: std.Build.ResolvedTarget,
-    optimize: std.builtin.OptimizeMode,
+    optimize: std.lang.Optimize,
     common: host_types.CommonConfig,
 ) !host_types.GeneratedOutputs {
     const core_c_flags = if (host_target.result.os.tag == .windows)
@@ -150,7 +150,7 @@ pub fn addGeneratorSteps(
     const run_raster_fonts = b.addRunArtifact(raster_fonts_gen);
     run_raster_fonts.setCwd(b.path("."));
     run_raster_fonts.addArg(build_common.upstreamPathString(b, "res/fonts"));
-    const raster_fonts_data = run_raster_fonts.addOutputFileArg("rasterFontsData.c");
+    const raster_fonts_data = run_raster_fonts.addOutputFileArg2("rasterFontsData.c", .{});
 
     const generate_constants = b.addExecutable(.{
         .name = "generateConstants",
@@ -179,9 +179,9 @@ pub fn addGeneratorSteps(
     const run_generate_constants = b.addRunArtifact(generate_constants);
     run_generate_constants.setCwd(b.path("."));
     run_generate_constants.addArgs(&.{ "--upstream-root", build_common.upstreamRootString(b) });
-    const constant_pointers_c = run_generate_constants.addOutputFileArg("constantPointers.c");
-    const constant_pointers_h = run_generate_constants.addOutputFileArg("constantPointers.h");
-    const constant_pointers2_c = run_generate_constants.addOutputFileArg("constantPointers2.c");
+    const constant_pointers_c = run_generate_constants.addOutputFileArg2("constantPointers.c", .{});
+    const constant_pointers_h = run_generate_constants.addOutputFileArg2("constantPointers.h", .{});
+    const constant_pointers2_c = run_generate_constants.addOutputFileArg2("constantPointers2.c", .{});
 
     const generate_catalogs = b.addExecutable(.{
         .name = "generateCatalogs",
@@ -215,7 +215,7 @@ pub fn addGeneratorSteps(
 
     const run_generate_catalogs = b.addRunArtifact(generate_catalogs);
     run_generate_catalogs.setCwd(b.path("."));
-    const softmenu_catalogs = run_generate_catalogs.addOutputFileArg("softmenuCatalogs.h");
+    const softmenu_catalogs = run_generate_catalogs.addOutputFileArg2("softmenuCatalogs.h", .{});
 
     const generate_testpgms = b.addExecutable(.{
         .name = "generateTestPgms",
@@ -250,7 +250,7 @@ pub fn addGeneratorSteps(
     const run_generate_testpgms = b.addRunArtifact(generate_testpgms);
     run_generate_testpgms.setCwd(b.path("."));
     run_generate_testpgms.addArgs(&.{ "--upstream-root", build_common.upstreamRootString(b) });
-    const test_pgms_bin = run_generate_testpgms.addOutputFileArg("testPgms.bin");
+    const test_pgms_bin = run_generate_testpgms.addOutputFileArg2("testPgms.bin", .{});
 
     return .{
         .raster_fonts_data = raster_fonts_data,

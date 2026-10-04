@@ -76,7 +76,7 @@ pub fn add(
     collect(b.allocator, exe.root_module, &objects, &seen_modules, &seen_objects);
 
     const run = b.addRunArtifact(writer_exe);
-    const manifest = run.addOutputFileArg(b.fmt("{s}-objects.txt", .{target_name}));
+    const manifest = run.addOutputFileArg2(b.fmt("{s}-objects.txt", .{target_name}), .{});
     for (objects.items) |object| run.addFileArg(object.getEmittedBin());
     return manifest;
 }
@@ -97,14 +97,14 @@ pub fn start(
     target_name: []const u8,
 ) Pending {
     const run = b.addRunArtifact(writer_exe);
-    return .{ .run = run, .path = run.addOutputFileArg(b.fmt("{s}-objects.txt", .{target_name})) };
+    return .{ .run = run, .path = run.addOutputFileArg2(b.fmt("{s}-objects.txt", .{target_name}), .{}) };
 }
 
 /// The tool that writes a manifest. Built once and shared by every target.
 pub fn addWriter(
     b: *std.Build,
     target: std.Build.ResolvedTarget,
-    optimize: std.builtin.OptimizeMode,
+    optimize: std.lang.Optimize,
 ) *std.Build.Step.Compile {
     return b.addExecutable(.{
         .name = "writeObjectManifest",

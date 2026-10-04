@@ -15,7 +15,7 @@ const is_dmcp_build = builtin.target.os.tag == .freestanding;
 // would otherwise drag in Zig's message-formatting panic handler; here a safety
 // failure traps directly instead. Hosted targets keep the default handler, so the
 // testSuite still reports the message and the stack trace. Must be declared in
-// this ROOT file: `std.builtin` reads `root.panic` and nowhere else.
+// this ROOT file: `std.lang` reads `root.panic` and nowhere else.
 pub const panic = abi.trap_panic.namespace;
 
 var compat_saved_calc_model: u16 = 0;
@@ -317,7 +317,7 @@ extern fn remove(pathname: [*:0]const u8) c_int;
 // errno, by the libc's own accessor: this object is compiled without a libc
 // dependency of its own, so std.c's accessor is out of reach, while the plain
 // extern resolves in the executable that links it.
-const errnoLocation = switch (builtin.os.tag) {
+const errnoLocation = switch (builtin.target.os.tag) {
     .windows => struct {
         extern fn _errno() *c_int;
     }._errno,

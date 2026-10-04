@@ -516,7 +516,7 @@ pub export fn z47_math_wrappers_fact_long_integer() linksection(runtime.code_sec
     }
 
     const n: u32 = @truncate(runtime.__gmpz_get_ui(&x[0]));
-    if (builtin.os.tag == .linux) {
+    if (builtin.target.os.tag == .linux) {
         __gmpz_init2(&f[0], factorialPreallocationBits(n));
         runtime.__gmpz_set_ui(&f[0], 1);
         var i: u32 = 2;

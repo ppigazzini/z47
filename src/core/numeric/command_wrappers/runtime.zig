@@ -1348,10 +1348,6 @@ pub inline fn uInt32ToReal(source: u32, destination: *real_t) void {
     _ = decNumberFromUInt32(destination, source);
 }
 
-// bufPrintZ compat (std.fmt.bufPrintZ was removed upstream): removed in Zig 0.17 master; this form works in both
-// pinned 0.16 and master (std.fmt.bufPrint + an explicit sentinel byte).
 pub fn bufPrintZ(buf: []u8, comptime fmt: []const u8, args: anytype) ![:0]u8 {
-    const s = try std.fmt.bufPrint(buf[0 .. buf.len - 1], fmt, args);
-    buf[s.len] = 0;
-    return buf[0..s.len :0];
+    return std.mem.printSentinel(buf, fmt, args, 0);
 }

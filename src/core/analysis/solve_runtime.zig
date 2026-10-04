@@ -163,9 +163,7 @@ pub extern fn decQuadIsInfinite(v: *align(1) const real34_t) u32;
 pub extern fn decQuadIsZero(v: *align(1) const real34_t) u32;
 
 pub fn bufPrintZ(buffer: []u8, comptime format: []const u8, args: anytype) ![:0]u8 {
-    const slice = try std.fmt.bufPrint(buffer[0 .. buffer.len - 1], format, args);
-    buffer[slice.len] = 0;
-    return buffer[0..slice.len :0];
+    return std.mem.printSentinel(buffer, format, args, 0);
 }
 
 pub fn infoNotANamedLabel(fnName: [*:0]const u8, buf: [*:0]const u8) void {

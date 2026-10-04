@@ -136,7 +136,7 @@ the companion c47-r47-ci doc set, `docs/04-testing.md`, owns them. See
 | deterministic generated outputs | `../build/tools/`, tracked generated files | `zig build generated --summary none` |
 | docs surface | `../upstream/docs/code/` | `zig build docs --summary none` |
 | firmware outputs | `../build/firmware.zig`, imported SDKs, linker scripts | `zig build dmcp --summary none` or `zig build dmcp5 --summary none` |
-| host or firmware packages | `../build/dist.zig` | `zig build -Doptimize=ReleaseFast dist_linux --summary none`, or the matching package target |
+| host or firmware packages | `../build/dist.zig` | `zig build -Doptimize=fast dist_linux --summary none`, or the matching package target |
 
 ## Per-Owner Parity Oracles
 
@@ -362,7 +362,7 @@ The full current set is discoverable with `zig build --help`.
   or keyboard dispatch, `zig build simulator_smoke`
 - firmware or linker-script change: the smallest affected firmware target first
 - package or release-proof change: the matching `dist_<host>` or firmware package
-  target on the matching host OS; use `-Doptimize=ReleaseFast` for the published
+  target on the matching host OS; use `-Doptimize=fast` for the published
   desktop archive contract, and unpack a fresh archive when packaged runtime
   behavior matters
 

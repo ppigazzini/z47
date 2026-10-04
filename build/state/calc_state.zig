@@ -10,7 +10,7 @@ pub const RuntimeObjects = struct {
 
 pub const RuntimeObjectOptions = struct {
     strip: ?bool = null,
-    unwind_tables: ?std.builtin.UnwindTables = null,
+    unwind_tables: ?std.lang.UnwindTables = null,
     stack_protector: ?bool = null,
     stack_check: ?bool = null,
     omit_frame_pointer: ?bool = null,
@@ -52,7 +52,7 @@ const replaced_core_sources = [_][]const u8{
 fn addRuntimeObject(
     b: *std.Build,
     target: std.Build.ResolvedTarget,
-    optimize: std.builtin.OptimizeMode,
+    optimize: std.lang.Optimize,
     name_prefix: []const u8,
     options: RuntimeObjectOptions,
 ) *std.Build.Step.Compile {
@@ -108,7 +108,7 @@ fn addRuntimeObject(
     // OLD_HW program-relocation sign; DMCP5 / DM42n / host are NEW_HW. The
     // firmware names the OLD_HW calc-state object "dmcp"/"dmcpr47" and the NEW_HW
     // one "dmcp5"/"dmcp5r47"; host names are NEW_HW.
-    build_options.addOption(bool, "state_old_hw", std.mem.indexOf(u8, name_prefix, "dmcp") != null and std.mem.indexOf(u8, name_prefix, "dmcp5") == null);
+    build_options.addOption(bool, "state_old_hw", std.mem.find(u8, name_prefix, "dmcp") != null and std.mem.find(u8, name_prefix, "dmcp5") == null);
     build_options.addOption(bool, "option_xfn_1000", options.option_xfn_1000);
     build_options.addOption(bool, "option_structured_pgm", options.option_structured_pgm);
     build_options.addOption(bool, "option_atext_fonts", options.option_atext_fonts);
@@ -129,7 +129,7 @@ fn addRuntimeObject(
 pub fn addRuntimeObjects(
     b: *std.Build,
     target: std.Build.ResolvedTarget,
-    optimize: std.builtin.OptimizeMode,
+    optimize: std.lang.Optimize,
     name_prefix: []const u8,
 ) RuntimeObjects {
     return addRuntimeObjectsWithOptions(b, target, optimize, name_prefix, .{});
@@ -138,7 +138,7 @@ pub fn addRuntimeObjects(
 pub fn addRuntimeObjectsWithOptions(
     b: *std.Build,
     target: std.Build.ResolvedTarget,
-    optimize: std.builtin.OptimizeMode,
+    optimize: std.lang.Optimize,
     name_prefix: []const u8,
     options: RuntimeObjectOptions,
 ) RuntimeObjects {
@@ -167,7 +167,7 @@ pub fn addToModule(
     b: *std.Build,
     module: *std.Build.Module,
     target: std.Build.ResolvedTarget,
-    optimize: std.builtin.OptimizeMode,
+    optimize: std.lang.Optimize,
     name_prefix: []const u8,
     c_flags: []const []const u8,
     calc_model_user_id: u16,

@@ -167,7 +167,7 @@ pub fn programExportListing() void {
     var first_line: u16 = 0;
     if (runtime.firstDisplayedLocalStepNumber == 0) {
         var header: [TMP_HEADER_LENGTH]u8 = undefined;
-        const text = std.fmt.bufPrint(&header, "0000: {{ Prgm #{d}/{d}: {d} bytes / {d} step{s} }}", .{
+        const text = std.mem.print(&header, "0000: {{ Prgm #{d}/{d}: {d} bytes / {d} step{s} }}", .{
             runtime.currentProgramNumber,
             runtime.numberOfPrograms,
             runtime.programSize(),
@@ -237,7 +237,7 @@ pub fn programExportListing() void {
         }
 
         const displayed = @as(i32, runtime.firstDisplayedLocalStepNumber) + @as(i32, line);
-        const numbered = std.fmt.bufPrint(&line_number_text, "{d:0>4}:  ", .{displayed}) catch line_number_text[0..0];
+        const numbered = std.mem.print(&line_number_text, "{d:0>4}:  ", .{displayed}) catch line_number_text[0..0];
         appendClamped(ascii_string[0..], &ascii_length, numbered);
 
         appendClamped(ascii_string[0..], &ascii_length, runtime.tmpStringContent());
@@ -277,7 +277,7 @@ fn exportProgramToPath(path: c_int) void {
     runtime.writeTmpString();
 
     var version_line: [TMP_HEADER_LENGTH]u8 = undefined;
-    const text = std.fmt.bufPrint(&version_line, "C47 Program file export: Export format version {d}, C47 program version {d}.\n", .{
+    const text = std.mem.print(&version_line, "C47 Program file export: Export format version {d}, C47 program version {d}.\n", .{
         runtime.EXPORT_VERSION,
         runtime.PROGRAM_VERSION,
     }) catch version_line[0..0];

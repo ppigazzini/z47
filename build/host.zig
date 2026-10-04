@@ -14,7 +14,7 @@ pub const SimulatorOutputs = host_types.SimulatorOutputs;
 
 pub fn prepareContext(
     b: *std.Build,
-    optimize: std.builtin.OptimizeMode,
+    optimize: std.lang.Optimize,
     ci_commit_tag: []const u8,
     raspberry: bool,
     decnumber_fastmul: bool,
@@ -22,7 +22,7 @@ pub fn prepareContext(
     return host_context.prepareContext(b, optimize, ci_commit_tag, raspberry, decnumber_fastmul);
 }
 
-pub fn registerSteps(b: *std.Build, context: Context, optimize: std.builtin.OptimizeMode) SimulatorOutputs {
+pub fn registerSteps(b: *std.Build, context: Context, optimize: std.lang.Optimize) SimulatorOutputs {
     return host_steps.registerSteps(b, context, optimize);
 }
 
@@ -31,7 +31,7 @@ pub fn addSimulator(
     host_target: std.Build.ResolvedTarget,
     name: []const u8,
     artifact_name: []const u8,
-    optimize: std.builtin.OptimizeMode,
+    optimize: std.lang.Optimize,
     core_sources: []const []const u8,
     gtk_sources: []const []const u8,
     common: CommonConfig,

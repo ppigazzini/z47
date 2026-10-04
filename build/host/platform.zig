@@ -287,7 +287,7 @@ fn addTranslateCPkgConfigToken(translate_c: *TranslateC, token: []const u8, kind
 }
 
 fn addPkgConfigDefine(module: *std.Build.Module, define: []const u8) void {
-    if (std.mem.indexOfScalar(u8, define, '=')) |eq| {
+    if (std.mem.findScalar(u8, define, '=')) |eq| {
         module.addCMacro(define[0..eq], define[eq + 1 ..]);
         return;
     }
@@ -296,7 +296,7 @@ fn addPkgConfigDefine(module: *std.Build.Module, define: []const u8) void {
 }
 
 fn addTranslateCPkgConfigDefine(translate_c: *TranslateC, define: []const u8) void {
-    if (std.mem.indexOfScalar(u8, define, '=')) |eq| {
+    if (std.mem.findScalar(u8, define, '=')) |eq| {
         translate_c.defineCMacro(define[0..eq], define[eq + 1 ..]);
         return;
     }
@@ -312,7 +312,7 @@ fn linkWindowsImportLibraryOrSystem(module: *std.Build.Module, name: []const u8)
 
     const import_library = module.owner.fmt("{s}/lib/lib{s}.dll.a", .{ prefix, name });
     const exists = blk: {
-        if (std.fs.path.isAbsolute(import_library)) {
+        if (std.Io.Dir.path.isAbsolute(import_library)) {
             std.Io.Dir.accessAbsolute(module.owner.graph.io, import_library, .{}) catch break :blk false;
             break :blk true;
         }
@@ -346,7 +346,7 @@ fn windowsHostPrefix(module: *std.Build.Module) ?[]const u8 {
 
 fn addHostSearchPaths(module: *std.Build.Module, paths: []const u8, comptime kind: HostSearchPathKind) void {
     const separator: ?u8 = blk: {
-        if (std.mem.indexOfScalar(u8, paths, ';') != null) break :blk ';';
+        if (std.mem.findScalar(u8, paths, ';') != null) break :blk ';';
         if (looksLikeWindowsAbsolutePath(paths)) break :blk null;
         break :blk ':';
     };

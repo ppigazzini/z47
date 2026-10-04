@@ -311,7 +311,7 @@ fn solverPackageOptions(base: solve.RuntimeObjectOptions, dmcp_package: ?u8) sol
 pub fn registerSteps(
     b: *std.Build,
     context: host_steps.Context,
-    optimize: std.builtin.OptimizeMode,
+    optimize: std.lang.Optimize,
     dmcp_package: u8,
     decnumber_fastmul: bool,
 ) Bundle {
@@ -676,15 +676,15 @@ pub fn registerSteps(
     };
 }
 
-fn defaultFirmwareLeafOptimize(optimize: std.builtin.OptimizeMode) std.builtin.OptimizeMode {
+fn defaultFirmwareLeafOptimize(optimize: std.lang.Optimize) std.lang.Optimize {
     _ = optimize;
-    return .ReleaseSmall;
+    return .small;
 }
 
 fn addForceCrc32Tool(
     b: *std.Build,
     host_target: std.Build.ResolvedTarget,
-    optimize: std.builtin.OptimizeMode,
+    optimize: std.lang.Optimize,
 ) *std.Build.Step.Compile {
     const exe = b.addExecutable(.{
         .name = "forcecrc32",
@@ -810,14 +810,14 @@ fn addArmGmpBuild(b: *std.Build, board: Board) ArmGmpOutputs {
         \\cp "$install_dir/include/gmp.h" "$header_out"
         \\cp "$install_dir/lib/libgmp.a" "$lib_out"
     ;
-    const script = std.fmt.allocPrint(b.allocator, "{s}{s}{s}", .{ script_prefix, gmp_repo_source, script_suffix }) catch @panic("OOM");
+    const script = b.allocator.print("{s}{s}{s}", .{ script_prefix, gmp_repo_source, script_suffix }) catch @panic("OOM");
 
     const cmd = b.addSystemCommand(&.{ "bash", "-euo", "pipefail", "-c", script, "--" });
     cmd.setCwd(b.path("."));
     cmd.addFileInput(build_common.upstreamPath(b, "subprojects/gmp-6.2.1.wrap"));
     cmd.addArg(@tagName(board));
-    const header = cmd.addOutputFileArg("gmp.h");
-    const library = cmd.addOutputFileArg("libgmp.a");
+    const header = cmd.addOutputFileArg2("gmp.h", .{});
+    const library = cmd.addOutputFileArg2("libgmp.a", .{});
     return .{ .header = header, .library = library };
 }
 
@@ -926,15 +926,15 @@ fn addFirmwareElfBuild(
     cmd.addArg(b.fmt("-I{s}", .{build_common.upstreamPathString(b, "src/c47")}));
     cmd.addArg(b.fmt("-I{s}", .{build_common.upstreamPathString(b, firmwareBoardSourceDir(config.board))}));
     cmd.addArg(b.fmt("-I{s}", .{build_common.upstreamPathString(b, firmwareSdkIncludeDir(config.board))}));
-    cmd.addPrefixedDirectoryArg("-I", version_headers_dir);
-    cmd.addPrefixedDirectoryArg("-I", generated.softmenu_catalogs.dirname());
-    cmd.addPrefixedDirectoryArg("-I", generated.constant_pointers_h.dirname());
-    cmd.addPrefixedDirectoryArg("-I", arm_gmp.header.dirname());
+    cmd.addDirectoryArg2(version_headers_dir, .{ .prefix = "-I" });
+    cmd.addDirectoryArg2(generated.softmenu_catalogs.dirname(), .{ .prefix = "-I" });
+    cmd.addDirectoryArg2(generated.constant_pointers_h.dirname(), .{ .prefix = "-I" });
+    cmd.addDirectoryArg2(arm_gmp.header.dirname(), .{ .prefix = "-I" });
     cmd.addFileInput(generated.softmenu_catalogs);
     cmd.addFileInput(generated.constant_pointers_h);
     cmd.addFileInput(arm_gmp.header);
     if (generated_qspi_header) |header| {
-        cmd.addPrefixedDirectoryArg("-I", header.dirname());
+        cmd.addDirectoryArg2(header.dirname(), .{ .prefix = "-I" });
         cmd.addFileInput(header);
     }
 
@@ -976,13 +976,13 @@ fn addFirmwareElfBuild(
         .pre => b.fmt("{s}_pre.map", .{config.program_name}),
         .final => b.fmt("{s}.map", .{config.map_name}),
     };
-    const map = cmd.addPrefixedOutputFileArg("-Wl,-Map=", map_name);
+    const map = cmd.addOutputFileArg2(map_name, .{ .prefix = "-Wl,-Map=" });
     cmd.addArg("-o");
-    const elf = cmd.addOutputFileArg(switch (phase) {
+    const elf = cmd.addOutputFileArg2(switch (phase) {
         .pre => b.fmt("{s}_pre.elf", .{config.program_name}),
         .final => b.fmt("{s}.elf", .{config.program_name}),
-    });
-    cmd.addPrefixedDirectoryArg("-L", arm_gmp.library.dirname());
+    }, .{});
+    cmd.addDirectoryArg2(arm_gmp.library.dirname(), .{ .prefix = "-L" });
     cmd.addArg("-lgmp");
     cmd.addFileInput(arm_gmp.library);
 
@@ -1020,7 +1020,7 @@ fn addObjcopyBinary(
     }
     cmd.addArgs(&.{ "-O", "binary" });
     cmd.addFileArg(input);
-    const output = cmd.addOutputFileArg(basename);
+    const output = cmd.addOutputFileArg2(basename, .{});
     return .{ .step = &cmd.step, .path = output };
 }
 
@@ -1041,7 +1041,7 @@ fn firmwareSdbBase(board: Board) usize {
 fn addFirmwarePrintIrRuntimeObject(
     b: *std.Build,
     target: std.Build.ResolvedTarget,
-    optimize: std.builtin.OptimizeMode,
+    optimize: std.lang.Optimize,
     name_prefix: []const u8,
     options: stack.RuntimeObjectOptions,
     board: Board,
@@ -1070,7 +1070,7 @@ fn addFirmwarePrintIrRuntimeObject(
 fn addFirmwareAudioRuntimeObject(
     b: *std.Build,
     target: std.Build.ResolvedTarget,
-    optimize: std.builtin.OptimizeMode,
+    optimize: std.lang.Optimize,
     name_prefix: []const u8,
     options: stack.RuntimeObjectOptions,
     board: Board,
@@ -1099,7 +1099,7 @@ fn addFirmwareAudioRuntimeObject(
 fn addFirmwareIoRuntimeObject(
     b: *std.Build,
     target: std.Build.ResolvedTarget,
-    optimize: std.builtin.OptimizeMode,
+    optimize: std.lang.Optimize,
     name_prefix: []const u8,
     options: stack.RuntimeObjectOptions,
     board: Board,
@@ -1134,9 +1134,9 @@ fn addModifyCrcStep(
 ) build_common.StepFile {
     const cmd = b.addSystemCommand(&.{ "bash", build_common.upstreamPathString(b, "tools/modify_crc") });
     cmd.setCwd(b.path("."));
-    cmd.addArtifactArg(forcecrc32);
+    cmd.addArtifactArg2(forcecrc32, .{});
     cmd.addFileArg(input);
-    const output = cmd.addOutputFileArg(basename);
+    const output = cmd.addOutputFileArg2(basename, .{});
     return .{ .step = &cmd.step, .path = output };
 }
 
@@ -1144,7 +1144,7 @@ fn addGenerateQspiCrcStep(b: *std.Build, input: std.Build.LazyPath, basename: []
     const cmd = b.addSystemCommand(&.{ "bash", build_common.upstreamPathString(b, "tools/gen_qspi_crc") });
     cmd.setCwd(b.path("."));
     cmd.addFileArg(input);
-    const output = cmd.addOutputFileArg(basename);
+    const output = cmd.addOutputFileArg2(basename, .{});
     return .{ .step = &cmd.step, .path = output };
 }
 
@@ -1152,7 +1152,7 @@ fn addPgmChecksumStep(b: *std.Build, input: std.Build.LazyPath, basename: []cons
     const cmd = b.addSystemCommand(&.{ "bash", build_common.upstreamPathString(b, "tools/add_pgm_chsum") });
     cmd.setCwd(b.path("."));
     cmd.addFileArg(input);
-    const output = cmd.addOutputFileArg(basename);
+    const output = cmd.addOutputFileArg2(basename, .{});
     return .{ .step = &cmd.step, .path = output };
 }
 
@@ -1177,9 +1177,9 @@ fn addFirmwareSizeReportStep(b: *std.Build, board: Board, section_sizes: std.Bui
 }
 
 fn installFirmwareOutputs(b: *std.Build, subdir: []const u8, firmware_build: Build) void {
-    const program_install = b.addInstallFileWithDir(firmware_build.outputs.program, .prefix, b.fmt("firmware/{s}/{s}", .{ subdir, std.fs.path.basename(firmware_build.outputs.program.getDisplayName()) }));
-    const qspi_install = b.addInstallFileWithDir(firmware_build.outputs.qspi, .prefix, b.fmt("firmware/{s}/{s}", .{ subdir, std.fs.path.basename(firmware_build.outputs.qspi.getDisplayName()) }));
-    const map_install = b.addInstallFileWithDir(firmware_build.outputs.map, .prefix, b.fmt("firmware/{s}/{s}", .{ subdir, std.fs.path.basename(firmware_build.outputs.map.getDisplayName()) }));
+    const program_install = b.addInstallFileWithDir(firmware_build.outputs.program, .prefix, b.fmt("firmware/{s}/{f}", .{ subdir, firmware_build.outputs.program }));
+    const qspi_install = b.addInstallFileWithDir(firmware_build.outputs.qspi, .prefix, b.fmt("firmware/{s}/{f}", .{ subdir, firmware_build.outputs.qspi }));
+    const map_install = b.addInstallFileWithDir(firmware_build.outputs.map, .prefix, b.fmt("firmware/{s}/{f}", .{ subdir, firmware_build.outputs.map }));
     firmware_build.step.dependOn(&program_install.step);
     firmware_build.step.dependOn(&qspi_install.step);
     firmware_build.step.dependOn(&map_install.step);
