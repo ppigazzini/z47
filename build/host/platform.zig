@@ -56,6 +56,14 @@ pub fn resolveCommonConfig(
 }
 
 pub fn linkGtk3(module: *std.Build.Module, common: host_types.CommonConfig) void {
+    if (std.mem.eql(u8, common.platform_define, "OSX")) {
+        // gdk's pkg-config Libs carry `-Wl,-framework,Cocoa` and its siblings, which
+        // Zig does not translate and `.force` therefore fails the build on. `.yes`
+        // drops them: the frameworks are dependencies of the gdk dylib itself, and
+        // the dynamic linker loads them along with it.
+        module.linkSystemLibrary("gtk+-3.0", .{ .use_pkg_config = .yes });
+        return;
+    }
     if (!std.mem.eql(u8, common.platform_define, "WIN32")) {
         module.linkSystemLibrary("gtk+-3.0", .{ .use_pkg_config = .force });
         return;

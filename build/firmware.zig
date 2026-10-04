@@ -705,7 +705,7 @@ fn addArmGmpBuild(b: *std.Build, board: Board) ArmGmpOutputs {
         \\board="$1"
         \\header_out="$2"
         \\lib_out="$3"
-        \\work_dir="$(dirname "$lib_out")/gmp-work"
+        \\work_dir="$(cd "$(dirname "$lib_out")" && pwd)/gmp-work"
         \\repo_source="$PWD/
     ;
     const script_suffix =

@@ -3,7 +3,7 @@
 // SanitizerCoverage trace-pc-guard runtime for Zig-owner coverage (Annex A0).
 //
 // Linked into a host harness built with `sanitize_coverage_trace_pc_guard`
-// (Zig 0.16's `-fsanitize-coverage-trace-pc-guard`, LLVM backend). The compiler
+// (Zig's `-fsanitize-coverage-trace-pc-guard`, LLVM backend). The compiler
 // inserts a call to __sanitizer_cov_trace_pc_guard at every instrumented edge of
 // the Zig owners (and compiled-in C); this runtime records the return address of
 // each FIRST-hit edge and writes the unique PC set to cov_pcs.txt at exit.

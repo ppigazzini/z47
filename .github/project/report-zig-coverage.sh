@@ -6,7 +6,7 @@
 # trace-pc-guard (LLVM backend) + build/tests/coverage/sancov_handler.c, which
 # writes the set of executed edges to cov_pcs.txt. This script symbolizes those
 # PCs (llvm-symbolizer) and reports the covered source lines, grouped by area.
-# kcov is unavailable here and Zig 0.16 has no -fprofile-instr path, so sancov is
+# kcov is unavailable here and Zig has no -fprofile-instr path, so sancov is
 # the coverage mechanism; the toy proof that Zig code IS instrumentable this way
 # is in the commit that introduced the handler.
 #

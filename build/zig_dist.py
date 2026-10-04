@@ -33,6 +33,12 @@ def load_upstream_root_value() -> str:
     raise SystemExit(f"missing UPSTREAM_ROOT in {UPSTREAM_PIN_PATH}")
 
 
+def resolve_argument(path_value: str) -> Path:
+    # The build passes cache paths relative to the CWD it gave this process, and
+    # several commands below run a child from a staging directory.
+    return Path(path_value).absolute()
+
+
 def resolve_repo_relative(path_value: str) -> Path:
     path = Path(path_value)
     if not path.is_absolute():
@@ -481,84 +487,89 @@ def main(argv: list[str]) -> int:
     command = argv[1]
 
     if command == "clone-wiki":
-        clone_wiki(Path(argv[2]))
+        clone_wiki(resolve_argument(argv[2]))
         return 0
 
     if command == "make-testpgms":
-        make_testpgms_zip(Path(argv[2]), Path(argv[3]), Path(argv[4]), Path(argv[5]))
+        make_testpgms_zip(
+            resolve_argument(argv[2]),
+            resolve_argument(argv[3]),
+            resolve_argument(argv[4]),
+            resolve_argument(argv[5]),
+        )
         return 0
 
     if command == "package-host":
         flavor = argv[2]
-        wiki_dir = Path(argv[10]) if len(argv) > 10 else None
+        wiki_dir = resolve_argument(argv[10]) if len(argv) > 10 else None
         package_host(
             flavor,
-            Path(argv[3]),
+            resolve_argument(argv[3]),
             argv[4],
-            Path(argv[5]),
-            Path(argv[6]),
-            Path(argv[7]),
-            Path(argv[8]),
-            Path(argv[9]),
+            resolve_argument(argv[5]),
+            resolve_argument(argv[6]),
+            resolve_argument(argv[7]),
+            resolve_argument(argv[8]),
+            resolve_argument(argv[9]),
             wiki_dir,
         )
         return 0
 
     if command == "package-dmcp":
-        wiki_dir = Path(argv[10]) if len(argv) > 11 else None
+        wiki_dir = resolve_argument(argv[10]) if len(argv) > 11 else None
         include_packages = (
             argv[11] == "with-packages" if wiki_dir is not None else argv[10] == "with-packages"
         )
         package_dmcp(
-            Path(argv[2]),
+            resolve_argument(argv[2]),
             argv[3],
-            Path(argv[4]),
-            Path(argv[5]),
-            Path(argv[6]),
-            Path(argv[7]),
-            Path(argv[8]),
-            Path(argv[9]),
+            resolve_argument(argv[4]),
+            resolve_argument(argv[5]),
+            resolve_argument(argv[6]),
+            resolve_argument(argv[7]),
+            resolve_argument(argv[8]),
+            resolve_argument(argv[9]),
             wiki_dir,
             include_packages,
         )
         return 0
 
     if command == "package-dmcpr47":
-        wiki_dir = Path(argv[10]) if len(argv) > 10 else None
+        wiki_dir = resolve_argument(argv[10]) if len(argv) > 10 else None
         package_dmcpr47(
-            Path(argv[2]),
+            resolve_argument(argv[2]),
             argv[3],
-            Path(argv[4]),
-            Path(argv[5]),
-            Path(argv[6]),
-            Path(argv[7]),
-            Path(argv[8]),
-            Path(argv[9]),
+            resolve_argument(argv[4]),
+            resolve_argument(argv[5]),
+            resolve_argument(argv[6]),
+            resolve_argument(argv[7]),
+            resolve_argument(argv[8]),
+            resolve_argument(argv[9]),
             wiki_dir,
         )
         return 0
 
     if command == "package-dmcp5":
         package_dmcp5(
-            Path(argv[2]),
+            resolve_argument(argv[2]),
             argv[3],
-            Path(argv[4]),
-            Path(argv[5]),
-            Path(argv[6]),
-            Path(argv[7]),
-            Path(argv[8]),
+            resolve_argument(argv[4]),
+            resolve_argument(argv[5]),
+            resolve_argument(argv[6]),
+            resolve_argument(argv[7]),
+            resolve_argument(argv[8]),
         )
         return 0
 
     if command == "package-dmcp5r47":
         package_dmcp5r47(
-            Path(argv[2]),
+            resolve_argument(argv[2]),
             argv[3],
-            Path(argv[4]),
-            Path(argv[5]),
-            Path(argv[6]),
-            Path(argv[7]),
-            Path(argv[8]),
+            resolve_argument(argv[4]),
+            resolve_argument(argv[5]),
+            resolve_argument(argv[6]),
+            resolve_argument(argv[7]),
+            resolve_argument(argv[8]),
             argv[9],
         )
         return 0

@@ -107,11 +107,6 @@ test "a region that SHRANK contributes only what is still free" {
 }
 
 test "intact poison reports nothing and one changed byte reports its offset" {
-    // `@splat`, not `[_]u8{POISON} ** 16`: Zig master (0.17.0-dev) rejects the
-    // repetition form here with "binary operator '*' has whitespace on one side,
-    // but not the other", which 0.16.0 accepts. The zig-master compatibility
-    // monitor is a CI lane, so a construct only one toolchain takes breaks the
-    // build; @splat is accepted by both and says the same thing more directly.
     var buf: [16]u8 = @splat(POISON);
     try std.testing.expect(firstDisturbed(&buf) == null);
     buf[7] = 0;
