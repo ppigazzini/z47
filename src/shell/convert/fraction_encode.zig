@@ -18,12 +18,11 @@
 const std = @import("std");
 
 // memmove of `n` bytes from dest[insert_at ..] to dest[insert_at + 2 ..],
-// matching the owner's xcopy right-shift-by-two (dest > source, so copy
-// backwards to survive the overlap).
+// matching the owner's xcopy right-shift-by-two.
 fn shiftRightTwo(dest: [*]u8, insert_at: i16, n: i16) void {
     const ia: usize = @intCast(insert_at);
     const cnt: usize = @intCast(n);
-    std.mem.copyBackwards(u8, dest[ia + 2 .. ia + 2 + cnt], dest[ia .. ia + cnt]);
+    @memmove(dest[ia + 2 .. ia + 2 + cnt], dest[ia .. ia + cnt]);
 }
 
 /// Encode `value` into `dest` at `ending_zero.*` as two-byte digit glyphs based

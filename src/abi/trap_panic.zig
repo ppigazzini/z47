@@ -39,7 +39,7 @@ const std = @import("std");
 const builtin = @import("builtin");
 
 /// Install in an object root as `pub const panic = abi.trap_panic.namespace;`.
-/// The decl must live in the ROOT source file of the compilation: `std.builtin`
+/// The decl must live in the ROOT source file of the compilation: `std.lang`
 /// reads `root.panic`, and a namespace exported from anywhere else is ignored
 /// without a diagnostic.
 pub const namespace = if (builtin.target.os.tag == .freestanding)
@@ -50,6 +50,6 @@ else
 test "the hosted branch keeps Zig's default handler" {
     // The point of the target switch: a host test that trips a safety check must
     // still get the message and the stack trace, so the hosted branch has to be
-    // the exact default `std.builtin.panic` would have selected.
+    // the exact default `std.lang.panic` would have selected.
     try std.testing.expect(namespace == std.debug.FullPanic(std.debug.defaultPanic));
 }

@@ -78,7 +78,7 @@ fn asRegister(regist: u16) calcRegister_t {
 }
 
 fn bufPrintZ(buffer: []u8, comptime format: []const u8, args: anytype) [:0]const u8 {
-    const slice = std.fmt.bufPrint(buffer[0 .. buffer.len - 1], format, args) catch buffer[0..0];
+    const slice = std.mem.print(buffer[0 .. buffer.len - 1], format, args) catch buffer[0..0];
     buffer[slice.len] = 0;
     return buffer[0..slice.len :0];
 }

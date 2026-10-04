@@ -20,7 +20,7 @@ pub fn getFreeRamMemory() u32 {
 }
 
 pub fn debugMemory(message: [*:0]const u8) void {
-    if (comptime builtin.os.tag == .freestanding) {
+    if (comptime builtin.target.os.tag == .freestanding) {
         return;
     }
 

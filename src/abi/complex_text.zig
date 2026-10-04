@@ -21,10 +21,10 @@ fn isSpace(c: u8) bool {
     return c == ' ' or c == '\t' or c == '\n' or c == '\r';
 }
 
-// bufPrint into dest + NUL terminate, matching abi.fmtCStr's "caller guarantees
+// Print into dest + NUL terminate, matching abi.fmtCStr's "caller guarantees
 // the buffer is big enough" contract (dest is a 200-byte scratch buffer).
 fn putCStr(dest: []u8, comptime fmt: []const u8, args: anytype) void {
-    const s = std.fmt.bufPrint(dest, fmt, args) catch dest[0..0];
+    const s = std.mem.print(dest, fmt, args) catch dest[0..0];
     dest[s.len] = 0;
 }
 

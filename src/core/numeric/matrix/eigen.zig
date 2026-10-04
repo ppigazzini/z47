@@ -58,9 +58,7 @@ const FLAG_ASLIFT: i32 = 0xc023;
 const ERROR_MATRIX_MISMATCH: u8 = 21;
 
 fn bufPrintZ(buffer: []u8, comptime format: []const u8, args: anytype) ![:0]u8 {
-    const slice = try std.fmt.bufPrint(buffer[0 .. buffer.len - 1], format, args);
-    buffer[slice.len] = 0;
-    return buffer[0..slice.len :0];
+    return std.mem.printSentinel(buffer, format, args, 0);
 }
 
 // --- decNumber primitives (operands *align(1) so blob constants + 159-digit

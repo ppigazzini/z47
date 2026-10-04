@@ -232,7 +232,7 @@ fn addTestPgmsZipStep(
 ) build_common.StepFile {
     const cmd = b.addSystemCommand(&.{ "python3", dist_script_path, "make-testpgms" });
     cmd.setCwd(b.path("."));
-    const output = cmd.addOutputFileArg("testPgms.zip");
+    const output = cmd.addOutputFileArg2("testPgms.zip", .{});
     cmd.addFileArg(c47_bin);
     cmd.addFileArg(test_pgms_bin);
     cmd.addFileArg(test_pgms_txt);
@@ -253,14 +253,14 @@ fn addHostDistZipStep(
 ) build_common.StepFile {
     const cmd = b.addSystemCommand(&.{ "python3", dist_script_path, "package-host", flavor });
     cmd.setCwd(b.path("."));
-    const output = cmd.addOutputFileArg(zip_name);
+    const output = cmd.addOutputFileArg2(zip_name, .{});
     cmd.addArg(stage_name);
     cmd.addFileArg(c47_bin);
     cmd.addFileArg(r47_bin);
     cmd.addFileArg(test_pgms_bin);
     cmd.addFileArg(test_pgms_txt);
     cmd.addFileArg(test_pgms_zip);
-    if (wiki_dir) |dir| cmd.addDirectoryArg(dir);
+    if (wiki_dir) |dir| cmd.addDirectoryArg2(dir, .{});
     return .{ .step = &cmd.step, .path = output };
 }
 
@@ -280,7 +280,7 @@ fn addDmcpDistZipStep(
     _ = version;
     const cmd = b.addSystemCommand(&.{ "python3", dist_script_path, command });
     cmd.setCwd(b.path("."));
-    const output = cmd.addOutputFileArg(zip_name);
+    const output = cmd.addOutputFileArg2(zip_name, .{});
     cmd.addArg(stage_name);
     cmd.addFileArg(outputs.program);
     cmd.addFileArg(outputs.qspi);
@@ -288,7 +288,7 @@ fn addDmcpDistZipStep(
     cmd.addFileArg(test_pgms_bin);
     cmd.addFileArg(test_pgms_txt);
     cmd.addFileArg(test_pgms_zip);
-    if (wiki_dir) |dir| cmd.addDirectoryArg(dir);
+    if (wiki_dir) |dir| cmd.addDirectoryArg2(dir, .{});
     if (std.mem.eql(u8, command, "package-dmcp")) {
         cmd.addArg(if (include_packages) "with-packages" else "without-packages");
     }
@@ -308,7 +308,7 @@ fn addDmcp5DistZipStep(
 ) build_common.StepFile {
     const cmd = b.addSystemCommand(&.{ "python3", dist_script_path, command });
     cmd.setCwd(b.path("."));
-    const output = cmd.addOutputFileArg(zip_name);
+    const output = cmd.addOutputFileArg2(zip_name, .{});
     cmd.addArg(stage_name);
     cmd.addFileArg(outputs.program);
     cmd.addFileArg(outputs.map);

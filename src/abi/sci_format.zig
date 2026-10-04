@@ -95,7 +95,7 @@ pub fn sciFmt(buf: []u8, x_arg: f64) void {
     }
 
     const dest = buf[i..];
-    const written = std.fmt.bufPrint(dest, "e{s}{d:0>2}", .{ if (exp < 0) "-" else "+", @abs(exp) }) catch dest[0..0];
+    const written = std.mem.print(dest, "e{s}{d:0>2}", .{ if (exp < 0) "-" else "+", @abs(exp) }) catch dest[0..0];
     i += written.len;
     buf[i] = 0;
 }
@@ -164,7 +164,7 @@ pub fn normalizeDoubleString(buf: []u8, x: f64) void {
 const testing = std.testing;
 
 fn asStr(buf: []const u8) []const u8 {
-    const nul = std.mem.indexOfScalar(u8, buf, 0) orelse buf.len;
+    const nul = std.mem.findScalar(u8, buf, 0) orelse buf.len;
     return buf[0..nul];
 }
 

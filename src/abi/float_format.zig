@@ -220,7 +220,7 @@ pub fn fmtExpBuf(buf: []u8, precision: usize, value: f64) []u8 {
     w.c(if (x < 0) '-' else '+');
     const ax: u64 = @intCast(if (x < 0) -x else x);
     var eb: [8]u8 = undefined;
-    const es = std.fmt.bufPrint(&eb, "{d}", .{ax}) catch unreachable;
+    const es = std.mem.print(&eb, "{d}", .{ax}) catch unreachable;
     if (es.len < 2) w.c('0');
     w.s(es);
     return buf[0..w.p];
@@ -316,7 +316,7 @@ pub fn fmtGBuf(buf: []u8, width: usize, precision: usize, upper: bool, value: f6
     // A NaN or an infinity has no exponent to read: %g prints the same word,
     // right-justified, which is what C does.
     const e = fmtExpBuf(&tmp, P - 1, value);
-    const epos = std.mem.indexOfScalar(u8, e, 'e') orelse {
+    const epos = std.mem.findScalar(u8, e, 'e') orelse {
         var pos: usize = 0;
         if (e.len < width) {
             for (0..width - e.len) |_| {
@@ -346,15 +346,15 @@ pub fn fmtGBuf(buf: []u8, width: usize, precision: usize, upper: bool, value: f6
 
     // Strip trailing zeros in the mantissa (keep any exponent tail).
     var s = body[0..blen];
-    const ei = std.mem.indexOfScalar(u8, s, 'e');
+    const ei = std.mem.findScalar(u8, s, 'e');
     const mant_end = ei orelse s.len;
-    if (std.mem.indexOfScalar(u8, s[0..mant_end], '.') != null) {
+    if (std.mem.findScalar(u8, s[0..mant_end], '.') != null) {
         var end = mant_end;
         while (end > 0 and s[end - 1] == '0') end -= 1;
         if (end > 0 and s[end - 1] == '.') end -= 1;
         if (ei) |j| {
             const tail_len = s.len - j;
-            std.mem.copyForwards(u8, s[end .. end + tail_len], s[j..]);
+            @memmove(s[end .. end + tail_len], s[j..]);
             s = s[0 .. end + tail_len];
         } else {
             s = s[0..end];

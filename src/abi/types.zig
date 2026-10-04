@@ -595,14 +595,11 @@ pub const matrixComplexElems = registers.matrixComplexElems;
 pub const matrixConstComplexElems = registers.matrixConstComplexElems;
 
 /// Format `args` into `buf` with a trailing NUL, like C `sprintf`/`snprintf`.
-/// Built on the stable `std.fmt.bufPrint` -- NOT `bufPrintZ`, which Zig
-/// 0.17-dev removed -- so the migrated call sites survive a toolchain bump and a
-/// future std.fmt change is absorbed in this single place. `buf` must fit the
-/// output (proven per call site by the format-equivalence oracle over a bounded
-/// scratch buffer), matching the C sprintf "caller guarantees the size" contract.
+/// `buf` must fit the output (proven per call site by the format-equivalence
+/// oracle over a bounded scratch buffer), matching the C sprintf "caller
+/// guarantees the size" contract.
 pub fn fmtBufZ(buf: []u8, comptime fmt: []const u8, args: anytype) void {
-    const written = std.fmt.bufPrint(buf[0 .. buf.len - 1], fmt, args) catch unreachable;
-    buf[written.len] = 0;
+    _ = std.mem.printSentinel(buf, fmt, args, 0) catch unreachable;
 }
 
 /// Like fmtBufZ but for a raw C `[*c]u8` destination whose backing size is not
@@ -614,7 +611,7 @@ pub fn fmtBufZ(buf: []u8, comptime fmt: []const u8, args: anytype) void {
 /// stage covers every display/label/save-line these sites produce (asserted).
 pub fn fmtCStr(dst: [*c]u8, comptime fmt: []const u8, args: anytype) void {
     var stage: [512]u8 = undefined;
-    const s = std.fmt.bufPrint(&stage, fmt, args) catch unreachable;
+    const s = std.mem.print(&stage, fmt, args) catch unreachable;
     @memcpy(dst[0..s.len], s);
     dst[s.len] = 0;
 }
@@ -624,7 +621,7 @@ pub fn fmtCStr(dst: [*c]u8, comptime fmt: []const u8, args: anytype) void {
 /// caller advances by the length (e.g. the clipboard/CSV stream writers).
 pub fn fmtCStrN(dst: [*c]u8, comptime fmt: []const u8, args: anytype) usize {
     var stage: [512]u8 = undefined;
-    const s = std.fmt.bufPrint(&stage, fmt, args) catch unreachable;
+    const s = std.mem.print(&stage, fmt, args) catch unreachable;
     @memcpy(dst[0..s.len], s);
     dst[s.len] = 0;
     return s.len;
@@ -651,7 +648,7 @@ pub const block_math = @import("block_math.zig");
 // The panic namespace the load-path object ROOTS install, so that raising
 // runtime safety over an untrusted parse is affordable on the firmware. Install
 // as `pub const panic = abi.trap_panic.namespace;` and only in a root source
-// file -- `std.builtin` reads `root.panic` and ignores it anywhere else.
+// file -- `std.lang` reads `root.panic` and ignores it anywhere else.
 pub const trap_panic = @import("trap_panic.zig");
 
 // Shared std-only header-line match / integer parse, used by BOTH file families

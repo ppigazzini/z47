@@ -119,7 +119,7 @@ pub inline fn handleResizeProgramMemoryOutOfMemory(deltaBlocks: u16) void {
         return;
     }
 
-    if (builtin.os.tag == .freestanding) {
+    if (builtin.target.os.tag == .freestanding) {
         backToSystem(NOPARAM);
         return;
     }

@@ -121,7 +121,7 @@ grep for step strings misses them.
 
 The live project-specific options reported by `zig build --help` are:
 
-- `-Doptimize=<Debug|ReleaseSafe|ReleaseFast|ReleaseSmall>`
+- `-Doptimize=<debug|safe|fast|small>`
 - `-Dci-commit-tag=<string>`
 - `-Draspberry=<bool>` (default `false`)
 - `-Ddecnumber-fastmul=<bool>` (default `true`)

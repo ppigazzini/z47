@@ -17,7 +17,7 @@ pub const RuntimeObjects = struct {
 
 pub const RuntimeObjectOptions = struct {
     strip: ?bool = null,
-    unwind_tables: ?std.builtin.UnwindTables = null,
+    unwind_tables: ?std.lang.UnwindTables = null,
     stack_protector: ?bool = null,
     stack_check: ?bool = null,
     omit_frame_pointer: ?bool = null,
@@ -81,7 +81,7 @@ pub const FirmwareModuleConfig = struct {
 fn addRuntimeObjectWithIncludeDir(
     b: *std.Build,
     target: std.Build.ResolvedTarget,
-    optimize: std.builtin.OptimizeMode,
+    optimize: std.lang.Optimize,
     name_prefix: []const u8,
     root_source_file: std.Build.LazyPath,
     options: RuntimeObjectOptions,
@@ -175,7 +175,7 @@ fn configureFirmwareModule(module: *std.Build.Module, config: FirmwareModuleConf
 pub fn addRuntimeObjects(
     b: *std.Build,
     target: std.Build.ResolvedTarget,
-    optimize: std.builtin.OptimizeMode,
+    optimize: std.lang.Optimize,
     name_prefix: []const u8,
 ) RuntimeObjects {
     return addRuntimeObjectsWithOptions(b, target, optimize, name_prefix, .{});
@@ -184,7 +184,7 @@ pub fn addRuntimeObjects(
 pub fn addRuntimeObjectsWithOptions(
     b: *std.Build,
     target: std.Build.ResolvedTarget,
-    optimize: std.builtin.OptimizeMode,
+    optimize: std.lang.Optimize,
     name_prefix: []const u8,
     options: RuntimeObjectOptions,
 ) RuntimeObjects {
@@ -206,7 +206,7 @@ pub fn addRuntimeObjectsWithOptions(
 pub fn addHostRuntimeObjects(
     b: *std.Build,
     target: std.Build.ResolvedTarget,
-    optimize: std.builtin.OptimizeMode,
+    optimize: std.lang.Optimize,
     name_prefix: []const u8,
     config: HostModuleConfig,
 ) RuntimeObjects {
@@ -216,7 +216,7 @@ pub fn addHostRuntimeObjects(
 pub fn addHostRuntimeObjectsWithOptions(
     b: *std.Build,
     target: std.Build.ResolvedTarget,
-    optimize: std.builtin.OptimizeMode,
+    optimize: std.lang.Optimize,
     name_prefix: []const u8,
     config: HostModuleConfig,
     options: RuntimeObjectOptions,
@@ -229,7 +229,7 @@ pub fn addHostRuntimeObjectsWithOptions(
 pub fn addFirmwareRuntimeObjects(
     b: *std.Build,
     target: std.Build.ResolvedTarget,
-    optimize: std.builtin.OptimizeMode,
+    optimize: std.lang.Optimize,
     name_prefix: []const u8,
     config: FirmwareModuleConfig,
 ) RuntimeObjects {
@@ -239,7 +239,7 @@ pub fn addFirmwareRuntimeObjects(
 pub fn addFirmwareRuntimeObjectsWithOptions(
     b: *std.Build,
     target: std.Build.ResolvedTarget,
-    optimize: std.builtin.OptimizeMode,
+    optimize: std.lang.Optimize,
     name_prefix: []const u8,
     config: FirmwareModuleConfig,
     options: RuntimeObjectOptions,

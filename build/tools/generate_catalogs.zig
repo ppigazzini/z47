@@ -223,7 +223,7 @@ fn cStringZ(bytes: *const [16]u8) [*:0]const u8 {
 
 fn writePaddedInt(file: *c.FILE, value: i32, width: usize) !void {
     var buffer: [32]u8 = undefined;
-    const text = try std.fmt.bufPrint(&buffer, "{d}", .{value});
+    const text = try std.mem.print(&buffer, "{d}", .{value});
     const padding = if (text.len < width) width - text.len else 0;
 
     var count: usize = 0;
@@ -235,7 +235,7 @@ fn writePaddedInt(file: *c.FILE, value: i32, width: usize) !void {
 
 fn writePrint(file: *c.FILE, comptime fmt: []const u8, args: anytype) !void {
     var buffer: [256]u8 = undefined;
-    const text = try std.fmt.bufPrint(&buffer, fmt, args);
+    const text = try std.mem.print(&buffer, fmt, args);
     try writeAll(file, text);
 }
 

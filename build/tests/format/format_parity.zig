@@ -10,7 +10,7 @@
 //
 // This harness is that proof. For every entry in TABLE it drives a fuzz matrix
 // of values through BOTH libc `snprintf` (the ground truth, linked here) and the
-// candidate `std.fmt.bufPrint` translation, and asserts the bytes are identical.
+// candidate `std.mem.print` translation, and asserts the bytes are identical.
 // A migration may only adopt a (C spec -> Zig fmt) pair that is GREEN here; a
 // pair that mismatches (e.g. `%04d` vs `{d:0>4}` on negatives -- C sign-then-pad
 // vs Zig fill-then-sign) is reported and MUST NOT be applied over that range.
@@ -61,7 +61,7 @@ fn proveSignedDecimal(
     var zbuf: [64]u8 = undefined;
     for (values) |v| {
         const c = cFmt(&cbuf, cspec, @as(c_int, @intCast(v)));
-        const z = std.fmt.bufPrint(&zbuf, zfmt, .{v}) catch unreachable;
+        const z = std.mem.print(&zbuf, zfmt, .{v}) catch unreachable;
         expectEqualStr(label, cspec, zfmt, c, z, "signed");
     }
 }
@@ -80,7 +80,7 @@ fn proveNonNegZeroPad(
     var zbuf: [64]u8 = undefined;
     for (values) |v| {
         const c = cFmt(&cbuf, cspec, @as(c_int, @intCast(v)));
-        const z = std.fmt.bufPrint(&zbuf, zfmt, .{@as(u64, @intCast(v))}) catch unreachable;
+        const z = std.mem.print(&zbuf, zfmt, .{@as(u64, @intCast(v))}) catch unreachable;
         expectEqualStr(label, cspec, zfmt, c, z, "nonneg->unsigned");
     }
 }
@@ -96,7 +96,7 @@ fn proveNonNegSpacePad(
     var zbuf: [64]u8 = undefined;
     for (values) |v| {
         const c = cFmt(&cbuf, cspec, @as(c_int, @intCast(v)));
-        const z = std.fmt.bufPrint(&zbuf, zfmt, .{@as(u64, @intCast(v))}) catch unreachable;
+        const z = std.mem.print(&zbuf, zfmt, .{@as(u64, @intCast(v))}) catch unreachable;
         expectEqualStr(label, cspec, zfmt, c, z, "nonneg-space->unsigned");
     }
 }
@@ -112,7 +112,7 @@ fn proveUnsigned(
     var zbuf: [64]u8 = undefined;
     for (values) |v| {
         const c = cFmt(&cbuf, cspec, @as(c_uint, @intCast(v)));
-        const z = std.fmt.bufPrint(&zbuf, zfmt, .{v}) catch unreachable;
+        const z = std.mem.print(&zbuf, zfmt, .{v}) catch unreachable;
         expectEqualStr(label, cspec, zfmt, c, z, "unsigned");
     }
 }
@@ -176,7 +176,7 @@ pub fn main() !void {
         var ch: u8 = 32;
         while (ch < 127) : (ch += 1) {
             const c = cFmt(&cbuf, "%c", @as(c_int, ch));
-            const z = std.fmt.bufPrint(&zbuf, "{c}", .{ch}) catch unreachable;
+            const z = std.mem.print(&zbuf, "{c}", .{ch}) catch unreachable;
             expectEqualStr("c", "%c", "{c}", c, z, "char");
         }
     }
@@ -188,13 +188,13 @@ pub fn main() !void {
         const samples = [_][:0]const u8{ "", "A", "abc", "hello", "0.0", "PI" };
         for (samples) |s| {
             const c = cFmt(&cbuf, "%s", s.ptr);
-            const z = std.fmt.bufPrint(&zbuf, "{s}", .{s}) catch unreachable;
+            const z = std.mem.print(&zbuf, "{s}", .{s}) catch unreachable;
             expectEqualStr("s", "%s", "{s}", c, z, "string");
         }
         // width-padded string: C `%8s` right-justifies with spaces.
         for (samples) |s| {
             const c = cFmt(&cbuf, "%8s", s.ptr);
-            const z = std.fmt.bufPrint(&zbuf, "{s: >8}", .{s}) catch unreachable;
+            const z = std.mem.print(&zbuf, "{s: >8}", .{s}) catch unreachable;
             expectEqualStr("8s", "%8s", "{s: >8}", c, z, "string-width");
         }
     }
@@ -206,7 +206,7 @@ pub fn main() !void {
         var cbuf: [64]u8 = undefined;
         var zbuf: [64]u8 = undefined;
         const c = cFmt(&cbuf, "%04d", @as(c_int, -42));
-        const z = std.fmt.bufPrint(&zbuf, "{d:0>4}", .{@as(i64, -42)}) catch unreachable;
+        const z = std.mem.print(&zbuf, "{d:0>4}", .{@as(i64, -42)}) catch unreachable;
         if (std.mem.eql(u8, c, z)) {
             std.debug.print("  UNEXPECTED: %04d and {{d:0>4}} agree on -42 (\"{s}\"); tighten the guard\n", .{c});
             fail_count += 1;
@@ -225,7 +225,7 @@ pub fn main() !void {
         var cbuf: [80]u8 = undefined;
         var zbuf: [80]u8 = undefined;
         const c = cFmt(&cbuf, "%.16e", @as(f64, -3.14159));
-        const z = std.fmt.bufPrint(&zbuf, "{e:.16}", .{@as(f64, -3.14159)}) catch unreachable;
+        const z = std.mem.print(&zbuf, "{e:.16}", .{@as(f64, -3.14159)}) catch unreachable;
         if (std.mem.eql(u8, c, z)) {
             std.debug.print("  UNEXPECTED: C %.16e and Zig {{e:.16}} now agree (\"{s}\") -- revisit float path\n", .{c});
             fail_count += 1;

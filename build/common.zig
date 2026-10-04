@@ -206,7 +206,7 @@ pub fn upstreamPathString(b: *std.Build, relative: []const u8) []const u8 {
     const upstream_root = upstreamRootString(b);
     if (std.mem.eql(u8, upstream_root, ".")) return relative;
 
-    return std.fs.path.join(b.allocator, &.{ upstream_root, relative }) catch @panic("OOM");
+    return std.Io.Dir.path.join(b.allocator, &.{ upstream_root, relative }) catch @panic("OOM");
 }
 
 pub fn upstreamPath(b: *std.Build, relative: []const u8) std.Build.LazyPath {
@@ -218,7 +218,7 @@ pub fn addBashCommand(b: *std.Build, script: []const u8) *std.Build.Step.Run {
 }
 
 pub fn addBashCommandFmt(b: *std.Build, comptime fmt: []const u8, args: anytype) *std.Build.Step.Run {
-    const script = std.fmt.allocPrint(b.allocator, fmt, args) catch @panic("OOM");
+    const script = b.allocator.print(fmt, args) catch @panic("OOM");
     const cmd = b.addSystemCommand(&.{ "bash", "-euo", "pipefail", "-c", script });
     cmd.setCwd(b.path("."));
     return cmd;
@@ -254,9 +254,9 @@ pub fn collectRelativeCFiles(b: *std.Build, root_path: []const u8) ![][]const u8
         if (std.mem.eql(u8, entry.path, "reservedRegisterLookupGenerator.c")) continue;
 
         const relative_path = try b.allocator.dupe(u8, entry.path);
-        if (std.fs.path.sep != '/') {
+        if (std.Io.Dir.path.sep != '/') {
             for (relative_path) |*byte| {
-                if (byte.* == std.fs.path.sep) byte.* = '/';
+                if (byte.* == std.Io.Dir.path.sep) byte.* = '/';
             }
         }
 

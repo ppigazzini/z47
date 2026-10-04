@@ -170,8 +170,8 @@ firmware artifact while keeping those checked-in build-surface names unchanged.
 - The host package lanes stage the same simulator binaries produced by the host
   build graph rather than compiling a separate dist-only host executable pair.
 - The published desktop host artifacts use `ReleaseFast` simulator binaries:
-  Linux via `zig build -Doptimize=ReleaseFast dist_linux`, and the macOS and
-  Windows workflow lanes rebuild `both` with `-Doptimize=ReleaseFast` before
+  Linux via `zig build -Doptimize=fast dist_linux`, and the macOS and
+  Windows workflow lanes rebuild `both` with `-Doptimize=fast` before
   smoke and staging.
 - On x86 and x86_64 hosts, `../build/common.zig` resolves the host package
   target with a baseline CPU model instead of inheriting runner-native CPU

@@ -146,7 +146,7 @@ test "parseU32 accepts every version the caller's range check admits" {
     // accepted window must round-trip exactly.
     for ([_]u32{ 10_000_000, 10_000_025, 15_000_000, 19_999_999, 20_000_000 }) |v| {
         var buf: [16]u8 = @splat(0);
-        const s = std.fmt.bufPrint(buf[0..15], "{d}", .{v}) catch unreachable;
+        const s = std.mem.print(buf[0..15], "{d}", .{v}) catch unreachable;
         try std.testing.expectEqual(v, parseU32(buf[0 .. s.len + 1]));
     }
 }
@@ -160,7 +160,7 @@ test "parseU8 truncates an out-of-range byte exactly as upstream does" {
     // Every in-range byte is unchanged, so no valid program file moves.
     for ([_]u8{ 0, 1, 127, 128, 254, 255 }) |v| {
         var buf: [8]u8 = @splat(0);
-        const s = std.fmt.bufPrint(buf[0..7], "{d}", .{v}) catch unreachable;
+        const s = std.mem.print(buf[0..7], "{d}", .{v}) catch unreachable;
         try std.testing.expectEqual(v, parseU8(buf[0 .. s.len + 1]));
     }
 }

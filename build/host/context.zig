@@ -20,7 +20,7 @@ const host_types = @import("types.zig");
 
 pub fn prepareContext(
     b: *std.Build,
-    optimize: std.builtin.OptimizeMode,
+    optimize: std.lang.Optimize,
     ci_commit_tag: []const u8,
     raspberry: bool,
     decnumber_fastmul: bool,

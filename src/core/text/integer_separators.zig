@@ -18,12 +18,12 @@ fn strlen(p: [*]const u8) i16 {
     return i;
 }
 
-// memmove the `n` bytes at [src_at, src_at+n) right by `shift` (dest > src, so
-// copy backwards to survive the overlap) -- the owner's xcopy right-shift.
+// memmove the `n` bytes at [src_at, src_at+n) right by `shift` -- the owner's
+// xcopy right-shift.
 fn moveRight(display: [*]u8, src_at: i16, shift: usize, n: i16) void {
     const s: usize = @intCast(src_at);
     const cnt: usize = @intCast(n);
-    std.mem.copyBackwards(u8, display[s + shift .. s + shift + cnt], display[s .. s + cnt]);
+    @memmove(display[s + shift .. s + shift + cnt], display[s .. s + cnt]);
 }
 
 /// Splice group separators into the NUL-terminated integer string `display`.

@@ -47,7 +47,7 @@ pub const RuntimeObjects = struct {
 
 pub const RuntimeObjectOptions = struct {
     strip: ?bool = null,
-    unwind_tables: ?std.builtin.UnwindTables = null,
+    unwind_tables: ?std.lang.UnwindTables = null,
     stack_protector: ?bool = null,
     stack_check: ?bool = null,
     omit_frame_pointer: ?bool = null,
@@ -57,7 +57,7 @@ pub const RuntimeObjectOptions = struct {
 fn addRuntimeObject(
     b: *std.Build,
     target: std.Build.ResolvedTarget,
-    optimize: std.builtin.OptimizeMode,
+    optimize: std.lang.Optimize,
     name_prefix: []const u8,
     name_suffix: []const u8,
     root_source_file: []const u8,
@@ -90,7 +90,7 @@ fn addRuntimeObject(
 pub fn addRuntimeObjects(
     b: *std.Build,
     target: std.Build.ResolvedTarget,
-    optimize: std.builtin.OptimizeMode,
+    optimize: std.lang.Optimize,
     name_prefix: []const u8,
 ) RuntimeObjects {
     return addRuntimeObjectsWithOptions(b, target, optimize, name_prefix, .{});
@@ -99,7 +99,7 @@ pub fn addRuntimeObjects(
 pub fn addRuntimeObjectsWithOptions(
     b: *std.Build,
     target: std.Build.ResolvedTarget,
-    optimize: std.builtin.OptimizeMode,
+    optimize: std.lang.Optimize,
     name_prefix: []const u8,
     options: RuntimeObjectOptions,
 ) RuntimeObjects {
@@ -127,7 +127,7 @@ pub fn filterCoreSources(b: *std.Build, core_sources: [][]const u8) ![][]const u
 pub fn addParityExecutable(
     b: *std.Build,
     target: std.Build.ResolvedTarget,
-    optimize: std.builtin.OptimizeMode,
+    optimize: std.lang.Optimize,
     runtime_objects: RuntimeObjects,
 ) *std.Build.Step.Compile {
     const exe = b.addExecutable(.{
@@ -158,7 +158,7 @@ pub fn addParityExecutable(
 pub fn addRotateBitsParityExecutable(
     b: *std.Build,
     target: std.Build.ResolvedTarget,
-    optimize: std.builtin.OptimizeMode,
+    optimize: std.lang.Optimize,
     rotate_bits_object: *std.Build.Step.Compile,
 ) *std.Build.Step.Compile {
     const exe = b.addExecutable(.{

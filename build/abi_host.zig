@@ -10,7 +10,7 @@ const std = @import("std");
 pub fn addObject(
     b: *std.Build,
     target: std.Build.ResolvedTarget,
-    optimize: std.builtin.OptimizeMode,
+    optimize: std.lang.Optimize,
     name_prefix: []const u8,
 ) *std.Build.Step.Compile {
     return b.addObject(.{
@@ -27,7 +27,7 @@ pub fn addToModule(
     b: *std.Build,
     module: *std.Build.Module,
     target: std.Build.ResolvedTarget,
-    optimize: std.builtin.OptimizeMode,
+    optimize: std.lang.Optimize,
     name_prefix: []const u8,
 ) void {
     module.addObject(addObject(b, target, optimize, name_prefix));

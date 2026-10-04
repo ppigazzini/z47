@@ -187,12 +187,11 @@ pub fn wordSizeError(function_name: [*:0]const u8, operation_name: []const u8, r
     }
 }
 
-// std.fmt.bufPrintZ was removed in Zig 0.17; std.fmt.bufPrint plus an explicit
-// sentinel works on both 0.16 and master. Every format below is bounded far
-// under ERROR_MESSAGE_LENGTH, so the truncating fallback is the empty string
-// rather than a second message the C never prints.
+// Every format below is bounded far under ERROR_MESSAGE_LENGTH, so the
+// truncating fallback is the empty string rather than a second message the C
+// never prints.
 fn bufPrintZ(buffer: []u8, comptime format: []const u8, args: anytype) [*:0]const u8 {
-    const text = std.fmt.bufPrint(buffer[0 .. buffer.len - 1], format, args) catch buffer[0..0];
+    const text = std.mem.print(buffer[0 .. buffer.len - 1], format, args) catch buffer[0..0];
     buffer[text.len] = 0;
     return @ptrCast(buffer.ptr);
 }

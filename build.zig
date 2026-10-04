@@ -170,14 +170,14 @@ fn registerNativeUnitTests(b: *std.Build) void {
     const abi_module = b.createModule(.{
         .root_source_file = b.path("src/abi/types.zig"),
         .target = target,
-        .optimize = .Debug,
+        .optimize = .debug,
     });
     const step = b.step("test:unit", "Run native Zig unit tests (no C oracle)");
     for (pure_modules) |src| {
         const mod = b.createModule(.{
             .root_source_file = b.path(src),
             .target = target,
-            .optimize = .Debug,
+            .optimize = .debug,
         });
         mod.addImport("abi", abi_module);
         const unit = b.addTest(.{ .root_module = mod });

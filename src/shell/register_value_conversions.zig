@@ -904,10 +904,6 @@ pub extern fn processRealComplexDyadicFunction(realf: Fn0, complexf: Fn0) callco
 // processIntRealComplexDyadicFunction moved to engine/kernel/register_convert_bulk.zig.
 pub extern fn processIntRealComplexDyadicFunction(realf: Fn0, complexf: Fn0, shortintf: Fn0, longintf: Fn0) callconv(.c) void;
 
-// bufPrintZ compat (std.fmt.bufPrintZ was removed upstream): removed in Zig 0.17 master; this form works in both
-// pinned 0.16 and master (std.fmt.bufPrint + an explicit sentinel byte).
 fn bufPrintZ(buf: []u8, comptime fmt: []const u8, args: anytype) ![:0]u8 {
-    const s = try std.fmt.bufPrint(buf[0 .. buf.len - 1], fmt, args);
-    buf[s.len] = 0;
-    return buf[0..s.len :0];
+    return std.mem.printSentinel(buf, fmt, args, 0);
 }

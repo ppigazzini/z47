@@ -683,7 +683,7 @@ fn b2i(x: bool) c_int {
 fn restoreNamedFlag(line: [*c]u8) void {
     @setRuntimeSafety(true); // untrusted file input -- see calc_state.zig's panic decl
     const whole = std.mem.sliceTo(line, 0);
-    const space = std.mem.indexOfScalar(u8, whole, ' ') orelse return; // no value on the line
+    const space = std.mem.findScalar(u8, whole, ' ') orelse return; // no value on the line
     line[space] = 0;
     const value: [*c]const u8 = line + space + 1;
     var flag: i32 = -1;
