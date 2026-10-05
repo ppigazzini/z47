@@ -5,22 +5,24 @@ Zig-first port workspace.
 
 These pages are code-facing maintainer docs, not end-user usage docs.
 
-Last verified: 2026-08-16, Zig `0.16.0` stable. The upstream pin is stated in
-exactly one place, [00-project-and-upstream.md](00-project-and-upstream.md); no
-other page repeats its value. Each page carries its own "Last verified" date.
+Last verified: 2026-10-05, Zig `0.17.0` stable. The upstream pin is
+`UPSTREAM_COMMIT` in `../.github/project/upstream-pin.env`, and no page repeats
+its value. Each page carries its own "Last verified" date.
 
 ## Port Status In One Paragraph
 
 The calculator core is fully ported to Zig. The product builds (the GTK host
 simulator and the DMCP/DMCP5 firmware) contain zero first-party calculator C:
 `report-c-dependency-status.py` reports 0 active product-build first-party C
-files. The upstream C tree (`upstream/src/`, `upstream/dep/`) is retained only as
-verification reference -- the shared testSuite and per-owner parity oracles that
-prove the Zig behaves byte-for-byte like upstream. Retained third-party C is
-explicit and unchanged: the vendored `upstream/dep/decNumberICU` is compiled by
-Zig, and the build links GTK 3, GMP, FreeType 2, optional PulseAudio (host) and
-the SwissMicros DMCP/DMCP5 SDKs (firmware). Ongoing work is idiomatic-Zig refinement and periodic
-upstream resync, not further core porting.
+files. The upstream calculator C (`upstream/src/`) is retained as the
+verification reference: the shared testSuite and the per-owner parity oracles
+check the Zig against it, bounded by what those lanes reach. `upstream/dep/` also
+supplies the retained third-party C, which is explicit and unchanged: the
+vendored `upstream/dep/decNumberICU` is compiled by Zig for the host and by
+`arm-none-eabi-gcc` for the firmware; the host links GTK 3, GMP, FreeType 2 and
+optional PulseAudio, and the firmware links a cross-built GMP 6.2.1 and the
+SwissMicros DMCP/DMCP5 SDKs. Ongoing work is idiomatic-Zig refinement and
+periodic upstream resync, not further core porting.
 
 These pages document tracked, maintained repo surfaces only. They do not define
 ignored local worktrees, ignored build outputs, or other ignored paths.
@@ -133,9 +135,11 @@ Maintainer entrypoints (see [10](10-build-and-source-layout.md) and
 - `zig build` or `zig build sim`: canonical host build entrypoint
 - `zig build both`: build both host simulators (C47 and R47)
 - `zig build test`: canonical grouped host regression lane (the shared upstream
-  testSuite plus the Zig-owned suites; the run prints the case total)
+  testSuite plus z47's `keyboard_statusbar_flags_regression`; it also refreshes
+  `build/generated/testPgms.bin`, and the run prints the case total)
 - `zig build test:unit`: native Zig unit tests with no C oracle
-- `zig build generated`: refresh all tracked generated host artifacts
+- `zig build generated`: regenerate the host generator outputs (gitignored, under
+  `upstream/src/generated/`) and the tracked `build/generated/testPgms.bin`
 - `zig build constants`, `zig build catalogs`, `zig build fonts`,
   `zig build testPgms`: individual generator lanes
 - `zig build docs`: canonical docs build for the imported `upstream/docs/code`
@@ -145,11 +149,13 @@ Maintainer entrypoints (see [10](10-build-and-source-layout.md) and
 
 Verification entrypoints:
 
-- `bash .github/project/run-local-gate.sh`: one command that reproduces the full
-  Linux CI verdict before pushing (governance guards + the host-parity
-  build/test/oracle battery + the tracked-generated-artifact diff)
-- the per-owner parity oracles (`zig build <owner>_parity`) prove each Zig owner
-  matches its retained upstream C; see
+- `PATH="$PWD/.venv/bin:$PATH" bash .github/project/run-local-gate.sh`: the local
+  gate, run before pushing. It runs the Linux governance guards, `test:unit`, the
+  host-parity battery, the malformed-input corpora, the oracle negative control,
+  the DMCP package 1-3 links and the tracked-generated-artifact diff; its closing
+  banner lists what only CI runs.
+- the parity lanes (`zig build <lane>`, named `*_parity`, `*_oracle`, `*_diff`,
+  `*_suite` or `*_test`) check owners against their retained upstream C; see
   [70-tests-and-verification.md](70-tests-and-verification.md)
 
 ## Repo-Owned Automation Layout

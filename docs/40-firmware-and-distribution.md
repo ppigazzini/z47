@@ -9,8 +9,8 @@ while still linking retained C: the SwissMicros DMCP/DMCP5 SDKs, the vendored
 Read [20-zig-build-graph.md](20-zig-build-graph.md) first. This page assumes the
 build-domain split is already clear.
 
-Last verified: 2026-08-16, Zig `0.16.0` stable. The upstream pin is stated once, in
-[00-project-and-upstream.md](00-project-and-upstream.md).
+Last verified: 2026-10-05, Zig `0.17.0` stable. The upstream pin is
+`UPSTREAM_COMMIT` in `../.github/project/upstream-pin.env`.
 
 The memory a firmware target actually has -- the arenas, which stack a running
 program uses, what one nested engine level costs, and why a simulator run cannot
@@ -39,18 +39,22 @@ Facts, verified from `../build/firmware.zig`:
   `../build/firmware_console_runtime.zig`, is carried into the link by the io
   object rather than built separately: it defines the console entry points that
   DMCP hardware does not have, which is what keeps newlib's buffered stdio -- and
-  the 316 bytes of SRAM2 its `FILE` array costs -- out of the image.
+  the `FILE` array `findfp.o` would place in SRAM2 -- out of the image.
 - Retained C still compiled into the firmware: the vendored
   `../upstream/dep/decNumberICU` sources, the SwissMicros SDK `pgm_syscalls.c` and
   `startup_pgm.s`, the generated constant-pointer and raster-font C, and a
   cross-built GMP archive (see below).
 - The `-Ibridge` overlay is prepended ahead of the imported `../upstream/src/c47`
-  include path so z47-specific header shims win over imported `defines.h`
-  without editing the imported tree.
-- Per-package flash trims are computed in the Zig frontier build
-  (`frontierDistributionStrip` in `../build/firmware.zig`) as build options
-  that mirror the upstream `defines.h` `OPTION_*` package blocks, not by editing
-  imported C. Read the option names out of `defines.h` rather than from prose:
+  include path. `../bridge/c47.h` `#include_next`s upstream's `c47.h` and then
+  adjusts macros; in the firmware link it reaches only the generated
+  `rasterFontsData.c`, `constantPointers.c` and `constantPointers2.c`. Owners take
+  `OPTION_*` from their build options, not from this header.
+- Per-package and DM42-board `OPTION_*` values are computed in
+  `../build/firmware.zig` (`frontierDistributionStrip`,
+  `mathematicsPackageOptions`, `solverPackageOptions`, `calcStateBoardOptions`,
+  and inline values for keyboard-state and program-serialization) as build
+  options that mirror the upstream `defines.h` blocks, not by editing imported
+  C. Read the option names out of `defines.h` rather than from prose:
   upstream renames them, and the `SAVE_SPACE_DM42_*` family they replaced is gone.
 - Package creation is still more than compilation: each firmware build also
   emits a QSPI image, a linker map, and a size report.
@@ -68,7 +72,7 @@ Verified from `registerSteps` in `../build/firmware.zig`:
 | `dmcp_pkg1` | DMCP | C47 | `.pgm` | fixed package `1` |
 | `dmcp_pkg2` | DMCP | C47 | `.pgm` | fixed package `2` |
 | `dmcp_pkg3` | DMCP | C47 | `.pgm` | fixed package `3` |
-| `dmcp_pkgs_all` | DMCP | C47 | mixed | grouped build of package variants 1, 2, and 3 |
+| `dmcp_pkgs_all` | DMCP | C47 | `.pgm` | grouped build of package variants 1, 2, and 3 |
 
 Each firmware build produces these output classes:
 
@@ -92,6 +96,14 @@ PREL31 exidx relocation range. Treat DMCP flash headroom as a real constraint:
 a change that grows an owner can overflow a package even when the host build and
 tests stay green.
 
+The DM42 RAM budget is just as tight. Every DM42 link asserts
+`_ebss <= 0x10002000` (`../upstream/src/c47-dmcp/stm32_program.ld`), and the
+link's `ram` row prints the headroom that is left. Any new firmware-linked static
+data spends it, and because the package variants strip different code, one
+variant's link can fail while `dmcp` and `dmcp5` still link. Link every variant:
+`zig build dmcp_pkgs_all` (the local gate runs it as step 10b), plus `dmcp`,
+`dmcpr47`, `dmcp5` and `dmcp5r47`.
+
 ## Retained Toolchain And Dependency Stack
 
 Firmware host-tool prerequisites (from the cross-GMP bootstrap and the ELF
@@ -105,6 +117,7 @@ build commands):
 - `tar`
 - `make`
 - native `cc` or `gcc` for the cross-GMP bootstrap
+- `curl` or `wget`, to download the GMP 6.2.1 tarball
 
 Retained C dependency inputs:
 
@@ -112,12 +125,18 @@ Retained C dependency inputs:
   (SDK include dirs, `pgm_syscalls.c`, `startup_pgm.s`). These are git
   submodules; a fresh checkout needs `git submodule update --init` before
   `zig build dmcp` or `dmcp5` can link.
-- `../upstream/dep/decNumberICU`: vendored decimal C, compiled by Zig into the firmware.
+- `../upstream/dep/decNumberICU`: vendored decimal C, compiled by
+  `arm-none-eabi-gcc` in the firmware link.
 - `../upstream/src/c47-dmcp` and `../upstream/src/c47-dmcp5`: used as board include dirs and for
   the checked-in `stm32_program.ld` linker scripts. The upstream board HAL `.c`
   files are no longer compiled (`firmwareBoardHalSources` is empty for both
   boards); the HAL is the Zig runtime objects above.
-- `../upstream/subprojects/gmp-6.2.1`: GMP source for the ARM cross-build.
+- `../upstream/subprojects/gmp-6.2.1.wrap`: names the GMP 6.2.1 tarball and its
+  SHA-256. A `gmp-6.2.1/` source tree beside it is used when present; it is
+  gitignored, so a fresh clone has none.
+- `../upstream/dep/forcecrc32.c`, compiled by Zig as the host CRC tool, and the
+  `../upstream/tools/modify_crc`, `gen_qspi_crc` and `add_pgm_chsum` scripts that
+  stamp the program and QSPI images.
 
 ## Cross-GMP Bootstrap Contract
 
@@ -127,9 +146,9 @@ GMP rewrite.
 
 Current behavior (`addArmGmpBuild`):
 
-- prefer the checked-in source tree under `../upstream/subprojects/gmp-6.2.1`
-- fall back to downloading `gmp-6.2.1.tar.bz2` from a mirror list when the source
-  tree is absent
+- use an unpacked tree at `../upstream/subprojects/gmp-6.2.1` when present
+- otherwise (always, on a fresh clone) download `gmp-6.2.1.tar.bz2` from a mirror
+  list
 - verify the tarball SHA-256 before use
 - configure GMP for `arm-none-eabi` with per-board CPU flags (Cortex-M4 for
   DMCP, Cortex-M33 for DMCP5)
@@ -169,9 +188,9 @@ firmware artifact while keeping those checked-in build-surface names unchanged.
   host OS.
 - The host package lanes stage the same simulator binaries produced by the host
   build graph rather than compiling a separate dist-only host executable pair.
-- The published desktop host artifacts use `ReleaseFast` simulator binaries:
-  Linux via `zig build -Doptimize=fast dist_linux`, and the macOS and
-  Windows workflow lanes rebuild `both` with `-Doptimize=fast` before
+- The published desktop host artifacts use simulator binaries built with
+  `-Doptimize=fast`: Linux via `zig build -Doptimize=fast dist_linux`, and the
+  macOS and Windows workflow lanes rebuild `both` with `-Doptimize=fast` before
   smoke and staging.
 - On x86 and x86_64 hosts, `../build/common.zig` resolves the host package
   target with a baseline CPU model instead of inheriting runner-native CPU
@@ -180,16 +199,17 @@ firmware artifact while keeping those checked-in build-surface names unchanged.
 - The Windows package lane stages GTK runtime directories, runtime tools,
   launcher helpers, and import-checked DLLs in addition to the simulator
   executables.
-- The Linux and macOS package lanes publish ReleaseFast simulator bundles
+- The Linux and macOS package lanes publish `-Doptimize=fast` simulator bundles
   together with the checked-out `../upstream/res/` assets and generated notice
   metadata.
 - The Linux CI lane also uploads a separate firmware artifact containing the C47
   SwissMicros package zips produced by `dist_dmcp`, `dist_dmcp_pkg1`,
   `dist_dmcp_pkg2`, `dist_dmcp_pkg3`, and `dist_dmcp5`.
-- On Linux and macOS, the packaging helper strips both staged simulator copies
-  before archiving them, so a freshly extracted desktop host package can differ
-  in hash from `zig-out/bin/c47` or `zig-out/bin/r47` while still carrying the
-  same safe non-BMI2 code path.
+- `dist_linux` and `dist_macos` strip both staged simulator copies before
+  archiving them (`../build/zig_dist.py`), so an extracted Linux package can
+  differ in hash from `zig-out/bin/c47` or `zig-out/bin/r47` while carrying the
+  same non-BMI2 code path. The published macOS artifact is staged by the workflow
+  straight from `zig-out/bin` and is not stripped.
 
 ## DMCP Package Control
 
@@ -210,10 +230,9 @@ The Linux CI firmware artifact keeps the default C47 DMCP package from
 `dist_dmcp` and uses `dist_dmcp_pkg1`, `dist_dmcp_pkg2`, and `dist_dmcp_pkg3` so
 each smaller package variant is preserved instead of overwritten.
 
-When a legacy-state, keyboard-helper, or package-trim change must stay safe on
-old hardware, rerun `zig build dist_dmcp_pkg3 --summary none`; rerun
-`zig build dist_dmcp_pkg2 --summary none` as well when the change touches the
-package-2-only overlay trims.
+After any change that reaches a firmware-linked owner, link every package
+variant: `zig build dmcp_pkgs_all --summary none` (the local gate runs exactly
+this), plus `dmcp`, `dmcpr47`, `dmcp5` and `dmcp5r47`.
 
 ### How An `OPTION_*` Value Is Established
 
@@ -225,12 +244,13 @@ removed from a package by an `#undef`, not by a `#define`.
 `defines.h` settles each option in layers, in this order:
 
 1. a default block that defines or undefines the option for every build;
-2. the `DMCP_PACKAGE1..4` block for the selected package;
+2. the `DMCP_PACKAGE1..3` / `DMCP_PACKAGE4_NOOPT` block for the selected package;
 3. a block common to hardware packages 1-4 that runs **after** the per-package
    blocks and overrides them;
-4. dependency fixups at the end -- `OPTION_SLVP_POLY` and `OPTION_EIGEN_159` are
-   dropped when `OPTION_EIGEN` is absent, and `OPTION_FACTOR` when
-   `OPTION_PRIME` is.
+4. dependency fixups after `#endif // DMCP_BUILD`, each an `#if !defined(...)`
+   block that undefines an option whose prerequisite is absent (for example
+   `OPTION_FACTOR` without `OPTION_PRIME`, and `OPTION_SLVP_POLY` and
+   `OPTION_EIGEN_159` without `OPTION_EIGEN`); read the full list there.
 
 Two consequences follow, and both have produced port defects:
 
@@ -247,8 +267,11 @@ are asking about: `-DPC_BUILD` for host, `-DDMCP_BUILD -DNEW_HW` for DMCP5, and
 `-DDMCP_BUILD -DOLD_HW -DTWO_FILE_PGM -DDMCP_PACKAGE=<n>` for a DM42 package.
 
 z47 records the derived value in the build -- the option sets in
-`../build/frontier/frontier.zig` and `../build/mathematics/math_command_wrappers.zig`,
-assigned per package in `../build/firmware.zig` -- and an owner reads it from the
+`../build/frontier/frontier.zig`, `../build/mathematics/math_command_wrappers.zig`,
+`../build/solver/solve.zig`, `../build/state/calc_state.zig`,
+`../build/state/keyboard_state.zig` and `../build/state/program_serialization.zig`,
+assigned per board and package in `../build/firmware.zig` -- and an owner reads it
+from the
 build-options module it imports. An owner must not re-derive an option from
 `old_hw`, from the target OS tag, or from a package-name proxy: none of those is
 the same predicate as the macro, so the owner and the build then disagree about

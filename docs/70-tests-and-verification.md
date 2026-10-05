@@ -6,8 +6,8 @@ the smallest rerun lane that should move with each kind of change.
 Read [10-build-and-source-layout.md](10-build-and-source-layout.md) first. This
 page assumes the build entrypoints and ownership split are already clear.
 
-Last verified: 2026-08-16, Zig `0.16.0` stable. The upstream pin is stated once, in
-[00-project-and-upstream.md](00-project-and-upstream.md).
+Last verified: 2026-10-05, Zig `0.17.0` stable. The upstream pin is
+`UPSTREAM_COMMIT` in `../.github/project/upstream-pin.env`.
 
 ## The One-Command Local Gate
 
@@ -18,17 +18,20 @@ PATH="$PWD/.venv/bin:$PATH" bash .github/project/run-local-gate.sh
 ```
 
 It runs the governance guards, then the host-parity build/test/oracle battery
-(`run-host-parity-battery.sh`, byte-identical to the CI step, which now calls the
-same script), then the firmware link for every DMCP package variant, then the
+(`run-host-parity-battery.sh`, byte-identical to the CI step, which calls the
+same script), then the post-battery checks -- the malformed-input corpora
+(`[10a/11]`), the lane-gating check, and the oracle negative control
+(`[10d/11]`), which rewrites tracked owner files while it runs, so edit nothing
+until the gate exits -- then the DMCP package 1-3 links, then the
 tracked-generated-artifact diff. It fails fast on the first red.
 
 **Give it the project virtualenv.** The gate calls plain `python3`, and step
 `[10e/11]` self-tests `check-ci-build-prerequisites.py` through a `>/dev/null`.
-That self-test needs PyYAML, which is a declared dependency installed only into
-`.venv`; without it the step exits 2 with its explanation swallowed, and the gate
-aborts on a bare step banner with no error text at all. Redirect the run to a file
-and read `$?` rather than piping it through `tail`, which reports its own exit
-code and can turn a red gate green.
+That self-test needs PyYAML, which `.venv` gets as a dependency of pre-commit; a
+`python3` without it makes the step exit 2 with its explanation swallowed, and
+the gate aborts on a bare step banner with no error text at all. Redirect the
+run to a file and read `$?` rather than piping it through `tail`, which reports
+its own exit code and can turn a red gate green.
 
 Step `[10a/11]` runs both malformed-input corpora through the real load paths.
 They are the only adversarial coverage those paths have -- every other lane feeds
@@ -44,12 +47,13 @@ corpus, not the five hand-written reproducers it started as:
 `build/tests/calc_state/malformed/generate_corpus.py` emits it deterministically,
 and `zig build state_load_fuzz` drives every file through the real `doLoad` at
 each of four load modes -- the mode matters, because the version gate and the
-skip-the-matrix-data arm are both mode-gated. Count the files rather than trusting
-a number here:
+skip-the-matrix-data arm are both mode-gated. The corpus is gitignored and the
+lane regenerates it on every run, so it always matches the generator and the
+current golden. Count the files rather than trusting a number here:
 
 ```bash
-ls build/tests/calc_state/malformed/*.sav | wc -l   # corpus size
-ls build/tests/pgm_run/malformed/*.p47   | wc -l   # the sibling program corpus
+python3 build/tests/calc_state/malformed/generate_corpus.py | grep -c '\.sav:'   # corpus size
+ls build/tests/pgm_run/malformed/*.p47 | wc -l                                   # the sibling program corpus
 ```
 
 The mutation families it covers are a truncation sweep, per-section count
@@ -58,41 +62,59 @@ overfill cases past each fixed array, program pointer/offset extremes, matrix
 dimension overflows, and the version-forgery set.
 
 **What it still holds only weakly is the OUTCOME assertion.** Every file is
-checked for crash, hang and Zig safety panic, but only the handful listed in
-`malformed/expectations.txt` is pinned to a specific `loadedVersion`. That second
-assertion is the one that catches SILENT wrong-accepts, which no crash detector
-sees -- so for any file outside `expectations.txt`, a green run means "did not
-crash", not "was rejected correctly". Adding a case is cheap; add its expectation
-with it.
+checked for crash, hang and Zig safety panic, but only the files whose
+`write(...)` call in `generate_corpus.py` passes `expect_version=` are pinned to
+a specific `loadedVersion`; the generator lists every other file as `any` in the
+`expectations.txt` it writes last. That second assertion is the one that catches
+SILENT wrong-accepts, which no crash detector sees -- so for a file marked `any`,
+a green run means "did not crash", not "was rejected correctly". Adding a case is
+cheap; pass its `expect_version` with it.
 
-Step `[10b/11]` links **every DMCP package variant** (`zig build dmcp_pkgs_all`),
-and it is not redundant with `zig build dmcp` / `dmcp5`. The OLD_HW package-3
-layout asserts `_ebss <= 0x10002000` and sits exactly on it, so a few bytes of
-static data in any firmware-linked owner fails the link -- in a package variant
-only. That happened: one `@setRuntimeSafety(true)` added to `shell/config.zig`
-pushed `_ebss` four bytes over, while this gate, `zig build test`, `test_asan`,
-`pgm_load_fuzz`, `simulator_smoke` **and `dmcp` and `dmcp5`** were all green. The
-step was added because of it, and reinstating that attribute is the check that
-the step still works.
+Step `[10b/11]` links the C47 DM42 package variants 1-3 (`zig build
+dmcp_pkgs_all`). It does not link `dmcp` (package 4), `dmcpr47`, `dmcp5` or
+`dmcp5r47`; `linux-firmware-artifacts` does. Every DM42 link asserts
+`_ebss <= 0x10002000` (`stm32_program.ld`), and the link's `ram` row prints the
+headroom. The package variants strip different code, so static data added to a
+firmware-linked owner can fail one variant's link alone. That happened when the
+headroom was four bytes: one `@setRuntimeSafety(true)` added to
+`shell/config.zig` pushed `_ebss` over, while `zig build test`, `test_asan`,
+`pgm_load_fuzz`, `simulator_smoke` **and `dmcp` and `dmcp5`** were all green.
 
-What the gate still does NOT cover, which its closing banner now states rather
-than papering over: the Windows (LLP64) and macOS host lanes, and CI's firmware
-PACKAGING and artifact publication. A green run is those Linux lanes, not the
-whole CI verdict.
+What the gate does NOT cover, which its closing banner states: the sanitizer
+lanes, the coverage floor, the docs build, the `dmcp`, `dmcpr47`, `dmcp5` and
+`dmcp5r47` links and all packaging, the font-seam, C-type-alias,
+extern-var-width and workflow-vocabulary checks, and the Windows (LLP64) and
+macOS host lanes. A green run is those Linux lanes, not the whole CI verdict.
+
+Three more ways a lane passes here and fails in CI, each held by a rule rather
+than a gate:
+
+- **A layout move breaks parity oracles silently.** The oracles `#include` upstream
+  C by relative path, so moving a directory breaks lanes that neither `zig build
+  sim` nor `zig build test` compiles. `check-harness-includes.py` (gate step 6g2)
+  resolves every quoted include; run it after any move.
+- **A resource budget belongs in harness code.** A memory or time limit for a
+  differential goes in the harness, which knows what it is measuring, never in
+  `ulimit` or a shell `timeout` around it: a differential killed from outside
+  executes the defect it should have reported.
+- **A lane that reads an untracked file passes locally and fails in CI.** CI
+  checks out only tracked files, so stage a new test input before gating.
 
 `zig build sim` and `zig build test:unit` are NOT the full gate. The first
 all-Zig upstream resync shipped three CI-only failures that were green under
 sim+test:unit -- a parity oracle that stopped compiling, a stale generated
-artifact, and a source-ownership violation. The local gate catches all three. The
-one class it cannot reproduce on Linux is the Windows LLP64 integer-width trap;
-`check-portable-int-widths.sh` (inside the gate) approximates it, and the CI
-Windows lane is the final adjudicator. See
+artifact, and a source-ownership violation. The local gate catches all three. Of
+the lanes it cannot run, the Windows LLP64 integer-width trap is the one that
+decides most Windows failures; `check-portable-int-widths.sh` (inside the gate)
+approximates it, and the CI Windows lane is the final adjudicator. See
 `.github/project/upstream-resync-runbook.md`.
 
-`zig build test` runs the shared upstream testSuite plus the Zig-owned suites. The
-run prints its own case total; read it there, because the count moves with every
-pin advance and a number written on this page would be stale by the next one.
-Confirm it exits 0, not just that it printed `0 TESTS FAILED` before any crash.
+`zig build test` runs upstream's testSuite unmodified, plus one z47 regression
+(`keyboard_statusbar_flags_regression`), and refreshes
+`build/generated/testPgms.bin`. The run prints its own case total; read it
+there, because the count moves with every pin advance and a number written on
+this page would be stale by the next one. Confirm it exits 0, not just that it
+printed `0 TESTS FAILED` before any crash.
 
 A green run is not proof a path executed. When the change routes a call through
 an installable host hook, or adds a corpus file, or depends on a display-side
@@ -107,9 +129,9 @@ the companion c47-r47-ci doc set, `docs/04-testing.md`, owns them. See
 
 | Contract surface | Source of truth | First rerun lane |
 | --- | --- | --- |
-| full Linux CI verdict | `../.github/project/run-local-gate.sh`, `../.github/project/run-host-parity-battery.sh` | `bash .github/project/run-local-gate.sh` |
+| Linux governance, host parity and firmware link | `../.github/project/run-local-gate.sh`, `../.github/project/run-host-parity-battery.sh` | `PATH="$PWD/.venv/bin:$PATH" bash .github/project/run-local-gate.sh` |
 | toolchain pin and supported Zig version | `../.github/zig-toolchain.env` | `zig version` against the pinned manifest |
-| imported upstream pin and repo-root import | `../.github/project/upstream-pin.env` | `git fetch <upstream-url> master && git merge-base --is-ancestor <pin> FETCH_HEAD` |
+| imported upstream pin (tree mounted under `upstream/`) | `../.github/project/upstream-pin.env` | `git fetch <upstream-url> master && git merge-base --is-ancestor <pin> FETCH_HEAD` |
 | upstream refresh report | `../.github/project/report-upstream-refresh.py` | `python3 .github/project/report-upstream-refresh.py --repo-root . --fetch` |
 | upstream port ledger | `../.github/project/check-upstream-port-ledger.py` | `python3 .github/project/check-upstream-port-ledger.py --repo-root .` |
 | split first-party C status | `../.github/project/report-c-dependency-status.py` | `python3 .github/project/report-c-dependency-status.py --repo-root .` |
@@ -135,15 +157,17 @@ the companion c47-r47-ci doc set, `docs/04-testing.md`, owns them. See
 | malformed-input load fuzz (untrusted `.sav` / `.d47`) | `../build/tests/calc_state/malformed/`, `../build/tests/calc_state/state_load_harness.c`, `run-state-load-fuzz.sh` | `zig build state_load_fuzz --summary none` |
 | deterministic generated outputs | `../build/tools/`, tracked generated files | `zig build generated --summary none` |
 | docs surface | `../upstream/docs/code/` | `zig build docs --summary none` |
-| firmware outputs | `../build/firmware.zig`, imported SDKs, linker scripts | `zig build dmcp --summary none` or `zig build dmcp5 --summary none` |
+| firmware outputs | `../build/firmware.zig`, imported SDKs, linker scripts | `zig build dmcp_pkgs_all --summary none`, then `zig build dmcp` and `zig build dmcp5` (and the R47 targets when the change reaches R47 code) |
 | host or firmware packages | `../build/dist.zig` | `zig build -Doptimize=fast dist_linux --summary none`, or the matching package target |
 
 ## Per-Owner Parity Oracles
 
-Each ported owner keeps a focused parity lane that compiles the retained upstream
-C as an oracle and asserts the Zig output matches it. These are the verification
-surface that lets the C be retired from the product while proving behavior. Run
-the lane for the owner you touched, for example:
+Many ported owners keep a focused parity lane that compiles the retained
+upstream C as an oracle and asserts the Zig output matches it;
+`zig build --help` lists them, and the other owners are held by the shared
+testSuite and unit tests. These are the verification surface that lets the C be
+retired from the product while proving behavior. Run the lane for the owner you
+touched, for example:
 
 ### The rule: an oracle must be compiled from c43 source
 
@@ -200,21 +224,20 @@ that list. `check-oracle-provenance.py` counts those separately and **both count
 are now zero**. Keep them there: every reference in the tree is c43's own code,
 and the ratchet does not go back up.
 
-`math_wrappers` is a special case worth knowing before you touch it: its `real_t`
-is a hand-declared struct, decNumber is not linked, and its `const39_*` are
-placeholder decimals, so the 86 c43 files it compiles run on fake arithmetic and
-what the lane compares is CONTROL FLOW. Compiling more c43 into it does not help —
-measured twice, recorded in the file. **There are two math-wrapper lanes and they
-answer different questions.** `math_command_wrappers_parity` drives 436 cases over
-88 wrappers and tells you which paths a wrapper takes;
-`math_wrappers_full_core_parity` drives 1140 cases over 32 and tells you what it
+`math_wrappers` is a special case worth knowing before you touch it: its
+`real_t` is a hand-declared struct, decNumber is not linked, and its `const39_*`
+are placeholder decimals, so the 86 c43 files it compiles run on fake arithmetic
+and what the lane compares is CONTROL FLOW. Compiling more c43 into it does not
+help — measured twice, recorded in the file. **There are two math-wrapper lanes
+and they answer different questions.** `math_command_wrappers_parity` tells you
+which paths a wrapper takes; `math_wrappers_full_core_parity` tells you what it
 computes, because there both sides run on real decNumber and the real register
-file. Neither substitutes for the other, which is why the first is not deleted.
-In the vocabulary of
+file. Each run prints its own case total. Neither substitutes for the other,
+which is why the first is not deleted. In the vocabulary of
 [90-official-references.md](90-official-references.md), that environment is a
-**Fake** and its snapshot of 62 call counters is a **Spy** — so a green run there
-says the wrappers *called* the same functions with the same arguments, and says
-nothing about whether they computed the right number.
+**Fake** and its snapshot of 62 call counters is a **Spy** — so a green run
+there says the wrappers *called* the same functions with the same arguments, and
+says nothing about whether they computed the right number.
 
 ### The rule: an owner must not change what it does because it is tested
 
@@ -268,9 +291,10 @@ a behavioural test, not a reading.
 
 **Code behind a firmware-only build guard.** Every lane that *runs* a program in
 the local gate is a host build. An owner branch selected by `DMCP_BUILD`, by
-`old_hw`, or by a `.freestanding` target test is compiled — step `[10b/11]` links
-every DMCP package variant, which is what catches a branch that no longer builds
-— but nothing in the gate executes it. So the gate proves those branches compile
+`old_hw`, or by a `.freestanding` target test is compiled for the `dmcp` and
+`dmcp5` object sets by step `[6i/11]` and linked for DM42 packages 1-3 by
+`[10b/11]` — R47 firmware objects are not built by the gate — but nothing in the
+gate executes it. So the gate proves those branches compile
 and says nothing about what they do, by construction rather than because they are
 correct. A guard that returns early on the firmware target changes what both
 firmware images compute while every lane stays green. When a change adds or edits
@@ -339,10 +363,10 @@ The full current set is discoverable with `zig build --help`.
   if imported-root or ownership claims changed
 - upstream pin advance (resync): follow
   `.github/project/upstream-resync-runbook.md`, then
-  `bash .github/project/run-local-gate.sh`
-- owner logic change: `zig build <owner>_parity`, then `zig build test`, then the
-  smallest firmware target if it must stay firmware-safe (`zig build dmcp` /
-  `zig build dmcp5`)
+  `PATH="$PWD/.venv/bin:$PATH" bash .github/project/run-local-gate.sh`
+- owner logic change: `zig build <owner>_parity`, then `zig build test`, then,
+  if it must stay firmware-safe, `zig build dmcp_pkgs_all`, `zig build dmcp` and
+  `zig build dmcp5`
 - Zig/C boundary or generated-seam change:
   `bash .github/project/check-zig-c-boundaries.sh`, then the affected owner parity
   lane, then `zig build generated`
@@ -350,17 +374,20 @@ The full current set is discoverable with `zig build --help`.
   `bash .github/project/check-portable-int-widths.sh`, then the owner parity lane;
   let the CI Windows lane adjudicate the runtime width behavior
 - state-load or program-load parse change (untrusted-file surface): the owner
-  parity lane, then `zig build pgm_load_fuzz` to drive the malformed-input corpus
-  through the real load path under UBSan -- not AddressSanitizer, despite the
-  harness name; see [75-debugging.md](75-debugging.md). The per-owner cov tests only
-  round-trip VALID files, so this lane is what covers truncated, oversized, and
-  garbage input. See the memory-safety posture in
+  parity lane, then `zig build pgm_load_fuzz` for `.p47` changes or
+  `zig build state_load_fuzz` for `.sav` / `.d47` changes, which drive the
+  malformed-input corpora through the real load paths under UBSan -- not
+  AddressSanitizer, despite the lane names; see
+  [75-debugging.md](75-debugging.md). The per-owner cov tests only round-trip
+  VALID files, so this lane is what covers truncated, oversized, and garbage
+  input. See the memory-safety posture in
   [50-zig-c-boundaries-and-rewrite-policy.md](50-zig-c-boundaries-and-rewrite-policy.md).
 - generated-artifact change: `zig build generated`, then
   `git diff --exit-code` on the tracked generated artifacts
 - host simulator / GTK change: `zig build sim`; if it touches LCD paint, pointer,
   or keyboard dispatch, `zig build simulator_smoke`
-- firmware or linker-script change: the smallest affected firmware target first
+- firmware or linker-script change: `zig build dmcp_pkgs_all`, then `zig build
+  dmcp` and `zig build dmcp5`
 - package or release-proof change: the matching `dist_<host>` or firmware package
   target on the matching host OS; use `-Doptimize=fast` for the published
   desktop archive contract, and unpack a fresh archive when packaged runtime
@@ -368,13 +395,19 @@ The full current set is discoverable with `zig build --help`.
 
 ## Full Linux Sweep
 
-`bash .github/project/run-local-gate.sh` is the maintained full Linux sweep and
-replaces the older hand-listed lane sequence. For platform surfaces the Linux
-gate does not cover, rely on the CI matrix:
+`PATH="$PWD/.venv/bin:$PATH" bash .github/project/run-local-gate.sh` is the
+maintained Linux sweep. For the surfaces it does not cover, rely on the CI
+matrix:
 
 - macOS and Windows host lanes (build, test, generated outputs, app smoke)
 - firmware validation and publication (`dmcp`, `dmcp5`, `dmcpr47`, `dmcp5r47`,
   and the `dist_dmcp*` package steps)
+- the sanitizer lanes, the coverage floor, the docs build, the Linux package and
+  its launch, and the font-seam, C-type-alias, extern-var-width and
+  workflow-vocabulary checks
+- the sanitizer lanes, the coverage floor, the docs build, the Linux package and
+  its launch, and the font-seam, C-type-alias, extern-var-width and
+  workflow-vocabulary checks
 
 See [60-ci-and-release-workflow.md](60-ci-and-release-workflow.md) for the lane
 split.

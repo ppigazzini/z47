@@ -8,8 +8,8 @@ which are retained C.
 Read [20-zig-build-graph.md](20-zig-build-graph.md) first. This page assumes the
 domain split is already clear.
 
-Last verified: 2026-08-16, Zig `0.16.0` stable. The upstream pin is stated once, in
-[00-project-and-upstream.md](00-project-and-upstream.md).
+Last verified: 2026-10-05, Zig `0.17.0` stable. The upstream pin is
+`UPSTREAM_COMMIT` in `../.github/project/upstream-pin.env`.
 
 ## Host Surface At A Glance
 
@@ -17,8 +17,7 @@ The host-facing build graph lives under `../build/host/` and owns:
 
 - the C47 and R47 desktop simulator builds
 - the Xvfb-backed X11 simulator smoke probe
-- the deterministic generator executables and the tracked generated-artifact
-  refresh steps
+- the deterministic generator executables and the generated-output refresh steps
 - the Sphinx and Doxygen docs orchestration
 - the host-platform glue (native paths, import libraries, link config)
 
@@ -30,7 +29,8 @@ canonical inventory lives in
 
 The GTK host application layer is ported to Zig. The calculator core is fully
 ported to Zig (the owners under `../src/`). The host still links external C
-libraries and compiles one vendored C library. Be honest about the split:
+libraries, compiles one vendored C library, and compiles the C its generators
+emit. Be honest about the split:
 
 | Host piece | State |
 | --- | --- |
@@ -38,6 +38,7 @@ libraries and compiles one vendored C library. Be honest about the split:
 | calculator core | ported to Zig (the `../src/` owners) |
 | `../upstream/src/c47-gtk/*.c` (the C the Zig host replaces) | filtered out of the build |
 | `../upstream/dep/decNumberICU` | retained vendored C, compiled by Zig |
+| generated `rasterFontsData.c`, `constantPointers.c`, `constantPointers2.c` | generator-emitted C, compiled by Zig into the simulator |
 | GTK 3 | retained external C library, linked from Zig |
 | GMP | retained external C library, linked from Zig |
 | FreeType 2 | retained external C library, linked by the fonts generator |
@@ -75,19 +76,20 @@ parity reference; they are not compiled.
 ## Host Regression And Parity Lanes
 
 The host build graph also registers the grouped regression lanes (`test`,
-`test_asan`, `repeattest`), the native Zig unit lane (`test:unit`), and the
-per-owner parity and oracle lanes.
+`test_asan`, `repeattest`) and the per-owner parity and oracle lanes;
+`../build.zig` registers the native Zig unit lane (`test:unit`).
 
-`test`, `test_asan`, and `repeattest` all run the imported upstream corpus list
-`../upstream/src/testSuite/tests/testSuiteList.txt` and nothing else. That is the
+`test`, `test_asan`, and `repeattest` run the imported upstream corpus list
+`../upstream/src/testSuite/tests/testSuiteList.txt` and no z47 list; `test` also
+runs the `keyboard_statusbar_flags_regression` harness. That is the
 point: the shared testSuite is the measuring instrument, so z47 runs it
 unmodified and never appends to it. z47's own focused coverage goes in its own
 lanes with their own lists -- `../build/tests/testSuiteList_logical_boolean_ops.txt`
 driving `logical_boolean_ops_suite` is the pattern -- and in the per-owner parity
 harnesses, never in the imported corpus.
 
-These lanes depend on the `testPgms` refresh, so the generated test-program image
-is rebuilt before they run.
+These lanes depend on the `testPgms` refresh, so running one rewrites
+`build/generated/testPgms.bin`.
 
 The full lane inventory, the smallest rerun per owner, and the parity-oracle
 model live in [70-tests-and-verification.md](70-tests-and-verification.md). Do not
@@ -105,33 +107,42 @@ Host simulator, generator, test, and host-package builds depend on:
 - optional PulseAudio development files (`libpulse-simple`); audio is auto-enabled
   only when `pkg-config` finds it
 - `python3`
+- the `translate_c` package pinned in `../build.zig.zon`, fetched on the first
+  configure into the ignored `zig-pkg/`; every `zig build` imports it through
+  `../build/common.zig`
 
 The vendored `../upstream/dep/decNumberICU` is compiled by Zig into the simulator
-and the generators; it is not a system dependency.
+and into every generator except the fonts generator; it is not a system
+dependency.
 
 The fonts generator needs the catalog sorting order extracted from
-`../upstream/res/fonts/sortingOrder.xlsx`. It prefers the `xlsxio_xlsx2csv` helper when it is
-on `PATH` (using `$HOME/.local/lib` as an extra library path) and otherwise falls
-back to the checked-in `../build/tools/xlsx_to_sorting_csv.py` Python
-converter, so the xlsxio helper is now optional rather than a hard runtime
-requirement.
+`../upstream/res/fonts/sortingOrder.xlsx`. On Linux and macOS it prefers the
+`xlsxio_xlsx2csv` helper when it is on `PATH` (with `$HOME/.local/lib` as an extra
+library path) and otherwise falls back to the checked-in
+`../build/tools/xlsx_to_sorting_csv.py` Python converter; on Windows it always
+uses the Python converter. The xlsxio helper is optional.
 
 ## Generated Artifact Inventory
 
 The generator executables live under `../build/tools/`. Each refresh step
-runs a generator and copies its output over the tracked source-tree path.
+runs a generator and copies its output to a source-tree path. Only the testPgms
+image is tracked; the `upstream/src/generated/` outputs are gitignored, and the
+build graph feeds the simulator and firmware from the generators directly, not
+from those copies.
 
-| Step | Generator | Tracked outputs |
+| Step | Generator | Outputs |
 | --- | --- | --- |
 | `fonts` | `ttf2_raster_fonts.zig` | `upstream/src/generated/rasterFontsData.c` |
 | `constants` | `generate_constants.zig` | `upstream/src/generated/constantPointers.c`, `constantPointers.h`, `constantPointers2.c` |
 | `catalogs` | `generate_catalogs.zig` | `upstream/src/generated/softmenuCatalogs.h` |
 | `testPgms` (alias `testpgms`) | `generate_testpgms.zig` | `build/generated/testPgms.bin` |
-| `generated` | all of the above | every tracked output above |
+| `generated` | all of the above | every output above |
 
 `../.github/project/workflow-imported-root-paths.sh generated-artifacts` prints
 that list; it is the vocabulary CI and the local gate's final diff both consume,
-so read it from there rather than from this table.
+so read it from there rather than from this table. That diff is `git diff
+--exit-code`, so of these paths it can only ever flag the tracked
+`build/generated/testPgms.bin`.
 
 **The testPgms image is the one output that does NOT live in the imported tree.**
 It is z47's own baseline under `build/generated/`, deliberately outside
@@ -140,9 +151,11 @@ product inside the imported tree and kept that tree from ever matching its pin.
 Upstream's own copy stays byte-identical to the pin and
 `check-imported-tree-pin.py` holds it there.
 
-Regenerate `build/generated/testPgms.bin` (via `zig build testPgms` or
-`zig build generated`) after any item-table growth; a stale image fails the host
-regression lanes.
+Regenerate `build/generated/testPgms.bin` (`zig build testPgms` or
+`zig build generated`) after any item-table growth. The testSuite does not read
+it -- it loads upstream's `res/testPgms/testPgms.bin` from its upstream working
+directory -- so a stale image fails the tracked-artifact diff (the local gate's
+last step and CI's "Compare tracked generated artifacts"), not a test lane.
 
 ## Generator Boundary And Retained C
 
@@ -153,7 +166,8 @@ build-managed C boundaries:
   under `../build/tools/translate_c/`, translated by the official `translate-c`
   package through `addTranslator` in `../build/common.zig` and wired in
   `../build/host/generated.zig`
-- every generator compiles the vendored `../upstream/dep/decNumberICU` sources
+- `generate_constants`, `generate_catalogs` and `generate_testpgms` compile the
+  vendored `../upstream/dep/decNumberICU` sources; the fonts generator does not
 - the fonts generator links FreeType 2 (via its `translate-c` root and
   `linkRasterFontsFreetype`)
 - `generate_catalogs` and `generate_testpgms` additionally compile a subset of
@@ -170,8 +184,9 @@ Current requirements:
 
 - `python3`
 - `doxygen`
-- the Python docs packages (`sphinx`, `breathe`, `furo`) from
-  `../upstream/docs/code/requirements.txt`
+- the Python docs packages `breathe` and `furo` listed in
+  `../upstream/docs/code/requirements.txt`, plus `sphinx` (the step checks
+  `import sphinx, breathe, furo`)
 
 After verifying those tools and packages are present, the step runs
 `python3 -m sphinx -M html upstream/docs/code zig-out/docs/code`.
@@ -184,8 +199,11 @@ not replace the maintainer-facing `docs/` set, which is this directory.
 - `../build/host/platform.zig` is the central host-platform glue surface.
 - Windows host builds and packaging need explicit native-path and import-library
   handling for GTK and FreeType rather than generic `-lfoo` names.
-- The macOS smoke lane expects the checked-out `../upstream/res/` asset tree to be
-  visible from the executable directory during startup.
+- At startup the simulator walks up from its executable directory (up to eight
+  levels) to the first directory holding `res/c47_pre.css` or
+  `upstream/res/c47_pre.css` and changes into it (`relocateToResourceDir` in
+  `../build/host/gtk_c47_main.zig`), so a build under `zig-out/bin` finds
+  `../upstream/res/` with no copy or link.
 
 ## Change Rules
 

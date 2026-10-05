@@ -25,10 +25,10 @@ git submodule update --init   # required before any dmcp* target
 uv sync                       # repo Python tooling into .venv
 ```
 
-Host builds link GTK 3, GMP and FreeType 2 as external system libraries; firmware
-needs `arm-none-eabi-gcc`. The Zig version is pinned in `.github/zig-toolchain.env`
-together with the master snapshot a non-blocking CI lane tracks; idioms must be
-valid under both, so neither `@hasDecl` nor version guards belong in owner code.
+Host builds link GTK 3, GMP and FreeType 2 as system libraries; firmware needs the
+`arm-none-eabi` toolchain and network for GMP. The Zig version is pinned in
+`.github/zig-toolchain.env` with the master snapshot a non-blocking CI lane tracks;
+idioms must be valid under both: no `@hasDecl` or version guards in owner code.
 
 `zig build --help` lists every target. `zig build sim` is the C47 simulator,
 `simr47` the R47 one, and the `dmcp*` family the firmware images.

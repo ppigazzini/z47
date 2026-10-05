@@ -9,8 +9,9 @@ Use this page when a task changes the public maintainer contract documented in
 `docs/`, `CONTRIBUTING.md`, or `README.md`, or when advancing the
 imported upstream pin.
 
-Last verified: 2026-08-16, Zig `0.16.0` stable. The upstream pin is stated once, in
-[00-project-and-upstream.md](00-project-and-upstream.md).
+Last verified: 2026-10-05, Zig `0.17.0` stable. The upstream pin is
+`UPSTREAM_COMMIT` in `../.github/project/upstream-pin.env`. Commands on this page
+run from the repo root.
 
 ## Where The Port Stands
 
@@ -62,7 +63,7 @@ Use one promotion workflow when a non-trivial change lands.
   `../.github/project/report-c-dependency-status.py`,
   `../.github/project/report-upstream-refresh.py`, and
   `../.github/project/workflow-imported-root-paths.sh`.
-- Use `bash ../.github/project/check-source-ownership.sh check-worktree` inside a
+- Use `bash .github/project/check-source-ownership.sh check-worktree` inside a
   linked-worktree layout pilot; keep the plain `check` subcommand for the
   maintained baseline and CI.
 - Keep tracked root maintainer docs short and route detailed material into the
@@ -75,7 +76,9 @@ Use one promotion workflow when a non-trivial change lands.
 The repo-owned Python (the governance scripts under `.github/project/` and the
 build/corpus helpers under `build/`) is linted, formatted and type-checked by
 `ruff` and `ty`, configured once in `pyproject.toml` and run by
-`.pre-commit-config.yaml`. Python 3.14 throughout.
+`.pre-commit-config.yaml`. The config targets Python 3.14 (`requires-python`,
+ruff `target-version`, ty `python-version`); CI runs the same scripts on the
+runner's unpinned `python3`, so they must stay valid there.
 
 ```sh
 uv sync                          # install pre-commit, ruff and ty into .venv
@@ -86,13 +89,13 @@ ty check
 ```
 
 **The rule that matters, and the reason this config is not a copy of the sibling
-repos': the hooks are scoped to what z47 authors.** Most of this tree is imported
-verbatim from upstream C47 — everything under `upstream/` (its own `src/`, `res/`,
-`docs/`, `tools/`, `dep/`, `Makefile` and `tag2ver.py`), plus the root
-`.gitattributes` and `.gitignore` that git honours only at the repo root — and
-every resync diffs it against upstream's. A hook that strips a trailing space from
-an imported file turns a clean import into a permanent conflict on a file z47 has
-no opinion about. So:
+repos': the hooks are scoped to what z47 authors.** Most of this tree is
+imported verbatim from upstream C47 — everything under `upstream/` (its own
+`src/`, `res/`, `docs/`, `tools/`, `dep/`, `Makefile` and `tag2ver.py`) — and
+every resync diffs it against upstream's. The root `.gitattributes`,
+`.gitignore` and `.gitmodules` are z47's, reconciled with upstream's by hand on
+a resync. A hook that strips a trailing space from an imported file turns a
+clean import into a permanent conflict on a file z47 has no opinion about. So:
 
 - `pyproject.toml` carries a single `extend-exclude = ["upstream"]`, which covers
   every imported `.py` file in one entry. Since the imported tree was nested, that
@@ -101,8 +104,12 @@ no opinion about. So:
   z47-owned paths, and excludes byte-exact data (`.p47`, `.sav`, `.tsv`, …)
   even inside them — those are test inputs compared verbatim.
 
-Adding a z47-owned top-level path means adding it to both. Anything not listed is
-upstream's and is left exactly as imported.
+The hooks skip some z47-owned root files (`README.md`, `AGENTS.md`, `CLAUDE.md`,
+`COPYING`, the git dotfiles); `.github/project/source-ownership.txt` is the
+authority on ownership. Adding a z47-owned top-level path means adding it to
+`Z47_OWNED` in `.pre-commit-config.yaml` and to `[z47-owned]` in
+`source-ownership.txt`. ruff already covers everything outside `upstream/`, and
+ty needs the path only if it holds Python.
 
 The hooks deliberately do **not** run the governance gates in `.github/project/`;
 those read the whole tree or build firmware and stay in
@@ -121,19 +128,19 @@ steps here. The maintainer-process shape is:
    constant/enum mirrors).
 2. Re-port behavioral drift into the Zig owners in idiomatic fixed-width Zig,
    never by editing the imported `src/` oracle.
-3. Run the one-command local gate before every push:
+3. Run the local gate before every push:
    ```bash
-   bash .github/project/run-local-gate.sh
+   PATH="$PWD/.venv/bin:$PATH" bash .github/project/run-local-gate.sh
    ```
-   This reproduces the full Linux CI verdict (governance guards + the
-   host-parity build/test/oracle battery + the tracked-generated-artifact diff).
+   It runs the Linux governance, host-parity and firmware-link lanes and the
+   tracked-generated-artifact diff; its closing banner lists what only CI runs.
    `zig build sim` and `zig build test:unit` are NOT the gate. See
    [70-tests-and-verification.md](70-tests-and-verification.md).
 4. Finalize the pin, ownership manifest, and port ledger together, and do not
    merge the sync branch to `main` until the local gate and the full CI matrix
-   (Linux, macOS, and Windows) are green. The one lane the Linux gate cannot
-   reproduce is the Windows LLP64 integer-width trap; the runbook records the
-   guard and the CI Windows adjudicator.
+   (Linux, macOS, and Windows) are green. The Linux gate cannot run the Windows
+   and macOS host lanes; on Windows the usual decider is the LLP64 integer-width
+   trap, and the runbook records its guard.
 
 ### Re-syncing seam-and-core owners after a pin advance
 
@@ -142,9 +149,11 @@ correspondence (see
 [50-zig-c-boundaries-and-rewrite-policy.md](50-zig-c-boundaries-and-rewrite-policy.md)).
 How to re-sync a changed upstream file depends on which layer it maps to:
 
-1. Seam layer (the build-managed `translate-c` roots): regenerate so the
-   `extern struct` / `callconv(.c)` / offset shapes track the new pin. Seam
-   drift is a generator rerun, never a hand edit.
+1. ABI layer: re-emit the item table (`audit-item-table-parity.py --emit`),
+   remap constant-blob offsets (`check-constant-offsets.py --fix`), and bring
+   `src/abi/types.zig` into line by hand until `zig build abi-layout-parity` is
+   green; regenerate the font seams with `generate-font-seams.py`. The runbook's
+   first section owns the steps.
 2. Transliterated (hot) owner: apply the upstream C diff textually; shape
    correspondence still holds.
 3. Idiomatized (cold) owner: do not expect a textual diff to apply. Run that
@@ -158,7 +167,7 @@ Use a linked worktree when auditing or rehearsing an `upstream/master` refresh
 without disturbing your active coding tree.
 
 1. `git fetch upstream master`
-2. `python3 ../.github/project/report-upstream-refresh.py --repo-root .. --head-rev upstream/master`
+2. `python3 .github/project/report-upstream-refresh.py --repo-root . --head-rev upstream/master`
 3. `git worktree add --detach ../z47-upstream-refresh upstream/master`
 4. Inspect, diff, or rehearse the upstream refresh inside
    `../z47-upstream-refresh` while the active tree stays on your topic branch.
@@ -171,8 +180,8 @@ Do not treat ignored local worktrees as tracked documentation surfaces.
 Use the tracked C-dependency status helper when a maintainer report needs
 current first-party C telemetry.
 
-1. Run `python3 ../.github/project/report-c-dependency-status.py --repo-root ..`.
-2. Run `python3 ../.github/project/check-retained-bridge-ledger.py --repo-root ..`.
+1. Run `python3 .github/project/report-c-dependency-status.py --repo-root .`.
+2. Run `python3 .github/project/check-retained-bridge-ledger.py --repo-root .`.
 3. Keep these buckets separate in the maintained wording; do not collapse them
    into one closure sentence:
    - active product-build first-party C (target 0)
@@ -181,7 +190,7 @@ current first-party C telemetry.
 4. Keep the retained-bridge set justified through
    `../.github/project/retained-bridge-review.tsv`.
 5. Pair the split C report with
-   `python3 ../.github/project/report-upstream-refresh.py --repo-root .. --fetch`
+   `python3 .github/project/report-upstream-refresh.py --repo-root . --fetch`
    when the report also makes an upstream-sync freshness claim.
 
 ## Local Roadmap Sync Flow
@@ -189,7 +198,8 @@ current first-party C telemetry.
 Use the tracked roadmap guard when a local roadmap file is part of a milestone
 close-out review.
 
-1. Run `python3 ../.github/project/check-local-roadmap-sync.py --roadmap <local-roadmap.md>`.
+1. Run
+   `python3 .github/project/check-local-roadmap-sync.py --roadmap <local-roadmap.md>`.
 2. Treat any reported duplicate, missing, or drifted milestone row as a real
    validation failure, not editorial cleanup.
 3. Keep tracked docs, tracked workflow files, and CI jobs free of hard

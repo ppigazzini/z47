@@ -85,8 +85,11 @@ Prerequisites, none of which the build vendors:
 - **Zig `0.17.0`** — pinned, with the CI toolchain, in `.github/zig-toolchain.env`.
 - **Host simulator:** GTK 3, GMP, FreeType 2, and optionally PulseAudio, as
   system libraries found through `pkg-config`.
-- **Firmware:** `arm-none-eabi-gcc`, plus the two SwissMicros SDK submodules —
-  `git submodule update --init` before any `dmcp*` target, or the link fails.
+- **Firmware:** the `arm-none-eabi` GCC toolchain (`gcc`, `ar`, `ranlib`), `make`,
+  `tar`, `python3` and a native `cc` for the GMP 6.2.1 cross-build, `curl` or
+  `wget` to fetch the GMP source on first use, plus the two SwissMicros SDK
+  submodules — `git submodule update --init` before any `dmcp*` target, or the
+  link fails.
 
 There is no Make and no Meson step. The imported `Makefile` and Meson files are
 upstream's and are kept only as parity references.
@@ -104,13 +107,16 @@ Before pushing, run the gate — not `sim` and not `test:unit`, which have both
 been green over changes that CI rejected:
 
 ```sh
-bash .github/project/run-local-gate.sh
+uv sync                                                    # repo Python tooling into .venv
+PATH="$PWD/.venv/bin:$PATH" bash .github/project/run-local-gate.sh
 ```
 
-It reproduces the Linux CI verdict: the governance guards, the host-parity
-build/test/oracle battery, the firmware link for every package variant, and the
-tracked-generated-artifact diff. The Windows (LLP64) and macOS host lanes cannot
-run locally and are adjudicated by CI.
+It runs the Linux governance, host-parity and firmware-link lanes: the guards,
+`test:unit`, the host-parity battery, the malformed-input corpora, the oracle
+negative control, the DMCP package 1-3 links (`dmcp_pkgs_all`) and the
+tracked-generated-artifact diff. Its closing banner lists what only CI runs,
+including the docs build, the other firmware links, packaging, and the Windows
+(LLP64) and macOS host lanes.
 
 ## Documentation
 
@@ -138,6 +144,7 @@ change are in [CONTRIBUTING.md](CONTRIBUTING.md).
 ## License
 
 z47 is **GPL-3.0-only**, the same terms as the C47 work it derives from. The full
-text is in [COPYING](COPYING); z47's own sources carry
-`SPDX-License-Identifier: GPL-3.0-only`. The vendored tree under `upstream/`
+text is in [COPYING](COPYING) and covers every z47 source; `git grep -L
+SPDX-License-Identifier -- src build` lists the files that do not yet carry the
+`GPL-3.0-only` tag. The vendored tree under `upstream/`
 remains under its own upstream copyright and ships the same license text.
