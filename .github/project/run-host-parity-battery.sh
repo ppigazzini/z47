@@ -90,6 +90,13 @@ zig build keyboard_entry_parity
 zig build charstring_diff
 zig build constants_parity
 zig build tone_parity
+# Zig test roots with their own step. The DMCP key ring buffer needs the
+# keyboard_state build options, so test:unit cannot compile it and this is the
+# only place its tests run; the other two re-run test:unit roots under their own
+# names, so the step stays meaningful if a root leaves that list.
+zig build keyboard_ringbuffer_test
+zig build state-progmem-test
+zig build idiom-test
 zig build both
 # NON-BLOCKING: the headless GUI smoke trips a pixman SSE2 composite over-read
 # under Xvfb software rendering (version-independent; not a product regression;

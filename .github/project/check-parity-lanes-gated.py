@@ -42,11 +42,11 @@ from pathlib import Path
 
 BATTERY = ".github/project/run-host-parity-battery.sh"
 
-# A build step is a parity lane when its name says so. The suffixes are the
-# vocabulary the tree already uses: `_parity` for a differential against c43,
-# `_oracle` for a focused worker-level one, `_diff` for a script-extracted
-# reference, `_suite` for a grouped set.
-LANE_RE = re.compile(r"^\s{2}([\w-]+(?:_parity|_oracle|_diff|_suite|-parity))\s", re.M)
+# A build step is a lane when its name says so. The suffixes are the vocabulary
+# the tree already uses: `_parity` for a differential against c43, `_oracle` for
+# a focused worker-level one, `_diff` for a script-extracted reference, `_suite`
+# for a grouped set, and `_test` for a Zig test root with its own step.
+LANE_RE = re.compile(r"^\s{2}([\w-]+(?:_parity|_oracle|_diff|_suite|_test|-parity|-test))\s", re.M)
 
 # Lanes that exist and are deliberately not in the battery. Each needs a reason.
 # Empty on purpose: every lane the build declares is currently run. The mechanism
