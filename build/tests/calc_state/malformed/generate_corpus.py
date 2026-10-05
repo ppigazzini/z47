@@ -9,8 +9,8 @@
 # `expectations.txt` states. The second matters because the defect class this
 # corpus exists for includes SILENT wrong-accepts, which no crash detector sees.
 #
-# Both the .sav files and expectations.txt are generated; the driver regenerates
-# them if the directory is empty.
+# Both the .sav files and expectations.txt are generated, and the driver
+# regenerates them on every run.
 #
 # Deterministic (no RNG) so CI is reproducible. Run from the repo root:
 #   python3 build/tests/calc_state/malformed/generate_corpus.py
@@ -147,13 +147,6 @@ def patch_version(line: str) -> list[str]:
 # arithmetic this file yields 10000025 and is accepted -- silently, with no crash
 # for a crash-detector to find.
 write("version_wrap_forges_valid.sav", patch_version("4304967321"), expect_version=0)
-
-# Emit the expectations the driver reads. Written last so it always matches the
-# files just generated.
-(outdir / "expectations.txt").write_text(
-    "".join(f"{name} {'any' if v is None else v}\n" for name, v in sorted(expectations.items()))
-)
-print(f"{(outdir / 'expectations.txt').relative_to(root)}: {len(expectations)} expectations")
 
 
 # =====================================================================
@@ -410,3 +403,11 @@ for v in (10000000, 10000007, 10000008, 10000019, 10000020, 20000000):
     write(f"version_{v}.sav", _version(v), expect_version=v)
 for v in (9999999, 20000001):
     write(f"version_{v}_out_of_range.sav", _version(v), expect_version=0)
+
+
+# Emit the expectations the driver reads. Written last so it always matches the
+# files just generated.
+(outdir / "expectations.txt").write_text(
+    "".join(f"{name} {'any' if v is None else v}\n" for name, v in sorted(expectations.items()))
+)
+print(f"{(outdir / 'expectations.txt').relative_to(root)}: {len(expectations)} expectations")

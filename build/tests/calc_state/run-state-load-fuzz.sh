@@ -11,7 +11,7 @@
 #
 # The harness is built at the default optimize level, so Zig's own safety checks
 # are live: an out-of-range @intCast or an overflowing add on the load path traps
-# here rather than wrapping silently as it would in the ReleaseSmall firmware.
+# here rather than wrapping silently as it would in the firmware, built `small`.
 # That is the detector this lane actually depends on -- the C is UBSan-
 # instrumented too, but there is no AddressSanitizer anywhere in this
 # tree, so an overrun INSIDE the `ram` pool is still invisible. See
@@ -31,13 +31,17 @@ corpus="${2:?usage: run-state-load-fuzz.sh <harness> <corpus-dir>}"
 # ignores it, and it exists only where the testSuite has already run and saved. So
 # the lane passed on a developer machine and died in CI on a clean checkout with a
 # FileNotFoundError. If this base ever changes, check `git ls-files` on it first.
-if [ ! -d "$corpus" ] || [ -z "$(ls -A "$corpus"/*.sav 2>/dev/null)" ]; then
-  echo "generating the malformed state corpus..."
-  python3 "$corpus/generate_corpus.py" >/dev/null || {
-    echo "FAIL: could not generate the corpus"
-    exit 1
-  }
-fi
+#
+# It is regenerated on every run, not only when the directory is empty: a corpus
+# left from an older generator or an older golden keeps loading, so a local run
+# would judge files CI no longer generates against expectations it no longer
+# writes.
+echo "generating the malformed state corpus..."
+rm -f "$corpus"/*.sav "$corpus/expectations.txt"
+python3 "$corpus/generate_corpus.py" >/dev/null || {
+  echo "FAIL: could not generate the corpus"
+  exit 1
+}
 
 # abort_on_error=0 so a sanitizer prints its report and exits with the code below
 # rather than dying on a signal we would report less precisely.

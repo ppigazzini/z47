@@ -1,5 +1,6 @@
 # The corpus is regenerated deterministically by generate_corpus.py from the
-# tracked c47Test.sav, and `zig build state_load_fuzz` regenerates it if absent.
+# tracked build/tests/calc_state/save_load_golden.sav, and `zig build
+# state_load_fuzz` regenerates it on every run.
 # Track the generator, not its ~360 KB of derived output or the expectations file
 # the generator emits alongside it -- both must always match the generator, and
 # tracking them invites the two drifting apart.
