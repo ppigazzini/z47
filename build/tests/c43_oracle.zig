@@ -68,7 +68,7 @@ pub fn addUpstreamHeaderRoots(
     // decQuad/decNumber types the core headers declare fields with.
     module.addIncludePath(build_common.upstreamPath(b, "dep/decNumberICU"));
     // constantPointers.h, which c47.h includes. It is NOT committed: `zig build
-    // update_constants` writes it here from the generator's output, so this root
+    // constants` writes it here from the generator's output, so this root
     // only resolves in a tree where that has run. A lane that must work from a
     // bare checkout should take the generator's LazyPath from the build graph
     // instead, the way the constants parity lane does.

@@ -27,7 +27,7 @@ IMP = re.compile(r'@import\("([^"]+\.zig)"\)')
 REFDIRS = ["src", "build"]
 
 
-# Path-reference surfaces beyond the build graph: the ledger, the extern/@cImport
+# Path-reference surfaces beyond the build graph: the ledger, the Zig/C
 # boundary allowlist, the build *.txt source-lists, and the .github/project
 # audit scripts (*.py / *.tsv) that hardcode owner paths. The gate enumerated
 # these one slice at a time; sweep them all.

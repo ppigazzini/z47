@@ -32,10 +32,8 @@ pub const generate_testpgms_sources: []const []const u8 = &.{
 /// right for the product builds -- upstream's C leans on wraparound in places --
 /// but it CANCELS `Module.sanitize_c`. A lane that asks for a sanitizer and also
 /// passes that flag gets no sanitizer at all, silently: the only symptom is zero
-/// sanitizer symbols in the linked binary, which nothing checked. That is how
-/// `test_asan`, `both_asan` and `pgm_load_fuzz` ran for their whole existence
-/// without sanitizing anything. `check-sanitizer-lanes.sh` now fails the build if
-/// it recurs.
+/// sanitizer symbols in the linked binary. The `comptime` block after the flag
+/// lists fails the build if a sanitizing list carries it.
 pub fn sanitizerCFlags(
     target: std.Build.ResolvedTarget,
     sanitize_c: ?std.zig.SanitizeC,
