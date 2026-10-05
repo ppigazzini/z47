@@ -654,7 +654,7 @@ fn parseProgram(source: []const u8, allocator: std.mem.Allocator, generator: *Ge
     const body_start = start + start_marker.len;
     const end_rel = std.mem.find(u8, source[body_start..], end_marker) orelse return error.MissingEndMarker;
 
-    var scanner = Scanner{ .source = source[body_start .. body_start + end_rel] };
+    var scanner = Scanner{ .source = source[body_start..][0..end_rel] };
     while (true) {
         scanner.skipWhitespace();
         if (scanner.index >= scanner.source.len) break;

@@ -1146,7 +1146,7 @@ fn dropRadixMark(str: [*c]u8) void {
         return; // 12E0 says nothing a plain 12 does not
     }
     @memcpy(mantissa[0..left], text[0..left]);
-    @memcpy(mantissa[left .. left + shift], text[decimal_pos + 1 .. decimal_pos + 1 + shift]);
+    @memcpy(mantissa[left..][0..shift], text[decimal_pos + 1 ..][0..shift]);
     abi.fmtCStr(str, "{s}E{d}", .{ mantissa[0 .. left + shift], exponent });
 }
 

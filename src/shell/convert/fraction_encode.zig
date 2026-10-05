@@ -22,7 +22,7 @@ const std = @import("std");
 fn shiftRightTwo(dest: [*]u8, insert_at: i16, n: i16) void {
     const ia: usize = @intCast(insert_at);
     const cnt: usize = @intCast(n);
-    @memmove(dest[ia + 2 .. ia + 2 + cnt], dest[ia .. ia + cnt]);
+    @memmove(dest[ia + 2 ..][0..cnt], dest[ia..][0..cnt]);
 }
 
 /// Encode `value` into `dest` at `ending_zero.*` as two-byte digit glyphs based

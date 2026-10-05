@@ -89,7 +89,7 @@ fn poisonReleased(pcMemPtr: ?*anyopaque, sizeInBlocks: usize) void {
 
 fn poolBytes(e: pool_poison.Extent) []u8 {
     const base: [*]u8 = @ptrCast(ram);
-    return base[toBytes(e.start) .. toBytes(e.start) + toBytes(e.blocks)];
+    return base[toBytes(e.start)..][0..toBytes(e.blocks)];
 }
 
 /// Fill every free region with the poison pattern and record what was filled.

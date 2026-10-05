@@ -953,7 +953,7 @@ inline fn isNamedVariable(regist: u16) bool {
 fn reservedVariableNameToErrorMessage(regist: u16) void {
     const name = &allReservedVariables[regist - FIRST_RESERVED_VARIABLE].reservedVariableName;
     const length: usize = name[0];
-    abi.fmtBufZ(errorMessage[0..512], "{s}", .{name[1 .. 1 + length]});
+    abi.fmtBufZ(errorMessage[0..512], "{s}", .{name[1..][0..length]});
 }
 
 fn reportAlphaRegisterOutOfRange(function_name: [*:0]const u8, regist: u16) void {

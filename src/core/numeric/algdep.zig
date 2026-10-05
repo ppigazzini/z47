@@ -726,7 +726,7 @@ fn buildPolynomialString(L: *Lattice, degree: i32) void {
             }
         } else {
             const sign: *const [3]u8 = if (negative) " - " else " + ";
-            @memcpy(algdepPoly[at .. at + 3], sign);
+            @memcpy(algdepPoly[at..][0..3], sign);
             at += 3;
         }
 
@@ -738,7 +738,7 @@ fn buildPolynomialString(L: *Lattice, degree: i32) void {
                 at = 0;
                 break;
             }
-            @memcpy(algdepPoly[at .. at + len], number[0..len]);
+            @memcpy(algdepPoly[at..][0..len], number[0..len]);
             at += len;
         }
         if (i >= 1) {
@@ -765,7 +765,7 @@ fn buildPolynomialString(L: *Lattice, degree: i32) void {
                 at = 0;
                 break;
             }
-            @memcpy(algdepPoly[at .. at + si], sup[0..si]);
+            @memcpy(algdepPoly[at..][0..si], sup[0..si]);
             at += si;
         }
         first = false;

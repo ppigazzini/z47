@@ -116,6 +116,10 @@ PATTERNS = [
     # @intFromFloat is "Equivalent to @trunc" and deprecated; @trunc, @round,
     # @floor and @ceil yield an integer when the result type is one.
     ("int_from_float_sites", re.compile(r"@intFromFloat\("), "site"),
+    # A slice whose end repeats its start, `s[a .. a + n]`. The language reference
+    # writes it `s[a..][0..n]`: no addition, and a comptime-known `n` gives a
+    # pointer to an array rather than a slice.
+    ("slice_by_end_sites", re.compile(r"\[\s*([^\[\]]+?)\s*\.\.\s*\1\s*\+"), "site"),
 ]
 
 

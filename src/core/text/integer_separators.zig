@@ -23,7 +23,7 @@ fn strlen(p: [*]const u8) i16 {
 fn moveRight(display: [*]u8, src_at: i16, shift: usize, n: i16) void {
     const s: usize = @intCast(src_at);
     const cnt: usize = @intCast(n);
-    @memmove(display[s + shift .. s + shift + cnt], display[s .. s + cnt]);
+    @memmove(display[s + shift ..][0..cnt], display[s..][0..cnt]);
 }
 
 /// Splice group separators into the NUL-terminated integer string `display`.
