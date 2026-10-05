@@ -4874,7 +4874,13 @@ fn refreshRegisterDataDispatch(regist_p: *calcRegister_t, origRegist: calcRegist
         if (prefixWidth_p.* > 0) {
             _ = showString(prefix, &standardFont, @intCast(indent), @intCast(@as(i32, baseY) + TEMPORARY_INFO_OFFSET), vmNormal, prefixPre, prefixPost);
         }
-        _ = showString(tmpString, &numericFont, @intCast(if (temporaryInformation == TI_VIEW_REGISTER and origRegist == REGISTER_T) @as(i32, prefixWidth_p.*) else @as(i32, SCREEN_WIDTH) - w_p.*), @intCast(@as(i32, baseY) - checkHPoffset()), vmNormal, 0, 1);
+        const isViewLine = temporaryInformation == TI_VIEW_REGISTER and origRegist == REGISTER_T;
+        if (w_p.* <= SCREEN_WIDTH - prefixWidth_p.*) {
+            _ = showString(tmpString, &numericFont, @intCast(if (isViewLine) @as(i32, prefixWidth_p.*) else @as(i32, SCREEN_WIDTH) - w_p.*), @intCast(@as(i32, baseY) - checkHPoffset()), vmNormal, 0, 1);
+        } else {
+            w_p.* = frontier_char_string.stringWidth(tmpString, &standardFont, false, true);
+            _ = showString(tmpString, &standardFont, @intCast(if (isViewLine) @as(i32, prefixWidth_p.*) else @as(i32, SCREEN_WIDTH) - w_p.*), @intCast(@as(i32, baseY) + 6), vmNormal, 0, 1);
+        }
     }
     // Main type dtDate
     else if (getRegisterDataType(regist) == dtDate) {
@@ -5756,11 +5762,11 @@ fn refreshLongInteger(regist: calcRegister_t, origRegist: calcRegister_t, baseY:
     if (prefixWidth_p.* > 0) {
         _ = showString(prefix, &standardFont, @intCast(indent), @intCast(@as(i32, baseY) + TEMPORARY_INFO_OFFSET), vmNormal, prefixPre, prefixPost);
     }
-    if (w_p.* <= SCREEN_WIDTH) {
+    if (w_p.* <= SCREEN_WIDTH - prefixWidth_p.*) {
         _ = showString(tmpString, &numericFont, @intCast(if (temporaryInformation == TI_VIEW_REGISTER and origRegist == REGISTER_T) @as(i32, prefixWidth_p.*) else @as(i32, SCREEN_WIDTH) - w_p.*), @intCast(@as(i32, baseY) - checkHPoffset()), vmNormal, 0, 1);
     } else {
         w_p.* = frontier_char_string.stringWidth(tmpString, &standardFont, false, true);
-        if (w_p.* > SCREEN_WIDTH) {
+        if (w_p.* > SCREEN_WIDTH - prefixWidth_p.*) {
             if (comptime extra_info) {
                 moreInfoOnError("In function _refreshRegisterLine:", "Long integer representation too wide!", tmpString, null);
             }
