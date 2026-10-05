@@ -1022,7 +1022,7 @@ pub export fn auto_tick(tick_int_f_in: f64) callconv(.c) f64 {
         }
         // Round the mantissa to 1 decimal as "%.1e" did. The argument is in
         // [10, 101), so truncating the cast is the floor.
-        tick_m = @as(f64, @floatFromInt(@as(i32, @intFromFloat(tick_m * 10.0 + 0.5)))) / 10.0;
+        tick_m = @as(f64, @floatFromInt(@as(i32, @trunc(tick_m * 10.0 + 0.5)))) / 10.0;
         if (tick_m >= 10.0) {
             tick_m /= 10.0;
             tick_mult *= 10.0;
@@ -1465,11 +1465,11 @@ pub export fn graphPlotstat(selection: u16) callconv(.c) void {
             const xLast: i16 = screen_window_x_r(x_min, &yr, x_max);
             const pitchDivisor: i32 = if (numberOfPlotPoints > 1) @as(i32, numberOfPlotPoints) - 1 else 1;
             // centre-to-centre bar spacing, one integer for all bars
-            const barPitch: i16 = @intFromFloat(@as(f32, @floatFromInt(@as(i32, xLast) - @as(i32, xn))) / @as(f32, @floatFromInt(pitchDivisor)) + 0.5);
+            const barPitch: i16 = @trunc(@as(f32, @floatFromInt(@as(i32, xLast) - @as(i32, xn))) / @as(f32, @floatFromInt(pitchDivisor)) + 0.5);
             // bars go on the integer grid barX0 + ix*barPitch, anchored mid-span so drift splits between both ends
             const barX0: i16 = @intCast(@divTrunc(@as(i32, xn) + @as(i32, xLast) - (@as(i32, numberOfPlotPoints) - 1) * @as(i32, barPitch) + 1, 2));
             // half bar width; bar width 2*colw+1 and gap barPitch-2*colw-1 are constant across the plot
-            const colw: i16 = @as(i16, @intFromFloat(@as(f32, @floatFromInt(barPitch)) / 2.0)) - 1;
+            const colw: i16 = @as(i16, @trunc(@as(f32, @floatFromInt(barPitch)) / 2.0)) - 1;
 
             // MAIN GRAPH LOOP
             ix = 0;

@@ -3064,7 +3064,7 @@ pub export fn longIntegerToDisplayString(lgInt: [*c]mpz_struct, displayString: [
     }
 
     const sl = SEPARATOR_LEFT();
-    exponentShift = @intFromFloat(@as(f64, @floatFromInt(longIntegerBits(lg) - 1)) * 0.3010299956639811952137);
+    exponentShift = @trunc(@as(f64, @floatFromInt(longIntegerBits(lg) - 1)) * 0.3010299956639811952137);
     exponentStep = if (GROUPWIDTH_LEFT() == 0 or (sl[0] == 1 and sl[1] == 1)) 1 else @intCast(GROUPWIDTH_LEFT());
     exponentStep1 = if (sl[0] == 1 and sl[1] == 1) 1 else @intCast(GROUPWIDTH_LEFT1());
 

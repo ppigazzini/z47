@@ -108,6 +108,10 @@ Enforcement split:
 - The idiom ratchet (`report-idiom-status.py` / `check-idiom-ratchet.sh`) grades
   the CORE layer only. Generated seam files are classified out of the ceiling
   totals and reported separately.
+- The same ratchet holds at zero the spellings the pinned Zig retires, so a
+  ported line cannot bring one back: `int_from_float_sites` counts
+  `@intFromFloat`, which the 0.17 language reference deprecates as equivalent to
+  `@trunc`.
 - A seam file lives under a `generated/` path in `src/` AND carries the
   `// SEAM-GENERATED` marker. The reporter fails closed if a file has one but not
   the other, so a hand-written owner cannot smuggle `extern struct` / `[*c]` debt

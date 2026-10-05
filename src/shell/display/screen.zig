@@ -2726,7 +2726,7 @@ pub export fn drawSinglePixelFullWidthLine(y: c_int) callconv(.c) void {
 pub export fn showBottomLine() callconv(.c) void {
     if (overrideShowBottomLine > 0) {
         // 40 means 4.0 registers up from the bottom
-        const yoff: i32 = @intFromFloat(@as(f32, SCREEN_HEIGHT) - @as(f32, REGISTER_LINE_HEIGHT) * @as(f32, @floatFromInt(overrideShowBottomLine)) / 10.0);
+        const yoff: i32 = @trunc(@as(f32, SCREEN_HEIGHT) - @as(f32, REGISTER_LINE_HEIGHT) * @as(f32, @floatFromInt(overrideShowBottomLine)) / 10.0);
         const offs: i32 = if (temporaryInformation == TI_SHOW_REGISTER_BIG) -2 else 0;
 
         drawSinglePixelFullWidthLine(yoff + offs);

@@ -803,7 +803,7 @@ fn plotarrow(xo: i16, yo: i16, xn: i16, yn: i16) void {
 // The C adds the offset to the endpoint as a float and truncates the sum at the
 // call, not the offset before it.
 inline fn fToI16(v: f32) i16 {
-    return @intFromFloat(@trunc(v));
+    return @trunc(v);
 }
 
 /// The clipping edge distance, as the C's `int16_t dY = abs(...)` produces it:
@@ -1713,7 +1713,7 @@ pub export fn graph_plotmem() linksection(code_section) callconv(.c) void {
                     continue; // Skip horizontal lines
                 }
                 const dxN: f32 = @abs((@as(f32, @floatFromInt(dY)) * @as(f32, @floatFromInt(@as(i32, xN1) - @as(i32, xo)))) / @as(f32, @floatFromInt(@as(i32, yN1) - @as(i32, yN0))));
-                xN1 = @intCast(@as(i32, xo) + @as(i32, @intFromFloat(dxN + 0.5)));
+                xN1 = @intCast(@as(i32, xo) + @as(i32, @trunc(dxN + 0.5)));
                 yN1 = SCREEN_HEIGHT_GRAPH - 1;
             }
             // exceeding the positive y-axis part or the top of the screen
@@ -1725,7 +1725,7 @@ pub export fn graph_plotmem() linksection(code_section) callconv(.c) void {
                     continue; // Skip horizontal lines
                 }
                 const dxN: f32 = @abs((@as(f32, @floatFromInt(dY)) * @as(f32, @floatFromInt(@as(i32, xN1) - @as(i32, xo)))) / @as(f32, @floatFromInt(@as(i32, yN1) - @as(i32, yN0))));
-                xN1 = @intCast(@as(i32, xo) + @as(i32, @intFromFloat(dxN + 0.5)));
+                xN1 = @intCast(@as(i32, xo) + @as(i32, @trunc(dxN + 0.5)));
                 yN1 = minN_y;
             }
 
