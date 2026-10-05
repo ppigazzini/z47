@@ -295,7 +295,7 @@ const FLAG_CPXj: c_int = 0x8005;
 // ZERO-initialized, so .realMatrix.matrixElements starts NULL. `= undefined`
 // would leave garbage: getMatrixFromRegister's `matrixElements != null` guard
 // then passes on the first edit and frees a wild pointer (freeC47Blocks ->
-// toC47MemPtr @intCast panic in Debug / heap corruption in ReleaseFast). Match
+// toC47MemPtr @intCast panic in `debug` / heap corruption in `fast`). Match
 // C's zero-init.
 pub export var openMatrixMIMPointer: AnyMatrix = std.mem.zeroes(AnyMatrix);
 pub export var scrollRow: u16 = 0;

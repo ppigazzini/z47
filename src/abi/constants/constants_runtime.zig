@@ -54,7 +54,7 @@ pub fn registerReal34Ptr(reg: calcRegister_t) *align(1) real34_t {
 /// testSuite configurations have no check at all and read `realtConstants` past
 /// its 84th entry. The port refuses on every build instead: reproducing the
 /// unchecked read would panic on the safety-checked lanes and load a garbage
-/// function pointer on `ReleaseSmall`, so the two builds would disagree and
+/// function pointer in `small` mode, so the two builds would disagree and
 /// neither would match the C. Only the message text follows the macro.
 pub inline fn validateConstant(constant: u16) bool {
     if (constant >= NOUC) {

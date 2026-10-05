@@ -25,7 +25,7 @@
 //! everything else keeps Zig's default handler exactly as if this file did not
 //! exist. A safety check that fires on the device becomes a `udf` -- the
 //! calculator resets, which is the correct outcome for a state no one can trust,
-//! and strictly better than the silent wrong number `ReleaseSmall` gives today.
+//! and strictly better than the silent wrong number `small` mode gives.
 //!
 //! The freestanding branch is `std.debug.no_panic`, whose every handler is a bare
 //! `@trap()`. The stdlib keeps that namespace complete for the compiler it ships

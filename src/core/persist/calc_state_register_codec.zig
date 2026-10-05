@@ -591,7 +591,7 @@ fn matrixDataBlocks(dims: vector_shape.Dims, element_blocks: u32) u16 {
 // PRODUCT at 16383 elements, not either dimension on its own -- 16383x1 passes it
 // and still exceeds 12 bits -- so a value wider than the field is reachable, and
 // `@intCast` would make it illegal behaviour here where upstream is defined: a
-// panic on the host, silent UB in the ReleaseSmall firmware.
+// panic on the host, silent UB in the `small` firmware.
 //
 // The residual is upstream's and is deliberately NOT diverged from: for such a
 // shape the header ends up describing fewer elements than the allocation and the
