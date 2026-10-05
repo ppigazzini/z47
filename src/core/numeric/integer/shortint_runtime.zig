@@ -26,7 +26,6 @@ pub const TI_FALSE: u8 = 12;
 pub const FLAG_CARRY: u32 = 0x800b;
 pub const FLAG_ASLIFT: u32 = 0xc023;
 
-const DECNUMUNITS = 25;
 const DECSPECIAL: u8 = 0x70;
 
 const abi = @import("abi"); // shared ABI bindings
@@ -138,11 +137,11 @@ pub fn setRegisterShortIntegerBase(regist: calcRegister_t, base: u32) void {
 }
 
 pub fn zeroReal() real_t {
-    return real_owned.zeroReal(real_t, DECNUMUNITS);
+    return real_owned.zeroReal(real_t);
 }
 
 pub fn realFromBoolean(value: bool) real_t {
-    return real_owned.realFromBoolean(real_t, DECNUMUNITS, value);
+    return real_owned.realFromBoolean(real_t, value);
 }
 
 pub fn isRealZero(value: *const real_t) bool {

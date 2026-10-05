@@ -226,7 +226,7 @@ fn advance(base: [*]u8, r: ?[*]u8) ?usize {
 }
 
 test "countLiteralBytes advances by the literal's encoded width" {
-    var buf = std.mem.zeroes([32]u8);
+    var buf: [32]u8 = @splat(0);
     buf[0] = BINARY_REAL34;
     try testing.expectEqual(@as(?usize, 1 + 16), advance(&buf, countLiteralBytes(&buf))); // kind + real34
     buf[0] = BINARY_SHORT_INTEGER;
@@ -243,7 +243,7 @@ test "countLiteralBytes advances by the literal's encoded width" {
 }
 
 test "countOpBytes advances by the parameter width per mode" {
-    var buf = std.mem.zeroes([32]u8);
+    var buf: [32]u8 = @splat(0);
     // PARAM_LABEL: a local label (<=123) consumes just the 1 opParam byte.
     buf[0] = 5;
     try testing.expectEqual(@as(?usize, 1), advance(&buf, countOpBytes(&buf, PARAM_LABEL, neverOld)));

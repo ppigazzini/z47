@@ -120,6 +120,16 @@ PATTERNS = [
     # writes it `s[a..][0..n]`: no addition, and a comptime-known `n` gives a
     # pointer to an array rather than a slice.
     ("slice_by_end_sites", re.compile(r"\[\s*([^\[\]]+?)\s*\.\.\s*\1\s*\+"), "site"),
+    # An array of numbers zero-filled through std.mem.zeroes, which is @splat(0)
+    # once the array type is the result type. Arrays of structs keep std.mem.zeroes.
+    (
+        "zeroes_scalar_array_sites",
+        re.compile(
+            r"std\.mem\.zeroes\(\[[^\]]*\]"
+            r"(?:u8|i8|u16|i16|u32|i32|u64|i64|bool_t|usize|c_int|f32|f64)\)"
+        ),
+        "site",
+    ),
 ]
 
 

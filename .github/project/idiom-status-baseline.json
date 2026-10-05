@@ -11,7 +11,8 @@
     "constants_blob_sites": 1,
     "qspi_section_files": 26,
     "int_from_float_sites": 0,
-    "slice_by_end_sites": 0
+    "slice_by_end_sites": 0,
+    "zeroes_scalar_array_sites": 0
   },
   "owner_count": 416,
   "seam_totals": {
@@ -26,7 +27,8 @@
     "constants_blob_sites": 0,
     "qspi_section_files": 2,
     "int_from_float_sites": 0,
-    "slice_by_end_sites": 0
+    "slice_by_end_sites": 0,
+    "zeroes_scalar_array_sites": 0
   },
   "seam_file_count": 2
 }

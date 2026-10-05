@@ -125,7 +125,7 @@ pub export var lastI: u16 = 0;
 pub export var lastJ: u16 = 0;
 pub export var lastFunc: i16 = 0;
 pub export var lastParam: i16 = 0;
-pub export var lastTemp: [16]u8 = std.mem.zeroes([16]u8);
+pub export var lastTemp: [16]u8 = @splat(0);
 
 // PC_BUILD-only globals (host only).
 comptime {
@@ -269,10 +269,10 @@ pub export var userKeyLabel: ?[*]u8 = null;
 // depend on it: statusBar.c reads oldTime[0] == 0 as "no time drawn yet" before
 // anything writes the buffer, and saveRestoreBackup.c writes the whole of it to
 // the backup file. `undefined` would leave that first read on undefined bytes.
-pub export var asmBuffer: [5]u8 = std.mem.zeroes([5]u8);
-pub export var oldTime: [8]u8 = std.mem.zeroes([8]u8);
-pub export var dateTimeString: [12]u8 = std.mem.zeroes([12]u8);
-pub export var displayValueX: [DISPLAY_VALUE_LEN]u8 = std.mem.zeroes([DISPLAY_VALUE_LEN]u8);
+pub export var asmBuffer: [5]u8 = @splat(0);
+pub export var oldTime: [8]u8 = @splat(0);
+pub export var dateTimeString: [12]u8 = @splat(0);
+pub export var displayValueX: [DISPLAY_VALUE_LEN]u8 = @splat(0);
 pub export var gapItemLeft: u16 = 0;
 pub export var gapItemRight: u16 = 0;
 pub export var gapItemRadix: u16 = 0;
@@ -355,10 +355,10 @@ pub export var currentRegisterBrowserScreen: i16 = 0;
 pub export var lineTWidth: i16 = 0;
 pub export var rbrRegister: i16 = 0;
 // catalog moved to the base kernel (engine/kernel/calc_globals.zig).
-pub export var lastCatalogPosition: [NUMBER_OF_CATALOGS]i16 = std.mem.zeroes([NUMBER_OF_CATALOGS]i16);
+pub export var lastCatalogPosition: [NUMBER_OF_CATALOGS]i16 = @splat(0);
 // The page each retained-page softmenu (softmenus.c's retainedPageMenu[]) reopens
 // on, whatever FLAG_MNUp1 says; backup.cfg and the state file carry it.
-pub export var retainedPageFirstItem: [NUMBER_OF_RETAINED_PAGE_MENUS]i16 = std.mem.zeroes([NUMBER_OF_RETAINED_PAGE_MENUS]i16);
+pub export var retainedPageFirstItem: [NUMBER_OF_RETAINED_PAGE_MENUS]i16 = @splat(0);
 pub export var lastKeyItemDetermined: i16 = 0;
 pub export var lastUserMode: bool_t = false;
 pub export var lastItem: i16 = 0;
@@ -436,9 +436,9 @@ pub export var numberOfTamMenusToPop: i16 = 0;
 pub export var itemToBeAssigned: i16 = 0;
 pub export var cachedDynamicMenu: i16 = 0;
 
-pub export var globalFlags: [8]u16 = std.mem.zeroes([8]u16);
+pub export var globalFlags: [8]u16 = @splat(0);
 pub export var freeProgramBytes: u16 = 0;
-pub export var glyphRow: [NUMBER_OF_GLYPH_ROWS]u16 = std.mem.zeroes([NUMBER_OF_GLYPH_ROWS]u16);
+pub export var glyphRow: [NUMBER_OF_GLYPH_ROWS]u16 = @splat(0);
 pub export var firstDisplayedLocalStepNumber: u16 = 0;
 pub export var numberOfPrograms: u16 = 0;
 // numberOfNamedVariables moved to the base kernel (engine/kernel/calc_globals.zig).
@@ -498,8 +498,8 @@ pub export var histElementXorY: i16 = 0;
 pub export var loBinR: real34_t = std.mem.zeroes(real34_t);
 pub export var nBins: real34_t = std.mem.zeroes(real34_t);
 pub export var hiBinR: real34_t = std.mem.zeroes(real34_t);
-pub export var statMx: [8]u8 = std.mem.zeroes([8]u8);
-pub export var plotStatMx: [8]u8 = std.mem.zeroes([8]u8);
+pub export var statMx: [8]u8 = @splat(0);
+pub export var plotStatMx: [8]u8 = @splat(0);
 pub export var regStatsXY: calcRegister_t = 0;
 
 pub export var temporaryFlagRect: bool_t = false;
@@ -508,10 +508,10 @@ pub export var vbatVIntegrated: c_int = 3000;
 pub export var timeLastOp: u32 = 0;
 pub export var timeLastOp0: u32 = 0;
 pub export var timeLastOp1: u32 = 0;
-pub export var lastStateFileOpened: [stateFileNameVarLength + 12]u8 = std.mem.zeroes([stateFileNameVarLength + 12]u8);
-pub export var fileNameSelected: [stateFileNameVarLength]u8 = std.mem.zeroes([stateFileNameVarLength]u8);
+pub export var lastStateFileOpened: [stateFileNameVarLength + 12]u8 = @splat(0);
+pub export var fileNameSelected: [stateFileNameVarLength]u8 = @splat(0);
 
-pub export var filename_csv: [FILENAMELEN]u8 = std.mem.zeroes([FILENAMELEN]u8);
+pub export var filename_csv: [FILENAMELEN]u8 = @splat(0);
 pub export var mem__32: u32 = 0;
 pub export var cancelFilename: bool_t = false;
 

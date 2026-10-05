@@ -806,7 +806,7 @@ fn matrixFitsUpright(matrix: *const real34Matrix_t, prefixWidth: i16) bool {
     const colVector = (cols == 1 and rows > 1);
     const upRows: usize = if (colVector) 1 else rows;
     const upCols: usize = if (colVector) rows else cols;
-    var tmpStr = std.mem.zeroes([200]u8);
+    var tmpStr: [200]u8 = @splat(0);
     const tmpFormat = displayFormat;
     const tmpFormatDigits = displayFormatDigits;
     var width: i16 = frontier_char_string.stringWidth("[" ++ STD_MAT_BR, &standardFont, true, true);
@@ -953,7 +953,7 @@ fn laysFlatOnShow(header: *align(1) const matrixHeader_t, prefixWidth: i16, regX
 // The width of a rendered element up to and including its radix mark, which is what the cells are
 // aligned on.
 fn flatLeftWidth(str: [*c]const u8, font: *const font_t) i16 {
-    var head = std.mem.zeroes([200]u8);
+    var head: [200]u8 = @splat(0);
     var used: usize = 0;
     var scan: [*c]const u8 = str;
     while (scan.* != 0) : (scan += 1) {
@@ -973,7 +973,7 @@ fn flatLeftWidth(str: [*c]const u8, font: *const font_t) i16 {
 // ends only, and a page read by column closes with the transpose mark.
 fn showRealMatrixFlat(matrix: *const real34Matrix_t, prefixWidth: i16) void {
     if (comptime !option_mx_show) return;
-    var elem = std.mem.zeroes([200]u8);
+    var elem: [200]u8 = @splat(0);
     const font: *const font_t = &standardFont;
     const rows: usize = matrix.header.matrixRows;
     const cols: usize = matrix.header.matrixColumns;
@@ -1114,9 +1114,9 @@ pub export fn showRealMatrix(matrix: *const real34Matrix_t, prefixWidth: i16, re
     var font: *const font_t = &numericFont;
     var fontHeight: i16 = NUMERIC_FONT_HEIGHT_;
     var maxWidth: i16 = MATRIX_LINE_WIDTH_C - prefixWidth;
-    var colWidth = std.mem.zeroes([MATRIX_MAX_COLUMNS]i16);
-    var rPadWidth = std.mem.zeroes([MATRIX_MAX_ROWS_ON_SHOW * MATRIX_MAX_COLUMNS]i16);
-    var allElementsInColAreIntegers = std.mem.zeroes([MATRIX_MAX_COLUMNS]bool_t);
+    var colWidth: [MATRIX_MAX_COLUMNS]i16 = @splat(0);
+    var rPadWidth: [MATRIX_MAX_ROWS_ON_SHOW * MATRIX_MAX_COLUMNS]i16 = @splat(0);
+    var allElementsInColAreIntegers: [MATRIX_MAX_COLUMNS]bool_t = @splat(false);
     const forEditor = matrix == &openMatrixMIMPointer.realMatrix;
     const sRow: u16 = if (forEditor) scrollRow else 0;
     var sCol: u16 = if (forEditor) scrollColumn else 0;
@@ -1280,7 +1280,7 @@ pub export fn showRealMatrix(matrix: *const real34Matrix_t, prefixWidth: i16, re
         baseWidth -= frontier_char_string.stringWidth(STD_SPACE_FIGURE, font, true, true);
         baseWidth += 3;
 
-        var endChar = std.mem.zeroes([6]u8);
+        var endChar: [6]u8 = @splat(0);
         _ = strcpy(&endChar, if (isMatrix3dVectorCYL(rows, cols, matrix.header.mtag))
             "]" ++ STD_SPACE_HAIR ++ STD_SUP_c
         else if (isMatrix3dVectorSPH(rows, cols, matrix.header.mtag))
@@ -1440,7 +1440,7 @@ pub export fn showRealMatrix(matrix: *const real34Matrix_t, prefixWidth: i16, re
 
 pub export fn getRealMatrixColumnWidths(matrix: *const real34Matrix_t, prefixWidth: i16, regXposition: bool_t, font: *const font_t, colWidthPtr: [*c]i16, rPadWidthPtr: [*c]i16, digitsPtr: *i16, maxColsIn: u16, allElementsInColAreIntegersPtr: [*c]bool_t) callconv(.c) i16 {
     // The measured page shape
-    var tmpStringL = std.mem.zeroes([200]u8);
+    var tmpStringL: [200]u8 = @splat(0);
     const showPage = MX_SHOW_PAGE(prefixWidth, regXposition); // the SHOW page, never the stack line
     const fixPage = showPage and displayFormat == DF_FIX;
     const verticalVector = showsVerticalVector(&matrix.header, prefixWidth, regXposition, matrixFitsUpright(matrix, prefixWidth)); // one shared column under SHOW
@@ -1458,8 +1458,8 @@ pub export fn getRealMatrixColumnWidths(matrix: *const real34Matrix_t, prefixWid
     // The width budget
     const maxWidth: i16 = if (verticalVector) showsVerticalVectorMaxWidth(&matrix.header, font, prefixWidth) else MATRIX_LINE_WIDTH_C - prefixWidth;
     var totalWidth: i16 = 0;
-    var maxRightWidth = std.mem.zeroes([MATRIX_MAX_COLUMNS]i16);
-    var maxLeftWidth = std.mem.zeroes([MATRIX_MAX_COLUMNS]i16);
+    var maxRightWidth: [MATRIX_MAX_COLUMNS]i16 = @splat(0);
+    var maxLeftWidth: [MATRIX_MAX_COLUMNS]i16 = @splat(0);
     const exponentOutOfRange: i16 = 0x4000;
     var noFix = false;
     const dspDigits: i16 = displayFormatDigits;
@@ -1664,11 +1664,11 @@ pub export fn showComplexMatrix(matrix: *const complex34Matrix_t, prefixWidth: i
     var font: *const font_t = &numericFont;
     var fontHeight: i16 = NUMERIC_FONT_HEIGHT_;
     var maxWidth: i16 = MATRIX_LINE_WIDTH_C - prefixWidth;
-    var colWidth = std.mem.zeroes([MATRIX_MAX_COLUMNS]i16);
-    var colWidth_r = std.mem.zeroes([MATRIX_MAX_COLUMNS]i16);
-    var colWidth_i = std.mem.zeroes([MATRIX_MAX_COLUMNS]i16);
-    var rPadWidth_r = std.mem.zeroes([MATRIX_MAX_ROWS_ON_SHOW * MATRIX_MAX_COLUMNS]i16);
-    var rPadWidth_i = std.mem.zeroes([MATRIX_MAX_ROWS_ON_SHOW * MATRIX_MAX_COLUMNS]i16);
+    var colWidth: [MATRIX_MAX_COLUMNS]i16 = @splat(0);
+    var colWidth_r: [MATRIX_MAX_COLUMNS]i16 = @splat(0);
+    var colWidth_i: [MATRIX_MAX_COLUMNS]i16 = @splat(0);
+    var rPadWidth_r: [MATRIX_MAX_ROWS_ON_SHOW * MATRIX_MAX_COLUMNS]i16 = @splat(0);
+    var rPadWidth_i: [MATRIX_MAX_ROWS_ON_SHOW * MATRIX_MAX_COLUMNS]i16 = @splat(0);
     const forEditor = matrix == &openMatrixMIMPointer.complexMatrix;
     const sRow: u16 = if (forEditor) scrollRow else 0;
     var sCol: u16 = if (forEditor) scrollColumn else 0;
@@ -1731,7 +1731,7 @@ pub export fn showComplexMatrix(matrix: *const complex34Matrix_t, prefixWidth: i
         // The SIG part budget
         sfPartWidth = 0;
         if (verticalVector and displayFormat == DF_SF) {
-            var unitStr = std.mem.zeroes([64]u8);
+            var unitStr: [64]u8 = @splat(0);
             if (polarMode) {
                 _ = strcpy(&unitStr, STD_SPACE_4_PER_EM ++ STD_MEASURED_ANGLE ++ STD_SPACE_4_PER_EM);
             } else {
@@ -1960,7 +1960,7 @@ pub export fn showComplexMatrix(matrix: *const complex34Matrix_t, prefixWidth: i
 
 pub export fn getComplexMatrixColumnWidths(matrix: *const complex34Matrix_t, prefixWidth: i16, regXposition: bool_t, font: *const font_t, colWidthPtr: [*c]i16, colWidth_rPtr: [*c]i16, colWidth_iPtr: [*c]i16, rPadWidth_rPtr: [*c]i16, rPadWidth_iPtr: [*c]i16, digitsPtr: *i16, maxColsIn: u16, angleMode: angularMode_t, polarMode: bool_t) callconv(.c) i16 {
     // The measured page shape
-    var tmpStringL = std.mem.zeroes([200]u8);
+    var tmpStringL: [200]u8 = @splat(0);
     const showPage = MX_SHOW_PAGE(prefixWidth, regXposition); // the SHOW page, never the stack line
     const fixPage = showPage and displayFormat == DF_FIX;
     // one shared column under SHOW; a complex vector has no integer form to keep
@@ -1977,10 +1977,10 @@ pub export fn getComplexMatrixColumnWidths(matrix: *const complex34Matrix_t, pre
     // The width budget, widened by one figure space on the vertical page
     const maxWidth: i16 = if (verticalVector) showsVerticalVectorMaxWidth(&matrix.header, font, prefixWidth) + frontier_char_string.stringWidth(STD_SPACE_FIGURE, font, true, true) else MATRIX_LINE_WIDTH_C - prefixWidth;
     var totalWidth: i16 = 0;
-    var maxRightWidth_r = std.mem.zeroes([MATRIX_MAX_COLUMNS]i16);
-    var maxLeftWidth_r = std.mem.zeroes([MATRIX_MAX_COLUMNS]i16);
-    var maxRightWidth_i = std.mem.zeroes([MATRIX_MAX_COLUMNS]i16);
-    var maxLeftWidth_i = std.mem.zeroes([MATRIX_MAX_COLUMNS]i16);
+    var maxRightWidth_r: [MATRIX_MAX_COLUMNS]i16 = @splat(0);
+    var maxLeftWidth_r: [MATRIX_MAX_COLUMNS]i16 = @splat(0);
+    var maxRightWidth_i: [MATRIX_MAX_COLUMNS]i16 = @splat(0);
+    var maxLeftWidth_i: [MATRIX_MAX_COLUMNS]i16 = @splat(0);
     const exponentOutOfRange: i16 = 0x4000;
     var sfShed = false; // a part shed digits
     const maxCols: usize = maxColsIn;
@@ -2730,7 +2730,7 @@ pub fn z47_frontier_matrix_render_editor_body(colVector: bool, rows: i16, cols: 
         _ = frontier_screen.showString(tmpString, &numericFont, 0, Y_POSITION_OF_NIM_LINE, 0, 1, 0);
     } else {
         if (aimBuffer[0] != 0 and aimBuffer[strlen(aimBuffer) - 1] == '/') {
-            var lastBase = std.mem.zeroes([12]u8);
+            var lastBase: [12]u8 = @splat(0);
             var lb: [*c]u8 = &lastBase;
             const ld: u32 = lastDenominator;
             if (ld >= 1000) {

@@ -175,7 +175,7 @@ inline fn real34Copy(src: *align(1) const real34_t, dst: *real34_t) void {
 // Each C string is copied into a zero-filled fixed-width row.
 // ---------------------------------------------------------------------------
 fn bugRow(comptime s: []const u8) [SIZE_OF_EACH_BUG_SCREEN_MESSAGE]u8 {
-    var row = std.mem.zeroes([SIZE_OF_EACH_BUG_SCREEN_MESSAGE]u8);
+    var row: [SIZE_OF_EACH_BUG_SCREEN_MESSAGE]u8 = @splat(0);
     @memcpy(row[0..s.len], s);
     return row;
 }

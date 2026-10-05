@@ -1,16 +1,16 @@
 const std = @import("std");
 
-pub fn zeroReal(comptime RealType: type, comptime dec_num_units: comptime_int) RealType {
+pub fn zeroReal(comptime RealType: type) RealType {
     return .{
         .digits = 1,
         .exponent = 0,
         .bits = 0,
-        .lsu = std.mem.zeroes([dec_num_units]u16),
+        .lsu = @splat(0),
     };
 }
 
-pub fn realFromBoolean(comptime RealType: type, comptime dec_num_units: comptime_int, value: bool) RealType {
-    var result = zeroReal(RealType, dec_num_units);
+pub fn realFromBoolean(comptime RealType: type, value: bool) RealType {
+    var result = zeroReal(RealType);
     result.lsu[0] = @intFromBool(value);
     return result;
 }

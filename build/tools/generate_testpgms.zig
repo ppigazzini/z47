@@ -358,7 +358,7 @@ const Scanner = struct {
 };
 
 const Generator = struct {
-    memory: [65536]u8 = std.mem.zeroes([65536]u8),
+    memory: [65536]u8 = @splat(0),
     current_step: usize = 0,
     ctxt_real34: c.decContext,
 

@@ -1287,7 +1287,7 @@ fn real34ToDisplayString2(real34_in: *align(1) const real34_t, displayString: [*
             // bytes past the real34ToString terminator (harmless stack reads in
             // C). Zero-initialize and oversize so those reads stay in-bounds and
             // see a terminator, keeping the algorithm's outcome identical.
-            var tmpString100: [256]u8 = std.mem.zeroes([256]u8);
+            var tmpString100: [256]u8 = @splat(0);
             var reduced: real34_t = undefined;
             var tmp1: real_t = undefined;
 

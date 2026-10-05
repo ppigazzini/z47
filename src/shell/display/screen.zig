@@ -918,7 +918,7 @@ const versionDateStr = @extern([*c]const u8, .{ .name = "versionDateStr" });
 // nameOfWday_en[8] : nstr { char itemName[30]; }. File-local in screen.c.
 const nstr = struct { itemName: [30]u8 };
 fn wday(comptime s: []const u8) nstr {
-    var r = nstr{ .itemName = std.mem.zeroes([30]u8) };
+    var r = nstr{ .itemName = @splat(0) };
     @memcpy(r.itemName[0..s.len], s);
     return r;
 }
@@ -3569,9 +3569,9 @@ pub export fn updateMatrixHeightCache() callconv(.c) void {
         const rows: u16 = matrix.header.matrixRows;
         const cols: u16 = matrix.header.matrixColumns;
         var smallFont: bool_t = @intFromBool(rows >= 5);
-        var dummyVal: [MATRIX_MAX_COLUMNS * (MATRIX_MAX_ROWS_ON_SHOW + 1) + 1]i16 = std.mem.zeroes([MATRIX_MAX_COLUMNS * (MATRIX_MAX_ROWS_ON_SHOW + 1) + 1]i16);
+        var dummyVal: [MATRIX_MAX_COLUMNS * (MATRIX_MAX_ROWS_ON_SHOW + 1) + 1]i16 = @splat(0);
 
-        var allElementsInColAreIntegers: [MATRIX_MAX_COLUMNS]bool_t = std.mem.zeroes([MATRIX_MAX_COLUMNS]bool_t);
+        var allElementsInColAreIntegers: [MATRIX_MAX_COLUMNS]bool_t = @splat(0);
         // The same rule showRealMatrix applies, or the height cache reserves stack
         // lines for a width the viewer does not draw.
         frontier_matrix_editor.getRealMatrixIntegerColumns(&matrix, displayFormat, @intCast(cols), 0, 0, @intCast(rows), @intCast(@min(cols, MATRIX_MAX_COLUMNS)), @ptrCast(&allElementsInColAreIntegers));
@@ -3614,7 +3614,7 @@ pub export fn updateMatrixHeightCache() callconv(.c) void {
         const rows: u16 = matrix.header.matrixRows;
         const cols: u16 = matrix.header.matrixColumns;
         var smallFont: bool_t = @intFromBool(rows >= 5);
-        var dummyVal: [MATRIX_MAX_COLUMNS * (MATRIX_MAX_ROWS_ON_SHOW * 2 + 3) + 1]i16 = std.mem.zeroes([MATRIX_MAX_COLUMNS * (MATRIX_MAX_ROWS_ON_SHOW * 2 + 3) + 1]i16);
+        var dummyVal: [MATRIX_MAX_COLUMNS * (MATRIX_MAX_ROWS_ON_SHOW * 2 + 3) + 1]i16 = @splat(0);
         const mtxWidth = frontier_matrix_editor.getComplexMatrixColumnWidths(&matrix, prefixWidth, true, &numericFont, &dummyVal, dummyVal[MATRIX_MAX_COLUMNS..].ptr, dummyVal[MATRIX_MAX_COLUMNS * 2 ..].ptr, dummyVal[MATRIX_MAX_COLUMNS * 3 ..].ptr, dummyVal[MATRIX_MAX_COLUMNS * (MATRIX_MAX_ROWS_ON_SHOW + 3) ..].ptr, &dummyVal[MATRIX_MAX_COLUMNS * (MATRIX_MAX_ROWS_ON_SHOW * 2 + 3)], if (cols > MATRIX_MAX_COLUMNS) MATRIX_MAX_COLUMNS else cols, getComplexRegisterAngularMode(REGISTER_X), (getComplexRegisterPolarMode(REGISTER_X) == amPolar));
         if (mtxWidth > MATRIX_LINE_WIDTH) {
             smallFont = 1;

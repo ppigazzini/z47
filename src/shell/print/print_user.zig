@@ -74,7 +74,7 @@ const PrintUserTelemetry = struct {
 const LABEL_LENGTH: usize = 256;
 
 const PrintUserContext = struct {
-    label: [LABEL_LENGTH]u8 = std.mem.zeroes([LABEL_LENGTH]u8),
+    label: [LABEL_LENGTH]u8 = @splat(0),
     user_variable_found: bool = false,
     step: [*]u8 = undefined,
     program_number: u16 = 1,

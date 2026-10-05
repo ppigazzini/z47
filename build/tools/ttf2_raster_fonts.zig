@@ -88,7 +88,7 @@ fn loadGlyphRanks(allocator: std.mem.Allocator, fonts_path: []const u8) Generato
     const file = c.fopen(csv_path.ptr, "rb") orelse return error.FileOpenFailed;
     defer _ = c.fclose(file);
 
-    var line_buffer = std.mem.zeroes([4096:0]u8);
+    var line_buffer: [4096:0]u8 = @splat(0);
     if (c.fgets(@ptrCast(&line_buffer), line_buffer.len, file) == null) {
         return error.InvalidCsv;
     }
@@ -199,7 +199,7 @@ fn exportFont(
             try writeAll(output_file, ",\n\n");
         }
 
-        var glyph_name = std.mem.zeroes([100:0]u8);
+        var glyph_name: [100:0]u8 = @splat(0);
         _ = c.FT_Get_Glyph_Name(face, glyph_index, @ptrCast(&glyph_name), glyph_name.len);
         const glyph_name_slice = std.mem.sliceTo(&glyph_name, 0);
 

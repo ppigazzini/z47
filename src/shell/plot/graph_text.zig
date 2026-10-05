@@ -653,7 +653,7 @@ fn lcd_refresh_wait() void {
 // IOMsgs[] (DMCP-only TO_QSPI table). Only .itemName is read; .count is unused.
 const IOMsgsT = extern struct { count: u8, itemName: [40]u8 };
 fn ioRow(comptime c: u8, comptime s: []const u8) IOMsgsT {
-    var row = IOMsgsT{ .count = c, .itemName = std.mem.zeroes([40]u8) };
+    var row = IOMsgsT{ .count = c, .itemName = @splat(0) };
     @memcpy(row.itemName[0..s.len], s);
     return row;
 }

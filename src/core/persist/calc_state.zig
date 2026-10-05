@@ -294,7 +294,7 @@ pub const AIM_BUFFER_1_LENGTH = 16;
 comptime {
     std.debug.assert(AIM_BUFFER_1_LENGTH >= "Cplx".len + ":MULTPI".len + "p".len + 1);
 }
-pub export var aimBuffer1: [AIM_BUFFER_1_LENGTH]u8 = std.mem.zeroes([AIM_BUFFER_1_LENGTH]u8);
+pub export var aimBuffer1: [AIM_BUFFER_1_LENGTH]u8 = @splat(0);
 
 // hal/io.h: the state file and its autosave twin, by model, under SAVFILES.
 const USER_R47: u16 = 66;
