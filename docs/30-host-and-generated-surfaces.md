@@ -147,7 +147,7 @@ regression lanes.
 ## Generator Boundary And Retained C
 
 The generator executables are manual Zig owners, but they still cross explicit,
-build-managed C boundaries rather than ad hoc `@cImport` blocks:
+build-managed C boundaries:
 
 - their narrow C interop enters through the checked-in `translate-c` root headers
   under `../build/tools/translate_c/`, translated by the official `translate-c`
@@ -197,8 +197,7 @@ not replace the maintainer-facing `docs/` set, which is this directory.
   `../upstream/dep/decNumberICU`.
 - Route any new generator C interop through a checked-in `translate-c` root and
   the allowlist in
-  [50-zig-c-boundaries-and-rewrite-policy.md](50-zig-c-boundaries-and-rewrite-policy.md);
-  do not add `@cImport` blocks to generator sources.
+  [50-zig-c-boundaries-and-rewrite-policy.md](50-zig-c-boundaries-and-rewrite-policy.md).
 - Update [70-tests-and-verification.md](70-tests-and-verification.md) whenever a
   host-facing command name, generated output path, or smallest rerun lane
   changes.

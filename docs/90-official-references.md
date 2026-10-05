@@ -498,7 +498,7 @@ Pins and manifests:
 - [.github/project/upstream-port-ledger.tsv](../.github/project/upstream-port-ledger.tsv):
   per-surface port-state ledger.
 - [.github/project/zig-c-boundaries.txt](../.github/project/zig-c-boundaries.txt):
-  approved `@cImport`, `extern`, and generated-seam boundary manifest.
+  approved `translate-c` root and direct-`extern` boundary manifest.
 - [.github/project/idiom-status-baseline.json](../.github/project/idiom-status-baseline.json):
   idiomatic-Zig ratchet baseline.
 

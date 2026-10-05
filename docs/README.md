@@ -101,7 +101,7 @@ flowchart TD
   [40-firmware-and-distribution.md](40-firmware-and-distribution.md),
   [60-ci-and-release-workflow.md](60-ci-and-release-workflow.md), and
   [70-tests-and-verification.md](70-tests-and-verification.md)
-- Zig/C boundary, `@cImport`, direct `extern`, or generated-seam change:
+- Zig/C boundary, `translate-c` root, direct `extern`, or generated-seam change:
   [50-zig-c-boundaries-and-rewrite-policy.md](50-zig-c-boundaries-and-rewrite-policy.md)
   and [70-tests-and-verification.md](70-tests-and-verification.md)
 - upstream resync (pin advance):

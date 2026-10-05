@@ -51,22 +51,22 @@ Do not imply the project is pure Zig. It is Zig-first with the retained C above.
 
 The checked-in allowlist is `../.github/project/zig-c-boundaries.txt`, and it is
 the source of truth -- prefer it over any list duplicated in prose, which rots.
-It has three sections:
+It has two sections:
 
 - `[translate-c-roots]`: the generator boundary headers under
   `build/tools/translate_c/` plus the ABI-layout oracle root
   (`abi_layout_oracle.h`), translated by the official `translate-c` package
   through `addTranslator` in `../build/common.zig`.
-- `[cimport]`: currently empty. No checked-in Zig file uses `@cImport`.
 - `[extern-symbols]`: files allowed to carry direct `extern` bindings -- the
   firmware runtime seams (`build/firmware_*_runtime.zig`), the Zig GTK host
   layer (`build/host/gtk_*.zig`), the Zig testSuite HAL
   (`build/tests/testsuite_hal.zig`), `src/abi/runtime.zig`, and a few
   generator and parity-runtime files.
 
-No other checked-in Zig file may introduce `@cImport` or a direct `extern fn`,
-`extern const`, or `extern var` without updating the allowlist and guard in the
-same change.
+No other checked-in Zig file may introduce a direct `extern fn`, `extern const`,
+or `extern var` without updating the allowlist and guard in the same change.
+There is no `@cImport` section: Zig 0.17 removed the builtin, so the compiler
+rejects it before any guard runs.
 
 ## Guard And CI Enforcement
 
@@ -75,11 +75,10 @@ same change.
 1. load the allowlisted files from `zig-c-boundaries.txt`
 2. verify each allowlisted `translate-c` root still exists and exposes real C
    includes
-3. verify each allowlisted Zig file still matches the expected `@cImport` or
-   direct-`extern` pattern
+3. verify each allowlisted Zig file still matches the direct-`extern` pattern
 4. scan all working-tree `translate_c/*.h` roots and all tracked `*.zig` files
-5. fail if a checked-in `translate-c` root, `@cImport`, or direct `extern`
-   binding appears outside the approved lists
+5. fail if a checked-in `translate-c` root or direct `extern` binding appears
+   outside the approved lists
 
 The guard runs in CI through the `zig-c-boundary-guard` job in
 `../.github/workflows/upstream-oracle.yml`, and locally through
@@ -352,8 +351,8 @@ rather than closed.
 
 ## `translate-c` Policy
 
-Treat `translate-c` roots and any `@cImport` use as narrow boundary tools, not a
-whole-project porting strategy. Repo policy requires:
+Treat `translate-c` roots as narrow boundary tools, not a whole-project porting
+strategy. Repo policy requires:
 
 - generator and ABI-seam C translation to stay build-managed through explicit root
   headers under `../build/tools/translate_c/` and the official `translate-c`
@@ -365,8 +364,8 @@ whole-project porting strategy. Repo policy requires:
 
 ## Rules For New Boundaries
 
-- Add a new checked-in `translate-c` root, `@cImport`, or direct `extern` only
-  when a build-managed or hand-written alternative is not practical.
+- Add a new checked-in `translate-c` root or direct `extern` only when a
+  build-managed or hand-written alternative is not practical.
 - Update `../.github/project/zig-c-boundaries.txt`, the guard expectations, and
   this page in the same change.
 - When an owner already has an approved `*_runtime.zig` seam, add new direct

@@ -8,8 +8,6 @@ build/tools/translate_c/generate_testpgms.h
 build/tools/translate_c/ttf2_raster_fonts.h
 build/tools/translate_c/abi_layout_oracle.h
 
-[cimport]
-
 [extern-symbols]
 build/firmware_audio_runtime.zig
 build/firmware_io_runtime.zig
