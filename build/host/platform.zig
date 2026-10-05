@@ -1,7 +1,7 @@
 const std = @import("std");
 const build_common = @import("../common.zig");
 const host_types = @import("types.zig");
-const TranslateC = std.Build.Step.TranslateC;
+const Translator = @import("translate_c").Translator;
 
 const HostSearchPathKind = enum {
     include,
@@ -121,22 +121,33 @@ pub fn linkRasterFontsFreetype(module: *std.Build.Module, common: host_types.Com
     }
 }
 
-pub fn configureRasterFontsTranslateC(translate_c: *TranslateC, common: host_types.CommonConfig) void {
-    if (!std.mem.eql(u8, common.platform_define, "WIN32")) {
-        translate_c.linkSystemLibrary("freetype2", .{ .use_pkg_config = .force });
+const freetype_pkg_config: []const Translator.LinkSystemLib = &.{
+    .{ .name = "freetype2", .options = .{ .use_pkg_config = .force } },
+};
+
+// translate-c asks pkg-config for the freetype2 headers itself everywhere but
+// Windows, where configureRasterFontsTranslator reads them from MSYS2's
+// pkg-config, or failing that from the MSYS2 prefix. A Windows host where
+// pkg-config does not answer and no prefix is set falls back to translate-c's
+// own lookup. The translator takes its system libraries when it is created, so
+// this choice is made before configureRasterFontsTranslator runs.
+pub fn rasterFontsTranslatorLibs(b: *std.Build, common: host_types.CommonConfig) []const Translator.LinkSystemLib {
+    if (!std.mem.eql(u8, common.platform_define, "WIN32")) return freetype_pkg_config;
+    if (build_common.commandOutput(b, &.{ "pkg-config", "--cflags", "freetype2" }) != null) return &.{};
+    if (windowsHostPrefixFromOwner(b) != null) return &.{};
+    return freetype_pkg_config;
+}
+
+pub fn configureRasterFontsTranslator(b: *std.Build, translator: *const Translator, common: host_types.CommonConfig) void {
+    if (!std.mem.eql(u8, common.platform_define, "WIN32")) return;
+
+    if (addPkgConfigCFlagsTranslator(b, translator, "freetype2")) {
         return;
     }
 
-    if (addPkgConfigCFlagsTranslateC(translate_c, "freetype2")) {
-        return;
+    if (windowsHostPrefixFromOwner(b)) |prefix| {
+        translator.addSystemIncludePath(.{ .cwd_relative = b.fmt("{s}/include/freetype2", .{prefix}) });
     }
-
-    if (windowsHostPrefixFromOwner(translate_c.step.owner)) |prefix| {
-        translate_c.addSystemIncludePath(.{ .cwd_relative = translate_c.step.owner.fmt("{s}/include/freetype2", .{prefix}) });
-        return;
-    }
-
-    translate_c.linkSystemLibrary("freetype2", .{ .use_pkg_config = .force });
 }
 
 // The abi layout oracle's translate-c root includes <gmp.h> so the Mpz mirror is
@@ -149,13 +160,11 @@ pub fn configureRasterFontsTranslateC(translate_c: *TranslateC, common: host_typ
 // already searched), and the host prefix is added behind it as the fallback for
 // a host that has the header but not the .pc. On Linux neither environment
 // variable is set, so nothing is added and the lane keeps working as it does.
-pub fn configureGmpTranslateC(translate_c: *TranslateC) void {
-    const owner = translate_c.step.owner;
+pub fn configureGmpTranslator(b: *std.Build, translator: *const Translator) void {
+    _ = addPkgConfigCFlagsTranslator(b, translator, "gmp");
 
-    _ = addPkgConfigCFlagsTranslateC(translate_c, "gmp");
-
-    if (hostPrefixFromOwner(owner)) |prefix| {
-        translate_c.addSystemIncludePath(.{ .cwd_relative = owner.fmt("{s}/include", .{nativePath(owner, prefix)}) });
+    if (hostPrefixFromOwner(b)) |prefix| {
+        translator.addSystemIncludePath(.{ .cwd_relative = b.fmt("{s}/include", .{nativePath(b, prefix)}) });
     }
 }
 
@@ -235,15 +244,15 @@ fn linkWindowsPkgConfigPackage(module: *std.Build.Module, package: []const u8) b
     return pending == null;
 }
 
-fn addPkgConfigCFlagsTranslateC(translate_c: *TranslateC, package: []const u8) bool {
-    const flags = build_common.commandOutput(translate_c.step.owner, &.{ "pkg-config", "--cflags", package }) orelse return false;
+fn addPkgConfigCFlagsTranslator(b: *std.Build, translator: *const Translator, package: []const u8) bool {
+    const flags = build_common.commandOutput(b, &.{ "pkg-config", "--cflags", package }) orelse return false;
 
     var tokens = std.mem.tokenizeAny(u8, flags, " \t\r\n");
     var pending: ?TranslateCPkgConfigTokenKind = null;
 
     while (tokens.next()) |token| {
         if (pending) |kind| {
-            addTranslateCPkgConfigToken(translate_c, token, kind);
+            addTranslatorPkgConfigToken(translator, token, kind);
             pending = null;
             continue;
         }
@@ -258,11 +267,11 @@ fn addPkgConfigCFlagsTranslateC(translate_c: *TranslateC, package: []const u8) b
         }
 
         if (std.mem.startsWith(u8, token, "-I")) {
-            addTranslateCPkgConfigToken(translate_c, token[2..], .include);
+            addTranslatorPkgConfigToken(translator, token[2..], .include);
             continue;
         }
         if (std.mem.startsWith(u8, token, "-D")) {
-            addTranslateCPkgConfigToken(translate_c, token[2..], .define);
+            addTranslatorPkgConfigToken(translator, token[2..], .define);
             continue;
         }
     }
@@ -279,10 +288,10 @@ fn addWindowsPkgConfigToken(module: *std.Build.Module, token: []const u8, kind: 
     }
 }
 
-fn addTranslateCPkgConfigToken(translate_c: *TranslateC, token: []const u8, kind: TranslateCPkgConfigTokenKind) void {
+fn addTranslatorPkgConfigToken(translator: *const Translator, token: []const u8, kind: TranslateCPkgConfigTokenKind) void {
     switch (kind) {
-        .include => translate_c.addSystemIncludePath(.{ .cwd_relative = token }),
-        .define => addTranslateCPkgConfigDefine(translate_c, token),
+        .include => translator.addSystemIncludePath(.{ .cwd_relative = token }),
+        .define => addTranslatorPkgConfigDefine(translator, token),
     }
 }
 
@@ -295,13 +304,13 @@ fn addPkgConfigDefine(module: *std.Build.Module, define: []const u8) void {
     module.addCMacro(define, "1");
 }
 
-fn addTranslateCPkgConfigDefine(translate_c: *TranslateC, define: []const u8) void {
+fn addTranslatorPkgConfigDefine(translator: *const Translator, define: []const u8) void {
     if (std.mem.findScalar(u8, define, '=')) |eq| {
-        translate_c.defineCMacro(define[0..eq], define[eq + 1 ..]);
+        translator.defineCMacro(define[0..eq], define[eq + 1 ..]);
         return;
     }
 
-    translate_c.defineCMacro(define, "1");
+    translator.defineCMacro(define, "1");
 }
 
 fn linkWindowsImportLibraryOrSystem(module: *std.Build.Module, name: []const u8) void {

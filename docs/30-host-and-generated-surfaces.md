@@ -150,7 +150,8 @@ The generator executables are manual Zig owners, but they still cross explicit,
 build-managed C boundaries rather than ad hoc `@cImport` blocks:
 
 - their narrow C interop enters through the checked-in `translate-c` root headers
-  under `../build/tools/translate_c/` and the `Build.addTranslateC` wiring in
+  under `../build/tools/translate_c/`, translated by the official `translate-c`
+  package through `addTranslator` in `../build/common.zig` and wired in
   `../build/host/generated.zig`
 - every generator compiles the vendored `../upstream/dep/decNumberICU` sources
 - the fonts generator links FreeType 2 (via its `translate-c` root and

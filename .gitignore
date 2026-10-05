@@ -224,6 +224,8 @@ compile_commands.json
 # Zig build cache and output
 .zig-cache/
 zig-out/
+# Packages zig build fetches for the build.zig.zon dependencies
+zig-pkg/
 
 # z47-owned roots that a re-imported upstream .gitignore would swallow. Upstream
 # ignores a root `/build` (its meson/make output dir) and z47 owns a `build/`
