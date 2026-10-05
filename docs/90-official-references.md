@@ -116,7 +116,7 @@ freestanding calculator whose data lives in one static pool.
 
 Language and toolchain:
 
-- [Zig language reference -- Undefined Behavior](https://ziglang.org/documentation/master/#Undefined-Behavior):
+- [Zig language reference -- Illegal Behavior](https://ziglang.org/documentation/master/#Illegal-Behavior):
   the canonical list of what is checked illegal behaviour (a panic in the safe
   modes) versus unchecked (silent in every mode). This is the authority for
   which of z47's several thousand `@intCast` sites are a trap on the host and a
