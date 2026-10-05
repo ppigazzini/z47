@@ -77,7 +77,7 @@ pub fn add(
 
     const run = b.addRunArtifact(writer_exe);
     const manifest = run.addOutputFileArg2(b.fmt("{s}-objects.txt", .{target_name}), .{});
-    for (objects.items) |object| run.addFileArg(object.getEmittedBin());
+    for (objects.items) |object| run.addFileArg2(object.getEmittedBin(), .{});
     return manifest;
 }
 

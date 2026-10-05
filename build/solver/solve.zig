@@ -13,7 +13,7 @@ pub const RuntimeObjects = struct {
             if (source.len == 0 or source[0] == '#') continue;
             cmd.addArg(source);
         }
-        cmd.addFileArg(self.solve.getEmittedBin());
+        cmd.addFileArg2(self.solve.getEmittedBin(), .{});
     }
 };
 

@@ -7,7 +7,7 @@ pub const RuntimeObjects = struct {
     program_serialization: *std.Build.Step.Compile,
 
     pub fn addToCommand(self: RuntimeObjects, cmd: *std.Build.Step.Run) void {
-        cmd.addFileArg(self.program_serialization.getEmittedBin());
+        cmd.addFileArg2(self.program_serialization.getEmittedBin(), .{});
     }
 };
 

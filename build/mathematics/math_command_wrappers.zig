@@ -31,7 +31,7 @@ pub const RuntimeObjects = struct {
             }
             cmd.addArg(source);
         }
-        cmd.addFileArg(self.math_command_wrappers.getEmittedBin());
+        cmd.addFileArg2(self.math_command_wrappers.getEmittedBin(), .{});
     }
 };
 
