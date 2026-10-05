@@ -4,19 +4,21 @@
 # the parity workflows stay the authority; this catches the same classes before
 # the commit exists.
 #
-# THE ONE RULE THAT SHAPES THIS FILE. Most of this tree is imported verbatim from
-# upstream C47 -- src/, res/, docs/, tools/, dep/, the Makefile, even .gitignore
+# THE ONE RULE THAT SHAPES THIS FILE. Everything under upstream/ is imported
+# verbatim from upstream C47 -- its src/, res/, docs/, tools/, dep/ and Makefile
 # -- and every resync diffs it against upstream's. A hook that strips a trailing
-# space from src/c47/display.c turns a clean import into a permanent conflict on
-# a file z47 has no opinion about. So every hook here is scoped to what z47
-# actually authors:
+# space from upstream/src/c47/display.c turns a clean import into a permanent
+# conflict on a file z47 has no opinion about. So every hook here is scoped to
+# what z47 actually authors:
 #
 #     .github/  bridge/  build/  docs/  src/
 #     build.zig  build.zig.zon  CONTRIBUTING.md  pyproject.toml
 #     .pre-commit-config.yaml
 #
-# Adding a z47-owned top-level path means adding it to Z47_OWNED below. Anything
-# not listed is upstream's and is left exactly as imported.
+# Adding a z47-owned top-level path means adding it to Z47_OWNED below. A path
+# not listed is either upstream's, under upstream/, or a z47 root file no hook
+# reads (README.md, AGENTS.md, CLAUDE.md, COPYING, the git dotfiles); ownership is
+# recorded in .github/project/source-ownership.txt.
 default_language_version:
   python: python3.14
 

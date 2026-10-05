@@ -1099,7 +1099,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.l
     pgm_load_fuzz_cmd.addArtifactArg2(pgm_run_asan, .{});
     pgm_load_fuzz_cmd.addArg("build/tests/pgm_run/malformed");
     pgm_load_fuzz_cmd.setCwd(b.path("."));
-    const pgm_load_fuzz_step = b.step("pgm_load_fuzz", "M1: run malformed .p47 files through the load path under ASAN");
+    const pgm_load_fuzz_step = b.step("pgm_load_fuzz", "Run malformed .p47 files through the load path under UBSan and Zig safety checks");
     pgm_load_fuzz_step.dependOn(&pgm_load_fuzz_cmd.step);
 
     // The same treatment for STATE files. saveload_roundtrip
@@ -1521,7 +1521,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.l
     test_asan_step.dependOn(&update_testpgms.step);
     repeattest_step.dependOn(&update_testpgms.step);
 
-    const generated_step = b.step("generated", "Refresh all tracked generated host artifacts");
+    const generated_step = b.step("generated", "Regenerate the host generator outputs and the tracked testPgms image");
     generated_step.dependOn(&update_fonts.step);
     generated_step.dependOn(&update_constants.step);
     generated_step.dependOn(&update_catalogs.step);

@@ -250,7 +250,7 @@ step "[10b/11] firmware link for every DMCP package variant"
 # bytes of static data anywhere in a firmware-linked owner fails the link -- and
 # only in a package variant. When that happened (one @setRuntimeSafety(true) in
 # shell/config.zig), every other lane here was green, as were dmcp and dmcp5.
-# ~16 s cached, against a gate that already runs a 12835-case testSuite.
+# ~16 s cached, against a gate that already runs the whole testSuite.
 zig build dmcp_pkgs_all --summary none
 
 step "[11/11] tracked generated artifacts unchanged"
@@ -258,4 +258,4 @@ mapfile -t generated_artifacts < <(bash .github/project/workflow-imported-root-p
 git diff --exit-code -- "${generated_artifacts[@]}"
 
 printf '\n\033[1;32mLOCAL GATE PASSED\033[0m — the Linux governance, host-parity and firmware-link lanes.\n'
-printf 'Still CI-only: the Windows (LLP64) and macOS host lanes, and firmware PACKAGING/artifact publication.\n'
+printf 'Still CI-only: the UBSan lanes (both_asan, test_asan), the coverage floor, the docs build, the dmcp, dmcpr47, dmcp5 and dmcp5r47 links and all packaging, the font-seam, C-type-alias, extern-var-width and workflow-vocabulary checks, and the Windows (LLP64) and macOS host lanes.\n'
