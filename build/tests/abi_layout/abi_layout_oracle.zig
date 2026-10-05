@@ -204,9 +204,9 @@ test "abi.RegisterHeaderBits packs bit-identically to C registerHeader_t" {
         .{ "notUsed", @as(u6, 0x3F), 4 },
     };
     inline for (FIELDS) |f| {
-        var z: abi.RegisterHeaderBits = @bitCast(@as(u32, 0));
+        var z: abi.RegisterHeaderBits = @fromBackingInt(0);
         @field(z, f[0]) = f[1];
-        const zmask: u32 = @bitCast(z);
+        const zmask: u32 = @backingInt(z);
         testing.expectEqual(z47_reg_header_field_mask(f[2]), zmask) catch |err| {
             std.debug.print("registerHeader bit mismatch on {s}: C=0x{x:0>8} abi=0x{x:0>8}\n", .{ f[0], z47_reg_header_field_mask(f[2]), zmask });
             return err;
@@ -303,9 +303,9 @@ test "abi.MatrixHeader packs bit-identically to C matrixHeader_t" {
         .{ "notUsed", @as(u2, 0x3), 3 },
     };
     inline for (FIELDS) |f| {
-        var z: abi.MatrixHeader = @bitCast(@as(u32, 0));
+        var z: abi.MatrixHeader = @fromBackingInt(0);
         @field(z, f[0]) = f[1];
-        const zmask: u32 = @bitCast(z);
+        const zmask: u32 = @backingInt(z);
         testing.expectEqual(z47_matrix_header_field_mask(f[2]), zmask) catch |err| {
             std.debug.print("matrixHeader bit mismatch on {s}: C=0x{x:0>8} abi=0x{x:0>8}\n", .{ f[0], z47_matrix_header_field_mask(f[2]), zmask });
             return err;
