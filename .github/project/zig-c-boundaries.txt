@@ -38,6 +38,8 @@ build/tools/generate_catalogs.zig
 build/tools/generate_testpgms.zig
 src/abi/runtime.zig
 src/abi/registers.zig
+src/abi/constants.zig
+src/abi/host.zig
 src/core/numeric/integer/shortint_runtime.zig
 src/abi/constants/constants_runtime.zig
 src/core/numeric/command_wrappers/runtime.zig
@@ -176,6 +178,7 @@ src/core/analysis/graph.zig
 src/shell/audio/tone_runtime.zig
 src/core/persist/calc_state_runtime.zig
 src/core/persist/calc_state.zig
+src/core/state/flags.zig
 src/core/state/flags/flags_runtime.zig
 src/core/input/keyboard_state_runtime.zig
 src/core/input/keyboard_state_dmcp.zig
