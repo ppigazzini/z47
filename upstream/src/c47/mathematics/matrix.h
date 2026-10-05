@@ -146,12 +146,19 @@
 
   void       fnEigenvectors                 (uint16_t unusedParamButMandatory);
 
+  // Linkage of calculateEigenvalues, decided here beside its prototype so that the qualifier reaches the definition as
+  // one token. Spelling it as a bare "static" inside its own #if above the function in matrix.c reads the same but is
+  // not: anything later inserted between that #if and the function orphans the qualifier, and the only builds that
+  // notice are the ones that emit it - EIGEN on, SLVP off, which is DMCP package 3 alone.
   #if defined(OPTION_SLVP_POLY)
+  #define EIGENVALUES_LINKAGE
   /**
    * Eigenvalues of a size x size matrix held as caller-allocated interleaved re/im real_t arrays; results land on the diagonal of eig.
    * SLVP feeds its companion matrix through here; on builds without SLVP the engine stays file-local.
    */
-  void       calculateEigenvalues           (real_t *a, real_t *q, real_t *r, real_t *eig, real_t *previousDiagonal, uint16_t size, bool_t shifted, bool_t reducedSignificantDigits, realContext_t *realContext);
+  void       calculateEigenvalues           (real_t *a, real_t *scratch, real_t *eig, uint16_t size, bool_t shifted, bool_t reducedSignificantDigits, realContext_t *realContext);
+  #else // OPTION_SLVP_POLY
+  #define EIGENVALUES_LINKAGE static
   #endif // OPTION_SLVP_POLY
 
   /**

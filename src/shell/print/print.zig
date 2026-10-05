@@ -341,6 +341,7 @@ extern var printerState: printerState_t;
 extern var lastFunc: i16;
 extern var printerColumn: u16;
 extern var printerIconEnabled: bool_t;
+extern var printerIconRefresh: bool_t;
 extern var tmpString: [*c]u8;
 extern var errorMessage: [*c]u8;
 extern var aimBuffer: [*c]u8;
@@ -698,7 +699,7 @@ const ITM_SHUFFLE: u16 = 1694;
 const ITM_RS: u16 = 1725;
 const ITM_SQRT1PX2: u16 = 1794;
 const ITM_EE_EXP_TH: u16 = 1816;
-const LAST_ITEM: u16 = 3481;
+const LAST_ITEM: u16 = 3536;
 
 const STD_SQUARE_ROOT = "\xa2\x1a";
 const STD_SUP_3 = "\xa1\x63";
@@ -738,7 +739,9 @@ const NamesAlias = [_]nameAlias_t{
     alias(LAST_ITEM, ""),
 };
 
-// HP-82240 Roman-8 to Unicode table (TO_QSPI const uint16_t[256]).
+// HP-82240 Roman-8 to Unicode table (TO_QSPI const uint16_t[256]). The
+// simulator's print-out window reads it to put each printed character in its
+// text copy.
 const hp82240CharMap = [256]u16{
     0x0000, 0x0000, 0x0000, 0x0000, 0x2404, 0x0000, 0x0000, 0x0000,
     0x0000, 0x0000, 0x240A, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
@@ -819,7 +822,9 @@ fn _exitKeyPressed() bool_t {
 fn setPrinterSBI(status: bool_t) void {
     printerIconEnabled = status;
     setSystemFlagChanged(SETTING_PRINTERICON);
+    printerIconRefresh = true; // the GTK simulator does not wait for a painted frame for the print annunciator, which changes twice per printed line
     frontier_status_bar.refreshStatusBar();
+    printerIconRefresh = false;
 }
 const SETTING_PRINTERICON: i32 = 134; // defines.h:935 0x86 (was 130; status bar reads 134)
 
@@ -2210,8 +2215,11 @@ const summationRegisterName = blk: {
 };
 
 // summationRegisterName is a TO_QSPI const array defined by print.c; export it.
+// hp82240CharMap sits inside print.c's OPTION_IR_PRINTING block, so it is
+// exported only where IR printing is built.
 comptime {
     @export(&summationRegisterName, .{ .name = "summationRegisterName", .linkage = .strong });
+    if (ir_printing) @export(&hp82240CharMap, .{ .name = "hp82240CharMap", .linkage = .strong });
 }
 
 // fnP_PrintAllItems is owned elsewhere; extern only.

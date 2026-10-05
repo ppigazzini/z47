@@ -30,6 +30,10 @@ pub const RuntimeObjectOptions = struct {
     // on firmware and in the testSuite, where an out-of-range swap target is
     // silently ignored rather than reported. Default true mirrors a host build.
     extra_info_on_calc_error: bool = true,
+    // TESTSUITE_BUILD. adjustResult undoes an erroring command itself only in the
+    // testSuite, which runs commands without reallyRunFunction's own undo; the
+    // simulator and the firmware leave that undo to reallyRunFunction.
+    is_testsuite_build: bool = false,
 };
 
 const replaced_core_sources = [_][]const u8{
@@ -67,6 +71,7 @@ fn addRuntimeObject(
     // firmware does; keep the owner's diagnostics out of both.
     build_options.addOption(bool, "extra_info_on_calc_error", options.extra_info_on_calc_error and
         !std.mem.startsWith(u8, name_prefix, "testSuite"));
+    build_options.addOption(bool, "is_testsuite_build", options.is_testsuite_build);
     module.addOptions("stack_state_build_options", build_options);
 
     const descriptor_storage_options = b.addOptions();

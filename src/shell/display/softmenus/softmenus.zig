@@ -130,6 +130,7 @@ const frontier_calc_mode = @import("../../calc_mode.zig");
 const frontier_char_string = @import("../text/char_string.zig");
 const frontier_conversion_units = @import("../../convert/conversion_units.zig");
 const frontier_conversion_pairs = @import("../../convert/conversion_pairs.zig");
+const frontier_date_time = @import("../../convert/date_time.zig");
 const frontier_debug = @import("../../debug.zig");
 const frontier_error = @import("../../error.zig");
 const frontier_items = @import("../items/items.zig");
@@ -217,7 +218,7 @@ const FLAG_HPCONV = 32834;
 const FLAG_IGN1ER = 32804;
 const FLAG_US = 32853;
 const FLAG_VMDISP = 49191;
-const INVALID_MENU = 3481; // items.h: LAST_ITEM
+const INVALID_MENU = 3536; // items.h: LAST_ITEM
 const INVALID_VARIABLE = 2199;
 const ITM_10X_XFN = 2570;
 const ITM_1ONX_XFN = 2562;
@@ -411,7 +412,7 @@ const ITM_WEIBLU = 1270;
 const ITM_XTHROOT_XFN = 2584;
 const ITM_YYX = 1665;
 const ITM_YY_DFLT = 2550;
-const LAST_ITEM = 3481;
+const LAST_ITEM = 3536;
 const MB_FALSE = 4;
 const MB_TRUE = 5;
 const MNU_1STDERIV = 2997;
@@ -907,7 +908,7 @@ const menu_ConvX linksection(code_section) = [_]i16{ 328, 329, 341, 340, 333, 33
 const menu_ConvYmmv linksection(code_section) = [_]i16{ 2204, 2205, 2210, 2211, 2216, 2217, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2868, 2869, 2221, 2220, 2209, 2208, 2864, 2865, 2212, 2213, 2206, 2207, 2866, 2867, 2218, 2219, 2215, 2214 };
 const menu_DELETE linksection(code_section) = [_]i16{ 1419, 2241, 2242, 1426, 1425, 1780, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1455 };
 const menu_DELITM linksection(code_section) = [_]i16{ 0, 0, 0, -3110, -3139, -3147 };
-const menu_DISP linksection(code_section) = [_]i16{ 1473, 1587, 1460, 1867, 1866, 1410, 1744, 2056, 1888, 2551, 1876, 1877, 2159, 2160, 2161, 2154, 1896, 1619, 1865, 1899, 1450, 2006, 1689, 2500, 1936, 1937, 0, 1798, 1944, 1945, 1950, 1951, 2050, 0, 2549, 2195, 1591, 1593, 1594, 1595, 1598, 1599, 0, 0, 0, 0, 0, 1596, 0, 0, 0, 0, 0, 0 };
+const menu_DISP linksection(code_section) = [_]i16{ 1473, 1587, 1460, 1867, 1866, 1410, 1744, 2056, 1888, 2551, 1876, 1877, 2159, 2160, 2161, 2154, 1896, 2050, 1865, 1899, 1450, 2006, 1689, 2500, 1936, 1937, 0, 1798, 1944, 1945, 1950, 1951, 0, 1619, 2549, 2195, 1591, 1593, 1594, 1595, 1598, 1599, 0, 0, 0, 0, 0, 1596, 0, 0, 0, 0, 0, 0 };
 const menu_DISTR linksection(code_section) = [_]i16{ -2985, -2976, -2989, -2980, -2979, -2991, -2988, -2990, -2975, -2986, -2984, -2982, 0, -2978, -2981, -2983, -2987, -2974 };
 const menu_Dev linksection(code_section) = [_]i16{ (if (strip_21_hp35) @as(i16, 0) else 2626), 2627, 2628, 2629, 0, 0 };
 const menu_DisUniform linksection(code_section) = [_]i16{ 2606, 0, 2607, 2608, 0, 2609, 0, 0, 0, 0, 0, 0, 2333, 2334, 0, 0, 0, 0 };
@@ -4249,4 +4250,53 @@ pub export fn fnDumpMenusAll(newFilenameformat: u16, path: [*c]const u8) callcon
 
 pub export fn fnDumpMenusAllWrapper(newFilenameformat: u16) callconv(.c) void {
     fnDumpMenusAll(newFilenameformat, null);
+}
+
+// Formats one line and writes it to f; the CAT sequence lines all fit the buffer.
+fn writeCatLine(f: *FILE, comptime format: []const u8, args: anytype) void {
+    var line: [192]u8 = undefined;
+    const bytes = std.fmt.bufPrint(&line, format, args) catch unreachable;
+    _ = fwrite(bytes.ptr, 1, bytes.len, f);
+}
+
+// Writes one catalog in its on-screen sequence as TSV: item code, catalog name,
+// softmenu name. A submenu entry is stored negated, so its absolute value is the
+// item code too.
+fn writeOneCatSequence(path: [*:0]const u8, header: []const u8, title: []const u8, items: []const i16) void {
+    const f = fopen(path, "w") orelse {
+        _ = printf("Cannot open %s for writing.\n", path);
+        return;
+    };
+    writeCatLine(f, "{s}\n\n", .{header});
+    writeCatLine(f, "{s}\n\n", .{title});
+    writeCatLine(f, "{s}\t{s}\t{s}\n", .{ "nnnn", "cat", "menu" });
+    writeCatLine(f, "{s}\t{s}\t{s}\n", .{ "----", "---", "----" });
+    for (items) |entry| {
+        const code = @abs(entry);
+        var catName: [64]u8 = undefined;
+        var smName: [64]u8 = undefined;
+        abi.c47_string.stringToUtf8(&indexOfItems[code].itemCatalogName, &catName);
+        abi.c47_string.stringToUtf8(&indexOfItems[code].itemSoftmenuName, &smName);
+        writeCatLine(f, "{d}\t{s}\t{s}\n", .{ code, std.mem.sliceTo(&catName, 0), std.mem.sliceTo(&smName, 0) });
+    }
+    writeCatLine(f, "\n{d} entries.\n", .{items.len});
+    _ = fclose(f);
+    _ = printf("CAT sequence written to %s.\n", path);
+}
+
+// Writes the CAT FCNS and CAT MENUS catalogs in catalog sequence, one TSV file
+// each, for the host's --catsequence. Each file opens with a SHA, version and
+// date header. PC_BUILD only: the firmware body is empty.
+pub export fn fnWriteCatSequence(fcnsPath: [*:0]const u8, menusPath: [*:0]const u8) callconv(.c) void {
+    if (comptime !dmcp_build) {
+        var dateStr: [11]u8 = undefined;
+        var headerBuf: [128]u8 = undefined;
+        const header = std.fmt.bufPrint(&headerBuf, "SHA: {s}\nVersion: {s}\nDate: {s}", .{
+            frontier_build_options.version_short,
+            frontier_build_options.version1,
+            frontier_date_time.isoDateToday(&dateStr),
+        }) catch unreachable;
+        writeOneCatSequence(fcnsPath, header, "C47/R47 CAT FCNS in catalog sequence", &menu_FCNS);
+        writeOneCatSequence(menusPath, header, "C47/R47 CAT MENUS in catalog sequence", &menu_MENUS);
+    }
 }

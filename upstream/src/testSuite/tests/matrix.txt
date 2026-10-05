@@ -1072,30 +1072,27 @@ TIMER: DISABLED 030 RCL67 TEST CASE 17: 6x6 integer in integer out, pathological
 
 
 
-; === === === CASE IDENTIFIED AND ERRORED === === ===:
-
-TIMER: TEST ERROR CASE RCL11 --- Not supported; matrix error checked; not in the QR method
+TIMER: RCL11: 4x4 companion of x^4 - 1, the fourth roots of unity
+; The exceptional shift: this companion's trailing 2x2 is [[0,1],[0,0]] at every sweep, so the
+; Wilkinson shift is zero throughout. N[Eigenvalues[{{0,1,0,0},{0,0,1,0},{0,0,0,1},{1,0,0,0}}], 34]
+; All four roots have magnitude 1, so the order below is the deflation order, not a sort: a change
+; to the shift sequence moves it without any value being wrong.
 In: RT=LonI:"0" RZ=LonI:"0" RY=LonI:"0" FL_ASLIFT=0 FL_CPXRES=0 RX=ReMa:"M4,4[0,1,0,0,0,0,1,0,0,0,0,1,1,0,0,0]"
-Out: EC=8 FL_CPXRES=0 FL_ASLIFT=0 RX=ReMa:"M4,4[0,1,0,0,0,0,1,0,0,0,0,1,1,0,0,0]"
-;Wolfram: Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=CxMa:"M4,4[-1,0,0,0,0,1i1,0,0,0,0,-1i1,0,0,0,0,1]"
-;N[Eigenvalues[{{0,1,0,0},{0,0,1,0},{0,0,0,1},{1,0,0,0}}], 34]
-; [0 1 0 0]
-; [0 0 1 0]
-; [0 0 0 1]
-; [1 0 0 0]
-; Error case: EC=8 - Matrix type not supported by QR algorithm
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=CxMa:"M1,4[0i-1,1i0,0i1,-1i0]"
 
 
 
-TIMER: TEST ERROR CASE companion of (x^2+1)^2: the double pair +/- i leaves a 4-row block that does not split, no root found
+TIMER: companion of (x^2+1)^2: the double pair +/- i, defective
 In: RT=LonI:"0" RZ=LonI:"0" RY=LonI:"0" FL_ASLIFT=0 FL_CPXRES=1 IM=2COMPL RX=ReMa:"M4,4[0,1,0,0,0,0,1,0,0,0,0,1,-1,0,-2,0]"
-Out: EC=20 FL_CPXRES=1 FL_ASLIFT=0 RX=ReMa:"M4,4[0,1,0,0,0,0,1,0,0,0,0,1,-1,0,-2,0]"
-; Eigenvalues +/- i twice: the 4-row block is not solved, so No root found is displayed. Replace with the eigenvalues once such a block is solved.
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ReMa:"M4,4[0,1,0,0,0,0,1,0,0,0,0,1,-1,0,-2,0]" RX=CxMa:"M1,4[0i1,0i-1,0i1,0i-1]"
+; Each eigenvalue is double and the matrix is defective, so a value is determined to about half the 75 working digits:
+; the real parts come back at 4E-39, which is 38 correct digits against the exact 0 asserted here.
 
-TIMER: TEST ERROR CASE companion of (x^2+1)^2 with i added on the diagonal: the blocks stay coupled, no root found
+TIMER: companion of (x^2+1)^2 with i added on the diagonal, eigenvalues 2i and 0 each twice
 In: RT=LonI:"0" RZ=LonI:"0" RY=LonI:"0" FL_ASLIFT=0 FL_CPXRES=1 IM=2COMPL RX=CxMa:"M4,4[0i1,1i0,0i0,0i0,0i0,0i1,1i0,0i0,0i0,0i0,0i1,1i0,-1i0,0i0,-2i0,0i1]"
-Out: EC=20 FL_CPXRES=1 RX=CxMa:"M4,4[0i1,1i0,0i0,0i0,0i0,0i1,1i0,0i0,0i0,0i0,0i1,1i0,-1i0,0i0,-2i0,0i1]"
-; Eigenvalues 2i twice and 0 twice: an element below a block is not negligible, so No root found is displayed. Replace with the eigenvalues once such a matrix is solved.
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M4,4[0i1,1i0,0i0,0i0,0i0,0i1,1i0,0i0,0i0,0i0,0i1,1i0,-1i0,0i0,-2i0,0i1]" RX=CxMa:"M1,4[0i2,0i2,0i0,0i0]"
+; A + iI shifts the spectrum of the case above by i, so both eigenvalues stay double and defective. The pair at 0 comes
+; back at 3E-38 and the pair at 2i with real parts at 2E-40, 37 and 39 correct digits against the exact values asserted here.
 
 TIMER: 4x4 Jordan block with eigenvalue 0: zero diagonal, so the relative block threshold is 0
 In: RT=LonI:"0" RZ=LonI:"0" RY=LonI:"0" FL_ASLIFT=0 FL_CPXRES=1 IM=2COMPL RX=ReMa:"M4,4[0,1,0,0,0,0,1,0,0,0,0,1,0,0,0,0]"
@@ -1163,10 +1160,25 @@ In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RT=LonI:"0" RZ=LonI:"0" RY=LonI:"0" RL=ReM
 Out: EC=22 FL_CPXRES=0 FL_ASLIFT=0 RL=ReMa:"M2,2[0,0,1,0]" RX=ReMa:"M2,2[0,0,1,0]"
 ; Both eigenvalues = 0 with geometric multiplicity 1 (Jordan block).
 
-TIMER: EIGVEC ERROR companion of (x^2+1)^2: no root found from the eigenvalues, and no defective-matrix message on top of it
+TIMER: EIGVEC ERROR companion of (x^2+1)^2: the double pair +/- i is defective, so there is no full set of eigenvectors
 In: FL_ASLIFT=0 FL_CPXRES=1 IM=2COMPL RT=LonI:"0" RZ=LonI:"0" RY=LonI:"0" RL=ReMa:"M4,4[0,1,0,0,0,0,1,0,0,0,0,1,-1,0,-2,0]" RX=ReMa:"M4,4[0,1,0,0,0,0,1,0,0,0,0,1,-1,0,-2,0]"
-Out: EC=20 FL_CPXRES=1 FL_ASLIFT=0 RL=ReMa:"M4,4[0,1,0,0,0,0,1,0,0,0,0,1,-1,0,-2,0]" RX=ReMa:"M4,4[0,1,0,0,0,0,1,0,0,0,0,1,-1,0,-2,0]"
-; Eigenvalues +/- i twice: the 4-row block is not solved, so No root found is displayed. Replace with the eigenvectors once such a block is solved.
+Out: EC=22 FL_CPXRES=1 FL_ASLIFT=0 RL=ReMa:"M4,4[0,1,0,0,0,0,1,0,0,0,0,1,-1,0,-2,0]" RX=ReMa:"M4,4[0,1,0,0,0,0,1,0,0,0,0,1,-1,0,-2,0]"
+; Each of +/- i has algebraic multiplicity 2 and geometric multiplicity 1. The two copies of an eigenvalue leave the QR
+; iteration 9E-39 apart, so they are one eigenvalue by the EPS3 = ULP * norm(A) test, the second copy asks the same system
+; for a second null-space vector, and there is none: the defective-matrix error is raised instead of a repeated column.
+
+TIMER: EIGVEC ERROR real Jordan block of the pair +/- i, defective, with the copies of an eigenvalue two places apart
+In: FL_ASLIFT=0 FL_CPXRES=1 IM=2COMPL RT=LonI:"0" RZ=LonI:"0" RY=LonI:"0" RL=ReMa:"M4,4[0,1,1,0,-1,0,0,1,0,0,0,1,0,0,-1,0]" RX=ReMa:"M4,4[0,1,1,0,-1,0,0,1,0,0,0,1,0,0,-1,0]"
+Out: EC=22 FL_CPXRES=1 FL_ASLIFT=0 RL=ReMa:"M4,4[0,1,1,0,-1,0,0,1,0,0,0,1,0,0,-1,0]" RX=ReMa:"M4,4[0,1,1,0,-1,0,0,1,0,0,0,1,0,0,-1,0]"
+; The eigenvalues come back as i, -i, i, -i, so the second copy of each sits two places from the first. A repeat found by
+; comparing with the previous eigenvalue alone is missed here, and the same eigenvector comes back twice with no error.
+
+TIMER: EIGVEC ERROR companion of (x^2+1)^3, the triple pair +/- i, defective
+In: FL_ASLIFT=0 FL_CPXRES=1 IM=2COMPL RT=LonI:"0" RZ=LonI:"0" RY=LonI:"0" RL=ReMa:"M6,6[0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,1,-1,0,-3,0,-3,0]" RX=ReMa:"M6,6[0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,1,-1,0,-3,0,-3,0]"
+Out: EC=22 FL_CPXRES=1 FL_ASLIFT=0 RL=ReMa:"M6,6[0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,1,-1,0,-3,0,-3,0]" RX=ReMa:"M6,6[0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,1,-1,0,-3,0,-3,0]"
+; A triple eigenvalue splits by about the cube root of the working precision, 1E-25 here, so its three copies are outside
+; EPS3 and the repeat test does not relate them. Each copy builds its own system and the retries reach a vector that is
+; independent of the two before it and is not an eigenvector: only the residual of (A - lambda I) v refuses it.
 
 TIMER: EIGVEC 005 2X2 DIAGONAL COMPLEX, DISTINCT REAL EIGENVALUES, DIAGONAL FAST PATH
 In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=CxMa:"M2,2[1i0,0i0,0i0,2i0]"
@@ -1574,3 +1586,14 @@ Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ReMa:"M2,2[1,2,2,1]" RX=CxMa:"M2,2[0.866025
 
 TIMEROFF:
 
+; Nilpotent 4x4, A^4 = 0: every eigenvalue is exactly 0, maximally defective. Gates the iteration budget at 134 iterations.
+; The values are not asserted: a quadruple eigenvalue reaches about 18 of the 75 working digits, the comparison requires 30.
+Func: fnEigenvalues
+In:  FL_ASLIFT=0 FL_CPXRES=1 RX=ReMa:"M4,4[1,0,0,-1,-1,0,0,-1,0,-1,0,0,1,0,0,-1]"
+Out: EC=0
+
+; blockdiag([[1E3000,1],[1,1E-3000]],[[1,2],[3,4]]): spectrum 1E3000, 0, (5 +- sqrt 33)/2, first block determinant 0.
+; Gates the deflation criterion: a subdiagonal tested against the size of its diagonal entries loses (5 +- sqrt 33)/2.
+Func: fnEigenvalues
+In:  FL_ASLIFT=0 FL_CPXRES=1 RX=ReMa:"M4,4[1E3000,1,0,0,1,1E-3000,0,0,0,0,1,2,0,0,3,4]"
+Out: EC=0 RX=ReMa:"M1,4[1E3000,5.372281323269014329925305734109465,-0.3722813232690143299253057341094647,0]"

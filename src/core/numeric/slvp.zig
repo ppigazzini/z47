@@ -6,7 +6,7 @@
 // Coefficients and roots live in interleaved complex slots of real_t at 75
 // digits: slot i is (c[2i] re, c[2i+1] im), the layout calculateEigenvalues
 // works on. The general case builds the monic companion matrix and hands it to
-// the already-Zig-owned QR eigensolver in matrix/eigen.zig, which shares this
+// the already-Zig-owned eigensolver in matrix/eigen.zig, which shares this
 // object -- upstream drops the `static` on its copy under OPTION_SLVP_POLY, the Zig
 // side only needs the `pub`.
 //
@@ -17,7 +17,6 @@
 const abi = @import("abi");
 const consts = abi.constants;
 const const_1 = consts.const_1;
-const const_1on2 = consts.const_1on2;
 const const75_2pi = consts.const75_2pi;
 
 const runtime = @import("command_wrappers/runtime.zig");
@@ -92,9 +91,8 @@ fn slotIsZero(c: [*]const real_t) bool {
 }
 
 // All d roots of x^d = w, w != 0, in angle order; every root has magnitude
-// |w|^(1/d). The QR engine refuses a circulant companion matrix
-// (isProblematicMatrix), so this closed form is the only path for such
-// polynomials, not an optimisation.
+// |w|^(1/d). Exact and O(d) where the companion matrix through the eigenvalue
+// solver is O(d^3).
 //
 // clean_noise: only real coefficients cap how small a genuine root component
 // can be; complex ones carry independent exponents, so their output stays raw.
@@ -256,8 +254,7 @@ pub export fn fnSlvp(unused_but_mandatory_parameter: u16) linksection(runtime.co
             }
 
             if (middleZero) {
-                // x^d = w in closed form: the QR engine refuses this circulant
-                // companion shape.
+                // x^d = w in closed form.
                 var wRe: real_t = undefined;
                 var wIm: real_t = undefined;
                 divComplexComplex(&coef[(lead + d) * 2], &coef[(lead + d) * 2 + 1], &aLead[0], &aLead[1], &wRe, &wIm, ctxtReal75);
@@ -267,7 +264,7 @@ pub export fn fnSlvp(unused_but_mandatory_parameter: u16) linksection(runtime.co
             } else {
                 // Monic companion matrix through the EIGEN QR solver.
                 const dz: usize = d;
-                const bulkSize: usize = real_size_in_blocks_75 * (dz * dz * 2 * 4 + dz * 2);
+                const bulkSize: usize = real_size_in_blocks_75 * (dz * dz * 2 * 2 + dz * 7);
                 const bulkRaw = runtime.allocC47Blocks(bulkSize) orelse {
                     runtime.freeC47Blocks(coefRaw, wsSize);
                     displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
@@ -278,10 +275,8 @@ pub export fn fnSlvp(unused_but_mandatory_parameter: u16) linksection(runtime.co
                 };
                 const bulk: [*]real_t = @ptrCast(@alignCast(bulkRaw));
                 const a = bulk;
-                const q = bulk + dz * dz * 2;
-                const r = bulk + dz * dz * 2 * 2;
-                const eig = bulk + dz * dz * 2 * 3;
-                const previousDiagonal = bulk + dz * dz * 2 * 4;
+                const eig = bulk + dz * dz * 2;
+                const scratch = bulk + dz * dz * 2 * 2;
 
                 var idx: usize = 0;
                 while (idx < dz * dz * 2) : (idx += 1) realSetZero(&a[idx]);
@@ -298,39 +293,7 @@ pub export fn fnSlvp(unused_but_mandatory_parameter: u16) linksection(runtime.co
                     realChangeSign(&a[((dz - 1) * dz + i) * 2 + 1]);
                 }
 
-                {
-                    // The engine's circulant screen reads only real parts, so a
-                    // complex polynomial with purely imaginary middle coefficients
-                    // and a real constant would be refused although it is not
-                    // x^d = w at all: a diagonal similarity (superdiagonal 1/2,
-                    // bottom row scaled by powers of 2) keeps every eigenvalue and
-                    // makes the companion invisible to the screen.
-                    const bottom = a + (dz - 1) * dz * 2;
-                    var looksCirculant = !realIsZero(&bottom[0]);
-                    i = 1;
-                    while (looksCirculant and i < dz) : (i += 1) {
-                        looksCirculant = realIsZero(&bottom[i * 2]);
-                    }
-                    if (looksCirculant) {
-                        var two: real_t = undefined;
-                        var scale: real_t = undefined;
-                        realAdd(const_1(), const_1(), &two, ctxtReal75);
-                        realCopy(const_1(), &scale);
-                        i = 0;
-                        while (i + 1 < dz) : (i += 1) {
-                            realCopy(const_1on2(), &a[(i * dz + i + 1) * 2]);
-                        }
-                        i = dz;
-                        while (i > 0) { // bottom row element i gains the factor 2^(d-1-i)
-                            i -= 1;
-                            realMultiply(&bottom[i * 2], &scale, &bottom[i * 2], ctxtReal75);
-                            realMultiply(&bottom[i * 2 + 1], &scale, &bottom[i * 2 + 1], ctxtReal75);
-                            realMultiply(&scale, &two, &scale, ctxtReal75);
-                        }
-                    }
-                }
-
-                math_matrix_eigen.calculateEigenvalues(a, q, r, eig, previousDiagonal, d, true, true, ctxtReal75);
+                math_matrix_eigen.calculateEigenvalues(a, scratch, eig, d, true, true, ctxtReal75);
                 if (runtime.lastErrorCode != runtime.ERROR_NONE) {
                     // Abort or refusal: write nothing, the central undo puts X and L back.
                     runtime.freeC47Blocks(bulkRaw, bulkSize);

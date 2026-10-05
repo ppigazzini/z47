@@ -1523,6 +1523,14 @@ pub export var testClockFrozen: bool = false;
 const testClock: Tm = .{ .sec = 0, .min = 34, .hour = 12, .mday = 1, .mon = 0, .year = 100, .wday = 6, .yday = 0, .isdst = 0 };
 
 // The host clock, with the testSuite freeze applied.
+// Today's local date as YYYY-MM-DD, read from the host clock. Host only: the
+// firmware has no localtime.
+pub fn isoDateToday(buf: *[11]u8) []const u8 {
+    const epoch: i64 = time(null);
+    const len = strftime(buf, buf.len, "%Y-%m-%d", localtime(&epoch));
+    return buf[0..len];
+}
+
 fn localTimeInfo(epoch: *const i64) *const Tm {
     if (testsuite_build and testClockFrozen) {
         return &testClock;

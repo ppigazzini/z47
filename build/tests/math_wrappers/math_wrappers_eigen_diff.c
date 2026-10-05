@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
 // A worker-level golden harness for the eigen
-// engine in src/mathematics/math_matrix_eigen_owned.zig. testSuite
-// matrix.txt only exercises the composed fnEigenvalues through registers; this
-// pins the individual numeric workers against math-truth reference values so a
-// worker regression cannot hide behind the composed result.
+// engine in src/core/numeric/matrix/eigen.zig. testSuite matrix.txt only
+// exercises the composed fnEigenvalues through registers; this pins the
+// individual numeric workers against math-truth reference values so a worker
+// regression cannot hide behind the composed result.
 //
 // The upstream C eigen workers (mathematics/matrix.c) are file-static, so this
 // is a golden (math-truth) oracle, not a Zig-vs-C parity oracle: it drives the
@@ -13,29 +13,24 @@
 //
 // WHAT THIS LANE DOES NOT COVER, MEASURED.
 //
-// It drives the workers AROUND the iteration -- the closed-form 2x2 and 3x3
+// It drives the workers AROUND the engine -- the closed-form 2x2 and 3x3
 // solvers, isRealSymmetric, dropNoise and the Householder QR step -- and not
-// calculateEigenvalues, the iterative driver that calls them.
+// calculateEigenvalues or the Hessenberg QR iteration behind it.
 //
 // That is not an oversight this file can fix. calculateEigenvalues is `pub fn`
 // and not exported, so a worker-level case would need a new symbol in the shipped
 // program purely for a test -- the same question asked and answered for curtReal
 // and compareTypeErrorX in the full-core lane, where the answer was no.
 //
-// The gap is real and it is wider than "this lane". Halving the driver's
-// convergence tolerance -- `@min(70, toleranceDigits * 2)` to `@min(70,
-// toleranceDigits)` -- passes this lane AND all 12830 cases of c43's own
-// testSuite, which reaches it through the composed fnEigenvalues. So nothing in
-// this project constrains that tolerance.
-//
-// Closing it would need a matrix whose eigenvalues take enough iterations for the
-// difference to reach the displayed digits, driven through fnEigenvalues. That is
-// a testSuite case, and c43's testSuite is the oracle and is never extended.
+// The engine is constrained elsewhere: halving its deflation tolerance --
+// `@min(70, toleranceDigits() * 2)` to `@min(70, toleranceDigits())` -- passes
+// this lane, and c43's own testSuite fails it in matrix.txt and slvp.txt,
+// reaching the engine through fnEigenvalues and SLVP.
 
 #include "../../../upstream/src/c47/c47.h"
 #include "../common/harness_resource_budget.h"
 
-// Exported Zig workers under test (math_matrix_eigen_owned.zig). The matrices
+// Exported Zig workers under test (eigen.zig). The matrices
 // are interleaved-complex, row-major: element (i,j) real at [(i*size+j)*2],
 // imag at [(i*size+j)*2 + 1].
 void calculateEigenvalues22(const real_t *mat, uint16_t size, real_t *t1r, real_t *t1i, real_t *t2r, real_t *t2i, bool is_real_symmetric, realContext_t *realContext);

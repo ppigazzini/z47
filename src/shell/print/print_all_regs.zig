@@ -182,6 +182,7 @@ const PrintAllRegsContext = struct {
         if (comptime !frontier_print.ir_printing) {
             return;
         }
+        currentKeyCode = 255; // an EXIT pressed before this print does not stop it
         switch (self.option) {
             PRN_ALL => self.printerOptionAll(),
             PRN_REGS => self.printerOptionRegs(),
@@ -448,6 +449,7 @@ pub fn run(option: u16) void {
 }
 
 extern var calcMode: u8;
+extern var currentKeyCode: u8;
 extern var errorMessage: [*c]u8;
 extern var lastErrorCode: u8;
 extern var numberOfNamedVariables: u16;

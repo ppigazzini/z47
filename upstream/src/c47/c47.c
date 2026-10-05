@@ -17,6 +17,7 @@ char                  lastTemp[16];
   uint32_t            deadKey;
   bool_t              testDeadKeys = false;
   bool_t              swapCtrlCode = false;
+  bool_t              snapKeepShift = false;
 #endif // PC_BUILD
 
 bool_t                headlessMode = false;
@@ -41,6 +42,7 @@ bool_t                 fnKeyInCatalog;
 bool_t                 hourGlassIconEnabled;
 bool_t                 watchIconEnabled;
 bool_t                 printerIconEnabled;
+bool_t                 printerIconRefresh;   // true while setPrinterSBI() refreshes the status bar
 bool_t                 serialIOIconEnabled;
 bool_t                 shiftF;
 bool_t                 shiftG;

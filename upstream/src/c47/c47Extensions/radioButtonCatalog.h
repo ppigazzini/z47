@@ -66,12 +66,12 @@ char*    figlabel              (const char* label, const char* showText, int16_t
 #define RB_PRM                 158 // PRINTER MODEL
 #define RB_PRON                159 // PRINTER ON/OFF
 #define RB_PM                  160 // PRINTER MODE (MAN/NORM/TRACE)
-//#define RB_FDC                 161 // FIN12C day count basis
-//#define RB_FRD                 162 // FIN12C 30/360 regional rule
-//#define RB_FTM                 163 // FIN12C Monte Carlo target metric
-//#define RB_FPM                 164 // FIN12C profit solver mode
-//#define RB_FDF                 165 // FIN12C money display format
-//#define RB_FOT                 166 // FIN12C BSM option type
+#define RB_FDC                 161 // FIN12C day count basis
+#define RB_FRD                 162 // FIN12C 30/360 regional rule
+#define RB_FTM                 163 // FIN12C Monte Carlo target metric
+#define RB_FPM                 164 // FIN12C profit solver mode
+#define RB_FDF                 165 // FIN12C money display format
+#define RB_FOT                 166 // FIN12C BSM option type
 #define RB_RM                  167 // RMODE
 
 //Not strictly needed to follow on numerically from RB/CB types above, but why not

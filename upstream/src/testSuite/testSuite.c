@@ -101,6 +101,8 @@ void covEqSet(uint16_t which);
 void covEqClear(uint16_t unusedButMandatoryParameter);
 void covVecToEqnRoundTrip(uint16_t unusedButMandatoryParameter);
 void covLoadGraphPgms(uint16_t unusedButMandatoryParameter);
+void covLoadUndoErrPgms(uint16_t unusedButMandatoryParameter);
+void covErrThenUndo(uint16_t unusedButMandatoryParameter);
 void covLoadNestedPgms(uint16_t unusedButMandatoryParameter);
 void covBmpName(uint16_t which);
 void covHashBmp(uint16_t which);
@@ -296,6 +298,8 @@ const funcTest_t funcTestNoParam[] = {
   {"fnDerivErrCov",              covDerivErr,                 1 },
   {"fnSolveErrCov",              covSolveErr,                 1 },
   {"fnLoadPgmCov",               covLoadPgm,                  1 },
+  {"fnLoadUndoErrPgmsCov",       covLoadUndoErrPgms,          1 },
+  {"fnErrThenUndoCov",           covErrThenUndo,              1 },
   {"fnMvarPageNoPgmCov",         covMvarPageNoProgram,        1 },
   {"fnLoadPgmLongLabelCov",      covLoadPgmLongLabel,         1 },
   {"fnLoadStateLongLabelCov",    covLoadStateLongLabel,       1 },
@@ -2615,6 +2619,100 @@ void covEqClear(uint16_t unusedButMandatoryParameter) {
 // Two-byte program opcode: the high bit on the first byte marks that a second opcode byte follows (the decoder's (op & 0x80) convention).
 #define OP2(itm) (uint8_t)(((itm) >> 8) | 0x80), (uint8_t)((itm) & 0xff)
 
+void covLoadUndoErrPgms(uint16_t unusedButMandatoryParameter) {
+  // Error-handling programs for undo_on_error.txt, each built to stop on an error so the case reads the stack the run leaves. The flags come from the case, not
+  // the program. A trailing 9 is the marker a run reaches only when the error is ignored (IGN1ER), so its presence in X tells a carry-on from a stop.
+  static const uint8_t pgmES[] = {                                                  // ES: one type error, the same whatever SPCRES and CPXRES are
+    ITM_LBL, STRING_LABEL_VARIABLE, 2, 'E', 'S',
+    ITM_LITERAL, STRING_REAL34, 2, '5', '5', ITM_FILL,                              // 55 FILL
+    ITM_LITERAL, STRING_REAL34, 1, '7',                                             // 7
+    ITM_LITERAL, STRING_LABEL_VARIABLE, 2, 'X', 'Y',                                // "XY"
+    ITM_DIV,                                                                        // 7 / "XY" raises a data type error
+    ITM_LITERAL, STRING_REAL34, 1, '9',                                             // 9 marker
+    OP2(ITM_END),
+  };
+  static const uint8_t pgmED1[] = {                                                 // ED1: 1/0 then ->I; SPCRES decides whether 1/0 is absorbed to Infinity or is the first error
+    ITM_LBL, STRING_LABEL_VARIABLE, 3, 'E', 'D', '1',
+    ITM_LITERAL, STRING_REAL34, 2, '5', '5', ITM_FILL,
+    ITM_LITERAL, STRING_REAL34, 1, '1',
+    ITM_LITERAL, STRING_REAL34, 1, '2',
+    ITM_ADD,                                                                        // 3
+    ITM_LITERAL, STRING_REAL34, 1, '0',
+    ITM_1ONX,                                                                       // 1/0
+    OP2(ITM_RI),                                                                    // ->I, errors on Infinity
+    ITM_LITERAL, STRING_REAL34, 1, '9',
+    OP2(ITM_END),
+  };
+  static const uint8_t pgmED2[] = {                                                 // ED2: sqrt(-1) then a type error; CPXRES decides whether sqrt(-1) is absorbed to a complex or is the first error
+    ITM_LBL, STRING_LABEL_VARIABLE, 3, 'E', 'D', '2',
+    ITM_LITERAL, STRING_REAL34, 2, '5', '5', ITM_FILL,
+    ITM_LITERAL, STRING_REAL34, 1, '1',
+    ITM_LITERAL, STRING_REAL34, 1, '2',
+    ITM_ADD,                                                                        // 3
+    ITM_LITERAL, STRING_REAL34, 1, '1',
+    ITM_CHS,                                                                        // -1
+    ITM_SQUAREROOTX,                                                                // sqrt(-1)
+    ITM_LITERAL, STRING_LABEL_VARIABLE, 2, 'X', 'Y',
+    ITM_DIV,                                                                        // "XY" over the complex raises a data type error
+    ITM_LITERAL, STRING_REAL34, 1, '9',
+    OP2(ITM_END),
+  };
+  static const uint8_t pgmEF1[] = {                                                 // EF1: the error is the first step, the stack comes from the case
+    ITM_LBL, STRING_LABEL_VARIABLE, 3, 'E', 'F', '1',
+    ITM_DIV,
+    OP2(ITM_END),
+  };
+  static const uint8_t pgmENS[] = {                                                 // ENS: the error happens one subroutine level down
+    ITM_LBL, STRING_LABEL_VARIABLE, 3, 'E', 'N', 'S',
+    ITM_LITERAL, STRING_REAL34, 2, '5', '5', ITM_FILL,
+    ITM_XEQ, STRING_LABEL_VARIABLE, 3, 'E', 'N', 'B',
+    ITM_LITERAL, STRING_REAL34, 1, '9',
+    OP2(ITM_END),
+  };
+  static const uint8_t pgmENB[] = {
+    ITM_LBL, STRING_LABEL_VARIABLE, 3, 'E', 'N', 'B',
+    ITM_LITERAL, STRING_REAL34, 1, '7',
+    ITM_LITERAL, STRING_LABEL_VARIABLE, 2, 'X', 'Y',
+    ITM_DIV,                                                                        // 7 / "XY" raises the error in the subroutine
+    OP2(ITM_END),
+  };
+  static const uint8_t pgmEDD[] = {                                                 // EDD: two real errors; IGN1ER ignores the first, the second still stops
+    ITM_LBL, STRING_LABEL_VARIABLE, 3, 'E', 'D', 'D',
+    ITM_LITERAL, STRING_REAL34, 2, '5', '5', ITM_FILL,
+    ITM_LITERAL, STRING_REAL34, 1, '7',
+    ITM_LITERAL, STRING_LABEL_VARIABLE, 2, 'X', 'Y',
+    ITM_DIV,                                                                        // first error
+    ITM_LITERAL, STRING_REAL34, 1, '3',
+    ITM_LITERAL, STRING_LABEL_VARIABLE, 2, 'A', 'B',
+    ITM_DIV,                                                                        // second error
+    ITM_LITERAL, STRING_REAL34, 1, '9',
+    OP2(ITM_END),
+  };
+  covWriteAndLoadPgm(pgmES,  sizeof(pgmES));
+  covWriteAndLoadPgm(pgmED1, sizeof(pgmED1));
+  covWriteAndLoadPgm(pgmED2, sizeof(pgmED2));
+  covWriteAndLoadPgm(pgmEF1, sizeof(pgmEF1));
+  covWriteAndLoadPgm(pgmENS, sizeof(pgmENS));
+  static const uint8_t pgmOK[] = {                                                  // OK: a clean RTN, run last to leave lastErrorCode clear for the next corpus file
+    ITM_LBL, STRING_LABEL_VARIABLE, 2, 'O', 'K',
+    ITM_RTN,
+    OP2(ITM_END),
+  };
+  covWriteAndLoadPgm(pgmENB, sizeof(pgmENB));
+  covWriteAndLoadPgm(pgmEDD, sizeof(pgmEDD));
+  covWriteAndLoadPgm(pgmOK,  sizeof(pgmOK));
+}
+
+void covErrThenUndo(uint16_t unusedButMandatoryParameter) {
+  // A program stopped by an error clears the launcher's undo snapshot, so a following UNDO must not pull the stack off the error state. Run ES (one error) then UNDO,
+  // and the stack stays the error state ES leaves. On the broken build the snapshot survived, so UNDO restored the pre-run stack instead.
+  calcRegister_t lbl = findNamedLabel("ES", GLOBAL_LABELS);
+  if(lbl != INVALID_VARIABLE) {
+    reallyRunFunction(ITM_XEQ, lbl);
+    fnUndo(NOPARAM);
+  }
+}
+
 void covLoadGraphPgms(uint16_t unusedButMandatoryParameter) {
   // Build and import the graph programs through the official loader like program S (covLoadPgm). G2..G4 match the numbered bitmaps they snap.
   static const uint8_t pgmG1[] = {
@@ -3412,6 +3510,14 @@ void setParameter(char *p) {
         }
         else {
           setSystemFlag(FLAG_CPXRES);
+        }
+      }
+      else if(!strcmp(l+3, "IGN1ER")) {
+        if(r[0] == '0') {
+          clearSystemFlag(FLAG_IGN1ER);
+        }
+        else {
+          setSystemFlag(FLAG_IGN1ER);
         }
       }
       else if(!strcmp(l+3, "CARRY")) {
@@ -4777,6 +4883,16 @@ void checkExpectedOutParameter(char *p) {
         }
         else if(r[0] == '0' && getSystemFlag(FLAG_CPXRES)) {
           printf("\nSystem flag CPXRES should be clear but it is set!\n");
+          abortTest();
+        }
+      }
+      else if(!strcmp(l+3, "IGN1ER")) {
+        if(r[0] == '1' && !getSystemFlag(FLAG_IGN1ER)) {
+          printf("\nSystem flag IGN1ER should be set but it is clear!\n");
+          abortTest();
+        }
+        else if(r[0] == '0' && getSystemFlag(FLAG_IGN1ER)) {
+          printf("\nSystem flag IGN1ER should be clear but it is set!\n");
           abortTest();
         }
       }

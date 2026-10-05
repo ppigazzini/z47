@@ -134,6 +134,7 @@ comptime {
         @export(&deadKey, .{ .name = "deadKey", .linkage = .strong });
         @export(&testDeadKeys, .{ .name = "testDeadKeys", .linkage = .strong });
         @export(&swapCtrlCode, .{ .name = "swapCtrlCode", .linkage = .strong });
+        @export(&snapKeepShift, .{ .name = "snapKeepShift", .linkage = .strong });
         @export(&lastFolderData, .{ .name = "lastFolderData", .linkage = .strong });
         @export(&lastFolderState, .{ .name = "lastFolderState", .linkage = .strong });
         @export(&lastFolderPrograms, .{ .name = "lastFolderPrograms", .linkage = .strong });
@@ -143,6 +144,7 @@ var forceTamAlpha: bool = false;
 var deadKey: u32 = 0;
 var testDeadKeys: bool_t = false;
 var swapCtrlCode: bool_t = false;
+var snapKeepShift: bool_t = false;
 // The folder the file chooser was left in, one per group of disk functions, saved
 // in backup.cfg. Empty means the group has no folder yet, so the chooser opens on
 // the default folder.
@@ -171,6 +173,7 @@ pub export var graphAccActive: bool_t = false; // graph-eqn precision reduction 
 pub export var graphToRemainOnScreen: bool_t = false; // a graph is the on-screen content and must survive the next halt
 pub export var watchIconEnabled: bool_t = false;
 pub export var printerIconEnabled: bool_t = false;
+pub export var printerIconRefresh: bool_t = false; // true while setPrinterSBI() refreshes the status bar
 pub export var serialIOIconEnabled: bool_t = false;
 pub export var shiftF: bool_t = false;
 pub export var shiftG: bool_t = false;

@@ -8,6 +8,7 @@ const undo_owned = @import("stack_undo.zig");
 
 const runtime = @import("../runtime/stack_runtime.zig");
 const use_fake_stack_state_harness_surface = build_options.use_fake_stack_state_harness_surface;
+const testsuite_build = build_options.is_testsuite_build;
 
 const matrix_header_size_in_blocks: u16 = 1;
 const amAngleMask: u32 = 15;
@@ -326,6 +327,16 @@ pub fn toReal(unused_but_mandatory_parameter: u16) void {
     reportToRealInvalidType();
 }
 
+// The testSuite's own error undo. Only the testSuite has it: there a command
+// runs without reallyRunFunction, so nothing else puts the stack back. Inside a
+// running program no per-step undo snapshot was taken, so there is nothing to
+// undo to. The simulator and the firmware leave the undo to reallyRunFunction.
+fn undoErroredResult() void {
+    if (testsuite_build and runtime.programRunStop != runtime.PGM_RUNNING) {
+        undo_owned.undo();
+    }
+}
+
 pub fn adjustResult(
     res: runtime.calcRegister_t,
     drop_y: bool,
@@ -344,7 +355,7 @@ pub fn adjustResult(
                 return;
             }
         } else if (runtime.lastErrorCode != runtime.ERROR_NONE) {
-            undo_owned.undo();
+            undoErroredResult();
             return;
         }
 
@@ -376,7 +387,7 @@ pub fn adjustResult(
     }
 
     if (runtime.lastErrorCode != runtime.ERROR_NONE) {
-        undo_owned.undo();
+        undoErroredResult();
         return;
     }
 

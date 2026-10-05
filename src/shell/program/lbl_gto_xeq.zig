@@ -125,7 +125,7 @@ const TAM_MAX_BITS: u4 = 14;
 const TAM_MAX_MASK: u16 = 0x3fff;
 
 const INVALID_VARIABLE: calcRegister_t = 2199;
-const INVALID_MENU: i16 = 3481; // items.h: LAST_ITEM
+const INVALID_MENU: i16 = 3536; // items.h: LAST_ITEM
 const TEMP_REGISTER_1: calcRegister_t = 135;
 const NOPARAM: u16 = 9876;
 const REGISTER_X: calcRegister_t = 100;
@@ -271,7 +271,7 @@ extern var dynamicMenuItem: i16;
 extern var numberOfLabels: u16;
 extern var labelList: [*c]labelList_t;
 extern var programList: [*c]programList_t;
-const LAST_ITEM: u32 = 3481;
+const LAST_ITEM: u32 = 3536;
 extern const indexOfItems: [LAST_ITEM + 1]item_t;
 const SOFTMENU_STACK_SIZE: usize = 8;
 // softmenu[] and softmenuStack[] are real C arrays: the linker symbol address is
@@ -291,6 +291,7 @@ extern var firstDisplayedLocalStepNumber: u16;
 
 extern var programRunStop: u8;
 extern var lastErrorCode: u8;
+extern var thereIsSomethingToUndo: bool_t;
 extern var previousErrorCode: u8;
 extern var graphAccActive: bool;
 extern var graphToRemainOnScreen: bool_t;
@@ -1438,6 +1439,9 @@ pub export fn runProgram(singleStep: bool_t, menuLabel: u16) callconv(.c) void {
     // stopProgram:
     if (programRunStop == PGM_RUNNING and nestedEngine == 0) {
         programRunStop = PGM_STOPPED;
+    }
+    if (lastErrorCode != ERROR_NONE and nestedEngine == 0) {
+        thereIsSomethingToUndo = 0; // a top-level program stopped by an error leaves the stack at the error point; its launcher (XEQ, R/S) must not undo it to the pre-run state
     }
     if (programRunStop != PGM_RUNNING) {
         entryStatus &= 0xfe;

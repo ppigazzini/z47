@@ -26,6 +26,9 @@ extern var screenData: [*c]u32;
 extern var screenStride: c_short;
 extern var screen: ?*anyopaque;
 extern var headlessMode: bool;
+// True while setPrinterSBI() refreshes the status bar for the print annunciator,
+// which changes twice per printed line and so does not wait for a painted frame.
+extern var printerIconRefresh: bool;
 
 // A queued draw waits on the frame clock, so it is still unpainted when the
 // event queue is empty.
@@ -222,7 +225,7 @@ pub export fn _lcdSBRefresh() callconv(.c) void {
     // gtk_main_level() is 0 in the batch runs (--writeexportall, --mockup,
     // --dumpmenus, --exec, --script), which paint before gtk_main() and never
     // release a blocked pump.
-    if (drawQueued and gtk_main_level() > 0 and !headlessMode and ui_is_active == 0 and screen != null and gtk_widget_get_mapped(screen) != 0) {
+    if (drawQueued and gtk_main_level() > 0 and !headlessMode and ui_is_active == 0 and !printerIconRefresh and screen != null and gtk_widget_get_mapped(screen) != 0) {
         // 20 ms cap on the pump; below GDK_PRIORITY_REDRAW, so a ready frame
         // paints first.
         const pumpGuard = g_timeout_add_full(G_PRIORITY_LOW, 20, pumpGuardTick, null, null);

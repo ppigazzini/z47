@@ -71,5 +71,6 @@ pub fn prepareContext(
             },
         }),
         .stack_state_objects = stack.addRuntimeObjects(b, host_target, optimize, "host"),
+        .testsuite_stack_state_objects = stack.addRuntimeObjectsWithOptions(b, host_target, optimize, "testSuite", .{ .is_testsuite_build = true }),
     };
 }

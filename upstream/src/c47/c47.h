@@ -216,6 +216,7 @@
     extern uint32_t             deadKey;
     extern bool_t               testDeadKeys;
     extern bool_t               swapCtrlCode;
+    extern bool_t               snapKeepShift;
     extern bool_t               calcLandscape;
     extern bool_t               calcAutoLandscapePortrait;
     extern GtkWidget           *screen;
@@ -295,6 +296,7 @@
   extern bool_t                 hourGlassIconEnabled;
   extern bool_t                 watchIconEnabled;
   extern bool_t                 printerIconEnabled;
+  extern bool_t                 printerIconRefresh;
   extern bool_t                 serialIOIconEnabled;
   extern bool_t                 shiftF;
   extern bool_t                 shiftG;

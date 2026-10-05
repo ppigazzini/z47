@@ -233,7 +233,7 @@ void _lcdSBRefresh(void) {
           #endif //ANALYSE_REFRESH
   lcd_refresh();
   // gtk_main_level() is 0 in the batch runs (--writeexportall, --mockup, --dumpmenus, --exec, --script), which paint before gtk_main() and never release a blocked pump
-  if(drawQueued && gtk_main_level() > 0 && !headlessMode && !ui_is_active && screen != NULL && gtk_widget_get_mapped(screen)) {
+  if(drawQueued && gtk_main_level() > 0 && !headlessMode && !ui_is_active && !printerIconRefresh && screen != NULL && gtk_widget_get_mapped(screen)) {
     guint pumpGuard = g_timeout_add_full(G_PRIORITY_LOW, 20, pumpGuardTick, NULL, NULL);   // 20 ms cap on the pump; below GDK_PRIORITY_REDRAW, so a ready frame paints first
     gtk_main_iteration();
     g_source_remove(pumpGuard);

@@ -363,7 +363,7 @@ const ITM_dotD: i16 = 1741;
 const ITM_HASH_JM: i16 = 1872;
 const ITM_toINT: i16 = 1687;
 const ITM_CLRMOD: i16 = 2005;
-const LAST_ITEM: i16 = 3481;
+const LAST_ITEM: i16 = 3536;
 const MNU_DYNAMIC: i16 = 3052;
 const FIRST_CONSTANT: i16 = 128;
 const LAST_CONSTANT: i16 = 212;
@@ -976,6 +976,7 @@ extern var screenUpdatingMode: u8;
 // c47.c: a program drew this screen and no refresh has repainted over it since.
 extern var screenHoldsDrawnPixels: bool;
 extern var snapSkipRefresh: bool; // c47.c global, set by the host --snapskiprefresh switch
+extern var snapKeepShift: bool; // c47.c PC_BUILD global, set by the host --snapkeepshift switch
 extern var refreshNIMdone: bool_t;
 extern var calcMode: u8;
 extern var graphToRemainOnScreen: bool_t;
@@ -5525,16 +5526,34 @@ fn refreshString(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16,
     }
 
     // STACK_X_STR_LRG_FONT (live); STACK_X_STR_MED_FONT undef; STACK_STR_MED_FONT (live).
-    var w: i16 = @intCast(stringWidthWithLimitC47(REGISTER_STRING_DATA(regist), stdnumEnlarge, nocompress, SCREEN_WIDTH, 0, 1));
-    if (temporaryInformation != TI_VIEW_REGISTER and regist == REGISTER_X and w < SCREEN_WIDTH) {
+    // The VIEW line (TI_VIEW_REGISTER on T) is drawn after the register name, not
+    // at the right margin, from a copy with its substrings split out.
+    const isViewLine = temporaryInformation == TI_VIEW_REGISTER and origRegist == REGISTER_T;
+    const room: i16 = SCREEN_WIDTH - prefixWidth_p.*;
+    var w: i16 = @intCast(stringWidthWithLimitC47(REGISTER_STRING_DATA(regist), stdnumEnlarge, nocompress, @intCast(room), 0, 1));
+    if (origRegist != REGISTER_T and regist == REGISTER_X and w < room) {
         lineWidth_p.* = w;
         _ = showStringC47(REGISTER_STRING_DATA(regist), stdnumEnlarge, nocompress, @intCast(@as(i32, SCREEN_WIDTH) - w), @intCast(@as(i32, Y_POSITION_OF_REGISTER_X_LINE) + 6 - checkHPoffset()), vmNormal, 0, 1);
-    } else if (regist >= REGISTER_Y and regist <= REGISTER_T and blk: {
-        w = @intCast(stringWidthWithLimitC47(REGISTER_STRING_DATA(regist), numHalf, nocompress, @intCast(@as(i32, SCREEN_WIDTH) - prefixWidth_p.*), 0, 1));
-        break :blk w < SCREEN_WIDTH - prefixWidth_p.*;
+    } else if (isViewLine and blk: {
+        w = @intCast(stringWidthWithLimitC47(REGISTER_STRING_DATA(regist), stdnumEnlarge, nocompress, @intCast(room), 0, 1));
+        break :blk w < room;
     }) {
         lineWidth_p.* = w;
-        _ = showStringC47(REGISTER_STRING_DATA(regist), numHalf, nocompress, @intCast(@as(i32, SCREEN_WIDTH) - w), @intCast(@as(i32, baseY) + 6 - checkHPoffset()), vmNormal, 0, 1);
+        COPY_REGISTER_STRING_TO(tmpString, regist);
+        createSubstrings(1);
+        _ = showStringC47(tmpString, stdnumEnlarge, nocompress, @intCast(prefixWidth_p.*), @intCast(@as(i32, baseY) + 2 - checkHPoffset()), vmNormal, 0, 1);
+    } else if (regist >= REGISTER_Y and regist <= REGISTER_T and blk: {
+        w = @intCast(stringWidthWithLimitC47(REGISTER_STRING_DATA(regist), numHalf, nocompress, @intCast(room), 0, 1));
+        break :blk w < room;
+    }) {
+        lineWidth_p.* = w;
+        if (isViewLine) {
+            COPY_REGISTER_STRING_TO(tmpString, regist);
+            createSubstrings(1);
+            _ = showStringC47(tmpString, numHalf, nocompress, @intCast(prefixWidth_p.*), @intCast(@as(i32, baseY) + 6 - checkHPoffset()), vmNormal, 0, 1);
+        } else {
+            _ = showStringC47(REGISTER_STRING_DATA(regist), numHalf, nocompress, @intCast(@as(i32, SCREEN_WIDTH) - w), @intCast(@as(i32, baseY) + 6 - checkHPoffset()), vmNormal, 0, 1);
+        }
     } else {
         w = frontier_char_string.stringWidth(REGISTER_STRING_DATA(regist), &standardFont, false, true);
         if (w >= SCREEN_WIDTH - prefixWidth_p.*) {
@@ -7013,7 +7032,13 @@ var snapRowLast: i32 = SCREEN_HEIGHT - 1;
 pub export fn fnSNAP(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
 
-    resetShiftState();
+    // f or g would otherwise show top left of the capture; the host's
+    // --snapkeepshift keeps the shift and its glyph in it.
+    if (comptime dmcp_build) {
+        resetShiftState();
+    } else if (!snapKeepShift) {
+        resetShiftState();
+    }
     // The capture carries the date and time, so the test build reads a fixed
     // clock and the stored hashes stay put. The TI survives a capture: SNAP is
     // excluded in runProgram, processKeyAction and showFunctionName.

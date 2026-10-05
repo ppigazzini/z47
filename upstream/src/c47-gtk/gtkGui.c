@@ -21,6 +21,7 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
   #include <gdk/gdk.h>
 
   #include "gtkGui.h"
+  #include "c47-gtk.h"
 
   GtkWidget *grid;
   #if (SIMULATOR_ON_SCREEN_KEYBOARD == 1)
@@ -779,6 +780,13 @@ returnKeyReleasedFalse:
 
 
   gboolean keyPressed(GtkWidget *w, GdkEventKey *event, gpointer data) {
+    if((event->state & GDK_CONTROL_MASK) && (event->keyval == GDK_KEY_p || event->keyval == GDK_KEY_P)) {
+      // Ctrl+P is taken from the event state, not from CTRL_State: the print-out window takes the focus, so a Control press often goes to it and CTRL_State stays 0
+      CTRL_State = 0;
+      printf("key pressed: CTRL+p Print-out window\n");
+      printerWindowToggle();
+      return TRUE;
+    }
     event_keyval = event->keyval + CTRL_State;
 
     char strr[30];
@@ -5443,7 +5451,7 @@ static gboolean clear_ui_active_flag(gpointer data) {
 }
 
 // Single handler for all UI events
-static gboolean onUIActivity(GtkWidget *w, GdkEvent *event, gpointer data) {
+gboolean onUIActivity(GtkWidget *w, GdkEvent *event, gpointer data) {
   static gint64 first_call_time = 0;
 
   // Record first call time
@@ -5651,7 +5659,7 @@ static gboolean onUIActivity(GtkWidget *w, GdkEvent *event, gpointer data) {
       // LCD screen 400x240
       screen = gtk_drawing_area_new();
       gtk_widget_set_size_request(screen, SCREEN_WIDTH, SCREEN_HEIGHT);
-      gtk_widget_set_tooltip_text(GTK_WIDGET(screen), "Copy to clipboard:\n CTRL+h: Screen image\n CTRL+m: Menu image\n CTRL+c/x: X Register\n CTRL+d: Lettered Registers\n CTRL+a: All Registers\nCTRL+s: SNAP\n");  //JM
+      gtk_widget_set_tooltip_text(GTK_WIDGET(screen), "Copy to clipboard:\n CTRL+a: All Registers\n CTRL+c/x: X Register\n CTRL+d: Lettered Registers\n CTRL+h: Screen image\n CTRL+m: Menu image\n CTRL+p: Print-out window\n CTRL+s: SNAP\n");  //JM
       #if NARROW_SCREEN == 0
         gtk_fixed_put(GTK_FIXED(grid), screen, 63, 72);
       #else // NARROW_SCREEN != 0 --> 400x1280 raspberry screen

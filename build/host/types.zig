@@ -39,6 +39,9 @@ pub const Context = struct {
     shortint_objects: ShortIntObjects,
     keyboard_state_objects: KeyboardStateObjects,
     stack_state_objects: StackStateObjects,
+    // The stack-state object built with TESTSUITE_BUILD's behaviour, for every
+    // executable that compiles its C with TESTSUITE_BUILD defined.
+    testsuite_stack_state_objects: StackStateObjects,
 };
 
 pub const SimulatorOutputs = struct {

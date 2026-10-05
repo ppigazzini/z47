@@ -1374,9 +1374,9 @@
 #define ITM_SET_42ALPHA             1332
 #define ITM_GET_42ALPHA             1333
 #define ITM_BASEMENU                1334
-#define ITM_1335                    1335 // General items / any items spare
-#define ITM_1336                    1336 // General items / any items spare
-#define ITM_1337                    1337 // General items / any items spare
+#define ITM_1335                    1335 // General items / any items spare (reserved: Display Rounding, DRM)
+#define ITM_1336                    1336 // General items / any items spare (reserved: Display Rounding, SET_DRM)
+#define ITM_1337                    1337 // General items / any items spare (reserved: Display Rounding, GET_DRM)
 #define ITM_1338                    1338 // General items / any items spare
 #define ITM_1339                    1339 // General items / any items spare
 #define ITM_ATEXT                   1340
@@ -1439,7 +1439,7 @@
 #define ITM_1397                    1397 // General items / any items spare
 #define ITM_1398                    1398 // General items / any items spare
 #define ITM_1399                    1399 // General items / any items spare
-#define ITM_1400                    1400 // General items / any items spare
+#define ITM_1400                    1400 // General items / any items spare (reserved: FIN12C, TVM PXN)
 #define VAR_Ip                      1401
 #define ITM_CLRTVM                  1402
 #define ITM_RSTTVM                  1403
@@ -1959,7 +1959,7 @@
 #define ITM_ms                      1909
 #define ITM_msTo                    1910
 #define ITM_ymdTo                   1911
-#define ITM_1912                    1912 // General items / any items spare
+#define ITM_1912                    1912 // General items / any items spare (reserved: die-op, FINISH)
 #define ITM_1913                    1913 // General items / any items spare
 #define ITM_TO_USER                 1914
 #define ITM_N_KEY_NIL               1915
@@ -3077,8 +3077,8 @@
 #define MNU_TAMSTO                  2961
 #define MNU_TAMSTO_TVM              2962
 #define MNU_TAMVARONLY              2963
-#define ITM_2964                    2964 // General items / any items spare (reserved: Tam Menus)
-#define ITM_2965                    2965 // General items / any items spare (reserved: Tam Menus)
+#define ITM_2964                    2964 // General items / any items spare (reserved: FIN12C, TAMSTO menu)
+#define ITM_2965                    2965 // General items / any items spare (reserved: FIN12C, TAMRCL menu)
 #define ITM_2966                    2966 // General items / any items spare (reserved: Tam Menus)
 #define ITM_2967                    2967 // General items / any items spare (reserved: Tam Menus)
 #define ITM_2968                    2968 // General items / any items spare (reserved: Tam Menus)
@@ -3267,16 +3267,16 @@
 #define MNU_POLY                    3145
 #define MNU_USRMENU                 3146
 #define MNU_USRMENUS                3147
-#define ITM_3148                    3148 // General items / any items spare (reserved: Menus)
-#define ITM_3149                    3149 // General items / any items spare (reserved: Menus)
-#define ITM_3150                    3150 // General items / any items spare (reserved: Menus)
-#define ITM_3151                    3151 // General items / any items spare (reserved: Menus)
+#define ITM_3148                    3148 // General items / any items spare (reserved: FIN12C, VARFIN menu)
+#define ITM_3149                    3149 // General items / any items spare (reserved: FIN12C, dynamic softmenu spare)
+#define ITM_3150                    3150 // General items / any items spare (reserved: FIN12C, dynamic softmenu spare)
+#define ITM_3151                    3151 // General items / any items spare (reserved: FIN12C, dynamic softmenu spare)
 #define MNU_RMODE                   3152
 #define ITM_3153                    3153 // General items / any items spare (reserved: Menus)
 #define ITM_3154                    3154 // General items / any items spare (reserved: Menus)
 #define ITM_3155                    3155 // General items / any items spare (reserved: Menus)
-#define ITM_3156                    3156 // General items / any items spare (reserved: Menus)
-#define ITM_3157                    3157 // General items / any items spare (reserved: Menus)
+#define ITM_3156                    3156 // General items / any items spare (reserved: Display Rounding, DRM menu)
+#define ITM_3157                    3157 // General items / any items spare (reserved: Display Rounding, RNDMODES menu)
 #define ITM_3158                    3158 // General items / any items spare (reserved: Menus)
 #define ITM_3159                    3159 // General items / any items spare (reserved: Menus)
 #define ITM_3160                    3160 // General items / any items spare (reserved: Menus)
@@ -3605,8 +3605,63 @@
 #define ITM_3478                    3478 // General items / any items spare (reserved: FIN12C, menu CFLO)
 #define ITM_3479                    3479 // General items / any items spare (reserved: FIN12C, menu AMORT2)
 #define ITM_3480                    3480 // General items / any items spare (reserved: FIN12C, menu TVM2)
+#define ITM_3481                    3481 // General items / any items spare (reserved: FIN12C, MSDCF N1)
+#define ITM_3482                    3482 // General items / any items spare (reserved: FIN12C, MSDCF N2)
+#define ITM_3483                    3483 // General items / any items spare (reserved: FIN12C, MSDCF TV)
+#define ITM_3484                    3484 // General items / any items spare (reserved: FIN12C, MSDCF TVPC)
+#define ITM_3485                    3485 // General items / any items spare (reserved: FIN12C, MSDCF PV1)
+#define ITM_3486                    3486 // General items / any items spare (reserved: FIN12C, MSDCF PV2)
+#define ITM_3487                    3487 // General items / any items spare (reserved: FIN12C, MSDCF PV3)
+#define ITM_3488                    3488 // General items / any items spare (reserved: FIN12C, EXPTVM)
+#define ITM_3489                    3489 // General items / any items spare (reserved: FIN12C, FIN spare)
+#define ITM_3490                    3490 // General items / any items spare (reserved: FIN12C, FIN spare)
+#define ITM_3491                    3491 // General items / any items spare (reserved: FIN12C, FIN spare)
+#define ITM_3492                    3492 // General items / any items spare (reserved: FIN12C, FRM menu)
+#define ITM_3493                    3493 // General items / any items spare (reserved: FIN12C, FIN GET_RM)
+#define ITM_3494                    3494 // General items / any items spare (reserved: FIN12C, FIN SET_RM)
+#define ITM_3495                    3495 // General items / any items spare (reserved: FIN12C, FIN spare)
+#define ITM_3496                    3496 // General items / any items spare (reserved: FIN12C, FIN spare)
+#define ITM_3497                    3497 // General items / any items spare (reserved: FIN12C, FIN spare)
+#define ITM_3498                    3498 // General items / any items spare (reserved: FIN12C, FIN spare)
+#define ITM_3499                    3499 // General items / any items spare (reserved: FIN12C, FIN spare)
+#define ITM_3500                    3500 // General items / any items spare (reserved: FIN12C, FIN spare)
+#define ITM_3501                    3501 // General items / any items spare (reserved: FIN12C, FIN spare)
+#define ITM_3502                    3502 // General items / any items spare (reserved: FIN12C, FIN spare)
+#define ITM_3503                    3503 // General items / any items spare (reserved: FIN12C, FIN spare)
+#define ITM_3504                    3504 // General items / any items spare (reserved: FIN12C, menu FREGION)
+#define ITM_3505                    3505 // General items / any items spare (reserved: FIN12C, menu FINPREF)
+#define ITM_3506                    3506 // General items / any items spare (reserved: FIN12C, menu FX)
+#define ITM_3507                    3507 // General items / any items spare (reserved: FIN12C, menu WACC)
+#define ITM_3508                    3508 // General items / any items spare (reserved: FIN12C, menu CAPM)
+#define ITM_3509                    3509 // General items / any items spare (reserved: FIN12C, menu DATE)
+#define ITM_3510                    3510 // General items / any items spare (reserved: FIN12C, menu CVP)
+#define ITM_3511                    3511 // General items / any items spare (reserved: FIN12C, menu PROFIT)
+#define ITM_3512                    3512 // General items / any items spare (reserved: FIN12C, menu DEPR)
+#define ITM_3513                    3513 // General items / any items spare (reserved: FIN12C, menu BOND)
+#define ITM_3514                    3514 // General items / any items spare (reserved: FIN12C, menu ICNV)
+#define ITM_3515                    3515 // General items / any items spare (reserved: FIN12C, menu SENS)
+#define ITM_3516                    3516 // General items / any items spare (reserved: FIN12C, menu MCS)
+#define ITM_3517                    3517 // General items / any items spare (reserved: FIN12C, menu DEPRTB)
+#define ITM_3518                    3518 // General items / any items spare (reserved: FIN12C, menu CFLO)
+#define ITM_3519                    3519 // General items / any items spare (reserved: FIN12C, menu AMORT2)
+#define ITM_3520                    3520 // General items / any items spare (reserved: FIN12C, menu TVM)
+#define ITM_3521                    3521 // General items / any items spare (reserved: FIN12C, menu GGM)
+#define ITM_3522                    3522 // General items / any items spare (reserved: FIN12C, menu BSM)
+#define ITM_3523                    3523 // General items / any items spare (reserved: FIN12C, menu MSDCF)
+#define ITM_3524                    3524 // General items / any items spare (reserved: FIN12C, menu FRM)
+#define ITM_3525                    3525 // General items / any items spare (reserved: GUM, UNCERT CALC)
+#define ITM_3526                    3526 // General items / any items spare (reserved: GUM, UNCERT BUDGET)
+#define ITM_3527                    3527 // General items / any items spare (reserved: GUM, UNCERT EXPAND)
+#define ITM_3528                    3528 // General items / any items spare (reserved: GUM, UNCERT EDIT)
+#define ITM_3529                    3529 // General items / any items spare (reserved: GUM, UNCERT CORR)
+#define ITM_3530                    3530 // General items / any items spare (reserved: GUM, UNCERT MEASURAND)
+#define ITM_3531                    3531 // General items / any items spare (reserved: GUM, UNCERT COVP)
+#define ITM_3532                    3532 // General items / any items spare (reserved: GUM, UNCT menu)
+#define ITM_3533                    3533 // General items / any items spare (reserved: GUM, spare)
+#define ITM_3534                    3534 // General items / any items spare (reserved: GUM, spare)
+#define ITM_3535                    3535 // General items / any items spare (reserved: GUM, spare)
 
-#define LAST_ITEM                   3481
+#define LAST_ITEM                   3536
 
 #define SCREENDUMP                  9875 // Used to signal screen dump operated (not to be confused with SNAP)
 #define NOPARAM                     9876 // Item for function who don't need an item

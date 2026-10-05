@@ -68,6 +68,7 @@ src/c47-dmcp/hal/print_ir.c
 src/c47-dmcp5/hal/console.c
 src/c47-dmcp5/hal/print_ir.c
 src/c47-gtk/hal/print_ir.c
+src/c47-gtk/hal/printerWindow.c
 src/c47/distributions/uniform.c
 src/c47/distributions/uniform.h
 src/c47/hal/print_ir.h
@@ -158,9 +159,11 @@ src/testSuite/tests/string_cov.txt
 src/testSuite/tests/tempConv.txt
 src/testSuite/tests/tvm.txt
 src/testSuite/tests/tvm_cov.txt
+src/testSuite/tests/undo_on_error.txt
 src/testSuite/tests/unitConversion.txt
 src/testSuite/tests/validate_tvm.py
 src/testSuite/tests/validate_tvm.txt
 src/testSuite/tests/vecreg.txt
 src/testSuite/tests/vtoeq.txt
 tools/create items spreadsheet.py
+tools/printer
