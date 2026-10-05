@@ -69,7 +69,7 @@ pub fn sciFmt(buf: []u8, x_arg: f64) void {
         exp += 1;
     }
 
-    var m: u64 = @intFromFloat(x * 1e15 + 0.5);
+    var m: u64 = @trunc(x * 1e15 + 0.5);
     if (m >= 10000000000000000) {
         m /= 10;
         exp += 1;

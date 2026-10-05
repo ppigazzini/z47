@@ -2168,26 +2168,26 @@ fn showKey2(label0in: [*c]const u8, label1in: [*c]const u8, x1: i16, x2: i16, y1
 
     midpoint = @divTrunc(x2 - x1, 2);
     space0 = (@as(f32, @floatFromInt(x2 - x1)) / 2.0 - @as(f32, @floatFromInt(widths[0])) - @as(f32, @floatFromInt(widths[1])) - @as(f32, @floatFromInt(arrowSpace))) / 2.0;
-    Text0 = @intFromFloat(@as(f32, @floatFromInt(x1 + midpoint - arrowSpace - widths[1])) - space0 - @as(f32, @floatFromInt(widths[0])));
+    Text0 = @trunc(@as(f32, @floatFromInt(x1 + midpoint - arrowSpace - widths[1])) - space0 - @as(f32, @floatFromInt(widths[0])));
     Arr0 = x1 + midpoint - arrowSpace - widths[1];
     space1 = (@as(f32, @floatFromInt(x2 - x1)) / 2.0 - @as(f32, @floatFromInt(widths[2])) - @as(f32, @floatFromInt(widths[3])) - @as(f32, @floatFromInt(arrowSpace))) / 2.0;
     Arr1 = x1 + midpoint + arrowSpace;
-    Text1 = @intFromFloat(@as(f32, @floatFromInt(x1 + midpoint + arrowSpace + widths[2])) + space1);
+    Text1 = @trunc(@as(f32, @floatFromInt(x1 + midpoint + arrowSpace + widths[2])) + space1);
 
     if (space0 < @as(f32, @floatFromInt(arrowSpace)) or space1 < @as(f32, @floatFromInt(arrowSpace))) {
         space = @as(f32, @floatFromInt((x2 - x1) - widths[0] - widths[1] - widths[2] - widths[3])) / 7.0;
-        Text0 = @intFromFloat(@as(f32, @floatFromInt(x1)) + space);
+        Text0 = @trunc(@as(f32, @floatFromInt(x1)) + space);
         // 3.5 is a double literal in the C, so `space` is promoted and the whole
         // sum is evaluated in double before the truncating store to int16_t.
-        midpoint = @intFromFloat(3.5 * @as(f64, space) + @as(f64, @floatFromInt(widths[0])) + @as(f64, @floatFromInt(widths[1])));
+        midpoint = @trunc(3.5 * @as(f64, space) + @as(f64, @floatFromInt(widths[0])) + @as(f64, @floatFromInt(widths[1])));
         if (getSystemFlag(FLAG_HPCONV) != 0) {
             Arr0 = x1 + midpoint - arrowSpace - widths[1];
             Arr1 = x1 + midpoint + arrowSpace;
         } else {
-            Arr0 = @intFromFloat(@as(f32, @floatFromInt(x1)) + space + @as(f32, @floatFromInt(widths[0])) + space);
-            Arr1 = @intFromFloat(@as(f32, @floatFromInt(x2)) - space - @as(f32, @floatFromInt(widths[2])) - @as(f32, @floatFromInt(widths[3])) - space);
+            Arr0 = @trunc(@as(f32, @floatFromInt(x1)) + space + @as(f32, @floatFromInt(widths[0])) + space);
+            Arr1 = @trunc(@as(f32, @floatFromInt(x2)) - space - @as(f32, @floatFromInt(widths[2])) - @as(f32, @floatFromInt(widths[3])) - space);
         }
-        Text1 = @intFromFloat(@as(f32, @floatFromInt(x2)) - space - @as(f32, @floatFromInt(widths[3])));
+        Text1 = @trunc(@as(f32, @floatFromInt(x2)) - space - @as(f32, @floatFromInt(widths[3])));
     }
 
     drawKeyFrame(x1, x2, y1, y2, videoMode, topLine, bottomLine);
@@ -2419,11 +2419,11 @@ const modeNames = [_]mstr{
 
 fn placeSubscript(itemNr: i16, flt: bool_t, tmpF: f32, itemName: [*c]u8, tmpS: [*c]u8, tmpSS: [*c]u8, showText: [*c]u8) void {
     const itemMod: i32 = cmodNonNeg(@as(i32, itemNr), 10000);
-    if (flt != 0 and tmpF == @as(f32, @floatFromInt(@as(i32, @intFromFloat(tmpF)))) and
+    if (flt != 0 and tmpF == @as(f32, @floatFromInt(@as(i32, @trunc(tmpF)))) and
         ((tmpF >= 0 and tmpF < (if (itemMod == VAR_NPPER or itemMod == VAR_PMT) @as(f32, 100000.0) else @as(f32, 1000000.0))) or
             (tmpF < 0 and -tmpF < (if (itemMod == VAR_NPPER or itemMod == VAR_PMT) @as(f32, 10000.0) else @as(f32, 100000.0)))))
     {
-        abi.fmtCStr(tmpS, "{d}", .{@as(c_int, @intFromFloat(tmpF))});
+        abi.fmtCStr(tmpS, "{d}", .{@as(c_int, @trunc(tmpF))});
     } else {
         if (tmpF > 0 and tmpF < 1.0e-34) {
             _ = strcpy(tmpS, concat2(STD_GAUSS_WHITE_R, STD_SUB_0));
@@ -2508,7 +2508,7 @@ fn accToString(s: [*c]u8, x: f32) void {
         m *= 10.0;
         e -= 1;
     }
-    var d: i16 = @intFromFloat(m + 0.5);
+    var d: i16 = @trunc(m + 0.5);
     if (d >= 10) {
         d = 1;
         e += 1;
@@ -3010,18 +3010,18 @@ pub export fn showMenuTopLine() callconv(.c) void {
     const t: f32 = 5;
     const t_o: f32 = 1.6 * t; // offset
     const tt_o: f32 = 2; // total offset
-    lcd_fill_rect(0, @intCast(@as(i32, menuTopLineY) - @as(i32, @intFromFloat(t))), 20, @intFromFloat(t + 1), 0); // (see screen.zig: _selectiveClearScreen)
+    lcd_fill_rect(0, @intCast(@as(i32, menuTopLineY) - @as(i32, @trunc(t))), 20, @trunc(t + 1), 0); // (see screen.zig: _selectiveClearScreen)
     var xx: i16 = 0;
-    while (xx <= @as(i16, @intFromFloat(t))) : (xx += 1) {
+    while (xx <= @as(i16, @trunc(t))) : (xx += 1) {
         if (catalog == 0) {
-            lcd_fill_rect(@intCast(xx), @intCast(@as(i32, @intFromFloat(tt_o - t)) + menuTopLineY - xx + @as(i32, @intFromFloat(t))), @intCast(2 * (@as(i32, @intFromFloat(t)) - xx)), 1, 1);
-            lcd_fill_rect(@intCast(xx + @as(i16, @intFromFloat(t_o))), @intCast(@as(i32, @intFromFloat(tt_o - t)) + menuTopLineY - @as(i32, @intFromFloat(t)) + xx + @as(i32, @intFromFloat(t))), @intCast(2 * (@as(i32, @intFromFloat(t)) - xx)), 1, 1);
+            lcd_fill_rect(@intCast(xx), @intCast(@as(i32, @trunc(tt_o - t)) + menuTopLineY - xx + @as(i32, @trunc(t))), @intCast(2 * (@as(i32, @trunc(t)) - xx)), 1, 1);
+            lcd_fill_rect(@intCast(xx + @as(i16, @trunc(t_o))), @intCast(@as(i32, @trunc(tt_o - t)) + menuTopLineY - @as(i32, @trunc(t)) + xx + @as(i32, @trunc(t))), @intCast(2 * (@as(i32, @trunc(t)) - xx)), 1, 1);
         } else {
-            if (xx != @as(i16, @intFromFloat(t))) {
-                lcd_fill_rect(@intCast(xx), @intCast(@as(i32, @intFromFloat(tt_o - t)) + menuTopLineY - xx + @as(i32, @intFromFloat(t))), 2, 1, 1);
-                lcd_fill_rect(@intCast(xx + 2 * (@as(i16, @intFromFloat(t)) - xx) - 1), @intCast(@as(i32, @intFromFloat(tt_o - t)) + menuTopLineY - xx + @as(i32, @intFromFloat(t))), 2, 1, 1);
-                lcd_fill_rect(@intCast(xx + @as(i16, @intFromFloat(t_o))), @intCast(@as(i32, @intFromFloat(tt_o - t)) + menuTopLineY - @as(i32, @intFromFloat(t)) + xx + @as(i32, @intFromFloat(t))), 2, 1, 1);
-                lcd_fill_rect(@intCast(xx + @as(i16, @intFromFloat(t_o)) + 2 * (@as(i16, @intFromFloat(t)) - xx) - 1), @intCast(@as(i32, @intFromFloat(tt_o - t)) + menuTopLineY - @as(i32, @intFromFloat(t)) + xx + @as(i32, @intFromFloat(t))), 2, 1, 1);
+            if (xx != @as(i16, @trunc(t))) {
+                lcd_fill_rect(@intCast(xx), @intCast(@as(i32, @trunc(tt_o - t)) + menuTopLineY - xx + @as(i32, @trunc(t))), 2, 1, 1);
+                lcd_fill_rect(@intCast(xx + 2 * (@as(i16, @trunc(t)) - xx) - 1), @intCast(@as(i32, @trunc(tt_o - t)) + menuTopLineY - xx + @as(i32, @trunc(t))), 2, 1, 1);
+                lcd_fill_rect(@intCast(xx + @as(i16, @trunc(t_o))), @intCast(@as(i32, @trunc(tt_o - t)) + menuTopLineY - @as(i32, @trunc(t)) + xx + @as(i32, @trunc(t))), 2, 1, 1);
+                lcd_fill_rect(@intCast(xx + @as(i16, @trunc(t_o)) + 2 * (@as(i16, @trunc(t)) - xx) - 1), @intCast(@as(i32, @trunc(tt_o - t)) + menuTopLineY - @as(i32, @trunc(t)) + xx + @as(i32, @trunc(t))), 2, 1, 1);
             }
         }
     }

@@ -112,6 +112,10 @@ PATTERNS = [
         "site",
     ),
     ("qspi_section_files", re.compile(r'"\.qspi_data"'), "file"),
+    # Spellings the pinned Zig retires, held at zero so they do not come back.
+    # @intFromFloat is "Equivalent to @trunc" and deprecated; @trunc, @round,
+    # @floor and @ceil yield an integer when the result type is one.
+    ("int_from_float_sites", re.compile(r"@intFromFloat\("), "site"),
 ]
 
 

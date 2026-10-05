@@ -127,7 +127,7 @@ fn frmCalcMouseButtonPressedHost(not_used: ?*anyopaque, event: ?*anyopaque, data
     _ = data;
     if (mouse_key[0] == 0) {
         const ev: *const GdkEventButton = @ptrCast(@alignCast(event));
-        convertXYToKey(@intFromFloat(ev.x), @intFromFloat(ev.y));
+        convertXYToKey(@trunc(ev.x), @trunc(ev.y));
         if (mouse_key[0] == 0) {
             return;
         }

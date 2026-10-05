@@ -97,7 +97,7 @@ pub inline fn scaleExtraSize(sizeInBlocks: usize, extraFraction: f32) usize {
         return z47_memory_runtime_scale_extra_size(sizeInBlocks, extraFraction);
     }
 
-    return @intFromFloat(@as(f64, @floatFromInt(sizeInBlocks)) * @as(f64, extraFraction));
+    return @trunc(@as(f64, @floatFromInt(sizeInBlocks)) * @as(f64, extraFraction));
 }
 
 pub inline fn copyBytes(dest: [*c]u8, source: [*c]const u8, n: u32) void {

@@ -721,7 +721,7 @@ pub fn implementation(comptime runtime: type) type {
             } else if (sk == runtime.ITM_SHIFTf or sk == runtime.ITM_SHIFTg) {
                 runtime.Shft_LongPress_f_g = true;
                 if (runtime.Shft_LongPress_f_g and runtime.getSystemFlag(runtime.FLAG_SH_LONGPRESS)) {
-                    runtime.fnTimerStart(runtime.TO_FG_LONG, @intCast(runtime.TO_FG_LONG), @intFromFloat(@as(f64, @floatFromInt(runtime.JM_TO_FG_LONG)) * 1.5));
+                    runtime.fnTimerStart(runtime.TO_FG_LONG, @intCast(runtime.TO_FG_LONG), @trunc(@as(f64, @floatFromInt(runtime.JM_TO_FG_LONG)) * 1.5));
                 }
             }
 
