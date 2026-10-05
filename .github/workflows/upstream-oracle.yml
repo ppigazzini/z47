@@ -922,7 +922,7 @@ jobs:
           linux_runtime_library_inventory_file=repo-notices/linux/LINUX-RUNTIME-LIBRARIES.txt
           linux_runtime_notice_summary_file=repo-notices/linux/LINUX-LIBRARY-NOTICES.txt
           linux_runtime_notice_dir=repo-notices/linux/licenses
-          host_optimize=ReleaseFast
+          host_optimize=fast
           zig_version=${{ steps.toolchain.outputs.version }}
           runner_os=${RUNNER_OS}
           runner_arch=${RUNNER_ARCH}
@@ -1377,7 +1377,6 @@ jobs:
           eval "$(brew shellenv)"
           export PATH="$RUNNER_TEMP/xlsxio-prefix/bin:$PATH"
           export DYLD_LIBRARY_PATH="$RUNNER_TEMP/xlsxio-prefix/lib:$RUNNER_TEMP/xlsxio-prefix/lib64${DYLD_LIBRARY_PATH:+:$DYLD_LIBRARY_PATH}"
-          ln -sfn "$PWD/res" zig-out/bin/res
           ./zig-out/bin/c47 >"$RUNNER_TEMP/c47-macos-smoke.log" 2>&1 &
           pid=$!
           sleep 5
@@ -1447,7 +1446,7 @@ jobs:
           macos_runtime_library_inventory_file=repo-notices/macos/MACOS-RUNTIME-LIBRARIES.txt
           macos_runtime_notice_summary_file=repo-notices/macos/MACOS-LIBRARY-NOTICES.txt
           macos_runtime_notice_dir=repo-notices/macos/licenses
-          host_optimize=ReleaseFast
+          host_optimize=fast
           zig_version=${{ steps.toolchain.outputs.version }}
           runner_os=${RUNNER_OS}
           runner_arch=${RUNNER_ARCH}
@@ -1872,7 +1871,7 @@ jobs:
           windows_dll_inventory_file=repo-notices/windows/WINDOWS-RUNTIME-DLLS.txt
           windows_dll_notice_summary_file=repo-notices/windows/WINDOWS-DLL-NOTICES.txt
           windows_dll_notice_dir=repo-notices/windows/licenses
-          host_optimize=ReleaseFast
+          host_optimize=fast
           zig_version=${{ steps.toolchain.outputs.version }}
           runner_os=${RUNNER_OS}
           runner_arch=${RUNNER_ARCH}
