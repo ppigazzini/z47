@@ -217,6 +217,10 @@ Checked-in build defaults come from these tracked files:
 - `../.github/zig-toolchain.env`: pins the stable Zig release (plus the audited
   Zig master snapshot used by the non-blocking compatibility lane and the
   setup-zig action ref)
+- `../build.zig.zon`: pins the build's one package dependency, the official
+  `translate-c` package, by tag, commit and content hash. `zig build` fetches it
+  and its `aro` dependency into the global Zig cache and the ignored `zig-pkg/`
+  directory, so the first build on a machine needs the network
 - `../.github/project/upstream-pin.env`: pins the imported upstream commit,
   repository URL, branch, and the imported upstream root
   (`UPSTREAM_ROOT=upstream`)

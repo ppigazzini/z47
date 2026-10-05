@@ -2,35 +2,35 @@ const std = @import("std");
 const build_common = @import("../common.zig");
 const host_platform = @import("platform.zig");
 const host_types = @import("types.zig");
+const Translator = @import("translate_c").Translator;
 
-const TranslateC = std.Build.Step.TranslateC;
-
-fn addHostTranslateC(
+fn addHostTranslator(
     b: *std.Build,
     header_path: []const u8,
     host_target: std.Build.ResolvedTarget,
     optimize: std.lang.Optimize,
     common: host_types.CommonConfig,
-) *TranslateC {
-    const translate_c = b.addTranslateC(.{
-        .root_source_file = b.path(header_path),
+    link_system_libs: []const Translator.LinkSystemLib,
+) Translator {
+    const translator = build_common.addTranslator(b, .{
+        .c_source_file = b.path(header_path),
         .target = host_target,
         .optimize = optimize,
-        .link_libc = true,
+        .link_system_libs = link_system_libs,
     });
-    addTranslateCHostMacros(translate_c, common);
-    return translate_c;
+    addTranslatorHostMacros(&translator, common);
+    return translator;
 }
 
-fn addTranslateCHostMacros(translate_c: *TranslateC, common: host_types.CommonConfig) void {
-    translate_c.defineCMacro("PC_BUILD", "1");
-    translate_c.defineCMacro(common.platform_define, "1");
-    translate_c.defineCMacro(common.word_size_define, "1");
+fn addTranslatorHostMacros(translator: *const Translator, common: host_types.CommonConfig) void {
+    translator.defineCMacro("PC_BUILD", "1");
+    translator.defineCMacro(common.platform_define, "1");
+    translator.defineCMacro(common.word_size_define, "1");
     if (common.raspberry) {
-        translate_c.defineCMacro("RASPBERRY", "1");
+        translator.defineCMacro("RASPBERRY", "1");
     }
     if (common.decnumber_fastmul) {
-        translate_c.defineCMacro("DECNUMBER_FASTMUL", "1");
+        translator.defineCMacro("DECNUMBER_FASTMUL", "1");
     }
 }
 
@@ -134,15 +134,16 @@ pub fn addGeneratorSteps(
             .link_libc = true,
         }),
     });
-    const raster_fonts_c_bindings = addHostTranslateC(
+    const raster_fonts_c_bindings = addHostTranslator(
         b,
         "build/tools/translate_c/ttf2_raster_fonts.h",
         host_target,
         optimize,
         common,
+        host_platform.rasterFontsTranslatorLibs(b, common),
     );
-    host_platform.configureRasterFontsTranslateC(raster_fonts_c_bindings, common);
-    raster_fonts_gen.root_module.addImport("c_bindings", raster_fonts_c_bindings.createModule());
+    host_platform.configureRasterFontsTranslator(b, &raster_fonts_c_bindings, common);
+    raster_fonts_gen.root_module.addImport("c_bindings", raster_fonts_c_bindings.mod);
     host_platform.addHostMacros(raster_fonts_gen.root_module, common);
     host_platform.addHostSystemPaths(raster_fonts_gen.root_module, common);
     host_platform.linkRasterFontsFreetype(raster_fonts_gen.root_module, common);
@@ -161,16 +162,17 @@ pub fn addGeneratorSteps(
             .link_libc = true,
         }),
     });
-    const generate_constants_c_bindings = addHostTranslateC(
+    const generate_constants_c_bindings = addHostTranslator(
         b,
         "build/tools/translate_c/generate_constants.h",
         host_target,
         optimize,
         common,
+        &.{},
     );
     generate_constants_c_bindings.addIncludePath(build_common.upstreamPath(b, "dep/decNumberICU"));
     generate_constants_c_bindings.addIncludePath(build_common.upstreamPath(b, "src/c47"));
-    generate_constants.root_module.addImport("c_bindings", generate_constants_c_bindings.createModule());
+    generate_constants.root_module.addImport("c_bindings", generate_constants_c_bindings.mod);
     host_platform.addHostMacros(generate_constants.root_module, common);
     generate_constants.root_module.addIncludePath(build_common.upstreamPath(b, "dep/decNumberICU"));
     generate_constants.root_module.addIncludePath(build_common.upstreamPath(b, "src/c47"));
@@ -192,16 +194,17 @@ pub fn addGeneratorSteps(
             .link_libc = true,
         }),
     });
-    const generate_catalogs_c_bindings = addHostTranslateC(
+    const generate_catalogs_c_bindings = addHostTranslator(
         b,
         "build/tools/translate_c/generate_catalogs.h",
         host_target,
         optimize,
         common,
+        &.{},
     );
     generate_catalogs_c_bindings.addIncludePath(build_common.upstreamPath(b, "dep/decNumberICU"));
     generate_catalogs_c_bindings.addIncludePath(build_common.upstreamPath(b, "src/c47"));
-    generate_catalogs.root_module.addImport("c_bindings", generate_catalogs_c_bindings.createModule());
+    generate_catalogs.root_module.addImport("c_bindings", generate_catalogs_c_bindings.mod);
     host_platform.addHostMacros(generate_catalogs.root_module, common);
     host_platform.addHostSystemPaths(generate_catalogs.root_module, common);
     generate_catalogs.root_module.addCMacro("GENERATE_CATALOGS", "1");
@@ -226,17 +229,18 @@ pub fn addGeneratorSteps(
             .link_libc = true,
         }),
     });
-    const generate_testpgms_c_bindings = addHostTranslateC(
+    const generate_testpgms_c_bindings = addHostTranslator(
         b,
         "build/tools/translate_c/generate_testpgms.h",
         host_target,
         optimize,
         common,
+        &.{},
     );
     generate_testpgms_c_bindings.defineCMacro("GENERATE_TESTPGMS", "1");
     generate_testpgms_c_bindings.addIncludePath(build_common.upstreamPath(b, "dep/decNumberICU"));
     generate_testpgms_c_bindings.addIncludePath(build_common.upstreamPath(b, "src/c47"));
-    generate_testpgms.root_module.addImport("c_bindings", generate_testpgms_c_bindings.createModule());
+    generate_testpgms.root_module.addImport("c_bindings", generate_testpgms_c_bindings.mod);
     host_platform.addHostMacros(generate_testpgms.root_module, common);
     host_platform.addHostSystemPaths(generate_testpgms.root_module, common);
     generate_testpgms.root_module.addCMacro("GENERATE_TESTPGMS", "1");

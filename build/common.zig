@@ -1,4 +1,5 @@
 const std = @import("std");
+const Translator = @import("translate_c").Translator;
 
 const upstream_pin_env_path = ".github/project/upstream-pin.env";
 
@@ -237,6 +238,16 @@ pub fn resolveBuildHostTarget(b: *std.Build) std.Build.ResolvedTarget {
     if (needs_baseline_cpu) query.cpu_model = .baseline;
     if (host_target.result.os.tag == .windows) query.abi = .gnu;
     return b.resolveTargetQuery(query);
+}
+
+/// Translates a C root header with the official translate-c package. The
+/// translator is a host tool, so it is built for the same host target as the
+/// generators that consume its output.
+pub fn addTranslator(b: *std.Build, options: Translator.Options) Translator {
+    const translate_c = b.dependency("translate_c", .{
+        .target = resolveBuildHostTarget(b),
+    });
+    return .init(translate_c, options);
 }
 
 /// Lists the `.c` files under `root_path`, relative to it. Each directory the walk

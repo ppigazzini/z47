@@ -1185,11 +1185,10 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.l
     // layout (silent-corruption class) fails here rather than at runtime. This
     // must gate green before abi/types.zig is generated. Wiring mirrors the
     // generate_constants translate-c root (dep/decNumberICU + src/c47 includes).
-    const abi_layout_c_bindings = b.addTranslateC(.{
-        .root_source_file = b.path("build/tools/translate_c/abi_layout_oracle.h"),
+    const abi_layout_c_bindings = build_common.addTranslator(b, .{
+        .c_source_file = b.path("build/tools/translate_c/abi_layout_oracle.h"),
         .target = context.host_target,
         .optimize = optimize,
-        .link_libc = true,
     });
     abi_layout_c_bindings.defineCMacro("PC_BUILD", "1");
     abi_layout_c_bindings.defineCMacro(context.common.platform_define, "1");
@@ -1197,13 +1196,13 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.l
     abi_layout_c_bindings.addIncludePath(build_common.upstreamPath(b, "dep/decNumberICU"));
     abi_layout_c_bindings.addIncludePath(build_common.upstreamPath(b, "src/c47"));
     // The root includes <gmp.h>, which only Linux puts on the default search path.
-    host_platform.configureGmpTranslateC(abi_layout_c_bindings);
+    host_platform.configureGmpTranslator(b, &abi_layout_c_bindings);
     const abi_layout_module = b.createModule(.{
         .root_source_file = b.path("build/tests/abi_layout/abi_layout_oracle.zig"),
         .target = context.host_target,
         .optimize = optimize,
     });
-    abi_layout_module.addImport("c_bindings", abi_layout_c_bindings.createModule());
+    abi_layout_module.addImport("c_bindings", abi_layout_c_bindings.mod);
     abi_layout_module.addImport("abi", b.createModule(.{
         .root_source_file = b.path("src/abi/types.zig"),
         .target = context.host_target,

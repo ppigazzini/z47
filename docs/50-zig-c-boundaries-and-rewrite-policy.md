@@ -55,7 +55,8 @@ It has three sections:
 
 - `[translate-c-roots]`: the generator boundary headers under
   `build/tools/translate_c/` plus the ABI-layout oracle root
-  (`abi_layout_oracle.h`), consumed by `Build.addTranslateC` wiring.
+  (`abi_layout_oracle.h`), translated by the official `translate-c` package
+  through `addTranslator` in `../build/common.zig`.
 - `[cimport]`: currently empty. No checked-in Zig file uses `@cImport`.
 - `[extern-symbols]`: files allowed to carry direct `extern` bindings -- the
   firmware runtime seams (`build/firmware_*_runtime.zig`), the Zig GTK host
@@ -348,7 +349,8 @@ Treat `translate-c` roots and any `@cImport` use as narrow boundary tools, not a
 whole-project porting strategy. Repo policy requires:
 
 - generator and ABI-seam C translation to stay build-managed through explicit root
-  headers under `../build/tools/translate_c/` and `Build.addTranslateC` wiring
+  headers under `../build/tools/translate_c/` and the official `translate-c`
+  package, reached only through `addTranslator` in `../build/common.zig`
 - exact justification for every checked-in boundary file
 - build-managed integration through `addCSourceFiles`, `linkSystemLibrary`, or
   other explicit build-graph ownership where practical
