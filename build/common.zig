@@ -239,16 +239,25 @@ pub fn resolveBuildHostTarget(b: *std.Build) std.Build.ResolvedTarget {
     return b.resolveTargetQuery(query);
 }
 
+/// Lists the `.c` files under `root_path`, relative to it. Each directory the walk
+/// reads is declared to the configure cache, which tracks one directory's entries
+/// and not its subdirectories, so adding, removing or renaming a file anywhere in
+/// the tree makes the next `zig build` configure again.
 pub fn collectRelativeCFiles(b: *std.Build, root_path: []const u8) ![][]const u8 {
     var files = try std.ArrayList([]const u8).initCapacity(b.allocator, 0);
     errdefer files.deinit(b.allocator);
     var dir = try std.Io.Dir.cwd().openDir(b.graph.io, root_path, .{ .iterate = true });
     defer dir.close(b.graph.io);
+    b.dependOnDirectoryContents(b.path(root_path));
 
     var walker = try dir.walk(b.allocator);
     defer walker.deinit();
 
     while (try walker.next(b.graph.io)) |entry| {
+        if (entry.kind == .directory) {
+            b.dependOnDirectoryContents(b.path(b.pathJoin(&.{ root_path, entry.path })));
+            continue;
+        }
         if (entry.kind != .file) continue;
         if (!std.mem.endsWith(u8, entry.path, ".c")) continue;
         if (std.mem.eql(u8, entry.path, "reservedRegisterLookupGenerator.c")) continue;
@@ -266,7 +275,14 @@ pub fn collectRelativeCFiles(b: *std.Build, root_path: []const u8) ![][]const u8
     return try files.toOwnedSlice(b.allocator);
 }
 
+// The configure cache keys on the command line, the target triple and the build
+// sources, so it cannot see what the helpers below read from the host: a
+// process's output, an environment variable, whether a file exists. Each one
+// poisons the cache, and `zig build` configures again on every run rather than
+// reusing an answer the host has since changed, such as `git describe --dirty`.
+
 pub fn commandOutput(b: *std.Build, argv: []const []const u8) ?[]const u8 {
+    b.graph.poisonCache();
     const result = std.process.run(b.allocator, b.graph.io, .{
         .argv = argv,
         .environ_map = &b.graph.environ_map,
@@ -282,6 +298,7 @@ pub fn commandOutput(b: *std.Build, argv: []const []const u8) ?[]const u8 {
 }
 
 pub fn pkgConfigExists(b: *std.Build, package: []const u8) bool {
+    b.graph.poisonCache();
     const result = std.process.run(b.allocator, b.graph.io, .{
         .argv = &.{ "pkg-config", "--exists", package },
         .environ_map = &b.graph.environ_map,
@@ -291,4 +308,19 @@ pub fn pkgConfigExists(b: *std.Build, package: []const u8) bool {
         .exited => |code| code == 0,
         else => false,
     };
+}
+
+pub fn hostEnv(b: *std.Build, name: []const u8) ?[]const u8 {
+    b.graph.poisonCache();
+    return b.graph.environ_map.get(name);
+}
+
+pub fn hostFileExists(b: *std.Build, path: []const u8) bool {
+    b.graph.poisonCache();
+    if (std.Io.Dir.path.isAbsolute(path)) {
+        std.Io.Dir.accessAbsolute(b.graph.io, path, .{}) catch return false;
+        return true;
+    }
+    std.Io.Dir.cwd().access(b.graph.io, path, .{}) catch return false;
+    return true;
 }

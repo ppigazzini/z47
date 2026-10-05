@@ -98,12 +98,12 @@ pub fn addHostSystemPaths(module: *std.Build.Module, common: host_types.CommonCo
 
 fn addWindowsHostSystemPaths(module: *std.Build.Module) void {
     const owner = module.owner;
-    if (owner.graph.environ_map.get("PKG_CONFIG_SYSTEM_INCLUDE_PATH")) |include_paths| {
+    if (build_common.hostEnv(owner, "PKG_CONFIG_SYSTEM_INCLUDE_PATH")) |include_paths| {
         addHostSearchPaths(module, include_paths, .include);
     } else if (windowsHostPrefix(module)) |prefix| {
         module.addSystemIncludePath(.{ .cwd_relative = owner.fmt("{s}/include", .{prefix}) });
     }
-    if (owner.graph.environ_map.get("PKG_CONFIG_SYSTEM_LIBRARY_PATH")) |library_paths| {
+    if (build_common.hostEnv(owner, "PKG_CONFIG_SYSTEM_LIBRARY_PATH")) |library_paths| {
         addHostSearchPaths(module, library_paths, .library);
     } else if (windowsHostPrefix(module)) |prefix| {
         module.addLibraryPath(.{ .cwd_relative = owner.fmt("{s}/lib", .{prefix}) });
@@ -311,17 +311,7 @@ fn linkWindowsImportLibraryOrSystem(module: *std.Build.Module, name: []const u8)
     };
 
     const import_library = module.owner.fmt("{s}/lib/lib{s}.dll.a", .{ prefix, name });
-    const exists = blk: {
-        if (std.Io.Dir.path.isAbsolute(import_library)) {
-            std.Io.Dir.accessAbsolute(module.owner.graph.io, import_library, .{}) catch break :blk false;
-            break :blk true;
-        }
-
-        std.Io.Dir.cwd().access(module.owner.graph.io, import_library, .{}) catch break :blk false;
-        break :blk true;
-    };
-
-    if (exists) {
+    if (build_common.hostFileExists(module.owner, import_library)) {
         module.addObjectFile(.{ .cwd_relative = import_library });
         return;
     }
@@ -330,14 +320,14 @@ fn linkWindowsImportLibraryOrSystem(module: *std.Build.Module, name: []const u8)
 }
 
 fn windowsHostPrefixFromOwner(owner: *std.Build) ?[]const u8 {
-    return owner.graph.environ_map.get("MSYSTEM_PREFIX") orelse owner.graph.environ_map.get("MINGW_PREFIX");
+    return build_common.hostEnv(owner, "MSYSTEM_PREFIX") orelse build_common.hostEnv(owner, "MINGW_PREFIX");
 }
 
 // The prefix a non-system package manager installed under: MSYS2 on Windows,
 // Homebrew on macOS. Unset on Linux, where the distribution's own paths are
 // already searched.
 fn hostPrefixFromOwner(owner: *std.Build) ?[]const u8 {
-    return windowsHostPrefixFromOwner(owner) orelse owner.graph.environ_map.get("HOMEBREW_PREFIX");
+    return windowsHostPrefixFromOwner(owner) orelse build_common.hostEnv(owner, "HOMEBREW_PREFIX");
 }
 
 fn windowsHostPrefix(module: *std.Build.Module) ?[]const u8 {
