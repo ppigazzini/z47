@@ -1108,7 +1108,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.l
     // ported matrix-dimension guard had no adversarial coverage at all.
     // Built at the default optimize level on purpose: Zig's safety checks are the
     // detector here, since an out-of-range @intCast on the load path traps in a
-    // safe build and wraps silently in the ReleaseSmall firmware.
+    // safe build and wraps silently in the firmware, which builds `small`.
     const state_load_harness = host_builders.addFullCoreHarness(
         b,
         context.host_target,
