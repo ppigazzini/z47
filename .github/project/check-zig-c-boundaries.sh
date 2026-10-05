@@ -9,6 +9,11 @@ allowlist_file="$script_dir/zig-c-boundaries.txt"
 declare -a translate_c_allowed=()
 declare -a extern_allowed=()
 
+# A direct C binding is an `extern` declaration, with or without a library name
+# (`extern "kernel32" fn`), or the `@extern` builtin, which binds a symbol by name
+# without declaring it.
+extern_binding_re='^[[:space:]]*(pub[[:space:]]+)?extern([[:space:]]+"[^"]*")?[[:space:]]+(fn|const|var)\b|@extern[[:space:]]*\('
+
 contains_path() {
     local needle="$1"
     shift
@@ -101,11 +106,11 @@ check_tree() {
     done
 
     for file in "${extern_allowed[@]}"; do
-        require_allowlisted_match "$file" '^[[:space:]]*(pub[[:space:]]+)?extern[[:space:]]+(fn|const|var)\b' 'extern-symbol' || violations=1
+        require_allowlisted_match "$file" "$extern_binding_re" 'extern-symbol' || violations=1
     done
 
     for file in "${zig_files[@]}"; do
-        if grep -Eq '^[[:space:]]*(pub[[:space:]]+)?extern[[:space:]]+(fn|const|var)\b' "$repo_root/$file"; then
+        if grep -Eq "$extern_binding_re" "$repo_root/$file"; then
             if ! contains_path "$file" "${extern_allowed[@]}"; then
                 printf 'Unapproved direct extern symbol binding: %s\n' "$file" >&2
                 violations=1
