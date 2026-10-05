@@ -16,7 +16,7 @@ pub const RuntimeObjects = struct {
             }
             cmd.addArg(source);
         }
-        cmd.addFileArg(self.frontier_root.getEmittedBin());
+        cmd.addFileArg2(self.frontier_root.getEmittedBin(), .{});
     }
 };
 

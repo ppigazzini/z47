@@ -5,7 +5,7 @@ pub const RuntimeObjects = struct {
     tone: *std.Build.Step.Compile,
 
     pub fn addToCommand(self: RuntimeObjects, cmd: *std.Build.Step.Run) void {
-        cmd.addFileArg(self.tone.getEmittedBin());
+        cmd.addFileArg2(self.tone.getEmittedBin(), .{});
     }
 };
 

@@ -9,7 +9,7 @@ pub const RuntimeObjects = struct {
     }
 
     pub fn addToCommand(self: RuntimeObjects, cmd: *std.Build.Step.Run) void {
-        cmd.addFileArg(self.stack_state.getEmittedBin());
+        cmd.addFileArg2(self.stack_state.getEmittedBin(), .{});
     }
 };
 

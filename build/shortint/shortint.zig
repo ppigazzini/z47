@@ -39,9 +39,9 @@ pub const RuntimeObjects = struct {
     }
 
     pub fn addToCommand(self: RuntimeObjects, cmd: *std.Build.Step.Run) void {
-        cmd.addFileArg(self.bit_manipulation.getEmittedBin());
-        cmd.addFileArg(self.logical_boolean_ops.getEmittedBin());
-        cmd.addFileArg(self.rotate_bits.getEmittedBin());
+        cmd.addFileArg2(self.bit_manipulation.getEmittedBin(), .{});
+        cmd.addFileArg2(self.logical_boolean_ops.getEmittedBin(), .{});
+        cmd.addFileArg2(self.rotate_bits.getEmittedBin(), .{});
     }
 };
 

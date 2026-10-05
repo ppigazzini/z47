@@ -71,7 +71,7 @@ fn addTestSuiteRun(b: *std.Build, test_suite: *std.Build.Step.Compile, list_path
     // src/testSuite/tests/, z47's under build/tests/), so no single CWD can
     // spell both. testSuite.c derives the per-test directory and items.h from
     // dirname(argv[1]), which keeps working with an absolute path.
-    run_test_suite.addFileArg(b.path(list_path));
+    run_test_suite.addFileArg2(b.path(list_path), .{});
     return run_test_suite;
 }
 
@@ -860,7 +860,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.l
     );
     const run_saveload_roundtrip = b.addRunArtifact(saveload_roundtrip_harness);
     run_saveload_roundtrip.setCwd(upstreamCwd(b));
-    run_saveload_roundtrip.addFileArg(b.path("build/tests/calc_state/save_load_golden.sav"));
+    run_saveload_roundtrip.addFileArg2(b.path("build/tests/calc_state/save_load_golden.sav"), .{});
     const saveload_roundtrip_step = b.step("saveload_roundtrip", "Run the save/load round-trip + golden-snapshot harness");
     saveload_roundtrip_step.dependOn(&run_saveload_roundtrip.step);
 
@@ -873,7 +873,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.l
     // golden as an input to a step that overwrites it, which is harmless for a manual
     // regeneration step and is what run_saveload_roundtrip above already does for the
     // read.
-    gen_saveload_golden.addFileArg(b.path("build/tests/calc_state/save_load_golden.sav"));
+    gen_saveload_golden.addFileArg2(b.path("build/tests/calc_state/save_load_golden.sav"), .{});
     gen_saveload_golden.addArg("--write-golden");
     const saveload_golden_step = b.step("saveload_golden", "Regenerate the save/load golden snapshot");
     saveload_golden_step.dependOn(&gen_saveload_golden.step);

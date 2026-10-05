@@ -128,9 +128,9 @@ const FirmwareObjects = struct {
         self.math_command_wrappers.addToCommand(cmd);
         self.constants.addToCommand(cmd);
         self.tone.addToCommand(cmd);
-        cmd.addFileArg(self.audio_runtime.getEmittedBin());
-        cmd.addFileArg(self.print_ir_runtime.getEmittedBin());
-        cmd.addFileArg(self.io_runtime.getEmittedBin());
+        cmd.addFileArg2(self.audio_runtime.getEmittedBin(), .{});
+        cmd.addFileArg2(self.print_ir_runtime.getEmittedBin(), .{});
+        cmd.addFileArg2(self.io_runtime.getEmittedBin(), .{});
         self.keyboard_state.addToCommand(cmd);
         self.memory_state.addToCommand(cmd);
         self.calc_state.addToCommand(cmd);
@@ -962,16 +962,16 @@ fn addFirmwareElfBuild(
     };
     objects.addToCommand(cmd);
     for (firmwareBoardHalSources(config.board)) |source| cmd.addArg(build_common.upstreamPathString(b, source));
-    cmd.addFileArg(generated.raster_fonts_data);
-    cmd.addFileArg(generated.constant_pointers_c);
-    cmd.addFileArg(generated.constant_pointers2_c);
+    cmd.addFileArg2(generated.raster_fonts_data, .{});
+    cmd.addFileArg2(generated.constant_pointers_c, .{});
+    cmd.addFileArg2(generated.constant_pointers2_c, .{});
 
     for (firmware_common_link_flags) |flag| cmd.addArg(flag);
     for (firmwareLinkFlags(config.board)) |flag| cmd.addArg(flag);
     // Discard .ARM.exidx (see fragment) before the upstream script so QSPI-placed
     // owner code does not blow the PREL31 exidx relocation range.
-    cmd.addPrefixedFileArg("-T", b.path("build/firmware/discard_exidx.ld"));
-    cmd.addPrefixedFileArg("-T", build_common.upstreamPath(b, firmwareBoardLinkerScript(config.board)));
+    cmd.addFileArg2(b.path("build/firmware/discard_exidx.ld"), .{ .prefix = "-T" });
+    cmd.addFileArg2(build_common.upstreamPath(b, firmwareBoardLinkerScript(config.board)), .{ .prefix = "-T" });
     const map_name = switch (phase) {
         .pre => b.fmt("{s}_pre.map", .{config.program_name}),
         .final => b.fmt("{s}.map", .{config.map_name}),
@@ -1019,7 +1019,7 @@ fn addObjcopyBinary(
         .remove => cmd.addArgs(&.{ "--remove-section", ".qspi" }),
     }
     cmd.addArgs(&.{ "-O", "binary" });
-    cmd.addFileArg(input);
+    cmd.addFileArg2(input, .{});
     const output = cmd.addOutputFileArg2(basename, .{});
     return .{ .step = &cmd.step, .path = output };
 }
@@ -1135,7 +1135,7 @@ fn addModifyCrcStep(
     const cmd = b.addSystemCommand(&.{ "bash", build_common.upstreamPathString(b, "tools/modify_crc") });
     cmd.setCwd(b.path("."));
     cmd.addArtifactArg2(forcecrc32, .{});
-    cmd.addFileArg(input);
+    cmd.addFileArg2(input, .{});
     const output = cmd.addOutputFileArg2(basename, .{});
     return .{ .step = &cmd.step, .path = output };
 }
@@ -1143,7 +1143,7 @@ fn addModifyCrcStep(
 fn addGenerateQspiCrcStep(b: *std.Build, input: std.Build.LazyPath, basename: []const u8) build_common.StepFile {
     const cmd = b.addSystemCommand(&.{ "bash", build_common.upstreamPathString(b, "tools/gen_qspi_crc") });
     cmd.setCwd(b.path("."));
-    cmd.addFileArg(input);
+    cmd.addFileArg2(input, .{});
     const output = cmd.addOutputFileArg2(basename, .{});
     return .{ .step = &cmd.step, .path = output };
 }
@@ -1151,7 +1151,7 @@ fn addGenerateQspiCrcStep(b: *std.Build, input: std.Build.LazyPath, basename: []
 fn addPgmChecksumStep(b: *std.Build, input: std.Build.LazyPath, basename: []const u8) build_common.StepFile {
     const cmd = b.addSystemCommand(&.{ "bash", build_common.upstreamPathString(b, "tools/add_pgm_chsum") });
     cmd.setCwd(b.path("."));
-    cmd.addFileArg(input);
+    cmd.addFileArg2(input, .{});
     const output = cmd.addOutputFileArg2(basename, .{});
     return .{ .step = &cmd.step, .path = output };
 }
@@ -1159,7 +1159,7 @@ fn addPgmChecksumStep(b: *std.Build, input: std.Build.LazyPath, basename: []cons
 fn addReadelfSectionSizesStep(b: *std.Build, input: std.Build.LazyPath, basename: []const u8) build_common.StepFile {
     const cmd = b.addSystemCommand(&.{ "arm-none-eabi-readelf", "-l" });
     cmd.setCwd(b.path("."));
-    cmd.addFileArg(input);
+    cmd.addFileArg2(input, .{});
     const output = cmd.captureStdOut(.{ .basename = basename });
     return .{ .step = &cmd.step, .path = output };
 }
@@ -1172,7 +1172,7 @@ fn addFirmwareSizeReportStep(b: *std.Build, board: Board, section_sizes: std.Bui
     const cmd = b.addSystemCommand(&.{ "python3", "build/tools/size.py" });
     cmd.setCwd(b.path("."));
     if (board == .dmcp5) cmd.addArg("dmcp5");
-    cmd.addFileArg(section_sizes);
+    cmd.addFileArg2(section_sizes, .{});
     return cmd;
 }
 

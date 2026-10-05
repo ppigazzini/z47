@@ -5,7 +5,7 @@ pub const RuntimeObjects = struct {
     register_metadata: *std.Build.Step.Compile,
 
     pub fn addToCommand(self: RuntimeObjects, cmd: *std.Build.Step.Run) void {
-        cmd.addFileArg(self.register_metadata.getEmittedBin());
+        cmd.addFileArg2(self.register_metadata.getEmittedBin(), .{});
     }
 };
 
