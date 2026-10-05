@@ -26,7 +26,7 @@ fn reportFibonacciLimit() void {
         runtime.tmpString[length] = runtime.errorMessage[i];
         length += 1;
     }
-    @memcpy(runtime.tmpString[length .. length + suffix.len], suffix);
+    @memcpy(runtime.tmpString[length..][0..suffix.len], suffix);
     runtime.tmpString[length + suffix.len] = 0;
     runtime.moreInfoOnError("In function fibLonI:", @ptrCast(runtime.tmpString), null, null);
 }

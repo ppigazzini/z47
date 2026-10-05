@@ -2592,7 +2592,7 @@ pub export fn fnEqSolvGraph(func: u16) callconv(.c) void {
                 if (allNamedVariables) |vars| {
                     const stored = &vars[@intCast(currentSolverVariable - FIRST_NAMED_VARIABLE)].variableName;
                     const len = @min(stored[0], plotVarName.len - 1);
-                    @memcpy(plotVarName[0..len], stored[1 .. 1 + len]);
+                    @memcpy(plotVarName[0..len], stored[1..][0..len]);
                     plotVarName[len] = 0;
                 }
             }

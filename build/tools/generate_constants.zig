@@ -434,7 +434,7 @@ fn parseConstants(allocator: std.mem.Allocator, upstream_root: []const u8) ![]Pa
     const body_open_rel = std.mem.findScalar(u8, source[start..], '{') orelse return error.MissingFunctionBody;
     const body_start = start + body_open_rel + 1;
     const main_rel = std.mem.find(u8, source[body_start..], "int main(") orelse return error.MissingMain;
-    const preprocessed_body = try preprocessConstantsBody(allocator, source[body_start .. body_start + main_rel]);
+    const preprocessed_body = try preprocessConstantsBody(allocator, source[body_start..][0..main_rel]);
 
     var scanner = Scanner{ .source = preprocessed_body };
     var constants = try std.ArrayList(ParsedConstant).initCapacity(allocator, 0);

@@ -515,7 +515,7 @@ pub fn findNamedVariable(variable_name: [*c]const u8) runtime.calcRegister_t {
     for (last_found_named_variables) |cached| {
         if (cached < runtime.numberOfNamedVariables) {
             const stored_name = namedVariableHeaderName(cached) orelse continue;
-            if (stored_name[0] == name_byte_length and std.mem.eql(u8, stored_name[1 .. 1 + name_byte_length], text[0..name_byte_length])) {
+            if (stored_name[0] == name_byte_length and std.mem.eql(u8, stored_name[1..][0..name_byte_length], text[0..name_byte_length])) {
                 return runtime.FIRST_NAMED_VARIABLE + @as(runtime.calcRegister_t, @intCast(cached));
             }
         }
@@ -528,7 +528,7 @@ pub fn findNamedVariable(variable_name: [*c]const u8) runtime.calcRegister_t {
     var index: u16 = 0;
     while (index < runtime.numberOfNamedVariables) : (index += 1) {
         const stored_name = namedVariableHeaderName(index) orelse break;
-        if ((stored_name[0] == name_byte_length and std.mem.eql(u8, stored_name[1 .. 1 + name_byte_length], text[0..name_byte_length])) or
+        if ((stored_name[0] == name_byte_length and std.mem.eql(u8, stored_name[1..][0..name_byte_length], text[0..name_byte_length])) or
             abi.glyph_code.nameEqualsPrefolded(stored_name + 1, &folded_name, folded_length))
         {
             last_found_named_variables[last_found_named_variable_insert] = index;

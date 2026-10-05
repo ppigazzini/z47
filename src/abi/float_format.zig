@@ -354,7 +354,7 @@ pub fn fmtGBuf(buf: []u8, width: usize, precision: usize, upper: bool, value: f6
         if (end > 0 and s[end - 1] == '.') end -= 1;
         if (ei) |j| {
             const tail_len = s.len - j;
-            @memmove(s[end .. end + tail_len], s[j..]);
+            @memmove(s[end..][0..tail_len], s[j..]);
             s = s[0 .. end + tail_len];
         } else {
             s = s[0..end];
