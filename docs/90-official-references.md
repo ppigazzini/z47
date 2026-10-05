@@ -5,9 +5,11 @@ maintainer docs and the checked-in z47 workflow.
 
 Prefer these exact surfaces over broad summaries or secondary writeups.
 
-Last verified: 2026-08-16, Zig `0.16.0` stable. The upstream pin is stated once, in
-[00-project-and-upstream.md](00-project-and-upstream.md).
-The Zig memory-safety reference set was reviewed against upstream Zig on 2026-08-01.
+Last verified: 2026-10-05, Zig `0.17.0` stable. The upstream pin is
+`UPSTREAM_COMMIT` in `../.github/project/upstream-pin.env`. The Zig toolchain,
+memory-safety and idiom reference sets were re-read against the 0.17.0 language
+reference and release notes on that date; the memory-safety set was first
+reviewed on 2026-08-01.
 The test-oracle reference set was added and verified 2026-08-03: until then every
 reference here was about *writing* the program and none was about *knowing
 whether it is right*. It was extended from five sources to eight the same day,
@@ -42,8 +44,8 @@ flowchart TD
 - [C47 GitLab project](https://gitlab.com/rpncalculators/c43): authoritative
   upstream source repository consumed by z47. The path still uses the
   historical `c43` name even though the project identifies itself as C47.
-- [BUILD.md](../upstream/BUILD.md): imported upstream build-target summary carried at
-  the repo root.
+- [BUILD.md](../upstream/BUILD.md): imported upstream build-target summary, carried
+  at `upstream/BUILD.md`.
 - [Makefile](../upstream/Makefile): imported upstream human-facing command surface.
 - [meson.build](../upstream/meson.build): imported upstream root build graph.
 - [dep/meson.build](../upstream/dep/meson.build): imported upstream dependency build
@@ -73,7 +75,7 @@ diverge".
 
 | Their page | Owns, for z47's purposes |
 | --- | --- |
-| `docs/00-architecture.md` | the god header, the item table, the HAL, and the measured upstream dependency graph. Sections 9-11 are assessment and an unadopted proposal, not a plan of record |
+| `docs/00-architecture.md` | the god header, the item table, the HAL, and the measured upstream dependency graph. Sections 9-12 are assessment and, in section 12, an unadopted proposal, not a plan of record |
 | `docs/01-codebase.md` | the upstream source tree, the register file and memory model, and control flow from a key press to a screen |
 | `docs/02-modules.md` | the subsystem inventory, each named by its literature term |
 | `docs/04-testing.md` | the corpus, the three drivers, and the rules for writing a test that actually tests. z47 shares the corpus, so its authoring rules apply here unchanged |
@@ -95,9 +97,13 @@ checksum are recorded in [.github/zig-toolchain.env](../.github/zig-toolchain.en
 - [Zig download index JSON](https://ziglang.org/download/index.json): canonical
   machine-readable release metadata used by the CI toolchain check.
 - [Zig build system docs](https://ziglang.org/learn/build-system/): official
-  build-system reference.
-- [Zig C Translation CLI docs](https://ziglang.org/documentation/master/#C-Translation-CLI):
-  official `translate-c` reference and limits.
+  build-system reference. Its examples still call the `add*Arg` Run-step spellings
+  0.17 deprecates; the `add*Arg2` forms replace them.
+- [translate-c package](https://codeberg.org/ziglang/translate-c): the C translator
+  `../build.zig.zon` pins and `addTranslator` in `../build/common.zig` drives.
+  0.17 removes `@cImport` and deprecates `std.Build.Step.TranslateC` in its favour.
+- [Zig C Translation CLI docs](https://ziglang.org/documentation/0.17.0/#C-Translation-CLI):
+  the translator's behaviour and limits.
 - [Zig source repository](https://codeberg.org/ziglang/zig): canonical upstream
   Zig source tree.
 - [README.md](../README.md): maintained z47 root entry point, command, and
@@ -111,12 +117,12 @@ checksum are recorded in [.github/zig-toolchain.env](../.github/zig-toolchain.en
 Reviewed 2026-08-01. These are the sources the memory-safety posture in
 [50-zig-c-boundaries-and-rewrite-policy.md](50-zig-c-boundaries-and-rewrite-policy.md)
 is argued from. Read them as *what the toolchain does and does not give you* --
-each entry ends with why it does or does not apply to a `ReleaseSmall`
-freestanding calculator whose data lives in one static pool.
+each entry ends with why it does or does not apply to a freestanding calculator
+built in `small` mode, whose data lives in one static pool.
 
 Language and toolchain:
 
-- [Zig language reference -- Illegal Behavior](https://ziglang.org/documentation/master/#Illegal-Behavior):
+- [Zig language reference -- Illegal Behavior](https://ziglang.org/documentation/0.17.0/#Illegal-Behavior):
   the canonical list of what is checked illegal behaviour (a panic in the safe
   modes) versus unchecked (silent in every mode). This is the authority for
   which of z47's several thousand `@intCast` sites are a trap on the host and a
@@ -128,16 +134,16 @@ Language and toolchain:
   `@hasDecl` sees only public declarations, also from inside the declaring file;
   and `heap.SafeAllocator` replaces `DebugAllocator`.
 - [Zig 0.16.0 release notes](https://ziglang.org/download/0.16.0/release-notes.html):
-  the release before, whose changes all still hold. Safety-relevant: *forbid
+  the release before. Its safety-relevant changes still hold: *forbid
   trivial local addresses returned from functions* (now a compile error,
   "returning address of expired local variable"), *forbid runtime vector
   indexes*, *forbid pointers in packed structs and unions*, *forbid unused bits
   in packed unions*, safe stack unwinding by default, and
   `heap.ThreadSafeAllocator` removed in favour of allocators that are lock-free
   themselves.
-- [zig.guide -- Runtime Safety](https://zig.guide/language-basics/runtime-safety/):
-  the per-build-mode table of which checks are live. The practical statement of
-  why `ReleaseSmall` firmware is unchecked.
+- [Zig language reference -- Optimization Mode](https://ziglang.org/documentation/0.17.0/#Optimization-Mode):
+  `debug` and `safe` keep safety checks, `fast` and `small` drop them. This is
+  why the firmware, built `small`, is unchecked.
 
 Allocator-level safety:
 
@@ -148,8 +154,11 @@ Allocator-level safety:
   leaves `DebugAllocator` deprecated.
 - [ziglang/zig#25978](https://github.com/ziglang/zig/issues/25978):
   `std.heap.DebugAllocator` with `.safety = true` is broken on **freestanding**
-  targets. This rules out the otherwise-obvious "put a checking allocator on the
-  device" move, independently of the flash cost.
+  targets. Filed against `DebugAllocator`, which 0.17 deprecates for
+  `heap.SafeAllocator`; that one never reuses memory over a non-reusing backing
+  allocator, which alone rules it out for a fixed 256 KiB pool. Either way the
+  otherwise-obvious "put a checking allocator on the device" move is out,
+  independently of the flash cost.
 - [AddressSanitizer manual poisoning](https://github.com/google/sanitizers/wiki/AddressSanitizerManualPoisoning):
   **Read the caveat first: z47 has no AddressSanitizer.** Zig 0.17 ships no ASan
   runtime and `-fsanitize=address` fails to link, so this API has nothing to talk
@@ -159,7 +168,10 @@ Allocator-level safety:
   makes a custom arena visible to ASan. Chunks must be 8-aligned; C47 blocks are
   4 bytes, so a poisoning implementation must work in 8-byte shadow granules and
   accept that a 4-byte overrun into the next block's first word is not
-  detectable. This is the only route to a detector for gap 2 in the posture.
+  detectable. Without it, z47's free-space poison pattern
+  (`../src/shell/pool_poison.zig`, run by `state_load_fuzz`) covers writes into
+  free pool space; per-allocation redzones for gap 3 in the posture would need
+  this API or a pool-layout change.
 
 What Zig does not give you:
 
@@ -169,15 +181,15 @@ What Zig does not give you:
   iterator invalidation, or interior-pointer invalidation. All three of those are
   live in a design that hands out indices into a relocatable pool, which is
   exactly what `freeListRealloc` does.
-- [ziglang/zig#36237](https://codeberg.org/ziglang/zig/issues/36237): the
-  accepted proposal (opened 2026-07-20) for a Fil-C-inspired memory-safe
-  compilation mode -- a new "fil" ABI with pointer capabilities, no escape
-  hatches, and no source changes required. **Not applicable to z47 and unlikely
-  to become so**: it is defined for x86_64-linux only, the device is ARM
-  freestanding, every linked object must use the same ABI (z47 links GMP,
-  decNumber, GTK and the DMCP SDK), and the estimated 1-6x overhead is priced for
-  a server, not a calculator. Track it for the host test lane only, and do not
-  let a roadmap depend on it.
+- [ziglang/zig#36237](https://codeberg.org/ziglang/zig/issues/36237): an open
+  enhancement issue in the Upcoming milestone (opened 2026-07-20) for a
+  Fil-C-inspired memory-safe compilation mode -- a new "fil" ABI with pointer
+  capabilities, no escape hatches, and no source changes required. **Not
+  applicable to z47 and unlikely to become so**: it is defined for x86_64-linux
+  only, the device is ARM freestanding, every linked object must use the same
+  ABI (z47 links GMP, decNumber, GTK and the DMCP SDK), and the estimated 1-6x
+  overhead is priced for a server, not a calculator. Track it for the host test
+  lane only, and do not let a roadmap depend on it.
 
 ## Test Oracle And Differential-Testing References
 
@@ -337,7 +349,7 @@ first: it is the only question that matters about a reference.
 | `audit-*.py` preprocessing live c43 source | derived oracle | yes | full |
 | `charstring_diff` (extracts c43 functions at build time) | derived oracle | yes | full |
 | `saveload_roundtrip` save→load→save, `backup.cfg` and data-file round-trips | metamorphic relation | n/a — needs none | full, and independent |
-| ASAN, safety panics, `state_load_fuzz` | implicit oracle | n/a | weak but free |
+| UBSan lanes, Zig safety panics, `state_load_fuzz` (including its pool-poison audit) | implicit oracle | n/a | weak but free |
 | `save_load_golden.sav` | characterization test | no | change detector only |
 | unit lane on a hand-built `c47.h` + fake runtime | fake-hosted derived oracle | partly — the *reference* does, the *environment* does not | full for control flow, **none** for anything the fake cannot compute |
 | snapshot of call counts and arguments | interaction (spy) oracle | no — it pins the port's call pattern | change detector; breaks on refactor, misses wrong results |
@@ -394,8 +406,13 @@ real, and z47 does not use it). Argue against the test before adding to the list
 
 ## Zig Idiom And Style Guidance (secondary)
 
-There is no single official Zig style guide beyond `zig fmt` and the standard
-library's naming conventions, so these are community/secondary sources plus a few
+The official style guide is the language reference's
+[Style Guide](https://ziglang.org/documentation/0.17.0/#Style-Guide) -- Names,
+Avoid Redundancy in Names, Refrain from Underscore Prefixes, Whitespace and Doc
+Comment Guidance (*assume* for an unchecked invariant, *assert* for a checked
+one) -- plus `zig fmt`. It is advisory: the compiler does not enforce it. Where a
+spelling is in question, the pinned toolchain's own `lib/std` is the reference
+the guide itself points to. The sources below are community references and
 exemplar production codebases. They are the external basis for the idiom ratchet
 ([.github/project/report-idiom-status.py](../.github/project/report-idiom-status.py))
 and for the code-quality assessment and refactor plan kept in the maintainer
@@ -407,8 +424,8 @@ embedded** calculator, so **TigerBeetle's TigerStyle is the primary calibration*
 model for the comptime dispatch/platform seams. Bun's arena/heap idioms are
 largely **out of domain** here and are kept only as a lint-discipline reference.
 
-Scope caveat (important, do not misread): z47 is a faithful C→Zig transliteration
-pinned for byte-for-byte upstream parity, so the transliterated owner surface is
+Scope caveat (important, do not misread): z47 is a C→Zig transliteration held to
+function parity with upstream at the pin, so the transliterated owner surface is
 deliberately **non-idiomatic** and cannot satisfy most of these rules — see the
 C-ABI ceiling in
 [50-zig-c-boundaries-and-rewrite-policy.md](50-zig-c-boundaries-and-rewrite-policy.md).
@@ -425,9 +442,11 @@ Exemplar production codebases (primary calibration for this domain):
   asserted caps, explicitly-sized ints over `usize`/`c_int`. The primary yardstick
   for z47's firmware-facing code.
 - [Ghostty — Useful Zig Patterns (Hashimoto)](https://mitchellh.com/writing/ghostty-and-useful-zig-patterns):
-  comptime interfaces for platform code, comptime data tables + `@Type` enum
-  generation + platform pruning (the model for a native item table), and
-  Zig-as-C-library (which validates z47's C-ABI shell as a boundary technique).
+  comptime interfaces for platform code, comptime data tables, generated enums
+  and platform pruning (the model for a native item table), and Zig-as-C-library
+  (which validates z47's C-ABI shell as a boundary technique). Written in 2023:
+  its `@Type` spelling is invalid on 0.16 and 0.17, where `@Enum` generates the
+  enum.
 
 General style / review references (secondary):
 
@@ -437,15 +456,42 @@ General style / review references (secondary):
   functions, minimal `@as`/`@intCast`). Its arena/heap idioms do not apply to the
   no-heap firmware path.
 - [Zig naming conventions (Craddock)](https://nathancraddock.com/blog/zig-naming-conventions/):
-  the camelCase-function / PascalCase-type / snake_case-variable conventions the
-  owners follow.
+  the camelCase-function / TitleCase-type / snake_case-variable conventions,
+  consistent with the language reference's `#Names` rules, that the pure-core
+  modules follow.
 - [Learning Zig: Style Guide](https://www.openmymind.net/learning_zig/style_guide/):
-  community style reference.
-- [zigcc/zig-idioms](https://github.com/zigcc/zig-idioms): common Zig idiom
-  catalogue.
+  community style reference, labelled Zig 0.16.
+- [zigcc/zig-idioms](https://github.com/zigcc/zig-idioms): a Zig idiom catalogue
+  whose last commit (2023-12-22) predates 0.12; read it as historical and check
+  every spelling against the pinned compiler.
 - [Zig memory-safety code-review checklist](https://pullpanda.io/blog/zig-code-review-checklist):
   the allocator / `errdefer` / bounds / optional / overflow checklist the pure
-  cores are reviewed against.
+  cores are reviewed against; written 2025-10-25, before `SafeAllocator`.
+
+Recent writing worth knowing, each read against 0.17:
+
+- [Minimal Viable Zig Error Contexts (matklad)](https://matklad.github.io/2026/05/03/zig-error-context.html):
+  a capture-less `errdefer log.err(...)` per layer instead of diagnostic
+  out-parameters. 0.17 removed the `errdefer |err|` capture; this idiom never
+  used it.
+- [Steering Zig Fmt (matklad)](https://matklad.github.io/2026/05/08/steering-zig-fmt.html):
+  a trailing comma chooses one item per line, and in an array the first line
+  break sets the column count -- the tool for upstream's wide constant tables.
+- [Memory Safety's Hardest Problem](https://matklad.github.io/2026/07/20/memory-safety-hardest-problem.html)
+  and
+  [Static Allocation, Constant Work](https://matklad.github.io/2026/09/02/static-allocation-constant-work.html)
+  (matklad): a typed pointer into one tagged-union variant outliving a write of
+  another, and why a use-after-free in a pool typed per object is aliasing
+  without type confusion while a type-erased pool turns it back into type
+  confusion. C47's `ram` pool is type-erased, which frames gap 3 in the posture.
+- [Finding Bugs (matklad)](https://matklad.github.io/2026/09/19/finding-bugs.html):
+  generative testing against an oracle, and "treat a bug that dodged your fuzzers
+  as a bug in the fuzzer" before fixing it -- the method behind the
+  differential lanes.
+- [Zig devlog, 2026](https://ziglang.org/devlog/2026/): the reasoning behind the
+  0.17 changes, notably the new `@bitCast` semantics (2026-06-25), the build
+  system rework that introduced the configure cache (2026-05-26), and pointer
+  stability locks for `ArrayList` (2026-08-27).
 
 ## Retained Dependency References
 
@@ -475,11 +521,11 @@ Zig-native replacement (see
 - [xlsxio repository](https://github.com/brechtsanders/xlsxio): build-time
   generator helper (`xlsxio_xlsx2csv` plus `libxlsxio_read`) used by the
   font-generator toolchain and its CI lanes; not a product-runtime dependency.
-- [GitHub Actions workflow syntax](https://docs.github.com/actions/using-workflows/workflow-syntax-for-github-actions):
+- [GitHub Actions workflow syntax](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax):
   workflow trigger, job, matrix, and artifact syntax reference.
-- [GitHub Actions artifacts docs](https://docs.github.com/actions/using-workflows/storing-workflow-data-as-artifacts):
+- [GitHub Actions artifacts docs](https://docs.github.com/en/actions/tutorials/store-and-share-data):
   artifact publishing and retention behavior.
-- [GitHub Actions cache docs](https://docs.github.com/actions/using-workflows/caching-dependencies-to-speed-up-workflows):
+- [GitHub Actions cache docs](https://docs.github.com/en/actions/reference/workflows-and-actions/dependency-caching):
   cache-key behavior used by the host-platform workflows.
 
 ## Repo-Local Governance And Pin Map
@@ -496,7 +542,8 @@ Pins and manifests:
 - [.github/project/source-ownership.txt](../.github/project/source-ownership.txt):
   z47-owned versus imported-upstream surface manifest.
 - [.github/project/upstream-port-ledger.tsv](../.github/project/upstream-port-ledger.tsv):
-  per-surface port-state ledger.
+  the upstream commit triage ledger: one row per pin advance, recording what was
+  ported and what was not.
 - [.github/project/zig-c-boundaries.txt](../.github/project/zig-c-boundaries.txt):
   approved `translate-c` root and direct-`extern` boundary manifest.
 - [.github/project/idiom-status-baseline.json](../.github/project/idiom-status-baseline.json):
@@ -507,22 +554,22 @@ Runbooks and gate scripts:
 - [.github/project/upstream-resync-runbook.md](../.github/project/upstream-resync-runbook.md):
   the pin-advance (upstream resync) procedure.
 - [.github/project/run-local-gate.sh](../.github/project/run-local-gate.sh):
-  one command that reproduces the full Linux CI verdict before pushing.
+  the local gate: the Linux governance, host-parity and firmware-link lanes,
+  run before pushing; its closing banner lists what only CI runs.
 - [.github/project/run-host-parity-battery.sh](../.github/project/run-host-parity-battery.sh):
   the host-parity build/test/oracle battery invoked by the local gate.
 - [.github/project/check-portable-int-widths.sh](../.github/project/check-portable-int-widths.sh):
   portable integer-width governance guard.
-
-Root entry points and CI workflows:
-
 - [.github/project/check-extern-var-widths.py](../.github/project/check-extern-var-widths.py):
   every `extern var` declaration must be as wide as the `export var` defining it;
   a wider declaration makes each store through it write past the end of the real
   object, and only the linker decides what that hits
 - [.github/project/check-c-type-alias-widths.sh](../.github/project/check-c-type-alias-widths.sh):
   a C type aliased in two owners must have the same width in both
+
+Root entry points and CI workflows:
+
 - [README.md](../README.md)
-- [BUILD.md](../upstream/BUILD.md)
 - [docs/README.md](README.md)
 - [build.zig](../build.zig)
 - [.github/workflows/upstream-oracle.yml](../.github/workflows/upstream-oracle.yml)

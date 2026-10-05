@@ -10,8 +10,8 @@ runnable**. Upstream C47 at the pinned commit answers any question about
 intended behaviour exactly, so the first move on a behavioural divergence is
 never to reason about the Zig -- it is to make the C say what it does.
 
-Last verified: 2026-08-16, Zig `0.16.0` stable. The upstream pin is stated once, in
-[00-project-and-upstream.md](00-project-and-upstream.md).
+Last verified: 2026-10-05, Zig `0.17.0` stable. The upstream pin is
+`UPSTREAM_COMMIT` in `../.github/project/upstream-pin.env`.
 
 ## What This Page Does Not Cover
 
@@ -29,12 +29,13 @@ Last verified: 2026-08-16, Zig `0.16.0` stable. The upstream pin is stated once,
 | --- | --- | --- |
 | wrong value, right shape | the corpus (`zig build test`), with a value assertion | every sanitizer |
 | wrong value in one owner | that owner's parity lane, `zig build <owner>_parity` | the corpus, if no case reaches it |
-| out-of-bounds index, integer overflow, bad cast in Zig | Zig's own safety checks in a Debug build -- they panic with a stack trace | ASan, which never sees a checked access; **and the shipped `ReleaseSmall` firmware, where the same access is silent unless the function opts in with `@setRuntimeSafety(true)` -- only the load-path functions do, and `check-idiom-ratchet.sh` prints how many as `untrusted_fns`** |
+| out-of-bounds index, integer overflow, bad cast in Zig | Zig's own safety checks in a `debug` or `safe` build -- they panic with a stack trace | ASan, which never sees a checked access; **and the shipped firmware, built `small`, where the same access is silent unless the function opts in with `@setRuntimeSafety(true)` -- only the load-path functions do, and `check-idiom-ratchet.sh` prints how many as `untrusted_fns`** |
 | C undefined behaviour in retained C (signed overflow, bad shift, bad cast, invalid enum) | `zig build test_asan` -- **UBSan** | the corpus, the parity lanes |
 | heap overflow / use-after-free in retained C | **nothing.** There is no AddressSanitizer here and Zig cannot link one -- see *What The Sanitizer Lanes Actually Run* below | every lane in this tree |
-| **one C47 block overrunning its neighbour inside `ram`** | **nothing.** No ASan exists here -- see below. The last known instance, an unported matrix-capacity guard, was found by reading the upstream C against the owner; `state_load_fuzz` now reproduces it, but only because the under-allocation trips a Zig safety check first | ASan, which sees `ram` as one allocation; Zig's checks, which never see `[*c]` pointer arithmetic |
+| a write into FREE pool space inside `ram` | the pool-poison audit in `zig build state_load_fuzz` (`../src/shell/pool_poison.zig`, host only) | every other lane |
+| **one C47 block overrunning a live neighbour inside `ram`** | **nothing.** No ASan exists here -- see below. The last known instance, an unported matrix-capacity guard, was found by reading the upstream C against the owner; `state_load_fuzz` now reproduces it, but only because the under-allocation trips a Zig safety check first | ASan, which sees `ram` as one allocation; Zig's checks, which never see `[*c]` pointer arithmetic; the pool-poison audit, which sees only free space |
 | malformed `.p47` program file | `zig build pgm_load_fuzz`, now genuinely UBSan-instrumented | the corpus, which only round-trips valid files |
-| malformed `.sav` / `.d47` state file | `zig build state_load_fuzz` -- a generated corpus through the real `doLoad` at four load modes, checked for crash/hang/safety-panic. **Read the caveat in [70](70-tests-and-verification.md): only the files listed in `expectations.txt` are pinned to an expected outcome, so for the rest a green run means "did not crash", not "was rejected correctly"** | `saveload_roundtrip` and `saveload_golden`, which round-trip valid files only; and the silent wrong-accept, for any file with no pinned expectation |
+| malformed `.sav` / `.d47` state file | `zig build state_load_fuzz` -- a generated corpus through the real `doLoad` at four load modes, checked for crash/hang/safety-panic. **Read the caveat in [70](70-tests-and-verification.md): only the files the generator pins with `expect_version` have an expected outcome, so for the rest a green run means "did not crash", not "was rejected correctly"** | `saveload_roundtrip` (round-trip plus golden snapshot), which loads valid files only; and the silent wrong-accept, for any file with no pinned expectation |
 | ABI drift after a pin advance (struct layout, constant blob, item table) | `check-constant-offsets.py`, `audit-constant-parity.py`, `audit-item-table-parity.py`, `abi-layout-parity` | the corpus, which passes until the drift is reached |
 | the same constant given two values in two owners | a cross-owner consistency scan: extract the value from each owner and diff | every runtime lane, until one path is exercised |
 | the same global given two widths in two owners | `check-extern-var-widths.py` and `check-c-type-alias-widths.sh` | every runtime lane on ELF, where the overrun lands in padding |
@@ -66,8 +67,7 @@ differently -- it is which latent write the other targets are absorbing.
 ## What The Sanitizer Lanes Actually Run
 
 `zig build test_asan`, `both_asan` and `pgm_load_fuzz` run **UndefinedBehaviorSanitizer**,
-not AddressSanitizer. The `*_asan` names are historical and wrong; the lanes were
-also, for a time, running no sanitizer at all.
+not AddressSanitizer. The `*_asan` names are historical and wrong.
 
 **There is no AddressSanitizer in this tree and there cannot be one today.** Zig's
 `sanitize_c` is the UBSan knob -- built the same C with `.off`, `.trap` and
@@ -81,7 +81,7 @@ detects a heap overflow or a use-after-free.**
 What UBSan does catch is live now and was not before: signed overflow, bad shifts,
 out-of-range casts, invalid enum values, null-pointer arithmetic and the rest of
 the C undefined-behaviour set, across the whole retained C on every one of those
-lanes.
+lanes, except the two exclusions below.
 
 **Two checks are excluded, each individually and for a filed reason** -- never a
 blanket quietening. They live in `sanitizer_exclusions` and
@@ -103,12 +103,12 @@ zero instrumentation, with no symptom but an absent symbol nobody looked for. A
 sanitizing flag list carries that blanket flag, and asserts the product lists
 still do.
 
-Verifying by hand is possible but has a trap worth knowing: `grep -c asan` on the
-testSuite binary returns 5, and all five are `getRegisterAs`**`AsAn`**`yReal`-style
-false hits. Count `__ubsan` instead, and take the binary from `ls -t` on the
-build's own output rather than `find | head`, which cheerfully returns a stale
-cached copy -- or, if the name does not exist, nothing at all, leaving `ls` to
-list your working directory.
+Verifying by hand is possible but has a trap worth knowing: a case-insensitive
+`grep -ci asan` on the testSuite binary matches `getRegisterAsAnyReal`-style
+names, which are not sanitizer symbols. Count `__ubsan` with `nm` instead, and
+take the binary from `ls -t` on the build's own output rather than
+`find | head`, which cheerfully returns a stale cached copy -- or, if the name
+does not exist, nothing at all, leaving `ls` to list your working directory.
 
 ## Why ASan Cannot See The Calculator's Memory
 
@@ -135,9 +135,9 @@ the one a wrong block index is least likely to produce.
 
 Zig's own safety checks do not cover it either. Blocks are reached through
 `[*c]` pointer arithmetic off `ram`, and a many-item pointer carries no length,
-so there is no bound for a checked access to test. Between the two detectors the
-calculator's principal data structure has no spatial checking at all, in any
-build mode.
+so there is no bound for a checked access to test. Neither detector checks the
+calculator's principal data structure spatially, in any build mode; the only
+spatial check on `ram` is the free-space poison pattern below.
 
 Two consequences for debugging:
 
@@ -150,11 +150,13 @@ Two consequences for debugging:
   block shows up as a wrong value, not as a crash -- so it is a *wrong value,
   right shape* bug, and belongs to the first row of the table above.
 
-The standard remedy is ASan's manual-poisoning API for custom allocators
-(`__asan_poison_memory_region` on the pool at startup, unpoison exactly the
-handed-out extent in `freeListAlloc`, re-poison in `freeListFree`), which turns
-the single allocation into per-block redzones on the sanitized lane only. It is
-not implemented; it is scoped in
+ASan's manual-poisoning API for custom allocators is not available, because Zig
+ships no ASan runtime to call. What exists instead needs no runtime: a poison
+pattern written into the pool's free space and audited after each load
+(`../src/shell/pool_poison.zig`, armed by `zig build state_load_fuzz`, host only),
+which catches a write into free space. An overrun from one live block into
+another stays invisible; per-allocation redzones would change the pool layout and
+so the firmware. See gap 3 in
 [50-zig-c-boundaries-and-rewrite-policy.md](50-zig-c-boundaries-and-rewrite-policy.md).
 
 ## The C-vs-Zig Differential
@@ -179,12 +181,12 @@ away; the z47 side gets instrumented too, and nothing should be committed from
 either.
 
 **2. Reproduce with the smallest list that still diverges.** Both binaries take
-a list file of corpus test names. Write it **inside that build's own
-`src/testSuite/tests/`** -- `upstream/src/testSuite/tests/` in this repo, and
-`src/testSuite/tests/` in the throwaway `../c43-pin` worktree. The runner resolves
-the corpus and `../../c47/items.h` from the list's own directory, so a list in a
-scratch directory finds nothing and exits successfully having run almost
-nothing.
+a list file of corpus test names. The runner resolves each entry, and
+`../../c47/items.h` for `Item:` directives, from the list's own directory, and
+exits 255 on an entry it cannot open. On the z47 side keep the list outside
+`upstream/` and give its entries the hop to the corpus, as
+`build/tests/testSuiteList_logical_boolean_ops.txt` does; in the throwaway
+`../c43-pin` worktree, write it in `src/testSuite/tests/`.
 
 Shrink by bisecting the list, not by truncating it: a truncated prefix can drop
 the test that resets the state the failure depends on, so the C fails too and
@@ -218,17 +220,19 @@ matters, because each step must cost one CI round and no more.
 **1. Turn the symptom into values before theorising.** An error string names a
 branch, not the term that took it. `graphPlotstat` gates every plot on three
 terms and reported only "There is no statistical data available!", which is
-equally consistent with lost statistics and with a lost matrix name. A coverage
-helper that reads each term back into `REGISTER_X` -- `fnPlotGuardCov` in
-`upstream/src/testSuite/testSuite.c`, pinned by `graphs_cov.txt` -- answered it in one
-round: `plotStatMx[0]` was `0`, the sums pointer was live, `SIGMA_N` was `5`. The
-data had never been lost. **Prefer a corpus assertion to a print**: it survives as
-regression coverage, it costs the same round, and it cannot be left behind.
+equally consistent with lost statistics and with a lost matrix name. A helper
+that read each term back into `REGISTER_X` answered it in one round:
+`plotStatMx[0]` was `0`, the sums pointer was live, `SIGMA_N` was `5`. The data
+had never been lost. **Prefer an assertion in a z47 harness under `build/tests/`
+to a print**: it survives as regression coverage and costs the same round. Never
+add a case or a probe to the imported corpus, which shifts the line numbers the
+suite reports failures against.
 
-**2. Bisect in time with a program, not with prints.** Staging a second program
-that stops short of a suspect step says which side of it the damage falls on. A
-`SCATR` with the `SNAP` dropped failed identically, which placed the corruption
-in the plot rather than the screen capture and retired half the search space.
+**2. Bisect in time with a program, not with prints.** Running a second program
+from a z47 harness that stops short of a suspect step says which side of it the
+damage falls on. A `SCATR` with the `SNAP` dropped failed identically, which
+placed the corruption in the plot rather than the screen capture and retired half
+the search space.
 
 **3. Watch the byte, not the address.** A page-protection data breakpoint that
 reports only when the faulting address *equals* the watched byte will miss every
@@ -279,24 +283,20 @@ Every one of these has passed a broken thing at least once.
 3. **`0 TESTS FAILED` printed before a crash is not a pass.** Capture the exit
    code; the suite prints its summary and can still abort afterwards.
 4. **An orphaned `*_cov.txt` never runs.** A corpus file that is registered in
-   `funcTestNoParam[]` but not added to the list file silently never executes,
-   and the commit falsely claims coverage. After adding one, confirm the total
-   case count rose by the number of new `Out:` lines.
-5. **A stale plot bitmap fakes a graph pass.** The bitmap hash tests read
-   `c47plotTest<N>.bmp` from disk and nothing unlinks it, so a graph program
-   that errors before its snapshot is compared against the leftover from an
-   earlier passing run. `rm -f c47plotTest*.bmp` before bisecting a plot test.
-6. **A parity harness lags the owners it links.** The oracles link a hand-curated
+   `funcTestNoParam[]` but not added to the list file silently never executes.
+   On a resync that imports a new `*_cov.txt`, confirm `testSuiteList.txt` lists
+   it and the total case count rose by its `Out:` lines.
+5. **A parity harness lags the owners it links.** The oracles link a hand-curated
    fake `c47.h` plus stub runtimes. A newly ported cross-owner call breaks them
    at link time, and the break is in the harness, not the port. Expect this class
    on every pin advance and fix it in the z47-owned test surface, never in the
    imported tree.
-7. **A stale build is not evidence.** Confirm the binary you ran is the one your
+6. **A stale build is not evidence.** Confirm the binary you ran is the one your
    edit produced, especially when a build step and a run step share a command
    line.
-8. **A suite that got faster deserves suspicion.** A run that ends early produces
+7. **A suite that got faster deserves suspicion.** A run that ends early produces
    fewer findings, and fewer findings can pass a baseline diff.
-9. **A width agreed within one owner can still be wrong.** `extern var` states a
+8. **A width agreed within one owner can still be wrong.** `extern var` states a
    width; nothing checks it against the `export var` that defines the symbol. A
    declaration wider than the definition makes every store through it write past
    the end of the real object. Four owners aliased `bool_t` to `u32` where C

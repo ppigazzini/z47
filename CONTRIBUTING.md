@@ -11,19 +11,19 @@ repo surfaces.
 
 ## Project Baseline
 
-- z47 is the maintained Zig-first build, CI, packaging, documentation, and
-  staged rewrite overlay for the upstream C47 calculator application.
+- z47 re-implements the upstream C47 calculator application in Zig, with its own
+  build, CI, packaging and documentation.
 - The authoritative upstream source repository is
   `https://gitlab.com/rpncalculators/c43.git`.
 - The pinned imported upstream working tree is mounted under `upstream/`. The
-  repo root carries only z47-owned files: `build.zig`, `build/`,
-  `src/`, `bridge/`, `.github/`, `docs/`, this contributor note,
-  and the root entrypoint docs.
+  rest of the repo root is z47's, listed under `[z47-owned]` in
+  `.github/project/source-ownership.txt`.
 - `.github/project/upstream-pin.env` records `UPSTREAM_ROOT=upstream`, and
   `.github/project/source-ownership.txt` records the tracked top-level
-  ownership split used by CI. Two upstream dotfiles are deliberate root
-  exceptions, hand-reconciled on resync because git only honours them there:
-  `.gitmodules` (submodule paths) and `.gitattributes` (line-ending policy).
+  ownership split used by CI. `.gitmodules`, `.gitattributes` and `.gitignore`
+  are root files reconciled with upstream's by hand on a resync: git reads
+  `.gitmodules` only at the root, and the other two must cover the whole
+  repository, not only `upstream/`.
 - `.github/project/upstream-port-ledger.tsv` records the maintainer triage
   ledger that must move with any tracked upstream pin change.
 - `.github/project/report-upstream-refresh.py` summarizes new upstream commits,
@@ -47,8 +47,10 @@ repo surfaces.
 - GitHub `github_ci` is the dedicated CI validation branch
 - day-to-day work should happen on a local topic branch,
   then land on `main` or `github_ci` on GitHub to trigger CI
-- GitHub CI is the primary validation surface; local checks should reproduce
-  the smallest relevant CI lane before broader pushes
+- run the local gate (`PATH="$PWD/.venv/bin:$PATH" bash
+  .github/project/run-local-gate.sh`) before pushing; a change is not done until
+  it passes, and CI adjudicates the lanes it cannot run, Windows and macOS among
+  them
 
 ## Upstream Refresh Flow
 
@@ -173,7 +175,8 @@ explicit:
 - `upstream/dep/decNumberICU`
 - GTK 3
 - FreeType 2
-- GMP
+- GMP (a host system library; cross-built from source for the firmware)
+- PulseAudio (optional, host)
 - SwissMicros `DMCP_SDK` and `DMCP5_SDK`
 
 Do not remove or downplay those dependencies in docs or reviews unless the same

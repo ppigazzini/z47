@@ -8,8 +8,9 @@ build outputs.
 Read [00-project-and-upstream.md](00-project-and-upstream.md) first. This page
 starts after the project and ownership boundary are already clear.
 
-Last verified: 2026-08-16, Zig `0.16.0` stable. The upstream pin is stated once, in
-[00-project-and-upstream.md](00-project-and-upstream.md); this page does not repeat it.
+Last verified: 2026-10-05, Zig `0.17.0` stable. The upstream pin is
+`UPSTREAM_COMMIT` in `../.github/project/upstream-pin.env`; this page does not
+repeat it.
 
 ## Build At A Glance
 
@@ -18,13 +19,16 @@ Last verified: 2026-08-16, Zig `0.16.0` stable. The upstream pin is stated once,
 - The calculator core is fully ported to Zig. `report-c-dependency-status.py`
   reports 0 active product-build first-party C files, so `zig build sim`,
   `zig build dmcp`, and `zig build dmcp5` compile no first-party calculator C.
-- `build/` is build-only Zig plus the Zig host/firmware/testSuite HAL
-  replacements; the ported calculator core lives under `src/`; `bridge/`
-  is near-retired and holds only two header shims.
-- Retained C is explicit: the vendored `upstream/dep/decNumberICU` is compiled by Zig,
-  and the build links GTK 3, GMP, FreeType 2, and optional PulseAudio (host) plus
-  the SwissMicros DMCP/DMCP5 SDKs (firmware). The remaining first-party C in the
-  tree is parity/oracle/testSuite verification only, not in the product.
+- `build/` holds the Zig build system, the Zig host/firmware/testSuite HAL
+  replacements, and the parity harnesses (with their C) under `build/tests/`; the
+  ported calculator core lives under `src/`; `bridge/` is near-retired and holds
+  only two header shims.
+- Retained C is explicit: the vendored `upstream/dep/decNumberICU` is compiled
+  by Zig for the host and by `arm-none-eabi-gcc` for the firmware; the host
+  links GTK 3, GMP, FreeType 2 and optional PulseAudio, and the firmware links a
+  cross-built GMP 6.2.1 and the SwissMicros DMCP/DMCP5 SDKs. The remaining
+  first-party C in the tree is parity/oracle/testSuite verification only, not in
+  the product.
 - Imported upstream paths route through `UPSTREAM_ROOT` in
   `../.github/project/upstream-pin.env`; the current value `upstream` mounts the
   imported baseline under `upstream/`, which leaves the canonical `src/` and
@@ -35,16 +39,16 @@ Last verified: 2026-08-16, Zig `0.16.0` stable. The upstream pin is stated once,
 
 ## Canonical Build Entrypoints
 
-Lead with these. The full grouped set is in `../README.md`,
-[20-zig-build-graph.md](20-zig-build-graph.md), and live `zig build --help`.
+Lead with these. The full set is in [20-zig-build-graph.md](20-zig-build-graph.md)
+and live `zig build --help`.
 
 | Command | What it does |
 | --- | --- |
 | `zig build` / `zig build sim` | canonical host simulator build (C47) |
 | `zig build simr47` / `zig build both` | R47 simulator / build both simulators |
-| `zig build test` | grouped host regression lane: the shared upstream testSuite plus the Zig-owned suites |
+| `zig build test` | grouped host regression lane: the shared upstream testSuite plus z47's `keyboard_statusbar_flags_regression` |
 | `zig build test:unit` | native Zig unit tests, no C oracle |
-| `zig build generated` | refresh all tracked generated host artifacts |
+| `zig build generated` | regenerate the host generator outputs (gitignored, under `upstream/src/generated/`) and the tracked `build/generated/testPgms.bin` |
 | `zig build constants`, `zig build catalogs`, `zig build fonts`, `zig build testPgms` | individual generator lanes |
 | `zig build docs` | docs build for the imported `upstream/docs/code` tree |
 | `zig build dmcp`, `zig build dmcpr47`, `zig build dmcp5`, `zig build dmcp5r47` | firmware targets (DMCP and DMCP5, C47 and R47) |
@@ -53,10 +57,11 @@ Lead with these. The full grouped set is in `../README.md`,
 
 Verification entrypoints:
 
-- `bash .github/project/run-local-gate.sh`: one command that reproduces the full
-  Linux CI verdict before pushing. It runs the governance guards, the native unit
-  tests, the host-parity build/test/oracle battery, and the tracked
-  generated-artifact diff, failing fast on the first red.
+- `PATH="$PWD/.venv/bin:$PATH" bash .github/project/run-local-gate.sh`: the local
+  gate, run before pushing. It runs the Linux governance guards, `test:unit`, the
+  host-parity battery, the malformed-input corpora, the oracle negative control,
+  the DMCP package 1-3 links and the tracked-generated-artifact diff, failing
+  fast on the first red; its closing banner lists what only CI runs.
 - the per-owner parity and oracle lanes (for example `zig build calc_state_parity`,
   `zig build math_command_wrappers_parity`, `zig build eigen_parity`) prove each
   Zig owner matches its retained upstream C; see
@@ -97,8 +102,8 @@ zone split is the architectural one; the per-domain build objects under
 
 | Zone | Role |
 | --- | --- |
-| `abi/` | ABI mirror types, the generated C-boundary seam, the constants blob accessors, and the core-to-shell host-hook table |
-| `core/` | the headless calculator: `numeric/`, `state/`, `persist/`, `text/`, `analysis/`, `program/`, `memory/`, `input/` |
+| `abi/` | the hand-maintained ABI mirror types (checked by `zig build abi-layout-parity`), the constants blob accessors, and the core-to-shell host-hook table |
+| `core/` | the headless calculator: `numeric/`, `state/`, `persist/`, `text/`, `analysis/`, `program/`, `memory/`, `input/`, `hal/` |
 | `shell/` | the interactive surface: display, softmenus, plotting, printing, browsers, the matrix editor, and the keyboard/program-entry frontends |
 
 `src/frontier.zig` sits beside them as a module-root carrier: it force-imports
@@ -251,8 +256,8 @@ Checked-in build defaults come from these tracked files:
 - `../.github/project/zig-c-boundaries.txt` and
   `../.github/project/check-zig-c-boundaries.sh`: the approved checked-in
   `translate-c` roots and direct `extern` boundary files, and their guard
-- `../upstream/docs/code/requirements.txt`: pins the Python package set needed for
-  `zig build docs`
+- `../upstream/docs/code/requirements.txt`: lists the Python packages
+  `zig build docs` needs (`breathe`, `furo`; the step also checks for `sphinx`)
 
 The live project-specific Zig options are:
 
@@ -262,6 +267,9 @@ The live project-specific Zig options are:
 - `-Ddecnumber-fastmul=<bool>`: `DECNUMBER_FASTMUL` switch, default `true`
 - `-Ddmcp-package=<int>`: DMCP package selector for `dmcp` and `dmcpr47`,
   default `4`
+- `-Doptimize=<debug|safe|fast|small>`: the host optimize mode (the firmware is
+  always built `small`)
+- `-Dpgm=<file.p47>`: the program the `pgm_run` lane loads and runs
 
 ## Build Outputs
 
@@ -273,8 +281,9 @@ build-output directories.
 ## File Naming Conventions
 
 Use one naming stratum per file. The suffixes below are the layout-visible part
-of that contract; the deeper layer-scoped casing policy is maintained in the repo naming
-contract, not in this layout page.
+of that contract; the deeper layer-scoped casing policy is in the Naming Rules
+of
+[50-zig-c-boundaries-and-rewrite-policy.md](50-zig-c-boundaries-and-rewrite-policy.md).
 
 - semantic owner files use the domain name directly, for example
   `src/frontier.zig`, `src/core/persist/calc_state.zig`, and
@@ -306,16 +315,18 @@ boundary or export surface, not in the semantic owner filename.
    `zig build generated`, `zig build docs`, or one firmware target.
 4. Rerun the broader host or package lane only after the focused lane passes.
 5. Before pushing (especially after an upstream resync) run
-   `bash .github/project/run-local-gate.sh` for the full Linux CI verdict. The
-   Windows LLP64 and macOS lanes still only run in CI.
+   `PATH="$PWD/.venv/bin:$PATH" bash .github/project/run-local-gate.sh`. It covers
+   the Linux governance, host-parity and firmware-link lanes; the rest, including
+   the Windows LLP64 and macOS lanes, runs only in CI.
 
 ## Generated And Cleaned Surfaces
 
-`zig build generated` refreshes the tracked generated calculator sources and
-test-program data owned by the host build graph. `zig build clean` clears derived
-build state; after a clean-based lane, rerun `zig build generated` before
-checking generated diffs or committing generated output changes. Change canonical
-owner paths first and never patch generated outputs by hand.
+`zig build generated` regenerates the generated calculator sources (gitignored,
+under `upstream/src/generated/`) and the tracked `build/generated/testPgms.bin`.
+`zig build clean` clears derived build state; after a clean-based lane, rerun
+`zig build generated` before checking generated diffs or committing generated
+output changes. Change canonical owner paths first and never patch generated
+outputs by hand.
 
 ## Practical Maintenance Rules
 

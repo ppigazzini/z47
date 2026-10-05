@@ -7,15 +7,16 @@ tiers that must not be confused:
   `softmenu`, `calcMode` and the rest name things in the C47 product. z47 does
   not own those definitions and does not restate them here.
 - **z47's vocabulary is this repository's.** `owner`, `seam`, `oracle`, `gate`,
-  `ratchet` and the rest name things the port invented. None of them appears in
-  the upstream source, and upstream is not obliged to agree with any of them.
+  `ratchet` and the rest name things the port invented. None of them names a z47
+  concept in the upstream source, and upstream is not obliged to agree with any
+  of them.
 
 A reader who cannot tell which tier a word is in will grep the imported tree
-(`upstream/src/`) for `owner` and not find it. That is the failure this split exists to
-prevent.
+(`upstream/src/`) for `owner` and find only unrelated uses. That is the failure
+this split exists to prevent.
 
-Last verified: 2026-08-16, Zig `0.16.0` stable. The upstream pin is stated once, in
-[00-project-and-upstream.md](00-project-and-upstream.md).
+Last verified: 2026-10-05, Zig `0.17.0` stable. The upstream pin is
+`UPSTREAM_COMMIT` in `../.github/project/upstream-pin.env`.
 
 ## What This Page Does Not Cover
 
@@ -45,26 +46,29 @@ are worth repeating because they cost time in this repo too:
 The terms z47's own pages lean on hardest, so you know what to look up: `item`
 and the item table, `softmenu`, `calcMode`, `real34`/`complex34`/long integer,
 `TAM`, `HAL`, `QSPI`/`TO_QSPI`, `DMCP`/`DMCP5`, `DMCP_PACKAGE`, `OLD_HW`/
-`NEW_HW`, and the `.p47`/`.s47`/`.d47` file extensions.
+`NEW_HW`, the `.p47`/`.s47`/`.d47` file extensions, and upstream's own coverage
+cases: a **cov test** or **`*Cov` function** is a C coverage case inside
+`upstream/src/testSuite/testSuite.c`, driven from a `*_cov.txt` corpus file, for
+behaviour no keystroke sequence can reach.
 
 ## z47's Terms
 
-None of these appear in the imported upstream tree. Where a script owns the
-definition, the script wins.
+None of these names a z47 concept in the imported upstream tree. Where a script
+owns the definition, the script wins.
 
 | term | what it is |
 | --- | --- |
-| **owner** | one `.zig` file under `src/` that owns an upstream C file's behaviour. The binding is recorded in `.github/project/upstream-correspondence.tsv` and checked by `check-upstream-correspondence.py`; an owner is not required to mirror the C file's shape, only its observable behaviour |
-| **the seam** | the generated ABI layer under `src/abi/`: the `extern struct` layouts, `callconv(.c)` signatures and constant-blob offsets that upstream's ABI dictates. Derived from the C, regenerated when the pin advances, and never hand-edited. The idiom ratchet counts seam files separately and does not grade them |
+| **owner** | one `.zig` file under `src/` that owns an upstream C file's behaviour. The binding is recorded in `.github/project/upstream-correspondence.tsv` and checked by `check-upstream-correspondence.py`; a hot owner must keep the C file's shape (`check-transliteration-contract.py`), and a cold owner need only match its observable behaviour |
+| **the ABI layer** | `src/abi/`: the `extern struct` layouts, `callconv(.c)` signatures and constant-blob offsets that upstream's ABI dictates. Maintained by hand and proven by `zig build abi-layout-parity`, `audit-item-table-parity.py` and `check-constant-offsets.py` |
+| **the seam** | the idiom ratchet's term for a generated file: one under a `src/*/generated/` path that carries `// SEAM-GENERATED`, regenerated from upstream C and never hand-edited. The ratchet counts seam files separately and does not grade them |
 | **core and shell** | the two zones under `src/`. `core/` is the headless calculator; `shell/` is the interactive surface (display, menus, keyboard, plotting). `check-core-shell-severance.py` guards the direction of travel: core may not `@import` a shell source file, ever |
-| **host hook** | one installable callback in `src/abi/host.zig` through which the headless core signals the shell (redraw, abort poll, progress line, bug screen) without linking it. Each slot is a single weakly-exported C-ABI symbol; the interactive entry points install the real implementations at startup and a headless link keeps the neutral default. See [75-debugging.md](75-debugging.md) for why an uninstalled hook is a false-pass hazard |
+| **host hook** | one installable callback in `src/abi/host.zig` through which the headless core signals the shell (redraw, abort poll, progress line, bug screen) without linking it. Each slot is one strong C-ABI export in `src/abi/host_state.zig`, compiled into one object per executable; the host entry points install the real implementations at startup, a headless link keeps the neutral default, and the firmware binds the shell at link time with no slot. See [75-debugging.md](75-debugging.md) for why an uninstalled hook is a false-pass hazard |
 | **the frontier** | `src/frontier.zig`, a module-root carrier that force-imports owners so they land in the build even when nothing references them by name. A carrier is not a layer -- it holds no logic |
-| **oracle**, **parity lane** | a focused test that compiles the retained upstream C for one owner and asserts the Zig produces the same bytes: `zig build <owner>_parity`. This is what lets the C leave the product without losing the proof |
-| **the corpus** | the upstream behavioural regression files under `upstream/src/testSuite/tests/`, replayed by `zig build test`, plus the `*_cov.txt` coverage extensions. Shared with upstream, so a corpus file is a statement about the calculator, not about the port |
-| **cov test**, **`*Cov` function** | a coverage case written in C inside `upstream/src/testSuite/testSuite.c` and driven from a corpus `.txt` file, for behaviour no keystroke sequence can reach |
-| **the gate** | `.github/project/run-local-gate.sh`, the one command that reproduces the Linux CI verdict locally. "Green" without an exit code is not green |
+| **oracle**, **parity lane** | a focused test that compiles the retained upstream C for one owner and asserts the Zig produces the same result: `zig build <lane>`, named `*_parity`, `*_oracle`, `*_diff`, `*_suite` or `*_test`. This is what lets the C leave the product without losing the proof |
+| **the corpus** | the upstream behavioural regression files under `upstream/src/testSuite/tests/`, including upstream's own `*_cov.txt` coverage files, replayed by `zig build test`. Shared with upstream, so a corpus file is a statement about the calculator, not about the port |
+| **the gate** | `.github/project/run-local-gate.sh`, run with `.venv` on `PATH`: the Linux governance, host-parity and firmware-link lanes, run locally; the rest of CI, Windows and macOS included, runs only there. "Green" without an exit code is not green |
 | **guard** | one governance check inside the gate (`check-*.sh`, `check-*.py`). Distinct from a Zig safety check and from ordinary "guarded by" prose |
-| **ratchet** | a bound that may only move one way. The idiom ratchet (`.github/project/idiom-status-baseline.json`) caps transliteration anti-patterns; the coverage ratchet caps corpus shrinkage. Raising one is a deliberate act with a justification in the commit |
+| **ratchet** | a bound that may only move one way. The idiom ratchet (`.github/project/idiom-status-baseline.json`) caps transliteration anti-patterns and holds retired spellings at zero; the coverage ratchet (`check-coverage-ratchet.sh`) floors the functions under the C-vs-Zig differential, the full-core parity harness count, and the owner lines the keyboard coverage harness covers. Raising one is a deliberate act with a justification in the commit |
 | **baseline**, **allowlist** | a checked-in file of accepted findings a guard diffs against. A new entry fails; a vanished one is a gain to be re-pinned |
 | **the pin** | the upstream commit z47 is ported against, in `.github/project/upstream-pin.env`. Every parity claim is a claim *at the pin* and nowhere else |
 | **the ledger** | `.github/project/upstream-port-ledger.tsv`, one row per upstream commit range recording what was ported and what was deliberately not |
@@ -72,7 +76,7 @@ definition, the script wins.
 | **retained C** | upstream C still compiled somewhere. Three disjoint kinds, and conflating them misreads the port's status: **product** (none -- zero first-party C in the sim and firmware), **oracle** (compiled only by parity lanes), and **third-party** (decNumberICU, GMP, GTK, the SDKs) |
 | **the imported tree** | everything under `upstream/` -- its own `src/`, `dep/`, `docs/`, `res/`, `LIBRARY/` and build files: read-only audit input, never edited to make a z47 change pass. It is ONE tracked root, and `check-imported-tree-pin.py` holds it byte-identical to the pin; `imported-tree-divergences.txt` is the reviewed exception list, and `source-ownership.txt` is the authority on which root is which. Do not read a bare `src/` or `docs/` anywhere in this set as the imported tree -- those names are z47's |
 | **the differential** | running the same corpus against upstream's C build and z47's build and diffing an instrumented trace. The technique [75-debugging.md](75-debugging.md) is built around |
-| **drawer** | one build-object directory: the unit `check-file-cohesion.sh` grades. Carved by dependencies, not by file count |
+| **drawer** | one build-object directory, carved by dependencies, not by file count. No gate grades drawers; `check-file-cohesion.sh` grades files (dead files and the micro-file ratchet) |
 
 ## Words That Mean Two Things
 
@@ -82,7 +86,7 @@ Each of these has cost someone time here.
 | --- | --- | --- |
 | **owner** | a `.zig` file that owns a C file's behaviour | the zone that owns a *fact* in this doc set |
 | **core** | `src/core/`, the headless zone | "the calculator core", the whole ported product |
-| **seam** | the generated ABI layer | any Zig/C boundary, in loose prose |
+| **seam** | a generated `// SEAM-GENERATED` file | any Zig/C boundary, in loose prose |
 | **guard** | a governance check in the gate | a Zig safety check, and ordinary "guarded by" prose |
 | **ratchet** | the idiom baseline | the coverage floor |
 | **frontier** | `src/frontier.zig`, the carrier | `build/frontier/`, its build registration |
