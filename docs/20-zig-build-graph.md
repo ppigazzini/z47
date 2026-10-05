@@ -151,6 +151,25 @@ version header from the same fallback.
 That fallback is a z47 packaging convenience. It does not replace the separate
 checked-in upstream pin under `../.github/project/upstream-pin.env`.
 
+## Configure-Time Inputs
+
+`zig build` caches the configuration `build.zig` produces, keyed on the command
+line, the target triple and the build sources. Anything else the configure logic
+reads from the host is invisible to that key, so a cached configuration would
+keep the `git describe` stamp, the date and the pkg-config answers from the run
+that produced it. Every such read goes through a helper in `../build/common.zig`:
+
+- `commandOutput` and `pkgConfigExists` run a process, `hostEnv` reads an
+  environment variable, and `hostFileExists` checks a path. Each poisons the
+  configure cache, so `zig build` configures again on every run.
+- `collectRelativeCFiles` walks a source tree and declares every directory it
+  lists with `dependOnDirectoryContents`, so adding, removing or renaming a file
+  reconfigures without poisoning anything.
+
+`zig build <step> --cache-poison=disallowed` panics at the first poisoning call
+with its stack trace, which is how to find out what keeps a configuration from
+being cached.
+
 ## Change Rules
 
 - Keep `../build.zig` as a thin router. Push domain-specific logic down into the
@@ -160,6 +179,9 @@ checked-in upstream pin under `../.github/project/upstream-pin.env`.
   code in the same change.
 - Keep new platform-specific behavior centralized in `../build/host/` or
   `../build/firmware.zig`, not scattered through the tree.
+- Read the host while configuring only through the `../build/common.zig`
+  helpers listed under Configure-Time Inputs, never through
+  `b.graph.environ_map`, `std.process.run` or a filesystem call of your own.
 - Add new parity oracles, fake runtimes, or harnesses under
   `../build/tests/` and register their steps in `../build/host/steps.zig`.
 - Do not move imported upstream compatibility helpers such as `../upstream/tag2ver.py`
