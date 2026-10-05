@@ -27,6 +27,11 @@ pub export var menuDumpPath: ?[*:0]u8 = null;
 pub export var writeExportAll: bool = false;
 // --reset: start from factory defaults with backup.cfg deliberately not read.
 pub export var factoryReset: bool = false;
+// --catsequence: write CAT FCNS and CAT MENUS in catalog sequence, one TSV file
+// each, and exit.
+var catSequence: bool = false;
+const catFcnsFileName: [*:0]const u8 = "cat-fcns.tsv";
+const catMenusFileName: [*:0]const u8 = "cat-menus.tsv";
 // c47.c owns both; --testPgms and the export lane stage the sample programs,
 // --testData fills R10..R38.
 extern var loadTestPrograms: bool;
@@ -119,6 +124,10 @@ extern var headlessMode: bool;
 // c47.c global. Read by fnSNAP, which then captures the screen as it stands
 // instead of forcing the repaint that would destroy a graphic screen.
 extern var snapSkipRefresh: bool;
+// c47.c global. Read by fnSNAP, which then keeps the f or g shift, and its glyph,
+// in the capture instead of clearing it first.
+extern var snapKeepShift: bool;
+extern fn fnWriteCatSequence(fcnsPath: [*:0]const u8, menusPath: [*:0]const u8) void;
 extern fn refreshScreen(source: u16) void;
 extern fn installCoreHostHooks() void;
 extern fn refreshFn(timerType: u16) void;
@@ -277,6 +286,8 @@ fn printHelp() void {
     _ = printf("%s47 --headless       : suppress GTK interface startup\n", cc);
     _ = printf("%s47 --writeexportall : output all PROGs (internal use)\n", cc);
     _ = printf("%s47 --snapskiprefresh     : prevents refresh spoiling the graphic screens for DSL snap\n", cc);
+    _ = printf("%s47 --snapkeepshift       : SNAP keeps the f or g shift and its glyph in the capture\n", cc);
+    _ = printf("%s47 --catsequence         : produce function and menu tables in %s and %s\n", cc, catFcnsFileName, catMenusFileName);
     _ = printf("%s47 --help           : list all SIM switches\n", cc);
     _ = printf("%s47 --h              : see --help\n", cc);
 }
@@ -457,6 +468,11 @@ pub export fn main(argc: c_int, argv: [*][*:0]u8) callconv(.c) c_int {
             // so the packaging step that consumes PROGRAMS/ALLPGMS has no input.
             loadTestPrograms = true;
         }
+        if (argEql(argv[arg], "--catsequence")) {
+            catSequence = true;
+            headlessMode = true;
+            _ = printf("Activated: --catsequence\n");
+        }
         if (argEql(argv[arg], "--headless")) {
             headlessMode = true;
             _ = printf("Activated: --headless\n");
@@ -464,6 +480,10 @@ pub export fn main(argc: c_int, argv: [*][*:0]u8) callconv(.c) c_int {
         if (argEql(argv[arg], "--snapskiprefresh")) {
             snapSkipRefresh = true;
             _ = printf("Activated: --snapskiprefresh\n");
+        }
+        if (argEql(argv[arg], "--snapkeepshift")) {
+            snapKeepShift = true;
+            _ = printf("Activated: --snapkeepshift\n");
         }
         if (argEql(argv[arg], "--mockup")) {
             _ = printf("Activated: %s\n", argv[arg]);
@@ -596,6 +616,12 @@ pub export fn main(argc: c_int, argv: [*][*:0]u8) callconv(.c) c_int {
             fnDumpMenus(dumpMenus, menuDumpPath);
         }
         _ = printf("\n\nOutput menus saved.\n");
+        readyToExit();
+        return 0;
+    }
+
+    if (catSequence) {
+        fnWriteCatSequence(catFcnsFileName, catMenusFileName);
         readyToExit();
         return 0;
     }

@@ -215,7 +215,7 @@ extern fn fnClearFlag(flag: u16) void;
 extern fn utf8ToString(utf8: [*c]const u8, str: [*c]u8) void;
 extern var alphaRegister: u16;
 const indexOfItems = @extern([*]const abi.Item, .{ .name = "indexOfItems" });
-const LAST_ITEM: u16 = 3481; // items.h
+const LAST_ITEM: u16 = 3536; // items.h
 const CAT_STATUS: u16 = 0x00f0;
 const CAT_SYFL: u16 = 8 << 4;
 const FIRST_LOCAL_FLAG: i32 = 112;

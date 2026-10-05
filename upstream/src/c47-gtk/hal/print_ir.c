@@ -45,6 +45,8 @@ void sendByteIR(uint8_t c) {
   gssize size_sent;
   gchar buffer[8];
 
+  printerWindowByte(c);
+
   buffer[0] = c;
   //set_IO_annunciator();
 

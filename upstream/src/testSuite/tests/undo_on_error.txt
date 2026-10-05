@@ -1,0 +1,109 @@
+;*******************************************************************************************************************************
+;** Coverage: a program stopped by an error keeps the stack at the error point, and does not undo it to the pre-run state.   **
+;** The programs are staged below (ES, ED1, ED2, EF1, ENS/ENB, EDD) and run by XEQ, the real program-run path. Each case     **
+;** sets SPCRES, CPXRES and IGN1ER and reads the stack the run left, with EC the error code and FL_ASLIFT the lift state.    **
+;** Double error: SPCRES or CPXRES absorbs the first error, a second error then stops; IGN1ER ignores the first and the run  **
+;** carries on, the stack unchanged. On the broken build every run below collapsed the stack to zero.                        **
+;*******************************************************************************************************************************
+In: AM=DEG SD=0 RMODE=0 IM=2COMPL SS=4 WS=64
+
+; stage the error programs (program memory may have been wiped by an earlier test)
+Func: fnLoadUndoErrPgmsCov
+In:  FARG=0
+Out: EC=0
+
+Func: fnExecute
+
+;=======================================
+; ES: one data type error, the same under SPCRES and CPXRES. IGN1ER decides stop (EC 24) or carry on to the 9 marker.
+;=======================================
+In:  FL_ASLIFT=1 FL_SPCRES=0 FL_CPXRES=0 FL_IGN1ER=0 PGM="ES"
+Out: EC=24 FL_ASLIFT=1 RT=Real:"55" RZ=Real:"55" RY=Real:"7" RX=Stri:"XY" RL=Stri:"XY"
+In:  FL_ASLIFT=1 FL_SPCRES=0 FL_CPXRES=1 FL_IGN1ER=0 PGM="ES"
+Out: EC=24 FL_ASLIFT=1 RT=Real:"55" RZ=Real:"55" RY=Real:"7" RX=Stri:"XY" RL=Stri:"XY"
+In:  FL_ASLIFT=1 FL_SPCRES=1 FL_CPXRES=0 FL_IGN1ER=0 PGM="ES"
+Out: EC=24 FL_ASLIFT=1 RT=Real:"55" RZ=Real:"55" RY=Real:"7" RX=Stri:"XY" RL=Stri:"XY"
+In:  FL_ASLIFT=1 FL_SPCRES=1 FL_CPXRES=1 FL_IGN1ER=0 PGM="ES"
+Out: EC=24 FL_ASLIFT=1 RT=Real:"55" RZ=Real:"55" RY=Real:"7" RX=Stri:"XY" RL=Stri:"XY"
+In:  FL_ASLIFT=1 FL_SPCRES=0 FL_CPXRES=0 FL_IGN1ER=1 PGM="ES"
+Out: EC=0 FL_ASLIFT=1 FL_IGN1ER=0 RT=Real:"55" RZ=Real:"7" RY=Stri:"XY" RX=Real:"9"
+In:  FL_ASLIFT=1 FL_SPCRES=0 FL_CPXRES=1 FL_IGN1ER=1 PGM="ES"
+Out: EC=0 FL_ASLIFT=1 FL_IGN1ER=0 RT=Real:"55" RZ=Real:"7" RY=Stri:"XY" RX=Real:"9"
+In:  FL_ASLIFT=1 FL_SPCRES=1 FL_CPXRES=0 FL_IGN1ER=1 PGM="ES"
+Out: EC=0 FL_ASLIFT=1 FL_IGN1ER=0 RT=Real:"55" RZ=Real:"7" RY=Stri:"XY" RX=Real:"9"
+In:  FL_ASLIFT=1 FL_SPCRES=1 FL_CPXRES=1 FL_IGN1ER=1 PGM="ES"
+Out: EC=0 FL_ASLIFT=1 FL_IGN1ER=0 RT=Real:"55" RZ=Real:"7" RY=Stri:"XY" RX=Real:"9"
+
+;=======================================
+; ED1: 1/0 then ->I. SPCRES=1 absorbs 1/0 to Infinity and ->I is the error; SPCRES=0 makes 1/0 the error. CPXRES does not matter.
+;=======================================
+In:  FL_ASLIFT=1 FL_SPCRES=1 FL_CPXRES=1 FL_IGN1ER=0 PGM="ED1"
+Out: EC=1 FL_ASLIFT=1 RT=Real:"55" RZ=Real:"55" RY=Real:"3" RX=Real:"inf" RL=Real:"inf"
+In:  FL_ASLIFT=1 FL_SPCRES=1 FL_CPXRES=0 FL_IGN1ER=0 PGM="ED1"
+Out: EC=1 FL_ASLIFT=1 RT=Real:"55" RZ=Real:"55" RY=Real:"3" RX=Real:"inf" RL=Real:"inf"
+In:  FL_ASLIFT=1 FL_SPCRES=0 FL_CPXRES=1 FL_IGN1ER=0 PGM="ED1"
+Out: EC=1 FL_ASLIFT=1 RT=Real:"55" RZ=Real:"55" RY=Real:"3" RX=Real:"0" RL=Real:"0"
+In:  FL_ASLIFT=1 FL_SPCRES=0 FL_CPXRES=0 FL_IGN1ER=0 PGM="ED1"
+Out: EC=1 FL_ASLIFT=1 RT=Real:"55" RZ=Real:"55" RY=Real:"3" RX=Real:"0" RL=Real:"0"
+In:  FL_ASLIFT=1 FL_SPCRES=1 FL_CPXRES=1 FL_IGN1ER=1 PGM="ED1"
+Out: EC=0 FL_ASLIFT=1 FL_IGN1ER=0 RT=Real:"55" RZ=Real:"3" RY=Real:"inf" RX=Real:"9"
+In:  FL_ASLIFT=1 FL_SPCRES=1 FL_CPXRES=0 FL_IGN1ER=1 PGM="ED1"
+Out: EC=0 FL_ASLIFT=1 FL_IGN1ER=0 RT=Real:"55" RZ=Real:"3" RY=Real:"inf" RX=Real:"9"
+In:  FL_ASLIFT=1 FL_SPCRES=0 FL_CPXRES=1 FL_IGN1ER=1 PGM="ED1"
+Out: EC=0 FL_ASLIFT=1 FL_IGN1ER=0 RT=Real:"55" RZ=Real:"3" RY=LonI:"0" RX=Real:"9"
+In:  FL_ASLIFT=1 FL_SPCRES=0 FL_CPXRES=0 FL_IGN1ER=1 PGM="ED1"
+Out: EC=0 FL_ASLIFT=1 FL_IGN1ER=0 RT=Real:"55" RZ=Real:"3" RY=LonI:"0" RX=Real:"9"
+
+;=======================================
+; ED2: sqrt(-1) then a type error. CPXRES=1 absorbs sqrt(-1) to a complex and the type error stops; CPXRES=0 makes sqrt(-1) the error. SPCRES does not matter.
+;=======================================
+In:  FL_ASLIFT=1 FL_SPCRES=1 FL_CPXRES=1 FL_IGN1ER=0 PGM="ED2"
+Out: EC=24 FL_ASLIFT=1 RT=Real:"55" RZ=Real:"3" RY=Cplx:"0 i 1" RX=Stri:"XY" RL=Stri:"XY"
+In:  FL_ASLIFT=1 FL_SPCRES=0 FL_CPXRES=1 FL_IGN1ER=0 PGM="ED2"
+Out: EC=24 FL_ASLIFT=1 RT=Real:"55" RZ=Real:"3" RY=Cplx:"0 i 1" RX=Stri:"XY" RL=Stri:"XY"
+In:  FL_ASLIFT=1 FL_SPCRES=1 FL_CPXRES=0 FL_IGN1ER=0 PGM="ED2"
+Out: EC=1 FL_ASLIFT=1 RT=Real:"55" RZ=Real:"55" RY=Real:"3" RX=Real:"-1" RL=Real:"-1"
+In:  FL_ASLIFT=1 FL_SPCRES=0 FL_CPXRES=0 FL_IGN1ER=0 PGM="ED2"
+Out: EC=1 FL_ASLIFT=1 RT=Real:"55" RZ=Real:"55" RY=Real:"3" RX=Real:"-1" RL=Real:"-1"
+In:  FL_ASLIFT=1 FL_SPCRES=1 FL_CPXRES=1 FL_IGN1ER=1 PGM="ED2"
+Out: EC=0 FL_ASLIFT=1 FL_IGN1ER=0 RT=Real:"3" RZ=Cplx:"0 i 1" RY=Stri:"XY" RX=Real:"9"
+In:  FL_ASLIFT=1 FL_SPCRES=0 FL_CPXRES=1 FL_IGN1ER=1 PGM="ED2"
+Out: EC=0 FL_ASLIFT=1 FL_IGN1ER=0 RT=Real:"3" RZ=Cplx:"0 i 1" RY=Stri:"XY" RX=Real:"9"
+In:  FL_ASLIFT=1 FL_SPCRES=1 FL_CPXRES=0 FL_IGN1ER=1 PGM="ED2"
+Out: EC=24 FL_ASLIFT=1 FL_IGN1ER=0 RT=Real:"55" RZ=Real:"3" RY=Real:"-1" RX=Stri:"XY" RL=Stri:"XY"
+In:  FL_ASLIFT=1 FL_SPCRES=0 FL_CPXRES=0 FL_IGN1ER=1 PGM="ED2"
+Out: EC=24 FL_ASLIFT=1 FL_IGN1ER=0 RT=Real:"55" RZ=Real:"3" RY=Real:"-1" RX=Stri:"XY" RL=Stri:"XY"
+
+;=======================================
+; EF1: the error is the first step, so the stack is the one the case sets. A first-step error leaves all four registers untouched.
+;=======================================
+In:  FL_ASLIFT=1 FL_IGN1ER=0 RT=Real:"4" RZ=Real:"3" RY=Real:"7" RX=Stri:"XY" PGM="EF1"
+Out: EC=24 FL_ASLIFT=1 RT=Real:"4" RZ=Real:"3" RY=Real:"7" RX=Stri:"XY" RL=Stri:"XY"
+
+;=======================================
+; ENS: the error happens one subroutine level down (ENS calls ENB). The run still stops with the stack at the error point.
+;=======================================
+In:  FL_ASLIFT=1 FL_IGN1ER=0 PGM="ENS"
+Out: EC=24 FL_ASLIFT=1 RT=Real:"55" RZ=Real:"55" RY=Real:"7" RX=Stri:"XY" RL=Stri:"XY"
+
+;=======================================
+; EDD: two real errors. With IGN1ER clear the first stops the run; with IGN1ER set the first is ignored, the run carries on and the second stops it.
+;=======================================
+In:  FL_ASLIFT=1 FL_IGN1ER=0 PGM="EDD"
+Out: EC=24 FL_ASLIFT=1 RT=Real:"55" RZ=Real:"55" RY=Real:"7" RX=Stri:"XY" RL=Stri:"XY"
+In:  FL_ASLIFT=1 FL_IGN1ER=1 PGM="EDD"
+Out: EC=24 FL_ASLIFT=1 FL_IGN1ER=0 RT=Real:"7" RZ=Stri:"XY" RY=Real:"3" RX=Stri:"AB" RL=Stri:"AB"
+
+;=======================================
+; UNDO after a program error must not pull the stack off the error state. fnErrThenUndoCov runs ES then presses UNDO: the stack stays the ES error state.
+;=======================================
+Func: fnErrThenUndoCov
+In:  FL_ASLIFT=1 FL_IGN1ER=0 FARG=0
+Out: EC=24 FL_ASLIFT=1 RT=Real:"55" RZ=Real:"55" RY=Real:"7" RX=Stri:"XY"
+
+;=======================================
+; Leave the last error code clear for the next file: a clean program run resets it.
+;=======================================
+Func: fnExecute
+In:  PGM="OK"
+Out: EC=0

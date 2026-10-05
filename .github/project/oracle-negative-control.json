@@ -213,7 +213,7 @@
       "file": "src/core/numeric/matrix/eigen.zig",
       "find": "    var c: realContext_t = runtime.ctxtReal39;\n    c.digits = dig;\n    c.round = runtime.DEC_ROUND_HALF_UP;",
       "replace": "    var c: realContext_t = runtime.ctxtReal39;\n    c.round = runtime.DEC_ROUND_HALF_UP;",
-      "why": "This lane drives the closed-form 2x2/3x3 workers, isRealSymmetric, dropNoise and the Householder QR step -- NOT calculateEigenvalues, the iterative driver. A mutant in that driver's convergence tolerance SURVIVED, which is how the lane's real scope became visible."
+      "why": "This lane drives the closed-form 2x2/3x3 workers, isRealSymmetric, dropNoise and the Householder QR step -- NOT calculateEigenvalues and the Hessenberg QR engine behind it. A mutant in that engine's tolerance survives this lane, which is how the lane's real scope became visible."
     },
     {
       "lane": "keyboard_entry",
@@ -318,12 +318,12 @@
     {
       "lane": "eigen",
       "step": "eigen_parity",
-      "what": "the iterative driver's convergence tolerance halves",
+      "what": "the eigenvalue engine's deflation tolerance halves",
       "file": "src/core/numeric/matrix/eigen.zig",
-      "find": "    const eigenTolerance: i32 = @min(70, toleranceDigits * 2);",
-      "replace": "    const eigenTolerance: i32 = @min(70, toleranceDigits);",
-      "expected_survivor": "A GAP, and a wide one. This lane drives the workers AROUND calculateEigenvalues, not the driver itself, and the driver is not exported -- so covering it here would mean adding a symbol to the shipped program for a test, which this project already declined for curtReal and compareTypeErrorX. Measured: the same mutation also passes all 12830 cases of c43's testSuite, which reaches the driver through the composed fnEigenvalues. Nothing in this project constrains this tolerance.",
-      "why": "Recorded rather than widened. Closing it needs a matrix whose eigenvalues take enough iterations for the difference to reach the displayed digits, driven through fnEigenvalues -- a testSuite case, and c43's testSuite is the oracle and is never extended."
+      "find": "    return @min(70, toleranceDigits() * 2);",
+      "replace": "    return @min(70, toleranceDigits());",
+      "expected_survivor": "A GAP in this lane only. The lane drives the workers AROUND calculateEigenvalues -- the closed-form 2x2/3x3 solvers, isRealSymmetric, dropNoise and the Householder QR step -- and not the Hessenberg QR engine that reads this tolerance, which is not exported; covering it here would mean adding a symbol to the shipped program for a test, which this project already declined for curtReal and compareTypeErrorX. c43's testSuite does reach the engine, through fnEigenvalues and SLVP: with this mutation applied, `zig build test` fails cases in matrix.txt and slvp.txt.",
+      "why": "Recorded rather than widened: the testSuite, not this lane, is what constrains the engine's tolerance."
     }
   ]
 }

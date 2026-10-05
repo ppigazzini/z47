@@ -5275,7 +5275,9 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
             //This is for the VIEW line, drawn after the register name and not at the right margin
             if(temporaryInformation == TI_VIEW_REGISTER && origRegist == REGISTER_T && (w = stringWidthWithLimitC47(REGISTER_STRING_DATA(regist), stdnumEnlarge, nocompress, SCREEN_WIDTH - prefixWidth, false, true)) < SCREEN_WIDTH - prefixWidth) {
               lineWidth = w;
-              showStringC47(REGISTER_STRING_DATA(regist), stdnumEnlarge, nocompress, prefixWidth, baseY + 2 - checkHPoffset, vmNormal, false, true);
+              COPY_REGISTER_STRING_TO(tmpString, regist);
+              createSubstrings(1);
+              showStringC47(tmpString, stdnumEnlarge, nocompress, prefixWidth, baseY + 2 - checkHPoffset, vmNormal, false, true);
             }
             else                                                                  //JM
           #endif // STACK_X_STR_LRG_FONT
@@ -5284,7 +5286,14 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
             //This is for Y, Z & T
             if(regist >= REGISTER_Y && regist <= REGISTER_T && (w = stringWidthWithLimitC47(REGISTER_STRING_DATA(regist), numHalf, nocompress, SCREEN_WIDTH - prefixWidth, false, true)) < SCREEN_WIDTH - prefixWidth) {
               lineWidth = w;
-              showStringC47(REGISTER_STRING_DATA(regist), numHalf, nocompress, SCREEN_WIDTH - w, baseY + 6 - checkHPoffset, vmNormal, false, true);
+              if(temporaryInformation == TI_VIEW_REGISTER && origRegist == REGISTER_T) {
+                COPY_REGISTER_STRING_TO(tmpString, regist);
+                createSubstrings(1);
+                showStringC47(tmpString, numHalf, nocompress, prefixWidth, baseY + 6 - checkHPoffset, vmNormal, false, true);
+              }
+              else {
+                showStringC47(REGISTER_STRING_DATA(regist), numHalf, nocompress, SCREEN_WIDTH - w, baseY + 6 - checkHPoffset, vmNormal, false, true);
+              }
             }
             else                                                                  //JM
           #endif // STACK_STR_MED_FONT
@@ -6658,7 +6667,13 @@ void fnSNAP(uint16_t unusedButMandatoryParameter) {
   #if defined(PC_BUILD)
     printf("fnSNAP!\n");
   #endif // PC_BUILD
-  resetShiftState();                  //JM To avoid f or g top left of the screen, clear to make sure
+  #if defined(PC_BUILD)
+    if(!snapKeepShift) {
+      resetShiftState();              //JM To avoid f or g top left of the screen, clear to make sure
+    }
+  #else // !PC_BUILD
+    resetShiftState();                  //JM To avoid f or g top left of the screen, clear to make sure
+  #endif // PC_BUILD
   #if defined(TESTSUITE_BUILD)
     testClockFrozen = true;           // the capture carries the date and time, so the test build reads a fixed clock and the stored hashes stay put
   #endif // TESTSUITE_BUILD

@@ -98,7 +98,7 @@ const vmNormal: c_int = 0;
 
 const STD_SPACE_EM = "\xa0\x03";
 
-const LAST_ITEM: u32 = 3481;
+const LAST_ITEM: u32 = 3536;
 
 // ---------------------------------------------------------------------------
 // Constant blob

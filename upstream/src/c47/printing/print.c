@@ -422,7 +422,9 @@
   static void setPrinterSBI(bool_t status) {
     printerIconEnabled = status;
     setSystemFlagChanged(SETTING_PRINTERICON);
+    printerIconRefresh = true;   // the GTK simulator does not wait for a painted frame for the print annunciator, which changes twice per printed line
     refreshStatusBar();
+    printerIconRefresh = false;
   }
 
 
@@ -2340,6 +2342,7 @@ void fnP_All_Regs(uint16_t option) {
   #if defined(OPTION_IR_PRINTING)
     bool_t exited;
     uint16_t s, n;
+    currentKeyCode = 255;  // an EXIT pressed before this print does not stop it
     switch(option) {
       case PRN_ALL:
         exited = _printRegRange(REGISTER_X, REGISTER_W);  // Lettered registers

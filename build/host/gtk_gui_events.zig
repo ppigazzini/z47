@@ -1,4 +1,6 @@
 const shortcut_owned = @import("gtk_gui_shortcut.zig");
+const keypress_owned = @import("gtk_gui_keypress.zig");
+const printer_window = @import("gtk_printer_window.zig");
 
 const calcKey_t = extern struct {
     keyId: i16,
@@ -67,6 +69,9 @@ const GDK_KEY_F5: u32 = 65474;
 const GDK_KEY_F6: u32 = 65475;
 const GDK_KEY_f: u32 = 102;
 const GDK_KEY_g: u32 = 103;
+const GDK_KEY_P: u32 = 80;
+const GDK_KEY_p: u32 = 112;
+const GDK_CONTROL_MASK: u32 = 1 << 2;
 
 pub var CTRL_State: u32 = 0;
 pub var SHIFT_State: u32 = 0;
@@ -103,6 +108,7 @@ extern fn gtk_widget_queue_draw(widget: ?*anyopaque) void;
 extern fn g_get_monotonic_time() i64;
 extern fn g_source_remove(tag: c_uint) c_int;
 extern fn g_timeout_add(interval: c_uint, function: *const fn (?*anyopaque) callconv(.c) c_int, data: ?*anyopaque) c_uint;
+extern fn printf(format: [*:0]const u8, ...) c_int;
 
 fn stripCapsLockForCommand(keyval: u32) u32 {
     const is_alpha = (keyval >= 'A' and keyval <= 'Z') or (keyval >= 'a' and keyval <= 'z');
@@ -131,6 +137,17 @@ pub fn keyPressedImpl(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque
     if (event == null) return z47_keyPressed_c_impl(widget, event, data);
 
     const key_event: *GdkEventKey = @ptrCast(@alignCast(event.?));
+    // Ctrl+P is read from the event state, not from CTRL_State: the print-out
+    // window takes the focus, so a Control press often goes to it and CTRL_State
+    // stays 0. This prologue and the keypress body each keep a CTRL_State, and
+    // both clear.
+    if ((key_event.state & GDK_CONTROL_MASK) != 0 and (key_event.keyval == GDK_KEY_p or key_event.keyval == GDK_KEY_P)) {
+        CTRL_State = 0;
+        keypress_owned.CTRL_State = 0;
+        _ = printf("key pressed: CTRL+p Print-out window\n");
+        printer_window.printerWindowToggle();
+        return 1;
+    }
     event_keyval = key_event.keyval + CTRL_State;
 
     const altgr_pressed = key_event.keyval == GDK_KEY_Alt_R and (key_event.state & 0b10100) != 0;

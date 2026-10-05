@@ -42,6 +42,9 @@
   char               *menuDumpPath = NULL;
   char               *scriptCommand = NULL;
   bool_t              dumpDslCmds = false;
+  bool_t              catSequence = false;
+  const char         *catFcnsFileName = "cat-fcns.tsv";
+  const char         *catMenusFileName = "cat-menus.tsv";
 
   #if defined(EXPORT_ITEMS)
     int sortItems(void const *a, void const *b) {
@@ -234,6 +237,11 @@
         headlessMode = true;
         printf("Activated: --dslcommands\n");
       }
+      if(strcmp(argv[arg], "--catsequence") == 0) {
+        catSequence = true;
+        headlessMode = true;
+        printf("Activated: --catsequence\n");
+      }
       if(strcmp(argv[arg], "--exec") == 0 || strcmp(argv[arg], "--e") == 0 || strcmp(argv[arg], "-e") == 0) {
         printf("Activated: %s\n", argv[arg]);
         if(arg+1 < argc) {
@@ -247,6 +255,10 @@
       if(strcmp(argv[arg], "--snapskiprefresh") == 0) {
           snapSkipRefresh = true;
           printf("Activated: --snapskiprefresh\n");
+      }
+      if(strcmp(argv[arg], "--snapkeepshift") == 0) {
+          snapKeepShift = true;
+          printf("Activated: --snapkeepshift\n");
       }
       if(strcmp(argv[arg], "--mockup") == 0) {
         printf("Activated: %s\n", argv[arg]);
@@ -356,9 +368,11 @@
         printf("%s47 --e, %s47 -e <commands>: see --exec,                  ┴ e.g. ./t47 --exec 'nim 3; nim -4; xeq yˣ'\n", cc, cc);
         printf("%s47 --headless            : suppress GTK interface startup\n", cc);
         printf("%s47 --snapskiprefresh     : prevents refresh spoiling the graphic screens for DSL snap\n", cc);
+        printf("%s47 --snapkeepshift       : SNAP keeps the f or g shift and its glyph in the capture\n", cc);
         #if defined(HAVE_T47_DSL)
           printf("%s47 --dslcommands         : produce T47 ops table in %s\n", cc, dslOpsFileName);
         #endif
+        printf("%s47 --catsequence         : produce function and menu tables in %s and %s\n", cc, catFcnsFileName, catMenusFileName);
         #if defined(_WIN32)
           printf("\nExample for command line operation: \n  %s47.exe --headless --script res/SCRIPTS/example.t47\n", cc);
           printf(  "Cmd returns the prompt before output ends. Run via 'start /wait %s47.exe ...' or pipe '| more' to prevent that.\n\n", cc);
@@ -526,6 +540,12 @@
         fnDumpMenus(dumpMenus, menuDumpPath);
       }
       printf("\n\nOutput menus saved.\n");
+      readyToExit();
+      return 0;
+    }
+
+    if(catSequence) {
+      fnWriteCatSequence(catFcnsFileName, catMenusFileName);
       readyToExit();
       return 0;
     }

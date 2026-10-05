@@ -16,7 +16,7 @@ static bool_t _slotIsZero(const real_t *c) {
 }
 
 // All d roots of x^d = w, w != 0, in angle order; every root has magnitude |w|^(1/d).
-// The QR engine refuses a circulant companion matrix (isProblematicMatrix), so this closed form is the only path for such polynomials, not an optimisation.
+// Exact and O(d) where the companion matrix through the eigenvalue solver is O(d^3).
 // cleanNoise: only real coefficients cap how small a genuine root component can be; complex ones carry independent exponents, so their output stays raw.
 static void _rootsOfXdEqualsW(const real_t *wRe, const real_t *wIm, uint16_t d, real_t *roots, bool_t cleanNoise, realContext_t *realContext) {
   real_t mag, theta, rho, oneOnD, dReal, kReal, angle;
@@ -159,7 +159,7 @@ void fnSlvp(uint16_t unusedButMandatoryParameter) {
         }
       }
 
-      if(middleZero) {                                                   // x^d = w in closed form: the QR engine refuses this circulant companion shape
+      if(middleZero) {                                                   // x^d = w in closed form
         real_t wRe, wIm;
         divComplexComplex(coef + (lead + d) * 2, coef + (lead + d) * 2 + 1, aLead, aLead + 1, &wRe, &wIm, &ctxtReal75);
         realChangeSign(&wRe);
@@ -167,8 +167,8 @@ void fnSlvp(uint16_t unusedButMandatoryParameter) {
         _rootsOfXdEqualsW(&wRe, &wIm, d, roots, realContent, &ctxtReal75);
       }
       else {                                                             // monic companion matrix through the EIGEN QR solver
-        const size_t bulkSize = (size_t)REAL_SIZE_IN_BLOCKS(75) * ((size_t)d * d * 2 * 4 + d * 2);
-        real_t *bulk, *a, *q, *r, *eig, *previousDiagonal;
+        const size_t bulkSize = (size_t)REAL_SIZE_IN_BLOCKS(75) * ((size_t)d * d * 2 * 2 + d * 7);
+        real_t *bulk, *a, *scratch, *eig;
 
         if(!(bulk = allocC47Blocks(bulkSize))) {
           freeC47Blocks(coef, wsSize);
@@ -179,10 +179,8 @@ void fnSlvp(uint16_t unusedButMandatoryParameter) {
           return;
         }
         a   = bulk;
-        q   = bulk + (size_t)d * d * 2;
-        r   = bulk + (size_t)d * d * 2 * 2;
-        eig = bulk + (size_t)d * d * 2 * 3;
-        previousDiagonal = bulk + (size_t)d * d * 2 * 4;
+        eig = bulk + (size_t)d * d * 2;
+        scratch = bulk + (size_t)d * d * 2 * 2;
 
         for(j = 0; j < (uint32_t)d * d * 2; j++) {
           realSetZero(a + j);
@@ -197,28 +195,7 @@ void fnSlvp(uint16_t unusedButMandatoryParameter) {
           realChangeSign(dst + 1);
         }
 
-        {                                                                // the engine's circulant screen reads only real parts, so a complex polynomial with purely
-          real_t *bottom = a + (size_t)(d - 1) * d * 2;                  // imaginary middle coefficients and a real constant would be refused although it is not
-          bool_t looksCirculant = !realIsZero(bottom);                   // x^d = w at all: a diagonal similarity (superdiagonal 1/2, bottom row scaled by powers
-          for(i = 1; looksCirculant && i < d; i++) {                     // of 2) keeps every eigenvalue and makes the companion invisible to the screen
-            looksCirculant = realIsZero(bottom + (size_t)i * 2);
-          }
-          if(looksCirculant) {
-            real_t two, scale;
-            realAdd(const_1, const_1, &two, &ctxtReal75);
-            realCopy(const_1, &scale);
-            for(i = 0; i + 1 < d; i++) {
-              realCopy(const_1on2, a + ((size_t)i * d + i + 1) * 2);
-            }
-            for(i = d; i-- > 0;) {                                       // bottom row element i gains the factor 2^(d-1-i)
-              realMultiply(bottom + (size_t)i * 2,     &scale, bottom + (size_t)i * 2,     &ctxtReal75);
-              realMultiply(bottom + (size_t)i * 2 + 1, &scale, bottom + (size_t)i * 2 + 1, &ctxtReal75);
-              realMultiply(&scale, &two, &scale, &ctxtReal75);
-            }
-          }
-        }
-
-        calculateEigenvalues(a, q, r, eig, previousDiagonal, d, true, true, &ctxtReal75);
+        calculateEigenvalues(a, scratch, eig, d, true, true, &ctxtReal75);
         if(lastErrorCode != ERROR_NONE) {                                // abort or refusal: write nothing, the central undo puts X and L back
           freeC47Blocks(bulk, bulkSize);
           freeC47Blocks(coef, wsSize);

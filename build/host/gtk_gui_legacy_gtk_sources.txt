@@ -2,6 +2,7 @@ c47-gtk.c
 hal/gui.c
 hal/audio.c
 hal/print_ir.c
+hal/printerWindow.c
 hal/io.c
 hal/lcd.c
 gtkGui.c

@@ -115,6 +115,8 @@ ALLOWED: dict[str, str] = {
     "strip_elliptic": "!OPTION_ELLIPTIC",
     "version_str": "the version string, assembled at build time",
     "version_str2": "the version string, assembled at build time",
+    "version1": "VERSION1 -- defines.h's release string, which the CAT sequence header names",
+    "version_short": "VERSION_SHORT -- version.h's VCS id, which the CAT sequence header names",
 }
 
 # Harness-only options that do NOT start with use_fake_. Recognising the family by

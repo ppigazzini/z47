@@ -297,6 +297,10 @@ pub fn addBuildOptions(
     const version_str2 = b.fmt("  {s} {s} {s}, dd ", .{ modeltext, sim_or_qspi, version1 });
     build_options.addOption([]const u8, "version_str", version_str);
     build_options.addOption([]const u8, "version_str2", version_str2);
+    // VERSION1 and VERSION_SHORT for the CAT sequence header; VERSION_SHORT is the
+    // VCS id, as version.h defines it for the custom build version_str names.
+    build_options.addOption([]const u8, "version1", version1);
+    build_options.addOption([]const u8, "version_short", vcs);
     build_options.addOption([]const u8, "compile_date", cdate);
 
     module.addOptions("frontier_build_options", build_options);

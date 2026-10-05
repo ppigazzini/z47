@@ -16,7 +16,7 @@
 ;         Measure the floor, do not guess it: ./testSuite --report-accuracy <list file>
 ;         prints the digits every comparison actually reached.
 ;
-;   FL_n  Flag n from 0 to 112, A,B,C,D,I,J,K,L,T,X,Y,Z, or name: 0 or 1
+;   FL_n  Flag n from 0 to 112, A,B,C,D,I,J,K,L,T,X,Y,Z, or a system-flag name such as SPCRES, CPXRES, IGN1ER: 0 or 1
 ;   IM    Integer Mode: 1COMPL, 2COMPL, UNSIGN or SIGNMT
 ;   AM    Angular Mode: DEG, DMS, GRAD, RAD, MULTPI
 ;   SS    Stack Size: 4 or 8
@@ -522,6 +522,9 @@ algfunc_cub
 algfunc_fp
 
 nested_cov
+
+; a program stopped by an error keeps the stack at the error point; stages its own programs, so it runs after serialize_cov's reset.
+undo_on_error
 
 config_cov
 stack_cov

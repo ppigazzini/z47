@@ -9,9 +9,11 @@ const display_owned = @import("gtk_gui_display.zig");
 const keypress_owned = @import("gtk_gui_keypress.zig");
 const setup_ui_owned = @import("gtk_gui_setup_ui.zig");
 // The ported GTK entry point main() + program globals (was c47-gtk.c via the
-// retired gtk_c47_gtk_legacy.c shim).
+// retired gtk_c47_gtk_legacy.c shim), and the HP 82240B print-out window whose
+// printerWindowByte the HAL object's sendByteIR calls.
 comptime {
     _ = @import("gtk_c47_main.zig");
+    _ = @import("gtk_printer_window.zig");
 }
 
 extern fn gtk_init(argc: *c_int, argv: [*]?[*:0]u8) void;

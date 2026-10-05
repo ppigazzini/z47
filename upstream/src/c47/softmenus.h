@@ -16,6 +16,7 @@ void      fnDumpMenus            (uint16_t newFilenameformat, const char *path);
 void      fnDumpMenusWrapper     (uint16_t newFilenameformat);
 void      fnDumpMenusAll         (uint16_t newFilenameformat, const char *path);
 void      fnDumpMenusAllWrapper  (uint16_t newFilenameformat);
+void      fnWriteCatSequence     (const char *fcnsPath, const char *menusPath);
 void      fnPseudoMenu           (uint16_t target);
 
 /**

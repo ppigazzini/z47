@@ -693,7 +693,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.l
         context.generated,
         context.shortint_objects,
         context.keyboard_state_objects,
-        context.stack_state_objects,
+        context.testsuite_stack_state_objects,
         null,
     );
 
@@ -754,7 +754,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.l
         context.generated,
         context.shortint_objects,
         context.keyboard_state_objects,
-        context.stack_state_objects,
+        context.testsuite_stack_state_objects,
         null,
         false,
     );
@@ -809,7 +809,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.l
         context.generated,
         context.shortint_objects,
         context.keyboard_state_objects,
-        context.stack_state_objects,
+        context.testsuite_stack_state_objects,
         null,
         false,
     );
@@ -854,7 +854,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.l
         context.generated,
         context.shortint_objects,
         context.keyboard_state_objects,
-        context.stack_state_objects,
+        context.testsuite_stack_state_objects,
         null,
         false,
     );
@@ -894,7 +894,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.l
         context.generated,
         context.shortint_objects,
         context.keyboard_state_objects,
-        context.stack_state_objects,
+        context.testsuite_stack_state_objects,
         null,
         false,
     );
@@ -945,7 +945,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.l
         context.host_target,
         optimize,
         "keyboardEntryCov",
-        .{ .coverage = true },
+        .{ .coverage = true, .is_testsuite_build = true },
     );
     const coverage_harness = host_builders.addFullCoreHarness(
         b,
@@ -1003,7 +1003,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.l
         context.generated,
         context.shortint_objects,
         context.keyboard_state_objects,
-        context.stack_state_objects,
+        context.testsuite_stack_state_objects,
         null,
         false,
     );
@@ -1060,7 +1060,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.l
         context.generated,
         context.shortint_objects,
         context.keyboard_state_objects,
-        context.stack_state_objects,
+        context.testsuite_stack_state_objects,
         null,
         false,
     );
@@ -1091,7 +1091,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.l
         context.generated,
         context.shortint_objects,
         context.keyboard_state_objects,
-        context.stack_state_objects,
+        context.testsuite_stack_state_objects,
         .full,
         false,
     );
@@ -1122,7 +1122,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.l
         context.generated,
         context.shortint_objects,
         context.keyboard_state_objects,
-        context.stack_state_objects,
+        context.testsuite_stack_state_objects,
         .full,
         false,
     );
@@ -1246,7 +1246,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.l
         context.generated,
         context.shortint_objects,
         context.keyboard_state_objects,
-        context.stack_state_objects,
+        context.testsuite_stack_state_objects,
         null,
         false,
     );
@@ -1291,7 +1291,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.l
         context.generated,
         context.shortint_objects,
         context.keyboard_state_objects,
-        context.stack_state_objects,
+        context.testsuite_stack_state_objects,
         null,
         false,
     );
@@ -1467,7 +1467,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.l
         context.generated,
         context.shortint_objects,
         context.keyboard_state_objects,
-        context.stack_state_objects,
+        context.testsuite_stack_state_objects,
         .full,
     );
     const run_test_suite_asan = addTestSuiteRun(b, test_suite_asan, build_common.upstreamPathString(b, "src/testSuite/tests/testSuiteList.txt"));

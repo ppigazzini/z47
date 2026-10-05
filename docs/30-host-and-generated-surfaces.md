@@ -52,13 +52,15 @@ it still compiles the vendored `../upstream/dep/decNumberICU`.
 
 `../build/host/context.zig` collects the imported `../upstream/src/c47-gtk` C files,
 then `../build/host/gtk_gui.zig` `filterGtkSources` drops every path listed in
-`../build/host/gtk_gui_legacy_gtk_sources.txt`. That manifest currently lists
-all seven upstream GTK C files (`c47-gtk.c`, `gtkGui.c`, and the `hal/` set), so
-no first-party GTK C reaches the simulator link. The former
-`gtk_gui_legacy.c` re-entry bridge is retired; the ported main, GUI, HAL, I/O, and
-LCD surfaces run entirely from the Zig objects added by
-`gtk_gui.addToModule` (`gtk_gui_runtime.zig`, `gtk_hal_runtime.zig`,
-`gtk_io_runtime.zig`, `gtk_lcd_runtime.zig`, and the wider `gtk_gui_*.zig` set).
+`../build/host/gtk_gui_legacy_gtk_sources.txt`. That manifest lists every
+upstream GTK C file (`c47-gtk.c`, `gtkGui.c`, and the `hal/` set), so no
+first-party GTK C reaches the simulator link; `ls ../upstream/src/c47-gtk/*.c
+../upstream/src/c47-gtk/hal/*.c` against the manifest shows the two agree. The
+former `gtk_gui_legacy.c` re-entry bridge is retired; the ported main, GUI, HAL,
+I/O, LCD and HP 82240B print-out window surfaces run entirely from the Zig
+objects added by `gtk_gui.addToModule` (`gtk_gui_runtime.zig`,
+`gtk_hal_runtime.zig`, `gtk_io_runtime.zig`, `gtk_lcd_runtime.zig`,
+`gtk_printer_window.zig`, and the wider `gtk_gui_*.zig` set).
 
 The imported `../upstream/src/c47-gtk/*.c` files stay in the tree as read-only audit and
 parity reference; they are not compiled.

@@ -86,7 +86,7 @@ In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,3[1,0,0]"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,3[1,0,0]" RX=ReMa:"M1,2[0,0]"
 
 ;=======================================================================================================================
-; x^d = w in closed form (the QR engine refuses circulant companion matrices)
+; x^d = w in closed form
 ;=======================================================================================================================
 ; x^2 + 1: roots +i, -i
 In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,3[1,0,1]"
@@ -154,11 +154,11 @@ In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,4[0,1,-1,0]"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,4[0,1,-1,0]" RX=ReMa:"M1,2[1,0]"
 
 ;=======================================================================================================================
-; Repeated roots: (x-1)^4 - a multiplicity-4 cluster is conditioning-limited to about 75/4 digits; these are the engine's
-; deterministic values, a conjugate-symmetric cluster of spread ~1.4E-17 around the true quadruple root, delivered honestly
+; (x-1)^4 by exact integer expansion: the root is exactly 1, multiplicity 4. The cluster below is engine residue at
+; the 1E-18.75 a quadruple root allows, and moves with the shift sequence
 ;=======================================================================================================================
 In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,5[1,-4,6,-4,1]"
-Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ReMa:"M1,5[1,-4,6,-4,1]" RX=CxMa:"M1,4[1.000000000000000007677764405319433i0,0.9999999999999999992695695413283999i7.305814482782950167235141191142776E-19,0.9999999999999999992695695413283999i-7.305814482782950167235141191142776E-19,0.9999999999999999937830965120237671i0]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ReMa:"M1,5[1,-4,6,-4,1]" RX=CxMa:"M1,4[1.000000000000000000325401177898388i-3.183307399979853181808103224312381E-19,1.000000000000000000318330739997985i3.254011778983875762614106157626121E-19,0.9999999999999999996816692600020147i-3.254011778983875760616412480183550E-19,0.9999999999999999996745988221016124i3.183307399979853179810409546869810E-19]"
 
 ;=======================================================================================================================
 ; Wilkinson degree 10: roots 1..10, coefficients exact in real34
@@ -168,24 +168,19 @@ In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,11[1,-55,1320,-18150,1577
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,11[1,-55,1320,-18150,157773,-902055,3416930,-8409500,12753576,-10628640,3628800]" RX=ReMa:"M1,10[10,9,8,7,6,5,4,3,2,1]"
 
 ;=======================================================================================================================
-; Degree 20 exceeds the working RAM the QR engine needs: refused whole, X and L untouched.
-; This case is an arena-size proxy: it documents the ceiling of RAM_SIZE_IN_BLOCKS_NEW_HW, and a change to that
-; constant legitimately moves the refusal point, in which case re-derive the degree that no longer fits
+; Wilkinson degree 20 by exact integer expansion of prod (x-k), k=1..20: roots exactly 1..20, asserted to 34 digits
 ;=======================================================================================================================
 In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,21[1,-210,20615,-1256850,53327946,-1672280820,40171771630,-756111184500,11310276995381,-135585182899530,1307535010540395,-10142299865511450,63030812099294896,-311333643161390640,1206647803780373360,-3599979517947607200,8037811822645051776,-12870931245150988800,13803759753640704000,-8752948036761600000,2432902008176640000]"
-Out: EC=11 FL_CPXRES=0 FL_ASLIFT=0 RL=LonI:"852" RX=ReMa:"M1,21[1,-210,20615,-1256850,53327946,-1672280820,40171771630,-756111184500,11310276995381,-135585182899530,1307535010540395,-10142299865511450,63030812099294896,-311333643161390640,1206647803780373360,-3599979517947607200,8037811822645051776,-12870931245150988800,13803759753640704000,-8752948036761600000,2432902008176640000]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,21[1,-210,20615,-1256850,53327946,-1672280820,40171771630,-756111184500,11310276995381,-135585182899530,1307535010540395,-10142299865511450,63030812099294896,-311333643161390640,1206647803780373360,-3599979517947607200,8037811822645051776,-12870931245150988800,13803759753640704000,-8752948036761600000,2432902008176640000]" RX=ReMa:"M1,20[20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1]"
 
 ;=======================================================================================================================
-; The engine's circulant screen reads only real parts, so a complex polynomial whose middle coefficients are all purely
-; imaginary while the constant has a real part looks circulant to it although it is not x^d = w: SLVP dodges the screen
-; with a diagonal similarity (superdiagonal 1/2), and the QR solver then delivers these roots, verified independently
-; to 34 digits by 60-digit Horner residuals. Complex input gets no residue cleanup (independent component exponents can
-; encode arbitrarily small genuine features), so the sub-representable real parts on the two purely imaginary roots are
-; the engine's raw convergence residue, delivered honestly
+; A complex polynomial with purely imaginary middle coefficients and a real constant, through the companion matrix.
+; p(i) = 0 in exact Gaussian-integer arithmetic, so two roots are exactly i and exactly -1.5436...i and their real
+; parts are asserted as 0. Roots verified to 34 digits by 60-digit Horner residuals.
 ;=======================================================================================================================
 ; x^4 + i x^3 - 2, exact roots include i
 In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=CxMa:"M1,5[1i0,0i1,0i0,0i0,-2i0]"
-Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M1,5[1i0,0i1,0i0,0i0,-2i0]" RX=CxMa:"M1,4[-6.777262814425583794579544187249176E-40i-1.543689012692076361570855971801748,-1.115142508039937359745764636315014i-0.2281554936539618192145720140991260,1.115142508039937359745764636315014i-0.2281554936539618192145720140991260,-4.067804215061577727803136725462773E-40i1]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M1,5[1i0,0i1,0i0,0i0,-2i0]" RX=CxMa:"M1,4[0i-1.543689012692076361570855971801748,1.115142508039937359745764636315014i-0.2281554936539618192145720140991260,-1.115142508039937359745764636315014i-0.2281554936539618192145720140991260,0i1]"
 
 ;=======================================================================================================================
 ; Two or more complex pairs through the QR engine: each 2x2 block of the real Schur form is solved on its own. The roots
@@ -194,13 +189,22 @@ Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M1,5[1i0,0i1,0i0,0i0,-2i0]" RX=CxMa:"
 ; x^4 - 6x^2 + 25 = (x^2 - 4x + 5)(x^2 + 4x + 5): roots -2 -/+ i and 2 +/- i, all of magnitude sqrt(5)
 TIMER: 004 degree 4, two complex pairs
 In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,5[1,0,-6,0,25]"
-Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ReMa:"M1,5[1,0,-6,0,25]" RX=CxMa:"M1,4[-2i-1,-2i1,2i1,2i-1]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ReMa:"M1,5[1,0,-6,0,25]" RX=CxMa:"M1,4[2i1,-2i1,-2i-1,2i-1]"
 
 ; (x^2 + 1)(x^2 + 4)(x^2 + 9) = x^6 + 14x^4 + 49x^2 + 36: roots +/- 3i, -/+ 2i, +/- i
 TIMER: 005 degree 6, three complex pairs
 In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,7[1,0,14,0,49,0,36]"
-Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ReMa:"M1,7[1,0,14,0,49,0,36]" RX=CxMa:"M1,6[0i3,0i-3,0i-2,0i2,0i1,0i-1]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ReMa:"M1,7[1,0,14,0,49,0,36]" RX=CxMa:"M1,6[0i3,0i-3,0i2,0i-2,0i1,0i-1]"
 
-; (x^2 + 1)^2 = x^4 + 2x^2 + 1, roots +/- i twice: the 4-row block is not solved, so No root found is displayed. Replace with the roots once such a block is solved.
+; (x^2 + 1)^2 = x^4 + 2x^2 + 1: the roots are +/- i, each of multiplicity 2. A double root is determined to about half
+; the working digits; on this polynomial both come back exact, while the companion matrix of the same polynomial in
+; matrix.txt returns them with real parts at 4E-39. Both copies of the pair are ordered positive-imaginary-first, as
+; a pair off the imaginary axis is: the ordering compares against the pair's own magnitude, which is non-zero here,
+; where a comparison against its real part would have nothing to scale by
 In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,5[1,0,2,0,1]"
-Out: EC=20 FL_CPXRES=0 FL_ASLIFT=0 RL=LonI:"852" RX=ReMa:"M1,5[1,0,2,0,1]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ReMa:"M1,5[1,0,2,0,1]" RX=CxMa:"M1,4[0i1,0i-1,0i1,0i-1]"
+
+; (x^2-2x+5)(x^2-8x+20)(x^2-18x+85) by exact integer expansion, roots 9+-2i, 4+-2i, 1+-2i. Asserts that a conjugate
+; pair is identified by its real part as well as its imaginary one.
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,7[1,-28,306,-1668,5025,-8600,8500]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ReMa:"M1,7[1,-28,306,-1668,5025,-8600,8500]" RX=CxMa:"M1,6[9i2,9i-2,4i2,4i-2,1i2,1i-2]"

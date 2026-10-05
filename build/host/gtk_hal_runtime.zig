@@ -42,9 +42,8 @@ pub export fn setLineDelay(delay: u16) callconv(.c) void {
     _ = delay;
 }
 
-pub export fn sendByteIR(byte: u8) callconv(.c) void {
-    _ = byte;
-}
+// sendByteIR lives with the print-out window in gtk_printer_window.zig, the
+// only consumer of the printer byte stream on the simulator.
 
 pub export fn printer_advance_buf(what: c_int) callconv(.c) void {
     _ = what;

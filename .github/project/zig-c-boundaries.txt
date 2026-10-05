@@ -28,6 +28,7 @@ build/host/gtk_gui_setup_ui.zig
 build/host/gtk_io_runtime.zig
 build/host/gtk_io.zig
 build/host/gtk_lcd_runtime.zig
+build/host/gtk_printer_window.zig
 build/tests/testsuite_hal.zig
 build/tests/testsuite_main.zig
 build/tests/constants/constants_parity.zig

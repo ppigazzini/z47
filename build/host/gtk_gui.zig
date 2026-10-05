@@ -51,6 +51,9 @@ pub fn addToModule(
     gtk_options.addOption(u8, "calcmodel", calcmodel);
     gtk_options.addOption([]const u8, "vcs_commit_id", vcs);
     gtk_options.addOption([]const u8, "version1", "00.109.04.00b0"); // mirrors defines.h VERSION1
+    // OPTION_IR_PRINTING, read by the print-out window. defines.h #undef's it
+    // only for DM42 packages 1 and 3, so every simulator build has it.
+    gtk_options.addOption(bool, "ir_printing", true);
     // res/ is an imported-upstream path, so in the dev layout it sits under
     // UPSTREAM_ROOT rather than beside build.zig. relocateToResourceDir() probes
     // this subdirectory as well when walking up from the executable; a packaged
