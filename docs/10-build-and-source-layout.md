@@ -250,7 +250,7 @@ Checked-in build defaults come from these tracked files:
   proof, and host package staging
 - `../.github/project/zig-c-boundaries.txt` and
   `../.github/project/check-zig-c-boundaries.sh`: the approved checked-in
-  `@cImport` and direct `extern` boundary files and their guard
+  `translate-c` roots and direct `extern` boundary files, and their guard
 - `../upstream/docs/code/requirements.txt`: pins the Python package set needed for
   `zig build docs`
 

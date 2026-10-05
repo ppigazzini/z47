@@ -55,8 +55,7 @@ root, kept as audit and parity reference.
 - not pure Zig at the dependency level: the build still compiles the vendored
   `upstream/dep/decNumberICU` and links GTK 3, GMP, FreeType 2, optional PulseAudio, and
   the SwissMicros SDKs (see the dependency table below)
-- not a license to treat `zig translate-c` or ad hoc `@cImport` as a migration
-  path for owner logic: `translate-c` is confined to the generated ABI seam and a
+- not a license to treat `translate-c` as a migration path for owner logic: `translate-c` is confined to the generated ABI seam and a
   few narrow generator boundaries (see
   [50-zig-c-boundaries-and-rewrite-policy.md](50-zig-c-boundaries-and-rewrite-policy.md))
 
@@ -134,6 +133,7 @@ page map in [90-official-references.md](90-official-references.md).
   build entrypoints, layout, and local flow.
 - [20-zig-build-graph.md](20-zig-build-graph.md) for the Zig build-domain split.
 - [50-zig-c-boundaries-and-rewrite-policy.md](50-zig-c-boundaries-and-rewrite-policy.md)
-  before changing any `@cImport`, `extern`, generated seam, or retained C surface.
+  before changing any `translate-c` root, `extern`, generated seam, or retained C
+  surface.
 - [70-tests-and-verification.md](70-tests-and-verification.md) before choosing a
   rerun lane.

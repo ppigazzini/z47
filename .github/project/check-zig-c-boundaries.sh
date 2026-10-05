@@ -7,7 +7,6 @@ repo_root="$(cd -- "$script_dir/../.." && pwd)"
 allowlist_file="$script_dir/zig-c-boundaries.txt"
 
 declare -a translate_c_allowed=()
-declare -a cimport_allowed=()
 declare -a extern_allowed=()
 
 contains_path() {
@@ -37,10 +36,6 @@ load_allowlist() {
                 section="translate-c"
                 continue
                 ;;
-            "[cimport]")
-                section="cimport"
-                continue
-                ;;
             "[extern-symbols]")
                 section="extern"
                 continue
@@ -50,9 +45,6 @@ load_allowlist() {
         case "$section" in
             translate-c)
                 translate_c_allowed+=("$line")
-                ;;
-            cimport)
-                cimport_allowed+=("$line")
                 ;;
             extern)
                 extern_allowed+=("$line")
@@ -108,22 +100,11 @@ check_tree() {
         require_allowlisted_match "$file" '#include[[:space:]]*[<"]' 'translate-c-root' || violations=1
     done
 
-    for file in "${cimport_allowed[@]}"; do
-        require_allowlisted_match "$file" '@cImport[[:space:]]*\(' '@cImport' || violations=1
-    done
-
     for file in "${extern_allowed[@]}"; do
         require_allowlisted_match "$file" '^[[:space:]]*(pub[[:space:]]+)?extern[[:space:]]+(fn|const|var)\b' 'extern-symbol' || violations=1
     done
 
     for file in "${zig_files[@]}"; do
-        if grep -Eq '@cImport[[:space:]]*\(' "$repo_root/$file"; then
-            if ! contains_path "$file" "${cimport_allowed[@]}"; then
-                printf 'Unapproved @cImport boundary: %s\n' "$file" >&2
-                violations=1
-            fi
-        fi
-
         if grep -Eq '^[[:space:]]*(pub[[:space:]]+)?extern[[:space:]]+(fn|const|var)\b' "$repo_root/$file"; then
             if ! contains_path "$file" "${extern_allowed[@]}"; then
                 printf 'Unapproved direct extern symbol binding: %s\n' "$file" >&2
@@ -148,5 +129,4 @@ load_allowlist
 check_tree
 
 printf 'Approved translate-c roots: %s\n' "${#translate_c_allowed[@]}"
-printf 'Approved @cImport files: %s\n' "${#cimport_allowed[@]}"
 printf 'Approved extern-symbol files: %s\n' "${#extern_allowed[@]}"
