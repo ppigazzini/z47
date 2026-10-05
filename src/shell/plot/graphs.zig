@@ -218,7 +218,7 @@ pub export var invalid_rms: bool_t = true;
 // decimal, matching c43. The exported symbol is a `real_t *const` to a backing
 // buffer, ABI-identical to upstream's REAL_T_PTR(name, 34), so the C and Zig
 // owners are drop-in swappable (the buffer rounds up to 39-digit capacity).
-const real_zero: real_t = .{ .digits = 1, .exponent = 0, .bits = 0, .lsu = std.mem.zeroes([abi.DECNUMUNITS]u16) };
+const real_zero: real_t = .{ .digits = 1, .exponent = 0, .bits = 0, .lsu = @splat(0) };
 var _x_min_data: real_t = real_zero;
 var _x_max_data: real_t = real_zero;
 var _y_min_data: real_t = real_zero;
@@ -234,7 +234,7 @@ pub export const y_max: *real_t = &_y_max_data;
 pub export var PLOT_ZMY: i8 = 0;
 
 // function-local statics (preserve across calls)
-var gt_outstr: [bufLen]u8 = std.mem.zeroes([bufLen]u8); // graph_text's static char outstr[bufLen]
+var gt_outstr: [bufLen]u8 = @splat(0); // graph_text's static char outstr[bufLen]
 var gpm_prev_y_unclipped: i16 = 0; // graph_plotmem's static int16_t prev_y_unclipped
 
 // ---------------------------------------------------------------------------

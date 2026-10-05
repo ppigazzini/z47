@@ -169,7 +169,7 @@ fn desc(comptime text: []const u8) reserved_variable_desc_t {
         if (text.len >= 28) @compileError("reserved variable description too long");
     }
 
-    var out: [28]u8 = std.mem.zeroes([28]u8);
+    var out: [28]u8 = @splat(0);
     inline for (text, 0..) |ch, i| {
         out[i] = ch;
     }

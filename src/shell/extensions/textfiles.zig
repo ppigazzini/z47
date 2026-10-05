@@ -96,7 +96,7 @@ inline fn stringByteLength(str: [*c]const u8) i32 {
 // ClipBoardMsg table (TO_QSPI const nstr[]). Each row is a 30-byte name field.
 // ---------------------------------------------------------------------------
 fn clipRow(comptime s: []const u8) [SIZE_OF_EACH_CLIPBOARD_MSG]u8 {
-    var row = std.mem.zeroes([SIZE_OF_EACH_CLIPBOARD_MSG]u8);
+    var row: [SIZE_OF_EACH_CLIPBOARD_MSG]u8 = @splat(0);
     @memcpy(row[0..s.len], s);
     return row;
 }

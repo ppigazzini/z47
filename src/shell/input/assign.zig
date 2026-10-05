@@ -746,7 +746,7 @@ pub export fn removeUserItemAssignments(userItem: i16, userItemName: [*c]u8) cal
     var lbl: [22]u8 = undefined;
     const f: bool_t = shiftF;
     const g: bool_t = shiftG;
-    var kc: [4]u8 = std.mem.zeroes([4]u8);
+    var kc: [4]u8 = @splat(0);
     {
         var i: usize = 0;
         while (i < 37) : (i += 1) {
@@ -1520,7 +1520,7 @@ fn _assignToKey(keyFunc: i16) bool_t {
                 else => {},
             }
             if (keyFunc == kf and (!getSystemFlag(FLAG_USER) or getUserKeyLabelString(@intCast(j * 6 + @as(i32, keyStateCode) + i))[0] == 0)) {
-                var kc: [4]u8 = std.mem.zeroes([4]u8);
+                var kc: [4]u8 = @splat(0);
                 kc[0] = @intCast(@divTrunc(j, 10) + '0');
                 kc[1] = @intCast(@rem(j, 10) + '0');
                 kc[2] = 0;

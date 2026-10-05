@@ -19,7 +19,7 @@ pub fn setPositiveSign(value: *abi.Real34) void {
 }
 
 test "isNegative reads the top-byte sign bit" {
-    var v = abi.Real34{ .bytes = std.mem.zeroes([16]u8) };
+    var v = abi.Real34{ .bytes = @splat(0) };
     try std.testing.expect(!isNegative(&v));
     v.bytes[15] = 0x80;
     try std.testing.expect(isNegative(&v));
@@ -28,7 +28,7 @@ test "isNegative reads the top-byte sign bit" {
 }
 
 test "setPositiveSign clears only the sign bit" {
-    var v = abi.Real34{ .bytes = std.mem.zeroes([16]u8) };
+    var v = abi.Real34{ .bytes = @splat(0) };
     v.bytes[15] = 0xa2;
     setPositiveSign(&v);
     try std.testing.expectEqual(@as(u8, 0x22), v.bytes[15]);

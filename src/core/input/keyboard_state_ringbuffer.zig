@@ -50,7 +50,7 @@ pub const BUFFER_SUCCESS: u8 = 1;
 // oldest stored byte, `write` always points at an empty slot. A full buffer keeps
 // one slot empty, so capacity is BUFFER_SIZE - 1 = 7 bytes.
 pub const KeyBuffer = struct {
-    data: [BUFFER_SIZE]u8 = std.mem.zeroes([BUFFER_SIZE]u8),
+    data: [BUFFER_SIZE]u8 = @splat(0),
     read: u8 = 0,
     write: u8 = 0,
 

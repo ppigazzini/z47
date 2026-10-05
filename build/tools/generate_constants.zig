@@ -248,7 +248,7 @@ const Generator = struct {
     fn emitRealConstant(self: *Generator, spec: RealConstant, ctxt_real: *realContext_t) !void {
         const max_digits = ((spec.digits + 2) / 6) * 6 + 3;
         const len_in_bytes = 10 + @sizeOf(c.decNumberUnit) * (max_digits / dec_digits_per_unit);
-        var storage = std.mem.zeroes([max_real_words]u32);
+        var storage: [max_real_words]u32 = @splat(0);
         const real_ptr: *real_t = @ptrCast(&storage[0]);
 
         ctxt_real.digits = @intCast(max_digits);

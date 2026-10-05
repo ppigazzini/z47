@@ -706,7 +706,7 @@ const STD_SUP_x = "\xa4\x99";
 const STD_SUP_2 = "\xa1\x62";
 
 fn alias(comptime item: u16, comptime name: []const u8) nameAlias_t {
-    var row = nameAlias_t{ .item = item, .name = std.mem.zeroes([16]u8) };
+    var row = nameAlias_t{ .item = item, .name = @splat(0) };
     @memcpy(row.name[0..name.len], name);
     return row;
 }
@@ -2166,7 +2166,7 @@ extern fn liftStack() void;
 const summationRegisterName = blk: {
     const SS = struct {
         fn row(comptime s: []const u8) summationRegisterName_t {
-            var r = summationRegisterName_t{ .name = std.mem.zeroes([16]u8) };
+            var r = summationRegisterName_t{ .name = @splat(0) };
             @memcpy(r.name[0..s.len], s);
             return r;
         }

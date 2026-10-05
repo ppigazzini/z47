@@ -92,7 +92,7 @@ fn runRegister(register_no: u16) void {
         }
         // fnP_Regs declares char label[16]: the longest thing written into it is
         // a named variable's name, at most 15 bytes plus the terminator.
-        var label: [16]u8 = std.mem.zeroes([16]u8);
+        var label: [16]u8 = @splat(0);
         frontier_print.z47_frontier_format_register_label(register_no, &label, label.len);
         frontier_print.printReg(register_no, @ptrCast(&label), true, LINE_FULL, false);
         return;

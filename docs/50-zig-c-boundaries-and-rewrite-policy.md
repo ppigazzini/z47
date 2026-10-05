@@ -111,8 +111,10 @@ Enforcement split:
 - The same ratchet holds at zero the spellings the pinned Zig retires, so a
   ported line cannot bring one back: `int_from_float_sites` counts
   `@intFromFloat`, which the 0.17 language reference deprecates as equivalent to
-  `@trunc`, and `slice_by_end_sites` counts a slice written `s[a .. a + n]`,
-  which the reference's *Slicing by Length* writes `s[a..][0..n]`.
+  `@trunc`; `slice_by_end_sites` counts a slice written `s[a .. a + n]`, which
+  the reference's *Slicing by Length* writes `s[a..][0..n]`; and
+  `zeroes_scalar_array_sites` counts an array of numbers zero-filled through
+  `std.mem.zeroes`, which is `@splat(0)`.
 - A seam file lives under a `generated/` path in `src/` AND carries the
   `// SEAM-GENERATED` marker. The reporter fails closed if a file has one but not
   the other, so a hand-written owner cannot smuggle `extern struct` / `[*c]` debt

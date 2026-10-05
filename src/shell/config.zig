@@ -1856,7 +1856,7 @@ pub export const confirmationTI linksection(code_data_section) = [11]confirmatio
 };
 
 fn strBuf(comptime s: []const u8) [30]u8 {
-    var b: [30]u8 = std.mem.zeroes([30]u8);
+    var b: [30]u8 = @splat(0);
     @memcpy(b[0..s.len], s);
     return b;
 }
@@ -2141,7 +2141,7 @@ pub export fn setLongPressFg(calcModel0: c_int, menuItem: i16) callconv(.c) void
 // ===========================================================================
 const msg2 = [_]nstr2{
     .{ .str2 = blk: {
-        var b: [180]u8 = std.mem.zeroes([180]u8);
+        var b: [180]u8 = @splat(0);
         const lit = "\xff\xf8\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\xff\xf8";
         @memcpy(b[0..lit.len], lit);
         break :blk b;
