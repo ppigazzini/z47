@@ -119,6 +119,8 @@ uint64_t systemFlags0 = 0;
 uint64_t systemFlags1 = 0;
 static real_t fake_const_nan_value;
 static real_t fake_const_one_value;
+static real_t fake_const_10_value;
+static real_t fake_const_1on10_value;
 static real_t fake_const_100_value;
 static real_t fake_const_3600_value;
 static real_t fake_const_180_value;
@@ -593,6 +595,8 @@ void mathWrappersReset(void) {
   ctxtReal75.digits = 75;
   setFakeReal(&fake_const_nan_value, 0, 0x20);
   setFakeReal(&fake_const_one_value, 1, 0);
+  setFakeReal(&fake_const_10_value, 10, 0);
+  setFakeRealWithExponent(&fake_const_1on10_value, 1, 0, -1);
   setFakeReal(&fake_const_100_value, 100, 0);
   setFakeReal(&fake_const_3600_value, 3600, 0);
   setFakeReal(&fake_const_180_value, 180, 0);
@@ -1546,6 +1550,11 @@ void convertLongIntegerRegisterToReal34Register(calcRegister_t source, calcRegis
 void convertLongIntegerRegisterToTimeRegister(calcRegister_t source, calcRegister_t destination) {
   convertLongIntegerRegisterToReal34Register(source, destination);
   *registerDataTypeSlot(destination) = dtTime;
+}
+
+void convertLongIntegerToReal(longInteger_t source, real_t *destination, realContext_t *realContext) {
+  (void)realContext;
+  setFakeReal(destination, (int32_t)mpz_get_si(source), 0);
 }
 
 void convertLongIntegerToReal34(longInteger_t source, real34_t *destination) {
@@ -3116,6 +3125,43 @@ decNumber *decNumberFMA(decNumber *result, const decNumber *lhs, const decNumber
   return decNumberAdd(result, &product, term, realContext);
 }
 
+decNumber *decNumberPlus(decNumber *result, const decNumber *rhs, decContext *realContext) {
+  (void)realContext;
+  *result = *rhs;
+  return result;
+}
+
+decNumber *decNumberRescale(decNumber *result, const decNumber *lhs, const decNumber *rhs, decContext *realContext) {
+  (void)rhs;
+  (void)realContext;
+  *result = *lhs;
+  return result;
+}
+
+decNumber *decNumberCopyAbs(decNumber *result, const decNumber *rhs) {
+  *result = *rhs;
+  result->bits &= 0x7f;
+  return result;
+}
+
+// A fake real carries no exact arithmetic, so no power and no root is ever exact here: both sides take the rounded path, and the
+// number of times each asks is what the snapshot compares. The exact cases are the testSuite's.
+bool_t realIntegerPowerExact(const real_t *x, const real_t *n, real_t *res) {
+  (void)x;
+  (void)n;
+  (void)res;
+  snapshot.real_integer_power_exact_calls++;
+  return false;
+}
+
+bool_t realExactRoot(const real_t *x, const real_t *n, real_t *root) {
+  (void)x;
+  (void)n;
+  (void)root;
+  snapshot.real_exact_root_calls++;
+  return false;
+}
+
 decNumber *decNumberFromUInt32(decNumber *result, uint32_t source) {
   snapshot.dec_number_from_uint32_calls++;
   snapshot.dec_number_from_uint32_last_source = source;
@@ -3687,6 +3733,14 @@ const real_t *z47_math_wrappers_const_1e_6(void) {
 
 const real34_t *z47_math_wrappers_const34_86400(void) {
   return &fake_const34_86400_value;
+}
+
+const real_t *z47_math_wrappers_const_10(void) {
+  return &fake_const_10_value;
+}
+
+const real_t *z47_math_wrappers_const_1on10(void) {
+  return &fake_const_1on10_value;
 }
 
 const real_t *z47_math_wrappers_const_100(void) {

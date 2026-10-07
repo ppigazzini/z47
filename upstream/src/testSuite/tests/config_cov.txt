@@ -9,6 +9,7 @@
 ;** exercised for EC=0. SETHP35 stores the config into R35   **
 ;** before SETC47 recalls it. fnClAll takes FARG = CONFIRMED.**
 ;*************************************************************
+Acc: 34
 In: FL_SPCRES=0 SD=0
 
 ; last error code is clear at the start of this file
@@ -30,6 +31,13 @@ In:  FARG=1
 Out: EC=0
 Func: fnGetRoundingMode
 Out: EC=0 RX=LonI:"1"
+; The item setter and configuration reset must select matching Real34 context modes.
+Func: fnConfigRoundingCov
+In:  FARG=0
+Out: EC=0 RX=Real:"1"
+Func: fnConfigRoundingCov
+In:  FARG=1
+Out: EC=0 RX=Real:"1"
 
 ; exponent range (values below 99 are floored to 99, 150 echoes back)
 Func: fnRange
@@ -46,6 +54,16 @@ Func: fnGetHide
 Out: EC=0 RX=LonI:"12"
 
 ; number of displayed decimals (value taken from R00)
+; UINT32_MAX remains representable and clamps to the display limit.
+Func: fnSetNDEC
+In:  FARG=0 R00=Real:"4294967295"
+Out: EC=0
+Func: fnGetNDEC
+Out: EC=0 RX=LonI:"19"
+; The next integer must not wrap to zero during native conversion.
+Func: fnSetNDEC
+In:  FARG=0 R00=Real:"4294967296"
+Out: EC=8
 Func: fnSetNDEC
 In:  FARG=0 R00=Real:"4"
 Out: EC=0
@@ -53,6 +71,9 @@ Func: fnGetNDEC
 Out: EC=0 RX=LonI:"4"
 
 ; real display format (value taken from R00, 3 = ENG)
+Func: fnSetREALDF
+In:  FARG=0 R00=Real:"4294967296"
+Out: EC=8
 Func: fnSetREALDF
 In:  FARG=0 R00=Real:"3"
 Out: EC=0
@@ -75,12 +96,34 @@ Out: EC=0 RX=LonI:"1"
 
 ; angular display mode (value from R00, 2 = radian; ADM round-trips)
 Func: fnSetADM
+In:  FARG=0 R00=Real:"-0"
+Out: EC=0
+Func: fnGetADM
+Out: EC=0 RX=LonI:"0"
+Func: fnSetADM
+In:  FARG=0 R00=Real:"NaN"
+Out: EC=1
+Func: fnSetADM
+In:  FARG=0 R00=Real:"Infinity"
+Out: EC=1
+Func: fnSetADM
+In:  FARG=0 R00=Real:"4294967296"
+Out: EC=8
+Func: fnSetADM
 In:  FARG=0 R00=Real:"2"
 Out: EC=0
 Func: fnGetADM
 Out: EC=0 RX=LonI:"2"
 
 ; denominator max (value taken from R00; 64 is a profile default, so use 50)
+Func: fnSetDMX
+In:  FARG=0 R00=Real:"4294967295"
+Out: EC=0
+Func: fnGetDMX
+Out: EC=0 RX=LonI:"9999"
+Func: fnSetDMX
+In:  FARG=0 R00=Real:"4294967296"
+Out: EC=8
 Func: fnSetDMX
 In:  FARG=0 R00=Real:"50"
 Out: EC=0
@@ -99,6 +142,13 @@ Out: EC=0
 Func: fnSetBaseNr
 In:  FARG=10
 Out: EC=0
+; Values outside int32 must not wrap to an accepted sign-mode code.
+Func: fnSetISM
+In:  FARG=0 R00=Real:"4294967295"
+Out: EC=8
+Func: fnSetISM
+In:  FARG=0 R00=Real:"-4294967296"
+Out: EC=8
 Func: fnSetISM
 In:  FARG=0 R00=Real:"1"
 Out: EC=0
@@ -134,3 +184,4 @@ Out: EC=0
 Func: fnClAll
 In:  FARG=9877
 Out: EC=0
+Acc: 30

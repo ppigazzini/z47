@@ -53,6 +53,9 @@ void curtReal(void) {
     return;
   }
 
+  real_t a;
+
+  realCopyAbs(&x, &a);
   if(realIsPositive(&x)) {
     PowerReal(&x, const39_1on3, &x, &ctxtReal39);
   }
@@ -60,6 +63,14 @@ void curtReal(void) {
     realSetPositiveSign(&x);
     PowerReal(&x, const39_1on3, &x, &ctxtReal39);
     realSetNegativeSign(&x);
+  }
+  if(!realIsZero(&a) && !realIsSpecial(&a)) {                     // a cube of a number of 34 digits gives that number
+    const bool_t negative = realIsNegative(&x);
+    realSetPositiveSign(&x);
+    realExactRoot(&a, const_3, &x);
+    if(negative) {
+      realSetNegativeSign(&x);
+    }
   }
   convertRealToResultRegister(&x, REGISTER_X, amNone);
 }

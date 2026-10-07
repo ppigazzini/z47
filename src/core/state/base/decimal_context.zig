@@ -22,3 +22,5 @@ pub export var ctxtReal75: realContext_t = std.mem.zeroes(realContext_t);
 // The decimal working precision and rounding mode that drive the contexts above.
 pub export var significantDigits: u8 = 0;
 pub export var roundingMode: u8 = 0;
+// DRM, the mode the display, ROUND and the XFN strings round a shown value by.
+pub export var displayRoundingMode: u8 = 0;

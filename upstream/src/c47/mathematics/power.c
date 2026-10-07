@@ -40,6 +40,54 @@ void PowerReal(const real_t *y, const real_t *x, real_t *res, realContext_t *rea
 }
 
 
+/********************************************//**
+ * \brief x to the integer power n, when the power is exact
+ *
+ * The power is taken at 75 digits half even, by repeated multiplication. It is exact when no digit is dropped, which the Inexact status of the context
+ * reports.
+ *
+ * \param[in]  x   const real_t* a real
+ * \param[in]  n   const real_t* the exponent
+ * \param[out] res real_t*       x^n, when the result is true
+ * \return bool_t true when n is an integer below 10000 in magnitude and res is x^n exactly
+ ***********************************************/
+bool_t realIntegerPowerExact(const real_t *x, const real_t *n, real_t *res) {
+  realContext_t c = ctxtReal75;
+
+  if(realIsSpecial(x) || realIsSpecial(n) || !realIsAnInteger(n) || (!realIsZero(n) && realGetExponent(n) > 3)) {
+    return false;
+  }
+  c.round = DEC_ROUND_HALF_EVEN;
+  c.status = 0;
+  realPower(x, n, res, &c);
+  return (c.status & (DEC_Inexact | DEC_Overflow | DEC_Underflow | DEC_Invalid_operation | DEC_Division_by_zero)) == 0 && !realIsSpecial(res);
+}
+
+
+/********************************************//**
+ * \brief The n-th root of x, exact where x is the n-th power of a number of 34 digits
+ *
+ * root rounded half even to 34 digits is the exact root when one of 34 digits exists. The test is that its n-th power is x exactly.
+ *
+ * \param[in]     x    const real_t* a positive real
+ * \param[in]     n    const real_t* an integer of 2 or more
+ * \param[in,out] root real_t*       the root at working precision, replaced by the exact root when there is one
+ * \return bool_t true when root is replaced
+ ***********************************************/
+bool_t realExactRoot(const real_t *x, const real_t *n, real_t *root) {
+  real_t c, p;
+  realContext_t c34 = ctxtReal34;
+
+  c34.round = DEC_ROUND_HALF_EVEN;
+  realPlus(root, &c, &c34);
+  if(!realIntegerPowerExact(&c, n, &p) || !realCompareEqual(&p, x)) {
+    return false;
+  }
+  realCopy(&c, root);
+  return true;
+}
+
+
 /******************************************************************************************************************************************************************************************/
 /* long integer ^ ...                                                                                                                                                                     */
 /******************************************************************************************************************************************************************************************/
@@ -202,7 +250,23 @@ static void powReal(void) {
     goto finish;
   }
 
+  if(realIsZero(&y) && !realIsAnInteger(&x)) {        // (-0) ^ non-integer is (+0) ^ non-integer, a real
+    realSetPositiveSign(&y);
+  }
+
+  if(!realIsZero(&y) && realIntegerPowerExact(&y, &x, &res)) {   // an integer exponent with an exact power: the power itself, rounded once by RM
+    goto finish;
+  }
+
   PowerReal(&y, &x, &res, &ctxtReal39);
+
+  if(realIsPositive(&y) && !realIsZero(&x) && !realIsSpecial(&res)) {   // an exponent 1/n with an exact n-th root of y gives that root
+    real_t n;
+    realDivide(const_1, &x, &n, &ctxtReal39);
+    if(realIsAnInteger(&n) && realCompareGreaterThan(&n, const_1)) {
+      realExactRoot(&y, &n, &res);
+    }
+  }
 
   if(realIsNaN(&res) && realIsNegative(&y) && !realIsAnInteger(&x)) {
     if(getFlag(FLAG_CPXRES)) {

@@ -374,7 +374,7 @@ typedef struct {
   bool_t         compatibility_byte11;              //Spare Byte           //
   bool_t         compatibility_byte12;              //Spare Byte           //
   bool_t         compatibility_byte13;              //Spare Byte           //
-  bool_t         compatibility_byte14;              //Spare Byte           //
+  uint8_t        displayRoundingMode;                                      //  DRM setting
   bool_t         compatibility_byte15;              //Spare Byte           //
   int8_t         fractionDigits;                                           //  FDIGS
   int8_t         compatibility_byte23;                                     //

@@ -252,6 +252,9 @@ void xthRootReal(const real_t *yy, const real_t *xx, realContext_t *realContext)
     if(realIsPositive(&y)) {                                       //positive base, no problem, get the power function y^(1/x)
       realDivide(const_1, &x, &x, realContext);
       PowerReal(&y, &x, &o, realContext);
+      if(realIsAnInteger(xx) && realCompareGreaterThan(xx, const_1) && !realIsZero(&y)) {   // an n-th power of a number of 34 digits gives that number
+        realExactRoot(&y, xx, &o);
+      }
     }
     else {
       // negative base and odd exp: the root is real. 
@@ -261,6 +264,9 @@ void xthRootReal(const real_t *yy, const real_t *xx, realContext_t *realContext)
 
         realSetPositiveSign(&y);
         PowerReal(&y, &x, &o, realContext);
+        if(realCompareGreaterThan(xx, const_1)) {
+          realExactRoot(&y, xx, &o);
+        }
         realSetNegativeSign(&o);
       }
       else {

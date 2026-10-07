@@ -399,8 +399,8 @@ pub export fn _ioFileNameFromFilePath(path: c_int, filename: [*c]u8) callconv(.c
             return FILE_OK;
         },
         IO_PATH_REG_DUMP => return FILE_OK,
-        IO_PATH_REG_EXPORT => return fileSelectionHelper("Export Register File", DATA_DIR, DATA_EXT, @ptrCast(&save_datafile), 1, filename),
-        IO_PATH_REG_IMPORT => return fileSelectionHelper("Import Register File", DATA_DIR, DATA_EXT, @ptrCast(&load_datafile), 0, filename),
+        IO_PATH_REG_EXPORT => return fileSelectionHelper("Export Register/Flag Data File", DATA_DIR, DATA_EXT, @ptrCast(&save_datafile), 1, filename),
+        IO_PATH_REG_IMPORT => return fileSelectionHelper("Import Register/Flag Data File", DATA_DIR, DATA_EXT, @ptrCast(&load_datafile), 0, filename),
         IO_PATH_SAVE_STATE_FILE => return fileSelectionHelper("Save Calculator State", STATE_DIR, STATE_EXT, @ptrCast(&save_statefile), 1, filename),
         IO_PATH_LOAD_STATE_FILE => return fileSelectionHelper("Load Calculator State", STATE_DIR, STATE_EXT, @ptrCast(&load_statefile), 0, filename),
         IO_PATH_SAVE_PROGRAM => return fileSelectionHelper("Save Program", PROGRAMS_DIR, PRGM_EXT, @ptrCast(&save_programfile), 1, filename),

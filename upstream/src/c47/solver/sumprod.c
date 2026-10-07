@@ -97,6 +97,8 @@
     realCopy(prod ? const_1 : const_0, &resultR);           //Initialize real accumulator
     realSetZero(&resultRi);                                    //Initialize complex accumulator
 
+    const uint8_t guardRoundingMode = roundingMode;
+    setRoundingMode(RM_ENGINE);                             // the count and the test below round as the counter step does
     real34Subtract(&loopTo, &counter, &rLoop);              //calculate the remaining iteration counter
     if(!real34IsZero(&loopStep)) {
       real34Divide(&rLoop, &loopStep, &rLoop);
@@ -107,6 +109,7 @@
     longIntegerFree(iLoop);
 
     real34Add(&counter, &loopStep, &moved);                 // the counter plus the step, against the counter, which is the test the FOR structure makes
+    setRoundingMode(guardRoundingMode);
     if(real34CompareEqual(&moved, &counter)) {              // a step of zero, and a step too small for the counter's digits, are the same fault
       displayCalcErrorMessage(ERROR_STEP_OF_ZERO, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -129,6 +132,8 @@
     else {
       ++currentSolverNestingDepth;
       setSystemFlag(FLAG_SOLVING);
+      const uint8_t userRoundingMode = roundingMode;
+      setRoundingMode(RM_ENGINE);                           // the engine iterates at RM_ENGINE, and the sum is stored once by RM
 
       #if defined(OPTION_INFSUMS)
       if(inf) {
@@ -166,6 +171,7 @@
 
         dynamicMenuItem = -1;
         execProgram(label);
+        setRoundingMode(RM_ENGINE);                         // a mode the term program sets does not reach the engine
         if(lastErrorCode != ERROR_NONE) {
           break;
         }
@@ -265,6 +271,7 @@
           break;
         }
       } //WHILE
+      setRoundingMode(userRoundingMode);
 
 
       if(lastErrorCode == ERROR_NONE) {

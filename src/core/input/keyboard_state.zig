@@ -413,6 +413,10 @@ fn btnFnReleasedHost(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaqu
         runtime.screenUpdatingMode &= ~runtime.SCRUPD_ONE_TIME_FLAGS;
         return;
     }
+    // The host lane only: DMCP never reaches btnFnReleased during a run.
+    if (runtime.programRunStop == runtime.PGM_RUNNING or runtime.programRunStop == runtime.PGM_PAUSED) {
+        return;
+    }
 
     if (runtime.calcMode != runtime.CM_REGISTER_BROWSER and runtime.calcMode != runtime.CM_FLAG_BROWSER and runtime.calcMode != runtime.CM_ASN_BROWSER and runtime.calcMode != runtime.CM_FONT_BROWSER) {
         if (runtime.tam.mode == runtime.TM_KEY and !runtime.tam.keyInputFinished) {
@@ -528,6 +532,10 @@ fn btnReleasedHost(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque)
     if (runtime.programRunStop == runtime.PGM_KEY_PRESSED_WHILE_PAUSED) {
         runtime.programRunStop = runtime.PGM_RESUMING;
         runtime.screenUpdatingMode &= ~runtime.SCRUPD_ONE_TIME_FLAGS;
+        return;
+    }
+    // The host lane only: DMCP never reaches btnReleased during a run.
+    if (runtime.programRunStop == runtime.PGM_RUNNING or runtime.programRunStop == runtime.PGM_PAUSED) {
         return;
     }
 

@@ -2646,6 +2646,16 @@ void createSubstrings(uint8_t number) {
   }
 
 
+  static void _fnShowRModeTI2(char * prefix, int16_t *prefixWidth, uint16_t mode) {
+    prefix[0] = 0;
+    stringCopy(prefix, getRoundModeName(mode, abbreviation));
+    stringCopy(prefix + stringByteLength(prefix), ": ");
+    stringCopy(prefix + stringByteLength(prefix), getRoundModeName(mode, !abbreviation));
+    *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
+    screenUpdatingMode |= SCRUPD_SKIP_STACK_ONE_TIME;
+  }
+
+
   static void _fnShowRecallTI(char * prefix, int16_t *prefixWidth) {
     viewRegName2(prefix + sprintf(prefix, "SHOW RCL"));
     *prefixWidth = prefixWidthAt(prefix, noShiftOffset);
@@ -2659,7 +2669,6 @@ void createSubstrings(uint8_t number) {
     stringCopy(prefix, getRoundModeName(roundingMode, abbreviation));
     stringCopy(prefix + stringByteLength(prefix), ": ");
     stringCopy(prefix + stringByteLength(prefix), getRoundModeName(roundingMode, !abbreviation));
-    stringCopy(prefix + stringByteLength(prefix), ".");
     *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
     screenUpdatingMode |= SCRUPD_SKIP_STACK_ONE_TIME;
   }
@@ -3197,7 +3206,7 @@ void _displayRegType(calcRegister_t regist, char *prefix, int16_t *prefixWidth) 
       return;
     }
     int32_t typeIdx = realToInt32C47(&t, NULL);           // integer part: data type
-    realMultiply(&t, const_1000, &t, &ctxtReal39);
+    realMultiply(&t, const_1000, &t, &ctxtReal34);
     int32_t subCode = realToInt32C47(&t, NULL) - 1000*typeIdx;
     int angSub  = subCode / 100;                          // angle: 0=RECT 1=MulPi 2=DMS 3=Deg 4=Grad 5=Rad
     int polRec  = (subCode / 10) % 10;                    // type6: 0=1Dvec 2=2Dvec 3=3DSPH/RECT 4=3DCYL; type7: 0=RECT 1=POLAR
@@ -3554,7 +3563,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
 
   // Calculates a shortened real, using only reaal34
-  bool_t registerFMA(calcRegister_t regist, real_t* tmp1, real_t* tmp2, real34_t* tmp3, angularMode_t* angle, realContext_t *c) {
+  bool_t registerFMA(calcRegister_t regist, real_t *tmp1, real_t *tmp2, real_t *tmp4, real34_t *tmp3, angularMode_t *angle, realContext_t *c) {
     if(getRegisterDataType(regist) == dtShortInteger || getRegisterDataType(regist+1) == dtShortInteger || getRegisterDataType(regist+2) == dtShortInteger) {  //check for SI, because getRegisterAsRealQuiet will accept SI as leagl number.
       return false;
     }
@@ -3569,14 +3578,26 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
     if(!getRegisterAsRealQuiet(regist+1, tmp2)) {
       return false;
     }
-    realMultiply(tmp1, tmp2, tmp1, c);
-
-    if(!getRegisterAsRealQuiet(regist+2, tmp2)) {
+    if(!getRegisterAsRealQuiet(regist+2, tmp4)) {
       return false;
     }
-    realAdd(tmp1, tmp2, tmp1, c);
+    realContext_t fmaContext = *c;
+    fmaContext.round = roundingModeTable[displayRoundingMode];         // X x Y + Z is rounded once to the digits of c by DRM
+    #if defined(OPTION_XFN_1000)
+      if(isXFNregisterValid3r(regist)) {
+        return registerMultiplyAddToReal34(regist, tmp3, &fmaContext);         // a long integer is converted in full, not at 75 digits
+      }
+    #endif // OPTION_XFN_1000
+    realFMA(tmp1, tmp2, tmp4, tmp1, &fmaContext);
     realToReal34(tmp1, tmp3);
     return true;
+  }
+
+
+  // The value the XFN view shows for the triple at regist, X x Y + Z rounded once to 34 digits by DRM. The view line and the test suite both take it from here.
+  bool_t xfnViewValue(calcRegister_t regist, real34_t *value, angularMode_t *angle) {
+    real_t product, term, addend;
+    return isXFNregisterValid3r(regist) && registerFMA(regist, &product, &term, &addend, value, angle, &ctxtReal34);
   }
 
 #define LRWidth 140
@@ -3693,6 +3714,11 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
       else if(temporaryInformation == TI_BATTV && regist == REGISTER_X) {
         sprintf(prefix, "V" STD_SPACE_FIGURE "=");
         displayTemporaryInformationOnX(prefix);
+      }
+
+      else if(temporaryInformation == TI_DISPLAY_ROUNDING_MODE_ONLY && regist == REGISTER_X) {
+        _fnShowRModeTI2(prefix, &prefixWidth, displayRoundingMode);
+        showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + TEMPORARY_INFO_OFFSET + 6, vmNormal, true, true);
       }
 
       else if(temporaryInformation == TI_BYTES && regist == REGISTER_X) {
@@ -4128,7 +4154,6 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
           int tmpY = Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(REGISTER_T - REGISTER_X);
 
           angularMode_t angle;
-          real_t tmp1, tmp2;
           real34_t tmp3;
           #define FMA_X 19-3
           #define FMA_T -1-3
@@ -4140,7 +4165,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
           {
             sprintf(tmpString, "X%sY+Z=", PRODUCT_SIGN);
             int xx = showString(tmpString, &standardFont, indentFMA, tmpY + FMA_X, vmNormal, false, true);
-              if(isXFNregisterValid3r(REGISTER_X + (calcMode == CM_NIM ? 1 : 0)) && registerFMA(REGISTER_X + (calcMode == CM_NIM ? 1 : 0), &tmp1, &tmp2, &tmp3, &angle, &ctxtReal39)) {
+              if(xfnViewValue(REGISTER_X + (calcMode == CM_NIM ? 1 : 0), &tmp3, &angle)) {
                 tmpString[0] = 0;
                 real34ToDisplayString(&tmp3, angle, tmpString, &standardFont, SCREEN_WIDTH - indentFMA - xx, 34, LIMITEXP, FRONTSPACE, NOIRFRAC);
               } else {
@@ -4151,7 +4176,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
           if(getSystemFlag(FLAG_SSIZE8)) {
             sprintf(tmpString, "T%sA+B=", PRODUCT_SIGN);
             int xx = showString(tmpString, &standardFont, indentFMA, tmpY + FMA_T, vmNormal, false, true);
-              if(isXFNregisterValid3r(REGISTER_T + (calcMode == CM_NIM ? 1 : 0)) && registerFMA(REGISTER_T + (calcMode == CM_NIM ? 1 : 0), &tmp1, &tmp2, &tmp3, &angle, &ctxtReal39)) {
+              if(xfnViewValue(REGISTER_T + (calcMode == CM_NIM ? 1 : 0), &tmp3, &angle)) {
                 tmpString[0] = 0;
                 real34ToDisplayString(&tmp3, angle, tmpString, &standardFont, SCREEN_WIDTH - indentFMA - xx, 34, LIMITEXP, FRONTSPACE, NOIRFRAC);
               } else {
@@ -4395,6 +4420,10 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
 
           else if(temporaryInformation >= TI_ROUNDING_MODE && temporaryInformation <= TI_DPFCT && temporaryInformation != TI_ROUNDING_MODE_ONLY && regist == REGISTER_X) {
             _fnShowSettingTI(prefix, &prefixWidth);
+          }
+
+          else if(temporaryInformation == TI_DISPLAY_ROUNDING_MODE && regist == REGISTER_X) {
+            _fnShowRModeTI2(prefix, &prefixWidth, displayRoundingMode);
           }
 
           else if(temporaryInformation == TI_THETA_RADIUS) {
@@ -5438,6 +5467,10 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
 
           else if(temporaryInformation >= TI_ROUNDING_MODE && temporaryInformation <= TI_DPFCT && temporaryInformation != TI_ROUNDING_MODE_ONLY && regist == REGISTER_X) {
             _fnShowSettingTI(prefix, &prefixWidth);
+          }
+
+          else if(temporaryInformation == TI_DISPLAY_ROUNDING_MODE && regist == REGISTER_X) {
+            _fnShowRModeTI2(prefix, &prefixWidth, displayRoundingMode);
           }
 
           else if(temporaryInformation == TI_SOLVER_VARIABLE) {

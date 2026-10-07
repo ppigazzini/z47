@@ -79,6 +79,14 @@ void     fnFreeMemory                 (uint16_t unusedButMandatoryParameter);
  ***********************************************/
 
 /********************************************//**
+ * \brief Display rounding mode DRM: the RM keys set it while DRMODE is the current menu
+ ***********************************************/
+bool_t   displayRoundActive           (void);
+void     fnGetDisplayRoundingMode     (uint16_t unusedButMandatoryParameter);
+void     fnSetDisplayRoundingModeM    (uint16_t unusedButMandatoryParameter);
+void     fnSetDisplayRoundingModeRegist(uint16_t regist);
+
+/********************************************//**
  * \brief Sets X to the value of the rounding mode
  *
  * \param[in] unusedButMandatoryParameter uint16_t
@@ -90,6 +98,7 @@ void     fnGetRoundingMode            (uint16_t unusedButMandatoryParameter);
  *
  * \param[in] RM uint16_t
  ***********************************************/
+void     setRoundingMode              (uint16_t RM);
 void     fnSetRoundingMode            (uint16_t RM);
 void     fnSetRoundingModeM           (uint16_t unusedButMandatoryParameter);
 void     fnSetRoundingModeRegist      (uint16_t regist);

@@ -320,6 +320,7 @@ void fnSolveVar(uint16_t unusedButMandatoryParameter) {
 }
 
 static void _executeSolver(calcRegister_t variable, const real34_t *val, real34_t *res) {
+  const uint8_t engineRoundingMode = roundingMode;  // RM_ENGINE inside solver(), RM for a plot sample
   reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
   real34Copy(val, REGISTER_REAL34_DATA(REGISTER_X));
   if(currentSolverStatus & SOLVER_STATUS_TVM_APPLICATION) {
@@ -347,6 +348,7 @@ static void _executeSolver(calcRegister_t variable, const real34_t *val, real34_
     currentSolverVariable = savedCurrentSolverVariable;
     currentSolverStatus = savedCurrentSolverStatus;
   }
+  setRoundingMode(engineRoundingMode);  // a mode the function sets does not reach the engine
   if(lastErrorCode == ERROR_OVERFLOW_PLUS_INF) {
     realToReal34(const_plusInfinity, res);
     lastErrorCode = ERROR_NONE;
@@ -468,6 +470,8 @@ void _executeSolverReal(calcRegister_t variable, const real_t *val, real_t *res,
 
 int solver(calcRegister_t variable, const real34_t *y, const real34_t *x, real34_t *resZ, real34_t *resY, real34_t *resX) {
   currentKeyCode = 255;
+  const uint8_t userRoundingMode = roundingMode;
+  setRoundingMode(RM_ENGINE);                                                  // the iteration takes no mode from RM
 
     typedef enum {
       SOLVER_METHOD_BRENT,
@@ -1325,5 +1329,6 @@ freeWork:
       REAL_T_FREE(newton_step,     75);
       REAL_T_FREE(tol_converged,   75);
     #endif //OPTION_TVM_NEWTON
+    setRoundingMode(userRoundingMode);
     return result;
 }

@@ -47,6 +47,11 @@ tools/pgemu
 # program-listing converter rebuilt with item names its own release lacks. A
 # desktop helper for writing .p47 files; nothing in the build or CI runs it.
 tools/rejig_patched
+# The source patches those executables are built from, against the external
+# rejig tool's own op table (program/ops.go), and the .p47 reproductions of the
+# bugs found in it. They patch a Go program outside this tree; nothing here
+# builds or reads them.
+tools/rejig
 # Upstream's own helper scripts and generator, superseded by z47's build.
 res/SCRIPTS
 src/generateTests

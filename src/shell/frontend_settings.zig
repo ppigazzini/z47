@@ -13,6 +13,9 @@ const SETTING_SINT_MODE: c_int = 0x0083;
 const TI_VERSION: u8 = 10;
 const TI_WHO: u8 = 11;
 const TI_ROUNDING_MODE_ONLY: u8 = 149; // X line blanked
+const TI_DISPLAY_ROUNDING_MODE_ONLY: u8 = 161; // X line blanked
+
+const PGM_RUNNING: u8 = 1;
 
 const CM_CONFIRMATION: u8 = 11;
 
@@ -128,7 +131,12 @@ fn applyVersion() void {
 }
 
 fn applyRounding(value: u16) void {
-    roundingMode = @truncate(value);
+    if (frontier_config.displayRoundActive() and programRunStop != PGM_RUNNING) { // a program step sets RM whatever menu is on show
+        displayRoundingMode = @truncate(value);
+        temporaryInformation = TI_DISPLAY_ROUNDING_MODE_ONLY;
+        return;
+    }
+    frontier_config.setRoundingMode(value);
     temporaryInformation = TI_ROUNDING_MODE_ONLY; // a mode key of RMODE sets the mode outright, so the X content is not part of the reading
 }
 
@@ -286,7 +294,8 @@ extern var grpGroupingHex: u8;
 extern var grpGroupingBin: u8;
 extern var shortIntegerMode: u8;
 extern var temporaryInformation: u8;
-extern var roundingMode: u8;
+extern var displayRoundingMode: u8;
+extern var programRunStop: u8;
 extern var significantDigits: u8;
 extern var dispBase: u8;
 extern var fractionDigits: u8;

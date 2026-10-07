@@ -1935,6 +1935,7 @@ void addStepInProgram(int16_t func) {
                                 #if defined(DEBUG_PGM)
                                   print_caller(NULL);
                                 #endif
+  const bool_t cursorWasZerothStep = pemCursorIsZerothStep;
   if((!pemCursorIsZerothStep) && ((aimBuffer[0] == 0 && !getSystemFlag(FLAG_ALPHA)) || tam.mode) && !isAtEndOfProgram(currentStep) && !isAtEndOfPrograms(currentStep)) {
     currentStep = findNextStep(currentStep);
     ++currentLocalStepNumber;
@@ -1969,6 +1970,7 @@ void addStepInProgram(int16_t func) {
           break;
         }
         default: {
+          pemCursorIsZerothStep = cursorWasZerothStep;       // no step went in, so the cursor stays where it was
           return;
         }
       }

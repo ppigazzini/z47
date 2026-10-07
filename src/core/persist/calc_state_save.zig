@@ -145,6 +145,7 @@ extern var grpGroupingRight: u8;
 extern var grpGroupingHex: u8;
 extern var grpGroupingBin: u8;
 extern var roundingMode: u8;
+extern var displayRoundingMode: u8;
 extern var displayStack: u8;
 extern var exponentLimit: i16;
 extern var exponentHideLimit: i16;
@@ -481,6 +482,7 @@ pub fn writeSaveSections() void {
     saveField("grpGroupingRight", "%u\n", .{cu(grpGroupingRight)});
     saveField("grpGroupingHex", "%u\n", .{cu(grpGroupingHex)});
     saveField("grpGroupingBin", "%u\n", .{cu(grpGroupingBin)});
+    saveField("displayRoundingMode", "%u\n", .{cu(displayRoundingMode)});
     saveField("roundingMode", "%u\n", .{cu(roundingMode)});
     saveField("displayStack", "%u\n", .{cu(displayStack)});
 

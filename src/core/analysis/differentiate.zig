@@ -249,6 +249,7 @@ const STD_delta_SUB_d: [*:0]const u8 = "\x83\xb4\xa4\x9f"; // STD_delta STD_SUB_
 // Globals
 // ---------------------------------------------------------------------------
 extern var lastErrorCode: u8;
+extern var roundingMode: u8;
 extern var temporaryInformation: u8;
 extern var dynamicMenuItem: i16;
 extern var currentSolverStatus: u16;
@@ -365,6 +366,10 @@ extern fn fnToReal(unused: u16) void;
 extern fn fnFillStack(unused: u16) void;
 extern fn execProgram(label: u16) void;
 extern fn reallyRunFunction(func: i16, param: u16) void;
+extern fn setRoundingMode(RM: u16) void;
+
+// The mode an iterative engine runs its function at; the engine's result is stored once by RM.
+const RM_ENGINE: u8 = 0; // RM_HALF_EVEN
 extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: calcRegister_t) void;
 extern fn findNamedVariable(variable_name: [*:0]const u8) calcRegister_t;
 extern fn findProgramLabel(label: u16, caller: [*:0]const u8) calcRegister_t;
@@ -674,12 +679,14 @@ fn _differentiatorIteration(label: calcRegister_t, variable: calcRegister_t, r0:
     if ((currentSolverStatus & SOLVER_STATUS_USES_FORMULA) != 0) {
         reallyRunFunction(ITM_STO, currentSolverVariable);
         equation.parseEquation(currentFormula, EQUATION_PARSER_XEQ, tmpString, tmpString + AIM_BUFFER_LENGTH);
+        setRoundingMode(RM_ENGINE); // a mode the function sets does not reach the engine
     } else {
         if (variable != @as(calcRegister_t, @bitCast(INVALID_VARIABLE))) { // feed both channels: the stack for a program that consumes X, the variable for one that recalls its MVAR
             reallyRunFunction(ITM_STO, @bitCast(variable));
         }
         dynamicMenuItem = -1;
         execProgram(@bitCast(label));
+        setRoundingMode(RM_ENGINE); // a mode the function sets does not reach the engine
         fnToReal(NOPARAM);
     }
 
@@ -763,6 +770,9 @@ fn calcDeriv(label: calcRegister_t, finDiff: [*]const ?*const FINITE_DIFF_COEFF)
         return;
     };
     defer freeC47Blocks(workRaw, workBlocks);
+    const userRoundingMode = roundingMode;
+    setRoundingMode(RM_ENGINE); // the iteration takes no mode from RM
+    defer setRoundingMode(userRoundingMode);
     const work: [*]real_t = @ptrCast(@alignCast(workRaw));
     const x = &work[0];
     const h = &work[1];
@@ -916,5 +926,6 @@ fn calcDeriv(label: calcRegister_t, finDiff: [*]const ?*const FINITE_DIFF_COEFF)
         errorMessage[0] = 0;
     }
 
+    setRoundingMode(userRoundingMode); // the result is rounded once, by RM
     convertRealToResultRegister(x, REGISTER_X, amNone);
 }

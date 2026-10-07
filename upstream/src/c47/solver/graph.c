@@ -2130,6 +2130,8 @@ static inline void powCplxNat(const cplx_t *base, const uint8_t *exp, cplx_t *re
   // END SOLVER HELPER FUNCTIONS
   // =============================================================================
 
+  static uint8_t cpxSlvUserRoundingMode;                               // RM while the complex solver runs at RM_ENGINE
+
   static void complexSolver() {         //Input parameters in registers SREG_STARTX0, SREG_STARTX1
     currentKeyCode = 255;
     if(graphVariabl1 <= 0 || graphVariabl1 > LAST_LABEL) {
@@ -2666,6 +2668,7 @@ static inline void powCplxNat(const cplx_t *base, const uint8_t *exp, cplx_t *re
       convertDoubleToReal34Register(conjugates ? (double)SOLVER_RESULT_CONJUGATES : (double)SOLVER_RESULT_NORMAL, REGISTER_T);
     }
 
+    setRoundingMode(cpxSlvUserRoundingMode);                           // the results are rounded once, by RM
     convertRealToResultRegister(&cpxSlvBestMagnitudeY, REGISTER_Z, amNone);
     convertComplexToResultRegister(CPLX(*X1), REGISTER_Y);
     convertComplexRegisterToRealIfZeroImag(REGISTER_Y);
@@ -2726,7 +2729,10 @@ freeWork:
                                           printf("xmin:%f, xmax:%f\n", realToDoubleVal(x_min), realToDoubleVal(x_max));
                                         #endif // VERBOSE_SOLVER00 || VERBOSE_SOLVER0
     // initialize_function();
+    cpxSlvUserRoundingMode = roundingMode;
+    setRoundingMode(RM_ENGINE);                                        // the iteration takes no mode from RM
     complexSolver();
+    setRoundingMode(cpxSlvUserRoundingMode);
   }
 
 #endif //OPTION_GRAPHICS

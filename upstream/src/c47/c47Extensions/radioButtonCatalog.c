@@ -422,7 +422,7 @@ int8_t fnCbIsSet(int16_t item) {
         case RB_RX:  rb_param = gapItemRadix;
                      break;
 
-        case RB_RM:  rb_param = roundingMode;
+        case RB_RM:  rb_param = displayRoundActive() ? displayRoundingMode : roundingMode;
                      break;
 
         case RB_KY:  rb_param = calcModel;
@@ -608,6 +608,7 @@ int16_t fnItemShowValue(int16_t item) {
     case ITM_SET_NDEC:  result = displayFormatDigits;                               break;
     case ITM_HIDE:      result = exponentHideLimit;                                 break;
     case ITM_BESTF:     result = (lrSelection) & 0x1FF;                             break;
+    case ITM_SET_DRM:   result = displayRoundingMode;                               break;
     case ITM_RMODE:     result = roundingMode;                                      break;
     case ITM_SET_RM:    result = roundingMode;                                      break;
     case ITM_HASH_JM:   if(lastIntegerBase != 0) {

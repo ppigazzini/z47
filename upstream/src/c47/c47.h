@@ -421,6 +421,7 @@
   extern uint8_t                grpGroupingRight;
   extern uint8_t                grpGroupingHex;
   extern uint8_t                grpGroupingBin;
+  extern uint8_t                displayRoundingMode;
   extern uint8_t                roundingMode;
   extern uint8_t                calcMode;
   extern uint8_t                nextChar;

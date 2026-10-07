@@ -162,6 +162,7 @@ uint8_t                grpGroupingGr1Left;
 uint8_t                grpGroupingRight;
 uint8_t                grpGroupingHex;
 uint8_t                grpGroupingBin;
+uint8_t                displayRoundingMode;
 uint8_t                roundingMode;
 uint8_t                calcMode;
 uint8_t                nextChar;

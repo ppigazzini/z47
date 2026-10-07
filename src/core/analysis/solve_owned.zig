@@ -146,6 +146,7 @@ const solverTvmZer: i32 = solverTvmTol + 1;
 // Globals
 // ---------------------------------------------------------------------------
 extern var lastErrorCode: u8;
+extern var roundingMode: u8;
 extern var varMenu42: bool; // c47.c globals (42S MVAR alpha-register routing)
 extern var alphaRegister: u16;
 extern var temporaryInformation: u8;
@@ -400,6 +401,10 @@ extern fn fnFillStack(unused: u16) void;
 extern fn fnUndo(unused: u16) void;
 extern fn execProgram(label: u16) void;
 extern fn reallyRunFunction(func: i16, param: u16) void;
+extern fn setRoundingMode(RM: u16) void;
+
+// The mode an iterative engine runs its function at; the engine's result is stored once by RM.
+const RM_ENGINE: u8 = 0; // RM_HALF_EVEN
 extern fn runProgram(singleStep: bool, menuLabel: u16) void;
 extern fn runFunction(item: i16) void;
 extern fn adjustResult(res: calcRegister_t, drop_y: bool, set_cpx_res: bool, op1: calcRegister_t, op2: calcRegister_t, op3: calcRegister_t) void;
@@ -627,6 +632,7 @@ pub fn execSolverProgram() linksection(runtime.code_section) void {
 }
 
 fn _executeSolver(variable: calcRegister_t, val: *align(1) const real34_t, res: *align(1) real34_t) linksection(runtime.code_section) void {
+    const engineRoundingMode = roundingMode; // RM_ENGINE inside solver(), RM for a plot sample
     reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
     real34Copy(val, registerReal34Ptr(REGISTER_X));
     if ((currentSolverStatus & SOLVER_STATUS_TVM_APPLICATION) != 0) {
@@ -644,6 +650,7 @@ fn _executeSolver(variable: calcRegister_t, val: *align(1) const real34_t, res: 
     } else {
         execSolverProgram();
     }
+    setRoundingMode(engineRoundingMode); // a mode the function sets does not reach the engine
     if (lastErrorCode == ERROR_OVERFLOW_PLUS_INF) {
         realToReal34(const_plusInfinity(), res);
         lastErrorCode = ERROR_NONE;
@@ -767,6 +774,9 @@ inline fn newtonReal(p: ?*real_t) *real_t {
 
 pub export fn solver(variable: calcRegister_t, y: *align(1) const real34_t, x: *align(1) const real34_t, resZ: *align(1) real34_t, resY: *align(1) real34_t, resX: *align(1) real34_t) linksection(runtime.code_section) callconv(.c) c_int {
     currentKeyCode = 255;
+    const userRoundingMode = roundingMode;
+    setRoundingMode(RM_ENGINE); // the iteration takes no mode from RM
+    defer setRoundingMode(userRoundingMode);
 
     // The working reals come from the heap, not the frame: twenty-five decNumbers
     // at 60 bytes, and twelve more where OPTION_TVM_NEWTON is in. The frame stands

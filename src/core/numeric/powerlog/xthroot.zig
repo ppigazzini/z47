@@ -392,6 +392,9 @@ pub export fn xthRootReal(yy: *const real_t, xx: *const real_t, realContext: *re
         if (realIsPositive(&y)) { // positive base, no problem, get the power function y^(1/x)
             realDivide(const_1(), &x, &x, realContext);
             math_power.PowerReal(&y, &x, &o, realContext);
+            if (realIsAnInteger(xx) and math_comparison_reals.realCompareGreaterThan(xx, const_1()) and !realIsZero(&y)) { // an n-th power of a number of 34 digits gives that number
+                _ = math_power.realExactRoot(&y, xx, &o);
+            }
         } else {
             // negative base and odd exp: the root is real.
             realDivideRemainder(&x, const_2(), &r, realContext);
@@ -400,6 +403,9 @@ pub export fn xthRootReal(yy: *const real_t, xx: *const real_t, realContext: *re
 
                 realSetPositiveSign(&y);
                 math_power.PowerReal(&y, &x, &o, realContext);
+                if (math_comparison_reals.realCompareGreaterThan(xx, const_1())) {
+                    _ = math_power.realExactRoot(&y, xx, &o);
+                }
                 realSetNegativeSign(&o);
             } else {
                 // even exp, or neither odd nor even i.e. not integer: complex either way

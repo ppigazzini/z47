@@ -266,11 +266,13 @@ pub export const asymptote_offsets_negative linksection(runtime.code_section) = 
 // Static globals.
 var cpxSlvBestX: cplx_t = undefined;
 var cpxSlvBestMagnitudeY: real_t = undefined;
+var cpxSlvUserRoundingMode: u8 = 0; // RM while the complex solver runs at RM_ENGINE
 
 // ---------------------------------------------------------------------------
 // External globals
 // ---------------------------------------------------------------------------
 extern var lastErrorCode: u8;
+extern var roundingMode: u8;
 extern var temporaryInformation: u8;
 extern var calcMode: u8;
 extern var programRunStop: u8;
@@ -316,6 +318,10 @@ extern fn errorMessageOf(errorCode: u8) [*c]const u8;
 // ---------------------------------------------------------------------------
 extern fn fnStore(r: u16) void;
 extern fn reallyRunFunction(func: i16, param: u16) void;
+extern fn setRoundingMode(RM: u16) void;
+
+// The mode an iterative engine runs its function at; the engine's result is stored once by RM.
+const RM_ENGINE: u8 = 0; // RM_HALF_EVEN
 extern fn fnFillStack(unusedButMandatoryParameter: u16) void;
 extern fn fnRCL(inp: i16) void;
 extern fn adjustResult(res: calcRegister_t, dropY: bool, setCpxRes: bool, errorReg: calcRegister_t, op1: calcRegister_t, op2: calcRegister_t) void;
@@ -2418,6 +2424,7 @@ fn complexSolver() void {
         convertDoubleToReal34Register(if (conjugates) SOLVER_RESULT_CONJUGATES else SOLVER_RESULT_NORMAL, REGISTER_T);
     }
 
+    setRoundingMode(cpxSlvUserRoundingMode); // the results are rounded once, by RM
     convertRealToResultRegister(&cpxSlvBestMagnitudeY, REGISTER_Z, amNone);
     convertComplexToResultRegister(&X1.Real, &X1.Imag, REGISTER_Y);
     convertComplexRegisterToRealIfZeroImag(REGISTER_Y);
@@ -2444,7 +2451,10 @@ pub export fn fnComplexSolver() callconv(.c) void {
     saveForUndo();
     // VERBOSE_SOLVER00/0 pre-conditioning block: never defined.
     // initialize_function();
+    cpxSlvUserRoundingMode = roundingMode;
+    setRoundingMode(RM_ENGINE); // the iteration takes no mode from RM
     complexSolver();
+    setRoundingMode(cpxSlvUserRoundingMode);
 }
 
 // ===========================================================================

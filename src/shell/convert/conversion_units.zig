@@ -94,13 +94,13 @@ const OFF_const_plusInfinity = 1696;
 const OFF_const_0 = 1708;
 const OFF_const_1 = 5376;
 const OFF_const_9on5 = 5436;
-const OFF_const_32 = 5744;
+const OFF_const_32 = 5756;
 const OFF_const_273p15 = 4172;
 const OFF_const_459p67 = 4188;
 const OFF_const39_kBeVK = 4204;
 const OFF_const_9on10 = 5328;
-const OFF_const39_180onPi = 5780;
-const OFF_const39_200onPi = 5828;
+const OFF_const39_180onPi = 5792;
+const OFF_const39_200onPi = 5840;
 const OFF_const_10 = 5652;
 const OFF_const_20 = 5676;
 
@@ -108,7 +108,7 @@ const OFF_const_20 = 5676;
 const conversionFactorOffsets = [_]?u32{
     1948, // 0 constFactorFt2Hectare = const_Ft2ToHa
     1964, // 1 constFactorFt2M2 = const_Ft2ToM2
-    8052, // 2 constFactorHectareKm2 = const_100
+    8080, // 2 constFactorHectareKm2 = const_100
     2444, // 3 constFactorAcreHa = const_AccreToHa
     2464, // 4 constFactorAcreusHa = const39_AccreusToHa
     3356, // 5 constFactorAtmPa = const_AtmToPa
@@ -159,7 +159,7 @@ const conversionFactorOffsets = [_]?u32{
     2032, // 50 constFactorFathomM = const_FathomToM
     2328, // 51 constFactorNMiM = const_NmiToM
     2688, // 52 constFactorBarrelM3 = const_BarrelToM3
-    6032, // 53 constFactorHectareM2 = const_10000
+    6044, // 53 constFactorHectareM2 = const_10000
     2500, // 54 constFactorMuM2 = const_MuToM2
     2228, // 55 constFactorLiM = const_LiToM
     5532, // 56 constFactorChiM = const_3
@@ -186,15 +186,15 @@ const conversionFactorOffsets = [_]?u32{
     3644, // 77 constFactorFpftomph = const39_fpfToMph
     3680, // 78 constFactorFpstokph = const_fpsToKph
     3696, // 79 constFactorFpstomps = const_fpsToMps
-    8052, // 80 constFactorL100Tokml = const_100
+    8080, // 80 constFactorL100Tokml = const_100
     null, // 81 constFactorKmletok100K (no factor)
-    8052, // 82 constFactorK100Ktokmk = const_100
+    8080, // 82 constFactorK100Ktokmk = const_100
     null, // 83 constFactorL100Tomgus (no factor)
     null, // 84 constFactorMgeustok100M (no factor)
     2048, // 85 constFactorK100Ktok100M = const_MiToKm
     null, // 86 constFactorL100Tomguk (no factor)
     null, // 87 constFactorMgeuktok100M (no factor)
-    8052, // 88 constFactorK100Mtomik = const_100
+    8080, // 88 constFactorK100Mtomik = const_100
     3712, // 89 constFactorCupcFzus = const_CupcFzus
     3724, // 90 constFactorCupcMl = const_CupcMl
     3744, // 91 constFactorCupukFzuk = const_CupukFzuk
@@ -248,11 +248,11 @@ const conversionFactorOffsets = [_]?u32{
     3196, // 139 constFactorErgJ = const_ErgToJ
     3208, // 140 constFactorFoeJ = const_FoeToJ
     2860, // 141 constFactorKnotMps = const39_KnotToMps
-    5780, // 142 constFactor180onPi = const39_180onPi
+    5792, // 142 constFactor180onPi = const39_180onPi
     2968, // 143 constFactorSlugKg = const39_SlugToKg
     3004, // 144 constFactorSlinchKg = const39_SlinchToKg
     3004, // 145 constFactorBlobKg = const39_SlinchToKg
-    5900, // 146 constFactorTonneKg = const_1000
+    5912, // 146 constFactorTonneKg = const_1000
     4316, // 147 constFactorLbsft2Pa = const39_Lbsft2ToPa
     4292, // 148 constFactorInlbsNm = const_InlbsToNm
     2968, // 149 constFactorLbsftNpm = const39_SlugToKg
@@ -277,7 +277,7 @@ const conversionFactorOffsets = [_]?u32{
     3076, // 168 constFactorMgeukK100K = const39_MgeukToK100K
     3112, // 169 constFactorMikK100K = const39_MikToK100K
     4608, // 170 constFactorDegMil = const39_DegToMil
-    5968, // 171 constFactorDegArcsec = const_3600
+    5980, // 171 constFactorDegArcsec = const_3600
     4644, // 172 constFactorDegMrad = const39_DegToMrad
 };
 

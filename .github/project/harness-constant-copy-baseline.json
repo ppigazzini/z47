@@ -5,7 +5,7 @@
   "counts": {
     "build/tests/c47.h": 10,
     "build/tests/constants/c47.h": 12,
-    "build/tests/math_wrappers/c47.h": 126,
+    "build/tests/math_wrappers/c47.h": 136,
     "build/tests/memory/c47.h": 4,
     "build/tests/rotate_bits/c47.h": 12,
     "build/tests/stack_state/c47.h": 74,

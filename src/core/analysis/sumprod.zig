@@ -102,6 +102,7 @@ const halfSec_disp: bool = true;
 // Globals
 // ---------------------------------------------------------------------------
 extern var lastErrorCode: u8;
+extern var roundingMode: u8;
 extern var temporaryInformation: u8;
 extern var programRunStop: u8;
 extern var currentKeyCode: u8;
@@ -236,6 +237,10 @@ extern fn fnToReal(unused: u16) void;
 extern fn fnDrop(unused: u16) void;
 extern fn fnFillStack(unused: u16) void;
 extern fn execProgram(label: u16) void;
+extern fn setRoundingMode(RM: u16) void;
+
+// The mode an iterative engine runs its function at; the engine's result is stored once by RM.
+const RM_ENGINE: u8 = 0; // RM_HALF_EVEN
 extern fn adjustResult(res: calcRegister_t, drop_y: bool, set_cpx_res: bool, op1: calcRegister_t, op2: calcRegister_t, op3: calcRegister_t) void;
 extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: calcRegister_t) void;
 extern fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void;
@@ -322,6 +327,8 @@ fn _programmableSumProd(label: u16, prod: bool_t, early: ?*EarlyAbort) linksecti
     realCopy(if (prod) const_1() else const_0(), &resultR); // Initialize real accumulator
     realSetZero(&resultRi); // Initialize complex accumulator
 
+    const guardRoundingMode = roundingMode;
+    setRoundingMode(RM_ENGINE); // the count and the test below round as the counter step does
     real34Subtract(&loopTo, &counter, &rLoop); // calculate the remaining iteration counter
     if (!real34IsZero(&loopStep)) {
         real34Divide(&rLoop, &loopStep, &rLoop);
@@ -334,6 +341,7 @@ fn _programmableSumProd(label: u16, prod: bool_t, early: ?*EarlyAbort) linksecti
     var moved: real34_t = undefined;
 
     real34Add(&counter, &loopStep, &moved); // the counter plus the step, against the counter, which is the test the FOR structure makes
+    setRoundingMode(guardRoundingMode);
     if (real34CompareEqual(&moved, &counter)) { // a step of zero, and a step too small for the counter's digits, are the same fault
         displayCalcErrorMessage(ERROR_STEP_OF_ZERO, ERR_REGISTER_LINE);
         moreInfoOnError("In function _programmableSumProd:", "Counter will not move", null, null);
@@ -347,6 +355,8 @@ fn _programmableSumProd(label: u16, prod: bool_t, early: ?*EarlyAbort) linksecti
     } else {
         currentSolverNestingDepth += 1;
         setSystemFlag(FLAG_SOLVING);
+        const userRoundingMode = roundingMode;
+        setRoundingMode(RM_ENGINE); // the engine iterates at RM_ENGINE, and the sum is stored once by RM
 
         if (inf) {
             const e = early.?;
@@ -382,6 +392,7 @@ fn _programmableSumProd(label: u16, prod: bool_t, early: ?*EarlyAbort) linksecti
 
             dynamicMenuItem = -1;
             execProgram(label);
+            setRoundingMode(RM_ENGINE); // a mode the term program sets does not reach the engine
             if (lastErrorCode != ERROR_NONE) {
                 break;
             }
@@ -459,6 +470,7 @@ fn _programmableSumProd(label: u16, prod: bool_t, early: ?*EarlyAbort) linksecti
                 break;
             }
         } // WHILE
+        setRoundingMode(userRoundingMode);
 
         if (lastErrorCode == ERROR_NONE) {
             if (inf) { // iterations actually run, so a short run is visible

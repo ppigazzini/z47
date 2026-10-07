@@ -231,6 +231,16 @@ const noBaseOverride: u8 = 0;
 // HALF_EVEN=3, HALF_DOWN=4, DOWN=5, FLOOR=6).
 const DEC_ROUND_HALF_UP: c_int = 2;
 const DEC_ROUND_DOWN: c_int = 5;
+const DEC_ROUND_05UP: c_int = 7;
+
+// C47 rounding modes (defines.h RM_*), the values of roundingMode and displayRoundingMode.
+const RM_HALF_EVEN: u8 = 0;
+const RM_HALF_UP: u8 = 1;
+const RM_HALF_DOWN: u8 = 2;
+const RM_UP: u8 = 3;
+const RM_DOWN: u8 = 4;
+const RM_CEIL: u8 = 5;
+const RM_FLOOR: u8 = 6;
 
 // System flags (defines.h hex codes).
 const FLAG_SIGZEROS: c_int = 0x806a;
@@ -319,12 +329,13 @@ const oneOverE = "(" ++ STD_EulerE ++ STD_SUP_MINUS ++ STD_SUP_1 ++ STD_SPACE_HA
 const constR = abi.constants.cstRAligned;
 const constR34 = abi.constants.cst34;
 const const_1 = constR(5376);
-const const_1000 = constR(5900);
-const const_1024 = constR(5912);
-const const_60 = constR(5816);
-const const_3600 = constR(5968);
-const const_86400 = constR(6044);
-const const_100 = constR(8052);
+const const_1000 = constR(5912);
+const const_1024 = constR(5924);
+const const_60 = constR(5828);
+const const_3600 = constR(5980);
+const const_360000 = constR(6068);
+const const_86400 = constR(6056);
+const const_100 = constR(8080);
 const const_24 = constR(5688);
 const const_12 = constR(5664);
 const const39_ln2 = constR(5148);
@@ -332,21 +343,21 @@ const const39_root2 = constR(5184);
 const const39_pi = constR(1848);
 const const39_eE = constR(176);
 const const39_PHI = constR(1596);
-const const39_rt3 = constR(6240);
-const const39_rt5 = constR(6276);
-const const39_rt7 = constR(6312);
-const const39_rtpi = constR(6372);
-const const39_1onpi = constR(6408);
+const const39_rt3 = constR(6268);
+const const39_rt5 = constR(6304);
+const const39_rt7 = constR(6340);
+const const39_rtpi = constR(6400);
+const const39_1onpi = constR(6436);
 const const39_1oneE = constR(4716);
-const const39_pisq = constR(6444);
-const const39_eEsq = constR(6480);
-const const39_1onpisq = constR(6516);
-const const39_1oneEsq = constR(6552);
+const const39_pisq = constR(6472);
+const const39_eEsq = constR(6508);
+const const39_1onpisq = constR(6544);
+const const39_1oneEsq = constR(6580);
 const const_plusInfinity = constR(1696);
 const const_minusInfinity = constR(1684);
 const const_1e_24 = constR(4800);
-const const34_1e_24 = constR34(17272);
-const const34_2p32 = constR34(17912);
+const const34_1e_24 = constR34(17300);
+const const34_2p32 = constR34(17940);
 
 // ---------------------------------------------------------------------------
 // font tables: real extern const structs (taken by &name).
@@ -401,6 +412,8 @@ extern var systemFlags0: u64;
 extern var systemFlags1: u64;
 extern var numberOfNamedVariables: u16;
 extern var significantDigits: u8;
+extern var roundingMode: u8;
+extern var displayRoundingMode: u8;
 extern var displayStack: u8;
 extern var Input_Default: u8;
 extern var DM_Cycling: u8;
@@ -479,6 +492,7 @@ extern fn real34IsAnInteger(x: *const real34_t) bool_t;
 extern fn real34CompareAbsLessThan(a: *const real34_t, b: *const real34_t) bool_t;
 extern fn real34CompareEqual(a: *const real34_t, b: *const real34_t) bool_t;
 extern fn realCompareAbsLessThan(a: *const real_t, b: *const real_t) bool_t;
+extern fn realCompareEqual(a: *const real_t, b: *const real_t) bool;
 extern fn realCompareLessThan(a: *const real_t, b: *const real_t) bool_t;
 extern fn realCompareGreaterEqual(a: *const real_t, b: *const real_t) bool_t;
 extern fn realCompareLessEqual(a: *const real_t, b: *const real_t) bool_t;
@@ -850,8 +864,9 @@ inline fn longIntegerBits(op: *const longInteger_t) u32 {
 inline fn longIntegerModuloUInt(op: *const longInteger_t, d: u32) u32 {
     return @intCast(__gmpz_fdiv_ui(&op[0], d));
 }
-inline fn longIntegerDivideUInt(op: *const longInteger_t, d: u32, q: *longInteger_t) void {
-    _ = __gmpz_tdiv_q_ui(&q[0], &op[0], d);
+/// op/d => q*d + remainder == op; returns |remainder|, which is below d.
+inline fn longIntegerDivideUInt(op: *const longInteger_t, d: u32, q: *longInteger_t) u32 {
+    return @intCast(__gmpz_tdiv_q_ui(&q[0], &op[0], d));
 }
 
 // extra-info hint (host only, gated like siblings).
@@ -1038,30 +1053,38 @@ pub export fn angle34ToDisplayString2(angle34: *align(1) const real34_t, modeIn:
         var s: u32 = undefined;
         var fs: u32 = undefined;
         var sign: i16 = undefined;
-        var angle34Dms: real34_t = undefined;
         var angleDms: real_t = undefined;
         var degrees: real_t = undefined;
         var minutes: real_t = undefined;
         var seconds: real_t = undefined;
 
-        frontier_conversion_angles.real34FromDegToDms(@ptrCast(angle34), &angle34Dms);
-        real34ToReal(&angle34Dms, &angleDms);
+        if (real34IsInfinite(angle34) or real34IsNaN(angle34)) {
+            real34ToDisplayString2(angle34, displayString, displayHasNDigits, limitExponent, 0, frontSpace, 1, limitIrfrac);
+            _ = strcat(displayString, STD_DEGREE);
+            return;
+        }
+
+        real34ToReal(angle34, &angleDms);
 
         sign = @intFromBool(realIsNegative(&angleDms));
         realSetPositiveSign(&angleDms);
 
+        // Get the degrees
         frontier_register_value_conversions.realToIntegralValue(&angleDms, &degrees, DEC_ROUND_DOWN, &ctxtReal39);
 
+        // Get the minutes
         realSubtract(&angleDms, &degrees, &angleDms, &ctxtReal39);
-        angleDms.exponent += 2;
+        realMultiply(&angleDms, const_60, &angleDms, &ctxtReal39);
         frontier_register_value_conversions.realToIntegralValue(&angleDms, &minutes, DEC_ROUND_DOWN, &ctxtReal39);
 
+        // Get the seconds
         realSubtract(&angleDms, &minutes, &angleDms, &ctxtReal39);
-        angleDms.exponent += 2;
+        realMultiply(&angleDms, const_60, &angleDms, &ctxtReal39);
         frontier_register_value_conversions.realToIntegralValue(&angleDms, &seconds, DEC_ROUND_DOWN, &ctxtReal39);
 
+        // Get the fractional seconds
         realSubtract(&angleDms, &seconds, &angleDms, &ctxtReal39);
-        angleDms.exponent += 2;
+        angleDms.exponent += 2; // angleDms = angleDms * 100
 
         frontier_register_value_conversions.realToIntegralValue(&angleDms, &angleDms, DEC_ROUND_HALF_UP, &ctxtReal39);
         fs = frontier_real_type.realToUint32C47(&angleDms, null);
@@ -1087,7 +1110,20 @@ pub export fn angle34ToDisplayString2(angle34: *align(1) const real34_t, modeIn:
         const savedDisplayFormat = displayFormat;
         displayFormatDigits = 0;
         displayFormat = DF_ALL;
+        const dmsValueStart: usize = if (updateDisplayValueX != 0) strlen(&displayValueX) else 0;
         real34ToDisplayString2(&tmp, &degStr, displayHasNDigits, limitExponent, 0, frontSpace, 1, limitIrfrac);
+        if (updateDisplayValueX != 0) { // displayValueX takes the angle the line shows: (d x 360000 + m x 6000 + s x 100 + fs) / 360000
+            var shown: real_t = undefined;
+            var part: real_t = undefined;
+            realMultiply(&degrees, const_360000, &shown, &ctxtReal75);
+            int32ToReal(@intCast(m * 6000 + s * 100 + fs), &part);
+            realAdd(&shown, &part, &shown, &ctxtReal75);
+            if (sign != 0) {
+                realSetNegativeSign(&shown);
+            }
+            realDivide(&shown, const_360000, &shown, &ctxtReal34);
+            realToString(&shown, @as([*c]u8, &displayValueX) + dmsValueStart);
+        }
         if (degStr[0] == ' ' and degStr[1] != 0) {
             _ = memmove(&degStr, @as([*c]u8, &degStr) + 1, strlen(&degStr));
         }
@@ -1175,6 +1211,27 @@ fn radixTT(tt: *[4]u8) void {
     }
 }
 
+/// The ALL-mode digit bounds once roundBcdAt has rounded at lastDigit and its carry reached roundedAt.
+fn allRoundedAt(roundedAt: i16, firstDigit: *i16, lastDigit: *i16, numDigits: *i16, exponent: *i16) void {
+    if (getSystemFlag(FLAG_SIGZEROS) != 0) { // TRL0 set: the zeros a round up leaves are shown digits
+        if (roundedAt < firstDigit.*) { // 9.9999 rounds to 10.000: one digit more on the left, one less on the right
+            firstDigit.* -= 1;
+            lastDigit.* -= 1;
+            exponent.* += 1;
+        }
+    } else {
+        numDigits.* -= lastDigit.* - roundedAt;
+        lastDigit.* = roundedAt;
+        // Case when 9.9999 rounds to 10.0000
+        if (lastDigit.* < firstDigit.*) {
+            firstDigit.* -= 1;
+            lastDigit.* = firstDigit.*;
+            numDigits.* = 1;
+            exponent.* += 1;
+        }
+    }
+}
+
 fn real34ToDisplayString2(real34_in: *align(1) const real34_t, displayString: [*c]u8, displayHasNDigits: i16, limitExponent: bool_t, noFix: bool_t, frontSpace: bool_t, complex: bool_t, limitIrfrac: irfracOption_t) void {
     // real34 is passed const but the 2TO10/UN path mutates *real34 then restores it.
     const real34: *align(1) real34_t = @constCast(real34_in);
@@ -1194,13 +1251,16 @@ fn real34ToDisplayString2(real34_in: *align(1) const real34_t, displayString: [*
     var lastDigit: i16 = undefined;
     var i: i16 = undefined;
     var digitCount: i16 = undefined;
-    var digitsToTruncate: i16 = undefined;
+    var digitsToTruncate: i16 = 0;
     var exponent: i16 = undefined;
+    var roundedAt: i16 = undefined;
     var sign: i32 = undefined;
     var ovrSCI: bool = false;
     var ovrENG: bool = false;
     var firstDigitAfterPeriod: bool = true;
     var value34: real34_t = undefined;
+
+    hp35Round10 = checkHP();
 
     var exponentUNlimit: i32 = 0;
     var flag2To10: bool = getSystemFlag(FLAG_2TO10) != 0;
@@ -1247,6 +1307,9 @@ fn real34ToDisplayString2(real34_in: *align(1) const real34_t, displayString: [*
                 if (neg) {
                     realSetNegativeSign(&x);
                 }
+                c.digits = 34;
+                c.round = DEC_ROUND_05UP;
+                realPlus(&x, &x, &c); // 05UP at 34 digits, so realToReal34 takes the value exactly and the display rounds it once
                 realToReal34(&x, real34);
             } else {
                 flag2To10_baseunit_integer = true;
@@ -1294,8 +1357,22 @@ fn real34ToDisplayString2(real34_in: *align(1) const real34_t, displayString: [*
             real34ToReal(real34, &tmp1);
             var c: realContext_t = ctxtReal39;
             c.digits = if (showmode()) 39 else nbrDispRealCtxDigits();
-            if (forceSigZeroes) {
+            if (forceSigZeroes and !(checkHP() and displayFormatDigits >= 9)) {
+                const savedRoundingMode = roundingMode;
+                if (polarTieWatch) {
+                    var away: real_t = undefined;
+                    var toward: real_t = undefined;
+                    roundingMode = if (displayRoundingMode >= RM_UP) RM_UP else RM_HALF_UP;
+                    roundToSignificantDigits(&tmp1, &away, @as(u16, displayFormatDigits) + 1, &c);
+                    roundingMode = if (displayRoundingMode >= RM_UP) RM_DOWN else RM_HALF_DOWN;
+                    roundToSignificantDigits(&tmp1, &toward, @as(u16, displayFormatDigits) + 1, &c);
+                    if (realCompareEqual(&away, &toward) == (displayRoundingMode >= RM_UP)) { // UP equal to DOWN: nothing dropped; HALF_UP unequal to HALF_DOWN: a tie
+                        polarNearTie = true;
+                    }
+                }
+                roundingMode = displayRoundingMode;
                 roundToSignificantDigits(&tmp1, &tmp1, @as(u16, displayFormatDigits) + 1, &c);
+                roundingMode = savedRoundingMode;
             }
             realToReal34(&tmp1, &reduced);
             real34Reduce(&reduced, &reduced);
@@ -1347,10 +1424,12 @@ fn real34ToDisplayString2(real34_in: *align(1) const real34_t, displayString: [*
         real34ToReal(real34, &value);
     }
 
-    if (checkHP()) {
-        ctxtReal39.digits = minI(10, displayHasNDigits);
-        realPlus(&value, &value, &ctxtReal39);
-        ctxtReal39.digits = 39;
+    if (checkHP() and (if (displayFormat == DF_ALL) displayHasNDigits >= 10 else displayFormat == DF_SF and displayFormatDigits >= 9)) {
+        // HP35 profile, 10 digits or more shown in ALL or SIG: the value to 10 digits, a tie rounded away from zero; roundBcdAt takes this step in the other formats
+        var c: realContext_t = ctxtReal39;
+        c.digits = 10;
+        c.round = DEC_ROUND_HALF_UP;
+        realPlus(&value, &value, &c);
     }
 
     realToReal34(&value, &value34);
@@ -1451,6 +1530,7 @@ fn real34ToDisplayString2(real34_in: *align(1) const real34_t, displayString: [*
 
     charIndex = 0;
     valueIndex = if (updateDisplayValueX != 0) @intCast(strlen(&displayValueX)) else 0;
+    const valueStart = valueIndex;
 
     // ALL mode
     if (displayFormat == DF_ALL) {
@@ -1459,21 +1539,10 @@ fn real34ToDisplayString2(real34_in: *align(1) const real34_t, displayString: [*
         lastDigit -= digitsToTruncate;
 
         if (bcd[@intCast(lastDigit + 1)] == 9) {
-            // Cleared so the "Round the displayed number" step below does not bump the same digit a second time.
-            bcd[@intCast(lastDigit + 1)] = 0;
-            bcd[@intCast(lastDigit)] += 1;
-            while (bcd[@intCast(lastDigit)] == 10) {
-                bcd[@intCast(lastDigit)] = 0;
-                lastDigit -= 1;
-                numDigits -= 1;
-                bcd[@intCast(lastDigit)] += 1;
-            }
-            if (lastDigit < firstDigit) {
-                firstDigit -= 1;
-                lastDigit = firstDigit;
-                numDigits = 1;
-                exponent += 1;
-            }
+            roundedAt = roundBcdAt(bcd, lastDigit, lastDigit + digitsToTruncate, sign != 0);
+            // The dropped digits are cleared so the "Round the displayed number" step below does not bump the same digit a second time.
+            _ = memset(bcd + @as(usize, @intCast(lastDigit + 1)), 0, @intCast(digitsToTruncate));
+            allRoundedAt(roundedAt, &firstDigit, &lastDigit, &numDigits, &exponent);
         }
 
         if (noFix != 0 or exponent >= displayHasNDigits or
@@ -1486,21 +1555,8 @@ fn real34ToDisplayString2(real34_in: *align(1) const real34_t, displayString: [*
             ovrSCI = getSystemFlag(FLAG_ENGOVR) == 0;
             ovrENG = getSystemFlag(FLAG_ENGOVR) != 0;
         } else {
-            if (bcd[@intCast(lastDigit + 1)] >= 5) {
-                bcd[@intCast(lastDigit)] += 1;
-            }
-            while (bcd[@intCast(lastDigit)] == 10) {
-                bcd[@intCast(lastDigit)] = 0;
-                lastDigit -= 1;
-                numDigits -= 1;
-                bcd[@intCast(lastDigit)] += 1;
-            }
-            if (lastDigit < firstDigit) {
-                firstDigit -= 1;
-                lastDigit = firstDigit;
-                numDigits = 1;
-                exponent += 1;
-            }
+            roundedAt = roundBcdAt(bcd, lastDigit, lastDigit + digitsToTruncate, sign != 0);
+            allRoundedAt(roundedAt, &firstDigit, &lastDigit, &numDigits, &exponent);
             while (!forceSigZeroes and numDigits > 1 and bcd[@intCast(lastDigit)] == 0) {
                 lastDigit -= 1;
                 numDigits -= 1;
@@ -1635,7 +1691,7 @@ fn real34ToDisplayString2(real34_in: *align(1) const real34_t, displayString: [*
             digitToRound = @intCast(minI(firstDigit + digitsToDisplay, lastDigit));
             ovrSCI = getSystemFlag(FLAG_ENGOVR) == 0;
             ovrENG = getSystemFlag(FLAG_ENGOVR) != 0;
-        } else {
+        } else fix: {
             var displayFormatDigits_Active: u8 = undefined;
             if (displayFormat == DF_SF) {
                 displayFormatDigits_Active = @intCast(minI(maxI((@as(i32, displayFormatDigits) + 1) - exponent - 1, 0), 255));
@@ -1652,17 +1708,11 @@ fn real34ToDisplayString2(real34_in: *align(1) const real34_t, displayString: [*
                 digitToRound = lastDigit;
             }
 
-            if (bcd[@intCast(digitToRound + 1)] >= 5) {
-                bcd[@intCast(digitToRound)] += 1;
+            roundedAt = roundBcdAt(bcd, digitToRound, lastDigit + digitsToTruncate, sign != 0);
+            if (displayFormat == DF_SF) {
+                numDigits -= digitToRound - roundedAt;
             }
-            while (bcd[@intCast(digitToRound)] == 10) {
-                bcd[@intCast(digitToRound)] = 0;
-                digitToRound -= 1;
-                if (displayFormat == DF_SF) {
-                    numDigits -= 1;
-                }
-                bcd[@intCast(digitToRound)] += 1;
-            }
+            digitToRound = roundedAt;
             if (displayFormat == DF_SF and forceSigZeroes) {
                 lastDigit = digitToRound;
             }
@@ -1674,6 +1724,20 @@ fn real34ToDisplayString2(real34_in: *align(1) const real34_t, displayString: [*
                     displayFormatDigits_Active -%= 1;
                 }
                 exponent += 1;
+                if (displayFormat == DF_FIX and !checkHP() and exponent >= displayHasNDigits) { // the rounding took the integer part past its limit: the exponent form, as for any larger number
+                    digitsToTruncate = 0; // the value is rounded already, and the dropped digits are not read again
+                    digitsToDisplay = @intCast(minI(displayFormatDigits, displayHasNDigits - 1));
+                    digitToRound = @intCast(minI(firstDigit + digitsToDisplay, lastDigit));
+                    ovrSCI = getSystemFlag(FLAG_ENGOVR) == 0;
+                    ovrENG = getSystemFlag(FLAG_ENGOVR) != 0;
+                    break :fix;
+                }
+            }
+
+            if (displayFormat == DF_SF and !forceSigZeroes) { // no-zero: a kept decimal the rounding leaves as 0 is a trailing zero as well
+                while (lastDigit > firstDigit and lastDigit > firstDigit + exponent and bcd[@intCast(lastDigit)] == 0) {
+                    lastDigit -= 1;
+                }
             }
 
             if (displayFormat == DF_SF and forceSigZeroes) {
@@ -1836,7 +1900,7 @@ fn real34ToDisplayString2(real34_in: *align(1) const real34_t, displayString: [*
             digitsToDisplay = displayFormatDigits;
             digitToRound = @intCast(minI(firstDigit + @as(i16, displayFormatDigits), lastDigit));
         }
-        emitSciDigits(bcd, firstDigit, lastDigit, numDigits, exponent, @intFromBool(sign != 0), digitToRound, digitsToDisplay, frontSpace, if ((displayFormat == DF_SF or displayFormat == DF_ALL) and !forceSigZeroes) STRIP_TRAILING_ZEROS else KEEP_TRAILING_ZEROS, displayString);
+        emitSciDigits(bcd, firstDigit, lastDigit + digitsToTruncate, numDigits, exponent, @intFromBool(sign != 0), digitToRound, digitsToDisplay, frontSpace, if ((displayFormat == DF_SF or displayFormat == DF_ALL) and !forceSigZeroes) STRIP_TRAILING_ZEROS else KEEP_TRAILING_ZEROS, displayString);
         return;
     }
 
@@ -1847,18 +1911,16 @@ fn real34ToDisplayString2(real34_in: *align(1) const real34_t, displayString: [*
             digitToRound = @intCast(minI(firstDigit + digitsToDisplay, lastDigit));
         }
 
-        if (bcd[@intCast(digitToRound + 1)] >= 5) {
-            bcd[@intCast(digitToRound)] += 1;
-        }
+        roundedAt = roundBcdAt(bcd, digitToRound, lastDigit + digitsToTruncate, sign != 0);
+
+        // Ensure rounding before the radix mark for DSP 0 & DSP 1
         bcd[@intCast(digitToRound + 1)] = 0;
         bcd[@intCast(digitToRound + 2)] = 0;
 
-        while (bcd[@intCast(digitToRound)] == 10) {
-            bcd[@intCast(digitToRound)] = 0;
-            digitToRound -= 1;
-            numDigits -= 1;
-            bcd[@intCast(digitToRound)] += 1;
-        }
+        numDigits -= digitToRound - roundedAt;
+        digitToRound = roundedAt;
+
+        // Case when 9.9999 rounds to 10.0000
         if (digitToRound < firstDigit) {
             firstDigit -= 1;
             numDigits = 1;
@@ -1997,7 +2059,16 @@ fn real34ToDisplayString2(real34_in: *align(1) const real34_t, displayString: [*
                     exponentToDisplayString(exponent, displayString + charIndex, null, 0);
                 }
             } else {
-                frontier_addons.exponentToUnitDisplayString(exponent, @intFromBool(flag2To10), displayString + charIndex, @as([*c]u8, &displayValueX) + valueIndex, 0);
+                frontier_addons.exponentToUnitDisplayString(exponent, @intFromBool(flag2To10), displayString + charIndex, if (updateDisplayValueX != 0) @as([*c]u8, &displayValueX) + valueIndex else null, 0);
+                if (updateDisplayValueX != 0 and flag2To10) { // the value shown is the mantissa times 1024^(exponent/3)
+                    var shown: real_t = undefined;
+                    stringToReal(@as([*c]u8, &displayValueX) + valueStart, &shown, &ctxtReal75);
+                    var k: i32 = @divTrunc(@as(i32, exponent), 3);
+                    while (k > 0) : (k -= 1) {
+                        realMultiply(&shown, const_1024, &shown, &ctxtReal75);
+                    }
+                    realToString(&shown, @as([*c]u8, &displayValueX) + valueStart);
+                }
             }
         }
     }
@@ -2101,96 +2172,116 @@ fn complex34ToDisplayString2(complex34: *align(1) const complex34_t, displayStri
     var absimag34: real34_t = undefined;
     var real: real_t = undefined;
     var imagIc: real_t = undefined;
+    var polarAt39: bool = false;
+    const valueXLength = strlen(&displayValueX);
 
-    if (tagPolar != 0) {
-        real34ToReal(varReal34(complex34), &real);
-        real34ToReal(varImag34(complex34), &imagIc);
-
-        var c: realContext_t = ctxtReal39;
-        // Compute the polar form at a fixed display precision and not at one scaled by the operands' exponent: hypot and
-        // atan2 are well conditioned, so this reproduces the display exactly at every magnitude while the repeated-input
-        // calls hit the cache. SHOW keeps its full 39 digits. polar_display_cov gates any narrowing of the constant.
-        c.digits = minI(@as(i32, displayHasNDigits) + 2, if (showmode()) 39 else POLAR_DISPLAY_COMPUTE_DIGITS);
-        realRectangularToPolarCached(&real, &imagIc, &real, &imagIc, &c, cache);
-        // convertAngleFromTo runs at the same c.digits; radian->grad (x 200/pi) is its worst case and stays inside it.
-        frontier_conversion_angles.convertAngleFromTo(&imagIc, amRadian, if (tagAngle == amNone) currentAngularMode else @intCast(tagAngle), &c);
-
-        realToReal34(&real, &real34_);
-        realToReal34(&imagIc, &imag34);
-    } else {
-        real34Copy(varReal34(complex34), &real34_);
-        real34Copy(varImag34(complex34), &imag34);
-    }
-
-    real34ToDisplayString2(&real34_, displayString, displayHasNDigits, limitExponent, 0, frontSpace, isComplex, limitIrfrac);
-    if (updateDisplayValueX != 0) {
+    polarFormat: while (true) {
         if (tagPolar != 0) {
-            _ = strcat(&displayValueX, "j");
-        } else {
-            _ = strcat(&displayValueX, "i");
-        }
-    }
+            real34ToReal(varReal34(complex34), &real);
+            real34ToReal(varImag34(complex34), &imagIc);
 
-    real34ToDisplayString2(&imag34, displayString + @as(usize, @intCast(imagOffset)), displayHasNDigits, limitExponent, 0, @intFromBool(FRONTSPACE == 0), isComplex, limitIrfrac);
-
-    if (!real34IsZero(&real34_) and strncmp(displayString + @as(usize, @intCast(imagOffset)), STD_ALMOST_EQUAL, 2) == 0) {
-        displayString[@intCast(imagOffset)] = STD_NOCHAR;
-        displayString[@intCast(imagOffset + 1)] = STD_NOCHAR;
-        if (strncmp(displayString, STD_ALMOST_EQUAL, 2) != 0) {
-            strPrepend(displayString, @constCast(STD_ALMOST_EQUAL));
-        }
-    }
-
-    if (tagPolar != 0) {
-        _ = strcat(displayString, STD_SPACE_4_PER_EM ++ STD_MEASURED_ANGLE ++ STD_SPACE_4_PER_EM);
-        const kk: u16 = @intCast(stringByteLength(displayString));
-        angle34ToDisplayString2(&imag34, @intCast(if (tagAngle == amNone) @as(angularMode_t, currentAngularMode) else @as(angularMode_t, @intCast(tagAngle))), displayString + kk, displayHasNDigits, limitExponent, 0, limitIrfrac);
-        if (strncmp(displayString + kk, STD_ALMOST_EQUAL, 2) == 0) {
-            displayString[kk] = STD_NOCHAR;
-            displayString[kk + 1] = STD_NOCHAR;
-        }
-    } else {
-        if (strncmp(displayString + @as(usize, @intCast(stringByteLength(displayString) - 2)), STD_SPACE_HAIR, 2) != 0) {
-            _ = strcat(displayString, STD_SPACE_HAIR);
-        }
-
-        if (real34IsZero(&real34_) and !real34IsNegative(&real34_) and !real34IsZero(&imag34)) {
-            displayString[0] = 0;
-        } else {
-            var iidx: i16 = imagOffset;
-            var imagNegative: bool = false;
-            while (iidx < imagOffset + @as(i16, @intCast(minI(4, stringByteLength(displayString + @as(usize, @intCast(imagOffset))))))) {
-                if (displayString[@intCast(iidx)] >= '0' and displayString[@intCast(iidx)] <= '9') {
-                    break;
-                }
-                if (displayString[@intCast(iidx)] == '-') {
-                    displayString[@intCast(iidx)] = STD_NOCHAR;
-                    _ = strcat(displayString, "-");
-                    imagNegative = true;
-                    break;
-                }
-                iidx = imagOffset + frontier_char_string.stringNextGlyph(displayString + @as(usize, @intCast(imagOffset)), iidx - imagOffset);
+            var c: realContext_t = ctxtReal39;
+            // Compute the polar form at a fixed display precision and not at one scaled by the operands' exponent: hypot and
+            // atan2 are well conditioned, so this reproduces the display exactly at every magnitude while the repeated-input
+            // calls hit the cache. SHOW keeps its full 39 digits. polar_display_cov gates any narrowing of the constant.
+            c.digits = minI(@as(i32, displayHasNDigits) + 2, if (showmode()) 39 else POLAR_DISPLAY_COMPUTE_DIGITS);
+            if (polarAt39) {
+                c.digits = 39;
             }
+            polarTieWatch = c.digits < 39; // a value within one unit of its last computed digit from a rounding boundary is computed again at 39 digits
+            polarNearTie = false;
+            realRectangularToPolarCached(&real, &imagIc, &real, &imagIc, &c, cache);
+            // convertAngleFromTo runs at the same c.digits; radian->grad (x 200/pi) is its worst case and stays inside it.
+            frontier_conversion_angles.convertAngleFromTo(&imagIc, amRadian, if (tagAngle == amNone) currentAngularMode else @intCast(tagAngle), &c);
 
-            if (!imagNegative) {
-                _ = strcat(displayString, "+");
+            realToReal34(&real, &real34_);
+            realToReal34(&imagIc, &imag34);
+        } else {
+            real34Copy(varReal34(complex34), &real34_);
+            real34Copy(varImag34(complex34), &imag34);
+        }
+
+        real34ToDisplayString2(&real34_, displayString, displayHasNDigits, limitExponent, 0, frontSpace, isComplex, limitIrfrac);
+        if (updateDisplayValueX != 0) {
+            if (tagPolar != 0) {
+                _ = strcat(&displayValueX, "j");
+            } else {
+                _ = strcat(&displayValueX, "i");
             }
         }
 
-        if (getSystemFlag(FLAG_CPXMULT) != 0) {
-            _ = strcat(displayString, complexUnit());
-            real34CopyAbs(&imag34, &absimag34);
-            _ = strcat(displayString, productSign());
-            _ = frontier_char_string.xcopy(strchr(displayString, 0), displayString + @as(usize, @intCast(imagOffset)), @intCast(strlen(displayString + @as(usize, @intCast(imagOffset))) + 1));
+        const savedUpdateDisplayValueX = updateDisplayValueX;
+        updateDisplayValueX = @intFromBool(updateDisplayValueX != 0 and tagPolar == 0); // the polar angle is written into displayValueX by angle34ToDisplayString2 below
+        real34ToDisplayString2(&imag34, displayString + @as(usize, @intCast(imagOffset)), displayHasNDigits, limitExponent, 0, @intFromBool(FRONTSPACE == 0), isComplex, limitIrfrac);
+        updateDisplayValueX = savedUpdateDisplayValueX;
+
+        if (!real34IsZero(&real34_) and strncmp(displayString + @as(usize, @intCast(imagOffset)), STD_ALMOST_EQUAL, 2) == 0) {
+            displayString[@intCast(imagOffset)] = STD_NOCHAR;
+            displayString[@intCast(imagOffset + 1)] = STD_NOCHAR;
+            if (strncmp(displayString, STD_ALMOST_EQUAL, 2) != 0) {
+                strPrepend(displayString, @constCast(STD_ALMOST_EQUAL));
+            }
         }
 
-        if (getSystemFlag(FLAG_CPXMULT) == 0) {
-            real34CopyAbs(&imag34, &absimag34);
-            _ = frontier_char_string.xcopy(strchr(displayString, 0), displayString + @as(usize, @intCast(imagOffset)), @intCast(strlen(displayString + @as(usize, @intCast(imagOffset))) + 1));
-            _ = strcat(displayString, STD_SPACE_HAIR);
-            _ = strcat(displayString, STD_SPACE_HAIR);
-            _ = strcat(displayString, complexUnit());
+        if (tagPolar != 0) {
+            _ = strcat(displayString, STD_SPACE_4_PER_EM ++ STD_MEASURED_ANGLE ++ STD_SPACE_4_PER_EM);
+            const kk: u16 = @intCast(stringByteLength(displayString));
+            angle34ToDisplayString2(&imag34, @intCast(if (tagAngle == amNone) @as(angularMode_t, currentAngularMode) else @as(angularMode_t, @intCast(tagAngle))), displayString + kk, displayHasNDigits, limitExponent, 0, limitIrfrac);
+            if (strncmp(displayString + kk, STD_ALMOST_EQUAL, 2) == 0) {
+                displayString[kk] = STD_NOCHAR;
+                displayString[kk + 1] = STD_NOCHAR;
+            }
+            polarTieWatch = false;
+            if (polarNearTie) {
+                polarNearTie = false;
+                polarAt39 = true;
+                displayValueX[valueXLength] = 0; // the first formatting appended to displayValueX
+                continue :polarFormat;
+            }
+        } else {
+            if (strncmp(displayString + @as(usize, @intCast(stringByteLength(displayString) - 2)), STD_SPACE_HAIR, 2) != 0) {
+                _ = strcat(displayString, STD_SPACE_HAIR);
+            }
+
+            if (real34IsZero(&real34_) and !real34IsNegative(&real34_) and !real34IsZero(&imag34)) {
+                displayString[0] = 0;
+            } else {
+                var iidx: i16 = imagOffset;
+                var imagNegative: bool = false;
+                while (iidx < imagOffset + @as(i16, @intCast(minI(4, stringByteLength(displayString + @as(usize, @intCast(imagOffset))))))) {
+                    if (displayString[@intCast(iidx)] >= '0' and displayString[@intCast(iidx)] <= '9') {
+                        break;
+                    }
+                    if (displayString[@intCast(iidx)] == '-') {
+                        displayString[@intCast(iidx)] = STD_NOCHAR;
+                        _ = strcat(displayString, "-");
+                        imagNegative = true;
+                        break;
+                    }
+                    iidx = imagOffset + frontier_char_string.stringNextGlyph(displayString + @as(usize, @intCast(imagOffset)), iidx - imagOffset);
+                }
+
+                if (!imagNegative) {
+                    _ = strcat(displayString, "+");
+                }
+            }
+
+            if (getSystemFlag(FLAG_CPXMULT) != 0) {
+                _ = strcat(displayString, complexUnit());
+                real34CopyAbs(&imag34, &absimag34);
+                _ = strcat(displayString, productSign());
+                _ = frontier_char_string.xcopy(strchr(displayString, 0), displayString + @as(usize, @intCast(imagOffset)), @intCast(strlen(displayString + @as(usize, @intCast(imagOffset))) + 1));
+            }
+
+            if (getSystemFlag(FLAG_CPXMULT) == 0) {
+                real34CopyAbs(&imag34, &absimag34);
+                _ = frontier_char_string.xcopy(strchr(displayString, 0), displayString + @as(usize, @intCast(imagOffset)), @intCast(strlen(displayString + @as(usize, @intCast(imagOffset))) + 1));
+                _ = strcat(displayString, STD_SPACE_HAIR);
+                _ = strcat(displayString, STD_SPACE_HAIR);
+                _ = strcat(displayString, complexUnit());
+            }
         }
+        break;
     }
 }
 
@@ -2356,7 +2447,7 @@ pub export fn longIntegerToHexDisplayString(regist: calcRegister_t, displayStrin
 
     while (!longIntegerIsZero(&lgInt)) {
         digit = @intCast(longIntegerModuloUInt(&lgInt, @intCast(dispBase)));
-        longIntegerDivideUInt(&lgInt, @intCast(dispBase), &lgInt);
+        _ = longIntegerDivideUInt(&lgInt, @intCast(dispBase), &lgInt);
         displayString[i] = baseDigits[@intCast(digit)];
         i += 1;
     }
@@ -2810,13 +2901,78 @@ const trailingZeros_t = u8;
 const KEEP_TRAILING_ZEROS: trailingZeros_t = 0;
 const STRIP_TRAILING_ZEROS: trailingZeros_t = 1;
 
+// HP35 profile on the real34 route: roundBcdAt rounds a value kept with 10 digits or more to 10 digits.
+var hp35Round10: bool = false;
+// A polar line computed to POLAR_DISPLAY_COMPUTE_DIGITS is being formatted.
+var polarTieWatch: bool = false;
+// Set under polarTieWatch: the dropped digits are a tie, or zero under UP, DOWN, CEIL and FLOOR; the exact value may round either way.
+var polarNearTie: bool = false;
+
+/// True when the kept digit d[kept] goes up by one under DRM, d[kept+1] to d[last] being dropped.
+/// d holds one digit per byte, MSD first, and a byte that is not a digit is skipped; zero is 0 for
+/// bcd[] and '0' for text; sticky is set when a dropped digit after d[last] is not zero.
+fn roundUpDrm(d: [*c]const u8, kept: i16, last: i16, sign: bool, zero: u8, sticky: bool) bool {
+    var next: u8 = 10;
+    var tail: u8 = @intFromBool(sticky);
+    const m = displayRoundingMode;
+    var i: i32 = @as(i32, kept) + 1;
+    while (i <= last) : (i += 1) {
+        const v = d[@intCast(i)] -% zero;
+        if (v > 9) {
+            continue;
+        }
+        if (next == 10) {
+            next = v;
+        } else {
+            tail |= v;
+        }
+    }
+    if (next == 10) {
+        next = 0;
+    }
+    if (polarTieWatch and (if (m >= RM_UP) (next | tail) == 0 else (next == 5 and tail == 0))) {
+        polarNearTie = true;
+    }
+    if (m >= RM_UP) { // UP, DOWN, CEIL and FLOOR test only for a non-zero dropped digit: UP goes up, CEIL for a positive and FLOOR for a negative value, DOWN never
+        return (next | tail) != 0 and (m == RM_UP or (m == RM_CEIL and !sign) or (m == RM_FLOOR and sign));
+    }
+    return next > 5 or (next == 5 and (m == RM_HALF_UP or tail != 0 or (m == RM_HALF_EVEN and ((d[@intCast(kept)] -% zero) & 1) != 0)));
+}
+
+/// Rounds bcd[] at d under DRM; a digit that reaches 10 becomes 0 and adds one on its left.
+/// last is the index of the last dropped digit. Returns the index of the leftmost digit changed,
+/// d when no digit reaches 10.
+fn roundBcdAt(bcd: [*c]u8, d_in: i16, last: i16, sign: bool) i16 {
+    var d = d_in;
+    var first: i16 = 0;
+    while (hp35Round10 and first < d and bcd[@intCast(first)] == 0) {
+        first += 1;
+    }
+    if (hp35Round10 and d - first >= 9) { // HP35 profile, 10 digits or more kept: the value to 10 digits, a tie rounded away from zero, and the digits after it cleared
+        d = first + 9;
+        if (bcd[@intCast(d + 1)] >= 5) {
+            bcd[@intCast(d)] += 1;
+        }
+        if (last > d) {
+            @memset(bcd[@intCast(d + 1)..@intCast(last + 1)], 0);
+        }
+    } else if (roundUpDrm(bcd, d, last, sign, 0, false)) {
+        bcd[@intCast(d)] += 1;
+    }
+    while (bcd[@intCast(d)] == 10) {
+        bcd[@intCast(d)] = 0;
+        d -= 1;
+        bcd[@intCast(d)] += 1;
+    }
+    return d;
+}
+
 // emitSciDigits: the DF_SCI body lifted out, fed from a digit-per-byte bcd[]
 // (MSD first) so a long real can supply up to digitsToDisplay digits.
-// (display.c emitSciDigits)
+// lastDigit is the last digit the rounding may drop. (display.c emitSciDigits)
 fn emitSciDigits(bcd: [*c]u8, firstDigit_in: i16, lastDigit: i16, numDigits_in: i16, exponent_in: i32, sign: bool_t, digitToRound_in: i16, digitsToDisplay_in: i16, frontSpace: bool_t, stripTrailingZeros: trailingZeros_t, displayString: [*c]u8) void {
-    _ = lastDigit;
     var charIndex: i32 = 0;
-    var valueIndex: i32 = 0;
+    var valueIndex: i32 = if (updateDisplayValueX != 0) @intCast(strlen(&displayValueX)) else 0; // displayValueX appends to any existing prefix
     var digitCount: i16 = undefined;
     var digitPointer: i16 = undefined;
     var firstDigitAfterPeriod: bool = true;
@@ -2828,16 +2984,9 @@ fn emitSciDigits(bcd: [*c]u8, firstDigit_in: i16, lastDigit: i16, numDigits_in: 
     var digitsToDisplay = digitsToDisplay_in;
 
     // Round the displayed number
-    if (bcd[@intCast(digitToRound + 1)] >= 5) {
-        bcd[@intCast(digitToRound)] += 1;
-    }
-    // Transfer the carry
-    while (bcd[@intCast(digitToRound)] == 10) {
-        bcd[@intCast(digitToRound)] = 0;
-        digitToRound -= 1;
-        numDigits -= 1;
-        bcd[@intCast(digitToRound)] += 1;
-    }
+    const roundedAt = roundBcdAt(bcd, digitToRound, lastDigit, sign != 0);
+    numDigits -= digitToRound - roundedAt;
+    digitToRound = roundedAt;
     // Case when 9.9999 rounds to 10.0000
     if (digitToRound < firstDigit) {
         firstDigit -= 1;
@@ -2955,6 +3104,7 @@ pub export fn realSCIToDisplayString(work: *const real_t, displayString: [*c]u8,
     var sign: i32 = undefined;
     var digitsToDisplay = digitsToDisplay_in;
 
+    hp35Round10 = false;
     _ = memset(bcd, 0, @intCast(maxDigits));
 
     sign = @intFromBool(realIsNegative(work));
@@ -3004,7 +3154,9 @@ pub export fn longIntegerRegisterToRealDisplayString(regist: calcRegister_t, dis
     longIntegerFree(&lgInt);
     var tmp4: real_t = undefined;
     var tmpReal: real_t = undefined;
-    stringToReal(displayString, &tmpReal, &ctxtReal75);
+    var c: realContext_t = ctxtReal75;
+    c.round = DEC_ROUND_05UP; // a dropped digit that is not zero leaves the last kept digit neither 0 nor 5, so a later rounding to fewer digits gives that of the exact integer
+    stringToReal(displayString, &tmpReal, &c);
     int32ToReal(minimum, &tmp4);
     if (minimum == 0 or !(realCompareAbsLessThan(&tmpReal, &tmp4) != 0)) {
         const font = if (getSystemFlag(FLAG_LARGELI) != 0) &numericFont else &standardFont;
@@ -3014,7 +3166,6 @@ pub export fn longIntegerRegisterToRealDisplayString(regist: calcRegister_t, dis
         if (displayFormat == DF_ALL and displayFormatDigits > DSP_MAX) {
             const regDispMaxDigits: i16 = 48; // buffer ceiling for shown digits
             var bcdScratch: [100]u8 = undefined;
-            var c: realContext_t = ctxtReal75;
             c.digits = regDispMaxDigits;
             realPlus(&tmpReal, &tmpReal, &c);
             var digitsToDisplay: i16 = regDispMaxDigits - 1; // fill the width
@@ -3028,6 +3179,8 @@ pub export fn longIntegerRegisterToRealDisplayString(regist: calcRegister_t, dis
             }
         } else {
             var tmpReal34: real34_t = undefined;
+            c.digits = 34;
+            realPlus(&tmpReal, &tmpReal, &c); // 05UP at 34 digits as well, so realToReal34 takes the value exactly and the display rounds it once
             realToReal34(&tmpReal, &tmpReal34);
             real34ToDisplayString(&tmpReal34, amNone, displayString, font, maxWidth, 34, LIMITEXP, @intFromBool(FRONTSPACE == 0), NOIRFRAC);
         }
@@ -3054,6 +3207,7 @@ pub export fn longIntegerToDisplayString(lgInt: [*c]mpz_struct, displayString: [
     var exponentStep1: i16 = undefined;
     var exponentShift: u32 = undefined;
     var exponentShiftLimit: u32 = undefined;
+    var shiftRemainder: u32 = 0;
     var maxWidth: i16 = undefined;
 
     const lg: *longInteger_t = @ptrCast(lgInt);
@@ -3077,13 +3231,13 @@ pub export fn longIntegerToDisplayString(lgInt: [*c]mpz_struct, displayString: [
         var ix: i32 = @intCast(exponentShift);
         while (ix >= 1) : (ix -= 1) {
             if (ix >= 9) {
-                longIntegerDivideUInt(lg, 1000000000, lg);
+                shiftRemainder |= longIntegerDivideUInt(lg, 1000000000, lg);
                 ix -= 8;
             } else if (ix >= 4) {
-                longIntegerDivideUInt(lg, 10000, lg);
+                shiftRemainder |= longIntegerDivideUInt(lg, 10000, lg);
                 ix -= 3;
             } else {
-                longIntegerDivideUInt(lg, 10, lg);
+                shiftRemainder |= longIntegerDivideUInt(lg, 10, lg);
             }
         }
     } else {
@@ -3099,16 +3253,16 @@ pub export fn longIntegerToDisplayString(lgInt: [*c]mpz_struct, displayString: [
     insertSepsIntoIntegerText(displayString);
 
     if (frontier_char_string.stringWidth(displayString, if (allowLARGELI != 0 and getSystemFlag(FLAG_LARGELI) != 0) &numericFont else &standardFont, false, false) > maxWidth) {
-        var exponentString: [14]u8 = undefined;
-        var lastRemovedDigit: u8 = undefined;
+        var exponentString: [24]u8 = undefined; // ×, ₁₀, the sign, five digits and a gap at 2 bytes each, and the terminator: any i16 exponent
         var lastChar: i16 = undefined;
         var stringStep: i16 = undefined;
         var tenExponent: i16 = undefined;
+        const lastIndex: i16 = @as(i16, @intCast(strlen(displayString))) - 1;
 
         stringStep = if (GROUPLEFT_DISABLED()) 1 else @as(i16, @intCast(GROUPWIDTH_LEFT())) + (if (sl[1] == 1) @as(i16, 1) else 2);
         tenExponent = exponentStep + @as(i16, @intCast(exponentShift));
         lastChar = @as(i16, @intCast(strlen(displayString))) - stringStep;
-        lastRemovedDigit = displayString[@intCast(lastChar + (if (sl[1] == 1) @as(i16, 1) else 2))];
+        var cutChar: u8 = displayString[@intCast(lastChar)];
         displayString[@intCast(lastChar)] = 0;
         if (updateDisplayValueX != 0) {
             displayValueX[@intCast(@as(i32, @intCast(strlen(&displayValueX))) - maxI(GROUPWIDTH_LEFT(), 1))] = 0;
@@ -3117,9 +3271,10 @@ pub export fn longIntegerToDisplayString(lgInt: [*c]mpz_struct, displayString: [
         exponentToDisplayString(tenExponent, &exponentString, null, 0);
         // The cut stops at the first digit group when no width is left for it.
         while (lastChar > stringStep and frontier_char_string.stringWidth(displayString, if (allowLARGELI != 0 and getSystemFlag(FLAG_LARGELI) != 0) &numericFont else &standardFont, false, true) + frontier_char_string.stringWidth(&exponentString, if (allowLARGELI != 0 and getSystemFlag(FLAG_LARGELI) != 0) &numericFont else &standardFont, true, false) > maxWidth) {
+            displayString[@intCast(lastChar)] = cutChar; // the byte under the previous cut is written back: with the separator NONE it is a dropped digit, which roundUpDrm takes into the rounding
             lastChar -= stringStep;
             tenExponent += exponentStep;
-            lastRemovedDigit = displayString[@intCast(lastChar + (if (sl[1] == 1) @as(i16, 1) else 2))];
+            cutChar = displayString[@intCast(lastChar)];
             displayString[@intCast(lastChar)] = 0;
             if (updateDisplayValueX != 0) {
                 displayValueX[@intCast(@as(i32, @intCast(strlen(&displayValueX))) - maxI(GROUPWIDTH_LEFT(), 1))] = 0;
@@ -3128,7 +3283,10 @@ pub export fn longIntegerToDisplayString(lgInt: [*c]mpz_struct, displayString: [
             exponentToDisplayString(tenExponent, &exponentString, null, 0);
         }
 
-        if (lastRemovedDigit >= '5') {
+        displayString[@intCast(lastChar)] = cutChar; // the first dropped byte is written back for roundUpDrm and cut again after it
+        const roundUp = roundUpDrm(displayString, lastChar - 1, lastIndex, displayString[0] == '-', '0', shiftRemainder != 0);
+        displayString[@intCast(lastChar)] = 0;
+        if (roundUp) {
             lastChar = @intCast(strlen(displayString) - 1);
             displayString[@intCast(lastChar)] += 1;
             while (displayString[@intCast(lastChar)] > '9') {
@@ -3257,9 +3415,8 @@ pub export fn timeToDisplayString(regist: calcRegister_t, displayString: [*c]u8,
     const savedDisplayFormat = displayFormat;
     const savedDisplayFormatDigits = displayFormatDigits;
 
-    // The fraction loop below never ends on a NaN, and under ignoreTDisp there is
-    // no digit cap to stop it.
-    if (real34IsNaN(reg34(regist))) {
+    // A special value has no HMS decomposition.
+    if (real34IsNaN(reg34(regist)) or real34IsInfinite(reg34(regist))) {
         real34ToString(reg34(regist), displayString);
         return;
     }
@@ -3353,6 +3510,11 @@ pub export fn timeToDisplayString(regist: calcRegister_t, displayString: [*c]u8,
                 tDigits = 0;
             },
         }
+    }
+    if (ignoreTDisp == 0 and timeDisplayFormatDigits == 0) {
+        realDivide(&real, const_3600, &h, &ctxtReal39);
+        realSetPositiveSign(&h);
+        frontier_register_value_conversions.realToIntegralValue(&h, &h, DEC_ROUND_DOWN, &ctxtReal39);
     }
     realSetPositiveSign(&real);
 

@@ -1,0 +1,136 @@
+;*******************************************************************************************************************************
+;** Coverage: RM and the routes that take no mode from it. SOLVE, the TVM rate and the integrator iterate at half even under  **
+;** every RM and store once by RM, and RM is back afterwards. LOG and LB of an exact power are exact under every RM. The sign  **
+;** of an exact zero difference under ⌊x⌋ is minus, and √ and yˣ take a zero of either sign as 0. A time below the TDISP unit **
+;** rounds by DRM. Expected: Python decimal at 120 digits, not from a build.                                                  **
+;*******************************************************************************************************************************
+Acc: 34
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+
+; SOLVE 3X-2 = 0 from 0 and 1: 2/3 rounded half even, whatever RM is, and RM is back afterwards
+Func: fnRmIterationCov
+In:  FARG=0 RMODE=0 RY=Real:"0" RX=Real:"1"
+Out: EC=0 RMODE=0 RX=Real:"0.6666666666666666666666666666666667"
+In:  FARG=0 RMODE=3 RY=Real:"0" RX=Real:"1"
+Out: EC=0 RMODE=3 RX=Real:"0.6666666666666666666666666666666667"
+In:  FARG=0 RMODE=4 RY=Real:"0" RX=Real:"1"
+Out: EC=0 RMODE=4 RX=Real:"0.6666666666666666666666666666666667"
+In:  FARG=0 RMODE=5 RY=Real:"0" RX=Real:"1"
+Out: EC=0 RMODE=5 RX=Real:"0.6666666666666666666666666666666667"
+In:  FARG=0 RMODE=6 RY=Real:"0" RX=Real:"1"
+Out: EC=0 RMODE=6 RX=Real:"0.6666666666666666666666666666666667"
+
+; the RM step ⌈x⌉ of a running program with the DRM menu on show sets RM and leaves DRM as it is
+In:  FARG=2 RMODE=0 DRM=1
+Out: EC=0 RMODE=5 DRM=1
+In:  RMODE=0
+
+; TVM rate: 0.62595572739708920831700005864100626|16, rounded half even ...0063, whatever RM is
+In:  FARG=1 RMODE=0
+Out: EC=0 RMODE=0 RX=Real:"0.6259557273970892083170000586410063"
+In:  FARG=1 RMODE=3
+Out: EC=0 RMODE=3 RX=Real:"0.6259557273970892083170000586410063"
+In:  FARG=1 RMODE=5
+Out: EC=0 RMODE=5 RX=Real:"0.6259557273970892083170000586410063"
+In:  FARG=1 RMODE=6
+Out: EC=0 RMODE=6 RX=Real:"0.6259557273970892083170000586410063"
+
+; integral of X over [0,1] = 0.5 exactly, under every RM. The working value of the integrator ends above 0.5, so ←0→ and ⌈x⌉ store 0.5 and one ulp: 33 digits
+Func: fnIntegrateCov
+In:  FARG=0 RMODE=0 RY=Real:"0" RX=Real:"1"
+Out: EC=0 RMODE=0 RX=Real:"0.5"
+In:  FARG=0 RMODE=3 RY=Real:"0" RX=Real:"1"
+Out: EC=0 RMODE=3 RX=Real:"0.5" ACC=33
+In:  FARG=0 RMODE=4 RY=Real:"0" RX=Real:"1"
+Out: EC=0 RMODE=4 RX=Real:"0.5"
+In:  FARG=0 RMODE=5 RY=Real:"0" RX=Real:"1"
+Out: EC=0 RMODE=5 RX=Real:"0.5" ACC=33
+In:  FARG=0 RMODE=6 RY=Real:"0" RX=Real:"1"
+Out: EC=0 RMODE=6 RX=Real:"0.5"
+
+; integral of X*X over [0,1] = 1/3, rounded once by RM
+In:  FARG=1 RMODE=0 RY=Real:"0" RX=Real:"1"
+Out: EC=0 RMODE=0 RX=Real:"0.3333333333333333333333333333333333"
+In:  FARG=1 RMODE=3 RY=Real:"0" RX=Real:"1"
+Out: EC=0 RMODE=3 RX=Real:"0.3333333333333333333333333333333334"
+In:  FARG=1 RMODE=4 RY=Real:"0" RX=Real:"1"
+Out: EC=0 RMODE=4 RX=Real:"0.3333333333333333333333333333333333"
+In:  FARG=1 RMODE=5 RY=Real:"0" RX=Real:"1"
+Out: EC=0 RMODE=5 RX=Real:"0.3333333333333333333333333333333334"
+In:  FARG=1 RMODE=6 RY=Real:"0" RX=Real:"1"
+Out: EC=0 RMODE=6 RX=Real:"0.3333333333333333333333333333333333"
+
+; LOG and LB of an exact power of the base are the exact integer under every RM
+Func: fnLog10
+In:  RMODE=4 FL_ASLIFT=0 RX=LonI:"10"
+Out: EC=0 RMODE=4 RX=LonI:"1"
+In:  RMODE=6 FL_ASLIFT=0 RX=LonI:"10"
+Out: EC=0 RMODE=6 RX=LonI:"1"
+In:  RMODE=6 FL_ASLIFT=0 RX=LonI:"1000"
+Out: EC=0 RMODE=6 RX=LonI:"3"
+In:  RMODE=5 FL_ASLIFT=0 RX=LonI:"1000"
+Out: EC=0 RMODE=5 RX=LonI:"3"
+Func: fnLog2
+In:  RMODE=4 FL_ASLIFT=0 RX=LonI:"1024"
+Out: EC=0 RMODE=4 RX=LonI:"10"
+In:  RMODE=6 FL_ASLIFT=0 RX=LonI:"1024"
+Out: EC=0 RMODE=6 RX=LonI:"10"
+
+; LOG of an integer that is not a power is rounded once by RM: log10 7 = 0.845098040014256830712216258592636|19, log10 2 = 0.3010299956639811952137388947244930|27
+Func: fnLog10
+In:  RMODE=0 FL_ASLIFT=0 RX=LonI:"7"
+Out: EC=0 RX=Real:"0.8450980400142568307122162585926362"
+In:  RMODE=5 FL_ASLIFT=0 RX=LonI:"7"
+Out: EC=0 RX=Real:"0.8450980400142568307122162585926362"
+In:  RMODE=6 FL_ASLIFT=0 RX=LonI:"7"
+Out: EC=0 RX=Real:"0.8450980400142568307122162585926361"
+In:  RMODE=4 FL_ASLIFT=0 RX=LonI:"7"
+Out: EC=0 RX=Real:"0.8450980400142568307122162585926361"
+In:  RMODE=0 FL_ASLIFT=0 RX=LonI:"2"
+Out: EC=0 RX=Real:"0.3010299956639811952137388947244930"
+In:  RMODE=5 FL_ASLIFT=0 RX=LonI:"2"
+Out: EC=0 RX=Real:"0.3010299956639811952137388947244931"
+In:  RMODE=3 FL_ASLIFT=0 RX=LonI:"2"
+Out: EC=0 RX=Real:"0.3010299956639811952137388947244931"
+
+; x - x of a real is -0 under ⌊x⌋ and +0 under every other RM
+Func: fnSubtract
+In:  RMODE=6 FL_SPCRES=1 FL_ASLIFT=0 RY=Real:"5.0" RX=Real:"5.0"
+Out: EC=0 RX=Real:"-0"
+In:  RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 RY=Real:"5.0" RX=Real:"5.0"
+Out: EC=0 RX=Real:"0"
+
+; √ of a zero of either sign is that zero, a real, with CPXRES clear and set
+Func: fnSquareRoot
+In:  FL_SPCRES=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"-0"
+Out: EC=0 RX=Real:"-0"
+In:  FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=0 RX=Real:"-0"
+Out: EC=0 RX=Real:"-0"
+In:  FL_SPCRES=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"0"
+Out: EC=0 RX=Real:"0"
+
+; yˣ of -0: a non-integer exponent gives the real +0, an odd integer keeps the sign
+Func: fnPower
+In:  FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=0 RY=Real:"-0" RX=Real:"0.5"
+Out: EC=0 RX=Real:"0"
+In:  FL_SPCRES=1 FL_CPXRES=0 FL_ASLIFT=0 RY=Real:"-0" RX=Real:"0.5"
+Out: EC=0 RX=Real:"0"
+In:  FL_SPCRES=1 FL_CPXRES=0 FL_ASLIFT=0 RY=Real:"-0" RX=LonI:"3"
+Out: EC=0 RX=Real:"-0"
+
+; a time below the TDISP unit rounds by DRM, as a number does: 59.9999999 s at TDISP 1 shows 5.999 under ⌊x⌋ and →0←, 6.000 under ½↑
+Func: fnDisplayFormatTime
+In:  FARG=1
+Out: EC=0
+Func: fnNop
+In:  DRM=6 FL_SPCRES=0 FL_ASLIFT=0 RX=Time:"59.9999999"
+Out: EC=0 DSX="5.999s"
+In:  DRM=4 FL_SPCRES=0 FL_ASLIFT=0 RX=Time:"59.9999999"
+Out: EC=0 DSX="5.999s"
+In:  DRM=1 FL_SPCRES=0 FL_ASLIFT=0 RX=Time:"59.9999999"
+Out: EC=0 DSX="6.000s"
+In:  DRM=1 RMODE=0
+Func: fnDisplayFormatTime
+In:  FARG=0
+Out: EC=0
+Acc: 30

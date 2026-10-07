@@ -129,6 +129,7 @@ const maxlevel: c_int = 7;
 // Globals
 // ---------------------------------------------------------------------------
 extern var lastErrorCode: u8;
+extern var roundingMode: u8;
 extern var temporaryInformation: u8;
 extern var currentKeyCode: u8;
 extern var dynamicMenuItem: i16;
@@ -292,6 +293,10 @@ extern fn fnDrop(unused: u16) void;
 extern fn fnFillStack(unused: u16) void;
 extern fn fnUndo(unused: u16) void;
 extern fn execProgram(label: u16) void;
+extern fn setRoundingMode(RM: u16) void;
+
+// The mode an iterative engine runs its function at; the engine's result is stored once by RM.
+const RM_ENGINE: u8 = 0; // RM_HALF_EVEN
 extern fn reallyRunFunction(func: i16, param: u16) void;
 extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: calcRegister_t) void;
 extern fn findNamedLabel(label_name: [*:0]const u8, label_type: u8) calcRegister_t;
@@ -509,6 +514,7 @@ fn _integratorIteration() linksection(runtime.code_section) void {
         execProgram(currentSolverProgram + FIRST_LABEL);
         currentSolverProgram = savedCurrentSolverProgram;
     }
+    setRoundingMode(RM_ENGINE); // a mode the integrand sets does not reach the engine
 }
 
 // ===========================================================================
@@ -1007,6 +1013,8 @@ fn dbl_exp_int_new(regist: calcRegister_t, a: *align(1) const real_t, b: *align(
 
 pub export fn integrate(regist: calcRegister_t, a: *align(1) const real_t, b: *align(1) const real_t, acc: *real_t, res: *real_t, realContext: *realContext_t) linksection(runtime.code_section) callconv(.c) void {
     const was_solving: bool_t = getSystemFlag(@bitCast(FLAG_SOLVING));
+    const userRoundingMode = roundingMode;
+    setRoundingMode(RM_ENGINE); // the iteration takes no mode from RM
     currentSolverNestingDepth += 1;
     setSystemFlag(FLAG_INTING);
     clearSystemFlag(FLAG_SOLVING);
@@ -1031,4 +1039,5 @@ pub export fn integrate(regist: calcRegister_t, a: *align(1) const real_t, b: *a
         clearSystemFlag(FLAG_INTING);
         setSystemFlag(FLAG_SOLVING);
     }
+    setRoundingMode(userRoundingMode);
 }

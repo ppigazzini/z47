@@ -43,6 +43,7 @@ const LAST_GLOBAL_REGISTER: i16 = 136;
 extern fn boundShortIntegerWordSize(word_size: u8) callconv(.c) u8;
 extern fn set_def_Input_Default() callconv(.c) void;
 extern fn grpGroupingHexBinDefault() callconv(.c) void;
+extern fn setRoundingMode(RM: u16) void;
 // currentNumberOfLocalRegisters macro: currentSubroutineLevelData->numberOfLocalRegisters.
 const subroutineLevelHeader_t = abi.SubroutineLevelHeader;
 extern var currentSubroutineLevelData: [*c]subroutineLevelHeader_t;
@@ -95,6 +96,11 @@ const LM_SUMS: u16 = 4;
 const LM_SYSTEM_STATE: u16 = 5;
 const LM_REGISTERS_PARTIAL: u16 = 6;
 const ERROR_NONE: u8 = 0;
+
+const RM_HALF_EVEN: u8 = 0;
+const RM_HALF_UP: u8 = 1;
+const RM_FLOOR: u8 = 6;
+const DRM_DFLT: u8 = RM_HALF_UP;
 
 const USER_R47: u16 = 66;
 const USER_C47: u16 = 46;
@@ -621,6 +627,7 @@ extern var grpGroupingRight: u8;
 extern var grpGroupingHex: u8;
 extern var grpGroupingBin: u8;
 extern var roundingMode: u8;
+extern var displayRoundingMode: u8;
 extern var displayStack: u8;
 extern var exponentLimit: i16;
 extern var exponentHideLimit: i16;
@@ -1471,7 +1478,18 @@ fn applyConfigField(loaded_version: u32, allow_user_keys: bool, saved_calc_model
     } else if (cmpName(ab, "grpGroupingBin")) {
         grpGroupingBin = text.toUint8(tmpString);
         grpGroupingHexBinDefault();
-    } else if (matchU8("roundingMode", &roundingMode)) {} else if (matchU8("displayStack", &displayStack)) {} else if (cmpName(ab, "rngState")) {
+    } else if (cmpName(ab, "roundingMode")) {
+        roundingMode = text.toUint8(tmpString);
+        if (roundingMode > RM_FLOOR) {
+            roundingMode = RM_HALF_EVEN;
+        }
+        setRoundingMode(roundingMode);
+    } else if (matchU8("displayStack", &displayStack)) {} else if (cmpName(ab, "displayRoundingMode")) {
+        displayRoundingMode = text.toUint8(tmpString);
+        if (displayRoundingMode > RM_FLOOR) {
+            displayRoundingMode = DRM_DFLT;
+        }
+    } else if (cmpName(ab, "rngState")) {
         pcg32_global.state = calc_state.stringToUint64(tmpString);
         const w = text.nextWord(tmpString);
         pcg32_global.inc = calc_state.stringToUint64(w);

@@ -295,6 +295,7 @@ static void _integratorIteration(void) {
     execProgram(currentSolverProgram + FIRST_LABEL);
     currentSolverProgram = savedCurrentSolverProgram;
   }
+  setRoundingMode(RM_ENGINE);  // a mode the integrand sets does not reach the engine
                             if(ENABLE_INTEGRATOR_FILE_OUTPUT == 1) {
                               copySourceRegisterToDestRegister(TEMP_REGISTER_1, REGISTER_Y);
                               fnP_All_Regs(PRN_XYr);
@@ -1620,6 +1621,8 @@ freeWork:
 
 void integrate(calcRegister_t regist, const real_t *a, const real_t *b, real_t *acc, real_t *res, realContext_t *realContext) {
   bool_t was_solving = getSystemFlag(FLAG_SOLVING);
+  const uint8_t userRoundingMode = roundingMode;
+  setRoundingMode(RM_ENGINE);                                                  // the iteration takes no mode from RM
   ++currentSolverNestingDepth;
   setSystemFlag(FLAG_INTING);
   clearSystemFlag(FLAG_SOLVING);
@@ -1656,4 +1659,5 @@ void integrate(calcRegister_t regist, const real_t *a, const real_t *b, real_t *
     clearSystemFlag(FLAG_INTING);
     setSystemFlag(FLAG_SOLVING);
   }
+  setRoundingMode(userRoundingMode);
 }

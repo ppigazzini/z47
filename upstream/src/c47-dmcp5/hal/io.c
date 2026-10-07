@@ -42,9 +42,9 @@ int _ioFileNameFromFilePath(ioFilePath_t path, char * filename) {
       //strcat(filename, ".tsv");
       return FILE_OK;
     case ioPathRegExport:
-      return _file_selection_helper("Export Register File", DATA_DIR, DATA_EXT, save_datafile, 1, filename);
+      return _file_selection_helper("Export Register/Flag Data File", DATA_DIR, DATA_EXT, save_datafile, 1, filename);
     case ioPathRegImport:
-      return _file_selection_helper("Import Register File", DATA_DIR, DATA_EXT, load_datafile, 0, filename);
+      return _file_selection_helper("Import Register/Flag Data File", DATA_DIR, DATA_EXT, load_datafile, 0, filename);
     case ioPathSaveStateFile:
       return _file_selection_helper("Save Calculator State", STATE_DIR, STATE_EXT, save_statefile, 1, filename);
    case ioPathLoadStateFile:

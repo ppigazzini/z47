@@ -216,6 +216,7 @@ const ITM_SET_ADM: u16 = 2764;
 const ITM_SET_GRAMOD: u16 = 2742;
 const ITM_SET_GRFNT: u16 = 1342;
 const ITM_SET_RM: u16 = 1325;
+const ITM_SET_DRM: u16 = 1336;
 const ITM_SET_42ALPHAX: u16 = 1327;
 // defines.h: the register layout regCtoKS translates through.
 const FIRST_LOCAL_REGISTER: i16 = 7000;
@@ -289,6 +290,7 @@ extern var fractionDigits: u8;
 extern var denMax: u32;
 extern var exponentHideLimit: i16;
 extern var roundingMode: u8;
+extern var displayRoundingMode: u8;
 extern var timerCraAndDeciseconds: u8;
 extern var Norm_Key_00: normKey_t;
 extern var printerState: printerState_t;
@@ -703,7 +705,7 @@ pub export fn fnCbIsSet(item: i16) callconv(.c) i8 {
                 RB_FP => rb_param = gapItemRight,
                 RB_IP => rb_param = gapItemLeft,
                 RB_RX => rb_param = gapItemRadix,
-                RB_RM => rb_param = roundingMode,
+                RB_RM => rb_param = if (frontier_config.displayRoundActive()) displayRoundingMode else roundingMode,
                 RB_KY => {
                     rb_param = calcModel;
                     if (itemNr == ITM_USER_R47) {
@@ -876,6 +878,7 @@ pub export fn fnItemShowValue(item: i16) callconv(.c) i16 {
         ITM_SET_NDEC => result = displayFormatDigits,
         ITM_HIDE => result = exponentHideLimit,
         ITM_BESTF => result = @intCast(lrSelection & 0x1FF),
+        ITM_SET_DRM => result = displayRoundingMode,
         ITM_RMODE => result = roundingMode,
         ITM_SET_RM => result = roundingMode,
         ITM_HASH_JM => if (lastIntegerBase != 0) {

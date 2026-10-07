@@ -253,6 +253,7 @@ void oracle_intPowCplx(const real_t *lnBase);
 #undef intPowReal
 #undef realPower2
 
+#define realPower2 oracle_realPower2
 #define realPower10 oracle_realPower10
 #define intPowReal oracle_intPowReal
 #define intPowCplx oracle_intPowCplx
@@ -264,6 +265,7 @@ void oracle_intPowCplx(const real_t *lnBase);
 #undef intPowCplx
 #undef intPowReal
 #undef realPower10
+#undef realPower2
 
 #define fnLog2 oracle_fnLog2
 #include "../../../upstream/src/c47/mathematics/log2.c"

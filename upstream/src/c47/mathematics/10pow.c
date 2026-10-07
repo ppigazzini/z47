@@ -89,7 +89,14 @@ void intPowReal(void (*powf)(const real_t *x, real_t *res, realContext_t *realCo
     return;
   }
 
-  (*powf)(&x, &x, &ctxtReal39);
+  real_t p;
+
+  if(realIntegerPowerExact(powf == &realPower2 ? const_2 : const_10, &x, &p)) {   // an integer exponent gives the exact power
+    realCopy(&p, &x);
+  }
+  else {
+    (*powf)(&x, &x, &ctxtReal39);
+  }
   convertRealToResultRegister(&x, REGISTER_X, amNone);
 }
 

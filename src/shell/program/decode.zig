@@ -1023,7 +1023,8 @@ fn _decodeOneStep(step_arg: [*c]u8, textVersion: u16) void {
             },
 
             PTP_DISABLED => {
-                // PC_BUILD printf diagnostic dropped.
+                const item = &indexOfItems[op];
+                _ = strcpy(tmpString, if (item.itemCatalogName[0] != 0) &item.itemCatalogName else &item.itemSoftmenuName);
             },
 
             PTP_LITERAL => {

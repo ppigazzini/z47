@@ -260,6 +260,10 @@ void fnRecallConfig(uint16_t regist) {
     recallFromDtConfigDescriptor(displayStack);
     recallFromDtConfigDescriptor(firstGregorianDay);
     recallFromDtConfigDescriptor(roundingMode);
+    if(roundingMode > RM_FLOOR) {
+      roundingMode = RM_HALF_EVEN;
+    }
+    setRoundingMode(roundingMode);
     recallFromDtConfigDescriptor(systemFlags0);
     recallFromDtConfigDescriptor(systemFlags1);
     xcopy(kbd_usr, configToRecall->kbd_usr, sizeof(kbd_usr));
@@ -311,7 +315,10 @@ void fnRecallConfig(uint16_t regist) {
     recallFromDtConfigDescriptor(    compatibility_byte11);
     recallFromDtConfigDescriptor(    compatibility_byte12);
     recallFromDtConfigDescriptor(    compatibility_byte13);
-    recallFromDtConfigDescriptor(    compatibility_byte14);
+    displayRoundingMode = configToRecall->displayRoundingMode ^ DRM_DFLT;
+    if(displayRoundingMode > RM_FLOOR) {
+      displayRoundingMode = DRM_DFLT;
+    }
     recallFromDtConfigDescriptor(    compatibility_byte15);
     recallFromDtConfigDescriptor(fractionDigits);
     recallFromDtConfigDescriptor(    compatibility_byte23);

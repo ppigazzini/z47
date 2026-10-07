@@ -1910,7 +1910,6 @@ int16_t getRealMatrixColumnWidths(const real34Matrix_t *matrix, int16_t prefixWi
         extractVectorElement34(matrix, j, (i+sRow)*actualCols+j+sCol, rows, cols, &r34Val, &toBeAngle, calcDigits, &aa, &bb, &cc);   // a row steps by the matrix width, not by the count of columns on screen
 
         bool_t r34sign = real34IsNegative(&r34Val);
-        real34SetPositiveSign(&r34Val);
 
         if(allElementsInColAreIntegers[j]){ // && !(maxRows == 1 && (maxCols == 2 || maxCols == 3))) {  //no integers needed in vector
           displayFormat = DF_FIX;
@@ -1930,6 +1929,12 @@ int16_t getRealMatrixColumnWidths(const real34Matrix_t *matrix, int16_t prefixWi
         else {
           // no internal shrink under SHOW: it hides shed digits and flips SIG to sci; the k countdown does the fitting
           real34ToDisplayString(&r34Val, toBeAngle, tmpString, font, showPage ? UNSHRUNK_WIDTH : maxWidth, calcDigits, LIMITEXP, FRONTSPACE, cols*rows > 3 ? LIMITIRFRAC : LIGHTIRFRAC);
+        }
+        if(r34sign) {                                                    // the signed value rounds as the cell does; its sign is measured as the front space
+          char *minusSign = strchr(tmpString, '-');
+          if(minusSign != NULL) {
+            *minusSign = ' ';
+          }
         }
         #if STRIP_INTEGER_MATRIX_RADIX
           if(allElementsInColAreIntegers[j]) {

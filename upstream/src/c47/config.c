@@ -329,7 +329,6 @@ AMORTP2,                             xxx,        12,                            
 
 void Sett(int16_t grp) {
   int16_t ptr = -1;
-  real_t realt;
 
   while(Settings[++ptr*(_numberOfGrps+2) + 0] != 0) {
     if(Settings[  ptr*(_numberOfGrps+2) + 1 + grp] != xxx) {
@@ -375,9 +374,8 @@ void Sett(int16_t grp) {
         case RESERVED_VARIABLE_PV     :
         case RESERVED_VARIABLE_PPERONA:
         case RESERVED_VARIABLE_CPERONA: {
-            int32ToReal(Settings[ptr*(_numberOfGrps+2) + 1 + grp], &realt);
             reallocateRegister(Settings[ptr*(_numberOfGrps+2) + 0], dtReal34, 0, amNone);
-            realToReal34(&realt, REGISTER_REAL34_DATA(Settings[ptr*(_numberOfGrps+2) + 0]));
+            int32ToReal34(Settings[ptr*(_numberOfGrps+2) + 1 + grp], REGISTER_REAL34_DATA(Settings[ptr*(_numberOfGrps+2) + 0]));
             #if defined(PC_BUILD) && (VERBOSE_LEVEL > -1)
               printf("Sett1A Register %d = ", Settings[ptr*(_numberOfGrps+2) + 0]);
               printRegisterToConsole(Settings[ptr*(_numberOfGrps+2) + 0], " : ", "\n");
@@ -448,7 +446,7 @@ void Sett(int16_t grp) {
 
     Sett(_JM);
 
-    roundingMode = RM_HALF_UP;
+    setRoundingMode(RM_HALF_UP);
     if(!isR47FAM) {
       fnKeysManagement(ITM_RIBBON_C47PL);
     } else {
@@ -724,15 +722,56 @@ const char *getRoundModeName(uint16_t RM, bool_t abbreviated) {
 
 
 
+bool_t displayRoundActive(void) {
+  return currentMenu() == -MNU_DRM;
+}
+
+
+
+void fnGetDisplayRoundingMode(uint16_t unusedButMandatoryParameter) {
+  fnIntInputLongint(displayRoundingMode);
+  temporaryInformation = TI_DISPLAY_ROUNDING_MODE;
+}
+
+
+
+void fnSetDisplayRoundingModeM(uint16_t unusedButMandatoryParameter) {
+  showSoftmenu(-MNU_DRM);
+}
+
+
+
+void fnSetDisplayRoundingModeRegist(uint16_t regist) {
+  uint32_t value;
+  if(getRegisterAsUint32Param(regist, &value) && value <= RM_FLOOR) {
+    displayRoundingMode = value;
+    temporaryInformation = TI_DISPLAY_ROUNDING_MODE;
+  }
+  else if(lastErrorCode == ERROR_NONE) {
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
+  }
+}
+
+
+
 void fnGetRoundingMode(uint16_t unusedButMandatoryParameter) {
   fnIntInputLongint(roundingMode);
   temporaryInformation = TI_ROUNDING_MODE;
 }
 
 
+void setRoundingMode(uint16_t RM) {
+  roundingMode = RM;
+  ctxtReal34.round = roundingModeTable[RM];
+}
 
 void fnSetRoundingMode(uint16_t RM) {
-  roundingMode = RM;
+  if(displayRoundActive() && programRunStop != PGM_RUNNING) {                   // a program step sets RM whatever menu is on show
+    displayRoundingMode = RM;
+    temporaryInformation = TI_DISPLAY_ROUNDING_MODE_ONLY;
+    return;
+  }
+  setRoundingMode(RM);
   temporaryInformation = TI_ROUNDING_MODE_ONLY;                                 // a mode key of RMODE sets the mode outright, so the X content is not part of the reading
 }
 
@@ -743,7 +782,12 @@ void fnSetRoundingModeM(uint16_t unusedButMandatoryParameter) {
 void fnSetRoundingModeRegist(uint16_t regist) {
   uint32_t value;
   if(getRegisterAsUint32Param(regist, &value) && value <= RM_FLOOR) {           // a value above the last mode is refused, not clamped, so no reading names the wrong mode
-    fnSetRoundingMode(value);
+    if(displayRoundActive()) {
+      setRoundingMode(value);
+    }
+    else {
+      fnSetRoundingMode(value);
+    }
     temporaryInformation = TI_ROUNDING_MODE;                                    // RM takes its value from X, so the mode is confirmed against that value
   }
   else if(lastErrorCode == ERROR_NONE) {
@@ -753,14 +797,13 @@ void fnSetRoundingModeRegist(uint16_t regist) {
 
 // Decnumber PDF:
 // 0 DEC_ROUND_CEILING Round towards +Infinity.
-// 1 DEC_ROUND_DOWN Round towards 0 (truncation).
-// 2 DEC_ROUND_FLOOR Round towards -Infinity.
-// 3 DEC_ROUND_HALF_DOWN Round to nearest; if equidistant, round down.
-// 4 DEC_ROUND_HALF_EVEN Round to nearest; if equidistant, round so that the final digit
-// 5 is even.
-// 6 DEC_ROUND_HALF_UP Round to nearest; if equidistant, round up.
-// 7 DEC_ROUND_UP Round away from 0.
-// 8 DEC_ROUND_05UP The same as DEC_ROUND_UP, except that rounding up only occurs if the digit to be rounded up is 0 or 5 and after Overflow the result is the same as for DEC_ROUND_DOWN.
+// 1 DEC_ROUND_UP Round away from 0.
+// 2 DEC_ROUND_HALF_UP Round to nearest; if equidistant, round up.
+// 3 DEC_ROUND_HALF_EVEN Round to nearest; if equidistant, round so that the final digit is even.
+// 4 DEC_ROUND_HALF_DOWN Round to nearest; if equidistant, round down.
+// 5 DEC_ROUND_DOWN Round towards 0 (truncation).
+// 6 DEC_ROUND_FLOOR Round towards -Infinity.
+// 7 DEC_ROUND_05UP The same as DEC_ROUND_UP, except that rounding up only occurs if the digit to be rounded up is 0 or 5 and after Overflow the result is the same as for DEC_ROUND_DOWN.
 
 // C47 definition of roundingMode
 // 0: round half even: ½ E 0.5 rounds to next even number (default, used in science).
@@ -964,8 +1007,7 @@ void fnSetFractionDigits(uint16_t S) {
 
 void fnRoundingMode(uint16_t RM) {
   if(RM < nbrOfElements(roundingModeTable)) {
-    roundingMode = RM;
-    ctxtReal34.round = roundingModeTable[RM];
+    setRoundingMode(RM);
   }
   else {
     sprintf(errorMessage, commonBugScreenMessages[bugMsgValueFor], "fnRoundingMode", RM, "RM");
@@ -1139,6 +1181,9 @@ void fnSetISM(uint16_t regist) {
         break;
       }
     }
+  }
+  else if(lastErrorCode == ERROR_NONE) {
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
   }
 }
 
@@ -1667,10 +1712,11 @@ void resetOtherConfigurationStuff(bool_t allowUserKeys) {
   displayFormat = DF_ALL;
   displayFormatDigits = 3;
   timeDisplayFormatDigits = 0;
+  displayRoundingMode = DRM_DFLT;
 
   shortIntegerMode = SIM_2COMPL;                              //64:2
   fnSetWordSize(64);
-  roundingMode = RM_HALF_EVEN;
+  setRoundingMode(RM_HALF_EVEN);
   pcg32_srandom(0x1963073019931121ULL, 0x1995062319981019ULL); // RNG initialisation
   exponentHideLimit = 0;
   lastCenturyHighUsed = 0;

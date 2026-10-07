@@ -1,4 +1,14 @@
+const abi = @import("abi");
 const runtime = @import("../command_wrappers/runtime.zig");
+
+const RM_UP: u8 = 3;
+const RM_DOWN: u8 = 4;
+const RM_CEIL: u8 = 5;
+const RM_FLOOR: u8 = 6;
+
+inline fn realSetNegativeSign(operand: *runtime.real_t) void {
+    operand.bits |= 0x80;
+}
 
 const std_plus_minus = "\x80\xb1"; // STD_PLUS_MINUS
 const std_infinity = "\xa2\x1e"; // STD_INFINITY
@@ -23,6 +33,68 @@ fn sqrtShoI() callconv(.c) void {
     runtime.registerShortIntegerPtr(runtime.REGISTER_X).* = runtime.WP34S_intSqrt(runtime.registerShortIntegerPtr(runtime.REGISTER_X).*);
 }
 
+/// The exact square root of x rounded once by RM to 34 digits. r is the square
+/// root decNumber rounds correctly at 39 digits, so the rounding by RM of r to
+/// 34 digits is the answer or one of its two 34-digit neighbours. Exact squares
+/// at 75 digits decide which: a 34-digit square has 68 digits, a midpoint's
+/// square 70. A midpoint's square ends in 25 and has more than 34 digits, so it
+/// is never x and no tie is reached. x is a positive real of 34 digits, or a
+/// long integer of at most 75 digits that is not a square; r enters as the root
+/// at 39 digits and leaves as the root at 34 digits.
+fn sqrtRoundedOnce(x: *const runtime.real_t, r: *runtime.real_t) void {
+    var c34: runtime.real34_t = undefined;
+    var lo34: runtime.real34_t = undefined;
+    var hi34: runtime.real34_t = undefined;
+    var c: runtime.real_t = undefined;
+    var lo: runtime.real_t = undefined;
+    var hi: runtime.real_t = undefined;
+    var sq: runtime.real_t = undefined;
+
+    runtime.realToReal34(r, &c34); // by RM
+    runtime.real34NextMinus(&c34, &lo34);
+    runtime.real34NextPlus(&c34, &hi34);
+    runtime.real34ToReal(&c34, &c);
+    runtime.real34ToReal(&lo34, &lo);
+    runtime.real34ToReal(&hi34, &hi);
+
+    if (runtime.roundingMode == RM_DOWN or runtime.roundingMode == RM_FLOOR) { // the largest c with c^2 <= x
+        runtime.realMultiply(&c, &c, &sq, &runtime.ctxtReal75);
+        if (runtime.realCompareGreaterThan(&sq, x)) {
+            c = lo;
+        } else {
+            runtime.realMultiply(&hi, &hi, &sq, &runtime.ctxtReal75);
+            if (!runtime.realCompareGreaterThan(&sq, x)) {
+                c = hi;
+            }
+        }
+    } else if (runtime.roundingMode == RM_UP or runtime.roundingMode == RM_CEIL) { // the smallest c with c^2 >= x
+        runtime.realMultiply(&c, &c, &sq, &runtime.ctxtReal75);
+        if (runtime.realCompareLessThan(&sq, x)) {
+            c = hi;
+        } else {
+            runtime.realMultiply(&lo, &lo, &sq, &runtime.ctxtReal75);
+            if (!runtime.realCompareLessThan(&sq, x)) {
+                c = lo;
+            }
+        }
+    } else { // the neighbour nearest the root, on the side of its midpoint
+        runtime.realAdd(&lo, &c, &sq, &runtime.ctxtReal75);
+        runtime.realMultiply(&sq, runtime.z47_math_wrappers_const_1on2(), &sq, &runtime.ctxtReal75);
+        runtime.realMultiply(&sq, &sq, &sq, &runtime.ctxtReal75);
+        if (runtime.realCompareGreaterThan(&sq, x)) {
+            c = lo;
+        } else {
+            runtime.realAdd(&c, &hi, &sq, &runtime.ctxtReal75);
+            runtime.realMultiply(&sq, runtime.z47_math_wrappers_const_1on2(), &sq, &runtime.ctxtReal75);
+            runtime.realMultiply(&sq, &sq, &sq, &runtime.ctxtReal75);
+            if (runtime.realCompareLessThan(&sq, x)) {
+                c = hi;
+            }
+        }
+    }
+    r.* = c;
+}
+
 fn sqrtReal() callconv(.c) void {
     var value: runtime.real_t = undefined;
 
@@ -36,8 +108,12 @@ fn sqrtReal() callconv(.c) void {
         return;
     }
 
-    if (!runtime.realIsNegative(&value)) {
+    if (!runtime.realIsNegative(&value) or runtime.realIsZero(&value)) { // a zero of either sign is the real 0
+        const x = value;
         runtime.realSquareRoot(&value, &value, &runtime.ctxtReal39);
+        if (!runtime.realIsZero(&value) and !runtime.realIsSpecial(&value)) {
+            sqrtRoundedOnce(&x, &value);
+        }
         runtime.convertRealToResultRegister(&value, runtime.REGISTER_X, runtime.amNone);
         return;
     }
@@ -75,6 +151,16 @@ fn sqrtLonI() callconv(.c) void {
         runtime.__gmpz_rootrem(&root[0], &rem[0], &value[0], 2);
         if (rem[0]._mp_size == 0) {
             runtime.convertLongIntegerToLongIntegerRegister(&root[0], runtime.REGISTER_X);
+            return;
+        }
+        if (runtime.__gmpz_sizeinbase(&value[0], 10) > 75) { // the root has 38 digits or more and is not an integer: 10*floor(sqrt(x)) + 5 rounds by RM to the digits sqrt(x) rounds to
+            var a: runtime.real_t = undefined;
+
+            runtime.__gmpz_mul_ui(&root[0], &root[0], 10);
+            runtime.__gmpz_add_ui(&root[0], &root[0], 5);
+            runtime.convertLongIntegerToReal(&root[0], &a, &runtime.ctxtReal34);
+            runtime.realDivide(&a, abi.constants.const_10(), &a, &runtime.ctxtReal34);
+            runtime.convertRealToResultRegister(&a, runtime.REGISTER_X, runtime.amNone);
             return;
         }
     }
@@ -154,12 +240,23 @@ fn curtReal() callconv(.c) void {
         return;
     }
 
+    var a: runtime.real_t = value;
+
+    runtime.realSetPositiveSign(&a);
     if (runtime.realIsNegative(&value)) {
         runtime.realSetPositiveSign(&value);
         runtime.PowerReal(&value, runtime.z47_math_wrappers_const_1on3(), &value, &runtime.ctxtReal39);
         runtime.realChangeSign(&value);
     } else {
         runtime.PowerReal(&value, runtime.z47_math_wrappers_const_1on3(), &value, &runtime.ctxtReal39);
+    }
+    if (!runtime.realIsZero(&a) and !runtime.realIsSpecial(&a)) { // a cube of a number of 34 digits gives that number
+        const negative = runtime.realIsNegative(&value);
+        runtime.realSetPositiveSign(&value);
+        _ = runtime.realExactRoot(&a, runtime.z47_math_wrappers_const_3(), &value);
+        if (negative) {
+            realSetNegativeSign(&value);
+        }
     }
 
     runtime.convertRealToResultRegister(&value, runtime.REGISTER_X, runtime.amNone);

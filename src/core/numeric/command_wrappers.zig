@@ -1,3 +1,4 @@
+const abi_constants = @import("abi").constants;
 const check_value_owned = @import("compare/check_value.zig");
 const build_options = @import("math_command_wrappers_build_options");
 const compare_owned = @import("compare/compare.zig");
@@ -23,6 +24,7 @@ const trig_complex_primitives_owned = @import("trig/trig_complex_primitives.zig"
 const logxy_command_owned = @import("powerlog/logxy_command.zig");
 const circular_trig_command_owned = @import("trig/circular_trig_command.zig");
 const inverse_trig_command_owned = @import("trig/inverse_trig_command.zig");
+const inverse_trig_real_command_owned = @import("trig/inverse_trig_real_command.zig");
 const transcendental_command_owned = @import("special/transcendental_command.zig");
 const powlog_log_owned = @import("powerlog/powlog_log.zig");
 const powlog_power_owned = @import("powerlog/powlog_power.zig");
@@ -405,7 +407,13 @@ fn intPowRealValue(powf: PowRealFn) void {
         return;
     }
 
-    powf(&x, &x, &runtime.ctxtReal39);
+    var p: runtime.real_t = undefined;
+
+    if (runtime.realIntegerPowerExact(if (powf == &realPower2) abi_constants.const_2() else abi_constants.const_10(), &x, &p)) { // an integer exponent gives the exact power
+        x = p;
+    } else {
+        powf(&x, &x, &runtime.ctxtReal39);
+    }
     runtime.convertRealToResultRegister(&x, runtime.REGISTER_X, runtime.amNone);
 }
 

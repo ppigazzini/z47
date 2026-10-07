@@ -163,6 +163,7 @@ testPgms: build.sim
 
 test: clean build.sim testPgms
 	cd $(BUILD_PC) && ninja test
+	@grep "NUMBER OF TESTS" $(BUILD_PC)/meson-logs/testlog.txt
 
 test_asan: clean testPgms
 	meson setup $(BUILD_PC)
@@ -190,6 +191,7 @@ testPgms_stamp: build.sim src_files_stamp
 
 repeattest: build.sim testPgms_stamp
 	cd $(BUILD_PC) && ninja test
+	@grep "NUMBER OF TESTS" $(BUILD_PC)/meson-logs/testlog.txt
 
 build.rel/wiki: build.rel
 	rm -fr $(BUILD_PC)/wiki

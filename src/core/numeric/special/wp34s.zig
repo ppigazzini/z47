@@ -52,7 +52,7 @@ pub const amMultPi = runtime.amMultPi;
 const cstR = consts.cstR;
 
 // Offsets extracted from the generated constantPointers.h.
-const OFF_const51_gammaC01: u32 = 6632;
+const OFF_const51_gammaC01: u32 = 6660;
 
 // REAL_SIZE_IN_BYTES(51) for indexing const51_gammaC01[k].
 const REAL_SIZE_51: u32 = 44;
@@ -80,6 +80,15 @@ pub inline fn const_1on4() *align(1) const real_t {
 }
 pub inline fn const_1on10() *align(1) const real_t {
     return consts.c4520();
+}
+inline fn const_6() *align(1) const real_t {
+    return consts.const_6();
+}
+inline fn const_3on2() *const real_t {
+    return consts.const_3on2();
+}
+pub inline fn const_30() *const real_t {
+    return consts.const_30();
 }
 inline fn const_29() *align(1) const real_t {
     return consts.c5180();
@@ -287,6 +296,7 @@ extern fn decNumberSquareRoot(res: *align(1) real_t, rhs: *align(1) const real_t
 extern fn decNumberPower(res: *align(1) real_t, op1: *align(1) const real_t, op2: *align(1) const real_t, ctxt: *realContext_t) *align(1) real_t;
 extern fn decNumberCompare(res: *align(1) real_t, op1: *align(1) const real_t, op2: *align(1) const real_t, ctxt: *realContext_t) *align(1) real_t;
 extern fn decNumberRemainder(res: *align(1) real_t, op1: *align(1) const real_t, op2: *align(1) const real_t, ctxt: *realContext_t) *align(1) real_t;
+extern fn decNumberNextToward(res: *align(1) real_t, from: *align(1) const real_t, toward: *align(1) const real_t, ctxt: *realContext_t) *align(1) real_t;
 extern fn decNumberFromString(res: *align(1) real_t, source: [*:0]const u8, ctxt: *realContext_t) *align(1) real_t;
 extern fn decNumberFromInt32(res: *align(1) real_t, source: i32) *align(1) real_t;
 extern fn decNumberFromUInt32(res: *align(1) real_t, source: u32) *align(1) real_t;
@@ -365,6 +375,9 @@ inline fn realPower(op1: *align(1) const real_t, op2: *align(1) const real_t, re
 }
 pub inline fn realCompare(op1: *align(1) const real_t, op2: *align(1) const real_t, res: *align(1) real_t, ctxt: *realContext_t) void {
     _ = decNumberCompare(res, op1, op2, ctxt);
+}
+inline fn realNextToward(from: *align(1) const real_t, toward: *align(1) const real_t, res: *align(1) real_t, ctxt: *realContext_t) void {
+    _ = decNumberNextToward(res, from, toward, ctxt);
 }
 inline fn realDivideRemainder(op1: *align(1) const real_t, op2: *align(1) const real_t, res: *align(1) real_t, ctxt: *realContext_t) void {
     _ = decNumberRemainder(res, op1, op2, ctxt);
@@ -638,9 +651,24 @@ fn WP34S_Gamma_LnGamma(xin: *align(1) const real_t, calculateLnGamma: bool, res:
 
     if (reflect) {
         // figure out xin * PI mod 2PI
-        WP34S_Mod(xin, const_2(), &t, realContext);
+        var sinNegated = false;
+        WP34S_Mod(xin, const_2(), &t, realContext); // t in (-2, 2], with the sign of xin
+        realCopyAbs(&t, &x);
+        if (math_comparison_reals.realCompareGreaterThan(&x, const_3on2())) { // t is taken to its nearest integer, exactly: sin(pi*t) = sin(pi*(t-+2)) = -sin(pi*(t-+1)).
+            realSubtract(&x, const_2(), &x, realContext); // The argument is then small where sin(pi*xin) is, so no digit is lost near an integer xin
+        } else if (math_comparison_reals.realCompareGreaterThan(&x, consts.const_1on2())) {
+            realSubtract(&x, const_1(), &x, realContext);
+            sinNegated = true;
+        }
+        if (realIsNegative(&t)) {
+            realChangeSign(&x);
+        }
+        realCopy(&x, &t);
         realMultiply(&t, const39_pi(), &t, realContext); // t = xin*pi
         wp34s_trig.C47_WP34S_SinCosTanTaylor_temp75(@ptrCast(&t), false, &x, null, null, realContext); // x = sin(xin*pi)
+        if (sinNegated) {
+            realChangeSign(&x);
+        }
 
         if (calculateLnGamma) {
             realDivide(const39_pi(), &x, &t, realContext); // t = pi / sin(pi*xin)
@@ -897,9 +925,26 @@ pub export fn WP34S_Tanh(x: *align(1) const real_t, res: *align(1) real_t, realC
 // ===========================================================================
 // WP34S_ArcSinh / WP34S_ArcTanh
 // ===========================================================================
-pub export fn WP34S_ArcSinh(x: *align(1) const real_t, res: *align(1) real_t, realContext: *realContext_t) callconv(.c) void {
+pub export fn WP34S_ArcSinh(xin: *align(1) const real_t, res: *align(1) real_t, realContext: *realContext_t) callconv(.c) void {
     var a: real_t = undefined;
+    var xabs: real_t = undefined;
+    const x = &xabs;
+    const negative = realIsNegative(xin);
 
+    realCopyAbs(xin, x); // arsinh is odd: the formula below cancels for x < 0, so it runs on |x|
+    if (!realIsZero(x) and realGetExponent(x) < -18) { // arsinh x = x - x^3/6 to 72 digits, below |x| by less than half a unit at 34 digits
+        realMultiply(x, x, &a, realContext);
+        realMultiply(&a, x, &a, realContext);
+        realDivide(&a, const_6(), &a, realContext);
+        realSubtract(x, &a, res, realContext);
+        if (math_comparison_reals.realCompareEqual(res, x)) { // x^3/6 is below the context's last digit: one step toward 0 keeps the result below |x|
+            realNextToward(x, const_0(), res, realContext);
+        }
+        if (negative) {
+            realChangeSign(res);
+        }
+        return;
+    }
     realMultiply(x, x, &a, realContext); // a = x^2
     realAdd(&a, const_1(), &a, realContext); // a = x^2 + 1
     realSquareRoot(&a, &a, realContext); // a = sqrt(x^2+1)
@@ -908,22 +953,32 @@ pub export fn WP34S_ArcSinh(x: *align(1) const real_t, res: *align(1) real_t, re
     realAdd(&a, const_1(), &a, realContext); // a = x / (sqrt(x^2+1)+1) + 1
     realMultiply(x, &a, &a, realContext); // y = x * (...)
     WP34S_Ln1P(&a, res, realContext);
+    if (negative) {
+        realChangeSign(res);
+    }
 }
 
-pub export fn WP34S_ArcTanh(x: *align(1) const real_t, res: *align(1) real_t, realContext: *realContext_t) callconv(.c) void {
+pub export fn WP34S_ArcTanh(xin: *align(1) const real_t, res: *align(1) real_t, realContext: *realContext_t) callconv(.c) void {
     var y: real_t = undefined;
     var z: real_t = undefined;
+    var xabs: real_t = undefined;
+    const x = &xabs;
+    const negative = realIsNegative(xin);
 
-    if (realIsNaN(x)) {
+    if (realIsNaN(xin)) {
         realSetNaN(res);
     }
 
     // Not the obvious formula but more stable...
+    realCopyAbs(xin, x); // artanh is odd: near -1 the formula takes 1 + z of a z near -1, so it runs on |x|, where 1-x is exact
     realSubtract(const_1(), x, &z, realContext); // z = 1-x
     realDivide(x, &z, &y, realContext); // y = x / (1-x)
     realMultiply(&y, const_2(), &z, realContext); // z = 2x / (1-x)
     WP34S_Ln1P(&z, &y, realContext); // y = ln(1 + 2x / (1-x))
     realMultiply(&y, const_1on2(), res, realContext); // res = ln(...) / 2
+    if (negative) {
+        realChangeSign(res);
+    }
 }
 
 // ===========================================================================
