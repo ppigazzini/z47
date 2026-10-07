@@ -1,3 +1,4 @@
+const consts = @import("abi").constants;
 const runtime = @import("../command_wrappers/runtime.zig");
 const transcendental_command_owned = @import("../special/transcendental_command.zig");
 
@@ -31,7 +32,13 @@ fn intPowReal(powf: *const fn (x: *const runtime.real_t, res: *runtime.real_t, r
         return;
     }
 
-    powf(&x, &x, &runtime.ctxtReal39);
+    var p: runtime.real_t = undefined;
+
+    if (runtime.realIntegerPowerExact(if (powf == &realPower2) consts.const_2() else consts.const_10(), &x, &p)) { // an integer exponent gives the exact power
+        x = p;
+    } else {
+        powf(&x, &x, &runtime.ctxtReal39);
+    }
     runtime.convertRealToResultRegister(&x, runtime.REGISTER_X, runtime.amNone);
 }
 

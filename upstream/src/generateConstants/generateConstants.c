@@ -439,6 +439,7 @@ void generateAllConstants(void) {
          generateConstant("20",             2, EXACT,  "+20"                                                          );
          generateConstant("24",             2, EXACT,  "+24"                                                          );
          generateConstant("29",             2, EXACT,  "+29"                                                          ); // used for Lanczos N=30
+         generateConstant("30",             1, EXACT,  "+30"                                                          );
          generateConstant("gammaR",        31, EXACT,  "+31.43188335932791233062744140625"                            ); // used for Lanczos N=30
          generateConstant("32",             1, EXACT,  "+32"                                                          );
          generateConstant("47",             1, EXACT,  "+47"                                                          );
@@ -459,6 +460,7 @@ void generateAllConstants(void) {
          generateConstant("9999",           4, EXACT,  "+9999"                                                        );
          generateConstant("10000",          1, EXACT,  "+1e+04"                                                       );
          generateConstant("86400",          3, EXACT,  "+8.64e+04"                                                    );
+         generateConstant("360000",         6, EXACT,  "+360000"                                                      );
          generateConstant("2e6",            1, EXACT,  "+2e+06"                                                       );
          generateConstant("2p32",          10, EXACT,  "+4294967296"                                                  );
          generateConstant("1e32",           1, EXACT,  "+1e+32"                                                       );

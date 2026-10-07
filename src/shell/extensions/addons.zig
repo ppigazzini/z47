@@ -548,17 +548,17 @@ const const_1 = constR(5376);
 const const_1on2 = constR(5100);
 const const_1on4 = constR(5052);
 const const39_root3on2 = constR(5292);
-const const39_rt3 = constR(6240);
+const const39_rt3 = constR(6268);
 const const_1e_16 = constR(4812);
 const const_1e_24 = constR(4800);
-const const_10p9__1 = constR(6120);
+const const_10p9__1 = constR(6148);
 const const39_pi = constR(1848);
-const const34_10 = constR34(17448);
-const const34_60 = constR34(17560);
-const const34_100 = constR34(17576);
-const const34_3600 = constR34(17704);
-const const34_0 = constR34(17224);
-const const34_24 = constR34(17496);
+const const34_10 = constR34(17476);
+const const34_60 = constR34(17588);
+const const34_100 = constR34(17604);
+const const34_3600 = constR34(17732);
+const const34_0 = constR34(17252);
+const const34_24 = constR34(17524);
 
 // ===========================================================================
 // C-arrays bound by address (NOT pointer-typed externs).
@@ -2927,12 +2927,18 @@ pub export fn fnJM_2SI(unusedButMandatoryParameter: u16) callconv(.c) void {
 const SIprefixes linksection(code_section) = "q  r  y  z  a  f  p  n  u  m     k  M  G  T  P  E  Z  Y  R  Q  ".*;
 const ITSIprefixes linksection(code_section) = "K  M  G  T  P  E  Z  ".*;
 
-pub export fn exponentToUnitDisplayString(exponent: i32, flag2To10: bool_t, displayString_in: [*c]u8, displayValueString: [*c]u8, nimMode: bool_t) callconv(.c) void {
+pub export fn exponentToUnitDisplayString(exponent: i32, flag2To10: bool_t, displayString_in: [*c]u8, displayValueString_in: [*c]u8, nimMode: bool_t) callconv(.c) void {
     var displayString = displayString_in;
+    var displayValueString = displayValueString_in;
     displayString[0] = ' ';
     displayString[1] = 0;
     displayString[2] = 0;
     displayString[3] = 0;
+
+    if (displayValueString != null and flag2To10 == 0) { // a binary prefix is multiplied into the mantissa by the caller
+        abi.fmtCStr(displayValueString, "e{d}", .{exponent});
+        displayValueString = null;
+    }
 
     if (flag2To10 == 0 and getSystemFlag(FLAG_2TO10) == 0) {
         if ((-15 <= exponent and exponent <= 15) or (-30 <= exponent and exponent <= 30 and getSystemFlag(FLAG_PFX_ALL) != 0)) {

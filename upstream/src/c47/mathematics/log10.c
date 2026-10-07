@@ -56,8 +56,14 @@ void logxyReal(const real_t *denom) {
 
   else {
     if(realIsPositive(&a)) {
+      real_t k, p;
+      realCopy(&a, &b);
       WP34S_Ln(&a, &a, &ctxtReal39);
       realDivide(&a, denom, &a, &ctxtReal39);
+      realRescale(&a, &k, const_0, &ctxtReal39);
+      if(realIntegerPowerExact(denom == const39_ln2 ? const_2 : const_10, &k, &p) && realCompareEqual(&p, &b)) {   // X an exact power of the base gives the integer
+        realCopy(&k, &a);
+      }
     }
     else if(getFlag(FLAG_CPXRES)) {
       realSetPositiveSign(&a);
@@ -124,13 +130,30 @@ void logxyLonI(const real_t *denom) {
     return;
   }
 
+  real_t x34;
+  realContext_t c = ctxtReal34;
+  c.round = DEC_ROUND_HALF_EVEN;            // the test for an exact integer takes no mode from RM
   WP34S_Ln(&x, &x, &ctxtReal39);
-  realDivide(&x, denom, &x, &ctxtReal34);   /* Round using the 34 digit context */
-  if(!realIsAnInteger(&x)) {
+  realDivide(&x, denom, &x, &ctxtReal39);
+  realPlus(&x, &x34, &c);                   /* Round using the 34 digit context */
+  if(!realIsAnInteger(&x34)) {
     convertRealToResultRegister(&x, REGISTER_X, amNone);
   }
   else {
-    convertRealToLongIntegerRegister(&x, REGISTER_X, DEC_ROUND_HALF_EVEN);
+    longInteger_t lgInt, power;
+    int32_t k = realToInt32C47(&x34, NULL);
+
+    getRegisterAsLongInt(REGISTER_X, lgInt, NULL);
+    longIntegerInit(power);
+    longIntegerPowerUIntUInt(denom == const39_ln2 ? 2 : 10, k, power);
+    if(longIntegerCompare(power, lgInt) == 0) {   // an integer result only where X is the base to that power
+      convertRealToLongIntegerRegister(&x34, REGISTER_X, DEC_ROUND_HALF_EVEN);
+    }
+    else {
+      convertRealToResultRegister(&x, REGISTER_X, amNone);
+    }
+    longIntegerFree(power);
+    longIntegerFree(lgInt);
   }
 }
 

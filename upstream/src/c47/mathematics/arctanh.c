@@ -49,7 +49,7 @@ static void arctanhReal(void) {
   }
 
   if(realIsZero(&x)) {
-    r = const_0;
+    r = &x;  // a zero keeps its sign, as it does in arsinh, arcsin and arctan
   }
   else {
     if(realCompareEqual(&x, const_1)) {

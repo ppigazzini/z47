@@ -141,6 +141,7 @@ static void doWP34S_SinCosTanTaylor(real_t* angle, bool* sinNeg, bool* cosNeg, b
       realSubtract(angle90, angle, angle, realContext); // 90° - angle  --> angle
       *swap = !(*swap);
     }
+    const bool_t angle30 = (angularMode == amDegree && realCompareEqual(angle, const_30));   // exactly 30°: its sine is 1/2
     convertAngleFromTo(angle, angularMode, amRadian, realContext);
     #if defined(OPTION_XFN_1000)
       if(savedContextDigits >= 1071) {
@@ -150,6 +151,10 @@ static void doWP34S_SinCosTanTaylor(real_t* angle, bool* sinNeg, bool* cosNeg, b
     #endif // OPTION_XFN_1000
     {
       C47_WP34S_SinCosTanTaylor_temp75(angle, *swap, (*swap) ? cosOut : sinOut, (*swap) ? sinOut : cosOut, tanOut, realContext); // angle in radian
+    }
+    real_t *sinOfAngle = (*swap) ? cosOut : sinOut;
+    if(angle30 && sinOfAngle != NULL) {
+      realCopy(const_1on2, sinOfAngle);
     }
   }
 
@@ -1258,8 +1263,9 @@ static bool_t doAsin(const real_t *x, real_t *angle, real_t *abx, real_t *z, rea
     return false;
   }
   // angle = 2*atan(x/(1+sqrt(1-x*x)))
-  realMultiply(x, x, z, realContext);
-  realSubtract(const_1, z, z, realContext);
+  realSubtract(const_1, abx, z, realContext);     // 1-x*x as (1-|x|)(1+|x|): both factors are exact, where 1-x*x cancels near |x| = 1
+  realAdd(const_1, abx, abx, realContext);
+  realMultiply(z, abx, z, realContext);
   realSquareRoot(z, z, realContext);
   realAdd(z, const_1, z, realContext);
   realDivide(x, z, z, realContext);
@@ -1343,8 +1349,9 @@ static bool_t doAcos(const real_t *x, real_t *angle, real_t *abx, real_t *z, rea
     realSetZero(angle);
   }
   else {
-    realMultiply(x, x, z, realContext);
-    realSubtract(const_1, z, z, realContext);
+    realSubtract(const_1, abx, z, realContext);   // 1-x*x as (1-|x|)(1+|x|): both factors are exact, where 1-x*x cancels near |x| = 1
+    realAdd(const_1, abx, abx, realContext);
+    realMultiply(z, abx, z, realContext);
     realSquareRoot(z, z, realContext);
     realSubtract(const_1, x, abx, realContext);
     realDivide(abx, z, z, realContext);
@@ -1520,9 +1527,25 @@ static void WP34S_Gamma_LnGamma(const real_t *xin, const bool_t calculateLnGamma
 
   if(reflect) {
     // figure out xin * PI mod 2PI
-    WP34S_Mod(xin, const_2, &t, realContext);
+    bool_t sinNegated = false;
+    WP34S_Mod(xin, const_2, &t, realContext);                                 // t in (-2, 2], with the sign of xin
+    realCopyAbs(&t, &x);
+    if(realCompareGreaterThan(&x, const_3on2)) {                              // t is taken to its nearest integer, exactly: sin(pi·t) = sin(pi·(t∓2)) = -sin(pi·(t∓1)).
+      realSubtract(&x, const_2, &x, realContext);                             // The argument is then small where sin(pi·xin) is, so no digit is lost near an integer xin
+    }
+    else if(realCompareGreaterThan(&x, const_1on2)) {
+      realSubtract(&x, const_1, &x, realContext);
+      sinNegated = true;
+    }
+    if(realIsNegative(&t)) {
+      realChangeSign(&x);
+    }
+    realCopy(&x, &t);
     realMultiply(&t, const39_pi, &t, realContext);                            // t = xin·pi
     C47_WP34S_SinCosTanTaylor_temp75(&t, false, &x, NULL, NULL, realContext); // x = sin(xin·pi)
+    if(sinNegated) {
+      realChangeSign(&x);
+    }
 
     if(calculateLnGamma) {
       realDivide(const39_pi, &x, &t, realContext);                            // t = pi / sin(pi·xin)
@@ -1807,9 +1830,25 @@ void WP34S_Tanh(const real_t *x, real_t *res, realContext_t *realContext) {
 }
 
 
-void WP34S_ArcSinh(const real_t *x, real_t *res, realContext_t *realContext) {
-  real_t a;
+void WP34S_ArcSinh(const real_t *xin, real_t *res, realContext_t *realContext) {
+  real_t a, xabs;
+  real_t *x = &xabs;
+  const bool_t negative = realIsNegative(xin);
 
+  realCopyAbs(xin, x);                   // arsinh is odd: the formula below cancels for x < 0, so it runs on |x|
+  if(!realIsZero(x) && realGetExponent(x) < -18) {   // arsinh x = x - x³/6 to 72 digits, below |x| by less than half a unit at 34 digits
+    realMultiply(x, x, &a, realContext);
+    realMultiply(&a, x, &a, realContext);
+    realDivide(&a, const_6, &a, realContext);
+    realSubtract(x, &a, res, realContext);
+    if(realCompareEqual(res, x)) {       // x³/6 is below the context's last digit: one step toward 0 keeps the result below |x|
+      realNextToward(x, const_0, res, realContext);
+    }
+    if(negative) {
+      realChangeSign(res);
+    }
+    return;
+  }
   realMultiply(x, x, &a, realContext);   // a = x²
   realAdd(&a, const_1, &a, realContext); // a = x² + 1
   realSquareRoot(&a, &a, realContext);   // a = sqrt(x²+1)
@@ -1818,6 +1857,9 @@ void WP34S_ArcSinh(const real_t *x, real_t *res, realContext_t *realContext) {
   realAdd(&a, const_1, &a, realContext); // a = x / (sqrt(x²+1)+1) + 1
   realMultiply(x, &a, &a, realContext);  // y = x * (x / (sqrt(x²+1)+1) + 1)
   WP34S_Ln1P(&a, res, realContext);      // res = ln(1 + (x * (x / (sqrt(x²+1)+1) + 1)))
+  if(negative) {
+    realChangeSign(res);
+  }
 }
 
 
@@ -1836,19 +1878,25 @@ void WP34S_ArcCosh(const real_t *xin, real_t *res, realContext_t *realContext) {
 */
 
 
-void WP34S_ArcTanh(const real_t *x, real_t *res, realContext_t *realContext) {
-  real_t y, z;
+void WP34S_ArcTanh(const real_t *xin, real_t *res, realContext_t *realContext) {
+  real_t y, z, xabs;
+  real_t *x = &xabs;
+  const bool_t negative = realIsNegative(xin);
 
-  if(realIsNaN(x)) {
+  if(realIsNaN(xin)) {
     realSetNaN(res);
   }
 
   // Not the obvious formula but more stable...
+  realCopyAbs(xin, x);                            // artanh is odd: near -1 the formula takes 1 + z of a z near -1, so it runs on |x|, where 1-x is exact
   realSubtract(const_1, x, &z, realContext);      // z = 1-x
   realDivide(x, &z, &y, realContext);             // y = x / (1-x)
   realMultiply(&y, const_2, &z, realContext);     // z = 2x / (1-x)
   WP34S_Ln1P(&z, &y, realContext);                // y = ln(1 + 2x / (1-x))
   realMultiply(&y, const_1on2, res, realContext); // res = ln(1 + 2x / (1-x)) / 2
+  if(negative) {
+    realChangeSign(res);
+  }
 }
 
 

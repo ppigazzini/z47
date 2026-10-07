@@ -142,7 +142,10 @@ typedef realContext_t decContext;
 
 enum {
   amRadian = 0,
+  amGrad = 1,
   amDegree = 2,
+  amDMS = 3,
+  amMultPi = 4,
   amNone = 5,
   amPolar = 16,
   amAngleMask = 15,
@@ -257,6 +260,8 @@ real34_t *decQuadMultiply(real34_t *res, const real34_t *operand1, const real34_
 #define longIntegerInitSizeInBits(op, bits) mpz_init2((op), (bits))
 #define longIntegerDivideUInt(op, divisor, result) mpz_fdiv_q_ui((result), (op), (divisor))
 #define longIntegerMultiplyUInt(lhs, rhs, result) mpz_mul_ui((result), (lhs), (rhs))
+#define longIntegerPowerUIntUInt(base, exponent, result) mpz_ui_pow_ui((result), (base), (exponent))
+#define longIntegerBase10Digits(op) mpz_sizeinbase((op), 10)
 #define longIntegerCompare(lhs, rhs) mpz_cmp((lhs), (rhs))
 #define longIntegerCopy(source, destination) mpz_set((destination), (source))
 #define longIntegerSubtractUInt(lhs, rhs, result) mpz_sub_ui((result), (lhs), (rhs))
@@ -280,6 +285,11 @@ void longIntegerSubtract(longInteger_t opY, longInteger_t opX, longInteger_t res
 #define longIntegerDivideRemainder(dividend, divisor, remainder) mpz_tdiv_r((remainder), (dividend), (divisor))
 #define longIntegerModulo(lhs, rhs, result) mpz_mod((result), (lhs), (rhs))
 #define DECNEG 0x80
+
+#define RM_UP 3
+#define RM_DOWN 4
+#define RM_CEIL 5
+#define RM_FLOOR 6
 
 #define TI_FALSE 12
 #define TI_TRUE 13
@@ -313,6 +323,9 @@ void longIntegerSubtract(longInteger_t opY, longInteger_t opX, longInteger_t res
 #define realAdd(operand1, operand2, res, ctxt) decNumberAdd((res), (operand1), (operand2), (ctxt))
 #define realSubtract(operand1, operand2, res, ctxt) decNumberSubtract((res), (operand1), (operand2), (ctxt))
 #define realFMA(factor1, factor2, term, res, ctxt) decNumberFMA((res), (factor1), (factor2), (term), (ctxt))
+#define realPlus(operand, res, ctxt) decNumberPlus((res), (operand), (ctxt))
+#define realRescale(operand, res, accuracy, ctxt) decNumberRescale((res), (operand), (accuracy), (ctxt))
+#define realCopyAbs(source, destination) decNumberCopyAbs((destination), (source))
 #define realSquareRoot(operand, res, ctxt) decNumberSquareRoot((res), (operand), (ctxt))
 #define uInt32ToReal(source, destination) decNumberFromUInt32((destination), (source))
 
@@ -348,6 +361,7 @@ extern uint64_t systemFlags1;
 #define const_1 ((real_t *)z47_math_wrappers_const_1())
 #define const__1 ((real_t *)z47_math_wrappers_const_minus_1())
 #define const_2 ((real_t *)z47_math_wrappers_const_2())
+#define const_3 ((real_t *)z47_math_wrappers_const_3())
 #define const_5 ((real_t *)z47_math_wrappers_const_5())
 #define const_100 ((real_t *)z47_math_wrappers_const_100())
 #define const_3600 ((real_t *)z47_math_wrappers_const_3600())
@@ -366,6 +380,8 @@ extern uint64_t systemFlags1;
 #define const39_piOn2 ((real_t *)z47_math_wrappers_const_piOn2())
 #define const39_PHI ((real_t *)z47_math_wrappers_const_phi())
 #define const39_pi ((real_t *)z47_math_wrappers_const_pi())
+#define const_10 ((real_t *)z47_math_wrappers_const_10())
+#define const_1on10 ((real_t *)z47_math_wrappers_const_1on10())
 #define const_plusInfinity ((real_t *)z47_math_wrappers_const_plus_infinity())
 #define const_minusInfinity ((real_t *)z47_math_wrappers_const_minus_infinity())
 
@@ -544,6 +560,12 @@ decNumber *decNumberAdd(decNumber *result, const decNumber *lhs, const decNumber
 decNumber *decNumberSubtract(decNumber *result, const decNumber *lhs, const decNumber *rhs, decContext *real_context);
 decNumber *decNumberFMA(decNumber *result, const decNumber *lhs, const decNumber *rhs, const decNumber *term, decContext *real_context);
 decNumber *decNumberFromUInt32(decNumber *result, uint32_t source);
+decNumber *decNumberPlus(decNumber *result, const decNumber *rhs, decContext *real_context);
+decNumber *decNumberRescale(decNumber *result, const decNumber *lhs, const decNumber *rhs, decContext *real_context);
+decNumber *decNumberCopyAbs(decNumber *result, const decNumber *rhs);
+bool_t realIntegerPowerExact(const real_t *x, const real_t *n, real_t *res);
+bool_t realExactRoot(const real_t *x, const real_t *n, real_t *root);
+void convertLongIntegerToReal(longInteger_t source, real_t *destination, realContext_t *real_context);
 void realToIntegralValue(const real_t *source, real_t *destination, enum rounding mode, realContext_t *realContext);
 bool_t realCompareEqual(const real_t *number1, const real_t *number2);
 bool_t realCompareLessThan(const real_t *number1, const real_t *number2);
@@ -692,6 +714,9 @@ const real_t *z47_math_wrappers_const_100(void);
 const real_t *z47_math_wrappers_const_3600(void);
 const real_t *z47_math_wrappers_const_180(void);
 const real_t *z47_math_wrappers_const_1on2(void);
+const real_t *z47_math_wrappers_const_3(void);
+const real_t *z47_math_wrappers_const_10(void);
+const real_t *z47_math_wrappers_const_1on10(void);
 const real_t *z47_math_wrappers_const_1on3(void);
 const real_t *z47_math_wrappers_const_2e6(void);
 const real_t *z47_math_wrappers_const_1e_6(void);

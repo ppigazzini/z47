@@ -1374,9 +1374,9 @@
 #define ITM_SET_42ALPHA             1332
 #define ITM_GET_42ALPHA             1333
 #define ITM_BASEMENU                1334
-#define ITM_1335                    1335 // General items / any items spare (reserved: Display Rounding, DRM)
-#define ITM_1336                    1336 // General items / any items spare (reserved: Display Rounding, SET_DRM)
-#define ITM_1337                    1337 // General items / any items spare (reserved: Display Rounding, GET_DRM)
+#define ITM_DRM                     1335
+#define ITM_SET_DRM                 1336
+#define ITM_GET_DRM                 1337
 #define ITM_1338                    1338 // General items / any items spare
 #define ITM_1339                    1339 // General items / any items spare
 #define ITM_ATEXT                   1340
@@ -3275,8 +3275,8 @@
 #define ITM_3153                    3153 // General items / any items spare (reserved: Menus)
 #define ITM_3154                    3154 // General items / any items spare (reserved: Menus)
 #define ITM_3155                    3155 // General items / any items spare (reserved: Menus)
-#define ITM_3156                    3156 // General items / any items spare (reserved: Display Rounding, DRM menu)
-#define ITM_3157                    3157 // General items / any items spare (reserved: Display Rounding, RNDMODES menu)
+#define MNU_DRM                     3156
+#define MNU_RNDMODES                3157
 #define ITM_3158                    3158 // General items / any items spare (reserved: Menus)
 #define ITM_3159                    3159 // General items / any items spare (reserved: Menus)
 #define ITM_3160                    3160 // General items / any items spare (reserved: Menus)

@@ -1288,6 +1288,7 @@ void doSave(uint16_t saveType) {
         sprintf(tmpString, "grpGroupingRight\n%"           PRIu8  "\n",     grpGroupingRight);             save(tmpString, strlen(tmpString));
         sprintf(tmpString, "grpGroupingHex\n%"             PRIu8  "\n",     grpGroupingHex);               save(tmpString, strlen(tmpString));
         sprintf(tmpString, "grpGroupingBin\n%"             PRIu8  "\n",     grpGroupingBin);               save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "displayRoundingMode\n%"        PRIu8  "\n",     displayRoundingMode);          save(tmpString, strlen(tmpString));
         sprintf(tmpString, "roundingMode\n%"               PRIu8  "\n",     roundingMode);                 save(tmpString, strlen(tmpString));
         sprintf(tmpString, "displayStack\n%"               PRIu8  "\n",     displayStack);                 save(tmpString, strlen(tmpString));
         UI64toString(pcg32_global.state, yy1);
@@ -2826,8 +2827,18 @@ int64_t stringToInt64(const char *str) {
           else if(strcmp(aimBuffer, "grpGroupingBin"              ) == 0) { grpGroupingBin             = toUint8(tmpString);
             grpGroupingHexBinDefault();
           }
-          else if(strcmp(aimBuffer, "roundingMode"                ) == 0) { roundingMode               = toUint8(tmpString);  }
+          else if(strcmp(aimBuffer, "roundingMode"                ) == 0) { roundingMode               = toUint8(tmpString);
+            if(roundingMode > RM_FLOOR) {
+              roundingMode = RM_HALF_EVEN;
+            }
+            setRoundingMode(roundingMode);
+          }
           else if(strcmp(aimBuffer, "displayStack"                ) == 0) { displayStack               = toUint8(tmpString);  }
+          else if(strcmp(aimBuffer, "displayRoundingMode"         ) == 0) { displayRoundingMode        = toUint8(tmpString);
+            if(displayRoundingMode > RM_FLOOR) {
+              displayRoundingMode = DRM_DFLT;
+            }
+          }
           else if(strcmp(aimBuffer, "rngState"                    ) == 0) {
             pcg32_global.state = stringToUint64(tmpString);
             str = next_word(tmpString);

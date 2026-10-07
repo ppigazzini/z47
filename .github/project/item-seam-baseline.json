@@ -1502,15 +1502,15 @@
    "9876"
   ],
   "1335": [
-   "&itemToBeCoded",
+   "ext_fnSetDisplayRoundingModeM",
    "9876"
   ],
   "1336": [
-   "&itemToBeCoded",
-   "9876"
+   "ext_fnSetDisplayRoundingModeRegist",
+   "100"
   ],
   "1337": [
-   "&itemToBeCoded",
+   "ext_fnGetDisplayRoundingMode",
    "9876"
   ],
   "1338": [

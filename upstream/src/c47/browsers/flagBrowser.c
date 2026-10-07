@@ -220,6 +220,10 @@ TO_QSPI const  letteredFlagDisplay_t letteredFlagDisplay[] = {
         default: {
         }
       }
+
+      // Display rounding mode
+      strcpy(tmpString + CHARS_PER_LINE * ++line, "DRM=");
+      strcat(tmpString + CHARS_PER_LINE * line, getRoundModeName(displayRoundingMode, abbreviation));
       tmpString[CHARS_PER_LINE * ++line] = 0;
     }
 

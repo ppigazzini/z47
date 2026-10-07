@@ -200,6 +200,7 @@ const TI_GRMOD: u8 = 150; // X prefixed
 const TI_GRFNT: u8 = 151; // X prefixed
 const TI_LPFCT: u8 = 152; // X prefixed
 const TI_DPFCT: u8 = 153; // X prefixed
+const TI_DISPLAY_ROUNDING_MODE: u8 = 160; // X prefixed
 const TI_BITS: u8 = 109;
 const TI_BATTV: u8 = 78;
 const TI_ARE_YOU_SURE: u8 = 9;
@@ -219,6 +220,8 @@ pub fn admValue() u8 {
 
 const RM_HALF_EVEN: u8 = 0;
 const RM_HALF_UP: u8 = 1;
+const RM_FLOOR: u8 = 6;
+const DRM_DFLT: u8 = RM_HALF_UP;
 
 // STD_* macro byte sequences (fonts.h), for the rounding-mode abbreviations.
 const STD_ONE_HALF = "\x80\xbd";
@@ -348,6 +351,7 @@ const MNU_RIBBONS: i16 = 3115;
 const MNU_DEV: i16 = 3050;
 const MNU_YESNO: i16 = 3144;
 const MNU_RMODE: i16 = 3152;
+const MNU_DRM: i16 = 3156;
 const MNU_HOME: i16 = 3070;
 const MNU_MyMenu: i16 = 3090;
 
@@ -744,6 +748,7 @@ extern var shortIntegerWordSize: u8;
 extern var shortIntegerMask: u64;
 extern var shortIntegerSignBit: u64;
 extern var roundingMode: u8;
+extern var displayRoundingMode: u8;
 extern var significantDigits: u8;
 extern var fractionDigits: u8;
 extern var dispBase: u8;
@@ -904,6 +909,7 @@ extern fn decNumberCopy(res: *real_t, src: *align(1) const real_t) *real_t;
 // realToReal34/decQuadFromNumber are macros over decimal128FromNumber.
 extern fn decimal128FromNumber(dst: *real34_t, src: *align(1) const real_t, ctx: *realContext_t) *real34_t;
 extern fn decQuadZero(dst: *real34_t) *real34_t;
+extern fn decQuadFromInt32(dst: *real34_t, v: i32) *real34_t;
 
 extern fn decContextDefault(ctx: *realContext_t, kind: c_int) *realContext_t;
 
@@ -1005,6 +1011,9 @@ inline fn realToReal34(source: *const real_t, destination: *real34_t) void {
 }
 inline fn real34SetZero(destination: *real34_t) void {
     _ = decQuadZero(destination);
+}
+inline fn int32ToReal34(source: i32, destination: *real34_t) void {
+    _ = decQuadFromInt32(destination, source);
 }
 // REGISTER_REAL34_DATA(a)
 const reg34 = abi.registerReal34Aligned;
@@ -1250,7 +1259,6 @@ extern var amortP2: u16;
 // Sett (file-local) — walk the flat Settings[] preset table for profile `grp`.
 // ===========================================================================
 fn Sett(grp: i16) void {
-    var realt: real_t = undefined;
     const stride: usize = _numberOfGrps + 2;
     const grpU: usize = @intCast(grp);
 
@@ -1300,9 +1308,8 @@ fn Sett(grp: i16) void {
                 RESERVED_VARIABLE_PPERONA,
                 RESERVED_VARIABLE_CPERONA,
                 => {
-                    int32ToReal(value, &realt);
                     reallocateRegister(@intCast(opcode), dtReal34, 0, amNone);
-                    realToReal34(&realt, reg34(@intCast(opcode)));
+                    int32ToReal34(value, reg34(@intCast(opcode)));
                 },
 
                 2 => SetSetting(@intCast(value)),
@@ -1353,7 +1360,7 @@ pub export fn fnSetJM(unusedButMandatoryParameter: u16) callconv(.c) void {
 
     Sett(_JM);
 
-    roundingMode = RM_HALF_UP;
+    setRoundingMode(RM_HALF_UP);
     if (!isR47FAM()) {
         keys_management.fnKeysManagement(ITM_RIBBON_C47PL);
     } else {
@@ -1519,10 +1526,42 @@ pub export fn getRoundModeName(RM: u16, abbreviated: bool_t) callconv(.c) [*:0]c
     return if (abbreviated) row.abbreviation else row.name;
 }
 
+/// DRM: the RM keys set it while DRMODE is the current menu.
+pub fn displayRoundActive() bool {
+    return frontier_softmenus.currentMenu() == -MNU_DRM;
+}
+
+pub export fn fnGetDisplayRoundingMode(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
+    frontier_addons.fnIntInputLongint(@intCast(displayRoundingMode));
+    temporaryInformation = TI_DISPLAY_ROUNDING_MODE;
+}
+
+pub export fn fnSetDisplayRoundingModeM(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
+    frontier_softmenus.showSoftmenu(-MNU_DRM);
+}
+
+pub export fn fnSetDisplayRoundingModeRegist(regist: u16) callconv(.c) void {
+    var value: u32 = undefined;
+    if (frontier_register_value_conversions.getRegisterAsUint32Param(regist, &value) and value <= RM_FLOOR) {
+        displayRoundingMode = @intCast(value);
+        temporaryInformation = TI_DISPLAY_ROUNDING_MODE;
+    } else if (lastErrorCode == ERROR_NONE) {
+        frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
+    }
+}
+
 pub export fn fnGetRoundingMode(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     frontier_addons.fnIntInputLongint(@intCast(roundingMode));
     temporaryInformation = TI_ROUNDING_MODE;
+}
+
+/// RM and the Real34 context's rounding, set together.
+pub export fn setRoundingMode(RM: u16) callconv(.c) void {
+    roundingMode = @intCast(RM);
+    ctxtReal34.round = roundingModeTable[RM];
 }
 
 pub export fn fnSetRoundingModeM(unusedButMandatoryParameter: u16) callconv(.c) void {
@@ -1534,7 +1573,11 @@ pub export fn fnSetRoundingModeRegist(regist: u16) callconv(.c) void {
     var value: u32 = undefined;
     // A value above the last mode is refused, not clamped, so no reading names the wrong mode.
     if (frontier_register_value_conversions.getRegisterAsUint32Param(regist, &value) and value < roundingModeName.len) {
-        frontend_settings.run(.set_rounding_mode, @intCast(value));
+        if (displayRoundActive()) {
+            setRoundingMode(@intCast(value));
+        } else {
+            frontend_settings.run(.set_rounding_mode, @intCast(value));
+        }
         temporaryInformation = TI_ROUNDING_MODE; // RM takes its value from X, so the mode is confirmed against that value
     } else if (lastErrorCode == ERROR_NONE) {
         frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
@@ -1659,8 +1702,7 @@ pub export fn fnGetFractionDigits(unusedButMandatoryParameter: u16) callconv(.c)
 
 pub export fn fnRoundingMode(RM: u16) callconv(.c) void {
     if (RM < roundingModeTable.len) {
-        roundingMode = @intCast(RM);
-        ctxtReal34.round = roundingModeTable[RM];
+        setRoundingMode(RM);
     } else {
         abi.fmtBufZ(errorMessage[0..512], "In function {s}:{d} is an unexpected value for {s}!", .{ "fnRoundingMode", @as(c_int, RM), "RM" });
         _ = strcat(errorMessage, "Must be from 0 to 6");
@@ -1791,6 +1833,8 @@ pub export fn fnSetISM(regist: u16) callconv(.c) void {
                 frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
             },
         }
+    } else if (lastErrorCode == ERROR_NONE) {
+        frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
     }
 }
 
@@ -2071,10 +2115,11 @@ pub export fn resetOtherConfigurationStuff(allowUserKeys: bool_t) callconv(.c) v
     displayFormat = DF_ALL;
     displayFormatDigits = 3;
     timeDisplayFormatDigits = 0;
+    displayRoundingMode = DRM_DFLT;
 
     shortIntegerMode = SIM_2COMPL_v;
     fnSetWordSize(64);
-    roundingMode = RM_HALF_EVEN;
+    setRoundingMode(RM_HALF_EVEN);
     pcg32_srandom(0x1963073019931121, 0x1995062319981019);
     exponentHideLimit = 0;
     lastCenturyHighUsed = 0;

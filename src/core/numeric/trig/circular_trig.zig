@@ -344,6 +344,7 @@ pub fn convertAngleToSinCosTan(
             swap = !swap;
         }
 
+        const angle30 = (angular_mode == runtime.amDegree and runtime.realCompareEqual(&angle, abi.constants.const_30())); // exactly 30 degrees: its sine is 1/2
         runtime.convertAngleFromTo(&angle, angular_mode, runtime.amRadian, real_context);
         sinCosTanTaylorTemp75(
             &angle,
@@ -353,6 +354,11 @@ pub fn convertAngleToSinCosTan(
             tan_out,
             real_context,
         );
+        if (angle30) {
+            if (if (swap) cos_out else sin_out) |sin_of_angle| {
+                copyReal(sin_of_angle, runtime.z47_math_wrappers_const_1on2());
+            }
+        }
     }
 
     real_context.digits = saved_context_digits;

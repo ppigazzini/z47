@@ -20,8 +20,16 @@ void setLineDelay(uint16_t delay) {
 }
 
 
+// The bytes the printer route sent since the corpus last cleared them, for the PRX= check
+char    printedBytes[4096];
+int32_t printedLength = 0;
+
 //
 // Send Byte to over IR
 //
 void sendByteIR( uint8_t byte ) {
+  if(printedLength < (int32_t)sizeof(printedBytes) - 1) {
+    printedBytes[printedLength++] = byte;
+    printedBytes[printedLength] = 0;
+  }
 }

@@ -114,6 +114,9 @@ typedef struct {
   uint8_t wp34s_sinh_cosh_input_bits;
   uint8_t wp34s_sinh_cosh_requested_mask;
 
+  uint32_t real_integer_power_exact_calls;
+  uint32_t real_exact_root_calls;
+
   uint32_t dec_number_multiply_calls;
   int32_t dec_number_multiply_lhs_value;
   uint8_t dec_number_multiply_lhs_bits;

@@ -44,6 +44,7 @@ const const_180 = owner.const_180;
 const const_1on2 = owner.const_1on2;
 const const_1on4 = owner.const_1on4;
 const const_2 = owner.const_2;
+const const_30 = owner.const_30;
 const const_200 = owner.const_200;
 const const_360 = owner.const_360;
 const const_400 = owner.const_400;
@@ -190,11 +191,17 @@ fn doWP34S_SinCosTanTaylor(
             realSubtract(angle90, angle, angle, realContext); // 90 - angle --> angle
             swap.* = !(swap.*);
         }
+        const angle30 = (angularMode == amDegree and math_comparison_reals.realCompareEqual(@alignCast(angle), const_30())); // exactly 30 degrees: its sine is 1/2
         convertAngleFromTo(angle, angularMode, amRadian, realContext);
         if (runtime.option_xfn_1000 and savedContextDigits >= 1071) {
             C47_WP34S_SinCosTanTaylor_temp1071(angle, swap.*, if (swap.*) cosOut else sinOut, if (swap.*) sinOut else cosOut, tanOut, realContext);
         } else {
             C47_WP34S_SinCosTanTaylor_temp75(angle, swap.*, if (swap.*) cosOut else sinOut, if (swap.*) sinOut else cosOut, tanOut, realContext);
+        }
+        if (angle30) {
+            if (if (swap.*) cosOut else sinOut) |sinOfAngle| {
+                realCopy(const_1on2(), sinOfAngle);
+            }
         }
     }
 

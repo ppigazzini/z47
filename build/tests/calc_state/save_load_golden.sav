@@ -6548,6 +6548,8 @@ grpGroupingHex
 2
 grpGroupingBin
 4
+displayRoundingMode
+1
 roundingMode
 1
 displayStack

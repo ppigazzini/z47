@@ -39,6 +39,9 @@ bool_t noFailForNow = true; // abortTest counts a failure only while set; starts
 bool_t caseSetupFailed;
 // Set when an Out: line has already failed the case, so countUnreportedSetupFailure() does not count that same rejection again when the file or the block ends.
 bool_t caseSetupReported;
+// The bytes the printer route sent (hal/print_ir.c); every In: line clears them, the PRX= check compares them
+extern char    printedBytes[4096];
+extern int32_t printedLength;
 
 uint16_t label, functionParameter;
 
@@ -57,6 +60,7 @@ void covConvToSI(uint16_t itemNr);
 void covConvFromSI(uint16_t itemNr);
 void covStateRoundtrip(uint16_t unusedButMandatoryParameter);
 void covShortIntWordSizeRestore(uint16_t unusedButMandatoryParameter);
+void covConfigRounding(uint16_t which);
 void covEqCalc(uint16_t unusedButMandatoryParameter);
 void covDerivEq(uint16_t order);
 void covSolveRoot(uint16_t which);
@@ -73,6 +77,8 @@ void covIterationTi(uint16_t which);
 void covNamedVariableFold(uint16_t unusedButMandatoryParameter);
 void covStatsRegister(uint16_t unusedButMandatoryParameter);
 void covPolarDisplayCap(uint16_t unusedButMandatoryParameter);
+void covDecimalDisplay(uint16_t which);
+void covScreenFma(uint16_t unusedButMandatoryParameter);
 void covDerivPgm(uint16_t order);
 void covDerivMvarPgm(uint16_t which);
 void covDerivAccPgm(uint16_t which);
@@ -80,6 +86,7 @@ void covDerivUi(uint16_t which);
 void covSolvePgm(uint16_t unusedButMandatoryParameter);
 void covMvarPageNoProgram(uint16_t unusedButMandatoryParameter);
 void covIntegrate(uint16_t which);
+void covRmIteration(uint16_t which);
 void covIntegrateErr(uint16_t which);
 void covMvarKey(uint16_t which);
 void covMatrixEditorScroll(uint16_t which);
@@ -287,6 +294,7 @@ const funcTest_t funcTestNoParam[] = {
   {"fnRealToDoubleCov",          covRealToDouble,             1 },
   {"fnStateRoundtrip",           covStateRoundtrip,           1 },
   {"fnShortIntWSRestoreCov",     covShortIntWordSizeRestore,  1 },
+  {"fnConfigRoundingCov",        covConfigRounding,           1 },
   {"fnEqCalcCov",                covEqCalc,                   1 },
   {"fnVecToEqnRtCov",            covVecToEqnRoundTrip,        1 },
   {"fnDerivEqCov",               covDerivEq,                  1 },
@@ -307,12 +315,15 @@ const funcTest_t funcTestNoParam[] = {
   {"fnNamedVarFoldCov",          covNamedVariableFold,        1 },
   {"fnStatsRegisterCov",         covStatsRegister,            1 },
   {"fnPolarDisplayCapCov",       covPolarDisplayCap,          1 },
+  {"fnDecimalDisplayCov",        covDecimalDisplay,           1 },
+  {"fnScreenFmaCov",             covScreenFma,                1 },
   {"fnDerivPgmCov",              covDerivPgm,                 1 },
   {"fnDerivMvarPgmCov",          covDerivMvarPgm,             1 },
   {"fnDerivAccPgm",              covDerivAccPgm,              1 },
   {"fnDerivUiCov",               covDerivUi,                  1 },
   {"fnSolvePgmCov",              covSolvePgm,                 1 },
   {"fnIntegrateCov",             covIntegrate,                1 },
+  {"fnRmIterationCov",           covRmIteration,              1 },
   {"fnIntegrateErrCov",          covIntegrateErr,             1 },
   {"fnMvarKeyCov",               covMvarKey,                  1 },
   {"fnMatEditScrollCov",         covMatrixEditorScroll,       1 },
@@ -738,6 +749,9 @@ const funcTest_t funcTestNoParam[] = {
   {"fnSettingsDispFormatGrpHex", fnSettingsDispFormatGrpHex     },
   {"fnSettingsDispFormatGrpBin", fnSettingsDispFormatGrpBin     },
   {"fnSettingsDispFormatGrpR",   fnSettingsDispFormatGrpR       },
+  {"fnSettingsDispFormatGrp1L",  fnSettingsDispFormatGrp1L      },
+  {"fnP_All_Regs",               fnP_All_Regs                   },
+  {"fnDisplayFormatTime",        fnDisplayFormatTime            },
   {"fnClAll",                    fnClAll                        },
   {"fnWho",                      fnWho                          },
 
@@ -916,6 +930,44 @@ static void covClobberRegs(void) {
   }
 }
 
+/**
+ * Compare one exact Real34 midpoint operation with the selected neighbour.
+ */
+static bool_t covMidpointRoundsTo(const char *expectedText) {
+  real34_t one, halfUlp, expected, result;
+
+  stringToReal34("1", &one);
+  stringToReal34("5e-34", &halfUlp);
+  stringToReal34(expectedText, &expected);
+  real34Add(&one, &halfUlp, &result);
+  return real34CompareEqual(&result, &expected);
+}
+
+/**
+ * Verify that the public rounding setter and configuration reset update both
+ * the mode index and the Real34 context.
+ */
+void covConfigRounding(uint16_t which) {
+  bool_t correct;
+
+  if(which == 0) {
+    static const bool_t roundsUp[] = { false, true, false, true, false, true, false };
+    correct = true;
+    for(uint16_t rm = 0; rm < nbrOfElements(roundsUp); ++rm) {
+      fnSetRoundingMode(rm);
+      const char *expected = roundsUp[rm] ? "1.000000000000000000000000000000001" : "1";
+      correct = correct && roundingMode == rm && covMidpointRoundsTo(expected);
+    }
+  }
+  else {
+    fnRoundingMode(RM_HALF_UP);
+    resetOtherConfigurationStuff(true);
+    correct = roundingMode == RM_HALF_EVEN && covMidpointRoundsTo("1");
+  }
+  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+  int32ToReal34(correct ? 1 : 0, REGISTER_REAL34_DATA(REGISTER_X));
+}
+
 void covStateRoundtrip(uint16_t unusedButMandatoryParameter) {
   // Save the whole calculator state and load it straight back, driving both the serialize half (doSave) and the deserialize half (doLoad,
   // restoreOneSection) of saveRestoreCalcState.c. In the host build the DMCP power_check_screen() guard is compiled out, so doSave runs.
@@ -928,6 +980,7 @@ void covStateRoundtrip(uint16_t unusedButMandatoryParameter) {
   // the load actually reads and restores the file - a no-op load would leave the sentinel and fail the test, rather than passing on state that was simply never
   // changed.
   fnSave(SM_STATE_SAVE);
+  fnRoundingMode(RM_HALF_EVEN);                                 // the load must recover the saved context selection as well as its index
   covClobberRegs();
   fnLoad(LM_STATE_LOAD);
   fnSave(SM_MANUAL_SAVE);
@@ -936,6 +989,9 @@ void covStateRoundtrip(uint16_t unusedButMandatoryParameter) {
   fnLoad(LM_NAMED_VARIABLES);
   fnLoad(LM_SUMS);
   fnLoad(LM_SYSTEM_STATE);
+  const bool_t roundingRestored = roundingMode == RM_HALF_UP && covMidpointRoundsTo("1.000000000000000000000000000000001");
+  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+  int32ToReal34(roundingRestored ? 1 : 0, REGISTER_REAL34_DATA(REGISTER_X));
 }
 
 void covShortIntWordSizeRestore(uint16_t unusedButMandatoryParameter) {
@@ -1457,6 +1513,90 @@ void covPolarDisplayCap(uint16_t unusedButMandatoryParameter) {
       return;
     }
   }
+}
+
+void covDecimalDisplay(uint16_t which) {
+  static const struct {
+    bool_t dms;
+    bool_t tdm24;
+    const char *source;
+    const char *expected;
+  } probes[] = {
+    {true,  true,  "Infinity",                                      " " STD_INFINITY STD_DEGREE},
+    {true,  true,  "-Infinity",                                     "-" STD_INFINITY STD_DEGREE},
+    {true,  true,  "NaN",                                           "NaN" STD_DEGREE},
+    {true,  true,  "12.5",                                          NULL},
+    {false, true,  "3599.9999999999999995",                         " 1:00:00"},
+    {false, false, "43199.99999999999995",                          " 12:00:00p.m."},
+    {false, true,  "Infinity",                                      "Infinity"},
+    {false, true,  "-Infinity",                                     "-Infinity"},
+    {false, true,  "NaN",                                           "NaN"},
+  };
+
+  if(which >= nbrOfElements(probes)) {
+    abortTest();
+    return;
+  }
+
+  const uint8_t savedDisplayFormat = displayFormat;
+  const uint8_t savedDisplayFormatDigits = displayFormatDigits;
+  const uint8_t savedTimeDisplayFormatDigits = timeDisplayFormatDigits;
+  const bool_t savedTdm24 = getSystemFlag(FLAG_TDM24);
+  char actual[200], expected[200];
+
+  displayFormat = DF_ALL;
+  displayFormatDigits = 0;
+  timeDisplayFormatDigits = 0;
+  forceSystemFlag(FLAG_TDM24, probes[which].tdm24);
+
+  if(probes[which].dms) {
+    real34_t angle;
+    stringToReal34(probes[which].source, &angle);
+    angle34ToDisplayString2(&angle, amDMS, actual, 34, !LIMITEXP, FRONTSPACE, NOIRFRAC);
+    if(probes[which].expected == NULL) {
+      char radix[4];
+      if(RADIX34_MARK_STRING[1] != 1) {
+        strcpy(radix, RADIX34_MARK_STRING);
+      }
+      else {
+        radix[0] = RADIX34_MARK_STRING[0];
+        radix[1] = 0;
+      }
+      sprintf(expected, " 12%s30%s 0%s00%s", STD_DEGREE, STD_RIGHT_SINGLE_QUOTE, radix, STD_RIGHT_DOUBLE_QUOTE);
+    }
+    else {
+      strcpy(expected, probes[which].expected);
+    }
+  }
+  else {
+    reallocateRegister(REGISTER_X, dtTime, 0, amNone);
+    stringToReal34(probes[which].source, REGISTER_REAL34_DATA(REGISTER_X));
+    timeToDisplayString(REGISTER_X, actual, false);
+    strcpy(expected, probes[which].expected);
+  }
+
+  displayFormat = savedDisplayFormat;
+  displayFormatDigits = savedDisplayFormatDigits;
+  timeDisplayFormatDigits = savedTimeDisplayFormatDigits;
+  forceSystemFlag(FLAG_TDM24, savedTdm24);
+
+  if(strcmp(actual, expected) != 0) {
+    printf("\ndecimal-display probe %u: actual=|%s| expected=|%s|\n", which, actual, expected);
+    abortTest();
+  }
+}
+
+void covScreenFma(uint16_t unusedButMandatoryParameter) {
+  real_t factor1, factor2, term;
+  real34_t result;
+  angularMode_t angle;
+
+  if(!registerFMA(REGISTER_X, &factor1, &factor2, &term, &result, &angle, &ctxtReal34)) {
+    abortTest();
+    return;
+  }
+  reallocateRegister(REGISTER_X, dtReal34, 0, angle);
+  real34Copy(&result, REGISTER_REAL34_DATA(REGISTER_X));
 }
 
 void covLoadPgm(uint16_t unusedButMandatoryParameter) {
@@ -2395,6 +2535,45 @@ void covTvm(uint16_t which) {
   // The closed-form variables (FV/PV/PMT/N) ignore the wrong seed and simply overwrite it; the iterative I% solve takes the seeded 50 as its starting guess,
   // a wrong start inside the convergence basin, so that case proves the solver moves from a wrong start to 100.
   covSolveTvmTarget(target);
+}
+
+void covRmIteration(uint16_t which) {
+  // An iteration takes no mode from RM, and the RM of the caller is in force again after it. which selects:
+  //   0  SOLVE of the formula 3X-2 from the guesses in Y and X, root 2/3
+  //   1  TVM I%/a for N=360, PV=100000, PMT=-700, FV=0, one payment and compounding period a year
+  //   2  the RM step ⌈x⌉ of a running program with the DRM menu on show: RM is set and DRM is left alone
+  if(which == 2) {
+    const uint8_t savedRunStop = programRunStop;
+    showSoftmenu(-MNU_DRM);
+    programRunStop = PGM_RUNNING;
+    fnSetRoundingMode(RM_CEIL);
+    programRunStop = savedRunStop;
+    popSoftmenu();
+  }
+  else if(which == 0) {
+    if(numberOfFormulae == 0) {
+      fnEqNew(NOPARAM);
+    }
+    setEquation(currentFormula, "3" STD_CROSS "X-2");
+    const uint16_t var = findOrAllocateNamedVariable("X");
+    currentSolverVariable = var;
+    currentSolverStatus = SOLVER_STATUS_USES_FORMULA;
+    fnSolve(var);
+  }
+  else {
+    setSystemFlag(FLAG_ENDPMT);
+    covStoTvm(360,    RESERVED_VARIABLE_NPPER);
+    covStoTvm(100000, RESERVED_VARIABLE_PV);
+    covStoTvm(-700,   RESERVED_VARIABLE_PMT);
+    covStoTvm(0,      RESERVED_VARIABLE_FV);
+    covStoTvm(1,      RESERVED_VARIABLE_PPERONA);
+    covStoTvm(1,      RESERVED_VARIABLE_CPERONA);
+    covStoTvm(1,      RESERVED_VARIABLE_IPONA);
+    currentSolverStatus = 0;
+    fnTvmVar(RESERVED_VARIABLE_IPONA);
+    reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+    real34Copy(REGISTER_REAL34_DATA(RESERVED_VARIABLE_IPONA), REGISTER_REAL34_DATA(REGISTER_X));
+  }
 }
 
 void covTvmPmt(uint16_t which) {
@@ -3583,6 +3762,21 @@ void setParameter(char *p) {
           setSystemFlag(FLAG_ENDPMT);
         }
       }
+      // A system flag by its number in hex, FL_0x803D for FLAG_2TO10: for a flag whose catalogue name is a glyph the corpus text cannot match
+      else if(l[3] == '0' && l[4] == 'X' && l[5] != 0) {
+        char *end;
+        long flg = strtol(l + 3, &end, 16);
+        if(*end != 0 || flg < 0x8000 || flg > 0xFFFF) {
+          printf("\nMalformed system flag number. After FL_0x there shall be the hexadecimal number of a system flag, 8000 to FFFF.\n");
+          abortTest();
+        }
+        else if(r[0] == '0') {
+          clearSystemFlag((uint16_t)flg);
+        }
+        else {
+          setSystemFlag((uint16_t)flg);
+        }
+      }
       // Generic fallback: resolve any system flag by its CAT_SYFL catalog name (e.g. TRL0, ENGOVR, FRACT), as dslParseFlagArg does
       else {
         bool_t found = false;
@@ -3830,6 +4024,17 @@ void setParameter(char *p) {
     }
     else {
       printf("\nMalformed rounding mode setting. The rvalue must be a number from 0 to 6.\n");
+      abortTest();
+    }
+  }
+
+  //Setting display rounding mode
+  else if(strcmp(l, "DRM") == 0) {
+    if(r[0] >= '0' && r[0] <= '6' && r[1] == 0) {
+      displayRoundingMode = r[0] - '0';
+    }
+    else {
+      printf("\nMalformed display rounding mode setting. The rvalue must be a number from 0 to 6.\n");
       abortTest();
     }
   }
@@ -4773,6 +4978,63 @@ bool_t real34AreEqual(real34_t *a, real34_t *b) {
 
 
 
+// A number as shown, reduced to sign, digits and radix, E for the product sign and the exponent's superscript digits and minus; every other glyph and
+// ASCII byte (a group separator, a space, the Z: prefix) dropped
+static void compactNumberText(const char *shown, char *compact) {
+  const uint16_t product    = (uint16_t)(((uint8_t)PRODUCT_SIGN[0]  << 8) | (uint8_t)PRODUCT_SIGN[1]);
+  const uint16_t superZero  = (uint16_t)(((uint8_t)STD_SUP_0[0]     << 8) | (uint8_t)STD_SUP_0[1]);
+  const uint16_t superNine  = (uint16_t)(((uint8_t)STD_SUP_9[0]     << 8) | (uint8_t)STD_SUP_9[1]);
+  const uint16_t superMinus = (uint16_t)(((uint8_t)STD_SUP_MINUS[0] << 8) | (uint8_t)STD_SUP_MINUS[1]);
+  int32_t n = 0;
+  bool_t inExponent = false;
+  for(int32_t k = 0; shown[k] != 0 && n < 990; k++) {
+    uint8_t b = (uint8_t)shown[k];
+    if(b & 0x80) {
+      uint16_t glyph = (uint16_t)((b << 8) | (uint8_t)shown[k + 1]);
+      k++;
+      if(glyph == product) {
+        compact[n++] = 'E';
+        inExponent = true;
+      }
+      else if(inExponent && glyph >= superZero && glyph <= superNine) {
+        compact[n++] = '0' + (glyph - superZero);
+      }
+      else if(inExponent && glyph == superMinus) {
+        compact[n++] = '-';
+      }
+    }
+    else if((b >= '0' && b <= '9') || b == '.' || b == '-') {
+      compact[n++] = b;
+    }
+  }
+  compact[n] = 0;
+}
+
+
+
+#if defined(OPTION_XFN_1000)
+  // One register of an XFN triple as a real of up to 1071 digits: a long integer through its decimal text, a real34 as it is
+  static bool_t xfnRegisterAsReal(calcRegister_t regist, real_t *value, realContext_t *c) {
+    if(getRegisterDataType(regist) == dtLongInteger) {
+      longInteger_t lgInt;
+      char *text = malloc(2200);
+      convertLongIntegerRegisterToLongInteger(regist, lgInt);
+      longIntegerToString(lgInt, 10, text);
+      longIntegerFree(lgInt);
+      stringToReal(text, value, c);
+      free(text);
+      return true;
+    }
+    if(getRegisterDataType(regist) == dtReal34) {
+      real34ToReal(REGISTER_REAL34_DATA(regist), value);
+      return true;
+    }
+    return false;
+  }
+#endif // OPTION_XFN_1000
+
+
+
 void checkExpectedOutParameter(char *p) {
   calcRegister_t regist = 0;
   char l[2000], r[2000], real[2000], imag[2000], angMod[2000], letter = 0;
@@ -5166,6 +5428,375 @@ void checkExpectedOutParameter(char *p) {
     else {
       printf("\nMalformed rounding mode checking. The rvalue must be a number from 0 to 6.\n");
       abortTest();
+    }
+  }
+
+  //Checking display rounding mode
+  else if(strcmp(l, "DRM") == 0) {
+    if(r[0] >= '0' && r[0] <= '6' && r[1] == 0) {
+      if(displayRoundingMode != r[0] - '0') {
+        printf("\nDisplay rounding mode should be %c but it is %u!\n", r[0], displayRoundingMode);
+        abortTest();
+      }
+    }
+    else {
+      printf("\nMalformed display rounding mode checking. The rvalue must be a number from 0 to 6.\n");
+      abortTest();
+    }
+  }
+
+  //Checking the exact text of the real in X: every digit, trailing zeros included, and the exponent
+  else if(strcmp(l, "RXT") == 0) {
+    char text[64];
+    if(getRegisterDataType(REGISTER_X) != dtReal34) {
+      printf("\nRegister X should be a real34 for RXT but it is not!\n");
+      abortTest();
+    }
+    real34ToString(REGISTER_REAL34_DATA(REGISTER_X), text);
+    if(strcmp(text, r) != 0) {
+      printf("\nRegister X should be %s but it is %s!\n", r, text);
+      abortTest();
+    }
+  }
+
+  //Checking the exact text of every real34 part of X, comma separated: a real, the real then the imaginary part of a complex, the elements of a matrix row by row
+  else if(strcmp(l, "RXTP") == 0) {
+    char text[2000];
+    int32_t parts = 0, length = 0;
+    const real34_t *part = NULL;
+    switch(getRegisterDataType(REGISTER_X)) {
+      case dtReal34:
+      case dtTime: {
+        parts = 1;
+        part = REGISTER_REAL34_DATA(REGISTER_X);
+        break;
+      }
+      case dtComplex34: {
+        parts = 2;
+        part = REGISTER_REAL34_DATA(REGISTER_X);
+        break;
+      }
+      case dtReal34Matrix: {
+        parts = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows * REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns;
+        part = REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_X);
+        break;
+      }
+      case dtComplex34Matrix: {
+        parts = 2 * REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows * REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns;
+        part = (const real34_t *)REGISTER_COMPLEX34_MATRIX_ELEMENTS(REGISTER_X);
+        break;
+      }
+      default: {
+        printf("\nRegister X should be a real, a time, a complex or a matrix for RXTP but it is not!\n");
+        abortTest();
+        break;
+      }
+    }
+    text[0] = 0;
+    for(int32_t n = 0; n < parts; n++) {
+      if(length > (int32_t)sizeof(text) - 64) {
+        printf("\nRegister X has too many parts for RXTP!\n");
+        abortTest();
+        break;
+      }
+      if(n > 0) {
+        text[length++] = ',';
+      }
+      real34ToString(part + n, text + length);
+      length += strlen(text + length);
+    }
+    if(getRegisterDataType(REGISTER_X) == dtTime) {                                       // a time is its seconds value; the stored exponent is not part of it, so the value is compared, not the text form
+      real34_t expected34, cmp;
+      stringToReal34(r, &expected34);
+      real34Compare(REGISTER_REAL34_DATA(REGISTER_X), &expected34, &cmp);
+      if(!real34IsZero(&cmp)) {
+        printf("\nRegister X time should be %s but it is %s!\n", r, text);
+        abortTest();
+      }
+    }
+    else if(strcmp(text, r) != 0) {
+      printf("\nRegister X parts should be %s but they are %s!\n", r, text);
+      abortTest();
+    }
+  }
+
+  #if defined(OPTION_XFN_1000)
+    //Checking the value of the XFN triple X x Y + Z, computed at 1071 digits, against the decimal given: equal in value, every digit
+    else if(strcmp(l, "XFNV") == 0) {
+      REAL_T_ALLOC(xfnValue, 1071);
+      REAL_T_ALLOC(xfnTerm,  1071);
+      REAL_T_ALLOC(xfnWant,  1071);
+      realContext_t c = ctxtReal75;
+      c.digits = 1071;
+      if(!xfnRegisterAsReal(REGISTER_X, xfnValue, &c) || !xfnRegisterAsReal(REGISTER_Y, xfnTerm, &c)) {
+        printf("\nRegisters X and Y should be an XFN triple for XFNV but they are not!\n");
+        abortTest();
+      }
+      else {
+        realMultiply(xfnValue, xfnTerm, xfnValue, &c);
+        if(!xfnRegisterAsReal(REGISTER_Z, xfnTerm, &c)) {
+          printf("\nRegister Z should be a real or a long integer for XFNV but it is not!\n");
+          abortTest();
+        }
+        else {
+          realAdd(xfnValue, xfnTerm, xfnValue, &c);
+          stringToReal(r, xfnWant, &c);
+          realSubtract(xfnValue, xfnWant, xfnTerm, &c);
+          if(!realIsZero(xfnTerm)) {
+            char *text = malloc(2200);
+            realToString(xfnValue, text);
+            printf("\nX x Y + Z should be %s but it is %s!\n", r, text);
+            free(text);
+            abortTest();
+          }
+        }
+      }
+      REAL_T_FREE(xfnWant,  1071);
+      REAL_T_FREE(xfnTerm,  1071);
+      REAL_T_FREE(xfnValue, 1071);
+    }
+
+    //Checking the 34-digit value the XFN view shows, the X x Y + Z line over the stack on the XFCNS menu: xfnViewValue, the call the view line makes
+    else if(strcmp(l, "XFNW") == 0) {
+      real34_t viewValue;
+      angularMode_t viewAngle;
+      char text[64];
+      if(!xfnViewValue(REGISTER_X, &viewValue, &viewAngle)) {
+        printf("\nRegisters X, Y and Z should be an XFN triple for XFNW but they are not!\n");
+        abortTest();
+      }
+      else {
+        real34ToString(&viewValue, text);
+        if(strcmp(text, r) != 0) {
+          printf("\nThe XFN view should show %s but it shows %s!\n", r, text);
+          abortTest();
+        }
+      }
+    }
+
+    //Checking the plain XFN string, every digit of X x Y + Z as the print and the TSV and .d47 export write it
+    else if(strcmp(l, "XFNP") == 0) {
+      char *text = malloc(2200);
+      text[0] = 0;
+      if(!registerFMAOutputPlainString(REGISTER_X, "", text) || strcmp(text, r) != 0) {
+        printf("\nThe plain XFN string should be %s but it is %s!\n", r, text);
+        abortTest();
+      }
+      free(text);
+    }
+
+    //Checking the XFN string the SHOW screen takes, reduced to its digits, the radix and the exponent: 1.23E-4 for 1.23 x10^-4, grouping dropped
+    else if(strcmp(l, "XFNS") == 0) {
+      char *text = malloc(6000);
+      char *compact = malloc(2200);
+      int32_t n = 0;
+      bool_t inExponent = false;
+      const uint16_t product    = (uint16_t)(((uint8_t)PRODUCT_SIGN[0]  << 8) | (uint8_t)PRODUCT_SIGN[1]);
+      const uint16_t superZero  = (uint16_t)(((uint8_t)STD_SUP_0[0]     << 8) | (uint8_t)STD_SUP_0[1]);
+      const uint16_t superNine  = (uint16_t)(((uint8_t)STD_SUP_9[0]     << 8) | (uint8_t)STD_SUP_9[1]);
+      const uint16_t superMinus = (uint16_t)(((uint8_t)STD_SUP_MINUS[0] << 8) | (uint8_t)STD_SUP_MINUS[1]);
+      text[0] = 0;
+      if(!registerFMAOutputString(REGISTER_X, "", text)) {
+        printf("\nRegisters X, Y and Z should be an XFN triple for XFNS but they are not!\n");
+        abortTest();
+      }
+      else {
+        for(int32_t k = 0; text[k] != 0 && n < 2190; k++) {
+          uint8_t b = (uint8_t)text[k];
+          if(b & 0x80) {
+            uint16_t glyph = (uint16_t)((b << 8) | (uint8_t)text[k + 1]);
+            k++;
+            if(glyph == product) {
+              compact[n++] = 'E';
+              inExponent = true;
+            }
+            else if(inExponent && glyph >= superZero && glyph <= superNine) {
+              compact[n++] = '0' + (glyph - superZero);
+            }
+            else if(inExponent && glyph == superMinus) {
+              compact[n++] = '-';
+            }
+          }
+          else if((b >= '0' && b <= '9') || b == '.' || b == '-') {
+            compact[n++] = b;
+          }
+        }
+        compact[n] = 0;
+        if(strcmp(compact, r) != 0) {
+          printf("\nThe XFN SHOW string should be %s but it is %s!\n", r, compact);
+          abortTest();
+        }
+      }
+      free(compact);
+      free(text);
+    }
+  #endif // OPTION_XFN_1000
+
+  //Checking the number the printer route sent since the last In: line: the bytes 0-9 . - E kept, every other byte (tabs, spaces, control codes) dropped
+  else if(strcmp(l, "PRX") == 0) {
+    char printed[4096];
+    int32_t n = 0;
+    for(int32_t k = 0; k < printedLength; k++) {
+      if(strchr("0123456789.-E", printedBytes[k]) != NULL && printedBytes[k] != 0) {
+        printed[n++] = printedBytes[k];
+      }
+    }
+    printed[n] = 0;
+    if(strcmp(printed, r) != 0) {
+      printf("\nThe printer should have printed %s but it printed %s!\n", r, printed);
+      abortTest();
+    }
+  }
+
+  //Checking the text of X as the TSV row and the clipboard write it: copyRegisterToClipboardString2, utf8ToString and stringToASCII, the steps of
+  //stackregister_csv_out. The rvalue is in quotes, \" for a quote and \\ for a backslash
+  else if(strcmp(l, "TSX") == 0) {
+    char *row = malloc(TMP_STR_LENGTH);
+    char *text = malloc(TMP_STR_LENGTH);
+    int32_t n = 0;
+    const bool_t quoted = (r[0] == '"');
+    copyRegisterToClipboardString2(REGISTER_X, row);
+    utf8ToString((uint8_t *)row, text);
+    stringToASCII(text, row);
+    for(int32_t k = (quoted ? 1 : 0); r[k] != 0 && !(quoted && r[k] == '"' && r[k + 1] == 0); k++) {
+      if(r[k] == '\\' && r[k + 1] != 0) {
+        k++;
+      }
+      r[n++] = r[k];
+    }
+    r[n] = 0;
+    if(strcmp(row, r) != 0) {
+      printf("\nThe TSV row of X should be %s but it is %s!\n", r, row);
+      abortTest();
+    }
+    free(text);
+    free(row);
+  }
+
+  //Checking the text the X line shows for a long integer (DLX), the text a long integer appends to a string in X (DLA), or the last cell the matrix
+  //editor draws for the matrix in X (MEC), compacted: sign, digits and radix, E for the product sign, the exponent's superscript digits and minus
+  else if(strcmp(l, "DLX") == 0 || strcmp(l, "DLA") == 0 || strcmp(l, "MEC") == 0) {
+    char *shown = malloc(TMP_STR_LENGTH);
+    char compact[1000];
+    shown[0] = 0;
+    if(strcmp(l, "DLX") == 0 && getRegisterDataType(REGISTER_X) == dtLongInteger) {
+      uint8_t savedTemporaryInformation = temporaryInformation;
+      temporaryInformation = TI_NO_INFO;  // a pending TI, such as TI_VERSION after the reset, replaces the X line
+      tmpString[0] = 0;
+      refreshRegisterLine(REGISTER_X);
+      temporaryInformation = savedTemporaryInformation;
+      strcpy(shown, tmpString);
+    }
+    else if(strcmp(l, "DLA") == 0 && getRegisterDataType(REGISTER_X) == dtString) {
+      strcpy(shown, REGISTER_STRING_DATA(REGISTER_X));
+    }
+    else if(strcmp(l, "MEC") == 0 && getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
+      fnEditMatrix(REGISTER_X);
+      if(calcMode == CM_MIM) {
+        showMatrixEditor();
+        tmpString[0] = 0;
+        showRealMatrix(&openMatrixMIMPointer.realMatrix, 0, !regXp, NULL);  // the call showMatrixEditor draws the cells with; tmpString keeps the last cell
+        strcpy(shown, tmpString);
+        mimEnter(true);
+        mimFinalize();
+        calcModeNormal();
+        popSoftmenu();
+      }
+    }
+    if(shown[0] == 0) {
+      printf("\nRegister X gives no text for %s: a long integer for DLX, a string for DLA, a real matrix in the editor for MEC!\n", l);
+      abortTest();
+    }
+    else {
+      compactNumberText(shown, compact);
+      if(strcmp(l, "MEC") == 0) {  // a cell is checked by value and digits, as RXT has it: 3.15E0 is 3.15, 300.E-6 is 0.000300
+        real34_t cell;
+        stringToReal34(compact, &cell);
+        real34ToString(&cell, compact);
+      }
+      if(r[0] == '"') {
+        xcopy(r, r + 1, strlen(r));
+        if(r[0] != 0 && r[strlen(r) - 1] == '"') {
+          r[strlen(r) - 1] = 0;
+        }
+      }
+      if(strcmp(compact, r) != 0) {
+        printf("\nThe %s text should be %s but it is %s!\n", l, r, compact);
+        abortTest();
+      }
+    }
+    free(shown);
+  }
+
+  //Checking the text the X line shows for a real, angles included, or a time, compacted: ASCII kept, spaces dropped, degree D, minute M, second S, other glyphs dropped
+  else if(strcmp(l, "DSX") == 0) {
+    char shown[1000], compact[1000];
+    int32_t n = 0;
+    shown[0] = 0;
+    if(getRegisterDataType(REGISTER_X) == dtReal34) {
+      real34ToDisplayString(REGISTER_REAL34_DATA(REGISTER_X), getRegisterAngularMode(REGISTER_X), shown, &numericFont, SCREEN_WIDTH, NUMBER_OF_DISPLAY_DIGITS, LIMITEXP, FRONTSPACE, FULLIRFRAC);
+    }
+    else if(getRegisterDataType(REGISTER_X) == dtTime) {
+      timeToDisplayString(REGISTER_X, shown, false);
+    }
+    else {
+      printf("\nRegister X should be a real or a time for DSX but it is not!\n");
+      abortTest();
+    }
+    for(int32_t k = 0; shown[k] != 0; k++) {
+      if(shown[k] & 0x80) {
+        if(shown[k] == STD_DEGREE[0] && shown[k + 1] == STD_DEGREE[1]) {
+          compact[n++] = 'D';
+        }
+        else if(shown[k] == STD_RIGHT_SINGLE_QUOTE[0] && shown[k + 1] == STD_RIGHT_SINGLE_QUOTE[1]) {
+          compact[n++] = 'M';
+        }
+        else if(shown[k] == STD_RIGHT_DOUBLE_QUOTE[0] && shown[k + 1] == STD_RIGHT_DOUBLE_QUOTE[1]) {
+          compact[n++] = 'S';
+        }
+        k++;
+      }
+      else if(shown[k] != ' ') {
+        compact[n++] = shown[k];
+      }
+    }
+    compact[n] = 0;
+    if(r[0] == '"') {
+      xcopy(r, r + 1, strlen(r));
+      if(r[0] != 0 && r[strlen(r) - 1] == '"') {
+        r[strlen(r) - 1] = 0;
+      }
+    }
+    if(strcmp(compact, r) != 0) {
+      printf("\nThe X line should show %s but it shows %s!\n", r, compact);
+      abortTest();
+    }
+  }
+
+  //Checking the real a stack line shows: DVX, DVY, DVZ or DVT renders that line with displayValueX captured, as ROUND does for X, and checks the text of the real
+  else if(l[0] == 'D' && l[1] == 'V' && l[2] != 0 && l[3] == 0 && strchr("XYZT", l[2]) != NULL) {
+    const char *lines = "XYZT";
+    calcRegister_t shown = REGISTER_X + (calcRegister_t)(strchr(lines, l[2]) - lines);
+    char text[64];
+    real34_t value;
+    if(getRegisterDataType(shown) != dtReal34) {
+      printf("\nRegister %c should be a real34 for %s but it is not!\n", l[2], l);
+      abortTest();
+    }
+    else {
+      uint8_t savedTemporaryInformation = temporaryInformation;
+      temporaryInformation = TI_NO_INFO;  // a pending TI, such as TI_VERSION after the reset, replaces the X line
+      updateDisplayValueX = true;
+      displayValueX[0] = 0;
+      refreshRegisterLine(shown);
+      updateDisplayValueX = false;
+      temporaryInformation = savedTemporaryInformation;
+      stringToReal34(displayValueX, &value);
+      real34ToString(&value, text);
+      if(strcmp(text, r) != 0) {
+        printf("\nThe %c line should show %s but it shows %s (display value %s)!\n", l[2], r, text, displayValueX);
+        abortTest();
+      }
     }
   }
 
@@ -6434,6 +7065,8 @@ void processLine(void) {
   else if(strncmp(line, "IN: ", 4) == 0) {
     //printf("%s\n", line);
     strcpy(lastInParameters, line);
+    printedLength = 0;
+    printedBytes[0] = 0;
     inParameters(line + 4);
   }
 

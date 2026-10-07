@@ -13,6 +13,7 @@
 ;** loaded they still exit cleanly. File I/O is observable    **
 ;** only as the success exit code, so those cases assert EC.   **
 ;*************************************************************
+Acc: 34
 In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
 
 ; save the loaded sample programs to file and export one (saveRestorePrograms.c)
@@ -59,5 +60,6 @@ Out: EC=0
 ; round-trip the whole state; every seeded register survives save+restore
 ; losslessly, preserving both its value and its datatype
 Func: fnStateRoundtrip
-In:  FARG=0
-Out: EC=0 R00=Real:"1234.5678" R01=LonI:"42" R02=Real:"-0.00123" R03=Cplx:"1.5 i -2.5" R04=Stri:"round trip" R05=ShoI:"42#10"
+In:  FARG=0 RMODE=1
+Out: EC=0 RMODE=1 R00=Real:"1234.5678" R01=LonI:"42" R02=Real:"-0.00123" R03=Cplx:"1.5 i -2.5" R04=Stri:"round trip" R05=ShoI:"42#10"
+Acc: 30

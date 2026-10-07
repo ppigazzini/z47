@@ -1731,6 +1731,8 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define RM_DOWN                                    4
 #define RM_CEIL                                    5
 #define RM_FLOOR                                   6
+#define DRM_DFLT                          RM_HALF_UP
+#define RM_ENGINE                       RM_HALF_EVEN  // the mode an iterative engine runs its function at; the engine's result is stored once by RM
 
 // Calc mode 5 bits
 #define CM_NORMAL                                  0 // Normal operation
@@ -1977,8 +1979,14 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TI_GRFNT                                 151  // X prefixed
 #define TI_LPFCT                                 152  // X prefixed
 #define TI_DPFCT                                 153  // X prefixed
+#define TI_FIN_RESULT                            154
+#define TI_FIN_ROUNDING_MODE                     155  // X prefixed
+#define TI_FIN_ROUNDING_MODE_ONLY                156  // X line blanked
 
 #define SET_TI_TRUE_FALSE(condition)               do { temporaryInformation = TI_FALSE + (condition); } while(0) // TI_TRUE must be TI_FALSE + 1
+
+#define TI_DISPLAY_ROUNDING_MODE                 160  // X prefixed
+#define TI_DISPLAY_ROUNDING_MODE_ONLY            161  // X line blanked
 
 // Register browser mode
 #define RBR_GLOBAL                                 0 // Global registers are browsed

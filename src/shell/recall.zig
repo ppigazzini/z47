@@ -27,6 +27,7 @@ fn linearToRowCol(ix: i32, cols: i32) RowCol {
 }
 const frontier_matrix_editor = @import("matrix_editor/matrix_editor.zig");
 const frontier_char_string = @import("display/text/char_string.zig");
+const frontier_config = @import("config.zig");
 const frontier_debug = @import("debug.zig");
 const frontier_error = @import("error.zig");
 const frontier_next_step = @import("program/next_step.zig");
@@ -83,6 +84,11 @@ const ERROR_OUT_OF_RANGE: u8 = 8;
 const ERROR_STACK_CLASH: u8 = 12;
 const ERROR_INVALID_DATA_TYPE_FOR_OP: u8 = 24;
 const ERROR_NO_MATRIX_INDEXED: u8 = 38;
+
+const RM_HALF_EVEN: u8 = 0;
+const RM_HALF_UP: u8 = 1;
+const RM_FLOOR: u8 = 6;
+const DRM_DFLT: u8 = RM_HALF_UP;
 
 const REGISTER_X: calcRegister_t = 100;
 const REGISTER_Y: calcRegister_t = 101;
@@ -161,6 +167,7 @@ extern var denMax: u32;
 extern var displayStack: u8;
 extern var firstGregorianDay: u32;
 extern var roundingMode: u8;
+extern var displayRoundingMode: u8;
 extern var systemFlags0: u64;
 extern var systemFlags1: u64;
 extern var kbd_usr: [37]calcKey_t;
@@ -523,6 +530,10 @@ pub export fn fnRecallConfig(regist: u16) callconv(.c) void {
         displayStack = configToRecall.displayStack;
         firstGregorianDay = configToRecall.firstGregorianDay;
         roundingMode = configToRecall.roundingMode;
+        if (roundingMode > RM_FLOOR) {
+            roundingMode = RM_HALF_EVEN;
+        }
+        frontier_config.setRoundingMode(roundingMode);
         systemFlags0 = configToRecall.systemFlags0;
         systemFlags1 = configToRecall.systemFlags1;
         _ = frontier_char_string.xcopy(@ptrCast(&kbd_usr), @ptrCast(&configToRecall.kbd_usr), @sizeOf(@TypeOf(kbd_usr)));
@@ -585,7 +596,10 @@ pub export fn fnRecallConfig(regist: u16) callconv(.c) void {
         _ = configToRecall.compatibility_byte11;
         _ = configToRecall.compatibility_byte12;
         _ = configToRecall.compatibility_byte13;
-        _ = configToRecall.compatibility_byte14;
+        displayRoundingMode = configToRecall.displayRoundingMode ^ DRM_DFLT;
+        if (displayRoundingMode > RM_FLOOR) {
+            displayRoundingMode = DRM_DFLT;
+        }
         _ = configToRecall.compatibility_byte15;
         fractionDigits = @bitCast(configToRecall.fractionDigits);
         _ = configToRecall.compatibility_byte23;

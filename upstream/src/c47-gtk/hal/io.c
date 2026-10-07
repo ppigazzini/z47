@@ -157,10 +157,10 @@ int _ioFileNameFromFilePath(ioFilePath_t path, char * filename) {
         strcpy(base_dir, lastFolderData);
       }
       if(path == ioPathRegExport) {
-        ret = file_selection_screen("Export Register File", base_dir, "*"DATA_EXT, 1, 1, filename);
+        ret = file_selection_screen("Export Register/Flag Data File", base_dir, "*"DATA_EXT, 1, 1, filename);
       }
       else if(path == ioPathRegImport) {
-        ret = file_selection_screen("Import Register File", base_dir, "*"DATA_EXT, 0, 0, filename);
+        ret = file_selection_screen("Import Register/Flag Data File", base_dir, "*"DATA_EXT, 0, 0, filename);
       }
       if(ret == FILE_OK) {
         rememberFolder(lastFolderData, filename);

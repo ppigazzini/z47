@@ -833,6 +833,12 @@ endReturnTrue:
       screenUpdatingMode &= ~SCRUPD_ONE_TIME_FLAGS;
       return;
     }
+    // PC build only: DMCP never reaches btnFnReleased during a run, so this guard is dead code there and is kept out of the hardware image.
+    #if defined(PC_BUILD)
+      if(programRunStop == PGM_RUNNING || programRunStop == PGM_PAUSED) {
+        return;
+      }
+    #endif
 
     if(calcMode != CM_REGISTER_BROWSER && calcMode != CM_FLAG_BROWSER && calcMode != CM_ASN_BROWSER && calcMode != CM_FONT_BROWSER) {
       if(tam.mode == TM_KEY && !tam.keyInputFinished) {
@@ -2124,6 +2130,12 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
         screenUpdatingMode &= ~SCRUPD_ONE_TIME_FLAGS;
         return;
       }
+      // PC build only: DMCP never reaches btnReleased during a run, so this guard is dead code there and is kept out of the hardware image.
+      #if defined(PC_BUILD)
+        if(programRunStop == PGM_RUNNING || programRunStop == PGM_PAUSED) {
+          return;
+        }
+      #endif
 
       if(calcMode == CM_ASN_BROWSER && lastItem == ITM_PERIOD) {
         fnAsnDisplayUSER = true;

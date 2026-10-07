@@ -294,11 +294,11 @@ int main(void) {
   btnClicked(NULL, (gpointer)"01"); // f-shifted 1/x key = y^x
   {
     char xb[64];
-    // y^x (power) returns a full-precision decQuad (trailing zeros), so the
-    // string is 8 followed by 33 zeros; the value 8 confirms the f-shifted
-    // function executed.
+    // y^x with an integer exponent and an exact power returns the power
+    // itself, so the string is 8 with no trailing zeros; the value 8 confirms
+    // the f-shifted function executed.
     decQuadToString((decQuad *)REGISTER_REAL34_DATA(REGISTER_X), xb);
-    if(strcmp(xb, "8.000000000000000000000000000000000") != 0) {
+    if(strcmp(xb, "8") != 0) {
       printf("FAIL: f then y^x on (Y=2, X=3): X = \"%s\", expected 8\n", xb);
       return 1;
     }

@@ -72,6 +72,7 @@ const option_tvm_amort: bool = frontier_build_options.option_tvm_amort;
 // OPTION_ALGDEP gates the X-line rendering of the polynomial x->POLY recovered.
 // #undef'd in the block common to DM42 packages 1-4; DMCP5 and host keep it.
 const option_algdep: bool = frontier_build_options.option_algdep;
+const option_xfn_1000: bool = frontier_build_options.option_xfn_1000;
 // The relation x->POLY recovered, rendered as x^3 - x - 1 (algdep.h). Empty until a search succeeded.
 extern fn algdepPolynomialString() callconv(.c) [*:0]const u8;
 
@@ -586,6 +587,8 @@ const TI_GRMOD: u8 = 150; // X prefixed
 const TI_GRFNT: u8 = 151; // X prefixed
 const TI_LPFCT: u8 = 152; // X prefixed
 const TI_DPFCT: u8 = 153; // X prefixed
+const TI_DISPLAY_ROUNDING_MODE: u8 = 160; // X prefixed
+const TI_DISPLAY_ROUNDING_MODE_ONLY: u8 = 161; // X line blanked
 // config.h's `#define abbreviation true`: the glyph group rather than the full name.
 const abbreviation: bool = true;
 const TI_ACC: u8 = 53;
@@ -781,10 +784,10 @@ const STD_NOCHAR: u8 = 1;
 // ---------------------------------------------------------------------------
 const constR = abi.constants.cstRAligned;
 const constR34 = abi.constants.cst34;
-const const_1000 = constR(5900);
+const const_1000 = constR(5912);
 // const34_0 / const34_1e6 : real34 constants. (offsets via constantPointers.h)
-const const34_0 = constR34(17224);
-const const34_1e6 = constR34(17880);
+const const34_0 = constR34(17252);
+const const34_1e6 = constR34(17908);
 
 // ---------------------------------------------------------------------------
 // font tables (real extern const structs, taken by &name).
@@ -987,6 +990,7 @@ extern var dispBase: u8;
 extern var graMod: u8;
 extern var graFont: u8;
 extern var roundingMode: u8;
+extern var displayRoundingMode: u8;
 extern var longPressFactor: i16;
 extern var doublePressFactor: i16;
 extern var currentInputVariable: u16;
@@ -1331,6 +1335,8 @@ extern fn decimal128ToNumber(d: *const real34_t, dn: *real_t) *real_t;
 extern fn decimal128FromNumber(d: *real34_t, dn: *const real_t, set: *realContext_t) *real34_t;
 extern fn decNumberMultiply(res: *real_t, a: *const real_t, b: *const real_t, ctx: *realContext_t) *real_t;
 extern fn decNumberAdd(res: *real_t, a: *const real_t, b: *const real_t, ctx: *realContext_t) *real_t;
+extern fn decNumberFMA(res: *real_t, a: *const real_t, b: *const real_t, fma: *const real_t, ctx: *realContext_t) *real_t;
+extern fn registerMultiplyAddToReal34(regist: calcRegister_t, result: *real34_t, c: *realContext_t) bool;
 extern fn decNumberToString(r: *const real_t, str: [*c]u8) [*c]u8;
 
 // GMP
@@ -3434,6 +3440,15 @@ fn inputRegName(prefix: [*c]u8, prefixWidth: *i16) void {
     prefixWidth.* = prefixWidthAt(prefix, noShiftOffset);
 }
 
+fn _fnShowRModeTI2(prefix: [*c]u8, prefixWidth: *i16, mode: u8) void {
+    prefix[0] = 0;
+    _ = frontier_char_string.stringCopy(prefix, frontier_config.getRoundModeName(mode, abbreviation));
+    _ = frontier_char_string.stringCopy(prefix + strlen(prefix), ": ");
+    _ = frontier_char_string.stringCopy(prefix + strlen(prefix), frontier_config.getRoundModeName(mode, !abbreviation));
+    prefixWidth.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+    screenUpdatingMode |= SCRUPD_SKIP_STACK_ONE_TIME;
+}
+
 fn _fnShowRecallTI(prefix: [*c]u8, prefixWidth: *i16) void {
     abi.fmtCStr(prefix, "SHOW RCL", .{});
     viewRegName2(prefix + "SHOW RCL".len);
@@ -3447,7 +3462,6 @@ fn _fnShowRModeTI(prefix: [*c]u8, prefixWidth: *i16) void {
     _ = frontier_char_string.stringCopy(prefix, frontier_config.getRoundModeName(roundingMode, abbreviation));
     _ = frontier_char_string.stringCopy(prefix + strlen(prefix), ": ");
     _ = frontier_char_string.stringCopy(prefix + strlen(prefix), frontier_config.getRoundModeName(roundingMode, !abbreviation));
-    _ = frontier_char_string.stringCopy(prefix + strlen(prefix), ".");
     prefixWidth.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
     screenUpdatingMode |= SCRUPD_SKIP_STACK_ONE_TIME;
 }
@@ -3975,7 +3989,7 @@ pub export fn _displayRegType(regist: calcRegister_t, prefix: [*c]u8, prefixWidt
             return;
         }
         const typeIdx: i32 = frontier_real_type.realToInt32C47(&t, null);
-        realMultiply(&t, const_1000, &t, &ctxtReal39);
+        realMultiply(&t, const_1000, &t, &ctxtReal34);
         const subCode: i32 = frontier_real_type.realToInt32C47(&t, null) - 1000 * typeIdx;
         const angSub: i32 = @divTrunc(subCode, 100);
         const polRec: i32 = @rem(@divTrunc(subCode, 10), 10);
@@ -4164,7 +4178,7 @@ pub export fn displayBaseMode(regist: calcRegister_t) callconv(.c) void {
     }
 }
 
-pub export fn registerFMA(regist: calcRegister_t, tmp1: *real_t, tmp2: *real_t, tmp3: *real34_t, angle: *angularMode_t, c: *realContext_t) callconv(.c) bool_t {
+pub export fn registerFMA(regist: calcRegister_t, tmp1: *real_t, tmp2: *real_t, tmp4: *real_t, tmp3: *real34_t, angle: *angularMode_t, c: *realContext_t) callconv(.c) bool_t {
     if (getRegisterDataType(regist) == dtShortInteger or getRegisterDataType(regist + 1) == dtShortInteger or getRegisterDataType(regist + 2) == dtShortInteger) {
         return 0;
     }
@@ -4179,13 +4193,27 @@ pub export fn registerFMA(regist: calcRegister_t, tmp1: *real_t, tmp2: *real_t, 
     if (!frontier_register_value_conversions.getRegisterAsRealQuiet(regist + 1, tmp2)) {
         return 0;
     }
-    realMultiply(tmp1, tmp2, tmp1, c);
-    if (!frontier_register_value_conversions.getRegisterAsRealQuiet(regist + 2, tmp2)) {
+    if (!frontier_register_value_conversions.getRegisterAsRealQuiet(regist + 2, tmp4)) {
         return 0;
     }
-    realAdd(tmp1, tmp2, tmp1, c);
+    var fmaContext = c.*;
+    fmaContext.round = frontier_config.roundingModeTable[displayRoundingMode]; // X x Y + Z is rounded once to the digits of c by DRM
+    if (comptime option_xfn_1000) {
+        if (isXFNregisterValid3r(regist)) {
+            return @intFromBool(registerMultiplyAddToReal34(regist, tmp3, &fmaContext)); // a long integer is converted in full, not at 75 digits
+        }
+    }
+    _ = decNumberFMA(tmp1, tmp1, tmp2, tmp4, &fmaContext);
     realToReal34(tmp1, @ptrCast(tmp3));
     return 1;
+}
+
+/// The value the XFN view shows for the triple at regist, X x Y + Z rounded once to 34 digits by DRM. The view line and the test suite both take it from here.
+pub export fn xfnViewValue(regist: calcRegister_t, value: *real34_t, angle: *angularMode_t) callconv(.c) bool_t {
+    var product: real_t = undefined;
+    var term: real_t = undefined;
+    var addend: real_t = undefined;
+    return @intFromBool(isXFNregisterValid3r(regist) and registerFMA(regist, &product, &term, &addend, value, angle, &ctxtReal34) != 0);
 }
 
 const LRWidth: i16 = 140;
@@ -4287,6 +4315,9 @@ fn _refreshRegisterLine(regist_in: calcRegister_t, restoreRegisterT: bool_t) voi
         } else if (temporaryInformation == TI_BATTV and regist == REGISTER_X) {
             abi.fmtBufZ(&prefix, "V" ++ STD_SPACE_FIGURE ++ "=", .{});
             displayTemporaryInformationOnX(&prefix);
+        } else if (temporaryInformation == TI_DISPLAY_ROUNDING_MODE_ONLY and regist == REGISTER_X) {
+            _fnShowRModeTI2(&prefix, &prefixWidth, displayRoundingMode);
+            _ = showString(&prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + TEMPORARY_INFO_OFFSET + 6, vmNormal, 1, 1);
         } else if (temporaryInformation == TI_BYTES and regist == REGISTER_X) {
             abi.fmtBufZ(&prefix, "Bytes" ++ STD_SPACE_FIGURE ++ "=", .{});
             displayTemporaryInformationOnX(&prefix);
@@ -4657,8 +4688,6 @@ fn refreshRegisterMainBranch(regist_p: *calcRegister_t, restoreRegisterT: bool_t
         const tmpY: i32 = @as(i32, Y_POSITION_OF_REGISTER_X_LINE) - @as(i32, REGISTER_LINE_HEIGHT) * @as(i32, REGISTER_T - REGISTER_X);
 
         var angle: angularMode_t = undefined;
-        var tmp1: real_t = undefined;
-        var tmp2: real_t = undefined;
         var tmp3: real34_t = undefined;
         const FMA_X: i32 = 19 - 3;
         const FMA_T: i32 = -1 - 3;
@@ -4671,7 +4700,7 @@ fn refreshRegisterMainBranch(regist_p: *calcRegister_t, restoreRegisterT: bool_t
         {
             abi.fmtBufZ(tmpString[0..2560], "X{s}Y+Z=", .{std.mem.span(PRODUCT_SIGN())});
             const xx = showString(tmpString, &standardFont, @intCast(indentFMA), @intCast(tmpY + FMA_X), vmNormal, 0, 1);
-            if (isXFNregisterValid3r(REGISTER_X + (if (calcMode == CM_NIM) @as(calcRegister_t, 1) else 0)) and registerFMA(REGISTER_X + (if (calcMode == CM_NIM) @as(calcRegister_t, 1) else 0), &tmp1, &tmp2, &tmp3, &angle, &ctxtReal39) != 0) {
+            if (xfnViewValue(REGISTER_X + (if (calcMode == CM_NIM) @as(calcRegister_t, 1) else 0), &tmp3, &angle) != 0) {
                 tmpString[0] = 0;
                 frontier_display.real34ToDisplayString(&tmp3, @intCast(angle), tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - indentFMA - @as(i32, @intCast(xx))), 34, LIMITEXP, FRONTSPACE, NOIRFRAC);
             } else {
@@ -4682,7 +4711,7 @@ fn refreshRegisterMainBranch(regist_p: *calcRegister_t, restoreRegisterT: bool_t
         if (getSystemFlag(FLAG_SSIZE8) != 0) {
             abi.fmtBufZ(tmpString[0..2560], "T{s}A+B=", .{std.mem.span(PRODUCT_SIGN())});
             const xx = showString(tmpString, &standardFont, @intCast(indentFMA), @intCast(tmpY + FMA_T), vmNormal, 0, 1);
-            if (isXFNregisterValid3r(REGISTER_T + (if (calcMode == CM_NIM) @as(calcRegister_t, 1) else 0)) and registerFMA(REGISTER_T + (if (calcMode == CM_NIM) @as(calcRegister_t, 1) else 0), &tmp1, &tmp2, &tmp3, &angle, &ctxtReal39) != 0) {
+            if (xfnViewValue(REGISTER_T + (if (calcMode == CM_NIM) @as(calcRegister_t, 1) else 0), &tmp3, &angle) != 0) {
                 tmpString[0] = 0;
                 frontier_display.real34ToDisplayString(&tmp3, @intCast(angle), tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - indentFMA - @as(i32, @intCast(xx))), 34, LIMITEXP, FRONTSPACE, NOIRFRAC);
             } else {
@@ -4948,6 +4977,8 @@ fn refreshReal34(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16,
         _fnShowRecallTI(prefix, prefixWidth_p);
     } else if (isSettingTI() and regist == REGISTER_X) {
         _fnShowSettingTI(prefix, prefixWidth_p);
+    } else if (temporaryInformation == TI_DISPLAY_ROUNDING_MODE and regist == REGISTER_X) {
+        _fnShowRModeTI2(prefix, prefixWidth_p, displayRoundingMode);
     } else if (temporaryInformation == TI_THETA_RADIUS) {
         if (regist == REGISTER_Y) {
             prefixWidth_p.* = setPrefix(prefix, "r =", indent);
@@ -5682,6 +5713,8 @@ fn refreshLongInteger(regist: calcRegister_t, origRegist: calcRegister_t, baseY:
         _fnShowRecallTI(prefix, prefixWidth_p);
     } else if (isSettingTI() and regist == REGISTER_X) {
         _fnShowSettingTI(prefix, prefixWidth_p);
+    } else if (temporaryInformation == TI_DISPLAY_ROUNDING_MODE and regist == REGISTER_X) {
+        _fnShowRModeTI2(prefix, prefixWidth_p, displayRoundingMode);
     } else if (temporaryInformation == TI_SOLVER_VARIABLE) {
         _displaySolverInput(regist, prefix, prefixWidth_p);
     } else if (temporaryInformation == TI_DERIV_STEP) {

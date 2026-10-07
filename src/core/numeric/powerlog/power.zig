@@ -176,6 +176,68 @@ pub export fn PowerReal(y: *const real_t, x: *const real_t, res: *real_t, realCo
     }
 }
 
+// decContext status flags (DECEXTFLAG layout) that mark a power as not exact.
+const DEC_Division_by_zero: u32 = 0x00000002;
+const DEC_Inexact: u32 = 0x00000020;
+const DEC_Invalid_operation: u32 = 0x00000080;
+const DEC_Overflow: u32 = 0x00000200;
+const DEC_Underflow: u32 = 0x00002000;
+
+const realIsSpecial = runtime.realIsSpecial;
+const realCompareEqual = runtime.realCompareEqual;
+const realCompareGreaterThan = runtime.realCompareGreaterThan;
+
+inline fn realGetExponent(source: *const real_t) i32 {
+    return source.digits + source.exponent - 1;
+}
+
+inline fn realPlus(operand: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+    _ = runtime.decNumberPlus(res, operand, ctxt);
+}
+
+// ===========================================================================
+// realIntegerPowerExact
+// ===========================================================================
+
+/// x to the integer power n, when the power is exact. The power is taken at 75
+/// digits half even, by repeated multiplication. It is exact when no digit is
+/// dropped, which the Inexact status of the context reports. True when n is an
+/// integer below 10000 in magnitude and res is x^n exactly.
+pub export fn realIntegerPowerExact(x: *const real_t, n: *const real_t, res: *real_t) linksection(runtime.code_section) callconv(.c) bool {
+    var c: realContext_t = runtime.ctxtReal75;
+
+    if (realIsSpecial(x) or realIsSpecial(n) or !realIsAnInteger(n) or (!realIsZero(n) and realGetExponent(n) > 3)) {
+        return false;
+    }
+    c.round = runtime.DEC_ROUND_HALF_EVEN;
+    c.status = 0;
+    runtime.realPower(x, n, res, &c);
+    return (c.status & (DEC_Inexact | DEC_Overflow | DEC_Underflow | DEC_Invalid_operation | DEC_Division_by_zero)) == 0 and !realIsSpecial(res);
+}
+
+// ===========================================================================
+// realExactRoot
+// ===========================================================================
+
+/// The n-th root of x, exact where x is the n-th power of a number of 34
+/// digits. root rounded half even to 34 digits is the exact root when one of 34
+/// digits exists; the test is that its n-th power is x exactly. root holds the
+/// root at working precision and is replaced by the exact root when there is
+/// one, which the result reports.
+pub export fn realExactRoot(x: *const real_t, n: *const real_t, root: *real_t) linksection(runtime.code_section) callconv(.c) bool {
+    var c: real_t = undefined;
+    var p: real_t = undefined;
+    var c34: realContext_t = runtime.ctxtReal34;
+
+    c34.round = runtime.DEC_ROUND_HALF_EVEN;
+    realPlus(root, &c, &c34);
+    if (!realIntegerPowerExact(&c, n, &p) or !realCompareEqual(&p, x)) {
+        return false;
+    }
+    realCopy(&c, root);
+    return true;
+}
+
 // ===========================================================================
 // longIntegerPower
 // ===========================================================================
@@ -315,7 +377,24 @@ fn powReal() linksection(runtime.code_section) callconv(.c) void {
         return;
     }
 
+    if (realIsZero(&y) and !realIsAnInteger(&x)) { // (-0) ^ non-integer is (+0) ^ non-integer, a real
+        realSetPositiveSign(&y);
+    }
+
+    if (!realIsZero(&y) and realIntegerPowerExact(&y, &x, &res)) { // an integer exponent with an exact power: the power itself, rounded once by RM
+        runtime.convertRealToResultRegister(&res, REGISTER_X, amNone);
+        return;
+    }
+
     PowerReal(&y, &x, &res, &runtime.ctxtReal39);
+
+    if (realIsPositive(&y) and !realIsZero(&x) and !realIsSpecial(&res)) { // an exponent 1/n with an exact n-th root of y gives that root
+        var n: real_t = undefined;
+        realDivide(const_1(), &x, &n, &runtime.ctxtReal39);
+        if (realIsAnInteger(&n) and realCompareGreaterThan(&n, const_1())) {
+            _ = realExactRoot(&y, &n, &res);
+        }
+    }
 
     if (realIsNaN(&res) and realIsNegative(&y) and !realIsAnInteger(&x)) {
         if (runtime.getFlag(FLAG_CPXRES)) {

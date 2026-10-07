@@ -35,6 +35,10 @@ const REAL34_SIZE_IN_BYTES: usize = 16;
 const BACKUP_VERSION: u32 = 1023; // C saveRestoreBackup.c:14 (retainedPageFirstItem[], the page each retained-page softmenu reopens on; lastCatalogPosition[] written as hexDump, every catalog; 1021 and 1022 are taken on FIN-12C, 1021 also on units/algebra)
 const INVALID_VARIABLE: i16 = 2199;
 const CM_CONFIRMATION: u8 = 11;
+const RM_HALF_EVEN: u8 = 0;
+const RM_HALF_UP: u8 = 1;
+const RM_FLOOR: u8 = 6;
+const DRM_DFLT: u8 = RM_HALF_UP;
 const USER_C47: u16 = 46;
 const USER_DM42: u16 = 45;
 const USER_R47: u16 = 66;
@@ -143,12 +147,14 @@ extern fn boundShortIntegerWordSize(word_size: u8) callconv(.c) u8;
 extern fn updateShortIntegerMasks() callconv(.c) void;
 extern fn set_def_Input_Default() callconv(.c) void;
 extern fn grpGroupingHexBinDefault() callconv(.c) void;
+extern fn setRoundingMode(RM: u16) void;
 extern var significantDigits: [1]u8;
 extern var fractionDigits: [1]u8;
 extern var shortIntegerMode: [1]u8;
 extern var currentAngularMode: [4]u8;
 extern var scrLock: [1]u8;
 extern var roundingMode: [1]u8;
+extern var displayRoundingMode: [1]u8;
 extern var nextChar: [1]u8;
 extern var alphaCase: [1]u8;
 extern var hourGlassIconEnabled: [1]u8;
@@ -533,6 +539,7 @@ pub fn saveCalc() void {
     sv(&shortIntegerMode[0], 1, "shortIntegerMode", "uint8");
     sv(&currentAngularMode[0], 4, "currentAngularMode", "uint32");
     sv(&scrLock[0], 1, "scrLock", "uint8");
+    sv(&displayRoundingMode[0], 1, "displayRoundingMode", "uint8");
     sv(&roundingMode[0], 1, "roundingMode", "uint8");
     sv(&nextChar[0], 1, "nextChar", "uint8");
     sv(&alphaCase[0], 1, "alphaCase", "uint8");
@@ -1225,7 +1232,18 @@ pub fn restoreCalc() void {
     rv(&shortIntegerMode[0], 1, "shortIntegerMode", "uint8");
     rv(&currentAngularMode[0], 4, "currentAngularMode", "uint32");
     rv(&scrLock[0], 1, "scrLock", "uint8");
+    scrLock[0] &= 0x03;
+
+    displayRoundingMode[0] = DRM_DFLT;
+    rv(&displayRoundingMode[0], 1, "displayRoundingMode", "uint8");
+    if (displayRoundingMode[0] > RM_FLOOR) {
+        displayRoundingMode[0] = DRM_DFLT;
+    }
     rv(&roundingMode[0], 1, "roundingMode", "uint8");
+    if (roundingMode[0] > RM_FLOOR) {
+        roundingMode[0] = RM_HALF_EVEN;
+    }
+    setRoundingMode(roundingMode[0]);
     rv(&nextChar[0], 1, "nextChar", "uint8");
     rv(&alphaCase[0], 1, "alphaCase", "uint8");
     rv(&hourGlassIconEnabled[0], 1, "hourGlassIconEnabled", "bool");

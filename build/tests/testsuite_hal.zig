@@ -168,7 +168,8 @@ pub export fn LCD_write_line(line_buf: [*c]u8) callconv(.c) void {
 pub export fn lcd_refresh() callconv(.c) void {}
 
 // ---------------------------------------------------------------------------
-// print_ir.c — no infrared printer in the testSuite.
+// print_ir.c — no infrared printer in the testSuite; the bytes the printer
+// route sends are kept for the corpus's PRX= check.
 // ---------------------------------------------------------------------------
 pub export fn getLineDelay() callconv(.c) u32 {
     return 0;
@@ -176,8 +177,17 @@ pub export fn getLineDelay() callconv(.c) u32 {
 pub export fn setLineDelay(delay: u16) callconv(.c) void {
     _ = delay;
 }
+
+// The bytes the printer route sent since the corpus last cleared them, for the PRX= check.
+pub export var printedBytes: [4096]u8 = @splat(0);
+pub export var printedLength: i32 = 0;
+
 pub export fn sendByteIR(byte: u8) callconv(.c) void {
-    _ = byte;
+    if (printedLength < printedBytes.len - 1) {
+        printedBytes[@intCast(printedLength)] = byte;
+        printedLength += 1;
+        printedBytes[@intCast(printedLength)] = 0;
+    }
 }
 
 // ---------------------------------------------------------------------------

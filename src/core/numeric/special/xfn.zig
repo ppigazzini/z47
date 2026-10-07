@@ -205,6 +205,8 @@ extern fn decNumberFromString(res: *align(1) real_t, source: [*:0]const u8, ctxt
 extern fn decNumberToString(source: *align(1) const real_t, destination: [*]u8) [*]u8;
 extern fn realSetNaN(value: *align(1) real_t) void;
 extern fn decNumberReduce(res: *align(1) real_t, source: *align(1) const real_t, ctxt: *realContext_t) *align(1) real_t;
+extern fn decNumberFMA(res: *align(1) real_t, op1: *align(1) const real_t, op2: *align(1) const real_t, op3: *align(1) const real_t, ctxt: *realContext_t) *align(1) real_t;
+extern fn realToReal34(source: *align(1) const real_t, destination: *real34_t) void;
 extern fn sprintf(str: [*]u8, format: [*:0]const u8, ...) c_int;
 
 // realIsNaN / realIsInfinite / realIsZero (decNumber.h bit-test macros, inlined).
@@ -238,6 +240,9 @@ inline fn realDivide(op1: *align(1) const real_t, op2: *align(1) const real_t, r
 }
 inline fn realPower(op1: *align(1) const real_t, op2: *align(1) const real_t, res: *align(1) real_t, ctxt: *realContext_t) void {
     _ = decNumberPower(res, op1, op2, ctxt);
+}
+inline fn realFMA(factor1: *align(1) const real_t, factor2: *align(1) const real_t, term: *align(1) const real_t, res: *align(1) real_t, ctxt: *realContext_t) void {
+    _ = decNumberFMA(res, factor1, factor2, term, ctxt);
 }
 inline fn realSetZero(r: *align(1) real_t) void {
     r.bits = 0;
@@ -434,6 +439,7 @@ fn decomposeReal(x: *align(1) const real_t, integerPart: *mpz_struct, fractional
     mantissa.exponent += scaleAmount;
     var cc: realContext_t = c.*;
     cc.round = DEC_ROUND_HALF_UP;
+    cc.status = 0; // decNumberToIntegralExact folds the incoming status into its result, and an error flag turns it into NaN
     _ = decNumberToIntegralExact(mantissa, mantissa, &cc);
     mantissa.bits &= 0x7F; // realSetPositiveSign
     realToString(mantissa, tmpString);
@@ -600,18 +606,22 @@ fn validateExponent(x: *align(1) const real_t) linksection(runtime.code_section)
 // readThreeRegisters
 // ===========================================================================
 fn readThreeRegisters(registerNo: calcRegister_t, result: *align(1) real_t, temporary: *align(1) real_t, c: *realContext_t) linksection(runtime.code_section) bool {
-    if (!getLongintegerRegisterAsReal1071(registerNo + 0, temporary, c)) {
+    var addend_b = BigReal(1071){};
+    const addend = addend_b.ptr();
+    var full: realContext_t = c.*;
+    full.digits = maxContextDigits; // the registers are read at the full width, so the fused multiply-add is the one rounding to the digits of c
+    full.emax = 999999; // the product is exact whatever its exponent; overflow and underflow happen at the fused multiply-add, in c
+    full.emin = -999999;
+    if (!getLongintegerRegisterAsReal1071(registerNo + 0, temporary, &full)) {
         return false;
     }
-    if (!getLongintegerRegisterAsReal1071(registerNo + 1, result, c)) {
+    if (!getLongintegerRegisterAsReal1071(registerNo + 1, result, &full)) { // check for long integer first, to first have that error message if invalid number
         return false;
     }
-    realMultiply(result, temporary, result, c);
-
-    if (!getLongintegerRegisterAsReal1071(registerNo + 2, temporary, c)) {
+    if (!getLongintegerRegisterAsReal1071(registerNo + 2, addend, &full)) {
         return false;
     }
-    realAdd(result, temporary, result, c);
+    realFMA(temporary, result, addend, result, c);
     realSetZero(temporary);
     return true;
 }
@@ -688,7 +698,7 @@ pub export fn registerFMAOutputString(regist: calcRegister_t, prefix: [*:0]const
     const tmp2 = tmp2_b.ptr();
     var c: realContext_t = runtime.ctxtReal75;
     c.digits = 1000;
-    c.round = DEC_ROUND_HALF_UP;
+    c.round = runtime.roundingModeTable[runtime.displayRoundingMode]; // the SHOW string is X x Y + Z rounded once to 1000 digits by DRM
     if (getCombinedParameter(1, regist, tmp1, tmp2, &angle, &c)) {
         _ = strcpy(displayString, prefix);
         realSCIToDisplayString(tmp1, displayString + strlen(@ptrCast(displayString)), 1000, 0, tmpString, 2560);
@@ -718,7 +728,7 @@ pub export fn registerFMAOutputPlainString(regist: calcRegister_t, prefix: [*:0]
     const tmp2 = tmp2_b.ptr();
     var c: realContext_t = runtime.ctxtReal75;
     c.digits = 1034;
-    c.round = DEC_ROUND_HALF_UP;
+    c.round = runtime.roundingModeTable[runtime.displayRoundingMode]; // the plain string is X x Y + Z rounded once to 1034 digits by DRM
     if (getCombinedParameter(1, regist, tmp1, tmp2, &angle, &c)) {
         _ = strcpy(displayString, prefix);
         if (realIsNaN(tmp1) or realIsInfinite(tmp1) or realIsZero(tmp1)) {
@@ -731,6 +741,25 @@ pub export fn registerFMAOutputPlainString(regist: calcRegister_t, prefix: [*:0]
             realToString(tmp1, displayString + strlen(@ptrCast(displayString)));
             abi.fmtCStr(@ptrCast(displayString + strlen(@ptrCast(displayString))), "E{s}{d}", .{ if (sciExp >= 0) @as([*:0]const u8, "+") else @as([*:0]const u8, "-"), @abs(@as(i64, sciExp)) });
         }
+        return true;
+    }
+    return false;
+}
+
+// ===========================================================================
+// registerMultiplyAddToReal34
+// ===========================================================================
+
+/// X x Y + Z of the triple at regist, rounded once to the digits of c, as a
+/// real34. The XFN view line and registerFMA take their value from here.
+pub export fn registerMultiplyAddToReal34(regist: calcRegister_t, result: *real34_t, c: *realContext_t) linksection(runtime.code_section) callconv(.c) bool {
+    if (comptime !runtime.option_xfn_1000) return false;
+    var tmp1_b = BigReal(1071){};
+    var tmp2_b = BigReal(1071){};
+    const tmp1 = tmp1_b.ptr();
+    const tmp2 = tmp2_b.ptr();
+    if (readThreeRegisters(regist, tmp1, tmp2, c)) { // X x Y + Z rounded once to the digits of c
+        realToReal34(tmp1, result);
         return true;
     }
     return false;

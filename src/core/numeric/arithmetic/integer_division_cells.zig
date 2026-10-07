@@ -797,7 +797,7 @@ pub export fn roundTime() linksection(runtime.code_section) callconv(.c) void {
             var shift: runtime.real34_t = undefined;
             _ = support.decQuadFromInt32(&shift, n);
             _ = support.decQuadScaleB(&real34, &real34, &shift, &runtime.ctxtReal34);
-            runtime.real34ToIntegralValue(&real34, &real34, support.roundingModeTable[support.roundingMode]);
+            runtime.real34ToIntegralValue(&real34, &real34, support.roundingModeTable[runtime.displayRoundingMode]); // the last unit is rounded by DRM, as ROUND rounds a number
             _ = support.decQuadFromInt32(&shift, -n);
             _ = support.decQuadScaleB(&real34, &real34, &shift, &runtime.ctxtReal34);
         },
@@ -852,7 +852,7 @@ pub export fn roundReal() linksection(runtime.code_section) callconv(.c) void {
         var numerator: runtime.real34_t = undefined;
         var denominator: runtime.real34_t = undefined;
 
-        if (runtime.getSystemFlag(support.FLAG_PROPFR)) { // a b/c
+        if (runtime.getSystemFlag(support.FLAG_PROPFR) and std.mem.indexOfScalar(u8, std.mem.sliceTo(&support.displayValueX, 0), ' ') != null) { // a b/c; below 1 the line shows d/c
             while (true) {
                 end_of_integer_part += 1;
                 if (dvx[@intCast(end_of_integer_part)] == ' ') {
@@ -863,6 +863,9 @@ pub export fn roundReal() linksection(runtime.code_section) callconv(.c) void {
             _ = support.decQuadFromString(runtime.registerReal34Ptr(REGISTER_X), displayValueXCString(0), &runtime.ctxtReal34);
         } else { // FT_IMPROPER d/c
             _ = support.decQuadZero(runtime.registerReal34Ptr(REGISTER_X));
+            if (dvx[0] == '-') {
+                end_of_integer_part = 0; // the numerator starts after the minus sign
+            }
         }
 
         var slash_pos: i32 = end_of_integer_part;
@@ -877,12 +880,13 @@ pub export fn roundReal() linksection(runtime.code_section) callconv(.c) void {
         slash_pos += 1;
         _ = support.decQuadFromInt32(&numerator, support.stringToInt32(displayValueXCString(end_of_integer_part)));
         _ = support.decQuadFromInt32(&denominator, support.stringToInt32(displayValueXCString(slash_pos)));
-        runtime.real34Divide(&numerator, &denominator, &numerator);
+        runtime.real34Multiply(runtime.registerReal34Ptr(REGISTER_X), &denominator, runtime.registerReal34Ptr(REGISTER_X)); // a b/c is (a c + b)/c: exact integers, divided once
         if (dvx[0] == '-') {
             runtime.real34Subtract(runtime.registerReal34Ptr(REGISTER_X), &numerator, runtime.registerReal34Ptr(REGISTER_X));
         } else {
             runtime.real34Add(runtime.registerReal34Ptr(REGISTER_X), &numerator, runtime.registerReal34Ptr(REGISTER_X));
         }
+        runtime.real34Divide(runtime.registerReal34Ptr(REGISTER_X), &denominator, runtime.registerReal34Ptr(REGISTER_X));
     } else {
         _ = support.decQuadFromString(runtime.registerReal34Ptr(REGISTER_X), displayValueXCString(0), &runtime.ctxtReal34);
     }
@@ -928,6 +932,7 @@ pub export fn roundCplx() linksection(runtime.code_section) callconv(.c) void {
 
         _ = runtime.decNumberFromString(&magnitude, displayValueXCString(0), &runtime.ctxtReal39);
         _ = runtime.decNumberFromString(&theta, displayValueXCString(pos_i), &runtime.ctxtReal39);
+        runtime.convertAngleFromTo(&theta, runtime.getComplexRegisterAngularMode(REGISTER_X), runtime.amRadian, &runtime.ctxtReal39); // the angle is shown in the unit of the register
         runtime.realPolarToRectangular(&magnitude, &theta, &magnitude, &theta, &runtime.ctxtReal39);
         runtime.realToReal34(&magnitude, runtime.registerReal34Ptr(REGISTER_X));
         runtime.realToReal34(&theta, runtime.registerImag34Ptr(REGISTER_X));

@@ -765,6 +765,10 @@ pub extern fn decNumberExp(result: *real_t, rhs: *const real_t, real_context: *r
 pub extern fn decNumberAdd(result: *real_t, lhs: *const real_t, rhs: *const real_t, real_context: *realContext_t) *real_t;
 pub extern fn decNumberSubtract(result: *real_t, lhs: *const real_t, rhs: *const real_t, real_context: *realContext_t) *real_t;
 pub extern fn decNumberFMA(result: *real_t, lhs: *const real_t, rhs: *const real_t, term: *const real_t, real_context: *realContext_t) *real_t;
+pub extern fn decNumberRescale(result: *real_t, lhs: *const real_t, rhs: *const real_t, real_context: *realContext_t) *real_t;
+pub extern fn __gmpz_ui_pow_ui(result: *mpz_struct, base: c_ulong, exponent: c_ulong) void;
+pub extern fn __gmpz_sizeinbase(op: *const mpz_struct, base: c_int) usize;
+pub extern fn convertLongIntegerToReal(source: *mpz_struct, destination: *real_t, real_context: *realContext_t) void;
 pub extern fn decNumberFromUInt32(result: *real_t, rhs: u32) *real_t;
 pub extern fn __gmpz_clear(op: *mpz_struct) void;
 pub extern fn __gmpz_init(op: *mpz_struct) void;
@@ -852,6 +856,8 @@ pub extern fn realSetNegativeOne(value: *real_t) void;
 pub extern fn realPower(base: *const real_t, exponent: *const real_t, result: *real_t, real_context: *realContext_t) void;
 pub extern fn PowerReal(base: *const real_t, exponent: *const real_t, result: *real_t, real_context: *realContext_t) void;
 pub extern fn PowerComplex(base_real: *const real_t, base_imag: *const real_t, exponent_real: *const real_t, exponent_imag: *const real_t, result_real: *real_t, result_imag: *real_t, real_context: *realContext_t) u8;
+pub extern fn realIntegerPowerExact(x: *const real_t, n: *const real_t, res: *real_t) bool;
+pub extern fn realExactRoot(x: *const real_t, n: *const real_t, root: *real_t) bool;
 pub extern fn convertRealToReal34ResultRegister(real: *const real_t, dest: calcRegister_t) void;
 pub extern fn realToInt32C47(source: *const real_t, err: ?*bool) i32;
 
@@ -1113,6 +1119,7 @@ pub extern var tmpString: [*c]u8;
 /// error code alone.
 pub extern var errorMessage: [*c]u8;
 pub extern var roundingMode: u8;
+pub extern var displayRoundingMode: u8;
 pub extern const roundingModeTable: [7]rounding_t;
 pub extern fn fnSwapXY(unused_but_mandatory_parameter: u16) void;
 pub extern fn convertLongIntegerRegisterToTimeRegister(source: calcRegister_t, destination: calcRegister_t) void;

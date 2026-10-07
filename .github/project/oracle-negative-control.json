@@ -302,9 +302,9 @@
       "step": "math_real_trig_primitives_oracle",
       "what": "asin's half-angle identity adds where it subtracts",
       "file": "src/core/numeric/trig/wp34s_atan.zig",
-      "find": "    realMultiply(x, x, z, realContext);\n    realSubtract(const_1(), z, z, realContext);\n    realSquareRoot(z, z, realContext);",
-      "replace": "    realMultiply(x, x, z, realContext);\n    realAdd(const_1(), z, z, realContext);\n    realSquareRoot(z, z, realContext);",
-      "why": "angle = 2*atan(x/(1+sqrt(1-x*x))). The lane drives asin at 0, +-0.5 and +-1, so a sign error in the radicand moves every in-domain answer."
+      "find": "    // angle = 2*atan(x/(1+sqrt(1-x*x)))\n    realSubtract(const_1(), abx, z, realContext);",
+      "replace": "    // angle = 2*atan(x/(1+sqrt(1-x*x)))\n    realAdd(const_1(), abx, z, realContext);",
+      "why": "angle = 2*atan(x/(1+sqrt(1-x*x))), with 1-x*x formed as (1-|x|)(1+|x|). The lane drives asin at 0, +-0.5 and +-1, so a sign error in the first factor moves every in-domain answer but 0."
     },
     {
       "lane": "program_serialization",

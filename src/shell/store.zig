@@ -82,6 +82,9 @@ const ERROR_NO_MATRIX_INDEXED: u8 = 38;
 const ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX: u8 = 39;
 const ERROR_NO_STRING_IN_ALPHA_REGISTER: u8 = 64;
 
+const RM_HALF_UP: u8 = 1;
+const DRM_DFLT: u8 = RM_HALF_UP;
+
 const REGISTER_X: calcRegister_t = 100;
 const REGISTER_Y: calcRegister_t = 101;
 const REGISTER_Z: calcRegister_t = 102;
@@ -171,6 +174,7 @@ extern var denMax: u32;
 extern var displayStack: u8;
 extern var firstGregorianDay: u32;
 extern var roundingMode: u8;
+extern var displayRoundingMode: u8;
 extern var systemFlags0: u64;
 extern var systemFlags1: u64;
 extern var kbd_usr: [37]calcKey_t;
@@ -703,7 +707,6 @@ pub export fn fnStoreConfig(regist: u16) callconv(.c) void {
     const compatibility_byte11: bool = false;
     const compatibility_byte12: bool = false;
     const compatibility_byte13: bool = false;
-    const compatibility_byte14: bool = false;
     const compatibility_byte15: bool = false;
     const compatibility_byte16: bool = false;
     const compatibility_byte17: bool = false;
@@ -784,7 +787,7 @@ pub export fn fnStoreConfig(regist: u16) callconv(.c) void {
     configToStore.compatibility_byte11 = compatibility_byte11;
     configToStore.compatibility_byte12 = compatibility_byte12;
     configToStore.compatibility_byte13 = compatibility_byte13;
-    configToStore.compatibility_byte14 = compatibility_byte14;
+    configToStore.displayRoundingMode = displayRoundingMode ^ DRM_DFLT; // the reserved byte14 slot, exclusive or with the default so an old file's zero restores as half-up
     configToStore.compatibility_byte15 = compatibility_byte15;
     configToStore.fractionDigits = @bitCast(fractionDigits);
     configToStore.compatibility_byte23 = @intFromBool(compatibility_byte23);

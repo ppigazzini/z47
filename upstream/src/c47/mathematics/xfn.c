@@ -231,6 +231,7 @@ void decomposeReal(const real_t *x, longInteger_t integerPart, real_t *fractiona
     mantissa->exponent += scaleAmount;
     realContext_t cc = *c;                                    // convert scaled mantissa to integral part, and condition the string
     cc.round = DEC_ROUND_HALF_UP;
+    cc.status = 0;                                            // decNumberToIntegralExact folds the incoming status into its result, and an error flag turns it into NaN
     decNumberToIntegralExact(mantissa, mantissa, &cc);
     realSetPositiveSign(mantissa);
     realToString(mantissa, tmpString);                    // Convert real to string and load string into integerPart
@@ -420,18 +421,21 @@ typedef struct {
 
 
   static bool_t readThreeRegisters(int registerNo, real_t *result, real_t *temporary, realContext_t *c) {
-    if(!getLongintegerRegisterAsReal1071(registerNo+0, temporary, c)) {                        //ignore anglemode, it is handled elsewhere
+    REAL_T_PTR(addend, 1071);
+    realContext_t full = *c;
+    full.digits = maxContextDigits;  // the registers are read at the full width, so the fused multiply-add is the one rounding to the digits of c
+    full.emax   = 999999;            // the product is exact whatever its exponent; overflow and underflow happen at the fused multiply-add, in c
+    full.emin   = -999999;
+    if(!getLongintegerRegisterAsReal1071(registerNo+0, temporary, &full)) {                        //ignore anglemode, it is handled elsewhere
       return false;
     }
-    if(!getLongintegerRegisterAsReal1071(registerNo+1, result, c)) {    // check for long integer first, to first have that error message if invalid number
+    if(!getLongintegerRegisterAsReal1071(registerNo+1, result, &full)) {    // check for long integer first, to first have that error message if invalid number
       return false;
     }
-    realMultiply(result, temporary, result, c);
-
-    if(!getLongintegerRegisterAsReal1071(registerNo+2, temporary, c)) {                        //ignore anglemode, it is handled elsewhere
+    if(!getLongintegerRegisterAsReal1071(registerNo+2, addend, &full)) {                        //ignore anglemode, it is handled elsewhere
       return false;
     }
-    realAdd(result, temporary, result, c);
+    realFMA(temporary, result, addend, result, c);
     realSetZero(temporary);
     return true;
   }
@@ -524,7 +528,7 @@ static void replaceSeparatorWithFigureSpace(char *displayString) {              
     REAL_T_PTR(tmp2, 1071);
     realContext_t c = ctxtReal75;
     c.digits = 1000;
-    c.round = DEC_ROUND_HALF_UP;
+    c.round = roundingModeTable[displayRoundingMode];  // the SHOW string is X x Y + Z rounded once to 1000 digits by DRM
     if(getCombinedParameter(1, regist, tmp1, tmp2, &angle, &c)) {   //use the angle of the 1st param only, if set
       // realPlus(tmp1, tmp1, &c);
       strcpy(displayString, prefix);
@@ -544,7 +548,7 @@ static void replaceSeparatorWithFigureSpace(char *displayString) {              
     REAL_T_PTR(tmp2, 1071);
     realContext_t c = ctxtReal75;
     c.digits = 1034;
-    c.round = DEC_ROUND_HALF_UP;
+    c.round = roundingModeTable[displayRoundingMode];  // the plain string is X x Y + Z rounded once to 1034 digits by DRM
     if(getCombinedParameter(1, regist, tmp1, tmp2, &angle, &c)) {   //use the angle of the 1st param only, if set
       // realPlus(tmp1, tmp1, &c);
       strcpy(displayString, prefix);
@@ -558,6 +562,17 @@ static void replaceSeparatorWithFigureSpace(char *displayString) {              
         realToString(tmp1, displayString + stringByteLength(displayString));             //   mantissa only: "1", "1.2345", "1.0001"
         sprintf(displayString + stringByteLength(displayString), "E%+ld", (long)sciExp); //   exponent emulating decNumber standard style: E, explicit sign, no leading zeros
       }
+      return true;
+    }
+    return false;
+  }
+
+
+  bool_t registerMultiplyAddToReal34(calcRegister_t regist, real34_t *result, realContext_t *c) {
+    REAL_T_PTR(tmp1, 1071);
+    REAL_T_PTR(tmp2, 1071);
+    if(readThreeRegisters(regist, tmp1, tmp2, c)) {                     // X x Y + Z rounded once to the digits of c
+      realToReal34(tmp1, result);
       return true;
     }
     return false;

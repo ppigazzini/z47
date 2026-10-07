@@ -2166,6 +2166,11 @@ TO_QSPI static const char ITSIprefixes[22] = "K  M  G  T  P  E  Z  ";
   displayString[2] = 0;
   displayString[3] = 0;
 
+  if(displayValueString != NULL && !flag2To10) {                         // a binary prefix is multiplied into the mantissa by the caller
+    sprintf(displayValueString, "e%" PRId32, exponent);
+    displayValueString = NULL;
+  }
+
   if(!flag2To10 && !getSystemFlag(FLAG_2TO10)) {
       if((-15 <= exponent && exponent <= 15) || (-30 <= exponent && exponent <= 30 && getSystemFlag(FLAG_PFX_ALL))) {
         displayString[1] = SIprefixes[exponent + 30];

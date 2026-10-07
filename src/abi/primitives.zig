@@ -134,7 +134,7 @@ pub const DtConfigDescriptor = extern struct {
     compatibility_byte11: bool,
     compatibility_byte12: bool,
     compatibility_byte13: bool,
-    compatibility_byte14: bool,
+    displayRoundingMode: u8,
     compatibility_byte15: bool,
     fractionDigits: i8,
     compatibility_byte23: i8,

@@ -337,6 +337,7 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     saveStateValue(&shortIntegerMode,               sizeof(shortIntegerMode),                                    "shortIntegerMode",               "uint8");
     saveStateValue(&currentAngularMode,             sizeof(currentAngularMode),                                  "currentAngularMode",             "uint32");
     saveStateValue(&scrLock,                        sizeof(scrLock),                                             "scrLock",                        "uint8");
+    saveStateValue(&displayRoundingMode,            sizeof(displayRoundingMode),                                 "displayRoundingMode",            "uint8");
     saveStateValue(&roundingMode,                   sizeof(roundingMode),                                        "roundingMode",                   "uint8");
     saveStateValue(&calcMode,                       sizeof(calcMode),                                            "calcMode",                       "uint8");
     saveStateValue(&nextChar,                       sizeof(nextChar),                                            "nextChar",                       "uint8");
@@ -1052,7 +1053,16 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     restoreStateValue(&scrLock,                        sizeof(scrLock),                                             "scrLock",                        "uint8");
     scrLock &= 0x03;
 
+    displayRoundingMode = DRM_DFLT;
+    restoreStateValue(&displayRoundingMode,            sizeof(displayRoundingMode),                                 "displayRoundingMode",            "uint8");
+    if(displayRoundingMode > RM_FLOOR) {
+      displayRoundingMode = DRM_DFLT;
+    }
     restoreStateValue(&roundingMode,                   sizeof(roundingMode),                                        "roundingMode",                   "uint8");
+    if(roundingMode > RM_FLOOR) {
+      roundingMode = RM_HALF_EVEN;
+    }
+    setRoundingMode(roundingMode);
     restoreStateValue(&calcMode,                       sizeof(calcMode),                                            "calcMode",                       "uint8");
     restoreStateValue(&nextChar,                       sizeof(nextChar),                                            "nextChar",                       "uint8");
     restoreStateValue(&alphaCase,                      sizeof(alphaCase),                                           "alphaCase",                      "uint8");

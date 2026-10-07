@@ -1528,7 +1528,6 @@ pub export fn getRealMatrixColumnWidths(matrix: *const real34Matrix_t, prefixWid
                     extractVectorElement34(matrix, @intCast(j), @intCast((i + sRow) * @as(usize, @intCast(actualCols)) + j + sCol), rowsReal, cols, &r34Val, &toBeAngle, calcDigits, &aa, &bb, &cc);
 
                     const r34sign = real34IsNegative(&r34Val);
-                    real34SetPositiveSign(&r34Val);
 
                     if (allElementsInColAreIntegersPtr[j]) {
                         displayFormat = DF_FIX;
@@ -1545,6 +1544,11 @@ pub export fn getRealMatrixColumnWidths(matrix: *const real34Matrix_t, prefixWid
                     } else {
                         // no internal shrink under SHOW: it hides shed digits and flips SIG to sci; the k countdown does the fitting
                         frontier_display.real34ToDisplayString(&r34Val, toBeAngle, &tmpStringL, font, if (showPage) UNSHRUNK_WIDTH else maxWidth, @intCast(calcDigits), @intFromBool(LIMITEXP), @intFromBool(FRONTSPACE), if (cols * rowsReal > 3) LIMITIRFRAC else LIGHTIRFRAC);
+                    }
+                    if (r34sign) { // the signed value rounds as the cell does; its sign is measured as the front space
+                        if (std.mem.indexOfScalar(u8, std.mem.sliceTo(&tmpStringL, 0), '-')) |minusSign| {
+                            tmpStringL[minusSign] = ' ';
+                        }
                     }
                     if (STRIP_INTEGER_MATRIX_RADIX and allElementsInColAreIntegersPtr[j]) {
                         frontier_char_string.stripTrailingRadix(&tmpStringL);

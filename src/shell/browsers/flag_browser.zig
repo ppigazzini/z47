@@ -162,6 +162,7 @@ extern var lastFlgScr: u8;
 extern var cursorEnabled: u8;
 extern var tmpString: [*c]u8;
 extern var roundingMode: u8;
+extern var displayRoundingMode: u8;
 extern var significantDigits: u8;
 extern var ctxtReal34: realContext_t;
 
@@ -407,6 +408,11 @@ pub export fn flagBrowser(init: u16) callconv(.c) void {
             },
             else => {},
         }
+
+        // Display rounding mode
+        line += 1;
+        _ = strcpy(lineStr(line), "DRM=");
+        _ = strcat(lineStr(line), frontier_config.getRoundModeName(displayRoundingMode, abbreviation));
         line += 1;
         lineStr(line)[0] = 0;
     }

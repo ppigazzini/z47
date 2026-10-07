@@ -1,3 +1,4 @@
+const abi = @import("abi");
 const logxy_owned = @import("logxy.zig");
 const runtime = @import("../command_wrappers/runtime.zig");
 const transcendental_command_owned = @import("../special/transcendental_command.zig");
@@ -16,6 +17,16 @@ fn extraInfoMessage(function_name: [*:0]const u8, message: [*:0]const u8) void {
 
 fn copyReal(destination: *runtime.real_t, source: *const runtime.real_t) void {
     destination.* = source.*;
+}
+
+fn realRescale(operand: *const runtime.real_t, result: *runtime.real_t, accuracy: *const runtime.real_t, real_context: *runtime.realContext_t) void {
+    _ = runtime.decNumberRescale(result, operand, accuracy, real_context);
+}
+
+/// The base whose logarithm denom is: 2 for the ln 2 the binary logarithm
+/// divides by, 10 otherwise.
+fn logBase(denom: *const runtime.real_t) u32 {
+    return if (denom == runtime.z47_math_wrappers_const_ln2()) 2 else 10;
 }
 
 fn logXYComplex(
@@ -221,8 +232,16 @@ pub fn logxyReal(denom: *const runtime.real_t) callconv(.c) void {
             runtime.realSetNaN(&a);
         }
     } else if (!runtime.realIsNegative(&a)) {
+        var k: runtime.real_t = undefined;
+        var p: runtime.real_t = undefined;
+        copyReal(&b, &a);
         transcendental_command_owned.lnRealValue(&a, &a, &runtime.ctxtReal39);
         runtime.realDivide(&a, denom, &a, &runtime.ctxtReal39);
+        realRescale(&a, &k, runtime.z47_math_wrappers_const_0(), &runtime.ctxtReal39);
+        const base = if (logBase(denom) == 2) abi.constants.const_2() else abi.constants.const_10();
+        if (runtime.realIntegerPowerExact(base, &k, &p) and runtime.realCompareEqual(&p, &b)) { // X an exact power of the base gives the integer
+            copyReal(&a, &k);
+        }
     } else if (runtime.getFlag(@intCast(runtime.FLAG_CPXRES))) {
         runtime.realSetPositiveSign(&a);
         transcendental_command_owned.lnRealValue(&a, &a, &runtime.ctxtReal39);
@@ -284,11 +303,28 @@ pub fn logxyLonI(denom: *const runtime.real_t) callconv(.c) void {
         return;
     }
 
+    var x34: runtime.real_t = undefined;
+    var c: runtime.realContext_t = runtime.ctxtReal34;
+    c.round = runtime.DEC_ROUND_HALF_EVEN; // the test for an exact integer takes no mode from RM
     transcendental_command_owned.lnRealValue(&x, &x, &runtime.ctxtReal39);
-    runtime.realDivide(&x, denom, &x, &runtime.ctxtReal34);
-    if (!runtime.realIsAnInteger(&x)) {
+    runtime.realDivide(&x, denom, &x, &runtime.ctxtReal39);
+    _ = runtime.decNumberPlus(&x34, &x, &c); // Round using the 34 digit context
+    if (!runtime.realIsAnInteger(&x34)) {
         runtime.convertRealToResultRegister(&x, runtime.REGISTER_X, runtime.amNone);
     } else {
-        runtime.convertRealToLongIntegerRegister(&x, runtime.REGISTER_X, runtime.DEC_ROUND_HALF_EVEN);
+        var lgInt: runtime.longInteger_t = undefined;
+        var power: runtime.longInteger_t = undefined;
+        const k = runtime.realToInt32C47(&x34, null);
+
+        _ = runtime.getRegisterAsLongInt(runtime.REGISTER_X, &lgInt[0], null);
+        defer runtime.__gmpz_clear(&lgInt[0]);
+        runtime.__gmpz_init(&power[0]);
+        defer runtime.__gmpz_clear(&power[0]);
+        runtime.__gmpz_ui_pow_ui(&power[0], logBase(denom), @intCast(k));
+        if (runtime.__gmpz_cmp(&power[0], &lgInt[0]) == 0) { // an integer result only where X is the base to that power
+            runtime.convertRealToLongIntegerRegister(&x34, runtime.REGISTER_X, runtime.DEC_ROUND_HALF_EVEN);
+        } else {
+            runtime.convertRealToResultRegister(&x, runtime.REGISTER_X, runtime.amNone);
+        }
     }
 }

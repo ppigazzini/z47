@@ -1,0 +1,35 @@
+;******************************************************************************************************************************
+;** Decimal display: DMS special values; time rounding across an hour and special values.                                    **
+;******************************************************************************************************************************
+Acc: 34
+In: FL_SPCRES=1 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+
+Func: fnDecimalDisplayCov
+
+In:  FARG=0
+Out: EC=0
+
+In:  FARG=1
+Out: EC=0
+
+In:  FARG=2
+Out: EC=0
+
+In:  FARG=3
+Out: EC=0
+
+In:  FARG=4
+Out: EC=0
+
+In:  FARG=5
+Out: EC=0
+
+In:  FARG=6
+Out: EC=0
+
+In:  FARG=7
+Out: EC=0
+
+In:  FARG=8
+Out: EC=0
+Acc: 30

@@ -2428,6 +2428,7 @@ pub export fn insertUserItemInProgram(func: i16, funcParam: [*c]u8) callconv(.c)
 // addStepInProgram (public)
 // ===========================================================================
 pub export fn addStepInProgram(func: i16) callconv(.c) void {
+    const cursorWasZerothStep = pemCursorIsZerothStep;
     if ((!pemCursorIsZerothStep) and ((aimBuffer[0] == 0 and !getSystemFlag(FLAG_ALPHA)) or tam.mode != 0) and !isAtEndOfProgram(currentStep) and !isAtEndOfPrograms(currentStep)) {
         currentStep = frontier_next_step.findNextStep(currentStep);
         currentLocalStepNumber += 1;
@@ -2443,6 +2444,7 @@ pub export fn addStepInProgram(func: i16) callconv(.c) void {
             switch (@as(u16, @bitCast(func))) {
                 VAR_ACC, VAR_ULIM, VAR_LLIM, VAR_UX, VAR_LX, VAR_UEST, VAR_LEST, VAR_UY, VAR_LY, ITM_DELP, ITM_DELPALL, ITM_GTOP, ITM_KEYG, ITM_KEYX, ITM_42KEYG, ITM_42KEYX, ITM_BST, ITM_SST => {},
                 else => {
+                    pemCursorIsZerothStep = cursorWasZerothStep; // no step went in, so the cursor stays where it was
                     return;
                 },
             }

@@ -239,6 +239,14 @@ inline fn realIsNegative(r: *const real_t) bool {
     return (r.bits & DECNEG) != 0;
 }
 
+/// realType.c's cleanup for REAL_T_ALLOC and CPLX_T_ALLOC: p is the address of the pointer they declare, and what it points at is
+/// freed when that pointer leaves scope.
+pub export fn auto_free(p: *?*anyopaque) callconv(.c) void {
+    if (p.*) |q| {
+        free(q);
+    }
+}
+
 fn realToInt(r: *const real_t, magnitude_limit: u64, round: c_int, err: ?*bool) u64 {
     if (realIsSpecial(r)) {
         return 0;
@@ -851,10 +859,11 @@ const REAL_2139_BYTES: usize = blk: {
 };
 
 // Heap for the 2139-digit working reals that REAL_T_ALLOC(name, 2139) keeps off
-// the frame. Bound at ?*real_t rather than an untyped C pointer because a C
-// void* converts to any object pointer, which keeps the call sites cast-free.
+// the frame. malloc is bound at ?*real_t rather than an untyped C pointer because
+// a C void* converts to any object pointer, which keeps the call sites cast-free;
+// free takes any pointer, which every pointer coerces to.
 extern fn malloc(size: usize) ?*real_t;
-extern fn free(ptr: ?*real_t) void;
+extern fn free(ptr: ?*anyopaque) void;
 
 inline fn mallocReal2139() ?*real_t {
     return malloc(REAL_2139_BYTES);
@@ -1432,29 +1441,35 @@ pub export fn getRegisterAsLongInt(reg: calcRegister_t, val: *mpz_struct, fracti
     return err == ERROR_NONE;
 }
 
-// A setter's non-negative long-integer argument, handed back as a uint32. The
-// register is read once and the long integer is released on every path, so the
-// callers are a single `if` instead of the goto-and-free ladder each one carried.
+// A setter's long-integer argument from 0 to UINT32_MAX, handed back as a
+// uint32; a value outside that range is refused, not wrapped. The register is
+// read once and the long integer is released on every path, so the callers are
+// a single `if` instead of the goto-and-free ladder each one carried.
 pub export fn getRegisterAsUint32Param(regist: u16, value: *u32) callconv(.c) bool {
     // getRegisterAsLongInt initialises lgInt on every path it takes, including
     // the ones it fails on, so the caller hands it an uninitialised value.
     var lgInt: mpz_struct = undefined;
     var ok = getRegisterAsLongInt(@intCast(regist), &lgInt, null);
     if (ok) {
-        ok = __gmpz_cmp_si(&lgInt, 0) >= 0;
-        value.* = @truncate(__gmpz_get_ui(&lgInt));
+        ok = __gmpz_cmp_si(&lgInt, 0) >= 0 and __gmpz_cmp_ui(&lgInt, std.math.maxInt(u32)) <= 0;
+        if (ok) {
+            value.* = @intCast(__gmpz_get_ui(&lgInt));
+        }
     }
     mpz_clear(&lgInt);
     return ok;
 }
 
-// Signed variant of getRegisterAsUint32Param. The C assigns a long into an
-// int32_t, which truncates; an unmasked cast would refuse the same value.
+// Signed variant of getRegisterAsUint32Param: INT32_MIN to INT32_MAX, a value
+// outside that range refused.
 pub export fn getRegisterAsInt32Param(regist: u16, value: *i32) callconv(.c) bool {
     var lgInt: mpz_struct = undefined;
-    const ok = getRegisterAsLongInt(@intCast(regist), &lgInt, null);
+    var ok = getRegisterAsLongInt(@intCast(regist), &lgInt, null);
     if (ok) {
-        value.* = @truncate(__gmpz_get_si(&lgInt));
+        ok = __gmpz_cmp_si(&lgInt, std.math.minInt(i32)) >= 0 and __gmpz_cmp_si(&lgInt, std.math.maxInt(i32)) <= 0;
+        if (ok) {
+            value.* = @intCast(__gmpz_get_si(&lgInt));
+        }
     }
     mpz_clear(&lgInt);
     return ok;
@@ -1463,6 +1478,7 @@ pub export fn getRegisterAsInt32Param(regist: u16, value: *i32) callconv(.c) boo
 extern fn __gmpz_get_ui(p: *const mpz_struct) c_ulong;
 extern fn __gmpz_get_si(p: *const mpz_struct) c_long;
 extern fn __gmpz_cmp_si(p: *const mpz_struct, v: c_long) c_int;
+extern fn __gmpz_cmp_ui(p: *const mpz_struct, v: c_ulong) c_int;
 
 pub export fn getRegisterAsRealAngle(reg: calcRegister_t, val: *real_t, xAngularMode: *angularMode_t, reduceLongintegerAngle: bool) callconv(.c) bool {
     switch (getRegisterDataType(reg)) {

@@ -357,7 +357,6 @@ void fnStoreConfig(uint16_t regist) {
   bool_t compatibility_byte11 = false;           //defaults to use when settings are removed
   bool_t compatibility_byte12 = false;           //defaults to use when settings are removed
   bool_t compatibility_byte13 = false;           //defaults to use when settings are removed
-  bool_t compatibility_byte14 = false;           //defaults to use when settings are removed
   bool_t compatibility_byte15 = false;           //defaults to use when settings are removed
   bool_t compatibility_byte16 = false;           //defaults to use when settings are removed
   bool_t compatibility_byte17 = false;           //defaults to use when settings are removed
@@ -434,7 +433,7 @@ void fnStoreConfig(uint16_t regist) {
   storeToDtConfigDescriptor(    compatibility_byte11);
   storeToDtConfigDescriptor(    compatibility_byte12);
   storeToDtConfigDescriptor(    compatibility_byte13);
-  storeToDtConfigDescriptor(    compatibility_byte14);
+  configToStore->displayRoundingMode = displayRoundingMode ^ DRM_DFLT;  // the reserved byte14 slot, exclusive or with the default so an old file's zero restores as half-up
   storeToDtConfigDescriptor(    compatibility_byte15);
   storeToDtConfigDescriptor(fractionDigits);
   storeToDtConfigDescriptor(    compatibility_byte23);

@@ -309,6 +309,7 @@ static void _differentiatorIteration(calcRegister_t label, calcRegister_t variab
   if(currentSolverStatus & SOLVER_STATUS_USES_FORMULA) {
     reallyRunFunction(ITM_STO, currentSolverVariable);
     parseEquation(currentFormula, EQUATION_PARSER_XEQ, tmpString, tmpString + AIM_BUFFER_LENGTH);
+    setRoundingMode(RM_ENGINE);  // a mode the function sets does not reach the engine
   }
   else {
     if(variable != INVALID_VARIABLE) {   // feed both channels: the stack for a program that consumes X, the variable for one that recalls its MVAR
@@ -316,6 +317,7 @@ static void _differentiatorIteration(calcRegister_t label, calcRegister_t variab
     }
     dynamicMenuItem = -1;
     execProgram(label);
+    setRoundingMode(RM_ENGINE);  // a mode the function sets does not reach the engine
     fnToReal(NOPARAM);
   }
 
@@ -397,6 +399,8 @@ static void calcDeriv(calcRegister_t label, const FINITE_DIFF_COEFF *const *finD
     displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
     return;
   }
+  const uint8_t userRoundingMode = roundingMode;
+  setRoundingMode(RM_ENGINE);  // the iteration takes no mode from RM
   REAL_T_IN(work, 75, 0, x);
   REAL_T_IN(work, 75, 1, h);
   REAL_T_IN(work, 75, 2, scratch);   // the MVAR probe, then working space for calcOneDeriv and deriv_agrees
@@ -553,9 +557,11 @@ noResult:;
   errorMessage[0] = 0;
 
 finish:
+  setRoundingMode(userRoundingMode);  // the result is rounded once, by RM
   convertRealToResultRegister(x, REGISTER_X, amNone);
 
 freeWork:
+  setRoundingMode(userRoundingMode);
   freeC47Blocks(work, DERIV_WORK_REALS * REAL_SIZE_IN_BLOCKS(75));
 }
 

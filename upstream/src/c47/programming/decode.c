@@ -906,6 +906,7 @@ static void _decodeOneStep(uint8_t *step, uint16_t textVersion) {
         #if defined(PC_BUILD)
           printf("\nERROR in decodeOneStep: instruction %u:%s is not programmable!\n", op, indexOfItems[op].itemCatalogName);
         #endif
+        strcpy(tmpString, indexOfItems[op].itemCatalogName[0] != 0 ? indexOfItems[op].itemCatalogName : indexOfItems[op].itemSoftmenuName);
         break;
       }
 
