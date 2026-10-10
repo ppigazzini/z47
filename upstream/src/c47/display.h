@@ -57,5 +57,7 @@ void supNumberToDisplayString          (int32_t supNumber, char *displayString, 
 void subNumberToDisplayString          (int32_t subNumber, char *displayString, char *displayValueString);
 void longIntegerToAllocatedString      (const longInteger_t lgInt, char *str, int32_t strLen);
 void fnC47Show                         (uint16_t fnShow_param);    //JMSHOW
+void storeShowStatus                   (void);                     //JM keep the SHOW paging of the page now on screen
+void recallShowStatus                  (void);                     //JM put it back, so fnC47Show(ITM_NOP) repaints that same page
 
 #endif // !DISPLAY_H

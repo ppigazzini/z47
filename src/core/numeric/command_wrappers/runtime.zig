@@ -30,9 +30,10 @@ pub const option_cubic_159 = build_options.option_cubic_159;
 pub const option_eigen_159 = build_options.option_eigen_159;
 
 /// defines.h's OPTION_EIGEN: the eigenvalue/eigenvector/QR/matrix-square-root
-/// half of matrix.c, and squareRoot.c's matrix branch. #undef'd for DM42
-/// packages 1, 2 and 4 (17440 bytes of flash); package 3, DMCP5 and host keep
-/// it. LU, determinant and inverse are outside it and stay either way.
+/// half of matrix.c, and squareRoot.c's matrix branch, 17440 bytes of flash.
+/// Some DM42 packages drop it (build/firmware.zig's dm42Package table); DMCP5
+/// and host keep it. LU, determinant and inverse are outside it and stay either
+/// way.
 pub const option_eigen = build_options.option_eigen;
 
 /// defines.h's OPTION_VECTOR: matrix.c's 2D/3D vector command surface and the
@@ -41,11 +42,10 @@ pub const option_eigen = build_options.option_eigen;
 /// so no DM42 package carries it; DMCP5 and host do.
 pub const option_vector = build_options.option_vector;
 
-/// defines.h's OPTION_SLVP_POLY: the SLVP polynomial-root command. Enabled by
-/// default and #undef'd in the same DM42 TWO_FILE block as OPTION_XFN_1000
-/// (2024 bytes of flash), so it is off for exactly the same builds. Its
+/// defines.h's OPTION_SLVP_POLY: the SLVP polynomial-root command, 2024 bytes
+/// of flash. Enabled by default and #undef'd by some DM42 package blocks. Its
 /// `#if !defined(OPTION_EIGEN) #undef OPTION_SLVP_POLY` dependency adds nothing:
-/// every target that drops OPTION_EIGEN is already one of those.
+/// every package block that drops OPTION_EIGEN drops SLVP as well.
 pub const option_slvp_poly = build_options.option_slvp_poly;
 
 /// defines.h's OPTION_ALGDEP: x->POLY and V->SUM=0, algebraic number

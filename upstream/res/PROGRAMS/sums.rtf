@@ -1,0 +1,153 @@
+{\rtf1\ansi\ansicpg1252\deff0\nouicompat{\fonttbl{\f0\fnil\fcharset0 C47__StandardFont;}}{\pard\sl240\slmult1\f0\fs24\lang9\f0\loch
+C47 Program file export: Export format version 3, C47 program version 1.
+ \par
+0000: { Prgm #1/1: 828 bytes / 135 steps } \par
+\par
+0001:  LBL \u8216?sums\u8217?\par
+0002:    XEQ \u8216?EUP\u8217?\par
+0003:    XEQ \u8216?EDN\u8217?\par
+0004:    XEQ \u8216?HUP\u8217?\par
+0005:    XEQ \u8216?HDN\u8217?\par
+0006:    XEQ \u8216?CUP\u8217?\par
+0007:    XEQ \u8216?CDN\u8217?\par
+0008:    RTN\par
+\par
+0009:    LBL \u8216?FSQ\u8217?\par
+0010:    REM \u8216?f(n) = 1/n\super 2\nosupersub \u8217?\par
+0011:    1/x\par
+0012:    x\super 2\nosupersub \par
+0013:    RTN\par
+\par
+0014:    LBL \u8216?EUP\u8217?\par
+0015:    REM \u8216?Engine sum, 1 to 10000\u8217?\par
+0016:    1\par
+0017:    10\u8200?000\par
+0018:    1\par
+0019:    \u8721?\sub n\nosupersub  \u8216?FSQ\u8217?\par
+0020:    STO \u8216?Eup\u8217?\par
+0021:    RTN\par
+\par
+0022:    LBL \u8216?EDN\u8217?\par
+0023:    REM \u8216?Engine sum, 10000 to 1\u8217?\par
+0024:    10\u8200?000\par
+0025:    1\par
+0026:    1\par
+0027:    CHS\par
+0028:    \u8721?\sub n\nosupersub  \u8216?FSQ\u8217?\par
+0029:    STO \u8216?Edn\u8217?\par
+0030:    RTN\par
+\par
+0031:    LBL :HSQ:\par
+0032:    REM \u8216?STO+ into SS, returns 0\u8217?\par
+0033:    1/x\par
+0034:    x\super 2\nosupersub \par
+0035:    STO+ \u8216?SS\u8217?\par
+0036:    0\par
+0037:    RTN\par
+\par
+0038:    LBL \u8216?HUP\u8217?\par
+0039:    REM \u8216?STO+ sum, 1 to 10000\u8217?\par
+0040:    0.\par
+0041:    STO \u8216?SS\u8217?\par
+0042:    1\par
+0043:    10\u8200?000\par
+0044:    1\par
+0045:    \u8721?\sub n\nosupersub  :HSQ:\par
+0046:    RCL \u8216?SS\u8217?\par
+0047:    STO \u8216?Hup\u8217?\par
+0048:    RTN\par
+\par
+0049:    LBL \u8216?HDN\u8217?\par
+0050:    REM \u8216?STO+ sum, 10000 to 1\u8217?\par
+0051:    0.\par
+0052:    STO \u8216?SS\u8217?\par
+0053:    10\u8200?000\par
+0054:    1\par
+0055:    1\par
+0056:    CHS\par
+0057:    \u8721?\sub n\nosupersub  :HSQ:\par
+0058:    RCL \u8216?SS\u8217?\par
+0059:    STO \u8216?Hdn\u8217?\par
+0060:    RTN\par
+\par
+0061:    LBL \u8216?CSQ\u8217?\par
+0062:    REM \u8216?+ into SS, returns 0\u8217?\par
+0063:    1/x\par
+0064:    x\super 2\nosupersub \par
+0065:    RCL \u8216?SS\u8217?\par
+0066:    +\par
+0067:    STO \u8216?SS\u8217?\par
+0068:    0\par
+0069:    RTN\par
+\par
+0070:    LBL \u8216?CUP\u8217?\par
+0071:    REM \u8216?+ sum, 1 to 10000\u8217?\par
+0072:    0.\par
+0073:    STO \u8216?SS\u8217?\par
+0074:    1\par
+0075:    10\u8200?000\par
+0076:    1\par
+0077:    \u8721?\sub n\nosupersub  \u8216?CSQ\u8217?\par
+0078:    RCL \u8216?SS\u8217?\par
+0079:    STO \u8216?Cup\u8217?\par
+0080:    RTN\par
+\par
+0081:    LBL \u8216?CDN\u8217?\par
+0082:    REM \u8216?+ sum, 10000 to 1\u8217?\par
+0083:    0.\par
+0084:    STO \u8216?SS\u8217?\par
+0085:    10\u8200?000\par
+0086:    1\par
+0087:    1\par
+0088:    CHS\par
+0089:    \u8721?\sub n\nosupersub  \u8216?CSQ\u8217?\par
+0090:    RCL \u8216?SS\u8217?\par
+0091:    STO \u8216?Cdn\u8217?\par
+0092:    RTN\par
+\par
+0093:    LBL :PSQ:\par
+0094:    REM \u8216?+ into SS, alternating term\u8217?\par
+0095:    1/x\par
+0096:    x\super 2\nosupersub \par
+0097:    x\u8644?y\par
+0098:    (-1)\u739?\par
+0099:    CHS\par
+0100:    \u215?\par
+0101:    RCL \u8216?SS\u8217?\par
+0102:    +\par
+0103:    STO \u8216?SS\u8217?\par
+0104:    0\par
+0105:    RTN\par
+\par
+0106:    LBL \u8216?PUP\u8217?\par
+0107:    REM \u8216?alternating + sum, 1 to 10000\u8217?\par
+0108:    0.\par
+0109:    STO \u8216?SS\u8217?\par
+0110:    1\par
+0111:    10\u8200?000\par
+0112:    1\par
+0113:    \u8721?\sub n\nosupersub  :PSQ:\par
+0114:    RCL \u8216?SS\u8217?\par
+0115:    12\par
+0116:    \u215?\par
+0117:    \u8730?\u895?\par
+0118:    STO \u8216?Pup\u8217?\par
+0119:    RTN\par
+\par
+0120:    LBL \u8216?PDN\u8217?\par
+0121:    REM \u8216?alternating + sum, 10000 to 1\u8217?\par
+0122:    0.\par
+0123:    STO \u8216?SS\u8217?\par
+0124:    10\u8200?000\par
+0125:    1\par
+0126:    1\par
+0127:    CHS\par
+0128:    \u8721?\sub n\nosupersub  :PSQ:\par
+0129:    RCL \u8216?SS\u8217?\par
+0130:    12\par
+0131:    \u215?\par
+0132:    \u8730?\u895?\par
+0133:    STO \u8216?Pdn\u8217?\par
+0134:    RTN\par
+0135:  END\par
+}}

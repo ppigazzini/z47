@@ -2,6 +2,7 @@ const std = @import("std");
 const abi = @import("abi");
 const builtin = @import("builtin");
 const build_options = @import("memory_build_options");
+const rom = @import("dmcp_rom");
 const block_math = abi.block_math;
 
 pub const freeMemoryRegion_t = abi.FreeMemoryRegion;
@@ -135,6 +136,19 @@ pub inline fn handleResizeProgramMemoryOutOfMemory(deltaBlocks: u16) void {
         .{ toBytes(deltaBlocks), toBytes(free_memory) },
     );
     exit(-3);
+}
+
+// The stop after the bug screen memory.c paints when GMP runs out of heap: the
+// firmware refreshes the LCD, waits for a key and resets; the host exits with
+// 255.
+pub fn stopOnGmpExhaustion() void {
+    if (builtin.target.os.tag == .freestanding) {
+        rom.lcd_refresh();
+        rom.wait_for_key_press();
+        rom.sys_reset();
+        return;
+    }
+    exit(255);
 }
 
 pub inline fn allocGmpBytes(sizeInBytes: usize) ?*anyopaque {

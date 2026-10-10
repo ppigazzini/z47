@@ -1,0 +1,25 @@
+@ Index:   Problem 11, penny a minute, FV then rate
+@ Author:  Jaco Mostert, fm Duncan Murray's problem set
+@ One penny a minute for a year at 1/6%. Solves FV, then I%/a.
+LBL ‘P11’
+  # Problem 11, first calculate FV then I/a
+  60
+  24
+  365
+  ×
+  ×
+  STO ‘NPPER’
+  STO ‘PPER/a’
+  STO ‘CPER/a’
+  1
+  6
+  ÷
+  STO ‘I%/a’
+  0
+  STO ‘PV’
+  -0.01
+  STO ‘PMT’
+  ENDP
+  FV
+  I/a
+  END

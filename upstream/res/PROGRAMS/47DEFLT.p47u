@@ -1,0 +1,31 @@
+@ Index:  Restore default settings after HP35fun
+@ Author: Jaco Mostert
+@ Tested: From cleared flags, sets SPCRES, CPXRES and eRPN.
+@ Input:  SPCRES, CPXRES and eRPN cleared
+@ Output: All three set to 1
+LBL ‘47DEFLT’
+  # SET THE USUAL SETTINGS WHEN COMING BACK FROM HP35fun Rev2
+  CLRMOD
+  CLSTK
+  iLI/ℝ
+  ALL 03
+  SF ‘MyMb’
+  CF ‘HOMEb’
+  RNG 6145
+  SDIGS 34
+  dSTACK 04
+  DEG
+  SSIZE8
+  SF ‘SPCRES’
+  SF ‘CPXRES’
+  SF ‘eRPN’
+  SF ‘fg.FUL’
+  IPGRP 03
+  FPGRP 03
+  IPGRP1 00
+  IPGRP1x 00
+  ISPC␣
+  FSPC␣
+  RPER.
+  END
+.END.

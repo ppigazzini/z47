@@ -1,0 +1,18 @@
+@ Index:   Extreme-scaled exponential PLOT and SOLVE stress test
+@ Author:  Jaco Mostert
+@ Created: 2026-07-24
+@ Tested:  Returns 1 at x=1e-50 and e (2.71828...) at x=2e-50.
+@ Input:   Variable x=1e-50 (also 2e-50)
+@ Output:  X = 1 (2e-50 returns e 2.718281828459045235360287471352662)
+@
+@ Computes e^(MVAR x) at tiny multiples of x in the range of -10E-50 to 10E-50
+LBL ‘FFX’
+  MVAR ‘x’
+  RCL ‘x’
+  1.e-50
+  -
+  1.e+50
+  ×
+  𝑒ˣ
+  END
+.END.

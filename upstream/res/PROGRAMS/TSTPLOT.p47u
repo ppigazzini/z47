@@ -1,0 +1,24 @@
+@ Index:  Gamma function RPN plot demo
+@ Author: Jaco Mostert
+@ Tested: XEQ ‘TSTPLOT’
+@ Input:  none
+@ Output: On-screen Γ(𝑥) plot over [-2, 2] with poles at 0, -1, -2
+LBL :TST:
+  MVAR ‘x’
+  RCL ‘x’
+  Γ(𝑥)
+  RTN
+
+LBL ‘TSTPLOT’
+  PLTRST
+  -2
+  2
+  PLTRST
+  CF ‘PLbox’
+  SF ‘PLx.ax’
+  SF ‘PLy.ax’
+  PGMPLT :TST:
+  PLTf ‘x’
+  OPENM ‘PLFUNC’
+  END
+.END.

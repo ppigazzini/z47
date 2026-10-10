@@ -1,0 +1,31 @@
+@ Index:   Iterative factorial using DSE
+@ Tested:  5 returns 120, 0 returns 1, 10 returns 3628800.
+@ Input:   X = 5 (also 0 and 10)
+@ Output:  X = 120 (0 returns 1, 10 returns 3628800)
+@ Author:  Warren Young, assisted by Cursor and Didier Lachieze
+@ Created: 2026-10-01
+@ Version: 1.0
+@
+@ Usage is the same as the built-in 𝑥! operation: input value in X,
+@ factorial of same output in X; stack-neutral.  Takes any X that
+@ the IP op can turn into an integer, but rejects negative.
+@
+@ As a bonus, this demonstrates several uncommonly-seen ops:
+@
+@ - FINISH for exiting early upon a detected error condition, with a diagnostic message
+@ - DROPy to keep the stack clean; much less common than X-only DROP
+@ - program flow via BACK and SKIP
+LBL ‘FactIt’
+  IP
+  𝑥<? 0.            ; factorial is undefined for negative inputs
+    FINISH ‘Invalid argument!’
+  1.
+  𝑥>? Y             ; with passed X (now Y) clamped to integer and ≥ 0…
+    SKIP 003        ; …it has to be = 0 here, so clean up and exit
+  RCL× Y            ; multiply accumulated X by next Y value
+  DSE Y             ; decrement Y (passed as X) until = 0
+    BACK 002        ; return to the multiply step
+  DROP𝑦             ; passed X now consumed; clean its remnant
+  RTN
+  END
+.END.

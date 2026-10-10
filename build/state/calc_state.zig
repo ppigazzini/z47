@@ -31,13 +31,13 @@ pub const RuntimeObjectOptions = struct {
     option_xfn_1000: bool = true,
     // OPTION_STRUCTURED_PGM gates the STRUCT halves of the two save/restore
     // owners: the forLoopTable block backup.cfg carries, and the forClearLoops a
-    // load makes so no FOR structure survives the file. Same "common to packages
-    // 1-4" block as OPTION_XFN_1000, so the same per-target answer. Defaults true
-    // to match a host build.
+    // load makes so no FOR structure survives the file. It is set per DM42
+    // package, from build/firmware.zig's dm42Package table. Defaults true to match a
+    // host build.
     option_structured_pgm: bool = true,
     // OPTION_ATEXT_FONTS gates graFont's line in the state file and its key in
-    // backup.cfg, both written and read. Same "common to packages 1-4" block
-    // again, so the same per-target answer. Defaults true to match a host build.
+    // backup.cfg, both written and read. Every target z47 builds defines it: the
+    // block common to the DM42 packages keeps it.
     option_atext_fonts: bool = true,
     // EXTRA_INFO_ON_CALC_ERROR, for the scalar-state owners this object carries
     // through its core_state module. 0 on firmware and in the testSuite; default

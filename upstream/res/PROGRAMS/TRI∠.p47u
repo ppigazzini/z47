@@ -1,0 +1,1532 @@
+@ Index:   HP-42S triangle solver reimagined
+@ Author:  Mike Leffel
+@ Source:  https://forum.swissmicros.com/viewtopic.php?p=38746#p38746
+@ Version: 1.14
+@
+@ Compared to the straight port in TRI∡.p47u, this is greatly extended.
+@
+@ DEG RAD setting of calc ignored
+@ untagged angles assumed DEG
+@ user must tag angles for other units
+@ [TRI∠] always converts to degrees
+@ 
+@ Helper batch file to wrap repeated rejig commands:
+@ ------------------------------------
+@ echo off
+@ echo Formats the *.utf8 file in place, then compiles it to P47.
+@ echo If needed, run this first to create the editable file
+@ echo rejig TRI∠.p47 -o TRIv(edit).utf8
+@ pause
+@ echo on
+@ :Begin
+@ rejig --fmt TRIv(edit).utf8
+@ rejig TRIv(edit).utf8 -o TRI∠.p47
+@ pause
+@ goto Begin
+@ ------------------------------------
+@
+@ REG 00 HOLDS TI TEXT
+@ Flags hold temp info
+@ FLAG 0 INDICATES AN ERROR
+@ FLAG 1 INDICATES 2 SOLUTIONS
+@ FLAG 2 SELECTS SOL 1 OR SOL 2
+@ FLAG 3 SELECTS active menu
+@ FLAG 4 means close enough to right tri
+@
+@ Regs 01..08 temp, hold sol 1 & 2
+@ one sol in real, other in imag part
+@
+@ Tested: AUTO on sides 3, 4, 5 (SSS) returns area 6 and a 90 degree right angle.
+@ input:  sides 3, 4, 5 on the stack, then AUTO
+@ output: area 6; 90 degree right angle
+LBL ‘TRI∠’
+  CF F00
+  CF F01
+  CF F02
+  CF F03
+  CF F04
+  CLMENU
+
+  # set flag 03 to start in 2nd menu
+  SF F03
+
+  ‘’
+  STO R00
+  DROP𝑥
+
+  # 8 TRI VARIABLES ARE SAVED
+  MVAR ‘s1’
+  MVAR ‘s2’
+  MVAR ‘s3’
+  MVAR ‘a1’
+  MVAR ‘a2’
+  MVAR ‘a3’
+  MVAR ‘perim’
+  MVAR ‘area’
+
+  # clear them
+  XEQ 02
+
+  # goto the desired menu
+  FS? F03
+    GTO 60
+
+  LBL 00
+    CF F03
+
+    # Menu Loop
+    # This is the entry menu
+    ‘SSS’
+    KEY 01 XEQ 11
+    ‘SAS’
+    KEY 08 XEQ 12
+    ‘ASA’
+    KEY 09 XEQ 13
+    ‘ASS’
+    KEY 14 XEQ 17
+    ‘SAA’
+    KEY 15 XEQ 14
+    ‘SSA’
+    KEY 02 XEQ 16
+    ‘AAS’
+    KEY 03 XEQ 15
+    ‘⇒DEG’
+    KEY 04 XEQ 04
+    ‘⇒RAD’
+    KEY 10 XEQ 05
+    ‘⇒MULπ’
+    KEY 16 XEQ 06
+    ‘AUTO’
+    KEY 06 XEQ 10
+    ‘HELP’
+    KEY 12 XEQ 01
+    ‘EXIT’
+    KEY 18 GTO 99
+    MENU
+    FS? F00
+      AVIEW R00
+    STOP
+
+    # if error, loop for new input
+    FS? F00
+      GTO 00
+
+    # DISPLAY RESULTS
+    FC? F01
+      ‘Unique solution is stored in memory.’
+    FS? F01
+      ‘TWO SOLUTIONS! Both are stored in mem.’
+    STO R00
+    DROP𝑥
+    XEQ 60
+    RTN
+
+  # End of Menu Loop
+  LBL 01
+    # Help
+    ‘Enter the sides and angle variables onto  ’
+    ‘the stack.  Then select the three letters ’
+    ‘that match your entry types.  Or press   ’
+    ‘AUTO to auto detect your entry types.    ’
+    # Must be GTO, not solving for Triangle
+    GTO 00
+
+  LBL 02
+    # clear all triangle variables
+    # called at start of each solver
+    0
+    STO ‘s1’
+    STO ‘s2’
+    STO ‘s3’
+    STO ‘a1’
+    STO ‘a2’
+    STO ‘a3’
+    STO ‘perim’
+    STO ‘area’
+    DROP𝑥
+    RTN
+
+  LBL 03
+    # safe ⇒DEG
+    XEQ 21
+    FS? F00
+      RTN
+    ⇒DEG
+    ‘’
+    STO R00
+    DROP𝑥
+    RTN
+
+  LBL 04
+    # menu tag entry in degrees
+    CF F00
+    XEQ 03
+
+    # Must be GTO, not solving for Triangle
+    FC? F03
+      GTO 00
+    FS? F03
+      GTO 60
+
+    LBL 05
+      # menu tag entry in radians
+      CF F00
+      XEQ 21
+      FS? F00
+        SKIP 004
+      ‘’
+      STO R00
+      DROP𝑥
+      ⇒RAD
+
+      # Must be GTO, not solving for Triangle
+      FC? F03
+        GTO 00
+      FS? F03
+        GTO 60
+
+      LBL 06
+        # menu tag entry in mult of pi
+        CF F00
+        XEQ 21
+        FS? F00
+          SKIP 004
+        ‘’
+        STO R00
+        DROP𝑥
+        ⇒MULπ
+
+        # Must be GTO, not solving for Triangle
+        FC? F03
+          GTO 00
+        FS? F03
+          GTO 60
+
+        LBL 10
+          # auto detect sss, sas, asa, etc
+          # operates on stack values
+          CF F00
+          LocR 08
+          STOS R.00
+
+          # new triangle, clear messages
+          ‘’
+          STO R00
+          DROP𝑥
+
+          # new triangle, clear assumptions
+          CF F01
+          CF F04
+
+          # last (bottom) entry angle?
+          XEQ 24
+          𝑦⇄ Z
+          𝑥⇄𝑦
+
+          # middle entry angle?
+          XEQ 24
+          2
+          ×
+          𝑦⇄ Z
+          +
+          𝑦⇄ T
+          𝑥⇄𝑦
+
+          # first (top) entry angle?
+          XEQ 24
+          4
+          ×
+          𝑦⇄ Z
+          +
+
+          # now call the correct xxx sub
+          0
+          𝑥=? Y
+            SKIP 031
+          DROP𝑥
+          1
+          𝑥=? Y
+            SKIP 030
+          DROP𝑥
+          2
+          𝑥=? Y
+            SKIP 029
+          DROP𝑥
+          3
+          𝑥=? Y
+            SKIP 028
+          DROP𝑥
+          4
+          𝑥=? Y
+            SKIP 027
+          DROP𝑥
+          5
+          𝑥=? Y
+            SKIP 026
+          DROP𝑥
+          6
+          𝑥=? Y
+            SKIP 025
+          DROP𝑥
+          7
+          𝑥=? Y
+            SKIP 024
+          DROP𝑥
+
+          # SKIP TABLE...
+          # SSS DETECTED
+          RCLS R.00
+          GTO 11
+
+          # SSA DETECTED
+          RCLS R.00
+          GTO 16
+
+          # SAS DETECTED
+          RCLS R.00
+          GTO 12
+
+          # SAA DETECTED
+          RCLS R.00
+          GTO 14
+
+          # ASS DETECTED
+          RCLS R.00
+          GTO 17
+
+          # ASA DETECTED
+          RCLS R.00
+          GTO 13
+
+          # AAS DETECTED
+          RCLS R.00
+          GTO 15
+
+          # AAA NOT SUPPORTED
+          # Or something else went wrong
+          SF F00
+
+          # SF F15
+          ‘Three angles is not supported.’
+          STO R00
+          RCLS R.00
+          RTN
+
+        LBL 11
+          # SSS
+          # STK zyx is s1, s2, s3
+          CF F00
+          LocR 08
+          STOS R.00
+          XEQ 02
+
+          # validate and store inputs
+          XEQ 21
+          XEQ 22
+          STO ‘s3’
+          R↓
+          XEQ 21
+          XEQ 22
+          STO ‘s2’
+          R↓
+          XEQ 21
+          XEQ 22
+          STO ‘s1’
+          XEQ 26
+
+          # if invalid entry, abort
+          RCLS R.00
+          FS? F00
+            RTN
+
+          # calc semi perim
+          +
+          +
+          2
+          ÷
+          STO ‘perim’
+
+          # calc a1
+          RCL ‘s3’
+          RCL ‘s1’
+          RCL ‘s2’
+          XEQ 41
+          STO ‘a1’
+
+          # calc a2
+          RCL ‘s1’
+          RCL ‘s2’
+          RCL ‘s3’
+          XEQ 41
+          STO ‘a2’
+
+          # calc a3
+          RCL ‘s2’
+          RCL ‘s3’
+          RCL ‘s1’
+          XEQ 41
+          STO ‘a3’
+
+          # Calc area
+          XEQ 50
+
+          # Update message
+          FC? F01
+            ‘Unique solution is stored in memory.’
+          FS? F01
+            ‘TWO SOLUTIONS ! Both are stored in mem.’
+          STO R00
+          DROP𝑥
+
+          # restore stk
+          RCLS R.00
+          RTN
+
+        LBL 12
+          # SAS
+          # STK zyx is s1, a1, s2
+          CF F00
+          LocR 08
+          STOS R.00
+          XEQ 02
+
+          # validate and store inputs
+          XEQ 21
+          XEQ 22
+          STO ‘s2’
+          R↓
+          XEQ 21
+          XEQ 23
+          XEQ 03
+          STO ‘a1’
+          R↓
+          XEQ 21
+          XEQ 22
+          STO ‘s1’
+
+          # if invalid entry, abort
+          RCLS R.00
+          FS? F00
+            RTN
+
+          # calc s3
+          RCL ‘s1’
+          RCL ‘a1’
+          RCL ‘s2’
+          XEQ 43
+          STO ‘s3’
+
+          # calc semi perim
+          RCL ‘s2’
+          RCL ‘s1’
+          +
+          +
+          2
+          ÷
+          STO ‘perim’
+
+          # calc a2
+          RCL ‘s1’
+          RCL ‘s2’
+          RCL ‘s3’
+          XEQ 41
+          STO ‘a2’
+
+          # calc a3
+          RCL ‘s2’
+          RCL ‘s3’
+          RCL ‘s1’
+          XEQ 41
+          STO ‘a3’
+
+          # Calc area
+          XEQ 50
+
+          # Update message
+          FC? F01
+            ‘Unique solution is stored in memory.’
+          FS? F01
+            ‘TWO SOLUTIONS ! Both are stored in mem.’
+          STO R00
+          DROP𝑥
+
+          # restore stk
+          RCLS R.00
+          RTN
+
+        LBL 13
+          # ASA
+          # STK zyx is a3, s1, a1
+          CF F00
+          LocR 08
+          STOS R.00
+          XEQ 02
+
+          # validate and store inputs
+          XEQ 21
+          XEQ 23
+          XEQ 03
+          STO ‘a1’
+          R↓
+          XEQ 21
+          XEQ 22
+          STO ‘s1’
+          R↓
+          XEQ 21
+          XEQ 23
+          XEQ 03
+          STO ‘a3’
+          RCL ‘a1’
+          +
+          XEQ 23
+
+          # if invalid entry, abort
+          RCLS R.00
+          FS? F00
+            RTN
+
+          # calc a2
+          RCL ‘a1’
+          RCL ‘a3’
+          XEQ 42
+          STO ‘a2’
+
+          # calc s2
+          RCL ‘s1’
+          RCL ‘a3’
+          RCL ‘a2’
+          XEQ 44
+          STO ‘s2’
+
+          # calc side 3
+          RCL ‘s1’
+          RCL ‘a1’
+          RCL ‘a2’
+          XEQ 44
+          STO ‘s3’
+          RCL ‘s2’
+          RCL ‘s1’
+          +
+          +
+          2
+          ÷
+          STO ‘perim’
+
+          # Calc area
+          XEQ 50
+
+          # Update message
+          FC? F01
+            ‘Unique solution is stored in memory.’
+          FS? F01
+            ‘TWO SOLUTIONS ! Both are stored in mem.’
+          STO R00
+          DROP𝑥
+
+          # restore stk
+          RCLS R.00
+          RTN
+
+        LBL 14
+          # SAA
+          # STK zyx is s1, a1, a2
+          CF F00
+          LocR 08
+          STOS R.00
+          XEQ 02
+
+          # validate and store inputs
+          XEQ 21
+          XEQ 23
+          XEQ 03
+          STO ‘a2’
+          R↓
+          XEQ 21
+          XEQ 23
+          XEQ 03
+          STO ‘a1’
+          R↓
+          XEQ 21
+          XEQ 22
+          STO ‘s1’
+          RCL ‘a2’
+          RCL ‘a1’
+          +
+          XEQ 23
+
+          # if invalid entry, abort
+          RCLS R.00
+          FS? F00
+            RTN
+
+          # calc a3
+          RCL ‘a2’
+          RCL ‘a1’
+          XEQ 42
+          STO ‘a3’
+
+          # calc s2
+          RCL ‘s1’
+          RCL ‘a3’
+          RCL ‘a2’
+          XEQ 44
+          STO ‘s2’
+
+          # calc s3
+          RCL ‘s1’
+          RCL ‘a1’
+          RCL ‘a2’
+          XEQ 44
+          STO ‘s3’
+          RCL ‘s2’
+          RCL ‘s1’
+          +
+          +
+          2
+          ÷
+          STO ‘perim’
+
+          # Calc area
+          XEQ 50
+
+          # Update message
+          FC? F01
+            ‘Unique solution is stored in memory.’
+          FS? F01
+            ‘TWO SOLUTIONS ! Both are stored in mem.’
+          STO R00
+          DROP𝑥
+
+          # restore stk
+          RCLS R.00
+          RTN
+
+        LBL 15
+          # AAS
+          # STK zyx is a1, a2, s3
+          CF F00
+          LocR 08
+          STOS R.00
+          XEQ 02
+
+          # use SAA, then mir, rot, rot
+          𝑥⇄ Z
+          XEQ 14
+
+          # if invalid entry, abort
+          FS? F00
+            RCLS R.00
+          FS? F00
+            RTN
+
+          # mirror, rotate, rotate
+          XEQ 72
+          XEQ 71
+          XEQ 71
+
+          # Update message
+          FC? F01
+            ‘Unique solution is stored in memory.’
+          FS? F01
+            ‘TWO SOLUTIONS ! Both are stored in mem.’
+          STO R00
+          DROP𝑥
+
+          # restore stack
+          RCLS R.00
+          RTN
+
+        LBL 16
+          # SSA
+          # STK zyx is s1, s2, a2
+          CF F00
+          LocR 08
+          STOS R.00
+          XEQ 02
+
+          # validate and store inputs
+          XEQ 21
+          XEQ 23
+          XEQ 03
+          STO ‘a2’
+          R↓
+          XEQ 21
+          XEQ 22
+          STO ‘s2’
+          R↓
+          XEQ 21
+          XEQ 22
+          STO ‘s1’
+
+          # RCLS R.00 removed, RCL added
+          RCL ‘s1’
+          RCL ‘s2’
+          RCL ‘a2’
+          XEQ 28
+          FC? F04
+            XEQ 25
+
+          # if invalid entry, abort
+          RCLS R.00
+          FS? F00
+            RTN
+
+          # If 2 solutions --> SF01 in XEQ 27
+          RCL ‘s1’
+          RCL ‘s2’
+          RCL ‘a2’
+          FC? F04
+            XEQ 27
+
+          # calc a3
+          RCL ‘s1’
+          RCL ‘s2’
+          RCL ‘a2’
+          XEQ 45
+          STO ‘a3’
+
+          # calc a1
+          RCL ‘a2’
+          RCL ‘a3’
+          XEQ 42
+          STO ‘a1’
+
+          # calc s3
+          RCL ‘s1’
+          RCL ‘a1’
+          RCL ‘a2’
+          XEQ 44
+          STO ‘s3’
+          RCL ‘s2’
+          RCL ‘s1’
+          +
+          +
+          2
+          ÷
+          STO ‘perim’
+
+          # calc area, perim
+          XEQ 50
+
+          # If 2 solutions, calc 2nd one now
+          FS? F01
+            XEQ 18
+
+          # Update message
+          FC? F01
+            ‘Unique solution is stored in memory.’
+          FS? F01
+            ‘TWO SOLUTIONS ! Both are stored in mem.’
+          STO R00
+          DROP𝑥
+
+          # restore stack
+          RCLS R.00
+          RTN
+
+        LBL 17
+          # ASS
+          # STK zyx is a1, s2, s3
+          CF F00
+          LocR 08
+          STOS R.00
+          XEQ 02
+
+          # use SSA, then mir, rot, rot
+          𝑥⇄ Z
+          XEQ 16
+
+          # if invalid entry, abort
+          FS? F00
+            RCLS R.00
+          FS? F00
+            RTN
+
+          # mirror, rotate, rotate
+          XEQ 72
+          XEQ 71
+          XEQ 71
+
+          # Update message
+          FC? F01
+            ‘Unique solution is stored in memory.’
+          FS? F01
+            ‘TWO SOLUTIONS ! Both are stored in mem.’
+          STO R00
+          DROP𝑥
+
+          # restore stack
+          RCLS R.00
+          RTN
+
+        LBL 18
+          # SSA (and ASS) 2nd solution
+          # operates on variables, not stk
+          # save s1, s2, a2 to 2 sol regs
+          RCL ‘s1’
+          ENTER
+          COMPLEX
+          STO R01
+          RCL ‘s2’
+          ENTER
+          COMPLEX
+          STO R02
+          RCL ‘a2’
+          ⇒DEG
+          →REAL
+          ENTER
+          COMPLEX
+          STO R05
+
+          # find alternate a3
+          RCL ‘a3’
+          ENTER
+          cos(𝑥)
+          CHS
+          cos⁻¹(𝑥)
+          STO ‘a3’
+
+          # both a3 to reg 06 as re, im
+          ⇒DEG
+          →REAL
+          𝑥⇄𝑦
+          ⇒DEG
+          →REAL
+          𝑥⇄𝑦
+          COMPLEX
+          STO R06
+          RCL ‘a1’
+
+          # calc alt a1
+          RCL ‘a3’
+          RCL ‘a2’
+          XEQ 42
+          STO ‘a1’
+
+          # both a1 to reg 04 as re, im
+          ⇒DEG
+          →REAL
+          𝑥⇄𝑦
+          ⇒DEG
+          →REAL
+          𝑥⇄𝑦
+          COMPLEX
+          STO R04
+          RCL ‘s3’
+
+          # calc alt s3
+          RCL ‘s1’
+          RCL ‘a1’
+          RCL ‘a2’
+          XEQ 44
+          STO ‘s3’
+
+          # both s3 to reg 03 as re, im
+          COMPLEX
+          STO R03
+          RCL ‘perim’
+          RCL ‘area’
+          RCL ‘s1’
+          RCL ‘s2’
+          RCL ‘s3’
+          +
+          +
+          2
+          ÷
+          STO ‘perim’
+          DROP𝑥
+
+          # calc alt area, perim
+          XEQ 50
+          RCL ‘area’
+
+          # both areas to reg 07 as re, im
+          COMPLEX
+          STO R07
+          R↓
+          RCL ‘perim’
+
+          # both perim to reg 08 as re, im
+          COMPLEX
+          STO R08
+          RTN
+
+        LBL 21
+          # operates on stack values
+          # x: value --> validated pos real, else SF F00
+          # accepts ShortInt, LongInt, or Real
+          # converts Int to Real if needed
+          FS? F00
+            RTN
+          ShortInt?
+            →REAL
+          LongInt?
+            →REAL
+          ℝ?
+            SKIP 001
+          SF F00
+          FS? F00
+            SKIP 004
+          0
+          𝑥≥? Y
+            SF F00
+          DROP𝑥
+          FC? F00
+            RTN
+
+          # SF F10
+          ‘Pos Num expected, found something else’
+          STO R00
+          DROP𝑥
+          RTN
+
+        LBL 22
+          # operates on stack values
+          # x: value --> validated side, else SF F00
+          # flags error if angle tag found where side expected
+          FS? F00
+            RTN
+          ANGLE?
+            SF F00
+          FC? F00
+            RTN
+
+          # SF F11
+          ‘Angle found where side expected’
+          STO R00
+          DROP𝑥
+          RTN
+
+        LBL 23
+          # operates on stack values
+          # x: angle --> validated angle, else SF F00
+          # also called with sum of two angles on stack
+          # flags error if angle <= 0 or >= 180
+          FS? F00
+            RTN
+          180
+          ⇒DEG
+          𝑥⇄𝑦
+          XEQ 03
+          𝑥≥? Y
+            SF F00
+          0
+          ⇒DEG
+          𝑥≥? Y
+            SF F00
+          DROP𝑥
+          𝑥⇄𝑦
+          DROP𝑥
+          FC? F00
+            RTN
+
+          # SF F12
+          ‘Angle ≤ 0° or Sum to ≥ 180°’
+          STO R00
+          DROP𝑥
+          RTN
+
+        LBL 24
+          # operates on stack values
+          # x: value --> 0 if side, 1 if angle tag found
+          FS? F00
+            RTN
+          ANGLE?
+            SKIP 002
+          0
+          SKIP 001
+          1
+          RTN
+
+        LBL 25
+          # ssa, test for no solution
+          # operates on var s1, s2, a2
+          # 2 cases to test
+          # is a2 >= 90 AND s1 ≤ s2
+          # for copy paste:  ≤  ≥
+          FS? F00
+            RTN
+          90
+          ⇒DEG
+          RCL ‘a2’
+          𝑥<? Y
+            SKIP 004
+          RCL ‘s2’
+          RCL ‘s1’
+          𝑥≤? Y
+            SF F00
+
+          # 呥≤? Y
+          # SF F13
+          # is a2 < 90 AND s1 < s2 sin(a2)
+          90
+          ⇒DEG
+          RCL ‘a2’
+          𝑥>? Y
+            SKIP 007
+          RCL ‘s1’
+          RCL ‘s2’
+          RCL ‘a2’
+          sin(𝑥)
+          ×
+          𝑥>? Y
+            SF F00
+
+          # 呥>? Y
+          # SF F14
+          FC? F00
+            RTN
+          ‘Adjacent side too long’
+          STO R00
+          DROP𝑥
+          RTN
+
+        LBL 26
+          # sss, test for no solution
+          # operates on var s1, s2, s3
+          # longest side < short + short
+          # for copy paste:  ≤  ≥
+          FS? F00
+            RTN
+          RCL ‘s1’
+          RCL ‘s2’
+          𝑥<? Y
+            𝑥⇄𝑦
+          RCL ‘s3’
+          𝑥<? Y
+            𝑥⇄𝑦
+          R↓
+          +
+          R↑
+          𝑥≥? Y
+            SF F00
+          FC? F00
+            RTN
+
+          # SF F16
+          ‘Long side too long’
+          STO R00
+          DROP𝑥
+          RTN
+
+        LBL 27
+          # zyx: s1, s2, a2 --> unique?
+          # operates on var s1, s2, a2
+          # 3 cases to test, all must be true
+          # a2 < 90
+          # s2 sin(a2) < s1
+          # s1 < s2
+          # means 2 solutions
+          # is a2 < 90
+          FS? F00
+            RTN
+          90
+          ⇒DEG
+          RCL ‘a2’
+          𝑥>? Y
+            SKIP 017
+
+          # s2 sin(a2) < s1
+          RCL ‘s1’
+          RCL ‘s2’
+          RCL ‘a2’
+          sin(𝑥)
+          ×
+          𝑥≥? Y
+            SKIP 008
+
+          # is s1 < s2
+          RCL ‘s2’
+          RCL ‘s1’
+          𝑥≥? Y
+            SKIP 003
+
+          # all three are true, so 2 sol
+          SF F01
+          CF F02
+          RTN
+
+        LBL 28
+          # test for approximately right triangle
+          # only needed for SSA CASE
+          # only needed when angle given is < 90 deg
+          # operates on var s1, s2, a2
+          # is a2 < 90 AND s1 ~ s2 sin(a2)
+          FS? F00
+            RTN
+          90
+          ⇒DEG
+          RCL ‘a2’
+          𝑥≥? Y
+            SKIP 009
+          RCL ‘s1’
+          RCL ‘s2’
+          RCL ‘a2’
+          sin(𝑥)
+          ×
+          -
+
+          # is this approximately 0?
+          𝑥≈? 0.
+            SF F04
+          FC? F04
+            RTN
+
+          # SF F16
+          ‘Approximately right triangle’
+          STO R00
+          DROP𝑥
+          RTN
+
+        LBL 41
+          # zyx: s1 s2 s3 -> a2
+          # operates on stack values
+          # half-angle formula derived from Herons formula
+          # a2 = 2 * acos( sqrt( s*(s-a) / (b*c) ) )
+          # where s=semi-perim, a=s1, b=s2, c=s3
+          # WARNING: perim must contain semi-perim on entry
+          ×
+          1/𝑥
+          𝑥⇄𝑦
+          RCL ‘perim’
+          ×
+          CHS
+          LAST𝑥
+          𝑥²
+          +
+          ×
+          √𝑥
+          cos⁻¹(𝑥)
+          2
+          ×
+          RTN
+
+        LBL 42
+          # yx: a1 a2 -> a3
+          # uses cos(180-x) = -cos(x) to avoid unit conversion
+          +
+          cos(𝑥)
+          CHS
+          cos⁻¹(𝑥)
+          RTN
+
+        LBL 43
+          # zyx: s1, a1, s2 --> s3
+          # operates on stack values
+          # requires tagged angles
+          # uses complex plane: s3 = |s1 - s2*e^(i*a1)|
+          # treats s1 and s2 as vectors, s3 is distance between endpoints
+          𝑥⇄𝑦
+          COMPLEX
+          𝑥⇄𝑦
+          0
+          COMPLEX
+          -
+          |𝑥|
+          RTN
+
+        LBL 44
+          # zyx: s1, a1, a2 -->s3
+          # operates on stack values
+          # law of sines: s3 = s1 * sin(a1) / sin(a2)
+          # requires tagged angles
+          R↓
+          COMPLEX
+          Im
+          R↑
+          1
+          COMPLEX
+          Im
+          ÷
+          RTN
+
+        LBL 45
+          # zyx: s1, s2, a2 --> a3, alt a3
+          # operates on stack values
+          # law of sines: a3 = asin( s2 * sin(a2) / s1 )
+          # requires tagged angles
+          sin(𝑥)
+          ×
+          𝑥⇄𝑦
+          ÷
+          sin⁻¹(𝑥)
+          RTN
+
+        LBL 50
+          # calc area and perim from variables
+          # entry: perim holds semi-perim, s1 s2 s3 set
+          # exit:  area and perim variables updated
+          RCL ‘perim’
+          RCL ‘s3’
+          -
+          RCL ‘perim’
+          RCL ‘s2’
+          -
+          ×
+          RCL ‘perim’
+          RCL ‘s1’
+          -
+          ×
+          RCL ‘perim’
+          ×
+          √𝑥
+          STO ‘area’
+          RCL ‘perim’
+          2
+          ×
+          STO ‘perim’
+          DROP𝑥
+          DROP𝑥
+          RTN
+
+        LBL 60
+          SF F03
+
+          # RESULTS menu
+          # Also can use AUTO for new tri
+          CLMENU
+          ‘S1’
+          KEY 13 XEQ 61
+          ‘∡1’
+          KEY 14 XEQ 67
+          ‘S2’
+          KEY 07 XEQ 62
+          ‘∡2’
+          KEY 08 XEQ 68
+          ‘S3’
+          KEY 01 XEQ 63
+          ‘∡3’
+          KEY 02 XEQ 69
+          ‘⇒DEG’
+          KEY 03 XEQ 04
+          ‘⇒RAD’
+          KEY 09 XEQ 05
+          ‘⇒MULπ’
+          KEY 15 XEQ 06
+          ‘[TRI]’
+          KEY 05 XEQ 80
+          ‘ROTATE’
+          KEY 11 XEQ 71
+          ‘MIRROR’
+          KEY 17 XEQ 72
+          ‘AREA’
+          KEY 16 XEQ 64
+          ‘PERIM’
+          KEY 10 XEQ 70
+          ‘1st sol’
+          ‘2nd sol’
+          FC? F02
+            𝑥⇄𝑦
+          DROP𝑥
+          ‘unique’
+          FC? F01
+            𝑥⇄𝑦
+          DROP𝑥
+          KEY 04 XEQ 75
+          ‘New TRI’
+          KEY 12 XEQ ‘TRI∠’
+          ‘AUTO’
+          KEY 06 XEQ 10
+          ‘EXIT’
+          KEY 18 XEQ 99
+          MENU
+          AVIEW R00
+          STOP
+
+          # return to menu
+          # messages (including errors) will be displayed
+          GTO 60
+          RTN
+
+        # End of results menu
+        # Recall solutions for user
+        LBL 61
+          RCL ‘s1’
+          ‘↵S1:’
+          STO R00
+          DROP𝑥
+          RTN
+
+        LBL 62
+          RCL ‘s2’
+          ‘↵S2:’
+          STO R00
+          DROP𝑥
+          RTN
+
+        LBL 63
+          RCL ‘s3’
+          ‘↵S3:’
+          STO R00
+          DROP𝑥
+          RTN
+
+        LBL 64
+          RCL ‘area’
+          ‘↵AREA:’
+          STO R00
+          DROP𝑥
+          RTN
+
+        LBL 67
+          RCL ‘a1’
+          ‘↵∡1:’
+          STO R00
+          DROP𝑥
+          RTN
+
+        LBL 68
+          RCL ‘a2’
+          ‘↵∡2:’
+          STO R00
+          DROP𝑥
+          RTN
+
+        LBL 69
+          RCL ‘a3’
+          ‘↵∡3:’
+          STO R00
+          DROP𝑥
+          RTN
+
+        LBL 70
+          RCL ‘perim’
+          ‘↵PERIM:’
+          STO R00
+          DROP𝑥
+          RTN
+
+        LBL 71
+          # rotate triangle
+          LocR 08
+          STOS R.00
+
+          # SF F17
+          ‘Rotated triangle is stored in memory.’
+          FC? F00
+            STO R00
+          DROP𝑥
+          RCL ‘a1’
+          RCL ‘a2’
+          RCL ‘a3’
+          STO ‘a1’
+          R↓
+          STO ‘a3’
+          R↓
+          STO ‘a2’
+          RCL ‘s1’
+          RCL ‘s2’
+          RCL ‘s3’
+          STO ‘s1’
+          R↓
+          STO ‘s3’
+          R↓
+          STO ‘s2’
+
+          # rotate alt solution if it exists
+          FS? F01
+            XEQ 73
+
+          # restore stack
+          RCLS R.00
+          RTN
+
+        LBL 72
+          # mirror triangle
+          LocR 08
+          STOS R.00
+
+          # SF F18
+          ‘Mirrored triangle is stored in memory.’
+          FC? F00
+            STO R00
+          DROP𝑥
+          RCL ‘s2’
+          RCL ‘s3’
+          STO ‘s2’
+          R↓
+          STO ‘s3’
+          RCL ‘a1’
+          RCL ‘a3’
+          STO ‘a1’
+          R↓
+          STO ‘a3’
+
+          # mirror alt solution if it exists
+          FS? F01
+            XEQ 74
+
+          # restore stack
+          RCLS R.00
+          RTN
+
+        LBL 73
+          # rotate alt solution
+          # SF F19
+          RCL R01
+          RCL R02
+          RCL R03
+          STO R01
+          R↓
+          STO R03
+          R↓
+          STO R02
+          RCL R04
+          RCL R05
+          RCL R06
+          STO R04
+          R↓
+          STO R06
+          R↓
+          STO R05
+          RTN
+
+        LBL 74
+          # mirror alt solution
+          # SF F20
+          RCL R02
+          RCL R03
+          STO R02
+          R↓
+          STO R03
+          RCL R04
+          RCL R06
+          STO R04
+          R↓
+          STO R06
+          RTN
+
+        LBL 75
+          # HANDLE MULTIPLE SOLUTIONS
+          # flag 1 indicates unique solution
+          # flag 2 indicates which solution
+          FC? F01
+            RTN
+          LocR 08
+          STOS R.00
+          FS? F02
+            ‘1st Sol moved into stored variables’
+          FC? F02
+            ‘2nd Sol moved into stored variables’
+          FC? F00
+            STO R00
+          DROP𝑥
+          FF F02
+
+          # reg 01 has s1 (re and im)
+          # reg 02 s2
+          # reg 03 s3
+          # reg 04 a1
+          # reg 05 a2
+          # reg 06 a3
+          # reg 07 area
+          # reg 08 perim
+          RCL R01
+          FS? F02
+            Re
+          FC? F02
+            Im
+          STO ‘s1’
+          RCL R02
+          FS? F02
+            Re
+          FC? F02
+            Im
+          STO ‘s2’
+          RCL R03
+          FS? F02
+            Re
+          FC? F02
+            Im
+          STO ‘s3’
+          RCL R04
+          FS? F02
+            Re
+          FC? F02
+            Im
+          ⇒DEG
+          STO ‘a1’
+          RCL R05
+          FS? F02
+            Re
+          FC? F02
+            Im
+          ⇒DEG
+          STO ‘a2’
+          RCL R06
+          FS? F02
+            Re
+          FC? F02
+            Im
+          ⇒DEG
+          STO ‘a3’
+          RCL R07
+          FS? F02
+            Re
+          FC? F02
+            Im
+          STO ‘area’
+          RCL R08
+          FS? F02
+            Re
+          FC? F02
+            Im
+          STO ‘perim’
+
+          # RESTORE STACK
+          RCLS R.00
+          RTN
+
+        LBL 80
+          # TRIANGLE SUMMARY IN ARRAY
+          LocR 09
+          STOS R.00
+          3
+          ENTER
+          2
+          M.NEW
+          STO R.08
+          INDEX R.08
+          1
+          1
+          STOIJ
+          RCL ‘s1’
+          STOEL
+          2
+          STO I
+          RCL ‘s2’
+          STOEL
+          3
+          STO I
+          RCL ‘s3’
+          STOEL
+          1
+          2
+          STOIJ
+          RCL ‘a1’
+          ⇒DEG
+          STOEL
+          2
+          STO I
+          RCL ‘a2’
+          ⇒DEG
+          STOEL
+          3
+          STO I
+          RCL ‘a3’
+          ⇒DEG
+          STOEL
+          RCL R.00
+
+          # SF F21
+          ‘[TRI]: 1st col sides; 2nd col angles (degs)’
+          FC? F00
+            STO R00
+          RCLS R.00
+          RCL R.08
+          RTN
+
+        LBL 99
+          CLRMOD
+  END
+.END.

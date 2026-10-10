@@ -19,7 +19,7 @@ const frontier_screen_snap = @import("screen_snap.zig");
 //
 // Build matrix (every OPTION_* below is read from the frontier build options):
 //   * option_tvm_amort: the OPTION_TVM_AMORT amort-TI branches. The option is
-//     defined for host, DMCP5 and every DM42 package, so they are always live.
+//     defined for host and DMCP5 and set per DM42 package.
 //   * LONGPRESS_CFG is ON for every target (always live).
 //   * STACK_X_STR_MED_FONT is #undef everywhere; only STACK_X_STR_LRG_FONT +
 //     STACK_STR_MED_FONT live. TEXT_MULTILINE_EDIT is ON everywhere.
@@ -61,13 +61,12 @@ const option_mx_show: bool = frontier_build_options.option_mx_show;
 const option_lp_dp_timing: bool = frontier_build_options.option_lp_dp_timing;
 // OPTION_ATEXT gates ATEXT and the GRMOD pixel operation string drawing takes on
 // under it; OPTION_ATEXT_FONTS the GRFNT font table and the TI line naming it.
-// Both are #undef'd in the block common to DM42 packages 1-4.
+// Every target z47 builds defines both.
 const option_atext: bool = frontier_build_options.option_atext;
 const option_atext_fonts: bool = frontier_build_options.option_atext_fonts;
 const testsuite_build: bool = frontier_build_options.is_testsuite_build;
 // OPTION_TVM_AMORT gates screen.c's amort temporary-information branches. It is
-// defined for every DM42 package as well as for DMCP5 and host; the only #undef
-// is in the legacy single-file block z47 never builds.
+// defined for DMCP5 and host and set per DM42 package.
 const option_tvm_amort: bool = frontier_build_options.option_tvm_amort;
 // OPTION_ALGDEP gates the X-line rendering of the polynomial x->POLY recovered.
 // #undef'd in the block common to DM42 packages 1-4; DMCP5 and host keep it.
@@ -390,6 +389,10 @@ const MNU_NORML: i16 = 2985;
 const MNU_UNIFORM: i16 = 2990;
 const MNU_DISUNIFORM: i16 = 2978;
 const MNU_SHOW: i16 = 3119;
+
+// false: the FINISH message sits at the ERR line, left-aligned, as a calc error;
+// true: at the TI line on X, right-aligned.
+const FINISH_LOCATION_TI = false;
 const MNU_MVAR: i16 = 3088;
 const MNU_EQ_EDIT: i16 = 3056;
 const MNU_Sf: i16 = 3116;
@@ -445,7 +448,7 @@ const TO_3S_CTFF: u8 = 5;
 const TO_KB_ACTV: u8 = 10;
 const TO_TIMER_APP: u8 = 8;
 const TIMER_APP_PERIOD: u32 = 100;
-const TO_KB_ACTV_MEDIUM: u32 = 6000;
+const TO_KB_ACTV_ZERO: u32 = 0;
 const TIME_FN_1234_F_TO_G: u32 = 560;
 const TIME_FN_124_F_TO_NOP: u32 = 560;
 const TIME_FN_1234_G_TO_NOP: u32 = 504;
@@ -637,6 +640,7 @@ const TI_SHOWNOTHING: u8 = 93;
 const TI_COPY_FROM_SHOW: u8 = 94;
 const TI_DATA_LOSS: u8 = 95;
 const TI_CLEAR_ALL_FLAGS: u8 = 96;
+const TI_FINISH: u8 = 157;
 const TI_CLEAR_ALL_MENUS: u8 = 97;
 const TI_CLEAR_ALL_VARIABLES: u8 = 98;
 const TI_DEL_ALL_PRGMS: u8 = 99;
@@ -1279,6 +1283,12 @@ extern fn emptyKeyBuffer() bool_t;
 // dmcp_build (the battery-power skip path).
 inline fn key_empty() c_int {
     const f: *const fn () callconv(.c) c_int = @ptrFromInt(LIBRARY_FN_BASE + 380);
+    return f();
+}
+// key_tail: DMCP ROM (LIBRARY_FN_BASE+388, lft_ifc.h:143); only called under
+// dmcp_build (the battery-power skip path).
+inline fn key_tail() c_int {
+    const f: *const fn () callconv(.c) c_int = @ptrFromInt(LIBRARY_FN_BASE + 388);
     return f();
 }
 
@@ -3013,7 +3023,7 @@ fn _printHalfSecUpdate_Integer(modeArg: u8, txt: [*c]u8, loop: i32, clearZ: bool
             clearRegisterLine(REGISTER_Z, true, true);
         }
 
-        fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, TO_KB_ACTV_MEDIUM);
+        fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, TO_KB_ACTV_ZERO);
         if (disp != 0 and blockMonitoring == 0) {
             abi.fmtBufZ(&tmps, "{s} {d}  ", .{ std.mem.span(txt), loop });
             _ = showString(&tmps, &standardFont, 20, @intCast(@as(i32, Y_POSITION_OF_REGISTER_T_LINE) + @as(i32, modeArg) * 20), vmNormal, 0, 0);
@@ -4247,10 +4257,16 @@ fn _refreshRegisterLine(regist_in: calcRegister_t, restoreRegisterT: bool_t) voi
     var lastBase: [20]u8 = undefined;
 
     if (comptime dmcp_build) {
+        const pendingKey = key_tail(); // peek the DMCP buffer before the pop empties it: >0 a press, 0 a release, -1 nothing
         keyBuffer_pop();
         if (!(skippedStackLines != 0) and (calcMode == CM_NORMAL or calcMode == CM_MIM) and
             !(regist == REGISTER_X) and
+            // Not on USB: a polar complex or polar vector line takes a rectangular to polar conversion per draw, so
+            // defer it and reach the X line and the waiting key sooner (see fnTimerEndOfActivity in timer.zig).
             !runningOnSimOrUSB() and
+            // A press, not a release: the file chooser returns without waiting for the release of the key that
+            // closed it, and deferring a line does nothing for a release.
+            pendingKey > 0 and
             !(emptyKeyBuffer() != 0) and
             key_empty() == 1)
         {
@@ -4400,6 +4416,12 @@ fn _refreshRegisterLine(regist_in: calcRegister_t, restoreRegisterT: bool_t) voi
             abi.fmtBufZ(tmpString[0..2560], "{s}", .{errMsgRow(TI_All_user_flags_cleared)});
             w = frontier_char_string.stringWidth(tmpString, &standardFont, true, true);
             _ = showString(tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - w), Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, 1, 1);
+        } else if (FINISH_LOCATION_TI and temporaryInformation == TI_FINISH and regist == REGISTER_X) { // the message sits at the TI line on X, right-aligned
+            w = frontier_char_string.stringWidth(errorMessage, &standardFont, true, true);
+            _ = showString(errorMessage, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - w), Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, 1, 1);
+        } else if (!FINISH_LOCATION_TI and temporaryInformation == TI_FINISH and regist == ERR_REGISTER_LINE) { // the message sits at the ERR line, left-aligned, the way a calc error does
+            const errorY: i16 = Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT * (ERR_REGISTER_LINE - REGISTER_X) + 6;
+            _ = showString(errorMessage, &standardFont, 1, errorY, vmNormal, 1, 1);
         } else if (temporaryInformation == TI_CLEAR_ALL_MENUS and regist == REGISTER_X) {
             abi.fmtBufZ(tmpString[0..2560], "{s}", .{errMsgRow(TI_All_user_menus_cleared)});
             w = frontier_char_string.stringWidth(tmpString, &standardFont, true, true);
@@ -7094,12 +7116,20 @@ pub export fn fnSNAP(unused_but_mandatory_parameter: u16) callconv(.c) void {
     // destroys the graphic screen the capture wants: --snapskiprefresh, and a
     // screen CLLCD/PIXEL/POINT/AGRAPH painted that nothing has refreshed over.
     if (!snapSkipRefresh and !screenHoldsDrawnPixels) {
-        // A SHOW page is painted once, and SCRUPD_AUTO disarms the guard in
-        // _refreshNormalScreen that keeps it on screen.
-        if (temporaryInformation != TI_SHOWNOTHING) {
-            screenUpdatingMode = SCRUPD_AUTO;
+        if (frontier_softmenus.currentMenu() == -MNU_SHOW) {
+            // A SHOW page: repaint the page on screen so the capture keeps its top
+            // line, as f+DISP does. The longpress preview clears the SHOW TI, so the
+            // menu is tested, not SHOWMODE.
+            frontier_display.recallShowStatus();
+            frontier_display.fnC47Show(ITM_NOP);
+        } else {
+            // Not a SHOW page: a TI page is painted once, and SCRUPD_AUTO disarms the
+            // guard in _refreshNormalScreen that keeps it on screen.
+            if (temporaryInformation != TI_SHOWNOTHING) {
+                screenUpdatingMode = SCRUPD_AUTO;
+            }
+            refreshScreen(80);
         }
-        refreshScreen(80);
     }
     frontier_screen_snap.z47_frontier_snap_screenshot_with_message_backup();
 
@@ -7111,6 +7141,13 @@ pub export fn fnSNAP(unused_but_mandatory_parameter: u16) callconv(.c) void {
         print_all_regs.fnP_All_Regs(PRN_STK);
     }
     frontier_screen_snap.z47_frontier_snap_restore_tam(&tam_backup);
+    // fnP_All_Regs formats the registers through the SHOW display buffer; the page is
+    // repainted so the screen the release refresh leaves is the clean SHOW page, not
+    // the register print's TSV text.
+    if (frontier_softmenus.currentMenu() == -MNU_SHOW and !screenHoldsDrawnPixels) {
+        frontier_display.recallShowStatus();
+        frontier_display.fnC47Show(ITM_NOP);
+    }
     if (comptime testsuite_build) {
         frontier_date_time.testClockFrozen = false;
     }

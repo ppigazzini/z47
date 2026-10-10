@@ -1,0 +1,1384 @@
+{\rtf1\ansi\ansicpg1252\deff0\nouicompat{\fonttbl{\f0\fnil\fcharset0 C47__StandardFont;}}{\pard\sl240\slmult1\f0\fs24\lang9\f0\loch
+C47 Program file export: Export format version 3, C47 program version 1.
+ \par
+0000: { Prgm #1/1: 9863 bytes / 1332 steps } \par
+\par
+0001:  LBL \u8216?TRI\u8736?\u8217?\par
+0002:    CF 00\par
+0003:    CF 01\par
+0004:    CF 02\par
+0005:    CF 03\par
+0006:    CF 04\par
+0007:    CLMENU\par
+0008:    REM \u8216?set flag 03 to start in 2nd menu\u8217?\par
+0009:    SF 03\par
+0010:    \u8216?\u8217?\par
+0011:    STO 00\par
+0012:    DROPx\par
+0013:    REM \u8216?8 TRI VARIABLES ARE SAVED\u8217?\par
+0014:    MVAR \u8216?s1\u8217?\par
+0015:    MVAR \u8216?s2\u8217?\par
+0016:    MVAR \u8216?s3\u8217?\par
+0017:    MVAR \u8216?a1\u8217?\par
+0018:    MVAR \u8216?a2\u8217?\par
+0019:    MVAR \u8216?a3\u8217?\par
+0020:    MVAR \u8216?perim\u8217?\par
+0021:    MVAR \u8216?area\u8217?\par
+0022:    REM \u8216?clear them\u8217?\par
+0023:    XEQ 02\par
+0024:    REM \u8216?goto the desired menu\u8217?\par
+0025:    FS? 03\par
+0026:    GTO 60\par
+\par
+0027:    LBL 00\par
+0028:    CF 03\par
+0029:    REM \u8216?Menu Loop\u8217?\par
+0030:    REM \u8216?This is the entry menu\u8217?\par
+0031:    \u8216?SSS\u8217?\par
+0032:    KEY 01 XEQ 11\par
+0033:    \u8216?SAS\u8217?\par
+0034:    KEY 08 XEQ 12\par
+0035:    \u8216?ASA\u8217?\par
+0036:    KEY 09 XEQ 13\par
+0037:    \u8216?ASS\u8217?\par
+0038:    KEY 14 XEQ 17\par
+0039:    \u8216?SAA\u8217?\par
+0040:    KEY 15 XEQ 14\par
+0041:    \u8216?SSA\u8217?\par
+0042:    KEY 02 XEQ 16\par
+0043:    \u8216?AAS\u8217?\par
+0044:    KEY 03 XEQ 15\par
+0045:    \u8216?\u8658?DEG\u8217?\par
+0046:    KEY 04 XEQ 04\par
+0047:    \u8216?\u8658?RAD\u8217?\par
+0048:    KEY 10 XEQ 05\par
+0049:    \u8216?\u8658?MUL\u960?\u8217?\par
+0050:    KEY 16 XEQ 06\par
+0051:    \u8216?AUTO\u8217?\par
+0052:    KEY 06 XEQ 10\par
+0053:    \u8216?HELP\u8217?\par
+0054:    KEY 12 XEQ 01\par
+0055:    \u8216?EXIT\u8217?\par
+0056:    KEY 18 GTO 99\par
+0057:    MENU\par
+0058:    FS? 00\par
+0059:    AVIEW 00\par
+0060:    STOP\par
+0061:    REM \u8216?if error, loop for new input\u8217?\par
+0062:    FS? 00\par
+0063:    GTO 00\par
+0064:    REM \u8216?DISPLAY RESULTS\u8217?\par
+0065:    FC? 01\par
+0066:    \u8216?Unique solution is stored in memory.\u8217?\par
+0067:    FS? 01\par
+0068:    \u8216?TWO SOLUTIONS! Both are stored in mem.\u8217?\par
+0069:    STO 00\par
+0070:    DROPx\par
+0071:    XEQ 60\par
+0072:    RTN\par
+0073:    REM \u8216?End of Menu Loop\u8217?\par
+\par
+0074:    LBL 01\par
+0075:    REM \u8216?Help\u8217?\par
+0076:    \u8216?Enter the sides and angle variables onto  \u8217?\par
+0077:    \u8216?the stack.  Then select the three letters \u8217?\par
+0078:    \u8216?that match your entry types.  Or press   \u8217?\par
+0079:    \u8216?AUTO to auto detect your entry types.    \u8217?\par
+0080:    REM \u8216?Must be GTO, not solving for Triangle\u8217?\par
+0081:    GTO 00\par
+\par
+0082:    LBL 02\par
+0083:    REM \u8216?clear all triangle variables\u8217?\par
+0084:    REM \u8216?called at start of each solver\u8217?\par
+0085:    0\par
+0086:    STO \u8216?s1\u8217?\par
+0087:    STO \u8216?s2\u8217?\par
+0088:    STO \u8216?s3\u8217?\par
+0089:    STO \u8216?a1\u8217?\par
+0090:    STO \u8216?a2\u8217?\par
+0091:    STO \u8216?a3\u8217?\par
+0092:    STO \u8216?perim\u8217?\par
+0093:    STO \u8216?area\u8217?\par
+0094:    DROPx\par
+0095:    RTN\par
+\par
+0096:    LBL 03\par
+0097:    REM \u8216?safe \u8658?DEG\u8217?\par
+0098:    XEQ 21\par
+0099:    FS? 00\par
+0100:    RTN\par
+0101:    \u8658?DEG\par
+0102:    \u8216?\u8217?\par
+0103:    STO 00\par
+0104:    DROPx\par
+0105:    RTN\par
+\par
+0106:    LBL 04\par
+0107:    REM \u8216?menu tag entry in degrees\u8217?\par
+0108:    CF 00\par
+0109:    XEQ 03\par
+0110:    REM \u8216?Must be GTO, not solving for Triangle\u8217?\par
+0111:    FC? 03\par
+0112:    GTO 00\par
+0113:    FS? 03\par
+0114:    GTO 60\par
+\par
+0115:    LBL 05\par
+0116:    REM \u8216?menu tag entry in radians\u8217?\par
+0117:    CF 00\par
+0118:    XEQ 21\par
+0119:    FS? 00\par
+0120:    SKIP 004\par
+0121:    \u8216?\u8217?\par
+0122:    STO 00\par
+0123:    DROPx\par
+0124:    \u8658?RAD\par
+0125:    REM \u8216?Must be GTO, not solving for Triangle\u8217?\par
+0126:    FC? 03\par
+0127:    GTO 00\par
+0128:    FS? 03\par
+0129:    GTO 60\par
+\par
+0130:    LBL 06\par
+0131:    REM \u8216?menu tag entry in mult of pi\u8217?\par
+0132:    CF 00\par
+0133:    XEQ 21\par
+0134:    FS? 00\par
+0135:    SKIP 004\par
+0136:    \u8216?\u8217?\par
+0137:    STO 00\par
+0138:    DROPx\par
+0139:    \u8658?MUL\u960?\par
+0140:    REM \u8216?Must be GTO, not solving for Triangle\u8217?\par
+0141:    FC? 03\par
+0142:    GTO 00\par
+0143:    FS? 03\par
+0144:    GTO 60\par
+\par
+0145:    LBL 10\par
+0146:    REM \u8216?auto detect sss, sas, asa, etc\u8217?\par
+0147:    REM \u8216?operates on stack values\u8217?\par
+0148:    CF 00\par
+0149:    LocR 08\par
+0150:    STOS .00\par
+0151:    REM \u8216?new triangle, clear messages\u8217?\par
+0152:    \u8216?\u8217?\par
+0153:    STO 00\par
+0154:    DROPx\par
+0155:    REM \u8216?new triangle, clear assumptions\u8217?\par
+0156:    CF 01\par
+0157:    CF 04\par
+0158:    REM \u8216?last (bottom) entry angle?\u8217?\par
+0159:    XEQ 24\par
+0160:    y\u8644? Z\par
+0161:    x\u8644?y\par
+0162:    REM \u8216?middle entry angle?\u8217?\par
+0163:    XEQ 24\par
+0164:    2\par
+0165:    \u215?\par
+0166:    y\u8644? Z\par
+0167:    +\par
+0168:    y\u8644? T\par
+0169:    x\u8644?y\par
+0170:    REM \u8216?first (top) entry angle?\u8217?\par
+0171:    XEQ 24\par
+0172:    4\par
+0173:    \u215?\par
+0174:    y\u8644? Z\par
+0175:    +\par
+0176:    REM \u8216?now call the correct xxx sub\u8217?\par
+0177:    0\par
+0178:    x= ? Y\par
+0179:      SKIP 031\par
+0180:    DROPx\par
+0181:    1\par
+0182:    x= ? Y\par
+0183:      SKIP 030\par
+0184:    DROPx\par
+0185:    2\par
+0186:    x= ? Y\par
+0187:      SKIP 029\par
+0188:    DROPx\par
+0189:    3\par
+0190:    x= ? Y\par
+0191:      SKIP 028\par
+0192:    DROPx\par
+0193:    4\par
+0194:    x= ? Y\par
+0195:      SKIP 027\par
+0196:    DROPx\par
+0197:    5\par
+0198:    x= ? Y\par
+0199:      SKIP 026\par
+0200:    DROPx\par
+0201:    6\par
+0202:    x= ? Y\par
+0203:      SKIP 025\par
+0204:    DROPx\par
+0205:    7\par
+0206:    x= ? Y\par
+0207:      SKIP 024\par
+0208:    DROPx\par
+0209:    REM \u8216?SKIP TABLE...\u8217?\par
+0210:    REM \u8216?SSS DETECTED\u8217?\par
+0211:    RCLS .00\par
+0212:    GTO 11\par
+0213:    REM \u8216?SSA DETECTED\u8217?\par
+0214:    RCLS .00\par
+0215:    GTO 16\par
+0216:    REM \u8216?SAS DETECTED\u8217?\par
+0217:    RCLS .00\par
+0218:    GTO 12\par
+0219:    REM \u8216?SAA DETECTED\u8217?\par
+0220:    RCLS .00\par
+0221:    GTO 14\par
+0222:    REM \u8216?ASS DETECTED\u8217?\par
+0223:    RCLS .00\par
+0224:    GTO 17\par
+0225:    REM \u8216?ASA DETECTED\u8217?\par
+0226:    RCLS .00\par
+0227:    GTO 13\par
+0228:    REM \u8216?AAS DETECTED\u8217?\par
+0229:    RCLS .00\par
+0230:    GTO 15\par
+0231:    REM \u8216?AAA NOT SUPPORTED\u8217?\par
+0232:    REM \u8216?Or something else went wrong\u8217?\par
+0233:    SF 00\par
+0234:    REM \u8216?SF F15\u8217?\par
+0235:    \u8216?Three angles is not supported.\u8217?\par
+0236:    STO 00\par
+0237:    RCLS .00\par
+0238:    RTN\par
+\par
+0239:    LBL 11\par
+0240:    REM \u8216?SSS\u8217?\par
+0241:    REM \u8216?STK zyx is s1, s2, s3\u8217?\par
+0242:    CF 00\par
+0243:    LocR 08\par
+0244:    STOS .00\par
+0245:    XEQ 02\par
+0246:    REM \u8216?validate and store inputs\u8217?\par
+0247:    XEQ 21\par
+0248:    XEQ 22\par
+0249:    STO \u8216?s3\u8217?\par
+0250:    R\u8595?\par
+0251:    XEQ 21\par
+0252:    XEQ 22\par
+0253:    STO \u8216?s2\u8217?\par
+0254:    R\u8595?\par
+0255:    XEQ 21\par
+0256:    XEQ 22\par
+0257:    STO \u8216?s1\u8217?\par
+0258:    XEQ 26\par
+0259:    REM \u8216?if invalid entry, abort\u8217?\par
+0260:    RCLS .00\par
+0261:    FS? 00\par
+0262:    RTN\par
+0263:    REM \u8216?calc semi perim\u8217?\par
+0264:    +\par
+0265:    +\par
+0266:    2\par
+0267:    \u247?\par
+0268:    STO \u8216?perim\u8217?\par
+0269:    REM \u8216?calc a1\u8217?\par
+0270:    RCL \u8216?s3\u8217?\par
+0271:    RCL \u8216?s1\u8217?\par
+0272:    RCL \u8216?s2\u8217?\par
+0273:    XEQ 41\par
+0274:    STO \u8216?a1\u8217?\par
+0275:    REM \u8216?calc a2\u8217?\par
+0276:    RCL \u8216?s1\u8217?\par
+0277:    RCL \u8216?s2\u8217?\par
+0278:    RCL \u8216?s3\u8217?\par
+0279:    XEQ 41\par
+0280:    STO \u8216?a2\u8217?\par
+0281:    REM \u8216?calc a3\u8217?\par
+0282:    RCL \u8216?s2\u8217?\par
+0283:    RCL \u8216?s3\u8217?\par
+0284:    RCL \u8216?s1\u8217?\par
+0285:    XEQ 41\par
+0286:    STO \u8216?a3\u8217?\par
+0287:    REM \u8216?Calc area\u8217?\par
+0288:    XEQ 50\par
+0289:    REM \u8216?Update message\u8217?\par
+0290:    FC? 01\par
+0291:    \u8216?Unique solution is stored in memory.\u8217?\par
+0292:    FS? 01\par
+0293:    \u8216?TWO SOLUTIONS ! Both are stored in mem.\u8217?\par
+0294:    STO 00\par
+0295:    DROPx\par
+0296:    REM \u8216?restore stk\u8217?\par
+0297:    RCLS .00\par
+0298:    RTN\par
+\par
+0299:    LBL 12\par
+0300:    REM \u8216?SAS\u8217?\par
+0301:    REM \u8216?STK zyx is s1, a1, s2\u8217?\par
+0302:    CF 00\par
+0303:    LocR 08\par
+0304:    STOS .00\par
+0305:    XEQ 02\par
+0306:    REM \u8216?validate and store inputs\u8217?\par
+0307:    XEQ 21\par
+0308:    XEQ 22\par
+0309:    STO \u8216?s2\u8217?\par
+0310:    R\u8595?\par
+0311:    XEQ 21\par
+0312:    XEQ 23\par
+0313:    XEQ 03\par
+0314:    STO \u8216?a1\u8217?\par
+0315:    R\u8595?\par
+0316:    XEQ 21\par
+0317:    XEQ 22\par
+0318:    STO \u8216?s1\u8217?\par
+0319:    REM \u8216?if invalid entry, abort\u8217?\par
+0320:    RCLS .00\par
+0321:    FS? 00\par
+0322:    RTN\par
+0323:    REM \u8216?calc s3\u8217?\par
+0324:    RCL \u8216?s1\u8217?\par
+0325:    RCL \u8216?a1\u8217?\par
+0326:    RCL \u8216?s2\u8217?\par
+0327:    XEQ 43\par
+0328:    STO \u8216?s3\u8217?\par
+0329:    REM \u8216?calc semi perim\u8217?\par
+0330:    RCL \u8216?s2\u8217?\par
+0331:    RCL \u8216?s1\u8217?\par
+0332:    +\par
+0333:    +\par
+0334:    2\par
+0335:    \u247?\par
+0336:    STO \u8216?perim\u8217?\par
+0337:    REM \u8216?calc a2\u8217?\par
+0338:    RCL \u8216?s1\u8217?\par
+0339:    RCL \u8216?s2\u8217?\par
+0340:    RCL \u8216?s3\u8217?\par
+0341:    XEQ 41\par
+0342:    STO \u8216?a2\u8217?\par
+0343:    REM \u8216?calc a3\u8217?\par
+0344:    RCL \u8216?s2\u8217?\par
+0345:    RCL \u8216?s3\u8217?\par
+0346:    RCL \u8216?s1\u8217?\par
+0347:    XEQ 41\par
+0348:    STO \u8216?a3\u8217?\par
+0349:    REM \u8216?Calc area\u8217?\par
+0350:    XEQ 50\par
+0351:    REM \u8216?Update message\u8217?\par
+0352:    FC? 01\par
+0353:    \u8216?Unique solution is stored in memory.\u8217?\par
+0354:    FS? 01\par
+0355:    \u8216?TWO SOLUTIONS ! Both are stored in mem.\u8217?\par
+0356:    STO 00\par
+0357:    DROPx\par
+0358:    REM \u8216?restore stk\u8217?\par
+0359:    RCLS .00\par
+0360:    RTN\par
+\par
+0361:    LBL 13\par
+0362:    REM \u8216?ASA\u8217?\par
+0363:    REM \u8216?STK zyx is a3, s1, a1\u8217?\par
+0364:    CF 00\par
+0365:    LocR 08\par
+0366:    STOS .00\par
+0367:    XEQ 02\par
+0368:    REM \u8216?validate and store inputs\u8217?\par
+0369:    XEQ 21\par
+0370:    XEQ 23\par
+0371:    XEQ 03\par
+0372:    STO \u8216?a1\u8217?\par
+0373:    R\u8595?\par
+0374:    XEQ 21\par
+0375:    XEQ 22\par
+0376:    STO \u8216?s1\u8217?\par
+0377:    R\u8595?\par
+0378:    XEQ 21\par
+0379:    XEQ 23\par
+0380:    XEQ 03\par
+0381:    STO \u8216?a3\u8217?\par
+0382:    RCL \u8216?a1\u8217?\par
+0383:    +\par
+0384:    XEQ 23\par
+0385:    REM \u8216?if invalid entry, abort\u8217?\par
+0386:    RCLS .00\par
+0387:    FS? 00\par
+0388:    RTN\par
+0389:    REM \u8216?calc a2\u8217?\par
+0390:    RCL \u8216?a1\u8217?\par
+0391:    RCL \u8216?a3\u8217?\par
+0392:    XEQ 42\par
+0393:    STO \u8216?a2\u8217?\par
+0394:    REM \u8216?calc s2\u8217?\par
+0395:    RCL \u8216?s1\u8217?\par
+0396:    RCL \u8216?a3\u8217?\par
+0397:    RCL \u8216?a2\u8217?\par
+0398:    XEQ 44\par
+0399:    STO \u8216?s2\u8217?\par
+0400:    REM \u8216?calc side 3\u8217?\par
+0401:    RCL \u8216?s1\u8217?\par
+0402:    RCL \u8216?a1\u8217?\par
+0403:    RCL \u8216?a2\u8217?\par
+0404:    XEQ 44\par
+0405:    STO \u8216?s3\u8217?\par
+0406:    RCL \u8216?s2\u8217?\par
+0407:    RCL \u8216?s1\u8217?\par
+0408:    +\par
+0409:    +\par
+0410:    2\par
+0411:    \u247?\par
+0412:    STO \u8216?perim\u8217?\par
+0413:    REM \u8216?Calc area\u8217?\par
+0414:    XEQ 50\par
+0415:    REM \u8216?Update message\u8217?\par
+0416:    FC? 01\par
+0417:    \u8216?Unique solution is stored in memory.\u8217?\par
+0418:    FS? 01\par
+0419:    \u8216?TWO SOLUTIONS ! Both are stored in mem.\u8217?\par
+0420:    STO 00\par
+0421:    DROPx\par
+0422:    REM \u8216?restore stk\u8217?\par
+0423:    RCLS .00\par
+0424:    RTN\par
+\par
+0425:    LBL 14\par
+0426:    REM \u8216?SAA\u8217?\par
+0427:    REM \u8216?STK zyx is s1, a1, a2\u8217?\par
+0428:    CF 00\par
+0429:    LocR 08\par
+0430:    STOS .00\par
+0431:    XEQ 02\par
+0432:    REM \u8216?validate and store inputs\u8217?\par
+0433:    XEQ 21\par
+0434:    XEQ 23\par
+0435:    XEQ 03\par
+0436:    STO \u8216?a2\u8217?\par
+0437:    R\u8595?\par
+0438:    XEQ 21\par
+0439:    XEQ 23\par
+0440:    XEQ 03\par
+0441:    STO \u8216?a1\u8217?\par
+0442:    R\u8595?\par
+0443:    XEQ 21\par
+0444:    XEQ 22\par
+0445:    STO \u8216?s1\u8217?\par
+0446:    RCL \u8216?a2\u8217?\par
+0447:    RCL \u8216?a1\u8217?\par
+0448:    +\par
+0449:    XEQ 23\par
+0450:    REM \u8216?if invalid entry, abort\u8217?\par
+0451:    RCLS .00\par
+0452:    FS? 00\par
+0453:    RTN\par
+0454:    REM \u8216?calc a3\u8217?\par
+0455:    RCL \u8216?a2\u8217?\par
+0456:    RCL \u8216?a1\u8217?\par
+0457:    XEQ 42\par
+0458:    STO \u8216?a3\u8217?\par
+0459:    REM \u8216?calc s2\u8217?\par
+0460:    RCL \u8216?s1\u8217?\par
+0461:    RCL \u8216?a3\u8217?\par
+0462:    RCL \u8216?a2\u8217?\par
+0463:    XEQ 44\par
+0464:    STO \u8216?s2\u8217?\par
+0465:    REM \u8216?calc s3\u8217?\par
+0466:    RCL \u8216?s1\u8217?\par
+0467:    RCL \u8216?a1\u8217?\par
+0468:    RCL \u8216?a2\u8217?\par
+0469:    XEQ 44\par
+0470:    STO \u8216?s3\u8217?\par
+0471:    RCL \u8216?s2\u8217?\par
+0472:    RCL \u8216?s1\u8217?\par
+0473:    +\par
+0474:    +\par
+0475:    2\par
+0476:    \u247?\par
+0477:    STO \u8216?perim\u8217?\par
+0478:    REM \u8216?Calc area\u8217?\par
+0479:    XEQ 50\par
+0480:    REM \u8216?Update message\u8217?\par
+0481:    FC? 01\par
+0482:    \u8216?Unique solution is stored in memory.\u8217?\par
+0483:    FS? 01\par
+0484:    \u8216?TWO SOLUTIONS ! Both are stored in mem.\u8217?\par
+0485:    STO 00\par
+0486:    DROPx\par
+0487:    REM \u8216?restore stk\u8217?\par
+0488:    RCLS .00\par
+0489:    RTN\par
+\par
+0490:    LBL 15\par
+0491:    REM \u8216?AAS\u8217?\par
+0492:    REM \u8216?STK zyx is a1, a2, s3\u8217?\par
+0493:    CF 00\par
+0494:    LocR 08\par
+0495:    STOS .00\par
+0496:    XEQ 02\par
+0497:    REM \u8216?use SAA, then mir, rot, rot\u8217?\par
+0498:    x\u8644? Z\par
+0499:    XEQ 14\par
+0500:    REM \u8216?if invalid entry, abort\u8217?\par
+0501:    FS? 00\par
+0502:    RCLS .00\par
+0503:    FS? 00\par
+0504:    RTN\par
+0505:    REM \u8216?mirror, rotate, rotate\u8217?\par
+0506:    XEQ 72\par
+0507:    XEQ 71\par
+0508:    XEQ 71\par
+0509:    REM \u8216?Update message\u8217?\par
+0510:    FC? 01\par
+0511:    \u8216?Unique solution is stored in memory.\u8217?\par
+0512:    FS? 01\par
+0513:    \u8216?TWO SOLUTIONS ! Both are stored in mem.\u8217?\par
+0514:    STO 00\par
+0515:    DROPx\par
+0516:    REM \u8216?restore stack\u8217?\par
+0517:    RCLS .00\par
+0518:    RTN\par
+\par
+0519:    LBL 16\par
+0520:    REM \u8216?SSA\u8217?\par
+0521:    REM \u8216?STK zyx is s1, s2, a2\u8217?\par
+0522:    CF 00\par
+0523:    LocR 08\par
+0524:    STOS .00\par
+0525:    XEQ 02\par
+0526:    REM \u8216?validate and store inputs\u8217?\par
+0527:    XEQ 21\par
+0528:    XEQ 23\par
+0529:    XEQ 03\par
+0530:    STO \u8216?a2\u8217?\par
+0531:    R\u8595?\par
+0532:    XEQ 21\par
+0533:    XEQ 22\par
+0534:    STO \u8216?s2\u8217?\par
+0535:    R\u8595?\par
+0536:    XEQ 21\par
+0537:    XEQ 22\par
+0538:    STO \u8216?s1\u8217?\par
+0539:    REM \u8216?RCLS R.00 removed, RCL added\u8217?\par
+0540:    RCL \u8216?s1\u8217?\par
+0541:    RCL \u8216?s2\u8217?\par
+0542:    RCL \u8216?a2\u8217?\par
+0543:    XEQ 28\par
+0544:    FC? 04\par
+0545:    XEQ 25\par
+0546:    REM \u8216?if invalid entry, abort\u8217?\par
+0547:    RCLS .00\par
+0548:    FS? 00\par
+0549:    RTN\par
+0550:    REM \u8216?If 2 solutions --> SF01 in XEQ 27\u8217?\par
+0551:    RCL \u8216?s1\u8217?\par
+0552:    RCL \u8216?s2\u8217?\par
+0553:    RCL \u8216?a2\u8217?\par
+0554:    FC? 04\par
+0555:    XEQ 27\par
+0556:    REM \u8216?calc a3\u8217?\par
+0557:    RCL \u8216?s1\u8217?\par
+0558:    RCL \u8216?s2\u8217?\par
+0559:    RCL \u8216?a2\u8217?\par
+0560:    XEQ 45\par
+0561:    STO \u8216?a3\u8217?\par
+0562:    REM \u8216?calc a1\u8217?\par
+0563:    RCL \u8216?a2\u8217?\par
+0564:    RCL \u8216?a3\u8217?\par
+0565:    XEQ 42\par
+0566:    STO \u8216?a1\u8217?\par
+0567:    REM \u8216?calc s3\u8217?\par
+0568:    RCL \u8216?s1\u8217?\par
+0569:    RCL \u8216?a1\u8217?\par
+0570:    RCL \u8216?a2\u8217?\par
+0571:    XEQ 44\par
+0572:    STO \u8216?s3\u8217?\par
+0573:    RCL \u8216?s2\u8217?\par
+0574:    RCL \u8216?s1\u8217?\par
+0575:    +\par
+0576:    +\par
+0577:    2\par
+0578:    \u247?\par
+0579:    STO \u8216?perim\u8217?\par
+0580:    REM \u8216?calc area, perim\u8217?\par
+0581:    XEQ 50\par
+0582:    REM \u8216?If 2 solutions, calc 2nd one now\u8217?\par
+0583:    FS? 01\par
+0584:    XEQ 18\par
+0585:    REM \u8216?Update message\u8217?\par
+0586:    FC? 01\par
+0587:    \u8216?Unique solution is stored in memory.\u8217?\par
+0588:    FS? 01\par
+0589:    \u8216?TWO SOLUTIONS ! Both are stored in mem.\u8217?\par
+0590:    STO 00\par
+0591:    DROPx\par
+0592:    REM \u8216?restore stack\u8217?\par
+0593:    RCLS .00\par
+0594:    RTN\par
+\par
+0595:    LBL 17\par
+0596:    REM \u8216?ASS\u8217?\par
+0597:    REM \u8216?STK zyx is a1, s2, s3\u8217?\par
+0598:    CF 00\par
+0599:    LocR 08\par
+0600:    STOS .00\par
+0601:    XEQ 02\par
+0602:    REM \u8216?use SSA, then mir, rot, rot\u8217?\par
+0603:    x\u8644? Z\par
+0604:    XEQ 16\par
+0605:    REM \u8216?if invalid entry, abort\u8217?\par
+0606:    FS? 00\par
+0607:    RCLS .00\par
+0608:    FS? 00\par
+0609:    RTN\par
+0610:    REM \u8216?mirror, rotate, rotate\u8217?\par
+0611:    XEQ 72\par
+0612:    XEQ 71\par
+0613:    XEQ 71\par
+0614:    REM \u8216?Update message\u8217?\par
+0615:    FC? 01\par
+0616:    \u8216?Unique solution is stored in memory.\u8217?\par
+0617:    FS? 01\par
+0618:    \u8216?TWO SOLUTIONS ! Both are stored in mem.\u8217?\par
+0619:    STO 00\par
+0620:    DROPx\par
+0621:    REM \u8216?restore stack\u8217?\par
+0622:    RCLS .00\par
+0623:    RTN\par
+\par
+0624:    LBL 18\par
+0625:    REM \u8216?SSA (and ASS) 2nd solution\u8217?\par
+0626:    REM \u8216?operates on variables, not stk\u8217?\par
+0627:    REM \u8216?save s1, s2, a2 to 2 sol regs\u8217?\par
+0628:    RCL \u8216?s1\u8217?\par
+0629:    ENTER\par
+0630:    COMPLEX\par
+0631:    STO 01\par
+0632:    RCL \u8216?s2\u8217?\par
+0633:    ENTER\par
+0634:    COMPLEX\par
+0635:    STO 02\par
+0636:    RCL \u8216?a2\u8217?\par
+0637:    \u8658?DEG\par
+0638:    \u8594?REAL\par
+0639:    ENTER\par
+0640:    COMPLEX\par
+0641:    STO 05\par
+0642:    REM \u8216?find alternate a3\u8217?\par
+0643:    RCL \u8216?a3\u8217?\par
+0644:    ENTER\par
+0645:    COS\par
+0646:    CHS\par
+0647:    ARCCOS\par
+0648:    STO \u8216?a3\u8217?\par
+0649:    REM \u8216?both a3 to reg 06 as re, im\u8217?\par
+0650:    \u8658?DEG\par
+0651:    \u8594?REAL\par
+0652:    x\u8644?y\par
+0653:    \u8658?DEG\par
+0654:    \u8594?REAL\par
+0655:    x\u8644?y\par
+0656:    COMPLEX\par
+0657:    STO 06\par
+0658:    RCL \u8216?a1\u8217?\par
+0659:    REM \u8216?calc alt a1\u8217?\par
+0660:    RCL \u8216?a3\u8217?\par
+0661:    RCL \u8216?a2\u8217?\par
+0662:    XEQ 42\par
+0663:    STO \u8216?a1\u8217?\par
+0664:    REM \u8216?both a1 to reg 04 as re, im\u8217?\par
+0665:    \u8658?DEG\par
+0666:    \u8594?REAL\par
+0667:    x\u8644?y\par
+0668:    \u8658?DEG\par
+0669:    \u8594?REAL\par
+0670:    x\u8644?y\par
+0671:    COMPLEX\par
+0672:    STO 04\par
+0673:    RCL \u8216?s3\u8217?\par
+0674:    REM \u8216?calc alt s3\u8217?\par
+0675:    RCL \u8216?s1\u8217?\par
+0676:    RCL \u8216?a1\u8217?\par
+0677:    RCL \u8216?a2\u8217?\par
+0678:    XEQ 44\par
+0679:    STO \u8216?s3\u8217?\par
+0680:    REM \u8216?both s3 to reg 03 as re, im\u8217?\par
+0681:    COMPLEX\par
+0682:    STO 03\par
+0683:    RCL \u8216?perim\u8217?\par
+0684:    RCL \u8216?area\u8217?\par
+0685:    RCL \u8216?s1\u8217?\par
+0686:    RCL \u8216?s2\u8217?\par
+0687:    RCL \u8216?s3\u8217?\par
+0688:    +\par
+0689:    +\par
+0690:    2\par
+0691:    \u247?\par
+0692:    STO \u8216?perim\u8217?\par
+0693:    DROPx\par
+0694:    REM \u8216?calc alt area, perim\u8217?\par
+0695:    XEQ 50\par
+0696:    RCL \u8216?area\u8217?\par
+0697:    REM \u8216?both areas to reg 07 as re, im\u8217?\par
+0698:    COMPLEX\par
+0699:    STO 07\par
+0700:    R\u8595?\par
+0701:    RCL \u8216?perim\u8217?\par
+0702:    REM \u8216?both perim to reg 08 as re, im\u8217?\par
+0703:    COMPLEX\par
+0704:    STO 08\par
+0705:    RTN\par
+\par
+0706:    LBL 21\par
+0707:    REM \u8216?operates on stack values\u8217?\par
+0708:    REM \u8216?x: value --> validated pos real, else SF F00\u8217?\par
+0709:    REM \u8216?accepts ShortInt, LongInt, or Real\u8217?\par
+0710:    REM \u8216?converts Int to Real if needed\u8217?\par
+0711:    FS? 00\par
+0712:    RTN\par
+0713:    SINT?\par
+0714:    \u8594?REAL\par
+0715:    LINT?\par
+0716:    \u8594?REAL\par
+0717:    \u8477??\par
+0718:    SKIP 001\par
+0719:    SF 00\par
+0720:    FS? 00\par
+0721:    SKIP 004\par
+0722:    0\par
+0723:    x\u8805? ? Y\par
+0724:      SF 00\par
+0725:    DROPx\par
+0726:    FC? 00\par
+0727:    RTN\par
+0728:    REM \u8216?SF F10\u8217?\par
+0729:    \u8216?Pos Num expected, found something else\u8217?\par
+0730:    STO 00\par
+0731:    DROPx\par
+0732:    RTN\par
+\par
+0733:    LBL 22\par
+0734:    REM \u8216?operates on stack values\u8217?\par
+0735:    REM \u8216?x: value --> validated side, else SF F00\u8217?\par
+0736:    REM \u8216?flags error if angle tag found where side expected\u8217?\par
+0737:    FS? 00\par
+0738:    RTN\par
+0739:    ANGLE?\par
+0740:    SF 00\par
+0741:    FC? 00\par
+0742:    RTN\par
+0743:    REM \u8216?SF F11\u8217?\par
+0744:    \u8216?Angle found where side expected\u8217?\par
+0745:    STO 00\par
+0746:    DROPx\par
+0747:    RTN\par
+\par
+0748:    LBL 23\par
+0749:    REM \u8216?operates on stack values\u8217?\par
+0750:    REM \u8216?x: angle --> validated angle, else SF F00\u8217?\par
+0751:    REM \u8216?also called with sum of two angles on stack\u8217?\par
+0752:    REM \u8216?flags error if angle <= 0 or >= 180\u8217?\par
+0753:    FS? 00\par
+0754:    RTN\par
+0755:    180\par
+0756:    \u8658?DEG\par
+0757:    x\u8644?y\par
+0758:    XEQ 03\par
+0759:    x\u8805? ? Y\par
+0760:      SF 00\par
+0761:    0\par
+0762:    \u8658?DEG\par
+0763:    x\u8805? ? Y\par
+0764:      SF 00\par
+0765:    DROPx\par
+0766:    x\u8644?y\par
+0767:    DROPx\par
+0768:    FC? 00\par
+0769:    RTN\par
+0770:    REM \u8216?SF F12\u8217?\par
+0771:    \u8216?Angle \u8804? 0\u176? or Sum to \u8805? 180\u176?\u8217?\par
+0772:    STO 00\par
+0773:    DROPx\par
+0774:    RTN\par
+\par
+0775:    LBL 24\par
+0776:    REM \u8216?operates on stack values\u8217?\par
+0777:    REM \u8216?x: value --> 0 if side, 1 if angle tag found\u8217?\par
+0778:    FS? 00\par
+0779:    RTN\par
+0780:    ANGLE?\par
+0781:    SKIP 002\par
+0782:    0\par
+0783:    SKIP 001\par
+0784:    1\par
+0785:    RTN\par
+\par
+0786:    LBL 25\par
+0787:    REM \u8216?ssa, test for no solution\u8217?\par
+0788:    REM \u8216?operates on var s1, s2, a2\u8217?\par
+0789:    REM \u8216?2 cases to test\u8217?\par
+0790:    REM \u8216?is a2 >= 90 AND s1 \u8804? s2\u8217?\par
+0791:    REM \u8216?for copy paste:  \u8804?  \u8805?\u8217?\par
+0792:    FS? 00\par
+0793:    RTN\par
+0794:    90\par
+0795:    \u8658?DEG\par
+0796:    RCL \u8216?a2\u8217?\par
+0797:    x< ? Y\par
+0798:      SKIP 004\par
+0799:    RCL \u8216?s2\u8217?\par
+0800:    RCL \u8216?s1\u8217?\par
+0801:    x\u8804? ? Y\par
+0802:      SF 00\par
+0803:    REM \u8216?\u21605?\u8804?? Y\u8217?\par
+0804:    REM \u8216?SF F13\u8217?\par
+0805:    REM \u8216?is a2 < 90 AND s1 < s2 sin(a2)\u8217?\par
+0806:    90\par
+0807:    \u8658?DEG\par
+0808:    RCL \u8216?a2\u8217?\par
+0809:    x> ? Y\par
+0810:      SKIP 007\par
+0811:    RCL \u8216?s1\u8217?\par
+0812:    RCL \u8216?s2\u8217?\par
+0813:    RCL \u8216?a2\u8217?\par
+0814:    SIN\par
+0815:    \u215?\par
+0816:    x> ? Y\par
+0817:      SF 00\par
+0818:    REM \u8216?\u21605?>? Y\u8217?\par
+0819:    REM \u8216?SF F14\u8217?\par
+0820:    FC? 00\par
+0821:    RTN\par
+0822:    \u8216?Adjacent side too long\u8217?\par
+0823:    STO 00\par
+0824:    DROPx\par
+0825:    RTN\par
+\par
+0826:    LBL 26\par
+0827:    REM \u8216?sss, test for no solution\u8217?\par
+0828:    REM \u8216?operates on var s1, s2, s3\u8217?\par
+0829:    REM \u8216?longest side < short + short\u8217?\par
+0830:    REM \u8216?for copy paste:  \u8804?  \u8805?\u8217?\par
+0831:    FS? 00\par
+0832:    RTN\par
+0833:    RCL \u8216?s1\u8217?\par
+0834:    RCL \u8216?s2\u8217?\par
+0835:    x< ? Y\par
+0836:      x\u8644?y\par
+0837:    RCL \u8216?s3\u8217?\par
+0838:    x< ? Y\par
+0839:      x\u8644?y\par
+0840:    R\u8595?\par
+0841:    +\par
+0842:    R\u8593?\par
+0843:    x\u8805? ? Y\par
+0844:      SF 00\par
+0845:    FC? 00\par
+0846:    RTN\par
+0847:    REM \u8216?SF F16\u8217?\par
+0848:    \u8216?Long side too long\u8217?\par
+0849:    STO 00\par
+0850:    DROPx\par
+0851:    RTN\par
+\par
+0852:    LBL 27\par
+0853:    REM \u8216?zyx: s1, s2, a2 --> unique?\u8217?\par
+0854:    REM \u8216?operates on var s1, s2, a2\u8217?\par
+0855:    REM \u8216?3 cases to test, all must be true\u8217?\par
+0856:    REM \u8216?a2 < 90\u8217?\par
+0857:    REM \u8216?s2 sin(a2) < s1\u8217?\par
+0858:    REM \u8216?s1 < s2\u8217?\par
+0859:    REM \u8216?means 2 solutions\u8217?\par
+0860:    REM \u8216?is a2 < 90\u8217?\par
+0861:    FS? 00\par
+0862:    RTN\par
+0863:    90\par
+0864:    \u8658?DEG\par
+0865:    RCL \u8216?a2\u8217?\par
+0866:    x> ? Y\par
+0867:      SKIP 017\par
+0868:    REM \u8216?s2 sin(a2) < s1\u8217?\par
+0869:    RCL \u8216?s1\u8217?\par
+0870:    RCL \u8216?s2\u8217?\par
+0871:    RCL \u8216?a2\u8217?\par
+0872:    SIN\par
+0873:    \u215?\par
+0874:    x\u8805? ? Y\par
+0875:      SKIP 008\par
+0876:    REM \u8216?is s1 < s2\u8217?\par
+0877:    RCL \u8216?s2\u8217?\par
+0878:    RCL \u8216?s1\u8217?\par
+0879:    x\u8805? ? Y\par
+0880:      SKIP 003\par
+0881:    REM \u8216?all three are true, so 2 sol\u8217?\par
+0882:    SF 01\par
+0883:    CF 02\par
+0884:    RTN\par
+\par
+0885:    LBL 28\par
+0886:    REM \u8216?test for approximately right triangle\u8217?\par
+0887:    REM \u8216?only needed for SSA CASE\u8217?\par
+0888:    REM \u8216?only needed when angle given is < 90 deg\u8217?\par
+0889:    REM \u8216?operates on var s1, s2, a2\u8217?\par
+0890:    REM \u8216?is a2 < 90 AND s1 ~ s2 sin(a2)\u8217?\par
+0891:    FS? 00\par
+0892:    RTN\par
+0893:    90\par
+0894:    \u8658?DEG\par
+0895:    RCL \u8216?a2\u8217?\par
+0896:    x\u8805? ? Y\par
+0897:      SKIP 009\par
+0898:    RCL \u8216?s1\u8217?\par
+0899:    RCL \u8216?s2\u8217?\par
+0900:    RCL \u8216?a2\u8217?\par
+0901:    SIN\par
+0902:    \u215?\par
+0903:    -\par
+0904:    REM \u8216?is this approximately 0?\u8217?\par
+0905:    x\u8776? ? 0.\par
+0906:      SF 04\par
+0907:    FC? 04\par
+0908:    RTN\par
+0909:    REM \u8216?SF F16\u8217?\par
+0910:    \u8216?Approximately right triangle\u8217?\par
+0911:    STO 00\par
+0912:    DROPx\par
+0913:    RTN\par
+\par
+0914:    LBL 41\par
+0915:    REM \u8216?zyx: s1 s2 s3 -> a2\u8217?\par
+0916:    REM \u8216?operates on stack values\u8217?\par
+0917:    REM \u8216?half-angle formula derived from Herons formula\u8217?\par
+0918:    REM \u8216?a2 = 2 * acos( sqrt( s*(s-a) / (b*c) ) )\u8217?\par
+0919:    REM \u8216?where s=semi-perim, a=s1, b=s2, c=s3\u8217?\par
+0920:    REM \u8216?WARNING: perim must contain semi-perim on entry\u8217?\par
+0921:    \u215?\par
+0922:    1/x\par
+0923:    x\u8644?y\par
+0924:    RCL \u8216?perim\u8217?\par
+0925:    \u215?\par
+0926:    CHS\par
+0927:    LASTx\par
+0928:    x\super 2\nosupersub \par
+0929:    +\par
+0930:    \u215?\par
+0931:    \u8730?\u895?\par
+0932:    ARCCOS\par
+0933:    2\par
+0934:    \u215?\par
+0935:    RTN\par
+\par
+0936:    LBL 42\par
+0937:    REM \u8216?yx: a1 a2 -> a3\u8217?\par
+0938:    REM \u8216?uses cos(180-x) = -cos(x) to avoid unit conversion\u8217?\par
+0939:    +\par
+0940:    COS\par
+0941:    CHS\par
+0942:    ARCCOS\par
+0943:    RTN\par
+\par
+0944:    LBL 43\par
+0945:    REM \u8216?zyx: s1, a1, s2 --> s3\u8217?\par
+0946:    REM \u8216?operates on stack values\u8217?\par
+0947:    REM \u8216?requires tagged angles\u8217?\par
+0948:    REM \u8216?uses complex plane: s3 = |s1 - s2*e^(i*a1)|\u8217?\par
+0949:    REM \u8216?treats s1 and s2 as vectors, s3 is distance between endpoints\u8217?\par
+0950:    x\u8644?y\par
+0951:    COMPLEX\par
+0952:    x\u8644?y\par
+0953:    0\par
+0954:    COMPLEX\par
+0955:    -\par
+0956:    |x|\par
+0957:    RTN\par
+\par
+0958:    LBL 44\par
+0959:    REM \u8216?zyx: s1, a1, a2 -->s3\u8217?\par
+0960:    REM \u8216?operates on stack values\u8217?\par
+0961:    REM \u8216?law of sines: s3 = s1 * sin(a1) / sin(a2)\u8217?\par
+0962:    REM \u8216?requires tagged angles\u8217?\par
+0963:    R\u8595?\par
+0964:    COMPLEX\par
+0965:    Im\par
+0966:    R\u8593?\par
+0967:    1\par
+0968:    COMPLEX\par
+0969:    Im\par
+0970:    \u247?\par
+0971:    RTN\par
+\par
+0972:    LBL 45\par
+0973:    REM \u8216?zyx: s1, s2, a2 --> a3, alt a3\u8217?\par
+0974:    REM \u8216?operates on stack values\u8217?\par
+0975:    REM \u8216?law of sines: a3 = asin( s2 * sin(a2) / s1 )\u8217?\par
+0976:    REM \u8216?requires tagged angles\u8217?\par
+0977:    SIN\par
+0978:    \u215?\par
+0979:    x\u8644?y\par
+0980:    \u247?\par
+0981:    ARCSIN\par
+0982:    RTN\par
+\par
+0983:    LBL 50\par
+0984:    REM \u8216?calc area and perim from variables\u8217?\par
+0985:    REM \u8216?entry: perim holds semi-perim, s1 s2 s3 set\u8217?\par
+0986:    REM \u8216?exit:  area and perim variables updated\u8217?\par
+0987:    RCL \u8216?perim\u8217?\par
+0988:    RCL \u8216?s3\u8217?\par
+0989:    -\par
+0990:    RCL \u8216?perim\u8217?\par
+0991:    RCL \u8216?s2\u8217?\par
+0992:    -\par
+0993:    \u215?\par
+0994:    RCL \u8216?perim\u8217?\par
+0995:    RCL \u8216?s1\u8217?\par
+0996:    -\par
+0997:    \u215?\par
+0998:    RCL \u8216?perim\u8217?\par
+0999:    \u215?\par
+1000:    \u8730?\u895?\par
+1001:    STO \u8216?area\u8217?\par
+1002:    RCL \u8216?perim\u8217?\par
+1003:    2\par
+1004:    \u215?\par
+1005:    STO \u8216?perim\u8217?\par
+1006:    DROPx\par
+1007:    DROPx\par
+1008:    RTN\par
+\par
+1009:    LBL 60\par
+1010:    SF 03\par
+1011:    REM \u8216?RESULTS menu\u8217?\par
+1012:    REM \u8216?Also can use AUTO for new tri\u8217?\par
+1013:    CLMENU\par
+1014:    \u8216?S1\u8217?\par
+1015:    KEY 13 XEQ 61\par
+1016:    \u8216?\u8737?1\u8217?\par
+1017:    KEY 14 XEQ 67\par
+1018:    \u8216?S2\u8217?\par
+1019:    KEY 07 XEQ 62\par
+1020:    \u8216?\u8737?2\u8217?\par
+1021:    KEY 08 XEQ 68\par
+1022:    \u8216?S3\u8217?\par
+1023:    KEY 01 XEQ 63\par
+1024:    \u8216?\u8737?3\u8217?\par
+1025:    KEY 02 XEQ 69\par
+1026:    \u8216?\u8658?DEG\u8217?\par
+1027:    KEY 03 XEQ 04\par
+1028:    \u8216?\u8658?RAD\u8217?\par
+1029:    KEY 09 XEQ 05\par
+1030:    \u8216?\u8658?MUL\u960?\u8217?\par
+1031:    KEY 15 XEQ 06\par
+1032:    \u8216?[TRI]\u8217?\par
+1033:    KEY 05 XEQ 80\par
+1034:    \u8216?ROTATE\u8217?\par
+1035:    KEY 11 XEQ 71\par
+1036:    \u8216?MIRROR\u8217?\par
+1037:    KEY 17 XEQ 72\par
+1038:    \u8216?AREA\u8217?\par
+1039:    KEY 16 XEQ 64\par
+1040:    \u8216?PERIM\u8217?\par
+1041:    KEY 10 XEQ 70\par
+1042:    \u8216?1st sol\u8217?\par
+1043:    \u8216?2nd sol\u8217?\par
+1044:    FC? 02\par
+1045:    x\u8644?y\par
+1046:    DROPx\par
+1047:    \u8216?unique\u8217?\par
+1048:    FC? 01\par
+1049:    x\u8644?y\par
+1050:    DROPx\par
+1051:    KEY 04 XEQ 75\par
+1052:    \u8216?New TRI\u8217?\par
+1053:    KEY 12 XEQ \u8216?TRI\u8736?\u8217?\par
+1054:    \u8216?AUTO\u8217?\par
+1055:    KEY 06 XEQ 10\par
+1056:    \u8216?EXIT\u8217?\par
+1057:    KEY 18 XEQ 99\par
+1058:    MENU\par
+1059:    AVIEW 00\par
+1060:    STOP\par
+1061:    REM \u8216?return to menu\u8217?\par
+1062:    REM \u8216?messages (including errors) will be displayed\u8217?\par
+1063:    GTO 60\par
+1064:    RTN\par
+1065:    REM \u8216?End of results menu\u8217?\par
+1066:    REM \u8216?Recall solutions for user\u8217?\par
+\par
+1067:    LBL 61\par
+1068:    RCL \u8216?s1\u8217?\par
+1069:    \u8216?\u8629?S1:\u8217?\par
+1070:    STO 00\par
+1071:    DROPx\par
+1072:    RTN\par
+\par
+1073:    LBL 62\par
+1074:    RCL \u8216?s2\u8217?\par
+1075:    \u8216?\u8629?S2:\u8217?\par
+1076:    STO 00\par
+1077:    DROPx\par
+1078:    RTN\par
+\par
+1079:    LBL 63\par
+1080:    RCL \u8216?s3\u8217?\par
+1081:    \u8216?\u8629?S3:\u8217?\par
+1082:    STO 00\par
+1083:    DROPx\par
+1084:    RTN\par
+\par
+1085:    LBL 64\par
+1086:    RCL \u8216?area\u8217?\par
+1087:    \u8216?\u8629?AREA:\u8217?\par
+1088:    STO 00\par
+1089:    DROPx\par
+1090:    RTN\par
+\par
+1091:    LBL 67\par
+1092:    RCL \u8216?a1\u8217?\par
+1093:    \u8216?\u8629?\u8737?1:\u8217?\par
+1094:    STO 00\par
+1095:    DROPx\par
+1096:    RTN\par
+\par
+1097:    LBL 68\par
+1098:    RCL \u8216?a2\u8217?\par
+1099:    \u8216?\u8629?\u8737?2:\u8217?\par
+1100:    STO 00\par
+1101:    DROPx\par
+1102:    RTN\par
+\par
+1103:    LBL 69\par
+1104:    RCL \u8216?a3\u8217?\par
+1105:    \u8216?\u8629?\u8737?3:\u8217?\par
+1106:    STO 00\par
+1107:    DROPx\par
+1108:    RTN\par
+\par
+1109:    LBL 70\par
+1110:    RCL \u8216?perim\u8217?\par
+1111:    \u8216?\u8629?PERIM:\u8217?\par
+1112:    STO 00\par
+1113:    DROPx\par
+1114:    RTN\par
+\par
+1115:    LBL 71\par
+1116:    REM \u8216?rotate triangle\u8217?\par
+1117:    LocR 08\par
+1118:    STOS .00\par
+1119:    REM \u8216?SF F17\u8217?\par
+1120:    \u8216?Rotated triangle is stored in memory.\u8217?\par
+1121:    FC? 00\par
+1122:    STO 00\par
+1123:    DROPx\par
+1124:    RCL \u8216?a1\u8217?\par
+1125:    RCL \u8216?a2\u8217?\par
+1126:    RCL \u8216?a3\u8217?\par
+1127:    STO \u8216?a1\u8217?\par
+1128:    R\u8595?\par
+1129:    STO \u8216?a3\u8217?\par
+1130:    R\u8595?\par
+1131:    STO \u8216?a2\u8217?\par
+1132:    RCL \u8216?s1\u8217?\par
+1133:    RCL \u8216?s2\u8217?\par
+1134:    RCL \u8216?s3\u8217?\par
+1135:    STO \u8216?s1\u8217?\par
+1136:    R\u8595?\par
+1137:    STO \u8216?s3\u8217?\par
+1138:    R\u8595?\par
+1139:    STO \u8216?s2\u8217?\par
+1140:    REM \u8216?rotate alt solution if it exists\u8217?\par
+1141:    FS? 01\par
+1142:    XEQ 73\par
+1143:    REM \u8216?restore stack\u8217?\par
+1144:    RCLS .00\par
+1145:    RTN\par
+\par
+1146:    LBL 72\par
+1147:    REM \u8216?mirror triangle\u8217?\par
+1148:    LocR 08\par
+1149:    STOS .00\par
+1150:    REM \u8216?SF F18\u8217?\par
+1151:    \u8216?Mirrored triangle is stored in memory.\u8217?\par
+1152:    FC? 00\par
+1153:    STO 00\par
+1154:    DROPx\par
+1155:    RCL \u8216?s2\u8217?\par
+1156:    RCL \u8216?s3\u8217?\par
+1157:    STO \u8216?s2\u8217?\par
+1158:    R\u8595?\par
+1159:    STO \u8216?s3\u8217?\par
+1160:    RCL \u8216?a1\u8217?\par
+1161:    RCL \u8216?a3\u8217?\par
+1162:    STO \u8216?a1\u8217?\par
+1163:    R\u8595?\par
+1164:    STO \u8216?a3\u8217?\par
+1165:    REM \u8216?mirror alt solution if it exists\u8217?\par
+1166:    FS? 01\par
+1167:    XEQ 74\par
+1168:    REM \u8216?restore stack\u8217?\par
+1169:    RCLS .00\par
+1170:    RTN\par
+\par
+1171:    LBL 73\par
+1172:    REM \u8216?rotate alt solution\u8217?\par
+1173:    REM \u8216?SF F19\u8217?\par
+1174:    RCL 01\par
+1175:    RCL 02\par
+1176:    RCL 03\par
+1177:    STO 01\par
+1178:    R\u8595?\par
+1179:    STO 03\par
+1180:    R\u8595?\par
+1181:    STO 02\par
+1182:    RCL 04\par
+1183:    RCL 05\par
+1184:    RCL 06\par
+1185:    STO 04\par
+1186:    R\u8595?\par
+1187:    STO 06\par
+1188:    R\u8595?\par
+1189:    STO 05\par
+1190:    RTN\par
+\par
+1191:    LBL 74\par
+1192:    REM \u8216?mirror alt solution\u8217?\par
+1193:    REM \u8216?SF F20\u8217?\par
+1194:    RCL 02\par
+1195:    RCL 03\par
+1196:    STO 02\par
+1197:    R\u8595?\par
+1198:    STO 03\par
+1199:    RCL 04\par
+1200:    RCL 06\par
+1201:    STO 04\par
+1202:    R\u8595?\par
+1203:    STO 06\par
+1204:    RTN\par
+\par
+1205:    LBL 75\par
+1206:    REM \u8216?HANDLE MULTIPLE SOLUTIONS\u8217?\par
+1207:    REM \u8216?flag 1 indicates unique solution\u8217?\par
+1208:    REM \u8216?flag 2 indicates which solution\u8217?\par
+1209:    FC? 01\par
+1210:    RTN\par
+1211:    LocR 08\par
+1212:    STOS .00\par
+1213:    FS? 02\par
+1214:    \u8216?1st Sol moved into stored variables\u8217?\par
+1215:    FC? 02\par
+1216:    \u8216?2nd Sol moved into stored variables\u8217?\par
+1217:    FC? 00\par
+1218:    STO 00\par
+1219:    DROPx\par
+1220:    FF 02\par
+1221:    REM \u8216?reg 01 has s1 (re and im)\u8217?\par
+1222:    REM \u8216?reg 02 s2\u8217?\par
+1223:    REM \u8216?reg 03 s3\u8217?\par
+1224:    REM \u8216?reg 04 a1\u8217?\par
+1225:    REM \u8216?reg 05 a2\u8217?\par
+1226:    REM \u8216?reg 06 a3\u8217?\par
+1227:    REM \u8216?reg 07 area\u8217?\par
+1228:    REM \u8216?reg 08 perim\u8217?\par
+1229:    RCL 01\par
+1230:    FS? 02\par
+1231:    Re\par
+1232:    FC? 02\par
+1233:    Im\par
+1234:    STO \u8216?s1\u8217?\par
+1235:    RCL 02\par
+1236:    FS? 02\par
+1237:    Re\par
+1238:    FC? 02\par
+1239:    Im\par
+1240:    STO \u8216?s2\u8217?\par
+1241:    RCL 03\par
+1242:    FS? 02\par
+1243:    Re\par
+1244:    FC? 02\par
+1245:    Im\par
+1246:    STO \u8216?s3\u8217?\par
+1247:    RCL 04\par
+1248:    FS? 02\par
+1249:    Re\par
+1250:    FC? 02\par
+1251:    Im\par
+1252:    \u8658?DEG\par
+1253:    STO \u8216?a1\u8217?\par
+1254:    RCL 05\par
+1255:    FS? 02\par
+1256:    Re\par
+1257:    FC? 02\par
+1258:    Im\par
+1259:    \u8658?DEG\par
+1260:    STO \u8216?a2\u8217?\par
+1261:    RCL 06\par
+1262:    FS? 02\par
+1263:    Re\par
+1264:    FC? 02\par
+1265:    Im\par
+1266:    \u8658?DEG\par
+1267:    STO \u8216?a3\u8217?\par
+1268:    RCL 07\par
+1269:    FS? 02\par
+1270:    Re\par
+1271:    FC? 02\par
+1272:    Im\par
+1273:    STO \u8216?area\u8217?\par
+1274:    RCL 08\par
+1275:    FS? 02\par
+1276:    Re\par
+1277:    FC? 02\par
+1278:    Im\par
+1279:    STO \u8216?perim\u8217?\par
+1280:    REM \u8216?RESTORE STACK\u8217?\par
+1281:    RCLS .00\par
+1282:    RTN\par
+\par
+1283:    LBL 80\par
+1284:    REM \u8216?TRIANGLE SUMMARY IN ARRAY\u8217?\par
+1285:    LocR 09\par
+1286:    STOS .00\par
+1287:    3\par
+1288:    ENTER\par
+1289:    2\par
+1290:    M.NEW\par
+1291:    STO .08\par
+1292:    INDEX .08\par
+1293:    1\par
+1294:    1\par
+1295:    STOIJ\par
+1296:    RCL \u8216?s1\u8217?\par
+1297:    STOEL\par
+1298:    2\par
+1299:    STO I\par
+1300:    RCL \u8216?s2\u8217?\par
+1301:    STOEL\par
+1302:    3\par
+1303:    STO I\par
+1304:    RCL \u8216?s3\u8217?\par
+1305:    STOEL\par
+1306:    1\par
+1307:    2\par
+1308:    STOIJ\par
+1309:    RCL \u8216?a1\u8217?\par
+1310:    \u8658?DEG\par
+1311:    STOEL\par
+1312:    2\par
+1313:    STO I\par
+1314:    RCL \u8216?a2\u8217?\par
+1315:    \u8658?DEG\par
+1316:    STOEL\par
+1317:    3\par
+1318:    STO I\par
+1319:    RCL \u8216?a3\u8217?\par
+1320:    \u8658?DEG\par
+1321:    STOEL\par
+1322:    RCL .00\par
+1323:    REM \u8216?SF F21\u8217?\par
+1324:    \u8216?[TRI]: 1st col sides; 2nd col angles (degs)\u8217?\par
+1325:    FC? 00\par
+1326:    STO 00\par
+1327:    RCLS .00\par
+1328:    RCL .08\par
+1329:    RTN\par
+\par
+1330:    LBL 99\par
+1331:    CLRMOD\par
+1332:  END\par
+}}

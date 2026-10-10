@@ -1,0 +1,22 @@
+@ Index:   Problem 1, 38-year loan, solves PMT
+@ Author:  Jaco Mostert, fm Duncan Murray's problem set
+@ 38 years monthly at 5.25% on PV 270000, FV 0. Solves PMT.
+LBL ‘P1’
+  38
+  12
+  ×
+  STO ‘NPPER’
+  5.25
+  STO ‘I%/a’
+  270000
+  STO ‘PV’
+  0
+  STO ‘PMT’
+  0
+  STO ‘FV’
+  12
+  STO ‘PPER/a’
+  STO ‘CPER/a’
+  ENDP
+  PMT
+  END

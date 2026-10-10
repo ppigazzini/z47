@@ -1,0 +1,20 @@
+@ Index:   Problem 8, solves rate, near-unity ratio
+@ Author:  Jaco Mostert, fm Duncan Murray's problem set
+@ N 32, PV -999999, PMT 0, FV 1000000, one period a year. Solves I%/a.
+LBL ‘P8’
+  32
+  STO ‘NPPER’
+  0
+  STO ‘I%/a’
+  -999999
+  STO ‘PV’
+  0
+  STO ‘PMT’
+  1.e+6
+  STO ‘FV’
+  1
+  STO ‘PPER/a’
+  STO ‘CPER/a’
+  ENDP
+  I/a
+  END

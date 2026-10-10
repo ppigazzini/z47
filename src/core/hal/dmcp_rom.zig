@@ -1,15 +1,17 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
 // DMCP ROM function-table shims for the state save/restore owners
-// (calc_state_io_owned, program_serialization_io_owned). power_check_screen,
-// sys_timer_disable and sys_timer_start are DMCP library function-table macros
-// (lft_ifc.h), not linkable symbols, so a Zig extern cannot resolve them on
-// firmware. This module reconstructs them as lane-aware ROM trampolines. On
-// host (no power button / DMCP timers) they are trivial no-ops.
+// (calc_state_io_owned, program_serialization_io_owned) and the memory owner's
+// GMP allocator. power_check_screen, sys_timer_disable, sys_timer_start,
+// lcd_refresh, wait_for_key_press and sys_reset are DMCP library function-table
+// macros (lft_ifc.h), not linkable symbols, so a Zig extern cannot resolve them
+// on firmware. This module reconstructs them as lane-aware ROM trampolines. On
+// host (no power button / DMCP timers / DMCP LCD) they are trivial no-ops.
 //
-// Offsets verified against lft_ifc.h: power_check_screen LIBRARY_FN_BASE+340,
-// sys_disk_write_enable +480, sys_timer_disable +500, sys_timer_start +504,
-// f_unlink +768. LIBRARY_FN_BASE is selected by
+// Offsets verified against lft_ifc.h: lcd_refresh LIBRARY_FN_BASE+48,
+// power_check_screen +340, wait_for_key_press +408, sys_disk_write_enable +480,
+// sys_timer_disable +500, sys_timer_start +504, sys_reset +544, f_unlink +768.
+// LIBRARY_FN_BASE is selected by
 // the firmware cpu model (cortex-m4 = old_hw, else cortex-m33). Verified by
 // build/link across every target (the established frontier ROM-trampoline
 // pattern; these are not testSuite-reachable).
@@ -24,6 +26,7 @@ const SysTimerDisableFn = *const fn (timer_ix: c_int) callconv(.c) void;
 const SysTimerStartFn = *const fn (timer_ix: c_int, ms_value: u32) callconv(.c) void;
 const SysDiskWriteEnableFn = *const fn (val: c_int) callconv(.c) c_int;
 const FUnlinkFn = *const fn (path: [*:0]const u8) callconv(.c) c_uint;
+const VoidFn = *const fn () callconv(.c) void;
 
 fn powerCheckScreenNoop() callconv(.c) c_int {
     return 0;
@@ -53,6 +56,15 @@ const sys_timer_start_impl: SysTimerStartFn = if (is_dmcp_build) @ptrFromInt(LIB
 const sys_disk_write_enable_impl: SysDiskWriteEnableFn = if (is_dmcp_build) @ptrFromInt(LIBRARY_FN_BASE + 480) else &sysDiskWriteEnableNoop;
 const f_unlink_impl: FUnlinkFn = if (is_dmcp_build) @ptrFromInt(LIBRARY_FN_BASE + 768) else &fUnlinkNoop;
 
+// The three entries that take nothing and return nothing are a no-op on host
+// with no default to point at.
+fn romVoid(comptime offset: usize) void {
+    if (is_dmcp_build) {
+        const f: VoidFn = @ptrFromInt(LIBRARY_FN_BASE + offset);
+        f();
+    }
+}
+
 pub fn power_check_screen() bool {
     return power_check_screen_impl() != 0;
 }
@@ -67,4 +79,13 @@ pub fn sys_disk_write_enable(val: c_int) c_int {
 }
 pub fn f_unlink(path: [*:0]const u8) c_uint {
     return f_unlink_impl(path);
+}
+pub fn lcd_refresh() void {
+    romVoid(48);
+}
+pub fn wait_for_key_press() void {
+    romVoid(408);
+}
+pub fn sys_reset() void {
+    romVoid(544);
 }

@@ -1,0 +1,31 @@
+@ Index:  Real-axis crossing of a complex segment from Y to X
+@ Author: Jaco Mostert
+@ Tested: Segment 1+i (parameter 0) to 3-i (parameter 1) crosses the real axis at 2.
+@ Input:  Y = 1+i, X = 3-i
+@ Output: X = 2
+@
+@ I is the value at parameter 0 and J the value at 1. SOLVE drives
+@ xx over [0, 1] until FF, the imaginary part of the linear
+@ interpolation, is zero. The real part of that point is kept in K.
+LBL ‘PP’
+  STO J             ; segment end, parameter 1
+  DROP𝑥
+  STO I             ; segment start, parameter 0
+  DROP𝑥
+  PGMSLV ‘FF’
+  0                 ; lower guess
+  1                 ; upper guess
+  SOLVE ‘xx’
+  RCL K
+  Re                ; value at the crossing
+  RTN
+
+LBL ‘FF’
+  RCL I
+  RCL J
+  RCL ‘xx’
+  LINPOL
+  STO K
+  Im                ; residual for the solver
+  END
+.END.

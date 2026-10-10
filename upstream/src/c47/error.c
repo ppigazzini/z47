@@ -295,16 +295,18 @@ void displayCalcErrorMessage(uint8_t errorCode, calcRegister_t errMessageRegiste
     screenUpdatingMode = SCRUPD_AUTO;
 
     #if defined(OPTION_IR_PRINTING)
-       if((tam.mode != 0) && (errorCode != ERROR_LABEL_NOT_FOUND) &&   !printerState.trace_done) {
-         printTrace(tam.function, tam.value);
-       }
-       if(lastErrorCode == ERROR_RESERVED_VARIABLE_NAME) {
-         sprintf(tmpString, "%s: %s", errorMessageOf(lastErrorCode), errorMessage);
-       }
-       else {
-         sprintf(tmpString, "%s", errorMessageOf(lastErrorCode));
-       }
-       printTraceError(tmpString);
+      if((tam.mode != 0) && (errorCode != ERROR_LABEL_NOT_FOUND) &&   !printerState.trace_done) {
+        printTrace(tam.function, tam.value);
+      }
+      if(!getSystemFlag(FLAG_IGN1ER)) {
+        if(lastErrorCode == ERROR_RESERVED_VARIABLE_NAME) {
+          sprintf(tmpString, "%s: %s", errorMessageOf(lastErrorCode), errorMessage);
+        }
+        else {
+          sprintf(tmpString, "%s", errorMessageOf(lastErrorCode));
+        }
+        printTraceError(tmpString);
+      }
     #endif //OPTION_IR_PRINTING
   }
 }

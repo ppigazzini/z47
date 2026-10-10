@@ -1,0 +1,167 @@
+@ Index:   Elliptic integral and function examples
+@ Author:  Jaco Mostert
+@ Source:  AN0023
+@ Version: 1.2
+@ Tested:  xeq AN23ALL returns R01..R11 matching the note's printed values.
+@ Input:   none
+@ Output:  R01=1.05050 ... R11=0.20000; R10=2.15281 is twice the Annex 1 figure, as the note states
+@
+@ AN0023 Elliptic Functions: every numerical example of the note and two of Annex 1, as one program.
+@
+@ Encode with  ./rejig AN0023_examples.txt -o AN0023_examples.p47 and load with READP.
+@ Run it cold:  ./t47 --reset --exec 'readp AN0023_examples.p47; xeq AN23ALL'
+@
+@ AN23ALL runs every routine and leaves each result in R01 to R11. The value the note prints follows each STO.
+@ Each routine sets the angular mode it needs, RAD or DEG, so the result does not depend on the mode left before.
+@ The Lawden table gives k; the calculator takes m = k², so those routines square k first.
+; Jaco Mostert  AN0023 examples
+
+LBL ‘AN23ALL’
+  # Runs every example
+  XEQ ‘EM’
+  STO R01          ; 1.05050
+  XEQ ‘EPHI’
+  STO R02          ; 0.19872
+  XEQ ‘ZETA’
+  STO R03          ; -0.11777
+  XEQ ‘FAM’
+  STO R04          ; 0.10008
+  XEQ ‘LF36’
+  STO R05          ; 0.63459
+  XEQ ‘LE36’
+  STO R06          ; 0.62215
+  XEQ ‘LF65’
+  STO R07          ; 1.21431
+  XEQ ‘LE65’
+  STO R08          ; 1.06311
+  XEQ ‘AXF23’
+  STO R09          ; 0.41133
+  XEQ ‘AXE180’
+  STO R10          ; 2.15281, Annex 1 states 1.076405
+  XEQ ‘SLVE’
+  STO R11          ; 0.20000
+  RTN
+
+@ Section 2: the perimeter parameter of the ellipse a=5, b=1, m=.96.
+LBL ‘EM’
+  # E(m) at m=.96
+  0.96
+  E(m)
+  RTN
+
+@ Section 2: the partial arc at phi=.2 rad.
+LBL ‘EPHI’
+  # E(.2|.96), radians
+  RAD
+  0.96
+  ENTER
+  0.2
+  E(ϕ,m)
+  RTN
+
+@ Section 4: Mathematica JacobiZeta[2,.5].
+LBL ‘ZETA’
+  # Z(2|.5), radians
+  RAD
+  0.5
+  ENTER
+  2
+  ζ(ϕ,𝑚)
+  RTN
+
+@ Section 5: F ahead of am(u,m), phi=.1 and k=.7.
+LBL ‘FAM’
+  # F(.1|.7²), radians
+  RAD
+  0.7
+  𝑥²
+  0.1
+  F(ϕ,m)
+  RTN
+
+@ Section 5, Lawden incomplete integrals table, first row: k=.4, phi=36 degrees.
+LBL ‘LF36’
+  # F(36°|.4²)
+  DEG
+  0.4
+  𝑥²
+  36
+  F(ϕ,m)
+  RTN
+
+LBL ‘LE36’
+  # E(36°|.4²)
+  DEG
+  0.4
+  𝑥²
+  36
+  E(ϕ,m)
+  RTN
+
+@ Section 5, Lawden incomplete integrals table, second row: k=.6, phi=65 degrees.
+LBL ‘LF65’
+  # F(65°|.6²)
+  DEG
+  0.6
+  𝑥²
+  65
+  F(ϕ,m)
+  RTN
+
+LBL ‘LE65’
+  # E(65°|.6²)
+  DEG
+  0.6
+  𝑥²
+  65
+  E(ϕ,m)
+  RTN
+
+@ Annex 1, Fig. 4: a=100, b=300, so m = 1-(a/b)² = 8/9, and phi=23 degrees.
+LBL ‘AXF23’
+  # F(23°|8/9)
+  DEG
+  8
+  ENTER
+  9
+  ÷
+  23
+  F(ϕ,m)
+  RTN
+
+@ Annex 1, Baker example 16: k = sin 75°, phi = pi. Annex 1 states 1.076405; the calculator gives 2.152810, twice that.
+LBL ‘AXE180’
+  # E(180°|sin²75°)
+  DEG
+  75
+  sin(𝑥)
+  𝑥²
+  180
+  E(ϕ,m)
+  RTN
+
+@ Section 2, the inverse problem: EllE is the note's program, SLVE solves it for x with m=.96 and u=.19872.
+LBL ‘EllE’
+  # E(x|m) - u
+  MVAR 'x'
+  MVAR 'm'
+  MVAR 'u'
+  RCL 'm'
+  RCL 'x'
+  E(ϕ,m)
+  RCL- 'u'
+  RTN
+
+LBL ‘SLVE’
+  # Solve EllE for x
+  RAD
+  0.96
+  STO 'm'
+  0.19872
+  STO 'u'
+  PGMSLV 'EllE'
+  0
+  1
+  SOLVE 'x'
+  RTN
+END

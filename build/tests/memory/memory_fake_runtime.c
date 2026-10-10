@@ -2,6 +2,8 @@
 
 #include "memory_test_runtime.h"
 
+#include <unistd.h>
+
 typedef enum {
   ALLOC_KIND_NONE = 0,
   ALLOC_KIND_C47 = 1,
@@ -40,6 +42,7 @@ static uint32_t gmpReallocCalls = 0;
 static uint32_t gmpFreeCalls = 0;
 static uint32_t copyBytesCalls = 0;
 static uint32_t resizeProgramOomCalls = 0;
+static int bugScreenFd = -1;
 static size_t lastFreeListAllocSize = 0;
 static size_t lastFreeListReallocOldSize = 0;
 static size_t lastFreeListReallocNewSize = 0;
@@ -141,8 +144,15 @@ static void resetCounters(void) {
   lastResizeProgramOomDelta = 0;
 }
 
+// The Zig owner paints its bug screen through the core-to-shell hook; pointing
+// the hook at the fake displayBugScreen records both sides in one place.
+extern void (*z47HostShowBugScreenHook)(const char *msg);
+
 void memoryParityReset(void) {
   size_t index;
+
+  z47HostShowBugScreenHook = displayBugScreen;
+  bugScreenFd = -1;
 
   for(index = 0; index < MAX_FAKE_ALLOCATIONS; index++) {
     if(allocationSlots[index].ptr != NULL) {
@@ -328,6 +338,19 @@ void *z47_memory_runtime_copy_bytes(void *dest, const void *source, uint32_t n) 
   }
 
   return memmove(dest, source, n);
+}
+
+// The bug screen a GMP exhaustion stop paints. The stop then ends the process, so
+// the case runs in a child and the message goes to the parent through a pipe.
+void memoryParitySetBugScreenFd(int fd) {
+  bugScreenFd = fd;
+}
+
+void displayBugScreen(const char *msg) {
+  if(bugScreenFd >= 0) {
+    ssize_t written = write(bugScreenFd, msg, strlen(msg));
+    (void)written;
+  }
 }
 
 void z47_memory_runtime_handle_resize_program_memory_out_of_memory(uint16_t deltaBlocks) {

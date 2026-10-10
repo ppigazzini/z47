@@ -9,7 +9,7 @@
 // VARIOUS OPTIONS
 //*********************************
 
-#define VERSION1 "00.109.04.00b0"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
+#define VERSION1 "00.109.05.00a0.ALPHA"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
 
 // Version 00.109.02.07b11   Public Release C47 & R47
 // Version 00.109.02.07b12   Public Release C47 & R47 launch
@@ -25,6 +25,7 @@
 // Version 00.109.03.02b0    Public C47 & R47
 // Version 00.109.03.03b0    Public C47 & R47
 // Version 00.109.04.00b0    Public C47 & R47
+// Version 00.109.05.00a0    Internal alpha C47 & R47
 
 #if !defined(CALCMODEL)
   #define CALCMODEL USER_C47               // USER_C47 or USER_R47
@@ -162,35 +163,40 @@
   #endif
 
 
-//    Info 2026-07-22 00.109.03.04
+//    Info 2026-08-03 00.109.04.00b
 //
-//       Pkg │ DIST    │ X.FN     │ FIN  │ EIGEN │ ELEC │ IR
-//      ─────┼─────────┼──────────┼──────┼───────┼──────┼────
-//        1  │ all     │ no ellip │ fast │   ❌  │  ✅  │ ❌
-//        2  │ limB    │ full     │ slow │   ❌  │  ❌  │ ✅
-//        3  │ limA    │ no ellip │ fast │   ✅  │  ✅  │ ❌
-//        4  │ none    │ no e-B-O │ slow │   ❌  │  ❌  │ ✅
+//       Pkg │ DIST    │ X.FN     │ FIN    │ EIGEN │ ELEC │ IR │ STRUCT
+//      ─────┼─────────┼──────────┼────────┼───────┼──────┼────┼────────
+//        1  │ all     │ no ellip │ fast   │   ✅  │  ✅  │ ✅ │   ✅
+//        2  │ limit   │ full     │ fast   │   ✅  │  ✅  │ ✅ │   ✅
+//        3  │ all     │ full     │ slow   │   ✅  │  ✅  │ ❌ │   ✅
+//        4  │ none    │ no e-B-O │ slow   │   ❌  │  ❌  │ ✅ │   ✅
 //
 //
 //      DIST   all      every distribution
-//             limA     Normal, StdNormal, LogNormal
-//             limB     Normal, StdNormal, LogNormal, cauchy, chi, expo, logis, t, weibull
+//             limit    Normal, StdNormal, LogNormal, t, chi, expo, weibull, cauchy, logis
 //             none     no distributions
 //      X.FN   full     includes elliptic, Bessel, Orthogonal
 //             no ellip without elliptic
 //             no e-B-O none of elliptic, Bessel, Orthogonal
 //      FIN    fast     financial funcs at full precision/speed
 //             slow     financial funcs available, but lower precision and slower
-//      EIGEN  ✅       EIGVAL + EIGVEC (est. > 16 digits) + MSQRT
+//      EIGEN  ✅       EIGVAL + EIGVEC (est. > 16 digits) + MSQRT + SLVP
 //             ❌       none of the above
 //      ELEC   ✅       Star/Delta, Impedance, phase-sequence, parallel funcs
 //             ❌       none of the above
 //      IR     ✅       IR printing
 //             ❌       no IR printing
+//      STRUCT ✅       structured programs: 10 nesting levels, 4 FOR loops, 10 IF, 10 DO, 10 REPEAT
 //      All C47 / DM42 packages (common to 1–4): no 2D/3D VECTOR conversions (matrix functions stay), no number editing, no 1000-digit XFN math.
 
+//Flash table
+// Package 1: Free flash: 680   less Elliptical
+// Package 2: Free flash: 168   less 50% if DIST (less F BINOM HYPER POISS GEOM GEV PARETO UNIFORM DISUNIFORM)
+// Package 3: Free flash: 848   less IR printing
+// Package 4: Free flash: 69648 git pipelines mo math 
 
-  #if defined(DMCP_PACKAGE1)             // PACKAGE 1 (free 1016) // ALL DIST, Stripped ELLIPSE X.FN menu; NO EIGEN; ELEC; FAST FIN; NO IR PRINTING
+  #if defined(DMCP_PACKAGE1)             // PACKAGE 1 (free 680)
             #undef  OPTION_ELLIPTIC      // ✓ 13112 bytes // Without ELLIPTIC
     #define OPTION_BESSEL                // ☑  5000 bytes // Without X.FN BESSEL
     #define OPTION_ORTHO                 // ☑   504 bytes // Without X.FN ORTHO MENU
@@ -201,12 +207,15 @@
     #define OPTION_DIST_D                // ☑  3256 bytes // (4) Without GEV, Prto, Prto2, Unfm, DisU: 20 items, submenus GEV PARETO UNIFORM DISUNIFORM
     #define OPTION_TVM_FORMULAS          // ☑  2744 bytes // Use TVM analytical formulas where possible
     #define OPTION_TVM_NEWTON            // ☑  2128 bytes // Use TVM additional newton raphson in the brent solver for tvm where possible
+    #define OPTION_TVM_AMORT             // ✓  1648 bytes // Use additional AMORT in tvm
     #define OPTION_ELEC                  // ☑  6856 bytes // ELEC   6240 saving if VECTOR is not in; 2856 saving if VECTOR is in
-            #undef  OPTION_EIGEN         // ✓ 17440 bytes // Without EIGVAL, EIGVEC, M.QR, MSQRT
-            #undef  OPTION_IR_PRINTING   // ✓ 10040 bytes // Remove IR printing for old hardware
+    #define OPTION_EIGEN                 // ✓ 17440 bytes // Without EIGVAL, EIGVEC, M.QR, MSQRT
+    #define OPTION_SLVP_POLY             // ✓  2024 bytes // SLVP general polynomial roots (companion matrix through the EIGEN QR solver)
+    #define OPTION_STRUCTURED_PGM        // ✓  5873 bytes // The DM42 can include STRUCT at 10 nesting levels, 4 FOR loops, and 10 IF, 10 DO and 10 REPEAT numbers
+            #define  OPTION_IR_PRINTING   // ✓ 10040 bytes // Remove IR printing for old hardware
   #endif // DMCP_PACKAGE1
 
-  #if defined(DMCP_PACKAGE2)             // PACKAGE 2 (free 4624 ☑) // Limited2 DIST; Full X.FN menu; NO EIGEN; NO ELEC; SLOW FIN; IR PRINTING
+  #if defined(DMCP_PACKAGE2)             // PACKAGE 2 (free 168 ☑)
     #define OPTION_ELLIPTIC              // ☑ 13192 bytes // Without ELLIPTIC
     #define OPTION_BESSEL                // ☑  4984 bytes // Without X.FN BESSEL
     #define OPTION_ORTHO                 // ☑   696 bytes // Without X.FN ORTHO MENU
@@ -215,27 +224,33 @@
     #define OPTION_DIST_B                // ☑  7080 bytes // Without (2) Cauch, chi2, Expon, Weibl, Logis, t: 24 items, submenus CAUCH CHI2 EXPON WEIBL LOGIS T; +DIST_C
             #undef  OPTION_DIST_C        // ✓  9624 bytes // Without (3) F, Binom, NBin, Hyper, Poiss, Geom: 24 items, submenus F BINOM HYPER POISS GEOM
             #undef  OPTION_DIST_D        // ✓  3280 bytes // Without (4) GEV, Prto, Prto2, Unfm, DisU: 20 items, submenus GEV PARETO UNIFORM DISUNIFORM
-            #undef  OPTION_TVM_FORMULAS  // ✓  2744 bytes // Use TVM analytical formulas where possible
-            #undef  OPTION_TVM_NEWTON    // ✓  2032 bytes // Use TVM additional newton raphson in the brent solver for tvm where possible
-            #undef  OPTION_ELEC          // ✓  6816 bytes // ELEC   see below
-            #undef  OPTION_EIGEN         // ✓ 17440 bytes // Without EIGVAL, EIGVEC, M.QR, MSQRT
-    #define OPTION_IR_PRINTING   // ✓ 10040 bytes // Remove IR printing for old hardware
+    #define OPTION_TVM_FORMULAS          // ✓  2744 bytes // Use TVM analytical formulas where possible
+    #define OPTION_TVM_NEWTON            // ✓  2032 bytes // Use TVM additional newton raphson in the brent solver for tvm where possible
+    #define OPTION_TVM_AMORT             // ✓  1648 bytes // Use additional AMORT in tvm
+    #define OPTION_ELEC                  // ✓  6816 bytes // ELEC   see below
+    #define OPTION_EIGEN                 // ✓ 17440 bytes // Without EIGVAL, EIGVEC, M.QR, MSQRT
+    #define OPTION_SLVP_POLY             // ✓  2024 bytes // SLVP general polynomial roots (companion matrix through the EIGEN QR solver)
+    #define OPTION_STRUCTURED_PGM        // ✓  5873 bytes // The DM42 can include STRUCT at 10 nesting levels, 4 FOR loops, and 10 IF, 10 DO and 10 REPEAT numbers
+    #define OPTION_IR_PRINTING           // ✓ 10040 bytes // Remove IR printing for old hardware
   #endif // DMCP_PACKAGE2
 
-  #if defined(DMCP_PACKAGE3)             // PACKAGE 3 (free 3280) // Limited0 DIST, Stripped ELLIPSE X.FN menu; EIGEN; ELEC; FAST FIN; IR PRINTING
-            #undef  OPTION_ELLIPTIC      // ✓ 13112 bytes // Without ELLIPTIC
-    #define OPTION_BESSEL               // ☑  5008 bytes // Without X.FN BESSEL
-    #define OPTION_ORTHO                // ☑   696 bytes // Without X.FN ORTHO MENU
+  #if defined(DMCP_PACKAGE3)             // PACKAGE 3 (free 848)
+    #define  OPTION_ELLIPTIC             // ✓ 13112 bytes // Without ELLIPTIC
+    #define OPTION_BESSEL                // ☑  5008 bytes // Without X.FN BESSEL
+    #define OPTION_ORTHO                 // ☑   696 bytes // Without X.FN ORTHO MENU
     #define OPTION_DISTRIBUTIONS         // ✓     0 bytes // Without the DIST menu top-level link; the subsets below carry the code
     #define OPTION_DIST_NORMAL           // ☑  2200 bytes // Without (1) Norml, LgNrm, StdNorml: 12 items, submenus NORML STDNORML; base set, undefines DIST_B/C/D
-            #undef  OPTION_DIST_B        // ✓  7136 bytes // Without (2) Cauch, chi2, Expon, Weibl, Logis, t: 24 items, submenus CAUCH CHI2 EXPON WEIBL LOGIS T; +DIST_C
-            #undef  OPTION_DIST_C        // ✓  9624 bytes // Without (3) F, Binom, NBin, Hyper, Poiss, Geom: 24 items, submenus F BINOM HYPER POISS GEOM
-            #undef  OPTION_DIST_D        // ✓  3280 bytes // Without (4) GEV, Prto, Prto2, Unfm, DisU: 20 items, submenus GEV PARETO UNIFORM DISUNIFORM
-    #define OPTION_TVM_FORMULAS          // ☑  2744 bytes // Use TVM analytical formulas where possible
+    #define OPTION_DIST_B                // ✓  7136 bytes // Without (2) Cauch, chi2, Expon, Weibl, Logis, t: 24 items, submenus CAUCH CHI2 EXPON WEIBL LOGIS T; +DIST_C
+    #define OPTION_DIST_C                // ✓  9624 bytes // Without (3) F, Binom, NBin, Hyper, Poiss, Geom: 24 items, submenus F BINOM HYPER POISS GEOM
+    #define OPTION_DIST_D                // ✓  3280 bytes // Without (4) GEV, Prto, Prto2, Unfm, DisU: 20 items, submenus GEV PARETO UNIFORM DISUNIFORM
+            #undef  OPTION_TVM_FORMULAS  // ☑  2744 bytes // Use TVM analytical formulas where possible
     #define OPTION_TVM_NEWTON            // ☑  2088 bytes // Use TVM additional newton raphson in the brent solver for tvm where possible
+    #define OPTION_TVM_AMORT      // ✓  1648 bytes // Use additional AMORT in tvm
     #define OPTION_ELEC                  // ☑  6824 bytes // ELEC   see below
     #define OPTION_EIGEN                 // ☑ 17464 bytes // Without EIGVAL, EIGVEC, M.QR, MSQRT
-            #undef OPTION_IR_PRINTING           // ✓ 10040 bytes // Remove IR printing for old hardware
+    #define OPTION_SLVP_POLY             // ✓  2024 bytes // SLVP general polynomial roots (companion matrix through the EIGEN QR solver)
+    #define OPTION_STRUCTURED_PGM        // ✓  5873 bytes // The DM42 can include STRUCT at 10 nesting levels, 4 FOR loops, and 10 IF, 10 DO and 10 REPEAT numbers
+    #undef OPTION_IR_PRINTING           // ✓ 10040 bytes // Remove IR printing for old hardware
   #endif // DMCP_PACKAGE3
             // ELEC VECT  FLASH cost   free   (pkg4, 720896 total)
             //  0    0          0     32692
@@ -254,8 +269,11 @@
             #undef  OPTION_DIST_D        // ✓  3280 bytes // Without (4) GEV, Prto, Prto2, Unfm, DisU: 20 items, submenus GEV PARETO UNIFORM DISUNIFORM
             #undef  OPTION_TVM_FORMULAS  // ✓  2744 bytes // Use TVM analytical formulas where possible
             #undef  OPTION_TVM_NEWTON    // ✓  2032 bytes // Use TVM additional newton raphson in the brent solver for tvm where possible
+            #undef  OPTION_TVM_AMORT     // ✓  1648 bytes // Use additional AMORT in tvm
             #undef  OPTION_ELEC          // ✓  6816 bytes // ELEC   6240 saving if VECTOR is not in; 2856 saving if VECTOR is in
             #undef  OPTION_EIGEN         // ✓ 17440 bytes // Without EIGVAL, EIGVEC, M.QR, MSQRT
+            #undef  OPTION_SLVP_POLY     // ✓  2024 bytes // SLVP general polynomial roots (companion matrix through the EIGEN QR solver)
+            #undef  OPTION_STRUCTURED_PGM// ✓  5873 bytes // The DM42 can include STRUCT at 10 nesting levels, 4 FOR loops, and 10 IF, 10 DO and 10 REPEAT numbers
     #define OPTION_IR_PRINTING           // ✓ 10040 bytes // Remove IR printing for old hardware
   #endif // DMCP_PACKAGE4_NOOPT
 
@@ -277,24 +295,21 @@
     #define OPTION_DEVPROFILES           // ✓   360 bytes // Without any dev profile shortcuts, and no JM, RJ & HP35
             #undef  OPTION_SAMPLEPGMS    // ✓   200 bytes // All hardware without Load programming sample programs testPgms
     #define OPTION_STOPWATCH             // ✓  1432 bytes // Without STOPW
-            #undef  OPTION_EDIT_X        // ✓  3240 bytes // Without number editing in X-register. Not complete EDIT removal.
-            #undef  OPTION_EDIT_PEM      // ✓  1808 bytes // Without number and function parameter editing in PEM. Not complete EDIT removal.
+    #define OPTION_EDIT_X                // ✓  3240 bytes // Without number editing in X-register. Not complete EDIT removal.
+    #define OPTION_EDIT_PEM              // ✓  1808 bytes // Without number and function parameter editing in PEM. Not complete EDIT removal.
     #define OPTION_LONGPRESS_CFG         // ✓  1248 bytes // Logic for longpress assignment to the f/g key
+    #define OPTION_INFSUMS               // ?   400 bytes // Infinity sum with the early stop; the plain programmable sum and product stay
+    #define OPTION_ATEXT                 // ✓   504 bytes // ATEXT: the string in a register, displayed from the PIXEL position
+    #define OPTION_ATEXT_FONTS           // ✓   592 bytes // GRFNT, GRFNT#: the ATEXT font
+    #define OPTION_LP_DP_TIMING          // ✓   296 bytes // LP%, DP% long press and double press timing in percent
   //Large packages developed for DM42/DM42n. Could arguably work on DM42.
             #undef  OPTION_CUBIC_159     // ✓  2880 bytes // C47 SLVC function is 159 digits internally
             #undef  OPTION_SQUARE_159    // ✓  2656 bytes // C47 SLVQ function is 159 digits internally
             #undef  OPTION_EIGEN_159     // ✓  2568 bytes // C47 EINEN function is 159 digits internally; note both OPTION_SQUARE_159 & OPTION_CUBIC_159 used by OPTION_EIGEN_159
             #undef  OPTION_XFN_1000      // ✓  5224 bytes // XFN extended 1000 digit math Functionality
             #undef  OPTION_VECTOR        // ✓ 13672 bytes // Vector 12952 saving if ELEC is not in; 9568 saving if ELEC is in
-            #undef  OPTION_SLVP_POLY     // ✓  2024 bytes // SLVP general polynomial roots (companion matrix through the EIGEN QR solver)
-            #undef  OPTION_INFSUMS       // ?   400 bytes // Infinity sum with the early stop; the plain programmable sum and product stay
-            #undef  OPTION_ATEXT         // ✓   504 bytes // ATEXT: the string in a register, displayed from the PIXEL position
-            #undef  OPTION_ATEXT_FONTS   // ✓   592 bytes // GRFNT, GRFNT#: the ATEXT font
-            #undef  OPTION_LP_DP_TIMING  // ✓   296 bytes // LP%, DP% long press and double press timing in percent
-            #undef  OPTION_STRUCTURED_PGM// ✓  5873 bytes // The DM42 can include STRUCT at 10 nesting levels, 4 FOR loops, and 10 IF, 10 DO and 10 REPEAT numbers
             #undef  OPTION_ALGDEP        // ✓  3896 bytes // Without x->POLY, V->SUM=0 algebraic number identification
             #undef  OPTION_MX_SHOW       // ✓  5408 bytes // Matrix SHOW off: 9 rows not 11, no rolled out [[...] [...]], vector on one line, 15 digits not 34, ALL not user format, no per line SIG
-    #define OPTION_TVM_AMORT             // ✓  1648 bytes // Use additional AMORT in tvm
     #define OPTION_DATAFILE              // ✓  2112 bytes // Without register/variable .d47 export & import
 
    // DECNUMBER_FASTMUL        // manually include or exclude this option in the Makefile, DECNUMBER_FASTMUL
@@ -567,6 +582,7 @@
 #define TO_KB_ACTV_CURSOR  480
 #define TO_KB_ACTV_SHORT    40
 #define PROGRAM_KB_ACTV  60000
+#define TO_KB_ACTV_ZERO      0
 
 
 #define JMSHOWCODES_KB3   // top line right   Single Double Triple
@@ -1982,6 +1998,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TI_FIN_RESULT                            154
 #define TI_FIN_ROUNDING_MODE                     155  // X prefixed
 #define TI_FIN_ROUNDING_MODE_ONLY                156  // X line blanked
+#define TI_FINISH                                157
 
 #define SET_TI_TRUE_FALSE(condition)               do { temporaryInformation = TI_FALSE + (condition); } while(0) // TI_TRUE must be TI_FALSE + 1
 

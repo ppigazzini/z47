@@ -272,7 +272,7 @@ def copy_testpgms_bundle(
 
 
 def run_exportall(c47_bin: Path, cwd: Path) -> None:
-    command = [str(c47_bin), "--writeexportall"]
+    command = [str(c47_bin), "--headless", "--writeexportall"]
     if sys.platform.startswith("linux") and not (
         "DISPLAY" in os.environ or "WAYLAND_DISPLAY" in os.environ
     ):

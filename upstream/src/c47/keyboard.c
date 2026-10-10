@@ -1589,6 +1589,8 @@ endReturnTrue:
                            || key->primary == ITM_RS
                            || key->primary == ITM_UP1
                            || key->primary == ITM_DOWN1
+                           || key->primary == ITM_EXIT1
+                           || key->primary == ITM_SNAP
                            || (allowShowDigits && key->primary >= ITM_0 && key->primary <= ITM_9))
                          ) ) {
       showRegis = 9999;                                      //clear showmode register
@@ -1722,6 +1724,11 @@ endReturnTrue:
 
     if(Check_Norm_Key_00_Assigned(&result, key_no) == 0) {
       Check_MultiPresses(&result, key_no);        //JM
+    }
+
+    if(SHOWMODE && result == ITM_EXIT1) {                               //JM EXIT in SHOW defers to key release, (as shift); long press ladder start; short press exit on release
+      lastItem = ITM_EXIT1;
+      return ITM_NOP;
     }
 
                     #if defined(PC_BUILD)
@@ -2109,6 +2116,11 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
         refreshModeGui();
         screenUpdatingMode &= ~SCRUPD_MANUAL_SHIFT_STATUS;
       }
+      if(SHOWMODE && lastItem == ITM_EXIT1 && showFunctionNameItem == 0) {   //JM deferred short EXIT press in SHOW exits on release; a long press ran SNAP or NOP through showFunctionNameItem instead
+        lastItem = 0;
+        fnKeyExit(NOPARAM);
+        goto RELEASE_END;
+      }
       if(SHOWMODE) {
         lastItem = 0;
       }
@@ -2116,7 +2128,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
 
 
 
-      if(temporaryInformation == TI_SHOWNOTHING) {
+      if(temporaryInformation == TI_SHOWNOTHING && !(currentMenu() == -MNU_SHOW && (showFunctionNameItem == ITM_SNAP || showFunctionNameItem == ITM_NOP))) {   //JM a matrix SHOW draws directly and sits in TI_SHOWNOTHING; let the EXIT long press SNAP or NOP stage through, so it runs on the release like the other SHOW types
         return;
       }
 
@@ -2190,6 +2202,10 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
         hideFunctionName();
 
         if(item == ITM_NOP) {                                                   //the long press has run out to its NOP stage, so the key changes nothing and in CM_PEM adds no step
+          if(currentMenu() == -MNU_SHOW) {                                      //JM the EXIT long press ran out to NOP in SHOW: restore the SHOW page the preview label overwrote (the preview cleared the SHOW TI, so test the menu, not SHOWMODE)
+            recallShowStatus();
+            fnC47Show(ITM_NOP);
+          }
           goto RELEASE_END;
         }
 
@@ -2821,7 +2837,7 @@ RELEASE_END:
               //case CM_FONT_BROWSER:
                 break;
               default: {
-                runFunction(item);
+                runFunction(item);                               //JM an assigned SNAP over a SHOW page (USER mode): fnSNAP repaints the page for the capture and leaves it on screen
                 keyActionProcessed = true;
                 break;
               }

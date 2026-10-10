@@ -4,6 +4,8 @@
 #include "c47.h"
 #include "version.h"
 
+#define FINISH_LOCATION_TI false                                  // false: the FINISH message sits at the ERR line, left-aligned, as a calc error; true: at the TI line on X, right-aligned
+
 static void refreshRegisterLineRestoreT(void);
 static bool_t shiftGlyphOnScreen = false;                        // set where the f or g glyph is drawn, cleared where it is taken off
 static bool_t functionNameOnScreen = false;                      // set where showFunctionName puts a name up, cleared where hideFunctionName takes it down
@@ -164,9 +166,7 @@ TO_QSPI static const char *nameOfWday_pt[8] = {"dia inv" STD_a_ACUTE "lido da se
     #endif // BIG_SCREEN_COEF != 1
     cairo_set_source_surface(cr, imageSurface, 0, 0);
     cairo_surface_mark_dirty(imageSurface);
-    #if (BIG_SCREEN_COEF != 1)
-      cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
-    #endif // BIG_SCREEN_COEF != 1
+    cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);  // Quartz antialiases GOOD at device scale, so a 1 px damage strip covers its row only in part.
     cairo_paint(cr);
     cairo_surface_destroy(imageSurface);
 
@@ -2127,7 +2127,7 @@ return res;
       }
 
       //lcd_refresh();
-      fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, TO_KB_ACTV_MEDIUM); //PROGRAM_KB_ACTV
+      fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, TO_KB_ACTV_ZERO); //PROGRAM_KB_ACTV
       if(disp && !blockMonitoring) {
         sprintf(tmps, "%s %" PRIi32 "  ", txt, loop);
         showString(tmps, &standardFont, 20, /*145-7*/ Y_POSITION_OF_REGISTER_T_LINE + mode * 20, vmNormal, false, false);  //note: displays info 1 line down, if "force" parameter is set
@@ -3628,10 +3628,12 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
     char prefix[200], lastBase[20];
 
     #if defined(DMCP_BUILD)
+      const int pendingKey = key_tail();                          // peek the DMCP buffer before the pop empties it: >0 a press, 0 a release, -1 nothing
       keyBuffer_pop();                                            // This causes key updates while the longer time processing register updates happen
       if( !skippedStackLines && (calcMode == CM_NORMAL || calcMode == CM_MIM) &&
           !(regist == REGISTER_X)&&// || regist == REGISTER_Y) &&
-          !runningOnSimOrUSB &&                                   // Automatically, when on battery (hence low processor), change to skip long processing register printing, recovering the fragmented screen here: See timer.c fnTimerEndOfActivity()
+          !runningOnSimOrUSB &&                                   // Not on USB: a polar complex or polar vector line takes a rectangular to polar conversion per draw, so defer it and reach the X line and the waiting key sooner: See timer.c fnTimerEndOfActivity()
+          pendingKey > 0 &&                                       // a press, not a release: the file chooser returns without waiting for the release of the key that closed it, and deferring a line does nothing for a release
           !emptyKeyBuffer() &&
           key_empty() == 1
           ) {
@@ -3846,6 +3848,18 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
         w = stringWidth(tmpString, &standardFont, true, true);
         showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
       }
+
+      #if FINISH_LOCATION_TI
+      else if(temporaryInformation == TI_FINISH && regist == REGISTER_X) {        // the message sits at the TI line on X, right-aligned
+        w = stringWidth(errorMessage, &standardFont, true, true);
+        showString(errorMessage, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
+      }
+      #else
+      else if(temporaryInformation == TI_FINISH && regist == ERR_REGISTER_LINE) { // the message sits at the ERR line, left-aligned, the way a calc error does
+        const int16_t errorY = Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(ERR_REGISTER_LINE - REGISTER_X) + 6;
+        showString(errorMessage, &standardFont, 1, errorY, vmNormal, true, true);
+      }
+      #endif // FINISH_LOCATION_TI
 
       else if(temporaryInformation == TI_CLEAR_ALL_MENUS && regist == REGISTER_X) {
         sprintf(tmpString, "%s", errorMessageOf(TI_All_user_menus_cleared));
@@ -4797,14 +4811,14 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
           //else if(temporaryInformation == TI_SXY) {
           //  if(regist == REGISTER_X) {
           //    strcpy(prefix, "s" STD_SUB_x STD_SUB_y " =");
-          //    prefixWidth = prefixWidthAt(prefix, indent);
+          //    prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
           //  }
           //}
 
           //else if(temporaryInformation == TI_COV) {
           //  if(regist == REGISTER_X) {
           //    strcpy(prefix, "s" STD_SUB_m STD_SUB_w " =");
-          //    prefixWidth = prefixWidthAt(prefix, indent);
+          //    prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
           //  }
           //}
 
@@ -6711,10 +6725,16 @@ void fnSNAP(uint16_t unusedButMandatoryParameter) {
     testClockFrozen = true;           // the capture carries the date and time, so the test build reads a fixed clock and the stored hashes stay put
   #endif // TESTSUITE_BUILD
   if(!snapSkipRefresh && !screenHoldsDrawnPixels) {   //--snapskiprefresh, or a screen a program drew, keeps the raw graphic screen
-    if(temporaryInformation != TI_SHOWNOTHING) {      //a SHOW page is painted once, and SCRUPD_AUTO disarms the guard in _refreshNormalScreen that keeps it on screen
-      screenUpdatingMode = SCRUPD_AUTO;
+    if(currentMenu() == -MNU_SHOW) {                  //a SHOW page: repaint the page on screen so the capture keeps its top line, as f+DISP does; the longpress preview clears the SHOW TI, so test the menu, not SHOWMODE
+      recallShowStatus();
+      fnC47Show(ITM_NOP);
     }
-    refreshScreen(80);
+    else {
+      if(temporaryInformation != TI_SHOWNOTHING) {    //not a SHOW page: keep the original capture refresh, with SCRUPD_AUTO for the normal screen
+        screenUpdatingMode = SCRUPD_AUTO;
+      }
+      refreshScreen(80);
+    }
   }
 
   #if defined(PC_BUILD)  //added the xcopy commands needed for hardware, to better duplicate the hardware standardScreenDump
@@ -6734,6 +6754,10 @@ void fnSNAP(uint16_t unusedButMandatoryParameter) {
     fnP_All_Regs(PRN_STK); //print stack
   }
   xcopy(tamBuffer, ss, TAM_BUFFER_LENGTH);      //Backup the TamBuffer, in case we are in a TAM screen when doing screenshot
+  if(currentMenu() == -MNU_SHOW && !screenHoldsDrawnPixels) {   //fnP_All_Regs above formats the registers through the SHOW display buffer; repaint the page so the screen the release refresh leaves is the clean SHOW page, not the register print's TSV text
+    recallShowStatus();
+    fnC47Show(ITM_NOP);
+  }
   #if defined(TESTSUITE_BUILD)
     testClockFrozen = false;
   #endif // TESTSUITE_BUILD

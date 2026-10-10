@@ -1,0 +1,252 @@
+@ Index:  Straight port of the HP-42S triangle solver
+@ Author: Hewlett-Packard, Bruce Young, Didier Lachieze, Barry Mead
+@ Source: https://forum.swissmicros.com/viewtopic.php?p=38646#p38646
+@ Tested: SSS
+@ Input:  Sides 3, 4, 5
+@ Output: Area 6
+@
+@ This is the triangle program starting on p.58 of _HP-42S Programming
+@ Examples & Techniques_, ported to the R47 by those listed above.
+LBL ‘TRI∡’
+  ‘SSS’
+  KEY 01 XEQ A
+  ‘SSA’
+  KEY 02 XEQ B
+  ‘ASA’
+  KEY 03 XEQ C
+  ‘SAA’
+  KEY 04 XEQ D
+  ‘SAS’
+  KEY 05 XEQ 40
+  MENU
+  STOP
+  XEQ 41
+  GTO ‘TRI∡’
+
+# SSS subroutine
+LBL A
+  INPUT ‘s1’
+  INPUT ‘s2’
+  INPUT ‘s3’
+  RCL ‘s1’
+  RCL+ ‘s2’
+  RCL+ ‘s3’
+  2
+  ÷
+  STO ‘perim’
+  𝑥²
+  LAST𝑥
+  RCL× ‘s2’
+  -
+  RCL ‘s1’
+  RCL× ‘s3’
+  ÷
+  √𝑥
+  cos⁻¹(𝑥)
+  2
+  ×
+  STO ‘a3’
+  sin(𝑥)
+  RCL ‘s1’
+  ×
+  STO R00
+  RCL ‘perim’
+  𝑥²
+  LAST𝑥
+  RCL× ‘s1’
+  -
+  RCL÷ ‘s2’
+  RCL÷ ‘s3’
+  √𝑥
+  cos⁻¹(𝑥)
+  2
+  ×
+  STO ‘a2’
+  RCL+ ‘a3’
+  cos(𝑥)
+  CHS
+  cos⁻¹(𝑥)
+  STO ‘a1’
+  RTN
+
+# SSA subroutine
+LBL B
+  INPUT ‘s1’
+  INPUT ‘s2’
+  INPUT ‘a2’
+  sin(𝑥)
+  RCL× ‘s2’
+  RCL÷ ‘s1’
+  sin⁻¹(𝑥)
+  STO ‘a3’
+  sin(𝑥)
+  RCL× ‘s1’
+  STO R00
+  XEQ 42
+  RCL ‘s2’
+  𝑥≤? ‘s1’
+    RTN
+  XEQ 41
+  STOP
+  RCL ‘a3’
+  cos(𝑥)
+  CHS
+  cos⁻¹(𝑥)
+  STO ‘a3’
+  XEQ 42
+  RTN
+
+# Calculate both SSA cases
+LBL 42
+  RCL ‘a3’
+  RCL+ ‘a2’
+  cos(𝑥)
+  CHS
+  cos⁻¹(𝑥)
+  STO ‘a1’
+  RCL ‘a2’
+  cos(𝑥)
+  RCL× ‘s2’
+  RCL ‘a3’
+  cos(𝑥)
+  RCL× ‘s1’
+  +
+  STO ‘s3’
+  RTN
+
+# ASA subroutine
+LBL C
+  INPUT ‘a3’
+  INPUT ‘s1’
+  INPUT ‘a1’
+  RCL ‘a3’
+  RCL+ ‘a1’
+  cos(𝑥)
+  CHS
+  cos⁻¹(𝑥)
+  STO ‘a2’
+  RCL ‘a3’
+  RCL ‘s1’
+  →RECT_(HP)
+  𝑥⇄𝑦
+  STO R00
+  RCL ‘a2’
+  1
+  →RECT_(HP)
+  R↓
+  ÷
+  STO ‘s2’
+  R↑
+  ×
+  +
+  STO ‘s3’
+  RTN
+
+# SAA subroutine
+LBL D
+  INPUT ‘s1’
+  INPUT ‘a1’
+  INPUT ‘a2’
+  RCL ‘a1’
+  +
+  cos(𝑥)
+  CHS
+  cos⁻¹(𝑥)
+  STO ‘a3’
+  RCL ‘s1’
+  →RECT_(HP)
+  𝑥⇄𝑦
+  STO R00
+  RCL ‘a2’
+  1
+  →RECT_(HP)
+  R↓
+  ÷
+  STO ‘s2’
+  R↑
+  ×
+  +
+  STO ‘s3’
+  RTN
+
+# SAS subroutine
+LBL 40
+  INPUT ‘s1’
+  INPUT ‘a1’
+  INPUT ‘s2’
+  RCL ‘a1’
+  𝑥⇄𝑦
+  →RECT_(HP)
+  RCL- ‘s1’
+  →POL_(HP)
+  STO ‘s3’
+  RCL+ ‘s1’
+  RCL+ ‘s2’
+  2
+  ÷
+  STO ‘perim’
+  𝑥²
+  LAST𝑥
+  RCL× ‘s2’
+  -
+  RCL ‘s1’
+  RCL× ‘s3’
+  ÷
+  √𝑥
+  cos⁻¹(𝑥)
+  2
+  ×
+  STO ‘a3’
+  sin(𝑥)
+  RCL× ‘s1’
+  STO R00
+  RCL ‘perim’
+  𝑥²
+  LAST𝑥
+  RCL× ‘s1’
+  -
+  RCL÷ ‘s2’
+  RCL÷ ‘s3’
+  √𝑥
+  cos⁻¹(𝑥)
+  2
+  ×
+  STO ‘a2’
+  RTN
+
+# Calculate results
+LBL 41
+  STOCFG K
+  RCL R00
+  RCL× ‘s3’
+  2
+  ÷
+  STO ‘area’
+  RCL ‘s1’
+  RCL+ ‘s2’
+  RCL+ ‘s3’
+  STO ‘perim’
+  FIX 03
+  ‘per : ’
+  RCL+ ‘perim’
+  ‘   area : ’
+  RCL+ ‘area’
+  +
+  ‘s3 : ’
+  RCL+ ‘s3’
+  ‘   a3 : ’
+  RCL+ ‘a3’
+  +
+  ‘s2 : ’
+  RCL+ ‘s2’
+  ‘   a2 : ’
+  RCL+ ‘a2’
+  +
+  ‘s1 : ’
+  RCL+ ‘s1’
+  ‘   a1 : ’
+  RCL+ ‘a1’
+  +
+  RCLCFG K
+  END
+.END.

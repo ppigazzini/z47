@@ -15,6 +15,11 @@ const calcRegister_t = i16;
 
 const REGISTER_X: calcRegister_t = 100;
 const FIRST_LOCAL_REGISTER: calcRegister_t = 7000;
+const NUMBER_OF_LOCAL_REGISTERS: i16 = 99;
+const FIRST_LOCAL_REGISTER_IN_KS_CODE: i16 = 112;
+const LAST_LOCAL_REGISTER_IN_KS_CODE: i16 = 210;
+const FIRST_STAT_REGISTER_IN_KS_CODE: i16 = 211;
+const LAST_SPARE_REGISTERS_IN_KS_CODE: i16 = 224;
 const dtReal34: u32 = 1;
 const ERROR_NONE: u8 = 0;
 const ERROR_OUT_OF_RANGE: u8 = 8;
@@ -49,6 +54,15 @@ fn productRealSetPositiveSign(value: *ProductReal) void {
 
 fn productRealSubtract(lhs: *const ProductReal, rhs: *const ProductReal, result: *ProductReal, real_context: *ProductRealContext) void {
     product_real_owned.productRealSubtract(lhs, rhs, result, real_context);
+}
+
+// defines.h regKStoC: a keystroke register code to the internal register number.
+// Its parameter is a uint8_t, so a code above 255 wraps before it is converted.
+fn regKStoC(reg_ks: u8) i16 {
+    const ks: i16 = reg_ks;
+    const stat_or_spare: i16 = if (FIRST_STAT_REGISTER_IN_KS_CODE <= ks and ks <= LAST_SPARE_REGISTERS_IN_KS_CODE) NUMBER_OF_LOCAL_REGISTERS else 0;
+    const local: i16 = if (FIRST_LOCAL_REGISTER_IN_KS_CODE <= ks and ks <= LAST_LOCAL_REGISTER_IN_KS_CODE) FIRST_LOCAL_REGISTER - FIRST_LOCAL_REGISTER_IN_KS_CODE else 0;
+    return ks - stat_or_spare + local;
 }
 
 fn validateRegisterSourceRange(load_into_memory: ?bool, start: u16, count: *u16, local_register_count: u8) u8 {
@@ -141,8 +155,17 @@ pub fn getRegParamProduct(load_into_memory: ?*bool, start: *u16, count: *u16, de
     }
 
     if (destination) |dest| {
-        return validateRegisterDestinationRange(dest.*, count.*, local_register_count);
+        const destination_error = validateRegisterDestinationRange(dest.*, count.*, local_register_count);
+        if (destination_error != ERROR_NONE) {
+            return destination_error;
+        }
     }
 
+    // The user keys a keystroke register number, 112 for R.00; the caller gets the
+    // internal one, 7000.
+    start.* = @intCast(regKStoC(@truncate(start.*)));
+    if (destination) |dest| {
+        dest.* = @intCast(regKStoC(@truncate(dest.*)));
+    }
     return ERROR_NONE;
 }

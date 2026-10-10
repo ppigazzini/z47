@@ -1,0 +1,55 @@
+{\rtf1\ansi\ansicpg1252\deff0\nouicompat{\fonttbl{\f0\fnil\fcharset0 C47__StandardFont;}}{\pard\sl240\slmult1\f0\fs24\lang9\f0\loch
+C47 Program file export: Export format version 3, C47 program version 1.
+ \par
+0000: { Prgm #1/1: 119 bytes / 47 steps } \par
+\par
+0001:  LBL \u8216?Binet1\u8217?\par
+0002:    LocR 11\par
+0003:    STOCFG .02\par
+0004:    STOS .03\par
+0005:    CL\u931?\par
+0006:    101\par
+0007:    STO .00\par
+0008:    STO .01\par
+\par
+0009:    LBL \u8216?M1\u8217?\par
+0010:    RCL .01\par
+0011:    RCL .00\par
+0012:    -\par
+0013:    RCL .01\par
+0014:    XEQ \u8216?CALCLP1\u8217?\par
+0015:    \u931?+\par
+0016:    DSZ .00\par
+0017:      GTO \u8216?M1\u8217?\par
+0018:    RCLS .03\par
+0019:    RCLCFG .02\par
+0020:    RTN\par
+\par
+0021:    LBL \u8216?CALCLP1\u8217?\par
+0022:    DECR X\par
+0023:    \u247?\par
+0024:    7\par
+0025:    \u215?\par
+0026:    2\par
+0027:    -\par
+0028:    ENTER\par
+0029:    # 74 \u981? r.golden\par
+0030:    x\u8644?y\par
+0031:    y\u739?\par
+0032:    x\u8644?y\par
+0033:    # 74 \u981? r.golden\par
+0034:    CHS\par
+0035:    x\u8644?y\par
+0036:    CHS\par
+0037:    y\u739?\par
+0038:    -\par
+0039:    5\par
+0040:    \u8730?\u895?\par
+0041:    \u247?\par
+0042:    ENTER\par
+0043:    Im\par
+0044:    x\u8644?y\par
+0045:    Re\par
+0046:    RTN\par
+0047:  END\par
+}}

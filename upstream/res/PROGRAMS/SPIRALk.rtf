@@ -1,87 +1,79 @@
 {\rtf1\ansi\ansicpg1252\deff0\nouicompat{\fonttbl{\f0\fnil\fcharset0 C47__StandardFont;}}{\pard\sl240\slmult1\f0\fs24\lang9\f0\loch
 C47 Program file export: Export format version 3, C47 program version 1.
  \par
-0000: { Prgm #4/4: 672 bytes / 78 steps } \par
+0000: { Prgm #1/1: 382 bytes / 70 steps } \par
 \par
 0001:  LBL \u8216?SPIRALk\u8217?\par
-0002:    REM \u8216?SPIRAL Program update 2026-06-06\u8217?\par
-0003:    REM \u8216?REG I: 0 or SCALING FACTOR\u8217?\par
-0004:    REM \u8216?REG J: 0 or GROWTH RATE\u8217?\par
-0005:    REM \u8216?C47 CODE FOR =>RAD REMOVED UPDATE\u8217?\par
-0006:    REM \u8216?COMPLEX AND DO NOT CHANGE TO RAD by RAprism\u8217?\par
-0007:    REM \u8216?CHANGED TO LIMIT |x| TO 150 INSTEAD OF 234 by barrymead\u8217?\par
-0008:    REM \u8216?PRESS ANY KEY added JM\u8217?\par
-0009:    REM \u8216?NEG PREVENTION added JM\u8217?\par
-0010:    ENTER\par
-0011:    RCL I\par
-0012:    x= ? 0.\par
-0013:      0.35\par
-0014:    STO I\par
-0015:    RCL J\par
-0016:    x= ? 0.\par
-0017:      0.1\par
-0018:    |x|\par
-0019:    STO J\par
-0020:    LocR 02\par
-0021:    1\par
-0022:    STO .00\par
-0023:    0\par
+0002:    ENTER\par
+0003:    RCL I\par
+0004:    x= ? 0.\par
+0005:      0.35\par
+0006:    STO I\par
+0007:    RCL J\par
+0008:    x= ? 0.\par
+0009:      0.1\par
+0010:    |x|\par
+0011:    STO J\par
+0012:    LocR 02\par
+0013:    1\par
+0014:    STO .00\par
+0015:    0\par
+0016:    ENTER\par
+0017:    CLLCD\sub x\nosupersub \sub y\nosupersub \par
+0018:    REM \u8216?MAIN LOOP START\u8217?\par
+\par
+0019:    LBL :LOOP1:\par
+0020:    REM \u8216?CALC ANGLE\u8217?\par
+0021:    RCL .00\par
+0022:    500.\par
+0023:    \u247?\par
 0024:    ENTER\par
-0025:    CLLCD\sub x\nosupersub \sub y\nosupersub \par
-0026:    REM \u8216?MAIN LOOP START\u8217?\par
+0025:    \u8658?RAD\par
+0026:    ENTER\par
+0027:    REM \u8216?CALC RE IM\u8217?\par
+0028:    COS\par
+0029:    x\u8644?y\par
+0030:    SIN\par
+0031:    COMPLEX\par
+0032:    x\u8644?y\par
+0033:    REM \u8216?CALC SIZE\u8217?\par
+0034:    RCL\u215? J\par
+0035:    \u8519?\u739?\par
+0036:    RCL\u215? I\par
+0037:    REM \u8216?CHECK COMPLEX VECTOR SIZE\u8217?\par
+0038:    150\par
+0039:    x\u8804? ? Y\par
+0040:      GTO :EXIT:\par
+0041:    DROPx\par
+0042:    STO .01\par
+0043:    \u215?\par
+0044:    REM \u8216?PLOT POINTS\u8217?\par
+0045:    REM \u8216?ADD OFFSET TO HAVE 0,0 IN MID OF SCREEN\u8217?\par
+0046:    200.+\u8520?\u215?120.\par
+0047:    +\par
+0048:    COMPLEX\par
+0049:    x\u8804?-0?\par
+0050:    GTO :BYPASS:\par
+0051:    x\u8644?y\par
+0052:    x\u8804?-0?\par
+0053:    GTO :BYPASS:\par
+0054:    SF \u8216?IGN1ER\u8217?\par
+0055:    POINT\par
+0056:    CF \u8216?IGN1ER\u8217?\par
+0057:    PAUSE 00\par
 \par
-0027:  LBL :LOOP1:\par
-0028:    REM \u8216?CALC ANGLE\u8217?\par
-0029:    RCL .00\par
-0030:    500.\par
-0031:    \u247?\par
-0032:    ENTER\par
-0033:    \u8658?RAD\par
-0034:    ENTER\par
-0035:    REM \u8216?CALC RE IM\u8217?\par
-0036:    COS\par
-0037:    x\u8644?y\par
-0038:    SIN\par
-0039:    COMPLEX\par
-0040:    x\u8644?y\par
-0041:    REM \u8216?CALC SIZE\u8217?\par
-0042:    RCL\u215? J\par
-0043:    \u8519?\u739?\par
-0044:    RCL\u215? I\par
-0045:    REM \u8216?CHECK COMPLEX VECTOR SIZE\u8217?\par
-0046:    150\par
-0047:    x\u8804? ? Y\par
-0048:      GTO :EXIT:\par
-0049:    DROPx\par
-0050:    STO .01\par
-0051:    \u215?\par
-0052:    REM \u8216?PLOT POINTS\u8217?\par
-0053:    REM \u8216?ADD OFFSET TO HAVE 0,0 IN MID OF SCREEN\u8217?\par
-0054:    200.+120.\u8520?\par
-0055:    +\par
-0056:    COMPLEX\par
-0057:    x\u8804?-0?\par
-0058:  GTO :BYPASS:\par
-0059:    x\u8644?y\par
-0060:    x\u8804?-0?\par
-0061:  GTO :BYPASS:\par
-0062:    SF \u8216?IGN1ER\u8217?\par
-0063:    POINT\par
-0064:    CF \u8216?IGN1ER\u8217?\par
-0065:    PAUSE 00\par
+0058:    LBL :BYPASS:\par
+0059:    REM \u8216?CALC NEXT ANGLE COUNTER\u8217?\par
+0060:    RCL .01\par
+0061:    1/x\par
+0062:    SDL 03\par
+0063:    IP\par
+0064:    INCR X\par
+0065:    STO+ .00\par
+0066:    GTO :LOOP1:\par
 \par
-0066:  LBL :BYPASS:\par
-0067:    REM \u8216?CALC NEXT ANGLE COUNTER\u8217?\par
-0068:    RCL .01\par
-0069:    1/x\par
-0070:    SDL 03\par
-0071:    IP\par
-0072:    INCR X\par
-0073:    STO+ .00\par
-0074:  GTO :LOOP1:\par
-\par
-0075:  LBL :EXIT:\par
-0076:    REM \u8216?WAIT FOR A KEY\u8217?\par
-0077:    PAUSE 99\par
-0078:  .END.\par
+0067:    LBL :EXIT:\par
+0068:    REM \u8216?WAIT FOR A KEY\u8217?\par
+0069:    PAUSE 99\par
+0070:  END\par
 }}

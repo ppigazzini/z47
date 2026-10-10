@@ -1,0 +1,202 @@
+@ Index:  64-bit elementary cellular automaton
+@ Author: fm org C47 test program
+@ Tested: Rule 90 from a single seed; AGRAPH displays each generation.
+@ input:  Rule 90, flag 00 clear (single seed)
+@ output: Each generation displayed by AGRAPH
+@
+@ The rule is prompted into K.
+@
+@ Flag 00 clear stores one set bit in R08; set, the row is
+@ filled from RAN#. Each generation is drawn with AGRAPH, then advanced.
+LBL ‘ECA’
+  UNSIGN
+  WSIZE 64          ; each cell word is 64 bits
+  INPUT ‘RULE’
+  →INT 10
+  STO K
+  0
+  0
+  CLLCD
+  XEQ 01
+  0
+  0.4               ; draws four rows, then stops
+  STO R40
+
+  LBL 00
+    CL𝑥
+    RCL R40
+    IP
+    AGRAPH R07
+    DECR X
+    64
+    RCL+ Z
+    𝑥⇄𝑦
+    AGRAPH R08
+    DECR X
+    64
+    RCL+ Z
+    𝑥⇄𝑦
+    AGRAPH R09
+    DECR X
+    64
+    RCL+ Z
+    𝑥⇄𝑦
+    AGRAPH R10
+    DECR X
+    0
+    𝑥⇄𝑦
+    PAUSE 00
+    ISE R40
+      GTO 70
+    GTO 71
+
+  LBL 70
+    XEQ 02
+    GTO 00
+
+  LBL 71
+    PAUSE 99
+    RTN
+
+  LBL 01
+    17
+    STO R44
+    R↓
+    FC? F00         ; clear: one set bit; set: a random row
+      GTO 50
+
+    LBL 55
+      XEQ 51
+      STO →R44
+      R↓
+      DSL R44
+        GTO 55
+      RTN
+    RTN             ; for rejig --fmt only
+
+  LBL 50
+    0₁₆
+    LBL 56
+      STO →R44
+      DSL R44
+        GTO 56
+      R↓
+      100000000000000₁₆  ; one set bit, the clear-flag seed
+      STO R08
+      R↓
+      RTN
+    RTN
+
+  LBL 51
+    64
+    2ˣ
+    RAN#
+    ×
+    →INT 16
+    RTN
+
+  LBL 02            ; one generation
+    𝑥⇄ I
+    𝑦⇄ J
+    37.02
+    STO R44
+
+    LBL 65
+      0₁₆
+      STO →R44
+      DSL R44
+        GTO 65
+      0
+      STO R45
+      20
+      STO R46
+      17
+      STO R44
+
+      LBL 66
+        63
+        STO R88
+
+        LBL 63
+          RCL →R45
+          3₁₆
+          SF C
+          RLCn →R88
+          AND
+          RL
+          RRn →R88
+          ENTER
+          2ˣ
+          RCL K
+          AND
+          SRn →Y
+          SLn →R88
+          RCL →R46
+          OR
+          STO →R46
+          DSL R88
+            GTO 63
+          INCR R45
+          INCR R46
+          DSL R44
+            GTO 66
+          0
+          STO R45
+          20
+          STO R46
+          16
+          STO R44
+
+          LBL 67
+            RCL →R45
+            MASKL 02
+            AND
+            SRn 62
+            INCR R45
+            RCL →R45
+            DECR R45
+            MASKR 01
+            AND
+            SLn 02
+            OR
+            ENTER
+            2ˣ
+            RCL K
+            AND
+            SRn →Y
+            SLn 63
+            RCL →R46
+            CB 63
+            OR
+            STO →R46
+            RCL →R45
+            MASKL 01
+            AND
+            SRn 63
+            INCR R45
+            RCL →R45
+            DECR R45
+            MASKR 02
+            AND
+            SL
+            OR
+            ENTER
+            2ˣ
+            RCL K
+            AND
+            SRn →Y
+            INCR R46
+            RCL →R46
+            CB 00
+            OR
+            STO →R46
+            INCR R45
+            DSL R44
+              GTO 67
+            20.18
+            R-COPY
+            RCL J
+            RCL I
+            RTN
+  END
+.END.

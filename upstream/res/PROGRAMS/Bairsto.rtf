@@ -1,0 +1,362 @@
+{\rtf1\ansi\ansicpg1252\deff0\nouicompat{\fonttbl{\f0\fnil\fcharset0 C47__StandardFont;}}{\pard\sl240\slmult1\f0\fs24\lang9\f0\loch
+C47 Program file export: Export format version 3, C47 program version 1.
+ \par
+0000: { Prgm #1/1: 842 bytes / 337 steps } \par
+\par
+0001:  LBL \u8216?Bairsto\u8217?\par
+0002:    ALL 00\par
+0003:    CLCVAR\par
+0004:    CLSTK\par
+0005:    \u8216?Polynomial degree?\u8217?\par
+0006:    STOP\par
+0007:    |x|\par
+0008:    IP\par
+0009:    STO 90\par
+0010:    STO 91\par
+0011:    CLSTK\par
+0012:    RCL 91\par
+0013:    1.\u215?\u9341?\super 3\nosupersub \par
+0014:    \u247?\par
+0015:    STO 92\par
+\par
+0016:    LBL A\par
+0017:    \u8216?x^\u8217?\par
+0018:    RCL 91\par
+0019:    +\par
+0020:    STOP\par
+0021:    STO \u8594?93\par
+0022:    CLSTK\par
+0023:    1.\par
+0024:    STO+ 93\par
+0025:    STO- 91\par
+0026:    RCL 92\par
+0027:    ISG 92\par
+0028:      GTO A\par
+0029:    CLSTK\par
+0030:    1.\par
+0031:    RCL 00\par
+0032:    x\u8800? ? Y\par
+0033:      XEQ B\par
+0034:    \u8216?Tolerance?\u8217?\par
+0035:    STOP\par
+0036:    STO 99\par
+0037:    CLSTK\par
+\par
+0038:    LBL 10\par
+0039:    3.\par
+0040:    STO 94\par
+0041:    RCL 94\par
+0042:    RCL 90\par
+0043:    x< ? Y\par
+0044:      GTO 02\par
+0045:    1.\par
+0046:    STO 95\par
+0047:    STO 96\par
+0048:    XEQ D\par
+0049:    XEQ 59\par
+0050:    XEQ 11\par
+0051:    STOP\par
+0052:    GTO 10\par
+\par
+0053:    LBL 02\par
+0054:    2.\par
+0055:    STO 94\par
+0056:    RCL 94\par
+0057:    RCL 90\par
+0058:    x\u8800? ? Y\par
+0059:      GTO 01\par
+0060:    XEQ 12\par
+0061:    GTO 90\par
+\par
+0062:    LBL 01\par
+0063:    XEQ 13\par
+\par
+0064:    LBL 90\par
+0065:    \u8216?Last root\u8217?\par
+0066:    RTN\par
+\par
+0067:    LBL B\par
+0068:    1.\par
+0069:    STO 93\par
+0070:    RCL 90\par
+0071:    1.\u215?\u9341?\super 3\nosupersub \par
+0072:    \u247?\par
+0073:    STO 92\par
+\par
+0074:    LBL C\par
+0075:    RCL 00\par
+0076:    STO\u247? \u8594?93\par
+0077:    1.\par
+0078:    STO+ 93\par
+0079:    RCL 92\par
+0080:    ISG 92\par
+0081:      GTO C\par
+0082:    1.\par
+0083:    STO 00\par
+0084:    RTN\par
+\par
+0085:    LBL D\par
+0086:    1.\par
+0087:    STO 97\par
+0088:    0.\par
+0089:    STO 98\par
+\par
+0090:    LBL 58\par
+0091:    1.\par
+0092:    STO 91\par
+0093:    RCL 90\par
+0094:    1.\u215?\u9341?\super 3\nosupersub \par
+0095:    \u247?\par
+0096:    1.\par
+0097:    +\par
+0098:    STO 89\par
+0099:    30.\par
+0100:    STO 92\par
+0101:    STO 93\par
+0102:    STO 94\par
+0103:    1.\par
+0104:    STO+ 93\par
+0105:    STO+ 94\par
+0106:    STO+ 94\par
+0107:    0.\par
+0108:    STO \u8594?92\par
+0109:    1.\par
+0110:    STO \u8594?93\par
+\par
+0111:    LBL E\par
+0112:    RCL \u8594?91\par
+0113:    STO \u8594?94\par
+0114:    RCL \u8594?93\par
+0115:    RCL 95\par
+0116:    \u215?\par
+0117:    CHS\par
+0118:    STO+ \u8594?94\par
+0119:    RCL \u8594?92\par
+0120:    RCL 96\par
+0121:    \u215?\par
+0122:    CHS\par
+0123:    STO+ \u8594?94\par
+0124:    1.\par
+0125:    STO+ 91\par
+0126:    STO+ 92\par
+0127:    STO+ 93\par
+0128:    STO+ 94\par
+0129:    RCL 89\par
+0130:    ISG 89\par
+0131:      GTO E\par
+0132:    RCL \u8594?92\par
+0133:    STO 84\par
+0134:    RCL \u8594?93\par
+0135:    STO 85\par
+0136:    30.\par
+0137:    STO 91\par
+0138:    RCL 90\par
+0139:    1.\u215?\u9341?\super 3\nosupersub \par
+0140:    \u247?\par
+0141:    1.\par
+0142:    +\par
+0143:    STO 89\par
+0144:    60.\par
+0145:    STO 92\par
+0146:    STO 93\par
+0147:    STO 94\par
+0148:    1.\par
+0149:    STO+ 93\par
+0150:    STO+ 94\par
+0151:    STO+ 94\par
+0152:    0.\par
+0153:    STO \u8594?92\par
+0154:    0.\par
+0155:    STO \u8594?93\par
+\par
+0156:    LBL 55\par
+0157:    RCL \u8594?91\par
+0158:    STO \u8594?94\par
+0159:    RCL \u8594?93\par
+0160:    RCL 95\par
+0161:    \u215?\par
+0162:    CHS\par
+0163:    STO+ \u8594?94\par
+0164:    RCL \u8594?92\par
+0165:    RCL 96\par
+0166:    \u215?\par
+0167:    CHS\par
+0168:    STO+ \u8594?94\par
+0169:    1.\par
+0170:    STO+ 91\par
+0171:    STO+ 92\par
+0172:    STO+ 93\par
+0173:    STO+ 94\par
+0174:    RCL 89\par
+0175:    ISG 89\par
+0176:      GTO 55\par
+0177:    RCL \u8594?92\par
+0178:    STO 92\par
+0179:    RCL \u8594?93\par
+0180:    STO 93\par
+0181:    CLSTK\par
+0182:    RCL 95\par
+0183:    RCL 93\par
+0184:    \u215?\par
+0185:    RCL 96\par
+0186:    RCL 92\par
+0187:    \u215?\par
+0188:    +\par
+0189:    RCL 92\par
+0190:    \u215?\par
+0191:    RCL 93\par
+0192:    RCL 93\par
+0193:    \u215?\par
+0194:    +\par
+0195:    STO 88\par
+0196:    RCL 84\par
+0197:    RCL 93\par
+0198:    \u215?\par
+0199:    RCL 85\par
+0200:    RCL 92\par
+0201:    \u215?\par
+0202:    -\par
+0203:    RCL 88\par
+0204:    \u247?\par
+0205:    STO 87\par
+0206:    RCL 95\par
+0207:    RCL 93\par
+0208:    \u215?\par
+0209:    RCL 96\par
+0210:    RCL 92\par
+0211:    \u215?\par
+0212:    +\par
+0213:    RCL 84\par
+0214:    \u215?\par
+0215:    RCL 85\par
+0216:    RCL 93\par
+0217:    \u215?\par
+0218:    +\par
+0219:    RCL 88\par
+0220:    \u247?\par
+0221:    STO 86\par
+0222:    RCL 87\par
+0223:    |x|\par
+0224:    STO X\par
+0225:    RCL 86\par
+0226:    |x|\par
+0227:    STO Y\par
+0228:    x> ? Y\par
+0229:      GTO 56\par
+0230:    RCL 87\par
+0231:    |x|\par
+0232:    STO 97\par
+0233:    GTO 57\par
+\par
+0234:    LBL 56\par
+0235:    RCL 86\par
+0236:    |x|\par
+0237:    STO 97\par
+\par
+0238:    LBL 57\par
+0239:    RCL 87\par
+0240:    STO+ 95\par
+0241:    RCL 86\par
+0242:    STO+ 96\par
+0243:    1.\par
+0244:    STO+ 98\par
+0245:    1.\u215?\u9341?\super 4\nosupersub \par
+0246:    STO X\par
+0247:    RCL 98\par
+0248:    x> ? Y\par
+0249:      GTO 04\par
+0250:    RCL 99\par
+0251:    RCL 97\par
+0252:    x> ? Y\par
+0253:      GTO 58\par
+0254:    RTN\par
+\par
+0255:    LBL 59\par
+0256:    0.\par
+0257:    STO 91\par
+0258:    31.\par
+0259:    STO 92\par
+0260:    RCL 90\par
+0261:    1.\par
+0262:    -\par
+0263:    STO 93\par
+0264:    1.\u215?\u9341?\super 3\nosupersub \par
+0265:    \u247?\par
+0266:    STO 94\par
+\par
+0267:    LBL 88\par
+0268:    RCL \u8594?92\par
+0269:    STO \u8594?91\par
+0270:    1.\par
+0271:    STO+ 91\par
+0272:    STO+ 92\par
+0273:    RCL 94\par
+0274:    ISG 94\par
+0275:      GTO 88\par
+0276:    RCL 90\par
+0277:    2.\par
+0278:    -\par
+0279:    STO 90\par
+0280:    RTN\par
+\par
+0281:    LBL 11\par
+0282:    CLSTK\par
+0283:    RCL 95\par
+0284:    CHS\par
+0285:    2.\par
+0286:    \u247?\par
+0287:    STO 91\par
+0288:    x\super 2\nosupersub \par
+0289:    RCL 96\par
+0290:    -\par
+0291:    STO 92\par
+0292:    CLSTK\par
+0293:    RCL 91\par
+0294:    RCL 92\par
+0295:    \u8730?\u895?\par
+0296:    +\par
+0297:    RCL 91\par
+0298:    RCL 92\par
+0299:    \u8730?\u895?\par
+0300:    -\par
+0301:    RTN\par
+\par
+0302:    LBL 12\par
+0303:    CLSTK\par
+0304:    \u8216?... continue\u8217?\par
+0305:    RCL 01\par
+0306:    CHS\par
+0307:    2.\par
+0308:    \u247?\par
+0309:    STO 91\par
+0310:    x\super 2\nosupersub \par
+0311:    RCL 02\par
+0312:    -\par
+0313:    STO 92\par
+0314:    CLSTK\par
+0315:    RCL 91\par
+0316:    RCL 92\par
+0317:    \u8730?\u895?\par
+0318:    +\par
+0319:    RCL 91\par
+0320:    RCL 92\par
+0321:    \u8730?\u895?\par
+0322:    -\par
+0323:    RTN\par
+\par
+0324:    LBL 13\par
+0325:    CLSTK\par
+0326:    \u8216?... continue\u8217?\par
+0327:    RCL 01\par
+0328:    CHS\par
+0329:    STO 91\par
+0330:    CLSTK\par
+0331:    RCL 91\par
+0332:    RTN\par
+\par
+0333:    LBL 04\par
+0334:    CLSTK\par
+0335:    \u8216?Error m>80!\u8217?\par
+0336:    RTN\par
+0337:  END\par
+}}

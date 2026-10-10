@@ -13,7 +13,7 @@ const dr = @import("distribution_runtime.zig");
 const real_t = dr.real_t;
 
 // noinline: called from all four entry points; a single shared copy keeps the
-// flash-limited full package (pkg1) within budget.
+// flash-limited DM42 packages that carry OPTION_DIST_D within budget.
 noinline fn checkParamGEV(x: *real_t, mu: *real_t, sigma: *real_t, xi: *real_t, qf: bool) linksection(dr.code_section) bool {
     const ctx = &dr.ctxtReal39;
     var t: real_t = undefined;

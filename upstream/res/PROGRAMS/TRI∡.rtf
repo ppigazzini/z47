@@ -1,0 +1,248 @@
+{\rtf1\ansi\ansicpg1252\deff0\nouicompat{\fonttbl{\f0\fnil\fcharset0 C47__StandardFont;}}{\pard\sl240\slmult1\f0\fs24\lang9\f0\loch
+C47 Program file export: Export format version 3, C47 program version 1.
+ \par
+0000: { Prgm #1/1: 945 bytes / 235 steps } \par
+\par
+0001:  LBL \u8216?TRI\u8737?\u8217?\par
+0002:    \u8216?SSS\u8217?\par
+0003:    KEY 01 XEQ A\par
+0004:    \u8216?SSA\u8217?\par
+0005:    KEY 02 XEQ B\par
+0006:    \u8216?ASA\u8217?\par
+0007:    KEY 03 XEQ C\par
+0008:    \u8216?SAA\u8217?\par
+0009:    KEY 04 XEQ D\par
+0010:    \u8216?SAS\u8217?\par
+0011:    KEY 05 XEQ 40\par
+0012:    MENU\par
+0013:    STOP\par
+0014:    XEQ 41\par
+0015:    GTO \u8216?TRI\u8737?\u8217?\par
+0016:    REM \u8216?SSS subroutine\u8217?\par
+\par
+0017:    LBL A\par
+0018:    INPUT \u8216?s1\u8217?\par
+0019:    INPUT \u8216?s2\u8217?\par
+0020:    INPUT \u8216?s3\u8217?\par
+0021:    RCL \u8216?s1\u8217?\par
+0022:    RCL+ \u8216?s2\u8217?\par
+0023:    RCL+ \u8216?s3\u8217?\par
+0024:    2\par
+0025:    \u247?\par
+0026:    STO \u8216?perim\u8217?\par
+0027:    x\super 2\nosupersub \par
+0028:    LASTx\par
+0029:    RCL\u215? \u8216?s2\u8217?\par
+0030:    -\par
+0031:    RCL \u8216?s1\u8217?\par
+0032:    RCL\u215? \u8216?s3\u8217?\par
+0033:    \u247?\par
+0034:    \u8730?\u895?\par
+0035:    ARCCOS\par
+0036:    2\par
+0037:    \u215?\par
+0038:    STO \u8216?a3\u8217?\par
+0039:    SIN\par
+0040:    RCL \u8216?s1\u8217?\par
+0041:    \u215?\par
+0042:    STO 00\par
+0043:    RCL \u8216?perim\u8217?\par
+0044:    x\super 2\nosupersub \par
+0045:    LASTx\par
+0046:    RCL\u215? \u8216?s1\u8217?\par
+0047:    -\par
+0048:    RCL\u247? \u8216?s2\u8217?\par
+0049:    RCL\u247? \u8216?s3\u8217?\par
+0050:    \u8730?\u895?\par
+0051:    ARCCOS\par
+0052:    2\par
+0053:    \u215?\par
+0054:    STO \u8216?a2\u8217?\par
+0055:    RCL+ \u8216?a3\u8217?\par
+0056:    COS\par
+0057:    CHS\par
+0058:    ARCCOS\par
+0059:    STO \u8216?a1\u8217?\par
+0060:    RTN\par
+0061:    REM \u8216?SSA subroutine\u8217?\par
+\par
+0062:    LBL B\par
+0063:    INPUT \u8216?s1\u8217?\par
+0064:    INPUT \u8216?s2\u8217?\par
+0065:    INPUT \u8216?a2\u8217?\par
+0066:    SIN\par
+0067:    RCL\u215? \u8216?s2\u8217?\par
+0068:    RCL\u247? \u8216?s1\u8217?\par
+0069:    ARCSIN\par
+0070:    STO \u8216?a3\u8217?\par
+0071:    SIN\par
+0072:    RCL\u215? \u8216?s1\u8217?\par
+0073:    STO 00\par
+0074:    XEQ 42\par
+0075:    RCL \u8216?s2\u8217?\par
+0076:    x\u8804? ? \u8216?s1\u8217?\par
+0077:      RTN\par
+0078:    XEQ 41\par
+0079:    STOP\par
+0080:    RCL \u8216?a3\u8217?\par
+0081:    COS\par
+0082:    CHS\par
+0083:    ARCCOS\par
+0084:    STO \u8216?a3\u8217?\par
+0085:    XEQ 42\par
+0086:    RTN\par
+0087:    REM \u8216?Calculate both SSA cases\u8217?\par
+\par
+0088:    LBL 42\par
+0089:    RCL \u8216?a3\u8217?\par
+0090:    RCL+ \u8216?a2\u8217?\par
+0091:    COS\par
+0092:    CHS\par
+0093:    ARCCOS\par
+0094:    STO \u8216?a1\u8217?\par
+0095:    RCL \u8216?a2\u8217?\par
+0096:    COS\par
+0097:    RCL\u215? \u8216?s2\u8217?\par
+0098:    RCL \u8216?a3\u8217?\par
+0099:    COS\par
+0100:    RCL\u215? \u8216?s1\u8217?\par
+0101:    +\par
+0102:    STO \u8216?s3\u8217?\par
+0103:    RTN\par
+0104:    REM \u8216?ASA subroutine\u8217?\par
+\par
+0105:    LBL C\par
+0106:    INPUT \u8216?a3\u8217?\par
+0107:    INPUT \u8216?s1\u8217?\par
+0108:    INPUT \u8216?a1\u8217?\par
+0109:    RCL \u8216?a3\u8217?\par
+0110:    RCL+ \u8216?a1\u8217?\par
+0111:    COS\par
+0112:    CHS\par
+0113:    ARCCOS\par
+0114:    STO \u8216?a2\u8217?\par
+0115:    RCL \u8216?a3\u8217?\par
+0116:    RCL \u8216?s1\u8217?\par
+0117:    \u8594?RECT\sub h\nosupersub \sub p\nosupersub \par
+0118:    x\u8644?y\par
+0119:    STO 00\par
+0120:    RCL \u8216?a2\u8217?\par
+0121:    1\par
+0122:    \u8594?RECT\sub h\nosupersub \sub p\nosupersub \par
+0123:    R\u8595?\par
+0124:    \u247?\par
+0125:    STO \u8216?s2\u8217?\par
+0126:    R\u8593?\par
+0127:    \u215?\par
+0128:    +\par
+0129:    STO \u8216?s3\u8217?\par
+0130:    RTN\par
+0131:    REM \u8216?SAA subroutine\u8217?\par
+\par
+0132:    LBL D\par
+0133:    INPUT \u8216?s1\u8217?\par
+0134:    INPUT \u8216?a1\u8217?\par
+0135:    INPUT \u8216?a2\u8217?\par
+0136:    RCL \u8216?a1\u8217?\par
+0137:    +\par
+0138:    COS\par
+0139:    CHS\par
+0140:    ARCCOS\par
+0141:    STO \u8216?a3\u8217?\par
+0142:    RCL \u8216?s1\u8217?\par
+0143:    \u8594?RECT\sub h\nosupersub \sub p\nosupersub \par
+0144:    x\u8644?y\par
+0145:    STO 00\par
+0146:    RCL \u8216?a2\u8217?\par
+0147:    1\par
+0148:    \u8594?RECT\sub h\nosupersub \sub p\nosupersub \par
+0149:    R\u8595?\par
+0150:    \u247?\par
+0151:    STO \u8216?s2\u8217?\par
+0152:    R\u8593?\par
+0153:    \u215?\par
+0154:    +\par
+0155:    STO \u8216?s3\u8217?\par
+0156:    RTN\par
+0157:    REM \u8216?SAS subroutine\u8217?\par
+\par
+0158:    LBL 40\par
+0159:    INPUT \u8216?s1\u8217?\par
+0160:    INPUT \u8216?a1\u8217?\par
+0161:    INPUT \u8216?s2\u8217?\par
+0162:    RCL \u8216?a1\u8217?\par
+0163:    x\u8644?y\par
+0164:    \u8594?RECT\sub h\nosupersub \sub p\nosupersub \par
+0165:    RCL- \u8216?s1\u8217?\par
+0166:    \u8594?POL\sub h\nosupersub \sub p\nosupersub \par
+0167:    STO \u8216?s3\u8217?\par
+0168:    RCL+ \u8216?s1\u8217?\par
+0169:    RCL+ \u8216?s2\u8217?\par
+0170:    2\par
+0171:    \u247?\par
+0172:    STO \u8216?perim\u8217?\par
+0173:    x\super 2\nosupersub \par
+0174:    LASTx\par
+0175:    RCL\u215? \u8216?s2\u8217?\par
+0176:    -\par
+0177:    RCL \u8216?s1\u8217?\par
+0178:    RCL\u215? \u8216?s3\u8217?\par
+0179:    \u247?\par
+0180:    \u8730?\u895?\par
+0181:    ARCCOS\par
+0182:    2\par
+0183:    \u215?\par
+0184:    STO \u8216?a3\u8217?\par
+0185:    SIN\par
+0186:    RCL\u215? \u8216?s1\u8217?\par
+0187:    STO 00\par
+0188:    RCL \u8216?perim\u8217?\par
+0189:    x\super 2\nosupersub \par
+0190:    LASTx\par
+0191:    RCL\u215? \u8216?s1\u8217?\par
+0192:    -\par
+0193:    RCL\u247? \u8216?s2\u8217?\par
+0194:    RCL\u247? \u8216?s3\u8217?\par
+0195:    \u8730?\u895?\par
+0196:    ARCCOS\par
+0197:    2\par
+0198:    \u215?\par
+0199:    STO \u8216?a2\u8217?\par
+0200:    RTN\par
+0201:    REM \u8216?Calculate results\u8217?\par
+\par
+0202:    LBL 41\par
+0203:    STOCFG K\par
+0204:    RCL 00\par
+0205:    RCL\u215? \u8216?s3\u8217?\par
+0206:    2\par
+0207:    \u247?\par
+0208:    STO \u8216?area\u8217?\par
+0209:    RCL \u8216?s1\u8217?\par
+0210:    RCL+ \u8216?s2\u8217?\par
+0211:    RCL+ \u8216?s3\u8217?\par
+0212:    STO \u8216?perim\u8217?\par
+0213:    FIX 03\par
+0214:    \u8216?per : \u8217?\par
+0215:    RCL+ \u8216?perim\u8217?\par
+0216:    \u8216?   area : \u8217?\par
+0217:    RCL+ \u8216?area\u8217?\par
+0218:    +\par
+0219:    \u8216?s3 : \u8217?\par
+0220:    RCL+ \u8216?s3\u8217?\par
+0221:    \u8216?   a3 : \u8217?\par
+0222:    RCL+ \u8216?a3\u8217?\par
+0223:    +\par
+0224:    \u8216?s2 : \u8217?\par
+0225:    RCL+ \u8216?s2\u8217?\par
+0226:    \u8216?   a2 : \u8217?\par
+0227:    RCL+ \u8216?a2\u8217?\par
+0228:    +\par
+0229:    \u8216?s1 : \u8217?\par
+0230:    RCL+ \u8216?s1\u8217?\par
+0231:    \u8216?   a1 : \u8217?\par
+0232:    RCL+ \u8216?a1\u8217?\par
+0233:    +\par
+0234:    RCLCFG K\par
+0235:  END\par
+}}

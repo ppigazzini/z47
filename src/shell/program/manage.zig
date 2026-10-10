@@ -282,6 +282,7 @@ const ITM_42KEYX: u16 = 2796;
 const ITM_42STRING: u16 = 2775;
 const ITM_42APPEND: u16 = 2776;
 const ITM_REM: u16 = 1554;
+const ITM_FINISH: u16 = 1912;
 const ITM_toINT: u16 = 1687;
 const ITM_HMStoTM: u16 = 1688;
 const ITM_USERMODE: u16 = 1729;
@@ -1198,8 +1199,14 @@ pub export fn fnPem(unusedButMandatoryParameter: u16) callconv(.c) void {
                 if (getSystemFlag(FLAG_ALPHA)) {
                     const tmpChar = tmpString[4];
                     tmpString[4] = 0;
-                    const cursorInString: i16 = if (strcmp(tmpString, "REM ") == 0) T_cursorPos + 4 else if (strcmp(tmpString, "42" ++ STD_alpha) == 0 or strcmp(tmpString, "42" ++ STD_RIGHT_TACK) == 0) T_cursorPos + 5 else T_cursorPos;
+                    const isRem = strcmp(tmpString, "REM ") == 0;
+                    const is42 = strcmp(tmpString, "42" ++ STD_alpha) == 0 or strcmp(tmpString, "42" ++ STD_RIGHT_TACK) == 0;
                     tmpString[4] = tmpChar;
+                    const tmpChar7 = tmpString[7];
+                    tmpString[7] = 0;
+                    const isFinish = strcmp(tmpString, "FINISH ") == 0; // FINISH with its space is seven bytes, so the four-byte compare above cannot see it
+                    tmpString[7] = tmpChar7;
+                    const cursorInString: i16 = if (isRem) T_cursorPos + 4 else if (isFinish) T_cursorPos + 7 else if (is42) T_cursorPos + 5 else T_cursorPos;
                     _ = frontier_char_string.xcopy(tmpString + 2 + @as(usize, @intCast(cursorInString)) + 2, tmpString + 2 + @as(usize, @intCast(cursorInString)), @intCast(stringByteLength(tmpString + 2 + @as(usize, @intCast(cursorInString))) + 1));
                     tmpString[2 + @as(usize, @intCast(cursorInString))] = STD_CURSOR[0];
                     tmpString[2 + @as(usize, @intCast(cursorInString)) + 1] = STD_CURSOR[1];
@@ -1471,9 +1478,10 @@ pub export fn pemAlpha(item_in: i16) callconv(.c) void {
             deleteStepsFromTo(currentStep, frontier_next_step.findNextStep(currentStep));
             editCommand = true;
             item = 0;
-        } else if (aimFunc == ITM_REM) { // REM
-            _ = frontier_char_string.xcopy(aimBuffer, tmpString + 6, @intCast(ll));
-            aimBuffer[@intCast(ll - 2 - 6)] = 0;
+        } else if (aimFunc == ITM_REM or aimFunc == ITM_FINISH) { // REM or FINISH
+            const pfx = stringByteLength(&indexOfItems[@intCast(aimFunc)].itemCatalogName) + 3; // the name, the space and the two-byte opening quote before the text
+            _ = frontier_char_string.xcopy(aimBuffer, tmpString + @as(usize, @intCast(pfx)), @intCast(ll));
+            aimBuffer[@intCast(ll - 2 - pfx)] = 0;
             T_cursorPos = frontier_char_string.stringLastGlyph(aimBuffer) + 1;
             deleteStepsFromTo(currentStep, frontier_next_step.findNextStep(currentStep));
             tam.function = aimFunc;
@@ -1655,7 +1663,7 @@ pub export fn pemAlphaEdit(unusedButMandatoryParameter: u16) callconv(.c) void {
         func <<= 8;
         func |= currentStep[1];
     }
-    if ((func == ITM_LITERAL or func == ITM_REM)) {
+    if ((func == ITM_LITERAL or func == ITM_REM or func == ITM_FINISH)) {
         pemAlpha(ITM_EDIT);
     }
     hourGlassIconEnabled = false;
@@ -2063,7 +2071,7 @@ pub export fn insertStepInProgram(newFunc: i16) callconv(.c) void {
         pemAlpha(func);
         pemCursorIsZerothStep = false;
         return;
-    } else if (func == ITM_REM) {
+    } else if (func == ITM_REM or func == ITM_FINISH) {
         if (aimBuffer[0] != 0 and !getSystemFlag(FLAG_ALPHA)) {
             pemCloseNumberInput();
             aimBuffer[0] = 0;
@@ -2075,7 +2083,7 @@ pub export fn insertStepInProgram(newFunc: i16) callconv(.c) void {
                 frontier_softmenus.popSoftmenu();
             }
         }
-        tam.function = @intCast(ITM_REM);
+        tam.function = func;
         pemAlpha(func);
         pemCursorIsZerothStep = false;
         return;

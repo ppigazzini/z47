@@ -2,8 +2,8 @@
 //
 // Zig owner for src/c47/distributions/binomial.c: the Binomial distribution
 // commands (fnBinomialP/L/R/I) and the WP34S math borrowings. Part of the
-// OPTION_DIST_C cluster, so compiled on host, on DMCP5 and on DM42 package 1,
-// and stubbed on DM42 packages 2-4 via strip_17.
+// OPTION_DIST_C cluster, so compiled on host, on DMCP5 and on the DM42 packages
+// that keep the cluster, and stubbed on the others via strip_17.
 //
 // WP34S_Cdf_Binomial2 and WP34S_Pdf_Binomial are exported with C linkage because
 // still-C cluster members reach them where the cluster is kept (the geometric

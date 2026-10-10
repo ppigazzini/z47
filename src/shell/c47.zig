@@ -617,6 +617,9 @@ const dmcp = struct {
     const lcd_set_buf_cleared = rom(*const fn (c_int) callconv(.c) void, 84);
     const lcd_get_buf_cleared = rom(*const fn () callconv(.c) c_int, 88);
     const key_empty = rom(*const fn () callconv(.c) c_int, 380);
+    const key_pop = rom(*const fn () callconv(.c) c_int, 392);
+    const lcd_setLine = rom(*const fn (?*anyopaque, c_int) callconv(.c) void, 104);
+    const lcd_writeText = rom(*const fn (?*anyopaque, [*]const u8) callconv(.c) void, 124);
     const wait_for_key_release = rom(*const fn (c_int) callconv(.c) c_int, 420);
     const rtc_wakeup_delay = rom(*const fn () callconv(.c) void, 228);
     const sys_timer_disable = rom(*const fn (c_int) callconv(.c) void, 500);
@@ -698,6 +701,49 @@ const dmcp = struct {
         "@Z,? ";
     // sys_sdb_t.key_to_alpha_table: calc_state (uint32_t) then ppgm_fp (pointer).
     const key_to_alpha_table: *[*:0]const u8 = @ptrFromInt(SDB_ADDR + 8);
+    // sys_sdb_t.pds_t24, the 24-pixel text display state: offset 52, after
+    // calc_state, the eleven pointers that follow it and pds_t20.
+    const t24: *const ?*anyopaque = @ptrFromInt(SDB_ADDR + 52);
+
+    inline fn lcd_putsAt(ds: ?*anyopaque, ln: c_int, str: [*]const u8) void {
+        lcd_setLine(ds, ln);
+        lcd_writeText(ds, str);
+    }
+
+    // The DM42 runs TWO_FILE_PGM: the image is split into the .pgm and a QSPI
+    // file. The loader checks the QSPI image by size and by a CRC that the build
+    // pipeline forces constant, so a stale QSPI file of the same size passes, and
+    // the first dispatch through the shifted function pointers of the QSPI item
+    // table hard faults. The two copies of one tag below are linked one into the
+    // .pgm and one into the QSPI image. The tag names the commit and the day of
+    // the build, so the copies differ whenever the two files on the calculator
+    // come from different commits or different days. Everything the guard uses
+    // when it fires is in the .pgm. The message is a named array in .rodata.<name>, which the .ld
+    // keeps internal: .rodata.str1.1 is placed in QSPI, where a stale image
+    // garbles it.
+    const pair_tag = build_options.version_str ++ "|" ++ build_options.compile_date ++ "\x00";
+    const qspiPairTag: [pair_tag.len]u8 linksection(code_section) = pair_tag.*;
+    const flashPairTag: [pair_tag.len]u8 linksection(".rodata.flashPairTag") = pair_tag.*;
+    const qspiPairMsg: [4][29]u8 linksection(".rodata.qspiPairMsg") = .{
+        "C47: this QSPI image is from\x00".*,
+        "a different build than the\x00\x00\x00".*,
+        "program. Flash [4] QSPI and\x00\x00".*,
+        "[3] Program from one folder.\x00".*,
+    };
+
+    // Both tags are equal known constants, so a plain compare folds to equal at
+    // compile time and deletes the guard and both tags. The volatile reads take
+    // each byte from the image it was linked into.
+    fn qspiPairsWithProgram() bool {
+        const image: *const volatile [pair_tag.len]u8 = &qspiPairTag;
+        const program: *const volatile [pair_tag.len]u8 = &flashPairTag;
+        for (0..pair_tag.len) |i| {
+            if (image[i] != program[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
 
     pub fn convertKeyCode(key_in: c_int) callconv(.c) c_int {
         return keycode_remap.remapKey(key_in, CALCMODEL == USER_R47, wp43KbdLayout);
@@ -721,6 +767,25 @@ const dmcp = struct {
         // initialize lcd_buffer mainly used in hal/lcd.c
         lcd_buffer = lcd_line_addr(0) - 2;
         lcd_clear_buf();
+
+        // Runs before any dispatch through QSPI-resident pointers. The guard
+        // refuses a program/QSPI pair from two different builds with a message
+        // instead of the hard fault that pair produces. The message uses the DMCP
+        // firmware font, which needs nothing from QSPI.
+        if (comptime old_hw) {
+            if (!qspiPairsWithProgram()) {
+                for (&qspiPairMsg, 2..) |*line, row| {
+                    lcd_putsAt(t24.*, @intCast(row), line);
+                }
+                lcd_refresh();
+                key = -1;
+                while (key == -1) {
+                    sys_sleep();
+                    key = key_pop();
+                }
+                return;
+            }
+        }
         doFnReset(CONFIRMED_v, loadAutoSav);
         refreshScreen(71);
 

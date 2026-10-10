@@ -3,12 +3,12 @@
 // Zig owner for src/c47/distributions/f.c: the F (Fisher-Snedecor) distribution
 // commands (fnF_P/L/R/I) plus the WP34S math borrowings, including the shared
 // Newton-step solver WP34S_Qf_Newton used by the poisson/binomial/negBinom/hyper
-// quantiles. Part of the OPTION_DIST_C cluster (stripped on DM42 packages
-// 2-4), so compiled on host, on DMCP5 and on DM42 package 1, gated by strip_17.
+// quantiles. Part of the OPTION_DIST_C cluster, so compiled on host, on DMCP5
+// and on the DM42 packages that keep the cluster, gated by strip_17.
 //
 // WP34S_Qf_Newton is exported with C linkage (shell.zig) so the other cluster
-// members link against it where the cluster is kept; on DM42 packages 2-4 it
-// collapses to an empty stub. The solver dispatches to each distribution's CDF/PDF (the Zig
+// members link against it where the cluster is kept; on the DM42 packages that
+// strip it, it collapses to an empty stub. The solver dispatches to each distribution's CDF/PDF (the Zig
 // owners' exports, bound through distribution_runtime.zig) and finishes
 // discrete searches via WP34S_qf_discrete_final. The testSuite drives every
 // branch via tests/f_{p,l,r,i}.txt.

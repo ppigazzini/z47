@@ -1,0 +1,16 @@
+@ Index:   Prints result and run time
+@ Author:  Jaco Mostert
+@ Prints the result, then the tick count in K divided by 10, in seconds.
+LBL ‘TT’
+  RCL Y
+  STO K
+  DROP𝑥
+  DROP𝑦
+  🖨xy
+  RCL K
+  10
+  ÷
+  ‘ Sec’
+  +
+  🖨x
+  END

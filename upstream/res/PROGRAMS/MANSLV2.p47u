@@ -1,0 +1,163 @@
+@ Index:    Manual Newton/secant solve to 1000 digits
+@ Author:   Jaco Mostert
+@ Source:   https://forum.swissmicros.com/viewtopic.php?p=42167#p42167
+@ Version:  2
+@ Modified: 2026-10-08 to add NaN check on slope due to real engine changes.
+@ Tested:   cos x = x to 1000 digits
+@ Input:    Endpoints 0 and 1 on the stack (Y and X)
+@ Output:   x0 triplet mantissa is 0.7390851332151606416553120876738734...
+@
+@ Uses XFN with no checks and stabilisations.
+@
+@ Start with X Y as the two initial endpoints.
+@
+LBL ‘MANSLV2’
+  1.e-1000
+  STO ‘tol’
+  R↓
+  ‘↵Multiplier <=34d↵Mantissa <=1000d↵Carry over <=34d’
+  STO W
+  R↓
+  RAD
+  70
+  STO ‘temp’
+  67
+  STO 'tempout'
+
+@ the indirection arrow → reads/writes the triplet via this base
+  R↓
+  73
+  STO ‘x0’
+  R↓
+  76
+  STO ‘x1’
+  R↓
+  79
+  STO ‘y0’
+  R↓
+  82
+  STO ‘y1’
+  R↓
+  X→XFN
+  3STO →‘x0’
+  RCL T
+  X→XFN
+  3STO →‘x1’
+  0
+  STO ‘loop’
+  85
+  STO ‘deltax’
+  88
+  STO ‘deltay’
+  91
+  STO ‘DELTAX’
+  94
+  STO ‘slope’
+
+  # === Loop start
+  LBL :LOOP:
+    3RCL →‘x1’
+    XEQ ‘CALC’
+    3STO →‘y1’
+    3RCL →‘x0’
+    XEQ ‘CALC’
+    3STO →‘y0’
+
+    # SLOPE                      ; secant slope, not analytic derivative. Avoids
+    # evaluating -sin(x)-1, and damps near flat regions.
+    3RCL →‘y1’
+    3RCL →‘y0’
+    XSUB
+    3STO →‘deltay’
+    3RCL →‘x1’
+    3RCL →‘x0’
+    XSUB
+    3STO →‘deltax’
+    3RCL →‘deltay’
+    3SWAP
+    XDIV
+    3STO →‘slope’
+ 
+    # If slope is NaN, you divided by 0, meaning it is not moving anymore and it is the end 
+    NaN?
+      GTO :DONE:
+
+    # CREATE NEW X               ; MOD vs textbook secant: alternate which side is
+    # refined each iteration. Pure secant promotes
+    # new->x1, x1->x0 and discards x0; one endpoint can
+    # stall and degrade the slope estimate. Alternating
+    # keeps both sides moving against the shared slope
+    # (Newton flavour: each side takes a Newton step
+    # using the current secant f'). At extended precision
+    # this prevents (y1-y0)/(x1-x0) cancellation when
+    # one endpoint freezes far from the root.
+    RCL ‘loop’
+    ODD?
+      GTO :ODDMOV:
+    GTO :EVENMOV:
+
+  LBL :ODDMOV:
+    3RCL →‘y1’
+    3RCL →‘slope’
+    XDIV
+    3STO →‘DELTAX’
+    3RCL →‘x1’
+    3SWAP
+    XSUB
+    3STO →‘x1’
+    3STO →‘tempout’
+    GTO :MOVED:
+
+  LBL :EVENMOV:
+    3RCL →‘y0’
+    3RCL →‘slope’
+    XDIV
+    3STO →‘DELTAX’
+    3RCL →‘x0’
+    3SWAP
+    XSUB
+    3STO →‘x0’
+    3STO →‘tempout’
+
+  LBL :MOVED:
+      # SHOW                 ; live progress display, purely informational. Composite
+      # of x0, x1, DELTAX with loop weighting so position and
+      # step magnitude are both visible. The x≥? tol check
+      # below uses the same composite, and exit is
+      # once DELTAX is observed to vanish.
+      CLSTK
+      ‘’
+      INCR ‘loop’
+      RCL ‘loop’
+      3RCL →‘x1’
+      ×
+      +
+      3RCL →‘x0’
+      ×
+      +
+      3RCL →‘DELTAX’
+      ×
+      +
+      |𝑥|
+      VIEW ‘loop’
+      𝑥≥? ‘tol’
+        GTO :LOOP:
+
+      # === LOOP END
+      # The end, here when tol is met or when dx is 0
+      # Open XFCNS menu, for XFN viewer
+    OPENM 'XFCNS'
+    3RCL →'tempout'
+    LBL :DONE:
+      AVIEW W
+      RTN
+
+    LBL ‘CALC’
+      # _COSX-X
+      3STO →‘temp’
+      XCOS
+      3RCL →‘temp’
+      XSUB
+      RTN
+  END
+.END.

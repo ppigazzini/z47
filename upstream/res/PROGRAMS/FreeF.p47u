@@ -1,0 +1,29 @@
+@ Index:   Free-fall height residual for SOLVE
+@ Height residual in Earth's gravity, set to zero by interactive
+@ SOLVE: h0 + v0*time - g_⊕/2*time^2 - height.
+@
+@ Originally published as the function passed to SOLVE under
+@ "The Solver" section of the WP43 Owner's Manual.
+@
+@ Author:  Walter Bonin, fm org C47 test program
+@ Created: original publication date unknown
+@ Version: 0.29
+@ Tested: SOLVE time for height 0, h0=50, v0=15 returns 5.070303019685519581163707165121980 s.
+@ input:  variables height=0, h0=50, v0=15; SOLVE time, guesses 5 and 10
+@ output: time = 5.070303019685519581163707165121980 s
+LBL ‘FreeF’
+  MVAR ‘height’
+  MVAR ‘h0’
+  MVAR ‘v0’
+  MVAR ‘time’
+  g_⊕
+  -2
+  ÷
+  RCL× ‘time’
+  RCL+ ‘v0’
+  RCL× ‘time’
+  RCL+ ‘h0’
+  RCL- ‘height’     ; residual of the height equation
+  RTN
+  END
+.END.

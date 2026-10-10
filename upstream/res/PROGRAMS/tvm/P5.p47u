@@ -1,0 +1,21 @@
+@ Index:   Problem 5, solves rate, guess zero
+@ Author:  Jaco Mostert, fm Duncan Murray's problem set
+@ N 10, PV 50, PMT -30, FV 400, one period a year, starting rate 0.
+@ Solves I%/a.
+LBL ‘P5’
+  10
+  STO ‘NPPER’
+  0
+  STO ‘I%/a’
+  50
+  STO ‘PV’
+  -30
+  STO ‘PMT’
+  400
+  STO ‘FV’
+  1
+  STO ‘PPER/a’
+  STO ‘CPER/a’
+  ENDP
+  I/a
+  END

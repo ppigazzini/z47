@@ -36,6 +36,7 @@ const frontier_char_string = @import("../display/text/char_string.zig");
 const frontier_graph_text = @import("../plot/graph_text.zig");
 const frontier_screen_snap = @import("../display/screen_snap.zig");
 const namedVariableHeader_t = abi.NamedVariableHeader;
+const reservedVariableHeader_t = abi.ReservedVariableHeader;
 
 // ---------------------------------------------------------------------------
 // Constants / enum values (verified against defines.h / typeDefinitions.h)
@@ -57,6 +58,8 @@ const FIRST_LOCAL_REGISTER: i16 = 7000;
 const LAST_LOCAL_REGISTER: i16 = 7098;
 const FIRST_NAMED_VARIABLE: i16 = 256;
 const LAST_NAMED_VARIABLE: i16 = 1999;
+const FIRST_RESERVED_VARIABLE: i16 = 2000;
+const LAST_RESERVED_VARIABLE: i16 = 2047;
 
 // graphText.h
 const CSV_NEWLINE = "\n";
@@ -72,6 +75,7 @@ const SIZE_OF_EACH_CLIPBOARD_MSG: usize = 30; // sizeof(nstr.itemName)
 // ---------------------------------------------------------------------------
 extern var tmpString: [*c]u8;
 extern var allNamedVariables: [*c]namedVariableHeader_t;
+const allReservedVariables = @extern([*c]const reservedVariableHeader_t, .{ .name = "allReservedVariables" });
 
 // ---------------------------------------------------------------------------
 // Function externs
@@ -178,9 +182,11 @@ pub export fn stackregister_csv_out(reg_b: i16, reg_e: i16, oneLine: bool_t) cal
         } else if (FIRST_GLOBAL_REGISTER <= ix and ix < REGISTER_X) {
             abi.fmtBufZ(&tmp_b, CSV_STR ++ "R{d:0>2}" ++ CSV_STR ++ CSV_TAB, .{@as(u32, @intCast(ix))});
         } else if (FIRST_LOCAL_REGISTER <= ix and ix <= LAST_LOCAL_REGISTER) {
-            abi.fmtBufZ(&tmp_b, CSV_STR ++ "R.{d:0>3}" ++ CSV_STR ++ CSV_TAB, .{@as(u32, @intCast(@as(c_int, ix) - 100))});
+            abi.fmtBufZ(&tmp_b, CSV_STR ++ "R.{d:0>2}" ++ CSV_STR ++ CSV_TAB, .{@as(u32, @intCast(ix - FIRST_LOCAL_REGISTER))});
         } else if (FIRST_NAMED_VARIABLE <= ix and ix <= LAST_NAMED_VARIABLE) {
-            abi.fmtBufZ(&tmp_b, CSV_STR ++ "N{d:0>3}" ++ CSV_STR ++ CSV_TAB ++ CSV_STR ++ "{s}" ++ CSV_STR ++ CSV_TAB, .{ @as(u32, @intCast(@as(c_int, ix) - 100)), std.mem.span(@as([*c]const u8, @ptrCast(&allNamedVariables[@intCast(ix - FIRST_NAMED_VARIABLE)].variableName)) + 1) });
+            abi.fmtBufZ(&tmp_b, CSV_STR ++ "{s}" ++ CSV_STR ++ CSV_TAB, .{std.mem.span(@as([*c]const u8, @ptrCast(&allNamedVariables[@intCast(ix - FIRST_NAMED_VARIABLE)].variableName)) + 1)});
+        } else if (FIRST_RESERVED_VARIABLE <= ix and ix <= LAST_RESERVED_VARIABLE) {
+            abi.fmtBufZ(&tmp_b, CSV_STR ++ "{s}" ++ CSV_STR ++ CSV_TAB, .{std.mem.span(@as([*c]const u8, &allReservedVariables[@intCast(ix - FIRST_RESERVED_VARIABLE)].reservedVariableName) + 1)});
         }
 
         copyRegisterToClipboardString2(ix, tmpString);

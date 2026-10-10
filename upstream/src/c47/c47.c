@@ -2,6 +2,9 @@
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
 #include "c47.h"
+#if defined(DMCP_BUILD) && defined(TWO_FILE_PGM)
+  #include "version.h"  // VERSION_STRING for the program/QSPI pairing tag below
+#endif // DMCP_BUILD && TWO_FILE_PGM
 
 //#define JMSHOWCODES
 //#define BUFFER_CLICK_DETECTION
@@ -613,6 +616,21 @@ int convertKeyCode(int key) {
                                                 //#define TMR_OBSERVE
                                                 #endif // INLINE_TEST
 
+  #if defined(DMCP_BUILD) && defined(TWO_FILE_PGM)
+    // The loader checks the QSPI image by size and by a CRC that the build pipeline forces constant, so a stale C47_qspi.bin of the same size passes, and the first
+    // dispatch through the shifted function pointers of the QSPI item table hard faults. The two copies of one tag below, one linked into the .pgm and one into the QSPI
+    // image, come from one compilation, so they differ exactly when the two files on the calculator differ. Everything the guard uses when it fires is in the .pgm.
+    // The message is a named array (.rodata.<name>, kept internal by the .ld), never a string literal: .rodata.str1.1 is placed in QSPI, where a stale image garbles it.
+    TO_QSPI __attribute__ ((used)) static const char qspiPairTag[]  = VERSION_STRING "|" __DATE__ "|" __TIME__;
+            __attribute__ ((used)) static const char flashPairTag[] = VERSION_STRING "|" __DATE__ "|" __TIME__;
+    static const char qspiPairMsg[4][29] = {
+      "C47: this QSPI image is from",
+      "a different build than the",
+      "program. Flash [4] QSPI and",
+      "[3] Program from one folder."
+    };
+  #endif // DMCP_BUILD && TWO_FILE_PGM
+
   void program_main(void) {
     int key = 0;
     char charKey[3];
@@ -639,6 +657,27 @@ int convertKeyCode(int key) {
     // initialize lcd_buffer mainly used in hal/lcd.c
     lcd_buffer = lcd_line_addr(0)-2;
     lcd_clear_buf();
+
+    #if defined(TWO_FILE_PGM)
+      // Runs before any dispatch through QSPI-resident pointers. The guard refuses a program/QSPI pair from two different builds with a message instead of the hard
+      // fault that pair produces. The message uses the DMCP firmware font, which needs nothing from QSPI. The asm hides the address of the QSPI copy from the optimiser:
+      // both tags are known constants with equal contents, and without the barrier arm-gcc -Os folds the memcmp to 0 at compile time and deletes the guard and both tags.
+      const char *qspiTagInImage = qspiPairTag;
+      __asm__ ("" : "+r" (qspiTagInImage));
+      if(memcmp(flashPairTag, qspiTagInImage, sizeof(flashPairTag)) != 0) {
+        lcd_putsAt(t24, 2, qspiPairMsg[0]);
+        lcd_putsAt(t24, 3, qspiPairMsg[1]);
+        lcd_putsAt(t24, 4, qspiPairMsg[2]);
+        lcd_putsAt(t24, 5, qspiPairMsg[3]);
+        lcd_refresh();
+        key = -1;
+        while(key == -1) {
+          sys_sleep();
+          key = key_pop();
+        }
+        return;
+      }
+    #endif // TWO_FILE_PGM
                                                 #if defined(NOKEYMAP)                                             //vv dr - no keymap is used
                                                     lcd_putsAt(t24, 4, "Press the bottom left key.");
                                                     lcd_refresh();

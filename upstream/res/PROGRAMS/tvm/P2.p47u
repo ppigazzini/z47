@@ -1,0 +1,32 @@
+@ Index:   Problem 2, payment difference present value
+@ Author:  Jaco Mostert, fm Duncan Murray's problem set
+@ 100000 over 360 months: payment at 15%, payment at 12%, then PV of
+@ the payment difference over 36 months at 15%.
+LBL ‘P2’
+  360
+  STO ‘NPPER’
+  15
+  STO ‘I%/a’
+  100000
+  STO ‘PV’
+  0
+  STO ‘FV’
+  12
+  STO ‘PPER/a’
+  STO ‘CPER/a’
+  ENDP
+  0
+  STO ‘PMT’
+  PMT
+  12
+  STO ‘I%/a’
+  DROP𝑥
+  PMT
+  -
+  STO ‘PMT’
+  36
+  STO ‘NPPER’
+  15
+  STO ‘I%/a’
+  PV
+  END

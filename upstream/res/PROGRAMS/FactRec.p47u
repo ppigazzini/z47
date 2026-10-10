@@ -1,0 +1,31 @@
+@ Index:   Compute factorial recursively
+@ Author:  Walter Bonin
+@ Created: Original publication date unknown
+@ Version: 3.1
+@ Tested:  3 returns 6, 5 returns 120, 1 returns 1, 0 returns 1.
+@ Input:   X = 3 (also 5, 1, 0)
+@ Output:  X = 6 (5 returns 120, 1 returns 1, 0 returns 1)
+@
+@ Originally published in Appendix B of the WP34s Manual as a recursive programming demo called FACT.
+@
+@ Usage is the same as the built-in 𝑥! operation: input value in X,
+@ factorial of same output in X; stack-neutral for inputs > 1.
+@
+@ The result is valid for X ≥ 0 inputs only.  Whereas the fact-iter
+@ implementation diagnoses the X<0 error case, this one incorrectly
+@ returns 1 for negative inputs.
+LBL ‘FactRec’
+  IP
+  𝑥>? 1.
+    GTO 00
+  1.
+  RTN
+
+LBL 00
+  LocR 01
+  STO R.00
+  DECR X
+  XEQ ‘FactRec’
+  RCL× R.00
+  RTN
+  END

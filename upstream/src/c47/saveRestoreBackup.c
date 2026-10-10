@@ -22,6 +22,8 @@
 1010     // Change constant format in equation, adding a # prefix
 1011     // Added reserve variables UY, LY, UEST, LEST.
 1016     // Graph defaults changing from float to real
+1017     // FLAG_SBadm
+1018     // FLAG_M_ALL; Added AUTOVALID flag
 1019     // 2026-08-16 Menu items renumbered into one block; 1017 and 1018 are taken on release branch 4.00a2
 1023     // 2026-09-11 retainedPageFirstItem[] added, the page each retained-page softmenu reopens on; lastCatalogPosition[] written as hexDump, every catalog; 1021 and 1022 are taken on FIN-12C, 1021 also on units/algebra
 */

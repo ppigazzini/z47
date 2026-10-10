@@ -1,0 +1,69 @@
+@ Index:   Runs P1 to P12a, prints results
+@ Author:  Jaco Mostert
+@ Runs P1 through P12a and prints each result through TT.
+LBL ‘Pall’
+  XEQ ‘P1’
+  LASTT#
+  ‘TVM P1:’
+  XEQ ‘TT’
+  XEQ ‘P1b’
+  LASTT#
+  ‘TVM P1b:’
+  XEQ ‘TT’
+  XEQ ‘P2’
+  LASTT#
+  ‘TVM P2:’
+  XEQ ‘TT’
+  XEQ ‘P3’
+  LASTT#
+  ‘TVM P3:’
+  XEQ ‘TT’
+  XEQ ‘P4’
+  LASTT#
+  ‘TVM P4:’
+  XEQ ‘TT’
+  XEQ ‘P5’
+  LASTT#
+  ‘TVM P5:’
+  XEQ ‘TT’
+  XEQ ‘P5b’
+  LASTT#
+  ‘TVM P5B(50):’
+  XEQ ‘TT’
+  XEQ ‘P6’
+  LASTT#
+  ‘TVM P6:’
+  XEQ ‘TT’
+  XEQ ‘P6b’
+  LASTT#
+  ‘TVM P6B(50):’
+  XEQ ‘TT’
+  XEQ ‘P7’
+  LASTT#
+  ‘TVM P7:’
+  XEQ ‘TT’
+  XEQ ‘P8’
+  LASTT#
+  ‘TVM P8:’
+  XEQ ‘TT’
+  XEQ ‘P9’
+  LASTT#
+  ‘TVM P9:’
+  XEQ ‘TT’
+  XEQ ‘P10’
+  LASTT#
+  ‘TVM P10:’
+  XEQ ‘TT’
+  XEQ ‘P11’
+  LASTT#
+  ‘TVM P11’
+  XEQ ‘TT’
+  XEQ ‘P12’
+  LASTT#
+  ‘TVM P12’
+  XEQ ‘TT’
+  XEQ ‘P12a’
+  LASTT#
+  ‘TVM P12a’
+  XEQ ‘TT’
+  END

@@ -1,0 +1,15 @@
+@ Index:  Non-linear best fit
+@ Author: Jaco Mostert
+@ Tested: Sample (1,2) (2,4) (3,6) (4,8) returns x-hat at y=0 of 0.
+@ Input:  Stat sample (1,2) (2,4) (3,6) (4,8)
+@ Output: x-hat at y=0 = 0
+@
+@ Fit the current statistical sample with every regression family
+@ except the straight line, with estimated x.
+LBL ‘POL’
+  BestF 510         ; all families except LinF
+  L.R.
+  0.                ; y value for the estimate
+  𝑥̂
+  END
+.END.

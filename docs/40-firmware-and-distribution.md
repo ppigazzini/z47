@@ -92,7 +92,12 @@ Decision and technique: heavy owner code is placed in QSPI and executed
 in-place (XIP) rather than the main program flash. The firmware link discards
 `.ARM.exidx` first (`../build/firmware/discard_exidx.ld`, applied ahead of
 the upstream board linker script) so QSPI-placed owner code does not blow the
-PREL31 exidx relocation range. Treat DMCP flash headroom as a real constraint:
+PREL31 exidx relocation range. Code in QSPI makes a program and a QSPI image
+from different builds a hard fault rather than a stale screen, and the loader
+only really checks the QSPI image's size, so the DM42 `program_main` in
+`../src/shell/c47.zig` compares a tag linked into each file and refuses a
+mismatched pair with a message before anything dispatches through QSPI. Treat
+DMCP flash headroom as a real constraint:
 a change that grows an owner can overflow a package even when the host build and
 tests stay green.
 
@@ -134,6 +139,10 @@ Retained C dependency inputs:
 - `../upstream/subprojects/gmp-6.2.1.wrap`: names the GMP 6.2.1 tarball and its
   SHA-256. A `gmp-6.2.1/` source tree beside it is used when present; it is
   gitignored, so a fresh clone has none.
+- `../upstream/subprojects/packagefiles/gmp-6.2.1/`: upstream's overlay for that
+  source tree. Its `meson.build` is upstream's build recipe, which z47 does not
+  run; `gmp-impl.h` and `mpn/generic/gmp-mparam.h` are laid over the GMP source
+  before it is configured.
 - `../upstream/dep/forcecrc32.c`, compiled by Zig as the host CRC tool, and the
   `../upstream/tools/modify_crc`, `gen_qspi_crc` and `add_pgm_chsum` scripts that
   stamp the program and QSPI images.
@@ -146,14 +155,23 @@ GMP rewrite.
 
 Current behavior (`addArmGmpBuild`):
 
-- use an unpacked tree at `../upstream/subprojects/gmp-6.2.1` when present
+- copy an unpacked tree at `../upstream/subprojects/gmp-6.2.1` into the step's
+  work directory when present
 - otherwise (always, on a fresh clone) download `gmp-6.2.1.tar.bz2` from a mirror
-  list
-- verify the tarball SHA-256 before use
-- configure GMP for `arm-none-eabi` with per-board CPU flags (Cortex-M4 for
-  DMCP, Cortex-M33 for DMCP5)
+  list, verify its SHA-256 and unpack it into the work directory
+- lay upstream's packagefiles overlay over that copy, never over the tree in
+  `upstream/`: `gmp-impl.h`, whose TMP_ALLOC stack/heap split is lowered to 1 KB
+  for the DM42's stack grant, and a generic `gmp-mparam.h` that sets every
+  threshold a 3328-bit long integer cannot reach to `MP_SIZE_T_MAX`, so those
+  algorithms leave the link
+- configure GMP for `arm-none-eabi` with upstream's `-Os -std=gnu17
+  -Wno-overflow` and per-board CPU flags (Cortex-M4 for DMCP, Cortex-M33 for
+  DMCP5)
 - build and install it with upstream Autoconf and Make
 - feed the resulting `gmp.h` and `libgmp.a` into the firmware ELF link
+
+The two overlay files are inputs of the step, so a resync that changes either
+rebuilds the archive.
 
 ## Distribution Surface
 
@@ -266,13 +284,14 @@ Derive the value instead, by preprocessing `defines.h` in the configuration you
 are asking about: `-DPC_BUILD` for host, `-DDMCP_BUILD -DNEW_HW` for DMCP5, and
 `-DDMCP_BUILD -DOLD_HW -DTWO_FILE_PGM -DDMCP_PACKAGE=<n>` for a DM42 package.
 
-z47 records the derived value in the build -- the option sets in
-`../build/frontier/frontier.zig`, `../build/mathematics/math_command_wrappers.zig`,
-`../build/solver/solve.zig`, `../build/state/calc_state.zig`,
-`../build/state/keyboard_state.zig` and `../build/state/program_serialization.zig`,
-assigned per board and package in `../build/firmware.zig` -- and an owner reads it
-from the
-build-options module it imports. An owner must not re-derive an option from
+z47 records the derived value in the build: `dm42Package` in
+`../build/firmware.zig` is the one table of what each DM42 package block keeps,
+and the option sets in `../build/frontier/frontier.zig`,
+`../build/mathematics/math_command_wrappers.zig`, `../build/solver/solve.zig`,
+`../build/state/calc_state.zig`, `../build/state/keyboard_state.zig` and
+`../build/state/program_serialization.zig` are assigned from it per board and
+package. An object that reads a per-package option is built once per package.
+An owner reads the option from the build-options module it imports. An owner must not re-derive an option from
 `old_hw`, from the target OS tag, or from a package-name proxy: none of those is
 the same predicate as the macro, so the owner and the build then disagree about
 what the firmware contains. Which conditionals an owner may carry is ratcheted by

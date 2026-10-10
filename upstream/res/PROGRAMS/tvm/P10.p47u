@@ -1,0 +1,20 @@
+@ Index:   Problem 10, begin mode, solves n
+@ Author:  Jaco Mostert, fm Duncan Murray's problem set
+@ Same shape as P9, begin mode, PMT -2040.816327. Solves n.
+LBL ‘P10’
+  0
+  STO ‘NPPER’
+  25
+  STO ‘I%/a’
+  100000
+  STO ‘PV’
+  -2040.816327
+  STO ‘PMT’
+  0
+  STO ‘FV’
+  12
+  STO ‘PPER/a’
+  STO ‘CPER/a’
+  BeginP
+  n
+  END

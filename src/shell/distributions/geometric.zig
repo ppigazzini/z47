@@ -6,13 +6,13 @@
 // distribution. Exported from shell.zig under the strip_17 guard.
 //
 // Upstream strips the OPTION_DIST_C cluster (poisson/hyper/binomial/negBinom/
-// geometric/f) on DM42 packages 2-4, so this owner is compiled where that cluster
-// is present: the host (PC) build, DMCP5 and DM42 package 1. There it links
-// against the still-C discrete CDFs (WP34S_Cdf_Poisson2/Binomial2,
-// cdf_Hypergeometric2, cdf_NegBinomial2) which the shared dispatcher reaches; on
-// packages 2-4 strip_17 is set, so the four entry points become empty stubs and
-// the math is eliminated. Package 1 is an old_hw DM42, so the bodies carry
-// linksection(dr.code_section) and run from QSPI there.
+// geometric/f) on some DM42 packages, so this owner is compiled where that
+// cluster is present: the host (PC) build, DMCP5 and the DM42 packages that keep
+// it. There it links against the still-C discrete CDFs (WP34S_Cdf_Poisson2/
+// Binomial2, cdf_Hypergeometric2, cdf_NegBinomial2) which the shared dispatcher
+// reaches; where strip_17 is set the four entry points become empty stubs and
+// the math is eliminated. On an old_hw DM42 the bodies carry
+// linksection(dr.code_section) and run from QSPI.
 //
 // The testSuite exercises every branch directly (tests/geometric_{p,l,r,i}.txt),
 // so this owner is parity-gated by `zig build test`.

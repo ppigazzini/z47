@@ -939,6 +939,7 @@ pub fn normKey00Key() i16 {
 // SHOWMODE macro (defines.h:2187).
 
 pub extern fn fnC47Show(fn_show_param: u16) void;
+pub extern fn recallShowStatus() void;
 pub extern fn fnFlipFlag(flag: u16) void;
 pub extern fn assignGetName1() void;
 pub extern fn assignGetName2() void;

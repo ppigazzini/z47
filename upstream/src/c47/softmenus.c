@@ -363,12 +363,12 @@ TO_QSPI const int16_t menu_MyPFN[]       = { ITM_LBL,                   ITM_GTO,
                                              ITM_EDIT,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  -MNU_PFN_3,                -MNU_PFN_2                     };
 
 TO_QSPI const int16_t menu_PFN_1[]       = { ITM_INPUT,                 ITM_PROMPT,                ITM_KEYQ,                  ITM_KTYP,                  ITM_PUTK,                  -MNU_PFN_2,
-                                             ITM_PAUSE,                 ITM_MSG,                   ITM_ERR,                   ITM_NULL,                  ITM_PLOTRST,               ITM_PLTFCNS,
+                                             ITM_PAUSE,                 ITM_MSG,                   ITM_ERR,                   ITM_FINISH,                ITM_PLOTRST,               ITM_PLTFCNS,
                                              ITM_AVIEW,                 ITM_ATEXT,                 ITM_AGRAPH,                ITM_PIXEL,                 ITM_POINT,                 ITM_PLOTZOOM                   };
 
 TO_QSPI const int16_t menu_PFN_2[]       = { ITM_KEYG,                  ITM_KEYX,                  ITM_MENU,                  ITM_MVAR,                  ITM_VARMNU,                -MNU_PFN_3,
                                              ITM_LocR,                  ITM_POPLR,                 ITM_CLMENU,                ITM_OPEN_MENU,             ITM_EXITALL,               -MNU_42,
-                                             ITM_R_COPY,                ITM_R_SORT,                ITM_R_SWAP,                ITM_R_CLR,                 ITM_NULL,                  ITM_NULL                       };
+                                             ITM_R_COPY,                ITM_R_SORT,                ITM_R_SWAP,                ITM_R_CLR,                 ITM_PLTFCNS,               ITM_NULL                       };
 
 TO_QSPI const int16_t menu_PFN_3[]       = { ITM_LBL,                   ITM_GTO,                   ITM_XEQ,                   ITM_RTN,                   ITM_END,                   -MNU_PFN,
                                              ITM_REM,                   ITM_CASE,                  ITM_XEQP1,                 ITM_RTNP1,                 -MNU_LOOP,                 -MNU_TEST,

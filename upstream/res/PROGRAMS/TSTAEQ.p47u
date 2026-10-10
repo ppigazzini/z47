@@ -1,0 +1,52 @@
+@ Index:  Tests that x≈? follows display FIX
+@ Author: Rémy Trotin
+@ Tested: XEQ ‘TSTAEQ’
+@ Input:  none; runs its four built-in pairs
+@ Output: All four return PASSED
+@
+@ TSTAEQ tries four pairs: a real against a long integer, a real against
+@ a complex, a real against a real, and a complex against a complex.
+@
+@ Helper subroutine A compares Y and X: agreement at FIX 03 is a failure,
+@ and agreement only at FIX 02 is a pass.
+LBL A
+  FIX 03
+  𝑥≈? Y             ; equal at 3 decimals is too close
+    GTO 01
+  FIX 02
+  𝑥≈? Y             ; equal at 2 decimals is the expected pass
+    GTO 02
+
+  LBL 01
+    NDROP 02
+    ‘FAILED’
+    GTO 03
+
+  LBL 02
+    NDROP 02
+    ‘PASSED’
+
+    LBL 03
+      STOP
+      NDROP 02
+      RTN
+
+    LBL ‘TSTAEQ’
+      ‘R34-LI’      ; real against a long integer
+      1.001
+      1
+      XEQ A
+      ‘R34-CPX’     ; real against a complex
+      1.001
+      1.002+0.𝒾
+      XEQ A
+      ‘R34-R34’     ; real against a real
+      1.001
+      1.002
+      XEQ A
+      ‘CPX-CPX’     ; complex against a complex
+      1.001+1.002𝒾
+      1.003+1.004𝒾
+      XEQ A
+  END
+.END.

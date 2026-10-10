@@ -129,6 +129,7 @@ extern fn free(ptr: ?*anyopaque) void;
 
 // cairo / gdk constants.
 const CAIRO_FORMAT_RGB24: c_int = 1;
+const CAIRO_FILTER_FAST: c_int = 0;
 // GDK_SELECTION_CLIPBOARD = _GDK_MAKE_ATOM(69) = GUINT_TO_POINTER(69).
 const GDK_SELECTION_CLIPBOARD: ?*anyopaque = @ptrFromInt(69);
 
@@ -494,6 +495,8 @@ extern var headlessMode: bool; // c47.c global; --dumpMenus and friends run with
 extern fn cairo_image_surface_create_for_data(data: [*c]u8, format: c_int, width: c_int, height: c_int, stride: c_int) ?*anyopaque;
 extern fn cairo_set_source_surface(cr: ?*anyopaque, surface: ?*anyopaque, x: f64, y: f64) void;
 extern fn cairo_surface_mark_dirty(surface: ?*anyopaque) void;
+extern fn cairo_get_source(cr: ?*anyopaque) ?*anyopaque;
+extern fn cairo_pattern_set_filter(pattern: ?*anyopaque, filter: c_int) void;
 extern fn cairo_paint(cr: ?*anyopaque) void;
 extern fn cairo_surface_destroy(surface: ?*anyopaque) void;
 extern fn gtk_clipboard_get(selection: ?*anyopaque) ?*anyopaque;
@@ -522,6 +525,7 @@ pub export fn drawScreen(widget: ?*anyopaque, cr: ?*anyopaque, data: ?*anyopaque
     const imageSurface = cairo_image_surface_create_for_data(@ptrCast(screenData()), CAIRO_FORMAT_RGB24, SCREEN_WIDTH, SCREEN_HEIGHT, stride4());
     cairo_set_source_surface(cr, imageSurface, 0, 0);
     cairo_surface_mark_dirty(imageSurface);
+    cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST); // Quartz antialiases GOOD at device scale, so a 1 px damage strip covers its row only in part
     cairo_paint(cr);
     cairo_surface_destroy(imageSurface);
     return 0; // FALSE

@@ -1,0 +1,20 @@
+@ Index:   Problem 7, solves rate, monthly
+@ Author:  Jaco Mostert, fm Duncan Murray's problem set
+@ N 10, PV -100, PMT 10, FV 1e-10, 12 periods a year. Solves I%/a.
+LBL ‘P7’
+  10
+  STO ‘NPPER’
+  0
+  STO ‘I%/a’
+  -100
+  STO ‘PV’
+  10
+  STO ‘PMT’
+  1.e-10
+  STO ‘FV’
+  12
+  STO ‘PPER/a’
+  STO ‘CPER/a’
+  ENDP
+  I/a
+  END

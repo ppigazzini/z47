@@ -8,22 +8,24 @@ const abi = @import("abi");
 const dm42_pkg_xip: bool = solve_build_options.dm42_pkg_xip;
 
 /// defines.h's OPTION_INFSUMS: the infinity sum and the early stop it carries. The
-/// plain programmable sum and product are outside it. Enabled by default and
-/// #undef'd in the same DM42 TWO_FILE block as OPTION_XFN_1000 and OPTION_SLVP_POLY
-/// (400 bytes of flash), so it is off for exactly the same builds. Every consumer
-/// of this module gets the option from the one build-options producer, so it is
-/// read straight rather than defaulted.
+/// plain programmable sum and product are outside it. Every consumer of this
+/// module gets the option from the one build-options producer, so it is read
+/// straight rather than defaulted.
 pub const option_infsums: bool = solve_build_options.option_infsums;
 
 /// defines.h's OPTION_TVM_FORMULAS: tvm.c's analytical closed forms and the
-/// fnTvmVar arm that tries them before the iterative solver. #undef'd for DM42
-/// packages 2 and 4, whose FIN application is therefore solver-only.
+/// fnTvmVar arm that tries them before the iterative solver. Without it the FIN
+/// application is solver-only.
 pub const option_tvm_formulas = solve_build_options.option_tvm_formulas;
 
 /// defines.h's OPTION_TVM_NEWTON: the Newton-Raphson method inside solve.c's
-/// solver() and the derivatives tvmEquation supplies it with. #undef'd for the
-/// same two packages, which makes their FIN solver brent-only.
+/// solver() and the derivatives tvmEquation supplies it with. Without it the FIN
+/// solver is brent-only.
 pub const option_tvm_newton = solve_build_options.option_tvm_newton;
+
+/// defines.h's OPTION_TVM_AMORT: the AMORT half of tvm.c. Without it the five
+/// AMORT commands are empty.
+pub const option_tvm_amort = solve_build_options.option_tvm_amort;
 pub const code_section = if (dm42_pkg_xip)
     ".qspi_data"
 else if (@import("builtin").target.os.tag == .macos)

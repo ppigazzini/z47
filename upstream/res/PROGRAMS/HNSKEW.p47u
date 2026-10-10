@@ -1,0 +1,25 @@
+@ Index:   Skewed-histogram HNORM window test
+@ Author:  Jaco Mostert
+@ Created: 2026-07-15
+@ Tested:  Per inline comments below
+@ Input:   none; its eight built-in points
+@ Output:  HNORM fit a0=4.034, a1=1.559, a2=-1.852, r^2=1
+@
+@ Eight points, three bins (edges 1/2/3/4), counts 4-3-1. The Gauss fit peaks left of centre.
+@ (a0 = 4.034, a1 = 1.559, a2 = -1.852, r^2 = 1). The graphic window follows the fitted bell
+@ (x = a1 +- 3 sigma unioned with the bar range, y_max clearing the peak) and the peak and tails scale on screen.
+LBL ‘HNSKEW’
+  CLΣ
+  1 1   Σ+
+  2 1.2 Σ+
+  3 1.5 Σ+
+  4 1.8 Σ+
+  5 2.3 Σ+
+  6 2.5 Σ+
+  7 2.7 Σ+
+  8 3.6 Σ+
+  HISTOX HPLOT SNAP ; histogram, bars 4-3-1
+  HISTOX HNORM SNAP ; skewed Gauss: peak inside the frame, tails to both edges
+  RTN
+  END
+.END.

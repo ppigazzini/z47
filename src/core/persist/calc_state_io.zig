@@ -39,7 +39,7 @@ const USER_R47fg_g: u8 = 64;
 
 const TIMER_IDX_REFRESH_SLEEP: c_int = 0;
 const TO_KB_ACTV: u16 = 10;
-const TO_KB_ACTV_MEDIUM: u32 = 6000;
+const TO_KB_ACTV_ZERO: u32 = 0;
 
 // defines.h: 129 rows of 45 bytes each (longest message is 44 bytes plus the
 // terminator). The stride is what indexes SAVING_STATE_FILE / LOADING_STATE_FILE
@@ -182,7 +182,7 @@ pub fn restartPostLoadTimers() void {
     if (is_dmcp_build) {
         rom.sys_timer_disable(TIMER_IDX_REFRESH_SLEEP);
         rom.sys_timer_start(TIMER_IDX_REFRESH_SLEEP, 1000);
-        fnTimerStart(@intCast(TO_KB_ACTV), TO_KB_ACTV, TO_KB_ACTV_MEDIUM);
+        fnTimerStart(@intCast(TO_KB_ACTV), TO_KB_ACTV, TO_KB_ACTV_ZERO);
     }
 }
 

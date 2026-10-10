@@ -47,6 +47,7 @@
 10000024 // 2026-06-21 FLAG_SIGIP
 10000025 // 2026-07-03 FLAG_PDIFF PINTG PRMS PSHADE
 10000026 // 2026-07-14 FLAG_SBadm
+10000027 // 2026-08-11 FLAG_AUTOVALID; 2026-08-17 FLAG_M_ALL
 10000028 // 2026-08-16 Menu items renumbered into one block; 10000027 is taken on release branch 4.00a2
 10000029 // 2026-08-25 GRAMOD moved from the reserved variable table to the graMod global
 
@@ -3361,7 +3362,7 @@ void doLoad(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d, uint16_t load
   #if defined(DMCP_BUILD)
     sys_timer_disable(TIMER_IDX_REFRESH_SLEEP);
     sys_timer_start(TIMER_IDX_REFRESH_SLEEP, 1000);
-    fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, TO_KB_ACTV_MEDIUM); //PROGRAM_KB_ACTV
+    fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, TO_KB_ACTV_ZERO); //PROGRAM_KB_ACTV
   #endif // DMCP_BUILD
 
 

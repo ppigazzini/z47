@@ -63,8 +63,8 @@ pub const RuntimeObjectOptions = struct {
     option_dist_normal: bool = true,
     // OPTION_EIGEN gates the eigenvalue/eigenvector/QR/matrix-sqrt half of
     // matrix.c (EIGVAL, EIGVEC, M.QR, MSQRT) and squareRoot.c's 159-digit
-    // helpers; LU, determinant and inverse stay either way. Upstream #undef's it
-    // for DMCP packages 1, 2 and 4; package 3, DMCP5 and host keep it.
+    // helpers; LU, determinant and inverse stay either way. Which DM42 packages
+    // keep it is build/firmware.zig's dm42Package table; DMCP5 and host keep it.
     option_eigen: bool = true,
     // OPTION_VECTOR gates matrix.c's 2D/3D vector command surface and the
     // rectangular <-> spherical/cylindrical/polar conversions in toRect.c and
@@ -77,10 +77,10 @@ pub const RuntimeObjectOptions = struct {
     // off for every DM42 package and on for DMCP5 and host.
     option_xfn_1000: bool = true,
     // OPTION_SLVP_POLY gates SLVP (every root of a polynomial, through the
-    // companion matrix and the QR eigensolver) in slvp.c and matrix.c. Same
-    // block, so the same per-target answer. defines.h also #undef's it whenever
-    // OPTION_EIGEN is out, which adds nothing: every target that drops EIGEN has
-    // already dropped SLVP with the block.
+    // companion matrix and the QR eigensolver) in slvp.c and matrix.c. It is set
+    // per DM42 package, from build/firmware.zig's dm42Package table. defines.h also
+    // #undef's it whenever OPTION_EIGEN is out, which adds nothing: every package
+    // that drops EIGEN drops SLVP in its own block.
     option_slvp_poly: bool = true,
     // OPTION_ALGDEP gates algdep.c whole: fnAlgdep and fnLindep are empty stubs
     // and algdepPolynomialString() is "" without it. #undef'd in the block common

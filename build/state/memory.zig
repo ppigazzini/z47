@@ -47,6 +47,14 @@ fn addRuntimeObject(
         .optimize = optimize,
     });
     module.addImport("abi", abi_module);
+    // The DMCP ROM shim the GMP allocator's exhaustion stop calls; the same
+    // registered module the calc-state and program-serialization owners import.
+    const dmcp_rom_module = b.createModule(.{
+        .root_source_file = b.path("src/core/hal/dmcp_rom.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    module.addImport("dmcp_rom", dmcp_rom_module);
     const build_options = b.addOptions();
     const use_fake_harness_surface = std.mem.endsWith(u8, name_prefix, "parity");
     const free_regions_are_inline_array = target.result.os.tag == .freestanding and std.mem.eql(u8, name_prefix, "dmcp");

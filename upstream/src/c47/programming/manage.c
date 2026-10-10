@@ -666,8 +666,14 @@ void fnPem(uint16_t unusedButMandatoryParameter) {
         if(getSystemFlag(FLAG_ALPHA)) {
           char tmpChar = tmpString[4];
           tmpString[4] = 0;
-          int16_t cursorInString = (strcmp(tmpString, "REM ") == 0 ? T_cursorPos + 4 : (strcmp(tmpString, "42" STD_alpha) == 0)  || (strcmp(tmpString, "42" STD_RIGHT_TACK) == 0) ? T_cursorPos +5 : T_cursorPos);
+          const bool_t isRem = (strcmp(tmpString, "REM ") == 0);
+          const bool_t is42 = (strcmp(tmpString, "42" STD_alpha) == 0) || (strcmp(tmpString, "42" STD_RIGHT_TACK) == 0);
           tmpString[4] = tmpChar;
+          const char tmpChar7 = tmpString[7];
+          tmpString[7] = 0;
+          const bool_t isFinish = (strcmp(tmpString, "FINISH ") == 0);  // FINISH with its space is seven bytes, so the four-byte compare above cannot see it
+          tmpString[7] = tmpChar7;
+          int16_t cursorInString = isRem ? T_cursorPos + 4 : isFinish ? T_cursorPos + 7 : is42 ? T_cursorPos + 5 : T_cursorPos;
           xcopy(tmpString + 2 + cursorInString + 2, tmpString + 2 + cursorInString, stringByteLength(tmpString + 2 + cursorInString) + 1);
           tmpString[2 + cursorInString    ] = STD_CURSOR[0];
           tmpString[2 + cursorInString + 1] = STD_CURSOR[1];
@@ -907,9 +913,10 @@ void pemAlpha(int16_t item) {
       editCommand = true;
       item = 0;
     }
-    else if(aimFunc == ITM_REM)   { // REM
-      xcopy(aimBuffer, tmpString + 6, ll);        //purposely overshoot aimbuffer, as there is sufficient space
-      aimBuffer[ll - 2 - 6] = 0;
+    else if(aimFunc == ITM_REM || aimFunc == ITM_FINISH)   { // REM or FINISH
+      const uint16_t pfx = stringByteLength(indexOfItems[aimFunc].itemCatalogName) + 3; // the name, the space and the two-byte opening quote before the text
+      xcopy(aimBuffer, tmpString + pfx, ll);        //purposely overshoot aimbuffer, as there is sufficient space
+      aimBuffer[ll - 2 - pfx] = 0;
       T_cursorPos = stringLastGlyph(aimBuffer) + 1;
       deleteStepsFromTo(currentStep, findNextStep(currentStep));
       tam.function = aimFunc;
@@ -1106,7 +1113,7 @@ void pemAlphaEdit (uint16_t unusedButMandatoryParameter) {
     func <<= 8;
     func |= currentStep[1];
   }
-  if((func == ITM_LITERAL || func == ITM_REM)) {
+  if((func == ITM_LITERAL || func == ITM_REM || func == ITM_FINISH)) {
     pemAlpha(ITM_EDIT);
   }
   hourGlassIconEnabled = false;
@@ -1507,7 +1514,7 @@ void insertStepInProgram(const int16_t newFunc) {
     pemCursorIsZerothStep = false;
     return;
   }
-  else if(func == ITM_REM) {
+  else if(func == ITM_REM || func == ITM_FINISH) {
     if(aimBuffer[0] != 0 && !getSystemFlag(FLAG_ALPHA)) {
       pemCloseNumberInput();
       aimBuffer[0] = 0;

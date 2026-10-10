@@ -1959,7 +1959,7 @@
 #define ITM_ms                      1909
 #define ITM_msTo                    1910
 #define ITM_ymdTo                   1911
-#define ITM_1912                    1912 // General items / any items spare (reserved: die-op, FINISH)
+#define ITM_FINISH                  1912
 #define ITM_1913                    1913 // General items / any items spare
 #define ITM_TO_USER                 1914
 #define ITM_N_KEY_NIL               1915

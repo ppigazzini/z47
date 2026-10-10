@@ -594,7 +594,7 @@ pub fn implementation(comptime runtime: type) type {
 
             runtime.fnTimerExec(runtime.TO_FN_EXEC);
 
-            if ((key.primary != runtime.ITM_SHIFTf) and (key.primary != runtime.KEY_fg) and (!runtime.isShowMode() or !(key.primary == runtime.ITM_RCL or key.primary == runtime.ITM_RS or key.primary == runtime.ITM_UP1 or key.primary == runtime.ITM_DOWN1 or (runtime.allowShowDigits and key.primary >= ITM_0 and key.primary <= ITM_9)))) {
+            if ((key.primary != runtime.ITM_SHIFTf) and (key.primary != runtime.KEY_fg) and (!runtime.isShowMode() or !(key.primary == runtime.ITM_RCL or key.primary == runtime.ITM_RS or key.primary == runtime.ITM_UP1 or key.primary == runtime.ITM_DOWN1 or key.primary == runtime.ITM_EXIT1 or key.primary == runtime.ITM_SNAP or (runtime.allowShowDigits and key.primary >= ITM_0 and key.primary <= ITM_9)))) {
                 runtime.showRegis = 9999;
             }
 
@@ -681,6 +681,13 @@ pub fn implementation(comptime runtime: type) type {
 
             if (runtime.Check_Norm_Key_00_Assigned(&result, key_no) == 0) {
                 runtime.Check_MultiPresses(&result, key_no);
+            }
+
+            // EXIT in SHOW defers to the key release, as a shift does: a long press
+            // starts the ladder and a short press exits on the release.
+            if (runtime.isShowMode() and result == runtime.ITM_EXIT1) {
+                runtime.lastItem = runtime.ITM_EXIT1;
+                return runtime.ITM_NOP;
             }
 
             if (result == runtime.ITM_PROD_SIGN) {
