@@ -1,0 +1,26 @@
+@ Index:   Integrand cos(x·sin t) for integration
+@ Author:  Hewlett-Packard, Walter Bonin
+@ Created: 1979-05-01 by HP, original OM publication date unknown
+@ Version: 0.29
+@ Tested:  Requires RAD mode
+@ Input:   Variables x=1 and t={0, 𝜋/2}
+@ Output:  Stack X = {1, 0.5403023058681397174009366074429766} for those t inputs
+@
+@ Computes cos(𝑥⋅sin(𝑡)) with the variables given via menu input,
+@ with the intention that this function then be integrated.
+@
+@ Based on the HP-34C _Owner's Handbook and Programming Guide_ Bessel
+@ function examples starting on p.202, enhanced with MVAR for the
+@ "Interactive Integrating Expressions Stored in Programs" section of
+@ the WP43 Owner's Manual.  The version number above is for the latest
+@ publication we checked of the OM.
+LBL ‘IBessI’
+  MVAR ‘x’
+  MVAR ‘t’
+  RCL ‘t’
+  sin(𝑥)
+  RCL× ‘x’
+  cos(𝑥)
+  RTN
+  END
+.END.

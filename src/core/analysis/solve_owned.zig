@@ -2,8 +2,8 @@
 const consts = abi.constants;
 //
 // Zig owner for src/c47/solver/solve.c: the central generic equation solver
-// (Brent, plus the Newton method OPTION_TVM_NEWTON adds; that option is out of
-// DM42 packages 2 and 4, which run the brent-only solver).
+// (Brent, plus the Newton method OPTION_TVM_NEWTON adds; a build without that
+// option runs the brent-only solver).
 // Transitively COVERED via tvm.txt / validate_tvm (solver() is exercised by the
 // TVM application). Faithful line-by-line translation preserving the exact order
 // of every real_t / real34_t operation.

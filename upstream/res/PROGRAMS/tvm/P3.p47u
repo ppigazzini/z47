@@ -1,0 +1,23 @@
+@ Index:   Problem 3, penny a second, solves FV
+@ Author:  Jaco Mostert, fm Duncan Murray's problem set
+@ One penny a second for a year (60^2 x 24 x 365 periods) at 10%.
+@ Solves FV.
+LBL ‘P3’
+  60
+  𝑥²
+  24
+  ×
+  365
+  ×
+  STO ‘NPPER’
+  STO ‘PPER/a’
+  STO ‘CPER/a’
+  10
+  STO ‘I%/a’
+  0
+  STO ‘PV’
+  -0.01
+  STO ‘PMT’
+  ENDP
+  FV
+  END

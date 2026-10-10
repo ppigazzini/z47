@@ -1484,7 +1484,7 @@ void _getRegisterLabel(uint16_t registerNo, char *label) {
     sprintf(label, "R%02d", registerNo);
   }
   else if(FIRST_LOCAL_REGISTER <= registerNo && registerNo <= LAST_LOCAL_REGISTER) {
-    sprintf(label, "R.%03d", registerNo-100);
+    sprintf(label, "R.%02d", registerNo - FIRST_LOCAL_REGISTER);
   }
   else if(FIRST_NAMED_VARIABLE <= registerNo && registerNo <= LAST_NAMED_VARIABLE) {
     sprintf(label, "%s", (char *)allNamedVariables[registerNo - FIRST_NAMED_VARIABLE].variableName + 1);
@@ -2238,7 +2238,7 @@ void fnP_Regs (uint16_t registerNo) {
       sprintf(label, "R%02d", registerNo);
     }
     else if(FIRST_LOCAL_REGISTER <= registerNo && registerNo <= LAST_LOCAL_REGISTER) {
-      sprintf(label, "R.%03d", registerNo-100);
+      sprintf(label, "R.%02d", registerNo - FIRST_LOCAL_REGISTER);
     }
     else if(FIRST_NAMED_VARIABLE <= registerNo && registerNo <= LAST_NAMED_VARIABLE) {
       sprintf(label, "%s", (char *)allNamedVariables[registerNo - FIRST_NAMED_VARIABLE].variableName + 1);

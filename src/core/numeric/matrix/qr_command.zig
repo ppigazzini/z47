@@ -32,9 +32,9 @@ pub export fn fnQrDecomposition(unused_param_but_mandatory: u16) callconv(.c) vo
     _ = unused_param_but_mandatory;
     // matrix.c defines fnQrDecomposition as an empty body under
     // `#if !defined(OPTION_EIGEN)` and only compiles the real one inside
-    // `#if defined(OPTION_EIGEN)`. The option is #undef'd on DM42 packages 1, 2
-    // and 4, where M.QR therefore returns without touching the stack -- it does
-    // not save LastX and it raises no error.
+    // `#if defined(OPTION_EIGEN)`. On a DM42 package without the option M.QR
+    // therefore returns without touching the stack -- it does not save LastX and
+    // it raises no error.
     if (comptime !runtime.option_eigen) return;
     if (!runtime.saveLastX()) {
         return;

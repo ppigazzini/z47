@@ -1,0 +1,26 @@
+@ Index:   Free-fall height residual for PGMSLV
+@ Author:  Walter Bonin, fm org C47 test program
+@ Created: original publication date unknown
+@ Version: 0.29
+@ Tested:  Solution time
+@ Input:   Driven by FreFp2
+@ Output:  Time taken = 5.070303019685519581163707165121980 s
+@
+@ Height residual in Earth's gravity, set to zero by the solver:
+@ h0 + v0*time - g_⊕/2*time^2 - height.
+@
+@ Originally published as the function passed to PGMSLV under
+@ "The Solver" section of the WP43 Owner's Manual.  See the
+@ wrapper FreFp2.p47u for how to call this.
+LBL ‘FreeFp’
+  g_⊕
+  -2
+  ÷
+  RCL× ‘time’
+  RCL+ ‘v0’
+  RCL× ‘time’
+  RCL+ ‘h0’
+  RCL- ‘height’     ; residual of the height equation
+  RTN
+  END
+.END.

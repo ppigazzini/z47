@@ -82,6 +82,7 @@ const ERROR_OUT_OF_RANGE: u8 = 8;
 
 const PGM_RUNNING: u8 = 1;
 const FLAG_SPCRES: c_int = 0x8017;
+const FLAG_IGN1ER: c_int = 0x8024;
 const FLAG_ALPHA: c_uint = 0x800e;
 
 const SCREEN_WIDTH: i16 = 400;
@@ -501,10 +502,11 @@ pub extern fn displayCalcErrorMessage(errorCode: u8, errMessageRegisterLine: cal
 // port while the engine keeps the entry point and calls this once the status is
 // recorded.
 //
-// OPTION_IR_PRINTING is defined unconditionally at defines.h:72 and undefined
-// only by DMCP packages 1 and 3, so this is live on the simulator, in the
-// testSuite, on DMCP5 and on packages 2 and 4. With the option off nothing here
-// runs -- the tmpString write included, exactly as the #if leaves it.
+// OPTION_IR_PRINTING is defined by default in defines.h and undefined only by
+// some DM42 package blocks, so this is live on the simulator, in the testSuite,
+// on DMCP5 and on the DM42 packages that keep the printer. With the option off
+// nothing here runs -- the tmpString write included, exactly as the #if leaves
+// it.
 const ir_printing: bool = frontier_build_options.ir_printing;
 const ERROR_LABEL_NOT_FOUND: u8 = 6;
 const ERROR_RESERVED_VARIABLE_NAME: u8 = 61;
@@ -522,12 +524,14 @@ pub export fn printErrorTrace(errorCode: u8) callconv(.c) void {
         printTrace(tam.function, @bitCast(tam.value));
     }
 
-    if (lastErrorCode == ERROR_RESERVED_VARIABLE_NAME) {
-        _ = sprintf(tmpString, "%s: %s", errorMessageOf(lastErrorCode), errorMessage);
-    } else {
-        _ = sprintf(tmpString, "%s", errorMessageOf(lastErrorCode));
+    if (!getSystemFlag(FLAG_IGN1ER)) {
+        if (lastErrorCode == ERROR_RESERVED_VARIABLE_NAME) {
+            _ = sprintf(tmpString, "%s: %s", errorMessageOf(lastErrorCode), errorMessage);
+        } else {
+            _ = sprintf(tmpString, "%s", errorMessageOf(lastErrorCode));
+        }
+        printTraceError(tmpString);
     }
-    printTraceError(tmpString);
 }
 
 // reportBugError: the shell implementation of the host bug-report hook. It fires

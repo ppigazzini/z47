@@ -1,0 +1,96 @@
+@ Index:    Logarithmic spiral plot program
+@ Author:   Jaco Mostert, RAprism, barrymead
+@ Version:  5
+@ Created:  2024-12-27
+@ Modified: 2026-06-06
+@ Source:   https://forum.swissmicros.com/viewtopic.php?p=35422#p35422
+@ Tested:   Draws a logarithmic spiral (defaults scale 0.35, growth 0.1).
+@ Input:    none; I=0 and J=0 take the defaults 0.35 and 0.1
+@ Output:   Spiral on-screen
+@
+@ REG I: 0 or SCALING FACTOR
+@ REG J: 0 or GROWTH RATE
+@
+@ Complex and do not change to RAD by RAprism
+@
+@ Changed to limit |x| to 150 instead of 234 by barrymead
+@
+@ Press-any-key and negative prevention added by JM
+LBL ‘SPIRALk’
+  ENTER
+  RCL I
+  𝑥=? 0.
+    0.35
+  STO I
+  RCL J
+  𝑥=? 0.
+    0.1
+  |𝑥|
+  STO J
+  LocR 02
+  1
+  STO R.00
+  0
+  ENTER
+  CLLCDxy
+
+  # MAIN LOOP START
+  LBL :LOOP1:
+    # CALC ANGLE
+    RCL R.00
+    500.
+    ÷
+    ENTER
+    ⇒RAD
+    ENTER
+
+    # CALC RE IM
+    cos(𝑥)
+    𝑥⇄𝑦
+    sin(𝑥)
+    COMPLEX
+    𝑥⇄𝑦
+
+    # CALC SIZE
+    RCL× J
+    𝑒ˣ
+    RCL× I
+
+    # CHECK COMPLEX VECTOR SIZE
+    150
+    𝑥≤? Y
+      GTO :EXIT:
+    DROP𝑥
+    STO R.01
+    ×
+
+    # PLOT POINTS
+    # ADD OFFSET TO HAVE 0,0 IN MID OF SCREEN
+    200.+120.𝒾
+    +
+    COMPLEX
+    𝑥≤-0?
+      GTO :BYPASS:
+    𝑥⇄𝑦
+    𝑥≤-0?
+      GTO :BYPASS:
+    SF ‘IGN1ER’
+    POINT
+    CF ‘IGN1ER’
+    PAUSE 00
+
+    LBL :BYPASS:
+      # CALC NEXT ANGLE COUNTER
+      RCL R.01
+      1/𝑥
+      SDL 03
+      IP
+      INCR X
+      STO+ R.00
+      GTO :LOOP1:
+
+    LBL :EXIT:
+      # WAIT FOR A KEY
+      PAUSE 99
+  END
+.END.

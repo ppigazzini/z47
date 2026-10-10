@@ -53,5 +53,6 @@ void memoryParitySetFailureModes(bool_t freeListAllocFail, bool_t freeListReallo
 void *memoryParityMakeC47Allocation(size_t sizeInBlocks);
 void *memoryParityMakeGmpAllocation(size_t sizeInBytes);
 void memoryParityCapture(memory_parity_snapshot_t *snapshot);
+void memoryParitySetBugScreenFd(int fd);
 
 #endif

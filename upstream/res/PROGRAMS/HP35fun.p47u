@@ -1,0 +1,39 @@
+@ Index:   Fun HP35 mode replacement
+@ Author:  Jaco Mostert and Robbert Jan van Meenen
+@ Version: 2
+@ Source:  https://47calc.com/doc/R47/Reference/R47v0_HP35.pdf
+@ Source:  https://47calc.com/doc/C47/Reference/C47_HP35.pdf
+@ Tested:  Run from default clears CPXRES, SPCRES and eRPN (1 to 0).
+@ Input:   CPXRES, SPCRES and eRPN set
+@ Output:  All three cleared to 0
+@
+@ Save the current settings first with STO Config 35.
+@
+@ Replaces the development HP35 function. No emulation and no simulation.
+LBL ‘HP35fun’
+  CLRMOD
+  CLSTK
+  𝝅
+  iℝ
+  SIG 09
+  CF ‘MyMb’
+  CF ‘HOMEb’
+  RNG 99
+  SDIGS 16
+  dSTACK 01
+  RAD
+  SSIZE4
+  CF ‘CPXRES’
+  CF ‘SPCRES’
+  CF ‘eRPN’
+  CF ‘fg.FUL’
+  IPGRP 03
+  FPGRP 03
+  IPGRP1 00
+  IPGRP1x 00
+  INONE
+  FNONE
+  RWDOT⋅
+  RTN
+  END
+.END.

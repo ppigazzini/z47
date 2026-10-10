@@ -1,0 +1,632 @@
+{\rtf1\ansi\ansicpg1252\deff0\nouicompat{\fonttbl{\f0\fnil\fcharset0 C47__StandardFont;}}{\pard\sl240\slmult1\f0\fs24\lang9\f0\loch
+C47 Program file export: Export format version 3, C47 program version 1.
+ \par
+0000: { Prgm #1/1: 4751 bytes / 597 steps } \par
+\par
+0001:  LBL \u8216?STRUCT\u8217?\par
+0002:    REM \u8216?Runs every example below, in order\u8217?\par
+0003:    5\par
+0004:    CHS\par
+0005:    XEQ \u8216?NEG1-X\u8217?\par
+0006:    DROPx\par
+0007:    5\par
+0008:    CHS\par
+0009:    XEQ \u8216?SGN1\u8217?\par
+0010:    DROPx\par
+0011:    XEQ \u8216?TRI3\u8217?\par
+0012:    12\par
+0013:    XEQ \u8216?HALF\u8217?\par
+0014:    DROPx\par
+0015:    XEQ \u8216?W0\u8217?\par
+0016:    XEQ \u8216?WW\u8217?\par
+0017:    XEQ \u8216?DISPL\u8217?\par
+0018:    XEQ \u8216?YS\u8217?\par
+0019:    XEQ \u8216?YR\u8217?\par
+0020:    XEQ \u8216?POLY_H\u8217?\par
+0021:    12\par
+0022:    XEQ \u8216?RHLF\u8217?\par
+0023:    DROPx\par
+0024:    XEQ \u8216?R0\u8217?\par
+0025:    XEQ \u8216?RR\u8217?\par
+0026:    XEQ \u8216?FRAC\u8217?\par
+0027:    XEQ \u8216?FRC3\u8217?\par
+0028:    XEQ \u8216?RND1\u8217?\par
+0029:    XEQ \u8216?RND2\u8217?\par
+0030:    XEQ \u8216?RND3\u8217?\par
+0031:    XEQ \u8216?REV\u8217?\par
+0032:    XEQ \u8216?RVFR\u8217?\par
+0033:    XEQ \u8216?F0\u8217?\par
+0034:    XEQ \u8216?FTOP\u8217?\par
+0035:    XEQ \u8216?TBL\u8217?\par
+0036:    XEQ \u8216?CLEAR\u8217?\par
+0037:    XEQ \u8216?MAXR\u8217?\par
+0038:    XEQ \u8216?MIXED\u8217?\par
+0039:    XEQ \u8216?LLOC\u8217?\par
+0040:    XEQ \u8216?ERTN\u8217?\par
+0041:    RTN\par
+0042:    REM \u8216?STRUCT note examples: IF, WHILE and FOR\u8217?\par
+\par
+0043:    LBL \u8216?NEG1-X\u8217?\par
+0044:    REM \u8216?IF without ELSE. A negative X comes out as 1-X, anything else is unchanged.\u8217?\par
+0045:    x< ? 0.\par
+0046:    IF\u8321?\par
+0047:      1\par
+0048:      -\par
+0049:      CHS\par
+0050:    ENDIF\u8321?\par
+0051:    RTN\par
+\par
+0052:    LBL \u8216?SGN1\u8217?\par
+0053:    REM \u8216?IF with ELSE. R01 gets -1 when X is negative, else 1.\u8217?\par
+0054:    x< ? 0.\par
+0055:    IF\u8322?\par
+0056:      -1\par
+0057:      STO 01\par
+0058:    ELSE\u8322?\par
+0059:      1\par
+0060:      STO 01\par
+0061:    ENDIF\u8322?\par
+0062:    RTN\par
+\par
+0063:    LBL \u8216?TRI3\u8217?\par
+0064:    REM \u8216?Based HP42S PE&T p17\u8217?\par
+0065:    REM \u8216?Sides in S1, S2 and S3, the names HP42S PE&T uses. R01 gets 3 equilateral, 2 isosceles, 1 scalene.\u8217?\par
+0066:    5\par
+0067:    STO \u8216?S1\u8217?\par
+0068:    DROPx\par
+0069:    5\par
+0070:    STO \u8216?S2\u8217?\par
+0071:    DROPx\par
+0072:    8\par
+0073:    STO \u8216?S3\u8217?\par
+0074:    DROPx\par
+0075:    RCL \u8216?S1\u8217?\par
+0076:    x= ? \u8216?S2\u8217?\par
+0077:    IF\u8323?\par
+0078:      RCL \u8216?S2\u8217?\par
+0079:      x= ? \u8216?S3\u8217?\par
+0080:      IF\u8324?\par
+0081:        3\par
+0082:        STO 01\par
+0083:      ELSE\u8324?\par
+0084:        2\par
+0085:        STO 01\par
+0086:      ENDIF\u8324?\par
+0087:    ELSE\u8323?\par
+0088:      RCL \u8216?S2\u8217?\par
+0089:      x= ? \u8216?S3\u8217?\par
+0090:      IF\u8325?\par
+0091:        2\par
+0092:        STO 01\par
+0093:      ELSE\u8325?\par
+0094:        RCL \u8216?S1\u8217?\par
+0095:        x= ? \u8216?S3\u8217?\par
+0096:        IF\u8326?\par
+0097:          2\par
+0098:          STO 01\par
+0099:        ELSE\u8326?\par
+0100:          1\par
+0101:          STO 01\par
+0102:        ENDIF\u8326?\par
+0103:      ENDIF\u8325?\par
+0104:    ENDIF\u8323?\par
+0105:    RTN\par
+\par
+0106:    LBL \u8216?HALF\u8217?\par
+0107:    REM \u8216?An ordinary WHILE. Halve X until it no longer exceeds 1. X = 12 gives R01 = 4 and X = 0.75.\u8217?\par
+0108:    0\par
+0109:    STO 01\par
+0110:    1\par
+0111:    STO 00\par
+0112:    DROPx\par
+0113:    DROPx\par
+0114:    DO\u8321?\par
+0115:      x> ? 00\par
+0116:    WHILE\u8321?\par
+0117:      2\par
+0118:      \u247?\par
+0119:      INCR 01\par
+0120:    ENDDO\u8321?\par
+0121:    RTN\par
+\par
+0122:    LBL \u8216?W0\u8217?\par
+0123:    REM \u8216?A test false on entry. The body never runs, so R01 stays 0.\u8217?\par
+0124:    CLX\par
+0125:    STO 01\par
+0126:    1\par
+0127:    STO 00\par
+0128:    0\par
+0129:    DO\u8322?\par
+0130:      x> ? 00\par
+0131:    WHILE\u8322?\par
+0132:      99\par
+0133:      STO 01\par
+0134:    ENDDO\u8322?\par
+0135:    RTN\par
+\par
+0136:    LBL \u8216?WW\u8217?\par
+0137:    REM \u8216?Nested WHILE. Three outer iterations, two inner each, so R03 finishes at 6.\u8217?\par
+0138:    3\par
+0139:    STO 00\par
+0140:    CLX\par
+0141:    STO 02\par
+0142:    CLX\par
+0143:    STO 03\par
+0144:    DO\u8323?\par
+0145:      RCL 00\par
+0146:      x> ? 02\par
+0147:    WHILE\u8323?\par
+0148:      DROPx\par
+0149:      2\par
+0150:      STO 01\par
+0151:      DO\u8324?\par
+0152:        RCL 01\par
+0153:        x> ? 02\par
+0154:      WHILE\u8324?\par
+0155:        DROPx\par
+0156:        INCR 03\par
+0157:        DECR 01\par
+0158:      ENDDO\u8324?\par
+0159:      DROPx\par
+0160:      DECR 00\par
+0161:    ENDDO\u8323?\par
+0162:    RTN\par
+\par
+0163:    LBL \u8216?DISPL\u8217?\par
+0164:    REM \u8216?Based HP42S PE&T p41\u8217?\par
+0165:    REM \u8216?x = x0 + v t, at t = 0 to 15 s in 5 s steps\u8217?\par
+0166:    10\par
+0167:    STO \u8216?x0\u8217?\par
+0168:    DROPx\par
+0169:    20\par
+0170:    STO \u8216?v\u8217?\par
+0171:    DROPx\par
+0172:    CLX\par
+0173:    STO 03\par
+0174:    DROPx\par
+0175:    15\par
+0176:    STO \u8216?tF\u8217?\par
+0177:    DROPx\par
+0178:    5\par
+0179:    STO \u8216?STEP\u8217?\par
+0180:    DROPx\par
+0181:    0\par
+0182:    RCL \u8216?tF\u8217?\par
+0183:    RCL \u8216?STEP\u8217?\par
+0184:    FOR \u8216?COUNT\u8217?\par
+0185:      RCL \u8216?COUNT\u8217?\par
+0186:      RCL\u215? \u8216?v\u8217?\par
+0187:      RCL+ \u8216?x0\u8217?\par
+0188:      STO \u8216?x\u8217?\par
+0189:      STO+ 03\par
+0190:      DROPx\par
+0191:    NEXT \u8216?COUNT\u8217?\par
+0192:    RTN\par
+\par
+0193:    LBL \u8216?YS\u8217?\par
+0194:    REM \u8216?The same sum with FORyx, two numbers instead of three. R01 contains 5050 and the counter ends at 100.\u8217?\par
+0195:    CLX\par
+0196:    STO 01\par
+0197:    1\par
+0198:    100\par
+0199:    FOR\u10736? 00\par
+0200:      RCL 00\par
+0201:      STO+ 01\par
+0202:      DROPx\par
+0203:    NEXT 00\par
+0204:    RTN\par
+\par
+0205:    LBL \u8216?YR\u8217?\par
+0206:    REM \u8216?FORyx counting down, the end value below the start. Ten down to zero, eleven iterations.\u8217?\par
+0207:    REM \u8216?R01 contains 11 and R03 totals the counter, 10+9+...+0 = 55.\u8217?\par
+0208:    CLX\par
+0209:    STO 01\par
+0210:    CLX\par
+0211:    STO 03\par
+0212:    10\par
+0213:    0\par
+0214:    FOR\u10736? 02\par
+0215:      INCR 01\par
+0216:      RCL 02\par
+0217:      STO+ 03\par
+0218:      DROPx\par
+0219:    NEXT 02\par
+0220:    RTN\par
+\par
+0221:    LBL \u8216?POLY_H\u8217?\par
+0222:    REM \u8216?Horner. p(x) = 2x^3 - 6x^2 + 2x - 1 written as ((2x - 6)x + 2)x - 1\u8217?\par
+0223:    REM \u8216?At x = 3 the running value in X goes 2, 0, 2, 5, so X ends at 5\u8217?\par
+0224:    -1\par
+0225:    STO 11\par
+0226:    DROPx\par
+0227:    2\par
+0228:    STO 12\par
+0229:    DROPx\par
+0230:    -6\par
+0231:    STO 13\par
+0232:    DROPx\par
+0233:    2\par
+0234:    STO 14\par
+0235:    DROPx\par
+0236:    3\par
+0237:    STO \u8216?x\u8217?\par
+0238:    DROPx\par
+0239:    0\par
+0240:    14\par
+0241:    11\par
+0242:    FOR\u10736? 00\par
+0243:      RCL\u215? \u8216?x\u8217?\par
+0244:      RCL+ \u8594?00\par
+0245:    NEXT 00\par
+0246:    RTN\par
+\par
+0247:    LBL \u8216?RHLF\u8217?\par
+0248:    REM \u8216?Based HP15C AFH p22\u8217?\par
+0249:    REM \u8216?The halving structure written with REPEAT. X = 12 gives R01 = 4 and X = 0.75, the same as HALF.\u8217?\par
+0250:    0\par
+0251:    STO 01\par
+0252:    1\par
+0253:    STO 00\par
+0254:    DROPx\par
+0255:    DROPx\par
+0256:    REPEAT\u8321?\par
+0257:      2\par
+0258:      \u247?\par
+0259:      INCR 01\par
+0260:      x\u8804? ? 00\par
+0261:    UNTIL\u8321?\par
+0262:    RTN\par
+\par
+0263:    LBL \u8216?R0\u8217?\par
+0264:    REM \u8216?Based HP15C AFH p22\u8217?\par
+0265:    REM \u8216?The body runs once even where the test is true on entry, which is where DO differs. R01 contains 99.\u8217?\par
+0266:    CLX\par
+0267:    STO 01\par
+0268:    1\par
+0269:    STO 00\par
+0270:    0\par
+0271:    REPEAT\u8322?\par
+0272:      99\par
+0273:      STO 01\par
+0274:      DROPx\par
+0275:      x\u8804? ? 00\par
+0276:    UNTIL\u8322?\par
+0277:    RTN\par
+\par
+0278:    LBL \u8216?RR\u8217?\par
+0279:    REM \u8216?Nested REPEAT. Three outer iterations, two inner each, so R03 finishes at 6.\u8217?\par
+0280:    3\par
+0281:    STO 00\par
+0282:    CLX\par
+0283:    STO 02\par
+0284:    CLX\par
+0285:    STO 03\par
+0286:    DROPx\par
+0287:    REPEAT\u8323?\par
+0288:      2\par
+0289:      STO 01\par
+0290:      DROPx\par
+0291:      REPEAT\u8324?\par
+0292:        INCR 03\par
+0293:        DECR 01\par
+0294:        RCL 01\par
+0295:        x\u8804? ? 02\par
+0296:      UNTIL\u8324?\par
+0297:      DROPx\par
+0298:      DECR 00\par
+0299:      RCL 00\par
+0300:      x\u8804? ? 02\par
+0301:    UNTIL\u8323?\par
+0302:    RTN\par
+\par
+0303:    LBL \u8216?FRAC\u8217?\par
+0304:    REM \u8216?Based HP15C AFH p23\u8217?\par
+0305:    REM \u8216?Sweeps 10 to 90 degrees in 20 degree steps, five angles, and totals sin of each\u8217?\par
+0306:    DEG\par
+0307:    CLX\par
+0308:    STO 01\par
+0309:    CLX\par
+0310:    STO 02\par
+0311:    DROPx\par
+0312:    10\par
+0313:    90\par
+0314:    20\par
+0315:    FOR \u8216?ang\u8217?\par
+0316:      INCR 01\par
+0317:      RCL \u8216?ang\u8217?\par
+0318:      SIN\par
+0319:      STO \u8216?E\u8217?\par
+0320:      STO+ 02\par
+0321:      DROPx\par
+0322:    NEXT \u8216?ang\u8217?\par
+0323:    RTN\par
+\par
+0324:    LBL \u8216?FRC3\u8217?\par
+0325:    REM \u8216?A step that misses the end value. Four iterations, R01 contains 4 and the counter ends at 0.9.\u8217?\par
+0326:    CLX\par
+0327:    STO 01\par
+0328:    0\par
+0329:    1\par
+0330:    0.3\par
+0331:    FOR 00\par
+0332:      INCR 01\par
+0333:    NEXT 00\par
+0334:    RTN\par
+\par
+0335:    LBL \u8216?RND1\u8217?\par
+0336:    REM \u8216?Nine steps of 2/9 to 9 x 2/9. Ten iterations, the count expected.\u8217?\par
+0337:    CLX\par
+0338:    STO 01\par
+0339:    0\par
+0340:    2\par
+0341:    9\par
+0342:    \u247?\par
+0343:    9\par
+0344:    \u215?\par
+0345:    2\par
+0346:    9\par
+0347:    \u247?\par
+0348:    FOR 00\par
+0349:      INCR 01\par
+0350:    NEXT 00\par
+0351:    RTN\par
+\par
+0352:    LBL \u8216?RND2\u8217?\par
+0353:    REM \u8216?The same with 5/9. Nine iterations, one fewer, the counter ending short of the end value.\u8217?\par
+0354:    CLX\par
+0355:    STO 01\par
+0356:    0\par
+0357:    5\par
+0358:    9\par
+0359:    \u247?\par
+0360:    9\par
+0361:    \u215?\par
+0362:    5\par
+0363:    9\par
+0364:    \u247?\par
+0365:    FOR 00\par
+0366:      INCR 01\par
+0367:    NEXT 00\par
+0368:    RTN\par
+\par
+0369:    LBL \u8216?RND3\u8217?\par
+0370:    REM \u8216?Zero to two in steps of 2/3. Four iterations, one more, and ab lands exactly on 2.\u8217?\par
+0371:    CLX\par
+0372:    STO 01\par
+0373:    0\par
+0374:    2\par
+0375:    2\par
+0376:    3\par
+0377:    \u247?\par
+0378:    FOR \u8216?ab\u8217?\par
+0379:      INCR 01\par
+0380:    NEXT \u8216?ab\u8217?\par
+0381:    RTN\par
+\par
+0382:    LBL \u8216?REV\u8217?\par
+0383:    REM \u8216?A negative step counts down. Ten down to zero, eleven iterations.\u8217?\par
+0384:    REM \u8216?R01 contains 11 and R03 totals 55, the same as YR, which counts the same range with FORyx.\u8217?\par
+0385:    CLX\par
+0386:    STO 01\par
+0387:    CLX\par
+0388:    STO 03\par
+0389:    10\par
+0390:    0\par
+0391:    -1\par
+0392:    FOR 02\par
+0393:      INCR 01\par
+0394:      RCL 02\par
+0395:      STO+ 03\par
+0396:      DROPx\par
+0397:    NEXT 02\par
+0398:    RTN\par
+\par
+0399:    LBL \u8216?RVFR\u8217?\par
+0400:    REM \u8216?Down in fractions, counting in the variable named A. Five iterations.\u8217?\par
+0401:    CLX\par
+0402:    STO 01\par
+0403:    1\par
+0404:    0\par
+0405:    -0.25\par
+0406:    FOR \u8216?A\u8217?\par
+0407:      INCR 01\par
+0408:    NEXT \u8216?A\u8217?\par
+0409:    RTN\par
+\par
+0410:    LBL \u8216?F0\u8217?\par
+0411:    REM \u8216?Two FOR/NEXT loops. At RTN, R01 contains 99, R02 the start value of 5 and R03 the last iteration value 3.\u8217?\par
+0412:    CLX\par
+0413:    STO 01\par
+0414:    5\par
+0415:    1\par
+0416:    1\par
+0417:    FOR 02\par
+0418:      99\par
+0419:      STO 01\par
+0420:    NEXT 02\par
+0421:    1\par
+0422:    3\par
+0423:    1\par
+0424:    FOR 03\par
+0425:    NEXT 03\par
+0426:    RTN\par
+\par
+0427:    LBL \u8216?FTOP\u8217?\par
+0428:    REM \u8216?Two FORTOP/NEXT loops, F0 with the two FOR steps changed. At RTN, R01 contains 0, R02 the start value of 5 and R03 the value 4, one past the end.\u8217?\par
+0429:    CLX\par
+0430:    STO 01\par
+0431:    5\par
+0432:    1\par
+0433:    1\par
+0434:    FOR\super T\nosupersub \super O\nosupersub \super P\nosupersub  02\par
+0435:      99\par
+0436:      STO 01\par
+0437:    NEXT 02\par
+0438:    1\par
+0439:    3\par
+0440:    1\par
+0441:    FOR\super T\nosupersub \super O\nosupersub \super P\nosupersub  03\par
+0442:    NEXT 03\par
+0443:    RTN\par
+\par
+0444:    LBL \u8216?TBL\u8217?\par
+0445:    REM \u8216?Nested FOR. The 12 x 8 times table, one product a line, ninety six lines.\u8217?\par
+0446:    LocR 01\par
+0447:    1\par
+0448:    12\par
+0449:    1\par
+0450:    FOR \u8216?AAA\u8217?\par
+0451:      1\par
+0452:      8\par
+0453:      1\par
+0454:      FOR .00\par
+0455:        RCL \u8216?AAA\u8217?\par
+0456:        RCL\u215? .00\par
+0457:        \u9113?x\par
+0458:        DROPx\par
+0459:      NEXT .00\par
+0460:    NEXT \u8216?AAA\u8217?\par
+0461:    RTN\par
+\par
+0462:    LBL \u8216?CLEAR\u8217?\par
+0463:    REM \u8216?Based HP42S PE&T p44\u8217?\par
+0464:    REM \u8216?Zeroes the block R11..R15 through the counter, then counts what it cleared\u8217?\par
+0465:    7\par
+0466:    STO 11\par
+0467:    DROPx\par
+0468:    7\par
+0469:    STO 12\par
+0470:    DROPx\par
+0471:    7\par
+0472:    STO 13\par
+0473:    DROPx\par
+0474:    7\par
+0475:    STO 14\par
+0476:    DROPx\par
+0477:    7\par
+0478:    STO 15\par
+0479:    DROPx\par
+0480:    CLX\par
+0481:    STO 01\par
+0482:    DROPx\par
+0483:    11\par
+0484:    15\par
+0485:    1\par
+0486:    FOR \u8216?COUNT\u8217?\par
+0487:      CLX\par
+0488:      STO \u8594?\u8216?COUNT\u8217?\par
+0489:      DROPx\par
+0490:      INCR 01\par
+0491:    NEXT \u8216?COUNT\u8217?\par
+0492:    RTN\par
+\par
+0493:    LBL \u8216?MAXR\u8217?\par
+0494:    REM \u8216?Based HP42S PE&T p152\u8217?\par
+0495:    REM \u8216?Largest of R11..R15. R01 keeps it, R02 keeps its register number.\u8217?\par
+0496:    3\par
+0497:    STO 11\par
+0498:    DROPx\par
+0499:    17\par
+0500:    STO 12\par
+0501:    DROPx\par
+0502:    8\par
+0503:    STO 13\par
+0504:    DROPx\par
+0505:    42\par
+0506:    STO 14\par
+0507:    DROPx\par
+0508:    11\par
+0509:    STO 15\par
+0510:    DROPx\par
+0511:    -99\par
+0512:    STO 01\par
+0513:    DROPx\par
+0514:    -77\par
+0515:    STO 02\par
+0516:    DROPx\par
+0517:    11\par
+0518:    15\par
+0519:    1\par
+0520:    FOR 00\par
+0521:      RCL \u8594?00\par
+0522:      x> ? 01\par
+0523:      IF\u8327?\par
+0524:        STO 01\par
+0525:        RCL 00\par
+0526:        STO 02\par
+0527:        DROPx\par
+0528:      ENDIF\u8327?\par
+0529:      DROPx\par
+0530:    NEXT 00\par
+0531:    RCL 02\par
+0532:    RCL 01\par
+0533:    RTN\par
+\par
+0534:    LBL \u8216?MIXED\u8217?\par
+0535:    REM \u8216?WHILE inside FOR. Halve each n from 2 to 5 until it no longer exceeds 1. R01 contains 8.\u8217?\par
+0536:    CLX\par
+0537:    STO 01\par
+0538:    1\par
+0539:    STO 02\par
+0540:    2\par
+0541:    5\par
+0542:    1\par
+0543:    FOR 03\par
+0544:      RCL 03\par
+0545:      DO\u8325?\par
+0546:        x> ? 02\par
+0547:      WHILE\u8325?\par
+0548:        2\par
+0549:        \u247?\par
+0550:        INCR 01\par
+0551:      ENDDO\u8325?\par
+0552:      DROPx\par
+0553:    NEXT 03\par
+0554:    RTN\par
+\par
+0555:    LBL \u8216?LLOC\u8217?\par
+0556:    REM \u8216?A local label inside the body. The odd numbers in 1 to 5, so R01 contains 3.\u8217?\par
+0557:    REM \u8216?R02 totals them, 1+3+5 = 9. The GTO skips both the count and the total for an even number.\u8217?\par
+0558:    CLX\par
+0559:    STO 01\par
+0560:    CLX\par
+0561:    STO 02\par
+0562:    1\par
+0563:    5\par
+0564:    1\par
+0565:    FOR 00\par
+0566:      RCL 00\par
+0567:      EVEN?\par
+0568:        GTO 01\par
+0569:      INCR 01\par
+0570:      STO+ 02\par
+\par
+0571:      LBL 01\par
+0572:      DROPx\par
+0573:    NEXT 00\par
+0574:    RTN\par
+\par
+0575:    LBL \u8216?ERTN\u8217?\par
+0576:    REM \u8216?Based HP42S PE&T p152\u8217?\par
+0577:    REM \u8216?Leaving the structure early with RTN. R01 contains 105 and the counter ends at 14.\u8217?\par
+0578:    CLX\par
+0579:    STO 01\par
+0580:    100\par
+0581:    STO 02\par
+0582:    1\par
+0583:    1\u8200?000\par
+0584:    1\par
+0585:    FOR 00\par
+0586:      RCL 00\par
+0587:      STO+ 01\par
+0588:      DROPx\par
+0589:      RCL 01\par
+0590:      x> ? 02\par
+0591:      IF\u8328?\par
+0592:        RTN\par
+0593:      ENDIF\u8328?\par
+0594:      DROPx\par
+0595:    NEXT 00\par
+0596:    RTN\par
+0597:  END\par
+}}

@@ -3,7 +3,7 @@
 // Zig owner for src/c47/distributions/hyper.c: the Hypergeometric distribution
 // commands (fnHypergeometricP/L/R/I) and the WP34S math borrowings. Part of the
 // OPTION_DIST_C cluster, gated by strip_17: present on host, on DMCP5 and on
-// DM42 package 1, stubbed on DM42 packages 2-4.
+// the DM42 packages that keep the cluster, stubbed on the others.
 //
 // cdf_Hypergeometric2 and pdf_Hypergeometric are exported with C linkage because
 // still-C cluster members reach them where the cluster is kept (the geometric

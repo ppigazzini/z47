@@ -8,8 +8,8 @@
 //
 // Gated on OPTION_ELEC exactly as elec.c: every entry point is always exported
 // (the items table references them unconditionally), but the body only compiles
-// where option_elec is set -- the host and DMCP package 3. On every other build
-// (DMCP packages 1/2/4 and DMCP5) the bodies are comptime-elided to empty
+// where option_elec is set -- the host, DMCP5 and the DM42 packages that keep
+// it. On a DM42 package without it the bodies are comptime-elided to empty
 // no-ops, mirroring elec.c's `#if defined(OPTION_ELEC)` empty stubs, so the
 // symbols still resolve at link without pulling the feature into tight flash.
 //

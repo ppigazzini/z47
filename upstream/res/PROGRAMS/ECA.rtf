@@ -1,0 +1,198 @@
+{\rtf1\ansi\ansicpg1252\deff0\nouicompat{\fonttbl{\f0\fnil\fcharset0 C47__StandardFont;}}{\pard\sl240\slmult1\f0\fs24\lang9\f0\loch
+C47 Program file export: Export format version 3, C47 program version 1.
+ \par
+0000: { Prgm #1/1: 449 bytes / 179 steps } \par
+\par
+0001:  LBL \u8216?ECA\u8217?\par
+0002:    UNSIGN\par
+0003:    WSIZE 64\par
+0004:    INPUT \u8216?RULE\u8217?\par
+0005:    \u8594?INT 10\par
+0006:    STO K\par
+0007:    0\par
+0008:    0\par
+0009:    CLLCD\par
+0010:    XEQ 01\par
+0011:    0\par
+0012:    0.4\par
+0013:    STO 40\par
+\par
+0014:    LBL 00\par
+0015:    CLX\par
+0016:    RCL 40\par
+0017:    IP\par
+0018:    AGRAPH 07\par
+0019:    DECR X\par
+0020:    64\par
+0021:    RCL+ Z\par
+0022:    x\u8644?y\par
+0023:    AGRAPH 08\par
+0024:    DECR X\par
+0025:    64\par
+0026:    RCL+ Z\par
+0027:    x\u8644?y\par
+0028:    AGRAPH 09\par
+0029:    DECR X\par
+0030:    64\par
+0031:    RCL+ Z\par
+0032:    x\u8644?y\par
+0033:    AGRAPH 10\par
+0034:    DECR X\par
+0035:    0\par
+0036:    x\u8644?y\par
+0037:    PAUSE 00\par
+0038:    ISE 40\par
+0039:      GTO 70\par
+0040:    GTO 71\par
+\par
+0041:    LBL 70\par
+0042:    XEQ 02\par
+0043:    GTO 00\par
+\par
+0044:    LBL 71\par
+0045:    PAUSE 99\par
+0046:    RTN\par
+\par
+0047:    LBL 01\par
+0048:    17\par
+0049:    STO 44\par
+0050:    R\u8595?\par
+0051:    FC? 00\par
+0052:    GTO 50\par
+\par
+0053:    LBL 55\par
+0054:    XEQ 51\par
+0055:    STO \u8594?44\par
+0056:    R\u8595?\par
+0057:    DSL 44\par
+0058:      GTO 55\par
+0059:    RTN\par
+0060:    RTN\par
+\par
+0061:    LBL 50\par
+0062:    0\u9327?\par
+\par
+0063:    LBL 56\par
+0064:    STO \u8594?44\par
+0065:    DSL 44\par
+0066:      GTO 56\par
+0067:    R\u8595?\par
+0068:    1\u8200?00\u8200?00\u8200?00\u8200?00\u8200?00\u8200?00\u8200?00\u9327?\par
+0069:    STO 08\par
+0070:    R\u8595?\par
+0071:    RTN\par
+0072:    RTN\par
+\par
+0073:    LBL 51\par
+0074:    64\par
+0075:    2\u739?\par
+0076:    RAN#\par
+0077:    \u215?\par
+0078:    \u8594?INT 16\par
+0079:    RTN\par
+\par
+0080:    LBL 02\par
+0081:    x\u8644? I\par
+0082:    y\u8644? J\par
+0083:    37.02\par
+0084:    STO 44\par
+\par
+0085:    LBL 65\par
+0086:    0\u9327?\par
+0087:    STO \u8594?44\par
+0088:    DSL 44\par
+0089:      GTO 65\par
+0090:    0\par
+0091:    STO 45\par
+0092:    20\par
+0093:    STO 46\par
+0094:    17\par
+0095:    STO 44\par
+\par
+0096:    LBL 66\par
+0097:    63\par
+0098:    STO 88\par
+\par
+0099:    LBL 63\par
+0100:    RCL \u8594?45\par
+0101:    3\u9327?\par
+0102:    SF C\par
+0103:    RLCn \u8594?88\par
+0104:    AND\par
+0105:    RL\par
+0106:    RRn \u8594?88\par
+0107:    ENTER\par
+0108:    2\u739?\par
+0109:    RCL K\par
+0110:    AND\par
+0111:    SRn \u8594?Y\par
+0112:    SLn \u8594?88\par
+0113:    RCL \u8594?46\par
+0114:    OR\par
+0115:    STO \u8594?46\par
+0116:    DSL 88\par
+0117:      GTO 63\par
+0118:    INCR 45\par
+0119:    INCR 46\par
+0120:    DSL 44\par
+0121:      GTO 66\par
+0122:    0\par
+0123:    STO 45\par
+0124:    20\par
+0125:    STO 46\par
+0126:    16\par
+0127:    STO 44\par
+\par
+0128:    LBL 67\par
+0129:    RCL \u8594?45\par
+0130:    MASKL 02\par
+0131:    AND\par
+0132:    SRn 62\par
+0133:    INCR 45\par
+0134:    RCL \u8594?45\par
+0135:    DECR 45\par
+0136:    MASKR 01\par
+0137:    AND\par
+0138:    SLn 02\par
+0139:    OR\par
+0140:    ENTER\par
+0141:    2\u739?\par
+0142:    RCL K\par
+0143:    AND\par
+0144:    SRn \u8594?Y\par
+0145:    SLn 63\par
+0146:    RCL \u8594?46\par
+0147:    CB 63\par
+0148:    OR\par
+0149:    STO \u8594?46\par
+0150:    RCL \u8594?45\par
+0151:    MASKL 01\par
+0152:    AND\par
+0153:    SRn 63\par
+0154:    INCR 45\par
+0155:    RCL \u8594?45\par
+0156:    DECR 45\par
+0157:    MASKR 02\par
+0158:    AND\par
+0159:    SL\par
+0160:    OR\par
+0161:    ENTER\par
+0162:    2\u739?\par
+0163:    RCL K\par
+0164:    AND\par
+0165:    SRn \u8594?Y\par
+0166:    INCR 46\par
+0167:    RCL \u8594?46\par
+0168:    CB 00\par
+0169:    OR\par
+0170:    STO \u8594?46\par
+0171:    INCR 45\par
+0172:    DSL 44\par
+0173:      GTO 67\par
+0174:    20.18\par
+0175:    R-COPY\par
+0176:    RCL J\par
+0177:    RCL I\par
+0178:    RTN\par
+0179:  END\par
+}}

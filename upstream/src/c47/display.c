@@ -3569,6 +3569,10 @@ static void showShortIntegerLine(calcRegister_t showRegis, int16_t tag, int16_t 
 int16_t startingLine = 0;
 int16_t IntShowMode = 0;
 int16_t source = 0;
+uint16_t savedShowRegis = 0;        // the SHOW paging of the page now on screen, kept by storeShowStatus() on every fnC47Show() paint so recallShowStatus() repaints that same page
+int16_t savedSource = 0;
+int16_t savedStartingLine = 0;
+int16_t savedIntShowMode = 0;
 #define SHOWAUTO 0
 #define SHOWSML 1
 #define SHOWTNY 2
@@ -3696,6 +3700,8 @@ void fnC47Show(uint16_t fnShow_param) {
         break;
     }
     #pragma GCC diagnostic pop
+
+    storeShowStatus();                                 // the switch above has chosen the page; keep its start so a later recallShowStatus() repaints this same page, not the next one
 
 // printf("fnC47Show: fnShow_param=%i startingLine=%i IntShowMode=%i source=%i\n",fnShow_param, startingLine, IntShowMode, source);
 
@@ -4141,6 +4147,20 @@ goBreak1:
 #else
     fnView(REGISTER_X); // Re-direct to use VIEW instead. No more accuracy though
 #endif // !OPTION_SHOW
+}
+
+void storeShowStatus(void) {     //keep the SHOW paging of the page now on screen, so recallShowStatus() can repaint that same page after a capture or a preview label overwrote it
+  savedShowRegis = showRegis;
+  savedSource = source;
+  savedStartingLine = startingLine;
+  savedIntShowMode = IntShowMode;
+}
+
+void recallShowStatus(void) {    //put back the paging storeShowStatus() kept; fnC47Show(ITM_NOP) then re-renders the page that was on screen, from its own start
+  showRegis = savedShowRegis;
+  source = savedSource;
+  startingLine = savedStartingLine;
+  IntShowMode = savedIntShowMode;
 }
 
 void _view(uint16_t regist) {

@@ -26,7 +26,7 @@ const solve_build_options = @import("solve_build_options");
 const is_dmcp_build: bool = solve_build_options.is_dmcp_build;
 
 // defines.h's OPTION_SLVP_POLY: the polynomial-roots family. It gates V->EQ here
-// exactly as it gates SLVP itself; the DM42 packages drop both.
+// exactly as it gates SLVP itself; a DM42 package without the option drops both.
 const option_slvp_poly = solve_build_options.option_slvp_poly;
 
 const real34_t = abi.Real34;

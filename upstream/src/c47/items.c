@@ -1228,6 +1228,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
   void fnReturn                    (uint16_t unusedButMandatoryParameter) {}
   void fnRunProgram                (uint16_t unusedButMandatoryParameter) {}
   void fnStopProgram               (uint16_t unusedButMandatoryParameter) {}
+  void fnFinish                    (uint16_t unusedButMandatoryParameter) {}
   void fnBst                       (uint16_t unusedButMandatoryParameter) {}
   void fnSst                       (uint16_t unusedButMandatoryParameter) {}
   void fnBack                      (uint16_t unusedButMandatoryParameter) {}
@@ -3865,7 +3866,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 1909 */  { fnTo_ms,                         NOPARAM,                     ".ms",                                         ".ms",                                         (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         | RESULT_IN_X },//JM DMS HMS
 /* 1910 */  { fnFrom_ms,                       NOPARAM,                     ".ms" STD_SUP_MINUS STD_SUP_1,                 ".ms" STD_SUP_MINUS STD_SUP_1,                 (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         | RESULT_IN_X },//JM DMS HMS
 /* 1911 */  { fnFrom_ymd,                      NOPARAM,                     DT STD_RIGHT_ARROW "x",                        DT STD_RIGHT_ARROW "x",                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         | RESULT_IN_X },//JM DMS HMS
-/* 1912 */  { itemToBeCoded,                   NOPARAM,                     "1912",                                        "1912",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         }, // reserved: die-op, FINISH
+/* 1912 */  { fnFinish,                        NOPARAM,                     "FINISH",                                      "FINISH",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_REM          | HG_ENABLED         },
 /* 1913 */  { itemToBeCoded,                   NOPARAM,                     "1913",                                        "1913",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 1914 */  { fnKeysManagement,                TO_USER,                     "N" STD_RIGHT_ARROW "U",                       "N" STD_RIGHT_ARROW "U",                       (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 1915 */  { fnSigmaAssign,                   16384+ITM_NULL,              "",                                            STD_RIGHT_DASHARROW STD_SPACE_4_PER_EM "nil",  (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },

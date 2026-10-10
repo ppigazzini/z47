@@ -1,0 +1,67 @@
+@ Index:   Original Binet graphing program
+@ Author:  Jaco Mostert
+@ Created: unknown publication date
+@ Version: 1.0
+@ Tested:  Fills 101 samples; PLSTAT plots the Binet function, (-1.3, -1.02) to (5.3, 1.02).
+@ Input:   none; PLSTAT after the run
+@ Output:  Binet plot, (-1.3, -1.02) to (5.3, 1.02); closed curves for negative x
+@
+@ Samples a closed form from -2 to 5 and accumulate each value.
+@ R.00 counts 101 steps down from 101.  The argument is
+@
+@   n = 7*(R.01 - R.00)/(R.01 - 1) - 2
+@
+@ CALCLP1 returns (φ^n - (-φ)^(-X))/√5, where X is the stack
+@ register present when Binet is called.  A cleared stack makes the
+@ second term 1. Σ+ takes the real part as x and the imaginary
+@ part as y. STOCFG and STOS save the configuration and the stack;
+@ the matching recalls put them back.  CLΣ clears the sample.
+LBL ‘Binet1’
+  LocR 11
+  STOCFG R.02       ; put back by RCLCFG
+  STOS R.03         ; put back by RCLS
+  CLΣ
+  101               ; 101 samples, n from -2 to 5
+  STO R.00
+  STO R.01
+
+  LBL ‘M1’
+    RCL R.01
+    RCL R.00
+    -
+    RCL R.01
+    XEQ ‘CALCLP1’
+    Σ+              ; x is the real part, y the imaginary part
+    DSZ R.00
+      GTO ‘M1’
+    RCLS R.03       ; stack from before the sample
+    RCLCFG R.02     ; configuration from before the sample
+    RTN
+
+  LBL ‘CALCLP1’
+    DECR X
+    ÷
+    7
+    ×
+    2
+    -
+    ENTER
+    φ
+    𝑥⇄𝑦
+    𝑦ˣ
+    𝑥⇄𝑦
+    φ
+    CHS
+    𝑥⇄𝑦
+    CHS
+    𝑦ˣ
+    -
+    5
+    √𝑥
+    ÷
+    ENTER
+    Im
+    𝑥⇄𝑦
+    Re
+    RTN
+.END.

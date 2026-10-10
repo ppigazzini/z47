@@ -25,9 +25,10 @@ const const_3Off = consts.const_3Off;
 // preserving the exact order of every real_t operation (ellipticE/Ephi/Fphi/K/
 // Pi.txt and jacobi_*.txt check results to the last ULP). The
 // EXTRA_INFO_ON_CALC_ERROR sprintf hints become fixed moreInfoOnError strings.
-// OPTION_ELLIPTIC is LIVE: upstream keeps it for DMCP package 2 alone and empties
-// these commands on the rest, which is what the option_elliptic early returns
-// below are. Do not read the gate as dead code.
+// OPTION_ELLIPTIC is LIVE: upstream keeps it for some DM42 packages and empties
+// these commands on the rest (build/firmware.zig's dm42Package table), which is
+// what the option_elliptic early returns below are. Do not read the gate as dead
+// code.
 
 const std = @import("std");
 const runtime = @import("../command_wrappers/runtime.zig");

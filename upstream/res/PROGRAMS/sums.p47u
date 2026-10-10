@@ -1,0 +1,164 @@
+@ Index:   Summation order tests
+@ Author:  Jaco Mostert
+@ Source:  AN0005
+@ Version: 0.2
+@ Tested:  XEQ ‘sums’ tries the six 1/n^2 sums
+@ Input:   none; set SDIGS first for more digits
+@ Output:  All yield 1.644834071848059769806081833310; Eup=Edn ending 311, Hup=Cup ending 290
+@ Build:   make simc47 && make t47
+@
+@ Computes sums of 1/n² for n = 1 to 10000 by three different means,
+@ both up and down = 6 tests.
+@
+@ Written to support AN0005.
+@
+@ CUP and CDN accumulate with the + operation.
+@ EUP and EDN accumulate by calling the built-in Σₙ function.
+@ HUP and HDN accumulate with STO+.
+
+LBL 'sums'
+  XEQ 'EUP'
+  XEQ 'EDN'
+  XEQ 'HUP'
+  XEQ 'HDN'
+  XEQ 'CUP'
+  XEQ 'CDN'
+RTN
+
+LBL 'FSQ'
+  # f(n) = 1/n²
+  1/𝑥
+  𝑥²
+RTN
+
+LBL 'EUP'
+  # Engine sum, 1 to 10000
+  1
+  10000
+  1
+  Σₙ 'FSQ'
+  STO 'Eup'
+RTN
+
+LBL 'EDN'
+  # Engine sum, 10000 to 1
+  10000
+  1
+  1
+  CHS
+  Σₙ 'FSQ'
+  STO 'Edn'
+RTN
+
+LBL :HSQ:
+  # STO+ into SS, returns 0
+  1/𝑥
+  𝑥²
+  STO+ 'SS'
+  0
+RTN
+
+LBL 'HUP'
+  # STO+ sum, 1 to 10000
+  0.
+  STO 'SS'
+  1
+  10000
+  1
+  Σₙ :HSQ:
+  RCL 'SS'
+  STO 'Hup'
+RTN
+
+LBL 'HDN'
+  # STO+ sum, 10000 to 1
+  0.
+  STO 'SS'
+  10000
+  1
+  1
+  CHS
+  Σₙ :HSQ:
+  RCL 'SS'
+  STO 'Hdn'
+RTN
+
+LBL 'CSQ'
+  # + into SS, returns 0
+  1/𝑥
+  𝑥²
+  RCL 'SS'
+  +
+  STO 'SS'
+  0
+RTN
+
+LBL 'CUP'
+  # + sum, 1 to 10000
+  0.
+  STO 'SS'
+  1
+  10000
+  1
+  Σₙ 'CSQ'
+  RCL 'SS'
+  STO 'Cup'
+RTN
+
+LBL 'CDN'
+  # + sum, 10000 to 1
+  0.
+  STO 'SS'
+  10000
+  1
+  1
+  CHS
+  Σₙ 'CSQ'
+  RCL 'SS'
+  STO 'Cdn'
+RTN
+
+LBL :PSQ:
+  # + into SS, alternating term
+  1/𝑥
+  𝑥²
+  𝑥⇄𝑦
+  (-1)ˣ
+  CHS
+  ×
+  RCL 'SS'
+  +
+  STO 'SS'
+  0
+RTN
+
+LBL 'PUP'
+  # alternating + sum, 1 to 10000
+  0.
+  STO 'SS'
+  1
+  10000
+  1
+  Σₙ :PSQ:
+  RCL 'SS'
+  12
+  ×
+  √𝑥
+  STO 'Pup'
+RTN
+
+LBL 'PDN'
+  # alternating + sum, 10000 to 1
+  0.
+  STO 'SS'
+  10000
+  1
+  1
+  CHS
+  Σₙ :PSQ:
+  RCL 'SS'
+  12
+  ×
+  √𝑥
+  STO 'Pdn'
+RTN

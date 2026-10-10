@@ -1,0 +1,37 @@
+@ Index:    Bundled engineering settings
+@ Author:   Jaco Mostert
+@ Source:   AN0015
+@ Source:   https://forum.swissmicros.com/viewtopic.php?p=33113#p33113
+@ Created:  2024-08-01
+@ Modified: 2026-01-25
+@ Tested:   Sets IRFRAC, DENANY and eRPN
+@ Input:    Those three cleared
+@ Output:   All three set to 1
+LBL ‘SETT’
+  setEUR
+  RWDOT⋅
+  MULT·
+  CPX𝒿
+  CF ‘CPXmul’
+  CF ‘CONV_(HP)’
+  FDIGS 31
+  CF ‘FRCYC’
+  SF ‘IRFRAC’
+  SF ‘PROPFR’
+  SF ‘DENANY’
+  CF ‘DENFIX’
+  DMX 12
+  SIG 03
+  ENGOVR
+  HIDE 31
+  RNG 6143
+  SF ‘dℤ.0’
+  CF ‘dLrgLI’
+  CF ‘RP_(HP)’
+  SF ‘eRPN’
+  SSIZE8
+  SF ‘CPXRES’
+  SF ‘SPCRES’
+  CF ‘1024ⁿ’
+  END
+.END.

@@ -1,0 +1,23 @@
+@ Index:   Problem 5b, other root, guess 50
+@ Author:  Jaco Mostert, fm Duncan Murray's problem set
+@ Same as P5, starting rate 50, the other root.
+LBL ‘P5b’
+  10
+  STO ‘NPPER’
+  0
+  STO ‘I%/a’
+  50
+  STO ‘PV’
+  -30
+  STO ‘PMT’
+  400
+  STO ‘FV’
+  1
+  STO ‘PPER/a’
+  STO ‘CPER/a’
+  ENDP
+  50
+  STO ‘I%/a’
+  DROP𝑥
+  I/a
+  END

@@ -1,0 +1,23 @@
+@ Index:   Problem 12a, starting rate 55
+@ Author:  Jaco Mostert, fm Duncan Murray's problem set
+@ Same as P12, starting rate 55.
+LBL ‘P12a’
+  # Problem 12 first do I/a then FV
+  40
+  STO ‘NPPER’
+  900
+  STO ‘PV’
+  -400
+  STO ‘PMT’
+  -1000
+  STO ‘FV’
+  1
+  STO ‘PPER/a’
+  STO ‘CPER/a’
+  BeginP
+  55
+  STO ‘I%/a’
+  I/a
+  FV
+  END
+.END.

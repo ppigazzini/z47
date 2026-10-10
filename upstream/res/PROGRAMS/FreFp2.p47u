@@ -1,0 +1,23 @@
+@ Index:  Solves free-fall time, drives FreeFp
+@ Author: fm org C47 test program
+@ Tested: Drives FreeFp
+@ Input:  none; loaded together with FreeFp
+@ Output: Solution time
+@
+@ Calling wrapper for FreeFp.p47u; see it for details.
+LBL ‘FreFp2’
+  0                 ; target height
+  STO ‘height’
+  50                ; platform, 50 m
+  STO ‘h0’
+  15                ; initial velocity, 15 m/s upward
+  STO ‘v0’
+  5                 ; first guess for time
+  STO ‘time’
+  10                ; second guess, left in X
+  PGMSLV ‘FreeFp’
+  SOLVE ‘time’
+  VIEW ‘time’
+  RTN
+  END
+.END.

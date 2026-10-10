@@ -11,8 +11,8 @@
 // src/shell/display/items/items.zig still resolves.
 //
 // fnJM's body is gated on OPTION_ELEC: upstream defines.h enables it for the host
-// build and for DMCP packages 1 and 3 / DMCP5, and #undef's it for the
-// flash-limited DMCP packages 2 and 4. The frontier object is compiled once per
+// build and DMCP5, and #undef's it for some flash-limited DM42 packages
+// (build/firmware.zig's dm42Package table). The frontier object is compiled once per
 // package, so the gate is carried through the frontier_build_options.option_elec
 // flag (set by firmware.zig's frontierDistributionStrip). When OPTION_ELEC is off
 // the function is the empty "item 255 is NOP" stub, exactly like the C.

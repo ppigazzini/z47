@@ -90,10 +90,13 @@ void stackregister_csv_out(int16_t reg_b, int16_t reg_e, bool_t oneLine) {
         sprintf(tmp_b, "%sR%02d%s%s", CSV_STR, ix, CSV_STR, CSV_TAB);
       }
       else if(FIRST_LOCAL_REGISTER <= ix && ix <= LAST_LOCAL_REGISTER) {
-        sprintf(tmp_b, "%sR.%03d%s%s", CSV_STR, ix-100, CSV_STR, CSV_TAB);
+        sprintf(tmp_b, "%sR.%02d%s%s", CSV_STR, ix - FIRST_LOCAL_REGISTER, CSV_STR, CSV_TAB);
       }
       else if(FIRST_NAMED_VARIABLE <= ix && ix <= LAST_NAMED_VARIABLE) {
-        sprintf(tmp_b, "%sN%03d%s%s%s%s%s%s", CSV_STR, ix-100, CSV_STR, CSV_TAB, CSV_STR, (char *)allNamedVariables[ix - FIRST_NAMED_VARIABLE].variableName + 1, CSV_STR, CSV_TAB);
+        sprintf(tmp_b, "%s%s%s%s", CSV_STR, (char *)allNamedVariables[ix - FIRST_NAMED_VARIABLE].variableName + 1, CSV_STR, CSV_TAB);
+      }
+      else if(FIRST_RESERVED_VARIABLE <= ix && ix <= LAST_RESERVED_VARIABLE) {
+        sprintf(tmp_b, "%s%s%s%s", CSV_STR, (char *)allReservedVariables[ix - FIRST_RESERVED_VARIABLE].reservedVariableName + 1, CSV_STR, CSV_TAB);
       }
 
       #if (VERBOSE_LEVEL >= 1)

@@ -12,6 +12,7 @@
 #include <inttypes.h>
 
 typedef bool bool_t;
+typedef int16_t calcRegister_t;
 
 typedef struct {
   uint16_t blockAddress;
@@ -60,6 +61,8 @@ void z47_memory_runtime_handle_resize_program_memory_out_of_memory(uint16_t delt
 void *z47_memory_runtime_alloc_gmp_bytes(size_t sizeInBytes);
 void *z47_memory_runtime_realloc_gmp_bytes(void *pcMemPtr, size_t newSizeInBytes);
 void z47_memory_runtime_free_gmp_bytes(void *pcMemPtr);
+// displayBugScreen, which memory.c's GMP exhaustion stop calls.
+#include "../../../upstream/src/c47/error.h"
 
 uint32_t getFreeRamMemory(void);
 bool_t isMemoryBlockAvailable(size_t sizeInBlocks, uint16_t numBlocks, float extraFraction);

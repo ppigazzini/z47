@@ -1558,8 +1558,8 @@ fn addCleanStep(b: *std.Build) void {
         \\rm -rf "$u"/wp43-windows* "$u"/wp43-macos* "$u"/wp43-linux* "$u"/wp43-dm42*
         \\rm -rf "$u"/c47-windows* "$u"/c47-macos* "$u"/c47-linux* "$u"/c47-dmcp* "$u"/r47-dmcp*
         \\rm -rf "$u"/build "$u"/build.sim "$u"/build.dmcp "$u"/build.dmcp.* "$u"/build.dmcp5 "$u"/build.rel "$u"/build.rel.debug
+        \\rm -rf "$u"/res/testPgms/ALLPGMS
         \\rm -f "$u"/src/generated/*.c "$u"/src/generated/constantPointers.h "$u"/src/generated/softmenuCatalogs.h
-        \\rm -rf "$u"/PROGRAMS/ALLPGMS
         \\rm -f "$u"/src_files_stamp "$u"/testPgms_stamp
         \\rm -rf .zig-cache zig-out
     , .{upstream_root});

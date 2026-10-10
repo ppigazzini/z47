@@ -19,7 +19,7 @@ const const_1e_34 = consts.const_1e_34;
 // The whole engine, and the four commands it serves, sit inside matrix.c's
 // `#if defined(OPTION_EIGEN)`; the commands get empty bodies from the
 // `#if !defined(OPTION_EIGEN)` stub block above it. defines.h #undef's
-// OPTION_EIGEN on DM42 packages 1, 2 and 4.
+// OPTION_EIGEN for some DM42 packages (build/firmware.zig's dm42Package table).
 //
 // The workers are pub-exported so the file is fully analysed before the public
 // commands are wired (the upstream copies are file-static, so the global Zig
@@ -202,7 +202,7 @@ fn BigReal(comptime digits: u32) linksection(runtime.code_section) type {
 // scratch plus a realPlus round-back through the caller's context with the
 // option, 75 digits written straight into the caller's outputs without it.
 // defines.h #undef's OPTION_EIGEN_159 in the block common to packages 1-4, so
-// package 3 -- the only DM42 package that keeps OPTION_EIGEN -- runs at 75.
+// every DM42 package that keeps OPTION_EIGEN runs at 75.
 const eigen_block_digits: u32 = if (runtime.option_eigen_159) 159 else 75;
 
 // ===========================================================================

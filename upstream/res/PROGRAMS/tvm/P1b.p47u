@@ -1,0 +1,24 @@
+@ Index:   Problem 1b, same loan, solves rate
+@ Author:  Jaco Mostert, fm Duncan Murray's problem set
+@ Same loan as P1, payment 14584/12. Solves I%/a.
+LBL ‘P1b’
+  38
+  12
+  ×
+  STO ‘NPPER’
+  0
+  STO ‘I%/a’
+  270000
+  STO ‘PV’
+  -14584
+  12
+  ÷
+  STO ‘PMT’
+  0
+  STO ‘FV’
+  12
+  STO ‘PPER/a’
+  STO ‘CPER/a’
+  ENDP
+  I/a
+  END

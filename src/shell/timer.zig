@@ -481,6 +481,8 @@ pub export fn fnTimerEndOfActivity(param: u16) callconv(.c) void {
         _ = printf("fnTimerEndOfActivity called  %u\n", @as(c_uint, param));
     } else {
         // DM42_POWERMARKS never defined for the frontier compile.
+        // Repaints the register lines refreshRegisterLine deferred, when TO_KB_ACTV
+        // expires, TO_KB_ACTV_MEDIUM/5 after a key release.
         if (skippedStackLines) {
             screenUpdatingMode = SCRUPD_AUTO | SCRUPD_MANUAL_MENU;
             skippedStackLines = false;

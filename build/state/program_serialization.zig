@@ -18,8 +18,8 @@ pub const RuntimeObjectOptions = struct {
     // OPTION_STRUCTURED_PGM: the exported and stored program is refused while a
     // structure carries no partner number, a load runs VALID under AVALID, and the
     // listing indents a structure's body (OPTION_STRUCT_INDENT, which structured.h
-    // defines inside the same guard). Upstream #undef's it in the block common to
-    // DMCP packages 1-4, so no DM42 package has it; DMCP5 and host do.
+    // defines inside the same guard). It is set per DM42 package, from
+    // build/firmware.zig's dm42Package table; DMCP5 and host have it.
     option_structured_pgm: bool = true,
     strip: ?bool = null,
     unwind_tables: ?std.lang.UnwindTables = null,

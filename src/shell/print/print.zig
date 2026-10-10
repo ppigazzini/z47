@@ -18,13 +18,11 @@ const print_register = @import("print_register.zig");
 // OPTION_IR_PRINTING gating: print.c's infrared engine is one
 // `#if defined(OPTION_IR_PRINTING)` block spanning print.c:7-1941, and each
 // fnP_* entry point below it repeats the guard around its own body. defines.h
-// defines the option by default (defines.h:73) and keeps it for the host
-// (PC_BUILD) and for the NEW_HW dmcp5 firmware; inside the TWO_FILE_PGM package
-// blocks it is `#undef`'d for DM42 packages 1 and 3 (defines.h:200, :232) and
-// `#define`'d again for packages 2 and 4 (defines.h:216, :253). The IR path is
-// therefore live on host, dmcp5 and DM42 packages 2 and 4, and dead only on DM42
-// packages 1 and 3 -- a per-package answer no target-shape expression can
-// restate, so it is read from the build option.
+// defines the option by default and keeps it for the host (PC_BUILD) and for
+// the NEW_HW dmcp5 firmware; inside the TWO_FILE_PGM package blocks some DM42
+// packages `#undef` it and the others `#define` it again (build/firmware.zig's
+// dm42Package table). That is a per-package answer no target-shape expression
+// can restate, so it is read from the build option.
 // On the dead branch print.c's `#else` stubs are reproduced. The DMCP-ROM functions (printer_advance_buf / printer_busy_for /
 // sys_timer_* / sys_sleep / lcd_line_addr / start_buzzer_freq / stop_buzzer /
 // sys_delay) are fixed-address jump-table
@@ -46,8 +44,7 @@ pub const is_dmcp_build = dmcp_build;
 const old_hw: bool = frontier_build_options.old_hw;
 const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 
-// OPTION_IR_PRINTING: on for host and dmcp5, on for DM42 packages 2 and 4, off
-// for DM42 packages 1 and 3.
+// OPTION_IR_PRINTING: on for host and dmcp5, and per package on the DM42.
 pub const ir_printing: bool = frontier_build_options.ir_printing;
 
 const LIBRARY_FN_BASE: usize = if (old_hw) 0x08000201 else 0x08000301;
@@ -1582,7 +1579,7 @@ fn _getRegisterLabel(registerNo: u16, label: [*c]u8) void {
     } else if (registerNo < REGISTER_X) {
         abi.fmtCStr(label, "R{d:0>2}", .{@as(u32, @intCast(@as(c_int, registerNo)))});
     } else if (FIRST_LOCAL_REGISTER <= registerNo and registerNo <= LAST_LOCAL_REGISTER) {
-        abi.fmtCStr(label, "R.{d:0>3}", .{@as(u32, @intCast(@as(c_int, registerNo) - 100))});
+        abi.fmtCStr(label, "R.{d:0>2}", .{@as(u32, @intCast(@as(c_int, registerNo) - FIRST_LOCAL_REGISTER))});
     } else if (FIRST_NAMED_VARIABLE <= registerNo and registerNo <= LAST_NAMED_VARIABLE) {
         abi.fmtCStr(label, "{s}", .{@as([*:0]const u8, @as([*c]u8, &allNamedVariables[registerNo - FIRST_NAMED_VARIABLE].variableName) + 1)});
     } else if (FIRST_NAMED_RESERVED_VARIABLE <= registerNo and registerNo <= LAST_RESERVED_VARIABLE) {
@@ -2467,7 +2464,7 @@ pub fn z47_frontier_format_register_label(register_no: u16, label: [*c]u8, label
     } else if (register_no < REGISTER_X) {
         abi.fmtCStr(label, "R{d:0>2}", .{@as(c_uint, register_no)});
     } else if (FIRST_LOCAL_REGISTER <= register_no and register_no <= LAST_LOCAL_REGISTER) {
-        abi.fmtCStr(label, "R.{d:0>3}", .{@as(c_uint, register_no) - 100});
+        abi.fmtCStr(label, "R.{d:0>2}", .{@as(c_uint, register_no) - FIRST_LOCAL_REGISTER});
     } else if (FIRST_NAMED_VARIABLE <= register_no and register_no <= LAST_NAMED_VARIABLE) {
         abi.fmtCStr(label, "{s}", .{@as([*:0]const u8, @as([*c]u8, &allNamedVariables[register_no - FIRST_NAMED_VARIABLE].variableName) + 1)});
     } else if (FIRST_NAMED_RESERVED_VARIABLE <= register_no and register_no <= LAST_RESERVED_VARIABLE) {

@@ -14,9 +14,8 @@ const consts = abi.constants;
 //
 // OPTION_TVM_FORMULAS gates the analytical closed forms and the fnTvmVar arm
 // that tries them; OPTION_TVM_NEWTON gates the derivatives tvmEquation hands
-// the solver. Both are out of DM42 packages 2 and 4, whose FIN application is
-// therefore brent-only. OPTION_TVM_AMORT is defined for every target z47
-// builds, so AMORT is unconditional here.
+// the solver; OPTION_TVM_AMORT gates the five AMORT commands, which upstream
+// compiles as empty functions without it.
 //
 // Build-target context selection mirrors the C
 //   #if defined(DMCP_BUILD) && (HARDWARE_MODEL == HWM_DM42)
@@ -29,6 +28,7 @@ const solve_build_options = @import("solve_build_options");
 const dmcp_dm42 = solve_build_options.dm42_pkg_xip;
 const option_tvm_formulas = runtime.option_tvm_formulas;
 const option_tvm_newton = runtime.option_tvm_newton;
+const option_tvm_amort = runtime.option_tvm_amort;
 
 // DECNUMDIGITS=75, DECDPUN=3 => DECNUMUNITS=ceil(75/3)=25; decNumberUnit=u16.
 const abi = @import("abi"); // shared ABI bindings
@@ -1528,6 +1528,7 @@ pub export fn tvmEquation(variable: calcRegister_t, ioVal: *real_t, derivative: 
 // AMORT (OPTION_TVM_AMORT)
 // ===========================================================================
 pub export fn fnAmortP(select: u16) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !option_tvm_amort) return;
     var r: real_t = undefined;
     if (!getRegisterAsReal(REGISTER_X, &r)) {
         return;
@@ -1560,6 +1561,7 @@ pub export fn fnAmortP(select: u16) linksection(runtime.code_section) callconv(.
 
 pub export fn fnAmortNext(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
     _ = unusedButMandatoryParameter;
+    if (comptime !option_tvm_amort) return;
     const delta: u16 = @intCast(@abs(@as(i32, amortP2) - @as(i32, amortP1)));
     const npper: u32 = real34ToUInt32(registerReal34Ptr(RESERVED_VARIABLE_NPPER));
     amortP1 = amortP2 +% 1;
@@ -1742,6 +1744,7 @@ fn fnAmortBalCore() TvmError!void {
 
 pub export fn fnAmortBal(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
     _ = unusedButMandatoryParameter;
+    if (comptime !option_tvm_amort) return;
     fnAmortBalCore() catch |e| reportTvmError(e);
 }
 
@@ -1757,6 +1760,7 @@ fn fnAmortPrnCore() TvmError!void {
 
 pub export fn fnAmortPrn(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
     _ = unusedButMandatoryParameter;
+    if (comptime !option_tvm_amort) return;
     fnAmortPrnCore() catch |e| reportTvmError(e);
 }
 
@@ -1772,5 +1776,6 @@ fn fnAmortIntCore() TvmError!void {
 
 pub export fn fnAmortInt(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
     _ = unusedButMandatoryParameter;
+    if (comptime !option_tvm_amort) return;
     fnAmortIntCore() catch |e| reportTvmError(e);
 }

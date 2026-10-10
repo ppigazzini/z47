@@ -1,7 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
+#include <signal.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/wait.h>
+#include <unistd.h>
 
 #include "memory_test_runtime.h"
 
@@ -230,6 +233,95 @@ static int runReallocGmpCase(size_t starting_gmp_bytes,
   return reportPointerMismatch("reallocGmp", (uint32_t)new_size_in_bytes, expected_non_null, actual_non_null, &expected_snapshot, &actual_snapshot);
 }
 
+// GMP takes no NULL from its allocator: memory.c paints the bug screen and ends
+// the process, exit(255) on the host. A stop cannot be compared in-process, so
+// each side runs the failing call in a child of its own, and the two children
+// are compared by how they ended and by the message they painted.
+typedef struct {
+  bool_t exited;
+  int code;
+  char message[64];
+} gmp_stop_t;
+
+// A child that neither stops nor returns within this many seconds is killed by
+// SIGALRM, which reads as not having exited.
+#define GMP_STOP_BUDGET_SECONDS 10
+
+static gmp_stop_t runGmpStop(bool_t realloc_case, bool_t use_oracle) {
+  gmp_stop_t stop;
+  int fds[2];
+  int status = 0;
+  ssize_t length;
+  pid_t pid;
+
+  memset(&stop, 0, sizeof(stop));
+  if(pipe(fds) != 0) {
+    return stop;
+  }
+
+  fflush(stdout);
+  fflush(stderr);
+  pid = fork();
+  if(pid == 0) {
+    void *ptr;
+
+    close(fds[0]);
+    alarm(GMP_STOP_BUDGET_SECONDS);
+    memoryParityReset();
+    memoryParitySetBugScreenFd(fds[1]);
+    if(realloc_case) {
+      memoryParitySetCounters(0, 8);
+      memoryParitySetFailureModes(false, false, false, true);
+      ptr = memoryParityMakeGmpAllocation(TO_BYTES(TO_BLOCKS(5)));
+      ptr = use_oracle ? oracle_reallocGmp(ptr, 5, 9) : reallocGmp(ptr, 5, 9);
+    }
+    else {
+      memoryParitySetCounters(0, 4);
+      memoryParitySetFailureModes(false, false, true, false);
+      ptr = use_oracle ? oracle_allocGmp(5) : allocGmp(5);
+    }
+    (void)ptr;
+    _exit(0); // reached only when the failing call returned instead of stopping
+  }
+
+  close(fds[1]);
+  if(pid < 0) {
+    close(fds[0]);
+    return stop;
+  }
+  length = read(fds[0], stop.message, sizeof(stop.message) - 1);
+  if(length < 0) {
+    length = 0;
+  }
+  stop.message[length] = 0;
+  close(fds[0]);
+  if(waitpid(pid, &status, 0) == pid && WIFEXITED(status)) {
+    stop.exited = true;
+    stop.code = WEXITSTATUS(status);
+  }
+  return stop;
+}
+
+static int runGmpStopCase(const char *name, bool_t realloc_case) {
+  const gmp_stop_t expected = runGmpStop(realloc_case, true);
+  const gmp_stop_t actual = runGmpStop(realloc_case, false);
+  int failures = 0;
+
+  if(!expected.exited || expected.code != 255 || expected.message[0] == 0) {
+    fprintf(stderr, "%s: c43 did not stop with the bug screen and exit(255) (exited %d, code %d)\n", name, expected.exited, expected.code);
+    failures++;
+  }
+  if(expected.exited != actual.exited || expected.code != actual.code) {
+    fprintf(stderr, "%s stop mismatch: expected exited %d code %d, actual exited %d code %d\n", name, expected.exited, expected.code, actual.exited, actual.code);
+    failures++;
+  }
+  if(strcmp(expected.message, actual.message) != 0) {
+    fprintf(stderr, "%s bug screen mismatch: expected \"%s\" actual \"%s\"\n", name, expected.message, actual.message);
+    failures++;
+  }
+  return failures;
+}
+
 static int runFreeGmpCase(size_t starting_gmp_bytes,
                           size_t size_in_bytes,
                           bool_t use_null_pointer) {
@@ -335,9 +427,9 @@ int main(void) {
   failures += runFreeC47Case(9, 4, true);
 
   failures += runAllocGmpCase(4, 5, false);
-  failures += runAllocGmpCase(4, 5, true);
+  failures += runGmpStopCase("allocGmp", false);
   failures += runReallocGmpCase(8, 5, 9, false);
-  failures += runReallocGmpCase(8, 5, 9, true);
+  failures += runGmpStopCase("reallocGmp", true);
   failures += runFreeGmpCase(12, 9, false);
   failures += runFreeGmpCase(12, 9, true);
 

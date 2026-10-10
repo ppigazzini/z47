@@ -1,0 +1,128 @@
+@ Index:   Op-amp helper suite
+@ Author:  Warren Young
+@ Created: 2026-01-18
+@ Licence: CC BY-NC-SA 4.0
+@ Source:  https://tangentsoft.com/rpn/dir/r47/OpAmp
+@ Tested:  Init displays "Initialized!"
+@ Input:   ||R given {2,2} and {3,6}
+@ Output:  1 and 2, respectively
+@
+@ See the docs at the URL above for details.
+LBL ‘OpAmp’         ; suite name for XPORTP; must match file name
+  LBL ‘_INIT’       ; one-time entrypoint alias
+    298.
+    STO ‘Tⓚ’
+    2.e+4
+    STO ‘B₁’
+    20.
+    STO ‘B₀’
+    UNIT 03
+    SF F01
+    ‘Initialized!’
+    RTN
+  RTN               ; close the double-label scope
+
+LBL ‘Gain’
+  INPUT ‘R⒡’
+  INPUT ‘R⒢’
+  RCL ‘R⒡’
+  RCL ‘R⒢’
+  ÷
+  FS? F01
+    INCR X
+  STO ‘gain’
+  VIEW ‘gain’
+  RTN
+
+LBL ‘Gⓝⓘ’
+  SF F01
+  GTO ‘Gain’
+
+LBL ‘Gⓘⓝⓥ’
+  CF F01
+  GTO ‘Gain’
+
+LBL ‘Rdiv’
+  INPUT ‘R⒤’
+  INPUT ‘R⒢’
+  INPUT V
+  RCL V
+  RCL ‘R⒢’
+  ENTER
+  RCL ‘R⒤’
+  +
+  ÷
+  ×
+  RTN
+
+LBL ‘RJ⒩⒪⒤⒮⒠’
+  INPUT ‘R⒤’
+  INPUT ‘Tⓚ’
+  INPUT ‘B₁’
+  INPUT ‘B₀’
+  4
+  k_B
+  ×
+  RCL ‘Tⓚ’
+  ×
+  RCL ‘B₁’
+  RCL ‘B₀’
+  -
+  ×
+  RCL ‘R⒤’
+  ×
+  √𝑥
+  STO ‘Rj’
+  VIEW ‘Rj’
+  RTN
+
+LBL ‘Vⓞⓢ’
+  INPUT ‘Iⓘⓑ’
+  INPUT ‘Iⓘⓞ’
+  INPUT ‘Vⓘⓞ’
+  INPUT ‘R⒤’
+  INPUT ‘R⒡’
+  INPUT ‘R⒢’
+  RCL ‘R⒡’
+  RCL ‘R⒢’
+  XEQ ‘||R’
+  LocR 01
+  STO R.00
+  RCL ‘R⒡’
+  RCL ‘R⒢’
+  ÷
+  INCR X
+  RCL ‘Iⓘⓑ’
+  RCL R.00
+  RCL ‘R⒤’
+  -
+  ×
+  RCL ‘Iⓘⓞ’
+  2
+  ÷
+  RCL R.00
+  RCL ‘R⒤’
+  +
+  ×
+  -
+  |𝑥|
+  RCL ‘Vⓘⓞ’
+  +
+  ×
+  STO ‘Vⓞⓢ’
+  VIEW ‘Vⓞⓢ’
+  RTN
+
+LBL ‘||R’
+  LocR 02
+  STO R.00
+  𝑥⇄𝑦
+  STO R.01
+  ×
+  RCL R.00
+  RCL R.01
+  +
+  ÷
+  RTN
+  END
+.END.

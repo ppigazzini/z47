@@ -2,7 +2,7 @@
 //
 // Zig owner for src/c47/distributions/t.c: the Student's t distribution commands
 // (fnT_P/L/R/I) and the WP34S math borrowings. Part of the OPTION_DIST_B
-// cluster (kept on DM42 packages 1 and 2 and on host/DMCP5), gated by strip_17b
+// cluster (kept on host/DMCP5 and the DM42 packages that define it), gated by strip_17b
 // and tagged linksection(dr.code_section) so the code runs from QSPI on the
 // flash-limited old_hw DM42. Self-contained (its own Halley-style quantile
 // refinement); no helpers are exported. The testSuite drives every branch via

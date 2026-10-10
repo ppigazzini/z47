@@ -29,13 +29,11 @@
 // not re-exported.
 //
 // Build matrix (defines.h):
-//   * OPTION_EDIT_X / OPTION_EDIT_PEM are `#undef`'d by every DM42 defines.h
-//     block (the TWO_FILE_PGM packages 1-4 and the single-file old-hardware one),
-//     and stay defined for host (sim/test) and for the NEW_HW dmcp5. They gate the
-//     full fnEdit body plus the _fractionToString / _shortIntegerToString /
-//     _hmsTimeToReal / _real34ToNim helpers, so
-//     `save_space_edit` below is `dmcp_build and old_hw` and the helpers sit
-//     behind `if (comptime !save_space_edit)`.
+//   * OPTION_EDIT_X / OPTION_EDIT_PEM gate the full fnEdit body plus the
+//     _fractionToString / _shortIntegerToString / _hmsTimeToReal / _real34ToNim
+//     helpers. Both are defined on every target z47 builds: host, DMCP5 and the
+//     four DM42 packages. Only the single-file old-hardware block drops them,
+//     and no z47 target reaches it, so the editor is ported unconditionally.
 //   * OPTION_VECTOR / OPTION_ELEC gate the stk<->mx converters + vecCreate[] table.
 //     Both are build options; the converters need (option_vector OR option_elec).
 //     fnExchangeStkToMx is OPTION_VECTOR-only.
@@ -71,10 +69,6 @@ const old_hw: bool = frontier_build_options.old_hw;
 const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 const option_vector: bool = frontier_build_options.option_vector;
 const option_elec: bool = frontier_build_options.option_elec;
-
-// True where upstream drops OPTION_EDIT_X / OPTION_EDIT_PEM: every DM42 build
-// (dmcp_build and old_hw). Host and dmcp5 keep both and so keep the full editor.
-const save_space_edit: bool = dmcp_build and old_hw;
 
 // DMCP ROM trampoline base (lft_ifc.h offsets; base differs old_hw / new_hw).
 const LIBRARY_FN_BASE: usize = if (old_hw) 0x08000201 else 0x08000301;
@@ -273,6 +267,7 @@ const ITM_EQ_EDI: i16 = 1464;
 const ITM_XEDIT: i16 = 2420;
 const ITM_LITERAL: i32 = 114;
 const ITM_REM: i32 = 1554;
+const ITM_FINISH: i32 = 1912;
 const ITM_NULL: u16 = 0;
 const ITM_0: u16 = 540;
 const ITM_A: u16 = 550;
@@ -1083,15 +1078,11 @@ inline fn setVectorRegisterPolarMode(reg: calcRegister_t, pm: u32) void {
 // OPTION_EDIT_X-gated helpers (file-static in C).
 // ===========================================================================
 
-// Both this and _shortIntegerToString sit inside the OPTION_EDIT_X block, so the
-// packages that strip it (dmcp_build and old_hw, the reduced fnEdit) emit no code
-// for them: the two call sites are already comptime-dead there, and the C symbol
-// is published only where upstream compiles the definition.
+// Both this and _shortIntegerToString sit inside the OPTION_EDIT_X block, which
+// every z47 target compiles, so the C symbols are published everywhere.
 comptime {
-    if (!save_space_edit) {
-        @export(&_fractionToString, .{ .name = "_fractionToString", .linkage = .strong });
-        @export(&_shortIntegerToString, .{ .name = "_shortIntegerToString", .linkage = .strong });
-    }
+    @export(&_fractionToString, .{ .name = "_fractionToString", .linkage = .strong });
+    @export(&_shortIntegerToString, .{ .name = "_shortIntegerToString", .linkage = .strong });
 }
 
 fn _fractionToString(regist: calcRegister_t, displayString: [*c]u8, lessEqualGreater: *i16) callconv(.c) void {
@@ -1370,30 +1361,28 @@ fn editErr() void {
 // CM_NORMAL data-type dispatch arm of fnEdit.
 fn editNormalDispatch(index: *i16, grpGroupingLeftOld: *u8, grpGroupingRightOld: *u8) void {
     const dt = getRegisterDataType(REGISTER_X);
-    if (comptime !save_space_edit) {
-        switch (dt) {
-            dtLongInteger => {
-                editLongInteger();
-                return;
-            },
-            dtReal34 => {
-                editReal34(index, grpGroupingLeftOld, grpGroupingRightOld);
-                return;
-            },
-            dtTime => {
-                _hmsTimeToReal();
-                setRegisterDataType(REGISTER_X, dtTime, amNone);
-                editReal34(index, grpGroupingLeftOld, grpGroupingRightOld);
-                return;
-            },
-            dtDate => {
-                frontier_register_value_conversions.convertDateRegisterToReal34Register(REGISTER_X, REGISTER_X);
-                setRegisterDataType(REGISTER_X, dtDate, amNone);
-                editReal34(index, grpGroupingLeftOld, grpGroupingRightOld);
-                return;
-            },
-            else => {},
-        }
+    switch (dt) {
+        dtLongInteger => {
+            editLongInteger();
+            return;
+        },
+        dtReal34 => {
+            editReal34(index, grpGroupingLeftOld, grpGroupingRightOld);
+            return;
+        },
+        dtTime => {
+            _hmsTimeToReal();
+            setRegisterDataType(REGISTER_X, dtTime, amNone);
+            editReal34(index, grpGroupingLeftOld, grpGroupingRightOld);
+            return;
+        },
+        dtDate => {
+            frontier_register_value_conversions.convertDateRegisterToReal34Register(REGISTER_X, REGISTER_X);
+            setRegisterDataType(REGISTER_X, dtDate, amNone);
+            editReal34(index, grpGroupingLeftOld, grpGroupingRightOld);
+            return;
+        },
+        else => {},
     }
     switch (dt) {
         dtString => {
@@ -1412,11 +1401,9 @@ fn editNormalDispatch(index: *i16, grpGroupingLeftOld: *u8, grpGroupingRightOld:
             matrix_editor_entry.fnEditMatrix(NOPARAM);
         },
         else => {
-            if (comptime !save_space_edit) {
-                if (dt == dtShortInteger) {
-                    editShortInteger(grpGroupingLeftOld, grpGroupingRightOld);
-                    return;
-                }
+            if (dt == dtShortInteger) {
+                editShortInteger(grpGroupingLeftOld, grpGroupingRightOld);
+                return;
             }
             editErr();
         },
@@ -1601,31 +1588,25 @@ fn editPem(index: *i16, grpGroupingLeftOld: *u8, grpGroupingRightOld: *u8, varOr
     }
     const opParam: u8 = currentStep[@intCast(i)];
     i += 1;
-    var opParam2: u8 = 0;
-    var opParam3: u8 = 0;
-    if (comptime !save_space_edit) {
-        opParam2 = currentStep[@intCast(i)];
-        i += 1;
-        opParam3 = currentStep[@intCast(i)];
-    }
+    const opParam2: u8 = currentStep[@intCast(i)];
+    i += 1;
+    const opParam3: u8 = currentStep[@intCast(i)];
 
-    if ((func == ITM_LITERAL or func == ITM_REM)) {
+    if ((func == ITM_LITERAL or func == ITM_REM or func == ITM_FINISH)) {
         @memset(aimBuffer[0..AIM_BUFFER_LENGTH], 0);
 
         if (opParam == STRING_LABEL_VARIABLE) {
             frontier_manage.pemAlphaEdit(NOPARAM);
-        } else if (comptime !save_space_edit) {
-            if ((opParam == BINARY_SHORT_INTEGER) or (opParam == STRING_SHORT_INTEGER) or (opParam == STRING_LONG_INTEGER) or
-                (opParam == BINARY_REAL34) or (opParam == STRING_REAL34) or
-                (opParam == BINARY_COMPLEX34) or (opParam == STRING_COMPLEX34) or
-                (opParam == STRING_DATE) or (opParam == STRING_TIME) or (opParam == STRING_ANGLE_DMS) or
-                (opParam == STRING_ANGLE_RADIAN) or (opParam == STRING_ANGLE_GRAD) or
-                (opParam == STRING_ANGLE_DEGREE) or (opParam == STRING_ANGLE_MULTPI))
-            {
-                editPemLiteral(opParam, opParam2, grpGroupingLeftOld, grpGroupingRightOld);
-            }
+        } else if ((opParam == BINARY_SHORT_INTEGER) or (opParam == STRING_SHORT_INTEGER) or (opParam == STRING_LONG_INTEGER) or
+            (opParam == BINARY_REAL34) or (opParam == STRING_REAL34) or
+            (opParam == BINARY_COMPLEX34) or (opParam == STRING_COMPLEX34) or
+            (opParam == STRING_DATE) or (opParam == STRING_TIME) or (opParam == STRING_ANGLE_DMS) or
+            (opParam == STRING_ANGLE_RADIAN) or (opParam == STRING_ANGLE_GRAD) or
+            (opParam == STRING_ANGLE_DEGREE) or (opParam == STRING_ANGLE_MULTPI))
+        {
+            editPemLiteral(opParam, opParam2, grpGroupingLeftOld, grpGroupingRightOld);
         }
-    } else if (comptime !save_space_edit) {
+    } else {
         editPemNonLiteral(func, opParam, opParam2, opParam3, &i, index, varOrLblName);
     }
 }

@@ -1,54 +1,51 @@
 {\rtf1\ansi\ansicpg1252\deff0\nouicompat{\fonttbl{\f0\fnil\fcharset0 C47__StandardFont;}}{\pard\sl240\slmult1\f0\fs24\lang9\f0\loch
 C47 Program file export: Export format version 3, C47 program version 1.
  \par
-0000: { Prgm #1/1: 208 bytes / 47 steps } \par
+0000: { Prgm #1/1: 149 bytes / 44 steps } \par
 \par
 0001:  LBL \u8216?GudrmPL\u8217?\par
-0002:    REM \u8216?Plot Gudermannian Inverse Func\u8217?\par
-0003:    REM \u8216?JM\u8217?\par
-0004:    REM \u8216?2026-08-09 Rev5\u8217?\par
-0005:    LocR 15\par
-0006:    STOS .00\par
-0007:    RAD\par
-0008:    CF \u8216?FRACT\u8217?\par
-0009:    CF \u8216?IRFRAC\u8217?\par
-0010:    CL\u931?\par
-0011:    TICKS#\par
-0012:    STO N\par
-0013:    101\par
-0014:    STO M\par
-0015:    STO O\par
+0002:    LocR 15\par
+0003:    STOS .00\par
+0004:    RAD\par
+0005:    CF \u8216?FRACT\u8217?\par
+0006:    CF \u8216?IRFRAC\u8217?\par
+0007:    CL\u931?\par
+0008:    TICKS#\par
+0009:    STO N\par
+0010:    101\par
+0011:    STO M\par
+0012:    STO O\par
 \par
-0016:    LBL :LOOP:\par
-0017:    VIEW M\par
+0013:    LBL :LOOP:\par
+0014:    VIEW M\par
+0015:    RCL O\par
+0016:    RCL- M\par
+0017:    REM \u8216?CALCULATION START\u8217?\par
 0018:    RCL O\par
-0019:    RCL- M\par
-0020:    REM \u8216?CALCULATION START\u8217?\par
-0021:    RCL O\par
-0022:    DECR X\par
-0023:    2\par
-0024:    IDIV\par
-0025:    \u247?\par
-0026:    1\par
-0027:    -\par
-0028:    0.49\par
-0029:    \u215?\par
-0030:    \u960?\par
-0031:    \u215?\par
-0032:    ENTER\par
-0033:    g\u1106?\par
-0034:    x\u8644?y\par
-0035:    REM \u8216?ENDCALC\u8217?\par
-0036:    \u931?+\par
-0037:    DSZ M\par
-0038:      GTO :LOOP:\par
-0039:    TICKS#\par
-0040:    RCL- N\par
-0041:    10\par
-0042:    \u247?\par
-0043:    \u8216? sec\u8217?\par
-0044:    +\par
-0045:    PLSTAT\par
-0046:    PLTFCNS\par
-0047:  END\par
+0019:    DECR X\par
+0020:    2\par
+0021:    IDIV\par
+0022:    \u247?\par
+0023:    1\par
+0024:    -\par
+0025:    0.49\par
+0026:    \u215?\par
+0027:    \u960?\par
+0028:    \u215?\par
+0029:    ENTER\par
+0030:    g\u1106?\par
+0031:    x\u8644?y\par
+0032:    REM \u8216?ENDCALC\u8217?\par
+0033:    \u931?+\par
+0034:    DSZ M\par
+0035:      GTO :LOOP:\par
+0036:    TICKS#\par
+0037:    RCL- N\par
+0038:    10\par
+0039:    \u247?\par
+0040:    \u8216? sec\u8217?\par
+0041:    +\par
+0042:    PLSTAT\par
+0043:    PLTFCNS\par
+0044:  END\par
 }}

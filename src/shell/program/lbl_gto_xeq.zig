@@ -193,6 +193,7 @@ const ITM_FORTOP: u16 = 2938;
 const ITM_SOLVE: u16 = 1608;
 const ITM_42STRING: u16 = 2775;
 const ITM_42APPEND: u16 = 2776;
+const ITM_FINISH: u16 = 1912;
 
 const SFL_TDM24: u16 = 463;
 const SFL_MONIT: u16 = 2251;
@@ -202,6 +203,10 @@ const TI_TRUE: u8 = 13;
 const TI_NO_INFO: u8 = 0;
 const TI_VIEW_REGISTER: u8 = 15;
 const TI_SOLVER_FAILED: u8 = 52;
+const TI_FINISH: u8 = 157;
+
+const MAX_NUMBER_OF_GLYPHS_IN_STRING: usize = 508;
+const ERROR_MESSAGE_LENGTH: usize = 512;
 
 const amRadian: angularMode_t = 0;
 const amGrad: angularMode_t = 1;
@@ -242,6 +247,7 @@ const SCRUPD_SKIP_STATUSBAR_ONE_TIME: u8 = 0x10;
 const SCRUPD_SKIP_STACK_ONE_TIME: u8 = 0x20;
 
 const FLAG_ASLIFT: c_uint = 0xc023;
+const FLAG_IGN1ER: u16 = 0x8024;
 const FLAG_INTING: c_int = 0xc025;
 const FLAG_SOLVING: c_int = 0xc026;
 
@@ -326,6 +332,7 @@ const c_moreInfoOnError = @extern(*const fn (m1: [*:0]const u8, m2: ?[*:0]const 
 
 extern fn liftStack() void;
 extern fn setSystemFlag(sf: c_uint) void;
+extern fn clearSystemFlag(sf: c_uint) void;
 extern fn getSystemFlag(sf: c_int) bool;
 extern fn fnDropY(unusedButMandatoryParameter: u16) void;
 
@@ -794,6 +801,36 @@ pub export fn fnStopProgram(unusedButMandatoryParameter: u16) callconv(.c) void 
     programRunStop = PGM_WAITING;
     screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
     //  refreshStatusBar();
+}
+
+pub export fn fnFinish(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
+    if (programRunStop != PGM_RUNNING) { // FINISH keyed in by hand has no string argument, so it does nothing, as REM does
+        return;
+    }
+    const msg = tmpStringLabelOrVariableName;
+    var len: usize = 0;
+    var glyphs: usize = 0;
+    while (glyphs < MAX_NUMBER_OF_GLYPHS_IN_STRING and msg[len] != 0) : (glyphs += 1) {
+        const step: usize = if (msg[len] & 0x80 != 0) 2 else 1;
+        if (len + step >= ERROR_MESSAGE_LENGTH) {
+            break;
+        }
+        len += step;
+    }
+    @memcpy(errorMessage[0..len], msg[0..len]);
+    errorMessage[len] = 0;
+    if (len > 0) { // an empty string shows no message; the termination below still runs
+        temporaryInformation = TI_FINISH;
+    }
+    const theProgram = currentProgramNumber; // the FINISH op's own program, read before the unwind moves the pointer
+    frontier_structured.forClearLoops(); // every open FOR gives up its row and its two local registers
+    while (cur().subroutineLevel > 0) { // every subroutine that has not returned is unwound, the same as an error does
+        fnReturn(0);
+    }
+    cleanLocalFlagsAndRegisters(); // the level the run started in gives up its locals
+    programRunStop = PGM_STOPPED; // terminated, not paused: the ! icon is cleared and R/S does not resume it
+    goToPgmStep(theProgram, 1); // the step pointer sits at the top of that program
 }
 
 fn _executeWithIndirectRegister(paramAddress: [*c]u8, op: u16) void {
@@ -1292,6 +1329,14 @@ pub export fn executeOneStep(step_arg: [*c]u8) callconv(.c) i16 {
                             frontier_decode.getStringLabelOrVariableName(step);
                             frontier_string_funcs.fn42Append(NOPARAM);
                         }
+                    } else if (op == ITM_FINISH) {
+                        const marker = step[0];
+                        step += 1;
+                        if (marker == STRING_LABEL_VARIABLE) {
+                            frontier_decode.getStringLabelOrVariableName(step);
+                            fnFinish(NOPARAM);
+                            return -1; // fnFinish has stopped the run and set the step pointer; the engine must not advance it
+                        }
                     } else {
                         // REM: just ignore it
                     }
@@ -1379,6 +1424,10 @@ pub export fn runProgram(singleStep: bool_t, menuLabel: u16) callconv(.c) void {
             temporaryInformation = TI_NO_INFO;
         }
         stepsToBeAdvanced = executeOneStep(currentStep);
+        if (lastErrorCode != ERROR_NONE and getSystemFlag(FLAG_IGN1ER)) { // to catch an opcode parameter error detected before reallyRunFunction is called
+            lastErrorCode = ERROR_NONE;
+            clearSystemFlag(FLAG_IGN1ER);
+        }
         if (lastErrorCode == ERROR_NONE) {
             switch (stepsToBeAdvanced) {
                 -1 => { // Already the pointer is set

@@ -1,0 +1,680 @@
+@ Index:  Structured programming demo: IF, WHILE, FOR
+@ Author: Jaco Mostert, Didier Lachieze
+@ Source: AN0007
+@ Tested: as below
+@ Input:  none; calls YS, WW, POLY_H, MAXR, ERTN
+@ Output: YS R01=5050, WW R03=6, POLY_H X=5, MAXR X=42, ERTN R01=105
+LBL ‘STRUCT’
+  # Runs every example below, in order
+  5
+  CHS
+  XEQ ‘NEG1-X’
+  DROP𝑥
+  5
+  CHS
+  XEQ ‘SGN1’
+  DROP𝑥
+  XEQ ‘TRI3’
+  12
+  XEQ ‘HALF’
+  DROP𝑥
+  XEQ ‘W0’
+  XEQ ‘WW’
+  XEQ ‘DISPL’
+  XEQ ‘YS’
+  XEQ ‘YR’
+  XEQ ‘POLY_H’
+  12
+  XEQ ‘RHLF’
+  DROP𝑥
+  XEQ ‘R0’
+  XEQ ‘RR’
+  XEQ ‘FRAC’
+  XEQ ‘FRC3’
+  XEQ ‘RND1’
+  XEQ ‘RND2’
+  XEQ ‘RND3’
+  XEQ ‘REV’
+  XEQ ‘RVFR’
+  XEQ ‘F0’
+  XEQ ‘FTOP’
+  XEQ ‘TBL’
+  XEQ ‘CLEAR’
+  XEQ ‘MAXR’
+  XEQ ‘MIXED’
+  XEQ ‘LLOC’
+  XEQ ‘ERTN’
+  RTN
+
+  # STRUCT note examples: IF, WHILE and FOR
+  LBL ‘NEG1-X’
+    # IF without ELSE. A negative X comes out as 1-X, anything else is unchanged.
+    𝑥<? 0.
+      IF 01
+    1 - CHS
+    ENDIF 01
+    RTN
+
+  @ The sign decision is the shortest program that needs an ELSE.
+  LBL ‘SGN1’
+    # IF with ELSE. R01 gets -1 when X is negative, else 1.
+    𝑥<? 0.
+      IF 01
+    -1
+    STO R01
+    ELSE 01
+    1
+    STO R01
+    ENDIF 01
+    RTN
+
+  @ HP-42S Programming Examples and Techniques, Simple Programming, the side-side-side triangle,
+  @ annotated listing p17. HP42S PE&T takes three sides and returns the three angles, in straight
+  @ line code with no decision in it. No step of HP42S PE&T is quoted here. What is taken is the
+  @ problem and its three sides, and the decision a solver has to take before it starts.
+  LBL ‘TRI3’
+    # Based HP42S PE&T p17
+    # Sides in S1, S2 and S3, the names HP42S PE&T uses. R01 gets 3 equilateral, 2 isosceles, 1 scalene.
+    5
+    STO ‘S1’
+    DROP𝑥
+    5
+    STO ‘S2’
+    DROP𝑥
+    8
+    STO ‘S3’
+    DROP𝑥
+    RCL ‘S1’
+    𝑥=? ‘S2’         ; first two sides equal ?
+      IF 01
+    RCL ‘S2’
+    𝑥=? ‘S3’         ; and the third as well ?
+      IF 02
+    3
+    STO R01          ; all three equal, equilateral
+    ELSE 02
+    2
+    STO R01          ; two equal, isosceles
+    ENDIF 02
+    ELSE 01
+    RCL ‘S2’
+    𝑥=? ‘S3’         ; try the other two pairs
+      IF 03
+    2
+    STO R01
+    ELSE 03
+    RCL ‘S1’
+    𝑥=? ‘S3’
+      IF 04
+    2
+    STO R01
+    ELSE 04
+    1
+    STO R01          ; no pair equal, scalene
+    ENDIF 04
+    ENDIF 03
+    ENDIF 01
+    RTN
+
+  @ Halving until a bound is reached, the shortest test-at-the-top structure with a real answer.
+  LBL ‘HALF’
+    # An ordinary WHILE. Halve X until it no longer exceeds 1. X = 12 gives R01 = 4 and X = 0.75.
+    0
+    STO R01
+    1
+    STO R00
+    DROP𝑥
+    DROP𝑥
+    DO 01
+    𝑥>? R00
+      WHILE 01
+    2
+    ÷
+    INCR R01
+    ENDDO 01
+    RTN
+
+  @ A test false on entry. The rule it shows cannot be demonstrated by a structure that does run.
+  LBL ‘W0’
+    # A test false on entry. The body never runs, so R01 stays 0.
+    CL𝑥
+    STO R01
+    1
+    STO R00
+    0
+    DO 01
+    𝑥>? R00
+      WHILE 01
+    99
+    STO R01
+    ENDDO 01
+    RTN
+
+  @ The nested form of HALF's structure.
+  LBL ‘WW’
+    # Nested WHILE. Three outer iterations, two inner each, so R03 finishes at 6.
+    3
+    STO R00
+    CL𝑥
+    STO R02
+    CL𝑥
+    STO R03
+    DO 01
+    RCL R00
+    𝑥>? R02
+      WHILE 01
+    DROP𝑥
+    2
+    STO R01
+    DO 02
+    RCL R01
+    𝑥>? R02
+      WHILE 02
+    DROP𝑥
+    INCR R03
+    DECR R01
+    ENDDO 02
+    DROP𝑥
+    DECR R00
+    ENDDO 01
+    RTN
+
+  @ HP-42S Programming Examples and Techniques, Controlled Looping, program DISPL, listing p41.
+  @ HP42S PE&T's calculation, its steps 20 to 22, is kept exactly. What changes is the count around
+  @ it. HP42S PE&T packs tF and STEP into one counter of the form fff.ii in its steps 07 to 16, opens
+  @ the body with LBL 01, and closes it with ISG COUNT and GTO 01. FOR takes the start, the end and
+  @ the step as its own three values, so none of that counter arithmetic is needed.
+  LBL ‘DISPL’
+    # Based HP42S PE&T p41
+    # x = x0 + v t, at t = 0 to 15 s in 5 s steps
+    10
+    STO ‘x0’         ; HP42S PE&T 03: INPUT ‘x0’
+    DROP𝑥
+    20
+    STO ‘v’          ; HP42S PE&T 04: INPUT ‘v’
+    DROP𝑥
+    CL𝑥
+    STO R03
+    DROP𝑥
+    15
+    STO ‘tF’         ; HP42S PE&T 05: INPUT ‘tF’
+    DROP𝑥
+    5
+    STO ‘STEP’       ; HP42S PE&T 06: INPUT ‘STEP’
+    DROP𝑥
+    0                ; t starts at 0
+    RCL ‘tF’
+    RCL ‘STEP’       ; HP42S PE&T 07 to 16 pack these two into one counter
+    FOR ‘COUNT’      ; HP42S PE&T 17: LBL 01
+    RCL ‘COUNT’      ; HP42S PE&T 18,19: RCL ‘COUNT’ then IP, the time
+    RCL× ‘v’         ; HP42S PE&T 20: RCL× ‘v’
+    RCL+ ‘x0’        ; HP42S PE&T 21: RCL+ ‘x0’
+    STO ‘x’          ; HP42S PE&T 22: STO ‘x’
+    STO+ R03
+    DROP𝑥            ; HP42S PE&T 23: CLX
+    NEXT ‘COUNT’     ; HP42S PE&T 25,26: ISG ‘COUNT’ and GTO 01
+    RTN
+
+  @ The same count as DISPL written with two values instead of three.
+  LBL ‘YS’
+    # The same sum with FORyx, two numbers instead of three. R01 contains 5050 and the counter ends at 100.
+    CL𝑥
+    STO R01
+    1
+    100
+    FOR𝑦ˣ R00
+    RCL R00
+    STO+ R01
+    DROP𝑥
+    NEXT R00
+    RTN
+
+  @ Counting down with no step given.
+  LBL ‘YR’
+    # FORyx counting down, the end value below the start. Ten down to zero, eleven iterations.
+    # R01 contains 11 and R03 totals the counter, 10+9+...+0 = 55.
+    CL𝑥
+    STO R01
+    CL𝑥
+    STO R03
+    10
+    0
+    FOR𝑦ˣ R02
+    INCR R01
+    RCL R02
+    STO+ R03
+    DROP𝑥
+    NEXT R02
+    RTN
+
+  @ Horner's rule reads the coefficients from the highest power down, which is a count that has to
+  @ run backwards. FORyx takes the end below the start and needs no step for it.
+  LBL ‘POLY_H’
+    # Horner. p(x) = 2x^3 - 6x^2 + 2x - 1 written as ((2x - 6)x + 2)x - 1
+    # At x = 3 the running value in X goes 2, 0, 2, 5, so X ends at 5
+    -1
+    STO R11          ; a0, the constant
+    DROP𝑥
+    2
+    STO R12          ; a1
+    DROP𝑥
+    -6
+    STO R13          ; a2
+    DROP𝑥
+    2
+    STO R14          ; a3, the highest power
+    DROP𝑥
+    3
+    STO ‘x’          ; the point to evaluate at
+    DROP𝑥
+    0                ; the running value
+    14
+    11
+    FOR𝑦ˣ R00        ; counts down 14, 13, 12, 11, one register per coefficient
+    RCL× ‘x’         ; the running value times x
+    RCL+ →R00        ; plus the coefficient in this register, one line of Horner's rule
+    NEXT R00
+    RTN
+
+  @ HP-15C Advanced Functions Handbook, Using Repeated Estimation, p22. The method there samples,
+  @ then repeats until two successive results agree closely. The work has to happen before there
+  @ is anything to test, which is why the test belongs at the far end and not at the top.
+  LBL ‘RHLF’
+    # Based HP15C AFH p22
+    # The halving structure written with REPEAT. X = 12 gives R01 = 4 and X = 0.75, the same as HALF.
+    0
+    STO R01
+    1
+    STO R00
+    DROP𝑥
+    DROP𝑥
+    REPEAT 01
+    2
+    ÷
+    INCR R01
+    𝑥≤? R00
+    UNTIL 01
+    RTN
+
+  @ HP-15C Advanced Functions Handbook, Using Repeated Estimation, p22. The first estimate is
+  @ taken before anything can be judged, so the body must run whatever the test would have said.
+  LBL ‘R0’
+    # Based HP15C AFH p22
+    # The body runs once even where the test is true on entry, which is where DO differs. R01 contains 99.
+    CL𝑥
+    STO R01
+    1
+    STO R00
+    0
+    REPEAT 01
+    99
+    STO R01
+    DROP𝑥
+    𝑥≤? R00
+    UNTIL 01
+    RTN
+
+  @ The nested form of RHLF's structure.
+  LBL ‘RR’
+    # Nested REPEAT. Three outer iterations, two inner each, so R03 finishes at 6.
+    3
+    STO R00
+    CL𝑥
+    STO R02
+    CL𝑥
+    STO R03
+    DROP𝑥
+    REPEAT 01
+    2
+    STO R01
+    DROP𝑥
+    REPEAT 02
+    INCR R03
+    DECR R01
+    RCL R01
+    𝑥≤? R02
+    UNTIL 02
+    DROP𝑥
+    DECR R00
+    RCL R00
+    𝑥≤? R02
+    UNTIL 01
+    RTN
+
+  @ HP-15C Advanced Functions Handbook, Finding Local Extremes of a Function, p23. The engineer
+  @ there samples the field intensity at 10, 30 and 50 degrees, one keystroke sequence per
+  @ angle, to find where to look for the minimum. There is no program to quote. What is taken is
+  @ the sweep itself, written as one structure so the calculator does the repeating.
+  LBL ‘FRAC’
+    # Based HP15C AFH p23
+    # Sweeps 10 to 90 degrees in 20 degree steps, five angles, and totals sin of each
+    DEG              ; HP15C AFH samples in degrees, so the mode is set before the sweep
+    CL𝑥
+    STO R01
+    CL𝑥
+    STO R02
+    DROP𝑥
+    10               ; HP15C AFH first sample angle
+    90               ; the last
+    20               ; HP15C AFH steps 10, 30, 50. The step is what sets the sampling
+    FOR ‘ang’
+    INCR R01
+    RCL ‘ang’
+    sin              ; HP15C AFH evaluates its field intensity E
+    STO ‘E’          ; HP15C AFH keeps E to compare against the estimate in R9
+    STO+ R02
+    DROP𝑥
+    NEXT ‘ang’
+    RTN
+
+  @ A step that never lands on the end value. The numbers are chosen to show the rule.
+  LBL ‘FRC3’
+    # A step that misses the end value. Four iterations, R01 contains 4 and the counter ends at 0.9.
+    CL𝑥
+    STO R01
+    0
+    1
+    0.3
+    FOR R00
+    INCR R01
+    NEXT R00
+    RTN
+
+  @ A rounding case, the count as expected.
+  LBL ‘RND1’
+    # Nine steps of 2/9 to 9 x 2/9. Ten iterations, the count expected.
+    CL𝑥
+    STO R01
+    0
+    2
+    9
+    ÷
+    9
+    ×
+    2
+    9
+    ÷
+    FOR R00
+    INCR R01
+    NEXT R00
+    RTN
+
+  @ A rounding case, one iteration short.
+  LBL ‘RND2’
+    # The same with 5/9. Nine iterations, one fewer, the counter ending short of the end value.
+    CL𝑥
+    STO R01
+    0
+    5
+    9
+    ÷
+    9
+    ×
+    5
+    9
+    ÷
+    FOR R00
+    INCR R01
+    NEXT R00
+    RTN
+
+  @ A rounding case, one iteration over.
+  LBL ‘RND3’
+    # Zero to two in steps of 2/3. Four iterations, one more, and ab lands exactly on 2.
+    CL𝑥
+    STO R01
+    0
+    2
+    2
+    3
+    ÷
+    FOR ‘ab’
+    INCR R01
+    NEXT ‘ab’
+    RTN
+
+  @ The counting down of YR written with an explicit negative step.
+  LBL ‘REV’
+    # A negative step counts down. Ten down to zero, eleven iterations.
+    # R01 contains 11 and R03 totals 55, the same as YR, which counts the same range with FORyx.
+    CL𝑥
+    STO R01
+    CL𝑥
+    STO R03
+    10
+    0
+    -1
+    FOR R02
+    INCR R01
+    RCL R02
+    STO+ R03
+    DROP𝑥
+    NEXT R02
+    RTN
+
+  @ Counting down in fractions.
+  LBL ‘RVFR’
+    # Down in fractions, counting in the variable named A. Five iterations.
+    CL𝑥
+    STO R01
+    1
+    0
+    -0.25
+    FOR ‘A’
+    INCR R01
+    NEXT ‘A’
+    RTN
+
+  @ A start already past its end, kept because it shows where the comparison is made.
+  LBL ‘F0’
+    # Two FOR/NEXT loops. At RTN, R01 contains 99, R02 the start value of 5 and R03 the last iteration value 3.
+    CL𝑥
+    STO R01
+    5
+    1
+    1
+    FOR R02          ; The first FOR starts with the end value exceeding the start and runs once.
+    99
+    STO R01
+    NEXT R02
+    1
+    3
+    1
+    FOR R03          ; The second FOR runs 1 to 3 
+    NEXT R03
+    RTN
+
+  @ The same two loops under FORTOP, which compares before the first iteration.
+  LBL ‘FTOP’
+    # Two FORTOP/NEXT loops, F0 with the two FOR steps changed. At RTN, R01 contains 0, R02 the start value of 5 and R03 the value 4, one past the end.
+    CL𝑥
+    STO R01
+    5
+    1
+    1
+    FORᵀᴼᴾ R02       ; The FORᵀᴼᴾ starts with the end value exceeding the start and runs no iteration.
+    99
+    STO R01
+    NEXT R02
+    1
+    3
+    1
+    FORᵀᴼᴾ R03       ; The FORᵀᴼᴾ runs 1 to 3
+    NEXT R03
+    RTN
+
+  @ A times table, the plainest nested count there is.
+  LBL ‘TBL’
+    # Nested FOR. The 12 x 8 times table, one product a line, ninety six lines.
+    LocR 01
+    1
+    12
+    1
+    FOR ‘AAA’
+    1
+    8
+    1
+    FOR R.00
+    RCL ‘AAA’
+    RCL× R.00
+    🖨x
+    DROP𝑥
+    NEXT R.00
+    NEXT ‘AAA’
+    RTN
+
+  @ HP-42S Programming Examples and Techniques, Indirect Addressing in Programs, program CLEAR,
+  @ listing p44. HP42S PE&T's clearing step, STO IND ‘COUNT’, is kept exactly. HP42S PE&T prompts for
+  @ FIRST and LAST and packs them into one counter of the form first.last, its steps 03 to 10.
+  @ FOR takes the first and the last as two of its own three values, so nothing has to be packed.
+  LBL ‘CLEAR’
+    # Based HP42S PE&T p44
+    # Zeroes the block R11..R15 through the counter, then counts what it cleared
+    7
+    STO R11
+    DROP𝑥
+    7
+    STO R12
+    DROP𝑥
+    7
+    STO R13
+    DROP𝑥
+    7
+    STO R14
+    DROP𝑥
+    7
+    STO R15
+    DROP𝑥
+    CL𝑥
+    STO R01
+    DROP𝑥
+    11               ; HP42S PE&T 03,04: FIRST? prompt
+    15               ; HP42S PE&T 06,07: LAST? prompt
+    1
+    FOR ‘COUNT’      ; HP42S PE&T 11: LBL 10
+    CL𝑥             ; HP42S PE&T 12: 0
+    STO →‘COUNT’     ; HP42S PE&T 13: STO IND ‘COUNT’
+    DROP𝑥
+    INCR R01
+    NEXT ‘COUNT’     ; HP42S PE&T 14,15: ISG ‘COUNT’ and GTO 10
+    RTN
+
+  @ HP-42S Programming Examples and Techniques, Flags in Programs, program MINMAX, annotated listing p152.
+  @ HP42S PE&T steps through a matrix with J+ and reads flag 77 to find the end. Here the block is five
+  @ registers and the FOR counts them, so the search is the structure rather than a flag. MINMAX names
+  @ only the matrix it is given, which this has no counterpart for, so what is kept is its result: the
+  @ element in X and where it was found in Y.
+  LBL ‘MAXR’
+    # Based HP42S PE&T p152
+    # Largest of R11..R15. R01 keeps it, R02 keeps its register number.
+    3
+    STO R11
+    DROP𝑥
+    17
+    STO R12
+    DROP𝑥
+    8
+    STO R13
+    DROP𝑥
+    42
+    STO R14
+    DROP𝑥
+    11
+    STO R15
+    DROP𝑥
+    -99
+    STO R01
+    DROP𝑥
+    -77
+    STO R02
+    DROP𝑥
+    11
+    15
+    1
+    FOR R00          ; HP42S PE&T 06: LBL 01
+    RCL →R00         ; HP42S PE&T 07: RCLEL, the next element
+    𝑥>? R01          ; HP42S PE&T 10: X≥Y?, against the best so far
+      IF 01          ; HP42S PE&T 11,12: GTO 04 true, GTO 03 false
+    STO R01          ; HP42S PE&T 16: the new best is kept
+    RCL R00
+    STO R02          ; HP42S PE&T 17: RCLIJ, where it was found
+    DROP𝑥
+    ENDIF 01
+    DROP𝑥
+    NEXT R00         ; HP42S PE&T 22,23: J+ then FC? 77
+    RCL R02
+    RCL R01          ; HP42S PE&T returns the element in X and where it was found in Y
+    RTN
+
+  @ One structure inside another of a different kind.
+  LBL ‘MIXED’
+    # WHILE inside FOR. Halve each n from 2 to 5 until it no longer exceeds 1. R01 contains 8.
+    CL𝑥
+    STO R01
+    1
+    STO R02
+    2
+    5
+    1
+    FOR R03
+    RCL R03
+    DO 01
+    𝑥>? R02
+      WHILE 01
+    2
+    ÷
+    INCR R01
+    ENDDO 01
+    DROP𝑥
+    NEXT R03
+    RTN
+
+  @ A local label and a GTO inside a body, kept to show the older style still works there.
+  LBL ‘LLOC’
+    # A local label inside the body. The odd numbers in 1 to 5, so R01 contains 3.
+    # R02 totals them, 1+3+5 = 9. The GTO skips both the count and the total for an even number.
+    CL𝑥
+    STO R01
+    CL𝑥
+    STO R02
+    1
+    5
+    1
+    FOR R00
+    RCL R00
+    EVEN?
+      GTO 01
+    INCR R01
+    STO+ R02
+
+    LBL 01
+      DROP𝑥
+      NEXT R00
+      RTN
+
+  @ HP-42S Programming Examples and Techniques, Flags in Programs, program MINMAX, annotated
+  @ listing p152. MINMAX reads the whole block. This one leaves the moment it has an answer,
+  @ which is what RTN inside a structure is for.
+  LBL ‘ERTN’
+    # Based HP42S PE&T p152
+    # Leaving the structure early with RTN. R01 contains 105 and the counter ends at 14.
+    CL𝑥
+    STO R01
+    100
+    STO R02
+    1
+    1000
+    1
+    FOR R00
+    RCL R00
+    STO+ R01
+    DROP𝑥
+    RCL R01
+    𝑥>? R02
+      IF 01
+    RTN              ; early return
+  ENDIF 01
+  DROP𝑥
+  NEXT R00
+  RTN
+  END

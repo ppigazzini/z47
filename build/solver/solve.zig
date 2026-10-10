@@ -30,30 +30,24 @@ pub const RuntimeObjectOptions = struct {
     stack_check: ?bool = null,
     omit_frame_pointer: ?bool = null,
     error_tracing: ?bool = null,
-    // Per-package OPTION_* from defines.h, all defaulting to a host build.
+    // Per-package OPTION_* from defines.h, all defaulting to a host build. Which
+    // DM42 packages keep each one is build/firmware.zig's dm42Package table.
     //
     // OPTION_TVM_FORMULAS is the analytical closed forms tvm.c uses where one
-    // exists; without it every unknown goes through the solver. It is #undef'd
-    // for DMCP packages 2 and 4.
+    // exists; without it every unknown goes through the solver.
     option_tvm_formulas: bool = true,
     // OPTION_TVM_NEWTON adds the Newton-Raphson refinement inside solve.c's brent
-    // solver for TVM. It is #undef'd for DMCP packages 2 and 4, which is what
-    // makes their FIN solver the slow brent-only path.
+    // solver for TVM; without it the FIN solver is the slow brent-only path.
     option_tvm_newton: bool = true,
-    // OPTION_TVM_AMORT is the AMORT half of tvm.c. Upstream defines it for every
-    // DMCP package as well as for DMCP5 and host; its only #undef is in the
-    // legacy single-file block, which needs neither TWO_FILE_PGM nor NEW_HW and
-    // so is unreachable for every target z47 builds.
+    // OPTION_TVM_AMORT is the AMORT half of tvm.c: without it fnAmortP,
+    // fnAmortNext, fnAmortBal, fnAmortPrn and fnAmortInt are empty.
     option_tvm_amort: bool = true,
     // OPTION_INFSUMS is the infinity sum and its early stop in sumprod.c; the
-    // plain programmable sum and product stay either way. Upstream #undef's it in
-    // the block common to DMCP packages 1-4, so no DM42 package has it; DMCP5 and
-    // host do.
+    // plain programmable sum and product stay either way. Every target z47
+    // builds defines it: the block common to the DM42 packages keeps it.
     option_infsums: bool = true,
     // OPTION_SLVP_POLY is the general polynomial-roots command and, with it,
-    // equation.c's V->EQ rendering of a coefficient vector. Upstream #undef's it
-    // in the block common to DMCP packages 1-4, so no DM42 package has it; DMCP5
-    // and host do.
+    // equation.c's V->EQ rendering of a coefficient vector.
     option_slvp_poly: bool = true,
 };
 

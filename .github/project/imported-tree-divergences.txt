@@ -43,21 +43,14 @@ docs/tools
 tools/hwtest
 tools/bench
 tools/pgemu
-# Prebuilt rejig executables for macOS and Windows (23 MiB of binaries), the
-# program-listing converter rebuilt with item names its own release lacks. A
-# desktop helper for writing .p47 files; nothing in the build or CI runs it.
-tools/rejig_patched
-# The source patches those executables are built from, against the external
-# rejig tool's own op table (program/ops.go), and the .p47 reproductions of the
-# bugs found in it. They patch a Go program outside this tree; nothing here
-# builds or reads them.
+# Source patches against the external rejig tool's own op table
+# (program/ops.go), the program-listing converter, with its build notes and the
+# .p47 reproductions of the bugs found in it. They patch a Go program outside
+# this tree; nothing here builds or reads them.
 tools/rejig
 # Upstream's own helper scripts and generator, superseded by z47's build.
 res/SCRIPTS
 src/generateTests
-# Upstream's runtime PROGRAMS/ working directory at ITS repo root, not the
-# packaged res/PROGRAMS library. z47 gitignores /PROGRAMS as a runtime output.
-PROGRAMS
 # z47 has its own README, and git honours these three only at the repo root, so
 # they live there as hand-reconciled z47-owned files instead.
 README.md

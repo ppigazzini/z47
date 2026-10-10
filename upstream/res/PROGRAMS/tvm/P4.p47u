@@ -1,0 +1,20 @@
+@ Index:   Problem 4, 480 months, PMT then rate
+@ Author:  Jaco Mostert, fm Duncan Murray's problem set
+@ 480 months, rate 0, PV 100000, FV 0. Solves PMT, then I%/a.
+LBL ‘P4’
+  480
+  STO ‘NPPER’
+  0
+  STO ‘I%/a’
+  100000
+  STO ‘PV’
+  0
+  STO ‘PMT’
+  STO ‘FV’
+  12
+  STO ‘PPER/a’
+  STO ‘CPER/a’
+  ENDP
+  PMT
+  I/a
+  END

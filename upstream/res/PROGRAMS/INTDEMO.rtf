@@ -1,0 +1,241 @@
+{\rtf1\ansi\ansicpg1252\deff0\nouicompat{\fonttbl{\f0\fnil\fcharset0 C47__StandardFont;}}{\pard\sl240\slmult1\f0\fs24\lang9\f0\loch
+C47 Program file export: Export format version 3, C47 program version 1.
+ \par
+0000: { Prgm #1/1: 1226 bytes / 211 steps } \par
+\par
+0001:  LBL \u8216?INTDEMO\u8217?\par
+0002:    RAD\par
+0003:    SF \u8216?SSIZE8\u8217?\par
+0004:    11\par
+0005:    STO 00\par
+\par
+0006:    LBL 00\par
+0007:    REM \u8216?== LOOP START ==\u8217?\par
+0008:    \u8216?BND_P\u8217?\par
+0009:    RCL 00\par
+0010:    +\par
+0011:    STO 02\par
+0012:    \u8216?INT_P\u8217?\par
+0013:    RCL 00\par
+0014:    +\par
+0015:    STO 01\par
+0016:    REM \u8216?== SET AND DRAW GRAPH ==\u8217?\par
+0017:    XEQ \u8594?02\par
+0018:    PLTRST\par
+0019:    PGMPLT \u8594?01\par
+0020:    PLT\u8197?f \u8216?x\u8217?\par
+0021:    SNAP\par
+0022:    PAUSE 10\par
+0023:    REM \u8216?USE BYPASS TO SKIP INTEGRATION\u8217?\par
+0024:    REM \u8216?GTO 'BYPASS'\u8217?\par
+0025:    REM \u8216?== SET AND INTEGRATE ==\u8217?\par
+0026:    XEQ \u8594?02\par
+0027:    PGMINT \u8594?01\par
+0028:    \u8747?\u10736? \u8216?x\u8217?\par
+0029:    LASTT#\par
+0030:    RCL Y\par
+0031:    RCL 01\par
+0032:    \u9113?xy\par
+0033:    R\u8595?\par
+0034:    R\u8595?\par
+0035:    10\par
+0036:    \u247?\par
+0037:    \u8216? s\u8217?\par
+0038:    +\par
+0039:    RCL Z\par
+0040:    \u9113?xy\par
+0041:    RCL Z\par
+0042:    \u247?\par
+0043:    |x|\par
+0044:    LOG\par
+0045:    CHS\par
+0046:    \u8216?Relative Accuracy:\u8217?\par
+0047:    \u9113?xy\par
+\par
+0048:    LBL \u8216?BYPASS\u8217?\par
+0049:    REM \u8216?== END LOOP ==\u8217?\par
+0050:    DSZ 00\par
+0051:      GTO 00\par
+0052:    RTN\par
+\par
+0053:    LBL \u8216?BND_P1\u8217?\par
+0054:    1\par
+0055:    2\par
+0056:    RTN\par
+\par
+0057:    LBL \u8216?INT_P1\u8217?\par
+0058:    REM \u8216?f(x) = 1/\u8730?x,\u8217?\par
+0059:    REM \u8216?bounds [1, 2]\u8217?\par
+0060:    MVAR \u8216?x\u8217?\par
+0061:    RCL \u8216?x\u8217?\par
+0062:    \u8730?\u895?\par
+0063:    1/x\par
+0064:    RTN\par
+\par
+0065:    LBL \u8216?BND_P2\u8217?\par
+0066:    -1\par
+0067:    3\par
+0068:    RTN\par
+\par
+0069:    LBL \u8216?INT_P2\u8217?\par
+0070:    REM \u8216?f(x) = e^(-x\super 2\nosupersub ),\u8217?\par
+0071:    REM \u8216?bounds [-1, 3]\u8217?\par
+0072:    MVAR \u8216?x\u8217?\par
+0073:    RCL \u8216?x\u8217?\par
+0074:    x\super 2\nosupersub \par
+0075:    CHS\par
+0076:    \u8519?\u739?\par
+0077:    RTN\par
+\par
+0078:    LBL \u8216?BND_P3\u8217?\par
+0079:    -15\par
+0080:    15\par
+0081:    RTN\par
+\par
+0082:    LBL \u8216?INT_P3\u8217?\par
+0083:    REM \u8216?f(x) = |x\super 2\nosupersub  - 3x|,\u8217?\par
+0084:    REM \u8216?bounds [-15, 15]\u8217?\par
+0085:    MVAR \u8216?x\u8217?\par
+0086:    RCL \u8216?x\u8217?\par
+0087:    ENTER\par
+0088:    x\super 2\nosupersub \par
+0089:    x\u8644?y\par
+0090:    3\par
+0091:    \u215?\par
+0092:    -\par
+0093:    |x|\par
+0094:    RTN\par
+\par
+0095:    LBL \u8216?BND_P4\u8217?\par
+0096:    0\par
+0097:    1.570\u8200?79\par
+0098:    RTN\par
+\par
+0099:    LBL \u8216?INT_P4\u8217?\par
+0100:    REM \u8216?f(x) = tan(x),\u8217?\par
+0101:    REM \u8216?bounds [0, 1.57079]\u8217?\par
+0102:    MVAR \u8216?x\u8217?\par
+0103:    RCL \u8216?x\u8217?\par
+0104:    TAN\par
+0105:    RTN\par
+\par
+0106:    LBL \u8216?BND_P5\u8217?\par
+0107:    0\par
+0108:    1\par
+0109:    RTN\par
+\par
+0110:    LBL \u8216?INT_P5\u8217?\par
+0111:    REM \u8216?f(x) = x^(x^(x^x)),\u8217?\par
+0112:    REM \u8216?bounds [0, 1]\u8217?\par
+0113:    MVAR \u8216?x\u8217?\par
+0114:    RCL \u8216?x\u8217?\par
+0115:    ENTER\par
+0116:    ENTER\par
+0117:    ENTER\par
+0118:    y\u739?\par
+0119:    y\u739?\par
+0120:    y\u739?\par
+0121:    RTN\par
+\par
+0122:    LBL \u8216?BND_P6\u8217?\par
+0123:    0\par
+0124:    1\par
+0125:    RTN\par
+\par
+0126:    LBL \u8216?INT_P6\u8217?\par
+0127:    REM \u8216?f(x) = cos(x)\u183?ln(x),\u8217?\par
+0128:    REM \u8216?bounds [0, 1]\u8217?\par
+0129:    MVAR \u8216?x\u8217?\par
+0130:    RCL \u8216?x\u8217?\par
+0131:    COS\par
+0132:    RCL \u8216?x\u8217?\par
+0133:    LN\par
+0134:    \u215?\par
+0135:    RTN\par
+\par
+0136:    LBL \u8216?BND_P7\u8217?\par
+0137:    0\par
+0138:    1\par
+0139:    RTN\par
+\par
+0140:    LBL \u8216?INT_P7\u8217?\par
+0141:    REM \u8216?f(x) = 1/\u8730?x,\u8217?\par
+0142:    REM \u8216?bounds [0, 1]\u8217?\par
+0143:    MVAR \u8216?x\u8217?\par
+0144:    RCL \u8216?x\u8217?\par
+0145:    \u8730?\u895?\par
+0146:    1/x\par
+0147:    RTN\par
+\par
+0148:    LBL \u8216?BND_P8\u8217?\par
+0149:    0\par
+0150:    1\par
+0151:    RTN\par
+\par
+0152:    LBL \u8216?INT_P8\u8217?\par
+0153:    REM \u8216?f(x) = 1/\u8730?(-ln(x)),\u8217?\par
+0154:    REM \u8216?bounds [0, 1]\u8217?\par
+0155:    MVAR \u8216?x\u8217?\par
+0156:    RCL \u8216?x\u8217?\par
+0157:    LN\par
+0158:    CHS\par
+0159:    \u8730?\u895?\par
+0160:    1/x\par
+0161:    RTN\par
+\par
+0162:    LBL \u8216?BND_P9\u8217?\par
+0163:    0\par
+0164:    1\par
+0165:    RTN\par
+\par
+0166:    LBL \u8216?INT_P9\u8217?\par
+0167:    REM \u8216?f(x) = ln(\u915?(x))\u8217?\par
+0168:    REM \u8216?bounds [0, 1]\u8217?\par
+0169:    MVAR \u8216?x\u8217?\par
+0170:    RCL \u8216?x\u8217?\par
+0171:    \u915?(x)\par
+0172:    LN\par
+0173:    RTN\par
+\par
+0174:    LBL \u8216?BND_P10\u8217?\par
+0175:    -1\par
+0176:    1\par
+0177:    RTN\par
+\par
+0178:    LBL \u8216?INT_P10\u8217?\par
+0179:    REM \u8216?f(x)=e^(x+sin(e^e^e^(x+1/3)))\u8217?\par
+0180:    REM \u8216?bounds [-1, 1]\u8217?\par
+0181:    MVAR \u8216?x\u8217?\par
+0182:    RCL \u8216?x\u8217?\par
+0183:    1\par
+0184:    3\par
+0185:    \u247?\par
+0186:    +\par
+0187:    \u8519?\u739?\par
+0188:    \u8519?\u739?\par
+0189:    \u8519?\u739?\par
+0190:    SIN\par
+0191:    RCL \u8216?x\u8217?\par
+0192:    +\par
+0193:    \u8519?\u739?\par
+0194:    RTN\par
+\par
+0195:    LBL \u8216?BND_P11\u8217?\par
+0196:    0\par
+0197:    1\par
+0198:    RTN\par
+\par
+0199:    LBL \u8216?INT_P11\u8217?\par
+0200:    REM \u8216?f(x) = sin\super 2\nosupersub (tan(tan(\u960?x)))\u8217?\par
+0201:    REM \u8216?bounds[0,1]\u8217?\par
+0202:    MVAR \u8216?x\u8217?\par
+0203:    RCL \u8216?x\u8217?\par
+0204:    \u960?\par
+0205:    \u215?\par
+0206:    TAN\par
+0207:    TAN\par
+0208:    SIN\par
+0209:    x\super 2\nosupersub \par
+0210:    RTN\par
+0211:  END\par
+}}

@@ -19,8 +19,7 @@ const std = @import("std");
 //     target and is ported unconditionally; the `#else` fallback
 //     `fnView(REGISTER_X)` is dead and omitted.
 //   * OPTION_IR_PRINTING gates printViewAview / printInputPrompt (print.c). It is
-//     ON for host (sim/test), DMCP5 and DM42 packages 2 and 4, OFF for DM42
-//     packages 1 and 3. The frontier
+//     ON for host (sim/test) and DMCP5, and set per DM42 package. The frontier
 //     object is built once per (target, options); ir_printing is a build option
 //     wired per package, and the calls are guarded `if (comptime ir_printing)`.
 //     When off those symbols do not exist, so they must not be referenced.
@@ -565,6 +564,12 @@ extern fn __gmpz_sizeinbase(op: [*c]const mpz_struct, base: c_int) usize;
 pub export var startingLine: i16 = 0;
 pub export var IntShowMode: i16 = 0;
 pub export var source: i16 = 0;
+// The SHOW paging of the page now on screen, kept by storeShowStatus() on every
+// fnC47Show() paint so recallShowStatus() repaints that same page.
+var savedShowRegis: u16 = 0;
+var savedSource: i16 = 0;
+var savedStartingLine: i16 = 0;
+var savedIntShowMode: i16 = 0;
 
 const SHOWAUTO: i16 = 0;
 const SHOWSML: i16 = 1;
@@ -4136,6 +4141,8 @@ pub export fn fnC47Show(fnShow_param: u16) callconv(.c) void {
         else => {},
     }
 
+    storeShowStatus(); // the switch above has chosen the page; keep its start so a later recallShowStatus() repaints this same page, not the next one
+
     SHOW_reset();
     // The real34 page sets it again below; every other page keeps the standard line at two registers.
     overrideShowBottomLine = 0;
@@ -4568,6 +4575,24 @@ fn fnC47Show_goBreak1(numberOfLines: i16) void {
 // ===========================================================================
 // _view / fnView / fnAview / fnPrompt
 // ===========================================================================
+// Keeps the SHOW paging of the page now on screen, so recallShowStatus() can repaint
+// that same page after a capture or a preview label overwrote it.
+fn storeShowStatus() void {
+    savedShowRegis = showRegis;
+    savedSource = source;
+    savedStartingLine = startingLine;
+    savedIntShowMode = IntShowMode;
+}
+
+// Puts back the paging storeShowStatus() kept; fnC47Show(ITM_NOP) then re-renders
+// the page that was on screen, from its own start.
+pub export fn recallShowStatus() callconv(.c) void {
+    showRegis = savedShowRegis;
+    source = savedSource;
+    startingLine = savedStartingLine;
+    IntShowMode = savedIntShowMode;
+}
+
 fn _view(regist: u16) void {
     if (frontier_store.regInRange(regist)) {
         currentViewRegister = regist;

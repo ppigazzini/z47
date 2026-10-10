@@ -663,7 +663,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
         //printf("**[DL]** fnEdit cmPem func %d opParam %d opParam2 %d decodedLiteralType %d\n", func, opParam, opParam2, decodedLiteralType);
         //fflush(stdout);
 
-        if((func == ITM_LITERAL) || (func == ITM_REM)) {
+        if((func == ITM_LITERAL) || (func == ITM_REM) || (func == ITM_FINISH)) {
           memset(aimBuffer, 0, AIM_BUFFER_LENGTH);
 
           if(opParam == STRING_LABEL_VARIABLE) {

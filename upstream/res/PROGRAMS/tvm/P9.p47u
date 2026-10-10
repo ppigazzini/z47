@@ -1,0 +1,20 @@
+@ Index:   Problem 9, 25% monthly, solves n
+@ Author:  Jaco Mostert, fm Duncan Murray's problem set
+@ 25%, PV 100000, PMT -2083.333334, FV 0, monthly, end. Solves n.
+LBL ‘P9’
+  0
+  STO ‘NPPER’
+  25
+  STO ‘I%/a’
+  100000
+  STO ‘PV’
+  -2083.333334
+  STO ‘PMT’
+  0
+  STO ‘FV’
+  12
+  STO ‘PPER/a’
+  STO ‘CPER/a’
+  ENDP
+  n
+  END

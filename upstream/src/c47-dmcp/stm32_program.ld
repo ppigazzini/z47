@@ -69,6 +69,47 @@ SECTIONS {
     KEEP(*(.rodata.mpn_fft_table))
     KEEP(*(.rodata.angle_ids*))
 
+    /* GMP multiplication and division tiers that MAX_LONG_INTEGER_SIZE_IN_BITS (3328 bits = 104
+       32-bit limbs, enforced in integers.c and at every mpz entry point) can never invoke. They
+       stay linked because the mpn dispatchers reference them statically, but their trigger sizes
+       sit at 120..3000 limbs against the 104-limb ceiling (generic gmp-impl.h thresholds; the
+       vn >= MUL_TOOM33_THRESHOLD band only opens at vn >= 100 where un/vn <= 1.04 < 7/6, so it
+       always resolves to toom33 and the higher-ratio toom43/53/63 arms are dead too). Unreachable
+       code cannot pay the uncached-QSPI fetch cost, so placement here is free. The call-graph
+       closure over the map's own cross-reference table is in the MR; every referencer of each
+       member below is either one of these dispatch arms or another member of this list.
+       Deliberately NOT moved: mulmod_bnm1 and redc_n (POWMOD reaches them at moduli of 100..104
+       limbs through REDC_1_TO_REDC_N_THRESHOLD = 100), toom22/32/42/33, toom2_sqr, and the hgcd
+       family. */
+    *libgmp.a:mul_fft.o(.text .text.*)
+    *libgmp.a:nussbaumer_mul.o(.text .text.*)
+    *libgmp.a:toom44_mul.o(.text .text.*)
+    *libgmp.a:toom6h_mul.o(.text .text.*)
+    *libgmp.a:toom8h_mul.o(.text .text.*)
+    *libgmp.a:toom43_mul.o(.text .text.*)
+    *libgmp.a:toom53_mul.o(.text .text.*)
+    *libgmp.a:toom63_mul.o(.text .text.*)
+    *libgmp.a:toom3_sqr.o(.text .text.*)
+    *libgmp.a:toom6_sqr.o(.text .text.*)
+    *libgmp.a:toom8_sqr.o(.text .text.*)
+    *libgmp.a:toom_interpolate_6pts.o(.text .text.*)
+    *libgmp.a:toom_interpolate_7pts.o(.text .text.*)
+    *libgmp.a:toom_interpolate_8pts.o(.text .text.*)
+    *libgmp.a:toom_interpolate_12pts.o(.text .text.*)
+    *libgmp.a:toom_interpolate_16pts.o(.text .text.*)
+    *libgmp.a:toom_couple_handling.o(.text .text.*)
+    *libgmp.a:toom_eval_pm1.o(.text .text.*)
+    *libgmp.a:toom_eval_pm2.o(.text .text.*)
+    *libgmp.a:toom_eval_pm2exp.o(.text .text.*)
+    *libgmp.a:toom_eval_pm2rexp.o(.text .text.*)
+    *libgmp.a:toom_eval_dgr3_pm2.o(.text .text.*)
+    *libgmp.a:sqrmod_bnm1.o(.text .text.*)
+    *libgmp.a:mu_div_qr.o(.text .text.*)
+    *libgmp.a:mu_divappr_q.o(.text .text.*)
+    *libgmp.a:mu_div_q.o(.text .text.*)
+    *libgmp.a:mu_bdiv_q.o(.text .text.*)
+    *libgmp.a:invertappr.o(.text .text.*)
+
     . = ALIGN(8);
     _qspi_end = .;     /* define a global symbols at end of qspi */
   } >QSPI /* AT> FLASH */

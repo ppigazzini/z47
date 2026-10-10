@@ -1,0 +1,65 @@
+@ Index:   Inverse Gudermannian function plot
+@ Author:  Jaco Mostert
+@ Created: 2026-08-09
+@ Version: 5
+@ Tested:  Plots the inverse Gudermannian S-curve, range (-1.69, -4.57) to (1.69, 4.57).
+@ Input:   None; runs over 101 points
+@ Output:  Inverse Gudermannian S-curve, (-1.69, -4.57) to (1.69, 4.57)
+@
+@ The loop walks 101 points, works each one out from the counter rather than
+@ from a stored range, and collects the pairs in the statistics registers.
+@
+@ TICKS# is read at the start and again at the end, so the program leaves
+@ its own run time in X as a string of seconds.
+@
+@ The plot is drawn by PLSTAT and PLTFCNS once the sweep is finished.
+@
+@ Clears FRACT and IRFRAC on entry to allow reliable integer division in
+@ the counter arithmetic.
+LBL ‘GudrmPL’
+  LocR 15
+  STOS R.00
+  RAD
+  CF ‘FRACT’
+  CF ‘IRFRAC’
+  CLΣ
+  TICKS#
+  STO N
+  101
+  STO M
+  STO O
+
+  LBL :LOOP:
+    VIEW M
+    RCL O
+    RCL- M
+
+    # CALCULATION START
+    RCL O
+    DECR X
+    2
+    IDIV
+    ÷
+    1
+    -
+    0.49
+    ×
+    𝜋
+    ×
+    ENTER
+    g_d⁻¹
+    𝑥⇄𝑦
+
+    # ENDCALC
+    Σ+
+    DSZ M
+      GTO :LOOP:
+    TICKS#
+    RCL- N
+    10
+    ÷
+    ‘ sec’
+    +
+    PLSTAT
+    PLTFCNS
+  END

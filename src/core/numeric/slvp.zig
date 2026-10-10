@@ -10,9 +10,9 @@
 // object -- upstream drops the `static` on its copy under OPTION_SLVP_POLY, the Zig
 // side only needs the `pub`.
 //
-// OPTION_SLVP_POLY is #undef'd for the flash-limited DM42 firmware, where the whole
-// body compiles away and fnSlvp is an empty stub (items.zig still binds the
-// symbol, and softmenus.zig strikes the item out).
+// OPTION_SLVP_POLY is #undef'd for some flash-limited DM42 packages, where the
+// whole body compiles away and fnSlvp is an empty stub (items.zig still binds
+// the symbol, and softmenus.zig strikes the item out).
 
 const abi = @import("abi");
 const consts = abi.constants;

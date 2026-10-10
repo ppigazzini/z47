@@ -435,7 +435,7 @@ void resetKeytimers(void) {
     int16_t longpressDelayedkey1 = 0;                                   //To Setup the timer locally for the next timed stage
             longpressDelayedkey2 = 0;                                   //To Store the next timed stage
             longpressDelayedkey3 = 0;                                   //To Store the next timed stage
-    if(currentMenu() == -MNU_SHOW) {                                    //blank menu: SHOW, WHO or a programmed plot is on screen, so no key arms a timer
+    if(currentMenu() == -MNU_SHOW && !(SHOWMODE && *result == ITM_EXIT1)) {   //blank menu SHOW, WHO or a programmed plot: no key arms a timer, except EXIT in SHOW, which arms the SNAP then NOP ladder
       return;
     }
 
@@ -571,6 +571,11 @@ void resetKeytimers(void) {
       longpressDelayedkey3 = ITM_EDIT;
     }
 
+    else if(SHOWMODE && *result == ITM_EXIT1) {                        //JM EXIT in SHOW: the long press cycles overrides to SNAP then NOP same for both C47 and R47
+      longpressDelayedkey1 = ITM_SNAP;
+      longpressDelayedkey2 = 0;
+      longpressDelayedkey3 = ITM_NOP;
+    }
     else if((calcMode == CM_NORMAL || calcMode == CM_NIM) && *result == ITM_EXIT1) {
       longpressDelayedkey1 = LongpressEXIT1; // LongpressEXIT1 : C47: MyAlpha or MyMenu; R47: SNAP
       longpressDelayedkey2 = 0;     // EXIT longpress DOES CLRMOD

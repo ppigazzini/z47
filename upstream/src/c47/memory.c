@@ -127,12 +127,30 @@ void freeC47Blocks(void *pcMemPtr, size_t sizeInBlocks) {
 
 
 
+static void *gmpAllocFailed(void) {
+  // GMP never checks what its allocator returns, so a NULL here becomes limb writes through a null pointer. TMP_ALLOC blocks over the 1 KB split of the gmp-impl.h
+  // overlay reach these functions too, through __gmp_tmp_reentrant_alloc, so heap exhaustion stops here with a message instead of corrupting memory mid-arithmetic.
+  displayBugScreen("In function allocGmp: GMP is out of memory");
+  #if defined(DMCP_BUILD)
+    lcd_refresh();
+    wait_for_key_press();
+    sys_reset();
+  #else // !DMCP_BUILD
+    exit(255);
+  #endif // DMCP_BUILD
+  return NULL;
+}
+
 void *allocGmp(size_t sizeInBytes) {
   sizeInBytes = TO_BYTES(TO_BLOCKS(sizeInBytes));
   gmpMemInBytes += sizeInBytes;
 
   //return freeListAlloc(TO_BLOCKS(sizeInBytes));
-  return malloc(sizeInBytes);
+  void *pcMemPtr = malloc(sizeInBytes);
+  if(pcMemPtr == NULL && sizeInBytes != 0) {
+    return gmpAllocFailed();
+  }
+  return pcMemPtr;
 }
 
 void *reallocGmp(void *pcMemPtr, size_t oldSizeInBytes, size_t newSizeInBytes) {
@@ -142,7 +160,11 @@ void *reallocGmp(void *pcMemPtr, size_t oldSizeInBytes, size_t newSizeInBytes) {
   gmpMemInBytes += newSizeInBytes - oldSizeInBytes;
 
   //return freeListRealloc(pcMemPtr, TO_BLOCKS(oldSizeInBytes), TO_BLOCKS(newSizeInBytes));
-  return realloc(pcMemPtr, newSizeInBytes);
+  void *pcNewPtr = realloc(pcMemPtr, newSizeInBytes);
+  if(pcNewPtr == NULL && newSizeInBytes != 0) {
+    return gmpAllocFailed();
+  }
+  return pcNewPtr;
 }
 
 void freeGmp(void *pcMemPtr, size_t sizeInBytes) {

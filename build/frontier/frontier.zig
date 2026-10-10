@@ -44,14 +44,14 @@ pub const RuntimeObjectOptions = struct {
     // OPTION_DIST_C (binomial/f/geometric/hyper/negBinom/poisson), strip_17b of
     // OPTION_DIST_B (cauchy/chi2/expo/logistic/t/weibull) and strip_17c of
     // OPTION_DIST_D (gev/pareto/uniform). build/firmware.zig maps each to the
-    // packages whose defines.h block undefines it.
+    // packages whose defines.h block undefines it, from its dm42Package table.
     strip_16: bool = false,
     strip_17: bool = false,
     strip_17b: bool = false,
     strip_17c: bool = false,
     // The inverse of OPTION_DISTRIBUTIONS, which carries the DISTR submenu entry
-    // in softmenus.c's menu_PROB (DDMENU). Upstream undefines it for DMCP package
-    // 4 alone. Defaults false (host / other packages keep the DISTR menu).
+    // in softmenus.c's menu_PROB (DDMENU). Defaults false: host, DMCP5 and the
+    // DM42 packages that keep OPTION_DISTRIBUTIONS keep the DISTR menu.
     strip_15: bool = false,
     // The inverse of OPTION_HP35, which carries the SetHP35 dev-profile shortcut
     // in softmenus.c's menu_Dev. Upstream defines it for host and for every DMCP
@@ -59,10 +59,9 @@ pub const RuntimeObjectOptions = struct {
     strip_21_hp35: bool = false,
     // The inverses of upstream's OPTION_ORTHO, OPTION_BESSEL and OPTION_ELLIPTIC,
     // which gate the matching case labels in softmenus.c's savedspace()
-    // strike-out helper. They are three separate options with three different
-    // per-package values, so they cannot share one flag: elliptic is out of
-    // packages 1, 3 and 4, while ortho and bessel are out of package 4 alone.
-    // Default false (host / DMCP5 keep all three).
+    // strike-out helper. They are three separate options, and the DM42 packages
+    // do not drop them together, so they cannot share one flag. Default false
+    // (host / DMCP5 keep all three).
     strip_ortho: bool = false,
     strip_bessel: bool = false,
     strip_elliptic: bool = false,
@@ -76,9 +75,9 @@ pub const RuntimeObjectOptions = struct {
     dmcp_build: bool = false,
     old_hw: bool = false,
     // OPTION_ELEC gates the ELEC functions (fnJM body in c47Extensions/jm.c).
-    // Upstream defines.h enables it by default and #undef's it for the
-    // flash-limited DMCP TWO_FILE packages 1, 2 and 4 (package 3 and DMCP5 keep
-    // it). Defaults true to match a host build.
+    // Upstream defines.h enables it by default and #undef's it for some DM42
+    // packages (build/firmware.zig's dm42Package table); DMCP5 keeps it.
+    // Defaults true to match a host build.
     option_elec: bool = true,
     // CALCMODEL selects the firmware/sim model the way upstream's compile-time
     // -DCALCMODEL does: it seeds the calcModel global (c47.c) so isR47FAM() and
@@ -88,8 +87,8 @@ pub const RuntimeObjectOptions = struct {
     calcmodel: u8 = 46,
     // IR_PRINTING gates the IR printer paths (printViewAview / printInputPrompt
     // in display.c's fnView/fnAview/fnPrompt). Upstream defines.h enables it by
-    // default and #undef's it for DMCP packages 1 and 3; packages 2 and 4,
-    // DMCP5 (NEW_HW) and host keep it. Defaults true (host).
+    // default and #undef's it for some DM42 packages (build/firmware.zig's
+    // dm42Package table); DMCP5 (NEW_HW) and host keep it. Defaults true (host).
     ir_printing: bool = true,
     // OPTION_VECTOR gates the 2D/3D vector display special-case in display.c's
     // real34MatrixToDisplayString and the VECTOR menu entries. Upstream enables
@@ -102,8 +101,8 @@ pub const RuntimeObjectOptions = struct {
     // load is still gated at runtime on the loadTestPrograms command-line flag.
     option_samplepgms: bool = true,
     // OPTION_EIGEN gates EIGVAL, EIGVEC, M.QR and MSQRT. Upstream enables it by
-    // default and #undef's it for DMCP packages 1, 2 and 4; package 3, DMCP5 and
-    // host keep it. Defaults true (host).
+    // default and #undef's it for some DM42 packages (build/firmware.zig's
+    // dm42Package table); DMCP5 and host keep it. Defaults true (host).
     option_eigen: bool = true,
     // OPTION_XFN_1000 gates the 1000-digit XFN surface the frontier owners see:
     // the menu_XFN softkeys, the matching items-table entries and the saved-state
@@ -112,16 +111,16 @@ pub const RuntimeObjectOptions = struct {
     // Defaults true (host).
     option_xfn_1000: bool = true,
     // OPTION_SLVP_POLY gates the SLVP softkey and its savedspace() strike-out.
-    // It sits in the same "common to packages 1-4" block as OPTION_XFN_1000, so
-    // it has the same per-target answer. Defaults true (host).
+    // It is set per DM42 package, from build/firmware.zig's dm42Package table.
+    // Defaults true (host).
     option_slvp_poly: bool = true,
     // OPTION_INFSUMS gates the infinity-sum items; the plain programmable sum and
-    // product stay either way. Same block again, so the same per-target answer.
-    // Defaults true (host).
+    // product stay either way. Every target z47 builds defines it: the block
+    // common to the DM42 packages keeps it. Defaults true (host).
     option_infsums: bool = true,
     // OPTION_STRUCTURED_PGM gates the STRUCT programming set: IF/ELSE/ENDIF,
-    // DO/WHILE/ENDDO, REPEAT/UNTIL, FOR/NEXT, VALID and CLSTRUC. Same "common to
-    // packages 1-4" block again, so the same per-target answer: the items exist in
+    // DO/WHILE/ENDDO, REPEAT/UNTIL, FOR/NEXT, VALID and CLSTRUC. It is set per DM42
+    // package, from build/firmware.zig's dm42Package table: the items exist in
     // every build, but without the option they only report that the hardware cannot
     // run them. Defaults true (host). OPTION_STRUCT_INDENT, which structured.h
     // defines inside the same guard, is this option: PEM and the exported listing
@@ -134,11 +133,8 @@ pub const RuntimeObjectOptions = struct {
     // packages 1-4" block again, so the same per-target answer. Defaults true (host).
     option_algdep: bool = true,
     // OPTION_TVM_AMORT gates menu_AMORT and screen.c's amort temporary-information
-    // lines. Upstream defines it for every DMCP package as well as for DMCP5 and
-    // host; its only #undef is in the legacy single-file block, which needs
-    // neither TWO_FILE_PGM nor NEW_HW and so is unreachable for every target z47
-    // builds. It is therefore true everywhere, and exists as an option so the two
-    // owners read the fact instead of restating it.
+    // lines. It is set per DM42 package, from build/firmware.zig's dm42Package
+    // table; DMCP5 and host keep it. Defaults true (host).
     option_tvm_amort: bool = true,
     // OPTION_MX_SHOW gates the enhanced matrix SHOW pages: 11 rows instead of 9,
     // the rolled out one-element-per-line page, the laid flat page for a wide
@@ -149,17 +145,17 @@ pub const RuntimeObjectOptions = struct {
     // OPTION_LP_DP_TIMING gates LP% and DP%, the getter/setter pairs that scale the
     // long-press and double-press timeouts. Without it the four items bind
     // itemToBeCoded and carry CAT_NONE, and every timer keeps its nominal delay.
-    // Same block again, so the same per-target answer. Defaults true (host).
+    // Every target z47 builds defines it. Defaults true (host).
     option_lp_dp_timing: bool = true,
     // OPTION_ATEXT gates ATEXT, which draws the string in a register from the
     // PIXEL position, and the GRMOD pixel operation that string drawing takes on
-    // while ATEXT runs. Same block again, so the same per-target answer. Defaults
-    // true (host).
+    // while ATEXT runs. Every target z47 builds defines it. Defaults true (host).
     option_atext: bool = true,
     // OPTION_ATEXT_FONTS gates GRFNT and GRFNT#, the font ATEXT draws with, and the
     // graFont setting they hold: its TI line, its config, state-file and backup
-    // round trips. Same block again. defines.h undefines it without OPTION_ATEXT,
-    // and addBuildOptions applies that rule. Defaults true (host).
+    // round trips. Every target z47 builds defines it. defines.h undefines it
+    // without OPTION_ATEXT, and addBuildOptions applies that rule. Defaults true
+    // (host).
     option_atext_fonts: bool = true,
 };
 
@@ -287,7 +283,7 @@ pub fn addBuildOptions(
     // indexing those eleven columns.
     const sp3 = "\xa0\x04";
     const modeltext = if (options.calcmodel == 66) "R47" else "C47";
-    const version1 = "00.109.04.00b0";
+    const version1 = "00.109.05.00a0.ALPHA";
     const vcs = build_common.commandOutput(b, &.{ "git", "describe", "--match=NeVeRmAtCh", "--always", "--abbrev=8", "--dirty=-mod" }) orelse "unknown";
     const today = build_common.commandOutput(b, &.{ "date", "+%Y-%m-%d" }) orelse "1970-01-01";
     const cdate = build_common.commandOutput(b, &.{ "date", "+%b %e %Y" }) orelse "Jan  1 1970";

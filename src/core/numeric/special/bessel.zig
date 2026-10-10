@@ -27,8 +27,8 @@ const const39_egamma = consts.const39_egamma;
 // WP34S_BesselJ / WP34S_BesselY keep it where OPTION_BESSEL compiles them in.
 // The EXTRA_INFO_ON_CALC_ERROR sprintf hints
 // become fixed moreInfoOnError strings (no-op under TESTSUITE / DMCP). The
-// OPTION_BESSEL is LIVE: upstream keeps it for DMCP packages 1-3 and drops it for
-// package 4, where it empties fnBesselJ/fnBesselY rather than removing them. The
+// OPTION_BESSEL is LIVE: upstream drops it for some DM42 packages, where it
+// empties fnBesselJ/fnBesselY rather than removing them. The
 // two commands below return immediately when option_bessel is false, which is
 // that empty body. Do not read the gate as dead code.
 

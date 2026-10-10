@@ -1,0 +1,382 @@
+@ Index:   Polynomial roots by Bairstow's method
+@ Author:  Enrico Bellincioni, corrections Lance Locklear, entered Jaco Mostert, fm org C47 test program
+@ Source:  Lin-Bairstow method (Leonard Bairstow 1920); Bairstow.pdf, Bairstow2.pdf
+@
+@ Prompts for the degree and the coefficients, then peels off quadratic
+@ factors until the degree drops below 3.
+@
+@ R90 is the degree. R92 is the ISG counter, degree/1000. R93 is the
+@ indirect coefficient pointer. R95 and R96 are the trial quadratic.
+@ R99 is the tolerance. R98 is the iteration count.
+@
+@ Usage: XEQ Bairsto; enter the degree, then each coefficient highest
+@ power first, then the tolerance. Each R/S shows a quadratic factor's
+@ two roots, then the last root. Tested x^3-6x^2+11x-6 returns 1, 2, 3.
+@
+@ Tested in t47 at tolerance 1E-20 and 1E-30, every root returned to the tolerance:
+@   order 3  x^3-6x^2+11x-6                        roots 1, 2, 3
+@   order 6  (x-1)(x-2)(x-3)(x-4)(x-5)(x-6)        roots 1 to 6
+@   order 9  (x-1)(x-2)(x-3)(x^2+1)(x^2+4)(x^2+9)  roots 1, 2, 3, +-i, +-2i, +-3i
+@
+@ Input:  XEQ Bairsto. At 'Polynomial degree?' key 3 R/S. At each 'x^n' prompt
+@         key the coefficient, highest power first: 1 R/S, 6 CHS R/S, 11 R/S,
+@         6 CHS R/S. At 'Tolerance?' key 1E-20 R/S.
+@ Output: R/S shows a quadratic factor's two roots in X and Y. R/S again for
+@         each further factor. The final R/S shows the last root in Y, with
+@         'Last root' in X. This example returns 1, 2, 3.
+LBL ‘Bairsto’
+  ALL 00
+  CLCVAR
+  CLSTK
+  ‘Polynomial degree?’
+  STOP
+  |𝑥|
+  IP
+  STO R90
+  STO R91
+  CLSTK
+  RCL R91
+  1e3
+  ÷
+  STO R92
+
+  LBL A
+    ‘x^’
+    RCL R91
+    +
+    STOP
+    STO →R93
+    CLSTK
+    1.
+    STO+ R93
+    STO- R91
+    RCL R92
+    ISG R92
+      GTO A
+    CLSTK
+    1.
+    RCL R00
+    𝑥≠? Y
+      XEQ B
+    ‘Tolerance?’
+    STOP
+    STO R99
+    CLSTK
+
+    LBL 10  ; degree at least 3
+      3.
+      STO R94
+      RCL R94
+      RCL R90
+      𝑥<? Y
+        GTO 02
+      1.
+      STO R95
+      STO R96
+      XEQ D
+      XEQ 59
+      XEQ 11
+      STOP
+      GTO 10
+
+      LBL 02  ; degree below 3
+        2.
+        STO R94
+        RCL R94
+        RCL R90
+        𝑥≠? Y
+          GTO 01  ; degree is not 2
+        XEQ 12
+        GTO 90
+
+        LBL 01  ; linear root, then Last root
+          XEQ 13
+
+          LBL 90
+            ‘Last root’
+            RTN
+
+          LBL B  ; make the polynomial monic
+            1.
+            STO R93
+            RCL R90
+            1e3
+            ÷
+            STO R92
+
+            LBL C
+              RCL R00
+              STO÷ →R93
+              1.
+              STO+ R93
+              RCL R92
+              ISG R92
+                GTO C
+              1.
+              STO R00
+              RTN
+
+            LBL D  ; Newton step on the trial quadratic
+              1.
+              STO R97
+              0.
+              STO R98
+
+              LBL 58
+                1.
+                STO R91
+                RCL R90
+                1e3
+                ÷
+                1.
+                +
+                STO R89
+                30.
+                STO R92
+                STO R93
+                STO R94
+                1.
+                STO+ R93
+                STO+ R94
+                STO+ R94
+                0.
+                STO →R92
+                1.
+                STO →R93
+
+                LBL E
+                  RCL →R91
+                  STO →R94
+                  RCL →R93
+                  RCL R95
+                  ×
+                  CHS
+                  STO+ →R94
+                  RCL →R92
+                  RCL R96
+                  ×
+                  CHS
+                  STO+ →R94
+                  1.
+                  STO+ R91
+                  STO+ R92
+                  STO+ R93
+                  STO+ R94
+                  RCL R89
+                  ISG R89
+                    GTO E
+                  RCL →R92
+                  STO R84
+                  RCL →R93
+                  STO R85
+                  30.
+                  STO R91
+                  RCL R90
+                  1e3
+                  ÷
+                  1.
+                  +
+                  STO R89
+                  60.
+                  STO R92
+                  STO R93
+                  STO R94
+                  1.
+                  STO+ R93
+                  STO+ R94
+                  STO+ R94
+                  0.
+                  STO →R92
+                  0.
+                  STO →R93
+
+                  LBL 55
+                    RCL →R91
+                    STO →R94
+                    RCL →R93
+                    RCL R95
+                    ×
+                    CHS
+                    STO+ →R94
+                    RCL →R92
+                    RCL R96
+                    ×
+                    CHS
+                    STO+ →R94
+                    1.
+                    STO+ R91
+                    STO+ R92
+                    STO+ R93
+                    STO+ R94
+                    RCL R89
+                    ISG R89
+                      GTO 55
+                    RCL →R92
+                    STO R92
+                    RCL →R93
+                    STO R93
+                    CLSTK
+                    RCL R95
+                    RCL R93
+                    ×
+                    RCL R96
+                    RCL R92
+                    ×
+                    +
+                    RCL R92
+                    ×
+                    RCL R93
+                    RCL R93
+                    ×
+                    +
+                    STO R88
+                    RCL R84
+                    RCL R93
+                    ×
+                    RCL R85
+                    RCL R92
+                    ×
+                    -
+                    RCL R88
+                    ÷
+                    STO R87
+                    RCL R95
+                    RCL R93
+                    ×
+                    RCL R96
+                    RCL R92
+                    ×
+                    +
+                    RCL R84
+                    ×
+                    RCL R85
+                    RCL R93
+                    ×
+                    +
+                    RCL R88
+                    ÷
+                    STO R86
+                    RCL R87
+                    |𝑥|
+                    STO X
+                    RCL R86
+                    |𝑥|
+                    STO Y
+                    𝑥>? Y
+                      GTO 56
+                    RCL R87
+                    |𝑥|
+                    STO R97
+                    GTO 57
+
+                    LBL 56
+                      RCL R86
+                      |𝑥|
+                      STO R97
+
+                      LBL 57
+                        RCL R87
+                        STO+ R95
+                        RCL R86
+                        STO+ R96
+                        1.
+                        STO+ R98
+                        1e4
+                        STO X
+                        RCL R98
+                        𝑥>? Y
+                          GTO 04
+                        RCL R99
+                        RCL R97
+                        𝑥>? Y
+                          GTO 58
+                        RTN
+
+                      LBL 59  ; deflate the polynomial by two
+                        0.
+                        STO R91
+                        31.
+                        STO R92
+                        RCL R90
+                        1.
+                        -
+                        STO R93
+                        1e3
+                        ÷
+                        STO R94
+
+                        LBL 88
+                          RCL →R92
+                          STO →R91
+                          1.
+                          STO+ R91
+                          STO+ R92
+                          RCL R94
+                          ISG R94
+                            GTO 88
+                          RCL R90
+                          2.
+                          -
+                          STO R90
+                          RTN
+
+                        LBL 11  ; roots of the quadratic factor
+                          CLSTK
+                          RCL R95
+                          CHS
+                          2.
+                          ÷
+                          STO R91
+                          𝑥²
+                          RCL R96
+                          -
+                          STO R92
+                          CLSTK
+                          RCL R91
+                          RCL R92
+                          √𝑥
+                          +
+                          RCL R91
+                          RCL R92
+                          √𝑥
+                          -
+                          RTN
+
+                        LBL 12  ; the remaining quadratic factor
+                          CLSTK
+                          ‘... continue’
+                          RCL R01
+                          CHS
+                          2.
+                          ÷
+                          STO R91
+                          𝑥²
+                          RCL R02
+                          -
+                          STO R92
+                          CLSTK
+                          RCL R91
+                          RCL R92
+                          √𝑥
+                          +
+                          RCL R91
+                          RCL R92
+                          √𝑥
+                          -
+                          RTN
+
+                        LBL 13  ; the remaining linear root
+                          CLSTK
+                          ‘... continue’
+                          RCL R01
+                          CHS
+                          STO R91
+                          CLSTK
+                          RCL R91
+                          RTN
+
+                        LBL 04  ; iteration count passed 10000
+                          CLSTK
+                          ‘Error m>80!’
+                          RTN
+  END

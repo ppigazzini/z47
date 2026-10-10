@@ -31,9 +31,9 @@ pub const RuntimeObjectOptions = struct {
     // end of RAM. A quarter of what every other target gets.
     old_hw: bool = false,
     // OPTION_STRUCTURED_PGM: leavePem runs VALID on the way out of the program
-    // editor when AVALID is set, and holds the editor open on a fault. Upstream
-    // #undef's the option in the block common to DMCP packages 1-4, so no DM42
-    // package has it; DMCP5 and host do. Defaults true (host).
+    // editor when AVALID is set, and holds the editor open on a fault. It is set
+    // per DM42 package, from build/firmware.zig's dm42Package table. Defaults true
+    // (host).
     option_structured_pgm: bool = true,
     // Build this object with SanitizerCoverage
     // trace-pc-guard so report-zig-coverage.sh can resolve the keyboard-state Zig

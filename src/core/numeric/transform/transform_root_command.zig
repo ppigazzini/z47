@@ -327,9 +327,8 @@ pub fn squareRoot(unused_but_mandatory_parameter: u16) void {
 
     if (register_type == runtime.dtReal34Matrix or register_type == runtime.dtComplex34Matrix) {
         // squareRoot.c takes the matrix branch to fnMatrixSquareRoot only under
-        // OPTION_EIGEN; its #else arm refuses the operand instead. The option is
-        // #undef'd on DM42 packages 1, 2 and 4, where fnMatrixSquareRoot is
-        // itself an empty stub.
+        // OPTION_EIGEN; its #else arm refuses the operand instead. On a DM42
+        // package without the option fnMatrixSquareRoot is itself an empty stub.
         if (runtime.option_eigen) {
             runtime.fnMatrixSquareRoot(runtime.NOPARAM);
         } else {

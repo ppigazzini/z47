@@ -518,28 +518,38 @@ fn btnReleasedHost(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque)
         runtime.refreshModeGui();
         runtime.screenUpdatingMode &= ~runtime.SCRUPD_MANUAL_SHIFT_STATUS;
     }
-    if (runtime.isShowMode()) {
-        runtime.lastItem = 0;
-    }
-    if (runtime.temporaryInformation == runtime.TI_SHOWNOTHING) {
-        return;
-    }
-
-    runtime.Shft_timeouts = false;
-    runtime.Shft_LongPress_f_g = false;
-    runtime.JM_auto_longpress_enabled = 0;
-
-    if (runtime.programRunStop == runtime.PGM_KEY_PRESSED_WHILE_PAUSED) {
-        runtime.programRunStop = runtime.PGM_RESUMING;
-        runtime.screenUpdatingMode &= ~runtime.SCRUPD_ONE_TIME_FLAGS;
-        return;
-    }
-    // The host lane only: DMCP never reaches btnReleased during a run.
-    if (runtime.programRunStop == runtime.PGM_RUNNING or runtime.programRunStop == runtime.PGM_PAUSED) {
-        return;
-    }
-
     rel: {
+        // A short EXIT press in SHOW was deferred to its release and exits here; a
+        // long press ran SNAP or NOP through showFunctionNameItem instead.
+        if (runtime.isShowMode() and runtime.lastItem == runtime.ITM_EXIT1 and runtime.showFunctionNameItem == 0) {
+            runtime.lastItem = 0;
+            fnKeyExit(runtime.NOPARAM);
+            break :rel;
+        }
+        if (runtime.isShowMode()) {
+            runtime.lastItem = 0;
+        }
+        // A matrix SHOW draws directly and sits in TI_SHOWNOTHING; the EXIT long
+        // press SNAP or NOP stage is let through, so it runs on the release like the
+        // other SHOW types.
+        if (runtime.temporaryInformation == runtime.TI_SHOWNOTHING and !(runtime.currentMenu() == -runtime.MNU_SHOW and (runtime.showFunctionNameItem == runtime.ITM_SNAP or runtime.showFunctionNameItem == runtime.ITM_NOP))) {
+            return;
+        }
+
+        runtime.Shft_timeouts = false;
+        runtime.Shft_LongPress_f_g = false;
+        runtime.JM_auto_longpress_enabled = 0;
+
+        if (runtime.programRunStop == runtime.PGM_KEY_PRESSED_WHILE_PAUSED) {
+            runtime.programRunStop = runtime.PGM_RESUMING;
+            runtime.screenUpdatingMode &= ~runtime.SCRUPD_ONE_TIME_FLAGS;
+            return;
+        }
+        // The host lane only: DMCP never reaches btnReleased during a run.
+        if (runtime.programRunStop == runtime.PGM_RUNNING or runtime.programRunStop == runtime.PGM_PAUSED) {
+            return;
+        }
+
         if (runtime.calcMode == runtime.CM_ASN_BROWSER and runtime.lastItem == runtime.ITM_PERIOD) {
             runtime.fnAsnDisplayUSER = true;
             runtime.lastItem = 0;
@@ -584,6 +594,13 @@ fn btnReleasedHost(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque)
             // The long press ran out to its NOP stage: the key changes nothing,
             // and in CM_PEM it must not add a step.
             if (item == runtime.ITM_NOP) {
+                // The EXIT long press ran out to NOP in SHOW: the SHOW page the
+                // preview label overwrote is restored. The preview cleared the SHOW
+                // TI, so the menu is tested, not SHOWMODE.
+                if (runtime.currentMenu() == -runtime.MNU_SHOW) {
+                    runtime.recallShowStatus();
+                    runtime.fnC47Show(runtime.ITM_NOP);
+                }
                 break :rel;
             }
 
@@ -1411,7 +1428,7 @@ pub export fn Check_MultiPresses(result: [*c]i16, key_no: i8) callconv(.c) void 
     var lp1: i16 = 0;
     runtime.longpressDelayedkey2 = 0;
     runtime.longpressDelayedkey3 = 0;
-    if (runtime.currentMenu() == -runtime.MNU_SHOW) { // blank menu: SHOW, WHO or a programmed plot is on screen, so no key arms a timer
+    if (runtime.currentMenu() == -runtime.MNU_SHOW and !(runtime.isShowMode() and result.* == runtime.ITM_EXIT1)) { // blank menu SHOW, WHO or a programmed plot: no key arms a timer, except EXIT in SHOW, which arms the SNAP then NOP ladder
         return;
     }
 
@@ -1501,6 +1518,10 @@ pub export fn Check_MultiPresses(result: [*c]i16, key_no: i8) callconv(.c) void 
         lp1 = runtime.ITM_CLSTK;
         runtime.longpressDelayedkey2 = 0;
         runtime.longpressDelayedkey3 = runtime.ITM_EDIT;
+    } else if (runtime.isShowMode() and result.* == runtime.ITM_EXIT1) { // EXIT in SHOW: the long press cycles overrides to SNAP then NOP, the same on the C47 and the R47
+        lp1 = runtime.ITM_SNAP;
+        runtime.longpressDelayedkey2 = 0;
+        runtime.longpressDelayedkey3 = runtime.ITM_NOP;
     } else if ((runtime.calcMode == runtime.CM_NORMAL or runtime.calcMode == runtime.CM_NIM) and result.* == runtime.ITM_EXIT1) {
         lp1 = runtime.longpressExit1();
         runtime.longpressDelayedkey2 = 0;

@@ -1,0 +1,20 @@
+@ Index:   Problem 12, begin mode, rate then FV
+@ Author:  Jaco Mostert, fm Duncan Murray's problem set
+@ N 40, PV 900, PMT -400, FV -1000, begin mode. Solves I%/a, then FV.
+LBL ‘P12’
+  # Problem 12 first do I/a then FV
+  40
+  STO ‘NPPER’
+  900
+  STO ‘PV’
+  -400
+  STO ‘PMT’
+  -1000
+  STO ‘FV’
+  1
+  STO ‘PPER/a’
+  STO ‘CPER/a’
+  BeginP
+  I/a
+  FV
+  END

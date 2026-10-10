@@ -53,7 +53,6 @@ distS
 docs/decimal-context-configuration.md
 docs/decimal-context-display.md
 docs/decimal-context-screen.md
-glyphs_standardFont_1of3.png
 res/DATA/TestData.d47
 res/PACKAGES.md
 res/PROGRAMS
@@ -188,5 +187,9 @@ src/testSuite/tests/validate_tvm.py
 src/testSuite/tests/validate_tvm.txt
 src/testSuite/tests/vecreg.txt
 src/testSuite/tests/vtoeq.txt
+# Upstream's GMP packagefiles overlay, which z47's cross-GMP build lays over a
+# staged copy of the GMP source (build/firmware.zig, addArmGmpBuild).
+subprojects/packagefiles/gmp-6.2.1/gmp-impl.h
+subprojects/packagefiles/gmp-6.2.1/mpn/generic/gmp-mparam.h
 tools/create items spreadsheet.py
 tools/printer

@@ -1,0 +1,91 @@
+@ Index:  N-queens solver
+@ Author: Calcman54, modified
+@ Source: https://forum.swissmicros.com/viewtopic.php?p=34743#p34743
+@ Tested: Single solution
+@ Input:  X = 4
+@ Output: 3,1,4,2
+REGS
+LBL ‘NQueens’
+  STO ‘nn’
+  4
+  𝑥>? Y
+    STOP
+  R↓
+  10
+  𝑥<? Y
+    STOP
+  TICKS#
+  STO ‘tt’
+  0
+  STO ‘xx’
+  STO ‘cc’
+
+  LBL A
+    RCL ‘xx’
+    RCL ‘nn’
+    𝑥=? Y
+      GTO ‘E’
+    1
+    STO+ ‘xx’
+    RCL ‘nn’
+    STO →‘xx’
+
+    LBL B
+      1
+      STO+ ‘cc’
+      RCL ‘xx’
+      STO ‘yy’
+
+      LBL C
+        1
+        STO- ‘yy’
+        RCL ‘yy’
+        𝑥=? 0.
+          GTO A
+        RCL →‘xx’
+        RCL- →‘yy’
+        𝑥=? 0.
+          GTO D
+        |𝑥|
+        RCL ‘xx’
+        RCL- ‘yy’
+        𝑥≠? Y
+          GTO C
+
+        LBL D
+          DSE →‘xx’
+            GTO B
+          DSE ‘xx’
+            GTO D
+
+          LBL ‘E’
+            TICKS#
+            RCL- ‘tt’
+            10
+            ÷
+            STO ‘tt’
+            0.001
+            RCL× ‘nn’
+            1
+            +
+            STO ‘xx’
+            CLSTK
+            RCL ‘tt’
+            ‘s’
+            +
+            ‘n=’
+            RCL ‘cc’
+            +
+            ‘’
+            ‘→’
+            GTO ‘G’
+
+          LBL ‘F’
+            ‘,’
+            LBL ‘G’
+              RCL →‘xx’
+              +
+              +
+              ISG ‘xx’
+                GTO ‘F’
+  END

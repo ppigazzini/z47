@@ -44,8 +44,8 @@ clean: $(GMP_MESON_BUILD)
 	rm -rf wp43-windows* wp43-macos* wp43-linux* wp43-dm42*
 	rm -rf c47-windows* c47-macos* c47-linux* c47-dmcp* r47-dmcp*
 	rm -rf build build.sim build.sim.t47 build.dmcp build.dmcp.* build.dmcp5 build.rel build.rel.debug
+	rm -rf res/testPgms/ALLPGMS
 	rm -f src/generated/*.c src/generated/constantPointers.h src/generated/softmenuCatalogs.h
-	rm -rf PROGRAMS/ALLPGMS
 	rm -f src_files_stamp testPgms_stamp
 
 build.sim:
@@ -236,7 +236,7 @@ dist_install_PC: sim simr47
 dist_testPgms_PC: testPgms dist_install_PC
 	mkdir -p $(DIST_DIR_PC)/res/testPgms/
 	cp res/testPgms/testPgms.bin res/testPgms/testPgms.txt $(DIST_DIR_PC)/res/testPgms/
-	cd $(DIST_DIR_PC) && $(XVFB) ./c47$(EXE) --writeexportall
+	cd $(DIST_DIR_PC) && $(XVFB) ./c47$(EXE) --headless --writeexportall
 	cd $(DIST_DIR_PC)/PROGRAMS/ && zip -r ../res/testPgms/testPgms.zip ALLPGMS
 	cp $(DIST_DIR_PC)/res/testPgms/testPgms.zip res/testPgms/
 
