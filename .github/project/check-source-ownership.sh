@@ -213,12 +213,15 @@ check_added_imported_paths() {
     # would hand back an empty list and this gate would report a clean tree. A
     # guard that passes because it measured NOTHING is worse than no guard, so an
     # unreadable input is fatal here.
+    # core.quotepath=off: git otherwise prints a path with a non-ASCII byte quoted
+    # and octal-escaped ("res/PROGRAMS/TRI\342\210\240.p47"), and the quote alone
+    # keeps it from matching the approved prefix it sits under.
     local diff_output=""
     local diff_status=0
     if [[ "$UPSTREAM_ROOT" == "." ]]; then
-        diff_output="$(git diff --name-only --diff-filter=A "$diff_base"..HEAD -- "${imported_roots[@]}")" || diff_status=$?
+        diff_output="$(git -c core.quotepath=off diff --name-only --diff-filter=A "$diff_base"..HEAD -- "${imported_roots[@]}")" || diff_status=$?
     else
-        diff_output="$(git diff --name-only --diff-filter=A "$diff_base" "HEAD:$UPSTREAM_ROOT")" || diff_status=$?
+        diff_output="$(git -c core.quotepath=off diff --name-only --diff-filter=A "$diff_base" "HEAD:$UPSTREAM_ROOT")" || diff_status=$?
     fi
 
     if [[ "$diff_status" -ne 0 ]]; then
