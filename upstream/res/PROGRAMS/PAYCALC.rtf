@@ -1,0 +1,152 @@
+{\rtf1\ansi\ansicpg1252\deff0\nouicompat{\fonttbl{\f0\fnil\fcharset0 C47__StandardFont;}}{\pard\sl240\slmult1\f0\fs24\lang9\f0\loch
+C47 Program file export: Export format version 3, C47 program version 1.
+ \par
+0000: { Prgm #1/1: 590 bytes / 146 steps } \par
+\par
+0001:  LBL \u8216?PAYCALC\u8217?\par
+0002:    MVAR \u8216?INC\u8217?\par
+0003:    MVAR \u8216?ANN\u8217?\par
+0004:    VARMNU \u8216?PAYCALC\u8217?\par
+0005:    STOP\par
+0006:    EXITALL\par
+0007:    12\par
+0008:    RCL \u8216?ANN\u8217?\par
+0009:    11\par
+0010:    \u215?\par
+0011:    -\par
+0012:    STO \u8216?DIV\u8217?\par
+0013:    RCL \u8216?INC\u8217?\par
+0014:    100\u8200?000\par
+0015:    -\par
+0016:    0\par
+0017:    MAX\par
+0018:    2\par
+0019:    \u247?\par
+0020:    CHS\par
+0021:    12\u8200?570\par
+0022:    +\par
+0023:    0\par
+0024:    MAX\par
+0025:    STO \u8216?PA\u8217?\par
+0026:    RCL \u8216?PA\u8217?\par
+0027:    ceil\par
+0028:    10\par
+0029:    \u247?\par
+0030:    IP\par
+0031:    STO \u8216?TC\u8217?\par
+0032:    RCL \u8216?INC\u8217?\par
+0033:    RCL- \u8216?PA\u8217?\par
+0034:    0\par
+0035:    MAX\par
+0036:    STO \u8216?TI\u8217?\par
+0037:    RCL \u8216?TI\u8217?\par
+0038:    3\u8200?967\par
+0039:    MIN\par
+0040:    0.19\par
+0041:    \u215?\par
+0042:    STO \u8216?TAX\u8217?\par
+0043:    RCL \u8216?TI\u8217?\par
+0044:    16\u8200?956\par
+0045:    MIN\par
+0046:    3\u8200?967\par
+0047:    -\par
+0048:    0\par
+0049:    MAX\par
+0050:    0.2\par
+0051:    \u215?\par
+0052:    STO+ \u8216?TAX\u8217?\par
+0053:    RCL \u8216?TI\u8217?\par
+0054:    31\u8200?092\par
+0055:    MIN\par
+0056:    16\u8200?956\par
+0057:    -\par
+0058:    0\par
+0059:    MAX\par
+0060:    0.21\par
+0061:    \u215?\par
+0062:    STO+ \u8216?TAX\u8217?\par
+0063:    RCL \u8216?TI\u8217?\par
+0064:    62\u8200?430\par
+0065:    MIN\par
+0066:    31\u8200?092\par
+0067:    -\par
+0068:    0\par
+0069:    MAX\par
+0070:    0.42\par
+0071:    \u215?\par
+0072:    STO+ \u8216?TAX\u8217?\par
+0073:    RCL \u8216?TI\u8217?\par
+0074:    125\u8200?140\par
+0075:    MIN\par
+0076:    62\u8200?430\par
+0077:    -\par
+0078:    0\par
+0079:    MAX\par
+0080:    0.45\par
+0081:    \u215?\par
+0082:    STO+ \u8216?TAX\u8217?\par
+0083:    RCL \u8216?TI\u8217?\par
+0084:    125\u8200?140\par
+0085:    -\par
+0086:    0\par
+0087:    MAX\par
+0088:    0.48\par
+0089:    \u215?\par
+0090:    STO+ \u8216?TAX\u8217?\par
+0091:    RCL \u8216?INC\u8217?\par
+0092:    50\u8200?270\par
+0093:    MIN\par
+0094:    12\u8200?570\par
+0095:    -\par
+0096:    0\par
+0097:    MAX\par
+0098:    0.08\par
+0099:    \u215?\par
+0100:    STO \u8216?NIC\u8217?\par
+0101:    RCL \u8216?INC\u8217?\par
+0102:    50\u8200?270\par
+0103:    -\par
+0104:    0\par
+0105:    MAX\par
+0106:    0.02\par
+0107:    \u215?\par
+0108:    STO+ \u8216?NIC\u8217?\par
+0109:    4\par
+0110:    ENTER\par
+0111:    1\par
+0112:    M.NEW\par
+0113:    STO \u8216?OUT\u8217?\par
+0114:    INDEX \u8216?OUT\u8217?\par
+0115:    1\par
+0116:    ENTER\par
+0117:    1\par
+0118:    STOIJ\par
+0119:    RCL \u8216?INC\u8217?\par
+0120:    RCL- \u8216?TAX\u8217?\par
+0121:    RCL- \u8216?NIC\u8217?\par
+0122:    RCL\u247? \u8216?DIV\u8217?\par
+0123:    STOEL\par
+0124:    2\par
+0125:    ENTER\par
+0126:    1\par
+0127:    STOIJ\par
+0128:    RCL \u8216?TAX\u8217?\par
+0129:    RCL\u247? \u8216?DIV\u8217?\par
+0130:    STOEL\par
+0131:    3\par
+0132:    ENTER\par
+0133:    1\par
+0134:    STOIJ\par
+0135:    RCL \u8216?NIC\u8217?\par
+0136:    RCL\u247? \u8216?DIV\u8217?\par
+0137:    STOEL\par
+0138:    4\par
+0139:    ENTER\par
+0140:    1\par
+0141:    STOIJ\par
+0142:    RCL \u8216?TC\u8217?\par
+0143:    STOEL\par
+0144:    RCL \u8216?OUT\u8217?\par
+0145:    RTN\par
+0146:  END\par
+}}

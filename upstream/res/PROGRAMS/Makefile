@@ -12,8 +12,23 @@
 
 HERE := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 
-# Prefer a t47 or rejig binary in the repository root, but fall back to the PATH.
-T47 ?= $(or $(wildcard $(abspath $(HERE)/../../t47)),$(shell command -v t47),$(shell command -v t47.sh))
+# Prefer a t47 binary, then c47, then r47.
+# Look in the repository root first, but fall back to the PATH.
+T47 ?= $(shell \
+	if [ -x "$(HERE)/../../t47" ]; then \
+		printf '"%s"' "$(HERE)/../../t47"; \
+	elif command -v t47 >/dev/null 2>&1; then \
+		command -v t47; \
+	elif [ -x "$(HERE)/../../c47" ]; then \
+		printf '"%s" --headless' "$(HERE)/../../c47"; \
+	elif command -v c47 >/dev/null 2>&1; then \
+		printf '%s --headless' "$$(command -v c47)"; \
+	elif [ -x "$(HERE)/../../r47" ]; then \
+		printf '"%s" --headless' "$(HERE)/../../r47"; \
+	elif command -v r47 >/dev/null 2>&1; then \
+		printf '%s --headless' "$$(command -v r47)"; \
+	fi)
+
 REJIG ?= $(or $(wildcard $(abspath $(HERE)/../../rejig)),$(shell command -v rejig))
 
 P47U := $(wildcard $(HERE)/*.p47u $(HERE)/*/*.p47u)

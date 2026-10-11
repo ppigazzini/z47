@@ -1,0 +1,170 @@
+{\rtf1\ansi\ansicpg1252\deff0\nouicompat{\fonttbl{\f0\fnil\fcharset0 C47__StandardFont;}}{\pard\sl240\slmult1\f0\fs24\lang9\f0\loch
+C47 Program file export: Export format version 3, C47 program version 1.
+ \par
+0000: { Prgm #1/1: 609 bytes / 150 steps } \par
+\par
+0001:  LBL \u8216?Lander\u8217?\par
+0002:    LocR 10\par
+0003:    STOCFG .00\par
+0004:    STOS .01\par
+0005:    FIX 01\par
+0006:    5.\par
+0007:    STO 07\par
+0008:    0.\par
+0009:    STO \u8216?Burn\u8217?\par
+0010:    SEED\par
+0011:    1\par
+0012:    STO \u8216?Body\u8217?\par
+0013:    XEQ 80\par
+0014:    \u8216?Lander\u8217?\par
+0015:    PAUSE 10\par
+0016:    \u8216?Location? (1-4)\u8217?\par
+0017:    INPUT \u8216?Body\u8217?\par
+0018:    4\par
+0019:    MIN\par
+0020:    1\par
+0021:    MAX\par
+0022:    XEQ \u8594?X\par
+0023:    GTO 10\par
+\par
+0024:    LBL 01\par
+0025:    9.81\par
+0026:    STO 02\par
+0027:    500.\par
+0028:    XEQ 70\par
+0029:    STO 03\par
+0030:    \u8216?Earth\u8217?\par
+0031:    STO \u8216?Body\u8217?\par
+0032:    RTN\par
+\par
+0033:    LBL 02\par
+0034:    3.71\par
+0035:    STO 02\par
+0036:    300.\par
+0037:    XEQ 70\par
+0038:    STO 03\par
+0039:    \u8216?Mars\u8217?\par
+0040:    STO \u8216?Body\u8217?\par
+0041:    RTN\par
+\par
+0042:    LBL 03\par
+0043:    1.62\par
+0044:    STO 02\par
+0045:    200.\par
+0046:    XEQ 70\par
+0047:    STO 03\par
+0048:    \u8216?Luna\u8217?\par
+0049:    STO \u8216?Body\u8217?\par
+0050:    RTN\par
+\par
+0051:    LBL 04\par
+0052:    0.25\par
+0053:    STO 02\par
+0054:    50.\par
+0055:    XEQ 70\par
+0056:    STO 03\par
+0057:    \u8216?Vesta\u8217?\par
+0058:    STO \u8216?Body\u8217?\par
+0059:    RTN\par
+\par
+0060:    LBL 10\par
+0061:    XEQ 80\par
+0062:    \u8216?Safe landing velocity = \u8217?\par
+0063:    RCL+ 07\par
+0064:    PAUSE 30\par
+0065:    1\u8200?000.\par
+0066:    XEQ 70\par
+0067:    STO 04\par
+0068:    -50.\par
+0069:    XEQ 70\par
+0070:    STO 05\par
+0071:    GTO 20\par
+\par
+0072:    LBL 20\par
+0073:    XEQ 80\par
+0074:    RCL \u8216?Body\u8217?\par
+0075:    \u8216? Altitude = \u8217?\par
+0076:    +\par
+0077:    RCL+ 04\par
+0078:    \u8216?Velocity = \u8217?\par
+0079:    RCL+ 05\par
+0080:    \u8216?Fuel = \u8217?\par
+0081:    RCL+ 03\par
+0082:    INPUT \u8216?Burn\u8217?\par
+0083:    x> ? 03\par
+0084:      GTO 40\par
+0085:    STO- 03\par
+\par
+0086:    LBL 30\par
+0087:    RCL \u8216?Burn\u8217?\par
+0088:    RCL 02\par
+0089:    -\par
+0090:    STO 06\par
+0091:    2.\par
+0092:    \u247?\par
+0093:    RCL 04\par
+0094:    +\par
+0095:    RCL 05\par
+0096:    +\par
+0097:    STO 04\par
+0098:    x\u8804? ? 0.\par
+0099:      GTO 60\par
+0100:    RCL 06\par
+0101:    STO+ 05\par
+0102:    GTO 20\par
+\par
+0103:    LBL 40\par
+0104:    XEQ 80\par
+0105:    \u8216?Fuel depleted!\u8217?\par
+0106:    PAUSE 10\par
+0107:    RCL 03\par
+0108:    STO \u8216?Burn\u8217?\par
+0109:    0.\par
+0110:    STO 03\par
+0111:    GTO 30\par
+\par
+0112:    LBL 60\par
+0113:    XEQ 80\par
+0114:    \u8216?Contact...\u8217?\par
+0115:    PAUSE 20\par
+0116:    RCL 05\par
+0117:    |x|\par
+0118:    x\u8804? ? 07\par
+0119:      GTO 61\par
+0120:    GTO 65\par
+\par
+0121:    LBL 61\par
+0122:    XEQ 80\par
+0123:    \u8216?Safe Landing!\u8217?\par
+0124:    TONE 8\par
+0125:    TONE 9\par
+0126:    GTO 90\par
+\par
+0127:    LBL 65\par
+0128:    XEQ 80\par
+0129:    \u8216?Crash!!\u8217?\par
+0130:    TONE 1\par
+0131:    TONE 0\par
+0132:    GTO 90\par
+\par
+0133:    LBL 70\par
+0134:    0.9\par
+0135:    1.1\par
+0136:    RANI#\par
+0137:    \u215?\par
+0138:    RTN\par
+\par
+0139:    LBL 80\par
+0140:    \u8216? \u8217?\par
+0141:    FILL\par
+0142:    RTN\par
+\par
+0143:    LBL 90\par
+0144:    RCL \u8216?Body\u8217?\par
+0145:    \u8216?Final Velocity = \u8217?\par
+0146:    RCL+ 05\par
+0147:    PAUSE 50\par
+0148:    RCLS .01\par
+0149:    RCLCFG .00\par
+0150:  END\par
+}}

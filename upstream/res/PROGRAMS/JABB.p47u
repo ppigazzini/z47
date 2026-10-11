@@ -1,0 +1,100 @@
+@ Index:    [Game] The Hunt for the Jabberwocky
+@ Author:   pyjam
+@ Source:   https://forum.swissmicros.com/viewtopic.php?f=48&t=3749
+@ Version:  1
+@ Modified: -
+@ Tested:   jaymos
+
+@ The Hunt for the Jabberwocky is a very simple game for R47/C47.
+@ The Jabberwocky appears at an unknown altitude between 1000 and 3000 meters (this Swiss device only works in meters).
+@ The hunt begins at 2000 m, and the C47 automatically indicates the creature's direction.
+@ Enter a new search altitude and press 𝚁/𝚂 resolutely.
+@ The C47 indicates the new direction to follow.
+@ There are 4 distance indicators:
+@ ? - out of range
+@ 🠙🠙🠙 / 🠛🠛🠛 - from 100 to 999 m (range limit)
+@ 🠙🠙 / 🠛🠛 - from 10 to 99 m
+@ 🠙 / 🠛 - from 1 to 9 m
+@ Warning: if the distance was less than 100 m, the Jabberwocky saw you and fled. The last measurement is therefore no longer accurate. To save battery power, you decide to move before taking another measurement.
+@ Some old information found in the archives: the creature always flees in the opposite direction, and the escape distance cannot exceed the original distance. So, the closer you are to the creature, the less it moves away.
+@
+LBL ‘JABB’
+  # Hunt for the Jabberwocky
+  ‘ ? ’
+  STO R01
+  STO R09
+  ‘ ↑ ’
+  STO R04
+  ‘ ↑↑ ’
+  STO R03
+  ‘ ↑↑↑ ’
+  STO R02
+  ‘ ↓↓↓ ’
+  STO R08
+  ‘ ↓↓ ’
+  STO R07
+  ‘ ↓ ’
+  STO R06
+  CLSTK
+  STO I
+  ‘Hunting is open’
+  2000
+  ENTER
+  RAN#
+  0.5
+  +
+  ×
+  IP
+  STO R00
+  DROP𝑥
+  GTO 01
+
+LBL 00
+  RCL R05
+  RCL →J
+  +
+  STOP
+
+  LBL 01
+    LongInt
+    STO R05
+    INCR I
+    RCL R00
+    𝑥=? Y
+      GTO 03
+    -
+    EXPT
+    STO J
+    INCR J
+    LAST𝑥
+    SIGN
+    STO× J
+    DROP𝑥
+    𝑥≤? 1.
+      XEQ 02
+    DROP𝑥
+    5
+    STO+ J
+    DROP𝑥
+    GTO 00
+
+  LBL 02
+    LAST𝑥
+    RAN#
+    ×
+    IP
+    STO- R00
+    DROP𝑥
+    RTN
+
+  LBL 03
+    DROP𝑥
+    ‘ ⊙ ’
+    +
+    ‘Capture in ’
+    RCL I
+    LongInt
+    ‘ moves’
+    +
+    +
+  END

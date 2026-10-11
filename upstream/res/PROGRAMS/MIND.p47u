@@ -1,0 +1,642 @@
+@ Index:    Mastermind program
+@ Author:   Pyjam, ported from the DM42 to the C47/R47 by Didier Lachieze
+@ Version:  1
+@ Created:  2026-10-10
+@ Source:   https://forum.swissmicros.com/viewtopic.php?f=19&t=3430
+@
+@ See the original link above for the rules.
+@
+LBL ‘MIND’
+  LocR 26
+  0.25112
+  R-COPY
+  STOCFG R.25
+  1.
+  ENTER
+  6.
+  M.DIM ‘Code’
+  FIX 02
+  RPER.
+  INONE
+  CLMENU
+  XEQ 21
+  42α ‘6’
+  42KEY 02 XEQ 52
+  42α ‘7’
+  42KEY 03 XEQ 53
+  42α ‘8’
+  42KEY 04 XEQ 54
+  42α ‘9’
+  42KEY 05 XEQ 55
+  42α ‘8/5’
+  42KEY 06 GTO 56
+  42KEY 21 GTO 20
+  42α ‘ COLORS?’
+
+  LBL 01
+    CLSTK
+    STO ‘C’
+    STO ‘P’
+    MENU
+    42PRMPT
+    RCL ‘C’
+    𝑥=? 0.
+      GTO 01
+    CLMENU
+    42α ‘3’
+    42KEY 02 XEQ 62
+    42α ‘4’
+    42KEY 03 XEQ 63
+    42α ‘5’
+    42KEY 04 XEQ 64
+    42α ‘6’
+    42KEY 05 XEQ 65
+    42KEY 21 GTO 20
+    42α ‘ POSITIONS?’
+
+    LBL 02
+      CLSTK
+      STO ‘P’
+      MENU
+      42PRMPT
+      RCL ‘P’
+      𝑥=? 0.
+        GTO 02
+      CF F89
+      CF F90
+      CLMENU
+      42α ‘NO’
+      42KEY 02 XEQ 82
+      42α ‘ONE’
+      42KEY 04 XEQ 84
+      42α ‘MANY’
+      42KEY 05 XEQ 85
+      42KEY 21 GTO 20
+      42α ‘ DUPLICATES?’
+      CLSTK
+      MENU
+      42PRMPT
+      CLMENU
+      42α ‘YES’
+      42KEY 02 XEQ 72
+      42α ‘NO’
+      42KEY 03 XEQ 73
+      42α ‘CLR’
+      42KEY 05 XEQ 27
+      42KEY 21 GTO 20
+      42α ‘ STATS?’
+      CLSTK
+      MENU
+      42PRMPT
+      FS? F89
+        GTO 03
+
+      LBL 00
+        RCL ‘C’
+        STO ‘i’
+        XEQ A
+
+      LBL 03
+        CF F99
+        CLMENU
+        EXITALL
+        XEQ 30
+        CLSTK
+        STO ‘T’
+        STO ‘B’
+        STO ‘N’
+        STO R13
+        STO R14
+        STO R15
+        STO R16
+        GTO 05
+
+      LBL 04
+        XEQ 14
+        XEQ E
+
+      LBL 05
+        1.
+        STO+ ‘T’
+
+        LBL 06
+          16.
+          STO ‘k’
+          CLMENU
+          42α ‘↑’
+          42KEY 01 GTO 91
+          42α ‘↓’
+          42KEY 02 GTO 92
+          42KEY 19 GTO 91
+          42KEY 21 GTO 20
+          42α ‘ TURN ’
+          RCL ‘T’
+          42AIP
+
+          LBL 07
+            XEQ C
+            MENU
+            42PRMPT
+            FS? F99
+              GTO 07
+            LAST𝑥
+            𝑥=? Y
+              GTO 07
+            R↓
+            IP
+            𝑥=? 0.
+              GTO 07
+            STO R11
+            STO R12
+            log₁₀(𝑥)
+            IP
+            1.
+            +
+            RCL ‘P’
+            𝑥≠? Y
+              GTO 12
+            STO ‘j’
+            1.
+            𝑥⇄𝑦
+            INDEX ‘Code’
+            STOIJ
+            CL𝑥
+            STO ‘B’
+            STO ‘N’
+
+            LBL 08
+              RCL R11
+              IP
+              10.
+              STO÷ R11
+              MOD
+              STO R10
+              𝑥=? 0.
+                GTO 12
+              RCL ‘C’
+              𝑥<? Y
+                GTO 12
+              RCL R10
+              STOEL
+              RCL →‘j’
+              |𝑥|
+              STO →‘j’
+              𝑥=? Y
+                XEQ 15
+              J-
+              DSE ‘j’
+                GTO 08
+              RCL ‘P’
+              RCL ‘N’
+              𝑥=? Y
+                GTO 10
+              1.
+              RCL ‘P’
+              STO ‘j’
+              STOIJ
+
+              LBL J
+                RCL ‘P’
+                STO ‘i’
+
+                LBL I
+                  RCL →‘i’
+                  RCLEL
+                  𝑥=? Y
+                    XEQ 16
+                  DSE ‘i’
+                    GTO I
+                  J-
+                  DSE ‘j’
+                    GTO J
+                  GTO 04
+
+                LBL 10
+                  SF F99
+                  INDEX ‘Mind’
+                  FS? F88
+                    XEQ 24
+                  XEQ 14
+                  XEQ E
+                  16.
+                  STO ‘k’
+                  CLMENU
+                  42α ‘PLAY’
+                  42KEY 02 GTO 03
+                  42α ‘CONF’
+                  42KEY 03 GTO ‘MIND’
+                  42α ‘EXIT’
+                  42KEY 05 GTO 20
+                  42KEY 19 GTO 91
+                  42KEY 20 GTO 92
+                  42KEY 21 GTO 20
+                  42α ‘ WIN IN ’
+                  RCL ‘T’
+                  42AIP
+                  42⊢ ‘ TURNS’
+                  GTO 07
+
+                LBL 12
+                  XEQ C
+                  TONE 02
+                  TONE 09
+                  GTO 06
+
+                LBL 14
+                  0.1
+                  RCL× ‘N’
+                  LAST𝑥
+                  𝑥²
+                  RCL× ‘B’
+                  +
+                  RCL+ R12
+                  RTN
+
+                LBL 15
+                  CHS
+                  STO →‘j’
+                  1.
+                  STO+ ‘N’
+                  CL𝑥
+                  STOEL
+                  RTN
+
+                LBL 16
+                  CHS
+                  STO →‘i’
+                  1.
+                  STO+ ‘B’
+                  CL𝑥
+                  STOEL
+                  RTN
+
+                LBL 20
+                  INDEX ‘Mind’
+                  XEQ 25
+                  CLMENU
+                  EXITALL
+                  112.25
+                  R-COPY
+                  SF ‘IGN1ER’
+                  DELITM ‘Code’
+                  SF ‘IGN1ER’
+                  DELITM ‘C’
+                  SF ‘IGN1ER’
+                  DELITM ‘P’
+                  SF ‘IGN1ER’
+                  DELITM ‘B’
+                  SF ‘IGN1ER’
+                  DELITM ‘N’
+                  SF ‘IGN1ER’
+                  DELITM ‘T’
+                  SF ‘IGN1ER’
+                  DELITM ‘i’
+                  SF ‘IGN1ER’
+                  DELITM ‘j’
+                  SF ‘IGN1ER’
+                  DELITM ‘k’
+                  CF ‘IGN1ER’
+                  42CLA
+                  FS? F88
+                    XEQ 26
+                  RCLCFG R.25
+                  SF F27
+                  42ALENG
+                  𝑥≠? 0.
+                    42AVIEW
+                  CLSTK
+                  RTN
+
+                LBL 21
+                  SF ‘IGN1ER’
+                  RCL ‘Mind’
+                  FS?C ‘IGN1ER’
+                  GTO 22
+                  1.
+                  ENTER
+                  7.
+                  M.DIM ‘Mind’
+
+                  LBL 27
+                    SF F88
+                    INDEX ‘Mind’
+                    1.
+                    ENTER
+                    6.
+                    STOIJ
+                    CL𝑥
+                    STOEL
+                    J+
+                    STOEL
+                    RTN
+
+                  LBL 22
+                    42α ‘>’
+                    42KEY 01 GTO 23
+                    INDEX ‘Mind’
+                    RTN
+
+                  LBL 23
+                    CF F88
+                    CF F89
+                    CF F90
+                    1.
+                    ENTER
+                    STOIJ
+                    RCLEL
+                    STO ‘C’
+                    J+
+                    RCLEL
+                    STO ‘P’
+                    J+
+                    RCLEL
+                    𝑥≠? 0.
+                      SF F88
+                    J+
+                    RCLEL
+                    𝑥≠? 0.
+                      SF F89
+                    J+
+                    RCLEL
+                    𝑥≠? 0.
+                      SF F90
+                    FS? F89
+                      GTO 03
+                    GTO 00
+
+                  LBL 24
+                    1.
+                    ENTER
+                    6.
+                    STOIJ
+                    RCLEL
+                    1.
+                    +
+                    STOEL
+                    J+
+                    RCLEL
+                    RCL+ ‘T’
+                    STOEL
+                    RTN
+
+                  LBL 25
+                    1.
+                    ENTER
+                    STOIJ
+                    SF ‘IGN1ER’
+                    RCL ‘C’
+                    FC?C ‘IGN1ER’
+                    RTN
+                  STOEL
+                  J+
+                  RCL ‘P’
+                  𝑥=? 0.
+                    5.
+                  STOEL
+                  J+
+                  CL𝑥
+                  FS? F88
+                    1.
+                  STOEL
+                  J+
+                  CL𝑥
+                  FS? F89
+                    1.
+                  STOEL
+                  J+
+                  CL𝑥
+                  FS? F90
+                    1.
+                  STOEL
+                  RTN
+
+                LBL 26
+                  INDEX ‘Mind’
+                  1.
+                  ENTER
+                  7.
+                  STOIJ
+                  RCLEL
+                  J-
+                  RCLEL
+                  𝑥=? 0.
+                    RTN
+                  ÷
+                  42α ‘ MEAN=’
+                  42ARCL X
+                  42⊢ ‘ / ’
+                  LAST𝑥
+                  42AIP
+                  RTN
+
+                LBL 30
+                  FS? F89
+                    GTO 31
+                  RCL ‘C’
+                  STO ‘i’
+                  XEQ B
+                  RTN
+
+                LBL 31
+                  FS? F90
+                    GTO 32
+                  RCL ‘P’
+                  STO ‘i’
+                  XEQ D
+                  RTN
+
+                LBL 32
+                  RCL ‘C’
+                  STO ‘i’
+                  XEQ A
+                  RCL ‘C’
+                  STO ‘i’
+                  XEQ B
+                  RAN#
+                  RCL× ‘P’
+                  IP
+                  1.
+                  +
+                  STO ‘i’
+                  RAN#
+                  RCL ‘P’
+                  1.
+                  +
+                  ×
+                  IP
+                  1.
+                  +
+                  STO →‘i’
+                  RTN
+
+                LBL 51
+                  6.
+                  STO ‘C’
+                  4.
+                  STO ‘P’
+                  SF F88
+                  CF F89
+                  CF F90
+                  GTO 00
+
+                LBL 52
+                  6.
+                  STO ‘C’
+                  RTN
+
+                LBL 53
+                  7.
+                  STO ‘C’
+                  RTN
+
+                LBL 54
+                  8.
+                  STO ‘C’
+                  RTN
+
+                LBL 55
+                  9.
+                  STO ‘C’
+                  RTN
+
+                LBL 56
+                  8.
+                  STO ‘C’
+                  5.
+                  STO ‘P’
+                  SF F88
+                  SF F89
+                  CF F90
+                  XEQ 27
+                  GTO 03
+
+                LBL 62
+                  3.
+                  STO ‘P’
+                  RTN
+
+                LBL 63
+                  4.
+                  STO ‘P’
+                  RTN
+
+                LBL 64
+                  5.
+                  STO ‘P’
+                  RTN
+
+                LBL 65
+                  6.
+                  STO ‘P’
+                  RTN
+
+                LBL 72
+                  SF F88
+                  RTN
+
+                LBL 73
+                  CF F88
+                  RTN
+
+                LBL 82
+                  CF F89
+                  CF F90
+                  RTN
+
+                LBL 84
+                  SF F89
+                  SF F90
+                  RTN
+
+                LBL 85
+                  SF F89
+                  CF F90
+                  RTN
+
+                LBL 91
+                  RCL ‘k’
+                  24.
+                  𝑥=? Y
+                    GTO 07
+                  R↓
+                  11.
+                  1.
+                  FC? F99
+                    CL𝑥
+                  +
+                  RCL+ ‘T’
+                  𝑥≤? Y
+                    GTO 07
+                  1.
+                  STO+ ‘k’
+                  GTO 07
+
+                LBL 92
+                  16.
+                  RCL ‘k’
+                  𝑥=? Y
+                    GTO 07
+                  1.
+                  STO- ‘k’
+                  GTO 07
+
+                LBL A
+                  RCL ‘i’
+                  STO →‘i’
+                  DSE ‘i’
+                    GTO A
+                  RTN
+
+                LBL B
+                  RAN#
+                  RCL× ‘C’
+                  IP
+                  1.
+                  +
+                  STO ‘j’
+                  RCL →‘j’
+                  𝑥⇄ →‘i’
+                  STO →‘j’
+                  DSE ‘i’
+                    GTO B
+                  RTN
+
+                LBL C
+                  RCL ‘k’
+                  STO R00
+                  RCL →R00
+                  DSE R00
+                    RCL →R00
+                  DSE R00
+                    RCL →R00
+                  DSE R00
+                    RCL →R00
+                  STO L
+                  RTN
+
+                LBL D
+                  RAN#
+                  RCL× ‘C’
+                  IP
+                  1.
+                  +
+                  STO →‘i’
+                  DSE ‘i’
+                    GTO D
+                  RTN
+
+                LBL E
+                  𝑥⇄ R13
+                  𝑥⇄ R14
+                  𝑥⇄ R15
+                  𝑥⇄ R16
+                  𝑥⇄ R17
+                  𝑥⇄ R18
+                  𝑥⇄ R19
+                  𝑥⇄ R20
+                  𝑥⇄ R21
+                  𝑥⇄ R22
+                  𝑥⇄ R23
+                  𝑥⇄ R24
+                  RTN
+.END.

@@ -1,0 +1,640 @@
+{\rtf1\ansi\ansicpg1252\deff0\nouicompat{\fonttbl{\f0\fnil\fcharset0 C47__StandardFont;}}{\pard\sl240\slmult1\f0\fs24\lang9\f0\loch
+C47 Program file export: Export format version 3, C47 program version 1.
+ \par
+0000: { Prgm #1/1: 1820 bytes / 585 steps } \par
+\par
+0001:  LBL \u8216?MIND\u8217?\par
+0002:    LocR 26\par
+0003:    0.251\u8200?12\par
+0004:    R-COPY\par
+0005:    STOCFG .25\par
+0006:    1.\par
+0007:    ENTER\par
+0008:    6.\par
+0009:    M.DIM \u8216?Code\u8217?\par
+0010:    FIX 02\par
+0011:    RPER.\par
+0012:    INONE\par
+0013:    CLMENU\par
+0014:    XEQ 21\par
+0015:    42\u945? \u8216?6\u8217?\par
+0016:    42KEY 02 XEQ 52\par
+0017:    42\u945? \u8216?7\u8217?\par
+0018:    42KEY 03 XEQ 53\par
+0019:    42\u945? \u8216?8\u8217?\par
+0020:    42KEY 04 XEQ 54\par
+0021:    42\u945? \u8216?9\u8217?\par
+0022:    42KEY 05 XEQ 55\par
+0023:    42\u945? \u8216?8/5\u8217?\par
+0024:    42KEY 06 GTO 56\par
+0025:    42KEY 21 GTO 20\par
+0026:    42\u945? \u8216? COLORS?\u8217?\par
+\par
+0027:    LBL 01\par
+0028:    CLSTK\par
+0029:    STO \u8216?C\u8217?\par
+0030:    STO \u8216?P\u8217?\par
+0031:    MENU\par
+0032:    42PRMPT\par
+0033:    RCL \u8216?C\u8217?\par
+0034:    x= ? 0.\par
+0035:      GTO 01\par
+0036:    CLMENU\par
+0037:    42\u945? \u8216?3\u8217?\par
+0038:    42KEY 02 XEQ 62\par
+0039:    42\u945? \u8216?4\u8217?\par
+0040:    42KEY 03 XEQ 63\par
+0041:    42\u945? \u8216?5\u8217?\par
+0042:    42KEY 04 XEQ 64\par
+0043:    42\u945? \u8216?6\u8217?\par
+0044:    42KEY 05 XEQ 65\par
+0045:    42KEY 21 GTO 20\par
+0046:    42\u945? \u8216? POSITIONS?\u8217?\par
+\par
+0047:    LBL 02\par
+0048:    CLSTK\par
+0049:    STO \u8216?P\u8217?\par
+0050:    MENU\par
+0051:    42PRMPT\par
+0052:    RCL \u8216?P\u8217?\par
+0053:    x= ? 0.\par
+0054:      GTO 02\par
+0055:    CF 89\par
+0056:    CF 90\par
+0057:    CLMENU\par
+0058:    42\u945? \u8216?NO\u8217?\par
+0059:    42KEY 02 XEQ 82\par
+0060:    42\u945? \u8216?ONE\u8217?\par
+0061:    42KEY 04 XEQ 84\par
+0062:    42\u945? \u8216?MANY\u8217?\par
+0063:    42KEY 05 XEQ 85\par
+0064:    42KEY 21 GTO 20\par
+0065:    42\u945? \u8216? DUPLICATES?\u8217?\par
+0066:    CLSTK\par
+0067:    MENU\par
+0068:    42PRMPT\par
+0069:    CLMENU\par
+0070:    42\u945? \u8216?YES\u8217?\par
+0071:    42KEY 02 XEQ 72\par
+0072:    42\u945? \u8216?NO\u8217?\par
+0073:    42KEY 03 XEQ 73\par
+0074:    42\u945? \u8216?CLR\u8217?\par
+0075:    42KEY 05 XEQ 27\par
+0076:    42KEY 21 GTO 20\par
+0077:    42\u945? \u8216? STATS?\u8217?\par
+0078:    CLSTK\par
+0079:    MENU\par
+0080:    42PRMPT\par
+0081:    FS? 89\par
+0082:    GTO 03\par
+\par
+0083:    LBL 00\par
+0084:    RCL \u8216?C\u8217?\par
+0085:    STO \u8216?i\u8217?\par
+0086:    XEQ A\par
+\par
+0087:    LBL 03\par
+0088:    CF 99\par
+0089:    CLMENU\par
+0090:    EXITALL\par
+0091:    XEQ 30\par
+0092:    CLSTK\par
+0093:    STO \u8216?T\u8217?\par
+0094:    STO \u8216?B\u8217?\par
+0095:    STO \u8216?N\u8217?\par
+0096:    STO 13\par
+0097:    STO 14\par
+0098:    STO 15\par
+0099:    STO 16\par
+0100:    GTO 05\par
+\par
+0101:    LBL 04\par
+0102:    XEQ 14\par
+0103:    XEQ E\par
+\par
+0104:    LBL 05\par
+0105:    1.\par
+0106:    STO+ \u8216?T\u8217?\par
+\par
+0107:    LBL 06\par
+0108:    16.\par
+0109:    STO \u8216?k\u8217?\par
+0110:    CLMENU\par
+0111:    42\u945? \u8216?\u8593?\u8217?\par
+0112:    42KEY 01 GTO 91\par
+0113:    42\u945? \u8216?\u8595?\u8217?\par
+0114:    42KEY 02 GTO 92\par
+0115:    42KEY 19 GTO 91\par
+0116:    42KEY 21 GTO 20\par
+0117:    42\u945? \u8216? TURN \u8217?\par
+0118:    RCL \u8216?T\u8217?\par
+0119:    42AIP\par
+\par
+0120:    LBL 07\par
+0121:    XEQ C\par
+0122:    MENU\par
+0123:    42PRMPT\par
+0124:    FS? 99\par
+0125:    GTO 07\par
+0126:    LASTx\par
+0127:    x= ? Y\par
+0128:      GTO 07\par
+0129:    R\u8595?\par
+0130:    IP\par
+0131:    x= ? 0.\par
+0132:      GTO 07\par
+0133:    STO 11\par
+0134:    STO 12\par
+0135:    LOG\par
+0136:    IP\par
+0137:    1.\par
+0138:    +\par
+0139:    RCL \u8216?P\u8217?\par
+0140:    x\u8800? ? Y\par
+0141:      GTO 12\par
+0142:    STO \u8216?j\u8217?\par
+0143:    1.\par
+0144:    x\u8644?y\par
+0145:    INDEX \u8216?Code\u8217?\par
+0146:    STOIJ\par
+0147:    CLX\par
+0148:    STO \u8216?B\u8217?\par
+0149:    STO \u8216?N\u8217?\par
+\par
+0150:    LBL 08\par
+0151:    RCL 11\par
+0152:    IP\par
+0153:    10.\par
+0154:    STO\u247? 11\par
+0155:    MOD\par
+0156:    STO 10\par
+0157:    x= ? 0.\par
+0158:      GTO 12\par
+0159:    RCL \u8216?C\u8217?\par
+0160:    x< ? Y\par
+0161:      GTO 12\par
+0162:    RCL 10\par
+0163:    STOEL\par
+0164:    RCL \u8594?\u8216?j\u8217?\par
+0165:    |x|\par
+0166:    STO \u8594?\u8216?j\u8217?\par
+0167:    x= ? Y\par
+0168:      XEQ 15\par
+0169:    J-\par
+0170:    DSE \u8216?j\u8217?\par
+0171:      GTO 08\par
+0172:    RCL \u8216?P\u8217?\par
+0173:    RCL \u8216?N\u8217?\par
+0174:    x= ? Y\par
+0175:      GTO 10\par
+0176:    1.\par
+0177:    RCL \u8216?P\u8217?\par
+0178:    STO \u8216?j\u8217?\par
+0179:    STOIJ\par
+\par
+0180:    LBL J\par
+0181:    RCL \u8216?P\u8217?\par
+0182:    STO \u8216?i\u8217?\par
+\par
+0183:    LBL I\par
+0184:    RCL \u8594?\u8216?i\u8217?\par
+0185:    RCLEL\par
+0186:    x= ? Y\par
+0187:      XEQ 16\par
+0188:    DSE \u8216?i\u8217?\par
+0189:      GTO I\par
+0190:    J-\par
+0191:    DSE \u8216?j\u8217?\par
+0192:      GTO J\par
+0193:    GTO 04\par
+\par
+0194:    LBL 10\par
+0195:    SF 99\par
+0196:    INDEX \u8216?Mind\u8217?\par
+0197:    FS? 88\par
+0198:    XEQ 24\par
+0199:    XEQ 14\par
+0200:    XEQ E\par
+0201:    16.\par
+0202:    STO \u8216?k\u8217?\par
+0203:    CLMENU\par
+0204:    42\u945? \u8216?PLAY\u8217?\par
+0205:    42KEY 02 GTO 03\par
+0206:    42\u945? \u8216?CONF\u8217?\par
+0207:    42KEY 03 GTO \u8216?MIND\u8217?\par
+0208:    42\u945? \u8216?EXIT\u8217?\par
+0209:    42KEY 05 GTO 20\par
+0210:    42KEY 19 GTO 91\par
+0211:    42KEY 20 GTO 92\par
+0212:    42KEY 21 GTO 20\par
+0213:    42\u945? \u8216? WIN IN \u8217?\par
+0214:    RCL \u8216?T\u8217?\par
+0215:    42AIP\par
+0216:    42\u8866? \u8216? TURNS\u8217?\par
+0217:    GTO 07\par
+\par
+0218:    LBL 12\par
+0219:    XEQ C\par
+0220:    TONE 2\par
+0221:    TONE 9\par
+0222:    GTO 06\par
+\par
+0223:    LBL 14\par
+0224:    0.1\par
+0225:    RCL\u215? \u8216?N\u8217?\par
+0226:    LASTx\par
+0227:    x\super 2\nosupersub \par
+0228:    RCL\u215? \u8216?B\u8217?\par
+0229:    +\par
+0230:    RCL+ 12\par
+0231:    RTN\par
+\par
+0232:    LBL 15\par
+0233:    CHS\par
+0234:    STO \u8594?\u8216?j\u8217?\par
+0235:    1.\par
+0236:    STO+ \u8216?N\u8217?\par
+0237:    CLX\par
+0238:    STOEL\par
+0239:    RTN\par
+\par
+0240:    LBL 16\par
+0241:    CHS\par
+0242:    STO \u8594?\u8216?i\u8217?\par
+0243:    1.\par
+0244:    STO+ \u8216?B\u8217?\par
+0245:    CLX\par
+0246:    STOEL\par
+0247:    RTN\par
+\par
+0248:    LBL 20\par
+0249:    INDEX \u8216?Mind\u8217?\par
+0250:    XEQ 25\par
+0251:    CLMENU\par
+0252:    EXITALL\par
+0253:    112.25\par
+0254:    R-COPY\par
+0255:    SF \u8216?IGN1ER\u8217?\par
+0256:    DELITM \u8216?Code\u8217?\par
+0257:    SF \u8216?IGN1ER\u8217?\par
+0258:    DELITM \u8216?C\u8217?\par
+0259:    SF \u8216?IGN1ER\u8217?\par
+0260:    DELITM \u8216?P\u8217?\par
+0261:    SF \u8216?IGN1ER\u8217?\par
+0262:    DELITM \u8216?B\u8217?\par
+0263:    SF \u8216?IGN1ER\u8217?\par
+0264:    DELITM \u8216?N\u8217?\par
+0265:    SF \u8216?IGN1ER\u8217?\par
+0266:    DELITM \u8216?T\u8217?\par
+0267:    SF \u8216?IGN1ER\u8217?\par
+0268:    DELITM \u8216?i\u8217?\par
+0269:    SF \u8216?IGN1ER\u8217?\par
+0270:    DELITM \u8216?j\u8217?\par
+0271:    SF \u8216?IGN1ER\u8217?\par
+0272:    DELITM \u8216?k\u8217?\par
+0273:    CF \u8216?IGN1ER\u8217?\par
+0274:    42CLA\par
+0275:    FS? 88\par
+0276:    XEQ 26\par
+0277:    RCLCFG .25\par
+0278:    SF 27\par
+0279:    42ALENG\par
+0280:    x\u8800? ? 0.\par
+0281:      42AVIEW\par
+0282:    CLSTK\par
+0283:    RTN\par
+\par
+0284:    LBL 21\par
+0285:    SF \u8216?IGN1ER\u8217?\par
+0286:    RCL \u8216?Mind\u8217?\par
+0287:    FS?C \u8216?IGN1ER\u8217?\par
+0288:    GTO 22\par
+0289:    1.\par
+0290:    ENTER\par
+0291:    7.\par
+0292:    M.DIM \u8216?Mind\u8217?\par
+\par
+0293:    LBL 27\par
+0294:    SF 88\par
+0295:    INDEX \u8216?Mind\u8217?\par
+0296:    1.\par
+0297:    ENTER\par
+0298:    6.\par
+0299:    STOIJ\par
+0300:    CLX\par
+0301:    STOEL\par
+0302:    J+\par
+0303:    STOEL\par
+0304:    RTN\par
+\par
+0305:    LBL 22\par
+0306:    42\u945? \u8216?>\u8217?\par
+0307:    42KEY 01 GTO 23\par
+0308:    INDEX \u8216?Mind\u8217?\par
+0309:    RTN\par
+\par
+0310:    LBL 23\par
+0311:    CF 88\par
+0312:    CF 89\par
+0313:    CF 90\par
+0314:    1.\par
+0315:    ENTER\par
+0316:    STOIJ\par
+0317:    RCLEL\par
+0318:    STO \u8216?C\u8217?\par
+0319:    J+\par
+0320:    RCLEL\par
+0321:    STO \u8216?P\u8217?\par
+0322:    J+\par
+0323:    RCLEL\par
+0324:    x\u8800? ? 0.\par
+0325:      SF 88\par
+0326:    J+\par
+0327:    RCLEL\par
+0328:    x\u8800? ? 0.\par
+0329:      SF 89\par
+0330:    J+\par
+0331:    RCLEL\par
+0332:    x\u8800? ? 0.\par
+0333:      SF 90\par
+0334:    FS? 89\par
+0335:    GTO 03\par
+0336:    GTO 00\par
+\par
+0337:    LBL 24\par
+0338:    1.\par
+0339:    ENTER\par
+0340:    6.\par
+0341:    STOIJ\par
+0342:    RCLEL\par
+0343:    1.\par
+0344:    +\par
+0345:    STOEL\par
+0346:    J+\par
+0347:    RCLEL\par
+0348:    RCL+ \u8216?T\u8217?\par
+0349:    STOEL\par
+0350:    RTN\par
+\par
+0351:    LBL 25\par
+0352:    1.\par
+0353:    ENTER\par
+0354:    STOIJ\par
+0355:    SF \u8216?IGN1ER\u8217?\par
+0356:    RCL \u8216?C\u8217?\par
+0357:    FC?C \u8216?IGN1ER\u8217?\par
+0358:    RTN\par
+0359:    STOEL\par
+0360:    J+\par
+0361:    RCL \u8216?P\u8217?\par
+0362:    x= ? 0.\par
+0363:      5.\par
+0364:    STOEL\par
+0365:    J+\par
+0366:    CLX\par
+0367:    FS? 88\par
+0368:    1.\par
+0369:    STOEL\par
+0370:    J+\par
+0371:    CLX\par
+0372:    FS? 89\par
+0373:    1.\par
+0374:    STOEL\par
+0375:    J+\par
+0376:    CLX\par
+0377:    FS? 90\par
+0378:    1.\par
+0379:    STOEL\par
+0380:    RTN\par
+\par
+0381:    LBL 26\par
+0382:    INDEX \u8216?Mind\u8217?\par
+0383:    1.\par
+0384:    ENTER\par
+0385:    7.\par
+0386:    STOIJ\par
+0387:    RCLEL\par
+0388:    J-\par
+0389:    RCLEL\par
+0390:    x= ? 0.\par
+0391:      RTN\par
+0392:    \u247?\par
+0393:    42\u945? \u8216? MEAN=\u8217?\par
+0394:    42ARCL X\par
+0395:    42\u8866? \u8216? / \u8217?\par
+0396:    LASTx\par
+0397:    42AIP\par
+0398:    RTN\par
+\par
+0399:    LBL 30\par
+0400:    FS? 89\par
+0401:    GTO 31\par
+0402:    RCL \u8216?C\u8217?\par
+0403:    STO \u8216?i\u8217?\par
+0404:    XEQ B\par
+0405:    RTN\par
+\par
+0406:    LBL 31\par
+0407:    FS? 90\par
+0408:    GTO 32\par
+0409:    RCL \u8216?P\u8217?\par
+0410:    STO \u8216?i\u8217?\par
+0411:    XEQ D\par
+0412:    RTN\par
+\par
+0413:    LBL 32\par
+0414:    RCL \u8216?C\u8217?\par
+0415:    STO \u8216?i\u8217?\par
+0416:    XEQ A\par
+0417:    RCL \u8216?C\u8217?\par
+0418:    STO \u8216?i\u8217?\par
+0419:    XEQ B\par
+0420:    RAN#\par
+0421:    RCL\u215? \u8216?P\u8217?\par
+0422:    IP\par
+0423:    1.\par
+0424:    +\par
+0425:    STO \u8216?i\u8217?\par
+0426:    RAN#\par
+0427:    RCL \u8216?P\u8217?\par
+0428:    1.\par
+0429:    +\par
+0430:    \u215?\par
+0431:    IP\par
+0432:    1.\par
+0433:    +\par
+0434:    STO \u8594?\u8216?i\u8217?\par
+0435:    RTN\par
+\par
+0436:    LBL 51\par
+0437:    6.\par
+0438:    STO \u8216?C\u8217?\par
+0439:    4.\par
+0440:    STO \u8216?P\u8217?\par
+0441:    SF 88\par
+0442:    CF 89\par
+0443:    CF 90\par
+0444:    GTO 00\par
+\par
+0445:    LBL 52\par
+0446:    6.\par
+0447:    STO \u8216?C\u8217?\par
+0448:    RTN\par
+\par
+0449:    LBL 53\par
+0450:    7.\par
+0451:    STO \u8216?C\u8217?\par
+0452:    RTN\par
+\par
+0453:    LBL 54\par
+0454:    8.\par
+0455:    STO \u8216?C\u8217?\par
+0456:    RTN\par
+\par
+0457:    LBL 55\par
+0458:    9.\par
+0459:    STO \u8216?C\u8217?\par
+0460:    RTN\par
+\par
+0461:    LBL 56\par
+0462:    8.\par
+0463:    STO \u8216?C\u8217?\par
+0464:    5.\par
+0465:    STO \u8216?P\u8217?\par
+0466:    SF 88\par
+0467:    SF 89\par
+0468:    CF 90\par
+0469:    XEQ 27\par
+0470:    GTO 03\par
+\par
+0471:    LBL 62\par
+0472:    3.\par
+0473:    STO \u8216?P\u8217?\par
+0474:    RTN\par
+\par
+0475:    LBL 63\par
+0476:    4.\par
+0477:    STO \u8216?P\u8217?\par
+0478:    RTN\par
+\par
+0479:    LBL 64\par
+0480:    5.\par
+0481:    STO \u8216?P\u8217?\par
+0482:    RTN\par
+\par
+0483:    LBL 65\par
+0484:    6.\par
+0485:    STO \u8216?P\u8217?\par
+0486:    RTN\par
+\par
+0487:    LBL 72\par
+0488:    SF 88\par
+0489:    RTN\par
+\par
+0490:    LBL 73\par
+0491:    CF 88\par
+0492:    RTN\par
+\par
+0493:    LBL 82\par
+0494:    CF 89\par
+0495:    CF 90\par
+0496:    RTN\par
+\par
+0497:    LBL 84\par
+0498:    SF 89\par
+0499:    SF 90\par
+0500:    RTN\par
+\par
+0501:    LBL 85\par
+0502:    SF 89\par
+0503:    CF 90\par
+0504:    RTN\par
+\par
+0505:    LBL 91\par
+0506:    RCL \u8216?k\u8217?\par
+0507:    24.\par
+0508:    x= ? Y\par
+0509:      GTO 07\par
+0510:    R\u8595?\par
+0511:    11.\par
+0512:    1.\par
+0513:    FC? 99\par
+0514:    CLX\par
+0515:    +\par
+0516:    RCL+ \u8216?T\u8217?\par
+0517:    x\u8804? ? Y\par
+0518:      GTO 07\par
+0519:    1.\par
+0520:    STO+ \u8216?k\u8217?\par
+0521:    GTO 07\par
+\par
+0522:    LBL 92\par
+0523:    16.\par
+0524:    RCL \u8216?k\u8217?\par
+0525:    x= ? Y\par
+0526:      GTO 07\par
+0527:    1.\par
+0528:    STO- \u8216?k\u8217?\par
+0529:    GTO 07\par
+\par
+0530:    LBL A\par
+0531:    RCL \u8216?i\u8217?\par
+0532:    STO \u8594?\u8216?i\u8217?\par
+0533:    DSE \u8216?i\u8217?\par
+0534:      GTO A\par
+0535:    RTN\par
+\par
+0536:    LBL B\par
+0537:    RAN#\par
+0538:    RCL\u215? \u8216?C\u8217?\par
+0539:    IP\par
+0540:    1.\par
+0541:    +\par
+0542:    STO \u8216?j\u8217?\par
+0543:    RCL \u8594?\u8216?j\u8217?\par
+0544:    x\u8644? \u8594?\u8216?i\u8217?\par
+0545:    STO \u8594?\u8216?j\u8217?\par
+0546:    DSE \u8216?i\u8217?\par
+0547:      GTO B\par
+0548:    RTN\par
+\par
+0549:    LBL C\par
+0550:    RCL \u8216?k\u8217?\par
+0551:    STO 00\par
+0552:    RCL \u8594?00\par
+0553:    DSE 00\par
+0554:      RCL \u8594?00\par
+0555:    DSE 00\par
+0556:      RCL \u8594?00\par
+0557:    DSE 00\par
+0558:      RCL \u8594?00\par
+0559:    STO L\par
+0560:    RTN\par
+\par
+0561:    LBL D\par
+0562:    RAN#\par
+0563:    RCL\u215? \u8216?C\u8217?\par
+0564:    IP\par
+0565:    1.\par
+0566:    +\par
+0567:    STO \u8594?\u8216?i\u8217?\par
+0568:    DSE \u8216?i\u8217?\par
+0569:      GTO D\par
+0570:    RTN\par
+\par
+0571:    LBL E\par
+0572:    x\u8644? 13\par
+0573:    x\u8644? 14\par
+0574:    x\u8644? 15\par
+0575:    x\u8644? 16\par
+0576:    x\u8644? 17\par
+0577:    x\u8644? 18\par
+0578:    x\u8644? 19\par
+0579:    x\u8644? 20\par
+0580:    x\u8644? 21\par
+0581:    x\u8644? 22\par
+0582:    x\u8644? 23\par
+0583:    x\u8644? 24\par
+0584:    RTN\par
+0585:  END\par
+}}

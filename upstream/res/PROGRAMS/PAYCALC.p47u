@@ -1,0 +1,155 @@
+@ Index:    Salary calculator for Scottish tax bands, 2026 tax year
+@ Author:   nickapos
+@ Source:   https://forum.swissmicros.com/viewtopic.php?f=48&t=4998
+@ Created:  2026-10-05
+@ Tested:   jaymos
+@ Input:    MVAR variables, INCome and ANNual (1/0)
+@ Output:   Matrix with results
+@
+LBL ‘PAYCALC’
+  MVAR ‘INC’        ; menu variable: annual income in GBP
+  MVAR ‘ANN’        ; menu variable: 0 = monthly, 1 = annual
+  VARMENU ‘PAYCALC’ ; open the INC/ANN input menu for this program
+  STOP              ; wait for the user to enter values, then press R/S
+  EXITALL           ; close the menu and carry on
+  12                ; push 12
+  RCL ‘ANN’         ; push ANN (0 or 1)
+  11                ; push 11
+  ×                 ; 11 times ANN
+  -                 ; 12 minus (11 times ANN)
+  STO ‘DIV’         ; DIV = 12 monthly, 1 annual
+  RCL ‘INC’         ; push annual income
+  100000            ; push 100000 taper threshold
+  -                 ; income minus 100000
+  0                 ; push 0
+  MAX               ; floor at 0 (no taper below 100k)
+  2                 ; push 2
+  ÷                 ; excess divided by 2 (1 lost per 2 over)
+  CHS               ; make it negative
+  12570             ; push standard personal allowance
+  +                 ; 12570 minus the reduction
+  0                 ; push 0
+  MAX               ; allowance cannot go below 0
+  STO ‘PA’          ; personal allowance (tapered over 100k)
+  RCL ‘PA’          ; push allowance
+  ⌈𝑥⌉               ; round up to a whole pound
+  10                ; push 10
+  ÷                 ; allowance divided by 10
+  IP                ; integer part
+  STO ‘TC’          ; numeric part of tax code
+  RCL ‘INC’         ; push annual income
+  RCL- ‘PA’         ; income minus allowance
+  0                 ; push 0
+  MAX               ; floor at 0
+  STO ‘TI’          ; taxable income
+  RCL ‘TI’          ; push taxable income
+  3967              ; starter band width
+  MIN               ; income in starter band (capped at 3967)
+  0.19              ; starter rate
+  ×                 ; starter tax
+  STO ‘TAX’         ; start running tax total: starter 19 percent
+  RCL ‘TI’          ; push taxable income
+  16956             ; basic band upper limit
+  MIN               ; cap at 16956
+  3967              ; basic band lower limit
+  -                 ; amount above the starter limit
+  0                 ; push 0
+  MAX               ; floor at 0
+  0.2               ; basic rate
+  ×                 ; basic tax
+  STO+ ‘TAX’        ; add to total: basic 20 percent
+  RCL ‘TI’          ; push taxable income
+  31092             ; intermediate band upper limit
+  MIN               ; cap at 31092
+  16956             ; intermediate band lower limit
+  -                 ; amount above the basic limit
+  0                 ; push 0
+  MAX               ; floor at 0
+  0.21              ; intermediate rate
+  ×                 ; intermediate tax
+  STO+ ‘TAX’        ; add to total: intermediate 21 percent
+  RCL ‘TI’          ; push taxable income
+  62430             ; higher band upper limit
+  MIN               ; cap at 62430
+  31092             ; higher band lower limit
+  -                 ; amount above the intermediate limit
+  0                 ; push 0
+  MAX               ; floor at 0
+  0.42              ; higher rate
+  ×                 ; higher tax
+  STO+ ‘TAX’        ; add to total: higher 42 percent
+  RCL ‘TI’          ; push taxable income
+  125140            ; advanced band upper limit
+  MIN               ; cap at 125140
+  62430             ; advanced band lower limit
+  -                 ; amount above the higher limit
+  0                 ; push 0
+  MAX               ; floor at 0
+  0.45              ; advanced rate
+  ×                 ; advanced tax
+  STO+ ‘TAX’        ; add to total: advanced 45 percent
+  RCL ‘TI’          ; push taxable income
+  125140            ; top band lower limit
+  -                 ; amount above 125140
+  0                 ; push 0
+  MAX               ; floor at 0
+  0.48              ; top rate
+  ×                 ; top tax
+  STO+ ‘TAX’        ; add to total: top 48 percent
+  RCL ‘INC’         ; push annual income
+  50270             ; upper earnings limit
+  MIN               ; cap earnings at the limit
+  12570             ; primary threshold
+  -                 ; earnings above the threshold
+  0                 ; push 0
+  MAX               ; floor at 0
+  0.08              ; main NI rate
+  ×                 ; NI at 8 percent
+  STO ‘NIC’         ; start NI total: NI 8 percent
+  RCL ‘INC’         ; push annual income
+  50270             ; upper earnings limit
+  -                 ; earnings above the limit
+  0                 ; push 0
+  MAX               ; floor at 0
+  0.02              ; upper NI rate
+  ×                 ; NI at 2 percent
+  STO+ ‘NIC’        ; add to total: NI 2 percent
+  4                 ; push 4 (rows)
+  ENTER             ; separate from next number
+  1                 ; push 1 (column)
+  M.NEW             ; create a 4 by 1 zero matrix
+  STO ‘OUT’         ; store it as OUT
+  INDEX ‘OUT’       ; select OUT for element access
+  1                 ; push 1 (row)
+  ENTER             ; separate from next number
+  1                 ; push 1 (column)
+  STOIJ             ; point at row 1, column 1
+  RCL ‘INC’         ; push income
+  RCL- ‘TAX’        ; minus tax
+  RCL- ‘NIC’        ; minus NI
+  RCL÷ ‘DIV’        ; divide by 12 or 1
+  STOEL             ; row 1: take-home
+  2                 ; push 2 (row)
+  ENTER             ; separate from next number
+  1                 ; push 1 (column)
+  STOIJ             ; point at row 2, column 1
+  RCL ‘TAX’         ; push annual tax
+  RCL÷ ‘DIV’        ; divide by 12 or 1
+  STOEL             ; row 2: tax
+  3                 ; push 3 (row)
+  ENTER             ; separate from next number
+  1                 ; push 1 (column)
+  STOIJ             ; point at row 3, column 1
+  RCL ‘NIC’         ; push annual NI
+  RCL÷ ‘DIV’        ; divide by 12 or 1
+  STOEL             ; row 3: NI
+  4                 ; push 4 (row)
+  ENTER             ; separate from next number
+  1                 ; push 1 (column)
+  STOIJ             ; point at row 4, column 1
+  RCL ‘TC’          ; push tax code number
+  STOEL             ; row 4: tax code number
+  RCL ‘OUT’         ; put the result matrix in X
+  RTN               ; return
+  END               ; end of program
+.END.
