@@ -1,0 +1,901 @@
+{\rtf1\ansi\ansicpg1252\deff0\nouicompat{\fonttbl{\f0\fnil\fcharset0 C47__StandardFont;}}{\pard\sl240\slmult1\f0\fs24\lang9\f0\loch
+C47 Program file export: Export format version 3, C47 program version 1.
+ \par
+0000: { Prgm #1/3: 3566 bytes / 868 steps } \par
+\par
+0001:  LBL \u8216?ELEM47\u8217?\par
+0002:    XEQ 11\par
+0003:    DO\u8321?\par
+0004:      DO\u8322?\par
+0005:        PAUSE 50\par
+0006:        KEY? 33\par
+0007:      WHILE\u8322?\par
+0008:      ENDDO\u8322?\par
+0009:      RCL 33\par
+0010:      82\par
+0011:      x\u8800? ? Y\par
+0012:    WHILE\u8321?\par
+0013:      RCL 33\par
+0014:      10\par
+0015:      \u247?\par
+0016:      IP\par
+0017:      6\par
+0018:      -\par
+0019:      STO 41\par
+0020:      RCL 33\par
+0021:      10\par
+0022:      MOD\par
+0023:      3\par
+0024:      -\par
+0025:      STO 42\par
+0026:      |x|\par
+0027:      RCL 41\par
+0028:      |x|\par
+0029:      +\par
+0030:      1\par
+0031:      x= ? Y\par
+0032:      IF\u8321?\par
+0033:        XEQ 03\par
+0034:        XEQ 18\par
+0035:        XEQ 02\par
+0036:        XEQ 04\par
+0037:        RCL 36\par
+0038:        x\u8800? ? 0.\par
+0039:          XEQ 09\par
+0040:      ENDIF\u8321?\par
+0041:      RCL 33\par
+0042:      63\par
+0043:      x= ? Y\par
+0044:      IF\u8322?\par
+0045:        RCL 36\par
+0046:        x\u8800? ? 0.\par
+0047:        IF\u8323?\par
+0048:          0\par
+0049:          STO 36\par
+0050:          XEQ 06\par
+0051:        ELSE\u8323?\par
+0052:          1\par
+0053:          STO 36\par
+0054:          XEQ 08\par
+0055:        ENDIF\u8323?\par
+0056:      ENDIF\u8322?\par
+0057:    ENDDO\u8321?\par
+0058:    0\par
+0059:    GRMOD\par
+0060:    20\par
+0061:    GRFNT\par
+0062:    DELITM \u8216?PT\u8217?\par
+0063:    CLLCD\par
+0064:    CLREGS\par
+0065:    CLSTK\par
+0066:    RTN\par
+\par
+0067:    LBL 02\par
+0068:    RCL 31\par
+0069:    STO 26\par
+0070:    RCL 32\par
+0071:    STO 27\par
+0072:    XEQ 15\par
+\par
+0073:    LBL 03\par
+0074:    3\par
+0075:    GRMOD\par
+0076:    RCL 53\par
+0077:    RCL 39\par
+0078:    1\par
+0079:    +\par
+0080:    AGRAPH 23\par
+0081:    AGRAPH 23\par
+0082:    AGRAPH 23\par
+0083:    AGRAPH 23\par
+0084:    AGRAPH 23\par
+0085:    AGRAPH 23\par
+0086:    AGRAPH 23\par
+0087:    AGRAPH 23\par
+0088:    AGRAPH 23\par
+0089:    AGRAPH 23\par
+0090:    AGRAPH 23\par
+0091:    AGRAPH 23\par
+0092:    AGRAPH 23\par
+0093:    AGRAPH 23\par
+0094:    AGRAPH 23\par
+0095:    AGRAPH 23\par
+0096:    AGRAPH 23\par
+0097:    AGRAPH 23\par
+0098:    AGRAPH 23\par
+0099:    AGRAPH 23\par
+0100:    AGRAPH 23\par
+0101:    0\par
+0102:    GRMOD\par
+0103:    RTN\par
+\par
+0104:    LBL 04\par
+0105:    1\par
+0106:    GRMOD\par
+0107:    21\par
+0108:    GRFNT\par
+0109:    XEQ 05\par
+0110:    RCL 37\par
+0111:    STO 38\par
+0112:    \u8216?             \u8217?\par
+0113:    x\u8594?\u945? 38\par
+0114:    RCL 38\par
+0115:    211\par
+0116:    50\par
+0117:    ATEXT Z\par
+0118:    \u8216? \u8217?\par
+0119:    STO 38\par
+0120:    RCL 30\par
+0121:    \u945?IP 38\par
+0122:    1\par
+0123:    \u945?SL 38\par
+0124:    \u8216?  \u8217?\par
+0125:    x\u8594?\u945? 38\par
+0126:    RCL 38\par
+0127:    190\par
+0128:    50\par
+0129:    ATEXT Z\par
+0130:    RCL 35\par
+0131:    STO 38\par
+0132:    \u8216?     \u8217?\par
+0133:    x\u8594?\u945? 38\par
+0134:    RCL 38\par
+0135:    170\par
+0136:    50\par
+0137:    ATEXT Z\par
+0138:    0\par
+0139:    GRMOD\par
+0140:    RTN\par
+\par
+0141:    LBL 05\par
+0142:    RCL 30\par
+0143:    STO 43\par
+0144:    60\par
+0145:    x< ? Y\par
+0146:    IF\u8324?\par
+0147:      STO- 43\par
+0148:      XEQ \u8216?ELD2\u8217?\par
+0149:    ELSE\u8324?\par
+0150:      XEQ \u8216?ELD1\u8217?\par
+0151:    ENDIF\u8324?\par
+0152:    STO 44\par
+0153:    XEQ 16\par
+0154:    RCL 35\par
+0155:    STO 37\par
+0156:    XEQ 16\par
+0157:    RTN\par
+\par
+0158:    LBL 06\par
+0159:    XEQ 03\par
+0160:    XEQ 22\par
+0161:    XEQ 21\par
+0162:    0\par
+0163:    GRMOD\par
+0164:    11\u8200?1111\u8200?1111\u8200?1111\u8200?1111\u8200?1111\u8200?1111\u9313?\par
+0165:    STO 20\par
+0166:    13\par
+0167:    XEQ 07\par
+0168:    4\par
+0169:    3\par
+0170:    13\par
+0171:    XEQ 13\par
+0172:    21\par
+0173:    XEQ 07\par
+0174:    14\par
+0175:    4\par
+0176:    3\par
+0177:    XEQ 13\par
+0178:    39\par
+0179:    XEQ 07\par
+0180:    14\par
+0181:    5\par
+0182:    3\par
+0183:    XEQ 13\par
+0184:    72\par
+0185:    XEQ 07\par
+0186:    13\par
+0187:    6\par
+0188:    4\par
+0189:    XEQ 13\par
+0190:    104\par
+0191:    XEQ 07\par
+0192:    13\par
+0193:    7\par
+0194:    4\par
+0195:    XEQ 13\par
+0196:    XEQ 12\par
+0197:    XEQ 02\par
+0198:    XEQ 04\par
+0199:    RTN\par
+\par
+0200:    LBL 07\par
+0201:    STO 25\par
+0202:    1\par
+0203:    -\par
+0204:    STO 24\par
+0205:    65\par
+0206:    \u247?\par
+0207:    IP\par
+0208:    STO 50\par
+0209:    XEQ \u8594?50\par
+0210:    STO 34\par
+0211:    RCL 24\par
+0212:    65\par
+0213:    MOD\par
+0214:    3\par
+0215:    \u215?\par
+0216:    \u945?SL 34\par
+0217:    RTN\par
+\par
+0218:    LBL 08\par
+0219:    XEQ 05\par
+\par
+0220:    LBL 09\par
+0221:    RCL 35\par
+0222:    STO 48\par
+0223:    XEQ 16\par
+0224:    RCL 35\par
+0225:    STO 45\par
+0226:    XEQ 16\par
+0227:    RCL 35\par
+0228:    STO 46\par
+0229:    RCL 44\par
+0230:    STO 47\par
+0231:    RCL 30\par
+0232:    1\par
+0233:    -\par
+0234:    STO 28\par
+0235:    65\par
+0236:    \u247?\par
+0237:    IP\par
+0238:    STO 43\par
+0239:    XEQ \u8594?43\par
+0240:    STO 29\par
+0241:    RCL 28\par
+0242:    65\par
+0243:    MOD\par
+0244:    3\par
+0245:    \u215?\par
+0246:    \u945?SL 29\par
+0247:    2\par
+0248:    \u945?LEFT 29\par
+0249:    STO 29\par
+0250:    \u8216?\u8629?\u8217?\par
+0251:    x\u8594?\u945? 48\par
+0252:    RCL 46\par
+0253:    x\u8594?\u945? 48\par
+0254:    \u8216?-\u8217?\par
+0255:    \u945?POS 46\par
+0256:    x< ? 0.\par
+0257:      XEQ 23\par
+0258:    RCL 29\par
+0259:    STO 38\par
+0260:    \u8216?\u8629?\u8217?\par
+0261:    x\u8594?\u945? 38\par
+0262:    XEQ 24\par
+0263:    RCL 45\par
+0264:    \u945?POS 51\par
+0265:    STO 24\par
+0266:    XEQ 17\par
+0267:    RCL 35\par
+0268:    x\u8594?\u945? 38\par
+0269:    \u8216?\u8629?\u8217?\par
+0270:    x\u8594?\u945? 38\par
+0271:    RCL 31\par
+0272:    7\par
+0273:    x\u8805? ? Y\par
+0274:    IF\u8325?\par
+0275:      RCL 32\par
+0276:      \u945?IP 38\par
+0277:      \u8216?  \u8217?\par
+0278:      x\u8594?\u945? 38\par
+0279:    ENDIF\u8325?\par
+0280:    XEQ 25\par
+0281:    XEQ 26\par
+0282:    XEQ 17\par
+0283:    RCL 35\par
+0284:    x\u8594?\u945? 38\par
+0285:    \u8216?\u8629?\u8217?\par
+0286:    x\u8594?\u945? 38\par
+0287:    RCL 47\par
+0288:    x\u8594?\u945? 38\par
+0289:    XEQ 22\par
+0290:    0\par
+0291:    GRMOD\par
+0292:    1111\u8200?1111\u8200?1111\u8200?1111\u8200?1111\u8200?1111\u8200?1111\u8200?1111\u8200?1111\u8200?1111\u8200?1111\u8200?1111\u8200?1111\u8200?1111\u8200?1111\u9313?\par
+0293:    STO 20\par
+0294:    60\par
+0295:    50\par
+0296:    AGRAPH 20\par
+0297:    120\par
+0298:    50\par
+0299:    AGRAPH 20\par
+0300:    60\par
+0301:    349\par
+0302:    AGRAPH 20\par
+0303:    120\par
+0304:    349\par
+0305:    AGRAPH 20\par
+0306:    1\u9313?\par
+0307:    STO 20\par
+0308:    60\par
+0309:    51\par
+0310:    XEQ 19\par
+0311:    \u8216? \u8217?\par
+0312:    STO 55\par
+0313:    RCL 30\par
+0314:    \u945?IP 55\par
+0315:    RCL 55\par
+0316:    158\par
+0317:    51\par
+0318:    ATEXT Z\par
+0319:    RCL 37\par
+0320:    158\par
+0321:    90\par
+0322:    ATEXT Z\par
+0323:    10\par
+0324:    GRFNT\par
+0325:    \u8216?5: BACK\u8217?\par
+0326:    162\par
+0327:    304\par
+0328:    ATEXT Z\par
+0329:    21\par
+0330:    GRFNT\par
+0331:    \u8216?Symbol\u8629?State\u8629?Group\u8629?Config\u8217?\par
+0332:    134\par
+0333:    58\par
+0334:    ATEXT Z\par
+0335:    \u8216?Mass\u8629?Boil\u8217?\par
+0336:    134\par
+0337:    226\par
+0338:    ATEXT Z\par
+0339:    RCL 48\par
+0340:    134\par
+0341:    272\par
+0342:    ATEXT Z\par
+0343:    RCL 38\par
+0344:    134\par
+0345:    130\par
+0346:    ATEXT Z\par
+0347:    3\par
+0348:    GRMOD\par
+0349:    11\u8200?1111\u8200?1111\u8200?1111\u8200?1111\u8200?1111\u9313?\par
+0350:    STO 20\par
+0351:    158\par
+0352:    51\par
+0353:    XEQ 19\par
+0354:    0\par
+0355:    GRMOD\par
+0356:    RTN\par
+\par
+0357:    LBL 10\par
+0358:    11\u8200?1111\u8200?1111\u8200?1111\u8200?1111\u8200?1111\u8200?1111\u9313?\par
+0359:    STO 20\par
+0360:    100\u8200?0000\u8200?0000\u8200?0000\u8200?0000\u8200?0000\u8200?0010\u8200?0000\u8200?0000\u8200?0000\u8200?0000\u8200?0000\u8200?0001\u9313?\par
+0361:    STO 21\par
+0362:    XEQ 20\par
+0363:    1\par
+0364:    STO 25\par
+0365:    -1\par
+0366:    STO 50\par
+0367:    XEQ 14\par
+0368:    1\par
+0369:    1\par
+0370:    1\par
+0371:    XEQ 13\par
+0372:    1\par
+0373:    1\par
+0374:    18\par
+0375:    XEQ 13\par
+0376:    2\par
+0377:    2\par
+0378:    1\par
+0379:    XEQ 13\par
+0380:    6\par
+0381:    2\par
+0382:    13\par
+0383:    XEQ 13\par
+0384:    2\par
+0385:    3\par
+0386:    1\par
+0387:    XEQ 13\par
+0388:    6\par
+0389:    3\par
+0390:    13\par
+0391:    XEQ 13\par
+0392:    18\par
+0393:    4\par
+0394:    1\par
+0395:    XEQ 13\par
+0396:    18\par
+0397:    5\par
+0398:    1\par
+0399:    XEQ 13\par
+0400:    2\par
+0401:    6\par
+0402:    1\par
+0403:    XEQ 13\par
+0404:    15\par
+0405:    8\par
+0406:    3\par
+0407:    XEQ 13\par
+0408:    15\par
+0409:    6\par
+0410:    4\par
+0411:    XEQ 13\par
+0412:    2\par
+0413:    7\par
+0414:    1\par
+0415:    XEQ 13\par
+0416:    15\par
+0417:    9\par
+0418:    3\par
+0419:    XEQ 13\par
+0420:    15\par
+0421:    7\par
+0422:    4\par
+0423:    XEQ 13\par
+0424:    RTN\par
+\par
+0425:    LBL 11\par
+0426:    WSIZE 64\par
+0427:    9\par
+0428:    18\par
+0429:    M.NEW\par
+0430:    STO \u8216?PT\u8217?\par
+0431:    INDEX \u8216?PT\u8217?\par
+0432:    1111\u8200?1111\u8200?1111\u8200?1111\u8200?1111\u8200?1111\u9313?\par
+0433:    STO 23\par
+0434:    \u8216?SLG-\u8217?\par
+0435:    STO 51\par
+0436:    0\par
+0437:    STO 36\par
+0438:    1\par
+0439:    STO 30\par
+0440:    STO 31\par
+0441:    STO 32\par
+0442:    CLLCD\par
+0443:    XEQ 10\par
+0444:    XEQ 12\par
+0445:    XEQ 02\par
+0446:    XEQ 04\par
+0447:    RTN\par
+\par
+0448:    LBL 12\par
+0449:    21\par
+0450:    GRFNT\par
+0451:    \u8216?ELEMENTS 47\u8217?\par
+0452:    217\par
+0453:    270\par
+0454:    ATEXT Z\par
+0455:    10\par
+0456:    GRFNT\par
+0457:    \u8216?   8\u8629?5 4 6\u8629?   2\u8629?   0\u8217?\par
+0458:    200\par
+0459:    152\par
+0460:    ATEXT Z\par
+0461:    \u8216?      \u8593?\u8629?INFO \u8592? \u8594?\u8629?      \u8595?\u8629?     END\u8217?\par
+0462:    200\par
+0463:    194\par
+0464:    ATEXT Z\par
+0465:    RTN\par
+\par
+0466:    LBL 13\par
+0467:    STO 27\par
+0468:    R\u8595?\par
+0469:    STO 26\par
+0470:    R\u8595?\par
+0471:    STO 28\par
+0472:    XEQ 15\par
+0473:    RCL 39\par
+0474:    4\par
+0475:    -\par
+0476:    STO 54\par
+0477:    44\par
+0478:    -\par
+0479:    STO 56\par
+0480:    RCL 26\par
+0481:    RCL 27\par
+0482:    STOIJ\par
+0483:    DO\u8323?\par
+0484:      RCL 25\par
+0485:      STOSEQ\par
+0486:      66\par
+0487:      x= ? Y\par
+0488:        XEQ 14\par
+0489:      RCL 40\par
+0490:      RCL 39\par
+0491:      AGRAPH 20\par
+0492:      10\par
+0493:      GRFNT\par
+0494:      \u8216? \u8217?\par
+0495:      STO 38\par
+0496:      RCL 25\par
+0497:      \u945?IP 38\par
+0498:      RCL 38\par
+0499:      RCL 52\par
+0500:      RCL 54\par
+0501:      ATEXT Z\par
+0502:      21\par
+0503:      GRFNT\par
+0504:      2\par
+0505:      \u945?LEFT 34\par
+0506:      2\par
+0507:      \u945?SL 34\par
+0508:      DROPx\par
+0509:      RCL 53\par
+0510:      \u945?\u8594?x 34\par
+0511:      RCL+ 56\par
+0512:      ATEXT Z\par
+0513:      1\par
+0514:      STO+ 25\par
+0515:      22\par
+0516:      STO+ 39\par
+0517:      STO+ 54\par
+0518:      STO+ 56\par
+0519:      DSE 28\par
+0520:    WHILE\u8323?\par
+0521:    ENDDO\u8323?\par
+0522:    RCL 40\par
+0523:    RCL 39\par
+0524:    AGRAPH 20\par
+0525:    RTN\par
+\par
+0526:    LBL 14\par
+0527:    1\par
+0528:    STO+ 50\par
+0529:    XEQ \u8594?50\par
+0530:    STO 34\par
+0531:    RTN\par
+\par
+0532:    LBL 15\par
+0533:    RCL 27\par
+0534:    22\par
+0535:    \u215?\par
+0536:    21\par
+0537:    -\par
+0538:    STO 39\par
+0539:    238\par
+0540:    RCL 26\par
+0541:    25\par
+0542:    \u215?\par
+0543:    -\par
+0544:    STO 40\par
+0545:    RCL 26\par
+0546:    7\par
+0547:    x< ? Y\par
+0548:    IF\u8326?\par
+0549:      9\par
+0550:      STO- 40\par
+0551:    ENDIF\u8326?\par
+0552:    RCL 40\par
+0553:    1\par
+0554:    +\par
+0555:    STO 53\par
+0556:    17\par
+0557:    +\par
+0558:    STO 52\par
+0559:    RTN\par
+\par
+0560:    LBL 16\par
+0561:    RCL 44\par
+0562:    STO 35\par
+0563:    \u8216?/\u8217?\par
+0564:    \u945?POS 44\par
+0565:    x< ? 0.\par
+0566:      RTN\par
+0567:    STO 24\par
+0568:    \u945?LEFT 35\par
+0569:    STO 35\par
+0570:    RCL 24\par
+0571:    1\par
+0572:    +\par
+0573:    \u945?SL 44\par
+0574:    RTN\par
+\par
+0575:    LBL 17\par
+0576:    DO\u8324?\par
+0577:      RCL 24\par
+0578:      x\u8800? ? 0.\par
+0579:    WHILE\u8324?\par
+0580:      \u8216?/\u8217?\par
+0581:      \u945?POS 35\par
+0582:      1\par
+0583:      +\par
+0584:      \u945?SL 35\par
+0585:      1\par
+0586:      STO- 24\par
+0587:    ENDDO\u8324?\par
+0588:    \u8216?/\u8217?\par
+0589:    \u945?POS 35\par
+0590:    x< ? 0.\par
+0591:      RTN\par
+0592:    \u945?LEFT 35\par
+0593:    STO 35\par
+0594:    RTN\par
+\par
+0595:    LBL 18\par
+0596:    RCL 31\par
+0597:    STO 26\par
+0598:    RCL 32\par
+0599:    STO 27\par
+0600:    REPEAT\u8321?\par
+0601:      RCL 26\par
+0602:      RCL 41\par
+0603:      +\par
+0604:      8\par
+0605:      +\par
+0606:      9\par
+0607:      MOD\par
+0608:      1\par
+0609:      +\par
+0610:      STO 26\par
+0611:      RCL 27\par
+0612:      RCL 42\par
+0613:      +\par
+0614:      17\par
+0615:      +\par
+0616:      18\par
+0617:      MOD\par
+0618:      1\par
+0619:      +\par
+0620:      STO 27\par
+0621:      STOIJ\par
+0622:      RCLEL\par
+0623:      x\u8800? ? 0.\par
+0624:    UNTIL\u8321?\par
+0625:    STO 30\par
+0626:    RCL 26\par
+0627:    STO 31\par
+0628:    RCL 27\par
+0629:    STO 32\par
+0630:    RTN\par
+\par
+0631:    LBL 19\par
+0632:    AGRAPH 20\par
+0633:    AGRAPH 20\par
+0634:    8\par
+0635:    STO 22\par
+0636:    R\u8595?\par
+0637:    DO\u8325?\par
+0638:      AGRAPH 20\par
+0639:      AGRAPH 20\par
+0640:      AGRAPH 20\par
+0641:      AGRAPH 20\par
+0642:      AGRAPH 20\par
+0643:      AGRAPH 20\par
+0644:      AGRAPH 20\par
+0645:      AGRAPH 20\par
+0646:      AGRAPH 20\par
+0647:      AGRAPH 20\par
+0648:      AGRAPH 20\par
+0649:      AGRAPH 20\par
+0650:      AGRAPH 20\par
+0651:      AGRAPH 20\par
+0652:      AGRAPH 20\par
+0653:      AGRAPH 20\par
+0654:      AGRAPH 20\par
+0655:      AGRAPH 20\par
+0656:      AGRAPH 20\par
+0657:      AGRAPH 20\par
+0658:      AGRAPH 20\par
+0659:      AGRAPH 20\par
+0660:      AGRAPH 20\par
+0661:      AGRAPH 20\par
+0662:      AGRAPH 20\par
+0663:      AGRAPH 20\par
+0664:      AGRAPH 20\par
+0665:      AGRAPH 20\par
+0666:      AGRAPH 20\par
+0667:      AGRAPH 20\par
+0668:      AGRAPH 20\par
+0669:      AGRAPH 20\par
+0670:      AGRAPH 20\par
+0671:      AGRAPH 20\par
+0672:      AGRAPH 20\par
+0673:      AGRAPH 20\par
+0674:      AGRAPH 20\par
+0675:      DSE 22\par
+0676:    WHILE\u8325?\par
+0677:    ENDDO\u8325?\par
+0678:    RTN\par
+\par
+0679:    LBL 20\par
+0680:    -4\par
+0681:    0\par
+0682:    PIXEL\par
+0683:    -29\par
+0684:    0\par
+0685:    PIXEL\par
+0686:    -54\par
+0687:    0\par
+0688:    PIXEL\par
+0689:    -188\par
+0690:    0\par
+0691:    PIXEL\par
+0692:    -213\par
+0693:    0\par
+0694:    PIXEL\par
+0695:    -238\par
+0696:    0\par
+0697:    PIXEL\par
+0698:    2\par
+0699:    GRMOD\par
+0700:    188\par
+0701:    0\par
+0702:    AGRAPH 21\par
+0703:    DROPx\par
+0704:    398\par
+0705:    AGRAPH 21\par
+0706:    AGRAPH 21\par
+0707:    XEQ 21\par
+0708:    \u8216?      \u8629?      \u8629?      \u8217?\par
+0709:    40\par
+0710:    0\par
+0711:    ATEXT Z\par
+0712:    \u8216? \u8629? \u8629? \u8217?\par
+0713:    40\par
+0714:    38\par
+0715:    ATEXT Z\par
+0716:    \u8216?   \u8629?   \u8629?   \u8217?\par
+0717:    40\par
+0718:    376\par
+0719:    ATEXT Z\par
+0720:    \u8216? \u8629? \u8629? \u8217?\par
+0721:    40\par
+0722:    392\par
+0723:    ATEXT Z\par
+0724:    \u8216?                                                  \u8217?\par
+0725:    219\par
+0726:    24\par
+0727:    ATEXT Z\par
+0728:    \u8216? \u8217?\par
+0729:    219\par
+0730:    368\par
+0731:    ATEXT Z\par
+0732:    \u8216?                               \u8629?                               \u8217?\par
+0733:    199\par
+0734:    46\par
+0735:    ATEXT Z\par
+0736:    \u8216? \u8629? \u8217?\par
+0737:    199\par
+0738:    258\par
+0739:    ATEXT Z\par
+0740:    0\par
+0741:    GRMOD\par
+0742:    RTN\par
+\par
+0743:    LBL 21\par
+0744:    -63\par
+0745:    0\par
+0746:    PIXEL\par
+0747:    -88\par
+0748:    0\par
+0749:    PIXEL\par
+0750:    -113\par
+0751:    0\par
+0752:    PIXEL\par
+0753:    -138\par
+0754:    0\par
+0755:    PIXEL\par
+0756:    -163\par
+0757:    0\par
+0758:    PIXEL\par
+0759:    2\par
+0760:    GRMOD\par
+0761:    63\par
+0762:    0\par
+0763:    AGRAPH 21\par
+0764:    DROPx\par
+0765:    398\par
+0766:    AGRAPH 21\par
+0767:    AGRAPH 21\par
+0768:    138\par
+0769:    0\par
+0770:    AGRAPH 21\par
+0771:    DROPx\par
+0772:    398\par
+0773:    AGRAPH 21\par
+0774:    AGRAPH 21\par
+0775:    1\par
+0776:    GRMOD\par
+0777:    21\par
+0778:    GRFNT\par
+0779:    \u8216?   \u8217?\par
+0780:    88\par
+0781:    46\par
+0782:    ATEXT Z\par
+0783:    \u8216?   \u8217?\par
+0784:    63\par
+0785:    46\par
+0786:    ATEXT Z\par
+0787:    RTN\par
+\par
+0788:    LBL 22\par
+0789:    1\par
+0790:    GRMOD\par
+0791:    21\par
+0792:    GRFNT\par
+0793:    \u8216?                                          \u8629?\u8217?\par
+0794:    STO 55\par
+0795:    x\u8594?\u945? 55\par
+0796:    x\u8594?\u945? 55\par
+0797:    x\u8594?\u945? 55\par
+0798:    x\u8594?\u945? 55\par
+0799:    x\u8594?\u945? 55\par
+0800:    RCL 55\par
+0801:    160\par
+0802:    50\par
+0803:    ATEXT Z\par
+0804:    \u8216? \u8629? \u8629? \u8629? \u8629? \u8629? \u8217?\par
+0805:    160\par
+0806:    343\par
+0807:    ATEXT Z\par
+0808:    RTN\par
+\par
+0809:    LBL 23\par
+0810:    \u8216? K\u8217?\par
+0811:    x\u8594?\u945? 48\par
+0812:    RTN\par
+\par
+0813:    LBL 24\par
+0814:    \u8216?Solid/Liquid/Gas/-\u8217?\par
+0815:    STO 35\par
+0816:    RTN\par
+\par
+0817:    LBL 25\par
+0818:    RCL 31\par
+0819:    STO 24\par
+0820:    7\par
+0821:    x< ? Y\par
+0822:    IF\u8327?\par
+0823:      2\par
+0824:      STO+ 24\par
+0825:    ELSE\u8327?\par
+0826:      RCL 32\par
+0827:      STO 24\par
+0828:      RCL 30\par
+0829:      1\par
+0830:      x= ? Y\par
+0831:      IF\u8328?\par
+0832:        0\par
+0833:        STO 24\par
+0834:      ELSE\u8328?\par
+0835:        RCL 32\par
+0836:        2\par
+0837:        x< ? Y\par
+0838:        IF\u8329?\par
+0839:          3\par
+0840:          STO 24\par
+0841:          RCL 32\par
+0842:          12\par
+0843:          x< ? Y\par
+0844:          IF\u8321?\u8320?\par
+0845:            RCL 32\par
+0846:            9\par
+0847:            -\par
+0848:            STO 24\par
+0849:          ENDIF\u8321?\u8320?\par
+0850:        ENDIF\u8329?\par
+0851:      ENDIF\u8328?\par
+0852:    ENDIF\u8327?\par
+0853:    RTN\par
+\par
+0854:    LBL 26\par
+0855:    \u8216?Nonmetal/Alkali metals/Alkaline earth metals/\u8217?\par
+0856:    STO 35\par
+0857:    \u8216?Transition metals/Boron group/Carbon group/Pnictogens/\u8217?\par
+0858:    x\u8594?\u945? 35\par
+0859:    \u8216?Chalcogens/Halogens/Noble gases/Lanthanides/Actinides\u8217?\par
+0860:    x\u8594?\u945? 35\par
+0861:    RTN\par
+\par
+0862:    LBL 00\par
+0863:    \u8216?H 7He3Li6Be3B 7C 7N 7O 7F 7Ne2Na2Mg2Al5Si5P 7S 7Cl5Ar2K 7Ca3Sc3Ti5V 7Cr3Mn2Fe3Co3Ni5Cu3Zn3Ga3Ge3As2Se3Br3Kr2Rb3Sr3Y 7Zr3Nb2Mo2Tc3Ru3Rh3Pd3Ag2Cd3In5Sn3Sb3Te3I 9Xe3Cs3Ba3La3Ce3Pr3Nd2Pm2Sm2Eu3Gd3Tb3\u8217?\par
+0864:    RTN\par
+\par
+0865:    LBL 01\par
+0866:    \u8216?Dy3Ho3Er3Tm2Yb3Lu3Hf3Ta3W 6Re3Os3Ir5Pt3Au2Hg3Tl5Pb3Bi5Po3At3Rn3Fr3Ra3Ac2Th3Pa3U 7Np2Pu3Am1Cm2Bk3Cf3Es3Fm2Md2No2Lr3Rf3Db3Sg3Bh3Hs3Mt2Ds3Rg3Cn3Nh2Fl5Mc2Lv3Ts3Og3\u8217?\par
+0867:    RTN\par
+0868:  END\par
+}}

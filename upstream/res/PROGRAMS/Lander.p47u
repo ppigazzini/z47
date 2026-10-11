@@ -1,0 +1,208 @@
+@ Index:    Lander.R47
+@ Author:   stuart_fort
+@ Source:   https://forum.swissmicros.com/viewtopic.php?f=48&t=4832
+@ Version:  1
+@ Tested:   jaymos
+@ Input:    into X, activate entries with R/S
+@ Output:   on screen
+@
+@ Registers
+@ .00   Config
+@ .01   Stack
+@ 02    Body acceleration (g)
+@ 03    Fuel
+@ 04    Altitude
+@ 05    Velocity
+@ 06    Acceleration
+@ 07    Safe landing velocity
+@ 
+@ Variables
+@ Body  Body #/Name
+@ Burn  Burn rate
+@ 
+@ Flags
+@ none
+@ 
+@ Labels
+@     Save state, Initialize program
+@ 01    Set variables for Earth
+@ 02    Set variables for Mars
+@ 03    Set variables for Luna
+@ 04    Set variables for Vesta
+@ 10    Initialize descent
+@ 20    Display variables & input Burn
+@ 30    Calculate burn effect & result
+@ 40    Fuel depleted
+@ 60    Process landing
+@ 61    Safe landing
+@ 65    Crash landing
+@ 70    Random multiplier
+@ 80    Clear screen
+@ 90    Output final velocity, restore state
+
+
+LBL ‘Lander’
+  LocR 10
+  STOCFG R.00
+  STOS R.01
+  FIX 01
+  5.
+  STO R07
+  0.
+  STO ‘Burn’
+  SEED
+  1
+  STO ‘Body’
+  XEQ 80
+  ‘Lander’
+  PAUSE 10
+  ‘Location? (1-4)’
+  INPUT ‘Body’
+  4
+  MIN
+  1
+  MAX
+  XEQ →X
+  GTO 10
+
+LBL 01
+  9.81
+  STO R02
+  500.
+  XEQ 70
+  STO R03
+  ‘Earth’
+  STO ‘Body’
+  RTN
+
+LBL 02
+  3.71
+  STO R02
+  300.
+  XEQ 70
+  STO R03
+  ‘Mars’
+  STO ‘Body’
+  RTN
+
+LBL 03
+  1.62
+  STO R02
+  200.
+  XEQ 70
+  STO R03
+  ‘Luna’
+  STO ‘Body’
+  RTN
+
+LBL 04
+  0.25
+  STO R02
+  50.
+  XEQ 70
+  STO R03
+  ‘Vesta’
+  STO ‘Body’
+  RTN
+
+LBL 10
+  XEQ 80
+  ‘Safe landing velocity = ’
+  RCL+ R07
+  PAUSE 30
+  1000.
+  XEQ 70
+  STO R04
+  -50.
+  XEQ 70
+  STO R05
+  GTO 20
+
+LBL 20
+  XEQ 80
+  RCL ‘Body’
+  ‘ Altitude = ’
+  +
+  RCL+ R04
+  ‘Velocity = ’
+  RCL+ R05
+  ‘Fuel = ’
+  RCL+ R03
+  INPUT ‘Burn’
+  𝑥>? R03
+    GTO 40
+  STO- R03
+
+  LBL 30
+    RCL ‘Burn’
+    RCL R02
+    -
+    STO R06
+    2.
+    ÷
+    RCL R04
+    +
+    RCL R05
+    +
+    STO R04
+    𝑥≤? 0.
+      GTO 60
+    RCL R06
+    STO+ R05
+    GTO 20
+
+  LBL 40
+    XEQ 80
+    ‘Fuel depleted!’
+    PAUSE 10
+    RCL R03
+    STO ‘Burn’
+    0.
+    STO R03
+    GTO 30
+
+  LBL 60
+    XEQ 80
+    ‘Contact...’
+    PAUSE 20
+    RCL R05
+    |𝑥|
+    𝑥≤? R07
+      GTO 61
+    GTO 65
+
+  LBL 61
+    XEQ 80
+    ‘Safe Landing!’
+    TONE 08
+    TONE 09
+    GTO 90
+
+  LBL 65
+    XEQ 80
+    ‘Crash!!’
+    TONE 01
+    TONE 00
+    GTO 90
+
+  LBL 70
+    0.9
+    1.1
+    RANI#
+    ×
+    RTN
+
+  LBL 80
+    ‘ ’
+    FILL
+    RTN
+
+  LBL 90
+    RCL ‘Body’
+    ‘Final Velocity = ’
+    RCL+ R05
+    PAUSE 50
+    RCLS R.01
+    RCLCFG R.00
+  END
+.END.

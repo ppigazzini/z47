@@ -1,0 +1,20 @@
+@ Index:   Body Mass Index for a given Height and Weight
+@ Author:  Barry Mead
+@ Version: 1
+@ Source:  https://forum.swissmicros.com/viewtopic.php?p=44674#p44674
+@ Tested:  jaymos
+@ input:   Weight in Lbs in Y; Height in In in X
+@ output:  BMI in X
+@
+# Body Mass Index
+# Weight in Lbs in Y
+# Height in In in X
+LBL ‘BMI’
+  𝑥²
+  ÷
+
+  # Convert Lbs/Sq Inch to Kg/Sq Meter
+  703
+  ×
+  END
+.END.

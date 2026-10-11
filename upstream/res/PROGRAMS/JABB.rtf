@@ -1,0 +1,86 @@
+{\rtf1\ansi\ansicpg1252\deff0\nouicompat{\fonttbl{\f0\fnil\fcharset0 C47__StandardFont;}}{\pard\sl240\slmult1\f0\fs24\lang9\f0\loch
+C47 Program file export: Export format version 3, C47 program version 1.
+ \par
+0000: { Prgm #1/1: 260 bytes / 76 steps } \par
+\par
+0001:  LBL \u8216?JABB\u8217?\par
+0002:    REM \u8216?Hunt for the Jabberwocky\u8217?\par
+0003:    \u8216? ? \u8217?\par
+0004:    STO 01\par
+0005:    STO 09\par
+0006:    \u8216? \u8593? \u8217?\par
+0007:    STO 04\par
+0008:    \u8216? \u8593?\u8593? \u8217?\par
+0009:    STO 03\par
+0010:    \u8216? \u8593?\u8593?\u8593? \u8217?\par
+0011:    STO 02\par
+0012:    \u8216? \u8595?\u8595?\u8595? \u8217?\par
+0013:    STO 08\par
+0014:    \u8216? \u8595?\u8595? \u8217?\par
+0015:    STO 07\par
+0016:    \u8216? \u8595? \u8217?\par
+0017:    STO 06\par
+0018:    CLSTK\par
+0019:    STO I\par
+0020:    \u8216?Hunting is open\u8217?\par
+0021:    2\u8200?000\par
+0022:    ENTER\par
+0023:    RAN#\par
+0024:    0.5\par
+0025:    +\par
+0026:    \u215?\par
+0027:    IP\par
+0028:    STO 00\par
+0029:    DROPx\par
+0030:    GTO 01\par
+\par
+0031:    LBL 00\par
+0032:    RCL 05\par
+0033:    RCL \u8594?J\par
+0034:    +\par
+0035:    STOP\par
+\par
+0036:    LBL 01\par
+0037:    LINT\par
+0038:    STO 05\par
+0039:    INCR I\par
+0040:    RCL 00\par
+0041:    x= ? Y\par
+0042:      GTO 03\par
+0043:    -\par
+0044:    EXPT\par
+0045:    STO J\par
+0046:    INCR J\par
+0047:    LASTx\par
+0048:    sign\par
+0049:    STO\u215? J\par
+0050:    DROPx\par
+0051:    x\u8804? ? 1.\par
+0052:      XEQ 02\par
+0053:    DROPx\par
+0054:    5\par
+0055:    STO+ J\par
+0056:    DROPx\par
+0057:    GTO 00\par
+\par
+0058:    LBL 02\par
+0059:    LASTx\par
+0060:    RAN#\par
+0061:    \u215?\par
+0062:    IP\par
+0063:    STO- 00\par
+0064:    DROPx\par
+0065:    RTN\par
+\par
+0066:    LBL 03\par
+0067:    DROPx\par
+0068:    \u8216? \u8857? \u8217?\par
+0069:    +\par
+0070:    \u8216?Capture in \u8217?\par
+0071:    RCL I\par
+0072:    LINT\par
+0073:    \u8216? moves\u8217?\par
+0074:    +\par
+0075:    +\par
+0076:  END\par
+}}
