@@ -1,4 +1,3 @@
-const abi = @import("abi");
 const circular_trig_owned = @import("circular_trig.zig");
 const real_trig_owned = @import("real_trig.zig");
 const runtime = @import("../command_wrappers/runtime.zig");
@@ -105,7 +104,7 @@ pub fn sinCosReal(trig_type: runtime.trigType_t) callconv(.c) void {
     if (runtime.realIsSpecial(&x)) {
         runtime.realSetNaN(&x);
     } else if (trig_type == runtime.trigSin and x_angular_mode == runtime.amRadian and isTinyArgument(&x)) { // sin x = x - x^3/6 to 72 digits, below |x| by less than half a unit at 34 digits
-        runtime.WP34S_TinyOddSeries(&x, abi.constants.const_6(), false, &x, &runtime.ctxtReal75);
+        runtime.WP34S_TinyOddSeries(&x, runtime.z47_math_wrappers_const_6(), false, &x, &runtime.ctxtReal75);
     } else if (trig_type == runtime.trigSin) {
         circular_trig_owned.convertAngleToSinCosTan(&x, x_angular_mode, &x, null, null, &runtime.ctxtReal34);
     } else {
@@ -144,7 +143,7 @@ pub fn sinhCoshReal(trig_type: runtime.trigType_t) callconv(.c) void {
     }
 
     if (trig_type == runtime.trigSin and !runtime.realIsSpecial(&x) and isTinyArgument(&x)) { // sinh x = x + x^3/6 to 72 digits, above |x| by less than half a unit at 34 digits
-        runtime.WP34S_TinyOddSeries(&x, abi.constants.const_6(), true, &x, &runtime.ctxtReal75);
+        runtime.WP34S_TinyOddSeries(&x, runtime.z47_math_wrappers_const_6(), true, &x, &runtime.ctxtReal75);
     } else if (trig_type == runtime.trigSin) {
         real_trig_owned.sinhCoshReal(&x, &x, null, &runtime.ctxtReal39);
     } else {
@@ -230,13 +229,13 @@ pub fn TanComplex(x: *const cplx_t, r: *cplx_t, real_context: *runtime.realConte
     runtime.realAdd(&exp_term, runtime.z47_math_wrappers_const_1(), &one_plus_exp, real_context);
 
     runtime.realMultiply(&cosa, &cosa, &denominator, real_context);
-    runtime.realMultiply(&denominator, abi.constants.const_4(), &denominator, real_context);
+    runtime.realMultiply(&denominator, runtime.z47_math_wrappers_const_4(), &denominator, real_context);
     runtime.realMultiply(&denominator, &exp_term, &denominator, real_context);
     runtime.realMultiply(&one_minus_exp, &one_minus_exp, &temporary, real_context);
     runtime.realAdd(&denominator, &temporary, &denominator, real_context);
 
     runtime.realMultiply(&sina, &cosa, &numer.Real, real_context);
-    runtime.realMultiply(&numer.Real, abi.constants.const_4(), &numer.Real, real_context);
+    runtime.realMultiply(&numer.Real, runtime.z47_math_wrappers_const_4(), &numer.Real, real_context);
     runtime.realMultiply(&numer.Real, &exp_term, &numer.Real, real_context);
     runtime.realMultiply(&one_minus_exp, &one_plus_exp, &numer.Imag, real_context);
     if (runtime.realIsNegative(&x.Imag)) {

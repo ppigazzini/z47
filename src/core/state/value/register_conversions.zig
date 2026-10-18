@@ -275,13 +275,17 @@ fn realToInt(r: *const real_t, magnitude_limit: u64, err: ?*bool) u64 {
         return 0;
     }
 
+    // The coefficient is read through a many-item pointer, as upstream reads it
+    // through realHeader_t's one-unit lsu: a shortened or a wider decNumber (159,
+    // 2139 digits) carries more units than real_t's 75-digit array declares.
+    const lsu: [*]const u16 = &r.lsu;
     var position: i64 = integer_digits - 1;
     while (position >= 0) : (position -= 1) {
         const coefficient_position = position - r.exponent;
         const digit: u16 = if (coefficient_position < 0)
             0
         else
-            r.lsu[@intCast(@divTrunc(coefficient_position, DECDPUN))] / powers_of_ten[@intCast(@mod(coefficient_position, DECDPUN))] % 10;
+            lsu[@intCast(@divTrunc(coefficient_position, DECDPUN))] / powers_of_ten[@intCast(@mod(coefficient_position, DECDPUN))] % 10;
         if (value > (magnitude_limit - digit) / 10) {
             return 0;
         }

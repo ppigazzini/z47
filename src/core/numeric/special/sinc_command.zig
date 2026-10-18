@@ -1,7 +1,4 @@
-const abi = @import("abi");
-const comparison_reals_owned = @import("../compare/comparison_reals.zig");
 const runtime = @import("../command_wrappers/runtime.zig");
-const math_wp34s = @import("wp34s.zig");
 
 const real_t = runtime.real_t;
 const cplx_t = runtime.cplx_t;
@@ -68,10 +65,10 @@ pub fn sincComplex(z: *const cplx_t, res: *cplx_t, real_context: *realContext_t)
     if (runtime.realIsZero(&x.Real) and runtime.realIsZero(&x.Imag)) {
         runtime.realSetOne(&res.Real);
         runtime.realSetZero(&res.Imag);
-    } else if (comparison_reals_owned.realCompareAbsLessThan(&x.Real, abi.constants.const_1on10()) and comparison_reals_owned.realCompareAbsLessThan(&x.Imag, abi.constants.const_1on10())) {
+    } else if (runtime.realCompareAbsLessThan(&x.Real, runtime.z47_math_wrappers_const_1on10()) and runtime.realCompareAbsLessThan(&x.Imag, runtime.z47_math_wrappers_const_1on10())) {
         sincComplexSeries(&x, res, real_context);
     } else if (runtime.realIsZero(&x.Real) and !runtime.realIsSpecial(&x.Imag)) {
-        math_wp34s.WP34S_SinhCosh(&x.Imag, &res.Real, null, real_context);
+        runtime.WP34S_SinhCosh(&x.Imag, &res.Real, null, real_context);
         runtime.realDivide(&res.Real, &x.Imag, &res.Real, real_context);
         runtime.realSetZero(&res.Imag);
     } else {
@@ -81,8 +78,8 @@ pub fn sincComplex(z: *const cplx_t, res: *cplx_t, real_context: *realContext_t)
         var coshb: real_t = undefined;
         var sinZ: cplx_t = undefined;
 
-        math_wp34s.C47_WP34S_Cvt2RadSinCosTan(&z.Real, runtime.amRadian, &sina, &cosa, null, real_context);
-        math_wp34s.WP34S_SinhCosh(&z.Imag, &sinhb, &coshb, real_context);
+        runtime.C47_WP34S_Cvt2RadSinCosTan(&z.Real, runtime.amRadian, &sina, &cosa, null, real_context);
+        runtime.WP34S_SinhCosh(&z.Imag, &sinhb, &coshb, real_context);
 
         if (!runtime.realIsSpecial(&x.Real) and !runtime.realIsSpecial(&x.Imag) and (runtime.realIsInfinite(&sinhb) or runtime.realIsInfinite(&coshb))) {
             copyReal(&sinZ.Real, &x.Imag);
@@ -158,7 +155,7 @@ fn sincReal() callconv(.c) void {
                     x_angular_mode = runtime.amRadian;
                 }
             }
-            math_wp34s.C47_WP34S_Cvt2RadSinCosTan(&phase, x_angular_mode, &sine, null, null, &runtime.ctxtReal39);
+            runtime.C47_WP34S_Cvt2RadSinCosTan(&phase, x_angular_mode, &sine, null, null, &runtime.ctxtReal39);
             if (x_angular_mode != runtime.amRadian) {
                 runtime.convertAngleFromTo(&x, x_angular_mode, runtime.amRadian, &runtime.ctxtReal39);
             }
@@ -235,7 +232,7 @@ fn sincpiReal() callconv(.c) void {
             } else {
                 // This pi converts sincpi to sinc for all input, regardless.
                 runtime.realMultiply(&x, runtime.z47_math_wrappers_const75_pi(), &x, &runtime.ctxtReal75);
-                math_wp34s.C47_WP34S_Cvt2RadSinCosTan(&x, runtime.amRadian, &sine, null, null, &runtime.ctxtReal75);
+                runtime.C47_WP34S_Cvt2RadSinCosTan(&x, runtime.amRadian, &sine, null, null, &runtime.ctxtReal75);
                 runtime.realDivide(&sine, &x, &x, &runtime.ctxtReal75);
             }
         }

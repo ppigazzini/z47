@@ -74,10 +74,12 @@ void *decQuadFromUInt32(void *res, uint32_t value) {
     return res;
 }
 
-// swapRealImaginary's real-matrix path zeroes a decQuad through real34SetZero,
-// which is decNumber's decQuadZero. Same story: this lane links no decNumber, and
-// the matrix families are compared in the full-core differential where the real
-// one is present.
+// real34SetZero is decNumber's decQuadZero in c43, and this lane links no
+// decNumber. The imaginary part of a real matrix reaches it once per element,
+// through the Zig owner, while the oracle's copy of imaginaryPart.c expands the
+// mock header's real34SetZero to sixteen zero bytes. So this writes those same
+// sixteen bytes, which is the zero both sides of this lane share.
 void *decQuadZero(void *res) {
+    memset(res, 0, 16);
     return res;
 }

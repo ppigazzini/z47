@@ -1,4 +1,5 @@
 const std = @import("std");
+const abi = @import("abi");
 const runtime = @import("../command_wrappers/runtime.zig");
 
 const no_register = @as(runtime.calcRegister_t, -1);
@@ -28,40 +29,26 @@ fn reportTypeError(function_name: [*:0]const u8, comptime format: []const u8) vo
     runtime.moreInfoOnError(function_name, message, null, null);
 }
 
-// The decimal digit count of a long integer. GMP sizes a base-10 figure to
-// within one digit, so the candidate is checked against the next lower power
-// of ten.
-fn longIntegerExactBase10Digits(value: *const runtime.mpz_struct) i32 {
-    var digits: i32 = @intCast(runtime.__gmpz_sizeinbase(value, 10));
-    var power: runtime.mpz_struct = undefined;
+// TMP_STR_LENGTH (defines.h): the size of the shared tmpString buffer.
+const TMP_STR_LENGTH = 2560;
 
-    if (digits > 1) {
-        runtime.__gmpz_init(&power);
-        defer runtime.__gmpz_clear(&power);
-        runtime.__gmpz_ui_pow_ui(&power, 10, @intCast(digits - 1));
-        if (runtime.__gmpz_cmpabs(value, &power) < 0) {
-            digits -= 1;
-        }
-    }
-    return digits;
-}
-
-// The mantissa of a long integer is the integer rounded once to 34 digits and
-// scaled by a power of ten, so it takes the register's own Real34 conversion
-// and moves the decimal exponent by one less than the digit count.
+// The mantissa of a long integer: its decimal digits with the exponent that puts
+// the point after the first one, parsed once into the Real34 of X. The longest
+// long integer is about a thousand digits, well inside tmpString.
 fn mantLonI() void {
-    var value: runtime.mpz_struct = undefined;
-    var mantissa34: runtime.real34_t = undefined;
-    var mantissa: runtime.real_t = undefined;
+    var x: runtime.mpz_struct = undefined;
 
-    runtime.convertLongIntegerRegisterToLongInteger(runtime.REGISTER_X, &value);
-    const digits = longIntegerExactBase10Digits(&value);
-    runtime.__gmpz_clear(&value);
-    runtime.convertLongIntegerRegisterToReal34(runtime.REGISTER_X, &mantissa34);
-    runtime.real34ToReal(&mantissa34, &mantissa);
-    mantissa.exponent += 1 - digits;
+    runtime.convertLongIntegerRegisterToLongInteger(runtime.REGISTER_X, &x);
+    defer runtime.__gmpz_clear(&x);
+    const buffer = runtime.tmpString[0..TMP_STR_LENGTH];
+    runtime.longIntegerToAllocatedString(&x, buffer.ptr, TMP_STR_LENGTH);
+    const length = std.mem.indexOfScalar(u8, buffer, 0).?;
+    const digits = length - @intFromBool(buffer[0] == '-');
+    const exponent: i32 = 1 - @as(i32, @intCast(digits));
+    const suffix = runtime.bufPrintZ(buffer[length..], "e{d}", .{exponent}) catch unreachable;
+    const text: [:0]const u8 = buffer[0 .. length + suffix.len :0];
     runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, runtime.REAL34_SIZE_IN_BLOCKS, runtime.amNone);
-    runtime.convertRealToReal34ResultRegister(&mantissa, runtime.REGISTER_X);
+    runtime.stringToReal34(text.ptr, runtime.registerReal34Ptr(runtime.REGISTER_X));
 }
 
 fn mantReal() void {
@@ -121,9 +108,10 @@ fn roundiRema() void {
     runtime.linkToRealMatrixRegister(runtime.REGISTER_X, &x);
     const elements: u32 = @as(u32, x.header.matrixRows) * @as(u32, x.header.matrixColumns);
 
+    const elements_ptr: [*]runtime.real34_t = abi.matrixRealElems(&x);
     var i: u32 = 0;
     while (i < elements) : (i += 1) {
-        if (runtime.real34IsSpecial(&x.matrixElements[i])) {
+        if (runtime.real34IsSpecial(&elements_ptr[i])) {
             runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
             return;
         }
@@ -131,7 +119,7 @@ fn roundiRema() void {
 
     i = 0;
     while (i < elements) : (i += 1) {
-        runtime.real34ToIntegralValue(&x.matrixElements[i], &x.matrixElements[i], runtime.DEC_ROUND_HALF_UP);
+        runtime.real34ToIntegralValue(&elements_ptr[i], &elements_ptr[i], runtime.DEC_ROUND_HALF_UP);
     }
 }
 

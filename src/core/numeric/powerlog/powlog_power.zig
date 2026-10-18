@@ -1,5 +1,4 @@
 const runtime = @import("../command_wrappers/runtime.zig");
-const helpers = @import("../command_wrappers/helpers.zig");
 const transcendental_command_owned = @import("../special/transcendental_command.zig");
 
 // The exported intPowReal / intPowCplx take this pointer across the C boundary,
@@ -196,7 +195,7 @@ fn twoPowReal() callconv(.c) void {
 }
 
 fn twoPowCplx() callconv(.c) void {
-    intPowCplx(&realPower2, helpers.const75_ln2());
+    intPowCplx(&realPower2, runtime.z47_math_wrappers_const75_ln2());
 }
 
 fn tenPowShoI() callconv(.c) void {
@@ -226,7 +225,7 @@ fn tenPowCplx() callconv(.c) void {
     }
 
     realPower10(&x.Real, &factor, &runtime.ctxtReal39);
-    runtime.realMultiply(helpers.const75_ln10(), &x.Imag, &x.Imag, &runtime.ctxtReal75);
+    runtime.realMultiply(runtime.z47_math_wrappers_const75_ln10(), &x.Imag, &x.Imag, &runtime.ctxtReal75);
     runtime.realPolarToRectangular(runtime.z47_math_wrappers_const_1(), &x.Imag, &x, &runtime.ctxtReal75);
     runtime.realMultiply(&factor, &x.Real, &x.Real, &runtime.ctxtReal39);
     runtime.realMultiply(&factor, &x.Imag, &x.Imag, &runtime.ctxtReal39);

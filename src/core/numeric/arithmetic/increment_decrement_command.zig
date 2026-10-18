@@ -40,41 +40,27 @@ fn incDecLonI(regist: runtime.calcRegister_t, operation: Operation) void {
     runtime.convertLongIntegerToLongIntegerRegister(&value[0], regist);
 }
 
+// The real, complex and time steps work in the register's own decQuad. The
+// complex one steps the real part only.
 fn incDecReal(regist: runtime.calcRegister_t, operation: Operation) void {
-    var value: runtime.real_t = undefined;
-
-    runtime.real34ToReal(real34DataPointer(regist), &value);
-    if (operation == .inc) {
-        runtime.realAdd(&value, runtime.z47_math_wrappers_const_1(), &value, &runtime.ctxtReal39);
-    } else {
-        runtime.realSubtract(&value, runtime.z47_math_wrappers_const_1(), &value, &runtime.ctxtReal39);
-    }
-    runtime.realToReal34(&value, real34DataPointer(regist));
+    incDecReal34(real34DataPointer(regist), runtime.z47_math_wrappers_const34_1(), operation);
 }
 
 fn incDecCplx(regist: runtime.calcRegister_t, operation: Operation) void {
-    var value: runtime.real_t = undefined;
-
-    runtime.real34ToReal(real34DataPointer(regist), &value);
-    if (operation == .inc) {
-        runtime.realAdd(&value, runtime.z47_math_wrappers_const_1(), &value, &runtime.ctxtReal39);
-    } else {
-        runtime.realSubtract(&value, runtime.z47_math_wrappers_const_1(), &value, &runtime.ctxtReal39);
-    }
-    runtime.realToReal34(&value, real34DataPointer(regist));
+    incDecReal34(real34DataPointer(regist), runtime.z47_math_wrappers_const34_1(), operation);
 }
 
+// "count hours": the value is in seconds, so a step is 1 h = 3600 s, matching DSZ/ISZ.
 fn incDecTime(regist: runtime.calcRegister_t, operation: Operation) void {
-    var value: runtime.real_t = undefined;
+    incDecReal34(real34DataPointer(regist), runtime.z47_math_wrappers_const34_3600(), operation);
+}
 
-    // "count hours", value in seconds; step by 1 h = 3600 s to match DSZ/ISZ.
-    runtime.real34ToReal(real34DataPointer(regist), &value);
+fn incDecReal34(value: *runtime.real34_t, step: *const runtime.real34_t, operation: Operation) void {
     if (operation == .inc) {
-        runtime.realAdd(&value, runtime.z47_math_wrappers_const_3600(), &value, &runtime.ctxtReal39);
+        runtime.real34Add(value, step, value);
     } else {
-        runtime.realSubtract(&value, runtime.z47_math_wrappers_const_3600(), &value, &runtime.ctxtReal39);
+        runtime.real34Subtract(value, step, value);
     }
-    runtime.realToReal34(&value, real34DataPointer(regist));
 }
 
 fn incDecShoI(regist: runtime.calcRegister_t, operation: Operation) void {

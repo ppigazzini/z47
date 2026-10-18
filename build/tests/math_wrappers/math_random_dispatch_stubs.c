@@ -2,6 +2,7 @@
 
 #define STUB(name) void name(void) {}
 
+STUB(addComplex)
 STUB(addCplxCplx)
 STUB(addCplxCxma)
 STUB(addCplxLonI)

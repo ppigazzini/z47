@@ -160,7 +160,10 @@ typedef struct {
 // realType.h's frame-resident reals: a name over a byte array sized for its
 // digit count. The heap forms stand on the frame here too, since this lane links
 // no allocator worth measuring and the body of a function is the same under both.
-#define REAL_T_PTR(name, digits)     uint32_t _ ## name ## _data[REAL_SIZE_IN_BYTES(digits) / 4]; real_t *const name=(real_t *)_ ## name ## _data
+// The fakes write a whole real_t whatever the digits, so a shortened real takes
+// at least real_t's room here, where a real decNumber writes only its digits.
+#define FAKE_REAL_STORAGE_BYTES(digits) (REAL_SIZE_IN_BYTES(digits) > sizeof(real_t) ? REAL_SIZE_IN_BYTES(digits) : sizeof(real_t))
+#define REAL_T_PTR(name, digits)     uint32_t _ ## name ## _data[(FAKE_REAL_STORAGE_BYTES(digits) + 3) / 4]; real_t *const name=(real_t *)_ ## name ## _data
 #define CPLX_T_PTR(name)             cplx_t _ ## name ## _data; cplx_t *const name=&_ ## name ## _data
 #define REAL_T_ALLOC(name, digits)   REAL_T_PTR(name, digits)
 #define REAL_T_FREE(name, digits)
@@ -492,7 +495,8 @@ extern uint64_t systemFlags1;
 // Mapping it to WP34S_Mod here put the oracle's sinc on the other function from
 // the owner's, so the differential compared two different reductions.
 #define realDivideRemainder(operand1, operand2, res, ctxt) decNumberRemainder((res), (operand1), (operand2), (ctxt))
-#define realCompareAbsLessThan(number1, number2) (!realCompareAbsEqual((number1), (number2)) && !realCompareAbsGreaterThan((number1), (number2)))
+// A function, as comparisonReals.c defines it: the owners call it by name.
+bool_t realCompareAbsLessThan(const real_t *number1, const real_t *number2);
 // NOT macros. comparisonReals.c defines all three as FUNCTIONS built from a
 // sign-bit test on decNumberCompare's result, and rebuilding them out of
 // realCompareLessThan gets the NaN cases backwards -- which is how a NaN reached

@@ -64,6 +64,21 @@ fn caseU(name: []const u8, f: DistFn, discrete: u16, x: [*:0]const u8, low: [*:0
     check(name, golden);
 }
 
+// Uniform limits the domain rule refuses: the command reports `expected_error`
+// and leaves register X as it found it.
+fn caseUDomainError(name: []const u8, f: DistFn, discrete: u16, x: [*:0]const u8, low: [*:0]const u8, high: [*:0]const u8, expected_error: u8) void {
+    fake.z47_distribution_parity_reset();
+    fake.z47_distribution_parity_set_register(REGISTER_X, x);
+    fake.z47_distribution_parity_set_register(REGISTER_M, low);
+    fake.z47_distribution_parity_set_register(REGISTER_N, high);
+    f(discrete);
+    const reported = fake.z47_distribution_parity_last_error();
+    if (reported == expected_error and fake.z47_distribution_parity_matches(REGISTER_X, x)) return;
+    failures += 1;
+    std.debug.print("  FAIL {s}: expected error {d} with X unchanged, got error {d}\n", .{ name, expected_error, reported });
+    fake.z47_distribution_parity_print(REGISTER_X);
+}
+
 // GEV: X plus mu (REGISTER_M), sigma (REGISTER_S) and xi (REGISTER_Q).
 fn caseG(name: []const u8, f: DistFn, x: [*:0]const u8, mu: [*:0]const u8, sigma: [*:0]const u8, xi: [*:0]const u8, golden: [*:0]const u8) void {
     fake.z47_distribution_parity_reset();
@@ -130,34 +145,41 @@ pub fn main() void {
     caseU("uniformP", &uniform.uniformP, 0, "4", "2", "7", "0.2");
     caseU("uniformL", &uniform.uniformL, 0, "4", "2", "7", "0.4");
     caseU("uniformU", &uniform.uniformU, 0, "4", "2", "7", "0.6");
-    // fnUniformI always applies the discrete-style quantile floor((1-p)*low +
-    // p*(high+1)); it does not branch on `discrete`. p=0.3 -> floor(3.8) = 3.
-    caseU("uniformI", &uniform.uniformI, 0, "0.3", "2", "7", "3");
+    // Continuous QF(p) = low + p*(high - low): p=0.3 -> 2 + 0.3*5 = 3.5.
+    caseU("uniformI", &uniform.uniformI, 0, "0.3", "2", "7", "3.5");
     // p == 1 hits the realCopy(high) boundary branch -> high (= 7).
     caseU("uniformI-unity", &uniform.uniformI, 0, "1", "2", "7", "7");
     caseU("uniformP-oob", &uniform.uniformP, 0, "10", "2", "7", "0"); // x above high -> 0
     caseU("uniformL-below", &uniform.uniformL, 0, "0", "2", "7", "0"); // x below low -> 0
     caseU("uniformL-above", &uniform.uniformL, 0, "10", "2", "7", "1"); // x above high -> 1
-    // The DEGENERATE uniform: low == high, so range is zero. Every case above
-    // seeds a non-degenerate pair, which left uniform.c's zero-range branches
-    // unreachable -- a mutant that answered 0 where the density is 1 survived.
-    caseU("uniformP-degenerate", &uniform.uniformP, 0, "5", "5", "5", "1");
-    caseU("uniformL-degenerate", &uniform.uniformL, 0, "5", "5", "5", "1");
+    // The DEGENERATE uniform: low == high. A continuous distribution has no
+    // density on a single point, so the domain rule refuses equal continuous
+    // limits with ERROR_INVALID_DISTRIBUTION_PARAM (16).
+    caseUDomainError("uniformP-degenerate", &uniform.uniformP, 0, "5", "5", "5", 16);
+    caseUDomainError("uniformL-degenerate", &uniform.uniformL, 0, "5", "5", "5", 16);
+    // The discrete one-point distribution on {5}: P(5) = 1 and F(5) = 1. These
+    // keep a degenerate pair in the suite, where a mutant answering 0 for a
+    // density of 1 would otherwise survive.
+    caseU("uniformP-degenerate-d", &uniform.uniformP, 1, "5", "5", "5", "1");
+    caseU("uniformL-degenerate-d", &uniform.uniformL, 1, "5", "5", "5", "1");
     // Discrete Uniform on integers [1, 6] (discrete = 1).
     caseU("uniformP-d", &uniform.uniformP, 1, "3", "1", "6", "0.166666666666666666666666666666666667");
     caseU("uniformL-d", &uniform.uniformL, 1, "3", "1", "6", "0.5");
     caseU("uniformU-d", &uniform.uniformU, 1, "3", "1", "6", "0.666666666666666666666666666666666667");
-    caseU("uniformI-d", &uniform.uniformI, 1, "0.5", "1", "6", "4");
+    // Discrete QF(p) = the least k with F(k) >= p = low + ceil(p*n) - 1, with
+    // n = high - low + 1: p=0.5, n=6 -> 1 + 3 - 1 = 3.
+    caseU("uniformI-d", &uniform.uniformI, 1, "0.5", "1", "6", "3");
 
     // GEV, xi = 0.5 (mu=0, sigma=1) at x=2 -> t = 0.25; QF round-trips p=e^-0.25.
-    // The PDF reproduces upstream's t^(t+1) exponent (its comment says t^(xi+1)).
+    // PDF(x) = t^(xi+1) e^-t / sigma = 0.25^1.5 e^-0.25.
     caseG("gevL", &gev.gevL, "2", "0", "1", "0.5", "0.778800783071404868245170266978320647");
     caseG("gevR", &gev.gevR, "2", "0", "1", "0.5", "0.221199216928595131754829733021679353");
-    caseG("gevP", &gev.gevP, "2", "0", "1", "0.5", "0.137673828725795936903995265687411962");
+    caseG("gevP", &gev.gevP, "2", "0", "1", "0.5", "0.0973500978839256085306462833722900809");
     caseG("gevI", &gev.gevI, "0.778800783071404868245170266978320647", "0", "1", "0.5", "2");
     // GEV, xi = 0 (Gumbel) at x=1 -> t = e^-1; exercises the realFMA branch.
+    // PDF(x) = t e^-t / sigma = e^(-1 - e^-1).
     caseG("gevL-gumbel", &gev.gevL, "1", "0", "1", "0", "0.692200627555346353865421997182789761");
-    caseG("gevP-gumbel", &gev.gevP, "1", "0", "1", "0", "0.176266384070865029614622604509631273");
+    caseG("gevP-gumbel", &gev.gevP, "1", "0", "1", "0", "0.254646380043582495819366695848172599");
     caseG("gevI-gumbel", &gev.gevI, "0.692200627555346353865421997182789761", "0", "1", "0", "1");
 
     if (failures == 0) {

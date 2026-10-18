@@ -594,6 +594,93 @@ const igamma_table_start = [8]u32{ 0, 31, 60, 87, 112, 135, 152, 167 };
 pub inline fn igammaC39(table: u32, k: u32) *align(1) const Real {
     return cstR(5636 + (igamma_table_start[table] + k) * 36);
 }
+pub inline fn const75_pi() *const Real {
+    return at(15244);
+}
+pub inline fn const51_1on3() *const Real {
+    return at(5124);
+}
+pub inline fn const51_7zeta2SqOn5() *const Real {
+    return at(5340);
+}
+pub inline fn const51_twoLn2() *const Real {
+    return at(5252);
+}
+pub inline fn const51_zeta2() *const Real {
+    return at(5296);
+}
+pub inline fn const75_ln10() *const Real {
+    return at(15556);
+}
+pub inline fn const75_ln2() *const Real {
+    return at(5384);
+}
+pub inline fn const75_piOn4() *const Real {
+    return at(15412);
+}
+pub inline fn const_1000() *const Real {
+    return at(12728);
+}
+pub inline fn const_10000() *const Real {
+    return at(12860);
+}
+pub inline fn const_180() *const Real {
+    return at(15316);
+}
+pub inline fn const_1e_10000() *const Real {
+    return at(13060);
+}
+pub inline fn const_1e_12() *const Real {
+    return at(4836);
+}
+pub inline fn const_1e_71() *const Real {
+    return at(4752);
+}
+pub inline fn const_205() *const Real {
+    return at(12692);
+}
+pub inline fn const_28() *const Real {
+    return at(12440);
+}
+pub inline fn const_29() *const Real {
+    return at(12452);
+}
+pub inline fn const_3on4() *const Real {
+    return at(5076);
+}
+pub inline fn const__gammaRm1() *const Real {
+    return at(12476);
+}
+pub inline fn const_gammaR() *const Real {
+    return at(12540);
+}
+pub inline fn const_gammaRm1() *const Real {
+    return at(12508);
+}
+pub inline fn const_plusInfinity() *const Real {
+    return at(1696);
+}
+pub inline fn const75_egamma() *const Real {
+    return at(15676);
+}
+pub inline fn const39_root2() *const Real {
+    return at(5444);
+}
+pub inline fn const_1on40000() *const Real {
+    return at(12872);
+}
+pub inline fn const_459p67() *const Real {
+    return at(4188);
+}
+pub inline fn const_9on5() *const Real {
+    return at(12176);
+}
+pub inline fn const39_3piOn4() *const Real {
+    return at(12236);
+}
+pub inline fn const_10p9__1() *const Real {
+    return at(12976);
+}
 pub inline fn const75_3piOn4() *const Real {
     return at(15616);
 }

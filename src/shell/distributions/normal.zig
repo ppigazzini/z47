@@ -2,8 +2,8 @@
 //
 // Zig owner for src/c47/distributions/normal.c: the standard, parametrised and
 // log-normal distribution commands and the WP34S kernels of the standard normal
-// behind them, which the Student t, chi-square, Poisson and hypergeometric
-// owners also call. The entry points load register X, the location in M and the
+// behind them, which the Student t, Poisson and hypergeometric owners also
+// call. The entry points load register X, the location in M and the
 // scale in S through WP34S_CheckDistributionParameters and keep their own
 // bodies, since the normal has no row in the descriptor table. A log-normal
 // argument whose logarithm cancels the location by more than 32 digits, and a

@@ -332,7 +332,8 @@ fn _sumProdNormalise(real: *real_t, imag: ?*real_t, exponent: *i64) linksection(
         const imagExponent: i32 = realGetExponent(imag.?);
         scale = if (realExponent > imagExponent) realExponent else imagExponent;
     }
-    if ((scale > 0 and exponent.* > std.math.maxInt(i64) - scale) or (scale < 0 and exponent.* < std.math.minInt(i64) - scale)) {
+    const scale_wide: i64 = scale;
+    if ((scale_wide > 0 and exponent.* > std.math.maxInt(i64) - scale_wide) or (scale_wide < 0 and exponent.* < std.math.minInt(i64) - scale_wide)) {
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
         return false;
     }

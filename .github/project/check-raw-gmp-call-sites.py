@@ -66,6 +66,52 @@ ALLOWED_FILES = {
 # NOT used -- a line number rots on the next edit. Keyed by path plus the exact call
 # text, so the reason survives a move and dies with the call.
 ALLOWED_SITES: dict[tuple[str, str], str] = {
+    # c43's exact scaled long-integer arithmetic (registerValueConversions.c and the
+    # callers the same range added) multiplies, adds and subtracts through the
+    # longIntegerMultiplyUnbounded/AddUnbounded/SubtractUnbounded macros, which are
+    # raw mpz calls in longIntegerType.h. Their operands are exact coefficients
+    # scaled by powers of ten to a common exponent; the result is rounded to Real34
+    # straight after, so the checked operators' overflow error would be a refusal
+    # c43 never raises.
+    (
+        "src/core/numeric/arithmetic/integer_residue_command.zig",
+        "runtime.__gmpz_mul(&divisor[0], &divisor[0], &scale[0]);",
+    ): (
+        "remainder.c mixedIntegerRealRemainder: longIntegerMultiplyUnbounded, a scaled exact coefficient rounded to Real34 next"
+    ),
+    (
+        "src/core/numeric/compare/comparison_reals.zig",
+        "runtime.__gmpz_mul(&coefficient, &coefficient, &scale);",
+    ): (
+        "comparisonReals.c compareFiniteReal34LongIntegerRegisters: longIntegerMultiplyUnbounded, a scaled exact coefficient rounded to Real34 next"
+    ),
+    (
+        "src/core/numeric/compare/comparison_reals.zig",
+        "runtime.__gmpz_mul(&integer, &integer, &scale);",
+    ): (
+        "comparisonReals.c compareFiniteReal34LongIntegerRegisters: longIntegerMultiplyUnbounded, a scaled exact coefficient rounded to Real34 next"
+    ),
+    (
+        "src/core/numeric/matrix/vector_linpol_io.zig",
+        "runtime.__gmpz_mul(&product[0], &p[0], &difference[0]);",
+    ): (
+        "linpol.c exact wide interpolation: longIntegerMultiplyUnbounded, a scaled exact coefficient rounded to Real34 next"
+    ),
+    (
+        "src/core/numeric/transform/transform_parallel_command.zig",
+        "runtime.__gmpz_mul(&product, &x, &y);",
+    ): (
+        "parallel.c exact wide ratio: longIntegerMultiplyUnbounded, a scaled exact coefficient rounded to Real34 next"
+    ),
+    ("src/core/state/value/register_conversions.zig", "__gmpz_mul(result, a, b);"): (
+        "the longIntegerMultiplyUnbounded wrapper itself, a raw mpz macro in c43's longIntegerType.h"
+    ),
+    ("src/core/state/value/register_conversions.zig", "__gmpz_add(result, a, b);"): (
+        "the longIntegerAddUnbounded wrapper itself, a raw mpz macro in c43's longIntegerType.h"
+    ),
+    ("src/core/state/value/register_conversions.zig", "__gmpz_sub(result, a, b);"): (
+        "the longIntegerSubtractUnbounded wrapper itself, a raw mpz macro in c43's longIntegerType.h"
+    ),
     # c43's algdep.c calls the raw operations. Every lattice entry is bounded by
     # ALGDEP_SCALE (30 digits) and ALGDEP_MAX_DEGREE (10): the Gram determinants run
     # to about 2*ALGDEP_SCALE digits whatever the degree, N^10 of a 34 digit input is

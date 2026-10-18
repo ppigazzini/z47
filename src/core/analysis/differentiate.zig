@@ -292,6 +292,7 @@ extern fn decNumberFromUInt32(res: *real_t, source: u32) *real_t;
 extern fn decNumberToString(source: *const real_t, dest: [*c]u8) [*c]u8;
 extern fn decNumberCopyAbs(res: *real_t, source: *const real_t) *real_t;
 extern fn decNumberSubtract(res: *real_t, op1: *const real_t, op2: *const real_t, ctxt: *realContext_t) *real_t;
+extern fn decNumberAdd(res: *real_t, op1: *const real_t, op2: *const real_t, ctxt: *realContext_t) *real_t;
 extern fn realCompareAbsLessThan(number1: *align(1) const real_t, number2: *align(1) const real_t) bool;
 
 inline fn realCopy(source: *align(1) const real_t, destination: *real_t) void {
@@ -314,6 +315,9 @@ inline fn realCopyAbs(source: *const real_t, destination: *real_t) void {
 }
 inline fn realSubtract(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberSubtract(res, op1, op2, ctxt);
+}
+inline fn realAdd(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+    _ = decNumberAdd(res, op1, op2, ctxt);
 }
 inline fn int32ToReal(source: i32, destination: *real_t) void {
     _ = decNumberFromInt32(destination, source);

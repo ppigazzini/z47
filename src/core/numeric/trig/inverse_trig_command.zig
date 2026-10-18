@@ -1,4 +1,3 @@
-const abi = @import("abi");
 const inverse_trig_complex_command_owned = @import("inverse_trig_complex_command.zig");
 const inverse_trig_real_command_owned = @import("inverse_trig_real_command.zig");
 const real_trig_owned = @import("real_trig.zig");
@@ -38,7 +37,7 @@ pub fn ArcsinAcosComplex(z: *const cplx_t, r: *cplx_t, calculate_acos: bool, rea
     const pi: *const real_t = if (wide) runtime.z47_math_wrappers_const75_pi() else runtime.z47_math_wrappers_const_pi();
     const pi_on_2: *const real_t = if (wide) runtime.z47_math_wrappers_const75_piOn2() else runtime.z47_math_wrappers_const_piOn2();
     const pi_on_4: *const real_t = if (wide) runtime.z47_math_wrappers_const75_piOn4() else runtime.z47_math_wrappers_const_piOn4();
-    const pi_3_on_4: *const real_t = if (wide) abi.constants.const75_3piOn4() else runtime.z47_math_wrappers_const_3piOn4();
+    const pi_3_on_4: *const real_t = if (wide) runtime.z47_math_wrappers_const75_3piOn4() else runtime.z47_math_wrappers_const_3piOn4();
 
     copyReal(&x, &z.Real);
     copyReal(&y, &z.Imag);
@@ -99,7 +98,7 @@ pub fn ArcsinAcosComplex(z: *const cplx_t, r: *cplx_t, calculate_acos: bool, rea
 
     // d = sqrt(q^2 + 4y^2); for q < 0 the root t uses d - q instead of q + d, which keeps two nearly equal operands apart
     // next to the finite real-axis segment.
-    runtime.realMultiply(&y_squared, abi.constants.const_4(), &d, real_context);
+    runtime.realMultiply(&y_squared, runtime.z47_math_wrappers_const_4(), &d, real_context);
     runtime.realFMA(&q, &q, &d, &d, real_context);
     runtime.realSquareRoot(&d, &d, real_context);
     if (runtime.realIsNegative(&q)) {
@@ -180,10 +179,10 @@ pub fn ArctanComplex(x: *cplx_t, r: *cplx_t, real_context: *runtime.realContext_
     runtime.realMultiply(&w.Real, &w.Real, &a_squared, real_context);
     if (runtime.realIsNegative(&w.Imag)) {
         runtime.realAdd(&w.Imag, runtime.z47_math_wrappers_const_1(), &denominator, real_context);
-        runtime.realMultiply(&w.Imag, abi.constants.const__4(), &numerator, real_context);
+        runtime.realMultiply(&w.Imag, runtime.z47_math_wrappers_const_minus_4(), &numerator, real_context);
     } else {
         runtime.realSubtract(&w.Imag, runtime.z47_math_wrappers_const_1(), &denominator, real_context);
-        runtime.realMultiply(&w.Imag, abi.constants.const_4(), &numerator, real_context);
+        runtime.realMultiply(&w.Imag, runtime.z47_math_wrappers_const_4(), &numerator, real_context);
     }
     runtime.realFMA(&denominator, &denominator, &a_squared, &denominator, real_context);
     runtime.realDivide(&numerator, &denominator, &numerator, real_context);
@@ -268,7 +267,7 @@ pub fn ArcsinhComplex(z: *const cplx_t, r: *cplx_t, real_context: *runtime.realC
 
     // d = sqrt(q^2 + 4x^2); for q < 0 the root t uses d - q instead of q + d, which keeps two nearly equal operands apart
     // next to the finite imaginary-axis segment.
-    runtime.realMultiply(&x_squared, abi.constants.const_4(), &d, real_context);
+    runtime.realMultiply(&x_squared, runtime.z47_math_wrappers_const_4(), &d, real_context);
     runtime.realFMA(&q, &q, &d, &d, real_context);
     runtime.realSquareRoot(&d, &d, real_context);
     if (runtime.realIsNegative(&q)) {

@@ -1,7 +1,5 @@
-const abi = @import("abi");
 const runtime = @import("../command_wrappers/runtime.zig");
 const transcendental_command_owned = @import("transcendental_command.zig");
-const math_wp34s = @import("wp34s.zig");
 
 const real_t = runtime.real_t;
 const cplx_t = runtime.cplx_t;
@@ -158,7 +156,7 @@ fn m1PowShoI() callconv(.c) void {
 // axis carries the magnitude.
 fn setM1PowAxis(magnitude: *const real_t, sector: *real_t, res: *cplx_t) void {
     if (runtime.realIsNegative(sector) and !runtime.realIsZero(sector)) {
-        runtime.realAdd(sector, abi.constants.const_4(), sector, &runtime.ctxtReal39);
+        runtime.realAdd(sector, runtime.z47_math_wrappers_const_4(), sector, &runtime.ctxtReal39);
     }
     const sector_index = runtime.realToInt32C47(sector, null);
 
@@ -190,7 +188,7 @@ fn m1PowReal() callconv(.c) void {
     }
 
     if (runtime.realIsInfinite(&z.Real) or runtime.realIsNaN(&z.Real)) {
-        runtime.convertRealToResultRegister(abi.constants.const_NaN(), runtime.REGISTER_X, runtime.amNone);
+        runtime.convertRealToResultRegister(runtime.const_NaN, runtime.REGISTER_X, runtime.amNone);
         return;
     }
 
@@ -279,7 +277,7 @@ pub fn eulersFormula(
 
     if (runtime.realIsZero(&in.Imag)) {
         copyReal(&z.Real, &in.Real);
-        math_wp34s.C47_WP34S_Cvt2RadSinCosTan(&z.Real, runtime.amRadian, &out.Imag, &out.Real, null, ctxt);
+        runtime.C47_WP34S_Cvt2RadSinCosTan(&z.Real, runtime.amRadian, &out.Imag, &out.Real, null, ctxt);
         return;
     }
 
@@ -300,7 +298,7 @@ fn eulersFormulaCplx() callconv(.c) void {
     }
 
     if (runtime.realIsInfinite(&z.Real)) {
-        runtime.convertComplexPartsToResultRegister(abi.constants.const_NaN(), abi.constants.const_NaN(), runtime.REGISTER_X);
+        runtime.convertComplexPartsToResultRegister(runtime.const_NaN, runtime.const_NaN, runtime.REGISTER_X);
     } else {
         if (runtime.realIsZero(&z.Imag)) {
             eulersFormula(&z, &z, &runtime.ctxtReal34);
@@ -337,7 +335,7 @@ fn eulersFormulaReal() callconv(.c) void {
         x_angular_mode = runtime.getRegisterAngularMode(runtime.REGISTER_X);
         if (x_angular_mode != runtime.amNone) {
             copyReal(&angle, &c.Real);
-            math_wp34s.C47_WP34S_Cvt2RadSinCosTan(&angle, x_angular_mode, &c.Imag, &c.Real, null, &runtime.ctxtReal34);
+            runtime.C47_WP34S_Cvt2RadSinCosTan(&angle, x_angular_mode, &c.Imag, &c.Real, null, &runtime.ctxtReal34);
         }
     }
 

@@ -368,11 +368,11 @@ pub export fn fnCvtTemp(ix: u16) callconv(.c) void {
 
     if (ix == 10) {
         // (F + 459.67) / 1.8 keeps the small distance from absolute zero.
-        rAdd(&re_x, cst(OFF_const_459p67), &re_x);
-        rDiv(&re_x, cst(OFF_const_9on5), &re_x);
+        rAdd(&re_x, consts.const_459p67(), &re_x);
+        rDiv(&re_x, consts.const_9on5(), &re_x);
     } else if (ix == 11) {
-        rMul(&re_x, cst(OFF_const_9on5), &re_x);
-        rSub(&re_x, cst(OFF_const_459p67), &re_x);
+        rMul(&re_x, consts.const_9on5(), &re_x);
+        rSub(&re_x, consts.const_459p67(), &re_x);
     } else {
         // The Celsius and Fahrenheit pair keeps its 39 digits; every other row rounds at the Real34 context.
         const context: *realContext_t = if (ix < 2) &ctxtReal39 else &ctxtReal34;

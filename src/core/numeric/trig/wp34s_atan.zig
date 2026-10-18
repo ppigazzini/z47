@@ -857,15 +857,12 @@ fn doAsin(x: *align(1) const real_t, angle: *align(1) real_t, abx: *align(1) rea
         realSetNaN(angle);
         return false;
     }
-    // angle = 2*atan(x/(1+sqrt(1-x*x)))
-    realSubtract(const_1(), abx, z, realContext); // 1-x*x as (1-|x|)(1+|x|): both factors are exact, where 1-x*x cancels near |x| = 1
+    // angle = atan2(x, sqrt((1-|x|)*(1+|x|)))
+    realSubtract(const_1(), abx, z, realContext);
     realAdd(const_1(), abx, abx, realContext);
     realMultiply(z, abx, z, realContext);
     realSquareRoot(z, z, realContext);
-    realAdd(z, const_1(), z, realContext);
-    realDivide(x, z, z, realContext);
-    C47_WP34S_Atan(@ptrCast(z), @ptrCast(abx), realContext);
-    realAdd(abx, abx, angle, realContext);
+    C47_WP34S_Atan2(x, z, angle, realContext);
     return true;
 }
 
@@ -931,19 +928,12 @@ fn doAcos(x: *align(1) const real_t, angle: *align(1) real_t, abx: *align(1) rea
         realSetNaN(angle);
         return false;
     }
-    // angle = 2*atan((1-x)/sqrt(1-x*x))
-    if (math_comparison_reals.realCompareEqual(@alignCast(x), @alignCast(const_1()))) {
-        realSetZero(angle);
-    } else {
-        realSubtract(const_1(), abx, z, realContext); // 1-x*x as (1-|x|)(1+|x|): both factors are exact, where 1-x*x cancels near |x| = 1
-        realAdd(const_1(), abx, abx, realContext);
-        realMultiply(z, abx, z, realContext);
-        realSquareRoot(z, z, realContext);
-        realSubtract(const_1(), x, abx, realContext);
-        realDivide(abx, z, z, realContext);
-        C47_WP34S_Atan(@ptrCast(z), @ptrCast(abx), realContext);
-        realAdd(abx, abx, angle, realContext);
-    }
+    // angle = atan2(sqrt((1-|x|)*(1+|x|)), x)
+    realSubtract(const_1(), abx, z, realContext);
+    realAdd(const_1(), abx, abx, realContext);
+    realMultiply(z, abx, z, realContext);
+    realSquareRoot(z, z, realContext);
+    C47_WP34S_Atan2(z, x, angle, realContext);
     return true;
 }
 

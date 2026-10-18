@@ -33,11 +33,11 @@
     {
       "lane": "math_wrappers_full_core",
       "step": "math_wrappers_full_core_parity",
-      "what": "conjCxma stops restoring a positive sign on a zero imaginary part",
+      "what": "conjugateComponent stops restoring a positive sign on a zero imaginary part",
       "file": "src/core/numeric/projection.zig",
-      "find": "        if (runtime.real34IsZero(complexMatrixImagPtr(&complex_matrix, index)) and !runtime.getSystemFlag(runtime.FLAG_SPCRES)) {\n            runtime.real34SetPositiveSign(complexMatrixImagPtr(&complex_matrix, index));\n        }",
+      "find": "    if (runtime.real34IsZero(component) and !runtime.getSystemFlag(runtime.FLAG_SPCRES)) {\n        component.bytes[15] &= 0x7f;\n    }\n",
       "replace": "",
-      "why": "Guards the complex-matrix branch, which no fixture in any lane reached until seedComplexMatrix existed. It needs BOTH halves of the condition arranged -- a zero imaginary part and SPCRES clear -- and this mutant survived until seedComplexMatrixImagZero cleared the flag, because the harness leaves it at its reset value of SET."
+      "why": "conjugate.c's conjugateComponent, which every conjugate path calls, conjCxma's included. It needs BOTH halves of the condition arranged -- a zero imaginary part and SPCRES clear -- and this mutant survived until seedComplexMatrixImagZero cleared the flag, because the harness leaves it at its reset value of SET."
     },
     {
       "lane": "math_wrappers_full_core",
@@ -53,8 +53,8 @@
       "step": "math_wrappers_full_core_parity",
       "what": "an out-of-domain arccos always answers complex, whatever CPXRES says",
       "file": "src/core/numeric/trig/inverse_trig_real_command.zig",
-      "find": "        if (runtime.getFlag(@intCast(runtime.FLAG_CPXRES))) {\n            inverse_trig_complex_command_owned.arccosCplx();\n            return;\n        }",
-      "replace": "        if (true) {\n            inverse_trig_complex_command_owned.arccosCplx();\n            return;\n        }",
+      "find": "        if (runtime.getFlag(@intCast(runtime.FLAG_CPXRES))) {\n            var z = realOutsideUnitInterval(&x);\n            _ = inverse_trig_command_owned.ArcsinAcosComplex(&z, &z, true, &runtime.ctxtReal39);",
+      "replace": "        if (true) {\n            var z = realOutsideUnitInterval(&x);\n            _ = inverse_trig_command_owned.ArcsinAcosComplex(&z, &z, true, &runtime.ctxtReal39);",
       "why": "Guards the CPXRES partition. FLAG_CPXRES is read at 32 sites in src/core/numeric/ and decides whether an out-of-domain real answers with a complex result or a domain error. This exact mutant SURVIVED until seedRealOutOfDomainNoComplex existed, because every fixture left the flag set."
     },
     {
@@ -62,9 +62,9 @@
       "step": "math_wrappers_full_core_parity",
       "what": "toRect2 reads a long integer's sign tag as an angular mode",
       "file": "src/core/numeric/transform/transform_polar_rect_command.zig",
-      "find": "    // mode. tryToRectReal34Pair below already does this; this one did not.\n    if (angle_type == runtime.dtLongInteger) {\n        angle_mode = runtime.currentAngularMode;\n    } else if (angle_mode == runtime.amNone) {\n        angle_mode = runtime.currentAngularMode;\n    }",
-      "replace": "    // mode. tryToRectReal34Pair below already does this; this one did not.\n    if (angle_type == runtime.dtReal34 and angle_mode == runtime.amNone) {\n        angle_mode = runtime.currentAngularMode;\n    }",
-      "why": "Restores the live defect this pass fixed. LI_NEGATIVE is 1 and LI_POSITIVE is 2, colliding with amGrad and amDegree, so a long-integer angle was converted from whatever mode its sign spelled. It hid because LI_POSITIVE equals amDegree by coincidence -- only a NEGATIVE long integer diverges, and the pair table had none in either operand. The anchor includes the comment above the block because the fix made this function textually identical to its sibling -- which is the point of the fix, and means the code alone cannot disambiguate them."
+      "find": "        reportPairTypeError(\"In function fnToRect2:\");\n        return true;\n    }\n\n    var radius_reg = if (angle_in_y == 1) runtime.REGISTER_X else runtime.REGISTER_Y;\n    var angle_reg = if (angle_in_y == 1) runtime.REGISTER_Y else runtime.REGISTER_X;\n    const radius_type = runtime.getRegisterDataType(radius_reg);\n    const angle_type = runtime.getRegisterDataType(angle_reg);\n    const radius_valid = radius_type == runtime.dtLongInteger or radius_type == runtime.dtReal34;\n    const angle_valid = angle_type == runtime.dtLongInteger or angle_type == runtime.dtReal34;\n\n    if (!radius_valid or !angle_valid) {\n        runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE);\n        reportToRectTypeError(radius_reg, angle_reg);\n        return true;\n    }\n\n    // The angle is read in its own unit, a long integer reduced by that unit's\n    // turn, before LASTx is saved; an out of range angle leaves everything as it was.\n    var z: runtime.cplx_t = undefined;\n    var angle_mode: runtime.angularMode_t = undefined;\n    if (!runtime.getRegisterAsRealAngle(angle_reg, z.arg(), &angle_mode, true) or runtime.lastErrorCode != runtime.ERROR_NONE) {\n        return true;\n    }\n",
+      "replace": "        reportPairTypeError(\"In function fnToRect2:\");\n        return true;\n    }\n\n    var radius_reg = if (angle_in_y == 1) runtime.REGISTER_X else runtime.REGISTER_Y;\n    var angle_reg = if (angle_in_y == 1) runtime.REGISTER_Y else runtime.REGISTER_X;\n    const radius_type = runtime.getRegisterDataType(radius_reg);\n    const angle_type = runtime.getRegisterDataType(angle_reg);\n    const radius_valid = radius_type == runtime.dtLongInteger or radius_type == runtime.dtReal34;\n    const angle_valid = angle_type == runtime.dtLongInteger or angle_type == runtime.dtReal34;\n\n    if (!radius_valid or !angle_valid) {\n        runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE);\n        reportToRectTypeError(radius_reg, angle_reg);\n        return true;\n    }\n\n    // The angle is read in its own unit, a long integer reduced by that unit's\n    // turn, before LASTx is saved; an out of range angle leaves everything as it was.\n    var z: runtime.cplx_t = undefined;\n    var angle_mode: runtime.angularMode_t = undefined;\n    if (!runtime.getRegisterAsRealAngle(angle_reg, z.arg(), &angle_mode, true) or runtime.lastErrorCode != runtime.ERROR_NONE) {\n        return true;\n    }\n    if (angle_type == runtime.dtLongInteger) {\n        angle_mode = runtime.getRegisterAngularMode(angle_reg);\n    }\n",
+      "why": "A long integer register's tag holds its SIGN, not an angular mode: LI_NEGATIVE is 1 and LI_POSITIVE is 2, colliding with amGrad and amDegree. getRegisterAsRealAngle answers currentAngularMode for a long integer, and both sides of this lane share it, so the mutant reads the tag back in the owner. Only a NEGATIVE long integer diverges, since LI_POSITIVE equals amDegree. fnToRect2 and tryToRectReal34Pair are textually identical from the register selection on, as toRect.c's are, so the anchor starts at fnToRect2's own type-error report."
     },
     {
       "lane": "register_metadata",
@@ -152,8 +152,8 @@
       "step": "math_ln_complex_oracle",
       "what": "ln(0) stops returning -infinity",
       "file": "src/core/numeric/ln_complex.zig",
-      "find": "    if (runtime.realIsZero(real) and runtime.realIsZero(imag)) {",
-      "replace": "    if (runtime.realIsZero(real) and !runtime.realIsZero(imag)) {",
+      "find": "    if (runtime.realIsZero(&z.Real) and runtime.realIsZero(&z.Imag)) {",
+      "replace": "    if (runtime.realIsZero(&z.Real) and !runtime.realIsZero(&z.Imag)) {",
       "why": "The zero-argument branch of the complex logarithm, which this oracle drives directly."
     },
     {
@@ -175,7 +175,7 @@
       "step": "math_command_wrappers_parity",
       "what": "changeSign stops routing a time register to its own worker",
       "file": "src/core/numeric/arithmetic/sign_command.zig",
-      "find": "    if (runtime.getRegisterDataType(runtime.REGISTER_X) == runtime.dtTime) {\n        changeSignTime();\n        return;\n    }",
+      "find": "    if (runtime.getRegisterDataType(runtime.REGISTER_X) == runtime.dtTime) {\n        chsZeroCheck(runtime.registerReal34Ptr(runtime.REGISTER_X));\n        return;\n    }\n",
       "replace": "",
       "why": "The lane that is the ONLY coverage for 86 of 120 math wrappers had no mutant at all. changeSign.c dispatches dtTime before the monadic table and the driver seeds two time fixtures, so the branch is reachable and observable in the snapshot."
     },
@@ -204,15 +204,25 @@
       "file": "src/shell/distributions/uniform.zig",
       "find": "            if (dr.realIsZero(&range)) {\n                res = dr.const1();",
       "replace": "            if (dr.realIsZero(&range)) {\n                res = dr.const0();",
-      "why": "The degenerate uniform (low == high) is a boundary c43 answers explicitly. This mutant SURVIVED until uniformP-degenerate existed, because every other uniform case seeds a non-degenerate low/high pair."
+      "why": "The zero-range branch fnUniformP still carries. This mutant SURVIVED until uniformP-degenerate existed, because every other uniform case seeds a non-degenerate low/high pair.",
+      "expected_survivor": "EQUIVALENT, not a gap. uniformCheckDomain swaps inverted limits and refuses equal continuous ones, and a discrete range is high - low + 1, so no input reaches the branch: the one-point discrete distribution answers 1 through 1/range. The killing mutant for this lane is the equal-limits rule below."
+    },
+    {
+      "lane": "distribution",
+      "step": "distribution_parity",
+      "what": "the equal-limits rule refuses the discrete one-point uniform instead of the continuous one",
+      "file": "src/shell/distributions/uniform.zig",
+      "find": "    if (discrete == 0 and dr.realEqual(l, h)) {",
+      "replace": "    if (discrete != 0 and dr.realEqual(l, h)) {",
+      "why": "uniformCheckDomain refuses equal continuous limits with ERROR_INVALID_DISTRIBUTION_PARAM, and a discrete pair of equal limits is the one-point distribution. Flipping the polarity breaks both: the continuous degenerate cases stop reporting error 16, and the discrete ones stop answering 1."
     },
     {
       "lane": "eigen",
       "step": "eigen_parity",
       "what": "dropNoise rounds at a fixed 39 digits instead of the requested precision",
       "file": "src/core/numeric/matrix/eigen.zig",
-      "find": "    var c: realContext_t = runtime.ctxtReal39;\n    c.digits = dig;\n    c.round = runtime.DEC_ROUND_HALF_UP;",
-      "replace": "    var c: realContext_t = runtime.ctxtReal39;\n    c.round = runtime.DEC_ROUND_HALF_UP;",
+      "find": "    var c: realContext_t = runtime.ctxtReal39; // ctxtDeNoise\n    c.digits = dig;\n    c.round = runtime.DEC_ROUND_HALF_UP;",
+      "replace": "    var c: realContext_t = runtime.ctxtReal39; // ctxtDeNoise\n    _ = dig;\n    c.round = runtime.DEC_ROUND_HALF_UP;",
       "why": "This lane drives the closed-form 2x2/3x3 workers, isRealSymmetric, dropNoise and the Householder QR step -- NOT calculateEigenvalues and the Hessenberg QR engine behind it. A mutant in that engine's tolerance survives this lane, which is how the lane's real scope became visible."
     },
     {
@@ -265,8 +275,8 @@
       "step": "math_real_trig_primitives_oracle",
       "what": "asin accepts an argument above one instead of answering NaN",
       "file": "src/core/numeric/trig/wp34s_atan.zig",
-      "find": "    realCopyAbs(x, abx);\n    if (math_comparison_reals.realCompareGreaterThan(@alignCast(abx), @alignCast(const_1()))) {\n        realSetNaN(angle);\n        return false;\n    }\n    // angle = 2*atan(x/(1+sqrt(1-x*x)))",
-      "replace": "    realCopyAbs(x, abx);\n    // angle = 2*atan(x/(1+sqrt(1-x*x)))",
+      "find": "    realCopyAbs(x, abx);\n    if (math_comparison_reals.realCompareGreaterThan(@alignCast(abx), @alignCast(const_1()))) {\n        realSetNaN(angle);\n        return false;\n    }\n    // angle = atan2(x, sqrt((1-|x|)*(1+|x|)))",
+      "replace": "    realCopyAbs(x, abx);\n    // angle = atan2(x, sqrt((1-|x|)*(1+|x|)))",
       "why": "Kept because the reason is worth more than the entry. This lane drives Asin/Acos/SinhCosh/Tanh/ArcSinh/ArcTanh, not the circular Taylor kernel -- a mutant in that kernel SURVIVED because at 39 digits its branch is never taken. The killing mutant for this lane is the asin arithmetic below.",
       "expected_survivor": "EQUIVALENT, not a gap. The corpus does drive asin at 2 and -2, but the guard is only an early-out: without it, 1-x*x is negative, realSquareRoot answers NaN and the whole expression is NaN anyway. Both sides agree either way."
     },
@@ -302,9 +312,9 @@
       "step": "math_real_trig_primitives_oracle",
       "what": "asin's half-angle identity adds where it subtracts",
       "file": "src/core/numeric/trig/wp34s_atan.zig",
-      "find": "    // angle = 2*atan(x/(1+sqrt(1-x*x)))\n    realSubtract(const_1(), abx, z, realContext);",
-      "replace": "    // angle = 2*atan(x/(1+sqrt(1-x*x)))\n    realAdd(const_1(), abx, z, realContext);",
-      "why": "angle = 2*atan(x/(1+sqrt(1-x*x))), with 1-x*x formed as (1-|x|)(1+|x|). The lane drives asin at 0, +-0.5 and +-1, so a sign error in the first factor moves every in-domain answer but 0."
+      "find": "    // angle = atan2(x, sqrt((1-|x|)*(1+|x|)))\n    realSubtract(const_1(), abx, z, realContext);",
+      "replace": "    // angle = atan2(x, sqrt((1-|x|)*(1+|x|)))\n    realAdd(const_1(), abx, z, realContext);",
+      "why": "angle = atan2(x, sqrt((1-|x|)(1+|x|))). The lane drives asin at 0, +-0.5 and +-1, so a sign error in the first factor moves every in-domain answer but 0."
     },
     {
       "lane": "program_serialization",

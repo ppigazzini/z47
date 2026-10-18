@@ -123,10 +123,11 @@ pub const RuntimeObjectOptions = struct {
     // configuration and the disjunction is the other two.
     option_cubic_159: bool = true,
     option_eigen_159: bool = true,
-    // Whether the owner exports its lnComplex under the plain C name. True for
-    // the product, sim and testSuite links, where mathematics/ln.c is filtered
-    // out and the owner is the only definition. The focused oracles set it false:
-    // each of them already links a C lnComplex, so a second one would clash.
+    // Whether the owner exports its lnComplex and lnComplexDirect under the plain
+    // C names. True for the product, sim and testSuite links, where
+    // mathematics/ln.c is filtered out and the owner is the only definition. The
+    // focused oracles set it false: each of them already links a C lnComplex and
+    // lnComplexDirect, so a second one would clash.
     export_public_ln_complex: bool = true,
 };
 

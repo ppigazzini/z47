@@ -287,13 +287,12 @@ pub export fn fnSigmaAssign(sigmaAssign: u16) callconv(.c) void {
 // flipPolar
 // ===========================================================================
 pub export fn flipPolar() callconv(.c) void {
-    var zReal: real_t = undefined;
-    var zImag: real_t = undefined;
+    var z: frontier_register_value_conversions.cplx_t = undefined;
     if (getRegisterDataType(REGISTER_X) != dtComplex34) {
-        if (!frontier_register_value_conversions.getRegisterAsComplex(REGISTER_X, &zReal, &zImag)) {
+        if (!frontier_register_value_conversions.getRegisterAsComplex(REGISTER_X, &z)) {
             return;
         }
-        frontier_register_value_conversions.convertComplexToResultRegister(&zReal, &zImag, REGISTER_X);
+        frontier_register_value_conversions.convertComplexToResultRegister(&z, REGISTER_X);
         return;
     }
 

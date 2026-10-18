@@ -95,7 +95,7 @@ fn reduceRadianToFirstOctant(
     }
 
     // Four times the remainder identifies its quadrant without shortening a value close to a multiple of pi/2.
-    runtime.realMultiply(work, abi.constants.const_4(), work, &c);
+    runtime.realMultiply(work, runtime.z47_math_wrappers_const_4(), work, &c);
     while (runtime.realCompareGreaterEqual(work, two_pi)) {
         runtime.realSubtract(work, two_pi, work, &c);
         quadrant += 1;

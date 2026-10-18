@@ -130,9 +130,10 @@ fn addMathLnComplexOracle(
     // Give the focused oracle the whole mathematics option set at its host
     // defaults, so the owners it compiles are the ones the sim compiles.
     // export_public_ln_complex stays false: every one of these lanes already has a
-    // C lnComplex to link -- the ln-complex differential the real ln.c body under
-    // its own name, the others the weak stub in math_wrappers_eigen_link_stubs.c
-    // -- so an exported owner copy would be a second definition of the symbol.
+    // C lnComplex and lnComplexDirect to link -- the ln-complex differential the
+    // real ln.c bodies under their own names, the others the weak stubs in
+    // math_wrappers_eigen_link_stubs.c -- so an exported owner copy would be a
+    // second definition of each symbol.
     math_command_wrappers.addBuildOptions(b, math_ln_complex_module, "math-ln-complex-oracle", .{ .export_public_ln_complex = false });
     const math_ln_complex_object = b.addObject(.{
         .name = "math-ln-complex-oracle-owned",
@@ -211,9 +212,10 @@ fn addMathEigenOracle(
     // Give the focused oracle the whole mathematics option set at its host
     // defaults, so the owners it compiles are the ones the sim compiles.
     // export_public_ln_complex stays false: every one of these lanes already has a
-    // C lnComplex to link -- the ln-complex differential the real ln.c body under
-    // its own name, the others the weak stub in math_wrappers_eigen_link_stubs.c
-    // -- so an exported owner copy would be a second definition of the symbol.
+    // C lnComplex and lnComplexDirect to link -- the ln-complex differential the
+    // real ln.c bodies under their own names, the others the weak stubs in
+    // math_wrappers_eigen_link_stubs.c -- so an exported owner copy would be a
+    // second definition of each symbol.
     math_command_wrappers.addBuildOptions(b, eigen_module, "math-eigen-oracle", .{ .export_public_ln_complex = false });
     const eigen_object = b.addObject(.{
         .name = "math-eigen-oracle-owned",
@@ -281,9 +283,10 @@ fn addMathRealRectangularToPolarOracle(
     // Give the focused oracle the whole mathematics option set at its host
     // defaults, so the owners it compiles are the ones the sim compiles.
     // export_public_ln_complex stays false: every one of these lanes already has a
-    // C lnComplex to link -- the ln-complex differential the real ln.c body under
-    // its own name, the others the weak stub in math_wrappers_eigen_link_stubs.c
-    // -- so an exported owner copy would be a second definition of the symbol.
+    // C lnComplex and lnComplexDirect to link -- the ln-complex differential the
+    // real ln.c bodies under their own names, the others the weak stubs in
+    // math_wrappers_eigen_link_stubs.c -- so an exported owner copy would be a
+    // second definition of each symbol.
     math_command_wrappers.addBuildOptions(b, helper_module, "math-real-rectangular-to-polar-oracle", .{ .export_public_ln_complex = false });
     const helper_object = b.addObject(.{
         .name = "math-real-rectangular-to-polar-oracle-owned",
@@ -351,9 +354,10 @@ fn addMathAtan2Oracle(
     // Give the focused oracle the whole mathematics option set at its host
     // defaults, so the owners it compiles are the ones the sim compiles.
     // export_public_ln_complex stays false: every one of these lanes already has a
-    // C lnComplex to link -- the ln-complex differential the real ln.c body under
-    // its own name, the others the weak stub in math_wrappers_eigen_link_stubs.c
-    // -- so an exported owner copy would be a second definition of the symbol.
+    // C lnComplex and lnComplexDirect to link -- the ln-complex differential the
+    // real ln.c bodies under their own names, the others the weak stubs in
+    // math_wrappers_eigen_link_stubs.c -- so an exported owner copy would be a
+    // second definition of each symbol.
     math_command_wrappers.addBuildOptions(b, helper_module, "math-atan2-oracle", .{ .export_public_ln_complex = false });
     const helper_object = b.addObject(.{
         .name = "math-atan2-oracle-owned",
@@ -421,9 +425,10 @@ fn addMathAtanOracle(
     // Give the focused oracle the whole mathematics option set at its host
     // defaults, so the owners it compiles are the ones the sim compiles.
     // export_public_ln_complex stays false: every one of these lanes already has a
-    // C lnComplex to link -- the ln-complex differential the real ln.c body under
-    // its own name, the others the weak stub in math_wrappers_eigen_link_stubs.c
-    // -- so an exported owner copy would be a second definition of the symbol.
+    // C lnComplex and lnComplexDirect to link -- the ln-complex differential the
+    // real ln.c bodies under their own names, the others the weak stubs in
+    // math_wrappers_eigen_link_stubs.c -- so an exported owner copy would be a
+    // second definition of each symbol.
     math_command_wrappers.addBuildOptions(b, helper_module, "math-atan-oracle", .{ .export_public_ln_complex = false });
     const helper_object = b.addObject(.{
         .name = "math-atan-oracle-owned",
@@ -491,9 +496,10 @@ fn addMathRealTrigPrimitivesOracle(
     // Give the focused oracle the whole mathematics option set at its host
     // defaults, so the owners it compiles are the ones the sim compiles.
     // export_public_ln_complex stays false: every one of these lanes already has a
-    // C lnComplex to link -- the ln-complex differential the real ln.c body under
-    // its own name, the others the weak stub in math_wrappers_eigen_link_stubs.c
-    // -- so an exported owner copy would be a second definition of the symbol.
+    // C lnComplex and lnComplexDirect to link -- the ln-complex differential the
+    // real ln.c bodies under their own names, the others the weak stubs in
+    // math_wrappers_eigen_link_stubs.c -- so an exported owner copy would be a
+    // second definition of each symbol.
     math_command_wrappers.addBuildOptions(b, helper_module, "math-real-trig-primitives-oracle", .{ .export_public_ln_complex = false });
     const helper_object = b.addObject(.{
         .name = "math-real-trig-primitives-oracle-owned",
@@ -561,9 +567,10 @@ fn addMathCircularTrigOracle(
     // Give the focused oracle the whole mathematics option set at its host
     // defaults, so the owners it compiles are the ones the sim compiles.
     // export_public_ln_complex stays false: every one of these lanes already has a
-    // C lnComplex to link -- the ln-complex differential the real ln.c body under
-    // its own name, the others the weak stub in math_wrappers_eigen_link_stubs.c
-    // -- so an exported owner copy would be a second definition of the symbol.
+    // C lnComplex and lnComplexDirect to link -- the ln-complex differential the
+    // real ln.c bodies under their own names, the others the weak stubs in
+    // math_wrappers_eigen_link_stubs.c -- so an exported owner copy would be a
+    // second definition of each symbol.
     math_command_wrappers.addBuildOptions(b, helper_module, "math-circular-trig-oracle", .{ .export_public_ln_complex = false });
     const helper_object = b.addObject(.{
         .name = "math-circular-trig-oracle-owned",
@@ -1417,6 +1424,14 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.l
         .files = build_common.decnumber_sources,
         .flags = distribution_dec_flags,
     });
+    // The owners read c43's constants through abi.constants, which indexes the
+    // generated `constants` blob, so the lane links the generator's own blob rather
+    // than a copy of it. The blob is a byte array that needs nothing from the core
+    // headers, and the constants lane's mock `c47.h` is the header that compiles it
+    // headless; the generated directory supplies the constantPointers.h it includes.
+    distribution_parity.root_module.addIncludePath(b.path("build/tests/constants"));
+    distribution_parity.root_module.addIncludePath(context.generated.constant_pointers_h.dirname());
+    distribution_parity.root_module.addCSourceFile(.{ .file = context.generated.constant_pointers_c, .flags = &.{} });
     const run_distribution_parity = b.addRunArtifact(distribution_parity);
     run_distribution_parity.setCwd(b.path("."));
     const distribution_parity_step = b.step("distribution_parity", "Run the statistical-distribution parity suite");

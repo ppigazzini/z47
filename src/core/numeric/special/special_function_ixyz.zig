@@ -1,6 +1,5 @@
 const std = @import("std");
 const runtime = @import("../command_wrappers/runtime.zig");
-const math_wp34s = @import("wp34s.zig");
 
 const real_t = runtime.real_t;
 const realContext_t = runtime.realContext_t;
@@ -45,8 +44,8 @@ fn ixyzEvaluate(x: *const real_t, a: *const real_t, b: *const real_t, res: *real
         }
 
         runtime.realSubtract(runtime.z47_math_wrappers_const_1(), x, &complement, real_context);
-        math_wp34s.WP34S_Ln(x, &logit, real_context);
-        math_wp34s.WP34S_Ln(&complement, &logComplement, real_context);
+        runtime.WP34S_Ln(x, &logit, real_context);
+        runtime.WP34S_Ln(&complement, &logComplement, real_context);
         runtime.realSubtract(&logit, &logComplement, &logit, real_context);
         if (!runtime.distributionBetaPair(a, b, x, &complement, &logit, &lower, &upper, real_context)) {
             return false;
@@ -59,7 +58,7 @@ fn ixyzEvaluate(x: *const real_t, a: *const real_t, b: *const real_t, res: *real
         copyReal(res, &lower);
         return true;
     } else {
-        math_wp34s.WP34S_betai(b, a, x, res, &runtime.ctxtReal75);
+        runtime.WP34S_betai(b, a, x, res, &runtime.ctxtReal75);
         return !runtime.realIsNaN(res);
     }
 }

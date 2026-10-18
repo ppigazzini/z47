@@ -320,7 +320,9 @@ fn doRealAGM() callconv(.c) void {
             doComplexAGM();
         } else {
             displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
-            moreInfoOnError("In function doRealAGM:", "cannot use negative X and Y as input of AGM", null, null);
+            if (comptime runtime.extra_info_on_calc_error) {
+                moreInfoOnError("In function doRealAGM:", "cannot use negative X and Y as input of AGM", null, null);
+            }
         }
     } else if (realIsInfinite(&a) or realIsInfinite(&b)) {
         if (runtime.getSystemFlag(FLAG_SPCRES)) {

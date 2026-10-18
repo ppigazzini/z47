@@ -600,7 +600,7 @@ pub export fn addRemaRema() callconv(.c) void {
     }
 
     runtime.addRealMatrices(&y, &x, &x);
-    if (x.matrixElements != null) {
+    if (abi.matrixHasElements(&x)) {
         runtime.convertReal34MatrixToReal34MatrixRegister(&x, runtime.REGISTER_X);
     } else {
         runtime.displayCalcErrorMessage(runtime.ERROR_MATRIX_MISMATCH, runtime.ERR_REGISTER_LINE);
@@ -761,7 +761,7 @@ pub export fn addCxmaCxma() callconv(.c) void {
     }
 
     runtime.addComplexMatrices(&y, &x, &x);
-    if (x.matrixElements != null) {
+    if (abi.matrixHasElements(&x)) {
         runtime.convertComplex34MatrixToComplex34MatrixRegister(&x, runtime.REGISTER_X);
     } else {
         runtime.displayCalcErrorMessage(runtime.ERROR_MATRIX_MISMATCH, runtime.ERR_REGISTER_LINE);
