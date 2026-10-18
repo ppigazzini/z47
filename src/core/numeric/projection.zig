@@ -1,6 +1,5 @@
 const std = @import("std");
 const abi = @import("abi");
-const build_options = @import("math_command_wrappers_build_options");
 const rectangular_to_polar_owned = @import("transform/rectangular_to_polar.zig");
 const runtime = @import("command_wrappers/runtime.zig");
 
@@ -13,18 +12,10 @@ fn complexMatrixElementCount(matrix: *const runtime.complex34Matrix_t) usize {
 }
 
 fn realMatrixElementPtr(matrix: *runtime.real34Matrix_t, index: usize) *runtime.real34_t {
-    if (build_options.use_fake_wp34s_model) {
-        return &matrix.matrixElements[index];
-    }
-
     return &abi.matrixRealElems(matrix)[index];
 }
 
 fn complexMatrixElementPtr(matrix: *runtime.complex34Matrix_t, index: usize) *runtime.complex34_t {
-    if (build_options.use_fake_wp34s_model) {
-        return &matrix.matrixElements[index];
-    }
-
     return &abi.matrixComplexElems(matrix)[index];
 }
 
@@ -36,14 +27,11 @@ fn complexMatrixImagPtr(matrix: *runtime.complex34Matrix_t, index: usize) *runti
     return &complexMatrixElementPtr(matrix, index).imag;
 }
 
+// The parts of a complex34 are copied as they are stored: no conversion, so no
+// rounding the stored value did not already have.
 fn realPartComplex() callconv(.c) void {
-    var value: runtime.cplx_t = undefined;
-
-    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &value)) {
-        return;
-    }
-
-    runtime.convertRealToResultRegister(&value.Real, runtime.REGISTER_X, runtime.amNone);
+    const real = runtime.registerReal34Ptr(runtime.REGISTER_X).*;
+    runtime.convertReal34ToReal34Register(&real, runtime.REGISTER_X);
 }
 
 fn realPartComplexMatrix() void {
@@ -61,7 +49,7 @@ fn realPartComplexMatrix() void {
 
     var index: usize = 0;
     while (index < count) : (index += 1) {
-        real_matrix.matrixElements[index] = complex_matrix.matrixElements[index].real;
+        realMatrixElementPtr(&real_matrix, index).* = complexMatrixRealPtr(&complex_matrix, index).*;
     }
 
     runtime.convertReal34MatrixToReal34MatrixRegister(&real_matrix, runtime.REGISTER_X);
@@ -70,6 +58,15 @@ fn realPartComplexMatrix() void {
 fn realPartReal() callconv(.c) void {
     var value: runtime.real_t = undefined;
 
+    const data_type = runtime.getRegisterDataType(runtime.REGISTER_X);
+    if (data_type == runtime.dtReal34) {
+        runtime.setRegisterAngularMode(runtime.REGISTER_X, runtime.amNone);
+        return;
+    }
+    if (data_type == runtime.dtLongInteger and (runtime.significantDigits == 0 or runtime.significantDigits == 34)) {
+        runtime.convertLongIntegerRegisterToReal34Register(runtime.REGISTER_X, runtime.REGISTER_X);
+        return;
+    }
     if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &value)) {
         return;
     }
@@ -78,13 +75,8 @@ fn realPartReal() callconv(.c) void {
 }
 
 fn imaginaryPartComplex() callconv(.c) void {
-    var value: runtime.cplx_t = undefined;
-
-    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &value)) {
-        return;
-    }
-
-    runtime.convertRealToResultRegister(&value.Imag, runtime.REGISTER_X, runtime.amNone);
+    const imaginary = runtime.registerImag34Ptr(runtime.REGISTER_X).*;
+    runtime.convertReal34ToReal34Register(&imaginary, runtime.REGISTER_X);
 }
 
 fn imaginaryPartComplexMatrix() void {
@@ -102,14 +94,15 @@ fn imaginaryPartComplexMatrix() void {
 
     var index: usize = 0;
     while (index < count) : (index += 1) {
-        real_matrix.matrixElements[index] = complex_matrix.matrixElements[index].imag;
+        realMatrixElementPtr(&real_matrix, index).* = complexMatrixImagPtr(&complex_matrix, index).*;
     }
 
     runtime.convertReal34MatrixToReal34MatrixRegister(&real_matrix, runtime.REGISTER_X);
 }
 
 fn imaginaryPartReal() callconv(.c) void {
-    runtime.convertRealToResultRegister(runtime.z47_math_wrappers_const_0(), runtime.REGISTER_X, runtime.amNone);
+    runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, runtime.amNone);
+    runtime.real34SetZero(runtime.registerReal34Data(runtime.REGISTER_X));
 }
 
 pub fn realPart() void {
@@ -119,6 +112,7 @@ pub fn realPart() void {
         }
 
         realPartComplexMatrix();
+        runtime.adjustResult(runtime.REGISTER_X, false, true, runtime.REGISTER_X, -1, -1);
         return;
     }
 
@@ -132,6 +126,7 @@ pub fn imaginaryPart() void {
         }
 
         imaginaryPartComplexMatrix();
+        runtime.adjustResult(runtime.REGISTER_X, false, true, runtime.REGISTER_X, -1, -1);
         return;
     }
 
@@ -181,7 +176,7 @@ fn argComplex() callconv(.c) void {
         return;
     }
 
-    rectangular_to_polar_owned.rectangularToPolarReal(&value, value.mag(), value.arg(), &runtime.ctxtReal39);
+    runtime.C47_WP34S_Atan2(&value.Imag, &value.Real, value.arg(), &runtime.ctxtReal39);
     runtime.convertAngleFromTo(value.arg(), runtime.amRadian, runtime.currentAngularMode, &runtime.ctxtReal39);
 
     runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, @intCast(runtime.currentAngularMode));
@@ -215,7 +210,6 @@ fn argRealMatrix() void {
 fn argComplexMatrix() void {
     var complex_matrix: runtime.complex34Matrix_t = undefined;
     var real_matrix: runtime.real34Matrix_t = undefined;
-    var dummy = std.mem.zeroes(runtime.real34_t);
 
     runtime.linkToComplexMatrixRegister(runtime.REGISTER_X, &complex_matrix);
     if (!runtime.realMatrixInit(&real_matrix, complex_matrix.header.matrixRows, complex_matrix.header.matrixColumns)) {
@@ -228,13 +222,12 @@ fn argComplexMatrix() void {
 
     var index: usize = 0;
     while (index < count) : (index += 1) {
-        runtime.real34RectangularToPolar(
-            complexMatrixRealPtr(&complex_matrix, index),
-            complexMatrixImagPtr(&complex_matrix, index),
-            &dummy,
-            realMatrixElementPtr(&real_matrix, index),
-        );
-        runtime.convertAngle34FromTo(realMatrixElementPtr(&real_matrix, index), runtime.amRadian, runtime.currentAngularMode);
+        var z: runtime.cplx_t = undefined;
+        runtime.real34ToReal(complexMatrixRealPtr(&complex_matrix, index), &z.Real);
+        runtime.real34ToReal(complexMatrixImagPtr(&complex_matrix, index), &z.Imag);
+        runtime.C47_WP34S_Atan2(&z.Imag, &z.Real, z.arg(), &runtime.ctxtReal39);
+        runtime.convertAngleFromTo(z.arg(), runtime.amRadian, runtime.currentAngularMode, &runtime.ctxtReal39);
+        runtime.realToReal34(z.arg(), realMatrixElementPtr(&real_matrix, index));
     }
 
     runtime.convertReal34MatrixToReal34MatrixRegister(&real_matrix, runtime.REGISTER_X);
@@ -269,24 +262,9 @@ fn magnitudeReal() callconv(.c) void {
     runtime.setRegisterAngularMode(runtime.REGISTER_X, runtime.amNone);
 }
 
-fn complexMagnitudeSquared(z: *const runtime.cplx_t, out_magnitude: *runtime.real_t, real_context: *runtime.realContext_t) void {
-    var product: runtime.real_t = undefined;
-
-    runtime.realMultiply(&z.Real, &z.Real, &product, real_context);
-    runtime.realFMA(&z.Imag, &z.Imag, &product, out_magnitude, real_context);
-}
-
-fn complexMagnitude(z: *const runtime.cplx_t, out_magnitude: *runtime.real_t, real_context: *runtime.realContext_t) void {
-    var squared: runtime.real_t = undefined;
-
-    complexMagnitudeSquared(z, &squared, real_context);
-    runtime.realSquareRoot(&squared, out_magnitude, real_context);
-}
-
 fn magnitudeComplexMatrix() void {
     var complex_matrix: runtime.complex34Matrix_t = undefined;
     var real_matrix: runtime.real34Matrix_t = undefined;
-    var dummy = std.mem.zeroes(runtime.real34_t);
 
     runtime.linkToComplexMatrixRegister(runtime.REGISTER_X, &complex_matrix);
     if (!runtime.realMatrixInit(&real_matrix, complex_matrix.header.matrixRows, complex_matrix.header.matrixColumns)) {
@@ -296,15 +274,17 @@ fn magnitudeComplexMatrix() void {
     defer runtime.realMatrixFree(&real_matrix);
 
     const count = complexMatrixElementCount(&complex_matrix);
+    const digits: i32 = if (runtime.significantDigits == 0) 34 else runtime.significantDigits;
 
     var index: usize = 0;
     while (index < count) : (index += 1) {
-        runtime.real34RectangularToPolar(
-            complexMatrixRealPtr(&complex_matrix, index),
-            complexMatrixImagPtr(&complex_matrix, index),
-            realMatrixElementPtr(&real_matrix, index),
-            &dummy,
-        );
+        var magnitude_value: runtime.real_t = undefined;
+        var z: runtime.cplx_t = undefined;
+        runtime.real34ToReal(complexMatrixRealPtr(&complex_matrix, index), &z.Real);
+        runtime.real34ToReal(complexMatrixImagPtr(&complex_matrix, index), &z.Imag);
+        runtime.complexMagnitude(&z, &magnitude_value, &runtime.ctxtReal39);
+        runtime.roundToSignificantDigits(&magnitude_value, &magnitude_value, digits, &runtime.ctxtReal39);
+        runtime.realToReal34(&magnitude_value, realMatrixElementPtr(&real_matrix, index));
     }
 
     runtime.convertReal34MatrixToReal34MatrixRegister(&real_matrix, runtime.REGISTER_X);
@@ -318,7 +298,7 @@ fn magnitudeComplex() callconv(.c) void {
         return;
     }
 
-    complexMagnitude(&value, &magnitude_value, &runtime.ctxtReal39);
+    runtime.complexMagnitude(&value, &magnitude_value, &runtime.ctxtReal39);
     runtime.convertRealToResultRegister(&magnitude_value, runtime.REGISTER_X, runtime.amNone);
 }
 
@@ -329,14 +309,21 @@ pub fn magnitude() void {
         }
 
         magnitudeComplexMatrix();
+        runtime.adjustResult(runtime.REGISTER_X, false, true, runtime.REGISTER_X, -1, -1);
         return;
     }
 
     runtime.processIntRealComplexMonadicFunction(&magnitudeReal, &magnitudeComplex, &magnitudeShortInteger, &magnitudeLongInteger);
 }
 
-fn changeReal34Sign(value: *runtime.real34_t) void {
-    value.bytes[15] ^= 0x80;
+// The imaginary part of a conjugate: the sign flipped, a zero kept positive
+// unless special results are on, then rounded to the selected significant digits.
+fn conjugateComponent(component: *align(1) runtime.real34_t) void {
+    component.bytes[15] ^= 0x80;
+    if (runtime.real34IsZero(component) and !runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
+        component.bytes[15] &= 0x7f;
+    }
+    runtime.roundReal34ResultToSignificantDigits(component);
 }
 
 fn conjugateRealMatrix() void {
@@ -346,13 +333,12 @@ fn conjugateRealMatrix() void {
     if (runtime.lastErrorCode != 0) {
         return;
     }
-    if (runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
-        const count = complexMatrixElementCount(&complex_matrix);
+    const count = complexMatrixElementCount(&complex_matrix);
 
-        var index: usize = 0;
-        while (index < count) : (index += 1) {
-            changeReal34Sign(complexMatrixImagPtr(&complex_matrix, index));
-        }
+    var index: usize = 0;
+    while (index < count) : (index += 1) {
+        runtime.roundReal34ResultToSignificantDigits(complexMatrixRealPtr(&complex_matrix, index));
+        conjugateComponent(complexMatrixImagPtr(&complex_matrix, index));
     }
 
     runtime.convertComplex34MatrixToComplex34MatrixRegister(&complex_matrix, runtime.REGISTER_X);
@@ -367,23 +353,53 @@ fn conjugateComplexMatrix() void {
     // write-back: convertComplex34MatrixToComplex34MatrixRegister would
     // reallocateRegister the very block matrixElements points into and then copy
     // from it, and it can raise ERROR_RAM_FULL on a path where c43 never allocates.
-    // conjRema below DOES write back and free, because its matrix is a converted
+    // conjRema above DOES write back and free, because its matrix is a converted
     // copy rather than the register.
     runtime.linkToComplexMatrixRegister(runtime.REGISTER_X, &complex_matrix);
     const count = complexMatrixElementCount(&complex_matrix);
 
     var index: usize = 0;
     while (index < count) : (index += 1) {
-        changeReal34Sign(complexMatrixImagPtr(&complex_matrix, index));
-        if (runtime.real34IsZero(complexMatrixImagPtr(&complex_matrix, index)) and !runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
-            runtime.real34SetPositiveSign(complexMatrixImagPtr(&complex_matrix, index));
-        }
+        runtime.roundReal34ResultToSignificantDigits(complexMatrixRealPtr(&complex_matrix, index));
+        conjugateComponent(complexMatrixImagPtr(&complex_matrix, index));
     }
+    runtime.setRegisterTag(runtime.REGISTER_X, @intCast(runtime.amNone));
+}
+
+// A real34 or a long integer the conjugate turns into a complex34 with a zero
+// imaginary part, its real part as stored (the real34 rounded to SDIGS).
+fn conjugateRealIntoComplex(real: runtime.real34_t) void {
+    runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtComplex34, 0, runtime.amNone);
+    if (runtime.lastErrorCode == runtime.ERROR_RAM_FULL) {
+        return;
+    }
+    runtime.registerReal34Ptr(runtime.REGISTER_X).* = real;
+    runtime.real34SetZero(runtime.registerImag34Data(runtime.REGISTER_X));
+    conjugateComponent(runtime.registerImag34Ptr(runtime.REGISTER_X));
 }
 
 fn conjugateComplex() callconv(.c) void {
+    const data_type = runtime.getRegisterDataType(runtime.REGISTER_X);
     var value: runtime.cplx_t = undefined;
 
+    if (data_type == runtime.dtComplex34) {
+        runtime.roundReal34ResultToSignificantDigits(runtime.registerReal34Ptr(runtime.REGISTER_X));
+        conjugateComponent(runtime.registerImag34Ptr(runtime.REGISTER_X));
+        runtime.setRegisterTag(runtime.REGISTER_X, @intCast(runtime.amNone));
+        return;
+    }
+    if (data_type == runtime.dtReal34) {
+        var real = runtime.registerReal34Ptr(runtime.REGISTER_X).*;
+        runtime.roundReal34ResultToSignificantDigits(&real);
+        conjugateRealIntoComplex(real);
+        return;
+    }
+    if (data_type == runtime.dtLongInteger and (runtime.significantDigits == 0 or runtime.significantDigits == 34)) {
+        var real: runtime.real34_t = undefined;
+        runtime.convertLongIntegerRegisterToReal34(runtime.REGISTER_X, &real);
+        conjugateRealIntoComplex(real);
+        return;
+    }
     if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &value)) {
         return;
     }
@@ -417,36 +433,27 @@ pub fn conjugate() void {
     conjugateComplex();
 }
 
-fn swapRealImaginaryComplex() callconv(.c) void {
-    var value: runtime.cplx_t = undefined;
-    var swapped: runtime.cplx_t = undefined;
-
-    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &value)) {
-        return;
-    }
-
-    swapped.Real = value.Imag;
-    swapped.Imag = value.Real;
-    runtime.convertComplexToResultRegister(&swapped, runtime.REGISTER_X);
-}
-
 fn swapRealImaginaryRealMatrix() void {
     var complex_matrix: runtime.complex34Matrix_t = undefined;
     var real_matrix: runtime.real34Matrix_t = undefined;
 
     runtime.linkToRealMatrixRegister(runtime.REGISTER_X, &real_matrix);
     runtime.convertReal34MatrixToComplex34Matrix(&real_matrix, &complex_matrix);
+    if (!abi.matrixHasElements(&complex_matrix)) {
+        return;
+    }
 
     const count = complexMatrixElementCount(&complex_matrix);
 
     var index: usize = 0;
     while (index < count) : (index += 1) {
-        complex_matrix.matrixElements[index].imag = complex_matrix.matrixElements[index].real;
+        complexMatrixImagPtr(&complex_matrix, index).* = complexMatrixRealPtr(&complex_matrix, index).*;
         // real34SetZero (decQuadZero), NOT sixteen zero bytes. An all-zero blob
         // is a valid decQuad but a DIFFERENT member of zero's cohort than the one
         // decQuadZero writes, so the register ends up holding bytes c43 never
         // produces. swapRealImaginary.c uses real34SetZero here.
         runtime.real34SetZero(complexMatrixRealPtr(&complex_matrix, index));
+        runtime.roundReal34ResultToSignificantDigits(complexMatrixImagPtr(&complex_matrix, index));
     }
 
     runtime.convertComplex34MatrixToComplex34MatrixRegister(&complex_matrix, runtime.REGISTER_X);
@@ -457,21 +464,36 @@ fn swapRealImaginaryComplexMatrix() void {
     var complex_matrix: runtime.complex34Matrix_t = undefined;
 
     // Aliased to the register, so the swap lands in place and
-    // swapRealImaginary.c's swapReImCxma ends here. swapReImRema below writes back
+    // swapRealImaginary.c's swapReImCxma ends here. swapReImRema above writes back
     // and frees because its matrix is a converted copy, not the register.
     runtime.linkToComplexMatrixRegister(runtime.REGISTER_X, &complex_matrix);
     const count = complexMatrixElementCount(&complex_matrix);
 
     var index: usize = 0;
     while (index < count) : (index += 1) {
-        const real_value = complex_matrix.matrixElements[index].real;
-        complex_matrix.matrixElements[index].real = complex_matrix.matrixElements[index].imag;
-        complex_matrix.matrixElements[index].imag = real_value;
+        const real_value = complexMatrixRealPtr(&complex_matrix, index).*;
+        complexMatrixRealPtr(&complex_matrix, index).* = complexMatrixImagPtr(&complex_matrix, index).*;
+        complexMatrixImagPtr(&complex_matrix, index).* = real_value;
+        runtime.roundReal34ResultToSignificantDigits(complexMatrixRealPtr(&complex_matrix, index));
+        runtime.roundReal34ResultToSignificantDigits(complexMatrixImagPtr(&complex_matrix, index));
     }
+    runtime.setRegisterTag(runtime.REGISTER_X, @intCast(runtime.amNone));
+}
+
+// A real34 or a long integer swapped into a complex34: zero real part, the value
+// as the imaginary part.
+fn swapRealIntoComplex(real: runtime.real34_t) void {
+    runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtComplex34, 0, runtime.amNone);
+    if (runtime.lastErrorCode == runtime.ERROR_RAM_FULL) {
+        return;
+    }
+    runtime.real34SetZero(runtime.registerReal34Data(runtime.REGISTER_X));
+    runtime.registerImag34Ptr(runtime.REGISTER_X).* = real;
 }
 
 pub fn swapRealImaginary() void {
     const register_data_type = runtime.getRegisterDataType(runtime.REGISTER_X);
+    var value: runtime.cplx_t = undefined;
 
     if (!runtime.saveLastX()) {
         return;
@@ -479,13 +501,27 @@ pub fn swapRealImaginary() void {
 
     if (register_data_type == runtime.dtReal34Matrix) {
         swapRealImaginaryRealMatrix();
-        return;
-    }
-
-    if (register_data_type == runtime.dtComplex34Matrix) {
+    } else if (register_data_type == runtime.dtComplex34Matrix) {
         swapRealImaginaryComplexMatrix();
-        return;
+    } else if (register_data_type == runtime.dtComplex34) {
+        const real_value = runtime.registerReal34Ptr(runtime.REGISTER_X).*;
+        runtime.registerReal34Ptr(runtime.REGISTER_X).* = runtime.registerImag34Ptr(runtime.REGISTER_X).*;
+        runtime.registerImag34Ptr(runtime.REGISTER_X).* = real_value;
+        runtime.roundReal34ResultToSignificantDigits(runtime.registerReal34Ptr(runtime.REGISTER_X));
+        runtime.roundReal34ResultToSignificantDigits(runtime.registerImag34Ptr(runtime.REGISTER_X));
+        runtime.setRegisterTag(runtime.REGISTER_X, @intCast(runtime.amNone));
+    } else if (register_data_type == runtime.dtReal34) {
+        var real = runtime.registerReal34Ptr(runtime.REGISTER_X).*;
+        runtime.roundReal34ResultToSignificantDigits(&real);
+        swapRealIntoComplex(real);
+    } else if (register_data_type == runtime.dtLongInteger and (runtime.significantDigits == 0 or runtime.significantDigits == 34)) {
+        var real: runtime.real34_t = undefined;
+        runtime.convertLongIntegerRegisterToReal34(runtime.REGISTER_X, &real);
+        swapRealIntoComplex(real);
+    } else {
+        if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &value)) {
+            return;
+        }
+        runtime.convertComplexPartsToResultRegister(&value.Imag, &value.Real, runtime.REGISTER_X);
     }
-
-    swapRealImaginaryComplex();
 }

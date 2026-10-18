@@ -603,6 +603,7 @@ pub const matrixRealElems = registers.matrixRealElems;
 pub const matrixConstRealElems = registers.matrixConstRealElems;
 pub const matrixComplexElems = registers.matrixComplexElems;
 pub const matrixConstComplexElems = registers.matrixConstComplexElems;
+pub const matrixHasElements = registers.matrixHasElements;
 
 /// Format `args` into `buf` with a trailing NUL, like C `sprintf`/`snprintf`.
 /// `buf` must fit the output (proven per call site by the format-equivalence

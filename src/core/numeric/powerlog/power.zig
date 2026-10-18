@@ -17,7 +17,6 @@ const const_1on4 = consts.const_1on4;
 // moreInfoOnError strings (no-op under TESTSUITE / DMCP).
 
 const runtime = @import("../command_wrappers/runtime.zig");
-const helpers = @import("../command_wrappers/helpers.zig");
 const math_command_wrappers = @import("../command_wrappers.zig");
 const math_comparison_reals = @import("../compare/comparison_reals.zig");
 const math_real_predicates = @import("../compare/real_predicates.zig");
@@ -178,7 +177,7 @@ fn powerRealWithParity(y: *const real_t, x: *const real_t, res: *real_t, realCon
     var lny: real_t = undefined;
 
     realCopyAbs(x, &lny);
-    if (realIsAnInteger(x) and runtime.realCompareLessEqual(&lny, helpers.const_10p9__1())) {
+    if (realIsAnInteger(x) and runtime.realCompareLessEqual(&lny, abi.constants.const_10p9__1())) {
         runtime.realPower(y, x, res, realContext);
     } else if (realIsNegative(y) and (integerParity >= 0 or realIsAnInteger(x))) {
         var isOdd: bool = false;

@@ -481,14 +481,13 @@ void oracle_decompReal(void);
 #undef fnArg
 #undef arg
 
-#define complexMagnitude2 oracle_complexMagnitude2
-#define complexMagnitude oracle_complexMagnitude
+// complexMagnitude and complexMagnitude2 keep their names, and so do sqrtComplex
+// and curtComplex below: the Zig owners reach them through the C names, so c43's
+// own bodies serve both sides of every case. The fake runtime's copies are weak
+// and stand in only where these files are not compiled.
 #define fnMagnitude oracle_fnMagnitude
-void complexMagnitude(const cplx_t *a, real_t *c, realContext_t *realContext);
 #include "../../../upstream/src/c47/mathematics/magnitude.c"
 #undef fnMagnitude
-#undef complexMagnitude
-#undef complexMagnitude2
 
 #define conjCplx oracle_conjCplx
 #define fnConjugate oracle_fnConjugate_legacy
@@ -617,16 +616,13 @@ void atan2LonIRema(void);
 #endif
 
 void harnessCurtRealLinkStub(void);
-void oracle_sqrtComplex(const cplx_t *z, cplx_t *res, realContext_t *realContext);
 #define curtReal harnessCurtRealLinkStub
 #define rootLonI oracle_rootLonI
 #define sqrtComplex75 oracle_sqrtComplex75
 #define sqrtComplex159 oracle_sqrtComplex159
-#define sqrtComplex oracle_sqrtComplex
 #define fnSquareRoot oracle_fnSquareRoot
 #include "../../../upstream/src/c47/mathematics/squareRoot.c"
 #undef fnSquareRoot
-#undef sqrtComplex
 #undef sqrtComplex159
 #undef sqrtComplex75
 #undef rootLonI
@@ -639,16 +635,13 @@ void harnessCurtRealLinkStub(void) {
 }
 
 void oracle_curtReal_impl(void);
-void oracle_curtComplex(const cplx_t *z, cplx_t *res, realContext_t *realContext);
 #define rootLonI oracle_rootLonI
 #define curtReal oracle_curtReal_impl
 #define curtComplex75 oracle_curtComplex75
 #define curtComplex159 oracle_curtComplex159
-#define curtComplex oracle_curtComplex
 #define fnCubeRoot oracle_fnCubeRoot
 #include "../../../upstream/src/c47/mathematics/cubeRoot.c"
 #undef fnCubeRoot
-#undef curtComplex
 #undef curtComplex159
 #undef curtComplex75
 #undef curtReal

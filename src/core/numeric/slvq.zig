@@ -28,7 +28,6 @@ const const_4 = consts.const_4;
 const runtime = @import("command_wrappers/runtime.zig");
 // slvc owns solveCoefficientVector, which both SLVQ and SLVC dispatch to; slvc
 // imports this file back for solveQuadraticEquation.
-const math_slvc = @import("slvc.zig");
 const real_t = runtime.real_t;
 const Real159 = abi.Real159;
 const cplx_t = runtime.cplx_t;
@@ -123,7 +122,7 @@ pub export fn fnSlvq(unused_but_mandatory_parameter: u16) linksection(runtime.co
 
     // A coefficient vector takes the matrix path: the element count picks the solver.
     if (getRegisterDataType(REGISTER_X) == dtReal34Matrix or getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {
-        math_slvc.solveCoefficientVector();
+        runtime.solveCoefficientVector();
         return;
     }
 
@@ -379,7 +378,15 @@ pub export fn solveQuadraticEquation(a: *const cplx_t, b: *const cplx_t, c: *con
 // ===========================================================================
 // solveQuadraticEquation159 (OPTION_SQUARE_159 / OPTION_EIGEN_159)
 // ===========================================================================
-pub export fn solveQuadraticEquation159(a: *const cplx159_t, b: *const cplx159_t, c: *const cplx159_t, r: *cplx159_t, x1: *cplx159_t, x2: *cplx159_t, realContext: *realContext_t) linksection(runtime.code_section) callconv(.c) void {
+// Compiled with OPTION_SQUARE_159 or OPTION_EIGEN_159, as slvq.c compiles it: the
+// 159-digit complex helpers it calls exist only under those options.
+comptime {
+    if (option_square_159 or runtime.option_eigen_159) {
+        @export(&solveQuadraticEquation159, .{ .name = "solveQuadraticEquation159" });
+    }
+}
+
+pub fn solveQuadraticEquation159(a: *const cplx159_t, b: *const cplx159_t, c: *const cplx159_t, r: *cplx159_t, x1: *cplx159_t, x2: *cplx159_t, realContext: *realContext_t) linksection(runtime.code_section) callconv(.c) void {
     const realCoefs = realIsZero(a.Imag.constPtr()) and realIsZero(b.Imag.constPtr()) and realIsZero(c.Imag.constPtr());
 
     if (realCoefs) {

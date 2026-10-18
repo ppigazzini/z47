@@ -60,16 +60,11 @@ src/core/numeric/matrix/vector3d.zig
 src/core/numeric/number_theory/prime.zig
 src/core/numeric/special/wp34s.zig
 src/core/numeric/special/cpyx.zig
-src/core/numeric/special/agm.zig
-src/core/numeric/special/gd.zig
-src/core/numeric/special/lnbeta.zig
-src/core/numeric/special/gamma.zig
 src/core/numeric/special/zeta.zig
 src/core/numeric/transform/transform_complex_helpers.zig
 src/core/numeric/compare/comparison_reals.zig
 src/core/numeric/compare/register_compare.zig
 src/core/numeric/transform/retocx.zig
-src/core/numeric/cxtore.zig
 src/core/numeric/special/elliptic.zig
 src/core/numeric/special/bessel.zig
 src/core/numeric/number_theory/opmod.zig

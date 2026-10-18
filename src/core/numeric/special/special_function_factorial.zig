@@ -1,5 +1,4 @@
 const runtime = @import("../command_wrappers/runtime.zig");
-const math_wp34s = @import("wp34s.zig");
 
 const real_t = runtime.real_t;
 const cplx_t = runtime.cplx_t;
@@ -25,7 +24,7 @@ fn factReal() callconv(.c) void {
         {
             real_context = &runtime.ctxtReal34;
         }
-        math_wp34s.WP34S_Factorial(&x, &x, real_context);
+        runtime.WP34S_Factorial(&x, &x, real_context);
         runtime.convertRealToResultRegister(&x, runtime.REGISTER_X, runtime.amNone);
     }
 }

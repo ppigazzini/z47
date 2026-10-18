@@ -43,6 +43,12 @@ void lnComplex(const cplx_t *z, cplx_t *ln, realContext_t *realContext) {
   (void)z; (void)ln; (void)realContext;
 }
 
+// Weak for the same reason: ln.c's lnComplexDirect, which the logXY owner calls.
+__attribute__((weak))
+void lnComplexDirect(const cplx_t *z, cplx_t *ln) {
+  (void)z; (void)ln;
+}
+
 // lcd_buffer_pixel_on and _ioFileNameOverride are NOT stubbed here: every
 // consumer of this file also links build/tests/testsuite_hal.zig, which
 // defines both, and duplicating them made all six oracles that use this file

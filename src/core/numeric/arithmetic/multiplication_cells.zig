@@ -533,7 +533,7 @@ pub export fn mulRemaRema() linksection(runtime.code_section) callconv(.c) void 
     runtime.linkToRealMatrixRegister(REGISTER_X, &x);
 
     support.multiplyRealMatrices(&y, &x, &res);
-    if (res.matrixElements != null) {
+    if (abi.matrixHasElements(&res)) {
         runtime.convertReal34MatrixToReal34MatrixRegister(&res, REGISTER_X);
         runtime.realMatrixFree(&res);
     } else {
@@ -624,7 +624,7 @@ pub export fn mulCxmaCxma() linksection(runtime.code_section) callconv(.c) void 
     runtime.linkToComplexMatrixRegister(REGISTER_X, &x);
 
     support.multiplyComplexMatrices(&y, &x, &res);
-    if (res.matrixElements != null) {
+    if (abi.matrixHasElements(&res)) {
         runtime.convertComplex34MatrixToComplex34MatrixRegister(&res, REGISTER_X);
         runtime.complexMatrixFree(&res);
     } else {

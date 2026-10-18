@@ -82,6 +82,12 @@ const realSetNegativeSign = owner.realSetNegativeSign;
 const realSetOne = owner.realSetOne;
 const realSetPositiveSign = owner.realSetPositiveSign;
 const realSubtract = owner.realSubtract;
+const realDivideRemainder = owner.realDivideRemainder;
+const radianReduction2Pi = owner.radianReduction2Pi;
+const mallocBigReal = owner.mallocBigReal;
+const freeBigReal = owner.freeBigReal;
+const const_4 = owner.const_4;
+const const_8 = owner.const_8;
 const real_t = owner.real_t;
 const stringToReal = owner.stringToReal;
 
@@ -134,6 +140,72 @@ pub fn reduceAngleToRange(
 }
 
 // ===========================================================================
+// reduceRadianToFirstOctant (static)
+// ===========================================================================
+// The radian reduction runs at a width that covers the 1001-digit input cap: the
+// DM42 reduces with the 2139-digit 2pi, since the 12321-digit one NaNs on the
+// DM42 decNumber at that context; every other target takes the wider one.
+const radian_reduction_digits: u32 = if (runtime.wp34s_mod_small_buffers) 2139 else 12321;
+
+// Reduces a nonnegative radian angle to the first octant without shortening it
+// before the quadrant subtraction: the remainder modulo 2pi is taken at the full
+// reduction width, four times it names the quadrant, its upper half is folded,
+// and only the final division by eight rounds to the caller's context. The
+// working real comes off the heap; without one the angle becomes NaN.
+fn reduceRadianToFirstOctant(angle: *align(1) real_t, sinNeg: *bool, cosNeg: *bool, swap: *bool, realContext: *realContext_t) void {
+    const work_buffer = mallocBigReal(radian_reduction_digits);
+    defer freeBigReal(work_buffer);
+    var c: realContext_t = realContext.*;
+    var quadrant: u32 = 0;
+
+    const work = work_buffer orelse {
+        displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE);
+        realSetNaN(angle);
+        return;
+    };
+    const two_pi = radianReduction2Pi();
+
+    c.digits = @intCast(radian_reduction_digits);
+    realDivideRemainder(angle, two_pi, work, &c);
+    if (realIsNaN(work)) {
+        realCopy(work, angle);
+        return;
+    }
+
+    // Four times the remainder identifies its quadrant without shortening a value close to a multiple of pi/2.
+    realMultiply(work, const_4(), work, &c);
+    while (math_comparison_reals.realCompareGreaterEqual(work, two_pi)) {
+        realSubtract(work, two_pi, work, &c);
+        quadrant += 1;
+    }
+
+    switch (quadrant) {
+        1 => {
+            swap.* = !swap.*;
+            cosNeg.* = !cosNeg.*;
+        },
+        2 => {
+            sinNeg.* = !sinNeg.*;
+            cosNeg.* = !cosNeg.*;
+        },
+        3 => {
+            swap.* = !swap.*;
+            sinNeg.* = !sinNeg.*;
+        },
+        else => {},
+    }
+
+    // The value is now four times an angle in [0, pi/2). Fold its upper half before shortening it.
+    realMultiply(work, const_2(), work, &c);
+    if (math_comparison_reals.realCompareGreaterThan(work, two_pi)) {
+        realSubtract(work, two_pi, work, &c);
+        realSubtract(two_pi, work, work, &c);
+        swap.* = !swap.*;
+    }
+    realDivide(work, const_8(), angle, realContext);
+}
+
+// ===========================================================================
 // doWP34S_SinCosTanTaylor (static)
 // ===========================================================================
 fn doWP34S_SinCosTanTaylor(
@@ -159,24 +231,30 @@ fn doWP34S_SinCosTanTaylor(
         realSetPositiveSign(angle);
     }
 
-    reduceAngleToRange(@ptrCast(angle), &angle45, &angle90, &angle180, &angularMode, savedContextDigits, realContext);
+    if (angularMode == amRadian) {
+        reduceRadianToFirstOctant(angle, sinNeg, cosNeg, swap, realContext);
+    } else {
+        reduceAngleToRange(@ptrCast(angle), &angle45, &angle90, &angle180, &angularMode, savedContextDigits, realContext);
+    }
 
+    // The quadrant folds below are for the units reduceAngleToRange returns in
+    // [0, 360); a radian angle already arrives in the first octant.
     // sin(180+x) = -sin(x), cos(180+x) = -cos(x)
-    if (math_comparison_reals.realCompareGreaterEqual(@alignCast(angle), @alignCast(angle180))) { // angle >= 180
+    if (angularMode != amRadian and math_comparison_reals.realCompareGreaterEqual(@alignCast(angle), @alignCast(angle180))) { // angle >= 180
         realSubtract(angle, angle180, angle, realContext); // angle - 180 --> angle
         sinNeg.* = !(sinNeg.*);
         cosNeg.* = !(cosNeg.*);
     }
 
     // sin(90+x) = cos(x), cos(90+x) = -sin(x)
-    if (math_comparison_reals.realCompareGreaterEqual(@alignCast(angle), @alignCast(angle90))) { // angle >= 90
+    if (angularMode != amRadian and math_comparison_reals.realCompareGreaterEqual(@alignCast(angle), @alignCast(angle90))) { // angle >= 90
         realSubtract(angle, angle90, angle, realContext); // angle - 90 --> angle
         swap.* = true;
         cosNeg.* = !(cosNeg.*);
     }
 
     // sin(90-x) = cos(x), cos(90-x) = sin(x)
-    if (math_comparison_reals.realCompareEqual(@alignCast(angle), @alignCast(angle45))) { // angle == 45
+    if (angularMode != amRadian and math_comparison_reals.realCompareEqual(@alignCast(angle), @alignCast(angle45))) { // angle == 45
         if (sinOut) |s| {
             realCopy(const39_root2on2(), s);
         }
@@ -187,12 +265,18 @@ fn doWP34S_SinCosTanTaylor(
             realSetOne(t);
         }
     } else { // angle < 90
-        if (math_comparison_reals.realCompareGreaterThan(@alignCast(angle), @alignCast(angle45))) { // angle > 45
+        if (angularMode != amRadian and math_comparison_reals.realCompareGreaterThan(@alignCast(angle), @alignCast(angle45))) { // angle > 45
             realSubtract(angle90, angle, angle, realContext); // 90 - angle --> angle
             swap.* = !(swap.*);
         }
         const angle30 = (angularMode == amDegree and math_comparison_reals.realCompareEqual(@alignCast(angle), const_30())); // exactly 30 degrees: its sine is 1/2
-        convertAngleFromTo(angle, angularMode, amRadian, realContext);
+        if (angularMode != amRadian) {
+            convertAngleFromTo(angle, angularMode, amRadian, realContext);
+        }
+        // The Taylor series runs at 51 digits for a caller that asked for 51 or fewer.
+        if (savedContextDigits <= 51) {
+            realContext.digits = 51;
+        }
         if (runtime.option_xfn_1000 and savedContextDigits >= 1071) {
             C47_WP34S_SinCosTanTaylor_temp1071(angle, swap.*, if (swap.*) cosOut else sinOut, if (swap.*) sinOut else cosOut, tanOut, realContext);
         } else {
@@ -252,25 +336,24 @@ fn C47_WP34S_Cvt2RadSinCosTan_75_helper(an: *align(1) const real_t, angularMode:
     var cosNeg: bool = false;
     var swap: bool = false;
     var angle: real_t = undefined;
+    // The reduction and the series run on a copy of the caller's context, at 75
+    // digits; the results are rounded back to the caller's digits at the end.
+    var c: realContext_t = realContext.*;
 
     if (realIsNaN(an)) {
         if (sinOut) |s| realSetNaN(s);
-        if (cosOut) |c| realSetNaN(c);
+        if (cosOut) |co| realSetNaN(co);
         if (tanOut) |t| realSetNaN(t);
         return;
     }
 
     realCopy(an, &angle);
 
-    const savedContextDigits = realContext.digits;
+    const savedContextDigits = c.digits;
 
-    if (realContext.digits > 51) {
-        realContext.digits = 75;
-    } else {
-        realContext.digits = 51;
-    }
+    c.digits = 75;
 
-    doWP34S_SinCosTanTaylor(&angle, &sinNeg, &cosNeg, &swap, sinOut, cosOut, tanOut, angularMode, savedContextDigits, realContext);
+    doWP34S_SinCosTanTaylor(&angle, &sinNeg, &cosNeg, &swap, sinOut, cosOut, tanOut, angularMode, savedContextDigits, &c);
 }
 
 // ===========================================================================

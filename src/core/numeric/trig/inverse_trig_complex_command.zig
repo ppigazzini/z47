@@ -1,4 +1,3 @@
-const abi = @import("abi");
 const inverse_trig_command_owned = @import("inverse_trig_command.zig");
 const runtime = @import("../command_wrappers/runtime.zig");
 
@@ -224,7 +223,7 @@ pub fn arctanhCplx() callconv(.c) void {
         runtime.realSubtract(runtime.z47_math_wrappers_const_1(), &a_abs, &denominator, &runtime.ctxtReal39);
         runtime.realMultiply(&denominator, &denominator, &denominator, &runtime.ctxtReal39);
         runtime.realFMA(&x.Imag, &x.Imag, &denominator, &denominator, &runtime.ctxtReal39);
-        runtime.realMultiply(&a_abs, abi.constants.const_4(), &numerator, &runtime.ctxtReal39);
+        runtime.realMultiply(&a_abs, runtime.z47_math_wrappers_const_4(), &numerator, &runtime.ctxtReal39);
         runtime.realDivide(&numerator, &denominator, &numerator, &runtime.ctxtReal39);
         runtime.WP34S_Ln1P(&numerator, &numerator, &runtime.ctxtReal39);
         runtime.realMultiply(&numerator, runtime.z47_math_wrappers_const_1on2(), &numerator, &runtime.ctxtReal39);

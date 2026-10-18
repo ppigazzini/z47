@@ -27,7 +27,6 @@ const const34_4 = consts.const34_4;
 // C carries no build-option guard on this file, so the body is unconditional.
 
 const runtime = @import("../command_wrappers/runtime.zig");
-const helpers = @import("../command_wrappers/helpers.zig");
 
 const std_plus_minus = "\x80\xb1"; // STD_PLUS_MINUS
 const std_infinity = "\xa2\x1e"; // STD_INFINITY
@@ -97,8 +96,8 @@ inline fn const_2() *const real_t {
 inline fn const_plusInfinity() *const real_t {
     return runtime.z47_math_wrappers_const_plus_infinity();
 }
-const const39_3piOn4 = helpers.const39_3piOn4;
-const const75_3piOn4 = helpers.const75_3piOn4;
+const const39_3piOn4 = consts.const39_3piOn4;
+const const75_3piOn4 = consts.const75_3piOn4;
 
 // real ops / predicates / copy. Some are C macros; reproduce them.
 extern fn realSetPlusInfinity(value: *real_t) void;

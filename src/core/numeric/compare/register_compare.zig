@@ -407,7 +407,7 @@ fn compareMatrices(regist: u16, mode: u8, type_x: u32, type_r: u32) void {
     var x_columns: i32 = undefined;
     var r_rows: i32 = undefined;
     var r_columns: i32 = undefined;
-    const zero34: *const runtime.real34_t = abi.constants.const34_0();
+    const zero34: *const runtime.real34_t = runtime.z47_math_wrappers_const34_0();
 
     if (type_x == runtime.dtComplex34Matrix) {
         runtime.linkToComplexMatrixRegister(runtime.REGISTER_X, &x_complex);
@@ -434,10 +434,10 @@ fn compareMatrices(regist: u16, mode: u8, type_x: u32, type_r: u32) void {
         var i: i32 = 0;
         while (i < element_count) : (i += 1) {
             const index: usize = @intCast(i);
-            const x_re: *const runtime.real34_t = if (type_x == runtime.dtComplex34Matrix) &x_complex.matrixElements[index].real else &x_real.matrixElements[index];
-            const x_im: *const runtime.real34_t = if (type_x == runtime.dtComplex34Matrix) &x_complex.matrixElements[index].imag else zero34;
-            const r_re: *const runtime.real34_t = if (type_r == runtime.dtComplex34Matrix) &r_complex.matrixElements[index].real else &r_real.matrixElements[index];
-            const r_im: *const runtime.real34_t = if (type_r == runtime.dtComplex34Matrix) &r_complex.matrixElements[index].imag else zero34;
+            const x_re: *const runtime.real34_t = if (type_x == runtime.dtComplex34Matrix) &@as([*]runtime.complex34_t, x_complex.matrixElements)[index].real else &@as([*]runtime.real34_t, x_real.matrixElements)[index];
+            const x_im: *const runtime.real34_t = if (type_x == runtime.dtComplex34Matrix) &@as([*]runtime.complex34_t, x_complex.matrixElements)[index].imag else zero34;
+            const r_re: *const runtime.real34_t = if (type_r == runtime.dtComplex34Matrix) &@as([*]runtime.complex34_t, r_complex.matrixElements)[index].real else &@as([*]runtime.real34_t, r_real.matrixElements)[index];
+            const r_im: *const runtime.real34_t = if (type_r == runtime.dtComplex34Matrix) &@as([*]runtime.complex34_t, r_complex.matrixElements)[index].imag else zero34;
 
             if (!matrixCompareRealEqual(x_re, r_re) or !matrixCompareRealEqual(x_im, r_im)) {
                 runtime.temporaryInformation = runtime.TI_FALSE;
@@ -982,16 +982,16 @@ fn incDecReal34(regist: u16, flag: u8, step: *const runtime.real34_t) void {
 }
 
 pub export fn incDecReal(regist: u16, flag: u8) callconv(.c) void {
-    incDecReal34(regist, flag, abi.constants.const34_1());
+    incDecReal34(regist, flag, runtime.z47_math_wrappers_const34_1());
 }
 
 fn incDecCplx(regist: u16, flag: u8) void {
-    incDecReal34(regist, flag, abi.constants.const34_1());
+    incDecReal34(regist, flag, runtime.z47_math_wrappers_const34_1());
 }
 
 pub export fn incDecTime(regist: u16, flag: u8) callconv(.c) void {
     // "count hours", value in seconds; step by 1 h = 3600 s to match DSZ/ISZ.
-    incDecReal34(regist, flag, abi.constants.const34_3600());
+    incDecReal34(regist, flag, runtime.z47_math_wrappers_const34_3600());
 }
 
 pub export fn incDecShoI(regist: u16, flag: u8) callconv(.c) void {

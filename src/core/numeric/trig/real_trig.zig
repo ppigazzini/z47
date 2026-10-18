@@ -1,4 +1,3 @@
-const abi = @import("abi");
 const atan2_owned = @import("atan2.zig");
 const build_options = @import("math_command_wrappers_build_options");
 const runtime = @import("../command_wrappers/runtime.zig");
@@ -201,7 +200,7 @@ pub fn arcsinhReal(
 
     copyAbs(&a, xin); // arsinh is odd: the formula below cancels for x < 0, so it runs on |x|
     if (realGetExponent(&a) < -18) { // arsinh x = x - x^3/6 to 72 digits, below |x| by less than half a unit at 34 digits
-        runtime.WP34S_TinyOddSeries(&a, abi.constants.const_6(), false, res, real_context);
+        runtime.WP34S_TinyOddSeries(&a, runtime.z47_math_wrappers_const_6(), false, res, real_context);
         if (negative) {
             res.bits |= 0x80;
         }

@@ -1,6 +1,5 @@
 const abi = @import("abi");
 const build_options = @import("math_command_wrappers_build_options");
-const comparison_reals_owned = @import("compare/comparison_reals.zig");
 const runtime = @import("command_wrappers/runtime.zig");
 
 const real_t = runtime.real_t;
@@ -164,8 +163,11 @@ pub fn lnRealValue(
         return;
     }
 
+    // The decimal exponent's share, at the 75-digit ln(10) when the context is
+    // wider than 39 digits, as WP34S_Ln takes it.
     int32ToRealLocal(exponent_adjust, &e);
-    runtime.realMultiply(&e, runtime.z47_math_wrappers_const_ln10(), &w, real_context);
+    const ln10: *const real_t = if (real_context.digits > 39) runtime.z47_math_wrappers_const75_ln10() else runtime.z47_math_wrappers_const_ln10();
+    runtime.realMultiply(&e, ln10, &w, real_context);
     runtime.realAdd(res, &w, res, real_context);
 }
 
@@ -197,7 +199,7 @@ pub fn lnComplexDirect(z: *const cplx_t, ln: *cplx_t) void {
     runtime.realRectangularToPolar(&w, ln.mag(), ln.arg(), &runtime.ctxtReal39);
     if (runtime.realCompareGreaterThan(ln.mag(), runtime.z47_math_wrappers_const_1on2()) and runtime.realCompareLessThan(ln.mag(), runtime.z47_math_wrappers_const_2())) {
         var near_unit_context: realContext_t = runtime.ctxtReal75;
-        if (comparison_reals_owned.realCompareAbsLessThan(&w.Real, &w.Imag)) {
+        if (runtime.realCompareAbsLessThan(&w.Real, &w.Imag)) {
             runtime.realSubtract(&w.Imag, runtime.z47_math_wrappers_const_1(), &ln.Real, &near_unit_context);
             runtime.realAdd(&w.Imag, runtime.z47_math_wrappers_const_1(), &w.Imag, &near_unit_context);
             runtime.realMultiply(&ln.Real, &w.Imag, &ln.Real, &near_unit_context);

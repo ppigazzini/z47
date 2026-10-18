@@ -307,9 +307,18 @@ fn publicLnComplex(
     ln_complex_owned.lnComplex(z, ln, real_context);
 }
 
+fn publicLnComplexDirect(z: *const runtime.cplx_t, ln: *runtime.cplx_t) callconv(.c) void {
+    ln_complex_owned.lnComplexDirect(z, ln);
+}
+
 comptime {
     if (build_options.export_public_ln_complex) {
         @export(&publicLnComplex, .{ .name = "lnComplex" });
+        // logXY reaches lnComplexDirect through the C name, as logxy.c does. The
+        // fake-runtime harness defines that name itself.
+        if (!runtime.harness_surface_is_fake) {
+            @export(&publicLnComplexDirect, .{ .name = "lnComplexDirect" });
+        }
     }
 }
 

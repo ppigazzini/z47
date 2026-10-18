@@ -1,8 +1,5 @@
 const runtime = @import("../command_wrappers/runtime.zig");
-const comparison_reals_owned = @import("../compare/comparison_reals.zig");
 const transcendental_command_owned = @import("transcendental_command.zig");
-const math_wp34s = @import("wp34s.zig");
-const abi = @import("abi");
 
 const real_t = runtime.real_t;
 const cplx_t = runtime.cplx_t;
@@ -79,7 +76,7 @@ fn fibonacciConstants(lnPhi: *real_t, sqrt5: *real_t, real_context: *realContext
     runtime.realSquareRoot(runtime.z47_math_wrappers_const_5(), sqrt5, real_context);
     runtime.realAdd(sqrt5, runtime.z47_math_wrappers_const_1(), lnPhi, real_context);
     runtime.realMultiply(lnPhi, runtime.z47_math_wrappers_const_1on2(), lnPhi, real_context);
-    math_wp34s.WP34S_Ln(lnPhi, lnPhi, real_context);
+    runtime.WP34S_Ln(lnPhi, lnPhi, real_context);
 }
 
 fn cosinePiComplex(z: *const cplx_t, res: *cplx_t, real_context: *realContext_t) void {
@@ -90,9 +87,9 @@ fn cosinePiComplex(z: *const cplx_t, res: *cplx_t, real_context: *realContext_t)
     var piImag: real_t = undefined;
     const pi: *const real_t = if (real_context.digits > 51) runtime.z47_math_wrappers_const75_pi() else runtime.z47_math_wrappers_const_pi();
 
-    math_wp34s.C47_WP34S_Cvt2RadSinCosTan(&z.Real, runtime.amMultPi, &sinReal, &cosReal, null, real_context);
+    runtime.C47_WP34S_Cvt2RadSinCosTan(&z.Real, runtime.amMultPi, &sinReal, &cosReal, null, real_context);
     runtime.realMultiply(&z.Imag, pi, &piImag, real_context);
-    math_wp34s.WP34S_SinhCosh(&piImag, &sinhImag, &coshImag, real_context);
+    runtime.WP34S_SinhCosh(&piImag, &sinhImag, &coshImag, real_context);
     runtime.multiplyTrigByHyperbolic(&cosReal, &coshImag, &res.Real, real_context);
     runtime.multiplyTrigByHyperbolic(&sinReal, &sinhImag, &res.Imag, real_context);
     runtime.realChangeSign(&res.Imag);
@@ -108,9 +105,9 @@ fn sinePiHalfComplex(z: *const cplx_t, res: *cplx_t, real_context: *realContext_
     const piOn2: *const real_t = if (real_context.digits > 51) runtime.z47_math_wrappers_const75_piOn2() else runtime.z47_math_wrappers_const_piOn2();
 
     runtime.realMultiply(&z.Real, runtime.z47_math_wrappers_const_1on2(), &halfReal, real_context);
-    math_wp34s.C47_WP34S_Cvt2RadSinCosTan(&halfReal, runtime.amMultPi, &sinReal, &cosReal, null, real_context);
+    runtime.C47_WP34S_Cvt2RadSinCosTan(&halfReal, runtime.amMultPi, &sinReal, &cosReal, null, real_context);
     runtime.realMultiply(&z.Imag, piOn2, &piImag, real_context);
-    math_wp34s.WP34S_SinhCosh(&piImag, &sinhImag, &coshImag, real_context);
+    runtime.WP34S_SinhCosh(&piImag, &sinhImag, &coshImag, real_context);
     runtime.multiplyTrigByHyperbolic(&sinReal, &coshImag, &res.Real, real_context);
     runtime.multiplyTrigByHyperbolic(&cosReal, &sinhImag, &res.Imag, real_context);
 }
@@ -125,7 +122,7 @@ fn FibonacciReal(n: *const real_t, res: *real_t, real_context: *realContext_t) u
     fibonacciConstants(&lnPhi, &sqrt5, real_context);
     runtime.realMultiply(&lnPhi, n, &a, real_context);
 
-    if (comparison_reals_owned.realCompareAbsLessThan(n, abi.constants.const_1on10())) {
+    if (runtime.realCompareAbsLessThan(n, runtime.z47_math_wrappers_const_1on10())) {
         var oneMinusCos: real_t = undefined;
         var sinHalf: real_t = undefined;
 
@@ -133,9 +130,9 @@ fn FibonacciReal(n: *const real_t, res: *real_t, real_context: *realContext_t) u
         runtime.realChangeSign(&b);
         transcendental_command_owned.realExp(&b, &b, real_context);
         runtime.realAdd(&a, &a, &a, real_context);
-        math_wp34s.WP34S_ExpM1(&a, &a, real_context);
+        runtime.WP34S_ExpM1(&a, &a, real_context);
         runtime.realMultiply(n, runtime.z47_math_wrappers_const_1on2(), &sinHalf, real_context);
-        math_wp34s.C47_WP34S_Cvt2RadSinCosTan(&sinHalf, runtime.amMultPi, &sinHalf, null, null, real_context);
+        runtime.C47_WP34S_Cvt2RadSinCosTan(&sinHalf, runtime.amMultPi, &sinHalf, null, null, real_context);
         runtime.realMultiply(&sinHalf, &sinHalf, &oneMinusCos, real_context);
         runtime.realAdd(&oneMinusCos, &oneMinusCos, &oneMinusCos, real_context);
         runtime.realAdd(&a, &oneMinusCos, &a, real_context);
@@ -145,7 +142,7 @@ fn FibonacciReal(n: *const real_t, res: *real_t, real_context: *realContext_t) u
         runtime.realChangeSign(&b);
         transcendental_command_owned.realExp(&a, &a, real_context);
         transcendental_command_owned.realExp(&b, &b, real_context);
-        math_wp34s.C47_WP34S_Cvt2RadSinCosTan(n, runtime.amMultPi, null, res, null, real_context);
+        runtime.C47_WP34S_Cvt2RadSinCosTan(n, runtime.amMultPi, null, res, null, real_context);
         runtime.multiplyTrigByHyperbolic(res, &b, &b, real_context);
         runtime.realSubtract(&a, &b, &a, real_context);
     }
@@ -165,7 +162,7 @@ fn FibonacciComplex(n: *const cplx_t, res: *cplx_t, real_context: *realContext_t
     fibonacciConstants(&lnPhi, &sqrt5, real_context);
     runtime.mulComplexReal(n, &lnPhi, &a, real_context);
 
-    if (comparison_reals_owned.realCompareAbsLessThan(&n.Real, abi.constants.const_1on10()) and comparison_reals_owned.realCompareAbsLessThan(&n.Imag, abi.constants.const_1on10())) {
+    if (runtime.realCompareAbsLessThan(&n.Real, runtime.z47_math_wrappers_const_1on10()) and runtime.realCompareAbsLessThan(&n.Imag, runtime.z47_math_wrappers_const_1on10())) {
         var c: cplx_t = undefined;
 
         copyReal(&b.Real, &a.Real);
@@ -202,7 +199,7 @@ fn FibonacciComplex(n: *const cplx_t, res: *cplx_t, real_context: *realContext_t
 }
 
 fn fibonacciRealContext(n: *const real_t) *realContext_t {
-    if (comparison_reals_owned.realCompareAbsLessThan(n, abi.constants.const_1on10())) {
+    if (runtime.realCompareAbsLessThan(n, runtime.z47_math_wrappers_const_1on10())) {
         return &runtime.ctxtReal39;
     }
     return if (runtime.realIsNegative(n)) &runtime.ctxtReal75 else &runtime.ctxtReal51;

@@ -410,7 +410,7 @@ pub export fn divRealLonI() linksection(runtime.code_section) callconv(.c) void 
     if (runtime.realIsZero(&x)) {
         runtime.reallocateRegister(REGISTER_X, runtime.dtReal34, 0, @intCast(runtime.amNone));
         if (runtime.getSystemFlag(support.FLAG_SPCRES)) {
-            runtime.real34Divide(runtime.registerReal34Ptr(REGISTER_Y), abi.constants.const34_0(), runtime.registerReal34Ptr(REGISTER_X));
+            runtime.real34Divide(runtime.registerReal34Ptr(REGISTER_Y), runtime.z47_math_wrappers_const34_0(), runtime.registerReal34Ptr(REGISTER_X));
         } else {
             if (runtime.real34IsZero(runtime.registerReal34Ptr(REGISTER_Y))) {
                 divisionDomainError("In function divRealLonI:", "cannot divide 0 by 0");
@@ -631,7 +631,7 @@ pub export fn divRemaLonI() linksection(runtime.code_section) callconv(.c) void 
 fn realMatrixHasZeroElement(matrix: *const runtime.real34Matrix_t) bool {
     const rows: u16 = matrix.header.matrixRows;
     const cols: u16 = matrix.header.matrixColumns;
-    const elements: [*]const runtime.real34_t = matrix.matrixElements;
+    const elements: [*]const runtime.real34_t = abi.matrixConstRealElems(matrix);
     var div_zero_occurs = false;
 
     var i: i32 = 0;
@@ -684,7 +684,7 @@ pub export fn divRemaRema() linksection(runtime.code_section) callconv(.c) void 
         runtime.moreInfoOnError("In function divRemaRema:", message, null, null);
     } else {
         support.divideRealMatrices(&y, &x, &res);
-        if (res.matrixElements != null) {
+        if (abi.matrixHasElements(&res)) {
             runtime.convertReal34MatrixToReal34MatrixRegister(&res, REGISTER_X);
             runtime.realMatrixFree(&res);
         } else {
@@ -825,7 +825,7 @@ pub export fn divCxmaCxma() linksection(runtime.code_section) callconv(.c) void 
         runtime.moreInfoOnError("In function divCxmaCxma:", message, null, null);
     } else {
         support.divideComplexMatrices(&y, &x, &res);
-        if (res.matrixElements != null) {
+        if (abi.matrixHasElements(&res)) {
             runtime.convertComplex34MatrixToComplex34MatrixRegister(&res, REGISTER_X);
             runtime.complexMatrixFree(&res);
         } else {

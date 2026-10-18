@@ -112,29 +112,38 @@ fn columnMinMaxComplex(matrix: *complex34Matrix_t) callconv(.c) bool {
     return false;
 }
 
-// readSearchValue -- decode REGISTER_X into a real34 search value, returning
-// false (with temporaryInformation set) when the value cannot be a plain real.
-fn readSearchValue(searchVal: *real34_t) ?bool {
+// matrixFindAny -- locate REGISTER_X in the indexed matrix and return its I,J.
+// The search value is decoded into a complex34, large enough for an element of
+// either kind. A real matrix compares the real part alone, so an X with a
+// nonzero imaginary part finds nothing there; an angle finds nothing in either.
+fn matrixFindAny(comptime Matrix: type, matrix: *Matrix) bool {
+    const is_complex = Matrix == complex34Matrix_t;
+    var searchVal: complex34_t = undefined;
+
     switch (runtime.getRegisterDataType(REGISTER_X)) {
         runtime.dtShortInteger => {
             var x: real_t = undefined;
             runtime.convertShortIntegerRegisterToReal(REGISTER_X, &x, &runtime.ctxtReal39);
-            runtime.realToReal34(&x, searchVal);
+            runtime.realToReal34(&x, &searchVal.real);
+            runtime.real34SetZero(&searchVal.imag);
         },
         runtime.dtLongInteger => {
-            convertLongIntegerRegisterToReal34(REGISTER_X, searchVal);
+            convertLongIntegerRegisterToReal34(REGISTER_X, &searchVal.real);
+            runtime.real34SetZero(&searchVal.imag);
         },
         runtime.dtReal34 => {
             if (runtime.getRegisterAngularMode(REGISTER_X) == runtime.amNone) {
-                searchVal.* = runtime.registerReal34Data(REGISTER_X).*;
+                searchVal.real = runtime.registerReal34Data(REGISTER_X).*;
+                runtime.real34SetZero(&searchVal.imag);
             } else {
                 runtime.temporaryInformation = TI_FALSE;
                 return true;
             }
         },
         runtime.dtComplex34 => {
-            if (runtime.real34IsZero(runtime.registerImag34Data(REGISTER_X))) {
-                searchVal.* = runtime.registerReal34Data(REGISTER_X).*;
+            if (is_complex or runtime.real34IsZero(runtime.registerImag34Data(REGISTER_X))) {
+                searchVal.real = runtime.registerReal34Data(REGISTER_X).*;
+                searchVal.imag = runtime.registerImag34Data(REGISTER_X).*;
             } else {
                 runtime.temporaryInformation = TI_FALSE;
                 return true;
@@ -145,77 +154,34 @@ fn readSearchValue(searchVal: *real34_t) ?bool {
             return true;
         },
     }
-    return null;
+
+    const cols: usize = matrix.header.matrixColumns;
+    var r: usize = 0;
+    while (r < matrix.header.matrixRows) : (r += 1) {
+        var c: usize = 0;
+        while (c < cols) : (c += 1) {
+            const found = if (is_complex) found: {
+                const cell = cmEl(matrix, r * cols + c);
+                break :found math_comparison_reals.real34CompareEqual(&cell.real, &searchVal.real) and math_comparison_reals.real34CompareEqual(&cell.imag, &searchVal.imag);
+            } else math_comparison_reals.real34CompareEqual(rmEl(matrix, r * cols + c), &searchVal.real);
+            if (found) {
+                runtime.setIRegisterAsInt(true, @intCast(r));
+                runtime.setJRegisterAsInt(true, @intCast(c));
+                runtime.temporaryInformation = TI_TRUE;
+                return true;
+            }
+        }
+    }
+    runtime.temporaryInformation = TI_FALSE;
+    return true;
 }
 
 fn matrixFindReal(matrix: *real34Matrix_t) callconv(.c) bool {
-    var searchVal: real34_t = undefined;
-    if (readSearchValue(&searchVal)) |_| return true;
-    const cols: usize = matrix.header.matrixColumns;
-    var r: usize = 0;
-    while (r < matrix.header.matrixRows) : (r += 1) {
-        var c: usize = 0;
-        while (c < cols) : (c += 1) {
-            if (math_comparison_reals.real34CompareEqual(rmEl(matrix, r * cols + c), &searchVal)) {
-                runtime.setIRegisterAsInt(true, @intCast(r));
-                runtime.setJRegisterAsInt(true, @intCast(c));
-                runtime.temporaryInformation = TI_TRUE;
-                return true;
-            }
-        }
-    }
-    runtime.temporaryInformation = TI_FALSE;
-    return true;
+    return matrixFindAny(real34Matrix_t, matrix);
 }
 
 fn matrixFindComplex(matrix: *complex34Matrix_t) callconv(.c) bool {
-    var searchValR: real34_t = undefined;
-    var searchValI: real34_t = undefined;
-    switch (runtime.getRegisterDataType(REGISTER_X)) {
-        runtime.dtShortInteger => {
-            var x: real_t = undefined;
-            runtime.convertShortIntegerRegisterToReal(REGISTER_X, &x, &runtime.ctxtReal39);
-            runtime.realToReal34(&x, &searchValR);
-            runtime.real34SetZero(&searchValI);
-        },
-        runtime.dtLongInteger => {
-            convertLongIntegerRegisterToReal34(REGISTER_X, &searchValR);
-            runtime.real34SetZero(&searchValI);
-        },
-        runtime.dtReal34 => {
-            if (runtime.getRegisterAngularMode(REGISTER_X) == runtime.amNone) {
-                searchValR = runtime.registerReal34Data(REGISTER_X).*;
-                runtime.real34SetZero(&searchValI);
-            } else {
-                runtime.temporaryInformation = TI_FALSE;
-                return true;
-            }
-        },
-        runtime.dtComplex34 => {
-            searchValR = runtime.registerReal34Data(REGISTER_X).*;
-            searchValI = runtime.registerImag34Data(REGISTER_X).*;
-        },
-        else => {
-            runtime.temporaryInformation = TI_FALSE;
-            return true;
-        },
-    }
-    const cols: usize = matrix.header.matrixColumns;
-    var r: usize = 0;
-    while (r < matrix.header.matrixRows) : (r += 1) {
-        var c: usize = 0;
-        while (c < cols) : (c += 1) {
-            const cell = cmEl(matrix, r * cols + c);
-            if (math_comparison_reals.real34CompareEqual(&cell.real, &searchValR) and math_comparison_reals.real34CompareEqual(&cell.imag, &searchValI)) {
-                runtime.setIRegisterAsInt(true, @intCast(r));
-                runtime.setJRegisterAsInt(true, @intCast(c));
-                runtime.temporaryInformation = TI_TRUE;
-                return true;
-            }
-        }
-    }
-    runtime.temporaryInformation = TI_FALSE;
-    return true;
+    return matrixFindAny(complex34Matrix_t, matrix);
 }
 
 pub export fn fnColumnMin(unusedParamButMandatory: u16) callconv(.c) void {

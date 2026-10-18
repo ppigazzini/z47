@@ -1,11 +1,9 @@
 const abi = @import("abi");
 const build_options = @import("math_command_wrappers_build_options");
-const comparison_reals_owned = @import("../compare/comparison_reals.zig");
 const ln_complex_owned = @import("../ln_complex.zig");
 const real_predicates_owned = @import("../compare/real_predicates.zig");
 const runtime = @import("../command_wrappers/runtime.zig");
 const math_command_wrappers = @import("../command_wrappers.zig");
-const math_wp34s = @import("wp34s.zig");
 
 const real_t = runtime.real_t;
 const cplx_t = runtime.cplx_t;
@@ -103,7 +101,7 @@ pub fn expComplex(
     const cos_value = cos_p.?;
 
     realExp(&z.Real, expa, real_context);
-    math_wp34s.C47_WP34S_Cvt2RadSinCosTan(&z.Imag, runtime.amRadian, sin_value, cos_value, null, real_context);
+    runtime.C47_WP34S_Cvt2RadSinCosTan(&z.Imag, runtime.amRadian, sin_value, cos_value, null, real_context);
     runtime.realMultiply(expa, cos_value, &res.Real, real_context);
     runtime.realMultiply(expa, sin_value, &res.Imag, real_context);
 }
@@ -200,8 +198,11 @@ pub fn lnRealValue(
         return;
     }
 
+    // The decimal exponent's share, at the 75-digit ln(10) when the context is
+    // wider than 39 digits, as WP34S_Ln takes it.
     runtime.int32ToReal(exponent_adjust, &e);
-    runtime.realMultiply(&e, runtime.z47_math_wrappers_const_ln10(), &w, real_context);
+    const ln10: *const real_t = if (real_context.digits > 39) runtime.z47_math_wrappers_const75_ln10() else runtime.z47_math_wrappers_const_ln10();
+    runtime.realMultiply(&e, ln10, &w, real_context);
     runtime.realAdd(res, &w, res, real_context);
 }
 
@@ -233,7 +234,7 @@ pub fn expM1Complex(
     // The split identity below has factors that approach zero and infinity for
     // a large negative real part. Direct subtraction is well-conditioned for
     // real <= -0.1 and avoids multiplying those factors.
-    if (runtime.realIsInfinite(&z.Real) or (runtime.realIsNegative(&z.Real) and !comparison_reals_owned.realCompareAbsLessThan(&z.Real, abi.constants.const_1on10()))) {
+    if (runtime.realIsInfinite(&z.Real) or (runtime.realIsNegative(&z.Real) and !runtime.realCompareAbsLessThan(&z.Real, runtime.z47_math_wrappers_const_1on10()))) {
         expComplex(z, res, real_context);
         runtime.realSubtract(&res.Real, runtime.z47_math_wrappers_const_1(), &res.Real, real_context);
         return;
@@ -342,7 +343,7 @@ pub fn lnCplx() callconv(.c) void {
 // applies directly without loss.
 pub fn lnP1Complex(
     z: *const cplx_t,
-    ln: *cplx_t,
+    result: *cplx_t,
     real_context: *realContext_t,
 ) void {
     var r: real_t = undefined;
@@ -354,7 +355,7 @@ pub fn lnP1Complex(
     // rectangular-to-polar conversion would additionally run an arctangent
     // that is thrown away, leaving its status in the caller's context.
     runtime.complexMagnitude(z, &t, real_context);
-    if (comparison_reals_owned.realCompareAbsLessThan(&t, abi.constants.const_1e_6())) {
+    if (runtime.realCompareAbsLessThan(&t, runtime.z47_math_wrappers_const_1e_6())) {
         var series_context: realContext_t = real_context.*;
         if (series_context.digits > 51) {
             series_context.digits = 51;
@@ -379,27 +380,27 @@ pub fn lnP1Complex(
             runtime.realDivide(&term.Imag, &r, &t, &series_context);
             runtime.realAdd(&sum.Imag, &t, &sum.Imag, &series_context);
         }
-        copyReal(&ln.Real, &sum.Real);
-        copyReal(&ln.Imag, &sum.Imag);
+        copyReal(&result.Real, &sum.Real);
+        copyReal(&result.Imag, &sum.Imag);
     } else {
         // No numeric problems, so just do this directly
         runtime.realAdd(&z.Real, runtime.z47_math_wrappers_const_1(), &term.Real, real_context); // term = 1 + z
         copyReal(&term.Imag, &z.Imag);
         if (runtime.realIsZero(&term.Real) and runtime.realIsZero(&term.Imag)) {
-            copyReal(&ln.Real, runtime.z47_math_wrappers_const_minus_infinity());
-            runtime.realSetZero(&ln.Imag);
+            copyReal(&result.Real, runtime.z47_math_wrappers_const_minus_infinity());
+            runtime.realSetZero(&result.Imag);
         } else {
             copyReal(&sum.Imag, &z.Imag);
-            runtime.realRectangularToPolar(&term, ln.mag(), ln.arg(), real_context);
-            if (runtime.realCompareGreaterThan(ln.mag(), runtime.z47_math_wrappers_const_1on2()) and runtime.realCompareLessThan(ln.mag(), runtime.z47_math_wrappers_const_2())) {
+            runtime.realRectangularToPolar(&term, result.mag(), result.arg(), real_context);
+            if (runtime.realCompareGreaterThan(result.mag(), runtime.z47_math_wrappers_const_1on2()) and runtime.realCompareLessThan(result.mag(), runtime.z47_math_wrappers_const_2())) {
                 runtime.realSubtract(&term.Real, runtime.z47_math_wrappers_const_1(), &t, real_context);
                 runtime.realAdd(&term.Real, runtime.z47_math_wrappers_const_1(), &sum.Real, real_context);
                 runtime.realMultiply(&t, &sum.Real, &sum.Real, real_context);
                 runtime.realFMA(&sum.Imag, &sum.Imag, &sum.Real, &sum.Real, real_context);
-                runtime.WP34S_Ln1P(&sum.Real, &ln.Real, real_context);
-                runtime.realMultiply(&ln.Real, runtime.z47_math_wrappers_const_1on2(), &ln.Real, real_context);
+                runtime.WP34S_Ln1P(&sum.Real, &result.Real, real_context);
+                runtime.realMultiply(&result.Real, runtime.z47_math_wrappers_const_1on2(), &result.Real, real_context);
             } else {
-                lnRealValue(ln.mag(), &ln.Real, real_context);
+                lnRealValue(result.mag(), &result.Real, real_context);
             }
         }
     }
@@ -430,7 +431,7 @@ pub fn expM1Cplx() callconv(.c) void {
         return;
     }
 
-    if (runtime.realIsInfinite(&z.Real) or (runtime.realIsNegative(&z.Real) and !comparison_reals_owned.realCompareAbsLessThan(&z.Real, abi.constants.const_1on10()))) {
+    if (runtime.realIsInfinite(&z.Real) or (runtime.realIsNegative(&z.Real) and !runtime.realCompareAbsLessThan(&z.Real, runtime.z47_math_wrappers_const_1on10()))) {
         real_context = &runtime.ctxtReal39;
     }
     expM1Complex(&z, &z, real_context);

@@ -32,7 +32,7 @@ distributions/binomial	frontier	port	symbol
 distributions/cauchy	frontier	port	symbol
 distributions/chi2	frontier	port	symbol
 distributions/exponential	frontier	port	symbol
-distributions/f	frontier	port	symbol
+distributions/f	frontier;shell/distributions/f	port	symbol
 distributions/geometric	frontier	port	symbol
 distributions/gev	frontier	port	symbol
 distributions/hyper	frontier	port	symbol
@@ -62,8 +62,8 @@ logicalOps/rotateBits	core/numeric/integer/rotate_bits	port	symbol
 logicalOps/setClearFlipBits	core/numeric/integer/bit_manipulation	port	symbol
 logicalOps/xnor	core/numeric/integer/logical_boolean_ops	port	symbol
 logicalOps/xor	core/numeric/integer/logical_boolean_ops	port	symbol
-mathematics/10pow	core/numeric/command_wrappers;core/numeric/powerlog/powlog_power	port	symbol
-mathematics/2pow	core/numeric/command_wrappers;core/numeric/powerlog/powlog_power	port	symbol
+mathematics/10pow	core/numeric/powerlog/powlog_power	port	symbol
+mathematics/2pow	core/numeric/powerlog/powlog_power	port	symbol
 mathematics/addition	core/numeric/arithmetic/addition_cells;core/numeric/arithmetic/dispatch_command	port	symbol
 mathematics/agm	core/numeric/special/agm	port	symbol
 mathematics/algdep	core/numeric/algdep	port	symbol
@@ -126,7 +126,7 @@ mathematics/invert	core/numeric/arithmetic/invert_command	port	symbol
 mathematics/iteration	core/numeric/iteration	port	symbol
 mathematics/ixyz	core/numeric/special/special_function_ixyz	port	symbol
 mathematics/lcm	core/numeric/arithmetic/integer_residue_command	port	symbol
-mathematics/linpol	core/numeric/command_wrappers;core/numeric/matrix/vector_linpol_compute;core/numeric/matrix/vector_linpol_pipeline	port	symbol
+mathematics/linpol	core/numeric/command_wrappers;core/numeric/matrix/vector_linpol_compute;core/numeric/matrix/vector_linpol_io;core/numeric/matrix/vector_linpol_pipeline	port	symbol
 mathematics/ln	core/numeric/ln_complex;core/numeric/special/transcendental_command	port	symbol
 mathematics/lnPOne	core/numeric/special/transcendental_command	port	symbol
 mathematics/lnbeta	core/numeric/special/lnbeta	port	symbol
@@ -206,7 +206,7 @@ programming/structured	shell/program/structured	port	symbol
 realType	core/state/value/real_special_values;core/state/value/register_conversions	port	symbol
 recall	shell/recall	port	symbol
 registerValueConversions	abi/sci_format;core/state/value/register_conversions;shell/register_value_conversions	port	symbol
-registers	core/state/register_metadata;core/state/register_metadata/register_metadata_descriptor;core/state/register_metadata/register_metadata_local_registers;core/state/register_metadata/register_metadata_payload;core/state/register_metadata/register_metadata_reallocate;core/state/register_metadata/register_metadata_variables;core/state/register_metadata/registers_compat_exports;core/state/runtime/register_memory;core/state/stack;core/state/stack/stack_clear;core/state/stack/stack_mutation;core/state/stack/stack_register_commands;core/state/stack/stack_result	port	symbol
+registers	core/state/register_metadata;core/state/register_metadata/register_metadata_descriptor;core/state/register_metadata/register_metadata_local_registers;core/state/register_metadata/register_metadata_payload;core/state/register_metadata/register_metadata_reallocate;core/state/register_metadata/register_metadata_variables;core/state/register_metadata/registers_compat_exports;core/state/runtime/register_memory;core/state/runtime/stack_runtime_register_range;core/state/stack;core/state/stack/stack_clear;core/state/stack/stack_mutation;core/state/stack/stack_register_commands;core/state/stack/stack_result	port	symbol
 saveRestoreBackup	core/persist/calc_state_backup	port	symbol
 saveRestoreCalcState	abi/complex_text;core/persist/calc_state;core/persist/calc_state_entrypoints;core/persist/calc_state_io_flow;core/persist/calc_state_load;core/persist/calc_state_register_codec;core/persist/calc_state_restore;core/persist/calc_state_save;core/persist/calc_state_text;core/program/program_serialization_runtime;shell/matrix_editor/matrix_lifecycle	port	symbol
 saveRestorePrograms	core/program/program_serialization;core/program/program_serialization_export	port	symbol
@@ -238,7 +238,6 @@ distributions/binomial	shell/distributions/binomial	port	comment
 distributions/cauchy	shell/distributions/cauchy	port	comment
 distributions/chi2	shell/distributions/chi2	port	comment
 distributions/exponential	shell/distributions/exponential	port	comment
-distributions/f	shell/distributions/f	port	comment
 distributions/geometric	shell/distributions/geometric	port	comment
 distributions/gev	shell/distributions/gev	port	comment
 distributions/hyper	shell/distributions/hyper	port	comment

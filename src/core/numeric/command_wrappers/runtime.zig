@@ -401,12 +401,15 @@ pub inline fn freeReal(ptr: ?*real_t) void {
 pub inline fn mallocRealDigits(digits: u32) ?*real_t {
     return malloc(10 + 2 * ((((digits + 2) / 6) * 6 + 3) / 3));
 }
-// The complex dense core (math_matrix_complex_core.zig): in-place inverse
-// and product on interleaved-complex real_t arrays.
-pub extern fn invCpxMat(matrix: [*]real_t, n: u16, real_context: *realContext_t) bool;
-pub extern fn mulCpxMat(y: [*]const real_t, x: [*]const real_t, size_y: u16, size_yx: u16, size_x: u16, res: [*]real_t, real_context: *realContext_t) void;
+// The complex dense core (matrix/complex_core.zig): in-place inverse, product
+// and LU on cplx_t arrays.
+pub extern fn invCpxMat(matrix: [*]cplx_t, n: u16, tolerance_exponent: i32, real_context: *realContext_t) bool;
+pub extern fn mulCpxMat(y: [*]const cplx_t, x: [*]const cplx_t, size_y: u16, size_yx: u16, size_x: u16, res: [*]cplx_t, real_context: *realContext_t) void;
 // p is nullable: the worker skips the pivot store when the caller passes null.
-pub extern fn luCpxMat(tmp_mat: [*]real_t, size: u16, p: ?[*]u16, real_context: *realContext_t) bool;
+pub extern fn luCpxMat(tmp_mat: [*]cplx_t, size: u16, p: ?[*]u16, tolerance_exponent: i32, real_context: *realContext_t) bool;
+pub extern fn realExp(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
+// slvc.c: the SLVC/SLVQ coefficient-vector entry, which slvq.c hands a vector in X to.
+pub extern fn solveCoefficientVector() void;
 pub extern fn decQuadZero(result: *real34_t) *real34_t;
 pub inline fn real34SetZero(destination: *real34_t) void {
     _ = decQuadZero(destination);
@@ -693,6 +696,12 @@ pub inline fn real34Add(operand1: *const real34_t, operand2: *const real34_t, re
     _ = decQuadAdd(res, operand1, operand2, &ctxtReal34);
 }
 
+pub extern fn decQuadFromString(result: *real34_t, string: [*:0]const u8, context: *realContext_t) *real34_t;
+
+pub inline fn stringToReal34(source: [*:0]const u8, destination: *real34_t) void {
+    _ = decQuadFromString(destination, source, &ctxtReal34);
+}
+
 pub inline fn real34Divide(operand1: *const real34_t, operand2: *const real34_t, res: *real34_t) void {
     _ = decQuadDivide(res, operand1, operand2, &ctxtReal34);
 }
@@ -886,6 +895,7 @@ pub extern fn int32ToReal(source: i32, destination: *real_t) void;
 pub extern fn decNumberCompare(result: *real_t, lhs: *align(1) const real_t, rhs: *align(1) const real_t, real_context: *realContext_t) *real_t;
 pub extern fn decNumberFromString(result: *real_t, source: [*:0]const u8, real_context: *realContext_t) *real_t;
 pub extern fn decNumberPlus(result: *real_t, rhs: *const real_t, real_context: *realContext_t) *real_t;
+pub extern fn decNumberReduce(result: *real_t, rhs: *const real_t, real_context: *realContext_t) *real_t;
 pub extern fn decNumberMinus(result: *real_t, rhs: *const real_t, real_context: *realContext_t) *real_t;
 /// The IEEE 754 remainder, whose sign follows the dividend -- not decNumberDivide's
 /// quotient. sinc reduces its argument with it before the pi-multiple test.
@@ -905,6 +915,10 @@ pub extern fn realCompareIdentical(number1: *const real_t, number2: *const real_
 pub extern fn realCompareLessThan(number1: *const real_t, number2: *const real_t) bool;
 pub extern fn realCompareAbsEqual(number1: *const real_t, number2: *const real_t) bool;
 pub extern fn realCompareAbsGreaterThan(number1: *const real_t, number2: *const real_t) bool;
+pub extern fn realCompareAbsLessThan(number1: *const real_t, number2: *const real_t) bool;
+pub extern fn longIntegerToAllocatedString(lgInt: *const mpz_struct, str: [*c]u8, strLen: i32) void;
+// f.c's beta-pair routine, which ixyz.c reads for the regularised incomplete beta.
+pub extern fn distributionBetaPair(a: *const real_t, b: *const real_t, y: *const real_t, z: *const real_t, logit: *const real_t, lower: *real_t, upper: *real_t, real_context: *realContext_t) bool;
 /// comparisonReals.c:215-241. Each is `realCompare` (decNumberCompare) followed by
 /// a SIGN-BIT test on the result, and that is why a NaN operand does not answer
 /// what intuition expects: comparing with a NaN yields a NaN, whose sign bit is
@@ -973,7 +987,7 @@ pub extern fn convertLongIntegerRegisterToReal34(source: calcRegister_t, destina
 // integers.c: the scaled integer quotient and remainder the integer division commands share.
 pub extern fn longIntegerScaledDivide(op_y: *const mpz_struct, y_exp: i32, op_x: *const mpz_struct, x_exp: i32, quotient: *mpz_struct, remainder: *mpz_struct, remainder_exp: *i32) void;
 // registers.c: one stored Real34 result rounded to the selected significant digits; unchanged when SDIGS is 0 or 34.
-pub extern fn roundReal34ResultToSignificantDigits(val: *real34_t) void;
+pub extern fn roundReal34ResultToSignificantDigits(val: *align(1) real34_t) void;
 // comparisonReals.c: an exact comparison of a finite Real34 with a long integer, or of two of either kind.
 pub extern fn compareFiniteReal34LongIntegerRegisters(first: calcRegister_t, second: calcRegister_t, comparison: *i32) bool;
 // conversionAngles.c
@@ -998,6 +1012,17 @@ pub extern fn z47_math_wrappers_const_3() *const real_t;
 pub extern fn z47_math_wrappers_const_5() *const real_t;
 pub extern fn z47_math_wrappers_const_100() *const real_t;
 pub extern fn z47_math_wrappers_const_3600() *const real_t;
+pub extern fn z47_math_wrappers_const_4() *const real_t;
+pub extern fn z47_math_wrappers_const_6() *const real_t;
+pub extern fn z47_math_wrappers_const_1on10() *const real_t;
+pub extern fn z47_math_wrappers_const_1e_6() *const real_t;
+pub extern fn z47_math_wrappers_const_minus_4() *const real_t;
+pub extern fn z47_math_wrappers_const75_ln2() *const real_t;
+pub extern fn z47_math_wrappers_const75_ln10() *const real_t;
+pub extern fn z47_math_wrappers_const75_3piOn4() *const real_t;
+pub extern fn z47_math_wrappers_const34_0() *const real34_t;
+pub extern fn z47_math_wrappers_const34_1() *const real34_t;
+pub extern fn z47_math_wrappers_const34_3600() *const real34_t;
 pub extern fn z47_math_wrappers_const_1on2() *const real_t;
 pub extern fn z47_math_wrappers_const_1on3() *const real_t;
 pub extern fn z47_math_wrappers_const_phi() *const real_t;

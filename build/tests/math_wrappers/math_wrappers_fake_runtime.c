@@ -184,6 +184,24 @@ static uint128_t loadFakeCoeff(const real_t *value) {
 
 static int32_t fakeRealValue(const real_t *value);
 
+// The fakes model a kernel as an offset of its operand. The offset wraps, as an
+// unsigned 32-bit sum does, so an operand near the edge of the model stays a
+// value both sides agree on instead of an overflow.
+static int32_t fakeWrap(int32_t value, int32_t offset) {
+  return (int32_t)((uint32_t)value + (uint32_t)offset);
+}
+
+// The fake complex products, in the same two's-complement wrap: chained products
+// of fake values leave int32 range, and the model only has to be one both sides share.
+static int32_t fakeMulWrap(int32_t a, int32_t b) {
+  return (int32_t)((uint32_t)a * (uint32_t)b);
+}
+
+static int32_t fakeSubWrap(int32_t a, int32_t b) {
+  return (int32_t)((uint32_t)a - (uint32_t)b);
+}
+
+
 static void storeFakeCoeff(real_t *value, uint128_t coeff) {
   memset(value->lsu, 0, sizeof(value->lsu));
   memcpy(value->lsu, &coeff, sizeof(coeff));
@@ -2870,47 +2888,47 @@ void WP34S_SinhCosh(const real_t *x, real_t *sinOut, real_t *cosOut, realContext
 
 void WP34S_Tanh(const real_t *x, real_t *res, realContext_t *realContext) {
   (void)realContext;
-  setFakeReal(res, fakeRealValue(x) + 60, 0);
+  setFakeReal(res, fakeWrap(fakeRealValue(x), +60), 0);
 }
 
 void C47_WP34S_Asin(const real_t *x, real_t *angle, realContext_t *realContext) {
   (void)realContext;
-  setFakeReal(angle, fakeRealValue(x) + 61, 0);
+  setFakeReal(angle, fakeWrap(fakeRealValue(x), +61), 0);
 }
 
 void C47_WP34S_Acos(const real_t *x, real_t *angle, realContext_t *realContext) {
   (void)realContext;
-  setFakeReal(angle, fakeRealValue(x) + 62, 0);
+  setFakeReal(angle, fakeWrap(fakeRealValue(x), +62), 0);
 }
 
 void C47_WP34S_Atan(const real_t *x, real_t *angle, realContext_t *realContext) {
   (void)realContext;
-  setFakeReal(angle, fakeRealValue(x) + 63, 0);
+  setFakeReal(angle, fakeWrap(fakeRealValue(x), +63), 0);
 }
 
 void C47_WP34S_Atan2(const real_t *y, const real_t *x, real_t *angle, realContext_t *realContext) {
   (void)realContext;
-  setFakeReal(angle, fakeRealValue(y) - fakeRealValue(x) + 94, 0);
+  setFakeReal(angle, (int32_t)((uint32_t)fakeRealValue(y) - (uint32_t)fakeRealValue(x) + 94u), 0);
 }
 
 void WP34S_ArcSinh(const real_t *x, real_t *res, realContext_t *realContext) {
   (void)realContext;
-  setFakeReal(res, fakeRealValue(x) + 64, 0);
+  setFakeReal(res, fakeWrap(fakeRealValue(x), +64), 0);
 }
 
 void WP34S_ArcTanh(const real_t *x, real_t *res, realContext_t *realContext) {
   (void)realContext;
-  setFakeReal(res, fakeRealValue(x) + 65, 0);
+  setFakeReal(res, fakeWrap(fakeRealValue(x), +65), 0);
 }
 
 void WP34S_Ln(const real_t *x, real_t *res, realContext_t *realContext) {
   (void)realContext;
-  setFakeReal(res, fakeRealValue(x) + 66, 0);
+  setFakeReal(res, fakeWrap(fakeRealValue(x), +66), 0);
 }
 
 void WP34S_Ln1P(const real_t *x, real_t *res, realContext_t *realContext) {
   (void)realContext;
-  setFakeReal(res, fakeRealValue(x) + 67, 0);
+  setFakeReal(res, fakeWrap(fakeRealValue(x), +67), 0);
 }
 
 void realPower(const real_t *base, const real_t *exponent, real_t *result, realContext_t *realContext) {
@@ -2976,7 +2994,7 @@ int32_t realToInt32C47(const real_t *source, bool_t *error) {
 
 void WP34S_ExpM1(const real_t *x, real_t *res, realContext_t *realContext) {
   (void)realContext;
-  setFakeReal(res, fakeRealValue(x) + 68, 0);
+  setFakeReal(res, fakeWrap(fakeRealValue(x), +68), 0);
 }
 
 void WP34S_Bernoulli(const real_t *x, real_t *res, bool_t bnstar, realContext_t *realContext) {
@@ -2993,12 +3011,12 @@ void WP34S_Bernoulli(const real_t *x, real_t *res, bool_t bnstar, realContext_t 
 
 void WP34S_Factorial(const real_t *x, real_t *res, realContext_t *realContext) {
   (void)realContext;
-  setFakeReal(res, fakeRealValue(x) + 91, 0);
+  setFakeReal(res, fakeWrap(fakeRealValue(x), +91), 0);
 }
 
 void WP34S_InverseW(const real_t *x, real_t *res, realContext_t *realContext) {
   (void)realContext;
-  setFakeReal(res, fakeRealValue(x) + 84, 0);
+  setFakeReal(res, fakeWrap(fakeRealValue(x), +84), 0);
 }
 
 void WP34S_InverseComplexW(const cplx_t *x, cplx_t *res, realContext_t *realContext) {
@@ -3029,12 +3047,17 @@ void WP34S_betai(const real_t *b, const real_t *a, const real_t *x, real_t *res,
   setFakeReal(res, fakeRealValue(b) + fakeRealValue(a) + fakeRealValue(x), 0);
 }
 
+// Weak, like sqrtComplex and curtComplex: math_wrappers_oracle.c compiles c43's
+// magnitude.c, squareRoot.c and cubeRoot.c with these names kept, and those
+// bodies win. These models serve the lanes that do not compile those files.
+__attribute__((weak))
 void complexMagnitude(const cplx_t *a, real_t *c, realContext_t *realContext) {
   real_t theta;
 
   realRectangularToPolar(a, c, &theta, realContext);
 }
 
+__attribute__((weak))
 void complexMagnitude2(const cplx_t *a, real_t *c, realContext_t *realContext) {
   complexMagnitude(a, c, realContext);
   decNumberMultiply(c, c, c, realContext);
@@ -3046,14 +3069,15 @@ void int32ToReal(int32_t source, real_t *destination) {
 
 void WP34S_Erf(const real_t *x, real_t *res, realContext_t *realContext) {
   (void)realContext;
-  setFakeReal(res, fakeRealValue(x) + 80, 0);
+  setFakeReal(res, fakeWrap(fakeRealValue(x), +80), 0);
 }
 
 void WP34S_Erfc(const real_t *x, real_t *res, realContext_t *realContext) {
   (void)realContext;
-  setFakeReal(res, fakeRealValue(x) + 81, 0);
+  setFakeReal(res, fakeWrap(fakeRealValue(x), +81), 0);
 }
 
+__attribute__((weak))
 void sqrtComplex(const cplx_t *z, cplx_t *res, realContext_t *realContext) {
   const int32_t real_value = fakeRealValue(&z->Real);
   const int32_t imag_value = fakeRealValue(&z->Imag);
@@ -3080,6 +3104,7 @@ void sqrtComplex(const cplx_t *z, cplx_t *res, realContext_t *realContext) {
   setFakeReal(&res->Imag, real_value - imag_value + 73, 0);
 }
 
+__attribute__((weak))
 void curtComplex(const cplx_t *z, cplx_t *res, realContext_t *realContext) {
   (void)realContext;
   setFakeReal(&res->Real, fakeRealValue(&z->Real) + 74, 0);
@@ -3149,7 +3174,7 @@ decNumber *decNumberRemainder(decNumber *result, const decNumber *lhs, const dec
 
 decNumber *decNumberSquareRoot(decNumber *result, const decNumber *rhs, decContext *realContext) {
   (void)realContext;
-  setFakeReal(result, fakeRealValue(rhs) + 69, rhs->bits & 0x70);
+  setFakeReal(result, fakeWrap(fakeRealValue(rhs), +69), rhs->bits & 0x70);
   return result;
 }
 
@@ -3158,7 +3183,7 @@ decNumber *decNumberExp(decNumber *result, const decNumber *rhs, decContext *rea
   snapshot.dec_number_exp_input_value = fakeRealValue(rhs);
   snapshot.dec_number_exp_input_bits = rhs->bits;
   (void)realContext;
-  setFakeReal(result, fakeRealValue(rhs) + 70, 0);
+  setFakeReal(result, fakeWrap(fakeRealValue(rhs), +70), 0);
   return result;
 }
 
@@ -3372,14 +3397,16 @@ void mulComplexComplex(const cplx_t *factor1, const cplx_t *factor2, cplx_t *pro
   snapshot.mul_complex_complex_factor2_real_value = fakeRealValue(&factor2->Real);
   snapshot.mul_complex_complex_factor2_imag_value = fakeRealValue(&factor2->Imag);
   (void)realContext;
-  setFakeReal(&product->Real, fakeRealValue(&factor1->Real) * fakeRealValue(&factor2->Real) - fakeRealValue(&factor1->Imag) * fakeRealValue(&factor2->Imag), 0);
-  setFakeReal(&product->Imag, fakeRealValue(&factor1->Real) * fakeRealValue(&factor2->Imag) + fakeRealValue(&factor1->Imag) * fakeRealValue(&factor2->Real), 0);
+  const int32_t realPart = fakeSubWrap(fakeMulWrap(fakeRealValue(&factor1->Real), fakeRealValue(&factor2->Real)), fakeMulWrap(fakeRealValue(&factor1->Imag), fakeRealValue(&factor2->Imag)));
+  const int32_t imagPart = fakeWrap(fakeMulWrap(fakeRealValue(&factor1->Real), fakeRealValue(&factor2->Imag)), fakeMulWrap(fakeRealValue(&factor1->Imag), fakeRealValue(&factor2->Real)));
+  setFakeReal(&product->Real, realPart, 0);
+  setFakeReal(&product->Imag, imagPart, 0);
 }
 
 void mulComplexReal(const cplx_t *factor1, const real_t *factor2, cplx_t *product, realContext_t *realContext) {
   (void)realContext;
-  setFakeReal(&product->Real, fakeRealValue(&factor1->Real) * fakeRealValue(factor2), 0);
-  setFakeReal(&product->Imag, fakeRealValue(&factor1->Imag) * fakeRealValue(factor2), 0);
+  setFakeReal(&product->Real, fakeMulWrap(fakeRealValue(&factor1->Real), fakeRealValue(factor2)), 0);
+  setFakeReal(&product->Imag, fakeMulWrap(fakeRealValue(&factor1->Imag), fakeRealValue(factor2)), 0);
 }
 
 void unitVectorCplx(void) {
@@ -4323,7 +4350,7 @@ void WP34S_Real34Remainder(const real_t *x, const real_t *y, real_t *res) {
 
 void WP34S_LanczosSum(const real_t *x, const real_t *offset, real_t *res, realContext_t *realContext) {
   (void)realContext;
-  setFakeReal(res, fakeRealValue(x) + fakeRealValue(offset) + 96, 0);
+  setFakeReal(res, (int32_t)((uint32_t)fakeRealValue(x) + (uint32_t)fakeRealValue(offset) + 96u), 0);
 }
 
 void WP34S_LnExtended(const real_t *x, real_t *res, realContext_t *realContext) {
@@ -4332,7 +4359,7 @@ void WP34S_LnExtended(const real_t *x, real_t *res, realContext_t *realContext) 
 
 void WP34S_Log1pMinus(const real_t *value, real_t *res, realContext_t *realContext) {
   (void)realContext;
-  setFakeReal(res, -fakeRealValue(value) + 97, 0);
+  setFakeReal(res, (int32_t)(97u - (uint32_t)fakeRealValue(value)), 0);
 }
 
 bool_t WP34S_IsPositiveFinite(const real_t *value) {
@@ -4397,4 +4424,46 @@ real34_t *decQuadFromString(real34_t *result, const char *string, realContext_t 
   (void)context;
   setRegisterReal34((uint8_t *)result, (int32_t)strtol(string, NULL, 10), 0);
   return result;
+}
+
+// The symbols the owners reach by name that this lane's included C does not
+// define. Each records its call into the snapshot; the register writes go
+// through the same slots as the other converters, so both sides see one model.
+bool_t realCompareAbsLessThan(const real_t *number1, const real_t *number2) {
+  snapshot.real_compare_abs_less_than_calls++;
+  return !realCompareAbsEqual(number1, number2) && !realCompareAbsGreaterThan(number1, number2);
+}
+
+void lnComplexDirect(const cplx_t *z, cplx_t *ln) {
+  snapshot.ln_complex_direct_calls++;
+  *ln = *z;
+}
+
+void convertReal34ToReal34Register(const real34_t *real34, calcRegister_t dest) {
+  snapshot.convert_real34_to_real34_register_calls++;
+  const real34_t value = *real34;
+  reallocateRegister(dest, dtReal34, 0, amNone);
+  memcpy(getRegisterDataPointer(dest), &value, sizeof(value));
+}
+
+void convertReal34ToComplex34Register(const real34_t *real34, const real34_t *imag34, calcRegister_t dest) {
+  snapshot.convert_real34_to_complex34_register_calls++;
+  const real34_t real = *real34;
+  const real34_t imag = *imag34;
+  reallocateRegister(dest, dtComplex34, 0, amNone);
+  memcpy(getRegisterDataPointer(dest), &real, sizeof(real));
+  memcpy((uint8_t *)getRegisterDataPointer(dest) + sizeof(real34_t), &imag, sizeof(imag));
+}
+
+void convertReal34ToLongInteger(const real34_t *real34, longInteger_t lgInt, enum rounding mode) {
+  (void)mode;
+  snapshot.convert_real34_to_long_integer_calls++;
+  mpz_init_set_si(lgInt, fakeReal34Value(real34));
+}
+
+void convertLongIntegerRegisterToReal34(calcRegister_t source, real34_t *destination) {
+  const int32_t value = source == REGISTER_Y ? longint_y_input.value : source == REGISTER_Z ? longint_z_input.value : longint_input.value;
+
+  snapshot.convert_long_integer_register_to_real34_calls++;
+  setRegisterReal34(destination->bytes, value, 0);
 }

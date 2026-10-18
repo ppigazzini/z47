@@ -1,7 +1,6 @@
 const logxy_owned = @import("logxy.zig");
 const powlog_power_owned = @import("powlog_power.zig");
 const runtime = @import("../command_wrappers/runtime.zig");
-const math_comparison_reals = @import("../compare/comparison_reals.zig");
 const math_real_predicates = @import("../compare/real_predicates.zig");
 const transcendental_command_owned = @import("../special/transcendental_command.zig");
 
@@ -35,8 +34,8 @@ fn logXYComplex(x: *const runtime.cplx_t, y: *const runtime.cplx_t, r: *runtime.
     var ln_x: runtime.cplx_t = undefined;
 
     // lnComplexDirect handles the case where y = 0+i0.
-    @import("../ln_complex.zig").lnComplexDirect(y, r); // r = Ln(y)
-    @import("../ln_complex.zig").lnComplexDirect(x, &ln_x); // ln_x = Ln(x)
+    runtime.lnComplexDirect(y, r); // r = Ln(y)
+    runtime.lnComplexDirect(x, &ln_x); // ln_x = Ln(x)
     runtime.divComplexComplex(r, &ln_x, r, &runtime.ctxtReal75);
 }
 
@@ -318,7 +317,7 @@ pub fn logBaseCplx(denom: *const runtime.real_t) callconv(.c) void {
         if (runtime.realCompareGreaterThan(&result.Real, runtime.z47_math_wrappers_const_1on2()) and runtime.realCompareLessThan(&result.Real, runtime.z47_math_wrappers_const_2())) {
             var near_unit_context: runtime.realContext_t = runtime.ctxtReal75;
             // Factoring the component with greater magnitude keeps its offset from one in working precision, while the other component contributes its square directly.
-            if (math_comparison_reals.realCompareAbsLessThan(&x.Real, &x.Imag)) {
+            if (runtime.realCompareAbsLessThan(&x.Real, &x.Imag)) {
                 runtime.realSubtract(&x.Imag, runtime.z47_math_wrappers_const_1(), &result.Real, &near_unit_context);
                 runtime.realAdd(&x.Imag, runtime.z47_math_wrappers_const_1(), &x.Imag, &near_unit_context);
                 runtime.realMultiply(&result.Real, &x.Imag, &result.Real, &near_unit_context);

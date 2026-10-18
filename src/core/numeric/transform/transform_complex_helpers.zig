@@ -30,12 +30,10 @@ const arm_159 = runtime.option_cubic_159 or runtime.option_eigen_159;
 // Upstream realType.c functions (canonical symbols in the product link).
 extern fn realSetPlusInfinity(value: *real_t) void;
 extern fn realSetMinusInfinity(value: *real_t) void;
-// decNumber functions behind the upstream realCopy/realMinus/realReduce macros
-// (src/c47/realType.h: realCopy -> decNumberCopy, realMinus -> decNumberMinus,
-// realReduce -> decNumberReduce).
+// decNumber functions behind the upstream realCopy/realMinus macros
+// (src/c47/realType.h: realCopy -> decNumberCopy, realMinus -> decNumberMinus).
 extern fn decNumberCopy(destination: *real_t, source: *const real_t) *real_t;
 extern fn decNumberMinus(result: *real_t, rhs: *const real_t, real_context: *runtime.realContext_t) *real_t;
-extern fn decNumberReduce(result: *real_t, rhs: *const real_t, real_context: *runtime.realContext_t) *real_t;
 
 fn copyReal(destination: *real_t, source: *const real_t) void {
     destination.* = source.*;
@@ -604,31 +602,6 @@ fn sqrtComplex159(z: *const cplx159_t, res: *cplx159_t, real_context: *runtime.r
 // ----------------------------------------------------------------------------
 // cubeRoot.c
 // ----------------------------------------------------------------------------
-
-/// Replaces an approximation with an exact Real34 cube root when one exists. A
-/// nearest 34-digit candidate is reduced before verification: an exact decimal
-/// cube with a 34-digit coefficient has a reduced root coefficient of at most 12
-/// digits, so two 39-digit multiplications verify it exactly.
-pub fn correctExactReal34Cube(operand: *const real_t, root: *real_t) void {
-    var nearest_context: runtime.realContext_t = runtime.ctxtReal34;
-    var nearest: real_t = undefined;
-    var cube: real_t = undefined;
-
-    if (math_real_predicates.realIsSpecial(operand) or runtime.realIsZero(operand)) {
-        return;
-    }
-    nearest_context.round = runtime.DEC_ROUND_HALF_EVEN;
-    _ = runtime.decNumberPlus(&nearest, root, &nearest_context);
-    _ = decNumberReduce(&nearest, &nearest, &runtime.ctxtReal39);
-    if (nearest.digits > 12) {
-        return;
-    }
-    runtime.realMultiply(&nearest, &nearest, &cube, &runtime.ctxtReal39);
-    runtime.realMultiply(&cube, &nearest, &cube, &runtime.ctxtReal39);
-    if (runtime.realCompareEqual(&cube, operand)) {
-        copyReal(root, &nearest);
-    }
-}
 
 pub export fn curtComplex(z: *const cplx_t, res: *cplx_t, real_context: *runtime.realContext_t) callconv(.c) void {
     var w: cplx_t = undefined;

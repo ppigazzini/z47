@@ -1,4 +1,3 @@
-const abi = @import("abi");
 const atan_owned = @import("atan.zig");
 const inverse_trig_complex_command_owned = @import("inverse_trig_complex_command.zig");
 const inverse_trig_command_owned = @import("inverse_trig_command.zig");
@@ -82,7 +81,7 @@ pub fn exactArcSinCosAngle(x: *const runtime.real_t, cosine: bool, res: *runtime
                 return false;
             }
             runtime.int32ToReal(@divTrunc(degrees, 90) * 5, res); // 90 degrees is 0.5 pi
-            runtime.realMultiply(res, abi.constants.const_1on10(), res, &runtime.ctxtReal39);
+            runtime.realMultiply(res, runtime.z47_math_wrappers_const_1on10(), res, &runtime.ctxtReal39);
             return true;
         },
         else => {
@@ -117,7 +116,7 @@ pub fn arcsinReal() callconv(.c) void {
             return;
         }
     } else if (runtime.currentAngularMode == runtime.amRadian and isTinyArgument(&x)) { // arcsin x = x + x^3/6 to 72 digits, above |x| by less than half a unit at 34 digits
-        runtime.WP34S_TinyOddSeries(&x, abi.constants.const_6(), true, &x, &runtime.ctxtReal75);
+        runtime.WP34S_TinyOddSeries(&x, runtime.z47_math_wrappers_const_6(), true, &x, &runtime.ctxtReal75);
     } else if (!exactArcSinCosAngle(&x, false, &x)) {
         real_trig_owned.arcsinReal(&x, &x, &runtime.ctxtReal39);
         runtime.convertAngleFromTo(&x, runtime.amRadian, runtime.currentAngularMode, &runtime.ctxtReal39);

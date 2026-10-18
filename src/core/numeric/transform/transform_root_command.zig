@@ -1,6 +1,4 @@
-const abi = @import("abi");
 const runtime = @import("../command_wrappers/runtime.zig");
-const transform_complex_helpers_owned = @import("transform_complex_helpers.zig");
 
 const real_t = runtime.real_t;
 const cplx_t = runtime.cplx_t;
@@ -107,7 +105,7 @@ fn rootLonI(n: u32) void {
         const exact_root = runtime.rootLongIntegerToReal34(&magnitude[0], 2, &rounded_root);
         runtime.__gmpz_clear(&magnitude[0]);
         if (exact_root) {
-            runtime.convertReal34ToComplex34Register(abi.constants.const34_0(), &rounded_root, runtime.REGISTER_X);
+            runtime.convertReal34ToComplex34Register(runtime.z47_math_wrappers_const34_0(), &rounded_root, runtime.REGISTER_X);
             return;
         }
     }
@@ -131,7 +129,7 @@ fn sqrtCplx() callconv(.c) void {
     var a: cplx_t = undefined;
 
     if (runtime.getRegisterAsComplex(runtime.REGISTER_X, &a)) {
-        transform_complex_helpers_owned.sqrtComplex(&a, &a, &runtime.ctxtReal39);
+        runtime.sqrtComplex(&a, &a, &runtime.ctxtReal39);
         runtime.convertComplexToResultRegister(&a, runtime.REGISTER_X);
     }
 }
@@ -199,7 +197,7 @@ fn curtReal() callconv(.c) void {
         runtime.PowerReal(&x, runtime.z47_math_wrappers_const_1on3(), &x, &runtime.ctxtReal39);
         realSetNegativeSign(&x);
     }
-    transform_complex_helpers_owned.correctExactReal34Cube(&operand, &x);
+    correctExactReal34Cube(&operand, &x);
     runtime.convertRealToResultRegister(&x, runtime.REGISTER_X, runtime.amNone);
 }
 
@@ -213,9 +211,9 @@ fn curtCplx() callconv(.c) void {
     if (runtime.getRegisterAsComplex(runtime.REGISTER_X, &a)) {
         const operand_real = a.Real;
         const operand_imaginary_zero = runtime.realIsZero(&a.Imag);
-        transform_complex_helpers_owned.curtComplex(&a, &a, &runtime.ctxtReal39);
+        runtime.curtComplex(&a, &a, &runtime.ctxtReal39);
         if (operand_imaginary_zero) {
-            transform_complex_helpers_owned.correctExactReal34Cube(&operand_real, &a.Real);
+            correctExactReal34Cube(&operand_real, &a.Real);
         }
         runtime.convertComplexToResultRegister(&a, runtime.REGISTER_X);
     }
@@ -245,4 +243,29 @@ pub fn cubeRoot(unused_but_mandatory_parameter: u16) void {
     _ = unused_but_mandatory_parameter;
 
     runtime.processIntRealComplexMonadicFunction(&curtReal, &curtCplx, &curtShoI, &curtLonI);
+}
+
+/// Replaces an approximation with an exact Real34 cube root when one exists. A
+/// nearest 34-digit candidate is reduced before verification: an exact decimal
+/// cube with a 34-digit coefficient has a reduced root coefficient of at most 12
+/// digits, so two 39-digit multiplications verify it exactly.
+fn correctExactReal34Cube(operand: *const real_t, root: *real_t) void {
+    var nearest_context: runtime.realContext_t = runtime.ctxtReal34;
+    var nearest: real_t = undefined;
+    var cube: real_t = undefined;
+
+    if (runtime.realIsSpecial(operand) or runtime.realIsZero(operand)) {
+        return;
+    }
+    nearest_context.round = runtime.DEC_ROUND_HALF_EVEN;
+    _ = runtime.decNumberPlus(&nearest, root, &nearest_context);
+    _ = runtime.decNumberReduce(&nearest, &nearest, &runtime.ctxtReal39);
+    if (nearest.digits > 12) {
+        return;
+    }
+    runtime.realMultiply(&nearest, &nearest, &cube, &runtime.ctxtReal39);
+    runtime.realMultiply(&cube, &nearest, &cube, &runtime.ctxtReal39);
+    if (runtime.realCompareEqual(&cube, operand)) {
+        root.* = nearest;
+    }
 }

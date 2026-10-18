@@ -42,12 +42,36 @@ const math_slvc = @import("../slvc.zig");
 const math_slvq = @import("../slvq.zig");
 const math_transform_complex_helpers = @import("../transform/transform_complex_helpers.zig");
 const math_real_predicates = @import("../compare/real_predicates.zig");
+const math_addition_cells = @import("../arithmetic/addition_cells.zig");
+const math_subtraction_cells = @import("../arithmetic/subtraction_cells.zig");
+const math_vector_dot_scalar = @import("vector_dot_scalar.zig");
 const real_t = runtime.real_t;
 const real34_t = runtime.real34_t;
 const real34Matrix_t = runtime.real34Matrix_t;
 const complex34Matrix_t = runtime.complex34Matrix_t;
 const realContext_t = runtime.realContext_t;
 const calcRegister_t = runtime.calcRegister_t;
+
+// The engine works on cplx_t arrays carved out of pool blocks sized in real_t,
+// so a cplx_t has to be exactly two real_t with nothing between or after them.
+const cplx_t = abi.Complex;
+const cplx159_t = runtime.cplx159_t;
+comptime {
+    std.debug.assert(@sizeOf(cplx_t) == 2 * @sizeOf(real_t));
+    std.debug.assert(@offsetOf(cplx_t, "Imag") == @sizeOf(real_t));
+}
+
+// The cplx_t arithmetic the engine calls, by the names matrix.c calls it.
+const addComplex = math_addition_cells.addComplex;
+const subComplex = math_subtraction_cells.subComplex;
+const mulComplexComplex = math_multiplication_cells.mulComplexComplex;
+const mulComplexReal = math_multiplication_cells.mulComplexReal;
+const divComplexComplex = math_division_cells.divComplexComplex;
+const divComplexReal = math_division_cells.divComplexReal;
+const complexMagnitude = math_runtime_helpers.complexMagnitude;
+const realCompareLessThan = math_comparison_reals.realCompareLessThan;
+const realCompareGreaterThan = math_comparison_reals.realCompareGreaterThan;
+const realCompareEqual = math_comparison_reals.realCompareEqual;
 
 // fnEigenvalues command-handler dependencies (matrix.c).
 extern fn fnRecallVElement(n: u16) void;
@@ -72,11 +96,14 @@ extern fn decNumberMultiply(res: *align(1) real_t, op1: *align(1) const real_t, 
 extern fn decNumberDivide(res: *align(1) real_t, op1: *align(1) const real_t, op2: *align(1) const real_t, ctxt: *realContext_t) *align(1) real_t;
 extern fn decNumberSquareRoot(res: *align(1) real_t, rhs: *align(1) const real_t, ctxt: *realContext_t) *align(1) real_t;
 extern fn decNumberFMA(res: *align(1) real_t, f1: *align(1) const real_t, f2: *align(1) const real_t, term: *align(1) const real_t, ctxt: *realContext_t) *align(1) real_t;
-extern fn decNumberFromString(res: *align(1) real_t, source: [*:0]const u8, ctxt: *realContext_t) *align(1) real_t;
 extern fn realSetOne(r: *align(1) real_t) void;
-// mulCpxMat is the math_matrix_complex_core-owned interleaved-complex matmul.
-extern fn allocC47Blocks(size_in_blocks: usize) ?[*]align(4) real_t;
-extern fn freeC47Blocks(ptr: ?[*]align(4) real_t, size_in_blocks: usize) void;
+const allocC47Blocks = runtime.allocC47Blocks;
+const freeC47Blocks = runtime.freeC47Blocks;
+
+// A pool block of cplx_t; the pool hands out 4-aligned blocks, which cplx_t needs.
+inline fn allocCplx(size_in_blocks: usize) ?[*]cplx_t {
+    return @ptrCast(@alignCast(allocC47Blocks(size_in_blocks) orelse return null));
+}
 extern fn decNumberCopyAbs(res: *align(1) real_t, source: *align(1) const real_t) *align(1) real_t;
 extern var currentKeyCode: u8;
 extern var currentSolverNestingDepth: u16;
@@ -113,9 +140,6 @@ const realIsSpecial = math_real_predicates.realIsSpecial;
 inline fn realFMA(f1: *align(1) const real_t, f2: *align(1) const real_t, term: *align(1) const real_t, res: *align(1) real_t, ctxt: *realContext_t) void {
     _ = decNumberFMA(res, f1, f2, term, ctxt);
 }
-inline fn stringToReal(source: [*:0]const u8, destination: *align(1) real_t, ctxt: *realContext_t) void {
-    _ = decNumberFromString(destination, source, ctxt);
-}
 inline fn realIsNegativeA(source: *align(1) const real_t) bool {
     return (source.bits & 0x80) == 0x80;
 }
@@ -130,6 +154,11 @@ const NONDIAG: c_int = 2;
 const CHDIAG: c_int = 3;
 // defines.h: symmetric/tridiagonal detection tolerance exponent.
 const symmetricTolerance: i32 = 30;
+// Clamp a rotation residue smaller than 10^-eigenNoiseThreshold of the smallest
+// input element to zero.
+const eigenNoiseThreshold: i32 = 70;
+// The post-QR block threshold, relative to the average diagonal magnitude.
+const finalBlockTolerance: i32 = 30;
 
 inline fn realCopy(source: *align(1) const real_t, destination: *align(1) real_t) void {
     _ = decNumberCopy(destination, source);
@@ -174,12 +203,11 @@ extern var blockMonitoring: bool;
 
 // --- blob constants -------------------------------------------------------
 
-// Matrix-product owners + a real comparison, used by the matrix-sqrt engine.
 const ERROR_NO_ROOT_FOUND: u8 = 20;
 
-// Complex dense inverse (math_matrix_complex_core.zig) + NaN setter, both
-// taken at align(1) so the packed interleaved-complex bulk scratch passes.
+// The NaN setter, taken at align(1) like the decNumber primitives above.
 extern fn realSetNaN(value: *align(1) real_t) void;
+extern fn real34CompareEqual(number1: *align(1) const real34_t, number2: *align(1) const real34_t) bool;
 
 // --- BigReal(159): REAL_T_PTR(name, 159) stack scratch -------------------
 inline fn realMaxDigits(comptime digits: u32) u32 {
@@ -198,42 +226,66 @@ fn BigReal(comptime digits: u32) linksection(runtime.code_section) type {
 }
 
 // Internal working precision of the 2x2 and 3x3 block solvers. matrix.c gives
-// each of them an `#if defined(OPTION_EIGEN_159)` / `#else` pair: 159 digits of
-// scratch plus a realPlus round-back through the caller's context with the
-// option, 75 digits written straight into the caller's outputs without it.
+// each of them an `#if defined(OPTION_EIGEN_159)` / `#else` pair: cplx159_t
+// intermediates plus a realPlus round-back through the caller's context with the
+// option, cplx_t written straight into the caller's outputs without it.
 // defines.h #undef's OPTION_EIGEN_159 in the block common to packages 1-4, so
 // every DM42 package that keeps OPTION_EIGEN runs at 75.
 const eigen_block_digits: u32 = if (runtime.option_eigen_159) 159 else 75;
+const BlockCplx = if (runtime.option_eigen_159) cplx159_t else cplx_t;
+
+// A part of a BlockCplx, as the real_t the decNumber primitives take.
+inline fn blockRe(z: *BlockCplx) *real_t {
+    return if (comptime runtime.option_eigen_159) z.Real.ptr() else &z.Real;
+}
+inline fn blockIm(z: *BlockCplx) *real_t {
+    return if (comptime runtime.option_eigen_159) z.Imag.ptr() else &z.Imag;
+}
+
+// EIGEN_MUL: the 2x2 and 3x3 helpers mix 75 digit matrix elements with 159
+// digit intermediates when OPTION_EIGEN_159 is set, so a factor given by its
+// parts is copied into a cplx159_t first; without it the factors are cplx_t.
+fn eigenMul(f1r: *const real_t, f1i: *const real_t, f2r: *const real_t, f2i: *const real_t, product: *BlockCplx, ctx159: *realContext_t) linksection(runtime.code_section) void {
+    if (comptime runtime.option_eigen_159) {
+        var f1: cplx159_t = undefined;
+        var f2: cplx159_t = undefined;
+        realCopy(f1r, f1.Real.ptr());
+        realCopy(f1i, f1.Imag.ptr());
+        realCopy(f2r, f2.Real.ptr());
+        realCopy(f2i, f2.Imag.ptr());
+        runtime.mulComplexComplex159(&f1, &f2, product, ctx159);
+    } else {
+        var f1: cplx_t = undefined;
+        var f2: cplx_t = undefined;
+        realCopy(f1r, &f1.Real);
+        realCopy(f1i, &f1.Imag);
+        realCopy(f2r, &f2.Real);
+        realCopy(f2i, &f2.Imag);
+        mulComplexComplex(&f1, &f2, product, ctx159);
+    }
+}
+inline fn eigenMulElem(f1: *const cplx_t, f2: *const cplx_t, product: *BlockCplx, ctx159: *realContext_t) void {
+    eigenMul(&f1.Real, &f1.Imag, &f2.Real, &f2.Imag, product, ctx159);
+}
 
 // ===========================================================================
 // calculateEigenvalues22 -- eigenvalues of the bottom-right 2x2 sub-matrix of
-// the interleaved-complex real_t array `mat` (2 reals per element).
+// the size x size cplx_t array `mat`.
 // ===========================================================================
-pub export fn calculateEigenvalues22(
-    mat: [*]align(1) const real_t,
-    size: u16,
-    t1r: *align(1) real_t,
-    t1i: *align(1) real_t,
-    t2r: *align(1) real_t,
-    t2i: *align(1) real_t,
-    is_real_symmetric: bool,
-    realContext: *realContext_t,
-) callconv(.c) void {
+pub export fn calculateEigenvalues22(mat: [*]const cplx_t, size: u16, t1: *cplx_t, t2: *cplx_t, is_real_symmetric: bool, realContext: *realContext_t) callconv(.c) void {
     var ctx159: realContext_t = runtime.ctxtReal75;
     ctx159.digits = eigen_block_digits;
 
-    var trR_b = BigReal(eigen_block_digits){};
-    var trI_b = BigReal(eigen_block_digits){};
-    var detR_b = BigReal(eigen_block_digits){};
-    var detI_b = BigReal(eigen_block_digits){};
-    var discrR_b = BigReal(eigen_block_digits){};
-    var discrI_b = BigReal(eigen_block_digits){};
-    const trR = trR_b.ptr();
-    const trI = trI_b.ptr();
-    const detR = detR_b.ptr();
-    const detI = detI_b.ptr();
-    const discrR = discrR_b.ptr();
-    const discrI = discrI_b.ptr();
+    var tr: BlockCplx = undefined;
+    var det: BlockCplx = undefined;
+    var discr: BlockCplx = undefined;
+    var one: BlockCplx = undefined;
+    const trR = blockRe(&tr);
+    const trI = blockIm(&tr);
+    const detR = blockRe(&det);
+    const detI = blockIm(&det);
+    const discrR = blockRe(&discr);
+    const discrI = blockIm(&discr);
 
     realSetZero(trR);
     realSetZero(trI);
@@ -243,64 +295,54 @@ pub export fn calculateEigenvalues22(
     realSetZero(discrI);
 
     const sz: usize = size;
-    const ar = &mat[((sz - 2) * sz + (sz - 2)) * 2];
-    const ai = &mat[((sz - 2) * sz + (sz - 2)) * 2 + 1];
-    const br = &mat[((sz - 2) * sz + (sz - 1)) * 2];
-    const bi = &mat[((sz - 2) * sz + (sz - 1)) * 2 + 1];
-    const cr = &mat[((sz - 1) * sz + (sz - 2)) * 2];
-    const ci = &mat[((sz - 1) * sz + (sz - 2)) * 2 + 1];
-    const dr = &mat[((sz - 1) * sz + (sz - 1)) * 2];
-    const di = &mat[((sz - 1) * sz + (sz - 1)) * 2 + 1];
+    const a = &mat[(sz - 2) * sz + (sz - 2)];
+    const b = &mat[(sz - 2) * sz + (sz - 1)];
+    const c = &mat[(sz - 1) * sz + (sz - 2)];
+    const d = &mat[(sz - 1) * sz + (sz - 1)];
 
     // determinant ad - bc
-    if (realIsZeroA(ai) and realIsZeroA(bi) and realIsZeroA(ci) and realIsZeroA(di)) {
-        realMultiply(ar, dr, detR, &ctx159);
-        realMultiply(br, cr, trR, &ctx159); // reuse trR as temp
+    if (realIsZeroA(&a.Imag) and realIsZeroA(&b.Imag) and realIsZeroA(&c.Imag) and realIsZeroA(&d.Imag)) {
+        realMultiply(&a.Real, &d.Real, detR, &ctx159);
+        realMultiply(&b.Real, &c.Real, trR, &ctx159); // reuse trR as temp
         realSubtract(detR, trR, detR, &ctx159);
         realSetZero(detI);
     } else {
-        math_multiplication_cells.mulComplexComplex(@alignCast(ar), @alignCast(ai), @alignCast(dr), @alignCast(di), @alignCast(detR), @alignCast(detI), &ctx159);
-        math_multiplication_cells.mulComplexComplex(@alignCast(br), @alignCast(bi), @alignCast(cr), @alignCast(ci), @alignCast(trR), @alignCast(trI), &ctx159);
+        eigenMulElem(a, d, &det, &ctx159);
+        eigenMulElem(b, c, &tr, &ctx159);
         realSubtract(detR, trR, detR, &ctx159);
         realSubtract(detI, trI, detI, &ctx159);
     }
 
     // negative trace -(a + d)
-    realAdd(ar, dr, trR, &ctx159);
-    realAdd(ai, di, trI, &ctx159);
+    realAdd(&a.Real, &d.Real, trR, &ctx159);
+    realAdd(&a.Imag, &d.Imag, trI, &ctx159);
     realChangeSign(trR);
     realChangeSign(trI);
 
     blockMonitoring = true;
-    if (runtime.option_eigen_159) {
-        var t1rH_b = BigReal(159){};
-        var t1iH_b = BigReal(159){};
-        var t2rH_b = BigReal(159){};
-        var t2iH_b = BigReal(159){};
-        const t1rH = t1rH_b.ptr();
-        const t1iH = t1iH_b.ptr();
-        const t2rH = t2rH_b.ptr();
-        const t2iH = t2iH_b.ptr();
-        realSetZero(t1rH);
-        realSetZero(t1iH);
-        realSetZero(t2rH);
-        realSetZero(t2iH);
-        math_slvq.solveQuadraticEquation159(const_1(), const_0(), trR, trI, detR, detI, discrR, discrI, t1rH, t1iH, t2rH, t2iH, &ctx159);
+    realSetOne(blockRe(&one));
+    realSetZero(blockIm(&one));
+    if (comptime runtime.option_eigen_159) {
+        var t1H: cplx159_t = undefined;
+        var t2H: cplx159_t = undefined;
+        realSetZero(t1H.Real.ptr());
+        realSetZero(t1H.Imag.ptr());
+        realSetZero(t2H.Real.ptr());
+        realSetZero(t2H.Imag.ptr());
+        math_slvq.solveQuadraticEquation159(&one, &tr, &det, &discr, &t1H, &t2H, &ctx159);
         // Round the 159-digit roots back through the caller's context.
-        realPlus(t1rH, t1r, realContext);
-        realPlus(t1iH, t1i, realContext);
-        realPlus(t2rH, t2r, realContext);
-        realPlus(t2iH, t2i, realContext);
+        realPlus(t1H.Real.ptr(), &t1.Real, realContext);
+        realPlus(t1H.Imag.ptr(), &t1.Imag, realContext);
+        realPlus(t2H.Real.ptr(), &t2.Real, realContext);
+        realPlus(t2H.Imag.ptr(), &t2.Imag, realContext);
     } else {
-        // No high-precision temporaries and no round-back: the 75-digit solver
-        // writes the caller's outputs directly.
-        math_slvq.solveQuadraticEquation(const_1(), const_0(), trR, trI, detR, detI, discrR, discrI, t1r, t1i, t2r, t2i, &ctx159);
+        math_slvq.solveQuadraticEquation(&one, &tr, &det, &discr, t1, t2, &ctx159);
     }
     blockMonitoring = false;
 
     if (is_real_symmetric) {
-        realSetZero(t1i);
-        realSetZero(t2i);
+        realSetZero(&t1.Imag);
+        realSetZero(&t2.Imag);
     }
 }
 
@@ -308,42 +350,38 @@ inline fn realSizeInBlocks(comptime digits: u32) u32 {
     return (realSizeInBytes(digits) + 3) / 4;
 }
 
-// adjCpxMat: conjugate transpose of a size x size interleaved-complex matrix.
-fn adjCpxMat(x: [*]align(1) const real_t, size: u16, res: [*]align(1) real_t) linksection(runtime.code_section) void {
+// adjCpxMat: conjugate transpose of a size x size cplx_t matrix.
+fn adjCpxMat(x: [*]const cplx_t, size: u16, res: [*]cplx_t) linksection(runtime.code_section) void {
     const sz: usize = size;
     var i: usize = 0;
     while (i < sz) : (i += 1) {
         var j: usize = 0;
         while (j < sz) : (j += 1) {
-            realCopy(&x[(i * sz + j) * 2], &res[(j * sz + i) * 2]);
-            realCopy(&x[(i * sz + j) * 2 + 1], &res[(j * sz + i) * 2 + 1]);
-            realChangeSign(&res[(j * sz + i) * 2 + 1]);
+            realCopy(&x[i * sz + j].Real, &res[j * sz + i].Real);
+            realCopy(&x[i * sz + j].Imag, &res[j * sz + i].Imag);
+            realChangeSign(&res[j * sz + i].Imag);
         }
     }
 }
 
 // ===========================================================================
-// QR_decomposition_householder -- Householder QR of the interleaved-complex
-// size x size matrix `mat`, producing q and r (also interleaved complex). Uses
+// QR_decomposition_householder -- Householder QR of the size x size cplx_t
+// matrix `mat`, producing q and r, also cplx_t. Uses
 // a single C47-block bulk allocation for all scratch, matching upstream.
 // ===========================================================================
-pub export fn QR_decomposition_householder(
-    mat: [*]align(1) const real_t,
-    size: u16,
-    q: [*]align(1) real_t,
-    r: [*]align(1) real_t,
-    realContext: *realContext_t,
-) callconv(.c) void {
+pub export fn QR_decomposition_householder(mat: [*]const cplx_t, size: u16, q: [*]cplx_t, r: [*]cplx_t, realContext: *realContext_t) callconv(.c) void {
     const sz: usize = size;
-    const n2: usize = sz * sz * 2; // real_t slots per matrix
+    const n2: usize = sz * sz; // cplx_t per matrix
     const bulkSize: usize = (sz * sz * 5 + sz) * realSizeInBlocks(75) * 2;
 
-    if (allocC47Blocks(bulkSize)) |bulk| {
+    if (allocCplx(bulkSize)) |bulk| {
         // Zero the entire bulk allocation.
         {
             var z: usize = 0;
-            const total = (sz * sz * 5 + sz) * 2;
-            while (z < total) : (z += 1) realSetZero(&bulk[z]);
+            while (z < sz * sz * 5 + sz) : (z += 1) {
+                realSetZero(&bulk[z].Real);
+                realSetZero(&bulk[z].Imag);
+            }
         }
 
         const matr = bulk;
@@ -354,23 +392,22 @@ pub export fn QR_decomposition_householder(
         const v = bulk + 5 * n2;
 
         var sum: real_t = undefined;
-        var m: real_t = undefined;
-        var t: real_t = undefined;
+        var mt: cplx_t = undefined;
 
         // Copy mat -> matr.
         var i: usize = 0;
-        while (i < sz * sz) : (i += 1) {
-            realCopy(&mat[i * 2], &matr[i * 2]);
-            realCopy(&mat[i * 2 + 1], &matr[i * 2 + 1]);
+        while (i < n2) : (i += 1) {
+            realCopy(&mat[i].Real, &matr[i].Real);
+            realCopy(&mat[i].Imag, &matr[i].Imag);
         }
         // Initialize Q to identity.
         i = 0;
-        while (i < sz * sz) : (i += 1) {
-            realSetZero(&matq[i * 2]);
-            realSetZero(&matq[i * 2 + 1]);
+        while (i < n2) : (i += 1) {
+            realSetZero(&matq[i].Real);
+            realSetZero(&matq[i].Imag);
         }
         i = 0;
-        while (i < sz) : (i += 1) realSetOne(&matq[(i * sz + i) * 2]);
+        while (i < sz) : (i += 1) realSetOne(&matq[i * sz + i].Real);
 
         var j: usize = 0;
         while (j < sz - 1) : (j += 1) {
@@ -378,31 +415,33 @@ pub export fn QR_decomposition_householder(
             realSetZero(&sum);
             i = 0;
             while (i < sz - j) : (i += 1) {
-                realCopy(&matr[((i + j) * sz + j) * 2], &v[i * 2]);
-                realCopy(&matr[((i + j) * sz + j) * 2 + 1], &v[i * 2 + 1]);
+                realCopy(&matr[(i + j) * sz + j].Real, &v[i].Real);
+                realCopy(&matr[(i + j) * sz + j].Imag, &v[i].Imag);
                 var temp_v1: real_t = undefined;
                 var temp_v2: real_t = undefined;
-                realFMA(&v[i * 2], &v[i * 2], &sum, &temp_v1, realContext);
+                realFMA(&v[i].Real, &v[i].Real, &sum, &temp_v1, realContext);
                 realCopy(&temp_v1, &sum);
-                realFMA(&v[i * 2 + 1], &v[i * 2 + 1], &sum, &temp_v2, realContext);
+                realFMA(&v[i].Imag, &v[i].Imag, &sum, &temp_v2, realContext);
                 realCopy(&temp_v2, &sum);
             }
             realSquareRoot(&sum, &sum, realContext);
 
-            // u = x - alpha e1 with the stable sign choice.
-            if (realIsZeroA(&v[1])) {
-                if (!realIsNegativeA(&v[0])) {
+            // u = x - alpha e1, with alpha's sign opposite to v[0]'s so the
+            // subtraction is effectively an addition and cannot cancel.
+            if (realIsZeroA(&v[0].Imag)) {
+                if (!realIsNegativeA(&v[0].Real)) {
                     realChangeSign(&sum);
                 }
-                realSubtract(&v[0], &sum, &v[0], realContext);
+                realSubtract(&v[0].Real, &sum, &v[0].Real, realContext);
             } else {
+                // alpha = ||v|| * exp(i*arg(v[0]))
                 blockMonitoring = true;
-                math_transform_complex_helpers.realRectangularToPolar(&v[0], &v[1], &m, &t, realContext);
+                math_transform_complex_helpers.realRectangularToPolar(&v[0], mt.mag(), mt.arg(), realContext);
                 blockMonitoring = true;
-                math_transform_complex_helpers.realPolarToRectangular(&sum, &t, &m, &t, realContext);
+                math_transform_complex_helpers.realPolarToRectangular(&sum, mt.arg(), &mt, realContext);
                 blockMonitoring = false;
-                realAdd(&v[0], &m, &v[0], realContext);
-                realAdd(&v[1], &t, &v[1], realContext);
+                realAdd(&v[0].Real, &mt.Real, &v[0].Real, realContext);
+                realAdd(&v[0].Imag, &mt.Imag, &v[0].Imag, realContext);
             }
 
             // Norm of u.
@@ -411,41 +450,45 @@ pub export fn QR_decomposition_householder(
             while (i < sz - j) : (i += 1) {
                 var temp_v1: real_t = undefined;
                 var temp_v2: real_t = undefined;
-                realFMA(&v[i * 2], &v[i * 2], &sum, &temp_v1, realContext);
+                realFMA(&v[i].Real, &v[i].Real, &sum, &temp_v1, realContext);
                 realCopy(&temp_v1, &sum);
-                realFMA(&v[i * 2 + 1], &v[i * 2 + 1], &sum, &temp_v2, realContext);
+                realFMA(&v[i].Imag, &v[i].Imag, &sum, &temp_v2, realContext);
                 realCopy(&temp_v2, &sum);
             }
             realSquareRoot(&sum, &sum, realContext);
 
-            // v = u / ||u|| with a precision-relative minimum threshold.
+            // v = u / ||u|| with a precision-dependent zero threshold.
             var min_norm: real_t = undefined;
-            var threshold_buf: [24]u8 = undefined;
-            const threshold_str = bufPrintZ(&threshold_buf, "1E-{d}", .{realContext.digits}) catch "1E-75";
-            stringToReal(threshold_str, &min_norm, realContext);
+            realSetOne(&min_norm);
+            min_norm.exponent -= realContext.digits;
+
             i = 0;
             while (i < sz - j) : (i += 1) {
-                if (math_comparison_reals.realCompareLessThan(&sum, &min_norm)) {
-                    realCopy(&v[i * 2], &m);
-                    realCopy(&v[i * 2 + 1], &t);
-                } else if (realIsZeroA(&v[i * 2 + 1])) {
-                    realDivide(&v[i * 2], &sum, &m, realContext);
-                    realSetZero(&t);
+                if (realCompareLessThan(&sum, &min_norm)) {
+                    // Norm too small for the precision: keep the vector as it
+                    // is, which skips this Householder step.
+                    realCopy(&v[i].Real, &mt.Real);
+                    realCopy(&v[i].Imag, &mt.Imag);
+                } else if (realIsZeroA(&v[i].Imag)) {
+                    realDivide(&v[i].Real, &sum, &mt.Real, realContext);
+                    realSetZero(&mt.Imag);
                 } else {
-                    math_division_cells.divComplexComplex(&v[i * 2], &v[i * 2 + 1], &sum, const_0(), &m, &t, realContext);
+                    realCopy(&sum, &mt.Real);
+                    realSetZero(&mt.Imag);
+                    divComplexComplex(&v[i], &mt, &mt, realContext);
                 }
-                realCopy(&m, &v[i * 2]);
-                realCopy(&t, &v[i * 2 + 1]);
+                realCopy(&mt.Real, &v[i].Real);
+                realCopy(&mt.Imag, &v[i].Imag);
             }
 
             // qq = I.
             i = 0;
-            while (i < sz * sz) : (i += 1) {
-                realSetZero(&qq[i * 2]);
-                realSetZero(&qq[i * 2 + 1]);
+            while (i < n2) : (i += 1) {
+                realSetZero(&qq[i].Real);
+                realSetZero(&qq[i].Imag);
             }
             i = 0;
-            while (i < sz) : (i += 1) realSetOne(&qq[(i * sz + i) * 2]);
+            while (i < sz) : (i += 1) realSetOne(&qq[i * sz + i].Real);
 
             // qq -= 2 v v*.
             i = 0;
@@ -453,54 +496,56 @@ pub export fn QR_decomposition_householder(
                 var k: usize = 0;
                 while (k < sz - j) : (k += 1) {
                     const qe = (i + j) * sz + k + j;
-                    realSubtract(const_0(), &v[k * 2 + 1], &sum, realContext);
-                    if (realIsZeroA(&v[i * 2 + 1]) and realIsZeroA(&sum)) {
-                        realMultiply(&v[i * 2], &v[k * 2], &m, realContext);
-                        realSetZero(&t);
+                    realSubtract(const_0(), &v[k].Imag, &sum, realContext);
+                    if (realIsZeroA(&v[i].Imag) and realIsZeroA(&sum)) {
+                        realMultiply(&v[i].Real, &v[k].Real, &mt.Real, realContext);
+                        realSetZero(&mt.Imag);
                     } else {
-                        math_multiplication_cells.mulComplexComplex(&v[i * 2], &v[i * 2 + 1], &v[k * 2], &sum, &m, &t, realContext);
+                        realCopy(&v[k].Real, &mt.Real); // mt = conj(v[k]), sum takes -Im v[k]
+                        realCopy(&sum, &mt.Imag);
+                        mulComplexComplex(&v[i], &mt, &mt, realContext);
                     }
-                    realMultiply(&m, const_2(), &m, realContext);
-                    realMultiply(&t, const_2(), &t, realContext);
-                    realSubtract(&qq[qe * 2], &m, &qq[qe * 2], realContext);
-                    realSubtract(&qq[qe * 2 + 1], &t, &qq[qe * 2 + 1], realContext);
+                    realMultiply(&mt.Real, const_2(), &mt.Real, realContext);
+                    realMultiply(&mt.Imag, const_2(), &mt.Imag, realContext);
+                    realSubtract(&qq[qe].Real, &mt.Real, &qq[qe].Real, realContext);
+                    realSubtract(&qq[qe].Imag, &mt.Imag, &qq[qe].Imag, realContext);
                 }
             }
 
             // R = qq * matr.
             math_matrix_complex_core.mulCpxMat(qq, matr, size, size, size, newMat, realContext);
             i = 0;
-            while (i < sz * sz) : (i += 1) {
-                realCopy(&newMat[i * 2], &matr[i * 2]);
-                realCopy(&newMat[i * 2 + 1], &matr[i * 2 + 1]);
+            while (i < n2) : (i += 1) {
+                realCopy(&newMat[i].Real, &matr[i].Real);
+                realCopy(&newMat[i].Imag, &matr[i].Imag);
             }
             // Q = matq * qq*.
             adjCpxMat(qq, size, qt);
             math_matrix_complex_core.mulCpxMat(matq, qt, size, size, size, newMat, realContext);
             i = 0;
-            while (i < sz * sz) : (i += 1) {
-                realCopy(&newMat[i * 2], &matq[i * 2]);
-                realCopy(&newMat[i * 2 + 1], &matq[i * 2 + 1]);
+            while (i < n2) : (i += 1) {
+                realCopy(&newMat[i].Real, &matq[i].Real);
+                realCopy(&newMat[i].Imag, &matq[i].Imag);
             }
         }
 
-        // Force R lower part to zero.
+        // Make sure R is triangular.
         j = 0;
         while (j < sz - 1) : (j += 1) {
             i = j + 1;
             while (i < sz) : (i += 1) {
-                realSetZero(&matr[(i * sz + j) * 2]);
-                realSetZero(&matr[(i * sz + j) * 2 + 1]);
+                realSetZero(&matr[i * sz + j].Real);
+                realSetZero(&matr[i * sz + j].Imag);
             }
         }
 
         // Copy results out.
         i = 0;
-        while (i < sz * sz) : (i += 1) {
-            realCopy(&matq[i * 2], &q[i * 2]);
-            realCopy(&matq[i * 2 + 1], &q[i * 2 + 1]);
-            realCopy(&matr[i * 2], &r[i * 2]);
-            realCopy(&matr[i * 2 + 1], &r[i * 2 + 1]);
+        while (i < n2) : (i += 1) {
+            realCopy(&matq[i].Real, &q[i].Real);
+            realCopy(&matq[i].Imag, &q[i].Imag);
+            realCopy(&matr[i].Real, &r[i].Real);
+            realCopy(&matr[i].Imag, &r[i].Imag);
         }
 
         freeC47Blocks(bulk, bulkSize);
@@ -517,73 +562,52 @@ pub export fn QR_decomposition_householder(
 // sub-matrix via its characteristic cubic (see eigen_block_digits for the
 // precision the configuration selects).
 // ===========================================================================
-pub export fn calculateEigenvalues33(
-    mat: [*]align(1) const real_t,
-    size: u16,
-    t1r: *align(1) real_t,
-    t1i: *align(1) real_t,
-    t2r: *align(1) real_t,
-    t2i: *align(1) real_t,
-    t3r: *align(1) real_t,
-    t3i: *align(1) real_t,
-    is_real_symmetric: bool,
-    realContext: *realContext_t,
-) callconv(.c) void {
+pub export fn calculateEigenvalues33(mat: [*]const cplx_t, size: u16, t1: *cplx_t, t2: *cplx_t, t3: *cplx_t, is_real_symmetric: bool, realContext: *realContext_t) callconv(.c) void {
     var ctx159: realContext_t = runtime.ctxtReal75;
     ctx159.digits = eigen_block_digits;
 
-    var aekr_b = BigReal(eigen_block_digits){};
-    var aeki_b = BigReal(eigen_block_digits){};
-    var bfgr_b = BigReal(eigen_block_digits){};
-    var bfgi_b = BigReal(eigen_block_digits){};
-    var cdhr_b = BigReal(eigen_block_digits){};
-    var cdhi_b = BigReal(eigen_block_digits){};
-    var cegr_b = BigReal(eigen_block_digits){};
-    var cegi_b = BigReal(eigen_block_digits){};
-    var bdkr_b = BigReal(eigen_block_digits){};
-    var bdki_b = BigReal(eigen_block_digits){};
-    var afhr_b = BigReal(eigen_block_digits){};
-    var afhi_b = BigReal(eigen_block_digits){};
-    var br_b = BigReal(eigen_block_digits){};
-    var bi_b = BigReal(eigen_block_digits){};
-    var cr_b = BigReal(eigen_block_digits){};
-    var ci_b = BigReal(eigen_block_digits){};
-    var dr_b = BigReal(eigen_block_digits){};
-    var di_b = BigReal(eigen_block_digits){};
-    var discrR_b = BigReal(eigen_block_digits){};
-    var discrI_b = BigReal(eigen_block_digits){};
-    const aekr = aekr_b.ptr();
-    const aeki = aeki_b.ptr();
-    const bfgr = bfgr_b.ptr();
-    const bfgi = bfgi_b.ptr();
-    const cdhr = cdhr_b.ptr();
-    const cdhi = cdhi_b.ptr();
-    const cegr = cegr_b.ptr();
-    const cegi = cegi_b.ptr();
-    const bdkr = bdkr_b.ptr();
-    const bdki = bdki_b.ptr();
-    const afhr = afhr_b.ptr();
-    const afhi = afhi_b.ptr();
-    const br = br_b.ptr();
-    const bi = bi_b.ptr();
-    const cr = cr_b.ptr();
-    const ci = ci_b.ptr();
-    const dr = dr_b.ptr();
-    const di = di_b.ptr();
-    const discrR = discrR_b.ptr();
-    const discrI = discrI_b.ptr();
+    var aek: BlockCplx = undefined;
+    var bfg: BlockCplx = undefined;
+    var cdh: BlockCplx = undefined;
+    var ceg: BlockCplx = undefined;
+    var bdk: BlockCplx = undefined;
+    var afh: BlockCplx = undefined;
+    var b: BlockCplx = undefined;
+    var c: BlockCplx = undefined;
+    var d: BlockCplx = undefined;
+    var discr: BlockCplx = undefined;
+    const aekr = blockRe(&aek);
+    const aeki = blockIm(&aek);
+    const bfgr = blockRe(&bfg);
+    const bfgi = blockIm(&bfg);
+    const cdhr = blockRe(&cdh);
+    const cdhi = blockIm(&cdh);
+    const cegr = blockRe(&ceg);
+    const cegi = blockIm(&ceg);
+    const bdkr = blockRe(&bdk);
+    const bdki = blockIm(&bdk);
+    const afhr = blockRe(&afh);
+    const afhi = blockIm(&afh);
+    const br = blockRe(&b);
+    const bi = blockIm(&b);
+    const cr = blockRe(&c);
+    const ci = blockIm(&c);
+    const dr = blockRe(&d);
+    const di = blockIm(&d);
+    const discrR = blockRe(&discr);
+    const discrI = blockIm(&discr);
 
     const sz: usize = size;
-    var mr: [9]*align(1) const real_t = undefined;
-    var mi: [9]*align(1) const real_t = undefined;
-    const b0 = ((sz - 3) * sz + (sz - 3)) * 2;
-    const b3 = ((sz - 2) * sz + (sz - 3)) * 2;
-    const b6 = ((sz - 1) * sz + (sz - 3)) * 2;
-    const idx = [9]usize{ b0, b0 + 2, b0 + 4, b3, b3 + 2, b3 + 4, b6, b6 + 2, b6 + 4 };
-    for (0..9) |i| {
-        mr[i] = &mat[idx[i]];
-        mi[i] = &mat[idx[i] + 1];
-    }
+    var m: [9]*const cplx_t = undefined;
+    m[0] = &mat[(sz - 3) * sz + (sz - 3)];
+    m[1] = &mat[(sz - 3) * sz + (sz - 2)];
+    m[2] = &mat[(sz - 3) * sz + (sz - 1)];
+    m[3] = &mat[(sz - 2) * sz + (sz - 3)];
+    m[4] = &mat[(sz - 2) * sz + (sz - 2)];
+    m[5] = &mat[(sz - 2) * sz + (sz - 1)];
+    m[6] = &mat[(sz - 1) * sz + (sz - 3)];
+    m[7] = &mat[(sz - 1) * sz + (sz - 2)];
+    m[8] = &mat[(sz - 1) * sz + (sz - 1)];
 
     realSetZero(br);
     realSetZero(bi);
@@ -607,20 +631,20 @@ pub export fn calculateEigenvalues33(
     realSetZero(afhi);
 
     // quadratic coefficient: -trace
-    realAdd(mr[0], mr[4], br, &ctx159);
-    realAdd(mi[0], mi[4], bi, &ctx159);
-    realAdd(br, mr[8], br, &ctx159);
-    realAdd(bi, mi[8], bi, &ctx159);
+    realAdd(&m[0].Real, &m[4].Real, br, &ctx159);
+    realAdd(&m[0].Imag, &m[4].Imag, bi, &ctx159);
+    realAdd(br, &m[8].Real, br, &ctx159);
+    realAdd(bi, &m[8].Imag, bi, &ctx159);
     realChangeSign(br);
     realChangeSign(bi);
 
     // linear coefficient: sum of principal 2x2 minors
-    math_multiplication_cells.mulComplexComplex(@alignCast(mr[0]), @alignCast(mi[0]), @alignCast(mr[4]), @alignCast(mi[4]), @alignCast(aekr), @alignCast(aeki), &ctx159);
-    math_multiplication_cells.mulComplexComplex(@alignCast(mr[1]), @alignCast(mi[1]), @alignCast(mr[3]), @alignCast(mi[3]), @alignCast(bdkr), @alignCast(bdki), &ctx159);
-    math_multiplication_cells.mulComplexComplex(@alignCast(mr[0]), @alignCast(mi[0]), @alignCast(mr[8]), @alignCast(mi[8]), @alignCast(cdhr), @alignCast(cdhi), &ctx159);
-    math_multiplication_cells.mulComplexComplex(@alignCast(mr[2]), @alignCast(mi[2]), @alignCast(mr[6]), @alignCast(mi[6]), @alignCast(cegr), @alignCast(cegi), &ctx159);
-    math_multiplication_cells.mulComplexComplex(@alignCast(mr[4]), @alignCast(mi[4]), @alignCast(mr[8]), @alignCast(mi[8]), @alignCast(bfgr), @alignCast(bfgi), &ctx159);
-    math_multiplication_cells.mulComplexComplex(@alignCast(mr[5]), @alignCast(mi[5]), @alignCast(mr[7]), @alignCast(mi[7]), @alignCast(afhr), @alignCast(afhi), &ctx159);
+    eigenMulElem(m[0], m[4], &aek, &ctx159);
+    eigenMulElem(m[1], m[3], &bdk, &ctx159);
+    eigenMulElem(m[0], m[8], &cdh, &ctx159);
+    eigenMulElem(m[2], m[6], &ceg, &ctx159);
+    eigenMulElem(m[4], m[8], &bfg, &ctx159);
+    eigenMulElem(m[5], m[7], &afh, &ctx159);
     realAdd(aekr, cdhr, cr, &ctx159);
     realAdd(aeki, cdhi, ci, &ctx159);
     realAdd(cr, bfgr, cr, &ctx159);
@@ -633,14 +657,14 @@ pub export fn calculateEigenvalues33(
     realSubtract(ci, afhi, ci, &ctx159);
 
     // constant term: -determinant
-    math_multiplication_cells.mulComplexComplex(@alignCast(aekr), @alignCast(aeki), @alignCast(mr[8]), @alignCast(mi[8]), @alignCast(aekr), @alignCast(aeki), &ctx159);
-    math_multiplication_cells.mulComplexComplex(@alignCast(mr[1]), @alignCast(mi[1]), @alignCast(mr[5]), @alignCast(mi[5]), @alignCast(bfgr), @alignCast(bfgi), &ctx159);
-    math_multiplication_cells.mulComplexComplex(@alignCast(bfgr), @alignCast(bfgi), @alignCast(mr[6]), @alignCast(mi[6]), @alignCast(bfgr), @alignCast(bfgi), &ctx159);
-    math_multiplication_cells.mulComplexComplex(@alignCast(mr[2]), @alignCast(mi[2]), @alignCast(mr[3]), @alignCast(mi[3]), @alignCast(cdhr), @alignCast(cdhi), &ctx159);
-    math_multiplication_cells.mulComplexComplex(@alignCast(cdhr), @alignCast(cdhi), @alignCast(mr[7]), @alignCast(mi[7]), @alignCast(cdhr), @alignCast(cdhi), &ctx159);
-    math_multiplication_cells.mulComplexComplex(@alignCast(cegr), @alignCast(cegi), @alignCast(mr[4]), @alignCast(mi[4]), @alignCast(cegr), @alignCast(cegi), &ctx159);
-    math_multiplication_cells.mulComplexComplex(@alignCast(bdkr), @alignCast(bdki), @alignCast(mr[8]), @alignCast(mi[8]), @alignCast(bdkr), @alignCast(bdki), &ctx159);
-    math_multiplication_cells.mulComplexComplex(@alignCast(afhr), @alignCast(afhi), @alignCast(mr[0]), @alignCast(mi[0]), @alignCast(afhr), @alignCast(afhi), &ctx159);
+    eigenMul(aekr, aeki, &m[8].Real, &m[8].Imag, &aek, &ctx159);
+    eigenMulElem(m[1], m[5], &bfg, &ctx159);
+    eigenMul(bfgr, bfgi, &m[6].Real, &m[6].Imag, &bfg, &ctx159);
+    eigenMulElem(m[2], m[3], &cdh, &ctx159);
+    eigenMul(cdhr, cdhi, &m[7].Real, &m[7].Imag, &cdh, &ctx159);
+    eigenMul(cegr, cegi, &m[4].Real, &m[4].Imag, &ceg, &ctx159);
+    eigenMul(bdkr, bdki, &m[8].Real, &m[8].Imag, &bdk, &ctx159);
+    eigenMul(afhr, afhi, &m[0].Real, &m[0].Imag, &afh, &ctx159);
     realAdd(aekr, bfgr, dr, &ctx159);
     realAdd(aeki, bfgi, di, &ctx159);
     realAdd(dr, cdhr, dr, &ctx159);
@@ -655,46 +679,35 @@ pub export fn calculateEigenvalues33(
     realChangeSign(di);
 
     blockMonitoring = true;
-    if (runtime.option_eigen_159) {
-        var t1rH_b = BigReal(159){};
-        var t1iH_b = BigReal(159){};
-        var t2rH_b = BigReal(159){};
-        var t2iH_b = BigReal(159){};
-        var t3rH_b = BigReal(159){};
-        var t3iH_b = BigReal(159){};
-        const t1rH = t1rH_b.ptr();
-        const t1iH = t1iH_b.ptr();
-        const t2rH = t2rH_b.ptr();
-        const t2iH = t2iH_b.ptr();
-        const t3rH = t3rH_b.ptr();
-        const t3iH = t3iH_b.ptr();
-        realSetZero(t1rH);
-        realSetZero(t1iH);
-        realSetZero(t2rH);
-        realSetZero(t2iH);
-        realSetZero(t3rH);
-        realSetZero(t3iH);
+    if (comptime runtime.option_eigen_159) {
+        var t1H: cplx159_t = undefined;
+        var t2H: cplx159_t = undefined;
+        var t3H: cplx159_t = undefined;
+        realSetZero(t1H.Real.ptr());
+        realSetZero(t1H.Imag.ptr());
+        realSetZero(t2H.Real.ptr());
+        realSetZero(t2H.Imag.ptr());
+        realSetZero(t3H.Real.ptr());
+        realSetZero(t3H.Imag.ptr());
 
-        math_slvc.solveCubicEquation159(br, bi, cr, ci, dr, di, discrR, discrI, t1rH, t1iH, t2rH, t2iH, t3rH, t3iH, &ctx159);
+        math_slvc.solveCubicEquation159(&b, &c, &d, &discr, &t1H, &t2H, &t3H, &ctx159);
 
         // Round the 159-digit roots back through the caller's context.
-        realPlus(t1rH, t1r, realContext);
-        realPlus(t1iH, t1i, realContext);
-        realPlus(t2rH, t2r, realContext);
-        realPlus(t2iH, t2i, realContext);
-        realPlus(t3rH, t3r, realContext);
-        realPlus(t3iH, t3i, realContext);
+        realPlus(t1H.Real.ptr(), &t1.Real, realContext);
+        realPlus(t1H.Imag.ptr(), &t1.Imag, realContext);
+        realPlus(t2H.Real.ptr(), &t2.Real, realContext);
+        realPlus(t2H.Imag.ptr(), &t2.Imag, realContext);
+        realPlus(t3H.Real.ptr(), &t3.Real, realContext);
+        realPlus(t3H.Imag.ptr(), &t3.Imag, realContext);
     } else {
-        // No high-precision temporaries and no round-back: the 75-digit solver
-        // writes the caller's outputs directly.
-        math_slvc.solveCubicEquation(br, bi, cr, ci, dr, di, discrR, discrI, t1r, t1i, t2r, t2i, t3r, t3i, &ctx159);
+        math_slvc.solveCubicEquation(&b, &c, &d, &discr, t1, t2, t3, &ctx159);
     }
     blockMonitoring = false;
 
     if (is_real_symmetric) {
-        realSetZero(t1i);
-        realSetZero(t2i);
-        realSetZero(t3i);
+        realSetZero(&t1.Imag);
+        realSetZero(&t2.Imag);
+        realSetZero(&t3.Imag);
     }
 }
 
@@ -704,7 +717,7 @@ pub export fn calculateEigenvalues33(
 
 // Merge-sort the computed eigenvalues (stored on the diagonal of eig) by
 // descending magnitude, using the (i+1)/(i+2) off-diagonal slots as scratch.
-fn sortEigenvalues(eig: [*]align(1) real_t, size: u16, begin_a: u16, begin_b: u16, end_b: u16, realContext: *realContext_t) linksection(runtime.code_section) void {
+fn sortEigenvalues(eig: [*]cplx_t, size: u16, begin_a: u16, begin_b: u16, end_b: u16, realContext: *realContext_t) linksection(runtime.code_section) void {
     const end_a: u16 = begin_b - 1;
     const sz: usize = size;
 
@@ -712,16 +725,16 @@ fn sortEigenvalues(eig: [*]align(1) real_t, size: u16, begin_a: u16, begin_b: u1
         return;
     } else if (begin_a == end_b) {
         return;
-    } else if (size == 2) {
-        math_runtime_helpers.complexMagnitude(@alignCast(&eig[0]), @alignCast(&eig[1]), @alignCast(&eig[2]), realContext);
-        math_runtime_helpers.complexMagnitude(@alignCast(&eig[6]), @alignCast(&eig[7]), @alignCast(&eig[4]), realContext);
-        if (math_comparison_reals.realCompareLessThan(@alignCast(&eig[2]), @alignCast(&eig[4]))) {
-            realCopy(&eig[0], &eig[2]);
-            realCopy(&eig[1], &eig[3]);
-            realCopy(&eig[6], &eig[0]);
-            realCopy(&eig[7], &eig[1]);
-            realCopy(&eig[2], &eig[6]);
-            realCopy(&eig[1], &eig[7]);
+    } else if (size == 2) { // simply compare
+        complexMagnitude(&eig[0], &eig[1].Real, realContext);
+        complexMagnitude(&eig[3], &eig[2].Real, realContext);
+        if (realCompareLessThan(&eig[1].Real, &eig[2].Real)) {
+            realCopy(&eig[0].Real, &eig[1].Real);
+            realCopy(&eig[0].Imag, &eig[1].Imag);
+            realCopy(&eig[3].Real, &eig[0].Real);
+            realCopy(&eig[3].Imag, &eig[0].Imag);
+            realCopy(&eig[1].Real, &eig[3].Real);
+            realCopy(&eig[1].Imag, &eig[3].Imag);
         }
     } else {
         var a: u16 = begin_a;
@@ -731,52 +744,50 @@ fn sortEigenvalues(eig: [*]align(1) real_t, size: u16, begin_a: u16, begin_b: u1
         var i: u16 = begin_a;
         while (i <= end_b) : (i += 1) {
             const ii: usize = i;
-            math_runtime_helpers.complexMagnitude(@alignCast(&eig[(ii * sz + ii) * 2]), @alignCast(&eig[(ii * sz + ii) * 2 + 1]), @alignCast(&eig[(ii * sz + (ii + 1) % sz) * 2]), realContext);
+            complexMagnitude(&eig[ii * sz + ii], &eig[ii * sz + (ii + 1) % sz].Real, realContext);
         }
         i = begin_a;
         while (i <= end_b) : (i += 1) {
             const ii: usize = i;
-            const dst = (ii * sz + (ii + 2) % sz) * 2;
+            const dst = &eig[ii * sz + (ii + 2) % sz];
+            const aa: usize = a;
+            const bb: usize = b;
             if (a > end_a) {
-                const bb: usize = b;
-                realCopy(&eig[(bb * sz + bb) * 2], &eig[dst]);
-                realCopy(&eig[(bb * sz + bb) * 2 + 1], &eig[dst + 1]);
+                realCopy(&eig[bb * sz + bb].Real, &dst.Real);
+                realCopy(&eig[bb * sz + bb].Imag, &dst.Imag);
                 b += 1;
             } else if (b > end_b) {
-                const aa: usize = a;
-                realCopy(&eig[(aa * sz + aa) * 2], &eig[dst]);
-                realCopy(&eig[(aa * sz + aa) * 2 + 1], &eig[dst + 1]);
+                realCopy(&eig[aa * sz + aa].Real, &dst.Real);
+                realCopy(&eig[aa * sz + aa].Imag, &dst.Imag);
                 a += 1;
-            } else if (math_comparison_reals.realCompareLessThan(@alignCast(&eig[(@as(usize, a) * sz + (@as(usize, a) + 1) % sz) * 2]), @alignCast(&eig[(@as(usize, b) * sz + (@as(usize, b) + 1) % sz) * 2]))) {
-                const bb: usize = b;
-                realCopy(&eig[(bb * sz + bb) * 2], &eig[dst]);
-                realCopy(&eig[(bb * sz + bb) * 2 + 1], &eig[dst + 1]);
+            } else if (realCompareLessThan(&eig[aa * sz + (aa + 1) % sz].Real, &eig[bb * sz + (bb + 1) % sz].Real)) {
+                realCopy(&eig[bb * sz + bb].Real, &dst.Real);
+                realCopy(&eig[bb * sz + bb].Imag, &dst.Imag);
                 b += 1;
             } else {
-                const aa: usize = a;
-                realCopy(&eig[(aa * sz + aa) * 2], &eig[dst]);
-                realCopy(&eig[(aa * sz + aa) * 2 + 1], &eig[dst + 1]);
+                realCopy(&eig[aa * sz + aa].Real, &dst.Real);
+                realCopy(&eig[aa * sz + aa].Imag, &dst.Imag);
                 a += 1;
             }
         }
         i = begin_a;
         while (i <= end_b) : (i += 1) {
             const ii: usize = i;
-            realCopy(&eig[(ii * sz + (ii + 2) % sz) * 2], &eig[(ii * sz + ii) * 2]);
-            realCopy(&eig[(ii * sz + (ii + 2) % sz) * 2 + 1], &eig[(ii * sz + ii) * 2 + 1]);
+            realCopy(&eig[ii * sz + (ii + 2) % sz].Real, &eig[ii * sz + ii].Real);
+            realCopy(&eig[ii * sz + (ii + 2) % sz].Imag, &eig[ii * sz + ii].Imag);
         }
     }
 }
 
 // True when every off-diagonal element has magnitude below tol.
-fn isMatrixDiagonal(matrix: [*]align(1) const real_t, size: u16, tol: *align(1) const real_t, realContext: *realContext_t) linksection(runtime.code_section) bool {
+fn isMatrixDiagonal(matrix: [*]const cplx_t, size: u16, tol: *const real_t, realContext: *realContext_t) linksection(runtime.code_section) bool {
     const sz: usize = size;
     for (0..sz) |i| {
         for (0..sz) |j| {
             if (i != j) {
                 var offdiag_mag: real_t = undefined;
-                math_runtime_helpers.complexMagnitude(@alignCast(&matrix[(i * sz + j) * 2]), @alignCast(&matrix[(i * sz + j) * 2 + 1]), &offdiag_mag, realContext);
-                if (!math_comparison_reals.realCompareLessThan(&offdiag_mag, @alignCast(tol))) {
+                complexMagnitude(&matrix[i * sz + j], &offdiag_mag, realContext);
+                if (!realCompareLessThan(&offdiag_mag, tol)) {
                     return false;
                 }
             }
@@ -794,7 +805,7 @@ fn isMatrixDiagonal(matrix: [*]align(1) const real_t, size: u16, tol: *align(1) 
 // and CONV_SUM_159 is not, so each element adds |Re| + |Im| at realContext.
 // ===========================================================================
 
-fn sumOfSubSupDiagonalAll(heading: [*:0]const u8, matrix: [*]align(1) const real_t, previousDiagonal: ?[*]align(1) real_t, size: u16, activeSize: u16, mode: c_int, sum: *align(1) real_t, firstCall: bool, realContext: *realContext_t) linksection(runtime.code_section) void {
+fn sumOfSubSupDiagonalAll(heading: [*:0]const u8, matrix: [*]const cplx_t, previousDiagonal: ?[*]cplx_t, size: u16, activeSize: u16, mode: c_int, sum: *real_t, firstCall: bool, realContext: *realContext_t) linksection(runtime.code_section) void {
     _ = heading;
     var elemRe: real_t = undefined;
     var elemIm: real_t = undefined;
@@ -804,46 +815,39 @@ fn sumOfSubSupDiagonalAll(heading: [*:0]const u8, matrix: [*]align(1) const real
     while (i < activeSize) : (i += 1) {
         var j: u16 = 0;
         while (j < activeSize) : (j += 1) {
-            var include = false;
-            switch (mode) {
-                DIAG => {
-                    include = (i == j);
-                },
-                SUPSUBDIAG => {
-                    include = (i == j + 1) or (j == i + 1);
-                },
-                NONDIAG => {
-                    include = (i != j);
-                },
-                CHDIAG => {
-                    include = (i == j);
-                },
-                else => {},
-            }
+            const include = switch (mode) {
+                DIAG => i == j,
+                SUPSUBDIAG => (i == j + 1) or (j == i + 1),
+                NONDIAG => i != j,
+                CHDIAG => i == j,
+                else => false,
+            };
             if (include) {
                 const ii: usize = i;
                 const jj: usize = j;
-                realCopy(&matrix[(ii * sz + jj) * 2], &elemRe);
-                realCopy(&matrix[(ii * sz + jj) * 2 + 1], &elemIm);
+                realCopy(&matrix[ii * sz + jj].Real, &elemRe);
+                realCopy(&matrix[ii * sz + jj].Imag, &elemIm);
                 if (mode == CHDIAG) {
                     const previous = previousDiagonal.?;
                     if (firstCall) {
-                        realCopy(&elemRe, &previous[ii * 2]);
-                        realCopy(&elemIm, &previous[ii * 2 + 1]);
+                        // store the initial diagonal and skip summing
+                        realCopy(&elemRe, &previous[ii].Real);
+                        realCopy(&elemIm, &previous[ii].Imag);
                         continue;
                     } else {
+                        // change = |current - previous|
                         var prevRe: real_t = undefined;
                         var prevIm: real_t = undefined;
                         var changeRe: real_t = undefined;
                         var changeIm: real_t = undefined;
-                        realCopy(&previous[ii * 2], &prevRe);
-                        realCopy(&previous[ii * 2 + 1], &prevIm);
+                        realCopy(&previous[ii].Real, &prevRe);
+                        realCopy(&previous[ii].Imag, &prevIm);
                         realSubtract(&elemRe, &prevRe, &changeRe, realContext);
                         realSubtract(&elemIm, &prevIm, &changeIm, realContext);
                         realSetPositiveSign(&changeRe);
                         realSetPositiveSign(&changeIm);
-                        realCopy(&elemRe, &previous[ii * 2]);
-                        realCopy(&elemIm, &previous[ii * 2 + 1]);
+                        realCopy(&elemRe, &previous[ii].Real);
+                        realCopy(&elemIm, &previous[ii].Imag);
                         elemRe = changeRe;
                         elemIm = changeIm;
                     }
@@ -859,54 +863,49 @@ fn sumOfSubSupDiagonalAll(heading: [*:0]const u8, matrix: [*]align(1) const real
     }
 }
 
-pub export fn dropNoise(eig: [*]align(1) real_t, size: u16, dig: u16) linksection(runtime.code_section) callconv(.c) void {
-    var c: realContext_t = runtime.ctxtReal39;
+pub export fn dropNoise(eig: [*]cplx_t, size: u16, dig: u16) linksection(runtime.code_section) callconv(.c) void {
+    var c: realContext_t = runtime.ctxtReal39; // ctxtDeNoise
     c.digits = dig;
     c.round = runtime.DEC_ROUND_HALF_UP;
     const sz: usize = size;
     var i: usize = 0;
     while (i < sz) : (i += 1) {
-        const ptr = &eig[(i * sz + i) * 2];
-        realPlus(ptr, ptr, &c);
-        const ptr2 = &eig[(i * sz + i) * 2 + 1];
-        realPlus(ptr2, ptr2, &c);
+        const ptr = &eig[i * sz + i];
+        realPlus(&ptr.Real, &ptr.Real, &c);
+        realPlus(&ptr.Imag, &ptr.Imag, &c);
     }
 }
 
 fn isElementWithinTolerance(value_re: *align(1) const real_t, value_im: *align(1) const real_t, tol: *align(1) const real_t, realContext: *realContext_t) linksection(runtime.code_section) bool {
     var mag: real_t = undefined;
-    // Copy the align(1) blob operands into naturally-aligned locals before the
-    // naturally-aligned complexMagnitude call; @alignCast on a constant-pool
-    // pointer aborts on strict-alignment targets (macOS/aarch64) whenever the
-    // blob base lands at an under-aligned address.
-    var value_re_local: real_t = value_re.*;
-    var value_im_local: real_t = value_im.*;
-    math_runtime_helpers.complexMagnitude(&value_re_local, &value_im_local, &mag, realContext);
-    return math_comparison_reals.realCompareLessThan(&mag, @alignCast(tol));
+    // |value| with the operations of complexMagnitude(), on separate parts.
+    realMultiply(value_re, value_re, &mag, realContext);
+    realFMA(value_im, value_im, &mag, &mag, realContext);
+    realSquareRoot(&mag, &mag, realContext);
+    return realCompareLessThan(&mag, tol);
 }
 
 // Real symmetric: every imaginary part on and above the diagonal, and every
 // a[i][j] - a[j][i], is within 1E-symmetricTolerance.
-fn checkMatrixProperties(a: [*]align(1) const real_t, size: u16, realContext: *realContext_t) linksection(runtime.code_section) bool {
+fn checkMatrixProperties(a: [*]const cplx_t, size: u16, realContext: *realContext_t) linksection(runtime.code_section) bool {
     var tol: real_t = undefined;
     realSetOne(&tol);
     tol.exponent -= symmetricTolerance;
     const sz: usize = size;
-    var i: u16 = 0;
-    while (i < size) : (i += 1) {
-        var j: u16 = i;
-        while (j < size) : (j += 1) {
-            const ii: usize = i;
-            const jj: usize = j;
-            const a_ij_re = &a[(ii * sz + jj) * 2];
-            const a_ij_im = &a[(ii * sz + jj) * 2 + 1];
-            const a_ji_re = &a[(jj * sz + ii) * 2];
-            if (!isElementWithinTolerance(a_ij_im, const_0(), &tol, realContext)) {
+    var i: usize = 0;
+    while (i < sz) : (i += 1) {
+        var j: usize = i;
+        while (j < sz) : (j += 1) { // only the upper triangle
+            const a_ij = &a[i * sz + j];
+            const a_ji = &a[j * sz + i];
+            // a real matrix: the imaginary part is zero
+            if (!isElementWithinTolerance(&a_ij.Imag, const_0(), &tol, realContext)) {
                 return false;
             }
+            // symmetric: a[i][j] == a[j][i]
             if (i < j) {
                 var diff_val: real_t = undefined;
-                realSubtract(a_ij_re, a_ji_re, &diff_val, realContext);
+                realSubtract(&a_ij.Real, &a_ji.Real, &diff_val, realContext);
                 if (!isElementWithinTolerance(&diff_val, const_0(), &tol, realContext)) {
                     return false;
                 }
@@ -916,16 +915,16 @@ fn checkMatrixProperties(a: [*]align(1) const real_t, size: u16, realContext: *r
     return true;
 }
 
-pub export fn isRealSymmetric(a: [*]align(1) const real_t, size: u16, realContext: *realContext_t) linksection(runtime.code_section) callconv(.c) bool {
+pub export fn isRealSymmetric(a: [*]const cplx_t, size: u16, realContext: *realContext_t) linksection(runtime.code_section) callconv(.c) bool {
     return checkMatrixProperties(a, size, realContext);
 }
 
-fn solveEigenBlock(a: [*]align(1) real_t, eig: [*]align(1) real_t, size: u16, first_unconverged: c_int, last_unconverged: c_int, is_real_symmetric: bool, realContext: *realContext_t) linksection(runtime.code_section) void {
+fn solveEigenBlock(a: [*]cplx_t, eig: [*]const cplx_t, size: u16, first_unconverged: c_int, last_unconverged: c_int, is_real_symmetric: bool, realContext: *realContext_t) linksection(runtime.code_section) void {
     const n = last_unconverged - first_unconverged + 1;
     if (n < 2 or n > 3) {
         return;
     }
-    var block: [18]real_t = undefined;
+    var block: [9]cplx_t = undefined; // the largest block is 3x3
     const sz: usize = size;
     const nn: usize = @intCast(n);
     const fu: usize = @intCast(first_unconverged);
@@ -935,23 +934,162 @@ fn solveEigenBlock(a: [*]align(1) real_t, eig: [*]align(1) real_t, size: u16, fi
         while (col < nn) : (col += 1) {
             const src_row = fu + row;
             const src_col = fu + col;
-            realCopy(&eig[(src_row * sz + src_col) * 2], &block[(row * nn + col) * 2]);
-            realCopy(&eig[(src_row * sz + src_col) * 2 + 1], &block[(row * nn + col) * 2 + 1]);
+            realCopy(&eig[src_row * sz + src_col].Real, &block[row * nn + col].Real);
+            realCopy(&eig[src_row * sz + src_col].Imag, &block[row * nn + col].Imag);
         }
     }
-    var ev_re: [3]real_t = undefined;
-    var ev_im: [3]real_t = undefined;
+    var ev: [3]cplx_t = undefined;
     if (n == 2) {
-        calculateEigenvalues22(&block, 2, &ev_re[0], &ev_im[0], &ev_re[1], &ev_im[1], is_real_symmetric, realContext);
+        calculateEigenvalues22(&block, 2, &ev[0], &ev[1], is_real_symmetric, realContext);
     } else if (n == 3) {
-        calculateEigenvalues33(&block, 3, &ev_re[0], &ev_im[0], &ev_re[1], &ev_im[1], &ev_re[2], &ev_im[2], is_real_symmetric, realContext);
+        calculateEigenvalues33(&block, 3, &ev[0], &ev[1], &ev[2], is_real_symmetric, realContext);
     }
+    // Write the eigenvalues back to the diagonal of a.
     var i: usize = 0;
     while (i < nn) : (i += 1) {
         const pos = fu + i;
-        realCopy(&ev_re[i], &a[(pos * sz + pos) * 2]);
-        realCopy(&ev_im[i], &a[(pos * sz + pos) * 2 + 1]);
+        realCopy(&ev[i].Real, &a[pos * sz + pos].Real);
+        realCopy(&ev[i].Imag, &a[pos * sz + pos].Imag);
     }
+}
+
+// The eigenvalues of an exact real symmetric matrix by cyclic Jacobi rotations,
+// on the diagonal of matrix. False, with matrix possibly rotated, when an
+// element is special, the matrix is not exactly real symmetric, or the
+// rotations do not bring the off-diagonal under the tolerance in the
+// iteration limit.
+fn calculateSymmetricEigenvalues(matrix: [*]cplx_t, size: u16, realContext: *realContext_t) linksection(runtime.code_section) bool {
+    var smallestExponent: i32 = 999999;
+    const sz: usize = size;
+
+    var i: usize = 0;
+    while (i < sz * sz) : (i += 1) {
+        if (realIsSpecial(&matrix[i].Real) or realIsSpecial(&matrix[i].Imag)) {
+            return false;
+        }
+        if (!realIsZeroA(&matrix[i].Real)) {
+            smallestExponent = @min(smallestExponent, realGetExponent(&matrix[i].Real));
+        }
+        if (!realIsZeroA(&matrix[i].Imag)) {
+            smallestExponent = @min(smallestExponent, realGetExponent(&matrix[i].Imag));
+        }
+    }
+    var row: usize = 0;
+    while (row < sz) : (row += 1) {
+        var column: usize = row;
+        while (column < sz) : (column += 1) {
+            if (!realIsZeroA(&matrix[row * sz + column].Imag) or
+                !realIsZeroA(&matrix[column * sz + row].Imag) or
+                !realCompareEqual(&matrix[row * sz + column].Real, &matrix[column * sz + row].Real))
+            {
+                return false;
+            }
+        }
+    }
+
+    const iterationLimit: u32 = @as(u32, size) * 12 + 24;
+    var iteration: u32 = 0;
+    while (iteration < iterationLimit) : (iteration += 1) {
+        var p: usize = 0;
+        while (p + 1 < sz) : (p += 1) {
+            var q: usize = p + 1;
+            while (q < sz) : (q += 1) {
+                const apq = &matrix[p * sz + q].Real;
+                if (realIsZeroA(apq)) {
+                    continue;
+                }
+
+                var tau: real_t = undefined;
+                var denominator: real_t = undefined;
+                var magnitude: real_t = undefined;
+                var t: real_t = undefined;
+                var c: real_t = undefined;
+                var s: real_t = undefined;
+                var term: real_t = undefined;
+                realSubtract(&matrix[q * sz + q].Real, &matrix[p * sz + p].Real, &tau, realContext);
+                realMultiply(apq, const_2(), &denominator, realContext);
+                realDivide(&tau, &denominator, &tau, realContext);
+                realCopyAbs(&tau, &magnitude);
+                realFMA(&magnitude, &magnitude, const_1(), &denominator, realContext);
+                realSquareRoot(&denominator, &denominator, realContext);
+                realAdd(&magnitude, &denominator, &denominator, realContext);
+                realDivide(const_1(), &denominator, &t, realContext);
+                if (realIsNegativeA(&tau)) {
+                    realChangeSign(&t);
+                }
+
+                realFMA(&t, &t, const_1(), &denominator, realContext);
+                realSquareRoot(&denominator, &denominator, realContext);
+                realDivide(const_1(), &denominator, &c, realContext);
+                realMultiply(&t, &c, &s, realContext);
+
+                realMultiply(&t, apq, &term, realContext);
+                realSubtract(&matrix[p * sz + p].Real, &term, &matrix[p * sz + p].Real, realContext);
+                realAdd(&matrix[q * sz + q].Real, &term, &matrix[q * sz + q].Real, realContext);
+                realSetZero(apq);
+                realSetZero(&matrix[q * sz + p].Real);
+
+                var k: usize = 0;
+                while (k < sz) : (k += 1) {
+                    if (k == p or k == q) {
+                        continue;
+                    }
+                    var oldP: real_t = undefined;
+                    var oldQ: real_t = undefined;
+                    var newP: real_t = undefined;
+                    var newQ: real_t = undefined;
+                    realCopy(&matrix[k * sz + p].Real, &oldP);
+                    realCopy(&matrix[k * sz + q].Real, &oldQ);
+                    realMultiply(&c, &oldP, &newP, realContext);
+                    realMultiply(&s, &oldQ, &term, realContext);
+                    realSubtract(&newP, &term, &newP, realContext);
+                    realMultiply(&c, &oldQ, &newQ, realContext);
+                    realFMA(&s, &oldP, &newQ, &newQ, realContext);
+                    realCopy(&newP, &matrix[k * sz + p].Real);
+                    realCopy(&newP, &matrix[p * sz + k].Real);
+                    realCopy(&newQ, &matrix[k * sz + q].Real);
+                    realCopy(&newQ, &matrix[q * sz + k].Real);
+                }
+            }
+        }
+
+        var offDiagonalMax: real_t = undefined;
+        var diagonalMax: real_t = undefined;
+        var magnitude: real_t = undefined;
+        var tolerance: real_t = undefined;
+        realSetZero(&offDiagonalMax);
+        realSetZero(&diagonalMax);
+        row = 0;
+        while (row < sz) : (row += 1) {
+            realCopyAbs(&matrix[row * sz + row].Real, &magnitude);
+            if (realCompareLessThan(&diagonalMax, &magnitude)) {
+                realCopy(&magnitude, &diagonalMax);
+            }
+            var column: usize = row + 1;
+            while (column < sz) : (column += 1) {
+                realCopyAbs(&matrix[row * sz + column].Real, &magnitude);
+                if (realCompareLessThan(&offDiagonalMax, &magnitude)) {
+                    realCopy(&magnitude, &offDiagonalMax);
+                }
+            }
+        }
+        realCopy(&diagonalMax, &tolerance);
+        if (realIsZeroA(&tolerance)) { // a zero diagonal gives no scale, so the test falls back to one
+            realSetOne(&tolerance);
+        }
+        tolerance.exponent -= 60;
+        if (realCompareLessThan(&offDiagonalMax, &tolerance)) {
+            // rounding noise of the rotations, below the smallest input element
+            row = 0;
+            while (row < sz) : (row += 1) {
+                if (realGetExponent(&matrix[row * sz + row].Real) < smallestExponent - eigenNoiseThreshold) {
+                    realSetZero(&matrix[row * sz + row].Real);
+                }
+            }
+            return true;
+        }
+    }
+    return false;
 }
 
 // ===========================================================================
@@ -961,24 +1099,6 @@ fn solveEigenBlock(a: [*]align(1) real_t, eig: [*]align(1) real_t, size: u16, fi
 // formed. The shift is a single complex one, so a complex eigenvalue deflates
 // as a 1x1 and no real 2x2 block machinery is needed.
 // ===========================================================================
-
-// The engine walks the caller's pool bulk as cplx_t. The bulk is untyped memory
-// from allocC47Blocks sized in real_t, so the two views have to agree exactly:
-// a cplx_t is two real_t with nothing between them and nothing after them.
-const cplx_t = abi.Complex;
-comptime {
-    std.debug.assert(@sizeOf(cplx_t) == 2 * @sizeOf(real_t));
-    std.debug.assert(@offsetOf(cplx_t, "Imag") == @sizeOf(real_t));
-}
-
-// The bulk, or a part of it, viewed as the cplx_t pairs or the plain real_t the
-// engine walks. The pool hands out 4-aligned blocks, which both views need.
-inline fn cxView(bulk: [*]align(1) real_t) [*]cplx_t {
-    return @ptrCast(@alignCast(bulk));
-}
-inline fn realView(bulk: [*]align(1) real_t) [*]real_t {
-    return @alignCast(bulk);
-}
 
 // Element (i, j) of the n x n complex matrix m (matrix.c's CX).
 inline fn cxAt(m: anytype, n: u16, i: usize, j: usize) @TypeOf(&m[0]) {
@@ -995,44 +1115,12 @@ fn cxSetZero(z: *cplx_t) linksection(runtime.code_section) void {
     realSetZero(&z.Imag);
 }
 
-fn cxAdd(x: *const cplx_t, y: *const cplx_t, z: *cplx_t, ctx: *realContext_t) linksection(runtime.code_section) void {
-    realAdd(&x.Real, &y.Real, &z.Real, ctx);
-    realAdd(&x.Imag, &y.Imag, &z.Imag, ctx);
-}
-
-fn cxSub(x: *const cplx_t, y: *const cplx_t, z: *cplx_t, ctx: *realContext_t) linksection(runtime.code_section) void {
-    realSubtract(&x.Real, &y.Real, &z.Real, ctx);
-    realSubtract(&x.Imag, &y.Imag, &z.Imag, ctx);
-}
-
-fn cxMulReal(x: *const cplx_t, y: *const real_t, z: *cplx_t, ctx: *realContext_t) linksection(runtime.code_section) void {
-    realMultiply(&x.Real, y, &z.Real, ctx);
-    realMultiply(&x.Imag, y, &z.Imag, ctx);
-}
-
-fn cxDivReal(x: *const cplx_t, y: *const real_t, z: *cplx_t, ctx: *realContext_t) linksection(runtime.code_section) void {
-    realDivide(&x.Real, y, &z.Real, ctx);
-    realDivide(&x.Imag, y, &z.Imag, ctx);
-}
-
-fn cxMul(x: *const cplx_t, y: *const cplx_t, z: *cplx_t, ctx: *realContext_t) linksection(runtime.code_section) void {
-    var zr: real_t = undefined;
-    var zi: real_t = undefined;
-    math_multiplication_cells.mulComplexComplex(&x.Real, &x.Imag, &y.Real, &y.Imag, &zr, &zi, ctx);
-    realCopy(&zr, &z.Real);
-    realCopy(&zi, &z.Imag);
-}
-
 fn cxConj(x: *const cplx_t, z: *cplx_t) linksection(runtime.code_section) void {
     realCopy(&x.Real, &z.Real);
     realCopy(&x.Imag, &z.Imag);
     if (!realIsZeroA(&z.Imag)) {
         realChangeSign(&z.Imag);
     }
-}
-
-fn cxAbs(x: *const cplx_t, r: *real_t, ctx: *realContext_t) linksection(runtime.code_section) void {
-    math_runtime_helpers.complexMagnitude(&x.Real, &x.Imag, r, ctx);
 }
 
 // LAPACK CABS1: |Re x| + |Im x|, the norm zlahqr's deflation tests use, with no
@@ -1058,12 +1146,12 @@ fn cxSqrt(x: *const cplx_t, z: *cplx_t, ctx: *realContext_t) linksection(runtime
         return;
     }
     blockMonitoring = true;
-    math_transform_complex_helpers.realRectangularToPolar(&x.Real, &x.Imag, &m, &t, ctx);
+    math_transform_complex_helpers.realRectangularToPolar(x, &m, &t, ctx);
     blockMonitoring = false;
     realSquareRoot(&m, &m, ctx);
     realMultiply(&t, const_1on2(), &t, ctx);
     blockMonitoring = true;
-    math_transform_complex_helpers.realPolarToRectangular(&m, &t, &z.Real, &z.Imag, ctx);
+    math_transform_complex_helpers.realPolarToRectangular(&m, &t, z, ctx);
     blockMonitoring = false;
 }
 
@@ -1083,7 +1171,7 @@ fn hessenbergReduce(a: [*]cplx_t, n: u16, v: [*]cplx_t, w: [*]cplx_t, ctx: *real
         realSetZero(&nrm);
         var i: u16 = k + 1;
         while (i < n) : (i += 1) {
-            cxAbs(cxAt(a, n, i, k), &tmp, ctx);
+            complexMagnitude(cxAt(a, n, i, k), &tmp, ctx);
             realFMA(&tmp, &tmp, &nrm, &nrm, ctx);
         }
         realSquareRoot(&nrm, &nrm, ctx);
@@ -1108,20 +1196,20 @@ fn hessenbergReduce(a: [*]cplx_t, n: u16, v: [*]cplx_t, w: [*]cplx_t, ctx: *real
         while (i < n) : (i += 1) {
             cxCopy(cxAt(a, n, i, k), &v[i]);
         }
-        cxAbs(&v[k + 1], &alpha, ctx);
+        complexMagnitude(&v[k + 1], &alpha, ctx);
         if (realIsZeroA(&alpha)) {
             realAdd(&v[k + 1].Real, &nrm, &v[k + 1].Real, ctx);
         } else {
             var phase: cplx_t = undefined;
             realDivide(&nrm, &alpha, &tmp, ctx); // ||x|| / |x0|
-            cxMulReal(&v[k + 1], &tmp, &phase, ctx);
-            cxAdd(&v[k + 1], &phase, &v[k + 1], ctx);
+            mulComplexReal(&v[k + 1], &tmp, &phase, ctx);
+            addComplex(&v[k + 1], &phase, &v[k + 1], ctx);
         }
 
         realSetZero(&nrm);
         i = k + 1;
         while (i < n) : (i += 1) {
-            cxAbs(&v[i], &tmp, ctx);
+            complexMagnitude(&v[i], &tmp, ctx);
             realFMA(&tmp, &tmp, &nrm, &nrm, ctx);
         }
         realSquareRoot(&nrm, &nrm, ctx);
@@ -1130,7 +1218,7 @@ fn hessenbergReduce(a: [*]cplx_t, n: u16, v: [*]cplx_t, w: [*]cplx_t, ctx: *real
         }
         i = k + 1;
         while (i < n) : (i += 1) {
-            cxDivReal(&v[i], &nrm, &v[i], ctx);
+            divComplexReal(&v[i], &nrm, &v[i], ctx);
         }
 
         // A[k+1:, :] -= 2 v (v^H A[k+1:, :])
@@ -1143,10 +1231,10 @@ fn hessenbergReduce(a: [*]cplx_t, n: u16, v: [*]cplx_t, w: [*]cplx_t, ctx: *real
             i = k + 1;
             while (i < n) : (i += 1) {
                 cxConj(&v[i], &cv);
-                cxMul(&cv, cxAt(a, n, i, j), &prod, ctx);
-                cxAdd(&acc, &prod, &acc, ctx);
+                mulComplexComplex(&cv, cxAt(a, n, i, j), &prod, ctx);
+                addComplex(&acc, &prod, &acc, ctx);
             }
-            cxMulReal(&acc, &two, &acc, ctx);
+            mulComplexReal(&acc, &two, &acc, ctx);
             cxCopy(&acc, &w[j]);
         }
         i = k + 1;
@@ -1154,8 +1242,8 @@ fn hessenbergReduce(a: [*]cplx_t, n: u16, v: [*]cplx_t, w: [*]cplx_t, ctx: *real
             j = 0;
             while (j < n) : (j += 1) {
                 var prod: cplx_t = undefined;
-                cxMul(&v[i], &w[j], &prod, ctx);
-                cxSub(cxAt(a, n, i, j), &prod, cxAt(a, n, i, j), ctx);
+                mulComplexComplex(&v[i], &w[j], &prod, ctx);
+                subComplex(cxAt(a, n, i, j), &prod, cxAt(a, n, i, j), ctx);
             }
         }
 
@@ -1167,10 +1255,10 @@ fn hessenbergReduce(a: [*]cplx_t, n: u16, v: [*]cplx_t, w: [*]cplx_t, ctx: *real
             cxSetZero(&acc);
             j = k + 1;
             while (j < n) : (j += 1) {
-                cxMul(cxAt(a, n, i, j), &v[j], &prod, ctx);
-                cxAdd(&acc, &prod, &acc, ctx);
+                mulComplexComplex(cxAt(a, n, i, j), &v[j], &prod, ctx);
+                addComplex(&acc, &prod, &acc, ctx);
             }
-            cxMulReal(&acc, &two, &acc, ctx);
+            mulComplexReal(&acc, &two, &acc, ctx);
             cxCopy(&acc, &w[i]);
         }
         i = 0;
@@ -1180,8 +1268,8 @@ fn hessenbergReduce(a: [*]cplx_t, n: u16, v: [*]cplx_t, w: [*]cplx_t, ctx: *real
                 var cv: cplx_t = undefined;
                 var prod: cplx_t = undefined;
                 cxConj(&v[j], &cv);
-                cxMul(&w[i], &cv, &prod, ctx);
-                cxSub(cxAt(a, n, i, j), &prod, cxAt(a, n, i, j), ctx);
+                mulComplexComplex(&w[i], &cv, &prod, ctx);
+                subComplex(cxAt(a, n, i, j), &prod, cxAt(a, n, i, j), ctx);
             }
         }
 
@@ -1201,8 +1289,8 @@ fn cxGivens(f: *const cplx_t, g: *const cplx_t, c: *real_t, s: *cplx_t, r: *cplx
     var ag: real_t = undefined;
     var t: real_t = undefined;
 
-    cxAbs(f, &af, ctx);
-    cxAbs(g, &ag, ctx);
+    complexMagnitude(f, &af, ctx);
+    complexMagnitude(g, &ag, ctx);
 
     if (realIsZeroA(&ag)) {
         realSetOne(c);
@@ -1227,11 +1315,11 @@ fn cxGivens(f: *const cplx_t, g: *const cplx_t, c: *real_t, s: *cplx_t, r: *cplx
     {
         var phase: cplx_t = undefined;
         var cg: cplx_t = undefined;
-        cxDivReal(f, &af, &phase, ctx); // phase = f / |f|
+        divComplexReal(f, &af, &phase, ctx); // phase = f / |f|
         cxConj(g, &cg);
-        cxMul(&phase, &cg, s, ctx);
-        cxDivReal(s, &t, s, ctx); // s = phase * conj(g) / t
-        cxMulReal(&phase, &t, r, ctx); // r = phase * t
+        mulComplexComplex(&phase, &cg, s, ctx);
+        divComplexReal(s, &t, s, ctx); // s = phase * conj(g) / t
+        mulComplexReal(&phase, &t, r, ctx); // r = phase * t
     }
 }
 
@@ -1240,7 +1328,7 @@ fn cxGivens(f: *const cplx_t, g: *const cplx_t, c: *real_t, s: *cplx_t, r: *cplx
 fn hessenbergQrSweep(a: [*]cplx_t, n: u16, lo: u16, hi: u16, shift: *const cplx_t, cs: [*]real_t, sn: [*]cplx_t, ctx: *realContext_t) linksection(runtime.code_section) void {
     var i: u16 = lo;
     while (i <= hi) : (i += 1) {
-        cxSub(cxAt(a, n, i, i), shift, cxAt(a, n, i, i), ctx);
+        subComplex(cxAt(a, n, i, i), shift, cxAt(a, n, i, i), ctx);
     }
 
     // QR: annihilate the subdiagonal left to right
@@ -1268,14 +1356,14 @@ fn hessenbergQrSweep(a: [*]cplx_t, n: u16, lo: u16, hi: u16, shift: *const cplx_
             cxCopy(cxAt(a, n, k, j), &u);
             cxCopy(cxAt(a, n, k + 1, j), &w);
 
-            cxMulReal(&u, &c, &t1, ctx);
-            cxMul(&s, &w, &t2, ctx);
-            cxAdd(&t1, &t2, cxAt(a, n, k, j), ctx); // c*u + s*w
+            mulComplexReal(&u, &c, &t1, ctx);
+            mulComplexComplex(&s, &w, &t2, ctx);
+            addComplex(&t1, &t2, cxAt(a, n, k, j), ctx); // c*u + s*w
 
             cxConj(&s, &cs2);
-            cxMul(&cs2, &u, &t1, ctx);
-            cxMulReal(&w, &c, &t2, ctx);
-            cxSub(&t2, &t1, cxAt(a, n, k + 1, j), ctx); // c*w - conj(s)*u
+            mulComplexComplex(&cs2, &u, &t1, ctx);
+            mulComplexReal(&w, &c, &t2, ctx);
+            subComplex(&t2, &t1, cxAt(a, n, k + 1, j), ctx); // c*w - conj(s)*u
         }
     }
 
@@ -1300,19 +1388,19 @@ fn hessenbergQrSweep(a: [*]cplx_t, n: u16, lo: u16, hi: u16, shift: *const cplx_
             cxCopy(cxAt(a, n, i, k), &u);
             cxCopy(cxAt(a, n, i, k + 1), &w);
 
-            cxMulReal(&u, &c, &t1, ctx);
-            cxMul(&cs2, &w, &t2, ctx);
-            cxAdd(&t1, &t2, cxAt(a, n, i, k), ctx); // c*u + conj(s)*w
+            mulComplexReal(&u, &c, &t1, ctx);
+            mulComplexComplex(&cs2, &w, &t2, ctx);
+            addComplex(&t1, &t2, cxAt(a, n, i, k), ctx); // c*u + conj(s)*w
 
-            cxMul(&s, &u, &t1, ctx);
-            cxMulReal(&w, &c, &t2, ctx);
-            cxSub(&t2, &t1, cxAt(a, n, i, k + 1), ctx); // c*w - s*u
+            mulComplexComplex(&s, &u, &t1, ctx);
+            mulComplexReal(&w, &c, &t2, ctx);
+            subComplex(&t2, &t1, cxAt(a, n, i, k + 1), ctx); // c*w - s*u
         }
     }
 
     i = lo;
     while (i <= hi) : (i += 1) {
-        cxAdd(cxAt(a, n, i, i), shift, cxAt(a, n, i, i), ctx);
+        addComplex(cxAt(a, n, i, i), shift, cxAt(a, n, i, i), ctx);
     }
 }
 
@@ -1329,20 +1417,20 @@ fn cxEig2x2Old(a: [*]const cplx_t, n: u16, hi: u16, l1: *cplx_t, l2: *cplx_t, ct
     var t1: cplx_t = undefined;
     var t2: cplx_t = undefined;
 
-    cxAdd(p, s, &tr, ctx);
-    cxMul(p, s, &t1, ctx);
-    cxMul(q, rr, &t2, ctx);
-    cxSub(&t1, &t2, &det, ctx);
+    addComplex(p, s, &tr, ctx);
+    mulComplexComplex(p, s, &t1, ctx);
+    mulComplexComplex(q, rr, &t2, ctx);
+    subComplex(&t1, &t2, &det, ctx);
 
-    cxMul(&tr, &tr, &disc, ctx);
-    cxMulReal(&det, const_4(), &t1, ctx);
-    cxSub(&disc, &t1, &disc, ctx);
+    mulComplexComplex(&tr, &tr, &disc, ctx);
+    mulComplexReal(&det, const_4(), &t1, ctx);
+    subComplex(&disc, &t1, &disc, ctx);
     cxSqrt(&disc, &disc, ctx);
 
-    cxAdd(&tr, &disc, l1, ctx);
-    cxMulReal(l1, const_1on2(), l1, ctx);
-    cxSub(&tr, &disc, l2, ctx);
-    cxMulReal(l2, const_1on2(), l2, ctx);
+    addComplex(&tr, &disc, l1, ctx);
+    mulComplexReal(l1, const_1on2(), l1, ctx);
+    subComplex(&tr, &disc, l2, ctx);
+    mulComplexReal(l2, const_1on2(), l2, ctx);
 }
 
 fn cxEig2x2(a: [*]const cplx_t, n: u16, hi: u16, l1: *cplx_t, l2: *cplx_t, ctx: *realContext_t) linksection(runtime.code_section) void {
@@ -1364,11 +1452,11 @@ fn cxEig2x2(a: [*]const cplx_t, n: u16, hi: u16, l1: *cplx_t, l2: *cplx_t, ctx: 
     // two nearly equal numbers, where (tr - sqrt(tr^2 - 4 det)) / 2 cancels to 0
     // for a root many orders below the other. l1 keeps (tr + sqrt) / 2, l2
     // (tr - sqrt) / 2.
-    cxSub(p, s, &x, ctx);
-    cxMulReal(&x, const_1on2(), &x, ctx);
-    cxMul(q, rr, &u_2, ctx);
-    cxMul(&x, &x, &y, ctx);
-    cxAdd(&y, &u_2, &y, ctx);
+    subComplex(p, s, &x, ctx);
+    mulComplexReal(&x, const_1on2(), &x, ctx);
+    mulComplexComplex(q, rr, &u_2, ctx);
+    mulComplexComplex(&x, &x, &y, ctx);
+    addComplex(&y, &u_2, &y, ctx);
     cxSqrt(&y, &y, ctx);
     realMultiply(&x.Real, &y.Real, &r1, ctx);
     realFMA(&x.Imag, &y.Imag, &r1, &r2, ctx);
@@ -1377,19 +1465,19 @@ fn cxEig2x2(a: [*]const cplx_t, n: u16, hi: u16, l1: *cplx_t, l2: *cplx_t, ctx: 
         realChangeSign(&y.Real);
         realChangeSign(&y.Imag);
     }
-    cxAdd(&x, &y, &d, ctx);
+    addComplex(&x, &y, &d, ctx);
     if (cxIsZero(&d)) { // x = y = 0: p = s and q r = 0, a double root
         cxCopy(p, l1);
         cxCopy(s, l2);
         return;
     }
-    math_division_cells.divComplexComplex(&u_2.Real, &u_2.Imag, &d.Real, &d.Imag, &t.Real, &t.Imag, ctx);
+    math_division_cells.divComplexComplex(&u_2, &d, &t, ctx);
     if (flipped) {
-        cxSub(s, &t, l1, ctx);
-        cxAdd(p, &t, l2, ctx);
+        subComplex(s, &t, l1, ctx);
+        addComplex(p, &t, l2, ctx);
     } else {
-        cxAdd(p, &t, l1, ctx);
-        cxSub(s, &t, l2, ctx);
+        addComplex(p, &t, l1, ctx);
+        subComplex(s, &t, l2, ctx);
     }
 }
 
@@ -1405,10 +1493,10 @@ fn wilkinsonShift(a: [*]const cplx_t, n: u16, hi: u16, shift: *cplx_t, ctx: *rea
 
     cxEig2x2Old(a, n, hi, &l1, &l2, ctx);
 
-    cxSub(&l1, s, &t1, ctx);
-    cxAbs(&t1, &d1, ctx);
-    cxSub(&l2, s, &t2, ctx);
-    cxAbs(&t2, &d2, ctx);
+    subComplex(&l1, s, &t1, ctx);
+    complexMagnitude(&t1, &d1, ctx);
+    subComplex(&l2, s, &t2, ctx);
+    complexMagnitude(&t2, &d2, ctx);
 
     cxCopy(if (math_comparison_reals.realCompareLessThan(&d1, &d2)) &l1 else &l2, shift);
 }
@@ -1453,7 +1541,7 @@ fn eigenHessenbergQr(a: [*]cplx_t, eig: [*]cplx_t, scratch1: [*]cplx_t, scratch2
             if (!realIsZeroA(&cxAt(a, n, i, j).Imag)) {
                 inputWasReal = false;
             }
-            cxAbs(cxAt(a, n, i, j), &tmp, ctx);
+            complexMagnitude(cxAt(a, n, i, j), &tmp, ctx);
             if (math_comparison_reals.realCompareGreaterThan(&tmp, &scale)) {
                 realCopy(&tmp, &scale);
             }
@@ -1503,7 +1591,7 @@ fn eigenHessenbergQr(a: [*]cplx_t, eig: [*]cplx_t, scratch1: [*]cplx_t, scratch2
                     realCopy(&ba, &ab);
                     realCopy(&t2, &ba);
                 }
-                cxSub(cxAt(a, n, i - 1, i - 1), cxAt(a, n, i, i), &dif, ctx);
+                subComplex(cxAt(a, n, i - 1, i - 1), cxAt(a, n, i, i), &dif, ctx);
                 cxAbs1(&dif, &bb, ctx);
                 cxAbs1(cxAt(a, n, i, i), &aa, ctx);
                 if (math_comparison_reals.realCompareLessThan(&aa, &bb)) {
@@ -1580,21 +1668,21 @@ fn eigenHessenbergQr(a: [*]cplx_t, eig: [*]cplx_t, scratch1: [*]cplx_t, scratch2
                 var disc: cplx_t = undefined;
                 var aa: cplx_t = undefined;
 
-                cxAbs(cxAt(a, n, hi, hi - 1), &ss, ctx);
+                complexMagnitude(cxAt(a, n, hi, hi - 1), &ss, ctx);
                 if (hi >= lo + 2) {
-                    cxAbs(cxAt(a, n, hi - 1, hi - 2), &tmp, ctx);
+                    complexMagnitude(cxAt(a, n, hi - 1, hi - 2), &tmp, ctx);
                     realAdd(&ss, &tmp, &ss, ctx);
                 }
                 realMultiply(&ss, &w1, &aa.Real, ctx);
                 realSetZero(&aa.Imag);
-                cxAdd(&aa, cxAt(a, n, hi, hi), &aa, ctx); // AA = WILK1*SS + H(hi,hi)
+                addComplex(&aa, cxAt(a, n, hi, hi), &aa, ctx); // AA = WILK1*SS + H(hi,hi)
                 realCopy(&ss, &bb.Real);
                 realSetZero(&bb.Imag); // BB = SS
                 realMultiply(&ss, &w2, &cc.Real, ctx);
                 realSetZero(&cc.Imag); // CC = WILK2*SS
-                cxMul(&bb, &cc, &disc, ctx);
+                mulComplexComplex(&bb, &cc, &disc, ctx);
                 cxSqrt(&disc, &disc, ctx);
-                cxAdd(&aa, &disc, &shift, ctx); // an eigenvalue of [[AA,BB],[CC,AA]]
+                addComplex(&aa, &disc, &shift, ctx); // an eigenvalue of [[AA,BB],[CC,AA]]
             } else {
                 wilkinsonShift(a, n, hi, &shift, ctx);
             }
@@ -1647,37 +1735,41 @@ fn qrDidNotConverge(size: u16) linksection(runtime.code_section) void {
 }
 
 // ===========================================================================
-// calculateEigenvalues -- eigenvalues of a size x size matrix held as
-// interleaved re/im real_t arrays; the results land on the diagonal of eig.
-// Size 2 and 3 use the closed-form solvers. A larger matrix that is diagonal to
-// the deep tolerance is taken as it is; any other runs eigenHessenbergQr, which
-// destroys a. scratch holds the engine's 7 * size reals. On non-convergence
-// ERROR_NO_ROOT_FOUND is raised and the caller writes no result.
+// calculateEigenvalues -- eigenvalues of a size x size matrix in cplx_t
+// arrays; the results land on the diagonal of eig. Size 2 and 3 use the
+// closed-form solvers. A larger exact real symmetric matrix takes cyclic Jacobi
+// rotations; one that is diagonal to the deep tolerance is taken as it is; any
+// other runs eigenHessenbergQr, which destroys a. scratch holds the engine's
+// 7 * size reals. On non-convergence ERROR_NO_ROOT_FOUND is raised and the
+// caller writes no result.
 // ===========================================================================
 // SLVP feeds its companion matrix through here (upstream drops the `static` on
 // matrix.c's copy when OPTION_SLVP_POLY is on); slvp.zig shares this object, so the
 // Zig side needs `pub`, not a C-ABI export.
-pub fn calculateEigenvalues(a: [*]align(1) real_t, scratch: [*]align(1) real_t, eig: [*]align(1) real_t, size: u16, shifted: bool, reducedSignificantDigits: bool, realContext: *realContext_t) linksection(runtime.code_section) void {
+pub fn calculateEigenvalues(a: [*]cplx_t, scratch: [*]cplx_t, eig: [*]cplx_t, size: u16, shifted: bool, reducedSignificantDigits: bool, realContext: *realContext_t) linksection(runtime.code_section) void {
     _ = shifted;
     const sz: usize = size;
     const tolerance_digits = toleranceDigits();
     const eigen_tolerance = eigenTolerance();
     var converged: bool = false;
+    // The engine's real_t scratch follows the 2 * size cplx_t of its own.
+    const scratch2: [*]real_t = @ptrCast(&scratch[sz * 2].Real);
 
     const is_real_symmetric = isRealSymmetric(a, size, realContext);
 
-    // Initialize eig (size*size*2 reals) to zero, then copy the input matrix to it.
+    // Initialize eig to zero, then copy the input matrix to it.
     {
         var k: usize = 0;
-        while (k < sz * sz * 2) : (k += 1) {
-            realSetZero(&eig[k]);
+        while (k < sz * sz) : (k += 1) {
+            realSetZero(&eig[k].Real);
+            realSetZero(&eig[k].Imag);
         }
         var ii: usize = 0;
         while (ii < sz) : (ii += 1) {
             var jj: usize = 0;
             while (jj < sz) : (jj += 1) {
-                realCopy(&a[(ii * sz + jj) * 2], &eig[(ii * sz + jj) * 2]);
-                realCopy(&a[(ii * sz + jj) * 2 + 1], &eig[(ii * sz + jj) * 2 + 1]);
+                realCopy(&a[ii * sz + jj].Real, &eig[ii * sz + jj].Real);
+                realCopy(&a[ii * sz + jj].Imag, &eig[ii * sz + jj].Imag);
             }
         }
     }
@@ -1690,14 +1782,20 @@ pub fn calculateEigenvalues(a: [*]align(1) real_t, scratch: [*]align(1) real_t, 
     runtime.setSystemFlag(@intCast(FLAG_SOLVING));
 
     if (size == 2) {
-        calculateEigenvalues22(a, size, &eig[0], &eig[1], &eig[6], &eig[7], is_real_symmetric, realContext);
+        calculateEigenvalues22(a, size, &eig[0], &eig[3], is_real_symmetric, realContext);
         sortEigenvalues(eig, size, 0, (size + 1) / 2, size - 1, realContext);
-        dropNoise(eig, size, @intCast(tolerance_digits));
+        dropNoise(eig, size, 39);
     } else if (size == 3) {
-        calculateEigenvalues33(a, size, &eig[0], &eig[1], &eig[8], &eig[9], &eig[16], &eig[17], is_real_symmetric, realContext);
+        calculateEigenvalues33(a, size, &eig[0], &eig[4], &eig[8], is_real_symmetric, realContext);
         sortEigenvalues(eig, size, 0, (size + 1) / 2, size - 1, realContext);
-        dropNoise(eig, size, @intCast(tolerance_digits));
-    } else {
+        dropNoise(eig, size, 39);
+    } else done: {
+        if (is_real_symmetric and calculateSymmetricEigenvalues(eig, size, realContext)) {
+            sortEigenvalues(eig, size, 0, (size + 1) / 2, size - 1, realContext);
+            dropNoise(eig, size, 39);
+            break :done;
+        }
+
         var tol: real_t = undefined;
         if (reducedSignificantDigits) {
             if (tolerance_digits >= 34 or tolerance_digits == 0) {
@@ -1714,14 +1812,17 @@ pub fn calculateEigenvalues(a: [*]align(1) real_t, scratch: [*]align(1) real_t, 
 
         if (isMatrixDiagonal(a, size, &tol, realContext)) {
             var k: usize = 0;
-            while (k < sz * sz * 2) : (k += 1) realCopy(&a[k], &eig[k]);
+            while (k < sz * sz) : (k += 1) {
+                realCopy(&a[k].Real, &eig[k].Real);
+                realCopy(&a[k].Imag, &eig[k].Imag);
+            }
             converged = true;
         }
 
         // Destroys a. On non-convergence the caller raises ERROR_NO_ROOT_FOUND
         // and writes no result.
         if (!converged and runtime.lastErrorCode == runtime.ERROR_NONE) {
-            if (eigenHessenbergQr(cxView(a), cxView(eig), cxView(scratch), realView(scratch + sz * 4), size, realContext)) {
+            if (eigenHessenbergQr(a, eig, scratch, scratch2, size, realContext)) {
                 converged = true;
             } else {
                 qrDidNotConverge(size);
@@ -1733,12 +1834,12 @@ pub fn calculateEigenvalues(a: [*]align(1) real_t, scratch: [*]align(1) real_t, 
         var diag_sum: real_t = undefined;
         var avg_diag: real_t = undefined;
         var rel_threshold: real_t = undefined;
+        var matrixSize: real_t = undefined;
         sumOfSubSupDiagonalAll("", eig, null, size, size, DIAG, &diag_sum, true, realContext);
-        // avg_diag = diag_sum / size
-        realCopy(&diag_sum, &avg_diag);
-        avg_diag.exponent -= @as(i32, size); // divide by size
+        runtime.int32ToReal(size, &matrixSize);
+        realDivide(&diag_sum, &matrixSize, &avg_diag, realContext);
         realCopy(&avg_diag, &rel_threshold);
-        rel_threshold.exponent -= 10;
+        rel_threshold.exponent -= finalBlockTolerance;
 
         // Solve each block of the quasi-triangular eig on its own: solveEigenBlock
         // writes the eigenvalues of a 2x2 or 3x3 block on the diagonal of a. A
@@ -1762,16 +1863,16 @@ pub fn calculateEigenvalues(a: [*]align(1) real_t, scratch: [*]align(1) real_t, 
                 j = i;
                 while (j + 1 < sz) : (j += 1) { // j stops on the last row of the block that starts on row i
                     var offdiag_mag: real_t = undefined;
-                    math_runtime_helpers.complexMagnitude(@alignCast(&eig[((j + 1) * sz + j) * 2]), @alignCast(&eig[((j + 1) * sz + j) * 2 + 1]), &offdiag_mag, realContext);
-                    if (realIsZeroA(&offdiag_mag) or math_comparison_reals.realCompareLessThan(&offdiag_mag, &blockThreshold)) break;
+                    complexMagnitude(&eig[(j + 1) * sz + j], &offdiag_mag, realContext);
+                    if (realIsZeroA(&offdiag_mag) or realCompareLessThan(&offdiag_mag, &blockThreshold)) break;
                 }
 
                 var row: usize = j + 1;
                 while (row < sz and !coupled) : (row += 1) {
                     var col: usize = i;
                     while (col <= j and !coupled) : (col += 1) {
-                        math_runtime_helpers.complexMagnitude(@alignCast(&eig[(row * sz + col) * 2]), @alignCast(&eig[(row * sz + col) * 2 + 1]), &mag, realContext);
-                        coupled = !realIsZeroA(&mag) and !math_comparison_reals.realCompareLessThan(&mag, &blockThreshold);
+                        complexMagnitude(&eig[row * sz + col], &mag, realContext);
+                        coupled = !realIsZeroA(&mag) and !realCompareLessThan(&mag, &blockThreshold);
                     }
                 }
                 if (!coupled and (j == i + 1 or j == i + 2)) {
@@ -1784,8 +1885,11 @@ pub fn calculateEigenvalues(a: [*]align(1) real_t, scratch: [*]align(1) real_t, 
                 // The diagonal shortcut took couplings no 2x2 or 3x3 block solver
                 // takes: eig still holds the input, so solve the whole matrix.
                 var k: usize = 0;
-                while (k < sz * sz * 2) : (k += 1) realCopy(&eig[k], &a[k]);
-                if (!eigenHessenbergQr(cxView(a), cxView(eig), cxView(scratch), realView(scratch + sz * 4), size, realContext)) {
+                while (k < sz * sz) : (k += 1) {
+                    realCopy(&eig[k].Real, &a[k].Real);
+                    realCopy(&eig[k].Imag, &a[k].Imag);
+                }
+                if (!eigenHessenbergQr(a, eig, scratch, scratch2, size, realContext)) {
                     qrDidNotConverge(size);
                 }
             }
@@ -1795,8 +1899,8 @@ pub fn calculateEigenvalues(a: [*]align(1) real_t, scratch: [*]align(1) real_t, 
         {
             var i: usize = 0;
             while (i < sz) : (i += 1) {
-                realCopy(&a[(i * sz + i) * 2], &eig[(i * sz + i) * 2]);
-                realCopy(&a[(i * sz + i) * 2 + 1], &eig[(i * sz + i) * 2 + 1]);
+                realCopy(&a[i * sz + i].Real, &eig[i * sz + i].Real);
+                realCopy(&a[i * sz + i].Imag, &eig[i * sz + i].Imag);
             }
         }
 
@@ -1811,48 +1915,48 @@ pub fn calculateEigenvalues(a: [*]align(1) real_t, scratch: [*]align(1) real_t, 
         {
             var i: usize = 0;
             while (i + 1 < sz) : (i += 1) {
-                const u = eig + (i * sz + i) * 2;
-                const v = eig + ((i + 1) * sz + (i + 1)) * 2;
+                const u = &eig[i * sz + i];
+                const v = &eig[(i + 1) * sz + (i + 1)];
                 var du: real_t = undefined;
                 var dv: real_t = undefined;
                 var t: real_t = undefined;
                 var mean: real_t = undefined;
 
-                if (realIsZeroA(&u[1]) or realIsZeroA(&v[1]) or realIsNegativeA(&u[1]) == realIsNegativeA(&v[1])) {
+                if (realIsZeroA(&u.Imag) or realIsZeroA(&v.Imag) or realIsNegativeA(&u.Imag) == realIsNegativeA(&v.Imag)) {
                     continue;
                 }
-                realSubtract(&u[0], &v[0], &du, realContext);
-                realAdd(&u[1], &v[1], &dv, realContext);
+                realSubtract(&u.Real, &v.Real, &du, realContext);
+                realAdd(&u.Imag, &v.Imag, &dv, realContext);
                 realCopyAbs(&du, &du);
                 realCopyAbs(&dv, &dv);
                 // Scale by the pair's own magnitude: a pair on the imaginary axis
                 // has a zero real part, and nothing is below a tolerance scaled by
                 // that.
-                math_runtime_helpers.complexMagnitude(@alignCast(&u[0]), @alignCast(&u[1]), &t, realContext);
+                complexMagnitude(u, &t, realContext);
                 t.exponent -= tolerance_digits;
-                if (math_comparison_reals.realCompareLessThan(&du, &t) and math_comparison_reals.realCompareLessThan(&dv, &t)) {
+                if (realCompareLessThan(&du, &t) and realCompareLessThan(&dv, &t)) {
                     // A real matrix has a real characteristic polynomial, so the
                     // two members share a real part exactly; the mean is that
                     // value where they agree and drops the residue where they do
                     // not.
-                    realAdd(&u[0], &v[0], &mean, realContext);
+                    realAdd(&u.Real, &v.Real, &mean, realContext);
                     realMultiply(&mean, const_1on2(), &mean, realContext);
-                    realCopy(&mean, &u[0]);
-                    realCopy(&mean, &v[0]);
-                    if (realIsNegativeA(&u[1])) {
-                        var swap: [2]real_t = undefined;
-                        realCopy(&u[0], &swap[0]);
-                        realCopy(&u[1], &swap[1]);
-                        realCopy(&v[0], &u[0]);
-                        realCopy(&v[1], &u[1]);
-                        realCopy(&swap[0], &v[0]);
-                        realCopy(&swap[1], &v[1]);
+                    realCopy(&mean, &u.Real);
+                    realCopy(&mean, &v.Real);
+                    if (realIsNegativeA(&u.Imag)) {
+                        var swap: cplx_t = undefined;
+                        realCopy(&u.Real, &swap.Real);
+                        realCopy(&u.Imag, &swap.Imag);
+                        realCopy(&v.Real, &u.Real);
+                        realCopy(&v.Imag, &u.Imag);
+                        realCopy(&swap.Real, &v.Real);
+                        realCopy(&swap.Imag, &v.Imag);
                     }
                 }
             }
         }
 
-        dropNoise(eig, size, @intCast(tolerance_digits - extraDigits));
+        dropNoise(eig, size, 39);
     } // size > 3
 
     // The prologue increments for every size, so this pairs off exactly; keep
@@ -1865,9 +1969,8 @@ pub fn calculateEigenvalues(a: [*]align(1) real_t, scratch: [*]align(1) real_t, 
 
 // ===========================================================================
 // realEigenvalues / complexEigenvalues -- register-matrix wrappers: convert the
-// real34 register matrix to an interleaved-complex real_t bulk, run
-// calculateEigenvalues, and write the diagonal eigenvalues back. eigenContext is
-// &ctxtReal75. pub-exported, dead until fnEigenvalues wires them.
+// real34 register matrix to a cplx_t bulk, run calculateEigenvalues, and write
+// the diagonal eigenvalues back. eigenContext is &ctxtReal75.
 // ===========================================================================
 fn ramFull(comptime where: [*:0]const u8, comptime tag: [*:0]const u8) linksection(runtime.code_section) void {
     runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE);
@@ -1881,21 +1984,22 @@ fn realEigenvalues(matrix: *const real34Matrix_t, res: *real34Matrix_t, ires: ?*
     const sz: usize = size;
     const bulkSize: usize = realSizeInBlocks(75) * (sz * sz * 2 * 2 + sz * 7);
     if (matrix.header.matrixRows != matrix.header.matrixColumns) return;
-    if (allocC47Blocks(bulkSize)) |bulk| {
+    if (allocCplx(bulkSize)) |bulk| {
         const a = bulk;
-        const eig = bulk + sz * sz * 2;
-        const scratch = bulk + sz * sz * 2 * 2;
+        const eig = bulk + sz * sz;
+        const scratch = bulk + sz * sz * 2;
         const elems: [*]const real34_t = abi.matrixConstRealElems(matrix);
         var i: usize = 0;
         while (i < sz * sz) : (i += 1) {
-            runtime.real34ToReal(&elems[i], &a[i * 2]);
-            realSetZero(&a[i * 2 + 1]);
+            runtime.real34ToReal(&elems[i], &a[i].Real);
+            realSetZero(&a[i].Imag);
         }
         calculateEigenvalues(a, scratch, eig, size, true, true, &runtime.ctxtReal75);
+        // Mutually conjugate complex roots are possible in real quadratic equations.
         var isComplex = false;
         i = 0;
         while (i < sz) : (i += 1) {
-            if (!realIsZeroA(&eig[(i * sz + i) * 2 + 1])) {
+            if (!realIsZeroA(&eig[i * sz + i].Imag)) {
                 isComplex = true;
                 break;
             }
@@ -1903,12 +2007,12 @@ fn realEigenvalues(matrix: *const real34Matrix_t, res: *real34Matrix_t, ires: ?*
         if (@intFromPtr(matrix) == @intFromPtr(res) or runtime.realMatrixInit(res, size, size)) {
             const resElems: [*]real34_t = @ptrCast(res.matrixElements);
             i = 0;
-            while (i < sz) : (i += 1) runtime.realToReal34(&eig[(i * sz + i) * 2], &resElems[i * sz + i]);
+            while (i < sz) : (i += 1) runtime.realToReal34(&eig[i * sz + i].Real, &resElems[i * sz + i]);
             if (isComplex and ires != null) {
                 if (@intFromPtr(matrix) == @intFromPtr(ires.?) or @intFromPtr(res) == @intFromPtr(ires.?) or runtime.realMatrixInit(ires.?, size, size)) {
                     const iresElems: [*]real34_t = @ptrCast(ires.?.matrixElements);
                     i = 0;
-                    while (i < sz) : (i += 1) runtime.realToReal34(&eig[(i * sz + i) * 2 + 1], &iresElems[i * sz + i]);
+                    while (i < sz) : (i += 1) runtime.realToReal34(&eig[i * sz + i].Imag, &iresElems[i * sz + i]);
                 } else {
                     ramFull("In function realEigenvalues:", "Ram full, 1ax");
                 }
@@ -1927,23 +2031,23 @@ fn complexEigenvalues(matrix: *const complex34Matrix_t, res: *complex34Matrix_t)
     const sz: usize = size;
     const bulkSize: usize = realSizeInBlocks(75) * (sz * sz * 2 * 2 + sz * 7);
     if (matrix.header.matrixRows != matrix.header.matrixColumns) return;
-    if (allocC47Blocks(bulkSize)) |bulk| {
+    if (allocCplx(bulkSize)) |bulk| {
         const a = bulk;
-        const eig = bulk + sz * sz * 2;
-        const scratch = bulk + sz * sz * 2 * 2;
+        const eig = bulk + sz * sz;
+        const scratch = bulk + sz * sz * 2;
         const elems: [*]const runtime.complex34_t = abi.matrixConstComplexElems(matrix);
         var i: usize = 0;
         while (i < sz * sz) : (i += 1) {
-            runtime.real34ToReal(&elems[i].real, &a[i * 2]);
-            runtime.real34ToReal(&elems[i].imag, &a[i * 2 + 1]);
+            runtime.real34ToReal(&elems[i].real, &a[i].Real);
+            runtime.real34ToReal(&elems[i].imag, &a[i].Imag);
         }
         calculateEigenvalues(a, scratch, eig, size, true, true, &runtime.ctxtReal75);
         if (@intFromPtr(matrix) == @intFromPtr(res) or runtime.complexMatrixInit(res, size, size)) {
             const resElems: [*]runtime.complex34_t = @ptrCast(res.matrixElements);
             i = 0;
             while (i < sz) : (i += 1) {
-                runtime.realToReal34(&eig[(i * sz + i) * 2], &resElems[i * sz + i].real);
-                runtime.realToReal34(&eig[(i * sz + i) * 2 + 1], &resElems[i * sz + i].imag);
+                runtime.realToReal34(&eig[i * sz + i].Real, &resElems[i * sz + i].real);
+                runtime.realToReal34(&eig[i * sz + i].Imag, &resElems[i * sz + i].imag);
             }
         } else {
             ramFull("In function complexEigenvalues:", "Ram full, 1ba");
@@ -2141,16 +2245,17 @@ fn extractDiagonalToRowComplex34Matrix(source: *const complex34Matrix_t, dest: *
 
 // ===========================================================================
 // cpxLinearEqn (static) -- solve A x = b for complex dense A by inverting A in
-// place (invCpxMat) and multiplying. Singular A -> ERROR_SINGULAR_MATRIX.
+// place (invCpxMat) and multiplying. Singular A -> ERROR_SINGULAR_MATRIX. A pivot
+// below 10^toleranceExponent of the matrix's scale counts as zero.
 // ===========================================================================
 // Exported (was file-local) so the linear-equation solver owner can share it;
 // cpxLinearEqn is static in matrix.c, so the Zig global does not clash.
-pub export fn cpxLinearEqn(a: [*]align(1) const real_t, b: [*]align(1) const real_t, r: [*]align(1) real_t, size: u16, realContext: *realContext_t) linksection(runtime.code_section) callconv(.c) void {
+pub export fn cpxLinearEqn(a: [*]const cplx_t, b: [*]const cplx_t, r: [*]cplx_t, size: u16, toleranceExponent: i32, realContext: *realContext_t) linksection(runtime.code_section) callconv(.c) void {
     const blocks: usize = @as(usize, size) * size * realSizeInBlocks(75) * 2;
-    if (allocC47Blocks(blocks)) |inv_a| {
+    if (allocCplx(blocks)) |inv_a| {
         _ = runtime.xcopy(@ptrCast(inv_a), @ptrCast(a), @intCast(blocks << 2)); // TO_BYTES, BPB=2
-        if (math_matrix_complex_core.invCpxMat(inv_a, size, realContext)) {
-            math_matrix_complex_core.mulCpxMat(inv_a, @alignCast(b), size, size, 1, @alignCast(r), realContext);
+        if (math_matrix_complex_core.invCpxMat(inv_a, size, toleranceExponent, realContext)) {
+            math_matrix_complex_core.mulCpxMat(inv_a, b, size, size, 1, r, realContext);
         } else if (runtime.lastErrorCode != runtime.ERROR_RAM_FULL) {
             runtime.displayCalcErrorMessage(runtime.ERROR_SINGULAR_MATRIX, runtime.ERR_REGISTER_LINE);
             if (runtime.extra_info_on_calc_error) runtime.moreInfoOnError("In function cpxLinearEqn:", "attempt to invert a singular matrix", null, null);
@@ -2166,16 +2271,13 @@ pub export fn cpxLinearEqn(a: [*]align(1) const real_t, b: [*]align(1) const rea
 // wrong ones meets the augmented rows while leaving the original ones unmet, so
 // the vector it returns solves a different problem. LAPACK zlaein sets INFO
 // instead, when inverse iteration does not reach its growth test.
-fn solvesTheEigenProblem(matrix: *const real34Matrix_t, isComplex: bool, v: [*]align(1) const real_t, lambda: [*]align(1) const real_t, size: u16, eps3: *const real_t, realContext: *realContext_t) linksection(runtime.code_section) bool {
+fn solvesTheEigenProblem(matrix: *const real34Matrix_t, isComplex: bool, v: [*]const cplx_t, lambda: *const cplx_t, size: u16, eps3: *const real_t, realContext: *realContext_t) linksection(runtime.code_section) bool {
     const sz: usize = size;
     const rElems: [*]const real34_t = abi.matrixConstRealElems(matrix);
     const cElems: [*]const runtime.complex34_t = abi.matrixConstComplexElems(matrix);
-    var accRe: real_t = undefined;
-    var accIm: real_t = undefined;
-    var elemRe: real_t = undefined;
-    var elemIm: real_t = undefined;
-    var prodRe: real_t = undefined;
-    var prodIm: real_t = undefined;
+    var acc: cplx_t = undefined;
+    var elem: cplx_t = undefined;
+    var prod: cplx_t = undefined;
     var mag: real_t = undefined;
     var resid: real_t = undefined;
     var vmax: real_t = undefined;
@@ -2185,8 +2287,8 @@ fn solvesTheEigenProblem(matrix: *const real34Matrix_t, isComplex: bool, v: [*]a
     realSetZero(&vmax);
     var i: usize = 0;
     while (i < sz) : (i += 1) {
-        math_runtime_helpers.complexMagnitude(@alignCast(&v[i * 2]), @alignCast(&v[i * 2 + 1]), &mag, realContext);
-        if (math_comparison_reals.realCompareGreaterThan(&mag, &vmax)) {
+        complexMagnitude(&v[i], &mag, realContext);
+        if (realCompareGreaterThan(&mag, &vmax)) {
             realCopy(&mag, &vmax);
         }
     }
@@ -2196,112 +2298,225 @@ fn solvesTheEigenProblem(matrix: *const real34Matrix_t, isComplex: bool, v: [*]a
 
     i = 0;
     while (i < sz) : (i += 1) {
-        realSetZero(&accRe);
-        realSetZero(&accIm);
+        realSetZero(&acc.Real);
+        realSetZero(&acc.Imag);
         var j: usize = 0;
         while (j < sz) : (j += 1) {
             if (isComplex) {
-                runtime.real34ToReal(&cElems[i * sz + j].real, &elemRe);
-                runtime.real34ToReal(&cElems[i * sz + j].imag, &elemIm);
+                runtime.real34ToReal(&cElems[i * sz + j].real, &elem.Real);
+                runtime.real34ToReal(&cElems[i * sz + j].imag, &elem.Imag);
             } else {
-                runtime.real34ToReal(&rElems[i * sz + j], &elemRe);
-                realSetZero(&elemIm);
+                runtime.real34ToReal(&rElems[i * sz + j], &elem.Real);
+                realSetZero(&elem.Imag);
             }
             if (i == j) {
-                realSubtract(&elemRe, &lambda[0], &elemRe, realContext);
-                realSubtract(&elemIm, &lambda[1], &elemIm, realContext);
+                realSubtract(&elem.Real, &lambda.Real, &elem.Real, realContext);
+                realSubtract(&elem.Imag, &lambda.Imag, &elem.Imag, realContext);
             }
-            math_multiplication_cells.mulComplexComplex(&elemRe, &elemIm, @alignCast(&v[j * 2]), @alignCast(&v[j * 2 + 1]), &prodRe, &prodIm, realContext);
-            realAdd(&accRe, &prodRe, &accRe, realContext);
-            realAdd(&accIm, &prodIm, &accIm, realContext);
+            mulComplexComplex(&elem, &v[j], &prod, realContext);
+            realAdd(&acc.Real, &prod.Real, &acc.Real, realContext);
+            realAdd(&acc.Imag, &prod.Imag, &acc.Imag, realContext);
         }
-        math_runtime_helpers.complexMagnitude(&accRe, &accIm, &mag, realContext);
-        if (math_comparison_reals.realCompareGreaterThan(&mag, &resid)) {
+        complexMagnitude(&acc, &mag, realContext);
+        if (realCompareGreaterThan(&mag, &resid)) {
             realCopy(&mag, &resid);
         }
     }
     realMultiply(eps3, &vmax, &bound, realContext);
-    return math_comparison_reals.realCompareLessThan(&resid, &bound) or math_comparison_reals.realCompareEqual(&resid, &bound);
+    return realCompareLessThan(&resid, &bound) or realCompareEqual(&resid, &bound);
 }
 
-// Report whether v is a multiple of column col of r. Eigenvectors of distinct
-// eigenvalues are independent, and a further copy of a repeated one re-solves
-// the system its first copy built, so a vector that is a multiple of an earlier
-// column is a rank-deficient set rather than a basis. LAPACK zhsein keeps them
-// apart by perturbing the shift of each further copy by EPS3. The comparison is
-// scale invariant: divide out the ratio at the column's largest entry and
-// measure what is left against v's own size.
-fn isMultipleOfColumn(v: [*]align(1) const real_t, r: [*]align(1) const real_t, size: u16, col: u16, realContext: *realContext_t) linksection(runtime.code_section) bool {
+// Report whether v is in the span of the m orthonormal columns of basis. When it
+// is not, its remainder, normalised, is written as column m of basis for the
+// caller to keep. Eigenvectors of distinct eigenvalues are independent, so a
+// vector in the span of the earlier columns, a multiple of one of them or a
+// combination of several, leaves a rank deficient set. Projecting the columns
+// out twice keeps them orthogonal to working precision (Giraud, Langou and
+// Rozloznik, 2005), and the remainder is compared against v at
+// 10^-(toleranceDigits/2): a defective multiple eigenvalue splits by about a
+// root of the working precision, so the vectors of its copies agree to about
+// half the digits.
+fn isInSpanOfColumns(v: [*]const cplx_t, basis: [*]cplx_t, size: u16, m: u16, realContext: *realContext_t) linksection(runtime.code_section) bool {
     const sz: usize = size;
-    const cl: usize = col;
-    var m: usize = 0;
-    var best: real_t = undefined;
-    var mag: real_t = undefined;
-    var ratioRe: real_t = undefined;
-    var ratioIm: real_t = undefined;
-    var prodRe: real_t = undefined;
-    var prodIm: real_t = undefined;
-    var difRe: real_t = undefined;
-    var difIm: real_t = undefined;
-    var resid: real_t = undefined;
-    var vmax: real_t = undefined;
-    var tol: real_t = undefined;
+    const w = basis + @as(usize, m) * sz;
+    var t: real_t = undefined;
+    var vNorm: real_t = undefined;
+    var wNorm: real_t = undefined;
+    var dot: cplx_t = undefined;
+    var bConj: cplx_t = undefined;
+    var prod: cplx_t = undefined;
 
-    realSetZero(&best);
     var i: usize = 0;
     while (i < sz) : (i += 1) {
-        const w = r + (i * sz + cl) * 2;
-        math_runtime_helpers.complexMagnitude(@alignCast(&w[0]), @alignCast(&w[1]), &mag, realContext);
-        if (math_comparison_reals.realCompareGreaterThan(&mag, &best)) {
-            realCopy(&mag, &best);
-            m = i;
+        realCopy(&v[i].Real, &w[i].Real);
+        realCopy(&v[i].Imag, &w[i].Imag);
+    }
+    var round: u16 = 0;
+    while (round < 2) : (round += 1) {
+        var j: usize = 0;
+        while (j < m) : (j += 1) {
+            const b = basis + j * sz;
+            realSetZero(&dot.Real);
+            realSetZero(&dot.Imag);
+            i = 0;
+            while (i < sz) : (i += 1) { // b^H w
+                realCopy(&b[i].Real, &bConj.Real);
+                realCopy(&b[i].Imag, &bConj.Imag);
+                realChangeSign(&bConj.Imag);
+                mulComplexComplex(&bConj, &w[i], &prod, realContext);
+                realAdd(&dot.Real, &prod.Real, &dot.Real, realContext);
+                realAdd(&dot.Imag, &prod.Imag, &dot.Imag, realContext);
+            }
+            i = 0;
+            while (i < sz) : (i += 1) {
+                mulComplexComplex(&dot, &b[i], &prod, realContext);
+                realSubtract(&w[i].Real, &prod.Real, &w[i].Real, realContext);
+                realSubtract(&w[i].Imag, &prod.Imag, &w[i].Imag, realContext);
+            }
         }
     }
-    if (realIsZeroA(&best)) {
-        return false; // an all-zero column is already the failure signal
-    }
-    const wm = r + (m * sz + cl) * 2;
-    math_division_cells.divComplexComplex(@alignCast(&v[m * 2]), @alignCast(&v[m * 2 + 1]), @alignCast(&wm[0]), @alignCast(&wm[1]), &ratioRe, &ratioIm, realContext);
 
-    realSetZero(&resid);
-    realSetZero(&vmax);
+    realSetZero(&vNorm);
+    realSetZero(&wNorm);
     i = 0;
     while (i < sz) : (i += 1) {
-        const w = r + (i * sz + cl) * 2;
-        math_multiplication_cells.mulComplexComplex(&ratioRe, &ratioIm, @alignCast(&w[0]), @alignCast(&w[1]), &prodRe, &prodIm, realContext);
-        realSubtract(&v[i * 2], &prodRe, &difRe, realContext);
-        realSubtract(&v[i * 2 + 1], &prodIm, &difIm, realContext);
-        math_runtime_helpers.complexMagnitude(&difRe, &difIm, &mag, realContext);
-        if (math_comparison_reals.realCompareGreaterThan(&mag, &resid)) {
-            realCopy(&mag, &resid);
-        }
-        math_runtime_helpers.complexMagnitude(@alignCast(&v[i * 2]), @alignCast(&v[i * 2 + 1]), &mag, realContext);
-        if (math_comparison_reals.realCompareGreaterThan(&mag, &vmax)) {
-            realCopy(&mag, &vmax);
-        }
+        realMultiply(&v[i].Real, &v[i].Real, &t, realContext);
+        realAdd(&vNorm, &t, &vNorm, realContext);
+        realMultiply(&w[i].Real, &w[i].Real, &t, realContext);
+        realAdd(&wNorm, &t, &wNorm, realContext);
+        realMultiply(&v[i].Imag, &v[i].Imag, &t, realContext);
+        realAdd(&vNorm, &t, &vNorm, realContext);
+        realMultiply(&w[i].Imag, &w[i].Imag, &t, realContext);
+        realAdd(&wNorm, &t, &wNorm, realContext);
     }
-    if (realIsZeroA(&vmax)) {
-        return false;
+    realSquareRoot(&vNorm, &vNorm, realContext);
+    realSquareRoot(&wNorm, &wNorm, realContext);
+    realCopy(&vNorm, &t);
+    t.exponent -= @divTrunc(toleranceDigits(), 2);
+    if (!realCompareGreaterThan(&wNorm, &t)) {
+        return true;
     }
-    realDivide(&resid, &vmax, &mag, realContext);
-    realSetOne(&tol);
-    // A defective multiple eigenvalue splits by about the square root of the
-    // working precision, so its copies agree to half the digits.
-    tol.exponent -= @divTrunc(toleranceDigits(), 2);
-    return math_comparison_reals.realCompareLessThan(&mag, &tol);
+    i = 0;
+    while (i < sz) : (i += 1) {
+        divComplexReal(&w[i], &wNorm, &w[i], realContext);
+    }
+    return false;
 }
 
 // LAPACK zhsein compares CABS1(w(i) - wk), the sum of the absolute parts,
 // against EPS3 rather than testing equality.
-fn isRepeatedEigenvalue(u: [*]align(1) const real_t, v: [*]align(1) const real_t, eps3: *const real_t, realContext: *realContext_t) linksection(runtime.code_section) bool {
-    var re: real_t = undefined;
-    var im: real_t = undefined;
-    realSubtract(&u[0], &v[0], &re, realContext);
-    realSubtract(&u[1], &v[1], &im, realContext);
-    realCopyAbs(&re, &re);
-    realCopyAbs(&im, &im);
-    realAdd(&re, &im, &re, realContext);
-    return math_comparison_reals.realCompareLessThan(&re, eps3);
+fn isRepeatedEigenvalue(u: *const cplx_t, v: *const cplx_t, eps3: *const real_t, realContext: *realContext_t) linksection(runtime.code_section) bool {
+    var re_part: real_t = undefined;
+    var im_part: real_t = undefined;
+    realSubtract(&u.Real, &v.Real, &re_part, realContext);
+    realSubtract(&u.Imag, &v.Imag, &im_part, realContext);
+    realCopyAbs(&re_part, &re_part);
+    realCopyAbs(&im_part, &im_part);
+    realAdd(&re_part, &im_part, &re_part, realContext);
+    return realCompareLessThan(&re_part, eps3);
+}
+
+// Reduce A - lambda I in b by Gaussian elimination with partial pivoting, the
+// columns taken from the last to the first, and return its nullity. A column
+// whose pivot candidates are all below 10^-(toleranceDigits/2) of the norm of A
+// has no pivot: its index goes to freeCol, in ascending order, and each row
+// left without a pivot goes to zeroRow. The pivots taken from the right leave
+// the leading columns free, so fixing the unknowns of freeCol to the d-th unit
+// vector, with a slack on each row of zeroRow, gives the null vector whose free
+// coordinates are the d-th unit vector: sympy nullspace of A - lambda I with
+// its columns reversed, read back in the original order. The Schur complement
+// of that augmented system is -I, so it is not singular. Golub and Wilkinson
+// (1976) take the SVD for the rank: a pivot misjudged here gives a vector that
+// fails solvesTheEigenProblem, or a copy with no vector, and both are reported
+// as a defective matrix.
+fn nullSpaceOfShiftedMatrix(matrix: *const real34Matrix_t, isComplex: bool, lambda: *const cplx_t, size: u16, eps3: *const real_t, b: [*]cplx_t, freeCol: [*]u16, zeroRow: [*]u16, realContext: *realContext_t) linksection(runtime.code_section) u16 {
+    const sz: usize = size;
+    const rElems: [*]const real34_t = abi.matrixConstRealElems(matrix);
+    const cElems: [*]const runtime.complex34_t = abi.matrixConstComplexElems(matrix);
+    var rank: u16 = 0;
+    var nullity: u16 = 0;
+    var tol: real_t = undefined;
+    var best: real_t = undefined;
+    var mag: real_t = undefined;
+    var fac: cplx_t = undefined;
+    var prod: cplx_t = undefined;
+
+    var i: usize = 0;
+    while (i < sz) : (i += 1) {
+        var j: usize = 0;
+        while (j < sz) : (j += 1) {
+            if (isComplex) {
+                runtime.real34ToReal(&cElems[i * sz + j].real, &b[i * sz + j].Real);
+                runtime.real34ToReal(&cElems[i * sz + j].imag, &b[i * sz + j].Imag);
+            } else {
+                runtime.real34ToReal(&rElems[i * sz + j], &b[i * sz + j].Real);
+                realSetZero(&b[i * sz + j].Imag);
+            }
+        }
+        realSubtract(&b[i * sz + i].Real, &lambda.Real, &b[i * sz + i].Real, realContext);
+        realSubtract(&b[i * sz + i].Imag, &lambda.Imag, &b[i * sz + i].Imag, realContext);
+        zeroRow[i] = @intCast(i);
+    }
+    realCopy(eps3, &tol);
+    tol.exponent += 33 - @divTrunc(toleranceDigits(), 2); // EPS3 is 1E-33 of the norm of A
+
+    var c: usize = 0;
+    while (c < sz) : (c += 1) {
+        const col = sz - 1 - c;
+        realSetZero(&best);
+        var p: usize = rank;
+        i = rank;
+        while (i < sz) : (i += 1) {
+            complexMagnitude(&b[i * sz + col], &mag, realContext);
+            if (realCompareGreaterThan(&mag, &best)) {
+                realCopy(&mag, &best);
+                p = i;
+            }
+        }
+        if (!realCompareGreaterThan(&best, &tol)) {
+            freeCol[nullity] = @intCast(col);
+            nullity += 1;
+            continue;
+        }
+        const rk: usize = rank;
+        if (p != rk) {
+            var j: usize = 0;
+            while (j <= col) : (j += 1) {
+                realCopy(&b[p * sz + j].Real, &mag);
+                realCopy(&b[rk * sz + j].Real, &b[p * sz + j].Real);
+                realCopy(&mag, &b[rk * sz + j].Real);
+                realCopy(&b[p * sz + j].Imag, &mag);
+                realCopy(&b[rk * sz + j].Imag, &b[p * sz + j].Imag);
+                realCopy(&mag, &b[rk * sz + j].Imag);
+            }
+            const swapRow = zeroRow[p];
+            zeroRow[p] = zeroRow[rk];
+            zeroRow[rk] = swapRow;
+        }
+        i = rk + 1;
+        while (i < sz) : (i += 1) {
+            divComplexComplex(&b[i * sz + col], &b[rk * sz + col], &fac, realContext);
+            var j: usize = 0;
+            while (j <= col) : (j += 1) {
+                mulComplexComplex(&fac, &b[rk * sz + j], &prod, realContext);
+                realSubtract(&b[i * sz + j].Real, &prod.Real, &b[i * sz + j].Real, realContext);
+                realSubtract(&b[i * sz + j].Imag, &prod.Imag, &b[i * sz + j].Imag, realContext);
+            }
+        }
+        rank += 1;
+    }
+
+    i = 0;
+    while (i < nullity) : (i += 1) {
+        zeroRow[i] = zeroRow[@as(usize, rank) + i];
+    }
+    i = 0;
+    while (i < nullity / 2) : (i += 1) {
+        const swapCol = freeCol[i];
+        freeCol[i] = freeCol[nullity - 1 - i];
+        freeCol[nullity - 1 - i] = swapCol;
+    }
+    return nullity;
 }
 
 // ===========================================================================
@@ -2312,9 +2527,10 @@ fn isRepeatedEigenvalue(u: [*]align(1) const real_t, v: [*]align(1) const real_t
 // complex34Matrix_t (shared header); the C copy stays file-local so the Zig
 // signature is chosen for convenience.
 // ===========================================================================
-fn calculateEigenvectors(matrix: *const real34Matrix_t, isComplex: bool, a: [*]align(1) real_t, q: [*]align(1) real_t, r: [*]align(1) real_t, eig: [*]align(1) real_t, realContext: *realContext_t) linksection(runtime.code_section) void {
-    // real34Matrix_t and complex34Matrix_t share the {header, matrixElements}
-    // layout; the complex element view reinterprets the same element pointer.
+fn calculateEigenvectors(matrix: *const real34Matrix_t, isComplex: bool, a: [*]cplx_t, q: [*]cplx_t, r: [*]cplx_t, eig: [*]cplx_t, realContext: *realContext_t) linksection(runtime.code_section) void {
+    // Call after the eigenvalues are calculated. real34Matrix_t and
+    // complex34Matrix_t share the {header, matrixElements} layout; the complex
+    // element view reinterprets the same element pointer.
     const size: u16 = matrix.header.matrixRows;
     const sz: usize = size;
     if (matrix.header.matrixRows != matrix.header.matrixColumns) return;
@@ -2323,14 +2539,19 @@ fn calculateEigenvectors(matrix: *const real34Matrix_t, isComplex: bool, a: [*]a
     const cElems: [*]const runtime.complex34_t = abi.matrixConstComplexElems(matrix);
 
     var i: usize = 0;
-    while (i < sz * sz * 2) : (i += 1) realSetZero(&r[i]);
-    var k: usize = 0;
-    while (k < sz) : (k += 1) {
-        realPlus(&eig[(k * sz + k) * 2], &eig[(k * sz + k) * 2], &runtime.ctxtReal34);
-        realPlus(&eig[(k * sz + k) * 2 + 1], &eig[(k * sz + k) * 2 + 1], &runtime.ctxtReal34);
+    while (i < sz * sz) : (i += 1) {
+        realSetZero(&r[i].Real);
+        realSetZero(&r[i].Imag);
     }
+    // The digits past the 34th are residue of the iteration. Rounding them away
+    // makes an exact eigenvalue exact, so dependent rows of A - lambda I cancel
+    // in the solve.
+    dropNoise(eig, size, 34);
 
-    // Fast path: diagonal A has permuted unit eigenvectors.
+    // Fast path: a diagonal matrix has unit eigenvectors permuted to match the
+    // eigenvalue ordering. The augmented-system technique below fails on a
+    // diagonal A because A - lambda I then has a zero row for any eigenvalue,
+    // which makes the augmented matrix singular.
     var isDiagonal = true;
     {
         var ii: usize = 0;
@@ -2353,28 +2574,32 @@ fn calculateEigenvectors(matrix: *const real34Matrix_t, isComplex: bool, a: [*]a
             }
         }
     }
+    var k: usize = 0;
     if (isDiagonal) {
-        k = 0;
+        // For each eigenvalue eig[k], the first unclaimed diagonal position j
+        // where A[j][j] == eig[k] gets r[j][k] = 1, so repeated eigenvalues land
+        // in distinct columns; r itself records the claims.
         while (k < sz) : (k += 1) {
             var j: usize = 0;
             while (j < sz) : (j += 1) {
                 var alreadyUsed = false;
                 var kPrev: usize = 0;
                 while (kPrev < k) : (kPrev += 1) {
-                    if (!realIsZeroA(&r[(j * sz + kPrev) * 2])) {
+                    if (!realIsZeroA(&r[j * sz + kPrev].Real)) {
                         alreadyUsed = true;
                         break;
                     }
                 }
                 if (alreadyUsed) continue;
-                var diagR: real_t = undefined;
-                var diagI: real_t = undefined;
+                // |eig[k] - A[j][j]| <= max(|eig|, |A[j][j]|, 1) * 1e-30: an exact
+                // test fails on the residue QR leaves on an exact eigenvalue.
+                var diag: cplx_t = undefined;
                 if (isComplex) {
-                    runtime.real34ToReal(&cElems[j * sz + j].real, &diagR);
-                    runtime.real34ToReal(&cElems[j * sz + j].imag, &diagI);
+                    runtime.real34ToReal(&cElems[j * sz + j].real, &diag.Real);
+                    runtime.real34ToReal(&cElems[j * sz + j].imag, &diag.Imag);
                 } else {
-                    runtime.real34ToReal(&rElems[j * sz + j], &diagR);
-                    realSetZero(&diagI);
+                    runtime.real34ToReal(&rElems[j * sz + j], &diag.Real);
+                    realSetZero(&diag.Imag);
                 }
                 var diff_r: real_t = undefined;
                 var diff_i: real_t = undefined;
@@ -2382,16 +2607,16 @@ fn calculateEigenvectors(matrix: *const real34Matrix_t, isComplex: bool, a: [*]a
                 var mag_diag: real_t = undefined;
                 var scale: real_t = undefined;
                 var tol: real_t = undefined;
-                realSubtract(&eig[(k * sz + k) * 2], &diagR, &diff_r, realContext);
-                realSubtract(&eig[(k * sz + k) * 2 + 1], &diagI, &diff_i, realContext);
-                math_runtime_helpers.complexMagnitude(@alignCast(&eig[(k * sz + k) * 2]), @alignCast(&eig[(k * sz + k) * 2 + 1]), &mag_eig, realContext);
-                math_runtime_helpers.complexMagnitude(&diagR, &diagI, &mag_diag, realContext);
+                realSubtract(&eig[k * sz + k].Real, &diag.Real, &diff_r, realContext);
+                realSubtract(&eig[k * sz + k].Imag, &diag.Imag, &diff_i, realContext);
+                complexMagnitude(&eig[k * sz + k], &mag_eig, realContext);
+                complexMagnitude(&diag, &mag_diag, realContext);
                 realCopy(&mag_eig, &scale);
-                if (math_comparison_reals.realCompareLessThan(&scale, &mag_diag)) realCopy(&mag_diag, &scale);
-                if (math_comparison_reals.realCompareLessThan(&scale, const_1())) realCopy(const_1(), &scale);
+                if (realCompareLessThan(&scale, &mag_diag)) realCopy(&mag_diag, &scale);
+                if (realCompareLessThan(&scale, const_1())) realCopy(const_1(), &scale);
                 realMultiply(&scale, const_1e_30(), &tol, realContext);
                 if (isElementWithinTolerance(&diff_r, &diff_i, &tol, realContext)) {
-                    realCopy(const_1(), &r[(j * sz + k) * 2]);
+                    realCopy(const_1(), &r[j * sz + k].Real);
                     break;
                 }
             }
@@ -2409,8 +2634,7 @@ fn calculateEigenvectors(matrix: *const real34Matrix_t, isComplex: bool, a: [*]a
     // and returns the same eigenvector again.
     var eps3: real_t = undefined;
     var rowSum: real_t = undefined;
-    var mag: real_t = undefined;
-    var magIm: real_t = undefined;
+    var mag: cplx_t = undefined;
     realSetZero(&eps3);
     i = 0;
     while (i < sz) : (i += 1) {
@@ -2418,16 +2642,18 @@ fn calculateEigenvectors(matrix: *const real34Matrix_t, isComplex: bool, a: [*]a
         var j: usize = 0;
         while (j < sz) : (j += 1) {
             if (isComplex) {
-                runtime.real34ToReal(&cElems[i * sz + j].real, &mag);
-                runtime.real34ToReal(&cElems[i * sz + j].imag, &magIm);
-                math_runtime_helpers.complexMagnitude(&mag, &magIm, &mag, realContext);
+                runtime.real34ToReal(&cElems[i * sz + j].real, &mag.Real);
+                runtime.real34ToReal(&cElems[i * sz + j].imag, &mag.Imag);
+                var magnitude: real_t = undefined;
+                complexMagnitude(&mag, &magnitude, realContext);
+                realCopy(&magnitude, &mag.Real);
             } else {
-                runtime.real34ToReal(&rElems[i * sz + j], &mag);
-                realCopyAbs(&mag, &mag);
+                runtime.real34ToReal(&rElems[i * sz + j], &mag.Real);
+                realCopyAbs(&mag.Real, &mag.Real);
             }
-            realAdd(&rowSum, &mag, &rowSum, realContext);
+            realAdd(&rowSum, &mag.Real, &rowSum, realContext);
         }
-        if (math_comparison_reals.realCompareGreaterThan(&rowSum, &eps3)) {
+        if (realCompareGreaterThan(&rowSum, &eps3)) {
             realCopy(&rowSum, &eps3);
         }
     }
@@ -2442,102 +2668,118 @@ fn calculateEigenvectors(matrix: *const real34Matrix_t, isComplex: bool, a: [*]a
     var systemBuiltFor: u16 = 0;
     var rebuildSystem = true;
     var acceptedVector = false;
+    var repeated = false;
     var pairedSlack = false;
+    var basisSize: u16 = 0;
     const utBlocks: usize = sz * 2 * realSizeInBlocks(75) * 2;
     if (allocC47Blocks(utBlocks)) |utBuf| {
-        const unknownsToFill: [*]u16 = @ptrCast(utBuf);
+        const unknownsToFill: [*]u16 = @ptrCast(@alignCast(utBuf));
+        const slackRow = unknownsToFill + sz;
+        const basis = q + sz * sz * 2; // the right-hand side and the elimination use the first half of q
         k = 0;
         while (k < sz and runtime.lastErrorCode != runtime.ERROR_RAM_FULL) : (k += 1) { // a full RAM stops the remaining columns
             rep = @intCast(k);
             duplicateEigenvalueCount = 0;
+            repeated = false;
             var jr: usize = 0;
-            while (jr < k) : (jr += 1) {
-                if (isRepeatedEigenvalue(eig + (jr * sz + jr) * 2, eig + (k * sz + k) * 2, &eps3, realContext)) {
-                    if (duplicateEigenvalueCount == 0) {
-                        rep = @intCast(jr); // the first copy of this eigenvalue: its system is the one to solve again
+            while (jr < sz) : (jr += 1) {
+                if (jr != k and isRepeatedEigenvalue(&eig[jr * sz + jr], &eig[k * sz + k], &eps3, realContext)) {
+                    repeated = true;
+                    if (jr < k) {
+                        if (duplicateEigenvalueCount == 0) {
+                            rep = @intCast(jr); // the first copy of this eigenvalue: its system is the one to solve again
+                        }
+                        duplicateEigenvalueCount += 1;
                     }
-                    duplicateEigenvalueCount += 1;
                 }
             }
             rebuildSystem = (duplicateEigenvalueCount == 0) or (rep != systemBuiltFor);
             if (rebuildSystem) {
-                freeUnknowns = 1;
-                unknownsToFill[0] = 0;
                 systemBuiltFor = rep;
                 pairedSlack = false;
-            } else if (freeUnknowns > size) {
-                freeUnknowns = size; // just in case
+                if (repeated) { // copy d of a repeated eigenvalue takes the d-th null vector
+                    freeUnknowns = nullSpaceOfShiftedMatrix(matrix, isComplex, &eig[@as(usize, rep) * sz + rep], size, &eps3, q, unknownsToFill, slackRow, realContext);
+                } else {
+                    freeUnknowns = 1;
+                    unknownsToFill[0] = 0;
+                }
             }
             acceptedVector = false;
             const vBlocks: usize = sz * 2 * realSizeInBlocks(75) * 2;
-            if (allocC47Blocks(vBlocks)) |vBuf| {
-                const v: [*]align(1) real_t = @ptrCast(vBuf);
-                while (true) {
+            if (allocCplx(vBlocks)) |v| {
+                while (duplicateEigenvalueCount < freeUnknowns) { // a copy beyond the nullity has no eigenvector of its own
                     var j: usize = 0;
-                    while (j < sz * 2 * 2) : (j += 1) realSetNaN(&v[j]);
+                    while (j < sz * 2) : (j += 1) {
+                        realSetNaN(&v[j].Real);
+                        realSetNaN(&v[j].Imag);
+                    }
+                    if (!repeated) {
+                        slackRow[0] = if (pairedSlack) unknownsToFill[0] else 0;
+                    }
 
+                    const stride: usize = sz + freeUnknowns;
                     if (rebuildSystem) {
-                        const stride: usize = @as(usize, size) + freeUnknowns;
+                        // Restore the original matrix
                         var ii: usize = 0;
                         while (ii < sz) : (ii += 1) {
                             var jj: usize = 0;
                             while (jj < sz) : (jj += 1) {
                                 if (isComplex) {
-                                    runtime.real34ToReal(&cElems[ii * sz + jj].real, @alignCast(&a[(ii * stride + jj) * 2]));
-                                    runtime.real34ToReal(&cElems[ii * sz + jj].imag, @alignCast(&a[(ii * stride + jj) * 2 + 1]));
+                                    runtime.real34ToReal(&cElems[ii * sz + jj].real, &a[ii * stride + jj].Real);
+                                    runtime.real34ToReal(&cElems[ii * sz + jj].imag, &a[ii * stride + jj].Imag);
                                 } else {
-                                    runtime.real34ToReal(&rElems[ii * sz + jj], @alignCast(&a[(ii * stride + jj) * 2]));
-                                    realSetZero(&a[(ii * stride + jj) * 2 + 1]);
+                                    runtime.real34ToReal(&rElems[ii * sz + jj], &a[ii * stride + jj].Real);
+                                    realSetZero(&a[ii * stride + jj].Imag);
                                 }
                             }
                             jj = 0;
                             while (jj < freeUnknowns) : (jj += 1) {
-                                realCopy(if ((if (pairedSlack) unknownsToFill[jj] else jj) == ii) const_1() else const_0(), &a[(ii * stride + jj + sz) * 2]);
-                                realSetZero(&a[(ii * stride + jj + sz) * 2 + 1]);
+                                realCopy(if (slackRow[jj] == ii) const_1() else const_0(), &a[ii * stride + jj + sz].Real);
+                                realSetZero(&a[ii * stride + jj + sz].Imag);
                             }
                         }
                         ii = 0;
                         while (ii < freeUnknowns) : (ii += 1) {
                             var jj: usize = 0;
                             while (jj < sz) : (jj += 1) {
-                                realCopy(if (jj == unknownsToFill[ii]) const_1() else const_0(), &a[((ii + sz) * stride + jj) * 2]);
-                                realSetZero(&a[((ii + sz) * stride + jj) * 2 + 1]);
+                                realCopy(if (jj == unknownsToFill[ii]) const_1() else const_0(), &a[(ii + sz) * stride + jj].Real);
+                                realSetZero(&a[(ii + sz) * stride + jj].Imag);
                             }
                             jj = 0;
                             while (jj < freeUnknowns) : (jj += 1) {
-                                realCopy(if (jj == ii) const_1() else const_0(), &a[((ii + sz) * stride + jj + sz) * 2]);
-                                realSetZero(&a[((ii + sz) * stride + jj + sz) * 2 + 1]);
+                                realCopy(if (jj == ii) const_1() else const_0(), &a[(ii + sz) * stride + jj + sz].Real);
+                                realSetZero(&a[(ii + sz) * stride + jj + sz].Imag);
                             }
                         }
-                        // Subtract the eigenvalue from the leading diagonal.
+                        // Subtract an eigenvalue
                         const rp: usize = rep;
                         var jd: usize = 0;
                         while (jd < sz) : (jd += 1) {
-                            realSubtract(&a[(jd * stride + jd) * 2], &eig[(rp * sz + rp) * 2], &a[(jd * stride + jd) * 2], realContext);
-                            realSubtract(&a[(jd * stride + jd) * 2 + 1], &eig[(rp * sz + rp) * 2 + 1], &a[(jd * stride + jd) * 2 + 1], realContext);
+                            realSubtract(&a[jd * stride + jd].Real, &eig[rp * sz + rp].Real, &a[jd * stride + jd].Real, realContext);
+                            realSubtract(&a[jd * stride + jd].Imag, &eig[rp * sz + rp].Imag, &a[jd * stride + jd].Imag, realContext);
                         }
                     }
                     if (duplicateEigenvalueCount != 0) {
                         rebuildSystem = false; // a further copy solves the system the first copy built, for the next null-space vector
                     }
 
-                    // Make the RHS unit vector.
-                    const stride: usize = @as(usize, size) + freeUnknowns;
+                    // Make the equation matrices
                     var jq: usize = 0;
                     while (jq < stride) : (jq += 1) {
-                        realCopy(if (jq == @as(usize, duplicateEigenvalueCount) + sz) const_1() else const_0(), &q[jq * 2]);
-                        realSetZero(&q[jq * 2 + 1]);
+                        realCopy(if (jq == @as(usize, duplicateEigenvalueCount) + sz) const_1() else const_0(), &q[jq].Real);
+                        realSetZero(&q[jq].Imag);
                     }
 
+                    // Solve linear equations from the submatrix
                     runtime.lastErrorCode = runtime.ERROR_NONE;
-                    cpxLinearEqn(a, q, v, @intCast(stride), realContext);
+                    cpxLinearEqn(a, q, v, @intCast(stride), 2 - 34, realContext); // a 34-digit eigenvalue is off by up to half a unit in its 34th digit
                     if (runtime.lastErrorCode != runtime.ERROR_SINGULAR_MATRIX) {
-                        var usable = solvesTheEigenProblem(matrix, isComplex, v, eig + (k * sz + k) * 2, size, &eps3, realContext);
-                        var jc: u16 = 0;
-                        while (jc < k and usable) : (jc += 1) {
-                            usable = !isMultipleOfColumn(v, r, size, jc, realContext);
+                        var usable = solvesTheEigenProblem(matrix, isComplex, v, &eig[k * sz + k], size, &eps3, realContext);
+                        if (usable) {
+                            usable = !isInSpanOfColumns(v, basis, size, basisSize, realContext);
                         }
                         if (usable) {
+                            basisSize += 1; // isInSpanOfColumns wrote the remainder of v as this column of basis
                             acceptedVector = true;
                             break;
                         }
@@ -2548,33 +2790,24 @@ fn calculateEigenvectors(matrix: *const real34Matrix_t, isComplex: bool, a: [*]a
                     // freeUnknowns is the row stride, so a retry that keeps the old
                     // matrix reads elements never written at the new stride.
                     rebuildSystem = true;
-                    unknownsToFill[freeUnknowns - 1] += 1;
-                    var ia: u16 = 1;
-                    while (ia <= freeUnknowns - 1) : (ia += 1) {
-                        if (unknownsToFill[freeUnknowns - 1] >= size) {
-                            unknownsToFill[freeUnknowns - ia - 1] += 1;
-                            var jb: usize = freeUnknowns - ia;
-                            while (jb <= freeUnknowns - 1) : (jb += 1) {
-                                unknownsToFill[freeUnknowns + jb] = unknownsToFill[freeUnknowns + jb - 1];
-                            }
-                        } else break;
+                    if (repeated) {
+                        break; // the null space gives the only choice of unknowns and slacks
                     }
-                    if (unknownsToFill[freeUnknowns - 1] >= size) {
-                        // No choice of fixed unknowns works with the slack on
-                        // the first rows: the same choices come again with the
-                        // slack on the rows of the fixed unknowns, which reaches
-                        // an eigenvector whose dependent row is further down,
-                        // and only then one more unknown is fixed.
+
+                    // Next choice for a simple eigenvalue: the fixed unknown moves
+                    // down the rows with its slack on the first row, then again with
+                    // the slack on its own row. One of the latter is not singular:
+                    // adj(A - lambda I) is c x y^T with y^T x not 0, so some row u
+                    // has x_u y_u not 0. Two fixed unknowns would only reach the same
+                    // null vector again.
+                    unknownsToFill[0] += 1;
+                    if (unknownsToFill[0] == size) {
                         if (pairedSlack) {
-                            pairedSlack = false;
-                            freeUnknowns += 1;
-                        } else {
-                            pairedSlack = true;
+                            break;
                         }
-                        var ic: u16 = 0;
-                        while (ic < size) : (ic += 1) unknownsToFill[ic] = ic;
+                        pairedSlack = true;
+                        unknownsToFill[0] = 0;
                     }
-                    if (freeUnknowns > size) break;
                 }
                 if (!acceptedVector) {
                     // Zero-fill on failure. The caller (realEigenvectors /
@@ -2582,8 +2815,8 @@ fn calculateEigenvectors(matrix: *const real34Matrix_t, isComplex: bool, a: [*]a
                     // defective-matrix error to the user.
                     var ii: usize = 0;
                     while (ii < sz) : (ii += 1) {
-                        realSetZero(&v[ii * 2]);
-                        realSetZero(&v[ii * 2 + 1]);
+                        realSetZero(&v[ii].Real);
+                        realSetZero(&v[ii].Imag);
                     }
                     if (runtime.lastErrorCode == runtime.ERROR_SINGULAR_MATRIX) {
                         // Clear only the singular solve the retries expect; any
@@ -2593,16 +2826,16 @@ fn calculateEigenvectors(matrix: *const real34Matrix_t, isComplex: bool, a: [*]a
                 }
                 var ii: usize = 0;
                 while (ii < sz) : (ii += 1) {
-                    realCopy(&v[ii * 2], &r[(ii * sz + k) * 2]);
-                    realCopy(&v[ii * 2 + 1], &r[(ii * sz + k) * 2 + 1]);
+                    realCopy(&v[ii].Real, &r[ii * sz + k].Real);
+                    realCopy(&v[ii].Imag, &r[ii * sz + k].Imag);
                 }
-                freeC47Blocks(vBuf, vBlocks);
+                freeC47Blocks(v, vBlocks);
             } else {
                 ramFull("In function calculateEigenvectors:", "Ram full, 1av");
                 var ii: usize = 0;
                 while (ii < sz) : (ii += 1) {
-                    realSetNaN(&r[(ii * sz + k) * 2]);
-                    realSetNaN(&r[(ii * sz + k) * 2 + 1]);
+                    realSetNaN(&r[ii * sz + k].Real);
+                    realSetNaN(&r[ii * sz + k].Imag);
                 }
             }
         }
@@ -2611,8 +2844,8 @@ fn calculateEigenvectors(matrix: *const real34Matrix_t, isComplex: bool, a: [*]a
         ramFull("In function calculateEigenvectors:", "Ram full, 2aw");
         var ii: usize = 0;
         while (ii < sz) : (ii += 1) {
-            realSetNaN(&r[(ii * sz + k) * 2]);
-            realSetNaN(&r[(ii * sz + k) * 2 + 1]);
+            realSetNaN(&r[ii * sz + k].Real);
+            realSetNaN(&r[ii * sz + k].Imag);
         }
     }
 }
@@ -2622,23 +2855,68 @@ fn calculateEigenvectors(matrix: *const real34Matrix_t, isComplex: bool, a: [*]a
 // eigenvalues, solve for each eigenvector, detect defective (zero) columns,
 // normalize each column, and write real (res) + imaginary (ires) parts back.
 // ===========================================================================
+// Scale every real or complex column to Euclidean unit norm.
+fn normaliseEigenvectorColumns(vectors: [*]cplx_t, size: u16, realContext: *realContext_t) linksection(runtime.code_section) void {
+    const sz: usize = size;
+    var column: usize = 0;
+    while (column < sz) : (column += 1) {
+        var sum: real_t = undefined;
+        realSetZero(&sum);
+        var row: usize = 0;
+        while (row < sz) : (row += 1) {
+            var term: real_t = undefined;
+            realFMA(&vectors[row * sz + column].Real, &vectors[row * sz + column].Real, &sum, &term, realContext);
+            realCopy(&term, &sum);
+            realFMA(&vectors[row * sz + column].Imag, &vectors[row * sz + column].Imag, &sum, &term, realContext);
+            realCopy(&term, &sum);
+        }
+        realSquareRoot(&sum, &sum, realContext);
+        if (!realIsZeroA(&sum) and !realIsSpecial(&sum)) {
+            row = 0;
+            while (row < sz) : (row += 1) {
+                realDivide(&vectors[row * sz + column].Real, &sum, &vectors[row * sz + column].Real, realContext);
+                realDivide(&vectors[row * sz + column].Imag, &sum, &vectors[row * sz + column].Imag, realContext);
+            }
+        }
+    }
+}
+
+// A column calculateEigenvectors zero-filled: it found no linearly independent
+// eigenvector there. A genuine eigenvector is never zero.
+fn hasZeroColumn(r: [*]const cplx_t, size: u16) linksection(runtime.code_section) bool {
+    const sz: usize = size;
+    var j: usize = 0;
+    while (j < sz) : (j += 1) {
+        var allZero = true;
+        var i: usize = 0;
+        while (i < sz) : (i += 1) {
+            if (!realIsZeroA(&r[i * sz + j].Real) or !realIsZeroA(&r[i * sz + j].Imag)) {
+                allZero = false;
+                break;
+            }
+        }
+        if (allZero) return true;
+    }
+    return false;
+}
+
 fn realEigenvectors(matrix: *const real34Matrix_t, res: *real34Matrix_t, ires: ?*real34Matrix_t) linksection(runtime.code_section) void {
     const size: u16 = matrix.header.matrixRows;
     const sz: usize = size;
     if (matrix.header.matrixRows != matrix.header.matrixColumns) return;
     const bulkSize: usize = realSizeInBlocks(75) * (sz * sz * 4 * 2 * 4 + sz * 7);
-    if (allocC47Blocks(bulkSize)) |bulk| {
+    if (allocCplx(bulkSize)) |bulk| {
         const a = bulk;
-        const q = bulk + sz * sz * 4 * 2;
-        const r = bulk + sz * sz * 4 * 2 * 2;
-        const eig = bulk + sz * sz * 4 * 2 * 3;
-        const scratch = bulk + sz * sz * 4 * 2 * 4;
+        const q = bulk + sz * sz * 4;
+        const r = bulk + sz * sz * 4 * 2;
+        const eig = bulk + sz * sz * 4 * 3;
+        const scratch = bulk + sz * sz * 4 * 4;
         const elems: [*]const real34_t = abi.matrixConstRealElems(matrix);
 
         var i: usize = 0;
         while (i < sz * sz) : (i += 1) {
-            runtime.real34ToReal(&elems[i], &a[i * 2]);
-            realSetZero(&a[i * 2 + 1]);
+            runtime.real34ToReal(&elems[i], &a[i].Real);
+            realSetZero(&a[i].Imag);
         }
         calculateEigenvalues(a, scratch, eig, size, true, false, &runtime.ctxtReal75);
         if (runtime.lastErrorCode == ERROR_NO_ROOT_FOUND) { // the eigenvalues did not converge, so no eigenvectors are returned
@@ -2656,69 +2934,37 @@ fn realEigenvectors(matrix: *const real34Matrix_t, res: *real34Matrix_t, ires: ?
             freeC47Blocks(bulk, bulkSize);
             return;
         }
-
-        // Defective-matrix detection: a genuine eigenvector is never all-zero.
-        var j: usize = 0;
-        while (j < sz) : (j += 1) {
-            var allZero = true;
-            i = 0;
-            while (i < sz) : (i += 1) {
-                if (!realIsZeroA(&r[(i * sz + j) * 2]) or !realIsZeroA(&r[(i * sz + j) * 2 + 1])) {
-                    allZero = false;
-                    break;
-                }
-            }
-            if (allZero) {
-                res.matrixElements = null;
-                res.header.matrixRows = 0;
-                res.header.matrixColumns = 0;
-                freeC47Blocks(bulk, bulkSize);
-                return;
-            }
+        // No linearly independent eigenvector for a column: fnEigenvectors raises
+        // ERROR_SINGULAR_MATRIX, fnMatrixSquareRoot's eigen path falls back.
+        if (hasZeroColumn(r, size)) {
+            res.matrixElements = null;
+            res.header.matrixRows = 0;
+            res.header.matrixColumns = 0;
+            freeC47Blocks(bulk, bulkSize);
+            return;
         }
 
+        // Mutually conjugate complex roots are possible in real quadratic equations.
         var isComplex = false;
         i = 0;
         while (i < sz * sz) : (i += 1) {
-            if (!realIsZeroA(&r[i * 2 + 1])) {
+            if (!realIsZeroA(&r[i].Imag)) {
                 isComplex = true;
                 break;
             }
         }
 
-        // Normalize each eigenvector column.
-        j = 0;
-        while (j < sz) : (j += 1) {
-            var sum: real_t = undefined;
-            realSetZero(&sum);
-            i = 0;
-            while (i < sz) : (i += 1) {
-                var t1: real_t = undefined;
-                var t2: real_t = undefined;
-                realFMA(&r[(i * sz + j) * 2], &r[(i * sz + j) * 2], &sum, &t1, &runtime.ctxtReal75);
-                realCopy(&t1, &sum);
-                realFMA(&r[(i * sz + j) * 2 + 1], &r[(i * sz + j) * 2 + 1], &sum, &t2, &runtime.ctxtReal75);
-                realCopy(&t2, &sum);
-            }
-            realSquareRoot(&sum, &sum, &runtime.ctxtReal75);
-            if (!realIsZeroA(&sum) and !realIsSpecial(&sum)) {
-                i = 0;
-                while (i < sz) : (i += 1) {
-                    realDivide(&r[(i * sz + j) * 2], &sum, &r[(i * sz + j) * 2], &runtime.ctxtReal75);
-                    realDivide(&r[(i * sz + j) * 2 + 1], &sum, &r[(i * sz + j) * 2 + 1], &runtime.ctxtReal75);
-                }
-            }
-        }
+        normaliseEigenvectorColumns(r, size, &runtime.ctxtReal75);
 
         if (@intFromPtr(matrix) == @intFromPtr(res) or runtime.realMatrixInit(res, size, size)) {
             const resElems: [*]real34_t = @ptrCast(res.matrixElements);
             i = 0;
-            while (i < sz * sz) : (i += 1) runtime.realToReal34(&r[i * 2], &resElems[i]);
+            while (i < sz * sz) : (i += 1) runtime.realToReal34(&r[i].Real, &resElems[i]);
             if (isComplex and ires != null) {
                 if (@intFromPtr(matrix) == @intFromPtr(ires.?) or @intFromPtr(res) == @intFromPtr(ires.?) or runtime.realMatrixInit(ires.?, size, size)) {
                     const iresElems: [*]real34_t = @ptrCast(ires.?.matrixElements);
                     i = 0;
-                    while (i < sz * sz) : (i += 1) runtime.realToReal34(&r[i * 2 + 1], &iresElems[i]);
+                    while (i < sz * sz) : (i += 1) runtime.realToReal34(&r[i].Imag, &iresElems[i]);
                 } else {
                     ramFull("In function realEigenvectors:", "Ram full, 1bc");
                     if (@intFromPtr(matrix) != @intFromPtr(res)) {
@@ -2746,18 +2992,18 @@ fn complexEigenvectors(matrix: *const complex34Matrix_t, res: *complex34Matrix_t
     const sz: usize = size;
     if (matrix.header.matrixRows != matrix.header.matrixColumns) return;
     const bulkSize: usize = realSizeInBlocks(75) * (sz * sz * 4 * 2 * 4 + sz * 7);
-    if (allocC47Blocks(bulkSize)) |bulk| {
+    if (allocCplx(bulkSize)) |bulk| {
         const a = bulk;
-        const q = bulk + sz * sz * 4 * 2;
-        const r = bulk + sz * sz * 4 * 2 * 2;
-        const eig = bulk + sz * sz * 4 * 2 * 3;
-        const scratch = bulk + sz * sz * 4 * 2 * 4;
+        const q = bulk + sz * sz * 4;
+        const r = bulk + sz * sz * 4 * 2;
+        const eig = bulk + sz * sz * 4 * 3;
+        const scratch = bulk + sz * sz * 4 * 4;
         const elems: [*]const runtime.complex34_t = abi.matrixConstComplexElems(matrix);
 
         var i: usize = 0;
         while (i < sz * sz) : (i += 1) {
-            runtime.real34ToReal(&elems[i].real, &a[i * 2]);
-            runtime.real34ToReal(&elems[i].imag, &a[i * 2 + 1]);
+            runtime.real34ToReal(&elems[i].real, &a[i].Real);
+            runtime.real34ToReal(&elems[i].imag, &a[i].Imag);
         }
         calculateEigenvalues(a, scratch, eig, size, true, false, &runtime.ctxtReal75);
         if (runtime.lastErrorCode == ERROR_NO_ROOT_FOUND) { // the eigenvalues did not converge, so no eigenvectors are returned
@@ -2775,32 +3021,22 @@ fn complexEigenvectors(matrix: *const complex34Matrix_t, res: *complex34Matrix_t
             freeC47Blocks(bulk, bulkSize);
             return;
         }
-
-        var j: usize = 0;
-        while (j < sz) : (j += 1) {
-            var allZero = true;
-            i = 0;
-            while (i < sz) : (i += 1) {
-                if (!realIsZeroA(&r[(i * sz + j) * 2]) or !realIsZeroA(&r[(i * sz + j) * 2 + 1])) {
-                    allZero = false;
-                    break;
-                }
-            }
-            if (allZero) {
-                res.matrixElements = null;
-                res.header.matrixRows = 0;
-                res.header.matrixColumns = 0;
-                freeC47Blocks(bulk, bulkSize);
-                return;
-            }
+        if (hasZeroColumn(r, size)) {
+            res.matrixElements = null;
+            res.header.matrixRows = 0;
+            res.header.matrixColumns = 0;
+            freeC47Blocks(bulk, bulkSize);
+            return;
         }
+
+        normaliseEigenvectorColumns(r, size, &runtime.ctxtReal75);
 
         if (@intFromPtr(matrix) == @intFromPtr(res) or runtime.complexMatrixInit(res, size, size)) {
             const resElems: [*]runtime.complex34_t = @ptrCast(res.matrixElements);
             i = 0;
             while (i < sz * sz) : (i += 1) {
-                runtime.realToReal34(&r[i * 2], &resElems[i].real);
-                runtime.realToReal34(&r[i * 2 + 1], &resElems[i].imag);
+                runtime.realToReal34(&r[i].Real, &resElems[i].real);
+                runtime.realToReal34(&r[i].Imag, &resElems[i].imag);
             }
         } else {
             ramFull("In function complexEigenvectors:", "Ram full, 1");
@@ -3062,6 +3298,62 @@ fn verifySqrtMatrix(inputReal: ?*const real34Matrix_t, resultReal: ?*const real3
     return verified;
 }
 
+// The principal square root of a symmetric positive-semidefinite 2 by 2 real
+// matrix: for A with determinant d it is (A + sqrt(d) I) / sqrt(trace(A) +
+// 2 sqrt(d)). True when the direct formula applies and storage succeeds.
+fn sqrtSymmetricRealMatrix2x2(matrix: *const real34Matrix_t, res: *real34Matrix_t) linksection(runtime.code_section) bool {
+    const elems: [*]const real34_t = abi.matrixConstRealElems(matrix);
+    var a: real_t = undefined;
+    var b: real_t = undefined;
+    var d: real_t = undefined;
+    var determinant: real_t = undefined;
+    var negativeB: real_t = undefined;
+    var rootDeterminant: real_t = undefined;
+    var denominator: real_t = undefined;
+    var value: real_t = undefined;
+
+    if (!real34CompareEqual(&elems[1], &elems[2])) {
+        return false;
+    }
+
+    runtime.real34ToReal(&elems[0], &a);
+    runtime.real34ToReal(&elems[1], &b);
+    runtime.real34ToReal(&elems[3], &d);
+    if (realIsNegativeA(&a) or realIsNegativeA(&d) or realIsSpecial(&a) or realIsSpecial(&b) or realIsSpecial(&d)) {
+        return false;
+    }
+
+    realCopy(&b, &negativeB);
+    realChangeSign(&negativeB);
+    math_vector_dot_scalar.dotCplx(&a, &b, &d, &negativeB, &determinant, &runtime.ctxtReal39);
+    if (realIsNegativeA(&determinant) or realIsSpecial(&determinant)) {
+        return false;
+    }
+    realSquareRoot(&determinant, &rootDeterminant, &runtime.ctxtReal39);
+    realAdd(&a, &d, &denominator, &runtime.ctxtReal39);
+    realAdd(&rootDeterminant, &rootDeterminant, &value, &runtime.ctxtReal39);
+    realAdd(&denominator, &value, &denominator, &runtime.ctxtReal39);
+    if (!realCompareGreaterThan(&denominator, const_0())) {
+        return false;
+    }
+    realSquareRoot(&denominator, &denominator, &runtime.ctxtReal39);
+    if (!runtime.realMatrixInit(res, 2, 2)) {
+        return false;
+    }
+
+    const re: [*]real34_t = @ptrCast(res.matrixElements);
+    realAdd(&a, &rootDeterminant, &value, &runtime.ctxtReal39);
+    realDivide(&value, &denominator, &value, &runtime.ctxtReal39);
+    runtime.realToReal34(&value, &re[0]);
+    realDivide(&b, &denominator, &value, &runtime.ctxtReal39);
+    runtime.realToReal34(&value, &re[1]);
+    runtime.realToReal34(&value, &re[2]);
+    realAdd(&d, &rootDeterminant, &value, &runtime.ctxtReal39);
+    realDivide(&value, &denominator, &value, &runtime.ctxtReal39);
+    runtime.realToReal34(&value, &re[3]);
+    return true;
+}
+
 fn sqrtRealMatrixEigen(matrix: *const real34Matrix_t, res: *real34Matrix_t) linksection(runtime.code_section) void {
     const n = matrix.header.matrixRows;
     const nn: usize = n;
@@ -3196,15 +3488,13 @@ fn sqrtComplexMatrixEigen(matrix: *const complex34Matrix_t, res: *complex34Matri
         const lam: [*]runtime.complex34_t = @ptrCast(Lambda.matrixElements);
         var i: usize = 0;
         while (i < nn) : (i += 1) {
-            var aReal: real_t = undefined;
-            var aImag: real_t = undefined;
-            var sqrtR: real_t = undefined;
-            var sqrtI: real_t = undefined;
-            runtime.real34ToReal(&lam[i * nn + i].real, &aReal);
-            runtime.real34ToReal(&lam[i * nn + i].imag, &aImag);
-            runtime.sqrtComplex(&aReal, &aImag, &sqrtR, &sqrtI, &runtime.ctxtReal39);
-            runtime.realToReal34(&sqrtR, &lam[i * nn + i].real);
-            runtime.realToReal34(&sqrtI, &lam[i * nn + i].imag);
+            var a: cplx_t = undefined;
+            var sq: cplx_t = undefined;
+            runtime.real34ToReal(&lam[i * nn + i].real, &a.Real);
+            runtime.real34ToReal(&lam[i * nn + i].imag, &a.Imag);
+            runtime.sqrtComplex(&a, &sq, &runtime.ctxtReal39);
+            runtime.realToReal34(&sq.Real, &lam[i * nn + i].real);
+            runtime.realToReal34(&sq.Imag, &lam[i * nn + i].imag);
         }
 
         complexEigenvectors(matrix, &Q);
@@ -3280,6 +3570,16 @@ fn sqrtRealMatrix(matrix: *const real34Matrix_t, res: *real34Matrix_t) linksecti
         return;
     }
 
+    if (n == 2 and sqrtSymmetricRealMatrix2x2(matrix, res)) {
+        if (!verifySqrtMatrix(matrix, res, null, null)) {
+            runtime.realMatrixFree(res);
+            res.matrixElements = null;
+            res.header.matrixRows = 0;
+            res.header.matrixColumns = 0;
+        }
+        return;
+    }
+
     sqrtRealMatrixEigen(matrix, res);
     if (res.matrixElements != null and !verifySqrtMatrix(matrix, res, null, null)) {
         runtime.realMatrixFree(res);
@@ -3302,15 +3602,13 @@ fn sqrtComplexMatrix(matrix: *const complex34Matrix_t, res: *complex34Matrix_t) 
         const re: [*]runtime.complex34_t = @ptrCast(res.matrixElements);
         var i: usize = 0;
         while (i < nn) : (i += 1) {
-            var aReal: real_t = undefined;
-            var aImag: real_t = undefined;
-            var sqrtR: real_t = undefined;
-            var sqrtI: real_t = undefined;
-            runtime.real34ToReal(&me[i * nn + i].real, &aReal);
-            runtime.real34ToReal(&me[i * nn + i].imag, &aImag);
-            runtime.sqrtComplex(&aReal, &aImag, &sqrtR, &sqrtI, &runtime.ctxtReal39);
-            runtime.realToReal34(&sqrtR, &re[i * nn + i].real);
-            runtime.realToReal34(&sqrtI, &re[i * nn + i].imag);
+            var a: cplx_t = undefined;
+            var sq: cplx_t = undefined;
+            runtime.real34ToReal(&me[i * nn + i].real, &a.Real);
+            runtime.real34ToReal(&me[i * nn + i].imag, &a.Imag);
+            runtime.sqrtComplex(&a, &sq, &runtime.ctxtReal39);
+            runtime.realToReal34(&sq.Real, &re[i * nn + i].real);
+            runtime.realToReal34(&sq.Imag, &re[i * nn + i].imag);
         }
         return;
     }
@@ -3452,35 +3750,35 @@ pub export fn fnMatrixSquareRoot(unusedParamButMandatory: u16) linksection(runti
 
 // ===========================================================================
 // real_QR_decomposition / complex_QR_decomposition (public) -- register-level
-// QR wrappers around the now-ported QR_decomposition_householder. Convert the
-// real34/complex34 input to interleaved-complex real_t scratch, run Householder
-// QR at ctxtReal39, write Q and R back. fnQrDecomposition (Zig) drives these.
+// QR wrappers around QR_decomposition_householder. Convert the real34/complex34
+// input to cplx_t scratch, run Householder QR at ctxtReal75, write Q and R
+// back. fnQrDecomposition (Zig) drives these.
 // ===========================================================================
 pub export fn real_QR_decomposition(matrix: *const real34Matrix_t, q: *real34Matrix_t, r: *real34Matrix_t) linksection(runtime.code_section) callconv(.c) void {
     const rows = matrix.header.matrixRows;
     if (matrix.header.matrixRows != matrix.header.matrixColumns) return;
     const n2: usize = @as(usize, rows) * matrix.header.matrixColumns;
     const blocks: usize = n2 * realSizeInBlocks(75) * 2 * 3;
-    if (allocC47Blocks(blocks)) |mat| {
-        const matq = mat + n2 * 2;
-        const matr = mat + n2 * 2 * 2;
+    if (allocCplx(blocks)) |mat| {
+        const matq = mat + n2;
+        const matr = mat + n2 * 2;
         const elems: [*]const real34_t = abi.matrixConstRealElems(matrix);
         var i: usize = 0;
         while (i < n2) : (i += 1) {
-            runtime.real34ToReal(&elems[i], &mat[i * 2]);
-            realSetZero(&mat[i * 2 + 1]);
+            runtime.real34ToReal(&elems[i], &mat[i].Real);
+            realSetZero(&mat[i].Imag);
         }
-        QR_decomposition_householder(mat, rows, matq, matr, &runtime.ctxtReal39);
+        QR_decomposition_householder(mat, rows, matq, matr, &runtime.ctxtReal75);
         if (runtime.lastErrorCode == runtime.ERROR_NONE) {
             const rr: usize = @as(usize, rows) * rows;
             if (runtime.realMatrixInit(q, rows, rows)) {
                 const qe: [*]real34_t = @ptrCast(q.matrixElements);
                 i = 0;
-                while (i < rr) : (i += 1) runtime.realToReal34(&matq[i * 2], &qe[i]);
+                while (i < rr) : (i += 1) runtime.realToReal34(&matq[i].Real, &qe[i]);
                 if (runtime.realMatrixInit(r, rows, rows)) {
                     const re: [*]real34_t = @ptrCast(r.matrixElements);
                     i = 0;
-                    while (i < rr) : (i += 1) runtime.realToReal34(&matr[i * 2], &re[i]);
+                    while (i < rr) : (i += 1) runtime.realToReal34(&matr[i].Real, &re[i]);
                 } else {
                     ramFull("In function real_QR_decomposition:", "Ram full, 1ao");
                 }
@@ -3501,29 +3799,29 @@ pub export fn complex_QR_decomposition(matrix: *const complex34Matrix_t, q: *com
     if (matrix.header.matrixRows != matrix.header.matrixColumns) return;
     const n2: usize = @as(usize, rows) * matrix.header.matrixColumns;
     const blocks: usize = n2 * realSizeInBlocks(75) * 2 * 3;
-    if (allocC47Blocks(blocks)) |mat| {
-        const matq = mat + n2 * 2;
-        const matr = mat + n2 * 2 * 2;
+    if (allocCplx(blocks)) |mat| {
+        const matq = mat + n2;
+        const matr = mat + n2 * 2;
         const elems: [*]const runtime.complex34_t = abi.matrixConstComplexElems(matrix);
         var i: usize = 0;
         while (i < n2) : (i += 1) {
-            runtime.real34ToReal(&elems[i].real, &mat[i * 2]);
-            runtime.real34ToReal(&elems[i].imag, &mat[i * 2 + 1]);
+            runtime.real34ToReal(&elems[i].real, &mat[i].Real);
+            runtime.real34ToReal(&elems[i].imag, &mat[i].Imag);
         }
-        QR_decomposition_householder(mat, rows, matq, matr, &runtime.ctxtReal39);
+        QR_decomposition_householder(mat, rows, matq, matr, &runtime.ctxtReal75);
         if (runtime.complexMatrixInit(q, rows, rows)) {
             const qe: [*]runtime.complex34_t = @ptrCast(q.matrixElements);
             i = 0;
             while (i < n2) : (i += 1) {
-                runtime.realToReal34(&matq[i * 2], &qe[i].real);
-                runtime.realToReal34(&matq[i * 2 + 1], &qe[i].imag);
+                runtime.realToReal34(&matq[i].Real, &qe[i].real);
+                runtime.realToReal34(&matq[i].Imag, &qe[i].imag);
             }
             if (runtime.complexMatrixInit(r, rows, rows)) {
                 const re: [*]runtime.complex34_t = @ptrCast(r.matrixElements);
                 i = 0;
                 while (i < n2) : (i += 1) {
-                    runtime.realToReal34(&matr[i * 2], &re[i].real);
-                    runtime.realToReal34(&matr[i * 2 + 1], &re[i].imag);
+                    runtime.realToReal34(&matr[i].Real, &re[i].real);
+                    runtime.realToReal34(&matr[i].Imag, &re[i].imag);
                 }
             } else {
                 ramFull("In function complex_QR_decomposition:", "Ram full, 1as");

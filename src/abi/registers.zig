@@ -95,15 +95,36 @@ pub inline fn registerComplex34MatrixElements(reg: i16) [*]align(1) Complex34 {
 // both real34Matrix_t and complex34Matrix_t (each has a `.matrixElements`); these
 // replace the identical realElems/complexElems quartet reimplemented per matrix
 // owner.
+//
+// The unit harness surface declares `.matrixElements` as an inline array rather
+// than a pointer; the element view is then the array itself, so an owner reads
+// its matrices the same way on both surfaces.
+inline fn elementsAreInline(comptime Matrix: type) bool {
+    const Child = switch (@typeInfo(Matrix)) {
+        .pointer => |info| info.child,
+        else => Matrix,
+    };
+    return @typeInfo(@FieldType(Child, "matrixElements")) == .array;
+}
 pub inline fn matrixRealElems(matrix: anytype) [*]Real34 {
+    if (comptime elementsAreInline(@TypeOf(matrix))) return &matrix.matrixElements;
     return @ptrCast(matrix.matrixElements);
 }
 pub inline fn matrixConstRealElems(matrix: anytype) [*]const Real34 {
+    if (comptime elementsAreInline(@TypeOf(matrix))) return &matrix.matrixElements;
     return @ptrCast(matrix.matrixElements);
 }
 pub inline fn matrixComplexElems(matrix: anytype) [*]Complex34 {
+    if (comptime elementsAreInline(@TypeOf(matrix))) return &matrix.matrixElements;
     return @ptrCast(matrix.matrixElements);
 }
 pub inline fn matrixConstComplexElems(matrix: anytype) [*]const Complex34 {
+    if (comptime elementsAreInline(@TypeOf(matrix))) return &matrix.matrixElements;
     return @ptrCast(matrix.matrixElements);
+}
+/// Whether a matrix has element storage: false after a failed allocation, the
+/// C `matrix.matrixElements != NULL`. Inline storage always has it.
+pub inline fn matrixHasElements(matrix: anytype) bool {
+    if (comptime elementsAreInline(@TypeOf(matrix))) return true;
+    return matrix.matrixElements != null;
 }

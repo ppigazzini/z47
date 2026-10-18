@@ -234,6 +234,7 @@ pub fn wp34sCdfPoisson2(x: *const real_t, lambda: *const real_t, res: *real_t, r
 }
 
 pub fn wp34sQfPoisson(x: *const real_t, lambda: *const real_t, res: *real_t, real_context: *realContext_t) linksection(dr.code_section) callconv(.c) void {
+    _ = real_context; // the quantile works at its own 39 and 51 digit contexts, as upstream's does
     var probability: real_t = undefined;
     var low: real_t = undefined;
     var high: real_t = undefined;

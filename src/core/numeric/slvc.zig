@@ -260,7 +260,15 @@ fn _realDigits(x: *const real_t) linksection(runtime.code_section) i32 {
 }
 
 // The homogeneous form avoids another normalisation. A sign obscured by p159 round-off gives roots indistinguishable at Real34.
-pub export fn realCubicHasOnlyRealRoots(a: *const real_t, b: *const real_t, c: *const real_t, d: *const real_t, unresolvedDigits: i32, discriminantOut: ?*real_t, realContext: *realContext_t) linksection(runtime.code_section) callconv(.c) bool {
+// slvc.c compiles it with OPTION_CUBIC_159, OPTION_EIGEN_159 or OPTION_SLVP_POLY,
+// the three paths that call it.
+comptime {
+    if (runtime.option_cubic_159 or runtime.option_eigen_159 or runtime.option_slvp_poly) {
+        @export(&realCubicHasOnlyRealRoots, .{ .name = "realCubicHasOnlyRealRoots" });
+    }
+}
+
+pub fn realCubicHasOnlyRealRoots(a: *const real_t, b: *const real_t, c: *const real_t, d: *const real_t, unresolvedDigits: i32, discriminantOut: ?*real_t, realContext: *realContext_t) linksection(runtime.code_section) callconv(.c) bool {
     var t0: Real159 = undefined;
     var t1: Real159 = undefined;
     var t2: Real159 = undefined;
@@ -991,7 +999,15 @@ pub export fn solveCubicEquation(c2: *const cplx_t, c1: *const cplx_t, c0: *cons
 // ===========================================================================
 // solveCubicEquation159 (OPTION_CUBIC_159 / OPTION_EIGEN_159)
 // ===========================================================================
-pub export fn solveCubicEquation159(c2: *const cplx159_t, c1: *const cplx159_t, c0: *const cplx159_t, r: *cplx159_t, x1: *cplx159_t, x2: *cplx159_t, x3: *cplx159_t, realContext: *realContext_t) linksection(runtime.code_section) callconv(.c) void {
+// Compiled with OPTION_CUBIC_159 or OPTION_EIGEN_159, as slvc.c compiles it: the
+// 159-digit complex helpers it calls exist only under those options.
+comptime {
+    if (runtime.option_cubic_159 or runtime.option_eigen_159) {
+        @export(&solveCubicEquation159, .{ .name = "solveCubicEquation159" });
+    }
+}
+
+pub fn solveCubicEquation159(c2: *const cplx159_t, c1: *const cplx159_t, c0: *const cplx159_t, r: *cplx159_t, x1: *cplx159_t, x2: *cplx159_t, x3: *cplx159_t, realContext: *realContext_t) linksection(runtime.code_section) callconv(.c) void {
     const realIn = realIsZero(c2.Imag.constPtr()) and realIsZero(c1.Imag.constPtr()) and realIsZero(c0.Imag.constPtr());
 
     // high-precision constant sqrt(3)/2

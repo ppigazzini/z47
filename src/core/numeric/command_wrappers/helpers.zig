@@ -96,10 +96,6 @@ const offset_const75_pi = 15244; // const75_pi
 const offset_const75_piOn2 = 15328; // const75_piOn2
 const offset_const75_piOn4 = 15412; // const75_piOn4
 const offset_const_3600 = 12796; // const_3600
-const offset_const_10p9__1 = 12976; // const_10p9__1
-const offset_const75_ln10 = 15556; // const75_ln10
-const offset_const75_ln2 = 5384; // const75_ln2
-const offset_const75_3piOn4 = 15616; // const75_3piOn4
 
 // Constants synthesized locally rather than read from the constants blob; here
 // they are comptime real_t values with fixed bit patterns.
@@ -219,31 +215,52 @@ pub export fn z47_math_wrappers_const_3600() linksection(runtime.code_section) c
     return constantPointer(offset_const_3600);
 }
 
+pub export fn z47_math_wrappers_const_4() linksection(runtime.code_section) callconv(.c) *align(1) const real_t {
+    return consts.const_4();
+}
+
+pub export fn z47_math_wrappers_const_6() linksection(runtime.code_section) callconv(.c) *align(1) const real_t {
+    return consts.const_6();
+}
+
+pub export fn z47_math_wrappers_const_1on10() linksection(runtime.code_section) callconv(.c) *align(1) const real_t {
+    return consts.const_1on10();
+}
+
+pub export fn z47_math_wrappers_const_1e_6() linksection(runtime.code_section) callconv(.c) *align(1) const real_t {
+    return consts.const_1e_6();
+}
+
+pub export fn z47_math_wrappers_const_minus_4() linksection(runtime.code_section) callconv(.c) *align(1) const real_t {
+    return consts.const__4();
+}
+
+pub export fn z47_math_wrappers_const75_ln2() linksection(runtime.code_section) callconv(.c) *align(1) const real_t {
+    return consts.const75_ln2();
+}
+
+pub export fn z47_math_wrappers_const75_ln10() linksection(runtime.code_section) callconv(.c) *align(1) const real_t {
+    return consts.const75_ln10();
+}
+
+pub export fn z47_math_wrappers_const75_3piOn4() linksection(runtime.code_section) callconv(.c) *align(1) const real_t {
+    return consts.const75_3piOn4();
+}
+
+pub export fn z47_math_wrappers_const34_0() linksection(runtime.code_section) callconv(.c) *align(1) const real34_t {
+    return consts.const34_0();
+}
+
+pub export fn z47_math_wrappers_const34_1() linksection(runtime.code_section) callconv(.c) *align(1) const real34_t {
+    return consts.const34_1();
+}
+
+pub export fn z47_math_wrappers_const34_3600() linksection(runtime.code_section) callconv(.c) *align(1) const real34_t {
+    return consts.const34_3600();
+}
+
 pub export fn z47_math_wrappers_const_plus_infinity() linksection(runtime.code_section) callconv(.c) *align(1) const real_t {
     return &const_plus_infinity_value;
-}
-
-// Constants the power and logarithm owners read; module-scope accessors keep
-// them off the exported surface. Each offset is a multiple of 4, so the
-// pointer is aligned.
-pub inline fn const_10p9__1() *const real_t {
-    return consts.cstRAligned(offset_const_10p9__1);
-}
-
-pub inline fn const75_ln10() *const real_t {
-    return consts.cstRAligned(offset_const75_ln10);
-}
-
-pub inline fn const75_ln2() *const real_t {
-    return consts.cstRAligned(offset_const75_ln2);
-}
-
-pub inline fn const75_3piOn4() *const real_t {
-    return consts.cstRAligned(offset_const75_3piOn4);
-}
-
-pub inline fn const39_3piOn4() *const real_t {
-    return consts.cstRAligned(offset_const39_3piOn4);
 }
 
 pub export fn z47_math_wrappers_const_minus_infinity() linksection(runtime.code_section) callconv(.c) *align(1) const real_t {

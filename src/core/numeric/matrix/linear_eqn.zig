@@ -28,8 +28,8 @@ const MNU_SIMQ: i16 = 3120;
 const MNU_TAM: i16 = 2945;
 const ERROR_UNDEF_SOURCE_VAR: u8 = 36;
 
-extern fn allocC47Blocks(size_in_blocks: usize) ?*anyopaque;
-extern fn freeC47Blocks(ptr: ?*anyopaque, size_in_blocks: usize) void;
+const allocC47Blocks = runtime.allocC47Blocks;
+const freeC47Blocks = runtime.freeC47Blocks;
 // Softmenu / matrix-editor surface (frontier owners).
 extern fn showSoftmenu(id: i16) void;
 extern fn popSoftmenu() void;

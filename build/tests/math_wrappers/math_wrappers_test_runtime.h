@@ -296,6 +296,12 @@ typedef struct {
   uint8_t final_complex_matrix_imag_bits[4];
   bool_t final_overflow_flag;
   bool_t final_carry_flag;
+  uint32_t real_compare_abs_less_than_calls;
+  uint32_t ln_complex_direct_calls;
+  uint32_t convert_real34_to_real34_register_calls;
+  uint32_t convert_real34_to_complex34_register_calls;
+  uint32_t convert_real34_to_long_integer_calls;
+  uint32_t convert_long_integer_register_to_real34_calls;
 } math_wrappers_snapshot_t;
 
 void mathWrappersReset(void);
