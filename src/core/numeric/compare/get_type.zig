@@ -19,7 +19,7 @@ fn pushIntegerOut(value: i32) void {
 }
 
 // checkValue.c forms this value in real34 (decQuad) throughout: uInt32ToReal34,
-// then real34Divide by const34_1000, then a raw real34Copy into X.
+// then real34Divide by const34_1000, then the Real34 register conversion into X.
 //
 // The division has to stay in decQuad. Doing it in real_t under ctxtReal39 and
 // converting down afterwards yields the same NUMBER with a different decimal
@@ -38,9 +38,7 @@ fn pushRealOut(value: i32) void {
 
     runtime.setSystemFlag(runtime.FLAG_ASLIFT);
     runtime.liftStack();
-    runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, runtime.amNone);
-    // real34Copy (realType.h macro): copy the 16-byte value verbatim.
-    runtime.registerReal34Ptr(runtime.REGISTER_X).bytes = real_output.bytes;
+    runtime.convertReal34ToReal34Register(&real_output, runtime.REGISTER_X);
     runtime.setSystemFlag(runtime.FLAG_ASLIFT);
 }
 
@@ -98,9 +96,9 @@ pub fn getType() void {
             pushRealOut(dtp * 1000 + 100 * angle + 10 * pol_rec + matrixVectorShape(header));
         },
         runtime.dtShortInteger, runtime.dtReal34, runtime.dtComplex34 => {
-            const short_bits: i32 = angular_mode & 0x1f;
+            const short_integer_base: i32 = @intCast(runtime.getRegisterShortIntegerBase(runtime.REGISTER_X));
             const value: i32 = if (data_type == runtime.dtShortInteger)
-                10 * (dtp * 100 + short_bits)
+                10 * (dtp * 100 + short_integer_base)
             else
                 100 * (dtp * 10 + angleCode(angular_mode));
 

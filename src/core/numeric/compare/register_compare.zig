@@ -51,8 +51,6 @@ const COMPARE_MODE_GREATER_EQUAL: u8 = 0x6;
 extern var numberOfNamedVariables: u16;
 extern fn badTypeError(reg: calcRegister_t) void;
 extern fn compareString(stra: [*c]const u8, strb: [*c]const u8, comparison_type: i32) i32;
-extern fn getRegisterAsAnyRealQuiet(reg: calcRegister_t, val: *runtime.real_t) bool;
-extern fn getRegisterAsComplexOrAnyReal(reg: calcRegister_t, r: *runtime.real_t, i: *runtime.real_t, cmplx: *bool) bool;
 extern fn convertShortIntegerRegisterToReal34Register(source: calcRegister_t, destination: calcRegister_t) void;
 extern fn convertComplex34MatrixRegisterToComplex34Matrix(regist: calcRegister_t, matrix: *runtime.complex34Matrix_t) void;
 extern fn fnSwapX(regist: u16) void;
@@ -109,6 +107,58 @@ fn compareTypeError(regist: calcRegister_t) void {
     badTypeError(regist);
 }
 
+// Convert tagged real storage to the common unit used for comparison: a time
+// in seconds to hours, a tagged angle to the current angular mode, the latter
+// at 75 digits when radians are on either side.
+fn normaliseRegisterRealForComparison(regist: calcRegister_t, value: *runtime.real_t) void {
+    const data_type = runtime.getRegisterDataType(regist);
+
+    if (data_type == runtime.dtTime) {
+        runtime.realDivide(value, runtime.z47_math_wrappers_const_3600(), value, &runtime.ctxtReal39);
+    } else if (data_type == runtime.dtReal34) {
+        const mode = runtime.getRegisterAngularMode(regist);
+
+        if (mode != runtime.amNone and mode != runtime.currentAngularMode) {
+            const context = if (mode == runtime.amRadian or runtime.currentAngularMode == runtime.amRadian) &runtime.ctxtReal75 else &runtime.ctxtReal39;
+            runtime.convertAngleFromTo(value, mode, runtime.currentAngularMode, context);
+        }
+    }
+}
+
+// Read a real-compatible register and normalise its comparison unit.
+fn getRegisterAsComparisonReal(regist: calcRegister_t, value: *runtime.real_t) bool {
+    if (!runtime.getRegisterAsAnyRealQuiet(regist, value)) {
+        return false;
+    }
+    normaliseRegisterRealForComparison(regist, value);
+    return true;
+}
+
+// Compares a Real34 and long-integer pair exactly when the real carries no
+// angle, or one in the current unit. True when that comparison applies.
+fn compareMixedRealLong(regist1: calcRegister_t, regist2: calcRegister_t, comparison: *i8) bool {
+    const type1 = runtime.getRegisterDataType(regist1);
+    const type2 = runtime.getRegisterDataType(regist2);
+    var value: i32 = undefined;
+    const real_register = if (type1 == runtime.dtReal34 and type2 == runtime.dtLongInteger)
+        regist1
+    else if (type1 == runtime.dtLongInteger and type2 == runtime.dtReal34)
+        regist2
+    else
+        return false;
+
+    const mode = runtime.getRegisterAngularMode(real_register);
+    if (mode != runtime.amNone and mode != runtime.currentAngularMode) {
+        return false;
+    }
+    if (!comparison_reals.compareFiniteReal34LongIntegerRegisters(regist1, regist2, &value)) {
+        return false;
+    }
+
+    comparison.* = @intCast(value);
+    return true;
+}
+
 pub export fn registerCmp(regist1: calcRegister_t, regist2: calcRegister_t, res: *i8) callconv(.c) bool {
     const type1 = runtime.getRegisterDataType(regist1);
     const type2 = runtime.getRegisterDataType(regist2);
@@ -141,16 +191,14 @@ pub export fn registerCmp(regist1: calcRegister_t, regist2: calcRegister_t, res:
         var real1: runtime.real_t = undefined;
         var real2: runtime.real_t = undefined;
 
-        if (!getRegisterAsAnyRealQuiet(regist1, &real1) or !getRegisterAsAnyRealQuiet(regist2, &real2)) {
+        if (compareMixedRealLong(regist1, regist2, res)) {
+            return true;
+        }
+        if (!getRegisterAsComparisonReal(regist1, &real1) or !getRegisterAsComparisonReal(regist2, &real2)) {
             return false;
         }
-        // Time stored in seconds; normalize to hours to compare against a plain
-        // number similar to =? / <? / >? (see compareRegisters also).
-        if (runtime.getRegisterDataType(regist1) == runtime.dtTime) {
-            runtime.realDivide(&real1, runtime.z47_math_wrappers_const_3600(), &real1, &runtime.ctxtReal39);
-        }
-        if (runtime.getRegisterDataType(regist2) == runtime.dtTime) {
-            runtime.realDivide(&real2, runtime.z47_math_wrappers_const_3600(), &real2, &runtime.ctxtReal39);
+        if (runtime.realIsNaN(&real1) or runtime.realIsNaN(&real2)) {
+            return false;
         }
         realCompare(&real1, &real2, &rcmp, &runtime.ctxtReal39);
         res.* = if (runtime.realIsZero(&rcmp)) 0 else if (realIsPositive(&rcmp)) 1 else -1;
@@ -158,10 +206,36 @@ pub export fn registerCmp(regist1: calcRegister_t, regist2: calcRegister_t, res:
     return true;
 }
 
+// A NaN operand is the answer of both MIN and MAX; between zeros of opposite
+// sign MAX takes the positive one and MIN the negative one.
 fn registerMinMax(regist1: calcRegister_t, regist2: calcRegister_t, dest: calcRegister_t, maximum: c_int) void {
     var cmp: i8 = undefined;
     var r_min = regist1;
     var r_max = regist2;
+    var real1: runtime.real_t = undefined;
+    var real2: runtime.real_t = undefined;
+
+    if (getRegisterAsComparisonReal(regist1, &real1) and getRegisterAsComparisonReal(regist2, &real2)) {
+        const nan1 = runtime.realIsNaN(&real1);
+        const nan2 = runtime.realIsNaN(&real2);
+
+        if (nan1 or nan2) {
+            const where = if (nan1 == nan2) regist1 else if (nan1) regist2 else regist1;
+            if (where != dest) {
+                runtime.copySourceRegisterToDestRegister(where, dest);
+            }
+            return;
+        }
+
+        if (runtime.realIsZero(&real1) and runtime.realIsZero(&real2) and runtime.realIsNegative(&real1) != runtime.realIsNegative(&real2)) {
+            const choose_first = if (maximum != 0) realIsPositive(&real1) else runtime.realIsNegative(&real1);
+            const where = if (choose_first) regist1 else regist2;
+            if (where != dest) {
+                runtime.copySourceRegisterToDestRegister(where, dest);
+            }
+            return;
+        }
+    }
 
     if (registerCmp(r_min, r_max, &cmp)) {
         if (cmp == 0 and (dest == regist1 or dest == regist2)) {
@@ -232,10 +306,10 @@ fn cmpToResult(result: i32, mode: u8) void {
     }
 }
 
-fn compareRealsToTemporaryInformation(a: *runtime.real_t, b: *runtime.real_t, mode: u8) void {
-    // Real ordering/equality is invalid if any operand is NaN
+fn compareRealsToTemporaryInformation(a: *const runtime.real_t, b: *const runtime.real_t, mode: u8) void {
+    // Ordered comparison and equality are false for NaN; inequality is true.
     if (runtime.realIsNaN(a) or runtime.realIsNaN(b)) {
-        runtime.temporaryInformation = runtime.TI_FALSE;
+        runtime.setTemporaryInformation(mode == COMPARE_MODE_NOT_EQUAL);
         return;
     }
 
@@ -247,10 +321,8 @@ fn compareRealsToTemporaryInformation(a: *runtime.real_t, b: *runtime.real_t, mo
 }
 
 fn compareComplexToTemporaryInformation(
-    a_real: *runtime.real_t,
-    a_imag: *runtime.real_t,
-    b_real: *runtime.real_t,
-    b_imag: *runtime.real_t,
+    a: *const runtime.cplx_t,
+    b: *const runtime.cplx_t,
     mode: u8,
     regist_for_error: u16,
 ) void {
@@ -259,10 +331,8 @@ fn compareComplexToTemporaryInformation(
         compareTypeError(asRegister(regist_for_error));
         return;
     }
-    compareRealsToTemporaryInformation(a_real, b_real, mode);
-    if (runtime.temporaryInformation != runtime.TI_FALSE) {
-        compareRealsToTemporaryInformation(a_imag, b_imag, mode);
-    }
+    const equal = comparison_reals.realCompareEqual(&a.Real, &b.Real) and comparison_reals.realCompareEqual(&a.Imag, &b.Imag);
+    runtime.setTemporaryInformation(if (mode == COMPARE_MODE_EQUAL) equal else !equal);
 }
 
 fn compareMatrix01(regist: u16, mode: u8, type_x: u32) void {
@@ -326,40 +396,50 @@ fn matrixCompareRealEqual(a: *const runtime.real34_t, b: *const runtime.real34_t
     return comparison_reals.real34CompareEqual(a, b) or (runtime.real34IsNaN(a) and runtime.real34IsNaN(b));
 }
 
+// Both matrices are read in place; a real matrix contributes a zero imaginary
+// part to every element.
 fn compareMatrices(regist: u16, mode: u8, type_x: u32, type_r: u32) void {
-    var x: runtime.complex34Matrix_t = undefined;
-    var r: runtime.complex34Matrix_t = undefined;
+    var x_real: runtime.real34Matrix_t = undefined;
+    var r_real: runtime.real34Matrix_t = undefined;
+    var x_complex: runtime.complex34Matrix_t = undefined;
+    var r_complex: runtime.complex34Matrix_t = undefined;
+    var x_rows: i32 = undefined;
+    var x_columns: i32 = undefined;
+    var r_rows: i32 = undefined;
+    var r_columns: i32 = undefined;
+    const zero34: *const runtime.real34_t = abi.constants.const34_0();
 
     if (type_x == runtime.dtComplex34Matrix) {
-        runtime.linkToComplexMatrixRegister(runtime.REGISTER_X, &x);
+        runtime.linkToComplexMatrixRegister(runtime.REGISTER_X, &x_complex);
+        x_rows = x_complex.header.matrixRows;
+        x_columns = x_complex.header.matrixColumns;
     } else {
-        runtime.convertReal34MatrixRegisterToComplex34Matrix(runtime.REGISTER_X, &x);
+        runtime.linkToRealMatrixRegister(runtime.REGISTER_X, &x_real);
+        x_rows = x_real.header.matrixRows;
+        x_columns = x_real.header.matrixColumns;
     }
     if (type_r == runtime.dtComplex34Matrix) {
-        runtime.linkToComplexMatrixRegister(asRegister(regist), &r);
+        runtime.linkToComplexMatrixRegister(asRegister(regist), &r_complex);
+        r_rows = r_complex.header.matrixRows;
+        r_columns = r_complex.header.matrixColumns;
     } else {
-        runtime.convertReal34MatrixRegisterToComplex34Matrix(asRegister(regist), &r);
+        runtime.linkToRealMatrixRegister(asRegister(regist), &r_real);
+        r_rows = r_real.header.matrixRows;
+        r_columns = r_real.header.matrixColumns;
     }
-    if (runtime.lastErrorCode != 0) { // a convert ran out of RAM; free what was allocated and return
-        if (type_x == runtime.dtReal34Matrix) {
-            runtime.complexMatrixFree(&x);
-        }
-        if (type_r == runtime.dtReal34Matrix) {
-            runtime.complexMatrixFree(&r);
-        }
-        return;
-    }
-    if (x.header.matrixRows == r.header.matrixRows and x.header.matrixColumns == r.header.matrixColumns) {
+
+    if (x_rows == r_rows and x_columns == r_columns) {
         runtime.temporaryInformation = TI_TRUE;
-        const x_elements: [*]runtime.complex34_t = x.matrixElements;
-        const r_elements: [*]runtime.complex34_t = r.matrixElements;
-        const element_count: i32 = @as(i32, x.header.matrixRows) * @as(i32, x.header.matrixColumns);
+        const element_count: i32 = x_rows * x_columns;
         var i: i32 = 0;
         while (i < element_count) : (i += 1) {
             const index: usize = @intCast(i);
-            if (!matrixCompareRealEqual(&x_elements[index].real, &r_elements[index].real) or
-                !matrixCompareRealEqual(&x_elements[index].imag, &r_elements[index].imag))
-            {
+            const x_re: *const runtime.real34_t = if (type_x == runtime.dtComplex34Matrix) &x_complex.matrixElements[index].real else &x_real.matrixElements[index];
+            const x_im: *const runtime.real34_t = if (type_x == runtime.dtComplex34Matrix) &x_complex.matrixElements[index].imag else zero34;
+            const r_re: *const runtime.real34_t = if (type_r == runtime.dtComplex34Matrix) &r_complex.matrixElements[index].real else &r_real.matrixElements[index];
+            const r_im: *const runtime.real34_t = if (type_r == runtime.dtComplex34Matrix) &r_complex.matrixElements[index].imag else zero34;
+
+            if (!matrixCompareRealEqual(x_re, r_re) or !matrixCompareRealEqual(x_im, r_im)) {
                 runtime.temporaryInformation = runtime.TI_FALSE;
                 break;
             }
@@ -374,12 +454,6 @@ fn compareMatrices(regist: u16, mode: u8, type_x: u32, type_r: u32) void {
             runtime.temporaryInformation = TI_TRUE;
         }
     }
-    if (type_x == runtime.dtReal34Matrix) {
-        runtime.complexMatrixFree(&x);
-    }
-    if (type_r == runtime.dtReal34Matrix) {
-        runtime.complexMatrixFree(&r);
-    }
 }
 
 fn compareRegisters(regist: u16, mode: u8) void {
@@ -391,10 +465,8 @@ fn compareRegisters(regist: u16, mode: u8) void {
     const r_type = runtime.getRegisterDataType(asRegister(regist));
     const type_pair = typePair(x_type, r_type);
 
-    var x_real: runtime.real_t = undefined;
-    var x_imag: runtime.real_t = undefined;
-    var r_real: runtime.real_t = undefined;
-    var r_imag: runtime.real_t = undefined;
+    var x: runtime.cplx_t = undefined;
+    var r: runtime.cplx_t = undefined;
 
     switch (type_pair) {
         // String vs String
@@ -430,11 +502,18 @@ fn compareRegisters(regist: u16, mode: u8) void {
                 return;
             }
 
-            if (regist == TEMP_REGISTER_1 and x_type == r_type) {
-                compareMatrix01(regist, mode, x_type);
-            } else {
-                compareMatrices(regist, mode, x_type, r_type);
+            compareMatrices(regist, mode, x_type, r_type);
+        },
+
+        // Matrix vs the zero or identity real in TEMP_REGISTER_1 (equality only)
+        typePair(runtime.dtReal34Matrix, runtime.dtReal34),
+        typePair(runtime.dtComplex34Matrix, runtime.dtReal34),
+        => {
+            if (regist != TEMP_REGISTER_1 or !modeIsEquality(mode)) {
+                compareTypeError(asRegister(regist));
+                return;
             }
+            compareMatrix01(regist, mode, x_type);
         },
 
         // Integer pairs (short/long mix)
@@ -481,20 +560,31 @@ fn compareRegisters(regist: u16, mode: u8) void {
         typePair(runtime.dtLongInteger, runtime.dtReal34),
         => {
             var is_complex = false;
+            var comparison: i8 = undefined;
 
-            if (!getRegisterAsComplexOrAnyReal(runtime.REGISTER_X, &x_real, &x_imag, &is_complex)) {
+            if (compareMixedRealLong(runtime.REGISTER_X, asRegister(regist), &comparison)) {
+                cmpToResult(comparison, mode);
+                return;
+            }
+
+            // getRegisterAsComplexOrAnyReal sets isComplex to true or leaves it
+            // unchanged, effectively implementing a logical OR.
+            if (!runtime.getRegisterAsComplexOrAnyReal(runtime.REGISTER_X, &x, &is_complex)) {
                 compareTypeError(runtime.REGISTER_X);
                 return;
             }
-            if (!getRegisterAsComplexOrAnyReal(asRegister(regist), &r_real, &r_imag, &is_complex)) {
+            if (!runtime.getRegisterAsComplexOrAnyReal(asRegister(regist), &r, &is_complex)) {
                 compareTypeError(asRegister(regist));
                 return;
             }
 
+            normaliseRegisterRealForComparison(runtime.REGISTER_X, &x.Real);
+            normaliseRegisterRealForComparison(asRegister(regist), &r.Real);
+
             if (is_complex) {
-                compareComplexToTemporaryInformation(&x_real, &x_imag, &r_real, &r_imag, mode, regist);
+                compareComplexToTemporaryInformation(&x, &r, mode, regist);
             } else {
-                compareRealsToTemporaryInformation(&x_real, &r_real, mode);
+                compareRealsToTemporaryInformation(&x.Real, &r.Real, mode);
             }
         },
 
@@ -509,23 +599,19 @@ fn compareRegisters(regist: u16, mode: u8) void {
         typePair(runtime.dtTime, runtime.dtTime),
         => {
             var cannot_be_complex = false;
-            if (!getRegisterAsComplexOrAnyReal(runtime.REGISTER_X, &x_real, &x_imag, &cannot_be_complex)) {
+            if (!runtime.getRegisterAsComplexOrAnyReal(runtime.REGISTER_X, &x, &cannot_be_complex)) {
                 compareTypeError(runtime.REGISTER_X);
                 return;
             }
-            if (!getRegisterAsComplexOrAnyReal(asRegister(regist), &r_real, &r_imag, &cannot_be_complex)) {
+            if (!runtime.getRegisterAsComplexOrAnyReal(asRegister(regist), &r, &cannot_be_complex)) {
                 compareTypeError(asRegister(regist));
                 return;
             }
 
-            if (runtime.getRegisterDataType(runtime.REGISTER_X) == runtime.dtTime) {
-                runtime.realDivide(&x_real, runtime.z47_math_wrappers_const_3600(), &x_real, &runtime.ctxtReal39);
-            }
-            if (runtime.getRegisterDataType(asRegister(regist)) == runtime.dtTime) {
-                runtime.realDivide(&r_real, runtime.z47_math_wrappers_const_3600(), &r_real, &runtime.ctxtReal39);
-            }
+            normaliseRegisterRealForComparison(runtime.REGISTER_X, &x.Real);
+            normaliseRegisterRealForComparison(asRegister(regist), &r.Real);
 
-            compareRealsToTemporaryInformation(&x_real, &r_real, mode);
+            compareRealsToTemporaryInformation(&x.Real, &r.Real, mode);
         },
 
         // Unsupported combinations
@@ -883,46 +969,29 @@ pub export fn incDecLonI(regist: u16, flag: u8) callconv(.c) void {
     runtime.__gmpz_clear(&r);
 }
 
-pub export fn incDecReal(regist: u16, flag: u8) callconv(.c) void {
-    var r: runtime.real_t = undefined;
+// One Real34 step in place, so a value with 34 significant digits moves by
+// exactly one.
+fn incDecReal34(regist: u16, flag: u8, step: *const runtime.real34_t) void {
+    const value = runtime.registerReal34Ptr(asRegister(regist));
 
-    runtime.real34ToReal(@ptrCast(runtime.registerReal34Ptr(asRegister(regist))), &r);
     if (flag == INC_FLAG) {
-        runtime.realAdd(&r, runtime.z47_math_wrappers_const_1(), &r, &runtime.ctxtReal39);
+        runtime.real34Add(value, step, value);
     } else {
-        runtime.realSubtract(&r, runtime.z47_math_wrappers_const_1(), &r, &runtime.ctxtReal39);
+        runtime.real34Subtract(value, step, value);
     }
+}
 
-    runtime.realToReal34(&r, @ptrCast(runtime.registerReal34Ptr(asRegister(regist))));
+pub export fn incDecReal(regist: u16, flag: u8) callconv(.c) void {
+    incDecReal34(regist, flag, abi.constants.const34_1());
 }
 
 fn incDecCplx(regist: u16, flag: u8) void {
-    var r_real: runtime.real_t = undefined;
-
-    runtime.real34ToReal(@ptrCast(runtime.registerReal34Ptr(asRegister(regist))), &r_real);
-
-    if (flag == INC_FLAG) {
-        runtime.realAdd(&r_real, runtime.z47_math_wrappers_const_1(), &r_real, &runtime.ctxtReal39);
-    } else {
-        runtime.realSubtract(&r_real, runtime.z47_math_wrappers_const_1(), &r_real, &runtime.ctxtReal39);
-    }
-
-    runtime.realToReal34(&r_real, @ptrCast(runtime.registerReal34Ptr(asRegister(regist))));
+    incDecReal34(regist, flag, abi.constants.const34_1());
 }
 
 pub export fn incDecTime(regist: u16, flag: u8) callconv(.c) void {
-    var r: runtime.real_t = undefined;
-
     // "count hours", value in seconds; step by 1 h = 3600 s to match DSZ/ISZ.
-    runtime.real34ToReal(@ptrCast(runtime.registerReal34Ptr(asRegister(regist))), &r);
-
-    if (flag == INC_FLAG) {
-        runtime.realAdd(&r, runtime.z47_math_wrappers_const_3600(), &r, &runtime.ctxtReal39);
-    } else {
-        runtime.realSubtract(&r, runtime.z47_math_wrappers_const_3600(), &r, &runtime.ctxtReal39);
-    }
-
-    runtime.realToReal34(&r, @ptrCast(runtime.registerReal34Ptr(asRegister(regist))));
+    incDecReal34(regist, flag, abi.constants.const34_3600());
 }
 
 pub export fn incDecShoI(regist: u16, flag: u8) callconv(.c) void {

@@ -463,7 +463,9 @@ inline fn real34IsZero(source: *const real34_t) u32 {
     return decQuadIsZero(source);
 }
 
-extern fn realRectangularToPolar(real: *const real_t, imag: *const real_t, magnitude: *real_t, theta: *real_t, realContext: *realContext_t) void;
+extern fn realRectangularToPolar(z: *const cplx_t, magnitude: *real_t, theta: *real_t, realContext: *realContext_t) void;
+const cplx_t = abi.Complex;
+const testsuite_build: bool = frontier_build_options.is_testsuite_build;
 
 // decQuad / decimal128 (behind real34 macros)
 extern fn decimal128ToNumber(src: *const real34_t, dst: *real_t) *real_t;
@@ -1158,13 +1160,17 @@ fn _realStringToPrint(realString: [*c]u8, max_len: i16) void {
     }
 }
 
-fn _real34ToPrintString(real34: *real34_t, amMode: u16, realString: [*c]u8, maxWidth: i16) void {
+// The printer's own digit count, and the two guard digits the polar magnitude and argument take.
+const PRINTER_REAL_DIGITS: i16 = 16;
+const PRINTER_POLAR_COMPUTE_DIGITS: i32 = PRINTER_REAL_DIGITS + 2;
+
+fn _real34ToPrintString(real34: *const real34_t, amMode: u16, realString: [*c]u8, maxWidth: i16) void {
     const grpGroupingLeftOld = grpGroupingLeft;
     const grpGroupingRightOld = grpGroupingRight;
 
     grpGroupingLeft = 0;
     grpGroupingRight = 0;
-    frontier_display.real34ToDisplayString(real34, amMode, realString, &standardFont, maxWidth, 16, @intFromBool(true), @intFromBool(false), 1);
+    frontier_display.real34ToDisplayString(real34, amMode, realString, &standardFont, maxWidth, PRINTER_REAL_DIGITS, @intFromBool(true), @intFromBool(false), 1);
     grpGroupingRight = grpGroupingRightOld;
     grpGroupingLeft = grpGroupingLeftOld;
     const len: u16 = @intCast(strlen(realString));
@@ -1246,52 +1252,66 @@ fn _real34ToPrintString(real34: *real34_t, amMode: u16, realString: [*c]u8, maxW
     realString[j] = 0;
 }
 
-fn _complex34ToPrintString(registReal34: *real34_t, registImag34: *real34_t, tagAngle_in: u16, tagPolar: u16, realString: [*c]u8) void {
-    _ = realString;
+fn _complex34ToPrintString(registReal34: *const real34_t, registImag34: *const real34_t, tagAngle_in: u16, tagPolar: u16, realString: [*c]u8) void {
     const max_len: i16 = 17;
-    var real: real_t = undefined;
-    var imagIc: real_t = undefined;
+    var z: cplx_t = undefined;
     var real34: real34_t = undefined;
     var imag34: real34_t = undefined;
     var tagAngle = tagAngle_in;
 
     if (tagPolar != 0) {
         temporaryFlagPolar = true;
-        real34ToReal(registReal34, &real);
-        real34ToReal(registImag34, &imagIc);
+        real34ToReal(registReal34, &z.Real);
+        real34ToReal(registImag34, &z.Imag);
 
         var c: realContext_t = ctxtReal39;
-        const maxExponent: i32 = cMax(i32, real.exponent + real.digits, imagIc.exponent + imagIc.digits);
-        c.digits = if (showMode()) 39 else cMax(i32, 0, maxExponent) + numberOfDisplayRealContextDigits() + 2;
-        realRectangularToPolar(&real, &imagIc, &real, &imagIc, &c);
-        c.digits = if (showMode()) 39 else 3 + numberOfDisplayRealContextDigits();
-        frontier_conversion_angles.convertAngleFromTo(&imagIc, amRadian, tagAngle, &c);
+        c.digits = PRINTER_POLAR_COMPUTE_DIGITS;
+        realRectangularToPolar(&z, z.mag(), z.arg(), &c); // the argument in radian
+        tagAngle = if (tagAngle == amNone) @intCast(currentAngularMode) else tagAngle;
+        frontier_conversion_angles.convertAngleFromTo(z.arg(), amRadian, tagAngle, &c);
 
-        realToReal34(&real, &real34);
-        realToReal34(&imagIc, &imag34);
+        realToReal34(z.mag(), &real34);
+        realToReal34(z.arg(), &imag34);
     } else {
         real34Copy(registReal34, &real34);
         real34Copy(registImag34, &imag34);
     }
 
     // Real part
-    _real34ToPrintString(&real34, @intCast(amNone), tmpString, max_len * 9);
-    _realStringToPrint(tmpString, max_len);
+    _real34ToPrintString(&real34, @intCast(amNone), realString, max_len * 9);
+    _realStringToPrint(realString, max_len); // Adjust the real part length (same as a standard real)
 
     // Separator
     if (tagPolar != 0) {
-        _ = strcat(tmpString, STD_MEASURED_ANGLE);
-        tagAngle = if (tagAngle == amNone) @intCast(currentAngularMode) else tagAngle;
+        _ = strcat(realString, STD_MEASURED_ANGLE);
     } else {
-        _ = strcat(tmpString, "+i");
-        _ = strcat(tmpString, PRODUCT_SIGN());
+        _ = strcat(realString, "+i");
+        _ = strcat(realString, PRODUCT_SIGN());
         tagAngle = @intCast(amNone);
     }
 
     // Imaginary part
-    const imaginaryPart = tmpString + strlen(tmpString);
+    const imaginaryPart = realString + strlen(realString);
     _real34ToPrintString(&imag34, tagAngle, imaginaryPart, max_len * 9);
-    _realStringToPrint(imaginaryPart, max_len + (if (tagPolar != 0) @as(i16, 1) else 0));
+    _realStringToPrint(imaginaryPart, max_len + (if (tagPolar != 0) @as(i16, 1) else 0)); // Adjust the imaginary part length
+}
+
+// The testSuite reads the printer's number formatting through these two; the
+// product build has no caller for them and does not carry them.
+fn printerReal34ToStringForTest(real34: *const real34_t, realString: [*c]u8) callconv(.c) void {
+    _real34ToPrintString(real34, @intCast(amNone), realString, 17 * 9);
+    _realStringToPrint(realString, 17);
+}
+
+fn printerComplex34ToStringForTest(real34: *const real34_t, imag34: *const real34_t, tagAngle: u16, tagPolar: u16, realString: [*c]u8) callconv(.c) void {
+    _complex34ToPrintString(real34, imag34, tagAngle, tagPolar, realString);
+}
+
+comptime {
+    if (testsuite_build) {
+        @export(&printerReal34ToStringForTest, .{ .name = "printerReal34ToStringForTest" });
+        @export(&printerComplex34ToStringForTest, .{ .name = "printerComplex34ToStringForTest" });
+    }
 }
 
 fn printRegImpl(regist: u16, label: [*c]const u8, eq: bool_t, where: print_area_t, prSigma: bool) void {

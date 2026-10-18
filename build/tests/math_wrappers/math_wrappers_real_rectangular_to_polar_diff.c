@@ -18,8 +18,8 @@ typedef struct {
   const char *imagText;
 } realRectangularToPolarCase_t;
 
-void z47_math_wrappers_owned_realRectangularToPolar(const real_t *real, const real_t *imag, real_t *magnitude, real_t *theta, realContext_t *realContext);
-void realRectangularToPolar(const real_t *real, const real_t *imag, real_t *magnitude, real_t *theta, realContext_t *realContext);
+void z47_math_wrappers_owned_realRectangularToPolar(const cplx_t *z, real_t *magnitude, real_t *theta, realContext_t *realContext);
+void realRectangularToPolar(const cplx_t *z, real_t *magnitude, real_t *theta, realContext_t *realContext);
 
 static const realRectangularToPolarCase_t realRectangularToPolarCases[] = {
   {"real_nan", INPUT_NAN, NULL, INPUT_TEXT, "1"},
@@ -90,18 +90,17 @@ static void printMismatch(const realRectangularToPolarCase_t *testCase, const re
 }
 
 static int runCase(const realRectangularToPolarCase_t *testCase) {
-  real_t real;
-  real_t imag;
+  cplx_t z;
   real_t expectedMagnitude;
   real_t expectedTheta;
   real_t actualMagnitude;
   real_t actualTheta;
 
-  initInput(&real, testCase->realKind, testCase->realText);
-  initInput(&imag, testCase->imagKind, testCase->imagText);
+  initInput(&z.Real, testCase->realKind, testCase->realText);
+  initInput(&z.Imag, testCase->imagKind, testCase->imagText);
 
-  realRectangularToPolar(&real, &imag, &expectedMagnitude, &expectedTheta, &ctxtReal39);
-  z47_math_wrappers_owned_realRectangularToPolar(&real, &imag, &actualMagnitude, &actualTheta, &ctxtReal39);
+  realRectangularToPolar(&z, &expectedMagnitude, &expectedTheta, &ctxtReal39);
+  z47_math_wrappers_owned_realRectangularToPolar(&z, &actualMagnitude, &actualTheta, &ctxtReal39);
 
   if(!sameReal(&expectedMagnitude, &actualMagnitude) || !sameReal(&expectedTheta, &actualTheta)) {
     printMismatch(testCase, &expectedMagnitude, &expectedTheta, &actualMagnitude, &actualTheta);

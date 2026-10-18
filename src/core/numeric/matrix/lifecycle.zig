@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // Zig port of the matrix lifecycle primitives from
-// src/c47/mathematics/matrix.c: allocate/free/identity/redim, copy and
-// transpose for real34 and complex34 matrices. The register-linking,
-// element-arithmetic and command-level matrix functions stay in the matrix
-// bridge.
+// src/c47/mathematics/matrix.c: allocate/free/identity, copy and transpose for
+// real34 and complex34 matrices. Upstream has one body per operation over a
+// kind descriptor, so both kinds report as anyMatrixIdentity / copyAnyMatrix /
+// transposeAnyMatrix. The register-linking, element-arithmetic and
+// command-level matrix functions are their own owners.
 
 const runtime = @import("../command_wrappers/runtime.zig");
 const abi = @import("abi");
@@ -116,30 +117,7 @@ pub export fn realMatrixIdentity(matrix: *real34Matrix_t, size: u16) callconv(.c
             real34SetOne(&elems[i * size + i]);
         }
     } else {
-        reportRamFull("In function realMatrixIdentity:", "Ram full");
-    }
-}
-
-pub export fn realMatrixRedim(matrix: *real34Matrix_t, rows: u16, cols: u16) callconv(.c) void {
-    var new_matrix: real34Matrix_t = undefined;
-    if (realMatrixInit(&new_matrix, rows, cols)) {
-        var elements = @as(usize, matrix.header.matrixRows) * @as(usize, matrix.header.matrixColumns);
-        const new_elements = @as(usize, rows) * @as(usize, cols);
-        if (elements > new_elements) {
-            elements = new_elements;
-        }
-        const src = constRealElems(matrix);
-        const dst = realElems(&new_matrix);
-        var i: usize = 0;
-        while (i < elements) : (i += 1) {
-            real34Copy(&src[i], &dst[i]);
-        }
-        realMatrixFree(matrix);
-        matrix.header.matrixRows = new_matrix.header.matrixRows;
-        matrix.header.matrixColumns = new_matrix.header.matrixColumns;
-        matrix.matrixElements = new_matrix.matrixElements;
-    } else {
-        reportRamFull("In function realMatrixRedim:", "Ram full");
+        reportRamFull("In function anyMatrixIdentity:", "Ram full");
     }
 }
 
@@ -191,30 +169,7 @@ pub export fn complexMatrixIdentity(matrix: *complex34Matrix_t, size: u16) callc
             real34SetZero(&elems[i * size + i].imag);
         }
     } else {
-        reportRamFull("In function complexMatrixIdentity:", "Ram full");
-    }
-}
-
-pub export fn complexMatrixRedim(matrix: *complex34Matrix_t, rows: u16, cols: u16) callconv(.c) void {
-    var new_matrix: complex34Matrix_t = undefined;
-    if (complexMatrixInit(&new_matrix, rows, cols)) {
-        var elements = @as(usize, matrix.header.matrixRows) * @as(usize, matrix.header.matrixColumns);
-        const new_elements = @as(usize, rows) * @as(usize, cols);
-        if (elements > new_elements) {
-            elements = new_elements;
-        }
-        const src = constComplexElems(matrix);
-        const dst = complexElems(&new_matrix);
-        var i: usize = 0;
-        while (i < elements) : (i += 1) {
-            complex34Copy(&src[i], &dst[i]);
-        }
-        complexMatrixFree(matrix);
-        matrix.header.matrixRows = new_matrix.header.matrixRows;
-        matrix.header.matrixColumns = new_matrix.header.matrixColumns;
-        matrix.matrixElements = new_matrix.matrixElements;
-    } else {
-        reportRamFull("In function complexMatrixRedim:", "Ram full");
+        reportRamFull("In function anyMatrixIdentity:", "Ram full");
     }
 }
 
@@ -230,7 +185,7 @@ pub export fn copyRealMatrix(matrix: *const real34Matrix_t, res: *real34Matrix_t
             real34Copy(&src[i], &dst[i]);
         }
     } else {
-        reportRamFull("In function copyRealMatrix:", "Ram full");
+        reportRamFull("In function copyAnyMatrix:", "Ram full");
     }
 }
 
@@ -246,7 +201,7 @@ pub export fn copyComplexMatrix(matrix: *const complex34Matrix_t, res: *complex3
             complex34Copy(&src[i], &dst[i]);
         }
     } else {
-        reportRamFull("In function copyComplexMatrix:", "Ram full");
+        reportRamFull("In function copyAnyMatrix:", "Ram full");
     }
 }
 
@@ -266,7 +221,7 @@ pub export fn transposeRealMatrix(matrix: *const real34Matrix_t, res: *real34Mat
                 }
             }
         } else {
-            reportRamFull("In function transposeRealMatrix:", "Ram full, 1g");
+            reportRamFull("In function transposeAnyMatrix:", "Ram full, 1g");
         }
     } else {
         var tmp: real34Matrix_t = undefined;
@@ -285,7 +240,7 @@ pub export fn transposeRealMatrix(matrix: *const real34Matrix_t, res: *real34Mat
             res.header.matrixRows = @intCast(cols);
             res.header.matrixColumns = @intCast(rows);
         } else {
-            reportRamFull("In function transposeRealMatrix:", "Ram full, 2h");
+            reportRamFull("In function transposeAnyMatrix:", "Ram full, 2h");
         }
     }
 }
@@ -306,7 +261,7 @@ pub export fn transposeComplexMatrix(matrix: *const complex34Matrix_t, res: *com
                 }
             }
         } else {
-            reportRamFull("In function transposeComplexMatrix:", "Ram full, 1i");
+            reportRamFull("In function transposeAnyMatrix:", "Ram full, 1g");
         }
     } else {
         var tmp: complex34Matrix_t = undefined;
@@ -325,7 +280,7 @@ pub export fn transposeComplexMatrix(matrix: *const complex34Matrix_t, res: *com
             res.header.matrixRows = @intCast(cols);
             res.header.matrixColumns = @intCast(rows);
         } else {
-            reportRamFull("In function transposeComplexMatrix:", "Ram full, 2j");
+            reportRamFull("In function transposeAnyMatrix:", "Ram full, 2h");
         }
     }
 }

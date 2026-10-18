@@ -3,8 +3,8 @@
 #include "../../../upstream/src/c47/c47.h"
 #include "../common/harness_resource_budget.h"
 
-void z47_math_wrappers_owned_lnComplex(const real_t *real, const real_t *imag, real_t *lnReal, real_t *lnImag, realContext_t *realContext);
-void lnComplex(const real_t *real, const real_t *imag, real_t *lnReal, real_t *lnImag, realContext_t *realContext);
+void z47_math_wrappers_owned_lnComplex(const cplx_t *z, cplx_t *ln, realContext_t *realContext);
+void lnComplex(const cplx_t *z, cplx_t *ln, realContext_t *realContext);
 
 typedef struct {
   const char *name;
@@ -51,21 +51,18 @@ static void printMismatch(const lnComplexCase_t *testCase, const real_t *expecte
 }
 
 static int runCase(const lnComplexCase_t *testCase) {
-  real_t real;
-  real_t imag;
-  real_t expectedReal;
-  real_t expectedImag;
-  real_t actualReal;
-  real_t actualImag;
+  cplx_t z;
+  cplx_t expected;
+  cplx_t actual;
 
-  stringToReal(testCase->realText, &real, &ctxtReal39);
-  stringToReal(testCase->imagText, &imag, &ctxtReal39);
+  stringToReal(testCase->realText, &z.Real, &ctxtReal39);
+  stringToReal(testCase->imagText, &z.Imag, &ctxtReal39);
 
-  lnComplex(&real, &imag, &expectedReal, &expectedImag, &ctxtReal39);
-  z47_math_wrappers_owned_lnComplex(&real, &imag, &actualReal, &actualImag, &ctxtReal39);
+  lnComplex(&z, &expected, &ctxtReal39);
+  z47_math_wrappers_owned_lnComplex(&z, &actual, &ctxtReal39);
 
-  if(!realCompareEqual(&expectedReal, &actualReal) || !realCompareEqual(&expectedImag, &actualImag)) {
-    printMismatch(testCase, &expectedReal, &expectedImag, &actualReal, &actualImag);
+  if(!realCompareEqual(&expected.Real, &actual.Real) || !realCompareEqual(&expected.Imag, &actual.Imag)) {
+    printMismatch(testCase, &expected.Real, &expected.Imag, &actual.Real, &actual.Imag);
     return 1;
   }
 

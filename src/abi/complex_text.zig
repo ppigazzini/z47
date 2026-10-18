@@ -31,6 +31,26 @@ fn putCStr(dest: []u8, comptime fmt: []const u8, args: anytype) void {
 /// Normalize `src` (NUL-terminated) into `dest` as the stock "re im" complex form.
 pub const STANDARDISED_COMPLEX_LENGTH = 200; // one size for the work buffer and for every caller's output buffer
 
+/// The index of the imaginary-unit 'i' in `text`, or null. An 'i' that sits inside
+/// the word Infinity (or infinity), letters before it and no letter straight after
+/// the word, is part of that decimal token and not the marker.
+fn findComplexImaginaryMarker(text: []const u8) ?usize {
+    var p: usize = 0;
+    while (std.mem.indexOfScalarPos(u8, text, p, 'i')) |i| {
+        var word = i;
+        while (word > 0 and std.ascii.isAlphabetic(text[word - 1])) word -= 1;
+        const rest = text[word..];
+        const is_infinity = (std.mem.startsWith(u8, rest, "Infinity") or std.mem.startsWith(u8, rest, "infinity")) and
+            !(rest.len > 8 and std.ascii.isAlphabetic(rest[8]));
+        if (is_infinity) {
+            p = i + 1;
+            continue;
+        }
+        return i;
+    }
+    return null;
+}
+
 pub fn standardiseComplex(src: [*]const u8, dest: []u8) void {
     var work: [STANDARDISED_COMPLEX_LENGTH]u8 = undefined;
     var w: usize = 0;
@@ -52,17 +72,9 @@ pub fn standardiseComplex(src: [*]const u8, dest: []u8) void {
         }
     }
 
-    // isIform: an 'i' anywhere in src marks the "re +iIM" family.
-    var isIform = false;
-    {
-        var i: usize = 0;
-        while (src[i] != 0) : (i += 1) {
-            if (src[i] == 'i') {
-                isIform = true;
-                break;
-            }
-        }
-    }
+    // isIform: an imaginary-unit 'i' in src marks the "re +iIM" family. The
+    // lower-case 'i' characters inside Infinity stay part of that decimal token.
+    const isIform = findComplexImaginaryMarker(std.mem.sliceTo(src, 0)) != null;
 
     var s: usize = 0;
     while (src[s] != 0) : (s += 1) {
@@ -85,8 +97,11 @@ pub fn standardiseComplex(src: [*]const u8, dest: []u8) void {
         return;
     }
 
-    var ip: usize = 0;
-    while (work[ip] != 'i') : (ip += 1) {} // guaranteed present (isIform)
+    const work_text = std.mem.sliceTo(work[0..], 0);
+    const ip = findComplexImaginaryMarker(work_text) orelse {
+        putCStr(dest, "{s}", .{work_text}); // malformed whitespace may have joined text into one decimal token
+        return;
+    };
     if (ip == 0) {
         putCStr(dest, "0 +{s}", .{std.mem.sliceTo(work[1..], 0)}); // leading 'i' (e.g. "i4" == 0+i4)
         return;
@@ -138,6 +153,14 @@ test "standardiseComplex: signed i-form keeps both signs" {
 test "standardiseComplex: whitespace inside an i-form is stripped" {
     var dest: [200]u8 = undefined;
     try testing.expectEqualStrings("3 -4", norm(&dest, " ( 3 - i4 ) "));
+}
+
+test "standardiseComplex: the i inside Infinity is not the imaginary marker" {
+    var dest: [200]u8 = undefined;
+    try testing.expectEqualStrings("Infinity -Infinity", norm(&dest, "Infinity -Infinity"));
+    try testing.expectEqualStrings("-infinity 0", norm(&dest, " -infinity 0 "));
+    try testing.expectEqualStrings("3 +Infinity", norm(&dest, "3+iInfinity"));
+    try testing.expectEqualStrings("-Infinity -4", norm(&dest, "(-Infinity-i4)"));
 }
 
 test "standardiseComplex: a bare leading 'i' means zero real part" {

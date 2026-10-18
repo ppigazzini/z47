@@ -511,6 +511,38 @@ void reallocateRegister(calcRegister_t reg, uint32_t data_type, uint16_t data_si
   }
 }
 
+// roundReal34ResultToSignificantDigits is exported by the stack-result owner in
+// every build, fake surface included, and it reaches these three decNumber
+// surfaces; the fake branch of adjustResult never calls it, so they are
+// link-only here. The context has decContext's shape with the fields the owner
+// reads; the rounding leaves its operand as it is and the Real34 conversion
+// writes a zero.
+typedef struct {
+  int32_t digits;
+  int32_t emax;
+  int32_t emin;
+  int32_t round;
+  uint32_t traps;
+  uint32_t status;
+  uint8_t clamp;
+} z47_fake_real_context_t;
+z47_fake_real_context_t ctxtReal34 = {34, 6144, -6143, 3, 0, 0, 1};
+
+void roundToSignificantDigits(const real_t *source, real_t *destination, uint16_t digits, z47_fake_real_context_t *realContext) {
+  (void)digits;
+  (void)realContext;
+  if(destination != source) {
+    *destination = *source;
+  }
+}
+
+real34_t *decimal128FromNumber(real34_t *destination, const real_t *source, z47_fake_real_context_t *realContext) {
+  (void)source;
+  (void)realContext;
+  memset(destination, 0, sizeof(*destination));
+  return destination;
+}
+
 void real34SetZero(real34_t *dest) {
   if(dest != NULL) {
     memset(dest, 0, sizeof(*dest));

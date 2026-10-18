@@ -66,6 +66,11 @@ extern fn strcat(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn strlen(s: [*c]const u8) usize;
 extern fn strcmp(a: [*c]const u8, b: [*c]const u8) c_int;
 extern fn strchr(s: [*c]const u8, c: c_int) [*c]u8;
+extern fn printf(fmt: [*:0]const u8, ...) c_int;
+// backupFileName: the model's own backup file.
+inline fn backupFileName() [*:0]const u8 {
+    return if (calc_model_user_id == USER_R47) "backupR47.cfg" else "backup.cfg";
+}
 extern fn ioFileWrite(buffer: ?*const anyopaque, size: u32) void;
 extern fn decNumberToString(src: [*c]const u8, dst: [*c]u8) [*c]u8; // realToString
 extern fn decQuadToString(src: [*c]const u8, dst: [*c]u8) [*c]u8; // real34ToString
@@ -807,9 +812,18 @@ extern fn free(p: ?*anyopaque) void;
 extern fn strncmp(a: [*c]const u8, b: [*c]const u8, n: usize) c_int;
 extern fn decNumberFromString(dst: [*c]u8, src: [*c]const u8, ctx: *OpaqueCtx) [*c]u8; // stringToReal
 extern fn decQuadFromString(dst: [*c]u8, src: [*c]const u8, ctx: *OpaqueCtx) [*c]u8; // stringToReal34
-const OpaqueCtx = opaque {};
+const OpaqueCtx = abi.RealContext;
 extern var ctxtReal34: OpaqueCtx;
 extern var ctxtReal39: OpaqueCtx;
+extern var ctxtReal51: OpaqueCtx;
+extern var ctxtReal75: OpaqueCtx;
+// decContext.h status bits (DECEXTFLAG): a conversion that raised any of these did
+// not read the text as the number it names.
+const DEC_Conversion_syntax: u32 = 0x00000001;
+const DEC_Inexact: u32 = 0x00000020;
+const DEC_Overflow: u32 = 0x00000200;
+const DEC_Underflow: u32 = 0x00002000;
+const DEC_REJECTED: u32 = DEC_Conversion_syntax | DEC_Overflow | DEC_Underflow | DEC_Inexact;
 
 // The config-param list (was the file-static cfgFileParam_t paramHead chain),
 // now Zig-owned. Built from the open backup.cfg, walked by restoreStateValue.
@@ -903,9 +917,39 @@ fn restoreStateValue(buffer: ?*anyopaque, size: u32, name: [*c]const u8, type_st
     } else if (streq(type_str, "double")) {
         @as(*f64, @ptrCast(@alignCast(buffer))).* = atof(vp);
     } else if (streq(type_str, "real")) {
-        _ = decNumberFromString(@ptrCast(buffer), vp, &ctxtReal39);
+        // The saved infinities are spelt as the out-of-range decimals the save writes; a
+        // value that does not parse cleanly leaves the default in place.
+        var restored: abi.Real = undefined;
+        var context: OpaqueCtx = ctxtReal39;
+        const numericValue: [*c]const u8 = if (strcmp(vp, "9.9e9999999") == 0) "Infinity" else if (strcmp(vp, "-9.9e9999999") == 0) "-Infinity" else vp;
+        context.status = 0;
+        _ = decNumberFromString(@ptrCast(&restored), numericValue, &context);
+        if ((context.status & DEC_REJECTED) == 0) {
+            @as(*align(1) abi.Real, @ptrCast(buffer)).* = restored;
+        } else {
+            _ = printf("Invalid real value for parameter %s in file %s, using default\n", name, backupFileName());
+        }
     } else if (streq(type_str, "real34")) {
-        _ = decQuadFromString(@ptrCast(buffer), vp, &ctxtReal34);
+        // stringToReal34 reads through ctxtReal34, so its status is cleared first and
+        // the four shared contexts are put back whatever the conversion did to them.
+        var restored: abi.Real34 = undefined;
+        const savedReal34 = ctxtReal34;
+        const savedReal39 = ctxtReal39;
+        const savedReal51 = ctxtReal51;
+        const savedReal75 = ctxtReal75;
+        const numericValue: [*c]const u8 = if (strcmp(vp, "9.9e9999") == 0) "Infinity" else if (strcmp(vp, "-9.9e9999") == 0) "-Infinity" else vp;
+        ctxtReal34.status = 0;
+        _ = decQuadFromString(@ptrCast(&restored), numericValue, &ctxtReal34);
+        const status = ctxtReal34.status;
+        ctxtReal34 = savedReal34;
+        ctxtReal39 = savedReal39;
+        ctxtReal51 = savedReal51;
+        ctxtReal75 = savedReal75;
+        if ((status & DEC_REJECTED) == 0) {
+            @as(*align(1) abi.Real34, @ptrCast(buffer)).* = restored;
+        } else {
+            _ = printf("Invalid real34 value for parameter %s in file %s, using default\n", name, backupFileName());
+        }
     } else if (streq(type_str, "bool")) {
         @as(*u8, @ptrCast(buffer)).* = if (calc_state.stringToInt8(vp) != 0) 1 else 0;
     } else if (streq(type_str, "c47Ptr")) {

@@ -1,104 +1,58 @@
 const std = @import("std");
 
-fn rangeExceedsLimit(start: u16, count: u16, exclusive_upper_bound: u16) bool {
-    return @as(u32, start) + @as(u32, count) >= @as(u32, exclusive_upper_bound);
-}
-
-fn resolveRegisterRange(start: u16, count: *u16, exclusive_upper_bound: u16, error_out_of_range: u8, error_none: u8) u8 {
-    if (rangeExceedsLimit(start, count.*, exclusive_upper_bound)) {
-        return error_out_of_range;
-    }
-
-    if (count.* == 0) {
-        count.* = exclusive_upper_bound - start;
-    }
-
-    return error_none;
-}
-
-pub fn validateRegisterSourceRange(
-    load_into_memory: ?bool,
-    start: u16,
-    count: *u16,
-    register_x: u16,
-    first_local_register: u16,
+/// registers.c getRegParamRange: validates a public register range keyed in
+/// keystroke codes and expands a zero count to the rest of its band. The bands
+/// are the numbered registers, the lettered registers, the allocated local
+/// registers and the stat-and-spare registers; a range must stay inside one.
+pub fn getRegParamRange(
+    first: u16,
+    number: *u16,
+    register_x_in_ks_code: u16,
+    last_lettered_register_in_ks_code: u16,
+    first_local_register_in_ks_code: u16,
     current_local_register_count: u16,
-    error_out_of_range: u8,
-    error_none: u8,
-) u8 {
-    const local_limit = first_local_register + current_local_register_count;
+    first_stat_register_in_ks_code: u16,
+    last_spare_registers_in_ks_code: u16,
+) bool {
+    var end: u16 = undefined;
 
-    if (start < register_x) {
-        return resolveRegisterRange(start, count, register_x, error_out_of_range, error_none);
+    if (first < register_x_in_ks_code) {
+        end = register_x_in_ks_code;
+    } else if (first <= last_lettered_register_in_ks_code) {
+        end = last_lettered_register_in_ks_code + 1;
+    } else if (first >= first_local_register_in_ks_code and first < first_local_register_in_ks_code + current_local_register_count) {
+        end = first_local_register_in_ks_code + current_local_register_count;
+    } else if (first >= first_stat_register_in_ks_code and first <= last_spare_registers_in_ks_code) {
+        end = last_spare_registers_in_ks_code + 1;
+    } else {
+        return false;
     }
 
-    if (start < first_local_register) {
-        return resolveRegisterRange(start, count, first_local_register, error_out_of_range, error_none);
+    if (number.* == 0) {
+        number.* = end - first;
     }
-
-    if (start < local_limit) {
-        if (load_into_memory != null and load_into_memory.?) {
-            return error_out_of_range;
-        }
-
-        return resolveRegisterRange(start, count, local_limit, error_out_of_range, error_none);
-    }
-
-    return error_out_of_range;
+    return @as(u32, first) + @as(u32, number.*) <= @as(u32, end);
 }
 
-pub fn validateRegisterDestinationRange(
-    start: u16,
-    count: u16,
-    register_x: u16,
-    first_local_register: u16,
-    current_local_register_count: u16,
-    error_out_of_range: u8,
-    error_none: u8,
-) u8 {
-    const local_limit = first_local_register + current_local_register_count;
-
-    if (start < register_x) {
-        return if (rangeExceedsLimit(start, count, register_x)) error_out_of_range else error_none;
-    }
-
-    if (start < first_local_register) {
-        return if (rangeExceedsLimit(start, count, first_local_register)) error_out_of_range else error_none;
-    }
-
-    if (start < local_limit) {
-        return if (rangeExceedsLimit(start, count, local_limit)) error_out_of_range else error_none;
-    }
-
-    return error_out_of_range;
-}
-
-// Native unit tests. Pure register-range validation; no C
-// oracle, no global state. Fixture: register_x=112, first_local=1000, 8 locals
-// (local_limit=1008), OOR=1 / NONE=0.
+// Native unit tests over the keystroke bands: numbered 0-99, lettered 100-111,
+// local 112.., stat and spare 211-224.
 const testing = std.testing;
-const OOR: u8 = 1;
-const NONE: u8 = 0;
 
-test "validateRegisterSourceRange" {
-    var c: u16 = 5;
-    try testing.expectEqual(NONE, validateRegisterSourceRange(false, 0, &c, 112, 1000, 8, OOR, NONE));
-    c = 0;
-    try testing.expectEqual(NONE, validateRegisterSourceRange(false, 0, &c, 112, 1000, 8, OOR, NONE));
-    try testing.expectEqual(@as(u16, 112), c); // count auto-filled to register_x - start
-    c = 5;
-    try testing.expectEqual(OOR, validateRegisterSourceRange(false, 110, &c, 112, 1000, 8, OOR, NONE));
-    c = 2;
-    try testing.expectEqual(OOR, validateRegisterSourceRange(true, 1002, &c, 112, 1000, 8, OOR, NONE)); // load into local block
-    c = 2;
-    try testing.expectEqual(NONE, validateRegisterSourceRange(false, 1002, &c, 112, 1000, 8, OOR, NONE));
-    c = 1;
-    try testing.expectEqual(OOR, validateRegisterSourceRange(false, 2000, &c, 112, 1000, 8, OOR, NONE));
+fn range(first: u16, number: u16, locals: u16) ?u16 {
+    var n = number;
+    return if (getRegParamRange(first, &n, 100, 111, 112, locals, 211, 224)) n else null;
 }
 
-test "validateRegisterDestinationRange" {
-    try testing.expectEqual(NONE, validateRegisterDestinationRange(0, 5, 112, 1000, 8, OOR, NONE));
-    try testing.expectEqual(OOR, validateRegisterDestinationRange(110, 5, 112, 1000, 8, OOR, NONE));
-    try testing.expectEqual(NONE, validateRegisterDestinationRange(500, 3, 112, 1000, 8, OOR, NONE));
-    try testing.expectEqual(OOR, validateRegisterDestinationRange(2000, 1, 112, 1000, 8, OOR, NONE));
+test "getRegParamRange keeps a range inside one band" {
+    try testing.expectEqual(@as(?u16, 5), range(0, 5, 8));
+    try testing.expectEqual(@as(?u16, 100), range(0, 0, 8)); // a zero count takes the band
+    try testing.expectEqual(@as(?u16, 2), range(98, 2, 8)); // ends exactly at the band
+    try testing.expectEqual(@as(?u16, null), range(98, 3, 8)); // crosses into the lettered band
+    try testing.expectEqual(@as(?u16, 12), range(100, 0, 8));
+    try testing.expectEqual(@as(?u16, 8), range(112, 0, 8)); // the allocated locals
+    try testing.expectEqual(@as(?u16, null), range(112, 9, 8));
+    try testing.expectEqual(@as(?u16, null), range(112, 1, 0)); // no locals allocated
+    try testing.expectEqual(@as(?u16, 14), range(211, 0, 8));
+    try testing.expectEqual(@as(?u16, null), range(224, 2, 8));
+    try testing.expectEqual(@as(?u16, null), range(230, 1, 8)); // outside every band
 }

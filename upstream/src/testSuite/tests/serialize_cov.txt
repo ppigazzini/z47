@@ -19,6 +19,31 @@
 ;*************************************************************
 In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
 
+; decimal-valued backup fields preserve the Real34 range limits, signed zero,
+; NaN and infinity independently of the raw register-memory image.
+Func: fnBackupDecimalCov
+In:  FARG=0
+Out: EC=0 RX=Real:"1"
+
+; malformed and inexact decimal text leaves the reset value unchanged
+Func: fnBackupDecimalCov
+In:  FARG=1
+Out: EC=0 RX=Real:"1"
+Func: fnBackupDecimalCov
+In:  FARG=2
+Out: EC=0 RX=Real:"1"
+Func: fnBackupDecimalCov
+In:  FARG=3
+Out: EC=0 RX=Real:"1"
+Func: fnBackupDecimalCov
+In:  FARG=4
+Out: EC=0 RX=Real:"1"
+
+; the historical Real34 infinity spelling retains its sign
+Func: fnBackupDecimalCov
+In:  FARG=5
+Out: EC=0 RX=Real:"1"
+
 ; seed a little varied state, then round-trip it through backup.cfg
 Func: fnStore
 In:  FARG=0 RX=Real:"1234.5678"
@@ -27,6 +52,20 @@ Out: EC=0
 Func: fnBackupRoundtrip
 In:  FARG=0
 Out: EC=0 R00=Real:"1234.5678"
+
+; RM restored from backup.cfg sets the Real34 context too: RM 0 is selected between the save and the restore, and under RM 5, ceiling, 1/3 rounds up to ...334
+Func: fnSetRoundingMode
+In:  FARG=5 SD=0
+Out: EC=0
+Func: fnBackupRoundtrip
+In:  FARG=1
+Out: EC=0 RMODE=5
+Func: fnDivide
+In:  FL_ASLIFT=0 RY=LonI:"1" RX=LonI:"3"
+Out: EC=0 RX=Real:"0.3333333333333333333333333333333334" ACC=34
+Func: fnSetRoundingMode
+In:  FARG=0
+Out: EC=0
 
 ; an out-of-range free region count in the file must not become the live one
 Func: fnBackupBadRegionCount

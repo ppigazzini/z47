@@ -13,6 +13,7 @@ const std = @import("std");
 const runtime = @import("../command_wrappers/runtime.zig");
 
 const real_t = runtime.real_t;
+const cplx_t = runtime.cplx_t;
 const real34_t = runtime.real34_t;
 const complex34_t = runtime.complex34_t;
 const real34Matrix_t = runtime.real34Matrix_t;
@@ -30,8 +31,12 @@ const dtComplex34 = runtime.dtComplex34;
 const dtReal34Matrix = runtime.dtReal34Matrix;
 const dtComplex34Matrix = runtime.dtComplex34Matrix;
 
-extern fn getRegisterAsComplexOrReal(reg: calcRegister_t, r: *real_t, i: *real_t, cmplx: *bool) bool;
-extern fn __gmpz_clear(op: *runtime.mpz_struct) void;
+// snap_t and the register snapshot the scalar dispatchers take a scalar aside
+// with (registerValueConversions.c).
+const snap_t = abi.RegisterSnapshot;
+extern fn saveRegisterSnapshot(reg: calcRegister_t, s: *snap_t) void;
+extern fn applyRegisterSnapshot(reg: calcRegister_t, s: *snap_t) void;
+extern fn freeRegisterSnapshot(s: *snap_t) void;
 // I/J index registers + register-range check (frontier display surface).
 extern fn getIRegisterAsInt(asArrayPointer: bool) i16;
 extern fn getJRegisterAsInt(asArrayPointer: bool) i16;
@@ -54,14 +59,16 @@ inline fn realloc(reg: calcRegister_t, dt: u32) void {
 inline fn numElems(rows: u16, cols: u16) usize {
     return @as(usize, rows) * cols;
 }
+inline fn otherRegister(matrix_reg: calcRegister_t) calcRegister_t {
+    return if (matrix_reg == REGISTER_X) REGISTER_Y else REGISTER_X;
+}
 
 // --- real-matrix (Rema) result extraction + dispatchers -------------------
 
 fn elementwiseRemaGetResult(complex: *bool, x: *real34Matrix_t, xc: *complex34Matrix_t, i: usize) void {
-    var a: real_t = undefined;
-    var b: real_t = undefined;
+    var value: cplx_t = undefined;
     var isComplex: bool = false;
-    _ = getRegisterAsComplexOrReal(REGISTER_X, &a, &b, &isComplex);
+    _ = runtime.getRegisterAsComplexOrReal(REGISTER_X, &value, &isComplex);
     if (isComplex or complex.*) {
         if (!complex.*) {
             runtime.convertReal34MatrixToComplex34Matrix(x, xc);
@@ -71,11 +78,11 @@ fn elementwiseRemaGetResult(complex: *bool, x: *real34Matrix_t, xc: *complex34Ma
             }
         }
         if (complex.*) { // promotion may have failed with RAM_FULL; only write xc when it actually exists
-            runtime.realToReal34(&a, &cmEl(xc, i).real);
-            runtime.realToReal34(&b, &cmEl(xc, i).imag);
+            runtime.realToReal34(&value.Real, &cmEl(xc, i).real);
+            runtime.realToReal34(&value.Imag, &cmEl(xc, i).imag);
         }
     } else {
-        runtime.realToReal34(&a, rmEl(x, i));
+        runtime.realToReal34(&value.Real, rmEl(x, i));
     }
 }
 
@@ -131,129 +138,64 @@ pub export fn elementwiseRema_UInt16(f: VoidU16Callback, param: u16) callconv(.c
     }
 }
 
-pub export fn elementwiseRemaLonI(f: VoidCallback) callconv(.c) void {
-    var y: real34Matrix_t = undefined;
-    var yc: complex34Matrix_t = undefined;
-    var x: runtime.longInteger_t = undefined;
+// Every elementwise routine with a real matrix on one side and a scalar on the
+// other walks the matrix, putting one element in the matrix register and the
+// scalar back in the other, running f and collecting the result. They differed
+// only in how each one took the scalar aside and put it back, and one register
+// snapshot serves every scalar type, so there is one body. matrix_reg names the
+// register holding the matrix.
+fn elementwiseRemaScalar(f: VoidCallback, matrix_reg: calcRegister_t) void {
+    const scalar_reg = otherRegister(matrix_reg);
+    var m: real34Matrix_t = undefined;
+    var mc: complex34Matrix_t = undefined;
+    var scalar: snap_t = undefined;
     var complex: bool = false;
-    runtime.convertReal34MatrixRegisterToReal34Matrix(REGISTER_Y, &y);
-    runtime.convertLongIntegerRegisterToLongInteger(REGISTER_X, &x[0]);
-    const n = numElems(y.header.matrixRows, y.header.matrixColumns);
+
+    saveRegisterSnapshot(scalar_reg, &scalar);
+    if (scalar.t == dtReal34 or scalar.t == dtComplex34) {
+        scalar.tag = @intCast(runtime.amNone); // a real or complex scalar goes back untagged, so an angular value is taken by its value alone
+    }
+    runtime.convertReal34MatrixRegisterToReal34Matrix(matrix_reg, &m);
+
+    const n = numElems(m.header.matrixRows, m.header.matrixColumns);
     var i: usize = 0;
     while (i < n) : (i += 1) {
-        realloc(REGISTER_Y, dtReal34);
+        realloc(matrix_reg, dtReal34);
         if (complex) {
-            runtime.registerReal34Data(REGISTER_Y).* = cmEl(&yc, i).real;
+            runtime.registerReal34Data(matrix_reg).* = cmEl(&mc, i).real;
         } else {
-            runtime.registerReal34Data(REGISTER_Y).* = rmEl(&y, i).*;
+            runtime.registerReal34Data(matrix_reg).* = rmEl(&m, i).*;
         }
-        runtime.convertLongIntegerToLongIntegerRegister(&x[0], REGISTER_X);
+        applyRegisterSnapshot(scalar_reg, &scalar);
         f.?();
-        elementwiseRemaGetResult(&complex, &y, &yc, i);
+        elementwiseRemaGetResult(&complex, &m, &mc, i);
     }
+
+    freeRegisterSnapshot(&scalar);
+
     if (complex) {
-        runtime.convertComplex34MatrixToComplex34MatrixRegister(&yc, REGISTER_X);
-        runtime.complexMatrixFree(&yc);
+        runtime.convertComplex34MatrixToComplex34MatrixRegister(&mc, REGISTER_X);
+        runtime.complexMatrixFree(&mc);
     } else {
-        runtime.convertReal34MatrixToReal34MatrixRegister(&y, REGISTER_X);
-        runtime.realMatrixFree(&y);
+        runtime.convertReal34MatrixToReal34MatrixRegister(&m, REGISTER_X);
+        runtime.realMatrixFree(&m);
     }
-    __gmpz_clear(&x[0]);
+}
+
+pub export fn elementwiseRemaLonI(f: VoidCallback) callconv(.c) void {
+    elementwiseRemaScalar(f, REGISTER_Y);
 }
 
 pub export fn elementwiseRemaReal(f: VoidCallback) callconv(.c) void {
-    var y: real34Matrix_t = undefined;
-    var yc: complex34Matrix_t = undefined;
-    var xin: real_t = undefined;
-    var x: real34_t = undefined;
-    var complex: bool = false;
-    if (!runtime.getRegisterAsReal(REGISTER_X, &xin)) return;
-    runtime.realToReal34(&xin, &x);
-    runtime.convertReal34MatrixRegisterToReal34Matrix(REGISTER_Y, &y);
-    const n = numElems(y.header.matrixRows, y.header.matrixColumns);
-    var i: usize = 0;
-    while (i < n) : (i += 1) {
-        realloc(REGISTER_Y, dtReal34);
-        realloc(REGISTER_X, dtReal34);
-        if (complex) {
-            runtime.registerReal34Data(REGISTER_Y).* = cmEl(&yc, i).real;
-        } else {
-            runtime.registerReal34Data(REGISTER_Y).* = rmEl(&y, i).*;
-        }
-        runtime.registerReal34Data(REGISTER_X).* = x;
-        f.?();
-        elementwiseRemaGetResult(&complex, &y, &yc, i);
-    }
-    if (complex) {
-        runtime.convertComplex34MatrixToComplex34MatrixRegister(&yc, REGISTER_X);
-        runtime.complexMatrixFree(&yc);
-    } else {
-        runtime.convertReal34MatrixToReal34MatrixRegister(&y, REGISTER_X);
-        runtime.realMatrixFree(&y);
-    }
+    elementwiseRemaScalar(f, REGISTER_Y);
 }
 
 pub export fn elementwiseRemaShoI(f: VoidCallback) callconv(.c) void {
-    var y: real34Matrix_t = undefined;
-    var yc: complex34Matrix_t = undefined;
-    var x: u64 = undefined;
-    var sign: i16 = undefined;
-    var complex: bool = false;
-    runtime.convertReal34MatrixRegisterToReal34Matrix(REGISTER_Y, &y);
-    runtime.convertShortIntegerRegisterToUInt64(REGISTER_X, &sign, &x);
-    const base = runtime.getRegisterShortIntegerBase(REGISTER_X);
-    const n = numElems(y.header.matrixRows, y.header.matrixColumns);
-    var i: usize = 0;
-    while (i < n) : (i += 1) {
-        realloc(REGISTER_Y, dtReal34);
-        if (complex) {
-            runtime.registerReal34Data(REGISTER_Y).* = cmEl(&yc, i).real;
-        } else {
-            runtime.registerReal34Data(REGISTER_Y).* = rmEl(&y, i).*;
-        }
-        runtime.convertUInt64ToShortIntegerRegister(sign, x, base, REGISTER_X);
-        f.?();
-        elementwiseRemaGetResult(&complex, &y, &yc, i);
-    }
-    if (complex) {
-        runtime.convertComplex34MatrixToComplex34MatrixRegister(&yc, REGISTER_X);
-        runtime.complexMatrixFree(&yc);
-    } else {
-        runtime.convertReal34MatrixToReal34MatrixRegister(&y, REGISTER_X);
-        runtime.realMatrixFree(&y);
-    }
+    elementwiseRemaScalar(f, REGISTER_Y);
 }
 
 pub export fn elementwiseRealRema(f: VoidCallback) callconv(.c) void {
-    var x: real34Matrix_t = undefined;
-    var xc: complex34Matrix_t = undefined;
-    var yin: real_t = undefined;
-    var y: real34_t = undefined;
-    var complex: bool = false;
-    if (!runtime.getRegisterAsReal(REGISTER_Y, &yin)) return;
-    runtime.realToReal34(&yin, &y);
-    runtime.convertReal34MatrixRegisterToReal34Matrix(REGISTER_X, &x);
-    const n = numElems(x.header.matrixRows, x.header.matrixColumns);
-    var i: usize = 0;
-    while (i < n) : (i += 1) {
-        realloc(REGISTER_Y, dtReal34);
-        realloc(REGISTER_X, dtReal34);
-        runtime.registerReal34Data(REGISTER_Y).* = y;
-        if (complex) {
-            runtime.registerReal34Data(REGISTER_X).* = cmEl(&xc, i).real;
-        } else {
-            runtime.registerReal34Data(REGISTER_X).* = rmEl(&x, i).*;
-        }
-        f.?();
-        elementwiseRemaGetResult(&complex, &x, &xc, i);
-    }
-    if (complex) {
-        runtime.convertComplex34MatrixToComplex34MatrixRegister(&xc, REGISTER_X);
-        runtime.complexMatrixFree(&xc);
-    } else {
-        runtime.convertReal34MatrixToReal34MatrixRegister(&x, REGISTER_X);
-        runtime.realMatrixFree(&x);
-    }
+    elementwiseRemaScalar(f, REGISTER_X);
 }
 
 pub export fn elementwiseRemaRema(f: VoidCallback) callconv(.c) void {
@@ -294,11 +236,10 @@ pub export fn elementwiseRemaRema(f: VoidCallback) callconv(.c) void {
 // --- complex-matrix (Cxma) result extraction + dispatchers ----------------
 
 fn elementwiseCxmaGetResult(x: *complex34Matrix_t, i: usize) void {
-    var a: real_t = undefined;
-    var b: real_t = undefined;
-    _ = runtime.getRegisterAsComplex(REGISTER_X, &a, &b);
-    runtime.realToReal34(&a, &cmEl(x, i).real);
-    runtime.realToReal34(&b, &cmEl(x, i).imag);
+    var value: cplx_t = undefined;
+    _ = runtime.getRegisterAsComplex(REGISTER_X, &value);
+    runtime.realToReal34(&value.Real, &cmEl(x, i).real);
+    runtime.realToReal34(&value.Imag, &cmEl(x, i).imag);
 }
 
 pub export fn elementwiseCxma(f: VoidCallback) callconv(.c) void {
@@ -331,177 +272,70 @@ pub export fn elementwiseCxma_UInt16(f: VoidU16Callback, param: u16) callconv(.c
     runtime.complexMatrixFree(&x);
 }
 
-pub export fn elementwiseCxmaLonI(f: VoidCallback) callconv(.c) void {
-    var y: complex34Matrix_t = undefined;
-    var x: runtime.longInteger_t = undefined;
-    runtime.convertComplex34MatrixRegisterToComplex34Matrix(REGISTER_Y, &y);
-    runtime.convertLongIntegerRegisterToLongInteger(REGISTER_X, &x[0]);
-    const n = numElems(y.header.matrixRows, y.header.matrixColumns);
+// The complex matrix counterpart. from_real says the matrix register holds a
+// real matrix taken up as a complex one, which is how a real matrix meets a
+// complex scalar.
+fn elementwiseCxmaScalar(f: VoidCallback, matrix_reg: calcRegister_t, from_real: bool) void {
+    const scalar_reg = otherRegister(matrix_reg);
+    var m: complex34Matrix_t = undefined;
+    var scalar: snap_t = undefined;
+
+    saveRegisterSnapshot(scalar_reg, &scalar);
+    if (scalar.t == dtReal34 or scalar.t == dtComplex34) {
+        scalar.tag = @intCast(runtime.amNone); // a real or complex scalar goes back untagged, so an angular value is taken by its value alone
+    }
+    if (from_real) {
+        runtime.convertReal34MatrixRegisterToComplex34Matrix(matrix_reg, &m);
+    } else {
+        runtime.convertComplex34MatrixRegisterToComplex34Matrix(matrix_reg, &m);
+    }
+
+    const n = numElems(m.header.matrixRows, m.header.matrixColumns);
     var i: usize = 0;
     while (i < n) : (i += 1) {
-        realloc(REGISTER_Y, dtComplex34);
-        registerComplex34Data(REGISTER_Y).* = cmEl(&y, i).*;
-        runtime.convertLongIntegerToLongIntegerRegister(&x[0], REGISTER_X);
+        realloc(matrix_reg, dtComplex34);
+        registerComplex34Data(matrix_reg).* = cmEl(&m, i).*;
+        applyRegisterSnapshot(scalar_reg, &scalar);
         f.?();
-        elementwiseCxmaGetResult(&y, i);
+        elementwiseCxmaGetResult(&m, i);
     }
-    runtime.convertComplex34MatrixToComplex34MatrixRegister(&y, REGISTER_X);
-    __gmpz_clear(&x[0]);
-    runtime.complexMatrixFree(&y);
+
+    freeRegisterSnapshot(&scalar);
+
+    runtime.convertComplex34MatrixToComplex34MatrixRegister(&m, REGISTER_X);
+    runtime.complexMatrixFree(&m);
+}
+
+pub export fn elementwiseCxmaLonI(f: VoidCallback) callconv(.c) void {
+    elementwiseCxmaScalar(f, REGISTER_Y, false);
 }
 
 pub export fn elementwiseCxmaReal(f: VoidCallback) callconv(.c) void {
-    var y: complex34Matrix_t = undefined;
-    var x: real34_t = undefined;
-    var xin: real_t = undefined;
-    if (!runtime.getRegisterAsReal(REGISTER_X, &xin)) return;
-    runtime.realToReal34(&xin, &x);
-    runtime.convertComplex34MatrixRegisterToComplex34Matrix(REGISTER_Y, &y);
-    const n = numElems(y.header.matrixRows, y.header.matrixColumns);
-    var i: usize = 0;
-    while (i < n) : (i += 1) {
-        realloc(REGISTER_Y, dtComplex34);
-        realloc(REGISTER_X, dtReal34);
-        registerComplex34Data(REGISTER_Y).* = cmEl(&y, i).*;
-        runtime.registerReal34Data(REGISTER_X).* = x;
-        f.?();
-        elementwiseCxmaGetResult(&y, i);
-    }
-    runtime.convertComplex34MatrixToComplex34MatrixRegister(&y, REGISTER_X);
-    runtime.complexMatrixFree(&y);
+    elementwiseCxmaScalar(f, REGISTER_Y, false);
 }
 
 pub export fn elementwiseCxmaShoI(f: VoidCallback) callconv(.c) void {
-    var y: complex34Matrix_t = undefined;
-    var x: u64 = undefined;
-    var sign: i16 = undefined;
-    runtime.convertComplex34MatrixRegisterToComplex34Matrix(REGISTER_Y, &y);
-    runtime.convertShortIntegerRegisterToUInt64(REGISTER_X, &sign, &x);
-    const base = runtime.getRegisterShortIntegerBase(REGISTER_X);
-    const n = numElems(y.header.matrixRows, y.header.matrixColumns);
-    var i: usize = 0;
-    while (i < n) : (i += 1) {
-        realloc(REGISTER_Y, dtComplex34);
-        registerComplex34Data(REGISTER_Y).* = cmEl(&y, i).*;
-        runtime.convertUInt64ToShortIntegerRegister(sign, x, base, REGISTER_X);
-        f.?();
-        elementwiseCxmaGetResult(&y, i);
-    }
-    runtime.convertComplex34MatrixToComplex34MatrixRegister(&y, REGISTER_X);
-    runtime.complexMatrixFree(&y);
+    elementwiseCxmaScalar(f, REGISTER_Y, false);
 }
 
 pub export fn elementwiseCxmaCplx(f: VoidCallback) callconv(.c) void {
-    var y: complex34Matrix_t = undefined;
-    var x: complex34_t = undefined;
-    var xReal: real_t = undefined;
-    var xImag: real_t = undefined;
-    if (!runtime.getRegisterAsComplex(REGISTER_X, &xReal, &xImag)) return;
-    runtime.realToReal34(&xReal, &x.real);
-    runtime.realToReal34(&xImag, &x.imag);
-    runtime.convertComplex34MatrixRegisterToComplex34Matrix(REGISTER_Y, &y);
-    const n = numElems(y.header.matrixRows, y.header.matrixColumns);
-    var i: usize = 0;
-    while (i < n) : (i += 1) {
-        realloc(REGISTER_Y, dtComplex34);
-        realloc(REGISTER_X, dtComplex34);
-        registerComplex34Data(REGISTER_Y).* = cmEl(&y, i).*;
-        registerComplex34Data(REGISTER_X).* = x;
-        f.?();
-        elementwiseCxmaGetResult(&y, i);
-    }
-    runtime.convertComplex34MatrixToComplex34MatrixRegister(&y, REGISTER_X);
-    runtime.complexMatrixFree(&y);
+    elementwiseCxmaScalar(f, REGISTER_Y, false);
 }
 
 pub export fn elementwiseRealCxma(f: VoidCallback) callconv(.c) void {
-    var x: complex34Matrix_t = undefined;
-    var y: real34_t = undefined;
-    var yin: real_t = undefined;
-    if (!runtime.getRegisterAsReal(REGISTER_Y, &yin)) return;
-    runtime.realToReal34(&yin, &y);
-    runtime.convertComplex34MatrixRegisterToComplex34Matrix(REGISTER_X, &x);
-    const n = numElems(x.header.matrixRows, x.header.matrixColumns);
-    var i: usize = 0;
-    while (i < n) : (i += 1) {
-        realloc(REGISTER_Y, dtReal34);
-        realloc(REGISTER_X, dtComplex34);
-        runtime.registerReal34Data(REGISTER_Y).* = y;
-        registerComplex34Data(REGISTER_X).* = cmEl(&x, i).*;
-        f.?();
-        elementwiseCxmaGetResult(&x, i);
-    }
-    runtime.convertComplex34MatrixToComplex34MatrixRegister(&x, REGISTER_X);
-    runtime.complexMatrixFree(&x);
+    elementwiseCxmaScalar(f, REGISTER_X, false);
 }
 
 pub export fn elementwiseCplxCxma(f: VoidCallback) callconv(.c) void {
-    var x: complex34Matrix_t = undefined;
-    var y: complex34_t = undefined;
-    var yReal: real_t = undefined;
-    var yImag: real_t = undefined;
-    if (!runtime.getRegisterAsComplex(REGISTER_Y, &yReal, &yImag)) return;
-    runtime.realToReal34(&yReal, &y.real);
-    runtime.realToReal34(&yImag, &y.imag);
-    runtime.convertComplex34MatrixRegisterToComplex34Matrix(REGISTER_X, &x);
-    const n = numElems(x.header.matrixRows, x.header.matrixColumns);
-    var i: usize = 0;
-    while (i < n) : (i += 1) {
-        realloc(REGISTER_Y, dtComplex34);
-        realloc(REGISTER_X, dtComplex34);
-        registerComplex34Data(REGISTER_Y).* = y;
-        registerComplex34Data(REGISTER_X).* = cmEl(&x, i).*;
-        f.?();
-        elementwiseCxmaGetResult(&x, i);
-    }
-    runtime.convertComplex34MatrixToComplex34MatrixRegister(&x, REGISTER_X);
-    runtime.complexMatrixFree(&x);
+    elementwiseCxmaScalar(f, REGISTER_X, false);
 }
 
 pub export fn elementwiseCplxRema(f: VoidCallback) callconv(.c) void {
-    var x: complex34Matrix_t = undefined;
-    var y: complex34_t = undefined;
-    var yReal: real_t = undefined;
-    var yImag: real_t = undefined;
-    if (!runtime.getRegisterAsComplex(REGISTER_Y, &yReal, &yImag)) return;
-    runtime.realToReal34(&yReal, &y.real);
-    runtime.realToReal34(&yImag, &y.imag);
-    runtime.convertReal34MatrixRegisterToComplex34Matrix(REGISTER_X, &x);
-    const n = numElems(x.header.matrixRows, x.header.matrixColumns);
-    var i: usize = 0;
-    while (i < n) : (i += 1) {
-        realloc(REGISTER_Y, dtComplex34);
-        realloc(REGISTER_X, dtComplex34);
-        registerComplex34Data(REGISTER_Y).* = y;
-        registerComplex34Data(REGISTER_X).* = cmEl(&x, i).*;
-        f.?();
-        elementwiseCxmaGetResult(&x, i);
-    }
-    runtime.convertComplex34MatrixToComplex34MatrixRegister(&x, REGISTER_X);
-    runtime.complexMatrixFree(&x);
+    elementwiseCxmaScalar(f, REGISTER_X, true);
 }
 
 pub export fn elementwiseRemaCplx(f: VoidCallback) callconv(.c) void {
-    var y: complex34Matrix_t = undefined;
-    var x: complex34_t = undefined;
-    var xReal: real_t = undefined;
-    var xImag: real_t = undefined;
-    if (!runtime.getRegisterAsComplex(REGISTER_X, &xReal, &xImag)) return;
-    runtime.realToReal34(&xReal, &x.real);
-    runtime.realToReal34(&xImag, &x.imag);
-    runtime.convertReal34MatrixRegisterToComplex34Matrix(REGISTER_Y, &y);
-    const n = numElems(y.header.matrixRows, y.header.matrixColumns);
-    var i: usize = 0;
-    while (i < n) : (i += 1) {
-        realloc(REGISTER_Y, dtComplex34);
-        realloc(REGISTER_X, dtComplex34);
-        registerComplex34Data(REGISTER_X).* = x;
-        registerComplex34Data(REGISTER_Y).* = cmEl(&y, i).*;
-        f.?();
-        elementwiseCxmaGetResult(&y, i);
-    }
-    runtime.convertComplex34MatrixToComplex34MatrixRegister(&y, REGISTER_X);
-    runtime.complexMatrixFree(&y);
+    elementwiseCxmaScalar(f, REGISTER_Y, true);
 }
 
 pub export fn elementwiseCxmaRema(f: VoidCallback) callconv(.c) void {

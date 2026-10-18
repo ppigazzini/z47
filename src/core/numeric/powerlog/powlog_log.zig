@@ -15,7 +15,7 @@ fn log2Real() callconv(.c) void {
 }
 
 fn log2Cplx() callconv(.c) void {
-    runtime.logxyCplx(runtime.z47_math_wrappers_const_ln2());
+    runtime.logBaseCplx(runtime.z47_math_wrappers_const_ln2());
 }
 
 fn log10LonI() callconv(.c) void {
@@ -33,7 +33,7 @@ fn log10Real() callconv(.c) void {
 }
 
 fn log10Cplx() callconv(.c) void {
-    runtime.logxyCplx(runtime.z47_math_wrappers_const_ln10());
+    runtime.logBaseCplx(runtime.z47_math_wrappers_const_ln10());
 }
 
 pub fn fnLog10(unused_but_mandatory_parameter: u16) void {

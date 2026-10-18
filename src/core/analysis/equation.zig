@@ -108,6 +108,8 @@ const EQUATION_PARSER_MVAR: u16 = 0;
 const EQUATION_PARSER_XEQ: u16 = 1;
 
 const AIM_BUFFER_LENGTH: usize = 1024;
+// A uint8_t block count reaches 255 blocks, terminator included.
+const MAX_EQUATION_BYTE_LENGTH: u32 = 255 * 4;
 const REAL34_SIZE_IN_BYTES: usize = 16;
 
 const FIRST_CONSTANT: u32 = 128; // CST_01
@@ -589,7 +591,18 @@ pub export fn fnEqCalc(unusedButMandatoryParameter: u16) linksection(runtime.cod
 }
 
 pub export fn setEquation(equationId: u16, equationString: [*c]const u8) linksection(runtime.code_section) callconv(.c) void {
-    const newSizeInBlocks: usize = TO_BLOCKS(@intCast(stringByteLength(equationString) + 1));
+    var byteLen: u32 = @intCast(stringByteLength(equationString));
+    if (byteLen >= MAX_EQUATION_BYTE_LENGTH) { // a crafted state file may be longer: cut on a glyph boundary so the 8-bit block count cannot wrap
+        byteLen = 0;
+        while (equationString[byteLen] != 0) {
+            const step: u32 = if ((equationString[byteLen] & 0x80) != 0) 2 else 1;
+            if (byteLen + step > MAX_EQUATION_BYTE_LENGTH - 1) {
+                break;
+            }
+            byteLen += step;
+        }
+    }
+    const newSizeInBlocks: usize = TO_BLOCKS(byteLen + 1);
     var newPtr: ?*anyopaque = undefined;
     if (allFormulae[equationId].sizeInBlocks == 0) {
         newPtr = allocC47Blocks(newSizeInBlocks);
@@ -603,10 +616,11 @@ pub export fn setEquation(equationId: u16, equationString: [*c]const u8) linksec
         moreInfoOnError("In function setEquation:", "there is not enough memory for a new equation!", null, null);
         return;
     }
-    // C assigns the 32-bit block count straight into the 8-bit field, so a
-    // formula of 1020 bytes or more keeps only the low byte of its size.
-    allFormulae[equationId].sizeInBlocks = @truncate(newSizeInBlocks);
-    _ = xcopy(TO_PCMEMPTR(allFormulae[equationId].pointerToFormulaData), equationString, @intCast(stringByteLength(equationString) + 1));
+    // The cut above keeps the block count within the 8-bit field.
+    allFormulae[equationId].sizeInBlocks = @intCast(newSizeInBlocks);
+    const bytes: [*]u8 = @ptrCast(newPtr.?);
+    _ = xcopy(bytes, equationString, byteLen);
+    bytes[byteLen] = 0;
 }
 
 // Format into a caller-local buffer and NUL-terminate, so the shared errorMessage
@@ -708,9 +722,9 @@ pub export fn fnVecToEqn(unusedButMandatoryParameter: u16) linksection(runtime.c
         }
         term[t] = 0;
 
-        // The text is headed for the equation buffer: what cannot fit there is
-        // refused whole.
-        if (@intFromPtr(p) - @intFromPtr(tmpString) + t >= AIM_BUFFER_LENGTH) {
+        // The text is headed for the 255-block equation store: what cannot fit
+        // there is refused whole.
+        if (@intFromPtr(p) - @intFromPtr(tmpString) + t >= MAX_EQUATION_BYTE_LENGTH) {
             displayCalcErrorMessage(ERROR_STRING_WOULD_BE_TOO_LONG, ERR_REGISTER_LINE);
             moreInfoOnError("In function fnVecToEqn:", "the polynomial text does not fit the equation buffer", null, null);
             return;
@@ -1221,23 +1235,17 @@ fn _runDyadicFunction(mvarBuffer: [*c]u8, item: u16) linksection(runtime.code_se
     liftStack();
 
     _popNumericStack(mvarBuffer, &re, &im);
-    if (real34IsZero(&im) or real34IsNaN(&im)) {
-        reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
-        real34Copy(&re, registerReal34Ptr(REGISTER_X));
+    if (real34IsZero(&im)) {
+        runtime.convertReal34ToReal34Register(&re, REGISTER_X);
     } else {
-        reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
-        real34Copy(&re, registerReal34Ptr(REGISTER_X));
-        real34Copy(&im, registerImag34Ptr(REGISTER_X));
+        runtime.convertReal34ToComplex34Register(&re, &im, REGISTER_X);
     }
 
     _popNumericStack(mvarBuffer, &re, &im);
-    if (real34IsZero(&im) or real34IsNaN(&im)) {
-        reallocateRegister(REGISTER_Y, dtReal34, 0, amNone);
-        real34Copy(&re, registerReal34Ptr(REGISTER_Y));
+    if (real34IsZero(&im)) {
+        runtime.convertReal34ToReal34Register(&re, REGISTER_Y);
     } else {
-        reallocateRegister(REGISTER_Y, dtComplex34, 0, amNone);
-        real34Copy(&re, registerReal34Ptr(REGISTER_Y));
-        real34Copy(&im, registerImag34Ptr(REGISTER_Y));
+        runtime.convertReal34ToComplex34Register(&re, &im, REGISTER_Y);
     }
 
     runFunction(@bitCast(item));
@@ -1258,13 +1266,10 @@ fn _runMonadicFunction(mvarBuffer: [*c]u8, item: u16) linksection(runtime.code_s
     clearRegister(REGISTER_X);
 
     _popNumericStack(mvarBuffer, &re, &im);
-    if (real34IsZero(&im) or real34IsNaN(&im)) {
-        reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
-        real34Copy(&re, registerReal34Ptr(REGISTER_X));
+    if (real34IsZero(&im)) {
+        runtime.convertReal34ToReal34Register(&re, REGISTER_X);
     } else {
-        reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
-        real34Copy(&re, registerReal34Ptr(REGISTER_X));
-        real34Copy(&im, registerImag34Ptr(REGISTER_X));
+        runtime.convertReal34ToComplex34Register(&re, &im, REGISTER_X);
     }
 
     runFunction(@bitCast(item));
@@ -1366,29 +1371,29 @@ fn _processOperator(func: u16, mvarBuffer: [*c]u8) linksection(runtime.code_sect
                     moreInfoOnError("In function _processOperator:", "parentheses mismatch!", "no corresponding opening vertical bar", null);
                 },
                 PARSER_OPERATOR_ITM_EQUAL => {
-                    if (getRegisterDataType(REGISTER_X) != dtComplex34) { // a complex left hand side cannot convert: the complex solver leaves one in X
-                        fnToReal(NOPARAM);
-                    }
                     _popNumericStack(mvarBuffer, PARSER_LEFT_VALUE_REAL(mvarBuffer), PARSER_LEFT_VALUE_IMAG(mvarBuffer));
                 },
                 else => {
+                    const sp = PARSER_NUMERIC_STACK_POINTER(mvarBuffer);
+                    if (sp[0] != 1) {
+                        displayCalcErrorMessage(ERROR_SYNTAX_ERROR_IN_EQUATION, ERR_REGISTER_LINE);
+                        moreInfoOnError("In function _processOperator:", "an expression must produce one value", null, null);
+                        return;
+                    }
                     setSystemFlag(FLAG_ASLIFT);
                     liftStack();
-                    const sp = PARSER_NUMERIC_STACK_POINTER(mvarBuffer);
                     const leftReal = PARSER_LEFT_VALUE_REAL(mvarBuffer);
                     const leftImag = PARSER_LEFT_VALUE_IMAG(mvarBuffer);
-                    const topImag = parserNumericSlot(mvarBuffer, sp[0], 1);
-                    const topReal = parserNumericSlot(mvarBuffer, sp[0], 2);
-                    if ((real34IsZero(leftImag) or real34IsNaN(leftImag)) and (real34IsZero(topImag) or real34IsNaN(topImag))) {
+                    const stack = PARSER_NUMERIC_STACK(mvarBuffer);
+                    if (real34IsZero(leftImag) and real34IsZero(&stack[1])) {
                         reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
-                        real34Subtract(topReal, leftReal, registerReal34Ptr(REGISTER_X));
+                        real34Subtract(&stack[0], leftReal, registerReal34Ptr(REGISTER_X));
                     } else {
                         reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
-                        real34Subtract(topReal, leftReal, registerReal34Ptr(REGISTER_X));
-                        real34Subtract(topImag, leftImag, registerImag34Ptr(REGISTER_X));
+                        real34Subtract(&stack[0], leftReal, registerReal34Ptr(REGISTER_X));
+                        real34Subtract(&stack[1], leftImag, registerImag34Ptr(REGISTER_X));
                     }
-                    // C decrements a uint8_t, so an empty stack wraps to 255.
-                    sp[0] -%= 1;
+                    sp[0] = 0;
                 },
             }
             return;

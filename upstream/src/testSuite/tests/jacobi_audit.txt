@@ -38,11 +38,11 @@ In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
 ; ║ Π(n,m) ║ EllipticPi[0, 0.5]           ║n=0.0000000 ║m=0.5000000 ║ 1.8540747  ║ ✓ ║ =K(m) exactly when n=0         ║
 ; ║ Π(n,m) ║ EllipticPi[0.25, 0]          ║n=0.2500000 ║m=0.0000000 ║ 1.8137994  ║ ✓ ║ m=0 degenerate case            ║
 ; ║ Π(n,m) ║ EllipticPi[0.4, 0]           ║n=0.4000000 ║m=0.0000000 ║ 2.0278893  ║ ✓ ║ m=0 degenerate case            ║
-; ║ Π(n,m) ║ EllipticPi[0.4, 0.6]         ║n=0.4000000 ║m=0.6000000 ║ 2.5909212  ║ ✓ ║ n<m: _ellipticPi_1 branch      ║
-; ║ Π(n,m) ║ EllipticPi[0.59, 0.6]        ║n=0.5900000 ║m=0.6000000 ║ 3.2018658  ║ ✓ ║ n just below m boundary        ║
-; ║ Π(n,m) ║ EllipticPi[0.61, 0.6]        ║n=0.6100000 ║m=0.6000000 ║ 3.2920178  ║ ✓ ║ n just above m boundary        ║
-; ║ Π(n,m) ║ EllipticPi[-0.5, 0.5]        ║n=-0.500000 ║m=0.5000000 ║ 1.4878470  ║ ✓ ║ Negative n → _ellipticPi_4     ║
-; ║ Π(n,m) ║ EllipticPi[1.5, 0.5]         ║n=1.5000000 ║m=0.5000000 ║ -0.4567203 ║ ✓ ║ n>1 → _ellipticPi_2 path       ║
+; ║ Π(n,m) ║ EllipticPi[0.4, 0.6]         ║n=0.4000000 ║m=0.6000000 ║ 2.5909212  ║ ✓ ║ Direct Carlson RF/RJ formula    ║
+; ║ Π(n,m) ║ EllipticPi[0.59, 0.6]        ║n=0.5900000 ║m=0.6000000 ║ 3.2018658  ║ ✓ ║ Direct Carlson RF/RJ formula    ║
+; ║ Π(n,m) ║ EllipticPi[0.61, 0.6]        ║n=0.6100000 ║m=0.6000000 ║ 3.2920178  ║ ✓ ║ Direct Carlson RF/RJ formula    ║
+; ║ Π(n,m) ║ EllipticPi[-0.5, 0.5]        ║n=-0.500000 ║m=0.5000000 ║ 1.4878470  ║ ✓ ║ Direct Carlson RF/RJ formula    ║
+; ║ Π(n,m) ║ EllipticPi[1.5, 0.5]         ║n=1.5000000 ║m=0.5000000 ║ -0.4567203 ║ ✓ ║ Principal-value Carlson formula ║
 ; ╠════════╬══════════════════════════════╬════════════╬════════════╬════════════╬═══╬════════════════════════════════╣
 ; ║ Z(φ,m) ║ JacobiZeta[0, 0.5]           ║φ=0.0000000 ║m=0.5000000 ║ 0.0000000  ║ ✓ ║ Z=0 at φ=0 for all m           ║
 ; ║ Z(φ,m) ║ JacobiZeta[π/2, 0.6]         ║φ=1.5707963 ║m=0.6000000 ║ 0.0000000  ║ ✓ ║ Z(π/2,m)=0 for all m (identity)║
@@ -139,23 +139,23 @@ Func: fnEllipticPi
 In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0" RX=Real:"0.4"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.4" RX=Real:"2.0278893379868059484764803851489695249775045315868273339005028063"
 Func: fnEllipticPi
-;EllipticPi[0.4, 0.6] — n!=0, m!=0, exercises _ellipticPi_1
+;EllipticPi[0.4, 0.6], direct Carlson RF/RJ formula
 In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0.6" RX=Real:"0.4"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.4" RX=Real:"2.5909211565552202930677921722956512368970204585464802660712104256"
 Func: fnEllipticPi
-;EllipticPi[0.59, 0.6] — n just below m, boundary _ellipticPi_1/_ellipticPi_3
+;EllipticPi[0.59, 0.6], n immediately below m
 In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0.6" RX=Real:"0.59"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.59" RX=Real:"3.2018657790104620015425527493418397641506064607496270514905973446"
 Func: fnEllipticPi
-;EllipticPi[0.61, 0.6] — n just above m, boundary _ellipticPi_3/_ellipticPi_1
+;EllipticPi[0.61, 0.6], n immediately above m
 In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0.6" RX=Real:"0.61"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.61" RX=Real:"3.2920177559507165953392402006021333668850209598584559148729441750"
 Func: fnEllipticPi
-;EllipticPi[-0.5, 0.5] — negative n, exercises _ellipticPi_4
+;EllipticPi[-0.5, 0.5], negative n
 In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0.5" RX=Real:"-0.5"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-0.5" RX=Real:"1.4878469926687983852736473992742008384364149684541791596595838209"
 Func: fnEllipticPi
-;EllipticPi[1.5, 0.5] — n > 1, exercises _ellipticPi_2
+;EllipticPi[1.5, 0.5], principal value for n > 1
 In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0.5" RX=Real:"1.5"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1.5" RX=Real:"-0.456720313452909897008464337082923880026483131320347682348613975"
 
@@ -175,16 +175,15 @@ Func: fnJacobiSn
 In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0.99" RX=Real:"0.5"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.5" RX=Real:"0.4622893992991469172163555874850831822259435476521049834176717258"
 Func: fnJacobiCn
-;JacobiCN[EllipticK[0.5], 0.5] = 0 exactly (quarter period)
-;input: EllipticK[0.5] = 1.8540746773013719184338503471952600462175988235217669055859280450
+;JacobiCN at the decimal128 value nearest the quarter period
 In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0.5" RX=Real:"1.8540746773013719184338503471952600462175988235217669055859280450"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1.8540746773013719184338503471952600462175988235217669055859280450" RX=Real:"3.268280587232690793149014679635173E-35"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1.8540746773013719184338503471952600462175988235217669055859280450" RX=Real:"3.268077753827164232432055899361179E-35"
 Func: fnJacobiCn
 ;JacobiCN[2.5, 0.5]
 In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0.5" RX=Real:"2.5"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"2.5" RX=Real:"-0.454757722860204454706625553821737075187228062168852398817245251"
 Func: fnJacobiDn
-;JacobiDN[EllipticK[0.5], 0.5] = Sqrt[0.5] exactly (quarter period: dn(K(m),m)=sqrt(1-m))
+;JacobiDN near the quarter period
 In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0.5" RX=Real:"1.8540746773013719184338503495318688"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1.8540746773013719184338503495318688" RX=Real:"0.70710678118654752440084436210484904"
 
@@ -192,9 +191,9 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1.8540746773013719184338503495318688"
 ; Jacobi amplitude am(u,m)
 ; ------------------------------------------------------------
 Func: fnJacobiAmplitude
-;JacobiAmplitude[EllipticK[0.5], 0.5] = Pi/2 exactly (quarter period)
+;JacobiAmplitude near the quarter period
 In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0.5" RX=Real:"1.8540746773013719184338503495318688"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1.8540746773013719184338503495318688" RX=Real:"1.5707963267948966192313216916397514":RAD
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1.8540746773013719184338503495318688" RX=Real:"1.570796326794896619231321693291983":RAD
 
 ; ------------------------------------------------------------
 ; Jacobi zeta Z(phi,m)
@@ -249,4 +248,14 @@ In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0.5" RX=Real:"2.5"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"2.5" RX=Real:"-0.1372107115300787950968015391801217709490216088764057227123024020"
 
 
-
+; Ellipse conversion uses magnitudes and a cancellation-free parameter identity.
+Func: fnEllipse
+In: RT=Real:"1e64" RZ=Real:"1.999999999999999999999999999997000e-30" RY=Real:"1" RX=Real:"1.000000000000000000000000000001"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+Func: fnEllipse
+In: FL_ASLIFT=0 RY=Real:"1" RX=ReMa:"M1,2[1.000000000000000000000000000001,-5]"
+Out: EC=0 RX=ReMa:"M1,2[1.999999999999999999999999999997000e-30,0.96]"

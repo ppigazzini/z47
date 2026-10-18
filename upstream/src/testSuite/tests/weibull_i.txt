@@ -173,3 +173,70 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.75" RX=Real:"3.84362411134561139733
 ;=======================================
 ; WeibullI(Complex) --> Error24
 ;=======================================
+
+; Endpoint, scaled-power, directed-rounding, parameter, and matrix cases.
+Func: fnWeibullI
+In:  RMODE=0 FL_SPCRES=0 RS=Real:"1" RQ=Real:"2" RX=Real:"0"
+Out: EC=1 RX=Real:"0"
+
+Func: fnWeibullI
+In:  RMODE=0 FL_SPCRES=1 RS=Real:"1" RQ=Real:"2" RX=Real:"0"
+Out: EC=0 RX=Real:"NaN"
+
+Func: fnWeibullI
+In:  RMODE=0 FL_SPCRES=0 RS=Real:"1" RQ=Real:"2" RX=Real:"1"
+Out: EC=1 RX=Real:"1"
+
+Func: fnWeibullI
+In:  RMODE=0 FL_SPCRES=1 RS=Real:"1" RQ=Real:"2" RX=Real:"1"
+Out: EC=0 RX=Real:"NaN"
+
+; The logarithmic result recovers a quantile after the power underflows.
+Func: fnWeibullI
+In:  RMODE=0 FL_SPCRES=0 RS=Real:"1e6144" RQ=Real:"0.5" RX=Real:"1e-6144"
+Out: EC=0 RX=Real:"1e-6144"
+
+; A positive quantile below the working exponent range retains its directed side.
+Func: fnWeibullI
+In:  RMODE=0 FL_SPCRES=0 RS=Real:"1e-6144" RQ=Real:"1" RX=Real:"1e-6176"
+Out: EC=0 RX=Real:"0"
+
+Func: fnWeibullI
+In:  RMODE=3 FL_SPCRES=0 RS=Real:"1e-6144" RQ=Real:"1" RX=Real:"1e-6176"
+Out: EC=0 RX=Real:"1e-6176"
+
+Func: fnWeibullI
+In:  RMODE=0 FL_SPCRES=0 RS=Real:"1" RQ=Real:"1" RX=Real:"-1e-34"
+Out: EC=1 RX=Real:"-1e-34"
+
+Func: fnWeibullI
+In:  RMODE=0 FL_SPCRES=1 RS=Real:"1" RQ=Real:"1" RX=Real:"1.000000000000000000000000000000001"
+Out: EC=0 RX=Real:"NaN"
+
+Func: fnWeibullI
+In:  RMODE=0 FL_SPCRES=0 RS=Real:"1" RQ=Real:"1" RX=Real:"NaN"
+Out: EC=1 RX=Real:"NaN"
+
+Func: fnWeibullI
+In:  RMODE=0 FL_SPCRES=1 RS=Real:"1" RQ=Real:"1" RX=Real:"NaN"
+Out: EC=0 RX=Real:"NaN"
+
+Func: fnWeibullI
+In:  RMODE=0 FL_SPCRES=0 RS=Real:"1" RQ=Real:"0" RX=Real:"0.5"
+Out: EC=16 RX=Real:"0.5"
+
+Func: fnWeibullI
+In:  RMODE=0 FL_SPCRES=0 RS=Real:"NaN" RQ=Real:"1" RX=Real:"0.5"
+Out: EC=16 RX=Real:"0.5"
+
+Func: fnWeibullI
+In:  RMODE=0 FL_SPCRES=1 RS=Real:"1" RQ=Real:"inf" RX=Real:"0.5"
+Out: EC=0 RX=Real:"NaN"
+
+Func: fnWeibullI
+In:  RMODE=0 FL_SPCRES=0 RS=Real:"1" RQ=Real:"1" RX=ReMa:"M1,2[0.1,0.9]"
+Out: EC=24 RX=ReMa:"M1,2[0.1,0.9]"
+
+Func: fnWeibullI
+In:  RMODE=0 FL_SPCRES=0 RS=Real:"1" RQ=Real:"1" RX=CxMa:"M1,1[0i1]"
+Out: EC=24 RX=CxMa:"M1,1[0i1]"

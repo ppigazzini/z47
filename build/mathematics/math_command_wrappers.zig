@@ -61,6 +61,29 @@ pub const RuntimeObjectOptions = struct {
     option_bessel: bool = true,
     option_ortho: bool = true,
     option_dist_normal: bool = true,
+    // THE DISTRIBUTION GATES (defines.h): one OPTION_DIST_* per distribution
+    // file, defined by the group option that carries it (NORML by DIST_NORMAL;
+    // T, LOGIS, CAUCH, WEIBL, EXPON and CHI2 by DIST_B; BINOM, F, GEOM, HYPER,
+    // NBIN and POISS by DIST_C; PRTO, GEV and UNFM by DIST_D), so a shipped
+    // package takes a whole group or none of it. Each owner reads its own gate,
+    // as its upstream file does. build/firmware.zig derives them from the
+    // dm42Package table; host and DMCP5 keep every one.
+    option_dist_norml: bool = true,
+    option_dist_t: bool = true,
+    option_dist_logis: bool = true,
+    option_dist_cauch: bool = true,
+    option_dist_weibl: bool = true,
+    option_dist_expon: bool = true,
+    option_dist_chi2: bool = true,
+    option_dist_binom: bool = true,
+    option_dist_f: bool = true,
+    option_dist_geom: bool = true,
+    option_dist_hyper: bool = true,
+    option_dist_nbin: bool = true,
+    option_dist_poiss: bool = true,
+    option_dist_prto: bool = true,
+    option_dist_gev: bool = true,
+    option_dist_unfm: bool = true,
     // OPTION_EIGEN gates the eigenvalue/eigenvector/QR/matrix-sqrt half of
     // matrix.c (EIGVAL, EIGVEC, M.QR, MSQRT) and squareRoot.c's 159-digit
     // helpers; LU, determinant and inverse stay either way. Which DM42 packages
@@ -183,6 +206,22 @@ pub fn addBuildOptions(
     build_options.addOption(bool, "option_bessel", options.option_bessel);
     build_options.addOption(bool, "option_ortho", options.option_ortho);
     build_options.addOption(bool, "option_dist_normal", options.option_dist_normal);
+    build_options.addOption(bool, "option_dist_norml", options.option_dist_norml);
+    build_options.addOption(bool, "option_dist_t", options.option_dist_t);
+    build_options.addOption(bool, "option_dist_logis", options.option_dist_logis);
+    build_options.addOption(bool, "option_dist_cauch", options.option_dist_cauch);
+    build_options.addOption(bool, "option_dist_weibl", options.option_dist_weibl);
+    build_options.addOption(bool, "option_dist_expon", options.option_dist_expon);
+    build_options.addOption(bool, "option_dist_chi2", options.option_dist_chi2);
+    build_options.addOption(bool, "option_dist_binom", options.option_dist_binom);
+    build_options.addOption(bool, "option_dist_f", options.option_dist_f);
+    build_options.addOption(bool, "option_dist_geom", options.option_dist_geom);
+    build_options.addOption(bool, "option_dist_hyper", options.option_dist_hyper);
+    build_options.addOption(bool, "option_dist_nbin", options.option_dist_nbin);
+    build_options.addOption(bool, "option_dist_poiss", options.option_dist_poiss);
+    build_options.addOption(bool, "option_dist_prto", options.option_dist_prto);
+    build_options.addOption(bool, "option_dist_gev", options.option_dist_gev);
+    build_options.addOption(bool, "option_dist_unfm", options.option_dist_unfm);
     build_options.addOption(bool, "option_eigen", options.option_eigen);
     build_options.addOption(bool, "option_vector", options.option_vector);
     module.addOptions("math_command_wrappers_build_options", build_options);

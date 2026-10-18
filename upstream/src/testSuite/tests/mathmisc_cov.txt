@@ -5,39 +5,39 @@
 In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
 
 ; type predicates on a plain real
-Func: fnCheckType
+Func: fnCheckValueTiCov
+In:  FARG=20 RX=Real:"3.5"
+Out: EC=0 RX=Real:"1"
+Func: fnCheckValueTiCov
 In:  FARG=0 RX=Real:"3.5"
-Out: EC=0
-Func: fnCheckNumber
-In:  FARG=0 RX=Real:"3.5"
-Out: EC=0
-Func: fnCheckAngle
-In:  FARG=0 RX=Real:"3.5"
-Out: EC=0
-Func: fnCheckMatrix
-In:  FARG=0 RX=Real:"3.5"
-Out: EC=0
+Out: EC=0 RX=Real:"1"
+Func: fnCheckValueTiCov
+In:  FARG=1 RX=Real:"3.5"
+Out: EC=0 RX=Real:"0"
+Func: fnCheckValueTiCov
+In:  FARG=2 RX=Real:"3.5"
+Out: EC=0 RX=Real:"0"
 Func: fnCheckMatrixSquare
 In:  FARG=0 RX=Real:"3.5"
 Out: EC=24
-Func: fnCheckForZero
-In:  FARG=0 RX=Real:"0"
-Out: EC=0
-Func: fnCheckPlusZero
-In:  FARG=0 RX=Real:"0"
-Out: EC=0
-Func: fnCheckMinusZero
-In:  FARG=0 RX=Real:"0"
-Out: EC=0
-Func: fnCheckNaN
-In:  FARG=0 RX=Real:"NaN"
-Out: EC=0
-Func: fnCheckInfinite
-In:  FARG=0 RX=Real:"NaN"
-Out: EC=0
-Func: fnCheckSpecial
-In:  FARG=0 RX=Real:"NaN"
-Out: EC=0
+Func: fnCheckValueTiCov
+In:  FARG=11 RX=Real:"0"
+Out: EC=0 RX=Real:"1"
+Func: fnCheckValueTiCov
+In:  FARG=7 RX=Real:"0"
+Out: EC=0 RX=Real:"1"
+Func: fnCheckValueTiCov
+In:  FARG=8 RX=Real:"0"
+Out: EC=0 RX=Real:"0"
+Func: fnCheckValueTiCov
+In:  FARG=4 RX=Real:"NaN"
+Out: EC=0 RX=Real:"1"
+Func: fnCheckValueTiCov
+In:  FARG=5 RX=Real:"NaN"
+Out: EC=0 RX=Real:"0"
+Func: fnCheckValueTiCov
+In:  FARG=6 RX=Real:"NaN"
+Out: EC=0 RX=Real:"1"
 
 ; fnGetType across data types (covers the type switch). The pushed type code
 ; folds the angular/polar mode into its fraction, so it is not asserted by value.
@@ -55,9 +55,9 @@ In:  FARG=0 RX=Stri:"abc"
 Out: EC=0
 
 ; predicates on other types
-Func: fnCheckNumber
+Func: fnCheckValueTiCov
 In:  FARG=0 RX=Cplx:"1 i 2"
-Out: EC=0
+Out: EC=0 RX=Real:"1"
 
 ; small math ops on X: shift the decimal 2 places left (x100) and right (/100)
 Func: fnSdl
@@ -67,20 +67,57 @@ Func: fnSdr
 In:  FARG=2 RX=Real:"123.456"
 Out: EC=0 RX=Real:"1.23456"
 
+; Decimal shifts are exact before the Real34 exponent limit is applied.
+Func: fnSdl
+In:  FARG=1 RMODE=4 RX=Real:"9.999999999999999999999999999999999e6144"
+Out: EC=0 RX=Real:"9.999999999999999999999999999999999e6144"
+Func: fnSdl
+In:  FARG=1 RMODE=5 FL_SPCRES=1 RX=Real:"9.999999999999999999999999999999999e6144"
+Out: EC=0 RX=Real:"inf"
+Func: fnSdl
+In:  FARG=1 RMODE=4 RX=Real:"-9.999999999999999999999999999999999e6144"
+Out: EC=0 RX=Real:"-9.999999999999999999999999999999999e6144"
+Func: fnSdl
+In:  FARG=1 RMODE=6 FL_SPCRES=1 RX=Real:"-9.999999999999999999999999999999999e6144"
+Out: EC=0 RX=Real:"-inf"
+Func: fnSdr
+In:  FARG=1 RMODE=0 RX=Real:"1e-6176"
+Out: EC=0 RX=Real:"0"
+Func: fnSdr
+In:  FARG=1 RMODE=5 RX=Real:"1e-6176"
+Out: EC=0 RX=Real:"1e-6176"
+Func: fnSdr
+In:  FARG=1 RMODE=6 RX=Real:"-1e-6176"
+Out: EC=0 RX=Real:"-1e-6176"
+Func: fnSdl
+In:  FARG=99 RMODE=3 FL_SPCRES=1 RX=Real:"-inf"
+Out: EC=0 RX=Real:"-inf"
+Func: fnSdr
+In:  FARG=99 RMODE=6 FL_SPCRES=1 RX=Real:"NaN"
+Out: EC=0 RX=Real:"NaN"
+
+; Non-real decimal shifts report a type error.
+Func: fnSdl
+In:  FARG=2 RX=Cplx:"1 i 2"
+Out: EC=24 RX=Cplx:"1 i 2"
+Func: fnSdr
+In:  FARG=2 RX=ReMa:"M1,2[1,2]"
+Out: EC=24 RX=ReMa:"M1,2[1,2]"
+
 
 ; integer check across modes (0 plain, 1 even, 2 odd, 3 fp) on integer and fractional X
-Func: fnCheckInteger
-In:  FARG=0 RX=Real:"6"
-Out: EC=0
-Func: fnCheckInteger
-In:  FARG=1 RX=Real:"6"
-Out: EC=0
-Func: fnCheckInteger
-In:  FARG=2 RX=Real:"7"
-Out: EC=0
-Func: fnCheckInteger
-In:  FARG=3 RX=Real:"5.5"
-Out: EC=0
+Func: fnCheckValueTiCov
+In:  FARG=15 RX=Real:"6"
+Out: EC=0 RX=Real:"1"
+Func: fnCheckValueTiCov
+In:  FARG=16 RX=Real:"6"
+Out: EC=0 RX=Real:"1"
+Func: fnCheckValueTiCov
+In:  FARG=17 RX=Real:"7"
+Out: EC=0 RX=Real:"1"
+Func: fnCheckValueTiCov
+In:  FARG=18 RX=Real:"5.5"
+Out: EC=0 RX=Real:"1"
 
 ; increment a numbered register (R00: 41 -> 42)
 Func: fnInc
@@ -94,6 +131,12 @@ Out: EC=0 R00=Real:"4"
 Func: fnDec
 In:  FARG=0 R00=Real:"-0.5" RX=Real:"1"
 Out: EC=0 R00=Real:"-1.5"
+Func: fnInc
+In:  FARG=0 R00=Cplx:"1.25 i -2.5" RX=Real:"1"
+Out: EC=0 R00=Cplx:"2.25 i -2.5"
+Func: fnDec
+In:  FARG=0 R00=Time:"12:00:00" RX=Real:"1"
+Out: EC=0 R00=Time:"11:00:00"
 Func: fnDec
 In:  FARG=0 R00=LonI:"9" RX=Real:"1"
 Out: EC=0 R00=LonI:"8"
@@ -116,3 +159,72 @@ Out: EC=0
 Func: fnRandomI
 In:  FARG=0 RY=Real:"1" RX=Real:"100"
 Out: EC=0 RX=Real:"14.03867479730860208273123018232058"
+
+; Timer recall converts Real34 hours to milliseconds.  The first value is
+; forty decimal places above the half-millisecond boundary after exact scaling;
+; p34 multiplication loses that direction, while p39 retains it.
+Func: fnTimerInputCov
+In:  RX=Real:"1.388888888888888888888888888888889e-7"
+Out: EC=0 RX=Real:"1"
+Func: fnTimerInputCov
+In:  RX=Real:"1.388888888888888888888888888888888e-7"
+Out: EC=0 RX=Real:"0"
+Func: fnTimerInputCov
+In:  RX=Real:"2.763888888888888888888888888888888e-5"
+Out: EC=0 RX=Real:"99"
+
+; The full uint32 millisecond range is accepted and the next integer rejected.
+Func: fnTimerInputCov
+In:  RX=Real:"1193.046470833333333333333333333333"
+Out: EC=0 RX=Real:"4294967295"
+Func: fnTimerInputCov
+In:  RX=Real:"1193.046471111111111111111111111111"
+Out: EC=8
+Func: fnTimerInputCov
+In:  RX=Time:"4294967.295"
+Out: EC=0 RX=Real:"4294967295"
+Func: fnTimerInputCov
+In:  RX=Time:"4294967.296"
+Out: EC=8
+
+; Signed zero is a valid zero duration.  Specials and negative durations are
+; outside the unsigned timer range.
+Func: fnTimerInputCov
+In:  RX=Real:"-0"
+Out: EC=0 RX=Real:"0"
+Func: fnTimerInputCov
+In:  RX=Time:"-0"
+Out: EC=0 RX=Real:"0"
+Func: fnTimerInputCov
+In:  RX=Real:"-1e-20"
+Out: EC=8
+Func: fnTimerInputCov
+In:  RX=Real:"Infinity"
+Out: EC=8
+Func: fnTimerInputCov
+In:  RX=Real:"NaN"
+Out: EC=8
+
+; Decimal-wrapper boundaries: unsigned and signed host conversion, 4-byte
+; aligned Real34 copies, sign-bit operations, aliases, and Real34 packing.
+Func: fnRealTypeCov
+In:  FARG=0 RMODE=0
+Out: EC=0
+Func: fnRealTypeCov
+In:  FARG=1 RMODE=0
+Out: EC=0
+Func: fnRealTypeCov
+In:  FARG=2 RMODE=0
+Out: EC=0
+Func: fnRealTypeCov
+In:  FARG=3 RMODE=0
+Out: EC=0
+Func: fnRealTypeCov
+In:  FARG=4 RMODE=0
+Out: EC=0
+Func: fnRealTypeCov
+In:  FARG=5 RX=CxMa:"M1,1[2i3]" RMODE=0
+Out: EC=0 RX=CxMa:"M1,1[1i90]"
+Func: fnRealTypeCov
+In:  FARG=6 RMODE=0
+Out: EC=0

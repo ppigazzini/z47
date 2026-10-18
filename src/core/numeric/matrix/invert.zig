@@ -1,17 +1,18 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // Zig port of the matrix inverse primitives of src/c47/mathematics/matrix.c:
 // invertRealMatrix / invertComplexMatrix invert a square matrix in place into a
-// real_t scratch array via the dense core invCpxMat (owned by
+// cplx_t scratch array via the dense core invCpxMat (owned by
 // math_matrix_complex_core.zig) and write the result back, copying the
-// source first when res differs from the input.
+// source first when res differs from the input. A real matrix that is exactly
+// singular is refused before the LU is attempted.
 
 const runtime = @import("../command_wrappers/runtime.zig");
 const abi = @import("abi");
 const math_real_predicates = @import("../compare/real_predicates.zig");
+const math_matrix_determinant = @import("determinant.zig");
 
 const real_t = runtime.real_t;
-const real34_t = runtime.real34_t;
-const complex34_t = runtime.complex34_t;
+const cplx_t = runtime.cplx_t;
 const real34Matrix_t = runtime.real34Matrix_t;
 const complex34Matrix_t = runtime.complex34Matrix_t;
 
@@ -39,6 +40,11 @@ fn reportRamFull(comptime function_name: [*:0]const u8, comptime info: [*:0]cons
     }
 }
 
+// A 1x1 matrix inverts at 39 digits; larger ones at 75.
+inline fn inverseContext(n: u16) *runtime.realContext_t {
+    return if (n == 1) &runtime.ctxtReal39 else &runtime.ctxtReal75;
+}
+
 pub export fn invertRealMatrix(matrix: *const real34Matrix_t, res: *real34Matrix_t) callconv(.c) void {
     const n = matrix.header.matrixColumns;
 
@@ -51,15 +57,15 @@ pub export fn invertRealMatrix(matrix: *const real34Matrix_t, res: *real34Matrix
     const blocks = @as(usize, n) * n * real_size_in_blocks * 2;
     const count = @as(usize, n) * n;
     if (runtime.allocC47Blocks(blocks)) |tmp_raw| {
-        const tmp_mat: [*]real_t = @ptrCast(@alignCast(tmp_raw));
+        const tmp_mat: [*]cplx_t = @ptrCast(@alignCast(tmp_raw));
         const me = constRealElems(matrix);
         var k: usize = 0;
         while (k < count) : (k += 1) {
-            runtime.real34ToReal(&me[k], &tmp_mat[k * 2]);
-            runtime.realSetZero(&tmp_mat[k * 2 + 1]);
+            runtime.real34ToReal(&me[k], &tmp_mat[k].Real);
+            runtime.realSetZero(&tmp_mat[k].Imag);
         }
 
-        if (runtime.invCpxMat(tmp_mat, n, &runtime.ctxtReal39)) {
+        if (!math_matrix_determinant.realMatExactlySingular(matrix) and runtime.invCpxMat(tmp_mat, n, 0, inverseContext(n))) {
             if (!samePtr(matrix, res)) {
                 runtime.copyRealMatrix(matrix, res);
             }
@@ -67,7 +73,7 @@ pub export fn invertRealMatrix(matrix: *const real34Matrix_t, res: *real34Matrix
                 const re = realElems(res);
                 k = 0;
                 while (k < count) : (k += 1) {
-                    runtime.realToReal34(&tmp_mat[k * 2], &re[k]);
+                    runtime.realToReal34(&tmp_mat[k].Real, &re[k]);
                 }
             } else {
                 reportRamFull("In function invertRealMatrix:", "Ram full, 1u");
@@ -94,15 +100,15 @@ pub export fn invertComplexMatrix(matrix: *const complex34Matrix_t, res: *comple
     const blocks = @as(usize, n) * n * real_size_in_blocks * 2;
     const count = @as(usize, n) * n;
     if (runtime.allocC47Blocks(blocks)) |tmp_raw| {
-        const tmp_mat: [*]real_t = @ptrCast(@alignCast(tmp_raw));
+        const tmp_mat: [*]cplx_t = @ptrCast(@alignCast(tmp_raw));
         const me = constComplexElems(matrix);
         var k: usize = 0;
         while (k < count) : (k += 1) {
-            runtime.real34ToReal(&me[k].real, &tmp_mat[k * 2]);
-            runtime.real34ToReal(&me[k].imag, &tmp_mat[k * 2 + 1]);
+            runtime.real34ToReal(&me[k].real, &tmp_mat[k].Real);
+            runtime.real34ToReal(&me[k].imag, &tmp_mat[k].Imag);
         }
 
-        if (runtime.invCpxMat(tmp_mat, n, &runtime.ctxtReal39)) {
+        if (runtime.invCpxMat(tmp_mat, n, 0, inverseContext(n))) {
             if (!samePtr(matrix, res)) {
                 runtime.copyComplexMatrix(matrix, res);
             }
@@ -110,8 +116,8 @@ pub export fn invertComplexMatrix(matrix: *const complex34Matrix_t, res: *comple
                 const re = complexElems(res);
                 k = 0;
                 while (k < count) : (k += 1) {
-                    runtime.realToReal34(&tmp_mat[k * 2], &re[k].real);
-                    runtime.realToReal34(&tmp_mat[k * 2 + 1], &re[k].imag);
+                    runtime.realToReal34(&tmp_mat[k].Real, &re[k].real);
+                    runtime.realToReal34(&tmp_mat[k].Imag, &re[k].imag);
                 }
             } else {
                 reportRamFull("In function invertComplexMatrix:", "Ram full, 1w");

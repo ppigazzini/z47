@@ -222,6 +222,77 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"5" RX=Real:"2"
 In:  FL_ASLIFT=0 RZ=Real:"3.5" RY=Real:"2" RX=Real:"5"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"5" RX=Real:"2"
 
+; Exact decimal scaling and wide exponent range.
+In:  FL_ASLIFT=0 RZ=Real:"3" RY=Real:"5" RX=Real:"7.005"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"7.005" RX=Real:"0.990"
+
+In:  FL_ASLIFT=0 RZ=LonI:"3" RY=LonI:"5" RX=Real:"7.005"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"7.005" RX=Real:"0.990"
+
+In:  RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 RZ=Real:"1E6144" RY=Real:"1E6144" RX=Real:"7"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"7" RX=Real:"1"
+
+; The exact 68-digit product is rounded only at the Real34 result boundary.
+In:  RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 RZ=Real:"1.000000000000000000000000000000001" RY=Real:"1.000000000000000000000000000000001" RX=Real:"2"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"2" RX=Real:"1.000000000000000000000000000000002"
+
+In:  RMODE=5 FL_SPCRES=1 FL_ASLIFT=0 RZ=Real:"1.000000000000000000000000000000001" RY=Real:"1.000000000000000000000000000000001" RX=Real:"2"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"2" RX=Real:"1.000000000000000000000000000000003"
+
+In:  RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 RZ=Real:"1E-6176" RY=Real:"1E-6176" RX=Real:"2"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"2" RX=Real:"0"
+
+In:  RMODE=5 FL_SPCRES=1 FL_ASLIFT=0 RZ=Real:"1E-6176" RY=Real:"1E-6176" RX=Real:"2"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"2" RX=Real:"1E-6176"
+
+; Nonfinite values are outside the modular domain.
+In:  RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 RZ=Real:"3" RY=Real:"2" RX=Real:"inf"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RZ=Real:"3" RY=Real:"2" RX=Real:"inf"
+
+In:  FL_SPCRES=1 FL_ASLIFT=0 RZ=Real:"3" RY=Real:"inf" RX=Real:"7"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RZ=Real:"3" RY=Real:"inf" RX=Real:"7"
+
+In:  FL_SPCRES=1 FL_ASLIFT=0 RZ=Real:"3" RY=Real:"2" RX=Real:"NaN"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RZ=Real:"3" RY=Real:"2" RX=Real:"NaN"
+
+In:  FL_SPCRES=1 FL_ASLIFT=0 RZ=LonI:"3" RY=LonI:"2" RX=Real:"inf"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RZ=LonI:"3" RY=LonI:"2" RX=Real:"inf"
+
+; Every finite operand must satisfy X > 1, Y > 0, and Z > 0.
+In:  FL_SPCRES=1 FL_ASLIFT=0 RZ=Real:"3" RY=Real:"2" RX=Real:"1"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RZ=Real:"3" RY=Real:"2" RX=Real:"1"
+
+In:  FL_SPCRES=1 FL_ASLIFT=0 RZ=Real:"3" RY=Real:"2" RX=Real:"-7"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RZ=Real:"3" RY=Real:"2" RX=Real:"-7"
+
+In:  FL_SPCRES=1 FL_ASLIFT=0 RZ=Real:"3" RY=Real:"0" RX=Real:"7"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RZ=Real:"3" RY=Real:"0" RX=Real:"7"
+
+In:  FL_SPCRES=1 FL_ASLIFT=0 RZ=Real:"0" RY=Real:"2" RX=Real:"7"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RZ=Real:"0" RY=Real:"2" RX=Real:"7"
+
+In:  FL_SPCRES=1 FL_ASLIFT=0 RZ=Real:"-3" RY=Real:"2" RX=Real:"7"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RZ=Real:"-3" RY=Real:"2" RX=Real:"7"
+
+In:  FL_SPCRES=1 FL_ASLIFT=0 RZ=Real:"3" RY=Real:"-2" RX=Real:"7"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RZ=Real:"3" RY=Real:"-2" RX=Real:"7"
+
+; Ordered real modular multiplication rejects angular values and matrices.
+In:  FL_ASLIFT=0 RZ=Real:"3" RY=Real:"2":DEG RX=Real:"7"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RZ=Real:"3" RY=Real:"2":DEG RX=Real:"7"
+
+In:  FL_ASLIFT=0 RZ=ReMa:"M1,1[3]" RY=Real:"2" RX=Real:"7"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RZ=ReMa:"M1,1[3]" RY=Real:"2" RX=Real:"7"
+
+In:  FL_ASLIFT=0 RZ=Real:"3" RY=ReMa:"M1,1[2]" RX=Real:"7"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RZ=Real:"3" RY=ReMa:"M1,1[2]" RX=Real:"7"
+
+In:  FL_ASLIFT=0 RZ=Real:"3" RY=Real:"2" RX=ReMa:"M1,1[7]"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RZ=Real:"3" RY=Real:"2" RX=ReMa:"M1,1[7]"
+
+In:  FL_ASLIFT=0 RZ=Real:"3" RY=Real:"2" RX=CxMa:"M1,1[7i1]"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RZ=Real:"3" RY=Real:"2" RX=CxMa:"M1,1[7i1]"
+
 ;=======================================
 ; Error cases
 ;=======================================

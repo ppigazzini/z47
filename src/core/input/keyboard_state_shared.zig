@@ -1136,7 +1136,7 @@ pub fn implementation(comptime runtime: type) type {
                 runtime.temporaryInformation = runtime.TI_NO_INFO;
             }
 
-            if (isGraphMode() and item != runtime.ITM_BACKSPACE and item != runtime.ITM_EXIT1 and item != runtime.ITM_UP1 and item != runtime.ITM_DOWN1 and item != runtime.ITM_SNAP) {
+            if (isGraphMode() and item != runtime.ITM_BACKSPACE and item != runtime.ITM_EXIT1 and item != runtime.ITM_UP1 and item != runtime.ITM_DOWN1 and item != runtime.ITM_SNAP and item != runtime.ITM_OFF) {
                 runtime.keyActionProcessed = true;
             } else if (runtime.calcMode == runtime.CM_ASN_BROWSER and item != runtime.ITM_PERIOD and item != runtime.ITM_USERMODE and item != runtime.ITM_BACKSPACE and item != runtime.ITM_EXIT1 and item != runtime.ITM_UP1 and item != runtime.ITM_DOWN1) {
                 runtime.keyActionProcessed = true;

@@ -113,3 +113,15 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"0.0"
 ;=======================================
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"6.2 i -7.6"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Cplx:"6.2 i -7.6" RX=Real:"-7.6"
+
+; Matrix extraction uses the public SDIGS boundary.
+In:  RMODE=0 SD=7 FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=CxMa:"M1,2[2i1.234567890123456789012345678901234,NaN i -0]"
+Out: EC=0 SD=7 FL_CPXRES=0 FL_ASLIFT=1 RX=ReMa:"M1,2[1.234568,-0]"
+
+; With special results disabled, an infinite extracted component has the scalar overflow result.
+In:  RMODE=0 SD=34 FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RX=CxMa:"M1,1[2i1E6145]"
+Out: EC=4 FL_CPXRES=0 FL_ASLIFT=0 RX=CxMa:"M1,1[2i1E6145]"
+
+; NaN propagates and signed zero is retained when special results are enabled.
+In:  RMODE=6 SD=34 FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=CxMa:"M1,2[1E6145iNaN,-1E6145i-0]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=ReMa:"M1,2[NaN,-0]"

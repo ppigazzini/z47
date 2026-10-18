@@ -52,6 +52,11 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M2,3[1.1,-2.3,3.5,-5.7,7.8,-8.9]" RX=
 ;=======================================
 ; ip(Complex Matrix)
 ;=======================================
+In:  FL_ASLIFT=0 RX=CxMa:"M1,2[1.1i-2.3,-4.5i6.7]"
+Out: EC=0 FL_ASLIFT=1 RL=CxMa:"M1,2[1.1i-2.3,-4.5i6.7]" RX=CxMa:"M1,2[1i-2,-4i6]"
+
+In:  FL_ASLIFT=0 RX=CxMa:"M1,2[1.1i-2.3,NaNi6.7]"
+Out: EC=1 FL_ASLIFT=0 RX=CxMa:"M1,2[1.1i-2.3,NaNi6.7]"
 
 
 
@@ -64,7 +69,7 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=ShoI:"5#7"
 
 
 ;=======================================
-; ip(Real) --> Long Integer
+; ip(Real) --> Real
 ;=======================================
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"0.0001"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.0001" Rx=Real:"0"
@@ -117,3 +122,9 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-50546854216541525654542254525645458.
 ;=======================================
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"6.2 i -7.6"
 Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"6 i -7"
+
+In:  FL_ASLIFT=0 FL_SPCRES=0 RX=Cplx:"NaN i 2.9"
+Out: EC=1 FL_ASLIFT=0 RX=Cplx:"NaN i 2.9"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 RX=Cplx:"NaN i 2.9"
+Out: EC=0 FL_ASLIFT=1 RX=Cplx:"NaN i 2"

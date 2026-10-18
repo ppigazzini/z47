@@ -37,14 +37,13 @@ fn complexMatrixImagPtr(matrix: *runtime.complex34Matrix_t, index: usize) *runti
 }
 
 fn realPartComplex() callconv(.c) void {
-    var real_value: runtime.real_t = undefined;
-    var imag_value: runtime.real_t = undefined;
+    var value: runtime.cplx_t = undefined;
 
-    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &real_value, &imag_value)) {
+    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &value)) {
         return;
     }
 
-    runtime.convertRealToResultRegister(&real_value, runtime.REGISTER_X, runtime.amNone);
+    runtime.convertRealToResultRegister(&value.Real, runtime.REGISTER_X, runtime.amNone);
 }
 
 fn realPartComplexMatrix() void {
@@ -79,14 +78,13 @@ fn realPartReal() callconv(.c) void {
 }
 
 fn imaginaryPartComplex() callconv(.c) void {
-    var real_value: runtime.real_t = undefined;
-    var imag_value: runtime.real_t = undefined;
+    var value: runtime.cplx_t = undefined;
 
-    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &real_value, &imag_value)) {
+    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &value)) {
         return;
     }
 
-    runtime.convertRealToResultRegister(&imag_value, runtime.REGISTER_X, runtime.amNone);
+    runtime.convertRealToResultRegister(&value.Imag, runtime.REGISTER_X, runtime.amNone);
 }
 
 fn imaginaryPartComplexMatrix() void {
@@ -177,18 +175,17 @@ fn argError() void {
 }
 
 fn argComplex() callconv(.c) void {
-    var real_value: runtime.real_t = undefined;
-    var imag_value: runtime.real_t = undefined;
+    var value: runtime.cplx_t = undefined;
 
-    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &real_value, &imag_value)) {
+    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &value)) {
         return;
     }
 
-    rectangular_to_polar_owned.rectangularToPolarReal(&real_value, &imag_value, &real_value, &imag_value, &runtime.ctxtReal39);
-    runtime.convertAngleFromTo(&imag_value, runtime.amRadian, runtime.currentAngularMode, &runtime.ctxtReal39);
+    rectangular_to_polar_owned.rectangularToPolarReal(&value, value.mag(), value.arg(), &runtime.ctxtReal39);
+    runtime.convertAngleFromTo(value.arg(), runtime.amRadian, runtime.currentAngularMode, &runtime.ctxtReal39);
 
     runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, @intCast(runtime.currentAngularMode));
-    runtime.convertRealToReal34ResultRegister(&imag_value, runtime.REGISTER_X);
+    runtime.convertRealToReal34ResultRegister(value.arg(), runtime.REGISTER_X);
 }
 
 fn argRealMatrix() void {
@@ -272,17 +269,17 @@ fn magnitudeReal() callconv(.c) void {
     runtime.setRegisterAngularMode(runtime.REGISTER_X, runtime.amNone);
 }
 
-fn complexMagnitudeSquared(real: *const runtime.real_t, imag: *const runtime.real_t, out_magnitude: *runtime.real_t, real_context: *runtime.realContext_t) void {
+fn complexMagnitudeSquared(z: *const runtime.cplx_t, out_magnitude: *runtime.real_t, real_context: *runtime.realContext_t) void {
     var product: runtime.real_t = undefined;
 
-    runtime.realMultiply(real, real, &product, real_context);
-    runtime.realFMA(imag, imag, &product, out_magnitude, real_context);
+    runtime.realMultiply(&z.Real, &z.Real, &product, real_context);
+    runtime.realFMA(&z.Imag, &z.Imag, &product, out_magnitude, real_context);
 }
 
-fn complexMagnitude(real: *const runtime.real_t, imag: *const runtime.real_t, out_magnitude: *runtime.real_t, real_context: *runtime.realContext_t) void {
+fn complexMagnitude(z: *const runtime.cplx_t, out_magnitude: *runtime.real_t, real_context: *runtime.realContext_t) void {
     var squared: runtime.real_t = undefined;
 
-    complexMagnitudeSquared(real, imag, &squared, real_context);
+    complexMagnitudeSquared(z, &squared, real_context);
     runtime.realSquareRoot(&squared, out_magnitude, real_context);
 }
 
@@ -314,15 +311,14 @@ fn magnitudeComplexMatrix() void {
 }
 
 fn magnitudeComplex() callconv(.c) void {
-    var real_value: runtime.real_t = undefined;
-    var imag_value: runtime.real_t = undefined;
+    var value: runtime.cplx_t = undefined;
     var magnitude_value: runtime.real_t = undefined;
 
-    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &real_value, &imag_value)) {
+    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &value)) {
         return;
     }
 
-    complexMagnitude(&real_value, &imag_value, &magnitude_value, &runtime.ctxtReal39);
+    complexMagnitude(&value, &magnitude_value, &runtime.ctxtReal39);
     runtime.convertRealToResultRegister(&magnitude_value, runtime.REGISTER_X, runtime.amNone);
 }
 
@@ -386,20 +382,19 @@ fn conjugateComplexMatrix() void {
 }
 
 fn conjugateComplex() callconv(.c) void {
-    var real_value: runtime.real_t = undefined;
-    var imag_value: runtime.real_t = undefined;
+    var value: runtime.cplx_t = undefined;
 
-    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &real_value, &imag_value)) {
+    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &value)) {
         return;
     }
 
-    runtime.realChangeSign(&imag_value);
-    if (runtime.realIsZero(&imag_value) and !runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
-        runtime.realSetPositiveSign(&imag_value);
+    runtime.realChangeSign(&value.Imag);
+    if (runtime.realIsZero(&value.Imag) and !runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
+        runtime.realSetPositiveSign(&value.Imag);
     }
 
     runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtComplex34, 0, runtime.amNone);
-    runtime.convertComplexToResultRegister(&real_value, &imag_value, runtime.REGISTER_X);
+    runtime.convertComplexToResultRegister(&value, runtime.REGISTER_X);
 }
 
 pub fn conjugate() void {
@@ -423,14 +418,16 @@ pub fn conjugate() void {
 }
 
 fn swapRealImaginaryComplex() callconv(.c) void {
-    var real_value: runtime.real_t = undefined;
-    var imag_value: runtime.real_t = undefined;
+    var value: runtime.cplx_t = undefined;
+    var swapped: runtime.cplx_t = undefined;
 
-    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &real_value, &imag_value)) {
+    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &value)) {
         return;
     }
 
-    runtime.convertComplexToResultRegister(&imag_value, &real_value, runtime.REGISTER_X);
+    swapped.Real = value.Imag;
+    swapped.Imag = value.Real;
+    runtime.convertComplexToResultRegister(&swapped, runtime.REGISTER_X);
 }
 
 fn swapRealImaginaryRealMatrix() void {

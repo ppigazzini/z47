@@ -8,7 +8,7 @@ fn doIP(x: *runtime.real_t, mode: runtime.rounding_t) void {
             runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
         }
     } else {
-        runtime.realToIntegralValue(x, x, mode, &runtime.ctxtReal39);
+        runtime.realToIntegralValue(x, x, mode, &runtime.ctxtReal34);
     }
 }
 
@@ -24,13 +24,12 @@ pub fn integerPartReal(mode: runtime.rounding_t) void {
 }
 
 pub fn integerPartCplx(mode: runtime.rounding_t) void {
-    var a: runtime.real_t = undefined;
-    var b: runtime.real_t = undefined;
+    var x: runtime.cplx_t = undefined;
 
-    if (runtime.getRegisterAsComplex(runtime.REGISTER_X, &a, &b)) {
-        doIP(&a, mode);
-        doIP(&b, mode);
-        runtime.convertComplexToResultRegister(&a, &b, runtime.REGISTER_X);
+    if (runtime.getRegisterAsComplex(runtime.REGISTER_X, &x)) {
+        doIP(&x.Real, mode);
+        doIP(&x.Imag, mode);
+        runtime.convertComplexToResultRegister(&x, runtime.REGISTER_X);
     }
 }
 
@@ -64,6 +63,10 @@ fn ipCplx() callconv(.c) void {
 
 fn fpRealForward() callconv(.c) void {
     var integral: runtime.real34_t = undefined;
+
+    if (runtime.real34IsZero(runtime.registerReal34Ptr(runtime.REGISTER_X))) {
+        return;
+    }
 
     runtime.real34ToIntegralValue(runtime.registerReal34Ptr(runtime.REGISTER_X), &integral, runtime.DEC_ROUND_DOWN);
     runtime.real34Subtract(runtime.registerReal34Ptr(runtime.REGISTER_X), &integral, runtime.registerReal34Ptr(runtime.REGISTER_X));

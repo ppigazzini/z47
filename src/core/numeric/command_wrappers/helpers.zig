@@ -16,6 +16,7 @@ const math_real_predicates = @import("../compare/real_predicates.zig");
 const real_t = runtime.real_t;
 const real34_t = runtime.real34_t;
 const realContext_t = runtime.realContext_t;
+const cplx_t = runtime.cplx_t;
 const mpz_struct = runtime.mpz_struct;
 const longInteger_t = runtime.longInteger_t;
 
@@ -73,28 +74,32 @@ const consts = abi.constants;
 const constantPointer = consts.cstR;
 
 // Byte offsets from the generated constantPointers.h.
-const offset_const_1 = 5376; // const_1
-const offset_const_2 = 5448; // const_2
-const offset_const_3 = 5532; // const_3
-const offset_const_5 = 5592; // const_5
-const offset_const_1on2 = 5100; // const_1on2
-const offset_const39_1on3 = 5064; // const39_1on3
+const offset_const_1 = 12116; // const_1
+const offset_const_2 = 12188; // const_2
+const offset_const_3 = 12272; // const_3
+const offset_const_5 = 12332; // const_5
+const offset_const_1on2 = 5168; // const_1on2
+const offset_const39_1on3 = 5088; // const39_1on3
 const offset_const39_1oneE = 4716; // const39_1oneE
-const offset_const_90 = 8092; // const_90
-const offset_const_100 = 8080; // const_100
-const offset_const_180 = 8008; // const_180
-const offset_const39_ln2 = 5148; // const39_ln2
-const offset_const39_ln10 = 5460; // const39_ln10
+const offset_const_90 = 15400; // const_90
+const offset_const_100 = 15388; // const_100
+const offset_const_180 = 15316; // const_180
+const offset_const39_ln2 = 5216; // const39_ln2
+const offset_const39_ln10 = 12200; // const39_ln10
 const offset_const39_PHI = 1596; // const39_PHI
 const offset_const39_pi = 1848; // const39_pi
-const offset_const39_piOn4 = 5256; // const39_piOn4
-const offset_const39_piOn2 = 5400; // const39_piOn2
-const offset_const39_3piOn4 = 5496; // const39_3piOn4
-const offset_const39_3piOn2 = 5556; // const39_3piOn2
-const offset_const75_pi = 7936; // const75_pi
-const offset_const75_piOn2 = 8020; // const75_piOn2
-const offset_const75_piOn4 = 8104; // const75_piOn4
-const offset_const_3600 = 5980; // const_3600
+const offset_const39_piOn4 = 5516; // const39_piOn4
+const offset_const39_piOn2 = 12140; // const39_piOn2
+const offset_const39_3piOn4 = 12236; // const39_3piOn4
+const offset_const39_3piOn2 = 12296; // const39_3piOn2
+const offset_const75_pi = 15244; // const75_pi
+const offset_const75_piOn2 = 15328; // const75_piOn2
+const offset_const75_piOn4 = 15412; // const75_piOn4
+const offset_const_3600 = 12796; // const_3600
+const offset_const_10p9__1 = 12976; // const_10p9__1
+const offset_const75_ln10 = 15556; // const75_ln10
+const offset_const75_ln2 = 5384; // const75_ln2
+const offset_const75_3piOn4 = 15616; // const75_3piOn4
 
 // Constants synthesized locally rather than read from the constants blob; here
 // they are comptime real_t values with fixed bit patterns.
@@ -218,6 +223,29 @@ pub export fn z47_math_wrappers_const_plus_infinity() linksection(runtime.code_s
     return &const_plus_infinity_value;
 }
 
+// Constants the power and logarithm owners read; module-scope accessors keep
+// them off the exported surface. Each offset is a multiple of 4, so the
+// pointer is aligned.
+pub inline fn const_10p9__1() *const real_t {
+    return consts.cstRAligned(offset_const_10p9__1);
+}
+
+pub inline fn const75_ln10() *const real_t {
+    return consts.cstRAligned(offset_const75_ln10);
+}
+
+pub inline fn const75_ln2() *const real_t {
+    return consts.cstRAligned(offset_const75_ln2);
+}
+
+pub inline fn const75_3piOn4() *const real_t {
+    return consts.cstRAligned(offset_const75_3piOn4);
+}
+
+pub inline fn const39_3piOn4() *const real_t {
+    return consts.cstRAligned(offset_const39_3piOn4);
+}
+
 pub export fn z47_math_wrappers_const_minus_infinity() linksection(runtime.code_section) callconv(.c) *align(1) const real_t {
     return &const_minus_infinity_value;
 }
@@ -276,34 +304,79 @@ pub export fn real34Subtract(operand1: *const real34_t, operand2: *const real34_
 // Complex helpers previously forwarded to the retained upstream copies of
 // magnitude.c / conjugate.c; ported faithfully from those upstream sources.
 // ---------------------------------------------------------------------------
-pub export fn complexMagnitude2(a: *const real_t, b: *const real_t, c: *real_t, real_context: *realContext_t) linksection(runtime.code_section) callconv(.c) void {
-    var t: real_t = undefined;
-
-    runtime.realMultiply(a, a, &t, real_context);
-    runtime.realFMA(b, b, &t, c, real_context);
+// c may be the same variable as a.Real, not as a.Imag. The square is formed in c, which needs room for the digits of realContext.
+pub export fn complexMagnitude2(a: *const cplx_t, c: *real_t, real_context: *realContext_t) linksection(runtime.code_section) callconv(.c) void {
+    runtime.realMultiply(&a.Real, &a.Real, c, real_context);
+    runtime.realFMA(&a.Imag, &a.Imag, c, c, real_context);
 }
 
-pub export fn complexMagnitude(a: *const real_t, b: *const real_t, c: *real_t, real_context: *realContext_t) linksection(runtime.code_section) callconv(.c) void {
-    var u: real_t = undefined;
+pub export fn complexMagnitude(a: *const cplx_t, c: *real_t, real_context: *realContext_t) linksection(runtime.code_section) callconv(.c) void {
+    complexMagnitude2(a, c, real_context);
+    runtime.realSquareRoot(c, c, real_context);
+}
 
-    complexMagnitude2(a, b, &u, real_context);
-    runtime.realSquareRoot(&u, c, real_context);
+// real34ChangeSign and real34Copy are realType.h macros over the 16 decQuad bytes.
+inline fn real34ChangeSign(value: *align(1) real34_t) void {
+    value.bytes[15] ^= 0x80;
+}
+
+inline fn real34Copy(source: *align(1) const real34_t, destination: *align(1) real34_t) void {
+    destination.bytes = source.bytes;
+}
+
+fn conjugateComponent(component: *align(1) real34_t) linksection(runtime.code_section) void {
+    real34ChangeSign(component);
+    if (runtime.real34IsZero(component) and !runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
+        component.bytes[15] &= 0x7f;
+    }
+    runtime.roundReal34ResultToSignificantDigits(component);
 }
 
 pub export fn conjCplx() linksection(runtime.code_section) callconv(.c) void {
-    var r: real_t = undefined;
-    var i: real_t = undefined;
+    const data_type = runtime.getRegisterDataType(runtime.REGISTER_X);
+    var x: cplx_t = undefined;
 
-    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &r, &i)) {
+    if (data_type == runtime.dtComplex34) {
+        runtime.roundReal34ResultToSignificantDigits(runtime.registerReal34Ptr(runtime.REGISTER_X));
+        conjugateComponent(runtime.registerImag34Ptr(runtime.REGISTER_X));
+        runtime.setRegisterTag(runtime.REGISTER_X, @intCast(runtime.amNone));
+        return;
+    }
+    if (data_type == runtime.dtReal34) {
+        var r34: real34_t = undefined;
+        real34Copy(runtime.registerReal34Ptr(runtime.REGISTER_X), &r34);
+        runtime.roundReal34ResultToSignificantDigits(&r34);
+        runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtComplex34, 0, @intCast(runtime.amNone));
+        if (runtime.lastErrorCode == runtime.ERROR_RAM_FULL) {
+            return;
+        }
+        real34Copy(&r34, runtime.registerReal34Ptr(runtime.REGISTER_X));
+        runtime.real34SetZero(runtime.registerImag34Ptr(runtime.REGISTER_X));
+        conjugateComponent(runtime.registerImag34Ptr(runtime.REGISTER_X));
+        return;
+    }
+    if (data_type == runtime.dtLongInteger and (runtime.significantDigits == 0 or runtime.significantDigits == 34)) {
+        var r34: real34_t = undefined;
+        runtime.convertLongIntegerRegisterToReal34(runtime.REGISTER_X, &r34);
+        runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtComplex34, 0, @intCast(runtime.amNone));
+        if (runtime.lastErrorCode == runtime.ERROR_RAM_FULL) {
+            return;
+        }
+        real34Copy(&r34, runtime.registerReal34Ptr(runtime.REGISTER_X));
+        runtime.real34SetZero(runtime.registerImag34Ptr(runtime.REGISTER_X));
+        conjugateComponent(runtime.registerImag34Ptr(runtime.REGISTER_X));
+        return;
+    }
+    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &x)) {
         return;
     }
 
-    runtime.realChangeSign(&i);
-    if (runtime.realIsZero(&i) and !runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
-        runtime.realSetPositiveSign(&i);
+    runtime.realChangeSign(&x.Imag);
+    if (runtime.realIsZero(&x.Imag) and !runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
+        runtime.realSetPositiveSign(&x.Imag);
     }
     runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtComplex34, 0, @intCast(runtime.amNone));
-    runtime.convertComplexToResultRegister(&r, &i, runtime.REGISTER_X);
+    runtime.convertComplexToResultRegister(&x, runtime.REGISTER_X);
 }
 
 // ---------------------------------------------------------------------------
@@ -450,13 +523,12 @@ pub export fn z47_math_wrappers_fact_real() linksection(runtime.code_section) ca
 }
 
 pub export fn z47_math_wrappers_fact_cplx() linksection(runtime.code_section) callconv(.c) void {
-    var z_real: real_t = undefined;
-    var z_imag: real_t = undefined;
+    var z: cplx_t = undefined;
 
-    if (runtime.getRegisterAsComplex(runtime.REGISTER_X, &z_real, &z_imag)) {
-        _ = decNumberAdd(&z_real, &z_real, constantPointer(offset_const_1), &runtime.ctxtReal39);
-        runtime.WP34S_ComplexGamma(&z_real, &z_imag, &z_real, &z_imag, &runtime.ctxtReal39);
-        runtime.convertComplexToResultRegister(&z_real, &z_imag, runtime.REGISTER_X);
+    if (runtime.getRegisterAsComplex(runtime.REGISTER_X, &z)) {
+        _ = decNumberAdd(&z.Real, &z.Real, constantPointer(offset_const_1), &runtime.ctxtReal39);
+        runtime.WP34S_ComplexGamma(&z, &z, &runtime.ctxtReal39);
+        runtime.convertComplexToResultRegister(&z, runtime.REGISTER_X);
     }
 }
 
@@ -919,6 +991,10 @@ pub export fn z47_math_wrappers_fractional_part_short_integer() linksection(runt
 pub export fn z47_math_wrappers_fractional_part_real() linksection(runtime.code_section) callconv(.c) void {
     var x: real34_t = undefined;
     const x_data = runtime.registerReal34Ptr(runtime.REGISTER_X);
+
+    if (runtime.real34IsZero(x_data)) {
+        return;
+    }
 
     real34ToIntegralValue(x_data, &x, runtime.DEC_ROUND_DOWN);
     real34Subtract(x_data, &x, x_data);

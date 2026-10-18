@@ -108,6 +108,8 @@ const SIZE_PAIRS = .{
     .{ c.upperLower_t, abi.UpperLower, "UpperLower" },
     .{ c.calcKeyboard_t, abi.CalcKeyboard, "CalcKeyboard" },
     .{ c.cplx_t, abi.CmplxPair, "CmplxPair" },
+    .{ c.cplx_t, abi.Complex, "Complex" },
+    .{ c.cplx159_t, abi.Complex159, "Complex159" },
     .{ c.__mpz_struct, abi.Mpz, "Mpz" },
 };
 
@@ -123,8 +125,13 @@ test "abi calc structs match upstream C size" {
 // The abi mirrors that deliberately rename a member. Each entry is
 // {C type, abi type, name, .{ .{c field, abi field}, ... }}; everything else is
 // matched by name in the test below.
+// cplx_t and cplx159_t hold each part in an anonymous union (Real with Mag, Imag
+// with Arg; Real with RealStorage, Imag with ImagStorage), which translate-c
+// names unnamed_0 and unnamed_1.
 const RENAMED_FIELDS = .{
-    .{ c.cplx_t, abi.CmplxPair, "CmplxPair", .{ .{ "Real", "r" }, .{ "Imag", "i" } } },
+    .{ c.cplx_t, abi.CmplxPair, "CmplxPair", .{ .{ "unnamed_0", "r" }, .{ "unnamed_1", "i" } } },
+    .{ c.cplx_t, abi.Complex, "Complex", .{ .{ "unnamed_0", "Real" }, .{ "unnamed_1", "Imag" } } },
+    .{ c.cplx159_t, abi.Complex159, "Complex159", .{ .{ "unnamed_0", "Real" }, .{ "unnamed_1", "Imag" } } },
 };
 
 // Fields the by-name sweep cannot look up on the C side, each with the reason.

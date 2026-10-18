@@ -348,7 +348,7 @@ extern fn convertLongIntegerToShortIntegerRegister(lgInt: *const mpz_struct, bas
 extern fn convertLongIntegerToLongIntegerRegister(lgInt: *const mpz_struct, regist: calcRegister_t) void;
 extern fn convertLongIntegerRegisterToLongInteger(reg: calcRegister_t, lgInt: *mpz_struct) void;
 extern fn convertRealToResultRegister(real: *const real_t, dest: calcRegister_t, angle_mode: runtime.angularMode_t) void;
-extern fn convertComplexToResultRegister(real: *const real_t, imag: *const real_t, dest: calcRegister_t) void;
+extern fn convertComplexToResultRegister(z: *const runtime.cplx_t, dest: calcRegister_t) void;
 extern fn realToInt32C47(source: *const real_t, err: ?*bool) i32;
 extern fn fnDrop(unused_but_mandatory_parameter: u16) void;
 extern fn fnSwapXY(unused_but_mandatory_parameter: u16) void;
@@ -742,12 +742,10 @@ const sumTypeReal: u8 = 1;
 const sumTypeComplex: u8 = 2;
 
 fn _doFnEvPFacts(param: u16) void {
-    var prodR: real_t = undefined;
-    var prodI: real_t = undefined;
-    var factorR: real_t = undefined;
-    var factorI: real_t = undefined;
-    var baseR: real_t = undefined;
-    var expR: real_t = undefined;
+    var factorZ: runtime.cplx_t = undefined;
+    var baseZ: runtime.cplx_t = undefined;
+    var expZ: runtime.cplx_t = undefined;
+    var prodZ: runtime.cplx_t = undefined;
 
     var pwr: i32 = @intCast(param);
     var x: real_t = undefined;
@@ -755,11 +753,17 @@ fn _doFnEvPFacts(param: u16) void {
 
     if (param == M_SIGMA_k) {
         if (getRegisterDataType(REGISTER_X) == dtReal34) {
+            var conversionError: bool = undefined;
+
             if (!getRegisterAsReal(REGISTER_X, &x)) {
                 doDomainAbort();
                 return;
             }
-            pwr = realToInt32C47(&x, null);
+            pwr = realToInt32C47(&x, &conversionError);
+            if (conversionError or pwr > 3321 or pwr < 0) {
+                doDomainAbort();
+                return;
+            }
             fnDrop(NOPARAM);
         } else {
             if (!getIntArg(&currentNumber, REGISTER_X)) {
@@ -800,7 +804,7 @@ fn _doFnEvPFacts(param: u16) void {
             defer longIntegerFree(&factor);
             defer longIntegerFree(&tmp_prod);
             uInt32ToLongInteger(1, &prod);
-            realSetOne(&prodR);
+            realSetOne(&prodZ.Real);
             var sumType: u8 = sumTypeInteger;
             const elems = matrixElementsPtr(&matrix);
             var j: u16 = 0;
@@ -819,22 +823,24 @@ fn _doFnEvPFacts(param: u16) void {
                     longIntegerMultiply(&tmp_prod, &factor, &prod);
                 } else {
                     if (sumType == sumTypeInteger) {
-                        convertLongIntegerToReal(&prod, &prodR, &runtime.ctxtReal39);
+                        convertLongIntegerToReal(&prod, &prodZ.Real, &runtime.ctxtReal39);
                         sumType = sumTypeReal;
                     }
-                    real34ToReal(&elems[j], &baseR);
-                    real34ToReal(&elems[cols + j], &expR);
-                    if (!(realIsNegative(&baseR) and !math_comparison_reals.realIsAnInteger(&expR)) and sumType == sumTypeReal) {
-                        math_power.PowerReal(&baseR, &expR, &factorR, &runtime.ctxtReal39);
-                        realMultiply(&prodR, &factorR, &prodR, &runtime.ctxtReal39);
+                    real34ToReal(&elems[j], &baseZ.Real);
+                    real34ToReal(&elems[cols + j], &expZ.Real);
+                    if (!(realIsNegative(&baseZ.Real) and !math_comparison_reals.realIsAnInteger(&expZ.Real)) and sumType == sumTypeReal) {
+                        math_power.PowerReal(&baseZ.Real, &expZ.Real, &factorZ.Real, &runtime.ctxtReal39);
+                        realMultiply(&prodZ.Real, &factorZ.Real, &prodZ.Real, &runtime.ctxtReal39);
                     } else if (getFlag(FLAG_CPXRES)) {
                         if (sumType == sumTypeReal) {
-                            realSetZero(&prodI);
+                            realSetZero(&prodZ.Imag);
                             sumType = sumTypeComplex;
                         }
                         if (sumType == sumTypeComplex) {
-                            _ = math_power.PowerComplex(&baseR, const_0(), &expR, const_0(), &factorR, &factorI, &runtime.ctxtReal39);
-                            math_multiplication_cells.mulComplexComplex(&prodR, &prodI, &factorR, &factorI, &prodR, &prodI, &runtime.ctxtReal39);
+                            realSetZero(&baseZ.Imag);
+                            realSetZero(&expZ.Imag);
+                            _ = math_power.PowerComplex(&baseZ, &expZ, &factorZ, &runtime.ctxtReal39);
+                            math_multiplication_cells.mulComplexComplex(&prodZ, &factorZ, &prodZ, &runtime.ctxtReal39);
                         }
                     } else {
                         displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
@@ -849,10 +855,10 @@ fn _doFnEvPFacts(param: u16) void {
                     convertLongIntegerToLongIntegerRegister(&prod, REGISTER_X);
                 },
                 sumTypeReal => {
-                    convertRealToResultRegister(&prodR, REGISTER_X, runtime.amNone);
+                    convertRealToResultRegister(&prodZ.Real, REGISTER_X, runtime.amNone);
                 },
                 sumTypeComplex => {
-                    convertComplexToResultRegister(&prodR, &prodI, REGISTER_X);
+                    convertComplexToResultRegister(&prodZ, REGISTER_X);
                 },
                 else => {},
             }

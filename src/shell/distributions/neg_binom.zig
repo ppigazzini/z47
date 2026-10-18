@@ -1,245 +1,233 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
-// Zig owner for src/c47/distributions/negBinom.c: the Negative Binomial
-// distribution commands (fnNegBinomialP/L/R/I) and the WP34S math borrowings.
-// Part of the OPTION_DIST_C cluster, so compiled on host, on DMCP5 and on the
-// DM42 packages that keep the cluster, and stubbed on the others via strip_17.
-//
-// cdf_NegBinomial2 and pdf_NegBinomial are exported with C linkage because
-// still-C cluster members reach them where the cluster is kept (the geometric
-// qf_discrete_final dispatcher and the f-distribution Newton solver's NEGBINOM
-// case; the f distribution's PDF path). The quantile uses the shared C Newton
-// solver (WP34S_Qf_Newton), the regularised incomplete beta (WP34S_betai),
-// logCyxReal, and the poisson owner's WP34S_normal_moment_approx, all bound
-// through frontier_distribution_runtime. The testSuite drives every branch via
-// tests/negBinomial_{p,l,r,i}.txt.
+// Zig owner for src/c47/distributions/negBinom.c: the negative binomial
+// distribution commands and the kernels behind them. The commands hand their
+// descriptor row to fnDistribution, which loads register X, the probability in P
+// and the success count in N. Tagged linksection(dr.code_section) so the code
+// runs from QSPI on the flash-limited old_hw DM42.
 
 const dr = @import("distribution_runtime.zig");
 pub const real_t = dr.real_t;
 pub const realContext_t = dr.realContext_t;
 
-// WP34S_Qf_Newton distribution selector (defines.h).
-const QF_NEWTON_NEGBINOM: u32 = 4;
-
-fn checkParamNegBinom(x: *real_t, i: *real_t, j: *real_t) linksection(dr.code_section) bool {
-    if (!dr.saveLastX()) {
+/// negativeBinomialCheckDomain: an integer r above zero, p in [0, 1) and x not NaN.
+pub fn checkDomain(registers_valid: bool, x: *real_t, first: ?*real_t, second: ?*real_t, third: ?*real_t, parameter: u16) linksection(dr.code_section) callconv(.c) bool {
+    _ = third;
+    _ = parameter;
+    if (!registers_valid) {
         return false;
     }
+    const i = first.?;
+    const j = second.?;
 
-    if (!dr.getRegisterAsReal(dr.REGISTER_X, x) or !dr.getRegisterAsReal(dr.REGISTER_P, i) or !dr.getRegisterAsReal(dr.REGISTER_N, j)) {
-        dr.specialResultNaN();
-        return false;
-    }
-
-    if (!dr.checkRegisterNoFP(j)) {
+    if (!dr.checkRegisterNoFP(j) or dr.realIsSpecial(j)) {
         dr.displayDomainErrorMessage(dr.ERROR_INVALID_DISTRIBUTION_PARAM, dr.ERR_REGISTER_LINE);
-        dr.moreInfoOnError("In function checkParamNegBinom:", "r is not an integer", null, null);
-        dr.specialResultNaN();
+        dr.moreInfoOnError("In function negativeBinomialCheckDomain:", "r is not a finite integer", null, null);
         return false;
-    } else if (dr.realIsNegative(x)) {
-        dr.displayDomainErrorMessage(dr.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, dr.ERR_REGISTER_LINE);
-        dr.moreInfoOnError("In function checkParamNegBinom:", "cannot calculate for x < 0", null, null);
-        dr.specialResultNaN();
+    } else if (dr.realIsNaN(x)) {
+        if (!dr.getSystemFlag(dr.FLAG_SPCRES)) {
+            dr.displayDomainErrorMessage(dr.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, dr.ERR_REGISTER_LINE);
+            dr.moreInfoOnError("In function negativeBinomialCheckDomain:", "x is NaN", null, null);
+        }
         return false;
-    } else if (dr.realIsZero(i) or dr.realIsNegative(i) or dr.realCompareGreaterEqual(i, dr.const1()) or dr.realIsZero(j) or dr.realIsNegative(j)) {
+    } else if (dr.realIsSpecial(i) or dr.realLessThan(i, dr.const0()) or dr.realCompareGreaterEqual(i, dr.const1()) or dr.realCompareLessEqual(j, dr.const0())) {
         dr.displayDomainErrorMessage(dr.ERROR_INVALID_DISTRIBUTION_PARAM, dr.ERR_REGISTER_LINE);
-        dr.moreInfoOnError("In function checkParamNegBinom:", "the parameters must be 0 < p < 1 and r > 0", null, null);
-        dr.specialResultNaN();
+        dr.moreInfoOnError("In function negativeBinomialCheckDomain:", "the parameters must be 0 \xa2\x64 p < 1 and r > 0", null, null);
         return false;
     }
     return true;
-}
-
-// Tail shared by P/L/R: store the answer, or report an invalid parameter on NaN.
-fn storeOrInvalid(ans: *const real_t, comptime where: [*:0]const u8) linksection(dr.code_section) void {
-    if (dr.realIsNaN(ans)) {
-        dr.displayDomainErrorMessage(dr.ERROR_INVALID_DISTRIBUTION_PARAM, dr.ERR_REGISTER_LINE);
-        dr.moreInfoOnError(where, "a parameter is invalid", null, null);
-    } else {
-        dr.convertRealToResultRegister(ans, dr.REGISTER_X, dr.amNone);
-    }
-    dr.adjustResult(dr.REGISTER_X, false, false, dr.REGISTER_X, -1, -1);
 }
 
 pub fn negBinomialP(unused_but_mandatory_parameter: u16) linksection(dr.code_section) void {
     _ = unused_but_mandatory_parameter;
-    var val: real_t = undefined;
-    var ans: real_t = undefined;
-    var prob: real_t = undefined;
-    var num: real_t = undefined;
-
-    if (checkParamNegBinom(&val, &prob, &num)) {
-        if (dr.isAnInteger(&val)) {
-            pdfNegBinomial(&val, &prob, &num, &ans, &dr.ctxtReal39);
-        } else {
-            dr.setZero(&ans);
-        }
-        storeOrInvalid(&ans, "In function fnNegBinomialP:");
-    }
+    dr.fnDistribution(dr.DIST_NEGBINOM * 4 + dr.DIST_P);
 }
 
 pub fn negBinomialL(unused_but_mandatory_parameter: u16) linksection(dr.code_section) void {
     _ = unused_but_mandatory_parameter;
-    var val: real_t = undefined;
-    var ans: real_t = undefined;
-    var prob: real_t = undefined;
-    var num: real_t = undefined;
-
-    if (checkParamNegBinom(&val, &prob, &num)) {
-        cdfNegBinomial(&val, &prob, &num, &ans, &dr.ctxtReal39);
-        storeOrInvalid(&ans, "In function fnNegBinomialL:");
-    }
+    dr.fnDistribution(dr.DIST_NEGBINOM * 4 + dr.DIST_L);
 }
 
 pub fn negBinomialR(unused_but_mandatory_parameter: u16) linksection(dr.code_section) void {
     _ = unused_but_mandatory_parameter;
-    var val: real_t = undefined;
-    var ans: real_t = undefined;
-    var prob: real_t = undefined;
-    var num: real_t = undefined;
-
-    if (checkParamNegBinom(&val, &prob, &num)) {
-        cdfuNegBinomial(&val, &prob, &num, &ans, &dr.ctxtReal39);
-        storeOrInvalid(&ans, "In function fnNegBinomialR:");
-    }
+    dr.fnDistribution(dr.DIST_NEGBINOM * 4 + dr.DIST_R);
 }
 
 pub fn negBinomialI(unused_but_mandatory_parameter: u16) linksection(dr.code_section) void {
     _ = unused_but_mandatory_parameter;
-    var val: real_t = undefined;
-    var ans: real_t = undefined;
-    var prob: real_t = undefined;
-    var num: real_t = undefined;
-
-    if (checkParamNegBinom(&val, &prob, &num)) {
-        if (dr.realCompareLessEqual(&val, dr.const0()) or dr.realCompareGreaterEqual(&val, dr.const1())) {
-            dr.displayDomainErrorMessage(dr.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, dr.ERR_REGISTER_LINE);
-            dr.moreInfoOnError("In function fnNegBinomialI:", "the argument must be 0 < x < 1", null, null);
-            dr.specialResultNaN();
-            return;
-        }
-        qfNegBinomial(&val, &prob, &num, &ans, &dr.ctxtReal39);
-        if (dr.realIsNaN(&ans)) {
-            dr.displayDomainErrorMessage(dr.ERROR_NO_ROOT_FOUND, dr.ERR_REGISTER_LINE);
-            dr.moreInfoOnError("In function fnNegBinomialI:", "WP34S_Qf_Binomial did not converge", null, null);
-            dr.specialResultNaN();
-            return;
-        }
-        dr.convertRealToResultRegister(&ans, dr.REGISTER_X, dr.amNone);
-        dr.adjustResult(dr.REGISTER_X, false, false, dr.REGISTER_X, -1, -1);
-    }
+    dr.fnDistribution(dr.DIST_NEGBINOM * 4 + dr.DIST_I);
 }
 
-// ---------------------------------------------------------------------------
-// WP34S math borrowings (upstream comment: "borrowed from the WP34S project").
-// ---------------------------------------------------------------------------
+// Whether p and r define a negative binomial distribution.
+fn negativeBinomialParametersAreValid(p: *const real_t, r: *const real_t) linksection(dr.code_section) bool {
+    return !dr.realIsSpecial(p) and !dr.realIsSpecial(r) and dr.realCompareGreaterEqual(p, dr.const0()) and dr.realLessThan(p, dr.const1()) and
+        dr.realGreaterThan(r, dr.const0()) and dr.isAnInteger(r);
+}
 
-fn negBinomParam(r: *const real_t, res: *real_t) linksection(dr.code_section) bool {
-    if (dr.realIsSpecial(r)) {
+/// pdf_NegBinomial: PDF[NB(r, p)](k) = [(k + r - 1) C k] p^k (1 - p)^r.
+pub fn pdfNegBinomial(x: *const real_t, p0: *const real_t, r: *const real_t, res: *real_t, real_context: *realContext_t) linksection(dr.code_section) callconv(.c) void {
+    var a: real_t = undefined;
+    var logit: real_t = undefined;
+    var log_mass: real_t = undefined;
+    var log_p: real_t = undefined;
+    var log_q: real_t = undefined;
+    var q0: real_t = undefined;
+    var term: real_t = undefined;
+    var value: real_t = undefined;
+    const calculation_context = &dr.ctxtReal51;
+
+    if (dr.realIsNaN(x) or !negativeBinomialParametersAreValid(p0, r)) {
         dr.setNaN(res);
-        return false;
-    }
-    if (!dr.realIsPositive(r) or !dr.isAnInteger(r)) {
-        dr.setZero(res);
-        return false;
-    }
-    return true;
-}
-
-// PDF[NB(r, p)](k) = [(k + r - 1) C k] p^k (1 - p)^r
-pub fn pdfNegBinomial(x: *const real_t, p0: *const real_t, r: *const real_t, res: *real_t, ctx: *realContext_t) linksection(dr.code_section) void {
-    var p: real_t = undefined;
-    var q: real_t = undefined;
-    var xx: real_t = undefined;
-    var c: real_t = undefined;
-
-    if (!negBinomParam(r, res)) {
         return;
     }
-    if (dr.realIsNegative(x)) {
+    if (dr.realIsNegative(x) or dr.realIsInfinite(x)) {
         dr.setZero(res);
         return;
     }
-
-    dr.realMinus(p0, &p, ctx);
-    dr.WP34S_Ln1P(&p, &p, ctx); // ln(1 - p0)
-    dr.realMultiply(&p, r, &p, ctx); // ln((1 - p0) ^ r)
-
-    dr.WP34S_Ln(p0, &q, ctx);
-    dr.realMultiply(&q, x, &q, ctx); // ln(p0 ^ x)
-    dr.realAdd(&p, &q, &p, ctx);
-
-    dr.realAdd(x, r, &q, ctx);
-    dr.realSubtract(&q, dr.const1(), &q, ctx);
-    dr.realCopy(x, &xx);
-    dr.logCyxReal(&q, &xx, &c, ctx);
-
-    dr.realAdd(&p, &c, &p, ctx);
-    dr.realExponential(&p, res, ctx);
-}
-
-// I[p](k, r)
-fn cdfuNegBinomial(x: *const real_t, p0: *const real_t, r: *const real_t, res: *real_t, ctx: *realContext_t) linksection(dr.code_section) void {
-    var p: real_t = undefined;
-
-    if (!negBinomParam(r, res)) {
+    if (dr.realIsZero(p0)) {
+        dr.realCopy(if (dr.realIsZero(x)) dr.const1() else dr.const0(), res);
         return;
     }
-    dr.toIntegralValue(x, &p, dr.DEC_ROUND_CEILING, ctx);
+
+    dr.WP34S_DistributionProbabilityData(p0, &q0, &log_p, &log_q, &logit, calculation_context);
+    if (dr.realIsZero(x)) {
+        dr.realMultiply(r, &log_q, &log_mass, calculation_context);
+    } else {
+        dr.realAdd(x, dr.const1(), &a, calculation_context);
+        dr.distributionLogBetaPrefix(&a, r, p0, &q0, &logit, &log_mass, calculation_context);
+        dr.realSubtract(&log_mass, &log_p, &log_mass, calculation_context);
+        dr.realAdd(x, r, &term, calculation_context);
+        dr.WP34S_Ln(&term, &term, calculation_context);
+        dr.realSubtract(&log_mass, &term, &log_mass, calculation_context);
+    }
+    dr.realExponential(&log_mass, &value, calculation_context);
+    if (dr.realIsZero(&value)) {
+        dr.realNextToward(&value, dr.const1(), &value, calculation_context);
+    }
+    dr.realPlus(&value, res, real_context);
+}
+
+/// cdfu_NegBinomial: I[p](ceil(x), r).
+pub fn cdfuNegBinomial(x: *const real_t, p0: *const real_t, r: *const real_t, res: *real_t, real_context: *realContext_t) linksection(dr.code_section) callconv(.c) void {
+    var logit: real_t = undefined;
+    var log_p: real_t = undefined;
+    var log_q: real_t = undefined;
+    var lower: real_t = undefined;
+    var p: real_t = undefined;
+    var q0: real_t = undefined;
+    var upper: real_t = undefined;
+
+    if (dr.realIsNaN(x) or !negativeBinomialParametersAreValid(p0, r)) {
+        dr.setNaN(res);
+        return;
+    }
+    dr.toIntegralValue(x, &p, dr.DEC_ROUND_CEILING, real_context);
     if (dr.realLessThan(&p, dr.const1())) {
         dr.setOne(res);
         return;
     }
-    dr.WP34S_betai(r, &p, p0, res, ctx);
-}
-
-// 1 - I[p](k + 1, r)
-fn cdfNegBinomial(x: *const real_t, p0: *const real_t, r: *const real_t, res: *real_t, ctx: *realContext_t) linksection(dr.code_section) void {
-    var p: real_t = undefined;
-
-    if (!negBinomParam(r, res)) {
+    if (dr.realIsInfinite(&p)) {
+        dr.setZero(res);
         return;
     }
-    dr.toIntegralValue(x, &p, dr.DEC_ROUND_FLOOR, ctx);
-    cdfNegBinomial2(&p, p0, r, res, ctx);
-}
-
-pub fn cdfNegBinomial2(x: *const real_t, p0: *const real_t, r: *const real_t, res: *real_t, ctx: *realContext_t) linksection(dr.code_section) void {
-    var p: real_t = undefined;
-    var q: real_t = undefined;
-
-    if (dr.realLessThan(x, dr.const0())) {
+    if (dr.realIsZero(p0)) {
         dr.setZero(res);
         return;
     }
 
-    dr.realSubtract(dr.const1(), p0, &p, ctx);
-    dr.realAdd(x, dr.const1(), &q, ctx);
-    dr.WP34S_betai(&q, r, &p, res, ctx);
+    const calculation_context = dr.WP34S_BetaCalculationContext(&p, r);
+    dr.WP34S_DistributionProbabilityData(p0, &q0, &log_p, &log_q, &logit, calculation_context);
+    if (!dr.distributionBetaPair(&p, r, p0, &q0, &logit, &lower, &upper, calculation_context)) {
+        dr.setNaN(res);
+        return;
+    }
+    dr.WP34S_MarkProbability(&lower, calculation_context);
+    dr.realPlus(&lower, res, real_context);
 }
 
-fn qfNegBinomial(x: *const real_t, p0: *const real_t, r: *const real_t, res: *real_t, ctx: *realContext_t) linksection(dr.code_section) void {
-    var p0c: real_t = undefined;
-    var pr: real_t = undefined;
-    var mean: real_t = undefined;
-    var variance: real_t = undefined;
-    var s: real_t = undefined;
+/// cdf_NegBinomial: I[1-p](r, floor(x) + 1).
+pub fn cdfNegBinomial(x: *const real_t, p0: *const real_t, r: *const real_t, res: *real_t, real_context: *realContext_t) linksection(dr.code_section) callconv(.c) void {
+    var p: real_t = undefined;
 
-    if (!negBinomParam(r, res)) {
+    if (dr.realIsNaN(x) or !negativeBinomialParametersAreValid(p0, r)) {
+        dr.setNaN(res);
+        return;
+    }
+    dr.toIntegralValue(x, &p, dr.DEC_ROUND_FLOOR, real_context);
+    cdfNegBinomial2(&p, p0, r, res, real_context);
+}
+
+pub fn cdfNegBinomial2(x: *const real_t, p0: *const real_t, r: *const real_t, res: *real_t, real_context: *realContext_t) linksection(dr.code_section) callconv(.c) void {
+    var b: real_t = undefined;
+    var logit: real_t = undefined;
+    var log_p: real_t = undefined;
+    var log_q: real_t = undefined;
+    var lower: real_t = undefined;
+    var q0: real_t = undefined;
+    var upper: real_t = undefined;
+
+    if (dr.realIsNaN(x) or !negativeBinomialParametersAreValid(p0, r)) {
+        dr.setNaN(res);
+        return;
+    }
+    if (dr.realLessThan(x, dr.const0())) {
+        dr.setZero(res);
+        return;
+    }
+    if (dr.realIsInfinite(x)) {
+        dr.setOne(res);
+        return;
+    }
+    if (dr.realIsZero(p0)) {
+        dr.setOne(res);
+        return;
+    }
+
+    dr.realAdd(x, dr.const1(), &b, &dr.ctxtReal51);
+    const calculation_context = dr.WP34S_BetaCalculationContext(r, &b);
+    dr.realAdd(x, dr.const1(), &b, calculation_context);
+    dr.WP34S_DistributionProbabilityData(p0, &q0, &log_p, &log_q, &logit, calculation_context);
+    dr.realChangeSign(&logit);
+    if (!dr.distributionBetaPair(r, &b, &q0, p0, &logit, &lower, &upper, calculation_context)) {
+        dr.setNaN(res);
+        return;
+    }
+    dr.WP34S_MarkProbability(&lower, calculation_context);
+    dr.realPlus(&lower, res, real_context);
+}
+
+pub fn qfNegBinomial(x: *const real_t, p0: *const real_t, r: *const real_t, res: *real_t, real_context: *realContext_t) linksection(dr.code_section) callconv(.c) void {
+    var estimate: real_t = undefined;
+    var mean: real_t = undefined;
+    var pr: real_t = undefined;
+    var q0: real_t = undefined;
+    var standard_deviation: real_t = undefined;
+    var variance: real_t = undefined;
+
+    if (dr.realIsNaN(x) or !negativeBinomialParametersAreValid(p0, r)) {
+        dr.setNaN(res);
         return;
     }
     if (dr.realCompareLessEqual(x, dr.const0())) {
         dr.setZero(res);
         return;
     }
+    if (dr.realIsZero(p0)) {
+        dr.setZero(res);
+        return;
+    }
+    if (dr.realCompareGreaterEqual(x, dr.const1())) {
+        dr.setPlusInfinity(res);
+        return;
+    }
 
-    dr.realSubtract(dr.const1(), p0, &p0c, ctx); // 1 - p
-    dr.realMultiply(p0, r, &pr, ctx);
-    dr.realDivide(&pr, &p0c, &mean, ctx); // mean = pr/(1-p)
+    dr.realSubtract(dr.const1(), p0, &q0, real_context);
+    dr.realMultiply(p0, r, &pr, real_context);
+    dr.realDivide(&pr, &q0, &mean, real_context); // mean = pr / (1 - p)
 
-    dr.realDivide(&mean, &p0c, &variance, ctx); // variance = pr/((1-p)^2)
-    dr.realSquareRoot(&variance, &variance, ctx);
+    dr.realDivide(&mean, &q0, &variance, real_context); // variance = pr / (1 - p)^2
+    dr.realSquareRoot(&variance, &standard_deviation, real_context);
 
-    dr.WP34S_normal_moment_approx(x, &variance, &mean, &s, ctx);
-    dr.WP34S_Qf_Newton(QF_NEWTON_NEGBINOM, x, &s, p0, r, null, res, ctx);
+    dr.WP34S_normal_moment_approx(x, &standard_deviation, &mean, &estimate, real_context);
+    dr.WP34S_Qf_Newton(dr.QF_NEWTON_NEGBINOM, x, &estimate, p0, r, null, res, real_context);
 }

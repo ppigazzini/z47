@@ -6,10 +6,13 @@
 ;*************************************************************
 In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
 
+Acc: 34
+
+
 ; --- GEV (mu=0, sigma=1, xi=0.1) ---
 Func: fnGEVP
 In:  AM=DEG FL_ASLIFT=0 RM=Real:"0" RS=Real:"1" RQ=Real:"0.1" RX=Real:"1"
-Out: EC=0 RX=Real:"0.1815712591647148349898921639598652"
+Out: EC=0 RX=Real:"0.2383642609200294496036659953523691"
 Func: fnGEVL
 In:  AM=DEG FL_ASLIFT=0 RM=Real:"0" RS=Real:"1" RQ=Real:"0.1" RX=Real:"1"
 Out: EC=0 RX=Real:"0.6800810549704990213774077696403660"
@@ -20,13 +23,139 @@ Func: fnGEVI
 In:  AM=DEG FL_ASLIFT=0 RM=Real:"0" RS=Real:"1" RQ=Real:"0.1" RX=Real:"0.5"
 Out: EC=0 RX=Real:"0.3733123212357060602785293524947308"
 
+; The Gumbel case has the full real line as its support.
+Func: fnGEVP
+In:  AM=DEG FL_ASLIFT=0 RM=Real:"0" RS=Real:"1" RQ=Real:"0" RX=Real:"-1"
+Out: EC=0 RX=Real:"0.1793740787340171819619895873183165"
+Func: fnGEVL
+In:  AM=DEG FL_ASLIFT=0 RM=Real:"0" RS=Real:"1" RQ=Real:"0" RX=Real:"-1"
+Out: EC=0 RX=Real:"0.06598803584531253707679018759684642"
+Func: fnGEVR
+In:  AM=DEG FL_ASLIFT=0 RM=Real:"0" RS=Real:"1" RQ=Real:"0" RX=Real:"-1"
+Out: EC=0 RX=Real:"0.9340119641546874629232098124031536"
+
+; xi > 0 has support [mu-sigma/xi,+infinity), here [4,+infinity).
+Func: fnGEVP
+In:  AM=DEG FL_ASLIFT=0 RM=Real:"10" RS=Real:"3" RQ=Real:"0.5" RX=Real:"5"
+Out: EC=0 RX=Real:"1.670056437775369959584829799011418e-14"
+Func: fnGEVL
+In:  AM=DEG FL_ASLIFT=0 RM=Real:"10" RS=Real:"3" RQ=Real:"0.5" RX=Real:"5"
+Out: EC=0 RX=Real:"2.319522830243569388312263609738080e-16"
+Func: fnGEVR
+In:  AM=DEG FL_ASLIFT=0 RM=Real:"10" RS=Real:"3" RQ=Real:"0.5" RX=Real:"5"
+Out: EC=0 RX=Real:"0.9999999999999997680477169756430612"
+Func: fnGEVP
+In:  AM=DEG FL_ASLIFT=0 RM=Real:"10" RS=Real:"3" RQ=Real:"0.5" RX=Real:"3"
+Out: EC=0 RX=Real:"0"
+Func: fnGEVL
+In:  AM=DEG FL_ASLIFT=0 RM=Real:"10" RS=Real:"3" RQ=Real:"0.5" RX=Real:"3"
+Out: EC=0 RX=Real:"0"
+Func: fnGEVR
+In:  AM=DEG FL_ASLIFT=0 RM=Real:"10" RS=Real:"3" RQ=Real:"0.5" RX=Real:"3"
+Out: EC=0 RX=Real:"1"
+
+; xi < 0 has support (-infinity,mu-sigma/xi], here (-infinity,16].
+Func: fnGEVP
+In:  AM=DEG FL_ASLIFT=0 RM=Real:"10" RS=Real:"3" RQ=Real:"-0.5" RX=Real:"5"
+Out: EC=0 RX=Real:"0.02120353011709564458495290530708381"
+Func: fnGEVL
+In:  AM=DEG FL_ASLIFT=0 RM=Real:"10" RS=Real:"3" RQ=Real:"-0.5" RX=Real:"5"
+Out: EC=0 RX=Real:"0.03469668564615650932083202686613715"
+Func: fnGEVR
+In:  AM=DEG FL_ASLIFT=0 RM=Real:"10" RS=Real:"3" RQ=Real:"-0.5" RX=Real:"5"
+Out: EC=0 RX=Real:"0.9653033143538434906791679731338629"
+Func: fnGEVP
+In:  AM=DEG FL_ASLIFT=0 RM=Real:"10" RS=Real:"3" RQ=Real:"-0.5" RX=Real:"17"
+Out: EC=0 RX=Real:"0"
+Func: fnGEVL
+In:  AM=DEG FL_ASLIFT=0 RM=Real:"10" RS=Real:"3" RQ=Real:"-0.5" RX=Real:"17"
+Out: EC=0 RX=Real:"1"
+Func: fnGEVR
+In:  AM=DEG FL_ASLIFT=0 RM=Real:"10" RS=Real:"3" RQ=Real:"-0.5" RX=Real:"17"
+Out: EC=0 RX=Real:"0"
+
+; Finite inverse endpoints and the xi=-1 density at its upper endpoint.
+Func: fnGEVI
+In:  AM=DEG FL_ASLIFT=0 RM=Real:"10" RS=Real:"3" RQ=Real:"0.5" RX=Real:"0"
+Out: EC=0 RX=Real:"4"
+Func: fnGEVI
+In:  AM=DEG FL_ASLIFT=0 RM=Real:"10" RS=Real:"3" RQ=Real:"-0.5" RX=Real:"1"
+Out: EC=0 RX=Real:"16"
+Func: fnGEVP
+In:  AM=DEG FL_ASLIFT=0 RM=Real:"10" RS=Real:"3" RQ=Real:"-1" RX=Real:"13"
+Out: EC=0 RX=Real:"0.3333333333333333333333333333333333"
+
+; Full Real34 density check; scaling exposes a last-place difference.
+Func: fnGEVP
+In:  AM=DEG FL_ASLIFT=0 RMODE=0 RM=Real:"0" RS=Real:"1" RQ=Real:"0.1" RY=Real:"0.2383642609200294496036659953523691" RX=Real:"1"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e40"
+Out: EC=0 RX=Real:"0"
+
+Func: fnGEVP
+In:  AM=DEG FL_ASLIFT=0 RMODE=1 RM=Real:"0" RS=Real:"1" RQ=Real:"0.1" RY=Real:"0.2383642609200294496036659953523691" RX=Real:"1"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e40"
+Out: EC=0 RX=Real:"0"
+
+Func: fnGEVP
+In:  AM=DEG FL_ASLIFT=0 RMODE=2 RM=Real:"0" RS=Real:"1" RQ=Real:"0.1" RY=Real:"0.2383642609200294496036659953523691" RX=Real:"1"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e40"
+Out: EC=0 RX=Real:"0"
+
+Func: fnGEVP
+In:  AM=DEG FL_ASLIFT=0 RMODE=3 RM=Real:"0" RS=Real:"1" RQ=Real:"0.1" RY=Real:"0.2383642609200294496036659953523692" RX=Real:"1"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e40"
+Out: EC=0 RX=Real:"0"
+
+Func: fnGEVP
+In:  AM=DEG FL_ASLIFT=0 RMODE=4 RM=Real:"0" RS=Real:"1" RQ=Real:"0.1" RY=Real:"0.2383642609200294496036659953523691" RX=Real:"1"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e40"
+Out: EC=0 RX=Real:"0"
+
+Func: fnGEVP
+In:  AM=DEG FL_ASLIFT=0 RMODE=5 RM=Real:"0" RS=Real:"1" RQ=Real:"0.1" RY=Real:"0.2383642609200294496036659953523692" RX=Real:"1"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e40"
+Out: EC=0 RX=Real:"0"
+
+Func: fnGEVP
+In:  AM=DEG FL_ASLIFT=0 RMODE=6 RM=Real:"0" RS=Real:"1" RQ=Real:"0.1" RY=Real:"0.2383642609200294496036659953523691" RX=Real:"1"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e40"
+Out: EC=0 RX=Real:"0"
+
 ; --- Pareto (sigma=1, alpha=2, mu=0) ---
 Func: fnParetoP
 In:  AM=DEG FL_ASLIFT=0 RM=Real:"0" RS=Real:"1" RQ=Real:"2" RX=Real:"3"
 Out: EC=0 RX=Real:"0.07407407407407407407407407407407407"
 Func: fnParetoL
 In:  AM=DEG FL_ASLIFT=0 RM=Real:"0" RS=Real:"1" RQ=Real:"2" RX=Real:"3"
-Out: EC=0 RX=Real:"0.8888888888888888888888888888888889"
+Out: EC=0 RX=Real:"0.88888888888888888888888888888888888889"
 Func: fnParetoU
 In:  AM=DEG FL_ASLIFT=0 RM=Real:"0" RS=Real:"1" RQ=Real:"2" RX=Real:"3"
 Out: EC=0 RX=Real:"0.1111111111111111111111111111111111"
@@ -37,27 +166,401 @@ Out: EC=0 RX=Real:"1.414213562373095048801688724209698"
 ; --- Pareto2 (sigma=1, alpha=2, mu=0) ---
 Func: fnPareto2P
 In:  AM=DEG FL_ASLIFT=0 RM=Real:"0" RS=Real:"1" RQ=Real:"2" RX=Real:"3"
-Out: EC=0 RX=Real:"0.03125"
+Out: EC=0 RX=Real:"0.03125"                                                  ;round mode 6 is floor, so incoming solution 0.0312500000000000000000000000000000000000000000000008 will round to 0.03125 no problem
 Func: fnPareto2L
 In:  AM=DEG FL_ASLIFT=0 RM=Real:"0" RS=Real:"1" RQ=Real:"2" RX=Real:"3"
-Out: EC=0 RX=Real:"0.9375"
+Out: EC=0 RX=Real:"0.937499999999999999999999999999999999999999999999999999" ;round mode 6 is floor, so incomiing solution 0.937499999999999999999999999999999999999999999999999 will round at 34th digit to 9, not up to 0, therefore we have to change the expected golden to that rounding mode applied, not 0.9375 which is either 0.5up or 0.5E both will be 0.9375. But floor is flooring it ;-)
 Func: fnPareto2U
 In:  AM=DEG FL_ASLIFT=0 RM=Real:"0" RS=Real:"1" RQ=Real:"2" RX=Real:"3"
 Out: EC=0 RX=Real:"0.0625"
 Func: fnPareto2I
 In:  AM=DEG FL_ASLIFT=0 RM=Real:"0" RS=Real:"1" RQ=Real:"2" RX=Real:"0.5"
-Out: EC=0 RX=Real:"0.4142135623730950488016887242096981"
+Out: EC=0 RX=Real:"0.4142135623730950488016887242096980785696"
 
-; --- Uniform (low=0, high=10) ---
+; The survival exponent needs more than p39 near the Real34 lower range.
+Func: fnParetoU
+In:  RMODE=0 RS=Real:"1" RQ=Real:"20000.12345678901234567890123456789" RX=Real:"2"
+Out: EC=0 RX=Real:"2.306335711554963691812736089917255e-6021"
+Func: fnSubtract
+In:  RY=Real:"2.306335711554963691812736089917255e-6021"
+Out: EC=0 RX=Real:"0"
+Func: fnMultiply
+In:  RY=Real:"1e6054"
+Out: EC=0 RX=Real:"0"
+
+; A nonintegral survival power distinguishes p51 from p39 work.
+Func: fnParetoU
+In:  RMODE=0 RS=Real:"1" RQ=Real:"751.0524713127250282194363444318017" RX=Real:"7.623068583195218190252761444302672"
+Out: EC=0 RX=Real:"2.979980196580028296507599701125752e-663"
+Func: fnSubtract
+In:  RY=Real:"2.979980196580028296507599701125752e-663"
+Out: EC=0 RX=Real:"0"
+Func: fnMultiply
+In:  RY=Real:"1e696"
+Out: EC=0 RX=Real:"0"
+
+; A p159 retry retains a 68-place location-scale cancellation.
+Func: fnPareto2I
+In:  RMODE=0 RM=Real:"-4125636888562548868221559797461449" RS=Real:"9960168529794442859224531878561050" RQ=Real:"2" RX=Real:"0.5"
+Out: EC=0 RX=Real:"-3.549672774468308801422504319938411e-35"
+Func: fnSubtract
+In:  RY=Real:"-3.549672774468308801422504319938411e-35"
+Out: EC=0 RX=Real:"0"
+Func: fnMultiply
+In:  RY=Real:"1e68"
+Out: EC=0 RX=Real:"0"
+Func: fnPareto2I
+In:  RMODE=1 RM=Real:"-4125636888562548868221559797461449" RS=Real:"9960168529794442859224531878561050" RQ=Real:"2" RX=Real:"0.5"
+Out: EC=0 RX=Real:"-3.549672774468308801422504319938411e-35"
+Func: fnSubtract
+In:  RY=Real:"-3.549672774468308801422504319938411e-35"
+Out: EC=0 RX=Real:"0"
+Func: fnMultiply
+In:  RY=Real:"1e68"
+Out: EC=0 RX=Real:"0"
+Func: fnPareto2I
+In:  RMODE=2 RM=Real:"-4125636888562548868221559797461449" RS=Real:"9960168529794442859224531878561050" RQ=Real:"2" RX=Real:"0.5"
+Out: EC=0 RX=Real:"-3.549672774468308801422504319938411e-35"
+Func: fnSubtract
+In:  RY=Real:"-3.549672774468308801422504319938411e-35"
+Out: EC=0 RX=Real:"0"
+Func: fnMultiply
+In:  RY=Real:"1e68"
+Out: EC=0 RX=Real:"0"
+Func: fnPareto2I
+In:  RMODE=3 RM=Real:"-4125636888562548868221559797461449" RS=Real:"9960168529794442859224531878561050" RQ=Real:"2" RX=Real:"0.5"
+Out: EC=0 RX=Real:"-3.549672774468308801422504319938412e-35"
+Func: fnSubtract
+In:  RY=Real:"-3.549672774468308801422504319938412e-35"
+Out: EC=0 RX=Real:"0"
+Func: fnMultiply
+In:  RY=Real:"1e68"
+Out: EC=0 RX=Real:"0"
+Func: fnPareto2I
+In:  RMODE=4 RM=Real:"-4125636888562548868221559797461449" RS=Real:"9960168529794442859224531878561050" RQ=Real:"2" RX=Real:"0.5"
+Out: EC=0 RX=Real:"-3.549672774468308801422504319938411e-35"
+Func: fnSubtract
+In:  RY=Real:"-3.549672774468308801422504319938411e-35"
+Out: EC=0 RX=Real:"0"
+Func: fnMultiply
+In:  RY=Real:"1e68"
+Out: EC=0 RX=Real:"0"
+Func: fnPareto2I
+In:  RMODE=5 RM=Real:"-4125636888562548868221559797461449" RS=Real:"9960168529794442859224531878561050" RQ=Real:"2" RX=Real:"0.5"
+Out: EC=0 RX=Real:"-3.549672774468308801422504319938411e-35"
+Func: fnSubtract
+In:  RY=Real:"-3.549672774468308801422504319938411e-35"
+Out: EC=0 RX=Real:"0"
+Func: fnMultiply
+In:  RY=Real:"1e68"
+Out: EC=0 RX=Real:"0"
+Func: fnPareto2I
+In:  RMODE=6 RM=Real:"-4125636888562548868221559797461449" RS=Real:"9960168529794442859224531878561050" RQ=Real:"2" RX=Real:"0.5"
+Out: EC=0 RX=Real:"-3.549672774468308801422504319938412e-35"
+Func: fnSubtract
+In:  RY=Real:"-3.549672774468308801422504319938412e-35"
+Out: EC=0 RX=Real:"0"
+Func: fnMultiply
+In:  RY=Real:"1e68"
+Out: EC=0 RX=Real:"0"
+
+; P75 is selected when the closing sum removes 23 decimal places.
+Func: fnPareto2I
+In:  RMODE=0 RM=Real:"-107578520350" RS=Real:"259717522849" RQ=Real:"2" RX=Real:"0.5"
+Out: EC=0 RX=Real:"1.361299717920188310152531645191683e-12"
+Func: fnSubtract
+In:  RY=Real:"1.361299717920188310152531645191683e-12"
+Out: EC=0 RX=Real:"0"
+Func: fnMultiply
+In:  RY=Real:"1e45"
+Out: EC=0 RX=Real:"0"
+
+; The lower inverse endpoint is the location itself.
+Func: fnPareto2I
+In:  RMODE=0 RM=Real:"1e-34" RS=Real:"1e34" RQ=Real:"2" RX=Real:"0"
+Out: EC=0 RX=Real:"1e-34"
+
+; Shape and scale parameters must be finite and positive.
+Func: fnParetoP
+In:  FL_SPCRES=0 RS=Real:"1" RQ=Real:"0" RX=Real:"2"
+Out: EC=16 RX=Real:"2"
+Func: fnPareto2L
+In:  FL_SPCRES=0 RM=Real:"0" RS=Real:"Infinity" RQ=Real:"2" RX=Real:"2"
+Out: EC=16 RX=Real:"2"
+
+; Independent ordinary type-I values exercise every public calculation.
+Func: fnParetoP
+In:  RMODE=0 RS=Real:"3.25" RQ=Real:"2.75" RX=Real:"7.125"
+Out: EC=0 RX=Real:"0.04457267296807499709397016079710930"
+Func: fnSubtract
+In:  RY=Real:"0.04457267296807499709397016079710930"
+Out: EC=0 RX=Real:"0"
+Func: fnMultiply
+In:  RY=Real:"1e40"
+Out: EC=0 RX=Real:"0"
+Func: fnParetoL
+In:  RS=Real:"3.25" RQ=Real:"2.75" RX=Real:"7.125"
+Out: EC=0 RX=Real:"0.8845162564008965984383500379347623"
+Func: fnSubtract
+In:  RY=Real:"0.8845162564008965984383500379347623"
+Out: EC=0 RX=Real:"0"
+Func: fnMultiply
+In:  RY=Real:"1e40"
+Out: EC=0 RX=Real:"0"
+Func: fnParetoU
+In:  RS=Real:"3.25" RQ=Real:"2.75" RX=Real:"7.125"
+Out: EC=0 RX=Real:"0.1154837435991034015616499620652377"
+Func: fnSubtract
+In:  RY=Real:"0.1154837435991034015616499620652377"
+Out: EC=0 RX=Real:"0"
+Func: fnMultiply
+In:  RY=Real:"1e40"
+Out: EC=0 RX=Real:"0"
+Func: fnParetoI
+In:  RS=Real:"3.25" RQ=Real:"2.75" RX=Real:"0.1234567890123456789012345678901234"
+Out: EC=0 RX=Real:"3.409518560887441626405497262379742"
+Func: fnSubtract
+In:  RY=Real:"3.409518560887441626405497262379742"
+Out: EC=0 RX=Real:"0"
+Func: fnMultiply
+In:  RY=Real:"1e40"
+Out: EC=0 RX=Real:"0"
+
+; Independent ordinary type-II values include a negative location.
+Func: fnPareto2P
+In:  RM=Real:"-7.125" RS=Real:"3.25" RQ=Real:"2.75" RX=Real:"0.375"
+Out: EC=0 RX=Real:"0.009533013226450228392591183525706296"
+Func: fnSubtract
+In:  RY=Real:"0.009533013226450228392591183525706296"
+Out: EC=0 RX=Real:"0"
+Func: fnMultiply
+In:  RY=Real:"1e40"
+Out: EC=0 RX=Real:"0"
+Func: fnPareto2L
+In:  RM=Real:"-7.125" RS=Real:"3.25" RQ=Real:"2.75" RX=Real:"0.375"
+Out: EC=0 RX=Real:"0.9627345846602400162835071916722390"
+Func: fnSubtract
+In:  RY=Real:"0.9627345846602400162835071916722390"
+Out: EC=0 RX=Real:"0"
+Func: fnMultiply
+In:  RY=Real:"1e40"
+Out: EC=0 RX=Real:"0"
+Func: fnPareto2U
+In:  RM=Real:"-7.125" RS=Real:"3.25" RQ=Real:"2.75" RX=Real:"0.375"
+Out: EC=0 RX=Real:"0.03726541533975998371649280832776097"
+Func: fnSubtract
+In:  RY=Real:"0.03726541533975998371649280832776097"
+Out: EC=0 RX=Real:"0"
+Func: fnMultiply
+In:  RY=Real:"1e40"
+Out: EC=0 RX=Real:"0"
+Func: fnPareto2I
+In:  RM=Real:"-7.125" RS=Real:"3.25" RQ=Real:"2.75" RX=Real:"0.1234567890123456789012345678901234"
+Out: EC=0 RX=Real:"-6.965481439112558373594502737620258"
+Func: fnSubtract
+In:  RY=Real:"-6.965481439112558373594502737620258"
+Out: EC=0 RX=Real:"0"
+Func: fnMultiply
+In:  RY=Real:"1e40"
+Out: EC=0 RX=Real:"0"
+
+; Support and probability endpoints are evaluated without transcendental work.
+Func: fnParetoP
+In:  RS=Real:"3" RQ=Real:"2" RX=Real:"3"
+Out: EC=0 RX=Real:"0.6666666666666666666666666666666667"
+Func: fnParetoL
+In:  RS=Real:"3" RQ=Real:"2" RX=Real:"3"
+Out: EC=0 RX=Real:"0"
+Func: fnParetoU
+In:  RS=Real:"3" RQ=Real:"2" RX=Real:"3"
+Out: EC=0 RX=Real:"1"
+Func: fnParetoI
+In:  RS=Real:"3" RQ=Real:"2" RX=Real:"0"
+Out: EC=0 RX=Real:"3"
+Func: fnParetoI
+In:  RS=Real:"3" RQ=Real:"2" RX=Real:"1"
+Out: EC=0 RX=Real:"Infinity"
+Func: fnPareto2P
+In:  RM=Real:"-7" RS=Real:"3" RQ=Real:"2" RX=Real:"-7"
+Out: EC=0 RX=Real:"0.6666666666666666666666666666666667"
+Func: fnPareto2L
+In:  RM=Real:"-7" RS=Real:"3" RQ=Real:"2" RX=Real:"-7"
+Out: EC=0 RX=Real:"0"
+Func: fnPareto2U
+In:  RM=Real:"-7" RS=Real:"3" RQ=Real:"2" RX=Real:"-7"
+Out: EC=0 RX=Real:"1"
+Func: fnPareto2I
+In:  RM=Real:"-7" RS=Real:"3" RQ=Real:"2" RX=Real:"1"
+Out: EC=0 RX=Real:"Infinity"
+
+; Infinite variates have exact finite-support limits.
+Func: fnParetoP
+In:  RS=Real:"3" RQ=Real:"2" RX=Real:"Infinity"
+Out: EC=0 RX=Real:"0"
+Func: fnParetoL
+In:  RS=Real:"3" RQ=Real:"2" RX=Real:"Infinity"
+Out: EC=0 RX=Real:"1"
+Func: fnParetoU
+In:  RS=Real:"3" RQ=Real:"2" RX=Real:"Infinity"
+Out: EC=0 RX=Real:"0"
+
+; Strict-side markers preserve directed results at the Real34 boundary.
+Func: fnPareto2L
+In:  RMODE=5 RM=Real:"0" RS=Real:"1" RQ=Real:"1e-6176" RX=Real:"1"
+Out: EC=0 RX=Real:"1e-6176"
+Func: fnPareto2U
+In:  RMODE=4 RM=Real:"0" RS=Real:"1" RQ=Real:"1e-6176" RX=Real:"1"
+Out: EC=0 RX=Real:"0.9999999999999999999999999999999999"
+
+; Finite overflow honours a directed final conversion.
+Func: fnParetoI
+In:  RMODE=4 RS=Real:"1" RQ=Real:"1e-6176" RX=Real:"0.5"
+Out: EC=0 RX=Real:"9.999999999999999999999999999999999e6144"
+Func: fnParetoP
+In:  RMODE=4 RS=Real:"1e-6176" RQ=Real:"1e6144" RX=Real:"1e-6176"
+Out: EC=0 RX=Real:"9.999999999999999999999999999999999e6144"
+
+; Remaining invalid parameters, arguments, and scalar dispatch cases.
+Func: fnParetoP
+In:  FL_SPCRES=0 RS=Real:"1" RQ=Real:"-2" RX=Real:"2"
+Out: EC=16 RX=Real:"2"
+Func: fnParetoP
+In:  FL_SPCRES=0 RS=Real:"1" RQ=Real:"Infinity" RX=Real:"2"
+Out: EC=16 RX=Real:"2"
+Func: fnPareto2P
+In:  FL_SPCRES=0 RM=Real:"Infinity" RS=Real:"1" RQ=Real:"2" RX=Real:"2"
+Out: EC=16 RX=Real:"2"
+Func: fnParetoP
+In:  FL_SPCRES=0 RS=Real:"3" RQ=Real:"2" RX=Real:"2"
+Out: EC=1 RX=Real:"2"
+Func: fnParetoI
+In:  FL_SPCRES=0 RS=Real:"3" RQ=Real:"2" RX=Real:"1.1"
+Out: EC=1 RX=Real:"1.1"
+Func: fnParetoI
+In:  FL_SPCRES=1 RS=Real:"3" RQ=Real:"2" RX=Real:"NaN"
+Out: EC=0 RX=Real:"NaN"
+Func: fnParetoP
+In:  FL_SPCRES=0 RS=Real:"3" RQ=Real:"2" RX=ReMa:"M1,2[3,4]"
+Out: EC=24 RX=ReMa:"M1,2[3,4]"
+
+; --- Discrete uniform (low=0, high=10) ---
 Func: fnUniformP
-In:  AM=DEG FL_ASLIFT=0 RM=Real:"0" RN=Real:"10" RX=Real:"5"
+In:  FARG=1 AM=DEG FL_ASLIFT=0 RMODE=0 RM=Real:"0" RN=Real:"10" RX=Real:"5"
 Out: EC=0 RX=Real:"0.09090909090909090909090909090909091"
 Func: fnUniformL
-In:  AM=DEG FL_ASLIFT=0 RM=Real:"0" RN=Real:"10" RX=Real:"5"
+In:  FARG=1 AM=DEG FL_ASLIFT=0 RM=Real:"0" RN=Real:"10" RX=Real:"5"
 Out: EC=0 RX=Real:"0.5454545454545454545454545454545455"
 Func: fnUniformU
-In:  AM=DEG FL_ASLIFT=0 RM=Real:"0" RN=Real:"10" RX=Real:"5"
+In:  FARG=1 AM=DEG FL_ASLIFT=0 RM=Real:"0" RN=Real:"10" RX=Real:"5"
 Out: EC=0 RX=Real:"0.5454545454545454545454545454545455"
 Func: fnUniformI
-In:  AM=DEG FL_ASLIFT=0 RM=Real:"0" RN=Real:"10" RX=Real:"0.5"
+In:  FARG=1 AM=DEG FL_ASLIFT=0 RM=Real:"0" RN=Real:"10" RX=Real:"0.5"
 Out: EC=0 RX=Real:"5"
+
+; A probability at a discrete CDF boundary selects the lower integer.
+Func: fnUniformI
+In:  FARG=1 RM=Real:"0" RN=Real:"2" RX=Real:"0.3333333333333333333333333333333333"
+Out: EC=0 RX=Real:"0"
+
+; The p75 rank product retains a fractional unit after 34 integer places.
+Func: fnUniformI
+In:  FARG=1 RM=Real:"0" RN=Real:"9999999999999999999999999999999998" RX=Real:"0.9999999999999999999999999999999999"
+Out: EC=0 RX=Real:"9999999999999999999999999999999998"
+Func: fnSubtract
+In:  RY=Real:"9999999999999999999999999999999998"
+Out: EC=0 RX=Real:"0"
+
+; Wide rank formation retains the endpoint and inclusive-unit terms.
+Func: fnUniformI
+In:  FARG=1 RM=Real:"-1" RN=Real:"1e40" RX=Real:"1e-40"
+Out: EC=0 RX=Real:"0"
+
+; Form the inclusive count after subtracting large discrete endpoints.
+Func: fnUniformP
+In:  FARG=1 RM=Real:"1e40" RN=Real:"1.000000000000000000000000000000001e40" RX=Real:"1e40"
+Out: EC=0 RX=Real:"9.999999000000099999990000001000000e-8"
+Func: fnUniformL
+In:  FARG=1 RM=Real:"1e40" RN=Real:"1.000000000000000000000000000000001e40" RX=Real:"1e40"
+Out: EC=0 RX=Real:"9.999999000000099999990000001000000e-8"
+Func: fnUniformU
+In:  FARG=1 RM=Real:"1e40" RN=Real:"1.000000000000000000000000000000001e40" RX=Real:"1.000000000000000000000000000000001e40"
+Out: EC=0 RX=Real:"9.999999000000099999990000001000000e-8"
+
+; A one-point discrete distribution remains valid.
+Func: fnUniformP
+In:  FARG=1 RM=Real:"7" RN=Real:"7" RX=Real:"7"
+Out: EC=0 RX=Real:"1"
+Func: fnUniformI
+In:  FARG=1 RM=Real:"7" RN=Real:"7" RX=Real:"0.25"
+Out: EC=0 RX=Real:"7"
+
+; --- Continuous uniform ---
+Func: fnUniformP
+In:  FARG=0 RM=Real:"0" RN=Real:"10" RX=Real:"5"
+Out: EC=0 RX=Real:"0.1"
+Func: fnUniformL
+In:  FARG=0 RM=Real:"0" RN=Real:"10" RX=Real:"5"
+Out: EC=0 RX=Real:"0.5"
+Func: fnUniformU
+In:  FARG=0 RM=Real:"0" RN=Real:"10" RX=Real:"5"
+Out: EC=0 RX=Real:"0.5"
+Func: fnUniformI
+In:  FARG=0 RM=Real:"1" RN=Real:"2" RX=Real:"0.75"
+Out: EC=0 RX=Real:"1.75"
+Func: fnUniformI
+In:  FARG=0 RM=Real:"-3" RN=Real:"7" RX=Real:"0"
+Out: EC=0 RX=Real:"-3"
+Func: fnUniformI
+In:  FARG=0 RM=Real:"-3" RN=Real:"7" RX=Real:"1"
+Out: EC=0 RX=Real:"7"
+
+; P39 retains the final CDF unit across subtraction and division.
+Func: fnUniformL
+In:  FARG=0 RM=Real:"-6.575137786851784350247730901e-14" RN=Real:"-9.801611154926538605335969414e-29" RX=Real:"-5.498707302233816802111167600799912e-14"
+Out: EC=0 RX=Real:"0.1637122322775490556665982648000000"
+Func: fnSubtract
+In:  RY=Real:"0.1637122322775490556665982648000000"
+Out: EC=0 RX=Real:"0"
+Func: fnMultiply
+In:  RY=Real:"1e34"
+Out: EC=0 RX=Real:"0"
+
+; The p75 interpolation retains a 67-place product cancellation.
+Func: fnUniformI
+In:  FARG=0 RM=Real:"-1669324476710274429562172822101162" RN=Real:"3644300365144359323354466838840005" RX=Real:"0.3141592653589793238462643383279503"
+Out: EC=0 RX=Real:"1e-34"
+
+; Infinite abscissas use the finite-support endpoints.
+Func: fnUniformP
+In:  FARG=0 RM=Real:"-2" RN=Real:"3" RX=Real:"Infinity"
+Out: EC=0 RX=Real:"0"
+Func: fnUniformL
+In:  FARG=0 RM=Real:"-2" RN=Real:"3" RX=Real:"Infinity"
+Out: EC=0 RX=Real:"1"
+Func: fnUniformU
+In:  FARG=0 RM=Real:"-2" RN=Real:"3" RX=Real:"-Infinity"
+Out: EC=0 RX=Real:"1"
+
+; A tiny excluded interval keeps the directed side below unity.
+Func: fnUniformU
+In:  FARG=0 RMODE=4 RM=Real:"0" RN=Real:"1e6144" RX=Real:"1e-6176"
+Out: EC=0 RX=Real:"0.9999999999999999999999999999999999"
+
+; Equal continuous limits do not define a density.
+Func: fnUniformP
+In:  FARG=0 RMODE=0 FL_SPCRES=0 RM=Real:"7" RN=Real:"7" RX=Real:"7"
+Out: EC=16 RX=Real:"7"
+
+; NaN limits and non-scalar inputs are rejected.
+Func: fnUniformP
+In:  FARG=0 FL_SPCRES=0 RM=Real:"NaN" RN=Real:"7" RX=Real:"2"
+Out: EC=16 RX=Real:"2"
+Func: fnUniformP
+In:  FARG=1 FL_SPCRES=0 RM=Real:"0.5" RN=Real:"7" RX=Real:"2"
+Out: EC=16 RX=Real:"2"
+Func: fnUniformI
+In:  FARG=0 FL_SPCRES=0 RM=Real:"0" RN=Real:"7" RX=Real:"1.1"
+Out: EC=1 RX=Real:"1.1"
+Func: fnUniformL
+In:  FARG=0 FL_SPCRES=0 RM=Real:"0" RN=Real:"1" RX=ReMa:"M1,2[0.25,0.75]"
+Out: EC=24 RX=ReMa:"M1,2[0.25,0.75]"

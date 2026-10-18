@@ -1,24 +1,29 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
-// Zig owner for src/c47/mathematics/beta.c: Beta(x, y) = Gamma(x)*Gamma(y)/
-// Gamma(x+y), real and complex. Faithful line-by-line translation preserving
-// the exact order of every real_t operation (beta.txt checks results to the
-// last ULP). Exports fnBeta with C linkage; the static realBeta/complexBeta/
-// betaReal/betaComplex helpers stay private. OPTION_ZETA_BETA is defined for
-// every target built here, so the body is unconditional -- the C's
-// !OPTION_ZETA_BETA arm, an empty fnBeta, is the one that is never taken.
+// Zig owner for src/c47/mathematics/beta.c: Beta(x, y) = exp(ln Beta(x, y)),
+// real and complex, through the positive-argument log-Beta of lnbeta.c.
+// Faithful line-by-line translation preserving the exact order of every real_t
+// operation (beta.txt checks results to the last ULP). Exports fnBeta with C
+// linkage; the static realBeta/complexBeta/betaReal/betaComplex helpers stay
+// private. OPTION_ZETA_BETA is defined for every target built here, so the
+// body is unconditional -- the C's !OPTION_ZETA_BETA arm, an empty fnBeta, is
+// the one that is never taken.
 
 const std = @import("std");
 const runtime = @import("../command_wrappers/runtime.zig");
 const math_comparison_reals = @import("../compare/comparison_reals.zig");
-const math_wp34s = @import("wp34s.zig");
+const math_lnbeta = @import("lnbeta.zig");
+const math_transcendental = @import("transcendental_command.zig");
 const real_t = runtime.real_t;
+const cplx_t = runtime.cplx_t;
 const realContext_t = runtime.realContext_t;
 
-const realAdd = runtime.realAdd;
-const realMultiply = runtime.realMultiply;
-const realDivide = runtime.realDivide;
 const realIsNaN = runtime.realIsNaN;
+const realIsInfinite = runtime.realIsInfinite;
+const realIsSpecial = runtime.realIsSpecial;
+const realIsZero = runtime.realIsZero;
+const realSetZero = runtime.realSetZero;
+const realSetNaN = runtime.realSetNaN;
 
 const REGISTER_X = runtime.REGISTER_X;
 const REGISTER_Y = runtime.REGISTER_Y;
@@ -26,15 +31,12 @@ const ERR_REGISTER_LINE = runtime.ERR_REGISTER_LINE;
 const ERROR_INVALID_DATA_TYPE_FOR_OP = runtime.ERROR_INVALID_DATA_TYPE_FOR_OP;
 const ERROR_OUT_OF_RANGE = runtime.ERROR_OUT_OF_RANGE;
 const amNone = runtime.amNone;
+const FLAG_SPCRES = runtime.FLAG_SPCRES;
 
 // const_0 has a runtime accessor.
 inline fn const_0() *const real_t {
     return runtime.z47_math_wrappers_const_0();
 }
-
-// realCompareLessEqual is not in runtime; extern it.
-
-// Cross-domain Zig-exported externs.
 
 const displayCalcErrorMessage = runtime.displayCalcErrorMessage;
 const moreInfoOnError = runtime.moreInfoOnError;
@@ -57,33 +59,33 @@ fn reportBetaError(function_name: [*:0]const u8, comptime tail: []const u8) void
     moreInfoOnError(function_name, message, null, null);
 }
 
-fn complexBeta(xReal: *real_t, xImag: *real_t, yReal: *real_t, yImag: *real_t, rReal: *real_t, rImag: *real_t, realContext: *realContext_t) bool {
-    // Beta(x, y) := Gamma(x) * Gamma(y) / Gamma(x+y)
-    var tReal: real_t = undefined;
-    var tImag: real_t = undefined;
-
-    if (math_comparison_reals.realCompareLessEqual(xReal, const_0())) {
+fn complexBeta(x: *cplx_t, y: *cplx_t, r: *cplx_t, realContext: *realContext_t) bool {
+    if (math_comparison_reals.realCompareLessEqual(&x.Real, const_0())) {
         displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
         reportBetaError("In function complexBeta:", ") with Re(x)<=0");
         return false;
-    } else if (math_comparison_reals.realCompareLessEqual(yReal, const_0())) {
+    } else if (math_comparison_reals.realCompareLessEqual(&y.Real, const_0())) {
         displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
         reportBetaError("In function complexBeta:", " with Re(y)<=0");
         return false;
     }
 
-    math_wp34s.WP34S_ComplexGamma(xReal, xImag, &tReal, &tImag, realContext); // t = Gamma(x)
-    math_wp34s.WP34S_ComplexGamma(yReal, yImag, rReal, rImag, realContext); // r = Gamma(y)
+    if (realIsSpecial(&x.Real) or realIsSpecial(&x.Imag) or realIsSpecial(&y.Real) or realIsSpecial(&y.Imag)) {
+        if (runtime.getSystemFlag(FLAG_SPCRES) and realIsZero(&x.Imag) and realIsZero(&y.Imag) and
+            !realIsNaN(&x.Real) and !realIsNaN(&y.Real) and (realIsInfinite(&x.Real) or realIsInfinite(&y.Real)))
+        {
+            realSetZero(&r.Real);
+            realSetZero(&r.Imag);
+            return true;
+        }
+        realSetNaN(&r.Real);
+        realSetNaN(&r.Imag);
+    } else {
+        math_lnbeta.C47_LnBetaPositiveComplex(x, y, r);
+        math_transcendental.expComplex(r, r, realContext);
+    }
 
-    runtime.mulComplexComplex(rReal, rImag, &tReal, &tImag, rReal, rImag, realContext); // r = Gamma(x) * Gamma(y)
-
-    realAdd(xReal, yReal, &tReal, realContext); // t = x + y
-    realAdd(xImag, yImag, &tImag, realContext);
-
-    math_wp34s.WP34S_ComplexGamma(&tReal, &tImag, &tReal, &tImag, realContext); // t = Gamma(x + y);
-    runtime.divComplexComplex(rReal, rImag, &tReal, &tImag, rReal, rImag, realContext); // r = Gamma(x) * Gamma(y) / Gamma(x + y);
-
-    if (realIsNaN(rImag) or realIsNaN(rReal)) {
+    if (realIsNaN(&r.Imag) or realIsNaN(&r.Real)) {
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
         reportBetaError("In function complexBeta:", ") out of range");
         return false;
@@ -92,8 +94,7 @@ fn complexBeta(xReal: *real_t, xImag: *real_t, yReal: *real_t, yImag: *real_t, r
     return true;
 }
 
-fn realBeta(x: *real_t, y: *real_t, r: *real_t, realContext: *realContext_t) bool {
-    // Beta(x, y) := Gamma(x) * Gamma(y) / Gamma(x+y)
+fn realBeta(x: *real_t, y: *real_t, r: *real_t) bool {
     var tReal: real_t = undefined;
 
     if (math_comparison_reals.realCompareLessEqual(x, const_0())) {
@@ -106,15 +107,18 @@ fn realBeta(x: *real_t, y: *real_t, r: *real_t, realContext: *realContext_t) boo
         return false;
     }
 
-    math_wp34s.WP34S_Gamma(x, &tReal, realContext); // t = Gamma(x)
-    math_wp34s.WP34S_Gamma(y, r, realContext); // r = Gamma(y)
-
-    realMultiply(r, &tReal, r, realContext); // r = Gamma(x) * Gamma(y)
-
-    realAdd(x, y, &tReal, realContext); // t = x + y
-
-    math_wp34s.WP34S_Gamma(&tReal, &tReal, realContext); // t = Gamma(x + y);
-    realDivide(r, &tReal, r, realContext); // r = Gamma(x) * Gamma(y) / Gamma(x + y);
+    if (realIsNaN(x) or realIsNaN(y)) {
+        realSetNaN(r);
+    } else if (realIsInfinite(x) or realIsInfinite(y)) {
+        if (runtime.getSystemFlag(FLAG_SPCRES)) {
+            realSetZero(r);
+            return true;
+        }
+        realSetNaN(r);
+    } else {
+        math_lnbeta.C47_LnBetaPositiveReal(x, y, &tReal);
+        math_transcendental.realExp(&tReal, r, &runtime.ctxtReal75);
+    }
 
     if (realIsNaN(r)) {
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
@@ -126,19 +130,16 @@ fn realBeta(x: *real_t, y: *real_t, r: *real_t, realContext: *realContext_t) boo
 }
 
 fn betaComplex() callconv(.c) void {
-    var xReal: real_t = undefined;
-    var xImag: real_t = undefined;
-    var yReal: real_t = undefined;
-    var yImag: real_t = undefined;
-    var rReal: real_t = undefined;
-    var rImag: real_t = undefined;
+    var x: cplx_t = undefined;
+    var y: cplx_t = undefined;
+    var r: cplx_t = undefined;
 
-    if (!runtime.getRegisterAsComplex(REGISTER_X, &xReal, &xImag) or !runtime.getRegisterAsComplex(REGISTER_Y, &yReal, &yImag)) {
+    if (!runtime.getRegisterAsComplex(REGISTER_X, &x) or !runtime.getRegisterAsComplex(REGISTER_Y, &y)) {
         return;
     }
 
-    if (complexBeta(&xReal, &xImag, &yReal, &yImag, &rReal, &rImag, &runtime.ctxtReal75)) {
-        runtime.convertComplexToResultRegister(&rReal, &rImag, REGISTER_X);
+    if (complexBeta(&x, &y, &r, &runtime.ctxtReal75)) {
+        runtime.convertComplexToResultRegister(&r, REGISTER_X);
     }
 }
 
@@ -151,7 +152,7 @@ fn betaReal() callconv(.c) void {
         return;
     }
 
-    if (realBeta(&x, &y, &r, &runtime.ctxtReal39)) {
+    if (realBeta(&x, &y, &r)) {
         runtime.convertRealToResultRegister(&r, REGISTER_X, amNone);
     }
 }

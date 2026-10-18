@@ -12,6 +12,7 @@ const math_matrix_lifecycle = @import("lifecycle.zig");
 const real34_t = runtime.real34_t;
 const complex34_t = runtime.complex34_t;
 const real_t = runtime.real_t;
+const cplx_t = runtime.cplx_t;
 const real34Matrix_t = runtime.real34Matrix_t;
 const complex34Matrix_t = runtime.complex34Matrix_t;
 
@@ -147,14 +148,15 @@ pub export fn _multiplyRealMatrix(matrix: *const real34Matrix_t, x: *const real_
 }
 
 pub export fn multiplyComplexMatrix(matrix: *const complex34Matrix_t, xr: *const real34_t, xi: *const real34_t, res: *complex34Matrix_t) callconv(.c) void {
-    var real_xr: real_t = undefined;
-    var real_xi: real_t = undefined;
-    runtime.real34ToReal(xr, &real_xr);
-    runtime.real34ToReal(xi, &real_xi);
-    _multiplyComplexMatrix(matrix, &real_xr, &real_xi, res, &runtime.ctxtReal39);
+    var x: cplx_t = undefined;
+    runtime.real34ToReal(xr, &x.Real);
+    runtime.real34ToReal(xi, &x.Imag);
+    _multiplyComplexMatrix(matrix, &x, res, &runtime.ctxtReal39);
 }
 
-pub export fn _multiplyComplexMatrix(matrix: *const complex34Matrix_t, xr: *const real_t, xi: *const real_t, res: *complex34Matrix_t, real_context: *runtime.realContext_t) callconv(.c) void {
+// Every element is multiplied at 39 digits, whatever context the caller
+// passes, as upstream does.
+pub export fn _multiplyComplexMatrix(matrix: *const complex34Matrix_t, x: *const cplx_t, res: *complex34Matrix_t, real_context: *runtime.realContext_t) callconv(.c) void {
     _ = real_context;
     const rows = matrix.header.matrixRows;
     const cols = matrix.header.matrixColumns;
@@ -165,13 +167,12 @@ pub export fn _multiplyComplexMatrix(matrix: *const complex34Matrix_t, xr: *cons
         const count = @as(usize, cols) * @as(usize, rows);
         var i: usize = 0;
         while (i < count) : (i += 1) {
-            var yr: real_t = undefined;
-            var yi: real_t = undefined;
-            runtime.real34ToReal(&me[i].real, &yr);
-            runtime.real34ToReal(&me[i].imag, &yi);
-            runtime.mulComplexComplex(&yr, &yi, xr, xi, &yr, &yi, &runtime.ctxtReal39);
-            runtime.realToReal34(&yr, &re[i].real);
-            runtime.realToReal34(&yi, &re[i].imag);
+            var y: cplx_t = undefined;
+            runtime.real34ToReal(&me[i].real, &y.Real);
+            runtime.real34ToReal(&me[i].imag, &y.Imag);
+            runtime.mulComplexComplex(&y, x, &y, &runtime.ctxtReal39);
+            runtime.realToReal34(&y.Real, &re[i].real);
+            runtime.realToReal34(&y.Imag, &re[i].imag);
         }
     } else {
         reportRamFull("In function _multiplyComplexMatrix:");

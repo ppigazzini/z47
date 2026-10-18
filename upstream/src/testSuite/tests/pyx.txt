@@ -197,3 +197,43 @@ Out: EC=8 FL_ASLIFT=0 RY=LonI:"50" RX=ShoI:"-10#10"
 In:  FL_ASLIFT=0 RY=ShoI:"-50#10" RX=ShoI:"-10#10"
 Out: EC=8 FL_ASLIFT=0 RY=ShoI:"-50#10" RX=ShoI:"-10#10"
 
+;************************************************************************************************************************************************************
+; Context, cancellation, and special-value coverage
+;************************************************************************************************************************************************************
+
+Func: fnPyx
+In:  FL_SPCRES=0 FL_CPXRES=0 FL_ASLIFT=0 RMODE=0 RY=Real:"1e100" RX=Real:"1"
+Out: EC=0 RX=Real:"1e100"
+
+In:  FL_ASLIFT=0 RY=Real:"1e100" RX=Real:"0.5"
+Out: EC=0 RX=Real:"1e50"
+
+; A p34 work chain changes the final coefficient by three units here.
+In:  FL_ASLIFT=0 RT=Real:"1e12" RZ=Real:"1014774104211425257920.723763419553" RY=Real:"123.456" RX=Real:"10.1234"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnPyx
+In:  FL_CPXRES=1 FL_ASLIFT=0 RY=Cplx:"1e34 i 0" RX=Cplx:"-1.5 i 0"
+Out: EC=0 RX=Cplx:"9.999999999999999999999999999999998e-52 i 0"
+
+In:  FL_CPXRES=1 FL_ASLIFT=0 RY=Cplx:"1e100 i +1" RX=Cplx:"1 i 0"
+Out: EC=0 RX=Cplx:"1e100 i +1"
+
+In:  FL_SPCRES=1 FL_CPXRES=0 FL_ASLIFT=0 RY=Real:"inf" RX=Real:"1"
+Out: EC=0 RX=Real:"inf"
+
+In:  FL_SPCRES=1 FL_ASLIFT=0 RY=Real:"inf" RX=Real:"0"
+Out: EC=0 RX=Real:"1"
+
+In:  FL_SPCRES=1 FL_ASLIFT=0 RY=Real:"NaN" RX=Real:"1"
+Out: EC=0 RX=Real:"NaN"
+
+In:  FL_SPCRES=0 FL_CPXRES=0 FL_ASLIFT=0 RY=ReMa:"M1,2[1e100,123.456]" RX=ReMa:"M1,2[1,10.1234]"
+Out: EC=0 RX=ReMa:"M1,2[1e100,1014774104211425257920.723763419553]"
+
+In:  FL_CPXRES=1 FL_ASLIFT=0 RY=CxMa:"M1,2[1e100i1,1e34i0]" RX=CxMa:"M1,2[1i0,-1.5i0]"
+Out: EC=0 RX=CxMa:"M1,2[1e100i1,9.999999999999999999999999999999998e-52i0]"

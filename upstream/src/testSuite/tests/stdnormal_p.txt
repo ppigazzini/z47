@@ -103,3 +103,26 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-3" RX=Real:"0.0044318484119380071756
 ;=======================================
 ; stdNormalP(Complex) --> Error24
 ;=======================================
+
+; Tail density retains the independently computed decimal128 value.
+Func: fnStdNormalP
+In:  RMODE=0 RZ=Real:"1e6144" RY=Real:"8.74243282388945206812979773076592153481658089255547816482887277212388010087684122756340462499394806e-501" RX=Real:"47.96890669070418330307583280827874"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+; A finite density remains positive under rounding away from zero.
+Func: fnStdNormalP
+In:  RMODE=3 RX=Real:"1e100"
+Out: EC=0 RX=Real:"1e-6176"
+
+; Infinite arguments and real matrices follow the scalar interface rules.
+Func: fnStdNormalP
+In:  RMODE=0 FL_SPCRES=1 RX=Real:"inf"
+Out: EC=0 RX=Real:"0"
+
+Func: fnStdNormalP
+In:  FL_SPCRES=0 RX=ReMa:"M1,2[0,1]"
+Out: EC=24 RX=ReMa:"M1,2[0,1]"

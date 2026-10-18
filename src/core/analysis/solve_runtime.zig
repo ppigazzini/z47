@@ -75,6 +75,8 @@ pub extern var lastErrorCode: u8;
 
 pub extern fn getRegisterDataType(reg: calcRegister_t) u32;
 pub extern fn getRegisterAsReal34Quiet(reg: calcRegister_t, val: *align(1) real34_t) bool;
+pub extern fn convertReal34ToReal34Register(real34: *align(1) const real34_t, dest: calcRegister_t) void;
+pub extern fn convertReal34ToComplex34Register(real34: *align(1) const real34_t, imag34: *align(1) const real34_t, dest: calcRegister_t) void;
 pub extern fn saveForUndo() void;
 pub extern fn fnUndo(unused_but_mandatory_parameter: u16) void;
 pub extern fn fnPlotf(unused_but_mandatory_parameter: u16) void;

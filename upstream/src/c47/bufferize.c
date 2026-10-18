@@ -475,9 +475,8 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
         if(tam.alpha){
           insertAlphaCharacter(item, &alphaCursor);
         }
-        else if(stringByteLength(aimBuffer) + (item == ITM_poly_SIGN ? 24 : stringByteLength(indexOfItems[item].itemSoftmenuName)) >= AIM_BUFFER_LENGTH) { /// TODO this error should never happen but who knows!
-          sprintf(errorMessage, "In function addItemToBuffer:the AIM input buffer is full! %d bytes for now", AIM_BUFFER_LENGTH);
-          displayBugScreen(errorMessage);
+        else if(stringByteLength(aimBuffer) + (item == ITM_poly_SIGN ? 24 : stringByteLength(indexOfItems[item].itemSoftmenuName)) >= (calcMode == CM_EIM ? MAX_EQUATION_BYTE_LENGTH : AIM_BUFFER_LENGTH)) {  // full: equation store is 255 blocks, alpha is the buffer; refuse the character so the text survives and ENTER still stores it
+          displayCalcErrorMessage(ERROR_INPUT_TOO_LONG, ERR_REGISTER_LINE);
         }
         else if(calcMode == CM_EIM) {
           const char *addChar0 = item == ITM_EEXCHR               ? "E" :                      //PRODUCT_SIGN "10^" :
@@ -605,7 +604,7 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
             }
           }
         }
-        else if(stringByteLength(aimBuffer) <= AIM_BUFFER_LENGTH-1 && stringWidthWithLimitC47(aimBuffer, stdNoEnlarge, nocompress, SCREEN_WIDTH * MAXLINES - 16, true, true) < SCREEN_WIDTH * MAXLINES - 16) { //0 means small standard font    //JM
+        else if(stringByteLength(aimBuffer) + stringByteLength(indexOfItems[item].itemSoftmenuName) <= MAX_STRING_BYTE_LENGTH - 1) { // the 1019-byte string limit; the editor scrolls through displayAIMbufferoffset   //JM
           #if defined(TEXT_MULTILINE_EDIT)
             //JMCURSOR vv ADD THE CHARACTER MID-STRING =======================================================
             uint16_t ix = 0;
@@ -645,6 +644,9 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
           #else // !TEXT_MULTILINE_EDIT
             xcopy(aimBuffer + stringByteLength(aimBuffer), indexOfItems[item].itemSoftmenuName, stringByteLength(indexOfItems[item].itemSoftmenuName) + 1);
           #endif // TEXT_MULTILINE_EDIT
+        }
+        else {
+          displayCalcErrorMessage(ERROR_INPUT_TOO_LONG, ERR_REGISTER_LINE);  // the text fills the editable width: refuse with feedback rather than dropping the key silently
         }
       }
 
@@ -1396,6 +1398,7 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
           strcat(aimBuffer, "3.141592653589793238462643383279503");
           reallyRunFunction(ITM_EXIT1, NOPARAM);
           setLastintegerBasetoZero();
+          return;  // NIM is closed and the value is on the stack, skip the buffer-to-display conversion
         }
         break;
       }
@@ -2322,20 +2325,16 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
 
     if((getSystemFlag(FLAG_POLAR) && !temporaryFlagRect) || temporaryFlagPolar) { // polar mode
       if(real34CompareEqual(dest_r, const34_0)) {
+        real34SetZero(dest_r);
         real34SetZero(dest_i);
       }
       else {
-        real_t magnitude, theta;
-        real34ToReal(dest_r, &magnitude);
-        real34ToReal(dest_i, &theta);
-        convertAngleFromTo(&theta, currentAngularMode, amRadian, &ctxtReal39);
-        if(realCompareLessThan(&magnitude, const_0)) {
-          realSetPositiveSign(&magnitude);
-          realAdd(&theta, const39_pi, &theta, &ctxtReal39);
-        }
-        realPolarToRectangular(&magnitude, &theta, &magnitude, &theta, &ctxtReal39); // theta in radian
-        realToReal34(&magnitude, dest_r);
-        realToReal34(&theta,     dest_i);
+        cplx_t z;
+        real34ToReal(dest_r, &z.Mag);
+        real34ToReal(dest_i, &z.Arg);
+        realPolarToRectangularInUnit(&z.Mag, &z.Arg, currentAngularMode, &z, &ctxtReal39);
+        realToReal34(&z.Real, dest_r);
+        realToReal34(&z.Imag, dest_i);
       }
       fnToPolar2(0);
     }

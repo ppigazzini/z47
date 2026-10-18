@@ -323,3 +323,91 @@ Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Real:"12540" RX=Cplx:"12663.456 i -6.78"
 
 In:  FL_ASLIFT=0 FL_CPXRES=0 RY=Cplx:"123.456 i -6.78" RX=Real:"12540":DEG
 Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Real:"12540":DEG RX=Cplx:"12663.456 i -6.78"
+
+
+
+;=======================================
+; Real34 precision and selected rounding
+;=======================================
+In:  RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"1.234567890123456789012345678901234" RX=Real:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"1.234567890123456789012345678901234"
+Func: fnSubtract
+In:  RY=Real:"1.234567890123456789012345678901234"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e40"
+Out: EC=0 RX=Real:"0"
+
+Func: fnAdd
+In:  RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"1" RX=Real:"5e-34"
+Out: EC=0 RX=Real:"1"
+Func: fnSubtract
+In:  RY=Real:"1"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e40"
+Out: EC=0 RX=Real:"0"
+
+Func: fnAdd
+In:  RMODE=1 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"1" RX=Real:"5e-34"
+Out: EC=0 RX=Real:"1.000000000000000000000000000000001"
+Func: fnSubtract
+In:  RY=Real:"1.000000000000000000000000000000001"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e40"
+Out: EC=0 RX=Real:"0"
+
+Func: fnAdd
+In:  RMODE=2 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"1" RX=Real:"5e-34"
+Out: EC=0 RX=Real:"1"
+Func: fnSubtract
+In:  RY=Real:"1"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e40"
+Out: EC=0 RX=Real:"0"
+
+Func: fnAdd
+In:  RMODE=3 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"1" RX=Real:"5e-34"
+Out: EC=0 RX=Real:"1.000000000000000000000000000000001"
+Func: fnSubtract
+In:  RY=Real:"1.000000000000000000000000000000001"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e40"
+Out: EC=0 RX=Real:"0"
+
+Func: fnAdd
+In:  RMODE=4 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"1" RX=Real:"5e-34"
+Out: EC=0 RX=Real:"1"
+Func: fnSubtract
+In:  RY=Real:"1"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e40"
+Out: EC=0 RX=Real:"0"
+
+Func: fnAdd
+In:  RMODE=5 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"1" RX=Real:"5e-34"
+Out: EC=0 RX=Real:"1.000000000000000000000000000000001"
+Func: fnSubtract
+In:  RY=Real:"1.000000000000000000000000000000001"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e40"
+Out: EC=0 RX=Real:"0"
+
+Func: fnAdd
+In:  RMODE=6 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"1" RX=Real:"5e-34"
+Out: EC=0 RX=Real:"1"
+Func: fnSubtract
+In:  RY=Real:"1"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e40"
+Out: EC=0 RX=Real:"-0"
+
+Func: fnAdd
+In:  RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"-0" RX=Real:"-0"
+Out: EC=0 RX=Real:"-0"

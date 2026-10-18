@@ -141,3 +141,55 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"180.0":DEG
 ;=======================================
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"6.2 i -7.6"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Cplx:"6.2 i -7.6" RX=Real:"-50.79279649503215887395761774037141":DEG
+
+; Signed branch-cut values use the side selected by the imaginary component
+In:  AM=DEG FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"-1 i -0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Cplx:"-1 i -0" RX=Real:"-180":DEG
+
+In:  AM=DEG FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"-1 i 0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Cplx:"-1 i 0" RX=Real:"180":DEG
+
+In:  AM=DEG FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"inf i -1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Cplx:"inf i -1" RX=Real:"-0":DEG
+
+; A reciprocal makes the zero sign observable to the numeric comparator
+Func: fnInvert
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"-inf"
+Func: fnArg
+
+In:  AM=DEG FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"-inf i -1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Cplx:"-inf i -1" RX=Real:"-180":DEG
+
+; Signed complex origins follow atan2(imaginary, real)
+In:  AM=DEG FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"-0 i -0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Cplx:"-0 i -0" RX=Real:"-180":DEG
+
+In:  AM=DEG FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"-0 i 0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Cplx:"-0 i 0" RX=Real:"180":DEG
+
+In:  AM=DEG FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"0 i -0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Cplx:"0 i -0" RX=Real:"-0":DEG
+
+Func: fnInvert
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"-inf"
+Func: fnArg
+
+In:  AM=DEG FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"0 i 0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Cplx:"0 i 0" RX=Real:"0":DEG
+
+; Infinite quadrants and NaN components
+In:  AM=DEG FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"inf i -inf"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Cplx:"inf i -inf" RX=Real:"-45":DEG
+
+In:  AM=DEG FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"-inf i -inf"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Cplx:"-inf i -inf" RX=Real:"-135":DEG
+
+In:  AM=RAD FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"NaN i 1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Cplx:"NaN i 1" RX=Real:"NaN":RAD
+
+In:  AM=RAD FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"1 i NaN"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Cplx:"1 i NaN" RX=Real:"NaN":RAD
+
+; Elementwise complex-matrix arguments retain the same signed axes
+In:  AM=DEG FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=CxMa:"M1,4[-1i-0,-1i0,1i-0,1i0]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=CxMa:"M1,4[-1i-0,-1i0,1i-0,1i0]" RX=ReMa:"M1,4[-180,180,-0,0]"

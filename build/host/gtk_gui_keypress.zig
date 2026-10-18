@@ -342,6 +342,8 @@ extern fn refreshLcd(unusedData: ?*anyopaque) c_int;
 extern fn addItemToBuffer(item: u16) void;
 extern fn fnT_ARROW(command: u16) void;
 extern fn fnSNAP(unused: u16) void;
+extern fn fnSNAPMENU(unused: u16) void;
+extern fn fnSNAPXBold(unused: u16) void;
 extern fn copyScreenToClipboard() void;
 extern fn copyMenuToClipboard() void;
 extern fn copyRegisterXToClipboard() void;
@@ -839,13 +841,23 @@ pub fn keyPressedCImpl(w: ?*anyopaque, event_opaque: ?*anyopaque, data: ?*anyopa
             },
             100 + 65536, 68 + 65536 => {
                 CTRL_State = 0;
-                _ = printf("key pressed: CTRL+d Copy Stack registers to clipboard\n");
+                _ = printf("key pressed: CTRL+d Copy Lettered registers to clipboard\n");
                 copyStackRegistersToClipboard();
             },
             97 + 65536, 65 + 65536 => {
                 CTRL_State = 0;
-                _ = printf("key pressed: CTRL+d Copy All registers to clipboard\n");
+                _ = printf("key pressed: CTRL+a Copy All registers to clipboard\n");
                 copyAllRegistersToClipboard();
+            },
+            78 + 65536, 110 + 65536 => {
+                CTRL_State = 0;
+                _ = printf("key pressed: CTRL+n Menu image to disk\n");
+                fnSNAPMENU(NOPARAM);
+            },
+            66 + 65536, 98 + 65536 => {
+                CTRL_State = 0;
+                _ = printf("key pressed: CTRL+b X register image to disk\n");
+                fnSNAPXBold(NOPARAM);
             },
             else => {},
         }

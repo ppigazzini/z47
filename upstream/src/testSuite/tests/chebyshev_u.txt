@@ -146,3 +146,12 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"5"
 ;=======================================
 ; Un(Complex) --> Error24
 ;=======================================
+
+; A decimal128 input adjacent to a degree-20 zero requires 75-digit recurrence work.
+Func: fnChebyshevU
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RT=Real:"1e70" RZ=Real:"7.124238313721139878528281689648209e-35" RY=Real:"20" RX=Real:"0.07473009358642425429093974573476665"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"

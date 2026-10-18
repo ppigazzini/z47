@@ -16,6 +16,8 @@ const calcRegister_t = i16;
 const REGISTER_X: calcRegister_t = 100;
 const FIRST_LOCAL_REGISTER: calcRegister_t = 7000;
 const NUMBER_OF_LOCAL_REGISTERS: i16 = 99;
+const REGISTER_X_IN_KS_CODE: i16 = 100;
+const LAST_LETTERED_REGISTER_IN_KS_CODE: i16 = 111;
 const FIRST_LOCAL_REGISTER_IN_KS_CODE: i16 = 112;
 const LAST_LOCAL_REGISTER_IN_KS_CODE: i16 = 210;
 const FIRST_STAT_REGISTER_IN_KS_CODE: i16 = 211;
@@ -65,32 +67,18 @@ fn regKStoC(reg_ks: u8) i16 {
     return ks - stat_or_spare + local;
 }
 
-fn validateRegisterSourceRange(load_into_memory: ?bool, start: u16, count: *u16, local_register_count: u8) u8 {
-    const register_x: u16 = @intCast(REGISTER_X);
-    const first_local_register: u16 = @intCast(FIRST_LOCAL_REGISTER);
-    return register_range_owned.validateRegisterSourceRange(
-        load_into_memory,
-        start,
-        count,
-        register_x,
-        first_local_register,
+// Validates a public register range keyed in keystroke codes and expands a zero
+// count to the rest of its band.
+fn getRegParamRange(first: u16, number: *u16, local_register_count: u8) bool {
+    return register_range_owned.getRegParamRange(
+        first,
+        number,
+        @intCast(REGISTER_X_IN_KS_CODE),
+        @intCast(LAST_LETTERED_REGISTER_IN_KS_CODE),
+        @intCast(FIRST_LOCAL_REGISTER_IN_KS_CODE),
         local_register_count,
-        ERROR_OUT_OF_RANGE,
-        ERROR_NONE,
-    );
-}
-
-fn validateRegisterDestinationRange(start: u16, count: u16, local_register_count: u8) u8 {
-    const register_x: u16 = @intCast(REGISTER_X);
-    const first_local_register: u16 = @intCast(FIRST_LOCAL_REGISTER);
-    return register_range_owned.validateRegisterDestinationRange(
-        start,
-        count,
-        register_x,
-        first_local_register,
-        local_register_count,
-        ERROR_OUT_OF_RANGE,
-        ERROR_NONE,
+        @intCast(FIRST_STAT_REGISTER_IN_KS_CODE),
+        @intCast(LAST_SPARE_REGISTERS_IN_KS_CODE),
     );
 }
 
@@ -144,20 +132,17 @@ pub fn getRegParamProduct(load_into_memory: ?*bool, start: *u16, count: *u16, de
         dest.* = @truncate(@as(u32, @bitCast(realToInt32C47(&integer_part, null))));
     }
 
-    const source_error = validateRegisterSourceRange(
-        if (load_into_memory) |load| load.* else null,
-        start.*,
-        count,
-        local_register_count,
-    );
-    if (source_error != ERROR_NONE) {
-        return source_error;
+    if (!getRegParamRange(start.*, count, local_register_count)) {
+        return ERROR_OUT_OF_RANGE;
+    }
+    // A load into memory may not target the local registers.
+    if (load_into_memory != null and load_into_memory.?.* and start.* >= @as(u16, @intCast(FIRST_LOCAL_REGISTER_IN_KS_CODE)) and start.* <= @as(u16, @intCast(LAST_LOCAL_REGISTER_IN_KS_CODE))) {
+        return ERROR_OUT_OF_RANGE;
     }
 
     if (destination) |dest| {
-        const destination_error = validateRegisterDestinationRange(dest.*, count.*, local_register_count);
-        if (destination_error != ERROR_NONE) {
-            return destination_error;
+        if (!getRegParamRange(dest.*, count, local_register_count)) {
+            return ERROR_OUT_OF_RANGE;
         }
     }
 

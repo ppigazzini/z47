@@ -90,7 +90,13 @@ pub export fn fnOrthoPoly(kind: u16) linksection(runtime.code_section) callconv(
                 displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
                 moreInfoOnError("In function fnOrthoPoly:", "Y must be a nonnegative integer.", if (kind == ORTHOPOLY_LAGUERRE_L_ALPHA) "In addition, Z must be greater than -1." else null, null);
             } else {
-                math_wp34s.WP34S_OrthoPoly(kind, &x, &y, &z, &ans, &ctxtReal39);
+                // n = 0 and n = 1 (with alpha = 0 for the generalised Laguerre)
+                // are exact in 34 digits; every other degree runs at 75.
+                var workContext: *realContext_t = &runtime.ctxtReal75;
+                if (runtime.realIsZero(&y) or (runtime.realCompareEqual(&y, runtime.z47_math_wrappers_const_1()) and (kind != ORTHOPOLY_LAGUERRE_L_ALPHA or runtime.realIsZero(&z)))) {
+                    workContext = &runtime.ctxtReal34;
+                }
+                math_wp34s.WP34S_OrthoPoly(kind, &x, &y, &z, &ans, workContext);
                 convertRealToResultRegister(&ans, REGISTER_X, amNone);
                 if (kind == ORTHOPOLY_LAGUERRE_L_ALPHA) {
                     fnDropY(NOPARAM);

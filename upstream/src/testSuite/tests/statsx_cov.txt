@@ -51,3 +51,39 @@ Out: EC=0 RX=Real:"3"
 Func: fnClSigma
 In:  FARG=0 RX=Real:"0"
 Out: EC=0
+
+; The range is one final Real34 subtraction.  The X range exceeds the finite
+; format while the Y range is the minimum positive subnormal.  These checks
+; exercise the selected rounding mode and both Real34 exponent limits.
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"0" RX=Real:"-9.999999999999999999999999999999999E6144"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"1E-6176" RX=Real:"9.999999999999999999999999999999999E6144"
+Out: EC=0
+
+Func: fnRangeXY
+In:  RMODE=0 FL_SPCRES=1
+Out: EC=0 RX=Real:"Infinity" RY=Real:"1E-6176"
+Func: fnRangeXY
+In:  RMODE=1 FL_SPCRES=1
+Out: EC=0 RX=Real:"Infinity" RY=Real:"1E-6176"
+Func: fnRangeXY
+In:  RMODE=2 FL_SPCRES=1
+Out: EC=0 RX=Real:"Infinity" RY=Real:"1E-6176"
+Func: fnRangeXY
+In:  RMODE=3 FL_SPCRES=1
+Out: EC=0 RX=Real:"Infinity" RY=Real:"1E-6176"
+Func: fnRangeXY
+In:  RMODE=4 FL_SPCRES=1
+Out: EC=0 RX=Real:"9.999999999999999999999999999999999E6144" RY=Real:"1E-6176"
+Func: fnRangeXY
+In:  RMODE=5 FL_SPCRES=1
+Out: EC=0 RX=Real:"Infinity" RY=Real:"1E-6176"
+Func: fnRangeXY
+In:  RMODE=6 FL_SPCRES=1
+Out: EC=0 RX=Real:"9.999999999999999999999999999999999E6144" RY=Real:"1E-6176"
+
+Func: fnClSigma
+In:  FARG=0 RX=Real:"0"
+Out: EC=0

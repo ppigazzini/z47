@@ -107,19 +107,18 @@ fn tryToPolar2Real34Pair() bool {
         return true;
     }
 
-    var real_value: runtime.real_t = undefined;
-    var imag_value: runtime.real_t = undefined;
+    var z: runtime.cplx_t = undefined;
 
-    loadToPolarNumericInput(real_reg, data_type_x, &real_value);
-    loadToPolarNumericInput(imag_reg, data_type_y, &imag_value);
+    loadToPolarNumericInput(real_reg, data_type_x, &z.Real);
+    loadToPolarNumericInput(imag_reg, data_type_y, &z.Imag);
 
-    rectangular_to_polar_owned.rectangularToPolarReal(&real_value, &imag_value, &real_value, &imag_value, &runtime.ctxtReal39);
-    runtime.convertAngleFromTo(&imag_value, runtime.amRadian, runtime.currentAngularMode, &runtime.ctxtReal39);
+    rectangular_to_polar_owned.rectangularToPolarReal(&z, z.mag(), z.arg(), &runtime.ctxtReal39);
+    runtime.convertAngleFromTo(z.arg(), runtime.amRadian, runtime.currentAngularMode, &runtime.ctxtReal39);
 
     runtime.reallocateRegister(real_reg, runtime.dtReal34, 0, runtime.amNone);
     runtime.reallocateRegister(imag_reg, runtime.dtReal34, 0, @intCast(runtime.currentAngularMode));
-    runtime.convertRealToReal34ResultRegister(&real_value, real_reg);
-    runtime.convertRealToReal34ResultRegister(&imag_value, imag_reg);
+    runtime.convertRealToReal34ResultRegister(z.constMag(), real_reg);
+    runtime.convertRealToReal34ResultRegister(z.constArg(), imag_reg);
     runtime.temporaryInformation = if (runtime.getSystemFlag(runtime.FLAG_HPRP))
         runtime.TI_RADIUS_THETA
     else
@@ -191,30 +190,21 @@ fn tryToRect2Real34Pair() bool {
         return true;
     }
 
-    var angle_mode = runtime.getRegisterAngularMode(angle_reg);
+    // The angle is read in its own unit, a long integer reduced by that unit's
+    // turn, before LASTx is saved; an out of range angle leaves everything as it was.
+    var z: runtime.cplx_t = undefined;
+    var angle_mode: runtime.angularMode_t = undefined;
+    if (!runtime.getRegisterAsRealAngle(angle_reg, z.arg(), &angle_mode, true) or runtime.lastErrorCode != runtime.ERROR_NONE) {
+        return true;
+    }
+
     if (!runtime.saveLastX()) {
         return true;
     }
 
-    var radius_value: runtime.real_t = undefined;
-    var angle_value: runtime.real_t = undefined;
+    loadToPolarNumericInput(radius_reg, radius_type, z.mag());
 
-    loadToPolarNumericInput(radius_reg, radius_type, &radius_value);
-    loadToPolarNumericInput(angle_reg, angle_type, &angle_value);
-
-    // A long integer register's tag holds its SIGN, not an angular mode --
-    // LI_NEGATIVE is 1 and LI_POSITIVE is 2, which collide with amGrad and
-    // amDegree. toRect.c reads currentAngularMode for a long-integer angle and the
-    // register's own tag only for a real34, so the sign is never mistaken for a
-    // mode. tryToRectReal34Pair below already does this; this one did not.
-    if (angle_type == runtime.dtLongInteger) {
-        angle_mode = runtime.currentAngularMode;
-    } else if (angle_mode == runtime.amNone) {
-        angle_mode = runtime.currentAngularMode;
-    }
-
-    runtime.convertAngleFromTo(&angle_value, angle_mode, runtime.amRadian, &runtime.ctxtReal39);
-    runtime.realPolarToRectangular(&radius_value, &angle_value, &radius_value, &angle_value, &runtime.ctxtReal39);
+    runtime.realPolarToRectangularInUnit(z.constMag(), z.constArg(), angle_mode, &z, &runtime.ctxtReal39);
 
     if (runtime.getSystemFlag(runtime.FLAG_HPRP)) {
         radius_reg = runtime.REGISTER_X;
@@ -226,8 +216,8 @@ fn tryToRect2Real34Pair() bool {
 
     runtime.reallocateRegister(radius_reg, runtime.dtReal34, 0, runtime.amNone);
     runtime.reallocateRegister(angle_reg, runtime.dtReal34, 0, runtime.amNone);
-    runtime.convertRealToReal34ResultRegister(&radius_value, radius_reg);
-    runtime.convertRealToReal34ResultRegister(&angle_value, angle_reg);
+    runtime.convertRealToReal34ResultRegister(&z.Real, radius_reg);
+    runtime.convertRealToReal34ResultRegister(&z.Imag, angle_reg);
     runtime.temporaryInformation = if (runtime.getSystemFlag(runtime.FLAG_HPRP))
         runtime.TI_X_Y
     else
@@ -249,25 +239,21 @@ fn tryToRectReal34Pair(angle_in_y: i8) bool {
         return true;
     }
 
-    var angle_mode = runtime.getRegisterAngularMode(angle_reg);
+    // The angle is read in its own unit, a long integer reduced by that unit's
+    // turn, before LASTx is saved; an out of range angle leaves everything as it was.
+    var z: runtime.cplx_t = undefined;
+    var angle_mode: runtime.angularMode_t = undefined;
+    if (!runtime.getRegisterAsRealAngle(angle_reg, z.arg(), &angle_mode, true) or runtime.lastErrorCode != runtime.ERROR_NONE) {
+        return true;
+    }
+
     if (!runtime.saveLastX()) {
         return true;
     }
 
-    var radius_value: runtime.real_t = undefined;
-    var angle_value: runtime.real_t = undefined;
+    loadToPolarNumericInput(radius_reg, radius_type, z.mag());
 
-    loadToPolarNumericInput(radius_reg, radius_type, &radius_value);
-    loadToPolarNumericInput(angle_reg, angle_type, &angle_value);
-
-    if (angle_type == runtime.dtLongInteger) {
-        angle_mode = runtime.currentAngularMode;
-    } else if (angle_mode == runtime.amNone) {
-        angle_mode = runtime.currentAngularMode;
-    }
-
-    runtime.convertAngleFromTo(&angle_value, angle_mode, runtime.amRadian, &runtime.ctxtReal39);
-    runtime.realPolarToRectangular(&radius_value, &angle_value, &radius_value, &angle_value, &runtime.ctxtReal39);
+    runtime.realPolarToRectangularInUnit(z.constMag(), z.constArg(), angle_mode, &z, &runtime.ctxtReal39);
 
     if (runtime.getSystemFlag(runtime.FLAG_HPRP)) {
         radius_reg = runtime.REGISTER_X;
@@ -279,8 +265,8 @@ fn tryToRectReal34Pair(angle_in_y: i8) bool {
 
     runtime.reallocateRegister(radius_reg, runtime.dtReal34, 0, runtime.amNone);
     runtime.reallocateRegister(angle_reg, runtime.dtReal34, 0, runtime.amNone);
-    runtime.convertRealToReal34ResultRegister(&radius_value, radius_reg);
-    runtime.convertRealToReal34ResultRegister(&angle_value, angle_reg);
+    runtime.convertRealToReal34ResultRegister(&z.Real, radius_reg);
+    runtime.convertRealToReal34ResultRegister(&z.Imag, angle_reg);
     runtime.temporaryInformation = if (runtime.getSystemFlag(runtime.FLAG_HPRP))
         runtime.TI_X_Y
     else

@@ -181,3 +181,89 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"20" RX=Real:"1.8600379880104179814798
 ;=======================================
 ; ExponP(Complex) --> Error24
 ;=======================================
+
+; Domain, endpoint, precision, and directed-rounding cases.
+Func: fnExponentialP
+In:  RMODE=0 FL_SPCRES=0 RR=Real:"2" RX=Real:"-1"
+Out: EC=0 RX=Real:"0"
+
+Func: fnExponentialP
+In:  RMODE=0 FL_SPCRES=0 RR=Real:"2" RX=Real:"-inf"
+Out: EC=0 RX=Real:"0"
+
+Func: fnExponentialP
+In:  RMODE=0 FL_SPCRES=0 RR=Real:"2" RX=Real:"0"
+Out: EC=0 RX=Real:"2"
+
+Func: fnExponentialP
+In:  RMODE=0 FL_SPCRES=0 RR=Real:"2" RX=Real:"inf"
+Out: EC=0 RX=Real:"0"
+
+; The logarithmic density avoids underflow before multiplication by a large rate.
+Func: fnExponentialP
+In:  RMODE=0 FL_SPCRES=0 RR=Real:"1e6144" RX=Real:"2e-6140"
+Out: EC=0 RX=Real:"1.289323608390093748351631080902723e-2542"
+
+; P34 multiplication changes low-order digits of the density.
+Func: fnExponentialP
+In:  RMODE=0 FL_SPCRES=0 RR=Real:"1.234567890123456789012345678901234" RZ=Real:"1e4350" ...
+     RY=Real:"4.979020533064369960379832125734781e-4290" RX=Real:"8000.123456789012345678901234567890"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+; A positive density below the working exponent range retains its directed side.
+Func: fnExponentialP
+In:  RMODE=0 FL_SPCRES=0 RR=Real:"1e6144" RX=Real:"1e6144"
+Out: EC=0 RX=Real:"0"
+
+Func: fnExponentialP
+In:  RMODE=3 FL_SPCRES=0 RR=Real:"1e6144" RX=Real:"1e6144"
+Out: EC=0 RX=Real:"1e-6176"
+
+Func: fnExponentialP
+In:  RMODE=5 FL_SPCRES=0 RR=Real:"1e6144" RX=Real:"1e6144"
+Out: EC=0 RX=Real:"1e-6176"
+
+; A positive argument makes the density strictly less than the rate.
+Func: fnExponentialP
+In:  RMODE=4 FL_SPCRES=0 RR=Real:"1" RX=Real:"1e-6176"
+Out: EC=0 RX=Real:"0.9999999999999999999999999999999999"
+
+Func: fnExponentialP
+In:  RMODE=6 FL_SPCRES=0 RR=Real:"1" RX=Real:"1e-6176"
+Out: EC=0 RX=Real:"0.9999999999999999999999999999999999"
+
+Func: fnExponentialP
+In:  RMODE=0 FL_SPCRES=0 RR=Real:"2" RX=Real:"NaN"
+Out: EC=1 RX=Real:"NaN"
+
+Func: fnExponentialP
+In:  RMODE=0 FL_SPCRES=1 RR=Real:"2" RX=Real:"NaN"
+Out: EC=0 RX=Real:"NaN"
+
+Func: fnExponentialP
+In:  RMODE=0 FL_SPCRES=0 RR=Real:"0" RX=Real:"2"
+Out: EC=16 RX=Real:"2"
+
+Func: fnExponentialP
+In:  RMODE=0 FL_SPCRES=0 RR=Real:"inf" RX=Real:"2"
+Out: EC=16 RX=Real:"2"
+
+Func: fnExponentialP
+In:  RMODE=0 FL_SPCRES=1 RR=Real:"inf" RX=Real:"2"
+Out: EC=0 RX=Real:"NaN"
+
+Func: fnExponentialP
+In:  RMODE=0 FL_SPCRES=1 RR=Real:"NaN" RX=Real:"2"
+Out: EC=0 RX=Real:"NaN"
+
+Func: fnExponentialP
+In:  RMODE=0 FL_SPCRES=0 RR=Real:"2" RX=ReMa:"M1,2[0,1]"
+Out: EC=24 RX=ReMa:"M1,2[0,1]"
+
+Func: fnExponentialP
+In:  RMODE=0 FL_SPCRES=0 RR=Real:"2" RX=CxMa:"M1,1[0i1]"
+Out: EC=24 RX=CxMa:"M1,1[0i1]"

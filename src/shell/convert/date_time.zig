@@ -137,6 +137,7 @@ const const34_400 = consts.const34_400();
 const const34__4712 = consts.const34__4712();
 const const34_1 = consts.const34_1();
 const const_1 = consts.const_1();
+const const_1on2 = consts.const_1on2();
 extern fn realSetZero(value: *real_t) void;
 extern fn realCompareGreaterEqual(a: *align(1) const real_t, b: *align(1) const real_t) bool;
 const const34_31 = consts.const34_31();
@@ -234,6 +235,19 @@ extern fn decQuadCopyAbs(r: *real34_t, a: *align(1) const real34_t) *real34_t;
 extern fn decQuadCompare(r: *real34_t, a: *align(1) const real34_t, b: *align(1) const real34_t, ctx: *realContext_t) *real34_t;
 extern fn decQuadIsZero(v: *align(1) const real34_t) u32;
 extern fn decQuadIsNaN(v: *align(1) const real34_t) u32;
+extern fn decQuadIsInfinite(v: *align(1) const real34_t) u32;
+extern fn decNumberAdd(res: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
+extern fn decNumberFromInt32(res: *real_t, value: i32) *real_t;
+extern fn realCompareLessThan(a: *align(1) const real_t, b: *align(1) const real_t) bool;
+inline fn real34IsSpecial(v: *align(1) const real34_t) bool {
+    return decQuadIsNaN(v) != 0 or decQuadIsInfinite(v) != 0;
+}
+inline fn realAdd(a: *align(1) const real_t, b: *align(1) const real_t, res: *real_t, ctx: *realContext_t) void {
+    _ = decNumberAdd(res, a, b, ctx);
+}
+inline fn int32ToReal(value: i32, res: *real_t) void {
+    _ = decNumberFromInt32(res, value);
+}
 
 extern fn decimal128ToNumber(src: *align(1) const real34_t, dst: *real_t) *real_t;
 
@@ -347,6 +361,10 @@ inline fn real34ToInt32(src: *align(1) const real34_t) i32 {
 }
 inline fn real34ToUInt32(src: *align(1) const real34_t) u32 {
     return decQuadToUInt32(src, &ctxtReal34, DEC_ROUND_DOWN);
+}
+extern fn decimal128FromNumber(dst: *align(1) real34_t, src: *const real_t, ctx: *realContext_t) *real34_t;
+inline fn realToReal34(src: *const real_t, dst: *align(1) real34_t) void {
+    _ = decimal128FromNumber(dst, src, &ctxtReal34);
 }
 inline fn real34ToReal(src: *align(1) const real34_t, dst: *real_t) void {
     _ = decimal128ToNumber(src, dst);
@@ -697,7 +715,7 @@ pub export fn getJulianDayOfWeek(regist: calcRegister_t) linksection(code_sectio
 }
 
 pub export fn checkDateRange(date34: *const real34_t) linksection(code_section) callconv(.c) void {
-    if (real34CompareGreaterEqual(date34, const34_maxDate) or real34IsNegative(date34)) {
+    if (real34IsNaN(date34) or real34CompareGreaterEqual(date34, const34_maxDate) or real34IsNegative(date34)) {
         frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
         moreInfoOnError("In function checkDateRange:", "value of date type is too large");
         return;
@@ -751,7 +769,7 @@ pub export fn checkTimeRange(time34: *const real34_t) linksection(code_section) 
     var t: real34_t = undefined;
 
     real34CopyAbs(time34, &t);
-    if (real34CompareGreaterEqual(&t, const34_maxTime)) {
+    if (real34IsNaN(&t) or real34CompareGreaterEqual(&t, const34_maxTime)) {
         frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
         moreInfoOnError("In function checkTimeRange:", "value of time type is too large");
         return;
@@ -811,40 +829,52 @@ fn fnJulianToDateTimeCore() error{JulianBadType}!void {
             real34Multiply(reg34(REGISTER_X), const34_24, reg34(REGISTER_X));
         },
         dtReal34 => {
-            liftStack(); // After a stack lift, X is a real 34 of random value
-            real34Add(reg34(REGISTER_Y), const34_1on2, reg34(REGISTER_Y)); //handle 0.5 offset
-            copySourceRegisterToDestRegister(REGISTER_Y, REGISTER_X);
-
-            //Get IP in Y
-            reallocateRegister(REGISTER_Y, dtDate, 0, amNoneU); // after this, content of Y is random
-            real34ToIntegralValue(reg34(REGISTER_X), reg34(REGISTER_Y), DEC_ROUND_DOWN);
-
-            //Get FP in x
-            var y: real_t = undefined;
-            var x: real_t = undefined;
-            real34ToReal(reg34(REGISTER_Y), &y); // IP
-            real34ToReal(reg34(REGISTER_X), &x); // Org
-            realSubtract(&x, &y, &x, &ctxtReal39); // FP = Org - IP
-            realMultiply(&x, const_86400, &x, &ctxtReal39); // (3600*24*(FP))          // round seconds
-            x.exponent += 3; // x = x * 1000            // to 0.001s
-            frontier_register_value_conversions.realToIntegralValue(&x, &x, DEC_ROUND_HALF_UP, &ctxtReal39); // round (3600*24*1000*(FP))
-            realDivide(&x, const_86400, &x, &ctxtReal39); // (round (3600*24*1000*(FP))) / (3600*24)
-            x.exponent -= 3; // x = x / 1000
-            if (realCompareGreaterEqual(&x, const_1)) { // rounding to 0.001s reaches a full day: zero the time and carry one day into the date
-                realSetZero(&x);
-                real34Add(reg34(REGISTER_Y), const34_1, reg34(REGISTER_Y));
+            if (real34IsSpecial(reg34(REGISTER_X))) {
+                frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
+                return;
+            }
+            // The day is the floor of the Julian day, the time the fraction past noon,
+            // rounded to the millisecond, so a day boundary carries into the date.
+            var julian: real_t = undefined;
+            var integerPart: real_t = undefined;
+            var fraction: real_t = undefined;
+            var milliseconds: real_t = undefined;
+            var dayMilliseconds: real_t = undefined;
+            liftStack();
+            real34ToReal(reg34(REGISTER_Y), &julian);
+            frontier_register_value_conversions.realToIntegralValue(&julian, &integerPart, DEC_ROUND_FLOOR, &ctxtReal39);
+            realSubtract(&julian, &integerPart, &fraction, &ctxtReal39);
+            const beforeNoon = realCompareLessThan(&fraction, const_1on2);
+            if (beforeNoon) {
+                realMultiply(&fraction, const_86400, &milliseconds, &ctxtReal39);
+            } else {
+                realSubtract(&fraction, const_1on2, &fraction, &ctxtReal39);
+                realMultiply(&fraction, const_86400, &milliseconds, &ctxtReal39);
+                realAdd(&integerPart, const_1, &integerPart, &ctxtReal39);
+            }
+            milliseconds.exponent += 3;
+            frontier_register_value_conversions.realToIntegralValue(&milliseconds, &milliseconds, DEC_ROUND_HALF_UP, &ctxtReal39);
+            if (beforeNoon) {
+                int32ToReal(43200000, &dayMilliseconds);
+                realAdd(&milliseconds, &dayMilliseconds, &milliseconds, &ctxtReal39);
+            }
+            int32ToReal(86400000, &dayMilliseconds);
+            if (realCompareGreaterEqual(&milliseconds, &dayMilliseconds)) {
+                realSetZero(&milliseconds);
+                realAdd(&integerPart, const_1, &integerPart, &ctxtReal39);
+            } else {
+                milliseconds.exponent -= 3;
             }
 
             //Convert date to Y
-            julianDayToInternalDate(reg34(REGISTER_Y), &date);
             reallocateRegister(REGISTER_Y, dtDate, 0, amNoneU);
+            realToReal34(&integerPart, reg34(REGISTER_Y));
+            julianDayToInternalDate(reg34(REGISTER_Y), &date);
             real34Copy(&date, reg34(REGISTER_Y));
 
             //Convert x to time to X
-            var tmp: real_t = undefined;
-            realMultiply(const_86400, &x, &tmp, &ctxtReal39); // tmp is now seconds
             reallocateRegister(REGISTER_X, dtTime, 0, amNoneU); // this must be in front of the next line, otherwise accuracy is gone
-            frontier_register_value_conversions.convertRealToReal34ResultRegister(&tmp, REGISTER_X);
+            frontier_register_value_conversions.convertRealToReal34ResultRegister(&milliseconds, REGISTER_X);
         },
         else => return error.JulianBadType,
     }
@@ -895,12 +925,20 @@ pub export fn fnDateTimeToJulian(unusedButMandatoryParameter: u16) linksection(c
     }
 
     if (checkDateArgument(REGISTER_Y, &jd34) and getRegisterDataType(REGISTER_X) == dtTime) {
+        // The day fraction is formed at 39 digits from the seconds past noon and added to the day once.
+        var julian: real_t = undefined;
+        var seconds: real_t = undefined;
+        var noon: real_t = undefined;
         frontier_register_value_conversions.convertReal34ToLongIntegerRegister(&jd34, REGISTER_Y, DEC_ROUND_DOWN); //Y is truncated date in real
         frontier_register_value_conversions.convertLongIntegerRegisterToReal34Register(REGISTER_Y, REGISTER_Y);
-        frontier_addons.timeToReal34(3); //X is now Real seconds
-        real34Divide(reg34(REGISTER_X), const34_86400, reg34(REGISTER_X)); //X is now in days
-        real34Add(reg34(REGISTER_X), reg34(REGISTER_Y), reg34(REGISTER_X));
-        real34Subtract(reg34(REGISTER_X), const34_1on2, reg34(REGISTER_X)); //handle 0.5 offset
+        real34ToReal(reg34(REGISTER_X), &seconds);
+        reallocateRegister(REGISTER_X, dtReal34, 0, amNoneU);
+        real34ToReal(const34_43200, &noon);
+        realSubtract(&seconds, &noon, &seconds, &ctxtReal39);
+        realDivide(&seconds, const_86400, &seconds, &ctxtReal39);
+        real34ToReal(reg34(REGISTER_Y), &julian);
+        realAdd(&julian, &seconds, &julian, &ctxtReal39);
+        frontier_register_value_conversions.convertRealToReal34ResultRegister(&julian, REGISTER_X);
         adjustResult(REGISTER_X, true, true, REGISTER_X, REGISTER_Y, -1);
     }
 }

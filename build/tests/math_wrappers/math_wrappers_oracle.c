@@ -55,25 +55,41 @@ void z47_math_wrappers_legacy_fnIDivR(uint16_t unusedButMandatoryParameter);
 #undef fpShoI
 #undef fpLonI
 
+// sin.c's multiplyTrigByHyperbolic serves sinc.c, cos.c and fib.c as well, and
+// log10.c's logBaseCplx serves log2.c: both are renamed for the whole file.
+void oracle_multiplyTrigByHyperbolic(const real_t *trigonometric, const real_t *hyperbolic, real_t *res, realContext_t *realContext);
+#define multiplyTrigByHyperbolic oracle_multiplyTrigByHyperbolic
+void oracle_logBaseCplx(const real_t *denom);
+#define logBaseCplx oracle_logBaseCplx
+
 #define sinComplex oracle_sinComplex
+#define sincComplex oracle_sincComplex
 #define fnSinc oracle_fnSinc
 #include "../../../upstream/src/c47/mathematics/sinc.c"
 #undef fnSinc
 #undef sinComplex
 
+// sincpi.c computes through sinc.c's sincComplex, renamed above.
+#define sincpiComplex oracle_sincpiComplex
 #define fnSincpi oracle_fnSincpi
 #include "../../../upstream/src/c47/mathematics/sincpi.c"
 #undef fnSincpi
+#undef sincpiComplex
+#undef sincComplex
 
 #define lnComplex oracle_lnComplex
+#define lnComplexDirect oracle_lnComplexDirect
 #define fnLn oracle_fnLn
 #include "../../../upstream/src/c47/mathematics/ln.c"
 #undef fnLn
+#undef lnComplexDirect
 #undef lnComplex
 
+#define lnP1Complex oracle_lnP1Complex
 #define fnLnP1 oracle_fnLnP1
 #include "../../../upstream/src/c47/mathematics/lnPOne.c"
 #undef fnLnP1
+#undef lnP1Complex
 
 #define sqrt1Px2Complex oracle_sqrt1Px2Complex
 #define fnSqrt1Px2 oracle_fnSqrt1Px2
@@ -82,18 +98,22 @@ void z47_math_wrappers_legacy_fnIDivR(uint16_t unusedButMandatoryParameter);
 #undef sqrt1Px2Complex
 
 #define ArcsinComplex oracle_ArcsinComplex
-uint8_t oracle_ArcsinComplex(const real_t *xReal, const real_t *xImag, real_t *rReal, real_t *rImag, realContext_t *realContext);
+#define ArcsinAcosComplex oracle_ArcsinAcosComplex
+uint8_t oracle_ArcsinComplex(const cplx_t *x, cplx_t *r, realContext_t *realContext);
+uint8_t oracle_ArcsinAcosComplex(const cplx_t *z, cplx_t *r, bool_t calculateAcos, realContext_t *realContext);
 #define fnArcsin oracle_fnArcsin
 #include "../../../upstream/src/c47/mathematics/arcsin.c"
 #undef fnArcsin
 #undef ArcsinComplex
 
+// arccos.c takes its complex body from arcsin.c's ArcsinAcosComplex, renamed above.
 #define fnArccos oracle_fnArccos
 #include "../../../upstream/src/c47/mathematics/arccos.c"
 #undef fnArccos
+#undef ArcsinAcosComplex
 
 #define ArctanComplex oracle_ArctanComplex
-uint8_t oracle_ArctanComplex(real_t *xReal, real_t *xImag, real_t *rReal, real_t *rImag, realContext_t *realContext);
+uint8_t oracle_ArctanComplex(cplx_t *x, cplx_t *r, realContext_t *realContext);
 #define fnArctan oracle_fnArctan
 #include "../../../upstream/src/c47/mathematics/arctan.c"
 #undef fnArctan
@@ -102,7 +122,7 @@ uint8_t oracle_ArctanComplex(real_t *xReal, real_t *xImag, real_t *rReal, real_t
 #define ArcsinhReal oracle_ArcsinhReal
 #define ArcsinhComplex oracle_ArcsinhComplex
 uint8_t oracle_ArcsinhReal(const real_t *x, real_t *res, realContext_t *realContext);
-uint8_t oracle_ArcsinhComplex(const real_t *xReal, const real_t *xImag, real_t *rReal, real_t *rImag, realContext_t *realContext);
+uint8_t oracle_ArcsinhComplex(const cplx_t *x, cplx_t *r, realContext_t *realContext);
 #define fnArcsinh oracle_fnArcsinh
 #include "../../../upstream/src/c47/mathematics/arcsinh.c"
 #undef fnArcsinh
@@ -156,7 +176,7 @@ void oracle_realArcosh(const real_t *x, real_t *res, realContext_t *realContext)
 
 #define TanComplex oracle_TanComplex
 #define fnTan oracle_fnTan
-uint8_t oracle_TanComplex(const real_t *xReal, const real_t *xImag, real_t *rReal, real_t *rImag, realContext_t *realContext);
+uint8_t oracle_TanComplex(const cplx_t *x, cplx_t *r, realContext_t *realContext);
 #include "../../../upstream/src/c47/mathematics/tan.c"
 #undef fnTan
 #undef TanComplex
@@ -179,7 +199,7 @@ uint8_t oracle_TanComplex(const real_t *xReal, const real_t *xImag, real_t *rRea
 
 #define TanhComplex oracle_TanhComplex
 #define fnTanh oracle_fnTanh
-uint8_t oracle_TanhComplex(const real_t *xReal, const real_t *xImag, real_t *rReal, real_t *rImag, realContext_t *realContext);
+uint8_t oracle_TanhComplex(const cplx_t *x, cplx_t *r, realContext_t *realContext);
 #include "../../../upstream/src/c47/mathematics/tanh.c"
 #undef fnTanh
 #undef TanhComplex
@@ -196,12 +216,14 @@ uint8_t oracle_TanhComplex(const real_t *xReal, const real_t *xImag, real_t *rRe
 
 #define sinComplex oracle_sinComplex
 #define expComplex oracle_expComplex
+#define expM1Complex oracle_expM1Complex
 #define realExpM1 oracle_realExpM1
 void oracle_realExpM1(const real_t *x, real_t *res, realContext_t *realContext);
 #define fnExpM1 oracle_fnExpM1
 #include "../../../upstream/src/c47/mathematics/expMOne.c"
 #undef fnExpM1
 #undef realExpM1
+#undef expM1Complex
 #undef expComplex
 #undef sinComplex
 
@@ -243,7 +265,7 @@ void oracle_realLog10(const real_t *x, real_t *res, realContext_t *realContext);
 // calls them, so forward-declare the renamed oracle_* symbols here to avoid the
 // implicit-declaration / conflicting-types errors (same pattern as realLog10).
 void oracle_intPowReal(void (*powf)(const real_t *x, real_t *res, realContext_t *realContext));
-void oracle_intPowCplx(const real_t *lnBase);
+void oracle_intPowCplx(void (*powf)(const real_t *x, real_t *res, realContext_t *realContext), const real_t *lnBase);
 #define realExp oracle_realExp
 #define fn2Pow oracle_fn2Pow
 #include "../../../upstream/src/c47/mathematics/2pow.c"
@@ -299,6 +321,12 @@ void oracle_intPowCplx(const real_t *lnBase);
 #include "../../../upstream/src/c47/mathematics/lcm.c"
 #undef fnLcm
 
+// modulo.c's integerRemainder is RMD's integer body too, and remainder.c's
+// mixedIntegerRealRemainder is MOD's mixed body: each file calls into the other.
+void oracle_integerRemainder(bool_t floorMod, bool_t shortResult);
+bool_t oracle_mixedIntegerRealRemainder(bool_t modulo);
+#define integerRemainder oracle_integerRemainder
+#define mixedIntegerRealRemainder oracle_mixedIntegerRealRemainder
 #define modReal oracle_modReal
 #define fnMod oracle_fnMod
 #include "../../../upstream/src/c47/mathematics/modulo.c"
@@ -308,6 +336,8 @@ void oracle_intPowCplx(const real_t *lnBase);
 #define fnRmd oracle_fnRmd
 #include "../../../upstream/src/c47/mathematics/remainder.c"
 #undef fnRmd
+#undef mixedIntegerRealRemainder
+#undef integerRemainder
 
 #define fnDblMultiply oracle_fnDblMultiply
 #include "../../../upstream/src/c47/mathematics/dblMultiplication.c"
@@ -426,8 +456,10 @@ void oracle_decompReal(void);
 #define fnDivide oracle_full_fnDivide
 #define divRealComplex oracle_divRealComplex
 #define divComplexComplex oracle_divComplexComplex
+#define divComplexReal oracle_divComplexReal
 #include "../../../upstream/src/c47/mathematics/division.h"
 #include "../../../upstream/src/c47/mathematics/division.c"
+#undef divComplexReal
 #undef divComplexComplex
 #undef divRealComplex
 #undef fnDivide
@@ -452,7 +484,7 @@ void oracle_decompReal(void);
 #define complexMagnitude2 oracle_complexMagnitude2
 #define complexMagnitude oracle_complexMagnitude
 #define fnMagnitude oracle_fnMagnitude
-void complexMagnitude(const real_t *a, const real_t *b, real_t *c, realContext_t *realContext);
+void complexMagnitude(const cplx_t *a, real_t *c, realContext_t *realContext);
 #include "../../../upstream/src/c47/mathematics/magnitude.c"
 #undef fnMagnitude
 #undef complexMagnitude
@@ -585,9 +617,7 @@ void atan2LonIRema(void);
 #endif
 
 void harnessCurtRealLinkStub(void);
-void oracle_sqrtComplex75(const real_t *real, const real_t *imag, real_t *resReal, real_t *resImag, realContext_t *realContext);
-void oracle_sqrtComplex159(const real_t *real, const real_t *imag, real_t *resReal, real_t *resImag, realContext_t *realContext);
-void oracle_sqrtComplex(const real_t *real, const real_t *imag, real_t *resReal, real_t *resImag, realContext_t *realContext);
+void oracle_sqrtComplex(const cplx_t *z, cplx_t *res, realContext_t *realContext);
 #define curtReal harnessCurtRealLinkStub
 #define rootLonI oracle_rootLonI
 #define sqrtComplex75 oracle_sqrtComplex75
@@ -609,9 +639,7 @@ void harnessCurtRealLinkStub(void) {
 }
 
 void oracle_curtReal_impl(void);
-void oracle_curtComplex75(const real_t *real, const real_t *imag, real_t *resReal, real_t *resImag, realContext_t *realContext);
-void oracle_curtComplex159(const real_t *real, const real_t *imag, real_t *resReal, real_t *resImag, realContext_t *realContext);
-void oracle_curtComplex(const real_t *real, const real_t *imag, real_t *resReal, real_t *resImag, realContext_t *realContext);
+void oracle_curtComplex(const cplx_t *z, cplx_t *res, realContext_t *realContext);
 #define rootLonI oracle_rootLonI
 #define curtReal oracle_curtReal_impl
 #define curtComplex75 oracle_curtComplex75
@@ -627,9 +655,13 @@ void oracle_curtComplex(const real_t *real, const real_t *imag, real_t *resReal,
 #undef rootLonI
 
 #define cosComplex oracle_cosComplex
+#define expComplex oracle_expComplex
+#define expM1Complex oracle_expM1Complex
 #define fnFib oracle_fnFib
 #include "../../../upstream/src/c47/mathematics/fib.c"
 #undef fnFib
+#undef expM1Complex
+#undef expComplex
 #undef cosComplex
 
 #define linpol oracle_linpol

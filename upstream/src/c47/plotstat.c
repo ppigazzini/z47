@@ -1619,7 +1619,13 @@ void graphDrawLRline(uint16_t selection) {
     processCurvefitSelection(selection, &RR, &SMI, &aa0, &aa1, &aa2);
     realMultiply(&RR, &RR, &RR, &ctxtReal39);
     if(orOrtho(selection) == CF_ORTHOGONAL_FITTING) {
-      processCurvefitSA(&sa0, &sa1);
+      if(realCompareLessThan(SIGMA_N, const_3)) {  // the standard errors divide by n - 2: two points draw the line without them
+        realSetNaN(&sa0);
+        realSetNaN(&sa1);
+      }
+      else {
+        processCurvefitSA(&sa0, &sa1);
+      }
     }
     drawline(selection, &RR, &SMI, &aa0, &aa1, &aa2, &sa0, &sa1);
   }

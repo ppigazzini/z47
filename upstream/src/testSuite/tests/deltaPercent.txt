@@ -14,6 +14,18 @@ Func: fnDeltaPercent
 In:  FL_ASLIFT=1 FL_CPXRES=1 RY=Real:"123.456" RX=Real:"456.123"
 Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Real:"456.123" RY=Real:"123.456" RX=Real:"269.4619945567651632970451010886469673405909797822706065318818040435"
 
+; A rounded difference needs guard digits before division
+Func: fnDeltaPercent
+In:  RMODE=0 FL_ASLIFT=0 RY=Real:"0.01100000000000000000000000000000001" RX=Real:"0.001000000000000000000000000000000001"
+Out: EC=0 RX=Real:"-90.90909090909090909090909090909091"
+Func: fnSubtract
+In:  RY=Real:"-90.90909090909090909090909090909091"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1E40"
+Out: EC=0 RX=Real:"0"
+Func: fnDeltaPercent
+
 ;=======================================
 ; Delta%(Long Integer, Real) --> Real
 ;=======================================
@@ -31,6 +43,15 @@ Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=LonI:"456" RY=LonI:"123" RX=Real:"270.73170
 ;=======================================
 In:  FL_ASLIFT=1 FL_CPXRES=1 RY=Real:"123.456" RX=LonI:"456"
 Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=LonI:"456" RY=Real:"123.456" RX=Real:"269.3623639191290824261275272161741835147744945567651632970451010886"
+
+; Wide integer cancellation retains every digit until the final quotient.
+Acc: 34
+In:  RMODE=0 FL_ASLIFT=0 RY=Real:"1E75" RX=LonI:"1000000000000000000000000000000000000000000000000000000000000000000000000001"
+Out: EC=0 FL_ASLIFT=1 RX=Real:"1E-73"
+
+In:  RMODE=0 FL_ASLIFT=0 RY=LonI:"1000000000000000000000000000000000000000000000000000000000000000" RX=LonI:"1000000000000000000000000000000000000000000000000000000000000001"
+Out: EC=0 FL_ASLIFT=1 RX=Real:"1E-61"
+Acc: 30
 
 ;=======================================
 ; Short integer case
@@ -50,6 +71,10 @@ Out: EC=0 FL_ASLIFT=1 RY=Real:"10.0" RX=Real:"4400"
 In:  FL_ASLIFT=0  RY=ShoI:"10#10" RX=Real:"20.0"
 Out: EC=0 FL_ASLIFT=1 RY=ShoI:"10#10" RX=Real:"100.0"
 
+; A real-axis complex scalar is accepted as a real value
+In:  FL_ASLIFT=0 RY=Cplx:"10 i 0" RX=Real:"20"
+Out: EC=0 FL_ASLIFT=1 RY=Cplx:"10 i 0" RX=Real:"100"
+
 ;=======================================
 ; Error case: ERROR_INVALID_DATA_INPUT_FOR_OP
 ;=======================================
@@ -58,6 +83,12 @@ Out: EC=24 FL_ASLIFT=0 RY=ShoI:"10#10" RX=Stri:"ABC"
 
 In:  FL_ASLIFT=0  RY=Real:"10.0" RX=Stri:"ABC"
 Out: EC=24 FL_ASLIFT=0 RY=Real:"10.0" RX=Stri:"ABC"
+
+In:  FL_ASLIFT=0 RY=Cplx:"1 i 1" RX=Real:"10"
+Out: EC=24 FL_ASLIFT=0 RY=Cplx:"1 i 1" RX=Real:"10"
+
+In:  FL_ASLIFT=0 RY=Real:"10" RX=CxMa:"M1,1[1i2]"
+Out: EC=24 FL_ASLIFT=0 RY=Real:"10" RX=CxMa:"M1,1[1i2]"
 
 ;=======================================
 ; Error case: ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN
@@ -79,3 +110,19 @@ Out: EC=1 FL_ASLIFT=0 RY=LonI:"0" RX=Real:"0.0"
 
 In:  FL_ASLIFT=0  RY=Real:"0.0" RX=LonI:"0"
 Out: EC=1 FL_ASLIFT=0 RY=Real:"0.0" RX=LonI:"0"
+
+; Signed zero contributes its sign when special results are enabled
+In:  RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 RY=Real:"-0" RX=Real:"10"
+Out: EC=0 FL_ASLIFT=1 RY=Real:"-0" RX=Real:"-Infinity"
+
+In:  RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 RY=Real:"0" RX=Real:"-10"
+Out: EC=0 FL_ASLIFT=1 RY=Real:"0" RX=Real:"-Infinity"
+
+In:  RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 RY=Real:"-0" RX=Real:"-10"
+Out: EC=0 FL_ASLIFT=1 RY=Real:"-0" RX=Real:"Infinity"
+
+In:  RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 RY=Real:"-0" RX=Real:"0"
+Out: EC=0 FL_ASLIFT=1 RY=Real:"-0" RX=Real:"NaN"
+
+In:  RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 RY=Real:"0" RX=Real:"NaN"
+Out: EC=0 FL_ASLIFT=1 RY=Real:"0" RX=Real:"NaN"

@@ -39,8 +39,8 @@ int create_dir(char *dir) {
 // something to compare the Zig owner with. Weak lets the real definition win
 // wherever it is present and this no-op stand in everywhere else.
 __attribute__((weak))
-void lnComplex(const real_t *real, const real_t *imag, real_t *lnReal, real_t *lnImag, realContext_t *realContext) {
-  (void)real; (void)imag; (void)lnReal; (void)lnImag; (void)realContext;
+void lnComplex(const cplx_t *z, cplx_t *ln, realContext_t *realContext) {
+  (void)z; (void)ln; (void)realContext;
 }
 
 // lcd_buffer_pixel_on and _ioFileNameOverride are NOT stubbed here: every

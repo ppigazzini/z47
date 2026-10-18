@@ -328,9 +328,8 @@ void fnFinish(uint16_t unusedButMandatoryParameter) {
   }
   char *msg = tmpStringLabelOrVariableName;
   int32_t len = 0;
-  int16_t glyphs;
 
-  for(glyphs = 0; glyphs < MAX_NUMBER_OF_GLYPHS_IN_STRING && msg[len] != 0; glyphs++) {
+  while(msg[len] != 0) {                                 // copy up to the errorMessage byte limit, stopping on a glyph boundary
     const int32_t step = (msg[len] & 0x80) ? 2 : 1;
     if(len + step >= ERROR_MESSAGE_LENGTH) {
       break;
@@ -619,8 +618,7 @@ static void _putLiteral(uint8_t *literalAddress) {
       xcopy(&realLiteral, literalAddress, REAL34_SIZE_IN_BYTES);
       liftStack();
       setSystemFlag(FLAG_ASLIFT);
-      reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
-      real34Copy(&realLiteral, REGISTER_REAL34_DATA(REGISTER_X));
+      convertReal34ToReal34Register(&realLiteral, REGISTER_X);
       break;
       }
 

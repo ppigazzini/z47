@@ -1363,15 +1363,29 @@ continueWithOldDetections:
       case 100+65536: // CTRL d
       case 68+65536: // CTRL D
         CTRL_State = 0;
-        printf("key pressed: CTRL+d Copy Stack registers to clipboard\n");
+        printf("key pressed: CTRL+d Copy Lettered registers to clipboard\n");
         copyStackRegistersToClipboard();
         break;
 
       case 97+65536: // CTRL a
       case 65+65536: // CTRL A
         CTRL_State = 0;
-        printf("key pressed: CTRL+d Copy All registers to clipboard\n");
+        printf("key pressed: CTRL+a Copy All registers to clipboard\n");
         copyAllRegistersToClipboard();
+        break;
+
+      case 78+65536: // Ctrl N
+      case 110+65536: // Ctrl n
+        CTRL_State = 0;
+        printf("key pressed: CTRL+n Menu image to disk\n");
+        fnSNAPMENU(NOPARAM);
+        break;
+
+      case 66+65536: // Ctrl B
+      case 98+65536: // Ctrl b
+        CTRL_State = 0;
+        printf("key pressed: CTRL+b X register image to disk\n");
+        fnSNAPXBold(NOPARAM);
         break;
 
       default:;
@@ -5659,7 +5673,7 @@ gboolean onUIActivity(GtkWidget *w, GdkEvent *event, gpointer data) {
       // LCD screen 400x240
       screen = gtk_drawing_area_new();
       gtk_widget_set_size_request(screen, SCREEN_WIDTH, SCREEN_HEIGHT);
-      gtk_widget_set_tooltip_text(GTK_WIDGET(screen), "Copy to clipboard:\n CTRL+a: All Registers\n CTRL+c/x: X Register\n CTRL+d: Lettered Registers\n CTRL+h: Screen image\n CTRL+m: Menu image\n CTRL+p: Print-out window\n CTRL+s: SNAP\n");  //JM
+      gtk_widget_set_tooltip_text(GTK_WIDGET(screen), "Copy to clipboard:\n CTRL+a: All Registers WVU…X R99…R00\n CTRL+c/x: X Register\n CTRL+d: Lettered Registers WVU…X\n CTRL+h: Screen image\n CTRL+m: Menu image\n CTRL+n: Menu image to disk\n CTRL+b: X register image to disk\n CTRL+p: Print-out window\n CTRL+s: SNAP\n");  //JM
       #if NARROW_SCREEN == 0
         gtk_fixed_put(GTK_FIXED(grid), screen, 63, 72);
       #else // NARROW_SCREEN != 0 --> 400x1280 raspberry screen

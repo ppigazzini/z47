@@ -28,6 +28,28 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"4096" RX=LonI:"16"
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"-4096"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"-4096" RX=LonI:"-16"
 
+; Non-perfect wide integer roots are rounded from exact GMP comparisons.
+In:  RMODE=3 FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"1000000000000000000000000000000000000000000000000000000000000000000000000000000001"
+Out: EC=0 FL_ASLIFT=1 RX=Real:"1.000000000000000000000000000000001E27"
+
+In:  RMODE=4 FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"999999999999999999999999999999999999999999999999999999999999999999999999999999999"
+Out: EC=0 FL_ASLIFT=1 RX=Real:"9.999999999999999999999999999999999E26"
+
+In:  RMODE=3 FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"-1000000000000000000000000000000000000000000000000000000000000000000000000000000001"
+Out: EC=0 FL_ASLIFT=1 RX=Real:"-1.000000000000000000000000000000001E27"
+
+In:  RMODE=6 FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"-1000000000000000000000000000000000000000000000000000000000000000000000000000000001"
+Out: EC=0 FL_ASLIFT=1 RX=Real:"-1.000000000000000000000000000000001E27"
+
+In:  RMODE=4 FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"-999999999999999999999999999999999999999999999999999999999999999999999999999999999"
+Out: EC=0 FL_ASLIFT=1 RX=Real:"-9.999999999999999999999999999999999E26"
+
+In:  RMODE=5 FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"-999999999999999999999999999999999999999999999999999999999999999999999999999999999"
+Out: EC=0 FL_ASLIFT=1 RX=Real:"-9.999999999999999999999999999999999E26"
+
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"611857471261507405657238352462684304416308201730214389355325902390316300888240656045"
+Out: EC=0 FL_ASLIFT=1 RX=Real:"8489525604290957071128452595.033560"
+
 
 
 ;=======================================
@@ -104,6 +126,15 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"5.32564":DMS RX=Real:"1.7463204319901
 In:  FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-5.32564":DMS
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-5.32564":DMS RX=Real:"-1.7463204319901609356922737268876921175934116112721107102426736"
 
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-0" RX=Real:"-0"
+Func: fnInvert
+Out: EC=0 RX=Real:"-inf"
+Func: fnCubeRoot
+
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=1 RX=Real:"-0"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Real:"-0" RX=Real:"-0"
+
 ; NaN
 In:  FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"NaN":RAD
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"NaN":RAD RX=Real:"NaN"
@@ -172,6 +203,10 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"-inf"
 In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=1 RX=Cplx:"-inf i 0"
 Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"-inf i 0"
 
+; A zero real part keeps its sign, as a real -0 does: the correction to an exact cube root leaves a zero operand alone.
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=1 RX=Cplx:"-0 i 0"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"-0 i 0"
+
 ;=========================================================
 ; curt(Short Integer): a perfect cube is exact, anything
 ; else truncates. The root is computed as a real, so an
@@ -227,3 +262,224 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=ShoI:"-2#10"
 
 In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=1 RX=Cplx:"inf i 0"
 Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"inf i 0"
+
+
+;=========================================================
+; The final digit of curt(2) under all rounding modes.
+; Subtraction and scaling expose a digit-34 difference.
+;=========================================================
+Func: fnCubeRoot
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1E34" RY=Real:"1.259921049894873164767210607278228" RX=Real:"2"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnCubeRoot
+In:  RMODE=1 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1E34" RY=Real:"1.259921049894873164767210607278228" RX=Real:"2"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnCubeRoot
+In:  RMODE=2 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1E34" RY=Real:"1.259921049894873164767210607278228" RX=Real:"2"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnCubeRoot
+In:  RMODE=3 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1E34" RY=Real:"1.259921049894873164767210607278229" RX=Real:"2"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnCubeRoot
+In:  RMODE=4 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1E34" RY=Real:"1.259921049894873164767210607278228" RX=Real:"2"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnCubeRoot
+In:  RMODE=5 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1E34" RY=Real:"1.259921049894873164767210607278229" RX=Real:"2"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnCubeRoot
+In:  RMODE=6 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1E34" RY=Real:"1.259921049894873164767210607278228" RX=Real:"2"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"-0"
+
+
+;=========================================================
+; The final component digits of curt(1+i) under all modes.
+; Subtraction and scaling expose a digit-34 difference.
+;=========================================================
+Func: fnCubeRoot
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=1 RZ=Real:"1E34" RY=Cplx:"1.084215081491351181879666008261083 i 0.2905145555072514445038131886249291" RX=Cplx:"1 i 1"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+Func: fnCubeRoot
+In:  RMODE=1 FL_ASLIFT=0 FL_CPXRES=1 RZ=Real:"1E34" RY=Cplx:"1.084215081491351181879666008261083 i 0.2905145555072514445038131886249291" RX=Cplx:"1 i 1"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+Func: fnCubeRoot
+In:  RMODE=2 FL_ASLIFT=0 FL_CPXRES=1 RZ=Real:"1E34" RY=Cplx:"1.084215081491351181879666008261083 i 0.2905145555072514445038131886249291" RX=Cplx:"1 i 1"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+Func: fnCubeRoot
+In:  RMODE=3 FL_ASLIFT=0 FL_CPXRES=1 RZ=Real:"1E34" RY=Cplx:"1.084215081491351181879666008261084 i 0.2905145555072514445038131886249291" RX=Cplx:"1 i 1"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+Func: fnCubeRoot
+In:  RMODE=4 FL_ASLIFT=0 FL_CPXRES=1 RZ=Real:"1E34" RY=Cplx:"1.084215081491351181879666008261083 i 0.2905145555072514445038131886249290" RX=Cplx:"1 i 1"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+Func: fnCubeRoot
+In:  RMODE=5 FL_ASLIFT=0 FL_CPXRES=1 RZ=Real:"1E34" RY=Cplx:"1.084215081491351181879666008261084 i 0.2905145555072514445038131886249291" RX=Cplx:"1 i 1"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+Func: fnCubeRoot
+In:  RMODE=6 FL_ASLIFT=0 FL_CPXRES=1 RZ=Real:"1E34" RY=Cplx:"1.084215081491351181879666008261083 i 0.2905145555072514445038131886249290" RX=Cplx:"1 i 1"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"-0 i -0"
+
+
+;=========================================================
+; Exact decimal cubes remain exact in directed modes.
+; The exponent limits also exercise the full Real34 range.
+;=========================================================
+Func: fnCubeRoot
+In:  RMODE=4 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"1E2048" RX=Real:"1E6144"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1
+Func: fnSubtract
+Out: EC=0 RX=Real:"0"
+
+Func: fnCubeRoot
+In:  RMODE=4 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"-1E2048" RX=Real:"-1E6144"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1
+Func: fnSubtract
+Out: EC=0 RX=Real:"0"
+
+Func: fnCubeRoot
+In:  RMODE=5 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"-1E2048" RX=Real:"-1E6144"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1
+Func: fnSubtract
+Out: EC=0 RX=Real:"0"
+
+Func: fnCubeRoot
+In:  RMODE=4 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1E34" RY=Real:"123456789" RX=Real:"1881676371789154860897069.0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+
+;=========================================================
+; A zero imaginary part selects the real-valued branch and
+; retains its sign. The exact real component stays exact.
+;=========================================================
+Func: fnCubeRoot
+In:  RMODE=4 FL_ASLIFT=0 FL_CPXRES=1 RY=Cplx:"1E2048 i -0" RX=Cplx:"1E6144 i -0"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1
+Func: fnSubtract
+Out: EC=0 RX=Cplx:"0 i 0"
+
+Func: fnCubeRoot
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=1 RX=Cplx:"0 i -0"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"0 i -0"
+
+
+;=========================================================
+; A finite nonzero imaginary component selects the
+; principal complex branch next to an infinite real part.
+;=========================================================
+Func: fnCubeRoot
+In:  RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=1 RX=Cplx:"-inf i -1"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"inf i -inf"
+
+In:  RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=1 RX=Cplx:"-inf i 1"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"inf i inf"
+
+In:  RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=1 RX=Cplx:"inf i -1"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"inf i -0"
+
+
+;=========================================================
+; Extreme finite component exponents remain in range.
+; The imaginary result is b/(3*a^(2/3)); every omitted term
+; starts more than 16000 decimal places below that result.
+;=========================================================
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=1 RX=Cplx:"1E6144 i 1E-2000"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"1E2048 i 3.333333333333333333333333333333333E-6097"
+
+;=========================================================
+; The real cube root is rounded once by RM at every exponent.
+; x^(1/3) with a 39-digit 1/3 was more than 1 ulp out where
+; |ln x| is large. Each value is the exact root rounded once.
+;=========================================================
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"4.907601024285024696255912343160969e-5587"
+Out: EC=0 FL_ASLIFT=1 RX=Real:"7.887809551103665424854356972177056E-1863" ACC=34
+
+In:  RMODE=4 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"4.907601024285024696255912343160969e-5587"
+Out: EC=0 FL_ASLIFT=1 RX=Real:"7.887809551103665424854356972177056E-1863" ACC=34
+
+In:  RMODE=5 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"4.907601024285024696255912343160969e-5587"
+Out: EC=0 FL_ASLIFT=1 RX=Real:"7.887809551103665424854356972177057E-1863" ACC=34
+
+In:  RMODE=6 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"4.907601024285024696255912343160969e-5587"
+Out: EC=0 FL_ASLIFT=1 RX=Real:"7.887809551103665424854356972177056E-1863" ACC=34
+
+In:  RMODE=4 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-6.563725166905755650985057479299258e3719"
+Out: EC=0 FL_ASLIFT=1 RX=Real:"-8.690607367494047616051773577357095E+1239" ACC=34
+
+In:  RMODE=5 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-6.563725166905755650985057479299258e3719"
+Out: EC=0 FL_ASLIFT=1 RX=Real:"-8.690607367494047616051773577357095E+1239" ACC=34
+
+In:  RMODE=6 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-6.563725166905755650985057479299258e3719"
+Out: EC=0 FL_ASLIFT=1 RX=Real:"-8.690607367494047616051773577357096E+1239" ACC=34
+
+In:  RMODE=4 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.0000000000000000000000003"
+Out: EC=0 FL_ASLIFT=1 RX=Real:"1.000000000000000000000000099999999" ACC=34

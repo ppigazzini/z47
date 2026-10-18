@@ -49,6 +49,29 @@ pub const RuntimeObjectOptions = struct {
     strip_17: bool = false,
     strip_17b: bool = false,
     strip_17c: bool = false,
+    // THE DISTRIBUTION GATES (defines.h): one OPTION_DIST_* per distribution
+    // file, defined by the group option that carries it (NORML by DIST_NORMAL;
+    // T, LOGIS, CAUCH, WEIBL, EXPON and CHI2 by DIST_B; BINOM, F, GEOM, HYPER,
+    // NBIN and POISS by DIST_C; PRTO, GEV and UNFM by DIST_D), so a shipped
+    // package takes a whole group or none of it. Each owner reads its own gate,
+    // as its upstream file does. build/firmware.zig derives them from the
+    // dm42Package table; host and DMCP5 keep every one.
+    option_dist_norml: bool = true,
+    option_dist_t: bool = true,
+    option_dist_logis: bool = true,
+    option_dist_cauch: bool = true,
+    option_dist_weibl: bool = true,
+    option_dist_expon: bool = true,
+    option_dist_chi2: bool = true,
+    option_dist_binom: bool = true,
+    option_dist_f: bool = true,
+    option_dist_geom: bool = true,
+    option_dist_hyper: bool = true,
+    option_dist_nbin: bool = true,
+    option_dist_poiss: bool = true,
+    option_dist_prto: bool = true,
+    option_dist_gev: bool = true,
+    option_dist_unfm: bool = true,
     // The inverse of OPTION_DISTRIBUTIONS, which carries the DISTR submenu entry
     // in softmenus.c's menu_PROB (DDMENU). Defaults false: host, DMCP5 and the
     // DM42 packages that keep OPTION_DISTRIBUTIONS keep the DISTR menu.
@@ -238,6 +261,22 @@ pub fn addBuildOptions(
     build_options.addOption(bool, "strip_17", options.strip_17);
     build_options.addOption(bool, "strip_17b", options.strip_17b);
     build_options.addOption(bool, "strip_17c", options.strip_17c);
+    build_options.addOption(bool, "option_dist_norml", options.option_dist_norml);
+    build_options.addOption(bool, "option_dist_t", options.option_dist_t);
+    build_options.addOption(bool, "option_dist_logis", options.option_dist_logis);
+    build_options.addOption(bool, "option_dist_cauch", options.option_dist_cauch);
+    build_options.addOption(bool, "option_dist_weibl", options.option_dist_weibl);
+    build_options.addOption(bool, "option_dist_expon", options.option_dist_expon);
+    build_options.addOption(bool, "option_dist_chi2", options.option_dist_chi2);
+    build_options.addOption(bool, "option_dist_binom", options.option_dist_binom);
+    build_options.addOption(bool, "option_dist_f", options.option_dist_f);
+    build_options.addOption(bool, "option_dist_geom", options.option_dist_geom);
+    build_options.addOption(bool, "option_dist_hyper", options.option_dist_hyper);
+    build_options.addOption(bool, "option_dist_nbin", options.option_dist_nbin);
+    build_options.addOption(bool, "option_dist_poiss", options.option_dist_poiss);
+    build_options.addOption(bool, "option_dist_prto", options.option_dist_prto);
+    build_options.addOption(bool, "option_dist_gev", options.option_dist_gev);
+    build_options.addOption(bool, "option_dist_unfm", options.option_dist_unfm);
     build_options.addOption(bool, "strip_15", options.strip_15);
     build_options.addOption(bool, "strip_21_hp35", options.strip_21_hp35);
     build_options.addOption(bool, "strip_ortho", options.strip_ortho);

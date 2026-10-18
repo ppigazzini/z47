@@ -1,0 +1,234 @@
+; Exact arithmetic preserves Real34 range and the signs of zero.
+In: FL_SPCRES=1 FL_CPXRES=0 SD=0 RMODE=0 SS=4 WS=64
+Acc: 34
+
+Func: fnAdd
+In: RMODE=0 FL_ASLIFT=0 RY=LonI:"0" RX=Real:"0"
+Out: EC=0 RX=Real:"0"
+In: RMODE=0 FL_ASLIFT=0 RY=LonI:"0" RX=Real:"-0"
+Out: EC=0 RX=Real:"0"
+In: RMODE=0 FL_ASLIFT=0 RY=Real:"0" RX=LonI:"0"
+Out: EC=0 RX=Real:"0"
+In: RMODE=0 FL_ASLIFT=0 RY=Real:"-0" RX=LonI:"0"
+Out: EC=0 RX=Real:"0"
+
+Func: fnSubtract
+In: RMODE=0 FL_ASLIFT=0 RY=LonI:"0" RX=Real:"0"
+Out: EC=0 RX=Real:"0"
+In: RMODE=0 FL_ASLIFT=0 RY=LonI:"0" RX=Real:"-0"
+Out: EC=0 RX=Real:"0"
+In: RMODE=0 FL_ASLIFT=0 RY=Real:"0" RX=LonI:"0"
+Out: EC=0 RX=Real:"0"
+In: RMODE=0 FL_ASLIFT=0 RY=Real:"-0" RX=LonI:"0"
+Out: EC=0 RX=Real:"-0"
+
+Func: fnDivide
+In: RMODE=0 SD=1 FL_ASLIFT=0 RY=Real:"1e-6144" RX=LonI:"1"
+Out: EC=0 RX=Real:"1e-6144"
+In: RMODE=0 SD=1 FL_ASLIFT=0 RY=Real:"1e-6176" RX=LonI:"1"
+Out: EC=0 RX=Real:"1e-6176"
+
+Func: fnDivide
+In: RMODE=0 SD=1 FL_ASLIFT=0 RY=Real:"-1e-6144" RX=LonI:"1"
+Out: EC=0 RX=Real:"-1e-6144"
+In: RMODE=0 SD=1 FL_ASLIFT=0 RY=Real:"-1e-6176" RX=LonI:"1"
+Out: EC=0 RX=Real:"-1e-6176"
+In: SD=0
+
+Func: fnAdd
+In: RMODE=1 FL_ASLIFT=0 RY=LonI:"0" RX=Real:"0"
+Out: EC=0 RX=Real:"0"
+In: RMODE=1 FL_ASLIFT=0 RY=LonI:"0" RX=Real:"-0"
+Out: EC=0 RX=Real:"0"
+In: RMODE=1 FL_ASLIFT=0 RY=Real:"0" RX=LonI:"0"
+Out: EC=0 RX=Real:"0"
+In: RMODE=1 FL_ASLIFT=0 RY=Real:"-0" RX=LonI:"0"
+Out: EC=0 RX=Real:"0"
+
+Func: fnSubtract
+In: RMODE=1 FL_ASLIFT=0 RY=LonI:"0" RX=Real:"0"
+Out: EC=0 RX=Real:"0"
+In: RMODE=1 FL_ASLIFT=0 RY=LonI:"0" RX=Real:"-0"
+Out: EC=0 RX=Real:"0"
+In: RMODE=1 FL_ASLIFT=0 RY=Real:"0" RX=LonI:"0"
+Out: EC=0 RX=Real:"0"
+In: RMODE=1 FL_ASLIFT=0 RY=Real:"-0" RX=LonI:"0"
+Out: EC=0 RX=Real:"-0"
+
+Func: fnDivide
+In: RMODE=1 SD=1 FL_ASLIFT=0 RY=Real:"1e-6144" RX=LonI:"1"
+Out: EC=0 RX=Real:"1e-6144"
+In: RMODE=1 SD=1 FL_ASLIFT=0 RY=Real:"1e-6176" RX=LonI:"1"
+Out: EC=0 RX=Real:"1e-6176"
+In: RMODE=1 SD=1 FL_ASLIFT=0 RY=Real:"-1e-6144" RX=LonI:"1"
+Out: EC=0 RX=Real:"-1e-6144"
+In: RMODE=1 SD=1 FL_ASLIFT=0 RY=Real:"-1e-6176" RX=LonI:"1"
+Out: EC=0 RX=Real:"-1e-6176"
+In: SD=0
+
+Func: fnAdd
+In: RMODE=2 FL_ASLIFT=0 RY=LonI:"0" RX=Real:"0"
+Out: EC=0 RX=Real:"0"
+In: RMODE=2 FL_ASLIFT=0 RY=LonI:"0" RX=Real:"-0"
+Out: EC=0 RX=Real:"0"
+In: RMODE=2 FL_ASLIFT=0 RY=Real:"0" RX=LonI:"0"
+Out: EC=0 RX=Real:"0"
+In: RMODE=2 FL_ASLIFT=0 RY=Real:"-0" RX=LonI:"0"
+Out: EC=0 RX=Real:"0"
+
+Func: fnSubtract
+In: RMODE=2 FL_ASLIFT=0 RY=LonI:"0" RX=Real:"0"
+Out: EC=0 RX=Real:"0"
+In: RMODE=2 FL_ASLIFT=0 RY=LonI:"0" RX=Real:"-0"
+Out: EC=0 RX=Real:"0"
+In: RMODE=2 FL_ASLIFT=0 RY=Real:"0" RX=LonI:"0"
+Out: EC=0 RX=Real:"0"
+In: RMODE=2 FL_ASLIFT=0 RY=Real:"-0" RX=LonI:"0"
+Out: EC=0 RX=Real:"-0"
+
+Func: fnDivide
+In: RMODE=2 SD=1 FL_ASLIFT=0 RY=Real:"1e-6144" RX=LonI:"1"
+Out: EC=0 RX=Real:"1e-6144"
+In: RMODE=2 SD=1 FL_ASLIFT=0 RY=Real:"1e-6176" RX=LonI:"1"
+Out: EC=0 RX=Real:"1e-6176"
+In: RMODE=2 SD=1 FL_ASLIFT=0 RY=Real:"-1e-6144" RX=LonI:"1"
+Out: EC=0 RX=Real:"-1e-6144"
+In: RMODE=2 SD=1 FL_ASLIFT=0 RY=Real:"-1e-6176" RX=LonI:"1"
+Out: EC=0 RX=Real:"-1e-6176"
+In: SD=0
+
+Func: fnAdd
+In: RMODE=3 FL_ASLIFT=0 RY=LonI:"0" RX=Real:"0"
+Out: EC=0 RX=Real:"0"
+In: RMODE=3 FL_ASLIFT=0 RY=LonI:"0" RX=Real:"-0"
+Out: EC=0 RX=Real:"0"
+In: RMODE=3 FL_ASLIFT=0 RY=Real:"0" RX=LonI:"0"
+Out: EC=0 RX=Real:"0"
+In: RMODE=3 FL_ASLIFT=0 RY=Real:"-0" RX=LonI:"0"
+Out: EC=0 RX=Real:"0"
+
+Func: fnSubtract
+In: RMODE=3 FL_ASLIFT=0 RY=LonI:"0" RX=Real:"0"
+Out: EC=0 RX=Real:"0"
+In: RMODE=3 FL_ASLIFT=0 RY=LonI:"0" RX=Real:"-0"
+Out: EC=0 RX=Real:"0"
+In: RMODE=3 FL_ASLIFT=0 RY=Real:"0" RX=LonI:"0"
+Out: EC=0 RX=Real:"0"
+In: RMODE=3 FL_ASLIFT=0 RY=Real:"-0" RX=LonI:"0"
+Out: EC=0 RX=Real:"-0"
+
+Func: fnDivide
+In: RMODE=3 SD=1 FL_ASLIFT=0 RY=Real:"1e-6144" RX=LonI:"1"
+Out: EC=0 RX=Real:"1e-6144"
+In: RMODE=3 SD=1 FL_ASLIFT=0 RY=Real:"1e-6176" RX=LonI:"1"
+Out: EC=0 RX=Real:"1e-6176"
+In: RMODE=3 SD=1 FL_ASLIFT=0 RY=Real:"-1e-6144" RX=LonI:"1"
+Out: EC=0 RX=Real:"-1e-6144"
+In: RMODE=3 SD=1 FL_ASLIFT=0 RY=Real:"-1e-6176" RX=LonI:"1"
+Out: EC=0 RX=Real:"-1e-6176"
+In: SD=0
+
+Func: fnAdd
+In: RMODE=4 FL_ASLIFT=0 RY=LonI:"0" RX=Real:"0"
+Out: EC=0 RX=Real:"0"
+In: RMODE=4 FL_ASLIFT=0 RY=LonI:"0" RX=Real:"-0"
+Out: EC=0 RX=Real:"0"
+In: RMODE=4 FL_ASLIFT=0 RY=Real:"0" RX=LonI:"0"
+Out: EC=0 RX=Real:"0"
+In: RMODE=4 FL_ASLIFT=0 RY=Real:"-0" RX=LonI:"0"
+Out: EC=0 RX=Real:"0"
+
+Func: fnSubtract
+In: RMODE=4 FL_ASLIFT=0 RY=LonI:"0" RX=Real:"0"
+Out: EC=0 RX=Real:"0"
+In: RMODE=4 FL_ASLIFT=0 RY=LonI:"0" RX=Real:"-0"
+Out: EC=0 RX=Real:"0"
+In: RMODE=4 FL_ASLIFT=0 RY=Real:"0" RX=LonI:"0"
+Out: EC=0 RX=Real:"0"
+In: RMODE=4 FL_ASLIFT=0 RY=Real:"-0" RX=LonI:"0"
+Out: EC=0 RX=Real:"-0"
+
+Func: fnDivide
+In: RMODE=4 SD=1 FL_ASLIFT=0 RY=Real:"1e-6144" RX=LonI:"1"
+Out: EC=0 RX=Real:"1e-6144"
+In: RMODE=4 SD=1 FL_ASLIFT=0 RY=Real:"1e-6176" RX=LonI:"1"
+Out: EC=0 RX=Real:"1e-6176"
+In: RMODE=4 SD=1 FL_ASLIFT=0 RY=Real:"-1e-6144" RX=LonI:"1"
+Out: EC=0 RX=Real:"-1e-6144"
+In: RMODE=4 SD=1 FL_ASLIFT=0 RY=Real:"-1e-6176" RX=LonI:"1"
+Out: EC=0 RX=Real:"-1e-6176"
+In: SD=0
+
+Func: fnAdd
+In: RMODE=5 FL_ASLIFT=0 RY=LonI:"0" RX=Real:"0"
+Out: EC=0 RX=Real:"0"
+In: RMODE=5 FL_ASLIFT=0 RY=LonI:"0" RX=Real:"-0"
+Out: EC=0 RX=Real:"0"
+In: RMODE=5 FL_ASLIFT=0 RY=Real:"0" RX=LonI:"0"
+Out: EC=0 RX=Real:"0"
+In: RMODE=5 FL_ASLIFT=0 RY=Real:"-0" RX=LonI:"0"
+Out: EC=0 RX=Real:"0"
+
+Func: fnSubtract
+In: RMODE=5 FL_ASLIFT=0 RY=LonI:"0" RX=Real:"0"
+Out: EC=0 RX=Real:"0"
+In: RMODE=5 FL_ASLIFT=0 RY=LonI:"0" RX=Real:"-0"
+Out: EC=0 RX=Real:"0"
+In: RMODE=5 FL_ASLIFT=0 RY=Real:"0" RX=LonI:"0"
+Out: EC=0 RX=Real:"0"
+In: RMODE=5 FL_ASLIFT=0 RY=Real:"-0" RX=LonI:"0"
+Out: EC=0 RX=Real:"-0"
+
+Func: fnDivide
+In: RMODE=5 SD=1 FL_ASLIFT=0 RY=Real:"1e-6144" RX=LonI:"1"
+Out: EC=0 RX=Real:"1e-6144"
+In: RMODE=5 SD=1 FL_ASLIFT=0 RY=Real:"1e-6176" RX=LonI:"1"
+Out: EC=0 RX=Real:"1e-6176"
+In: RMODE=5 SD=1 FL_ASLIFT=0 RY=Real:"-1e-6144" RX=LonI:"1"
+Out: EC=0 RX=Real:"-1e-6144"
+In: RMODE=5 SD=1 FL_ASLIFT=0 RY=Real:"-1e-6176" RX=LonI:"1"
+Out: EC=0 RX=Real:"-1e-6176"
+In: SD=0
+
+Func: fnAdd
+In: RMODE=6 FL_ASLIFT=0 RY=LonI:"0" RX=Real:"0"
+Out: EC=0 RX=Real:"0"
+In: RMODE=6 FL_ASLIFT=0 RY=LonI:"0" RX=Real:"-0"
+Out: EC=0 RX=Real:"-0"
+In: RMODE=6 FL_ASLIFT=0 RY=Real:"0" RX=LonI:"0"
+Out: EC=0 RX=Real:"0"
+In: RMODE=6 FL_ASLIFT=0 RY=Real:"-0" RX=LonI:"0"
+Out: EC=0 RX=Real:"-0"
+
+Func: fnSubtract
+In: RMODE=6 FL_ASLIFT=0 RY=LonI:"0" RX=Real:"0"
+Out: EC=0 RX=Real:"-0"
+In: RMODE=6 FL_ASLIFT=0 RY=LonI:"0" RX=Real:"-0"
+Out: EC=0 RX=Real:"0"
+In: RMODE=6 FL_ASLIFT=0 RY=Real:"0" RX=LonI:"0"
+Out: EC=0 RX=Real:"-0"
+In: RMODE=6 FL_ASLIFT=0 RY=Real:"-0" RX=LonI:"0"
+Out: EC=0 RX=Real:"-0"
+
+Func: fnDivide
+In: RMODE=6 SD=1 FL_ASLIFT=0 RY=Real:"1e-6144" RX=LonI:"1"
+Out: EC=0 RX=Real:"1e-6144"
+In: RMODE=6 SD=1 FL_ASLIFT=0 RY=Real:"1e-6176" RX=LonI:"1"
+Out: EC=0 RX=Real:"1e-6176"
+In: RMODE=6 SD=1 FL_ASLIFT=0 RY=Real:"-1e-6144" RX=LonI:"1"
+Out: EC=0 RX=Real:"-1e-6144"
+In: RMODE=6 SD=1 FL_ASLIFT=0 RY=Real:"-1e-6176" RX=LonI:"1"
+Out: EC=0 RX=Real:"-1e-6176"
+In: SD=0
+
+Func: fnDivide
+In: RMODE=0 SD=0 FL_ASLIFT=0 RY=LonI:"0" RX=ReMa:"M1,1[-2]"
+Out: EC=0 RX=ReMa:"M1,1[-0]"
+
+Func: fnMultiply
+In: RMODE=0 SD=1 FL_ASLIFT=0 RY=LonI:"1" RX=Real:"1e-6144"
+Out: EC=0 RX=Real:"1e-6144"
+
+Func: fnAdd
+In: RMODE=0 SD=1 FL_ASLIFT=0 RY=LonI:"0" RX=Real:"1e-6176"
+Out: EC=0 RX=Real:"1e-6176"

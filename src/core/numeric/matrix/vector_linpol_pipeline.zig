@@ -5,23 +5,22 @@ const result_owned = @import("vector_linpol_result.zig");
 const runtime = @import("../command_wrappers/runtime.zig");
 
 pub fn linpol() callconv(.c) void {
-    var a_real: runtime.real_t = undefined;
-    var b_real: runtime.real_t = undefined;
-    var a_imag: runtime.real_t = undefined;
-    var b_imag: runtime.real_t = undefined;
+    var a: runtime.cplx_t = undefined;
+    var b: runtime.cplx_t = undefined;
     var p: runtime.real_t = undefined;
-    var result_real: runtime.real_t = undefined;
-    var result_imag: runtime.real_t = undefined;
+    var r: runtime.cplx_t = undefined;
+    var exact_result: runtime.real_t = undefined;
     var real_coefs = true;
     var data_tag_y: runtime.angularMode_t = runtime.amNone;
     var data_tag_z: runtime.angularMode_t = runtime.amNone;
+    const type_x = runtime.getRegisterDataType(runtime.REGISTER_X);
     const type_y = runtime.getRegisterDataType(runtime.REGISTER_Y);
     const type_z = runtime.getRegisterDataType(runtime.REGISTER_Z);
     const is_y_angle = type_y == runtime.dtReal34 and runtime.getRegisterAngularMode(runtime.REGISTER_Y) != runtime.amNone;
     const is_z_angle = type_z == runtime.dtReal34 and runtime.getRegisterAngularMode(runtime.REGISTER_Z) != runtime.amNone;
 
-    runtime.realSetZero(&a_imag);
-    runtime.realSetZero(&b_imag);
+    runtime.realSetZero(&a.Imag);
+    runtime.realSetZero(&b.Imag);
 
     if (!io_owned.readP(&p)) {
         diagnostics_owned.invalidXError();
@@ -36,15 +35,23 @@ pub fn linpol() callconv(.c) void {
         return;
     }
 
-    if (!io_owned.readCoeff(runtime.REGISTER_Y, type_y, &b_real, &b_imag, &real_coefs, &data_tag_y)) {
+    if (!io_owned.readCoeff(runtime.REGISTER_Y, type_y, &b.Real, &b.Imag, &real_coefs, &data_tag_y)) {
         diagnostics_owned.coeffTypeError(runtime.REGISTER_Y);
         return;
     }
 
-    if (!io_owned.readCoeff(runtime.REGISTER_Z, type_z, &a_real, &a_imag, &real_coefs, &data_tag_z)) {
+    if (!io_owned.readCoeff(runtime.REGISTER_Z, type_z, &a.Real, &a.Imag, &real_coefs, &data_tag_z)) {
         diagnostics_owned.coeffTypeError(runtime.REGISTER_Z);
         return;
     }
+
+    // With a long integer among the operands and plain integer or untagged real
+    // endpoints, the interpolation is formed exactly on scaled long integers.
+    const exact_interpolation = real_coefs and
+        (type_x == runtime.dtLongInteger or type_y == runtime.dtLongInteger or type_z == runtime.dtLongInteger) and
+        (type_y == runtime.dtLongInteger or type_y == runtime.dtShortInteger or (type_y == runtime.dtReal34 and !is_y_angle)) and
+        (type_z == runtime.dtLongInteger or type_z == runtime.dtShortInteger or (type_z == runtime.dtReal34 and !is_z_angle)) and
+        io_owned.linpolExactRegisters(&p, &exact_result);
 
     if (!runtime.saveLastX()) {
         return;
@@ -54,9 +61,11 @@ pub fn linpol() callconv(.c) void {
     runtime.fnDrop(runtime.NOPARAM);
     runtime.fnDrop(runtime.NOPARAM);
 
-    compute_owned.linpolScalar(&a_real, &b_real, &p, &result_real);
+    if (!exact_interpolation) {
+        compute_owned.linpolScalar(&a.Real, &b.Real, &p, &r.Real);
+    }
     if (!real_coefs) {
-        compute_owned.linpolScalar(&a_imag, &b_imag, &p, &result_imag);
+        compute_owned.linpolScalar(&a.Imag, &b.Imag, &p, &r.Imag);
     }
 
     result_owned.writeResult(
@@ -66,7 +75,7 @@ pub fn linpol() callconv(.c) void {
         data_tag_y,
         data_tag_z,
         real_coefs,
-        &result_real,
-        &result_imag,
+        &r,
+        if (exact_interpolation) &exact_result else null,
     );
 }

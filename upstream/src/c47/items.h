@@ -2950,8 +2950,8 @@
 #define ITM_2848                    2848 // General items / any items spare
 #define ITM_2849                    2849 // General items / any items spare
 
-#define ITM_XGEP0                   2850
-#define ITM_XLEM0                   2851
+#define ITM_XLEM0                   2850
+#define ITM_XGEP0                   2851
 #define ITM_PLTFCNS                 2852
 #define ITM_2853                    2853 // General items / any items spare
 #define ITM_2854                    2854 // General items / any items spare

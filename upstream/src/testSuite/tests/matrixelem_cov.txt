@@ -75,6 +75,9 @@ Func: fnIndexedElementCov
 In:  FARG=0 R00=CxMa:"M2,2[1i1,2i2,3i3,4i4]" RX=Cplx:"7i7" RI=Real:"3" RJ=Real:"1"
 Out: EC=8 R00=CxMa:"M2,2[1i1,2i2,3i3,4i4]"
 Func: fnIndexedElementCov
+In:  FARG=0 R00=ReMa:"M2,2[1,2,3,4]" RX=Cplx:"7i7" RI=Real:"3" RJ=Real:"1"
+Out: EC=8 R00=ReMa:"M2,2[1,2,3,4]"
+Func: fnIndexedElementCov
 In:  FARG=0 R00=Real:"5" RX=Real:"7" RI=Real:"1" RJ=Real:"1"
 Out: EC=24 R00=Real:"5" RX=Real:"7"
 Func: fnIndexedElementCov
@@ -83,6 +86,17 @@ Out: EC=24 R00=ReMa:"M2,2[1,2,3,4]"
 Func: fnIndexedElementCov
 In:  FARG=0 R00=CxMa:"M2,2[1i1,2i2,3i3,4i4]" RX=Stri:"ab" RI=Real:"2" RJ=Real:"1"
 Out: EC=24 R00=CxMa:"M2,2[1i1,2i2,3i3,4i4]"
+
+; A failed sequential operation leaves both the matrix and cursor unchanged.
+Func: fnIndexedElementCov
+In:  FARG=2 R00=ReMa:"M2,2[1,2,3,4]" RX=Real:"7" RI=Real:"3" RJ=Real:"1"
+Out: EC=8 R00=ReMa:"M2,2[1,2,3,4]" RI=LonI:"3" RJ=LonI:"1"
+Func: fnIndexedElementCov
+In:  FARG=2 R00=ReMa:"M2,2[1,2,3,4]" RX=Stri:"ab" RI=Real:"1" RJ=Real:"1"
+Out: EC=24 R00=ReMa:"M2,2[1,2,3,4]" RI=LonI:"1" RJ=LonI:"1"
+Func: fnIndexedElementCov
+In:  FARG=3 R00=ReMa:"M2,2[1,2,3,4]" RX=Real:"0" RI=Real:"3" RJ=Real:"1"
+Out: EC=8 R00=ReMa:"M2,2[1,2,3,4]" RX=Real:"0" RI=LonI:"3" RJ=LonI:"1"
 
 ; --- M.GETM takes the submatrix at the cursor, Y rows by X columns ---
 Func: fnIndexedElementCov

@@ -1,6 +1,7 @@
 ;*************************************************************
-;** Coverage: save/export file I/O paths through the         **
-;** testSuite HAL.                                           **
+;** Coverage: register data-file save/load paths through the **
+;** testSuite HAL, plus state and program export entry       **
+;** points.                                                   **
 ;*************************************************************
 In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
 
@@ -12,6 +13,12 @@ Out: EC=0
 Func: fnSaveStackRegisters
 In:  FARG=0 RX=Real:"1"
 Out: EC=0
+; exported complex values use an i marker. The i letters within Infinity are
+; part of a number, not that marker; both the special real component and the
+; signed-zero imaginary component must survive the export/import path.
+Func: fnDataDecimalRoundtripCov
+In:  FARG=0
+Out: EC=0 RX=Real:"1"
 ; full state save
 Func: fnSave
 In:  FARG=0 RX=Real:"5"

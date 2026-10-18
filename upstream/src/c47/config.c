@@ -814,6 +814,13 @@ void fnSetRoundingModeRegist(uint16_t regist) {
 // 5: ceiling: ⌈x⌉ rounds towards + ∞.
 // 6: floor: ⌊x⌋ rounds towards – ∞.
 
+// roundingModeTable[RM_HALF_EVEN] = roundingModeTable[0] = DEC_ROUND_HALF_EVEN   = 3  ½E  : 0.5 rounds to next
+// roundingModeTable[RM_HALF_UP  ] = roundingModeTable[1] = DEC_ROUND_HALF_UP     = 2  ½up : 0.5 rounds up
+// roundingModeTable[RM_HALF_DOWN] = roundingModeTable[2] = DEC_ROUND_HALF_DOWN   = 4  ½↓  : 0.5 rounds down
+// roundingModeTable[RM_UP       ] = roundingModeTable[3] = DEC_ROUND_UP          = 1  ←0→ : rounds away from 0
+// roundingModeTable[RM_DOWN     ] = roundingModeTable[4] = DEC_ROUND_DOWN        = 5  →0← : rounds towards 0
+// roundingModeTable[RM_CEIL     ] = roundingModeTable[5] = DEC_ROUND_CEILING     = 0  ⌈x⌉ : rounds towards + ∞
+// roundingModeTable[RM_FLOOR    ] = roundingModeTable[6] = DEC_ROUND_FLOOR       = 6  ⌊x⌋ : rounds towards – ∞
 
 
 // "enum rounding" does not match with the specification of WP 43s rounding mode.
@@ -997,6 +1004,7 @@ void fnGetFractionDigits(uint16_t unusedButMandatoryParameter) {
 
 
 void fnSetFractionDigits(uint16_t S) {
+   setSystemFlagChanged(SETTING_FDIGS);
    fractionDigits = S;
    if(fractionDigits == 0) {
      fractionDigits = 34;

@@ -181,3 +181,80 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"20" RX=Real:"3.7200759760208359629596
 ;=======================================
 ; ExponR(Complex) --> Error24
 ;=======================================
+
+; Domain, endpoint, precision, and directed-rounding cases.
+Func: fnExponentialR
+In:  RMODE=0 FL_SPCRES=0 RR=Real:"2" RX=Real:"-1"
+Out: EC=0 RX=Real:"1"
+
+Func: fnExponentialR
+In:  RMODE=0 FL_SPCRES=0 RR=Real:"2" RX=Real:"-inf"
+Out: EC=0 RX=Real:"1"
+
+Func: fnExponentialR
+In:  RMODE=0 FL_SPCRES=0 RR=Real:"2" RX=Real:"0"
+Out: EC=0 RX=Real:"1"
+
+Func: fnExponentialR
+In:  RMODE=0 FL_SPCRES=0 RR=Real:"2" RX=Real:"inf"
+Out: EC=0 RX=Real:"0"
+
+; P34 multiplication changes low-order digits before the exponential.
+Func: fnExponentialR
+In:  RMODE=0 FL_SPCRES=0 RR=Real:"1.234567890123456789012345678901234" RZ=Real:"1e4350" ...
+     RY=Real:"4.033006668079199684250167181730929e-4290" RX=Real:"8000.123456789012345678901234567890"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+; A positive upper probability below the working exponent range retains its directed side.
+Func: fnExponentialR
+In:  RMODE=0 FL_SPCRES=0 RR=Real:"1e6144" RX=Real:"1e6144"
+Out: EC=0 RX=Real:"0"
+
+Func: fnExponentialR
+In:  RMODE=3 FL_SPCRES=0 RR=Real:"1e6144" RX=Real:"1e6144"
+Out: EC=0 RX=Real:"1e-6176"
+
+Func: fnExponentialR
+In:  RMODE=5 FL_SPCRES=0 RR=Real:"1e6144" RX=Real:"1e6144"
+Out: EC=0 RX=Real:"1e-6176"
+
+; A finite positive argument makes the upper probability strictly less than one.
+Func: fnExponentialR
+In:  RMODE=4 FL_SPCRES=0 RR=Real:"1e-6176" RX=Real:"1e-6176"
+Out: EC=0 RX=Real:"0.9999999999999999999999999999999999"
+
+Func: fnExponentialR
+In:  RMODE=6 FL_SPCRES=0 RR=Real:"1e-6176" RX=Real:"1e-6176"
+Out: EC=0 RX=Real:"0.9999999999999999999999999999999999"
+
+Func: fnExponentialR
+In:  RMODE=0 FL_SPCRES=0 RR=Real:"2" RX=Real:"NaN"
+Out: EC=1 RX=Real:"NaN"
+
+Func: fnExponentialR
+In:  RMODE=0 FL_SPCRES=1 RR=Real:"2" RX=Real:"NaN"
+Out: EC=0 RX=Real:"NaN"
+
+Func: fnExponentialR
+In:  RMODE=0 FL_SPCRES=0 RR=Real:"NaN" RX=Real:"2"
+Out: EC=16 RX=Real:"2"
+
+Func: fnExponentialR
+In:  RMODE=0 FL_SPCRES=0 RR=Real:"inf" RX=Real:"2"
+Out: EC=16 RX=Real:"2"
+
+Func: fnExponentialR
+In:  RMODE=0 FL_SPCRES=1 RR=Real:"inf" RX=Real:"2"
+Out: EC=0 RX=Real:"NaN"
+
+Func: fnExponentialR
+In:  RMODE=0 FL_SPCRES=0 RR=Real:"2" RX=ReMa:"M1,2[0,1]"
+Out: EC=24 RX=ReMa:"M1,2[0,1]"
+
+Func: fnExponentialR
+In:  RMODE=0 FL_SPCRES=0 RR=Real:"2" RX=CxMa:"M1,1[0i1]"
+Out: EC=24 RX=CxMa:"M1,1[0i1]"

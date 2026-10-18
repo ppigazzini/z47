@@ -5,7 +5,7 @@ const const_2p32 = consts.const_2p32;
 const const34_86400 = consts.const34_86400;
 const const34_43200 = consts.const34_43200;
 const const34_2p32 = consts.const34_2p32;
-const const6147_2pi = consts.const6147_2pi;
+const const2139_2pi = consts.const2139_2pi;
 const const_2p64 = consts.const_2p64;
 const const_0 = consts.const_0;
 const const34_100 = consts.const34_100;
@@ -64,6 +64,8 @@ const angularMode_t = c_int;
 // mis-sized _mp_d and broke the @ptrCast to [*]u64 below on the Windows CI lane.
 const mp_limb_t = usize;
 const mpz_struct = abi.Mpz;
+/// cplx_t: two back-to-back real_t, Mag and Arg as the polar-form view.
+pub const cplx_t = abi.Complex;
 const LIMB_SIZE: u32 = @sizeOf(mp_limb_t);
 const is32: bool = @sizeOf(*anyopaque) == 4;
 
@@ -515,7 +517,14 @@ pub extern fn convertRealToImag34ResultRegister(real: *const real_t, dest: calcR
 pub extern fn convertRealToResultRegister(x: *const real_t, dest: calcRegister_t, angle: angularMode_t) callconv(.c) void;
 
 // convertComplexToResultRegister moved to engine/kernel/register_convert_bulk.zig.
-pub extern fn convertComplexToResultRegister(real: *const real_t, imag: *const real_t, dest: calcRegister_t) callconv(.c) void;
+pub extern fn convertComplexToResultRegister(z: *const cplx_t, dest: calcRegister_t) callconv(.c) void;
+
+// convertComplexToResultRegister for a real and an imaginary part that are not one cplx_t, such as constants or parts computed apart.
+pub extern fn convertComplexPartsToResultRegister(real: *const real_t, imag: *const real_t, dest: calcRegister_t) callconv(.c) void;
+
+// A Real34, or a Real34 pair, into a freshly reallocated register.
+pub extern fn convertReal34ToReal34Register(real34: *align(1) const real34_t, dest: calcRegister_t) callconv(.c) void;
+pub extern fn convertReal34ToComplex34Register(real34: *align(1) const real34_t, imag34: *align(1) const real34_t, dest: calcRegister_t) callconv(.c) void;
 
 // convertComplexToResultRegisterRPangle moved to engine/kernel/register_convert_bulk.zig.
 pub extern fn convertComplexToResultRegisterRPangle(real: *const real_t, imag: *const real_t, dest: calcRegister_t, angl: angularMode_t, polarTag: u8) callconv(.c) void;
@@ -798,19 +807,19 @@ pub extern fn badDomainErrorX() callconv(.c) void;
 // getRegisterAs* family
 // ===========================================================================
 // getRegisterAsComplex moved to engine/kernel/register_convert_bulk.zig.
-pub extern fn getRegisterAsComplex(reg: calcRegister_t, r: *real_t, i: *real_t) callconv(.c) bool;
+pub extern fn getRegisterAsComplex(reg: calcRegister_t, z: *cplx_t) callconv(.c) bool;
 
 // getRegisterAsComplexOrAnyRealQuiet moved to engine/kernel/register_convert_bulk.zig.
-pub extern fn getRegisterAsComplexOrAnyRealQuiet(reg: calcRegister_t, r: *real_t, i: *real_t, cmplx: ?*bool) callconv(.c) bool;
+pub extern fn getRegisterAsComplexOrAnyRealQuiet(reg: calcRegister_t, z: *cplx_t, cmplx: ?*bool) callconv(.c) bool;
 
 // getRegisterAsComplexOrAnyReal moved to engine/kernel/register_convert_bulk.zig.
-pub extern fn getRegisterAsComplexOrAnyReal(reg: calcRegister_t, r: *real_t, i: *real_t, cmplx: ?*bool) callconv(.c) bool;
+pub extern fn getRegisterAsComplexOrAnyReal(reg: calcRegister_t, z: *cplx_t, cmplx: ?*bool) callconv(.c) bool;
 
 // getRegisterAsComplexOrRealQuiet moved to engine/kernel/register_convert_bulk.zig.
-pub extern fn getRegisterAsComplexOrRealQuiet(reg: calcRegister_t, r: *real_t, i: *real_t, cmplx: ?*bool) callconv(.c) bool;
+pub extern fn getRegisterAsComplexOrRealQuiet(reg: calcRegister_t, z: *cplx_t, cmplx: ?*bool) callconv(.c) bool;
 
 // getRegisterAsComplexOrReal moved to engine/kernel/register_convert_bulk.zig.
-pub extern fn getRegisterAsComplexOrReal(reg: calcRegister_t, r: *real_t, i: *real_t, cmplx: ?*bool) callconv(.c) bool;
+pub extern fn getRegisterAsComplexOrReal(reg: calcRegister_t, z: *cplx_t, cmplx: ?*bool) callconv(.c) bool;
 
 // getRegisterAsAnyRealQuiet moved to engine/kernel/register_integer_convert.zig.
 pub extern fn getRegisterAsAnyRealQuiet(reg: calcRegister_t, val: *real_t) callconv(.c) bool;

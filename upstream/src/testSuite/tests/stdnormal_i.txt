@@ -28,6 +28,10 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.1" RX=Real:"-1.28155156554460046696
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"0.9"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.9" RX=Real:"1.281551565544600466965103329448743"
 
+; Next to the median: -sqrt(2) erfinv(1 - 2p) with 1 - 2p = 2E-13.
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"0.4999999999999"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.4999999999999" RX=Real:"-2.506628274631000502415765311060395E-13"
+
 
 
 ;=======================================
@@ -90,3 +94,42 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.9" RX=Real:"1.281551565544600466965
 ;=======================================
 ; stdNormalI(Complex) --> Error24
 ;=======================================
+
+; The five guard digits determine a decimal128 central quantile.
+Func: fnStdNormalI
+In:  RMODE=0 RZ=Real:"1e40" RY=Real:"0.3358552104165860423350871198754083290306534802465892094319206625990452779528122043267886244649534732" RX=Real:"0.6315099730179966720050552286903421"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+; The smallest positive probability remains in range.
+Func: fnStdNormalI
+In:  RMODE=0 RZ=Real:"1e40" RY=Real:"-168.61031386252175708270136257866227282548134446165880949686519590659474368962592169182914650014441" RX=Real:"1e-6176"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+; Endpoints and NaN are outside the quantile domain.
+Func: fnStdNormalI
+In:  FL_SPCRES=0 RX=Real:"0"
+Out: EC=1 RX=Real:"0"
+
+Func: fnStdNormalI
+In:  FL_SPCRES=1 RX=Real:"0"
+Out: EC=0 RX=Real:"NaN"
+
+Func: fnStdNormalI
+In:  FL_SPCRES=0 RX=Real:"1"
+Out: EC=1 RX=Real:"1"
+
+Func: fnStdNormalI
+In:  FL_SPCRES=1 RX=Real:"NaN"
+Out: EC=0 RX=Real:"NaN"
+
+Func: fnStdNormalI
+In:  FL_SPCRES=0 RX=CxMa:"M1,1[0i1]"
+Out: EC=24 RX=CxMa:"M1,1[0i1]"

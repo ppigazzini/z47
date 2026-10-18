@@ -155,3 +155,64 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"2" RX=Real:"0.36787944117144232159552
 ;=======================================
 ; WeibullR(Complex) --> Error24
 ;=======================================
+
+; Support, scaled-power, directed-rounding, parameter, and matrix cases.
+Func: fnWeibullR
+In:  RMODE=0 FL_SPCRES=0 RS=Real:"1" RQ=Real:"2" RX=Real:"-1"
+Out: EC=0 RX=Real:"1"
+
+Func: fnWeibullR
+In:  RMODE=0 FL_SPCRES=0 RS=Real:"1" RQ=Real:"2" RX=Real:"-inf"
+Out: EC=0 RX=Real:"1"
+
+Func: fnWeibullR
+In:  RMODE=0 FL_SPCRES=0 RS=Real:"1" RQ=Real:"2" RX=Real:"0"
+Out: EC=0 RX=Real:"1"
+
+Func: fnWeibullR
+In:  RMODE=0 FL_SPCRES=0 RS=Real:"1" RQ=Real:"2" RX=Real:"inf"
+Out: EC=0 RX=Real:"0"
+
+; The compensated ratio retains adjacent inputs under a large shape.
+Func: fnWeibullR
+In:  RMODE=0 FL_SPCRES=0 RS=Real:"1.234567890123456789012345678901234" RQ=Real:"1e33" RX=Real:"1.234567890123456789012345678901235"
+Out: EC=0 RX=Real:"0.1056199502149293589147611790256780"
+
+; Separate logarithms retain a small ratio before applying a small shape.
+Func: fnWeibullR
+In:  RMODE=0 FL_SPCRES=0 RS=Real:"1" RQ=Real:"0.025" RX=Real:"1e-40"
+Out: EC=0 RX=Real:"0.9048374180359595731642490594464366"
+
+; A finite positive argument gives an upper probability strictly less than one.
+Func: fnWeibullR
+In:  RMODE=4 FL_SPCRES=0 RS=Real:"1e6144" RQ=Real:"0.5" RX=Real:"1e-6144"
+Out: EC=0 RX=Real:"0.9999999999999999999999999999999999"
+
+; A positive upper probability below the working exponent range retains its directed side.
+Func: fnWeibullR
+In:  RMODE=0 FL_SPCRES=0 RS=Real:"1" RQ=Real:"1" RX=Real:"1e6144"
+Out: EC=0 RX=Real:"0"
+
+Func: fnWeibullR
+In:  RMODE=3 FL_SPCRES=0 RS=Real:"1" RQ=Real:"1" RX=Real:"1e6144"
+Out: EC=0 RX=Real:"1e-6176"
+
+Func: fnWeibullR
+In:  RMODE=0 FL_SPCRES=0 RS=Real:"0" RQ=Real:"1" RX=Real:"1"
+Out: EC=16 RX=Real:"1"
+
+Func: fnWeibullR
+In:  RMODE=0 FL_SPCRES=0 RS=Real:"1" RQ=Real:"inf" RX=Real:"1"
+Out: EC=16 RX=Real:"1"
+
+Func: fnWeibullR
+In:  RMODE=0 FL_SPCRES=1 RS=Real:"inf" RQ=Real:"1" RX=Real:"1"
+Out: EC=0 RX=Real:"NaN"
+
+Func: fnWeibullR
+In:  RMODE=0 FL_SPCRES=0 RS=Real:"1" RQ=Real:"1" RX=ReMa:"M1,2[0,1]"
+Out: EC=24 RX=ReMa:"M1,2[0,1]"
+
+Func: fnWeibullR
+In:  RMODE=0 FL_SPCRES=0 RS=Real:"1" RQ=Real:"1" RX=CxMa:"M1,1[0i1]"
+Out: EC=24 RX=CxMa:"M1,1[0i1]"

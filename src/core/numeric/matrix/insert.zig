@@ -2,8 +2,9 @@
 // Zig port of the matrix row/column insert cluster of
 // src/c47/mathematics/matrix.c: insRowRealMatrix / insColRealMatrix and
 // insRowComplexMatrix / insColComplexMatrix (grow the matrix by one row or
-// column, zero-filling the inserted line). The row/column delete cluster and
-// the rest of the engine stay in the matrix bridge.
+// column, zero-filling the inserted line). Upstream has one body per direction
+// over a kind descriptor, so both kinds report as insRowAnyMatrix /
+// insColAnyMatrix. The row/column delete cluster is its own owner.
 
 const runtime = @import("../command_wrappers/runtime.zig");
 const abi = @import("abi");
@@ -66,7 +67,7 @@ pub export fn insRowRealMatrix(matrix: *real34Matrix_t, before_row_no: u16, add:
         matrix.header.matrixColumns = new_mat.header.matrixColumns;
         matrix.matrixElements = new_mat.matrixElements;
     } else {
-        reportRamFull("In function insRowRealMatrix:");
+        reportRamFull("In function insRowAnyMatrix:");
     }
 }
 
@@ -105,7 +106,7 @@ pub export fn insColRealMatrix(matrix: *real34Matrix_t, before_col_no: u16, add:
         matrix.header.matrixColumns = new_mat.header.matrixColumns;
         matrix.matrixElements = new_mat.matrixElements;
     } else {
-        reportRamFull("In function insColRealMatrix:");
+        reportRamFull("In function insColAnyMatrix:");
     }
 }
 
@@ -136,7 +137,7 @@ pub export fn insRowComplexMatrix(matrix: *complex34Matrix_t, before_row_no: u16
         matrix.header.matrixColumns = new_mat.header.matrixColumns;
         matrix.matrixElements = new_mat.matrixElements;
     } else {
-        reportRamFull("In function insRowComplexMatrix:");
+        reportRamFull("In function insRowAnyMatrix:");
     }
 }
 
@@ -175,6 +176,6 @@ pub export fn insColComplexMatrix(matrix: *complex34Matrix_t, before_col_no: u16
         matrix.header.matrixColumns = new_mat.header.matrixColumns;
         matrix.matrixElements = new_mat.matrixElements;
     } else {
-        reportRamFull("In function insColComplexMatrix:");
+        reportRamFull("In function insColAnyMatrix:");
     }
 }

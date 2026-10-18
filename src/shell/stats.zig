@@ -4,6 +4,7 @@ const const_1 = consts.const_1;
 const const_1on2 = consts.const_1on2;
 const const34_1 = consts.const34_1;
 const const_3 = consts.const_3;
+const const_0 = consts.const_0;
 //
 // Zig owner for src/c47/stats.c: the Sigma+/Sigma- accumulator engine over the
 // 28 statistical sums (75-digit reals), the STATS matrix bookkeeping
@@ -82,6 +83,9 @@ const dtReal34Matrix: u32 = 6;
 const amNone: angularMode_t = 5;
 
 const ERROR_NONE: u8 = 0;
+const ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN: u8 = 1;
+const ERROR_OUT_OF_RANGE: u8 = 8;
+const ERROR_INVALID_INTEGER_INPUT: u8 = 9;
 const ERROR_RAM_FULL: u8 = 11;
 const ERROR_TOO_FEW_DATA: u8 = 15;
 const ERROR_MATRIX_MISMATCH: u8 = 21;
@@ -157,6 +161,7 @@ const force: u8 = 1;
 
 const DEC_ROUND_DOWN: c_int = 5;
 const DEC_ROUND_CEILING: c_int = 0;
+const DEC_ROUND_HALF_EVEN: c_int = 3;
 
 // ---------------------------------------------------------------------------
 // Constant blob (offsets from the generated constantPointers.h)
@@ -219,6 +224,9 @@ extern fn realCompareGreaterThan(number1: *align(1) const real_t, number2: *alig
 extern fn realCompareGreaterEqual(number1: *align(1) const real_t, number2: *align(1) const real_t) bool;
 extern fn realCompareLessThan(number1: *align(1) const real_t, number2: *align(1) const real_t) bool;
 extern fn realCompareLessEqual(number1: *align(1) const real_t, number2: *align(1) const real_t) bool;
+extern fn realCompareAbsGreaterThan(number1: *align(1) const real_t, number2: *align(1) const real_t) bool;
+extern fn realIsAnInteger(x: *const real_t) bool;
+extern fn realToInt32C47(source: *const real_t, err: ?*bool) i32;
 
 // decNumber / decQuad externs behind the real*/real34* macros.
 extern fn decNumberAdd(r: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
@@ -226,6 +234,7 @@ extern fn decNumberSubtract(r: *real_t, a: *align(1) const real_t, b: *align(1) 
 extern fn decNumberMultiply(r: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
 extern fn decNumberDivide(r: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
 extern fn decNumberSquareRoot(r: *real_t, a: *align(1) const real_t, ctx: *realContext_t) *real_t;
+extern fn decNumberFMA(r: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, c: *align(1) const real_t, ctx: *realContext_t) *real_t;
 extern fn decNumberCopy(r: *real_t, src: *align(1) const real_t) *real_t;
 extern fn decimal128ToNumber(src: *align(1) const real34_t, dst: *real_t) *real_t;
 extern fn decimal128FromNumber(dst: *align(1) real34_t, src: *const real_t, ctx: *realContext_t) *align(1) real34_t;
@@ -262,6 +271,21 @@ inline fn realDivide(a: *align(1) const real_t, b: *align(1) const real_t, res: 
 }
 inline fn realSquareRoot(operand: *align(1) const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberSquareRoot(res, operand, ctx);
+}
+inline fn realFMA(a: *align(1) const real_t, b: *align(1) const real_t, c: *align(1) const real_t, res: *real_t, ctx: *realContext_t) void {
+    _ = decNumberFMA(res, a, b, c, ctx);
+}
+inline fn realIsZero(v: *align(1) const real_t) bool {
+    return v.lsu[0] == 0 and v.digits == 1 and (v.bits & DECSPECIAL) == 0;
+}
+inline fn realIsNegative(v: *align(1) const real_t) bool {
+    return (v.bits & DECNEG) != 0;
+}
+inline fn real34Copy(src: *align(1) const real34_t, dst: *align(1) real34_t) void {
+    const s: *align(1) const [2]u64 = @ptrCast(src);
+    const d: *align(1) [2]u64 = @ptrCast(dst);
+    d[0] = s[0];
+    d[1] = s[1];
 }
 inline fn real34ToReal(src: *align(1) const real34_t, dst: *real_t) void {
     _ = decimal128ToNumber(src, dst);
@@ -710,14 +734,29 @@ pub export fn calcSigma(maxOffset: u16) callconv(.c) void {
 // First element of the matrix's last row. C indexes matrixElements[(rows-1)*cols]
 // with the subtraction evaluated at int width. matrixRows is a 12-bit field, so
 // 4096 rows wrap to 0 and the index becomes -cols: the row immediately before the
-// element block. initHistoMatrix carries a guard for that case; the two sites
-// below do not, so the row address is derived the way C derives it rather than
-// letting a narrow subtraction turn a bounded access into a wild one.
+// element block. The two sites below carry no guard for that case, so the row
+// address is derived the way C derives it rather than letting a narrow
+// subtraction turn a bounded access into a wild one.
 inline fn lastRowOfStats(elements: [*]real34_t, rows: u16, cols: u16) [*]real34_t {
     if (rows == 0) {
         return elements - @as(usize, cols);
     }
     return elements + (@as(usize, rows) - 1) * @as(usize, cols);
+}
+
+// Returns true when x and y are the row Sigma+ or Sigma- saved last, rounded as STATS stores it.
+fn isSavedSigmaRow(x: *const real_t, y: *const real_t) bool {
+    var stored: real34_t = undefined;
+    var value: real_t = undefined;
+
+    realToReal34(&SAVED_SIGMA_LASTX, &stored);
+    real34ToReal(&stored, &value);
+    if (!realCompareEqual(&value, x)) {
+        return false;
+    }
+    realToReal34(&SAVED_SIGMA_LASTY, &stored);
+    real34ToReal(&stored, &value);
+    return realCompareEqual(&value, y);
 }
 
 fn getLastRowStatsMatrix(x: *real_t, y: *real_t) void {
@@ -972,6 +1011,10 @@ pub export fn fnSigmaAddRem(plusMinusSelection: u16) callconv(.c) void {
     } else if (plusMinusSelection == SIGMA_MINUS) { // SIGMA-
         if (checkMinimumDataPoints(const_1())) {
             getLastRowStatsMatrix(&x, &y);
+            if (isSavedSigmaRow(&x, &y)) { // STATS keeps a long integer wider than 34 digits rounded, and the sums take it with all its digits
+                realCopy(&SAVED_SIGMA_LASTX, &x);
+                realCopy(&SAVED_SIGMA_LASTY, &y);
+            }
             if (statisticalSumsUpdate) {
                 subSigma(&x, &y);
             }
@@ -1054,10 +1097,10 @@ pub export fn fnRangeXY(unusedButMandatoryParameter: u16) callconv(.c) void {
         setSystemFlag(FLAG_ASLIFT);
         liftStack();
 
-        realSubtract(sigma(SUM_XMAX), sigma(SUM_XMIN), &t, &ctxtReal39);
+        realSubtract(sigma(SUM_XMAX), sigma(SUM_XMIN), &t, &ctxtReal34);
         frontier_register_value_conversions.convertRealToResultRegister(&t, REGISTER_X, amNone);
 
-        realSubtract(sigma(SUM_YMAX), sigma(SUM_YMIN), &t, &ctxtReal39);
+        realSubtract(sigma(SUM_YMAX), sigma(SUM_YMIN), &t, &ctxtReal34);
         frontier_register_value_conversions.convertRealToResultRegister(&t, REGISTER_Y, amNone);
 
         temporaryInformation = TI_RANGEX_RANGEY;
@@ -1066,70 +1109,90 @@ pub export fn fnRangeXY(unusedButMandatoryParameter: u16) callconv(.c) void {
 
 // ----------- Histogram Section -----------------
 
-fn isHistoMatrix(rows: *u16, mx: [*c]const u8) bool {
-    rows.* = 0;
-    const regHisto: calcRegister_t = findNamedVariable(mx);
-    if (regHisto == INVALID_VARIABLE) {
+// The bin limits are checked before any bin is laid out: both finite, with the
+// lower one not above the upper.
+fn histogramBoundsAreValid(lb: *const real_t, hb: *const real_t) bool {
+    if (realIsSpecial(lb) or realIsSpecial(hb) or realCompareGreaterThan(lb, hb)) {
+        frontier_error.displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
         return false;
-    } else {
-        if (getRegisterDataType(regHisto) != dtReal34Matrix) {
-            return false;
-        } else {
-            var histo: real34Matrix_t = undefined;
-            linkToRealMatrixRegister(regHisto, &histo);
-            rows.* = histo.header.matrixRows;
-            if (@as(u16, histo.header.matrixColumns) != 2) {
-                return false;
-            }
-        }
     }
     return true;
 }
 
-fn initHistoMatrix(s: *real_t) bool {
-    var rows: u16 = 0;
-    var cols: u16 = undefined;
-    var regHisto: calcRegister_t = findNamedVariable("HISTO");
-    if (!isHistoMatrix(&rows, "HISTO")) {
-        regHisto = allocateNamedMatrix("HISTO", 1, 2);
-        var histo: real34Matrix_t = undefined;
-        linkToRealMatrixRegister(regHisto, &histo);
-        // realMatrixInit(&histo, 1, 2);
-    } else {
-        if (appendRowAtMatrixRegister(regHisto)) {} else {
-            regHisto = INVALID_VARIABLE;
-        }
+// The bin count is a positive integer that fits the 12-bit matrixRows field.
+fn histogramBinCount(nb: *const real_t, count: *i32) bool {
+    var conversionError: bool = undefined;
+
+    if (realIsSpecial(nb) or !realIsAnInteger(nb) or !realCompareGreaterThan(nb, const_0())) {
+        frontier_error.displayCalcErrorMessage(ERROR_INVALID_INTEGER_INPUT, ERR_REGISTER_LINE);
+        return false;
     }
-    if (regHisto != INVALID_VARIABLE) {
-        var histo: real34Matrix_t = undefined;
-        linkToRealMatrixRegister(regHisto, &histo);
-        rows = histo.header.matrixRows;
-        cols = histo.header.matrixColumns;
-        if (rows == 0) {
-            // matrixRows is a 12-bit field: 4096 rows or more wrap to 0, which
-            // would make (rows - 1) index far out of bounds.
-            frontier_error.displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE);
-            if (comptime extra_info) {
-                abi.fmtBufZ(errorMessage[0..512], "HISTO row count wrapped the 12-bit matrixRows field", .{});
-                moreInfoOnError("In function initHistoMatrix:", errorMessage);
+    count.* = realToInt32C47(nb, &conversionError);
+    if (conversionError or count.* > 4095) { // matrixRows is a 12-bit field
+        frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
+        return false;
+    }
+    return true;
+}
+
+// The sign of value - (lb + edge * (hb - lb) / count), formed as the sum of the
+// three exact products count*value, (edge - count)*lb and -edge*hb, largest
+// first so that the rounding of the sum cannot cross zero.
+fn compareHistoValueToEdge(value: *const real_t, edge: i32, count: i32, lb: *const real_t, hb: *const real_t) i32 {
+    var factor: real_t = undefined;
+    var valueTerm: real_t = undefined;
+    var lowerTerm: real_t = undefined;
+    var upperTerm: real_t = undefined;
+    var difference: real_t = undefined;
+    var terms: [3]*const real_t = .{ &valueTerm, &lowerTerm, &upperTerm };
+    var context: realContext_t = ctxtReal39;
+    context.round = DEC_ROUND_HALF_EVEN;
+
+    int32ToReal(count, &factor);
+    realMultiply(value, &factor, &valueTerm, &context);
+    int32ToReal(edge - count, &factor);
+    realMultiply(lb, &factor, &lowerTerm, &context);
+    int32ToReal(-edge, &factor);
+    realMultiply(hb, &factor, &upperTerm, &context);
+
+    var first: usize = 0;
+    while (first < 2) : (first += 1) {
+        var candidate: usize = first + 1;
+        while (candidate < 3) : (candidate += 1) {
+            if (realCompareAbsGreaterThan(terms[candidate], terms[first])) {
+                const temporary = terms[first];
+                terms[first] = terms[candidate];
+                terms[candidate] = temporary;
             }
-            return false;
-        }
-        realToReal34(s, @ptrCast(&histo.matrixElements.?[@as(usize, rows - 1) * cols]));
-        real34SetZero(@ptrCast(&histo.matrixElements.?[@as(usize, rows - 1) * cols + 1]));
-    } else {
-        frontier_error.displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE); // Invalid input data type for this operation
-        if (comptime extra_info) {
-            abi.fmtBufZ(errorMessage[0..512], "additional matrix line not added; rows = {d}", .{@as(i32, rows)});
-            moreInfoOnError("In function initHistoMatrix:", errorMessage);
         }
     }
-    return regHisto != INVALID_VARIABLE;
+    realAdd(terms[0], terms[1], &difference, &context);
+    realAdd(&difference, terms[2], &difference, &context);
+    return if (realIsZero(&difference)) 0 else if (realIsNegative(&difference)) -1 else 1;
+}
+
+// The midpoint of bin `bin` of `count`: ((2 count - 2 bin - 1) lb + (2 bin + 1) hb) / (2 count).
+fn histogramMidpoint(bin: i32, count: i32, lb: *const real_t, hb: *const real_t, midpoint: *real_t) void {
+    var factor: real_t = undefined;
+    var denominator: real_t = undefined;
+
+    if (realCompareEqual(lb, hb)) {
+        realCopy(lb, midpoint);
+        return;
+    }
+    int32ToReal(2 * count - 2 * bin - 1, &factor);
+    realMultiply(&factor, lb, midpoint, &ctxtReal39);
+    int32ToReal(2 * bin + 1, &factor);
+    realFMA(&factor, hb, midpoint, midpoint, &ctxtReal39);
+    int32ToReal(2 * count, &denominator);
+    realDivide(midpoint, &denominator, midpoint, &ctxtReal39);
 }
 
 pub export fn fnSetLoBin(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     var x: real_t = undefined;
+    var hb: real_t = undefined;
+    var candidate: real34_t = undefined;
 
     if (histElementXorY == -1) {
         return;
@@ -1139,13 +1202,21 @@ pub export fn fnSetLoBin(unusedButMandatoryParameter: u16) callconv(.c) void {
         return;
     }
 
-    realToReal34(&x, &loBinR);
+    realToReal34(&x, &candidate);
+    real34ToReal(&candidate, &x);
+    real34ToReal(&hiBinR, &hb);
+    if (!histogramBoundsAreValid(&x, &hb)) {
+        return;
+    }
+    real34Copy(&candidate, &loBinR);
     convertStatsMatrixToHistoMatrix(if (histElementXorY == 1) ITM_Y else if (histElementXorY == 0) ITM_X else @bitCast(@as(i16, -1)));
 }
 
 pub export fn fnSetHiBin(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     var x: real_t = undefined;
+    var lb: real_t = undefined;
+    var candidate: real34_t = undefined;
 
     if (histElementXorY == -1) {
         return;
@@ -1155,13 +1226,20 @@ pub export fn fnSetHiBin(unusedButMandatoryParameter: u16) callconv(.c) void {
         return;
     }
 
-    realToReal34(&x, &hiBinR);
+    realToReal34(&x, &candidate);
+    real34ToReal(&candidate, &x);
+    real34ToReal(&loBinR, &lb);
+    if (!histogramBoundsAreValid(&lb, &x)) {
+        return;
+    }
+    real34Copy(&candidate, &hiBinR);
     convertStatsMatrixToHistoMatrix(if (histElementXorY == 1) ITM_Y else if (histElementXorY == 0) ITM_X else @bitCast(@as(i16, -1)));
 }
 
 pub export fn fnSetNBins(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     var x: real_t = undefined;
+    var count: i32 = undefined;
 
     if (histElementXorY == -1) {
         return;
@@ -1171,14 +1249,15 @@ pub export fn fnSetNBins(unusedButMandatoryParameter: u16) callconv(.c) void {
         return;
     }
 
+    if (!histogramBinCount(&x, &count)) {
+        return;
+    }
     realToReal34(&x, &nBins);
     convertStatsMatrixToHistoMatrix(if (histElementXorY == 1) ITM_Y else if (histElementXorY == 0) ITM_X else @bitCast(@as(i16, -1)));
 }
 
 pub export fn fnConvertStatsToHisto(statsVariableToHistogram: u16) callconv(.c) void {
     var rows: u16 = undefined;
-    var lb: real_t = undefined;
-    var hb: real_t = undefined;
     var nb: real_t = undefined;
     var nn: real_t = undefined;
 
@@ -1199,8 +1278,6 @@ pub export fn fnConvertStatsToHisto(statsVariableToHistogram: u16) callconv(.c) 
                 return;
             }
 
-            real34ToReal(&loBinR, &lb);
-            real34ToReal(&hiBinR, &hb);
             realCopy(sigma(0), &nn);
             realSquareRoot(&nn, &nb, &ctxtReal39);
             frontier_register_value_conversions.realToIntegralValue(&nb, &nb, DEC_ROUND_CEILING, &ctxtReal39); // number of bins are defaulted to square root of data points  nb = CEIL (sqrt(SIGMA_N))
@@ -1222,13 +1299,12 @@ pub export fn fnConvertStatsToHisto(statsVariableToHistogram: u16) callconv(.c) 
 // data points larger than loBinR (inclusive) and smaller than hiBinR (exclusive), except the right most bin right hand limit is inclusive)
 fn convertStatsMatrixToHistoMatrix(statsVariableToHistogram: u16) void {
     _ = statsVariableToHistogram;
-    var ii: real_t = undefined;
     var lb: real_t = undefined;
     var hb: real_t = undefined;
     var nb: real_t = undefined;
-    var bw: real_t = undefined;
     var i: u16 = 0;
     var j: u16 = 0;
+    var NN: i32 = undefined;
 
     if (!checkMinimumDataPoints(const_3())) {
         return;
@@ -1242,66 +1318,51 @@ fn convertStatsMatrixToHistoMatrix(statsVariableToHistogram: u16) void {
         return;
     }
 
+    real34ToReal(&loBinR, &lb);
+    real34ToReal(&hiBinR, &hb);
+    real34ToReal(&nBins, &nb);
+    if (!histogramBoundsAreValid(&lb, &hb) or !histogramBinCount(&nb, &NN)) {
+        return;
+    }
+
     const regHisto: calcRegister_t = fnClHisto(false); // clear and connect to HISTO matrix
     const regStats: calcRegister_t = findNamedVariable(&statMx); // connect to STATS only after fnClHisto: allocating "HISTO" can shift the STATS register index
 
     if (isStatsMatrix(&i, &statMx) and regStats != INVALID_VARIABLE and regHisto != INVALID_VARIABLE) {
-        real34ToReal(&loBinR, &lb);
-        real34ToReal(&hiBinR, &hb);
-        real34ToReal(&nBins, &nb);
-        const NN: i32 = real34ToInt32(&nBins);
-        realSubtract(&hb, &lb, &bw, &ctxtReal39);
-        realDivide(&bw, &nb, &bw, &ctxtReal39);
-
         var stats: real34Matrix_t = undefined;
         var histo: real34Matrix_t = undefined;
         linkToRealMatrixRegister(regStats, &stats);
         const rows: u16 = stats.header.matrixRows;
         const cols: u16 = stats.header.matrixColumns;
         if (cols == 2) {
-            var histoBuilt = true;
+            const histoBuilt = redimMatrixRegister(regHisto, @intCast(NN), 2, ITM_M_DIM);
 
-            i = 0;
-            while (@as(i32, i) < NN) : (i += 1) {
-                int32ToReal(i, &ii);
-                realAdd(&ii, const_1on2(), &ii, &ctxtReal39);
-                realMultiply(&ii, &bw, &ii, &ctxtReal39);
-                realAdd(&ii, &lb, &ii, &ctxtReal39); // bin midpoint
-                // Set up all x-mid-points of the bins in HISTO, with 0 in y. An
-                // append that fails on a full pool stops the loop before the
-                // populate pass writes past HISTO.
-                if (!initHistoMatrix(&ii)) {
-                    histoBuilt = false;
-                    break;
-                }
+            if (histoBuilt) {
                 linkToRealMatrixRegister(regHisto, &histo);
-            }
-
-            if (histoBuilt and isStatsMatrix(&i, &statMx) and isHistoMatrix(&i, "HISTO")) {
-                linkToRealMatrixRegister(regStats, &stats); // every initHistoMatrix append above reallocates the pool and can move the STATS data
+                i = 0;
+                while (@as(i32, i) < NN) : (i += 1) {
+                    var midpoint: real_t = undefined;
+                    histogramMidpoint(i, NN, &lb, &hb, &midpoint);
+                    realToReal34(&midpoint, @ptrCast(&histo.matrixElements.?[@as(usize, i) * @as(u16, histo.header.matrixColumns)]));
+                    real34SetZero(@ptrCast(&histo.matrixElements.?[@as(usize, i) * @as(u16, histo.header.matrixColumns) + 1]));
+                }
+                linkToRealMatrixRegister(regStats, &stats); // redimMatrixRegister can move the STATS data
                 i = 0;
                 while (i < rows) : (i += 1) {
-                    j = 0;
-                    while (@as(i32, j) < NN) : (j += 1) {
-                        var t: real_t = undefined;
-                        var tl: real_t = undefined;
-                        var th: real_t = undefined;
-                        real34ToReal(@ptrCast(&stats.matrixElements.?[@as(usize, i) * cols + @as(usize, @intCast(histElementXorY))]), &t); // from X or Y, depending
-                        // bin edges from loBin + j*bw, last high edge hiBin exactly: points equal to the limits fall inside
-                        int32ToReal(j, &tl);
-                        realMultiply(&tl, &bw, &tl, &ctxtReal39);
-                        realAdd(&tl, &lb, &tl, &ctxtReal39); // get the bin x low, exact at j == 0
-                        if (@as(i32, j) == NN - 1) {
-                            realCopy(&hb, &th); // get the last bin x hi: hiBin itself
-                        } else {
-                            realAdd(&tl, &bw, &th, &ctxtReal39); // get the bin x hi
+                    var t: real_t = undefined;
+                    real34ToReal(@ptrCast(&stats.matrixElements.?[@as(usize, i) * cols + @as(usize, @intCast(histElementXorY))]), &t); // from X or Y, depending
+                    if (realCompareGreaterEqual(&t, &lb) and realCompareLessEqual(&t, &hb)) {
+                        j = @intCast(NN - 1);
+                        if (!realCompareEqual(&lb, &hb)) {
+                            var edge: i32 = 1;
+                            while (edge < NN) : (edge += 1) {
+                                if (compareHistoValueToEdge(&t, edge, NN, &lb, &hb) < 0) {
+                                    j = @intCast(edge - 1);
+                                    break;
+                                }
+                            }
                         }
-                        if ((@as(i32, j) < NN - 1 and realCompareLessThan(&t, &th) and realCompareGreaterEqual(&t, &tl)) or
-                            (@as(i32, j) == NN - 1 and realCompareLessEqual(&t, &th) and realCompareGreaterEqual(&t, &tl)))
-                        {
-                            real34Add(@ptrCast(&histo.matrixElements.?[@as(usize, j) * @as(u16, histo.header.matrixColumns) + 1]), const34_1(), @ptrCast(&histo.matrixElements.?[@as(usize, j) * @as(u16, histo.header.matrixColumns) + 1]));
-                            break;
-                        }
+                        real34Add(@ptrCast(&histo.matrixElements.?[@as(usize, j) * @as(u16, histo.header.matrixColumns) + 1]), const34_1(), @ptrCast(&histo.matrixElements.?[@as(usize, j) * @as(u16, histo.header.matrixColumns) + 1]));
                     }
                 }
             }

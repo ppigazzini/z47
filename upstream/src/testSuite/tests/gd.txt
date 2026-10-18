@@ -40,11 +40,83 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.0" RX=Real:"0.0"
 In:  AM=DEG FL_ASLIFT=1 FL_CPXRES=0 RX=Real:"113.123"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"113.123" RX=Real:"1.5707963267948966192313216916397514420985846996874"
 
+; Stable evaluation near zero and a digit-34 finite check.
+Func: fnGd
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Real:"0.2955986759846041376789667036885340" RX=Real:"0.3"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnGd
+In:  RMODE=1 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Real:"0.2955986759846041376789667036885340" RX=Real:"0.3"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnGd
+In:  RMODE=2 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Real:"0.2955986759846041376789667036885340" RX=Real:"0.3"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnGd
+In:  RMODE=3 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Real:"0.2955986759846041376789667036885341" RX=Real:"0.3"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnGd
+In:  RMODE=4 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Real:"0.2955986759846041376789667036885340" RX=Real:"0.3"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnGd
+In:  RMODE=5 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Real:"0.2955986759846041376789667036885341" RX=Real:"0.3"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnGd
+In:  RMODE=6 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Real:"0.2955986759846041376789667036885340" RX=Real:"0.3"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnGd
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e140" RY=Real:"1e-100" RX=Real:"1e-100"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnGd
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-0"
+Out: EC=0 RX=Real:"-0"
+
 In:  AM=DEG FL_ASLIFT=1 FL_CPXRES=0 RX=Real:"inf"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"1.5707963267948966192313216916397514420985846996875529104874722961"
 
 In:  AM=DEG FL_ASLIFT=1 FL_CPXRES=0 RX=Real:"-inf"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"-1.5707963267948966192313216916397514420985846996875529104874722961"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"NaN"
+Out: EC=0 FL_ASLIFT=1 FL_CPXRES=0 RL=Real:"NaN" RX=Real:"NaN"
 
 
 ;=======================================
@@ -62,6 +134,74 @@ Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"0.0 i +0.0" RX=Cplx:"0.0 i +0.0"
 In:  AM=DEG FL_ASLIFT=1 FL_CPXRES=1 RX=Cplx:"12.12 i +2.12"
 Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"12.12 i +2.12" RX=Cplx:"-4.7123832910932760648398455880162103272549515895136 i +0.000009296074638373011846298231169602567"
 
+; Infinite real components use the phase-dependent limiting branch.
+In:  AM=RAD RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=1 RX=Cplx:"inf i 1"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"inf i 1" RX=Cplx:"1.570796326794896619231321691639751 i 0"
+
+In:  AM=RAD RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=1 RX=Cplx:"inf i 2"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"inf i 2" RX=Cplx:"-4.712388980384689857693965074919254 i 0"
+
+In:  AM=RAD RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=1 RX=Cplx:"-inf i 2"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"-inf i 2" RX=Cplx:"-1.570796326794896619231321691639751 i 0"
+
+; An infinite or NaN imaginary component leaves that branch unknown for a real component of +inf, which gives NaN; for -inf the limit is -pi/2 on every branch.
+In:  AM=RAD RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=1 RX=Cplx:"inf i inf"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"inf i inf" RX=Cplx:"NaN i NaN"
+
+In:  AM=RAD RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=1 RX=Cplx:"inf i NaN"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"inf i NaN" RX=Cplx:"NaN i NaN"
+
+In:  AM=RAD RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=1 RX=Cplx:"-inf i inf"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"-inf i inf" RX=Cplx:"-1.570796326794896619231321691639751 i 0"
+
+; Both tiny rectangular components must survive the complex formula.
+Func: fnGd
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=1 RZ=Real:"1e140" RY=Cplx:"1e-100 i 2e-100" RX=Cplx:"1e-100 i 2e-100"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+; Independently evaluated ordinary complex value through digit 34.
+Func: fnGd
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=1 RZ=Real:"1e40" RY=Cplx:"0.3193056964542505682425871220910794 i 0.3913557917869761724685074771380657" RX=Cplx:"0.3 i 0.4"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+; Near the repeated zero at 2*pi*i, retain a much smaller real component as
+; well as the 2.316...e-34 imaginary residual of the Real34 phase.
+Func: fnGd
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=1 RZ=Real:"1e140" RY=Cplx:"1e-100 i 2.316056612012497883580501108153844e-34" RX=Cplx:"1e-100 i 6.283185307179586476925286766559006"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+Func: fnGd
+
+; The hyperbolic form avoids exponential overflow when a finite real
+; component is large and the phase is on a trigonometric axis.
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=1 RZ=Real:"1e40" RY=Cplx:"1.570796326794896619231321691639751 i 0" RX=Cplx:"3e6 i 1.570796326794896619231321691639751"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+Func: fnGd
+
+; Matrix elements use the corresponding scalar and complex routes.
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RX=ReMa:"M1,3[1e-100,-0,0.3]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,3[1e-100,-0,0.3]" RX=ReMa:"M1,3[1e-100,-0,0.2955986759846041376789667036885340]"
+
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=1 RX=CxMa:"M1,2[1e-100i2e-100,0.3i0.4]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M1,2[1e-100i2e-100,0.3i0.4]" RX=CxMa:"M1,2[1e-100i2e-100,0.3193056964542505682425871220910794i0.3913557917869761724685074771380657]"
+
 ;=======================================
 ; Short Int --> Real
 ;=======================================
@@ -73,4 +213,3 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"5#10" RX=Real:"1.55732063672605102218
 ;=======================================
 In:  AM=DEG FL_ASLIFT=1 FL_CPXRES=0 RX=Stri:"Hello"
 Out: EC=24 FL_CPXRES=0 FL_ASLIFT=1 RX=Stri:"Hello"
-

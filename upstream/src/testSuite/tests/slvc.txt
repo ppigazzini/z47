@@ -85,11 +85,64 @@ Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1                      RL=LonI:"-2" RZ=Cplx:"1 i
 ; 1*x^3 + -1*x^2 + 0*x + 0 = 0
 ;-----------
 In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RL=Real:"3.5" RT=LonI:"1" RZ=LonI:"-1"    RY=LonI:"0"   RX=LonI:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1                      RL=LonI:"0" RZ=Real:"0"     RY=Real:"0"   RX=Real:"1"
 
-;ORIGINAL
-;Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1                      RL=LonI:"0" RZ=Real:"0"     RY=Real:"0"   RX=Real:"1"
-;SLVC 159 EXTREME
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1                      RL=LonI:"0" RZ=Real:"1"     RY=Real:"-1E-159"   RX=Real:"-1E-159"
+; An exact zero factor is removed before the quadratic solve: x^3 - x = 0
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RL=Real:"3.5" RT=LonI:"1" RZ=LonI:"0" RY=LonI:"-1" RX=LonI:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"0" RZ=Real:"0" RY=Real:"-1" RX=Real:"1"
+
+; Exact multiple roots must not acquire a numerical imaginary part: (7x - 1)^3 = 0
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RL=Real:"3.5" RT=LonI:"343" RZ=LonI:"-147" RY=LonI:"21" RX=LonI:"-1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"-1" RZ=Real:"0.1428571428571428571428571428571429" RY=Real:"0.1428571428571428571428571428571429" RX=Real:"0.1428571428571428571428571428571429"
+
+; x^3 - x^2 - 25x + 25 = (x - 1)(x - 5)(x + 5)
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RL=Real:"3.5" RT=LonI:"1" RZ=LonI:"-1" RY=LonI:"-25" RX=LonI:"25"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"25" RZ=Real:"-5" RY=Real:"5" RX=Real:"1"
+
+; 7x^3 + 10x^2 - 104x - 192 = (x + 2)(7x + 24)(x - 4)
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RL=Real:"3.5" RT=LonI:"7" RZ=LonI:"10" RY=LonI:"-104" RX=LonI:"-192"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"-192" RZ=Real:"4" RY=Real:"-3.428571428571428571428571428571429" RX=Real:"-2"
+
+; A small absolute imaginary part is still significant relative to its roots: x^3 + 1e-600 = 0
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RL=Real:"3.5" RT=LonI:"1" RZ=LonI:"0" RY=LonI:"0" RX=Real:"1e-600"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Real:"1e-600" RZ=Cplx:"5e-201 i -8.660254037844386467637231707529362e-201" RY=Cplx:"5e-201 i 8.660254037844386467637231707529362e-201" RX=Real:"-1e-200"
+
+; A discriminant of -1.35E-151 is 150 orders below its terms but far above their rounding, so the pair keeps its imaginary part:
+; x^3 - 1.5x^2 + 1e-152x + 0.5 = 0 has the roots -0.5 and 1 +- 8.2E-77 i
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RL=Real:"3.5" RT=LonI:"1" RZ=Real:"-1.5" RY=Real:"1e-152" RX=Real:"0.5"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Real:"0.5" RZ=Cplx:"1 i -8.164965809277260327324280249019638e-77" RY=Cplx:"1 i 8.164965809277260327324280249019638e-77" RX=Real:"-0.5"
+
+; Next to a double root the deflated quadratic cancels the pair to about 8 digits at p159, while the cubic's discriminant has exact terms and gives it in
+; full: 2x^3 + 2e-150x^2 - 6x + 4 = 0 has the roots -2 and 1 +- 5.8E-76 i
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RL=Real:"3.5" RT=LonI:"2" RZ=Real:"2e-150" RY=LonI:"-6" RX=LonI:"4"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=LonI:"4" RZ=Cplx:"1 i -5.773502691896257645091487805019575e-76" RY=Cplx:"1 i 5.773502691896257645091487805019575e-76" RX=Real:"-2"
+
+; Both Cardano cube roots set the pair, and taken apart they can differ by a cube root of unity: x^3 - x^2 + 10x + 1e-8 = 0 has the roots
+; -9.999999998999999999200000000450000E-10 and 0.5000000005 +- 3.1225 i
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RL=Real:"3.5" RT=LonI:"1" RZ=LonI:"-1" RY=LonI:"10" RX=Real:"1e-8"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Real:"1e-8" RZ=Cplx:"0.5000000004999999999499999999600000 i -3.122498999279263179937053372317421" RY=Cplx:"0.5000000004999999999499999999600000 i 3.122498999279263179937053372317421" RX=Real:"-9.999999998999999999200000000450000e-10"
+
+; A discriminant far below its terms has a sign where its rounding is below it: x^3 - 1.5x^2 + 1e-160x + 0.5 = 0 has the roots -0.5 and 1 +- 8.2E-81 i
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RL=Real:"3.5" RT=LonI:"1" RZ=Real:"-1.5" RY=Real:"1e-160" RX=Real:"0.5"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Real:"0.5" RZ=Cplx:"1 i -8.164965809277260327324280249019638e-81" RY=Cplx:"1 i 8.164965809277260327324280249019638e-81" RX=Real:"-0.5"
+
+; and none where it is not: a (x - p)^2 (x - q) with a of 30 digits has terms wider than 159 digits, and its double root 354000951284551 stays real
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RL=Real:"3.5" RT=LonI:"696902462168659341791752496068" RZ=LonI:"-619499453273888072502384095255437809714968488" RY=LonI:"176606296597948837487595400580709923378033396083733034763172" RX=LonI:"-15801327757085394399343375651944928122833826923424130775351223285976800752"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"-15801327757085394399343375651944928122833826923424130775351223285976800752" RZ=Real:"354000951284551" RY=Real:"354000951284551" RX=Real:"180930892051964"
+
+; The real part of a pair is (ad - bc) / (2 (a^2 x1^2 + ac)): x^3 + x + 1e-300 = 0 has the roots -1e-300 and 5e-301 +- i
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RL=Real:"3.5" RT=LonI:"1" RZ=LonI:"0" RY=LonI:"1" RX=Real:"1e-300"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Real:"1e-300" RZ=Cplx:"5e-301 i -1" RY=Cplx:"5e-301 i 1" RX=Real:"-1e-300"
+
+; A root rounded to 34 digits is that root where the cubic takes it to 0 exactly: x^3 + (7 + 16i)x^2 + (-130 + 104i)x - 816 + 48i = 0 has the roots -6,
+; 8 - 8i and -9 - 8i
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RL=Real:"3.5" RT=LonI:"1" RZ=Cplx:"7 i 16" RY=Cplx:"-130 i 104" RX=Cplx:"-816 i 48"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"-816 i 48" RZ=Cplx:"-9 i -8" RY=Cplx:"8 i -8" RX=Real:"-6"
+
+; and a root on the imaginary axis has a real part of 0. The roots 3E130 i, (-2 + 4i)E130 and (-5 - 7i)E130 put a real part 1E-159 of the modulus above
+; the absolute floor of a comparison with 0.
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RL=Real:"3.5" RT=LonI:"1" RZ=Real:"7e130" RY=Cplx:"47e260 i -27e260" RX=Cplx:"-18e390 i -114e390"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"-18e390 i -114e390" RZ=Cplx:"-5e130 i -7e130" RY=Cplx:"-2e130 i 4e130" RX=Cplx:"0 i 3e130"
 
 
 ;Cubic equation for stress testing: x^3 - 10000000001.0000000001·x^2 + 10000000001.0000000001·x - 1 = 0
@@ -100,6 +153,14 @@ In:  FL_ASLIFT=0 FL_CPXRES=1 FL_SPCRES=0 RL=Real:"3.5" RT=LonI:"1"  RZ=Real:"-10
 Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1                      RL=LonI:"-1" RZ=Real:"1E10" RY=Real:"1." RX=Real:"1E-10"
 ;SLVC not 159: Z = 1E+10, Y = 1.000000000000000000000000000108583, X = 1.000000000000000001085832068539056E-10
 ;Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1                      RL=LonI:"-1" RZ=Real:"1E10" RY=Real:"1.000000000000000000000000000108583" RX=Real:"1.000000000000000001085832068539056E-10"
+
+; Cardano reconstruction must not lose roots separated by the full Real34 exponent range
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RL=Real:"3.5" RT=LonI:"1" RZ=Real:"-1e6000" RY=Real:"1e6000" RX=LonI:"-1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"-1" RZ=Real:"1e6000" RY=Real:"1" RX=Real:"1e-6000"
+
+; The same scale range with a genuine conjugate pair: (x - 1e6000)(x^2 + 1e-6000) = 0
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RL=Real:"3.5" RT=LonI:"1" RZ=Real:"-1e6000" RY=Real:"1e-6000" RX=LonI:"-1"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=LonI:"-1" RZ=Cplx:"0 i -1e-3000" RY=Cplx:"0 i 1e-3000" RX=Real:"1e6000"
 
 
 
@@ -135,8 +196,19 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,3[1,2,-3]" RX=ReMa:"M1,2[-3,1]"
 In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,2[2,-6]"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,2[2,-6]" RX=ReMa:"M1,1[3]"
 
+; the real linear route keeps five work digits for a non-terminating quotient
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,2[7,-1]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,2[7,-1]" RX=ReMa:"M1,1[0.1428571428571428571428571428571429]"
+
+; directed Real34 conversion remains outside the p39 working division
+In:  RMODE=4 FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,2[7,-1]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,2[7,-1]" RX=ReMa:"M1,1[0.1428571428571428571428571428571428]"
+
+In:  RMODE=5 FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,2[7,-1]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,2[7,-1]" RX=ReMa:"M1,1[0.1428571428571428571428571428571429]"
+
 ; i*x + 1 = 0: the complex linear root
-In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=CxMa:"M2,1[0i1,1i0]"
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=CxMa:"M2,1[0i1,1i0]"
 Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M2,1[0i1,1i0]" RX=CxMa:"M1,1[0i1]"
 
 ;=======================================================================================================================
@@ -146,6 +218,10 @@ Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M2,1[0i1,1i0]" RX=CxMa:"M1,1[0i1]"
 ; the 159-digit stress cubic: x^3 - 10000000001.0000000001x^2 + 10000000001.0000000001x - 1 = 0, roots as the stack form orders X, Y, Z
 In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,4[1,-10000000001.0000000001,10000000001.0000000001,-1]"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,4[1,-10000000001.0000000001,10000000001.0000000001,-1]" RX=ReMa:"M1,3[1E-10,1,1E10]"
+
+; the vector route shares the multiple-root classification
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,4[343,-147,21,-1]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,4[343,-147,21,-1]" RX=ReMa:"M1,3[0.1428571428571428571428571428571429,0.1428571428571428571428571428571429,0.1428571428571428571428571428571429]"
 
 ; the 34-digit stress quadratic redirects to the quadratic path: x^2 - (1e33 + 1)x + 1 = 0
 In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,3[1,-1000000000000000000000000000000001,1]"

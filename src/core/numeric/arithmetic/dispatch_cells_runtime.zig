@@ -12,6 +12,7 @@ pub const realContext_t = runtime.realContext_t;
 pub const mpz_struct = runtime.mpz_struct;
 pub const real34Matrix_t = runtime.real34Matrix_t;
 pub const complex34Matrix_t = runtime.complex34Matrix_t;
+pub const cplx_t = runtime.cplx_t;
 pub const VoidCallback = runtime.VoidCallback;
 
 // 159-digit decNumber work area: REAL_SIZE_IN_BYTES(159) == 116 bytes
@@ -63,10 +64,6 @@ pub const displayBugScreen = abi.host.showBugScreen; // routed through the host-
 // debug.c
 pub extern fn getDataTypeName(dt: u16, article: bool, pad_with_blanks: bool) [*:0]const u8;
 
-// conversionAngles.c
-pub extern fn getInfiniteComplexAngle(x: *real_t, y: *real_t) u32;
-pub extern fn setInfiniteComplexAngle(angle: u32, x: *real_t, y: *real_t) void;
-
 // registerValueConversions.c
 pub extern fn convertShortIntegerRegisterToReal34Register(source: calcRegister_t, destination: calcRegister_t) void;
 pub extern fn convertShortIntegerRegisterToLongIntegerRegister(source: calcRegister_t, destination: calcRegister_t) void;
@@ -87,7 +84,7 @@ pub extern fn multiplyRealMatrix(matrix: *const real34Matrix_t, x: *align(1) con
 pub extern fn _multiplyRealMatrix(matrix: *const real34Matrix_t, x: *const real_t, res: *real34Matrix_t, real_context: *realContext_t) void;
 pub extern fn multiplyRealMatrices(y: *const real34Matrix_t, x: *const real34Matrix_t, res: *real34Matrix_t) void;
 pub extern fn multiplyComplexMatrix(matrix: *const complex34Matrix_t, xr: *align(1) const real34_t, xi: *align(1) const real34_t, res: *complex34Matrix_t) void;
-pub extern fn _multiplyComplexMatrix(matrix: *const complex34Matrix_t, xr: *const real_t, xi: *const real_t, res: *complex34Matrix_t, real_context: *realContext_t) void;
+pub extern fn _multiplyComplexMatrix(matrix: *const complex34Matrix_t, x: *const cplx_t, res: *complex34Matrix_t, real_context: *realContext_t) void;
 pub extern fn multiplyComplexMatrices(y: *const complex34Matrix_t, x: *const complex34Matrix_t, res: *complex34Matrix_t) void;
 pub extern fn divideRealMatrix(matrix: *const real34Matrix_t, x: *align(1) const real34_t, res: *real34Matrix_t) void;
 pub extern fn _divideRealMatrix(matrix: *const real34Matrix_t, x: *const real_t, res: *real34Matrix_t, real_context: *realContext_t) void;
@@ -95,9 +92,9 @@ pub extern fn divideByRealMatrix(y: *align(1) const real34_t, matrix: *const rea
 pub extern fn _divideByRealMatrix(y: *const real_t, matrix: *const real34Matrix_t, res: *real34Matrix_t, real_context: *realContext_t) void;
 pub extern fn divideRealMatrices(y: *const real34Matrix_t, x: *const real34Matrix_t, res: *real34Matrix_t) void;
 pub extern fn divideComplexMatrix(matrix: *const complex34Matrix_t, xr: *align(1) const real34_t, xi: *align(1) const real34_t, res: *complex34Matrix_t) void;
-pub extern fn _divideComplexMatrix(matrix: *const complex34Matrix_t, xr: *const real_t, xi: *const real_t, res: *complex34Matrix_t, real_context: *realContext_t) void;
+pub extern fn _divideComplexMatrix(matrix: *const complex34Matrix_t, x: *const cplx_t, res: *complex34Matrix_t, real_context: *realContext_t) void;
 pub extern fn divideByComplexMatrix(yr: *align(1) const real34_t, yi: *align(1) const real34_t, matrix: *const complex34Matrix_t, res: *complex34Matrix_t) void;
-pub extern fn _divideByComplexMatrix(yr: *const real_t, yi: *const real_t, matrix: *const complex34Matrix_t, res: *complex34Matrix_t, real_context: *realContext_t) void;
+pub extern fn _divideByComplexMatrix(y: *const cplx_t, matrix: *const complex34Matrix_t, res: *complex34Matrix_t, real_context: *realContext_t) void;
 pub extern fn divideComplexMatrices(y: *const complex34Matrix_t, x: *const complex34Matrix_t, res: *complex34Matrix_t) void;
 pub extern fn elementwiseRema(f: VoidCallback) void;
 pub extern fn elementwiseCxma(f: VoidCallback) void;

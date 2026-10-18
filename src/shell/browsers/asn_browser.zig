@@ -158,11 +158,12 @@ inline fn bitblt24(x: u32, dx: u32, y: u32, val: u32, blt_op: c_int, fill: c_int
     }
 }
 // static inline setBlackPixel / setWhitePixel (hal/lcd.h).
+// hal/lcd.h: on the DMCP firmware the pixel routines are written once, in screen.c.
 fn setBlackPixel(x: u32, y: u32) callconv(.c) void {
-    bitblt24(x, 1, y, 1, BLT_OR, BLT_NONE);
+    if (comptime dmcp_build) frontier_screen.setBlackPixel(x, y) else bitblt24(x, 1, y, 1, BLT_OR, BLT_NONE);
 }
 fn setWhitePixel(x: u32, y: u32) callconv(.c) void {
-    bitblt24(x, 1, y, 1, BLT_ANDN, BLT_NONE);
+    if (comptime dmcp_build) frontier_screen.setWhitePixel(x, y) else bitblt24(x, 1, y, 1, BLT_ANDN, BLT_NONE);
 }
 
 // ---------------------------------------------------------------------------

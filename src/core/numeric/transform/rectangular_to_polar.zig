@@ -24,9 +24,17 @@ fn setSignedAngle(destination: *runtime.real_t, angle: *const runtime.real_t, ne
     }
 }
 
+// The angle of a finite nonzero imaginary part beside an infinite real part is
+// 0 or pi with the sign of that part, so -0 and -pi name the lower half-plane.
+fn setHalfPlaneAngle(destination: *runtime.real_t, angle: *const runtime.real_t, imag: *const runtime.real_t) void {
+    copyReal(destination, angle);
+    if (!runtime.realIsZero(imag) and runtime.realIsNegative(imag)) {
+        destination.bits |= 0x80;
+    }
+}
+
 pub fn rectangularToPolarReal(
-    real: *const runtime.real_t,
-    imag: *const runtime.real_t,
+    z: *const runtime.cplx_t,
     magnitude: *runtime.real_t,
     theta: *runtime.real_t,
     real_context: *runtime.realContext_t,
@@ -35,12 +43,12 @@ pub fn rectangularToPolarReal(
     var imag_value: runtime.real_t = undefined;
 
     if (build_options.use_fake_wp34s_model) {
-        runtime.realRectangularToPolar(real, imag, magnitude, theta, real_context);
+        runtime.realRectangularToPolar(z, magnitude, theta, real_context);
         return;
     }
 
-    copyReal(&real_value, real);
-    copyReal(&imag_value, imag);
+    copyReal(&real_value, &z.Real);
+    copyReal(&imag_value, &z.Imag);
 
     if (runtime.realIsNaN(&real_value) or runtime.realIsNaN(&imag_value)) {
         runtime.realSetNaN(magnitude);
@@ -54,13 +62,13 @@ pub fn rectangularToPolarReal(
             if (runtime.realIsInfinite(&imag_value)) {
                 setSignedAngle(theta, runtime.z47_math_wrappers_const_piOn4(), runtime.realIsNegative(&imag_value));
             } else {
-                runtime.realSetZero(theta);
+                setHalfPlaneAngle(theta, runtime.z47_math_wrappers_const_0(), &imag_value);
             }
         } else {
             if (runtime.realIsInfinite(&imag_value)) {
                 setSignedAngle(theta, runtime.z47_math_wrappers_const_3piOn4(), runtime.realIsNegative(&imag_value));
             } else {
-                copyReal(theta, runtime.z47_math_wrappers_const_pi());
+                setHalfPlaneAngle(theta, runtime.z47_math_wrappers_const_pi(), &imag_value);
             }
         }
         return;

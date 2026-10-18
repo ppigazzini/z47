@@ -15,8 +15,8 @@ const runtime = @import("../command_wrappers/runtime.zig");
 const math_comparison_reals = @import("../compare/comparison_reals.zig");
 const math_runtime_helpers = @import("../command_wrappers/helpers.zig");
 const math_transform_complex_helpers = @import("transform_complex_helpers.zig");
-const math_wp34s = @import("../special/wp34s.zig");
 const real_t = runtime.real_t;
+const cplx_t = runtime.cplx_t;
 const real34_t = runtime.real34_t;
 const complex34_t = runtime.complex34_t;
 const real34Matrix_t = runtime.real34Matrix_t;
@@ -33,7 +33,6 @@ const ERROR_RAM_FULL = runtime.ERROR_RAM_FULL;
 const ERROR_MATRIX_MISMATCH = runtime.ERROR_MATRIX_MISMATCH;
 const ERROR_INVALID_DATA_TYPE_FOR_OP = runtime.ERROR_INVALID_DATA_TYPE_FOR_OP;
 const amNone = runtime.amNone;
-const amRadian = runtime.amRadian;
 const dtReal34 = runtime.dtReal34;
 const dtLongInteger = runtime.dtLongInteger;
 const dtComplex34 = runtime.dtComplex34;
@@ -44,16 +43,6 @@ const FLAG_POLAR: i32 = 0x8006;
 const FLAG_ASLIFT: i32 = 0xc023;
 const NOPARAM: u16 = 9876;
 
-const realAdd = runtime.realAdd;
-const realSetPositiveSign = runtime.realSetPositiveSign;
-
-// Runtime const accessors / blob offsets.
-inline fn const_0() *const real_t {
-    return runtime.z47_math_wrappers_const_0();
-}
-inline fn const39_pi() *align(1) const real_t {
-    return consts.c1848();
-}
 inline fn const34_0() *align(1) const real34_t {
     return consts.q16200();
 }
@@ -79,18 +68,10 @@ inline fn real34SetZero(destination: *align(1) real34_t) void {
     _ = decQuadZero(destination);
 }
 
-extern fn convertAngleFromTo(angle: *real_t, from_angular_mode: angularMode_t, to_angular_mode: angularMode_t, real_context: *runtime.realContext_t) void;
-extern fn convertAngle34FromTo(angle: *align(1) real34_t, from_mode: angularMode_t, to_mode: angularMode_t) void;
-
 // real34ToReal with a register-resident (unaligned) real34 source.
 extern fn decimal128ToNumber(source: *align(1) const real34_t, destination: *real_t) *real_t;
 inline fn real34ToReal(source: *align(1) const real34_t, destination: *real_t) void {
     _ = decimal128ToNumber(source, destination);
-}
-// realAdd with a blob-aligned operand (const39_pi).
-extern fn decNumberAdd(result: *real_t, lhs: *align(1) const real_t, rhs: *align(1) const real_t, ctxt: *runtime.realContext_t) *real_t;
-inline fn realAddB(op1: *align(1) const real_t, op2: *align(1) const real_t, res: *real_t, ctxt: *runtime.realContext_t) void {
-    _ = decNumberAdd(res, op1, op2, ctxt);
 }
 extern fn convertRealToReal34ResultRegister(real: *const real_t, dest: calcRegister_t) void;
 
@@ -138,25 +119,28 @@ pub export fn fnReToCx(unusedButMandatoryParameter: u16) callconv(.c) void {
     var tempAngle: angularMode_t = runtime.currentAngularMode;
     const dataTypeX = runtime.getRegisterDataType(REGISTER_X);
     const dataTypeY = runtime.getRegisterDataType(REGISTER_Y);
-    var xIsAReal: bool = undefined;
+    var reducedLongAngle: real_t = undefined;
+    var longAngleWasReduced = false;
 
     if ((dataTypeX == dtReal34 or dataTypeX == dtLongInteger) and (dataTypeY == dtReal34 or dataTypeY == dtLongInteger)) {
+        if (runtime.getSystemFlag(FLAG_POLAR)) { // polar mode
+            if (dataTypeX == dtReal34 and runtime.getRegisterAngularMode(REGISTER_X) != amNone) {
+                tempAngle = runtime.getRegisterAngularMode(REGISTER_X);
+            } else if (dataTypeX == dtLongInteger) {
+                // a long integer angle is reduced by the turn of the current unit before the stack moves
+                if (!runtime.getRegisterAsRealAngle(REGISTER_X, &reducedLongAngle, &tempAngle, true) or runtime.lastErrorCode != ERROR_NONE) {
+                    return;
+                }
+                longAngleWasReduced = true;
+            }
+        }
+
         if (!runtime.saveLastX()) {
             return;
         }
 
         runtime.fnSetFlag(FLAG_CPXRES);
         runtime.fnRefreshState(); //drJM
-
-        xIsAReal = true;
-        if (runtime.getSystemFlag(FLAG_POLAR)) { // polar mode
-            if (dataTypeX == dtReal34 and runtime.getRegisterAngularMode(REGISTER_X) != amNone) {
-                tempAngle = runtime.getRegisterAngularMode(REGISTER_X);
-                convertAngle34FromTo(REGISTER_REAL34_DATA(REGISTER_X), runtime.getRegisterAngularMode(REGISTER_X), amRadian);
-                runtime.setRegisterAngularMode(REGISTER_X, amNone);
-                xIsAReal = false;
-            }
-        }
 
         if (dataTypeX == dtLongInteger) {
             runtime.convertLongIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
@@ -177,22 +161,17 @@ pub export fn fnReToCx(unusedButMandatoryParameter: u16) callconv(.c) void {
                 real34SetZero(REGISTER_REAL34_DATA(REGISTER_X));
                 real34SetZero(REGISTER_IMAG34_DATA(REGISTER_X));
             } else {
-                var magnitude: real_t = undefined;
-                var theta: real_t = undefined;
+                var z: cplx_t = undefined;
 
-                real34ToReal(VARIABLE_REAL34_DATA(&temp), &magnitude);
-                real34ToReal(VARIABLE_IMAG34_DATA(&temp), &theta);
-                if (xIsAReal) {
-                    convertAngleFromTo(&theta, runtime.currentAngularMode, amRadian, &runtime.ctxtReal39);
+                real34ToReal(VARIABLE_REAL34_DATA(&temp), z.mag());
+                if (longAngleWasReduced) {
+                    z.arg().* = reducedLongAngle;
+                } else {
+                    real34ToReal(VARIABLE_IMAG34_DATA(&temp), z.arg());
                 }
-                if (math_comparison_reals.realCompareLessThan(&magnitude, const_0())) {
-                    realSetPositiveSign(&magnitude);
-                    realAddB(&theta, const39_pi(), &theta, &runtime.ctxtReal39);
-                    math_wp34s.mod2Pi(&theta, &theta, &runtime.ctxtReal39);
-                }
-                math_transform_complex_helpers.realPolarToRectangular(&magnitude, &theta, &magnitude, &theta, &runtime.ctxtReal39); // theta in radian
-                convertRealToReal34ResultRegister(&magnitude, REGISTER_X);
-                math_runtime_helpers.realToReal34(&theta, REGISTER_IMAG34_DATA(REGISTER_X));
+                math_transform_complex_helpers.realPolarToRectangularInUnit(z.constMag(), z.constArg(), tempAngle, &z, &runtime.ctxtReal39);
+                convertRealToReal34ResultRegister(&z.Real, REGISTER_X);
+                runtime.convertRealToImag34ResultRegister(&z.Imag, REGISTER_X);
                 runtime.setComplexRegisterAngularMode(REGISTER_X, tempAngle);
             }
         } else { // rectangular mode
@@ -231,22 +210,16 @@ pub export fn fnReToCx(unusedButMandatoryParameter: u16) callconv(.c) void {
 
                     if (runtime.getSystemFlag(FLAG_POLAR)) { // polar mode
                         if (math_comparison_reals.real34CompareEqual(VARIABLE_REAL34_DATA(&cElems[i]), const34_0())) {
+                            real34SetZero(VARIABLE_REAL34_DATA(&cElems[i]));
                             real34SetZero(VARIABLE_IMAG34_DATA(&cElems[i]));
                         } else {
-                            var magnitude: real_t = undefined;
-                            var theta: real_t = undefined;
+                            var z: cplx_t = undefined;
 
-                            real34ToReal(VARIABLE_REAL34_DATA(&cElems[i]), &magnitude);
-                            real34ToReal(VARIABLE_IMAG34_DATA(&cElems[i]), &theta);
-                            convertAngleFromTo(&theta, runtime.currentAngularMode, amRadian, &runtime.ctxtReal39);
-                            if (math_comparison_reals.realCompareLessThan(&magnitude, const_0())) {
-                                realSetPositiveSign(&magnitude);
-                                realAddB(&theta, const39_pi(), &theta, &runtime.ctxtReal39);
-                                math_wp34s.mod2Pi(&theta, &theta, &runtime.ctxtReal39);
-                            }
-                            math_transform_complex_helpers.realPolarToRectangular(&magnitude, &theta, &magnitude, &theta, &runtime.ctxtReal39); // theta in radian
-                            math_runtime_helpers.realToReal34(&magnitude, VARIABLE_REAL34_DATA(&cElems[i]));
-                            math_runtime_helpers.realToReal34(&theta, VARIABLE_IMAG34_DATA(&cElems[i]));
+                            real34ToReal(VARIABLE_REAL34_DATA(&cElems[i]), z.mag());
+                            real34ToReal(VARIABLE_IMAG34_DATA(&cElems[i]), z.arg());
+                            math_transform_complex_helpers.realPolarToRectangularInUnit(z.constMag(), z.constArg(), runtime.currentAngularMode, &z, &runtime.ctxtReal39);
+                            math_runtime_helpers.realToReal34(&z.Real, VARIABLE_REAL34_DATA(&cElems[i]));
+                            math_runtime_helpers.realToReal34(&z.Imag, VARIABLE_IMAG34_DATA(&cElems[i]));
                         }
                     }
                 }

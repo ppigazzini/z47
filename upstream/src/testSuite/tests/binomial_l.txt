@@ -79,13 +79,15 @@ Out: EC=24 FL_ASLIFT=0 RX=Stri:"String test"
 ;=======================================
 ; binomialL(Real Matrix) --> Error24
 ;=======================================
-
+In:  FL_ASLIFT=0 RP=Real:"0.5" RN=Real:"5" RX=ReMa:"M1,2[0,1]"
+Out: EC=24 FL_ASLIFT=0 RX=ReMa:"M1,2[0,1]"
 
 
 ;=======================================
 ; binomialL(Complex Matrix) --> Error24
 ;=======================================
-
+In:  FL_ASLIFT=0 RP=Real:"0.5" RN=Real:"5" RX=CxMa:"M1,1[1i1]"
+Out: EC=24 FL_ASLIFT=0 RX=CxMa:"M1,1[1i1]"
 
 
 ;=======================================
@@ -143,3 +145,46 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"3" RX=Real:"0.86704667656566492231"
 ;=======================================
 ; binomialL(Complex) --> Error24
 ;=======================================
+
+; Support, integer steps, and degenerate distributions.
+Func: fnBinomialL
+In:  RP=Real:"0.5" RN=Real:"5" RX=Real:"-1"
+Out: EC=0 RX=Real:"0"
+
+Func: fnBinomialL
+In:  RP=Real:"0.5" RN=Real:"5" RX=Real:"2.9"
+Out: EC=0 RX=Real:"0.5"
+
+Func: fnBinomialL
+In:  RP=Real:"0" RN=Real:"5" RX=Real:"0"
+Out: EC=0 RX=Real:"1"
+
+Func: fnBinomialL
+In:  RP=Real:"1" RN=Real:"5" RX=Real:"4"
+Out: EC=0 RX=Real:"0"
+
+Func: fnBinomialL
+In:  RP=Real:"0.5" RN=Real:"0" RX=Real:"0"
+Out: EC=0 RX=Real:"1"
+
+Func: fnBinomialL
+In:  RP=Real:"0.5" RN=Real:"5" RX=Real:"inf"
+Out: EC=0 RX=Real:"1"
+
+; P75 resolves the central correction for a very large trial count.
+Func: fnBinomialL
+In:  RP=Real:"0.5" RN=Real:"1e40" RX=Real:"5e39"
+Out: EC=0 RX=Real:"0.5000000000000000000039894228040143"
+
+; P39 loses result digits in the direct beta tail.
+Func: fnBinomialL
+In:  RP=Real:"0.37" RN=Real:"1000" RZ=Real:"1e40" RY=Real:"0.9766949451853648761648148333437772947005319583139383264479" RX=Real:"400"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnBinomialL
+In:  FL_SPCRES=1 RP=Real:"0.5" RN=Real:"5" RX=Real:"NaN"
+Out: EC=0 RX=Real:"NaN"

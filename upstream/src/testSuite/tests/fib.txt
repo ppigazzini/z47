@@ -54,6 +54,96 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"500.0" RX=Real:"139423224561697880139
 In:  AM=DEG FL_ASLIFT=1 FL_CPXRES=0 RX=Real:"15.123456"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"15.123456" RX=Real:"647.33720983212998584329662806252879844404481357094"
 
+; The exponent magnifies an error in log(phi), so large positive inputs use p51.
+Func: fnFib
+In:  RMODE=0 RZ=Real:"1e-6027" RY=Real:"2.079137397847174997931099442900047e6060" RX=Real:"29000.12345678901234567890123456789"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+; Stable subtraction near the zero at the origin, checked through digit 34.
+Func: fnFib
+In:  RMODE=0 RZ=Real:"1e70" RY=Real:"4.304089409640040388894332329506054e-36" RX=Real:"1e-35"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnFib
+In:  RMODE=1 RZ=Real:"1e70" RY=Real:"4.304089409640040388894332329506054e-36" RX=Real:"1e-35"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnFib
+In:  RMODE=2 RZ=Real:"1e70" RY=Real:"4.304089409640040388894332329506054e-36" RX=Real:"1e-35"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnFib
+In:  RMODE=3 RZ=Real:"1e70" RY=Real:"4.304089409640040388894332329506055e-36" RX=Real:"1e-35"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnFib
+In:  RMODE=4 RZ=Real:"1e70" RY=Real:"4.304089409640040388894332329506054e-36" RX=Real:"1e-35"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnFib
+In:  RMODE=5 RZ=Real:"1e70" RY=Real:"4.304089409640040388894332329506055e-36" RX=Real:"1e-35"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnFib
+In:  RMODE=6 RZ=Real:"1e70" RY=Real:"4.304089409640040388894332329506054e-36" RX=Real:"1e-35"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+; Negative real inputs can approach the other zeros of the continuation.
+Func: fnFib
+In:  RMODE=0 RZ=Real:"1e70" RY=Real:"1.517857160417714252999983693625211e-33" RX=Real:"-1.570776468203954722263371109084745"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+; Multiple-of-pi reduction retains the exact half-integer zero.
+Func: fnFib
+In:  RMODE=0 RX=Real:"-999999999999999999999999999999999.5"
+Out: EC=0 RX=Real:"0"
+
+; Positive infinity has a dominant first exponential.
+Func: fnFib
+In:  RMODE=0 FL_SPCRES=1 RX=Real:"inf"
+Out: EC=0 RX=Real:"inf"
+
+; Real matrix elements use the scalar route.
+Func: fnFib
+In:  RMODE=0 RX=ReMa:"M1,3[1e-35,-0.5,6]"
+Out: EC=0 FL_CPXRES=0 RX=ReMa:"M1,3[4.304089409640040388894332329506054e-36,0.3515775842541429284870572675264048,8]"
+
 
 ;=======================================
 ; fib(Complex) --> Complex
@@ -66,6 +156,33 @@ Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"0.0 i +5.0" RX=Cplx:"1.10017533941139
 
 In:  AM=DEG FL_ASLIFT=1 FL_CPXRES=1 RX=Cplx:"10.12 i +5.67"
 Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"010.12 i +5.67" RX=Cplx:"93328.050595462640024443804837801063243137790758942 i +3398.780140852028785707359264999671893140180299863"
+
+; A p75 work context resolves a component close to zero.
+Func: fnFib
+In:  RMODE=0 RZ=Real:"1e70" RY=Real:"-5.266334783441960936967034653006212e-35" RX=Cplx:"-0.5664481561808904398554053145161438 i 0.7"
+Out: EC=0 FL_CPXRES=1
+Func: fnRealPart
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+; The small complex formula retains its quadratic real component.
+Func: fnFib
+In:  RMODE=0 RZ=Real:"1e105" RY=Real:"-2.206910635186690531034384924258013e-70" RX=Cplx:"0 i 1e-35"
+Out: EC=0 FL_CPXRES=1
+Func: fnRealPart
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+; Complex matrix elements use the p75 route.
+Func: fnFib
+In:  RMODE=0 RX=CxMa:"M1,2[1e-35i1e-35,0.1i0.2]"
+Out: EC=0 FL_CPXRES=1 RX=CxMa:"M1,2[4.304089409640040388894332329506054e-36i4.304089409640040388894332329506055e-36,-0.01018885838540648859579267618214393i0.1798855957515946771428554359110875]"
 
 
 ;=======================================

@@ -1,15 +1,16 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // Zig port of complex_LU_decomposition from src/c47/mathematics/matrix.c: the
-// complex partial-pivoting LU decomposition, packing the matrix into an
-// interleaved-complex real_t scratch array, running the shared Zig-owned
-// luCpxMat worker and writing the combined L/U factors back (the pivot vector is
-// filled in for the caller).
+// complex partial-pivoting LU decomposition, packing the matrix into a cplx_t
+// scratch array, running the shared Zig-owned luCpxMat worker at 75 digits and
+// writing the combined L/U factors back (the pivot vector is filled in for the
+// caller).
 
 const runtime = @import("../command_wrappers/runtime.zig");
 const abi = @import("abi");
 const math_real_predicates = @import("../compare/real_predicates.zig");
 
 const real_t = runtime.real_t;
+const cplx_t = runtime.cplx_t;
 const complex34_t = runtime.complex34_t;
 const complex34Matrix_t = runtime.complex34Matrix_t;
 
@@ -50,7 +51,7 @@ pub export fn complex_LU_decomposition(matrix: *const complex34Matrix_t, lu: *co
 
     const blocks = @as(usize, m) * n * real_size_in_blocks * 2;
     if (runtime.allocC47Blocks(blocks)) |tmp_raw| {
-        const tmp_mat: [*]real_t = @ptrCast(@alignCast(tmp_raw));
+        const tmp_mat: [*]cplx_t = @ptrCast(@alignCast(tmp_raw));
         if (!samePtr(matrix, lu)) {
             runtime.copyComplexMatrix(matrix, lu);
         }
@@ -60,15 +61,15 @@ pub export fn complex_LU_decomposition(matrix: *const complex34Matrix_t, lu: *co
             const nn: usize = @as(usize, n) * n;
             var idx: usize = 0;
             while (idx < nn) : (idx += 1) {
-                runtime.real34ToReal(&lu_elems[idx].real, &tmp_mat[idx * 2]);
-                runtime.real34ToReal(&lu_elems[idx].imag, &tmp_mat[idx * 2 + 1]);
+                runtime.real34ToReal(&lu_elems[idx].real, &tmp_mat[idx].Real);
+                runtime.real34ToReal(&lu_elems[idx].imag, &tmp_mat[idx].Imag);
             }
 
-            if (runtime.luCpxMat(tmp_mat, n, p, &runtime.ctxtReal39)) {
+            if (runtime.luCpxMat(tmp_mat, n, p, 0, &runtime.ctxtReal75)) {
                 idx = 0;
                 while (idx < nn) : (idx += 1) {
-                    runtime.realToReal34(&tmp_mat[idx * 2], &lu_elems[idx].real);
-                    runtime.realToReal34(&tmp_mat[idx * 2 + 1], &lu_elems[idx].imag);
+                    runtime.realToReal34(&tmp_mat[idx].Real, &lu_elems[idx].real);
+                    runtime.realToReal34(&tmp_mat[idx].Imag, &lu_elems[idx].imag);
                 }
             } else {
                 runtime.complexMatrixFree(lu);

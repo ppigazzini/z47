@@ -38,6 +38,25 @@ Out: EC=0 RX=Real:"1"
 Func: fnConfigRoundingCov
 In:  FARG=1
 Out: EC=0 RX=Real:"1"
+; RCLCFG sets the recalled RM in the Real34 context too: under RM 5, ceiling, 1/3 rounds up to ...334, where RM 0 gives ...333.
+Func: fnSetRoundingMode
+In:  FARG=5 SD=0
+Out: EC=0
+Func: fnStoreConfig
+In:  FARG=0
+Out: EC=0
+Func: fnSetRoundingMode
+In:  FARG=0
+Out: EC=0
+Func: fnRecallConfig
+In:  FARG=0
+Out: EC=0 RMODE=5
+Func: fnDivide
+In:  FL_ASLIFT=0 RY=LonI:"1" RX=LonI:"3"
+Out: EC=0 RX=Real:"0.3333333333333333333333333333333334" ACC=34
+Func: fnSetRoundingMode
+In:  FARG=0
+Out: EC=0
 
 ; exponent range (values below 99 are floored to 99, 150 echoes back)
 Func: fnRange

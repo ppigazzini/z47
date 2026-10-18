@@ -53,12 +53,16 @@ Out: EC=24 FL_ASLIFT=0 RX=Stri:"String test"
 ;=======================================
 ; ulp(Real Matrix) --> Error24
 ;=======================================
+In:  FL_ASLIFT=0 RX=ReMa:"M1,2[1,10]"
+Out: EC=24 FL_ASLIFT=0 RX=ReMa:"M1,2[1,10]"
 
 
 
 ;=======================================
 ; ulp(Complex Matrix) --> Error24
 ;=======================================
+In:  FL_ASLIFT=0 RX=CxMa:"M1,1[1i2]"
+Out: EC=24 FL_ASLIFT=0 RX=CxMa:"M1,1[1i2]"
 
 
 
@@ -87,6 +91,25 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"50" RX=Real:"1e-32"
 
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"899.99999"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"899.99999" RX=Real:"1e-31"
+
+; ULP depends on magnitude, including a negative power-of-ten boundary.
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"1e-33"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-1" RX=Real:"1e-33"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1e-6176"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1e-6176" RX=Real:"1e-6176"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-1e-6176"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-1e-6176" RX=Real:"1e-6176"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"9.999999999999999999999999999999999e6144"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"9.999999999999999999999999999999999e6144" RX=Real:"1e6111"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-9.999999999999999999999999999999999e6144"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-9.999999999999999999999999999999999e6144" RX=Real:"1e6111"
 
 In:  FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"5.32564":DMS
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"5.32564":DMS RX=Real:"1e-33"

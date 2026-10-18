@@ -198,7 +198,12 @@ extern fn registerCmp(regist1: calcRegister_t, regist2: calcRegister_t, res: *i8
 extern fn saveRegisterSnapshot(reg: calcRegister_t, s: *snap_t) void;
 extern fn restoreRegisterSnapshot(reg: calcRegister_t, s: *snap_t) void;
 extern fn getRegisterAsAnyRealQuiet(reg: calcRegister_t, val: *real_t) bool;
-extern fn getRegisterAsComplexOrAnyRealQuiet(reg: calcRegister_t, r: *real_t, i: *real_t, cmplx: ?*bool) bool;
+extern fn getRegisterAsComplexOrAnyRealQuiet(reg: calcRegister_t, z: *cplx_t, cmplx: ?*bool) bool;
+extern fn convertReal34ToComplex34Register(real34: *align(1) const real34_t, imag34: *align(1) const real34_t, dest: calcRegister_t) void;
+extern fn realCompareEqual(a: *const real_t, b: *const real_t) bool;
+extern fn realCompareGreaterThan(a: *const real_t, b: *const real_t) bool;
+extern var ctxtReal75: realContext_t;
+const cplx_t = abi.Complex;
 extern fn convertUInt64ToShortIntegerRegister(sign: i16, value: u64, base: u32, regist: calcRegister_t) void;
 extern fn convertLongIntegerToLongIntegerRegister(lgInt: *const mpz_struct, regist: calcRegister_t) void;
 extern fn goToPgmStep(program: u16, step: u16) void;
@@ -910,25 +915,22 @@ fn forHasNext() bool {
 
 // True when the two registers hold the same value. Long and short integers compare
 // exactly. A complex value is compared part by part, the ordinary compare having no
-// meaning for it.
+// meaning for it. Comparing the components directly also avoids rounding a
+// difference merely to test whether it is zero.
 fn forValuesEqual(first: calcRegister_t, second: calcRegister_t) bool {
     var cmp: i8 = 0;
 
     if (getRegisterDataType(first) == dtComplex34 or getRegisterDataType(second) == dtComplex34) {
-        var firstRe: real_t = undefined;
-        var firstIm: real_t = undefined;
-        var secondRe: real_t = undefined;
-        var secondIm: real_t = undefined;
+        var firstValue: cplx_t = undefined;
+        var secondValue: cplx_t = undefined;
         var cmplx: bool = false;
 
-        if (!getRegisterAsComplexOrAnyRealQuiet(first, &firstRe, &firstIm, &cmplx) or
-            !getRegisterAsComplexOrAnyRealQuiet(second, &secondRe, &secondIm, &cmplx))
+        if (!getRegisterAsComplexOrAnyRealQuiet(first, &firstValue, &cmplx) or
+            !getRegisterAsComplexOrAnyRealQuiet(second, &secondValue, &cmplx))
         {
             return false;
         }
-        realSubtract(&firstRe, &secondRe, &firstRe, &ctxtReal39);
-        realSubtract(&firstIm, &secondIm, &firstIm, &ctxtReal39);
-        return realIsZero(&firstRe) and realIsZero(&firstIm);
+        return realCompareEqual(&firstValue.Real, &secondValue.Real) and realCompareEqual(&firstValue.Imag, &secondValue.Imag);
     }
     return registerCmp(first, second, &cmp) and cmp == 0;
 }
@@ -969,35 +971,34 @@ fn forStepCannotMove(value: calcRegister_t, stepReg: calcRegister_t) bool {
 // downwards for a negative one or a descending row, in an arithmetic that keeps a long
 // integer exact. A complex value in any of the three compares two lengths from the
 // origin instead, the counter's against the end value's, squared so no root is needed
-// and no answer changes.
+// and no answer changes. Each Real34 square has at most 68 coefficient digits and
+// their sum at most 69, so 75 digits keep the exact finite squared lengths this
+// control-flow decision compares.
 fn forCounterPastEnd(counter: calcRegister_t, endReg: calcRegister_t, stepReg: calcRegister_t, descends: bool) bool {
     var cmp: i8 = 0;
 
     if (getRegisterDataType(counter) == dtComplex34 or getRegisterDataType(endReg) == dtComplex34 or
         getRegisterDataType(stepReg) == dtComplex34)
     {
-        var counterRe: real_t = undefined;
-        var counterIm: real_t = undefined;
-        var endRe: real_t = undefined;
-        var endIm: real_t = undefined;
         var reach: real_t = undefined;
         var target: real_t = undefined;
         var term: real_t = undefined;
+        var counterValue: cplx_t = undefined;
+        var endValue: cplx_t = undefined;
         var cmplx: bool = false;
 
-        if (!getRegisterAsComplexOrAnyRealQuiet(counter, &counterRe, &counterIm, &cmplx) or
-            !getRegisterAsComplexOrAnyRealQuiet(endReg, &endRe, &endIm, &cmplx))
+        if (!getRegisterAsComplexOrAnyRealQuiet(counter, &counterValue, &cmplx) or
+            !getRegisterAsComplexOrAnyRealQuiet(endReg, &endValue, &cmplx))
         {
             return true; // a value the arithmetic cannot read ends the loop instead of running for ever
         }
-        realMultiply(&counterRe, &counterRe, &reach, &ctxtReal39);
-        realMultiply(&counterIm, &counterIm, &term, &ctxtReal39);
-        realAdd(&reach, &term, &reach, &ctxtReal39);
-        realMultiply(&endRe, &endRe, &target, &ctxtReal39);
-        realMultiply(&endIm, &endIm, &term, &ctxtReal39);
-        realAdd(&target, &term, &target, &ctxtReal39);
-        realCompare(&reach, &target, &term, &ctxtReal39);
-        return !realIsZero(&term) and realIsPositive(&term);
+        realMultiply(&counterValue.Real, &counterValue.Real, &reach, &ctxtReal75);
+        realMultiply(&counterValue.Imag, &counterValue.Imag, &term, &ctxtReal75);
+        realAdd(&reach, &term, &reach, &ctxtReal75);
+        realMultiply(&endValue.Real, &endValue.Real, &target, &ctxtReal75);
+        realMultiply(&endValue.Imag, &endValue.Imag, &term, &ctxtReal75);
+        realAdd(&target, &term, &target, &ctxtReal75);
+        return realCompareGreaterThan(&reach, &target);
     }
 
     var step39: real_t = undefined;
@@ -1193,9 +1194,7 @@ pub export fn fnForYx(regist: u16) callconv(.c) void {
             longIntegerFree(&stepValue);
         },
         dtComplex34 => {
-            reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
-            real34Copy(const34_1(), reg34(REGISTER_X));
-            real34Copy(const34_0(), regImag34(REGISTER_X));
+            convertReal34ToComplex34Register(const34_1(), const34_0(), REGISTER_X);
         },
         else => { // liftStack() has made X a real34 already, so only the value is left to write
             int32ToReal34(1, reg34(REGISTER_X));

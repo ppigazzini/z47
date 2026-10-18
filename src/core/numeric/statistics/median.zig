@@ -14,8 +14,8 @@ const const_1on2 = consts.const_1on2;
 // with C linkage.
 //
 // Sort comparator: the C uses libc qsort(data, n, sizeof(real_t), statsRealCompare)
-// where statsRealCompare does realCompare(r1, r2, &compare, &ctxtReal75) then
-// returns 0 / -1 / +1 from realIsZero / realIsNegative(&compare). To be
+// where statsRealCompare orders NaNs last, then realCompare(r1, r2, &compare,
+// &ctxtReal34) and returns 0 / -1 / +1 from realIsZero / realIsNegative(&compare). To be
 // byte-identical (incl. any NaN ordering qsort produces from this comparator) we
 // extern libc qsort and reimplement the SAME comparator exported with C linkage,
 // so the sort is the identical algorithm fed the identical comparator.
@@ -85,8 +85,8 @@ const real34ToReal = runtime.real34ToReal;
 const linkToRealMatrixRegister = runtime.linkToRealMatrixRegister;
 const displayCalcErrorMessage = runtime.displayCalcErrorMessage;
 
+extern var ctxtReal34: realContext_t;
 extern var ctxtReal39: realContext_t;
-extern var ctxtReal75: realContext_t;
 extern var statMx: [8]u8;
 
 extern fn decNumberCompare(res: *real_t, op1: *const real_t, op2: *const real_t, ctxt: *realContext_t) *real_t;
@@ -118,7 +118,16 @@ export fn statsRealCompare(v1: ?*const anyopaque, v2: ?*const anyopaque) linksec
     const r2: *const real_t = @ptrCast(@alignCast(v2));
     var compare: real_t = undefined;
 
-    realCompare(r1, r2, &compare, &ctxtReal75);
+    // Give qsort a strict ordering when statistical data contain NaNs.
+    if (realIsNaN(r1)) {
+        return if (realIsNaN(r2)) 0 else 1;
+    }
+    if (realIsNaN(r2)) {
+        return -1;
+    }
+
+    // Both operands came from Real34 matrix elements, so comparison is exact at p34.
+    realCompare(r1, r2, &compare, &ctxtReal34);
 
     if (realIsZero(&compare)) {
         return 0;
@@ -136,6 +145,11 @@ fn computePercentileSorted(data: [*]u8, n: u16, p: *const real_t, percentile: *r
     var d: real_t = undefined;
     var t: real_t = undefined;
     var k: i32 = undefined;
+
+    if (realIsNaN(p)) {
+        runtime.realSetNaN(percentile);
+        return;
+    }
 
     uInt32ToReal(@as(u32, n) + 1, &d);
     realMultiply(&d, p, &t, &ctxtReal39);

@@ -85,3 +85,22 @@ Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RZ=LonI:"3" RY=Real:"4" RX=Real:"5"
 
 In:  FL_ASLIFT=0 RZ=Stri:"String test" RY=Stri:"String test" RX=Stri:"String test"
 Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RZ=Stri:"String test" RY=Stri:"String test" RX=Stri:"String test"
+
+; Real values, specials, angular values, and matrices have no modular-power route.
+In:  FL_SPCRES=1 FL_ASLIFT=0 RZ=Real:"NaN" RY=Real:"4" RX=Real:"5"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RZ=Real:"NaN" RY=Real:"4" RX=Real:"5"
+
+In:  FL_ASLIFT=0 RZ=Real:"3" RY=Real:"4":RAD RX=Real:"5"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RZ=Real:"3" RY=Real:"4":RAD RX=Real:"5"
+
+In:  FL_ASLIFT=0 RZ=ReMa:"M1,1[3]" RY=Real:"4" RX=Real:"5"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RZ=ReMa:"M1,1[3]" RY=Real:"4" RX=Real:"5"
+
+In:  FL_ASLIFT=0 RZ=Real:"3" RY=ReMa:"M1,1[4]" RX=Real:"5"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RZ=Real:"3" RY=ReMa:"M1,1[4]" RX=Real:"5"
+
+In:  FL_ASLIFT=0 RZ=Real:"3" RY=Real:"4" RX=ReMa:"M1,1[5]"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RZ=Real:"3" RY=Real:"4" RX=ReMa:"M1,1[5]"
+
+In:  FL_ASLIFT=0 RZ=CxMa:"M1,1[3i1]" RY=Real:"4" RX=Real:"5"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RZ=CxMa:"M1,1[3i1]" RY=Real:"4" RX=Real:"5"

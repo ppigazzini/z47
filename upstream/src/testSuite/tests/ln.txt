@@ -180,6 +180,163 @@ Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"6.2 i -7.6" RX=Cplx:"2.28321467883583
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"0.1987661103464129406288031913435847 i 0.3095598756531121984439128249151294"
 Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"0.1987661103464129406288031913435847 i 0.3095598756531121984439128249151294" RX=Cplx:"-1 i 1"
 
+; For z = -1 + ib with a 34-digit b near 1e-34, Re(ln(z)) = ln(1 + b^2)/2; exact subtraction and scaling expose digit 34 of the result.
+Func: fnLn
+In:  RMODE=0 RX=Cplx:"-1 i +1.234567890123456789012345678901234e-34"
+Out: EC=0
+Func: fnRealPart
+In:  RMODE=0
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"7.620789376619418375247675781283334e-69"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e110"
+Out: EC=0 RX=Real:"0"
+
+Func: fnLn
+In:  RMODE=1 RX=Cplx:"-1 i +1.234567890123456789012345678901234e-34"
+Out: EC=0
+Func: fnRealPart
+In:  RMODE=1
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"7.620789376619418375247675781283334e-69"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e110"
+Out: EC=0 RX=Real:"0"
+
+Func: fnLn
+In:  RMODE=2 RX=Cplx:"-1 i +1.234567890123456789012345678901234e-34"
+Out: EC=0
+Func: fnRealPart
+In:  RMODE=2
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"7.620789376619418375247675781283334e-69"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e110"
+Out: EC=0 RX=Real:"0"
+
+Func: fnLn
+In:  RMODE=3 RX=Cplx:"-1 i +1.234567890123456789012345678901234e-34"
+Out: EC=0
+Func: fnRealPart
+In:  RMODE=3
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"7.620789376619418375247675781283334e-69"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e110"
+Out: EC=0 RX=Real:"0"
+
+Func: fnLn
+In:  RMODE=4 RX=Cplx:"-1 i +1.234567890123456789012345678901234e-34"
+Out: EC=0
+Func: fnRealPart
+In:  RMODE=4
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"7.620789376619418375247675781283333e-69"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e110"
+Out: EC=0 RX=Real:"0"
+
+Func: fnLn
+In:  RMODE=5 RX=Cplx:"-1 i +1.234567890123456789012345678901234e-34"
+Out: EC=0
+Func: fnRealPart
+In:  RMODE=5
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"7.620789376619418375247675781283334e-69"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e110"
+Out: EC=0 RX=Real:"0"
+
+Func: fnLn
+In:  RMODE=6 RX=Cplx:"-1 i +1.234567890123456789012345678901234e-34"
+Out: EC=0
+Func: fnRealPart
+In:  RMODE=6
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"7.620789376619418375247675781283333e-69"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e110"
+Out: EC=0 RX=Real:"-0"
+
+; A negative imaginary component checks the lower side of the negative-real branch cut, including digit 34 after exact subtraction and scaling.
+Func: fnLn
+In:  RMODE=0 RX=Cplx:"-1 i -1.234567890123456789012345678901234e-34"
+Out: EC=0
+Func: fnImaginaryPart
+In:  RMODE=0
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"-3.141592653589793238462643383279503"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e40"
+Out: EC=0 RX=Real:"0"
+
+; Scalar values near one and at both decimal128 exponent limits check the series and exponent decomposition at digit 34.
+Func: fnLn
+In:  RMODE=0 RX=Real:"1.000000000000000000000000000000001"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"9.999999999999999999999999999999995e-34"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e70"
+Out: EC=0 RX=Real:"0"
+
+Func: fnLn
+In:  RMODE=0 RX=Real:"1e-6176"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"-14220.76553433122614449511522413063"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e30"
+Out: EC=0 RX=Real:"0"
+
+Func: fnLn
+In:  RMODE=0 RX=Real:"9.999999999999999999999999999999999e6144"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"14149.38539644841072829055748903542"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e30"
+Out: EC=0 RX=Real:"0"
+
+Func: fnLn
+In:  RMODE=0
+
+; Rounded decimal128 coordinates near the unit circle need more than 51 digits when their squared components cancel; scaling checks the last result digit.
+Func: fnLn
+In:  RMODE=0 RX=Cplx:"0.7 i +0.7141428428542849997999399811367265"
+Out: EC=0
+Func: fnRealPart
+In:  RMODE=0
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"-1.990788659637371332567845643209888e-35"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e80"
+Out: EC=0 RX=Real:"0"
+
+Func: fnLn
+In:  RMODE=0
+
 In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=Cplx:"0 i 0"
 Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"0 i 0" RX=Cplx:"-inf i 0"
 

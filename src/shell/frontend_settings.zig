@@ -9,6 +9,7 @@ const FLAG_IRFRQ: c_uint = 0xc048;
 
 const SETTING_AMODE: c_int = 0x0080;
 const SETTING_SINT_MODE: c_int = 0x0083;
+const SETTING_FDIGS: c_int = 0x0087;
 
 const TI_VERSION: u8 = 10;
 const TI_WHO: u8 = 11;
@@ -155,6 +156,7 @@ fn applyBaseNr(value: u16) void {
 }
 
 fn applyFractionDigits(value: u16) void {
+    setSystemFlagChanged(SETTING_FDIGS); // the statusbar's fraction message follows FDIGS
     fractionDigits = @truncate(value);
     if (fractionDigits == 0) {
         fractionDigits = 34;

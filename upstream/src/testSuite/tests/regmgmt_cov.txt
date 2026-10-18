@@ -30,3 +30,152 @@ Out: EC=0 R00=Real:"7" R10=Real:"7"
 ; number of local registers at the top level = 0
 Func: fnGetLocR
 Out: EC=0 RX=LonI:"0"
+
+; the public endpoint also reaches the operation caller
+Func: fnRegClr
+In:  R99=Real:"7" RX=Real:"99.01"
+Out: EC=0 R99=Real:"0"
+
+Func: fnRegCopy
+In:  R00=Real:"8" R99=Real:"3" RX=Real:"0.01099"
+Out: EC=0 R00=Real:"8" R99=Real:"8"
+
+; public R99 is the closing numbered register; a one-register source range and destination both fit
+Func: fnRegParamCov(2)
+In:  RX=Real:"99.01000"
+Out: EC=0 RT=Real:"0" RZ=Real:"99" RY=Real:"1" RX=Real:"0"
+
+Func: fnRegParamCov(2)
+In:  RX=Real:"0.01099"
+Out: EC=0 RT=Real:"0" RZ=Real:"0" RY=Real:"1" RX=Real:"99"
+
+; public 112 and 210 identify local .00 and .98 when 99 local registers are available
+Func: fnRegParamCov(398)
+In:  RX=Real:"112.01210"
+Out: EC=0 RT=Real:"0" RZ=Real:"7000" RY=Real:"1" RX=Real:"7098"
+
+Func: fnRegParamCov(398)
+In:  RX=Real:"210.01112"
+Out: EC=0 RT=Real:"0" RZ=Real:"7098" RY=Real:"1" RX=Real:"7000"
+
+; a range cannot extend beyond the available local registers
+Func: fnRegParamCov(398)
+In:  RX=Real:"210.02112"
+Out: EC=8
+
+Func: fnRegParamCov(399)
+In:  RX=Real:"-112.01112"
+Out: EC=8
+
+; zero count selects the available local range from .96 through .98
+Func: fnRegParamCov(398)
+In:  RX=Real:"208.00112"
+Out: EC=0 RT=Real:"0" RZ=Real:"7096" RY=Real:"3" RX=Real:"7000"
+
+; no local register exists at the top level used here
+Func: fnRegParamCov(2)
+In:  RX=Real:"112.01000"
+Out: EC=8
+
+; public 211 and 224 identify M and W, whose internal numbers are 112 and 125
+Func: fnRegParamCov(2)
+In:  RX=Real:"211.01224":DEG
+Out: EC=0 RT=Real:"0" RZ=Real:"112" RY=Real:"1" RX=Real:"125"
+
+Func: fnRegParamCov(2)
+In:  RX=Real:"224.01211"
+Out: EC=0 RT=Real:"0" RZ=Real:"125" RY=Real:"1" RX=Real:"112"
+
+Func: fnRegParamCov(2)
+In:  RX=Real:"224.02211"
+Out: EC=8
+
+; a three-digit field outside the public bands is unavailable
+Func: fnRegParamCov(2)
+In:  RX=Real:"999.01000"
+Out: EC=8
+
+; K is public 111; its range cannot extend into the local-register number band
+Func: fnRegParamCov(2)
+In:  RX=Real:"111.01100"
+Out: EC=0 RT=Real:"0" RZ=Real:"111" RY=Real:"1" RX=Real:"100"
+
+Func: fnRegParamCov(2)
+In:  RX=Real:"111.02100"
+Out: EC=8
+
+; zero count reaches the end of the source class
+Func: fnRegParamCov(2)
+In:  RX=Real:"100.00100"
+Out: EC=0 RT=Real:"0" RZ=Real:"100" RY=Real:"12" RX=Real:"100"
+
+Func: fnRegParamCov(2)
+In:  RX=Real:"211.00211"
+Out: EC=0 RT=Real:"0" RZ=Real:"112" RY=Real:"14" RX=Real:"112"
+
+; negative zero retains the partial-load selector when a sign result is requested
+Func: fnRegParamCov(3)
+In:  RX=Real:"-0"
+Out: EC=0 RT=Real:"1" RZ=Real:"0" RY=Real:"100" RX=Real:"0"
+
+Func: fnRegParamCov(2)
+In:  RX=Real:"-0"
+Out: EC=8
+
+; special values and non-real register values are rejected
+Func: fnRegParamCov(3)
+In:  RX=Real:"NaN"
+Out: EC=8
+
+Func: fnRegParamCov(3)
+In:  RX=Real:"Infinity"
+Out: EC=8
+
+Func: fnRegParamCov(3)
+In:  RX=Cplx:"0 i 0"
+Out: EC=24
+
+; digits beyond the selected fields do not round a field upwards
+Func: fnRegParamCov(0)
+In:  RMODE=6 RX=Real:"5.019999999999999999999999999999999"
+Out: EC=0 RT=Real:"0" RZ=Real:"5" RY=Real:"1" RX=Real:"0"
+
+; indirect Real34 register parameters use the same public number bands
+Func: fnIndirectRegParamCov(0)
+In:  RX=Real:"100":RAD
+Out: EC=0 RX=Real:"100"
+
+Func: fnIndirectRegParamCov(99)
+In:  RX=Real:"112"
+Out: EC=0 RX=Real:"7000"
+
+Func: fnIndirectRegParamCov(0)
+In:  RX=Real:"112"
+Out: EC=8 RX=Real:"9999"
+
+Func: fnIndirectRegParamCov(0)
+In:  RX=Real:"211"
+Out: EC=0 RX=Real:"112"
+
+; undefined public codes are rejected instead of becoming internal register numbers
+Func: fnIndirectRegParamCov(0)
+In:  RX=Real:"225"
+Out: EC=8 RX=Real:"9999"
+
+Func: fnIndirectRegParamCov(0)
+In:  RX=Real:"255"
+Out: EC=8 RX=Real:"9999"
+
+; conversion truncates a finite Real34 parameter explicitly and preserves signed zero
+Func: fnIndirectRegParamCov(0)
+In:  RMODE=4 RX=Real:"99.99999999999999999999999999999999"
+Out: EC=0 RX=Real:"99"
+
+Func: fnIndirectRegParamCov(0)
+In:  RX=Real:"-0"
+Out: EC=0 RX=Real:"0"
+
+; NaN must not become register 0 through integer conversion
+Func: fnIndirectRegParamCov(0)
+In:  RX=Real:"NaN"
+Out: EC=8 RX=Real:"9999"

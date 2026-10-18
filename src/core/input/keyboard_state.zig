@@ -967,7 +967,7 @@ pub export fn openHOMEorMyM(situation: runtime.bool_t) callconv(.c) void {
     if (!((runtime.getSystemFlag(runtime.FLAG_HOME_TRIPLE) or runtime.getSystemFlag(runtime.FLAG_MYM_TRIPLE)) and !graphmode and runtime.calcMode != runtime.CM_EIM and runtime.calcMode != runtime.CM_MIM)) {
         return;
     }
-    // f/g long-press is temporarily disabled in EIM and MIM.
+    // f/g long-press is disabled in EIM, MIM and graph mode.
 
     var target_HOME: i16 = if (runtime.calcMode == runtime.CM_PEM) -runtime.MNU_PFN else -runtime.MNU_HOME;
     const target_MYM: i16 = if (runtime.calcMode == runtime.CM_PEM) -runtime.MNU_PFN else -runtime.MNU_MyMenu;

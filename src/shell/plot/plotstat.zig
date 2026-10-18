@@ -545,11 +545,12 @@ inline fn bitblt24(x: u32, dx: u32, y: u32, val: u32, blt_op: c_int, fill: c_int
 const BLT_OR: c_int = 0;
 const BLT_ANDN: c_int = 1;
 const BLT_NONE: c_int = 0;
+// hal/lcd.h: on the DMCP firmware the pixel routines are written once, in screen.c.
 inline fn setBlackPixel(x: u32, y: u32) void {
-    bitblt24(x, 1, y, 1, BLT_OR, BLT_NONE);
+    if (comptime dmcp_build) frontier_screen.setBlackPixel(x, y) else bitblt24(x, 1, y, 1, BLT_OR, BLT_NONE);
 }
 inline fn setWhitePixel(x: u32, y: u32) void {
-    bitblt24(x, 1, y, 1, BLT_ANDN, BLT_NONE);
+    if (comptime dmcp_build) frontier_screen.setWhitePixel(x, y) else bitblt24(x, 1, y, 1, BLT_ANDN, BLT_NONE);
 }
 
 // ---------------------------------------------------------------------------
@@ -1675,7 +1676,12 @@ pub export fn graphDrawLRline(selection: u16) callconv(.c) void {
         frontier_curve_fitting.processCurvefitSelection(selection, &lr_RR, &lr_SMI, &lr_aa0, &lr_aa1, &lr_aa2);
         realMultiply(&lr_RR, &lr_RR, &lr_RR, &ctxtReal39);
         if (orOrtho(selection) == CF_ORTHOGONAL_FITTING) {
-            processCurvefitSA(&lr_sa0, &lr_sa1);
+            if (realCompareLessThan(SIGMA_N(), consts.const_3())) { // the standard errors divide by n - 2: two points draw the line without them
+                frontier_real_type.realSetNaN(&lr_sa0);
+                frontier_real_type.realSetNaN(&lr_sa1);
+            } else {
+                processCurvefitSA(&lr_sa0, &lr_sa1);
+            }
         }
         drawline(selection, &lr_RR, &lr_SMI, &lr_aa0, &lr_aa1, &lr_aa2, &lr_sa0, &lr_sa1);
     }

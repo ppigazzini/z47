@@ -17,6 +17,9 @@ Func: fnSwapRealImaginary
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"5"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Cplx:"0 i 5"
 
+In:  RMODE=0 SD=0 FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"10000000000000000000000000000000014999999999999999999999999999999999999999950001"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Cplx:"0 i 1.000000000000000000000000000000001e79"
+
 
 
 ;=======================================
@@ -116,3 +119,23 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Cplx:"0 i -inf"
 ;=======================================
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"6.2 i -7.6"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Cplx:"6.2 i -7.6" RX=Cplx:"-7.6 i 6.2"
+
+; Matrix dispatch applies the same component rounding and rectangular tag policy as scalar dispatch.
+In:  RMODE=0 SD=7 FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=CxMa:"M1,2[1.234567890123456789012345678901234i-2.345678901234567890123456789012345,-0i0]":∠RAD
+Out: EC=0 SD=7 FL_CPXRES=0 FL_ASLIFT=1 RX=CxMa:"M1,2[-2.345679i1.234568,0i-0]"
+
+; Component exchange preserves NaN and signed zero.
+In:  RMODE=6 SD=34 FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=CxMa:"M1,2[1iNaN,2i-0]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=CxMa:"M1,2[NaNi1,-0i2]"
+
+; Scalar complex: each component is rounded to SD significant digits in the rounding mode set; a tie goes up under RMODE=1 and down under RMODE=2.
+In:  RMODE=0 SD=5 FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RX=Cplx:"1.23456789 i 6.54321987"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Cplx:"6.5432 i 1.2346"
+
+In:  RMODE=1 SD=5 FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RX=Cplx:"1.23455 i -6.54325"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Cplx:"-6.5433 i 1.2346"
+
+In:  RMODE=2 SD=5 FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RX=Cplx:"1.23455 i -6.54325"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Cplx:"-6.5432 i 1.2345"
+
+In:  RMODE=0 SD=0

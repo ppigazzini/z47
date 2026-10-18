@@ -182,6 +182,10 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"3" RX=Real:"2.48093194846624062434080
 In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"-1" RX=Real:"5"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"5" RX=Real:"4.137862636546201235100713862337863"
 
+; For 1 < m < 2 and pi/4 < phi < asin(1/sqrt m) the value is real: the Carlson form returns it, where K(m) - F(psi|m) leaves an imaginary part.
+In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"1.5" RX=Real:"0.8"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.8" RX=Real:"0.9987305714654648020462542810470657"
+
 
 
 ;=======================================
@@ -295,3 +299,47 @@ Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"0i-1" RX=Cplx:"-0.4011000650078700330
 
 In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"-1" RX=Cplx:"1i-1"
 Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"1i-1" RX=Cplx:"0.9962836726475598123016890214926345i-0.7004549346785655001368848197932802"
+
+
+; Direct Carlson form avoids subtracting nearly equal complete values for m<0.
+In: AM=RAD RT=Real:"1e70" RZ=Real:"1e-34" RY=Real:"-1" RX=Real:"1e-34"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+Func: fnEllipticFphi
+; Tiny real component of a complex argument near the imaginary axis.
+In: AM=RAD RY=Real:"0.5" RX=Cplx:"1e-34i1"
+Out: EC=0 RX=Cplx:"7.691058741267908380953808785284643e-35i0.9200974303141546982857302712788767"
+
+; A NaN amplitude or parameter gives NaN, real for a real amplitude: the lambda-mu split would hand a NaN amplitude back to F without end.
+In: AM=RAD FL_SPCRES=1 FL_CPXRES=1 RY=Real:"0.5" RX=Real:"NaN"
+Out: EC=0 RX=Real:"NaN"
+
+In: AM=RAD FL_SPCRES=1 FL_CPXRES=1 RY=Real:"NaN" RX=Real:"1"
+Out: EC=0 RX=Real:"NaN"
+
+; An infinite amplitude with m = -inf gives NaN: F rises by 2K(m) each half turn, and K(-inf) is 0.
+In: AM=RAD FL_SPCRES=1 FL_CPXRES=1 RY=Real:"-inf" RX=Real:"inf"
+Out: EC=0 RX=Real:"NaN"
+
+; A complex amplitude with an infinite real part gives NaN in both parts.
+In: AM=RAD FL_SPCRES=1 FL_CPXRES=1 RY=Real:"0.5" RX=Cplx:"inf i 1"
+Out: EC=0 RX=Cplx:"NaN i NaN"
+
+; An infinite imaginary part with a finite real part gives the limit, i K(1 - m) and 2K(m) each half turn: F(1 + i inf | 0.5) = i K(0.5)
+In: AM=RAD FL_SPCRES=1 FL_CPXRES=1 RY=Real:"0.5" RX=Cplx:"1 i inf"
+Out: EC=0 RX=Cplx:"0 i 1.854074677301371918433850347195260"
+
+; also above m = 1, where the limit is that of the finite amplitudes: F(1.5 + i inf | 2) = i K(-1)
+In: AM=RAD FL_SPCRES=1 FL_CPXRES=1 RY=Real:"2" RX=Cplx:"1.5 i inf"
+Out: EC=0 RX=Cplx:"0 i 1.311028777146059905232419794945560"
+
+; and below m = 0: F(3 + i inf | -2) = 2K(-2) - conj(i K(3)) = (K(2/3) + i K(1/3)) / sqrt(3)
+In: AM=RAD FL_SPCRES=1 FL_CPXRES=1 RY=Real:"-2" RX=Cplx:"3 i inf"
+Out: EC=0 RX=Cplx:"1.171420084146769858926335880095842 i 1.001077380456106236079659586383836"
+
+; On the imaginary axis F is odd for m < 0: F(0 - i inf | -2) = -i K(3) = -(K(2/3) + i K(1/3)) / sqrt(3)
+In: AM=RAD FL_SPCRES=1 FL_CPXRES=1 RY=Real:"-2" RX=Cplx:"0 i -inf"
+Out: EC=0 RX=Cplx:"-1.171420084146769858926335880095842 i -1.001077380456106236079659586383836"

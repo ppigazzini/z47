@@ -35,17 +35,6 @@ fn typeErrorX() void {
     }
 }
 
-// REGISTER_COMPLEX34_MATRIX_ELEMENTS(REGISTER_X), which is what zeroCheck reads
-// for a scalar dtComplex34 register: the register data pointer advanced by
-// sizeof(matrixHeader_t). The scalar value starts at offset 0, so the two
-// real34 halves read here are shifted four bytes into the block and the
-// "imaginary" half runs four bytes past its end. Reproduced because it decides
-// the answer of x=+0? / x=-0? on a complex X.
-fn registerComplex34MatrixElements(reg: runtime.calcRegister_t) *align(1) const runtime.complex34_t {
-    const bytes: [*]align(1) const u8 = @ptrCast(runtime.getRegisterDataPointer(reg).?);
-    return @ptrCast(bytes + @sizeOf(runtime.matrixHeader_t));
-}
-
 fn matchesRealSpecial(value: *align(1) const runtime.real34_t, comptime kind: SpecialKind) bool {
     return switch (kind) {
         .nan => runtime.real34IsNaN(value),
@@ -161,7 +150,7 @@ fn tryCheckSignedZero(comptime sign: ZeroSign) bool {
             return true;
         },
         runtime.dtComplex34 => {
-            const value = registerComplex34MatrixElements(runtime.REGISTER_X);
+            const value = runtime.registerComplex34Ptr(runtime.REGISTER_X);
             runtime.setTemporaryInformation(runtime.real34IsZero(&value.real) and runtime.real34IsZero(&value.imag) and (runtime.real34IsNegative(&value.real) == negative or runtime.real34IsNegative(&value.imag) == negative));
             return true;
         },
@@ -192,7 +181,8 @@ fn signedZeroCheck(neg: bool) void {
             check = stored_sign == @intFromBool(neg);
         },
         runtime.dtTime, runtime.dtDate, runtime.dtReal34 => {
-            check = runtime.real34IsNegative(runtime.registerReal34Ptr(runtime.REGISTER_X)) == neg;
+            const x = runtime.registerReal34Ptr(runtime.REGISTER_X);
+            check = !runtime.real34IsNaN(x) and runtime.real34IsNegative(x) == neg;
         },
         else => {
             typeErrorX();

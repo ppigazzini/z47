@@ -416,10 +416,11 @@ static void _doXToAlpha(uint16_t regist) {
     tmpString[0] = 0;      // If destination register is X just return the alpha character from the character code
   }
 
-  if(stringGlyphLength(tmpString) >= MAX_NUMBER_OF_GLYPHS_IN_STRING) {
+  int destLen = stringByteLength(tmpString);  // captured before displayCalcErrorMessage overwrites tmpString
+  if(destLen + 2 >= MAX_STRING_BYTE_LENGTH) {
     displayCalcErrorMessage(ERROR_STRING_WOULD_BE_TOO_LONG, ERR_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-      sprintf(errorMessage, "the resulting string would be %d characters long. Maximum is %d", stringGlyphLength(tmpString) + 1, MAX_NUMBER_OF_GLYPHS_IN_STRING);
+      sprintf(errorMessage, "the resulting string would be %d bytes long. Maximum is %d", destLen + 2, MAX_STRING_BYTE_LENGTH - 1);
       moreInfoOnError("In function _doXToAlpha:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1
   }
@@ -455,13 +456,15 @@ void fnXToAlpha(uint16_t regist) {   // new version, similar to the hp-42s ATOX 
 
     case dtString: {
       _readDestinationRegister(regist);
-      if(stringGlyphLength(tmpString) + stringGlyphLength(REGISTER_STRING_DATA(REGISTER_X)) > MAX_NUMBER_OF_GLYPHS_IN_STRING) {
+      int destLen = stringByteLength(tmpString);  // captured before displayCalcErrorMessage overwrites tmpString
+      int xStrLen = stringByteLength(REGISTER_STRING_DATA(REGISTER_X));
+      if(destLen + xStrLen >= MAX_STRING_BYTE_LENGTH) {
         displayCalcErrorMessage(ERROR_STRING_WOULD_BE_TOO_LONG, ERR_REGISTER_LINE);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-          sprintf(errorMessage, "the resulting string would be %d (%d + %d) characters long. Maximum is %d",
-            stringGlyphLength(tmpString) + stringGlyphLength(REGISTER_STRING_DATA(REGISTER_X)),
-            stringGlyphLength(tmpString),
-            stringGlyphLength(REGISTER_STRING_DATA(REGISTER_X)), MAX_NUMBER_OF_GLYPHS_IN_STRING);
+          sprintf(errorMessage, "the resulting string would be %d (%d + %d) bytes long. Maximum is %d",
+            destLen + xStrLen,
+            destLen,
+            xStrLen, MAX_STRING_BYTE_LENGTH - 1);
           moreInfoOnError("In function fnXToAlpha:", errorMessage, NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1
       }
@@ -642,9 +645,51 @@ void fnAlphaPos(uint16_t regist) {
 
 
 
+/**
+ * \brief Return floor(abs(value)) modulo modulus without a wide decimal remainder.
+ *
+ * \param[in] value Finite or special Real34 rotation count
+ * \param[in] modulus Non-negative string glyph count
+ * \return Exact reduced count, or zero for a zero modulus or special value
+ *
+ * Non-finite values retain the former zero-step conversion behaviour.
+ */
+static uint16_t real34RotationSteps(const real34_t *value, uint16_t modulus) {
+  uint8_t bcd[DECQUAD_Pmax];
+  int32_t exponent, coefficientDigits;
+  uint32_t remainder, power;
+
+  if(modulus == 0 || real34IsSpecial(value)) {
+    return 0;
+  }
+
+  real34GetCoefficient(value, bcd);
+  exponent = real34GetExponent(value);
+  if(exponent <= -DECQUAD_Pmax) {
+    return 0;
+  }
+
+  coefficientDigits = DECQUAD_Pmax + min(exponent, 0);
+  remainder = 0;
+  for(int32_t i=0; i<coefficientDigits; i++) {
+    remainder = (remainder * 10u + bcd[i]) % modulus;
+  }
+
+  power = 10u % modulus;
+  while(exponent > 0) {
+    if(exponent & 1) {
+      remainder = remainder * power % modulus;
+    }
+    power = power * power % modulus;
+    exponent >>= 1;
+  }
+  return (uint16_t)remainder;
+}
+
+
+
 void fnAlphaRR(uint16_t regist) {
   longInteger_t lgInt;
-  real_t real, mod;
   int16_t stringGlyphLen, steps, glyphPointer;
   char *ptr;
 
@@ -672,16 +717,7 @@ void fnAlphaRR(uint16_t regist) {
     }
 
     case dtReal34: {
-      if(stringGlyphLen == 0) {
-        lgInt->_mp_size = 0; // lgInt = 0
-      }
-      else {
-        real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &real);
-        realSetPositiveSign(&real);
-        int32ToReal(stringGlyphLen, &mod);
-        WP34S_Mod(&real, &mod, &real, &ctxtReal39);
-        convertRealToLongInteger(&real, lgInt, DEC_ROUND_DOWN);
-      }
+      uInt32ToLongInteger(real34RotationSteps(REGISTER_REAL34_DATA(REGISTER_X), stringGlyphLen), lgInt);
       break;
     }
 
@@ -728,7 +764,6 @@ void fnAlphaRR(uint16_t regist) {
 
 void fnAlphaRL(uint16_t regist) {
   longInteger_t lgInt;
-  real_t real, mod;
   int16_t stringGlyphLen, steps, glyphPointer;
   char *ptr;
 
@@ -756,16 +791,7 @@ void fnAlphaRL(uint16_t regist) {
     }
 
     case dtReal34: {
-      if(stringGlyphLen == 0) {
-        lgInt->_mp_size = 0; // lgInt = 0
-      }
-      else {
-        real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &real);
-        realSetPositiveSign(&real);
-        int32ToReal(stringGlyphLen, &mod);
-        WP34S_Mod(&real, &mod, &real, &ctxtReal39);
-        convertRealToLongInteger(&real, lgInt, DEC_ROUND_DOWN);
-      }
+      uInt32ToLongInteger(real34RotationSteps(REGISTER_REAL34_DATA(REGISTER_X), stringGlyphLen), lgInt);
       break;
     }
 
@@ -1099,9 +1125,18 @@ void fn42AlphaRotate(uint16_t unusedButMandatoryParameter) {
     }
 
     case dtReal34: {
-      longIntegerFree(lgInt); // the converter re-initialises lgInt; free the pre-init first
-      convertReal34ToLongInteger(REGISTER_REAL34_DATA(REGISTER_X), lgInt, DEC_ROUND_DOWN);
-      break;
+      const real34_t *count = REGISTER_REAL34_DATA(REGISTER_X);
+      const bool_t negativeIntegerPart = !real34IsSpecial(count) && !real34IsZero(count) && real34IsNegative(count)
+                                      && real34GetExponent(count) + real34Digits(count) > 0;
+
+      longIntegerFree(lgInt);
+      if(negativeIntegerPart) {
+        fnAlphaRR(alphaRegister);
+      }
+      else {
+        fnAlphaRL(alphaRegister);
+      }
+      return;
     }
 
     case dtShortInteger: {
@@ -1209,7 +1244,9 @@ void fnAlphaIP(uint16_t regist) {
 
     addition[getRegisterDataType(REGISTER_X)][getRegisterDataType(REGISTER_Y)]();
 
-    copySourceRegisterToDestRegister(REGISTER_X, regist);
+    if(lastErrorCode == ERROR_NONE) {                  // the append may overflow the string limit; leave the destination untouched when it does
+      copySourceRegisterToDestRegister(REGISTER_X, regist);
+    }
   }
 
   // restore, X, Y and L

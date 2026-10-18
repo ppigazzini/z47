@@ -28,7 +28,10 @@ const dtShortInteger: u32 = 8;
 const dtConfig: u32 = 9;
 
 // defines.h
-const MAX_NUMBER_OF_GLYPHS_IN_STRING: u16 = 508;
+// A string register's byte limit: 1019 bytes stored plus a terminator (defines.h MAX_STRING_BYTE_LENGTH).
+const MAX_STRING_BYTE_LENGTH: usize = 1020;
+// MAX_LONG_INTEGER_DIGITS: the decimal digits a long integer takes from a data file, 1001.
+const MAX_LONG_INTEGER_DIGITS: usize = 1001;
 
 // angular modes
 const amRadian: u8 = 0;
@@ -723,6 +726,16 @@ pub fn restoreRegister(regist: i16, type_str: [*c]u8, value_in: [*c]u8, loaded_v
         if (savedMDY) setSystemFlag(@intCast(FLAG_MDY));
         if (savedDMY) setSystemFlag(@intCast(FLAG_DMY));
     } else if (strcmpEq(type_str, "LonI")) {
+        const signLength: usize = if (value[0] == '-' or value[0] == '+') 1 else 0;
+        if (std.mem.len(@as([*:0]const u8, @ptrCast(value))) - signLength > MAX_LONG_INTEGER_DIGITS) {
+            displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
+            if (comptime EXTRA_INFO_ON_CALC_ERROR) {
+                abi.fmtBufZ(errorMessage[0..512], "long integer of more than {d} digits refused for register {d}", .{ @as(u32, MAX_LONG_INTEGER_DIGITS), @as(i32, regist) });
+                moreInfoOnError("In function restoreRegister:", &errorMessage[0], null, null);
+            }
+            return;
+        }
+
         var li: MpzStruct = undefined;
         __gmpz_init(&li);
         _ = __gmpz_set_str(&li, value, 10);
@@ -730,13 +743,16 @@ pub fn restoreRegister(regist: i16, type_str: [*c]u8, value_in: [*c]u8, loaded_v
         __gmpz_clear(&li);
     } else if (strcmpEq(type_str, "Stri")) {
         // A file cannot decode past the longest legal string.
-        utf8ToStringWithLength(value, errorMessage, MAX_NUMBER_OF_GLYPHS_IN_STRING * 2 + 1);
+        utf8ToStringWithLength(value, errorMessage, MAX_STRING_BYTE_LENGTH);
         var len: usize = 0;
-        var glyphs: u16 = 0;
-        while (glyphs < MAX_NUMBER_OF_GLYPHS_IN_STRING and errorMessage[len] != 0) : (glyphs += 1) {
-            len += if (errorMessage[len] & 0x80 != 0) 2 else 1;
+        while (errorMessage[len] != 0) {
+            const step: usize = if (errorMessage[len] & 0x80 != 0) 2 else 1;
+            if (len + step > MAX_STRING_BYTE_LENGTH - 1) {
+                break;
+            }
+            len += step;
         }
-        errorMessage[len] = 0; // more glyphs than a register takes are cut on a glyph boundary
+        errorMessage[len] = 0; // more bytes than a register takes are cut on a glyph boundary
         len += 1;
         reallocateRegister(regist, dtString, @intCast((len + 3) >> 2), amNone);
         _ = xcopy(regStringData(regist), errorMessage, @intCast(len));

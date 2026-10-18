@@ -240,6 +240,7 @@
    */
   void           fnGetLocR                       (uint16_t unusedButMandatoryParameter);
 
+  void           roundReal34ResultToSignificantDigits(real34_t *val);
   void           adjustResult                    (calcRegister_t result, bool_t dropY, bool_t setCpxRes, calcRegister_t op1, calcRegister_t op2, calcRegister_t op3);
 
   /**

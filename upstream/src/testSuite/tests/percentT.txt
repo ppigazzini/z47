@@ -32,6 +32,34 @@ Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=LonI:"456" RY=LonI:"123" RX=Real:"370.73170
 In:  FL_ASLIFT=1 FL_CPXRES=1 RY=Real:"123.456" RX=LonI:"456"
 Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=LonI:"456" RY=Real:"123.456" RX=Real:"369.3623639191290824261275272161741835147744945567651632970451010886"
 
+; Wide integer quotients retain their exact low digits until final rounding.
+Acc: 34
+In:  RMODE=0 FL_ASLIFT=0 RY=Real:"100" RX=LonI:"1234567890123456789012345678901234500000000000000000000000000000000000000001"
+Out: EC=0 FL_ASLIFT=1 RX=Real:"1.234567890123456789012345678901235E75"
+
+In:  RMODE=0 FL_ASLIFT=0 RY=LonI:"100" RX=LonI:"1234567890123456789012345678901234500000000000000000000000000000000000000001"
+Out: EC=0 FL_ASLIFT=1 RX=Real:"1.234567890123456789012345678901235E75"
+
+In:  RMODE=4 FL_ASLIFT=0 RY=LonI:"8000000000000000000000000000000000000000000000000000000000000000000000000001" RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RX=Real:"1.249999999999999999999999999999999E-74"
+
+In:  RMODE=6 FL_ASLIFT=0 RY=LonI:"8000000000000000000000000000000000000000000000000000000000000000000000000001" RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RX=Real:"1.249999999999999999999999999999999E-74"
+
+; The decimal scale is applied before the Real34 range decision.
+In:  RMODE=0 FL_ASLIFT=0 RY=LonI:"100" RX=Real:"9.999999999999999999999999999999999E6144"
+Out: EC=0 FL_ASLIFT=1 RX=Real:"9.999999999999999999999999999999999E6144"
+
+In:  RMODE=0 FL_ASLIFT=0 RY=LonI:"100" RX=Real:"1E-6176"
+Out: EC=0 FL_ASLIFT=1 RX=Real:"1E-6176"
+
+In:  RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 RY=LonI:"-7" RX=Real:"-0"
+Out: EC=0 FL_ASLIFT=1 RX=Real:"0"
+
+In:  RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 RY=LonI:"-7" RX=Real:"0"
+Out: EC=0 FL_ASLIFT=1 RX=Real:"-0"
+Acc: 30
+
 
 ;=======================================
 ; Short integer --> Real
@@ -76,6 +104,15 @@ In:  FL_ASLIFT=0  RY=Cplx:"123 i 1" RX=LonI:"456"
 Out: EC=24 FL_ASLIFT=0 RY=Cplx:"123 i 1" RX=LonI:"456"
 
 ;=======================================
+; Real34 exponent limits
+;=======================================
+In:  FL_ASLIFT=0 RY=Real:"100" RX=Real:"9.999999999999999999999999999999999E6144"
+Out: EC=0 FL_ASLIFT=1 RY=Real:"100" RX=Real:"9.999999999999999999999999999999999E6144"
+
+In:  FL_ASLIFT=0 RY=Real:"100" RX=Real:"1E-6176"
+Out: EC=0 FL_ASLIFT=1 RY=Real:"100" RX=Real:"1E-6176"
+
+;=======================================
 ; Error case: ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN
 ;=======================================
 In:  FL_ASLIFT=0 FL_SPCRES=1 RY=Real:"0.0" RX=Real:"10.0"
@@ -95,3 +132,31 @@ Out: EC=1 FL_ASLIFT=0 RY=Real:"0.0" RX=Real:"0.0"
 
 In:  FL_ASLIFT=0  RY=LonI:"0" RX=Real:"10.0"
 Out: EC=1 FL_ASLIFT=0 RY=LonI:"0" RX=Real:"10.0"
+
+;=======================================
+; Rounded division through digit 34
+;=======================================
+Func: fnPercentT
+In:  RMODE=0 RY=Real:"7" RX=Real:"1"
+Out: EC=0 RX=Real:"14.28571428571428571428571428571429"
+Func: fnSubtract
+In:  RY=Real:"14.28571428571428571428571428571429"
+Out: EC=0 RX=Real:"0"
+Func: fnMultiply
+In:  RY=Real:"1e32"
+Out: EC=0 RX=Real:"0"
+
+; Signed zero in the denominator contributes its sign
+Func: fnPercentT
+In:  RMODE=0 FL_SPCRES=1 RY=Real:"-0" RX=Real:"10"
+Out: EC=0 RX=Real:"-inf"
+Func: fnPercentT
+In:  RMODE=0 FL_SPCRES=1 RY=Real:"-0" RX=Real:"-10"
+Out: EC=0 RX=Real:"inf"
+Func: fnPercentT
+In:  RMODE=0 FL_SPCRES=1 RY=Real:"-0" RX=Real:"0"
+Out: EC=0 RX=Real:"NaN"
+
+Func: fnPercentT
+In:  RMODE=0 FL_SPCRES=0 RY=Real:"1" RX=Real:"0"
+Out: EC=0 RX=Real:"0"

@@ -54,8 +54,10 @@ bool_t          screenChange;
 
 void (*funcToTest)(uint16_t);
 void runPgm(uint16_t unusedButMandatoryParameter);
-void covBackupRoundtrip(uint16_t unusedButMandatoryParameter);
+void covBackupRoundtrip(uint16_t which);
+void covBackupDecimalRoundtrip(uint16_t unusedButMandatoryParameter);
 void covBackupCorruptRegionCount(uint16_t which);
+void covDataDecimalRoundtrip(uint16_t unusedButMandatoryParameter);
 void covConvToSI(uint16_t itemNr);
 void covConvFromSI(uint16_t itemNr);
 void covStateRoundtrip(uint16_t unusedButMandatoryParameter);
@@ -67,6 +69,7 @@ void covSolveRoot(uint16_t which);
 void covCpxSolveRoot(uint16_t which);
 void covEqSolveDispatch(uint16_t which);
 void covMimRowCol(uint16_t op);
+void covPolarNimClose(uint16_t returnZeroSigns);
 void covIndexedElement(uint16_t op);
 void covDerivErr(uint16_t which);
 void covSolveErr(uint16_t which);
@@ -74,11 +77,19 @@ void covLoadPgm(uint16_t unusedButMandatoryParameter);
 void covLoadPgmLongLabel(uint16_t unusedButMandatoryParameter);
 void covLoadStateLongLabel(uint16_t unusedButMandatoryParameter);
 void covIterationTi(uint16_t which);
+void covComparisonTi(uint16_t which);
+void covCheckValueTi(uint16_t which);
+void covRealType(uint16_t which);
 void covNamedVariableFold(uint16_t unusedButMandatoryParameter);
 void covStatsRegister(uint16_t unusedButMandatoryParameter);
+void covHistoElement(uint16_t element);
+void covVarianceCentred(uint16_t unusedButMandatoryParameter);
 void covPolarDisplayCap(uint16_t unusedButMandatoryParameter);
 void covDecimalDisplay(uint16_t which);
 void covScreenFma(uint16_t unusedButMandatoryParameter);
+void covPrinterNumber(uint16_t unusedButMandatoryParameter);
+void covRegParam(uint16_t options);
+void covIndirectRegParam(uint16_t localCount);
 void covDerivPgm(uint16_t order);
 void covDerivMvarPgm(uint16_t which);
 void covDerivAccPgm(uint16_t which);
@@ -86,11 +97,12 @@ void covDerivUi(uint16_t which);
 void covSolvePgm(uint16_t unusedButMandatoryParameter);
 void covMvarPageNoProgram(uint16_t unusedButMandatoryParameter);
 void covIntegrate(uint16_t which);
+void covIntegrateCheck(uint16_t which);
 void covRmIteration(uint16_t which);
 void covIntegrateErr(uint16_t which);
 void covMvarKey(uint16_t which);
 void covMatrixEditorScroll(uint16_t which);
-void covIntegratePgm(uint16_t unusedButMandatoryParameter);
+void covIntegratePgm(uint16_t which);
 void covNamedVariableCache(uint16_t unusedButMandatoryParameter);
 void covSumProd(uint16_t which);
 #if defined(OPTION_ALGDEP)
@@ -114,6 +126,9 @@ void covLoadNestedPgms(uint16_t unusedButMandatoryParameter);
 void covBmpName(uint16_t which);
 void covHashBmp(uint16_t which);
 void covRealToDouble(uint16_t unusedButMandatoryParameter);
+void covResultConversion(uint16_t which);
+void covAdjustResult(uint16_t which);
+void covTimerInput(uint16_t unusedButMandatoryParameter);
 
 static const char regNames[] = "XYZTABCDLIJKMNPQRSEFGHOUVW";
 
@@ -165,6 +180,9 @@ const funcTest_t funcTestNoParam[] = {
   {"fnXEqualsTo",                fnXEqualsTo                    },
   {"fnXNotEqual",                fnXNotEqual                    },
   {"fnXAlmostEqual",             fnXAlmostEqual                 },
+  {"fnComparisonTiCov",          covComparisonTi,              1 },
+  {"fnCheckValueTiCov",          covCheckValueTi,              1 },
+  {"fnRealTypeCov",              covRealType,                  1 },
   // Store / recall (FARG = register number; operate on X, and Y/Z for 2/3 variants).
   {"fnStore",                    fnStore                        },
   {"fnRecall",                   fnRecall                       },
@@ -281,7 +299,9 @@ const funcTest_t funcTestNoParam[] = {
   // Backup serializer round-trip: save the whole calculator state to backup.cfg and restore it. Exercises both directions of saveRestoreBackup.c.
   // Resets the calculator, so its corpus test must run last.
   {"fnBackupRoundtrip",          covBackupRoundtrip,          1 },
+  {"fnBackupDecimalCov",         covBackupDecimalRoundtrip,   1 },
   {"fnBackupBadRegionCount",     covBackupCorruptRegionCount, 1 },
+  {"fnDataDecimalRoundtripCov",  covDataDecimalRoundtrip,      1 },
   {"covConvToSI",                covConvToSI,                 1 },
   {"covConvFromSI",              covConvFromSI,               1 },
   {"fnPlotReset",                fnPlotReset                    },
@@ -292,6 +312,9 @@ const funcTest_t funcTestNoParam[] = {
   {"fnBmpNameCov",               covBmpName,                  1 },
   {"fnHashBmpCov",               covHashBmp,                  1 },
   {"fnRealToDoubleCov",          covRealToDouble,             1 },
+  {"fnResultConversionCov",      covResultConversion,         1 },
+  {"fnAdjustResultCov",          covAdjustResult,             1 },
+  {"fnTimerInputCov",            covTimerInput,                1 },
   {"fnStateRoundtrip",           covStateRoundtrip,           1 },
   {"fnShortIntWSRestoreCov",     covShortIntWordSizeRestore,  1 },
   {"fnConfigRoundingCov",        covConfigRounding,           1 },
@@ -302,6 +325,7 @@ const funcTest_t funcTestNoParam[] = {
   {"fnCpxSolveRootCov",          covCpxSolveRoot,             1 },
   {"fnEqSolveDispatchCov",       covEqSolveDispatch,          1 },
   {"fnMimRowColCov",             covMimRowCol,                1 },
+  {"fnPolarNimCloseCov",         covPolarNimClose,            1 },
   {"fnIndexedElementCov",        covIndexedElement,           1 },
   {"fnDerivErrCov",              covDerivErr,                 1 },
   {"fnSolveErrCov",              covSolveErr,                 1 },
@@ -314,15 +338,21 @@ const funcTest_t funcTestNoParam[] = {
   {"fnIterationTiCov",           covIterationTi,              1 },
   {"fnNamedVarFoldCov",          covNamedVariableFold,        1 },
   {"fnStatsRegisterCov",         covStatsRegister,            1 },
+  {"fnHistoElementCov",          covHistoElement,             1 },
+  {"fnVarianceCentredCov",       covVarianceCentred,           1 },
   {"fnPolarDisplayCapCov",       covPolarDisplayCap,          1 },
   {"fnDecimalDisplayCov",        covDecimalDisplay,           1 },
   {"fnScreenFmaCov",             covScreenFma,                1 },
+  {"fnPrinterNumberCov",         covPrinterNumber,            1 },
+  {"fnRegParamCov",              covRegParam,                 1 },
+  {"fnIndirectRegParamCov",      covIndirectRegParam,         1 },
   {"fnDerivPgmCov",              covDerivPgm,                 1 },
   {"fnDerivMvarPgmCov",          covDerivMvarPgm,             1 },
   {"fnDerivAccPgm",              covDerivAccPgm,              1 },
   {"fnDerivUiCov",               covDerivUi,                  1 },
   {"fnSolvePgmCov",              covSolvePgm,                 1 },
   {"fnIntegrateCov",             covIntegrate,                1 },
+  {"fnIntegrateCheckCov",        covIntegrateCheck,           1 },
   {"fnRmIterationCov",           covRmIteration,              1 },
   {"fnIntegrateErrCov",          covIntegrateErr,             1 },
   {"fnMvarKeyCov",               covMvarKey,                  1 },
@@ -361,9 +391,12 @@ const funcTest_t funcTestNoParam[] = {
   {"fnGeometricSampleStdDev",    fnGeometricSampleStdDev        },
   {"fnGeometricStandardError",   fnGeometricStandardError       },
   {"fnWeightedSampleStdDev",     fnWeightedSampleStdDev         },
+  {"fnWeightedPopulationStdDev", fnWeightedPopulationStdDev     },
   {"fnWeightedStandardError",    fnWeightedStandardError        },
   {"fnPercentileXY",             fnPercentileXY                 },
   {"fnCoeffDetermination",       fnCoefficientDetermination     },
+  {"fnMinExpStdDev",             fnMinExpStdDev,              1 },
+  {"fnStatSa",                   fnStatSa                       },
   {"fnAmortP",                   fnAmortP                       },
   {"fnAmortInt",                 fnAmortInt                     },
   {"fnAmortPrn",                 fnAmortPrn                     },
@@ -438,6 +471,7 @@ const funcTest_t funcTestNoParam[] = {
   {"fnDeltaPercent",             fnDeltaPercent                 },
   {"fnDenMax",                   fnDenMax                       },
   {"fnDeterminant",              fnDeterminant                  },
+  {"fnDisplayFormatTime",        fnDisplayFormatTime            },
   {"fnVectorDist",               fnVectorDist                   },
   {"fnSwapRows",                 fnSwapRows                     },
   {"fnSwapColumns",              fnSwapColumns                  },
@@ -454,6 +488,7 @@ const funcTest_t funcTestNoParam[] = {
   {"fnEigenvalues",              fnEigenvalues                  },
   {"fnEigenvectors",             fnEigenvectors                 },
   {"fnExchangeStkToMx",          fnExchangeStkToMx              },
+  {"fnEllipse",                  fnEllipse                      },
   {"fnEllipticE",                fnEllipticE                    },
   {"fnEllipticEphi",             fnEllipticEphi                 },
   {"fnEllipticFphi",             fnEllipticFphi                 },
@@ -839,12 +874,87 @@ void runPgm(uint16_t unusedButMandatoryParameter) {
 
 
 
-void covBackupRoundtrip(uint16_t unusedButMandatoryParameter) {
+void covBackupRoundtrip(uint16_t which) {
   // Save the whole calculator state to backup.cfg and restore it, exercising both the serialize and deserialize halves of saveRestoreBackup.c.
   // restoreCalc() bails when the sample programs are loaded, so clear that flag first; it resets the calculator, so this must be the last test in the list.
+  // With which set, RM 0 is selected between the save and the restore, as at power-on, so a restored RM has to reach the Real34 context itself.
+  loadTestPrograms = false;
+  saveCalc();
+  if(which) {
+    fnSetRoundingMode(RM_HALF_EVEN);
+  }
+  restoreCalc();
+}
+
+static void covShadowBackupLine(const char *shadowLine);
+
+/**
+ * Exercise the decimal-valued fields in backup.cfg at the Real34 range limits
+ * and with valid or invalid text.
+ */
+void covBackupDecimalRoundtrip(uint16_t which) {
+  real34_t expectedLo;
+  REAL_T_PTR(expectedLastY, 39);
+
+  if(which == 5) {
+    stringToReal34("-Infinity", &nBins);
+    loadTestPrograms = false;
+    saveCalc();
+    restoreCalc();
+
+    const bool_t restoredInfinity = real34IsInfinite(&nBins) && real34IsNegative(&nBins);
+    reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+    int32ToReal34(restoredInfinity ? 1 : 0, REGISTER_REAL34_DATA(REGISTER_X));
+    return;
+  }
+
+  if(which != 0) {
+    loadTestPrograms = false;
+    saveCalc();
+    switch(which) {
+      case 1:
+        covShadowBackupLine("SAVED_SIGMA_LASTY:real:not-a-number");
+        break;
+      case 2:
+        covShadowBackupLine("nBins:real34:1E+9999");
+        break;
+      case 3:
+        covShadowBackupLine("nBins:real34:1.0000000000000000000000000000000001");
+        break;
+      case 4:
+        covShadowBackupLine("SAVED_SIGMA_LASTY:real:1.000000000000000000000000000000000000001");
+        break;
+      default:
+        abortTest();
+        return;
+    }
+    restoreCalc();
+
+    const bool_t retainedDefault = which == 1 || which == 4 ? realIsZero(&SAVED_SIGMA_LASTY) : real34IsZero(&nBins);
+    reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+    int32ToReal34(retainedDefault ? 1 : 0, REGISTER_REAL34_DATA(REGISTER_X));
+    return;
+  }
+
+  stringToReal34("9.999999999999999999999999999999999E6144", &loBinR);
+  real34Copy(&loBinR, &expectedLo);
+  stringToReal34("-0", &nBins);
+  stringToReal34("NaN", &hiBinR);
+  stringToReal("Infinity", &SAVED_SIGMA_LASTX, &ctxtReal39);
+  stringToReal("1E-6176", &SAVED_SIGMA_LASTY, &ctxtReal39);
+  realCopy(&SAVED_SIGMA_LASTY, expectedLastY);
+
   loadTestPrograms = false;
   saveCalc();
   restoreCalc();
+
+  const bool_t restoredExactly = real34CompareEqual(&loBinR, &expectedLo) &&
+                                 real34IsZero(&nBins) && real34IsNegative(&nBins) &&
+                                 real34IsNaN(&hiBinR) &&
+                                 realIsInfinite(&SAVED_SIGMA_LASTX) && !realIsNegative(&SAVED_SIGMA_LASTX) &&
+                                 realCompareEqual(&SAVED_SIGMA_LASTY, expectedLastY);
+  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+  int32ToReal34(restoredExactly ? 1 : 0, REGISTER_REAL34_DATA(REGISTER_X));
 }
 
 // Put one parameter line at the front of the backup file that saveCalc() has just written. restoreStateValue() takes the first line whose name matches and stops,
@@ -913,6 +1023,30 @@ void covBackupCorruptRegionCount(uint16_t which) {
   longIntegerFree(li);
 }
 
+/**
+ * Round-trip a complex Real34 value through the human-readable register data
+ * file and report whether both special-value and signed-zero components were
+ * restored exactly.
+ */
+void covDataDecimalRoundtrip(uint16_t unusedButMandatoryParameter) {
+  reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
+  stringToReal34("Infinity", REGISTER_REAL34_DATA(REGISTER_X));
+  stringToReal34("-0", REGISTER_IMAG34_DATA(REGISTER_X));
+
+  fnSaveStackRegisters(0);
+  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+  int32ToReal34(7, REGISTER_REAL34_DATA(REGISTER_X));
+  fnLoadRegisters(0);
+
+  const bool_t restoredExactly = getRegisterDataType(REGISTER_X) == dtComplex34 &&
+                                 real34IsInfinite(REGISTER_REAL34_DATA(REGISTER_X)) &&
+                                 real34IsPositive(REGISTER_REAL34_DATA(REGISTER_X)) &&
+                                 real34IsZero(REGISTER_IMAG34_DATA(REGISTER_X)) &&
+                                 real34IsNegative(REGISTER_IMAG34_DATA(REGISTER_X));
+  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+  int32ToReal34(restoredExactly ? 1 : 0, REGISTER_REAL34_DATA(REGISTER_X));
+}
+
 static void covStoTvm(int32_t value, uint16_t reg) {
   // Store an integer into a register through the calculator's own STO, which types the destination correctly. Seeds the reserved TVM registers and clobbers global
   // registers with a sentinel.
@@ -922,10 +1056,10 @@ static void covStoTvm(int32_t value, uint16_t reg) {
 }
 
 static void covClobberRegs(void) {
-  // Overwrite the seeded global registers R00..R05 with a sentinel so a following load must restore them from file for the round-trip assertion to mean anything (a
+  // Overwrite the seeded global registers R00..R08 with a sentinel so a following load must restore them from file for the round-trip assertion to mean anything (a
   // no-op load would leave the sentinel and fail the test). The sentinel is a real, so it also destroys the datatype of the mixed-type registers (R03 complex,
-  // R04 string, R05 short integer) - the load must restore both the value and the type.
-  for(uint16_t r = 0; r < 6; ++r) {
+  // R04 string, R05 short integer, R06 time and R07 date) - the load must restore both the value and its type. R08 supplies the NaN case.
+  for(uint16_t r = 0; r < 9; ++r) {
     covStoTvm(-99999, r);
   }
 }
@@ -976,7 +1110,7 @@ void covStateRoundtrip(uint16_t unusedButMandatoryParameter) {
   // Two save flavours and several load modes are exercised: the full state file (stateSave/stateLoad, c47state.bin) plus a manual save (manualSave,
   // c47.sav) read back one section at a time, covering the loadMode dispatch in restoreOneSection (registers, named variables, statistical sums, system state).
   //
-  // The seeded registers R00..R05 are clobbered with a sentinel after each save and before the matching load, so the corpus assertion that they come back is proof that
+  // The seeded registers R00..R08 are clobbered with a sentinel after each save and before the matching load, so the corpus assertion that they come back is proof that
   // the load actually reads and restores the file - a no-op load would leave the sentinel and fail the test, rather than passing on state that was simply never
   // changed.
   fnSave(SM_STATE_SAVE);
@@ -1040,6 +1174,12 @@ void covEqCalc(uint16_t formulaIndex) {
     "A" STD_CROSS "A+1",      // 17 variable used twice
     "2+3=5",                  // 18 equation that holds (residual 0)
     "3+4=10",                 // 19 equation residual (RHS-LHS = 10-7 = 3)
+    "A+2",                    // 20 complex variable with a NaN imaginary component
+    "ABS(A)",                 // 21 monadic dispatch retains a complex NaN input
+    "A=2",                    // 22 equality retains a complex NaN left side
+    "1=",                     // 23 equality requires a right operand
+    "1 2",                    // 24 adjacent values cannot leave two numeric results
+    "1E34+1-1E34",            // 25 every formula operation has Real34 result semantics
   };
   const uint16_t n = sizeof(covFormulae) / sizeof(covFormulae[0]);
   if(formulaIndex >= n) {
@@ -1095,12 +1235,28 @@ void covDerivEq(uint16_t order) {
 void covSolveRoot(uint16_t which) {
   // Find a root of a formula with the numeric root solver (fnSolve -> solver() in solve.c). The two guesses come from Y and X on the stack;
   // the solver evaluates the formula (equation.c) each iteration, leaving the result in X. Using a formula avoids a program fixture,
-  // so SOLVER_STATUS_USES_FORMULA is set explicitly. which < 2 uses f(X)=X^2-4 (roots +/-2); which >= 2 uses f(X)=X^2+1, which has no real root,
-  // driving the solver's no-root-found path.
+  // so SOLVER_STATUS_USES_FORMULA is set explicitly. which selects the equation used by the file-driven coverage cases.
   if(numberOfFormulae == 0) {
     fnEqNew(NOPARAM);
   }
-  setEquation(currentFormula, (which >= 2) ? "X^2+1" : "X^2-4");
+  static const char * const formulae[] = {
+    "X^2-4",
+    "X^2-4",
+    "X^2+1",
+    "1E-100*(X^2-2)",
+    "X^2-1E-6000",
+    "X^2-2E6000",
+    "X",
+    "(X-2.1)" STD_CROSS "EXP(44" STD_CROSS "(X-1))",
+    "X^3",
+    "X^3-4" STD_CROSS "X",
+    "X^2",
+    "LN(X^2)-1"
+  };
+  if(which >= sizeof(formulae) / sizeof(formulae[0])) {
+    return;
+  }
+  setEquation(currentFormula, formulae[which]);
   const uint16_t var = findOrAllocateNamedVariable("X");
   currentSolverVariable = var;
   // Reset the solver status to exactly USES_FORMULA: a prior solver-driving test (e.g. the equation derivative) can leave other status bits set that change the
@@ -1173,6 +1329,45 @@ void covMimRowCol(uint16_t op) {
   mimFinalize();
   calcModeNormal();
 }
+
+
+/**
+ * \brief Closes a polar numeric-entry pair from Y and X and returns the rectangular complex value in X.
+ *
+ * \param[in] returnZeroSigns Returns a two-bit component sign value when nonzero
+ */
+void covPolarNimClose(uint16_t returnZeroSigns) {
+  char magnitudeString[64], thetaString[64];
+  real34_t magnitude, theta;
+
+  real34Copy(REGISTER_REAL34_DATA(REGISTER_Y), &magnitude);
+  real34Copy(REGISTER_REAL34_DATA(REGISTER_X), &theta);
+  real34ToString(&magnitude, magnitudeString);
+  real34ToString(&theta, thetaString);
+
+  strcpy(aimBuffer, magnitudeString);
+  imaginaryMantissaSignLocation = strlen(aimBuffer);
+  if(thetaString[0] == '-') {
+    strcat(aimBuffer, "-i");
+    strcat(aimBuffer, thetaString + 1);
+  }
+  else {
+    strcat(aimBuffer, "+i");
+    strcat(aimBuffer, thetaString);
+  }
+  nimRealPart = NP_REAL_FLOAT_PART;
+  nimNumberPart = NP_COMPLEX_FLOAT_PART;
+  temporaryFlagPolar = true;
+  reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
+  closeNimWithComplex(REGISTER_REAL34_DATA(REGISTER_X), REGISTER_IMAG34_DATA(REGISTER_X));
+  setComplexRegisterPolarMode(REGISTER_X, amNone);
+  if(returnZeroSigns != 0) {
+    const uint32_t signs = (real34IsNegative(REGISTER_REAL34_DATA(REGISTER_X)) ? 2 : 0) + (real34IsNegative(REGISTER_IMAG34_DATA(REGISTER_X)) ? 1 : 0);
+    reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+    uInt32ToReal34(signs, REGISTER_REAL34_DATA(REGISTER_X));
+  }
+}
+
 
 void covIndexedElement(uint16_t op) {
   // Run one operation on the INDEXed matrix, the element value going to and coming from X. None of them indexes a matrix, so index R00 with fnIndexMatrix - the
@@ -1301,6 +1496,411 @@ void covIterationTi(uint16_t which) {
   }
   reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
   int32ToReal34(temporaryInformation == TI_TRUE ? 1 : 0, REGISTER_REAL34_DATA(REGISTER_X));
+  temporaryInformation = TI_NO_INFO;
+}
+
+/********************************************//**
+ * \brief Converts the value in X through the public timer-recall route and
+ * returns the resulting millisecond count in X.
+ *
+ * \param[in] unusedButMandatoryParameter uint16_t
+ * \return void
+ ***********************************************/
+void covTimerInput(uint16_t unusedButMandatoryParameter) {
+  uint32_t value;
+
+  timerStartTime = TIMER_APP_STOPPED;
+  timerValue = 0;
+  fnRecallTimerApp(REGISTER_X);
+  value = timerValue;
+  timerValue = 0;
+
+  if(lastErrorCode == ERROR_NONE) {
+    reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+    uInt32ToReal34(value, REGISTER_REAL34_DATA(REGISTER_X));
+  }
+}
+
+/********************************************//**
+ * \brief Expose value-predicate Boolean results in register X.
+ *
+ * \param[in] which uint16_t
+ * \return void
+ ***********************************************/
+void covCheckValueTi(uint16_t which) {
+  temporaryInformation = TI_FALSE;
+  switch(which) {
+    case  0: fnCheckNumber(NOPARAM); break;
+    case  1: fnCheckAngle(NOPARAM); break;
+    case  2: fnCheckMatrix(NOPARAM); break;
+    case  3: fnCheckMatrixSquare(NOPARAM); break;
+    case  4: fnCheckNaN(NOPARAM); break;
+    case  5: fnCheckInfinite(NOPARAM); break;
+    case  6: fnCheckSpecial(NOPARAM); break;
+    case  7: fnCheckPlusZero(NOPARAM); break;
+    case  8: fnCheckMinusZero(NOPARAM); break;
+    case  9: fnCheckLessEqualMinusZero(NOPARAM); break;
+    case 10: fnCheckGreaterEqualPlusZero(NOPARAM); break;
+    case 11: fnCheckForZero(ITM_ISREZQ); break;
+    case 12: fnCheckForZero(ITM_ISIMZQ); break;
+    case 13: fnCheckForZero(ITM_ISRENZQ); break;
+    case 14: fnCheckForZero(ITM_ISIMNZQ); break;
+    case 15: fnCheckInteger(CHECK_INTEGER); break;
+    case 16: fnCheckInteger(CHECK_INTEGER_EVEN); break;
+    case 17: fnCheckInteger(CHECK_INTEGER_ODD); break;
+    case 18: fnCheckInteger(CHECK_INTEGER_FP); break;
+    case 19: fnCheckType(dtLongInteger); break;
+    case 20: fnCheckType(dtReal34); break;
+    case 21: fnCheckType(dtComplex34); break;
+    case 22: fnCheckType(dtTime); break;
+    case 23: fnCheckType(dtDate); break;
+    case 24: fnCheckType(dtString); break;
+    case 25: fnCheckType(dtReal34Matrix); break;
+    case 26: fnCheckType(dtComplex34Matrix); break;
+    case 27: fnCheckType(dtShortInteger); break;
+    case 28: fnCheckIsVect2d(NOPARAM); break;
+    case 29: fnCheckIsVect3d(NOPARAM); break;
+    default: break;
+  }
+  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+  int32ToReal34(temporaryInformation == TI_TRUE ? 1 : 0, REGISTER_REAL34_DATA(REGISTER_X));
+  temporaryInformation = TI_NO_INFO;
+}
+
+/********************************************//**
+ * \brief Check decimal-wrapper conversions, copies, signs, aliases, and storage boundaries.
+ *
+ * \param[in] which uint16_t
+ * \return void
+ ***********************************************/
+void covRealType(uint16_t which) {
+  realContext_t context = ctxtReal75;
+
+  switch(which) {
+    case 0: {
+      static const struct {
+        const char *source;
+        uint32_t result;
+        bool_t error;
+      } cases[] = {
+        {"-0",                                                 0,          false},
+        {"4294967295.999999999999999999999999999999999999", 4294967295u, false},
+        {"4294967296",                                         0,          true },
+        {"-0.1",                                               0,          true },
+        {"Infinity",                                           0,          true },
+        {"NaN",                                                0,          true },
+      };
+
+      for(uint16_t i = 0; i < nbrOfElements(cases); i++) {
+        real_t value;
+        bool_t error = !cases[i].error;
+        stringToReal(cases[i].source, &value, &context);
+        if(realToUint32C47(&value, &error) != cases[i].result || error != cases[i].error) {
+          abortTest();
+          return;
+        }
+      }
+      return;
+    }
+
+    case 1: {
+      static const struct {
+        const char *source;
+        int32_t result;
+        bool_t error;
+      } cases[] = {
+        {"-0",                                                  0,           false},
+        {"2147483647.999999999999999999999999999999999999",  2147483647,  false},
+        {"-2147483648.999999999999999999999999999999999999", INT32_MIN,   false},
+        {"2147483648",                                         0,           true },
+        {"-2147483649",                                        0,           true },
+        {"-Infinity",                                          0,           true },
+        {"NaN",                                                0,           true },
+      };
+
+      for(uint16_t i = 0; i < nbrOfElements(cases); i++) {
+        real_t value;
+        bool_t error = !cases[i].error;
+        stringToReal(cases[i].source, &value, &context);
+        if(realToInt32C47(&value, &error) != cases[i].result || error != cases[i].error) {
+          abortTest();
+          return;
+        }
+      }
+      return;
+    }
+
+    case 2: {
+      typedef union {
+        uint64_t alignment;
+        uint8_t bytes[sizeof(complex34_t) + 4];
+      } copyStorage_t;
+      copyStorage_t sourceStorage, destinationStorage;
+      complex34_t *source = (complex34_t *)(sourceStorage.bytes + 4);
+      complex34_t *destination = (complex34_t *)(destinationStorage.bytes + 4);
+
+      if(((uintptr_t)source & 7u) != 4u || ((uintptr_t)destination & 7u) != 4u) {
+        abortTest();
+        return;
+      }
+      stringToReal34("-0", VARIABLE_REAL34_DATA(source));
+      stringToReal34("sNaN123", VARIABLE_IMAG34_DATA(source));
+      real34SetOne(VARIABLE_REAL34_DATA(destination));
+      real34SetOne(VARIABLE_IMAG34_DATA(destination));
+      real34Copy(VARIABLE_REAL34_DATA(source), VARIABLE_REAL34_DATA(destination));
+      if(memcmp(VARIABLE_REAL34_DATA(source), VARIABLE_REAL34_DATA(destination), sizeof(real34_t)) != 0) {
+        abortTest();
+        return;
+      }
+      complex34Copy(source, destination);
+      if(memcmp(source, destination, sizeof(complex34_t)) != 0) {
+        abortTest();
+      }
+      return;
+    }
+
+    case 3: {
+      real34_t value, original;
+      complex34_t complex, complexOriginal;
+
+      stringToReal34("NaN123", &value);
+      if(!real34IsNaN(&value) || !real34IsPositive(&value)) {
+        abortTest();
+        return;
+      }
+      real34SetNegativeSign(&value);
+      if(!real34IsNaN(&value) || !real34IsNegative(&value)) {
+        abortTest();
+        return;
+      }
+      real34Copy(&value, &original);
+      real34ChangeSign(&value);
+      real34ChangeSign(&value);
+      if(memcmp(&value, &original, sizeof(real34_t)) != 0) {
+        abortTest();
+        return;
+      }
+      real34SetPositiveSign(&value);
+      if(!real34IsNaN(&value) || !real34IsPositive(&value)) {
+        abortTest();
+        return;
+      }
+
+      stringToReal34("-0", VARIABLE_REAL34_DATA(&complex));
+      stringToReal34("Infinity", VARIABLE_IMAG34_DATA(&complex));
+      complex34Copy(&complex, &complexOriginal);
+      complex34ChangeSign(&complex);
+      complex34ChangeSign(&complex);
+      if(memcmp(&complex, &complexOriginal, sizeof(complex34_t)) != 0) {
+        abortTest();
+      }
+      return;
+    }
+
+    case 4: {
+      real_t value, rounded;
+      real34_t left, right, expected, packed;
+      char result[96];
+
+      stringToReal("1.23456", &value, &context);
+      context.digits = 5;
+      context.round = DEC_ROUND_DOWN;
+      realAdd(&value, const_0, &rounded, &context);
+      realToString(&rounded, result);
+      if(strcmp(result, "1.2345") != 0) {
+        abortTest();
+        return;
+      }
+      context.round = DEC_ROUND_CEILING;
+      realPlus(&value, &value, &context);
+      realToString(&value, result);
+      if(strcmp(result, "1.2346") != 0) {
+        abortTest();
+        return;
+      }
+
+      stringToReal34("1.25", &left);
+      stringToReal34("2.5", &right);
+      real34Add(&left, &right, &left);
+      stringToReal34("3.75", &expected);
+      if(!real34CompareEqual(&left, &expected)) {
+        abortTest();
+        return;
+      }
+      real34FMA(&left, const34_2, const34_1, &left);
+      stringToReal34("8.5", &expected);
+      if(!real34CompareEqual(&left, &expected)) {
+        abortTest();
+        return;
+      }
+
+      context = ctxtReal75;
+      stringToReal("1.23456789012345678901234567890123455", &value, &context);
+      realToReal34(&value, &packed);
+      stringToReal34("1.234567890123456789012345678901235", &expected);
+      if(!real34CompareEqual(&packed, &expected)) {
+        abortTest();
+        return;
+      }
+      stringToReal34("-0", &left);
+      real34ToReal(&left, &value);
+      realToReal34(&value, &packed);
+      if(!real34IsZero(&packed) || !real34IsNegative(&packed)) {
+        abortTest();
+      }
+      return;
+    }
+
+    case 5: {
+      const angularMode_t savedAngularMode = currentAngularMode;
+      const bool_t savedTemporaryFlagPolar = temporaryFlagPolar;
+
+      fnEditMatrix(NOPARAM);
+      if(calcMode != CM_MIM) {
+        abortTest();
+        return;
+      }
+      currentAngularMode = amDegree;
+      temporaryFlagPolar = true;
+      mimAddNumber(ITM_op_j_pol);
+      mimEnter(true);
+      currentAngularMode = savedAngularMode;
+      temporaryFlagPolar = savedTemporaryFlagPolar;
+      mimFinalize();
+      calcModeNormal();
+      return;
+    }
+
+    case 6: {
+      REAL_T_PTR(value, 120);
+      realContext_t extendedContext = ctxtReal75;
+      bool_t error = false;
+
+      extendedContext.digits = 120;
+      stringToReal("9999999999999999999999999999999999999999"
+                   "9999999999999999999999999999999999999999"
+                   "9999999999999999999999999999999999999999", value, &extendedContext);
+      if(realToUint32C47(value, &error) != 0 || !error) {
+        abortTest();
+        return;
+      }
+
+      error = true;
+      stringToReal("1234567890.999999999999999999999999999999"
+                   "9999999999999999999999999999999999999999"
+                   "9999999999999999999999999999999999999999", value, &extendedContext);
+      if(realToUint32C47(value, &error) != 1234567890u || error) {
+        abortTest();
+      }
+      return;
+    }
+
+    default:
+      abortTest();
+  }
+}
+
+/********************************************//**
+ * \brief Expose comparison and error-predicate Boolean results in register X.
+ *
+ * \param[in] which uint16_t
+ * \return void
+ ***********************************************/
+void covComparisonTi(uint16_t which) {
+  real_t x, r;
+  bool_t result = false;
+
+  if(which <= 5) {
+    switch(which) {
+      case 0:
+        fnXEqualsTo(0);
+        break;
+      case 1:
+        fnXNotEqual(0);
+        break;
+      case 2:
+        fnXLessThan(0);
+        break;
+      case 3:
+        fnXLessEqual(0);
+        break;
+      case 4:
+        fnXGreaterThan(0);
+        break;
+      case 5:
+        fnXGreaterEqual(0);
+        break;
+    }
+    result = temporaryInformation == TI_TRUE;
+  }
+  else if(which == 6 || which == 7) {
+    reallocateRegister(TEMP_REGISTER_1, dtReal34, 0, amNone);
+    if(which == 6) {
+      real34SetZero(REGISTER_REAL34_DATA(TEMP_REGISTER_1));
+    }
+    else {
+      real34SetOne(REGISTER_REAL34_DATA(TEMP_REGISTER_1));
+    }
+    fnXEqualsTo(TEMP_REGISTER_1);
+    result = temporaryInformation == TI_TRUE;
+  }
+  else if(which >= 16 && which <= 23) {
+    fnIsConverged(which - 16);
+    result = temporaryInformation == TI_TRUE;
+  }
+  else if(getRegisterAsAnyRealQuiet(REGISTER_X, &x) && getRegisterAsAnyRealQuiet(0, &r)) {
+    switch(which) {
+      case 32:
+        result = realCompareGreaterThan(&x, &r);
+        break;
+      case 33:
+        result = realCompareGreaterEqual(&x, &r);
+        break;
+      case 34:
+        result = realCompareLessThan(&x, &r);
+        break;
+      case 35:
+        result = realCompareLessEqual(&x, &r);
+        break;
+      case 36:
+        result = realCompareAbsGreaterThan(&x, &r);
+        break;
+      case 37:
+        result = realCompareAbsLessThan(&x, &r);
+        break;
+      case 38:
+        result = realCompareEqual(&x, &r);
+        break;
+      case 39:
+        result = realCompareAbsEqual(&x, &r);
+        break;
+      case 42:
+        result = real34CompareGreaterThan(REGISTER_REAL34_DATA(REGISTER_X), REGISTER_REAL34_DATA(0));
+        break;
+      case 43:
+        result = real34CompareGreaterEqual(REGISTER_REAL34_DATA(REGISTER_X), REGISTER_REAL34_DATA(0));
+        break;
+      case 44:
+        result = real34CompareLessThan(REGISTER_REAL34_DATA(REGISTER_X), REGISTER_REAL34_DATA(0));
+        break;
+      case 45:
+        result = real34CompareLessEqual(REGISTER_REAL34_DATA(REGISTER_X), REGISTER_REAL34_DATA(0));
+        break;
+      case 46:
+        result = real34CompareAbsGreaterThan(REGISTER_REAL34_DATA(REGISTER_X), REGISTER_REAL34_DATA(0));
+        break;
+      case 47:
+        result = real34CompareAbsLessThan(REGISTER_REAL34_DATA(REGISTER_X), REGISTER_REAL34_DATA(0));
+        break;
+      case 48:
+        ctxtReal39.status = 0;
+        result = !realCompareGreaterThan(&x, &r) && ctxtReal39.status == 0;
+        break;
+    }
+  }
+
+  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+  int32ToReal34(result ? 1 : 0, REGISTER_REAL34_DATA(REGISTER_X));
   temporaryInformation = TI_NO_INFO;
 }
 
@@ -1473,6 +2073,95 @@ void covStatsRegister(uint16_t unusedButMandatoryParameter) {
   }
 }
 
+void covHistoElement(uint16_t element) {
+  const calcRegister_t regHisto = findNamedVariable("HISTO");
+  if(regHisto == INVALID_VARIABLE || getRegisterDataType(regHisto) != dtReal34Matrix) {
+    displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE);
+    return;
+  }
+
+  real34Matrix_t histo;
+  linkToRealMatrixRegister(regHisto, &histo);
+  if(element >= histo.header.matrixRows * histo.header.matrixColumns) {
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
+    return;
+  }
+
+  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+  real34Copy(histo.matrixElements + element, REGISTER_REAL34_DATA(REGISTER_X));
+}
+
+void covVarianceCentred(uint16_t which) {
+  const uint16_t rows = which == 0 ? 3200 : 30;
+  calcRegister_t regStats;
+  real34Matrix_t stats;
+  real34_t base, factor, offset;
+  real_t x, y, product;
+
+  fnClSigma(NOPARAM);
+  regStats = allocateNamedMatrix("STATS", rows, 2);
+  if(regStats == INVALID_VARIABLE) {
+    return;
+  }
+  linkToRealMatrixRegister(regStats, &stats);
+  if(which == 0) {
+    for(uint16_t i = 0; i < rows; ++i) {
+      stringToReal34("999999999999999999999.9999999999998", stats.matrixElements + i * 2);
+      stringToReal34("999999999999999999999.9999999999998", stats.matrixElements + i * 2 + 1);
+    }
+    stringToReal34("999999999999999999999.9999999999999", stats.matrixElements + (rows - 2) * 2);
+    stringToReal34("999999999999999999999.9999999999999", stats.matrixElements + (rows - 1) * 2 + 1);
+  }
+  else if(which == 1) {
+    for(uint16_t i = 0; i < rows; ++i) {
+      uInt32ToReal34(i + 1, stats.matrixElements + i * 2);
+      uInt32ToReal34((i + 1) * 2, stats.matrixElements + i * 2 + 1);
+    }
+    stringToReal34("60.00000000000000000000000000000001", stats.matrixElements + (rows - 1) * 2 + 1);
+  }
+  else if(which == 2) {
+    stringToReal34("1e33", &base);
+    for(uint16_t i = 0; i < rows; ++i) {
+      uInt32ToReal34(i + 1, &offset);
+      real34Add(&base, &offset, stats.matrixElements + i * 2);
+      uInt32ToReal34((i + 1) * 2, &offset);
+      real34Add(&base, &offset, stats.matrixElements + i * 2 + 1);
+    }
+    uInt32ToReal34(61, &offset);
+    real34Add(&base, &offset, stats.matrixElements + (rows - 1) * 2 + 1);
+  }
+  else {
+    stringToReal34("0.7399186288315937266742894445670843", &factor);
+    stringToReal34("0.5864434650420650964750568648637454", &offset);
+    real34Multiply(&factor, &offset, &base);
+    for(uint16_t i = 0; i < 10; ++i) {
+      real34SetZero(stats.matrixElements + i * 2);
+      real34SetZero(stats.matrixElements + i * 2 + 1);
+      real34SetOne(stats.matrixElements + (i + 10) * 2);
+      real34Copy(&factor, stats.matrixElements + (i + 10) * 2 + 1);
+      real34Copy(&offset, stats.matrixElements + (i + 20) * 2);
+      real34Copy(&base, stats.matrixElements + (i + 20) * 2 + 1);
+    }
+  }
+  initStatisticalSums();
+  if(statisticalSumsPointer == NULL) {
+    return;
+  }
+  uInt32ToReal(rows, SIGMA_N);
+  for(uint16_t i = 0; i < rows; ++i) {
+    real34ToReal(stats.matrixElements + i * 2, &x);
+    real34ToReal(stats.matrixElements + i * 2 + 1, &y);
+    realAdd(SIGMA_X, &x, SIGMA_X, &ctxtReal75);
+    realAdd(SIGMA_Y, &y, SIGMA_Y, &ctxtReal75);
+    realMultiply(&x, &x, &product, &ctxtReal75);
+    realAdd(SIGMA_X2, &product, SIGMA_X2, &ctxtReal75);
+    realMultiply(&y, &y, &product, &ctxtReal75);
+    realAdd(SIGMA_Y2, &product, SIGMA_Y2, &ctxtReal75);
+    realMultiply(&x, &y, &product, &ctxtReal75);
+    realAdd(SIGMA_XY, &product, SIGMA_XY, &ctxtReal75);
+  }
+}
+
 void covPolarDisplayCap(uint16_t unusedButMandatoryParameter) {
   // Gates POLAR_DISPLAY_COMPUTE_DIGITS, the fixed rect->polar compute width the polar stack display uses (complex34ToDisplayString2, MR !1615) instead of one scaled
   // by the operand exponent. Each adversarial probe (wide exponent spread, near-axis, near-45deg, tiny, huge, zero angle) compares the capped magnitude and angle to a
@@ -1490,11 +2179,12 @@ void covPolarDisplayCap(uint16_t unusedButMandatoryParameter) {
     cRef.digits = 75;                             // full-precision reference
     decContext cDsp = ctxtReal39;
     cDsp.digits = 17;                             // figures the polar line shows
-    real_t re, im, magCap, thCap, magRef, thRef, roundCap, roundRef;
-    stringToReal(probes[i][0], &re, &cRef);
-    stringToReal(probes[i][1], &im, &cRef);
-    realRectangularToPolar(&re, &im, &magCap, &thCap, &cCap);
-    realRectangularToPolar(&re, &im, &magRef, &thRef, &cRef);
+    real_t magCap, thCap, magRef, thRef, roundCap, roundRef;
+    cplx_t z;
+    stringToReal(probes[i][0], &z.Real, &cRef);
+    stringToReal(probes[i][1], &z.Imag, &cRef);
+    realRectangularToPolar(&z, &magCap, &thCap, &cCap);
+    realRectangularToPolar(&z, &magRef, &thRef, &cRef);
 
     realPlus(&magCap, &roundCap, &cDsp);
     realPlus(&magRef, &roundRef, &cDsp);
@@ -1599,10 +2289,80 @@ void covScreenFma(uint16_t unusedButMandatoryParameter) {
   real34Copy(&result, REGISTER_REAL34_DATA(REGISTER_X));
 }
 
+void covPrinterNumber(uint16_t unusedButMandatoryParameter) {
+  const dataType_t dataType = getRegisterDataType(REGISTER_X);
+  if(dataType != dtReal34 && dataType != dtComplex34 && dataType != dtComplex34Matrix) {
+    abortTest();
+    return;
+  }
+
+  char formatted[160];
+  const uint8_t savedDisplayFormat = displayFormat;
+  const uint8_t savedDisplayFormatDigits = displayFormatDigits;
+  const bool_t savedTemporaryFlagPolar = temporaryFlagPolar;
+  const uint16_t savedTemporaryInformation = temporaryInformation;
+  displayFormat = DF_ALL;
+  displayFormatDigits = 0;
+  temporaryInformation = TI_NO_INFO;
+  if(dataType == dtReal34) {
+    printerReal34ToStringForTest(REGISTER_REAL34_DATA(REGISTER_X), formatted);
+  }
+  else if(dataType == dtComplex34) {
+    printerComplex34ToStringForTest(REGISTER_REAL34_DATA(REGISTER_X), REGISTER_IMAG34_DATA(REGISTER_X),
+                                   currentAngularMode, unusedButMandatoryParameter != 0, formatted);
+  }
+  else {
+    const complex34_t *element = REGISTER_COMPLEX34_MATRIX_ELEMENTS(REGISTER_X);
+    printerComplex34ToStringForTest(VARIABLE_REAL34_DATA(element), VARIABLE_IMAG34_DATA(element),
+                                   currentAngularMode, unusedButMandatoryParameter != 0, formatted);
+  }
+  displayFormat = savedDisplayFormat;
+  displayFormatDigits = savedDisplayFormatDigits;
+  temporaryFlagPolar = savedTemporaryFlagPolar;
+  temporaryInformation = savedTemporaryInformation;
+
+  reallocateRegister(REGISTER_X, dtString, TO_BLOCKS(stringByteLength(formatted) + 1), amNone);
+  strcpy(REGISTER_STRING_DATA(REGISTER_X), formatted);
+}
+
+void covRegParam(uint16_t options) {
+  const uint8_t savedLocalCount = currentNumberOfLocalRegisters;
+  bool_t negative = false;
+  uint16_t start = 0, number = 0, destination = 0;
+
+  currentNumberOfLocalRegisters = options >> 2;
+  const uint8_t error = getRegParam((options & 1) ? &negative : NULL, &start, &number, (options & 2) ? &destination : NULL);
+  currentNumberOfLocalRegisters = savedLocalCount;
+
+  reallocateRegister(REGISTER_T, dtReal34, 0, amNone);
+  reallocateRegister(REGISTER_Z, dtReal34, 0, amNone);
+  reallocateRegister(REGISTER_Y, dtReal34, 0, amNone);
+  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+  uInt32ToReal34(negative, REGISTER_REAL34_DATA(REGISTER_T));
+  uInt32ToReal34(start, REGISTER_REAL34_DATA(REGISTER_Z));
+  uInt32ToReal34(number, REGISTER_REAL34_DATA(REGISTER_Y));
+  uInt32ToReal34(destination, REGISTER_REAL34_DATA(REGISTER_X));
+  lastErrorCode = error;
+}
+
+void covIndirectRegParam(uint16_t localCount) {
+  const uint8_t savedLocalCount = currentNumberOfLocalRegisters;
+
+  currentNumberOfLocalRegisters = localCount;
+  const int16_t result = indirectAddressing(REGISTER_X, INDPM_REGISTER, 0, 99, false);
+  const uint8_t error = lastErrorCode;
+  currentNumberOfLocalRegisters = savedLocalCount;
+
+  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+  int32ToReal34(result, REGISTER_REAL34_DATA(REGISTER_X));
+  lastErrorCode = error;
+}
+
 void covLoadPgm(uint16_t unusedButMandatoryParameter) {
-  // Build and import three labelled RPN programs: S = X^2 - 4 (root at X=2, derivative 2X) for the solver / differentiator / integrator / real summation,
+  // Build and import seven labelled RPN programs: S = X^2 - 4 (root at X=2, derivative 2X) for the solver / differentiator / integrator / real summation,
   // T = X^2 (which returns a long integer for a long-integer counter) for the indexed summation, and M = X^2 behind a leading MVAR "A" so the interactive
-  // integrator accepts it (fnIntegrateErrCov FARG=3). All reach the execProgram branches the formula corpus cannot.
+  // integrator accepts it (fnIntegrateErrCov FARG=3). U, W and QV exercise a cancellation-sensitive sum, a range-sensitive product and mixed real/complex terms.
+  // All reach the execProgram branches the formula corpus cannot.
   // Bytes: LBL name / [MVAR name] / X^2 / [literal 4 / SUB] / END.
   static const uint8_t pgmS[] = {
     ITM_LBL, STRING_LABEL_VARIABLE, 1, 'S',            // LBL "S"
@@ -1622,8 +2382,71 @@ void covLoadPgm(uint16_t unusedButMandatoryParameter) {
     ITM_SQUARE,                                        // X^2
     (uint8_t)((ITM_END >> 8) | 0x80), (uint8_t)(ITM_END & 0xff), // END
   };
+  static const uint8_t pgmU[] = {                       // U: 1E100*(2-X) + 1-(X-2)^2, giving 1E100, 1, -1E100 at X=1,2,3
+    ITM_LBL, STRING_LABEL_VARIABLE, 1, 'U',
+    ITM_LITERAL, STRING_REAL34, 1, '2',
+    ITM_SUB,
+    ITM_CHS,
+    ITM_LITERAL, STRING_REAL34, 5, '1', 'E', '1', '0', '0',
+    ITM_MULT,
+    ITM_XexY,
+    ITM_LITERAL, STRING_REAL34, 1, '2',
+    ITM_SUB,
+    ITM_SQUARE,
+    ITM_LITERAL, STRING_REAL34, 1, '1',
+    ITM_SUB,
+    ITM_CHS,
+    ITM_ADD,
+    ITM_RTN,
+    (uint8_t)((ITM_END >> 8) | 0x80), (uint8_t)(ITM_END & 0xff),
+  };
+  static const uint8_t pgmW[] = {                       // W: 1E-6000 for negative X, 1E6000 otherwise
+    ITM_LBL, STRING_LABEL_VARIABLE, 1, 'W',
+    (uint8_t)((ITM_XLEM0 >> 8) | 0x80), (uint8_t)(ITM_XLEM0 & 0xff),
+    ITM_GTO, STRING_LABEL_VARIABLE, 2, 'W', 'S',
+    ITM_LITERAL, STRING_REAL34, 6, '1', 'E', '6', '0', '0', '0',
+    ITM_RTN,
+    ITM_LBL, STRING_LABEL_VARIABLE, 2, 'W', 'S',
+    ITM_LITERAL, STRING_REAL34, 7, '1', 'E', '-', '6', '0', '0', '0',
+    ITM_RTN,
+    (uint8_t)((ITM_END >> 8) | 0x80), (uint8_t)(ITM_END & 0xff),
+  };
+  static const uint8_t pgmV[] = {                       // QV: 3+4i at X=1, then the real value 2
+    ITM_LBL, STRING_LABEL_VARIABLE, 2, 'Q', 'V',
+    ITM_LITERAL, STRING_REAL34, 1, '1',
+    ITM_SUB,
+    ITM_XEQUP0,
+    ITM_GTO, STRING_LABEL_VARIABLE, 3, 'Q', 'V', 'C',
+    ITM_LITERAL, STRING_REAL34, 1, '2',
+    ITM_RTN,
+    ITM_LBL, STRING_LABEL_VARIABLE, 3, 'Q', 'V', 'C',
+    ITM_LITERAL, STRING_REAL34, 1, '3',
+    ITM_LITERAL, STRING_REAL34, 1, '4',
+    (uint8_t)((ITM_CC >> 8) | 0x80), (uint8_t)(ITM_CC & 0xff),
+    ITM_RTN,
+    (uint8_t)((ITM_END >> 8) | 0x80), (uint8_t)(ITM_END & 0xff),
+  };
+  static const uint8_t pgmC[] = {                       // WC: W's two factors converted to complex values on the real axis
+    ITM_LBL, STRING_LABEL_VARIABLE, 2, 'W', 'C',
+    (uint8_t)((ITM_XLEM0 >> 8) | 0x80), (uint8_t)(ITM_XLEM0 & 0xff),
+    ITM_GTO, STRING_LABEL_VARIABLE, 3, 'W', 'C', 'S',
+    ITM_LITERAL, STRING_REAL34, 6, '1', 'E', '6', '0', '0', '0',
+    ITM_LITERAL, STRING_REAL34, 1, '0',
+    (uint8_t)((ITM_REtoCX >> 8) | 0x80), (uint8_t)(ITM_REtoCX & 0xff),
+    ITM_RTN,
+    ITM_LBL, STRING_LABEL_VARIABLE, 3, 'W', 'C', 'S',
+    ITM_LITERAL, STRING_REAL34, 7, '1', 'E', '-', '6', '0', '0', '0',
+    ITM_LITERAL, STRING_REAL34, 1, '0',
+    (uint8_t)((ITM_REtoCX >> 8) | 0x80), (uint8_t)(ITM_REtoCX & 0xff),
+    ITM_RTN,
+    (uint8_t)((ITM_END >> 8) | 0x80), (uint8_t)(ITM_END & 0xff),
+  };
   covWriteAndLoadPgm(pgmS, sizeof(pgmS));
   covWriteAndLoadPgm(pgmT, sizeof(pgmT));
+  covWriteAndLoadPgm(pgmU, sizeof(pgmU));
+  covWriteAndLoadPgm(pgmW, sizeof(pgmW));
+  covWriteAndLoadPgm(pgmV, sizeof(pgmV));
+  covWriteAndLoadPgm(pgmC, sizeof(pgmC));
   covWriteAndLoadPgm(pgmM, sizeof(pgmM));
 }
 
@@ -1907,6 +2730,20 @@ void covProgramFlow(uint16_t which) {
     ITM_LBL, STRING_LABEL_VARIABLE, 1, 'C',
     (uint8_t)((ITM_END >> 8) | 0x80), (uint8_t)(ITM_END & 0xff),
   };
+  static const uint8_t pgmF[] = {                          // F: FORTOP compares squared complex magnitudes that differ at coefficient position 69
+    ITM_LBL, STRING_LABEL_VARIABLE, 1, 'F',
+    ITM_LITERAL, STRING_REAL34, 1, '0',                    // R01 counts body executions
+    ITM_STO, 1,
+    ITM_LITERAL, STRING_COMPLEX34, 8, '1', '+', 'i', '1', 'e', '-', '3', '4', // start: |z|^2 = 1 + 1E-68
+    ITM_LITERAL, STRING_COMPLEX34, 4, '1', '+', 'i', '0',                    // end:   |z|^2 = 1
+    ITM_LITERAL, STRING_COMPLEX34, 4, '1', '+', 'i', '0',                    // step
+    (uint8_t)((ITM_FORTOP >> 8) | 0x80), (uint8_t)(ITM_FORTOP & 0xff), 0,
+    ITM_LITERAL, STRING_REAL34, 1, '1',
+    ITM_STOADD, 1,
+    (uint8_t)((ITM_NEXT >> 8) | 0x80), (uint8_t)(ITM_NEXT & 0xff), 0,
+    ITM_RCL, 1,
+    (uint8_t)((ITM_END >> 8) | 0x80), (uint8_t)(ITM_END & 0xff),
+  };
 
   // Start from an empty program memory (this also drives fnClPAll in manage.c) so
   // the freshly loaded labels are unambiguous and the missing-label lookup in
@@ -1968,6 +2805,11 @@ void covProgramFlow(uint16_t which) {
       };
       covWriteAndLoadPgm(pgmL, sizeof(pgmL));
       fnExecute(findNamedLabel("L", GLOBAL_LABELS));
+      break;
+    }
+    case 7: { // the exact start radius exceeds the end radius by 1E-68, so a top-tested row executes no body pass
+      covWriteAndLoadPgm(pgmF, sizeof(pgmF));
+      fnExecute(findNamedLabel("F", GLOBAL_LABELS));
       break;
     }
     default: break;
@@ -2108,7 +2950,7 @@ void covDerivMvarPgm(uint16_t which) {
 }
 
 void covDerivAccPgm(uint16_t unusedButMandatoryParameter) {
-  // Load the fixtures the derivative accuracy tests differentiate. Seven functions, each reading its argument off the stack, and for each of them a first and a
+  // Load the fixtures the derivative accuracy tests differentiate. Ten functions, each reading its argument off the stack, and for most of them a first and a
   // second derivative wrapper, so every case is an ordinary program run: Func fnExecute with PGM="Xa" and the point in X. The functions are chosen for what they
   // do to the step: e^x is the smooth reference, ln and 1/x have exact rational derivatives at the points used, arcsin is taken beside the end of its domain
   // where a wide stencil samples outside it, tan is taken near its pole, sin is taken 159 periods out where a step relative to x spans many of them, and the
@@ -2128,6 +2970,11 @@ void covDerivAccPgm(uint16_t unusedButMandatoryParameter) {
     LBL2('K', 'e'), ITM_tan,    ITM_RTN,                                        // tan x
     LBL2('K', 'f'), ITM_sin,    ITM_RTN,                                        // sin x
     LBL2('K', 'g'), ITM_EXP, ITM_LITERAL, STRING_REAL34, 4, '1', 'E', '2', '0', ITM_ADD, ITM_RTN,   // e^x + 1E20
+    LBL2('K', 'h'), ITM_SQUAREROOTX, ITM_SQUARE, ITM_RTN,                       // sqrt(x)^2, defined only for x >= 0
+    LBL2('K', 'i'), ITM_SQUAREROOTX, ITM_SQUARE, ITM_LITERAL, STRING_REAL34, 4, '1', 'E', '2', '0', ITM_ADD, ITM_RTN,
+    LBL2('K', 'j'), ITM_SQUAREROOTX, ITM_SQUARE, ITM_LITERAL, STRING_REAL34, 35,
+                    '1', '.', '2', '3', '4', '5', '6', '7', '8', '9', '0', '1', '2', '3', '4', '5', '6', '7',
+                    '8', '9', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '1', '2', '3', '4', ITM_MULT, ITM_RTN,
     LBL2('K', 'm'), (uint8_t)((ITM_MVAR >> 8) | 0x80), (uint8_t)(ITM_MVAR & 0xff), STRING_LABEL_VARIABLE, 2, 'z', 'z',                                              \
                     ITM_RCL, STRING_LABEL_VARIABLE, 2, 'z', 'z', ITM_ENTER, ITM_MULT, ITM_RTN,   // zz squared behind MVAR zz, the one fixture that declares one
     LBL2('X', 'a'), DER1('K', 'a'), ITM_RTN,
@@ -2137,6 +2984,9 @@ void covDerivAccPgm(uint16_t unusedButMandatoryParameter) {
     LBL2('X', 'e'), DER1('K', 'e'), ITM_RTN,
     LBL2('X', 'f'), DER1('K', 'f'), ITM_RTN,
     LBL2('X', 'g'), DER1('K', 'g'), ITM_RTN,
+    LBL2('X', 'h'), DER1('K', 'h'), ITM_RTN,
+    LBL2('X', 'i'), DER1('K', 'i'), ITM_RTN,
+    LBL2('X', 'j'), DER1('K', 'j'), ITM_RTN,
     LBL2('Y', 'a'), DER2('K', 'a'), ITM_RTN,
     LBL2('Y', 'b'), DER2('K', 'b'), ITM_RTN,
     LBL2('Y', 'c'), DER2('K', 'c'), ITM_RTN,
@@ -2144,6 +2994,8 @@ void covDerivAccPgm(uint16_t unusedButMandatoryParameter) {
     LBL2('Y', 'e'), DER2('K', 'e'), ITM_RTN,
     LBL2('Y', 'f'), DER2('K', 'f'), ITM_RTN,
     LBL2('Y', 'g'), DER2('K', 'g'), ITM_RTN,
+    LBL2('Y', 'i'), DER2('K', 'i'), ITM_RTN,
+    LBL2('Z', 'f'), DER2('K', 'f'), ITM_LITERAL, STRING_REAL34, 4, '1', 'E', '4', '0', ITM_MULT, ITM_RTN,
     LBL2('X', 'm'), DER1('K', 'm'), ITM_RTN,
     LBL2('Y', 'm'), DER2('K', 'm'), ITM_RTN,
     (uint8_t)((ITM_END >> 8) | 0x80), (uint8_t)(ITM_END & 0xff),
@@ -2233,6 +3085,27 @@ void covIntegrate(uint16_t which) {
     "X+1",                            // 2  integral of X+1   over [0,2] = 4
     "X" STD_CROSS "X" STD_CROSS "X",  // 3  integral of X^3   over [0,2] = 4
     "2" STD_CROSS "X",                // 4  integral of 2*X   over [0,3] = 9
+    "EXP(-X)",                        // 5  integral over [0,+inf] = 1
+    "EXP(X)",                         // 6  integral over [-inf,0] = 1
+    "EXP(-X^2)",                      // 7  integral over [-inf,+inf] = sqrt(pi)
+    "X^(-0.5)",                       // 8  endpoint singularity over [0,1], integral = 2
+    "LN(X)",                          // 9  endpoint singularity over [0,1], integral = -1
+    "1",                              // 10 interval width
+    "X",                              // 11 odd cancellation over a symmetric interval
+    "EXP(-X^2)",                      // 12 reduced-context whole-line Gaussian
+    "EXP(-X^2)",                      // 13 adjacent reduced-context whole-line Gaussian
+    "(1+1E4" STD_CROSS "X)" STD_CROSS "EXP(-X^2)", // 14 conditioned whole-line Gaussian
+    "1",                              // 15 finite constant at full accuracy
+    "EXP(-X^2)",                      // 16 negative requested accuracy
+    "X",                              // 17 NaN requested accuracy
+    "EXP(X)",                         // 18 low-accuracy exponential
+    "1/(1+X)",                        // 19 low-accuracy logarithm integral
+    "EXP(-10" STD_CROSS "X)",         // 20 low-accuracy decaying exponential
+    "1+i",                           // 21 nonreal integrand
+    "EXP(-X^2)",                      // 22 infinite requested accuracy
+    "EXP(-X/1E-6000)",                // 23 narrow semi-infinite exponential
+    "EXP(X/1E-6000)",                 // 24 narrow left semi-infinite exponential
+    "EXP(-X/1E6000)",                 // 25 broad semi-infinite exponential
   };
   const uint16_t n = sizeof(covIntegrand) / sizeof(covIntegrand[0]);
   if(which >= n) {
@@ -2248,8 +3121,81 @@ void covIntegrate(uint16_t which) {
   // Accuracy: zero the ACC reserved variable, which the integrator reads as the default 1e-32 tolerance. This does not touch X/Y,
   // which carry the limits that fnIntegrateYX reads (upper from X, lower from Y).
   reallocateRegister(RESERVED_VARIABLE_ACC, dtReal34, 0, amNone);
-  int32ToReal34(0, REGISTER_REAL34_DATA(RESERVED_VARIABLE_ACC));
+  if(which == 17) {
+    stringToReal34("NaN", REGISTER_REAL34_DATA(RESERVED_VARIABLE_ACC));
+  }
+  else if(which == 22) {
+    stringToReal34("Infinity", REGISTER_REAL34_DATA(RESERVED_VARIABLE_ACC));
+  }
+  else if(which == 13) {
+    stringToReal34("3e-6", REGISTER_REAL34_DATA(RESERVED_VARIABLE_ACC));
+  }
+  else if(which == 10 || which == 12) {
+    stringToReal34("1e-6", REGISTER_REAL34_DATA(RESERVED_VARIABLE_ACC));
+  }
+  else if(which == 16) {
+    stringToReal34("-1e-6", REGISTER_REAL34_DATA(RESERVED_VARIABLE_ACC));
+  }
+  else if((which >= 18 && which <= 20) || (which >= 23 && which <= 25)) {
+    stringToReal34("1e-6", REGISTER_REAL34_DATA(RESERVED_VARIABLE_ACC));
+  }
+  else {
+    int32ToReal34(0, REGISTER_REAL34_DATA(RESERVED_VARIABLE_ACC));
+  }
   fnIntegrateYX(var);
+}
+
+void covIntegrateCheck(uint16_t which) {
+  static const uint16_t integrand[] = {12, 10, 15, 16, 13, 18, 19, 20, 23, 24, 25};
+  real_t value, reference, difference, bound;
+  bool_t isAccurate;
+
+  if(which >= sizeof(integrand) / sizeof(integrand[0])) {
+    return;
+  }
+  covIntegrate(integrand[which]);
+  if(lastErrorCode != ERROR_NONE || getRegisterDataType(REGISTER_X) != dtReal34) {
+    return;
+  }
+  real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &value);
+  if(which == 1) {
+    stringToReal("1e-1000", &reference, &ctxtReal39);
+  }
+  else if(which == 2) {
+    realSetOne(&reference);
+  }
+  else if(which == 5) {
+    stringToReal("1.718281828459045235360287471352663", &reference, &ctxtReal39);
+  }
+  else if(which == 6) {
+    stringToReal("0.6931471805599453094172321214581766", &reference, &ctxtReal39);
+  }
+  else if(which == 7) {
+    stringToReal("0.09999546000702375151484644084844394", &reference, &ctxtReal39);
+  }
+  else if(which == 8 || which == 9) {
+    stringToReal("1e-6000", &reference, &ctxtReal39);
+  }
+  else if(which == 10) {
+    stringToReal("1e6000", &reference, &ctxtReal39);
+  }
+  else {
+    realCopy(const39_rtpi, &reference);
+  }
+  realSubtract(&value, &reference, &difference, &ctxtReal39);
+  realSetPositiveSign(&difference);
+  if(which == 2) {
+    isAccurate = realIsZero(&difference);
+  }
+  else {
+    realMultiply(realCopyAbs(&reference, &bound), const_1e_6, &bound, &ctxtReal39);
+    if(which == 4) {
+      realMultiply(&bound, const_3, &bound, &ctxtReal39);
+    }
+    isAccurate = realCompareLessEqual(&difference, &bound);
+  }
+  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+  int32ToReal34(isAccurate, REGISTER_REAL34_DATA(REGISTER_X));
 }
 
 void covIntegrateErr(uint16_t which) {
@@ -2414,13 +3360,25 @@ void covMatrixEditorScroll(uint16_t which) {
   int32ToReal34(reported, REGISTER_REAL34_DATA(REGISTER_X));
 }
 
-void covIntegratePgm(uint16_t unusedButMandatoryParameter) {
+void covIntegratePgm(uint16_t which) {
   // Program-based integral: integrate the loaded program S (f(X)=X^2-4) over [Y,X] through fnPgmInt -> the integrator's execProgram branch (integrate.c),
   // distinct from the formula path covIntegrate drives. Integral of X^2-4 over [0,3] is [X^3/3 - 4X] = 9 - 12 = -3. Requires the sample programs staged,
   // so its corpus runs after programs.txt.
-  const calcRegister_t label = findNamedLabel("S", GLOBAL_LABELS);
+  // which = 1 loads and integrates L instead, a long integer wider than the integrator's 39-digit buffers.
+  static const uint8_t pgmL[] = {                       // L: 2^200 from long-integer literals, for every X
+    ITM_LBL, STRING_LABEL_VARIABLE, 1, 'L',
+    ITM_LITERAL, STRING_LONG_INTEGER, 1, '2',
+    ITM_LITERAL, STRING_LONG_INTEGER, 3, '2', '0', '0',
+    ITM_YX,
+    (uint8_t)((ITM_END >> 8) | 0x80), (uint8_t)(ITM_END & 0xff),
+  };
+  if(which == 1) {
+    covWriteAndLoadPgm(pgmL, sizeof(pgmL));
+  }
+  const char *name = which == 1 ? "L" : "S";
+  const calcRegister_t label = findNamedLabel(name, GLOBAL_LABELS);
   if(label == INVALID_VARIABLE) {
-    printf("\nUnknown global label: S\n");
+    printf("\nUnknown global label: %s\n", name);
     abortTest();
     return;
   }
@@ -2435,14 +3393,15 @@ void covSumProd(uint16_t which) {
   // Program-based summation / product (sumprod.c). fnProgrammableSum / fnProgrammableProduct run the loaded program S (f(n)=n^2-4) for the counter n = Z, Z+X, ...
   // up to Y (from=Z, to=Y, step=X on the stack), accumulating the sum or product of f(n). For n=3,4,5: sum = 5+12+21 = 38, product = 5*12*21 = 1260.
   // Requires the sample programs staged, so its corpus runs after programs.
-  const calcRegister_t label = findNamedLabel("S", GLOBAL_LABELS);
+  const char *name = which == 2 ? "U" : which == 3 ? "W" : which == 4 ? "QV" : which == 7 ? "WC" : "S";
+  const calcRegister_t label = findNamedLabel(name, GLOBAL_LABELS);
   if(label == INVALID_VARIABLE) {
-    printf("\nUnknown global label: S\n");
+    printf("\nUnknown global label: %s\n", name);
     abortTest();
     return;
   }
   currentSolverStatus = 0;
-  if(which == 1) {
+  if(which == 1 || which == 3 || which == 7) {
     fnProgrammableProduct(label);
   }
   else {
@@ -3083,6 +4042,52 @@ void covRealToDouble(uint16_t unusedButMandatoryParameter) {
   uInt32ToLongInteger(fails, li);
   convertLongIntegerToLongIntegerRegister(li, REGISTER_X);
   longIntegerFree(li);
+}
+
+/**
+ * Exercises the wide-real to Real34 result boundary.
+ */
+void covResultConversion(uint16_t which) {
+  real_t real, imaginary;
+
+  switch(which) {
+    case 0:
+      stringToReal("5.0000000000000000000000000000000000000001E-6177", &real, &ctxtReal75);
+      convertRealToResultRegister(&real, REGISTER_X, amNone);
+      break;
+    case 1:
+      stringToReal("-5.0000000000000000000000000000000000000001E-6177", &real, &ctxtReal75);
+      convertRealToResultRegister(&real, REGISTER_X, amNone);
+      break;
+    case 2:
+      stringToReal("4.9999999999999999999999999999999999999999E-6177", &real, &ctxtReal75);
+      convertRealToResultRegister(&real, REGISTER_X, amNone);
+      break;
+    case 3:
+      stringToReal("5.0000000000000000000000000000000000000001E-6177", &real, &ctxtReal75);
+      stringToReal("-5.0000000000000000000000000000000000000001E-6177", &imaginary, &ctxtReal75);
+      convertComplexPartsToResultRegister(&real, &imaginary, REGISTER_X);
+      break;
+    case 4:
+      stringToReal("Infinity", &real, &ctxtReal75);
+      stringToReal("-0", &imaginary, &ctxtReal75);
+      convertComplexPartsToResultRegister(&real, &imaginary, REGISTER_X);
+      break;
+    default:
+      stringToReal("1.2345000000000000000000000000000000000001", &real, &ctxtReal75);
+      convertRealToResultRegister(&real, REGISTER_X, amNone);
+      break;
+  }
+}
+
+/**
+ * Applies the common result policy to an input supplied by the corpus.
+ */
+void covAdjustResult(uint16_t which) {
+  calcRegister_t result = which == 0 ? REGISTER_X : REGISTER_Y;
+  if(saveLastX()) {
+    adjustResult(result, false, false, result, -1, -1);
+  }
 }
 
 // The on-disk name of graph <which>'s bitmap. covBmpName points the SNAP capture at it and covHashBmp reads it back; one builder keeps the two from drifting.
@@ -4688,20 +5693,20 @@ static uint32_t parseComplexLiteral(char *r, char *real, char *imag, char *angMo
   }
 
   if(*polarLiteral) {
-    real_t magnitude, theta;
+    cplx_t z;
     real34_t re34, im34;
     stringToReal34(real, &re34);
     stringToReal34(imag, &im34);
-    real34ToReal(&re34, &magnitude);
-    real34ToReal(&im34, &theta);
-    convertAngleFromTo(&theta, am, amRadian, &ctxtReal39);
-    if(realCompareLessThan(&magnitude, const_0)) {
-      realSetPositiveSign(&magnitude);
-      realAdd(&theta, const39_pi, &theta, &ctxtReal39);
+    real34ToReal(&re34, &z.Mag);
+    real34ToReal(&im34, &z.Arg);
+    convertAngleFromTo(&z.Arg, am, amRadian, &ctxtReal39);
+    if(realCompareLessThan(&z.Mag, const_0)) {
+      realSetPositiveSign(&z.Mag);
+      realAdd(&z.Arg, const39_pi, &z.Arg, &ctxtReal39);
     }
-    realPolarToRectangular(&magnitude, &theta, &magnitude, &theta, &ctxtReal39); // theta in radian
-    realToReal34(&magnitude, &re34);
-    realToReal34(&theta,     &im34);
+    realPolarToRectangular(&z.Mag, &z.Arg, &z, &ctxtReal39);                     // theta in radian
+    realToReal34(&z.Real, &re34);
+    realToReal34(&z.Imag, &im34);
     real34ToString(&re34, real);
     real34ToString(&im34, imag);
     strcpy(r, real);
@@ -4767,11 +5772,41 @@ void checkRegisterType(calcRegister_t regist, char letter, uint32_t expectedData
 
 
 
-int relativeErrorReal34(real34_t *expectedValue34, real34_t *value34, char *numberPart, calcRegister_t regist, char letter) {
-  real_t expectedValue, value, relativeError;
+// A wide value into a real34 the one way the firmware rounds a result: to the significant digit count convertRealToReal34ResultRegister uses, registerValueConversions.c, keeping
+// the finite value where an SDIGS rounding overflows the Real34 exponent ceiling, as adjustRealRegister does. Both the Out: reference and the register value under test take this
+// route, so the two are compared at the same working precision the calculator produced them at.
+static void referenceWideToReal34(const real_t *wide, real34_t *out) {
+  real_t rounded;
+  roundToSignificantDigits(wide, &rounded, significantDigits == 0 ? 34 : significantDigits, &ctxtReal75);
+  realToReal34(&rounded, out);
+  if(real34IsInfinite(out)) {
+    realToReal34(wide, out);
+  }
+}
 
+
+// An Out: reference value into a real34, rounded the one way the firmware rounds a result, so a reference carried to more than 34 digits lands on the same 34 the calculator
+// produces. The string is read at the 75 digit context and rounded to the significant digit count convertRealToReal34ResultRegister uses, registerValueConversions.c. A
+// reference already at 34 digits is unchanged, so the existing files read exactly as before.
+void expectedReferenceToReal34(const char *text, real34_t *out) {
+  real_t wide;
+  stringToReal(text, &wide, &ctxtReal75);
+  referenceWideToReal34(&wide, out);
+}
+
+
+int relativeErrorReal34(real34_t *expectedValue34, real34_t *value34, char *numberPart, calcRegister_t regist, char letter) {
+  real_t expectedValue, value, relativeError, valueWide;
+  real34_t value34Rounded;
+
+  // The register under test takes the same rounding as the reference, so a value and a reference that agree to the significant digits in force compare equal.
+  real34ToReal(value34, &valueWide);
+  referenceWideToReal34(&valueWide, &value34Rounded);
+  if(real34CompareEqual(expectedValue34, &value34Rounded)) {                                                            // equal at the working precision is a pass; the relative error below reads an exact zero as -1 correct digits
+    return RE_ACCURATE;
+  }
   real34ToReal(expectedValue34, &expectedValue);
-  real34ToReal(value34, &value);
+  real34ToReal(&value34Rounded, &value);
 
   realSubtract(&expectedValue, &value, &relativeError, &ctxtReal39);
 
@@ -4795,12 +5830,12 @@ int relativeErrorReal34(real34_t *expectedValue34, real34_t *value34, char *numb
     if(letter == 0) {
       printf("\nThere are only %d correct significant digits in the %s part of register %d! Relative error is %s\n", correctSignificantDigits, numberPart, regist, realString);
       printf("R%d = ", regist);
-      printReal34ToConsole(value34, "", "\n");
+      printReal34ToConsole(&value34Rounded, "", "\n");
     }
     else {
       printf("\nThere are only %d correct significant digits in the %s part of register %c! Relative error is %s\n", correctSignificantDigits, numberPart, letter, realString);
       printf("%c = ", letter);
-      printReal34ToConsole(value34, "", "\n");
+      printReal34ToConsole(&value34Rounded, "", "\n");
     }
     printf("%s\n", lastInParameters);
     printf("%s\n", line);
@@ -5556,12 +6591,13 @@ void checkExpectedOutParameter(char *p) {
       REAL_T_FREE(xfnValue, 1071);
     }
 
-    //Checking the 34-digit value the XFN view shows, the X x Y + Z line over the stack on the XFCNS menu: xfnViewValue, the call the view line makes
+    //Checking the 34-digit value the XFN view shows, the X x Y + Z line over the stack on the XFCNS menu: registerFMA, the call the view line makes
     else if(strcmp(l, "XFNW") == 0) {
+      real_t product, term, addend;
       real34_t viewValue;
       angularMode_t viewAngle;
       char text[64];
-      if(!xfnViewValue(REGISTER_X, &viewValue, &viewAngle)) {
+      if(!isXFNregisterValid3r(REGISTER_X) || !registerFMA(REGISTER_X, &product, &term, &addend, &viewValue, &viewAngle, &ctxtReal34)) {
         printf("\nRegisters X, Y and Z should be an XFN triple for XFNW but they are not!\n");
         abortTest();
       }
@@ -5803,22 +6839,23 @@ void checkExpectedOutParameter(char *p) {
   //Checking error code
   else if(strcmp(l, "EC") == 0) {
     if(   (r[0] >= '0' && r[0] <= '9' && r[1] == 0)
-       || (r[0] >= '0' && r[0] <= '9' && r[1] >= '0' && r[1] <= '9' && r[2] == 0)) {
+       || (r[0] >= '0' && r[0] <= '9' && r[1] >= '0' && r[1] <= '9' && r[2] == 0)
+       || (r[0] >= '0' && r[0] <= '9' && r[1] >= '0' && r[1] <= '9' && r[2] >= '0' && r[2] <= '9' && r[3] == 0)) {
       uint16_t ec = atoi(r);
 
-      if(ec <= NUMBER_OF_ERROR_CODES) {
+      if(ec < NUMBER_OF_ERROR_CODES) {
         if(lastErrorCode != ec) {
           printf("\nLast error code should be %u (%s) but it is %u (%s)!\n", ec, errorMessageOf(ec), lastErrorCode, errorMessageOf(lastErrorCode));
           abortTest();
         }
       }
       else {
-        printf("\nMalformed error code checking. The rvalue must be a number from 0 to 28.\n");
+        printf("\nMalformed error code checking. The rvalue must be a number from 0 to %u.\n", NUMBER_OF_ERROR_CODES - 1);
         abortTest();
       }
     }
     else {
-      printf("\nMalformed error code checking. The rvalue must be a number from 0 to 28.\n");
+      printf("\nMalformed error code checking. The rvalue must be a number from 0 to %u.\n", NUMBER_OF_ERROR_CODES - 1);
       abortTest();
     }
   }
@@ -5962,7 +6999,7 @@ var2:
       }
 
       checkRegisterType(regist, letter, dtReal34, am);
-      stringToReal34(r, &expectedReal34);
+      expectedReferenceToReal34(r, &expectedReal34);
       if(!real34AreEqual(REGISTER_REAL34_DATA(regist), &expectedReal34)) {
         expectedAndShouldBeValue(regist, letter, r, registerExpectedAndValue);
         if(relativeErrorReal34(&expectedReal34, REGISTER_REAL34_DATA(regist), "real", regist, letter) == RE_INACCURATE) {
@@ -6056,8 +7093,8 @@ var2:
         abortTest();
       }
 
-      stringToReal34(real, &expectedReal34);
-      stringToReal34(imag, &expectedImag34);
+      expectedReferenceToReal34(real, &expectedReal34);
+      expectedReferenceToReal34(imag, &expectedImag34);
       if(!real34AreEqual(REGISTER_REAL34_DATA(regist), &expectedReal34)) {
         if(imag[0] == '-') {
           strcat(r, " -ix ");
@@ -6322,7 +7359,7 @@ var2:
             i++;
           }
           if(r[i] == '[') {
-            real_t *xr1 = NULL, *xi1 = NULL;
+            cplx_t *x1 = NULL;
             bool_t isCheckingEigenvectors;
             bool_t *xf1 = NULL;
             r[i] = 0;
@@ -6330,12 +7367,11 @@ var2:
             isCheckingEigenvectors = (funcType == FUNC_TO_TEST) && (funcToTest == fnEigenvectors) && (regist == REGISTER_X) && (rows == cols);
             xcopy(r, r + i + 1, strlen(r + i + 1) + 1);
             if(isCheckingEigenvectors) {
-              xr1 = malloc(REAL_SIZE_IN_BYTES(75) * cols);
-              xi1 = malloc(REAL_SIZE_IN_BYTES(75) * cols);
+              x1 = malloc(sizeof(cplx_t) * cols);
               xf1 = malloc(sizeof(bool_t) * cols);
               for(int col = 0; col < cols; ++col) {
-                realSetZero(xr1 + col);
-                realSetZero(xi1 + col);
+                realSetZero(&x1[col].Real);
+                realSetZero(&x1[col].Imag);
                 xf1[col] = false;
               }
             }
@@ -6354,15 +7390,15 @@ var2:
               for(int element = 0; element < rows * cols; ++element) {
                 bool_t lastElement = false;
                 if(isCheckingEigenvectors && element < cols) {
-                  real_t xr, xi;
+                  cplx_t x;
                   for(int row = 0; row < rows; ++row) {
-                    real34ToReal(VARIABLE_REAL34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist) + element + row * cols), &xr);
-                    real34ToReal(VARIABLE_IMAG34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist) + element + row * cols), &xi);
-                    mulComplexComplex(&xr, &xi, &xr, &xi, &xr, &xi, &ctxtReal39);
-                    realAdd(&xr, xr1 + element % cols, xr1 + element % cols, &ctxtReal39);
-                    realAdd(&xi, xi1 + element % cols, xi1 + element % cols, &ctxtReal39);
+                    real34ToReal(VARIABLE_REAL34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist) + element + row * cols), &x.Real);
+                    real34ToReal(VARIABLE_IMAG34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist) + element + row * cols), &x.Imag);
+                    mulComplexComplex(&x, &x, &x, &ctxtReal39);
+                    realAdd(&x.Real, &x1[element % cols].Real, &x1[element % cols].Real, &ctxtReal39);
+                    realAdd(&x.Imag, &x1[element % cols].Imag, &x1[element % cols].Imag, &ctxtReal39);
                   }
-                  sqrtComplex(xr1 + element % cols, xi1 + element % cols, xr1 + element % cols, xi1 + element % cols, &ctxtReal39);
+                  sqrtComplex(&x1[element % cols], &x1[element % cols], &ctxtReal39);
                 }
                 // real part
                 i = 0;
@@ -6411,69 +7447,70 @@ var2:
                     realSetZero(&expectedImag);
                   }
 
-                  if(isCheckingEigenvectors && (!realIsZero(xr1 + element % cols) || !realIsZero(xi1 + element % cols))) {
-                    real_t er, ei, tmpe, tol;
+                  if(isCheckingEigenvectors && (!realIsZero(&x1[element % cols].Real) || !realIsZero(&x1[element % cols].Imag))) {
+                    real_t tmpe, tol;
+                    cplx_t e;
                     real34ToReal(const34_1e_32, &tol);
 
-                    real34ToReal(VARIABLE_REAL34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist) + element), &er);
-                    real34ToReal(VARIABLE_IMAG34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist) + element), &ei);
+                    real34ToReal(VARIABLE_REAL34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist) + element), &e.Real);
+                    real34ToReal(VARIABLE_IMAG34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist) + element), &e.Imag);
 
                     // check for possible real or pure imaginary
-                    C47_WP34S_Atan2(&ei, &er, &tmpe, &ctxtReal39); // arctangent: check for possible pure imaginary
+                    C47_WP34S_Atan2(&e.Imag, &e.Real, &tmpe, &ctxtReal39); // arctangent: check for possible pure imaginary
                     realSetPositiveSign(&tmpe);
                     if(WP34S_RelativeError(&tmpe, const39_piOn2, &tol, &ctxtReal39)) {
-                      realSetZero(&er); // possible pure imaginary
+                      realSetZero(&e.Real); // possible pure imaginary
                     }
-                    C47_WP34S_Atan2(&er, &ei, &tmpe, &ctxtReal39); // arccotangent: check for possible real
+                    C47_WP34S_Atan2(&e.Real, &e.Imag, &tmpe, &ctxtReal39); // arccotangent: check for possible real
                     realSetPositiveSign(&tmpe);
                     if(WP34S_RelativeError(&tmpe, const39_piOn2, &tol, &ctxtReal39)) {
-                      realSetZero(&ei); // possible real
+                      realSetZero(&e.Imag); // possible real
                     }
 
-                    realToReal34(&er, VARIABLE_REAL34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist) + element));
-                    realToReal34(&ei, VARIABLE_IMAG34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist) + element));
+                    realToReal34(&e.Real, VARIABLE_REAL34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist) + element));
+                    realToReal34(&e.Imag, VARIABLE_IMAG34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist) + element));
 
-                    realCopy(&expectedReal, &er);
-                    realCopy(&expectedImag, &ei);
-                    mulComplexComplex(&er, &ei, xr1 + element % cols, xi1 + element % cols, &er, &ei, &ctxtReal39);
+                    realCopy(&expectedReal, &e.Real);
+                    realCopy(&expectedImag, &e.Imag);
+                    mulComplexComplex(&e, &x1[element % cols], &e, &ctxtReal39);
 
                     // check for possible real or pure imaginary
-                    C47_WP34S_Atan2(&ei, &er, &tmpe, &ctxtReal39); // arctangent: check for possible pure imaginary
+                    C47_WP34S_Atan2(&e.Imag, &e.Real, &tmpe, &ctxtReal39); // arctangent: check for possible pure imaginary
                     realSetPositiveSign(&tmpe);
                     if(WP34S_RelativeError(&tmpe, const39_piOn2, &tol, &ctxtReal39)) {
-                      realSetZero(&er); // possible pure imaginary
+                      realSetZero(&e.Real); // possible pure imaginary
                     }
-                    C47_WP34S_Atan2(&er, &ei, &tmpe, &ctxtReal39); // arccotangent: check for possible real
+                    C47_WP34S_Atan2(&e.Real, &e.Imag, &tmpe, &ctxtReal39); // arccotangent: check for possible real
                     realSetPositiveSign(&tmpe);
                     if(WP34S_RelativeError(&tmpe, const39_piOn2, &tol, &ctxtReal39)) {
-                      realSetZero(&ei); // possible real
+                      realSetZero(&e.Imag); // possible real
                     }
 
                     if(!(xf1[element % cols])) {
                       const real34_t *rr = VARIABLE_REAL34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist) + element);
                       const real34_t *ii = VARIABLE_IMAG34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist) + element);
                       if(!real34IsZero(rr)) {
-                        if((real34IsPositive(rr) && realIsNegative(&er)) || (real34IsNegative(rr) && realIsPositive(&er))) {
-                          realChangeSign(xr1 + element % cols);
-                          realChangeSign(xi1 + element % cols);
-                          realChangeSign(&er);
-                          realChangeSign(&ei);
+                        if((real34IsPositive(rr) && realIsNegative(&e.Real)) || (real34IsNegative(rr) && realIsPositive(&e.Real))) {
+                          realChangeSign(&x1[element % cols].Real);
+                          realChangeSign(&x1[element % cols].Imag);
+                          realChangeSign(&e.Real);
+                          realChangeSign(&e.Imag);
                         }
                         xf1[element % cols] = true;
                       }
                       else if(!real34IsZero(ii)) {
-                        if((real34IsPositive(ii) && realIsNegative(&ei)) || (real34IsNegative(ii) && realIsPositive(&ei))) {
-                          realChangeSign(xi1 + element % cols);
-                          realChangeSign(&ei);
+                        if((real34IsPositive(ii) && realIsNegative(&e.Imag)) || (real34IsNegative(ii) && realIsPositive(&e.Imag))) {
+                          realChangeSign(&x1[element % cols].Imag);
+                          realChangeSign(&e.Imag);
                         }
                         xf1[element % cols] = true;
                       }
                     }
 
-                    realToReal34(&er, &expectedReal34);
-                    realToReal34(&ei, &expectedImag34);
-                    realToString(&er, real);
-                    realToString(&ei, imag);
+                    realToReal34(&e.Real, &expectedReal34);
+                    realToReal34(&e.Imag, &expectedImag34);
+                    realToString(&e.Real, real);
+                    realToString(&e.Imag, imag);
                   }
 
                   if(!real34AreEqual(VARIABLE_REAL34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist) + element), &expectedReal34)) {
@@ -6513,8 +7550,7 @@ var2:
               }
             }
             if(isCheckingEigenvectors) {
-              free(xr1);
-              free(xi1);
+              free(x1);
               free(xf1);
             }
           }

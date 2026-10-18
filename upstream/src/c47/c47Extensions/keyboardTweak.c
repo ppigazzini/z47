@@ -374,7 +374,7 @@ void resetKeytimers(void) {
  * The standalone f key and g key, R47, added by Didier 2025-12-03 and built only under OPTION_LONGPRESS_CFG. A press of either sets Shft_LongPress_f_g and,
  * only when FLAG_SH_LONGPRESS is set, starts TO_FG_LONG at 1.5 times, 870 ms. On timeout Shft_handler() runs the gShifted item of the key, kbd_usr[10] for f
  * and kbd_usr[11] for g, then clears both shifts. It has its own branches for ASSIGN, where it stores a long press assignment, for NIM, where it closes the
- * number first unless the item belongs in the number, for USER mode, and for TAM and alpha. It is disabled in EIM and MIM.
+ * number first unless the item belongs in the number, for USER mode, and for TAM and alpha. It is disabled in EIM, MIM and GRAPHMODE.
  */
 
   void Setup_MultiPresses(int16_t result) {                            //Setup and start double press for DROP timer, and check for second press

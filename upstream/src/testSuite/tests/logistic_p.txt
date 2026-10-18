@@ -65,6 +65,8 @@ Out: EC=24 FL_ASLIFT=0 RX=Stri:"String test"
 ;=======================================
 ; LogisticP(Real Matrix) --> Error24
 ;=======================================
+In:  FL_ASLIFT=0 RM=Real:"0" RS=Real:"1" RX=ReMa:"M1,2[0,1]"
+Out: EC=24 FL_ASLIFT=0 RX=ReMa:"M1,2[0,1]"
 
 
 
@@ -115,3 +117,38 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"3" RX=Real:"0.09830596662074092626871
 ;=======================================
 ; LogisticP(Complex) --> Error24
 ;=======================================
+
+; Stable finite tails and special values
+In:  RM=Real:"0" RS=Real:"1" RX=Real:"100"
+Out: EC=0 RX=Real:"3.720075976020835962959695803863118e-44"
+
+In:  RM=Real:"0" RS=Real:"1" RX=Real:"-100"
+Out: EC=0 RX=Real:"3.720075976020835962959695803863118e-44"
+
+In:  RM=Real:"0" RS=Real:"1" RX=Real:"1000"
+Out: EC=0 RX=Real:"5.075958897549456765291809479574337e-435"
+
+In:  RMODE=0 RM=Real:"0" RS=Real:"1e-6176" RX=Real:"1e6144"
+Out: EC=0 RX=Real:"0"
+
+In:  RMODE=5 RM=Real:"0" RS=Real:"1e-6176" RX=Real:"1e6144"
+Out: EC=0 RX=Real:"1e-6176"
+
+In:  RM=Real:"0" RS=Real:"1" RX=Real:"inf"
+Out: EC=0 RX=Real:"0"
+
+In:  RM=Real:"0" RS=Real:"1" RX=Real:"-inf"
+Out: EC=0 RX=Real:"0"
+
+In:  RM=Real:"0" RS=Real:"1" RX=Real:"NaN"
+Out: EC=0 RX=Real:"NaN"
+
+; Distribution parameters are finite and the scale is positive
+In:  FL_SPCRES=0 RM=Real:"inf" RS=Real:"1" RX=Real:"0"
+Out: EC=16 RX=Real:"0"
+
+In:  FL_SPCRES=0 RM=Real:"0" RS=Real:"inf" RX=Real:"0"
+Out: EC=16 RX=Real:"0"
+
+In:  FL_SPCRES=1 RM=Real:"NaN" RS=Real:"1" RX=Real:"0"
+Out: EC=0 RX=Real:"NaN"

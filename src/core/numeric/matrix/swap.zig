@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // Zig port of the matrix row/column swap cluster of
 // src/c47/mathematics/matrix.c: realMatrixSwapRows / realMatrixSwapColumns and
-// complexMatrixSwapRows / complexMatrixSwapColumns (and their shared static
-// workers _realMatrixSwap / _complexMatrixSwap). The remaining matrix engine
-// stays in the matrix bridge until it is ported.
+// complexMatrixSwapRows / complexMatrixSwapColumns. Upstream has one static
+// worker _anyMatrixSwap over a kind descriptor, which both kinds report as.
 
 const runtime = @import("../command_wrappers/runtime.zig");
 const abi = @import("abi");
@@ -97,17 +96,17 @@ fn complexMatrixSwap(matrix: *const complex34Matrix_t, res: *complex34Matrix_t, 
 }
 
 pub export fn realMatrixSwapRows(matrix: *const real34Matrix_t, res: *real34Matrix_t, a: u16, b: u16) callconv(.c) void {
-    realMatrixSwap(matrix, res, a, b, true, "In function _realMatrixSwap:");
+    realMatrixSwap(matrix, res, a, b, true, "In function _anyMatrixSwap:");
 }
 
 pub export fn realMatrixSwapColumns(matrix: *const real34Matrix_t, res: *real34Matrix_t, a: u16, b: u16) callconv(.c) void {
-    realMatrixSwap(matrix, res, a, b, false, "In function _realMatrixSwap:");
+    realMatrixSwap(matrix, res, a, b, false, "In function _anyMatrixSwap:");
 }
 
 pub export fn complexMatrixSwapRows(matrix: *const complex34Matrix_t, res: *complex34Matrix_t, a: u16, b: u16) callconv(.c) void {
-    complexMatrixSwap(matrix, res, a, b, true, "In function _complexMatrixSwap:");
+    complexMatrixSwap(matrix, res, a, b, true, "In function _anyMatrixSwap:");
 }
 
 pub export fn complexMatrixSwapColumns(matrix: *const complex34Matrix_t, res: *complex34Matrix_t, a: u16, b: u16) callconv(.c) void {
-    complexMatrixSwap(matrix, res, a, b, false, "In function _complexMatrixSwap:");
+    complexMatrixSwap(matrix, res, a, b, false, "In function _anyMatrixSwap:");
 }

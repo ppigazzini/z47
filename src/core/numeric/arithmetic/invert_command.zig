@@ -3,6 +3,7 @@ const runtime = @import("../command_wrappers/runtime.zig");
 fn invertReal() callconv(.c) void {
     var x: runtime.real_t = undefined;
     var result: *const runtime.real_t = &x;
+    const register_type = runtime.getRegisterDataType(runtime.REGISTER_X);
 
     if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &x)) {
         return;
@@ -27,23 +28,29 @@ fn invertReal() callconv(.c) void {
         }
     } else if (runtime.realCompareAbsEqual(&x, runtime.z47_math_wrappers_const_1())) {
         return;
+    } else if (register_type == runtime.dtLongInteger) {
+        var reciprocal: runtime.real34_t = undefined;
+
+        if (runtime.reciprocalLongIntegerRegisterToReal34(runtime.REGISTER_X, &reciprocal)) {
+            runtime.convertReal34ToReal34Register(&reciprocal, runtime.REGISTER_X);
+        }
+        return;
     } else {
-        runtime.realDivide(runtime.z47_math_wrappers_const_1(), &x, &x, &runtime.ctxtReal39);
+        runtime.realDivide(runtime.z47_math_wrappers_const_1(), &x, &x, &runtime.ctxtReal34);
     }
 
     runtime.convertRealToResultRegister(result, runtime.REGISTER_X, runtime.amNone);
 }
 
 fn invertCplx() callconv(.c) void {
-    var a: runtime.real_t = undefined;
-    var b: runtime.real_t = undefined;
+    var a: runtime.cplx_t = undefined;
 
-    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &a, &b)) {
+    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &a)) {
         return;
     }
 
-    runtime.divRealComplex(runtime.z47_math_wrappers_const_1(), &a, &b, &a, &b, &runtime.ctxtReal39);
-    runtime.convertComplexToResultRegister(&a, &b, runtime.REGISTER_X);
+    runtime.divRealComplex(runtime.z47_math_wrappers_const_1(), &a, &a, &runtime.ctxtReal39);
+    runtime.convertComplexToResultRegister(&a, runtime.REGISTER_X);
 }
 
 pub fn invert(unused_but_mandatory_parameter: u16) callconv(.c) void {

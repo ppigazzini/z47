@@ -15,41 +15,45 @@ const runtime = @import("../command_wrappers/runtime.zig");
 const math_real_predicates = @import("../compare/real_predicates.zig");
 const wrappers = @import("../command_wrappers.zig");
 
-// squareRoot.c guards sqrtComplex159 and sqrtComplex's `digits <= 159` arm with
-// `OPTION_SQUARE_159 || OPTION_CUBIC_159 || OPTION_EIGEN_159`; cubeRoot.c guards
-// curtComplex159 and curtComplex's arm with `OPTION_CUBIC_159 ||
-// OPTION_EIGEN_159`. OPTION_SQUARE_159 is #undef'd at the top of defines.h and
-// never defined again in any configuration, so both conditions are the same two
-// terms. Without them, 76..159 digits falls past the arm to the bug screen, and
-// the 159-digit bodies leave the image.
+const real_t = runtime.real_t;
+const cplx_t = runtime.cplx_t;
+const cplx159_t = runtime.cplx159_t;
+
+// squareRoot.c compiles sqrtComplex159 under `OPTION_SQUARE_159 ||
+// OPTION_CUBIC_159 || OPTION_EIGEN_159`; cubeRoot.c compiles curtComplex159 under
+// `OPTION_CUBIC_159 || OPTION_EIGEN_159`. OPTION_SQUARE_159 is #undef'd at the
+// top of defines.h and never defined again in any configuration, so both
+// conditions are the same two terms. Without them the 159-digit bodies leave the
+// image; the 75-digit sqrtComplex and curtComplex stay whatever the options.
 const arm_159 = runtime.option_cubic_159 or runtime.option_eigen_159;
 
 // Upstream realType.c functions (canonical symbols in the product link).
-extern fn realSetPlusInfinity(value: *runtime.real_t) void;
-extern fn realSetMinusInfinity(value: *runtime.real_t) void;
-// Upstream error.c.
-const displayBugScreen = abi.host.showBugScreen; // routed through the host-callback boundary
-// decNumber functions behind the upstream realCopy/realMinus macros
-// (src/c47/realType.h: realCopy -> decNumberCopy, realMinus -> decNumberMinus).
-extern fn decNumberCopy(destination: *runtime.real_t, source: *const runtime.real_t) *runtime.real_t;
-extern fn decNumberMinus(result: *runtime.real_t, rhs: *const runtime.real_t, real_context: *runtime.realContext_t) *runtime.real_t;
+extern fn realSetPlusInfinity(value: *real_t) void;
+extern fn realSetMinusInfinity(value: *real_t) void;
+// decNumber functions behind the upstream realCopy/realMinus/realReduce macros
+// (src/c47/realType.h: realCopy -> decNumberCopy, realMinus -> decNumberMinus,
+// realReduce -> decNumberReduce).
+extern fn decNumberCopy(destination: *real_t, source: *const real_t) *real_t;
+extern fn decNumberMinus(result: *real_t, rhs: *const real_t, real_context: *runtime.realContext_t) *real_t;
+extern fn decNumberReduce(result: *real_t, rhs: *const real_t, real_context: *runtime.realContext_t) *real_t;
 
-fn bufPrintZ(buffer: []u8, comptime format: []const u8, args: anytype) ![:0]u8 {
-    return std.mem.printSentinel(buffer, format, args, 0);
-}
-
-fn copyReal(destination: *runtime.real_t, source: *const runtime.real_t) void {
+fn copyReal(destination: *real_t, source: *const real_t) void {
     destination.* = source.*;
 }
 
-fn realSetNegativeSign(value: *runtime.real_t) void {
+fn copyAbs(destination: *real_t, source: *const real_t) void {
+    copyReal(destination, source);
+    runtime.realSetPositiveSign(destination);
+}
+
+fn realSetNegativeSign(value: *real_t) void {
     value.bits |= 0x80;
 }
 
 const realIsPositive = math_real_predicates.realIsPositive;
 
 // realDivideBy2(op, ctxt) is the upstream macro decNumberMultiply(op, op, const_1on2, ctxt).
-fn realDivideBy2(operand: *runtime.real_t, real_context: *runtime.realContext_t) void {
+fn realDivideBy2(operand: *real_t, real_context: *runtime.realContext_t) void {
     runtime.realMultiply(operand, runtime.z47_math_wrappers_const_1on2(), operand, real_context);
 }
 
@@ -57,7 +61,7 @@ fn realDivideBy2(operand: *runtime.real_t, real_context: *runtime.realContext_t)
 // centralized in abi (size asserted there).
 const Real159 = abi.Real159;
 
-fn real159(storage: *Real159) *runtime.real_t {
+fn real159(storage: *Real159) *real_t {
     return @ptrCast(storage);
 }
 
@@ -94,33 +98,29 @@ pub export fn real34RectangularToPolar(
     magnitude34: *runtime.real34_t,
     theta34: *runtime.real34_t,
 ) callconv(.c) void {
-    var real_value: runtime.real_t = undefined;
-    var imag_value: runtime.real_t = undefined;
-    var magnitude: runtime.real_t = undefined;
-    var theta: runtime.real_t = undefined;
+    var z: cplx_t = undefined;
 
-    runtime.real34ToReal(real34, &real_value);
-    runtime.real34ToReal(imag34, &imag_value);
+    runtime.real34ToReal(real34, &z.Real);
+    runtime.real34ToReal(imag34, &z.Imag);
 
-    rectangularToPolarReal(&real_value, &imag_value, &magnitude, &theta, &runtime.ctxtReal39); // theta in radian
+    rectangularToPolarReal(&z, z.mag(), z.arg(), &runtime.ctxtReal39); // theta in radian
 
-    runtime.realToReal34(&magnitude, magnitude34);
-    runtime.realToReal34(&theta, theta34);
+    runtime.realToReal34(z.constMag(), magnitude34);
+    runtime.realToReal34(z.constArg(), theta34);
 }
 
-// theta is in ]-pi, pi]
+// theta is in ]-pi, pi]. z may alias the outputs: both parts are copied first.
 fn rectangularToPolarReal(
-    real: *const runtime.real_t,
-    imag: *const runtime.real_t,
-    magnitude: *runtime.real_t,
-    theta: *runtime.real_t,
+    z: *const cplx_t,
+    magnitude: *real_t,
+    theta: *real_t,
     real_context: *runtime.realContext_t,
 ) void {
-    var re: runtime.real_t = undefined;
-    var im: runtime.real_t = undefined;
+    var re: real_t = undefined;
+    var im: real_t = undefined;
 
-    copyReal(&re, real);
-    copyReal(&im, imag);
+    copyReal(&re, &z.Real);
+    copyReal(&im, &z.Imag);
 
     // Testing NaNs
     if (runtime.realIsNaN(&re) or runtime.realIsNaN(&im)) {
@@ -129,7 +129,8 @@ fn rectangularToPolarReal(
         return;
     }
 
-    // Real part is infinite
+    // Real part is infinite: the angle is 0 or pi with the sign of a finite
+    // nonzero imaginary part, so -0 and -pi name the lower half-plane.
     if (runtime.realIsInfinite(&re)) {
         realSetPlusInfinity(magnitude);
 
@@ -141,6 +142,9 @@ fn rectangularToPolarReal(
                 }
             } else {
                 runtime.realSetZero(theta);
+                if (!runtime.realIsZero(&im) and runtime.realIsNegative(&im)) {
+                    realSetNegativeSign(theta);
+                }
             }
         } else {
             if (runtime.realIsInfinite(&im)) {
@@ -150,6 +154,9 @@ fn rectangularToPolarReal(
                 }
             } else {
                 copyReal(theta, runtime.z47_math_wrappers_const_pi());
+                if (!runtime.realIsZero(&im) and runtime.realIsNegative(&im)) {
+                    realSetNegativeSign(theta);
+                }
             }
         }
 
@@ -174,8 +181,7 @@ fn rectangularToPolarReal(
             runtime.realSetZero(magnitude);
             runtime.realSetZero(theta);
         } else {
-            copyReal(magnitude, &im);
-            runtime.realSetPositiveSign(magnitude);
+            copyAbs(magnitude, &im);
             copyReal(theta, runtime.z47_math_wrappers_const_piOn2()); // 90 degrees
 
             if (runtime.realIsNegative(&im)) {
@@ -188,8 +194,7 @@ fn rectangularToPolarReal(
 
     // Imaginary part = 0
     if (runtime.realIsZero(&im)) {
-        copyReal(magnitude, &re);
-        runtime.realSetPositiveSign(magnitude);
+        copyAbs(magnitude, &re);
 
         if (runtime.realIsNegative(&re)) {
             copyReal(theta, runtime.z47_math_wrappers_const_pi()); // 180 degrees
@@ -202,7 +207,7 @@ fn rectangularToPolarReal(
 
     // Real and imaginary part not special and not zero
     if (real_context.digits > 75) {
-        displayBugScreen("In function realRectangularToPolar: The number of digits is > 75");
+        abi.host.showBugScreen("In function realRectangularToPolar: The number of digits is > 75");
     } else {
         // Magnitude
         runtime.realMultiply(&re, &re, magnitude, real_context);
@@ -215,51 +220,48 @@ fn rectangularToPolarReal(
 }
 
 pub export fn realRectangularToPolar(
-    real: *const runtime.real_t,
-    imag: *const runtime.real_t,
-    magnitude: *runtime.real_t,
-    theta: *runtime.real_t,
+    z: *const cplx_t,
+    magnitude: *real_t,
+    theta: *real_t,
     real_context: *runtime.realContext_t,
 ) callconv(.c) void {
-    rectangularToPolarReal(real, imag, magnitude, theta, real_context);
+    rectangularToPolarReal(z, magnitude, theta, real_context);
 }
 
 // The zero sign is part of the key, so this is an identical-bytes test and not a numeric one.
-fn rectKeyEqual(a: *const runtime.real_t, b: *const runtime.real_t) bool {
+fn rectKeyEqual(a: *const real_t, b: *const real_t) bool {
     return runtime.realCompareIdentical(a, b);
 }
 
 // Cached wrapper for realRectangularToPolar. The cache is caller-owned and passed by pointer; the caller creates it as
-// `.{ .valid = false }` in a scope covering every call that shares it. The inputs are copied before the call so an
+// `.{ .valid = false }` in a scope covering every call that shares it. The input is copied before the call so an
 // aliasing caller (in == out) is safe. A special magnitude or angle is never stored, so a hit is always a finite pair.
 pub export fn realRectangularToPolarCached(
-    real: *const runtime.real_t,
-    imag: *const runtime.real_t,
-    magnitude: *runtime.real_t,
-    theta: *runtime.real_t,
+    z: *const cplx_t,
+    magnitude: *real_t,
+    theta: *real_t,
     real_context: *runtime.realContext_t,
     cache: *abi.RectToPolarCache,
 ) callconv(.c) void {
-    var local_real: runtime.real_t = undefined;
-    var local_imag: runtime.real_t = undefined;
-    copyReal(&local_real, real);
-    copyReal(&local_imag, imag);
+    var local: cplx_t = undefined;
+    copyReal(&local.Real, &z.Real);
+    copyReal(&local.Imag, &z.Imag);
 
     if (cache.valid and real_context.digits == cache.digits and real_context.round == cache.round and
-        rectKeyEqual(&cache.real, &local_real) and rectKeyEqual(&cache.imag, &local_imag))
+        rectKeyEqual(&cache.real, &local.Real) and rectKeyEqual(&cache.imag, &local.Imag))
     {
         copyReal(magnitude, &cache.mag);
         copyReal(theta, &cache.theta);
         return;
     }
 
-    copyReal(&cache.real, &local_real);
-    copyReal(&cache.imag, &local_imag);
+    copyReal(&cache.real, &local.Real);
+    copyReal(&cache.imag, &local.Imag);
     cache.digits = real_context.digits;
     cache.round = real_context.round;
     cache.valid = false;
 
-    rectangularToPolarReal(&local_real, &local_imag, magnitude, theta, real_context);
+    rectangularToPolarReal(&local, magnitude, theta, real_context);
 
     if (!math_real_predicates.realIsSpecial(magnitude) and !math_real_predicates.realIsSpecial(theta)) {
         copyReal(&cache.mag, magnitude);
@@ -294,71 +296,96 @@ pub export fn fnToRect_CX(unused_but_mandatory_parameter: u16) callconv(.c) void
     }
 }
 
-fn polarToRectangularReal(
-    mag: *const runtime.real_t,
-    the: *const runtime.real_t,
-    real: *runtime.real_t,
-    imag: *runtime.real_t,
+// Converts a magnitude and tagged angle to rectangular components. A radian
+// angle is reduced modulo 2pi at 75 digits only when reduce_radian_at_p75 is
+// set, which is what the plain realPolarToRectangular asks for; an angle in any
+// other unit is handed to the trig evaluation in that unit. mag and the may alias
+// the parts of z: both are read before z is written.
+fn polarToRect(
+    mag: *const real_t,
+    the: *const real_t,
+    angular_mode: runtime.angularMode_t,
+    reduce_radian_at_p75: bool,
+    z: *cplx_t,
     real_context: *runtime.realContext_t,
 ) void {
-    var sin_value: runtime.real_t = undefined;
-    var cos_value: runtime.real_t = undefined;
-    var magnitude: runtime.real_t = undefined;
-    var theta: runtime.real_t = undefined;
+    var sin_value: real_t = undefined;
+    var cos_value: real_t = undefined;
+    var magnitude: real_t = undefined;
+    var theta: real_t = undefined;
+    var the_copy: real_t = undefined;
+    var trig_angle: *const real_t = &the_copy;
 
     // Testing NaNs and infinities
     if (runtime.realIsNaN(mag) or runtime.realIsNaN(the) or runtime.realIsInfinite(the)) {
-        runtime.realSetNaN(real);
-        runtime.realSetNaN(imag);
+        runtime.realSetNaN(&z.Real);
+        runtime.realSetNaN(&z.Imag);
         return;
     }
 
     copyReal(&magnitude, mag);
-    runtime.mod2Pi(the, &theta, &runtime.ctxtReal75); // here 0 <= theta < 2pi
-    const negative_angle = runtime.realIsNegative(&theta);
+    copyReal(&the_copy, the);
 
     // Magnitude is infinite
     if (runtime.realIsInfinite(&magnitude)) {
+        if (angular_mode != runtime.amRadian) {
+            runtime.C47_WP34S_Cvt2RadSinCosTan(&the_copy, angular_mode, &sin_value, &cos_value, null, real_context);
+            if (runtime.realIsZero(&cos_value)) {
+                runtime.realSetZero(&z.Real);
+            } else {
+                runtime.realMultiply(&magnitude, &cos_value, &z.Real, real_context);
+            }
+            if (runtime.realIsZero(&sin_value)) {
+                runtime.realSetZero(&z.Imag);
+            } else {
+                runtime.realMultiply(&magnitude, &sin_value, &z.Imag, real_context);
+            }
+            return;
+        }
+
+        runtime.mod2Pi(&the_copy, &theta, &runtime.ctxtReal75); // here 0 <= theta < 2pi
+        const negative_angle = runtime.realIsNegative(&theta);
+
         if (negative_angle) {
             runtime.realChangeSign(&theta);
         }
 
         if (runtime.realIsZero(&theta)) { // theta = 0
-            realSetPlusInfinity(real);
-            runtime.realSetZero(imag);
+            realSetPlusInfinity(&z.Real);
+            runtime.realSetZero(&z.Imag);
         } else {
-            runtime.realSubtract(&theta, runtime.z47_math_wrappers_const_piOn2(), real, &runtime.ctxtReal39);
-            if (runtime.realIsZero(real)) { // theta = pi/2
-                runtime.realSetZero(real);
-                realSetPlusInfinity(imag);
+            runtime.realSubtract(&theta, runtime.z47_math_wrappers_const_piOn2(), &z.Real, &runtime.ctxtReal39);
+            if (runtime.realIsZero(&z.Real)) { // theta = pi/2
+                runtime.realSetZero(&z.Real);
+                realSetPlusInfinity(&z.Imag);
             } else {
-                runtime.realSubtract(&theta, runtime.z47_math_wrappers_const_3piOn2(), real, &runtime.ctxtReal39);
-                if (runtime.realIsZero(real)) { // theta = -pi/2
-                    runtime.realSetZero(real);
-                    realSetMinusInfinity(imag);
+                runtime.realSubtract(&theta, runtime.z47_math_wrappers_const_3piOn2(), &z.Real, &runtime.ctxtReal39);
+                if (runtime.realIsZero(&z.Real)) { // theta = -pi/2
+                    runtime.realSetZero(&z.Real);
+                    realSetMinusInfinity(&z.Imag);
                 } else {
-                    runtime.realSubtract(&theta, runtime.z47_math_wrappers_const_pi(), real, &runtime.ctxtReal39);
-                    if (runtime.realIsZero(real)) { // theta = pi
-                        realSetMinusInfinity(real);
-                        runtime.realSetZero(imag);
+                    runtime.realSubtract(&theta, runtime.z47_math_wrappers_const_pi(), &z.Real, &runtime.ctxtReal39);
+                    if (runtime.realIsZero(&z.Real)) { // theta = pi
+                        realSetMinusInfinity(&z.Real);
+                        runtime.realSetZero(&z.Imag);
                     } else {
                         runtime.realSubtract(&theta, runtime.z47_math_wrappers_const_piOn2(), &theta, &runtime.ctxtReal39);
                         if (runtime.realIsNegative(&theta)) { // 0 < theta < pi/2
-                            realSetPlusInfinity(real);
-                            realSetPlusInfinity(imag);
+                            realSetPlusInfinity(&z.Real);
+                            realSetPlusInfinity(&z.Imag);
                         } else {
                             runtime.realSubtract(&theta, runtime.z47_math_wrappers_const_piOn2(), &theta, &runtime.ctxtReal39);
                             if (runtime.realIsNegative(&theta)) { // pi/2 < theta < pi
-                                realSetMinusInfinity(real);
-                                realSetPlusInfinity(imag);
+                                realSetMinusInfinity(&z.Real);
+                                realSetPlusInfinity(&z.Imag);
                             } else {
                                 runtime.realSubtract(&theta, runtime.z47_math_wrappers_const_piOn2(), &theta, &runtime.ctxtReal39);
                                 if (runtime.realIsNegative(&theta)) { // pi < theta < 3pi/2
-                                    realSetMinusInfinity(real);
-                                    realSetMinusInfinity(imag);
+                                    realSetMinusInfinity(&z.Real);
+                                    realSetMinusInfinity(&z.Imag);
                                 } else { // 3pi/2 < theta < 2pi
-                                    realSetPlusInfinity(real);
-                                    realSetMinusInfinity(imag);
+                                    realSetPlusInfinity(&z.Real);
+                                    realSetMinusInfinity(&z.Imag);
                                 }
                             }
                         }
@@ -368,77 +395,107 @@ fn polarToRectangularReal(
         }
 
         if (runtime.realIsNegative(&magnitude)) {
-            if (!runtime.realIsNaN(real) and !runtime.realIsZero(real)) {
-                runtime.realChangeSign(real);
+            if (!runtime.realIsNaN(&z.Real) and !runtime.realIsZero(&z.Real)) {
+                runtime.realChangeSign(&z.Real);
             }
-            if (!runtime.realIsNaN(imag) and !runtime.realIsZero(imag)) {
-                runtime.realChangeSign(imag);
+            if (!runtime.realIsNaN(&z.Imag) and !runtime.realIsZero(&z.Imag)) {
+                runtime.realChangeSign(&z.Imag);
             }
         }
 
-        if (negative_angle and !runtime.realIsNaN(imag) and !runtime.realIsZero(imag)) {
-            runtime.realChangeSign(imag);
+        if (negative_angle and !runtime.realIsNaN(&z.Imag) and !runtime.realIsZero(&z.Imag)) {
+            runtime.realChangeSign(&z.Imag);
         }
 
         return;
     }
 
     if (runtime.realIsZero(&magnitude)) {
-        runtime.realSetZero(real);
-        runtime.realSetZero(imag);
+        runtime.realSetZero(&z.Real);
+        runtime.realSetZero(&z.Imag);
         return;
     }
 
-    runtime.C47_WP34S_Cvt2RadSinCosTan(&theta, runtime.amRadian, &sin_value, &cos_value, null, real_context);
-    runtime.realMultiply(&magnitude, &cos_value, real, real_context);
-    runtime.realMultiply(&magnitude, &sin_value, imag, real_context);
+    if (angular_mode == runtime.amRadian and reduce_radian_at_p75) {
+        runtime.mod2Pi(&the_copy, &theta, &runtime.ctxtReal75);
+        trig_angle = &theta;
+    }
+    runtime.C47_WP34S_Cvt2RadSinCosTan(trig_angle, angular_mode, &sin_value, &cos_value, null, real_context);
+    runtime.realMultiply(&magnitude, &cos_value, &z.Real, real_context);
+    runtime.realMultiply(&magnitude, &sin_value, &z.Imag, real_context);
 }
 
 pub export fn realPolarToRectangular(
-    mag: *const runtime.real_t,
-    the: *const runtime.real_t,
-    real: *runtime.real_t,
-    imag: *runtime.real_t,
+    mag: *const real_t,
+    the: *const real_t,
+    z: *cplx_t,
     real_context: *runtime.realContext_t,
 ) callconv(.c) void {
-    polarToRectangularReal(mag, the, real, imag, real_context);
+    polarToRect(mag, the, runtime.amRadian, true, z, real_context);
+}
+
+/// Converts a polar pair while retaining the supplied angular unit through the
+/// argument reduction.
+pub export fn realPolarToRectangularInUnit(
+    magnitude: *const real_t,
+    theta: *const real_t,
+    angular_mode: runtime.angularMode_t,
+    z: *cplx_t,
+    real_context: *runtime.realContext_t,
+) callconv(.c) void {
+    polarToRect(magnitude, theta, angular_mode, false, z, real_context);
 }
 
 // ----------------------------------------------------------------------------
 // squareRoot.c
 // ----------------------------------------------------------------------------
 
-fn sqrtComplex75(
-    real: *const runtime.real_t,
-    imag: *const runtime.real_t,
-    res_real: *runtime.real_t,
-    res_imag: *runtime.real_t,
-    real_context: *runtime.realContext_t,
-) void {
-    if (runtime.realIsZero(imag) and runtime.realIsNegative(real)) {
-        _ = decNumberMinus(res_imag, real, real_context);
-        runtime.realSquareRoot(res_imag, res_imag, real_context);
-        runtime.realSetZero(res_real);
-    } else if (runtime.realIsZero(imag)) {
-        runtime.realSquareRoot(real, res_real, real_context);
-        runtime.realSetZero(res_imag);
+pub export fn sqrtComplex(z: *const cplx_t, res: *cplx_t, real_context: *runtime.realContext_t) callconv(.c) void {
+    if (runtime.realIsZero(&z.Imag) and runtime.realIsNegative(&z.Real)) {
+        _ = decNumberMinus(&res.Imag, &z.Real, real_context);
+        runtime.realSquareRoot(&res.Imag, &res.Imag, real_context);
+        runtime.realSetZero(&res.Real);
+    } else if (runtime.realIsZero(&z.Imag)) {
+        runtime.realSquareRoot(&z.Real, &res.Real, real_context);
+        runtime.realSetZero(&res.Imag);
+    } else if (runtime.realIsInfinite(&z.Imag)) { // whatever the real part, NaN included
+        copyAbs(&res.Real, &z.Imag);
+        copyReal(&res.Imag, &z.Imag);
     } else {
-        rectangularToPolarReal(real, imag, res_real, res_imag, real_context);
-        runtime.realSquareRoot(res_real, res_real, real_context);
-        runtime.realMultiply(res_imag, runtime.z47_math_wrappers_const_1on2(), res_imag, real_context);
-        polarToRectangularReal(res_real, res_imag, res_real, res_imag, real_context);
+        // t = sqrt((|x| + |z|) / 2) adds two terms of one sign, so no digits cancel, next to the negative real axis
+        // included. The other part is y / 2t: the root is t + i y/2t for x >= 0, and |y|/2t + i t with the sign of y
+        // for x < 0. A NaN part comes out as NaN + i NaN.
+        var t: real_t = undefined;
+        var u: real_t = undefined;
+        const imag_negative = runtime.realIsNegative(&z.Imag);
+        if (runtime.realIsInfinite(&z.Real) and !runtime.realIsNaN(&z.Imag)) { // t is infinite and y / 2t is 0: the formula gives the same, with zeros at the smallest exponent
+            copyAbs(&t, &z.Real);
+            runtime.realSetZero(&u);
+        } else {
+            runtime.complexMagnitude(z, &t, real_context);
+            copyAbs(&u, &z.Real);
+            runtime.realAdd(&u, &t, &t, real_context);
+            realDivideBy2(&t, real_context);
+            runtime.realSquareRoot(&t, &t, real_context);
+            runtime.realDivide(&z.Imag, &t, &u, real_context);
+            realDivideBy2(&u, real_context);
+        }
+        if (runtime.realIsNegative(&z.Real)) {
+            copyAbs(&res.Real, &u);
+            copyReal(&res.Imag, &t);
+            if (imag_negative) {
+                realSetNegativeSign(&res.Imag);
+            }
+        } else {
+            copyReal(&res.Real, &t);
+            copyReal(&res.Imag, &u);
+        }
     }
 }
 
 // Complex square root using Newton-Raphson: x_{n+1} = (x_n + z/x_n) / 2
 // (upstream sqrtComplex159, compiled when OPTION_SQUARE_159 || OPTION_CUBIC_159 || OPTION_EIGEN_159).
-fn sqrtComplex159(
-    z_real: *const runtime.real_t,
-    z_imag: *const runtime.real_t,
-    res_real: *runtime.real_t,
-    res_imag: *runtime.real_t,
-    real_context: *runtime.realContext_t,
-) void {
+fn sqrtComplex159(z: *const cplx159_t, res: *cplx159_t, real_context: *runtime.realContext_t) callconv(.c) void {
     var xr_s: Real159 = undefined;
     var xi_s: Real159 = undefined;
     var zr_s: Real159 = undefined;
@@ -473,12 +530,12 @@ fn sqrtComplex159(
     runtime.realSetZero(mag);
 
     // Copy inputs
-    _ = decNumberCopy(zr, z_real);
-    _ = decNumberCopy(zi, z_imag);
+    _ = decNumberCopy(zr, z.Real.constPtr());
+    _ = decNumberCopy(zi, z.Imag.constPtr());
 
     if (runtime.realIsZero(zr) and runtime.realIsZero(zi)) {
-        runtime.realSetZero(res_real);
-        runtime.realSetZero(res_imag);
+        runtime.realSetZero(res.Real.ptr());
+        runtime.realSetZero(res.Imag.ptr());
         return;
     }
 
@@ -490,12 +547,20 @@ fn sqrtComplex159(
     runtime.realSquareRoot(mag, mag, real_context);
 
     // Initial guess: xr = sqrt((mag + zr)/2), xi = sign(zi)*sqrt((mag - zr)/2)
+    // With zi zero or below the precision of zr, mag rounds to one unit below |zr| and one radicand to a negative
+    // value. It starts at zero instead, and the first Newton step forms that part.
     runtime.realAdd(mag, zr, temp1, real_context);
     realDivideBy2(temp1, real_context);
+    if (runtime.realIsNegative(temp1)) {
+        runtime.realSetZero(temp1);
+    }
     runtime.realSquareRoot(temp1, xr, real_context);
 
     runtime.realSubtract(mag, zr, temp2, real_context);
     realDivideBy2(temp2, real_context);
+    if (runtime.realIsNegative(temp2)) {
+        runtime.realSetZero(temp2);
+    }
     runtime.realSquareRoot(temp2, xi, real_context);
     if (runtime.realIsNegative(zi)) {
         runtime.realChangeSign(xi);
@@ -532,71 +597,76 @@ fn sqrtComplex159(
         realDivideBy2(xi, real_context);
     }
 
-    _ = decNumberCopy(res_real, xr);
-    _ = decNumberCopy(res_imag, xi);
-}
-
-pub export fn sqrtComplex(
-    real: *const runtime.real_t,
-    imag: *const runtime.real_t,
-    res_real: *runtime.real_t,
-    res_imag: *runtime.real_t,
-    real_context: *runtime.realContext_t,
-) callconv(.c) void {
-    if (real_context.digits <= 75) {
-        sqrtComplex75(real, imag, res_real, res_imag, real_context);
-    } else if (arm_159 and real_context.digits <= 159) {
-        sqrtComplex159(real, imag, res_real, res_imag, real_context);
-    } else {
-        var message_buffer: [64]u8 = undefined;
-        const message = bufPrintZ(&message_buffer, "Exceed digits :sqrtComplex: {d}", .{real_context.digits}) catch "Exceed digits :sqrtComplex:";
-        displayBugScreen(message);
-    }
+    _ = decNumberCopy(res.Real.ptr(), xr);
+    _ = decNumberCopy(res.Imag.ptr(), xi);
 }
 
 // ----------------------------------------------------------------------------
 // cubeRoot.c
 // ----------------------------------------------------------------------------
 
-fn curtComplex75(
-    real: *const runtime.real_t,
-    imag: *const runtime.real_t,
-    res_real: *runtime.real_t,
-    res_imag: *runtime.real_t,
-    real_context: *runtime.realContext_t,
-) void {
-    var a: runtime.real_t = undefined;
-    var b: runtime.real_t = undefined;
+/// Replaces an approximation with an exact Real34 cube root when one exists. A
+/// nearest 34-digit candidate is reduced before verification: an exact decimal
+/// cube with a 34-digit coefficient has a reduced root coefficient of at most 12
+/// digits, so two 39-digit multiplications verify it exactly.
+pub fn correctExactReal34Cube(operand: *const real_t, root: *real_t) void {
+    var nearest_context: runtime.realContext_t = runtime.ctxtReal34;
+    var nearest: real_t = undefined;
+    var cube: real_t = undefined;
 
-    copyReal(&a, real);
-    copyReal(&b, imag);
+    if (math_real_predicates.realIsSpecial(operand) or runtime.realIsZero(operand)) {
+        return;
+    }
+    nearest_context.round = runtime.DEC_ROUND_HALF_EVEN;
+    _ = runtime.decNumberPlus(&nearest, root, &nearest_context);
+    _ = decNumberReduce(&nearest, &nearest, &runtime.ctxtReal39);
+    if (nearest.digits > 12) {
+        return;
+    }
+    runtime.realMultiply(&nearest, &nearest, &cube, &runtime.ctxtReal39);
+    runtime.realMultiply(&cube, &nearest, &cube, &runtime.ctxtReal39);
+    if (runtime.realCompareEqual(&cube, operand)) {
+        copyReal(root, &nearest);
+    }
+}
 
-    if (runtime.realIsZero(&b)) {
-        if (realIsPositive(&a)) {
-            runtime.PowerReal(&a, runtime.z47_math_wrappers_const_1on3(), res_real, real_context);
+pub export fn curtComplex(z: *const cplx_t, res: *cplx_t, real_context: *runtime.realContext_t) callconv(.c) void {
+    var w: cplx_t = undefined;
+
+    copyReal(&w.Real, &z.Real);
+    copyReal(&w.Imag, &z.Imag);
+
+    if (runtime.realIsZero(&w.Imag)) {
+        if (realIsPositive(&w.Real)) {
+            runtime.PowerReal(&w.Real, runtime.z47_math_wrappers_const_1on3(), &res.Real, real_context);
         } else {
-            runtime.realSetPositiveSign(&a);
-            runtime.PowerReal(&a, runtime.z47_math_wrappers_const_1on3(), res_real, real_context);
-            realSetNegativeSign(res_real);
+            runtime.realSetPositiveSign(&w.Real);
+            runtime.PowerReal(&w.Real, runtime.z47_math_wrappers_const_1on3(), &res.Real, real_context);
+            realSetNegativeSign(&res.Real);
         }
-        runtime.realSetZero(res_imag);
+        copyReal(&res.Imag, &w.Imag);
+    } else if (runtime.realIsInfinite(&w.Real) and !math_real_predicates.realIsSpecial(&w.Imag)) {
+        realSetPlusInfinity(&res.Real);
+        if (realIsPositive(&w.Real)) {
+            runtime.realSetZero(&res.Imag);
+        } else {
+            realSetPlusInfinity(&res.Imag);
+        }
+        if (runtime.realIsNegative(&w.Imag)) {
+            realSetNegativeSign(&res.Imag);
+        }
     } else {
-        rectangularToPolarReal(&a, &b, &a, &b, real_context);
-        runtime.PowerReal(&a, runtime.z47_math_wrappers_const_1on3(), &a, real_context);
-        runtime.realMultiply(&b, runtime.z47_math_wrappers_const_1on3(), &b, real_context);
-        polarToRectangularReal(&a, &b, res_real, res_imag, real_context);
+        rectangularToPolarReal(&w, w.mag(), w.arg(), real_context);
+        runtime.PowerReal(w.mag(), runtime.z47_math_wrappers_const_1on3(), w.mag(), real_context);
+        runtime.realMultiply(w.arg(), runtime.z47_math_wrappers_const_1on3(), w.arg(), real_context);
+        polarToRect(w.constMag(), w.constArg(), runtime.amRadian, true, res, real_context);
     }
 }
 
 // Complex cube root using Halley's method: x_{n+1} = x_n * (x_n^3 + 2z) / (2x_n^3 + z)
 // (upstream curtComplex159, compiled when OPTION_CUBIC_159 || OPTION_EIGEN_159).
-fn curtComplex159(
-    z_real: *const runtime.real_t,
-    z_imag: *const runtime.real_t,
-    res_real: *runtime.real_t,
-    res_imag: *runtime.real_t,
-    real_context: *runtime.realContext_t,
-) void {
+// The point of using this is that complex trig is not available without a 159 digit Taylor series.
+fn curtComplex159(z: *const cplx159_t, res: *cplx159_t, real_context: *runtime.realContext_t) callconv(.c) void {
     const halley_iter_max = 15;
 
     // create 159 constants
@@ -664,12 +734,12 @@ fn curtComplex159(
     runtime.realSetZero(temp);
     runtime.realSetZero(denom_mag);
 
-    _ = decNumberCopy(zr, z_real);
-    _ = decNumberCopy(zi, z_imag);
+    _ = decNumberCopy(zr, z.Real.constPtr());
+    _ = decNumberCopy(zi, z.Imag.constPtr());
 
     if (runtime.realIsZero(zr) and runtime.realIsZero(zi)) {
-        runtime.realSetZero(res_real);
-        runtime.realSetZero(res_imag);
+        runtime.realSetZero(res.Real.ptr());
+        runtime.realSetZero(res.Imag.ptr());
         return;
     }
 
@@ -689,12 +759,12 @@ fn curtComplex159(
 
         // xi = |zi|^(1/3) * 1/2 * sign(zi_original)
         runtime.realMultiply(temp, runtime.z47_math_wrappers_const_1on2(), xi, real_context);
-        if (runtime.realIsNegative(z_imag)) {
+        if (runtime.realIsNegative(z.Imag.constPtr())) {
             runtime.realChangeSign(xi);
         }
 
-        _ = decNumberCopy(res_real, xr);
-        _ = decNumberCopy(res_imag, xi);
+        _ = decNumberCopy(res.Real.ptr(), xr);
+        _ = decNumberCopy(res.Imag.ptr(), xi);
         return;
     }
 
@@ -710,8 +780,8 @@ fn curtComplex159(
             runtime.realSetZero(xi);
             realSetNegativeSign(zr); // Restore to negative (input was negative real, we're handling cbrt of negative)
         }
-        _ = decNumberCopy(res_real, xr);
-        _ = decNumberCopy(res_imag, xi);
+        _ = decNumberCopy(res.Real.ptr(), xr);
+        _ = decNumberCopy(res.Imag.ptr(), xi);
         return;
     }
 
@@ -794,80 +864,57 @@ fn curtComplex159(
     // To select the principal cube root from the three possibilities: choose the one
     // with the largest real part.
     // The three cube roots are: w, w*omega, w*omega^2 where omega = -1/2 + i*sqrt(3)/2
-    var w1r_s: Real159 = undefined;
-    var w1i_s: Real159 = undefined;
-    var w2r_s: Real159 = undefined;
-    var w2i_s: Real159 = undefined;
-    var w3r_s: Real159 = undefined;
-    var w3i_s: Real159 = undefined;
-    const w1r = real159(&w1r_s);
-    const w1i = real159(&w1i_s);
-    const w2r = real159(&w2r_s);
-    const w2i = real159(&w2i_s);
-    const w3r = real159(&w3r_s);
-    const w3i = real159(&w3i_s);
-    runtime.realSetZero(w1r);
-    runtime.realSetZero(w1i);
-    runtime.realSetZero(w2r);
-    runtime.realSetZero(w2i);
-    runtime.realSetZero(w3r);
-    runtime.realSetZero(w3i);
+    var w1: cplx159_t = undefined;
+    var w2: cplx159_t = undefined;
+    var w3: cplx159_t = undefined;
+    runtime.realSetZero(w1.Real.ptr());
+    runtime.realSetZero(w1.Imag.ptr());
+    runtime.realSetZero(w2.Real.ptr());
+    runtime.realSetZero(w2.Imag.ptr());
+    runtime.realSetZero(w3.Real.ptr());
+    runtime.realSetZero(w3.Imag.ptr());
 
     // w1 = current root
-    _ = decNumberCopy(w1r, xr);
-    _ = decNumberCopy(w1i, xi);
+    _ = decNumberCopy(w1.Real.ptr(), xr);
+    _ = decNumberCopy(w1.Imag.ptr(), xi);
 
     // omega = -1/2 + i*sqrt(3)/2
-    var omega_r_s: Real159 = undefined;
-    var omega_i_s: Real159 = undefined;
-    const omega_r = real159(&omega_r_s);
-    const omega_i = real159(&omega_i_s);
-    runtime.realSetZero(omega_r);
-    runtime.realSetZero(omega_i);
-    _ = decNumberCopy(omega_r, runtime.z47_math_wrappers_const_1on2());
-    runtime.realChangeSign(omega_r); // -1/2
-    runtime.realSquareRoot(runtime.z47_math_wrappers_const_3(), omega_i, real_context);
-    runtime.realMultiply(omega_i, runtime.z47_math_wrappers_const_1on2(), omega_i, real_context); // sqrt(3)/2
+    var omega: cplx159_t = undefined;
+    runtime.realSetZero(omega.Real.ptr());
+    runtime.realSetZero(omega.Imag.ptr());
+    _ = decNumberCopy(omega.Real.ptr(), runtime.z47_math_wrappers_const_1on2());
+    runtime.realChangeSign(omega.Real.ptr()); // -1/2
+    runtime.realSquareRoot(runtime.z47_math_wrappers_const_3(), omega.Imag.ptr(), real_context);
+    runtime.realMultiply(omega.Imag.ptr(), runtime.z47_math_wrappers_const_1on2(), omega.Imag.ptr(), real_context); // sqrt(3)/2
 
     // w2 = w1 * omega
-    runtime.mulComplexComplex(w1r, w1i, omega_r, omega_i, w2r, w2i, real_context);
+    runtime.mulComplexComplex159(&w1, &omega, &w2, real_context);
 
     // w3 = w1 * omega^2 = w1 * conj(omega)
-    runtime.realChangeSign(omega_i);
-    runtime.mulComplexComplex(w1r, w1i, omega_r, omega_i, w3r, w3i, real_context);
+    runtime.realChangeSign(omega.Imag.ptr());
+    runtime.mulComplexComplex159(&w1, &omega, &w3, real_context);
 
     // Select root with largest real part
-    _ = decNumberCopy(xr, w1r);
-    _ = decNumberCopy(xi, w1i);
+    _ = decNumberCopy(xr, w1.Real.constPtr());
+    _ = decNumberCopy(xi, w1.Imag.constPtr());
 
-    if (runtime.realCompareLessThan(xr, w2r)) {
-        _ = decNumberCopy(xr, w2r);
-        _ = decNumberCopy(xi, w2i);
+    if (runtime.realCompareLessThan(xr, w2.Real.constPtr())) {
+        _ = decNumberCopy(xr, w2.Real.constPtr());
+        _ = decNumberCopy(xi, w2.Imag.constPtr());
     }
-    if (runtime.realCompareLessThan(xr, w3r)) {
-        _ = decNumberCopy(xr, w3r);
-        _ = decNumberCopy(xi, w3i);
+    if (runtime.realCompareLessThan(xr, w3.Real.constPtr())) {
+        _ = decNumberCopy(xr, w3.Real.constPtr());
+        _ = decNumberCopy(xi, w3.Imag.constPtr());
     }
 
-    _ = decNumberCopy(res_real, xr);
-    _ = decNumberCopy(res_imag, xi);
+    _ = decNumberCopy(res.Real.ptr(), xr);
+    _ = decNumberCopy(res.Imag.ptr(), xi);
 }
 
-pub export fn curtComplex(
-    z_real: *const runtime.real_t,
-    z_imag: *const runtime.real_t,
-    res_real: *runtime.real_t,
-    res_imag: *runtime.real_t,
-    real_context: *runtime.realContext_t,
-) callconv(.c) void {
-    if (real_context.digits <= 75) {
-        curtComplex75(z_real, z_imag, res_real, res_imag, real_context);
-    } else if (arm_159 and real_context.digits <= 159) {
-        curtComplex159(z_real, z_imag, res_real, res_imag, real_context);
-    } else {
-        var message_buffer: [64]u8 = undefined;
-        const message = bufPrintZ(&message_buffer, "Exceed digits :curtComplex159: {d}", .{real_context.digits}) catch "Exceed digits :curtComplex159:";
-        displayBugScreen(message);
+comptime {
+    if (arm_159) {
+        @export(&sqrtComplex159, .{ .name = "sqrtComplex159" });
+        @export(&curtComplex159, .{ .name = "curtComplex159" });
     }
 }
 
@@ -876,18 +923,17 @@ pub export fn curtComplex(
 // ----------------------------------------------------------------------------
 
 pub export fn unitVectorCplx() callconv(.c) void {
-    var a: runtime.real_t = undefined;
-    var b: runtime.real_t = undefined;
-    var norm: runtime.real_t = undefined;
+    var norm: real_t = undefined;
+    var x: cplx_t = undefined;
 
-    runtime.real34ToReal(runtime.registerReal34Ptr(runtime.REGISTER_X), &a);
-    runtime.real34ToReal(runtime.registerImag34Ptr(runtime.REGISTER_X), &b);
+    runtime.real34ToReal(runtime.registerReal34Ptr(runtime.REGISTER_X), &x.Real);
+    runtime.real34ToReal(runtime.registerImag34Ptr(runtime.REGISTER_X), &x.Imag);
 
-    runtime.realMultiply(&a, &a, &norm, &runtime.ctxtReal39);
-    runtime.realFMA(&b, &b, &norm, &norm, &runtime.ctxtReal39);
+    runtime.realMultiply(&x.Real, &x.Real, &norm, &runtime.ctxtReal39);
+    runtime.realFMA(&x.Imag, &x.Imag, &norm, &norm, &runtime.ctxtReal39);
     runtime.realSquareRoot(&norm, &norm, &runtime.ctxtReal39);
-    runtime.realDivide(&a, &norm, &a, &runtime.ctxtReal39);
-    runtime.realDivide(&b, &norm, &b, &runtime.ctxtReal39);
+    runtime.realDivide(&x.Real, &norm, &x.Real, &runtime.ctxtReal39);
+    runtime.realDivide(&x.Imag, &norm, &x.Imag, &runtime.ctxtReal39);
 
-    runtime.convertComplexToResultRegister(&a, &b, runtime.REGISTER_X);
+    runtime.convertComplexToResultRegister(&x, runtime.REGISTER_X);
 }

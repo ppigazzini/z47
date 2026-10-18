@@ -96,9 +96,10 @@ fn compareResultToTemporaryInformation(result: i32, mode: Mode) void {
     }
 }
 
-fn compareRealsToTemporaryInformation(left: *runtime.real_t, right: *runtime.real_t, mode: Mode) void {
+// Ordered comparison and equality are false for NaN; inequality is true.
+fn compareRealsToTemporaryInformation(left: *const runtime.real_t, right: *const runtime.real_t, mode: Mode) void {
     if (runtime.realIsNaN(left) or runtime.realIsNaN(right)) {
-        runtime.setTemporaryInformation(false);
+        runtime.setTemporaryInformation(mode == .not_equal);
         return;
     }
 
@@ -112,11 +113,10 @@ fn compareRealsToTemporaryInformation(left: *runtime.real_t, right: *runtime.rea
     compareResultToTemporaryInformation(result, mode);
 }
 
+// Complex numbers do not have a total ordering; only == and != are supported.
 fn compareComplexToTemporaryInformation(
-    left_real: *runtime.real_t,
-    left_imag: *runtime.real_t,
-    right_real: *runtime.real_t,
-    right_imag: *runtime.real_t,
+    left: *const runtime.cplx_t,
+    right: *const runtime.cplx_t,
     mode: Mode,
     regist: runtime.calcRegister_t,
 ) void {
@@ -125,70 +125,109 @@ fn compareComplexToTemporaryInformation(
         return;
     }
 
-    compareRealsToTemporaryInformation(left_real, right_real, mode);
-    if (runtime.temporaryInformation != runtime.TI_FALSE) {
-        compareRealsToTemporaryInformation(left_imag, right_imag, mode);
-    }
+    const equal = runtime.realCompareEqual(&left.Real, &right.Real) and runtime.realCompareEqual(&left.Imag, &right.Imag);
+    runtime.setTemporaryInformation(if (mode == .equal) equal else !equal);
 }
 
 fn getCompareInput(
     regist: runtime.calcRegister_t,
-    real: *runtime.real_t,
-    imag: *runtime.real_t,
+    z: *runtime.cplx_t,
     is_complex: *bool,
 ) bool {
     switch (runtime.getRegisterDataType(regist)) {
         runtime.dtComplex34 => {
             is_complex.* = true;
-            return runtime.getRegisterAsComplex(regist, real, imag);
+            return runtime.getRegisterAsComplex(regist, z);
         },
         runtime.dtReal34 => {
-            if (!runtime.getRegisterAsReal(regist, real)) {
+            if (!runtime.getRegisterAsReal(regist, &z.Real)) {
                 return false;
             }
-            runtime.realSetZero(imag);
+            runtime.realSetZero(&z.Imag);
             return true;
         },
         runtime.dtLongInteger => {
             // 75 digits, as getRegisterAsComplexOrAnyRealQuiet uses: a long integer
             // mixed with a real must not lose digits on the way in.
-            runtime.convertLongIntegerRegisterToReal(regist, real, &runtime.ctxtReal75);
-            runtime.realSetZero(imag);
+            runtime.convertLongIntegerRegisterToReal(regist, &z.Real, &runtime.ctxtReal75);
+            runtime.realSetZero(&z.Imag);
             return true;
         },
         runtime.dtShortInteger => {
             // 34 digits, as getRegisterAsComplexOrAnyRealQuiet uses.
-            runtime.convertShortIntegerRegisterToReal(regist, real, &runtime.ctxtReal34);
-            runtime.realSetZero(imag);
+            runtime.convertShortIntegerRegisterToReal(regist, &z.Real, &runtime.ctxtReal34);
+            runtime.realSetZero(&z.Imag);
             return true;
         },
         else => return false,
     }
 }
 
+// A tagged real is converted to the current angular mode before it is
+// compared; a conversion from or to radians runs at 75 digits.
+fn normaliseRegisterRealForComparison(regist: runtime.calcRegister_t, value: *runtime.real_t) void {
+    if (runtime.getRegisterDataType(regist) != runtime.dtReal34) {
+        return;
+    }
+
+    const mode = runtime.getRegisterAngularMode(regist);
+    if (mode != runtime.amNone and mode != runtime.currentAngularMode) {
+        const context = if (mode == runtime.amRadian or runtime.currentAngularMode == runtime.amRadian) &runtime.ctxtReal75 else &runtime.ctxtReal39;
+        runtime.convertAngleFromTo(value, mode, runtime.currentAngularMode, context);
+    }
+}
+
+// A Real34 against a long integer is compared exactly, without rounding
+// either into the other's digits, unless the real carries an angle in a unit
+// other than the current one. True with the signed comparison when that path
+// applies.
+fn compareMixedRealLong(regist1: runtime.calcRegister_t, regist2: runtime.calcRegister_t, comparison: *i32) bool {
+    const type1 = runtime.getRegisterDataType(regist1);
+    const type2 = runtime.getRegisterDataType(regist2);
+    const real_register = if (type1 == runtime.dtReal34 and type2 == runtime.dtLongInteger)
+        regist1
+    else if (type1 == runtime.dtLongInteger and type2 == runtime.dtReal34)
+        regist2
+    else
+        return false;
+
+    const mode = runtime.getRegisterAngularMode(real_register);
+    if (mode != runtime.amNone and mode != runtime.currentAngularMode) {
+        return false;
+    }
+    return runtime.compareFiniteReal34LongIntegerRegisters(regist1, regist2, comparison);
+}
+
 pub fn compareScalarRegister(regist: runtime.calcRegister_t, mode: Mode) void {
     const x_type = runtime.getRegisterDataType(runtime.REGISTER_X);
     const regist_type = runtime.getRegisterDataType(regist);
-    var x_real: runtime.real_t = undefined;
-    var x_imag: runtime.real_t = undefined;
-    var regist_real: runtime.real_t = undefined;
-    var regist_imag: runtime.real_t = undefined;
+    var x: runtime.cplx_t = undefined;
+    var r: runtime.cplx_t = undefined;
     var is_complex = false;
+    var comparison: i32 = undefined;
 
     if (!isOwnedCompareType(x_type) or !isOwnedCompareType(regist_type)) {
         compareTypeError(regist);
         return;
     }
 
-    if (!getCompareInput(runtime.REGISTER_X, &x_real, &x_imag, &is_complex) or !getCompareInput(regist, &regist_real, &regist_imag, &is_complex)) {
+    if (compareMixedRealLong(runtime.REGISTER_X, regist, &comparison)) {
+        compareResultToTemporaryInformation(comparison, mode);
+        return;
+    }
+
+    if (!getCompareInput(runtime.REGISTER_X, &x, &is_complex) or !getCompareInput(regist, &r, &is_complex)) {
         compareTypeError(regist);
         return;
     }
 
+    normaliseRegisterRealForComparison(runtime.REGISTER_X, &x.Real);
+    normaliseRegisterRealForComparison(regist, &r.Real);
+
     if (is_complex) {
-        compareComplexToTemporaryInformation(&x_real, &x_imag, &regist_real, &regist_imag, mode, regist);
+        compareComplexToTemporaryInformation(&x, &r, mode, regist);
     } else {
-        compareRealsToTemporaryInformation(&x_real, &regist_real, mode);
+        compareRealsToTemporaryInformation(&x.Real, &r.Real, mode);
     }
 }
 

@@ -9,6 +9,422 @@ Func: fnClSigma
 In:  FARG=0 RX=Real:"0"
 Out: EC=0
 
+; A NaN percentile parameter produces a NaN result instead of selecting an endpoint.
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"0" RX=Real:"0"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"10" RX=Real:"1"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"20" RX=Real:"2"
+Out: EC=0
+Func: fnPercentileXY
+In:  FL_SPCRES=1 FARG=0 RX=Real:"NaN"
+Out: EC=0 RX=Real:"NaN" RY=Real:"NaN"
+
+Func: fnClSigma
+In:  FL_SPCRES=0 FARG=0 RX=Real:"0"
+Out: EC=0
+
+; Fused centring retains a statistical-sum tail beyond the mean context
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"1" RX=Real:"2"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"1" RX=Real:"1.234567890123456789012345678901234e-40"
+Out: EC=0
+Func: fnDeltaPercentXmean
+In:  RMODE=0 FARG=0 RX=Real:"1"
+Out: EC=0 RX=Real:"-6.172839450617283945061728394506170e-39"
+Func: fnSubtract
+In:  RY=Real:"-6.172839450617283945061728394506170e-39"
+Out: EC=0 RX=Real:"0"
+Func: fnMultiply
+In:  RY=Real:"1e72"
+Out: EC=0 RX=Real:"0"
+Func: fnPcSigmaDeltaPcXmean
+In:  RMODE=0 FARG=0 RX=Real:"1"
+Out: EC=0 RY=Real:"50" RX=Real:"-6.172839450617283945061728394506170e-39"
+Func: fnSubtract
+In:  RY=Real:"-6.172839450617283945061728394506170e-39"
+Out: EC=0 RX=Real:"0"
+Func: fnMultiply
+In:  RY=Real:"1e72"
+Out: EC=0 RX=Real:"0"
+
+; Two rounded operations need p39 work arithmetic
+Func: fnClSigma
+In:  FARG=0 RX=Real:"0"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"1" RX=Real:"2.033280971048666087721175310280454"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"1" RX=Real:"9.615283548985539697959878206546683e-34"
+Out: EC=0
+Func: fnDeltaPercentXmean
+In:  RMODE=0 FARG=0 RX=Real:"7.401472794762299660552999531601163"
+Out: EC=0 RX=Real:"628.0324657683669633219879272851033"
+Func: fnSubtract
+In:  RY=Real:"628.0324657683669633219879272851033"
+Out: EC=0 RX=Real:"0"
+Func: fnMultiply
+In:  RY=Real:"1e31"
+Out: EC=0 RX=Real:"0"
+
+Func: fnDeltaPercentXmean
+In:  RMODE=1 FARG=0 RX=Real:"7.401472794762299660552999531601163"
+Out: EC=0 RX=Real:"628.0324657683669633219879272851033"
+Func: fnSubtract
+In:  RY=Real:"628.0324657683669633219879272851033"
+Out: EC=0 RX=Real:"0"
+Func: fnMultiply
+In:  RY=Real:"1e31"
+Out: EC=0 RX=Real:"0"
+
+Func: fnDeltaPercentXmean
+In:  RMODE=2 FARG=0 RX=Real:"7.401472794762299660552999531601163"
+Out: EC=0 RX=Real:"628.0324657683669633219879272851033"
+Func: fnSubtract
+In:  RY=Real:"628.0324657683669633219879272851033"
+Out: EC=0 RX=Real:"0"
+Func: fnMultiply
+In:  RY=Real:"1e31"
+Out: EC=0 RX=Real:"0"
+
+Func: fnDeltaPercentXmean
+In:  RMODE=3 FARG=0 RX=Real:"7.401472794762299660552999531601163"
+Out: EC=0 RX=Real:"628.0324657683669633219879272851033"
+Func: fnSubtract
+In:  RY=Real:"628.0324657683669633219879272851033"
+Out: EC=0 RX=Real:"0"
+Func: fnMultiply
+In:  RY=Real:"1e31"
+Out: EC=0 RX=Real:"0"
+
+Func: fnDeltaPercentXmean
+In:  RMODE=4 FARG=0 RX=Real:"7.401472794762299660552999531601163"
+Out: EC=0 RX=Real:"628.0324657683669633219879272851032"
+Func: fnSubtract
+In:  RY=Real:"628.0324657683669633219879272851032"
+Out: EC=0 RX=Real:"0"
+Func: fnMultiply
+In:  RY=Real:"1e31"
+Out: EC=0 RX=Real:"0"
+
+Func: fnDeltaPercentXmean
+In:  RMODE=5 FARG=0 RX=Real:"7.401472794762299660552999531601163"
+Out: EC=0 RX=Real:"628.0324657683669633219879272851033"
+Func: fnSubtract
+In:  RY=Real:"628.0324657683669633219879272851033"
+Out: EC=0 RX=Real:"0"
+Func: fnMultiply
+In:  RY=Real:"1e31"
+Out: EC=0 RX=Real:"0"
+
+Func: fnDeltaPercentXmean
+In:  RMODE=6 FARG=0 RX=Real:"7.401472794762299660552999531601163"
+Out: EC=0 RX=Real:"628.0324657683669633219879272851032"
+Func: fnSubtract
+In:  RY=Real:"628.0324657683669633219879272851032"
+Out: EC=0 RX=Real:"0"
+Func: fnMultiply
+In:  RY=Real:"1e31"
+Out: EC=0 RX=Real:"0"
+
+; Zero mean delegates special signs to decimal division
+Func: fnClSigma
+In:  FARG=0 RX=Real:"0"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"1" RX=Real:"0"
+Out: EC=0
+Func: fnDeltaPercentXmean
+In:  RMODE=0 FL_SPCRES=1 FARG=0 RX=Real:"-10"
+Out: EC=0 RX=Real:"-inf"
+Func: fnPcSigmaDeltaPcXmean
+In:  RMODE=0 FL_SPCRES=1 FARG=0 RX=Real:"-10"
+Out: EC=0 RY=Real:"-inf" RX=Real:"-inf"
+
+Func: fnClSigma
+In:  FARG=0 FL_SPCRES=0 RX=Real:"0"
+Out: EC=0
+
+; p34 centred arithmetic changes the final sample-deviation unit
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"6.425911026700541197619141272188538" RX=Real:"6.425911026700541197619141272188538"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"8.333352115295857821294974188122313" RX=Real:"8.333352115295857821294974188122313"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"8.907733415321082536380990015766958" RX=Real:"8.907733415321082536380990015766958"
+Out: EC=0
+Func: fnSampleStdDev
+In:  FARG=0
+Out: EC=0 RX=Real:"1.299210513667083581943692604707536" RY=Real:"1.299210513667083581943692604707536"
+Func: fnSubtract
+In:  RY=Real:"1.299210513667083581943692604707536"
+Out: EC=0 RX=Real:"0"
+Func: fnMultiply
+In:  RY=Real:"1e33"
+Out: EC=0 RX=Real:"0"
+
+; geometric deviation needs p51 before the closing exponential
+Func: fnClSigma
+In:  FARG=0 RX=Real:"0"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"1" RX=Real:"1"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"1e2808" RX=Real:"1e2808"
+Out: EC=0
+Func: fnGeometricSampleStdDev
+In:  FARG=0
+Out: EC=0 RX=Real:"3.596181245636668822458458830068446e1985" RY=Real:"3.596181245636668822458458830068446e1985"
+Func: fnSubtract
+In:  RY=Real:"3.596181245636668822458458830068446e1985"
+Out: EC=0 RX=Real:"0"
+Func: fnMultiply
+In:  RY=Real:"1e-1952"
+Out: EC=0 RX=Real:"0"
+
+Func: fnClSigma
+In:  FARG=0 RX=Real:"0"
+Out: EC=0
+
+; direct means use p34 without overflowing wide stored sums
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"1e-6176" RX=Real:"9.999999999999999999999999999999999e6144"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"1e-6176" RX=Real:"9.999999999999999999999999999999999e6144"
+Out: EC=0
+Func: fnMeanXY
+In:  FARG=0
+Out: EC=0 RX=Real:"9.999999999999999999999999999999999e6144" RY=Real:"1e-6176"
+Func: fnHarmonicMeanXY
+In:  FARG=0
+Out: EC=0 RX=Real:"9.999999999999999999999999999999999e6144" RY=Real:"1e-6176"
+
+; fractional positive weights are valid
+Func: fnClSigma
+In:  FARG=0 RX=Real:"0"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"0.1" RX=Real:"2"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"0.2" RX=Real:"4"
+Out: EC=0
+Func: fnWeightedMeanX
+In:  FARG=0
+Out: EC=0 RX=Real:"3.333333333333333333333333333333333"
+Func: fnWeightedPopulationStdDev
+In:  FARG=0
+Out: EC=0 RX=Real:"0.9428090415820633658677924828064654"
+Func: fnWeightedSampleStdDev
+In:  FARG=0
+Out: EC=15
+
+Func: fnClSigma
+In:  FARG=0 RX=Real:"0"
+Out: EC=0
+
+; centred evaluation retains a tiny variance beside a large mean
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"100000000000000000000" RX=Real:"100000000000000000000"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"100000000000000000000" RX=Real:"100000000000000000000"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"100000000000000000000.0000000000001" RX=Real:"100000000000000000000.0000000000001"
+Out: EC=0
+Func: fnSampleStdDev
+In:  FARG=0
+Out: EC=0 RX=Real:"5.773502691896257645091487805019575e-14" RY=Real:"5.773502691896257645091487805019575e-14"
+Func: fnSubtract
+In:  RY=Real:"5.773502691896257645091487805019575e-14"
+Out: EC=0 RX=Real:"0"
+Func: fnMultiply
+In:  RY=Real:"1e48"
+Out: EC=0 RX=Real:"0"
+Func: fnPopulationStdDev
+In:  FARG=0
+Out: EC=0 RX=Real:"4.714045207910316829338962414032327e-14" RY=Real:"4.714045207910316829338962414032327e-14"
+Func: fnStandardError
+In:  FARG=0
+Out: EC=0 RX=Real:"3.333333333333333333333333333333333e-14" RY=Real:"3.333333333333333333333333333333333e-14"
+
+; centred cross-products retain covariance beside large means
+Func: fnClSigma
+In:  FARG=0 RX=Real:"0"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RX=ReMa:"M3,2[100000000000000000000,100000000000000000000,100000000000000000000,100000000000000000000.0000000000001,100000000000000000000.0000000000001,100000000000000000000]"
+Out: EC=0 RX=Real:"100000000000000000000.0000000000001" RY=Real:"100000000000000000000"
+Func: fnSampleCovariance
+In:  FARG=0
+Out: EC=0 RX=Real:"-1.666666666666666666666666666666667e-27"
+Func: fnPopulationCovariance
+In:  FARG=0
+Out: EC=0 RX=Real:"-1.111111111111111111111111111111111e-27"
+Func: fnCoeffDetermination
+In:  FARG=0
+Out: EC=0 RX=Real:"-0.5"
+
+; the 3200-row coefficient growth defeats uncentred p75 subtraction
+Func: fnVarianceCentredCov
+In:  FARG=0
+Out: EC=0
+Func: fnSampleCovariance
+In:  FARG=0
+Out: EC=0 RX=Real:"-9.768677711784932791497342919662394e-34"
+Func: fnPopulationCovariance
+In:  FARG=0
+Out: EC=0 RX=Real:"-9.765625e-34"
+Func: fnCoeffDetermination
+In:  FARG=0
+Out: EC=0 RX=Real:"-0.0003125976867771178493279149734291966"
+Func: fnMinExpStdDev
+In:  FARG=0
+Out: EC=0 RX=Real:"1.767766780224939220806222296620253e-15"
+
+; direct residuals retain a minimum deviation when correlation rounds near one
+Func: fnVarianceCentredCov
+In:  FARG=1
+Out: EC=0
+Func: fnMinExpStdDev
+In:  FARG=0
+Out: EC=0 RX=Real:"7.759835936631705631376296628711847e-34"
+
+Func: fnVarianceCentredCov
+In:  FARG=2
+Out: EC=0
+Func: fnMinExpStdDev
+In:  FARG=0
+Out: EC=0 RX=Real:"0.07739855688918298422688165355951675"
+
+; p75 moments and residuals retain the rounded-products departure from a line
+Func: fnVarianceCentredCov
+In:  FARG=3
+Out: EC=0
+Func: fnMinExpStdDev
+In:  FARG=0
+Out: EC=0 RX=Real:"6.064576098676213715565706554828286e-41"
+Func: fnStatSa
+In:  FARG=0
+Out: EC=0 RX=Real:"2.286759664977343630310186616379295e-41" RY=Real:"3.416607567672368899594653927623601e-41"
+
+; signed cross-products need p75 when 68-digit products nearly cancel
+Func: fnClSigma
+In:  FARG=0 RX=Real:"0"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"7381275281927092048299803556388233" RX=Real:"9876543210987654321098765432109877"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"-7381275281927092048299803556388233" RX=Real:"-9876543210987654321098765432109877"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"-8316929885522185234311580572322940" RX=Real:"8765432109876543210987654321098761"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"8316929885522185234311580572322940" RX=Real:"-8765432109876543210987654321098761"
+Out: EC=0
+Func: fnSampleCovariance
+In:  FARG=0
+Out: EC=0 RX=Real:"0.6666666666666666666666666666666667"
+Func: fnPopulationCovariance
+In:  FARG=0
+Out: EC=0 RX=Real:"0.5"
+Func: fnCoeffDetermination
+In:  FARG=0
+Out: EC=0 RX=Real:"6.810013604699816737466904321984342e-69"
+
+; covariance needs two observations and parameter errors need three
+Func: fnClSigma
+In:  FARG=0 RX=Real:"0"
+Out: EC=0
+Func: fnSampleCovariance
+In:  FARG=0
+Out: EC=28
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"2" RX=Real:"1"
+Out: EC=0
+Func: fnSampleCovariance
+In:  FARG=0
+Out: EC=15
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"3" RX=Real:"1"
+Out: EC=0
+Func: fnStatSa
+In:  FARG=0
+Out: EC=15
+
+; zero X variance makes correlation undefined while covariance remains zero
+Func: fnSampleCovariance
+In:  FL_SPCRES=1 FARG=0
+Out: EC=0 RX=Real:"0"
+Func: fnCoeffDetermination
+In:  FL_SPCRES=1 FARG=0
+Out: EC=0 RX=Real:"NaN"
+
+; infinite observations propagate through covariance and correlation
+Func: fnClSigma
+In:  FARG=0 RX=Real:"0"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FL_SPCRES=1 FARG=1 RX=ReMa:"M2,2[Infinity,1,2,3]"
+Out: EC=0 RX=Real:"2" RY=Real:"3"
+Func: fnSampleCovariance
+In:  FL_SPCRES=1 FARG=0
+Out: EC=0 RX=Real:"NaN"
+Func: fnCoeffDetermination
+In:  FL_SPCRES=1 FARG=0
+Out: EC=0 RX=Real:"NaN"
+
+; three exact collinear observations have zero parameter errors
+Func: fnClSigma
+In:  FARG=0 RX=Real:"0"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RX=ReMa:"M3,2[1,2,2,4,3,6]"
+Out: EC=0 RX=Real:"3" RY=Real:"6"
+Func: fnStatSa
+In:  FL_SPCRES=0 FARG=0
+Out: EC=0 RX=Real:"0" RY=Real:"0"
+Func: fnMinExpStdDev
+In:  FARG=0
+Out: EC=15
+
+Func: fnClSigma
+In:  FARG=0 RX=Real:"0"
+Out: EC=0
+; RMS needs guard digits across division and square root
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"6.220504644630588869860143057304340" RX=Real:"6.220504644630588869860143057304340"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"1.386466957379140208711177696561762" RX=Real:"1.386466957379140208711177696561762"
+Out: EC=0
+Func: fnRMSMeanXY
+In:  FARG=0
+Out: EC=0 RX=Real:"4.506493573598818487239854561418073" RY=Real:"4.506493573598818487239854561418073"
+Func: fnSubtract
+In:  RY=Real:"4.506493573598818487239854561418073"
+Out: EC=0 RX=Real:"0"
+Func: fnMultiply
+In:  RY=Real:"1e33"
+Out: EC=0 RX=Real:"0"
+
+Func: fnClSigma
+In:  FARG=0 RX=Real:"0"
+Out: EC=0
+
 Func: fnSigmaAddRem
 In:  FARG=1 RY=Real:"2" RX=Real:"1"
 Out: EC=0
@@ -112,3 +528,281 @@ Out: EC=0
 Func: fnPercentileXY
 In:  FARG=0 RX=Real:"50"
 Out: EC=0 RX=Real:"3" RY=Real:"6"
+
+; percentile position needs the exact 35-digit product 4*p
+Func: fnClSigma
+In:  FARG=0 RX=Real:"0"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"0" RX=Real:"0"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"10" RX=Real:"1"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"20" RX=Real:"2"
+Out: EC=0
+Func: fnPercentileXY
+In:  FARG=0 RX=Real:"49.99999999999999999999999999999999"
+Out: EC=0 RX=Real:"0.9999999999999999999999999999999996" RY=Real:"9.999999999999999999999999999999996"
+Func: fnSubtract
+In:  RY=Real:"0.9999999999999999999999999999999996"
+Out: EC=0 RX=Real:"0"
+Func: fnMultiply
+In:  RY=Real:"1e34"
+Out: EC=0 RX=Real:"0"
+
+; p39 averaging avoids Real34 range overflow before division by two
+Func: fnClSigma
+In:  FARG=0 RX=Real:"0"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"1e-6176" RX=Real:"9.999999999999999999999999999999999e6144"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"1e-6176" RX=Real:"9.999999999999999999999999999999999e6144"
+Out: EC=0
+Func: fnMedianXY
+In:  FARG=0
+Out: EC=0 RX=Real:"9.999999999999999999999999999999999e6144" RY=Real:"1e-6176"
+
+; NaNs sort after numeric values and equal NaNs compare equally
+Func: fnClSigma
+In:  FARG=0 RX=Real:"0"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"-Infinity" RX=Real:"-Infinity"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"1" RX=Real:"1"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"NaN" RX=Real:"NaN"
+Out: EC=0
+Func: fnMedianXY
+In:  FARG=0
+Out: EC=0 RX=Real:"1" RY=Real:"1"
+Func: fnPercentileXY
+In:  FARG=0 RX=Real:"100"
+Out: EC=0 RX=Real:"NaN" RY=Real:"NaN"
+
+Func: fnClSigma
+In:  FARG=0 RX=Real:"0"
+Out: EC=0
+
+Func: fnClSigma
+In:  FARG=0 RX=Real:"0"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"2" RX=Real:"1"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"4" RX=Real:"2"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"5" RX=Real:"4"
+Out: EC=0
+Func: fnDeleteAllVariables
+In:  FARG=9877
+Out: EC=0
+; DELVall deletes STATS and keeps the sums, and the centred statistics take them as the mean does
+Func: fnSampleStdDev
+In:  FARG=0
+Out: EC=0 RX=Real:"1.527525231651946668862682397909336" RY=Real:"1.527525231651946668862682397909336"
+Func: fnWeightedSampleStdDev
+In:  FARG=0
+Out: EC=0 RX=Real:"1.272077756342676633400998854940584"
+Func: fnSampleCovariance
+In:  FARG=0
+Out: EC=0 RX=Real:"2.166666666666666666666666666666667"
+Func: fnCurveFitting
+In:  FARG=2
+Out: EC=0
+Func: fnProcessLR
+In:  FARG=1
+Out: EC=0
+Func: fnStatSa
+In:  FARG=0
+Out: EC=0 RX=Real:"0.3807304736131225759946206177423617" RY=Real:"0.1439025928177373669077280072457393"
+Func: fnCurveFitting
+In:  FARG=4
+Out: EC=0
+Func: fnProcessLR
+In:  FARG=1
+Out: EC=0
+Func: fnStatSa
+In:  FARG=0
+Out: EC=0 RX=Real:"0.3726779962499649494015289447885460" RY=Real:"0.4164701851078905862262682201948440"
+Func: fnCurveFitting
+In:  FARG=8
+Out: EC=0
+Func: fnProcessLR
+In:  FARG=1
+Out: EC=0
+Func: fnStatSa
+In:  FARG=0
+Out: EC=0 RX=Real:"0.1751600107775121510835269537242242" RY=Real:"0.1957424984733518635778792023446847"
+
+; a steep line after DELVall: the orthogonal residuals from the sums
+Func: fnClSigma
+In:  FARG=0 RX=Real:"0"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RX=ReMa:"M30,2[1,3,2,7,3,8,4,14,5,15,6,16,7,22,8,24,9,26,10,31,11,35,12,35,13,39,14,43,15,43,16,48,17,52,18,53,19,57,20,62,21,62,22,66,23,70,24,70,25,76,26,78,27,80,28,86,29,87,30,89]"
+Out: EC=0
+Func: fnDeleteAllVariables
+In:  FARG=9877
+Out: EC=0
+Func: fnMinExpStdDev
+In:  FARG=0
+Out: EC=0 RX=Real:"0.3802364285245103810142043383317246"
+
+Func: fnClSigma
+In:  FARG=0 RX=Real:"0"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"1" RX=Real:"1"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"2" RX=Real:"1.4"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"3" RX=Real:"1.8"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"4" RX=Real:"2.2"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"5" RX=Real:"2.4"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"6" RX=Real:"2.6"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"7" RX=Real:"2.8"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"8" RX=Real:"3.2"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"9" RX=Real:"4"
+Out: EC=0
+Item: ITM_HISTOX
+In:  FL_SPCRES=0
+Out: EC=0
+Item: ITM_HNORM
+In:  FL_SPCRES=0
+Out: EC=0
+Func: fnCoeffDetermination
+In:  FARG=0
+Out: EC=0
+Item: ITM_EXIT1
+In:  FL_SPCRES=0
+Out: EC=0
+Func: fnMeanXY
+In:  FARG=0
+Out: EC=0 RX=Real:"2.377777777777777777777777777777778" RY=Real:"5"
+
+Func: fnClSigma
+In:  FARG=0 RX=Real:"0"
+Out: EC=0
+
+; STATS keeps 10^37+1 as 1E37 and the sums keep all its digits: Sigma- takes off the row as Sigma+ added it -> means 6 and 1.5
+Func: fnClSigma
+In:  FARG=0 RX=Real:"0"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"1" RX=Real:"5"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"2" RX=Real:"7"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=LonI:"10000000000000000000000000000000000001" RX=LonI:"10000000000000000000000000000000000001"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=2
+Out: EC=0
+Func: fnMeanXY
+In:  FARG=0
+Out: EC=0 RX=Real:"6" RY=Real:"1.5"
+
+; the sums keep every digit of 10^37+1 and -10^37
+Func: fnClSigma
+In:  FARG=0 RX=Real:"0"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"1" RX=LonI:"10000000000000000000000000000000000001"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"1" RX=LonI:"-10000000000000000000000000000000000000"
+Out: EC=0
+Func: fnSumXY
+In:  FARG=0
+Out: EC=0 RX=Real:"1" RY=Real:"2"
+
+; s with 10^37+1 and 10^37+3 in y comes from the sums, as STATS keeps both as 1E37
+Func: fnClSigma
+In:  FARG=0 RX=Real:"0"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=LonI:"10000000000000000000000000000000000001" RX=Real:"1"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=LonI:"10000000000000000000000000000000000003" RX=Real:"2"
+Out: EC=0
+Func: fnSampleStdDev
+In:  FARG=0
+Out: EC=0 RX=Real:"0.7071067811865475244008443621048490" RY=Real:"1.414213562373095048801688724209698"
+
+; 10^37+1, +3 and +7: the exponential s(a) from the sums, with the mean to 150 digits
+Func: fnClSigma
+In:  FARG=0 RX=Real:"0"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"1" RX=LonI:"10000000000000000000000000000000000001"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"2" RX=LonI:"10000000000000000000000000000000000003"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"4" RX=LonI:"10000000000000000000000000000000000007"
+Out: EC=0
+Func: fnCurveFitting
+In:  FARG=2
+Out: EC=0
+Func: fnProcessLR
+In:  FARG=1
+Out: EC=0
+Func: fnStatSa
+In:  FARG=0
+Out: EC=0 RX=Real:"4.287736192331941704089655185852617e35" RY=Real:"0.04287736192331941704089655185852617"
+
+; Sigma- takes the saved row only when both of its columns round to the last row
+Func: fnClSigma
+In:  FARG=0 RX=Real:"0"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"1" RX=Real:"5"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"3" RX=Real:"1e40"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"4" RX=Real:"1e40"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"4" RX=Real:"2e40"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=2
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=2
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=2
+Out: EC=0
+Func: fnMeanXY
+In:  FARG=0
+Out: EC=0 RX=Real:"5" RY=Real:"1"

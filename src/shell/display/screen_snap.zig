@@ -121,6 +121,10 @@ else switch (@import("builtin").target.os.tag) {
     .macos => "\r\n",
     else => "\n",
 };
+// CLIPBOARD_LINEBREAK: the value-string line break for the clipboard and TSV
+// builders. GTK adds the host CR on paste, so the host form stays LF-only; the
+// hardware keeps its existing break at the shared matrix sites.
+const CLIPBOARD_LINEBREAK = if (dmcp_build) LINEBREAK else "\n";
 
 // CLIPSTR: 30000 on host (PC_BUILD), TMP_STR_LENGTH (2560) on firmware.
 const CLIPSTR: usize = if (dmcp_build) 2560 else 30000;
@@ -329,7 +333,7 @@ pub export fn copyRegisterToClipboardString(regist: calcRegister_t, clipboardStr
 
             var i: u32 = 0;
             while (i < rows * columns) : (i += 1) {
-                _ = strcat(buf, LINEBREAK);
+                _ = strcat(buf, CLIPBOARD_LINEBREAK);
                 const len = strlen(buf);
 
                 real34Reduce(&real34[0], &reduced);
@@ -352,7 +356,7 @@ pub export fn copyRegisterToClipboardString(regist: calcRegister_t, clipboardStr
 
             var i: u32 = 0;
             while (i < rows * columns) : (i += 1) {
-                _ = strcat(buf, LINEBREAK);
+                _ = strcat(buf, CLIPBOARD_LINEBREAK);
                 var len = strlen(buf);
 
                 // Real part
@@ -540,6 +544,9 @@ pub export fn copyScreenToClipboard() callconv(.c) void {
 
 pub export fn copyMenuToClipboard() callconv(.c) void {
     if (comptime dmcp_build) return;
+    if (!frontier_screen.snapMenusOk()) {
+        return;
+    }
     const clipboard = clipboardForClear();
     const imageSurface = cairo_image_surface_create_for_data(@ptrCast(screenData()), CAIRO_FORMAT_RGB24, SCREEN_WIDTH, SCREEN_HEIGHT - 170, stride4());
     gtk_clipboard_set_image(clipboard, gdk_pixbuf_get_from_surface(imageSurface, 0, 170, SCREEN_WIDTH, SCREEN_HEIGHT - 170));
@@ -561,7 +568,7 @@ fn copyStackRegistersToClipboardString(clipboardString: [*c]u8, lastRegist: calc
         ptr += abi.fmtCStrN(ptr, "{s}{c} = ", .{ sep, @as(u8, @intCast(letteredRegisterName(r))) });
         copyRegisterToClipboardString(r, ptr, 0);
         ptr = strchr(ptr, 0);
-        sep = LINEBREAK;
+        sep = CLIPBOARD_LINEBREAK;
     }
 }
 
@@ -569,7 +576,7 @@ pub export fn copyStackRegistersToClipboard() callconv(.c) void {
     if (comptime dmcp_build) return;
     const clipboard = clipboardForClear();
     var clipboardString: [10000]u8 = undefined;
-    copyStackRegistersToClipboardString(&clipboardString, REGISTER_K);
+    copyStackRegistersToClipboardString(&clipboardString, LAST_SPARE_REGISTER);
     gtk_clipboard_set_text(clipboard, &clipboardString, -1);
 }
 
@@ -626,7 +633,7 @@ pub export fn copyAllRegistersToClipboard() callconv(.c) void {
     var regist: i32 = 99;
     while (regist >= 0) : (regist -= 1) {
         ptr += strlen(ptr);
-        abi.fmtCStr(ptr, LINEBREAK ++ "R{d:0>2} = ", .{@as(u32, @intCast(regist))});
+        abi.fmtCStr(ptr, CLIPBOARD_LINEBREAK ++ "R{d:0>2} = ", .{@as(u32, @intCast(regist))});
         ptr += strlen(ptr);
         copyRegisterToClipboardString(@intCast(regist), ptr, 0);
     }
@@ -635,7 +642,7 @@ pub export fn copyAllRegistersToClipboard() callconv(.c) void {
     regist = numLocal - 1;
     while (regist >= 0) : (regist -= 1) {
         ptr += strlen(ptr);
-        abi.fmtCStr(ptr, LINEBREAK ++ "R.{d:0>2} = ", .{@as(u32, @intCast(regist))});
+        abi.fmtCStr(ptr, CLIPBOARD_LINEBREAK ++ "R.{d:0>2} = ", .{@as(u32, @intCast(regist))});
         ptr += strlen(ptr);
         copyRegisterToClipboardString(@intCast(FIRST_LOCAL_REGISTER + regist), ptr, 0);
     }
@@ -648,7 +655,7 @@ pub export fn copyAllRegistersToClipboard() callconv(.c) void {
             ptr += strlen(ptr);
             _ = strcpy(&sumName, StatSumNames[@intCast(sum)].ptr);
 
-            abi.fmtCStr(ptr, LINEBREAK ++ "SR{d:0>2} = ", .{@as(u32, @intCast(sum))});
+            abi.fmtCStr(ptr, CLIPBOARD_LINEBREAK ++ "SR{d:0>2} = ", .{@as(u32, @intCast(sum))});
             ptr += strlen(ptr);
             frontier_char_string.stringToUtf8(&sumName, ptr);
             ptr += strlen(ptr);

@@ -17,10 +17,10 @@ Func: fnSolveRootCov
 In:  FARG=0 RY=Real:"-3" RX=Real:"-1"
 Out: EC=0 RX=Real:"-2"
 
-; no real root (f(X)=X^2+1): the solver reports ERROR_NO_ROOT_FOUND (20)
+; no real root (f(X)=X^2+1): the solver reaches its local minimum
 Func: fnSolveRootCov
 In:  FARG=2 RY=Real:"0" RX=Real:"3"
-Out: EC=20
+Out: EC=42
 ; fnPgmSlv dispatch: unknown label letter -> LABEL_NOT_FOUND (6),
 ; out-of-range parameter -> OUT_OF_RANGE (8)
 Func: fnSolveErrCov
@@ -29,3 +29,78 @@ Out: EC=6
 Func: fnSolveErrCov
 In:  FARG=1 RX=Real:"0"
 Out: EC=8
+
+; scaling a root equation does not change its root
+Func: fnSolveRootCov
+In:  FARG=3 RY=Real:"1" RX=Real:"2"
+Out: EC=0 RX=Real:"1.414213562373095048801688724209698"
+
+; a narrow bracket around a tiny root is retained
+Func: fnSolveRootCov
+In:  FARG=4 RY=Real:"0" RX=Real:"1e-2999"
+Out: EC=0 RX=Real:"1e-3000"
+
+; an extreme finite root remains within the Real34 range
+Func: fnSolveRootCov
+In:  FARG=5 RY=Real:"1e3000" RX=Real:"2e3000"
+Out: EC=0 RX=Real:"1.414213562373095048801688724209698e3000"
+
+; equal guesses use the representable-neighbour search
+Func: fnSolveRootCov
+In:  FARG=0 RY=Real:"1" RX=Real:"1"
+Out: EC=0 RX=Real:"2"
+
+; invalid guesses are domain errors, not pole reports from later interpolation
+Func: fnSolveRootCov
+In:  FARG=0 RY=Real:"NaN" RX=Real:"1"
+Out: EC=43
+Func: fnSolveRootCov
+In:  FARG=0 RY=Real:"-inf" RX=Real:"1"
+Out: EC=43
+
+; signed zero guesses converge to the exact zero root
+Func: fnSolveRootCov
+In:  FARG=6 RY=Real:"-0" RX=Real:"0"
+Out: EC=0 RX=Real:"0"
+
+; A tiny secant displacement does not certify a wide sign bracket. The root is
+; exact even though the residual at the right endpoint is about 1.2e38 times
+; larger than at the left endpoint.
+Func: fnSolveRootCov
+In:  FARG=7 RY=Real:"1" RX=Real:"3"
+Out: EC=0 RX=Real:"2.1"
+Func: fnSolveRootCov
+In:  RMODE=1 FARG=7 RY=Real:"1" RX=Real:"3"
+Out: EC=0 RX=Real:"2.1"
+Func: fnSolveRootCov
+In:  RMODE=2 FARG=7 RY=Real:"1" RX=Real:"3"
+Out: EC=0 RX=Real:"2.1"
+Func: fnSolveRootCov
+In:  RMODE=3 FARG=7 RY=Real:"1" RX=Real:"3"
+Out: EC=0 RX=Real:"2.1"
+Func: fnSolveRootCov
+In:  RMODE=4 FARG=7 RY=Real:"1" RX=Real:"3"
+Out: EC=0 RX=Real:"2.1"
+Func: fnSolveRootCov
+In:  RMODE=5 FARG=7 RY=Real:"1" RX=Real:"3"
+Out: EC=0 RX=Real:"2.1"
+Func: fnSolveRootCov
+In:  RMODE=6 FARG=7 RY=Real:"1" RX=Real:"3"
+Out: EC=0 RX=Real:"2.1"
+
+; the flat root 0 of X^3: a bracket around 0 keeps a relative width of 1 or more -> 0
+Func: fnSolveRootCov
+In:  FARG=8 RY=Real:"-1" RX=Real:"2"
+Out: EC=0 RX=Real:"0"
+; zero, a root of X^3-4X outside the bracket from 1 to 3, is not taken -> 2
+Func: fnSolveRootCov
+In:  FARG=9 RY=Real:"1" RX=Real:"3"
+Out: EC=0 RX=Real:"2"
+; X^2 does not change sign at its root 0, which the guesses -1 and 2 enclose -> 0
+Func: fnSolveRootCov
+In:  FARG=10 RY=Real:"-1" RX=Real:"2"
+Out: EC=0 RX=Real:"0"
+; LN(X^2)-1 fails at 0 inside the bracket from -1 to 3, which contains one root, sqrt(e)
+Func: fnSolveRootCov
+In:  FARG=11 RY=Real:"-1" RX=Real:"3"
+Out: EC=0 RX=Real:"1.648721270700128146848650787814164"

@@ -25,17 +25,33 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"0" RX=LonI:"0"
 
 
 ;=======================================
-; round(Time) --> Error24
+; round(Time) --> Time
 ;=======================================
+Func: fnDisplayFormatTime
+In:  FARG=1 RX=Time:"119.9999999999999999999999999999999"
+Out: EC=0 RX=Time:"119.9999999999999999999999999999999"
+Func: fnRound
+In:  FL_ASLIFT=0 RX=Time:"119.9999999999999999999999999999999"
+Out: EC=0 FL_ASLIFT=1 RL=Time:"119.9999999999999999999999999999999" RX=Time:"60"
 
+Func: fnDisplayFormatTime
+In:  FARG=3 RX=Time:"1.5"
+Out: EC=0 RX=Time:"1.5"
+Func: fnRound
+In:  DRM=0 FL_ASLIFT=0 RX=Time:"1.5"
+Out: EC=0 FL_ASLIFT=1 RL=Time:"1.5" RX=Time:"2"
 
+In:  DRM=4 FL_ASLIFT=0 RX=Time:"1.5"
+Out: EC=0 FL_ASLIFT=1 RL=Time:"1.5" RX=Time:"1"
 
-;=======================================
-; round(Date) --> Error24
-;=======================================
+In:  DRM=5 FL_ASLIFT=0 RX=Time:"-1.5"
+Out: EC=0 FL_ASLIFT=1 RL=Time:"-1.5" RX=Time:"-1"
 
+Func: fnDisplayFormatTime
+In:  FARG=0 RMODE=0 DRM=1 RX=Time:"-1.5"
+Out: EC=0 RX=Time:"-1.5"
 
-
+Func: fnRound
 ;=======================================
 ; round(String) --> Error24
 ;=======================================
@@ -45,13 +61,13 @@ Out: EC=24 FL_ASLIFT=0 RX=Stri:"String test"
 
 
 ;=======================================
-; round(Real16 Matrix) --> Error24
+; round(Real34 Matrix) --> Real34 Matrix
 ;=======================================
 
 
 
 ;=======================================
-; round(Complex16 Matrix) --> Error24
+; round(Complex34 Matrix) --> Complex34 Matrix
 ;=======================================
 
 
@@ -67,6 +83,23 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"5#7" RX=ShoI:"5#7"
 ;=======================================
 ; round(Real34) --> Real34
 ;=======================================
+In:  FL_ASLIFT=0 FL_SPCRES=1 RX=Real:"NaN"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"NaN" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=0 RX=Real:"NaN"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=0 RX=Real:"inf"
+Out: EC=4 FL_ASLIFT=0 RX=Real:"inf"
+
+In:  FL_ASLIFT=0 FL_SPCRES=0 RX=Cplx:"1.25 i inf"
+Out: EC=4 FL_ASLIFT=0 RX=Cplx:"1.25 i inf"
+
+In:  FL_ASLIFT=0 FL_SPCRES=0 RX=ReMa:"M1,2[1.25,NaN]"
+Out: EC=1 FL_ASLIFT=0 RX=ReMa:"M1,2[1.25,NaN]"
+
+In:  FL_ASLIFT=0 FL_SPCRES=0 RX=CxMa:"M1,2[1.25i-2.75,-3.5iinf]"
+Out: EC=4 FL_ASLIFT=0 RX=CxMa:"M1,2[1.25i-2.75,-3.5iinf]"
 ;In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"0.0001"
 ;Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.0001" RX=Real:"1"
 ;

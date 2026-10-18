@@ -10,16 +10,20 @@ const std = @import("std");
 const runtime = @import("../command_wrappers/runtime.zig");
 
 const real_t = runtime.real_t;
+const cplx_t = runtime.cplx_t;
 const realContext_t = runtime.realContext_t;
-const angularMode_t = runtime.angularMode_t;
 
-const realAdd = runtime.realAdd;
 const realSubtract = runtime.realSubtract;
 const realMultiply = runtime.realMultiply;
+const realDivide = runtime.realDivide;
+const realFMA = runtime.realFMA;
+const realSquareRoot = runtime.realSquareRoot;
 const realIsNaN = runtime.realIsNaN;
 const realIsInfinite = runtime.realIsInfinite;
 const realIsZero = runtime.realIsZero;
+const realIsNegative = runtime.realIsNegative;
 const realSetZero = runtime.realSetZero;
+const realSetNaN = runtime.realSetNaN;
 const realChangeSign = runtime.realChangeSign;
 
 const REGISTER_X = runtime.REGISTER_X;
@@ -32,45 +36,38 @@ const amRadian = runtime.amRadian;
 const displayCalcErrorMessage = runtime.displayCalcErrorMessage;
 const moreInfoOnError = runtime.moreInfoOnError;
 
-// const_2 has a runtime accessor.
 inline fn const_2() *const real_t {
     return runtime.z47_math_wrappers_const_2();
 }
 inline fn const_1on2() *const real_t {
     return runtime.z47_math_wrappers_const_1on2();
 }
+inline fn const__1() *const real_t {
+    return runtime.z47_math_wrappers_const_minus_1();
+}
+inline fn const_plusInfinity() *const real_t {
+    return runtime.z47_math_wrappers_const_plus_infinity();
+}
+// pi/2 and 2 pi at the caller's width: 75 digits above a 39-digit context.
+inline fn piOn2For(realContext: *const realContext_t) *const real_t {
+    return if (realContext.digits > 39) runtime.z47_math_wrappers_const75_piOn2() else runtime.z47_math_wrappers_const_piOn2();
+}
+inline fn twoPiFor(realContext: *const realContext_t) *const real_t {
+    return if (realContext.digits > 39) consts.const75_2pi() else consts.const39_2pi();
+}
 
 const abi = @import("abi");
 const math_real_predicates = @import("../compare/real_predicates.zig");
-const math_command_wrappers = @import("../command_wrappers.zig");
 const math_comparison_reals = @import("../compare/comparison_reals.zig");
 const math_inverse_trig_command = @import("../trig/inverse_trig_command.zig");
-const math_ln_complex = @import("../ln_complex.zig");
 const math_wp34s = @import("wp34s.zig");
 const consts = abi.constants;
 
-// real ops / predicates not in runtime.
-extern fn decNumberCopy(res: *real_t, source: *align(1) const real_t) *real_t;
-inline fn realCopy(source: *align(1) const real_t, destination: *real_t) void {
-    _ = decNumberCopy(destination, source);
-}
-// real ops with a *align(1) const operand (blob constants).
-extern fn decNumberMultiply(result: *real_t, lhs: *const real_t, rhs: *align(1) const real_t, real_context: *realContext_t) *real_t;
-inline fn realMultiplyBlob(op1: *const real_t, op2: *align(1) const real_t, res: *real_t, ctxt: *realContext_t) void {
-    _ = decNumberMultiply(res, op1, op2, ctxt);
-}
-extern fn decNumberSubtract(result: *real_t, lhs: *const real_t, rhs: *align(1) const real_t, real_context: *realContext_t) *real_t;
-inline fn realSubtractBlob(op1: *const real_t, op2: *align(1) const real_t, res: *real_t, ctxt: *realContext_t) void {
-    _ = decNumberSubtract(res, op1, op2, ctxt);
-}
-extern fn decNumberAdd(result: *real_t, lhs: *const real_t, rhs: *align(1) const real_t, real_context: *realContext_t) *real_t;
-inline fn realAddBlob(op1: *const real_t, op2: *align(1) const real_t, res: *real_t, ctxt: *realContext_t) void {
-    _ = decNumberAdd(res, op1, op2, ctxt);
+inline fn realCopy(source: *const real_t, destination: *real_t) void {
+    destination.* = source.*;
 }
 
 const realIsPositive = math_real_predicates.realIsPositive;
-
-// Cross-domain externs.
 
 fn gdError(gd: bool, errorCode: u8) void {
     displayCalcErrorMessage(errorCode, ERR_REGISTER_LINE);
@@ -107,72 +104,103 @@ fn gdReal(gd: bool) void {
 }
 
 fn gdCplx(gd: bool) void {
-    var xReal: real_t = undefined;
-    var xImag: real_t = undefined;
+    var x: cplx_t = undefined;
 
-    if (!runtime.getRegisterAsComplex(REGISTER_X, &xReal, &xImag)) {
+    if (!runtime.getRegisterAsComplex(REGISTER_X, &x)) {
         return;
     }
 
     const errorCode = if (gd)
-        GudermannianComplex(&xReal, &xImag, &xReal, &xImag, &runtime.ctxtReal39)
+        GudermannianComplex(&x, &x, &runtime.ctxtReal39)
     else
-        InverseGudermannianComplex(&xReal, &xImag, &xReal, &xImag, &runtime.ctxtReal39);
+        InverseGudermannianComplex(&x, &x, &runtime.ctxtReal39);
 
     if (errorCode != ERROR_NONE) {
         gdError(gd, errorCode);
     } else {
-        runtime.convertComplexToResultRegister(&xReal, &xImag, REGISTER_X);
+        runtime.convertComplexToResultRegister(&x, REGISTER_X);
     }
 }
 
 pub export fn GudermannianReal(x: *const real_t, res: *real_t, realContext: *realContext_t) callconv(.c) u8 {
-    if (realIsInfinite(x)) {
-        if (realIsPositive(x)) {
-            realCopy(consts.const39piOn2(), res);
+    const piOn2 = piOn2For(realContext);
+
+    if (realIsZero(x)) {
+        if (realIsNegative(x)) {
+            realDivide(const__1(), const_plusInfinity(), res, realContext);
         } else {
-            realCopy(consts.const39piOn2(), res);
+            realSetZero(res);
+        }
+    } else if (realIsInfinite(x)) {
+        if (realIsPositive(x)) {
+            realCopy(piOn2, res);
+        } else {
+            realCopy(piOn2, res);
             realChangeSign(res);
         }
     } else {
-        // Gd(x) = 2 * Arctan(Exp(x)) - PI/2
-        math_command_wrappers.realExp(x, res, realContext);
+        // Gd(x) = 2*atan(tanh(x/2)).
+        realMultiply(x, const_1on2(), res, realContext);
+        math_wp34s.WP34S_Tanh(res, res, realContext);
         math_wp34s.C47_WP34S_Atan(res, res, realContext);
         realMultiply(res, const_2(), res, realContext);
-        realSubtractBlob(res, consts.const39piOn2(), res, realContext);
     }
 
     return ERROR_NONE;
 }
 
-pub export fn GudermannianComplex(xReal: *const real_t, xImag: *const real_t, resReal: *real_t, resImag: *real_t, realContext: *realContext_t) callconv(.c) u8 {
-    // Gd(x) = 2 * Arctan(Exp(x)) - PI/2
-    math_command_wrappers.expComplex(xReal, xImag, resReal, resImag, realContext);
-    _ = math_inverse_trig_command.ArctanComplex(resReal, resImag, resReal, resImag, realContext);
+pub export fn GudermannianComplex(x: *const cplx_t, res: *cplx_t, realContext: *realContext_t) callconv(.c) u8 {
+    const twoPi = twoPiFor(realContext);
+    var cosine: real_t = undefined;
+    var tangent: cplx_t = undefined;
+    const nonnegativeReal = !realIsNegative(&x.Real);
 
-    realMultiply(resReal, const_2(), resReal, realContext);
-    realMultiply(resImag, const_2(), resImag, realContext);
-    realSubtractBlob(resReal, consts.const39piOn2(), resReal, realContext);
+    realMultiply(&x.Real, const_1on2(), &tangent.Real, realContext);
+    realMultiply(&x.Imag, const_1on2(), &tangent.Imag, realContext);
+    _ = runtime.TanhComplex(&tangent, &tangent, realContext);
+    math_wp34s.C47_WP34S_Cvt2RadSinCosTan(&x.Imag, amRadian, null, &cosine, null, realContext);
+    _ = runtime.ArctanComplex(&tangent, res, realContext);
+    realMultiply(&res.Real, const_2(), &res.Real, realContext);
+    realMultiply(&res.Imag, const_2(), &res.Imag, realContext);
+
+    // The defining branch differs from 2*atan(tanh(z/2)) by -2*pi when Re(z) is
+    // nonnegative and cos(Im(z)) is negative; both tests precede aliased output.
+    if (nonnegativeReal and realIsNaN(&cosine)) {
+        // cos(Im(z)) is NaN for an infinite or NaN Im(z), where the branch is
+        // unknown: gd(+inf + iy) is pi/2 or -3pi/2 by the sign of cos(y).
+        realSetNaN(&res.Real);
+        realSetNaN(&res.Imag);
+    } else if (nonnegativeReal and realIsNegative(&cosine)) {
+        realSubtract(&res.Real, twoPi, &res.Real, realContext);
+    }
 
     return ERROR_NONE;
 }
 
 pub export fn InverseGudermannianReal(x: *const real_t, res: *real_t, realContext: *realContext_t) callconv(.c) u8 {
+    const piOn2 = piOn2For(realContext);
     var result: u8 = ERROR_NONE;
 
+    if (realIsNaN(x)) {
+        realSetNaN(res);
+        return result;
+    }
+
     // InvGd(x) = Ln(Tan(x/2 + PI/4))
-    if (!realIsNaN(x) and math_comparison_reals.realCompareAbsLessThan(x, consts.const39piOn2())) {
+    if (math_comparison_reals.realCompareAbsLessThan(x, piOn2)) {
         if (realIsZero(x)) {
-            realSetZero(res);
+            if (realIsNegative(x)) {
+                realDivide(const__1(), const_plusInfinity(), res, realContext);
+            } else {
+                realSetZero(res);
+            }
         } else {
             var sin: real_t = undefined;
             var cos: real_t = undefined;
 
-            // InvGd(x) = Ln(Tan(x/2 + PI/4)), -PI/2 < x < PI/2
-            realMultiply(x, const_1on2(), res, realContext); // r = x/2
-            realAddBlob(res, consts.const39piOn4(), res, realContext); // r = x/2 + pi/4
-            math_wp34s.C47_WP34S_Cvt2RadSinCosTan(res, amRadian, &sin, &cos, res, &runtime.ctxtReal39); // r = Tan(x/2 + pi/4)
-            math_wp34s.WP34S_Ln(res, res, &runtime.ctxtReal39); // r = Ln(Tan(x/2 + pi/4))
+            // InvGd(x) = asinh(tan(x)), -pi/2 < x < pi/2.
+            math_wp34s.C47_WP34S_Cvt2RadSinCosTan(x, amRadian, &sin, &cos, res, realContext);
+            _ = math_inverse_trig_command.ArcsinhReal(res, res, realContext);
         }
     } else {
         result = ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN;
@@ -181,15 +209,24 @@ pub export fn InverseGudermannianReal(x: *const real_t, res: *real_t, realContex
     return result;
 }
 
-pub export fn InverseGudermannianComplex(xReal: *const real_t, xImag: *const real_t, resReal: *real_t, resImag: *real_t, realContext: *realContext_t) callconv(.c) u8 {
-    // InvGd(x) = Ln(Tan(x / 2 + PI / 4))
-    realMultiply(xReal, const_1on2(), resReal, realContext); // r = x/2
-    realMultiply(xImag, const_1on2(), resImag, realContext);
+pub export fn InverseGudermannianComplex(x: *const cplx_t, res: *cplx_t, realContext: *realContext_t) callconv(.c) u8 {
+    var sine: real_t = undefined;
+    var cosine: real_t = undefined;
+    var sinhImag: real_t = undefined;
+    var modulus: real_t = undefined;
 
-    realAddBlob(xReal, consts.const39piOn4(), resReal, realContext); // r = x/2 + pi/2
-
-    _ = math_command_wrappers.TanComplex(resReal, resImag, resReal, resImag, realContext); // r = Tan(x/2 + pi/4)
-    math_ln_complex.lnComplex(resReal, resImag, resReal, resImag, realContext); // r = Ln(Tan(x/2 + pi/4))
+    // With z = a + ib and c = cos a + i sinh b, InvGd(z) = asinh(sin a / |c|) + i arg(c):
+    // asinh(tan z) where cos a > 0, and i pi - asinh(tan z), or -i pi - asinh(tan z)
+    // for b < 0, where cos a < 0. For a large |b|, tan z comes within e^(-2|b|) of
+    // +-i, the branch points of asinh, and asinh(tan z) loses those digits.
+    math_wp34s.C47_WP34S_Cvt2RadSinCosTan(&x.Real, amRadian, &sine, &cosine, null, realContext);
+    math_wp34s.WP34S_SinhCosh(&x.Imag, &sinhImag, null, realContext);
+    realMultiply(&cosine, &cosine, &modulus, realContext);
+    realFMA(&sinhImag, &sinhImag, &modulus, &modulus, realContext);
+    realSquareRoot(&modulus, &modulus, realContext);
+    realDivide(&sine, &modulus, &res.Real, realContext);
+    _ = math_inverse_trig_command.ArcsinhReal(&res.Real, &res.Real, realContext);
+    math_wp34s.C47_WP34S_Atan2(&sinhImag, &cosine, &res.Imag, realContext);
 
     return ERROR_NONE;
 }

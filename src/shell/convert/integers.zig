@@ -34,6 +34,11 @@ extern fn __gmpz_mul(r: *mpz_struct, a: *const mpz_struct, b: *const mpz_struct)
 extern fn __gmpz_add(r: *mpz_struct, a: *const mpz_struct, b: *const mpz_struct) void;
 extern fn __gmpz_sub(r: *mpz_struct, a: *const mpz_struct, b: *const mpz_struct) void;
 extern fn __gmpz_sizeinbase(op: *const mpz_struct, base: c_int) usize;
+extern fn __gmpz_init(op: *mpz_struct) void;
+extern fn __gmpz_clear(op: *mpz_struct) void;
+extern fn __gmpz_set(r: *mpz_struct, op: *const mpz_struct) void;
+extern fn __gmpz_ui_pow_ui(r: *mpz_struct, base: c_ulong, exponent: c_ulong) void;
+extern fn __gmpz_tdiv_qr(quotient: *mpz_struct, remainder: *mpz_struct, dividend: *const mpz_struct, divisor: *const mpz_struct) void;
 const mpz_mul = __gmpz_mul;
 const mpz_add = __gmpz_add;
 const mpz_sub = __gmpz_sub;
@@ -196,6 +201,35 @@ pub export fn longIntegerSubtract(opY: *mpz_struct, opX: *mpz_struct, result: *m
             moreInfoOnError("In function longIntegerSubtract:", errorMessage, tmpString, tmpString + TMP_STR_LENGTH / 2);
         }
     }
+}
+
+/// Divides two integer coefficients with decimal exponents: the quotient is the
+/// integer quotient truncated towards zero, the remainder is an integer
+/// coefficient at the smaller of the two exponents, which is returned.
+pub export fn longIntegerScaledDivide(opY: *const mpz_struct, yExp: i32, opX: *const mpz_struct, xExp: i32, quotient: *mpz_struct, remainder: *mpz_struct, remainderExp: *i32) callconv(.c) void {
+    var scaledY: mpz_struct = undefined;
+    var scaledX: mpz_struct = undefined;
+    var scale: mpz_struct = undefined;
+
+    remainderExp.* = @min(yExp, xExp);
+    __gmpz_init(&scaledY);
+    __gmpz_init(&scaledX);
+    __gmpz_init(&scale);
+    __gmpz_set(&scaledY, opY);
+    __gmpz_set(&scaledX, opX);
+
+    if (yExp > remainderExp.*) {
+        __gmpz_ui_pow_ui(&scale, 10, @as(u32, @intCast(yExp - remainderExp.*)));
+        mpz_mul(&scaledY, &scaledY, &scale); // unbounded: the scaled operands are not a user value
+    } else if (xExp > remainderExp.*) {
+        __gmpz_ui_pow_ui(&scale, 10, @as(u32, @intCast(xExp - remainderExp.*)));
+        mpz_mul(&scaledX, &scaledX, &scale);
+    }
+
+    __gmpz_tdiv_qr(quotient, remainder, &scaledY, &scaledX);
+    __gmpz_clear(&scale);
+    __gmpz_clear(&scaledX);
+    __gmpz_clear(&scaledY);
 }
 
 // ===========================================================================

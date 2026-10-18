@@ -214,6 +214,31 @@ typedef struct {
   uint32_t get_free_ram_memory_calls;
   uint32_t get_free_flash_calls;
 
+  // The exact scaled-long-integer predicates registerValueConversions.c added: each
+  // fake records the call and answers false, so both sides stay on the decNumber
+  // path, and the counts say the owner asked the same questions in the same order.
+  uint32_t scaled_long_integer_calls;
+  int32_t scaled_long_integer_last_adjustment;
+  uint32_t register_integer_parity_calls;
+  uint32_t root_register_to_real34_calls;
+  uint32_t root_register_to_real34_last_order;
+  uint32_t power_long_integer_to_real34_calls;
+  int32_t power_long_integer_to_real34_last_exponent;
+  uint32_t long_integer_real34_fast_path_calls;
+  uint32_t register_identity_exponent_calls;
+  uint32_t reciprocal_long_integer_calls;
+  uint32_t compare_finite_mixed_calls;
+  uint32_t round_real34_result_calls;
+  uint32_t right_angle_less_radians_calls;
+  bool_t right_angle_less_radians_last_negative;
+  uint32_t real34_op_calls;
+  uint32_t real_op_calls;
+  uint32_t reduce_long_integer_angle_calls;
+  uint32_t tiny_odd_series_calls;
+  uint32_t real34_remainder_calls;
+  uint32_t distribution_beta_pair_calls;
+  uint32_t long_integer_scaled_divide_calls;
+
   uint64_t final_pcg_state;
   uint64_t final_pcg_inc;
   bool_t final_there_is_something_to_undo;

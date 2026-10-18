@@ -93,6 +93,9 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1" RX=Cplx:"1 i -0"
 In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=LonI:"1"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"1" RX=Cplx:"1 i -0"
 
+In:  RMODE=0 SD=0 FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=LonI:"10000000000000000000000000000000014999999999999999999999999999999999999999950001"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Cplx:"1.000000000000000000000000000000001e79 i -0"
+
 In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=ShoI:"1#10"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"1#10" RX=Cplx:"1 i -0"
 
@@ -101,3 +104,23 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"1#10" RX=Cplx:"1 i -0"
 ;=======================================
 In:  FL_ASLIFT=0  RX=Stri:"ABC"
 Out: EC=24 FL_ASLIFT=0 RX=Stri:"ABC"
+
+; Matrix dispatch applies the same component rounding and rectangular tag policy as scalar dispatch.
+In:  RMODE=0 SD=7 FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=CxMa:"M1,2[1.234567890123456789012345678901234i-2.345678901234567890123456789012345,-0i0]":∠DEG
+Out: EC=0 SD=7 FL_CPXRES=0 FL_ASLIFT=1 RX=CxMa:"M1,2[1.234568i2.345679,-0i-0]"
+
+; Conjugation preserves infinity, NaN and signed zero because neither component is evaluated arithmetically.
+In:  RMODE=6 SD=34 FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=CxMa:"M1,2[1i-Infinity,NaNi-0]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=CxMa:"M1,2[1iInfinity,NaNi0]"
+
+; Scalar complex: each component is rounded to SD significant digits in the rounding mode set; a tie goes up under RMODE=1 and down under RMODE=2.
+In:  RMODE=0 SD=5 FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RX=Cplx:"1.23456789 i 6.54321987"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Cplx:"1.2346 i -6.5432"
+
+In:  RMODE=1 SD=5 FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RX=Cplx:"1.23455 i -6.54325"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Cplx:"1.2346 i 6.5433"
+
+In:  RMODE=2 SD=5 FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RX=Cplx:"1.23455 i -6.54325"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Cplx:"1.2345 i 6.5432"
+
+In:  RMODE=0 SD=0

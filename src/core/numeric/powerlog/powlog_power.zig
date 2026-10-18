@@ -1,26 +1,83 @@
-const consts = @import("abi").constants;
 const runtime = @import("../command_wrappers/runtime.zig");
+const helpers = @import("../command_wrappers/helpers.zig");
 const transcendental_command_owned = @import("../special/transcendental_command.zig");
 
-fn realPower10(
+// The exported intPowReal / intPowCplx take this pointer across the C boundary,
+// so the two base powers carry the C calling convention.
+pub const PowRealFn = *const fn (x: *const runtime.real_t, res: *runtime.real_t, real_context: *runtime.realContext_t) callconv(.c) void;
+
+// decQuad limits (decQuad.h): the exponent range an integer power of ten can
+// take without leaving the Real34 range once the fractional part is applied.
+const DECQUAD_Emax: i32 = 6144;
+const DECQUAD_Emin: i32 = -6143;
+const DECQUAD_Pmax: i32 = 34;
+
+/// 10^x. An integer part of x within the Real34 exponent range moves the
+/// decimal exponent of 10^fraction directly, so a power of ten is exact.
+pub fn realPower10(
     x: *const runtime.real_t,
     res: *runtime.real_t,
     real_context: *runtime.realContext_t,
-) void {
+) callconv(.c) void {
+    var conversion_error: bool = undefined;
+
+    if (!runtime.realIsSpecial(x)) {
+        const exponent = runtime.realToInt32C47(x, &conversion_error);
+        if (!conversion_error and exponent <= DECQUAD_Emax and exponent >= DECQUAD_Emin - DECQUAD_Pmax + 1 and exponent < real_context.emax and exponent > real_context.emin) {
+            var integer_part: runtime.real_t = undefined;
+
+            runtime.int32ToReal(exponent, &integer_part);
+            runtime.realSubtract(x, &integer_part, res, real_context);
+            if (runtime.realIsZero(res)) {
+                runtime.realSetOne(res);
+            } else {
+                runtime.realMultiply(res, runtime.z47_math_wrappers_const_ln10(), res, real_context);
+                transcendental_command_owned.realExp(res, res, real_context);
+            }
+            res.exponent += exponent;
+            return;
+        }
+    }
+
     runtime.realMultiply(x, runtime.z47_math_wrappers_const_ln10(), res, real_context);
     transcendental_command_owned.realExp(res, res, real_context);
 }
 
-fn realPower2(
+/// 2^x. The integer part of x is raised exactly by realPower and the
+/// fraction's factor multiplies it, so a power of two is exact.
+pub fn realPower2(
     x: *const runtime.real_t,
     res: *runtime.real_t,
     real_context: *runtime.realContext_t,
-) void {
+) callconv(.c) void {
+    var conversion_error: bool = undefined;
+
+    if (!runtime.realIsSpecial(x)) {
+        const exponent = runtime.realToInt32C47(x, &conversion_error);
+        if (!conversion_error) {
+            var integer_part: runtime.real_t = undefined;
+
+            runtime.int32ToReal(exponent, &integer_part);
+            runtime.realSubtract(x, &integer_part, res, real_context);
+            if (runtime.realIsZero(res)) {
+                runtime.realPower(runtime.z47_math_wrappers_const_2(), &integer_part, res, real_context);
+            } else {
+                var factor: runtime.real_t = undefined;
+
+                runtime.realMultiply(res, runtime.z47_math_wrappers_const_ln2(), res, real_context);
+                transcendental_command_owned.realExp(res, res, real_context);
+                runtime.realPower(runtime.z47_math_wrappers_const_2(), &integer_part, &factor, real_context);
+                runtime.realMultiply(&factor, res, res, real_context);
+            }
+            return;
+        }
+    }
+
     runtime.realMultiply(x, runtime.z47_math_wrappers_const_ln2(), res, real_context);
     transcendental_command_owned.realExp(res, res, real_context);
 }
 
-fn intPowReal(powf: *const fn (x: *const runtime.real_t, res: *runtime.real_t, real_context: *runtime.realContext_t) void) void {
+pub fn intPowReal(powf: PowRealFn) void {
     var x: runtime.real_t = undefined;
 
     if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &x)) {
@@ -32,34 +89,34 @@ fn intPowReal(powf: *const fn (x: *const runtime.real_t, res: *runtime.real_t, r
         return;
     }
 
-    var p: runtime.real_t = undefined;
-
-    if (runtime.realIntegerPowerExact(if (powf == &realPower2) consts.const_2() else consts.const_10(), &x, &p)) { // an integer exponent gives the exact power
-        x = p;
-    } else {
-        powf(&x, &x, &runtime.ctxtReal39);
-    }
+    powf(&x, &x, &runtime.ctxtReal39);
     runtime.convertRealToResultRegister(&x, runtime.REGISTER_X, runtime.amNone);
 }
 
-fn intPowCplx(ln_base: *const runtime.real_t) void {
-    var a: runtime.real_t = undefined;
-    var b: runtime.real_t = undefined;
+/// base^x for a complex x: base^Re(x) scales the unit vector at the angle
+/// Im(x).ln(base), the angle formed at 75 digits.
+pub fn intPowCplx(powf: PowRealFn, ln_base: *const runtime.real_t) void {
+    var x: runtime.cplx_t = undefined;
     var factor: runtime.real_t = undefined;
 
-    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &a, &b)) {
+    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &x)) {
         return;
     }
 
-    runtime.realMultiply(ln_base, &a, &a, &runtime.ctxtReal39);
-    runtime.realMultiply(ln_base, &b, &b, &runtime.ctxtReal39);
+    if (runtime.realIsZero(&x.Imag)) {
+        powf(&x.Real, &x.Real, &runtime.ctxtReal39);
+        runtime.realSetZero(&x.Imag);
+        runtime.convertComplexToResultRegister(&x, runtime.REGISTER_X);
+        return;
+    }
 
-    transcendental_command_owned.realExp(&a, &factor, &runtime.ctxtReal39);
-    runtime.realPolarToRectangular(runtime.z47_math_wrappers_const_1(), &b, &a, &b, &runtime.ctxtReal39);
-    runtime.realMultiply(&factor, &a, &a, &runtime.ctxtReal39);
-    runtime.realMultiply(&factor, &b, &b, &runtime.ctxtReal39);
+    powf(&x.Real, &factor, &runtime.ctxtReal39);
+    runtime.realMultiply(ln_base, &x.Imag, &x.Imag, &runtime.ctxtReal75);
+    runtime.realPolarToRectangular(runtime.z47_math_wrappers_const_1(), &x.Imag, &x, &runtime.ctxtReal75);
+    runtime.realMultiply(&factor, &x.Real, &x.Real, &runtime.ctxtReal39);
+    runtime.realMultiply(&factor, &x.Imag, &x.Imag, &runtime.ctxtReal39);
 
-    runtime.convertComplexToResultRegister(&a, &b, runtime.REGISTER_X);
+    runtime.convertComplexToResultRegister(&x, runtime.REGISTER_X);
 }
 
 fn longIntegerSetPositiveSign(value: *runtime.mpz_struct) void {
@@ -135,11 +192,11 @@ fn twoPowShoI() callconv(.c) void {
 }
 
 fn twoPowReal() callconv(.c) void {
-    intPowReal(realPower2);
+    intPowReal(&realPower2);
 }
 
 fn twoPowCplx() callconv(.c) void {
-    intPowCplx(runtime.z47_math_wrappers_const_ln2());
+    intPowCplx(&realPower2, helpers.const75_ln2());
 }
 
 fn tenPowShoI() callconv(.c) void {
@@ -149,11 +206,32 @@ fn tenPowShoI() callconv(.c) void {
 }
 
 fn tenPowReal() callconv(.c) void {
-    intPowReal(realPower10);
+    intPowReal(&realPower10);
 }
 
+// The same shape as intPowCplx, with the 75-digit ln 10.
 fn tenPowCplx() callconv(.c) void {
-    intPowCplx(runtime.z47_math_wrappers_const_ln10());
+    var x: runtime.cplx_t = undefined;
+    var factor: runtime.real_t = undefined;
+
+    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &x)) {
+        return;
+    }
+
+    if (runtime.realIsZero(&x.Imag)) {
+        realPower10(&x.Real, &x.Real, &runtime.ctxtReal39);
+        runtime.realSetZero(&x.Imag);
+        runtime.convertComplexToResultRegister(&x, runtime.REGISTER_X);
+        return;
+    }
+
+    realPower10(&x.Real, &factor, &runtime.ctxtReal39);
+    runtime.realMultiply(helpers.const75_ln10(), &x.Imag, &x.Imag, &runtime.ctxtReal75);
+    runtime.realPolarToRectangular(runtime.z47_math_wrappers_const_1(), &x.Imag, &x, &runtime.ctxtReal75);
+    runtime.realMultiply(&factor, &x.Real, &x.Real, &runtime.ctxtReal39);
+    runtime.realMultiply(&factor, &x.Imag, &x.Imag, &runtime.ctxtReal39);
+
+    runtime.convertComplexToResultRegister(&x, runtime.REGISTER_X);
 }
 
 pub fn fn2Pow(unused_but_mandatory_parameter: u16) void {

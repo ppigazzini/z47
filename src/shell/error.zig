@@ -143,6 +143,10 @@ inline fn lcdFillRect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void {
 
 // real34 compares (mathematics/comparisonReals.c).
 extern fn real34CompareLessEqual(a: *align(1) const real34_t, b: *align(1) const real34_t) bool;
+const mpz_struct = abi.Mpz;
+extern fn __gmpz_cmp_ui(op: *const mpz_struct, value: c_ulong) c_int;
+extern fn __gmpz_get_ui(op: *const mpz_struct) c_ulong;
+extern fn __gmpz_clear(op: *mpz_struct) void;
 extern fn real34CompareLessThan(a: *align(1) const real34_t, b: *align(1) const real34_t) bool;
 
 // decQuad helpers (the real34 macros).
@@ -429,17 +433,27 @@ pub export fn fnRaiseError(errorCode: u16) callconv(.c) void {
 
 pub export fn fnErrorMessage(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
-    var r: real34_t = undefined;
     var maxErr: real34_t = undefined;
+    var errorCode: u32 = 0;
     uInt32ToReal34(NUMBER_OF_ERROR_CODES, &maxErr);
 
     switch (getRegisterDataType(REGISTER_X)) {
         dtLongInteger => {
-            frontier_register_value_conversions.convertLongIntegerRegisterToReal34(REGISTER_X, &r);
+            var value: mpz_struct = undefined;
+
+            frontier_register_value_conversions.convertLongIntegerRegisterToLongInteger(REGISTER_X, &value);
+            if (__gmpz_cmp_ui(&value, 1) >= 0 and __gmpz_cmp_ui(&value, NUMBER_OF_ERROR_CODES) < 0) {
+                errorCode = @intCast(__gmpz_get_ui(&value));
+            }
+            __gmpz_clear(&value);
         },
         dtReal34 => {
             if (getRegisterAngularMode(REGISTER_X) == amNone) {
-                real34Copy(reg34(REGISTER_X), &r);
+                const value = reg34(REGISTER_X);
+
+                if (real34CompareLessEqual(const34_1, value) and real34CompareLessThan(value, &maxErr)) {
+                    errorCode = real34ToUInt32(value);
+                }
             } else {
                 badDataType();
                 return;
@@ -451,8 +465,8 @@ pub export fn fnErrorMessage(unusedButMandatoryParameter: u16) callconv(.c) void
         },
     }
 
-    if (real34CompareLessEqual(const34_1, &r) and real34CompareLessThan(&r, &maxErr)) {
-        displayCalcErrorMessage(@truncate(real34ToUInt32(&r)), ERR_REGISTER_LINE);
+    if (errorCode != 0) {
+        displayCalcErrorMessage(@truncate(errorCode), ERR_REGISTER_LINE);
     } else {
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
         if (comptime extra_info) {
@@ -554,10 +568,9 @@ pub export fn reportBugError(errorCode: u8, errMessageRegisterLine: calcRegister
 // displayDomainErrorMessage
 // ---------------------------------------------------------------------------
 pub export fn displayDomainErrorMessage(errorCode: u8, errMessageRegisterLine: calcRegister_t) callconv(.c) void {
-    const running: bool = programRunStop == PGM_RUNNING;
     const spcres: bool = getSystemFlag(FLAG_SPCRES);
 
-    if (!spcres or !running) {
+    if (!spcres) {
         displayCalcErrorMessage(errorCode, errMessageRegisterLine);
     }
     if (spcres) {

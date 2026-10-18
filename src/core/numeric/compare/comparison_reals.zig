@@ -128,6 +128,55 @@ pub export fn realGetExponentComp(val: *const runtime.real_t) callconv(.c) i32 {
     return val.digits + val.exponent - 1;
 }
 
+/// Compares one finite Real34 register with one long-integer register exactly:
+/// the Real34 as a scaled long integer against the integer scaled to the same
+/// power of ten. comparison is negative, zero or positive when first is less
+/// than, equal to or greater than second. True for a supported finite pair.
+pub export fn compareFiniteReal34LongIntegerRegisters(first: runtime.calcRegister_t, second: runtime.calcRegister_t, comparison: *i32) callconv(.c) bool {
+    const first_type = runtime.getRegisterDataType(first);
+    const second_type = runtime.getRegisterDataType(second);
+    var real_register: runtime.calcRegister_t = undefined;
+    var integer_register: runtime.calcRegister_t = undefined;
+    var exponent: i32 = undefined;
+    var coefficient: runtime.mpz_struct = undefined;
+    var integer: runtime.mpz_struct = undefined;
+    var scale: runtime.mpz_struct = undefined;
+
+    if (first_type == runtime.dtReal34 and second_type == runtime.dtLongInteger) {
+        real_register = first;
+        integer_register = second;
+    } else if (first_type == runtime.dtLongInteger and second_type == runtime.dtReal34) {
+        real_register = second;
+        integer_register = first;
+    } else {
+        return false;
+    }
+
+    if (runtime.real34IsSpecial(runtime.registerReal34Ptr(real_register))) {
+        return false;
+    }
+
+    _ = runtime.convertReal34ToScaledLongInteger(runtime.registerReal34Ptr(real_register), &coefficient, &exponent);
+    runtime.convertLongIntegerRegisterToLongInteger(integer_register, &integer);
+    runtime.__gmpz_init(&scale);
+    defer runtime.__gmpz_clear(&coefficient);
+    defer runtime.__gmpz_clear(&integer);
+    defer runtime.__gmpz_clear(&scale);
+
+    if (exponent > 0) {
+        runtime.__gmpz_ui_pow_ui(&scale, 10, @intCast(exponent));
+        runtime.__gmpz_mul(&coefficient, &coefficient, &scale);
+    } else if (exponent < 0) {
+        runtime.__gmpz_ui_pow_ui(&scale, 10, @intCast(-exponent));
+        runtime.__gmpz_mul(&integer, &integer, &scale);
+    }
+
+    const value: i32 = runtime.__gmpz_cmp(&coefficient, &integer);
+    const sign: i32 = if (value < 0) -1 else if (value > 0) 1 else 0;
+    comparison.* = if (first_type == runtime.dtReal34) sign else -sign;
+    return true;
+}
+
 pub export fn real34CompareAbsGreaterThan(number1: *const runtime.real34_t, number2: *const runtime.real34_t) callconv(.c) bool {
     var num1: runtime.real34_t = undefined;
     var num2: runtime.real34_t = undefined;
@@ -135,7 +184,7 @@ pub export fn real34CompareAbsGreaterThan(number1: *const runtime.real34_t, numb
     real34CopyAbs(number1, &num1);
     real34CopyAbs(number2, &num2);
     real34Compare(&num1, &num2, &num2);
-    return real34IsPositive(&num2) and !runtime.real34IsZero(&num2);
+    return !runtime.real34IsNaN(&num2) and real34IsPositive(&num2) and !runtime.real34IsZero(&num2);
 }
 
 pub export fn real34CompareAbsLessThan(number1: *const runtime.real34_t, number2: *const runtime.real34_t) callconv(.c) bool {
@@ -145,7 +194,7 @@ pub export fn real34CompareAbsLessThan(number1: *const runtime.real34_t, number2
     real34CopyAbs(number1, &num1);
     real34CopyAbs(number2, &num2);
     real34Compare(&num1, &num2, &num2);
-    return runtime.real34IsNegative(&num2) and !runtime.real34IsZero(&num2);
+    return !runtime.real34IsNaN(&num2) and runtime.real34IsNegative(&num2) and !runtime.real34IsZero(&num2);
 }
 
 pub export fn real34CompareEqual(number1: *const runtime.real34_t, number2: *const runtime.real34_t) callconv(.c) bool {
@@ -171,66 +220,63 @@ pub export fn real34CompareGreaterEqual(number1: *const runtime.real34_t, number
     var compare: runtime.real34_t = undefined;
 
     real34Compare(number1, number2, &compare);
-    return real34IsPositive(&compare) or runtime.real34IsZero(&compare);
+    return !runtime.real34IsNaN(&compare) and (real34IsPositive(&compare) or runtime.real34IsZero(&compare));
 }
 
 pub export fn real34CompareGreaterThan(number1: *const runtime.real34_t, number2: *const runtime.real34_t) callconv(.c) bool {
     var compare: runtime.real34_t = undefined;
 
     real34Compare(number1, number2, &compare);
-    return real34IsPositive(&compare) and !runtime.real34IsZero(&compare);
+    return !runtime.real34IsNaN(&compare) and real34IsPositive(&compare) and !runtime.real34IsZero(&compare);
 }
 
 pub export fn real34CompareLessEqual(number1: *const runtime.real34_t, number2: *const runtime.real34_t) callconv(.c) bool {
     var compare: runtime.real34_t = undefined;
 
     real34Compare(number1, number2, &compare);
-    return runtime.real34IsNegative(&compare) or runtime.real34IsZero(&compare);
+    return !runtime.real34IsNaN(&compare) and (runtime.real34IsNegative(&compare) or runtime.real34IsZero(&compare));
 }
 
 pub export fn real34CompareLessThan(number1: *const runtime.real34_t, number2: *const runtime.real34_t) callconv(.c) bool {
     var compare: runtime.real34_t = undefined;
 
     real34Compare(number1, number2, &compare);
-    return runtime.real34IsNegative(&compare) and !runtime.real34IsZero(&compare);
+    return !runtime.real34IsNaN(&compare) and runtime.real34IsNegative(&compare) and !runtime.real34IsZero(&compare);
 }
 
 pub export fn realCompareAbsGreaterThan(number1: *align(1) const runtime.real_t, number2: *align(1) const runtime.real_t) callconv(.c) bool {
-    var c: runtime.realContext_t = runtime.ctxtReal75;
+    var context: runtime.realContext_t = runtime.ctxtReal39;
     var num1: CompareScratch = undefined;
     var num2: CompareScratch = undefined;
 
-    c.digits = maxI32(maxI32(75, number1.digits), number2.digits);
-    if (c.digits > max_compare_digits) {
+    if (maxI32(number1.digits, number2.digits) > max_compare_digits) {
         bugScreen(std.fmt.comptimePrint("Exceed {d} digits :realCompareAbsGreaterThan", .{max_compare_digits}));
     }
     _ = decNumberCopyAbs(num1.ptr(), number1);
     _ = decNumberCopyAbs(num2.ptr(), number2);
-    realCompare(num1.constPtr(), num2.constPtr(), num2.ptr(), &c);
-    return realIsPositive(num2.constPtr()) and !runtime.realIsZero(num2.constPtr());
+    realCompare(num1.constPtr(), num2.constPtr(), num2.ptr(), &context);
+    return !runtime.realIsNaN(num2.constPtr()) and realIsPositive(num2.constPtr()) and !runtime.realIsZero(num2.constPtr());
 }
 
 pub export fn realCompareAbsLessThan(number1: *align(1) const runtime.real_t, number2: *align(1) const runtime.real_t) callconv(.c) bool {
-    var c: runtime.realContext_t = runtime.ctxtReal75;
+    var context: runtime.realContext_t = runtime.ctxtReal39;
     var num1: CompareScratch = undefined;
     var num2: CompareScratch = undefined;
 
-    c.digits = maxI32(maxI32(75, number1.digits), number2.digits);
-    if (c.digits > max_compare_digits) {
+    if (maxI32(number1.digits, number2.digits) > max_compare_digits) {
         bugScreen(std.fmt.comptimePrint("Exceed {d} digits :realCompareAbsLessThan", .{max_compare_digits}));
     }
     _ = decNumberCopyAbs(num1.ptr(), number1);
     _ = decNumberCopyAbs(num2.ptr(), number2);
-    realCompare(num1.constPtr(), num2.constPtr(), num2.ptr(), &c);
-    return runtime.realIsNegative(num2.constPtr()) and !runtime.realIsZero(num2.constPtr());
+    realCompare(num1.constPtr(), num2.constPtr(), num2.ptr(), &context);
+    return !runtime.realIsNaN(num2.constPtr()) and runtime.realIsNegative(num2.constPtr()) and !runtime.realIsZero(num2.constPtr());
 }
 
 pub export fn realCompareEqual(number1: *align(1) const runtime.real_t, number2: *align(1) const runtime.real_t) callconv(.c) bool {
     var compare: runtime.real_t = undefined;
-    var c: runtime.realContext_t = runtime.ctxtReal75;
+    var context: runtime.realContext_t = runtime.ctxtReal39;
 
-    c.digits = maxI32(maxI32(75, number1.digits), number2.digits);
-    realCompare(number1, number2, &compare, &c);
+    realCompare(number1, number2, &compare, &context);
     return runtime.realIsZero(&compare);
 }
 
@@ -254,54 +300,49 @@ pub export fn realCompareIdentical(number1: *align(1) const runtime.real_t, numb
 }
 
 pub export fn realCompareAbsEqual(number1: *align(1) const runtime.real_t, number2: *align(1) const runtime.real_t) callconv(.c) bool {
-    var c: runtime.realContext_t = runtime.ctxtReal75;
+    var context: runtime.realContext_t = runtime.ctxtReal39;
     var num1: CompareScratch = undefined;
     var num2: CompareScratch = undefined;
 
-    c.digits = maxI32(maxI32(75, number1.digits), number2.digits);
-    if (c.digits > max_compare_digits) {
+    if (maxI32(number1.digits, number2.digits) > max_compare_digits) {
         bugScreen(std.fmt.comptimePrint("Exceed {d} digits :realCompareAbsEqual", .{max_compare_digits}));
     }
     _ = decNumberCopyAbs(num1.ptr(), number1);
     _ = decNumberCopyAbs(num2.ptr(), number2);
-    realCompare(num1.constPtr(), num2.constPtr(), num2.ptr(), &c);
+    realCompare(num1.constPtr(), num2.constPtr(), num2.ptr(), &context);
     return runtime.realIsZero(num2.constPtr());
 }
 
 pub export fn realCompareGreaterEqual(number1: *align(1) const runtime.real_t, number2: *align(1) const runtime.real_t) callconv(.c) bool {
     var compare: runtime.real_t = undefined;
-    var c: runtime.realContext_t = runtime.ctxtReal75;
+    var context: runtime.realContext_t = runtime.ctxtReal39;
 
-    c.digits = maxI32(maxI32(75, number1.digits), number2.digits);
-    realCompare(number1, number2, &compare, &c);
-    return realIsPositive(&compare) or runtime.realIsZero(&compare);
+    realCompare(number1, number2, &compare, &context);
+    return !runtime.realIsNaN(&compare) and (realIsPositive(&compare) or runtime.realIsZero(&compare));
 }
 
 pub export fn realCompareGreaterThan(number1: *align(1) const runtime.real_t, number2: *align(1) const runtime.real_t) callconv(.c) bool {
     var compare: runtime.real_t = undefined;
-    var c: runtime.realContext_t = runtime.ctxtReal75;
+    var context: runtime.realContext_t = runtime.ctxtReal39;
 
-    c.digits = maxI32(maxI32(75, number1.digits), number2.digits);
-    realCompare(number1, number2, &compare, &c);
-    return realIsPositive(&compare) and !runtime.realIsZero(&compare);
+    realCompare(number1, number2, &compare, &context);
+    return !runtime.realIsNaN(&compare) and realIsPositive(&compare) and !runtime.realIsZero(&compare);
 }
 
 pub export fn realCompareLessEqual(number1: *align(1) const runtime.real_t, number2: *align(1) const runtime.real_t) callconv(.c) bool {
     var compare: runtime.real_t = undefined;
-    var c: runtime.realContext_t = runtime.ctxtReal75;
+    var context: runtime.realContext_t = runtime.ctxtReal39;
 
-    c.digits = maxI32(maxI32(75, number1.digits), number2.digits);
-    realCompare(number1, number2, &compare, &c);
-    return runtime.realIsNegative(&compare) or runtime.realIsZero(&compare);
+    realCompare(number1, number2, &compare, &context);
+    return !runtime.realIsNaN(&compare) and (runtime.realIsNegative(&compare) or runtime.realIsZero(&compare));
 }
 
 pub export fn realCompareLessThan(number1: *align(1) const runtime.real_t, number2: *align(1) const runtime.real_t) callconv(.c) bool {
     var compare: runtime.real_t = undefined;
-    var c: runtime.realContext_t = runtime.ctxtReal75;
+    var context: runtime.realContext_t = runtime.ctxtReal39;
 
-    c.digits = maxI32(maxI32(75, number1.digits), number2.digits);
-    realCompare(number1, number2, &compare, &c);
-    return runtime.realIsNegative(&compare) and !runtime.realIsZero(&compare);
+    realCompare(number1, number2, &compare, &context);
+    return !runtime.realIsNaN(&compare) and runtime.realIsNegative(&compare) and !runtime.realIsZero(&compare);
 }
 
 pub export fn real34IsAnInteger(x: *const runtime.real34_t) callconv(.c) bool {

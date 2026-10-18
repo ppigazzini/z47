@@ -67,6 +67,8 @@ Out: EC=24 FL_ASLIFT=0 RX=Stri:"String test"
 ;=======================================
 ; hypergeometricR(Real Matrix) --> Error24
 ;=======================================
+In:  FL_ASLIFT=0 RM=Real:"100" RN=Real:"90" RQ=Real:"90" RX=ReMa:"M1,2[0.1,0.9]"
+Out: EC=24 FL_ASLIFT=0 RX=ReMa:"M1,2[0.1,0.9]"
 
 
 
@@ -91,3 +93,39 @@ Out: EC=24 FL_ASLIFT=0 RX=Stri:"String test"
 ;=======================================
 ; hypergeometricR(Complex) --> Error24
 ;=======================================
+
+; A shifted support no longer rejects valid probabilities.
+In:  FL_ASLIFT=0 RM=Real:"100" RN=Real:"90" RQ=Real:"90" RX=Real:"0"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"80"
+
+In:  FL_ASLIFT=0 RM=Real:"100" RN=Real:"90" RQ=Real:"90" RX=Real:"0.1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"0.1" RX=Real:"80"
+
+In:  FL_ASLIFT=0 RM=Real:"100" RN=Real:"90" RQ=Real:"90" RX=Real:"0.5"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"0.5" RX=Real:"81"
+
+In:  FL_ASLIFT=0 RM=Real:"100" RN=Real:"90" RQ=Real:"90" RX=Real:"0.9"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"0.9" RX=Real:"82"
+
+In:  FL_ASLIFT=0 RM=Real:"100" RN=Real:"90" RQ=Real:"90" RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"90"
+
+; Exact classification at a large ordinary population.
+In:  FL_ASLIFT=0 RM=Real:"1000000" RN=Real:"400000" RQ=Real:"300000" RX=Real:"0.1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"0.1" RX=Real:"119712"
+
+In:  FL_ASLIFT=0 RM=Real:"1000000" RN=Real:"400000" RQ=Real:"300000" RX=Real:"0.5"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"0.5" RX=Real:"120000"
+
+In:  FL_ASLIFT=0 RM=Real:"1000000" RN=Real:"400000" RQ=Real:"300000" RX=Real:"0.9"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"0.9" RX=Real:"120288"
+
+In:  FL_ASLIFT=0 RM=Real:"1e40" RN=Real:"5e39" RQ=Real:"5e39" RX=Real:"0.5"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"0.5" RX=Real:"2.5e39"
+
+; Degenerate populations and NaN probabilities.
+In:  FL_ASLIFT=0 RM=Real:"0" RN=Real:"0" RQ=Real:"0" RX=Real:"0.7"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"0.7" RX=Real:"0"
+
+In:  FL_ASLIFT=0 RM=Real:"100" RN=Real:"90" RQ=Real:"90" RX=Real:"NaN"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"NaN"

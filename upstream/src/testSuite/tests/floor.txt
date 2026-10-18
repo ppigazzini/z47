@@ -59,8 +59,10 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M2,3[1.1,-2.3,3.5,-5.7,7.8,-8.9]" RX=
 
 
 ;=======================================
-; floor(Complex Matrix) --> Error24
+; floor(Complex Matrix) --> Complex Matrix
 ;=======================================
+In:  FL_ASLIFT=0 RX=CxMa:"M1,2[1.1i-2.3,-4.5i6.7]"
+Out: EC=0 FL_ASLIFT=1 RL=CxMa:"M1,2[1.1i-2.3,-4.5i6.7]" RX=CxMa:"M1,2[1i-3,-5i6]"
 
 
 
@@ -73,7 +75,7 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"5#7" RX=ShoI:"5#7"
 
 
 ;=======================================
-; floor(Real) --> Long Integer
+; floor(Real) --> Real
 ;=======================================
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"0.0001"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.0001" RX=Real:"0"
@@ -119,7 +121,10 @@ Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"-inf":RAD
 
 
 ;=======================================
-; floor(Complex) --> Error24
+; floor(Complex) --> Complex
 ;=======================================
 In:  FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"1.1 i 2.4"
 Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"1 i 2"
+
+In:  FL_ASLIFT=0 FL_SPCRES=0 RX=Cplx:"1.1 i inf"
+Out: EC=1 FL_ASLIFT=0 RX=Cplx:"1.1 i inf"

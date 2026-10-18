@@ -53,6 +53,7 @@ distS
 docs/decimal-context-configuration.md
 docs/decimal-context-display.md
 docs/decimal-context-screen.md
+docs/numerical-analysis
 res/DATA/TestData.d47
 res/PACKAGES.md
 res/PROGRAMS
@@ -166,6 +167,7 @@ src/testSuite/tests/regmgmt_cov.txt
 src/testSuite/tests/rm_iter_cov.txt
 src/testSuite/tests/round_cov.txt
 src/testSuite/tests/saverestore_cov.txt
+src/testSuite/tests/scaled_integer.txt
 src/testSuite/tests/serialize_cov.txt
 src/testSuite/tests/serialize_state_cov.txt
 src/testSuite/tests/shortint_restore_cov.txt

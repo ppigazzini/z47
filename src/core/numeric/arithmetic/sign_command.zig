@@ -1,3 +1,4 @@
+const abi = @import("abi");
 const runtime = @import("../command_wrappers/runtime.zig");
 
 fn signReal() callconv(.c) void {
@@ -45,40 +46,53 @@ fn signLonI() callconv(.c) void {
     runtime.z47_math_wrappers_build_sign_result(sign_result);
 }
 
-fn chsZeroCheck(value: *runtime.real_t) void {
-    runtime.realChangeSign(value);
-    if (runtime.realIsZero(value) and !runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
-        runtime.realSetPositiveSign(value);
+// real34ChangeSign is a decQuad macro over the sign bit.
+inline fn real34ChangeSign(value: *align(1) runtime.real34_t) void {
+    value.bytes[15] ^= runtime.DECNEG;
+}
+
+fn chsZeroCheck(a: *align(1) runtime.real34_t) void {
+    real34ChangeSign(a);
+    if (runtime.real34IsZero(a) and !runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
+        runtime.real34SetPositiveSign(a);
     }
 }
 
 pub fn chsReal() callconv(.c) void {
-    var x: runtime.real_t = undefined;
-    var mode = runtime.amNone;
-
-    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &x)) {
-        return;
-    }
-
-    if (runtime.getRegisterDataType(runtime.REGISTER_X) == runtime.dtReal34) {
-        mode = runtime.getRegisterAngularMode(runtime.REGISTER_X);
-    }
-
-    chsZeroCheck(&x);
-    runtime.convertRealToResultRegister(&x, runtime.REGISTER_X, mode);
+    chsZeroCheck(runtime.registerReal34Ptr(runtime.REGISTER_X));
 }
 
 pub fn chsCplx() callconv(.c) void {
-    var a: runtime.real_t = undefined;
-    var b: runtime.real_t = undefined;
+    chsZeroCheck(runtime.registerReal34Ptr(runtime.REGISTER_X));
+    chsZeroCheck(runtime.registerImag34Ptr(runtime.REGISTER_X));
+    runtime.setRegisterTag(runtime.REGISTER_X, @intCast(runtime.amNone));
+}
 
-    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &a, &b)) {
-        return;
+fn chsRema() void {
+    var matrix: runtime.real34Matrix_t = undefined;
+
+    runtime.linkToRealMatrixRegister(runtime.REGISTER_X, &matrix);
+    const elements = abi.matrixRealElems(&matrix);
+    const count: u16 = @truncate(@as(u32, matrix.header.matrixRows) * @as(u32, matrix.header.matrixColumns));
+    var i: u16 = 0;
+    while (i < count) : (i += 1) {
+        chsZeroCheck(&elements[i]);
     }
+    runtime.setRegisterTag(runtime.REGISTER_X, @intCast(runtime.amNone));
+}
 
-    chsZeroCheck(&a);
-    chsZeroCheck(&b);
-    runtime.convertComplexToResultRegister(&a, &b, runtime.REGISTER_X);
+fn chsCxma() void {
+    var matrix: runtime.complex34Matrix_t = undefined;
+
+    runtime.linkToComplexMatrixRegister(runtime.REGISTER_X, &matrix);
+    const elements = abi.matrixComplexElems(&matrix);
+    const count: u16 = @truncate(@as(u32, matrix.header.matrixRows) * @as(u32, matrix.header.matrixColumns));
+    var i: u16 = 0;
+    while (i < count) : (i += 1) {
+        chsZeroCheck(&elements[i].real);
+        chsZeroCheck(&elements[i].imag);
+    }
+    runtime.setRegisterTag(runtime.REGISTER_X, @intCast(runtime.amNone));
 }
 
 pub fn chsShoI() callconv(.c) void {
@@ -99,15 +113,6 @@ pub fn chsLonI() callconv(.c) void {
     runtime.convertLongIntegerToLongIntegerRegister(&x[0], runtime.REGISTER_X);
 }
 
-fn changeSignTime() void {
-    const x = runtime.registerReal34Ptr(runtime.REGISTER_X);
-    x.bytes[15] ^= runtime.DECNEG;
-
-    if (runtime.real34IsZero(x) and !runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
-        x.bytes[15] &= 0x7f;
-    }
-}
-
 pub fn sign(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
     runtime.processIntRealComplexMonadicFunction(&signReal, &signCplx, &signShoI, &signLonI);
@@ -117,7 +122,17 @@ pub fn changeSign(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
 
     if (runtime.getRegisterDataType(runtime.REGISTER_X) == runtime.dtTime) {
-        changeSignTime();
+        chsZeroCheck(runtime.registerReal34Ptr(runtime.REGISTER_X));
+        return;
+    }
+    if (runtime.getRegisterDataType(runtime.REGISTER_X) == runtime.dtReal34Matrix) {
+        chsRema();
+        runtime.adjustResult(runtime.REGISTER_X, false, true, runtime.REGISTER_X, -1, -1);
+        return;
+    }
+    if (runtime.getRegisterDataType(runtime.REGISTER_X) == runtime.dtComplex34Matrix) {
+        chsCxma();
+        runtime.adjustResult(runtime.REGISTER_X, false, true, runtime.REGISTER_X, -1, -1);
         return;
     }
 

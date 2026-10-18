@@ -214,7 +214,18 @@ void fnEqCalc(uint16_t unusedButMandatoryParameter) {
 
 
 void setEquation(uint16_t equationId, const char *equationString) {
-  uint32_t newSizeInBlocks = TO_BLOCKS(stringByteLength(equationString) + 1);
+  uint32_t byteLen = stringByteLength(equationString);
+  if(byteLen >= MAX_EQUATION_BYTE_LENGTH) {                                    // a crafted state file may be longer: cut on a glyph boundary so the 8-bit block count cannot wrap
+    byteLen = 0;
+    while(equationString[byteLen] != 0) {
+      uint32_t step = (equationString[byteLen] & 0x80) ? 2 : 1;
+      if(byteLen + step > MAX_EQUATION_BYTE_LENGTH - 1) {
+        break;
+      }
+      byteLen += step;
+    }
+  }
+  uint32_t newSizeInBlocks = TO_BLOCKS(byteLen + 1);
   uint8_t *newPtr;
   if(allFormulae[equationId].sizeInBlocks == 0) {
     newPtr = allocC47Blocks(newSizeInBlocks);
@@ -233,7 +244,8 @@ void setEquation(uint16_t equationId, const char *equationString) {
     return;
   }
   allFormulae[equationId].sizeInBlocks = newSizeInBlocks;
-  xcopy(TO_PCMEMPTR(allFormulae[equationId].pointerToFormulaData), equationString, stringByteLength(equationString) + 1);
+  xcopy(newPtr, equationString, byteLen);
+  newPtr[byteLen] = 0;
 }
 
 void deleteEquation(uint16_t equationId) {
@@ -338,7 +350,7 @@ void fnVecToEqn(uint16_t unusedButMandatoryParameter) {
     }
     *t = 0;
     termLen = (uint32_t)(t - term);
-    if((uint32_t)(p - tmpString) + termLen >= AIM_BUFFER_LENGTH) {       // the text is headed for the equation buffer: what cannot fit there is refused whole
+    if((uint32_t)(p - tmpString) + termLen >= MAX_EQUATION_BYTE_LENGTH) { // headed for the 255-block equation store: what cannot fit is refused whole
       displayCalcErrorMessage(ERROR_STRING_WOULD_BE_TOO_LONG, ERR_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         moreInfoOnError("In function fnVecToEqn:", "the polynomial text does not fit the equation buffer", NULL, NULL);
@@ -886,25 +898,19 @@ static void _runDyadicFunction(char *mvarBuffer, uint16_t item) {
   liftStack();
 
   _popNumericStack(mvarBuffer, &re, &im);
-  if(real34IsZero(&im) || real34IsNaN(&im)) {
-    reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
-    real34Copy(&re, REGISTER_REAL34_DATA(REGISTER_X));
+  if(real34IsZero(&im)) {
+    convertReal34ToReal34Register(&re, REGISTER_X);
   }
   else {
-    reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
-    real34Copy(&re, REGISTER_REAL34_DATA(REGISTER_X));
-    real34Copy(&im, REGISTER_IMAG34_DATA(REGISTER_X));
+    convertReal34ToComplex34Register(&re, &im, REGISTER_X);
   }
 
   _popNumericStack(mvarBuffer, &re, &im);
-  if(real34IsZero(&im) || real34IsNaN(&im)) {
-    reallocateRegister(REGISTER_Y, dtReal34, 0, amNone);
-    real34Copy(&re, REGISTER_REAL34_DATA(REGISTER_Y));
+  if(real34IsZero(&im)) {
+    convertReal34ToReal34Register(&re, REGISTER_Y);
   }
   else {
-    reallocateRegister(REGISTER_Y, dtComplex34, 0, amNone);
-    real34Copy(&re, REGISTER_REAL34_DATA(REGISTER_Y));
-    real34Copy(&im, REGISTER_IMAG34_DATA(REGISTER_Y));
+    convertReal34ToComplex34Register(&re, &im, REGISTER_Y);
   }
 
   runFunction(item);
@@ -925,14 +931,11 @@ static void _runMonadicFunction(char *mvarBuffer, uint16_t item) {
   clearRegister(REGISTER_X);
 
   _popNumericStack(mvarBuffer, &re, &im);
-  if(real34IsZero(&im) || real34IsNaN(&im)) {
-    reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
-    real34Copy(&re, REGISTER_REAL34_DATA(REGISTER_X));
+  if(real34IsZero(&im)) {
+    convertReal34ToReal34Register(&re, REGISTER_X);
   }
   else {
-    reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
-    real34Copy(&re, REGISTER_REAL34_DATA(REGISTER_X));
-    real34Copy(&im, REGISTER_IMAG34_DATA(REGISTER_X));
+    convertReal34ToComplex34Register(&re, &im, REGISTER_X);
   }
 
   runFunction(item);
@@ -1074,25 +1077,29 @@ static void _processOperator(uint16_t func, char *mvarBuffer) {
           break;
         }
         case PARSER_OPERATOR_ITM_EQUAL: {
-          if(getRegisterDataType(REGISTER_X) != dtComplex34) {   //a complex left hand side cannot convert: the complex solver leaves one in X
-            fnToReal(NOPARAM);
-          }
           _popNumericStack(mvarBuffer, PARSER_LEFT_VALUE_REAL, PARSER_LEFT_VALUE_IMAG);
           break;
         }
         default: {
+          if(*PARSER_NUMERIC_STACK_POINTER != 1) {
+            displayCalcErrorMessage(ERROR_SYNTAX_ERROR_IN_EQUATION, ERR_REGISTER_LINE);
+            #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+              moreInfoOnError("In function _processOperator:", "an expression must produce one value", NULL, NULL);
+            #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+            return;
+          }
           setSystemFlag(FLAG_ASLIFT);
           liftStack();
-          if((real34IsZero(PARSER_LEFT_VALUE_IMAG) || real34IsNaN(PARSER_LEFT_VALUE_IMAG)) && (real34IsZero(&PARSER_NUMERIC_STACK[(*PARSER_NUMERIC_STACK_POINTER) * 2 - 1]) || real34IsNaN(&PARSER_NUMERIC_STACK[(*PARSER_NUMERIC_STACK_POINTER) * 2 - 1]))) {
+          if(real34IsZero(PARSER_LEFT_VALUE_IMAG) && real34IsZero(&PARSER_NUMERIC_STACK[1])) {
             reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
-            real34Subtract(&PARSER_NUMERIC_STACK[(*PARSER_NUMERIC_STACK_POINTER) * 2 - 2], PARSER_LEFT_VALUE_REAL, REGISTER_REAL34_DATA(REGISTER_X));
+            real34Subtract(&PARSER_NUMERIC_STACK[0], PARSER_LEFT_VALUE_REAL, REGISTER_REAL34_DATA(REGISTER_X));
           }
           else {
             reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
-            real34Subtract(&PARSER_NUMERIC_STACK[(*PARSER_NUMERIC_STACK_POINTER) * 2 - 2], PARSER_LEFT_VALUE_REAL, REGISTER_REAL34_DATA(REGISTER_X));
-            real34Subtract(&PARSER_NUMERIC_STACK[(*PARSER_NUMERIC_STACK_POINTER) * 2 - 1], PARSER_LEFT_VALUE_IMAG, REGISTER_IMAG34_DATA(REGISTER_X));
+            real34Subtract(&PARSER_NUMERIC_STACK[0], PARSER_LEFT_VALUE_REAL, REGISTER_REAL34_DATA(REGISTER_X));
+            real34Subtract(&PARSER_NUMERIC_STACK[1], PARSER_LEFT_VALUE_IMAG, REGISTER_IMAG34_DATA(REGISTER_X));
           }
-          --(*PARSER_NUMERIC_STACK_POINTER);
+          *PARSER_NUMERIC_STACK_POINTER = 0;
         }
       }
       return;

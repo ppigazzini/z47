@@ -1,6 +1,8 @@
-const abi = @import("abi");
 const logxy_owned = @import("logxy.zig");
+const powlog_power_owned = @import("powlog_power.zig");
 const runtime = @import("../command_wrappers/runtime.zig");
+const math_comparison_reals = @import("../compare/comparison_reals.zig");
+const math_real_predicates = @import("../compare/real_predicates.zig");
 const transcendental_command_owned = @import("../special/transcendental_command.zig");
 
 const std_plus_minus = "\x80\xb1"; // STD_PLUS_MINUS
@@ -29,20 +31,13 @@ fn logBase(denom: *const runtime.real_t) u32 {
     return if (denom == runtime.z47_math_wrappers_const_ln2()) 2 else 10;
 }
 
-fn logXYComplex(
-    x_real: *const runtime.real_t,
-    x_imag: *const runtime.real_t,
-    y_real: *const runtime.real_t,
-    y_imag: *const runtime.real_t,
-    result_real: *runtime.real_t,
-    result_imag: *runtime.real_t,
-) void {
-    var ln_x_real: runtime.real_t = undefined;
-    var ln_x_imag: runtime.real_t = undefined;
+fn logXYComplex(x: *const runtime.cplx_t, y: *const runtime.cplx_t, r: *runtime.cplx_t) void {
+    var ln_x: runtime.cplx_t = undefined;
 
-    @import("../ln_complex.zig").lnComplex(y_real, y_imag, result_real, result_imag, &runtime.ctxtReal39);
-    @import("../ln_complex.zig").lnComplex(x_real, x_imag, &ln_x_real, &ln_x_imag, &runtime.ctxtReal39);
-    runtime.divComplexComplex(result_real, result_imag, &ln_x_real, &ln_x_imag, result_real, result_imag, &runtime.ctxtReal39);
+    // lnComplexDirect handles the case where y = 0+i0.
+    @import("../ln_complex.zig").lnComplexDirect(y, r); // r = Ln(y)
+    @import("../ln_complex.zig").lnComplexDirect(x, &ln_x); // ln_x = Ln(x)
+    runtime.divComplexComplex(r, &ln_x, r, &runtime.ctxtReal75);
 }
 
 fn logXYArgsHandled(x_real: *const runtime.real_t, x_imag: ?*const runtime.real_t, y_real: *const runtime.real_t, y_imag: ?*const runtime.real_t) bool {
@@ -82,24 +77,28 @@ fn logXYArgsHandled(x_real: *const runtime.real_t, x_imag: ?*const runtime.real_
 }
 
 fn logxyRealCore(x_real: *const runtime.real_t, y_real: *const runtime.real_t, real_context: *runtime.realContext_t) void {
-    var result_real: runtime.real_t = undefined;
-    var result_imag: runtime.real_t = undefined;
+    var x: runtime.cplx_t = undefined;
+    var r: runtime.cplx_t = undefined;
 
     if (logXYArgsHandled(x_real, null, y_real, null)) {
         return;
     }
 
     if (runtime.realIsNegative(x_real) or runtime.realIsNegative(y_real)) {
-        logXYComplex(x_real, runtime.z47_math_wrappers_const_0(), y_real, runtime.z47_math_wrappers_const_0(), &result_real, &result_imag);
+        copyReal(&x.Real, x_real);
+        runtime.realSetZero(&x.Imag);
+        copyReal(&r.Real, y_real);
+        runtime.realSetZero(&r.Imag);
+        logXYComplex(&x, &r, &r);
 
-        if (!runtime.realIsZero(&result_imag)) {
+        if (!runtime.realIsZero(&r.Imag)) {
             if (runtime.getFlag(@intCast(runtime.FLAG_CPXRES))) {
-                runtime.convertComplexToResultRegister(&result_real, &result_imag, runtime.REGISTER_X);
+                runtime.convertComplexToResultRegister(&r, runtime.REGISTER_X);
                 return;
             }
 
             if (runtime.getFlag(@intCast(runtime.FLAG_SPCRES))) {
-                runtime.realSetNaN(&result_real);
+                runtime.realSetNaN(&r.Real);
             } else {
                 runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
                 extraInfoMessage("logxy", "cannot calculate LogXY with x<0 or y<0 when flag I is not set");
@@ -107,10 +106,10 @@ fn logxyRealCore(x_real: *const runtime.real_t, y_real: *const runtime.real_t, r
             }
         }
     } else {
-        logxy_owned.logxyRealValue(y_real, x_real, &result_real, real_context);
+        logxy_owned.logxyRealValue(y_real, x_real, &r.Real, real_context);
     }
 
-    runtime.convertRealToResultRegister(&result_real, runtime.REGISTER_X, runtime.amNone);
+    runtime.convertRealToResultRegister(&r.Real, runtime.REGISTER_X, runtime.amNone);
 }
 
 fn logXYLongInt() callconv(.c) void {
@@ -168,23 +167,20 @@ fn logXYReal() callconv(.c) void {
 }
 
 fn logXYCplx() callconv(.c) void {
-    var x_real: runtime.real_t = undefined;
-    var x_imag: runtime.real_t = undefined;
-    var y_real: runtime.real_t = undefined;
-    var y_imag: runtime.real_t = undefined;
-    var result_real: runtime.real_t = undefined;
-    var result_imag: runtime.real_t = undefined;
+    var x: runtime.cplx_t = undefined;
+    var y: runtime.cplx_t = undefined;
+    var r: runtime.cplx_t = undefined;
 
-    if (!runtime.getRegisterAsComplex(runtime.REGISTER_Y, &y_real, &y_imag) or !runtime.getRegisterAsComplex(runtime.REGISTER_X, &x_real, &x_imag)) {
+    if (!runtime.getRegisterAsComplex(runtime.REGISTER_Y, &y) or !runtime.getRegisterAsComplex(runtime.REGISTER_X, &x)) {
         return;
     }
 
-    if (logXYArgsHandled(&x_real, &x_imag, &y_real, &y_imag)) {
+    if (logXYArgsHandled(&x.Real, &x.Imag, &y.Real, &y.Imag)) {
         return;
     }
 
-    logXYComplex(&x_real, &x_imag, &y_real, &y_imag, &result_real, &result_imag);
-    runtime.convertComplexToResultRegister(&result_real, &result_imag, runtime.REGISTER_X);
+    logXYComplex(&x, &y, &r);
+    runtime.convertComplexToResultRegister(&r, runtime.REGISTER_X);
 }
 
 pub fn fnLogXY(unused_but_mandatory_parameter: u16) void {
@@ -219,35 +215,40 @@ pub fn logxyReal(denom: *const runtime.real_t) callconv(.c) void {
             return;
         }
 
-        if (runtime.getFlag(@intCast(runtime.FLAG_CPXRES))) {
-            if (!runtime.realIsNegative(&a)) {
-                copyReal(&a, runtime.z47_math_wrappers_const_plus_infinity());
-            } else {
-                runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtComplex34, 0, runtime.amNone);
-                runtime.realDivide(runtime.z47_math_wrappers_const_pi(), denom, &a, &runtime.ctxtReal39);
-                runtime.convertComplexToResultRegister(runtime.z47_math_wrappers_const_plus_infinity(), &a, runtime.REGISTER_X);
-                return;
-            }
+        if (math_real_predicates.realIsPositive(&a)) {
+            copyReal(&a, runtime.z47_math_wrappers_const_plus_infinity());
+        } else if (runtime.getFlag(@intCast(runtime.FLAG_CPXRES))) {
+            runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtComplex34, 0, runtime.amNone);
+            runtime.realDivide(runtime.z47_math_wrappers_const_pi(), denom, &a, &runtime.ctxtReal39);
+            runtime.convertComplexPartsToResultRegister(runtime.z47_math_wrappers_const_plus_infinity(), &a, runtime.REGISTER_X);
+            return;
         } else {
             runtime.realSetNaN(&a);
         }
-    } else if (!runtime.realIsNegative(&a)) {
+    } else if (math_real_predicates.realIsPositive(&a)) {
         var k: runtime.real_t = undefined;
         var p: runtime.real_t = undefined;
         copyReal(&b, &a);
         transcendental_command_owned.lnRealValue(&a, &a, &runtime.ctxtReal39);
         runtime.realDivide(&a, denom, &a, &runtime.ctxtReal39);
         realRescale(&a, &k, runtime.z47_math_wrappers_const_0(), &runtime.ctxtReal39);
-        const base = if (logBase(denom) == 2) abi.constants.const_2() else abi.constants.const_10();
-        if (runtime.realIntegerPowerExact(base, &k, &p) and runtime.realCompareEqual(&p, &b)) { // X an exact power of the base gives the integer
-            copyReal(&a, &k);
+        const n = runtime.realToInt32C47(&k, null);
+        if (logBase(denom) != 2 or (n >= -100 and n <= 112)) { // 10^k, and 2^k in that range, are exact at 75 digits; the range takes every power of 2 of 34 digits
+            if (logBase(denom) == 2) {
+                powlog_power_owned.realPower2(&k, &p, &runtime.ctxtReal75);
+            } else {
+                powlog_power_owned.realPower10(&k, &p, &runtime.ctxtReal75);
+            }
+            if (runtime.realCompareEqual(&p, &b)) { // X an exact power of the base gives the integer
+                copyReal(&a, &k);
+            }
         }
     } else if (runtime.getFlag(@intCast(runtime.FLAG_CPXRES))) {
         runtime.realSetPositiveSign(&a);
         transcendental_command_owned.lnRealValue(&a, &a, &runtime.ctxtReal39);
         runtime.realDivide(&a, denom, &a, &runtime.ctxtReal39);
         runtime.realDivide(runtime.z47_math_wrappers_const_pi(), denom, &b, &runtime.ctxtReal39);
-        runtime.convertComplexToResultRegister(&a, &b, runtime.REGISTER_X);
+        runtime.convertComplexPartsToResultRegister(&a, &b, runtime.REGISTER_X);
         return;
     } else if (runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
         runtime.realSetNaN(&a);
@@ -263,14 +264,13 @@ pub fn logxyReal(denom: *const runtime.real_t) callconv(.c) void {
 }
 
 pub fn logxyCplx(denom: *const runtime.real_t) callconv(.c) void {
-    var a: runtime.real_t = undefined;
-    var b: runtime.real_t = undefined;
+    var x: runtime.cplx_t = undefined;
 
-    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &a, &b)) {
+    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &x)) {
         return;
     }
 
-    if (runtime.realIsZero(&a) and runtime.realIsZero(&b)) {
+    if (runtime.realIsZero(&x.Real) and runtime.realIsZero(&x.Imag)) {
         if (!runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
             runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
             if (runtime.extra_info_on_calc_error) {
@@ -279,16 +279,66 @@ pub fn logxyCplx(denom: *const runtime.real_t) callconv(.c) void {
             return;
         }
 
-        copyReal(&a, runtime.z47_math_wrappers_const_minus_infinity());
-        runtime.realSetZero(&b);
+        copyReal(&x.Real, runtime.z47_math_wrappers_const_minus_infinity());
+        runtime.realSetZero(&x.Imag);
     } else {
-        runtime.realRectangularToPolar(&a, &b, &a, &b, &runtime.ctxtReal39);
-        transcendental_command_owned.lnRealValue(&a, &a, &runtime.ctxtReal39);
-        runtime.realDivide(&a, denom, &a, &runtime.ctxtReal39);
-        runtime.realDivide(&b, denom, &b, &runtime.ctxtReal39);
+        runtime.realRectangularToPolar(&x, x.mag(), x.arg(), &runtime.ctxtReal39);
+        transcendental_command_owned.lnRealValue(x.mag(), &x.Real, &runtime.ctxtReal39);
+        runtime.realDivide(&x.Real, denom, &x.Real, &runtime.ctxtReal39);
+        runtime.realDivide(&x.Imag, denom, &x.Imag, &runtime.ctxtReal39);
     }
 
-    runtime.convertComplexToResultRegister(&a, &b, runtime.REGISTER_X);
+    runtime.convertComplexToResultRegister(&x, runtime.REGISTER_X);
+}
+
+/// log10 and log2 of a complex differ only in the constant they divide by.
+/// logxyCplx above has no near-unit branch, so it is a different routine and
+/// is left alone.
+pub fn logBaseCplx(denom: *const runtime.real_t) callconv(.c) void {
+    var x: runtime.cplx_t = undefined;
+    var result: runtime.cplx_t = undefined;
+
+    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &x)) {
+        return;
+    }
+
+    if (runtime.realIsZero(&x.Real) and runtime.realIsZero(&x.Imag)) {
+        if (!runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
+            runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
+            if (runtime.extra_info_on_calc_error) {
+                runtime.moreInfoOnError("In function logBaseCplx:", "cannot calculate the log of 0", null, null);
+            }
+            return;
+        }
+
+        copyReal(&result.Real, runtime.z47_math_wrappers_const_minus_infinity());
+        runtime.realSetZero(&result.Imag);
+    } else {
+        runtime.realRectangularToPolar(&x, result.mag(), result.arg(), &runtime.ctxtReal39);
+        if (runtime.realCompareGreaterThan(&result.Real, runtime.z47_math_wrappers_const_1on2()) and runtime.realCompareLessThan(&result.Real, runtime.z47_math_wrappers_const_2())) {
+            var near_unit_context: runtime.realContext_t = runtime.ctxtReal75;
+            // Factoring the component with greater magnitude keeps its offset from one in working precision, while the other component contributes its square directly.
+            if (math_comparison_reals.realCompareAbsLessThan(&x.Real, &x.Imag)) {
+                runtime.realSubtract(&x.Imag, runtime.z47_math_wrappers_const_1(), &result.Real, &near_unit_context);
+                runtime.realAdd(&x.Imag, runtime.z47_math_wrappers_const_1(), &x.Imag, &near_unit_context);
+                runtime.realMultiply(&result.Real, &x.Imag, &result.Real, &near_unit_context);
+                runtime.realFMA(&x.Real, &x.Real, &result.Real, &result.Real, &near_unit_context);
+            } else {
+                runtime.realSubtract(&x.Real, runtime.z47_math_wrappers_const_1(), &result.Real, &near_unit_context);
+                runtime.realAdd(&x.Real, runtime.z47_math_wrappers_const_1(), &x.Real, &near_unit_context);
+                runtime.realMultiply(&result.Real, &x.Real, &result.Real, &near_unit_context);
+                runtime.realFMA(&x.Imag, &x.Imag, &result.Real, &result.Real, &near_unit_context);
+            }
+            runtime.WP34S_Ln1P(&result.Real, &result.Real, &near_unit_context);
+            runtime.realMultiply(&result.Real, runtime.z47_math_wrappers_const_1on2(), &result.Real, &near_unit_context);
+            runtime.realDivide(&result.Real, denom, &result.Real, &near_unit_context);
+        } else {
+            transcendental_command_owned.lnRealValue(&result.Real, &result.Real, &runtime.ctxtReal39);
+            runtime.realDivide(&result.Real, denom, &result.Real, &runtime.ctxtReal39);
+        }
+        runtime.realDivide(&result.Imag, denom, &result.Imag, &runtime.ctxtReal39);
+    }
+    runtime.convertComplexToResultRegister(&result, runtime.REGISTER_X);
 }
 
 pub fn logxyLonI(denom: *const runtime.real_t) callconv(.c) void {

@@ -19,10 +19,6 @@ const real34_t = runtime.real34_t;
 const realContext_t = runtime.realContext_t;
 const calcRegister_t = runtime.calcRegister_t;
 
-const realMultiply = runtime.realMultiply;
-
-const WP34S_Mod = runtime.WP34S_Mod;
-
 const REGISTER_X = runtime.REGISTER_X;
 const REGISTER_Y = runtime.REGISTER_Y;
 const REGISTER_Z = runtime.REGISTER_Z;
@@ -54,6 +50,19 @@ extern fn decimal128ToNumber(source: *align(1) const real34_t, destination: *rea
 inline fn real34ToReal(source: *align(1) const real34_t, destination: *real_t) void {
     _ = decimal128ToNumber(source, destination);
 }
+// real34GetCoefficient / real34GetExponent (realType.h): the BCD digits, the
+// sign and the exponent of a decQuad, read without any rounding.
+extern fn decQuadGetCoefficient(source: *align(1) const real34_t, bcd: [*]u8) i32;
+extern fn decQuadGetExponent(source: *align(1) const real34_t) i32;
+inline fn real34GetCoefficient(source: *align(1) const real34_t, bcd: [*]u8) i32 {
+    return decQuadGetCoefficient(source, bcd);
+}
+inline fn real34GetExponent(source: *align(1) const real34_t) i32 {
+    return decQuadGetExponent(source);
+}
+// decQuad.h DECQUAD_Pmax: the digits of a decQuad coefficient.
+const DECQUAD_Pmax: usize = 34;
+const realIsSpecial = runtime.realIsSpecial;
 const registerReal34Data = abi.registerReal34;
 
 extern var lastErrorCode: u8;
@@ -63,6 +72,7 @@ const fnDropY = runtime.fnDropY;
 const getRegisterDataType = runtime.getRegisterDataType;
 const reallocateRegister = runtime.reallocateRegister;
 const convertRealToReal34ResultRegister = runtime.convertRealToReal34ResultRegister;
+const convertRealToResultRegister = runtime.convertRealToResultRegister;
 const getRegisterAngularMode = runtime.getRegisterAngularMode;
 
 extern fn convertRealToLongInteger(real: *const real_t, lgInt: *mpz_struct, mode: c_int) void;
@@ -102,6 +112,11 @@ extern fn __gmpz_cmp_si(op: *const mpz_struct, v: c_long) c_int;
 extern fn __gmpz_mul_ui(rop: *mpz_struct, op: *const mpz_struct, v: c_ulong) void;
 extern fn __gmpz_tdiv_q_ui(q: *mpz_struct, n: *const mpz_struct, d: c_ulong) c_ulong;
 extern fn __gmpz_mod(r: *mpz_struct, n: *const mpz_struct, d: *const mpz_struct) void;
+extern fn __gmpz_add_ui(rop: *mpz_struct, op: *const mpz_struct, v: c_ulong) void;
+extern fn __gmpz_ui_pow_ui(rop: *mpz_struct, base: c_ulong, exp: c_ulong) void;
+extern fn __gmpz_tdiv_qr(q: *mpz_struct, r: *mpz_struct, n: *const mpz_struct, d: *const mpz_struct) void;
+extern fn __gmpz_fdiv_ui(op: *const mpz_struct, d: c_ulong) c_ulong;
+extern fn __gmpz_sizeinbase(op: *const mpz_struct, base: c_int) usize;
 
 inline fn longIntegerInit(op: *mpz_struct) void {
     __gmpz_init(op);
@@ -138,6 +153,29 @@ inline fn longIntegerDivideUInt(op: *const mpz_struct, u: u32, result: *mpz_stru
 inline fn longIntegerModulo(op1: *const mpz_struct, op2: *const mpz_struct, result: *mpz_struct) void {
     __gmpz_mod(result, op1, op2);
 }
+inline fn longIntegerAddUInt(op: *const mpz_struct, u: u32, result: *mpz_struct) void {
+    __gmpz_add_ui(result, op, u);
+}
+inline fn longIntegerChangeSign(op: *mpz_struct) void {
+    op._mp_size = -op._mp_size;
+}
+inline fn longIntegerPowerUIntUInt(base: u32, exponent: u32, result: *mpz_struct) void {
+    __gmpz_ui_pow_ui(result, base, exponent);
+}
+// op1/op2 => quotient*op2 + remainder == op1
+inline fn longIntegerDivideQuotientRemainder(op1: *const mpz_struct, op2: *const mpz_struct, quotient: *mpz_struct, remainder: *mpz_struct) void {
+    __gmpz_tdiv_qr(quotient, remainder, op1, op2);
+}
+// result = op mod uint, 0 <= result < uint
+inline fn longIntegerModuloUInt(op: *const mpz_struct, u: u32) u32 {
+    return @truncate(__gmpz_fdiv_ui(op, u));
+}
+inline fn longIntegerIsZero(op: *const mpz_struct) bool {
+    return op._mp_size == 0;
+}
+inline fn longIntegerBase10Digits(op: *const mpz_struct) u32 {
+    return @intCast(__gmpz_sizeinbase(op, 10));
+}
 
 // Overflow-guarded operators (integers owner).
 extern fn longIntegerAdd(opY: *mpz_struct, opX: *mpz_struct, result: *mpz_struct) void;
@@ -160,26 +198,61 @@ fn opModOutOfDomain(mode: u16) linksection(runtime.code_section) void {
 // ===========================================================================
 // parseReal / toRealResult
 // ===========================================================================
+// The register's 34 coefficient digits go into the long integer as they are,
+// with the exponent taken out: no rounding, and the decimal point stays exact.
 fn parseReal(regist: calcRegister_t, longIntVal: *mpz_struct, exponent: *i32) linksection(runtime.code_section) void {
+    var bcd: [DECQUAD_Pmax]u8 = undefined;
     var r: real_t = undefined;
 
-    real34ToReal(registerReal34Data(regist), &r);
-
-    if (r.exponent < 0) {
-        exponent.* = -r.exponent;
-        r.exponent = 0;
-    }
     longIntegerInit(longIntVal);
-    convertRealToLongInteger(&r, longIntVal, DEC_ROUND_FLOOR);
+    exponent.* = 0;
+    real34ToReal(registerReal34Data(regist), &r);
+    if (realIsSpecial(&r)) {
+        return;
+    }
+
+    const sign = real34GetCoefficient(registerReal34Data(regist), &bcd);
+    exponent.* = -real34GetExponent(registerReal34Data(regist));
+    uInt32ToLongInteger(bcd[0], longIntVal);
+    var i: usize = 1;
+    while (i < DECQUAD_Pmax) : (i += 1) {
+        longIntegerMultiplyUInt(longIntVal, 10, longIntVal);
+        longIntegerAddUInt(longIntVal, bcd[i], longIntVal);
+    }
+    if (sign != 0) {
+        longIntegerChangeSign(longIntVal);
+    }
 }
 
+// The result is shortened to the working digits plus three, with a sticky
+// digit standing for whatever was discarded, so the final rounding to 34
+// digits sees every dropped digit as non-zero.
 fn toRealResult(longIntVal: *mpz_struct, exponent: i32) linksection(runtime.code_section) void {
     var r: real_t = undefined;
+    var shortened: mpz_struct = undefined;
+    var divisor: mpz_struct = undefined;
+    var remainder: mpz_struct = undefined;
+    const digits: i32 = @intCast(longIntegerBase10Digits(longIntVal));
+    const discardedDigits: i32 = @max(digits - runtime.ctxtReal39.digits - 3, 0);
 
-    convertLongIntegerToReal(longIntVal, &r, &runtime.ctxtReal75);
-    r.exponent -= exponent;
-    reallocateRegister(REGISTER_X, dtReal34, 0, @intCast(amNone));
-    convertRealToReal34ResultRegister(&r, REGISTER_X);
+    longIntegerInit(&shortened);
+    longIntegerInit(&divisor);
+    longIntegerInit(&remainder);
+    if (discardedDigits > 0) {
+        longIntegerPowerUIntUInt(10, @intCast(discardedDigits), &divisor);
+        longIntegerDivideQuotientRemainder(longIntVal, &divisor, &shortened, &remainder);
+        if (!longIntegerIsZero(&remainder) and longIntegerModuloUInt(&shortened, 10) == 0) {
+            longIntegerAddUInt(&shortened, 1, &shortened);
+        }
+    } else {
+        longIntegerCopy(longIntVal, &shortened);
+    }
+    convertLongIntegerToReal(&shortened, &r, &runtime.ctxtReal39);
+    r.exponent += discardedDigits - exponent;
+    convertRealToResultRegister(&r, REGISTER_X, amNone);
+    longIntegerFree(&shortened);
+    longIntegerFree(&divisor);
+    longIntegerFree(&remainder);
 }
 
 // ===========================================================================
@@ -191,10 +264,12 @@ pub export fn longInteger_mulmod(a: *const mpz_struct, exp_a: i32, b: *const mpz
     var aa: mpz_struct = undefined;
     var bb: mpz_struct = undefined;
     var cc: mpz_struct = undefined;
+    const productExponent: i32 = exp_a + exp_b;
+    const resultExponent: i32 = @max(productExponent, exp_c);
     var i: i32 = undefined;
 
     if (exp_res) |er| {
-        er.* = exp_a + exp_b;
+        er.* = resultExponent;
     }
 
     longIntegerInit(&x);
@@ -206,17 +281,18 @@ pub export fn longInteger_mulmod(a: *const mpz_struct, exp_a: i32, b: *const mpz
     longIntegerCopy(a, &aa);
     longIntegerCopy(c, &cc);
     i = 0;
-    while (i < (exp_c - exp_b - exp_a)) : (i += 1) {
+    while (i < resultExponent - productExponent) : (i += 1) {
         longIntegerMultiplyUInt(&aa, 10, &aa);
+        longIntegerModulo(&aa, &cc, &aa);
     }
     i = 0;
-    while (i < (exp_a + exp_b - exp_c)) : (i += 1) {
+    while (i < resultExponent - exp_c) : (i += 1) {
         longIntegerMultiplyUInt(&cc, 10, &cc);
     }
 
     longIntegerSetZero(&x);
     longIntegerModulo(&aa, &cc, &y);
-    longIntegerCopy(b, &bb);
+    longIntegerModulo(b, &cc, &bb);
 
     while (longIntegerCompareInt(&bb, 0) > 0) {
         if (longIntegerIsOdd(&bb)) {
@@ -314,7 +390,7 @@ pub export fn opModLonILonIReal(mode: u16) linksection(runtime.code_section) cal
 
     if ((mode == OPMOD_POWER) or (getRegisterAngularMode(REGISTER_X) != amNone)) {
         opModError(mode);
-    } else if (math_comparison_reals.realCompareGreaterThan(&xx, const_1()) and longIntegerIsPositive(&y) and longIntegerIsPositive(&z)) {
+    } else if (!realIsSpecial(&xx) and math_comparison_reals.realCompareGreaterThan(&xx, const_1()) and longIntegerIsPositive(&y) and longIntegerIsPositive(&z)) {
         longInteger_mulmod(&z, 0, &y, 0, &x, exp_x, &x, &exponent);
         toRealResult(&x, exponent);
     } else {
@@ -388,7 +464,7 @@ pub export fn opModLonIRealReal(mode: u16) linksection(runtime.code_section) cal
 
     if ((mode == OPMOD_POWER) or (getRegisterAngularMode(REGISTER_Y) != amNone) or (getRegisterAngularMode(REGISTER_X) != amNone)) {
         opModError(mode);
-    } else if (math_comparison_reals.realCompareGreaterThan(&xx, const_1()) and longIntegerIsPositive(&y) and longIntegerIsPositive(&z)) {
+    } else if (!realIsSpecial(&xx) and math_comparison_reals.realCompareGreaterThan(&xx, const_1()) and longIntegerIsPositive(&y) and longIntegerIsPositive(&z)) {
         longInteger_mulmod(&z, 0, &y, exp_y, &x, exp_x, &x, &exponent);
         toRealResult(&x, exponent);
     } else {
@@ -519,7 +595,7 @@ pub export fn opModRealLonIReal(mode: u16) linksection(runtime.code_section) cal
 
     if ((mode == OPMOD_POWER) or (getRegisterAngularMode(REGISTER_Z) != amNone) or (getRegisterAngularMode(REGISTER_X) != amNone)) {
         opModError(mode);
-    } else if (math_comparison_reals.realCompareGreaterThan(&xx, const_1()) and longIntegerIsPositive(&y) and longIntegerIsPositive(&z)) {
+    } else if (!realIsSpecial(&xx) and math_comparison_reals.realCompareGreaterThan(&xx, const_1()) and longIntegerIsPositive(&y) and longIntegerIsPositive(&z)) {
         longInteger_mulmod(&z, exp_z, &y, 0, &x, exp_x, &x, &exponent);
         toRealResult(&x, exponent);
     } else {
@@ -582,15 +658,29 @@ pub export fn opModRealRealReal(mode: u16) linksection(runtime.code_section) cal
     var x: real_t = undefined;
     var y: real_t = undefined;
     var z: real_t = undefined;
+    var xInt: mpz_struct = undefined;
+    var yInt: mpz_struct = undefined;
+    var zInt: mpz_struct = undefined;
+    var exp_x: i32 = undefined;
+    var exp_y: i32 = undefined;
+    var exp_z: i32 = undefined;
+    var exponent: i32 = undefined;
+
     real34ToReal(registerReal34Data(REGISTER_X), &x);
     real34ToReal(registerReal34Data(REGISTER_Y), &y);
     real34ToReal(registerReal34Data(REGISTER_Z), &z);
+    const finite = !realIsSpecial(&x) and !realIsSpecial(&y) and !realIsSpecial(&z);
     if ((mode == OPMOD_POWER) or (getRegisterAngularMode(REGISTER_Z) != amNone) or (getRegisterAngularMode(REGISTER_Y) != amNone) or (getRegisterAngularMode(REGISTER_X) != amNone)) {
         opModError(mode);
-    } else if (math_comparison_reals.realCompareGreaterThan(&x, const_1()) and math_comparison_reals.realCompareGreaterThan(&y, const_0()) and math_comparison_reals.realCompareGreaterThan(&z, const_0())) {
-        realMultiply(&z, &y, &z, &runtime.ctxtReal75);
-        WP34S_Mod(&z, &x, &x, &runtime.ctxtReal75);
-        convertRealToReal34ResultRegister(&x, REGISTER_X);
+    } else if (finite and math_comparison_reals.realCompareGreaterThan(&x, const_1()) and math_comparison_reals.realCompareGreaterThan(&y, const_0()) and math_comparison_reals.realCompareGreaterThan(&z, const_0())) {
+        parseReal(REGISTER_X, &xInt, &exp_x);
+        parseReal(REGISTER_Y, &yInt, &exp_y);
+        parseReal(REGISTER_Z, &zInt, &exp_z);
+        longInteger_mulmod(&zInt, exp_z, &yInt, exp_y, &xInt, exp_x, &xInt, &exponent);
+        toRealResult(&xInt, exponent);
+        longIntegerFree(&xInt);
+        longIntegerFree(&yInt);
+        longIntegerFree(&zInt);
     } else {
         opModOutOfDomain(mode);
     }

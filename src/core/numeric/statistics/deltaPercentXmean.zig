@@ -4,8 +4,9 @@ const consts = abi.constants;
 const const_1 = consts.const_1;
 //
 // Zig owner for src/c47/mathematics/deltaPercentXmean.c: Delta% relative to the
-// statistical mean: r = (x - mean(x)) / mean(x) * 100, where mean(x) =
-// Sum(x)/N. UNCOVERED by the testSuite (no gate); this is a faithful
+// statistical mean: r = (n*x - Sum(x)) * 100 / Sum(x), formed as one fused
+// multiply-add so the difference is exact before the single division rounds at
+// the result context. UNCOVERED by the testSuite (no gate); this is a faithful
 // line-by-line translation preserving the exact real_t operation order.
 //
 // deltaPercentXmeanReal() is exported with C linkage because
@@ -30,30 +31,23 @@ const ERR_REGISTER_LINE = runtime.ERR_REGISTER_LINE;
 const ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN = runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN;
 const FLAG_SPCRES = runtime.FLAG_SPCRES;
 const amNone = runtime.amNone;
-const dtReal34 = runtime.dtReal34;
-const DECNEG = runtime.DECNEG;
 
 const ERROR_NO_SUMMATION_DATA: u8 = 28;
 const TI_PERCD: u8 = 69;
 
 const realIsZero = runtime.realIsZero;
-const realCompareEqual = runtime.realCompareEqual;
 const getSystemFlag = runtime.getSystemFlag;
-const realSetNaN = runtime.realSetNaN;
 const realSetZero = runtime.realSetZero;
 const getRegisterAsReal = runtime.getRegisterAsReal;
-const reallocateRegister = runtime.reallocateRegister;
-const convertRealToReal34ResultRegister = runtime.convertRealToReal34ResultRegister;
 const setRegisterTag = runtime.setRegisterTag;
 const saveLastX = runtime.saveLastX;
 const adjustResult = runtime.adjustResult;
 const displayCalcErrorMessage = runtime.displayCalcErrorMessage;
 const moreInfoOnError = runtime.moreInfoOnError;
 
+extern var ctxtReal34: realContext_t;
 extern var ctxtReal39: realContext_t;
-extern var ctxtReal75: realContext_t;
 
-extern fn realSetPlusInfinity(r: *real_t) void;
 extern fn checkMinimumDataPoints(n: *const real_t) bool;
 extern var statisticalSumsPointer: ?[*]real_t;
 
@@ -66,45 +60,29 @@ inline fn SIGMA_X() *real_t {
     return &statisticalSumsPointer.?[SUM_X];
 }
 
-// real_t op helpers (realType.h macros).
-extern fn decNumberSubtract(res: *real_t, op1: *const real_t, op2: *const real_t, ctxt: *realContext_t) *real_t;
-extern fn decNumberDivide(res: *real_t, op1: *const real_t, op2: *const real_t, ctxt: *realContext_t) *real_t;
-inline fn realSubtract(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
-    _ = decNumberSubtract(res, op1, op2, ctxt);
-}
-inline fn realDivide(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
-    _ = decNumberDivide(res, op1, op2, ctxt);
-}
+const realDivide = runtime.realDivide;
 
 // Blob constants.
 const cstR = abi.constants.cstRAligned;
 
 pub export fn deltaPercentXmeanReal(xReal: *real_t, rReal: *real_t, realContext: *realContext_t) linksection(runtime.code_section) callconv(.c) bool {
-    var yReal: real_t = undefined;
+    var negativeSum: real_t = undefined;
 
-    realDivide(SIGMA_X(), SIGMA_N(), &yReal, &ctxtReal39);
     // Check x and y
-    if (realIsZero(xReal) and realCompareEqual(xReal, &yReal)) {
-        if (getSystemFlag(FLAG_SPCRES)) {
-            realSetNaN(rReal);
-        } else {
-            displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
-            moreInfoOnError("In function deltaPercentXmeanReal:", "cannot divide 0 by 0", null, null);
-            return false;
-        }
-    } else if (realIsZero(&yReal)) {
-        if (getSystemFlag(FLAG_SPCRES)) {
-            realSetPlusInfinity(rReal);
-            rReal.bits |= DECNEG * @as(u8, @intFromBool(realIsZero(xReal)));
-        } else {
-            displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
-            moreInfoOnError("In function deltaPercentXmeanReal:", "cannot divide a real by y=0", null, null);
-            return false;
-        }
+    if (realIsZero(xReal) and realIsZero(SIGMA_X()) and !getSystemFlag(FLAG_SPCRES)) {
+        displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
+        moreInfoOnError("In function deltaPercentXmeanReal:", "cannot divide 0 by 0", null, null);
+        return false;
+    } else if (realIsZero(SIGMA_X()) and !getSystemFlag(FLAG_SPCRES)) {
+        displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
+        moreInfoOnError("In function deltaPercentXmeanReal:", "cannot divide a real by y=0", null, null);
+        return false;
     } else {
-        realSubtract(xReal, &yReal, rReal, realContext); // r = x - y
-        realDivide(rReal, &yReal, rReal, realContext); // r = (x - y) / y
-        rReal.exponent += 2; // r = (x - y) / y * 100.0
+        negativeSum = SIGMA_X().*;
+        runtime.realChangeSign(&negativeSum);
+        runtime.realFMA(SIGMA_N(), xReal, &negativeSum, rReal, &ctxtReal39); // r = n*x - Sum(x)
+        rReal.exponent += 2; // r = (n*x - Sum(x)) * 100
+        realDivide(rReal, SIGMA_X(), rReal, realContext); // r = (n*x - Sum(x)) * 100 / Sum(x)
     }
     return true;
 }
@@ -129,9 +107,8 @@ pub export fn fnDeltaPercentXmean(unusedButMandatoryParameter: u16) linksection(
     }
 
     realSetZero(&rReal);
-    if (deltaPercentXmeanReal(&xReal, &rReal, &ctxtReal75)) {
-        reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
-        convertRealToReal34ResultRegister(&rReal, REGISTER_X);
+    if (deltaPercentXmeanReal(&xReal, &rReal, &ctxtReal34)) {
+        runtime.convertRealToResultRegister(&rReal, REGISTER_X, amNone);
         setRegisterTag(REGISTER_X, @intCast(amNone)); // setRegisterAngularMode(REGISTER_X, amNone)
     }
 

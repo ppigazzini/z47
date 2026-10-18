@@ -704,9 +704,32 @@ fn _differentiatorIteration(label: calcRegister_t, variable: calcRegister_t, r0:
     }
 }
 
-// Try to compute a single derivative estimate from a stencil. r takes the weighted sum as it builds, and t is the caller's
-// working space.
-fn calcOneDeriv(stencil: *const FINITE_DIFF_COEFF, fxIn: [*]const real_t, h: *const real_t, r: *real_t, t: *real_t, realContext: *realContext_t) linksection(runtime.code_section) bool_t {
+// A centred first-derivative stencil has antisymmetric coefficients, while a centred second-derivative stencil has symmetric
+// coefficients. Identifying that structure lets calcOneDeriv combine opposite samples before multiplying by the coefficient.
+// The remaining stencils retain their original ordered sum.
+fn deriv_stencil_is_centred(stencil: *const FINITE_DIFF_COEFF) linksection(runtime.code_section) bool_t {
+    const maxi: u16 = 2 * @as(u16, stencil.n) + 1;
+    var halfSum: i64 = 0;
+
+    if (stencil.order == 1 and stencil.coeff[stencil.n] != 0) {
+        return false;
+    }
+    var i: u16 = 0;
+    while (i < stencil.n) : (i += 1) {
+        const left: i32 = fdValues[stencil.coeff[i]];
+        const right: i32 = fdValues[stencil.coeff[maxi - i - 1]];
+
+        if ((stencil.order == 1 and left != -right) or (stencil.order == 2 and left != right)) {
+            return false;
+        }
+        halfSum += right;
+    }
+    return stencil.order == 1 or fdValues[stencil.coeff[stencil.n]] == -2 * halfSum;
+}
+
+// Try to compute a single derivative estimate from a stencil. r takes the weighted sum as it builds; t and pair are the
+// caller's working space.
+fn calcOneDeriv(stencil: *const FINITE_DIFF_COEFF, fxIn: [*]const real_t, h: *const real_t, r: *real_t, t: *real_t, pair: *real_t, realContext: *realContext_t) linksection(runtime.code_section) bool_t {
     const maxi: u16 = 2 * @as(u16, stencil.n) + 1;
     const fx: [*]const real_t = fxIn + @as(usize, @intCast(MAX_ORDER - @as(i32, stencil.n)));
 
@@ -718,13 +741,31 @@ fn calcOneDeriv(stencil: *const FINITE_DIFF_COEFF, fxIn: [*]const real_t, h: *co
         }
     }
 
-    // All values are defined where required so calculate the weighted sum
+    // Pairing centred samples preserves exact odd/even cancellation. This also reduces the magnitude of the products that
+    // the accumulator must cancel.
     realSetZero(r);
-    i = 0;
-    while (i < maxi) : (i += 1) {
-        if (stencil.coeff[i] != 0) {
-            int32ToReal(fdValues[stencil.coeff[i]], t);
-            realFMA(&fx[i], t, r, r, realContext);
+    if (deriv_stencil_is_centred(stencil)) {
+        i = 0;
+        while (i < stencil.n) : (i += 1) {
+            if (stencil.order == 1) {
+                realSubtract(&fx[maxi - i - 1], &fx[i], pair, realContext);
+            } else {
+                // Since the centre coefficient is minus twice the sum of either side, each pair can be formed as two
+                // differences from f(x). Constant offsets cancel here.
+                realSubtract(&fx[i], &fx[stencil.n], pair, realContext);
+                realSubtract(&fx[maxi - i - 1], &fx[stencil.n], t, realContext);
+                realAdd(pair, t, pair, realContext);
+            }
+            int32ToReal(fdValues[stencil.coeff[maxi - i - 1]], t);
+            realFMA(pair, t, r, r, realContext);
+        }
+    } else {
+        i = 0;
+        while (i < maxi) : (i += 1) {
+            if (stencil.coeff[i] != 0) {
+                int32ToReal(fdValues[stencil.coeff[i]], t);
+                realFMA(&fx[i], t, r, r, realContext);
+            }
         }
     }
     // Inefficiently factor in the derivative order
@@ -842,7 +883,7 @@ fn calcDeriv(label: calcRegister_t, finDiff: [*]const ?*const FINITE_DIFF_COEFF)
 
             // Compute the function at the finite difference points
             saveForUndo();
-            calcFuncValues(label, variable, x, fx, h, &ctxtReal39);
+            calcFuncValues(label, variable, x, fx, h, &ctxtReal34);
             undo();
             if (variable != @as(calcRegister_t, @bitCast(INVALID_VARIABLE))) { // undo() rolls back the stack only, so the sampled variable is put back here
                 restoreRegisterSnapshot(variable, &savedRegister);
@@ -855,7 +896,7 @@ fn calcDeriv(label: calcRegister_t, finDiff: [*]const ?*const FINITE_DIFF_COEFF)
             var stencil: i32 = -1;
             var i: usize = 0;
             while (finDiff[i] != null) : (i += 1) {
-                if (calcOneDeriv(finDiff[i].?, fx, h, estimate, scratch, &ctxtReal39)) {
+                if (calcOneDeriv(finDiff[i].?, fx, h, estimate, scratch, gap, &ctxtReal39)) {
                     stencil = @intCast(i);
                     break;
                 }

@@ -79,13 +79,15 @@ Out: EC=24 FL_ASLIFT=0 RX=Stri:"String test"
 ;=======================================
 ; binomialP(Real Matrix) --> Error24
 ;=======================================
-
+In:  FL_ASLIFT=0 RP=Real:"0.5" RN=Real:"5" RX=ReMa:"M1,2[0,1]"
+Out: EC=24 FL_ASLIFT=0 RX=ReMa:"M1,2[0,1]"
 
 
 ;=======================================
 ; binomialP(Complex Matrix) --> Error24
 ;=======================================
-
+In:  FL_ASLIFT=0 RP=Real:"0.5" RN=Real:"5" RX=CxMa:"M1,1[1i1]"
+Out: EC=24 FL_ASLIFT=0 RX=CxMa:"M1,1[1i1]"
 
 
 ;=======================================
@@ -143,3 +145,56 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"3" RX=Real:"0.1901198713761988866"
 ;=======================================
 ; binomialP(Complex) --> Error24
 ;=======================================
+
+; Support and degenerate distributions.
+Func: fnBinomialP
+In:  RP=Real:"0.5" RN=Real:"5" RX=Real:"-1"
+Out: EC=0 RX=Real:"0"
+
+Func: fnBinomialP
+In:  RP=Real:"0" RN=Real:"5" RX=Real:"0"
+Out: EC=0 RX=Real:"1"
+
+Func: fnBinomialP
+In:  RP=Real:"0" RN=Real:"5" RX=Real:"1"
+Out: EC=0 RX=Real:"0"
+
+Func: fnBinomialP
+In:  RP=Real:"1" RN=Real:"5" RX=Real:"5"
+Out: EC=0 RX=Real:"1"
+
+Func: fnBinomialP
+In:  RP=Real:"0.5" RN=Real:"0" RX=Real:"0"
+Out: EC=0 RX=Real:"1"
+
+; The beta-prefix form retains a central mass for a very large trial count.
+Func: fnBinomialP
+In:  RP=Real:"0.5" RN=Real:"1e40" RX=Real:"5e39"
+Out: EC=0 RX=Real:"7.978845608028653558798921198687637e-21"
+
+; P39 loses result digits in the beta prefix. Scale the residual to expose it.
+Func: fnBinomialP
+In:  RP=Real:"0.37" RN=Real:"1000" RZ=Real:"1e40" RY=Real:"0.0038103281309744425542263454374312961304962810464371674597002345" RX=Real:"400"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+; A small nonzero parameter does not become its degenerate endpoint.
+Func: fnBinomialP
+In:  RP=Real:"1e-34" RN=Real:"5" RX=Real:"0"
+Out: EC=0 RX=Real:"0.9999999999999999999999999999999995"
+
+; Special parameters become special results when enabled.
+Func: fnBinomialP
+In:  FL_SPCRES=0 RP=Real:"0.5" RN=Real:"inf" RX=Real:"2"
+Out: EC=16 RX=Real:"2"
+
+Func: fnBinomialP
+In:  FL_SPCRES=1 RP=Real:"0.5" RN=Real:"inf" RX=Real:"2"
+Out: EC=0 RX=Real:"NaN"
+
+Func: fnBinomialP
+In:  FL_SPCRES=1 RP=Real:"NaN" RN=Real:"5" RX=Real:"2"
+Out: EC=0 RX=Real:"NaN"

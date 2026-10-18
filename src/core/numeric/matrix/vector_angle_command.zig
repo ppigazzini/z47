@@ -2,21 +2,17 @@
 // Zig port of the fnVectorAngle command of src/c47/mathematics/matrix.c: replace
 // register X by the angle between the 2D/3D real vectors in Y and X. The numeric
 // vectorAngle is already Zig-owned; this command-level wrapper links the
-// registers, validates the operands, converts the radian result to the current
-// angular mode and stores it.
+// registers, validates the operands, converts the 39-digit radian result to the
+// current angular mode and stores it.
 
 const std = @import("std");
 const runtime = @import("../command_wrappers/runtime.zig");
 
-const real34_t = runtime.real34_t;
+const real_t = runtime.real_t;
 const real34Matrix_t = runtime.real34Matrix_t;
 
 const nim_register_line = runtime.REGISTER_X;
 const std_cross = "\x80\xd7";
-
-inline fn real34Copy(source: *const real34_t, destination: *real34_t) void {
-    destination.* = source.*;
-}
 
 fn bufPrintZ(buffer: []u8, comptime format: []const u8, args: anytype) ![:0]u8 {
     return std.mem.printSentinel(buffer, format, args, 0);
@@ -33,7 +29,7 @@ pub export fn fnVectorAngle(unused_but_mandatory_parameter: u16) callconv(.c) vo
     {
         var x: real34Matrix_t = undefined;
         var y: real34Matrix_t = undefined;
-        var res: real34_t = undefined;
+        var res: real_t = undefined;
         runtime.linkToRealMatrixRegister(runtime.REGISTER_X, &x);
         runtime.linkToRealMatrixRegister(runtime.REGISTER_Y, &y);
 
@@ -49,9 +45,9 @@ pub export fn fnVectorAngle(unused_but_mandatory_parameter: u16) callconv(.c) vo
             }
         } else {
             runtime.vectorAngle(&y, &x, &res);
-            runtime.convertAngle34FromTo(&res, runtime.amRadian, runtime.currentAngularMode);
+            runtime.convertAngleFromTo(&res, runtime.amRadian, runtime.currentAngularMode, &runtime.ctxtReal39);
             runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, @intCast(runtime.currentAngularMode));
-            real34Copy(&res, runtime.registerReal34Data(runtime.REGISTER_X));
+            runtime.convertRealToReal34ResultRegister(&res, runtime.REGISTER_X);
         }
     } else {
         runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE);

@@ -128,6 +128,7 @@ const SETTING_AMODE: i32 = 128;
 const SETTING_DMX: i32 = 129;
 const SETTING_SIOICON: i32 = 133;
 const SETTING_PRINTERICON: i32 = 134;
+const SETTING_FDIGS: i32 = 135; // defines.h 0x0087, the fraction almost-equal parameter
 
 // system flags
 const FLAG_POLAR: i32 = 32774;
@@ -339,11 +340,12 @@ inline fn bitblt24(x: u32, dx: u32, y: u32, val: u32, blt_op: c_int, fill: c_int
 const BLT_OR: c_int = 0;
 const BLT_ANDN: c_int = 1;
 const BLT_NONE: c_int = 0;
+// hal/lcd.h: on the DMCP firmware the pixel routines are written once, in screen.c.
 inline fn setBlackPixel(x: u32, y: u32) void {
-    bitblt24(x, 1, y, 1, BLT_OR, BLT_NONE);
+    if (comptime dmcp_build) frontier_screen.setBlackPixel(x, y) else bitblt24(x, 1, y, 1, BLT_OR, BLT_NONE);
 }
 inline fn setWhitePixel(x: u32, y: u32) void {
-    bitblt24(x, 1, y, 1, BLT_ANDN, BLT_NONE);
+    if (comptime dmcp_build) frontier_screen.setWhitePixel(x, y) else bitblt24(x, 1, y, 1, BLT_ANDN, BLT_NONE);
 }
 
 // The rate-limited battery reading. The gauge uses this rather than get_vbat so
@@ -724,8 +726,9 @@ pub export fn showFracMode() callconv(.c) void {
     const denfix = didSystemFlagChange(FLAG_DENFIX);
     const denany = didSystemFlagChange(FLAG_DENANY);
     const baseShown = (@as(u32, SBlastIntegerBaseShown) != lastIntegerBase); // base mode #BASE / #KEY A-F
+    const fdigs = didSystemFlagChange(SETTING_FDIGS);
     SBlastIntegerBaseShown = @truncate(lastIntegerBase);
-    if (fract or irfrac or propfr or dmx or denfix or denany or baseShown) {
+    if (fract or irfrac or propfr or dmx or denfix or denany or baseShown or fdigs) {
         var statusMessage: [20]u8 = undefined;
         var x: i32 = X_FRAC_MODE;
 

@@ -14,7 +14,7 @@ Func: fnWeibullP
 ; WeibullP(Long Integer) --> Real
 ;=======================================
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RS=LonI:"1" RQ=LonI:"1" RX=LonI:"0"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"0" RX=Real:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"0" RX=Real:"1"
 
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RS=LonI:"1" RQ=LonI:"1" RX=LonI:"1"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"1" RX=Real:"0.3678794411714423215955237701614609"
@@ -45,10 +45,10 @@ In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RS=LonI:"2" RQ=LonI:"2" RX=LonI:"2"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"2" RX=Real:"0.3678794411714423215955237701614609"
 
 
-In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RS=LonI:"1" RQ=Real:"0.5" RX=LonI:"0"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"0" RX=Real:"0"
+In:  AM=DEG FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RS=LonI:"1" RQ=Real:"0.5" RX=LonI:"0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"0" RX=Real:"inf"
 
-In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RS=LonI:"1" RQ=Real:"0.5" RX=LonI:"1"
+In:  AM=DEG FL_SPCRES=0 FL_ASLIFT=0 FL_CPXRES=0 RS=LonI:"1" RQ=Real:"0.5" RX=LonI:"1"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"1" RX=Real:"0.1839397205857211607977618850807304"
 
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RS=LonI:"1" RQ=Real:"0.5" RX=LonI:"2"
@@ -104,7 +104,7 @@ Out: EC=24 FL_ASLIFT=0 RX=Stri:"String test"
 ; WeibullP(Real) --> Real
 ;=======================================
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RS=Real:"1" RQ=Real:"1" RX=Real:"0"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"1"
 
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RS=Real:"1" RQ=Real:"1" RX=Real:"1"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.3678794411714423215955237701614609"
@@ -135,10 +135,10 @@ In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RS=Real:"2" RQ=Real:"2" RX=Real:"2"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"2" RX=Real:"0.3678794411714423215955237701614609"
 
 
-In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RS=Real:"1" RQ=Real:"0.5" RX=Real:"0"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"0"
+In:  AM=DEG FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RS=Real:"1" RQ=Real:"0.5" RX=Real:"0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"inf"
 
-In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RS=Real:"1" RQ=Real:"0.5" RX=Real:"1"
+In:  AM=DEG FL_SPCRES=0 FL_ASLIFT=0 FL_CPXRES=0 RS=Real:"1" RQ=Real:"0.5" RX=Real:"1"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.1839397205857211607977618850807304"
 
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RS=Real:"1" RQ=Real:"0.5" RX=Real:"2"
@@ -190,3 +190,87 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1.00095" RX=Real:"1.49307500188233308
 ;=======================================
 ; WeibullP(Complex) --> Error24
 ;=======================================
+
+; Support, scaled-power, directed-rounding, parameter, and matrix cases.
+Func: fnWeibullP
+In:  RMODE=0 FL_SPCRES=0 RS=Real:"1" RQ=Real:"2" RX=Real:"-1"
+Out: EC=0 RX=Real:"0"
+
+Func: fnWeibullP
+In:  RMODE=0 FL_SPCRES=0 RS=Real:"1" RQ=Real:"2" RX=Real:"-inf"
+Out: EC=0 RX=Real:"0"
+
+Func: fnWeibullP
+In:  RMODE=0 FL_SPCRES=0 RS=Real:"2" RQ=Real:"1" RX=Real:"0"
+Out: EC=0 RX=Real:"0.5"
+
+Func: fnWeibullP
+In:  RMODE=0 FL_SPCRES=0 RS=Real:"1" RQ=Real:"2" RX=Real:"inf"
+Out: EC=0 RX=Real:"0"
+
+; The logarithmic scaled power recovers a density after x/scale underflows.
+Func: fnWeibullP
+In:  RMODE=0 FL_SPCRES=0 RS=Real:"1e6144" RQ=Real:"0.5" RX=Real:"1e-6144"
+Out: EC=0 RX=Real:"0.5"
+
+; Separate logarithms retain a small ratio before applying a small shape.
+Func: fnWeibullP
+In:  RMODE=0 FL_SPCRES=0 RS=Real:"1" RQ=Real:"0.025" RX=Real:"1e-40"
+Out: EC=0 RX=Real:"2.262093545089898932910622648616092e37"
+
+; The compensated ratio retains adjacent inputs under a large shape.
+Func: fnWeibullP
+In:  RMODE=0 FL_SPCRES=0 RS=Real:"1.234567890123456789012345678901234" RQ=Real:"1e33" RX=Real:"1.234567890123456789012345678901235"
+Out: EC=0 RX=Real:"1.923133861415989654059502563544037e32"
+
+; A large scaled power needs more density digits before the outer exponential.
+Func: fnWeibullP
+In:  RMODE=0 FL_SPCRES=0 RS=Real:"1e-6143" RQ=Real:"1.016370519767229819295101392885817e34" RZ=Real:"1e5150" ...
+     RY=Real:"9.494117874160681850261189195514096e-5087" RX=Real:"1.000000000000000000000000000000001e-6143"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+; A positive density below the working exponent range retains its directed side.
+Func: fnWeibullP
+In:  RMODE=0 FL_SPCRES=0 RS=Real:"1" RQ=Real:"2" RX=Real:"1e6144"
+Out: EC=0 RX=Real:"0"
+
+Func: fnWeibullP
+In:  RMODE=3 FL_SPCRES=0 RS=Real:"1" RQ=Real:"2" RX=Real:"1e6144"
+Out: EC=0 RX=Real:"1e-6176"
+
+; Positive x makes the shape-one density strictly less than its endpoint value.
+Func: fnWeibullP
+In:  RMODE=4 FL_SPCRES=0 RS=Real:"1" RQ=Real:"1" RX=Real:"1e-6176"
+Out: EC=0 RX=Real:"0.9999999999999999999999999999999999"
+
+Func: fnWeibullP
+In:  RMODE=0 FL_SPCRES=0 RS=Real:"1" RQ=Real:"1" RX=Real:"NaN"
+Out: EC=1 RX=Real:"NaN"
+
+Func: fnWeibullP
+In:  RMODE=0 FL_SPCRES=1 RS=Real:"1" RQ=Real:"1" RX=Real:"NaN"
+Out: EC=0 RX=Real:"NaN"
+
+Func: fnWeibullP
+In:  RMODE=0 FL_SPCRES=0 RS=Real:"1" RQ=Real:"0" RX=Real:"1"
+Out: EC=16 RX=Real:"1"
+
+Func: fnWeibullP
+In:  RMODE=0 FL_SPCRES=0 RS=Real:"inf" RQ=Real:"1" RX=Real:"1"
+Out: EC=16 RX=Real:"1"
+
+Func: fnWeibullP
+In:  RMODE=0 FL_SPCRES=1 RS=Real:"NaN" RQ=Real:"1" RX=Real:"1"
+Out: EC=0 RX=Real:"NaN"
+
+Func: fnWeibullP
+In:  RMODE=0 FL_SPCRES=0 RS=Real:"1" RQ=Real:"1" RX=ReMa:"M1,2[0,1]"
+Out: EC=24 RX=ReMa:"M1,2[0,1]"
+
+Func: fnWeibullP
+In:  RMODE=0 FL_SPCRES=0 RS=Real:"1" RQ=Real:"1" RX=CxMa:"M1,1[0i1]"
+Out: EC=24 RX=CxMa:"M1,1[0i1]"

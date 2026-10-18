@@ -170,3 +170,219 @@ Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"-inf":GRAD
 ;=======================================
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"6.2 i -7.6"
 Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"6.2 i -7.6" RX=Cplx:"123.8080464976488539838298263536325051319227616339062123662824 i -476.94149024881402150678826706683369181922070119913800994669629"
+
+
+
+;=======================================
+; Decimal128 accuracy and range boundaries
+;=======================================
+Func: fnExp
+In:  RMODE=0 RX=Real:"0"
+Out: EC=0 RX=Real:"1"
+
+Func: fnExp
+In:  RMODE=0 RX=Real:"-0"
+Out: EC=0 RX=Real:"1"
+
+; exp(1) distinguishes the directed modes at digit 34, with scaling so the ordinary comparison tolerance cannot conceal an adjacent result.
+Func: fnExp
+In:  RMODE=0 RX=Real:"1"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"2.718281828459045235360287471352662"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e40"
+Out: EC=0 RX=Real:"0"
+
+Func: fnExp
+In:  RMODE=1 RX=Real:"1"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"2.718281828459045235360287471352662"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e40"
+Out: EC=0 RX=Real:"0"
+
+Func: fnExp
+In:  RMODE=2 RX=Real:"1"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"2.718281828459045235360287471352662"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e40"
+Out: EC=0 RX=Real:"0"
+
+Func: fnExp
+In:  RMODE=3 RX=Real:"1"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"2.718281828459045235360287471352663"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e40"
+Out: EC=0 RX=Real:"0"
+
+Func: fnExp
+In:  RMODE=4 RX=Real:"1"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"2.718281828459045235360287471352662"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e40"
+Out: EC=0 RX=Real:"0"
+
+Func: fnExp
+In:  RMODE=5 RX=Real:"1"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"2.718281828459045235360287471352663"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e40"
+Out: EC=0 RX=Real:"0"
+
+Func: fnExp
+In:  RMODE=6 RX=Real:"1"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"2.718281828459045235360287471352662"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e40"
+Out: EC=0 RX=Real:"0"
+
+; These adjacent decimal128 arguments bracket exp overflow.
+Func: fnExp
+In:  RMODE=0 FL_SPCRES=0 RX=Real:"14149.38539644841072829055748903541"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"9.999999999999999999999999999919443e6144"
+Out: EC=0 RX=Real:"0"
+
+Func: fnExp
+In:  RMODE=0 FL_SPCRES=0 RX=Real:"14149.38539644841072829055748903542"
+Out: EC=4 RX=Real:"14149.38539644841072829055748903542"
+
+Func: fnExp
+In:  RMODE=4 FL_SPCRES=0 RX=Real:"14149.38539644841072829055748903542"
+Out: EC=0 RX=Real:"9.999999999999999999999999999999999e6144"
+
+; These adjacent decimal128 arguments bracket the half-even transition between zero and the minimum subnormal.
+Func: fnExp
+In:  RMODE=0 RX=Real:"-14221.45868151178608980453245625210"
+Out: EC=0 RX=Real:"0"
+
+Func: fnExp
+In:  RMODE=0 RX=Real:"-14221.45868151178608980453245625209"
+Out: EC=0 RX=Real:"1e-6176"
+
+Func: fnExp
+In:  RMODE=3 RX=Real:"-14221.45868151178608980453245625210"
+Out: EC=0 RX=Real:"1e-6176"
+
+Func: fnExp
+In:  RMODE=6 RX=Real:"-14221.45868151178608980453245625209"
+Out: EC=0 RX=Real:"0"
+
+
+
+;=======================================
+; Complex accuracy and special values
+;=======================================
+; The argument is handed directly to the trigonometric reduction. Both checks expose digit 34.
+Func: fnExp
+In:  AM=RAD RMODE=0 RX=Cplx:"0 i 1e20"
+Out: EC=0 FL_CPXRES=1
+Func: fnRealPart
+In:  RMODE=0
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"0.7639704044417283004001468027378811"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e40"
+Out: EC=0 RX=Real:"0"
+
+Func: fnExp
+In:  AM=RAD RMODE=0 RX=Cplx:"0 i 1e20"
+Out: EC=0 FL_CPXRES=1
+Func: fnImaginaryPart
+In:  RMODE=0
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"-0.6452512852657808442058117113125230"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e40"
+Out: EC=0 RX=Real:"0"
+
+; The shared wide reduction preserves a decimal128 phase at the upper exponent limit.
+Func: fnExp
+In:  AM=RAD RMODE=0 RX=Cplx:"0 i 5.829979800222281883747164188135449e6144"
+Out: EC=0 FL_CPXRES=1
+Func: fnRealPart
+In:  RMODE=0
+Out: EC=0 RX=Real:"1"
+
+Func: fnExp
+In:  AM=RAD RMODE=0 RX=Cplx:"0 i 5.829979800222281883747164188135449e6144"
+Out: EC=0 FL_CPXRES=1
+Func: fnImaginaryPart
+In:  RMODE=0
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"-2.908962159350783229012734764285262e-34"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e75"
+Out: EC=0 RX=Real:"0"
+
+Func: fnExp
+In:  AM=RAD RMODE=0 FL_SPCRES=1 RX=Cplx:"-0 i -0"
+Out: EC=0 FL_CPXRES=1 RX=Cplx:"1 i 0"
+
+Func: fnExp
+In:  AM=RAD RMODE=0 FL_SPCRES=1 RX=Cplx:"inf i 1"
+Out: EC=0 FL_CPXRES=1 RX=Cplx:"inf i inf"
+
+Func: fnExp
+In:  AM=RAD RMODE=0 FL_SPCRES=1 RX=Cplx:"inf i -1"
+Out: EC=0 FL_CPXRES=1 RX=Cplx:"inf i -inf"
+
+; exp(-infinity + 2i) has a negative real zero. Its reciprocal exposes the zero sign.
+Func: fnExp
+In:  AM=RAD RMODE=0 FL_SPCRES=1 RX=Cplx:"-inf i 2"
+Out: EC=0 FL_CPXRES=1
+Func: fnRealPart
+In:  RMODE=0 FL_SPCRES=1
+Out: EC=0
+Func: fnInvert
+In:  RMODE=0 FL_SPCRES=1
+Out: EC=0 RX=Real:"-inf"
+
+; exp(-infinity - i) has a negative imaginary zero. Its reciprocal exposes the zero sign.
+Func: fnExp
+In:  AM=RAD RMODE=0 FL_SPCRES=1 RX=Cplx:"-inf i -1"
+Out: EC=0 FL_CPXRES=1
+Func: fnImaginaryPart
+In:  RMODE=0 FL_SPCRES=1
+Out: EC=0
+Func: fnInvert
+In:  RMODE=0 FL_SPCRES=1
+Out: EC=0 RX=Real:"-inf"
+
+Func: fnExp
+In:  AM=RAD RMODE=0 FL_SPCRES=1 RX=Cplx:"NaN i 0"
+Out: EC=0 FL_CPXRES=1 RX=Cplx:"NaN i 0"
+
+Func: fnExp
+In:  AM=RAD RMODE=0 FL_SPCRES=1 RX=Cplx:"NaN i 1"
+Out: EC=0 FL_CPXRES=1 RX=Cplx:"NaN i NaN"
+
+Func: fnExp
+In:  AM=RAD RMODE=0 FL_SPCRES=1 RX=Cplx:"0 i inf"
+Out: EC=0 FL_CPXRES=1 RX=Cplx:"NaN i NaN"

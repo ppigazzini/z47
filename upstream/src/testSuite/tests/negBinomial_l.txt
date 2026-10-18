@@ -101,12 +101,16 @@ Out: EC=24 FL_ASLIFT=0 RX=Stri:"String test"
 ;=======================================
 ; negBinomialL(Real Matrix) --> Error24
 ;=======================================
+In:  FL_ASLIFT=0 RP=Real:"0.5" RN=Real:"5" RX=ReMa:"M1,2[0,1]"
+Out: EC=24 FL_ASLIFT=0 RX=ReMa:"M1,2[0,1]"
 
 
 
 ;=======================================
 ; negBinomialL(Complex Matrix) --> Error24
 ;=======================================
+In:  FL_ASLIFT=0 RP=Real:"0.5" RN=Real:"5" RX=CxMa:"M1,1[1i1]"
+Out: EC=24 FL_ASLIFT=0 RX=CxMa:"M1,1[1i1]"
 
 
 
@@ -187,3 +191,46 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"100" RX=Real:"0.983283683480956638720
 ;=======================================
 ; negBinomialL(Complex) --> Error24
 ;=======================================
+
+; Support and integer-step convention.
+Func: fnNegBinomialL
+In:  RP=Real:"0.5" RN=Real:"5" RX=Real:"-1"
+Out: EC=0 RX=Real:"0"
+
+Func: fnNegBinomialL
+In:  RP=Real:"0.5" RN=Real:"5" RX=Real:"3.9"
+Out: EC=0 RX=Real:"0.36328125"
+
+Func: fnNegBinomialL
+In:  RP=Real:"0.5" RN=Real:"5" RX=Real:"inf"
+Out: EC=0 RX=Real:"1"
+
+Func: fnNegBinomialL
+In:  RP=Real:"0" RN=Real:"5" RX=Real:"0"
+Out: EC=0 RX=Real:"1"
+
+Func: fnNegBinomialL
+In:  RP=Real:"1e-34" RN=Real:"5" RX=Real:"0"
+Out: EC=0 RX=Real:"0.9999999999999999999999999999999995"
+
+; P39 loses result digits in the direct beta tail.
+Func: fnNegBinomialL
+In:  RP=Real:"0.37" RN=Real:"600" RZ=Real:"1e40" RY=Real:"0.9766949451853648761648148333437772947005319583139383264479" RX=Real:"400.9"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+; P75 resolves the central correction for very large beta shapes.
+Func: fnNegBinomialL
+In:  RP=Real:"0.5" RN=Real:"1e40" RZ=Real:"1e40" RY=Real:"0.5000000000000000000028209479177387814347403972578038629" RX=Real:"1e40"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnNegBinomialL
+In:  FL_SPCRES=1 RP=Real:"0.5" RN=Real:"5" RX=Real:"NaN"
+Out: EC=0 RX=Real:"NaN"

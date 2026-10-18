@@ -442,6 +442,36 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"3" RX=Real:"3.60555127546398929311922
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"2":GRAD RX=Real:"3":DEG
 Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RY=Real:"2":GRAD RX=Real:"3":DEG
 
+; The p39 work range contains the squares of every finite decimal128 component.
+In:  AM=DEG RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"1E6144" RX=Real:"1E6144"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1E6144" RX=Real:"1.414213562373095048801688724209698E6144" RY=Real:"45":DEG
+
+In:  AM=DEG RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"1E-6176" RX=Real:"1E-6176"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1E-6176" RX=Real:"1E-6176" RY=Real:"45":DEG
+
+; The conversion defines the negative real axis at the positive angular endpoint.
+In:  AM=DEG RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"-0" RX=Real:"-2"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-2" RX=Real:"2" RY=Real:"180":DEG
+
+In:  AM=DEG RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"-inf" RX=Real:"inf"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"inf" RY=Real:"-45":DEG
+
+In:  AM=RAD RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"NaN" RX=Real:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"NaN" RY=Real:"NaN":RAD
+
+; A finite negative ordinate selects the negative side of an infinite abscissa axis.
+In:  AM=DEG RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"-2" RX=Real:"inf"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"inf" RY=Real:"-0":DEG
+
+Func: fnSwapXY
+Out: EC=0 RX=Real:"-0":DEG
+Func: fnInvert
+Out: EC=0 RX=Real:"-inf"
+Func: fnToPolar2
+
+In:  AM=DEG RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"-2" RX=Real:"-inf"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"inf" RY=Real:"-180":DEG
+
 
 ;=================================================
 ; Real34, Complex34 --> Error24

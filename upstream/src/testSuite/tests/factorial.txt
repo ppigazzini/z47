@@ -50,12 +50,16 @@ Out: EC=24 FL_ASLIFT=0 RX=Stri:"String test"
 ;=======================================
 ; factorial(Real Matrix)
 ;=======================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=ReMa:"M1,2[5,6]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,2[5,6]" RX=ReMa:"M1,2[120,720]"
 
 
 
 ;=======================================
 ; factorial(Complex Matrix)
 ;=======================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=CxMa:"M1,1[2i1]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M1,1[2i1]" RX=CxMa:"M1,1[0.9628651530237880980885565089138579i1.339097176053257443016118221902708]"
 
 
 
@@ -106,6 +110,55 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"5.32564":DMS RX=Real:"211.13598684879
 In:  FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-5.32564":GRAD
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-5.32564":GRAD RX=Real:"-0.092823884274579407865808232851777690972248476783570824903801507"
 
+; The exact p34 integer route ends at 36!.
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"36"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"36" RX=Real:"371993326789901217467999448150835200000000"
+
+In:  RMODE=3 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"36"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"36" RX=Real:"371993326789901217467999448150835200000000"
+
+In:  RMODE=6 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"36"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"36" RX=Real:"371993326789901217467999448150835200000000"
+
+; The first inexact integer result remains on p39 before output conversion.
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"37"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"37" RX=Real:"1.376375309122634504631597958158090e43"
+
+In:  RMODE=3 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"37"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"37" RX=Real:"1.376375309122634504631597958158091e43"
+
+In:  RMODE=6 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"37"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"37" RX=Real:"1.376375309122634504631597958158090e43"
+
+; P34 recurrence rounding is already several units wrong at 38!.
+Func: fnFactorial
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"5.230226174666011117600072241000743e44" RX=Real:"38"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0 RX=Real:"0"
+
+Func: fnFactorial
+In:  RMODE=4 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"5.230226174666011117600072241000742e44" RX=Real:"38"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0 RX=Real:"0"
+
+Func: fnFactorial
+In:  RMODE=5 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"5.230226174666011117600072241000743e44" RX=Real:"38"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0 RX=Real:"0"
+
+Func: fnFactorial
+
+;=======================================
+; Real special values
+;=======================================
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=0 RX=Real:"inf"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"inf"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=0 RX=Real:"-inf"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"NaN"
 
 ;=======================================
 ; factorial(Complex) --> Complex

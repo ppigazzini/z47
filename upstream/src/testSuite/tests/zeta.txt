@@ -81,7 +81,7 @@ In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"0.5"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.5" RX=Real:"-1.460354508809586812889499152515298"
 
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1"
-Out: EC=5 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"1"
+Out: EC=4 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"1"
 
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.5"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1.5" RX=Real:"2.612375348685488343348567567924072"
@@ -112,3 +112,157 @@ Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"2i0" RX=Cplx:"1.644934066848226436472
 
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"0i0"
 Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"0i0" RX=Cplx:"-0.5 i 0"
+
+
+;=======================================
+; Decimal128 accuracy and corner cases
+;=======================================
+
+; These decimal128 neighbours of the trivial zero at -2 require the p75 reflection route. Exact subtraction and scaling expose digit 34.
+Func: fnZeta
+In:  AM=RAD RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e100" RY=Real:"-3.044845705839327078025153047115481e-35" RX=Real:"-1.999999999999999999999999999999999"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnZeta
+In:  AM=RAD RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e100" RY=Real:"3.044845705839327078025153047115474e-35" RX=Real:"-2.000000000000000000000000000000001"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+; A decimal128 approximation to the first non-trivial zero has a nonzero result. p51 work retains only about 15 significant digits here.
+Func: fnZeta
+In:  AM=RAD RMODE=0 FL_ASLIFT=0 FL_CPXRES=1 RZ=Real:"1e100" RY=Cplx:"3.376675076081268148074829102707534e-35 i -2.121043640672324664155873279877615e-34" ...
+     RX=Cplx:"0.5 i 14.13472514173469379045725198356247"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+; These arguments are close to a removable zero of eta(s)/(1 - 2^(1-s)). The p75 ln(2) constant keeps numerator and denominator consistent.
+Func: fnZeta
+In:  AM=RAD RMODE=0 FL_ASLIFT=0 FL_CPXRES=1 RZ=Real:"1e100" RY=Cplx:"1.525412789062534032424879405631740 i 0.2096961097706063394635644786612102" ...
+     RX=Cplx:"1 i 99.71192312019826381180902480576667"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+Func: fnZeta
+In:  AM=RAD RMODE=0 FL_ASLIFT=0 FL_CPXRES=1 RZ=Real:"1e100" RY=Cplx:"4.896882982526221596078567472917028 i 3.693939803638117228348093482876555" ...
+     RX=Cplx:"0 i 99.71192312019826381180902480576667"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+; A large supported imaginary component checks the term selection and phase arithmetic through digit 34.
+Func: fnZeta
+In:  AM=RAD RMODE=0 FL_ASLIFT=0 FL_CPXRES=1 RZ=Real:"1e100" RY=Cplx:"0.3563343671943960550744024767110296 i 0.9319978312329936651150604327370561" RX=Cplx:"0.5 i 1000"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+; zeta(2) distinguishes directed result rounding at digit 34.
+Func: fnZeta
+In:  AM=RAD RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Real:"1.644934066848226436472415166646025" RX=Real:"2"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnZeta
+In:  RMODE=1 FL_ASLIFT=0 RZ=Real:"1e40" RY=Real:"1.644934066848226436472415166646025" RX=Real:"2"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnZeta
+In:  RMODE=2 FL_ASLIFT=0 RZ=Real:"1e40" RY=Real:"1.644934066848226436472415166646025" RX=Real:"2"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnZeta
+In:  RMODE=3 FL_ASLIFT=0 RZ=Real:"1e40" RY=Real:"1.644934066848226436472415166646026" RX=Real:"2"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnZeta
+In:  RMODE=4 FL_ASLIFT=0 RZ=Real:"1e40" RY=Real:"1.644934066848226436472415166646025" RX=Real:"2"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnZeta
+In:  RMODE=5 FL_ASLIFT=0 RZ=Real:"1e40" RY=Real:"1.644934066848226436472415166646026" RX=Real:"2"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnZeta
+In:  RMODE=6 FL_ASLIFT=0 RZ=Real:"1e40" RY=Real:"1.644934066848226436472415166646025" RX=Real:"2"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+; Elementwise routes use the scalar p75 work and preserve the matrix in Last X.
+Func: fnZeta
+In:  AM=RAD RMODE=0 FL_SPCRES=0 FL_ASLIFT=0 FL_CPXRES=0 RX=ReMa:"M1,4[-1.999999999999999999999999999999999,0,2,100]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,4[-1.999999999999999999999999999999999,0,2,100]" ...
+     RX=ReMa:"M1,4[-3.044845705839327078025153047115481e-35,-0.5,1.644934066848226436472415166646025,1.000000000000000000000000000000789]"
+
+In:  AM=RAD RMODE=0 FL_SPCRES=0 FL_ASLIFT=0 FL_CPXRES=1 RX=CxMa:"M1,2[0.5i14.13472514173469379045725198356247,1i99.71192312019826381180902480576667]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M1,2[0.5i14.13472514173469379045725198356247,1i99.71192312019826381180902480576667]" ...
+     RX=CxMa:"M1,2[3.376675076081268148074829102707534e-35i-2.121043640672324664155873279877615e-34,1.525412789062534032424879405631740i0.2096961097706063394635644786612102]"
+
+; The pole has positive sign. A finite imaginary argument needing more than 10,000 terms returns NaN instead of starting an impractical calculation.
+In:  RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1"
+Out: EC=0 FL_SPCRES=1 FL_ASLIFT=1 RL=Real:"1" RX=Real:"inf"
+
+In:  RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=1 RX=Cplx:"1 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"1 i 0" RX=Cplx:"inf i 0"
+
+In:  RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=1 RX=Cplx:"0.5 i 3000"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"0.5 i 3000" RX=Cplx:"NaN i NaN"
+
+; Nonfinite arguments terminate without entering the term recurrence.
+In:  RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=1 RX=Cplx:"0.5 i inf"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"0.5 i inf" RX=Cplx:"NaN i NaN"
+
+In:  RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=1 RX=Cplx:"inf i 2"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"inf i 2" RX=Cplx:"1 i 0"
+
+; Exact trivial zeros and the positive-real limit avoid unnecessary high-range intermediate values.
+In:  RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-1e6144"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-1e6144" RX=Real:"0"
+
+In:  RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1e6144"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1e6144" RX=Real:"1"
+
+In:  RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=1 RX=Cplx:"-1e6144 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"-1e6144 i 0" RX=Cplx:"0 i 0"

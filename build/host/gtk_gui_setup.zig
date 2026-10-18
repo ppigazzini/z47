@@ -192,7 +192,7 @@ pub fn setupSoftkeyLabels() void {
 pub fn setupScreenBuffer() void {
     screen = gtk_drawing_area_new();
     gtk_widget_set_size_request(screen, SCREEN_WIDTH, SCREEN_HEIGHT);
-    gtk_widget_set_tooltip_text(screen, "Copy to clipboard:\n CTRL+a: All Registers\n CTRL+c/x: X Register\n CTRL+d: Lettered Registers\n CTRL+h: Screen image\n CTRL+m: Menu image\n CTRL+p: Print-out window\n CTRL+s: SNAP\n");
+    gtk_widget_set_tooltip_text(screen, "Copy to clipboard:\n CTRL+a: All Registers WVU…X R99…R00\n CTRL+c/x: X Register\n CTRL+d: Lettered Registers WVU…X\n CTRL+h: Screen image\n CTRL+m: Menu image\n CTRL+n: Menu image to disk\n CTRL+b: X register image to disk\n CTRL+p: Print-out window\n CTRL+s: SNAP\n");
     if (!NARROW_SCREEN) {
         gtk_fixed_put(@ptrCast(grid), screen, 63, 72);
     } else {

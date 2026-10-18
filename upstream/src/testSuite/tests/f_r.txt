@@ -58,6 +58,8 @@ Out: EC=24 FL_ASLIFT=0 RX=Stri:"String test"
 ;=======================================
 ; F_R(Real Matrix) --> Error24
 ;=======================================
+In:  FL_ASLIFT=0 RM=Real:"1" RN=Real:"1" RX=ReMa:"M1,2[0,1]"
+Out: EC=24 FL_ASLIFT=0 RX=ReMa:"M1,2[0,1]"
 
 
 
@@ -95,6 +97,35 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.53514521000636496977248
 
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RM=Real:"5" RN=Real:"3" RX=Real:"2"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"2" RX=Real:"0.3015473626950758266469209665576794"
+
+; The complementary probability is evaluated without subtracting from a rounded lower tail.
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RM=Real:"1e40" RN=Real:"1e40" RX=Real:"1.000000000000000000000000000000001"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1.000000000000000000000000000000001" RX=Real:"0.4999999999999800528859799283661030"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RM=Real:"1" RN=Real:"1e40" RX=Real:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.3173105078629141028295349087359242"
+
+; A small upper tail 14.9 mode widths above the mode, where the integration limit is taken relative to the requested point.
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RM=Real:"2E5" RN=Real:"2E5" RX=Real:"1.06891"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1.06891" RX=Real:"1.656939411150046698310618203447708E-50"
+
+; An upper tail whose fraction is evaluated next to z = 1, where it does not settle at p51.
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RM=Real:"51" RN=Real:"1E17" RX=Real:"5"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"5" RX=Real:"6.525939415474445509822335801023768E-29"
+
+; The same with d2 = 1E30, where the fraction takes 1 - z = 2.55E-28 from the digits of z below its leading nines.
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RM=Real:"51" RN=Real:"1E30" RX=Real:"5"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"5" RX=Real:"6.525939415473751611005639247972180E-29"
+
+; The same with d2 = 1E40, which settles at p75 only with a change below 1E-39.
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RM=Real:"51" RN=Real:"1E40" RX=Real:"5"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"5" RX=Real:"6.525939415473751611005639178582299E-29"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RM=Real:"1" RN=Real:"1" RX=Real:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"1"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RM=Real:"1" RN=Real:"1" RX=Real:"inf"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"0"
 
 
 

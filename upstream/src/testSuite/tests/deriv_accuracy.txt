@@ -1,6 +1,6 @@
 ;*******************************************************************************************************************************
-;** Accuracy: the numerical derivative on functions that make the step matter. covDerivAccPgm loads seven functions, Ka to    **
-;** Kg, each reading its argument off the stack, and a first and second derivative wrapper for each, Xa to Xg and Ya to Yg,   **
+;** Accuracy: the numerical derivative on functions that make the step matter. covDerivAccPgm loads ten functions, Ka to      **
+;** Kj, each reading its argument off the stack, and derivative wrappers Xa to Xj and Ya to Yg,                               **
 ;** so every case below is an ordinary program run with the point in X.                                                      **
 ;**                                                                                                                          **
 ;** Each Out: is what the engine returns, digit for digit. The ;Accurate line under it is the true value to 55 digits, lined  **
@@ -115,7 +115,7 @@ Out: EC=0 RX=Real:"2.718281828459351787101787101787102"
 ;Accurate          2.7182818284590452353602874713526624977572470936999595749669   15 points at x/10
 
 In:  FL_ASLIFT=1 RX=Real:"1" PGM="Yg"
-Out: EC=0 RX=Real:"2.718281828458521983175554604126033"
+Out: EC=0 RX=Real:"2.718281828458521960579103436246293"
 ;Accurate          2.7182818284590452353602874713526624977572470936999595749669   15 points at x/10
 
 ;=======================================================================================================================
@@ -152,15 +152,20 @@ In:  FL_ASLIFT=1 RX=Real:"1E-30" PGM="Xa"
 Out: EC=0 RX=Real:"1"
 ;Accurate          1.0000000000000000000000000000010000000000000000000000000000   15 points at x/10
 
-; sin at 0, where the relative step collapses again and the samples run over two whole periods. f" is exactly 0 and
-; comes back as 1.45E-39, an absolute miss of that size rather than a relative one, so it has no correct digit count.
+; sin at 0, where the relative step collapses again and the samples run over two whole periods. Pairing symmetric
+; samples makes the exactly zero second derivative cancel before coefficient accumulation.
 In:  FL_ASLIFT=1 AM=RAD RX=Real:"0" PGM="Xf"
 Out: EC=0 RX=Real:"0.9999999999999999999999999999999978"
 ;Accurate          1                                                              15 points at 1/100
 
 In:  FL_ASLIFT=1 AM=RAD RX=Real:"0" PGM="Yf"
-Out: EC=0 RX=Real:"1.453572882144310715739287167858596E-39"
+Out: EC=0 RX=Real:"0"
 ;Accurate          0                                                              15 points at 1/10
+
+; Zf scales that result after differentiation. Analytically it is still zero; the scale makes any residual from the
+; weighted coefficient accumulation visible to the file-driven comparison.
+In:  FL_ASLIFT=1 AM=RAD RX=Real:"0" PGM="Zf"
+Out: EC=0 RX=Real:"0"
 
 ; tan at 1.57 radians, four ten thousandths from the pole, where f' is 1.577E6 and f" is 3.96E9.
 In:  FL_ASLIFT=1 AM=RAD RX=Real:"1.57" PGM="Xe"
@@ -170,6 +175,25 @@ Out: EC=0 RX=Real:"1576948.220797081858921262372054096"
 In:  FL_ASLIFT=1 AM=RAD RX=Real:"1.57" PGM="Ye"
 Out: EC=0 RX=Real:"3960554630.510421453562233721431568"
 ;Accurate          3960554630.5104214535622337208792578541457552341360740945271   15 points at x/10^6
+
+; sqrt(x)^2 equals x throughout its domain, including its lower endpoint. Negative stencil points are undefined at x = 0,
+; so the derivative must come from a forward stencil and equal 1.
+In:  FL_ASLIFT=1 RX=Real:"0" PGM="Xh"
+Out: EC=0 RX=Real:"1"
+
+; Adding a constant does not change that endpoint derivative. It does force the one-sided weighted sum to cancel values near
+; 1E20, which needs guard digits beyond the 34-digit samples.
+In:  FL_ASLIFT=1 RX=Real:"0" PGM="Xi"
+Out: EC=0 RX=Real:"1"
+
+; Its second derivative is zero. This also exercises a one-sided second-derivative stencil with the same offset.
+In:  FL_ASLIFT=1 RX=Real:"0" PGM="Yi"
+Out: EC=0 RX=Real:"0"
+
+; Multiplying the restricted identity by a full-width decimal makes the endpoint derivative equal the multiplier. The
+; one-sided coefficient accumulation must retain at least 30 significant digits.
+In:  FL_ASLIFT=1 RX=Real:"0" PGM="Xj"
+Out: EC=0 RX=Real:"1.234567890123456789012345678901234"
 
 ;=======================================================================================================================
 ; The four routes into the new f' and f". Every case above is one of them, a program step on a function that declares no

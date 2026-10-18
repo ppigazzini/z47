@@ -40,8 +40,26 @@ pub const RealContext = extern struct {
     clamp: u8,
 };
 
-/// A complex value as a pair of `Real` (the C `CPLX(x)` passes &x.Real, &x.Imag).
-pub const Complex = extern struct { Real: Real, Imag: Real };
+/// cplx_t: a complex value as two back-to-back `Real`. Upstream names the same
+/// storage Mag and Arg while the value is in polar form (an anonymous union per
+/// part); `mag`/`arg` are that view, so a polar-form site reads as upstream does.
+pub const Complex = extern struct {
+    Real: Real,
+    Imag: Real,
+
+    pub inline fn mag(self: *Complex) *Real {
+        return &self.Real;
+    }
+    pub inline fn arg(self: *Complex) *Real {
+        return &self.Imag;
+    }
+    pub inline fn constMag(self: *const Complex) *const Real {
+        return &self.Real;
+    }
+    pub inline fn constArg(self: *const Complex) *const Real {
+        return &self.Imag;
+    }
+};
 
 /// decQuad complex (two Real34).
 pub const Complex34 = extern struct { real: Real34, imag: Real34 };

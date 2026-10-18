@@ -113,6 +113,10 @@ inline fn realIsPositive(v: *const real_t) bool {
 inline fn realIsInfinite(v: *const real_t) bool {
     return (v.bits & 0x40) != 0;
 }
+inline fn realIsSpecial(v: *const real_t) bool {
+    return (v.bits & 0x70) != 0;
+}
+const cplx_t = abi.Complex;
 inline fn realSetPositiveSign(v: *real_t) void {
     v.bits &= 0x7f;
 }
@@ -303,101 +307,149 @@ pub export fn checkDms34(angle34_dms: *real34_t) callconv(.c) void {
     realToReal34(&angle_dms, angle34_dms);
 }
 
-pub export fn getInfiniteComplexAngle(x: *real_t, y: *real_t) callconv(.c) u32 {
-    if (!realIsInfinite(x)) {
-        return 2 + 4 * @as(u32, @intFromBool(realIsNegative(y)));
+/// Replaces an angle in radians with the right angle less that angle, both in the
+/// current angular mode; `negative` takes -90 degrees as the right angle.
+pub export fn rightAngleLessRadians(angle: *real_t, negative: bool) callconv(.c) void {
+    var rightAngle: real_t = undefined;
+
+    rightAngle = consts.const_90().*;
+    if (negative) {
+        realSetNegativeSign(&rightAngle);
     }
-    if (!realIsInfinite(y)) {
-        return 4 * @as(u32, @intFromBool(realIsNegative(x)));
-    }
-    if (realIsPositive(x)) {
-        return 1 + 6 * @as(u32, @intFromBool(realIsNegative(y)));
-    }
-    return 3 + 2 * @as(u32, @intFromBool(realIsNegative(y)));
+    convertAngleFromTo(&rightAngle, amDegree, currentAngularMode, &ctxtReal39);
+    convertAngleFromTo(angle, amRadian, currentAngularMode, &ctxtReal39);
+    realSubOp(&rightAngle, angle, angle, &ctxtReal39);
 }
 
-pub export fn setInfiniteComplexAngle(angle: u32, x: *real_t, y: *real_t) callconv(.c) void {
+pub export fn getInfiniteComplexAngle(z: *const cplx_t) callconv(.c) u32 {
+    if (!realIsInfinite(&z.Real)) {
+        return 2 + 4 * @as(u32, @intFromBool(realIsNegative(&z.Imag))); // 2 -> 90°    6 -> -90° or 270°
+    }
+    if (!realIsInfinite(&z.Imag)) {
+        return 4 * @as(u32, @intFromBool(realIsNegative(&z.Real))); // 0 -> 0°     4 -> -180° or 180°
+    }
+    // At this point, both parts are infinite
+    if (realIsPositive(&z.Real)) {
+        return 1 + 6 * @as(u32, @intFromBool(realIsNegative(&z.Imag))); // 1 -> 45°    7 -> -45° or 315°
+    }
+    // At this point, the real part is negative
+    return 3 + 2 * @as(u32, @intFromBool(realIsNegative(&z.Imag))); // 3 -> 135°   5 -> -135° or 225°
+}
+
+pub export fn setInfiniteComplexAngle(angle: u32, z: *cplx_t) callconv(.c) void {
     switch (angle) {
-        3, 4, 5 => frontier_real_type.realSetMinusInfinity(x),
-        2, 6 => frontier_real_type.realSetZero(x),
-        else => frontier_real_type.realSetPlusInfinity(x),
+        3, 4, 5 => frontier_real_type.realSetMinusInfinity(&z.Real),
+        2, 6 => frontier_real_type.realSetZero(&z.Real),
+        else => frontier_real_type.realSetPlusInfinity(&z.Real),
     }
     switch (angle) {
-        5, 6, 7 => frontier_real_type.realSetMinusInfinity(y),
-        0, 4 => frontier_real_type.realSetZero(y),
-        else => frontier_real_type.realSetPlusInfinity(y),
+        5, 6, 7 => frontier_real_type.realSetMinusInfinity(&z.Imag),
+        0, 4 => frontier_real_type.realSetZero(&z.Imag),
+        else => frontier_real_type.realSetPlusInfinity(&z.Imag),
     }
 }
 
-pub export fn real34FromDmsToDeg(angle_dms: *const real34_t, angle_dec: *real34_t) callconv(.c) void {
+/// Converts a real from DMS (ddd.mmss) to decimal degrees in the given context; a
+/// special value passes through.
+pub export fn realFromDmsToDeg(angle_dms: *const real_t, angle_dec: *real_t, real_context: *realContext_t) callconv(.c) void {
     var angle: real_t = undefined;
     var degrees: real_t = undefined;
     var minutes: real_t = undefined;
     var seconds: real_t = undefined;
+    const negative = realIsNegative(angle_dms);
 
-    real34ToReal(angle_dms, &angle);
+    if (realIsSpecial(angle_dms)) {
+        angle_dec.* = angle_dms.*;
+        return;
+    }
+
+    angle = angle_dms.*;
     realSetPositiveSign(&angle);
 
-    _ = decContextClearStatus(&ctxtReal34, DEC_Invalid_operation);
-    frontier_register_value_conversions.realToIntegralValue(&angle, &degrees, DEC_ROUND_DOWN, &ctxtReal39);
+    frontier_register_value_conversions.realToIntegralValue(&angle, &degrees, DEC_ROUND_DOWN, real_context);
 
-    realSubOp(&angle, &degrees, &angle, &ctxtReal39);
+    realSubOp(&angle, &degrees, &angle, real_context);
     angle.exponent += 2; // * 100
 
-    frontier_register_value_conversions.realToIntegralValue(&angle, &minutes, DEC_ROUND_DOWN, &ctxtReal39);
+    frontier_register_value_conversions.realToIntegralValue(&angle, &minutes, DEC_ROUND_DOWN, real_context);
 
-    realSubOp(&angle, &minutes, &angle, &ctxtReal39);
-    realMul(&angle, consts.c7532(), &seconds, &ctxtReal39);
+    realSubOp(&angle, &minutes, &angle, real_context);
+    realMul(&angle, consts.c7532(), &seconds, real_context);
 
     if (realGreaterEqual(&seconds, consts.c5296())) {
-        realSubOp(&seconds, consts.c5296(), &seconds, &ctxtReal39);
-        realAddOp(&minutes, consts.c4856(), &minutes, &ctxtReal39);
+        realSubOp(&seconds, consts.c5296(), &seconds, real_context);
+        realAddOp(&minutes, consts.c4856(), &minutes, real_context);
     }
     if (realGreaterEqual(&minutes, consts.c5296())) {
-        realSubOp(&minutes, consts.c5296(), &minutes, &ctxtReal39);
-        realAddOp(&degrees, consts.c4856(), &degrees, &ctxtReal39);
+        realSubOp(&minutes, consts.c5296(), &minutes, real_context);
+        realAddOp(&degrees, consts.c4856(), &degrees, real_context);
     }
 
-    realDiv(&minutes, consts.c5296(), &minutes, &ctxtReal39);
-    realDiv(&seconds, consts.c5448(), &seconds, &ctxtReal39);
+    realDiv(&minutes, consts.c5296(), &minutes, real_context);
+    realDiv(&seconds, consts.c5448(), &seconds, real_context);
 
-    realAddOp(&degrees, &minutes, &angle, &ctxtReal39);
-    realAddOp(&angle, &seconds, &angle, &ctxtReal39);
+    realAddOp(&degrees, &minutes, &angle, real_context);
+    realAddOp(&angle, &seconds, &angle, real_context);
 
-    if (real34IsNegative(angle_dms)) {
+    if (negative) {
         realSetNegativeSign(&angle);
     }
+    angle_dec.* = angle;
+}
+
+/// Converts a real from decimal degrees to DMS (ddd.mmss) in the given context; a
+/// special value passes through.
+pub export fn realFromDegToDms(angle_dec: *const real_t, angle_dms: *real_t, real_context: *realContext_t) callconv(.c) void {
+    var angle: real_t = undefined;
+    var degrees: real_t = undefined;
+    var minutes: real_t = undefined;
+    var seconds: real_t = undefined;
+    const negative = realIsNegative(angle_dec);
+
+    if (realIsSpecial(angle_dec)) {
+        angle_dms.* = angle_dec.*;
+        return;
+    }
+
+    angle = angle_dec.*;
+    realSetPositiveSign(&angle);
+
+    frontier_register_value_conversions.realToIntegralValue(&angle, &degrees, DEC_ROUND_DOWN, real_context);
+
+    realSubOp(&angle, &degrees, &angle, real_context);
+    realMul(&angle, consts.c5296(), &angle, real_context);
+
+    frontier_register_value_conversions.realToIntegralValue(&angle, &minutes, DEC_ROUND_DOWN, real_context);
+
+    realSubOp(&angle, &minutes, &angle, real_context);
+    realMul(&angle, consts.c5296(), &seconds, real_context);
+
+    minutes.exponent -= 2; // / 100
+    seconds.exponent -= 4; // / 10000
+
+    realAddOp(&degrees, &minutes, &angle, real_context);
+    realAddOp(&angle, &seconds, &angle, real_context);
+
+    if (negative) {
+        realSetNegativeSign(&angle);
+    }
+    angle_dms.* = angle;
+}
+
+pub export fn real34FromDmsToDeg(angle_dms: *const real34_t, angle_dec: *real34_t) callconv(.c) void {
+    var angle: real_t = undefined;
+
+    real34ToReal(angle_dms, &angle);
+    _ = decContextClearStatus(&ctxtReal34, DEC_Invalid_operation);
+    realFromDmsToDeg(&angle, &angle, &ctxtReal39);
     realToReal34(&angle, angle_dec);
 }
 
 pub export fn real34FromDegToDms(angle_dec: *const real34_t, angle_dms: *real34_t) callconv(.c) void {
     var angle: real_t = undefined;
-    var degrees: real_t = undefined;
-    var minutes: real_t = undefined;
-    var seconds: real_t = undefined;
 
     real34ToReal(angle_dec, &angle);
-    realSetPositiveSign(&angle);
-
-    frontier_register_value_conversions.realToIntegralValue(&angle, &degrees, DEC_ROUND_DOWN, &ctxtReal39);
-
-    realSubOp(&angle, &degrees, &angle, &ctxtReal39);
-    realMul(&angle, consts.c5296(), &angle, &ctxtReal39);
-
-    frontier_register_value_conversions.realToIntegralValue(&angle, &minutes, DEC_ROUND_DOWN, &ctxtReal39);
-
-    realSubOp(&angle, &minutes, &angle, &ctxtReal39);
-    realMul(&angle, consts.c5296(), &seconds, &ctxtReal39);
-
-    minutes.exponent -= 2; // / 100
-    seconds.exponent -= 4; // / 10000
-
-    realAddOp(&degrees, &minutes, &angle, &ctxtReal39);
-    realAddOp(&angle, &seconds, &angle, &ctxtReal39);
-
-    if (real34IsNegative(angle_dec)) {
-        realSetNegativeSign(&angle);
-    }
+    realFromDegToDms(&angle, &angle, &ctxtReal39);
     realToReal34(&angle, angle_dms);
     checkDms34(angle_dms);
 }

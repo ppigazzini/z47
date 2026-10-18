@@ -15,6 +15,12 @@ Func: fnEulersFormula
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"1"
 Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=LonI:"1" RX=Cplx:"0.5403023058681397174009366074429766 i +0.841470984807896506652502321630299"
 
+In:  AM=RAD RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"100000000000000000000000000000000000000000000000000000000000000000000000000000000"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"-0.9983975062334704488253993674592912 i -0.05658992442818188003038413064704290"
+
+In:  AM=RAD RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"100000000000000000000000000000000000000000000000000000000000000000000000000000001"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"-0.4918176953521578343876781709908359 i -0.8706981994574768075850933288102934"
+
 
 ;=======================================
 ; eulersFormula(Time)
@@ -116,3 +122,136 @@ Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"-inf":GRAD
 ;=======================================
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"6.2 i -7.6"
 Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"6.2 i -7.6" RX=Cplx:"1991.286327570242807966908574943716 i -166.0289036365741953941569561328917"
+
+; Exact subtraction and scaling check both components through digit 34.
+Func: fnEulersFormula
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Cplx:"0.9553364891256060196423102275680499 i 0.2955202066613395751053207456850274" RX=Real:"0.3"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+Func: fnEulersFormula
+In:  RMODE=1 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Cplx:"0.9553364891256060196423102275680499 i 0.2955202066613395751053207456850274" RX=Real:"0.3"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+Func: fnEulersFormula
+In:  RMODE=2 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Cplx:"0.9553364891256060196423102275680499 i 0.2955202066613395751053207456850274" RX=Real:"0.3"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+Func: fnEulersFormula
+In:  RMODE=3 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Cplx:"0.9553364891256060196423102275680499 i 0.2955202066613395751053207456850274" RX=Real:"0.3"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+Func: fnEulersFormula
+In:  RMODE=4 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Cplx:"0.9553364891256060196423102275680498 i 0.2955202066613395751053207456850273" RX=Real:"0.3"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+Func: fnEulersFormula
+In:  RMODE=5 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Cplx:"0.9553364891256060196423102275680499 i 0.2955202066613395751053207456850274" RX=Real:"0.3"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+Func: fnEulersFormula
+In:  RMODE=6 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Cplx:"0.9553364891256060196423102275680498 i 0.2955202066613395751053207456850273" RX=Real:"0.3"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+; Exact-axis complex and matrix inputs use the direct trigonometric result path.
+Func: fnEulersFormula
+In:  RMODE=3 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Cplx:"0.9553364891256060196423102275680499 i 0.2955202066613395751053207456850274" RX=Cplx:"0.3 i 0"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+Func: fnEulersFormula
+In:  RMODE=4 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Cplx:"0.9553364891256060196423102275680498 i 0.2955202066613395751053207456850273" RX=Cplx:"0.3 i 0"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+Func: fnEulersFormula
+In:  RMODE=3 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=CxMa:"M1,1[0.9553364891256060196423102275680499i0.2955202066613395751053207456850274]" RX=ReMa:"M1,1[0.3]"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=CxMa:"M1,1[0i0]"
+
+Func: fnEulersFormula
+In:  RMODE=4 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=CxMa:"M1,1[0.9553364891256060196423102275680498i0.2955202066613395751053207456850273]" RX=CxMa:"M1,1[0.3i0]"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=CxMa:"M1,1[0i0]"
+
+; Reduce a tagged angle before converting its small distance from 180 degrees.
+Func: fnEulersFormula
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e70" RY=Cplx:"-1 i 1.745329251994329576923690768488613e-33" RX=Real:"179.9999999999999999999999999999999":DEG
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+; A finite phase beside an infinite imaginary component has a defined magnitude limit.
+Func: fnEulersFormula
+In:  RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"0 i inf"
+Out: EC=0 RX=Cplx:"0 i 0"
+Func: fnRealPart
+Out: EC=0
+Func: fnInvert
+Out: EC=0 RX=Real:"inf"
+
+Func: fnEulersFormula
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"0 i -inf"
+Out: EC=0 RX=Cplx:"inf i 0"
+
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"1 i inf"
+Out: EC=0 RX=Cplx:"0 i 0"
+
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"-1 i inf"
+Out: EC=0 RX=Cplx:"0 i -0"
+Func: fnImaginaryPart
+Out: EC=0
+Func: fnInvert
+Out: EC=0 RX=Real:"-inf"
+
+Func: fnEulersFormula
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"1 i -inf"
+Out: EC=0 RX=Cplx:"inf i inf"
+
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"-1 i -inf"
+Out: EC=0 RX=Cplx:"inf i -inf"
+
+; Directed final overflow requires the wide p39 exponential range.
+In:  RMODE=4 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"0 i -14149.38539644841072829055748903542"
+Out: EC=0 RX=Cplx:"9.999999999999999999999999999999999e6144 i 0"

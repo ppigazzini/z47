@@ -41,6 +41,7 @@ const real_t = abi.Real;
 const realContext_t = abi.RealContext;
 
 extern var ctxtReal39: realContext_t;
+extern var ctxtReal34: realContext_t;
 // `constants` is an extern byte array; @extern yields a pointer to its base.
 
 extern fn decNumberMultiply(res: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
@@ -81,6 +82,20 @@ inline fn rAdd(a: *align(1) const real_t, b: *align(1) const real_t, res: *real_
 inline fn rSub(a: *align(1) const real_t, b: *align(1) const real_t, res: *real_t) void {
     _ = decNumberSubtract(res, a, b, &ctxtReal39);
 }
+// The same four at a caller-chosen context: a conversion that ends in one
+// operation rounds it once, at the Real34 context the result takes.
+inline fn rMulCtx(a: *align(1) const real_t, b: *align(1) const real_t, res: *real_t, ctx: *realContext_t) void {
+    _ = decNumberMultiply(res, a, b, ctx);
+}
+inline fn rDivCtx(a: *align(1) const real_t, b: *align(1) const real_t, res: *real_t, ctx: *realContext_t) void {
+    _ = decNumberDivide(res, a, b, ctx);
+}
+inline fn rAddCtx(a: *align(1) const real_t, b: *align(1) const real_t, res: *real_t, ctx: *realContext_t) void {
+    _ = decNumberAdd(res, a, b, ctx);
+}
+inline fn rSubCtx(a: *align(1) const real_t, b: *align(1) const real_t, res: *real_t, ctx: *realContext_t) void {
+    _ = decNumberSubtract(res, a, b, ctx);
+}
 inline fn getRegisterAngularMode(reg: i16) c_int {
     return @intCast(getRegisterTag(reg) & amAngleMask);
 }
@@ -92,23 +107,23 @@ inline fn setRegisterAngularMode(reg: i16, am: u32) void {
 const OFF_const_minusInfinity = 1684;
 const OFF_const_plusInfinity = 1696;
 const OFF_const_0 = 1708;
-const OFF_const_1 = 5376;
-const OFF_const_9on5 = 5436;
-const OFF_const_32 = 5756;
+const OFF_const_1 = 12116;
+const OFF_const_9on5 = 12176;
+const OFF_const_32 = 12572;
 const OFF_const_273p15 = 4172;
 const OFF_const_459p67 = 4188;
 const OFF_const39_kBeVK = 4204;
-const OFF_const_9on10 = 5328;
-const OFF_const39_180onPi = 5792;
-const OFF_const39_200onPi = 5840;
-const OFF_const_10 = 5652;
-const OFF_const_20 = 5676;
+const OFF_const_9on10 = 5588;
+const OFF_const39_180onPi = 12608;
+const OFF_const39_200onPi = 12656;
+const OFF_const_10 = 12392;
+const OFF_const_20 = 12416;
 
 // conversionFactors[constFactorEND]: offset into `constants`, or null.
 const conversionFactorOffsets = [_]?u32{
     1948, // 0 constFactorFt2Hectare = const_Ft2ToHa
     1964, // 1 constFactorFt2M2 = const_Ft2ToM2
-    8080, // 2 constFactorHectareKm2 = const_100
+    15388, // 2 constFactorHectareKm2 = const_100
     2444, // 3 constFactorAcreHa = const_AccreToHa
     2464, // 4 constFactorAcreusHa = const39_AccreusToHa
     3356, // 5 constFactorAtmPa = const_AtmToPa
@@ -139,7 +154,7 @@ const conversionFactorOffsets = [_]?u32{
     2772, // 30 constFactorStoneKg = const_StoneToKg
     2824, // 31 constFactorShorttonKg = const_ShorttonToKg
     2840, // 32 constFactorTonKg = const_LongtonToKg
-    5676, // 33 constFactorLiangKg = const_20
+    12416, // 33 constFactorLiangKg = const_20
     2740, // 34 constFactorTrozG = const_TrozToG
     3220, // 35 constFactorLbfN = const_LbfToN
     2172, // 36 constFactorLyM = const_LyToM
@@ -154,15 +169,15 @@ const conversionFactorOffsets = [_]?u32{
     3240, // 45 constFactorTorrPa = const39_TorrToPa
     3424, // 46 constFactorYearS = const_YearToS
     2708, // 47 constFactorCaratG = const_CaratToG
-    5448, // 48 constFactorJinKg = const_2
+    12188, // 48 constFactorJinKg = const_2
     2672, // 49 constFactorQuartL = const_QuartToL
     2032, // 50 constFactorFathomM = const_FathomToM
     2328, // 51 constFactorNMiM = const_NmiToM
     2688, // 52 constFactorBarrelM3 = const_BarrelToM3
-    6044, // 53 constFactorHectareM2 = const_10000
+    12860, // 53 constFactorHectareM2 = const_10000
     2500, // 54 constFactorMuM2 = const_MuToM2
     2228, // 55 constFactorLiM = const_LiToM
-    5532, // 56 constFactorChiM = const_3
+    12272, // 56 constFactorChiM = const_3
     2264, // 57 constFactorYinM = const_YinToM
     2276, // 58 constFactorCunM = const_CunToM
     2288, // 59 constFactorZhangM = const_ZhangToM
@@ -186,15 +201,15 @@ const conversionFactorOffsets = [_]?u32{
     3644, // 77 constFactorFpftomph = const39_fpfToMph
     3680, // 78 constFactorFpstokph = const_fpsToKph
     3696, // 79 constFactorFpstomps = const_fpsToMps
-    8080, // 80 constFactorL100Tokml = const_100
+    15388, // 80 constFactorL100Tokml = const_100
     null, // 81 constFactorKmletok100K (no factor)
-    8080, // 82 constFactorK100Ktokmk = const_100
+    15388, // 82 constFactorK100Ktokmk = const_100
     null, // 83 constFactorL100Tomgus (no factor)
     null, // 84 constFactorMgeustok100M (no factor)
     2048, // 85 constFactorK100Ktok100M = const_MiToKm
     null, // 86 constFactorL100Tomguk (no factor)
     null, // 87 constFactorMgeuktok100M (no factor)
-    8080, // 88 constFactorK100Mtomik = const_100
+    15388, // 88 constFactorK100Mtomik = const_100
     3712, // 89 constFactorCupcFzus = const_CupcFzus
     3724, // 90 constFactorCupcMl = const_CupcMl
     3744, // 91 constFactorCupukFzuk = const_CupukFzuk
@@ -248,11 +263,11 @@ const conversionFactorOffsets = [_]?u32{
     3196, // 139 constFactorErgJ = const_ErgToJ
     3208, // 140 constFactorFoeJ = const_FoeToJ
     2860, // 141 constFactorKnotMps = const39_KnotToMps
-    5792, // 142 constFactor180onPi = const39_180onPi
+    12608, // 142 constFactor180onPi = const39_180onPi
     2968, // 143 constFactorSlugKg = const39_SlugToKg
     3004, // 144 constFactorSlinchKg = const39_SlinchToKg
     3004, // 145 constFactorBlobKg = const39_SlinchToKg
-    5912, // 146 constFactorTonneKg = const_1000
+    12728, // 146 constFactorTonneKg = const_1000
     4316, // 147 constFactorLbsft2Pa = const39_Lbsft2ToPa
     4292, // 148 constFactorInlbsNm = const_InlbsToNm
     2968, // 149 constFactorLbsftNpm = const39_SlugToKg
@@ -262,7 +277,7 @@ const conversionFactorOffsets = [_]?u32{
     4388, // 153 constFactorLbsin3Tmm3 = const39_Lbsin3ToTmm3
     4424, // 154 constFactorLbsin3Kgm3 = const39_Lbsin3ToKgm3
     4460, // 155 constFactorKgm3Blobin3 = const39_Kgm3ToBlobin3
-    4824, // 156 constFactorKgm3Tmm3 = const_1e_12
+    4836, // 156 constFactorKgm3Tmm3 = const_1e_12
     4496, // 157 constFactorLbsftKgm = const39_LbsftToKgm
     4532, // 158 constFactorIn3Mm3 = const_In3ToMm3
     4548, // 159 constFactorIn2Mm2 = const_In2ToMm2
@@ -277,7 +292,7 @@ const conversionFactorOffsets = [_]?u32{
     3076, // 168 constFactorMgeukK100K = const39_MgeukToK100K
     3112, // 169 constFactorMikK100K = const39_MikToK100K
     4608, // 170 constFactorDegMil = const39_DegToMil
-    5980, // 171 constFactorDegArcsec = const_3600
+    12796, // 171 constFactorDegArcsec = const_3600
     4644, // 172 constFactorDegMrad = const39_DegToMrad
 };
 
@@ -303,17 +318,26 @@ fn unitConversion(coefficient: *align(1) const real_t, multiply_divide: u16, inv
     if (!frontier_register_value_conversions.getRegisterAsReal(REGISTER_X, &re_x)) return;
     if (!saveLastX()) return;
 
-    if (invert and realIsZero(&re_x)) {
-        if (getSystemFlag(FLAG_SPCRES)) {
-            frontier_register_value_conversions.convertRealToResultRegister(@alignCast(cst(if (realIsNegative(&re_x)) OFF_const_minusInfinity else OFF_const_plusInfinity)), REGISTER_X, amNone);
-        } else {
-            frontier_error.displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
-            if (comptime extra_info) moreInfoOnError("In function unitConversion:", "cannot calculate divide by zero", null, null);
-        }
+    if (invert and realIsZero(&re_x) and !getSystemFlag(FLAG_SPCRES)) {
+        frontier_error.displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
+        if (comptime extra_info) moreInfoOnError("In function unitConversion:", "cannot calculate divide by zero", null, null);
+        return;
     }
 
-    if (invert) rDiv(consts.c4856(), &re_x, &re_x);
-    if (multiply_divide == multiply) rMul(&re_x, coefficient, &re_x) else rDiv(&re_x, coefficient, &re_x);
+    // The last operation rounds once at the Real34 context; an inverting division
+    // forms its product first at 39 digits.
+    if (invert) {
+        if (multiply_divide == multiply) {
+            rDivCtx(coefficient, &re_x, &re_x, &ctxtReal34);
+        } else {
+            rMul(&re_x, coefficient, &re_x);
+            rDivCtx(consts.c4856(), &re_x, &re_x, &ctxtReal34);
+        }
+    } else if (multiply_divide == multiply) {
+        rMulCtx(&re_x, coefficient, &re_x, &ctxtReal34);
+    } else {
+        rDivCtx(&re_x, coefficient, &re_x, &ctxtReal34);
+    }
 
     frontier_register_value_conversions.convertRealToResultRegister(&re_x, REGISTER_X, amNone);
     adjustResult(REGISTER_X, false, false, -1, -1, -1);
@@ -340,11 +364,24 @@ pub export fn fnCvtTemp(ix: u16) callconv(.c) void {
     if (!frontier_register_value_conversions.getRegisterAsReal(REGISTER_X, &re_x)) return;
     if (!saveLastX()) return;
 
-    const row = cvtTempOffsets[ix];
-    if (row[0] != OFF_const_0) rSub(&re_x, cst(row[0]), &re_x);
-    if (row[1] != OFF_const_1) rDiv(&re_x, cst(row[1]), &re_x);
-    if (row[2] != OFF_const_1) rMul(&re_x, cst(row[2]), &re_x);
-    if (row[3] != OFF_const_0) rAdd(&re_x, cst(row[3]), &re_x);
+    if (ix >= cvtTempOffsets.len) return;
+
+    if (ix == 10) {
+        // (F + 459.67) / 1.8 keeps the small distance from absolute zero.
+        rAdd(&re_x, cst(OFF_const_459p67), &re_x);
+        rDiv(&re_x, cst(OFF_const_9on5), &re_x);
+    } else if (ix == 11) {
+        rMul(&re_x, cst(OFF_const_9on5), &re_x);
+        rSub(&re_x, cst(OFF_const_459p67), &re_x);
+    } else {
+        // The Celsius and Fahrenheit pair keeps its 39 digits; every other row rounds at the Real34 context.
+        const context: *realContext_t = if (ix < 2) &ctxtReal39 else &ctxtReal34;
+        const row = cvtTempOffsets[ix];
+        if (row[0] != OFF_const_0) rSubCtx(&re_x, cst(row[0]), &re_x, context);
+        if (row[1] != OFF_const_1) rDivCtx(&re_x, cst(row[1]), &re_x, context);
+        if (row[2] != OFF_const_1) rMulCtx(&re_x, cst(row[2]), &re_x, context);
+        if (row[3] != OFF_const_0) rAddCtx(&re_x, cst(row[3]), &re_x, context);
+    }
 
     frontier_register_value_conversions.convertRealToResultRegister(&re_x, REGISTER_X, amNone);
     adjustResult(REGISTER_X, false, false, -1, -1, -1);

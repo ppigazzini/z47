@@ -135,6 +135,7 @@ extern var ctxtReal4: realContext_t;
 extern var ctxtReal34: realContext_t;
 extern var ctxtReal39: realContext_t;
 extern var ctxtReal75: realContext_t;
+extern var ctxtReal51: realContext_t;
 
 // The C file's non-static context-pointer globals (kept exported with the
 // same names and zero/undefined initial value as the C .bss definitions).
@@ -196,6 +197,16 @@ inline fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8) void {
 }
 inline fn sigma(sum: usize) *real_t {
     return &statisticalSumsPointer.?[sum];
+}
+extern fn realCompareLessThan(a: *align(1) const real_t, b: *align(1) const real_t) bool;
+inline fn realIsSpecial(v: *const real_t) bool {
+    return (v.bits & abi.DECSPECIAL) != 0;
+}
+inline fn realIsZero(v: *const real_t) bool {
+    return v.lsu[0] == 0 and v.digits == 1 and (v.bits & abi.DECSPECIAL) == 0;
+}
+inline fn realIsPositive(v: *const real_t) bool {
+    return (v.bits & abi.DECNEG) == 0;
 }
 inline fn realCopy(src: *align(1) const real_t, dst: *real_t) void {
     _ = decNumberCopy(dst, src);
@@ -583,23 +594,7 @@ pub export fn processCurvefitSelectionAll(selection_arg: u16, RR_: *real_t, MX: 
             realSubtract(&TT, &UU, &TT, ctx);
             realDivide(&SS, &TT, aa1, ctx);
 
-            //       r  = (nn * sumxy - sumx * sumy) / (sqrt (nn * sumx2 - sumx * sumx) * sqrt(nn * sumy2 - sumy * sumy) );
-            realMultiply(sigma(0), sigma(SUM_XY), &SS, ctx);
-            realMultiply(sigma(SUM_X), sigma(SUM_Y), &TT, ctx);
-            realSubtract(&SS, &TT, &SS, ctx); // SS is top
-
-            realMultiply(sigma(0), sigma(SUM_X2), &TT, ctx);
-            realMultiply(sigma(SUM_X), sigma(SUM_X), &UU, ctx);
-            realSubtract(&TT, &UU, &TT, ctx);
-            realSquareRoot(&TT, &TT, ctx); // TT is bottom, factor 1
-
-            realMultiply(sigma(0), sigma(SUM_Y2), &UU, ctx);
-            realMultiply(sigma(SUM_Y), sigma(SUM_Y), &VV, ctx);
-            realSubtract(&UU, &VV, &UU, ctx);
-            realSquareRoot(&UU, &UU, ctx); // UU is bottom factor 2
-
-            realDivide(&SS, &TT, RR_, ctx);
-            realDivide(RR_, &UU, RR_, ctx); // r
+            // RR_ already contains the centred correlation from fnStatR.
         },
 
         CF_EXPONENTIAL_FITTING => {
@@ -973,24 +968,7 @@ pub export fn processCurvefitSelectionAll(selection_arg: u16, RR_: *real_t, MX: 
             realMultiply(aa1, &M_X, &SS, ctx);
             realSubtract(&M_Y, &SS, aa0, ctx); // a0
 
-            // r is copied from LINF
-            //       r  = (nn * sumxy - sumx * sumy) / (sqrt (nn * sumx2 - sumx * sumx) * sqrt(nn * sumy2 - sumy * sumy) );
-            realMultiply(sigma(0), sigma(SUM_XY), &SS, ctx);
-            realMultiply(sigma(SUM_X), sigma(SUM_Y), &TT, ctx);
-            realSubtract(&SS, &TT, &SS, ctx); // SS is top
-
-            realMultiply(sigma(0), sigma(SUM_X2), &TT, ctx);
-            realMultiply(sigma(SUM_X), sigma(SUM_X), &UU, ctx);
-            realSubtract(&TT, &UU, &TT, ctx);
-            realSquareRoot(&TT, &TT, ctx); // TT is bottom, factor 1
-
-            realMultiply(sigma(0), sigma(SUM_Y2), &UU, ctx);
-            realMultiply(sigma(SUM_Y), sigma(SUM_Y), &VV, ctx);
-            realSubtract(&UU, &VV, &UU, ctx);
-            realSquareRoot(&UU, &UU, ctx); // UU is bottom factor 2
-
-            realDivide(&SS, &TT, RR_, ctx);
-            realDivide(RR_, &UU, RR_, ctx); // r
+            // RR_ contains the centred correlation from fnStatR.
         },
 
         else => {},
@@ -1019,6 +997,9 @@ pub export fn yIsFnx(useFloating: u8, selection: u16, x: f64, y: *f64, a0: f64, 
     }
     switch (orOrtho(selection)) {
         CF_LINEAR_FITTING, CF_ORTHOGONAL_FITTING => {
+            if (useFloating == useREAL39) {
+                realContextForecast = &ctxtReal75;
+            }
             if (useFloating == 0) {
                 y.* = a1 * x + a0;
             } else {
@@ -1029,6 +1010,9 @@ pub export fn yIsFnx(useFloating: u8, selection: u16, x: f64, y: *f64, a0: f64, 
             }
         },
         CF_EXPONENTIAL_FITTING => {
+            if (useFloating == useREAL39) {
+                realContextForecast = &ctxtReal51;
+            }
             if (useFloating == 0) {
                 y.* = a0 * @as(f64, @exp(@as(f32, @floatCast(a1 * x))));
             } else {
@@ -1040,6 +1024,9 @@ pub export fn yIsFnx(useFloating: u8, selection: u16, x: f64, y: *f64, a0: f64, 
             }
         },
         CF_LOGARITHMIC_FITTING => {
+            if (useFloating == useREAL39) {
+                realContextForecast = &ctxtReal75;
+            }
             if (useFloating == 0) {
                 y.* = a0 + a1 * @as(f64, @log(@as(f32, @floatCast(x))));
             } else {
@@ -1051,6 +1038,9 @@ pub export fn yIsFnx(useFloating: u8, selection: u16, x: f64, y: *f64, a0: f64, 
             }
         },
         CF_POWER_FITTING => {
+            if (useFloating == useREAL39) {
+                realContextForecast = &ctxtReal51;
+            }
             if (useFloating == 0) {
                 y.* = a0 * fastPowF(x, a1);
             } else {
@@ -1061,6 +1051,9 @@ pub export fn yIsFnx(useFloating: u8, selection: u16, x: f64, y: *f64, a0: f64, 
             }
         },
         CF_ROOT_FITTING => {
+            if (useFloating == useREAL39) {
+                realContextForecast = &ctxtReal51;
+            }
             if (useFloating == 0) {
                 y.* = a0 * fastPowF(a1, 1 / x);
             } else {
@@ -1072,6 +1065,9 @@ pub export fn yIsFnx(useFloating: u8, selection: u16, x: f64, y: *f64, a0: f64, 
             }
         },
         CF_HYPERBOLIC_FITTING => {
+            if (useFloating == useREAL39) {
+                realContextForecast = &ctxtReal75;
+            }
             if (useFloating == 0) {
                 y.* = 1 / (a1 * x + a0);
             } else {
@@ -1083,19 +1079,24 @@ pub export fn yIsFnx(useFloating: u8, selection: u16, x: f64, y: *f64, a0: f64, 
             }
         },
         CF_PARABOLIC_FITTING => {
+            if (useFloating == useREAL39) {
+                realContextForecast = &ctxtReal75;
+            }
             if (useFloating == 0) {
                 y.* = a2 * x * x + a1 * x + a0;
             } else {
-                realMultiply(XX, XX, &TT, realContextForecast.?);
-                realMultiply(&TT, aa2, &TT, realContextForecast.?);
-                realMultiply(XX, aa1, &UU, realContextForecast.?);
-                realAdd(&TT, &UU, &TT, realContextForecast.?);
+                realMultiply(XX, aa2, &TT, realContextForecast.?);
+                realAdd(&TT, aa1, &TT, realContextForecast.?);
+                realMultiply(XX, &TT, &TT, realContextForecast.?);
                 realAdd(&TT, aa0, YY, realContextForecast.?);
                 frontier_register_value_conversions.realToFloat(YY, &yf);
                 y.* = @floatCast(yf);
             }
         },
         CF_GAUSS_FITTING => {
+            if (useFloating == useREAL39) {
+                realContextForecast = &ctxtReal51;
+            }
             if (useFloating == 0) {
                 y.* = a0 * @as(f64, @exp(@as(f32, @floatCast((x - a1) * (x - a1) / a2))));
             } else {
@@ -1109,6 +1110,9 @@ pub export fn yIsFnx(useFloating: u8, selection: u16, x: f64, y: *f64, a0: f64, 
             }
         },
         CF_CAUCHY_FITTING => {
+            if (useFloating == useREAL39) {
+                realContextForecast = &ctxtReal75;
+            }
             if (useFloating == 0) {
                 y.* = 1 / (a0 * (x + a1) * (x + a1) + a2);
             } else {
@@ -1173,6 +1177,7 @@ pub export fn xIsFny(selection: u16, rootNo: u8, XX: *real_t, YY: *real_t, RR: *
     var SS: real_t = undefined;
     var TT: real_t = undefined;
     var UU: real_t = undefined;
+    var VV: real_t = undefined;
 
     frontier_real_type.realSetZero(XX);
     realContextForecast = &ctxtReal39;
@@ -1185,8 +1190,10 @@ pub export fn xIsFny(selection: u16, rootNo: u8, XX: *real_t, YY: *real_t, RR: *
             temporaryInformation = TI_CALCX;
         },
         CF_EXPONENTIAL_FITTING => {
-            realDivide(YY, aa0, &UU, realContextForecast.?);
-            WP34S_Ln(&UU, &UU, realContextForecast.?);
+            realContextForecast = &ctxtReal75;
+            WP34S_Ln(YY, &TT, realContextForecast.?);
+            WP34S_Ln(aa0, &UU, realContextForecast.?);
+            realSubtract(&TT, &UU, &UU, realContextForecast.?);
             realDivide(&UU, aa1, XX, realContextForecast.?);
             temporaryInformation = TI_CALCX;
         },
@@ -1197,73 +1204,142 @@ pub export fn xIsFny(selection: u16, rootNo: u8, XX: *real_t, YY: *real_t, RR: *
             temporaryInformation = TI_CALCX;
         },
         CF_POWER_FITTING => {
-            realDivide(YY, aa0, &UU, realContextForecast.?);
-            xthRootReal(&UU, aa1, realContextForecast.?); // Note X-register gets written here
-            if (!frontier_register_value_conversions.getRegisterAsReal(REGISTER_X, XX)) {
-                return;
+            realContextForecast = &ctxtReal75;
+            if (realIsPositive(YY) and realIsPositive(aa0) and !realIsZero(aa1)) {
+                WP34S_Ln(YY, &TT, realContextForecast.?);
+                WP34S_Ln(aa0, &UU, realContextForecast.?);
+                realSubtract(&TT, &UU, &UU, realContextForecast.?);
+                realDivide(&UU, aa1, &UU, realContextForecast.?);
+                realExp(&UU, XX, realContextForecast.?);
+            } else {
+                realDivide(YY, aa0, &UU, realContextForecast.?);
+                xthRootReal(&UU, aa1, realContextForecast.?); // Note X-register gets written here
+                if (!frontier_register_value_conversions.getRegisterAsReal(REGISTER_X, XX)) {
+                    return;
+                }
             }
             temporaryInformation = TI_CALCX;
         },
         CF_ROOT_FITTING => {
-            WP34S_Ln(YY, YY, realContextForecast.?);
+            realContextForecast = &ctxtReal75;
+            WP34S_Ln(YY, &TT, realContextForecast.?);
             WP34S_Ln(aa0, &UU, realContextForecast.?);
-            realSubtract(YY, &UU, YY, realContextForecast.?);
+            realSubtract(&TT, &UU, &TT, realContextForecast.?);
             WP34S_Ln(aa1, &UU, realContextForecast.?);
-            realDivide(&UU, YY, XX, realContextForecast.?);
+            realDivide(&UU, &TT, XX, realContextForecast.?);
             temporaryInformation = TI_CALCX;
         },
         CF_HYPERBOLIC_FITTING => {
-            realDivide(const_1(), YY, &UU, realContextForecast.?);
-            realSubtract(&UU, aa0, &UU, realContextForecast.?);
-            realDivide(&UU, aa1, XX, realContextForecast.?);
+            realContextForecast = &ctxtReal75;
+            realMultiply(aa0, YY, &TT, realContextForecast.?);
+            realSubtract(const_1(), &TT, &TT, realContextForecast.?);
+            realMultiply(aa1, YY, &UU, realContextForecast.?);
+            realDivide(&TT, &UU, XX, realContextForecast.?);
             temporaryInformation = TI_CALCX;
         },
         CF_PARABOLIC_FITTING => {
-            // (1/(2.a2)) . ( -a1 +- sqrt(a1.a1 - 4a2.(a0 - y) ) )
-            realSubtract(YY, aa0, &UU, realContextForecast.?);
+            // The root of a2 x^2 + a1 x + (a0 - y) = 0, taken the stable way: the
+            // larger root from the quadratic formula, the smaller as (a0 - y) over it.
+            realContextForecast = &ctxtReal75;
+            realSubtract(aa0, YY, &TT, realContextForecast.?);
+            realMultiply(aa2, &TT, &UU, realContextForecast.?);
             realMultiply(const_2(), &UU, &UU, realContextForecast.?);
             realMultiply(const_2(), &UU, &UU, realContextForecast.?);
-            realMultiply(aa2, &UU, &UU, realContextForecast.?);
-            realMultiply(aa1, aa1, &TT, realContextForecast.?);
-            realAdd(&UU, &TT, &UU, realContextForecast.?); // swapped terms around minus, therefore add
+            realMultiply(aa1, aa1, &VV, realContextForecast.?);
+            realSubtract(&VV, &UU, &UU, realContextForecast.?);
             realSquareRoot(&UU, &UU, realContextForecast.?);
 
-            realSubtract(const_0(), aa1, &SS, realContextForecast.?);
-            if (rootNo == 1) {
-                realSubtract(&SS, &UU, &SS, realContextForecast.?); // This term could be Add due to plus and minus
+            if (realIsSpecial(&TT) or realIsSpecial(aa1) or realIsSpecial(aa2) or realIsSpecial(&UU) or realIsZero(aa2)) {
+                realSubtract(const_0(), aa1, &SS, realContextForecast.?);
+                if (rootNo == 1) {
+                    realSubtract(&SS, &UU, &SS, realContextForecast.?);
+                }
+                if (rootNo == 2) {
+                    realAdd(&SS, &UU, &SS, realContextForecast.?);
+                }
+                realMultiply(&SS, const_1on2(), &SS, realContextForecast.?);
+                realDivide(&SS, aa2, XX, realContextForecast.?);
+            } else {
+                realCopy(&UU, &VV);
+                if (realCompareLessThan(aa1, const_0())) {
+                    realChangeSign(&VV);
+                }
+                realAdd(aa1, &VV, &SS, realContextForecast.?);
+                realChangeSign(&SS);
+                realMultiply(&SS, const_1on2(), &SS, realContextForecast.?);
+                if (realIsZero(&SS)) {
+                    frontier_real_type.realSetZero(XX);
+                } else if ((rootNo == 1) == !realCompareLessThan(aa1, const_0())) {
+                    realDivide(&SS, aa2, XX, realContextForecast.?);
+                } else {
+                    realDivide(&TT, &SS, XX, realContextForecast.?);
+                }
             }
-            if (rootNo == 2) {
-                realAdd(&SS, &UU, &SS, realContextForecast.?); // This term could be Add due to plus and minus
-            }
-
-            realMultiply(&SS, const_1on2(), &SS, realContextForecast.?);
-            realDivide(&SS, aa2, XX, realContextForecast.?);
             temporaryInformation = TI_CALCX2;
         },
         CF_CAUCHY_FITTING => {
-            realDivide(const_1(), YY, &UU, realContextForecast.?);
-            realSubtract(&UU, aa2, &UU, realContextForecast.?);
-            realDivide(&UU, aa0, &UU, realContextForecast.?);
+            realContextForecast = &ctxtReal75;
+            realMultiply(aa2, YY, &TT, realContextForecast.?);
+            realSubtract(const_1(), &TT, &TT, realContextForecast.?);
+            realMultiply(aa0, YY, &UU, realContextForecast.?);
+            realDivide(&TT, &UU, &UU, realContextForecast.?);
+            realMultiply(aa1, aa1, &TT, realContextForecast.?);
+            realSubtract(&TT, &UU, &TT, realContextForecast.?);
             realSquareRoot(&UU, &UU, realContextForecast.?);
             realSubtract(const_0(), aa1, &SS, realContextForecast.?);
-            if (rootNo == 1) {
-                realSubtract(&SS, &UU, XX, realContextForecast.?);
-            }
-            if (rootNo == 2) {
-                realAdd(&SS, &UU, XX, realContextForecast.?);
+            if (realIsSpecial(&SS) or realIsSpecial(&TT) or realIsSpecial(&UU)) {
+                if (rootNo == 1) {
+                    realSubtract(&SS, &UU, XX, realContextForecast.?);
+                }
+                if (rootNo == 2) {
+                    realAdd(&SS, &UU, XX, realContextForecast.?);
+                }
+            } else {
+                realCopy(&UU, &VV);
+                if (realCompareLessThan(&SS, const_0())) {
+                    realChangeSign(&VV);
+                }
+                realAdd(&SS, &VV, &VV, realContextForecast.?);
+                if (realIsZero(&VV)) {
+                    frontier_real_type.realSetZero(XX);
+                } else if ((rootNo == 1) == realCompareLessThan(&SS, const_0())) {
+                    realCopy(&VV, XX);
+                } else {
+                    realDivide(&TT, &VV, XX, realContextForecast.?);
+                }
             }
             temporaryInformation = TI_CALCX2;
         },
         CF_GAUSS_FITTING => {
-            realDivide(YY, aa0, &UU, realContextForecast.?);
-            WP34S_Ln(&UU, &UU, realContextForecast.?);
+            realContextForecast = &ctxtReal75;
+            WP34S_Ln(YY, &TT, realContextForecast.?);
+            WP34S_Ln(aa0, &UU, realContextForecast.?);
+            realSubtract(&TT, &UU, &UU, realContextForecast.?);
             realMultiply(&UU, aa2, &UU, realContextForecast.?);
+            realMultiply(aa1, aa1, &TT, realContextForecast.?);
+            realSubtract(&TT, &UU, &TT, realContextForecast.?);
             realSquareRoot(&UU, &UU, realContextForecast.?);
-            if (rootNo == 1) {
-                realSubtract(aa1, &UU, XX, realContextForecast.?);
-            }
-            if (rootNo == 2) {
-                realAdd(aa1, &UU, XX, realContextForecast.?);
+            realCopy(aa1, &SS);
+            if (realIsSpecial(&SS) or realIsSpecial(&TT) or realIsSpecial(&UU)) {
+                if (rootNo == 1) {
+                    realSubtract(&SS, &UU, XX, realContextForecast.?);
+                }
+                if (rootNo == 2) {
+                    realAdd(&SS, &UU, XX, realContextForecast.?);
+                }
+            } else {
+                realCopy(&UU, &VV);
+                if (realCompareLessThan(&SS, const_0())) {
+                    realChangeSign(&VV);
+                }
+                realAdd(&SS, &VV, &VV, realContextForecast.?);
+                if (realIsZero(&VV)) {
+                    frontier_real_type.realSetZero(XX);
+                } else if ((rootNo == 1) == realCompareLessThan(&SS, const_0())) {
+                    realCopy(&VV, XX);
+                } else {
+                    realDivide(&TT, &VV, XX, realContextForecast.?);
+                }
             }
             temporaryInformation = TI_CALCX2;
         },

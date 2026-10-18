@@ -14,7 +14,7 @@ pub fn doRealRandomI() callconv(.c) void {
         return;
     }
 
-    runtime.realSubtract(&reg_x, &reg_y, &difference, &runtime.ctxtReal39);
+    runtime.realSubtract(&reg_x, &reg_y, &difference, &runtime.ctxtReal75); // a cancellation-sensitive affine map can need all 68 input digits
     if (runtime.realIsZero(&difference)) {
         runtime.convertRealToResultRegister(&reg_x, runtime.REGISTER_X, runtime.amNone);
         return;
@@ -28,7 +28,7 @@ pub fn doRealRandomI() callconv(.c) void {
     }
 
     random_primitives_owned.realRandomU01(&unit);
-    runtime.realFMA(&unit, &difference, lower, &reg_x, &runtime.ctxtReal39);
+    runtime.realFMA(&unit, &difference, lower, &reg_x, &runtime.ctxtReal34); // final selected-mode rounding
     runtime.convertRealToResultRegister(&reg_x, runtime.REGISTER_X, runtime.amNone);
 }
 
@@ -39,7 +39,6 @@ pub fn random(unused_but_mandatory_parameter: u16) void {
 
     random_primitives_owned.realRandomU01(&value);
     runtime.liftStack();
-    runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, runtime.amNone);
-    runtime.convertRealToReal34ResultRegister(&value, runtime.REGISTER_X);
+    runtime.convertRealToResultRegister(&value, runtime.REGISTER_X, runtime.amNone);
     runtime.adjustResult(runtime.REGISTER_X, false, false, runtime.REGISTER_X, no_register, no_register);
 }

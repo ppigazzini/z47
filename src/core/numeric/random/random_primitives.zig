@@ -36,15 +36,15 @@ pub fn realRandomU01(res: *runtime.real_t) void {
 
     runtime.uInt32ToReal(boundedRand(100000000), &t);
     res.exponent += 8;
-    runtime.realAdd(res, &t, res, &runtime.ctxtReal39);
+    runtime.realAdd(res, &t, res, &runtime.ctxtReal34); // exact concatenation, at most 16 digits
 
     runtime.uInt32ToReal(boundedRand(1000000000), &t);
     res.exponent += 9;
-    runtime.realAdd(res, &t, res, &runtime.ctxtReal39);
+    runtime.realAdd(res, &t, res, &runtime.ctxtReal34); // exact concatenation, at most 25 digits
 
     runtime.uInt32ToReal(boundedRand(1000000000), &t);
     res.exponent += 9;
-    runtime.realAdd(res, &t, res, &runtime.ctxtReal39);
+    runtime.realAdd(res, &t, res, &runtime.ctxtReal34); // exact concatenation, at most 34 digits
 
     res.exponent -= 34;
 }

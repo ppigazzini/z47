@@ -788,10 +788,10 @@ const STD_NOCHAR: u8 = 1;
 // ---------------------------------------------------------------------------
 const constR = abi.constants.cstRAligned;
 const constR34 = abi.constants.cst34;
-const const_1000 = constR(5912);
+const const_1000 = constR(12728);
 // const34_0 / const34_1e6 : real34 constants. (offsets via constantPointers.h)
-const const34_0 = constR34(17252);
-const const34_1e6 = constR34(17908);
+const const34_0 = constR34(28796);
+const const34_1e6 = constR34(29452);
 
 // ---------------------------------------------------------------------------
 // font tables (real extern const structs, taken by &name).
@@ -874,38 +874,43 @@ const STD_e_ACUTE = "\x80\xe9";
 // The contributor roll under whoStr1, in the tiny font, counted on 29Sep2026.
 // Upstream generates it with a script that justifies each line with figure and
 // four-per-em spaces, so the spacing is data: carry it token for token. The count
-// is non-merge commits with author aliases merged, over c43
-// 00.109.04.00a3.Internal 9e155644f plus the unmerged origin work of Over_score,
-// Sviatoslav, Stan Le and Malcolm, less any commit whose patch-id the base already
+// is non-merge commits with author aliases merged, over c43 00.109.05.00b1
+// 86ffbfb plus Over_score's origin/Convert-to-32-bit-pointers and origin/FIN-12C
+// (Jaco code, Sviatoslav docs), less any commit whose patch-id the base already
 // has. Coders are code-path commits; doccers are docs-path commits plus the
 // c47-wiki manual repo and its page edits, and a commit on both paths counts as
 // code. The bands are commit counts -- 400+, 100+, and the plain band for the
 // rest -- with the most commits first inside each band, except that Robbert Jan
 // leads the doccers by decision. Testers and porters are not tracked in git.
-const whoStr2: [*:0]const u8 = "Coders 400+" ++ spc ++ ":" ++ spc ++ STD_SPACE_4_PER_EM ++ "Jaco" ++ spc ++ "Mostert," ++ spc ++ "Martin" ++ spc ++ "Lorang," ++ spc ++ "MihailJP," ++ spc ++ "Paul" ++
-    STD_SPACE_FIGURE ++ "Dale." ++ "\n" ++
-    "Coders 100+" ++ spc ++ ":" ++ spc ++ STD_SPACE_4_PER_EM ++ "Didier" ++ spc ++ STD_SPACE_4_PER_EM ++ "Lachieze," ++ spc ++ STD_SPACE_4_PER_EM ++ "Benjamin" ++ spc ++
-    STD_SPACE_4_PER_EM ++ "Titmus," ++ spc ++ STD_SPACE_4_PER_EM ++ "Walter" ++ spc ++ STD_SPACE_4_PER_EM ++ "Bonin," ++ "\n" ++
-    spc ++ spc ++ "Pasquale" ++ spc ++ "Pigazzini." ++ "\n" ++
-    "Coders" ++ spc ++ spc ++ spc ++ spc ++ spc ++ spc ++ ":" ++ spc ++ STD_SPACE_4_PER_EM ++ "Bj" ++ STD_o_DIARESIS ++ "rn" ++ spc ++ spc ++ "Jadelius," ++ spc ++ spc ++ "David" ++ spc ++ spc ++
-    "Emerson," ++ spc ++ spc ++ "Warren" ++ spc ++ STD_SPACE_FIGURE ++ "Young," ++ "\n" ++
-    spc ++ spc ++ "Philippe" ++ spc ++ "Martens," ++ spc ++ "Ralf" ++ spc ++ "Ahlbrink," ++ spc ++ "Gert" ++ spc ++ "Menke," ++ spc ++ "John" ++ spc ++ "Boydon," ++ spc ++ "Ian" ++ "\n" ++
-    spc ++ spc ++ "Abbott," ++ spc ++ "R" ++ STD_e_ACUTE ++ "my" ++ STD_SPACE_FIGURE ++ "Trotin," ++ STD_SPACE_FIGURE ++ "fridlmue," ++ STD_SPACE_FIGURE ++ "Harald" ++ spc ++
-    "Overbeek," ++ STD_SPACE_FIGURE ++ "Dani" ++ STD_SPACE_FIGURE ++ "Rau," ++ STD_SPACE_FIGURE ++ "Nigel" ++ "\n" ++
-    spc ++ spc ++ "Dowrick," ++ spc ++ "Stan" ++ spc ++ "Le," ++ spc ++ "Malcolm" ++ spc ++ "Miller," ++ spc ++ "Will" ++ spc ++ "Rutherdale." ++ "\n" ++
+const whoStr2: [*:0]const u8 = "Coders 400+" ++ spc ++ ":" ++ spc ++ STD_SPACE_4_PER_EM ++ "Jaco" ++ spc ++ "Mostert," ++ spc ++ "Martin" ++ spc ++ "Lorang," ++ spc ++ "MihailJP," ++ spc ++ "Paul" ++ spc ++
+    "Dale." ++ "\n" ++
+    "Coders 100+" ++ spc ++ ":" ++ spc ++ STD_SPACE_4_PER_EM ++ "Didier" ++ spc ++ spc ++ "Lachieze," ++ spc ++ spc ++ "Benjamin" ++ spc ++ spc ++ "Titmus," ++ spc ++ spc ++ "Walter" ++ spc ++
+    STD_SPACE_FIGURE ++ "Bonin," ++ "\n" ++
+    spc ++ STD_SPACE_4_PER_EM ++ "Pasquale" ++ spc ++ "Pigazzini," ++ spc ++ "Bj" ++ STD_o_DIARESIS ++ "rn" ++ spc ++ "Jadelius." ++ "\n" ++
+    "Coders" ++ spc ++ spc ++ spc ++ spc ++ spc ++ spc ++ ":" ++ spc ++ STD_SPACE_4_PER_EM ++ "David" ++ spc ++ "Emerson," ++ spc ++ "Warren" ++ spc ++ "Young," ++ spc ++ "Ralf" ++ spc ++
+    "Ahlbrink," ++ STD_SPACE_FIGURE ++ "Philippe" ++ "\n" ++
+    spc ++ STD_SPACE_4_PER_EM ++ "Martens," ++ spc ++ spc ++ "Gert" ++ spc ++ STD_SPACE_FIGURE ++ "Menke," ++ spc ++ spc ++ "John" ++ spc ++ STD_SPACE_FIGURE ++ "Boydon," ++ spc ++
+    spc ++ "Ian" ++ spc ++ STD_SPACE_FIGURE ++ "Abbott," ++ spc ++ spc ++ "R" ++ STD_e_ACUTE ++ "my" ++ spc ++ STD_SPACE_FIGURE ++ "Trotin," ++ "\n" ++
+    spc ++ STD_SPACE_4_PER_EM ++ "fridlmue," ++ spc ++ STD_SPACE_FIGURE ++ "Harald" ++ spc ++ STD_SPACE_FIGURE ++ "Overbeek," ++ spc ++ STD_SPACE_FIGURE ++ "Dani" ++ spc ++
+    STD_SPACE_4_PER_EM ++ "Rau," ++ spc ++ STD_SPACE_FIGURE ++ "Stan" ++ spc ++ STD_SPACE_FIGURE ++ "Le," ++ spc ++ STD_SPACE_FIGURE ++ "Nigel" ++ spc ++
+    STD_SPACE_4_PER_EM ++ "Dowrick," ++ "\n" ++
+    spc ++ STD_SPACE_4_PER_EM ++ "Malcolm" ++ spc ++ "Miller," ++ spc ++ "Will" ++ spc ++ "Rutherdale." ++ "\n" ++
     "Doccers 400+" ++ ":" ++ spc ++ STD_SPACE_4_PER_EM ++ "Robbert" ++ spc ++ "Jan" ++ spc ++ "van" ++ spc ++ "Meenen," ++ spc ++ "Ralf" ++ spc ++ "Ahlbrink." ++ "\n" ++
-    "Doccers" ++ spc ++ spc ++ spc ++ spc ++ spc ++ ":" ++ spc ++ STD_SPACE_4_PER_EM ++ "Jaco" ++ spc ++ spc ++ "Mostert," ++ spc ++ spc ++ "Hartmut" ++ spc ++ spc ++ "Bromkamp," ++ spc ++ spc ++
-    "Mike" ++ spc ++ STD_SPACE_FIGURE ++ "Leffel," ++ "\n" ++
-    spc ++ spc ++ "Walter" ++ spc ++ STD_SPACE_4_PER_EM ++ "Bonin," ++ spc ++ "Marcel" ++ spc ++ STD_SPACE_4_PER_EM ++ "Dan," ++ spc ++ "H" ++ STD_a_RING ++ "kon" ++ spc ++ "Hansen," ++
-    spc ++ STD_SPACE_4_PER_EM ++ "Michael" ++ spc ++ "Peter," ++ spc ++ "David" ++ "\n" ++
-    spc ++ spc ++ "Emerson," ++ spc ++ "Will" ++ spc ++ "Rutherdale," ++ spc ++ "A." ++ spc ++ "Vosough," ++ spc ++ "Martin" ++ spc ++ "Lorang," ++ spc ++ "Philippe" ++ "\n" ++
-    spc ++ spc ++ "Martens," ++ spc ++ "Sviatoslav" ++ STD_SPACE_FIGURE ++ "Feshchenko," ++ spc ++ "Didier" ++ STD_SPACE_FIGURE ++ "Lachieze," ++ spc ++ "Warren" ++
-    STD_SPACE_FIGURE ++ "Young," ++ "\n" ++
-    spc ++ spc ++ "Malcolm" ++ spc ++ "Miller," ++ spc ++ "Dani" ++ spc ++ "Rau," ++ spc ++ "Paul" ++ spc ++ "Dale." ++ "\n" ++
+    "Doccers" ++ spc ++ spc ++ spc ++ spc ++ spc ++ ":" ++ spc ++ STD_SPACE_4_PER_EM ++ "Jaco" ++ spc ++ STD_SPACE_4_PER_EM ++ "Mostert," ++ spc ++ "Hartmut" ++ spc ++ "Bromkamp," ++ spc ++
+    STD_SPACE_4_PER_EM ++ "Mike" ++ spc ++ "Leffel," ++ spc ++ "Walter" ++ "\n" ++
+    spc ++ STD_SPACE_4_PER_EM ++ "Bonin," ++ spc ++ "Philippe" ++ spc ++ "Martens," ++ spc ++ "Marcel" ++ spc ++ "Dan," ++ spc ++ "H" ++ STD_a_RING ++ "kon" ++ spc ++ "Hansen," ++ spc ++
+    "Michael" ++ STD_SPACE_FIGURE ++ "Peter," ++ "\n" ++
+    spc ++ STD_SPACE_4_PER_EM ++ "David" ++ spc ++ "Emerson," ++ STD_SPACE_FIGURE ++ "Will" ++ spc ++ "Rutherdale," ++ STD_SPACE_FIGURE ++ "Sviatoslav" ++ spc ++
+    "Feshchenko," ++ STD_SPACE_FIGURE ++ "A." ++ STD_SPACE_FIGURE ++ "Vosough," ++ "\n" ++
+    spc ++ STD_SPACE_4_PER_EM ++ "Warren" ++ spc ++ STD_SPACE_FIGURE ++ "Young," ++ spc ++ STD_SPACE_FIGURE ++ "Martin" ++ spc ++ STD_SPACE_4_PER_EM ++ "Lorang," ++ spc ++
+    STD_SPACE_FIGURE ++ "Didier" ++ spc ++ STD_SPACE_4_PER_EM ++ "Lachieze," ++ spc ++ STD_SPACE_FIGURE ++ "Malcolm" ++ spc ++ STD_SPACE_4_PER_EM ++ "Miller," ++ "\n" ++
+    spc ++ STD_SPACE_4_PER_EM ++ "Antoine" ++ spc ++ "Brandt," ++ spc ++ "Bj" ++ STD_o_DIARESIS ++ "rn" ++ spc ++ "Jadelius," ++ spc ++ "Dani" ++ spc ++ "Rau," ++ spc ++ "Paul" ++ spc ++
+    "Dale." ++ "\n" ++
     "Testers" ++ spc ++ spc ++ spc ++ spc ++ spc ++ ":" ++ spc ++ STD_SPACE_4_PER_EM ++ "Barry" ++ spc ++ "Mead." ++ "\n" ++
-    "Porters" ++ spc ++ spc ++ spc ++ spc ++ spc ++ ":" ++ spc ++ STD_SPACE_4_PER_EM ++ "Marcel" ++ spc ++ spc ++ STD_SPACE_4_PER_EM ++ "Dan" ++ spc ++ spc ++ STD_SPACE_4_PER_EM ++
-    "(iOS," ++ spc ++ spc ++ STD_SPACE_4_PER_EM ++ "Android," ++ spc ++ spc ++ STD_SPACE_4_PER_EM ++ "Web)," ++ spc ++ spc ++ STD_SPACE_4_PER_EM ++ "paletochen" ++ "\n" ++
-    spc ++ spc ++ "(Android)," ++ spc ++ "Pasquale" ++ spc ++ "Pigazzini" ++ spc ++ "(Android)." ++ spc ++ spc ++ "(commits 29Sep2026)";
+    "Porters" ++ spc ++ spc ++ spc ++ spc ++ spc ++ ":" ++ spc ++ STD_SPACE_4_PER_EM ++ "Marcel" ++ spc ++ "Dan" ++ STD_SPACE_FIGURE ++ "(iOS," ++ STD_SPACE_FIGURE ++ "Android," ++
+    spc ++ "Web)," ++ STD_SPACE_FIGURE ++ "paletochen" ++ STD_SPACE_FIGURE ++ "(Android)," ++ "\n" ++
+    spc ++ STD_SPACE_4_PER_EM ++ "Pasquale" ++ spc ++ "Pigazzini" ++ spc ++ "(Android)." ++ spc ++ spc ++ spc ++ spc ++ spc ++ spc ++ spc ++ spc ++ spc ++ spc ++ spc ++ spc ++ spc ++ spc ++ spc ++ spc ++
+    STD_SPACE_FIGURE ++ "(commits 12Oct2026)";
 
 // MODELTEXT: CALCMODEL == USER_R47 ? "R47" : "C47". The model comes from the
 // passed calcmodel build option -- the R47 simulator and the R47 firmware
@@ -1190,14 +1195,26 @@ const BLT_OR: c_int = 0;
 const BLT_ANDN: c_int = 1;
 const BLT_XOR: c_int = 2;
 const BLT_NONE: c_int = 0;
-inline fn setBlackPixel(x: u32, y: u32) void {
+// hal/lcd.h's pixel routines: on the DMCP firmware they are written once, here,
+// and every owner calls these three; the host keeps them inline at each site.
+pub fn setBlackPixel(x: u32, y: u32) void {
     bitblt24(x, 1, y, 1, BLT_OR, BLT_NONE);
 }
-inline fn setWhitePixel(x: u32, y: u32) void {
+pub fn setWhitePixel(x: u32, y: u32) void {
     bitblt24(x, 1, y, 1, BLT_ANDN, BLT_NONE);
 }
-inline fn flipPixel(x: u32, y: u32) void {
+pub fn flipPixel(x: u32, y: u32) void {
     bitblt24(x, 1, y, 1, BLT_XOR, BLT_NONE);
+}
+
+// SNAP_REGISTERS_OK / SNAP_MENUS_OK (defines.h): the X register and menu captures
+// are valid in the normal mode only, outside SHOW and with no TAM open; the full
+// screen capture is valid in every mode.
+pub inline fn snapRegistersOk() bool {
+    return frontier_softmenus.currentMenu() != -MNU_SHOW and calcMode == CM_NORMAL and tam.mode == 0;
+}
+pub inline fn snapMenusOk() bool {
+    return frontier_softmenus.currentMenu() != -MNU_SHOW and calcMode == CM_NORMAL and tam.mode == 0;
 }
 // ---------------------------------------------------------------------------
 // First-party / runtime / libc externs.
@@ -2045,7 +2062,7 @@ pub export fn Shft_handler() callconv(.c) void {
             frontier_timer.fnTimerStop(TO_FG_LONG);
             // LONGPRESS_CFG
             {
-                if ((shiftF != 0 or shiftG != 0) and (calcMode != CM_EIM) and (calcMode != CM_MIM)) {
+                if ((shiftF != 0 or shiftG != 0) and !GRAPHMODE() and (calcMode != CM_EIM) and (calcMode != CM_MIM)) {
                     const keyCode: c_int = if (shiftF != 0) 10 else 11;
                     const key = &kbd_usr[@intCast(keyCode)];
                     const item: i16 = key.gShifted;
@@ -4218,14 +4235,6 @@ pub export fn registerFMA(regist: calcRegister_t, tmp1: *real_t, tmp2: *real_t, 
     return 1;
 }
 
-/// The value the XFN view shows for the triple at regist, X x Y + Z rounded once to 34 digits by DRM. The view line and the test suite both take it from here.
-pub export fn xfnViewValue(regist: calcRegister_t, value: *real34_t, angle: *angularMode_t) callconv(.c) bool_t {
-    var product: real_t = undefined;
-    var term: real_t = undefined;
-    var addend: real_t = undefined;
-    return @intFromBool(isXFNregisterValid3r(regist) and registerFMA(regist, &product, &term, &addend, value, angle, &ctxtReal34) != 0);
-}
-
 const LRWidth: i16 = 140;
 fn displayLRtemporaryInformation(prefix1: [*c]const u8, prefix2: [*c]const u8, prefix: [*c]u8, label: [*c]const u8, prefixPre: bool_t, prefixPost: bool_t, prefixWidth: *i16, indent: i16) void {
     _ = strcpy(prefix, prefix1);
@@ -4710,6 +4719,9 @@ fn refreshRegisterMainBranch(regist_p: *calcRegister_t, restoreRegisterT: bool_t
         const tmpY: i32 = @as(i32, Y_POSITION_OF_REGISTER_X_LINE) - @as(i32, REGISTER_LINE_HEIGHT) * @as(i32, REGISTER_T - REGISTER_X);
 
         var angle: angularMode_t = undefined;
+        var tmp1: real_t = undefined;
+        var tmp2: real_t = undefined;
+        var tmp4: real_t = undefined;
         var tmp3: real34_t = undefined;
         const FMA_X: i32 = 19 - 3;
         const FMA_T: i32 = -1 - 3;
@@ -4722,7 +4734,7 @@ fn refreshRegisterMainBranch(regist_p: *calcRegister_t, restoreRegisterT: bool_t
         {
             abi.fmtBufZ(tmpString[0..2560], "X{s}Y+Z=", .{std.mem.span(PRODUCT_SIGN())});
             const xx = showString(tmpString, &standardFont, @intCast(indentFMA), @intCast(tmpY + FMA_X), vmNormal, 0, 1);
-            if (xfnViewValue(REGISTER_X + (if (calcMode == CM_NIM) @as(calcRegister_t, 1) else 0), &tmp3, &angle) != 0) {
+            if (isXFNregisterValid3r(REGISTER_X + (if (calcMode == CM_NIM) @as(calcRegister_t, 1) else 0)) and registerFMA(REGISTER_X + (if (calcMode == CM_NIM) @as(calcRegister_t, 1) else 0), &tmp1, &tmp2, &tmp4, &tmp3, &angle, &ctxtReal34) != 0) {
                 tmpString[0] = 0;
                 frontier_display.real34ToDisplayString(&tmp3, @intCast(angle), tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - indentFMA - @as(i32, @intCast(xx))), 34, LIMITEXP, FRONTSPACE, NOIRFRAC);
             } else {
@@ -4733,7 +4745,7 @@ fn refreshRegisterMainBranch(regist_p: *calcRegister_t, restoreRegisterT: bool_t
         if (getSystemFlag(FLAG_SSIZE8) != 0) {
             abi.fmtBufZ(tmpString[0..2560], "T{s}A+B=", .{std.mem.span(PRODUCT_SIGN())});
             const xx = showString(tmpString, &standardFont, @intCast(indentFMA), @intCast(tmpY + FMA_T), vmNormal, 0, 1);
-            if (xfnViewValue(REGISTER_T + (if (calcMode == CM_NIM) @as(calcRegister_t, 1) else 0), &tmp3, &angle) != 0) {
+            if (isXFNregisterValid3r(REGISTER_T + (if (calcMode == CM_NIM) @as(calcRegister_t, 1) else 0)) and registerFMA(REGISTER_T + (if (calcMode == CM_NIM) @as(calcRegister_t, 1) else 0), &tmp1, &tmp2, &tmp4, &tmp3, &angle, &ctxtReal34) != 0) {
                 tmpString[0] = 0;
                 frontier_display.real34ToDisplayString(&tmp3, @intCast(angle), tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - indentFMA - @as(i32, @intCast(xx))), 34, LIMITEXP, FRONTSPACE, NOIRFRAC);
             } else {
@@ -6063,20 +6075,21 @@ pub export fn clearShiftState() callconv(.c) void {
     }
 }
 
-pub export fn showShiftStateF() callconv(.c) void {
+// The f and g shift glyphs are drawn by one routine; f is pixel 4+8+3 wide, g 4+10+1.
+fn showShiftGlyph(glyph: [*c]const u8) void {
     if (functionNameOnScreen) { // a function name is displayed: it is what the glyph was taken off for
         return;
     }
     shiftGlyphOnScreen = true;
-    _ = showGlyph(displayF(), &standardFont, @intCast(X_SHIFT()), @intCast(Y_SHIFT()), vmNormal, 1, 1, 0);
+    _ = showGlyph(glyph, &standardFont, @intCast(X_SHIFT()), @intCast(Y_SHIFT()), vmNormal, 1, 1, 0);
+}
+
+pub export fn showShiftStateF() callconv(.c) void {
+    showShiftGlyph(displayF());
 }
 
 pub export fn showShiftStateG() callconv(.c) void {
-    if (functionNameOnScreen) { // a function name is displayed: it is what the glyph was taken off for
-        return;
-    }
-    shiftGlyphOnScreen = true;
-    _ = showGlyph(displayG(), &standardFont, @intCast(X_SHIFT()), @intCast(Y_SHIFT()), vmNormal, 1, 1, 0);
+    showShiftGlyph(displayG());
 }
 
 pub export fn displayShiftAndTamBuffer() callconv(.c) void {
@@ -7157,16 +7170,51 @@ pub export fn fnSNAP(unused_but_mandatory_parameter: u16) callconv(.c) void {
 // fnMenuDump writes for --dumpMenus1. Everything else is SNAP, the file names included.
 pub export fn fnSNAPMENU(unused_but_mandatory_parameter: u16) callconv(.c) void {
     if (comptime dmcp_build) return;
-    snapRowFirst = Y_POSITION_OF_MENU_TOP;
-    snapRowLast = SCREEN_HEIGHT - 1;
-    fnSNAP(unused_but_mandatory_parameter);
+    if (snapMenusOk()) {
+        snapRowFirst = Y_POSITION_OF_MENU_TOP;
+        snapRowLast = SCREEN_HEIGHT - 1;
+        fnSNAP(unused_but_mandatory_parameter);
+        _ = printf("Menu snapped.\n");
+    } else {
+        _ = printf("Menu not snapped. Snap not active in this mode.\n");
+    }
 }
 
 // SNAPX writes the band above the menu, rows 132 to 170 -- the register X line in
 // the big bold numericFont. Everything else is SNAP, the file names and the TSV included.
-pub export fn fnSNAPX(unused_but_mandatory_parameter: u16) callconv(.c) void {
+// The X line is the bold numericFont band, so `bold` forces BOLD for the capture
+// and puts the flag back after; the non-bold form keeps the band as it is.
+fn fnSNAPX(bold: bool) void {
+    if (snapRegistersOk()) {
+        const boldWasSet = getSystemFlag(FLAG_BOLD) != 0;
+        if (bold) {
+            setSystemFlag(@intCast(FLAG_BOLD));
+            snapRowFirst = Y_POSITION_OF_REGISTER_X_LINE - (if (getRegisterDataType(REGISTER_X) == dtString) @as(i32, 0) else 3);
+            snapRowLast = Y_POSITION_OF_MENU_TOP - (if (getRegisterDataType(REGISTER_X) == dtString) @as(i32, 1) else 1 + 3);
+        } else {
+            snapRowFirst = Y_POSITION_OF_REGISTER_X_LINE;
+            snapRowLast = Y_POSITION_OF_MENU_TOP - 1;
+        }
+        fnSNAP(@intFromBool(bold));
+        _ = printf("X snapped.\n");
+        if (!boldWasSet) {
+            clearSystemFlag(@intCast(FLAG_BOLD));
+            screenUpdatingMode = SCRUPD_AUTO; // force a full repaint, else refreshScreen keeps the skip-stack mode fnSNAP left and the X line stays bold on screen
+            refreshScreen(164);
+        }
+    } else {
+        _ = printf("X not snapped. Snap not active in this mode.\n");
+    }
+}
+
+pub export fn fnSNAPXBold(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
     if (comptime dmcp_build) return;
-    snapRowFirst = Y_POSITION_OF_REGISTER_X_LINE;
-    snapRowLast = Y_POSITION_OF_MENU_TOP - 1;
-    fnSNAP(unused_but_mandatory_parameter);
+    fnSNAPX(true);
+}
+
+pub export fn fnSNAPXNonBold(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+    if (comptime dmcp_build) return;
+    fnSNAPX(false);
 }

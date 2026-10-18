@@ -31,6 +31,67 @@ Out: EC=0 RX=Real:"0"
 Func: fnDeterminant
 In:  RX=CxMa:"M2,2[1i0,0i0,0i0,1i0]"
 Out: EC=0
+; Independent exact arithmetic: 7d-bc leaves all 34 displayed digits below the input scale.
+Func: fnDeterminant
+In:  RMODE=0 RX=ReMa:"M2,2[7,1.234567890123456789012345678901234,0.9876543210987654321098765432109876,0.1741894730528882788945500467626668]"
+Out: EC=0 RX=Real:"3.419971035595208351844841960013016E-34"
+; (1+a)(1-a)=1-a^2 with a=1E-33, so the determinant is exactly 1E-66.
+Func: fnDeterminant
+In:  RMODE=0 RX=ReMa:"M2,2[1,1.000000000000000000000000000000001,0.999999999999999999999999999999999,1]"
+Out: EC=0 RX=Real:"1E-66"
+; (1+ia)(1-ia)=1+a^2 gives the complex-kernel counterpart, exactly -1E-66.
+Func: fnDeterminant
+In:  RMODE=0 RX=CxMa:"M2,2[1i0,1i1E-33,1i-1E-33,1i0]"
+Out: EC=0 RX=Cplx:"-1E-66i0"
+; Intermediate exponents exceed the Real34 range before final conversion.
+Func: fnDeterminant
+In:  RMODE=0 FL_SPCRES=1 RX=ReMa:"M2,2[1E6144,0,0,1E6144]"
+Out: EC=0 RX=Real:"inf"
+Func: fnDeterminant
+In:  RMODE=4 FL_SPCRES=1 RX=ReMa:"M2,2[1E6144,0,0,1E6144]"
+Out: EC=0 RX=Real:"9.999999999999999999999999999999999E6144"
+; The exact determinant 1E-12352 exercises directed conversion at the lower Real34 limit.
+Func: fnDeterminant
+In:  RMODE=0 FL_SPCRES=0 RX=ReMa:"M2,2[1E-6176,0,0,1E-6176]"
+Out: EC=0 RX=Real:"0"
+Func: fnDeterminant
+In:  RMODE=1 FL_SPCRES=0 RX=ReMa:"M2,2[1E-6176,0,0,1E-6176]"
+Out: EC=0 RX=Real:"0"
+Func: fnDeterminant
+In:  RMODE=2 FL_SPCRES=0 RX=ReMa:"M2,2[1E-6176,0,0,1E-6176]"
+Out: EC=0 RX=Real:"0"
+Func: fnDeterminant
+In:  RMODE=3 FL_SPCRES=0 RX=ReMa:"M2,2[1E-6176,0,0,1E-6176]"
+Out: EC=0 RX=Real:"1E-6176"
+Func: fnDeterminant
+In:  RMODE=4 FL_SPCRES=0 RX=ReMa:"M2,2[1E-6176,0,0,1E-6176]"
+Out: EC=0 RX=Real:"0"
+Func: fnDeterminant
+In:  RMODE=5 FL_SPCRES=0 RX=ReMa:"M2,2[1E-6176,0,0,1E-6176]"
+Out: EC=0 RX=Real:"1E-6176"
+Func: fnDeterminant
+In:  RMODE=6 FL_SPCRES=0 RX=ReMa:"M2,2[1E-6176,0,0,1E-6176]"
+Out: EC=0 RX=Real:"0"
+; A one-element determinant preserves its special value exactly.
+Func: fnDeterminant
+In:  RMODE=0 FL_SPCRES=1 RX=ReMa:"M1,1[NaN]"
+Out: EC=0 RX=Real:"NaN"
+; The third row is twice the first minus the second, so the determinant is exactly 0.
+Func: fnDeterminant
+In:  RX=ReMa:"M3,3[5658905598910378976408991,-9268397789958112837291122,-4134241751852316457224936,-8961953171115812489378304,-4646171438599295050311097,6694594275965845298096153,20279764368936570442196286,-13890624141316930624271147,-14963077779670478212546025]"
+Out: EC=0 RX=Real:"0"
+; First-row expansion: -1*(2*8-3*4) + 2*(2*(-3)-0*4) = -16.
+Func: fnDeterminant
+In:  RX=ReMa:"M3,3[0,1,2,2,0,3,4,-3,8]"
+Out: EC=0 RX=Real:"-16"
+; First-row expansion: inf*(1*1-0*0) - 1*(1*1-0*1) + 1*(1*0-1*1) = inf.
+Func: fnDeterminant
+In:  FL_SPCRES=1 RX=ReMa:"M3,3[inf,1,1,1,1,0,1,0,1]"
+Out: EC=0 RX=Real:"inf"
+; 1E-80 times its cofactor 4 adds 4E-80 to the determinant -12 of the integer matrix, below the Real34 resolution.
+Func: fnDeterminant
+In:  RX=ReMa:"M4,4[1E-80,1,2,3,1,0,1,2,2,1,0,1,3,2,1,0]"
+Out: EC=0 RX=Real:"-12"
 
 ; --- inverse: nonsingular 2x2, 3x3, singular (error), complex ---
 Func: fnInvertMatrix
@@ -43,13 +104,113 @@ Func: fnInvertMatrix
 In:  RX=ReMa:"M2,2[1,2,2,4]"
 Out: EC=22
 Func: fnInvertMatrix
+In:  RX=ReMa:"M5,5[0,-3,-4,-2,-2,-5,-7,-1,3,7,8,-7,6,-3,4,9,-3,2,3,-3,1,-16,21,-8,29]"
+Out: EC=22
+Func: fnInvertMatrix
 In:  RX=CxMa:"M2,2[1i0,0i0,0i0,2i0]"
 Out: EC=0
+; The inverse of the varied 34-digit determinant case asserts every output component.
+Func: fnInvertMatrix
+In:  RMODE=0 RX=ReMa:"M2,2[7,1.234567890123456789012345678901234,0.9876543210987654321098765432109876,0.1741894730528882788945500467626668]"
+Out: EC=0 RX=ReMa:"M2,2[509330258180307999429969297678236.1,-3609878204446821647919028832099519,-2887902589873469668228265263036020,2.046800960342556519295218885949911E34]"
+; The exactly 1E-66 determinant has an exact inverse despite its large condition number.
+Func: fnInvertMatrix
+In:  RMODE=0 RX=ReMa:"M2,2[1,1.000000000000000000000000000000001,0.999999999999999999999999999999999,1]"
+Out: EC=0 RX=ReMa:"M2,2[1E66,-1.000000000000000000000000000000001E66,-9.99999999999999999999999999999999E65,1E66]"
+; A genuinely complex matrix has determinant -1E-66 and an exact inverse.
+Func: fnInvertMatrix
+In:  RMODE=0 RX=CxMa:"M2,2[1i0,1i1E-33,1i-1E-33,1i0]"
+Out: EC=0 RX=CxMa:"M2,2[-1E66i0,1E66i1E33,1E66i-1E33,-1E66i0]"
+; One real element needs only the p39 reciprocal route. Exact subtraction and scaling assert digit 34 in every result mode.
+Func: fnInvertMatrix
+In:  RMODE=0 RX=ReMa:"M1,1[7]"
+Out: EC=0 RX=ReMa:"M1,1[0.1428571428571428571428571428571429]"
+Func: fnSubtract
+In:  RY=ReMa:"M1,1[0.1428571428571428571428571428571429]"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1E40"
+Out: EC=0 RX=ReMa:"M1,1[0]"
+Func: fnInvertMatrix
+In:  RMODE=1 RX=ReMa:"M1,1[7]"
+Out: EC=0 RX=ReMa:"M1,1[0.1428571428571428571428571428571429]"
+Func: fnSubtract
+In:  RY=ReMa:"M1,1[0.1428571428571428571428571428571429]"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1E40"
+Out: EC=0 RX=ReMa:"M1,1[0]"
+Func: fnInvertMatrix
+In:  RMODE=2 RX=ReMa:"M1,1[7]"
+Out: EC=0 RX=ReMa:"M1,1[0.1428571428571428571428571428571429]"
+Func: fnSubtract
+In:  RY=ReMa:"M1,1[0.1428571428571428571428571428571429]"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1E40"
+Out: EC=0 RX=ReMa:"M1,1[0]"
+Func: fnInvertMatrix
+In:  RMODE=3 RX=ReMa:"M1,1[7]"
+Out: EC=0 RX=ReMa:"M1,1[0.1428571428571428571428571428571429]"
+Func: fnSubtract
+In:  RY=ReMa:"M1,1[0.1428571428571428571428571428571429]"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1E40"
+Out: EC=0 RX=ReMa:"M1,1[0]"
+Func: fnInvertMatrix
+In:  RMODE=4 RX=ReMa:"M1,1[7]"
+Out: EC=0 RX=ReMa:"M1,1[0.1428571428571428571428571428571428]"
+Func: fnSubtract
+In:  RY=ReMa:"M1,1[0.1428571428571428571428571428571428]"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1E40"
+Out: EC=0 RX=ReMa:"M1,1[0]"
+Func: fnInvertMatrix
+In:  RMODE=5 RX=ReMa:"M1,1[7]"
+Out: EC=0 RX=ReMa:"M1,1[0.1428571428571428571428571428571429]"
+Func: fnSubtract
+In:  RY=ReMa:"M1,1[0.1428571428571428571428571428571429]"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1E40"
+Out: EC=0 RX=ReMa:"M1,1[0]"
+Func: fnInvertMatrix
+In:  RMODE=6 RX=ReMa:"M1,1[7]"
+Out: EC=0 RX=ReMa:"M1,1[0.1428571428571428571428571428571428]"
+Func: fnSubtract
+In:  RY=ReMa:"M1,1[0.1428571428571428571428571428571428]"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1E40"
+Out: EC=0 RX=ReMa:"M1,1[-0]"
+; Wide diagonal scaling remains finite after reciprocal conversion.
+Func: fnInvertMatrix
+In:  RMODE=0 RX=ReMa:"M2,2[1E6144,0,0,1E-6143]"
+Out: EC=0 RX=ReMa:"M2,2[1E-6144,0,0,1E6143]"
+Func: fnInvertMatrix
+In:  RMODE=0 FL_SPCRES=0 RX=ReMa:"M1,1[-0]"
+Out: EC=22
+Func: fnInvertMatrix
+In:  RMODE=0 FL_SPCRES=1 RX=ReMa:"M1,1[inf]"
+Out: EC=0 RX=ReMa:"M1,1[0]"
 
 ; --- decompositions ---
 Func: fnLuDecomposition
 In:  RX=ReMa:"M3,3[4,3,2,1,5,3,2,1,6]"
 Out: EC=0
+; Cancellation in the second pivot exposes digits from two Real34 products.
+Func: fnLuDecomposition
+In:  RMODE=0 RX=ReMa:"M2,2[7,1.234567890123456789012345678901234,0.9876543210987654321098765432109876,0.1741894730528882788945500467626668]"
+Out: EC=0 RZ=ReMa:"M2,2[1,0,0,1]" RY=ReMa:"M2,2[1,0,0.1410934744426807760156966490301411,1]" RX=ReMa:"M2,2[7,1.234567890123456789012345678901234,0,4.885672907993154788349774228590023E-35]"
+; Exact Real34 factors can make a nonzero pivot 66 orders below the matrix scale.
+Func: fnLuDecomposition
+In:  RMODE=0 RX=ReMa:"M2,2[1,1.000000000000000000000000000000001,0.999999999999999999999999999999999,1]"
+Out: EC=0 RZ=ReMa:"M2,2[1,0,0,1]" RY=ReMa:"M2,2[1,0,0.999999999999999999999999999999999,1]" RX=ReMa:"M2,2[1,1.000000000000000000000000000000001,0,1E-66]"
+Func: fnLuDecomposition
+In:  RX=ReMa:"M5,5[0,-3,-4,-2,-2,-5,-7,-1,3,7,8,-7,6,-3,4,9,-3,2,3,-3,1,-16,21,-8,29]"
+Out: EC=22
 Func: fnQrDecomposition
 In:  RX=ReMa:"M3,3[12,-51,4,6,167,-68,-4,24,-41]"
 Out: EC=0
@@ -74,6 +235,52 @@ Func: fnEigenvectors
 In:  RX=ReMa:"M2,2[2,0,0,3]"
 Out: EC=0
 
+; A decimal power scale must not change the spectrum. The exact values follow from the four roots 2 + 2 cos(k pi/5), k = 1,...,4.
+Func: fnEigenvalues
+In:  RX=ReMa:"M4,4[2E-100,1E-100,0,0,1E-100,2E-100,1E-100,0,0,1E-100,2E-100,1E-100,0,0,1E-100,2E-100]"
+Out: EC=0 RX=ReMa:"M1,4[3.618033988749894848204586834365638E-100,2.618033988749894848204586834365638E-100,1.381966011250105151795413165634362E-100,3.819660112501051517954131656343619E-101]"
+; Row 1 and column 4 are zero off the diagonal, so 2 and 4 are eigenvalues, and the middle block [31, -7E-9; 1.2E11, -27] has trace 4 and determinant 3.
+Func: fnEigenvalues
+In:  RX=ReMa:"M4,4[2,0,0,0,-1E11,31,-7E-9,0,-4E20,1.2E11,-27,0,-2E30,1.2E21,-3.1E11,4]"
+Out: EC=0 RX=ReMa:"M1,4[4,3,2,1]"
+; Row 3 and column 4 are zero off the diagonal, so 4 and -1 are eigenvalues, and the rows and columns 1 and 2 leave -6 and 2.
+Func: fnEigenvalues
+In:  RX=ReMa:"M4,4[-6,0,1E1,0,0,2,-2,0,0,0,4,0,-5,-3,7,-1]"
+Out: EC=0 RX=ReMa:"M1,4[-6,4,2,-1]"
+; J4 squared is 4 J4, so its principal square root is J4 / 2.
+Func: fnMatrixSquareRoot
+In:  RX=ReMa:"M4,4[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]"
+Out: EC=0 RX=ReMa:"M4,4[0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5]"
+Func: fnEigenvalues
+In:  RX=ReMa:"M4,4[1,0,0,0,0,2,0,0,0,0,3,0,0,0,0,1E-100]"
+Out: EC=0 RX=ReMa:"M1,4[3,2,1,1E-100]"
+
+; The same symmetric spectrum remains valid near the upper Real34 exponent limit.
+Func: fnEigenvalues
+In:  RX=ReMa:"M4,4[2E6000,1E6000,0,0,1E6000,2E6000,1E6000,0,0,1E6000,2E6000,1E6000,0,0,1E6000,2E6000]"
+Out: EC=0 RX=ReMa:"M1,4[3.618033988749894848204586834365638E6000,2.618033988749894848204586834365638E6000,1.381966011250105151795413165634362E6000,3.819660112501051517954131656343619E5999]"
+
+; Complex and real matrix routes use the same Euclidean unit-norm convention.
+Func: fnEigenvectors
+In:  RX=CxMa:"M2,2[2i0,0i1,0i-1,2i0]"
+Out: EC=0 RX=CxMa:"M2,2[0.7071067811865475244008443621048490i0,0.7071067811865475244008443621048490i0,0i-0.7071067811865475244008443621048490,0i0.7071067811865475244008443621048490]"
+; Eigenvalues 7, 6, -5 and 2 with the exact vectors (1, 1, 0, 1), (1, 0, -1, 0), (1, 0, -1, -1/2) and (1, 1/2, 0, 1/2).
+Func: fnEigenvectors
+In:  RX=ReMa:"M4,4[-3,-12,-9,22,-5,12,-5,0,0,22,6,-22,-5,17,-5,-5]"
+Out: EC=0 RX=ReMa:"M4,4[0.5773502691896257645091487805019575,0.707106781186547524400844362104849,0.6666666666666666666666666666666667,0.8164965809277260327324280249019638,0.5773502691896257645091487805019575,0,0,0.4082482904638630163662140124509819,0,-0.707106781186547524400844362104849,-0.6666666666666666666666666666666667,0,0.5773502691896257645091487805019575,0,-0.3333333333333333333333333333333333,0.4082482904638630163662140124509819]"
+; The 6-cycle adjacency matrix: eigenvalues -2, 2, 1, -1, 1, -1, the vectors for 1 and -1 those with the first two components 1, 0 and then 0, 1.
+Func: fnEigenvectors
+In:  RX=ReMa:"M6,6[0,1,0,0,0,1,1,0,1,0,0,0,0,1,0,1,0,0,0,0,1,0,1,0,0,0,0,1,0,1,1,0,0,0,1,0]"
+Out: EC=0 RX=ReMa:"M6,6[0.4082482904638630163662140124509819,0.4082482904638630163662140124509819,0.5,0.5,0,0,-0.4082482904638630163662140124509819,0.4082482904638630163662140124509819,0,0,0.5,0.5,0.4082482904638630163662140124509819,0.4082482904638630163662140124509819,-0.5,-0.5,0.5,-0.5,-0.4082482904638630163662140124509819,0.4082482904638630163662140124509819,-0.5,0.5,0,0,0.4082482904638630163662140124509819,0.4082482904638630163662140124509819,0,0,-0.5,0.5,-0.4082482904638630163662140124509819,0.4082482904638630163662140124509819,0.5,-0.5,-0.5,-0.5]"
+; [[B, C], [0, D]] with B = [[1, 2], [3, 4]], C all ones and D = [[2, 1], [1, 3]]: eigenvalues (5 +/- sqrt 33)/2 from B and (5 +/- sqrt 5)/2 from D.
+Func: fnEigenvectors
+In:  RX=ReMa:"M4,4[1,2,1,1,3,4,1,1,0,0,2,1,0,0,1,3]"
+Out: EC=0 RX=ReMa:"M4,4[0.4159735579192842725751053848675298,-0.2088078219976133444832145444371153,0.02832890071693690275763357608675492,0.8245648401323937653690507170787727,0.9093767091321241072290380010703509,-0.7250091464430653914984526667385584,-0.155019596178763787707295473497711,-0.5657674649689922847228876279805267,0,0.3450498815757887531708316169952436,0.8400220441535107359306867061529153,0,0,0.5583024362037523291058350970322818,-0.5191621745860345276170608693800999,0]"
+; Eigenvalues 4, 2, 2, 2 and -1, the three vectors for 2 those with the first three components (1, 0, 0), (0, 1, 0) and (0, 0, 1).
+Func: fnEigenvectors
+In:  RX=ReMa:"M5,5[-154,24,66,54,-30,-276,44,121,95,-55,-156,24,68,54,-30,-192,30,77,69,-35,-114,18,44,40,-18]"
+Out: EC=0 RX=ReMa:"M5,5[0,0.3594425773447947190897835687593091,0,0,0.3651483716701107423046465218672014,0.5773502691896257645091487805019575,0,0.8908708063747479489485116029325117,0,0.5477225575051661134569697828008021,0,0,0,0.4138029443011839749411931255756115,0.3651483716701107423046465218672014,-0.5773502691896257645091487805019575,0.8986064433619867977244589218982727,-0.4454354031873739744742558014662559,0,0.5477225575051661134569697828008021,-0.5773502691896257645091487805019575,-0.2516098041413563033628484981315164,-0.08908708063747479489485116029325117,0.9103664774626047448706248762663453,0.3651483716701107423046465218672014]"
+
 ; --- matrix square root ---
 Func: fnMatrixSquareRoot
 In:  RX=ReMa:"M2,2[4,0,0,9]"
@@ -89,6 +296,96 @@ Out: EC=0
 Func: fnVectorDist
 In:  RY=ReMa:"M1,3[0,0,0]" RX=ReMa:"M1,3[3,4,0]"
 Out: EC=0
+; Component subtraction must remain wider than Real34 until the Euclidean norm is complete.
+; The expected result is subtracted and scaled so that a digit-34 error is visible to the comparator.
+Func: fnVectorDist
+In:  RMODE=0 RY=ReMa:"M1,2[1,0.5146678535507867701783243552272027]" RX=ReMa:"M1,2[-1E-34,0]"
+Out: EC=0 RX=Real:"1.124670173641398786712973008083582"
+Func: fnSubtract
+In:  RY=Real:"1.124670173641398786712973008083582"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1E40"
+Out: EC=0 RX=Real:"0"
+Func: fnVectorDist
+In:  RMODE=1 RY=ReMa:"M1,2[1,0.5146678535507867701783243552272027]" RX=ReMa:"M1,2[-1E-34,0]"
+Out: EC=0 RX=Real:"1.124670173641398786712973008083582"
+Func: fnSubtract
+In:  RY=Real:"1.124670173641398786712973008083582"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1E40"
+Out: EC=0 RX=Real:"0"
+Func: fnVectorDist
+In:  RMODE=2 RY=ReMa:"M1,2[1,0.5146678535507867701783243552272027]" RX=ReMa:"M1,2[-1E-34,0]"
+Out: EC=0 RX=Real:"1.124670173641398786712973008083582"
+Func: fnSubtract
+In:  RY=Real:"1.124670173641398786712973008083582"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1E40"
+Out: EC=0 RX=Real:"0"
+Func: fnVectorDist
+In:  RMODE=3 RY=ReMa:"M1,2[1,0.5146678535507867701783243552272027]" RX=ReMa:"M1,2[-1E-34,0]"
+Out: EC=0 RX=Real:"1.124670173641398786712973008083582"
+Func: fnSubtract
+In:  RY=Real:"1.124670173641398786712973008083582"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1E40"
+Out: EC=0 RX=Real:"0"
+Func: fnVectorDist
+In:  RMODE=4 RY=ReMa:"M1,2[1,0.5146678535507867701783243552272027]" RX=ReMa:"M1,2[-1E-34,0]"
+Out: EC=0 RX=Real:"1.124670173641398786712973008083581"
+Func: fnSubtract
+In:  RY=Real:"1.124670173641398786712973008083581"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1E40"
+Out: EC=0 RX=Real:"0"
+Func: fnVectorDist
+In:  RMODE=5 RY=ReMa:"M1,2[1,0.5146678535507867701783243552272027]" RX=ReMa:"M1,2[-1E-34,0]"
+Out: EC=0 RX=Real:"1.124670173641398786712973008083582"
+Func: fnSubtract
+In:  RY=Real:"1.124670173641398786712973008083582"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1E40"
+Out: EC=0 RX=Real:"0"
+Func: fnVectorDist
+In:  RMODE=6 RY=ReMa:"M1,2[1,0.5146678535507867701783243552272027]" RX=ReMa:"M1,2[-1E-34,0]"
+Out: EC=0 RX=Real:"1.124670173641398786712973008083581"
+Func: fnSubtract
+In:  RY=Real:"1.124670173641398786712973008083581"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1E40"
+Out: EC=0 RX=Real:"-0"
+; Mixed real and complex matrices use component differences before the common scaled norm.
+Func: fnVectorDist
+In:  RMODE=0 RY=CxMa:"M1,1[3i4]" RX=ReMa:"M1,1[0]"
+Out: EC=0 RX=Real:"5"
+Func: fnVectorDist
+In:  RMODE=0 RY=ReMa:"M1,1[0]" RX=CxMa:"M1,1[3i4]"
+Out: EC=0 RX=Real:"5"
+; Matrix broadcasting through the legacy subtraction route remains available.
+Func: fnVectorDist
+In:  RMODE=0 RY=ReMa:"M1,2[3,4]" RX=Real:"0"
+Out: EC=0 RX=Real:"5"
+; Matrix shape mismatches remain errors even when the element counts agree.
+Func: fnVectorDist
+In:  RMODE=0 RY=ReMa:"M1,2[1,2]" RX=ReMa:"M2,1[1,2]"
+Out: EC=21
+; NaN differences take priority, equal infinities are indeterminate, and a finite/infinite difference is infinite.
+Func: fnVectorDist
+In:  RMODE=0 FL_SPCRES=1 RY=ReMa:"M1,2[1,NaN]" RX=ReMa:"M1,2[0,0]"
+Out: EC=0 RX=Real:"NaN"
+Func: fnVectorDist
+In:  RMODE=0 FL_SPCRES=1 RY=ReMa:"M1,1[inf]" RX=ReMa:"M1,1[inf]"
+Out: EC=0 RX=Real:"NaN"
+Func: fnVectorDist
+In:  RMODE=0 FL_SPCRES=1 RY=ReMa:"M1,1[inf]" RX=ReMa:"M1,1[1]"
+Out: EC=0 RX=Real:"inf"
 Func: fnMatrixIdentity
 In:  RY=Real:"3" RX=Real:"3"
 Out: EC=0 RX=ReMa:"M3,3[1,0,0,0,1,0,0,0,1]"

@@ -30,21 +30,19 @@ const REGISTER_Y = runtime.REGISTER_Y;
 const REGISTER_L = runtime.REGISTER_L;
 const ERR_REGISTER_LINE = runtime.ERR_REGISTER_LINE;
 const amNone = runtime.amNone;
-const dtReal34 = runtime.dtReal34;
 
 const ERROR_NO_SUMMATION_DATA: u8 = 28;
 const TI_PERCD2: u8 = 70;
 
 const getRegisterAsReal = runtime.getRegisterAsReal;
-const reallocateRegister = runtime.reallocateRegister;
-const convertRealToReal34ResultRegister = runtime.convertRealToReal34ResultRegister;
+const convertRealToResultRegister = runtime.convertRealToResultRegister;
 const liftStack = runtime.liftStack;
 const saveLastX = runtime.saveLastX;
 const adjustResult = runtime.adjustResult;
 const displayCalcErrorMessage = runtime.displayCalcErrorMessage;
 const moreInfoOnError = runtime.moreInfoOnError;
 
-extern var ctxtReal75: realContext_t;
+extern var ctxtReal34: realContext_t;
 
 extern fn checkMinimumDataPoints(n: *const real_t) bool;
 
@@ -74,14 +72,12 @@ pub export fn fnPcSigmaDeltaPcXmean(unusedButMandatoryParameter: u16) linksectio
 
     liftStack();
 
-    if (math_percentSigma.percentSigma(&xReal, &rReal, &ctxtReal75)) {
-        reallocateRegister(REGISTER_Y, dtReal34, 0, amNone);
-        convertRealToReal34ResultRegister(&rReal, REGISTER_Y);
+    if (math_percentSigma.percentSigma(&xReal, &rReal, &ctxtReal34)) {
+        convertRealToResultRegister(&rReal, REGISTER_Y, amNone);
     }
 
-    if (math_deltaPercentXmean.deltaPercentXmeanReal(&xReal, &rReal, &ctxtReal75)) {
-        reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
-        convertRealToReal34ResultRegister(&rReal, REGISTER_X);
+    if (math_deltaPercentXmean.deltaPercentXmeanReal(&xReal, &rReal, &ctxtReal34)) {
+        convertRealToResultRegister(&rReal, REGISTER_X, amNone);
     }
 
     adjustResult(REGISTER_X, false, true, REGISTER_L, -1, -1);

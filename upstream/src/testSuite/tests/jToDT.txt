@@ -118,3 +118,36 @@ Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=ShoI:"5#7"
 ;=======================================
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"6.2 i -7.6"
 Out: EC=24 FL_ASLIFT=0 RX=Cplx:"6.2 i -7.6"
+
+
+;=======================================
+; Millisecond boundary classification
+;=======================================
+Func: fnJulianToDateTime
+
+; This value is one decimal128 unit below 13.5 milliseconds after noon.
+; The calendar result must therefore round to 13 milliseconds.
+In:  FL_YMD=1 FL_MDY=0 FL_DMY=0 JG=2299161 FL_ASLIFT=1 FL_CPXRES=0 RX=Real:"0.0000001562499999999999999999999999999999"
+Out: FL_YMD=1 FL_MDY=0 FL_DMY=0 JG=2299161 EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.0000001562499999999999999999999999999999" RX=Time:"12:00:00.013" RY=Date:"-4712.0101"
+
+; The midpoint itself uses the documented half-up millisecond rule.
+In:  FL_YMD=1 FL_MDY=0 FL_DMY=0 JG=2299161 FL_ASLIFT=1 FL_CPXRES=0 RX=Real:"0.00000015625"
+Out: FL_YMD=1 FL_MDY=0 FL_DMY=0 JG=2299161 EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.00000015625" RX=Time:"12:00:00.014" RY=Date:"-4712.0101"
+
+; P34 multiplication moves this value from immediately below a half-
+; millisecond boundary onto the boundary, producing a result one millisecond
+; too high.
+In:  FL_YMD=1 FL_MDY=0 FL_DMY=0 JG=2299161 FL_ASLIFT=1 FL_CPXRES=0 RX=Real:"0.3004984432870370370370370370370370"
+Out: FL_YMD=1 FL_MDY=0 FL_DMY=0 JG=2299161 EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.3004984432870370370370370370370370" RX=Time:"19:12:43.065" RY=Date:"-4712.0101"
+
+In:  FL_YMD=1 FL_MDY=0 FL_DMY=0 JG=2299161 FL_ASLIFT=1 FL_CPXRES=0 RX=Real:"-0.5"
+Out: FL_YMD=1 FL_MDY=0 FL_DMY=0 JG=2299161 EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-0.5" RX=Time:"00:00:00" RY=Date:"-4712.0101"
+
+In:  FL_YMD=1 FL_MDY=0 FL_DMY=0 JG=2299161 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"NaN"
+Out: FL_YMD=1 FL_MDY=0 FL_DMY=0 JG=2299161 EC=8 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"NaN"
+
+In:  FL_YMD=1 FL_MDY=0 FL_DMY=0 JG=2299161 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"Inf"
+Out: FL_YMD=1 FL_MDY=0 FL_DMY=0 JG=2299161 EC=8 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"Inf"
+
+In:  FL_YMD=1 FL_MDY=0 FL_DMY=0 JG=2299161 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-Inf"
+Out: FL_YMD=1 FL_MDY=0 FL_DMY=0 JG=2299161 EC=8 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"-Inf"

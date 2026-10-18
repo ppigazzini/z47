@@ -208,3 +208,106 @@ Out: EC=8 FL_ASLIFT=0 RY=LonI:"50" RX=ShoI:"-10#10"
 In:  FL_ASLIFT=0 RY=ShoI:"-50#10" RX=ShoI:"-10#10"
 Out: EC=8 FL_ASLIFT=0 RY=ShoI:"-50#10" RX=ShoI:"-10#10"
 
+;************************************************************************************************************************************************************
+; Context, cancellation, and special-value coverage
+;************************************************************************************************************************************************************
+
+Func: fnCyx
+In:  FL_SPCRES=0 FL_CPXRES=0 FL_ASLIFT=0 RMODE=0 RY=Real:"1e100" RX=Real:"1"
+Out: EC=0 RX=Real:"1e100"
+
+In:  FL_ASLIFT=0 RY=Real:"1e100" RX=Real:"0.5"
+Out: EC=0 RX=Real:"1.128379167095512573896158903121545e50"
+
+; All output modes at digit 34. Subtraction and scaling prevent the
+; ordinary comparison tolerance from hiding a last-digit error.
+In:  FL_ASLIFT=0 RMODE=0 RT=Real:"1e-17" RZ=Real:"1.128379167095512573896158903121545e50" RY=Real:"1e100" RX=Real:"0.5"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnCyx
+In:  FL_ASLIFT=0 RMODE=1 RT=Real:"1e-17" RZ=Real:"1.128379167095512573896158903121545e50" RY=Real:"1e100" RX=Real:"0.5"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnCyx
+In:  FL_ASLIFT=0 RMODE=2 RT=Real:"1e-17" RZ=Real:"1.128379167095512573896158903121545e50" RY=Real:"1e100" RX=Real:"0.5"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnCyx
+In:  FL_ASLIFT=0 RMODE=3 RT=Real:"1e-17" RZ=Real:"1.128379167095512573896158903121546e50" RY=Real:"1e100" RX=Real:"0.5"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnCyx
+In:  FL_ASLIFT=0 RMODE=4 RT=Real:"1e-17" RZ=Real:"1.128379167095512573896158903121545e50" RY=Real:"1e100" RX=Real:"0.5"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnCyx
+In:  FL_ASLIFT=0 RMODE=5 RT=Real:"1e-17" RZ=Real:"1.128379167095512573896158903121546e50" RY=Real:"1e100" RX=Real:"0.5"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnCyx
+In:  FL_ASLIFT=0 RMODE=6 RT=Real:"1e-17" RZ=Real:"1.128379167095512573896158903121545e50" RY=Real:"1e100" RX=Real:"0.5"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+; A p34 work chain changes the final coefficient by four units here.
+Func: fnCyx
+In:  FL_ASLIFT=0 RMODE=0 RT=Real:"1e19" RZ=Real:"209053723016892.308468188826117863" RY=Real:"123.456" RX=Real:"10.1234"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+; The general complex continuation needs more than p51 after cancellation.
+Func: fnCyx
+In:  FL_CPXRES=1 FL_ASLIFT=0 RY=Cplx:"0 i 0" RX=Cplx:"1.000000000000000000000000000000001 i 0"
+Out: EC=0 RX=Cplx:"-9.99999999999999999999999999999999e-34 i 0"
+
+In:  FL_CPXRES=1 FL_ASLIFT=0 RY=Cplx:"1e34 i 0" RX=Cplx:"-1.5 i 0"
+Out: EC=0 RX=Cplx:"-2.820947917738781434740397257803862e-52 i 0"
+
+; The beta rearrangement retains a small selection beside a large population.
+In:  FL_CPXRES=1 FL_ASLIFT=0 RY=Cplx:"1e100 i +1" RX=Cplx:"1 i 0"
+Out: EC=0 RX=Cplx:"1e100 i +1"
+
+In:  FL_SPCRES=1 FL_CPXRES=0 FL_ASLIFT=0 RY=Real:"inf" RX=Real:"1"
+Out: EC=0 RX=Real:"inf"
+
+In:  FL_SPCRES=1 FL_ASLIFT=0 RY=Real:"inf" RX=Real:"0"
+Out: EC=0 RX=Real:"1"
+
+In:  FL_SPCRES=1 FL_ASLIFT=0 RY=Real:"NaN" RX=Real:"1"
+Out: EC=0 RX=Real:"NaN"
+
+In:  FL_SPCRES=0 FL_CPXRES=0 FL_ASLIFT=0 RY=ReMa:"M1,2[1e100,123.456]" RX=ReMa:"M1,2[1,10.1234]"
+Out: EC=0 RX=ReMa:"M1,2[1e100,209053723016892.308468188826117863]"
+
+In:  FL_CPXRES=1 FL_ASLIFT=0 RY=CxMa:"M1,2[1e100i1,1e34i0]" RX=CxMa:"M1,2[1i0,-1.5i0]"
+Out: EC=0 RX=CxMa:"M1,2[1e100i1,-2.820947917738781434740397257803862e-52i0]"

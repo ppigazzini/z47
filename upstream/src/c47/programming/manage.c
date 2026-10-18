@@ -1440,11 +1440,13 @@ static void _pemCloseDateInput(void) {
       convertReal34RegisterToDateRegister(TEMP_REGISTER_1, TEMP_REGISTER_1, false);  //no !YYsystem needed here
       internalDateToJulianDay(REGISTER_REAL34_DATA(TEMP_REGISTER_1), REGISTER_REAL34_DATA(TEMP_REGISTER_1));
 
-      real34ToString(REGISTER_REAL34_DATA(TEMP_REGISTER_1), tmpPtr + 1);
-      *tmpPtr = stringByteLength(tmpPtr + 1);
-      ++tmpPtr;
+      if (lastErrorCode == 0) {
+        real34ToString(REGISTER_REAL34_DATA(TEMP_REGISTER_1), tmpPtr + 1);
+        *tmpPtr = stringByteLength(tmpPtr + 1);
+        ++tmpPtr;
 
-      _insertInProgram((uint8_t *)tmpString, stringByteLength(tmpPtr) + (int32_t)(tmpPtr - tmpString));
+        _insertInProgram((uint8_t *)tmpString, stringByteLength(tmpPtr) + (int32_t)(tmpPtr - tmpString));
+      }
     }
 
     aimBuffer[0] = '!';

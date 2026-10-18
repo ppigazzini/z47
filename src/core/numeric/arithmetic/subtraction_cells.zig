@@ -2,8 +2,10 @@
 //
 // Zig owner for src/c47/mathematics/subtraction.c: the full SUB dispatch
 // matrix (`subtraction`, consumed by store.c and recall.c) plus every cell
-// function, subDateDate and the subComplex helper. Faithful, line-by-line
-// port of the C; upstream symbol names are kept at the export boundary. The
+// function, subDateDate and the subComplex helpers. The cells a subtraction
+// shares with an addition call the bodies the addition owner exports with the
+// subtract operation. Faithful, line-by-line port of the C; upstream symbol
+// names are kept at the export boundary. The
 // legacy C fnSubtract body lives on as z47_math_wrappers_legacy_fnSubtract,
 // the fallback the Zig fnSubtract wrapper uses for the error cells not
 // handled natively.
@@ -16,8 +18,14 @@
 const std = @import("std");
 const abi = @import("abi");
 const runtime = @import("../command_wrappers/runtime.zig");
+const addition = @import("addition_cells.zig");
 
 const NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS = 10;
+
+// subtraction.c guards subComplex159 with OPTION_CUBIC_159 || OPTION_SQUARE_159 ||
+// OPTION_EIGEN_159. OPTION_SQUARE_159 is #undef'd at the top of defines.h and
+// never defined again in any configuration, so the disjunction is the other two.
+const arm_159 = runtime.option_cubic_159 or runtime.option_eigen_159;
 const CellFn = *const fn () callconv(.c) void;
 
 // defines.h values (verified against src/c47/defines.h / items.h).
@@ -83,6 +91,24 @@ fn const34_86400() *align(1) const runtime.real34_t {
     return abi.constants.const34_86400();
 }
 
+// One matrix element and a long integer, in either order: exact where the
+// element is finite, otherwise the 39-digit real difference rounded to the
+// significant digits.
+fn subtractLongIntegerMatrixElement(integer_register: runtime.calcRegister_t, integer: *const runtime.real_t, integer_first: bool, element: *runtime.real34_t) void {
+    if (!runtime.addSubtractLongIntegerReal34(integer_register, element, integer_first, true, element)) {
+        var value: runtime.real_t = undefined;
+
+        runtime.real34ToReal(element, &value);
+        if (integer_first) {
+            runtime.realSubtract(integer, &value, &value, &runtime.ctxtReal39);
+        } else {
+            runtime.realSubtract(&value, integer, &value, &runtime.ctxtReal39);
+        }
+        runtime.roundToSignificantDigits(&value, &value, significantDigitsOr34(), &runtime.ctxtReal39);
+        runtime.realToReal34(&value, element);
+    }
+}
+
 /// Data type error in subtraction (C: subError under EXTRA_INFO_ON_CALC_ERROR,
 /// typeError otherwise; message reporting follows the established owner
 /// convention, moreInfoOnError is a no-op away from the PC simulator).
@@ -117,112 +143,42 @@ pub export fn z47_math_wrappers_legacy_fnSubtract(unused_but_mandatory_parameter
 
 /// Y(long integer) - X(long integer) ==> X(long integer)
 pub export fn subLonILonI() callconv(.c) void {
-    var y: runtime.longInteger_t = undefined;
-    var x: runtime.longInteger_t = undefined;
-
-    runtime.convertLongIntegerRegisterToLongInteger(runtime.REGISTER_Y, &y[0]);
-    runtime.convertLongIntegerRegisterToLongInteger(runtime.REGISTER_X, &x[0]);
-
-    runtime.longIntegerSubtract(&y[0], &x[0], &x[0]);
-
-    runtime.convertLongIntegerToLongIntegerRegister(&x[0], runtime.REGISTER_X);
-
-    runtime.__gmpz_clear(&y[0]);
-    runtime.__gmpz_clear(&x[0]);
+    addition.addSubIntInt(&runtime.longIntegerSubtract, &runtime.convertLongIntegerRegisterToLongInteger, &runtime.convertLongIntegerRegisterToLongInteger);
 }
 
 /// Y(long integer) - X(time) ==> X(time)
 pub export fn subLonITime() callconv(.c) void {
-    runtime.convertLongIntegerRegisterToTimeRegister(runtime.REGISTER_Y, runtime.REGISTER_Y);
-    real34Subtract(runtime.registerReal34Ptr(runtime.REGISTER_Y), runtime.registerReal34Ptr(runtime.REGISTER_X), runtime.registerReal34Ptr(runtime.REGISTER_X));
+    addition.addSubTimeLonI(&runtime.real34SubtractOp, runtime.REGISTER_Y);
 }
 
 /// Y(time) - X(long integer) ==> X(time)
 pub export fn subTimeLonI() callconv(.c) void {
-    runtime.convertLongIntegerRegisterToTimeRegister(runtime.REGISTER_X, runtime.REGISTER_X);
-    real34Subtract(runtime.registerReal34Ptr(runtime.REGISTER_Y), runtime.registerReal34Ptr(runtime.REGISTER_X), runtime.registerReal34Ptr(runtime.REGISTER_X));
+    addition.addSubTimeLonI(&runtime.real34SubtractOp, runtime.REGISTER_X);
 }
 
 /// Y(date) - X(long integer) ==> X(date)
 pub export fn subDateLonI() callconv(.c) void {
-    var val: runtime.real34_t = undefined;
-    runtime.convertLongIntegerRegisterToReal34Register(runtime.REGISTER_X, runtime.REGISTER_X);
-    runtime.real34Multiply(runtime.registerReal34Ptr(runtime.REGISTER_X), const34_86400(), &val);
-    runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtDate, 0, runtime.amNone);
-    real34Subtract(runtime.registerReal34Ptr(runtime.REGISTER_Y), &val, runtime.registerReal34Ptr(runtime.REGISTER_X));
+    addition.addSubDateLonI(&runtime.real34SubtractOp);
 }
 
 /// Y(long integer) - X(short integer) ==> X(long integer)
 pub export fn subLonIShoI() callconv(.c) void {
-    var y: runtime.longInteger_t = undefined;
-    var x: runtime.longInteger_t = undefined;
-
-    runtime.convertLongIntegerRegisterToLongInteger(runtime.REGISTER_Y, &y[0]);
-    runtime.convertShortIntegerRegisterToLongInteger(runtime.REGISTER_X, &x[0]);
-
-    runtime.longIntegerSubtract(&y[0], &x[0], &x[0]);
-
-    runtime.convertLongIntegerToLongIntegerRegister(&x[0], runtime.REGISTER_X);
-
-    runtime.__gmpz_clear(&y[0]);
-    runtime.__gmpz_clear(&x[0]);
+    addition.addSubIntInt(&runtime.longIntegerSubtract, &runtime.convertLongIntegerRegisterToLongInteger, &runtime.convertShortIntegerRegisterToLongInteger);
 }
 
 /// Y(short integer) - X(long integer) ==> X(long integer)
 pub export fn subShoILonI() callconv(.c) void {
-    var y: runtime.longInteger_t = undefined;
-    var x: runtime.longInteger_t = undefined;
-
-    runtime.convertShortIntegerRegisterToLongInteger(runtime.REGISTER_Y, &y[0]);
-    runtime.convertLongIntegerRegisterToLongInteger(runtime.REGISTER_X, &x[0]);
-
-    runtime.longIntegerSubtract(&y[0], &x[0], &x[0]);
-
-    runtime.convertLongIntegerToLongIntegerRegister(&x[0], runtime.REGISTER_X);
-
-    runtime.__gmpz_clear(&y[0]);
-    runtime.__gmpz_clear(&x[0]);
+    addition.addSubIntInt(&runtime.longIntegerSubtract, &runtime.convertShortIntegerRegisterToLongInteger, &runtime.convertLongIntegerRegisterToLongInteger);
 }
 
 /// Y(long integer) - X(real34) ==> X(real34)
 pub export fn subLonIReal() callconv(.c) void {
-    var y: runtime.real_t = undefined;
-    var x: runtime.real_t = undefined;
-
-    runtime.convertLongIntegerRegisterToReal(runtime.REGISTER_Y, &y, &runtime.ctxtReal39);
-    runtime.real34ToReal(runtime.registerReal34Ptr(runtime.REGISTER_X), &x);
-    const x_angular_mode = runtime.getRegisterAngularMode(runtime.REGISTER_X);
-
-    if (x_angular_mode == runtime.amNone) {
-        runtime.realSubtract(&y, &x, &x, &runtime.ctxtReal39);
-        runtime.convertRealToReal34ResultRegister(&x, runtime.REGISTER_X);
-    } else {
-        runtime.convertAngleFromTo(&x, x_angular_mode, runtime.currentAngularMode, &runtime.ctxtReal39);
-        runtime.realSubtract(&y, &x, &x, &runtime.ctxtReal39);
-        runtime.convertRealToReal34ResultRegister(&x, runtime.REGISTER_X);
-        runtime.setRegisterAngularMode(runtime.REGISTER_X, runtime.currentAngularMode);
-    }
+    addition.lonIRealOp(&addition.subFastLonIReal, &runtime.realSubtractOp);
 }
 
 /// Y(real34) - X(long integer) ==> X(real34)
 pub export fn subRealLonI() callconv(.c) void {
-    var y: runtime.real_t = undefined;
-    var x: runtime.real_t = undefined;
-
-    runtime.real34ToReal(runtime.registerReal34Ptr(runtime.REGISTER_Y), &y);
-    const y_angular_mode = runtime.getRegisterAngularMode(runtime.REGISTER_Y);
-    runtime.convertLongIntegerRegisterToReal(runtime.REGISTER_X, &x, &runtime.ctxtReal39);
-    runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, runtime.amNone);
-
-    if (y_angular_mode == runtime.amNone) {
-        runtime.realSubtract(&y, &x, &x, &runtime.ctxtReal39);
-        runtime.convertRealToReal34ResultRegister(&x, runtime.REGISTER_X);
-    } else {
-        runtime.convertAngleFromTo(&y, y_angular_mode, runtime.currentAngularMode, &runtime.ctxtReal39);
-        runtime.realSubtract(&y, &x, &x, &runtime.ctxtReal39);
-        runtime.convertRealToReal34ResultRegister(&x, runtime.REGISTER_X);
-        runtime.setRegisterAngularMode(runtime.REGISTER_X, runtime.currentAngularMode);
-    }
+    addition.realLonIOp(&addition.subFastLonIReal, &runtime.realSubtractOp);
 }
 
 /// Y(long integer) - X(complex34) ==> X(complex34)
@@ -230,12 +186,12 @@ pub export fn subLonICplx() callconv(.c) void {
     var a: runtime.real_t = undefined;
     var c: runtime.real_t = undefined;
 
-    runtime.convertLongIntegerRegisterToReal(runtime.REGISTER_Y, &a, &runtime.ctxtReal39);
-    runtime.real34ToReal(runtime.registerReal34Ptr(runtime.REGISTER_X), &c);
-
-    runtime.realSubtract(&a, &c, &c, &runtime.ctxtReal39);
-
-    runtime.convertRealToReal34ResultRegister(&c, runtime.REGISTER_X);
+    if (!runtime.addSubtractLongIntegerReal34(runtime.REGISTER_Y, runtime.registerReal34Ptr(runtime.REGISTER_X), true, true, runtime.registerReal34Ptr(runtime.REGISTER_X))) {
+        runtime.convertLongIntegerRegisterToReal(runtime.REGISTER_Y, &a, &runtime.ctxtReal39);
+        runtime.real34ToReal(runtime.registerReal34Ptr(runtime.REGISTER_X), &c);
+        runtime.realSubtract(&a, &c, &c, &runtime.ctxtReal39);
+        runtime.convertRealToReal34ResultRegister(&c, runtime.REGISTER_X);
+    }
     real34ChangeSign(runtime.registerImag34Ptr(runtime.REGISTER_X));
 }
 
@@ -244,15 +200,19 @@ pub export fn subCplxLonI() callconv(.c) void {
     var a: runtime.real_t = undefined;
     var c: runtime.real_t = undefined;
     var b: runtime.real34_t = undefined;
+    var result: runtime.real34_t = undefined;
 
-    runtime.real34ToReal(runtime.registerReal34Ptr(runtime.REGISTER_Y), &a);
     b = runtime.registerImag34Ptr(runtime.REGISTER_Y).*;
-    runtime.convertLongIntegerRegisterToReal(runtime.REGISTER_X, &c, &runtime.ctxtReal39);
-
-    runtime.realSubtract(&a, &c, &c, &runtime.ctxtReal39);
-
-    runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtComplex34, 0, runtime.amNone);
-    runtime.convertRealToReal34ResultRegister(&c, runtime.REGISTER_X);
+    if (runtime.addSubtractLongIntegerReal34(runtime.REGISTER_X, runtime.registerReal34Ptr(runtime.REGISTER_Y), false, true, &result)) {
+        runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtComplex34, 0, runtime.amNone);
+        runtime.registerReal34Ptr(runtime.REGISTER_X).* = result;
+    } else {
+        runtime.real34ToReal(runtime.registerReal34Ptr(runtime.REGISTER_Y), &a);
+        runtime.convertLongIntegerRegisterToReal(runtime.REGISTER_X, &c, &runtime.ctxtReal39);
+        runtime.realSubtract(&a, &c, &c, &runtime.ctxtReal39);
+        runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtComplex34, 0, runtime.amNone);
+        runtime.convertRealToReal34ResultRegister(&c, runtime.REGISTER_X);
+    }
     runtime.registerImag34Ptr(runtime.REGISTER_X).* = b;
 }
 
@@ -318,7 +278,6 @@ pub export fn subDateReal() callconv(.c) void {
 /// Y(real34 matrix) - X(long integer) ==> X(real34 matrix)
 pub export fn subRemaLonI() callconv(.c) void {
     var ym: runtime.real34Matrix_t = undefined;
-    var y: runtime.real_t = undefined;
     var x: runtime.real_t = undefined;
 
     runtime.linkToRealMatrixRegister(runtime.REGISTER_Y, &ym);
@@ -328,10 +287,7 @@ pub export fn subRemaLonI() callconv(.c) void {
     runtime.convertLongIntegerRegisterToReal(runtime.REGISTER_X, &x, &runtime.ctxtReal39);
     var i: i32 = 0;
     while (i < count) : (i += 1) {
-        runtime.real34ToReal(realElem(&ym, i), &y);
-        runtime.realSubtract(&y, &x, &y, &runtime.ctxtReal39);
-        runtime.roundToSignificantDigits(&y, &y, significantDigitsOr34(), &runtime.ctxtReal39);
-        runtime.realToReal34(&y, realElem(&ym, i));
+        subtractLongIntegerMatrixElement(runtime.REGISTER_X, &x, false, realElem(&ym, i));
     }
     runtime.fnSwapXY(NOPARAM);
 }
@@ -340,7 +296,6 @@ pub export fn subRemaLonI() callconv(.c) void {
 pub export fn subLonIRema() callconv(.c) void {
     var xm: runtime.real34Matrix_t = undefined;
     var y: runtime.real_t = undefined;
-    var x: runtime.real_t = undefined;
 
     runtime.linkToRealMatrixRegister(runtime.REGISTER_X, &xm);
 
@@ -349,10 +304,7 @@ pub export fn subLonIRema() callconv(.c) void {
     runtime.convertLongIntegerRegisterToReal(runtime.REGISTER_Y, &y, &runtime.ctxtReal39);
     var i: i32 = 0;
     while (i < count) : (i += 1) {
-        runtime.real34ToReal(realElem(&xm, i), &x);
-        runtime.realSubtract(&y, &x, &x, &runtime.ctxtReal39);
-        runtime.roundToSignificantDigits(&x, &x, significantDigitsOr34(), &runtime.ctxtReal39);
-        runtime.realToReal34(&x, realElem(&xm, i));
+        subtractLongIntegerMatrixElement(runtime.REGISTER_Y, &y, true, realElem(&xm, i));
     }
 }
 
@@ -404,82 +356,24 @@ pub export fn subCxmaRema() callconv(.c) void {
 
 /// Y(real34 matrix) - X(short integer) ==> X(real34 matrix)
 pub export fn subRemaShoI() callconv(.c) void {
-    var ym: runtime.real34Matrix_t = undefined;
-    var y: runtime.real_t = undefined;
-    var x: runtime.real_t = undefined;
-
-    runtime.linkToRealMatrixRegister(runtime.REGISTER_Y, &ym);
-
-    const count = @as(i32, ym.header.matrixRows) * @as(i32, ym.header.matrixColumns);
-
-    runtime.convertShortIntegerRegisterToReal(runtime.REGISTER_X, &x, &runtime.ctxtReal39);
-    var i: i32 = 0;
-    while (i < count) : (i += 1) {
-        runtime.real34ToReal(realElem(&ym, i), &y);
-        runtime.realSubtract(&y, &x, &y, &runtime.ctxtReal39);
-        runtime.roundToSignificantDigits(&y, &y, significantDigitsOr34(), &runtime.ctxtReal39);
-        runtime.realToReal34(&y, realElem(&ym, i));
-    }
-    runtime.fnSwapXY(NOPARAM);
+    runtime.convertShortIntegerRegisterToReal34Register(runtime.REGISTER_X, runtime.REGISTER_X);
+    subRemaReal();
 }
 
 /// Y(short integer) - X(real34 matrix) ==> X(real34 matrix)
 pub export fn subShoIRema() callconv(.c) void {
-    var xm: runtime.real34Matrix_t = undefined;
-    var y: runtime.real_t = undefined;
-    var x: runtime.real_t = undefined;
-
-    runtime.linkToRealMatrixRegister(runtime.REGISTER_X, &xm);
-
-    const count = @as(i32, xm.header.matrixRows) * @as(i32, xm.header.matrixColumns);
-
-    runtime.convertShortIntegerRegisterToReal(runtime.REGISTER_Y, &y, &runtime.ctxtReal39);
-    var i: i32 = 0;
-    while (i < count) : (i += 1) {
-        runtime.real34ToReal(realElem(&xm, i), &x);
-        runtime.realSubtract(&y, &x, &x, &runtime.ctxtReal39);
-        runtime.roundToSignificantDigits(&x, &x, significantDigitsOr34(), &runtime.ctxtReal39);
-        runtime.realToReal34(&x, realElem(&xm, i));
-    }
+    runtime.convertShortIntegerRegisterToReal34Register(runtime.REGISTER_Y, runtime.REGISTER_Y);
+    subRealRema();
 }
 
 /// Y(real34 matrix) - X(real34) ==> X(real34 matrix)
 pub export fn subRemaReal() callconv(.c) void {
-    var y: runtime.real34Matrix_t = undefined;
-
-    runtime.linkToRealMatrixRegister(runtime.REGISTER_Y, &y);
-    const x_angular_mode = runtime.getRegisterAngularMode(runtime.REGISTER_X);
-
-    if (x_angular_mode == runtime.amNone) {
-        const count = @as(i32, y.header.matrixRows) * @as(i32, y.header.matrixColumns);
-
-        var i: i32 = 0;
-        while (i < count) : (i += 1) {
-            real34Subtract(realElem(&y, i), runtime.registerReal34Ptr(runtime.REGISTER_X), realElem(&y, i));
-        }
-        runtime.fnSwapXY(NOPARAM);
-    } else {
-        runtime.elementwiseRemaReal(&subRealReal);
-    }
+    addition.addSubRemaReal(&runtime.real34SubtractOp, &subRealReal);
 }
 
 /// Y(real34) - X(real34 matrix) ==> X(real34 matrix)
 pub export fn subRealRema() callconv(.c) void {
-    var x: runtime.real34Matrix_t = undefined;
-
-    runtime.linkToRealMatrixRegister(runtime.REGISTER_X, &x);
-    const y_angular_mode = runtime.getRegisterAngularMode(runtime.REGISTER_Y);
-
-    if (y_angular_mode == runtime.amNone) {
-        const count = @as(i32, x.header.matrixRows) * @as(i32, x.header.matrixColumns);
-
-        var i: i32 = 0;
-        while (i < count) : (i += 1) {
-            real34Subtract(runtime.registerReal34Ptr(runtime.REGISTER_Y), realElem(&x, i), realElem(&x, i));
-        }
-    } else {
-        runtime.elementwiseRealRema(&subRealReal);
-    }
+    addition.addSubRealRema(&runtime.real34SubtractOp, &subRealReal);
 }
 
 /// Y(real34 matrix) - X(complex34) ==> X(complex34 matrix)
@@ -505,7 +399,6 @@ pub export fn subCplxRema() callconv(.c) void {
 /// Y(complex34 matrix) - X(long integer) ==> X(complex34 matrix)
 pub export fn subCxmaLonI() callconv(.c) void {
     var ym: runtime.complex34Matrix_t = undefined;
-    var y: runtime.real_t = undefined;
     var x: runtime.real_t = undefined;
 
     runtime.linkToComplexMatrixRegister(runtime.REGISTER_Y, &ym);
@@ -515,10 +408,7 @@ pub export fn subCxmaLonI() callconv(.c) void {
     runtime.convertLongIntegerRegisterToReal(runtime.REGISTER_X, &x, &runtime.ctxtReal39);
     var i: i32 = 0;
     while (i < count) : (i += 1) {
-        runtime.real34ToReal(&cplxElem(&ym, i).real, &y);
-        runtime.realSubtract(&y, &x, &y, &runtime.ctxtReal39);
-        runtime.roundToSignificantDigits(&y, &y, significantDigitsOr34(), &runtime.ctxtReal39);
-        runtime.realToReal34(&y, &cplxElem(&ym, i).real);
+        subtractLongIntegerMatrixElement(runtime.REGISTER_X, &x, false, &cplxElem(&ym, i).real);
     }
     runtime.fnSwapXY(NOPARAM);
 }
@@ -527,7 +417,6 @@ pub export fn subCxmaLonI() callconv(.c) void {
 pub export fn subLonICxma() callconv(.c) void {
     var xm: runtime.complex34Matrix_t = undefined;
     var y: runtime.real_t = undefined;
-    var x: runtime.real_t = undefined;
 
     runtime.linkToComplexMatrixRegister(runtime.REGISTER_X, &xm);
 
@@ -536,10 +425,7 @@ pub export fn subLonICxma() callconv(.c) void {
     runtime.convertLongIntegerRegisterToReal(runtime.REGISTER_Y, &y, &runtime.ctxtReal39);
     var i: i32 = 0;
     while (i < count) : (i += 1) {
-        runtime.real34ToReal(&cplxElem(&xm, i).real, &x);
-        runtime.realSubtract(&y, &x, &x, &runtime.ctxtReal39);
-        runtime.roundToSignificantDigits(&x, &x, significantDigitsOr34(), &runtime.ctxtReal39);
-        runtime.realToReal34(&x, &cplxElem(&xm, i).real);
+        subtractLongIntegerMatrixElement(runtime.REGISTER_Y, &y, true, &cplxElem(&xm, i).real);
         real34ChangeSign(&cplxElem(&xm, i).imag);
     }
 }
@@ -575,64 +461,19 @@ pub export fn subCxmaCxma() callconv(.c) void {
 
 /// Y(complex34 matrix) - X(short integer) ==> X(complex34 matrix)
 pub export fn subCxmaShoI() callconv(.c) void {
-    var ym: runtime.complex34Matrix_t = undefined;
-    var y: runtime.real_t = undefined;
-    var x: runtime.real_t = undefined;
-
-    runtime.linkToComplexMatrixRegister(runtime.REGISTER_Y, &ym);
-
-    const count = @as(i32, ym.header.matrixRows) * @as(i32, ym.header.matrixColumns);
-
-    runtime.convertShortIntegerRegisterToReal(runtime.REGISTER_X, &x, &runtime.ctxtReal39);
-    var i: i32 = 0;
-    while (i < count) : (i += 1) {
-        runtime.real34ToReal(&cplxElem(&ym, i).real, &y);
-        runtime.realSubtract(&y, &x, &y, &runtime.ctxtReal39);
-        runtime.roundToSignificantDigits(&y, &y, significantDigitsOr34(), &runtime.ctxtReal39);
-        runtime.realToReal34(&y, &cplxElem(&ym, i).real);
-    }
-    runtime.fnSwapXY(NOPARAM);
+    runtime.convertShortIntegerRegisterToReal34Register(runtime.REGISTER_X, runtime.REGISTER_X);
+    subCxmaReal();
 }
 
 /// Y(short integer) - X(complex34 matrix) ==> X(complex34 matrix)
 pub export fn subShoICxma() callconv(.c) void {
-    var xm: runtime.complex34Matrix_t = undefined;
-    var y: runtime.real_t = undefined;
-    var x: runtime.real_t = undefined;
-
-    runtime.linkToComplexMatrixRegister(runtime.REGISTER_X, &xm);
-
-    const count = @as(i32, xm.header.matrixRows) * @as(i32, xm.header.matrixColumns);
-
-    runtime.convertShortIntegerRegisterToReal(runtime.REGISTER_Y, &y, &runtime.ctxtReal39);
-    var i: i32 = 0;
-    while (i < count) : (i += 1) {
-        runtime.real34ToReal(&cplxElem(&xm, i).real, &x);
-        runtime.realSubtract(&y, &x, &x, &runtime.ctxtReal39);
-        runtime.roundToSignificantDigits(&x, &x, significantDigitsOr34(), &runtime.ctxtReal39);
-        runtime.realToReal34(&x, &cplxElem(&xm, i).real);
-        real34ChangeSign(&cplxElem(&xm, i).imag);
-    }
+    runtime.convertShortIntegerRegisterToReal34Register(runtime.REGISTER_Y, runtime.REGISTER_Y);
+    subRealCxma();
 }
 
 /// Y(complex34 matrix) - X(real34) ==> X(complex34 matrix)
 pub export fn subCxmaReal() callconv(.c) void {
-    var y: runtime.complex34Matrix_t = undefined;
-
-    runtime.linkToComplexMatrixRegister(runtime.REGISTER_Y, &y);
-    const x_angular_mode = runtime.getRegisterAngularMode(runtime.REGISTER_X);
-
-    if (x_angular_mode == runtime.amNone) {
-        const count = @as(i32, y.header.matrixRows) * @as(i32, y.header.matrixColumns);
-
-        var i: i32 = 0;
-        while (i < count) : (i += 1) {
-            real34Subtract(&cplxElem(&y, i).real, runtime.registerReal34Ptr(runtime.REGISTER_X), &cplxElem(&y, i).real);
-        }
-        runtime.fnSwapXY(NOPARAM);
-    } else {
-        runtime.elementwiseCxmaReal(&subCplxReal);
-    }
+    addition.addSubCxmaReal(&runtime.real34SubtractOp, &subCplxReal);
 }
 
 /// Y(real34) - X(complex34 matrix) ==> X(complex34 matrix)
@@ -657,33 +498,12 @@ pub export fn subRealCxma() callconv(.c) void {
 
 /// Y(complex34 matrix) - X(complex34) ==> X(complex34 matrix)
 pub export fn subCxmaCplx() callconv(.c) void {
-    var y: runtime.complex34Matrix_t = undefined;
-
-    runtime.linkToComplexMatrixRegister(runtime.REGISTER_Y, &y);
-
-    const count = @as(i32, y.header.matrixRows) * @as(i32, y.header.matrixColumns);
-
-    var i: i32 = 0;
-    while (i < count) : (i += 1) {
-        real34Subtract(&cplxElem(&y, i).real, runtime.registerReal34Ptr(runtime.REGISTER_X), &cplxElem(&y, i).real);
-        real34Subtract(&cplxElem(&y, i).imag, runtime.registerImag34Ptr(runtime.REGISTER_X), &cplxElem(&y, i).imag);
-    }
-    runtime.fnSwapXY(NOPARAM);
+    addition.addSubCxmaCplx(&runtime.real34SubtractOp);
 }
 
 /// Y(complex34) - X(complex34 matrix) ==> X(complex34 matrix)
 pub export fn subCplxCxma() callconv(.c) void {
-    var x: runtime.complex34Matrix_t = undefined;
-
-    runtime.linkToComplexMatrixRegister(runtime.REGISTER_X, &x);
-
-    const count = @as(i32, x.header.matrixRows) * @as(i32, x.header.matrixColumns);
-
-    var i: i32 = 0;
-    while (i < count) : (i += 1) {
-        real34Subtract(runtime.registerReal34Ptr(runtime.REGISTER_Y), &cplxElem(&x, i).real, &cplxElem(&x, i).real);
-        real34Subtract(runtime.registerImag34Ptr(runtime.REGISTER_Y), &cplxElem(&x, i).imag, &cplxElem(&x, i).imag);
-    }
+    addition.addSubCplxCxma(&runtime.real34SubtractOp);
 }
 
 // short integer - ...
@@ -699,17 +519,17 @@ pub export fn subShoIShoI() callconv(.c) void {
 
 /// Y(short integer) - X(real34) ==> X(real34)
 pub export fn subShoIReal() callconv(.c) void {
-    var y: runtime.real_t = undefined;
-    var x: runtime.real_t = undefined;
     const x_angular_mode = runtime.getRegisterAngularMode(runtime.REGISTER_X);
 
-    runtime.convertShortIntegerRegisterToReal(runtime.REGISTER_Y, &y, &runtime.ctxtReal39);
-    runtime.real34ToReal(runtime.registerReal34Ptr(runtime.REGISTER_X), &x);
-
     if (x_angular_mode == runtime.amNone) {
-        runtime.realSubtract(&y, &x, &x, &runtime.ctxtReal39);
-        runtime.convertRealToReal34ResultRegister(&x, runtime.REGISTER_X);
+        runtime.convertShortIntegerRegisterToReal34Register(runtime.REGISTER_Y, runtime.REGISTER_Y);
+        real34Subtract(runtime.registerReal34Ptr(runtime.REGISTER_Y), runtime.registerReal34Ptr(runtime.REGISTER_X), runtime.registerReal34Ptr(runtime.REGISTER_X));
     } else {
+        var y: runtime.real_t = undefined;
+        var x: runtime.real_t = undefined;
+
+        runtime.convertShortIntegerRegisterToReal(runtime.REGISTER_Y, &y, &runtime.ctxtReal39);
+        runtime.real34ToReal(runtime.registerReal34Ptr(runtime.REGISTER_X), &x);
         runtime.convertAngleFromTo(&x, x_angular_mode, runtime.currentAngularMode, &runtime.ctxtReal39);
         runtime.realSubtract(&y, &x, &x, &runtime.ctxtReal39);
         runtime.convertRealToReal34ResultRegister(&x, runtime.REGISTER_X);
@@ -719,18 +539,18 @@ pub export fn subShoIReal() callconv(.c) void {
 
 /// Y(real34) - X(short integer) ==> X(real34)
 pub export fn subRealShoI() callconv(.c) void {
-    var y: runtime.real_t = undefined;
-    var x: runtime.real_t = undefined;
     const y_angular_mode = runtime.getRegisterAngularMode(runtime.REGISTER_Y);
 
-    runtime.real34ToReal(runtime.registerReal34Ptr(runtime.REGISTER_Y), &y);
-    runtime.convertShortIntegerRegisterToReal(runtime.REGISTER_X, &x, &runtime.ctxtReal39);
-    runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, runtime.amNone);
-
     if (y_angular_mode == runtime.amNone) {
-        runtime.realSubtract(&y, &x, &x, &runtime.ctxtReal39);
-        runtime.convertRealToReal34ResultRegister(&x, runtime.REGISTER_X);
+        runtime.convertShortIntegerRegisterToReal34Register(runtime.REGISTER_X, runtime.REGISTER_X);
+        real34Subtract(runtime.registerReal34Ptr(runtime.REGISTER_Y), runtime.registerReal34Ptr(runtime.REGISTER_X), runtime.registerReal34Ptr(runtime.REGISTER_X));
     } else {
+        var y: runtime.real_t = undefined;
+        var x: runtime.real_t = undefined;
+
+        runtime.real34ToReal(runtime.registerReal34Ptr(runtime.REGISTER_Y), &y);
+        runtime.convertShortIntegerRegisterToReal(runtime.REGISTER_X, &x, &runtime.ctxtReal39);
+        runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, runtime.amNone);
         runtime.convertAngleFromTo(&y, y_angular_mode, runtime.currentAngularMode, &runtime.ctxtReal39);
         runtime.realSubtract(&y, &x, &x, &runtime.ctxtReal39);
         runtime.convertRealToReal34ResultRegister(&x, runtime.REGISTER_X);
@@ -747,10 +567,7 @@ pub export fn subShoICplx() callconv(.c) void {
 
 /// Y(complex34) - X(short integer) ==> X(complex34)
 pub export fn subCplxShoI() callconv(.c) void {
-    runtime.convertShortIntegerRegisterToReal34Register(runtime.REGISTER_X, runtime.REGISTER_X);
-    real34Subtract(runtime.registerReal34Ptr(runtime.REGISTER_Y), runtime.registerReal34Ptr(runtime.REGISTER_X), runtime.registerReal34Ptr(runtime.REGISTER_Y)); // real part
-    runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtComplex34, 0, runtime.amNone);
-    runtime.registerComplex34Ptr(runtime.REGISTER_X).* = runtime.registerComplex34Ptr(runtime.REGISTER_Y).*;
+    addition.addSubCplxShoI(&runtime.real34SubtractOp);
 }
 
 // real34 - ...
@@ -793,27 +610,29 @@ pub export fn subRealCplx() callconv(.c) void {
 /// Y(complex34) - X(real34) ==> X(complex34)
 pub export fn subCplxReal() callconv(.c) void {
     real34Subtract(runtime.registerReal34Ptr(runtime.REGISTER_Y), runtime.registerReal34Ptr(runtime.REGISTER_X), runtime.registerReal34Ptr(runtime.REGISTER_Y)); // real part
-    runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtComplex34, 0, runtime.amNone);
-    runtime.registerComplex34Ptr(runtime.REGISTER_X).* = runtime.registerComplex34Ptr(runtime.REGISTER_Y).*;
+    runtime.convertReal34ToComplex34Register(runtime.registerReal34Ptr(runtime.REGISTER_Y), runtime.registerImag34Ptr(runtime.REGISTER_Y), runtime.REGISTER_X);
 }
 
 // complex34 - ...
 
-pub export fn subComplex(
-    a_real: *const runtime.real_t,
-    a_imag: *const runtime.real_t,
-    b_real: *const runtime.real_t,
-    b_imag: *const runtime.real_t,
-    res_real: *runtime.real_t,
-    res_imag: *runtime.real_t,
-    real_context: *runtime.realContext_t,
-) callconv(.c) void {
-    runtime.realSubtract(a_real, b_real, res_real, real_context);
-    runtime.realSubtract(a_imag, b_imag, res_imag, real_context);
+pub export fn subComplex(a: *const runtime.cplx_t, b: *const runtime.cplx_t, res: *runtime.cplx_t, real_context: *runtime.realContext_t) callconv(.c) void {
+    runtime.realSubtract(&a.Real, &b.Real, &res.Real, real_context);
+    runtime.realSubtract(&a.Imag, &b.Imag, &res.Imag, real_context);
+}
+
+// subComplex for 159 digit values in a cplx159_t.
+fn subComplex159Impl(a: *const runtime.cplx159_t, b: *const runtime.cplx159_t, res: *runtime.cplx159_t, real_context: *runtime.realContext_t) callconv(.c) void {
+    runtime.realSubtract(a.Real.constPtr(), b.Real.constPtr(), res.Real.ptr(), real_context);
+    runtime.realSubtract(a.Imag.constPtr(), b.Imag.constPtr(), res.Imag.ptr(), real_context);
+}
+
+comptime {
+    if (arm_159) {
+        @export(&subComplex159Impl, .{ .name = "subComplex159" });
+    }
 }
 
 /// Y(complex34) - X(complex34) ==> X(complex34)
 pub export fn subCplxCplx() callconv(.c) void {
-    real34Subtract(runtime.registerReal34Ptr(runtime.REGISTER_Y), runtime.registerReal34Ptr(runtime.REGISTER_X), runtime.registerReal34Ptr(runtime.REGISTER_X)); // real part
-    real34Subtract(runtime.registerImag34Ptr(runtime.REGISTER_Y), runtime.registerImag34Ptr(runtime.REGISTER_X), runtime.registerImag34Ptr(runtime.REGISTER_X)); // imaginary part
+    addition.addSubCplxCplx(&runtime.real34SubtractOp);
 }

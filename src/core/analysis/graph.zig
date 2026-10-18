@@ -361,18 +361,18 @@ extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWith
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
 extern fn getRegisterDataPointer(regist: calcRegister_t) *anyopaque;
 extern fn getRegisterAsReal(reg: calcRegister_t, val: *real_t) bool;
-extern fn getRegisterAsComplex(reg: calcRegister_t, r: *real_t, c: *real_t) bool;
+extern fn getRegisterAsComplex(reg: calcRegister_t, z: *cplx_t) bool;
 extern fn convertDoubleToReal34Register(x: f64, destination: calcRegister_t) void;
 extern fn convertDoubleToReal34RegisterPush(x: f64, destination: calcRegister_t) void;
 extern fn convertDoubleToReal(x: f64, destination: *real_t, ctxt: *realContext_t) void;
 extern fn convertRegisterToDouble(regist: calcRegister_t) f64;
 extern fn convertRealToResultRegister(x: *align(1) const real_t, dest: calcRegister_t, angle: c_int) void;
-extern fn convertComplexToResultRegister(real: *const real_t, imag: *const real_t, dest: calcRegister_t) void;
-extern fn complexMagnitude(a: *const real_t, b: *const real_t, c: *real_t, realContext: *realContext_t) void;
-extern fn divComplexComplex(numerReal: *const real_t, numerImag: *const real_t, denomReal: *const real_t, denomImag: *const real_t, quotientReal: *real_t, quotientImag: *real_t, realContext: *realContext_t) void;
-extern fn mulComplexComplex(factor1Real: *const real_t, factor1Imag: *const real_t, factor2Real: *align(1) const real_t, factor2Imag: *align(1) const real_t, productReal: *real_t, productImag: *real_t, realContext: *realContext_t) void;
-extern fn addComplex(aReal: *const real_t, aImag: *const real_t, bReal: *align(1) const real_t, bImag: *align(1) const real_t, resReal: *real_t, resImag: *real_t, realContext: *realContext_t) void;
-extern fn subComplex(aReal: *const real_t, aImag: *const real_t, bReal: *const real_t, bImag: *const real_t, resReal: *real_t, resImag: *real_t, realContext: *realContext_t) void;
+extern fn convertComplexToResultRegister(z: *const cplx_t, dest: calcRegister_t) void;
+extern fn complexMagnitude(a: *const cplx_t, c: *real_t, realContext: *realContext_t) void;
+extern fn divComplexComplex(numer: *const cplx_t, denom: *const cplx_t, quotient: *cplx_t, realContext: *realContext_t) void;
+extern fn mulComplexComplex(factor1: *const cplx_t, factor2: *const cplx_t, product: *cplx_t, realContext: *realContext_t) void;
+extern fn addComplex(a: *const cplx_t, b: *const cplx_t, res: *cplx_t, realContext: *realContext_t) void;
+extern fn subComplex(a: *const cplx_t, b: *const cplx_t, res: *cplx_t, realContext: *realContext_t) void;
 extern fn realSetZero(r: *real_t) void;
 extern fn realSetOne(r: *real_t) void;
 extern fn realCompareEqual(a: *align(1) const real_t, b: *align(1) const real_t) bool;
@@ -623,8 +623,7 @@ fn execute_rpn_function() void {
                     realSetNaN(&nanR);
                     realToReal34(&nanR, &res34);
                 }
-                reallocateRegister(REGISTER_X, dtReal34, 0, amNoneU);
-                reg34(REGISTER_X).* = res34;
+                runtime.convertReal34ToReal34Register(&res34, REGISTER_X);
             }
         } else {
             equation.parseEquation(currentFormula, EQUATION_PARSER_XEQ, tmpString, tmpString + AIM_BUFFER_LENGTH);
@@ -1928,25 +1927,25 @@ inline fn checkRealZeroTol(a: *const real_t, tol: *const real_t) bool {
     return realIsZero(a) or realCompareAbsLessThan(a, tol);
 }
 
-inline fn check2RealZeroTol(a: *const real_t, b: *const real_t, tol: *const real_t) bool {
-    return checkRealZeroTol(a, tol) and checkRealZeroTol(b, tol);
+inline fn checkComplexZeroTol(z: *const cplx_t, tol: *const real_t) bool {
+    return checkRealZeroTol(&z.Real, tol) and checkRealZeroTol(&z.Imag, tol);
 }
 
 // Now provided by registerValueConversions (shared, real master); use that one.
 extern fn convertComplexRegisterToRealIfZeroImag(regist: calcRegister_t) void;
 
-fn divFunctionComplex(a_re: *const real_t, a_im: *const real_t, b_re: *const real_t, b_im: *const real_t, res_re: *real_t, res_im: *real_t) void {
-    if ((realIsZero(a_re) and realIsZero(a_im)) or realIsNaN(a_re) or realIsNaN(a_im) or realIsNaN(b_re) or realIsNaN(b_im)) {
-        realSetZero(res_re);
-        realSetZero(res_im);
+fn divFunctionComplex(a: *const cplx_t, b: *const cplx_t, res: *cplx_t) void {
+    if ((realIsZero(&a.Real) and realIsZero(&a.Imag)) or realIsNaN(&a.Real) or realIsNaN(&a.Imag) or realIsNaN(&b.Real) or realIsNaN(&b.Imag)) {
+        realSetZero(&res.Real);
+        realSetZero(&res.Imag);
         return;
     }
-    if (realIsZero(b_re) and realIsZero(b_im)) {
-        stringToReal("1E30", res_re, ctxtSolver2);
-        realSetZero(res_im);
+    if (realIsZero(&b.Real) and realIsZero(&b.Imag)) {
+        stringToReal("1E30", &res.Real, ctxtSolver2);
+        realSetZero(&res.Imag);
         return;
     }
-    divComplexComplex(a_re, a_im, b_re, b_im, res_re, res_im, ctxtSolver2);
+    divComplexComplex(a, b, res, ctxtSolver2);
 }
 
 pub export fn check_osc(new: *real_t, old: *real_t, ii: *u8) callconv(.c) bool {
@@ -1983,12 +1982,12 @@ fn printSolverResult(iterationCounter: c_int) void {
     }
 }
 
-fn printComplexToConsole(re: *const real_t, im: *const real_t, before: [*:0]const u8, after: [*:0]const u8) void {
+fn printComplexToConsole(z: *const cplx_t, before: [*:0]const u8, after: [*:0]const u8) void {
     if (comptime !is_dmcp_build) {
         var str: [100]u8 = undefined;
-        _ = decNumberToString(re, &str);
+        _ = decNumberToString(&z.Real, &str);
         _ = printf("%s%43s + ", before, @as([*c]const u8, &str));
-        _ = decNumberToString(im, &str);
+        _ = decNumberToString(&z.Imag, &str);
         _ = printf("%43si %s", @as([*c]const u8, &str), after);
     }
 }
@@ -2015,10 +2014,10 @@ inline fn copyComplex(from: *const cplx_t, to: *cplx_t) void {
 
 // saves best solution to cpxSlvBestX and returns true if converging
 fn execute_rpn_function_reals(from: *const cplx_t, to: *cplx_t, magnitude: *real_t) bool {
-    convertComplexToResultRegister(&from.Real, &from.Imag, REGISTER_X);
+    convertComplexToResultRegister(from, REGISTER_X);
     execute_rpn_function();
-    _ = getRegisterAsComplex(REGISTER_Y, &to.Real, &to.Imag);
-    complexMagnitude(&to.Real, &to.Imag, magnitude, ctxtSolver2);
+    _ = getRegisterAsComplex(REGISTER_Y, to);
+    complexMagnitude(to, magnitude, ctxtSolver2);
     if (realCompareLessEqual(magnitude, &cpxSlvBestMagnitudeY)) {
         copyComplex(from, &cpxSlvBestX);
         if (runtime.realCompareLessThan(magnitude, &cpxSlvBestMagnitudeY)) {
@@ -2034,7 +2033,7 @@ inline fn powCplxNat(base: *const cplx_t, exp: *const u8, res: *cplx_t) void {
     copyComplex(base, &tmp);
     var i: u8 = 1;
     while (i < exp.*) : (i += 1) {
-        mulComplexComplex(&tmp.Real, &tmp.Imag, &base.Real, &base.Imag, &tmp.Real, &tmp.Imag, ctxtSolver2);
+        mulComplexComplex(&tmp, base, &tmp, ctxtSolver2);
     }
     copyComplex(&tmp, res);
 }
@@ -2150,8 +2149,8 @@ fn complexSolver() void {
     const temp3 = temp3_p.?;
 
     // Initialize
-    _ = getRegisterAsComplex(REGISTER_X, &X1.Real, &X1.Imag);
-    _ = getRegisterAsComplex(REGISTER_Y, &X0.Real, &X0.Imag);
+    _ = getRegisterAsComplex(REGISTER_X, X1);
+    _ = getRegisterAsComplex(REGISTER_Y, X0);
     copyComplex(X0, &cpxSlvBestX);
 
     realCopy(consts.c5568(), &cpxSlvBestMagnitudeY);
@@ -2191,17 +2190,19 @@ fn complexSolver() void {
     if (checkRealZeroTol(&cpxSlvBestMagnitudeY, tol)) {
         Y2IsZero = true;
     } else {
-        subComplex(&Y1.Real, &Y1.Imag, &Y0.Real, &Y0.Imag, &temp1.Real, &temp1.Imag, ctxtSolver2); // dy=y1-y0
+        subComplex(Y1, Y0, temp1, ctxtSolver2); // dy=y1-y0
         // avoid equal Y as it causes double iterations
-        if (check2RealZeroTol(&temp1.Real, &temp1.Imag, tol)) {
-            addComplex(&X0.Real, &X0.Imag, consts.c4508(), consts.c1708(), &X0.Real, &X0.Imag, ctxtSolver2);
+        if (checkComplexZeroTol(temp1, tol)) {
+            realCopy(consts.c4508(), &temp0.Real);
+            realSetZero(&temp0.Imag);
+            addComplex(X0, temp0, X0, ctxtSolver2);
             _ = execute_rpn_function_reals(X0, Y0, magnitudeY);
-            subComplex(&Y1.Real, &Y1.Imag, &Y0.Real, &Y0.Imag, &temp1.Real, &temp1.Imag, ctxtSolver2); // dy=y1-y0
+            subComplex(Y1, Y0, temp1, ctxtSolver2); // dy=y1-y0
         }
-        subComplex(&X1.Real, &X1.Imag, &X0.Real, &X0.Imag, &temp0.Real, &temp0.Imag, ctxtSolver2); // dx=x1-x0
-        divFunctionComplex(&temp0.Real, &temp0.Imag, &temp1.Real, &temp1.Imag, &temp0.Real, &temp0.Imag); // dx/dy
-        mulComplexComplex(&temp0.Real, &temp0.Imag, &Y1.Real, &Y1.Imag, &temp0.Real, &temp0.Imag, ctxtSolver2); // deltaX = Y1 x dx/dy
-        subComplex(&X1.Real, &X1.Imag, &temp0.Real, &temp0.Imag, &X2.Real, &X2.Imag, ctxtSolver2); // x2=x1-deltaX
+        subComplex(X1, X0, temp0, ctxtSolver2); // dx=x1-x0
+        divFunctionComplex(temp0, temp1, temp0); // dx/dy
+        mulComplexComplex(temp0, Y1, temp0, ctxtSolver2); // deltaX = Y1 x dx/dy
+        subComplex(X1, temp0, X2, ctxtSolver2); // x2=x1-deltaX
         if (realIsZero(&X2.Imag)) {
             realMultiply(&X2.Real, consts.c4544(), &X2.Imag, ctxtSolver2);
         }
@@ -2279,10 +2280,10 @@ fn complexSolver() void {
                 const kick: f64 = 0.8123 * @as(f64, @floatFromInt(kicker)) * @as(f64, @floatFromInt(kicker)) * p2;
                 convertDoubleToReal(if (@rem(kicker, 2) != 0) -kick else kick, &temp1.Real, ctxtSolver2);
                 convertDoubleToReal(kick, &temp1.Imag, ctxtSolver2);
-                addComplex(&temp1.Real, &temp1.Imag, &X0.Real, &X0.Imag, &X2.Real, &X2.Imag, ctxtSolver2);
+                addComplex(temp1, X0, X2, ctxtSolver2);
                 if (comptime !is_dmcp_build) {
                     _ = printf("------- Kick #%d, iter:%u ", @as(c_int, kicker), @as(c_uint, @intCast(iterationCounter)));
-                    printComplexToConsole(&temp1.Real, &temp1.Imag, "added: ", "\n");
+                    printComplexToConsole(temp1, "added: ", "\n");
                 }
                 kicker += 1;
             }
@@ -2290,8 +2291,8 @@ fn complexSolver() void {
 
         //@@@@@@@@@@@@@@@@@ CALCULATE NEW Y2, AND PLAUSIBILITY @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
         // if same as cpxSlvBestX we probably hit the precision limit for this equation?
-        subComplex(&cpxSlvBestX.Real, &cpxSlvBestX.Imag, &X2.Real, &X2.Imag, &temp1.Real, &temp1.Imag, ctxtSolver2);
-        complexMagnitude(&temp1.Real, &temp1.Imag, &temp1.Real, ctxtSolver2);
+        subComplex(&cpxSlvBestX, X2, temp1, ctxtSolver2);
+        complexMagnitude(temp1, &temp1.Real, ctxtSolver2);
         Y2IsCloseToZero = Y2IsCloseToZero or (runtime.realCompareLessThan(&cpxSlvBestMagnitudeY, consts.c4508()) and realIsZero(&temp1.Real) and realIsZero(&temp1.Imag));
 
         iterAfterBest = if (execute_rpn_function_reals(X2, Y2N, magnitudeY)) 0 else iterAfterBest + 1;
@@ -2319,33 +2320,35 @@ fn complexSolver() void {
 
         // ---------- Modified 3 point Secant ------------
         if ((iterationCounter == 0) or (!Y2IsZero and !dXdYIsZero and !checkNaN)) {
-            subComplex(&Y2.Real, &Y2.Imag, &Y1.Real, &Y1.Imag, &dY.Real, &dY.Imag, ctxtSolver2); // Y2-Y1 = dY
-            subComplex(&X2.Real, &X2.Imag, &X1.Real, &X1.Imag, &dX.Real, &dX.Imag, ctxtSolver2); // X2-X1 = dX
-            divFunctionComplex(&dY.Real, &dY.Imag, &dX.Real, &dX.Imag, &temp0.Real, &temp0.Imag); // dY/dX = temp0
+            subComplex(Y2, Y1, dY, ctxtSolver2); // Y2-Y1 = dY
+            subComplex(X2, X1, dX, ctxtSolver2); // X2-X1 = dX
+            divFunctionComplex(dY, dX, temp0); // dY/dX = temp0
 
-            subComplex(&Y2.Real, &Y2.Imag, &Y0.Real, &Y0.Imag, &temp3.Real, &temp3.Imag, ctxtSolver2);
+            subComplex(Y2, Y0, temp3, ctxtSolver2);
 
-            mulComplexComplex(&temp0.Real, &temp0.Imag, &temp3.Real, &temp3.Imag, &temp3.Real, &temp3.Imag, ctxtSolver2);
+            mulComplexComplex(temp0, temp3, temp3, ctxtSolver2);
 
-            subComplex(&Y0.Real, &Y0.Imag, &Y1.Real, &Y1.Imag, &temp1.Real, &temp1.Imag, ctxtSolver2);
-            subComplex(&X0.Real, &X0.Imag, &X1.Real, &X1.Imag, &temp2.Real, &temp2.Imag, ctxtSolver2);
-            divFunctionComplex(&temp1.Real, &temp1.Imag, &temp2.Real, &temp2.Imag, &temp1.Real, &temp1.Imag);
+            subComplex(Y0, Y1, temp1, ctxtSolver2);
+            subComplex(X0, X1, temp2, ctxtSolver2);
+            divFunctionComplex(temp1, temp2, temp1);
 
-            subComplex(&temp0.Real, &temp0.Imag, &temp1.Real, &temp1.Imag, &temp1.Real, &temp1.Imag, ctxtSolver2);
-            mulComplexComplex(&temp1.Real, &temp1.Imag, &Y2.Real, &Y2.Imag, &temp1.Real, &temp1.Imag, ctxtSolver2);
-            subComplex(&temp3.Real, &temp3.Imag, &temp1.Real, &temp1.Imag, &temp1.Real, &temp1.Imag, ctxtSolver2);
+            subComplex(temp0, temp1, temp1, ctxtSolver2);
+            mulComplexComplex(temp1, Y2, temp1, ctxtSolver2);
+            subComplex(temp3, temp1, temp1, ctxtSolver2);
 
-            subComplex(&Y2.Real, &Y2.Imag, &Y0.Real, &Y0.Imag, &X2N.Real, &X2N.Imag, ctxtSolver2);
+            subComplex(Y2, Y0, X2N, ctxtSolver2);
             // get the 1/slope
-            divFunctionComplex(&X2N.Real, &X2N.Imag, &temp1.Real, &temp1.Imag, &X2N.Real, &X2N.Imag);
-            mulComplexComplex(&X2N.Real, &X2N.Imag, &Y1.Real, &Y1.Imag, &X2N.Real, &X2N.Imag, ctxtSolver2); // increment to x is: y1 . DX/DY
+            divFunctionComplex(X2N, temp1, X2N);
+            mulComplexComplex(X2N, Y1, X2N, ctxtSolver2); // increment to x is: y1 . DX/DY
             // if converges slow without oscillating then accelerate.
             if (convergent > 10) {
                 convertDoubleToReal(1.0 + @as(f64, @floatFromInt(convergent)) * 0.1, f, ctxtSolver2); // factor ()
-                mulComplexComplex(&X2N.Real, &X2N.Imag, f, consts.c1708(), &X2N.Real, &X2N.Imag, ctxtSolver2); // increment to x is: y1 . DX/DY
+                realCopy(f, &temp3.Real);
+                realSetZero(&temp3.Imag);
+                mulComplexComplex(X2N, temp3, X2N, ctxtSolver2); // increment to x is: y1 . DX/DY
             }
 
-            subComplex(&X1.Real, &X1.Imag, &X2N.Real, &X2N.Imag, &X2N.Real, &X2N.Imag, ctxtSolver2); // subtract as per Newton, x1 - f/f' store temporarily to new x2n
+            subComplex(X1, X2N, X2N, ctxtSolver2); // subtract as per Newton, x1 - f/f' store temporarily to new x2n
         }
 
         //#############################################
@@ -2361,7 +2364,7 @@ fn complexSolver() void {
 
         if (checkHalfSec()) {
             if (progressHalfSecUpdate_Integer(timed, "Iter: ", iterationCounter, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { // timed
-                sumprod.showProgressReal(&X1.Real, &X1.Imag, !realIsZero(&X1.Imag));
+                sumprod.showProgressReal(X1, !realIsZero(&X1.Imag));
             }
         }
 
@@ -2426,9 +2429,9 @@ fn complexSolver() void {
 
     setRoundingMode(cpxSlvUserRoundingMode); // the results are rounded once, by RM
     convertRealToResultRegister(&cpxSlvBestMagnitudeY, REGISTER_Z, amNone);
-    convertComplexToResultRegister(&X1.Real, &X1.Imag, REGISTER_Y);
+    convertComplexToResultRegister(X1, REGISTER_Y);
     convertComplexRegisterToRealIfZeroImag(REGISTER_Y);
-    convertComplexToResultRegister(&cpxSlvBestX.Real, &cpxSlvBestX.Imag, REGISTER_X);
+    convertComplexToResultRegister(&cpxSlvBestX, REGISTER_X);
     convertComplexRegisterToRealIfZeroImag(REGISTER_X);
     copySourceRegisterToDestRegister(REGISTER_X, graphVariabl1);
 
