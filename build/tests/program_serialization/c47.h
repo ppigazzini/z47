@@ -53,6 +53,14 @@ typedef struct {
 } pcg32_random_t;
 typedef struct Z47ProgramSerializationGtkWidget GtkWidget;
 
+// typeDefinitions.h sizes cplx159_t's storage with realType.h's REAL_SIZE_IN_BYTES,
+// which this lane never reads; the macros give it that arithmetic over a two-byte
+// decNumber unit so the header compiles.
+typedef uint16_t decNumberUnit;
+#define DECDPUN 3
+#define REAL_MAX_DIGITS(digits)      (((digits + 2) / 6) * 6 + 3)
+#define REAL_SIZE_IN_BYTES(digits)   (10 + sizeof(decNumberUnit) * (REAL_MAX_DIGITS(digits) / DECDPUN))
+
 #include "../../../upstream/src/c47/defines.h"
 #include "../../../upstream/src/c47/items.h"
 #include "../../../upstream/src/c47/typeDefinitions.h"

@@ -9,6 +9,12 @@
 In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
 Func: fnSubtract
 
+In: FL_ASLIFT=0 FL_CPXRES=0 RY=LonI:"10000000000000000000000000000000000000000000000000000000000000000000000000000001" RX=CxMa:"M1,1[1e79i2]"
+Out: EC=0 FL_ASLIFT=1 RX=CxMa:"M1,1[1i-2]"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 RY=CxMa:"M1,1[1e79i2]" RX=LonI:"10000000000000000000000000000000000000000000000000000000000000000000000000000001"
+Out: EC=0 FL_ASLIFT=1 RX=CxMa:"M1,1[-1i2]"
+
 
 
 ;==================================================================
@@ -83,3 +89,20 @@ Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"7i8" RX=CxMa:"M2,3[-6i-6,-4i-4,-2i-2,
 ;=======================================
 In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=Cplx:"7i8" RX=CxMa:"M2,3[1i2,3i4,5i6,7i8,9i10,11i12]"
 Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M2,3[1i2,3i4,5i6,7i8,9i10,11i12]" RX=CxMa:"M2,3[6i6,4i4,2i2,0i0,-2i-2,-4i-4]"
+
+
+
+;=======================================
+; Complex matrix cancellation and special values
+;=======================================
+In: RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RY=CxMa:"M1,2[1.000000000000000000000000000000001i-0,infi-inf]" RX=CxMa:"M1,2[1i0,infi-inf]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M1,2[1i0,infi-inf]" RX=CxMa:"M1,2[1e-33i-0,NaNiNaN]"
+
+In: RMODE=6 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RY=Cplx:"-1 i 1" RX=CxMa:"M1,1[5e-34i-5e-34]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M1,1[5e-34i-5e-34]" RX=CxMa:"M1,1[-1.000000000000000000000000000000001i1]"
+Func: fnSubtract
+In:  RY=CxMa:"M1,1[-1.000000000000000000000000000000001i1]"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e40"
+Out: EC=0 RX=CxMa:"M1,1[-0i-0]"

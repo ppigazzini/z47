@@ -112,7 +112,7 @@ const extra_info: bool = core_state_build_options.extra_info_on_calc_error;
 const dmcp_build: bool = @import("builtin").target.os.tag == .freestanding;
 extern fn realSetZero(r: *real_t) void;
 const const34_2p32 = consts.const34_2p32;
-const const6147_2pi = consts.const6147_2pi;
+const const2139_2pi = consts.const2139_2pi;
 const const_2p64 = consts.const_2p64;
 const const_0 = consts.const_0;
 const const_2p63 = consts.const_2p63;
@@ -221,9 +221,13 @@ inline fn realToReal34(src: *const real_t, dst: *real34_t) void {
 }
 
 pub export fn convertRealToReal34ResultRegister(real: *const real_t, dest: calcRegister_t) callconv(.c) void {
-    var rounded: real_t = undefined;
-    roundToSignificantDigits(real, &rounded, if (significantDigits == 0) 34 else significantDigits, &ctxtReal75);
-    realToReal34(&rounded, reg34(dest));
+    if (significantDigits == 0 or significantDigits >= 34) {
+        realToReal34(real, reg34(dest));
+    } else {
+        var rounded: real_t = undefined;
+        roundToSignificantDigits(real, &rounded, significantDigits, &ctxtReal34);
+        realToReal34(&rounded, reg34(dest));
+    }
 }
 
 pub export fn convertRealToResultRegister(x: *const real_t, dest: calcRegister_t, angle: angularMode_t) callconv(.c) void {
@@ -247,29 +251,41 @@ pub export fn auto_free(p: *?*anyopaque) callconv(.c) void {
     }
 }
 
-fn realToInt(r: *const real_t, magnitude_limit: u64, round: c_int, err: ?*bool) u64 {
+// The integer part of a real, read digit by digit off its coefficient, truncated
+// towards zero; 0 with *error left set when the magnitude exceeds the limit.
+fn realToInt(r: *const real_t, magnitude_limit: u64, err: ?*bool) u64 {
+    const powers_of_ten = [DECDPUN]u16{ 1, 10, 100 };
+    var magnitude_digits: i64 = 1;
+    var value: u64 = 0;
+
     if (realIsSpecial(r)) {
         return 0;
     }
 
-    var integer: real_t = undefined;
-    realToIntegralValue(r, &integer, round, &ctxtReal39);
-
-    var value: u64 = 0;
-    var i: i32 = @divTrunc(integer.digits - 1, DECDPUN);
-    while (i >= 0) : (i -= 1) {
-        value = value * 1000 + integer.lsu[@intCast(i)]; // 1000 = 10^DECDPUN
-        if (value > magnitude_limit) {
-            return 0;
-        }
+    var limit = magnitude_limit;
+    while (limit >= 10) : (limit /= 10) {
+        magnitude_digits += 1;
+    }
+    const integer_digits: i64 = @as(i64, r.digits) + r.exponent;
+    if (!realIsZero(r) and integer_digits > magnitude_digits) {
+        return 0;
+    }
+    if (integer_digits <= 0) {
+        if (err) |ep| ep.* = false;
+        return 0;
     }
 
-    var e: i32 = integer.exponent;
-    while (e > 0) : (e -= 1) {
-        value *= 10;
-        if (value > magnitude_limit) {
+    var position: i64 = integer_digits - 1;
+    while (position >= 0) : (position -= 1) {
+        const coefficient_position = position - r.exponent;
+        const digit: u16 = if (coefficient_position < 0)
+            0
+        else
+            r.lsu[@intCast(@divTrunc(coefficient_position, DECDPUN))] / powers_of_ten[@intCast(@mod(coefficient_position, DECDPUN))] % 10;
+        if (value > (magnitude_limit - digit) / 10) {
             return 0;
         }
+        value = value * 10 + digit;
     }
 
     if (err) |ep| ep.* = false;
@@ -280,19 +296,41 @@ pub export fn realToInt32C47(r: *const real_t, err: ?*bool) callconv(.c) i32 {
     const sign = realIsNegative(r);
     const magnitude_limit: u64 = @as(u64, 2147483647) + @intFromBool(sign); // INT32_MAX (+1 if negative)
     if (err) |ep| ep.* = true;
-    const value: i64 = @intCast(realToInt(r, magnitude_limit, DEC_ROUND_DOWN, err));
+    const value: i64 = @intCast(realToInt(r, magnitude_limit, err));
     return if (sign) @intCast(-value) else @intCast(value);
 }
 
 pub export fn realToUint32C47(r: *const real_t, err: ?*bool) callconv(.c) u32 {
     if (err) |ep| ep.* = true;
 
-    if (realIsNegative(r)) {
+    if (realIsNegative(r) and !realIsZero(r)) {
         return 0;
     }
 
     const magnitude_limit: u64 = 4294967295; // UINT32_MAX
-    return @intCast(realToInt(r, magnitude_limit, DEC_ROUND_DOWN, err));
+    return @intCast(realToInt(r, magnitude_limit, err));
+}
+
+// A routine that is the same under addition and under subtraction takes one of
+// these. real34Add and real34Subtract are macros upstream and cannot be pointed at.
+pub export fn real34AddOp(y: *const real34_t, x: *const real34_t, res: *real34_t) callconv(.c) void {
+    _ = decQuadAdd(res, y, x, &ctxtReal34);
+}
+
+pub export fn real34SubtractOp(y: *const real34_t, x: *const real34_t, res: *real34_t) callconv(.c) void {
+    _ = decQuadSubtract(res, y, x, &ctxtReal34);
+}
+
+pub export fn realAddOp(y: *const real_t, x: *const real_t, res: *real_t, realContext: *realContext_t) callconv(.c) void {
+    _ = decNumberAdd(res, y, x, realContext);
+}
+
+pub export fn realSubtractOp(y: *const real_t, x: *const real_t, res: *real_t, realContext: *realContext_t) callconv(.c) void {
+    _ = decNumberSubtract(res, y, x, realContext);
+}
+
+pub export fn realMultiplyOp(y: *const real_t, x: *const real_t, res: *real_t, realContext: *realContext_t) callconv(.c) void {
+    _ = decNumberMultiply(res, y, x, realContext);
 }
 
 extern fn __gmpz_init2(op: [*c]mpz_struct, n: c_ulong) void;
@@ -306,6 +344,91 @@ extern fn __gmpz_tdiv_q_ui(q: [*c]mpz_struct, n: [*c]const mpz_struct, d: c_ulon
 extern fn __gmpz_tdiv_ui(n: [*c]const mpz_struct, d: c_ulong) c_ulong;
 
 extern fn __gmpz_sizeinbase(op: [*c]const mpz_struct, base: c_int) usize;
+extern fn __gmpz_cmp(a: *const mpz_struct, b: *const mpz_struct) c_int;
+extern fn __gmpz_cmpabs(a: *const mpz_struct, b: *const mpz_struct) c_int;
+extern fn __gmpz_pow_ui(r: *mpz_struct, base: *const mpz_struct, exponent: c_ulong) void;
+extern fn __gmpz_ui_pow_ui(r: *mpz_struct, base: c_ulong, exponent: c_ulong) void;
+extern fn __gmpz_mul(r: *mpz_struct, a: *const mpz_struct, b: *const mpz_struct) void;
+extern fn __gmpz_add(r: *mpz_struct, a: *const mpz_struct, b: *const mpz_struct) void;
+extern fn __gmpz_sub(r: *mpz_struct, a: *const mpz_struct, b: *const mpz_struct) void;
+extern fn __gmpz_tdiv_qr(q: *mpz_struct, r: *mpz_struct, n: *const mpz_struct, d: *const mpz_struct) void;
+extern fn __gmpz_rootrem(root: *mpz_struct, rem: *mpz_struct, op: *const mpz_struct, n: c_ulong) void;
+extern fn __gmpz_root(root: *mpz_struct, op: *const mpz_struct, n: c_ulong) c_int;
+extern fn __gmpz_set(r: *mpz_struct, op: *const mpz_struct) void;
+extern var roundingMode: u8;
+extern const roundingModeTable: [7]c_int;
+extern fn real34IsAnInteger(v: *align(1) const real34_t) bool;
+extern fn real34CompareAbsEqual(a: *align(1) const real34_t, b: *align(1) const real34_t) bool;
+extern fn decQuadAdd(res: *real34_t, a: *align(1) const real34_t, b: *align(1) const real34_t, ctx: *realContext_t) *real34_t;
+extern fn decQuadSubtract(res: *real34_t, a: *align(1) const real34_t, b: *align(1) const real34_t, ctx: *realContext_t) *real34_t;
+extern fn decNumberAdd(res: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
+extern fn decNumberSubtract(res: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
+extern fn decNumberMultiply(res: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
+const const34_1 = consts.const34_1;
+const cplx_t = abi.Complex;
+// decContext.h rounding enum order.
+const DEC_ROUND_CEILING: c_int = 0;
+const DEC_ROUND_UP: c_int = 1;
+const DEC_ROUND_HALF_UP: c_int = 2;
+const DEC_ROUND_HALF_EVEN: c_int = 3;
+const DEC_ROUND_HALF_DOWN: c_int = 4;
+const DEC_ROUND_FLOOR: c_int = 6;
+
+inline fn longIntegerIsZero(lg: *const mpz_struct) bool {
+    return lg._mp_size == 0;
+}
+inline fn longIntegerIsPositive(lg: *const mpz_struct) bool {
+    return lg._mp_size > 0;
+}
+/// mpz_odd_p: the low bit of the low limb, zero when there is no limb.
+inline fn longIntegerIsOdd(lg: *const mpz_struct) bool {
+    return lg._mp_size != 0 and (lg._mp_d[0] & 1) != 0;
+}
+inline fn longIntegerSetPositiveSign(lg: *mpz_struct) void {
+    if (lg._mp_size < 0) lg._mp_size = -lg._mp_size;
+}
+inline fn longIntegerCopy(src: *const mpz_struct, dst: *mpz_struct) void {
+    __gmpz_set(dst, src);
+}
+inline fn longIntegerCompare(a: *const mpz_struct, b: *const mpz_struct) i32 {
+    return __gmpz_cmp(a, b);
+}
+inline fn longIntegerCompareAbs(a: *const mpz_struct, b: *const mpz_struct) i32 {
+    return __gmpz_cmpabs(a, b);
+}
+inline fn longIntegerPowerUIntUInt(base: u32, exponent: u32, result: *mpz_struct) void {
+    __gmpz_ui_pow_ui(result, base, exponent);
+}
+inline fn longIntegerMultiplyUnbounded(a: *const mpz_struct, b: *const mpz_struct, result: *mpz_struct) void {
+    __gmpz_mul(result, a, b);
+}
+inline fn longIntegerAddUnbounded(a: *const mpz_struct, b: *const mpz_struct, result: *mpz_struct) void {
+    __gmpz_add(result, a, b);
+}
+inline fn longIntegerSubtractUnbounded(a: *const mpz_struct, b: *const mpz_struct, result: *mpz_struct) void {
+    __gmpz_sub(result, a, b);
+}
+inline fn longIntegerDivideQuotientRemainder(n: *const mpz_struct, d: *const mpz_struct, q: *mpz_struct, r: *mpz_struct) void {
+    __gmpz_tdiv_qr(q, r, n, d);
+}
+/// mpz_root: the truncated n-th root; true when it is exact.
+inline fn longIntegerRoot(op: *const mpz_struct, n: u32, result: *mpz_struct) bool {
+    return __gmpz_root(result, op, n) != 0;
+}
+extern fn decQuadIsNaN(v: *align(1) const real34_t) u32;
+extern fn decQuadIsInfinite(v: *align(1) const real34_t) u32;
+inline fn real34IsSpecial(v: *align(1) const real34_t) bool {
+    return decQuadIsNaN(v) != 0 or decQuadIsInfinite(v) != 0;
+}
+// realType.h real34IsNegative: the sign bit, so -0 and a signed NaN count.
+inline fn real34IsNegative(v: *align(1) const real34_t) bool {
+    return (v.bytes[15] & 0x80) == 0x80;
+}
+inline fn strlenC(str: [*c]const u8) usize {
+    var index: usize = 0;
+    while (str[index] != 0) : (index += 1) {}
+    return index;
+}
 
 pub export fn longIntegerToAllocatedString(lgInt: [*c]const mpz_struct, str: [*c]u8, strLen: i32) callconv(.c) void {
     var numberOfDigits: i32 = undefined;
@@ -775,7 +898,12 @@ fn typeIsNumber(t: u32, cmplx: ?*bool) bool {
     return false;
 }
 
-fn longIntegerAngleReduction(regist: calcRegister_t, angularMode: angularMode_t, reducedAngle: *real_t, reduceLongintegerAngle: bool) void {
+// Integer radian reduction: one width for the context, the buffers and the 2pi
+// divisor, so the divisor cannot drift from the context; 2139 covers the 1000
+// digit input cap. The 12321-digit 2pi NaNs on the DM42 decNumber here.
+const LONGINT_RADIAN_REDUCTION_DIGITS: i32 = 2139;
+
+pub export fn reduceLongIntegerRegisterAngle(regist: calcRegister_t, angularMode: angularMode_t, reducedAngle: *real_t, reduceLongintegerAngle: bool) callconv(.c) bool {
     var oneTurn: u32 = undefined;
     var angle: mpz_struct = undefined;
 
@@ -805,33 +933,33 @@ fn longIntegerAngleReduction(regist: calcRegister_t, angularMode: angularMode_t,
                 defer free(reducedAngleBuf2);
                 if (reducedAngleBuf == null or reducedAngleBuf2 == null) {
                     displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
-                    return;
+                    return false;
                 }
                 const reducedAngleTmp = reducedAngleBuf.?;
                 const reducedAngleTmp2 = reducedAngleBuf2.?;
                 var c: realContext_t = ctxtReal75;
                 // Cannot be increased further. 1071 works, 2139 is preferred as
                 // theoretically no case then fails; 6147 crashes.
-                c.digits = 2139;
+                c.digits = LONGINT_RADIAN_REDUCTION_DIGITS;
                 convertLongIntegerRegisterToLongInteger(regist, &angle);
 
-                if (longIntegerBase10Digits(&angle) > 1000) {
+                if (longIntegerBase10Digits(&angle) > 1001) {
                     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
-                    moreInfoOnError("In function longIntegerAngleReduction:", "Invalid integer size for angle reduction in radians: exponent too large.");
+                    moreInfoOnError("In function reduceLongIntegerRegisterAngle:", "Invalid integer size for angle reduction in radians: exponent too large.");
                     mpz_clear(&angle);
-                    return;
+                    return false;
                 }
 
                 _ = mpz_get_str(tmpString, 10, &angle);
                 _ = decNumberFromString(reducedAngleTmp, tmpString, &c);
-                WP34S_Mod(reducedAngleTmp, const6147_2pi(), reducedAngleTmp2, &c);
+                WP34S_Mod(reducedAngleTmp, const2139_2pi(), reducedAngleTmp2, &c); // the 2139-digit 2pi reduces at the 2139 context
                 realPlus(reducedAngleTmp2, reducedAngle, &ctxtReal75);
                 mpz_clear(&angle);
-                return;
+                return true;
             },
             else => { // amNone
                 convertLongIntegerRegisterToReal(regist, reducedAngle, &ctxtReal75);
-                return;
+                return true;
             },
         }
     }
@@ -843,6 +971,7 @@ fn longIntegerAngleReduction(regist: calcRegister_t, angularMode: angularMode_t,
     } else {
         convertLongIntegerRegisterToReal(regist, reducedAngle, &ctxtReal39);
     }
+    return true;
 }
 
 inline fn longIntegerBase10Digits(op: *const mpz_struct) u32 {
@@ -999,51 +1128,705 @@ pub export fn convertUInt64ToShortIntegerRegister(sign: i16, value_arg: u64, bas
     regShortInt(regist).* = value & shortIntegerMask;
 }
 
-pub export fn convertReal34ToLongInteger(re34: *align(1) const real34_t, lgInt: *mpz_struct, roundingMode: c_int) callconv(.c) void {
-    var bcd: [DECQUAD_Pmax]u8 = undefined;
-    var sign: i32 = undefined;
+pub export fn convertReal34ToLongInteger(re34: *align(1) const real34_t, lgInt: *mpz_struct, rounding_mode: c_int) callconv(.c) void {
     var exponent: i32 = undefined;
     var real34: real34_t = undefined;
 
-    real34ToIntegralValue(re34, &real34, roundingMode);
-    sign = real34GetCoefficient(&real34, &bcd);
-    exponent = real34GetExponent(&real34);
-
-    mpz_init(lgInt);
-    mpz_set_ui(lgInt, bcd[0]);
-
-    var i: usize = 1;
-    while (i < DECQUAD_Pmax) : (i += 1) {
-        mpz_mul_ui(lgInt, lgInt, 10);
-        mpz_add_ui(lgInt, lgInt, bcd[i]);
+    real34ToIntegralValue(re34, &real34, rounding_mode);
+    if (!convertReal34ToScaledLongInteger(&real34, lgInt, &exponent)) {
+        mpz_init(lgInt);
+        return;
     }
 
-    while (exponent > 0) {
+    while (exponent > 0) : (exponent -= 1) {
         mpz_mul_ui(lgInt, lgInt, 10);
-        exponent -= 1;
-    }
-
-    if (sign != 0) {
-        longIntegerChangeSign(lgInt);
     }
 }
 
-pub export fn convertReal34ToLongIntegerRegister(real34: *align(1) const real34_t, dest: calcRegister_t, roundingMode: c_int) callconv(.c) void {
+/// Converts an integer or finite Real34 register to an integer coefficient and
+/// decimal exponent; the coefficient is initialised when the conversion succeeds.
+pub export fn convertRegisterToScaledLongInteger(regist: calcRegister_t, coefficient: *mpz_struct, exponent: *i32) callconv(.c) bool {
+    exponent.* = 0;
+
+    switch (getRegisterDataType(regist)) {
+        dtLongInteger => {
+            convertLongIntegerRegisterToLongInteger(regist, coefficient);
+            return true;
+        },
+        dtShortInteger => {
+            convertShortIntegerRegisterToLongInteger(regist, coefficient);
+            return true;
+        },
+        dtReal34 => return convertReal34ToScaledLongInteger(reg34(regist), coefficient, exponent),
+        else => return false,
+    }
+}
+
+/// The exact parity of an integer register value: one for odd, zero for even,
+/// minus one for a noninteger or unsupported value.
+pub export fn getRegisterIntegerParity(regist: calcRegister_t) callconv(.c) i32 {
+    var integer: mpz_struct = undefined;
+
+    switch (getRegisterDataType(regist)) {
+        dtLongInteger => convertLongIntegerRegisterToLongInteger(regist, &integer),
+        dtShortInteger => convertShortIntegerRegisterToLongInteger(regist, &integer),
+        dtReal34 => {
+            if (!real34IsAnInteger(reg34(regist))) {
+                return -1;
+            }
+            convertReal34ToLongInteger(reg34(regist), &integer, DEC_ROUND_DOWN);
+        },
+        else => return -1,
+    }
+
+    const parity: i32 = if (longIntegerIsOdd(&integer)) 1 else 0;
+    mpz_clear(&integer);
+    return parity;
+}
+
+/// Converts a finite Real34 to its signed integer coefficient and decimal
+/// exponent; false, with nothing initialised, for a special value.
+pub export fn convertReal34ToScaledLongInteger(real34: *align(1) const real34_t, coefficient: *mpz_struct, exponent: *i32) callconv(.c) bool {
+    var bcd: [DECQUAD_Pmax]u8 = undefined;
+
+    if (real34IsSpecial(real34)) {
+        return false;
+    }
+
+    const sign = real34GetCoefficient(real34, &bcd);
+    exponent.* = real34GetExponent(real34);
+
+    mpz_init(coefficient);
+    mpz_set_ui(coefficient, bcd[0]);
+
+    var i: usize = 1;
+    while (i < DECQUAD_Pmax) : (i += 1) {
+        mpz_mul_ui(coefficient, coefficient, 10);
+        mpz_add_ui(coefficient, coefficient, bcd[i]);
+    }
+
+    if (sign != 0) {
+        longIntegerChangeSign(coefficient);
+    }
+
+    return true;
+}
+
+// mpz_sizeinbase(10) may answer one too many; this trims it to the exact count.
+fn exactLongIntegerDecimalDigits(value: *const mpz_struct) u32 {
+    var boundary: mpz_struct = undefined;
+
+    mpz_init(&boundary);
+    var digits = longIntegerBase10Digits(value);
+    longIntegerPowerUIntUInt(10, digits - 1, &boundary);
+    if (longIntegerCompareAbs(value, &boundary) < 0) {
+        digits -= 1;
+    }
+    mpz_clear(&boundary);
+    return digits;
+}
+
+/// Converts a signed integer coefficient and decimal exponent to a Real in the
+/// given context, keeping one sticky digit beyond the context so the conversion
+/// rounds once.
+pub export fn convertScaledLongIntegerToReal(coefficient: *const mpz_struct, exponent_in: i32, real: *real_t, realContext: *realContext_t) callconv(.c) void {
+    var exponent = exponent_in;
+
+    if (longIntegerIsZero(coefficient)) {
+        realSetZero(real);
+        return;
+    }
+
+    const digits = longIntegerBase10Digits(coefficient);
+    const context_digits: u32 = @intCast(realContext.digits);
+
+    if (digits > context_digits + 2) {
+        const discarded: u32 = digits - (context_digits + 2);
+        var leading: mpz_struct = undefined;
+        var trailing: mpz_struct = undefined;
+        var boundary: mpz_struct = undefined;
+
+        mpz_init(&boundary);
+        longIntegerPowerUIntUInt(10, discarded, &boundary);
+        mpz_init(&leading);
+        mpz_init(&trailing);
+        longIntegerDivideQuotientRemainder(coefficient, &boundary, &leading, &trailing);
+        longIntegerToAllocatedString(&leading, tmpString, TMP_STR_LENGTH);
+        var length = strlenC(tmpString);
+        if (!longIntegerIsZero(&trailing)) {
+            tmpString[length] = '1';
+            length += 1;
+            tmpString[length] = 0;
+            exponent += @as(i32, @intCast(discarded)) - 1;
+        } else {
+            exponent += @intCast(discarded);
+        }
+        mpz_clear(&trailing);
+        mpz_clear(&leading);
+        mpz_clear(&boundary);
+    } else {
+        longIntegerToAllocatedString(coefficient, tmpString, TMP_STR_LENGTH);
+    }
+
+    const length = strlenC(tmpString);
+    _ = abi.fmtBufZ(tmpString[length..@intCast(TMP_STR_LENGTH)], "e{d}", .{exponent});
+    stringToReal(tmpString, real, realContext);
+}
+
+// The context an exact result rounds to: Real34, narrowed to the selected
+// significant digits when SDIGS is set.
+fn exactResultContext(realContext: *realContext_t) void {
+    realContext.* = ctxtReal34;
+    if (significantDigits > 0 and significantDigits < 34) {
+        realContext.digits = significantDigits;
+        realContext.emin += @as(i32, significantDigits) - 34;
+    }
+}
+
+fn convertScaledLongIntegerToReal34Result(coefficient: *const mpz_struct, exponent: i32, real34: *real34_t) void {
+    var real: real_t = undefined;
+    var realContext: realContext_t = undefined;
+
+    exactResultContext(&realContext);
+    convertScaledLongIntegerToReal(coefficient, exponent, &real, &realContext);
+    realToReal34(&real, real34);
+}
+
+/// Converts a signed integer coefficient and decimal exponent to Real34.
+pub export fn convertScaledLongIntegerToReal34(coefficient: *const mpz_struct, exponent: i32, real34: *real34_t) callconv(.c) void {
+    var real: real_t = undefined;
+
+    convertScaledLongIntegerToReal(coefficient, exponent, &real, &ctxtReal34);
+    realToReal34(&real, real34);
+}
+
+/// Adds or subtracts two scaled integer coefficients exactly. `result` is
+/// initialised here and freed by the caller.
+pub export fn addSubtractScaledLongIntegers(first: *const mpz_struct, firstExponent: i32, second: *const mpz_struct, secondExponent: i32, subtract: bool, result: *mpz_struct, resultExponent: *i32) callconv(.c) void {
+    var firstScaled: *const mpz_struct = first;
+    var secondScaled: *const mpz_struct = second;
+    var scale: mpz_struct = undefined;
+
+    resultExponent.* = @min(firstExponent, secondExponent);
+    mpz_init(&scale);
+    mpz_init(result);
+    if (firstExponent > resultExponent.*) {
+        longIntegerPowerUIntUInt(10, @intCast(firstExponent - resultExponent.*), result);
+        longIntegerMultiplyUnbounded(first, result, &scale);
+        firstScaled = &scale;
+    } else if (secondExponent > resultExponent.*) {
+        longIntegerPowerUIntUInt(10, @intCast(secondExponent - resultExponent.*), result);
+        longIntegerMultiplyUnbounded(second, result, &scale);
+        secondScaled = &scale;
+    }
+
+    if (subtract) {
+        longIntegerSubtractUnbounded(firstScaled, secondScaled, result);
+    } else {
+        longIntegerAddUnbounded(firstScaled, secondScaled, result);
+    }
+
+    mpz_clear(&scale);
+}
+
+// The root, or the reciprocal root, of a long integer rounded once to Real34 in
+// the current rounding mode: the integer is scaled to a power of ten that gives
+// the root the target digits, rooted exactly, and the remainder decides the
+// rounding digit.
+fn rootLongIntegerToReal34Internal(operand: *const mpz_struct, order: u32, reciprocal: bool, exponentShift: i32, result: *real34_t) bool {
+    if (order < 2 or order > 4 or longIntegerIsZero(operand) or ((order & 1) == 0 and longIntegerIsNegative(operand))) {
+        return false;
+    }
+
+    const negative = longIntegerIsNegative(operand);
+    const targetDigits: u32 = if (significantDigits > 0 and significantDigits < 34) significantDigits else 34;
+    var decimalScale: i64 = undefined;
+    var magnitude: mpz_struct = undefined;
+    var scale: mpz_struct = undefined;
+    var scaled: mpz_struct = undefined;
+    var discarded: mpz_struct = undefined;
+    var coefficient: mpz_struct = undefined;
+    var remainder: mpz_struct = undefined;
+    var midpoint: mpz_struct = undefined;
+    var midpointPower: mpz_struct = undefined;
+    var comparison: mpz_struct = undefined;
+
+    mpz_init(&magnitude);
+    longIntegerCopy(operand, &magnitude);
+    longIntegerSetPositiveSign(&magnitude);
+    const digits = exactLongIntegerDecimalDigits(&magnitude);
+    if (reciprocal) {
+        const adjustedExponent: u64 = digits - 1;
+        var rootExponent: i64 = @intCast((adjustedExponent + order - 1) / order);
+
+        if (adjustedExponent % order == 0) {
+            mpz_init(&scale);
+            longIntegerPowerUIntUInt(10, @intCast(adjustedExponent), &scale);
+            if (longIntegerCompare(&magnitude, &scale) > 0) {
+                rootExponent += 1;
+            }
+            mpz_clear(&scale);
+        }
+        decimalScale = @as(i64, targetDigits) - 1 + rootExponent;
+    } else {
+        decimalScale = @as(i64, targetDigits) - 1 - @as(i64, (digits - 1) / order);
+    }
+    const scalePower: u64 = order * @as(u64, @intCast(if (decimalScale < 0) -decimalScale else decimalScale));
+    if (scalePower > std.math.maxInt(u32) or decimalScale < std.math.minInt(i32) or decimalScale > std.math.maxInt(i32)) {
+        mpz_clear(&magnitude);
+        return false;
+    }
+
+    mpz_init(&scale);
+    mpz_init(&scaled);
+    mpz_init(&discarded);
+    mpz_init(&coefficient);
+    mpz_init(&remainder);
+    longIntegerPowerUIntUInt(10, @intCast(scalePower), &scale);
+    if (reciprocal) {
+        longIntegerDivideQuotientRemainder(&scale, &magnitude, &scaled, &discarded);
+    } else if (decimalScale >= 0) {
+        longIntegerMultiplyUnbounded(&magnitude, &scale, &scaled);
+    } else {
+        longIntegerDivideQuotientRemainder(&magnitude, &scale, &scaled, &discarded);
+    }
+    __gmpz_rootrem(&coefficient, &remainder, &scaled, order);
+    const inexact = !longIntegerIsZero(&remainder) or !longIntegerIsZero(&discarded);
+
+    var increment = false;
+    if (inexact) {
+        const mode = roundingModeTable[roundingMode];
+
+        if (mode == DEC_ROUND_HALF_EVEN or mode == DEC_ROUND_HALF_UP or mode == DEC_ROUND_HALF_DOWN) {
+            mpz_init(&midpoint);
+            mpz_init(&midpointPower);
+            mpz_init(&comparison);
+            mpz_mul_ui(&midpoint, &coefficient, 2);
+            mpz_add_ui(&midpoint, &midpoint, 1);
+            __gmpz_pow_ui(&midpointPower, &midpoint, order);
+            const two_to_order: u32 = @as(u32, 1) << @intCast(order);
+            if (reciprocal) {
+                mpz_mul_ui(&comparison, &scale, two_to_order);
+                longIntegerMultiplyUnbounded(&midpointPower, &magnitude, &midpointPower);
+            } else {
+                mpz_mul_ui(&comparison, &magnitude, two_to_order);
+                if (decimalScale >= 0) {
+                    longIntegerMultiplyUnbounded(&comparison, &scale, &comparison);
+                } else {
+                    longIntegerMultiplyUnbounded(&midpointPower, &scale, &midpointPower);
+                }
+            }
+            const midpointComparison = longIntegerCompare(&comparison, &midpointPower);
+            increment = midpointComparison > 0 or
+                (midpointComparison == 0 and (mode == DEC_ROUND_HALF_UP or (mode == DEC_ROUND_HALF_EVEN and longIntegerIsOdd(&coefficient))));
+            mpz_clear(&comparison);
+            mpz_clear(&midpointPower);
+            mpz_clear(&midpoint);
+        } else if (mode == DEC_ROUND_UP) {
+            increment = true;
+        } else if (mode == DEC_ROUND_CEILING) {
+            increment = !negative;
+        } else if (mode == DEC_ROUND_FLOOR) {
+            increment = negative;
+        }
+    }
+
+    if (increment) {
+        mpz_add_ui(&coefficient, &coefficient, 1);
+    }
+    if (negative) {
+        longIntegerChangeSign(&coefficient);
+    }
+    convertScaledLongIntegerToReal34Result(&coefficient, exponentShift - @as(i32, @intCast(decimalScale)), result);
+
+    mpz_clear(&remainder);
+    mpz_clear(&coefficient);
+    mpz_clear(&discarded);
+    mpz_clear(&scaled);
+    mpz_clear(&scale);
+    mpz_clear(&magnitude);
+    return true;
+}
+
+/// Rounds a positive square root or signed cube root of a long integer (orders
+/// two through four) directly to Real34.
+pub export fn rootLongIntegerToReal34(operand: *const mpz_struct, order: u32, result: *real34_t) callconv(.c) bool {
+    return rootLongIntegerToReal34Internal(operand, order, false, 0, result);
+}
+
+/// Rounds a reciprocal square root or reciprocal signed cube root of a long
+/// integer (orders two through four) directly to Real34.
+pub export fn reciprocalRootLongIntegerToReal34(operand: *const mpz_struct, order: u32, result: *real34_t) callconv(.c) bool {
+    return rootLongIntegerToReal34Internal(operand, order, true, 0, result);
+}
+
+/// Rounds the root of an integer or Real34 register once to Real34. c*10^e is
+/// scaled to an exponent that is a multiple of the order, so its root is the root
+/// of the integer c, scaled exactly. An exact root takes the exponent e/order when
+/// exactExponent is set, as decNumber gives an exact square root; otherwise it has
+/// the 34 digits an inexact root has.
+pub export fn rootRegisterToReal34(regist: calcRegister_t, order: u32, exactExponent: bool, result: *real34_t) callconv(.c) bool {
+    var coefficient: mpz_struct = undefined;
+    var root: mpz_struct = undefined;
+    var exponent: i32 = undefined;
+    var rooted = true;
+
+    if (!convertRegisterToScaledLongInteger(regist, &coefficient, &exponent)) {
+        return false;
+    }
+    const order_i32: i32 = @intCast(order);
+    while (@rem(exponent, order_i32) != 0) {
+        mpz_mul_ui(&coefficient, &coefficient, 10);
+        exponent -= 1;
+    }
+    mpz_init(&root);
+    if (exactExponent and longIntegerIsPositive(&coefficient) and longIntegerRoot(&coefficient, order, &root)) {
+        convertScaledLongIntegerToReal34Result(&root, @divTrunc(exponent, order_i32), result);
+    } else {
+        rooted = rootLongIntegerToReal34Internal(&coefficient, order, false, @divTrunc(exponent, order_i32), result);
+    }
+    mpz_clear(&root);
+    mpz_clear(&coefficient);
+    return rooted;
+}
+
+/// Evaluates a long integer to a small signed integral power (minus four through
+/// four, excluding minus one through one) with one Real34 rounding.
+pub export fn powerLongIntegerToReal34(base: *const mpz_struct, exponent: i32, result: *real34_t) callconv(.c) bool {
+    var power: mpz_struct = undefined;
+
+    if ((exponent < -4 or exponent > 4 or (exponent >= -1 and exponent <= 1)) or (exponent < 0 and longIntegerIsZero(base))) {
+        return false;
+    }
+    const magnitude: u32 = @intCast(if (exponent < 0) -exponent else exponent);
+
+    mpz_init(&power);
+    __gmpz_pow_ui(&power, base, magnitude);
+    if (exponent > 0) {
+        convertScaledLongIntegerToReal34Result(&power, 0, result);
+    } else {
+        var one: mpz_struct = undefined;
+
+        mpz_init(&one);
+        mpz_set_ui(&one, 1);
+        _ = divideScaledLongIntegersToReal34(&one, 0, false, &power, 0, result);
+        mpz_clear(&one);
+    }
+    mpz_clear(&power);
+    return true;
+}
+
+/// Adds or subtracts a long integer and a finite Real34 exactly before the Real34
+/// conversion; false for a special Real34.
+pub export fn addSubtractLongIntegerReal34(integerRegister: calcRegister_t, real34: *align(1) const real34_t, integerFirst: bool, subtract: bool, result: *real34_t) callconv(.c) bool {
+    var exponent: i32 = undefined;
+    var integer: mpz_struct = undefined;
+    var coefficient: mpz_struct = undefined;
+    var combined: mpz_struct = undefined;
+    const integerNegative = subtract and !integerFirst;
+    const realNegative = real34IsNegative(real34) != (subtract and integerFirst);
+
+    convertLongIntegerRegisterToLongInteger(integerRegister, &integer);
+    if (!convertReal34ToScaledLongInteger(real34, &coefficient, &exponent)) {
+        mpz_clear(&integer);
+        return false;
+    }
+
+    const negativeZero = if (longIntegerIsZero(&integer) and longIntegerIsZero(&coefficient) and integerNegative == realNegative)
+        integerNegative
+    else
+        ctxtReal34.round == DEC_ROUND_FLOOR;
+    if (integerFirst) {
+        addSubtractScaledLongIntegers(&integer, 0, &coefficient, exponent, subtract, &combined, &exponent);
+    } else {
+        addSubtractScaledLongIntegers(&coefficient, exponent, &integer, 0, subtract, &combined, &exponent);
+    }
+
+    convertScaledLongIntegerToReal34Result(&combined, exponent, result);
+    if (longIntegerIsZero(&combined) and negativeZero) {
+        real34SetNegativeSign(result);
+    }
+
+    mpz_clear(&combined);
+    mpz_clear(&coefficient);
+    mpz_clear(&integer);
+    return true;
+}
+
+// Multiplies two scaled integer coefficients before one Real34 conversion.
+fn multiplyScaledLongIntegersToReal34(first: *const mpz_struct, firstExponent: i32, second: *const mpz_struct, secondExponent: i32, exponentAdjustment: i32, negativeZero: bool, result: *real34_t) void {
+    var product: mpz_struct = undefined;
+
+    mpz_init(&product);
+    longIntegerMultiplyUnbounded(first, second, &product);
+    convertScaledLongIntegerToReal34Result(&product, firstExponent + secondExponent + exponentAdjustment, result);
+    if (longIntegerIsZero(&product) and negativeZero) {
+        real34SetNegativeSign(result);
+    }
+    mpz_clear(&product);
+}
+
+/// Multiplies a long integer and a finite Real34 exactly before the Real34
+/// conversion; false for a special Real34.
+pub export fn multiplyLongIntegerReal34(integerRegister: calcRegister_t, real34: *align(1) const real34_t, result: *real34_t) callconv(.c) bool {
+    var exponent: i32 = undefined;
+    var integer: mpz_struct = undefined;
+    var coefficient: mpz_struct = undefined;
+    const negative = (getRegisterLongIntegerSign(integerRegister) == LI_NEGATIVE) != real34IsNegative(real34);
+
+    convertLongIntegerRegisterToLongInteger(integerRegister, &integer);
+    if (!convertReal34ToScaledLongInteger(real34, &coefficient, &exponent)) {
+        mpz_clear(&integer);
+        return false;
+    }
+
+    multiplyScaledLongIntegersToReal34(&integer, 0, &coefficient, exponent, 0, negative, result);
+
+    mpz_clear(&coefficient);
+    mpz_clear(&integer);
+    return true;
+}
+
+/// Multiplies two finite register values with a decimal scale and one Real34
+/// rounding; false for an unsupported or special operand.
+pub export fn multiplyRegisterValuesToReal34Scaled(firstRegister: calcRegister_t, secondRegister: calcRegister_t, exponentAdjustment: i32, result: *real34_t) callconv(.c) bool {
+    var firstExponent: i32 = undefined;
+    var secondExponent: i32 = undefined;
+    var first: mpz_struct = undefined;
+    var second: mpz_struct = undefined;
+
+    if (!convertRegisterToScaledLongInteger(firstRegister, &first, &firstExponent)) {
+        return false;
+    }
+    if (!convertRegisterToScaledLongInteger(secondRegister, &second, &secondExponent)) {
+        mpz_clear(&first);
+        return false;
+    }
+
+    var firstNegative = longIntegerIsNegative(&first);
+    var secondNegative = longIntegerIsNegative(&second);
+    if (longIntegerIsZero(&first) and getRegisterDataType(firstRegister) == dtReal34) {
+        firstNegative = real34IsNegative(reg34(firstRegister));
+    }
+    if (longIntegerIsZero(&second) and getRegisterDataType(secondRegister) == dtReal34) {
+        secondNegative = real34IsNegative(reg34(secondRegister));
+    }
+    multiplyScaledLongIntegersToReal34(&first, firstExponent, &second, secondExponent, exponentAdjustment, firstNegative != secondNegative, result);
+
+    mpz_clear(&second);
+    mpz_clear(&first);
+    return true;
+}
+
+/// Divides two scaled integer coefficients in the supplied context; false for a
+/// zero denominator.
+pub export fn divideScaledLongIntegersToReal(numerator: *const mpz_struct, numeratorExponent: i32, negativeZero: bool, denominator: *const mpz_struct, denominatorExponent: i32, result: *real_t, realContext: *realContext_t) callconv(.c) bool {
+    var scaledNumerator: mpz_struct = undefined;
+    var scaledDenominator: mpz_struct = undefined;
+    var power: mpz_struct = undefined;
+    var quotient: mpz_struct = undefined;
+    var remainder: mpz_struct = undefined;
+
+    if (longIntegerIsZero(denominator)) {
+        return false;
+    }
+
+    if (longIntegerIsZero(numerator)) {
+        realSetZero(result);
+        if (negativeZero) {
+            realSetNegativeSign(result);
+        }
+        return true;
+    }
+
+    const negative = longIntegerIsNegative(numerator) != longIntegerIsNegative(denominator);
+    // Each base-10 digit count can exceed the exact count by one; two extra places guarantee a rounding digit.
+    var scale: i32 = realContext.digits + 2 + @as(i32, @intCast(longIntegerBase10Digits(denominator))) - @as(i32, @intCast(longIntegerBase10Digits(numerator)));
+
+    mpz_init(&scaledNumerator);
+    mpz_init(&scaledDenominator);
+    mpz_init(&power);
+    mpz_init(&quotient);
+    mpz_init(&remainder);
+    longIntegerCopy(numerator, &scaledNumerator);
+    longIntegerCopy(denominator, &scaledDenominator);
+    longIntegerSetPositiveSign(&scaledNumerator);
+    longIntegerSetPositiveSign(&scaledDenominator);
+    if (scale >= 0) {
+        longIntegerPowerUIntUInt(10, @intCast(scale), &power);
+        longIntegerMultiplyUnbounded(&scaledNumerator, &power, &scaledNumerator);
+    } else {
+        longIntegerPowerUIntUInt(10, @intCast(-scale), &power);
+        longIntegerMultiplyUnbounded(&scaledDenominator, &power, &scaledDenominator);
+    }
+    longIntegerDivideQuotientRemainder(&scaledNumerator, &scaledDenominator, &quotient, &remainder);
+
+    if (!longIntegerIsZero(&remainder)) {
+        mpz_mul_ui(&quotient, &quotient, 10);
+        mpz_add_ui(&quotient, &quotient, 1);
+        scale += 1;
+    }
+    if (negative) {
+        longIntegerChangeSign(&quotient);
+    }
+
+    convertScaledLongIntegerToReal(&quotient, numeratorExponent - denominatorExponent - scale, result, realContext);
+    mpz_clear(&remainder);
+    mpz_clear(&quotient);
+    mpz_clear(&power);
+    mpz_clear(&scaledDenominator);
+    mpz_clear(&scaledNumerator);
+    return true;
+}
+
+/// Divides two scaled integer coefficients with one result rounding; false for a
+/// zero denominator.
+pub export fn divideScaledLongIntegersToReal34(numerator: *const mpz_struct, numeratorExponent: i32, negativeZero: bool, denominator: *const mpz_struct, denominatorExponent: i32, result: *real34_t) callconv(.c) bool {
+    var real: real_t = undefined;
+    var realContext: realContext_t = undefined;
+
+    exactResultContext(&realContext);
+    const ok = divideScaledLongIntegersToReal(numerator, numeratorExponent, negativeZero, denominator, denominatorExponent, &real, &realContext);
+    if (ok) {
+        realToReal34(&real, result);
+    }
+    return ok;
+}
+
+/// Divides a long integer and a finite Real34 with one result rounding; false for
+/// a special Real34 or a zero denominator.
+pub export fn divideLongIntegerReal34(integerRegister: calcRegister_t, real34: *align(1) const real34_t, integerFirst: bool, result: *real34_t) callconv(.c) bool {
+    var exponent: i32 = undefined;
+    var integer: mpz_struct = undefined;
+    var coefficient: mpz_struct = undefined;
+
+    convertLongIntegerRegisterToLongInteger(integerRegister, &integer);
+    if (!convertReal34ToScaledLongInteger(real34, &coefficient, &exponent)) {
+        mpz_clear(&integer);
+        return false;
+    }
+
+    var ok: bool = undefined;
+    if (integerFirst) {
+        ok = divideScaledLongIntegersToReal34(&integer, 0, real34IsNegative(real34), &coefficient, exponent, result);
+    } else {
+        const negativeZero = longIntegerIsZero(&coefficient) and (real34IsNegative(real34) != longIntegerIsNegative(&integer));
+        ok = divideScaledLongIntegersToReal34(&coefficient, exponent, negativeZero, &integer, 0, result);
+    }
+    mpz_clear(&coefficient);
+    mpz_clear(&integer);
+    return ok;
+}
+
+/// Divides two finite integer or Real34 register values with a decimal scale and
+/// one Real34 rounding; false for a special operand or a zero denominator.
+pub export fn divideRegisterValuesToReal34Scaled(numeratorRegister: calcRegister_t, denominatorRegister: calcRegister_t, exponentAdjustment: i32, result: *real34_t) callconv(.c) bool {
+    var numeratorExponent: i32 = undefined;
+    var denominatorExponent: i32 = undefined;
+    var numerator: mpz_struct = undefined;
+    var denominator: mpz_struct = undefined;
+
+    if (!convertRegisterToScaledLongInteger(numeratorRegister, &numerator, &numeratorExponent)) {
+        return false;
+    }
+    if (!convertRegisterToScaledLongInteger(denominatorRegister, &denominator, &denominatorExponent)) {
+        mpz_clear(&numerator);
+        return false;
+    }
+
+    var negativeZero = false;
+    if (longIntegerIsZero(&numerator)) {
+        const numeratorNegative = getRegisterDataType(numeratorRegister) == dtReal34 and real34IsNegative(reg34(numeratorRegister));
+        negativeZero = numeratorNegative != longIntegerIsNegative(&denominator);
+    }
+    const ok = divideScaledLongIntegersToReal34(&numerator, numeratorExponent + exponentAdjustment, negativeZero, &denominator, denominatorExponent, result);
+    mpz_clear(&denominator);
+    mpz_clear(&numerator);
+    return ok;
+}
+
+/// Divides two finite integer or Real34 register values with one Real34 rounding.
+pub export fn divideRegisterValuesToReal34(numeratorRegister: calcRegister_t, denominatorRegister: calcRegister_t, result: *real34_t) callconv(.c) bool {
+    return divideRegisterValuesToReal34Scaled(numeratorRegister, denominatorRegister, 0, result);
+}
+
+/// Divides one by a long or short integer register with one Real34 rounding;
+/// false for a zero denominator.
+pub export fn reciprocalLongIntegerRegisterToReal34(denominatorRegister: calcRegister_t, result: *real34_t) callconv(.c) bool {
+    var numerator: mpz_struct = undefined;
+    var denominator: mpz_struct = undefined;
+
+    mpz_init(&numerator);
+    mpz_set_ui(&numerator, 1);
+    _ = getRegisterAsLongIntQuiet(denominatorRegister, &denominator, null);
+    const ok = divideScaledLongIntegersToReal34(&numerator, 0, false, &denominator, 0, result);
+    mpz_clear(&denominator);
+    mpz_clear(&numerator);
+    return ok;
+}
+
+/// Evaluates a finite scalar base raised to an exponent of plus or minus one;
+/// false when the identity does not apply.
+pub export fn registerIdentityExponentToReal34(baseRegister: calcRegister_t, exponentRegister: calcRegister_t, result: *real34_t) callconv(.c) bool {
+    if (getRegisterDataType(exponentRegister) != dtReal34 or !real34CompareAbsEqual(reg34(exponentRegister), const34_1())) {
+        return false;
+    }
+
+    const reciprocal = real34IsNegative(reg34(exponentRegister));
+    switch (getRegisterDataType(baseRegister)) {
+        dtLongInteger => {
+            if (reciprocal) {
+                return reciprocalLongIntegerRegisterToReal34(baseRegister, result);
+            }
+            var base: mpz_struct = undefined;
+
+            convertLongIntegerRegisterToLongInteger(baseRegister, &base);
+            convertScaledLongIntegerToReal34Result(&base, 0, result);
+            mpz_clear(&base);
+            return true;
+        },
+        dtReal34 => {
+            if (reciprocal) {
+                if (real34IsSpecial(reg34(baseRegister)) or real34IsZero(reg34(baseRegister))) {
+                    return false;
+                }
+                real34Divide(const34_1(), reg34(baseRegister), result);
+            } else {
+                real34Copy(reg34(baseRegister), result);
+            }
+            return true;
+        },
+        else => return false,
+    }
+}
+
+pub export fn convertReal34ToLongIntegerRegister(real34: *align(1) const real34_t, dest: calcRegister_t, rounding_mode: c_int) callconv(.c) void {
     var lgInt: mpz_struct = undefined;
 
-    convertReal34ToLongInteger(real34, &lgInt, roundingMode);
+    convertReal34ToLongInteger(real34, &lgInt, rounding_mode);
     convertLongIntegerToLongIntegerRegister(&lgInt, dest);
 
     mpz_clear(&lgInt);
 }
 
-pub export fn convertRealToLongInteger(re: *const real_t, lgInt: *mpz_struct, roundingMode: c_int) callconv(.c) void {
+pub export fn convertReal34ToReal34Register(real34: *align(1) const real34_t, dest: calcRegister_t) callconv(.c) void {
+    reallocateRegister(dest, dtReal34, REAL34_SIZE_IN_BLOCKS, amNoneU);
+    real34Copy(real34, reg34(dest));
+}
+
+pub export fn convertReal34ToComplex34Register(real34: *align(1) const real34_t, imag34: *align(1) const real34_t, dest: calcRegister_t) callconv(.c) void {
+    reallocateRegister(dest, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNoneU);
+    real34Copy(real34, reg34(dest));
+    real34Copy(imag34, regImag34(dest));
+}
+
+pub export fn convertRealToLongInteger(re: *const real_t, lgInt: *mpz_struct, rounding_mode: c_int) callconv(.c) void {
     var bcd: [75]u8 = undefined;
     var sign: i32 = undefined;
     var exponent: i32 = undefined;
     var real: real_t = undefined;
 
-    realToIntegralValue(re, &real, roundingMode, &ctxtReal39);
+    realToIntegralValue(re, &real, rounding_mode, &ctxtReal39);
     realGetCoefficient(&real, &bcd);
     sign = if (realIsNegative(&real)) 1 else 0;
     exponent = real.exponent;
@@ -1066,23 +1849,33 @@ pub export fn convertRealToLongInteger(re: *const real_t, lgInt: *mpz_struct, ro
     }
 }
 
-pub export fn convertRealToLongIntegerRegister(real: *const real_t, dest: calcRegister_t, roundingMode: c_int) callconv(.c) void {
+pub export fn convertRealToLongIntegerRegister(real: *const real_t, dest: calcRegister_t, rounding_mode: c_int) callconv(.c) void {
     var lgInt: mpz_struct = undefined;
 
     mpz_init(&lgInt);
 
-    convertRealToLongInteger(real, &lgInt, roundingMode);
+    convertRealToLongInteger(real, &lgInt, rounding_mode);
     convertLongIntegerToLongIntegerRegister(&lgInt, dest);
     mpz_clear(&lgInt);
 }
 
 pub export fn convertRealToImag34ResultRegister(real: *const real_t, dest: calcRegister_t) callconv(.c) void {
-    var rounded: real_t = undefined;
-    roundToSignificantDigits(real, &rounded, if (significantDigits == 0) 34 else significantDigits, &ctxtReal75);
-    realToReal34(&rounded, regImag34(dest));
+    if (significantDigits == 0 or significantDigits >= 34) {
+        realToReal34(real, regImag34(dest));
+    } else {
+        var rounded: real_t = undefined;
+        roundToSignificantDigits(real, &rounded, significantDigits, &ctxtReal34);
+        realToReal34(&rounded, regImag34(dest));
+    }
 }
 
-pub export fn convertComplexToResultRegister(real: *const real_t, imag: *const real_t, dest: calcRegister_t) callconv(.c) void {
+pub export fn convertComplexToResultRegister(z: *const cplx_t, dest: calcRegister_t) callconv(.c) void {
+    convertComplexPartsToResultRegister(&z.Real, &z.Imag, dest);
+}
+
+/// convertComplexToResultRegister for a real and an imaginary part that are not
+/// one cplx_t, such as constants or parts computed apart.
+pub export fn convertComplexPartsToResultRegister(real: *const real_t, imag: *const real_t, dest: calcRegister_t) callconv(.c) void {
     reallocateRegister(dest, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNoneU);
     convertRealToReal34ResultRegister(real, dest);
     convertRealToImag34ResultRegister(imag, dest);
@@ -1208,10 +2001,9 @@ pub export fn convertDoubleToReal34RegisterPush(x: f64, destination: calcRegiste
 }
 
 pub export fn convertRegisterToDouble(regist: calcRegister_t) callconv(.c) f64 {
-    var regReal: real_t = undefined;
-    var regImag: real_t = undefined;
+    var regValue: cplx_t = undefined;
 
-    return if (getRegisterAsComplex(regist, &regReal, &regImag)) fnRealToFloat(&regReal) else DOUBLE_NOT_INIT;
+    return if (getRegisterAsComplex(regist, &regValue)) fnRealToFloat(&regValue.Real) else DOUBLE_NOT_INIT;
 }
 
 pub export fn realToFloat(vv: *const real_t, v: *f32) callconv(.c) void {
@@ -1254,14 +2046,14 @@ pub export fn badDomainError(reg: calcRegister_t) callconv(.c) void {
     }
 }
 
-pub export fn getRegisterAsComplex(reg: calcRegister_t, r: *real_t, i: *real_t) callconv(.c) bool {
+pub export fn getRegisterAsComplex(reg: calcRegister_t, z: *cplx_t) callconv(.c) bool {
     switch (getRegisterDataType(reg)) {
-        dtLongInteger => convertLongIntegerRegisterToReal(reg, r, &ctxtReal75),
-        dtShortInteger => convertShortIntegerRegisterToReal(reg, r, &ctxtReal34),
-        dtReal34 => real34ToReal(reg34(reg), r),
+        dtLongInteger => convertLongIntegerRegisterToReal(reg, &z.Real, &ctxtReal75),
+        dtShortInteger => convertShortIntegerRegisterToReal(reg, &z.Real, &ctxtReal34),
+        dtReal34 => real34ToReal(reg34(reg), &z.Real),
         dtComplex34 => {
-            real34ToReal(reg34(reg), r);
-            real34ToReal(regImag34(reg), i);
+            real34ToReal(reg34(reg), &z.Real);
+            real34ToReal(regImag34(reg), &z.Imag);
             return true;
         },
         else => {
@@ -1269,20 +2061,20 @@ pub export fn getRegisterAsComplex(reg: calcRegister_t, r: *real_t, i: *real_t) 
             return false;
         },
     }
-    realSetZero(i);
+    realSetZero(&z.Imag);
     return true;
 }
 
-pub export fn getRegisterAsComplexOrAnyReal(reg: calcRegister_t, r: *real_t, i: *real_t, cmplx: ?*bool) callconv(.c) bool {
-    const ret = getRegisterAsComplexOrAnyRealQuiet(reg, r, i, cmplx);
+pub export fn getRegisterAsComplexOrAnyReal(reg: calcRegister_t, z: *cplx_t, cmplx: ?*bool) callconv(.c) bool {
+    const ret = getRegisterAsComplexOrAnyRealQuiet(reg, z, cmplx);
     if (!ret) {
         badTypeError(reg);
     }
     return ret;
 }
 
-pub export fn getRegisterAsComplexOrReal(reg: calcRegister_t, r: *real_t, i: *real_t, cmplx: ?*bool) callconv(.c) bool {
-    const ret = getRegisterAsComplexOrRealQuiet(reg, r, i, cmplx);
+pub export fn getRegisterAsComplexOrReal(reg: calcRegister_t, z: *cplx_t, cmplx: ?*bool) callconv(.c) bool {
+    const ret = getRegisterAsComplexOrRealQuiet(reg, z, cmplx);
     if (!ret) {
         badTypeError(reg);
     }
@@ -1483,7 +2275,10 @@ extern fn __gmpz_cmp_ui(p: *const mpz_struct, v: c_ulong) c_int;
 pub export fn getRegisterAsRealAngle(reg: calcRegister_t, val: *real_t, xAngularMode: *angularMode_t, reduceLongintegerAngle: bool) callconv(.c) bool {
     switch (getRegisterDataType(reg)) {
         dtLongInteger => {
-            longIntegerAngleReduction(reg, currentAngularMode, val, reduceLongintegerAngle);
+            if (!reduceLongIntegerRegisterAngle(reg, currentAngularMode, val, reduceLongintegerAngle)) {
+                return false;
+            }
+            // the out of range error is reported there, where the long integer is still at hand
             xAngularMode.* = currentAngularMode;
         },
         dtShortInteger => {
@@ -1622,13 +2417,32 @@ pub export fn restoreRegisterSnapshot(reg: calcRegister_t, s: *snap_t) callconv(
     setRegisterDataType(reg, s.t, s.tag);
 }
 
+/// Writes a snapshot back and leaves it usable, for a loop that puts the same
+/// operand back at every element: restoreRegisterSnapshot frees what it owns, so
+/// this takes a fresh copy of the register straight after writing it back.
+pub export fn applyRegisterSnapshot(reg: calcRegister_t, s: *snap_t) callconv(.c) void {
+    restoreRegisterSnapshot(reg, s);
+    saveRegisterSnapshot(reg, s);
+}
+
+/// Releases what a snapshot owns without writing it back. A loop driven by
+/// applyRegisterSnapshot ends with this, so the result register is left alone.
+pub export fn freeRegisterSnapshot(s: *snap_t) callconv(.c) void {
+    if (@as(u32, s.t) == dtLongInteger) {
+        mpz_clear(&s.li);
+    } else if (s.mem) |mem| {
+        freeC47Blocks(mem, s.blocks);
+        s.mem = null;
+        s.blocks = 0;
+    }
+}
+
 pub export fn processRealComplexMonadicFunction(realf: Fn0, complexf: Fn0) callconv(.c) void {
     processIntRealComplexMonadicFunction(realf, complexf, null, null);
 }
 
 pub export fn processIntRealComplexMonadicFunction(realf: Fn0, complexf: Fn0, shortintf: Fn0, longintf: Fn0) callconv(.c) void {
-    var aReal: real_t = undefined;
-    var aImag: real_t = undefined;
+    var a: cplx_t = undefined;
     var cmplxRes: bool = false;
     const t = getRegisterDataType(REGISTER_X);
 
@@ -1654,7 +2468,7 @@ pub export fn processIntRealComplexMonadicFunction(realf: Fn0, complexf: Fn0, sh
             elementwiseRema(realf);
         } else if (t == dtComplex34Matrix and complexf != null) {
             elementwiseCxma(complexf);
-        } else if (getRegisterAsComplexOrReal(REGISTER_X, &aReal, &aImag, &cmplxRes)) {
+        } else if (getRegisterAsComplexOrReal(REGISTER_X, &a, &cmplxRes)) {
             if (!cmplxRes and realf != null) {
                 realf.?();
             } else if (complexf != null) {
@@ -1669,10 +2483,8 @@ pub export fn processIntRealComplexMonadicFunction(realf: Fn0, complexf: Fn0, sh
 }
 
 pub export fn processRealComplexDyadicFunction(realf: Fn0, complexf: Fn0) callconv(.c) void {
-    var xReal: real_t = undefined;
-    var xImag: real_t = undefined;
-    var yReal: real_t = undefined;
-    var yImag: real_t = undefined;
+    var x: cplx_t = undefined;
+    var y: cplx_t = undefined;
     const typeX = getRegisterDataType(REGISTER_X);
     const typeY = getRegisterDataType(REGISTER_Y);
     var xCmplx: bool = false;
@@ -1730,12 +2542,16 @@ pub export fn processRealComplexDyadicFunction(realf: Fn0, complexf: Fn0) callco
             }
             break :fin;
         } else if (typeY == dtComplex34Matrix and xNumber) {
-            elementwiseCxmaCplx(complexf);
+            if (complexf != null) {
+                elementwiseCxmaCplx(complexf);
+            } else {
+                badTypeError(REGISTER_Y);
+            }
             break :fin;
         }
 
         // Fall through to numeric/numeric or error if not
-        if (!getRegisterAsComplexOrReal(REGISTER_X, &xReal, &xImag, &cmplxRes) or !getRegisterAsComplexOrReal(REGISTER_Y, &yReal, &yImag, &cmplxRes)) {
+        if (!getRegisterAsComplexOrReal(REGISTER_X, &x, &cmplxRes) or !getRegisterAsComplexOrReal(REGISTER_Y, &y, &cmplxRes)) {
             return;
         }
 
@@ -1807,29 +2623,29 @@ pub export fn badDomainErrorX() callconv(.c) void {
     badDomainError(REGISTER_X);
 }
 
-pub export fn getRegisterAsComplexOrAnyRealQuiet(reg: calcRegister_t, r: *real_t, i: *real_t, cmplx: ?*bool) callconv(.c) bool {
+pub export fn getRegisterAsComplexOrAnyRealQuiet(reg: calcRegister_t, z: *cplx_t, cmplx: ?*bool) callconv(.c) bool {
     switch (getRegisterDataType(reg)) {
-        dtLongInteger => convertLongIntegerRegisterToReal(reg, r, &ctxtReal75),
-        dtShortInteger => convertShortIntegerRegisterToReal(reg, r, &ctxtReal34),
-        dtTime, dtDate, dtReal34 => real34ToReal(reg34(reg), r),
+        dtLongInteger => convertLongIntegerRegisterToReal(reg, &z.Real, &ctxtReal75),
+        dtShortInteger => convertShortIntegerRegisterToReal(reg, &z.Real, &ctxtReal34),
+        dtTime, dtDate, dtReal34 => real34ToReal(reg34(reg), &z.Real),
         dtComplex34 => {
-            real34ToReal(reg34(reg), r);
-            real34ToReal(regImag34(reg), i);
+            real34ToReal(reg34(reg), &z.Real);
+            real34ToReal(regImag34(reg), &z.Imag);
             if (cmplx) |c| c.* = true;
             return true;
         },
         else => return false,
     }
-    realSetZero(i);
+    realSetZero(&z.Imag);
     return true;
 }
 
-pub export fn getRegisterAsComplexOrRealQuiet(reg: calcRegister_t, r: *real_t, i: *real_t, cmplx: ?*bool) callconv(.c) bool {
+pub export fn getRegisterAsComplexOrRealQuiet(reg: calcRegister_t, z: *cplx_t, cmplx: ?*bool) callconv(.c) bool {
     const t = getRegisterDataType(reg);
     if (t == dtTime or t == dtDate) {
         return false;
     }
-    return getRegisterAsComplexOrAnyRealQuiet(reg, r, i, cmplx);
+    return getRegisterAsComplexOrAnyRealQuiet(reg, z, cmplx);
 }
 
 pub export fn getRegisterAsAnyReal(reg: calcRegister_t, val: *real_t) callconv(.c) bool {

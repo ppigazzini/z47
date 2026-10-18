@@ -1,7 +1,8 @@
 ** AUDIT CERTIFICATE of the C47/R47 conversion constants comprising INDEPENDENT sources and calculations.             **
-** Generated:   2026-10-01 (UTC date; the input hashes below pin the exact audited state)                             **
-** Commit:      20a7b4f8d60f4d910bd8afcd48570f78e6bc6eba (working tree had uncommitted changes)                       **
+** Generated:   2026-10-13 (UTC date; the input hashes below pin the exact audited state)                             **
+** Commit:      7798818d6f03fff8ab857528d76d1bb4413f3822                                                              **
 ** Note:        Regenerated at every testSuite run; re-written only when the parts between the ruled lines change.    **
+**              Committed in the normal way by a project owner, at a release tag.                                     **
 **              For a clean Commit line above: make test, commit, then make test again and re-commit the certificate. **
 ========================================================================================================================
 ** Project:     C47/R47, community firmware for DM42-class scientific calculators (this repository)                   **
@@ -9,14 +10,14 @@
 **              (note: the committed copy of this file is at least one commit ahead of the recorded hash; more        **
 **              when the certified content has been stable across multiple commits)                                   **
 ** Input:       src/generateConstants/generateConstants.c                                                             **
-**              SHA-256 025c96155effce85f87a03a779f6b49edb347e1f068b8ff9f682a31f1ce4f3c7                              **
+**              SHA-256 0222db1779705270f45b649d60ac26788275586a6af72671fa570b1d3ea5163c                              **
 ** Input:       src/c47/defines.h - only the defines consulted for #if branch selection (form "#if (NAME == n)"):     **
 **              MMHG_PA_133_3224 = 1                                                                                  **
 **              SHA-256 of the list above: b6120bb810c1e19b4cd94046ec907e1f38eef9ad01cbd689f759ff469396126d           **
 ** Input:       src/c47/conversionUnits.h                                                                             **
 **              SHA-256 db95377dd7f2b1673932e6f720e56218058bd2f60dbe077f8559555c7b2c2b4d                              **
 ** Input:       src/c47/conversionUnits.c                                                                             **
-**              SHA-256 57daa4efca1c780c33d36ba48db2e0eb524e936ff92680f08e4c06ee8a2068d2                              **
+**              SHA-256 7fd7a0e286cc3f865c224e167885b7ff9f9be08e3339c40a30de5a41dce5ab6c                              **
 ** Input:       src/c47/items.c - only the 52 item rows naming the conversion items:                                  **
 **              SHA-256 of those lines: 463a609be11f0198b225b8663e8b8ae55591a87d98697b5eb22526850bc93a2b              **
 ** Generator:   src/generateTests/constantsCheck.py; regenerate with python3 src/generateTests/constantsCheck.py      **
@@ -877,4 +878,4 @@ const_ZhangToM
   verdict    Correct to 1 verified digit as the RECIPROCAL (assumption A2)
 
 ========================================================================================================================
-END OF RECORD - 146 entries; SHA-256 of the lines between the ruled lines (both excluded, LF-joined, no trailing newline): 42032d905a8127277ff6674e8c15f3aa3385fa97f90938405da87c9b2f6213ee
+END OF RECORD - 146 entries; SHA-256 of the lines between the ruled lines (both excluded, LF-joined, no trailing newline): e3debb7c67b02ba0482a9bb6001cf3a815fa8312e6310bf9e382c7ec8eebf5ef

@@ -88,3 +88,96 @@ Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"-0.1 i 0" RX=Cplx:"-3.577152063957297
 
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"0 i 1"
 Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Cplx:"0 i 1"
+
+
+;=======================================
+; Decimal128 branch-point accuracy
+;=======================================
+
+; The nearest real input above -1/e exercises every output mode. Subtraction and scaling expose digit 34.
+Func: fnWnegative
+In:  AM=RAD RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Real:"-1.000000000000000019148719163597573" RX=Real:"-0.3678794411714423215955237701614608"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnWnegative
+In:  RMODE=1 FL_ASLIFT=0 RZ=Real:"1e40" RY=Real:"-1.000000000000000019148719163597573" RX=Real:"-0.3678794411714423215955237701614608"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnWnegative
+In:  RMODE=2 FL_ASLIFT=0 RZ=Real:"1e40" RY=Real:"-1.000000000000000019148719163597573" RX=Real:"-0.3678794411714423215955237701614608"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnWnegative
+In:  RMODE=3 FL_ASLIFT=0 RZ=Real:"1e40" RY=Real:"-1.000000000000000019148719163597573" RX=Real:"-0.3678794411714423215955237701614608"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnWnegative
+In:  RMODE=4 FL_ASLIFT=0 RZ=Real:"1e40" RY=Real:"-1.000000000000000019148719163597572" RX=Real:"-0.3678794411714423215955237701614608"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnWnegative
+In:  RMODE=5 FL_ASLIFT=0 RZ=Real:"1e40" RY=Real:"-1.000000000000000019148719163597572" RX=Real:"-0.3678794411714423215955237701614608"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnWnegative
+In:  RMODE=6 FL_ASLIFT=0 RZ=Real:"1e40" RY=Real:"-1.000000000000000019148719163597573" RX=Real:"-0.3678794411714423215955237701614608"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+; The minimum normal argument verifies the logarithmic starting value. The matrix route uses the same callback.
+Func: fnWnegative
+In:  RMODE=0 FL_ASLIFT=0 RZ=Real:"1e40" RY=Real:"-14154.33800269113858377908764207081" RX=Real:"-1e-6143"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnWnegative
+In:  RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-0" RX=Real:"-inf"
+
+Func: fnWnegative
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RX=ReMa:"M1,2[-0.1,-0.3678794411714423215955237701614608]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,2[-0.1,-0.3678794411714423215955237701614608]" ...
+     RX=ReMa:"M1,2[-3.577152063957297218409391963511995,-1.000000000000000019148719163597573]"
+
+Func: fnWnegative
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RX=CxMa:"M1,2[-0.1i0,-0.3678794411714423215955237701614608i0]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M1,2[-0.1i0,-0.3678794411714423215955237701614608i0]" ...
+     RX=CxMa:"M1,2[-3.577152063957297218409391963511995i0,-1.000000000000000019148719163597573i0]"
+
+Func: fnWnegative
+In:  RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"NaN"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"NaN" RX=Real:"NaN"
+
+Func: fnWnegative
+In:  RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"NaN i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"NaN i 0" RX=Cplx:"NaN i NaN"

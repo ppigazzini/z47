@@ -703,11 +703,54 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     }
 
     else if(!strcmp(valueType, "real")) {
-      stringToReal(valuePtr, (real_t *)buffer, &ctxtReal39);
+      REAL_T_PTR(restored, 39);
+      realContext_t context = ctxtReal39;
+      const char *numericValue = valuePtr;
+
+      if(!strcmp(valuePtr, "9.9e9999999")) {
+        numericValue = "Infinity";
+      }
+      else if(!strcmp(valuePtr, "-9.9e9999999")) {
+        numericValue = "-Infinity";
+      }
+      context.status = 0;
+      stringToReal(numericValue, restored, &context);
+      if((context.status & (DEC_Conversion_syntax | DEC_Overflow | DEC_Underflow | DEC_Inexact)) == 0) {
+        realCopy(restored, (real_t *)buffer);
+      }
+      else {
+        printf("Invalid real value for parameter %s in file %s, using default\n", valueName, backupFileName);
+      }
     }
 
     else if(!strcmp(valueType, "real34")) {
-      stringToReal34(valuePtr, (real34_t *)buffer);
+      real34_t restored;
+      realContext_t savedReal34 = ctxtReal34;
+      realContext_t savedReal39 = ctxtReal39;
+      realContext_t savedReal51 = ctxtReal51;
+      realContext_t savedReal75 = ctxtReal75;
+      const char *numericValue = valuePtr;
+      uint32_t status;
+
+      if(!strcmp(valuePtr, "9.9e9999")) {
+        numericValue = "Infinity";
+      }
+      else if(!strcmp(valuePtr, "-9.9e9999")) {
+        numericValue = "-Infinity";
+      }
+      ctxtReal34.status = 0;
+      stringToReal34(numericValue, &restored);
+      status = ctxtReal34.status;
+      ctxtReal34 = savedReal34;
+      ctxtReal39 = savedReal39;
+      ctxtReal51 = savedReal51;
+      ctxtReal75 = savedReal75;
+      if((status & (DEC_Conversion_syntax | DEC_Overflow | DEC_Underflow | DEC_Inexact)) == 0) {
+        real34Copy(&restored, (real34_t *)buffer);
+      }
+      else {
+        printf("Invalid real34 value for parameter %s in file %s, using default\n", valueName, backupFileName);
+      }
     }
 
     else if(!strcmp(valueType, "bool")) {

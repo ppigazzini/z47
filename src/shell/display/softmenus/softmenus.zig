@@ -56,6 +56,19 @@ const strip_16: bool = frontier_build_options.strip_16;
 const strip_17: bool = frontier_build_options.strip_17;
 const strip_17b: bool = frontier_build_options.strip_17b;
 const strip_17c: bool = frontier_build_options.strip_17c;
+// The per-distribution gates savedspace strikes out by: one OPTION_DIST_* per
+// distribution file, defined by the group option that carries it.
+const option_dist_norml: bool = frontier_build_options.option_dist_norml;
+const option_dist_t: bool = frontier_build_options.option_dist_t;
+const option_dist_logis: bool = frontier_build_options.option_dist_logis;
+const option_dist_cauch: bool = frontier_build_options.option_dist_cauch;
+const option_dist_weibl: bool = frontier_build_options.option_dist_weibl;
+const option_dist_expon: bool = frontier_build_options.option_dist_expon;
+const option_dist_chi2: bool = frontier_build_options.option_dist_chi2;
+const option_dist_binom: bool = frontier_build_options.option_dist_binom;
+const option_dist_prto: bool = frontier_build_options.option_dist_prto;
+const option_dist_gev: bool = frontier_build_options.option_dist_gev;
+const option_dist_unfm: bool = frontier_build_options.option_dist_unfm;
 const strip_ortho: bool = frontier_build_options.strip_ortho;
 const strip_bessel: bool = frontier_build_options.strip_bessel;
 const strip_elliptic: bool = frontier_build_options.strip_elliptic;
@@ -665,11 +678,12 @@ const BLT_OR: c_int = 0;
 const BLT_ANDN: c_int = 1;
 const BLT_NONE: c_int = 0;
 const BLT_SET: c_int = 1;
+// hal/lcd.h: on the DMCP firmware the pixel routines are written once, in screen.c.
 inline fn setBlackPixel(x: u32, y: u32) void {
-    bitblt24(x, 1, y, 1, BLT_OR, BLT_NONE);
+    if (comptime dmcp_build) frontier_screen.setBlackPixel(x, y) else bitblt24(x, 1, y, 1, BLT_OR, BLT_NONE);
 }
 inline fn setWhitePixel(x: u32, y: u32) void {
-    bitblt24(x, 1, y, 1, BLT_ANDN, BLT_NONE);
+    if (comptime dmcp_build) frontier_screen.setWhitePixel(x, y) else bitblt24(x, 1, y, 1, BLT_ANDN, BLT_NONE);
 }
 
 // ---------------------------------------------------------------------------
@@ -2857,25 +2871,80 @@ pub export fn savedspace(itemNr: i16) callconv(.c) bool_t {
             else => {},
         }
     }
-    if (comptime strip_17b) {
+    // !OPTION_DIST_CAUCH: MNU_CAUCH and CAUCHP, CAUCH, CAUCHU, CAUCHM1.
+    if (comptime !option_dist_cauch) {
         switch (itemNr) {
-            -2975, 1213, 1214, 1215, 1216, -2976, 1273, 1274, 1275, 1276, -2979, 1218, 1219, 1220, 1221, -2991, 1268, 1269, 1270, 1271, -2984, 1243, 1244, 1245, 1246, -2989, 1263, 1264, 1265, 1266 => return 1,
+            -2975, 1213, 1214, 1215, 1216 => return 1,
             else => {},
         }
     }
-    if (comptime strip_17c) {
+    // !OPTION_DIST_CHI2: MNU_CHI2 and chi2Px, chi2x, chi2ux, chi2M1.
+    if (comptime !option_dist_chi2) {
         switch (itemNr) {
-            -2982, 1282, 1283, 1284, 1285, -2986, 1287, 1288, 1289, 1290, 1291, 1292, 1293, 1294, -2990, 2601, 2602, 2603, 2604, -2978, 2606, 2607, 2608, 2609 => return 1,
+            -2976, 1273, 1274, 1275, 1276 => return 1,
             else => {},
         }
     }
-    if (comptime strip_16) {
+    // !OPTION_DIST_EXPON: MNU_EXPON and EXPONP, EXPON, EXPONU, EXPONM1.
+    if (comptime !option_dist_expon) {
+        switch (itemNr) {
+            -2979, 1218, 1219, 1220, 1221 => return 1,
+            else => {},
+        }
+    }
+    // !OPTION_DIST_WEIBL: MNU_WEIBL and WEIBLP, WEIBL, WEIBLU, WEIBLM1.
+    if (comptime !option_dist_weibl) {
+        switch (itemNr) {
+            -2991, 1268, 1269, 1270, 1271 => return 1,
+            else => {},
+        }
+    }
+    // !OPTION_DIST_LOGIS: MNU_LOGIS and LOGISP, LOGIS, LOGISU, LOGISM1.
+    if (comptime !option_dist_logis) {
+        switch (itemNr) {
+            -2984, 1243, 1244, 1245, 1246 => return 1,
+            else => {},
+        }
+    }
+    // !OPTION_DIST_T: MNU_T and TPX, TX, TUX, TM1P.
+    if (comptime !option_dist_t) {
+        switch (itemNr) {
+            -2989, 1263, 1264, 1265, 1266 => return 1,
+            else => {},
+        }
+    }
+    // !OPTION_DIST_GEV: MNU_GEV and GEVP, GEV, GEVU, GEVM1.
+    if (comptime !option_dist_gev) {
+        switch (itemNr) {
+            -2982, 1282, 1283, 1284, 1285 => return 1,
+            else => {},
+        }
+    }
+    // !OPTION_DIST_PRTO: MNU_PARETO and the Prto and Prto2 items.
+    if (comptime !option_dist_prto) {
+        switch (itemNr) {
+            -2986, 1287, 1288, 1289, 1290, 1291, 1292, 1293, 1294 => return 1,
+            else => {},
+        }
+    }
+    // !OPTION_DIST_UNFM: MNU_UNIFORM, MNU_DISUNIFORM and the Unfm and DisU items.
+    if (comptime !option_dist_unfm) {
+        switch (itemNr) {
+            -2990, 2601, 2602, 2603, 2604, -2978, 2606, 2607, 2608, 2609 => return 1,
+            else => {},
+        }
+    }
+    // !OPTION_DIST_NORML: MNU_NORML, the Norml, LgNrm and StdNorml items, and ERFC,
+    // which is the normal CDF in disguise.
+    if (comptime !option_dist_norml) {
         switch (itemNr) {
             -2985, 1253, 1254, 1255, 1256, 1238, 1239, 1240, 1241, -2988, 1278, 1279, 1280, 1281, 1467 => return 1,
             else => {},
         }
     }
-    if (comptime strip_17) {
+    // !OPTION_DIST_BINOM: the six of group 3 come out together, F, Binom, NBin,
+    // Hyper, Poiss and Geom, with their menus.
+    if (comptime !option_dist_binom) {
         switch (itemNr) {
             -2980, -2974, -2983, -2987, -2981, 1223, 1224, 1225, 1226, 1208, 1209, 1210, 1211, 1248, 1249, 1250, 1251, 1233, 1234, 1235, 1236, 1258, 1259, 1260, 1261, 1228, 1229, 1230, 1231 => return 1,
             else => {},

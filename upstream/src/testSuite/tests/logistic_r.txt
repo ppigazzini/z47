@@ -65,6 +65,8 @@ Out: EC=24 FL_ASLIFT=0 RX=Stri:"String test"
 ;=======================================
 ; normalR(Real Matrix) --> Error24
 ;=======================================
+In:  FL_ASLIFT=0 RM=Real:"0" RS=Real:"1" RX=ReMa:"M1,2[0,1]"
+Out: EC=24 FL_ASLIFT=0 RX=ReMa:"M1,2[0,1]"
 
 
 
@@ -115,3 +117,45 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"3" RX=Real:"0.26894142136999512074884
 ;=======================================
 ; normalR(Complex) --> Error24
 ;=======================================
+
+; Direct small tails avoid subtraction from one
+In:  RMODE=0 RM=Real:"0" RS=Real:"1" RX=Real:"100"
+Out: EC=0 RX=Real:"3.720075976020835962959695803863118e-44"
+
+In:  RMODE=0 RM=Real:"0" RS=Real:"1" RX=Real:"1000"
+Out: EC=0 RX=Real:"5.075958897549456765291809479574337e-435"
+
+In:  RMODE=0 RM=Real:"0" RS=Real:"1" RX=Real:"-100"
+Out: EC=0 RX=Real:"1"
+
+In:  RMODE=5 RM=Real:"0" RS=Real:"1" RX=Real:"-100"
+Out: EC=0 RX=Real:"1"
+
+In:  RMODE=6 RM=Real:"0" RS=Real:"1" RX=Real:"-100"
+Out: EC=0 RX=Real:"0.9999999999999999999999999999999999"
+
+; A finite displacement smaller than a p39 unit retains its side of one half
+In:  RMODE=6 RM=Real:"0" RS=Real:"1" RX=Real:"1e-100"
+Out: EC=0 RX=Real:"0.4999999999999999999999999999999999"
+
+In:  RMODE=5 RM=Real:"0" RS=Real:"1" RX=Real:"-1e-100"
+Out: EC=0 RX=Real:"0.5000000000000000000000000000000001"
+
+In:  RMODE=0 RM=Real:"0" RS=Real:"1e-6176" RX=Real:"1e6144"
+Out: EC=0 RX=Real:"0"
+
+In:  RMODE=5 RM=Real:"0" RS=Real:"1e-6176" RX=Real:"1e6144"
+Out: EC=0 RX=Real:"1e-6176"
+
+; Infinite variates and NaN
+In:  RM=Real:"0" RS=Real:"1" RX=Real:"inf"
+Out: EC=0 RX=Real:"0"
+
+In:  RM=Real:"0" RS=Real:"1" RX=Real:"-inf"
+Out: EC=0 RX=Real:"1"
+
+In:  RM=Real:"0" RS=Real:"1" RX=Real:"NaN"
+Out: EC=0 RX=Real:"NaN"
+
+In:  FL_SPCRES=0 RM=Real:"inf" RS=Real:"1" RX=Real:"0"
+Out: EC=16 RX=Real:"0"

@@ -2,16 +2,17 @@
 // Zig port of the matrix-by-matrix divide cluster of
 // src/c47/mathematics/matrix.c: divideRealMatrices / divideComplexMatrices
 // compute y * inverse(x) by inverting x (invCpxMat) and multiplying (mulCpxMat)
-// on interleaved-complex real_t scratch arrays. The dense core invCpxMat /
-// mulCpxMat is owned by math_matrix_complex_core.zig; this owner drives
-// it and packs/unpacks the real34/complex34 matrices.
+// on cplx_t scratch arrays. The dense core invCpxMat / mulCpxMat is owned by
+// math_matrix_complex_core.zig; this owner drives it and packs/unpacks the
+// real34/complex34 matrices. A real divisor that is exactly singular is refused
+// before the LU is attempted.
 
 const runtime = @import("../command_wrappers/runtime.zig");
 const abi = @import("abi");
+const math_matrix_determinant = @import("determinant.zig");
 
 const real_t = runtime.real_t;
-const real34_t = runtime.real34_t;
-const complex34_t = runtime.complex34_t;
+const cplx_t = runtime.cplx_t;
 const real34Matrix_t = runtime.real34Matrix_t;
 const complex34Matrix_t = runtime.complex34Matrix_t;
 
@@ -54,30 +55,30 @@ pub export fn divideRealMatrices(y: *const real34Matrix_t, x: *const real34Matri
     const yx_blocks = @as(usize, size_y) * size * real_size_in_blocks * 2;
     const xx_blocks = @as(usize, size) * size * real_size_in_blocks * 2;
     if (runtime.allocC47Blocks(yx_blocks)) |yy_raw| {
-        const yy: [*]real_t = @ptrCast(@alignCast(yy_raw));
+        const yy: [*]cplx_t = @ptrCast(@alignCast(yy_raw));
         if (runtime.allocC47Blocks(xx_blocks)) |xx_raw| {
-            const xx: [*]real_t = @ptrCast(@alignCast(xx_raw));
+            const xx: [*]cplx_t = @ptrCast(@alignCast(xx_raw));
             if (runtime.allocC47Blocks(yx_blocks)) |rr_raw| {
-                const rr: [*]real_t = @ptrCast(@alignCast(rr_raw));
+                const rr: [*]cplx_t = @ptrCast(@alignCast(rr_raw));
                 const xe = constRealElems(x);
                 var i: usize = 0;
                 while (i < @as(usize, size) * size) : (i += 1) {
-                    runtime.real34ToReal(&xe[i], &xx[i * 2]);
-                    runtime.realSetZero(&xx[i * 2 + 1]);
+                    runtime.real34ToReal(&xe[i], &xx[i].Real);
+                    runtime.realSetZero(&xx[i].Imag);
                 }
-                if (runtime.invCpxMat(xx, size, &runtime.ctxtReal39)) {
+                if (!math_matrix_determinant.realMatExactlySingular(x) and runtime.invCpxMat(xx, size, 0, &runtime.ctxtReal39)) {
                     const ye = constRealElems(y);
                     i = 0;
                     while (i < @as(usize, size_y) * size) : (i += 1) {
-                        runtime.real34ToReal(&ye[i], &yy[i * 2]);
-                        runtime.realSetZero(&yy[i * 2 + 1]);
+                        runtime.real34ToReal(&ye[i], &yy[i].Real);
+                        runtime.realSetZero(&yy[i].Imag);
                     }
                     runtime.mulCpxMat(yy, xx, size_y, size, size, rr, &runtime.ctxtReal39);
                     if (runtime.realMatrixInit(res, size_y, size)) {
                         const re = realElems(res);
                         i = 0;
                         while (i < @as(usize, size_y) * size) : (i += 1) {
-                            runtime.realToReal34(&rr[i * 2], &re[i]);
+                            runtime.realToReal34(&rr[i].Real, &re[i]);
                         }
                     } else {
                         if (distinctFromRes(y, x, res)) clearResult(res);
@@ -115,31 +116,31 @@ pub export fn divideComplexMatrices(y: *const complex34Matrix_t, x: *const compl
     const yx_blocks = @as(usize, size_y) * size * real_size_in_blocks * 2;
     const xx_blocks = @as(usize, size) * size * real_size_in_blocks * 2;
     if (runtime.allocC47Blocks(yx_blocks)) |yy_raw| {
-        const yy: [*]real_t = @ptrCast(@alignCast(yy_raw));
+        const yy: [*]cplx_t = @ptrCast(@alignCast(yy_raw));
         if (runtime.allocC47Blocks(xx_blocks)) |xx_raw| {
-            const xx: [*]real_t = @ptrCast(@alignCast(xx_raw));
+            const xx: [*]cplx_t = @ptrCast(@alignCast(xx_raw));
             if (runtime.allocC47Blocks(yx_blocks)) |rr_raw| {
-                const rr: [*]real_t = @ptrCast(@alignCast(rr_raw));
+                const rr: [*]cplx_t = @ptrCast(@alignCast(rr_raw));
                 const xe = constComplexElems(x);
                 var i: usize = 0;
                 while (i < @as(usize, size) * size) : (i += 1) {
-                    runtime.real34ToReal(&xe[i].real, &xx[i * 2]);
-                    runtime.real34ToReal(&xe[i].imag, &xx[i * 2 + 1]);
+                    runtime.real34ToReal(&xe[i].real, &xx[i].Real);
+                    runtime.real34ToReal(&xe[i].imag, &xx[i].Imag);
                 }
-                if (runtime.invCpxMat(xx, size, &runtime.ctxtReal39)) {
+                if (runtime.invCpxMat(xx, size, 0, &runtime.ctxtReal39)) {
                     const ye = constComplexElems(y);
                     i = 0;
                     while (i < @as(usize, size_y) * size) : (i += 1) {
-                        runtime.real34ToReal(&ye[i].real, &yy[i * 2]);
-                        runtime.real34ToReal(&ye[i].imag, &yy[i * 2 + 1]);
+                        runtime.real34ToReal(&ye[i].real, &yy[i].Real);
+                        runtime.real34ToReal(&ye[i].imag, &yy[i].Imag);
                     }
                     runtime.mulCpxMat(yy, xx, size_y, size, size, rr, &runtime.ctxtReal39);
                     if (runtime.complexMatrixInit(res, size_y, size)) {
                         const re = complexElems(res);
                         i = 0;
                         while (i < @as(usize, size_y) * size) : (i += 1) {
-                            runtime.realToReal34(&rr[i * 2], &re[i].real);
-                            runtime.realToReal34(&rr[i * 2 + 1], &re[i].imag);
+                            runtime.realToReal34(&rr[i].Real, &re[i].real);
+                            runtime.realToReal34(&rr[i].Imag, &re[i].imag);
                         }
                     } else {
                         if (distinctFromRes(y, x, res)) clearResult(res);

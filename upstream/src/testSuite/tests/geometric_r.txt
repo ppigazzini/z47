@@ -147,3 +147,71 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"50" RX=Real:"0.0051537752073201133103
 ;=======================================
 ; geometricR(Complex) --> Error24
 ;=======================================
+
+; Support, threshold, and precision cases.
+Func: fnGeometricR
+In:  FL_SPCRES=0 RP=Real:"0.5" RX=Real:"-1"
+Out: EC=0 RX=Real:"1"
+
+Func: fnGeometricR
+In:  FL_SPCRES=0 RP=Real:"0.5" RX=Real:"0.1"
+Out: EC=0 RX=Real:"0.5"
+
+Func: fnGeometricR
+In:  FL_SPCRES=0 RP=Real:"0.5" RX=Real:"inf"
+Out: EC=0 RX=Real:"0"
+
+Func: fnGeometricR
+In:  FL_SPCRES=0 RP=Real:"1" RX=Real:"0"
+Out: EC=0 RX=Real:"1"
+
+Func: fnGeometricR
+In:  FL_SPCRES=0 RP=Real:"1" RX=Real:"1"
+Out: EC=0 RX=Real:"0"
+
+; Forming 1-p first would round the base to one.
+Func: fnGeometricR
+In:  FL_SPCRES=0 RP=Real:"1e-6176" RZ=Real:"1e70" RY=Real:"0.9999999999999999999999999999999900" RX=Real:"1e6144"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+; P34 arithmetic changes result digits after the logarithm and exponential.
+Func: fnGeometricR
+In:  FL_SPCRES=0 RP=Real:"0.1234567890123456789012345678901234" RZ=Real:"1e45" RY=Real:"9.143650932151109885754923223383903e-8" RX=Real:"123"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+; A finite upper probability beyond the working exponent range retains its directed side.
+Func: fnGeometricR
+In:  RMODE=0 FL_SPCRES=0 RP=Real:"0.5" RX=Real:"4000000"
+Out: EC=0 RX=Real:"0"
+
+Func: fnGeometricR
+In:  RMODE=3 FL_SPCRES=0 RP=Real:"0.5" RX=Real:"4000000"
+Out: EC=0 RX=Real:"1e-6176"
+
+Func: fnGeometricR
+In:  RMODE=5 FL_SPCRES=0 RP=Real:"0.5" RX=Real:"4000000"
+Out: EC=0 RX=Real:"1e-6176"
+
+Func: fnGeometricR
+In:  FL_SPCRES=1 RP=Real:"0.5" RX=Real:"NaN"
+Out: EC=0 RX=Real:"NaN"
+
+Func: fnGeometricR
+In:  FL_SPCRES=1 RP=Real:"NaN" RX=Real:"2"
+Out: EC=0 RX=Real:"NaN"
+
+Func: fnGeometricR
+In:  FL_SPCRES=0 RP=Real:"0.5" RX=ReMa:"M1,2[0,1]"
+Out: EC=24 RX=ReMa:"M1,2[0,1]"
+
+Func: fnGeometricR
+In:  FL_SPCRES=0 RP=Real:"0.5" RX=CxMa:"M1,1[0i1]"
+Out: EC=24 RX=CxMa:"M1,1[0i1]"

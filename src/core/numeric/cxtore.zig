@@ -41,7 +41,27 @@ inline fn real34Copy(source: *align(1) const real34_t, destination: *align(1) re
     dst[1] = src[1];
 }
 
-extern fn convertAngle34FromTo(angle: *align(1) real34_t, from_mode: angularMode_t, to_mode: angularMode_t) void;
+// Converts rectangular Real34 components to polar Real34 values in a selected
+// angular unit: the angle is converted from radians as a real, before it is
+// shortened to Real34.
+fn rectangularToPolar34InUnit(
+    real34: *align(1) const real34_t,
+    imag34: *align(1) const real34_t,
+    magnitude34: *align(1) real34_t,
+    theta34: *align(1) real34_t,
+    angular_mode: angularMode_t,
+) void {
+    var z: runtime.cplx_t = undefined;
+    var magnitude: runtime.real_t = undefined;
+    var theta: runtime.real_t = undefined;
+
+    runtime.real34ToReal(real34, &z.Real);
+    runtime.real34ToReal(imag34, &z.Imag);
+    math_transform_complex_helpers.realRectangularToPolar(&z, &magnitude, &theta, &runtime.ctxtReal39);
+    runtime.convertAngleFromTo(&theta, amRadian, angular_mode, &runtime.ctxtReal39);
+    runtime.realToReal34(&magnitude, magnitude34);
+    runtime.realToReal34(&theta, theta34);
+}
 
 const displayCalcErrorMessage = runtime.displayCalcErrorMessage;
 const moreInfoOnError = runtime.moreInfoOnError;
@@ -92,8 +112,7 @@ pub export fn fnCxToRe(unusedButMandatoryParameter: u16) callconv(.c) void {
             }
             runtime.liftStack();
             runtime.reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
-            math_transform_complex_helpers.real34RectangularToPolar(REGISTER_REAL34_DATA(REGISTER_L), REGISTER_IMAG34_DATA(REGISTER_L), REGISTER_REAL34_DATA(REGISTER_Y), REGISTER_REAL34_DATA(REGISTER_X)); // X in radians
-            convertAngle34FromTo(REGISTER_REAL34_DATA(REGISTER_X), amRadian, tempAngle);
+            rectangularToPolar34InUnit(REGISTER_REAL34_DATA(REGISTER_L), REGISTER_IMAG34_DATA(REGISTER_L), REGISTER_REAL34_DATA(REGISTER_Y), REGISTER_REAL34_DATA(REGISTER_X), tempAngle);
             runtime.setRegisterAngularMode(REGISTER_X, tempAngle);
             runtime.temporaryInformation = TI_THETA_RADIUS;
         } else { // rectangular mode
@@ -121,8 +140,7 @@ pub export fn fnCxToRe(unusedButMandatoryParameter: u16) callconv(.c) void {
                 var i: u16 = 0;
                 while (i < @as(u32, cMat.header.matrixRows) * @as(u32, cMat.header.matrixColumns)) : (i += 1) {
                     if (runtime.getSystemFlag(FLAG_POLAR)) { // polar mode
-                        math_transform_complex_helpers.real34RectangularToPolar(VARIABLE_REAL34_DATA(&cElems[i]), VARIABLE_IMAG34_DATA(&cElems[i]), &rElems[i], &iElems[i]);
-                        convertAngle34FromTo(&iElems[i], amRadian, runtime.currentAngularMode);
+                        rectangularToPolar34InUnit(VARIABLE_REAL34_DATA(&cElems[i]), VARIABLE_IMAG34_DATA(&cElems[i]), &rElems[i], &iElems[i], runtime.currentAngularMode);
                     } else { // rectangular mode
                         real34Copy(VARIABLE_REAL34_DATA(&cElems[i]), &rElems[i]);
                         real34Copy(VARIABLE_IMAG34_DATA(&cElems[i]), &iElems[i]);

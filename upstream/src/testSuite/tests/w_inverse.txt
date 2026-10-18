@@ -113,3 +113,127 @@ Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"0 i 1" RX=Cplx:"-0.841470984807896506
 
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=1 RX=Cplx:"0 i -1"
 Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"0 i -1" RX=Cplx:"-0.8414709848078965066525023216302990 i -0.5403023058681397174009366074429766"
+
+
+;=======================================
+; Decimal128 accuracy and range
+;=======================================
+
+; The real inverse at one exercises every output mode. Subtraction and scaling expose digit 34.
+Func: fnWinverse
+In:  AM=RAD RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Real:"2.718281828459045235360287471352662" RX=Real:"1"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnWinverse
+In:  RMODE=1 FL_ASLIFT=0 RZ=Real:"1e40" RY=Real:"2.718281828459045235360287471352662" RX=Real:"1"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnWinverse
+In:  RMODE=2 FL_ASLIFT=0 RZ=Real:"1e40" RY=Real:"2.718281828459045235360287471352662" RX=Real:"1"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnWinverse
+In:  RMODE=3 FL_ASLIFT=0 RZ=Real:"1e40" RY=Real:"2.718281828459045235360287471352663" RX=Real:"1"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnWinverse
+In:  RMODE=4 FL_ASLIFT=0 RZ=Real:"1e40" RY=Real:"2.718281828459045235360287471352662" RX=Real:"1"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnWinverse
+In:  RMODE=5 FL_ASLIFT=0 RZ=Real:"1e40" RY=Real:"2.718281828459045235360287471352663" RX=Real:"1"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnWinverse
+In:  RMODE=6 FL_ASLIFT=0 RZ=Real:"1e40" RY=Real:"2.718281828459045235360287471352662" RX=Real:"1"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+; This input is next to a zero of the complex result's imaginary component. P51 retains about seventeen useful digits.
+Func: fnWinverse
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=1 RZ=Real:"1e40" RY=Cplx:"-6.148281423153994073113812051760701 i 2.764430366604715101862999484306563e-33" ...
+     RX=Cplx:"1 i 2.028757838110434223576971124734714"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+; Inputs adjacent to the decimal128 overflow and underflow transitions leave range handling to the final conversion.
+Func: fnWinverse
+In:  RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"14139.8286456274474935722333627412"
+Out: EC=0 FL_SPCRES=1 FL_ASLIFT=1 RL=Real:"14139.8286456274474935722333627412" RX=Real:"inf"
+
+Func: fnWinverse
+In:  RMODE=4 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"14139.8286456274474935722333627412"
+Out: EC=0 FL_SPCRES=1 FL_ASLIFT=1 RL=Real:"14139.8286456274474935722333627412" RX=Real:"9.999999999999999999999999999999999e6144"
+
+Func: fnWinverse
+In:  RMODE=6 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"14139.8286456274474935722333627412"
+Out: EC=0 FL_SPCRES=1 FL_ASLIFT=1 RL=Real:"14139.8286456274474935722333627412" RX=Real:"9.999999999999999999999999999999999e6144"
+
+Func: fnWinverse
+In:  RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-14231.02186101062278409468284203898"
+Out: EC=0 FL_SPCRES=1 FL_ASLIFT=1 RL=Real:"-14231.02186101062278409468284203898" RX=Real:"-1e-6176"
+
+Func: fnWinverse
+In:  RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-14231.02186101062278409468284203899"
+Out: EC=0
+Func: fnInvert
+Out: EC=0 RX=Real:"-inf"
+
+; Signed zero, infinities, NaNs, and both matrix callbacks.
+Func: fnWinverse
+In:  RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-inf"
+Out: EC=0
+Func: fnInvert
+Out: EC=0 RX=Real:"-inf"
+
+Func: fnWinverse
+In:  RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"inf"
+Out: EC=0 FL_SPCRES=1 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"inf"
+
+Func: fnWinverse
+In:  RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=1 RX=Cplx:"-inf i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"-inf i 0" RX=Cplx:"-0 i 0"
+
+Func: fnWinverse
+In:  RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=1 RX=Cplx:"NaN i 1"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"NaN i 1" RX=Cplx:"NaN i NaN"
+
+Func: fnWinverse
+In:  RMODE=0 FL_SPCRES=0 FL_ASLIFT=0 FL_CPXRES=0 RX=ReMa:"M1,3[-1,0,1]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,3[-1,0,1]" ...
+     RX=ReMa:"M1,3[-0.3678794411714423215955237701614609,0,2.718281828459045235360287471352662]"
+
+Func: fnWinverse
+In:  RMODE=0 FL_SPCRES=0 FL_ASLIFT=0 FL_CPXRES=1 RX=CxMa:"M1,2[0i1,1i2.028757838110434223576971124734714]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M1,2[0i1,1i2.028757838110434223576971124734714]" ...
+     RX=CxMa:"M1,2[-0.8414709848078965066525023216302990i0.5403023058681397174009366074429766,-6.148281423153994073113812051760701i2.764430366604715101862999484306563e-33]"

@@ -280,6 +280,17 @@ extern fn getRegisterDataPointer(reg: calcRegister_t) ?*anyopaque;
 const registerReal34Ptr = abi.registerReal34;
 extern fn getRegisterDataType(reg: calcRegister_t) u32;
 extern fn getRegisterAsReal(reg: calcRegister_t, val: *real_t) bool;
+extern fn convertLongIntegerRegisterToReal(reg: calcRegister_t, destination: *real_t, realContext: *realContext_t) void;
+// typeDefinitions.h dataType_t: dtLongInteger is the first data type.
+const dtLongInteger: u32 = 0;
+// decQuad.h: the precision and the adjusted-exponent range of a real34.
+const DECQUAD_Pmax: i32 = 34;
+const DECQUAD_Emin: i32 = -6143;
+const DECQUAD_Emax: i32 = 6144;
+// realType.h realAdjustExponent(destination, adjustment).
+inline fn realAdjustExponent(destination: *real_t, adjustment: i32) void {
+    destination.exponent += adjustment;
+}
 extern fn reallocateRegister(regist: calcRegister_t, data_type: u32, data_len: u16, tag: u32) void;
 extern fn convertRealToReal34ResultRegister(real: *const real_t, dest: calcRegister_t) void;
 
@@ -348,25 +359,25 @@ fn _fnIntegrate(labelOrVariable: u16, XY: bool_t) linksection(runtime.code_secti
         var ulim: real_t = undefined;
         var llim: real_t = undefined;
         var res: real_t = undefined;
-        var smallerEpsilon: bool_t = false;
         if (engineNestingRefused(false)) {
             return;
         }
         real34ToReal(registerReal34Ptr(@bitCast(RESERVED_VARIABLE_ACC)), &acc);
         real34ToReal(registerReal34Ptr(@bitCast(RESERVED_VARIABLE_ULIM)), &ulim);
         real34ToReal(registerReal34Ptr(@bitCast(RESERVED_VARIABLE_LLIM)), &llim);
-        smallerEpsilon = realCompareAbsLessThan(&acc, const_1e_16()) and (realCompareAbsLessThan(&ulim, const_1e_32()) or realCompareAbsLessThan(&llim, const_1e_32()));
-        // USE_MICHALSKI_MOSIG_TANH_SINH == 1
-        smallerEpsilon = smallerEpsilon and (realIsSpecial(&ulim) or realIsSpecial(&llim)); // smallerEpsilon not needed
-        if (realIsZero(&acc)) { // it may freeze if ACC=0
-            realCopy(const_1e_32(), &acc); // used to be const_1e_6143
-        }
+        const regist: calcRegister_t = @bitCast(labelOrVariable); // at this point, it is a register variable
+        saveForUndo();
+        realSetPositiveSign(&acc);
         if (real34CompareEqual(registerReal34Ptr(@bitCast(RESERVED_VARIABLE_ULIM)), registerReal34Ptr(@bitCast(RESERVED_VARIABLE_LLIM)))) {
             realSetZero(&res);
             realSetZero(&acc);
+        } else if (realIsSpecial(&acc)) {
+            realSetNaN(&res);
+            realSetNaN(&acc);
         } else {
-            const regist: calcRegister_t = @bitCast(labelOrVariable); // at this point, it is a register variable
-            saveForUndo();
+            if (realIsZero(&acc)) { // it may freeze if ACC=0
+                realCopy(const_1e_32(), &acc); // used to be const_1e_6143
+            }
 
             // SPEEDUPEXPERIMENT
             var digits: real_t = undefined;
@@ -386,24 +397,7 @@ fn _fnIntegrate(labelOrVariable: u16, XY: bool_t) linksection(runtime.code_secti
             _ = realDivide(&digits, const39_ln10(), &digits, &ctxtReal39);
             digitsN = max_i32(min_i32(-realToInt32C47(&digits, null), 34 - 3), 1);
 
-            if (digitsN == 6) {
-                if (pc_build) {
-                    _ = printf("Special accuracy test case: N=6 Reducing DEC to single precision and SDIGS digits to %i etc.\n", digitsN + 3);
-                }
-                significantDigits = @intCast(digitsN + 3);
-                ctxtReal4.digits = 7;
-                ctxtReal34.digits = digitsN + 3;
-                ctxtReal39.digits = digitsN + 5;
-                ctxtReal51.digits = digitsN + 7;
-                ctxtReal75.digits = digitsN + 13;
-                integrate(regist, &llim, &ulim, &acc, &res, &ctxtReal4);
-                significantDigits = significantDigitsMem;
-                ctxtReal4.digits = s4;
-                ctxtReal34.digits = s34;
-                ctxtReal39.digits = s39;
-                ctxtReal51.digits = s51;
-                ctxtReal75.digits = s75;
-            } else if (digitsN <= 10) {
+            if (digitsN <= 10) {
                 if (pc_build) {
                     _ = printf("Special accuracy test case: N<=10 Reducing SDIGS digits to %i etc.\n", digitsN + 3);
                 }
@@ -421,7 +415,7 @@ fn _fnIntegrate(labelOrVariable: u16, XY: bool_t) linksection(runtime.code_secti
                 ctxtReal51.digits = s51;
                 ctxtReal75.digits = s75;
             } else {
-                integrate(regist, &llim, &ulim, &acc, &res, if (smallerEpsilon) &ctxtReal75 else &ctxtReal39);
+                integrate(regist, &llim, &ulim, &acc, &res, &ctxtReal39);
             }
         }
 
@@ -521,7 +515,6 @@ fn _integratorIteration() linksection(runtime.code_section) void {
 // DEI_xeq_user  (ported from WP34s)
 // ===========================================================================
 fn DEI_xeq_user(regist: calcRegister_t, x: *align(1) const real_t, res: *real_t, realContext: *realContext_t) linksection(runtime.code_section) void {
-    _ = realContext;
     if (lastErrorCode == ERROR_SOLVER_ABORT) { // Aborted?
         realSetZero(res);
     } else if (!realIsSpecial(x)) { // abscissa is good?
@@ -535,8 +528,11 @@ fn DEI_xeq_user(regist: calcRegister_t, x: *align(1) const real_t, res: *real_t,
         realToReal34(x, registerReal34Ptr(REGISTER_X));
         fnFillStack(NOPARAM);
         _integratorIteration();
-        real34ToReal(registerReal34Ptr(REGISTER_X), res);
-        if (realIsSpecial(res)) { // do not stop in error (if SPCRES was set)
+        if (lastErrorCode != ERROR_NONE) { // do not stop in error (if SPCRES was set)
+            realSetZero(res);
+        } else if (getRegisterDataType(REGISTER_X) == dtLongInteger) {
+            convertLongIntegerRegisterToReal(REGISTER_X, res, realContext); // at the working context: res can be a 39-digit REAL_T_ALLOC buffer, and getRegisterAsReal converts at 75 digits
+        } else if (!getRegisterAsReal(REGISTER_X, res) or realIsSpecial(res)) {
             realSetZero(res);
         }
     } else { // DEI_bad_absc
@@ -592,10 +588,11 @@ inline fn IS_FINITE(x: *const real_t) bool {
 // ===========================================================================
 fn exp_sinh_opt_d(regist: calcRegister_t, a: *align(1) const real_t, eps: *align(1) const real_t, d: *real_t, realContext: *realContext_t) linksection(runtime.code_section) *real_t {
     _ = eps;
-    // The ten working reals come from the heap, not the frame: ten decNumbers at
-    // 60 bytes is 600 bytes of a frame that sits under a plotted integral, where
-    // the DM42's stack grant is already all but spent. Taken per call, and freed
-    // on both exits.
+    // The ten p39 working reals use heap storage because the plotted-integral
+    // call depth leaves insufficient DM42 stack space. Every exit reaches the
+    // deferred frees. Upstream sizes each buffer for 39 digits; here each is a
+    // real_t, and the arithmetic at realContext writes no more units than 39
+    // digits need.
     const fl_p = runtime.mallocReal();
     const fr_p = runtime.mallocReal();
     const h2_p = runtime.mallocReal();
@@ -634,6 +631,60 @@ fn exp_sinh_opt_d(regist: calcRegister_t, a: *align(1) const real_t, eps: *align
     const s1 = s1_p.?;
 
     DEI_xeq_user_adr(regist, a, d, const_2(), fl, fr, h2, realContext);
+
+    // Decimal-exponent bisection puts d within one decade of |f(a+d/2)| = 4|f(a+2d)| when d=1 is outside the sampled scale.
+    realCopy(d, lr);
+    _ = realCopyAbs(fl, lfl);
+    _ = realCopyAbs(fr, lfr);
+    if ((realIsZero(fl) and realIsZero(fr)) or runtime.realCompareLessThan(lfl, lfr)) {
+        var endpoint34: real34_t = undefined;
+        var probe34: real34_t = undefined;
+        var lowerExponent: i32 = undefined;
+        var upperExponent: i32 = undefined;
+        var exponentBracket: bool_t = false;
+
+        if (realIsZero(fl) and realIsZero(fr)) {
+            lowerExponent = DECQUAD_Emin - DECQUAD_Pmax + 1;
+            upperExponent = 0;
+            realCopy(lr, s1);
+            realAdjustExponent(s1, lowerExponent);
+            _ = realAdd(a, s1, h, realContext);
+            realToReal34(a, &endpoint34);
+            realToReal34(h, &probe34);
+            if (!real34CompareEqual(&endpoint34, &probe34)) {
+                DEI_xeq_user_adr(regist, a, s1, const_2(), fl, fr, h, realContext);
+                _ = realCopyAbs(fl, lfl);
+                _ = realCopyAbs(fr, lfr);
+                if (IS_FINITE(h) and (!realIsZero(fl) or !realIsZero(fr))) {
+                    realCopy(s1, d);
+                    realCopy(h, h2);
+                    exponentBracket = runtime.realCompareLessThan(lfl, lfr);
+                }
+            }
+        } else {
+            lowerExponent = 0;
+            upperExponent = DECQUAD_Emax;
+            exponentBracket = true;
+        }
+
+        while (exponentBracket and upperExponent - lowerExponent > 1) {
+            const exponent: i32 = lowerExponent + @divTrunc(upperExponent - lowerExponent, 2);
+            realCopy(lr, s1);
+            realAdjustExponent(s1, exponent);
+            DEI_xeq_user_adr(regist, a, s1, const_2(), fl, fr, h, realContext);
+            _ = realCopyAbs(fl, lfl);
+            _ = realCopyAbs(fr, lfr);
+            if (IS_FINITE(h) and (!realIsZero(fl) or !realIsZero(fr)) and runtime.realCompareLessThan(lfl, lfr)) {
+                lowerExponent = exponent;
+                realCopy(s1, d);
+            } else {
+                upperExponent = exponent;
+            }
+        }
+        if (exponentBracket) {
+            DEI_xeq_user_adr(regist, a, d, const_2(), fl, fr, h2, realContext);
+        }
+    }
 
     if (IS_INFINITE(h2) or (realIsZero(fl) and realIsZero(fr))) {
         return d;
@@ -701,12 +752,12 @@ fn dbl_exp_int_new(regist: calcRegister_t, a: *align(1) const real_t, b: *align(
     currentKeyCode = 255;
     var exitSignalled: bool_t = false;
 
-    // The sixteen working reals come from the heap, not the frame: sixteen
-    // decNumbers at 60 bytes is 960 bytes, and this function sits at the bottom of
-    // a plotted integral where the DM42's stack grant is already all but spent. The
-    // six from the outer loop are hoisted here so the loop allocates nothing; each
-    // is still written before it is read on every pass, so the reset at the top of
-    // the loop still does its work. Freed on every exit.
+    // The sixteen p39 working reals use heap storage because the plotted-integral
+    // call depth leaves insufficient DM42 stack space. Every exit reaches the
+    // deferred frees. The six outer-iteration values are allocated once for this
+    // invocation and written before use. Upstream sizes each buffer for 39
+    // digits; here each is a real_t, and the arithmetic at realContext writes no
+    // more units than 39 digits need.
     const c_p = runtime.mallocReal();
     const d_p = runtime.mallocReal();
     const s_p = runtime.mallocReal();

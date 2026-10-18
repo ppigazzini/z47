@@ -142,10 +142,107 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"NaN"
 In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RX=Real:"-inf"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"NaN"
 
+; Exact subtraction and scaling check the selected rounding mode through digit 34.
+Func: fnTan
+In:  AM=RAD RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Real:"0.3093362496096232330353036796982947" RX=Real:"0.3"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnTan
+In:  AM=RAD RMODE=1 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Real:"0.3093362496096232330353036796982947" RX=Real:"0.3"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnTan
+In:  AM=RAD RMODE=2 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Real:"0.3093362496096232330353036796982947" RX=Real:"0.3"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnTan
+In:  AM=RAD RMODE=3 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Real:"0.3093362496096232330353036796982947" RX=Real:"0.3"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnTan
+In:  AM=RAD RMODE=4 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Real:"0.3093362496096232330353036796982946" RX=Real:"0.3"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnTan
+In:  AM=RAD RMODE=5 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Real:"0.3093362496096232330353036796982947" RX=Real:"0.3"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnTan
+In:  AM=RAD RMODE=6 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Real:"0.3093362496096232330353036796982946" RX=Real:"0.3"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
 
 
 ;=======================================
 ; tan(Complex) --> Complex
 ;=======================================
+Func: fnTan
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"6.2 i -7.6"
 Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"6.2 i -7.6" RX=Cplx:"-8.2951632770191927777832809387648301530665840570244790376113112e-8 i -0.9999995060131651068608113798631681789187563420692453227162563"
+
+; This form remains finite when the hyperbolic representation overflows.
+In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"1 i 10000"
+Out: EC=0 RX=Cplx:"0 i 1"
+Func: fnRealPart
+Out: EC=0 RX=Real:"0"
+Func: fnInvert
+In:  FL_SPCRES=1
+Out: EC=0
+Func: fnSign
+Out: EC=0 RX=LonI:"1"
+
+Func: fnTan
+In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"1 i -10000"
+Out: EC=0 RX=Cplx:"0 i -1"
+
+; Finite arguments near a real pole retain both components.
+In:  AM=RAD RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"1.570796326794896619231321691639751 i 1e-34"
+Out: EC=0 RX=Cplx:"2151842743191743441445047752800240 i 486733687386370008138359794904189.3"
+
+; Exact digit-34 check of an ordinary finite complex result.
+Func: fnTan
+In:  AM=RAD RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Cplx:"0.2610736818416630348704835360099673 i 0.4106334708425563434163795704069883" RX=Cplx:"0.3 i 0.4"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+; The real-axis shortcut retains a signed imaginary zero; infinity retains its side.
+Func: fnTan
+In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"0.3 i -0"
+Out: EC=0 RX=Cplx:"0.3093362496096232330353036796982947 i -0"
+
+In:  AM=RAD FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"0.3 i inf"
+Out: EC=0 RX=Cplx:"0 i 1"
+
+In:  AM=RAD FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"0.3 i -inf"
+Out: EC=0 RX=Cplx:"0 i -1"

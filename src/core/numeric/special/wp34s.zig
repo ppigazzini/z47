@@ -51,12 +51,6 @@ pub const amMultPi = runtime.amMultPi;
 // ---------------------------------------------------------------------------
 const cstR = consts.cstR;
 
-// Offsets extracted from the generated constantPointers.h.
-const OFF_const51_gammaC01: u32 = 6660;
-
-// REAL_SIZE_IN_BYTES(51) for indexing const51_gammaC01[k].
-const REAL_SIZE_51: u32 = 44;
-
 pub inline fn const_0() *align(1) const real_t {
     return consts.c1708();
 }
@@ -267,14 +261,16 @@ pub inline fn const1071_piOn4() *align(1) const real_t {
 pub inline fn const1071_3piOn4() *align(1) const real_t {
     return consts.c7760();
 }
-inline fn const51_gammaC00() *align(1) const real_t {
-    return consts.c6068();
+inline fn const75_gammaC00() *align(1) const real_t {
+    return consts.const75_gammaC00();
 }
-inline fn const51_gammaC01(k: u32) *align(1) const real_t {
-    return consts.cstR(OFF_const51_gammaC01 + k * REAL_SIZE_51);
+inline fn const75_gammaC01(k: u32) *align(1) const real_t {
+    return consts.gammaC75(k);
 }
-inline fn const6147_2pi() *align(1) const real_t {
-    return consts.c12092();
+// RADIAN_REDUCTION_2PI: the DM42 reduces with the 2139-digit 2pi, since the
+// 12321-digit one NaNs on the DM42 decNumber at the 2139 context.
+inline fn radianReduction2Pi() *align(1) const real_t {
+    return if (comptime runtime.wp34s_mod_small_buffers) consts.const2139_2pi() else consts.const12321_2pi();
 }
 
 // ---------------------------------------------------------------------------
@@ -559,12 +555,12 @@ fn WP34S_Calc_Gamma_LnGamma_Lanczos(xin: *align(1) const real_t, res: *align(1) 
     realAdd(&x, const_29(), &t, realContext);
     var k: i32 = 28;
     while (k >= 0) : (k -= 1) {
-        realDivide(const51_gammaC01(@intCast(k)), &t, &u, realContext);
+        realDivide(const75_gammaC01(@intCast(k)), &t, &u, realContext);
         realSubtract(&t, const_1(), &t, realContext);
         realAdd(&s, &u, &s, realContext);
     }
 
-    realAdd(&s, const51_gammaC00(), &t, realContext);
+    realAdd(&s, const75_gammaC00(), &t, realContext);
     WP34S_Ln(&t, &s, realContext);
 
     //  r = z + g + 0.5;
@@ -1059,13 +1055,13 @@ fn WP34S_CalcComplexLnGamma_Lanczos(zReal: *align(1) const real_t, zImag: *align
         // blob pointer, which aborts on macOS/aarch64 (strict alignment). The
         // sibling real path (realDivide) already reads these align(1)-safe.
         var cReal: real_t = undefined;
-        realCopy(const51_gammaC01(@intCast(k)), &cReal);
+        realCopy(const75_gammaC01(@intCast(k)), &cReal);
         math_division_cells.divRealComplex(&cReal, &tReal, &tImag, &sReal, &sImag, realContext);
         realSubtract(&tReal, const_1(), &tReal, realContext);
         realAdd(&uReal, &sReal, &uReal, realContext);
         realAdd(&uImag, &sImag, &uImag, realContext);
     }
-    realAdd(&uReal, const51_gammaC00(), &tReal, realContext);
+    realAdd(&uReal, const75_gammaC00(), &tReal, realContext);
     realCopy(&uImag, &tImag);
     math_ln_complex.lnComplex(&tReal, &tImag, &sReal, &sImag, realContext); // (s1, s2)
 
@@ -1244,7 +1240,7 @@ pub export fn WP34S_BigMod(x: *align(1) const real_t, y: *align(1) const real_t,
 }
 
 pub export fn mod2Pi(x: *align(1) const real_t, res: *align(1) real_t, realContext: *realContext_t) callconv(.c) void {
-    WP34S_BigMod(x, const6147_2pi(), res, realContext);
+    WP34S_BigMod(x, radianReduction2Pi(), res, realContext);
 }
 
 // ===========================================================================

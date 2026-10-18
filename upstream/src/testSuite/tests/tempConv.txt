@@ -123,6 +123,43 @@ In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"373.15" RX=Real:"212"
 
 
+; The p39 product retains the small nonzero result after the addition of 32.
+; A p34 multiplication rounds the product to -32 before the addition.
+Func: fnCvtTemp(0)
+In:  RMODE=0 FL_ASLIFT=0 RX=Real:"-17.77777777777777777777777777777778"
+Out: EC=0 RX=Real:"-4E-33"
+
+; F to kelvin close to absolute zero.  Evaluating the division before adding
+; 273.15 loses most of this nonzero result.
+Func: fnCvtTemp(10)
+In:  RMODE=0 FL_ASLIFT=0 RX=Real:"-459.6700000000000000000000000000001"
+Out: EC=0 RX=Real:"-5.555555555555555555555555555555556E-32"
+
+Func: fnCvtTemp(10)
+In:  RMODE=1 FL_ASLIFT=0 RX=Real:"-459.6700000000000000000000000000001"
+Out: EC=0 RX=Real:"-5.555555555555555555555555555555556E-32"
+
+Func: fnCvtTemp(10)
+In:  RMODE=2 FL_ASLIFT=0 RX=Real:"-459.6700000000000000000000000000001"
+Out: EC=0 RX=Real:"-5.555555555555555555555555555555556E-32"
+
+Func: fnCvtTemp(10)
+In:  RMODE=3 FL_ASLIFT=0 RX=Real:"-459.6700000000000000000000000000001"
+Out: EC=0 RX=Real:"-5.555555555555555555555555555555556E-32"
+
+Func: fnCvtTemp(10)
+In:  RMODE=4 FL_ASLIFT=0 RX=Real:"-459.6700000000000000000000000000001"
+Out: EC=0 RX=Real:"-5.555555555555555555555555555555555E-32"
+
+Func: fnCvtTemp(10)
+In:  RMODE=5 FL_ASLIFT=0 RX=Real:"-459.6700000000000000000000000000001"
+Out: EC=0 RX=Real:"-5.555555555555555555555555555555555E-32"
+
+Func: fnCvtTemp(10)
+In:  RMODE=6 FL_ASLIFT=0 RX=Real:"-459.6700000000000000000000000000001"
+Out: EC=0 RX=Real:"-5.555555555555555555555555555555556E-32"
+
+
 
 ;=======================================
 ; fp(Time)
@@ -162,4 +199,3 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"373.15" RX=Real:"212"
 ;=======================================
 ; fp(Complex) --> Complex
 ;=======================================
-

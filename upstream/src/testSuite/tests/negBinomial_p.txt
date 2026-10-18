@@ -101,12 +101,16 @@ Out: EC=24 FL_ASLIFT=0 RX=Stri:"String test"
 ;=======================================
 ; negBinomialP(Real Matrix) --> Error24
 ;=======================================
+In:  FL_ASLIFT=0 RP=Real:"0.5" RN=Real:"5" RX=ReMa:"M1,2[0,1]"
+Out: EC=24 FL_ASLIFT=0 RX=ReMa:"M1,2[0,1]"
 
 
 
 ;=======================================
 ; negBinomialP(Complex Matrix) --> Error24
 ;=======================================
+In:  FL_ASLIFT=0 RP=Real:"0.5" RN=Real:"5" RX=CxMa:"M1,1[1i1]"
+Out: EC=24 FL_ASLIFT=0 RX=CxMa:"M1,1[1i1]"
 
 
 
@@ -187,3 +191,65 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"100" RX=Real:"0.001221326588213870549
 ;=======================================
 ; negBinomialP(Complex) --> Error24
 ;=======================================
+
+; Support and finite parameters.
+Func: fnNegBinomialP
+In:  RP=Real:"0.5" RN=Real:"5" RX=Real:"-1"
+Out: EC=0 RX=Real:"0"
+
+Func: fnNegBinomialP
+In:  RP=Real:"0.5" RN=Real:"5" RX=Real:"inf"
+Out: EC=0 RX=Real:"0"
+
+Func: fnNegBinomialP
+In:  RP=Real:"0.5" RN=Real:"5" RX=Real:"2.5"
+Out: EC=0 RX=Real:"0"
+
+; P39 loses result digits in the beta prefix. Scale the residual to expose it.
+Func: fnNegBinomialP
+In:  RP=Real:"0.37" RN=Real:"601" RZ=Real:"1e40" RY=Real:"0.0024005067225138988091625976255817165622126570592554154996111477" RX=Real:"400"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+; The beta-prefix form retains a central mass for very large parameters.
+Func: fnNegBinomialP
+In:  RP=Real:"0.5" RN=Real:"1e40" RX=Real:"1e40"
+Out: EC=0 RX=Real:"2.820947917738781434740397257803863e-21"
+
+; Small nonzero components retain their distance from the endpoint.
+Func: fnNegBinomialP
+In:  RP=Real:"1e-34" RN=Real:"5" RX=Real:"0"
+Out: EC=0 RX=Real:"0.9999999999999999999999999999999995"
+
+Func: fnNegBinomialP
+In:  RP=Real:"0.9999999999999999999999999999999999" RN=Real:"5" RX=Real:"0"
+Out: EC=0 RX=Real:"1e-170"
+
+; The zero-probability endpoint is the point mass at zero.
+Func: fnNegBinomialP
+In:  FL_SPCRES=0 RP=Real:"0" RN=Real:"5" RX=Real:"0"
+Out: EC=0 RX=Real:"1"
+
+Func: fnNegBinomialP
+In:  FL_SPCRES=0 RP=Real:"0" RN=Real:"5" RX=Real:"2"
+Out: EC=0 RX=Real:"0"
+
+; The other probability endpoint is not a finite negative-binomial law.
+Func: fnNegBinomialP
+In:  FL_SPCRES=0 RP=Real:"1" RN=Real:"5" RX=Real:"2"
+Out: EC=16 RX=Real:"2"
+
+Func: fnNegBinomialP
+In:  FL_SPCRES=0 RP=Real:"0.5" RN=Real:"5.5" RX=Real:"2"
+Out: EC=16 RX=Real:"2"
+
+Func: fnNegBinomialP
+In:  FL_SPCRES=1 RP=Real:"0.5" RN=Real:"inf" RX=Real:"2"
+Out: EC=0 RX=Real:"NaN"
+
+Func: fnNegBinomialP
+In:  FL_SPCRES=1 RP=Real:"NaN" RN=Real:"5" RX=Real:"2"
+Out: EC=0 RX=Real:"NaN"

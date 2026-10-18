@@ -1464,18 +1464,42 @@ int64_t stringToInt64(const char *str) {
 
   #define STANDARDISED_COMPLEX_LENGTH 200  // one size for standardiseComplex()'s buffers and for every caller's output buffer
 
+  /**
+   * Find the imaginary-unit marker in a complex text value. `Infinity` is a
+   * valid decimal token and contains lower-case `i` characters which are not
+   * separators.
+   */
+  static const char *findComplexImaginaryMarker(const char *text) {
+    const char *p = text;
+
+    while((p = strchr(p, 'i')) != NULL) {
+      const char *word = p;
+      while(word > text && ((word[-1] >= 'A' && word[-1] <= 'Z') || (word[-1] >= 'a' && word[-1] <= 'z'))) {
+        word--;
+      }
+      if((strncmp(word, "Infinity", 8) == 0 || strncmp(word, "infinity", 8) == 0) &&
+         !((word[8] >= 'A' && word[8] <= 'Z') || (word[8] >= 'a' && word[8] <= 'z'))) {
+        p++;
+        continue;
+      }
+      return p;
+    }
+    return NULL;
+  }
+
   // Function to standardize new input to the old state file format, any new complex, into the old "re im" form.
   // Accepts (3-i4) | 3-i4 | +3+i4 | -3-i4 | (+3+i4) | (-3-i4) | 3 -4 | 3 4 | -2.5 1e3 | -2.5e-3+i4 | (-2.5e-3-i4) | i4 | (i4) |
   //         ( 3 - i4 ) | (1.5e2-i2.5e-3) | 0+i0 | -7+i0 | (3 -i4) | 3 -i4 | +3 +i4 | -3 -i4 | ( 3 - i 4 ) | +3 + i4 | 3 - i 4 | (-2.5e-3 - i 4)
   //         (parentheses optional, leading sign optional)
-  // as well as the state file form  "3 -4"  (backward compatibility). Form and free white space is enabled by 'i' (which can never occur in a real number string).
+  // as well as the state file form  "3 -4"  (backward compatibility). Form and free white space is enabled by an imaginary-unit 'i'; the lower-case 'i'
+  // characters within Infinity remain part of that decimal token.
   // 'dest' must be STANDARDISED_COMPLEX_LENGTH bytes: the caller's buffer and the work buffer below are one size, and the length check
   // at the head of the function is what keeps every write inside both of them.
   static void standardiseComplex(const char *src, char *dest) {
     char work[STANDARDISED_COMPLEX_LENGTH];
     char *w = work;
-    char *iPos;
-    bool_t isIform = (strchr(src, 'i') != NULL);
+    const char *iPos;
+    bool_t isIform = (findComplexImaginaryMarker(src) != NULL);
 
     // A data file line is up to TMP_STR_LENGTH bytes and lands here unmeasured, while a complex this calculator can hold is far shorter: a real34 carries
     // 34 significant digits, so the widest legal element - both parts signed, with a radix mark and a four digit exponent - is well under 100 bytes. An
@@ -1514,7 +1538,11 @@ int64_t stringToInt64(const char *str) {
       return;
     }
 
-    iPos = strchr(work, 'i');
+    iPos = findComplexImaginaryMarker(work);
+    if(iPos == NULL) {                                                          // malformed whitespace may have joined text into one decimal token
+      strcpy(dest, work);
+      return;
+    }
     if(iPos == work) {
       sprintf(dest, "0 +%s", iPos + 1);                                          // leading 'i' (e.g. "i4" meaning 0+i4): real part is zero
       return;
@@ -1522,7 +1550,7 @@ int64_t stringToInt64(const char *str) {
 
     {
       char imSign = *(iPos - 1);                                                 // the character right before 'i' is the imaginary sign
-      char *imMag = iPos + 1;                                                    // the imaginary magnitude follows the 'i'
+      const char *imMag = iPos + 1;                                              // the imaginary magnitude follows the 'i'
       size_t realLen = (size_t)(iPos - 1 - work);                                // the real part is everything before that sign
       char realStr[STANDARDISED_COMPLEX_LENGTH];
 
@@ -1736,6 +1764,15 @@ int64_t stringToInt64(const char *str) {
     else if(strcmp(type, "LonI") == 0) {
       longInteger_t lgInt;
 
+      if((int32_t)strlen(value) - (value[0] == '-' || value[0] == '+' ? 1 : 0) > MAX_LONG_INTEGER_DIGITS) {
+        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+          sprintf(errorMessage, "long integer of more than %" PRId32 " digits refused for register %d", MAX_LONG_INTEGER_DIGITS, (int)regist);
+          moreInfoOnError("In function restoreRegister:", errorMessage, NULL, NULL);
+        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+        return;
+      }
+
       longIntegerInit(lgInt);
       stringToLongInteger(value, 10, lgInt);
       convertLongIntegerToLongIntegerRegister(lgInt, regist);
@@ -1744,14 +1781,17 @@ int64_t stringToInt64(const char *str) {
 
     else if(strcmp(type, "Stri") == 0) {
       int32_t len;
-      int16_t glyphs;
 
-      utf8ToStringWithLength((uint8_t *)value, errorMessage, MAX_NUMBER_OF_GLYPHS_IN_STRING * 2 + 1);  //a file cannot decode past the longest legal string
+      utf8ToStringWithLength((uint8_t *)value, errorMessage, MAX_STRING_BYTE_LENGTH);                   //a file cannot decode past the longest legal string
       len = 0;
-      for(glyphs = 0; glyphs < MAX_NUMBER_OF_GLYPHS_IN_STRING && errorMessage[len] != 0; glyphs++) {
-        len += (errorMessage[len] & 0x80) ? 2 : 1;
+      while(errorMessage[len] != 0) {
+        int32_t step = (errorMessage[len] & 0x80) ? 2 : 1;
+        if(len + step > MAX_STRING_BYTE_LENGTH - 1) {
+          break;
+        }
+        len += step;
       }
-      errorMessage[len] = 0;                                                                            //more glyphs than a register takes are cut on a glyph boundary
+      errorMessage[len] = 0;                                                                            //more bytes than a register takes are cut on a glyph boundary
       len++;
       reallocateRegister(regist, dtString, TO_BLOCKS(len), amNone);
       xcopy(REGISTER_STRING_DATA(regist), errorMessage, len);
@@ -3473,4 +3513,3 @@ void fnDeleteBackup(uint16_t confirmation) {
     #endif // DMCP_BUILD
   }
 }
-

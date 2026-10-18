@@ -118,3 +118,24 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"3" RX=Real:"0.12098536225957167489891
 ;=======================================
 ; normalP(Complex) --> Error24
 ;=======================================
+
+; Location and scale parameters must be finite, with a positive scale.
+Func: fnNormalP
+In:  FL_SPCRES=0 RM=Real:"0" RS=Real:"NaN" RX=Real:"0"
+Out: EC=16 RX=Real:"0"
+
+Func: fnNormalP
+In:  FL_SPCRES=1 RM=Real:"0" RS=Real:"NaN" RX=Real:"0"
+Out: EC=0 RX=Real:"NaN"
+
+Func: fnNormalP
+In:  FL_SPCRES=0 RM=Real:"0" RS=Real:"inf" RX=Real:"0"
+Out: EC=16 RX=Real:"0"
+
+Func: fnNormalP
+In:  FL_SPCRES=0 RM=Real:"inf" RS=Real:"1" RX=Real:"0"
+Out: EC=16 RX=Real:"0"
+
+Func: fnNormalP
+In:  FL_SPCRES=1 RM=Real:"NaN" RS=Real:"1" RX=Real:"0"
+Out: EC=0 RX=Real:"NaN"

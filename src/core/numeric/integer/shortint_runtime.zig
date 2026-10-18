@@ -30,6 +30,7 @@ const DECSPECIAL: u8 = 0x70;
 
 const abi = @import("abi"); // shared ABI bindings
 pub const real_t = abi.Real;
+pub const cplx_t = abi.Complex;
 
 comptime {
     if (@sizeOf(real_t) != 60) {
@@ -55,7 +56,7 @@ pub extern fn getRegisterDataType(regist: calcRegister_t) u32;
 pub extern fn getRegisterDataTypeName(regist: calcRegister_t, article: bool, abbreviated: bool) [*:0]const u8;
 pub extern fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void;
 pub extern fn getRegisterAsRawShortInt(reg: calcRegister_t, val: *u64, base: ?*u32) bool;
-pub extern fn getRegisterAsComplex(reg: calcRegister_t, r: *real_t, i: *real_t) bool;
+pub extern fn getRegisterAsComplex(reg: calcRegister_t, z: *cplx_t) bool;
 pub extern fn saveLastX() bool;
 pub extern fn liftStack() void;
 pub extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: calcRegister_t) void;
@@ -88,7 +89,8 @@ pub extern fn processIntRealComplexDyadicFunction(
     longintf: VoidCallback,
 ) void;
 pub extern fn convertRealToResultRegister(x: *const real_t, dest: calcRegister_t, angle: angularMode_t) void;
-pub extern fn convertComplexToResultRegister(real: *const real_t, imag: *const real_t, dest: calcRegister_t) void;
+pub extern fn convertComplexToResultRegister(z: *const cplx_t, dest: calcRegister_t) void;
+pub extern fn convertComplexPartsToResultRegister(real: *const real_t, imag: *const real_t, dest: calcRegister_t) void;
 pub extern fn convertUInt64ToShortIntegerRegister(sign: i16, value: u64, base: u32, regist: calcRegister_t) void;
 pub extern fn convertShortIntegerRegisterToLongIntegerRegister(source: calcRegister_t, destination: calcRegister_t) void;
 

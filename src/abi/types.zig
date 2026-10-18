@@ -56,6 +56,14 @@ pub const Real159 = extern struct {
     }
 };
 
+/// cplx159_t: two back-to-back `Real159`, the 159-digit complex the SLVC, SLVQ
+/// and EIGEN 159-digit paths work in. Each part is viewed as a `real_t` through
+/// `Real159.ptr`, as upstream's anonymous union of `real_t` and its storage does.
+pub const Complex159 = extern struct {
+    Real: Real159,
+    Imag: Real159,
+};
+
 /// A complex pair with lower-case r/i fields (cmplxPair), distinct from Complex's
 /// {Real, Imag} spelling used by the solver/addons owners.
 pub const CmplxPair = extern struct { r: Real, i: Real };
@@ -490,6 +498,8 @@ comptime {
     std.debug.assert(@sizeOf(Real159) == 116);
     std.debug.assert(@sizeOf(Real34) == 16);
     std.debug.assert(@sizeOf(Complex) == 2 * @sizeOf(Real));
+    std.debug.assert(@sizeOf(Complex159) == 2 * @sizeOf(Real159));
+    std.debug.assert(@offsetOf(Complex159, "Imag") == @sizeOf(Real159));
     std.debug.assert(@sizeOf(Complex34) == 32);
     std.debug.assert(@sizeOf(SubroutineLevelHeader) == 12);
     std.debug.assert(@offsetOf(RegisterSnapshot, "r") == 8);

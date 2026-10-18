@@ -124,3 +124,152 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"NaN"
 ;=======================================
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"6.2 i -7.6"
 Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"6.2 i -7.6" RX=Cplx:"18932934559.43801463394942199384139689232768522485717855351 i 13755582137.37415871329009406015795491763018737447506409652"
+
+
+; Check every result mode at digit 34 after real-exponent argument reduction.
+Func: fnM1Pow
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Cplx:"0.5877852522924731291687059546390728 i 0.8090169943749474241022934171828191" RX=Real:"0.3"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+; Negative integral exponents use the exact real branch.
+Func: fnM1Pow
+In:  RMODE=0 FL_SPCRES=0 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-1"
+Out: EC=0 FL_CPXRES=0 RX=Real:"-1"
+
+Func: fnM1Pow
+In:  RMODE=0 FL_SPCRES=0 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"-1 i 0"
+Out: EC=0 FL_CPXRES=1 RX=Cplx:"-1 i 0"
+
+; Exact half-integral exponents have an exact zero component.
+Func: fnM1Pow
+In:  RMODE=0 FL_SPCRES=0 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"0.5"
+Out: EC=0 RX=Cplx:"0 i 1"
+Func: fnRealPart
+Out: EC=0
+Func: fnInvert
+In:  FL_SPCRES=1
+Out: EC=0 RX=Real:"inf"
+
+Func: fnM1Pow
+In:  RMODE=0 FL_SPCRES=0 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-0.5"
+Out: EC=0 RX=Cplx:"0 i -1"
+Func: fnRealPart
+Out: EC=0
+Func: fnInvert
+In:  FL_SPCRES=1
+Out: EC=0 RX=Real:"inf"
+
+Func: fnM1Pow
+In:  RMODE=0 FL_SPCRES=0 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"0.5 i 1"
+Out: EC=0 RX=Cplx:"0 i 0.04321391826377224977441773717172801"
+Func: fnRealPart
+Out: EC=0
+Func: fnInvert
+In:  FL_SPCRES=1
+Out: EC=0 RX=Real:"inf"
+
+Func: fnM1Pow
+In:  RMODE=0 FL_SPCRES=0 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0.04321391826377224977441773717172801" RX=Cplx:"0.5 i 1"
+Out: EC=0
+Func: fnImaginaryPart
+Out: EC=0
+Func: fnSubtract
+Out: EC=0 RX=Real:"0"
+
+; Infinite imaginary exponents retain exact axis directions.
+Func: fnM1Pow
+In:  RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"0.5 i -inf"
+Out: EC=0 RX=Cplx:"0 i inf"
+
+In:  RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"1 i -inf"
+Out: EC=0 RX=Cplx:"-inf i 0"
+
+In:  RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"1.5 i -inf"
+Out: EC=0 RX=Cplx:"0 i -inf"
+
+Func: fnM1Pow
+In:  RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"0.5 i inf"
+Out: EC=0 RX=Cplx:"0 i 0"
+Func: fnRealPart
+Out: EC=0
+Func: fnInvert
+Out: EC=0 RX=Real:"inf"
+
+Func: fnM1Pow
+In:  RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"1.5 i inf"
+Out: EC=0 RX=Cplx:"0 i -0"
+Func: fnImaginaryPart
+Out: EC=0
+Func: fnInvert
+Out: EC=0 RX=Real:"-inf"
+
+; P39 argument rounding can reach digit 34 near the result-range limits.
+Func: fnM1Pow
+In:  RMODE=0 FL_SPCRES=0 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e5166" RY=Cplx:"3.596054980265096478362269974449671e-5133 i 0" RX=Cplx:"0 i 3761.751044149136135028268255"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+Func: fnM1Pow
+In:  RMODE=1 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Cplx:"0.5877852522924731291687059546390728 i 0.8090169943749474241022934171828191" RX=Real:"0.3"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+Func: fnM1Pow
+In:  RMODE=2 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Cplx:"0.5877852522924731291687059546390728 i 0.8090169943749474241022934171828191" RX=Real:"0.3"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+Func: fnM1Pow
+In:  RMODE=3 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Cplx:"0.5877852522924731291687059546390728 i 0.8090169943749474241022934171828191" RX=Real:"0.3"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+Func: fnM1Pow
+In:  RMODE=4 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Cplx:"0.5877852522924731291687059546390727 i 0.8090169943749474241022934171828190" RX=Real:"0.3"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+Func: fnM1Pow
+In:  RMODE=5 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Cplx:"0.5877852522924731291687059546390728 i 0.8090169943749474241022934171828191" RX=Real:"0.3"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+Func: fnM1Pow
+In:  RMODE=6 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Cplx:"0.5877852522924731291687059546390727 i 0.8090169943749474241022934171828190" RX=Real:"0.3"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+
+; A 75-digit product cannot recover digits absent from its 39-digit pi operand.
+Func: fnM1Pow
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e5441" RY=Cplx:"2.878885999974012190806347600637473e-5408 i 0" RX=Cplx:"0 i 3963.379136779662610338866812"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"

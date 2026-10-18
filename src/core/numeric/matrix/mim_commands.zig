@@ -4,7 +4,8 @@
 // and fnPNorm, and getMatrixFromRegister (loads a matrix register into the MIM
 // edit pointer). The numeric helpers (getArg, _swap*, get/putMatrix*,
 // _row_columnNorm) are static in matrix.c, so they stay file-local here; only
-// the public commands are bridge-renamed.
+// the public commands are bridge-renamed. Upstream has one get and one put body
+// over a kind descriptor, so both kinds report as getMatrixAny / putMatrixAny.
 const std = @import("std");
 const math_mim_util = @import("mim_util.zig"); // std-only matrix-input helpers
 const runtime = @import("../command_wrappers/runtime.zig");
@@ -12,10 +13,13 @@ const math_real_predicates = @import("../compare/real_predicates.zig");
 const math_comparison_reals = @import("../compare/comparison_reals.zig");
 const math_matrix_elementwise = @import("elementwise.zig");
 const math_matrix_euclidean_norm_command = @import("euclidean_norm_command.zig");
+const math_matrix_product = @import("product.zig");
 const math_matrix_swap = @import("swap.zig");
 const real_t = runtime.real_t;
+const cplx_t = runtime.cplx_t;
 const real34_t = runtime.real34_t;
 const complex34_t = runtime.complex34_t;
+const realContext_t = runtime.realContext_t;
 const real34Matrix_t = runtime.real34Matrix_t;
 const complex34Matrix_t = runtime.complex34Matrix_t;
 const matrixHeader_t = runtime.matrixHeader_t;
@@ -205,12 +209,12 @@ fn getMatrixReal(matrix: *real34Matrix_t) callconv(.c) bool {
                     }
                 }
             } else {
-                getPutRamFull("In function getMatrixReal:");
+                getPutRamFull("In function getMatrixAny:");
                 return false;
             }
         }
     } else {
-        getPutOutOfRange(a, b, "In function getMatrixReal:");
+        getPutOutOfRange(a, b, "In function getMatrixAny:");
         return false;
     }
     return false;
@@ -243,11 +247,12 @@ fn getMatrixComplex(matrix: *complex34Matrix_t) callconv(.c) bool {
                     }
                 }
             } else {
-                getPutRamFull("In function getMatrixComplex:");
+                getPutRamFull("In function getMatrixAny:");
+                return false;
             }
         }
     } else {
-        getPutOutOfRange(a, b, "In function getMatrixComplex:");
+        getPutOutOfRange(a, b, "In function getMatrixAny:");
         return false;
     }
     return false;
@@ -257,7 +262,7 @@ fn putMatrixReal(matrix: *real34Matrix_t) callconv(.c) bool {
     const i = getIRegisterAsInt(true);
     const j = getJRegisterAsInt(true);
     if (runtime.getRegisterDataType(REGISTER_X) != dtReal34Matrix) {
-        putWrongType("In function putMatrixReal:", "is not a real matrix");
+        putWrongType("is not a real matrix");
         return false;
     }
     var mat: real34Matrix_t = undefined;
@@ -272,7 +277,7 @@ fn putMatrixReal(matrix: *real34Matrix_t) callconv(.c) bool {
             }
         }
     } else {
-        getPutOutOfRange(mat.header.matrixRows, mat.header.matrixColumns, "In function putMatrixReal:");
+        getPutOutOfRange(mat.header.matrixRows, mat.header.matrixColumns, "In function putMatrixAny:");
         return false;
     }
     return true;
@@ -282,7 +287,7 @@ fn putMatrixComplex(matrix: *complex34Matrix_t) callconv(.c) bool {
     const i = getIRegisterAsInt(true);
     const j = getJRegisterAsInt(true);
     if (runtime.getRegisterDataType(REGISTER_X) != dtComplex34Matrix) {
-        putWrongType("In function putMatrixComplex:", "is not a complex matrix");
+        putWrongType("is not a complex matrix");
         return false;
     }
     var mat: complex34Matrix_t = undefined;
@@ -297,7 +302,7 @@ fn putMatrixComplex(matrix: *complex34Matrix_t) callconv(.c) bool {
             }
         }
     } else {
-        getPutOutOfRange(mat.header.matrixRows, mat.header.matrixColumns, "In function putMatrixComplex:");
+        getPutOutOfRange(mat.header.matrixRows, mat.header.matrixColumns, "In function putMatrixAny:");
         return false;
     }
     return true;
@@ -315,13 +320,13 @@ fn getPutOutOfRange(a: u16, b: u16, fnName: [*:0]const u8) void {
         runtime.moreInfoOnError(fnName, m, null, null);
     }
 }
-fn putWrongType(fnName: [*:0]const u8, suffix: []const u8) void {
+fn putWrongType(suffix: []const u8) void {
     runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
     if (runtime.extra_info_on_calc_error) {
         var buf: [80]u8 = undefined;
         const tn = runtime.getRegisterDataTypeName(REGISTER_X, true, false);
         const m = runtime.bufPrintZ(&buf, "{s} {s}", .{ tn, suffix }) catch "wrong type";
-        runtime.moreInfoOnError(fnName, m, null, null);
+        runtime.moreInfoOnError("In function putMatrixAny:", m, null, null);
     }
 }
 
@@ -344,6 +349,8 @@ pub export fn fnSwapColumns(unusedParamButMandatory: u16) callconv(.c) void {
     math_matrix_elementwise.callByIndexedMatrix(&swapColumnsReal, &swapColumnsComplex);
 }
 
+// Row or column sums through the compensated accumulator, replayed at 75 digits
+// where the 39-digit pass cancelled.
 pub export fn fnRowColSum(isRow: u16) callconv(.c) void {
     if (!runtime.saveLastX()) return;
     const dt = runtime.getRegisterDataType(REGISTER_X);
@@ -351,6 +358,8 @@ pub export fn fnRowColSum(isRow: u16) callconv(.c) void {
         var x: real34Matrix_t = undefined;
         var res: real34Matrix_t = undefined;
         var sum: real_t = undefined;
+        var correction: real_t = undefined;
+        var absolute_sum: real_t = undefined;
         var elem: real_t = undefined;
         runtime.linkToRealMatrixRegister(REGISTER_X, &x);
         const cols: usize = x.header.matrixColumns;
@@ -359,11 +368,22 @@ pub export fn fnRowColSum(isRow: u16) callconv(.c) void {
         if (runtime.realMatrixInit(&res, if (isRow != 0) @intCast(outerLimit) else 1, if (isRow != 0) 1 else @intCast(outerLimit))) {
             var i: usize = 0;
             while (i < outerLimit) : (i += 1) {
-                runtime.realSetZero(&sum);
-                var j: usize = 0;
-                while (j < innerLimit) : (j += 1) {
-                    runtime.real34ToReal(rmEl(&x, if (isRow != 0) i * cols + j else j * cols + i), &elem);
-                    runtime.realAdd(&sum, &elem, &sum, &runtime.ctxtReal39);
+                var sum_context: *realContext_t = &runtime.ctxtReal39;
+                while (true) {
+                    runtime.realSetZero(&sum);
+                    runtime.realSetZero(&correction);
+                    runtime.realSetZero(&absolute_sum);
+                    var j: usize = 0;
+                    while (j < innerLimit) : (j += 1) {
+                        runtime.real34ToReal(rmEl(&x, if (isRow != 0) i * cols + j else j * cols + i), &elem);
+                        math_matrix_product.matrixAccumulateValue(&elem, &sum, &correction, &absolute_sum, sum_context);
+                    }
+                    math_matrix_product.matrixFinishAccumulator(&sum, &correction, &sum, sum_context);
+                    if (sum_context == &runtime.ctxtReal39 and math_matrix_product.matrixNeedsExtendedAccumulator(&absolute_sum, &sum)) {
+                        sum_context = &runtime.ctxtReal75;
+                    } else {
+                        break;
+                    }
                 }
                 runtime.realToReal34(&sum, rmEl(&res, i));
             }
@@ -375,8 +395,9 @@ pub export fn fnRowColSum(isRow: u16) callconv(.c) void {
     } else if (dt == dtComplex34Matrix) {
         var x: complex34Matrix_t = undefined;
         var res: complex34Matrix_t = undefined;
-        var sumr: real_t = undefined;
-        var sumi: real_t = undefined;
+        var sum: cplx_t = undefined;
+        var correction: cplx_t = undefined;
+        var absolute_sum: cplx_t = undefined;
         var elem: real_t = undefined;
         runtime.linkToComplexMatrixRegister(REGISTER_X, &x);
         const cols: usize = x.header.matrixColumns;
@@ -385,18 +406,32 @@ pub export fn fnRowColSum(isRow: u16) callconv(.c) void {
         if (runtime.complexMatrixInit(&res, if (isRow != 0) @intCast(outerLimit) else 1, if (isRow != 0) 1 else @intCast(outerLimit))) {
             var i: usize = 0;
             while (i < outerLimit) : (i += 1) {
-                runtime.realSetZero(&sumr);
-                runtime.realSetZero(&sumi);
-                var j: usize = 0;
-                while (j < innerLimit) : (j += 1) {
-                    const idx: usize = if (isRow != 0) i * cols + j else j * cols + i;
-                    runtime.real34ToReal(&cmEl(&x, idx).real, &elem);
-                    runtime.realAdd(&sumr, &elem, &sumr, &runtime.ctxtReal39);
-                    runtime.real34ToReal(&cmEl(&x, idx).imag, &elem);
-                    runtime.realAdd(&sumi, &elem, &sumi, &runtime.ctxtReal39);
+                var sum_context: *realContext_t = &runtime.ctxtReal39;
+                while (true) {
+                    runtime.realSetZero(&sum.Real);
+                    runtime.realSetZero(&sum.Imag);
+                    runtime.realSetZero(&correction.Real);
+                    runtime.realSetZero(&correction.Imag);
+                    runtime.realSetZero(&absolute_sum.Real);
+                    runtime.realSetZero(&absolute_sum.Imag);
+                    var j: usize = 0;
+                    while (j < innerLimit) : (j += 1) {
+                        const idx: usize = if (isRow != 0) i * cols + j else j * cols + i;
+                        runtime.real34ToReal(&cmEl(&x, idx).real, &elem);
+                        math_matrix_product.matrixAccumulateValue(&elem, &sum.Real, &correction.Real, &absolute_sum.Real, sum_context);
+                        runtime.real34ToReal(&cmEl(&x, idx).imag, &elem);
+                        math_matrix_product.matrixAccumulateValue(&elem, &sum.Imag, &correction.Imag, &absolute_sum.Imag, sum_context);
+                    }
+                    math_matrix_product.matrixFinishAccumulator(&sum.Real, &correction.Real, &sum.Real, sum_context);
+                    math_matrix_product.matrixFinishAccumulator(&sum.Imag, &correction.Imag, &sum.Imag, sum_context);
+                    if (sum_context == &runtime.ctxtReal39 and (math_matrix_product.matrixNeedsExtendedAccumulator(&absolute_sum.Real, &sum.Real) or math_matrix_product.matrixNeedsExtendedAccumulator(&absolute_sum.Imag, &sum.Imag))) {
+                        sum_context = &runtime.ctxtReal75;
+                    } else {
+                        break;
+                    }
                 }
-                runtime.realToReal34(&sumr, &cmEl(&res, i).real);
-                runtime.realToReal34(&sumi, &cmEl(&res, i).imag);
+                runtime.realToReal34(&sum.Real, &cmEl(&res, i).real);
+                runtime.realToReal34(&sum.Imag, &cmEl(&res, i).imag);
             }
             runtime.convertComplex34MatrixToComplex34MatrixRegister(&res, REGISTER_X);
             runtime.complexMatrixFree(&res);
@@ -420,7 +455,7 @@ fn rowColSumRamFull(tag: [*:0]const u8) void {
 }
 
 // _row_columnNorm -- 0-norm (non-zero count), 1-norm (max column abs-sum),
-// inf-norm (max row abs-sum).
+// inf-norm (max row abs-sum). A NaN sum is the norm, and ends the scan.
 fn _row_columnNorm(pParam: u16) void {
     if (pParam != pNorm_inf_RNORM and pParam != pNorm_1_CNORM and pParam != pNorm_0_NNZ) {
         runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
@@ -480,15 +515,19 @@ fn _row_columnNorm(pParam: u16) void {
                 runtime.realSetPositiveSign(&elem);
                 runtime.realAdd(&sum, &elem, &sum, &runtime.ctxtReal39);
             }
-            if (math_comparison_reals.realCompareGreaterThan(&sum, &norm)) realCopy(&sum, &norm);
+            if (runtime.realIsNaN(&sum)) {
+                realCopy(&sum, &norm);
+                break;
+            } else if (math_comparison_reals.realCompareGreaterThan(&sum, &norm)) {
+                realCopy(&sum, &norm);
+            }
         }
         writeNorm(&norm);
     } else if (dt == dtComplex34Matrix) {
         var x: complex34Matrix_t = undefined;
         var norm: real_t = undefined;
         var sum: real_t = undefined;
-        var elem: real_t = undefined;
-        var imag: real_t = undefined;
+        var elem: cplx_t = undefined;
         runtime.linkToComplexMatrixRegister(REGISTER_X, &x);
         const cols: usize = x.header.matrixColumns;
         const outerLimit: usize = if (isRow) x.header.matrixRows else cols;
@@ -500,12 +539,17 @@ fn _row_columnNorm(pParam: u16) void {
             var j: usize = 0;
             while (j < innerLimit) : (j += 1) {
                 const idx: usize = if (isRow) i * cols + j else j * cols + i;
-                runtime.real34ToReal(&cmEl(&x, idx).real, &elem);
-                runtime.real34ToReal(&cmEl(&x, idx).imag, &imag);
-                runtime.complexMagnitude(&elem, &imag, &elem, &runtime.ctxtReal39);
-                runtime.realAdd(&sum, &elem, &sum, &runtime.ctxtReal39);
+                runtime.real34ToReal(&cmEl(&x, idx).real, &elem.Real);
+                runtime.real34ToReal(&cmEl(&x, idx).imag, &elem.Imag);
+                runtime.complexMagnitude(&elem, &elem.Real, &runtime.ctxtReal39);
+                runtime.realAdd(&sum, &elem.Real, &sum, &runtime.ctxtReal39);
             }
-            if (math_comparison_reals.realCompareGreaterThan(&sum, &norm)) realCopy(&sum, &norm);
+            if (runtime.realIsNaN(&sum)) {
+                realCopy(&sum, &norm);
+                break;
+            } else if (math_comparison_reals.realCompareGreaterThan(&sum, &norm)) {
+                realCopy(&sum, &norm);
+            }
         }
         writeNorm(&norm);
     } else {
@@ -520,12 +564,10 @@ inline fn numEl(h: *const matrixHeader_t) usize {
 fn writeNnz(nnzi: u32) void {
     var nnz: real_t = undefined;
     runtime.uInt32ToReal(nnzi, &nnz);
-    runtime.reallocateRegister(REGISTER_X, runtime.dtReal34, 0, runtime.amNone);
-    runtime.convertRealToReal34ResultRegister(&nnz, REGISTER_X);
+    runtime.convertRealToResultRegister(&nnz, REGISTER_X, runtime.amNone);
 }
 fn writeNorm(norm: *const real_t) void {
-    runtime.reallocateRegister(REGISTER_X, runtime.dtReal34, 0, runtime.amNone);
-    runtime.convertRealToReal34ResultRegister(norm, REGISTER_X);
+    runtime.convertRealToResultRegister(norm, REGISTER_X, runtime.amNone);
 }
 fn normNotMatrix() void {
     runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);

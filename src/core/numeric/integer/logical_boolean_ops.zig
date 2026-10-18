@@ -17,26 +17,24 @@ fn logicalOpResult(res: bool, xtype: u32, ytype: u32) void {
     var imag_result = runtime.zeroReal();
 
     if (xtype == runtime.dtComplex34 or ytype == runtime.dtComplex34) {
-        runtime.convertComplexToResultRegister(&real_result, &imag_result, runtime.REGISTER_X);
+        runtime.convertComplexPartsToResultRegister(&real_result, &imag_result, runtime.REGISTER_X);
     } else {
         runtime.convertRealToResultRegister(&real_result, runtime.REGISTER_X, runtime.amNone);
     }
 }
 
 fn dyadicLogicalOp(table: [4]u8) void {
-    var xr = runtime.zeroReal();
-    var xc = runtime.zeroReal();
-    var yr = runtime.zeroReal();
-    var yc = runtime.zeroReal();
+    var cx: runtime.cplx_t = .{ .Real = runtime.zeroReal(), .Imag = runtime.zeroReal() };
+    var cy: runtime.cplx_t = .{ .Real = runtime.zeroReal(), .Imag = runtime.zeroReal() };
 
-    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &xr, &xc) or
-        !runtime.getRegisterAsComplex(runtime.REGISTER_Y, &yr, &yc))
+    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &cx) or
+        !runtime.getRegisterAsComplex(runtime.REGISTER_Y, &cy))
     {
         return;
     }
 
-    const x = !runtime.isRealZero(&xr) or !runtime.isRealZero(&xc);
-    const y = !runtime.isRealZero(&yr) or !runtime.isRealZero(&yc);
+    const x = !runtime.isRealZero(&cx.Real) or !runtime.isRealZero(&cx.Imag);
+    const y = !runtime.isRealZero(&cy.Real) or !runtime.isRealZero(&cy.Imag);
     const table_index: usize = @intFromBool(x) + 2 * @as(usize, @intFromBool(y));
     const res = table[table_index] != 0;
 
@@ -98,15 +96,14 @@ fn xnorShoI() callconv(.c) void {
 }
 
 fn notCplx() callconv(.c) void {
-    var xr = runtime.zeroReal();
-    var xc = runtime.zeroReal();
+    var x: runtime.cplx_t = .{ .Real = runtime.zeroReal(), .Imag = runtime.zeroReal() };
     const xtype = runtime.getRegisterDataType(runtime.REGISTER_X);
 
-    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &xr, &xc)) {
+    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &x)) {
         return;
     }
 
-    logicalOpResult(runtime.isRealZero(&xr) and runtime.isRealZero(&xc), xtype, xtype);
+    logicalOpResult(runtime.isRealZero(&x.Real) and runtime.isRealZero(&x.Imag), xtype, xtype);
 }
 
 fn notShoI() callconv(.c) void {

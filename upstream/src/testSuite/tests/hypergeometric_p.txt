@@ -88,6 +88,8 @@ Out: EC=24 FL_ASLIFT=0 RX=Stri:"String test"
 ;=======================================
 ; hypergeometricL(Real Matrix) --> Error24
 ;=======================================
+In:  FL_ASLIFT=0 RM=Real:"100" RN=Real:"90" RQ=Real:"90" RX=ReMa:"M1,2[80,81]"
+Out: EC=24 FL_ASLIFT=0 RX=ReMa:"M1,2[80,81]"
 
 
 
@@ -112,3 +114,43 @@ Out: EC=24 FL_ASLIFT=0 RX=Stri:"String test"
 ;=======================================
 ; hypergeometricL(Complex) --> Error24
 ;=======================================
+
+; Shifted support, a moderate cancellation case, and the saddle formula.
+In:  FL_ASLIFT=0 RM=Real:"100" RN=Real:"90" RQ=Real:"90" RX=Real:"79"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"79" RX=Real:"0"
+
+In:  FL_ASLIFT=0 RM=Real:"100" RN=Real:"90" RQ=Real:"90" RX=Real:"80"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"80" RX=Real:"0.3304762110867251538707466612662081"
+
+In:  FL_ASLIFT=0 RM=Real:"1000000" RN=Real:"500000" RQ=Real:"500000" RX=Real:"250000"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"250000" RX=Real:"0.001595767924779338318412354489319156"
+
+In:  FL_ASLIFT=0 RM=Real:"1e40" RN=Real:"5e39" RQ=Real:"5e39" RX=Real:"2.5e39"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"2.5e39" RX=Real:"1.595769121605730711759784239737527e-20"
+
+In:  FL_ASLIFT=0 RM=Real:"1e12" RN=Real:"4e11" RQ=Real:"3e11" RX=Real:"1.2e11"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1.2e11" RX=Real:"0.000001777030155189261571376131064454745"
+
+; Degenerate and limiting support values.
+In:  FL_ASLIFT=0 RM=Real:"0" RN=Real:"0" RQ=Real:"0" RX=Real:"0"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"1"
+
+In:  FL_ASLIFT=0 RM=Real:"100" RN=Real:"90" RQ=Real:"90" RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"0"
+
+; A positive mass below the Real34 range retains its directed side.
+In:  RMODE=0 FL_ASLIFT=0 RM=Real:"1e100" RN=Real:"5e99" RQ=Real:"5e99" RX=Real:"0"
+Out: EC=0 RX=Real:"0"
+
+In:  RMODE=3 FL_ASLIFT=0 RM=Real:"1e100" RN=Real:"5e99" RQ=Real:"5e99" RX=Real:"0"
+Out: EC=0 RX=Real:"1e-6176"
+
+In:  RMODE=5 FL_ASLIFT=0 RM=Real:"1e100" RN=Real:"5e99" RQ=Real:"5e99" RX=Real:"0"
+Out: EC=0 RX=Real:"1e-6176"
+
+; NaN arguments and nonfinite parameters are rejected.
+In:  RMODE=0 FL_ASLIFT=0 RM=Real:"100" RN=Real:"90" RQ=Real:"90" RX=Real:"NaN"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RM=Real:"inf" RN=Real:"90" RQ=Real:"90" RX=Real:"80"
+Out: EC=16 FL_ASLIFT=0 RX=Real:"80"

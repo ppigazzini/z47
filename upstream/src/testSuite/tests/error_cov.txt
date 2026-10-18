@@ -19,3 +19,48 @@ Out: EC=5
 Func: fnErrorMessage
 In:  FARG=0 RX=Real:"5"
 Out: EC=5
+Func: fnErrorMessage
+In:  FARG=0 RX=LonI:"128"
+Out: EC=128
+Func: fnErrorMessage
+In:  FARG=0 RX=LonI:"129"
+Out: EC=8
+Func: fnErrorMessage
+In:  FARG=0 RX=LonI:"999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999"
+Out: EC=8
+
+; Real error-code input is truncated towards zero after its exact range checks.
+Func: fnErrorMessage
+In:  FARG=0 RMODE=4 RX=Real:"128.9999999999999999999999999999999"
+Out: EC=128
+Func: fnErrorMessage
+In:  FARG=0 RMODE=6 RX=Real:"1.999999999999999999999999999999999"
+Out: EC=1
+Func: fnErrorMessage
+In:  FARG=0 RX=Real:"0.9999999999999999999999999999999999"
+Out: EC=8
+
+; Zero, non-finite values and tagged reals are not error codes.
+Func: fnErrorMessage
+In:  FARG=0 RX=Real:"-0"
+Out: EC=8
+Func: fnErrorMessage
+In:  FARG=0 RX=Real:"inf"
+Out: EC=8
+Func: fnErrorMessage
+In:  FARG=0 RX=Real:"-inf"
+Out: EC=8
+Func: fnErrorMessage
+In:  FARG=0 RX=Real:"NaN"
+Out: EC=8
+Func: fnErrorMessage
+In:  FARG=0 RX=Real:"5":DEG
+Out: EC=24
+
+; SPCRES propagates the invalid continuous-uniform result without raising an error.
+Func: fnUniformP
+In:  FARG=0 FL_SPCRES=1 RM=Real:"1" RN=Real:"1" RX=Real:"2"
+Out: EC=0 RX=Real:"NaN"
+Func: fnUniformP
+In:  FARG=0 FL_SPCRES=0 RM=Real:"1" RN=Real:"1" RX=Real:"2"
+Out: EC=16 RX=Real:"2"

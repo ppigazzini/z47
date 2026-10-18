@@ -57,6 +57,100 @@ Out: EC=0
 Func: fnRandomI
 In:  RY=Real:"1" RX=Real:"100"
 Out: EC=0 RX=Real:"12.31169314806849985657086011702687"
+; The same draw with a 34-place closing cancellation.  If U is the draw above,
+; the bounds make X-Y=10^34-1 and the mathematical result is -U.
+Func: fnSeed
+In:  RX=Real:"12345"
+Out: EC=0
+Func: fnRandomI
+In:  RY=Real:"-1142595267481666652178874759295643" RX=Real:"8857404732518333347821125240704356"
+Out: EC=0 RX=Real:"-0.1142595267481666652178874759295643"
+; The span needs a wide exponent range even though the closing FMA needs p34.
+; Subtraction and scaling assert the final digit under every result mode.
+Func: fnSeed
+In:  RX=Real:"12345"
+Out: EC=0
+Func: fnRandomI
+In:  RMODE=0 RT=Real:"1e-6111" RZ=Real:"-7.714809465036666695642250481408713e6144" RY=Real:"-9.999999999999999999999999999999999e6144" RX=Real:"9.999999999999999999999999999999999e6144"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+Func: fnSeed
+In:  RX=Real:"12345"
+Out: EC=0
+Func: fnRandomI
+In:  RMODE=1 RT=Real:"1e-6111" RZ=Real:"-7.714809465036666695642250481408713e6144" RY=Real:"-9.999999999999999999999999999999999e6144" RX=Real:"9.999999999999999999999999999999999e6144"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+Func: fnSeed
+In:  RX=Real:"12345"
+Out: EC=0
+Func: fnRandomI
+In:  RMODE=2 RT=Real:"1e-6111" RZ=Real:"-7.714809465036666695642250481408713e6144" RY=Real:"-9.999999999999999999999999999999999e6144" RX=Real:"9.999999999999999999999999999999999e6144"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+Func: fnSeed
+In:  RX=Real:"12345"
+Out: EC=0
+Func: fnRandomI
+In:  RMODE=3 RT=Real:"1e-6111" RZ=Real:"-7.714809465036666695642250481408714e6144" RY=Real:"-9.999999999999999999999999999999999e6144" RX=Real:"9.999999999999999999999999999999999e6144"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+Func: fnSeed
+In:  RX=Real:"12345"
+Out: EC=0
+Func: fnRandomI
+In:  RMODE=4 RT=Real:"1e-6111" RZ=Real:"-7.714809465036666695642250481408713e6144" RY=Real:"-9.999999999999999999999999999999999e6144" RX=Real:"9.999999999999999999999999999999999e6144"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+Func: fnSeed
+In:  RX=Real:"12345"
+Out: EC=0
+Func: fnRandomI
+In:  RMODE=5 RT=Real:"1e-6111" RZ=Real:"-7.714809465036666695642250481408713e6144" RY=Real:"-9.999999999999999999999999999999999e6144" RX=Real:"9.999999999999999999999999999999999e6144"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+Func: fnSeed
+In:  RX=Real:"12345"
+Out: EC=0
+Func: fnRandomI
+In:  RMODE=6 RT=Real:"1e-6111" RZ=Real:"-7.714809465036666695642250481408714e6144" RY=Real:"-9.999999999999999999999999999999999e6144" RX=Real:"9.999999999999999999999999999999999e6144"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+; This seed begins with six zero decimal places.  The 40-digit span and fused
+; affine calculation cancel to 4e-40.
+Func: fnSeed
+In:  RX=Real:"853171"
+Out: EC=0
+Func: fnRandom
+In:  RX=Real:"0"
+Out: EC=0 RX=Real:"0.0000004877239210834499830504487972"
+Func: fnSeed
+In:  RX=Real:"853171"
+Out: EC=0
+Func: fnRandomI
+In:  RY=Real:"-1246406709166367291051921569.364857" RX=Real:"2555556632316048886314046525939287"
+Out: EC=0 RX=Real:"4e-40"
 ; fnRandomI with long-integer bounds takes the integer path (doIntRandomI): an int in [1,100]
 Func: fnSeed
 In:  RX=Real:"12345"

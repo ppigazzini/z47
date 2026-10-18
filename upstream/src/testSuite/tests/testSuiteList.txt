@@ -548,3 +548,4 @@ undo_on_error
 
 config_cov
 stack_cov
+scaled_integer

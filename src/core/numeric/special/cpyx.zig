@@ -10,10 +10,13 @@
 
 const runtime = @import("../command_wrappers/runtime.zig");
 const math_real_predicates = @import("../compare/real_predicates.zig");
-const math_command_wrappers = @import("../command_wrappers.zig");
 const math_comparison_reals = @import("../compare/comparison_reals.zig");
+const math_ln_complex = @import("../ln_complex.zig");
+const math_lnbeta = @import("lnbeta.zig");
+const math_transcendental = @import("transcendental_command.zig");
 const math_wp34s = @import("wp34s.zig");
 const real_t = runtime.real_t;
+const cplx_t = runtime.cplx_t;
 const realContext_t = runtime.realContext_t;
 const mpz_struct = runtime.mpz_struct;
 const calcRegister_t = runtime.calcRegister_t;
@@ -22,6 +25,10 @@ const realAdd = runtime.realAdd;
 const realSubtract = runtime.realSubtract;
 const realIsAnInteger = runtime.realIsAnInteger;
 const realIsNegative = runtime.realIsNegative;
+const realIsSpecial = runtime.realIsSpecial;
+const realIsInfinite = runtime.realIsInfinite;
+const realIsZero = runtime.realIsZero;
+const realChangeSign = runtime.realChangeSign;
 const realToIntegralValue = runtime.realToIntegralValue;
 const DEC_ROUND_HALF_UP = runtime.DEC_ROUND_HALF_UP;
 
@@ -30,6 +37,7 @@ const REGISTER_Y = runtime.REGISTER_Y;
 const ERR_REGISTER_LINE = runtime.ERR_REGISTER_LINE;
 const ERROR_OUT_OF_RANGE = runtime.ERROR_OUT_OF_RANGE;
 const FLAG_OVERFLOW = runtime.FLAG_OVERFLOW;
+const FLAG_SPCRES = runtime.FLAG_SPCRES;
 const amNone = runtime.amNone;
 
 const displayCalcErrorMessage = runtime.displayCalcErrorMessage;
@@ -39,11 +47,16 @@ const moreInfoOnError = runtime.moreInfoOnError;
 const CP_PERMUTATION: u16 = 0;
 const CP_COMBINATION: u16 = 1;
 
+inline fn const_0() *const real_t {
+    return runtime.z47_math_wrappers_const_0();
+}
 inline fn const_1() *const real_t {
     return runtime.z47_math_wrappers_const_1();
 }
-
-// realExp and WP34S_LnGamma / WP34S_ComplexLnGamma / expComplex cross-domain.
+inline fn realCopy(source: *const real_t, destination: *real_t) void {
+    destination.* = source.*;
+}
+const realIsPositive = math_real_predicates.realIsPositive;
 
 // Long integer <-> real / register conversions.
 extern fn convertLongIntegerToReal(source: *mpz_struct, destination: *real_t, ctxt: *realContext_t) void;
@@ -55,7 +68,6 @@ extern fn convertShortIntegerRegisterToLongInteger(reg: calcRegister_t, lgInt: *
 // GMP / long integer helpers (longIntegerType.h inlines / macros).
 extern fn __gmpz_cmp_si(op: *const mpz_struct, v: c_long) c_int;
 extern fn __gmpz_set(rop: *mpz_struct, op: *const mpz_struct) void;
-// Overflow-guarded multiply (integers.c).
 
 inline fn longIntegerInit(op: *mpz_struct) void {
     runtime.__gmpz_init(op);
@@ -119,12 +131,42 @@ pub export fn logCyxReal(y: *real_t, x: *real_t, result: *real_t, realContext: *
     realSubtract(result, x, result, realContext); // r = ln(y!) - ln((y-x)!) - ln(x!)
 }
 
+// log(C(y,x)) for finite 0 <= x <= y. The beta form avoids subtraction between
+// log-Gamma values of size proportional to y.
+fn logCyxPositiveReal(y: *const real_t, x: *const real_t, result: *real_t, realContext: *realContext_t) void {
+    var a: real_t = undefined;
+    var b: real_t = undefined;
+    var logBeta: real_t = undefined;
+    var t: real_t = undefined;
+
+    realAdd(x, const_1(), &a, realContext);
+    realSubtract(y, x, &b, realContext);
+    realAdd(&b, const_1(), &b, realContext);
+    math_lnbeta.C47_LnBetaPositiveReal(&a, &b, &logBeta);
+
+    realAdd(y, const_1(), &t, realContext);
+    math_wp34s.WP34S_Ln(&t, &t, &runtime.ctxtReal75);
+    realAdd(&t, &logBeta, result, realContext);
+    realChangeSign(result);
+}
+
+// log(P(y,x)) for finite 0 <= x <= y.
+fn logPyxPositiveReal(y: *const real_t, x: *const real_t, result: *real_t, realContext: *realContext_t) void {
+    var xPlusOne: real_t = undefined;
+    var logGamma: real_t = undefined;
+
+    logCyxPositiveReal(y, x, result, realContext);
+    realAdd(x, const_1(), &xPlusOne, realContext);
+    math_wp34s.WP34S_LnGamma(&xPlusOne, &logGamma, &runtime.ctxtReal75);
+    realAdd(result, &logGamma, result, realContext);
+}
+
 fn cyxReal(y: *real_t, x: *real_t, result: *real_t, realContext: *realContext_t) void {
     const inputAreIntegers = (realIsAnInteger(x) and realIsAnInteger(y));
 
-    logCyxReal(y, x, result, realContext);
+    logCyxPositiveReal(y, x, result, realContext);
 
-    math_command_wrappers.realExp(result, result, realContext); // r = y! / ((y-x)! x x!)
+    math_transcendental.realExp(result, result, realContext); // r = y! / ((y-x)! x x!)
 
     if (inputAreIntegers and !realIsAnInteger(result)) {
         realToIntegralValue(result, result, DEC_ROUND_HALF_UP, realContext);
@@ -170,47 +212,74 @@ fn cyxLong(y: *mpz_struct, x: *mpz_struct, result: *mpz_struct) void {
         realSubtract(&yReal, &resultReal, &resultReal, &runtime.ctxtReal75);
         realSubtract(&resultReal, &xReal, &resultReal, &runtime.ctxtReal75); // r = ln(y!) - ln((y-x)!) - ln(x!)
 
-        math_command_wrappers.realExp(&resultReal, &resultReal, &runtime.ctxtReal75); // r = y! / ((y-x)! x x!)
+        math_transcendental.realExp(&resultReal, &resultReal, &runtime.ctxtReal75); // r = y! / ((y-x)! x x!)
 
         convertRealToLongInteger(&resultReal, result, DEC_ROUND_HALF_UP);
     }
 }
 
-fn cyxCplx(yReal: *real_t, yImag: *real_t, xReal: *real_t, xImag: *real_t, rReal: *real_t, rImag: *real_t, realContext: *realContext_t) void {
-    realSubtract(yReal, xReal, rReal, realContext); // r = y - x
-    realSubtract(yImag, xImag, rImag, realContext);
+// log(C(y,x)) through log-Beta in its stable half-plane. Returns true when the
+// transformed arguments have positive real parts.
+fn logCyxPositiveComplex(y: *const cplx_t, x: *const cplx_t, r: *cplx_t, realContext: *realContext_t) bool {
+    var a: cplx_t = undefined;
+    var b: cplx_t = undefined;
+    var logBeta: cplx_t = undefined;
+    var t: cplx_t = undefined;
 
-    realAdd(rReal, const_1(), rReal, realContext); // r = t + 1
-    math_wp34s.WP34S_ComplexLnGamma(rReal, rImag, rReal, rImag, realContext); // r = lnGamma(t + 1) = ln((y - x)!)
+    realAdd(&x.Real, const_1(), &a.Real, realContext);
+    realCopy(&x.Imag, &a.Imag);
+    realSubtract(&y.Real, &x.Real, &b.Real, realContext);
+    realAdd(&b.Real, const_1(), &b.Real, realContext);
+    realSubtract(&y.Imag, &x.Imag, &b.Imag, realContext);
+    if (realIsSpecial(&a.Real) or realIsSpecial(&a.Imag) or realIsSpecial(&b.Real) or realIsSpecial(&b.Imag) or
+        !math_comparison_reals.realCompareGreaterThan(&a.Real, const_0()) or !math_comparison_reals.realCompareGreaterThan(&b.Real, const_0()))
+    {
+        return false;
+    }
 
-    realAdd(xReal, const_1(), xReal, realContext); // x = x + 1
-    math_wp34s.WP34S_ComplexLnGamma(xReal, xImag, xReal, xImag, realContext); // x = lnGamma(x + 1) = ln(x!)
+    math_lnbeta.C47_LnBetaPositiveComplex(&a, &b, &logBeta);
+    realAdd(&y.Real, const_1(), &t.Real, realContext);
+    realCopy(&y.Imag, &t.Imag);
+    math_ln_complex.lnComplex(&t, &t, realContext);
+    realAdd(&t.Real, &logBeta.Real, &r.Real, realContext);
+    realAdd(&t.Imag, &logBeta.Imag, &r.Imag, realContext);
+    realChangeSign(&r.Real);
+    realChangeSign(&r.Imag);
+    return true;
+}
 
-    realAdd(yReal, const_1(), yReal, realContext); // y = y + 1
-    math_wp34s.WP34S_ComplexLnGamma(yReal, yImag, yReal, yImag, realContext); // y = lnGamma(y + 1) = ln(y!)
+fn cyxCplx(y: *cplx_t, x: *cplx_t, r: *cplx_t, realContext: *realContext_t) void {
+    if (logCyxPositiveComplex(y, x, r, realContext)) {
+        math_transcendental.expComplex(r, r, realContext);
+        return;
+    }
 
-    realSubtract(yReal, rReal, rReal, realContext); // r = ln(y!) - ln((y - x)!)
-    realSubtract(yImag, rImag, rImag, realContext);
+    realSubtract(&y.Real, &x.Real, &r.Real, realContext); // r = y - x
+    realSubtract(&y.Imag, &x.Imag, &r.Imag, realContext);
 
-    realSubtract(rReal, xReal, rReal, realContext); // r = ln(y!) - ln((y - x)!) - ln(x!)
-    realSubtract(rImag, xImag, rImag, realContext);
+    realAdd(&r.Real, const_1(), &r.Real, realContext); // r = t + 1
+    runtime.WP34S_ComplexLnGamma(r, r, realContext); // r = lnGamma(t + 1) = ln((y - x)!)
 
-    math_command_wrappers.expComplex(rReal, rImag, rReal, rImag, realContext); // r = y! / ((y-x)! x x!)
+    realAdd(&x.Real, const_1(), &x.Real, realContext); // x = x + 1
+    runtime.WP34S_ComplexLnGamma(x, x, realContext); // x = lnGamma(x + 1) = ln(x!)
+
+    realAdd(&y.Real, const_1(), &y.Real, realContext); // y = y + 1
+    runtime.WP34S_ComplexLnGamma(y, y, realContext); // y = lnGamma(y + 1) = ln(y!)
+
+    realSubtract(&y.Real, &r.Real, &r.Real, realContext); // r = ln(y!) - ln((y - x)!)
+    realSubtract(&y.Imag, &r.Imag, &r.Imag, realContext);
+
+    realSubtract(&r.Real, &x.Real, &r.Real, realContext); // r = ln(y!) - ln((y - x)!) - ln(x!)
+    realSubtract(&r.Imag, &x.Imag, &r.Imag, realContext);
+
+    math_transcendental.expComplex(r, r, realContext); // r = y! / ((y-x)! x x!)
 }
 
 fn pyxReal(y: *real_t, x: *real_t, result: *real_t, realContext: *realContext_t) void {
     const inputAreIntegers = (realIsAnInteger(x) and realIsAnInteger(y));
 
-    realSubtract(y, x, result, realContext);
-    realAdd(result, const_1(), result, realContext);
-    math_wp34s.WP34S_LnGamma(result, result, realContext); // r = ln((y-x)!)
-
-    realAdd(y, const_1(), y, realContext);
-    math_wp34s.WP34S_LnGamma(y, y, realContext); // y = ln(y!)
-
-    realSubtract(y, result, result, realContext); // r = ln(y!) - ln((y-x)!)
-
-    math_command_wrappers.realExp(result, result, realContext); // r = y! / (y-x)!
+    logPyxPositiveReal(y, x, result, realContext);
+    math_transcendental.realExp(result, result, realContext);
 
     if (inputAreIntegers and !realIsAnInteger(result)) {
         realToIntegralValue(result, result, DEC_ROUND_HALF_UP, realContext);
@@ -251,26 +320,39 @@ fn pyxLong(y: *mpz_struct, x: *mpz_struct, result: *mpz_struct) void {
 
         realSubtract(&yReal, &resultReal, &resultReal, &runtime.ctxtReal75); // r = ln(y!) - ln((y-x)!)
 
-        math_command_wrappers.realExp(&resultReal, &resultReal, &runtime.ctxtReal75); // r = y! / (y-x)!
+        math_transcendental.realExp(&resultReal, &resultReal, &runtime.ctxtReal75); // r = y! / (y-x)!
 
         convertRealToLongInteger(&resultReal, result, DEC_ROUND_HALF_UP);
     }
 }
 
-fn pyxCplx(yReal: *real_t, yImag: *real_t, xReal: *real_t, xImag: *real_t, rReal: *real_t, rImag: *real_t, realContext: *realContext_t) void {
-    realSubtract(yReal, xReal, rReal, realContext); // r = y - x
-    realSubtract(yImag, xImag, rImag, realContext);
+fn pyxCplx(y: *cplx_t, x: *cplx_t, r: *cplx_t, realContext: *realContext_t) void {
+    if (logCyxPositiveComplex(y, x, r, realContext)) {
+        var xPlusOne: cplx_t = undefined;
+        var logGamma: cplx_t = undefined;
 
-    realAdd(rReal, const_1(), rReal, realContext); // r = t + 1
-    math_wp34s.WP34S_ComplexLnGamma(rReal, rImag, rReal, rImag, realContext); // r = lnGamma(t + 1) = ln((y - x)!)
+        realAdd(&x.Real, const_1(), &xPlusOne.Real, realContext);
+        realCopy(&x.Imag, &xPlusOne.Imag);
+        runtime.WP34S_ComplexLnGamma(&xPlusOne, &logGamma, realContext);
+        realAdd(&r.Real, &logGamma.Real, &r.Real, realContext);
+        realAdd(&r.Imag, &logGamma.Imag, &r.Imag, realContext);
+        math_transcendental.expComplex(r, r, realContext);
+        return;
+    }
 
-    realAdd(yReal, const_1(), yReal, realContext); // y = y + 1
-    math_wp34s.WP34S_ComplexLnGamma(yReal, yImag, yReal, yImag, realContext); // y = lnGamma(y + 1) = ln(y!)
+    realSubtract(&y.Real, &x.Real, &r.Real, realContext); // r = y - x
+    realSubtract(&y.Imag, &x.Imag, &r.Imag, realContext);
 
-    realSubtract(yReal, rReal, rReal, realContext); // r = ln(y!) - ln((y - x)!)
-    realSubtract(yImag, rImag, rImag, realContext);
+    realAdd(&r.Real, const_1(), &r.Real, realContext); // r = t + 1
+    runtime.WP34S_ComplexLnGamma(r, r, realContext); // r = lnGamma(t + 1) = ln((y - x)!)
 
-    math_command_wrappers.expComplex(rReal, rImag, rReal, rImag, realContext); // r = y! / (y-x)!
+    realAdd(&y.Real, const_1(), &y.Real, realContext); // y = y + 1
+    runtime.WP34S_ComplexLnGamma(y, y, realContext); // y = lnGamma(y + 1) = ln(y!)
+
+    realSubtract(&y.Real, &r.Real, &r.Real, realContext); // r = ln(y!) - ln((y - x)!)
+    realSubtract(&y.Imag, &r.Imag, &r.Imag, realContext);
+
+    math_transcendental.expComplex(r, r, realContext); // r = y! / (y-x)!
 }
 
 fn cpyxLonI(combOrPerm: u16) void {
@@ -310,6 +392,25 @@ fn cpyxReal(combOrPerm: u16) void {
         return;
     }
 
+    if (realIsSpecial(&x) or realIsSpecial(&y)) {
+        if (!runtime.getSystemFlag(FLAG_SPCRES)) {
+            displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
+            return;
+        }
+        var t: real_t = undefined;
+        if (realIsInfinite(&y) and realIsPositive(&y) and !realIsSpecial(&x) and !realIsNegative(&x)) {
+            if (realIsZero(&x)) {
+                runtime.realSetOne(&t);
+            } else {
+                realCopy(runtime.z47_math_wrappers_const_plus_infinity(), &t);
+            }
+        } else {
+            runtime.realSetNaN(&t);
+        }
+        runtime.convertRealToResultRegister(&t, REGISTER_X, amNone);
+        return;
+    }
+
     if (realIsNegative(&x) or realIsNegative(&y) or math_comparison_reals.realCompareGreaterThan(&x, &y)) {
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
         extraInfoMessage("cpyxRealReal:", "cannot calculate Cyx/Pyx, conditions: x>=0, y>=0, and x<=y.");
@@ -323,23 +424,20 @@ fn cpyxReal(combOrPerm: u16) void {
 }
 
 fn cpyxCplx(combOrPerm: u16) void {
-    var xReal: real_t = undefined;
-    var xImag: real_t = undefined;
-    var yReal: real_t = undefined;
-    var yImag: real_t = undefined;
-    var tReal: real_t = undefined;
-    var tImag: real_t = undefined;
+    var x: cplx_t = undefined;
+    var y: cplx_t = undefined;
+    var t: cplx_t = undefined;
 
-    if (!runtime.getRegisterAsComplex(REGISTER_X, &xReal, &xImag) or !runtime.getRegisterAsComplex(REGISTER_Y, &yReal, &yImag)) {
+    if (!runtime.getRegisterAsComplex(REGISTER_X, &x) or !runtime.getRegisterAsComplex(REGISTER_Y, &y)) {
         return;
     }
 
     if (combOrPerm == CP_COMBINATION)
-        cyxCplx(&yReal, &yImag, &xReal, &xImag, &tReal, &tImag, &runtime.ctxtReal39)
+        cyxCplx(&y, &x, &t, &runtime.ctxtReal75)
     else
-        pyxCplx(&yReal, &yImag, &xReal, &xImag, &tReal, &tImag, &runtime.ctxtReal39);
+        pyxCplx(&y, &x, &t, &runtime.ctxtReal75);
 
-    runtime.convertComplexToResultRegister(&tReal, &tImag, REGISTER_X);
+    runtime.convertComplexToResultRegister(&t, REGISTER_X);
 }
 
 fn cpyxShoI(combOrPerm: u16) void {

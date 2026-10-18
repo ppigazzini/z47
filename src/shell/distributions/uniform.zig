@@ -1,165 +1,202 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
-// Zig owner for the (continuous and discrete) Uniform distribution commands,
-// porting `src/c47/distributions/uniform.c`. The four fn* entry points each take
-// a `discrete` flag (0 = continuous, non-zero = discrete) and are dispatched
-// from the items.c function table via frontier.zig. All decNumber/register
-// access goes through frontier_distribution_runtime. The testSuite has no
-// Uniform dispatch entry, so these are verified by the distributions parity
-// harness.
+// Zig owner for src/c47/distributions/uniform.c: the continuous and discrete
+// uniform distribution commands. The parameter selects the discrete form. The
+// entry points load register X and the limits in M and N through
+// WP34S_CheckDistributionParameters, whose domain rule also orders the limits,
+// and keep their own bodies since the uniform has no row in the descriptor
+// table. Tagged linksection(dr.code_section) so the code runs from QSPI on the
+// flash-limited old_hw DM42.
 
 const dr = @import("distribution_runtime.zig");
-const real_t = dr.real_t;
+pub const real_t = dr.real_t;
 
-// Reads X, low (REGISTER_M) and high (REGISTER_N); validates and, when
-// requested, computes the range and the position of X relative to [low, high].
-fn checkParamUniform(x: *real_t, low: *real_t, high: *real_t, range: ?*real_t, cmp: ?*c_int, discrete: u16) linksection(dr.code_section) bool {
-    const ctx = &dr.ctxtReal39;
-    if (!dr.saveLastX()) {
+// uniformCheckDomain: finite limits, integers for the discrete form and distinct
+// for the continuous one; a reversed pair is swapped into order.
+fn checkDomain(registers_valid: bool, x: *real_t, low: ?*real_t, high: ?*real_t, third: ?*real_t, discrete: u16) linksection(dr.code_section) callconv(.c) bool {
+    _ = third;
+    if (!registers_valid) {
         return false;
     }
+    const l = low.?;
+    const h = high.?;
 
-    if (!dr.getRegisterAsReal(dr.REGISTER_X, x) or !dr.getRegisterAsReal(dr.REGISTER_M, low) or !dr.getRegisterAsReal(dr.REGISTER_N, high)) {
-        dr.specialResultNaN();
-        return false;
-    }
-    if (dr.realIsSpecial(x) or dr.realIsSpecial(low) or dr.realIsSpecial(high)) {
+    if (dr.realIsNaN(x)) {
         dr.displayDomainErrorMessage(dr.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, dr.ERR_REGISTER_LINE);
-        dr.moreInfoOnError("In function checkParamUniform:", "given non-number inputs", null, null);
-        dr.specialResultNaN();
+        dr.moreInfoOnError("In function uniformCheckDomain:", "given NaN argument", null, null);
+        return false;
+    }
+    if (dr.realIsSpecial(l) or dr.realIsSpecial(h)) {
+        dr.displayDomainErrorMessage(dr.ERROR_INVALID_DISTRIBUTION_PARAM, dr.ERR_REGISTER_LINE);
+        dr.moreInfoOnError("In function uniformCheckDomain:", "given non-finite limits", null, null);
         return false;
     }
     if (discrete != 0) {
-        if (!dr.isAnInteger(low)) {
-            dr.displayDomainErrorMessage(dr.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, dr.ERR_REGISTER_LINE);
-            dr.moreInfoOnError("In function checkParamUniform:", "given non-integer lower limit", null, null);
-            dr.specialResultNaN();
+        if (!dr.isAnInteger(l)) {
+            dr.displayDomainErrorMessage(dr.ERROR_INVALID_DISTRIBUTION_PARAM, dr.ERR_REGISTER_LINE);
+            dr.moreInfoOnError("In function uniformCheckDomain:", "given non-integer lower limit", null, null);
             return false;
         }
-        if (!dr.isAnInteger(high)) {
-            dr.displayDomainErrorMessage(dr.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, dr.ERR_REGISTER_LINE);
-            dr.moreInfoOnError("In function checkParamUniform:", "given non-integer upper limit", null, null);
-            dr.specialResultNaN();
+        if (!dr.isAnInteger(h)) {
+            dr.displayDomainErrorMessage(dr.ERROR_INVALID_DISTRIBUTION_PARAM, dr.ERR_REGISTER_LINE);
+            dr.moreInfoOnError("In function uniformCheckDomain:", "given non-integer upper limit", null, null);
             return false;
         }
     }
 
-    if (dr.realGreaterThan(low, high)) {
-        const tmp = low.*;
-        low.* = high.*;
-        high.* = tmp;
+    if (dr.realGreaterThan(l, h)) {
+        var t: real_t = undefined;
+        dr.realCopy(l, &t);
+        dr.realCopy(h, l);
+        dr.realCopy(&t, h);
+    }
+    if (discrete == 0 and dr.realEqual(l, h)) {
+        dr.displayDomainErrorMessage(dr.ERROR_INVALID_DISTRIBUTION_PARAM, dr.ERR_REGISTER_LINE);
+        dr.moreInfoOnError("In function uniformCheckDomain:", "equal continuous limits", null, null);
+        return false;
+    }
+    return true;
+}
+
+// The registers, the width of the support (counting both ends when discrete)
+// and where x sits relative to it: -1 below, 0 inside, 1 above.
+fn uniformParameters(x: *real_t, low: *real_t, high: *real_t, range: ?*real_t, cmp: ?*i32, discrete: u16) linksection(dr.code_section) bool {
+    if (!dr.WP34S_CheckDistributionParameters(x, dr.REGISTER_M, low, dr.REGISTER_N, high, 0, null, discrete, checkDomain)) {
+        return false;
     }
     if (range) |r| {
-        dr.realSubtract(high, low, r, ctx);
+        dr.realSubtract(high, low, r, &dr.ctxtReal39);
         if (discrete != 0) {
-            dr.realAdd(r, dr.const1(), r, ctx);
+            dr.realAdd(r, dr.const1(), r, &dr.ctxtReal39);
         }
     }
     if (cmp) |c| {
-        c.* = if (dr.realLessThan(x, low)) @as(c_int, -1) else if (dr.realGreaterThan(x, high)) @as(c_int, 1) else @as(c_int, 0);
+        c.* = if (dr.realLessThan(x, low)) -1 else if (dr.realGreaterThan(x, high)) 1 else 0;
     }
     return true;
 }
 
 pub fn uniformP(discrete: u16) linksection(dr.code_section) void {
-    const ctx = &dr.ctxtReal39;
     var x: real_t = undefined;
     var l: real_t = undefined;
     var h: real_t = undefined;
     var range: real_t = undefined;
-    var cmp: c_int = undefined;
     var res: *const real_t = &x;
+    var cmp: i32 = undefined;
 
-    if (checkParamUniform(&x, &l, &h, &range, &cmp, discrete)) {
+    if (uniformParameters(&x, &l, &h, &range, &cmp, discrete)) {
         if (cmp == 0) {
             if (dr.realIsZero(&range)) {
                 res = dr.const1();
             } else if (discrete != 0 and !dr.isAnInteger(&x)) {
                 res = dr.const0();
             } else {
-                dr.realDivide(dr.const1(), &range, &x, ctx);
+                dr.realDivide(dr.const1(), &range, &x, &dr.ctxtReal39);
             }
         } else {
             res = dr.const0();
         }
-        dr.storeResult(res);
+        dr.convertRealToResultRegister(res, dr.REGISTER_X, dr.amNone);
+        dr.adjustResult(dr.REGISTER_X, false, false, dr.REGISTER_X, -1, -1);
     }
 }
 
 pub fn uniformL(discrete: u16) linksection(dr.code_section) void {
-    const ctx = &dr.ctxtReal39;
     var x: real_t = undefined;
     var low: real_t = undefined;
     var h: real_t = undefined;
     var range: real_t = undefined;
-    var cmp: c_int = undefined;
     var res: *const real_t = &x;
+    var cmp: i32 = undefined;
 
-    if (checkParamUniform(&x, &low, &h, &range, &cmp, discrete)) {
+    if (uniformParameters(&x, &low, &h, &range, &cmp, discrete)) {
         if (cmp < 0) {
             res = dr.const0();
         } else if (cmp > 0 or dr.realIsZero(&range)) {
             res = dr.const1();
         } else {
+            const interior = dr.realLessThan(&x, &h);
             if (discrete != 0) {
-                dr.toIntegralValue(&x, &h, dr.DEC_ROUND_FLOOR, ctx);
-                dr.realAdd(&h, dr.const1(), &x, ctx);
+                dr.toIntegralValue(&x, &h, dr.DEC_ROUND_FLOOR, &dr.ctxtReal39);
+                dr.realSubtract(&h, &low, &h, &dr.ctxtReal39);
+                dr.realAdd(&h, dr.const1(), &h, &dr.ctxtReal39);
+            } else {
+                dr.realSubtract(&x, &low, &h, &dr.ctxtReal39);
             }
-            dr.realSubtract(&x, &low, &h, ctx);
-            dr.realDivide(&h, &range, &x, ctx);
+            dr.realDivide(&h, &range, &x, &dr.ctxtReal39);
+            if (interior and dr.realEqual(&x, dr.const1())) {
+                dr.realNextToward(&x, dr.const0(), &x, &dr.ctxtReal39);
+            }
         }
-        dr.storeResult(res);
+        dr.convertRealToResultRegister(res, dr.REGISTER_X, dr.amNone);
+        dr.adjustResult(dr.REGISTER_X, false, false, dr.REGISTER_X, -1, -1);
     }
 }
 
 pub fn uniformU(discrete: u16) linksection(dr.code_section) void {
-    const ctx = &dr.ctxtReal39;
     var x: real_t = undefined;
     var l: real_t = undefined;
     var high: real_t = undefined;
     var range: real_t = undefined;
-    var cmp: c_int = undefined;
     var res: *const real_t = &x;
+    var cmp: i32 = undefined;
 
-    if (checkParamUniform(&x, &l, &high, &range, &cmp, discrete)) {
+    if (uniformParameters(&x, &l, &high, &range, &cmp, discrete)) {
         if (cmp < 0 or dr.realIsZero(&range)) {
             res = dr.const1();
         } else if (cmp > 0) {
             res = dr.const0();
         } else {
+            const interior = dr.realGreaterThan(&x, &l);
             if (discrete != 0) {
-                dr.toIntegralValue(&x, &l, dr.DEC_ROUND_CEILING, ctx);
-                dr.realSubtract(&l, dr.const1(), &x, ctx);
+                dr.toIntegralValue(&x, &l, dr.DEC_ROUND_CEILING, &dr.ctxtReal39);
+                dr.realSubtract(&high, &l, &l, &dr.ctxtReal39);
+                dr.realAdd(&l, dr.const1(), &l, &dr.ctxtReal39);
+            } else {
+                dr.realSubtract(&high, &x, &l, &dr.ctxtReal39);
             }
-            dr.realSubtract(&high, &x, &l, ctx);
-            dr.realDivide(&l, &range, &x, ctx);
+            dr.realDivide(&l, &range, &x, &dr.ctxtReal39);
+            if (interior and dr.realEqual(&x, dr.const1())) {
+                dr.realNextToward(&x, dr.const0(), &x, &dr.ctxtReal39);
+            }
         }
-        dr.storeResult(res);
+        dr.convertRealToResultRegister(res, dr.REGISTER_X, dr.amNone);
+        dr.adjustResult(dr.REGISTER_X, false, false, dr.REGISTER_X, -1, -1);
     }
 }
 
 pub fn uniformI(discrete: u16) linksection(dr.code_section) void {
-    const ctx = &dr.ctxtReal39;
     var x: real_t = undefined;
     var low: real_t = undefined;
     var high: real_t = undefined;
     var t: real_t = undefined;
 
-    if (checkParamUniform(&x, &low, &high, null, null, discrete)) {
+    if (uniformParameters(&x, &low, &high, null, null, discrete)) {
         if (dr.realLessThan(&x, dr.const0()) or dr.realGreaterThan(&x, dr.const1())) {
             dr.displayDomainErrorMessage(dr.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, dr.ERR_REGISTER_LINE);
-            dr.moreInfoOnError("In function fnUniformI:", "the argument must be 0 < x < 1", null, null);
-            dr.specialResultNaN();
+            dr.moreInfoOnError("In function fnUniformI:", "the argument must be 0 <= x <= 1", null, null);
+            if (dr.getSystemFlag(dr.FLAG_SPCRES)) {
+                dr.setNaN(&t);
+                dr.convertRealToResultRegister(&t, dr.REGISTER_X, dr.amNone);
+            }
             return;
         }
-        // Adjust an exact unity input to not go out of range.
-        if (dr.realEqual(&x, dr.const1())) {
+        if (dr.realIsZero(&x)) {
+            dr.realCopy(&low, &x);
+        } else if (dr.realEqual(&x, dr.const1())) {
             dr.realCopy(&high, &x);
+        } else if (discrete != 0) {
+            dr.realSubtract(&high, &low, &t, &dr.ctxtReal75);
+            dr.realAdd(&t, dr.const1(), &t, &dr.ctxtReal75);
+            dr.realMultiply(&x, &t, &t, &dr.ctxtReal75);
+            dr.toIntegralValue(&t, &t, dr.DEC_ROUND_CEILING, &dr.ctxtReal75);
+            dr.realSubtract(&t, dr.const1(), &t, &dr.ctxtReal75);
+            dr.realAdd(&low, &t, &x, &dr.ctxtReal75);
         } else {
-            dr.realAdd(&high, dr.const1(), &high, ctx);
             dr.linearInterpolate(&low, &high, &x, &t);
-            dr.toIntegralValue(&t, &x, dr.DEC_ROUND_FLOOR, ctx);
+            dr.realCopy(&t, &x);
         }
-        dr.storeResult(&x);
+        dr.convertRealToResultRegister(&x, dr.REGISTER_X, dr.amNone);
+        dr.adjustResult(dr.REGISTER_X, false, false, dr.REGISTER_X, -1, -1);
     }
 }

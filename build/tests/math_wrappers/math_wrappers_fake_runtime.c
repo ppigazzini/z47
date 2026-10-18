@@ -132,6 +132,14 @@ static real_t fake_const_minus_infinity_value;
 static real_t fake_const_1e_6_value;
 static real34_t fake_const34_zero_value;
 static real34_t fake_const34_86400_value;
+static real_t fake_const_4_value;
+static real_t fake_const_6_value;
+static real_t fake_const_minus_4_value;
+static real_t fake_const75_ln2_value;
+static real_t fake_const75_ln10_value;
+static real_t fake_const75_3pi_on4_value;
+static real34_t fake_const34_one_value;
+static real34_t fake_const34_3600_value;
 const real_t *const_NaN = &fake_const_nan_value;
 uint8_t lastErrorCode = 0;
 
@@ -605,6 +613,14 @@ void mathWrappersReset(void) {
   setFakeRealWithExponent(&fake_const_1e_6_value, 1, 0, -6);
   setRegisterReal34((uint8_t *)&fake_const34_zero_value, 0, 0);
   setRegisterReal34((uint8_t *)&fake_const34_86400_value, 86400, 0);
+  setFakeReal(&fake_const_4_value, 4, 0);
+  setFakeReal(&fake_const_6_value, 6, 0);
+  setFakeReal(&fake_const_minus_4_value, -4, 0);
+  setFakeReal(&fake_const75_ln2_value, 693, 0);
+  setFakeReal(&fake_const75_ln10_value, 2302, 0);
+  setFakeReal(&fake_const75_3pi_on4_value, 2356, 0);
+  setRegisterReal34((uint8_t *)&fake_const34_one_value, 1, 0);
+  setRegisterReal34((uint8_t *)&fake_const34_3600_value, 3600, 0);
   setRegisterReal34(register_slot, 2, 0);
   setRegisterReal34(register_slot + sizeof(real34_t), 3, 0);
 
@@ -1354,7 +1370,7 @@ bool_t getRegisterAsRealAngle(calcRegister_t reg, real_t *value, angularMode_t *
   return true;
 }
 
-bool_t getRegisterAsComplex(calcRegister_t reg, real_t *real, real_t *imag) {
+bool_t getRegisterAsComplex(calcRegister_t reg, cplx_t *z) {
   snapshot.get_register_as_complex_calls++;
   if(*registerDataTypeSlot(reg) == dtComplex34) {
   const void *inputPtr = reg == REGISTER_Y ? (const void *)&complex_y_input : reg == REGISTER_Z ? (const void *)&complex_z_input : reg == REGISTER_T ? (const void *)&complex_t_input : (const void *)&complex_input;
@@ -1369,18 +1385,18 @@ bool_t getRegisterAsComplex(calcRegister_t reg, real_t *real, real_t *imag) {
       return false;
     }
 
-    *real = input->real;
-    *imag = input->imag;
+    z->Real = input->real;
+    z->Imag = input->imag;
     return true;
   }
 
-  if(!getRegisterAsReal(reg, real)) {
+  if(!getRegisterAsReal(reg, &z->Real)) {
     return false;
   }
 
-  setFakeReal(imag, 0, 0);
-  snapshot.get_register_as_complex_real_value = fakeRealValue(real);
-  snapshot.get_register_as_complex_real_bits = real->bits;
+  setFakeReal(&z->Imag, 0, 0);
+  snapshot.get_register_as_complex_real_value = fakeRealValue(&z->Real);
+  snapshot.get_register_as_complex_real_bits = z->Real.bits;
   snapshot.get_register_as_complex_imag_value = 0;
   snapshot.get_register_as_complex_imag_bits = 0;
   return true;
@@ -1850,7 +1866,11 @@ void convertRealToReal34ResultRegister(const real_t *real, calcRegister_t dest) 
   setRegisterScalar(fakeRealValue(real), real->bits & 0x70);
 }
 
-void convertComplexToResultRegister(const real_t *real, const real_t *imag, calcRegister_t reg) {
+void convertComplexToResultRegister(const cplx_t *z, calcRegister_t reg) {
+  convertComplexPartsToResultRegister(&z->Real, &z->Imag, reg);
+}
+
+void convertComplexPartsToResultRegister(const real_t *real, const real_t *imag, calcRegister_t reg) {
   snapshot.convert_complex_to_result_calls++;
   snapshot.convert_complex_to_result_real_value = fakeRealValue(real);
   snapshot.convert_complex_to_result_real_bits = real->bits;
@@ -2073,9 +2093,19 @@ static void multiplyComplexScalars(const complex34_t *lhs, const complex34_t *rh
   real_t prod_real;
   real_t prod_imag;
 
+  cplx_t lhs_cplx;
+  cplx_t rhs_cplx;
+  cplx_t prod_cplx;
+
   complex34ToRealPair(lhs, &lhs_real, &lhs_imag);
   complex34ToRealPair(rhs, &rhs_real, &rhs_imag);
-  mulComplexComplex(&lhs_real, &lhs_imag, &rhs_real, &rhs_imag, &prod_real, &prod_imag, realContext);
+  lhs_cplx.Real = lhs_real;
+  lhs_cplx.Imag = lhs_imag;
+  rhs_cplx.Real = rhs_real;
+  rhs_cplx.Imag = rhs_imag;
+  mulComplexComplex(&lhs_cplx, &rhs_cplx, &prod_cplx, realContext);
+  prod_real = prod_cplx.Real;
+  prod_imag = prod_cplx.Imag;
   realPairToComplex34(&prod_real, &prod_imag, res);
 }
 
@@ -2087,9 +2117,19 @@ static void divideComplexScalars(const complex34_t *lhs, const complex34_t *rhs,
   real_t quot_real;
   real_t quot_imag;
 
+  cplx_t lhs_cplx;
+  cplx_t rhs_cplx;
+  cplx_t quot_cplx;
+
   complex34ToRealPair(lhs, &lhs_real, &lhs_imag);
   complex34ToRealPair(rhs, &rhs_real, &rhs_imag);
-  divComplexComplex(&lhs_real, &lhs_imag, &rhs_real, &rhs_imag, &quot_real, &quot_imag, realContext);
+  lhs_cplx.Real = lhs_real;
+  lhs_cplx.Imag = lhs_imag;
+  rhs_cplx.Real = rhs_real;
+  rhs_cplx.Imag = rhs_imag;
+  divComplexComplex(&lhs_cplx, &rhs_cplx, &quot_cplx, realContext);
+  quot_real = quot_cplx.Real;
+  quot_imag = quot_cplx.Imag;
   realPairToComplex34(&quot_real, &quot_imag, res);
 }
 
@@ -2099,7 +2139,10 @@ static void negateComplex34(const complex34_t *value, complex34_t *res) {
   real34ChangeSign(&res->imag);
 }
 
-uint32_t getInfiniteComplexAngle(real_t *x, real_t *y) {
+uint32_t getInfiniteComplexAngle(const cplx_t *z) {
+  const real_t *x = &z->Real;
+  const real_t *y = &z->Imag;
+
   if(!realIsInfinite(x)) {
     return 2 + 4 * realIsNegative(y);
   }
@@ -2112,7 +2155,9 @@ uint32_t getInfiniteComplexAngle(real_t *x, real_t *y) {
   return 3 + 2 * realIsNegative(y);
 }
 
-void setInfiniteComplexAngle(uint32_t angle, real_t *x, real_t *y) {
+void setInfiniteComplexAngle(uint32_t angle, cplx_t *z) {
+  real_t *x = &z->Real;
+  real_t *y = &z->Imag;
   switch(angle) {
     case 3:
     case 4:
@@ -2276,20 +2321,19 @@ void multiplyRealMatrices(const real34Matrix_t *y, const real34Matrix_t *x, real
 }
 
 void multiplyComplexMatrix(const complex34Matrix_t *matrix, const real34_t *xr, const real34_t *xi, complex34Matrix_t *res) {
-  real_t xr_real;
-  real_t xi_real;
+  cplx_t x;
 
-  real34ToRealPair(xr, &xr_real);
-  real34ToRealPair(xi, &xi_real);
-  _multiplyComplexMatrix(matrix, &xr_real, &xi_real, res, &ctxtReal39);
+  real34ToRealPair(xr, &x.Real);
+  real34ToRealPair(xi, &x.Imag);
+  _multiplyComplexMatrix(matrix, &x, res, &ctxtReal39);
 }
 
-void _multiplyComplexMatrix(const complex34Matrix_t *matrix, const real_t *xr, const real_t *xi, complex34Matrix_t *res, realContext_t *realContext) {
+void _multiplyComplexMatrix(const complex34Matrix_t *matrix, const cplx_t *x, complex34Matrix_t *res, realContext_t *realContext) {
   complex34Matrix_t out;
   complex34_t rhs;
 
-  realToReal34(xr, &rhs.real);
-  realToReal34(xi, &rhs.imag);
+  realToReal34(&x->Real, &rhs.real);
+  realToReal34(&x->Imag, &rhs.imag);
   complexMatrixInit(&out, matrix->header.matrixRows, matrix->header.matrixColumns);
   for(uint16_t i = 0; i < cappedMatrixElementCount(matrix->header.matrixRows, matrix->header.matrixColumns); ++i) {
     multiplyComplexScalars(&matrix->matrixElements[i], &rhs, &out.matrixElements[i], realContext);
@@ -2324,9 +2368,19 @@ void multiplyComplexMatrices(const complex34Matrix_t *y, const complex34Matrix_t
         real_t prod_real;
         real_t prod_imag;
 
+        cplx_t lhs_cplx;
+        cplx_t rhs_cplx;
+        cplx_t prod_cplx;
+
         complex34ToRealPair(&y->matrixElements[matrixIndex(row, iter, y->header.matrixColumns)], &lhs_real, &lhs_imag);
         complex34ToRealPair(&x->matrixElements[matrixIndex(iter, col, x->header.matrixColumns)], &rhs_real, &rhs_imag);
-        mulComplexComplex(&lhs_real, &lhs_imag, &rhs_real, &rhs_imag, &prod_real, &prod_imag, &ctxtReal39);
+        lhs_cplx.Real = lhs_real;
+        lhs_cplx.Imag = lhs_imag;
+        rhs_cplx.Real = rhs_real;
+        rhs_cplx.Imag = rhs_imag;
+        mulComplexComplex(&lhs_cplx, &rhs_cplx, &prod_cplx, &ctxtReal39);
+        prod_real = prod_cplx.Real;
+        prod_imag = prod_cplx.Imag;
         realAdd(&sum_real, &prod_real, &sum_real, &ctxtReal39);
         realAdd(&sum_imag, &prod_imag, &sum_imag, &ctxtReal39);
       }
@@ -2457,29 +2511,27 @@ void divideRealMatrices(const real34Matrix_t *y, const real34Matrix_t *x, real34
 }
 
 void divideComplexMatrix(const complex34Matrix_t *matrix, const real34_t *xr, const real34_t *xi, complex34Matrix_t *res) {
-  real_t xr_real;
-  real_t xi_real;
+  cplx_t x;
 
-  real34ToRealPair(xr, &xr_real);
-  real34ToRealPair(xi, &xi_real);
-  _divideComplexMatrix(matrix, &xr_real, &xi_real, res, &ctxtReal39);
+  real34ToRealPair(xr, &x.Real);
+  real34ToRealPair(xi, &x.Imag);
+  _divideComplexMatrix(matrix, &x, res, &ctxtReal39);
 }
 
 void divideByComplexMatrix(const real34_t *yr, const real34_t *yi, const complex34Matrix_t *matrix, complex34Matrix_t *res) {
-  real_t yr_real;
-  real_t yi_real;
+  cplx_t y;
 
-  real34ToRealPair(yr, &yr_real);
-  real34ToRealPair(yi, &yi_real);
-  _divideByComplexMatrix(&yr_real, &yi_real, matrix, res, &ctxtReal39);
+  real34ToRealPair(yr, &y.Real);
+  real34ToRealPair(yi, &y.Imag);
+  _divideByComplexMatrix(&y, matrix, res, &ctxtReal39);
 }
 
-void _divideComplexMatrix(const complex34Matrix_t *matrix, const real_t *xr, const real_t *xi, complex34Matrix_t *res, realContext_t *realContext) {
+void _divideComplexMatrix(const complex34Matrix_t *matrix, const cplx_t *x, complex34Matrix_t *res, realContext_t *realContext) {
   complex34Matrix_t out;
   complex34_t rhs;
 
-  realToReal34(xr, &rhs.real);
-  realToReal34(xi, &rhs.imag);
+  realToReal34(&x->Real, &rhs.real);
+  realToReal34(&x->Imag, &rhs.imag);
   complexMatrixInit(&out, matrix->header.matrixRows, matrix->header.matrixColumns);
   for(uint16_t i = 0; i < cappedMatrixElementCount(matrix->header.matrixRows, matrix->header.matrixColumns); ++i) {
     divideComplexScalars(&matrix->matrixElements[i], &rhs, &out.matrixElements[i], realContext);
@@ -2487,12 +2539,12 @@ void _divideComplexMatrix(const complex34Matrix_t *matrix, const real_t *xr, con
   *res = out;
 }
 
-void _divideByComplexMatrix(const real_t *yr, const real_t *yi, const complex34Matrix_t *matrix, complex34Matrix_t *res, realContext_t *realContext) {
+void _divideByComplexMatrix(const cplx_t *y, const complex34Matrix_t *matrix, complex34Matrix_t *res, realContext_t *realContext) {
   complex34Matrix_t out;
   complex34_t lhs;
 
-  realToReal34(yr, &lhs.real);
-  realToReal34(yi, &lhs.imag);
+  realToReal34(&y->Real, &lhs.real);
+  realToReal34(&y->Imag, &lhs.imag);
   complexMatrixInit(&out, matrix->header.matrixRows, matrix->header.matrixColumns);
   for(uint16_t i = 0; i < cappedMatrixElementCount(matrix->header.matrixRows, matrix->header.matrixColumns); ++i) {
     divideComplexScalars(&lhs, &matrix->matrixElements[i], &out.matrixElements[i], realContext);
@@ -2542,8 +2594,21 @@ static bool_t invertComplexMatrix(const complex34Matrix_t *matrix, complex34Matr
     complex34ToRealPair(&matrix->matrixElements[1], &b_real, &b_imag);
     complex34ToRealPair(&matrix->matrixElements[2], &c_real, &c_imag);
     complex34ToRealPair(&matrix->matrixElements[3], &d_real, &d_imag);
-    mulComplexComplex(&a_real, &a_imag, &d_real, &d_imag, &ad_real, &ad_imag, &ctxtReal39);
-    mulComplexComplex(&b_real, &b_imag, &c_real, &c_imag, &bc_real, &bc_imag, &ctxtReal39);
+    {
+      cplx_t a_cplx = {{a_real}, {a_imag}};
+      cplx_t b_cplx = {{b_real}, {b_imag}};
+      cplx_t c_cplx = {{c_real}, {c_imag}};
+      cplx_t d_cplx = {{d_real}, {d_imag}};
+      cplx_t ad_cplx;
+      cplx_t bc_cplx;
+
+      mulComplexComplex(&a_cplx, &d_cplx, &ad_cplx, &ctxtReal39);
+      mulComplexComplex(&b_cplx, &c_cplx, &bc_cplx, &ctxtReal39);
+      ad_real = ad_cplx.Real;
+      ad_imag = ad_cplx.Imag;
+      bc_real = bc_cplx.Real;
+      bc_imag = bc_cplx.Imag;
+    }
     subtractComplexValues(&ad_real, &ad_imag, &bc_real, &bc_imag, &det_real, &det_imag, &ctxtReal39);
     if(complexIsZeroLike(&det_real, &det_imag)) {
       return false;
@@ -2554,7 +2619,15 @@ static bool_t invertComplexMatrix(const complex34Matrix_t *matrix, complex34Matr
     realToReal34(&det_real, &term.real);
     realToReal34(&det_imag, &term.imag);
 
-    divComplexComplex(&d_real, &d_imag, &det_real, &det_imag, &inv_real, &inv_imag, &ctxtReal39);
+    {
+      cplx_t d_cplx = {{d_real}, {d_imag}};
+      cplx_t det_cplx = {{det_real}, {det_imag}};
+      cplx_t inv_cplx;
+
+      divComplexComplex(&d_cplx, &det_cplx, &inv_cplx, &ctxtReal39);
+      inv_real = inv_cplx.Real;
+      inv_imag = inv_cplx.Imag;
+    }
     realPairToComplex34(&inv_real, &inv_imag, &inverse->matrixElements[0]);
 
     {
@@ -2887,16 +2960,10 @@ void PowerReal(const real_t *base, const real_t *exponent, real_t *result, realC
   realPower(base, exponent, result, realContext);
 }
 
-uint8_t PowerComplex(const real_t *base_real,
-                     const real_t *base_imag,
-                     const real_t *exponent_real,
-                     const real_t *exponent_imag,
-                     real_t *result_real,
-                     real_t *result_imag,
-                     realContext_t *realContext) {
+uint8_t PowerComplex(const cplx_t *y, const cplx_t *x, cplx_t *r, realContext_t *realContext) {
   (void)realContext;
-  setFakeReal(result_real, fakeRealValue(base_real) + fakeRealValue(exponent_real) + 84, 0);
-  setFakeReal(result_imag, fakeRealValue(base_imag) + fakeRealValue(exponent_imag) + 85, 0);
+  setFakeReal(&r->Real, fakeRealValue(&y->Real) + fakeRealValue(&x->Real) + 84, 0);
+  setFakeReal(&r->Imag, fakeRealValue(&y->Imag) + fakeRealValue(&x->Imag) + 85, 0);
   return ERROR_NONE;
 }
 
@@ -2934,10 +3001,10 @@ void WP34S_InverseW(const real_t *x, real_t *res, realContext_t *realContext) {
   setFakeReal(res, fakeRealValue(x) + 84, 0);
 }
 
-void WP34S_InverseComplexW(const real_t *real, const real_t *imag, real_t *resReal, real_t *resImag, realContext_t *realContext) {
+void WP34S_InverseComplexW(const cplx_t *x, cplx_t *res, realContext_t *realContext) {
   (void)realContext;
-  setFakeReal(resReal, fakeRealValue(real) + 85, 0);
-  setFakeReal(resImag, fakeRealValue(imag) + 86, 0);
+  setFakeReal(&res->Real, fakeRealValue(&x->Real) + 85, 0);
+  setFakeReal(&res->Imag, fakeRealValue(&x->Imag) + 86, 0);
 }
 
 void WP34S_LambertW(const real_t *x, real_t *res, bool_t negativeBranch, realContext_t *realContext) {
@@ -2945,16 +3012,16 @@ void WP34S_LambertW(const real_t *x, real_t *res, bool_t negativeBranch, realCon
   setFakeReal(res, fakeRealValue(x) + (negativeBranch ? 87 : 88), 0);
 }
 
-void WP34S_ComplexLambertW(const real_t *real, const real_t *imag, real_t *resReal, real_t *resImag, realContext_t *realContext) {
+void WP34S_ComplexLambertW(const cplx_t *x, cplx_t *res, realContext_t *realContext) {
   (void)realContext;
-  setFakeReal(resReal, fakeRealValue(real) + 89, 0);
-  setFakeReal(resImag, fakeRealValue(imag) + 90, 0);
+  setFakeReal(&res->Real, fakeRealValue(&x->Real) + 89, 0);
+  setFakeReal(&res->Imag, fakeRealValue(&x->Imag) + 90, 0);
 }
 
-void WP34S_ComplexGamma(const real_t *real, const real_t *imag, real_t *resReal, real_t *resImag, realContext_t *realContext) {
+void WP34S_ComplexGamma(const cplx_t *zin, cplx_t *res, realContext_t *realContext) {
   (void)realContext;
-  setFakeReal(resReal, fakeRealValue(real) + 92, 0);
-  setFakeReal(resImag, fakeRealValue(imag) + 93, 0);
+  setFakeReal(&res->Real, fakeRealValue(&zin->Real) + 92, 0);
+  setFakeReal(&res->Imag, fakeRealValue(&zin->Imag) + 93, 0);
 }
 
 void WP34S_betai(const real_t *b, const real_t *a, const real_t *x, real_t *res, realContext_t *realContext) {
@@ -2962,10 +3029,15 @@ void WP34S_betai(const real_t *b, const real_t *a, const real_t *x, real_t *res,
   setFakeReal(res, fakeRealValue(b) + fakeRealValue(a) + fakeRealValue(x), 0);
 }
 
-void complexMagnitude(const real_t *real, const real_t *imag, real_t *magnitude, realContext_t *realContext) {
+void complexMagnitude(const cplx_t *a, real_t *c, realContext_t *realContext) {
   real_t theta;
 
-  realRectangularToPolar(real, imag, magnitude, &theta, realContext);
+  realRectangularToPolar(a, c, &theta, realContext);
+}
+
+void complexMagnitude2(const cplx_t *a, real_t *c, realContext_t *realContext) {
+  complexMagnitude(a, c, realContext);
+  decNumberMultiply(c, c, c, realContext);
 }
 
 void int32ToReal(int32_t source, real_t *destination) {
@@ -2982,52 +3054,55 @@ void WP34S_Erfc(const real_t *x, real_t *res, realContext_t *realContext) {
   setFakeReal(res, fakeRealValue(x) + 81, 0);
 }
 
-void sqrtComplex(const real_t *real, const real_t *imag, real_t *resReal, real_t *resImag, realContext_t *realContext) {
-  const int32_t real_value = fakeRealValue(real);
-  const int32_t imag_value = fakeRealValue(imag);
+void sqrtComplex(const cplx_t *z, cplx_t *res, realContext_t *realContext) {
+  const int32_t real_value = fakeRealValue(&z->Real);
+  const int32_t imag_value = fakeRealValue(&z->Imag);
   real_t magnitude;
   real_t theta;
 
   if(imag_value == 0) {
     if(real_value < 0) {
-      setFakeReal(resReal, 0, 0);
-      setFakeReal(resImag, -real_value + 71, 0);
+      setFakeReal(&res->Real, 0, 0);
+      setFakeReal(&res->Imag, -real_value + 71, 0);
     }
     else {
-      setFakeReal(resReal, real_value + 70, 0);
-      setFakeReal(resImag, 0, 0);
+      setFakeReal(&res->Real, real_value + 70, 0);
+      setFakeReal(&res->Imag, 0, 0);
     }
     return;
   }
 
-  realRectangularToPolar(real, imag, &magnitude, &theta, realContext);
+  realRectangularToPolar(z, &magnitude, &theta, realContext);
   realSquareRoot(&magnitude, &magnitude, realContext);
   realMultiply(&theta, const_1on2, &theta, realContext);
-  realPolarToRectangular(&magnitude, &theta, &magnitude, &theta, realContext);
-  setFakeReal(resReal, real_value + imag_value + 72, 0);
-  setFakeReal(resImag, real_value - imag_value + 73, 0);
+  realPolarToRectangular(&magnitude, &theta, res, realContext);
+  setFakeReal(&res->Real, real_value + imag_value + 72, 0);
+  setFakeReal(&res->Imag, real_value - imag_value + 73, 0);
 }
 
-void realPolarToRectangular(const real_t *magnitude,
-                            const real_t *angle,
-                            real_t *real,
-                            real_t *imag,
-                            realContext_t *realContext) {
+void curtComplex(const cplx_t *z, cplx_t *res, realContext_t *realContext) {
+  (void)realContext;
+  setFakeReal(&res->Real, fakeRealValue(&z->Real) + 74, 0);
+  setFakeReal(&res->Imag, fakeRealValue(&z->Imag) + 75, 0);
+}
+
+void realPolarToRectangular(const real_t *magnitude, const real_t *theta, cplx_t *z, realContext_t *realContext) {
   snapshot.real_polar_to_rectangular_calls++;
   snapshot.real_polar_to_rectangular_magnitude_value = fakeRealValue(magnitude);
-  snapshot.real_polar_to_rectangular_angle_value = fakeRealValue(angle);
+  snapshot.real_polar_to_rectangular_angle_value = fakeRealValue(theta);
   (void)realContext;
-  setFakeReal(real, fakeRealValue(magnitude) + fakeRealValue(angle), 0);
-  setFakeReal(imag, fakeRealValue(magnitude) - fakeRealValue(angle), 0);
+  setFakeReal(&z->Real, fakeRealValue(magnitude) + fakeRealValue(theta), 0);
+  setFakeReal(&z->Imag, fakeRealValue(magnitude) - fakeRealValue(theta), 0);
 }
 
-void realRectangularToPolar(const real_t *real,
-                            const real_t *imag,
-                            real_t *magnitude,
-                            real_t *theta,
-                            realContext_t *realContext) {
-  const int32_t real_value = fakeRealValue(real);
-  const int32_t imag_value = fakeRealValue(imag);
+void realPolarToRectangularInUnit(const real_t *magnitude, const real_t *theta, angularMode_t angularMode, cplx_t *z, realContext_t *realContext) {
+  (void)angularMode;
+  realPolarToRectangular(magnitude, theta, z, realContext);
+}
+
+void realRectangularToPolar(const cplx_t *z, real_t *magnitude, real_t *theta, realContext_t *realContext) {
+  const int32_t real_value = fakeRealValue(&z->Real);
+  const int32_t imag_value = fakeRealValue(&z->Imag);
   const int32_t magnitude_value = (real_value < 0 ? -real_value : real_value) + (imag_value < 0 ? -imag_value : imag_value) + 5;
 
   snapshot.real_polar_to_rectangular_calls++;
@@ -3251,39 +3326,30 @@ bool_t WP34S_RelativeError(const real_t *x, const real_t *y, const real_t *tol, 
   return abs_diff * 10 <= scale * abs_tol;
 }
 
-bool_t WP34S_ComplexAbsError(const real_t *xReal,
-                             const real_t *xImag,
-                             const real_t *yReal,
-                             const real_t *yImag,
-                             const real_t *tol,
-                             realContext_t *realContext) {
-  return WP34S_AbsoluteError(xReal, yReal, tol, realContext) &&
-         WP34S_AbsoluteError(xImag, yImag, tol, realContext);
+bool_t WP34S_ComplexAbsError(const cplx_t *x, const cplx_t *y, const real_t *tol, realContext_t *realContext) {
+  return WP34S_AbsoluteError(&x->Real, &y->Real, tol, realContext) &&
+         WP34S_AbsoluteError(&x->Imag, &y->Imag, tol, realContext);
 }
 
-bool_t WP34S_ComplexRelativeError(const real_t *xReal,
-                                  const real_t *xImag,
-                                  const real_t *yReal,
-                                  const real_t *yImag,
-                                  const real_t *tol,
-                                  realContext_t *realContext) {
-  return WP34S_RelativeError(xReal, yReal, tol, realContext) &&
-         WP34S_RelativeError(xImag, yImag, tol, realContext);
+bool_t WP34S_ComplexRelativeError(const cplx_t *x, const cplx_t *y, const real_t *tol, realContext_t *realContext) {
+  return WP34S_RelativeError(&x->Real, &y->Real, tol, realContext) &&
+         WP34S_RelativeError(&x->Imag, &y->Imag, tol, realContext);
 }
 
-void divRealComplex(const real_t *numer,
-                    const real_t *denomReal,
-                    const real_t *denomImag,
-                    real_t *quotientReal,
-                    real_t *quotientImag,
-                    realContext_t *realContext) {
+void divRealComplex(const real_t *numer, const cplx_t *denom, cplx_t *quotient, realContext_t *realContext) {
   snapshot.div_real_complex_calls++;
   snapshot.div_real_complex_numer_value = fakeRealValue(numer);
-  snapshot.div_real_complex_denom_real_value = fakeRealValue(denomReal);
-  snapshot.div_real_complex_denom_imag_value = fakeRealValue(denomImag);
+  snapshot.div_real_complex_denom_real_value = fakeRealValue(&denom->Real);
+  snapshot.div_real_complex_denom_imag_value = fakeRealValue(&denom->Imag);
   (void)realContext;
-  setFakeReal(quotientReal, fakeRealValue(numer) + fakeRealValue(denomReal), 0);
-  setFakeReal(quotientImag, fakeRealValue(numer) - fakeRealValue(denomImag), 0);
+  setFakeReal(&quotient->Real, fakeRealValue(numer) + fakeRealValue(&denom->Real), 0);
+  setFakeReal(&quotient->Imag, fakeRealValue(numer) - fakeRealValue(&denom->Imag), 0);
+}
+
+void divComplexReal(const cplx_t *numer, const real_t *denom, cplx_t *quotient, realContext_t *realContext) {
+  (void)realContext;
+  setFakeReal(&quotient->Real, fakeRealValue(&numer->Real) - fakeRealValue(denom), 0);
+  setFakeReal(&quotient->Imag, fakeRealValue(&numer->Imag) - fakeRealValue(denom), 0);
 }
 
 void fnInvertMatrix(uint16_t unusedButMandatoryParameter) {
@@ -3291,40 +3357,29 @@ void fnInvertMatrix(uint16_t unusedButMandatoryParameter) {
   (void)unusedButMandatoryParameter;
 }
 
-void mulComplexi(const real_t *inReal, const real_t *inImag, real_t *productReal, real_t *productImag) {
+void mulComplexi(const cplx_t *in, cplx_t *product) {
   snapshot.mul_complex_i_calls++;
-  snapshot.mul_complex_i_input_real_value = fakeRealValue(inReal);
-  snapshot.mul_complex_i_input_imag_value = fakeRealValue(inImag);
-  setFakeReal(productReal, -fakeRealValue(inImag), 0);
-  setFakeReal(productImag, fakeRealValue(inReal), 0);
+  snapshot.mul_complex_i_input_real_value = fakeRealValue(&in->Real);
+  snapshot.mul_complex_i_input_imag_value = fakeRealValue(&in->Imag);
+  setFakeReal(&product->Real, -fakeRealValue(&in->Imag), 0);
+  setFakeReal(&product->Imag, fakeRealValue(&in->Real), 0);
 }
 
-void mulComplexComplex(const real_t *factor1Real,
-                       const real_t *factor1Imag,
-                       const real_t *factor2Real,
-                       const real_t *factor2Imag,
-                       real_t *productReal,
-                       real_t *productImag,
-                       realContext_t *realContext) {
+void mulComplexComplex(const cplx_t *factor1, const cplx_t *factor2, cplx_t *product, realContext_t *realContext) {
   snapshot.mul_complex_complex_calls++;
-  snapshot.mul_complex_complex_factor1_real_value = fakeRealValue(factor1Real);
-  snapshot.mul_complex_complex_factor1_imag_value = fakeRealValue(factor1Imag);
-  snapshot.mul_complex_complex_factor2_real_value = fakeRealValue(factor2Real);
-  snapshot.mul_complex_complex_factor2_imag_value = fakeRealValue(factor2Imag);
+  snapshot.mul_complex_complex_factor1_real_value = fakeRealValue(&factor1->Real);
+  snapshot.mul_complex_complex_factor1_imag_value = fakeRealValue(&factor1->Imag);
+  snapshot.mul_complex_complex_factor2_real_value = fakeRealValue(&factor2->Real);
+  snapshot.mul_complex_complex_factor2_imag_value = fakeRealValue(&factor2->Imag);
   (void)realContext;
-  setFakeReal(productReal, fakeRealValue(factor1Real) * fakeRealValue(factor2Real) - fakeRealValue(factor1Imag) * fakeRealValue(factor2Imag), 0);
-  setFakeReal(productImag, fakeRealValue(factor1Real) * fakeRealValue(factor2Imag) + fakeRealValue(factor1Imag) * fakeRealValue(factor2Real), 0);
+  setFakeReal(&product->Real, fakeRealValue(&factor1->Real) * fakeRealValue(&factor2->Real) - fakeRealValue(&factor1->Imag) * fakeRealValue(&factor2->Imag), 0);
+  setFakeReal(&product->Imag, fakeRealValue(&factor1->Real) * fakeRealValue(&factor2->Imag) + fakeRealValue(&factor1->Imag) * fakeRealValue(&factor2->Real), 0);
 }
 
-void mulComplexReal(const real_t *factor1Real,
-                    const real_t *factor1Imag,
-                    const real_t *factor2,
-                    real_t *productReal,
-                    real_t *productImag,
-                    realContext_t *realContext) {
+void mulComplexReal(const cplx_t *factor1, const real_t *factor2, cplx_t *product, realContext_t *realContext) {
   (void)realContext;
-  setFakeReal(productReal, fakeRealValue(factor1Real) * fakeRealValue(factor2), 0);
-  setFakeReal(productImag, fakeRealValue(factor1Imag) * fakeRealValue(factor2), 0);
+  setFakeReal(&product->Real, fakeRealValue(&factor1->Real) * fakeRealValue(factor2), 0);
+  setFakeReal(&product->Imag, fakeRealValue(&factor1->Imag) * fakeRealValue(factor2), 0);
 }
 
 void unitVectorCplx(void) {
@@ -3553,21 +3608,15 @@ void forceSystemFlag(unsigned int sf, int set) {
 void setLastintegerBasetoZero(void) {
 }
 
-void divComplexComplex(const real_t *numerReal,
-                       const real_t *numerImag,
-                       const real_t *denomReal,
-                       const real_t *denomImag,
-                       real_t *quotientReal,
-                       real_t *quotientImag,
-                       realContext_t *realContext) {
+void divComplexComplex(const cplx_t *numer, const cplx_t *denom, cplx_t *quotient, realContext_t *realContext) {
   snapshot.div_complex_complex_calls++;
-  snapshot.div_complex_complex_numer_real_value = fakeRealValue(numerReal);
-  snapshot.div_complex_complex_numer_imag_value = fakeRealValue(numerImag);
-  snapshot.div_complex_complex_denom_real_value = fakeRealValue(denomReal);
-  snapshot.div_complex_complex_denom_imag_value = fakeRealValue(denomImag);
+  snapshot.div_complex_complex_numer_real_value = fakeRealValue(&numer->Real);
+  snapshot.div_complex_complex_numer_imag_value = fakeRealValue(&numer->Imag);
+  snapshot.div_complex_complex_denom_real_value = fakeRealValue(&denom->Real);
+  snapshot.div_complex_complex_denom_imag_value = fakeRealValue(&denom->Imag);
   (void)realContext;
-  setFakeReal(quotientReal, fakeRealValue(numerReal) + fakeRealValue(denomReal), 0);
-  setFakeReal(quotientImag, fakeRealValue(numerImag) - fakeRealValue(denomImag), 0);
+  setFakeReal(&quotient->Real, fakeRealValue(&numer->Real) + fakeRealValue(&denom->Real), 0);
+  setFakeReal(&quotient->Imag, fakeRealValue(&numer->Imag) - fakeRealValue(&denom->Imag), 0);
 }
 
 void realSetNaN(real_t *value) {
@@ -3986,4 +4035,366 @@ void longInteger2Pow(int32_t exponent, longInteger_t result) {
 
 void longIntegerDivideQuotientRemainder(const longInteger_t dividend, const longInteger_t divisor, longInteger_t quotient, longInteger_t remainder) {
   mpz_tdiv_qr(quotient, remainder, dividend, divisor);
+}
+
+const real_t *z47_math_wrappers_const_4(void) {
+  return &fake_const_4_value;
+}
+
+const real_t *z47_math_wrappers_const_6(void) {
+  return &fake_const_6_value;
+}
+
+const real_t *z47_math_wrappers_const_minus_4(void) {
+  return &fake_const_minus_4_value;
+}
+
+const real_t *z47_math_wrappers_const75_ln2(void) {
+  return &fake_const75_ln2_value;
+}
+
+const real_t *z47_math_wrappers_const75_ln10(void) {
+  return &fake_const75_ln10_value;
+}
+
+const real_t *z47_math_wrappers_const75_3piOn4(void) {
+  return &fake_const75_3pi_on4_value;
+}
+
+const real34_t *z47_math_wrappers_const34_1(void) {
+  return &fake_const34_one_value;
+}
+
+const real34_t *z47_math_wrappers_const34_3600(void) {
+  return &fake_const34_3600_value;
+}
+
+// realType.c: the pointable add, subtract and multiply, over the fakes above.
+void real34AddOp(const real34_t *y, const real34_t *x, real34_t *res) {
+  snapshot.real34_op_calls++;
+  decQuadAdd(res, y, x, &ctxtReal34);
+}
+
+void real34SubtractOp(const real34_t *y, const real34_t *x, real34_t *res) {
+  snapshot.real34_op_calls++;
+  real34Subtract(y, x, res);
+}
+
+void realAddOp(const real_t *y, const real_t *x, real_t *res, realContext_t *realContext) {
+  snapshot.real_op_calls++;
+  decNumberAdd(res, y, x, realContext);
+}
+
+void realSubtractOp(const real_t *y, const real_t *x, real_t *res, realContext_t *realContext) {
+  snapshot.real_op_calls++;
+  decNumberSubtract(res, y, x, realContext);
+}
+
+void realMultiplyOp(const real_t *y, const real_t *x, real_t *res, realContext_t *realContext) {
+  snapshot.real_op_calls++;
+  decNumberMultiply(res, y, x, realContext);
+}
+
+// The exact scaled-long-integer arithmetic of registerValueConversions.c. Every
+// predicate records the call and answers false, so the oracle and the owner both
+// take the decNumber path this lane compares; the conversions that only the exact
+// path reaches are reduced to the call record.
+bool_t convertRegisterToScaledLongInteger(calcRegister_t regist, longInteger_t coefficient, int32_t *exponent) {
+  (void)regist;
+  (void)coefficient;
+  snapshot.scaled_long_integer_calls++;
+  *exponent = 0;
+  return false;
+}
+
+int32_t getRegisterIntegerParity(calcRegister_t regist) {
+  (void)regist;
+  snapshot.register_integer_parity_calls++;
+  return -1;
+}
+
+bool_t convertReal34ToScaledLongInteger(const real34_t *real34, longInteger_t coefficient, int32_t *exponent) {
+  (void)real34;
+  (void)coefficient;
+  snapshot.scaled_long_integer_calls++;
+  *exponent = 0;
+  return false;
+}
+
+void convertScaledLongIntegerToReal(const longInteger_t coefficient, int32_t exponent, real_t *real, realContext_t *realContext) {
+  (void)realContext;
+  snapshot.scaled_long_integer_calls++;
+  setFakeRealWithExponent(real, (int32_t)mpz_get_si(coefficient), 0, exponent);
+}
+
+void convertScaledLongIntegerToReal34(const longInteger_t coefficient, int32_t exponent, real34_t *real34) {
+  (void)exponent;
+  snapshot.scaled_long_integer_calls++;
+  setRegisterReal34((uint8_t *)real34, (int32_t)mpz_get_si(coefficient), 0);
+}
+
+void addSubtractScaledLongIntegers(const longInteger_t first, int32_t firstExponent, const longInteger_t second, int32_t secondExponent, bool_t subtract, longInteger_t result, int32_t *resultExponent) {
+  (void)firstExponent;
+  (void)secondExponent;
+  snapshot.scaled_long_integer_calls++;
+  mpz_init(result);
+  if(subtract) {
+    mpz_sub(result, first, second);
+  }
+  else {
+    mpz_add(result, first, second);
+  }
+  *resultExponent = 0;
+}
+
+bool_t rootLongIntegerToReal34(const longInteger_t operand, uint32_t order, real34_t *result) {
+  (void)operand;
+  (void)result;
+  snapshot.root_register_to_real34_calls++;
+  snapshot.root_register_to_real34_last_order = order;
+  return false;
+}
+
+bool_t reciprocalRootLongIntegerToReal34(const longInteger_t operand, uint32_t order, real34_t *result) {
+  (void)operand;
+  (void)result;
+  snapshot.root_register_to_real34_calls++;
+  snapshot.root_register_to_real34_last_order = order;
+  return false;
+}
+
+bool_t rootRegisterToReal34(calcRegister_t regist, uint32_t order, bool_t exactExponent, real34_t *result) {
+  (void)regist;
+  (void)exactExponent;
+  (void)result;
+  snapshot.root_register_to_real34_calls++;
+  snapshot.root_register_to_real34_last_order = order;
+  return false;
+}
+
+bool_t powerLongIntegerToReal34(const longInteger_t base, int32_t exponent, real34_t *result) {
+  (void)base;
+  (void)result;
+  snapshot.power_long_integer_to_real34_calls++;
+  snapshot.power_long_integer_to_real34_last_exponent = exponent;
+  return false;
+}
+
+bool_t addSubtractLongIntegerReal34(calcRegister_t integerRegister, const real34_t *real34, bool_t integerFirst, bool_t subtract, real34_t *result) {
+  (void)integerRegister;
+  (void)real34;
+  (void)integerFirst;
+  (void)subtract;
+  (void)result;
+  snapshot.long_integer_real34_fast_path_calls++;
+  return false;
+}
+
+bool_t multiplyLongIntegerReal34(calcRegister_t integerRegister, const real34_t *real34, real34_t *result) {
+  (void)integerRegister;
+  (void)real34;
+  (void)result;
+  snapshot.long_integer_real34_fast_path_calls++;
+  return false;
+}
+
+bool_t divideLongIntegerReal34(calcRegister_t integerRegister, const real34_t *real34, bool_t integerFirst, real34_t *result) {
+  (void)integerRegister;
+  (void)real34;
+  (void)integerFirst;
+  (void)result;
+  snapshot.long_integer_real34_fast_path_calls++;
+  return false;
+}
+
+bool_t multiplyRegisterValuesToReal34Scaled(calcRegister_t firstRegister, calcRegister_t secondRegister, int32_t exponentAdjustment, real34_t *result) {
+  (void)firstRegister;
+  (void)secondRegister;
+  (void)result;
+  snapshot.scaled_long_integer_calls++;
+  snapshot.scaled_long_integer_last_adjustment = exponentAdjustment;
+  return false;
+}
+
+bool_t divideScaledLongIntegersToReal(const longInteger_t numerator, int32_t numeratorExponent, bool_t negativeZero, const longInteger_t denominator, int32_t denominatorExponent, real_t *result, realContext_t *realContext) {
+  (void)numerator;
+  (void)numeratorExponent;
+  (void)negativeZero;
+  (void)denominator;
+  (void)denominatorExponent;
+  (void)result;
+  (void)realContext;
+  snapshot.scaled_long_integer_calls++;
+  return false;
+}
+
+bool_t divideScaledLongIntegersToReal34(const longInteger_t numerator, int32_t numeratorExponent, bool_t negativeZero, const longInteger_t denominator, int32_t denominatorExponent, real34_t *result) {
+  (void)numerator;
+  (void)numeratorExponent;
+  (void)negativeZero;
+  (void)denominator;
+  (void)denominatorExponent;
+  (void)result;
+  snapshot.scaled_long_integer_calls++;
+  return false;
+}
+
+bool_t divideRegisterValuesToReal34Scaled(calcRegister_t numeratorRegister, calcRegister_t denominatorRegister, int32_t exponentAdjustment, real34_t *result) {
+  (void)numeratorRegister;
+  (void)denominatorRegister;
+  (void)result;
+  snapshot.scaled_long_integer_calls++;
+  snapshot.scaled_long_integer_last_adjustment = exponentAdjustment;
+  return false;
+}
+
+bool_t divideRegisterValuesToReal34(calcRegister_t numeratorRegister, calcRegister_t denominatorRegister, real34_t *result) {
+  return divideRegisterValuesToReal34Scaled(numeratorRegister, denominatorRegister, 0, result);
+}
+
+bool_t reciprocalLongIntegerRegisterToReal34(calcRegister_t denominatorRegister, real34_t *result) {
+  (void)denominatorRegister;
+  (void)result;
+  snapshot.reciprocal_long_integer_calls++;
+  return false;
+}
+
+bool_t registerIdentityExponentToReal34(calcRegister_t baseRegister, calcRegister_t exponentRegister, real34_t *result) {
+  (void)baseRegister;
+  (void)exponentRegister;
+  (void)result;
+  snapshot.register_identity_exponent_calls++;
+  return false;
+}
+
+bool_t reduceLongIntegerRegisterAngle(calcRegister_t regist, angularMode_t angularMode, real_t *reducedAngle, bool_t reduceLongintegerAngle) {
+  (void)angularMode;
+  (void)reduceLongintegerAngle;
+  snapshot.reduce_long_integer_angle_calls++;
+  return getRegisterAsReal(regist, reducedAngle);
+}
+
+void roundReal34ResultToSignificantDigits(real34_t *val) {
+  (void)val;
+  snapshot.round_real34_result_calls++;
+}
+
+bool_t compareFiniteReal34LongIntegerRegisters(calcRegister_t first, calcRegister_t second, int32_t *comparison) {
+  (void)first;
+  (void)second;
+  snapshot.compare_finite_mixed_calls++;
+  *comparison = 0;
+  return false;
+}
+
+void rightAngleLessRadians(real_t *angle, bool_t negative) {
+  snapshot.right_angle_less_radians_calls++;
+  snapshot.right_angle_less_radians_last_negative = negative;
+  setFakeReal(angle, (negative ? -1571 : 1571) - fakeRealValue(angle), 0);
+}
+
+void longIntegerScaledDivide(longInteger_t opY, int32_t yExp, longInteger_t opX, int32_t xExp, longInteger_t quotient, longInteger_t remainder, int32_t *remainderExp) {
+  (void)yExp;
+  (void)xExp;
+  snapshot.long_integer_scaled_divide_calls++;
+  mpz_tdiv_qr(quotient, remainder, opY, opX);
+  *remainderExp = 0;
+}
+
+void longIntegerToAllocatedString(const longInteger_t lgInt, char *str, int32_t strLen) {
+  if(strLen > 0) {
+    snprintf(str, (size_t)strLen, "%ld", mpz_get_si(lgInt));
+  }
+}
+
+// wp34s.c's new helpers. The series and remainder answer a fake value that depends
+// on their inputs, so a swapped operand still shows; the rest are the identity
+// their names promise over the fake arithmetic.
+void WP34S_TinyOddSeries(const real_t *x, const real_t *divisor, bool_t above, real_t *res, realContext_t *realContext) {
+  (void)realContext;
+  snapshot.tiny_odd_series_calls++;
+  setFakeReal(res, fakeRealValue(x) + fakeRealValue(divisor) + (above ? 95 : 94), 0);
+}
+
+void WP34S_Real34Remainder(const real_t *x, const real_t *y, real_t *res) {
+  snapshot.real34_remainder_calls++;
+  WP34S_Mod(x, y, res, &ctxtReal34);
+}
+
+void WP34S_LanczosSum(const real_t *x, const real_t *offset, real_t *res, realContext_t *realContext) {
+  (void)realContext;
+  setFakeReal(res, fakeRealValue(x) + fakeRealValue(offset) + 96, 0);
+}
+
+void WP34S_LnExtended(const real_t *x, real_t *res, realContext_t *realContext) {
+  WP34S_Ln(x, res, realContext);
+}
+
+void WP34S_Log1pMinus(const real_t *value, real_t *res, realContext_t *realContext) {
+  (void)realContext;
+  setFakeReal(res, -fakeRealValue(value) + 97, 0);
+}
+
+bool_t WP34S_IsPositiveFinite(const real_t *value) {
+  return !realIsSpecial(value) && !realIsNegative(value) && !realIsZero(value);
+}
+
+bool_t WP34S_HasCancellation(const real_t *left, const real_t *right, const real_t *result, int32_t places) {
+  (void)left;
+  (void)right;
+  (void)result;
+  (void)places;
+  return false;
+}
+
+void WP34S_AdjustPositiveUnderflow(real_t *value) {
+  (void)value;
+}
+
+void WP34S_SetPowerOfTen(int32_t exponent, real_t *res) {
+  setFakeRealWithExponent(res, 1, 0, exponent);
+}
+
+// f.c's shared incomplete-beta pair: the fake refuses, which keeps Ixyz on its
+// error path on both sides.
+void distributionLogBetaPrefix(const real_t *a, const real_t *b, const real_t *y, const real_t *z, const real_t *logit, real_t *res, realContext_t *realContext) {
+  (void)realContext;
+  setFakeReal(res, fakeRealValue(a) + fakeRealValue(b) + fakeRealValue(y) + fakeRealValue(z) + fakeRealValue(logit), 0);
+}
+
+bool_t distributionBetaPair(const real_t *a, const real_t *b, const real_t *y, const real_t *z, const real_t *logit, real_t *lower, real_t *upper, realContext_t *realContext) {
+  (void)a;
+  (void)b;
+  (void)y;
+  (void)z;
+  (void)logit;
+  (void)lower;
+  (void)upper;
+  (void)realContext;
+  snapshot.distribution_beta_pair_calls++;
+  return false;
+}
+
+// decNumber's reduce, the decQuad absolute copy and the decQuad parse the range
+// reaches through realReduce, real34CopyAbs and stringToReal34.
+decNumber *decNumberReduce(decNumber *result, const decNumber *rhs, decContext *realContext) {
+  (void)realContext;
+  if(result != rhs) {
+    *result = *rhs;
+  }
+  return result;
+}
+
+real34_t *decQuadCopyAbs(real34_t *result, const real34_t *rhs) {
+  if(result != rhs) {
+    *result = *rhs;
+  }
+  result->bytes[15] &= 0x7f;
+  return result;
+}
+
+real34_t *decQuadFromString(real34_t *result, const char *string, realContext_t *context) {
+  (void)context;
+  setRegisterReal34((uint8_t *)result, (int32_t)strtol(string, NULL, 10), 0);
+  return result;
 }

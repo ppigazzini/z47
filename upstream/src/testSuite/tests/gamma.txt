@@ -50,12 +50,17 @@ Out: EC=24 FL_ASLIFT=0 RX=Stri:"String test"
 ;=======================================
 ; gamma(Real Matrix)
 ;=======================================
+Func: fnGamma
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RX=ReMa:"M1,2[503.0068446400174716,-41.00000000000000000000000000000001]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,2[503.0068446400174716,-41.00000000000000000000000000000001]" RX=ReMa:"M1,2[3.202125159324038782492961300322795e+1139,2.989310827142404510789121914487101e-18]"
 
 
 
 ;=======================================
 ; gamma(Complex Matrix)
 ;=======================================
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RX=CxMa:"M1,1[-41.00000000000000000000000000000001i1e-34]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M1,1[-41.00000000000000000000000000000001i1e-34]" RX=CxMa:"M1,1[2.989011925949809529836138300657035e-18i2.989011925949809529836138300657146e-20]"
 
 
 
@@ -131,3 +136,93 @@ Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"-6.2 i -7.6" RX=Cplx:"6.0938667647252
 
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"-6.2 i 7.6"
 Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"-6.2 i 7.6" RX=Cplx:"6.0938667647252428945239905379780774555297552199447987679735327e-12 i 8.001596227759724236614650692262884769794185678880715436824347e-12"
+
+
+;=======================================
+; Lanczos cancellation and pole reduction
+;=======================================
+; Independent 768-bit MPFR values. Subtraction asserts digit 34 under every result rounding mode.
+Func: fnGamma
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"3.202125159324038782492961300322795e+1139" RX=Real:"503.0068446400174716"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0 RX=Real:"0"
+
+Func: fnGamma
+In:  RMODE=1 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"3.202125159324038782492961300322795e+1139" RX=Real:"503.0068446400174716"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0 RX=Real:"0"
+
+Func: fnGamma
+In:  RMODE=2 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"3.202125159324038782492961300322795e+1139" RX=Real:"503.0068446400174716"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0 RX=Real:"0"
+
+Func: fnGamma
+In:  RMODE=3 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"3.202125159324038782492961300322795e+1139" RX=Real:"503.0068446400174716"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0 RX=Real:"0"
+
+Func: fnGamma
+In:  RMODE=4 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"3.202125159324038782492961300322794e+1139" RX=Real:"503.0068446400174716"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0 RX=Real:"0"
+
+Func: fnGamma
+In:  RMODE=5 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"3.202125159324038782492961300322795e+1139" RX=Real:"503.0068446400174716"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0 RX=Real:"0"
+
+Func: fnGamma
+In:  RMODE=6 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"3.202125159324038782492961300322794e+1139" RX=Real:"503.0068446400174716"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0 RX=Real:"0"
+
+; The exact remainder retains the distance from the pole before multiplication by pi.
+Func: fnGamma
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e60" RY=Real:"2.989310827142404510789121914487101e-18" RX=Real:"-41.00000000000000000000000000000001"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnGamma
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e60" RY=Real:"-2.989310827142404510789121914488326e-19" RX=Real:"-40.9999999999999999999999999999999"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+; Independent 1024-bit Spouge values exercise both components next to the same pole.
+Func: fnGamma
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e60" RY=Cplx:"2.989011925949809529836138300657035e-18 i 2.989011925949809529836138300657146e-20" RX=Cplx:"-41.00000000000000000000000000000001 i 1e-34"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+Func: fnGamma
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e60" RY=Cplx:"-2.989307837834566676222445692042634e-19 i -2.989307837834566676222445692041520e-22" RX=Cplx:"-40.9999999999999999999999999999999 i -1e-34"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+; Reflection remains finite across a wide imaginary exponent before final decimal128 conversion.
+Func: fnGamma
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e3500" RY=Cplx:"-1.614955092191440052771484195229471e-3451 i 4.675157590914850584666553893528250e-3451" RX=Cplx:"-10.25 i 5000"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"

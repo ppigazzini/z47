@@ -29,6 +29,7 @@ const frontier_error = @import("error.zig");
 const frontier_recall = @import("recall.zig");
 const frontier_register_value_conversions = @import("register_value_conversions.zig");
 const frontier_stats = @import("stats.zig");
+const cplx_t = abi.Complex;
 const real_t = abi.Real;
 const real34_t = abi.Real34;
 const realContext_t = abi.RealContext;
@@ -492,6 +493,9 @@ fn _storeValue(regist: u16) void {
 pub export fn fnStore(regist: u16) callconv(.c) void {
     if (_checkReadOnlyVariable(regist) and regInRange(regist)) {
         _storeValue(regist);
+        if (lastErrorCode != ERROR_NONE) {
+            return;
+        }
         var rows: u16 = 1;
         if (namedVariableIsStats(@intCast(regist))) {
             if (frontier_stats.isStatsMatrixN(&rows, @intCast(regist))) {
@@ -541,7 +545,20 @@ pub export fn fn3Sto(regist: u16) callconv(.c) void {
 // ===========================================================================
 // Store arithmetic
 // ===========================================================================
-pub export fn fnStoreAdd(regist: u16) callconv(.c) void {
+
+// Recalculates the stats sums when the destination is the stats matrix.
+fn storeOpRecalcStats(regist: u16) void {
+    var rows: u16 = 1;
+    if (regist >= FIRST_NAMED_VARIABLE and frontier_stats.isStatsMatrixN(&rows, @intCast(regist)) and namedVariableIsStats(@intCast(regist))) {
+        frontier_stats.calcSigma(0);
+    }
+}
+
+// The body STO+, STO-, STOx and STO/ share: the register comes to Y, the operation
+// runs on the stack, and the result goes back to the register. Two integers take
+// the result as it is; a real result is adjusted first, and an error on either
+// step puts X back and leaves the register untouched.
+fn storeOp(regist: u16, op: *const [NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS][NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS]Fn0) void {
     if (_checkReadOnlyVariable(regist) and regInRange(regist)) {
         if (programRunStop == PGM_RUNNING) {
             copySourceRegisterToDestRegister(REGISTER_Y, SAVED_REGISTER_Y);
@@ -553,104 +570,57 @@ pub export fn fnStoreAdd(regist: u16) callconv(.c) void {
             regShortInt(REGISTER_Y).* &= shortIntegerMask;
         }
 
-        addition[getRegisterDataType(REGISTER_X)][getRegisterDataType(REGISTER_Y)].?();
+        const xType = getRegisterDataType(REGISTER_X);
+        const yType = getRegisterDataType(REGISTER_Y);
+        const integerOnly = (xType == dtShortInteger or xType == dtLongInteger) and (yType == dtShortInteger or yType == dtLongInteger);
+        op[xType][yType].?();
 
         copySourceRegisterToDestRegister(SAVED_REGISTER_Y, REGISTER_Y);
+        if (integerOnly) {
+            _storeValue(regist);
+            if (regist != @as(u16, @intCast(REGISTER_X))) {
+                copySourceRegisterToDestRegister(SAVED_REGISTER_X, REGISTER_X);
+            }
+
+            adjustResult(REGISTER_X, false, true, REGISTER_X, @intCast(regist), -1);
+            storeOpRecalcStats(regist);
+            return;
+        }
+        if (lastErrorCode != ERROR_NONE) {
+            copySourceRegisterToDestRegister(SAVED_REGISTER_X, REGISTER_X);
+            return;
+        }
+
+        adjustResult(REGISTER_X, false, true, REGISTER_X, @intCast(regist), -1);
+        if (lastErrorCode != ERROR_NONE) {
+            copySourceRegisterToDestRegister(SAVED_REGISTER_X, REGISTER_X);
+            return;
+        }
         _storeValue(regist);
         if (regist != @as(u16, @intCast(REGISTER_X))) {
             copySourceRegisterToDestRegister(SAVED_REGISTER_X, REGISTER_X);
         }
 
-        adjustResult(REGISTER_X, false, true, REGISTER_X, @intCast(regist), -1);
-        var rows: u16 = 1;
-        if (regist >= FIRST_NAMED_VARIABLE and frontier_stats.isStatsMatrixN(&rows, @intCast(regist)) and namedVariableIsStats(@intCast(regist))) {
-            frontier_stats.calcSigma(0);
+        if (lastErrorCode == ERROR_NONE) {
+            storeOpRecalcStats(regist);
         }
     }
+}
+
+pub export fn fnStoreAdd(regist: u16) callconv(.c) void {
+    storeOp(regist, &addition);
 }
 
 pub export fn fnStoreSub(regist: u16) callconv(.c) void {
-    if (_checkReadOnlyVariable(regist) and regInRange(regist)) {
-        if (programRunStop == PGM_RUNNING) {
-            copySourceRegisterToDestRegister(REGISTER_Y, SAVED_REGISTER_Y);
-            copySourceRegisterToDestRegister(REGISTER_X, SAVED_REGISTER_X);
-        }
-
-        copySourceRegisterToDestRegister(@intCast(regist), REGISTER_Y);
-        if (getRegisterDataType(REGISTER_Y) == dtShortInteger) {
-            regShortInt(REGISTER_Y).* &= shortIntegerMask;
-        }
-
-        subtraction[getRegisterDataType(REGISTER_X)][getRegisterDataType(REGISTER_Y)].?();
-
-        copySourceRegisterToDestRegister(SAVED_REGISTER_Y, REGISTER_Y);
-        _storeValue(regist);
-        if (regist != @as(u16, @intCast(REGISTER_X))) {
-            copySourceRegisterToDestRegister(SAVED_REGISTER_X, REGISTER_X);
-        }
-
-        adjustResult(REGISTER_X, false, true, REGISTER_X, @intCast(regist), -1);
-        var rows: u16 = 1;
-        if (regist >= FIRST_NAMED_VARIABLE and frontier_stats.isStatsMatrixN(&rows, @intCast(regist)) and namedVariableIsStats(@intCast(regist))) {
-            frontier_stats.calcSigma(0);
-        }
-    }
+    storeOp(regist, &subtraction);
 }
 
 pub export fn fnStoreMult(regist: u16) callconv(.c) void {
-    if (_checkReadOnlyVariable(regist) and regInRange(regist)) {
-        if (programRunStop == PGM_RUNNING) {
-            copySourceRegisterToDestRegister(REGISTER_Y, SAVED_REGISTER_Y);
-            copySourceRegisterToDestRegister(REGISTER_X, SAVED_REGISTER_X);
-        }
-
-        copySourceRegisterToDestRegister(@intCast(regist), REGISTER_Y);
-        if (getRegisterDataType(REGISTER_Y) == dtShortInteger) {
-            regShortInt(REGISTER_Y).* &= shortIntegerMask;
-        }
-
-        multiplication[getRegisterDataType(REGISTER_X)][getRegisterDataType(REGISTER_Y)].?();
-
-        copySourceRegisterToDestRegister(SAVED_REGISTER_Y, REGISTER_Y);
-        _storeValue(regist);
-        if (regist != @as(u16, @intCast(REGISTER_X))) {
-            copySourceRegisterToDestRegister(SAVED_REGISTER_X, REGISTER_X);
-        }
-
-        adjustResult(REGISTER_X, false, true, REGISTER_X, @intCast(regist), -1);
-        var rows: u16 = 1;
-        if (regist >= FIRST_NAMED_VARIABLE and frontier_stats.isStatsMatrixN(&rows, @intCast(regist)) and namedVariableIsStats(@intCast(regist))) {
-            frontier_stats.calcSigma(0);
-        }
-    }
+    storeOp(regist, &multiplication);
 }
 
 pub export fn fnStoreDiv(regist: u16) callconv(.c) void {
-    if (_checkReadOnlyVariable(regist) and regInRange(regist)) {
-        if (programRunStop == PGM_RUNNING) {
-            copySourceRegisterToDestRegister(REGISTER_Y, SAVED_REGISTER_Y);
-            copySourceRegisterToDestRegister(REGISTER_X, SAVED_REGISTER_X);
-        }
-
-        copySourceRegisterToDestRegister(@intCast(regist), REGISTER_Y);
-        if (getRegisterDataType(REGISTER_Y) == dtShortInteger) {
-            regShortInt(REGISTER_Y).* &= shortIntegerMask;
-        }
-
-        division[getRegisterDataType(REGISTER_X)][getRegisterDataType(REGISTER_Y)].?();
-
-        copySourceRegisterToDestRegister(SAVED_REGISTER_Y, REGISTER_Y);
-        _storeValue(regist);
-        if (regist != @as(u16, @intCast(REGISTER_X))) {
-            copySourceRegisterToDestRegister(SAVED_REGISTER_X, REGISTER_X);
-        }
-
-        adjustResult(REGISTER_X, false, true, REGISTER_X, @intCast(regist), -1);
-        var rows: u16 = 1;
-        if (regist >= FIRST_NAMED_VARIABLE and frontier_stats.isStatsMatrixN(&rows, @intCast(regist)) and namedVariableIsStats(@intCast(regist))) {
-            frontier_stats.calcSigma(0);
-        }
-    }
+    storeOp(regist, &division);
 }
 
 pub export fn fnStoreMin(regist_arg: u16) callconv(.c) void {
@@ -845,13 +815,13 @@ pub export fn fnStoreStack(regist: u16) callconv(.c) void {
 // Matrix element store
 // ===========================================================================
 pub export fn fnStoreVElement(ix: u16) callconv(.c) void {
-    var rx: real_t = undefined;
+    var rx: cplx_t = undefined;
     var rows: u16 = undefined;
     var cols: u16 = undefined;
     if (!getMatrixDims(REGISTER_Y, "In function fnStoreVElement:", &rows, &cols)) {
         return;
     }
-    if (!frontier_register_value_conversions.getRegisterAsComplex(REGISTER_X, &rx, &rx) and !frontier_register_value_conversions.getRegisterAsReal(REGISTER_X, &rx)) {
+    if (!frontier_register_value_conversions.getRegisterAsComplex(REGISTER_X, &rx) and !frontier_register_value_conversions.getRegisterAsReal(REGISTER_X, &rx.Real)) {
         frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "DataType {d}", .{@as(u32, getRegisterDataType(REGISTER_X))});
@@ -904,13 +874,37 @@ pub export fn vectorSpanOk(regist: u16, n: u16, funcName: [*:0]const u8) callcon
 // Register `r` into element `ix` of the vector in X; a complex register turns
 // the whole vector complex before the element is written.
 fn registerToElement(r: calcRegister_t, ix: u16) bool {
-    var re: real_t = undefined;
-    var im: real_t = undefined;
     if (!regInRange(@intCast(r))) {
         return false;
     }
-    if (!frontier_register_value_conversions.getRegisterAsComplex(r, &re, &im)) {
-        if (!frontier_register_value_conversions.getRegisterAsReal(r, &re)) {
+    const idx: usize = @as(usize, ix) - 1;
+    // A Real34 or a complex34 source is copied as it is, so the element holds the
+    // register's digits unchanged.
+    const sourceType = getRegisterDataType(r);
+    if (sourceType == dtReal34) {
+        if (getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {
+            const halves: [*]align(1) real34_t = @ptrCast(&abi.registerComplex34MatrixElements(REGISTER_X)[idx]);
+            real34Copy(abi.registerReal34(r), &halves[0]);
+            real34SetZero(&halves[1]);
+        } else {
+            real34Copy(abi.registerReal34(r), &abi.registerReal34MatrixElements(REGISTER_X)[idx]);
+        }
+        return true;
+    }
+    if (sourceType == dtComplex34 and getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
+        frontier_register_value_conversions.convertReal34MatrixRegisterToComplex34MatrixRegister(REGISTER_X, REGISTER_X);
+        if (lastErrorCode != ERROR_NONE) {
+            return false;
+        }
+    }
+    if (sourceType == dtComplex34) {
+        abi.registerComplex34MatrixElements(REGISTER_X)[idx] = abi.registerComplex34(r).*;
+        return true;
+    }
+
+    var z: cplx_t = undefined;
+    if (!frontier_register_value_conversions.getRegisterAsComplex(r, &z)) {
+        if (!frontier_register_value_conversions.getRegisterAsReal(r, &z.Real)) {
             frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
             if (comptime extra_info) {
                 abi.fmtBufZ(errorMessage[0..512], "register {d} holds {s}", .{
@@ -921,19 +915,16 @@ fn registerToElement(r: calcRegister_t, ix: u16) bool {
             }
             return false;
         }
-        realSetZero(&im);
-    } else if (getRegisterDataType(r) == dtComplex34 and getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
-        frontier_register_value_conversions.convertReal34MatrixRegisterToComplex34MatrixRegister(REGISTER_X, REGISTER_X);
+        realSetZero(&z.Imag);
     }
-    const idx: usize = @as(usize, ix) - 1;
     if (getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {
         // VARIABLE_REAL34_DATA / VARIABLE_IMAG34_DATA: the two real34 halves of
         // the complex element.
         const halves: [*]align(1) real34_t = @ptrCast(&abi.registerComplex34MatrixElements(REGISTER_X)[idx]);
-        realToReal34(&re, &halves[0]);
-        realToReal34(&im, &halves[1]);
+        realToReal34(&z.Real, &halves[0]);
+        realToReal34(&z.Imag, &halves[1]);
     } else {
-        realToReal34(&re, &abi.registerReal34MatrixElements(REGISTER_X)[idx]);
+        realToReal34(&z.Real, &abi.registerReal34MatrixElements(REGISTER_X)[idx]);
     }
     return true;
 }
@@ -997,17 +988,25 @@ fn _fnStoreElement(stepForward: bool) void {
             moreInfoOnError("In function _fnStoreElement:", errorMessage, null);
         }
     } else {
-        if (regInRange(matrixIndex) and getRegisterDataType(@intCast(matrixIndex)) == dtReal34Matrix and getRegisterDataType(REGISTER_X) == dtComplex34) {
+        if (isRegInRange(matrixIndex) and getRegisterDataType(@intCast(matrixIndex)) == dtReal34Matrix and getRegisterDataType(REGISTER_X) == dtComplex34 and
+            frontier_matrix_editor.getIRegisterAsInt(true) >= 0 and frontier_matrix_editor.getIRegisterAsInt(true) < @as(i16, @intCast(abi.registerMatrixHeader(@intCast(matrixIndex)).matrixRows)) and
+            frontier_matrix_editor.getJRegisterAsInt(true) >= 0 and frontier_matrix_editor.getJRegisterAsInt(true) < @as(i16, @intCast(abi.registerMatrixHeader(@intCast(matrixIndex)).matrixColumns)))
+        {
             // Real matrices turns to complex matrices by setting a complex element
             frontier_register_value_conversions.convertReal34MatrixRegisterToComplex34MatrixRegister(@intCast(matrixIndex), @intCast(matrixIndex));
+            if (lastErrorCode != ERROR_NONE) {
+                return;
+            }
         }
         callByIndexedMatrix(storeElementReal, storeElementComplex);
-        if (stepForward) {
-            frontier_matrix_editor.fnIncDecJ(INC_FLAG);
-        }
-        var rows: u16 = 1;
-        if (matrixIndex >= FIRST_NAMED_VARIABLE and frontier_stats.isStatsMatrixN(&rows, @intCast(matrixIndex)) and namedVariableIsStats(@intCast(matrixIndex))) {
-            frontier_stats.calcSigma(0);
+        if (lastErrorCode == ERROR_NONE) {
+            if (stepForward) {
+                frontier_matrix_editor.fnIncDecJ(INC_FLAG);
+            }
+            var rows: u16 = 1;
+            if (matrixIndex >= FIRST_NAMED_VARIABLE and frontier_stats.isStatsMatrixN(&rows, @intCast(matrixIndex)) and namedVariableIsStats(@intCast(matrixIndex))) {
+                frontier_stats.calcSigma(0);
+            }
         }
     }
 }
@@ -1025,9 +1024,11 @@ pub export fn fnStoreIJ(unusedButMandatoryParameter: u16) callconv(.c) void {
         }
     } else {
         callByIndexedMatrix(storeIjReal, storeIjComplex);
-        var rows: u16 = 1;
-        if (matrixIndex >= FIRST_NAMED_VARIABLE and frontier_stats.isStatsMatrixN(&rows, @intCast(matrixIndex)) and namedVariableIsStats(@intCast(matrixIndex))) {
-            frontier_stats.calcSigma(0);
+        if (lastErrorCode == ERROR_NONE) {
+            var rows: u16 = 1;
+            if (matrixIndex >= FIRST_NAMED_VARIABLE and frontier_stats.isStatsMatrixN(&rows, @intCast(matrixIndex)) and namedVariableIsStats(@intCast(matrixIndex))) {
+                frontier_stats.calcSigma(0);
+            }
         }
     }
 }

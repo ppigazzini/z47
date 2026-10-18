@@ -163,3 +163,14 @@ Out: EC=5 FL_CPXRES=0 FL_ASLIFT=0 RX=Cplx:"inf i inf"
 
 In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RX=Cplx:"inf i -inf"
 Out: EC=4 FL_CPXRES=0 FL_ASLIFT=0 RX=Cplx:"inf i -inf"
+
+; Exact signed-zero components are independent of the selected rounding mode.
+In:  RMODE=6 SD=34 FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=Real:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"-0"
+
+In:  RMODE=6 SD=34 FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=Cplx:"-0 i 0"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"0 i -0"
+
+; A transformed complex matrix is rectangular and therefore untagged.
+In:  RMODE=0 SD=34 FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=CxMa:"M1,2[1.234567890123456789012345678901234i-0,2i-Infinity]":∠DEG
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=CxMa:"M1,2[-1.234567890123456789012345678901234i0,-2iInfinity]"

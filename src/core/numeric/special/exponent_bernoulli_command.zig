@@ -1,6 +1,7 @@
 const runtime = @import("../command_wrappers/runtime.zig");
 
 const no_register = @as(runtime.calcRegister_t, -1);
+const TMP_STR_LENGTH: i32 = 2560; // defines.h
 
 fn getExponent(result: *i32) bool {
     var x_value: runtime.real_t = undefined;
@@ -37,14 +38,27 @@ fn exptReal() callconv(.c) void {
     runtime.convertRealToResultRegister(&x_value, runtime.REGISTER_X, runtime.amNone);
 }
 
+// The decimal exponent of a long integer is one less than its digit count,
+// read off its decimal rendering so that no width limit truncates it.
 fn exptLonI() callconv(.c) void {
-    var exponent: i32 = undefined;
+    var lg_int: runtime.longInteger_t = undefined;
 
-    if (!getExponent(&exponent)) {
+    // The reader initialises its value on every path, refusals included, so the
+    // clear has to cover the failure branch too.
+    defer runtime.__gmpz_clear(&lg_int[0]);
+
+    if (!runtime.getRegisterAsLongInt(runtime.REGISTER_X, &lg_int[0], null)) {
         return;
     }
 
-    runtime.z47_math_wrappers_build_sign_result(exponent);
+    runtime.longIntegerToAllocatedString(&lg_int[0], runtime.tmpString, TMP_STR_LENGTH);
+    var digits: i32 = 0;
+    while (runtime.tmpString[@intCast(digits)] != 0) : (digits += 1) {}
+    if (runtime.tmpString[0] == '-') {
+        digits -= 1;
+    }
+    runtime.__gmpz_set_si(&lg_int[0], digits - 1);
+    runtime.convertLongIntegerToLongIntegerRegister(&lg_int[0], runtime.REGISTER_X);
 }
 
 fn bnCommon(bnstar: bool) void {
@@ -62,10 +76,9 @@ fn bnCommon(bnstar: bool) void {
     runtime.WP34S_Bernoulli(&x_value, &result, bnstar, &runtime.ctxtReal39);
     if (runtime.realIsNaN(&result)) {
         runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);
-        runtime.moreInfoOnError("In function fnBn:", if (bnstar) "k must be a non-negative integer" else "k must be a positive integer", null, null);
+        runtime.moreInfoOnError("In function fnBn:", "k must be a non-negative integer", null, null);
     } else {
-        runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, runtime.amNone);
-        runtime.convertRealToReal34ResultRegister(&result, runtime.REGISTER_X);
+        runtime.convertRealToResultRegister(&result, runtime.REGISTER_X, runtime.amNone);
     }
 
     runtime.adjustResult(runtime.REGISTER_X, false, true, runtime.REGISTER_X, no_register, no_register);

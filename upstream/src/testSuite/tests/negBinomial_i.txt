@@ -77,12 +77,16 @@ Out: EC=24 FL_ASLIFT=0 RX=Stri:"String test"
 ;=======================================
 ; negBinomialI(Real Matrix) --> Error24
 ;=======================================
+In:  FL_ASLIFT=0 RP=Real:"0.5" RN=Real:"5" RX=ReMa:"M1,2[0.1,0.5]"
+Out: EC=24 FL_ASLIFT=0 RX=ReMa:"M1,2[0.1,0.5]"
 
 
 
 ;=======================================
 ; negBinomialI(Complex Matrix) --> Error24
 ;=======================================
+In:  FL_ASLIFT=0 RP=Real:"0.5" RN=Real:"5" RX=CxMa:"M1,1[0.1i0.5]"
+Out: EC=24 FL_ASLIFT=0 RX=CxMa:"M1,1[0.1i0.5]"
 
 
 
@@ -139,3 +143,50 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.9" RX=Real:"73"
 ;=======================================
 ; negBinomialI(Complex) --> Error24
 ;=======================================
+
+; Adjacent tail values determine the discrete result.
+Func: fnNegBinomialI
+In:  RP=Real:"0.5" RN=Real:"1000000" RX=Real:"1e-34"
+Out: EC=0 RX=Real:"982770"
+
+Func: fnNegBinomialI
+In:  RP=Real:"0" RN=Real:"5" RX=Real:"0.5"
+Out: EC=0 RX=Real:"0"
+
+; For r=1 the inverse follows the geometric closed form.
+Func: fnNegBinomialI
+In:  RP=Real:"0.9999999999999999999999999999999999" RN=Real:"1" RX=Real:"0.5"
+Out: EC=0 RX=Real:"6931471805599453094172321214581765"
+
+; The Newton estimate stops at 0, about 1E33 below the quantile.
+Func: fnNegBinomialI
+In:  RP=Real:"0.9999999999999999999999999999999999" RN=Real:"1" RX=Real:"0.1"
+Out: EC=0 RX=Real:"1053605156578263012275009808393127"
+
+; The p51 CDF is below the target although its p39 image equals it.
+Func: fnNegBinomialI
+In:  RP=Real:"0.1730308614747440923815211764011360" RN=Real:"1" RX=Real:"0.9700603209773079206557417474640028"
+Out: EC=0 RX=Real:"2"
+
+; L(0) = (1 - p)^r equals the target exactly, and the CDF can come out a few units of its last digits below it. For p = 0.8 and r = 9, L(24)
+; is the target and its CDF comes out 3.6E-46 of it below.
+Func: fnNegBinomialI
+In:  RP=Real:"0.9999999999999999999999999999999999" RN=Real:"1" RX=Real:"1e-34"
+Out: EC=0 RX=Real:"0"
+
+Func: fnNegBinomialI
+In:  RP=Real:"0.8" RN=Real:"9" RX=Real:"0.2000363766291974244368075718656"
+Out: EC=0 RX=Real:"24"
+
+; The public inverse requires a strict interior probability.
+Func: fnNegBinomialI
+In:  FL_SPCRES=0 RP=Real:"0.5" RN=Real:"5" RX=Real:"0"
+Out: EC=1 RX=Real:"0"
+
+Func: fnNegBinomialI
+In:  FL_SPCRES=1 RP=Real:"0.5" RN=Real:"5" RX=Real:"1"
+Out: EC=0 RX=Real:"NaN"
+
+Func: fnNegBinomialI
+In:  FL_SPCRES=1 RP=Real:"NaN" RN=Real:"5" RX=Real:"0.5"
+Out: EC=0 RX=Real:"NaN"

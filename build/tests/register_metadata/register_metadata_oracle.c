@@ -67,6 +67,7 @@
 #define getRegParam oracle_getRegParam
 #define clampShortIntegerRegistersToWordSize oracle_clampShortIntegerRegistersToWordSize
 #define adjustResult oracle_adjustResult
+#define roundReal34ResultToSignificantDigits oracle_roundReal34ResultToSignificantDigits
 #define saveLastX oracle_saveLastX
 
 #define fnClearRegisters oracle_fnClearRegisters

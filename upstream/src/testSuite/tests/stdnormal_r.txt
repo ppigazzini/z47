@@ -103,3 +103,25 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-3" RX=Real:"0.9986501019683699054733
 ;=======================================
 ; stdNormalR(Complex) --> Error24
 ;=======================================
+
+; The upper tail retains the independently computed decimal128 value.
+Func: fnStdNormalR
+In:  RMODE=0 RZ=Real:"1e6144" RY=Real:"9.077058851995127926698719382662445118441181383752610526150917754008328399200751964678473986476250415e-4535" RX=Real:"144.4584761649631244527874416949974"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+; A finite upper tail remains positive under rounding away from zero.
+Func: fnStdNormalR
+In:  RMODE=3 RX=Real:"1e100"
+Out: EC=0 RX=Real:"1e-6176"
+
+Func: fnStdNormalR
+In:  RMODE=0 FL_SPCRES=1 RX=Real:"-inf"
+Out: EC=0 RX=Real:"1"
+
+Func: fnStdNormalR
+In:  FL_SPCRES=0 RX=ReMa:"M1,2[0,1]"
+Out: EC=24 RX=ReMa:"M1,2[0,1]"

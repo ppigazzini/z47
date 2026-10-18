@@ -129,7 +129,7 @@ In:  WS=64 FL_CPXRES=0 FL_ASLIFT=1 RY=Real:"54321.1234" RX=Real:"15.12345"
 Out: EC=0  FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"15.12345" RX=Real:"2.9792060544124469857572011872261581212833961986499e-61"
 
 In:  WS=64 FL_CPXRES=0 FL_ASLIFT=1 RY=Real:"654321.1234" RX=Real:"15.12345"
-Out: EC=8  FL_CPXRES=0 FL_ASLIFT=1 RY=Real:"654321.1234" RX=Real:"15.12345"
+Out: EC=0  FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"15.12345" RX=Real:"1.346241433669422832130922754637401e-77"
 
 In:  WS=64 FL_CPXRES=0 FL_ASLIFT=1 RY=Real:"-50.1234" RX=Real:"15.0"
 Out: EC=24  FL_CPXRES=0 FL_ASLIFT=1 RY=Real:"-50.1234" RX=Real:"15.0"
@@ -203,3 +203,40 @@ Out: EC=0  FL_CPXRES=1 FL_ASLIFT=1 RL=LonI:"7" RX=Cplx:"-0.000567308920335240049
 ;=======================================
 ; sinc(Complex Matrix, real/int/complex) -> Complex Matrix
 ;=======================================
+
+
+;=======================================
+; Stable log-domain evaluation
+;=======================================
+; Independent 1024-bit MPFR value. Scaling the subtraction exposes digit 34.
+Func: fnBeta
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RT=Real:"1e150" RZ=Real:"1.346241433669422832130922754637401e-77" RY=Real:"654321.1234" RX=Real:"15.12345"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+; Independent 2048-bit Spouge value; the former Gamma quotient exceeded the internal exponent range.
+Func: fnBeta
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RT=Real:"1e150" RZ=Cplx:"-7.354420552102439065271429512376631e-76 i -5.669032227361535809006680407968134e-76" RY=Cplx:"1e100 i 2" RX=Cplx:"0.75 i 0.5"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+; Elementwise real and complex routes use the same scalar calculations.
+Func: fnBeta
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RY=ReMa:"M1,2[0.6180339887498948482045868343656381,1e6144]" RX=ReMa:"M1,2[2,1]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,2[2,1]" RX=ReMa:"M1,2[1,1e-6144]"
+
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RY=Cplx:"1e100 i 2" RX=CxMa:"M1,1[0.75i0.5]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M1,1[0.75i0.5]" RX=CxMa:"M1,1[-7.354420552102439065271429512376631e-76i-5.669032227361535809006680407968134e-76]"
+
+; Positive infinity has the limiting value zero only when special results are enabled.
+In:  RMODE=0 FL_SPCRES=0 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"2" RX=Real:"inf"
+Out: EC=8 FL_SPCRES=0 FL_ASLIFT=0 RY=Real:"2" RX=Real:"inf"
+
+In:  RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"2" RX=Real:"inf"
+Out: EC=0 FL_SPCRES=1 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"0"

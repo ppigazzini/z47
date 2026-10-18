@@ -42,8 +42,80 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1.123123" RX=Real:"1.4799396848808398
 In:  AM=DEG FL_ASLIFT=1 FL_CPXRES=0 RX=Real:"1.5"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1.5" RX=Real:"3.3406775427983110033208126690376887603563221997771"
 
+; Stable evaluation near zero and a digit-34 finite check.
+Func: fnInvGd
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Real:"0.3046039744017041037930674677669158" RX=Real:"0.3"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnInvGd
+In:  RMODE=1 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Real:"0.3046039744017041037930674677669158" RX=Real:"0.3"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnInvGd
+In:  RMODE=2 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Real:"0.3046039744017041037930674677669158" RX=Real:"0.3"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnInvGd
+In:  RMODE=3 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Real:"0.3046039744017041037930674677669158" RX=Real:"0.3"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnInvGd
+In:  RMODE=4 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Real:"0.3046039744017041037930674677669157" RX=Real:"0.3"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnInvGd
+In:  RMODE=5 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Real:"0.3046039744017041037930674677669158" RX=Real:"0.3"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnInvGd
+In:  RMODE=6 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Real:"0.3046039744017041037930674677669157" RX=Real:"0.3"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnInvGd
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e140" RY=Real:"1e-100" RX=Real:"1e-100"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnInvGd
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-0"
+Out: EC=0 RX=Real:"-0"
+
 In:  AM=DEG FL_ASLIFT=1 FL_CPXRES=0 RX=Real:"2.0"
 Out: EC=1 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"2.0"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"NaN"
+Out: EC=0 FL_ASLIFT=1 FL_CPXRES=0 RL=Real:"NaN" RX=Real:"NaN"
 
 ;=======================================
 ; invGd(Complex) --> Complex
@@ -71,3 +143,134 @@ Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"10.123 i -1.123" RX=Cplx:"-0.39798286
 
 In:  AM=DEG FL_ASLIFT=1 FL_CPXRES=1 RX=Cplx:"-10.123 i -1.123"
 Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"-10.123 i -1.123" RX=Cplx:"0.3979828675720699724232611646688464390241930297808 i -2.0792514876826946716043489109378118158985532055787"
+
+; Infinite imaginary components approach the signed logarithmic axis value.
+In:  AM=RAD RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=1 RX=Cplx:"10.1 i inf"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"10.1 i inf" RX=Cplx:"-0 i 1.570796326794896619231321691639751"
+
+In:  AM=RAD RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=1 RX=Cplx:"10.1 i -inf"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"10.1 i -inf" RX=Cplx:"-0 i -1.570796326794896619231321691639751"
+
+; Both tiny rectangular components must survive the complex formula.
+Func: fnInvGd
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=1 RZ=Real:"1e140" RY=Cplx:"1e-100 i 2e-100" RX=Cplx:"1e-100 i 2e-100"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+; The odd-pi neighbourhood uses the reflected local identity and retains the
+; small real displacement on both sides of the logarithmic cut.
+Func: fnInvGd
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=1 RZ=Real:"1e70" RY=Cplx:"-1.158028306006248941790250554076922e-34 i 3.141592653589793238462643383279503" RX=Cplx:"3.141592653589793238462643383279503 i 0"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+Func: fnInvGd
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=1 RZ=Real:"1e70" RY=Cplx:"-1.158028306006248941790250554076922e-34 i -3.141592653589793238462643383279503" RX=Cplx:"3.141592653589793238462643383279503 i -0"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+; Matrix elements use the corresponding scalar and complex routes.
+Func: fnInvGd
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RX=ReMa:"M1,3[1e-100,-0,0.3]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,3[1e-100,-0,0.3]" RX=ReMa:"M1,3[1e-100,-0,0.3046039744017041037930674677669158]"
+
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=1 RX=CxMa:"M1,2[1e-100i2e-100,0.3i0.4]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M1,2[1e-100i2e-100,0.3i0.4]" RX=CxMa:"M1,2[1e-100i2e-100,0.2804898565611650486115781367889805i0.4060606325061216730297213862272581]"
+
+; Independently evaluated ordinary complex value through digit 34.
+Func: fnInvGd
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=1 RZ=Real:"1e40" RY=Cplx:"0.2804898565611650486115781367889805 i 0.4060606325061216730297213862272581" RX=Cplx:"0.3 i 0.4"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+; A large imaginary part keeps the digits of the small real part.
+Func: fnInvGd
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=1 RX=Cplx:"0.5 i 40"
+Out: EC=0 RX=Cplx:"4.073539054049255576463131562276319e-18 i 1.570796326794896611774758469286433"
+
+; The complex continuation has a repeated zero at 2*pi. Preserve the
+; 2.316...e-34 residual of the nearest Real34 value above it.
+Func: fnInvGd
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=1 RZ=Real:"1e70" RY=Cplx:"2.316056612012497883580501108153844e-34 i 0" RX=Cplx:"6.283185307179586476925286766559006 i 0"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+; Direct reduction of a large real component retains the half-angle offset.
+Func: fnInvGd
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=1 RZ=Real:"1e40" RY=Cplx:"-1.070561023278629803527587916664404 i 3.141592653589793238462643383279503" RX=Cplx:"1e50 i 0"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+Func: fnInvGd
+In:  RMODE=1 FL_ASLIFT=0 FL_CPXRES=1 RZ=Real:"1e40" RY=Cplx:"-1.070561023278629803527587916664404 i 3.141592653589793238462643383279503" RX=Cplx:"1e50 i 0"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+Func: fnInvGd
+In:  RMODE=2 FL_ASLIFT=0 FL_CPXRES=1 RZ=Real:"1e40" RY=Cplx:"-1.070561023278629803527587916664404 i 3.141592653589793238462643383279503" RX=Cplx:"1e50 i 0"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+Func: fnInvGd
+In:  RMODE=3 FL_ASLIFT=0 FL_CPXRES=1 RZ=Real:"1e40" RY=Cplx:"-1.070561023278629803527587916664404 i 3.141592653589793238462643383279503" RX=Cplx:"1e50 i 0"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+Func: fnInvGd
+In:  RMODE=4 FL_ASLIFT=0 FL_CPXRES=1 RZ=Real:"1e40" RY=Cplx:"-1.070561023278629803527587916664403 i 3.141592653589793238462643383279502" RX=Cplx:"1e50 i 0"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+Func: fnInvGd
+In:  RMODE=5 FL_ASLIFT=0 FL_CPXRES=1 RZ=Real:"1e40" RY=Cplx:"-1.070561023278629803527587916664403 i 3.141592653589793238462643383279503" RX=Cplx:"1e50 i 0"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+Func: fnInvGd
+In:  RMODE=6 FL_ASLIFT=0 FL_CPXRES=1 RZ=Real:"1e40" RY=Cplx:"-1.070561023278629803527587916664404 i 3.141592653589793238462643383279502" RX=Cplx:"1e50 i 0"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"-0 i -0"
+
+Func: fnInvGd
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=1 RZ=Real:"1e40" RY=Cplx:"-1.070561023278629803527587916664404 i -3.141592653589793238462643383279503" RX=Cplx:"1e50 i -0"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"

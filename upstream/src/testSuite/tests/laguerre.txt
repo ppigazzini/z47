@@ -146,3 +146,12 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"-0.625"
 ;=======================================
 ; Ln(Complex) --> Error24
 ;=======================================
+
+; A decimal128 input adjacent to a degree-20 zero requires 75-digit recurrence work.
+Func: fnLaguerre
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RT=Real:"1e70" RZ=Real:"-2.587819033777276095566174956019747e-35" RY=Real:"20" RX=Real:"0.9165821024832735646677162770741832"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"

@@ -182,27 +182,33 @@ const firmware_common_link_flags: []const []const u8 = &.{
 // the default block, then the DMCP_PACKAGE1..3 / DMCP_PACKAGE4_NOOPT block of the
 // selected package, then the block common to packages 1-4, which runs after the
 // package blocks and overrides them, then the dependency fixups after
-// `#endif // DMCP_BUILD`. Preprocessing defines.h for each package gives:
+// `#endif // DMCP_BUILD`. Preprocessing defines.h for each package
+// (-DDMCP_BUILD -DOLD_HW -DTWO_FILE_PGM -DDMCP_PACKAGE=<n> -DDMCP_PACKAGE<n>,
+// package 4 with -DDMCP_PACKAGE4_NOOPT) gives:
 //
 //   option                 pkg 1  pkg 2  pkg 3  pkg 4
-//   ELLIPTIC                 -      Y      Y      -
-//   BESSEL, ORTHO            Y      Y      Y      -
+//   ELLIPTIC                 -      Y      -      -
+//   BESSEL, ORTHO            Y      Y      -      -
 //   DISTRIBUTIONS            Y      Y      Y      -
-//   DIST_NORMAL, DIST_B      Y      Y      Y      -
-//   DIST_C, DIST_D           Y      -      Y      -
-//   TVM_FORMULAS             Y      Y      -      -
-//   TVM_NEWTON, TVM_AMORT    Y      Y      Y      -
-//   ELEC, EIGEN, SLVP_POLY   Y      Y      Y      -
-//   STRUCTURED_PGM           Y      Y      Y      -
-//   IR_PRINTING              Y      Y      -      Y
+//   DIST_NORMAL              Y      Y      Y      -
+//   DIST_B                   Y      Y      -      -
+//   DIST_C, DIST_D           Y      -      -      -
+//   TVM_FORMULAS, TVM_NEWTON -      -      Y      -
+//   TVM_AMORT                -      -      -      -
+//   ELEC, EIGEN, SLVP_POLY   -      -      Y      -
+//   STRUCTURED_PGM           Y      Y      Y      Y
+//   IR_PRINTING              -      Y      Y      Y
 //
 // Every other option is a property of the board, not of the package: the
-// common block drops VECTOR, XFN_1000, ALGDEP, MX_SHOW, CUBIC_159 and EIGEN_159
-// from all four, and keeps the rest of the host set, ATEXT, ATEXT_FONTS,
-// INFSUMS, LP_DP_TIMING, EDIT_X and EDIT_PEM among them. A null package is a
-// TWO_FILE_PGM build with no DMCP_PACKAGE: no package block runs, so it keeps
-// every option in the table. DMCP5 is NEW_HW, never enters the TWO_FILE_PGM
-// block, and goes through none of this.
+// common block drops VECTOR, XFN_1000, ALGDEP, MX_SHOW, CUBIC_159, SQUARE_159 and
+// EIGEN_159 from all four, and keeps the rest of the host set, ATEXT,
+// ATEXT_FONTS, INFSUMS, LP_DP_TIMING, EDIT_X and EDIT_PEM among them. The
+// per-distribution gates OPTION_DIST_NORML, _T, _LOGIS, _CAUCH, _WEIBL, _EXPON,
+// _CHI2, _BINOM, _F, _GEOM, _HYPER, _NBIN, _POISS, _PRTO, _GEV and _UNFM follow
+// the group that defines them, so a package takes a whole group or none of it. A
+// null package is a TWO_FILE_PGM build with no DMCP_PACKAGE: no package block
+// runs, so it keeps every option in the table. DMCP5 is NEW_HW, never enters the
+// TWO_FILE_PGM block, and goes through none of this.
 const Dm42Package = struct {
     elliptic: bool = true,
     bessel: bool = true,
@@ -225,9 +231,35 @@ const Dm42Package = struct {
 // What each package block drops from the table above.
 fn dm42Package(dmcp_package: ?u8) Dm42Package {
     return switch (dmcp_package orelse return .{}) {
-        1 => .{ .elliptic = false },
-        2 => .{ .dist_c = false, .dist_d = false },
-        3 => .{ .tvm_formulas = false, .ir_printing = false },
+        1 => .{
+            .elliptic = false,
+            .tvm_formulas = false,
+            .tvm_newton = false,
+            .tvm_amort = false,
+            .elec = false,
+            .eigen = false,
+            .slvp_poly = false,
+            .ir_printing = false,
+        },
+        2 => .{
+            .dist_c = false,
+            .dist_d = false,
+            .tvm_formulas = false,
+            .tvm_newton = false,
+            .tvm_amort = false,
+            .elec = false,
+            .eigen = false,
+            .slvp_poly = false,
+        },
+        3 => .{
+            .elliptic = false,
+            .bessel = false,
+            .ortho = false,
+            .dist_b = false,
+            .dist_c = false,
+            .dist_d = false,
+            .tvm_amort = false,
+        },
         4 => .{
             .elliptic = false,
             .bessel = false,
@@ -243,10 +275,30 @@ fn dm42Package(dmcp_package: ?u8) Dm42Package {
             .elec = false,
             .eigen = false,
             .slvp_poly = false,
-            .structured_pgm = false,
         },
         else => .{},
     };
+}
+
+// Write the sixteen per-distribution gates from the four groups into an options
+// value that carries them; the frontier and the mathematics option structs both do.
+fn applyDistributionGates(opts: anytype, pkg: Dm42Package) void {
+    opts.option_dist_norml = pkg.dist_normal;
+    opts.option_dist_t = pkg.dist_b;
+    opts.option_dist_logis = pkg.dist_b;
+    opts.option_dist_cauch = pkg.dist_b;
+    opts.option_dist_weibl = pkg.dist_b;
+    opts.option_dist_expon = pkg.dist_b;
+    opts.option_dist_chi2 = pkg.dist_b;
+    opts.option_dist_binom = pkg.dist_c;
+    opts.option_dist_f = pkg.dist_c;
+    opts.option_dist_geom = pkg.dist_c;
+    opts.option_dist_hyper = pkg.dist_c;
+    opts.option_dist_nbin = pkg.dist_c;
+    opts.option_dist_poiss = pkg.dist_c;
+    opts.option_dist_prto = pkg.dist_d;
+    opts.option_dist_gev = pkg.dist_d;
+    opts.option_dist_unfm = pkg.dist_d;
 }
 
 // Apply the DM42 board and package OPTION_* to a frontier build options value.
@@ -270,6 +322,7 @@ fn frontierDistributionStrip(base: frontier.RuntimeObjectOptions, dmcp_package: 
     opts.strip_17b = !pkg.dist_b;
     opts.strip_17 = !pkg.dist_c;
     opts.strip_17c = !pkg.dist_d;
+    applyDistributionGates(&opts, pkg);
     // !OPTION_DISTRIBUTIONS drops the DISTR entry from menu_PROB.
     opts.strip_15 = !pkg.distributions;
     // OPTION_HP35 stays defined for every TWO_FILE_PGM package, so menu_Dev keeps
@@ -306,6 +359,7 @@ fn mathematicsPackageOptions(base: math_command_wrappers.RuntimeObjectOptions, d
     opts.option_bessel = pkg.bessel;
     opts.option_ortho = pkg.ortho;
     opts.option_dist_normal = pkg.dist_normal;
+    applyDistributionGates(&opts, pkg);
     opts.option_eigen = pkg.eigen;
     opts.option_slvp_poly = pkg.slvp_poly;
     return opts;

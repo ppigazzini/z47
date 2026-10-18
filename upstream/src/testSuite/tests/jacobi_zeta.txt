@@ -298,3 +298,39 @@ Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"0i-1" RX=Cplx:"0.63197494645643702910
 
 In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"-1" RX=Cplx:"1i-1"
 Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"1i-1" RX=Cplx:"-0.5445643247639837058164436017377733i-0.3718755315928969924923304235571727"
+
+
+; Stable forms for small m and for an amplitude adjacent to pi/2.
+In: AM=RAD RMODE=0 RT=Real:"1e80" RZ=Real:"2.103677462019741266631255804075747e-41" RY=Real:"1e-40" RX=Real:"0.5"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+Func: fnJacobiZeta
+In: AM=RAD RMODE=0 RT=Real:"1e70" RZ=Real:"1.428464852395632227277347797238903e-34" RY=Real:"0.5" RX=Real:"1.570796326794896619231321691639751"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+Func: fnJacobiZeta
+
+; The real m>2 continuation and a near-axis complex argument.
+In: AM=RAD FL_CPXRES=1 RY=Real:"3" RX=Real:"0.5"
+Out: EC=0 RX=Cplx:"0.6096421316723956748410418670173326i-0.3928244165291572799316043776431849"
+In: AM=RAD RY=Real:"0.5" RX=Cplx:"1e-34i1"
+Out: EC=0 RX=Cplx:"7.399380201167029561964649026358225e-35i0.4232129027301335453521449869652475"
+
+; The p75 AGM history must cover the full decimal128 exponent range.
+In: AM=RAD RT=Real:"1e-2966" RZ=Real:"-8.773849755838889515095876946788550e2999" RY=Real:"-1e6000" RX=Real:"0.5"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnJacobiZeta
+; An infinite amplitude gives NaN, as Z repeats with period pi in phi.
+In: AM=RAD FL_SPCRES=1 FL_CPXRES=1 RY=Real:"0.5" RX=Real:"inf"
+Out: EC=0 RX=Real:"NaN"

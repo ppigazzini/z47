@@ -1,14 +1,17 @@
 const abi = @import("abi");
-const std = @import("std");
 const build_options = @import("math_command_wrappers_build_options");
-const rectangular_to_polar_owned = @import("transform/rectangular_to_polar.zig");
+const comparison_reals_owned = @import("compare/comparison_reals.zig");
 const runtime = @import("command_wrappers/runtime.zig");
 
-fn copyReal(destination: *runtime.real_t, source: *const runtime.real_t) void {
+const real_t = runtime.real_t;
+const cplx_t = runtime.cplx_t;
+const realContext_t = runtime.realContext_t;
+
+fn copyReal(destination: *real_t, source: *const real_t) void {
     destination.* = source.*;
 }
 
-fn int32ToRealLocal(source: i32, destination: *runtime.real_t) void {
+fn int32ToRealLocal(source: i32, destination: *real_t) void {
     if (source >= 0) {
         runtime.uInt32ToReal(@intCast(source), destination);
         return;
@@ -20,7 +23,7 @@ fn int32ToRealLocal(source: i32, destination: *runtime.real_t) void {
     }
 }
 
-fn setExpLimitResult(x: *const runtime.real_t, result: *runtime.real_t, zero: *const runtime.real_t) void {
+fn setExpLimitResult(x: *const real_t, result: *real_t, zero: *const real_t) void {
     if (runtime.realIsNegative(x)) {
         copyReal(result, zero);
     } else {
@@ -29,9 +32,9 @@ fn setExpLimitResult(x: *const runtime.real_t, result: *runtime.real_t, zero: *c
 }
 
 fn realExpLimitCheck(
-    x: *const runtime.real_t,
-    result: *runtime.real_t,
-    zero: *const runtime.real_t,
+    x: *const real_t,
+    result: *real_t,
+    zero: *const real_t,
 ) bool {
     if (runtime.realIsSpecial(x)) {
         if (runtime.realIsInfinite(x)) {
@@ -51,9 +54,9 @@ fn realExpLimitCheck(
 }
 
 fn realExp(
-    x: *const runtime.real_t,
-    result: *runtime.real_t,
-    real_context: *runtime.realContext_t,
+    x: *const real_t,
+    result: *real_t,
+    real_context: *realContext_t,
 ) void {
     if (realExpLimitCheck(x, result, runtime.z47_math_wrappers_const_0())) {
         _ = runtime.decNumberExp(result, x, real_context);
@@ -61,41 +64,41 @@ fn realExp(
 }
 
 fn realPower10(
-    x: *const runtime.real_t,
-    res: *runtime.real_t,
-    real_context: *runtime.realContext_t,
+    x: *const real_t,
+    res: *real_t,
+    real_context: *realContext_t,
 ) void {
     runtime.realMultiply(x, runtime.z47_math_wrappers_const_ln10(), res, real_context);
     realExp(res, res, real_context);
 }
 
-fn realCompareLessEqual(lhs: *const runtime.real_t, rhs: *const runtime.real_t) bool {
+fn realCompareLessEqual(lhs: *const real_t, rhs: *const real_t) bool {
     return !runtime.realCompareLessThan(rhs, lhs);
 }
 
-fn realCompareGreaterThan(lhs: *const runtime.real_t, rhs: *const runtime.real_t) bool {
+fn realCompareGreaterThan(lhs: *const real_t, rhs: *const real_t) bool {
     return runtime.realCompareLessThan(rhs, lhs);
 }
 
 pub fn lnRealValue(
-    x_in: *const runtime.real_t,
-    res: *runtime.real_t,
-    real_context: *runtime.realContext_t,
+    x_in: *const real_t,
+    res: *real_t,
+    real_context: *realContext_t,
 ) void {
     if (build_options.use_fake_wp34s_model) {
         runtime.WP34S_Ln(x_in, res, real_context);
         return;
     }
 
-    var z: runtime.real_t = undefined;
-    var t: runtime.real_t = undefined;
-    var f: runtime.real_t = undefined;
-    var n: runtime.real_t = undefined;
-    var m: runtime.real_t = undefined;
-    var i: runtime.real_t = undefined;
-    var v: runtime.real_t = undefined;
-    var w: runtime.real_t = undefined;
-    var e: runtime.real_t = undefined;
+    var z: real_t = undefined;
+    var t: real_t = undefined;
+    var f: real_t = undefined;
+    var n: real_t = undefined;
+    var m: real_t = undefined;
+    var i: real_t = undefined;
+    var v: real_t = undefined;
+    var w: real_t = undefined;
+    var e: real_t = undefined;
     var exponent_adjust: i32 = 0;
 
     if (runtime.realIsSpecial(x_in)) {
@@ -166,19 +169,48 @@ pub fn lnRealValue(
     runtime.realAdd(res, &w, res, real_context);
 }
 
+/// ln z in the caller's context: the polar magnitude and angle land in ln, and
+/// the magnitude is replaced by its logarithm in place.
 pub fn lnComplex(
-    real: *const runtime.real_t,
-    imag: *const runtime.real_t,
-    ln_real: *runtime.real_t,
-    ln_imag: *runtime.real_t,
-    real_context: *runtime.realContext_t,
+    z: *const cplx_t,
+    ln: *cplx_t,
+    real_context: *realContext_t,
 ) void {
-    if (runtime.realIsZero(real) and runtime.realIsZero(imag)) {
-        copyReal(ln_real, runtime.z47_math_wrappers_const_minus_infinity());
-        runtime.realSetZero(ln_imag);
+    if (runtime.realIsZero(&z.Real) and runtime.realIsZero(&z.Imag)) {
+        copyReal(&ln.Real, runtime.z47_math_wrappers_const_minus_infinity());
+        runtime.realSetZero(&ln.Imag);
         return;
     }
 
-    rectangular_to_polar_owned.rectangularToPolarReal(real, imag, ln_real, ln_imag, real_context);
-    lnRealValue(ln_real, ln_real, real_context);
+    runtime.realRectangularToPolar(z, ln.mag(), ln.arg(), real_context);
+    lnRealValue(ln.mag(), &ln.Real, real_context);
+}
+
+/// ln z for a result register: 39 digits, except that a modulus between 1/2
+/// and 2 takes ln(1 + (|z|^2 - 1)) / 2 at 75 digits, where the direct logarithm
+/// of a modulus near one loses the digits the subtraction cancels.
+pub fn lnComplexDirect(z: *const cplx_t, ln: *cplx_t) void {
+    var w: cplx_t = undefined;
+
+    copyReal(&w.Real, &z.Real);
+    copyReal(&w.Imag, &z.Imag);
+    runtime.realRectangularToPolar(&w, ln.mag(), ln.arg(), &runtime.ctxtReal39);
+    if (runtime.realCompareGreaterThan(ln.mag(), runtime.z47_math_wrappers_const_1on2()) and runtime.realCompareLessThan(ln.mag(), runtime.z47_math_wrappers_const_2())) {
+        var near_unit_context: realContext_t = runtime.ctxtReal75;
+        if (comparison_reals_owned.realCompareAbsLessThan(&w.Real, &w.Imag)) {
+            runtime.realSubtract(&w.Imag, runtime.z47_math_wrappers_const_1(), &ln.Real, &near_unit_context);
+            runtime.realAdd(&w.Imag, runtime.z47_math_wrappers_const_1(), &w.Imag, &near_unit_context);
+            runtime.realMultiply(&ln.Real, &w.Imag, &ln.Real, &near_unit_context);
+            runtime.realFMA(&w.Real, &w.Real, &ln.Real, &ln.Real, &near_unit_context);
+        } else {
+            runtime.realSubtract(&w.Real, runtime.z47_math_wrappers_const_1(), &ln.Real, &near_unit_context);
+            runtime.realAdd(&w.Real, runtime.z47_math_wrappers_const_1(), &w.Real, &near_unit_context);
+            runtime.realMultiply(&ln.Real, &w.Real, &ln.Real, &near_unit_context);
+            runtime.realFMA(&w.Imag, &w.Imag, &ln.Real, &ln.Real, &near_unit_context);
+        }
+        runtime.WP34S_Ln1P(&ln.Real, &ln.Real, &near_unit_context);
+        runtime.realMultiply(&ln.Real, runtime.z47_math_wrappers_const_1on2(), &ln.Real, &near_unit_context);
+    } else {
+        lnRealValue(ln.mag(), &ln.Real, &runtime.ctxtReal39);
+    }
 }

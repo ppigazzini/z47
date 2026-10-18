@@ -2,7 +2,8 @@
 //
 // Zig owner for src/c47/mathematics/addition.c: the full ADD dispatch matrix
 // (`addition`, consumed by store.c, recall.c and xeqm.c) plus every cell
-// function and the addComplex helper. Faithful, line-by-line port of the C;
+// function, the shared add/subtract bodies the subtraction and multiplication
+// owners call, and the addComplex helpers. Faithful, line-by-line port of the C;
 // upstream symbol names are kept at the export boundary. The legacy C fnAdd
 // body lives on as z47_math_wrappers_legacy_fnAdd, the fallback the Zig
 // fnAdd wrapper uses for the string/error cells not handled natively.
@@ -16,12 +17,31 @@ const std = @import("std");
 const abi = @import("abi");
 const runtime = @import("../command_wrappers/runtime.zig");
 
-// trimLeadingSpace (stringFuncs owner) — master fd83b4a4 strips the leading
-// FRONTSPACE from a formatted number before appending it to a string.
+// trimLeadingSpace (stringFuncs owner) strips the leading FRONTSPACE from a
+// formatted number before appending it to a string.
 extern fn trimLeadingSpace(stringToTrim: [*c]u8) void;
 
 const NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS = 10;
 const CellFn = *const fn () callconv(.c) void;
+
+// A pair of routines that is the same under addition and under subtraction
+// shares one body, which takes the operation. The long integer bodies take the
+// two conversions as well, so one body serves the long and short integer pairs
+// in both orders.
+pub const longIntegerOp_t = *const fn (op_y: *const runtime.mpz_struct, op_x: *const runtime.mpz_struct, result: *runtime.mpz_struct) callconv(.c) void;
+pub const registerToLongInteger_t = *const fn (regist: runtime.calcRegister_t, lg_int: *runtime.mpz_struct) callconv(.c) void;
+// The long integer and real34 pairs of add, subtract and multiply share two
+// bodies, one per operand order, each taking the fast path and the real
+// operation. Multiplication commutes, so its fast path has no use for the
+// operand order.
+pub const longIntegerReal34Op_t = *const fn (lon_i: runtime.calcRegister_t, r: *const runtime.real34_t, integer_first: bool, res: *runtime.real34_t) callconv(.c) bool;
+pub const real34Op_t = runtime.real34Op_t;
+pub const realOp_t = runtime.realOp_t;
+
+// addition.c guards addComplex159 with OPTION_CUBIC_159 || OPTION_SQUARE_159 ||
+// OPTION_EIGEN_159. OPTION_SQUARE_159 is #undef'd at the top of defines.h and
+// never defined again in any configuration, so the disjunction is the other two.
+const arm_159 = runtime.option_cubic_159 or runtime.option_eigen_159;
 
 // defines.h values (verified against src/c47/defines.h / items.h / display.h).
 const NOPARAM: u16 = 9876;
@@ -33,7 +53,8 @@ const LIMITEXP = true;
 const FRONTSPACE = true;
 const FULLIRFRAC: c_int = 3;
 const no_base_override: u8 = 0;
-const MAX_NUMBER_OF_GLYPHS_IN_STRING: i32 = 508;
+// A string register's byte limit: 1019 bytes stored plus a terminator.
+const MAX_STRING_BYTE_LENGTH: i32 = 1020;
 const ERROR_STRING_WOULD_BE_TOO_LONG: u8 = 33;
 const FLAG_FRACT: i32 = 0x8007;
 const FLAG_POLAR: i32 = 0x8006;
@@ -108,6 +129,19 @@ fn const34_86400() *align(1) const runtime.real34_t {
     return abi.constants.const34_86400();
 }
 
+// One matrix element plus a long integer: exact where the element is finite,
+// otherwise the 39-digit real sum rounded to the significant digits.
+fn addLongIntegerMatrixElement(integer_register: runtime.calcRegister_t, integer: *const runtime.real_t, element: *runtime.real34_t) void {
+    if (!runtime.addSubtractLongIntegerReal34(integer_register, element, true, false, element)) {
+        var value: runtime.real_t = undefined;
+
+        runtime.real34ToReal(element, &value);
+        runtime.realAdd(integer, &value, &value, &runtime.ctxtReal39);
+        runtime.roundToSignificantDigits(&value, &value, significantDigitsOr34(), &runtime.ctxtReal39);
+        runtime.realToReal34(&value, element);
+    }
+}
+
 /// Data type error in addition (C: addError under EXTRA_INFO_ON_CALC_ERROR,
 /// typeError otherwise; message reporting follows the established owner
 /// convention, moreInfoOnError is a no-op away from the PC simulator).
@@ -157,15 +191,16 @@ pub export fn addRegYStri() callconv(.c) void {
 
 // long integer + ...
 
-/// Y(long integer) + X(long integer) ==> X(long integer)
-pub export fn addLonILonI() callconv(.c) void {
+/// Y(integer) op X(integer) ==> X(long integer), the operands read by the two
+/// conversions and combined by the overflow-checked long integer operation.
+pub export fn addSubIntInt(op: longIntegerOp_t, cvt_y: registerToLongInteger_t, cvt_x: registerToLongInteger_t) callconv(.c) void {
     var y: runtime.longInteger_t = undefined;
     var x: runtime.longInteger_t = undefined;
 
-    runtime.convertLongIntegerRegisterToLongInteger(runtime.REGISTER_Y, &y[0]);
-    runtime.convertLongIntegerRegisterToLongInteger(runtime.REGISTER_X, &x[0]);
+    cvt_y(runtime.REGISTER_Y, &y[0]);
+    cvt_x(runtime.REGISTER_X, &x[0]);
 
-    runtime.longIntegerAdd(&y[0], &x[0], &x[0]);
+    op(&y[0], &x[0], &x[0]);
 
     runtime.convertLongIntegerToLongIntegerRegister(&x[0], runtime.REGISTER_X);
 
@@ -173,16 +208,25 @@ pub export fn addLonILonI() callconv(.c) void {
     runtime.__gmpz_clear(&x[0]);
 }
 
+/// Y(long integer) + X(long integer) ==> X(long integer)
+pub export fn addLonILonI() callconv(.c) void {
+    addSubIntInt(&runtime.longIntegerAdd, &runtime.convertLongIntegerRegisterToLongInteger, &runtime.convertLongIntegerRegisterToLongInteger);
+}
+
 /// Y(long integer) + X(time) ==> X(time)
 pub export fn addLonITime() callconv(.c) void {
-    runtime.convertLongIntegerRegisterToTimeRegister(runtime.REGISTER_Y, runtime.REGISTER_Y);
-    runtime.real34Add(runtime.registerReal34Ptr(runtime.REGISTER_Y), runtime.registerReal34Ptr(runtime.REGISTER_X), runtime.registerReal34Ptr(runtime.REGISTER_X));
+    addSubTimeLonI(&runtime.real34AddOp, runtime.REGISTER_Y);
+}
+
+/// Y(time) op X(time), the long integer in `lon_i` converted to a time first.
+pub export fn addSubTimeLonI(op: real34Op_t, lon_i: runtime.calcRegister_t) callconv(.c) void {
+    runtime.convertLongIntegerRegisterToTimeRegister(lon_i, lon_i);
+    op(runtime.registerReal34Ptr(runtime.REGISTER_Y), runtime.registerReal34Ptr(runtime.REGISTER_X), runtime.registerReal34Ptr(runtime.REGISTER_X));
 }
 
 /// Y(time) + X(long integer) ==> X(time)
 pub export fn addTimeLonI() callconv(.c) void {
-    runtime.convertLongIntegerRegisterToTimeRegister(runtime.REGISTER_X, runtime.REGISTER_X);
-    runtime.real34Add(runtime.registerReal34Ptr(runtime.REGISTER_Y), runtime.registerReal34Ptr(runtime.REGISTER_X), runtime.registerReal34Ptr(runtime.REGISTER_X));
+    addSubTimeLonI(&runtime.real34AddOp, runtime.REGISTER_X);
 }
 
 /// Y(long integer) + X(date) ==> X(date)
@@ -193,86 +237,110 @@ pub export fn addLonIDate() callconv(.c) void {
     runtime.real34Add(&val, runtime.registerReal34Ptr(runtime.REGISTER_X), runtime.registerReal34Ptr(runtime.REGISTER_X));
 }
 
-/// Y(date) + X(long integer) ==> X(date)
-pub export fn addDateLonI() callconv(.c) void {
+/// Y(date) op X(long integer) ==> X(date), the integer taken as days.
+pub export fn addSubDateLonI(op: real34Op_t) callconv(.c) void {
     var val: runtime.real34_t = undefined;
     runtime.convertLongIntegerRegisterToReal34Register(runtime.REGISTER_X, runtime.REGISTER_X);
     runtime.real34Multiply(runtime.registerReal34Ptr(runtime.REGISTER_X), const34_86400(), &val);
     runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtDate, 0, runtime.amNone);
-    runtime.real34Add(runtime.registerReal34Ptr(runtime.REGISTER_Y), &val, runtime.registerReal34Ptr(runtime.REGISTER_X));
+    op(runtime.registerReal34Ptr(runtime.REGISTER_Y), &val, runtime.registerReal34Ptr(runtime.REGISTER_X));
+}
+
+/// Y(date) + X(long integer) ==> X(date)
+pub export fn addDateLonI() callconv(.c) void {
+    addSubDateLonI(&runtime.real34AddOp);
 }
 
 /// Y(long integer) + X(short integer) ==> X(long integer)
 pub export fn addLonIShoI() callconv(.c) void {
-    var y: runtime.longInteger_t = undefined;
-    var x: runtime.longInteger_t = undefined;
-
-    runtime.convertLongIntegerRegisterToLongInteger(runtime.REGISTER_Y, &y[0]);
-    runtime.convertShortIntegerRegisterToLongInteger(runtime.REGISTER_X, &x[0]);
-
-    runtime.longIntegerAdd(&y[0], &x[0], &x[0]);
-
-    runtime.convertLongIntegerToLongIntegerRegister(&x[0], runtime.REGISTER_X);
-
-    runtime.__gmpz_clear(&y[0]);
-    runtime.__gmpz_clear(&x[0]);
+    addSubIntInt(&runtime.longIntegerAdd, &runtime.convertLongIntegerRegisterToLongInteger, &runtime.convertShortIntegerRegisterToLongInteger);
 }
 
 /// Y(short integer) + X(long integer) ==> X(long integer)
 pub export fn addShoILonI() callconv(.c) void {
-    var y: runtime.longInteger_t = undefined;
-    var x: runtime.longInteger_t = undefined;
+    addSubIntInt(&runtime.longIntegerAdd, &runtime.convertShortIntegerRegisterToLongInteger, &runtime.convertLongIntegerRegisterToLongInteger);
+}
 
-    runtime.convertShortIntegerRegisterToLongInteger(runtime.REGISTER_Y, &y[0]);
-    runtime.convertLongIntegerRegisterToLongInteger(runtime.REGISTER_X, &x[0]);
+/// Y(long integer) op X(real34) ==> X(real34). The fast path works on the long
+/// integer itself and answers false when it does not apply, which falls back on
+/// the real operation at 39 digits.
+pub export fn lonIRealOp(fast: longIntegerReal34Op_t, op: realOp_t) callconv(.c) void {
+    var y: runtime.real_t = undefined;
+    var x: runtime.real_t = undefined;
 
-    runtime.longIntegerAdd(&y[0], &x[0], &x[0]);
+    const x_angular_mode = runtime.getRegisterAngularMode(runtime.REGISTER_X);
 
-    runtime.convertLongIntegerToLongIntegerRegister(&x[0], runtime.REGISTER_X);
+    if (x_angular_mode == runtime.amNone) {
+        if (!fast(runtime.REGISTER_Y, runtime.registerReal34Ptr(runtime.REGISTER_X), true, runtime.registerReal34Ptr(runtime.REGISTER_X))) {
+            runtime.convertLongIntegerRegisterToReal(runtime.REGISTER_Y, &y, &runtime.ctxtReal39);
+            runtime.real34ToReal(runtime.registerReal34Ptr(runtime.REGISTER_X), &x);
+            op(&y, &x, &x, &runtime.ctxtReal39);
+            runtime.convertRealToReal34ResultRegister(&x, runtime.REGISTER_X);
+        }
+    } else {
+        runtime.convertLongIntegerRegisterToReal(runtime.REGISTER_Y, &y, &runtime.ctxtReal39);
+        runtime.real34ToReal(runtime.registerReal34Ptr(runtime.REGISTER_X), &x);
+        runtime.convertAngleFromTo(&x, x_angular_mode, runtime.currentAngularMode, &runtime.ctxtReal39);
+        op(&y, &x, &x, &runtime.ctxtReal39);
+        runtime.convertRealToReal34ResultRegister(&x, runtime.REGISTER_X);
+        runtime.setRegisterAngularMode(runtime.REGISTER_X, runtime.currentAngularMode);
+    }
+}
 
-    runtime.__gmpz_clear(&y[0]);
-    runtime.__gmpz_clear(&x[0]);
+/// Y(real34) op X(long integer) ==> X(real34), the other operand order of
+/// lonIRealOp.
+pub export fn realLonIOp(fast: longIntegerReal34Op_t, op: realOp_t) callconv(.c) void {
+    var y: runtime.real_t = undefined;
+    var x: runtime.real_t = undefined;
+    var result: runtime.real34_t = undefined;
+
+    const y_angular_mode = runtime.getRegisterAngularMode(runtime.REGISTER_Y);
+
+    if (y_angular_mode == runtime.amNone) {
+        if (fast(runtime.REGISTER_X, runtime.registerReal34Ptr(runtime.REGISTER_Y), false, &result)) {
+            runtime.convertReal34ToReal34Register(&result, runtime.REGISTER_X);
+        } else {
+            runtime.real34ToReal(runtime.registerReal34Ptr(runtime.REGISTER_Y), &y);
+            runtime.convertLongIntegerRegisterToReal(runtime.REGISTER_X, &x, &runtime.ctxtReal39);
+            runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, runtime.amNone);
+            op(&y, &x, &x, &runtime.ctxtReal39);
+            runtime.convertRealToReal34ResultRegister(&x, runtime.REGISTER_X);
+        }
+    } else {
+        runtime.real34ToReal(runtime.registerReal34Ptr(runtime.REGISTER_Y), &y);
+        runtime.convertLongIntegerRegisterToReal(runtime.REGISTER_X, &x, &runtime.ctxtReal39);
+        runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, runtime.amNone);
+        runtime.convertAngleFromTo(&y, y_angular_mode, runtime.currentAngularMode, &runtime.ctxtReal39);
+        op(&y, &x, &x, &runtime.ctxtReal39);
+        runtime.convertRealToReal34ResultRegister(&x, runtime.REGISTER_X);
+        runtime.setRegisterAngularMode(runtime.REGISTER_X, runtime.currentAngularMode);
+    }
+}
+
+// The fast path of each operation, under one signature. addSubtractLongIntegerReal34
+// takes the operation in a flag and multiplyLongIntegerReal34 has no operand
+// order to take.
+pub export fn addFastLonIReal(lon_i: runtime.calcRegister_t, r: *const runtime.real34_t, integer_first: bool, res: *runtime.real34_t) callconv(.c) bool {
+    return runtime.addSubtractLongIntegerReal34(lon_i, r, integer_first, false, res);
+}
+
+pub export fn subFastLonIReal(lon_i: runtime.calcRegister_t, r: *const runtime.real34_t, integer_first: bool, res: *runtime.real34_t) callconv(.c) bool {
+    return runtime.addSubtractLongIntegerReal34(lon_i, r, integer_first, true, res);
+}
+
+pub export fn mulFastLonIReal(lon_i: runtime.calcRegister_t, r: *const runtime.real34_t, unused_integer_first: bool, res: *runtime.real34_t) callconv(.c) bool {
+    _ = unused_integer_first;
+    return runtime.multiplyLongIntegerReal34(lon_i, r, res);
 }
 
 /// Y(long integer) + X(real34) ==> X(real34)
 pub export fn addLonIReal() callconv(.c) void {
-    var y: runtime.real_t = undefined;
-    var x: runtime.real_t = undefined;
-
-    runtime.convertLongIntegerRegisterToReal(runtime.REGISTER_Y, &y, &runtime.ctxtReal39);
-    runtime.real34ToReal(runtime.registerReal34Ptr(runtime.REGISTER_X), &x);
-    const x_angular_mode = runtime.getRegisterAngularMode(runtime.REGISTER_X);
-
-    if (x_angular_mode == runtime.amNone) {
-        runtime.realAdd(&y, &x, &x, &runtime.ctxtReal39);
-        runtime.convertRealToReal34ResultRegister(&x, runtime.REGISTER_X);
-    } else {
-        runtime.convertAngleFromTo(&x, x_angular_mode, runtime.currentAngularMode, &runtime.ctxtReal39);
-        runtime.realAdd(&y, &x, &x, &runtime.ctxtReal39);
-        runtime.convertRealToReal34ResultRegister(&x, runtime.REGISTER_X);
-        runtime.setRegisterAngularMode(runtime.REGISTER_X, runtime.currentAngularMode);
-    }
+    lonIRealOp(&addFastLonIReal, &runtime.realAddOp);
 }
 
 /// Y(real34) + X(long integer) ==> X(real34)
 pub export fn addRealLonI() callconv(.c) void {
-    var y: runtime.real_t = undefined;
-    var x: runtime.real_t = undefined;
-
-    runtime.real34ToReal(runtime.registerReal34Ptr(runtime.REGISTER_Y), &y);
-    const y_angular_mode = runtime.getRegisterAngularMode(runtime.REGISTER_Y);
-    runtime.convertLongIntegerRegisterToReal(runtime.REGISTER_X, &x, &runtime.ctxtReal39);
-    runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, runtime.amNone);
-
-    if (y_angular_mode == runtime.amNone) {
-        runtime.realAdd(&y, &x, &x, &runtime.ctxtReal39);
-        runtime.convertRealToReal34ResultRegister(&x, runtime.REGISTER_X);
-    } else {
-        runtime.convertAngleFromTo(&y, y_angular_mode, runtime.currentAngularMode, &runtime.ctxtReal39);
-        runtime.realAdd(&y, &x, &x, &runtime.ctxtReal39);
-        runtime.convertRealToReal34ResultRegister(&x, runtime.REGISTER_X);
-        runtime.setRegisterAngularMode(runtime.REGISTER_X, runtime.currentAngularMode);
-    }
+    realLonIOp(&addFastLonIReal, &runtime.realAddOp);
 }
 
 /// Y(long integer) + X(complex34) ==> X(complex34)
@@ -280,12 +348,12 @@ pub export fn addLonICplx() callconv(.c) void {
     var a: runtime.real_t = undefined;
     var c: runtime.real_t = undefined;
 
-    runtime.convertLongIntegerRegisterToReal(runtime.REGISTER_Y, &a, &runtime.ctxtReal39);
-    runtime.real34ToReal(runtime.registerReal34Ptr(runtime.REGISTER_X), &c);
-
-    runtime.realAdd(&a, &c, &c, &runtime.ctxtReal39);
-
-    runtime.convertRealToReal34ResultRegister(&c, runtime.REGISTER_X);
+    if (!runtime.addSubtractLongIntegerReal34(runtime.REGISTER_Y, runtime.registerReal34Ptr(runtime.REGISTER_X), true, false, runtime.registerReal34Ptr(runtime.REGISTER_X))) {
+        runtime.convertLongIntegerRegisterToReal(runtime.REGISTER_Y, &a, &runtime.ctxtReal39);
+        runtime.real34ToReal(runtime.registerReal34Ptr(runtime.REGISTER_X), &c);
+        runtime.realAdd(&a, &c, &c, &runtime.ctxtReal39);
+        runtime.convertRealToReal34ResultRegister(&c, runtime.REGISTER_X);
+    }
 }
 
 /// Y(complex34) + X(long integer) ==> X(complex34)
@@ -293,15 +361,19 @@ pub export fn addCplxLonI() callconv(.c) void {
     var a: runtime.real_t = undefined;
     var c: runtime.real_t = undefined;
     var b: runtime.real34_t = undefined;
+    var result: runtime.real34_t = undefined;
 
-    runtime.real34ToReal(runtime.registerReal34Ptr(runtime.REGISTER_Y), &a);
     b = runtime.registerImag34Ptr(runtime.REGISTER_Y).*;
-    runtime.convertLongIntegerRegisterToReal(runtime.REGISTER_X, &c, &runtime.ctxtReal39);
-
-    runtime.realAdd(&a, &c, &c, &runtime.ctxtReal39);
-
-    runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtComplex34, 0, runtime.amNone);
-    runtime.convertRealToReal34ResultRegister(&c, runtime.REGISTER_X);
+    if (runtime.addSubtractLongIntegerReal34(runtime.REGISTER_X, runtime.registerReal34Ptr(runtime.REGISTER_Y), false, false, &result)) {
+        runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtComplex34, 0, runtime.amNone);
+        runtime.registerReal34Ptr(runtime.REGISTER_X).* = result;
+    } else {
+        runtime.real34ToReal(runtime.registerReal34Ptr(runtime.REGISTER_Y), &a);
+        runtime.convertLongIntegerRegisterToReal(runtime.REGISTER_X, &c, &runtime.ctxtReal39);
+        runtime.realAdd(&a, &c, &c, &runtime.ctxtReal39);
+        runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtComplex34, 0, runtime.amNone);
+        runtime.convertRealToReal34ResultRegister(&c, runtime.REGISTER_X);
+    }
     runtime.registerImag34Ptr(runtime.REGISTER_X).* = b;
 }
 
@@ -369,24 +441,19 @@ pub export fn addRealDate() callconv(.c) void {
 
 // string + ...
 
-// static _addString in C.
+// static _addString in C. The two byte lengths are captured before
+// displayCalcErrorMessage overwrites tmpString, which string_to_append points into.
 fn addString(string_to_append: [*c]const u8) void {
-    const y_glyphs = runtime.stringGlyphLength(registerStringData(runtime.REGISTER_Y));
-    const append_glyphs = runtime.stringGlyphLength(string_to_append);
+    const y_str_len = stringByteLength(registerStringData(runtime.REGISTER_Y));
+    const x_str_len = stringByteLength(string_to_append);
 
-    if (y_glyphs + append_glyphs > MAX_NUMBER_OF_GLYPHS_IN_STRING) {
+    if (y_str_len + x_str_len >= MAX_STRING_BYTE_LENGTH) {
         runtime.displayCalcErrorMessage(ERROR_STRING_WOULD_BE_TOO_LONG, runtime.ERR_REGISTER_LINE);
-        // Both lengths are measured again here, after the error is raised, as
-        // the C sprintf arguments are: every addStri* caller hands this
-        // function the shared tmpString, which the error path may have
-        // rewritten, so the figures the hint prints are the post-error ones.
-        const reported_y_glyphs = runtime.stringGlyphLength(registerStringData(runtime.REGISTER_Y));
-        const reported_append_glyphs = runtime.stringGlyphLength(string_to_append);
         var message_buffer: [160]u8 = undefined;
         const message = bufPrintZ(
             &message_buffer,
-            "the resulting string would be {d} (Y {d} + X {d}) characters long. Maximum is {d}",
-            .{ reported_y_glyphs + reported_append_glyphs, reported_y_glyphs, reported_append_glyphs, MAX_NUMBER_OF_GLYPHS_IN_STRING },
+            "the resulting string would be {d} (Y {d} + X {d}) bytes long. Maximum is {d}",
+            .{ y_str_len + x_str_len, y_str_len, x_str_len, MAX_STRING_BYTE_LENGTH - 1 },
         ) catch "the resulting string would be too long";
         runtime.moreInfoOnError("In function _addString:", message, null, null);
     } else {
@@ -491,7 +558,6 @@ pub export fn addStriCplx() callconv(.c) void {
 /// Y(real34 matrix) + X(long integer) ==> X(real34 matrix)
 pub export fn addRemaLonI() callconv(.c) void {
     var ym: runtime.real34Matrix_t = undefined;
-    var y: runtime.real_t = undefined;
     var x: runtime.real_t = undefined;
 
     runtime.linkToRealMatrixRegister(runtime.REGISTER_Y, &ym);
@@ -501,10 +567,7 @@ pub export fn addRemaLonI() callconv(.c) void {
     runtime.convertLongIntegerRegisterToReal(runtime.REGISTER_X, &x, &runtime.ctxtReal39);
     var i: i32 = 0;
     while (i < count) : (i += 1) {
-        runtime.real34ToReal(realElem(&ym, i), &y);
-        runtime.realAdd(&y, &x, &y, &runtime.ctxtReal39);
-        runtime.roundToSignificantDigits(&y, &y, significantDigitsOr34(), &runtime.ctxtReal39);
-        runtime.realToReal34(&y, realElem(&ym, i));
+        addLongIntegerMatrixElement(runtime.REGISTER_X, &x, realElem(&ym, i));
     }
     runtime.fnSwapXY(NOPARAM);
 }
@@ -513,7 +576,6 @@ pub export fn addRemaLonI() callconv(.c) void {
 pub export fn addLonIRema() callconv(.c) void {
     var xm: runtime.real34Matrix_t = undefined;
     var y: runtime.real_t = undefined;
-    var x: runtime.real_t = undefined;
 
     runtime.linkToRealMatrixRegister(runtime.REGISTER_X, &xm);
 
@@ -522,10 +584,7 @@ pub export fn addLonIRema() callconv(.c) void {
     runtime.convertLongIntegerRegisterToReal(runtime.REGISTER_Y, &y, &runtime.ctxtReal39);
     var i: i32 = 0;
     while (i < count) : (i += 1) {
-        runtime.real34ToReal(realElem(&xm, i), &x);
-        runtime.realAdd(&y, &x, &x, &runtime.ctxtReal39);
-        runtime.roundToSignificantDigits(&x, &x, significantDigitsOr34(), &runtime.ctxtReal39);
-        runtime.realToReal34(&x, realElem(&xm, i));
+        addLongIntegerMatrixElement(runtime.REGISTER_Y, &y, realElem(&xm, i));
     }
 }
 
@@ -577,47 +636,19 @@ pub export fn addCxmaRema() callconv(.c) void {
 
 /// Y(real34 matrix) + X(short integer) ==> X(real34 matrix)
 pub export fn addRemaShoI() callconv(.c) void {
-    var ym: runtime.real34Matrix_t = undefined;
-    var y: runtime.real_t = undefined;
-    var x: runtime.real_t = undefined;
-
-    runtime.linkToRealMatrixRegister(runtime.REGISTER_Y, &ym);
-
-    const count = @as(i32, ym.header.matrixRows) * @as(i32, ym.header.matrixColumns);
-
-    runtime.convertShortIntegerRegisterToReal(runtime.REGISTER_X, &x, &runtime.ctxtReal39);
-    var i: i32 = 0;
-    while (i < count) : (i += 1) {
-        runtime.real34ToReal(realElem(&ym, i), &y);
-        runtime.realAdd(&y, &x, &y, &runtime.ctxtReal39);
-        runtime.roundToSignificantDigits(&y, &y, significantDigitsOr34(), &runtime.ctxtReal39);
-        runtime.realToReal34(&y, realElem(&ym, i));
-    }
-    runtime.fnSwapXY(NOPARAM);
+    runtime.convertShortIntegerRegisterToReal34Register(runtime.REGISTER_X, runtime.REGISTER_X);
+    addRemaReal();
 }
 
 /// Y(short integer) + X(real34 matrix) ==> X(real34 matrix)
 pub export fn addShoIRema() callconv(.c) void {
-    var xm: runtime.real34Matrix_t = undefined;
-    var y: runtime.real_t = undefined;
-    var x: runtime.real_t = undefined;
-
-    runtime.linkToRealMatrixRegister(runtime.REGISTER_X, &xm);
-
-    const count = @as(i32, xm.header.matrixRows) * @as(i32, xm.header.matrixColumns);
-
-    runtime.convertShortIntegerRegisterToReal(runtime.REGISTER_Y, &y, &runtime.ctxtReal39);
-    var i: i32 = 0;
-    while (i < count) : (i += 1) {
-        runtime.real34ToReal(realElem(&xm, i), &x);
-        runtime.realAdd(&y, &x, &x, &runtime.ctxtReal39);
-        runtime.roundToSignificantDigits(&x, &x, significantDigitsOr34(), &runtime.ctxtReal39);
-        runtime.realToReal34(&x, realElem(&xm, i));
-    }
+    runtime.convertShortIntegerRegisterToReal34Register(runtime.REGISTER_Y, runtime.REGISTER_Y);
+    addRealRema();
 }
 
-/// Y(real34 matrix) + X(real34) ==> X(real34 matrix)
-pub export fn addRemaReal() callconv(.c) void {
+/// Y(real34 matrix) op X(real34) ==> X(real34 matrix); an angle in X goes
+/// element by element through the real34-real34 cell.
+pub export fn addSubRemaReal(op: real34Op_t, real_realf: CellFn) callconv(.c) void {
     var y: runtime.real34Matrix_t = undefined;
 
     runtime.linkToRealMatrixRegister(runtime.REGISTER_Y, &y);
@@ -628,16 +659,21 @@ pub export fn addRemaReal() callconv(.c) void {
 
         var i: i32 = 0;
         while (i < count) : (i += 1) {
-            runtime.real34Add(realElem(&y, i), runtime.registerReal34Ptr(runtime.REGISTER_X), realElem(&y, i));
+            op(realElem(&y, i), runtime.registerReal34Ptr(runtime.REGISTER_X), realElem(&y, i));
         }
         runtime.fnSwapXY(NOPARAM);
     } else {
-        runtime.elementwiseRemaReal(&addRealReal);
+        runtime.elementwiseRemaReal(real_realf);
     }
 }
 
-/// Y(real34) + X(real34 matrix) ==> X(real34 matrix)
-pub export fn addRealRema() callconv(.c) void {
+/// Y(real34 matrix) + X(real34) ==> X(real34 matrix)
+pub export fn addRemaReal() callconv(.c) void {
+    addSubRemaReal(&runtime.real34AddOp, &addRealReal);
+}
+
+/// Y(real34) op X(real34 matrix) ==> X(real34 matrix)
+pub export fn addSubRealRema(op: real34Op_t, real_realf: CellFn) callconv(.c) void {
     var x: runtime.real34Matrix_t = undefined;
 
     runtime.linkToRealMatrixRegister(runtime.REGISTER_X, &x);
@@ -648,11 +684,16 @@ pub export fn addRealRema() callconv(.c) void {
 
         var i: i32 = 0;
         while (i < count) : (i += 1) {
-            runtime.real34Add(runtime.registerReal34Ptr(runtime.REGISTER_Y), realElem(&x, i), realElem(&x, i));
+            op(runtime.registerReal34Ptr(runtime.REGISTER_Y), realElem(&x, i), realElem(&x, i));
         }
     } else {
-        runtime.elementwiseRealRema(&addRealReal);
+        runtime.elementwiseRealRema(real_realf);
     }
+}
+
+/// Y(real34) + X(real34 matrix) ==> X(real34 matrix)
+pub export fn addRealRema() callconv(.c) void {
+    addSubRealRema(&runtime.real34AddOp, &addRealReal);
 }
 
 /// Y(real34 matrix) + X(complex34) ==> X(complex34 matrix)
@@ -678,7 +719,6 @@ pub export fn addCplxRema() callconv(.c) void {
 /// Y(complex34 matrix) + X(long integer) ==> X(complex34 matrix)
 pub export fn addCxmaLonI() callconv(.c) void {
     var ym: runtime.complex34Matrix_t = undefined;
-    var y: runtime.real_t = undefined;
     var x: runtime.real_t = undefined;
 
     runtime.linkToComplexMatrixRegister(runtime.REGISTER_Y, &ym);
@@ -688,10 +728,7 @@ pub export fn addCxmaLonI() callconv(.c) void {
     runtime.convertLongIntegerRegisterToReal(runtime.REGISTER_X, &x, &runtime.ctxtReal39);
     var i: i32 = 0;
     while (i < count) : (i += 1) {
-        runtime.real34ToReal(&cplxElem(&ym, i).real, &y);
-        runtime.realAdd(&y, &x, &y, &runtime.ctxtReal39);
-        runtime.roundToSignificantDigits(&y, &y, significantDigitsOr34(), &runtime.ctxtReal39);
-        runtime.realToReal34(&y, &cplxElem(&ym, i).real);
+        addLongIntegerMatrixElement(runtime.REGISTER_X, &x, &cplxElem(&ym, i).real);
     }
     runtime.fnSwapXY(NOPARAM);
 }
@@ -700,7 +737,6 @@ pub export fn addCxmaLonI() callconv(.c) void {
 pub export fn addLonICxma() callconv(.c) void {
     var xm: runtime.complex34Matrix_t = undefined;
     var y: runtime.real_t = undefined;
-    var x: runtime.real_t = undefined;
 
     runtime.linkToComplexMatrixRegister(runtime.REGISTER_X, &xm);
 
@@ -709,10 +745,7 @@ pub export fn addLonICxma() callconv(.c) void {
     runtime.convertLongIntegerRegisterToReal(runtime.REGISTER_Y, &y, &runtime.ctxtReal39);
     var i: i32 = 0;
     while (i < count) : (i += 1) {
-        runtime.real34ToReal(&cplxElem(&xm, i).real, &x);
-        runtime.realAdd(&y, &x, &x, &runtime.ctxtReal39);
-        runtime.roundToSignificantDigits(&x, &x, significantDigitsOr34(), &runtime.ctxtReal39);
-        runtime.realToReal34(&x, &cplxElem(&xm, i).real);
+        addLongIntegerMatrixElement(runtime.REGISTER_Y, &y, &cplxElem(&xm, i).real);
     }
 }
 
@@ -746,47 +779,19 @@ pub export fn addCxmaCxma() callconv(.c) void {
 
 /// Y(complex34 matrix) + X(short integer) ==> X(complex34 matrix)
 pub export fn addCxmaShoI() callconv(.c) void {
-    var ym: runtime.complex34Matrix_t = undefined;
-    var y: runtime.real_t = undefined;
-    var x: runtime.real_t = undefined;
-
-    runtime.linkToComplexMatrixRegister(runtime.REGISTER_Y, &ym);
-
-    const count = @as(i32, ym.header.matrixRows) * @as(i32, ym.header.matrixColumns);
-
-    runtime.convertShortIntegerRegisterToReal(runtime.REGISTER_X, &x, &runtime.ctxtReal39);
-    var i: i32 = 0;
-    while (i < count) : (i += 1) {
-        runtime.real34ToReal(&cplxElem(&ym, i).real, &y);
-        runtime.realAdd(&y, &x, &y, &runtime.ctxtReal39);
-        runtime.roundToSignificantDigits(&y, &y, significantDigitsOr34(), &runtime.ctxtReal39);
-        runtime.realToReal34(&y, &cplxElem(&ym, i).real);
-    }
-    runtime.fnSwapXY(NOPARAM);
+    runtime.convertShortIntegerRegisterToReal34Register(runtime.REGISTER_X, runtime.REGISTER_X);
+    addCxmaReal();
 }
 
 /// Y(short integer) + X(complex34 matrix) ==> X(complex34 matrix)
 pub export fn addShoICxma() callconv(.c) void {
-    var xm: runtime.complex34Matrix_t = undefined;
-    var y: runtime.real_t = undefined;
-    var x: runtime.real_t = undefined;
-
-    runtime.linkToComplexMatrixRegister(runtime.REGISTER_X, &xm);
-
-    const count = @as(i32, xm.header.matrixRows) * @as(i32, xm.header.matrixColumns);
-
-    runtime.convertShortIntegerRegisterToReal(runtime.REGISTER_Y, &y, &runtime.ctxtReal39);
-    var i: i32 = 0;
-    while (i < count) : (i += 1) {
-        runtime.real34ToReal(&cplxElem(&xm, i).real, &x);
-        runtime.realAdd(&y, &x, &x, &runtime.ctxtReal39);
-        runtime.roundToSignificantDigits(&x, &x, significantDigitsOr34(), &runtime.ctxtReal39);
-        runtime.realToReal34(&x, &cplxElem(&xm, i).real);
-    }
+    runtime.convertShortIntegerRegisterToReal34Register(runtime.REGISTER_Y, runtime.REGISTER_Y);
+    addRealCxma();
 }
 
-/// Y(complex34 matrix) + X(real34) ==> X(complex34 matrix)
-pub export fn addCxmaReal() callconv(.c) void {
+/// Y(complex34 matrix) op X(real34) ==> X(complex34 matrix); an angle in X goes
+/// element by element through the complex34-real34 cell.
+pub export fn addSubCxmaReal(op: real34Op_t, cplx_realf: CellFn) callconv(.c) void {
     var y: runtime.complex34Matrix_t = undefined;
 
     runtime.linkToComplexMatrixRegister(runtime.REGISTER_Y, &y);
@@ -797,12 +802,17 @@ pub export fn addCxmaReal() callconv(.c) void {
 
         var i: i32 = 0;
         while (i < count) : (i += 1) {
-            runtime.real34Add(&cplxElem(&y, i).real, runtime.registerReal34Ptr(runtime.REGISTER_X), &cplxElem(&y, i).real);
+            op(&cplxElem(&y, i).real, runtime.registerReal34Ptr(runtime.REGISTER_X), &cplxElem(&y, i).real);
         }
         runtime.fnSwapXY(NOPARAM);
     } else {
-        runtime.elementwiseCxmaReal(&addCplxReal);
+        runtime.elementwiseCxmaReal(cplx_realf);
     }
+}
+
+/// Y(complex34 matrix) + X(real34) ==> X(complex34 matrix)
+pub export fn addCxmaReal() callconv(.c) void {
+    addSubCxmaReal(&runtime.real34AddOp, &addCplxReal);
 }
 
 /// Y(real34) + X(complex34 matrix) ==> X(complex34 matrix)
@@ -824,8 +834,8 @@ pub export fn addRealCxma() callconv(.c) void {
     }
 }
 
-/// Y(complex34 matrix) + X(complex34) ==> X(complex34 matrix)
-pub export fn addCxmaCplx() callconv(.c) void {
+/// Y(complex34 matrix) op X(complex34) ==> X(complex34 matrix)
+pub export fn addSubCxmaCplx(op: real34Op_t) callconv(.c) void {
     var y: runtime.complex34Matrix_t = undefined;
 
     runtime.linkToComplexMatrixRegister(runtime.REGISTER_Y, &y);
@@ -834,14 +844,19 @@ pub export fn addCxmaCplx() callconv(.c) void {
 
     var i: i32 = 0;
     while (i < count) : (i += 1) {
-        runtime.real34Add(&cplxElem(&y, i).real, runtime.registerReal34Ptr(runtime.REGISTER_X), &cplxElem(&y, i).real);
-        runtime.real34Add(&cplxElem(&y, i).imag, runtime.registerImag34Ptr(runtime.REGISTER_X), &cplxElem(&y, i).imag);
+        op(&cplxElem(&y, i).real, runtime.registerReal34Ptr(runtime.REGISTER_X), &cplxElem(&y, i).real);
+        op(&cplxElem(&y, i).imag, runtime.registerImag34Ptr(runtime.REGISTER_X), &cplxElem(&y, i).imag);
     }
     runtime.fnSwapXY(NOPARAM);
 }
 
-/// Y(complex34) + X(complex34 matrix) ==> X(complex34 matrix)
-pub export fn addCplxCxma() callconv(.c) void {
+/// Y(complex34 matrix) + X(complex34) ==> X(complex34 matrix)
+pub export fn addCxmaCplx() callconv(.c) void {
+    addSubCxmaCplx(&runtime.real34AddOp);
+}
+
+/// Y(complex34) op X(complex34 matrix) ==> X(complex34 matrix)
+pub export fn addSubCplxCxma(op: real34Op_t) callconv(.c) void {
     var x: runtime.complex34Matrix_t = undefined;
 
     runtime.linkToComplexMatrixRegister(runtime.REGISTER_X, &x);
@@ -850,9 +865,14 @@ pub export fn addCplxCxma() callconv(.c) void {
 
     var i: i32 = 0;
     while (i < count) : (i += 1) {
-        runtime.real34Add(runtime.registerReal34Ptr(runtime.REGISTER_Y), &cplxElem(&x, i).real, &cplxElem(&x, i).real);
-        runtime.real34Add(runtime.registerImag34Ptr(runtime.REGISTER_Y), &cplxElem(&x, i).imag, &cplxElem(&x, i).imag);
+        op(runtime.registerReal34Ptr(runtime.REGISTER_Y), &cplxElem(&x, i).real, &cplxElem(&x, i).real);
+        op(runtime.registerImag34Ptr(runtime.REGISTER_Y), &cplxElem(&x, i).imag, &cplxElem(&x, i).imag);
     }
+}
+
+/// Y(complex34) + X(complex34 matrix) ==> X(complex34 matrix)
+pub export fn addCplxCxma() callconv(.c) void {
+    addSubCplxCxma(&runtime.real34AddOp);
 }
 
 // short integer + ...
@@ -868,17 +888,17 @@ pub export fn addShoIShoI() callconv(.c) void {
 
 /// Y(short integer) + X(real34) ==> X(real34)
 pub export fn addShoIReal() callconv(.c) void {
-    var y: runtime.real_t = undefined;
-    var x: runtime.real_t = undefined;
-
-    runtime.convertShortIntegerRegisterToReal(runtime.REGISTER_Y, &y, &runtime.ctxtReal39);
-    runtime.real34ToReal(runtime.registerReal34Ptr(runtime.REGISTER_X), &x);
     const x_angular_mode = runtime.getRegisterAngularMode(runtime.REGISTER_X);
 
     if (x_angular_mode == runtime.amNone) {
-        runtime.realAdd(&y, &x, &x, &runtime.ctxtReal39);
-        runtime.convertRealToReal34ResultRegister(&x, runtime.REGISTER_X);
+        runtime.convertShortIntegerRegisterToReal34Register(runtime.REGISTER_Y, runtime.REGISTER_Y);
+        runtime.real34Add(runtime.registerReal34Ptr(runtime.REGISTER_Y), runtime.registerReal34Ptr(runtime.REGISTER_X), runtime.registerReal34Ptr(runtime.REGISTER_X));
     } else {
+        var y: runtime.real_t = undefined;
+        var x: runtime.real_t = undefined;
+
+        runtime.convertShortIntegerRegisterToReal(runtime.REGISTER_Y, &y, &runtime.ctxtReal39);
+        runtime.real34ToReal(runtime.registerReal34Ptr(runtime.REGISTER_X), &x);
         runtime.convertAngleFromTo(&x, x_angular_mode, runtime.currentAngularMode, &runtime.ctxtReal39);
         runtime.realAdd(&y, &x, &x, &runtime.ctxtReal39);
         runtime.convertRealToReal34ResultRegister(&x, runtime.REGISTER_X);
@@ -888,18 +908,18 @@ pub export fn addShoIReal() callconv(.c) void {
 
 /// Y(real34) + X(short integer) ==> X(real34)
 pub export fn addRealShoI() callconv(.c) void {
-    var y: runtime.real_t = undefined;
-    var x: runtime.real_t = undefined;
-
-    runtime.real34ToReal(runtime.registerReal34Ptr(runtime.REGISTER_Y), &y);
     const y_angular_mode = runtime.getRegisterAngularMode(runtime.REGISTER_Y);
-    runtime.convertShortIntegerRegisterToReal(runtime.REGISTER_X, &x, &runtime.ctxtReal39);
-    runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, runtime.amNone);
 
     if (y_angular_mode == runtime.amNone) {
-        runtime.realAdd(&y, &x, &x, &runtime.ctxtReal39);
-        runtime.convertRealToReal34ResultRegister(&x, runtime.REGISTER_X);
+        runtime.convertShortIntegerRegisterToReal34Register(runtime.REGISTER_X, runtime.REGISTER_X);
+        runtime.real34Add(runtime.registerReal34Ptr(runtime.REGISTER_Y), runtime.registerReal34Ptr(runtime.REGISTER_X), runtime.registerReal34Ptr(runtime.REGISTER_X));
     } else {
+        var y: runtime.real_t = undefined;
+        var x: runtime.real_t = undefined;
+
+        runtime.real34ToReal(runtime.registerReal34Ptr(runtime.REGISTER_Y), &y);
+        runtime.convertShortIntegerRegisterToReal(runtime.REGISTER_X, &x, &runtime.ctxtReal39);
+        runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, runtime.amNone);
         runtime.convertAngleFromTo(&y, y_angular_mode, runtime.currentAngularMode, &runtime.ctxtReal39);
         runtime.realAdd(&y, &x, &x, &runtime.ctxtReal39);
         runtime.convertRealToReal34ResultRegister(&x, runtime.REGISTER_X);
@@ -913,12 +933,16 @@ pub export fn addShoICplx() callconv(.c) void {
     runtime.real34Add(runtime.registerReal34Ptr(runtime.REGISTER_Y), runtime.registerReal34Ptr(runtime.REGISTER_X), runtime.registerReal34Ptr(runtime.REGISTER_X)); // real part
 }
 
+/// Y(complex34) op X(short integer) ==> X(complex34)
+pub export fn addSubCplxShoI(op: real34Op_t) callconv(.c) void {
+    runtime.convertShortIntegerRegisterToReal34Register(runtime.REGISTER_X, runtime.REGISTER_X);
+    op(runtime.registerReal34Ptr(runtime.REGISTER_Y), runtime.registerReal34Ptr(runtime.REGISTER_X), runtime.registerReal34Ptr(runtime.REGISTER_Y)); // real part
+    runtime.convertReal34ToComplex34Register(runtime.registerReal34Ptr(runtime.REGISTER_Y), runtime.registerImag34Ptr(runtime.REGISTER_Y), runtime.REGISTER_X);
+}
+
 /// Y(complex34) + X(short integer) ==> X(complex34)
 pub export fn addCplxShoI() callconv(.c) void {
-    runtime.convertShortIntegerRegisterToReal34Register(runtime.REGISTER_X, runtime.REGISTER_X);
-    runtime.real34Add(runtime.registerReal34Ptr(runtime.REGISTER_Y), runtime.registerReal34Ptr(runtime.REGISTER_X), runtime.registerReal34Ptr(runtime.REGISTER_Y)); // real part
-    runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtComplex34, 0, runtime.amNone);
-    runtime.registerComplex34Ptr(runtime.REGISTER_X).* = runtime.registerComplex34Ptr(runtime.REGISTER_Y).*;
+    addSubCplxShoI(&runtime.real34AddOp);
 }
 
 // real34 + ...
@@ -960,27 +984,35 @@ pub export fn addRealCplx() callconv(.c) void {
 /// Y(complex34) + X(real34) ==> X(complex34)
 pub export fn addCplxReal() callconv(.c) void {
     runtime.real34Add(runtime.registerReal34Ptr(runtime.REGISTER_Y), runtime.registerReal34Ptr(runtime.REGISTER_X), runtime.registerReal34Ptr(runtime.REGISTER_Y)); // real part
-    runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtComplex34, 0, runtime.amNone);
-    runtime.registerComplex34Ptr(runtime.REGISTER_X).* = runtime.registerComplex34Ptr(runtime.REGISTER_Y).*; // imaginary part
+    runtime.convertReal34ToComplex34Register(runtime.registerReal34Ptr(runtime.REGISTER_Y), runtime.registerImag34Ptr(runtime.REGISTER_Y), runtime.REGISTER_X); // imaginary part
 }
 
 // complex34 + ...
 
-pub export fn addComplex(
-    a_real: *const runtime.real_t,
-    a_imag: *const runtime.real_t,
-    b_real: *const runtime.real_t,
-    b_imag: *const runtime.real_t,
-    res_real: *runtime.real_t,
-    res_imag: *runtime.real_t,
-    real_context: *runtime.realContext_t,
-) callconv(.c) void {
-    runtime.realAdd(a_real, b_real, res_real, real_context);
-    runtime.realAdd(a_imag, b_imag, res_imag, real_context);
+pub export fn addComplex(a: *const runtime.cplx_t, b: *const runtime.cplx_t, res: *runtime.cplx_t, real_context: *runtime.realContext_t) callconv(.c) void {
+    runtime.realAdd(&a.Real, &b.Real, &res.Real, real_context);
+    runtime.realAdd(&a.Imag, &b.Imag, &res.Imag, real_context);
+}
+
+// addComplex for 159 digit values in a cplx159_t.
+fn addComplex159Impl(a: *const runtime.cplx159_t, b: *const runtime.cplx159_t, res: *runtime.cplx159_t, real_context: *runtime.realContext_t) callconv(.c) void {
+    runtime.realAdd(a.Real.constPtr(), b.Real.constPtr(), res.Real.ptr(), real_context);
+    runtime.realAdd(a.Imag.constPtr(), b.Imag.constPtr(), res.Imag.ptr(), real_context);
+}
+
+comptime {
+    if (arm_159) {
+        @export(&addComplex159Impl, .{ .name = "addComplex159" });
+    }
+}
+
+/// Y(complex34) op X(complex34) ==> X(complex34), both parts.
+pub export fn addSubCplxCplx(op: real34Op_t) callconv(.c) void {
+    op(runtime.registerReal34Ptr(runtime.REGISTER_Y), runtime.registerReal34Ptr(runtime.REGISTER_X), runtime.registerReal34Ptr(runtime.REGISTER_X)); // real part
+    op(runtime.registerImag34Ptr(runtime.REGISTER_Y), runtime.registerImag34Ptr(runtime.REGISTER_X), runtime.registerImag34Ptr(runtime.REGISTER_X)); // imaginary part
 }
 
 /// Y(complex34) + X(complex34) ==> X(complex34)
 pub export fn addCplxCplx() callconv(.c) void {
-    runtime.real34Add(runtime.registerReal34Ptr(runtime.REGISTER_Y), runtime.registerReal34Ptr(runtime.REGISTER_X), runtime.registerReal34Ptr(runtime.REGISTER_X)); // real part
-    runtime.real34Add(runtime.registerImag34Ptr(runtime.REGISTER_Y), runtime.registerImag34Ptr(runtime.REGISTER_X), runtime.registerImag34Ptr(runtime.REGISTER_X)); // imaginary part
+    addSubCplxCplx(&runtime.real34AddOp);
 }

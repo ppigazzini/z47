@@ -147,7 +147,7 @@ const mp_limb_t = usize;
 const mpz_struct = abi.Mpz;
 const longInteger_t = [1]mpz_struct;
 
-const cmplxPair = abi.CmplxPair;
+const cplx_t = abi.Complex;
 
 // ===========================================================================
 // Numeric constants (probed from the C build)
@@ -539,21 +539,21 @@ inline fn SEPARATOR_RIGHT() [*c]const u8 {
 const constR = abi.constants.cstRAligned;
 const constR34 = abi.constants.cst34;
 const const_0 = constR(1708);
-const const_1 = constR(5376);
-const const_1on2 = constR(5100);
-const const_1on4 = constR(5052);
-const const39_root3on2 = constR(5292);
-const const39_rt3 = constR(6268);
-const const_1e_16 = constR(4812);
-const const_1e_24 = constR(4800);
-const const_10p9__1 = constR(6148);
+const const_1 = constR(12116);
+const const_1on2 = constR(5168);
+const const_1on4 = constR(5064);
+const const39_root3on2 = constR(5552);
+const const39_rt3 = constR(13096);
+const const_1e_16 = constR(4824);
+const const_1e_24 = constR(4812);
+const const_10p9__1 = constR(12976);
 const const39_pi = constR(1848);
-const const34_10 = constR34(17476);
-const const34_60 = constR34(17588);
-const const34_100 = constR34(17604);
-const const34_3600 = constR34(17732);
-const const34_0 = constR34(17252);
-const const34_24 = constR34(17524);
+const const34_10 = constR34(29020);
+const const34_60 = constR34(29132);
+const const34_100 = constR34(29148);
+const const34_3600 = constR34(29276);
+const const34_0 = constR34(28796);
+const const34_24 = constR34(29068);
 
 // ===========================================================================
 // C-arrays bound by address (NOT pointer-typed externs).
@@ -741,12 +741,12 @@ extern fn transposeRealMatrix(matrix: *const real34Matrix_t, res: *real34Matrix_
 extern fn transposeComplexMatrix(matrix: *const complex34Matrix_t, res: *complex34Matrix_t) void;
 extern fn is_2D3D_Register_Ready(ang2Dx: *u32, ang2Dy: *u32, ang3Dx: *u32, ang3Dy: *u32, ang3Dz: *u32, validPolarInput: *bool_t, valid2DRInput: *bool_t, validSPHInput: *bool_t, validCYLInput: *bool_t, valid3DRInput: *bool_t, constVector: u16) bool_t;
 extern fn convertPOLto2D(r: *real_t, th1: *real_t, am: u8, matrix: *real34Matrix_t, ctx: *realContext_t) void;
-extern fn convertSPHto3D(r: *real_t, th1: *real_t, th2: *real_t, am: u8, matrix: *real34Matrix_t, ctx: *realContext_t) void;
+extern fn convertSPHto3D(r: *real_t, th1: *real_t, th2: *real_t, am1: u8, am2: u8, matrix: *real34Matrix_t, ctx: *realContext_t) void;
 extern fn convertCYLto3D(r: *real_t, th1: *real_t, z: *real_t, am: u8, matrix: *real34Matrix_t, ctx: *realContext_t) void;
 extern fn convert3DtoCYL(matrix: *const real34Matrix_t, r: *real_t, th1: *real_t, z: *real_t, am: u8, ctx: *realContext_t) void;
 extern fn convert3DtoSPH(matrix: *const real34Matrix_t, r: *real_t, th1: *real_t, th2: *real_t, am: u8, ctx: *realContext_t) void;
 extern fn VtoAngleMode(angleMode: angularMode_t) bool_t;
-extern fn realRectangularToPolar(real: *const real_t, imag: *const real_t, magnitude: *real_t, theta: *real_t, ctx: *realContext_t) void;
+extern fn realRectangularToPolar(z: *const cplx_t, magnitude: *real_t, theta: *real_t, ctx: *realContext_t) void;
 
 // IRFRAC helpers
 extern fn irfractionTolerence(ii: i32, tol: *real_t) void;
@@ -797,11 +797,12 @@ inline fn bitblt24(x: u32, dx: u32, y: u32, val: u32, blt_op: c_int, fill: c_int
 const BLT_OR: c_int = 0;
 const BLT_ANDN: c_int = 1;
 const BLT_NONE: c_int = 0;
+// hal/lcd.h: on the DMCP firmware the pixel routines are written once, in screen.c.
 inline fn setBlackPixel(x: u32, y: u32) void {
-    bitblt24(x, 1, y, 1, BLT_OR, BLT_NONE);
+    if (comptime dmcp_build) frontier_screen.setBlackPixel(x, y) else bitblt24(x, 1, y, 1, BLT_OR, BLT_NONE);
 }
 inline fn setWhitePixel(x: u32, y: u32) void {
-    bitblt24(x, 1, y, 1, BLT_ANDN, BLT_NONE);
+    if (comptime dmcp_build) frontier_screen.setWhitePixel(x, y) else bitblt24(x, 1, y, 1, BLT_ANDN, BLT_NONE);
 }
 extern fn _Buzz(a: i32, b: i32) void;
 extern fn resetShiftState() void;
@@ -2290,7 +2291,7 @@ fn cpxToStk(real1: *const real_t, real2: *const real_t, sl: bool) void {
         setSystemFlag(FLAG_ASLIFT);
     }
     liftStack();
-    frontier_register_value_conversions.convertComplexToResultRegister(real1, real2, REGISTER_X);
+    frontier_register_value_conversions.convertComplexPartsToResultRegister(real1, real2, REGISTER_X);
 }
 
 pub export fn fn_cnst_op_j(unusedButMandatoryParameter: u16) callconv(.c) void {
@@ -2429,13 +2430,13 @@ const vecCreate linksection(code_section) = [10]vecCreate_t{
     .{ .rows = 1, .cols = 4, .x = 0, .y = 1, .z = 2, .t = 3, .xdef = V_COPY, .ydef = V_COPY, .zdef = V_COPY, .tdef = V_COPY }, // [9] tzyx
 };
 
-fn processDefaultVector(regist: calcRegister_t, p: u8, d: u8, xarr: [*]cmplxPair, complexCoefs: *bool_t) bool_t {
+fn processDefaultVector(regist: calcRegister_t, p: u8, d: u8, xarr: [*]cplx_t, complexCoefs: *bool_t) bool_t {
     if (d == V_COPY) {
-        if (!frontier_register_value_conversions.getRegisterAsComplexOrReal(regist, &xarr[p].r, &xarr[p].i, @ptrCast(complexCoefs))) {
+        if (!frontier_register_value_conversions.getRegisterAsComplexOrReal(regist, &xarr[p], @ptrCast(complexCoefs))) {
             return 0;
         }
     } else if (d <= V_D1) {
-        realCopy(if (d == V_D1) const_1 else const_0, &xarr[p].r);
+        realCopy(if (d == V_D1) const_1 else const_0, &xarr[p].Real);
     }
     return 1;
 }
@@ -2500,7 +2501,7 @@ inline fn invalidDataTypeHint(where: [*c]const u8) void {
 pub export fn fnConvertStkToMx(constVector1: u16) callconv(.c) void {
     if (comptime !vector_or_elec) return;
     var complexCoefs: bool_t = 0;
-    var x: [4]cmplxPair = undefined;
+    var x: [4]cplx_t = undefined;
     var matrix: real34Matrix_t = undefined;
     var matrixC: complex34Matrix_t = undefined;
     var elements: u16 = undefined;
@@ -2567,21 +2568,6 @@ pub export fn fnConvertStkToMx(constVector1: u16) callconv(.c) void {
                 return;
             }
         }
-
-        if (validPolarInput != 0) {
-            frontier_conversion_angles.convertAngleFromTo(&x[0].r, @intCast(ang2Dx), amRadian, &ctxtReal39);
-            if (realCompareLessThan(&x[1].r, const_0) != 0) {
-                realSetPositiveSign(&x[1].r);
-                realAdd(&x[0].r, const39_pi, &x[0].r, &ctxtReal39);
-            }
-        }
-
-        if (validSPHInput != 0) {
-            frontier_conversion_angles.convertAngleFromTo(&x[vc.x].r, @intCast(ang3Dx), amRadian, &ctxtReal39);
-            frontier_conversion_angles.convertAngleFromTo(&x[vc.y].r, @intCast(ang3Dy), amRadian, &ctxtReal39);
-        } else if (validCYLInput != 0) {
-            frontier_conversion_angles.convertAngleFromTo(&x[vc.y].r, @intCast(ang3Dy), amRadian, &ctxtReal39);
-        }
     }
 
     if (vc.xdef <= V_D1 or vc.ydef <= V_D1 or vc.zdef <= V_D1) {
@@ -2614,17 +2600,18 @@ pub export fn fnConvertStkToMx(constVector1: u16) callconv(.c) void {
 
         if (comptime vector_or_elec) {
             if (ang2Dx != amNone and ang2Dy == amNone and constVector == VECT_CR_yx) {
-                convertPOLto2D(&x[1].r, &x[0].r, amRadian, &matrix, &ctxtReal39);
+                // The angles go to the converters in their own units, which convert once.
+                convertPOLto2D(&x[1].Real, &x[0].Real, @intCast(ang2Dx), &matrix, &ctxtReal39);
                 matrixRegisterLoaded = true;
             } else if (ang3Dx != amNone and ang3Dy != amNone and (constVector == VECT_CR_zyx or constVector == VECT_CR_zxy)) {
                 if (constVector == VECT_CR_zxy) {
-                    convertSPHto3D(&x[2].r, &x[0].r, &x[1].r, amRadian, &matrix, &ctxtReal39);
+                    convertSPHto3D(&x[2].Real, &x[0].Real, &x[1].Real, @intCast(ang3Dx), @intCast(ang3Dy), &matrix, &ctxtReal39);
                 } else {
-                    convertSPHto3D(&x[2].r, &x[1].r, &x[0].r, amRadian, &matrix, &ctxtReal39);
+                    convertSPHto3D(&x[2].Real, &x[1].Real, &x[0].Real, @intCast(ang3Dy), @intCast(ang3Dx), &matrix, &ctxtReal39);
                 }
                 matrixRegisterLoaded = true;
             } else if (ang3Dx == amNone and ang3Dy != amNone and constVector == VECT_CR_zyx) {
-                convertCYLto3D(&x[2].r, &x[1].r, &x[0].r, amRadian, &matrix, &ctxtReal39);
+                convertCYLto3D(&x[2].Real, &x[1].Real, &x[0].Real, @intCast(ang3Dy), &matrix, &ctxtReal39);
                 matrixRegisterLoaded = true;
             }
         }
@@ -2634,10 +2621,10 @@ pub export fn fnConvertStkToMx(constVector1: u16) callconv(.c) void {
         var i: usize = 0;
         while (i < elements) : (i += 1) {
             if (complexCoefs != 0) {
-                realToReal34(&x[elements - 1 - i].r, varReal34(matrixC.matrixElements, i));
-                realToReal34(&x[elements - 1 - i].i, varImag34(matrixC.matrixElements, i));
+                realToReal34(&x[elements - 1 - i].Real, varReal34(matrixC.matrixElements, i));
+                realToReal34(&x[elements - 1 - i].Imag, varImag34(matrixC.matrixElements, i));
             } else {
-                realToReal34(&x[elements - 1 - i].r, mxRe34(matrix.matrixElements, i));
+                realToReal34(&x[elements - 1 - i].Real, mxRe34(matrix.matrixElements, i));
             }
         }
     }
@@ -2780,14 +2767,13 @@ pub export fn fnConvertMxToStk(param1: u16) callconv(.c) void {
 
     if (comptime vector_or_elec) {
         if (constVector == VECT_CR_yx and ang2Dx != amNone) {
-            var theta: real_t = undefined;
-            var magnitude: real_t = undefined;
-            real34ToReal(mxRe34(matrix.matrixElements, 0), &magnitude);
-            real34ToReal(mxRe34(matrix.matrixElements, 1), &theta);
-            realRectangularToPolar(&magnitude, &theta, &magnitude, &theta, &ctxtReal39);
-            frontier_conversion_angles.convertAngleFromTo(&theta, amRadian, ang2Dx, &ctxtReal39);
-            realToReal34(&magnitude, mxRe34(matrix.matrixElements, 0));
-            realToReal34(&theta, mxRe34(matrix.matrixElements, 1));
+            var v: cplx_t = undefined;
+            real34ToReal(mxRe34(matrix.matrixElements, 0), &v.Real);
+            real34ToReal(mxRe34(matrix.matrixElements, 1), &v.Imag);
+            realRectangularToPolar(&v, v.mag(), v.arg(), &ctxtReal39); // the argument in radian
+            frontier_conversion_angles.convertAngleFromTo(v.arg(), amRadian, ang2Dx, &ctxtReal39);
+            realToReal34(v.mag(), mxRe34(matrix.matrixElements, 0));
+            realToReal34(v.arg(), mxRe34(matrix.matrixElements, 1));
         } else if ((constVector == VECT_CR_zyx or constVector == VECT_CR_zxy) and (ang3Dy != amNone and ang3Dx == amNone)) { // CYL
             var theta: real_t = undefined;
             var magnitude: real_t = undefined;
@@ -3304,8 +3290,7 @@ pub export fn timeToReal34(hms: u16) callconv(.c) void {
 
     if (hms == 3) {
         //total seconds
-        reallocateRegister(regist, dtReal34, 0, amNone);
-        real34Copy(&real34, reg34(regist));
+        frontier_register_value_conversions.convertReal34ToReal34Register(&real34, regist);
         if (sign != 0) {
             real34ChangeSign(reg34(regist));
         }

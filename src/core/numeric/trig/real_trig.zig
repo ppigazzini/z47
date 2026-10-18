@@ -1,5 +1,5 @@
 const abi = @import("abi");
-const atan_owned = @import("atan.zig");
+const atan2_owned = @import("atan2.zig");
 const build_options = @import("math_command_wrappers_build_options");
 const runtime = @import("../command_wrappers/runtime.zig");
 
@@ -48,14 +48,12 @@ pub fn arcsinReal(
         return;
     }
 
-    runtime.realSubtract(runtime.z47_math_wrappers_const_1(), &abs_x, &z, real_context); // 1-x*x as (1-|x|)(1+|x|): both factors are exact, where 1-x*x cancels near |x| = 1
+    // angle = atan2(x, sqrt((1-|x|)(1+|x|))): both factors are exact, where 1-x*x cancels near |x| = 1
+    runtime.realSubtract(runtime.z47_math_wrappers_const_1(), &abs_x, &z, real_context);
     runtime.realAdd(runtime.z47_math_wrappers_const_1(), &abs_x, &abs_x, real_context);
     runtime.realMultiply(&z, &abs_x, &z, real_context);
     runtime.realSquareRoot(&z, &z, real_context);
-    runtime.realAdd(&z, runtime.z47_math_wrappers_const_1(), &z, real_context);
-    runtime.realDivide(x, &z, &z, real_context);
-    atan_owned.arctanReal(&z, &abs_x, real_context);
-    runtime.realAdd(&abs_x, &abs_x, angle, real_context);
+    atan2_owned.arctan2Real(x, &z, angle, real_context);
 }
 
 pub fn arccosReal(
@@ -82,19 +80,12 @@ pub fn arccosReal(
         return;
     }
 
-    if (runtime.realCompareEqual(x, runtime.z47_math_wrappers_const_1())) {
-        runtime.realSetZero(angle);
-        return;
-    }
-
-    runtime.realSubtract(runtime.z47_math_wrappers_const_1(), &abs_x, &z, real_context); // 1-x*x as (1-|x|)(1+|x|): both factors are exact, where 1-x*x cancels near |x| = 1
+    // angle = atan2(sqrt((1-|x|)(1+|x|)), x): both factors are exact, where 1-x*x cancels near |x| = 1
+    runtime.realSubtract(runtime.z47_math_wrappers_const_1(), &abs_x, &z, real_context);
     runtime.realAdd(runtime.z47_math_wrappers_const_1(), &abs_x, &abs_x, real_context);
     runtime.realMultiply(&z, &abs_x, &z, real_context);
     runtime.realSquareRoot(&z, &z, real_context);
-    runtime.realSubtract(runtime.z47_math_wrappers_const_1(), x, &abs_x, real_context);
-    runtime.realDivide(&abs_x, &z, &z, real_context);
-    atan_owned.arctanReal(&z, &abs_x, real_context);
-    runtime.realAdd(&abs_x, &abs_x, angle, real_context);
+    atan2_owned.arctan2Real(&z, x, angle, real_context);
 }
 
 pub fn sinhCoshReal(
@@ -155,6 +146,7 @@ pub fn tanhReal(
 ) void {
     var a: runtime.real_t = undefined;
     var b: runtime.real_t = undefined;
+    const negative = runtime.realIsNegative(x);
 
     if (build_options.use_fake_wp34s_model) {
         runtime.WP34S_Tanh(x, res, real_context);
@@ -166,16 +158,18 @@ pub fn tanhReal(
         return;
     }
 
-    // Above |x| = 47 the result equals 1 to 39 digits.
-    if (runtime.realCompareAbsGreaterThan(x, abi.constants.const_47())) {
-        copyReal(res, if (runtime.realIsNegative(x)) runtime.z47_math_wrappers_const_minus_1() else runtime.z47_math_wrappers_const_1());
-        return;
-    }
-
-    runtime.realAdd(x, x, &a, real_context);
-    runtime.WP34S_ExpM1(&a, &b, real_context);
-    runtime.realAdd(&b, runtime.z47_math_wrappers_const_2(), &a, real_context);
+    // tanh x = (1 - exp(-2|x|)) / (1 + exp(-2|x|)) with the sign of x: the
+    // exponential never overflows, and a large |x| gives exactly 1.
+    copyAbs(&a, x);
+    runtime.realAdd(&a, &a, &a, real_context);
+    a.bits |= 0x80; // a = -2|x|
+    runtime.WP34S_ExpM1(&a, &b, real_context); // b = exp(-2|x|) - 1
+    runtime.realChangeSign(&b); // b = 1 - exp(-2|x|)
+    runtime.realSubtract(runtime.z47_math_wrappers_const_2(), &b, &a, real_context); // a = 1 + exp(-2|x|)
     runtime.realDivide(&b, &a, res, real_context);
+    if (negative) {
+        res.bits |= 0x80;
+    }
 }
 
 pub fn arcsinhReal(
@@ -184,39 +178,44 @@ pub fn arcsinhReal(
     real_context: *runtime.realContext_t,
 ) void {
     var a: runtime.real_t = undefined;
-    var xabs: runtime.real_t = undefined;
-    const x = &xabs;
+    var s: runtime.real_t = undefined;
+    const negative = runtime.realIsNegative(xin);
 
     if (build_options.use_fake_wp34s_model) {
         runtime.WP34S_ArcSinh(xin, res, real_context);
         return;
     }
 
-    const negative = runtime.realIsNegative(xin);
-    copyAbs(x, xin); // arsinh is odd: the formula below cancels for x < 0, so it runs on |x|
-    if (!runtime.realIsZero(x) and realGetExponent(x) < -18) { // arsinh x = x - x^3/6 to 72 digits, below |x| by less than half a unit at 34 digits
-        runtime.realMultiply(x, x, &a, real_context);
-        runtime.realMultiply(&a, x, &a, real_context);
-        runtime.realDivide(&a, abi.constants.const_6(), &a, real_context);
-        runtime.realSubtract(x, &a, res, real_context);
-        if (runtime.realCompareEqual(res, x)) { // x^3/6 is below the context's last digit: one step toward 0 keeps the result below |x|
-            runtime.realNextToward(x, runtime.z47_math_wrappers_const_0(), res, real_context);
-        }
+    if (runtime.realIsSpecial(xin)) {
+        copyReal(res, xin);
+        return;
+    }
+    if (runtime.realIsZero(xin)) {
         if (negative) {
-            runtime.realChangeSign(res);
+            runtime.realDivide(runtime.z47_math_wrappers_const_minus_1(), runtime.z47_math_wrappers_const_plus_infinity(), res, real_context);
+        } else {
+            runtime.realSetZero(res);
         }
         return;
     }
-    runtime.realMultiply(x, x, &a, real_context);
-    runtime.realAdd(&a, runtime.z47_math_wrappers_const_1(), &a, real_context);
-    runtime.realSquareRoot(&a, &a, real_context);
-    runtime.realAdd(&a, runtime.z47_math_wrappers_const_1(), &a, real_context);
-    runtime.realDivide(x, &a, &a, real_context);
-    runtime.realAdd(&a, runtime.z47_math_wrappers_const_1(), &a, real_context);
-    runtime.realMultiply(x, &a, &a, real_context);
-    runtime.WP34S_Ln1P(&a, res, real_context);
+
+    copyAbs(&a, xin); // arsinh is odd: the formula below cancels for x < 0, so it runs on |x|
+    if (realGetExponent(&a) < -18) { // arsinh x = x - x^3/6 to 72 digits, below |x| by less than half a unit at 34 digits
+        runtime.WP34S_TinyOddSeries(&a, abi.constants.const_6(), false, res, real_context);
+        if (negative) {
+            res.bits |= 0x80;
+        }
+        return;
+    }
+    runtime.realFMA(&a, &a, runtime.z47_math_wrappers_const_1(), &s, real_context);
+    runtime.realSquareRoot(&s, &s, real_context);
+    runtime.realAdd(&s, runtime.z47_math_wrappers_const_1(), &s, real_context);
+    runtime.realDivide(&a, &s, &s, real_context);
+    runtime.realAdd(&s, runtime.z47_math_wrappers_const_1(), &s, real_context);
+    runtime.realMultiply(&a, &s, &s, real_context);
+    runtime.WP34S_Ln1P(&s, res, real_context);
     if (negative) {
-        runtime.realChangeSign(res);
+        res.bits |= 0x80;
     }
 }
 
@@ -227,8 +226,7 @@ pub fn arctanhReal(
 ) void {
     var y: runtime.real_t = undefined;
     var z: runtime.real_t = undefined;
-    var xabs: runtime.real_t = undefined;
-    const x = &xabs;
+    const negative = runtime.realIsNegative(xin);
 
     if (build_options.use_fake_wp34s_model) {
         runtime.WP34S_ArcTanh(xin, res, real_context);
@@ -239,15 +237,19 @@ pub fn arctanhReal(
         runtime.realSetNaN(res);
         return;
     }
-
-    const negative = runtime.realIsNegative(xin);
-    copyAbs(x, xin); // artanh is odd: near -1 the formula takes 1 + z of a z near -1, so it runs on |x|, where 1-x is exact
-    runtime.realSubtract(runtime.z47_math_wrappers_const_1(), x, &z, real_context);
-    runtime.realDivide(x, &z, &y, real_context);
-    runtime.realMultiply(&y, runtime.z47_math_wrappers_const_2(), &z, real_context);
-    runtime.WP34S_Ln1P(&z, &y, real_context);
-    runtime.realMultiply(&y, runtime.z47_math_wrappers_const_1on2(), res, real_context);
-    if (negative) {
-        runtime.realChangeSign(res);
+    if (runtime.realIsZero(xin)) {
+        if (negative) {
+            runtime.realDivide(runtime.z47_math_wrappers_const_minus_1(), runtime.z47_math_wrappers_const_plus_infinity(), res, real_context);
+        } else {
+            runtime.realSetZero(res);
+        }
+        return;
     }
+
+    // artanh x = (ln1p(x) - ln1p(-x)) / 2
+    runtime.WP34S_Ln1P(xin, &y, real_context);
+    runtime.realMinus(xin, &z, real_context);
+    runtime.WP34S_Ln1P(&z, &z, real_context);
+    runtime.realSubtract(&y, &z, &y, real_context);
+    runtime.realMultiply(&y, runtime.z47_math_wrappers_const_1on2(), res, real_context);
 }

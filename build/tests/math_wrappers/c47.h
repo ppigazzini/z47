@@ -31,6 +31,29 @@
 // nothing. Deciding each is its own piece of work; this comment is the record that
 // they are known, not that they are fine.
 #define OPTION_DIST_NORMAL
+// The host defines the DIST menu link, the four distribution groups and, since
+// defines.h gates each distribution file on its own option, the sixteen
+// per-distribution gates the groups define. Same host set as the product build.
+#define OPTION_DISTRIBUTIONS
+#define OPTION_DIST_B
+#define OPTION_DIST_C
+#define OPTION_DIST_D
+#define OPTION_DIST_NORML
+#define OPTION_DIST_T
+#define OPTION_DIST_LOGIS
+#define OPTION_DIST_CAUCH
+#define OPTION_DIST_WEIBL
+#define OPTION_DIST_EXPON
+#define OPTION_DIST_CHI2
+#define OPTION_DIST_BINOM
+#define OPTION_DIST_F
+#define OPTION_DIST_GEOM
+#define OPTION_DIST_HYPER
+#define OPTION_DIST_NBIN
+#define OPTION_DIST_POISS
+#define OPTION_DIST_PRTO
+#define OPTION_DIST_GEV
+#define OPTION_DIST_UNFM
 
 typedef bool bool_t;
 typedef int16_t calcRegister_t;
@@ -110,6 +133,39 @@ typedef struct {
 } real_t;
 
 typedef real_t decNumber;
+typedef uint16_t decNumberUnit;
+#define DECDPUN 3
+#define REAL_MAX_DIGITS(digits)      (((digits + 2) / 6) * 6 + 3)
+#define REAL_SIZE_IN_BYTES(digits)   (10 + sizeof(decNumberUnit) * (REAL_MAX_DIGITS(digits) / DECDPUN))
+
+// typeDefinitions.h's complex types, verbatim: a cplx_t is two reals whose parts
+// are also addressable as Mag and Arg while the value is in polar form, and a
+// cplx159_t gives each part 159 digits of room.
+typedef struct {
+      union { real_t Real; real_t Mag; };
+      union { real_t Imag; real_t Arg; };
+} cplx_t;
+
+typedef struct {
+  union {
+    real_t   Real;
+    uint32_t RealStorage[REAL_SIZE_IN_BYTES(159) / 4];
+  };
+  union {
+    real_t   Imag;
+    uint32_t ImagStorage[REAL_SIZE_IN_BYTES(159) / 4];
+  };
+} cplx159_t;
+
+// realType.h's frame-resident reals: a name over a byte array sized for its
+// digit count. The heap forms stand on the frame here too, since this lane links
+// no allocator worth measuring and the body of a function is the same under both.
+#define REAL_T_PTR(name, digits)     uint32_t _ ## name ## _data[REAL_SIZE_IN_BYTES(digits) / 4]; real_t *const name=(real_t *)_ ## name ## _data
+#define CPLX_T_PTR(name)             cplx_t _ ## name ## _data; cplx_t *const name=&_ ## name ## _data
+#define REAL_T_ALLOC(name, digits)   REAL_T_PTR(name, digits)
+#define REAL_T_FREE(name, digits)
+#define CPLX_T_ALLOC(name)           CPLX_T_PTR(name)
+#define CPLX_T_FREE(name)
 
 typedef enum {
   trigSin,
@@ -139,6 +195,17 @@ typedef struct {
 } realContext_t;
 
 typedef realContext_t decContext;
+
+// realType.h: a routine that is the same under addition and under subtraction
+// takes one of these; the real34 forms exist because real34Add and real34Subtract
+// are macros and cannot be pointed at.
+typedef void (*real34Op_t)   (const real34_t *y, const real34_t *x, real34_t *res);
+void     real34AddOp         (const real34_t *y, const real34_t *x, real34_t *res);
+void     real34SubtractOp    (const real34_t *y, const real34_t *x, real34_t *res);
+typedef void (*realOp_t)     (const real_t *y, const real_t *x, real_t *res, realContext_t *realContext);
+void     realAddOp           (const real_t *y, const real_t *x, real_t *res, realContext_t *realContext);
+void     realSubtractOp      (const real_t *y, const real_t *x, real_t *res, realContext_t *realContext);
+void     realMultiplyOp      (const real_t *y, const real_t *x, real_t *res, realContext_t *realContext);
 
 enum {
   amRadian = 0,
@@ -228,7 +295,11 @@ real34_t *decQuadMultiply(real34_t *res, const real34_t *operand1, const real34_
 #define MAX_FACTORIAL 450
 #define ERROR_MESSAGE_LENGTH 512
 #define TMP_STR_LENGTH 2560
-#define MAX_NUMBER_OF_GLYPHS_IN_STRING 508
+#define MAX_STRING_BYTE_LENGTH 1020
+#define REAL34_SIZE_IN_BLOCKS 4
+#define DECQUAD_Pmax 34
+#define DECQUAD_Emin -6143
+#define DECQUAD_Emax 6144
 #define NUMBER_OF_DISPLAY_DIGITS 20
 #define LIMITEXP 1
 #define FRONTSPACE false
@@ -268,6 +339,14 @@ real34_t *decQuadMultiply(real34_t *res, const real34_t *operand1, const real34_
 #define longIntegerCompareUInt(lhs, rhs) mpz_cmp_ui((lhs), (rhs))
 #define longIntegerToUInt32(source, destination) ((destination) = (uint32_t)mpz_get_ui((source)))
 #define longIntegerAddUInt(lhs, rhs, result) mpz_add_ui((result), (lhs), (rhs))
+#define longIntegerIsPositive(op) (mpz_sgn(op) > 0)
+#define longIntegerCompareAbs(lhs, rhs) mpz_cmpabs((lhs), (rhs))
+#define longIntegerAddUnbounded(lhs, rhs, result) mpz_add((result), (lhs), (rhs))
+#define longIntegerSubtractUnbounded(lhs, rhs, result) mpz_sub((result), (lhs), (rhs))
+#define longIntegerMultiplyUnbounded(lhs, rhs, result) mpz_mul((result), (lhs), (rhs))
+#define longIntegerRoot(op, n, result) mpz_root((result), (op), (n))
+#define longIntegerBits(op) mpz_sizeinbase((op), 2)
+void longIntegerToAllocatedString(const longInteger_t lgInt, char *str, int32_t strLen);
 
 // The four overflow-checked operators are FUNCTIONS, not macros over mpz_. c43
 // gives them external linkage in integers.c and they refuse a result wider than
@@ -316,6 +395,9 @@ void longIntegerSubtract(longInteger_t opY, longInteger_t opX, longInteger_t res
 #define realIsPositive(source) (!realIsNegative(source))
 #define realGetSign(source) (realIsNegative(source) ? -1 : 1)
 #define realIsZero(source) ((source)->lsu[0] == 0 && !realIsSpecial(source))
+#define realGetExponent(source) ((source)->digits + (source)->exponent - 1)
+#define realGetUnadjustedExponent(source) ((source)->exponent)
+#define realStoredDigits(source) ((source)->digits)
 #define realCopy(source, destination) (*(destination) = *(source))
 #define realMinus(operand, res, ctxt) do { (void)(ctxt); realCopy((operand), (res)); realChangeSign((res)); } while(0)
 #define realMultiply(operand1, operand2, res, ctxt) decNumberMultiply((res), (operand1), (operand2), (ctxt))
@@ -327,6 +409,8 @@ void longIntegerSubtract(longInteger_t opY, longInteger_t opX, longInteger_t res
 #define realRescale(operand, res, accuracy, ctxt) decNumberRescale((res), (operand), (accuracy), (ctxt))
 #define realCopyAbs(source, destination) decNumberCopyAbs((destination), (source))
 #define realSquareRoot(operand, res, ctxt) decNumberSquareRoot((res), (operand), (ctxt))
+#define realReduce(operand, res, ctxt) decNumberReduce((res), (operand), (ctxt))
+#define realDivideBy2(operand, ctxt) decNumberMultiply((operand), (operand), const_1on2, (ctxt))
 #define uInt32ToReal(source, destination) decNumberFromUInt32((destination), (source))
 
 #define real34ChangeSign(operand) ((operand)->bytes[15] ^= 0x80)
@@ -335,6 +419,9 @@ void longIntegerSubtract(longInteger_t opY, longInteger_t opX, longInteger_t res
 #define real34IsZero(source) decQuadIsZero((const decQuad *)(source))
 #define real34IsNegative(source) decQuadIsNegative((const decQuad *)(source))
 #define real34IsPositive(source) (!real34IsNegative((source)))
+#define real34IsSpecial(source) (real34IsNaN(source) || real34IsInfinite(source))
+#define real34CopyAbs(source, destination) decQuadCopyAbs((destination), (source))
+#define stringToReal34(source, destination) decQuadFromString((destination), (source), &ctxtReal34)
 #define real34Add(operand1, operand2, res) decQuadAdd((res), (operand1), (operand2), &ctxtReal34)
 #define real34Divide(operand1, operand2, res) decQuadDivide((res), (operand1), (operand2), &ctxtReal34)
 #define real34Multiply(operand1, operand2, res) decQuadMultiply((res), (operand1), (operand2), &ctxtReal34)
@@ -384,6 +471,17 @@ extern uint64_t systemFlags1;
 #define const_1on10 ((real_t *)z47_math_wrappers_const_1on10())
 #define const_plusInfinity ((real_t *)z47_math_wrappers_const_plus_infinity())
 #define const_minusInfinity ((real_t *)z47_math_wrappers_const_minus_infinity())
+#define const_4 ((real_t *)z47_math_wrappers_const_4())
+#define const_6 ((real_t *)z47_math_wrappers_const_6())
+#define const75_pi ((real_t *)z47_math_wrappers_const75_pi())
+#define const75_ln2 ((real_t *)z47_math_wrappers_const75_ln2())
+#define const75_ln10 ((real_t *)z47_math_wrappers_const75_ln10())
+#define const34_1 ((real34_t *)z47_math_wrappers_const34_1())
+#define const34_3600 ((real34_t *)z47_math_wrappers_const34_3600())
+#define const__4 ((real_t *)z47_math_wrappers_const_minus_4())
+#define const75_piOn4 ((real_t *)z47_math_wrappers_const75_piOn4())
+#define const75_piOn2 ((real_t *)z47_math_wrappers_const75_piOn2())
+#define const75_3piOn4 ((real_t *)z47_math_wrappers_const75_3piOn4())
 
 #define realSetPlusInfinity(value) realCopy(const_plusInfinity, (value))
 #define realSetMinusInfinity(value) realCopy(const_minusInfinity, (value))
@@ -450,7 +548,7 @@ void integerPartCplx(enum rounding mode);
 
 bool_t getRegisterAsReal(calcRegister_t reg, real_t *value);
 bool_t getRegisterAsRealAngle(calcRegister_t reg, real_t *value, angularMode_t *angle_mode, bool_t reduce_longinteger_angle);
-bool_t getRegisterAsComplex(calcRegister_t reg, real_t *real, real_t *imag);
+bool_t getRegisterAsComplex(calcRegister_t reg, cplx_t *z);
 bool_t getRegisterAsShortInt(calcRegister_t reg, bool_t *sign, uint64_t *val, bool_t *overflow, bool_t *fractional);
 bool_t getFlag(uint16_t flag);
 bool_t getRegisterAsLongInt(calcRegister_t reg, longInteger_t val, bool_t *fractional);
@@ -463,6 +561,39 @@ void convertLongIntegerRegisterToReal(calcRegister_t reg, real_t *real, realCont
 void convertLongIntegerRegisterToReal34Register(calcRegister_t source, calcRegister_t destination);
 void convertLongIntegerRegisterToTimeRegister(calcRegister_t source, calcRegister_t destination);
 void convertLongIntegerToReal34(longInteger_t source, real34_t *destination);
+void convertLongIntegerRegisterToReal34(calcRegister_t source, real34_t *destination);
+void convertReal34ToLongInteger(const real34_t *real34, longInteger_t lgInt, enum rounding mode);
+void convertRealToLongInteger(const real_t *real, longInteger_t lgInt, enum rounding mode);
+void convertReal34ToReal34Register(const real34_t *real34, calcRegister_t dest);
+void convertReal34ToComplex34Register(const real34_t *real34, const real34_t *imag34, calcRegister_t dest);
+// registerValueConversions.c: the exact scaled-long-integer arithmetic the dyadic
+// commands take before the decNumber path. The fakes record the call and answer
+// false, so the oracle and the owner both stay on the decNumber path this lane
+// compares.
+bool_t convertRegisterToScaledLongInteger(calcRegister_t regist, longInteger_t coefficient, int32_t *exponent);
+int32_t getRegisterIntegerParity(calcRegister_t regist);
+bool_t convertReal34ToScaledLongInteger(const real34_t *real34, longInteger_t coefficient, int32_t *exponent);
+void convertScaledLongIntegerToReal(const longInteger_t coefficient, int32_t exponent, real_t *real, realContext_t *realContext);
+void convertScaledLongIntegerToReal34(const longInteger_t coefficient, int32_t exponent, real34_t *real34);
+void addSubtractScaledLongIntegers(const longInteger_t first, int32_t firstExponent, const longInteger_t second, int32_t secondExponent, bool_t subtract, longInteger_t result, int32_t *resultExponent);
+bool_t rootLongIntegerToReal34(const longInteger_t operand, uint32_t order, real34_t *result);
+bool_t reciprocalRootLongIntegerToReal34(const longInteger_t operand, uint32_t order, real34_t *result);
+bool_t rootRegisterToReal34(calcRegister_t regist, uint32_t order, bool_t exactExponent, real34_t *result);
+bool_t powerLongIntegerToReal34(const longInteger_t base, int32_t exponent, real34_t *result);
+bool_t addSubtractLongIntegerReal34(calcRegister_t integerRegister, const real34_t *real34, bool_t integerFirst, bool_t subtract, real34_t *result);
+bool_t multiplyLongIntegerReal34(calcRegister_t integerRegister, const real34_t *real34, real34_t *result);
+bool_t divideLongIntegerReal34(calcRegister_t integerRegister, const real34_t *real34, bool_t integerFirst, real34_t *result);
+bool_t multiplyRegisterValuesToReal34Scaled(calcRegister_t firstRegister, calcRegister_t secondRegister, int32_t exponentAdjustment, real34_t *result);
+bool_t divideScaledLongIntegersToReal(const longInteger_t numerator, int32_t numeratorExponent, bool_t negativeZero, const longInteger_t denominator, int32_t denominatorExponent, real_t *result, realContext_t *realContext);
+bool_t divideScaledLongIntegersToReal34(const longInteger_t numerator, int32_t numeratorExponent, bool_t negativeZero, const longInteger_t denominator, int32_t denominatorExponent, real34_t *result);
+bool_t divideRegisterValuesToReal34Scaled(calcRegister_t numeratorRegister, calcRegister_t denominatorRegister, int32_t exponentAdjustment, real34_t *result);
+bool_t divideRegisterValuesToReal34(calcRegister_t numeratorRegister, calcRegister_t denominatorRegister, real34_t *result);
+bool_t reciprocalLongIntegerRegisterToReal34(calcRegister_t denominatorRegister, real34_t *result);
+bool_t registerIdentityExponentToReal34(calcRegister_t baseRegister, calcRegister_t exponentRegister, real34_t *result);
+bool_t reduceLongIntegerRegisterAngle(calcRegister_t regist, angularMode_t angularMode, real_t *reducedAngle, bool_t reduceLongintegerAngle);
+void roundReal34ResultToSignificantDigits(real34_t *val);
+bool_t compareFiniteReal34LongIntegerRegisters(calcRegister_t first, calcRegister_t second, int32_t *comparison);
+void longIntegerScaledDivide(longInteger_t opY, int32_t yExp, longInteger_t opX, int32_t xExp, longInteger_t quotient, longInteger_t remainder, int32_t *remainderExp);
 void *getRegisterDataPointer(calcRegister_t reg);
 uint32_t getRegisterDataType(calcRegister_t reg);
 uint32_t getRegisterTag(calcRegister_t reg);
@@ -476,8 +607,8 @@ void convertShortIntegerRegisterToReal34Register(calcRegister_t source, calcRegi
 void convergenceTolerence(real_t *tol);
 bool_t WP34S_RelativeError(const real_t *x, const real_t *y, const real_t *tol, realContext_t *realContext);
 bool_t WP34S_AbsoluteError(const real_t *x, const real_t *y, const real_t *tol, realContext_t *realContext);
-bool_t WP34S_ComplexRelativeError(const real_t *xReal, const real_t *xImag, const real_t *yReal, const real_t *yImag, const real_t *tol, realContext_t *realContext);
-bool_t WP34S_ComplexAbsError(const real_t *xReal, const real_t *xImag, const real_t *yReal, const real_t *yImag, const real_t *tol, realContext_t *realContext);
+bool_t WP34S_ComplexRelativeError(const cplx_t *x, const cplx_t *y, const real_t *tol, realContext_t *realContext);
+bool_t WP34S_ComplexAbsError(const cplx_t *x, const cplx_t *y, const real_t *tol, realContext_t *realContext);
 void convertRealToResultRegister(const real_t *real, calcRegister_t dest, angularMode_t angle_mode);
 void convertRealToLongIntegerRegister(const real_t *real, calcRegister_t dest, enum rounding roundingMode);
 void convertReal34ToLongIntegerRegister(const real34_t *real, calcRegister_t dest, enum rounding roundingMode);
@@ -493,21 +624,16 @@ void real34NextMinus(const real34_t *source, real34_t *destination);
 void realToReal34(const real_t *source, real34_t *destination);
 void convertAngle34FromTo(real34_t *angle, angularMode_t from_mode, angularMode_t to_mode);
 void real34RectangularToPolar(const real34_t *real, const real34_t *imag, real34_t *magnitude, real34_t *theta);
-void convertComplexToResultRegister(const real_t *real, const real_t *imag, calcRegister_t dest);
+void convertComplexToResultRegister(const cplx_t *z, calcRegister_t dest);
+void convertComplexPartsToResultRegister(const real_t *real, const real_t *imag, calcRegister_t dest);
 void setRegisterAngularMode(calcRegister_t reg, angularMode_t mode);
 void convertAngleFromTo(real_t *angle, angularMode_t fromAngularMode, angularMode_t toAngularMode, realContext_t *realContext);
-uint32_t getInfiniteComplexAngle(real_t *x, real_t *y);
-void setInfiniteComplexAngle(uint32_t angle, real_t *x, real_t *y);
-void realPolarToRectangular(const real_t *magnitude,
-                            const real_t *angle,
-                            real_t *real,
-                            real_t *imag,
-                            realContext_t *real_context);
-void realRectangularToPolar(const real_t *real,
-                            const real_t *imag,
-                            real_t *magnitude,
-                            real_t *theta,
-                            realContext_t *real_context);
+uint32_t getInfiniteComplexAngle(const cplx_t *z);
+void setInfiniteComplexAngle(uint32_t angle, cplx_t *z);
+void rightAngleLessRadians(real_t *angle, bool_t negative);
+void realPolarToRectangular(const real_t *magnitude, const real_t *theta, cplx_t *z, realContext_t *realContext);
+void realPolarToRectangularInUnit(const real_t *magnitude, const real_t *theta, angularMode_t angularMode, cplx_t *z, realContext_t *realContext);
+void realRectangularToPolar(const cplx_t *z, real_t *magnitude, real_t *theta, realContext_t *realContext);
 void WP34S_Mod(const real_t *x, const real_t *y, real_t *res, realContext_t *real_context);
 void WP34S_Logxy(const real_t *numer, const real_t *denom, real_t *res, realContext_t *real_context);
 void C47_WP34S_Cvt2RadSinCosTan(const real_t *angle,
@@ -531,23 +657,48 @@ void WP34S_Ln1P(const real_t *x, real_t *res, realContext_t *real_context);
 void WP34S_ExpM1(const real_t *x, real_t *res, realContext_t *real_context);
 void realPower(const real_t *base, const real_t *exponent, real_t *result, realContext_t *real_context);
 void PowerReal(const real_t *base, const real_t *exponent, real_t *result, realContext_t *real_context);
-uint8_t PowerComplex(const real_t *base_real, const real_t *base_imag, const real_t *exponent_real, const real_t *exponent_imag, real_t *result_real, real_t *result_imag, realContext_t *real_context);
+uint8_t PowerComplex(const cplx_t *y, const cplx_t *x, cplx_t *r, realContext_t *realContext);
 void WP34S_Bernoulli(const real_t *x, real_t *res, bool_t bnstar, realContext_t *real_context);
 void WP34S_Factorial(const real_t *x, real_t *res, realContext_t *real_context);
 void WP34S_InverseW(const real_t *x, real_t *res, realContext_t *real_context);
-void WP34S_InverseComplexW(const real_t *real, const real_t *imag, real_t *res_real, real_t *res_imag, realContext_t *real_context);
+void WP34S_InverseComplexW(const cplx_t *x, cplx_t *res, realContext_t *realContext);
 void WP34S_LambertW(const real_t *x, real_t *res, bool_t negative_branch, realContext_t *real_context);
-void WP34S_ComplexLambertW(const real_t *real, const real_t *imag, real_t *res_real, real_t *res_imag, realContext_t *real_context);
-void WP34S_ComplexGamma(const real_t *real, const real_t *imag, real_t *res_real, real_t *res_imag, realContext_t *real_context);
+void WP34S_ComplexLambertW(const cplx_t *x, cplx_t *res, realContext_t *realContext);
+void WP34S_ComplexGamma(const cplx_t *zin, cplx_t *res, realContext_t *realContext);
 void WP34S_betai(const real_t *b, const real_t *a, const real_t *x, real_t *res, realContext_t *real_context);
 void realExpM1(const real_t *x, real_t *res, realContext_t *realContext);
 void logxyLonI(const real_t *denom);
 void logxyReal(const real_t *denom);
 void logxyCplx(const real_t *denom);
-void lnComplex(const real_t *real, const real_t *imag, real_t *lnReal, real_t *lnImag, realContext_t *realContext);
-void sqrt1Px2Complex(const real_t *real, const real_t *imag, real_t *resReal, real_t *resImag, realContext_t *realContext);
-void sqrtComplex(const real_t *real, const real_t *imag, real_t *resReal, real_t *resImag, realContext_t *realContext);
-void complexMagnitude(const real_t *real, const real_t *imag, real_t *magnitude, realContext_t *realContext);
+void lnComplex(const cplx_t *z, cplx_t *ln, realContext_t *realContext);
+void lnComplexDirect(const cplx_t *z, cplx_t *ln);
+void sqrt1Px2Complex(const cplx_t *z, cplx_t *res, realContext_t *realContext);
+void sqrtComplex(const cplx_t *z, cplx_t *res, realContext_t *realContext);
+void curtComplex(const cplx_t *z, cplx_t *res, realContext_t *realContext);
+void complexMagnitude(const cplx_t *a, real_t *c, realContext_t *realContext);
+void complexMagnitude2(const cplx_t *a, real_t *c, realContext_t *realContext);
+void realExp(const real_t *rhs, real_t *res, realContext_t *set);
+void addComplex(const cplx_t *a, const cplx_t *b, cplx_t *res, realContext_t *realContext);
+void subComplex(const cplx_t *a, const cplx_t *b, cplx_t *res, realContext_t *realContext);
+void expComplex(const cplx_t *z, cplx_t *res, realContext_t *realContext);
+void expM1Complex(const cplx_t *z, cplx_t *res, realContext_t *realContext);
+// changeSign.h's inline negation of both parts.
+static inline void chsComplex(cplx_t *a) {
+  realChangeSign(&a->Real);
+  realChangeSign(&a->Imag);
+}
+void WP34S_TinyOddSeries(const real_t *x, const real_t *divisor, bool_t above, real_t *res, realContext_t *realContext);
+void WP34S_Real34Remainder(const real_t *x, const real_t *y, real_t *res);
+void WP34S_LanczosSum(const real_t *x, const real_t *offset, real_t *res, realContext_t *realContext);
+void WP34S_LnExtended(const real_t *x, real_t *res, realContext_t *realContext);
+void WP34S_Log1pMinus(const real_t *value, real_t *res, realContext_t *realContext);
+bool_t WP34S_IsPositiveFinite(const real_t *value);
+bool_t WP34S_HasCancellation(const real_t *left, const real_t *right, const real_t *result, int32_t places);
+void WP34S_AdjustPositiveUnderflow(real_t *value);
+void WP34S_SetPowerOfTen(int32_t exponent, real_t *res);
+// f.h: the shared incomplete-beta pair the discrete distributions and Ixyz take.
+void distributionLogBetaPrefix(const real_t *a, const real_t *b, const real_t *y, const real_t *z, const real_t *logit, real_t *res, realContext_t *realContext);
+bool_t distributionBetaPair(const real_t *a, const real_t *b, const real_t *y, const real_t *z, const real_t *logit, real_t *lower, real_t *upper, realContext_t *realContext);
 void int32ToReal(int32_t source, real_t *destination);
 int32_t realToInt32C47(const real_t *source, bool_t *error);
 decNumber *decimal128ToNumber(const real34_t *source, decNumber *destination);
@@ -563,6 +714,9 @@ decNumber *decNumberFromUInt32(decNumber *result, uint32_t source);
 decNumber *decNumberPlus(decNumber *result, const decNumber *rhs, decContext *real_context);
 decNumber *decNumberRescale(decNumber *result, const decNumber *lhs, const decNumber *rhs, decContext *real_context);
 decNumber *decNumberCopyAbs(decNumber *result, const decNumber *rhs);
+decNumber *decNumberReduce(decNumber *result, const decNumber *rhs, decContext *real_context);
+real34_t *decQuadCopyAbs(real34_t *result, const real34_t *rhs);
+real34_t *decQuadFromString(real34_t *result, const char *string, realContext_t *context);
 bool_t realIntegerPowerExact(const real_t *x, const real_t *n, real_t *res);
 bool_t realExactRoot(const real_t *x, const real_t *n, real_t *root);
 void convertLongIntegerToReal(longInteger_t source, real_t *destination, realContext_t *real_context);
@@ -579,33 +733,12 @@ void realSetNegativeOne(real_t *value);
 void *allocC47Blocks(size_t sizeInBlocks);
 void freeC47Blocks(void *pcMemPtr, size_t sizeInBlocks);
 bool_t initMatrixRegister(calcRegister_t regist, uint16_t rows, uint16_t cols, bool_t complex);
-void divRealComplex(const real_t *numer,
-                    const real_t *denom_real,
-                    const real_t *denom_imag,
-                    real_t *quotient_real,
-                    real_t *quotient_imag,
-                    realContext_t *real_context);
-void divComplexComplex(const real_t *numer_real,
-                       const real_t *numer_imag,
-                       const real_t *denom_real,
-                       const real_t *denom_imag,
-                       real_t *quotient_real,
-                       real_t *quotient_imag,
-                       realContext_t *real_context);
-void mulComplexReal(const real_t *factor1_real,
-                    const real_t *factor1_imag,
-                    const real_t *factor2,
-                    real_t *product_real,
-                    real_t *product_imag,
-                    realContext_t *real_context);
-void mulComplexi(const real_t *inReal, const real_t *inImag, real_t *productReal, real_t *productImag);
-void mulComplexComplex(const real_t *factor1_real,
-                       const real_t *factor1_imag,
-                       const real_t *factor2_real,
-                       const real_t *factor2_imag,
-                       real_t *product_real,
-                       real_t *product_imag,
-                       realContext_t *real_context);
+void divRealComplex(const real_t *numer, const cplx_t *denom, cplx_t *quotient, realContext_t *realContext);
+void divComplexComplex(const cplx_t *numer, const cplx_t *denom, cplx_t *quotient, realContext_t *realContext);
+void divComplexReal(const cplx_t *numer, const real_t *denom, cplx_t *quotient, realContext_t *realContext);
+void mulComplexReal(const cplx_t *factor1, const real_t *factor2, cplx_t *product, realContext_t *realContext);
+void mulComplexi(const cplx_t *in, cplx_t *product);
+void mulComplexComplex(const cplx_t *factor1, const cplx_t *factor2, cplx_t *product, realContext_t *realContext);
 void unitVectorCplx(void);
 uint64_t WP34S_extract_value(uint64_t val, int32_t *sign);
 int64_t WP34S_build_value(uint64_t x, int32_t sign);
@@ -678,7 +811,7 @@ void multiplyRealMatrix(const real34Matrix_t *matrix, const real34_t *x, real34M
 void _multiplyRealMatrix(const real34Matrix_t *matrix, const real_t *x, real34Matrix_t *res, realContext_t *realContext);
 void multiplyRealMatrices(const real34Matrix_t *y, const real34Matrix_t *x, real34Matrix_t *res);
 void multiplyComplexMatrix(const complex34Matrix_t *matrix, const real34_t *xr, const real34_t *xi, complex34Matrix_t *res);
-void _multiplyComplexMatrix(const complex34Matrix_t *matrix, const real_t *xr, const real_t *xi, complex34Matrix_t *res, realContext_t *realContext);
+void _multiplyComplexMatrix(const complex34Matrix_t *matrix, const cplx_t *x, complex34Matrix_t *res, realContext_t *realContext);
 void multiplyComplexMatrices(const complex34Matrix_t *y, const complex34Matrix_t *x, complex34Matrix_t *res);
 void divideRealMatrix(const real34Matrix_t *matrix, const real34_t *x, real34Matrix_t *res);
 void _divideRealMatrix(const real34Matrix_t *matrix, const real_t *x, real34Matrix_t *res, realContext_t *realContext);
@@ -686,8 +819,8 @@ void _divideByRealMatrix(const real_t *y, const real34Matrix_t *matrix, real34Ma
 void divideByRealMatrix(const real34_t *y, const real34Matrix_t *matrix, real34Matrix_t *res);
 void divideRealMatrices(const real34Matrix_t *y, const real34Matrix_t *x, real34Matrix_t *res);
 void divideComplexMatrix(const complex34Matrix_t *matrix, const real34_t *xr, const real34_t *xi, complex34Matrix_t *res);
-void _divideComplexMatrix(const complex34Matrix_t *matrix, const real_t *xr, const real_t *xi, complex34Matrix_t *res, realContext_t *realContext);
-void _divideByComplexMatrix(const real_t *yr, const real_t *yi, const complex34Matrix_t *matrix, complex34Matrix_t *res, realContext_t *realContext);
+void _divideComplexMatrix(const complex34Matrix_t *matrix, const cplx_t *x, complex34Matrix_t *res, realContext_t *realContext);
+void _divideByComplexMatrix(const cplx_t *y, const complex34Matrix_t *matrix, complex34Matrix_t *res, realContext_t *realContext);
 void divideByComplexMatrix(const real34_t *yr, const real34_t *yi, const complex34Matrix_t *matrix, complex34Matrix_t *res);
 void divideComplexMatrices(const complex34Matrix_t *y, const complex34Matrix_t *x, complex34Matrix_t *res);
 uint16_t realVectorSize(const real34Matrix_t *matrix);
@@ -733,6 +866,19 @@ const real_t *z47_math_wrappers_const_phi(void);
 const real_t *z47_math_wrappers_const_pi(void);
 const real_t *z47_math_wrappers_const_plus_infinity(void);
 const real_t *z47_math_wrappers_const_minus_infinity(void);
+const real_t *z47_math_wrappers_const_4(void);
+const real_t *z47_math_wrappers_const_6(void);
+const real_t *z47_math_wrappers_const75_pi(void);
+const real_t *z47_math_wrappers_const75_ln2(void);
+const real_t *z47_math_wrappers_const75_ln10(void);
+const real34_t *z47_math_wrappers_const34_1(void);
+const real34_t *z47_math_wrappers_const34_3600(void);
+const real_t *z47_math_wrappers_const_minus_4(void);
+const real_t *z47_math_wrappers_const75_piOn4(void);
+const real_t *z47_math_wrappers_const75_piOn2(void);
+const real_t *z47_math_wrappers_const75_3piOn4(void);
+void realPower2(const real_t *x, real_t *res, realContext_t *realContext);
+void realPower10(const real_t *x, real_t *res, realContext_t *realContext);
 void z47_math_wrappers_integer_part_long_integer(void);
 void z47_math_wrappers_integer_part_short_integer(void);
 void z47_math_wrappers_fractional_part_long_integer(void);
@@ -799,10 +945,10 @@ static inline void z47_test_setVectorRegisterPolarMode(calcRegister_t reg, uint3
 
 void sinCosReal(trigType_t trigType);
 void sinCosCplx(trigType_t trigType);
-void sinComplex(const real_t *real, const real_t *imag, real_t *resReal, real_t *resImag, realContext_t *realContext);
-void cosComplex(const real_t *real, const real_t *imag, real_t *resReal, real_t *resImag, realContext_t *realContext);
-uint8_t TanComplex(const real_t *xReal, const real_t *xImag, real_t *rReal, real_t *rImag, realContext_t *realContext);
-uint8_t TanhComplex(const real_t *xReal, const real_t *xImag, real_t *rReal, real_t *rImag, realContext_t *realContext);
+void sinComplex(const cplx_t *z, cplx_t *res, realContext_t *realContext);
+void cosComplex(const cplx_t *z, cplx_t *res, realContext_t *realContext);
+uint8_t TanComplex(const cplx_t *x, cplx_t *r, realContext_t *realContext);
+uint8_t TanhComplex(const cplx_t *x, cplx_t *r, realContext_t *realContext);
 void sinhCoshReal(trigType_t trigType);
 void sinhCoshCplx(trigType_t trigType);
 

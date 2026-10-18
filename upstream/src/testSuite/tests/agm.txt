@@ -27,6 +27,19 @@ Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=LonI:"-2" RY=LonI:"5"
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"5" RY=LonI:"-2"
 Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=LonI:"5" RY=LonI:"-2"
 
+; Nonfinite inputs must not enter the iterative kernel.
+In:  FL_ASLIFT=0 FL_SPCRES=0 FL_CPXRES=0 RX=Real:"inf" RY=Real:"2"
+Out: EC=1 FL_ASLIFT=0 FL_SPCRES=0 FL_CPXRES=0 RX=Real:"inf" RY=Real:"2"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=0 RX=Real:"inf" RY=Real:"2"
+Out: EC=0 FL_ASLIFT=1 FL_SPCRES=1 FL_CPXRES=0 RL=Real:"inf" RX=Real:"inf"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=0 RX=Real:"inf" RY=Real:"0"
+Out: EC=0 FL_ASLIFT=1 FL_SPCRES=1 FL_CPXRES=0 RL=Real:"inf" RX=Real:"0"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=0 RX=Real:"NaN" RY=Real:"0"
+Out: EC=0 FL_ASLIFT=1 FL_SPCRES=1 FL_CPXRES=0 RL=Real:"NaN" RX=Real:"NaN"
+
 ;=======================================================================================================================
 ; Integer Domain
 ;=======================================================================================================================
@@ -47,6 +60,82 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"1000" RX=Real:"189388.302409950875557
 
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"0.1" RY=Real:"0.00000001"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.1" RX=Real:"0.00897372788032617635832975712477846117577814780155175563194533968106"
+
+; The real iteration needs guard digits. Each subtraction and scale checks digit 34.
+Func: fnAgm
+In:  RMODE=0 FL_CPXRES=0 RY=Real:"4.482641554400924039604901399e82" RX=Real:"7.153175982084252549634178599e37"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"6.735828243772877315529580423290540e80"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e-47"
+Out: EC=0 RX=Real:"0"
+
+Func: fnAgm
+In:  RMODE=1 FL_CPXRES=0 RY=Real:"4.482641554400924039604901399e82" RX=Real:"7.153175982084252549634178599e37"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"6.735828243772877315529580423290540e80"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e-47"
+Out: EC=0 RX=Real:"0"
+
+Func: fnAgm
+In:  RMODE=2 FL_CPXRES=0 RY=Real:"4.482641554400924039604901399e82" RX=Real:"7.153175982084252549634178599e37"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"6.735828243772877315529580423290540e80"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e-47"
+Out: EC=0 RX=Real:"0"
+
+Func: fnAgm
+In:  RMODE=3 FL_CPXRES=0 RY=Real:"4.482641554400924039604901399e82" RX=Real:"7.153175982084252549634178599e37"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"6.735828243772877315529580423290540e80"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e-47"
+Out: EC=0 RX=Real:"0"
+
+Func: fnAgm
+In:  RMODE=4 FL_CPXRES=0 RY=Real:"4.482641554400924039604901399e82" RX=Real:"7.153175982084252549634178599e37"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"6.735828243772877315529580423290539e80"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e-47"
+Out: EC=0 RX=Real:"0"
+
+Func: fnAgm
+In:  RMODE=5 FL_CPXRES=0 RY=Real:"4.482641554400924039604901399e82" RX=Real:"7.153175982084252549634178599e37"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"6.735828243772877315529580423290540e80"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e-47"
+Out: EC=0 RX=Real:"0"
+
+Func: fnAgm
+In:  RMODE=6 FL_CPXRES=0 RY=Real:"4.482641554400924039604901399e82" RX=Real:"7.153175982084252549634178599e37"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"6.735828243772877315529580423290539e80"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e-47"
+Out: EC=0 RX=Real:"-0"
+
+; A decimal128 work context overflows the first product even though the result is finite.
+Func: fnAgm
+In:  RMODE=0 FL_SPCRES=0 FL_CPXRES=0 RY=Real:"9.999999999999999999999999999999999e6144" RX=Real:"8e6144"
+Out: EC=0 RX=Real:"8.972114321150410280511208771316266e6144"
 
 ; Special case fast exist zeros
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"0" RY=Real:"1"
@@ -79,6 +168,18 @@ Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=LonI:"-2" RX=Cplx:"1.1350783664601195967187
 
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=1 RX=LonI:"5" RY=LonI:"-2"
 Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=LonI:"5" RX=Cplx:"1.135078366460119596718762687873972 i 1.578058852302749068410087568838160"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RX=Cplx:"inf i 0" RY=Cplx:"2 i 0"
+Out: EC=0 FL_ASLIFT=1 FL_SPCRES=1 FL_CPXRES=1 RL=Cplx:"inf i 0" RX=Cplx:"inf i 0"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RX=Cplx:"inf i 0" RY=Cplx:"0 i 0"
+Out: EC=0 FL_ASLIFT=1 FL_SPCRES=1 FL_CPXRES=1 RL=Cplx:"inf i 0" RX=Cplx:"0 i 0"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RX=Cplx:"inf i 1" RY=Cplx:"2 i 0"
+Out: EC=0 FL_ASLIFT=1 FL_SPCRES=1 FL_CPXRES=1 RL=Cplx:"inf i 1" RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RX=Cplx:"NaN i 0" RY=Cplx:"0 i 0"
+Out: EC=0 FL_ASLIFT=1 FL_SPCRES=1 FL_CPXRES=1 RL=Cplx:"NaN i 0" RX=Cplx:"NaN i NaN"
 
 ;=======================================================================================================================
 ; Matrix / Number

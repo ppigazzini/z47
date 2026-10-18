@@ -2,19 +2,19 @@
 // Zig port of src/c47/mathematics/multiplication.c (dispatch matrix and cells).
 
 const std = @import("std");
+const abi = @import("abi");
 const build_options = @import("math_command_wrappers_build_options");
 const runtime = @import("../command_wrappers/runtime.zig");
 const support = @import("dispatch_cells_runtime.zig");
+const addition = @import("addition_cells.zig");
 
 const dm42_pkg_xip = build_options.dm42_pkg_xip;
 const table_section: ?[]const u8 = if (dm42_pkg_xip) ".qspi_data" else null;
 
-// multiplication.c guards mulComplexComplex159 and the `digits <= 159` arm of
-// mulComplexComplex with
+// multiplication.c guards mulComplexComplex159 and mulComplexReal159 with
 // `OPTION_CUBIC_159 || OPTION_SQUARE_159 || OPTION_EIGEN_159`. OPTION_SQUARE_159
 // is #undef'd at the top of defines.h and never defined again in any
-// configuration, so the disjunction is the other two terms. Without them,
-// 76..159 digits falls through to the bug screen.
+// configuration, so the disjunction is the other two terms.
 const arm_159 = runtime.option_cubic_159 or runtime.option_eigen_159;
 
 const CellFn = *const fn () callconv(.c) void;
@@ -31,6 +31,52 @@ fn bufPrintZ(buffer: []u8, comptime format: []const u8, args: anytype) [:0]const
     const slice = std.mem.print(buffer[0 .. buffer.len - 1], format, args) catch buffer[0..0];
     buffer[slice.len] = 0;
     return buffer[0..slice.len :0];
+}
+
+fn significantDigitsOr34() i32 {
+    return if (runtime.significantDigits == 0) 34 else runtime.significantDigits;
+}
+
+fn realElem(matrix: *runtime.real34Matrix_t, index: i32) *runtime.real34_t {
+    return &abi.matrixRealElems(matrix)[@intCast(index)];
+}
+
+fn cplxElem(matrix: *runtime.complex34Matrix_t, index: i32) *runtime.complex34_t {
+    return &abi.matrixComplexElems(matrix)[@intCast(index)];
+}
+
+fn elementCount(header: anytype) i32 {
+    return @as(i32, header.matrixColumns) * @as(i32, header.matrixRows);
+}
+
+// realSetPlusInfinity / realSetMinusInfinity are decNumber macros over the
+// bits field: an infinity carries DECINF (0x40), with DECNEG (0x80) for the
+// negative one, a zero exponent and a single zero digit.
+fn realSetPlusInfinity(value: *runtime.real_t) void {
+    value.bits = 0x40;
+    value.exponent = 0;
+    value.digits = 1;
+    value.lsu[0] = 0;
+}
+
+fn realSetMinusInfinity(value: *runtime.real_t) void {
+    value.bits = 0x80 | 0x40;
+    value.exponent = 0;
+    value.digits = 1;
+    value.lsu[0] = 0;
+}
+
+// One matrix element times a long integer: exact where the element is finite,
+// otherwise the 39-digit real product rounded to the significant digits.
+fn multiplyLongIntegerMatrixElement(integer_register: runtime.calcRegister_t, integer: *const runtime.real_t, element: *runtime.real34_t) void {
+    if (!runtime.multiplyLongIntegerReal34(integer_register, element, element)) {
+        var value: runtime.real_t = undefined;
+
+        runtime.real34ToReal(element, &value);
+        runtime.realMultiply(integer, &value, &value, &runtime.ctxtReal39);
+        runtime.roundToSignificantDigits(&value, &value, significantDigitsOr34(), &runtime.ctxtReal39);
+        runtime.realToReal34(&value, element);
+    }
 }
 
 // regX = column, regY = row; layout copied verbatim from multiplication.c.
@@ -77,49 +123,37 @@ pub export fn z47_math_wrappers_legacy_fnMultiply(unused_but_mandatory_parameter
     runtime.adjustResult(REGISTER_X, true, true, REGISTER_X, REGISTER_Y, no_register);
 }
 
-pub export fn mulComplexi(
-    in_real: *const runtime.real_t,
-    in_imag: *const runtime.real_t,
-    product_real: *runtime.real_t,
-    product_imag: *runtime.real_t,
-) linksection(runtime.code_section) callconv(.c) void {
+pub export fn mulComplexi(in: *const runtime.cplx_t, product: *runtime.cplx_t) linksection(runtime.code_section) callconv(.c) void {
     var tmp_i: runtime.real_t = undefined;
 
-    _ = support.decNumberCopy(&tmp_i, in_imag);
+    _ = support.decNumberCopy(&tmp_i, &in.Imag);
     runtime.realChangeSign(&tmp_i);
-    _ = support.decNumberCopy(product_imag, in_real);
-    _ = support.decNumberCopy(product_real, &tmp_i);
+    _ = support.decNumberCopy(&product.Imag, &in.Real);
+    _ = support.decNumberCopy(&product.Real, &tmp_i);
 }
 
-fn mulComplexComplex75(
-    factor1_real: *const runtime.real_t,
-    factor1_imag: *const runtime.real_t,
-    factor2_real: *const runtime.real_t,
-    factor2_imag: *const runtime.real_t,
-    product_real: *runtime.real_t,
-    product_imag: *runtime.real_t,
-    real_context: *runtime.realContext_t,
-) void {
+pub export fn mulComplexComplex(factor1: *const runtime.cplx_t, factor2: *const runtime.cplx_t, product: *runtime.cplx_t, real_context: *runtime.realContext_t) linksection(runtime.code_section) callconv(.c) void {
     var a: runtime.real_t = undefined;
     var b: runtime.real_t = undefined;
     var c: runtime.real_t = undefined;
     var d: runtime.real_t = undefined;
     var p: runtime.real_t = undefined;
     var t: runtime.real_t = undefined;
+    var infinite_result = false;
 
-    _ = support.decNumberCopy(&a, factor1_real);
+    _ = support.decNumberCopy(&a, &factor1.Real);
     const a_is_zero = runtime.realIsZero(&a);
     const a_is_infinite = runtime.realIsInfinite(&a);
 
-    _ = support.decNumberCopy(&b, factor1_imag);
+    _ = support.decNumberCopy(&b, &factor1.Imag);
     const b_is_zero = runtime.realIsZero(&b);
     const b_is_infinite = runtime.realIsInfinite(&b);
 
-    _ = support.decNumberCopy(&c, factor2_real);
+    _ = support.decNumberCopy(&c, &factor2.Real);
     const c_is_zero = runtime.realIsZero(&c);
     const c_is_infinite = runtime.realIsInfinite(&c);
 
-    _ = support.decNumberCopy(&d, factor2_imag);
+    _ = support.decNumberCopy(&d, &factor2.Imag);
     const d_is_zero = runtime.realIsZero(&d);
     const d_is_infinite = runtime.realIsInfinite(&d);
 
@@ -127,47 +161,88 @@ fn mulComplexComplex75(
         (a_is_zero and b_is_zero and (c_is_infinite or d_is_infinite)) or
         (c_is_zero and d_is_zero and (a_is_infinite or b_is_infinite)))
     {
-        runtime.realSetNaN(product_real);
-        runtime.realSetNaN(product_imag);
+        runtime.realSetNaN(&product.Real);
+        runtime.realSetNaN(&product.Imag);
         return;
     }
 
     if ((a_is_infinite or b_is_infinite) and (c_is_infinite or d_is_infinite)) { // perform multiplication in polar form
-        support.setInfiniteComplexAngle(
-            (support.getInfiniteComplexAngle(&a, &b) + support.getInfiniteComplexAngle(&c, &d)) % 8,
-            product_real,
-            product_imag,
-        );
-    } else { // perform multiplication in rectangular form using numerically stable approach
+        runtime.setInfiniteComplexAngle((runtime.getInfiniteComplexAngle(factor1) + runtime.getInfiniteComplexAngle(factor2)) % 8, product);
+    }
+    // Not sure the following lines are needed
+    //else if(aIsInfinite || bIsInfinite || cIsInfinite || dIsInfinite) {
+    //  realRectangularToPolar(&a, &b, &a, &b, realContext);
+    //  realRectangularToPolar(&c, &d, &c, &d, realContext);
+    //  realMultiply(&a, &c, &a, realContext);
+    //  realAdd(&b, &d, &b, realContext);
+    //  realPolarToRectangular(&a, &b, productReal, productImag, realContext);
+    //}
+    else { // perform multiplication in rectangular form using numerically stable approach
+        if (a_is_infinite or b_is_infinite) {
+            if (a_is_infinite) {
+                runtime.int32ToReal(if (runtime.realIsNegative(&a)) -1 else 1, &a);
+            } else {
+                runtime.realSetZero(&a);
+            }
+            if (b_is_infinite) {
+                runtime.int32ToReal(if (runtime.realIsNegative(&b)) -1 else 1, &b);
+            } else {
+                runtime.realSetZero(&b);
+            }
+            infinite_result = true;
+        } else if (c_is_infinite or d_is_infinite) {
+            if (c_is_infinite) {
+                runtime.int32ToReal(if (runtime.realIsNegative(&c)) -1 else 1, &c);
+            } else {
+                runtime.realSetZero(&c);
+            }
+            if (d_is_infinite) {
+                runtime.int32ToReal(if (runtime.realIsNegative(&d)) -1 else 1, &d);
+            } else {
+                runtime.realSetZero(&d);
+            }
+            infinite_result = true;
+        }
+
         // real part
         runtime.realMultiply(&a, &c, &p, real_context); // RN(ac)
         runtime.realChangeSign(&b);
         runtime.realFMA(&b, &d, &p, &t, real_context); // RN(p - bd)
         runtime.realChangeSign(&b);
         runtime.realChangeSign(&p);
-        runtime.realFMA(&a, &c, &p, product_real, real_context); // RN(ac - p)
-        runtime.realAdd(product_real, &t, product_real, real_context); // RN(RN(p - bd) + RN(ac - p))
+        runtime.realFMA(&a, &c, &p, &product.Real, real_context); // RN(ac - p)
+        runtime.realAdd(&product.Real, &t, &product.Real, real_context); // RN(RN(p - bd) + RN(ac - p))
 
         // imaginary part
         runtime.realMultiply(&a, &d, &p, real_context); // RN(ad)
         runtime.realFMA(&b, &c, &p, &t, real_context); // RN(bc + p)
         runtime.realChangeSign(&p);
-        runtime.realFMA(&a, &d, &p, product_imag, real_context); // RN(ad - p)
-        runtime.realAdd(product_imag, &t, product_imag, real_context); // RN(RN(bc + p) + RN(ad - p))
+        runtime.realFMA(&a, &d, &p, &product.Imag, real_context); // RN(ad - p)
+        runtime.realAdd(&product.Imag, &t, &product.Imag, real_context); // RN(RN(bc + p) + RN(ad - p))
+
+        if (infinite_result) {
+            if (!runtime.realIsZero(&product.Real)) {
+                if (runtime.realIsNegative(&product.Real)) {
+                    realSetMinusInfinity(&product.Real);
+                } else {
+                    realSetPlusInfinity(&product.Real);
+                }
+            }
+            if (!runtime.realIsZero(&product.Imag)) {
+                if (runtime.realIsNegative(&product.Imag)) {
+                    realSetMinusInfinity(&product.Imag);
+                } else {
+                    realSetPlusInfinity(&product.Imag);
+                }
+            }
+        }
     }
 }
 
-// Compiled when OPTION_CUBIC_159 / OPTION_SQUARE_159 / OPTION_EIGEN_159 are
-// enabled upstream; only reachable when realContext->digits > 75.
-fn mulComplexComplex159(
-    factor1_real: *const runtime.real_t,
-    factor1_imag: *const runtime.real_t,
-    factor2_real: *const runtime.real_t,
-    factor2_imag: *const runtime.real_t,
-    product_real: *runtime.real_t,
-    product_imag: *runtime.real_t,
-    real_context: *runtime.realContext_t,
-) void {
+// This re-write is needed as the mixing of decNumber types cannot deal with the
+// real_t temporary variable within mulComplexComplex(). The 159 series is
+// needed for 39 digit precision in cuberoots and the cubic formula solver.
+fn mulComplexComplex159Impl(factor1: *const runtime.cplx159_t, factor2: *const runtime.cplx159_t, product: *runtime.cplx159_t, real_context: *runtime.realContext_t) callconv(.c) void {
     var a_data: support.real159_t = undefined;
     var b_data: support.real159_t = undefined;
     var c_data: support.real159_t = undefined;
@@ -190,52 +265,38 @@ fn mulComplexComplex159(
     runtime.realSetZero(d);
     runtime.realSetZero(p);
     runtime.realSetZero(t);
-    _ = support.decNumberCopy(a, factor1_real);
-    _ = support.decNumberCopy(b, factor1_imag);
-    _ = support.decNumberCopy(c, factor2_real);
-    _ = support.decNumberCopy(d, factor2_imag);
+    _ = support.decNumberCopy(a, factor1.Real.constPtr());
+    _ = support.decNumberCopy(b, factor1.Imag.constPtr());
+    _ = support.decNumberCopy(c, factor2.Real.constPtr());
+    _ = support.decNumberCopy(d, factor2.Imag.constPtr());
 
     // Real part: ac - bd
     runtime.realMultiply(a, c, p, real_context);
     runtime.realChangeSign(b);
-    runtime.realFMA(b, d, p, product_real, real_context);
+    runtime.realFMA(b, d, p, product.Real.ptr(), real_context);
     runtime.realChangeSign(b);
 
     // Imaginary part: ad + bc
     runtime.realMultiply(a, d, p, real_context);
-    runtime.realFMA(b, c, p, product_imag, real_context);
+    runtime.realFMA(b, c, p, product.Imag.ptr(), real_context);
 }
 
-pub export fn mulComplexComplex(
-    factor1_real: *const runtime.real_t,
-    factor1_imag: *const runtime.real_t,
-    factor2_real: *const runtime.real_t,
-    factor2_imag: *const runtime.real_t,
-    product_real: *runtime.real_t,
-    product_imag: *runtime.real_t,
-    real_context: *runtime.realContext_t,
-) linksection(runtime.code_section) callconv(.c) void {
-    if (real_context.digits <= 75) {
-        mulComplexComplex75(factor1_real, factor1_imag, factor2_real, factor2_imag, product_real, product_imag, real_context);
-    } else if (arm_159 and real_context.digits <= 159) {
-        mulComplexComplex159(factor1_real, factor1_imag, factor2_real, factor2_imag, product_real, product_imag, real_context);
-    } else {
-        var message_buffer: [96]u8 = undefined;
-        const message = bufPrintZ(&message_buffer, "Exceed digits :mulComplexComplex: {d}", .{real_context.digits});
-        support.displayBugScreen(message);
+// mulComplexReal for 159 digit values in a cplx159_t.
+fn mulComplexReal159Impl(factor1: *const runtime.cplx159_t, factor2: *const runtime.real_t, product: *runtime.cplx159_t, real_context: *runtime.realContext_t) callconv(.c) void {
+    runtime.realMultiply(factor1.Real.constPtr(), factor2, product.Real.ptr(), real_context);
+    runtime.realMultiply(factor1.Imag.constPtr(), factor2, product.Imag.ptr(), real_context);
+}
+
+comptime {
+    if (arm_159) {
+        @export(&mulComplexComplex159Impl, .{ .name = "mulComplexComplex159" });
+        @export(&mulComplexReal159Impl, .{ .name = "mulComplexReal159" });
     }
 }
 
-pub export fn mulComplexReal(
-    factor1_real: *const runtime.real_t,
-    factor1_imag: *const runtime.real_t,
-    factor2: *const runtime.real_t,
-    product_real: *runtime.real_t,
-    product_imag: *runtime.real_t,
-    real_context: *runtime.realContext_t,
-) linksection(runtime.code_section) callconv(.c) void {
-    runtime.realMultiply(factor1_real, factor2, product_real, real_context);
-    runtime.realMultiply(factor1_imag, factor2, product_imag, real_context);
+pub export fn mulComplexReal(factor1: *const runtime.cplx_t, factor2: *const runtime.real_t, product: *runtime.cplx_t, real_context: *runtime.realContext_t) linksection(runtime.code_section) callconv(.c) void {
+    runtime.realMultiply(&factor1.Real, factor2, &product.Real, real_context);
+    runtime.realMultiply(&factor1.Imag, factor2, &product.Imag, real_context);
 }
 
 // ===== long integer × ... =====
@@ -280,50 +341,54 @@ pub export fn mulTimeLonI() linksection(runtime.code_section) callconv(.c) void 
 
 pub export fn mulLonIRema() linksection(runtime.code_section) callconv(.c) void {
     var matrix: runtime.real34Matrix_t = undefined;
-    var res: runtime.real34Matrix_t = undefined;
     var y: runtime.real_t = undefined;
 
     runtime.convertLongIntegerRegisterToReal(REGISTER_Y, &y, &runtime.ctxtReal39);
     runtime.linkToRealMatrixRegister(REGISTER_X, &matrix);
-    support._multiplyRealMatrix(&matrix, &y, &res, &runtime.ctxtReal39);
-    runtime.convertReal34MatrixToReal34MatrixRegister(&res, REGISTER_X);
-    runtime.realMatrixFree(&res);
+    var i: i32 = 0;
+    while (i < elementCount(matrix.header)) : (i += 1) {
+        multiplyLongIntegerMatrixElement(REGISTER_Y, &y, realElem(&matrix, i));
+    }
 }
 
 pub export fn mulRemaLonI() linksection(runtime.code_section) callconv(.c) void {
     var matrix: runtime.real34Matrix_t = undefined;
-    var res: runtime.real34Matrix_t = undefined;
     var x: runtime.real_t = undefined;
 
     runtime.convertLongIntegerRegisterToReal(REGISTER_X, &x, &runtime.ctxtReal39);
     runtime.linkToRealMatrixRegister(REGISTER_Y, &matrix);
-    support._multiplyRealMatrix(&matrix, &x, &res, &runtime.ctxtReal39);
-    runtime.convertReal34MatrixToReal34MatrixRegister(&res, REGISTER_X);
-    runtime.realMatrixFree(&res);
+    var i: i32 = 0;
+    while (i < elementCount(matrix.header)) : (i += 1) {
+        multiplyLongIntegerMatrixElement(REGISTER_X, &x, realElem(&matrix, i));
+    }
+    runtime.fnSwapXY(support.NOPARAM);
 }
 
 pub export fn mulLonICxma() linksection(runtime.code_section) callconv(.c) void {
     var matrix: runtime.complex34Matrix_t = undefined;
-    var res: runtime.complex34Matrix_t = undefined;
     var y: runtime.real_t = undefined;
 
     runtime.convertLongIntegerRegisterToReal(REGISTER_Y, &y, &runtime.ctxtReal39);
     runtime.linkToComplexMatrixRegister(REGISTER_X, &matrix);
-    support._multiplyComplexMatrix(&matrix, &y, runtime.z47_math_wrappers_const_0(), &res, &runtime.ctxtReal39);
-    runtime.convertComplex34MatrixToComplex34MatrixRegister(&res, REGISTER_X);
-    runtime.complexMatrixFree(&res);
+    var i: i32 = 0;
+    while (i < elementCount(matrix.header)) : (i += 1) {
+        multiplyLongIntegerMatrixElement(REGISTER_Y, &y, &cplxElem(&matrix, i).real);
+        multiplyLongIntegerMatrixElement(REGISTER_Y, &y, &cplxElem(&matrix, i).imag);
+    }
 }
 
 pub export fn mulCxmaLonI() linksection(runtime.code_section) callconv(.c) void {
     var matrix: runtime.complex34Matrix_t = undefined;
-    var res: runtime.complex34Matrix_t = undefined;
-    var y: runtime.real_t = undefined;
+    var x: runtime.real_t = undefined;
 
-    runtime.convertLongIntegerRegisterToReal(REGISTER_X, &y, &runtime.ctxtReal39);
+    runtime.convertLongIntegerRegisterToReal(REGISTER_X, &x, &runtime.ctxtReal39);
     runtime.linkToComplexMatrixRegister(REGISTER_Y, &matrix);
-    support._multiplyComplexMatrix(&matrix, &y, runtime.z47_math_wrappers_const_0(), &res, &runtime.ctxtReal39);
-    runtime.convertComplex34MatrixToComplex34MatrixRegister(&res, REGISTER_X);
-    runtime.complexMatrixFree(&res);
+    var i: i32 = 0;
+    while (i < elementCount(matrix.header)) : (i += 1) {
+        multiplyLongIntegerMatrixElement(REGISTER_X, &x, &cplxElem(&matrix, i).real);
+        multiplyLongIntegerMatrixElement(REGISTER_X, &x, &cplxElem(&matrix, i).imag);
+    }
+    runtime.fnSwapXY(support.NOPARAM);
 }
 
 pub export fn mulLonIShoI() linksection(runtime.code_section) callconv(.c) void {
@@ -359,73 +424,53 @@ pub export fn mulShoILonI() linksection(runtime.code_section) callconv(.c) void 
 }
 
 pub export fn mulLonIReal() linksection(runtime.code_section) callconv(.c) void {
-    var y: runtime.real_t = undefined;
-    var x: runtime.real_t = undefined;
-
-    runtime.convertLongIntegerRegisterToReal(REGISTER_Y, &y, &runtime.ctxtReal39);
-    runtime.real34ToReal(runtime.registerReal34Ptr(REGISTER_X), &x);
-    const x_angular_mode = runtime.getRegisterAngularMode(REGISTER_X);
-
-    if (x_angular_mode == runtime.amNone) {
-        runtime.realMultiply(&y, &x, &x, &runtime.ctxtReal39);
-        runtime.convertRealToReal34ResultRegister(&x, REGISTER_X);
-    } else {
-        runtime.convertAngleFromTo(&x, x_angular_mode, runtime.currentAngularMode, &runtime.ctxtReal39);
-        runtime.realMultiply(&y, &x, &x, &runtime.ctxtReal39);
-        runtime.convertRealToReal34ResultRegister(&x, REGISTER_X);
-        runtime.setRegisterAngularMode(REGISTER_X, runtime.currentAngularMode);
-    }
+    addition.lonIRealOp(&addition.mulFastLonIReal, &runtime.realMultiplyOp);
 }
 
 pub export fn mulRealLonI() linksection(runtime.code_section) callconv(.c) void {
-    var y: runtime.real_t = undefined;
-    var x: runtime.real_t = undefined;
-
-    runtime.real34ToReal(runtime.registerReal34Ptr(REGISTER_Y), &y);
-    const y_angular_mode = runtime.getRegisterAngularMode(REGISTER_Y);
-    runtime.convertLongIntegerRegisterToReal(REGISTER_X, &x, &runtime.ctxtReal39);
-    runtime.reallocateRegister(REGISTER_X, runtime.dtReal34, 0, @intCast(runtime.amNone));
-
-    if (y_angular_mode == runtime.amNone) {
-        runtime.realMultiply(&y, &x, &x, &runtime.ctxtReal39);
-        runtime.convertRealToReal34ResultRegister(&x, REGISTER_X);
-    } else {
-        runtime.convertAngleFromTo(&y, y_angular_mode, runtime.currentAngularMode, &runtime.ctxtReal39);
-        runtime.realMultiply(&y, &x, &x, &runtime.ctxtReal39);
-        runtime.convertRealToReal34ResultRegister(&x, REGISTER_X);
-        runtime.setRegisterAngularMode(REGISTER_X, runtime.currentAngularMode);
-    }
+    addition.realLonIOp(&addition.mulFastLonIReal, &runtime.realMultiplyOp);
 }
 
 pub export fn mulLonICplx() linksection(runtime.code_section) callconv(.c) void {
     var a: runtime.real_t = undefined;
-    var c: runtime.real_t = undefined;
-    var d: runtime.real_t = undefined;
+    var x: runtime.cplx_t = undefined;
+    var real: runtime.real34_t = undefined;
+    var imag: runtime.real34_t = undefined;
 
-    runtime.convertLongIntegerRegisterToReal(REGISTER_Y, &a, &runtime.ctxtReal39);
-    runtime.real34ToReal(runtime.registerReal34Ptr(REGISTER_X), &c);
-    runtime.real34ToReal(runtime.registerImag34Ptr(REGISTER_X), &d);
-
-    runtime.realMultiply(&c, &a, &c, &runtime.ctxtReal39);
-    runtime.realMultiply(&d, &a, &d, &runtime.ctxtReal39);
-
-    runtime.convertComplexToResultRegister(&c, &d, REGISTER_X);
+    if (runtime.multiplyLongIntegerReal34(REGISTER_Y, runtime.registerReal34Ptr(REGISTER_X), &real) and
+        runtime.multiplyLongIntegerReal34(REGISTER_Y, runtime.registerImag34Ptr(REGISTER_X), &imag))
+    {
+        runtime.registerReal34Ptr(REGISTER_X).* = real;
+        runtime.registerImag34Ptr(REGISTER_X).* = imag;
+    } else {
+        runtime.convertLongIntegerRegisterToReal(REGISTER_Y, &a, &runtime.ctxtReal39);
+        runtime.real34ToReal(runtime.registerReal34Ptr(REGISTER_X), &x.Real);
+        runtime.real34ToReal(runtime.registerImag34Ptr(REGISTER_X), &x.Imag);
+        runtime.realMultiply(&x.Real, &a, &x.Real, &runtime.ctxtReal39);
+        runtime.realMultiply(&x.Imag, &a, &x.Imag, &runtime.ctxtReal39);
+        runtime.convertComplexToResultRegister(&x, REGISTER_X);
+    }
 }
 
 pub export fn mulCplxLonI() linksection(runtime.code_section) callconv(.c) void {
-    var a: runtime.real_t = undefined;
-    var b: runtime.real_t = undefined;
     var c: runtime.real_t = undefined;
+    var y: runtime.cplx_t = undefined;
+    var real: runtime.real34_t = undefined;
+    var imag: runtime.real34_t = undefined;
 
-    runtime.real34ToReal(runtime.registerReal34Ptr(REGISTER_Y), &a);
-    runtime.real34ToReal(runtime.registerImag34Ptr(REGISTER_Y), &b);
-    runtime.convertLongIntegerRegisterToReal(REGISTER_X, &c, &runtime.ctxtReal39);
-
-    runtime.realMultiply(&a, &c, &a, &runtime.ctxtReal39);
-    runtime.realMultiply(&b, &c, &b, &runtime.ctxtReal39);
-
-    runtime.reallocateRegister(REGISTER_X, runtime.dtComplex34, 0, @intCast(runtime.amNone));
-    runtime.convertComplexToResultRegister(&a, &b, REGISTER_X);
+    if (runtime.multiplyLongIntegerReal34(REGISTER_X, runtime.registerReal34Ptr(REGISTER_Y), &real) and
+        runtime.multiplyLongIntegerReal34(REGISTER_X, runtime.registerImag34Ptr(REGISTER_Y), &imag))
+    {
+        runtime.convertReal34ToComplex34Register(&real, &imag, REGISTER_X);
+    } else {
+        runtime.real34ToReal(runtime.registerReal34Ptr(REGISTER_Y), &y.Real);
+        runtime.real34ToReal(runtime.registerImag34Ptr(REGISTER_Y), &y.Imag);
+        runtime.convertLongIntegerRegisterToReal(REGISTER_X, &c, &runtime.ctxtReal39);
+        runtime.realMultiply(&y.Real, &c, &y.Real, &runtime.ctxtReal39);
+        runtime.realMultiply(&y.Imag, &c, &y.Imag, &runtime.ctxtReal39);
+        runtime.reallocateRegister(REGISTER_X, runtime.dtComplex34, 0, @intCast(runtime.amNone));
+        runtime.convertComplexToResultRegister(&y, REGISTER_X);
+    }
 }
 
 // ===== time × ... =====
@@ -520,28 +565,13 @@ pub export fn mulCxmaRema() linksection(runtime.code_section) callconv(.c) void 
 }
 
 pub export fn mulRemaShoI() linksection(runtime.code_section) callconv(.c) void {
-    var matrix: runtime.real34Matrix_t = undefined;
-    var res: runtime.real34Matrix_t = undefined;
-    var x: runtime.real_t = undefined;
-
-    runtime.convertShortIntegerRegisterToReal(REGISTER_X, &x, &runtime.ctxtReal39);
-    runtime.linkToRealMatrixRegister(REGISTER_Y, &matrix);
-    support._multiplyRealMatrix(&matrix, &x, &res, &runtime.ctxtReal39);
-    runtime.convertReal34MatrixToReal34MatrixRegister(&res, REGISTER_X);
-    runtime.realMatrixFree(&res);
+    support.convertShortIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
+    mulRemaReal();
 }
 
 pub export fn mulShoIRema() linksection(runtime.code_section) callconv(.c) void {
-    var matrix: runtime.real34Matrix_t = undefined;
-    var res: runtime.real34Matrix_t = undefined;
-    var y: runtime.real_t = undefined;
-
-    runtime.convertShortIntegerRegisterToReal(REGISTER_Y, &y, &runtime.ctxtReal39);
-
-    runtime.linkToRealMatrixRegister(REGISTER_X, &matrix);
-    support._multiplyRealMatrix(&matrix, &y, &res, &runtime.ctxtReal39);
-    runtime.convertReal34MatrixToReal34MatrixRegister(&res, REGISTER_X);
-    runtime.realMatrixFree(&res);
+    support.convertShortIntegerRegisterToReal34Register(REGISTER_Y, REGISTER_Y);
+    mulRealRema();
 }
 
 pub export fn mulRemaReal() linksection(runtime.code_section) callconv(.c) void {
@@ -671,17 +701,17 @@ pub export fn mulShoIShoI() linksection(runtime.code_section) callconv(.c) void 
 }
 
 pub export fn mulShoIReal() linksection(runtime.code_section) callconv(.c) void {
-    var y: runtime.real_t = undefined;
-    var x: runtime.real_t = undefined;
-
-    runtime.convertShortIntegerRegisterToReal(REGISTER_Y, &y, &runtime.ctxtReal39);
-    runtime.real34ToReal(runtime.registerReal34Ptr(REGISTER_X), &x);
     const x_angular_mode = runtime.getRegisterAngularMode(REGISTER_X);
 
     if (x_angular_mode == runtime.amNone) {
-        runtime.realMultiply(&y, &x, &x, &runtime.ctxtReal39);
-        runtime.convertRealToReal34ResultRegister(&x, REGISTER_X);
+        support.convertShortIntegerRegisterToReal34Register(REGISTER_Y, REGISTER_Y);
+        runtime.real34Multiply(runtime.registerReal34Ptr(REGISTER_Y), runtime.registerReal34Ptr(REGISTER_X), runtime.registerReal34Ptr(REGISTER_X));
     } else {
+        var y: runtime.real_t = undefined;
+        var x: runtime.real_t = undefined;
+
+        runtime.convertShortIntegerRegisterToReal(REGISTER_Y, &y, &runtime.ctxtReal39);
+        runtime.real34ToReal(runtime.registerReal34Ptr(REGISTER_X), &x);
         runtime.convertAngleFromTo(&x, x_angular_mode, runtime.currentAngularMode, &runtime.ctxtReal39);
         runtime.realMultiply(&y, &x, &x, &runtime.ctxtReal39);
         runtime.convertRealToReal34ResultRegister(&x, REGISTER_X);
@@ -690,18 +720,18 @@ pub export fn mulShoIReal() linksection(runtime.code_section) callconv(.c) void 
 }
 
 pub export fn mulRealShoI() linksection(runtime.code_section) callconv(.c) void {
-    var y: runtime.real_t = undefined;
-    var x: runtime.real_t = undefined;
-
-    runtime.real34ToReal(runtime.registerReal34Ptr(REGISTER_Y), &y);
     const y_angular_mode = runtime.getRegisterAngularMode(REGISTER_Y);
-    runtime.convertShortIntegerRegisterToReal(REGISTER_X, &x, &runtime.ctxtReal39);
-    runtime.reallocateRegister(REGISTER_X, runtime.dtReal34, 0, @intCast(runtime.amNone));
 
     if (y_angular_mode == runtime.amNone) {
-        runtime.realMultiply(&y, &x, &x, &runtime.ctxtReal39);
-        runtime.convertRealToReal34ResultRegister(&x, REGISTER_X);
+        support.convertShortIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
+        runtime.real34Multiply(runtime.registerReal34Ptr(REGISTER_Y), runtime.registerReal34Ptr(REGISTER_X), runtime.registerReal34Ptr(REGISTER_X));
     } else {
+        var y: runtime.real_t = undefined;
+        var x: runtime.real_t = undefined;
+
+        runtime.real34ToReal(runtime.registerReal34Ptr(REGISTER_Y), &y);
+        runtime.convertShortIntegerRegisterToReal(REGISTER_X, &x, &runtime.ctxtReal39);
+        runtime.reallocateRegister(REGISTER_X, runtime.dtReal34, 0, @intCast(runtime.amNone));
         runtime.convertAngleFromTo(&y, y_angular_mode, runtime.currentAngularMode, &runtime.ctxtReal39);
         runtime.realMultiply(&y, &x, &x, &runtime.ctxtReal39);
         runtime.convertRealToReal34ResultRegister(&x, REGISTER_X);
@@ -719,8 +749,7 @@ pub export fn mulCplxShoI() linksection(runtime.code_section) callconv(.c) void 
     support.convertShortIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
     runtime.real34Multiply(runtime.registerReal34Ptr(REGISTER_Y), runtime.registerReal34Ptr(REGISTER_X), runtime.registerReal34Ptr(REGISTER_Y)); // real part
     runtime.real34Multiply(runtime.registerImag34Ptr(REGISTER_Y), runtime.registerReal34Ptr(REGISTER_X), runtime.registerImag34Ptr(REGISTER_Y)); // imaginary part
-    runtime.reallocateRegister(REGISTER_X, runtime.dtComplex34, 0, @intCast(runtime.amNone));
-    runtime.registerComplex34Ptr(REGISTER_X).* = runtime.registerComplex34Ptr(REGISTER_Y).*;
+    runtime.convertReal34ToComplex34Register(runtime.registerReal34Ptr(REGISTER_Y), runtime.registerImag34Ptr(REGISTER_Y), REGISTER_X);
 }
 
 // ===== real34 × ... =====
@@ -757,24 +786,21 @@ pub export fn mulRealCplx() linksection(runtime.code_section) callconv(.c) void 
 pub export fn mulCplxReal() linksection(runtime.code_section) callconv(.c) void {
     runtime.real34Multiply(runtime.registerReal34Ptr(REGISTER_Y), runtime.registerReal34Ptr(REGISTER_X), runtime.registerReal34Ptr(REGISTER_Y)); // real part
     runtime.real34Multiply(runtime.registerImag34Ptr(REGISTER_Y), runtime.registerReal34Ptr(REGISTER_X), runtime.registerImag34Ptr(REGISTER_Y)); // imaginary part
-    runtime.reallocateRegister(REGISTER_X, runtime.dtComplex34, 0, @intCast(runtime.amNone));
-    runtime.registerComplex34Ptr(REGISTER_X).* = runtime.registerComplex34Ptr(REGISTER_Y).*;
+    runtime.convertReal34ToComplex34Register(runtime.registerReal34Ptr(REGISTER_Y), runtime.registerImag34Ptr(REGISTER_Y), REGISTER_X); // imaginary part
 }
 
 // ===== complex34 × ... =====
 
 pub export fn mulCplxCplx() linksection(runtime.code_section) callconv(.c) void {
-    var y_real: runtime.real_t = undefined;
-    var y_imag: runtime.real_t = undefined;
-    var x_real: runtime.real_t = undefined;
-    var x_imag: runtime.real_t = undefined;
+    var y: runtime.cplx_t = undefined;
+    var x: runtime.cplx_t = undefined;
 
-    runtime.real34ToReal(runtime.registerReal34Ptr(REGISTER_Y), &y_real);
-    runtime.real34ToReal(runtime.registerImag34Ptr(REGISTER_Y), &y_imag);
-    runtime.real34ToReal(runtime.registerReal34Ptr(REGISTER_X), &x_real);
-    runtime.real34ToReal(runtime.registerImag34Ptr(REGISTER_X), &x_imag);
+    runtime.real34ToReal(runtime.registerReal34Ptr(REGISTER_Y), &y.Real);
+    runtime.real34ToReal(runtime.registerImag34Ptr(REGISTER_Y), &y.Imag);
+    runtime.real34ToReal(runtime.registerReal34Ptr(REGISTER_X), &x.Real);
+    runtime.real34ToReal(runtime.registerImag34Ptr(REGISTER_X), &x.Imag);
 
-    mulComplexComplex(&y_real, &y_imag, &x_real, &x_imag, &x_real, &x_imag, &runtime.ctxtReal39);
+    mulComplexComplex(&y, &x, &x, &runtime.ctxtReal39);
 
-    runtime.convertComplexToResultRegister(&x_real, &x_imag, REGISTER_X);
+    runtime.convertComplexToResultRegister(&x, REGISTER_X);
 }

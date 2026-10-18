@@ -945,6 +945,17 @@ static int nimCmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
     Jim_SetResultString(interp, "nim: missing string argument", -1);
     return JIM_ERR;
   }
+  long long digits = 0;
+  for(const char *p = Jim_String(argv[1]); *p != 0 && *p != 'e' && *p != 'E'; p++) {
+    if(*p >= '0' && *p <= '9') {
+      digits++;
+    }
+  }
+  if(digits > MAX_LONG_INTEGER_DIGITS) {  // mantissa digits, counted before any key reaches NIM
+    char got[DSL_NUM_LEN], mx[DSL_NUM_LEN];
+    Jim_SetResultFormatted(interp, "nim: %s digits exceed max length %s", dslNum(got, digits), dslNum(mx, (long long)MAX_LONG_INTEGER_DIGITS));
+    return JIM_ERR;
+  }
   if(temporaryInformation != TI_NO_INFO) {  // incoming digits clear the temporary information as processKeyAction does for a digit key; displayNim then caps the entry
     if(SHOWMODE) {
       closeShowMenu();
@@ -1299,7 +1310,7 @@ static int snapmenuCmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
  * snapx [<basename>] - Wrap SNAPX, the band above the menu, which is the register X line in the big bold numericFont.  Output file names are exactly as snap writes them.
  */
 static int snapxCmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
-  return snapAnyCmd(argc, argv, fnSNAPX);
+  return snapAnyCmd(argc, argv, fnSNAPXNonBold);
 }
 
 /**

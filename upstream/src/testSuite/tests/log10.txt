@@ -108,6 +108,34 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"50" RX=Real:"1.6989700043360188047862
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"89.99999"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"89.99999" RX=Real:"1.954242461184379760065074504433369599266577368811228358766214"
 
+; Exact subtraction and scaling check the logarithm next to one and at the upper decimal128 exponent limit through digit 34.
+Func: fnLog10
+In:  RMODE=0 RX=Real:"1.000000000000000000000000000000001"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"4.342944819032518276511289189166049e-34"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e70"
+Out: EC=0 RX=Real:"0"
+
+Func: fnLog10
+In:  RMODE=0 RX=Real:"1e-6176"
+Out: EC=0 RX=Real:"-6176"
+
+Func: fnLog10
+In:  RMODE=0 RX=Real:"9.999999999999999999999999999999999e6144"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"6145.000000000000000000000000000000"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e30"
+Out: EC=0 RX=Real:"0"
+
+Func: fnLog10
+In:  RMODE=0
+
 In:  FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"5.32564":DMS
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"5.32564":DMS RX=Real:"0.72637180586978936852596576935224006663925974928541803140426852"
 
@@ -141,13 +169,16 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"NaN" RX=Real:"NaN"
 
 ; Infinity
 In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=Real:"inf":DEG
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"inf":DEG RX=Real:"NaN"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"inf":DEG RX=Real:"inf"
 
 In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RX=Real:"inf":MULTPI
 Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"inf":MULTPI
 
 In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=Real:"inf"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"NaN"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"inf"
+
+In:  FL_ASLIFT=0 FL_CPXRES=1 FL_SPCRES=1 RX=Real:"inf"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"inf"
 
 In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RX=Real:"inf"
 Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"inf"
@@ -172,8 +203,152 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-inf":RAD RX=Real:"NaN"
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"6.2 i -7.6"
 Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"6.2 i -7.6" RX=Cplx:"0.99158753601890648061434737110297545279044588000774467986464917 i -0.38500272490734797658953300795055732053909377628629710122102587"
 
+; For z = -1 + ib with a 34-digit b near 1e-34, Re(log10(z)) = log10(1 + b^2)/2; scaling exposes digit 34 of the result.
+Func: fnLog10
+In:  RMODE=0 RX=Cplx:"-1 i +1.234567890123456789012345678901234e-34"
+Out: EC=0
+Func: fnRealPart
+In:  RMODE=0
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"3.309666774012735770375849679097900e-69"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e110"
+Out: EC=0 RX=Real:"0"
+
+Func: fnLog10
+In:  RMODE=1 RX=Cplx:"-1 i +1.234567890123456789012345678901234e-34"
+Out: EC=0
+Func: fnRealPart
+In:  RMODE=1
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"3.309666774012735770375849679097900e-69"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e110"
+Out: EC=0 RX=Real:"0"
+
+Func: fnLog10
+In:  RMODE=2 RX=Cplx:"-1 i +1.234567890123456789012345678901234e-34"
+Out: EC=0
+Func: fnRealPart
+In:  RMODE=2
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"3.309666774012735770375849679097900e-69"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e110"
+Out: EC=0 RX=Real:"0"
+
+Func: fnLog10
+In:  RMODE=3 RX=Cplx:"-1 i +1.234567890123456789012345678901234e-34"
+Out: EC=0
+Func: fnRealPart
+In:  RMODE=3
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"3.309666774012735770375849679097901e-69"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e110"
+Out: EC=0 RX=Real:"0"
+
+Func: fnLog10
+In:  RMODE=4 RX=Cplx:"-1 i +1.234567890123456789012345678901234e-34"
+Out: EC=0
+Func: fnRealPart
+In:  RMODE=4
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"3.309666774012735770375849679097900e-69"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e110"
+Out: EC=0 RX=Real:"0"
+
+Func: fnLog10
+In:  RMODE=5 RX=Cplx:"-1 i +1.234567890123456789012345678901234e-34"
+Out: EC=0
+Func: fnRealPart
+In:  RMODE=5
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"3.309666774012735770375849679097901e-69"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e110"
+Out: EC=0 RX=Real:"0"
+
+Func: fnLog10
+In:  RMODE=6 RX=Cplx:"-1 i +1.234567890123456789012345678901234e-34"
+Out: EC=0
+Func: fnRealPart
+In:  RMODE=6
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"3.309666774012735770375849679097900e-69"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e110"
+Out: EC=0 RX=Real:"-0"
+
+; A negative imaginary component checks the scaled lower side of the negative-real branch cut through digit 34.
+Func: fnLog10
+In:  RMODE=0 RX=Cplx:"-1 i -1.234567890123456789012345678901234e-34"
+Out: EC=0
+Func: fnImaginaryPart
+In:  RMODE=0
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"-1.364376353841841347485783625431356"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e40"
+Out: EC=0 RX=Real:"0"
+
+; Rounded decimal128 coordinates near the unit circle need more than 51 digits when their squared components cancel; scaling checks the last result digit.
+Func: fnLog10
+In:  RMODE=0 RX=Cplx:"0.7 i +0.7141428428542849997999399811367265"
+Out: EC=0
+Func: fnRealPart
+In:  RMODE=0
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"-8.645885295160813263664278022663993e-36"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e80"
+Out: EC=0 RX=Real:"0"
+
+Func: fnLog10
+In:  RMODE=0
+
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=Cplx:"0 i 0"
 Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"0 i 0" RX=Cplx:"-inf i 0"
 
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RX=Cplx:"0 i 0"
 Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Cplx:"0 i 0"
+
+; Rectangular-to-polar maps either sign of an exact imaginary zero to the positive endpoint of the negative-real branch cut.
+Func: fnLog10
+In:  RMODE=0 RX=Cplx:"-1 i -0"
+Out: EC=0
+Func: fnImaginaryPart
+In:  RMODE=0
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"1.364376353841841347485783625431356"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e40"
+Out: EC=0 RX=Real:"0"
+
+Func: fnLog10
+In:  RMODE=0 FL_SPCRES=1 RX=Cplx:"inf i inf"
+Out: EC=0 RX=Cplx:"inf i 0.3410940884604603368714459063578389"
+
+In:  RMODE=0 FL_SPCRES=1 RX=Cplx:"NaN i 1"
+Out: EC=0 RX=Cplx:"NaN i NaN"

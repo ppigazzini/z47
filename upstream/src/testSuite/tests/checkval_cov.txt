@@ -1,48 +1,55 @@
 ;*************************************************************
 ;** Coverage: value/type predicates (checkValue.c) across    **
-;** every data type and special value. Results land in        **
-;** temporaryInformation, so these assert only the exit code; **
-;** a coverage driver for the predicate and get-type switches.**
+;** every data type and special value. The coverage driver     **
+;** converts predicate results to 1 or 0 in X.                 **
 ;*************************************************************
 In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
 
 ; --- fnGetType across every data type (its big switch) ---
 Func: fnGetType
 In:  FARG=0 RX=Real:"3.5"
-Out: EC=0
+Out: EC=0 RX=Real:"1"
 Func: fnGetType
-In:  FARG=0 RX=Cplx:"1 i 2"
-Out: EC=0
+In:  FARG=0 CM=RECT RX=Cplx:"1 i 2"
+Out: EC=0 RX=Real:"2"
 Func: fnGetType
 In:  FARG=0 RX=LonI:"123"
-Out: EC=0
+Out: EC=0 RX=LonI:"0"
 Func: fnGetType
 In:  FARG=0 RX=ShoI:"255#16"
-Out: EC=0
+Out: EC=0 RX=Real:"8.16"
 Func: fnGetType
 In:  FARG=0 RX=Stri:"abc"
-Out: EC=0
+Out: EC=0 RX=LonI:"5"
 Func: fnGetType
 In:  FARG=0 RX=ReMa:"M2,2[1,2,3,4]"
-Out: EC=0
+Out: EC=0 RX=LonI:"6"
 Func: fnGetType
 In:  FARG=0 RX=CxMa:"M2,2[1,0,0,1]"
-Out: EC=0
+Out: EC=0 RX=Real:"7"
 Func: fnGetType
 In:  FARG=0 RX=ReMa:"M1,2[1,2]"
-Out: EC=0
+Out: EC=0 RX=Real:"6.021"
 Func: fnGetType
 In:  FARG=0 RX=ReMa:"M1,3[1,2,3]"
-Out: EC=0
+Out: EC=0 RX=Real:"6.031"
 Func: fnGetType
 In:  FARG=0 RX=ReMa:"M2,1[1,2]"
-Out: EC=0
+Out: EC=0 RX=Real:"6.022"
 Func: fnGetType
 In:  FARG=0 RX=Time:"12:00:00"
-Out: EC=0
+Out: EC=0 RX=LonI:"3"
 Func: fnGetType
 In:  FARG=0 RX=Date:"2024.0101"
-Out: EC=0
+Out: EC=0 RX=LonI:"4"
+
+; The fractional codes are exact decimal scalings.
+Func: fnGetType
+In:  FARG=0 RX=Real:"3.5":DEG
+Out: EC=0 RX=Real:"1.3"
+Func: fnGetType
+In:  FARG=0 RX=ShoI:"1#2"
+Out: EC=0 RX=Real:"8.02"
 
 ; --- type predicates across types ---
 Func: fnCheckNumber
@@ -128,3 +135,230 @@ Out: EC=0
 Func: fnCheckInteger
 In:  FARG=3 RX=Real:"5.5"
 Out: EC=0
+
+; --- predicate-value regressions ---
+; Scalar complex zero components must use scalar storage, not the matrix layout.
+Func: fnCheckValueTiCov
+In:  FARG=7 RX=Cplx:"0 i 0"
+Out: EC=0 RX=Real:"1"
+Func: fnCheckValueTiCov
+In:  FARG=8 RX=Cplx:"-0 i -0"
+Out: EC=0 RX=Real:"1"
+
+; NaN is unordered irrespective of its sign bit.
+Func: fnCheckValueTiCov
+In:  FL_SPCRES=1 FARG=9 RX=Real:"-NaN"
+Out: EC=0 RX=Real:"0"
+Func: fnCheckValueTiCov
+In:  FL_SPCRES=1 FARG=10 RX=Real:"NaN"
+Out: EC=0 RX=Real:"0"
+
+; --- type and shape predicate results ---
+Func: fnCheckValueTiCov
+In:  FARG=19 RX=LonI:"5"
+Out: EC=0 RX=Real:"1"
+Func: fnCheckValueTiCov
+In:  FARG=20 RX=Real:"5"
+Out: EC=0 RX=Real:"1"
+Func: fnCheckValueTiCov
+In:  FARG=21 RX=Cplx:"5 i 2"
+Out: EC=0 RX=Real:"1"
+Func: fnCheckValueTiCov
+In:  FARG=22 RX=Time:"12:00:00"
+Out: EC=0 RX=Real:"1"
+Func: fnCheckValueTiCov
+In:  FARG=23 RX=Date:"2024.0101"
+Out: EC=0 RX=Real:"1"
+Func: fnCheckValueTiCov
+In:  FARG=24 RX=Stri:"abc"
+Out: EC=0 RX=Real:"1"
+Func: fnCheckValueTiCov
+In:  FARG=25 RX=ReMa:"M1,1[2]"
+Out: EC=0 RX=Real:"1"
+Func: fnCheckValueTiCov
+In:  FARG=26 RX=CxMa:"M1,1[2i3]"
+Out: EC=0 RX=Real:"1"
+Func: fnCheckValueTiCov
+In:  FARG=27 RX=ShoI:"5#10"
+Out: EC=0 RX=Real:"1"
+Func: fnCheckValueTiCov
+In:  FARG=20 RX=Date:"2024.0101"
+Out: EC=0 RX=Real:"0"
+
+Func: fnCheckValueTiCov
+In:  FARG=1 RX=Real:"3.5":DEG
+Out: EC=0 RX=Real:"1"
+Func: fnCheckValueTiCov
+In:  FARG=1 RX=Real:"3.5"
+Out: EC=0 RX=Real:"0"
+Func: fnCheckValueTiCov
+In:  FARG=2 RX=CxMa:"M1,1[2i3]"
+Out: EC=0 RX=Real:"1"
+Func: fnCheckValueTiCov
+In:  FARG=2 RX=Real:"2"
+Out: EC=0 RX=Real:"0"
+Func: fnCheckValueTiCov
+In:  FARG=3 RX=ReMa:"M2,2[1,2,3,4]"
+Out: EC=0 RX=Real:"1"
+Func: fnCheckValueTiCov
+In:  FARG=3 RX=CxMa:"M2,3[1,2,3,4,5,6]"
+Out: EC=0 RX=Real:"0"
+Func: fnCheckValueTiCov
+In:  FARG=3 RX=Real:"2"
+Out: EC=24 RX=Real:"0"
+
+Func: fnCheckValueTiCov
+In:  FARG=28 RX=ReMa:"M1,2[1,2]"
+Out: EC=0 RX=Real:"1"
+Func: fnCheckValueTiCov
+In:  FARG=28 RX=ReMa:"M1,3[1,2,3]"
+Out: EC=0 RX=Real:"0"
+Func: fnCheckValueTiCov
+In:  FARG=29 RX=ReMa:"M3,1[1,2,3]"
+Out: EC=0 RX=Real:"1"
+Func: fnCheckValueTiCov
+In:  FARG=29 RX=CxMa:"M3,1[1,2,3]"
+Out: EC=24 RX=Real:"0"
+
+; --- finite-number classification ---
+Func: fnCheckValueTiCov
+In:  FARG=0 RX=Real:"2"
+Out: EC=0 RX=Real:"1"
+Func: fnCheckValueTiCov
+In:  FARG=0 RX=Cplx:"2 i 3"
+Out: EC=0 RX=Real:"1"
+Func: fnCheckValueTiCov
+In:  FARG=0 RX=LonI:"2"
+Out: EC=0 RX=Real:"1"
+Func: fnCheckValueTiCov
+In:  FARG=0 RX=ShoI:"2#10"
+Out: EC=0 RX=Real:"1"
+Func: fnCheckValueTiCov
+In:  FARG=0 RX=Time:"12:00:00"
+Out: EC=0 RX=Real:"1"
+Func: fnCheckValueTiCov
+In:  FARG=0 RX=Date:"2024.0101"
+Out: EC=0 RX=Real:"1"
+Func: fnCheckValueTiCov
+In:  FL_SPCRES=1 FARG=0 RX=Real:"inf"
+Out: EC=0 RX=Real:"0"
+Func: fnCheckValueTiCov
+In:  FL_SPCRES=1 FARG=0 RX=Cplx:"2 i NaN"
+Out: EC=0 RX=Real:"0"
+Func: fnCheckValueTiCov
+In:  FARG=0 RX=ReMa:"M1,1[2]"
+Out: EC=0 RX=Real:"0"
+Func: fnCheckValueTiCov
+In:  FARG=0 RX=Stri:"abc"
+Out: EC=0 RX=Real:"0"
+
+; --- component-zero classification ---
+Func: fnCheckValueTiCov
+In:  FARG=11 RX=Cplx:"0 i 3"
+Out: EC=0 RX=Real:"1"
+Func: fnCheckValueTiCov
+In:  FARG=12 RX=Cplx:"3 i -0"
+Out: EC=0 RX=Real:"1"
+Func: fnCheckValueTiCov
+In:  FARG=13 RX=Cplx:"3 i 0"
+Out: EC=0 RX=Real:"1"
+Func: fnCheckValueTiCov
+In:  FARG=14 RX=Cplx:"0 i 3"
+Out: EC=0 RX=Real:"1"
+Func: fnCheckValueTiCov
+In:  FARG=12 RX=Real:"3"
+Out: EC=0 RX=Real:"1"
+Func: fnCheckValueTiCov
+In:  FL_SPCRES=1 FARG=13 RX=Real:"inf"
+Out: EC=0 RX=Real:"1"
+
+; --- exact signed-zero and ordered-zero classification ---
+Func: fnCheckValueTiCov
+In:  FARG=7 RX=Real:"-0"
+Out: EC=0 RX=Real:"0"
+Func: fnCheckValueTiCov
+In:  FARG=8 RX=Real:"0"
+Out: EC=0 RX=Real:"0"
+Func: fnCheckValueTiCov
+In:  FARG=7 RX=LonI:"0"
+Out: EC=0 RX=Real:"1"
+Func: fnCheckValueTiCov
+In:  IM=2compl FARG=8 RX=Time:"-0"
+Out: EC=0 RX=Real:"1"
+Func: fnCheckValueTiCov
+In:  FL_SPCRES=1 FARG=7 RX=Real:"inf"
+Out: EC=0 RX=Real:"0"
+
+Func: fnCheckValueTiCov
+In:  FARG=9 RX=Real:"-0"
+Out: EC=0 RX=Real:"1"
+Func: fnCheckValueTiCov
+In:  FARG=9 RX=Real:"0"
+Out: EC=0 RX=Real:"0"
+Func: fnCheckValueTiCov
+In:  FARG=10 RX=Real:"0"
+Out: EC=0 RX=Real:"1"
+Func: fnCheckValueTiCov
+In:  FARG=10 RX=Real:"-0"
+Out: EC=0 RX=Real:"0"
+Func: fnCheckValueTiCov
+In:  FL_SPCRES=1 FARG=9 RX=Real:"-inf"
+Out: EC=0 RX=Real:"1"
+Func: fnCheckValueTiCov
+In:  FL_SPCRES=1 FARG=10 RX=Real:"inf"
+Out: EC=0 RX=Real:"1"
+Func: fnCheckValueTiCov
+In:  FARG=9 RX=LonI:"-2"
+Out: EC=0 RX=Real:"1"
+Func: fnCheckValueTiCov
+In:  FARG=10 RX=ShoI:"2#10"
+Out: EC=0 RX=Real:"1"
+Func: fnCheckValueTiCov
+In:  FARG=9 RX=ShoI:"-2#10"
+Out: EC=0 RX=Real:"1"
+Func: fnCheckValueTiCov
+In:  FARG=9 RX=Cplx:"-2 i 0"
+Out: EC=24 RX=Real:"0"
+
+; --- scalar and matrix special classification ---
+Func: fnCheckValueTiCov
+In:  FL_SPCRES=1 FARG=4 RX=Cplx:"2 i NaN"
+Out: EC=0 RX=Real:"1"
+Func: fnCheckValueTiCov
+In:  FL_SPCRES=1 FARG=5 RX=Cplx:"inf i 2"
+Out: EC=0 RX=Real:"1"
+Func: fnCheckValueTiCov
+In:  FL_SPCRES=1 FARG=6 RX=Time:"NaN"
+Out: EC=0 RX=Real:"1"
+Func: fnCheckValueTiCov
+In:  FL_SPCRES=1 FARG=4 RX=ReMa:"M1,3[1,NaN,3]"
+Out: EC=0 RX=Real:"1"
+Func: fnCheckValueTiCov
+In:  FL_SPCRES=1 FARG=5 RX=CxMa:"M1,2[1i2,3iinf]"
+Out: EC=0 RX=Real:"1"
+Func: fnCheckValueTiCov
+In:  FL_SPCRES=1 FARG=6 RX=CxMa:"M1,2[1i2,3i4]"
+Out: EC=0 RX=Real:"0"
+Func: fnCheckValueTiCov
+In:  FARG=6 RX=Stri:"abc"
+Out: EC=24 RX=Real:"0"
+
+; --- integer predicate results ---
+Func: fnCheckValueTiCov
+In:  FARG=15 RX=Real:"6"
+Out: EC=0 RX=Real:"1"
+Func: fnCheckValueTiCov
+In:  FARG=16 RX=LonI:"6"
+Out: EC=0 RX=Real:"1"
+Func: fnCheckValueTiCov
+In:  FARG=17 RX=ShoI:"7#10"
+Out: EC=0 RX=Real:"1"
+Func: fnCheckValueTiCov
+In:  FARG=18 RX=Real:"5.5"
+Out: EC=0 RX=Real:"1"
+Func: fnCheckValueTiCov
+In:  FARG=18 RX=Real:"5"
+Out: EC=0 RX=Real:"0"
+Func: fnCheckValueTiCov
+In:  FL_SPCRES=1 FARG=15 RX=Real:"NaN"
+Out: EC=24 RX=Real:"0"

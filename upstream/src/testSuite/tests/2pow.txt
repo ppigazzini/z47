@@ -120,3 +120,237 @@ Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"-inf":GRAD
 ;=======================================
 ; 2 ^ Complex
 ;=======================================
+
+; The scalar argument is reduced before multiplication by ln(2).  Subtraction and scaling assert all 34 result digits.
+Func: fn2Pow
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-17705.70203707282800997059791824504"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"1.128736456213891645553594338723705e-5330"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e5400"
+Out: EC=0 RX=Real:"0"
+
+Func: fn2Pow
+In:  RMODE=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-17705.70203707282800997059791824504"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"1.128736456213891645553594338723705e-5330"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e5400"
+Out: EC=0 RX=Real:"0"
+
+Func: fn2Pow
+In:  RMODE=2 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-17705.70203707282800997059791824504"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"1.128736456213891645553594338723705e-5330"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e5400"
+Out: EC=0 RX=Real:"0"
+
+Func: fn2Pow
+In:  RMODE=3 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-17705.70203707282800997059791824504"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"1.128736456213891645553594338723706e-5330"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e5400"
+Out: EC=0 RX=Real:"0"
+
+Func: fn2Pow
+In:  RMODE=4 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-17705.70203707282800997059791824504"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"1.128736456213891645553594338723705e-5330"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e5400"
+Out: EC=0 RX=Real:"0"
+
+Func: fn2Pow
+In:  RMODE=5 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-17705.70203707282800997059791824504"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"1.128736456213891645553594338723706e-5330"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e5400"
+Out: EC=0 RX=Real:"0"
+
+Func: fn2Pow
+In:  RMODE=6 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-17705.70203707282800997059791824504"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"1.128736456213891645553594338723705e-5330"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e5400"
+Out: EC=0 RX=Real:"0"
+
+; Integral powers use the integer exponent path before decimal128 conversion.
+Func: fn2Pow
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"113"
+Out: EC=0 RX=Real:"1.038459371706965525706099265844019e34"
+
+Func: fn2Pow
+In:  RMODE=3 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"113"
+Out: EC=0 RX=Real:"1.038459371706965525706099265844020e34"
+
+Func: fn2Pow
+In:  RMODE=5 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"113"
+Out: EC=0 RX=Real:"1.038459371706965525706099265844020e34"
+
+; Decimal128 upper and lower result transitions.
+Func: fn2Pow
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"20413"
+Out: EC=0 RX=Real:"8.419794440777613278010471518281439e6144"
+
+Func: fn2Pow
+In:  RMODE=3 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"20413"
+Out: EC=0 RX=Real:"8.419794440777613278010471518281440e6144"
+
+Func: fn2Pow
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"20414"
+Out: EC=4 FL_ASLIFT=0 RX=Real:"20414"
+
+Func: fn2Pow
+In:  RMODE=4 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"20414"
+Out: EC=0 RX=Real:"9.999999999999999999999999999999999e6144"
+
+Func: fn2Pow
+In:  RMODE=6 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"20414"
+Out: EC=0 RX=Real:"9.999999999999999999999999999999999e6144"
+
+Func: fn2Pow
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-20517"
+Out: EC=0 RX=Real:"1e-6176"
+
+Func: fn2Pow
+In:  RMODE=4 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-20517"
+Out: EC=0 RX=Real:"0"
+
+Func: fn2Pow
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-20518"
+Out: EC=0 RX=Real:"0"
+
+Func: fn2Pow
+In:  RMODE=3 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-20518"
+Out: EC=0 RX=Real:"1e-6176"
+
+Func: fn2Pow
+In:  RMODE=5 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-20518"
+Out: EC=0 RX=Real:"1e-6176"
+
+; P75 phase formation preserves both components at imaginary input 1e20.  Each result is checked through subtraction and scaling.
+Func: fn2Pow
+In:  AM=RAD RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"0 i 1e20"
+Out: EC=0 FL_CPXRES=1
+Func: fnRealPart
+In:  RMODE=0
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"0.4417529232488208010413068983416739"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e40"
+Out: EC=0 RX=Real:"0"
+
+Func: fn2Pow
+In:  AM=RAD RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"0 i 1e20"
+Out: EC=0 FL_CPXRES=1
+Func: fnImaginaryPart
+In:  RMODE=0
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"-0.8971367536786804938483461417581288"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e40"
+Out: EC=0 RX=Real:"0"
+
+Func: fn2Pow
+In:  AM=RAD RMODE=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"0 i 1e20"
+Out: EC=0 FL_CPXRES=1
+Func: fnSubtract
+In:  RY=Cplx:"0.4417529232488208010413068983416739 i -0.8971367536786804938483461417581288"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e40"
+Out: EC=0 RX=Cplx:"0 i 0"
+
+Func: fn2Pow
+In:  AM=RAD RMODE=2 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"0 i 1e20"
+Out: EC=0 FL_CPXRES=1
+Func: fnSubtract
+In:  RY=Cplx:"0.4417529232488208010413068983416739 i -0.8971367536786804938483461417581288"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e40"
+Out: EC=0 RX=Cplx:"0 i 0"
+
+Func: fn2Pow
+In:  AM=RAD RMODE=3 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"0 i 1e20"
+Out: EC=0 FL_CPXRES=1
+Func: fnSubtract
+In:  RY=Cplx:"0.4417529232488208010413068983416739 i -0.8971367536786804938483461417581289"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e40"
+Out: EC=0 RX=Cplx:"0 i 0"
+
+Func: fn2Pow
+In:  AM=RAD RMODE=4 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"0 i 1e20"
+Out: EC=0 FL_CPXRES=1
+Func: fnSubtract
+In:  RY=Cplx:"0.4417529232488208010413068983416738 i -0.8971367536786804938483461417581288"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e40"
+Out: EC=0 RX=Cplx:"0 i 0"
+
+Func: fn2Pow
+In:  AM=RAD RMODE=5 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"0 i 1e20"
+Out: EC=0 FL_CPXRES=1
+Func: fnSubtract
+In:  RY=Cplx:"0.4417529232488208010413068983416739 i -0.8971367536786804938483461417581288"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e40"
+Out: EC=0 RX=Cplx:"0 i 0"
+
+Func: fn2Pow
+In:  AM=RAD RMODE=6 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"0 i 1e20"
+Out: EC=0 FL_CPXRES=1
+Func: fnSubtract
+In:  RY=Cplx:"0.4417529232488208010413068983416738 i -0.8971367536786804938483461417581289"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e40"
+Out: EC=0 RX=Cplx:"0 i 0"
+
+; A zero imaginary component uses the scalar route and retains a defined zero beside special real values.
+Func: fn2Pow
+In:  AM=RAD RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"inf i 0"
+Out: EC=0 FL_CPXRES=1 RX=Cplx:"inf i 0"
+
+Func: fn2Pow
+In:  AM=RAD RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"-inf i 0"
+Out: EC=0 FL_CPXRES=1 RX=Cplx:"0 i 0"
+
+Func: fn2Pow
+In:  AM=RAD RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"NaN i 0"
+Out: EC=0 FL_CPXRES=1 RX=Cplx:"NaN i 0"
+
+; Matrix application invokes the same scalar and complex entries for each element.
+Func: fn2Pow
+In:  AM=RAD RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RX=ReMa:"M1,3[-17705.70203707282800997059791824504,113,-20518]"
+Out: EC=0 FL_CPXRES=0 RX=ReMa:"M1,3[1.128736456213891645553594338723705e-5330,1.038459371706965525706099265844019e34,0]"
+
+Func: fn2Pow
+In:  AM=RAD RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RX=CxMa:"M1,2[0i1e20,-17705.70203707282800997059791824504i0]"
+Out: EC=0 FL_CPXRES=1 RX=CxMa:"M1,2[0.4417529232488208010413068983416739i-0.8971367536786804938483461417581288,1.128736456213891645553594338723705e-5330i0]"

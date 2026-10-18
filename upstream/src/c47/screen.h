@@ -12,7 +12,6 @@
   #define noShiftOffset       2                                                                                   // the plain left indent, where the indicator is not on the line
 
   bool_t   registerFMA(calcRegister_t regist, real_t *tmp1, real_t *tmp2, real_t *tmp4, real34_t *tmp3, angularMode_t *angle, realContext_t *c);
-  bool_t   xfnViewValue(calcRegister_t regist, real34_t *value, angularMode_t *angle);
 
   void     setLastintegerBasetoZero           (void);
   extern bool_t   doRefreshSoftMenu;                                                                              //dr
@@ -36,7 +35,8 @@
   void     fnSNAP                             (uint16_t unusedButMandatoryParameter);
   #if defined(PC_BUILD)
     void   fnSNAPMENU                         (uint16_t unusedButMandatoryParameter);
-    void   fnSNAPX                            (uint16_t unusedButMandatoryParameter);
+    void   fnSNAPXBold                        (uint16_t unusedButMandatoryParameter);
+    void   fnSNAPXNonBold                     (uint16_t unusedButMandatoryParameter);
   #endif // PC_BUILD
 
 

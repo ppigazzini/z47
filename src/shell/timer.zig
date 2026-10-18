@@ -662,13 +662,20 @@ pub export fn fnDecisecondTimerApp(unusedButMandatoryParameter: u16) callconv(.c
 // ===========================================================================
 // _realToUInt32 (file static)
 // ===========================================================================
+// Converts a non-negative finite decimal timer value to milliseconds; a special or
+// a negative value is an overflow and converts to nothing.
 fn realToUInt32(re: *const real_t, mode: c_int, value32: *u32, overflow: *bool_t) void {
     var bcd: [76]u8 = undefined;
     var real: real_t = undefined;
     var lgInt: longInteger_t = undefined;
 
-    frontier_register_value_conversions.realToIntegralValue(re, &real, mode, &ctxtReal75);
-    const sign: u8 = real.bits & 0x80;
+    if ((re.bits & abi.DECSPECIAL) != 0 or ((re.bits & abi.DECNEG) != 0 and !(re.lsu[0] == 0 and re.digits == 1))) {
+        value32.* = 0;
+        overflow.* = true;
+        return;
+    }
+
+    frontier_register_value_conversions.realToIntegralValue(re, &real, mode, &ctxtReal39);
     realGetCoefficient(&real, &bcd);
 
     longIntegerInit(&lgInt[0]);
@@ -692,12 +699,12 @@ fn realToUInt32(re: *const real_t, mode: c_int, value32: *u32, overflow: *bool_t
     // = usize, so @bitSizeOf selects the matching branch at comptime.
     if (@bitSizeOf(mp_limb_t) == 32) { // OS32BIT
         value32.* = if (lgInt[0]._mp_size == 0) 0 else @truncate(lgInt[0]._mp_d[0]);
-        if (sign != 0 or lgInt[0]._mp_size > 1) {
+        if (lgInt[0]._mp_size > 1) {
             overflow.* = true;
         }
     } else { // OS64BIT
         value32.* = if (lgInt[0]._mp_size == 0) 0 else @truncate(lgInt[0]._mp_d[0] & 0x00000000ffffffff);
-        if (sign != 0 or lgInt[0]._mp_size > 1 or (lgInt[0]._mp_d[0] & 0xffffffff00000000) != 0) {
+        if (lgInt[0]._mp_size > 1 or (lgInt[0]._mp_d[0] & 0xffffffff00000000) != 0) {
             overflow.* = true;
         }
     }

@@ -46,3 +46,10 @@ Out: EC=0 RX=Real:"1"
 Func: fnProgramFlowCov
 In:  FARG=6
 Out: EC=0 RX=LonI:"42"
+
+; FORTOP compares complex counters by distance from the origin.  The start
+; 1+i1E-34 has squared magnitude 1+1E-68, strictly beyond the end 1+i0.
+; The body execution count must therefore remain zero.
+Func: fnProgramFlowCov
+In:  FARG=7
+Out: EC=0 RX=Real:"0"

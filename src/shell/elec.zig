@@ -3,8 +3,10 @@
 // Zig owner for src/c47/mathematics/elec.c: the electrical-engineering
 // transforms -- delta<->star, symmetrical-components<->ABC, three-phase Z=V/I,
 // V=I*Z, I=V/Z, X->ABC balanced set, and triple flip-polar. Faithful
-// line-by-line port preserving the exact ctxtReal39 complex-math operation
-// order and the CPXRES / SPCRES / ASLIFT gating.
+// line-by-line port preserving the exact complex-math operation order and the
+// CPXRES / SPCRES / ASLIFT gating. Cancellation-sensitive work runs at
+// ctxtReal75 with a two-term FastTwoSum expansion for the three-term sums;
+// isolated rotations and the three-phase products stay at ctxtReal39.
 //
 // Gated on OPTION_ELEC exactly as elec.c: every entry point is always exported
 // (the items table references them unconditionally), but the body only compiles
@@ -79,13 +81,14 @@ const TripleRegZ2_97: calcRegister_t = 97;
 const TripleRegZ3_98: calcRegister_t = 98;
 
 // Named, typed constant-blob accessors live in the shared abi module
-// (src/abi/constants.zig): consts.const1on2(), const3(), root3on2(),
-// const1e_37() -- no magic offsets or unchecked casts in this body.
+// (src/abi/constants.zig): consts.const1on2(), const3(), const_2(),
+// root3on2(), const1e_37() -- no magic offsets or unchecked casts in this body.
 
 // ---------------------------------------------------------------------------
 // Globals and function externs
 // ---------------------------------------------------------------------------
 extern var ctxtReal39: realContext_t;
+extern var ctxtReal75: realContext_t;
 extern var temporaryInformation: u8;
 
 extern fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void;
@@ -103,8 +106,16 @@ extern fn fnToRect2(unusedButMandatoryParameter: u16) void;
 extern fn copySourceRegisterToDestRegister(src: calcRegister_t, dst: calcRegister_t) void;
 
 extern fn decNumberCopy(dst: *real_t, src: *align(1) const real_t) *real_t;
+extern fn decNumberAdd(res: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
+extern fn decNumberSubtract(res: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
 extern fn decNumberDivide(res: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
+extern fn decNumberSquareRoot(res: *real_t, a: *align(1) const real_t, ctx: *realContext_t) *real_t;
 extern fn realCompareAbsLessThan(a: *align(1) const real_t, b: *align(1) const real_t) bool;
+
+// The complex arithmetic of the mathematics owners, at the context each site names.
+extern fn addComplex(a: *const cplx_t, b: *const cplx_t, res: *cplx_t, ctx: *realContext_t) void;
+extern fn mulComplexComplex(factor1: *const cplx_t, factor2: *const cplx_t, product: *cplx_t, ctx: *realContext_t) void;
+extern fn divComplexComplex(numer: *const cplx_t, denom: *const cplx_t, quotient: *cplx_t, ctx: *realContext_t) void;
 
 extern fn decQuadIsZero(x: *align(1) const real34_t) u32;
 
@@ -117,14 +128,26 @@ inline fn realCopy(src: *align(1) const real_t, dst: *real_t) void {
 inline fn realChangeSign(x: *real_t) void {
     x.bits ^= DECNEG;
 }
+inline fn realAdd(a: *align(1) const real_t, b: *align(1) const real_t, res: *real_t, ctx: *realContext_t) void {
+    _ = decNumberAdd(res, a, b, ctx);
+}
+inline fn realSubtract(a: *align(1) const real_t, b: *align(1) const real_t, res: *real_t, ctx: *realContext_t) void {
+    _ = decNumberSubtract(res, a, b, ctx);
+}
 inline fn realDivide(a: *align(1) const real_t, b: *align(1) const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberDivide(res, a, b, ctx);
+}
+inline fn realSquareRoot(a: *align(1) const real_t, res: *real_t, ctx: *realContext_t) void {
+    _ = decNumberSquareRoot(res, a, ctx);
 }
 inline fn realIsZero(x: *align(1) const real_t) bool {
     return x.lsu[0] == 0 and x.digits == 1 and (x.bits & DECSPECIAL) == 0;
 }
 inline fn realIsNaN(x: *align(1) const real_t) bool {
     return (x.bits & (DECNAN | DECSNAN)) != 0;
+}
+inline fn realIsSpecial(x: *align(1) const real_t) bool {
+    return (x.bits & DECSPECIAL) != 0;
 }
 inline fn real34IsZero(x: *align(1) const real34_t) bool {
     return decQuadIsZero(x) != 0;
@@ -138,14 +161,12 @@ inline fn setComplexRegisterPolarMode(reg: calcRegister_t, pm: u32) void {
     setRegisterTag(reg, angle | (pm & amPolar));
 }
 
-// Complex arithmetic comes from the shared abi runtime wrappers (abi.runtime):
-// rt.add/mul/div take a *Complex and thread ctxtReal39.
-const rt = abi.runtime;
+// Register reads and writes carry one cplx_t.
 inline fn getRegCplx(reg: calcRegister_t, c: *cplx_t) void {
-    _ = frontier_register_value_conversions.getRegisterAsComplex(reg, &c.Real, &c.Imag);
+    _ = frontier_register_value_conversions.getRegisterAsComplex(reg, c);
 }
 inline fn putRegCplx(c: *const cplx_t, reg: calcRegister_t) void {
-    frontier_register_value_conversions.convertComplexToResultRegister(&c.Real, &c.Imag, reg);
+    frontier_register_value_conversions.convertComplexToResultRegister(c, reg);
 }
 
 // ---------------------------------------------------------------------------
@@ -225,14 +246,65 @@ fn elecPutResults(l: *const cplx_t, x: *const cplx_t, y: *const cplx_t, z: *cons
     frontier_register_value_conversions.convertComplexRegisterToRealIfZeroImag(REGISTER_L);
 }
 
-fn elecSetAOperators(aOp: *cplx_t, aaOp: *cplx_t) void {
-    // a = 1 angle 120deg = -1/2 + j*root3/2 ; a^2 = conjugate of a
+// Form the positive- and negative-sequence rotation operators. The 39-digit
+// constant is sufficient for an isolated rotation. A wider transform derives the
+// irrational component in its work context because subtraction between sequence
+// terms can expose the constant's low digits.
+fn elecSetAOperators(aOp: *cplx_t, aaOp: *cplx_t, realContext: *realContext_t) void {
+    // a = 1 angle 120deg = -1/2 + j*root3/2 ; a^2 is its conjugate
     realCopy(consts.const1on2(), &aOp.Real);
     realChangeSign(&aOp.Real);
-    realCopy(consts.root3on2(), &aOp.Imag);
+    if (realContext.digits <= 39) {
+        realCopy(consts.root3on2(), &aOp.Imag);
+    } else {
+        realSquareRoot(consts.const3(), &aOp.Imag, realContext);
+        realDivide(&aOp.Imag, consts.const_2(), &aOp.Imag, realContext);
+    }
     realCopy(&aOp.Real, &aaOp.Real);
     realCopy(&aOp.Imag, &aaOp.Imag);
     realChangeSign(&aaOp.Imag);
+}
+
+// Add two finite values and retain the rounding residual. The greater-magnitude
+// operand is selected for the FastTwoSum identity.
+fn elecTwoSum(a: *const real_t, b: *const real_t, sum: *real_t, err: *real_t, realContext: *realContext_t) void {
+    var z: real_t = undefined;
+    var larger: *const real_t = a;
+    var smaller: *const real_t = b;
+
+    if (realCompareAbsLessThan(larger, smaller)) {
+        larger = b;
+        smaller = a;
+    }
+    realAdd(larger, smaller, sum, realContext);
+    realSubtract(sum, larger, &z, realContext);
+    realSubtract(smaller, &z, err, realContext);
+}
+
+// Add three real components with a two-term expansion. Special inputs retain the
+// ordinary arithmetic semantics. Finite inputs use two FastTwoSum stages so that a
+// small term is not discarded before a later cancellation.
+fn elecAddThreeReal(a: *const real_t, b: *const real_t, c: *const real_t, result: *real_t, realContext: *realContext_t) void {
+    var sum: real_t = undefined;
+    var total: real_t = undefined;
+    var error1: real_t = undefined;
+    var error2: real_t = undefined;
+
+    if (realIsSpecial(a) or realIsSpecial(b) or realIsSpecial(c)) {
+        realAdd(a, b, result, realContext);
+        realAdd(result, c, result, realContext);
+        return;
+    }
+    elecTwoSum(a, b, &sum, &error1, realContext);
+    elecTwoSum(&sum, c, &total, &error2, realContext);
+    realAdd(&error1, &error2, &error1, realContext);
+    realAdd(&total, &error1, result, realContext);
+}
+
+// Add three complex values component by component.
+fn elecAddThreeComplex(a: *const cplx_t, b: *const cplx_t, c: *const cplx_t, result: *cplx_t, realContext: *realContext_t) void {
+    elecAddThreeReal(&a.Real, &b.Real, &c.Real, &result.Real, realContext);
+    elecAddThreeReal(&a.Imag, &b.Imag, &c.Imag, &result.Imag, realContext);
 }
 
 fn flipPolar(regist: calcRegister_t) void {
@@ -241,11 +313,10 @@ fn flipPolar(regist: calcRegister_t) void {
         fnSwapX(@intCast(regist));
     }
     {
-        var zReal: real_t = undefined;
-        var zImag: real_t = undefined;
+        var z: cplx_t = undefined;
         if (getRegisterDataType(REGISTER_X) != dtComplex34) {
-            if (frontier_register_value_conversions.getRegisterAsComplex(REGISTER_X, &zReal, &zImag)) {
-                frontier_register_value_conversions.convertComplexToResultRegister(&zReal, &zImag, REGISTER_X);
+            if (frontier_register_value_conversions.getRegisterAsComplex(REGISTER_X, &z)) {
+                frontier_register_value_conversions.convertComplexToResultRegister(&z, REGISTER_X); // promote a real register to complex (rectangular); on read failure leave X unchanged
             }
         } else if (getComplexRegisterPolarMode(REGISTER_X) != amPolar) {
             setComplexRegisterPolarMode(REGISTER_X, amPolar);
@@ -285,7 +356,7 @@ fn elecStoreTriple(base: calcRegister_t, r1: *const cplx_t, r2: *const cplx_t, r
 // ---------------------------------------------------------------------------
 // Public item entry points
 // ---------------------------------------------------------------------------
-fn fnDeltaToStarCore() Error!void {
+fn fnDeltaToStarCore() Error!void { // Delta to Star; ZYX to ZYX. Cancellation-sensitive work uses ctxtReal75
     var x: cplx_t = undefined;
     var y: cplx_t = undefined;
     var z: cplx_t = undefined;
@@ -302,14 +373,13 @@ fn fnDeltaToStarCore() Error!void {
         setSystemFlag(FLAG_CPXRES);
     }
     elecGetXYZ(&x, &y, &z);
-    rt.add(&x, &y, &s); // s = x + y + z
-    rt.add(&s, &z, &s);
-    rt.mul(&z, &x, &zx); // pairwise products
-    rt.mul(&x, &y, &xy);
-    rt.mul(&y, &z, &yz);
-    rt.div(&zx, &s, &rx); // X = (z*x) / s
-    rt.div(&xy, &s, &ry); // Y = (x*y) / s
-    rt.div(&yz, &s, &rz); // Z = (y*z) / s
+    elecAddThreeComplex(&x, &y, &z, &s, &ctxtReal75); // s = x + y + z
+    mulComplexComplex(&z, &x, &zx, &ctxtReal75); // pairwise products
+    mulComplexComplex(&x, &y, &xy, &ctxtReal75);
+    mulComplexComplex(&y, &z, &yz, &ctxtReal75);
+    divComplexComplex(&zx, &s, &rx, &ctxtReal75); // X = (z*x) / s
+    divComplexComplex(&xy, &s, &ry, &ctxtReal75); // Y = (x*y) / s
+    divComplexComplex(&yz, &s, &rz, &ctxtReal75); // Z = (y*z) / s
     try checkResults(&results);
     saveForUndo();
     setSystemFlag(FLAG_ASLIFT);
@@ -322,12 +392,14 @@ pub export fn fnDeltaToStar(unusedButMandatoryParameter: u16) callconv(.c) void 
     if (option_elec) fnDeltaToStarCore() catch |e| reportError(e);
 }
 
-fn fnStarToDeltaCore() Error!void {
+fn fnStarToDeltaCore() Error!void { // Star to Delta; ZYX to ZYX. Cancellation-sensitive work uses ctxtReal75
     var x: cplx_t = undefined;
     var y: cplx_t = undefined;
     var z: cplx_t = undefined;
+    var xy: cplx_t = undefined;
+    var yz: cplx_t = undefined;
+    var zx: cplx_t = undefined;
     var p: cplx_t = undefined;
-    var t: cplx_t = undefined;
     var rx: cplx_t = undefined;
     var ry: cplx_t = undefined;
     var rz: cplx_t = undefined;
@@ -337,14 +409,13 @@ fn fnStarToDeltaCore() Error!void {
         setSystemFlag(FLAG_CPXRES);
     }
     elecGetXYZ(&x, &y, &z);
-    rt.mul(&x, &y, &p); // p = x*y + y*z + z*x
-    rt.mul(&y, &z, &t);
-    rt.add(&p, &t, &p);
-    rt.mul(&z, &x, &t);
-    rt.add(&p, &t, &p);
-    rt.div(&p, &z, &rx); // X = p / z
-    rt.div(&p, &x, &ry); // Y = p / x
-    rt.div(&p, &y, &rz); // Z = p / y
+    mulComplexComplex(&x, &y, &xy, &ctxtReal75); // p = x*y + y*z + z*x
+    mulComplexComplex(&y, &z, &yz, &ctxtReal75);
+    mulComplexComplex(&z, &x, &zx, &ctxtReal75);
+    elecAddThreeComplex(&xy, &yz, &zx, &p, &ctxtReal75);
+    divComplexComplex(&p, &z, &rx, &ctxtReal75); // X = p / z
+    divComplexComplex(&p, &x, &ry, &ctxtReal75); // Y = p / x
+    divComplexComplex(&p, &y, &rz, &ctxtReal75); // Z = p / y
     try checkResults(&results);
     saveForUndo();
     setSystemFlag(FLAG_ASLIFT);
@@ -357,7 +428,7 @@ pub export fn fnStarToDelta(unusedButMandatoryParameter: u16) callconv(.c) void 
     if (option_elec) fnStarToDeltaCore() catch |e| reportError(e);
 }
 
-fn fnSymToAbcCore() Error!void {
+fn fnSymToAbcCore() Error!void { // Symmetrical components -> ABC; cancellation-sensitive work uses ctxtReal75
     var a2: cplx_t = undefined;
     var a1: cplx_t = undefined;
     var a0: cplx_t = undefined;
@@ -372,18 +443,15 @@ fn fnSymToAbcCore() Error!void {
     if (elecInputIsComplex(&inRegs)) {
         setSystemFlag(FLAG_CPXRES);
     }
-    elecGetXYZ(&a2, &a1, &a0); // X = A2, Y = A1, Z = A0
-    elecSetAOperators(&aOp, &aaOp);
-    rt.add(&a0, &a1, &va); // Va = A0 + A1 + A2
-    rt.add(&va, &a2, &va);
-    rt.mul(&aaOp, &a1, &vb); // Vb = A0 + a^2*A1 + a*A2
-    rt.mul(&aOp, &a2, &t);
-    rt.add(&vb, &t, &vb);
-    rt.add(&vb, &a0, &vb);
-    rt.mul(&aOp, &a1, &vc); // Vc = A0 + a*A1 + a^2*A2
-    rt.mul(&aaOp, &a2, &t);
-    rt.add(&vc, &t, &vc);
-    rt.add(&vc, &a0, &vc);
+    elecGetXYZ(&a2, &a1, &a0); // X = A2 (negative), Y = A1 (positive), Z = A0 (zero) sequence
+    elecSetAOperators(&aOp, &aaOp, &ctxtReal75);
+    elecAddThreeComplex(&a0, &a1, &a2, &va, &ctxtReal75); // Va = A0 + A1 + A2
+    mulComplexComplex(&aaOp, &a1, &vb, &ctxtReal75); // Vb = A0 + a^2*A1 + a*A2
+    mulComplexComplex(&aOp, &a2, &t, &ctxtReal75);
+    elecAddThreeComplex(&a0, &vb, &t, &vb, &ctxtReal75);
+    mulComplexComplex(&aOp, &a1, &vc, &ctxtReal75); // Vc = A0 + a*A1 + a^2*A2
+    mulComplexComplex(&aaOp, &a2, &t, &ctxtReal75);
+    elecAddThreeComplex(&a0, &vc, &t, &vc, &ctxtReal75);
     try checkResults(&results);
     saveForUndo();
     setSystemFlag(FLAG_ASLIFT);
@@ -396,7 +464,7 @@ pub export fn fnSymToAbc(unusedButMandatoryParameter: u16) callconv(.c) void {
     if (option_elec) fnSymToAbcCore() catch |e| reportError(e);
 }
 
-fn fnAbcToSymCore() Error!void {
+fn fnAbcToSymCore() Error!void { // ABC -> symmetrical components; cancellation-sensitive work uses ctxtReal75
     var vc: cplx_t = undefined;
     var vb: cplx_t = undefined;
     var va: cplx_t = undefined;
@@ -412,23 +480,20 @@ fn fnAbcToSymCore() Error!void {
         setSystemFlag(FLAG_CPXRES);
     }
     elecGetXYZ(&vc, &vb, &va); // X = Vc, Y = Vb, Z = Va
-    elecSetAOperators(&aOp, &aaOp);
-    rt.add(&va, &vb, &s0); // A0 = (Va + Vb + Vc) / 3
-    rt.add(&s0, &vc, &s0);
-    realDivide(&s0.Real, consts.const3(), &s0.Real, &ctxtReal39);
-    realDivide(&s0.Imag, consts.const3(), &s0.Imag, &ctxtReal39);
-    rt.mul(&aOp, &vb, &s1); // A1 = (Va + a*Vb + a^2*Vc) / 3
-    rt.mul(&aaOp, &vc, &t);
-    rt.add(&s1, &t, &s1);
-    rt.add(&s1, &va, &s1);
-    realDivide(&s1.Real, consts.const3(), &s1.Real, &ctxtReal39);
-    realDivide(&s1.Imag, consts.const3(), &s1.Imag, &ctxtReal39);
-    rt.mul(&aaOp, &vb, &s2); // A2 = (Va + a^2*Vb + a*Vc) / 3
-    rt.mul(&aOp, &vc, &t);
-    rt.add(&s2, &t, &s2);
-    rt.add(&s2, &va, &s2);
-    realDivide(&s2.Real, consts.const3(), &s2.Real, &ctxtReal39);
-    realDivide(&s2.Imag, consts.const3(), &s2.Imag, &ctxtReal39);
+    elecSetAOperators(&aOp, &aaOp, &ctxtReal75);
+    elecAddThreeComplex(&va, &vb, &vc, &s0, &ctxtReal75); // A0 = (Va + Vb + Vc) / 3
+    realDivide(&s0.Real, consts.const3(), &s0.Real, &ctxtReal75);
+    realDivide(&s0.Imag, consts.const3(), &s0.Imag, &ctxtReal75);
+    mulComplexComplex(&aOp, &vb, &s1, &ctxtReal75); // A1 = (Va + a*Vb + a^2*Vc) / 3
+    mulComplexComplex(&aaOp, &vc, &t, &ctxtReal75);
+    elecAddThreeComplex(&va, &s1, &t, &s1, &ctxtReal75);
+    realDivide(&s1.Real, consts.const3(), &s1.Real, &ctxtReal75);
+    realDivide(&s1.Imag, consts.const3(), &s1.Imag, &ctxtReal75);
+    mulComplexComplex(&aaOp, &vb, &s2, &ctxtReal75); // A2 = (Va + a^2*Vb + a*Vc) / 3
+    mulComplexComplex(&aOp, &vc, &t, &ctxtReal75);
+    elecAddThreeComplex(&va, &s2, &t, &s2, &ctxtReal75);
+    realDivide(&s2.Real, consts.const3(), &s2.Real, &ctxtReal75);
+    realDivide(&s2.Imag, consts.const3(), &s2.Imag, &ctxtReal75);
     try checkResults(&results);
     saveForUndo();
     setSystemFlag(FLAG_ASLIFT);
@@ -441,7 +506,7 @@ pub export fn fnAbcToSym(unusedButMandatoryParameter: u16) callconv(.c) void {
     if (option_elec) fnAbcToSymCore() catch |e| reportError(e);
 }
 
-fn fnTripleZfromVICore() Error!void {
+fn fnTripleZfromVICore() Error!void { // V/I : three-phase Z = V / I ; complex math in real_t (ctxtReal75), in/out via real34_t
     var v1: cplx_t = undefined;
     var v2: cplx_t = undefined;
     var v3: cplx_t = undefined;
@@ -458,9 +523,9 @@ fn fnTripleZfromVICore() Error!void {
     }
     elecGetTriple(TripleRegV1_90, &v1, &v2, &v3);
     elecGetTriple(TripleRegI1_93, &ii1, &ii2, &ii3);
-    rt.div(&v1, &ii1, &z1); // Z1 = V1 / I1
-    rt.div(&v2, &ii2, &z2);
-    rt.div(&v3, &ii3, &z3);
+    divComplexComplex(&v1, &ii1, &z1, &ctxtReal75); // Z1 = V1 / I1
+    divComplexComplex(&v2, &ii2, &z2, &ctxtReal75);
+    divComplexComplex(&v3, &ii3, &z3, &ctxtReal75);
     try checkResults(&results);
     saveForUndo();
     elecStoreTriple(TripleRegZ1_96, &z1, &z2, &z3);
@@ -471,7 +536,7 @@ pub export fn fnTripleZfromVI(unusedButMandatoryParameter: u16) callconv(.c) voi
     if (option_elec) fnTripleZfromVICore() catch |e| reportError(e);
 }
 
-fn fnTripleVfromIZCore() Error!void {
+fn fnTripleVfromIZCore() Error!void { // IZ : three-phase V = I * Z ; complex multiplication uses ctxtReal39
     var ii1: cplx_t = undefined;
     var ii2: cplx_t = undefined;
     var ii3: cplx_t = undefined;
@@ -488,9 +553,9 @@ fn fnTripleVfromIZCore() Error!void {
     }
     elecGetTriple(TripleRegI1_93, &ii1, &ii2, &ii3);
     elecGetTriple(TripleRegZ1_96, &z1, &z2, &z3);
-    rt.mul(&ii1, &z1, &v1); // V1 = I1 * Z1
-    rt.mul(&ii2, &z2, &v2);
-    rt.mul(&ii3, &z3, &v3);
+    mulComplexComplex(&ii1, &z1, &v1, &ctxtReal39); // V1 = I1 * Z1
+    mulComplexComplex(&ii2, &z2, &v2, &ctxtReal39);
+    mulComplexComplex(&ii3, &z3, &v3, &ctxtReal39);
     try checkResults(&results);
     saveForUndo();
     elecStoreTriple(TripleRegV1_90, &v1, &v2, &v3);
@@ -501,7 +566,7 @@ pub export fn fnTripleVfromIZ(unusedButMandatoryParameter: u16) callconv(.c) voi
     if (option_elec) fnTripleVfromIZCore() catch |e| reportError(e);
 }
 
-fn fnTripleIfromVZCore() Error!void {
+fn fnTripleIfromVZCore() Error!void { // V/Z : three-phase I = V / Z ; complex math in real_t (ctxtReal75), in/out via real34_t
     var v1: cplx_t = undefined;
     var v2: cplx_t = undefined;
     var v3: cplx_t = undefined;
@@ -518,9 +583,9 @@ fn fnTripleIfromVZCore() Error!void {
     }
     elecGetTriple(TripleRegV1_90, &v1, &v2, &v3);
     elecGetTriple(TripleRegZ1_96, &z1, &z2, &z3);
-    rt.div(&v1, &z1, &ii1); // I1 = V1 / Z1
-    rt.div(&v2, &z2, &ii2);
-    rt.div(&v3, &z3, &ii3);
+    divComplexComplex(&v1, &z1, &ii1, &ctxtReal75); // I1 = V1 / Z1
+    divComplexComplex(&v2, &z2, &ii2, &ctxtReal75);
+    divComplexComplex(&v3, &z3, &ii3, &ctxtReal75);
     try checkResults(&results);
     saveForUndo();
     elecStoreTriple(TripleRegI1_93, &ii1, &ii2, &ii3);
@@ -543,7 +608,7 @@ pub export fn fnTripleFlipPolar(unusedButMandatoryParameter: u16) callconv(.c) v
     if (option_elec) fnTripleFlipPolarCore() catch |e| reportError(e);
 }
 
-fn fnCopyXtoAbcCore() Error!void {
+fn fnCopyXtoAbcCore() Error!void { // Copy/create X -> ABC balanced set. 1-in/3-out: x in Z, Y = a*x, X = a^2*x ; L = original x. Isolated rotations use ctxtReal39
     var x: cplx_t = undefined;
     var rx: cplx_t = undefined;
     var ry: cplx_t = undefined;
@@ -555,13 +620,13 @@ fn fnCopyXtoAbcCore() Error!void {
         setSystemFlag(FLAG_CPXRES);
     }
     getRegCplx(REGISTER_X, &x); // x = source phasor
-    elecSetAOperators(&aOp, &aaOp);
-    rt.mul(&aOp, &x, &ry); // a*x   -> Y
-    rt.mul(&aaOp, &x, &rx); // a^2*x -> X
+    elecSetAOperators(&aOp, &aaOp, &ctxtReal39); // a = 1 angle 120deg ; a^2 = 1 angle 240deg
+    mulComplexComplex(&aOp, &x, &ry, &ctxtReal39); // a*x   -> Y
+    mulComplexComplex(&aaOp, &x, &rx, &ctxtReal39); // a^2*x -> X
     try checkResults(&results);
-    saveForUndo();
-    fnDrop(NOPARAM); // consume the input
-    putRegCplx(&x, REGISTER_L); // L = original x
+    saveForUndo(); // commit point: disturb the stack only past the gate
+    fnDrop(NOPARAM); // consume the input so the set is built onto the stack below it
+    putRegCplx(&x, REGISTER_L); // L = original x (last x)
     liftStack();
     putRegCplx(&x, REGISTER_X); // x is the base of the set
     setSystemFlag(FLAG_ASLIFT);
@@ -569,7 +634,7 @@ fn fnCopyXtoAbcCore() Error!void {
     putRegCplx(&ry, REGISTER_X); // a*x into X, x rolls to Y
     setSystemFlag(FLAG_ASLIFT);
     liftStack();
-    putRegCplx(&rx, REGISTER_X); // a^2*x into X, a*x -> Y, x -> Z
+    putRegCplx(&rx, REGISTER_X); // a^2*x into X, a*x rolls to Y, x rolls to Z
     frontier_register_value_conversions.convertComplexRegisterToRealIfZeroImag(REGISTER_X);
     frontier_register_value_conversions.convertComplexRegisterToRealIfZeroImag(REGISTER_Y);
     frontier_register_value_conversions.convertComplexRegisterToRealIfZeroImag(REGISTER_Z);

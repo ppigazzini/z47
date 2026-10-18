@@ -35,8 +35,7 @@ pub fn tryDotMatrices() bool {
             });
         } else {
             runtime.dotRealVectors(&y_matrix, &x_matrix, &result);
-            runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, runtime.amNone);
-            runtime.registerReal34Ptr(runtime.REGISTER_X).* = result;
+            runtime.convertReal34ToReal34Register(&result, runtime.REGISTER_X);
         }
 
         runtime.adjustResult(runtime.REGISTER_X, true, true, runtime.REGISTER_X, no_register, no_register);
@@ -69,9 +68,7 @@ pub fn tryDotMatrices() bool {
         });
     } else {
         runtime.dotComplexVectors(&y_matrix, &x_matrix, &result_real, &result_imag);
-        runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtComplex34, 0, runtime.amNone);
-        runtime.registerReal34Ptr(runtime.REGISTER_X).* = result_real;
-        runtime.registerImag34Ptr(runtime.REGISTER_X).* = result_imag;
+        runtime.convertReal34ToComplex34Register(&result_real, &result_imag, runtime.REGISTER_X);
     }
 
     runtime.adjustResult(runtime.REGISTER_X, true, true, runtime.REGISTER_X, no_register, no_register);

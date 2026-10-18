@@ -108,6 +108,47 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"50" RX=Real:"5.6438561897747246957406
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"89.99999"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"89.99999" RX=Real:"6.4918529360302168175895930720129105261335591030017435151101347"
 
+; Exact subtraction and scaling check powers of two, the logarithm next to one and both decimal128 exponent limits through digit 34.
+Func: fnLog2
+In:  RMODE=0 RX=Real:"2"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"1"
+Out: EC=0 RX=Real:"0"
+
+Func: fnLog2
+In:  RMODE=0 RX=Real:"1.000000000000000000000000000000001"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"1.442695040888963407359924681001891e-33"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e70"
+Out: EC=0 RX=Real:"0"
+
+Func: fnLog2
+In:  RMODE=0 RX=Real:"1e-6176"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"-20516.22791402434986044709279652647"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e30"
+Out: EC=0 RX=Real:"0"
+
+Func: fnLog2
+In:  RMODE=0 RX=Real:"9.999999999999999999999999999999999e6144"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"20413.24814308284162766311289421230"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e30"
+Out: EC=0 RX=Real:"0"
+
+Func: fnLog2
+In:  RMODE=0
+
 In:  FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"5.32564":DMS
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"5.32564":DMS RX=Real:"2.4129549092529224002523452238261525321191140268114758508667583"
 
@@ -122,6 +163,9 @@ Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"0"
 
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=Real:"0"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"-inf"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=Real:"-0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-0" RX=Real:"-inf"
 
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RX=Real:"-5"
 Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"-5"
@@ -141,13 +185,16 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"NaN" RX=Real:"NaN"
 
 ; Infinity
 In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=Real:"inf":DEG
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"inf":DEG RX=Real:"NaN"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"inf":DEG RX=Real:"inf"
 
 In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RX=Real:"inf":MULTPI
 Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"inf":MULTPI
 
 In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=Real:"inf"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"NaN"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"inf"
+
+In:  FL_ASLIFT=0 FL_CPXRES=1 FL_SPCRES=1 RX=Real:"inf"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"inf"
 
 In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RX=Real:"inf"
 Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"inf"
@@ -172,8 +219,152 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-inf":RAD RX=Real:"NaN"
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"6.2 i -7.6"
 Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"6.2 i -7.6" RX=Cplx:"3.2939824944413397971921487011902400287625149892193224031176854 i -1.2789513684779097123770790153966945117657091074627130048785716"
 
+; For z = -1 + ib with a 34-digit b near 1e-34, Re(log2(z)) = log2(1 + b^2)/2; scaling exposes digit 34 of the result.
+Func: fnLog2
+In:  RMODE=0 RX=Cplx:"-1 i +1.234567890123456789012345678901234e-34"
+Out: EC=0
+Func: fnRealPart
+In:  RMODE=0
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"1.099447504130812974866659510776652e-68"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e110"
+Out: EC=0 RX=Real:"0"
+
+Func: fnLog2
+In:  RMODE=1 RX=Cplx:"-1 i +1.234567890123456789012345678901234e-34"
+Out: EC=0
+Func: fnRealPart
+In:  RMODE=1
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"1.099447504130812974866659510776652e-68"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e110"
+Out: EC=0 RX=Real:"0"
+
+Func: fnLog2
+In:  RMODE=2 RX=Cplx:"-1 i +1.234567890123456789012345678901234e-34"
+Out: EC=0
+Func: fnRealPart
+In:  RMODE=2
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"1.099447504130812974866659510776652e-68"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e110"
+Out: EC=0 RX=Real:"0"
+
+Func: fnLog2
+In:  RMODE=3 RX=Cplx:"-1 i +1.234567890123456789012345678901234e-34"
+Out: EC=0
+Func: fnRealPart
+In:  RMODE=3
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"1.099447504130812974866659510776653e-68"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e110"
+Out: EC=0 RX=Real:"0"
+
+Func: fnLog2
+In:  RMODE=4 RX=Cplx:"-1 i +1.234567890123456789012345678901234e-34"
+Out: EC=0
+Func: fnRealPart
+In:  RMODE=4
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"1.099447504130812974866659510776652e-68"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e110"
+Out: EC=0 RX=Real:"0"
+
+Func: fnLog2
+In:  RMODE=5 RX=Cplx:"-1 i +1.234567890123456789012345678901234e-34"
+Out: EC=0
+Func: fnRealPart
+In:  RMODE=5
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"1.099447504130812974866659510776653e-68"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e110"
+Out: EC=0 RX=Real:"0"
+
+Func: fnLog2
+In:  RMODE=6 RX=Cplx:"-1 i +1.234567890123456789012345678901234e-34"
+Out: EC=0
+Func: fnRealPart
+In:  RMODE=6
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"1.099447504130812974866659510776652e-68"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e110"
+Out: EC=0 RX=Real:"-0"
+
+; A negative imaginary component checks the scaled lower side of the negative-real branch cut through digit 34.
+Func: fnLog2
+In:  RMODE=0 RX=Cplx:"-1 i -1.234567890123456789012345678901234e-34"
+Out: EC=0
+Func: fnImaginaryPart
+In:  RMODE=0
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"-4.532360141827193809627682945716667"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e40"
+Out: EC=0 RX=Real:"0"
+
+; Rounded decimal128 coordinates near the unit circle need more than 51 digits when their squared components cancel; scaling checks the last result digit.
+Func: fnLog2
+In:  RMODE=0 RX=Cplx:"0.7 i +0.7141428428542849997999399811367265"
+Out: EC=0
+Func: fnRealPart
+In:  RMODE=0
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"-2.872100926716822090338556350530322e-35"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e80"
+Out: EC=0 RX=Real:"0"
+
+Func: fnLog2
+In:  RMODE=0
+
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=Cplx:"0 i 0"
 Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"0 i 0" RX=Cplx:"-inf i 0"
 
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RX=Cplx:"0 i 0"
 Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Cplx:"0 i 0"
+
+; Rectangular-to-polar maps either sign of an exact imaginary zero to the positive endpoint of the negative-real branch cut.
+Func: fnLog2
+In:  RMODE=0 RX=Cplx:"-1 i -0"
+Out: EC=0
+Func: fnImaginaryPart
+In:  RMODE=0
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"4.532360141827193809627682945716667"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e40"
+Out: EC=0 RX=Real:"0"
+
+Func: fnLog2
+In:  RMODE=0 FL_SPCRES=1 RX=Cplx:"inf i inf"
+Out: EC=0 RX=Cplx:"inf i 1.133090035456798452406920736429167"
+
+In:  RMODE=0 FL_SPCRES=1 RX=Cplx:"NaN i 1"
+Out: EC=0 RX=Cplx:"NaN i NaN"

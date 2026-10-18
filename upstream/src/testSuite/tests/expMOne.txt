@@ -219,3 +219,266 @@ Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"1.23456789E-25 i 1.23456789E-25" RX=C
 
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"1.23456789E-25 i 1.23456789E-30"
 Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"1.23456789E-25 i 1.23456789E-30" RX=Cplx:"1.23456789000000000000000007620789374333181562490474E-25 i 1.23456789000000000000000015241578750190521000000000E-30"
+
+
+
+;=======================================
+; Decimal128 scalar accuracy
+;=======================================
+; expm1(1) distinguishes the directed modes at digit 34. Scaling prevents the comparison tolerance from concealing an adjacent result.
+Func: fnExpM1
+In:  RMODE=0 RX=Real:"1"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"1.718281828459045235360287471352662"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e40"
+Out: EC=0 RX=Real:"0"
+
+Func: fnExpM1
+In:  RMODE=1 RX=Real:"1"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"1.718281828459045235360287471352662"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e40"
+Out: EC=0 RX=Real:"0"
+
+Func: fnExpM1
+In:  RMODE=2 RX=Real:"1"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"1.718281828459045235360287471352662"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e40"
+Out: EC=0 RX=Real:"0"
+
+Func: fnExpM1
+In:  RMODE=3 RX=Real:"1"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"1.718281828459045235360287471352663"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e40"
+Out: EC=0 RX=Real:"0"
+
+Func: fnExpM1
+In:  RMODE=4 RX=Real:"1"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"1.718281828459045235360287471352662"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e40"
+Out: EC=0 RX=Real:"0"
+
+Func: fnExpM1
+In:  RMODE=5 RX=Real:"1"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"1.718281828459045235360287471352663"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e40"
+Out: EC=0 RX=Real:"0"
+
+Func: fnExpM1
+In:  RMODE=6 RX=Real:"1"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"1.718281828459045235360287471352662"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e40"
+Out: EC=0 RX=Real:"0"
+
+; Adjacent decimal128 inputs bracket the upper range transition. Directed finite overflow needs a context wider than decimal128.
+Func: fnExpM1
+In:  RMODE=0 FL_SPCRES=0 RX=Real:"14149.38539644841072829055748903541"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"9.999999999999999999999999999919443e6144"
+Out: EC=0 RX=Real:"0"
+
+Func: fnExpM1
+In:  RMODE=0 FL_SPCRES=0 RX=Real:"14149.38539644841072829055748903542"
+Out: EC=4 RX=Real:"14149.38539644841072829055748903542"
+
+Func: fnExpM1
+In:  RMODE=4 FL_SPCRES=0 RX=Real:"14149.38539644841072829055748903542"
+Out: EC=0 RX=Real:"9.999999999999999999999999999999999e6144"
+
+; The small-result branch preserves the minimum subnormal and the sign of negative zero.
+Func: fnExpM1
+In:  RMODE=0 RX=Real:"1e-6176"
+Out: EC=0 RX=Real:"1e-6176"
+
+Func: fnExpM1
+In:  RMODE=0 RX=Real:"-1e-6176"
+Out: EC=0 RX=Real:"-1e-6176"
+
+Func: fnExpM1
+In:  RMODE=0 FL_SPCRES=1 RX=Real:"-0"
+Out: EC=0
+Func: fnInvert
+In:  RMODE=0 FL_SPCRES=1
+Out: EC=0 RX=Real:"-inf"
+
+
+
+;=======================================
+; Complex cancellation and range
+;=======================================
+; Here the input real part is decimal128-rounded -ln(cos(0.7)). The real result loses 35 leading digits, so p51 working arithmetic cannot determine result digit 34.
+Func: fnExpM1
+In:  AM=RAD RMODE=0 RX=Cplx:"0.2680857575679311005294132926142307 i 0.7"
+Out: EC=0 FL_CPXRES=1
+Func: fnRealPart
+In:  RMODE=0
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"4.995638184736981870975518456145120e-36"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e75"
+Out: EC=0 RX=Real:"0"
+
+Func: fnExpM1
+In:  AM=RAD RMODE=1 RX=Cplx:"0.2680857575679311005294132926142307 i 0.7"
+Out: EC=0 FL_CPXRES=1
+Func: fnRealPart
+In:  RMODE=1
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"4.995638184736981870975518456145120e-36"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e75"
+Out: EC=0 RX=Real:"0"
+
+Func: fnExpM1
+In:  AM=RAD RMODE=2 RX=Cplx:"0.2680857575679311005294132926142307 i 0.7"
+Out: EC=0 FL_CPXRES=1
+Func: fnRealPart
+In:  RMODE=2
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"4.995638184736981870975518456145120e-36"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e75"
+Out: EC=0 RX=Real:"0"
+
+Func: fnExpM1
+In:  AM=RAD RMODE=3 RX=Cplx:"0.2680857575679311005294132926142307 i 0.7"
+Out: EC=0 FL_CPXRES=1
+Func: fnRealPart
+In:  RMODE=3
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"4.995638184736981870975518456145120e-36"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e75"
+Out: EC=0 RX=Real:"0"
+
+Func: fnExpM1
+In:  AM=RAD RMODE=4 RX=Cplx:"0.2680857575679311005294132926142307 i 0.7"
+Out: EC=0 FL_CPXRES=1
+Func: fnRealPart
+In:  RMODE=4
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"4.995638184736981870975518456145119e-36"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e75"
+Out: EC=0 RX=Real:"0"
+
+Func: fnExpM1
+In:  AM=RAD RMODE=5 RX=Cplx:"0.2680857575679311005294132926142307 i 0.7"
+Out: EC=0 FL_CPXRES=1
+Func: fnRealPart
+In:  RMODE=5
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"4.995638184736981870975518456145120e-36"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e75"
+Out: EC=0 RX=Real:"0"
+
+Func: fnExpM1
+In:  AM=RAD RMODE=6 RX=Cplx:"0.2680857575679311005294132926142307 i 0.7"
+Out: EC=0 FL_CPXRES=1
+Func: fnRealPart
+In:  RMODE=6
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"4.995638184736981870975518456145119e-36"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e75"
+Out: EC=0 RX=Real:"-0"
+
+; The direct negative-real formula avoids zero times infinity in the split identity.
+Func: fnExpM1
+In:  AM=RAD RMODE=0 FL_SPCRES=1 RX=Cplx:"-5e6 i -1"
+Out: EC=0 FL_CPXRES=1 RX=Cplx:"-1 i -0"
+Func: fnImaginaryPart
+In:  RMODE=0 FL_SPCRES=1
+Out: EC=0
+Func: fnInvert
+In:  RMODE=0 FL_SPCRES=1
+Out: EC=0 RX=Real:"-inf"
+
+Func: fnExpM1
+In:  AM=RAD RMODE=0 FL_SPCRES=1 RX=Cplx:"-inf i 2"
+Out: EC=0 FL_CPXRES=1 RX=Cplx:"-1 i 0"
+
+Func: fnExpM1
+In:  AM=RAD RMODE=0 FL_SPCRES=1 RX=Cplx:"inf i 1"
+Out: EC=0 FL_CPXRES=1 RX=Cplx:"inf i inf"
+
+Func: fnExpM1
+In:  AM=RAD RMODE=0 FL_SPCRES=1 RX=Cplx:"inf i -1"
+Out: EC=0 FL_CPXRES=1 RX=Cplx:"inf i -inf"
+
+; The switch to the direct formula at real part -0.1 remains accurate through digit 34.
+Func: fnExpM1
+In:  AM=RAD RMODE=0 RX=Cplx:"-0.1 i 0.7"
+Out: EC=0 FL_CPXRES=1
+Func: fnRealPart
+In:  RMODE=0
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"-0.3079421700525276623430033958872524"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e40"
+Out: EC=0 RX=Real:"0"
+
+Func: fnExpM1
+In:  AM=RAD RMODE=0 RX=Cplx:"-0.1 i 0.7"
+Out: EC=0 FL_CPXRES=1
+Func: fnImaginaryPart
+In:  RMODE=0
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"0.5829122687732497183447548560328994"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e40"
+Out: EC=0 RX=Real:"0"
+
+Func: fnExpM1
+In:  AM=RAD RMODE=0 FL_SPCRES=1 RX=Cplx:"NaN i 1"
+Out: EC=0 FL_CPXRES=1 RX=Cplx:"NaN i NaN"
+
+Func: fnExpM1
+In:  AM=RAD RMODE=0 FL_SPCRES=1 RX=Cplx:"0 i inf"
+Out: EC=0 FL_CPXRES=1 RX=Cplx:"NaN i NaN"

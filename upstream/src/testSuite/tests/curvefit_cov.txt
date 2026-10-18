@@ -87,6 +87,350 @@ Out: EC=0 RX=Real:"12"
 Func: fnXIsFny
 In:  FARG=0 RX=Real:"12"
 Out: EC=0 RX=Real:"6"
+
+; The fitted slope is 1/3 at p75. Its rounded product nearly cancels the unit intercept.
+Func: fnClSigma
+In:  FARG=0 RX=Real:"0"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"1" RX=Real:"0"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"2" RX=Real:"3"
+Out: EC=0
+Func: fnCurveFitting
+In:  FARG=1
+Out: EC=0
+Func: fnProcessLR
+In:  FARG=7
+Out: EC=0
+Func: fnYIsFnx
+In:  FARG=0 RX=Real:"-2.999999999999999999999999999999999"
+Out: EC=0 RX=Real:"3.333333333333333333333333333333333E-34"
+Func: fnSubtract
+In:  RY=Real:"3.333333333333333333333333333333333E-34"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1E68"
+Out: EC=0 RX=Real:"0"
+
+Func: fnYIsFnx
+In:  FARG=0 RMODE=1 RX=Real:"-2.999999999999999999999999999999999"
+Out: EC=0 RX=Real:"3.333333333333333333333333333333333E-34"
+Func: fnSubtract
+In:  RY=Real:"3.333333333333333333333333333333333E-34"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1E68"
+Out: EC=0 RX=Real:"0"
+
+Func: fnYIsFnx
+In:  FARG=0 RMODE=2 RX=Real:"-2.999999999999999999999999999999999"
+Out: EC=0 RX=Real:"3.333333333333333333333333333333333E-34"
+Func: fnSubtract
+In:  RY=Real:"3.333333333333333333333333333333333E-34"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1E68"
+Out: EC=0 RX=Real:"0"
+
+Func: fnYIsFnx
+In:  FARG=0 RMODE=3 RX=Real:"-2.999999999999999999999999999999999"
+Out: EC=0 RX=Real:"3.333333333333333333333333333333334E-34"
+Func: fnSubtract
+In:  RY=Real:"3.333333333333333333333333333333334E-34"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1E68"
+Out: EC=0 RX=Real:"0"
+
+Func: fnYIsFnx
+In:  FARG=0 RMODE=4 RX=Real:"-2.999999999999999999999999999999999"
+Out: EC=0 RX=Real:"3.333333333333333333333333333333333E-34"
+Func: fnSubtract
+In:  RY=Real:"3.333333333333333333333333333333333E-34"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1E68"
+Out: EC=0 RX=Real:"0"
+
+Func: fnYIsFnx
+In:  FARG=0 RMODE=5 RX=Real:"-2.999999999999999999999999999999999"
+Out: EC=0 RX=Real:"3.333333333333333333333333333333334E-34"
+Func: fnSubtract
+In:  RY=Real:"3.333333333333333333333333333333334E-34"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1E68"
+Out: EC=0 RX=Real:"0"
+
+Func: fnYIsFnx
+In:  FARG=0 RMODE=6 RX=Real:"-2.999999999999999999999999999999999"
+Out: EC=0 RX=Real:"3.333333333333333333333333333333333E-34"
+Func: fnSubtract
+In:  RY=Real:"3.333333333333333333333333333333333E-34"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1E68"
+Out: EC=0 RX=Real:"0"
+
+; A well-conditioned quadratic fit can have roots with widely separated magnitudes. The small root agrees with y through digit 34 in (-1 + sqrt(1 + 4y))/2.
+Func: fnClSigma
+In:  FARG=0 RX=Real:"0"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"2" RX=Real:"1"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"6" RX=Real:"2"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"12" RX=Real:"3"
+Out: EC=0
+Func: fnCurveFitting
+In:  FARG=64
+Out: EC=0
+Func: fnProcessLR
+In:  FARG=7
+Out: EC=0
+Func: fnXIsFny
+In:  FARG=0 RMODE=0 RX=Real:"1.234567890123456789012345678901234E-50"
+Out: EC=0 RX=Real:"1.234567890123456789012345678901234E-50" RY=Real:"-1"
+Func: fnSubtract
+In:  RY=Real:"1.234567890123456789012345678901234E-50"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1E90"
+Out: EC=0 RX=Real:"0"
+
+; Exponential fit y=10^x.
+Func: fnClSigma
+In:  FARG=0 RX=Real:"0"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"1" RX=Real:"0"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"10" RX=Real:"1"
+Out: EC=0
+Func: fnCurveFitting
+In:  FARG=2
+Out: EC=0
+Func: fnProcessLR
+In:  FARG=7
+Out: EC=0
+Func: fnYIsFnx
+In:  FARG=0 RX=Real:"2"
+Out: EC=0 RX=Real:"100"
+Func: fnXIsFny
+In:  FARG=0 RX=Real:"100"
+Out: EC=0 RX=Real:"2"
+
+; Logarithmic fit y=log10(x).
+Func: fnClSigma
+In:  FARG=0 RX=Real:"0"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"0" RX=Real:"1"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"1" RX=Real:"10"
+Out: EC=0
+Func: fnCurveFitting
+In:  FARG=4
+Out: EC=0
+Func: fnProcessLR
+In:  FARG=7
+Out: EC=0
+Func: fnYIsFnx
+In:  FARG=0 RX=Real:"100"
+Out: EC=0 RX=Real:"2"
+Func: fnXIsFny
+In:  FARG=0 RX=Real:"2"
+Out: EC=0 RX=Real:"100"
+
+; Power fit y=x^2.
+Func: fnClSigma
+In:  FARG=0 RX=Real:"0"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"1" RX=Real:"1"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"4" RX=Real:"2"
+Out: EC=0
+Func: fnCurveFitting
+In:  FARG=8
+Out: EC=0
+Func: fnProcessLR
+In:  FARG=7
+Out: EC=0
+Func: fnYIsFnx
+In:  FARG=0 RX=Real:"3"
+Out: EC=0 RX=Real:"9"
+Func: fnXIsFny
+In:  FARG=0 RX=Real:"9"
+Out: EC=0 RX=Real:"3"
+
+; A fitted nonintegral exponent exercises the p51 composed-power route at digit 34.
+Func: fnClSigma
+In:  FARG=0 RX=Real:"0"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"1" RX=Real:"1"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"1.128421397312714611542510007777829E751" RX=Real:"10"
+Out: EC=0
+Func: fnCurveFitting
+In:  FARG=8
+Out: EC=0
+Func: fnProcessLR
+In:  FARG=7
+Out: EC=0
+Func: fnYIsFnx
+In:  FARG=0 RX=Real:"7.623068583195218190252761444302672"
+Out: EC=0 RX=Real:"3.355726998278878288774957104441270E662"
+Func: fnSubtract
+In:  RY=Real:"3.355726998278878288774957104441270E662"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1E-620"
+Out: EC=0 RX=Real:"0"
+
+; Root fit y=10^(1/x).
+Func: fnClSigma
+In:  FARG=0 RX=Real:"0"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"10" RX=Real:"1"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"100" RX=Real:"0.5"
+Out: EC=0
+Func: fnCurveFitting
+In:  FARG=16
+Out: EC=0
+Func: fnProcessLR
+In:  FARG=7
+Out: EC=0
+Func: fnYIsFnx
+In:  FARG=0 RX=Real:"0.25"
+Out: EC=0 RX=Real:"10000"
+Func: fnXIsFny
+In:  FARG=0 RX=Real:"10000"
+Out: EC=0 RX=Real:"0.25"
+
+; Hyperbolic fit y=1/(x+1).
+Func: fnClSigma
+In:  FARG=0 RX=Real:"0"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"1" RX=Real:"0"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"0.5" RX=Real:"1"
+Out: EC=0
+Func: fnCurveFitting
+In:  FARG=32
+Out: EC=0
+Func: fnProcessLR
+In:  FARG=7
+Out: EC=0
+Func: fnYIsFnx
+In:  FARG=0 RX=Real:"3"
+Out: EC=0 RX=Real:"0.25"
+Func: fnXIsFny
+In:  FARG=0 RX=Real:"0.25"
+Out: EC=0 RX=Real:"3"
+
+; Cauchy fit y=1/(x+1)^2. The upper Real34 neighbour below one gives a small second root.
+Func: fnClSigma
+In:  FARG=0 RX=Real:"0"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"1" RX=Real:"0"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"0.25" RX=Real:"1"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"0.0625" RX=Real:"3"
+Out: EC=0
+Func: fnCurveFitting
+In:  FARG=128
+Out: EC=0
+Func: fnProcessLR
+In:  FARG=7
+Out: EC=0
+Func: fnYIsFnx
+In:  FARG=0 RX=Real:"2"
+Out: EC=0 RX=Real:"0.1111111111111111111111111111111111"
+Func: fnXIsFny
+In:  FARG=0 RX=Real:"0.9999999999999999999999999999999999"
+Out: EC=0 RX=Real:"5.000000000000000000000000000000000E-35" RY=Real:"-2"
+Func: fnSubtract
+In:  RY=Real:"5.000000000000000000000000000000000E-35"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1E69"
+Out: EC=0 RX=Real:"0"
+
+; Gaussian fit y=10^(-(x-1)^2). The Real34 neighbour above 0.1 gives a small first root.
+Func: fnClSigma
+In:  FARG=0 RX=Real:"0"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"0.1" RX=Real:"0"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"1" RX=Real:"1"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"0.1" RX=Real:"2"
+Out: EC=0
+Func: fnCurveFitting
+In:  FARG=256
+Out: EC=0
+Func: fnProcessLR
+In:  FARG=7
+Out: EC=0
+Func: fnYIsFnx
+In:  FARG=0 RX=Real:"3"
+Out: EC=0 RX=Real:"0.0001"
+Func: fnXIsFny
+In:  FARG=0 RX=Real:"0.1000000000000000000000000000000001"
+Out: EC=0 RX=Real:"2" RY=Real:"2.171472409516259138255644594583025E-34"
+Func: fnSwapXY
+In:  FARG=0
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"2.171472409516259138255644594583025E-34"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1E68"
+Out: EC=0 RX=Real:"0"
+
+; two points draw the orthogonal fit line of the CENTRL plot; its standard errors need a third
+Func: fnClSigma
+In:  FARG=0 RX=Real:"0"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"2" RX=Real:"1"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"7" RX=Real:"3"
+Out: EC=0
+Item: ITM_PLOT_CENTRL
+In:  FL_SPCRES=0
+Out: EC=0
+Item: ITM_SNAP
+In:  FL_SPCRES=0
+Out: EC=0
+Item: ITM_EXIT1
+In:  FL_SPCRES=0
+Out: EC=0
+
 Func: fnCurveFittingReset
 In:  FARG=0
 Out: EC=0

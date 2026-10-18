@@ -37,6 +37,8 @@ const FIRST_LOCAL_FLAG: i16 = 112;
 const LAST_LOCAL_FLAG: i16 = 143;
 const FLAG_M: i16 = 211;
 const LAST_SPARE_REGISTERS_IN_KS_CODE: i16 = 224;
+const FIRST_GLOBAL_REGISTER_IN_KS_CODE: i16 = 0;
+const LAST_GLOBAL_REGISTER_IN_KS_CODE: i16 = 111;
 const FIRST_LOCAL_REGISTER_IN_KS_CODE: i16 = 112;
 const FIRST_STAT_REGISTER_IN_KS_CODE: i16 = 211;
 const NUMBER_OF_LOCAL_REGISTERS: i16 = 99;
@@ -397,6 +399,18 @@ pub export fn getRegParam(f: ?*bool, s: *u16, n: *u16, d: ?*u16) u8 {
     return reg_param_product.getRegParamProduct(f, s, n, d, stack_runtime.currentLocalRegisterCount());
 }
 
+/// Tests a numeric indirect-register parameter against the allocated public
+/// ranges: the numbered and lettered registers, the allocated local registers,
+/// the stat and spare registers, and the allocated named variables.
+fn isValidIndirectRegisterParam(value: i16) bool {
+    const local_count: i16 = @intCast(stack_runtime.currentLocalRegisterCount());
+    const named_count: i16 = @intCast(register_runtime.numberOfNamedVariables);
+    return (value >= FIRST_GLOBAL_REGISTER_IN_KS_CODE and value <= LAST_GLOBAL_REGISTER_IN_KS_CODE) or
+        (value >= FIRST_LOCAL_REGISTER_IN_KS_CODE and value < FIRST_LOCAL_REGISTER_IN_KS_CODE + local_count) or
+        (value >= FIRST_STAT_REGISTER_IN_KS_CODE and value <= LAST_SPARE_REGISTERS_IN_KS_CODE) or
+        (value >= register_runtime.FIRST_NAMED_VARIABLE and value < register_runtime.FIRST_NAMED_VARIABLE + named_count);
+}
+
 pub export fn indirectAddressing(regist: stack_runtime.calcRegister_t, parameter_type: u16, min_value: i16, max_value_in: i16, try_allocate: bool) i16 {
     return indirectAddressingReal(regist, parameter_type, min_value, max_value_in, try_allocate);
 }
@@ -429,7 +443,7 @@ fn indirectAddressingReal(regist: stack_runtime.calcRegister_t, parameter_type: 
         }
         return code;
     } else if (data_type == dtReal34 and parameter_type != INDPM_MENU) {
-        if (!parseRealRegisterToNonNegativeInt(regist, max_value, &value)) {
+        if (real34IsSpecial(registerReal34Ptr(regist)) or !parseRealRegisterToNonNegativeInt(regist, max_value, &value)) {
             const code = indirectError(ERROR_OUT_OF_RANGE);
             if (comptime extra_info) {
                 real34ToString(registerReal34Ptr(regist), errorMessage);
@@ -504,7 +518,7 @@ fn indirectAddressingReal(regist: stack_runtime.calcRegister_t, parameter_type: 
         return code;
     }
 
-    if (min_value <= value and (value <= max_value or is_valid_alpha)) {
+    if (min_value <= value and (value <= max_value or is_valid_alpha) and (parameter_type != INDPM_REGISTER or is_valid_alpha or isValidIndirectRegisterParam(value))) {
         if (parameter_type == INDPM_REGISTER) {
             if (value <= LAST_SPARE_REGISTERS_IN_KS_CODE) {
                 value = regKStoC(value);
@@ -554,6 +568,13 @@ extern var errorMessage: [*c]u8;
 
 fn real34IsNegative(value: *align(1) const real34_t) bool {
     return (value.bytes[15] & 0x80) == 0x80;
+}
+
+extern fn decQuadIsNaN(value: *align(1) const real34_t) u32;
+extern fn decQuadIsInfinite(value: *align(1) const real34_t) u32;
+
+fn real34IsSpecial(value: *align(1) const real34_t) bool {
+    return decQuadIsNaN(value) != 0 or decQuadIsInfinite(value) != 0;
 }
 
 const real_t = abi.Real;

@@ -222,3 +222,244 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"inf":DMS RX=Real:"inf"
 ;=======================================
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=1 FL_SPCRES=0 RX=Cplx:"-2 i -3"
 Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"-2 i -3" RX=Cplx:"-1.9833870299165354323470769028940395650142483029093453561252674 i 2.1414491111159960199416055713254210922813879447835930470177456"
+
+
+;=======================================
+; Stable scalar context
+;=======================================
+Func: fnArccosh
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.000000000000000000000000000000001"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"4.472135954999579392818347337462552e-17"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e100"
+Out: EC=0 RX=Real:"0"
+
+Func: fnArccosh
+In:  RMODE=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.000000000000000000000000000000001"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"4.472135954999579392818347337462552e-17"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e100"
+Out: EC=0 RX=Real:"0"
+
+Func: fnArccosh
+In:  RMODE=2 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.000000000000000000000000000000001"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"4.472135954999579392818347337462552e-17"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e100"
+Out: EC=0 RX=Real:"0"
+
+Func: fnArccosh
+In:  RMODE=3 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.000000000000000000000000000000001"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"4.472135954999579392818347337462553e-17"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e100"
+Out: EC=0 RX=Real:"0"
+
+Func: fnArccosh
+In:  RMODE=4 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.000000000000000000000000000000001"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"4.472135954999579392818347337462552e-17"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e100"
+Out: EC=0 RX=Real:"0"
+
+Func: fnArccosh
+In:  RMODE=5 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.000000000000000000000000000000001"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"4.472135954999579392818347337462553e-17"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e100"
+Out: EC=0 RX=Real:"0"
+
+Func: fnArccosh
+In:  RMODE=6 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.000000000000000000000000000000001"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"4.472135954999579392818347337462552e-17"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e100"
+Out: EC=0 RX=Real:"0"
+
+Func: fnArccosh
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"9.999999999999999999999999999999999e6144"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"14150.07854362897067359997472115688"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e40"
+Out: EC=0 RX=Real:"0"
+
+
+;=======================================
+; Complex branch neighbourhoods
+;=======================================
+; The real component on the open cut is exactly zero.
+Func: fnArccosh
+In:  RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=1 RX=Cplx:"0.5 i 0"
+Out: EC=0 RX=Cplx:"0 i 1.047197551196597746154214461093168"
+Func: fnRealPart
+Out: EC=0 RX=Real:"0"
+Func: fnInvert
+In:  FL_SPCRES=1
+Out: EC=0 RX=Real:"inf"
+
+Func: fnArccosh
+In:  RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=1 RX=Cplx:"0.5 i -0"
+Out: EC=0 RX=Cplx:"0 i 1.047197551196597746154214461093168"
+
+; A nonzero imaginary component near the cut retains a real component far below the p39 spacing at one.
+Func: fnArccosh
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=1 RX=Cplx:"0.5 i 1.234567890123456789012345678901234e-34"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Cplx:"1.425556207391292200698522611350601e-34 i 1.047197551196597746154214461093168"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e70"
+Out: EC=0 RX=Cplx:"0 i 0"
+
+Func: fnArccosh
+In:  RMODE=1 FL_ASLIFT=0 FL_CPXRES=1 RX=Cplx:"0.5 i 1.234567890123456789012345678901234e-34"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Cplx:"1.425556207391292200698522611350601e-34 i 1.047197551196597746154214461093168"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e70"
+Out: EC=0 RX=Cplx:"0 i 0"
+
+Func: fnArccosh
+In:  RMODE=2 FL_ASLIFT=0 FL_CPXRES=1 RX=Cplx:"0.5 i 1.234567890123456789012345678901234e-34"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Cplx:"1.425556207391292200698522611350601e-34 i 1.047197551196597746154214461093168"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e70"
+Out: EC=0 RX=Cplx:"0 i 0"
+
+Func: fnArccosh
+In:  RMODE=3 FL_ASLIFT=0 FL_CPXRES=1 RX=Cplx:"0.5 i 1.234567890123456789012345678901234e-34"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Cplx:"1.425556207391292200698522611350602e-34 i 1.047197551196597746154214461093168"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e70"
+Out: EC=0 RX=Cplx:"0 i 0"
+
+Func: fnArccosh
+In:  RMODE=4 FL_ASLIFT=0 FL_CPXRES=1 RX=Cplx:"0.5 i 1.234567890123456789012345678901234e-34"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Cplx:"1.425556207391292200698522611350601e-34 i 1.047197551196597746154214461093167"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e70"
+Out: EC=0 RX=Cplx:"0 i 0"
+
+Func: fnArccosh
+In:  RMODE=5 FL_ASLIFT=0 FL_CPXRES=1 RX=Cplx:"0.5 i 1.234567890123456789012345678901234e-34"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Cplx:"1.425556207391292200698522611350602e-34 i 1.047197551196597746154214461093168"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e70"
+Out: EC=0 RX=Cplx:"0 i 0"
+
+Func: fnArccosh
+In:  RMODE=6 FL_ASLIFT=0 FL_CPXRES=1 RX=Cplx:"0.5 i 1.234567890123456789012345678901234e-34"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Cplx:"1.425556207391292200698522611350601e-34 i 1.047197551196597746154214461093167"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e70"
+Out: EC=0 RX=Cplx:"-0 i -0"
+
+; The wide work exponent range preserves the squared imaginary component.
+Func: fnArccosh
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=1 RX=Cplx:"0.5 i 1e-4000"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Cplx:"1.154700538379251529018297561003915e-4000 i 1.047197551196597746154214461093168"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e4100"
+Out: EC=0 RX=Cplx:"0 i 0"
+
+; Endpoint neighbourhoods retain both square-root scale components.
+Func: fnArccosh
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=1 RX=Cplx:"1 i 1e-100"
+Out: EC=0 RX=Cplx:"1e-50 i 1e-50"
+
+Func: fnArccosh
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=1 RX=Cplx:"-1 i 1e-100"
+Out: EC=0 RX=Cplx:"-1e-50 i -3.141592653589793238462643383279503"
+
+
+;=======================================
+; Complex special values
+;=======================================
+Func: fnArccosh
+In:  RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=1 RX=Cplx:"inf i 0"
+Out: EC=0 RX=Cplx:"inf i 0"
+
+Func: fnArccosh
+In:  RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=1 RX=Cplx:"-inf i 0"
+Out: EC=0 RX=Cplx:"-inf i 3.141592653589793238462643383279503"
+
+Func: fnArccosh
+In:  RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=1 RX=Cplx:"2 i inf"
+Out: EC=0 RX=Cplx:"inf i 1.570796326794896619231321691639751"
+
+Func: fnArccosh
+In:  RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=1 RX=Cplx:"-2 i inf"
+Out: EC=0 RX=Cplx:"-inf i -1.570796326794896619231321691639751"
+
+Func: fnArccosh
+In:  RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=1 RX=Cplx:"0 i -inf"
+Out: EC=0 RX=Cplx:"-inf i 1.570796326794896619231321691639751"
+
+Func: fnArccosh
+In:  RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=1 RX=Cplx:"inf i inf"
+Out: EC=0 RX=Cplx:"inf i 0.7853981633974483096156608458198757"
+
+Func: fnArccosh
+In:  RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=1 RX=Cplx:"-inf i -inf"
+Out: EC=0 RX=Cplx:"-inf i 2.356194490192344928846982537459627"
+
+Func: fnArccosh
+In:  RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=1 RX=Cplx:"NaN i 1"
+Out: EC=0 RX=Cplx:"NaN i NaN"
+
+
+;=======================================
+; Matrix application
+;=======================================
+Func: fnArccosh
+In:  AM=RAD RMODE=0 FL_ASLIFT=0 FL_CPXRES=1 RX=ReMa:"M1,3[0.5,1,2]"
+Out: EC=0 FL_CPXRES=1 RX=CxMa:"M1,3[0i1.047197551196597746154214461093168,0i0,1.316957896924816708625046347307968i0]"
+
+Func: fnArccosh
+In:  AM=RAD RMODE=0 FL_ASLIFT=0 FL_CPXRES=1 RX=CxMa:"M1,3[0.5i1e-4000,1i1e-100,-2i3]"
+Out: EC=0 FL_CPXRES=1 RX=CxMa:"M1,3[1.154700538379251529018297561003915e-4000i1.047197551196597746154214461093168,1e-50i1e-50,-1.983387029916535432347076902894040i-2.141449111115996019941605571325421]"

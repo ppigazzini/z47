@@ -57,6 +57,8 @@ Out: EC=24 FL_ASLIFT=0 RX=Stri:"String test"
 ;=======================================
 ; PoissonI(Real Matrix) --> Error24
 ;=======================================
+In:  FL_ASLIFT=0 RR=Real:"1" RX=ReMa:"M1,2[0.1,0.9]"
+Out: EC=24 FL_ASLIFT=0 RX=ReMa:"M1,2[0.1,0.9]"
 
 
 
@@ -103,6 +105,74 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.5" RX=Real:"7"
 
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RR=Real:"7.5" RX=Real:"0.9"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.9" RX=Real:"11"
+
+; Exact discrete classification at a large ordinary mean.
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RR=Real:"1e6" RX=Real:"0.1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.1" RX=Real:"998719"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RR=Real:"1e6" RX=Real:"0.5"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.5" RX=Real:"1000000"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RR=Real:"1e6" RX=Real:"0.9"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.9" RX=Real:"1001282"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RR=Real:"1e6" RX=Real:"1e-34"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1e-34" RX=Real:"987789"
+
+; The rounded value immediately above exp(-1) selects one rather than zero.
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RR=Real:"1" RX=Real:"0.3678794411714423215955237701614609"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.3678794411714423215955237701614609" RX=Real:"1"
+
+; Large-mean inversion retains the normal displacement.
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RR=Real:"1e40" RX=Real:"0.1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.1" RX=Real:"9.999999999999999999871844843445540e39"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RR=Real:"1e40" RX=Real:"0.5"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.5" RX=Real:"1e40"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RR=Real:"1e40" RX=Real:"0.9"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.9" RX=Real:"1.000000000000000000012815515655446e40"
+
+; Large means preserve their side below and above the shortcut threshold.
+In:  AM=DEG RMODE=4 FL_ASLIFT=0 FL_CPXRES=0 RR=Real:"1e70" RX=Real:"0.1"
+Out: EC=0 RX=Real:"9.999999999999999999999999999999999e69"
+
+In:  AM=DEG RMODE=3 FL_ASLIFT=0 FL_CPXRES=0 RR=Real:"1e70" RX=Real:"0.9"
+Out: EC=0 RX=Real:"1.000000000000000000000000000000001e70"
+
+In:  AM=DEG RMODE=4 FL_ASLIFT=0 FL_CPXRES=0 RR=Real:"1e74" RX=Real:"0.1"
+Out: EC=0 RX=Real:"9.999999999999999999999999999999999e73"
+
+In:  AM=DEG RMODE=3 FL_ASLIFT=0 FL_CPXRES=0 RR=Real:"1e74" RX=Real:"0.9"
+Out: EC=0 RX=Real:"1.000000000000000000000000000000001e74"
+
+In:  AM=DEG RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RR=Real:"1e100" RX=Real:"0.1"
+Out: EC=0 RX=Real:"1e100"
+
+In:  AM=DEG RMODE=4 FL_ASLIFT=0 FL_CPXRES=0 RR=Real:"1e100" RX=Real:"0.1"
+Out: EC=0 RX=Real:"9.999999999999999999999999999999999e99"
+
+In:  AM=DEG RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RR=Real:"1e100" RX=Real:"0.5"
+Out: EC=0 RX=Real:"1e100"
+
+In:  AM=DEG RMODE=4 FL_ASLIFT=0 FL_CPXRES=0 RR=Real:"1e100" RX=Real:"0.5"
+Out: EC=0 RX=Real:"1e100"
+
+In:  AM=DEG RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RR=Real:"1e100" RX=Real:"0.9"
+Out: EC=0 RX=Real:"1e100"
+
+In:  AM=DEG RMODE=3 FL_ASLIFT=0 FL_CPXRES=0 RR=Real:"1e100" RX=Real:"0.9"
+Out: EC=0 RX=Real:"1.000000000000000000000000000000001e100"
+
+; NaN probabilities and nonfinite parameters are rejected.
+In:  AM=DEG RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RR=Real:"1" RX=Real:"NaN"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"NaN"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RR=Real:"inf" RX=Real:"0.5"
+Out: EC=16 FL_ASLIFT=0 RX=Real:"0.5"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RR=Real:"1e-6176" RX=Real:"0.5"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.5" RX=Real:"0"
 
 
 

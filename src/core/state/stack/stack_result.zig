@@ -38,15 +38,14 @@ extern fn convertShortIntegerRegisterToReal34Register(source: runtime.calcRegist
 extern fn convertTimeRegisterToReal34Register(source: runtime.calcRegister_t, destination: runtime.calcRegister_t) void;
 extern fn convertDateRegisterToReal34Register(source: runtime.calcRegister_t, destination: runtime.calcRegister_t) void;
 extern fn convertRealToResultRegister(x: *const real_t, dest: runtime.calcRegister_t, angle: c_int) void;
-extern fn convertRealToReal34ResultRegister(real: *const real_t, dest: runtime.calcRegister_t) void;
-extern fn convertRealToImag34ResultRegister(real: *const real_t, dest: runtime.calcRegister_t) void;
 extern fn setLastintegerBasetoZero() void;
 extern fn checkTimeRange(time34: *const real34_t) void;
 extern fn checkDateRange(date34: *const real34_t) void;
 extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: runtime.calcRegister_t) void;
 extern fn fnSetFlag(flag: u16) void;
-extern fn rsdRema(digits: u16) void;
-extern fn rsdCxma(digits: u16) void;
+extern var ctxtReal34: abi.RealContext;
+extern fn roundToSignificantDigits(source: *const real_t, destination: *real_t, digits: u16, real_context: *abi.RealContext) void;
+extern fn decimal128FromNumber(destination: *real34_t, source: *const real_t, real_context: *abi.RealContext) *real34_t;
 
 fn real34ToReal(source: *align(1) const real34_t, destination: *real_t) void {
     _ = decimal128ToNumber(source, destination);
@@ -233,28 +232,47 @@ fn adjustRealRegisterComponents(res: runtime.calcRegister_t, result_data_type: u
     }
 }
 
-// Round the result to the significant-digit setting. A scalar rounds its
-// rectangular components in place through the plain result converters; only the
-// two matrix types go through rsd*, which work on REGISTER_X.
+/// Round one stored Real34 result to the selected significant digits; unchanged
+/// when SDIGS is 0 or 34 (registers.c).
+pub export fn roundReal34ResultToSignificantDigits(val: *align(1) real34_t) callconv(.c) void {
+    if (significantDigits > 0 and significantDigits < 34) {
+        var tmp: real_t = undefined;
+        real34ToReal(val, &tmp);
+        roundToSignificantDigits(&tmp, &tmp, significantDigits, &ctxtReal34);
+        var rounded: real34_t = undefined;
+        _ = decimal128FromNumber(&rounded, &tmp, &ctxtReal34);
+        val.* = rounded;
+    }
+}
+
+// Round the result to the significant-digit setting, one rectangular component
+// at a time, matrices element by element. This runs BEFORE the public-result
+// check, so an infinity created by SDIGS takes the same special-result route as
+// an infinity created by the function.
 fn roundResultToSignificantDigits(res: runtime.calcRegister_t, result_data_type: u32) void {
     if (significantDigits == 0 or significantDigits >= 34) {
         return;
     }
 
-    var tmp: real_t = undefined;
     switch (result_data_type) {
-        runtime.dtReal34 => {
-            real34ToReal(registerReal34Ptr(res), &tmp);
-            convertRealToReal34ResultRegister(&tmp, res);
-        },
+        runtime.dtReal34 => roundReal34ResultToSignificantDigits(registerReal34Ptr(res)),
         runtime.dtComplex34 => {
-            real34ToReal(registerReal34Ptr(res), &tmp);
-            convertRealToReal34ResultRegister(&tmp, res);
-            real34ToReal(registerImag34Ptr(res), &tmp);
-            convertRealToImag34ResultRegister(&tmp, res);
+            roundReal34ResultToSignificantDigits(registerReal34Ptr(res));
+            roundReal34ResultToSignificantDigits(registerImag34Ptr(res));
         },
-        runtime.dtReal34Matrix => rsdRema(significantDigits),
-        runtime.dtComplex34Matrix => rsdCxma(significantDigits),
+        runtime.dtReal34Matrix => {
+            const elements = realMatrixElementsPtr(res);
+            for (0..realMatrixElementCount(res)) |index| {
+                roundReal34ResultToSignificantDigits(&elements[index]);
+            }
+        },
+        runtime.dtComplex34Matrix => {
+            const elements = complexMatrixElementsPtr(res);
+            for (0..complexMatrixElementCount(res)) |index| {
+                roundReal34ResultToSignificantDigits(&elements[index].real);
+                roundReal34ResultToSignificantDigits(&elements[index].imag);
+            }
+        },
         else => {},
     }
 }
@@ -369,9 +387,11 @@ pub fn adjustResult(
         return;
     }
 
-    // The data type is read once, up front: the rounding below can retype the
-    // register, and every later test has to see the type the result came in with.
     const result_data_type = runtime.getRegisterDataType(res);
+
+    if (runtime.lastErrorCode == runtime.ERROR_NONE) {
+        roundResultToSignificantDigits(res, result_data_type);
+    }
 
     if (!runtime.getSystemFlag(runtime.FLAG_SPCRES) and runtime.lastErrorCode == runtime.ERROR_NONE) {
         adjustRealRegisterComponents(res, result_data_type);
@@ -396,8 +416,6 @@ pub fn adjustResult(
     if (set_cpx_res and one_argument_is_complex and result_data_type != runtime.dtString and !runtime.getSystemFlag(FLAG_CPXRES)) {
         fnSetFlag(FLAG_CPXRES);
     }
-
-    roundResultToSignificantDigits(res, result_data_type);
 
     if (drop_y) {
         mutation_owned.dropY();

@@ -35,23 +35,24 @@ Out: EC=0 RMODE=5 RX=Real:"0.6259557273970892083170000586410063"
 In:  FARG=1 RMODE=6
 Out: EC=0 RMODE=6 RX=Real:"0.6259557273970892083170000586410063"
 
-; integral of X over [0,1] = 0.5 exactly, under every RM. The working value of the integrator ends above 0.5, so ←0→ and ⌈x⌉ store 0.5 and one ulp: 33 digits
+; integral of X over [0,1] = 0.5 exactly, under every RM (if you have enough digits). The working value of the integrator ends above 0.5, so modes differ as below:
+; The value from the calculator is 0.5 + 1E-34 (ULP), not 33 digits but 34.
 Func: fnIntegrateCov
-In:  FARG=0 RMODE=0 RY=Real:"0" RX=Real:"1"
+In:  FARG=0 RMODE=0 RY=Real:"0" RX=Real:"1" ;RM_HALF_EVEN
 Out: EC=0 RMODE=0 RX=Real:"0.5"
-In:  FARG=0 RMODE=3 RY=Real:"0" RX=Real:"1"
-Out: EC=0 RMODE=3 RX=Real:"0.5" ACC=33
-In:  FARG=0 RMODE=4 RY=Real:"0" RX=Real:"1"
+In:  FARG=0 RMODE=3 RY=Real:"0" RX=Real:"1" ;RM_UP
+Out: EC=0 RMODE=3 RX=Real:"0.5000000000000000000000000000000001" ; Incoming 0.500000000000000000000000000000000000350 rounded up is 0.5 + ULP
+In:  FARG=0 RMODE=4 RY=Real:"0" RX=Real:"1" ;RM_DOWN
 Out: EC=0 RMODE=4 RX=Real:"0.5"
-In:  FARG=0 RMODE=5 RY=Real:"0" RX=Real:"1"
-Out: EC=0 RMODE=5 RX=Real:"0.5" ACC=33
-In:  FARG=0 RMODE=6 RY=Real:"0" RX=Real:"1"
+In:  FARG=0 RMODE=5 RY=Real:"0" RX=Real:"1" ;RM_CEIL
+Out: EC=0 RMODE=5 RX=Real:"0.5000000000000000000000000000000001" ; Incoming 0.500000000000000000000000000000000000350 rounded ceiling is 0.5 + ULP"
+In:  FARG=0 RMODE=6 RY=Real:"0" RX=Real:"1" ;RM_FLOOR
 Out: EC=0 RMODE=6 RX=Real:"0.5"
 
 ; integral of X*X over [0,1] = 1/3, rounded once by RM
 In:  FARG=1 RMODE=0 RY=Real:"0" RX=Real:"1"
 Out: EC=0 RMODE=0 RX=Real:"0.3333333333333333333333333333333333"
-In:  FARG=1 RMODE=3 RY=Real:"0" RX=Real:"1"
+In:  FARG=1 RMODE=3 RY=Real:"0" RX=Real:"1" ;                        RM_UP
 Out: EC=0 RMODE=3 RX=Real:"0.3333333333333333333333333333333334"
 In:  FARG=1 RMODE=4 RY=Real:"0" RX=Real:"1"
 Out: EC=0 RMODE=4 RX=Real:"0.3333333333333333333333333333333333"
@@ -133,4 +134,4 @@ In:  DRM=1 RMODE=0
 Func: fnDisplayFormatTime
 In:  FARG=0
 Out: EC=0
-Acc: 30
+

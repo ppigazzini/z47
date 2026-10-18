@@ -26,6 +26,25 @@ pub const option_elliptic = build_options.option_elliptic;
 pub const option_bessel = build_options.option_bessel;
 pub const option_ortho = build_options.option_ortho;
 pub const option_dist_normal = build_options.option_dist_normal;
+// The per-distribution gates OPTION_DIST_<X>, each defined by the group option
+// that carries it; wp34s.c gates its distribution table entries and erfc.c and
+// ixyz.c their bodies on them.
+pub const option_dist_norml = build_options.option_dist_norml;
+pub const option_dist_t = build_options.option_dist_t;
+pub const option_dist_logis = build_options.option_dist_logis;
+pub const option_dist_cauch = build_options.option_dist_cauch;
+pub const option_dist_weibl = build_options.option_dist_weibl;
+pub const option_dist_expon = build_options.option_dist_expon;
+pub const option_dist_chi2 = build_options.option_dist_chi2;
+pub const option_dist_binom = build_options.option_dist_binom;
+pub const option_dist_f = build_options.option_dist_f;
+pub const option_dist_geom = build_options.option_dist_geom;
+pub const option_dist_hyper = build_options.option_dist_hyper;
+pub const option_dist_nbin = build_options.option_dist_nbin;
+pub const option_dist_poiss = build_options.option_dist_poiss;
+pub const option_dist_prto = build_options.option_dist_prto;
+pub const option_dist_gev = build_options.option_dist_gev;
+pub const option_dist_unfm = build_options.option_dist_unfm;
 pub const option_cubic_159 = build_options.option_cubic_159;
 pub const option_eigen_159 = build_options.option_eigen_159;
 
@@ -188,6 +207,11 @@ pub const real34_t = abi.Real34;
 
 pub const complex34_t = abi.Complex34;
 
+/// cplx_t: two back-to-back real_t, with Mag/Arg as the polar-form view (abi.Complex).
+pub const cplx_t = abi.Complex;
+/// cplx159_t: the 159-digit complex of the SLVC, SLVQ and EIGEN high-precision paths.
+pub const cplx159_t = abi.Complex159;
+
 // One header shape for every build. This used to be selected by the harness flag:
 // the unit lane got `{u16 rows, u16 cols}` with no `mtag`, so the owner compiled a
 // different struct there and no matrix angular-mode behaviour could be reached.
@@ -259,7 +283,15 @@ pub extern fn adjustResult(
 
 pub extern fn getRegisterAsReal(reg: calcRegister_t, value: ?*real_t) bool;
 pub extern fn getRegisterAsRealAngle(reg: calcRegister_t, value: *real_t, angle_mode: *angularMode_t, reduce_longinteger_angle: bool) bool;
-pub extern fn getRegisterAsComplex(reg: calcRegister_t, real: *real_t, imag: *real_t) bool;
+pub extern fn getRegisterAsComplex(reg: calcRegister_t, z: *cplx_t) bool;
+pub extern fn getRegisterAsComplexOrReal(reg: calcRegister_t, z: *cplx_t, cmplx: ?*bool) bool;
+pub extern fn getRegisterAsComplexOrAnyReal(reg: calcRegister_t, z: *cplx_t, cmplx: ?*bool) bool;
+pub extern fn getRegisterAsComplexOrRealQuiet(reg: calcRegister_t, z: *cplx_t, cmplx: ?*bool) bool;
+pub extern fn getRegisterAsComplexOrAnyRealQuiet(reg: calcRegister_t, z: *cplx_t, cmplx: ?*bool) bool;
+pub extern fn getRegisterAsAnyReal(reg: calcRegister_t, val: *real_t) bool;
+pub extern fn getRegisterAsAnyRealQuiet(reg: calcRegister_t, val: *real_t) bool;
+pub extern fn getRegisterAsRealQuiet(reg: calcRegister_t, val: *real_t) bool;
+pub extern fn getRegisterAsReal34Quiet(reg: calcRegister_t, val: *real34_t) bool;
 pub extern fn getRegisterAsShortInt(reg: calcRegister_t, sign: ?*bool, val: ?*u64, overflow: ?*bool, fractional: ?*bool) bool;
 pub extern fn getRegisterAsLongInt(reg: calcRegister_t, val: *mpz_struct, fractional: ?*bool) bool;
 pub extern fn getRegisterAsLongIntQuiet(reg: calcRegister_t, val: *mpz_struct, fractional: ?*bool) c_int;
@@ -278,22 +310,8 @@ pub extern fn convertShortIntegerRegisterToReal(source: calcRegister_t, destinat
 pub extern fn convergenceTolerence(tol: *real_t) void;
 pub extern fn WP34S_RelativeError(x: *const real_t, y: *const real_t, tol: *const real_t, real_context: *realContext_t) bool;
 pub extern fn WP34S_AbsoluteError(x: *const real_t, y: *const real_t, tol: *const real_t, real_context: *realContext_t) bool;
-pub extern fn WP34S_ComplexRelativeError(
-    x_real: *const real_t,
-    x_imag: *const real_t,
-    y_real: *const real_t,
-    y_imag: *const real_t,
-    tol: *const real_t,
-    real_context: *realContext_t,
-) bool;
-pub extern fn WP34S_ComplexAbsError(
-    x_real: *const real_t,
-    x_imag: *const real_t,
-    y_real: *const real_t,
-    y_imag: *const real_t,
-    tol: *const real_t,
-    real_context: *realContext_t,
-) bool;
+pub extern fn WP34S_ComplexRelativeError(x: *const cplx_t, y: *const cplx_t, tol: *const real_t, real_context: *realContext_t) bool;
+pub extern fn WP34S_ComplexAbsError(x: *const cplx_t, y: *const cplx_t, tol: *const real_t, real_context: *realContext_t) bool;
 pub extern fn getFlag(flag: u16) bool;
 pub extern fn getSystemFlag(flag: i32) bool;
 pub extern fn setSystemFlag(flag: c_uint) void;
@@ -343,7 +361,7 @@ pub extern fn detRealMatrix(matrix: *const real34Matrix_t, res: *real34_t) void;
 pub extern fn detComplexMatrix(matrix: *const complex34Matrix_t, res_r: *real34_t, res_i: *real34_t) void;
 pub extern fn euclideanNormRealMatrix(matrix: *const real34Matrix_t, p_param: u16, res: *real34_t) void;
 pub extern fn euclideanNormComplexMatrix(matrix: *const complex34Matrix_t, p_param: u16, res: *real34_t) void;
-pub extern fn vectorAngle(y: *const real34Matrix_t, x: *const real34Matrix_t, radians: *real34_t) void;
+pub extern fn vectorAngle(y: *const real34Matrix_t, x: *const real34Matrix_t, radians: *real_t) void;
 // Still in the matrix bridge (renamed-or-original C); the command owners call
 // the canonical names, which resolve to the C engine until those land in Zig.
 // invertRealMatrix / invertComplexMatrix are public; the matrix sqrt and eigen
@@ -375,6 +393,13 @@ pub inline fn mallocReal() ?*real_t {
 
 pub inline fn freeReal(ptr: ?*real_t) void {
     free(ptr);
+}
+
+/// REAL_SIZE_IN_BYTES(digits): the bytes a decNumber of that many digits takes
+/// (DECDPUN = 3, 4-byte alignment), for the REAL_T_ALLOC(name, digits) buffers
+/// the owners take off the heap and free with freeReal.
+pub inline fn mallocRealDigits(digits: u32) ?*real_t {
+    return malloc(10 + 2 * ((((digits + 2) / 6) * 6 + 3) / 3));
 }
 // The complex dense core (math_matrix_complex_core.zig): in-place inverse
 // and product on interleaved-complex real_t arrays.
@@ -460,28 +485,25 @@ pub extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line:
 pub extern fn getRegisterDataTypeName(reg: calcRegister_t, article: bool, abbreviated: bool) [*:0]const u8;
 pub extern fn convertRealToResultRegister(real: *const real_t, dest: calcRegister_t, angle_mode: angularMode_t) void;
 pub extern fn convertRealToLongIntegerRegister(real: *const real_t, dest: calcRegister_t, rounding_mode: rounding_t) void;
-pub extern fn convertComplexToResultRegister(real: *const real_t, imag: *const real_t, dest: calcRegister_t) void;
+pub extern fn convertComplexToResultRegister(z: *const cplx_t, dest: calcRegister_t) void;
+// convertComplexToResultRegister for a real and an imaginary part that are not one cplx_t, such as constants or parts computed apart.
+pub extern fn convertComplexPartsToResultRegister(real: *const real_t, imag: *const real_t, dest: calcRegister_t) void;
+pub extern fn convertComplexToResultRegisterRPangle(real: *const real_t, imag: *const real_t, dest: calcRegister_t, angl: angularMode_t, polar_tag: u8) void;
+pub extern fn convertRealToImag34ResultRegister(real: *const real_t, dest: calcRegister_t) void;
+pub extern fn convertReal34ToReal34Register(real34: *const real34_t, dest: calcRegister_t) void;
+pub extern fn convertReal34ToComplex34Register(real34: *const real34_t, imag34: *const real34_t, dest: calcRegister_t) void;
 pub extern fn fraction(regist: calcRegister_t, sign: *i16, int_part: *u64, numer: *u64, denom: *u64, less_equal_greater: *i16) bool;
 pub extern fn convertAngleFromTo(angle: *real_t, from_angular_mode: angularMode_t, to_angular_mode: angularMode_t, real_context: *realContext_t) void;
 pub extern fn mod2Pi(x: *const real_t, result: *real_t, real_context: *realContext_t) void;
 pub extern fn real34RectangularToPolar(real: *const real34_t, imag: *const real34_t, magnitude: *real34_t, theta: *real34_t) void;
 pub extern fn roundToSignificantDigits(source: *const real_t, destination: *real_t, digits: i32, real_context: *realContext_t) void;
-pub extern fn realPolarToRectangular(
-    magnitude: *const real_t,
-    angle: *const real_t,
-    real: *real_t,
-    imag: *real_t,
-    real_context: *realContext_t,
-) void;
-pub extern fn realRectangularToPolar(
-    real: *const real_t,
-    imag: *const real_t,
-    magnitude: *real_t,
-    theta: *real_t,
-    real_context: *realContext_t,
-) void;
+pub extern fn realPolarToRectangular(magnitude: *const real_t, theta: *const real_t, z: *cplx_t, real_context: *realContext_t) void;
+pub extern fn realPolarToRectangularInUnit(magnitude: *const real_t, theta: *const real_t, angular_mode: angularMode_t, z: *cplx_t, real_context: *realContext_t) void;
+pub extern fn realRectangularToPolar(z: *const cplx_t, magnitude: *real_t, theta: *real_t, real_context: *realContext_t) void;
+pub extern fn realRectangularToPolarCached(z: *const cplx_t, magnitude: *real_t, theta: *real_t, real_context: *realContext_t, cache: *abi.RectToPolarCache) void;
 pub extern fn realNextToward(x: *const real_t, y: *const real_t, result: *real_t, real_context: *realContext_t) void;
-pub extern fn complexMagnitude(real: *const real_t, imag: *const real_t, magnitude: *real_t, real_context: *realContext_t) void;
+pub extern fn complexMagnitude(a: *const cplx_t, c: *real_t, real_context: *realContext_t) void;
+pub extern fn complexMagnitude2(a: *const cplx_t, c: *real_t, real_context: *realContext_t) void;
 
 pub extern fn processRealComplexMonadicFunction(realf: VoidCallback, complexf: VoidCallback) void;
 pub extern fn processRealComplexDyadicFunction(realf: VoidCallback, complexf: VoidCallback) void;
@@ -693,53 +715,81 @@ pub extern fn WP34S_Erf(x: *const real_t, res: *real_t, real_context: *realConte
 pub extern fn WP34S_Erfc(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
 pub extern fn WP34S_Bernoulli(x: *const real_t, res: *real_t, bnstar: bool, real_context: *realContext_t) void;
 pub extern fn WP34S_InverseW(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
-pub extern fn WP34S_InverseComplexW(real: *const real_t, imag: *const real_t, res_real: *real_t, res_imag: *real_t, real_context: *realContext_t) void;
+pub extern fn WP34S_InverseComplexW(x: *const cplx_t, res: *cplx_t, real_context: *realContext_t) void;
 pub extern fn WP34S_LambertW(x: *const real_t, res: *real_t, negative_branch: bool, real_context: *realContext_t) void;
-pub extern fn WP34S_ComplexLambertW(real: *const real_t, imag: *const real_t, res_real: *real_t, res_imag: *real_t, real_context: *realContext_t) void;
+pub extern fn WP34S_ComplexLambertW(x: *const cplx_t, res: *cplx_t, real_context: *realContext_t) void;
 pub extern fn WP34S_Factorial(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
-pub extern fn WP34S_ComplexGamma(real: *const real_t, imag: *const real_t, res_real: *real_t, res_imag: *real_t, real_context: *realContext_t) void;
+pub extern fn WP34S_ComplexGamma(zin: *const cplx_t, res: *cplx_t, real_context: *realContext_t) void;
+pub extern fn WP34S_ComplexLnGamma(zin: *const cplx_t, res: *cplx_t, real_context: *realContext_t) void;
+pub extern fn WP34S_LnGamma(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
+pub extern fn WP34S_Gamma(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
+// wp34s.c helpers the exact-arithmetic rework added; one declaration here, shared by every owner.
+pub extern fn WP34S_AdjustPositiveUnderflow(value: *real_t) void;
+pub extern fn WP34S_AtLeastContext(real_context: *realContext_t, fallback_context: *realContext_t) *realContext_t;
+pub extern fn WP34S_BetaCalculationContext(a: *const real_t, b: *const real_t) *realContext_t;
+pub extern fn WP34S_DistributionProbabilityData(probability: *const real_t, complement: *real_t, log_probability: *real_t, log_complement: *real_t, logit: *real_t, real_context: *realContext_t) void;
+pub extern fn WP34S_HasCancellation(left: *const real_t, right: *const real_t, result: *const real_t, places: i32) bool;
+pub extern fn WP34S_IsPositiveFinite(value: *const real_t) bool;
+pub extern fn WP34S_LanczosSum(x: *const real_t, offset: *const real_t, res: *real_t, real_context: *realContext_t) void;
+pub extern fn WP34S_LnExtended(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
+pub extern fn WP34S_Log1pMinus(value: *const real_t, res: *real_t, real_context: *realContext_t) void;
+pub extern fn WP34S_MarkPositive(value: *real_t, real_context: *realContext_t) void;
+pub extern fn WP34S_MarkProbability(value: *real_t, real_context: *realContext_t) void;
+pub extern fn WP34S_SetPowerOfTen(exponent: i32, res: *real_t) void;
+pub extern fn WP34S_TinyOddSeries(x: *const real_t, divisor: *const real_t, above: bool, res: *real_t, real_context: *realContext_t) void;
+pub extern fn WP34S_Real34Remainder(x: *const real_t, y: *const real_t, res: *real_t) void;
+pub extern fn WP34S_BetaFraction(a: *const real_t, b: *const real_t, x: *const real_t, convergence_exponent: i32, iteration_max: i32, res: *real_t, real_context: *realContext_t) bool;
+pub extern fn WP34S_GammaP(x: *const real_t, a: *const real_t, res: *real_t, real_context: *realContext_t, upper: bool, regularised: bool) void;
+pub extern fn WP34S_Zeta(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
+pub extern fn WP34S_OrthoPoly(kind: u16, x: *const real_t, n: *const real_t, param: *const real_t, res: *real_t, real_context: *realContext_t) void;
 pub extern fn WP34S_Ln(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
 pub extern fn WP34S_Ln1P(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
 pub extern fn WP34S_ExpM1(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
 pub extern fn logxyLonI(denom: *const real_t) void;
 pub extern fn logxyReal(denom: *const real_t) void;
 pub extern fn logxyCplx(denom: *const real_t) void;
-pub extern fn lnComplex(real: *const real_t, imag: *const real_t, ln_real: *real_t, ln_imag: *real_t, real_context: *realContext_t) void;
+pub extern fn lnComplex(z: *const cplx_t, ln: *cplx_t, real_context: *realContext_t) void;
+pub extern fn lnComplexDirect(z: *const cplx_t, ln: *cplx_t) void;
+pub extern fn logBaseCplx(denom: *const real_t) void;
 pub extern fn WP34S_Logxy(numer: *const real_t, denom: *const real_t, res: *real_t, real_context: *realContext_t) void;
-pub extern fn sqrt1Px2Complex(real: *const real_t, imag: *const real_t, res_real: *real_t, res_imag: *real_t, real_context: *realContext_t) void;
-pub extern fn sqrtComplex(real: *const real_t, imag: *const real_t, res_real: *real_t, res_imag: *real_t, real_context: *realContext_t) void;
-pub extern fn divComplexComplex(
-    numer_real: *const real_t,
-    numer_imag: *const real_t,
-    denom_real: *const real_t,
-    denom_imag: *const real_t,
-    quotient_real: *real_t,
-    quotient_imag: *real_t,
-    real_context: *realContext_t,
-) void;
-pub extern fn mulComplexi(
-    in_real: *const real_t,
-    in_imag: *const real_t,
-    product_real: *real_t,
-    product_imag: *real_t,
-) void;
-pub extern fn mulComplexComplex(
-    factor1_real: *const real_t,
-    factor1_imag: *const real_t,
-    factor2_real: *const real_t,
-    factor2_imag: *const real_t,
-    product_real: *real_t,
-    product_imag: *real_t,
-    real_context: *realContext_t,
-) void;
-pub extern fn mulComplexReal(
-    factor1_real: *const real_t,
-    factor1_imag: *const real_t,
-    factor2: *const real_t,
-    product_real: *real_t,
-    product_imag: *real_t,
-    real_context: *realContext_t,
-) void;
+pub extern fn sqrt1Px2Complex(z: *const cplx_t, res: *cplx_t, real_context: *realContext_t) void;
+pub extern fn sqrtComplex(z: *const cplx_t, res: *cplx_t, real_context: *realContext_t) void;
+pub extern fn curtComplex(z: *const cplx_t, res: *cplx_t, real_context: *realContext_t) void;
+pub extern fn expComplex(z: *const cplx_t, res: *cplx_t, real_context: *realContext_t) void;
+pub extern fn expM1Complex(z: *const cplx_t, res: *cplx_t, real_context: *realContext_t) void;
+pub extern fn lnP1Complex(z: *const cplx_t, ln: *cplx_t, real_context: *realContext_t) void;
+pub extern fn sinComplex(z: *const cplx_t, res: *cplx_t, real_context: *realContext_t) void;
+pub extern fn cosComplex(z: *const cplx_t, res: *cplx_t, real_context: *realContext_t) void;
+pub extern fn TanComplex(x: *const cplx_t, r: *cplx_t, real_context: *realContext_t) u8;
+pub extern fn TanhComplex(x: *const cplx_t, r: *cplx_t, real_context: *realContext_t) u8;
+pub extern fn ArcsinComplex(x: *const cplx_t, r: *cplx_t, real_context: *realContext_t) u8;
+pub extern fn ArcsinAcosComplex(z: *const cplx_t, r: *cplx_t, calculate_acos: bool, real_context: *realContext_t) u8;
+pub extern fn ArcsinhComplex(x: *const cplx_t, r: *cplx_t, real_context: *realContext_t) u8;
+pub extern fn ArctanComplex(x: *cplx_t, r: *cplx_t, real_context: *realContext_t) u8;
+pub extern fn GudermannianComplex(x: *const cplx_t, res: *cplx_t, real_context: *realContext_t) u8;
+pub extern fn InverseGudermannianComplex(x: *const cplx_t, res: *cplx_t, real_context: *realContext_t) u8;
+pub extern fn sincComplex(z: *const cplx_t, res: *cplx_t, real_context: *realContext_t) void;
+pub extern fn sincpiComplex(z: *const cplx_t, res: *cplx_t, real_context: *realContext_t) void;
+pub extern fn eulersFormula(in: *const cplx_t, out: *cplx_t, ctxt: *realContext_t) void;
+pub extern fn complexLnGamma(x: *const cplx_t, r: *cplx_t, real_context: *realContext_t) void;
+pub extern fn ComplexZeta(x: *const cplx_t, res: *cplx_t, real_context: *realContext_t) void;
+pub extern fn multiplyTrigByHyperbolic(trigonometric: *const real_t, hyperbolic: *const real_t, res: *real_t, real_context: *realContext_t) void;
+pub extern fn addComplex(a: *const cplx_t, b: *const cplx_t, res: *cplx_t, real_context: *realContext_t) void;
+pub extern fn subComplex(a: *const cplx_t, b: *const cplx_t, res: *cplx_t, real_context: *realContext_t) void;
+pub extern fn divComplexComplex(numer: *const cplx_t, denom: *const cplx_t, quotient: *cplx_t, real_context: *realContext_t) void;
+pub extern fn divComplexReal(numer: *const cplx_t, denom: *const real_t, quotient: *cplx_t, real_context: *realContext_t) void;
+pub extern fn mulComplexi(in: *const cplx_t, product: *cplx_t) void;
+pub extern fn mulComplexComplex(factor1: *const cplx_t, factor2: *const cplx_t, product: *cplx_t, real_context: *realContext_t) void;
+pub extern fn mulComplexReal(factor1: *const cplx_t, factor2: *const real_t, product: *cplx_t, real_context: *realContext_t) void;
+// The 159-digit forms the SLVC, SLVQ and EIGEN high-precision paths share.
+pub extern fn addComplex159(a: *const cplx159_t, b: *const cplx159_t, res: *cplx159_t, real_context: *realContext_t) void;
+pub extern fn subComplex159(a: *const cplx159_t, b: *const cplx159_t, res: *cplx159_t, real_context: *realContext_t) void;
+pub extern fn mulComplexComplex159(factor1: *const cplx159_t, factor2: *const cplx159_t, product: *cplx159_t, real_context: *realContext_t) void;
+pub extern fn mulComplexReal159(factor1: *const cplx159_t, factor2: *const real_t, product: *cplx159_t, real_context: *realContext_t) void;
+pub extern fn divComplexComplex159(numer: *const cplx159_t, denom: *const cplx159_t, quotient: *cplx159_t, real_context: *realContext_t) void;
+pub extern fn divComplexReal159(numer: *const cplx159_t, denom: *const real_t, quotient: *cplx159_t, real_context: *realContext_t) void;
+pub extern fn sqrtComplex159(z: *const cplx159_t, res: *cplx159_t, real_context: *realContext_t) void;
+pub extern fn curtComplex159(z: *const cplx159_t, res: *cplx159_t, real_context: *realContext_t) void;
 pub extern fn WP34S_intMultiply(y: u64, x: u64) u64;
 pub extern fn WP34S_intGCD(y: u64, x: u64) u64;
 pub extern fn WP34S_intLCM(y: u64, x: u64) u64;
@@ -757,6 +807,12 @@ pub extern fn WP34S_build_value(x: u64, sign: i32) u64;
 pub extern fn WP34S_extract_value(val: u64, sign: *i32) u64;
 pub extern fn WP34S_Mod(x: *const real_t, y: *const real_t, res: *real_t, real_context: *realContext_t) void;
 pub extern fn WP34S_BigMod(x: *const real_t, y: *const real_t, res: *real_t, real_context: *realContext_t) void;
+pub extern fn __gmpz_cmpabs(lhs: *const mpz_struct, rhs: *const mpz_struct) c_int;
+pub extern fn __gmpz_pow_ui(result: *mpz_struct, base: *const mpz_struct, exponent: c_ulong) void;
+pub extern fn __gmpz_root(root: *mpz_struct, op: *const mpz_struct, n: c_ulong) c_int;
+pub extern fn __gmpz_set(result: *mpz_struct, op: *const mpz_struct) void;
+pub extern fn __gmpz_neg(result: *mpz_struct, op: *const mpz_struct) void;
+pub extern fn __gmpz_abs(result: *mpz_struct, op: *const mpz_struct) void;
 pub extern fn decimal128ToNumber(source: *const real34_t, destination: *real_t) *real_t;
 pub extern fn decNumberMultiply(result: *real_t, lhs: *const real_t, rhs: *const real_t, real_context: *realContext_t) *real_t;
 pub extern fn decNumberDivide(result: *real_t, lhs: *const real_t, rhs: *const real_t, real_context: *realContext_t) *real_t;
@@ -795,6 +851,27 @@ pub extern fn __gmpz_tdiv_r(result: *mpz_struct, dividend: *const mpz_struct, di
 pub extern fn __gmpz_mod(result: *mpz_struct, dividend: *const mpz_struct, divisor: *const mpz_struct) void;
 pub extern fn __gmpz_fdiv_q_ui(result: *mpz_struct, op: *const mpz_struct, divisor: c_ulong) c_ulong;
 pub extern fn __gmpz_rootrem(root: *mpz_struct, rem: *mpz_struct, op: *const mpz_struct, n: c_ulong) void;
+
+// The longIntegerType.h inline wrappers the owners read as named operations.
+pub inline fn longIntegerIsZero(op: *const mpz_struct) bool {
+    return op._mp_size == 0;
+}
+pub inline fn longIntegerIsNegative(op: *const mpz_struct) bool {
+    return op._mp_size < 0;
+}
+pub inline fn longIntegerIsPositive(op: *const mpz_struct) bool {
+    return op._mp_size > 0;
+}
+/// mpz_odd_p: the low limb's low bit, zero when there is no limb.
+pub inline fn longIntegerIsOdd(op: *const mpz_struct) bool {
+    return op._mp_size != 0 and (op._mp_d[0] & 1) != 0;
+}
+pub inline fn longIntegerCompareAbs(op1: *const mpz_struct, op2: *const mpz_struct) i32 {
+    return __gmpz_cmpabs(op1, op2);
+}
+pub inline fn longIntegerBase10Digits(op: *const mpz_struct) u32 {
+    return @intCast(__gmpz_sizeinbase(op, 10));
+}
 
 // The overflow-checked long integer operators. Every wrapper that adds, subtracts
 // or multiplies two long integers goes through these rather than the __gmpz_ entry
@@ -839,14 +916,7 @@ pub extern fn realCompareGreaterThan(number1: *const real_t, number2: *const rea
 pub extern fn realCompareLessEqual(number1: *const real_t, number2: *const real_t) bool;
 pub extern fn realIsAnInteger(x: *const real_t) bool;
 pub extern fn real34IsAnInteger(value: *const real34_t) bool;
-pub extern fn divRealComplex(
-    numer: *const real_t,
-    denom_real: *const real_t,
-    denom_imag: *const real_t,
-    quotient_real: *real_t,
-    quotient_imag: *real_t,
-    real_context: *realContext_t,
-) void;
+pub extern fn divRealComplex(numer: *const real_t, denom: *const cplx_t, quotient: *cplx_t, real_context: *realContext_t) void;
 pub extern fn fnInvertMatrix(unused_but_mandatory_parameter: u16) void;
 pub extern fn fnMatrixSquareRoot(unused_but_mandatory_parameter: u16) void;
 pub extern fn realSetNaN(value: *real_t) void;
@@ -855,11 +925,67 @@ pub extern fn realSetOne(value: *real_t) void;
 pub extern fn realSetNegativeOne(value: *real_t) void;
 pub extern fn realPower(base: *const real_t, exponent: *const real_t, result: *real_t, real_context: *realContext_t) void;
 pub extern fn PowerReal(base: *const real_t, exponent: *const real_t, result: *real_t, real_context: *realContext_t) void;
-pub extern fn PowerComplex(base_real: *const real_t, base_imag: *const real_t, exponent_real: *const real_t, exponent_imag: *const real_t, result_real: *real_t, result_imag: *real_t, real_context: *realContext_t) u8;
+pub extern fn PowerComplex(y: *const cplx_t, x: *const cplx_t, r: *cplx_t, real_context: *realContext_t) u8;
 pub extern fn realIntegerPowerExact(x: *const real_t, n: *const real_t, res: *real_t) bool;
 pub extern fn realExactRoot(x: *const real_t, n: *const real_t, root: *real_t) bool;
 pub extern fn convertRealToReal34ResultRegister(real: *const real_t, dest: calcRegister_t) void;
 pub extern fn realToInt32C47(source: *const real_t, err: ?*bool) i32;
+pub extern fn realToUint32C47(source: *const real_t, err: ?*bool) u32;
+
+// realType.c: a routine that is the same under addition and under subtraction
+// takes one of these; the real34 forms exist because real34Add and real34Subtract
+// are macros upstream and cannot be pointed at.
+pub const real34Op_t = *const fn (y: *const real34_t, x: *const real34_t, res: *real34_t) callconv(.c) void;
+pub const realOp_t = *const fn (y: *const real_t, x: *const real_t, res: *real_t, real_context: *realContext_t) callconv(.c) void;
+pub extern fn real34AddOp(y: *const real34_t, x: *const real34_t, res: *real34_t) void;
+pub extern fn real34SubtractOp(y: *const real34_t, x: *const real34_t, res: *real34_t) void;
+pub extern fn realAddOp(y: *const real_t, x: *const real_t, res: *real_t, real_context: *realContext_t) void;
+pub extern fn realSubtractOp(y: *const real_t, x: *const real_t, res: *real_t, real_context: *realContext_t) void;
+pub extern fn realMultiplyOp(y: *const real_t, x: *const real_t, res: *real_t, real_context: *realContext_t) void;
+
+// registerValueConversions.c: the exact scaled-long-integer arithmetic the
+// dyadic commands take before falling back to decNumber.
+pub extern fn convertRegisterToScaledLongInteger(regist: calcRegister_t, coefficient: *mpz_struct, exponent: *i32) bool;
+pub extern fn getRegisterIntegerParity(regist: calcRegister_t) i32;
+pub extern fn convertReal34ToScaledLongInteger(real34: *const real34_t, coefficient: *mpz_struct, exponent: *i32) bool;
+pub extern fn convertScaledLongIntegerToReal(coefficient: *const mpz_struct, exponent: i32, real: *real_t, real_context: *realContext_t) void;
+pub extern fn convertScaledLongIntegerToReal34(coefficient: *const mpz_struct, exponent: i32, real34: *real34_t) void;
+pub extern fn addSubtractScaledLongIntegers(first: *const mpz_struct, first_exponent: i32, second: *const mpz_struct, second_exponent: i32, subtract: bool, result: *mpz_struct, result_exponent: *i32) void;
+pub extern fn rootLongIntegerToReal34(operand: *const mpz_struct, order: u32, result: *real34_t) bool;
+pub extern fn reciprocalRootLongIntegerToReal34(operand: *const mpz_struct, order: u32, result: *real34_t) bool;
+pub extern fn rootRegisterToReal34(regist: calcRegister_t, order: u32, exact_exponent: bool, result: *real34_t) bool;
+pub extern fn powerLongIntegerToReal34(base: *const mpz_struct, exponent: i32, result: *real34_t) bool;
+pub extern fn addSubtractLongIntegerReal34(integer_register: calcRegister_t, real34: *const real34_t, integer_first: bool, subtract: bool, result: *real34_t) bool;
+pub extern fn multiplyLongIntegerReal34(integer_register: calcRegister_t, real34: *const real34_t, result: *real34_t) bool;
+pub extern fn divideLongIntegerReal34(integer_register: calcRegister_t, real34: *const real34_t, integer_first: bool, result: *real34_t) bool;
+pub extern fn multiplyRegisterValuesToReal34Scaled(first_register: calcRegister_t, second_register: calcRegister_t, exponent_adjustment: i32, result: *real34_t) bool;
+pub extern fn divideScaledLongIntegersToReal(numerator: *const mpz_struct, numerator_exponent: i32, negative_zero: bool, denominator: *const mpz_struct, denominator_exponent: i32, result: *real_t, real_context: *realContext_t) bool;
+pub extern fn divideScaledLongIntegersToReal34(numerator: *const mpz_struct, numerator_exponent: i32, negative_zero: bool, denominator: *const mpz_struct, denominator_exponent: i32, result: *real34_t) bool;
+pub extern fn divideRegisterValuesToReal34Scaled(numerator_register: calcRegister_t, denominator_register: calcRegister_t, exponent_adjustment: i32, result: *real34_t) bool;
+pub extern fn divideRegisterValuesToReal34(numerator_register: calcRegister_t, denominator_register: calcRegister_t, result: *real34_t) bool;
+pub extern fn reciprocalLongIntegerRegisterToReal34(denominator_register: calcRegister_t, result: *real34_t) bool;
+pub extern fn registerIdentityExponentToReal34(base_register: calcRegister_t, exponent_register: calcRegister_t, result: *real34_t) bool;
+pub extern fn reduceLongIntegerRegisterAngle(regist: calcRegister_t, angular_mode: angularMode_t, reduced_angle: *real_t, reduce_longinteger_angle: bool) bool;
+pub extern fn convertReal34ToLongInteger(re34: *const real34_t, lg_int: *mpz_struct, rounding_mode: rounding_t) void;
+pub extern fn convertRealToLongInteger(re: *const real_t, lg_int: *mpz_struct, rounding_mode: rounding_t) void;
+pub extern fn convertLongIntegerToReal34(source: *mpz_struct, destination: *real34_t) void;
+pub extern fn convertLongIntegerRegisterToReal34(source: calcRegister_t, destination: *real34_t) void;
+// integers.c: the scaled integer quotient and remainder the integer division commands share.
+pub extern fn longIntegerScaledDivide(op_y: *const mpz_struct, y_exp: i32, op_x: *const mpz_struct, x_exp: i32, quotient: *mpz_struct, remainder: *mpz_struct, remainder_exp: *i32) void;
+// registers.c: one stored Real34 result rounded to the selected significant digits; unchanged when SDIGS is 0 or 34.
+pub extern fn roundReal34ResultToSignificantDigits(val: *real34_t) void;
+// comparisonReals.c: an exact comparison of a finite Real34 with a long integer, or of two of either kind.
+pub extern fn compareFiniteReal34LongIntegerRegisters(first: calcRegister_t, second: calcRegister_t, comparison: *i32) bool;
+// conversionAngles.c
+pub extern fn rightAngleLessRadians(angle: *real_t, negative: bool) void;
+pub extern fn getInfiniteComplexAngle(z: *const cplx_t) u32;
+pub extern fn setInfiniteComplexAngle(angle: u32, z: *cplx_t) void;
+pub extern fn realFromDmsToDeg(angle_dms: *const real_t, angle_dec: *real_t, real_context: *realContext_t) void;
+pub extern fn realFromDegToDms(angle_dec: *const real_t, angle_dms: *real_t, real_context: *realContext_t) void;
+// The bodies the integer division, modulo and remainder commands share.
+pub extern fn integerDivideFiniteRegisters(return_remainder: bool) bool;
+pub extern fn integerRemainder(floor_mod: bool, short_result: bool) void;
+pub extern fn mixedIntegerRealRemainder(modulo: bool) bool;
 
 pub extern fn z47_math_wrappers_build_sign_result(result: i32) void;
 pub extern fn z47_math_wrappers_change_sign_long_integer() void;

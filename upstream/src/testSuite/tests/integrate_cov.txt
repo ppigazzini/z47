@@ -29,8 +29,8 @@ In:  FARG=4 RY=Real:"0" RX=Real:"3"
 Out: EC=0 RX=Real:"9"
 ; zero-width interval [2,2] -> 0
 Func: fnIntegrateCov
-In:  FARG=0 RY=Real:"2" RX=Real:"2"
-Out: EC=0 RX=Real:"0"
+In:  FARG=0 RT=Real:"40" RZ=Real:"30" RY=Real:"2" RX=Real:"2"
+Out: EC=0 RT=Real:"40" RZ=Real:"30" RY=Real:"0" RX=Real:"0"
 ; dispatch errors: unknown label letter -> 6; named var, no program -> 54. The staged-program selection cases
 ; (no-MVAR and MVAR) are fnIntegrateErrCov FARG=2/3 in pgm_solve_cov, which loads the programs.
 Func: fnIntegrateErrCov
@@ -39,3 +39,149 @@ Out: EC=6
 Func: fnIntegrateErrCov
 In:  FARG=1 RX=Real:"0"
 Out: EC=54
+
+; finite and infinite interval transformations
+Func: fnIntegrateCov
+In:  FARG=5 RY=Real:"0" RX=Real:"inf"
+Out: EC=0 RX=Real:"1"
+Func: fnIntegrateCov
+In:  FARG=6 RY=Real:"-inf" RX=Real:"0"
+Out: EC=0 RX=Real:"1"
+Func: fnIntegrateCov
+In:  FARG=7 RY=Real:"-inf" RX=Real:"inf"
+Out: EC=0 RX=Real:"1.772453850905516027298167483341145"
+Func: fnIntegrateCov
+In:  FARG=7 RY=Real:"inf" RX=Real:"-inf"
+Out: EC=0 RX=Real:"-1.772453850905516027298167483341145"
+Func: fnIntegrateCov
+In:  FARG=7 RY=Real:"inf" RX=Real:"inf"
+Out: EC=0 RX=Real:"0"
+; integrable endpoint singularities
+Func: fnIntegrateCov
+In:  FARG=8 RY=Real:"0" RX=Real:"1"
+Out: EC=0 RX=Real:"2"
+Func: fnIntegrateCov
+In:  FARG=9 RY=Real:"0" RX=Real:"1"
+Out: EC=0 RX=Real:"-1"
+; cancellation and reversed finite limits
+Func: fnIntegrateCov
+In:  FARG=11 RY=Real:"-1" RX=Real:"1"
+Out: EC=0 RX=Real:"0"
+Func: fnIntegrateCov
+In:  FARG=0 RY=Real:"2" RX=Real:"0"
+Out: EC=0 RX=Real:"-2"
+; odd contamination cancels in the paired whole-line rule
+Func: fnIntegrateCov
+In:  FARG=14 RY=Real:"-inf" RX=Real:"inf"
+Out: EC=0 RX=Real:"1.772453850905516027298167483341145"
+
+; ACC=1e-6 requires eleven-digit quadrature arithmetic. Check the requested
+; relative tolerance, the extended exponent range, and the adjacent ACC range.
+Func: fnIntegrateCheckCov
+In:  FARG=0 RY=Real:"-inf" RX=Real:"inf"
+Out: EC=0 RX=Real:"1"
+Func: fnIntegrateCheckCov
+In:  FARG=1 RY=Real:"1e-1000" RX=Real:"2e-1000"
+Out: EC=0 RX=Real:"1"
+Func: fnIntegrateCheckCov
+In:  FARG=4 RY=Real:"-inf" RX=Real:"inf"
+Out: EC=0 RX=Real:"1"
+; ACC is a magnitude; a negative value must request the same tolerance.
+Func: fnIntegrateCheckCov
+In:  FARG=3 RY=Real:"-inf" RX=Real:"inf"
+Out: EC=0 RX=Real:"1"
+
+; p39 is required even though the integrand samples are real34: p34 makes the
+; constant integral differ from one. The helper compares it exactly.
+In: RMODE=0
+Func: fnIntegrateCheckCov
+In:  FARG=2 RY=Real:"0" RX=Real:"1"
+Out: EC=0 RX=Real:"1"
+; Directed modes retain the requested 34-digit result accuracy.
+In: RMODE=5
+Func: fnIntegrateCov
+In:  FARG=15 RY=Real:"0" RX=Real:"1"
+Out: EC=0 RX=Real:"1"
+In: RMODE=0 RY=Real:"-inf" RX=Real:"inf"
+In: RMODE=5
+Func: fnIntegrateCheckCov
+In:  FARG=0
+Out: EC=0 RX=Real:"1"
+In: RMODE=6
+Func: fnIntegrateCov
+In:  FARG=15 RY=Real:"0" RX=Real:"1"
+Out: EC=0 RX=Real:"1"
+In: RMODE=0 RY=Real:"-inf" RX=Real:"inf"
+In: RMODE=6
+Func: fnIntegrateCheckCov
+In:  FARG=0
+Out: EC=0 RX=Real:"1"
+In: RMODE=0
+
+; Constant integrands preserve the finite Real34 exponent range.
+Func: fnIntegrateCov
+In:  FARG=15 RY=Real:"1e6143" RX=Real:"2e6143"
+Out: EC=0 RX=Real:"1e6143"
+Func: fnIntegrateCov
+In:  FARG=15 RY=Real:"1e-6143" RX=Real:"2e-6143"
+Out: EC=0 RX=Real:"1e-6143"
+Func: fnIntegrateCov
+In:  FARG=15 RY=Real:"-1e-6176" RX=Real:"1e-6176"
+Out: EC=0 RX=Real:"2e-6176"
+
+; Reduced-context elementary functions remain within the requested 1e-6
+; relative tolerance.
+Func: fnIntegrateCheckCov
+In:  FARG=5 RY=Real:"0" RX=Real:"1"
+Out: EC=0 RX=Real:"1"
+Func: fnIntegrateCheckCov
+In:  FARG=6 RY=Real:"0" RX=Real:"1"
+Out: EC=0 RX=Real:"1"
+Func: fnIntegrateCheckCov
+In:  FARG=7 RY=Real:"0" RX=Real:"1"
+Out: EC=0 RX=Real:"1"
+
+; Limit conversion accepts real-valued complex input, but rejects nonreal and
+; matrix values without modifying X.
+Func: fnIntegrateCov
+In:  FARG=0 RY=Cplx:"0i0" RX=Real:"1"
+Out: EC=0 RX=Real:"0.5"
+Func: fnIntegrateCov
+In:  FARG=0 RY=Cplx:"0i1" RX=Real:"1"
+Out: EC=24 RX=Real:"1"
+Func: fnIntegrateCov
+In:  FARG=0 RY=Real:"0" RX=ReMa:"M1,1[1]"
+Out: EC=24 RX=ReMa:"M1,1[1]"
+
+; NaN endpoints propagate without entering the quadrature iterations.
+In: FL_SPCRES=1
+Func: fnIntegrateCov
+In:  FARG=0 RY=Real:"NaN" RX=Real:"1"
+Out: EC=0 RX=Real:"NaN"
+; A NaN requested accuracy propagates without entering an unbounded tail iteration.
+Func: fnIntegrateCov
+In:  FARG=17 RT=Real:"40" RZ=Real:"30" RY=Real:"1" RX=Real:"2"
+Out: EC=0 RT=Real:"40" RZ=Real:"30" RY=Real:"NaN" RX=Real:"NaN"
+
+; A nonreal formula value is not a real integrand sample.
+In: FL_SPCRES=0 FL_CPXRES=1
+Func: fnIntegrateCov
+In:  FARG=21 RY=Real:"0" RX=Real:"1"
+Out: EC=24
+
+; Infinite requested accuracy has no finite convergence threshold.
+In: FL_SPCRES=1 FL_CPXRES=0
+Func: fnIntegrateCov
+In:  FARG=22 RY=Real:"-inf" RX=Real:"inf"
+Out: EC=0 RY=Real:"NaN" RX=Real:"NaN"
+
+; Exp-sinh scale selection covers finite scales separated by twelve thousand decades.
+Func: fnIntegrateCheckCov
+In:  FARG=8 RY=Real:"0" RX=Real:"inf"
+Out: EC=0 RX=Real:"1"
+Func: fnIntegrateCheckCov
+In:  FARG=9 RY=Real:"-inf" RX=Real:"0"
+Out: EC=0 RX=Real:"1"
+Func: fnIntegrateCheckCov
+In:  FARG=10 RY=Real:"0" RX=Real:"inf"
+Out: EC=0 RX=Real:"1"

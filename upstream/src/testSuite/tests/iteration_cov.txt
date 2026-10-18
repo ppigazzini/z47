@@ -109,3 +109,79 @@ Out: EC=0 R00=LonI:"0" RX=Real:"1"
 Func: fnIterationTiCov
 In:  FARG=5 R00=LonI:"0" RX=Real:"9"
 Out: EC=0 R00=LonI:"-1" RX=Real:"0"
+
+; --- Real34 range encoding: seven counter digits, three target digits and two step digits ---
+Func: fnIterationTiCov
+In:  RMODE=0 FARG=2 R00=Real:"1234567.99999" RX=Real:"9"
+Out: EC=0 R00=Real:"1234666.99999" RX=Real:"0"
+Func: fnIterationTiCov
+In:  RMODE=0 FARG=4 R00=Real:"-1234567.99999" RX=Real:"9"
+Out: EC=0 R00=Real:"-1234666.99999" RX=Real:"0"
+Func: fnIterationTiCov
+In:  RMODE=0 FARG=2 R00=Real:"-1.00502" RX=Real:"9"
+Out: EC=0 R00=Real:"1.00502" RX=Real:"1"
+
+; --- A wide Real34 counter applies its selected directed mode at p34. RCL- exposes the last result digit. ---
+Func: fnIterationTiCov
+In:  RMODE=5 FARG=2 R00=Real:"1e50" RX=Real:"9"
+Out: EC=0 R00=Real:"1.000000000000000000000000000000001e50" RX=Real:"0"
+Func: fnRecallSub
+In:  FARG=0 RX=Real:"1.000000000000000000000000000000001e50"
+Out: EC=0 RX=Real:"0"
+Func: fnIterationTiCov
+In:  RMODE=6 FARG=4 R00=Real:"-1e50" RX=Real:"9"
+Out: EC=0 R00=Real:"-1.000000000000000000000000000000001e50" RX=Real:"0"
+Func: fnRecallSub
+In:  FARG=0 RX=Real:"-1.000000000000000000000000000000001e50"
+Out: EC=0 RX=Real:"0"
+
+; --- A time counter compares its rounded Real34 state with one hour. The exact sum is one tenth of a p34 unit below 3600. ---
+Func: fnIterationTiCov
+In:  RMODE=0 FARG=0 R00=Time:"-1e-31" RX=Real:"9"
+Out: EC=0 R00=Time:"3600" RX=Real:"1"
+Func: fnIterationTiCov
+In:  RMODE=1 FARG=0 R00=Time:"-1e-31" RX=Real:"9"
+Out: EC=0 R00=Time:"3600" RX=Real:"1"
+Func: fnIterationTiCov
+In:  RMODE=2 FARG=0 R00=Time:"-1e-31" RX=Real:"9"
+Out: EC=0 R00=Time:"3600" RX=Real:"1"
+Func: fnIterationTiCov
+In:  RMODE=3 FARG=0 R00=Time:"-1e-31" RX=Real:"9"
+Out: EC=0 R00=Time:"3600" RX=Real:"1"
+Func: fnIterationTiCov
+In:  RMODE=4 FARG=0 R00=Time:"-1e-31" RX=Real:"9"
+Out: EC=0 R00=Time:"3599.999999999999999999999999999999" RX=Real:"0"
+Func: fnIterationTiCov
+In:  RMODE=5 FARG=0 R00=Time:"-1e-31" RX=Real:"9"
+Out: EC=0 R00=Time:"3600" RX=Real:"1"
+Func: fnIterationTiCov
+In:  RMODE=6 FARG=0 R00=Time:"-1e-31" RX=Real:"9"
+Out: EC=0 R00=Time:"3599.999999999999999999999999999999" RX=Real:"0"
+
+; --- Directed rounding retains the sign of an hour increment beyond the p39 coefficient span. RCL- converts a digit-34 mismatch into a nonzero residual. ---
+Func: fnIterationTiCov
+In:  RMODE=5 FARG=0 R00=Time:"1e50" RX=Real:"9"
+Out: EC=0 R00=Time:"1.000000000000000000000000000000001e50" RX=Real:"1"
+Func: fnRecallSub
+In:  FARG=0 RX=Time:"1.000000000000000000000000000000001e50"
+Out: EC=0 RX=Time:"0"
+Func: fnIterationTiCov
+In:  RMODE=6 FARG=1 R00=Time:"-1e50" RX=Real:"9"
+Out: EC=0 R00=Time:"-1.000000000000000000000000000000001e50" RX=Real:"1"
+Func: fnRecallSub
+In:  FARG=0 RX=Time:"-1.000000000000000000000000000000001e50"
+Out: EC=0 RX=Time:"0"
+
+; --- Signed zero and special time values follow Real34 addition and comparison rules. ---
+Func: fnIterationTiCov
+In:  RMODE=0 FARG=0 R00=Time:"-0" RX=Real:"9"
+Out: EC=0 R00=Time:"3600" RX=Real:"1"
+Func: fnIterationTiCov
+In:  RMODE=0 FARG=1 R00=Time:"0" RX=Real:"9"
+Out: EC=0 R00=Time:"-3600" RX=Real:"1"
+Func: fnIterationTiCov
+In:  RMODE=0 FL_SPCRES=1 FARG=0 R00=Time:"inf" RX=Real:"9"
+Out: EC=0 R00=Time:"inf" RX=Real:"1"
+Func: fnIterationTiCov
+In:  RMODE=0 FL_SPCRES=1 FARG=0 R00=Time:"NaN" RX=Real:"9"
+Out: EC=0 R00=Time:"NaN" RX=Real:"1"

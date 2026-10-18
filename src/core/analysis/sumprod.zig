@@ -29,6 +29,8 @@ const abi = @import("abi"); // shared ABI bindings
 const real_t = abi.Real;
 const real34_t = abi.Real34;
 const realContext_t = abi.RealContext;
+const cplx_t = abi.Complex;
+const std = @import("std");
 
 const calcRegister_t = runtime.calcRegister_t;
 const bool_t = bool;
@@ -134,7 +136,9 @@ const const_10 = consts.const_10;
 // ---------------------------------------------------------------------------
 extern fn decNumberCopy(res: *real_t, source: *align(1) const real_t) *real_t;
 extern fn decNumberAdd(res: *real_t, op1: *align(1) const real_t, op2: *align(1) const real_t, ctxt: *realContext_t) *real_t;
+extern fn decNumberSubtract(res: *real_t, op1: *align(1) const real_t, op2: *align(1) const real_t, ctxt: *realContext_t) *real_t;
 extern fn decNumberMultiply(res: *real_t, op1: *align(1) const real_t, op2: *align(1) const real_t, ctxt: *realContext_t) *real_t;
+extern fn realCompareAbsLessThan(number1: *align(1) const real_t, number2: *align(1) const real_t) bool;
 
 // decNumberIsZero is a decNumber.h macro (DECSPECIAL = 0x70):
 //   (*lsu == 0 && digits == 1 && (bits & 0x70) == 0)
@@ -151,8 +155,19 @@ inline fn realAdd(op1: *align(1) const real_t, op2: *align(1) const real_t, res:
 inline fn realMultiply(op1: *align(1) const real_t, op2: *align(1) const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberMultiply(res, op1, op2, ctxt);
 }
+inline fn realSubtract(op1: *align(1) const real_t, op2: *align(1) const real_t, res: *real_t, ctxt: *realContext_t) void {
+    _ = decNumberSubtract(res, op1, op2, ctxt);
+}
 inline fn realIsZero(source: *const real_t) bool {
     return decNumberIsZero(source);
+}
+// realType.h: realIsSpecial tests the DECSPECIAL bits; realGetExponent is the
+// adjusted exponent of the most significant digit.
+inline fn realIsSpecial(source: *const real_t) bool {
+    return (source.bits & 0x70) != 0;
+}
+inline fn realGetExponent(source: *const real_t) i32 {
+    return source.digits + source.exponent - 1;
 }
 extern fn realSetZero(value: *real_t) void;
 extern fn decNumberDivide(res: *real_t, op1: *align(1) const real_t, op2: *align(1) const real_t, ctxt: *realContext_t) *real_t;
@@ -165,7 +180,7 @@ inline fn realDivide(dividend: *align(1) const real_t, divisor: *align(1) const 
 }
 extern fn realPower(base: *align(1) const real_t, exponent: *align(1) const real_t, result: *real_t, real_context: *realContext_t) void;
 extern fn int32ToReal(source: i32, destination: *real_t) void;
-extern fn mulComplexComplex(f1r: *const real_t, f1i: *const real_t, f2r: *const real_t, f2i: *const real_t, pr: *real_t, pi: *real_t, real_context: *realContext_t) void;
+extern fn mulComplexComplex(factor1: *const cplx_t, factor2: *const cplx_t, product: *cplx_t, real_context: *realContext_t) void;
 
 // ---------------------------------------------------------------------------
 // real34_t macros
@@ -177,6 +192,7 @@ extern fn decQuadMultiply(res: *align(1) real34_t, op1: *align(1) const real34_t
 extern fn decQuadDivide(res: *align(1) real34_t, op1: *align(1) const real34_t, op2: *align(1) const real34_t, ctxt: *realContext_t) *align(1) real34_t;
 extern fn decQuadCompare(res: *align(1) real34_t, op1: *align(1) const real34_t, op2: *align(1) const real34_t, ctxt: *realContext_t) *align(1) real34_t;
 extern fn decQuadIsZero(source: *align(1) const real34_t) bool;
+extern fn decQuadIsFinite(source: *align(1) const real34_t) u32;
 extern fn decQuadToInt32(source: *align(1) const real34_t, ctxt: *realContext_t, mode: c_int) i32;
 extern fn convertReal34ToLongInteger(real34: *align(1) const real34_t, lgInt: *mpz_struct, mode: c_int) void;
 
@@ -206,6 +222,11 @@ inline fn real34Compare(op1: *align(1) const real34_t, op2: *align(1) const real
 }
 inline fn real34IsZero(source: *align(1) const real34_t) bool {
     return decQuadIsZero(source);
+}
+// realType.h real34IsSpecial: a NaN, a signalling NaN or an infinity, which is
+// every value decQuadIsFinite rejects.
+inline fn real34IsSpecial(source: *align(1) const real34_t) bool {
+    return decQuadIsFinite(source) == 0;
 }
 inline fn real34ToInt32(source: *align(1) const real34_t) i32 {
     return decQuadToInt32(source, &ctxtReal34, DEC_ROUND_DOWN);
@@ -255,14 +276,89 @@ const progressHalfSecUpdate_Integer = abi.host.progressHalfSecUpdate_Integer; //
 // showProgressReal: the running sum or product, real or complex. Exported
 // because the grapher calls it too.
 // ===========================================================================
-pub export fn showProgressReal(a: *const real_t, ai: *real_t, cpx: bool_t) linksection(runtime.code_section) callconv(.c) void {
+pub export fn showProgressReal(a: *const cplx_t, cpx: bool_t) linksection(runtime.code_section) callconv(.c) void {
     var a34: real34_t = undefined;
     var ai34: real34_t = undefined;
-    _ = decimal128FromNumber(&a34, a, &ctxtReal34);
+    _ = decimal128FromNumber(&a34, &a.Real, &ctxtReal34);
     if (cpx) {
-        _ = decimal128FromNumber(&ai34, ai, &ctxtReal34);
+        _ = decimal128FromNumber(&ai34, &a.Imag, &ctxtReal34);
     }
     progress_panel.showRealPartial(&a34, &ai34, cpx);
+}
+
+// ===========================================================================
+// _sumProdAdd: adds one finite term and retains the rounding residual. The
+// greater-magnitude operand is selected for the FastTwoSum identity; sum is the
+// leading accumulator and correction the accumulated residual.
+// ===========================================================================
+fn _sumProdAdd(sum: *real_t, correction: *real_t, term: *const real_t) linksection(runtime.code_section) void {
+    var rounded: real_t = undefined;
+    var residual: real_t = undefined;
+    var larger: *const real_t = sum;
+    var smaller: *const real_t = term;
+
+    if (realIsSpecial(sum) or realIsSpecial(term)) {
+        realAdd(sum, term, sum, &ctxtReal75);
+        return;
+    }
+    if (realCompareAbsLessThan(larger, smaller)) {
+        larger = term;
+        smaller = sum;
+    }
+    realAdd(larger, smaller, &rounded, &ctxtReal75);
+    realSubtract(&rounded, larger, &residual, &ctxtReal75);
+    realSubtract(smaller, &residual, &residual, &ctxtReal75);
+    realAdd(correction, &residual, correction, &ctxtReal75);
+    realCopy(&rounded, sum);
+}
+
+// ===========================================================================
+// _sumProdNormalise: separates a finite product from its common decimal
+// exponent. imag is null for a real product. Returns false if the exponent
+// counter cannot represent the scale.
+// ===========================================================================
+fn _sumProdNormalise(real: *real_t, imag: ?*real_t, exponent: *i64) linksection(runtime.code_section) bool_t {
+    var scale: i32 = undefined;
+
+    if (realIsSpecial(real) or (imag != null and realIsSpecial(imag.?)) or (realIsZero(real) and (imag == null or realIsZero(imag.?)))) {
+        return true;
+    }
+    if (realIsZero(real)) {
+        scale = realGetExponent(imag.?);
+    } else if (imag == null or realIsZero(imag.?)) {
+        scale = realGetExponent(real);
+    } else {
+        const realExponent: i32 = realGetExponent(real);
+        const imagExponent: i32 = realGetExponent(imag.?);
+        scale = if (realExponent > imagExponent) realExponent else imagExponent;
+    }
+    if ((scale > 0 and exponent.* > std.math.maxInt(i64) - scale) or (scale < 0 and exponent.* < std.math.minInt(i64) - scale)) {
+        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
+        return false;
+    }
+    if (!realIsZero(real)) {
+        real.exponent -= scale;
+    }
+    if (imag != null and !realIsZero(imag.?)) {
+        imag.?.exponent -= scale;
+    }
+    exponent.* += scale;
+    return true;
+}
+
+// ===========================================================================
+// _sumProdRestoreExponent: reapplies a product's common decimal exponent.
+// Exponents outside the work context are clamped beyond the Real34 range;
+// final conversion then applies the selected overflow or underflow mode.
+// ===========================================================================
+fn _sumProdRestoreExponent(value: *real_t, exponent: i64) linksection(runtime.code_section) void {
+    if (realIsSpecial(value) or realIsZero(value)) {
+        return;
+    }
+    const adjusted: i64 = @as(i64, realGetExponent(value)) + exponent;
+    var bounded: i64 = if (adjusted < @as(i64, ctxtReal75.emax)) adjusted else @as(i64, ctxtReal75.emax);
+    bounded = if (bounded > @as(i64, ctxtReal75.emin)) bounded else @as(i64, ctxtReal75.emin);
+    value.exponent += @intCast(bounded - realGetExponent(value));
 }
 
 // ===========================================================================
@@ -303,10 +399,9 @@ fn _programmableSumProd(label: u16, prod: bool_t, early: ?*EarlyAbort) linksecti
     const cpxAllowed = getFlag(FLAG_CPXRES);
     var loop: i32 = 0;
     var finished: i16 = 0;
-    var resultX: real_t = undefined;
-    var resultXi: real_t = undefined;
-    var resultR: real_t = undefined;
-    var resultRi: real_t = undefined;
+    var resultX: cplx_t = undefined;
+    var resultR: cplx_t = undefined;
+    var correctionR: cplx_t = undefined;
     var loopStep: real34_t = undefined;
     var loopTo: real34_t = undefined;
     var counter: real34_t = undefined;
@@ -314,18 +409,36 @@ fn _programmableSumProd(label: u16, prod: bool_t, early: ?*EarlyAbort) linksecti
     var sign: real34_t = undefined;
     var rLoop: real34_t = undefined;
     var changedOverToComplex: bool_t = false;
+    var productExponent: i64 = 0;
     var iLoop: longInteger_t = undefined;
 
     fnToReal(NOPARAM);
+    if (lastErrorCode != ERROR_NONE) {
+        return;
+    }
     real34Copy(registerReal34Ptr(REGISTER_X), &loopStep);
     fnDrop(NOPARAM);
     fnToReal(NOPARAM);
+    if (lastErrorCode != ERROR_NONE) {
+        return;
+    }
     real34Copy(registerReal34Ptr(REGISTER_X), &loopTo);
     fnDrop(NOPARAM);
     fnToReal(NOPARAM);
+    if (lastErrorCode != ERROR_NONE) {
+        return;
+    }
     real34Copy(registerReal34Ptr(REGISTER_X), &counter); // Loopfrom
-    realCopy(if (prod) const_1() else const_0(), &resultR); // Initialize real accumulator
-    realSetZero(&resultRi); // Initialize complex accumulator
+    realCopy(if (prod) const_1() else const_0(), &resultR.Real); // Initialize real accumulator
+    realSetZero(&resultR.Imag); // Initialize complex accumulator
+    realSetZero(&correctionR.Real);
+    realSetZero(&correctionR.Imag);
+
+    if (real34IsSpecial(&loopStep) or real34IsSpecial(&loopTo) or real34IsSpecial(&counter)) {
+        displayCalcErrorMessage(ERROR_BAD_INPUT, ERR_REGISTER_LINE);
+        moreInfoOnError("In function _programmableSumProd:", "Range controls must be finite", null, null);
+        return;
+    }
 
     const guardRoundingMode = roundingMode;
     setRoundingMode(RM_ENGINE); // the count and the test below round as the counter step does
@@ -372,7 +485,16 @@ fn _programmableSumProd(label: u16, prod: bool_t, early: ?*EarlyAbort) linksecti
             loop -= 1;
             if (checkHalfSec()) {
                 if (progressHalfSecUpdate_Integer(timed, "Loop: ", loop, halfSec_clearZ, halfSec_clearT, halfSec_disp)) {
-                    showProgressReal(&resultR, &resultRi, changedOverToComplex);
+                    realCopy(&resultR.Real, &resultX.Real);
+                    realCopy(&resultR.Imag, &resultX.Imag);
+                    if (prod) {
+                        _sumProdRestoreExponent(&resultX.Real, productExponent);
+                        _sumProdRestoreExponent(&resultX.Imag, productExponent);
+                    } else {
+                        realAdd(&resultX.Real, &correctionR.Real, &resultX.Real, &ctxtReal75);
+                        realAdd(&resultX.Imag, &correctionR.Imag, &resultX.Imag, &ctxtReal75);
+                    }
+                    showProgressReal(&resultX, changedOverToComplex);
                 }
             }
 
@@ -397,7 +519,8 @@ fn _programmableSumProd(label: u16, prod: bool_t, early: ?*EarlyAbort) linksecti
                 break;
             }
 
-            if (getRegisterDataType(REGISTER_X) == dtComplex34 or !realIsZero(&resultRi)) {
+            const termIsComplex = getRegisterDataType(REGISTER_X) == dtComplex34;
+            if (termIsComplex) {
                 if (cpxAllowed) {
                     changedOverToComplex = true; // Only latch over to complex operation if CPXRES is true, as well as either sum or new f(n) is complex
                 } else {
@@ -405,6 +528,18 @@ fn _programmableSumProd(label: u16, prod: bool_t, early: ?*EarlyAbort) linksecti
                     moreInfoOnError("In function _programmableSumProd:", "f(n) returned a complex value while flag I is not set!", null, null);
                     break;
                 }
+            }
+
+            if (termIsComplex) {
+                real34ToReal(registerReal34Ptr(REGISTER_X), &resultX.Real);
+                real34ToReal(registerImag34Ptr(REGISTER_X), &resultX.Imag);
+            } else {
+                fnToReal(NOPARAM);
+                if (lastErrorCode != ERROR_NONE) {
+                    break;
+                }
+                real34ToReal(registerReal34Ptr(REGISTER_X), &resultX.Real);
+                realSetZero(&resultX.Imag);
             }
 
             if (inf) { // counted for the complex branch too, and saturates
@@ -415,18 +550,16 @@ fn _programmableSumProd(label: u16, prod: bool_t, early: ?*EarlyAbort) linksecti
             }
 
             if (!changedOverToComplex) {
-                fnToReal(NOPARAM);
-                if (lastErrorCode != ERROR_NONE) {
-                    break;
-                }
-                real34ToReal(registerReal34Ptr(REGISTER_X), &resultX); // Result accumulated
                 if (prod) {
-                    realMultiply(&resultR, &resultX, &resultR, &ctxtReal75);
+                    realMultiply(&resultR.Real, &resultX.Real, &resultR.Real, &ctxtReal75);
+                    if (!_sumProdNormalise(&resultR.Real, null, &productExponent)) {
+                        break;
+                    }
                 } else {
-                    realAdd(&resultR, &resultX, &resultR, &ctxtReal75);
+                    _sumProdAdd(&resultR.Real, &correctionR.Real, &resultX.Real);
                     if (inf) {
                         const e = early.?;
-                        realCopy(&resultX, &e.term); // the term itself, which outlives a saturated total
+                        realCopy(&resultX.Real, &e.term); // the term itself, which outlives a saturated total
                         realSetPositiveSign(&e.term);
                         if (!realIsZero(&e.term)) { // a term of zero says nothing about the terms after it
                             if (e.haveTerm and e.pass >= EARLY_ABORT_WATCH_FROM and
@@ -441,7 +574,8 @@ fn _programmableSumProd(label: u16, prod: bool_t, early: ?*EarlyAbort) linksecti
                                 }
                                 real34ToReal(&rLoop, &e.remaining);
                                 realSetPositiveSign(&e.remaining);
-                                realDivide(&resultR, &e.scale, &e.allowance, &ctxtReal75); // one last digit of the answer
+                                realAdd(&resultR.Real, &correctionR.Real, &resultX.Real, &ctxtReal75);
+                                realDivide(&resultX.Real, &e.scale, &e.allowance, &ctxtReal75); // one last digit of the answer
                                 realSetPositiveSign(&e.allowance);
                                 realDivide(&e.allowance, &e.term, &e.allowance, &ctxtReal75); // iterations it is worth
                                 if (runtime.realCompareLessThan(&e.remaining, &e.allowance)) {
@@ -454,21 +588,26 @@ fn _programmableSumProd(label: u16, prod: bool_t, early: ?*EarlyAbort) linksecti
                     }
                 }
             } else { // dtComplex34, and EARLY_ABORT_IN_COMPLEX is false, so this branch always runs the full count
-                real34ToReal(registerReal34Ptr(REGISTER_X), &resultX); // Result accumulated
-                real34ToReal(registerImag34Ptr(REGISTER_X), &resultXi); // Result accumulated
                 if (prod) {
-                    mulComplexComplex(&resultR, &resultRi, &resultX, &resultXi, &resultR, &resultRi, &ctxtReal75);
+                    mulComplexComplex(&resultR, &resultX, &resultR, &ctxtReal75);
+                    if (!_sumProdNormalise(&resultR.Real, &resultR.Imag, &productExponent)) {
+                        break;
+                    }
                 } else {
-                    realAdd(&resultR, &resultX, &resultR, &ctxtReal75);
-                    realAdd(&resultRi, &resultXi, &resultRi, &ctxtReal75);
+                    _sumProdAdd(&resultR.Real, &correctionR.Real, &resultX.Real);
+                    _sumProdAdd(&resultR.Imag, &correctionR.Imag, &resultX.Imag);
                 }
             }
-
-            real34Add(&counter, &loopStep, &counter);
 
             if (finished == 0) {
                 break;
             }
+            real34Add(&counter, &loopStep, &moved);
+            if (real34CompareEqual(&moved, &counter)) {
+                displayCalcErrorMessage(ERROR_STEP_OF_ZERO, ERR_REGISTER_LINE);
+                break;
+            }
+            real34Copy(&moved, &counter);
         } // WHILE
         setRoundingMode(userRoundingMode);
 
@@ -480,17 +619,24 @@ fn _programmableSumProd(label: u16, prod: bool_t, early: ?*EarlyAbort) linksecti
                 convertLongIntegerToLongIntegerRegister(&iPass[0], REGISTER_Y);
                 longIntegerFree(&iPass[0]);
             }
+            if (prod) {
+                _sumProdRestoreExponent(&resultR.Real, productExponent);
+                _sumProdRestoreExponent(&resultR.Imag, productExponent);
+            } else {
+                realAdd(&resultR.Real, &correctionR.Real, &resultR.Real, &ctxtReal75);
+                realAdd(&resultR.Imag, &correctionR.Imag, &resultR.Imag, &ctxtReal75);
+            }
             if (!changedOverToComplex) {
                 if (getRegisterDataType(REGISTER_X) != dtReal34) {
                     reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
                 }
-                convertRealToReal34ResultRegister(&resultR, REGISTER_X);
+                convertRealToReal34ResultRegister(&resultR.Real, REGISTER_X);
             } else {
                 if (getRegisterDataType(REGISTER_X) != dtComplex34) {
                     reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
                 }
-                convertRealToReal34ResultRegister(&resultR, REGISTER_X);
-                convertRealToImag34ResultRegister(&resultRi, REGISTER_X);
+                convertRealToReal34ResultRegister(&resultR.Real, REGISTER_X);
+                convertRealToImag34ResultRegister(&resultR.Imag, REGISTER_X);
             }
             adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
         } else {

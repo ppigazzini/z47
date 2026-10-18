@@ -30,14 +30,13 @@
 #include "../../../upstream/src/c47/c47.h"
 #include "../common/harness_resource_budget.h"
 
-// Exported Zig workers under test (eigen.zig). The matrices
-// are interleaved-complex, row-major: element (i,j) real at [(i*size+j)*2],
-// imag at [(i*size+j)*2 + 1].
-void calculateEigenvalues22(const real_t *mat, uint16_t size, real_t *t1r, real_t *t1i, real_t *t2r, real_t *t2i, bool is_real_symmetric, realContext_t *realContext);
-void calculateEigenvalues33(const real_t *mat, uint16_t size, real_t *t1r, real_t *t1i, real_t *t2r, real_t *t2i, real_t *t3r, real_t *t3i, bool is_real_symmetric, realContext_t *realContext);
-bool isRealSymmetric(const real_t *a, uint16_t size, realContext_t *realContext);
-void dropNoise(real_t *eig, uint16_t size, uint16_t dig);
-void QR_decomposition_householder(const real_t *mat, uint16_t size, real_t *q, real_t *r, realContext_t *realContext);
+// Exported Zig workers under test (eigen.zig). The matrices are cplx_t,
+// row-major: element (i,j) at [i*size+j].
+void calculateEigenvalues22(const cplx_t *mat, uint16_t size, cplx_t *t1, cplx_t *t2, bool is_real_symmetric, realContext_t *realContext);
+void calculateEigenvalues33(const cplx_t *mat, uint16_t size, cplx_t *t1, cplx_t *t2, cplx_t *t3, bool is_real_symmetric, realContext_t *realContext);
+bool isRealSymmetric(const cplx_t *a, uint16_t size, realContext_t *realContext);
+void dropNoise(cplx_t *eig, uint16_t size, uint16_t dig);
+void QR_decomposition_householder(const cplx_t *mat, uint16_t size, cplx_t *q, cplx_t *r, realContext_t *realContext);
 
 static void initRuntime(void) {
   harnessInstallResourceBudget("math-wrappers eigen");
@@ -46,12 +45,13 @@ static void initRuntime(void) {
   fnReset(CONFIRMED);
 }
 
-// Load a size*size interleaved-complex matrix from a flat list of decimal
-// strings (2*size*size entries: re,im,re,im,...).
-static void loadMatrix(real_t *mat, uint16_t size, const char *const *cells) {
-  const uint32_t count = (uint32_t)size * (uint32_t)size * 2u;
+// Load a size*size complex matrix from a flat list of decimal strings
+// (2*size*size entries: re,im,re,im,...).
+static void loadMatrix(cplx_t *mat, uint16_t size, const char *const *cells) {
+  const uint32_t count = (uint32_t)size * (uint32_t)size;
   for(uint32_t k = 0; k < count; ++k) {
-    stringToReal(cells[k], &mat[k], &ctxtReal39);
+    stringToReal(cells[2 * k], &mat[k].Real, &ctxtReal39);
+    stringToReal(cells[2 * k + 1], &mat[k].Imag, &ctxtReal39);
   }
 }
 
@@ -94,7 +94,7 @@ static void expectEigenPair(const char *name,
 }
 
 static void runIsRealSymmetric(void) {
-  real_t mat[8];
+  cplx_t mat[4];
   // [[2,1],[1,2]] real symmetric -> true
   const char *sym[8] = {"2","0", "1","0", "1","0", "2","0"};
   loadMatrix(mat, 2, sym);
@@ -112,8 +112,8 @@ static void runIsRealSymmetric(void) {
 }
 
 static void runEigenvalues22(void) {
-  real_t mat[8];
-  real_t t1r, t1i, t2r, t2i;
+  cplx_t mat[4];
+  cplx_t t1, t2;
 
   // PROVENANCE of every expected value in this file: each is
   // DERIVED, not read off c43. That makes this a *specified* oracle in Barr et
@@ -125,20 +125,20 @@ static void runEigenvalues22(void) {
   // char. poly of [[2,1],[1,2]] is (2-L)^2 - 1 = 0 -> L = 3, 1.
   const char *sym[8] = {"2","0", "1","0", "1","0", "2","0"};
   loadMatrix(mat, 2, sym);
-  calculateEigenvalues22(mat, 2, &t1r, &t1i, &t2r, &t2i, true, &ctxtReal39);
-  expectEigenPair("eig22[[2,1],[1,2]]", &t1r, &t1i, &t2r, &t2i, "3", "0", "1", "0");
+  calculateEigenvalues22(mat, 2, &t1, &t2, true, &ctxtReal39);
+  expectEigenPair("eig22[[2,1],[1,2]]", &t1.Real, &t1.Imag, &t2.Real, &t2.Imag, "3", "0", "1", "0");
 
   // char. poly of [[0,-1],[1,0]] is L^2 + 1 = 0 -> L = +i, -i.
   const char *rot[8] = {"0","0", "-1","0", "1","0", "0","0"};
   loadMatrix(mat, 2, rot);
-  calculateEigenvalues22(mat, 2, &t1r, &t1i, &t2r, &t2i, false, &ctxtReal39);
-  expectEigenPair("eig22[[0,-1],[1,0]]", &t1r, &t1i, &t2r, &t2i, "0", "1", "0", "-1");
+  calculateEigenvalues22(mat, 2, &t1, &t2, false, &ctxtReal39);
+  expectEigenPair("eig22[[0,-1],[1,0]]", &t1.Real, &t1.Imag, &t2.Real, &t2.Imag, "0", "1", "0", "-1");
 
   // a diagonal matrix's eigenvalues ARE its diagonal -> 5, 3.
   const char *diag[8] = {"5","0", "0","0", "0","0", "3","0"};
   loadMatrix(mat, 2, diag);
-  calculateEigenvalues22(mat, 2, &t1r, &t1i, &t2r, &t2i, true, &ctxtReal39);
-  expectEigenPair("eig22[[5,0],[0,3]]", &t1r, &t1i, &t2r, &t2i, "5", "0", "3", "0");
+  calculateEigenvalues22(mat, 2, &t1, &t2, true, &ctxtReal39);
+  expectEigenPair("eig22[[5,0],[0,3]]", &t1.Real, &t1.Imag, &t2.Real, &t2.Imag, "5", "0", "3", "0");
 }
 
 // Assert the unordered eigenvalue triple {actual t1,t2,t3} equals the three
@@ -169,10 +169,10 @@ static void expectEigenTriple(const char *name,
 }
 
 static void runEigenvalues33(void) {
-  real_t mat[18];
-  real_t t1r, t1i, t2r, t2i, t3r, t3i;
-  const real_t *tr[3] = {&t1r, &t2r, &t3r};
-  const real_t *ti[3] = {&t1i, &t2i, &t3i};
+  cplx_t mat[9];
+  cplx_t t1, t2, t3;
+  const real_t *tr[3] = {&t1.Real, &t2.Real, &t3.Real};
+  const real_t *ti[3] = {&t1.Imag, &t2.Imag, &t3.Imag};
 
   // Diagonal [[7,0,0],[0,4,0],[0,0,1]] -> eigenvalues {7,4,1}.
   const char *diag[18] = {
@@ -181,7 +181,7 @@ static void runEigenvalues33(void) {
     "0","0", "0","0", "1","0",
   };
   loadMatrix(mat, 3, diag);
-  calculateEigenvalues33(mat, 3, &t1r, &t1i, &t2r, &t2i, &t3r, &t3i, true, &ctxtReal39);
+  calculateEigenvalues33(mat, 3, &t1, &t2, &t3, true, &ctxtReal39);
   {
     const char *er[3] = {"7", "4", "1"};
     const char *ei[3] = {"0", "0", "0"};
@@ -197,10 +197,10 @@ static void runEigenvalues33(void) {
     "0","0", "1","0", "2","0",
   };
   loadMatrix(mat, 3, sym);
-  calculateEigenvalues33(mat, 3, &t1r, &t1i, &t2r, &t2i, &t3r, &t3i, true, &ctxtReal39);
+  calculateEigenvalues33(mat, 3, &t1, &t2, &t3, true, &ctxtReal39);
   {
-    bool has_two = realEqualsText(&t1r, "2") || realEqualsText(&t2r, "2") || realEqualsText(&t3r, "2");
-    bool all_real = realEqualsText(&t1i, "0") && realEqualsText(&t2i, "0") && realEqualsText(&t3i, "0");
+    bool has_two = realEqualsText(&t1.Real, "2") || realEqualsText(&t2.Real, "2") || realEqualsText(&t3.Real, "2");
+    bool all_real = realEqualsText(&t1.Imag, "0") && realEqualsText(&t2.Imag, "0") && realEqualsText(&t3.Imag, "0");
     if(!has_two || !all_real) {
       printf("eigen oracle: eig33 symmetric tridiagonal expected a real eigenvalue 2\n");
       ++failures;
@@ -211,8 +211,8 @@ static void runEigenvalues33(void) {
 // dropNoise rounds each diagonal element (i,i) real+imag to `dig` significant
 // digits (HALF_UP) and leaves off-diagonal entries untouched.
 static void runDropNoise(void) {
-  real_t eig[8];
-  // Matrix-shaped 2x2: diagonal (0,0)=idx0, (1,1)=idx6; off-diagonal idx2/idx4.
+  cplx_t eig[4];
+  // Matrix-shaped 2x2: diagonal (0,0)=idx0, (1,1)=idx3; off-diagonal idx1/idx2.
   const char *cells[8] = {
     "2.99999999","0",   "0.123456789","0",
     "0.987654321","0",  "0.99999999","0",
@@ -220,11 +220,11 @@ static void runDropNoise(void) {
   loadMatrix(eig, 2, cells);
   dropNoise(eig, 2, 5);
   // Diagonal rounded to 5 sig digits -> integers 3 and 1.
-  if(!realEqualsText(&eig[0], "3")) { printf("eigen oracle: dropNoise diag(0,0) expected 3\n"); ++failures; }
-  if(!realEqualsText(&eig[6], "1")) { printf("eigen oracle: dropNoise diag(1,1) expected 1\n"); ++failures; }
+  if(!realEqualsText(&eig[0].Real, "3")) { printf("eigen oracle: dropNoise diag(0,0) expected 3\n"); ++failures; }
+  if(!realEqualsText(&eig[3].Real, "1")) { printf("eigen oracle: dropNoise diag(1,1) expected 1\n"); ++failures; }
   // Off-diagonal untouched (still the noisy inputs).
-  if(!realEqualsText(&eig[2], "0.123456789")) { printf("eigen oracle: dropNoise perturbed off-diagonal (0,1)\n"); ++failures; }
-  if(!realEqualsText(&eig[4], "0.987654321")) { printf("eigen oracle: dropNoise perturbed off-diagonal (1,0)\n"); ++failures; }
+  if(!realEqualsText(&eig[1].Real, "0.123456789")) { printf("eigen oracle: dropNoise perturbed off-diagonal (0,1)\n"); ++failures; }
+  if(!realEqualsText(&eig[2].Real, "0.987654321")) { printf("eigen oracle: dropNoise perturbed off-diagonal (1,0)\n"); ++failures; }
 }
 
 // |a - b| < 10^-30 (real parts; the QR reconstruction of an integer matrix is
@@ -241,7 +241,7 @@ static bool realCloseTo(const real_t *a, const real_t *b) {
 // input (within tolerance -- the reflection carries a square root) and R is
 // upper-triangular. Inputs here are real, so Q and R are real.
 static void checkQrReconstructs(const char *name, const char *const cells[8]) {
-  real_t mat[8], q[8], r[8];
+  cplx_t mat[4], q[4], r[4];
   loadMatrix(mat, 2, cells);
   QR_decomposition_householder(mat, 2, q, r, &ctxtReal39);
   for(int i = 0; i < 2; ++i) {
@@ -249,12 +249,12 @@ static void checkQrReconstructs(const char *name, const char *const cells[8]) {
       real_t acc, prod;
       realSetZero(&acc);
       for(int k = 0; k < 2; ++k) {
-        realMultiply(&q[(i*2+k)*2], &r[(k*2+j)*2], &prod, &ctxtReal39);
+        realMultiply(&q[i*2+k].Real, &r[k*2+j].Real, &prod, &ctxtReal39);
         realAdd(&acc, &prod, &acc, &ctxtReal39);
       }
-      if(!realCloseTo(&acc, &mat[(i*2+j)*2])) {
+      if(!realCloseTo(&acc, &mat[i*2+j].Real)) {
         char b1[TMP_STR_LENGTH], b2[TMP_STR_LENGTH];
-        realToString(&acc, b1); realToString(&mat[(i*2+j)*2], b2);
+        realToString(&acc, b1); realToString(&mat[i*2+j].Real, b2);
         printf("eigen oracle: %s reconstruction (Q*R)[%d][%d]=%s != input %s\n", name, i, j, b1, b2);
         ++failures;
       }
@@ -262,7 +262,7 @@ static void checkQrReconstructs(const char *name, const char *const cells[8]) {
   }
   real_t zero;
   realSetZero(&zero);
-  if(!realCloseTo(&r[(1*2+0)*2], &zero)) { printf("eigen oracle: %s R[1][0] not zero (not upper-triangular)\n", name); ++failures; }
+  if(!realCloseTo(&r[1*2+0].Real, &zero)) { printf("eigen oracle: %s R[1][0] not zero (not upper-triangular)\n", name); ++failures; }
 }
 
 static void runQrDecomposition(void) {

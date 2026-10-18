@@ -317,6 +317,56 @@ Out: EC=4  FL_CPXRES=1 FL_ASLIFT=1 RY=Cplx:"0.0 i +0.0" RX=ShoI:"0#10"
 In:  WS=64 FL_CPXRES=1 FL_ASLIFT=0 RY=Cplx:"0.0 i +0.0" RX=ShoI:"5#10"
 Out: EC=5  FL_CPXRES=1 FL_ASLIFT=0 RY=Cplx:"0.0 i +0.0" RX=ShoI:"5#10"
 
+; Nearby positive values require working digits beyond Real34 in both logarithms.
+Func: fnLogXY
+In:  RMODE=0 FL_CPXRES=0 RY=Real:"1.000000000000000000000000000000002" RX=Real:"1.000000000000000000000000000000001"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"1.999999999999999999999999999999999"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e40"
+Out: EC=0 RX=Real:"0"
+
+; Base ten exposes the natural-logarithm working error next to one.
+Func: fnLogXY
+In:  RMODE=0 FL_CPXRES=0 RY=Real:"1.000000000000000000000000000000001" RX=Real:"10"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"4.342944819032518276511289189166049e-34"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e70"
+Out: EC=0 RX=Real:"0"
+
+; A tiny radial component of the complex value must survive division by ln(10).
+Func: fnLogXY
+In:  RMODE=0 FL_CPXRES=1 RY=Cplx:"-1 i +1.234567890123456789012345678901234e-34" RX=Real:"10"
+Out: EC=0
+Func: fnRealPart
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"3.309666774012735770375849679097900e-69"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e110"
+Out: EC=0 RX=Real:"0"
+
+; Rounded rectangular coordinates can cancel through more than 51 digits in the squared radius.
+Func: fnLogXY
+In:  RMODE=0 FL_CPXRES=1 RY=Cplx:"0.7 i +0.7141428428542849997999399811367265" RX=Real:"10"
+Out: EC=0
+Func: fnRealPart
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"-8.645885295160813263664278022663993e-36"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e80"
+Out: EC=0 RX=Real:"0"
+
+Func: fnLogXY
+
 ;************************************************************************************************************************************************************
 ; LogXYX(Short Integer, *) -> Real or Complex
 ;************************************************************************************************************************************************************

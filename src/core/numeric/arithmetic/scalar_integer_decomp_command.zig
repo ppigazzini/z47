@@ -47,26 +47,40 @@ fn decompReal() void {
 
     const saved_system_flags0 = runtime.systemFlags0;
     const saved_system_flags1 = runtime.systemFlags1;
-    var sign: i16 = 0;
-    var int_part: u64 = 0;
+    var fraction_sign: i16 = 0;
+    var fraction_int_part: u64 = 0;
     var numer: u64 = 0;
     var denom: u64 = 0;
     var less_equal_greater: i16 = 0;
+    var abs_x: runtime.real34_t = undefined;
+    var int_part: runtime.real34_t = undefined;
+    var frac_part: runtime.real34_t = undefined;
     var value: runtime.longInteger_t = undefined;
 
+    // The integer part is split off first, so that fraction() only approximates
+    // the fractional part and the integer part is carried exactly.
+    // real34CopyAbs is a decQuad macro: the copy with its sign bit cleared.
+    abs_x = x_value;
+    abs_x.bytes[15] &= 0x7f;
+    runtime.real34ToIntegralValue(&abs_x, &int_part, runtime.DEC_ROUND_DOWN);
+    runtime.real34Subtract(&abs_x, &int_part, &frac_part);
+    runtime.registerReal34Ptr(runtime.REGISTER_Y).* = frac_part;
+
     runtime.clearSystemFlag(runtime.FLAG_PROPFR);
-    _ = runtime.fraction(runtime.REGISTER_Y, &sign, &int_part, &numer, &denom, &less_equal_greater);
+    _ = runtime.fraction(runtime.REGISTER_Y, &fraction_sign, &fraction_int_part, &numer, &denom, &less_equal_greater);
     runtime.systemFlags0 = saved_system_flags0;
     runtime.systemFlags1 = saved_system_flags1;
 
-    runtime.__gmpz_init(&value[0]);
+    // convertReal34ToLongInteger initialises its result.
+    runtime.convertReal34ToLongInteger(&int_part, &value[0], runtime.DEC_ROUND_DOWN);
     defer runtime.__gmpz_clear(&value[0]);
 
     // Both parts go out through a uint32_t, so the 64-bit accumulation above is
     // truncated to its low 32 bits rather than widened by the host's word size.
-    runtime.__gmpz_set_ui(&value[0], @as(u32, @truncate(numer)));
-    if (sign == -1) {
-        value[0]._mp_size = -value[0]._mp_size;
+    runtime.__gmpz_mul_ui(&value[0], &value[0], @as(u32, @truncate(denom)));
+    runtime.__gmpz_add_ui(&value[0], &value[0], @as(u32, @truncate(numer)));
+    if (runtime.real34IsNegative(&x_value)) {
+        value[0]._mp_size = -@as(c_int, @intCast(@abs(value[0]._mp_size)));
     }
     runtime.convertLongIntegerToLongIntegerRegister(&value[0], runtime.REGISTER_Y);
 

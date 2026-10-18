@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: GPL-3.0-only
 const abi = @import("abi");
 const math_real_predicates = @import("../compare/real_predicates.zig");
-const consts = abi.constants;
+const math_matrix_determinant = @import("determinant.zig");
 // Zig port of WP34S_LU_decomposition from src/c47/mathematics/matrix.c: the real
 // partial-pivoting LU decomposition, packing the matrix into a plain real_t
-// scratch array, running Gaussian elimination with pivoting and writing the
-// combined L/U factors back into the result matrix (the pivot vector is filled
-// in for the caller). complex_LU_decomposition stays in the matrix bridge.
+// scratch array, running Gaussian elimination with pivoting at 75 digits and
+// writing the combined L/U factors back into the result matrix (the pivot
+// vector is filled in for the caller). A matrix the exact elimination finds
+// singular gets no factors at all. complex_LU_decomposition is its own owner.
 
 const runtime = @import("../command_wrappers/runtime.zig");
 const math_comparison_reals = @import("../compare/comparison_reals.zig");
@@ -18,10 +19,6 @@ const nim_register_line = runtime.REGISTER_X;
 
 // REAL_SIZE_IN_BLOCKS(75) == 15; the real scratch is non-interleaved.
 const real_size_in_blocks: usize = (@sizeOf(real_t) + 3) >> 2;
-
-inline fn const_1e_37() *const real_t {
-    return consts.c4436();
-}
 
 const realElems = abi.matrixRealElems;
 
@@ -58,6 +55,15 @@ pub export fn WP34S_LU_decomposition(matrix: *const real34Matrix_t, lu: *real34M
         return;
     }
 
+    if (math_matrix_determinant.realMatExactlySingular(matrix)) {
+        if (!samePtr(matrix, lu)) {
+            lu.matrixElements = null;
+            lu.header.matrixRows = 0;
+            lu.header.matrixColumns = 0;
+        }
+        return;
+    }
+
     const blocks = @as(usize, m) * n * real_size_in_blocks;
     if (runtime.allocC47Blocks(blocks)) |tmp_raw| {
         const tmp_mat: [*]real_t = @ptrCast(@alignCast(tmp_raw));
@@ -76,6 +82,11 @@ pub export fn WP34S_LU_decomposition(matrix: *const real34Matrix_t, lu: *real34M
             var max: real_t = undefined;
             var t: real_t = undefined;
             var u: real_t = undefined;
+            // An update that cancels to below this fraction of its value is set
+            // to zero.
+            var tolerance: real_t = undefined;
+            runtime.realSetOne(&tolerance);
+            tolerance.exponent = 2 - runtime.ctxtReal75.digits;
             const nz: usize = n;
             var k: usize = 0;
             while (k < nz) : (k += 1) {
@@ -119,7 +130,7 @@ pub export fn WP34S_LU_decomposition(matrix: *const real34Matrix_t, lu: *real34M
                 while (i < nz) : (i += 1) {
                     realCopy(&tmp_mat[k * nz + k], &t);
                     realCopy(&tmp_mat[i * nz + k], &u);
-                    runtime.realDivide(&u, &t, &max, &runtime.ctxtReal39);
+                    runtime.realDivide(&u, &t, &max, &runtime.ctxtReal75);
                     realCopy(&max, &tmp_mat[i * nz + k]);
                 }
                 // Update the upper triangular elements.
@@ -129,11 +140,11 @@ pub export fn WP34S_LU_decomposition(matrix: *const real34Matrix_t, lu: *real34M
                     while (j < nz) : (j += 1) {
                         realCopy(&tmp_mat[i * nz + k], &t);
                         realCopy(&tmp_mat[k * nz + j], &u);
-                        runtime.realMultiply(&t, &u, &max, &runtime.ctxtReal39);
+                        runtime.realMultiply(&t, &u, &max, &runtime.ctxtReal75);
                         realCopy(&tmp_mat[i * nz + j], &t);
-                        runtime.realSubtract(&t, &max, &u, &runtime.ctxtReal39);
-                        runtime.realDivide(&u, &t, &max, &runtime.ctxtReal39); // condition number
-                        if (math_comparison_reals.realCompareAbsLessThan(&max, const_1e_37())) {
+                        runtime.realSubtract(&t, &max, &u, &runtime.ctxtReal75);
+                        runtime.realDivide(&u, &t, &max, &runtime.ctxtReal75); // condition number
+                        if (math_comparison_reals.realCompareAbsLessThan(&max, &tolerance)) {
                             runtime.realSetZero(&tmp_mat[i * nz + j]);
                         } else {
                             realCopy(&u, &tmp_mat[i * nz + j]);

@@ -103,3 +103,25 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-3" RX=Real:"0.0013498980316300945266
 ;=======================================
 ; stdNormalL(Complex) --> Error24
 ;=======================================
+
+; A negative tail retains the independently computed decimal128 value.
+Func: fnStdNormalL
+In:  RMODE=0 RZ=Real:"1e6144" RY=Real:"4.273935958118989479094161337085015537987445468925765889891378834858299182691651380438241784753027622e-1217" RX=Real:"-74.77379137440866803999523588445061"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+; A finite probability remains below one under downward rounding.
+Func: fnStdNormalL
+In:  RMODE=2 RX=Real:"1e100"
+Out: EC=0 RX=Real:"0.9999999999999999999999999999999999"
+
+Func: fnStdNormalL
+In:  RMODE=0 FL_SPCRES=1 RX=Real:"inf"
+Out: EC=0 RX=Real:"1"
+
+Func: fnStdNormalL
+In:  FL_SPCRES=0 RX=CxMa:"M1,1[0i1]"
+Out: EC=24 RX=CxMa:"M1,1[0i1]"

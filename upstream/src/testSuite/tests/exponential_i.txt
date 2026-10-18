@@ -139,3 +139,82 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.9" RX=Real:"0.460517018598809136803
 ;=======================================
 ; ExponI(Complex) --> Error24
 ;=======================================
+
+; Domain, endpoint, precision, and directed-rounding cases.
+Func: fnExponentialI
+In:  RMODE=0 FL_SPCRES=0 RR=Real:"2" RX=Real:"0"
+Out: EC=1 RX=Real:"0"
+
+Func: fnExponentialI
+In:  RMODE=0 FL_SPCRES=1 RR=Real:"2" RX=Real:"0"
+Out: EC=0 RX=Real:"NaN"
+
+Func: fnExponentialI
+In:  RMODE=0 FL_SPCRES=0 RR=Real:"2" RX=Real:"1"
+Out: EC=1 RX=Real:"1"
+
+Func: fnExponentialI
+In:  RMODE=0 FL_SPCRES=1 RR=Real:"2" RX=Real:"1"
+Out: EC=0 RX=Real:"NaN"
+
+Func: fnExponentialI
+In:  RMODE=0 FL_SPCRES=0 RR=Real:"1" RX=Real:"0.9999999999999999999999999999999999"
+Out: EC=0 RX=Real:"78.28789316179755325661170945926838"
+
+; P34 logarithm and division change the final digit.
+Func: fnExponentialI
+In:  RMODE=0 FL_SPCRES=0 RR=Real:"7.875276942602781230065233775e37" RZ=Real:"1e80" RY=Real:"2.861842725732451681861284926102739e-39" RX=Real:"0.2017855955094534401652622449896090"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+; A positive quantile below the working exponent range retains its directed side.
+Func: fnExponentialI
+In:  RMODE=0 FL_SPCRES=0 RR=Real:"1e6144" RX=Real:"1e-6176"
+Out: EC=0 RX=Real:"0"
+
+Func: fnExponentialI
+In:  RMODE=3 FL_SPCRES=0 RR=Real:"1e6144" RX=Real:"1e-6176"
+Out: EC=0 RX=Real:"1e-6176"
+
+Func: fnExponentialI
+In:  RMODE=5 FL_SPCRES=0 RR=Real:"1e6144" RX=Real:"1e-6176"
+Out: EC=0 RX=Real:"1e-6176"
+
+Func: fnExponentialI
+In:  RMODE=0 FL_SPCRES=0 RR=Real:"2" RX=Real:"-1e-34"
+Out: EC=1 RX=Real:"-1e-34"
+
+Func: fnExponentialI
+In:  RMODE=0 FL_SPCRES=0 RR=Real:"2" RX=Real:"1.000000000000000000000000000000001"
+Out: EC=1 RX=Real:"1.000000000000000000000000000000001"
+
+Func: fnExponentialI
+In:  RMODE=0 FL_SPCRES=1 RR=Real:"2" RX=Real:"-1e-34"
+Out: EC=0 RX=Real:"NaN"
+
+Func: fnExponentialI
+In:  RMODE=0 FL_SPCRES=0 RR=Real:"2" RX=Real:"NaN"
+Out: EC=1 RX=Real:"NaN"
+
+Func: fnExponentialI
+In:  RMODE=0 FL_SPCRES=1 RR=Real:"2" RX=Real:"NaN"
+Out: EC=0 RX=Real:"NaN"
+
+Func: fnExponentialI
+In:  RMODE=0 FL_SPCRES=0 RR=Real:"inf" RX=Real:"0.5"
+Out: EC=16 RX=Real:"0.5"
+
+Func: fnExponentialI
+In:  RMODE=0 FL_SPCRES=1 RR=Real:"NaN" RX=Real:"0.5"
+Out: EC=0 RX=Real:"NaN"
+
+Func: fnExponentialI
+In:  RMODE=0 FL_SPCRES=0 RR=Real:"2" RX=ReMa:"M1,2[0,1]"
+Out: EC=24 RX=ReMa:"M1,2[0,1]"
+
+Func: fnExponentialI
+In:  RMODE=0 FL_SPCRES=0 RR=Real:"2" RX=CxMa:"M1,1[0i1]"
+Out: EC=24 RX=CxMa:"M1,1[0i1]"

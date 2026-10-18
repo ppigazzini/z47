@@ -185,6 +185,10 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"3" RX=Real:"3.67813530866078299971775
 In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"-1" RX=Real:"5"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"5" RX=Real:"6.134265321110390150776959098000447"
 
+; For 1 < m < 2 and pi/4 < phi < asin(1/sqrt m) the value is real: the Carlson form returns it, where E(m) F(phi|m)/K(m) + Z(phi|m) leaves an imaginary part.
+In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"1.5" RX=Real:"0.8"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.8" RX=Real:"0.6671592741428521069135122225613842"
+
 
 
 ;=======================================
@@ -304,3 +308,31 @@ Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"0i-1" RX=Cplx:"0.04759357808650868334
 
 In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"-1" RX=Cplx:"1i-1"
 Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"1i-1" RX=Cplx:"0.9069677658503001646973009391424660i-1.392400953848556097708914246785097"
+
+
+; Direct Carlson form for a negative parameter and a tiny amplitude.
+In: AM=RAD RT=Real:"1e70" RZ=Real:"1e-34" RY=Real:"-1" RX=Real:"1e-34"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+Func: fnEllipticEphi
+; Tiny real component of a complex argument near the imaginary axis.
+In: AM=RAD RY=Real:"0.5" RX=Cplx:"1e-34i1"
+Out: EC=0 RX=Cplx:"1.300211107001823709959489695208941e-34i1.093479305392135700863364643157361"
+
+; E(1|1E76) returns: its Jacobi zeta takes F of an amplitude that is NaN.
+In: AM=RAD FL_SPCRES=1 FL_CPXRES=1 RY=Real:"1e76" RX=Real:"1"
+Out: EC=0
+
+; A NaN parameter gives NaN.
+In: AM=RAD FL_SPCRES=1 FL_CPXRES=1 RY=Real:"NaN" RX=Real:"1"
+Out: EC=0 RX=Real:"NaN"
+
+; An infinite amplitude and m of at most 1 give the limit, as E rises by 2E(m) each half turn; above m = 1 NaN.
+In: AM=RAD FL_SPCRES=1 FL_CPXRES=1 RY=Real:"0.5" RX=Real:"-inf"
+Out: EC=0 RX=Real:"-inf"
+
+In: AM=RAD FL_SPCRES=1 FL_CPXRES=1 RY=Real:"2" RX=Real:"inf"
+Out: EC=0 RX=Real:"NaN"

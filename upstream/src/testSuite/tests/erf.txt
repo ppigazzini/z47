@@ -137,6 +137,106 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"50" RX=Real:"1"
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"100"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"100" RX=Real:"1"
 
+; The local series retains tiny inputs without a logarithm and exponential.
+Func: fnErf
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e4171" RY=Real:"-6.6390735439276401528926070412718004240550698418261063149313005572185e-4122" RX=Real:"-5.883725734689738705423406261940990e-4122"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+; All calculator modes use the same p39 calculation and their selected final conversion.
+Func: fnErf
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Real:"0.32862675945912742763891404786675655116991809626267582260914313985371" RX=Real:"0.3"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnErf
+In:  RMODE=1 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Real:"0.32862675945912742763891404786675655116991809626267582260914313985371" RX=Real:"0.3"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnErf
+In:  RMODE=2 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Real:"0.32862675945912742763891404786675655116991809626267582260914313985371" RX=Real:"0.3"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnErf
+In:  RMODE=3 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Real:"0.32862675945912742763891404786675655116991809626267582260914313985371" RX=Real:"0.3"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnErf
+In:  RMODE=4 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Real:"0.32862675945912742763891404786675655116991809626267582260914313985371" RX=Real:"0.3"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnErf
+In:  RMODE=5 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Real:"0.32862675945912742763891404786675655116991809626267582260914313985371" RX=Real:"0.3"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnErf
+In:  RMODE=6 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Real:"0.32862675945912742763891404786675655116991809626267582260914313985371" RX=Real:"0.3"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+; Finite saturation retains the mathematical side for directed conversion.
+Func: fnErf
+In:  RMODE=2 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Real:"0.9999999999999999999999999999999999999999999979115124162374552430" RX=Real:"10"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnErf
+In:  RMODE=5 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Real:"-0.9999999999999999999999999999999999999999999979115124162374552430" RX=Real:"-10"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnErf
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-0"
+Out: EC=0 RX=Real:"-0"
+
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"inf"
+Out: EC=0 RX=Real:"1"
+
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-inf"
+Out: EC=0 RX=Real:"-1"
+
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"NaN"
+Out: EC=0 RX=Real:"NaN"
+
+; Matrix elements use the scalar kernel.
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RX=ReMa:"M1,4[-0,-5.883725734689738705423406261940990e-4122,0.3,10]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,4[-0,-5.883725734689738705423406261940990e-4122,0.3,10]" RX=ReMa:"M1,4[-0,-6.639073543927640152892607041271800e-4122,0.3286267594591274276389140478667566,1]"
+
 
 
 ;=======================================

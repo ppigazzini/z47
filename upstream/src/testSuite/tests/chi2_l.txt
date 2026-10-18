@@ -98,6 +98,8 @@ Out: EC=24 FL_ASLIFT=0 RX=Stri:"String test"
 ;=======================================
 ; Chi2L(Real Matrix) --> Error24
 ;=======================================
+In:  FL_ASLIFT=0 RM=Real:"2" RX=ReMa:"M1,2[0,1]"
+Out: EC=24 FL_ASLIFT=0 RX=ReMa:"M1,2[0,1]"
 
 
 
@@ -175,6 +177,33 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"10" RX=Real:"0.9247647538534878212779
 
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RM=Real:"5" RX=Real:"20"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"20" RX=Real:"0.9987502694369686245881489347472054"
+
+; Central large-shape probability.
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RM=Real:"1e6" RX=Real:"1e6"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1e6" RX=Real:"0.5001880631966055004839584963926819"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RM=Real:"1e30" RX=Real:"1e30"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1e30" RX=Real:"0.5000000000000001880631945159187623"
+
+; Exact support endpoints.
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RM=Real:"2" RX=Real:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"0"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RM=Real:"2" RX=Real:"-0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-0" RX=Real:"0"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RM=Real:"2" RX=Real:"inf"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"1"
+
+; A finite lower probability at the Real34 underflow boundary.
+In:  AM=DEG RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RM=Real:"2" RX=Real:"1e-6176"
+Out: EC=0 RX=Real:"0"
+
+In:  AM=DEG RMODE=3 FL_ASLIFT=0 FL_CPXRES=0 RM=Real:"2" RX=Real:"1e-6176"
+Out: EC=0 RX=Real:"1e-6176"
+
+In:  AM=DEG RMODE=5 FL_ASLIFT=0 FL_CPXRES=0 RM=Real:"2" RX=Real:"1e-6176"
+Out: EC=0 RX=Real:"1e-6176"
 
 
 

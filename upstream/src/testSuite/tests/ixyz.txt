@@ -83,3 +83,163 @@ Out: EC=0  FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.25" RX=Real:"0.3977567783173558368
 ;=======================================
 In:  WS=64 FL_CPXRES=0 FL_ASLIFT=0 RX=Stri:"C47"
 Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Stri:"C47"
+
+
+;=======================================
+; Context and range cases
+;=======================================
+; Balanced large shapes need the large-shape beta route.
+Func: fnIxyz
+In:  RMODE=0 RX=Real:"0.5001" RY=Real:"1000000" RZ=Real:"1000000"
+Out: EC=0 RX=Real:"0.6113512821376898981392889860554324"
+Func: fnSubtract
+In:  RY=Real:"0.6113512821376898981392889860554324"
+Out: EC=0 RX=Real:"0"
+Func: fnMultiply
+In:  RY=Real:"1e40"
+Out: EC=0 RX=Real:"0"
+
+; Every output mode is applied only at the Real34 conversion.
+Func: fnIxyz
+In:  RMODE=1 RX=Real:"1e-20" RY=Real:"0.25" RZ=Real:"100000"
+Out: EC=0 RX=Real:"0.0001961907417418197147331102579060177"
+Func: fnSubtract
+In:  RY=Real:"0.0001961907417418197147331102579060177"
+Out: EC=0 RX=Real:"0"
+Func: fnMultiply
+In:  RY=Real:"1e43"
+Out: EC=0 RX=Real:"0"
+Func: fnIxyz
+In:  RMODE=2 RX=Real:"1e-20" RY=Real:"0.25" RZ=Real:"100000"
+Out: EC=0 RX=Real:"0.0001961907417418197147331102579060177"
+Func: fnSubtract
+In:  RY=Real:"0.0001961907417418197147331102579060177"
+Out: EC=0 RX=Real:"0"
+Func: fnMultiply
+In:  RY=Real:"1e43"
+Out: EC=0 RX=Real:"0"
+Func: fnIxyz
+In:  RMODE=3 RX=Real:"1e-20" RY=Real:"0.25" RZ=Real:"100000"
+Out: EC=0 RX=Real:"0.0001961907417418197147331102579060177"
+Func: fnSubtract
+In:  RY=Real:"0.0001961907417418197147331102579060177"
+Out: EC=0 RX=Real:"0"
+Func: fnMultiply
+In:  RY=Real:"1e43"
+Out: EC=0 RX=Real:"0"
+Func: fnIxyz
+In:  RMODE=4 RX=Real:"1e-20" RY=Real:"0.25" RZ=Real:"100000"
+Out: EC=0 RX=Real:"0.0001961907417418197147331102579060176"
+Func: fnSubtract
+In:  RY=Real:"0.0001961907417418197147331102579060176"
+Out: EC=0 RX=Real:"0"
+Func: fnMultiply
+In:  RY=Real:"1e43"
+Out: EC=0 RX=Real:"0"
+Func: fnIxyz
+In:  RMODE=5 RX=Real:"1e-20" RY=Real:"0.25" RZ=Real:"100000"
+Out: EC=0 RX=Real:"0.0001961907417418197147331102579060177"
+Func: fnSubtract
+In:  RY=Real:"0.0001961907417418197147331102579060177"
+Out: EC=0 RX=Real:"0"
+Func: fnMultiply
+In:  RY=Real:"1e43"
+Out: EC=0 RX=Real:"0"
+Func: fnIxyz
+In:  RMODE=6 RX=Real:"1e-20" RY=Real:"0.25" RZ=Real:"100000"
+Out: EC=0 RX=Real:"0.0001961907417418197147331102579060176"
+Func: fnSubtract
+In:  RY=Real:"0.0001961907417418197147331102579060176"
+Out: EC=0 RX=Real:"0"
+Func: fnMultiply
+In:  RY=Real:"1e43"
+Out: EC=0 RX=Real:"0"
+
+; Interior probabilities retain their mathematical side at a Real34 boundary.
+Func: fnIxyz
+In:  RMODE=5 RX=Real:"1e-6176" RY=Real:"2" RZ=Real:"1"
+Out: EC=0 RX=Real:"1e-6176"
+Func: fnIxyz
+In:  RMODE=4 RX=Real:"0.9999999999999999999999999999999999" RY=Real:"1" RZ=Real:"2"
+Out: EC=0 RX=Real:"0.9999999999999999999999999999999999"
+
+; Endpoints are exact and special parameters remain outside the domain.
+Func: fnIxyz
+In:  RMODE=0 RX=Real:"0" RY=Real:"0.25" RZ=Real:"100000"
+Out: EC=0 RX=Real:"0"
+Func: fnIxyz
+In:  RX=Real:"1" RY=Real:"0.25" RZ=Real:"100000"
+Out: EC=0 RX=Real:"1"
+Func: fnIxyz
+In:  RX=Real:"NaN" RY=Real:"1" RZ=Real:"1"
+Out: EC=1 RX=Real:"NaN"
+Func: fnIxyz
+In:  RX=Real:"0.5" RY=Real:"Infinity" RZ=Real:"1"
+Out: EC=1 RX=Real:"0.5"
+Func: fnIxyz
+In:  RX=ReMa:"M1,2[0.25,0.5]" RY=Real:"1" RZ=Real:"1"
+Out: EC=24 RX=ReMa:"M1,2[0.25,0.5]"
+
+; A large-shape displacement selects the p75 scaled-density calculation.
+Func: fnIxyz
+In:  RMODE=0 RX=Real:"0.5000000000000000000000000000000002" RY=Real:"5e39" RZ=Real:"5e39"
+Out: EC=0 RX=Real:"0.5000000000000159576912160573071176"
+Func: fnSubtract
+In:  RY=Real:"0.5000000000000159576912160573071176"
+Out: EC=0 RX=Real:"0"
+Func: fnMultiply
+In:  RY=Real:"1e40"
+Out: EC=0 RX=Real:"0"
+
+Func: fnIxyz
+In:  RMODE=0 RX=Real:"0.3333333333333333333333333333333333" RY=Real:"100000" RZ=Real:"200000"
+Out: EC=0 RX=Real:"0.5001716775105492861878422135268251"
+Func: fnSubtract
+In:  RY=Real:"0.5001716775105492861878422135268251"
+Out: EC=0 RX=Real:"0"
+Func: fnMultiply
+In:  RY=Real:"1e40"
+Out: EC=0 RX=Real:"0"
+
+; The central displacement is far below the beta distribution width.
+Func: fnIxyz
+In:  RMODE=0 RX=Real:"0.5000000000000000000000000000000001" RY=Real:"1000000" RZ=Real:"1000000"
+Out: EC=0 RX=Real:"0.5000000000000000000000000000001128"
+Func: fnSubtract
+In:  RY=Real:"0.5000000000000000000000000000001128"
+Out: EC=0 RX=Real:"0"
+Func: fnMultiply
+In:  RY=Real:"1e40"
+Out: EC=0 RX=Real:"0"
+
+; A small tail 14.9 mode widths below the mode, where the integration limit is taken relative to the requested point.
+Func: fnIxyz
+In:  RMODE=0 RX=Real:"0.4833" RY=Real:"100000" RZ=Real:"100000"
+Out: EC=0 RX=Real:"8.902792769152845233148848280736328E-51"
+
+; A tail 150 mode widths below the mode of shapes 1E5 and 1E7, where the log density falls more slowly than a Gaussian one.
+Func: fnIxyz
+In:  RMODE=0 RX=Real:"0.00616993674642057738284" RY=Real:"100000" RZ=Real:"10000000"
+Out: EC=0 RX=Real:"5.870210000184967754284630467499847E-4208" ACC=34
+
+; A small first shape exercises a direct lower tail.
+Func: fnIxyz
+In:  RMODE=0 RX=Real:"1e-20" RY=Real:"0.25" RZ=Real:"100000"
+Out: EC=0 RX=Real:"0.0001961907417418197147331102579060177"
+Func: fnSubtract
+In:  RY=Real:"0.0001961907417418197147331102579060177"
+Out: EC=0 RX=Real:"0"
+Func: fnMultiply
+In:  RY=Real:"1e43"
+Out: EC=0 RX=Real:"0"
+
+; The closest Real34 input below one keeps the directly computed upper tail.
+Func: fnIxyz
+In:  RMODE=0 RX=Real:"0.9999999999999999999999999999999999" RY=Real:"0.25" RZ=Real:"0.25"
+Out: EC=0 RX=Real:"0.9999999982944173183082826781038499"
+Func: fnSubtract
+In:  RY=Real:"0.9999999982944173183082826781038499"
+Out: EC=0 RX=Real:"0"
+Func: fnMultiply
+In:  RY=Real:"1e40"
+Out: EC=0 RX=Real:"0"

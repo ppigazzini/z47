@@ -5,8 +5,66 @@
 ;** (wide exponent spread, near-axis, near-45deg, tiny, huge, zero angle), so narrowing the cap fails here instead of        **
 ;** silently changing the display. Reads nothing back; self-contained.                                                       **
 ;******************************************************************************************************************************
-In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+In: FL_SPCRES=0 FL_CPXRES=0 FL_IRFRAC=0 FL_TRL0=0 FL_ENGOVR=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
 
 Func: fnPolarDisplayCapCov
 In:  FARG=0
 Out: EC=0
+
+; Polar printer formatting uses rectangular stored components and the current
+; angular unit. These probes cover the Real34 exponent range and special table.
+Func: fnPrinterNumberCov
+In:  FARG=1 AM=RAD RX=Cplx:"3 i 4"
+Out: EC=0 RX=Stri:"5.\xa2\x219.27295218002E-1\x82\xb3"
+
+Func: fnPrinterNumberCov
+In:  FARG=1 AM=RAD RX=Cplx:"3e-6176 i 4e-6176"
+Out: EC=0 RX=Stri:"\xa2\x480\xa2\x219.27295218002E-1\x82\xb3"
+
+Func: fnPrinterNumberCov
+In:  FARG=1 AM=RAD RX=Cplx:"3e6144 i 4e6144"
+Out: EC=0 RX=Stri:"5.E6144\xa2\x219.27295218002E-1\x82\xb3"
+
+Func: fnPrinterNumberCov
+In:  FARG=1 AM=DEG RX=Cplx:"inf i -2"
+Out: EC=0 RX=Stri:" \xa2\x1e\xa2\x21-0.\x80\xb0"
+
+Func: fnPrinterNumberCov
+In:  FARG=1 AM=DEG RX=Cplx:"-inf i -2"
+Out: EC=0 RX=Stri:" \xa2\x1e\xa2\x21-180.\x80\xb0"
+
+Func: fnPrinterNumberCov
+In:  FARG=1 AM=RAD RX=Cplx:"-0 i -0"
+Out: EC=0 RX=Stri:"0.\xa2\x210.\x82\xb3"
+
+Func: fnPrinterNumberCov
+In:  FARG=1 AM=RAD RX=Cplx:"NaN i 1"
+Out: EC=0 RX=Stri:"NaN\xa2\x21NaN\x82\xb3"
+
+Func: fnPrinterNumberCov
+In:  FARG=0 RX=Real:"-0"
+Out: EC=0 RX=Stri:"-0."
+
+Func: fnPrinterNumberCov
+In:  FARG=0 RX=Real:"9.999999999999999999999999999999999e6144"
+Out: EC=0 RX=Stri:"1.E6145"
+
+Func: fnPrinterNumberCov
+In:  FARG=0 RX=Real:"NaN"
+Out: EC=0 RX=Stri:"NaN"
+
+Func: fnPrinterNumberCov
+In:  FARG=0 RX=Real:"inf"
+Out: EC=0 RX=Stri:" \xa2\x1e"
+
+Func: fnPrinterNumberCov
+In:  FARG=0 RX=Real:"-inf"
+Out: EC=0 RX=Stri:"-\xa2\x1e"
+
+Func: fnPrinterNumberCov
+In:  FARG=0 RX=Real:"1e-6176"
+Out: EC=0 RX=Stri:"\xa2\x480"
+
+Func: fnPrinterNumberCov
+In:  FARG=1 AM=RAD RX=CxMa:"M1,1[3i4]":RAD
+Out: EC=0 RX=Stri:"5.\xa2\x219.27295218002E-1\x82\xb3"

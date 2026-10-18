@@ -1988,11 +1988,13 @@ fn _pemCloseDateInput() void {
             frontier_register_value_conversions.convertReal34RegisterToDateRegister(TEMP_REGISTER_1, TEMP_REGISTER_1, false);
             frontier_date_time.internalDateToJulianDay(reg34(TEMP_REGISTER_1), reg34(TEMP_REGISTER_1));
 
-            real34ToString(reg34(TEMP_REGISTER_1), tmpPtr + 1);
-            tmpPtr[0] = @intCast(stringByteLength(tmpPtr + 1));
-            tmpPtr += 1;
+            if (lastErrorCode == 0) {
+                real34ToString(reg34(TEMP_REGISTER_1), tmpPtr + 1);
+                tmpPtr[0] = @intCast(stringByteLength(tmpPtr + 1));
+                tmpPtr += 1;
 
-            _insertInProgram(tmpString, @intCast(stringByteLength(tmpPtr) + @as(i32, @intCast(@intFromPtr(tmpPtr) - @intFromPtr(tmpString)))));
+                _insertInProgram(tmpString, @intCast(stringByteLength(tmpPtr) + @as(i32, @intCast(@intFromPtr(tmpPtr) - @intFromPtr(tmpString)))));
+            }
         }
         aimBuffer[0] = '!';
     }

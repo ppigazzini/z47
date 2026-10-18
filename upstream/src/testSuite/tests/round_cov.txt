@@ -9,22 +9,338 @@ In:  FARG=2 RX=Real:"3.14159265"
 Out: EC=0 RX=Real:"3.14"
 Func: fnRdp
 In:  FARG=2 RX=Cplx:"3.14159 i 2.71828"
-Out: EC=0
+Out: EC=0 RX=Cplx:"3.14 i 2.72"
 Func: fnRdp
 In:  FARG=0 RX=LonI:"123456789"
 Out: EC=24
 Func: fnRdp
 In:  FARG=2 RX=ReMa:"M2,2[1.234,5.678,9.012,3.456]"
-Out: EC=0
+Out: EC=0 RX=ReMa:"M2,2[1.23,5.68,9.01,3.46]"
 Func: fnRsd
 In:  FARG=3 RX=Real:"3.14159265"
 Out: EC=0 RX=Real:"3.14"
 Func: fnRsd
 In:  FARG=3 RX=Cplx:"3.14159 i 2.71828"
-Out: EC=0
+Out: EC=0 RX=Cplx:"3.14 i 2.72"
 Func: fnRsd
 In:  FARG=3 RX=ReMa:"M2,2[1.234,5.678,9.012,3.456]"
-Out: EC=0
+Out: EC=0 RX=ReMa:"M2,2[1.23,5.68,9.01,3.46]"
 Func: fnRsd
 In:  FARG=4 RX=Real:"0.000123456"
 Out: EC=0 RX=Real:"0.0001235"
+
+; DMS conversion stays wide until the requested rounding is complete.
+Func: fnRdp
+In:  RMODE=0 FARG=2 RX=Real:"0.01388888888888888888888888888888889":DMS
+Out: EC=0 RX=Real:"0.01666666666666666666666666666666667":DMS
+
+Func: fnRsd
+In:  RMODE=0 FARG=1 RX=Real:"0.004166666666666666666666666666666666":DMS
+Out: EC=0 RX=Real:"0.002777777777777777777777777777777778":DMS
+
+; Rounding preserves tagged special values.
+Func: fnRdp
+In:  FL_SPCRES=1 RMODE=0 FARG=2 RX=Real:"inf":DMS
+Out: EC=0 RX=Real:"inf":DMS
+
+Func: fnRsd
+In:  FL_SPCRES=1 RMODE=0 FARG=2 RX=Time:"inf"
+Out: EC=8 RX=Time:"inf"
+
+; Every selectable rounding mode is applied to an exact decimal-place tie.
+Func: fnRdp
+In:  RMODE=0 FARG=3 RX=Real:"1.2345"
+Out: EC=0 RX=Real:"1.234"
+Func: fnRdp
+In:  RMODE=1 FARG=3 RX=Real:"1.2345"
+Out: EC=0 RX=Real:"1.235"
+Func: fnRdp
+In:  RMODE=2 FARG=3 RX=Real:"1.2345"
+Out: EC=0 RX=Real:"1.234"
+Func: fnRdp
+In:  RMODE=3 FARG=3 RX=Real:"1.2345"
+Out: EC=0 RX=Real:"1.235"
+Func: fnRdp
+In:  RMODE=4 FARG=3 RX=Real:"1.2345"
+Out: EC=0 RX=Real:"1.234"
+Func: fnRdp
+In:  RMODE=5 FARG=3 RX=Real:"1.2345"
+Out: EC=0 RX=Real:"1.235"
+Func: fnRdp
+In:  RMODE=6 FARG=3 RX=Real:"1.2345"
+Out: EC=0 RX=Real:"1.234"
+
+Func: fnRdp
+In:  RMODE=0 FARG=3 RX=Real:"-1.2345"
+Out: EC=0 RX=Real:"-1.234"
+Func: fnRdp
+In:  RMODE=1 FARG=3 RX=Real:"-1.2345"
+Out: EC=0 RX=Real:"-1.235"
+Func: fnRdp
+In:  RMODE=2 FARG=3 RX=Real:"-1.2345"
+Out: EC=0 RX=Real:"-1.234"
+Func: fnRdp
+In:  RMODE=3 FARG=3 RX=Real:"-1.2345"
+Out: EC=0 RX=Real:"-1.235"
+Func: fnRdp
+In:  RMODE=4 FARG=3 RX=Real:"-1.2345"
+Out: EC=0 RX=Real:"-1.234"
+Func: fnRdp
+In:  RMODE=5 FARG=3 RX=Real:"-1.2345"
+Out: EC=0 RX=Real:"-1.234"
+Func: fnRdp
+In:  RMODE=6 FARG=3 RX=Real:"-1.2345"
+Out: EC=0 RX=Real:"-1.235"
+
+; Every selectable rounding mode is applied to an exact significant-digit tie.
+Func: fnRsd
+In:  RMODE=0 FARG=4 RX=Real:"12345"
+Out: EC=0 RX=Real:"12340"
+Func: fnRsd
+In:  RMODE=1 FARG=4 RX=Real:"12345"
+Out: EC=0 RX=Real:"12350"
+Func: fnRsd
+In:  RMODE=2 FARG=4 RX=Real:"12345"
+Out: EC=0 RX=Real:"12340"
+Func: fnRsd
+In:  RMODE=3 FARG=4 RX=Real:"12345"
+Out: EC=0 RX=Real:"12350"
+Func: fnRsd
+In:  RMODE=4 FARG=4 RX=Real:"12345"
+Out: EC=0 RX=Real:"12340"
+Func: fnRsd
+In:  RMODE=5 FARG=4 RX=Real:"12345"
+Out: EC=0 RX=Real:"12350"
+Func: fnRsd
+In:  RMODE=6 FARG=4 RX=Real:"12345"
+Out: EC=0 RX=Real:"12340"
+
+Func: fnRsd
+In:  RMODE=0 FARG=4 RX=Real:"-12345"
+Out: EC=0 RX=Real:"-12340"
+Func: fnRsd
+In:  RMODE=1 FARG=4 RX=Real:"-12345"
+Out: EC=0 RX=Real:"-12350"
+Func: fnRsd
+In:  RMODE=2 FARG=4 RX=Real:"-12345"
+Out: EC=0 RX=Real:"-12340"
+Func: fnRsd
+In:  RMODE=3 FARG=4 RX=Real:"-12345"
+Out: EC=0 RX=Real:"-12350"
+Func: fnRsd
+In:  RMODE=4 FARG=4 RX=Real:"-12345"
+Out: EC=0 RX=Real:"-12340"
+Func: fnRsd
+In:  RMODE=5 FARG=4 RX=Real:"-12345"
+Out: EC=0 RX=Real:"-12340"
+Func: fnRsd
+In:  RMODE=6 FARG=4 RX=Real:"-12345"
+Out: EC=0 RX=Real:"-12350"
+
+; Exponent adjustment does not expose a Real34 input to the p34 exponent limits.
+Func: fnRdp
+In:  RMODE=0 FARG=99 RX=Real:"9.999999999999999999999999999999999E6144"
+Out: EC=0 RX=Real:"9.999999999999999999999999999999999E6144"
+Func: fnRdp
+In:  RMODE=0 FARG=0 RX=Real:"1E-6176"
+Out: EC=0 RX=Real:"0"
+Func: fnRsd
+In:  RMODE=0 FARG=34 RX=Real:"1E-6176"
+Out: EC=0 RX=Real:"1E-6176"
+Func: fnRsd
+In:  RMODE=0 FARG=3 RX=Real:"1.234567890123456789012345678901234E6144"
+Out: EC=0 RX=Real:"1.23E6144"
+Func: fnRdp
+In:  RMODE=5 FARG=0 RX=Real:"-1E-6176"
+Out: EC=0 RX=Real:"-0"
+Func: fnRdp
+In:  RMODE=6 FARG=0 RX=Real:"-1E-6176"
+Out: EC=0 RX=Real:"-1"
+Func: fnRsd
+In:  RMODE=0 FARG=34 RX=Real:"-0"
+Out: EC=0 RX=Real:"-0"
+Func: fnRdp
+In:  RMODE=0 FARG=99 RX=Real:"9.999999999999999999999999999999999E6144":DMS
+Out: EC=0 RX=Real:"9.999999999999999999999999999999999E6144":DMS
+
+; Rectangular complex matrices round each component independently.
+Func: fnRdp
+In:  CM=RECT RMODE=0 FARG=2 RX=CxMa:"M1,2[1.2345i-2.675,-9.995i0.004999]"
+Out: EC=0 RX=CxMa:"M1,2[1.23i-2.68,-10.00i0.00]"
+Func: fnRsd
+In:  CM=RECT RMODE=0 FARG=3 RX=CxMa:"M1,2[1.2345i-2.675,-9.995i0.004999]"
+Out: EC=0 RX=CxMa:"M1,2[1.23i-2.68,-10.0i0.00500]"
+
+; Polar mode rounds magnitude and radian angle before returning to rectangular storage.
+Func: fnRdp
+In:  CM=POLAR RMODE=0 FARG=2 RX=Cplx:"0i2"
+Out: EC=0 RX=Cplx:"0.001592653421466650970817067290708372i1.999999365863669240421059847646654"
+Func: fnRsd
+In:  CM=POLAR RMODE=0 FARG=3 RX=CxMa:"M1,2[0i2,3i4]"
+Out: EC=0 RX=CxMa:"M1,2[0.001592653421466650970817067290708372i1.999999365863669240421059847646654,3.001180741258794277485174481431631i3.999114171700692282698900810340554]"
+
+; Time values retain the p39 base-sixty conversion route.
+Func: fnRdp
+In:  RMODE=0 FARG=3 RX=Time:"12:34:56.789"
+Out: EC=0 RX=Time:"12:35:00"
+Func: fnRsd
+In:  RMODE=0 FARG=4 RX=Time:"12:34:56.789"
+Out: EC=0 RX=Time:"12:35:00"
+
+Func: fnRdp
+In:  RMODE=0 FARG=4 RX=Time:"12:34:56.789"
+Out: EC=0 RX=Time:"12:34:57"
+Func: fnRdp
+In:  RMODE=0 FARG=5 RX=Time:"12:34:56.789"
+Out: EC=0 RX=Time:"12:34:56.8"
+Func: fnRsd
+In:  RMODE=0 FARG=6 RX=Time:"12:34:56.789"
+Out: EC=0 RX=Time:"12:34:57"
+Func: fnRsd
+In:  RMODE=0 FARG=7 RX=Time:"12:34:56.789"
+Out: EC=0 RX=Time:"12:34:56.8"
+
+; Conversion must not move seconds into an adjacent minute field.
+Func: fnRdp
+In:  RMODE=0 FARG=2 RX=Time:"00:00:41.918"
+Out: EC=0 RX=Time:"00:00:00"
+Func: fnRsd
+In:  RMODE=0 FARG=1 RX=Time:"00:00:41.918"
+Out: EC=0 RX=Time:"00:00:40"
+
+Func: fnRdp
+In:  RMODE=0 FARG=2 RX=Time:"00:00:50.00000000000000000000000000000001"
+Out: EC=0 RX=Time:"00:01:00"
+Func: fnRdp
+In:  RMODE=0 FARG=2 RX=Time:"-00:01:41.918"
+Out: EC=0 RX=Time:"-00:01:00"
+
+; Ordinary special values do not enter decimal arithmetic.
+Func: fnRdp
+In:  FL_SPCRES=1 RMODE=0 FARG=2 RX=Real:"inf"
+Out: EC=0 RX=Real:"inf"
+Func: fnRsd
+In:  FL_SPCRES=1 RMODE=0 FARG=2 RX=Real:"NaN"
+Out: EC=0 RX=Real:"NaN"
+
+; ROUND keeps an integral date unchanged through its p39 day calculation.
+Func: fnRound
+In:  FL_YMD=1 FL_MDY=0 FL_DMY=0 RMODE=0 FL_ASLIFT=0 RX=Date:"2000.0101"
+Out: EC=0 FL_ASLIFT=1 RL=Date:"2000.0101" RX=Date:"2000.0101"
+
+; The wide-real result boundary rounds once at the Real34 subnormal floor.
+Func: fnResultConversionCov
+In:  RMODE=0 SD=0 FARG=0
+Out: EC=0 RX=Real:"1E-6176"
+Func: fnResultConversionCov
+In:  RMODE=1 SD=34 FARG=0
+Out: EC=0 RX=Real:"1E-6176"
+Func: fnResultConversionCov
+In:  RMODE=2 SD=34 FARG=0
+Out: EC=0 RX=Real:"1E-6176"
+Func: fnResultConversionCov
+In:  RMODE=3 SD=34 FARG=0
+Out: EC=0 RX=Real:"1E-6176"
+Func: fnResultConversionCov
+In:  RMODE=4 SD=34 FARG=0
+Out: EC=0 RX=Real:"0"
+Func: fnResultConversionCov
+In:  RMODE=5 SD=34 FARG=0
+Out: EC=0 RX=Real:"1E-6176"
+Func: fnResultConversionCov
+In:  RMODE=6 SD=34 FARG=0
+Out: EC=0 RX=Real:"0"
+
+Func: fnResultConversionCov
+In:  RMODE=0 SD=34 FARG=1
+Out: EC=0 RX=Real:"-1E-6176"
+Func: fnResultConversionCov
+In:  RMODE=1 SD=34 FARG=1
+Out: EC=0 RX=Real:"-1E-6176"
+Func: fnResultConversionCov
+In:  RMODE=2 SD=34 FARG=1
+Out: EC=0 RX=Real:"-1E-6176"
+Func: fnResultConversionCov
+In:  RMODE=3 SD=34 FARG=1
+Out: EC=0 RX=Real:"-1E-6176"
+Func: fnResultConversionCov
+In:  RMODE=4 SD=34 FARG=1
+Out: EC=0 RX=Real:"-0"
+Func: fnResultConversionCov
+In:  RMODE=5 SD=34 FARG=1
+Out: EC=0 RX=Real:"-0"
+Func: fnResultConversionCov
+In:  RMODE=6 SD=34 FARG=1
+Out: EC=0 RX=Real:"-1E-6176"
+
+Func: fnResultConversionCov
+In:  RMODE=0 SD=34 FARG=2
+Out: EC=0 RX=Real:"0"
+Func: fnResultConversionCov
+In:  RMODE=3 SD=34 FARG=2
+Out: EC=0 RX=Real:"1E-6176"
+Func: fnResultConversionCov
+In:  RMODE=0 SD=34 FARG=3
+Out: EC=0 RX=Cplx:"1E-6176 i -1E-6176"
+Func: fnResultConversionCov
+In:  FL_SPCRES=1 RMODE=0 SD=34 FARG=4
+Out: EC=0 RX=Cplx:"inf i -0"
+
+; A requested significant-digit reduction precedes the Real34 storage conversion.
+Func: fnResultConversionCov
+In:  RMODE=0 SD=4 FARG=5
+Out: EC=0 RX=Real:"1.235"
+
+; SDIGS may create an infinity at the Real34 exponent ceiling, so the common result policy must inspect the rounded value before accepting the result.
+Func: fnAdjustResultCov
+In:  CM=RECT FL_SPCRES=0 RMODE=0 SD=1 FARG=0 RX=Real:"9.999999999999999999999999999999999E6144"
+Out: EC=4 RX=Real:"9.999999999999999999999999999999999E6144"
+
+In:  FL_SPCRES=0 RMODE=0 SD=1 FARG=0 RX=Real:"-9.999999999999999999999999999999999E6144"
+Out: EC=5 RX=Real:"-9.999999999999999999999999999999999E6144"
+
+In:  FL_SPCRES=0 RMODE=1 SD=1 FARG=0 RX=Real:"9.999999999999999999999999999999999E6144"
+Out: EC=4 RX=Real:"9.999999999999999999999999999999999E6144"
+
+In:  FL_SPCRES=0 RMODE=2 SD=1 FARG=0 RX=Real:"9.999999999999999999999999999999999E6144"
+Out: EC=4 RX=Real:"9.999999999999999999999999999999999E6144"
+
+In:  FL_SPCRES=0 RMODE=3 SD=1 FARG=0 RX=Real:"-9.999999999999999999999999999999999E6144"
+Out: EC=5 RX=Real:"-9.999999999999999999999999999999999E6144"
+
+In:  FL_SPCRES=0 RMODE=4 SD=1 FARG=0 RX=Real:"9.999999999999999999999999999999999E6144"
+Out: EC=0 RX=Real:"9E6144"
+
+In:  FL_SPCRES=0 RMODE=5 SD=1 FARG=0 RX=Real:"9.999999999999999999999999999999999E6144"
+Out: EC=4 RX=Real:"9.999999999999999999999999999999999E6144"
+
+In:  FL_SPCRES=0 RMODE=5 SD=1 FARG=0 RX=Real:"-9.999999999999999999999999999999999E6144"
+Out: EC=0 RX=Real:"-9E6144"
+
+In:  FL_SPCRES=0 RMODE=6 SD=1 FARG=0 RX=Real:"-9.999999999999999999999999999999999E6144"
+Out: EC=5 RX=Real:"-9.999999999999999999999999999999999E6144"
+
+In:  FL_SPCRES=0 RMODE=0 SD=1 FARG=0 RX=Cplx:"9.999999999999999999999999999999999E6144 i 2"
+Out: EC=4 RX=Cplx:"9.999999999999999999999999999999999E6144 i 2"
+
+In:  FL_SPCRES=0 RMODE=0 SD=1 FARG=0 RX=ReMa:"M1,2[2,-9.999999999999999999999999999999999E6144]"
+Out: EC=5 RX=ReMa:"M1,2[2,-9.999999999999999999999999999999999E6144]"
+
+In:  FL_SPCRES=0 RMODE=0 SD=1 FARG=0 RX=CxMa:"M1,1[2i9.999999999999999999999999999999999E6144]"
+Out: EC=4 RX=CxMa:"M1,1[2i9.999999999999999999999999999999999E6144]"
+
+In:  FL_SPCRES=1 RMODE=0 SD=1 FARG=0 RX=Cplx:"9.999999999999999999999999999999999E6144 i -9.999999999999999999999999999999999E6144"
+Out: EC=0 RX=Cplx:"inf i -inf"
+
+; A non-X matrix result is rounded in its own register without changing the unrelated matrix in X, for both real and complex component storage.
+In:  FL_SPCRES=0 RMODE=0 SD=3 FARG=1 RY=ReMa:"M1,1[1.2345]" RX=ReMa:"M1,1[8.7654]"
+Out: EC=0 RY=ReMa:"M1,1[1.23]" RX=ReMa:"M1,1[8.7654]"
+
+In:  FL_SPCRES=0 RMODE=0 SD=3 FARG=1 RY=CxMa:"M1,1[1.2345i-6.7895]" RX=CxMa:"M1,1[8.7654i-3.2106]"
+Out: EC=0 RY=CxMa:"M1,1[1.23i-6.79]" RX=CxMa:"M1,1[8.7654i-3.2106]"
+
+; The reference is rounded to the significant digits in force the way the calculator rounds a result, so a reference written to full precision matches the stored value. 1 / 8 is
+; 0.125 exactly, which SDIGS 2 rounds half even to 0.12; the full 0.125 reference is rounded the same way here and matches, where the unrounded 0.125 would not match the 0.12 stored.
+Func: fnDivide
+In:  FL_SPCRES=0 RMODE=0 SD=2 FL_ASLIFT=0 RY=Real:"1" RX=Real:"8"
+Out: EC=0 RX=Real:"0.125"

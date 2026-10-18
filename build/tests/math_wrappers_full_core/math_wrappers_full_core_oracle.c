@@ -572,6 +572,40 @@
 #define chsShoI oracle_chsShoI
 #define fnChangeSign oracle_fnChangeSign
 
+// --- symbols the exact-arithmetic and cplx_t rework gave external linkage ---
+// idiv.c shares its finite-register body with idivr.c; toRect.c's angular-unit
+// form; arcsin.c's shared asin/acos body and its exact-angle test; sin.c's product
+// of a trigonometric by a hyperbolic function, read by cos.c and sinc.c; ln.c's
+// context-free form; log10.c's near-unit branch, read by log2.c; and the shared
+// bodies and 159-digit forms of the four arithmetic files.
+#define integerDivideFiniteRegisters oracle_integerDivideFiniteRegisters
+#define realPolarToRectangularInUnit oracle_realPolarToRectangularInUnit
+#define real34PolarToRectangular oracle_real34PolarToRectangular
+#define ArcsinAcosComplex oracle_ArcsinAcosComplex
+#define exactArcSinCosAngle oracle_exactArcSinCosAngle
+#define multiplyTrigByHyperbolic oracle_multiplyTrigByHyperbolic
+#define lnComplexDirect oracle_lnComplexDirect
+#define logBaseCplx oracle_logBaseCplx
+#define addComplex159 oracle_addComplex159
+#define addFastLonIReal oracle_addFastLonIReal
+#define subFastLonIReal oracle_subFastLonIReal
+#define mulFastLonIReal oracle_mulFastLonIReal
+#define lonIRealOp oracle_lonIRealOp
+#define realLonIOp oracle_realLonIOp
+#define addSubIntInt oracle_addSubIntInt
+#define addSubTimeLonI oracle_addSubTimeLonI
+#define addSubDateLonI oracle_addSubDateLonI
+#define addSubRemaReal oracle_addSubRemaReal
+#define addSubRealRema oracle_addSubRealRema
+#define addSubCxmaReal oracle_addSubCxmaReal
+#define addSubCxmaCplx oracle_addSubCxmaCplx
+#define addSubCplxCxma oracle_addSubCplxCxma
+#define addSubCplxShoI oracle_addSubCplxShoI
+#define addSubCplxCplx oracle_addSubCplxCplx
+#define subComplex159 oracle_subComplex159
+#define mulComplexReal159 oracle_mulComplexReal159
+#define divComplexReal159 oracle_divComplexReal159
+
 #include "../../../upstream/src/c47/mathematics/checkValue.c"
 #include "../../../upstream/src/c47/mathematics/compare.c"
 #include "../../../upstream/src/c47/mathematics/int.c"

@@ -262,9 +262,8 @@ fn recallElementReal(matrix: *real34Matrix_t) callconv(.c) bool {
     const j: i16 = frontier_matrix_editor.getJRegisterAsInt(true);
 
     liftStack();
-    reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
     const idx: usize = @intCast(@as(i32, i) * @as(i32, @as(u16, matrix.header.matrixColumns)) + @as(i32, j));
-    real34Copy(&matrix.matrixElements.?[idx], reg34(REGISTER_X));
+    frontier_register_value_conversions.convertReal34ToReal34Register(&matrix.matrixElements.?[idx], REGISTER_X);
     return false;
 }
 
@@ -701,8 +700,7 @@ fn elementToRegister(ix: u16, r: calcRegister_t) void {
     } else {
         var v: real34_t = undefined;
         real34Copy(&abi.registerReal34MatrixElements(REGISTER_X)[idx], &v);
-        reallocateRegister(r, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-        real34Copy(&v, reg34(r));
+        frontier_register_value_conversions.convertReal34ToReal34Register(&v, r);
     }
 }
 
@@ -748,7 +746,7 @@ fn _fnRecallElement(stepForward: bool) void {
         }
     } else {
         callByIndexedMatrix(recallElementReal, recallElementComplex);
-        if (stepForward) {
+        if (stepForward and lastErrorCode == ERROR_NONE) {
             frontier_matrix_editor.fnIncDecJ(INC_FLAG);
         }
     }

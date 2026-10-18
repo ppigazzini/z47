@@ -205,7 +205,6 @@ const TI_VIEW_REGISTER: u8 = 15;
 const TI_SOLVER_FAILED: u8 = 52;
 const TI_FINISH: u8 = 157;
 
-const MAX_NUMBER_OF_GLYPHS_IN_STRING: usize = 508;
 const ERROR_MESSAGE_LENGTH: usize = 512;
 
 const amRadian: angularMode_t = 0;
@@ -810,8 +809,7 @@ pub export fn fnFinish(unusedButMandatoryParameter: u16) callconv(.c) void {
     }
     const msg = tmpStringLabelOrVariableName;
     var len: usize = 0;
-    var glyphs: usize = 0;
-    while (glyphs < MAX_NUMBER_OF_GLYPHS_IN_STRING and msg[len] != 0) : (glyphs += 1) {
+    while (msg[len] != 0) { // copy up to the errorMessage byte limit, stopping on a glyph boundary
         const step: usize = if (msg[len] & 0x80 != 0) 2 else 1;
         if (len + step >= ERROR_MESSAGE_LENGTH) {
             break;
@@ -1051,8 +1049,7 @@ fn _putLiteral(literalAddress_arg: [*c]u8) void {
             _ = frontier_char_string.xcopy(@ptrCast(&realLiteral), @ptrCast(literalAddress), REAL34_SIZE_IN_BYTES);
             liftStack();
             setSystemFlag(FLAG_ASLIFT);
-            reallocateRegister(REGISTER_X, dtReal34, 0, @bitCast(amNone));
-            real34Copy(&realLiteral, reg34(REGISTER_X));
+            frontier_register_value_conversions.convertReal34ToReal34Register(&realLiteral, REGISTER_X);
         },
 
         BINARY_COMPLEX34 => {

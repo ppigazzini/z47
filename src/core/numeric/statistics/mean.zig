@@ -17,8 +17,8 @@ const const_1 = consts.const_1;
 //   SIGMA_1onX = ptr[17], SIGMA_1onY = ptr[20]; strided by sizeof(real_t)==60.
 //   Indices verified against defines.h SUM_* (N=0,X=1,Y=2,X2=3,Y2=5,XY=6,
 //   lnX=8,lnY=11,1onX=17,1onY=20).
-// Real ops used: realDivide, realExp, realSquareRoot (all &ctxtReal39),
-//   realCompareLessThan, convertRealToReal34ResultRegister.
+// The mean divides at the result context, Real34, so it rounds once; the
+// geometric and RMS means divide at 39 digits because a transform follows.
 // TI_* values are the real defines.h values.
 
 const runtime = @import("../command_wrappers/runtime.zig");
@@ -44,13 +44,13 @@ const TI_RMSMEANX_RMSMEANY: u8 = 22;
 
 const realDivide = runtime.realDivide;
 const realSquareRoot = runtime.realSquareRoot;
-const realCompareLessThan = runtime.realCompareLessThan;
 const liftStack = runtime.liftStack;
 const setSystemFlag = runtime.setSystemFlag;
 const convertRealToReal34ResultRegister = runtime.convertRealToReal34ResultRegister;
 const displayCalcErrorMessage = runtime.displayCalcErrorMessage;
 const moreInfoOnError = runtime.moreInfoOnError;
 
+extern var ctxtReal34: realContext_t;
 extern var ctxtReal39: realContext_t;
 
 extern fn checkMinimumDataPoints(n: *const real_t) bool;
@@ -85,7 +85,7 @@ const TransformFn = ?*const fn (operand: *const real_t, result: *real_t) callcon
 // statisticalSumsPointer before checkMinimumDataPoints has established there is
 // summation data at all. The C passes address-of macros, which compute an address
 // without loading through it; resolving indices after the guard is the same order.
-fn calculateMean(displayInfo: u8, sumX: usize, numberX: usize, sumY: ?usize, numberY: ?usize, transform: TransformFn) linksection(runtime.code_section) void {
+fn calculateMean(displayInfo: u8, sumX: usize, numberX: usize, sumY: ?usize, numberY: ?usize, transform: TransformFn, realContext: *realContext_t) linksection(runtime.code_section) void {
     if (checkMinimumDataPoints(const_1())) {
         var tempReal1: real_t = undefined;
         var tempReal2: real_t = undefined;
@@ -97,7 +97,7 @@ fn calculateMean(displayInfo: u8, sumX: usize, numberX: usize, sumY: ?usize, num
             liftStack();
         }
 
-        realDivide(sigma(sumX), sigma(numberX), &tempReal1, &ctxtReal39);
+        realDivide(sigma(sumX), sigma(numberX), &tempReal1, realContext);
         if (transform != null) {
             transform.?(&tempReal1, &tempReal2);
         }
@@ -105,7 +105,7 @@ fn calculateMean(displayInfo: u8, sumX: usize, numberX: usize, sumY: ?usize, num
         convertRealToReal34ResultRegister(mean, REGISTER_X);
 
         if (sumY != null) {
-            realDivide(sigma(sumY.?), sigma(numberY.?), &tempReal1, &ctxtReal39);
+            realDivide(sigma(sumY.?), sigma(numberY.?), &tempReal1, realContext);
             if (transform != null) {
                 transform.?(&tempReal1, &tempReal2);
             }
@@ -118,12 +118,12 @@ fn calculateMean(displayInfo: u8, sumX: usize, numberX: usize, sumY: ?usize, num
 
 pub export fn fnMeanXY(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
     _ = unusedButMandatoryParameter;
-    calculateMean(TI_MEANX_MEANY, IDX_SIGMA_X, IDX_SIGMA_N, IDX_SIGMA_Y, IDX_SIGMA_N, null);
+    calculateMean(TI_MEANX_MEANY, IDX_SIGMA_X, IDX_SIGMA_N, IDX_SIGMA_Y, IDX_SIGMA_N, null, &ctxtReal34);
 }
 
 pub export fn fnMeanX(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
     _ = unusedButMandatoryParameter;
-    calculateMean(TI_MEANX, IDX_SIGMA_X, IDX_SIGMA_N, null, null, null);
+    calculateMean(TI_MEANX, IDX_SIGMA_X, IDX_SIGMA_N, null, null, null, &ctxtReal34);
 }
 
 fn geometricMeanTransform(operand: *const real_t, result: *real_t) linksection(runtime.code_section) callconv(.c) void {
@@ -132,12 +132,12 @@ fn geometricMeanTransform(operand: *const real_t, result: *real_t) linksection(r
 
 pub export fn fnGeometricMeanXY(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
     _ = unusedButMandatoryParameter;
-    calculateMean(TI_GEOMMEANX_GEOMMEANY, IDX_SIGMA_lnX, IDX_SIGMA_N, IDX_SIGMA_lnY, IDX_SIGMA_N, &geometricMeanTransform);
+    calculateMean(TI_GEOMMEANX_GEOMMEANY, IDX_SIGMA_lnX, IDX_SIGMA_N, IDX_SIGMA_lnY, IDX_SIGMA_N, &geometricMeanTransform, &ctxtReal39);
 }
 
 pub export fn fnHarmonicMeanXY(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
     _ = unusedButMandatoryParameter;
-    calculateMean(TI_HARMMEANX_HARMMEANY, IDX_SIGMA_N, IDX_SIGMA_1onX, IDX_SIGMA_N, IDX_SIGMA_1onY, null);
+    calculateMean(TI_HARMMEANX_HARMMEANY, IDX_SIGMA_N, IDX_SIGMA_1onX, IDX_SIGMA_N, IDX_SIGMA_1onY, null, &ctxtReal34);
 }
 
 fn RMSMeanTransform(operand: *const real_t, result: *real_t) linksection(runtime.code_section) callconv(.c) void {
@@ -146,7 +146,7 @@ fn RMSMeanTransform(operand: *const real_t, result: *real_t) linksection(runtime
 
 pub export fn fnRMSMeanXY(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
     _ = unusedButMandatoryParameter;
-    calculateMean(TI_RMSMEANX_RMSMEANY, IDX_SIGMA_X2, IDX_SIGMA_N, IDX_SIGMA_Y2, IDX_SIGMA_N, &RMSMeanTransform);
+    calculateMean(TI_RMSMEANX_RMSMEANY, IDX_SIGMA_X2, IDX_SIGMA_N, IDX_SIGMA_Y2, IDX_SIGMA_N, &RMSMeanTransform, &ctxtReal39);
 }
 
 pub export fn fnWeightedMeanX(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
@@ -156,14 +156,14 @@ pub export fn fnWeightedMeanX(unusedButMandatoryParameter: u16) linksection(runt
     if (statisticalSumsPointer == null) {
         displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE);
         moreInfoOnError("In function fnWeightedMeanX:", "There is no statistical data available!", null, null);
-    } else if (realCompareLessThan(SIGMA_Y(), const_1())) {
+    } else if (runtime.realIsZero(SIGMA_Y()) or runtime.realIsNegative(SIGMA_Y())) {
         displayCalcErrorMessage(ERROR_TOO_FEW_DATA, ERR_REGISTER_LINE);
         moreInfoOnError("In function fnWeightedMeanX:", "There is insufficient statistical data available!", null, null);
     } else {
         liftStack();
         setSystemFlag(FLAG_ASLIFT);
 
-        realDivide(SIGMA_XY(), SIGMA_Y(), &mean, &ctxtReal39);
+        realDivide(SIGMA_XY(), SIGMA_Y(), &mean, &ctxtReal34);
         convertRealToReal34ResultRegister(&mean, REGISTER_X);
 
         runtime.temporaryInformation = TI_WEIGHTEDMEANX;

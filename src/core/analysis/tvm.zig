@@ -1047,8 +1047,7 @@ pub export fn fnTvmVar(variable: u16) linksection(runtime.code_section) callconv
                     real34Copy(&y, &yy);
                     const solveResult: u16 = @bitCast(@as(i16, @truncate(solve_owned.solver(@bitCast(variable), &y, &x, &resZ, &resY, &resX))));
                     if (solveResult == SOLVER_RESULT_NORMAL) {
-                        reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
-                        real34Copy(&resX, registerReal34Ptr(REGISTER_X));
+                        runtime.convertReal34ToReal34Register(&resX, REGISTER_X);
                         temporaryInformation = TI_SOLVER_VARIABLE;
                         thereIsSomethingToUndo = false;
                         break;

@@ -327,36 +327,36 @@ const oneOverE = "(" ++ STD_EulerE ++ STD_SUP_MINUS ++ STD_SUP_1 ++ STD_SPACE_HA
 // ---------------------------------------------------------------------------
 const constR = abi.constants.cstRAligned;
 const constR34 = abi.constants.cst34;
-const const_1 = constR(5376);
-const const_1000 = constR(5912);
-const const_1024 = constR(5924);
-const const_60 = constR(5828);
-const const_3600 = constR(5980);
-const const_360000 = constR(6068);
-const const_86400 = constR(6056);
-const const_100 = constR(8080);
-const const_24 = constR(5688);
-const const_12 = constR(5664);
-const const39_ln2 = constR(5148);
-const const39_root2 = constR(5184);
+const const_1 = constR(12116);
+const const_1000 = constR(12728);
+const const_1024 = constR(12740);
+const const_60 = constR(12644);
+const const_3600 = constR(12796);
+const const_360000 = constR(12896);
+const const_86400 = constR(12884);
+const const_100 = constR(15388);
+const const_24 = constR(12428);
+const const_12 = constR(12404);
+const const39_ln2 = constR(5216);
+const const39_root2 = constR(5444);
 const const39_pi = constR(1848);
 const const39_eE = constR(176);
 const const39_PHI = constR(1596);
-const const39_rt3 = constR(6268);
-const const39_rt5 = constR(6304);
-const const39_rt7 = constR(6340);
-const const39_rtpi = constR(6400);
-const const39_1onpi = constR(6436);
+const const39_rt3 = constR(13096);
+const const39_rt5 = constR(13132);
+const const39_rt7 = constR(13168);
+const const39_rtpi = constR(13228);
+const const39_1onpi = constR(13264);
 const const39_1oneE = constR(4716);
-const const39_pisq = constR(6472);
-const const39_eEsq = constR(6508);
-const const39_1onpisq = constR(6544);
-const const39_1oneEsq = constR(6580);
+const const39_pisq = constR(13300);
+const const39_eEsq = constR(13336);
+const const39_1onpisq = constR(13372);
+const const39_1oneEsq = constR(13408);
 const const_plusInfinity = constR(1696);
 const const_minusInfinity = constR(1684);
-const const_1e_24 = constR(4800);
-const const34_1e_24 = constR34(17300);
-const const34_2p32 = constR34(17940);
+const const_1e_24 = constR(4812);
+const const34_1e_24 = constR34(28844);
+const const34_2p32 = constR34(29484);
 
 // ---------------------------------------------------------------------------
 // font tables: real extern const structs (taken by &name).
@@ -511,8 +511,7 @@ extern fn decNumberRemainder(res: *real_t, a: *const real_t, b: *const real_t, c
 extern fn decNumberFromInt32(r: *real_t, v: i32) *real_t;
 extern fn decNumberGetBCD(dn: *const real_t, bcd: [*c]u8) [*c]u8;
 // real symbols (true functions, not macros).
-extern fn realRectangularToPolar(real: *const real_t, imag: *const real_t, magnitude: *real_t, theta: *real_t, ctx: *realContext_t) void;
-extern fn realRectangularToPolarCached(real: *const real_t, imag: *const real_t, magnitude: *real_t, theta: *real_t, ctx: *realContext_t, cache: *abi.RectToPolarCache) void;
+extern fn realRectangularToPolarCached(z: *const abi.Complex, magnitude: *real_t, theta: *real_t, ctx: *realContext_t, cache: *abi.RectToPolarCache) void;
 // inline wrappers matching the realType.h macro call shapes.
 inline fn stringToReal(str: [*c]const u8, r: *real_t, ctx: *realContext_t) void {
     _ = decNumberFromString(r, str, ctx);
@@ -2175,15 +2174,14 @@ fn complex34ToDisplayString2(complex34: *align(1) const complex34_t, displayStri
     var real34_: real34_t = undefined;
     var imag34: real34_t = undefined;
     var absimag34: real34_t = undefined;
-    var real: real_t = undefined;
-    var imagIc: real_t = undefined;
+    var z: abi.Complex = undefined;
     var polarAt39: bool = false;
     const valueXLength = strlen(&displayValueX);
 
     polarFormat: while (true) {
         if (tagPolar != 0) {
-            real34ToReal(varReal34(complex34), &real);
-            real34ToReal(varImag34(complex34), &imagIc);
+            real34ToReal(varReal34(complex34), &z.Real);
+            real34ToReal(varImag34(complex34), &z.Imag);
 
             var c: realContext_t = ctxtReal39;
             // Compute the polar form at a fixed display precision and not at one scaled by the operands' exponent: hypot and
@@ -2195,12 +2193,12 @@ fn complex34ToDisplayString2(complex34: *align(1) const complex34_t, displayStri
             }
             polarTieWatch = c.digits < 39; // a value within one unit of its last computed digit from a rounding boundary is computed again at 39 digits
             polarNearTie = false;
-            realRectangularToPolarCached(&real, &imagIc, &real, &imagIc, &c, cache);
+            realRectangularToPolarCached(&z, z.mag(), z.arg(), &c, cache); // the argument in radian
             // convertAngleFromTo runs at the same c.digits; radian->grad (x 200/pi) is its worst case and stays inside it.
-            frontier_conversion_angles.convertAngleFromTo(&imagIc, amRadian, if (tagAngle == amNone) currentAngularMode else @intCast(tagAngle), &c);
+            frontier_conversion_angles.convertAngleFromTo(z.arg(), amRadian, if (tagAngle == amNone) currentAngularMode else @intCast(tagAngle), &c);
 
-            realToReal34(&real, &real34_);
-            realToReal34(&imagIc, &imag34);
+            realToReal34(z.mag(), &real34_);
+            realToReal34(z.arg(), &imag34);
         } else {
             real34Copy(varReal34(complex34), &real34_);
             real34Copy(varImag34(complex34), &imag34);

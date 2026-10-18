@@ -2,6 +2,7 @@
 // Zig port of src/c47/mathematics/division.c (dispatch matrix and cells).
 
 const std = @import("std");
+const abi = @import("abi");
 const build_options = @import("math_command_wrappers_build_options");
 const runtime = @import("../command_wrappers/runtime.zig");
 const support = @import("dispatch_cells_runtime.zig");
@@ -9,12 +10,10 @@ const support = @import("dispatch_cells_runtime.zig");
 const dm42_pkg_xip = build_options.dm42_pkg_xip;
 const table_section: ?[]const u8 = if (dm42_pkg_xip) ".qspi_data" else null;
 
-// division.c guards divComplexComplex159 and the `digits <= 159` arm of
-// divComplexComplex with
+// division.c guards divComplexComplex159 and divComplexReal159 with
 // `OPTION_CUBIC_159 || OPTION_SQUARE_159 || OPTION_EIGEN_159`. OPTION_SQUARE_159
 // is #undef'd at the top of defines.h and never defined again in any
-// configuration, so the disjunction is the other two terms. Without them,
-// 76..159 digits falls through to the bug screen.
+// configuration, so the disjunction is the other two terms.
 const arm_159 = runtime.option_cubic_159 or runtime.option_eigen_159;
 
 const CellFn = *const fn () callconv(.c) void;
@@ -32,6 +31,41 @@ fn bufPrintZ(buffer: []u8, comptime format: []const u8, args: anytype) [:0]const
     const slice = std.mem.print(buffer[0 .. buffer.len - 1], format, args) catch buffer[0..0];
     buffer[slice.len] = 0;
     return buffer[0..slice.len :0];
+}
+
+fn significantDigitsOr34() i32 {
+    return if (runtime.significantDigits == 0) 34 else runtime.significantDigits;
+}
+
+fn realElem(matrix: *runtime.real34Matrix_t, index: i32) *runtime.real34_t {
+    return &abi.matrixRealElems(matrix)[@intCast(index)];
+}
+
+fn elementCount(header: anytype) i32 {
+    return @as(i32, header.matrixColumns) * @as(i32, header.matrixRows);
+}
+
+// real34ChangeSign is a decQuad macro over the sign bit.
+inline fn real34ChangeSign(operand: *align(1) runtime.real34_t) void {
+    operand.bytes[15] ^= 0x80;
+}
+
+// One matrix element and a long integer, in either order: exact where the
+// element is finite, otherwise the 39-digit real quotient rounded to the
+// significant digits.
+fn divideLongIntegerMatrixElement(integer_register: runtime.calcRegister_t, integer: *const runtime.real_t, integer_first: bool, element: *runtime.real34_t) void {
+    if (!runtime.divideLongIntegerReal34(integer_register, element, integer_first, element)) {
+        var value: runtime.real_t = undefined;
+
+        runtime.real34ToReal(element, &value);
+        if (integer_first) {
+            runtime.realDivide(integer, &value, &value, &runtime.ctxtReal39);
+        } else {
+            runtime.realDivide(&value, integer, &value, &runtime.ctxtReal39);
+        }
+        runtime.roundToSignificantDigits(&value, &value, significantDigitsOr34(), &runtime.ctxtReal39);
+        runtime.realToReal34(&value, element);
+    }
 }
 
 // regX = column, regY = row; layout copied verbatim from division.c.
@@ -81,15 +115,7 @@ fn divisionDomainError(comptime function_name: [:0]const u8, comptime message: [
     runtime.moreInfoOnError(function_name, message, null, null);
 }
 
-fn divComplexComplex75(
-    numer_real: *const runtime.real_t,
-    numer_imag: *const runtime.real_t,
-    denom_real: *const runtime.real_t,
-    denom_imag: *const runtime.real_t,
-    quotient_real: *runtime.real_t,
-    quotient_imag: *runtime.real_t,
-    real_context: *runtime.realContext_t,
-) void {
+pub export fn divComplexComplex(numer: *const runtime.cplx_t, denom: *const runtime.cplx_t, quotient: *runtime.cplx_t, real_context: *runtime.realContext_t) linksection(runtime.code_section) callconv(.c) void {
     var real_numer: runtime.real_t = undefined;
     var real_denom: runtime.real_t = undefined;
     var a: runtime.real_t = undefined;
@@ -97,24 +123,24 @@ fn divComplexComplex75(
     var c: runtime.real_t = undefined;
     var d: runtime.real_t = undefined;
 
-    _ = support.decNumberCopy(&a, numer_real);
-    _ = support.decNumberCopy(&b, numer_imag);
-    _ = support.decNumberCopy(&c, denom_real);
-    _ = support.decNumberCopy(&d, denom_imag);
+    _ = support.decNumberCopy(&a, &numer.Real);
+    _ = support.decNumberCopy(&b, &numer.Imag);
+    _ = support.decNumberCopy(&c, &denom.Real);
+    _ = support.decNumberCopy(&d, &denom.Imag);
 
     if (runtime.realIsNaN(&a) or runtime.realIsNaN(&b) or runtime.realIsNaN(&c) or runtime.realIsNaN(&d)) {
-        runtime.realSetNaN(quotient_real);
-        runtime.realSetNaN(quotient_imag);
+        runtime.realSetNaN(&quotient.Real);
+        runtime.realSetNaN(&quotient.Imag);
         return;
     }
 
     if (runtime.realIsInfinite(&c) or runtime.realIsInfinite(&d)) {
         if (runtime.realIsInfinite(&a) or runtime.realIsInfinite(&b)) {
-            runtime.realSetNaN(quotient_real);
-            runtime.realSetNaN(quotient_imag);
+            runtime.realSetNaN(&quotient.Real);
+            runtime.realSetNaN(&quotient.Imag);
         } else {
-            runtime.realSetZero(quotient_real);
-            runtime.realSetZero(quotient_imag);
+            runtime.realSetZero(&quotient.Real);
+            runtime.realSetZero(&quotient.Imag);
         }
         return;
     }
@@ -134,26 +160,16 @@ fn divComplexComplex75(
     // real part
     runtime.realMultiply(&a, &c, &real_numer, real_context); // realNumer = a*c
     runtime.realFMA(&b, &d, &real_numer, &real_numer, real_context); // realNumer = a*c + b*d
-    runtime.realDivide(&real_numer, &real_denom, quotient_real, real_context); // realPart = (a*c + b*d) / (c² + d²)
+    runtime.realDivide(&real_numer, &real_denom, &quotient.Real, real_context); // realPart = (a*c + b*d) / (c² + d²) = realNumer / realDenom
 
     // imaginary part
     runtime.realMultiply(&b, &c, &real_numer, real_context); // realNumer = b*c
     runtime.realChangeSign(&a); // a = -a
     runtime.realFMA(&a, &d, &real_numer, &real_numer, real_context); // realNumer = b*c - a*d
-    runtime.realDivide(&real_numer, &real_denom, quotient_imag, real_context); // imagPart = (b*c - a*d) / (c² + d²)
+    runtime.realDivide(&real_numer, &real_denom, &quotient.Imag, real_context); // imagPart = (b*c - a*d) / (c² + d²) = realNumer / realDenom
 }
 
-// Compiled when OPTION_CUBIC_159 / OPTION_SQUARE_159 / OPTION_EIGEN_159 are
-// enabled upstream; only reachable when realContext->digits > 75.
-fn divComplexComplex159(
-    numer_real: *const runtime.real_t,
-    numer_imag: *const runtime.real_t,
-    denom_real: *const runtime.real_t,
-    denom_imag: *const runtime.real_t,
-    quotient_real: *runtime.real_t,
-    quotient_imag: *runtime.real_t,
-    real_context: *runtime.realContext_t,
-) void {
+fn divComplexComplex159Impl(numer: *const runtime.cplx159_t, denom: *const runtime.cplx159_t, quotient: *runtime.cplx159_t, real_context: *runtime.realContext_t) callconv(.c) void {
     var real_numer_data: support.real159_t = undefined;
     var real_denom_data: support.real159_t = undefined;
     var a_data: support.real159_t = undefined;
@@ -175,24 +191,24 @@ fn divComplexComplex159(
     runtime.realSetZero(c);
     runtime.realSetZero(d);
 
-    _ = support.decNumberCopy(a, numer_real);
-    _ = support.decNumberCopy(b, numer_imag);
-    _ = support.decNumberCopy(c, denom_real);
-    _ = support.decNumberCopy(d, denom_imag);
+    _ = support.decNumberCopy(a, numer.Real.constPtr());
+    _ = support.decNumberCopy(b, numer.Imag.constPtr());
+    _ = support.decNumberCopy(c, denom.Real.constPtr());
+    _ = support.decNumberCopy(d, denom.Imag.constPtr());
 
     if (runtime.realIsNaN(a) or runtime.realIsNaN(b) or runtime.realIsNaN(c) or runtime.realIsNaN(d)) {
-        runtime.realSetNaN(quotient_real);
-        runtime.realSetNaN(quotient_imag);
+        runtime.realSetNaN(quotient.Real.ptr());
+        runtime.realSetNaN(quotient.Imag.ptr());
         return;
     }
 
     if (runtime.realIsInfinite(c) or runtime.realIsInfinite(d)) {
         if (runtime.realIsInfinite(a) or runtime.realIsInfinite(b)) {
-            runtime.realSetNaN(quotient_real);
-            runtime.realSetNaN(quotient_imag);
+            runtime.realSetNaN(quotient.Real.ptr());
+            runtime.realSetNaN(quotient.Imag.ptr());
         } else {
-            runtime.realSetZero(quotient_real);
-            runtime.realSetZero(quotient_imag);
+            runtime.realSetZero(quotient.Real.ptr());
+            runtime.realSetZero(quotient.Imag.ptr());
         }
         return;
     }
@@ -211,61 +227,47 @@ fn divComplexComplex159(
     // Real part: (a*c + b*d) / (c² + d²)
     runtime.realMultiply(a, c, real_numer, real_context);
     runtime.realFMA(b, d, real_numer, real_numer, real_context);
-    runtime.realDivide(real_numer, real_denom, quotient_real, real_context);
+    runtime.realDivide(real_numer, real_denom, quotient.Real.ptr(), real_context);
 
     // Imaginary part: (b*c - a*d) / (c² + d²)
     runtime.realMultiply(b, c, real_numer, real_context);
     runtime.realChangeSign(a);
     runtime.realFMA(a, d, real_numer, real_numer, real_context);
-    runtime.realDivide(real_numer, real_denom, quotient_imag, real_context);
+    runtime.realDivide(real_numer, real_denom, quotient.Imag.ptr(), real_context);
 }
 
-pub export fn divComplexComplex(
-    numer_real: *const runtime.real_t,
-    numer_imag: *const runtime.real_t,
-    denom_real: *const runtime.real_t,
-    denom_imag: *const runtime.real_t,
-    quotient_real: *runtime.real_t,
-    quotient_imag: *runtime.real_t,
-    real_context: *runtime.realContext_t,
-) linksection(runtime.code_section) callconv(.c) void {
-    if (real_context.digits <= 75) {
-        divComplexComplex75(numer_real, numer_imag, denom_real, denom_imag, quotient_real, quotient_imag, real_context);
-    } else if (arm_159 and real_context.digits <= 159) {
-        divComplexComplex159(numer_real, numer_imag, denom_real, denom_imag, quotient_real, quotient_imag, real_context);
-    } else {
-        var message_buffer: [96]u8 = undefined;
-        const message = bufPrintZ(&message_buffer, "Exceed digits :divComplexComplex: {d}", .{real_context.digits});
-        support.displayBugScreen(message);
+// divComplexReal for 159 digit values in a cplx159_t.
+fn divComplexReal159Impl(numer: *const runtime.cplx159_t, denom: *const runtime.real_t, quotient: *runtime.cplx159_t, real_context: *runtime.realContext_t) callconv(.c) void {
+    runtime.realDivide(numer.Real.constPtr(), denom, quotient.Real.ptr(), real_context);
+    runtime.realDivide(numer.Imag.constPtr(), denom, quotient.Imag.ptr(), real_context);
+}
+
+comptime {
+    if (arm_159) {
+        @export(&divComplexComplex159Impl, .{ .name = "divComplexComplex159" });
+        @export(&divComplexReal159Impl, .{ .name = "divComplexReal159" });
     }
 }
 
-pub export fn divRealComplex(
-    numer_real: *const runtime.real_t,
-    denom_real: *const runtime.real_t,
-    denom_imag: *const runtime.real_t,
-    quotient_real: *runtime.real_t,
-    quotient_imag: *runtime.real_t,
-    real_context: *runtime.realContext_t,
-) linksection(runtime.code_section) callconv(.c) void {
+pub export fn divRealComplex(numer_real: *const runtime.real_t, denom_cplx: *const runtime.cplx_t, quotient: *runtime.cplx_t, real_context: *runtime.realContext_t) linksection(runtime.code_section) callconv(.c) void {
     var a: runtime.real_t = undefined;
     var c: runtime.real_t = undefined;
     var d: runtime.real_t = undefined;
     var denom: runtime.real_t = undefined;
 
     _ = support.decNumberCopy(&a, numer_real);
-    _ = support.decNumberCopy(&c, denom_real);
-    _ = support.decNumberCopy(&d, denom_imag);
+    _ = support.decNumberCopy(&c, &denom_cplx.Real);
+    _ = support.decNumberCopy(&d, &denom_cplx.Imag);
 
     if (runtime.realIsNaN(&a) or runtime.realIsNaN(&c) or runtime.realIsNaN(&d)) {
-        runtime.realSetNaN(quotient_real);
-        runtime.realSetNaN(quotient_imag);
+        runtime.realSetNaN(&quotient.Real);
+        runtime.realSetNaN(&quotient.Imag);
         return;
     }
 
     if (runtime.realIsInfinite(&c) or runtime.realIsInfinite(&d)) {
-        runtime.realSetZero(quotient_real);
-        runtime.realSetZero(quotient_imag);
+        runtime.realSetZero(&quotient.Real);
+        runtime.realSetZero(&quotient.Imag);
         return;
     }
 
@@ -273,25 +275,18 @@ pub export fn divRealComplex(
     runtime.realFMA(&d, &d, &denom, &denom, real_context); // c² + d²
 
     // real part
-    runtime.realMultiply(&a, &c, quotient_real, real_context); // numer = a*c
-    runtime.realDivide(quotient_real, &denom, quotient_real, real_context); // realPart = (a*c) / (c² + d²)
+    runtime.realMultiply(&a, &c, &quotient.Real, real_context); // numer = a*c
+    runtime.realDivide(&quotient.Real, &denom, &quotient.Real, real_context); // realPart = (a*c) / (c² + d²) = numer / denom
 
     // imaginary part
     runtime.realChangeSign(&a); // a = -a
-    runtime.realMultiply(&a, &d, quotient_imag, real_context); // numer = -a*d
-    runtime.realDivide(quotient_imag, &denom, quotient_imag, real_context); // imagPart = -(a*d) / (c² + d²)
+    runtime.realMultiply(&a, &d, &quotient.Imag, real_context); // numer = -a*d
+    runtime.realDivide(&quotient.Imag, &denom, &quotient.Imag, real_context); // imagPart = -(a*d) / (c² + d²) = numer / denom
 }
 
-pub export fn divComplexReal(
-    numer_real: *const runtime.real_t,
-    numer_imag: *const runtime.real_t,
-    denom: *const runtime.real_t,
-    quotient_real: *runtime.real_t,
-    quotient_imag: *runtime.real_t,
-    real_context: *runtime.realContext_t,
-) linksection(runtime.code_section) callconv(.c) void {
-    runtime.realDivide(numer_real, denom, quotient_real, real_context);
-    runtime.realDivide(numer_imag, denom, quotient_imag, real_context);
+pub export fn divComplexReal(numer: *const runtime.cplx_t, denom: *const runtime.real_t, quotient: *runtime.cplx_t, real_context: *runtime.realContext_t) linksection(runtime.code_section) callconv(.c) void {
+    runtime.realDivide(&numer.Real, denom, &quotient.Real, real_context);
+    runtime.realDivide(&numer.Imag, denom, &quotient.Imag, real_context);
 }
 
 // ===== long integer / ... =====
@@ -320,15 +315,11 @@ pub export fn divLonILonI() linksection(runtime.code_section) callconv(.c) void 
         if (remainder[0]._mp_size == 0) { // longIntegerIsZero(remainder)
             runtime.convertLongIntegerToLongIntegerRegister(&quotient[0], REGISTER_X);
         } else {
-            var x_ic: runtime.real_t = undefined;
-            var y_ic: runtime.real_t = undefined;
+            var result: runtime.real34_t = undefined;
 
-            runtime.convertLongIntegerRegisterToReal(REGISTER_Y, &y_ic, &runtime.ctxtReal39);
-            runtime.convertLongIntegerRegisterToReal(REGISTER_X, &x_ic, &runtime.ctxtReal39);
-            runtime.reallocateRegister(REGISTER_X, runtime.dtReal34, 0, @intCast(runtime.amNone));
-
-            runtime.realDivide(&y_ic, &x_ic, &x_ic, &runtime.ctxtReal39);
-            runtime.convertRealToReal34ResultRegister(&x_ic, REGISTER_X);
+            if (runtime.divideRegisterValuesToReal34(REGISTER_Y, REGISTER_X, &result)) {
+                runtime.convertReal34ToReal34Register(&result, REGISTER_X);
+            }
         }
 
         runtime.__gmpz_clear(&quotient[0]);
@@ -380,66 +371,68 @@ pub export fn divShoILonI() linksection(runtime.code_section) callconv(.c) void 
 pub export fn divLonIReal() linksection(runtime.code_section) callconv(.c) void {
     var y: runtime.real_t = undefined;
     var x: runtime.real_t = undefined;
+    var result: runtime.real34_t = undefined;
 
     runtime.setRegisterAngularMode(REGISTER_X, runtime.amNone);
     runtime.convertLongIntegerRegisterToReal(REGISTER_Y, &y, &runtime.ctxtReal39);
 
     if (runtime.real34IsZero(runtime.registerReal34Ptr(REGISTER_X))) {
-        if (runtime.realIsZero(&y)) {
-            if (runtime.getSystemFlag(support.FLAG_SPCRES)) {
-                runtime.convertRealToReal34ResultRegister(runtime.const_NaN, REGISTER_X);
-            } else {
-                divisionDomainError("In function divLonIReal:", "cannot divide 0 by 0");
-            }
+        if (runtime.getSystemFlag(support.FLAG_SPCRES)) {
+            var numerator: runtime.real34_t = undefined;
+
+            runtime.realToReal34(&y, &numerator);
+            runtime.real34Divide(&numerator, runtime.registerReal34Ptr(REGISTER_X), runtime.registerReal34Ptr(REGISTER_X));
         } else {
-            if (runtime.getSystemFlag(support.FLAG_SPCRES)) {
-                runtime.realToReal34(
-                    if (!runtime.realIsNegative(&y)) runtime.z47_math_wrappers_const_plus_infinity() else runtime.z47_math_wrappers_const_minus_infinity(),
-                    runtime.registerReal34Ptr(REGISTER_X),
-                );
+            if (runtime.realIsZero(&y)) {
+                divisionDomainError("In function divLonIReal:", "cannot divide 0 by 0");
             } else {
                 divisionDomainError("In function divLonIReal:", "cannot divide a long integer by 0");
             }
         }
     } else {
-        runtime.real34ToReal(runtime.registerReal34Ptr(REGISTER_X), &x);
-        runtime.realDivide(&y, &x, &x, &runtime.ctxtReal39);
-        runtime.convertRealToReal34ResultRegister(&x, REGISTER_X);
+        if (!runtime.divideRegisterValuesToReal34(REGISTER_Y, REGISTER_X, &result)) {
+            runtime.real34ToReal(runtime.registerReal34Ptr(REGISTER_X), &x);
+            runtime.realDivide(&y, &x, &x, &runtime.ctxtReal39);
+            runtime.convertRealToReal34ResultRegister(&x, REGISTER_X);
+        } else {
+            runtime.registerReal34Ptr(REGISTER_X).* = result;
+        }
     }
 }
 
 pub export fn divRealLonI() linksection(runtime.code_section) callconv(.c) void {
     var y: runtime.real_t = undefined;
     var x: runtime.real_t = undefined;
+    var result: runtime.real34_t = undefined;
 
     runtime.convertLongIntegerRegisterToReal(REGISTER_X, &x, &runtime.ctxtReal39);
-    runtime.reallocateRegister(REGISTER_X, runtime.dtReal34, 0, @intCast(runtime.amNone));
 
     if (runtime.realIsZero(&x)) {
-        if (runtime.real34IsZero(runtime.registerReal34Ptr(REGISTER_Y))) {
-            if (runtime.getSystemFlag(support.FLAG_SPCRES)) {
-                runtime.convertRealToReal34ResultRegister(runtime.const_NaN, REGISTER_X);
-            } else {
-                divisionDomainError("In function divRealLonI:", "cannot divide 0 by 0");
-            }
+        runtime.reallocateRegister(REGISTER_X, runtime.dtReal34, 0, @intCast(runtime.amNone));
+        if (runtime.getSystemFlag(support.FLAG_SPCRES)) {
+            runtime.real34Divide(runtime.registerReal34Ptr(REGISTER_Y), abi.constants.const34_0(), runtime.registerReal34Ptr(REGISTER_X));
         } else {
-            if (runtime.getSystemFlag(support.FLAG_SPCRES)) {
-                runtime.realToReal34(
-                    if (support.real34IsPositive(runtime.registerReal34Ptr(REGISTER_Y))) runtime.z47_math_wrappers_const_plus_infinity() else runtime.z47_math_wrappers_const_minus_infinity(),
-                    runtime.registerReal34Ptr(REGISTER_X),
-                );
+            if (runtime.real34IsZero(runtime.registerReal34Ptr(REGISTER_Y))) {
+                divisionDomainError("In function divRealLonI:", "cannot divide 0 by 0");
             } else {
                 divisionDomainError("In function divRealLonI:", "cannot divide a real34 by 0");
             }
         }
     } else {
-        runtime.real34ToReal(runtime.registerReal34Ptr(REGISTER_Y), &y);
         const y_angular_mode = runtime.getRegisterAngularMode(REGISTER_Y);
 
         if (y_angular_mode == runtime.amNone) {
-            runtime.realDivide(&y, &x, &x, &runtime.ctxtReal39);
-            runtime.convertRealToReal34ResultRegister(&x, REGISTER_X);
+            if (runtime.divideRegisterValuesToReal34(REGISTER_Y, REGISTER_X, &result)) {
+                runtime.convertReal34ToReal34Register(&result, REGISTER_X);
+            } else {
+                runtime.real34ToReal(runtime.registerReal34Ptr(REGISTER_Y), &y);
+                runtime.reallocateRegister(REGISTER_X, runtime.dtReal34, 0, @intCast(runtime.amNone));
+                runtime.realDivide(&y, &x, &x, &runtime.ctxtReal39);
+                runtime.convertRealToReal34ResultRegister(&x, REGISTER_X);
+            }
         } else {
+            runtime.real34ToReal(runtime.registerReal34Ptr(REGISTER_Y), &y);
+            runtime.reallocateRegister(REGISTER_X, runtime.dtReal34, 0, @intCast(runtime.amNone));
             runtime.convertAngleFromTo(&y, y_angular_mode, runtime.currentAngularMode, &runtime.ctxtReal39);
             runtime.realDivide(&y, &x, &x, &runtime.ctxtReal39);
             runtime.convertRealToReal34ResultRegister(&x, REGISTER_X);
@@ -450,32 +443,30 @@ pub export fn divRealLonI() linksection(runtime.code_section) callconv(.c) void 
 
 pub export fn divLonICplx() linksection(runtime.code_section) callconv(.c) void {
     var y: runtime.real_t = undefined;
-    var x_real: runtime.real_t = undefined;
-    var x_imag: runtime.real_t = undefined;
+    var x: runtime.cplx_t = undefined;
 
     runtime.convertLongIntegerRegisterToReal(REGISTER_Y, &y, &runtime.ctxtReal39);
-    runtime.real34ToReal(runtime.registerReal34Ptr(REGISTER_X), &x_real);
-    runtime.real34ToReal(runtime.registerImag34Ptr(REGISTER_X), &x_imag);
+    runtime.real34ToReal(runtime.registerReal34Ptr(REGISTER_X), &x.Real);
+    runtime.real34ToReal(runtime.registerImag34Ptr(REGISTER_X), &x.Imag);
 
-    divRealComplex(&y, &x_real, &x_imag, &x_real, &x_imag, &runtime.ctxtReal39);
+    divRealComplex(&y, &x, &x, &runtime.ctxtReal39);
 
-    runtime.convertComplexToResultRegister(&x_real, &x_imag, REGISTER_X);
+    runtime.convertComplexToResultRegister(&x, REGISTER_X);
 }
 
 pub export fn divCplxLonI() linksection(runtime.code_section) callconv(.c) void {
-    var a: runtime.real_t = undefined;
-    var b: runtime.real_t = undefined;
     var c: runtime.real_t = undefined;
+    var y: runtime.cplx_t = undefined;
 
-    runtime.real34ToReal(runtime.registerReal34Ptr(REGISTER_Y), &a);
-    runtime.real34ToReal(runtime.registerImag34Ptr(REGISTER_Y), &b);
+    runtime.real34ToReal(runtime.registerReal34Ptr(REGISTER_Y), &y.Real);
+    runtime.real34ToReal(runtime.registerImag34Ptr(REGISTER_Y), &y.Imag);
     runtime.convertLongIntegerRegisterToReal(REGISTER_X, &c, &runtime.ctxtReal39);
 
-    runtime.realDivide(&a, &c, &a, &runtime.ctxtReal39);
-    runtime.realDivide(&b, &c, &b, &runtime.ctxtReal39);
+    runtime.realDivide(&y.Real, &c, &y.Real, &runtime.ctxtReal39);
+    runtime.realDivide(&y.Imag, &c, &y.Imag, &runtime.ctxtReal39);
 
     runtime.reallocateRegister(REGISTER_X, runtime.dtComplex34, 0, @intCast(runtime.amNone));
-    runtime.convertComplexToResultRegister(&a, &b, REGISTER_X);
+    runtime.convertComplexToResultRegister(&y, REGISTER_X);
 }
 
 // ===== time / ... =====
@@ -622,7 +613,6 @@ pub export fn divTimeTime() linksection(runtime.code_section) callconv(.c) void 
 
 pub export fn divRemaLonI() linksection(runtime.code_section) callconv(.c) void {
     var matrix: runtime.real34Matrix_t = undefined;
-    var res: runtime.real34Matrix_t = undefined;
     var x: runtime.real_t = undefined;
 
     runtime.convertLongIntegerRegisterToReal(REGISTER_X, &x, &runtime.ctxtReal39);
@@ -630,9 +620,11 @@ pub export fn divRemaLonI() linksection(runtime.code_section) callconv(.c) void 
         divisionDomainError("In function divRemaLonI:", "cannot divide by 0");
     } else {
         runtime.linkToRealMatrixRegister(REGISTER_Y, &matrix);
-        support._divideRealMatrix(&matrix, &x, &res, &runtime.ctxtReal39);
-        runtime.convertReal34MatrixToReal34MatrixRegister(&res, REGISTER_X);
-        runtime.realMatrixFree(&res);
+        var i: i32 = 0;
+        while (i < elementCount(matrix.header)) : (i += 1) {
+            divideLongIntegerMatrixElement(REGISTER_X, &x, false, realElem(&matrix, i));
+        }
+        runtime.fnSwapXY(support.NOPARAM);
     }
 }
 
@@ -654,7 +646,6 @@ fn realMatrixHasZeroElement(matrix: *const runtime.real34Matrix_t) bool {
 
 pub export fn divLonIRema() linksection(runtime.code_section) callconv(.c) void {
     var matrix: runtime.real34Matrix_t = undefined;
-    var res: runtime.real34Matrix_t = undefined;
     var y: runtime.real_t = undefined;
     var div_zero_occurs = false;
 
@@ -667,9 +658,10 @@ pub export fn divLonIRema() linksection(runtime.code_section) callconv(.c) void 
     if (div_zero_occurs) {
         divisionDomainError("In function divLonIRema:", "cannot divide by 0");
     } else {
-        support._divideByRealMatrix(&y, &matrix, &res, &runtime.ctxtReal39);
-        runtime.convertReal34MatrixToReal34MatrixRegister(&res, REGISTER_X);
-        runtime.realMatrixFree(&res);
+        var i: i32 = 0;
+        while (i < elementCount(matrix.header)) : (i += 1) {
+            divideLongIntegerMatrixElement(REGISTER_Y, &y, true, realElem(&matrix, i));
+        }
     }
 }
 
@@ -711,40 +703,13 @@ pub export fn divRemaCxma() linksection(runtime.code_section) callconv(.c) void 
 }
 
 pub export fn divRemaShoI() linksection(runtime.code_section) callconv(.c) void {
-    var matrix: runtime.real34Matrix_t = undefined;
-    var res: runtime.real34Matrix_t = undefined;
-    var x: runtime.real_t = undefined;
-
-    runtime.convertShortIntegerRegisterToReal(REGISTER_X, &x, &runtime.ctxtReal39);
-    if (!runtime.getSystemFlag(support.FLAG_SPCRES) and runtime.realIsZero(&x)) {
-        divisionDomainError("In function divRemaShoI:", "cannot divide by 0");
-    } else {
-        runtime.linkToRealMatrixRegister(REGISTER_Y, &matrix);
-        support._divideRealMatrix(&matrix, &x, &res, &runtime.ctxtReal39);
-        runtime.convertReal34MatrixToReal34MatrixRegister(&res, REGISTER_X);
-        runtime.realMatrixFree(&res);
-    }
+    support.convertShortIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
+    divRemaReal();
 }
 
 pub export fn divShoIRema() linksection(runtime.code_section) callconv(.c) void {
-    var matrix: runtime.real34Matrix_t = undefined;
-    var res: runtime.real34Matrix_t = undefined;
-    var y: runtime.real_t = undefined;
-    var div_zero_occurs = false;
-
-    runtime.convertShortIntegerRegisterToReal(REGISTER_Y, &y, &runtime.ctxtReal39);
-    runtime.linkToRealMatrixRegister(REGISTER_X, &matrix);
-    if (!runtime.getSystemFlag(support.FLAG_SPCRES)) {
-        div_zero_occurs = realMatrixHasZeroElement(&matrix);
-    }
-
-    if (div_zero_occurs) {
-        divisionDomainError("In function divShoIRema:", "cannot divide by 0");
-    } else {
-        support._divideByRealMatrix(&y, &matrix, &res, &runtime.ctxtReal39);
-        runtime.convertReal34MatrixToReal34MatrixRegister(&res, REGISTER_X);
-        runtime.realMatrixFree(&res);
-    }
+    support.convertShortIntegerRegisterToReal34Register(REGISTER_Y, REGISTER_Y);
+    divRealRema();
 }
 
 pub export fn divRemaReal() linksection(runtime.code_section) callconv(.c) void {
@@ -783,19 +748,26 @@ pub export fn divRealRema() linksection(runtime.code_section) callconv(.c) void 
 }
 
 pub export fn divRemaCplx() linksection(runtime.code_section) callconv(.c) void {
+    var matrix: runtime.complex34Matrix_t = undefined;
+
     runtime.convertReal34MatrixRegisterToComplex34MatrixRegister(REGISTER_Y, REGISTER_Y);
     if (runtime.lastErrorCode != 0) {
         return;
     }
-    divCxmaCplx();
+    runtime.linkToComplexMatrixRegister(REGISTER_Y, &matrix);
+    support.divideComplexMatrix(&matrix, runtime.registerReal34Ptr(REGISTER_X), runtime.registerImag34Ptr(REGISTER_X), &matrix);
+    runtime.convertComplex34MatrixToComplex34MatrixRegister(&matrix, REGISTER_X);
 }
 
 pub export fn divCplxRema() linksection(runtime.code_section) callconv(.c) void {
+    var matrix: runtime.complex34Matrix_t = undefined;
+
     runtime.convertReal34MatrixRegisterToComplex34MatrixRegister(REGISTER_X, REGISTER_X);
     if (runtime.lastErrorCode != 0) {
         return;
     }
-    divCplxCxma();
+    runtime.linkToComplexMatrixRegister(REGISTER_X, &matrix);
+    support.divideByComplexMatrix(runtime.registerReal34Ptr(REGISTER_Y), runtime.registerImag34Ptr(REGISTER_Y), &matrix, &matrix);
 }
 
 // ===== complex34 matrix / ... =====
@@ -803,11 +775,12 @@ pub export fn divCplxRema() linksection(runtime.code_section) callconv(.c) void 
 pub export fn divCxmaLonI() linksection(runtime.code_section) callconv(.c) void {
     var matrix: runtime.complex34Matrix_t = undefined;
     var res: runtime.complex34Matrix_t = undefined;
-    var x: runtime.real_t = undefined;
+    var x: runtime.cplx_t = undefined;
 
-    runtime.convertLongIntegerRegisterToReal(REGISTER_X, &x, &runtime.ctxtReal39);
+    runtime.convertLongIntegerRegisterToReal(REGISTER_X, &x.Real, &runtime.ctxtReal39);
+    runtime.realSetZero(&x.Imag);
     runtime.linkToComplexMatrixRegister(REGISTER_Y, &matrix);
-    support._divideComplexMatrix(&matrix, &x, runtime.z47_math_wrappers_const_0(), &res, &runtime.ctxtReal39);
+    support._divideComplexMatrix(&matrix, &x, &res, &runtime.ctxtReal39);
     runtime.convertComplex34MatrixToComplex34MatrixRegister(&res, REGISTER_X);
     runtime.complexMatrixFree(&res);
 }
@@ -815,11 +788,12 @@ pub export fn divCxmaLonI() linksection(runtime.code_section) callconv(.c) void 
 pub export fn divLonICxma() linksection(runtime.code_section) callconv(.c) void {
     var matrix: runtime.complex34Matrix_t = undefined;
     var res: runtime.complex34Matrix_t = undefined;
-    var y: runtime.real_t = undefined;
+    var y: runtime.cplx_t = undefined;
 
-    runtime.convertLongIntegerRegisterToReal(REGISTER_Y, &y, &runtime.ctxtReal39);
+    runtime.convertLongIntegerRegisterToReal(REGISTER_Y, &y.Real, &runtime.ctxtReal39);
+    runtime.realSetZero(&y.Imag);
     runtime.linkToComplexMatrixRegister(REGISTER_X, &matrix);
-    support._divideByComplexMatrix(&y, runtime.z47_math_wrappers_const_0(), &matrix, &res, &runtime.ctxtReal39);
+    support._divideByComplexMatrix(&y, &matrix, &res, &runtime.ctxtReal39);
     runtime.convertComplex34MatrixToComplex34MatrixRegister(&res, REGISTER_X);
     runtime.complexMatrixFree(&res);
 }
@@ -900,17 +874,23 @@ pub export fn divRealCxma() linksection(runtime.code_section) callconv(.c) void 
 
 pub export fn divCxmaCplx() linksection(runtime.code_section) callconv(.c) void {
     var matrix: runtime.complex34Matrix_t = undefined;
+    var x: runtime.cplx_t = undefined;
 
     runtime.linkToComplexMatrixRegister(REGISTER_Y, &matrix);
-    support.divideComplexMatrix(&matrix, runtime.registerReal34Ptr(REGISTER_X), runtime.registerImag34Ptr(REGISTER_X), &matrix);
+    runtime.real34ToReal(runtime.registerReal34Ptr(REGISTER_X), &x.Real);
+    runtime.real34ToReal(runtime.registerImag34Ptr(REGISTER_X), &x.Imag);
+    support._divideComplexMatrix(&matrix, &x, &matrix, &runtime.ctxtReal75);
     runtime.convertComplex34MatrixToComplex34MatrixRegister(&matrix, REGISTER_X);
 }
 
 pub export fn divCplxCxma() linksection(runtime.code_section) callconv(.c) void {
     var matrix: runtime.complex34Matrix_t = undefined;
+    var y: runtime.cplx_t = undefined;
 
     runtime.linkToComplexMatrixRegister(REGISTER_X, &matrix);
-    support.divideByComplexMatrix(runtime.registerReal34Ptr(REGISTER_Y), runtime.registerImag34Ptr(REGISTER_Y), &matrix, &matrix);
+    runtime.real34ToReal(runtime.registerReal34Ptr(REGISTER_Y), &y.Real);
+    runtime.real34ToReal(runtime.registerImag34Ptr(REGISTER_Y), &y.Imag);
+    support._divideByComplexMatrix(&y, &matrix, &matrix, &runtime.ctxtReal75);
 }
 
 // ===== short integer / ... =====
@@ -932,67 +912,67 @@ pub export fn divShoIShoI() linksection(runtime.code_section) callconv(.c) void 
 
 pub export fn divShoIReal() linksection(runtime.code_section) callconv(.c) void {
     var y: runtime.real_t = undefined;
-    var x: runtime.real_t = undefined;
 
     runtime.setRegisterAngularMode(REGISTER_X, runtime.amNone);
     runtime.convertShortIntegerRegisterToReal(REGISTER_Y, &y, &runtime.ctxtReal39);
 
     if (runtime.real34IsZero(runtime.registerReal34Ptr(REGISTER_X))) {
-        if (runtime.realIsZero(&y)) {
-            if (runtime.getSystemFlag(support.FLAG_SPCRES)) {
-                runtime.convertRealToReal34ResultRegister(runtime.const_NaN, REGISTER_X);
-            } else {
-                divisionDomainError("In function divShoIReal:", "cannot divide 0 by 0");
-            }
+        if (runtime.getSystemFlag(support.FLAG_SPCRES)) {
+            var numerator: runtime.real34_t = undefined;
+
+            runtime.realToReal34(&y, &numerator);
+            runtime.real34Divide(&numerator, runtime.registerReal34Ptr(REGISTER_X), runtime.registerReal34Ptr(REGISTER_X));
         } else {
-            if (runtime.getSystemFlag(support.FLAG_SPCRES)) {
-                runtime.realToReal34(
-                    if (!runtime.realIsNegative(&y)) runtime.z47_math_wrappers_const_plus_infinity() else runtime.z47_math_wrappers_const_minus_infinity(),
-                    runtime.registerReal34Ptr(REGISTER_X),
-                );
+            if (runtime.realIsZero(&y)) {
+                divisionDomainError("In function divShoIReal:", "cannot divide 0 by 0");
             } else {
                 divisionDomainError("In function divShoIReal:", "cannot divide a short integer by 0");
             }
         }
     } else {
-        runtime.real34ToReal(runtime.registerReal34Ptr(REGISTER_X), &x);
-        runtime.realDivide(&y, &x, &x, &runtime.ctxtReal39);
-        runtime.convertRealToReal34ResultRegister(&x, REGISTER_X);
+        support.convertShortIntegerRegisterToReal34Register(REGISTER_Y, REGISTER_Y);
+        runtime.real34Divide(runtime.registerReal34Ptr(REGISTER_Y), runtime.registerReal34Ptr(REGISTER_X), runtime.registerReal34Ptr(REGISTER_X));
     }
 }
 
 pub export fn divRealShoI() linksection(runtime.code_section) callconv(.c) void {
     var y: runtime.real_t = undefined;
     var x: runtime.real_t = undefined;
+    var short_integer_value: u64 = 0;
+    var short_integer_sign: i16 = 0;
 
+    runtime.convertShortIntegerRegisterToUInt64(REGISTER_X, &short_integer_sign, &short_integer_value);
+    const negative_zero = short_integer_sign != 0 and short_integer_value == 0;
     runtime.convertShortIntegerRegisterToReal(REGISTER_X, &x, &runtime.ctxtReal39);
-    runtime.reallocateRegister(REGISTER_X, runtime.dtReal34, 0, @intCast(runtime.amNone));
 
-    if (runtime.realIsZero(&x)) {
-        if (runtime.real34IsZero(runtime.registerReal34Ptr(REGISTER_Y))) {
-            if (runtime.getSystemFlag(support.FLAG_SPCRES)) {
-                runtime.convertRealToReal34ResultRegister(runtime.const_NaN, REGISTER_X);
-            } else {
-                divisionDomainError("In function divRealShoI:", "cannot divide 0 by 0");
+    if (short_integer_value == 0) {
+        if (runtime.getSystemFlag(support.FLAG_SPCRES)) {
+            var denominator: runtime.real34_t = undefined;
+
+            runtime.realToReal34(&x, &denominator);
+            runtime.real34SetPositiveSign(&denominator);
+            runtime.reallocateRegister(REGISTER_X, runtime.dtReal34, 0, @intCast(runtime.amNone));
+            runtime.real34Divide(runtime.registerReal34Ptr(REGISTER_Y), &denominator, runtime.registerReal34Ptr(REGISTER_X));
+            if (negative_zero and !runtime.real34IsNaN(runtime.registerReal34Ptr(REGISTER_X))) {
+                real34ChangeSign(runtime.registerReal34Ptr(REGISTER_X));
             }
         } else {
-            if (runtime.getSystemFlag(support.FLAG_SPCRES)) {
-                runtime.realToReal34(
-                    if (support.real34IsPositive(runtime.registerReal34Ptr(REGISTER_Y))) runtime.z47_math_wrappers_const_plus_infinity() else runtime.z47_math_wrappers_const_minus_infinity(),
-                    runtime.registerReal34Ptr(REGISTER_X),
-                );
+            runtime.reallocateRegister(REGISTER_X, runtime.dtReal34, 0, @intCast(runtime.amNone));
+            if (runtime.real34IsZero(runtime.registerReal34Ptr(REGISTER_Y))) {
+                divisionDomainError("In function divRealShoI:", "cannot divide 0 by 0");
             } else {
                 divisionDomainError("In function divRealShoI:", "cannot divide a real34 by 0");
             }
         }
     } else {
-        runtime.real34ToReal(runtime.registerReal34Ptr(REGISTER_Y), &y);
         const y_angular_mode = runtime.getRegisterAngularMode(REGISTER_Y);
 
         if (y_angular_mode == runtime.amNone) {
-            runtime.realDivide(&y, &x, &x, &runtime.ctxtReal39);
-            runtime.convertRealToReal34ResultRegister(&x, REGISTER_X);
+            support.convertShortIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
+            runtime.real34Divide(runtime.registerReal34Ptr(REGISTER_Y), runtime.registerReal34Ptr(REGISTER_X), runtime.registerReal34Ptr(REGISTER_X));
         } else {
+            runtime.real34ToReal(runtime.registerReal34Ptr(REGISTER_Y), &y);
+            runtime.reallocateRegister(REGISTER_X, runtime.dtReal34, 0, @intCast(runtime.amNone));
             runtime.convertAngleFromTo(&y, y_angular_mode, runtime.currentAngularMode, &runtime.ctxtReal39);
             runtime.realDivide(&y, &x, &x, &runtime.ctxtReal39);
             runtime.convertRealToReal34ResultRegister(&x, REGISTER_X);
@@ -1003,49 +983,42 @@ pub export fn divRealShoI() linksection(runtime.code_section) callconv(.c) void 
 
 pub export fn divShoICplx() linksection(runtime.code_section) callconv(.c) void {
     var y: runtime.real_t = undefined;
-    var x_real: runtime.real_t = undefined;
-    var x_imag: runtime.real_t = undefined;
+    var x: runtime.cplx_t = undefined;
 
     runtime.convertShortIntegerRegisterToReal(REGISTER_Y, &y, &runtime.ctxtReal39);
-    runtime.real34ToReal(runtime.registerReal34Ptr(REGISTER_X), &x_real);
-    runtime.real34ToReal(runtime.registerImag34Ptr(REGISTER_X), &x_imag);
+    runtime.real34ToReal(runtime.registerReal34Ptr(REGISTER_X), &x.Real);
+    runtime.real34ToReal(runtime.registerImag34Ptr(REGISTER_X), &x.Imag);
 
-    divRealComplex(&y, &x_real, &x_imag, &x_real, &x_imag, &runtime.ctxtReal39);
+    divRealComplex(&y, &x, &x, &runtime.ctxtReal39);
 
-    runtime.convertComplexToResultRegister(&x_real, &x_imag, REGISTER_X);
+    runtime.convertComplexToResultRegister(&x, REGISTER_X);
 }
 
 pub export fn divCplxShoI() linksection(runtime.code_section) callconv(.c) void {
     support.convertShortIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
     runtime.real34Divide(runtime.registerReal34Ptr(REGISTER_Y), runtime.registerReal34Ptr(REGISTER_X), runtime.registerReal34Ptr(REGISTER_Y)); // real part
     runtime.real34Divide(runtime.registerImag34Ptr(REGISTER_Y), runtime.registerReal34Ptr(REGISTER_X), runtime.registerImag34Ptr(REGISTER_Y)); // imaginary part
-    runtime.reallocateRegister(REGISTER_X, runtime.dtComplex34, 0, @intCast(runtime.amNone));
-    runtime.registerComplex34Ptr(REGISTER_X).* = runtime.registerComplex34Ptr(REGISTER_Y).*;
+    runtime.convertReal34ToComplex34Register(runtime.registerReal34Ptr(REGISTER_Y), runtime.registerImag34Ptr(REGISTER_Y), REGISTER_X);
 }
 
 // ===== real34 / ... =====
 
 pub export fn divRealReal() linksection(runtime.code_section) callconv(.c) void {
-    if (runtime.real34IsZero(runtime.registerReal34Ptr(REGISTER_Y)) and runtime.real34IsZero(runtime.registerReal34Ptr(REGISTER_X))) {
+    const y_angular_mode = runtime.getRegisterAngularMode(REGISTER_Y);
+    const x_angular_mode = runtime.getRegisterAngularMode(REGISTER_X);
+
+    if (runtime.real34IsZero(runtime.registerReal34Ptr(REGISTER_X))) {
         if (runtime.getSystemFlag(support.FLAG_SPCRES)) {
-            runtime.convertRealToReal34ResultRegister(runtime.const_NaN, REGISTER_X);
-        } else {
+            runtime.real34Divide(runtime.registerReal34Ptr(REGISTER_Y), runtime.registerReal34Ptr(REGISTER_X), runtime.registerReal34Ptr(REGISTER_X));
+            runtime.setRegisterAngularMode(REGISTER_X, if (y_angular_mode != runtime.amNone and x_angular_mode == runtime.amNone) runtime.currentAngularMode else runtime.amNone);
+        } else if (runtime.real34IsZero(runtime.registerReal34Ptr(REGISTER_Y))) {
             divisionDomainError("In function divRealReal:", "cannot divide 0 by 0");
-        }
-    } else if (runtime.real34IsZero(runtime.registerReal34Ptr(REGISTER_X))) {
-        if (runtime.getSystemFlag(support.FLAG_SPCRES)) {
-            runtime.realToReal34(
-                if (support.real34IsPositive(runtime.registerReal34Ptr(REGISTER_Y))) runtime.z47_math_wrappers_const_plus_infinity() else runtime.z47_math_wrappers_const_minus_infinity(),
-                runtime.registerReal34Ptr(REGISTER_X),
-            );
         } else {
             divisionDomainError("In function divRealReal:", "cannot divide a real34 by 0");
         }
     } else {
         var y: runtime.real_t = undefined;
         var x: runtime.real_t = undefined;
-        const y_angular_mode = runtime.getRegisterAngularMode(REGISTER_Y);
-        const x_angular_mode = runtime.getRegisterAngularMode(REGISTER_X);
 
         if (y_angular_mode == runtime.amNone) { // real / (real or angle)
             runtime.real34Divide(runtime.registerReal34Ptr(REGISTER_Y), runtime.registerReal34Ptr(REGISTER_X), runtime.registerReal34Ptr(REGISTER_X));
@@ -1071,39 +1044,35 @@ pub export fn divRealReal() linksection(runtime.code_section) callconv(.c) void 
 
 pub export fn divRealCplx() linksection(runtime.code_section) callconv(.c) void {
     var y: runtime.real_t = undefined;
-    var x_real: runtime.real_t = undefined;
-    var x_imag: runtime.real_t = undefined;
+    var x: runtime.cplx_t = undefined;
 
     runtime.real34ToReal(runtime.registerReal34Ptr(REGISTER_Y), &y);
-    runtime.real34ToReal(runtime.registerReal34Ptr(REGISTER_X), &x_real);
-    runtime.real34ToReal(runtime.registerImag34Ptr(REGISTER_X), &x_imag);
+    runtime.real34ToReal(runtime.registerReal34Ptr(REGISTER_X), &x.Real);
+    runtime.real34ToReal(runtime.registerImag34Ptr(REGISTER_X), &x.Imag);
 
-    divRealComplex(&y, &x_real, &x_imag, &x_real, &x_imag, &runtime.ctxtReal39);
+    divRealComplex(&y, &x, &x, &runtime.ctxtReal39);
 
-    runtime.convertComplexToResultRegister(&x_real, &x_imag, REGISTER_X);
+    runtime.convertComplexToResultRegister(&x, REGISTER_X);
 }
 
 pub export fn divCplxReal() linksection(runtime.code_section) callconv(.c) void {
     runtime.real34Divide(runtime.registerReal34Ptr(REGISTER_Y), runtime.registerReal34Ptr(REGISTER_X), runtime.registerReal34Ptr(REGISTER_Y)); // real part
     runtime.real34Divide(runtime.registerImag34Ptr(REGISTER_Y), runtime.registerReal34Ptr(REGISTER_X), runtime.registerImag34Ptr(REGISTER_Y)); // imaginary part
-    runtime.reallocateRegister(REGISTER_X, runtime.dtComplex34, 0, @intCast(runtime.amNone));
-    runtime.registerComplex34Ptr(REGISTER_X).* = runtime.registerComplex34Ptr(REGISTER_Y).*;
+    runtime.convertReal34ToComplex34Register(runtime.registerReal34Ptr(REGISTER_Y), runtime.registerImag34Ptr(REGISTER_Y), REGISTER_X);
 }
 
 // ===== complex34 / ... =====
 
 pub export fn divCplxCplx() linksection(runtime.code_section) callconv(.c) void {
-    var y_real: runtime.real_t = undefined;
-    var y_imag: runtime.real_t = undefined;
-    var x_real: runtime.real_t = undefined;
-    var x_imag: runtime.real_t = undefined;
+    var y: runtime.cplx_t = undefined;
+    var x: runtime.cplx_t = undefined;
 
-    runtime.real34ToReal(runtime.registerReal34Ptr(REGISTER_Y), &y_real);
-    runtime.real34ToReal(runtime.registerImag34Ptr(REGISTER_Y), &y_imag);
-    runtime.real34ToReal(runtime.registerReal34Ptr(REGISTER_X), &x_real);
-    runtime.real34ToReal(runtime.registerImag34Ptr(REGISTER_X), &x_imag);
+    runtime.real34ToReal(runtime.registerReal34Ptr(REGISTER_Y), &y.Real);
+    runtime.real34ToReal(runtime.registerImag34Ptr(REGISTER_Y), &y.Imag);
+    runtime.real34ToReal(runtime.registerReal34Ptr(REGISTER_X), &x.Real);
+    runtime.real34ToReal(runtime.registerImag34Ptr(REGISTER_X), &x.Imag);
 
-    divComplexComplex(&y_real, &y_imag, &x_real, &x_imag, &x_real, &x_imag, &runtime.ctxtReal39);
+    divComplexComplex(&y, &x, &x, &runtime.ctxtReal75);
 
-    runtime.convertComplexToResultRegister(&x_real, &x_imag, REGISTER_X);
+    runtime.convertComplexToResultRegister(&x, REGISTER_X);
 }

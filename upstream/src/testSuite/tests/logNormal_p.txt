@@ -97,3 +97,33 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"3" RX=Real:"0.06640960692450676563914
 ;=======================================
 ; logNormalP(Complex) --> Error24
 ;=======================================
+
+; Logarithmic cancellation needs the p75 path.
+Func: fnLogNormalP
+In:  RMODE=0 RM=Real:"1" RS=Real:"1e-34" RZ=Real:"1e20" RY=Real:"274473012742723134936734350607256.4097819030696174534807599022858875336432317653879015694464751576333" RX=Real:"2.718281828459045235360287471352662"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+; The near-unit series resolves cancellation beyond p75.
+Func: fnLogNormalP
+In:  RMODE=0 RM=Real:"9.999999999999999999999999999999995e-34" RS=Real:"3.333333333333333333333333333333333e-100" RZ=Real:"1e40" RY=Real:"725912173557430049393490578806681783007972522854792728090020551172656627649824770138292135393964600.52654000820016145403021105468580062160260354180427350383477151017381076941706602675337693424081976681" RX=Real:"1.000000000000000000000000000000001"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnLogNormalP
+In:  FL_SPCRES=0 RM=Real:"0" RS=Real:"1" RX=Real:"-1"
+Out: EC=1 RX=Real:"-1"
+
+Func: fnLogNormalP
+In:  FL_SPCRES=1 RM=Real:"0" RS=Real:"1" RX=Real:"-1"
+Out: EC=0 RX=Real:"NaN"
+
+Func: fnLogNormalP
+In:  RMODE=0 FL_SPCRES=1 RM=Real:"0" RS=Real:"1" RX=Real:"inf"
+Out: EC=0 RX=Real:"0"

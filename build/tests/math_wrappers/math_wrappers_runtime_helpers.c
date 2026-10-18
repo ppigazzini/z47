@@ -115,12 +115,12 @@ void z47_math_wrappers_fact_real(void) {
 }
 
 void z47_math_wrappers_fact_cplx(void) {
-  real_t zReal, zImag;
+  cplx_t z;
 
-  if(getRegisterAsComplex(REGISTER_X, &zReal, &zImag)) {
-    realAdd(&zReal, const_1, &zReal, &ctxtReal39);
-    WP34S_ComplexGamma(&zReal, &zImag, &zReal, &zImag, &ctxtReal39);
-    convertComplexToResultRegister(&zReal, &zImag, REGISTER_X);
+  if(getRegisterAsComplex(REGISTER_X, &z)) {
+    realAdd(&z.Real, const_1, &z.Real, &ctxtReal39);
+    WP34S_ComplexGamma(&z, &z, &ctxtReal39);
+    convertComplexToResultRegister(&z, REGISTER_X);
   }
 }
 
@@ -1145,6 +1145,13 @@ void z47_math_wrappers_report_cube_real_domain_error(void) {
 #include "../../../upstream/src/c47/mathematics/lcm.c"
 #undef fnLcm
 
+// modulo.c's integerRemainder is RMD's integer body too, and remainder.c's
+// mixedIntegerRealRemainder is MOD's mixed body: each file calls into the other,
+// and both are renamed here so this copy does not collide with the oracle's.
+void z47_math_wrappers_legacy_integerRemainder(bool_t floorMod, bool_t shortResult);
+bool_t z47_math_wrappers_legacy_mixedIntegerRealRemainder(bool_t modulo);
+#define integerRemainder z47_math_wrappers_legacy_integerRemainder
+#define mixedIntegerRealRemainder z47_math_wrappers_legacy_mixedIntegerRealRemainder
 #define modReal z47_math_wrappers_legacy_modReal
 #define fnMod z47_math_wrappers_legacy_fnMod
 #include "../../../upstream/src/c47/mathematics/modulo.c"
@@ -1154,6 +1161,8 @@ void z47_math_wrappers_report_cube_real_domain_error(void) {
 #define fnRmd z47_math_wrappers_legacy_fnRmd
 #include "../../../upstream/src/c47/mathematics/remainder.c"
 #undef fnRmd
+#undef mixedIntegerRealRemainder
+#undef integerRemainder
 
 #define fnUlp z47_math_wrappers_legacy_fnUlp
 #include "../../../upstream/src/c47/mathematics/ulp.c"
@@ -1228,19 +1237,19 @@ void roundiReal(void);
 #define complexMagnitude2 z47_math_wrappers_legacy_complexMagnitude2
 #define complexMagnitude z47_math_wrappers_legacy_complexMagnitude
 #define fnMagnitude z47_math_wrappers_legacy_fnMagnitude
-void complexMagnitude(const real_t *a, const real_t *b, real_t *c, realContext_t *realContext);
+void complexMagnitude(const cplx_t *a, real_t *c, realContext_t *realContext);
 #include "../../../upstream/src/c47/mathematics/magnitude.c"
 #undef fnMagnitude
 #undef complexMagnitude
 #undef complexMagnitude2
 
 #ifndef Z47_MATH_WRAPPERS_C47_H
-void complexMagnitude2(const real_t *a, const real_t *b, real_t *c, realContext_t *realContext) {
-  z47_math_wrappers_legacy_complexMagnitude2(a, b, c, realContext);
+void complexMagnitude2(const cplx_t *a, real_t *c, realContext_t *realContext) {
+  z47_math_wrappers_legacy_complexMagnitude2(a, c, realContext);
 }
 
-void complexMagnitude(const real_t *a, const real_t *b, real_t *c, realContext_t *realContext) {
-  z47_math_wrappers_legacy_complexMagnitude(a, b, c, realContext);
+void complexMagnitude(const cplx_t *a, real_t *c, realContext_t *realContext) {
+  z47_math_wrappers_legacy_complexMagnitude(a, c, realContext);
 }
 #endif
 

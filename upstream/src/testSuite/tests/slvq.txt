@@ -189,6 +189,21 @@ Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1    RL=Real:"1E-33"  RY=Real:"9.999999999999999
 ; COMPLEX Domain
 ;=======================================================================================================================
 
+; x^2 + (1 + i*1E-100) = 0: retain the component beside the negative-real square-root cut
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=1 RL=LonI:"0" RZ=Real:"1" RY=Real:"0" RX=Cplx:"1 i 1E-100"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"1 i 1E-100" ...
+     RY=Cplx:"-5E-101 i 1" RX=Cplx:"5E-101 i -1"
+
+; lower side of the same cut
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=1 RL=LonI:"0" RZ=Real:"1" RY=Real:"0" RX=Cplx:"1 i -1E-100"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"1 i -1E-100" ...
+     RY=Cplx:"-5E-101 i -1" RX=Cplx:"5E-101 i 1"
+
+; x^2 + (1+i)x + 1E-60 = 0: use the large numerator and Vieta's identity for the small root
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=1 RL=LonI:"0" RZ=Real:"1" RY=Cplx:"1 i 1" RX=Real:"1E-60"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Real:"1E-60" ...
+     RY=Cplx:"-1 i -1" RX=Cplx:"-5E-61 i 5E-61"
+
 ; x^2 - i = 0
 ;-------------
 In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"0" RZ=LonI:"1" RY=LonI:"0" RX=Cplx:"0.0 i -1.0"

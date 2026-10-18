@@ -82,6 +82,14 @@ Item: ITM_V3toSTK
 In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RT=LonI:"7" RZ=LonI:"8" RY=LonI:"9" RX=ReMa:"M1,3[3,2,1]"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,3[3,2,1]" RT=LonI:"9" RZ=Real:"3" RY=Real:"2" RX=Real:"1"
 
+; A polar angle beside the z-axis uses atan2(rho,z), retaining a representable result instead of forming z/r.
+Func: fnToPolar2
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,3[1,0,1e6144]" AM=RAD
+Out: EC=0
+Item: ITM_V3toSTK
+In:  FL_ASLIFT=0 FL_CPXRES=0
+Out: EC=0 FL_ASLIFT=1 RZ=Real:"1e6144" RY=Real:"0":RAD RX=Real:"1e-6144":RAD
+
 Item: ITM_STKtoV2
 
 In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RT=LonI:"4" RZ=LonI:"3" RY=LonI:"2" RX=LonI:"1"
@@ -113,6 +121,23 @@ Out: EC=0 FL_ASLIFT=1 RX=CxMa:"M1,3[2i0,1.5i2.598076211353315940291169512258809,
 In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RZ=LonI:"5" RY=Real:"0":DEG RX=LonI:"2"
 Out: EC=0 FL_ASLIFT=1 RX=ReMa:"M1,3[5,0,2]"
 
+; CYL and mixed-unit SPH inputs retain the source units through reduction.
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RZ=Real:"1" RY=Real:"1e6144":DEG RX=Real:"2"
+Out: EC=0 FL_ASLIFT=1 RX=ReMa:"M1,3[0.1736481776669303488517166267693148,-0.9848077530122080593667430245895230,2]"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RZ=Real:"1" RY=Real:"1e6144":DEG RX=Real:"100":GRAD
+Out: EC=0 FL_ASLIFT=1 RX=ReMa:"M1,3[0.1736481776669303488517166267693148,-0.9848077530122080593667430245895230,0]"
+
+; Azimuth is irrelevant at an exact spherical pole.
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RZ=Real:"inf" RY=Real:"inf":DEG RX=Real:"0":GRAD
+Out: EC=0 FL_ASLIFT=1 RX=ReMa:"M1,3[0,0,inf]"
+
+Item: ITM_STKtoV3_P
+
+; The physical-coordinate ordering has its azimuth in X and polar angle in Y.
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RZ=Real:"1" RY=Real:"100":GRAD RX=Real:"1e6144":DEG
+Out: EC=0 FL_ASLIFT=1 RX=ReMa:"M1,3[0.1736481776669303488517166267693148,-0.9848077530122080593667430245895230,0]"
+
 Item: ITM_STKtoV2
 
 ; two polar-tagged complexes pack unchanged
@@ -122,3 +147,9 @@ Out: EC=0 FL_ASLIFT=1 RX=CxMa:"M1,2[1.5i2.598076211353315940291169512258809,3.46
 ; control: real polar input, r=5 in Y, theta=0 degrees in X, converts to rect x=5, y=0
 In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RY=LonI:"5" RX=Real:"0":DEG
 Out: EC=0 FL_ASLIFT=1 RX=ReMa:"M1,2[5,0]"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RY=Real:"1" RX=Real:"1e6144":DEG
+Out: EC=0 FL_ASLIFT=1 RX=ReMa:"M1,2[0.1736481776669303488517166267693148,-0.9848077530122080593667430245895230]"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RY=Real:"-1" RX=Real:"1e6144":DEG
+Out: EC=0 FL_ASLIFT=1 RX=ReMa:"M1,2[-0.1736481776669303488517166267693148,0.9848077530122080593667430245895230]"

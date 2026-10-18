@@ -53,6 +53,80 @@ fn setNegativeSign(value: *runtime.real_t) void {
     value.bits |= 0x80;
 }
 
+// The radian range reduction runs at a width that covers the 1001-digit input
+// cap: the DM42 reduces with the 2139-digit 2pi, since the 12321-digit one NaNs
+// on the DM42 decNumber at that context; every other target takes the wider one.
+const radian_reduction_digits: u32 = if (runtime.wp34s_mod_small_buffers) 2139 else 12321;
+
+fn radianReduction2Pi() *const runtime.real_t {
+    return if (comptime runtime.wp34s_mod_small_buffers) abi.constants.const2139_2pi() else abi.constants.const12321_2pi();
+}
+
+// Reduces a nonnegative radian angle to the first octant without shortening it
+// before the quadrant subtraction: the remainder modulo 2pi is taken at the full
+// reduction width, four times it names the quadrant, its upper half is folded,
+// and only the final division by eight rounds to the caller's context. The
+// working real comes off the heap; without one the angle becomes NaN.
+fn reduceRadianToFirstOctant(
+    angle: *runtime.real_t,
+    sin_neg: *bool,
+    cos_neg: *bool,
+    swap: *bool,
+    real_context: *runtime.realContext_t,
+) void {
+    const work_p = runtime.mallocRealDigits(radian_reduction_digits);
+    defer runtime.freeReal(work_p);
+    var c: runtime.realContext_t = real_context.*;
+    var quadrant: u32 = 0;
+
+    if (work_p == null) {
+        runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE);
+        runtime.realSetNaN(angle);
+        return;
+    }
+    const work = work_p.?;
+    const two_pi = radianReduction2Pi();
+
+    c.digits = @intCast(radian_reduction_digits);
+    _ = runtime.decNumberRemainder(work, angle, two_pi, &c);
+    if (runtime.realIsNaN(work)) {
+        copyReal(angle, work);
+        return;
+    }
+
+    // Four times the remainder identifies its quadrant without shortening a value close to a multiple of pi/2.
+    runtime.realMultiply(work, abi.constants.const_4(), work, &c);
+    while (runtime.realCompareGreaterEqual(work, two_pi)) {
+        runtime.realSubtract(work, two_pi, work, &c);
+        quadrant += 1;
+    }
+
+    switch (quadrant) {
+        1 => {
+            swap.* = !swap.*;
+            cos_neg.* = !cos_neg.*;
+        },
+        2 => {
+            sin_neg.* = !sin_neg.*;
+            cos_neg.* = !cos_neg.*;
+        },
+        3 => {
+            swap.* = !swap.*;
+            sin_neg.* = !sin_neg.*;
+        },
+        else => {},
+    }
+
+    // The value is now four times an angle in [0, pi/2). Fold its upper half before shortening it.
+    runtime.realMultiply(work, runtime.z47_math_wrappers_const_2(), work, &c);
+    if (runtime.realCompareGreaterThan(work, two_pi)) {
+        runtime.realSubtract(work, two_pi, work, &c);
+        runtime.realSubtract(two_pi, work, work, &c);
+        swap.* = !swap.*;
+    }
+    runtime.realDivide(work, abi.constants.const_8(), angle, real_context);
+}
+
 fn reduceAngleToRange(
     angle: *runtime.real_t,
     angle45: *runtime.real_t,
@@ -311,48 +385,64 @@ pub fn convertAngleToSinCosTan(
     }
 
     copyReal(&angle, angle_in);
-    real_context.digits = if (saved_context_digits > 51) 75 else 51;
+    // The work runs on a copy of the caller's context at 75 digits: the
+    // reduction at full width, the Taylor series at 51 where the caller asked
+    // for 51 or fewer, and the result rounded to the caller's digits.
+    var c: runtime.realContext_t = real_context.*;
+    c.digits = 75;
 
     if (runtime.realIsNegative(&angle)) {
         sin_neg = true;
         runtime.realSetPositiveSign(&angle);
     }
 
-    reduceAngleToRange(&angle, &angle45, &angle90, &angle180, &angular_mode, real_context);
+    if (angular_mode == runtime.amRadian) {
+        reduceRadianToFirstOctant(&angle, &sin_neg, &cos_neg, &swap, &c);
+    } else {
+        reduceAngleToRange(&angle, &angle45, &angle90, &angle180, &angular_mode, &c);
+    }
 
-    if (isGreaterEqual(&angle, &angle180)) {
-        runtime.realSubtract(&angle, &angle180, &angle, real_context);
+    // sin(180+x) = -sin(x), cos(180+x) = -cos(x)
+    if (angular_mode != runtime.amRadian and isGreaterEqual(&angle, &angle180)) {
+        runtime.realSubtract(&angle, &angle180, &angle, &c);
         sin_neg = !sin_neg;
         cos_neg = !cos_neg;
     }
 
-    if (isGreaterEqual(&angle, &angle90)) {
-        runtime.realSubtract(&angle, &angle90, &angle, real_context);
+    // sin(90+x) = cos(x), cos(90+x) = -sin(x)
+    if (angular_mode != runtime.amRadian and isGreaterEqual(&angle, &angle90)) {
+        runtime.realSubtract(&angle, &angle90, &angle, &c);
         swap = true;
         cos_neg = !cos_neg;
     }
 
-    if (runtime.realCompareEqual(&angle, &angle45)) {
+    // sin(90-x) = cos(x), cos(90-x) = sin(x)
+    if (angular_mode != runtime.amRadian and runtime.realCompareEqual(&angle, &angle45)) {
         if (sin_out) |output| copyReal(output, abi.constants.const39_root2on2());
         if (cos_out) |output| copyReal(output, abi.constants.const39_root2on2());
         if (tan_out) |output| {
             runtime.realSetOne(output);
         }
     } else {
-        if (isGreaterThan(&angle, &angle45)) {
-            runtime.realSubtract(&angle90, &angle, &angle, real_context);
+        if (angular_mode != runtime.amRadian and isGreaterThan(&angle, &angle45)) {
+            runtime.realSubtract(&angle90, &angle, &angle, &c);
             swap = !swap;
         }
 
         const angle30 = (angular_mode == runtime.amDegree and runtime.realCompareEqual(&angle, abi.constants.const_30())); // exactly 30 degrees: its sine is 1/2
-        runtime.convertAngleFromTo(&angle, angular_mode, runtime.amRadian, real_context);
+        if (angular_mode != runtime.amRadian) {
+            runtime.convertAngleFromTo(&angle, angular_mode, runtime.amRadian, &c);
+        }
+        if (saved_context_digits <= 51) {
+            c.digits = 51;
+        }
         sinCosTanTaylorTemp75(
             &angle,
             swap,
             if (swap) cos_out else sin_out,
             if (swap) sin_out else cos_out,
             tan_out,
-            real_context,
+            &c,
         );
         if (angle30) {
             if (if (swap) cos_out else sin_out) |sin_of_angle| {
@@ -361,7 +451,7 @@ pub fn convertAngleToSinCosTan(
         }
     }
 
-    real_context.digits = saved_context_digits;
+    c.digits = saved_context_digits;
 
     if (sin_out) |output| {
         if (sin_neg) {
@@ -376,7 +466,7 @@ pub fn convertAngleToSinCosTan(
                 runtime.realSetPositiveSign(tan_value);
             }
         }
-        roundToCallerPrecision(output, real_context);
+        roundToCallerPrecision(output, &c);
     }
 
     if (cos_out) |output| {
@@ -389,14 +479,14 @@ pub fn convertAngleToSinCosTan(
         if (runtime.realIsZero(output)) {
             runtime.realSetPositiveSign(output);
         }
-        roundToCallerPrecision(output, real_context);
+        roundToCallerPrecision(output, &c);
     }
 
     if (tan_out) |output| {
         if (cos_out) |cos_value_out| {
             if (runtime.realIsZero(cos_value_out)) {
                 runtime.realSetPositiveSign(output);
-                roundToCallerPrecision(output, real_context);
+                roundToCallerPrecision(output, &c);
             }
         }
     }

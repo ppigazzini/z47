@@ -7,30 +7,29 @@ fn typeErrorX() void {
 
 fn getConvergenceInput(
     regist: runtime.calcRegister_t,
-    real: *runtime.real_t,
-    imag: *runtime.real_t,
+    value: *runtime.cplx_t,
     is_complex: *bool,
 ) bool {
     switch (runtime.getRegisterDataType(regist)) {
         runtime.dtComplex34 => {
             is_complex.* = true;
-            return runtime.getRegisterAsComplex(regist, real, imag);
+            return runtime.getRegisterAsComplex(regist, value);
         },
         runtime.dtReal34 => {
-            if (!runtime.getRegisterAsReal(regist, real)) {
+            if (!runtime.getRegisterAsReal(regist, &value.Real)) {
                 return false;
             }
-            runtime.realSetZero(imag);
+            runtime.realSetZero(&value.Imag);
             return true;
         },
         runtime.dtLongInteger => {
-            runtime.convertLongIntegerRegisterToReal(regist, real, &runtime.ctxtReal75);
-            runtime.realSetZero(imag);
+            runtime.convertLongIntegerRegisterToReal(regist, &value.Real, &runtime.ctxtReal75);
+            runtime.realSetZero(&value.Imag);
             return true;
         },
         runtime.dtShortInteger => {
-            runtime.convertShortIntegerRegisterToReal(regist, real, &runtime.ctxtReal34);
-            runtime.realSetZero(imag);
+            runtime.convertShortIntegerRegisterToReal(regist, &value.Real, &runtime.ctxtReal34);
+            runtime.realSetZero(&value.Imag);
             return true;
         },
         else => return false,
@@ -38,36 +37,34 @@ fn getConvergenceInput(
 }
 
 pub fn isConverged(mode: u16) void {
-    var x_real: runtime.real_t = undefined;
-    var x_imag: runtime.real_t = undefined;
-    var y_real: runtime.real_t = undefined;
-    var y_imag: runtime.real_t = undefined;
+    var x: runtime.cplx_t = undefined;
+    var y: runtime.cplx_t = undefined;
     var tol: runtime.real_t = undefined;
     var is_complex = false;
 
     runtime.convergenceTolerence(&tol);
-    if (!getConvergenceInput(runtime.REGISTER_X, &x_real, &x_imag, &is_complex) or !getConvergenceInput(runtime.REGISTER_Y, &y_real, &y_imag, &is_complex)) {
+    if (!getConvergenceInput(runtime.REGISTER_X, &x, &is_complex) or !getConvergenceInput(runtime.REGISTER_Y, &y, &is_complex)) {
         typeErrorX();
         return;
     }
 
-    if (runtime.realIsNaN(&x_real) or runtime.realIsNaN(&y_real) or runtime.realIsNaN(&x_imag) or runtime.realIsNaN(&y_imag)) {
+    if (runtime.realIsNaN(&x.Real) or runtime.realIsNaN(&y.Real) or runtime.realIsNaN(&x.Imag) or runtime.realIsNaN(&y.Imag)) {
         runtime.setTemporaryInformation((mode & 0x4) != 0);
-    } else if (runtime.realIsInfinite(&x_real) or runtime.realIsInfinite(&y_real) or runtime.realIsInfinite(&x_imag) or runtime.realIsInfinite(&y_imag)) {
+    } else if (runtime.realIsInfinite(&x.Real) or runtime.realIsInfinite(&y.Real) or runtime.realIsInfinite(&x.Imag) or runtime.realIsInfinite(&y.Imag)) {
         runtime.setTemporaryInformation((mode & 0x2) != 0);
     } else if ((mode & 0x1) != 0) {
         runtime.setTemporaryInformation(
             if (is_complex)
-                runtime.WP34S_ComplexAbsError(&x_real, &x_imag, &y_real, &y_imag, &tol, &runtime.ctxtReal39)
+                runtime.WP34S_ComplexAbsError(&x, &y, &tol, &runtime.ctxtReal39)
             else
-                runtime.WP34S_AbsoluteError(&x_real, &y_real, &tol, &runtime.ctxtReal39),
+                runtime.WP34S_AbsoluteError(&x.Real, &y.Real, &tol, &runtime.ctxtReal39),
         );
     } else {
         runtime.setTemporaryInformation(
             if (is_complex)
-                runtime.WP34S_ComplexRelativeError(&x_real, &x_imag, &y_real, &y_imag, &tol, &runtime.ctxtReal39)
+                runtime.WP34S_ComplexRelativeError(&x, &y, &tol, &runtime.ctxtReal39)
             else
-                runtime.WP34S_RelativeError(&x_real, &y_real, &tol, &runtime.ctxtReal39),
+                runtime.WP34S_RelativeError(&x.Real, &y.Real, &tol, &runtime.ctxtReal39),
         );
     }
 }

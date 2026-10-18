@@ -1,10 +1,10 @@
-const abi = @import("abi");
 // SPDX-License-Identifier: GPL-3.0-only
 // Zig port of src/c47/mathematics/idiv.c, idivr.c, dblMultiplication.c,
 // dblDivision.c, round.c and decomp.c (dispatch tables, cells and the
 // retained legacy entry points still reachable from the Zig wrappers).
 
 const std = @import("std");
+const abi = @import("abi");
 const build_options = @import("math_command_wrappers_build_options");
 const runtime = @import("../command_wrappers/runtime.zig");
 const math_real_predicates = @import("../compare/real_predicates.zig");
@@ -37,6 +37,10 @@ fn domainError(comptime function_name: [:0]const u8, comptime message: [:0]const
 }
 
 const longIntegerIsZero = math_real_predicates.longIntegerIsZero;
+
+// The conversion that reads an operand into a long integer, so that one body
+// serves the long and short integer pairs in both orders.
+const registerToLongInteger_t = *const fn (regist: runtime.calcRegister_t, lg_int: *runtime.mpz_struct) callconv(.c) void;
 
 fn longIntegerSetPositiveSign(value: *runtime.mpz_struct) void {
     value._mp_size = @intCast(@abs(value._mp_size));
@@ -103,17 +107,56 @@ pub export fn z47_math_wrappers_legacy_fnIDiv(unused_but_mandatory_parameter: u1
     runtime.adjustResult(REGISTER_X, true, false, REGISTER_X, REGISTER_Y, no_register);
 }
 
-pub export fn idivLonILonI() linksection(runtime.code_section) callconv(.c) void {
+/// Computes exact integer division for finite integer and Real34 registers.
+/// `return_remainder` asks for the Real34 remainder in Y as well. Answers true
+/// when both registers are finite supported values, false when a special
+/// Real34 needs the decimal path.
+pub export fn integerDivideFiniteRegisters(return_remainder: bool) linksection(runtime.code_section) callconv(.c) bool {
+    var exponent_y: i32 = 0;
+    var exponent_x: i32 = 0;
+    var remainder_exponent: i32 = 0;
+    var y: runtime.longInteger_t = undefined;
+    var x: runtime.longInteger_t = undefined;
+    var quotient: runtime.longInteger_t = undefined;
+    var remainder: runtime.longInteger_t = undefined;
+
+    if (!runtime.convertRegisterToScaledLongInteger(REGISTER_Y, &y[0], &exponent_y)) {
+        return false;
+    }
+    if (!runtime.convertRegisterToScaledLongInteger(REGISTER_X, &x[0], &exponent_x)) {
+        runtime.__gmpz_clear(&y[0]);
+        return false;
+    }
+
+    runtime.__gmpz_init(&quotient[0]);
+    runtime.__gmpz_init(&remainder[0]);
+    runtime.longIntegerScaledDivide(&y[0], exponent_y, &x[0], exponent_x, &quotient[0], &remainder[0], &remainder_exponent);
+    runtime.convertLongIntegerToLongIntegerRegister(&quotient[0], REGISTER_X);
+
+    if (return_remainder) {
+        runtime.reallocateRegister(REGISTER_Y, runtime.dtReal34, 0, @intCast(runtime.amNone));
+        runtime.convertScaledLongIntegerToReal34(&remainder[0], remainder_exponent, runtime.registerReal34Ptr(REGISTER_Y));
+    }
+
+    runtime.__gmpz_clear(&remainder[0]);
+    runtime.__gmpz_clear(&quotient[0]);
+    runtime.__gmpz_clear(&x[0]);
+    runtime.__gmpz_clear(&y[0]);
+    return true;
+}
+
+// The three integer IDIV routines differ only in the conversion that reads each operand.
+fn idivIntInt(cvt_x: registerToLongInteger_t, cvt_y: registerToLongInteger_t) void {
     var x: runtime.longInteger_t = undefined;
 
-    runtime.convertLongIntegerRegisterToLongInteger(REGISTER_X, &x[0]);
+    cvt_x(REGISTER_X, &x[0]);
 
     if (longIntegerIsZero(&x[0])) {
-        domainError("In function idivLonILonI:", "cannot IDIV a long integer by 0");
+        domainError("In function idivIntInt:", "cannot IDIV an integer by 0");
     } else {
         var y: runtime.longInteger_t = undefined;
 
-        runtime.convertLongIntegerRegisterToLongInteger(REGISTER_Y, &y[0]);
+        cvt_y(REGISTER_Y, &y[0]);
         support.__gmpz_tdiv_q(&x[0], &y[0], &x[0]);
         runtime.convertLongIntegerToLongIntegerRegister(&x[0], REGISTER_X);
 
@@ -121,51 +164,27 @@ pub export fn idivLonILonI() linksection(runtime.code_section) callconv(.c) void
     }
 
     runtime.__gmpz_clear(&x[0]);
+}
+
+pub export fn idivLonILonI() linksection(runtime.code_section) callconv(.c) void {
+    idivIntInt(&runtime.convertLongIntegerRegisterToLongInteger, &runtime.convertLongIntegerRegisterToLongInteger);
 }
 
 pub export fn idivLonIShoI() linksection(runtime.code_section) callconv(.c) void {
-    var x: runtime.longInteger_t = undefined;
-
-    runtime.convertShortIntegerRegisterToLongInteger(REGISTER_X, &x[0]);
-
-    if (longIntegerIsZero(&x[0])) {
-        domainError("In function idivLonIShoI:", "cannot IDIV a long integer by 0");
-    } else {
-        var y: runtime.longInteger_t = undefined;
-
-        runtime.convertLongIntegerRegisterToLongInteger(REGISTER_Y, &y[0]);
-        support.__gmpz_tdiv_q(&x[0], &y[0], &x[0]);
-        runtime.convertLongIntegerToLongIntegerRegister(&x[0], REGISTER_X);
-
-        runtime.__gmpz_clear(&y[0]);
-    }
-
-    runtime.__gmpz_clear(&x[0]);
+    idivIntInt(&runtime.convertShortIntegerRegisterToLongInteger, &runtime.convertLongIntegerRegisterToLongInteger);
 }
 
 pub export fn idivShoILonI() linksection(runtime.code_section) callconv(.c) void {
-    var x: runtime.longInteger_t = undefined;
-
-    runtime.convertLongIntegerRegisterToLongInteger(REGISTER_X, &x[0]);
-
-    if (longIntegerIsZero(&x[0])) {
-        domainError("In function idivShoILonI:", "cannot IDIV a short integer by 0");
-    } else {
-        var y: runtime.longInteger_t = undefined;
-
-        runtime.convertShortIntegerRegisterToLongInteger(REGISTER_Y, &y[0]);
-        support.__gmpz_tdiv_q(&x[0], &y[0], &x[0]);
-        runtime.convertLongIntegerToLongIntegerRegister(&x[0], REGISTER_X);
-
-        runtime.__gmpz_clear(&y[0]);
-    }
-
-    runtime.__gmpz_clear(&x[0]);
+    idivIntInt(&runtime.convertLongIntegerRegisterToLongInteger, &runtime.convertShortIntegerRegisterToLongInteger);
 }
 
 pub export fn idivLonIReal() linksection(runtime.code_section) callconv(.c) void {
     if (runtime.real34IsZero(runtime.registerReal34Ptr(REGISTER_X))) {
         domainError("In function idivLonIReal:", "cannot IDIV a long integer by 0");
+        return;
+    }
+
+    if (integerDivideFiniteRegisters(false)) {
         return;
     }
 
@@ -184,6 +203,10 @@ pub export fn idivRealLonI() linksection(runtime.code_section) callconv(.c) void
     runtime.convertLongIntegerRegisterToReal(REGISTER_X, &x, &runtime.ctxtReal39);
     if (runtime.realIsZero(&x)) {
         domainError("In function idivRealLonI:", "cannot IDIV a real34 by 0");
+        return;
+    }
+
+    if (integerDivideFiniteRegisters(false)) {
         return;
     }
 
@@ -215,6 +238,10 @@ pub export fn idivShoIReal() linksection(runtime.code_section) callconv(.c) void
         return;
     }
 
+    if (integerDivideFiniteRegisters(false)) {
+        return;
+    }
+
     var y: runtime.real_t = undefined;
     var x: runtime.real_t = undefined;
 
@@ -233,6 +260,10 @@ pub export fn idivRealShoI() linksection(runtime.code_section) callconv(.c) void
         return;
     }
 
+    if (integerDivideFiniteRegisters(false)) {
+        return;
+    }
+
     var y: runtime.real_t = undefined;
 
     runtime.real34ToReal(runtime.registerReal34Ptr(REGISTER_Y), &y);
@@ -243,6 +274,10 @@ pub export fn idivRealShoI() linksection(runtime.code_section) callconv(.c) void
 pub export fn idivRealReal() linksection(runtime.code_section) callconv(.c) void {
     if (runtime.real34IsZero(runtime.registerReal34Ptr(REGISTER_X))) {
         domainError("In function idivRealReal:", "cannot IDIV a real34 by 0");
+        return;
+    }
+
+    if (integerDivideFiniteRegisters(false)) {
         return;
     }
 
@@ -302,26 +337,41 @@ pub export fn z47_math_wrappers_legacy_fnIDivR(unused_but_mandatory_parameter: u
     runtime.adjustResult(REGISTER_Y, false, false, REGISTER_X, REGISTER_Y, no_register);
 }
 
-pub export fn idivrLonILonI() linksection(runtime.code_section) callconv(.c) void {
+// The four integer IDIVR routines differ in the conversion that reads each
+// operand and in how the two answers go back. The remainder takes Y's type, and
+// the quotient is a short integer only when both operands are.
+fn idivrIntInt(cvt_x: registerToLongInteger_t, cvt_y: registerToLongInteger_t, quotient_in_base_y: bool, remainder_in_base_y: bool) void {
     var x: runtime.longInteger_t = undefined;
 
-    runtime.convertLongIntegerRegisterToLongInteger(REGISTER_X, &x[0]);
+    cvt_x(REGISTER_X, &x[0]);
 
     if (longIntegerIsZero(&x[0])) {
-        domainError("In function idivrLonILonI:", "cannot IDIVR a long integer by 0");
+        domainError("In function idivrIntInt:", "cannot IDIVR an integer by 0");
     } else {
         var y: runtime.longInteger_t = undefined;
         var quotient: runtime.longInteger_t = undefined;
         var remainder: runtime.longInteger_t = undefined;
+        var base_y: u32 = 0;
 
-        runtime.convertLongIntegerRegisterToLongInteger(REGISTER_Y, &y[0]);
+        if (quotient_in_base_y or remainder_in_base_y) {
+            base_y = runtime.getRegisterShortIntegerBase(REGISTER_Y);
+        }
+        cvt_y(REGISTER_Y, &y[0]);
 
         runtime.__gmpz_init(&quotient[0]);
         runtime.__gmpz_init(&remainder[0]);
         runtime.__gmpz_tdiv_qr(&quotient[0], &remainder[0], &y[0], &x[0]);
 
-        runtime.convertLongIntegerToLongIntegerRegister(&quotient[0], REGISTER_X);
-        runtime.convertLongIntegerToLongIntegerRegister(&remainder[0], REGISTER_Y);
+        if (quotient_in_base_y) {
+            runtime.convertLongIntegerToShortIntegerRegister(&quotient[0], base_y, REGISTER_X);
+        } else {
+            runtime.convertLongIntegerToLongIntegerRegister(&quotient[0], REGISTER_X);
+        }
+        if (remainder_in_base_y) {
+            runtime.convertLongIntegerToShortIntegerRegister(&remainder[0], base_y, REGISTER_Y);
+        } else {
+            runtime.convertLongIntegerToLongIntegerRegister(&remainder[0], REGISTER_Y);
+        }
 
         runtime.__gmpz_clear(&y[0]);
         runtime.__gmpz_clear(&quotient[0]);
@@ -329,70 +379,27 @@ pub export fn idivrLonILonI() linksection(runtime.code_section) callconv(.c) voi
     }
 
     runtime.__gmpz_clear(&x[0]);
+}
+
+pub export fn idivrLonILonI() linksection(runtime.code_section) callconv(.c) void {
+    idivrIntInt(&runtime.convertLongIntegerRegisterToLongInteger, &runtime.convertLongIntegerRegisterToLongInteger, false, false);
 }
 
 pub export fn idivrLonIShoI() linksection(runtime.code_section) callconv(.c) void {
-    var x: runtime.longInteger_t = undefined;
-
-    runtime.convertShortIntegerRegisterToLongInteger(REGISTER_X, &x[0]);
-
-    if (longIntegerIsZero(&x[0])) {
-        domainError("In function idivrLonIShoI:", "cannot IDIVR a long integer by 0");
-    } else {
-        var y: runtime.longInteger_t = undefined;
-        var quotient: runtime.longInteger_t = undefined;
-        var remainder: runtime.longInteger_t = undefined;
-
-        runtime.convertLongIntegerRegisterToLongInteger(REGISTER_Y, &y[0]);
-
-        runtime.__gmpz_init(&quotient[0]);
-        runtime.__gmpz_init(&remainder[0]);
-        runtime.__gmpz_tdiv_qr(&quotient[0], &remainder[0], &y[0], &x[0]);
-
-        runtime.convertLongIntegerToLongIntegerRegister(&quotient[0], REGISTER_X);
-        runtime.convertLongIntegerToLongIntegerRegister(&remainder[0], REGISTER_Y);
-
-        runtime.__gmpz_clear(&y[0]);
-        runtime.__gmpz_clear(&quotient[0]);
-        runtime.__gmpz_clear(&remainder[0]);
-    }
-
-    runtime.__gmpz_clear(&x[0]);
+    idivrIntInt(&runtime.convertShortIntegerRegisterToLongInteger, &runtime.convertLongIntegerRegisterToLongInteger, false, false);
 }
 
 pub export fn idivrShoILonI() linksection(runtime.code_section) callconv(.c) void {
-    var x: runtime.longInteger_t = undefined;
-
-    runtime.convertLongIntegerRegisterToLongInteger(REGISTER_X, &x[0]);
-
-    if (longIntegerIsZero(&x[0])) {
-        domainError("In function idivrShoILonI:", "cannot IDIVR a short integer by 0");
-    } else {
-        var y: runtime.longInteger_t = undefined;
-        var quotient: runtime.longInteger_t = undefined;
-        var remainder: runtime.longInteger_t = undefined;
-
-        const base_y = runtime.getRegisterShortIntegerBase(REGISTER_Y);
-        runtime.convertShortIntegerRegisterToLongInteger(REGISTER_Y, &y[0]);
-
-        runtime.__gmpz_init(&quotient[0]);
-        runtime.__gmpz_init(&remainder[0]);
-        runtime.__gmpz_tdiv_qr(&quotient[0], &remainder[0], &y[0], &x[0]);
-
-        runtime.convertLongIntegerToLongIntegerRegister(&quotient[0], REGISTER_X);
-        runtime.convertLongIntegerToShortIntegerRegister(&remainder[0], base_y, REGISTER_Y);
-
-        runtime.__gmpz_clear(&y[0]);
-        runtime.__gmpz_clear(&quotient[0]);
-        runtime.__gmpz_clear(&remainder[0]);
-    }
-
-    runtime.__gmpz_clear(&x[0]);
+    idivrIntInt(&runtime.convertLongIntegerRegisterToLongInteger, &runtime.convertShortIntegerRegisterToLongInteger, false, true);
 }
 
 pub export fn idivrLonIReal() linksection(runtime.code_section) callconv(.c) void {
     if (runtime.real34IsZero(runtime.registerReal34Ptr(REGISTER_X))) {
         domainError("In function idivrLonIReal:", "cannot IDIVR a long integer by 0");
+        return;
+    }
+
+    if (integerDivideFiniteRegisters(true)) {
         return;
     }
 
@@ -407,8 +414,7 @@ pub export fn idivrLonIReal() linksection(runtime.code_section) callconv(.c) voi
     runtime.convertRealToLongIntegerRegister(&q, REGISTER_X, runtime.DEC_ROUND_DOWN);
 
     runtime.WP34S_Mod(&y, &x, &y, &runtime.ctxtReal39);
-    runtime.reallocateRegister(REGISTER_Y, runtime.dtReal34, 0, @intCast(runtime.amNone));
-    runtime.convertRealToReal34ResultRegister(&y, REGISTER_Y);
+    runtime.convertRealToResultRegister(&y, REGISTER_Y, runtime.amNone);
 }
 
 pub export fn idivrRealLonI() linksection(runtime.code_section) callconv(.c) void {
@@ -417,6 +423,10 @@ pub export fn idivrRealLonI() linksection(runtime.code_section) callconv(.c) voi
     runtime.convertLongIntegerRegisterToReal(REGISTER_X, &x, &runtime.ctxtReal39);
     if (runtime.realIsZero(&x)) {
         domainError("In function idivrRealLonI:", "cannot IDIVR a real34 by 0");
+        return;
+    }
+
+    if (integerDivideFiniteRegisters(true)) {
         return;
     }
 
@@ -434,38 +444,16 @@ pub export fn idivrRealLonI() linksection(runtime.code_section) callconv(.c) voi
 }
 
 pub export fn idivrShoIShoI() linksection(runtime.code_section) callconv(.c) void {
-    var x: runtime.longInteger_t = undefined;
-
-    runtime.convertShortIntegerRegisterToLongInteger(REGISTER_X, &x[0]);
-
-    if (longIntegerIsZero(&x[0])) {
-        domainError("In function idivrShoIShoI:", "cannot IDIVR a short integer by 0");
-    } else {
-        var y: runtime.longInteger_t = undefined;
-        var quotient: runtime.longInteger_t = undefined;
-        var remainder: runtime.longInteger_t = undefined;
-
-        const base_y = runtime.getRegisterShortIntegerBase(REGISTER_Y);
-        runtime.convertShortIntegerRegisterToLongInteger(REGISTER_Y, &y[0]);
-
-        runtime.__gmpz_init(&quotient[0]);
-        runtime.__gmpz_init(&remainder[0]);
-        runtime.__gmpz_tdiv_qr(&quotient[0], &remainder[0], &y[0], &x[0]);
-
-        runtime.convertLongIntegerToShortIntegerRegister(&quotient[0], base_y, REGISTER_X);
-        runtime.convertLongIntegerToShortIntegerRegister(&remainder[0], base_y, REGISTER_Y);
-
-        runtime.__gmpz_clear(&y[0]);
-        runtime.__gmpz_clear(&quotient[0]);
-        runtime.__gmpz_clear(&remainder[0]);
-    }
-
-    runtime.__gmpz_clear(&x[0]);
+    idivrIntInt(&runtime.convertShortIntegerRegisterToLongInteger, &runtime.convertShortIntegerRegisterToLongInteger, true, true);
 }
 
 pub export fn idivrShoIReal() linksection(runtime.code_section) callconv(.c) void {
     if (runtime.real34IsZero(runtime.registerReal34Ptr(REGISTER_X))) {
         domainError("In function idivrShoIReal:", "cannot IDIVR a short integer by 0");
+        return;
+    }
+
+    if (integerDivideFiniteRegisters(true)) {
         return;
     }
 
@@ -480,8 +468,7 @@ pub export fn idivrShoIReal() linksection(runtime.code_section) callconv(.c) voi
     runtime.convertRealToLongIntegerRegister(&q, REGISTER_X, runtime.DEC_ROUND_DOWN);
 
     runtime.WP34S_Mod(&y, &x, &y, &runtime.ctxtReal39);
-    runtime.reallocateRegister(REGISTER_Y, runtime.dtReal34, 0, @intCast(runtime.amNone));
-    runtime.convertRealToReal34ResultRegister(&y, REGISTER_Y);
+    runtime.convertRealToResultRegister(&y, REGISTER_Y, runtime.amNone);
 }
 
 pub export fn idivrRealShoI() linksection(runtime.code_section) callconv(.c) void {
@@ -490,6 +477,10 @@ pub export fn idivrRealShoI() linksection(runtime.code_section) callconv(.c) voi
     runtime.convertShortIntegerRegisterToReal(REGISTER_X, &x, &runtime.ctxtReal39);
     if (runtime.realIsZero(&x)) {
         domainError("In function idivrRealShoI:", "cannot IDIVR a real34 by 0");
+        return;
+    }
+
+    if (integerDivideFiniteRegisters(true)) {
         return;
     }
 
@@ -509,6 +500,10 @@ pub export fn idivrRealShoI() linksection(runtime.code_section) callconv(.c) voi
 pub export fn idivrRealReal() linksection(runtime.code_section) callconv(.c) void {
     if (runtime.real34IsZero(runtime.registerReal34Ptr(REGISTER_X))) {
         domainError("In function idivrRealReal:", "cannot IDIVR a real34 by 0");
+        return;
+    }
+
+    if (integerDivideFiniteRegisters(true)) {
         return;
     }
 
@@ -745,6 +740,25 @@ pub export fn z47_math_wrappers_legacy_fnDblDivideRemainder(unused_but_mandatory
 
 // ===== round.c =====
 
+// A special real34 is refused unless SPCRES allows it through untouched.
+fn roundSpecial(x: *align(1) const runtime.real34_t) bool {
+    var error_code: u16 = 0;
+
+    if (!runtime.real34IsSpecial(x)) {
+        return false;
+    }
+
+    if (!runtime.getSystemFlag(support.FLAG_SPCRES)) {
+        if (runtime.real34IsNaN(x)) {
+            error_code = runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN;
+        } else {
+            error_code = if (runtime.real34IsNegative(x)) runtime.ERROR_OVERFLOW_MINUS_INF else runtime.ERROR_OVERFLOW_PLUS_INF;
+        }
+        runtime.displayCalcErrorMessage(@intCast(error_code), ERR_REGISTER_LINE);
+    }
+    return true;
+}
+
 // regX index; layout copied verbatim from round.c.
 const round_table: [10]CellFn = .{
     // regX ==> 1            2          3          4          5          6           7          8           9             10
@@ -777,60 +791,91 @@ pub export fn z47_math_wrappers_legacy_fnRound(unused_but_mandatory_parameter: u
     runtime.adjustResult(REGISTER_X, false, false, REGISTER_X, no_register, no_register);
 }
 pub export fn roundTime() linksection(runtime.code_section) callconv(.c) void {
-    var real34: runtime.real34_t = undefined;
+    var real: runtime.real_t = undefined;
 
-    real34 = runtime.registerReal34Ptr(REGISTER_X).*;
+    if (roundSpecial(runtime.registerReal34Ptr(REGISTER_X))) {
+        return;
+    }
+
+    runtime.real34ToReal(runtime.registerReal34Ptr(REGISTER_X), &real);
 
     switch (support.timeDisplayFormatDigits) {
-        0 => {}, // no rounding
+        0 => { // no rounding
+            return;
+        },
         1, 2 => { // round to minutes
-            // The blob constants, not rebuilt ones: they are real34Reduce'd, so
-            // 60 is stored as 6E+1 and a plain 60 divides differently.
-            const sixty = abi.constants.const34_60();
-            runtime.real34Divide(&real34, sixty, &real34);
-            runtime.real34ToIntegralValue(&real34, &real34, runtime.DEC_ROUND_DOWN);
-            runtime.real34Multiply(&real34, sixty, &real34);
+            var sixty: runtime.real_t = undefined;
+            runtime.int32ToReal(60, &sixty); // exponent 0: const_60 is stored as 6E+1, which gives the seconds exponent 1
+            runtime.realDivide(&real, abi.constants.const_60(), &real, &runtime.ctxtReal39);
+            runtime.realToIntegralValue(&real, &real, runtime.DEC_ROUND_DOWN, &runtime.ctxtReal39);
+            runtime.realMultiply(&real, &sixty, &real, &runtime.ctxtReal39);
         },
         else => { // round to seconds, milliseconds, microseconds, ...
             // round to timeDisplayFormatDigits decimal places via scaleB (exponent shift)
             const n: i32 = @as(i32, support.timeDisplayFormatDigits) - 3;
-            var shift: runtime.real34_t = undefined;
-            _ = support.decQuadFromInt32(&shift, n);
-            _ = support.decQuadScaleB(&real34, &real34, &shift, &runtime.ctxtReal34);
-            runtime.real34ToIntegralValue(&real34, &real34, support.roundingModeTable[runtime.displayRoundingMode]); // the last unit is rounded by DRM, as ROUND rounds a number
-            _ = support.decQuadFromInt32(&shift, -n);
-            _ = support.decQuadScaleB(&real34, &real34, &shift, &runtime.ctxtReal34);
+            real.exponent += n;
+            runtime.realToIntegralValue(&real, &real, support.roundingModeTable[runtime.displayRoundingMode], &runtime.ctxtReal39); // the last unit is rounded by DRM, as ROUND rounds a number
+            real.exponent -= n;
         },
     }
 
-    runtime.registerReal34Ptr(REGISTER_X).* = real34;
+    runtime.realToReal34(&real, runtime.registerReal34Ptr(REGISTER_X));
 }
 
 pub export fn roundDate() linksection(runtime.code_section) callconv(.c) void {
     // For the case accidentally added fractions of a day. It should not occur.
-    var real34: runtime.real34_t = undefined;
+    var real: runtime.real_t = undefined;
+    var offset: runtime.real_t = undefined;
 
-    real34 = runtime.registerReal34Ptr(REGISTER_X).*;
+    if (roundSpecial(runtime.registerReal34Ptr(REGISTER_X))) {
+        return;
+    }
 
-    const half_day = abi.constants.const34_43200();
-    const full_day = abi.constants.const34_86400();
+    runtime.real34ToReal(runtime.registerReal34Ptr(REGISTER_X), &real);
+    runtime.int32ToReal(43200, &offset);
 
-    runtime.real34Subtract(&real34, half_day, &real34);
-    runtime.real34Divide(&real34, full_day, &real34);
+    runtime.realSubtract(&real, &offset, &real, &runtime.ctxtReal39);
+    runtime.realDivide(&real, abi.constants.const_86400(), &real, &runtime.ctxtReal39);
 
-    runtime.real34ToIntegralValue(&real34, &real34, support.roundingModeTable[support.roundingMode]);
+    runtime.realToIntegralValue(&real, &real, support.roundingModeTable[support.roundingMode], &runtime.ctxtReal39);
 
-    runtime.real34Multiply(&real34, full_day, &real34);
-    runtime.real34Add(&real34, half_day, &real34);
+    runtime.realMultiply(&real, abi.constants.const_86400(), &real, &runtime.ctxtReal39);
+    runtime.realAdd(&real, &offset, &real, &runtime.ctxtReal39);
 
-    runtime.registerReal34Ptr(REGISTER_X).* = real34;
+    runtime.realToReal34(&real, runtime.registerReal34Ptr(REGISTER_X));
 }
 
 pub export fn roundRema() linksection(runtime.code_section) callconv(.c) void {
+    if (!runtime.getSystemFlag(support.FLAG_SPCRES)) {
+        var x: runtime.real34Matrix_t = undefined;
+
+        runtime.linkToRealMatrixRegister(REGISTER_X, &x);
+        const elements: u32 = @as(u32, x.header.matrixRows) * @as(u32, x.header.matrixColumns);
+        const elems = abi.matrixRealElems(&x);
+        var i: u32 = 0;
+        while (i < elements) : (i += 1) {
+            if (roundSpecial(&elems[i])) {
+                return;
+            }
+        }
+    }
     runtime.elementwiseRema(&roundReal);
 }
 
 pub export fn roundCxma() linksection(runtime.code_section) callconv(.c) void {
+    if (!runtime.getSystemFlag(support.FLAG_SPCRES)) {
+        var x: runtime.complex34Matrix_t = undefined;
+
+        runtime.linkToComplexMatrixRegister(REGISTER_X, &x);
+        const elements: u32 = @as(u32, x.header.matrixRows) * @as(u32, x.header.matrixColumns);
+        const elems = abi.matrixComplexElems(&x);
+        var i: u32 = 0;
+        while (i < elements) : (i += 1) {
+            if (roundSpecial(&elems[i].real) or roundSpecial(&elems[i].imag)) {
+                return;
+            }
+        }
+    }
     support.elementwiseCxma(&roundCplx);
 }
 
@@ -840,6 +885,10 @@ fn displayValueXCString(offset: i32) [*:0]const u8 {
 }
 
 pub export fn roundReal() linksection(runtime.code_section) callconv(.c) void {
+    if (roundSpecial(runtime.registerReal34Ptr(REGISTER_X))) {
+        return;
+    }
+
     support.updateDisplayValueX = true;
     support.displayValueX[0] = 0;
     support.refreshRegisterLine(REGISTER_X);
@@ -849,8 +898,9 @@ pub export fn roundReal() linksection(runtime.code_section) callconv(.c) void {
 
     if (runtime.getSystemFlag(support.FLAG_FRACT)) {
         var end_of_integer_part: i32 = -1;
-        var numerator: runtime.real34_t = undefined;
-        var denominator: runtime.real34_t = undefined;
+        var value: runtime.real_t = undefined;
+        var numerator: runtime.real_t = undefined;
+        var denominator: runtime.real_t = undefined;
 
         if (runtime.getSystemFlag(support.FLAG_PROPFR) and std.mem.indexOfScalar(u8, std.mem.sliceTo(&support.displayValueX, 0), ' ') != null) { // a b/c; below 1 the line shows d/c
             while (true) {
@@ -860,9 +910,9 @@ pub export fn roundReal() linksection(runtime.code_section) callconv(.c) void {
                 }
             }
             dvx[@intCast(end_of_integer_part)] = 0;
-            _ = support.decQuadFromString(runtime.registerReal34Ptr(REGISTER_X), displayValueXCString(0), &runtime.ctxtReal34);
+            _ = runtime.decNumberFromString(&value, displayValueXCString(0), &runtime.ctxtReal39);
         } else { // FT_IMPROPER d/c
-            _ = support.decQuadZero(runtime.registerReal34Ptr(REGISTER_X));
+            runtime.realSetZero(&value);
             if (dvx[0] == '-') {
                 end_of_integer_part = 0; // the numerator starts after the minus sign
             }
@@ -878,15 +928,16 @@ pub export fn roundReal() linksection(runtime.code_section) callconv(.c) void {
         }
         dvx[@intCast(slash_pos)] = 0;
         slash_pos += 1;
-        _ = support.decQuadFromInt32(&numerator, support.stringToInt32(displayValueXCString(end_of_integer_part)));
-        _ = support.decQuadFromInt32(&denominator, support.stringToInt32(displayValueXCString(slash_pos)));
-        runtime.real34Multiply(runtime.registerReal34Ptr(REGISTER_X), &denominator, runtime.registerReal34Ptr(REGISTER_X)); // a b/c is (a c + b)/c: exact integers, divided once
+        runtime.int32ToReal(support.stringToInt32(displayValueXCString(end_of_integer_part)), &numerator);
+        runtime.int32ToReal(support.stringToInt32(displayValueXCString(slash_pos)), &denominator);
+        runtime.realMultiply(&value, &denominator, &value, &runtime.ctxtReal39); // a b/c is (a c + b)/c: exact integers, divided once
         if (dvx[0] == '-') {
-            runtime.real34Subtract(runtime.registerReal34Ptr(REGISTER_X), &numerator, runtime.registerReal34Ptr(REGISTER_X));
+            runtime.realSubtract(&value, &numerator, &value, &runtime.ctxtReal39);
         } else {
-            runtime.real34Add(runtime.registerReal34Ptr(REGISTER_X), &numerator, runtime.registerReal34Ptr(REGISTER_X));
+            runtime.realAdd(&value, &numerator, &value, &runtime.ctxtReal39);
         }
-        runtime.real34Divide(runtime.registerReal34Ptr(REGISTER_X), &denominator, runtime.registerReal34Ptr(REGISTER_X));
+        runtime.realDivide(&value, &denominator, &value, &runtime.ctxtReal34);
+        runtime.realToReal34(&value, runtime.registerReal34Ptr(REGISTER_X));
     } else {
         _ = support.decQuadFromString(runtime.registerReal34Ptr(REGISTER_X), displayValueXCString(0), &runtime.ctxtReal34);
     }
@@ -894,6 +945,10 @@ pub export fn roundReal() linksection(runtime.code_section) callconv(.c) void {
 
 pub export fn roundCplx() linksection(runtime.code_section) callconv(.c) void {
     var polar = false;
+
+    if (roundSpecial(runtime.registerReal34Ptr(REGISTER_X)) or roundSpecial(runtime.registerImag34Ptr(REGISTER_X))) {
+        return;
+    }
 
     support.updateDisplayValueX = true;
     support.displayValueX[0] = 0;
@@ -927,15 +982,14 @@ pub export fn roundCplx() linksection(runtime.code_section) callconv(.c) void {
     dvx[@intCast(pos_i)] = 0;
     pos_i += 1;
     if (polar) {
-        var magnitude: runtime.real_t = undefined;
-        var theta: runtime.real_t = undefined;
+        var z: runtime.cplx_t = undefined;
 
-        _ = runtime.decNumberFromString(&magnitude, displayValueXCString(0), &runtime.ctxtReal39);
-        _ = runtime.decNumberFromString(&theta, displayValueXCString(pos_i), &runtime.ctxtReal39);
-        runtime.convertAngleFromTo(&theta, runtime.getComplexRegisterAngularMode(REGISTER_X), runtime.amRadian, &runtime.ctxtReal39); // the angle is shown in the unit of the register
-        runtime.realPolarToRectangular(&magnitude, &theta, &magnitude, &theta, &runtime.ctxtReal39);
-        runtime.realToReal34(&magnitude, runtime.registerReal34Ptr(REGISTER_X));
-        runtime.realToReal34(&theta, runtime.registerImag34Ptr(REGISTER_X));
+        _ = runtime.decNumberFromString(z.mag(), displayValueXCString(0), &runtime.ctxtReal39);
+        _ = runtime.decNumberFromString(z.arg(), displayValueXCString(pos_i), &runtime.ctxtReal39);
+        runtime.convertAngleFromTo(z.arg(), runtime.getComplexRegisterAngularMode(REGISTER_X), runtime.amRadian, &runtime.ctxtReal39); // the angle is shown in the unit of the register
+        runtime.realPolarToRectangular(z.mag(), z.arg(), &z, &runtime.ctxtReal39);
+        runtime.realToReal34(&z.Real, runtime.registerReal34Ptr(REGISTER_X));
+        runtime.realToReal34(&z.Imag, runtime.registerImag34Ptr(REGISTER_X));
     } else {
         _ = support.decQuadFromString(runtime.registerReal34Ptr(REGISTER_X), displayValueXCString(0), &runtime.ctxtReal34);
         _ = support.decQuadFromString(runtime.registerImag34Ptr(REGISTER_X), displayValueXCString(pos_i), &runtime.ctxtReal34);
@@ -1007,24 +1061,32 @@ pub export fn decompReal() linksection(runtime.code_section) callconv(.c) void {
     } else {
         const ssf0 = runtime.systemFlags0;
         const ssf1 = runtime.systemFlags1;
-        var sign: i16 = 0;
+        var fraction_sign: i16 = 0;
         var less_equal_greater: i16 = 0;
-        var int_part: u64 = 0;
+        var fraction_int_part: u64 = 0;
         var numer: u64 = 0;
         var denom: u64 = 0;
+        var abs_x: runtime.real34_t = undefined;
+        var int_part: runtime.real34_t = undefined;
+        var frac_part: runtime.real34_t = undefined;
         var lg_int: runtime.longInteger_t = undefined;
 
+        // real34CopyAbs is a decQuad macro: the copy with its sign bit cleared.
+        abs_x = x;
+        abs_x.bytes[15] &= 0x7f;
+        runtime.real34ToIntegralValue(&abs_x, &int_part, runtime.DEC_ROUND_DOWN);
+        runtime.real34Subtract(&abs_x, &int_part, &frac_part);
+        runtime.registerReal34Ptr(REGISTER_Y).* = frac_part;
+
         runtime.clearSystemFlag(support.FLAG_PROPFR); // set improper fraction mode
-
-        _ = runtime.fraction(REGISTER_Y, &sign, &int_part, &numer, &denom, &less_equal_greater);
-
+        _ = runtime.fraction(REGISTER_Y, &fraction_sign, &fraction_int_part, &numer, &denom, &less_equal_greater);
         runtime.systemFlags0 = ssf0;
         runtime.systemFlags1 = ssf1;
 
-        runtime.__gmpz_init(&lg_int[0]);
-
-        runtime.__gmpz_set_ui(&lg_int[0], @as(c_ulong, @as(u32, @truncate(numer))));
-        if (sign == -1) {
+        runtime.convertReal34ToLongInteger(&int_part, &lg_int[0], runtime.DEC_ROUND_DOWN);
+        runtime.__gmpz_mul_ui(&lg_int[0], &lg_int[0], @as(c_ulong, @as(u32, @truncate(denom))));
+        runtime.__gmpz_add_ui(&lg_int[0], &lg_int[0], @as(c_ulong, @as(u32, @truncate(numer))));
+        if (runtime.real34IsNegative(&x)) {
             longIntegerSetNegativeSign(&lg_int[0]);
         }
         runtime.convertLongIntegerToLongIntegerRegister(&lg_int[0], REGISTER_Y);

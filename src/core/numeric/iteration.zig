@@ -104,6 +104,11 @@ extern fn decQuadZero(res: *real34_t) *real34_t;
 extern fn decQuadFromInt32(res: *real34_t, value: i32) *real34_t;
 extern fn decQuadIsZero(value: *const real34_t) u32;
 extern fn decQuadIsNegative(value: *const real34_t) u32;
+extern fn decQuadCompare(res: *real34_t, lhs: *const real34_t, rhs: *const real34_t, context: *realContext_t) *real34_t;
+// realType.h real34Compare: the decQuad comparison result, -1, 0, 1 or NaN, as a real34.
+inline fn real34Compare(lhs: *const real34_t, rhs: *const real34_t, res: *real34_t) void {
+    _ = decQuadCompare(res, lhs, rhs, &runtime.ctxtReal34);
+}
 inline fn real34SetZero(destination: *real34_t) void {
     _ = decQuadZero(destination);
 }
@@ -203,7 +208,9 @@ fn incDecAndCompare(regist: u16, mode: u16) linksection(runtime.code_section) vo
                     real34SetNegativeSign(&step);
                 }
                 real34Add(registerReal34Data(@intCast(regist)), &step, registerReal34Data(@intCast(regist)));
-                _ = math_register_compare.registerCmp(@intCast(regist), TEMP_REGISTER_1, &compared);
+                // the comparison lands in the comparand's own slot, which is read no more after it
+                real34Compare(registerReal34Data(@intCast(regist)), registerReal34Data(TEMP_REGISTER_1), registerReal34Data(TEMP_REGISTER_1));
+                compared = if (real34IsZero(registerReal34Data(TEMP_REGISTER_1))) 0 else if (!real34IsNegative(registerReal34Data(TEMP_REGISTER_1))) 1 else -1;
                 if (real34IsNegative(registerReal34Data(@intCast(regist)))) {
                     real34SetNegativeSign(&fp);
                 }
@@ -214,16 +221,9 @@ fn incDecAndCompare(regist: u16, mode: u16) linksection(runtime.code_section) vo
             }
         },
         dtTime => {
-            if ((mode & 2) == 2) { // DSZ / ISZ : count by whole hours
-                var v: real_t = undefined;
-                real34ToReal(registerReal34Data(@intCast(regist)), &v); // seconds
-                if ((mode >> 2) == DEC_FLAG) {
-                    realSubtract(&v, const_3600(), &v, ctxtReal39);
-                } else {
-                    realAdd(&v, const_3600(), &v, ctxtReal39);
-                } // step = 1 hour = 3600 s
-                realToReal34(&v, registerReal34Data(@intCast(regist)));
-                compared = if (math_comparison_reals.realCompareAbsLessThan(&v, const_3600())) 0 else 1; // |time| < 1h -> treat as zero
+            if ((mode & 2) == 2) { // DSZ / ISZ : count by whole hours (similar /3600 used by MAX/MIN and compares =?)
+                math_register_compare.incDecTime(regist, @intCast(mode >> 2));
+                compared = if (math_comparison_reals.real34CompareAbsLessThan(registerReal34Data(@intCast(regist)), consts.const34_3600())) 0 else 1; // |time| < 1h -> treat as zero
             } else {
                 // ISG/DSE/ISE/DSL counter format has no meaning for Time
                 return invalidType();

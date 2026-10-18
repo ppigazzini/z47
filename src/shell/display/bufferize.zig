@@ -97,6 +97,10 @@ const longInteger_t = [1]mpz_struct;
 // Constants (probed from c47.h via /tmp probe)
 // ---------------------------------------------------------------------------
 const AIM_BUFFER_LENGTH = 1024;
+// A string register's byte limit: 1019 bytes stored plus a terminator; the editor scrolls through displayAIMbufferoffset.
+const MAX_STRING_BYTE_LENGTH = 1020;
+// The equation store is 255 blocks: a uint8_t block count, terminator included.
+const MAX_EQUATION_BYTE_LENGTH = 1020;
 const CATALOG_MVAR = 18;
 const CMP_CLEANED_STRING_ONLY = 1;
 const CM_AIM = 1;
@@ -195,6 +199,7 @@ const EIM_STATUS = 256;
 const ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN = 1;
 const ERROR_BAD_INPUT = 53;
 const ERROR_INVALID_INTEGER_INPUT = 9;
+const ERROR_INPUT_TOO_LONG = 10;
 const ERROR_NONE = 0;
 const ERROR_RAM_FULL = 11;
 const ERROR_WORD_SIZE_TOO_SMALL = 14;
@@ -1001,7 +1006,8 @@ extern fn getRegisterTag(regist: calcRegister_t) u32;
 extern fn setRegisterTag(regist: calcRegister_t, tag: u32) void;
 extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) void;
 extern fn copySourceRegisterToDestRegister(rSource: calcRegister_t, rDest: calcRegister_t) void;
-extern fn realPolarToRectangular(magnitude: *const real_t, theta: *const real_t, real: *real_t, imag: *real_t, realContext: *realContext_t) void;
+extern fn realPolarToRectangularInUnit(magnitude: *const real_t, theta: *const real_t, angularMode: angularMode_t, z: *cplx_t, realContext: *realContext_t) void;
+const cplx_t = abi.Complex;
 extern fn fnToPolar2(unusedButMandatoryParameter: u16) void;
 extern fn fnToRect2(unusedButMandatoryParameter: u16) void;
 extern fn real34CompareEqual(number1: *const real34_t, number2: *const real34_t) bool_t;
@@ -2407,20 +2413,15 @@ pub export fn closeNimWithComplex(dest_r: *real34_t, dest_i: *real34_t) callconv
 
     if ((getSystemFlag(FLAG_POLAR) != 0 and temporaryFlagRect == 0) or temporaryFlagPolar != 0) { // polar mode
         if (real34CompareEqual(dest_r, const34_0) != 0) {
+            real34SetZero(dest_r);
             real34SetZero(dest_i);
         } else {
-            var magnitude: real_t = undefined;
-            var theta: real_t = undefined;
-            real34ToReal(dest_r, &magnitude);
-            real34ToReal(dest_i, &theta);
-            frontier_conversion_angles.convertAngleFromTo(&theta, currentAngularMode, amRadian, &ctxtReal39);
-            if (realCompareLessThan(&magnitude, const_0) != 0) {
-                realSetPositiveSign(&magnitude);
-                realAdd(&theta, const39_pi, &theta, &ctxtReal39);
-            }
-            realPolarToRectangular(&magnitude, &theta, &magnitude, &theta, &ctxtReal39); // theta in radian
-            realToReal34(&magnitude, dest_r);
-            realToReal34(&theta, dest_i);
+            var z: cplx_t = undefined;
+            real34ToReal(dest_r, z.mag());
+            real34ToReal(dest_i, z.arg());
+            realPolarToRectangularInUnit(z.mag(), z.arg(), currentAngularMode, &z, &ctxtReal39);
+            realToReal34(&z.Real, dest_r);
+            realToReal34(&z.Imag, dest_i);
         }
         fnToPolar2(0);
     } else if ((getSystemFlag(FLAG_POLAR) == 0 and temporaryFlagPolar == 0) or temporaryFlagRect != 0) { // rect mode
@@ -2772,9 +2773,9 @@ pub export fn addItemToBuffer(item_in: u16) callconv(.c) void {
             item = convertItemToSubOrSup(item, nextChar);
             if (tam.alpha) {
                 insertAlphaCharacter(item, &alphaCursor);
-            } else if (stringByteLength(aimBuffer) + (if (item == ITM_poly_SIGN) @as(i32, 24) else stringByteLength(&indexOfItems[item].itemSoftmenuName)) >= AIM_BUFFER_LENGTH) {
-                abi.fmtBufZ(errorMessage[0..512], "In function addItemToBuffer:the AIM input buffer is full! {d} bytes for now", .{@as(i32, AIM_BUFFER_LENGTH)});
-                frontier_error.displayBugScreen(errorMessage);
+            } else if (stringByteLength(aimBuffer) + (if (item == ITM_poly_SIGN) @as(i32, 24) else stringByteLength(&indexOfItems[item].itemSoftmenuName)) >= (if (calcMode == CM_EIM) @as(i32, MAX_EQUATION_BYTE_LENGTH) else AIM_BUFFER_LENGTH)) {
+                // full: the equation store is 255 blocks, alpha is the buffer; refuse the character so the text survives and ENTER still stores it
+                frontier_error.displayCalcErrorMessage(ERROR_INPUT_TOO_LONG, ERR_REGISTER_LINE);
             } else if (calcMode == CM_EIM) {
                 const addChar0: [*c]const u8 = if (item == ITM_EEXCHR) "E" else if (item == ITM_PAIR_OF_PARENTHESES) "()" else if (item == ITM_VERTICAL_BAR) "||" else if (item == ITM_MAGNITUDE) "||" else if (item == ITM_ROOT_SIGN) STD_SQUARE_ROOT ++ "()" else if (item == ITM_SQUAREROOTX) STD_SQUARE_ROOT ++ "()" else if (item == ITM_CUBEROOT) STD_CUBE_ROOT ++ "()" else if (item == ITM_XTHROOT) STD_xTH_ROOT ++ "(:)" else if (item == ITM_EXP) STD_EulerE ++ "^()" else if (item == ITM_ALOG_SIGN) STD_EulerE ++ "^()" else if (item == ITM_LG_SIGN) "LOG()" else if (item == ITM_LN_SIGN) "LN()" else if (item == ITM_LOG2) "LB()" else if (item == ITM_SIN_SIGN) "SIN()" else if (item == ITM_COS_SIGN) "COS()" else if (item == ITM_TAN_SIGN) "TAN()" else if (item == ITM_OBELUS) STD_SLASH else if (item == ITM_poly_SIGN) "a4" ++ STD_DOT ++ "x^4+a3" ++ STD_DOT ++ "x^3+a2" ++ STD_DOT ++ "x^2+a1" ++ STD_DOT ++ "x+a0" else if (item == ITM_op_j_SIGN) complexUnit() else if (item == ITM_zetaX) STD_zeta ++ "()" else if (item == ITM_GAMMAX) STD_GAMMA ++ "()" else if (item == ITM_XFACT) "!" else if (item == ITM_M1X) "(-1)^()" else if (item == ITM_COMB) "COMB(:)" else if (item == ITM_PERM) "PERM(:)" else if (item >= FIRST_CONSTANT and item <= LAST_CONSTANT) @as([*c]const u8, &indexOfItems[item].itemCatalogName) else if (item >= ITM_SUP_0 and item <= ITM_SUP_9) @as([*c]const u8, &NumMsg[item - ITM_SUP_0].noStr) else "";
 
@@ -2846,7 +2847,7 @@ pub export fn addItemToBuffer(item_in: u16) callconv(.c) void {
                         },
                     }
                 }
-            } else if (stringByteLength(aimBuffer) <= AIM_BUFFER_LENGTH - 1 and frontier_screen.stringWidthWithLimitC47(aimBuffer, stdNoEnlarge, nocompress, SCREEN_WIDTH * MAXLINES - 16, 1, 1) < SCREEN_WIDTH * MAXLINES - 16) {
+            } else if (stringByteLength(aimBuffer) + stringByteLength(&indexOfItems[item].itemSoftmenuName) <= MAX_STRING_BYTE_LENGTH - 1) { // the 1019-byte string limit; the editor scrolls through displayAIMbufferoffset
                 // TEXT_MULTILINE_EDIT (always defined): insert mid-string.
                 var ix: u16 = 0;
                 var in: u16 = 0;
@@ -2875,6 +2876,8 @@ pub export fn addItemToBuffer(item_in: u16) callconv(.c) void {
                 }
 
                 frontier_screen.incOffset();
+            } else {
+                frontier_error.displayCalcErrorMessage(ERROR_INPUT_TOO_LONG, ERR_REGISTER_LINE); // the text fills the editable width: refuse with feedback rather than dropping the key silently
             }
         }
 
@@ -3392,6 +3395,7 @@ pub export fn addItemToNimBuffer(item: i16) callconv(.c) void {
                     _ = strcat(aimBuffer, "3.141592653589793238462643383279503");
                     frontier_items.reallyRunFunction(ITM_EXIT1, NOPARAM);
                     frontier_screen.setLastintegerBasetoZero();
+                    return; // NIM is closed and the value is on the stack, skip the buffer-to-display conversion
                 }
             },
 

@@ -68,6 +68,9 @@ Out: EC=24 FL_ASLIFT=0 RX=Stri:"String test"
 In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=ReMa:"M2,3[0,-1,2,-3,4,-5]"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M2,3[0,-1,2,-3,4,-5]" RX=ReMa:"M2,3[0,-0.761594155955764888119458282604793590413,0.964027580075816883946413724100923150255,-0.995054753686730451331880185255488475098,0.999329299739067043792243344341724962005,-0.999909204262595131210990447534473021090]"
 
+In:  RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=ReMa:"M1,3[NaN,inf,-inf]"
+Out: EC=0 RX=ReMa:"M1,3[NaN,1,-1]"
+
 
 
 ;=======================================
@@ -75,6 +78,9 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M2,3[0,-1,2,-3,4,-5]" RX=ReMa:"M2,3[0
 ;=======================================
 In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=CxMa:"M2,3[0,0i-1,2i-1,-3i2,4i3,-5i-4]"
 Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M2,3[0,0i-1,2i-1,-3i2,4i3,-5i-4]" RX=CxMa:"M2,3[0,0i-1.55740772465490223050697480745836017309,1.014793616146633568117054175417967614163i-0.033812826079896690284370559725287301640,-1.003238627353609801446358597821927259808i-0.003764025641504248292751221130322690840,0.999355987381473141391649630320133061565i-0.000187346204629478426224255637728218104,-1.000013207434784707532308500351930987733i-0.000089834776469715606405851268044690069]"
+
+In:  RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=CxMa:"M1,2[NaNi0,infiNaN]"
+Out: EC=0 RX=CxMa:"M1,2[NaNi0,1i0]"
 
 
 
@@ -140,10 +146,169 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-inf":MULTPI RX=Real:"-1"
 In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RX=Real:"-inf":GRAD
 Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"-inf":GRAD
 
+; Exact subtraction and scaling check the selected rounding mode through digit 34.
+Func: fnTanh
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Real:"0.2913126124515909058182212728237659" RX=Real:"0.3"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnTanh
+In:  RMODE=1 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Real:"0.2913126124515909058182212728237659" RX=Real:"0.3"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnTanh
+In:  RMODE=2 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Real:"0.2913126124515909058182212728237659" RX=Real:"0.3"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnTanh
+In:  RMODE=3 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Real:"0.2913126124515909058182212728237660" RX=Real:"0.3"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnTanh
+In:  RMODE=4 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Real:"0.2913126124515909058182212728237659" RX=Real:"0.3"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnTanh
+In:  RMODE=5 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Real:"0.2913126124515909058182212728237660" RX=Real:"0.3"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnTanh
+In:  RMODE=6 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Real:"0.2913126124515909058182212728237659" RX=Real:"0.3"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
 
 
 ;=======================================
 ; tanh(Complex) --> Complex
 ;=======================================
+Func: fnTanh
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"6.2 i -7.6"
 Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"6.2 i -7.6" RX=Cplx:"1.0000071971444162626580247553336318992184867022233254586847381 i -4.006581130350301688211150410256869841731704426136404234314817E-6"
+
+; Computing tanh(a) first erases this representable imaginary component.
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e80" RY=Real:"2.729321264492904590777293425576722e-41" RX=Cplx:"47 i 1"
+Out: EC=0
+Func: fnImaginaryPart
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+; Exact digit-34 check of an ordinary finite complex result.
+Func: fnTanh
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Cplx:"0.3382547432654714761693170332615285 i 0.3811320742724428554160424698364519" RX=Cplx:"0.3 i 0.4"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+Func: fnTanh
+In:  RMODE=1 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Cplx:"0.3382547432654714761693170332615285 i 0.3811320742724428554160424698364519" RX=Cplx:"0.3 i 0.4"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+Func: fnTanh
+In:  RMODE=2 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Cplx:"0.3382547432654714761693170332615285 i 0.3811320742724428554160424698364519" RX=Cplx:"0.3 i 0.4"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+Func: fnTanh
+In:  RMODE=3 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Cplx:"0.3382547432654714761693170332615286 i 0.3811320742724428554160424698364519" RX=Cplx:"0.3 i 0.4"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+Func: fnTanh
+In:  RMODE=4 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Cplx:"0.3382547432654714761693170332615285 i 0.3811320742724428554160424698364518" RX=Cplx:"0.3 i 0.4"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+Func: fnTanh
+In:  RMODE=5 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Cplx:"0.3382547432654714761693170332615286 i 0.3811320742724428554160424698364519" RX=Cplx:"0.3 i 0.4"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+Func: fnTanh
+In:  RMODE=6 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Cplx:"0.3382547432654714761693170332615285 i 0.3811320742724428554160424698364518" RX=Cplx:"0.3 i 0.4"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+; The IEC 60559 complex special cases retain exact zero components and
+; the limiting real component.
+Func: fnTanh
+In:  RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"NaN i 0"
+Out: EC=0 RX=Cplx:"NaN i 0"
+
+In:  RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"NaN i -0"
+Out: EC=0 RX=Cplx:"NaN i -0"
+
+In:  RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"inf i NaN"
+Out: EC=0 RX=Cplx:"1 i 0"
+
+In:  RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"-inf i NaN"
+Out: EC=0 RX=Cplx:"-1 i 0"
+
+In:  RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"inf i inf"
+Out: EC=0 RX=Cplx:"1 i 0"
+
+In:  RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"-inf i -inf"
+Out: EC=0 RX=Cplx:"-1 i 0"
+
+; A zero imaginary component keeps its sign, which sets the side of the negative real axis for ARG.
+Func: fnTanh
+In:  AM=RAD RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"-2 i 0"
+Out: EC=0 RX=Cplx:"-0.9640275800758168839464137241009232 i 0"
+Func: fnArg
+Out: EC=0 RX=Real:"3.141592653589793238462643383279503":RAD
+
+Func: fnTanh
+In:  AM=RAD RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"-2 i -0"
+Out: EC=0 RX=Cplx:"-0.9640275800758168839464137241009232 i -0"
+Func: fnArg
+Out: EC=0 RX=Real:"-3.141592653589793238462643383279503":RAD

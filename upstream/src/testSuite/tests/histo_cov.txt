@@ -47,3 +47,256 @@ Out: EC=0
 Func: fnSetNBins
 In:  RX=Real:"5"
 Out: EC=0
+
+; exact interior boundary: 0.5 belongs to the upper half-open bin for [0,1]/6
+Func: fnClSigma
+In:  FARG=0 RX=Real:"0"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"0" RX=Real:"0"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"0" RX=Real:"0.5"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"0" RX=Real:"1"
+Out: EC=0
+Func: fnConvertStatsToHisto
+In:  FARG=573
+Out: EC=0
+Func: fnSetNBins
+In:  RMODE=0 RX=Real:"6"
+Out: EC=0 RZ=Real:"6" RY=Real:"0" RX=Real:"1"
+Func: fnHistoElementCov
+In:  FARG=5
+Out: EC=0 RX=Real:"0"
+Func: fnHistoElementCov
+In:  FARG=7
+Out: EC=0 RX=Real:"1"
+Func: fnHistoElementCov
+In:  FARG=0
+Out: EC=0 RX=Real:"0.08333333333333333333333333333333333"
+
+; classification is independent of the working rounding direction
+Func: fnSetNBins
+In:  RMODE=1 RX=Real:"6"
+Out: EC=0
+Func: fnHistoElementCov
+In:  FARG=7
+Out: EC=0 RX=Real:"1"
+Func: fnSetNBins
+In:  RMODE=2 RX=Real:"6"
+Out: EC=0
+Func: fnHistoElementCov
+In:  FARG=7
+Out: EC=0 RX=Real:"1"
+Func: fnSetNBins
+In:  RMODE=3 RX=Real:"6"
+Out: EC=0
+Func: fnHistoElementCov
+In:  FARG=7
+Out: EC=0 RX=Real:"1"
+Func: fnSetNBins
+In:  RMODE=4 RX=Real:"6"
+Out: EC=0
+Func: fnHistoElementCov
+In:  FARG=7
+Out: EC=0 RX=Real:"1"
+Func: fnSetNBins
+In:  RMODE=5 RX=Real:"6"
+Out: EC=0
+Func: fnHistoElementCov
+In:  FARG=7
+Out: EC=0 RX=Real:"1"
+Func: fnSetNBins
+In:  RMODE=6 RX=Real:"6"
+Out: EC=0
+Func: fnHistoElementCov
+In:  FARG=7
+Out: EC=0 RX=Real:"1"
+
+; invalid bin counts leave the existing histogram available
+Func: fnSetNBins
+In:  RMODE=0 RX=Real:"2.5"
+Out: EC=9
+Func: fnHistoElementCov
+In:  FARG=7
+Out: EC=0 RX=Real:"1"
+Func: fnSetNBins
+In:  RX=Real:"0"
+Out: EC=9
+Func: fnSetNBins
+In:  RX=Real:"-1"
+Out: EC=9
+Func: fnSetNBins
+In:  RX=Real:"4096"
+Out: EC=8
+Func: fnSetNBins
+In:  RX=Real:"NaN"
+Out: EC=9
+Func: fnSetNBins
+In:  RX=Real:"inf"
+Out: EC=9
+
+; invalid finite order and special bounds leave the existing histogram available
+Func: fnSetLoBin
+In:  RX=Real:"2"
+Out: EC=1
+Func: fnHistoElementCov
+In:  FARG=7
+Out: EC=0 RX=Real:"1"
+Func: fnSetLoBin
+In:  RX=Real:"NaN"
+Out: EC=1
+Func: fnSetHiBin
+In:  RX=Real:"-1"
+Out: EC=1
+Func: fnSetHiBin
+In:  RX=Real:"inf"
+Out: EC=1
+
+; equal bounds define empty half-open bins and one inclusive final bin
+Func: fnSetHiBin
+In:  RX=Real:"0"
+Out: EC=0
+Func: fnHistoElementCov
+In:  FARG=0
+Out: EC=0 RX=Real:"0"
+Func: fnHistoElementCov
+In:  FARG=11
+Out: EC=0 RX=Real:"1"
+
+; an interior boundary remains distinguishable when the lower bound is tiny
+Func: fnClSigma
+In:  FARG=0 RX=Real:"0"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"0" RX=Real:"1e-6000"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"0" RX=Real:"5e5999"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"0" RX=Real:"1e6000"
+Out: EC=0
+Func: fnConvertStatsToHisto
+In:  FARG=573
+Out: EC=0 RZ=Real:"2" RY=Real:"1e-6000" RX=Real:"1e6000"
+Func: fnHistoElementCov
+In:  FARG=1
+Out: EC=0 RX=Real:"2"
+Func: fnHistoElementCov
+In:  FARG=3
+Out: EC=0 RX=Real:"1"
+Func: fnHistoElementCov
+In:  FARG=0
+Out: EC=0 RX=Real:"2.5e5999"
+Func: fnHistoElementCov
+In:  FARG=2
+Out: EC=0 RX=Real:"7.5e5999"
+
+; the symmetric exponent case uses the lower-bound form of the comparison
+Func: fnClSigma
+In:  FARG=0 RX=Real:"0"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"0" RX=Real:"-1e6000"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"0" RX=Real:"-5e5999"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"0" RX=Real:"1e-6000"
+Out: EC=0
+Func: fnConvertStatsToHisto
+In:  FARG=573
+Out: EC=0 RZ=Real:"2" RY=Real:"-1e6000" RX=Real:"1e-6000"
+Func: fnHistoElementCov
+In:  FARG=1
+Out: EC=0 RX=Real:"2"
+Func: fnHistoElementCov
+In:  FARG=3
+Out: EC=0 RX=Real:"1"
+Func: fnHistoElementCov
+In:  FARG=0
+Out: EC=0 RX=Real:"-7.5e5999"
+Func: fnHistoElementCov
+In:  FARG=2
+Out: EC=0 RX=Real:"-2.5e5999"
+
+; cancellation in the edge itself retains a minimum-subnormal offset
+Func: fnClSigma
+In:  FARG=0 RX=Real:"0"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"0" RX=Real:"-1e6000"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"0" RX=Real:"-1e-6176"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"0" RX=Real:"1e6000"
+Out: EC=0
+Func: fnConvertStatsToHisto
+In:  FARG=573
+Out: EC=0
+Func: fnHistoElementCov
+In:  FARG=1
+Out: EC=0 RX=Real:"2"
+Func: fnHistoElementCov
+In:  FARG=3
+Out: EC=0 RX=Real:"1"
+
+; matrix input and Y selection use the same Real34 classification route
+Func: fnClSigma
+In:  FARG=0 RX=Real:"0"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RX=ReMa:"M3,2[1,0,2,0.5,3,1]"
+Out: EC=0
+Func: fnConvertStatsToHisto
+In:  FARG=574
+Out: EC=0 RZ=Real:"2" RY=Real:"0" RX=Real:"1"
+Func: fnHistoElementCov
+In:  FARG=1
+Out: EC=0 RX=Real:"1"
+Func: fnHistoElementCov
+In:  FARG=3
+Out: EC=0 RX=Real:"2"
+
+; automatic infinite bounds cannot define finite bin centres
+Func: fnClSigma
+In:  FARG=0 RX=Real:"0"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FL_SPCRES=1 FARG=1 RX=ReMa:"M3,2[Infinity,0,2,0,4,0]"
+Out: EC=0
+Func: fnConvertStatsToHisto
+In:  FL_SPCRES=1 FARG=573
+Out: EC=1
+
+; p39 retains integer products that need more than 34 significant digits
+Func: fnClSigma
+In:  FARG=0 RX=Real:"0"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"0" RX=Real:"1.234567890123456789012345678901234"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"0" RX=Real:"1.234567890123456789012345678901236"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"0" RX=Real:"1.234567890123456789012345678901243"
+Out: EC=0
+Func: fnConvertStatsToHisto
+In:  FARG=573
+Out: EC=0
+Func: fnSetNBins
+In:  RMODE=0 RX=Real:"9"
+Out: EC=0
+Func: fnHistoElementCov
+In:  FARG=3
+Out: EC=0 RX=Real:"0"
+Func: fnHistoElementCov
+In:  FARG=5
+Out: EC=0 RX=Real:"1"

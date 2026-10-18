@@ -37,6 +37,14 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"2" RX=Real:"0.25"
 In:  FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"-0.5" RX=Real:"3"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"3" RX=Real:"-0.125"
 
+In:  FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"-1" RX=Real:"1E40"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1E40" RX=Real:"1"
+
+Acc: 34
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"2.796545254087200789020496202922496" RX=Real:"-1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"0.3575840578794432725499394920003525"
+Acc: 30
+
 ;=======================================
 ; Infinite base  (inf ^ x)
 ; A negative exponent must give 0, not infinity; a positive exponent
@@ -414,3 +422,216 @@ Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"inf"
 
 In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=1 RY=Real:"-inf" RX=Real:"0.5"
 Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"0 i inf"
+; Exact integer powers use the dedicated guarded exponentiation path.
+Func: fnPower
+In: RMODE=0 FL_SPCRES=1 FL_CPXRES=0 RZ=Real:"2503155504993241601315571986085849" RY=Real:"3" RX=Real:"70"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0 RX=Real:"0"
+
+Func: fnPower
+In: RMODE=1 FL_SPCRES=1 FL_CPXRES=0 RZ=Real:"2503155504993241601315571986085849" RY=Real:"3" RX=Real:"70"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0 RX=Real:"0"
+
+Func: fnPower
+In: RMODE=2 FL_SPCRES=1 FL_CPXRES=0 RZ=Real:"2503155504993241601315571986085849" RY=Real:"3" RX=Real:"70"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0 RX=Real:"0"
+
+Func: fnPower
+In: RMODE=3 FL_SPCRES=1 FL_CPXRES=0 RZ=Real:"2503155504993241601315571986085849" RY=Real:"3" RX=Real:"70"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0 RX=Real:"0"
+
+Func: fnPower
+In: RMODE=4 FL_SPCRES=1 FL_CPXRES=0 RZ=Real:"2503155504993241601315571986085849" RY=Real:"3" RX=Real:"70"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0 RX=Real:"0"
+
+Func: fnPower
+In: RMODE=5 FL_SPCRES=1 FL_CPXRES=0 RZ=Real:"2503155504993241601315571986085849" RY=Real:"3" RX=Real:"70"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0 RX=Real:"0"
+
+Func: fnPower
+In: RMODE=6 FL_SPCRES=1 FL_CPXRES=0 RZ=Real:"2503155504993241601315571986085849" RY=Real:"3" RX=Real:"70"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0 RX=Real:"-0"
+
+; Nonintegral real power applies each output rounding mode after p51 work.
+Func: fnPower
+In: RMODE=0 FL_SPCRES=1 FL_CPXRES=0 RT=Real:"1E30" RZ=Real:"1442499588942.764891498298518300550" RY=Real:"1.254554312028456" RX=Real:"123.456"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnPower
+In: RMODE=1 FL_SPCRES=1 FL_CPXRES=0 RT=Real:"1E30" RZ=Real:"1442499588942.764891498298518300550" RY=Real:"1.254554312028456" RX=Real:"123.456"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnPower
+In: RMODE=2 FL_SPCRES=1 FL_CPXRES=0 RT=Real:"1E30" RZ=Real:"1442499588942.764891498298518300550" RY=Real:"1.254554312028456" RX=Real:"123.456"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnPower
+In: RMODE=3 FL_SPCRES=1 FL_CPXRES=0 RT=Real:"1E30" RZ=Real:"1442499588942.764891498298518300550" RY=Real:"1.254554312028456" RX=Real:"123.456"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnPower
+In: RMODE=4 FL_SPCRES=1 FL_CPXRES=0 RT=Real:"1E30" RZ=Real:"1442499588942.764891498298518300549" RY=Real:"1.254554312028456" RX=Real:"123.456"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnPower
+In: RMODE=5 FL_SPCRES=1 FL_CPXRES=0 RT=Real:"1E30" RZ=Real:"1442499588942.764891498298518300550" RY=Real:"1.254554312028456" RX=Real:"123.456"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnPower
+In: RMODE=6 FL_SPCRES=1 FL_CPXRES=0 RT=Real:"1E30" RZ=Real:"1442499588942.764891498298518300549" RY=Real:"1.254554312028456" RX=Real:"123.456"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"-0"
+
+; A p39 logarithm changes the last result digit after exponent scaling.
+Func: fnPower
+In: RMODE=0 FL_SPCRES=1 FL_CPXRES=0 RZ=Real:"3.355726998278878288774957104441270E+662" RY=Real:"7.623068583195218190252761444302672" RX=Real:"751.0524713127250282194363444318017"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0 RX=Real:"0"
+
+; A p51 logarithm still takes the p39 ln(10) constant and changes the last result digit.
+Func: fnPower
+In: RMODE=0 FL_SPCRES=1 FL_CPXRES=0 RZ=Real:"8.607162811586246953894411553307428E+5487" RY=Real:"8.297010262456967857043679519245368" RX=Real:"5972.146804679021755073184110003969"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0 RX=Real:"0"
+
+Func: fnPower
+In: RMODE=0 FL_SPCRES=1 FL_CPXRES=0 RZ=Real:"6.771868044280319825778153234393313e443" RY=Real:"4.167496955017834746288349629" RX=Real:"716"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0 RX=Real:"0"
+
+Func: fnPower
+In: RMODE=1 FL_SPCRES=1 FL_CPXRES=0 RZ=Real:"6.771868044280319825778153234393313e443" RY=Real:"4.167496955017834746288349629" RX=Real:"716"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0 RX=Real:"0"
+
+Func: fnPower
+In: RMODE=2 FL_SPCRES=1 FL_CPXRES=0 RZ=Real:"6.771868044280319825778153234393313e443" RY=Real:"4.167496955017834746288349629" RX=Real:"716"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0 RX=Real:"0"
+
+Func: fnPower
+In: RMODE=3 FL_SPCRES=1 FL_CPXRES=0 RZ=Real:"6.771868044280319825778153234393314e443" RY=Real:"4.167496955017834746288349629" RX=Real:"716"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0 RX=Real:"0"
+
+Func: fnPower
+In: RMODE=4 FL_SPCRES=1 FL_CPXRES=0 RZ=Real:"6.771868044280319825778153234393313e443" RY=Real:"4.167496955017834746288349629" RX=Real:"716"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0 RX=Real:"0"
+
+Func: fnPower
+In: RMODE=5 FL_SPCRES=1 FL_CPXRES=0 RZ=Real:"6.771868044280319825778153234393314e443" RY=Real:"4.167496955017834746288349629" RX=Real:"716"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0 RX=Real:"0"
+
+Func: fnPower
+In: RMODE=6 FL_SPCRES=1 FL_CPXRES=0 RZ=Real:"6.771868044280319825778153234393313e443" RY=Real:"4.167496955017834746288349629" RX=Real:"716"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0 RX=Real:"-0"
+
+;=========================================================
+; An integer power that is exact at 75 digits is rounded once by RM,
+; and y^(1/n) with an exact n-th root gives that root. Each value is
+; the exact result rounded once in the mode; the last digit is checked.
+;=========================================================
+Func: fnPower
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"1.000000000000000000000000000000001" RX=Real:"2"
+Out: EC=0 FL_ASLIFT=1 RX=Real:"1.000000000000000000000000000000002" ACC=34
+
+In:  RMODE=3 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"1.000000000000000000000000000000001" RX=Real:"2"
+Out: EC=0 FL_ASLIFT=1 RX=Real:"1.000000000000000000000000000000003" ACC=34
+
+In:  RMODE=5 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"1.000000000000000000000000000000001" RX=Real:"2"
+Out: EC=0 FL_ASLIFT=1 RX=Real:"1.000000000000000000000000000000003" ACC=34
+
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"236" RX=Real:"26"
+Out: EC=0 FL_ASLIFT=1 RX=Real:"4.962632063885475470769384651565825E+61" ACC=34
+
+In:  RMODE=4 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"236" RX=Real:"26"
+Out: EC=0 FL_ASLIFT=1 RX=Real:"4.962632063885475470769384651565824E+61" ACC=34
+
+In:  RMODE=6 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"236" RX=Real:"26"
+Out: EC=0 FL_ASLIFT=1 RX=Real:"4.962632063885475470769384651565824E+61" ACC=34
+
+In:  RMODE=4 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"100000" RX=Real:"0.2"
+Out: EC=0 FL_ASLIFT=1 RX=Real:"10" ACC=34
+
+In:  RMODE=6 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"100000" RX=Real:"0.2"
+Out: EC=0 FL_ASLIFT=1 RX=Real:"10" ACC=34
+
+;=========================================================
+; A negative base to the power 1/2 is 0 + i√|y|, as √ gives it.
+; The real part is exactly 0: multiplied by 1E80, any residue
+; of the complex power shows.
+;=========================================================
+Func: fnPower
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=1 RY=Real:"-4" RX=Real:"0.5"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"0 i 2" ACC=34
+
+In:  RMODE=5 FL_ASLIFT=0 FL_CPXRES=1 RY=Real:"-2" RX=Real:"0.5"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"0 i 1.414213562373095048801688724209699" ACC=34
+
+Func: fnPower
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=1 RZ=Real:"1E80" RY=Real:"-4" RX=Real:"0.5"
+Out: EC=0
+Func: fnRealPart
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnPower
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=1 RZ=Real:"1E80" RY=LonI:"-9" RX=Real:"0.5"
+Out: EC=0
+Func: fnRealPart
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"

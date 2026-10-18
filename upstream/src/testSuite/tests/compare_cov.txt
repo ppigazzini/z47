@@ -239,3 +239,118 @@ Out: EC=0
 Func: fnXEqualsTo
 In:  FARG=0 R00=ReMa:"M2,2[1,2,3,4]" RX=ReMa:"M2,3[1,2,3,4,5,6]"
 Out: EC=0
+
+; --- asserted predicate results ---
+Func: fnComparisonTiCov
+In:  FARG=1 R00=Cplx:"1 i 3" RX=Cplx:"1 i 2"
+Out: EC=0 RX=Real:"1"
+In:  FARG=1 R00=Cplx:"2 i 2" RX=Cplx:"1 i 2"
+Out: EC=0 RX=Real:"1"
+In:  FARG=1 R00=Cplx:"2 i 3" RX=Cplx:"1 i 2"
+Out: EC=0 RX=Real:"1"
+In:  FARG=1 R00=Cplx:"1 i 2" RX=Cplx:"1 i 2"
+Out: EC=0 RX=Real:"0"
+
+In:  FARG=1 R00=Real:"NaN" RX=Real:"NaN"
+Out: EC=0 RX=Real:"1"
+In:  FARG=0 R00=Real:"NaN" RX=Real:"NaN"
+Out: EC=0 RX=Real:"0"
+In:  FARG=2 R00=Real:"0" RX=Real:"NaN"
+Out: EC=0 RX=Real:"0"
+
+In:  FARG=0 AM=DEG R00=Real:"200":GRAD RX=Real:"180":DEG
+Out: EC=0 RX=Real:"1"
+In:  FARG=2 AM=DEG R00=Real:"3":DEG RX=Real:"3":GRAD
+Out: EC=0 RX=Real:"1"
+In:  FARG=0 AM=RAD R00=Real:"1":MULTPI RX=Real:"3.141592653589793238462643383279503":RAD
+Out: EC=0 RX=Real:"0"
+; This continued-fraction pair needs more than p51 pi to determine its order.
+In:  FARG=2 AM=RAD RMODE=0 R00=Real:"2660986268060398033024932428949292":RAD RX=Real:"847018236122935192166388903710609":MULTPI
+Out: EC=0 RX=Real:"1"
+In:  FARG=2 AM=RAD RMODE=1 R00=Real:"2660986268060398033024932428949292":RAD RX=Real:"847018236122935192166388903710609":MULTPI
+Out: EC=0 RX=Real:"1"
+In:  FARG=2 AM=RAD RMODE=2 R00=Real:"2660986268060398033024932428949292":RAD RX=Real:"847018236122935192166388903710609":MULTPI
+Out: EC=0 RX=Real:"1"
+In:  FARG=2 AM=RAD RMODE=3 R00=Real:"2660986268060398033024932428949292":RAD RX=Real:"847018236122935192166388903710609":MULTPI
+Out: EC=0 RX=Real:"1"
+In:  FARG=2 AM=RAD RMODE=4 R00=Real:"2660986268060398033024932428949292":RAD RX=Real:"847018236122935192166388903710609":MULTPI
+Out: EC=0 RX=Real:"1"
+In:  FARG=2 AM=RAD RMODE=5 R00=Real:"2660986268060398033024932428949292":RAD RX=Real:"847018236122935192166388903710609":MULTPI
+Out: EC=0 RX=Real:"1"
+In:  FARG=2 AM=RAD RMODE=6 R00=Real:"2660986268060398033024932428949292":RAD RX=Real:"847018236122935192166388903710609":MULTPI
+Out: EC=0 RX=Real:"1"
+In:  FARG=6 RX=ReMa:"M2,2[0,-0,0,0]"
+Out: EC=0 RX=Real:"1"
+In:  FARG=7 RX=ReMa:"M2,2[1,0,-0,1]"
+Out: EC=0 RX=Real:"1"
+In:  FARG=6 RX=ReMa:"M2,2[0,1,0,0]"
+Out: EC=0 RX=Real:"0"
+
+; The decNumber comparison helpers must report every ordered NaN predicate as false.
+In:  FARG=32 R00=Real:"0" RX=Real:"NaN"
+Out: EC=0 RX=Real:"0"
+In:  FARG=33 R00=Real:"0" RX=Real:"NaN"
+Out: EC=0 RX=Real:"0"
+In:  FARG=34 R00=Real:"0" RX=Real:"-NaN"
+Out: EC=0 RX=Real:"0"
+In:  FARG=35 R00=Real:"0" RX=Real:"-NaN"
+Out: EC=0 RX=Real:"0"
+In:  FARG=36 R00=Real:"1" RX=Real:"NaN"
+Out: EC=0 RX=Real:"0"
+In:  FARG=37 R00=Real:"1" RX=Real:"-NaN"
+Out: EC=0 RX=Real:"0"
+; The native Real34 helpers have the same unordered rules.
+In:  FARG=42 R00=Real:"0" RX=Real:"NaN"
+Out: EC=0 RX=Real:"0"
+In:  FARG=43 R00=Real:"0" RX=Real:"NaN"
+Out: EC=0 RX=Real:"0"
+In:  FARG=44 R00=Real:"0" RX=Real:"-NaN"
+Out: EC=0 RX=Real:"0"
+In:  FARG=45 R00=Real:"0" RX=Real:"-NaN"
+Out: EC=0 RX=Real:"0"
+In:  FARG=46 R00=Real:"1" RX=Real:"NaN"
+Out: EC=0 RX=Real:"0"
+In:  FARG=47 R00=Real:"1" RX=Real:"-NaN"
+Out: EC=0 RX=Real:"0"
+; A helper NaN comparison must not set a sticky flag in the shared p39 context.
+In:  FARG=48 R00=Real:"0" RX=Real:"NaN"
+Out: EC=0 RX=Real:"1"
+
+; Mixed real and complex matrices compare component by component without conversion storage.
+In:  FARG=0 R00=CxMa:"M2,2[1i0,2i0,3i0,4i0]" RX=ReMa:"M2,2[1,2,3,4]"
+Out: EC=0 RX=Real:"1"
+In:  FARG=1 R00=CxMa:"M2,2[1i0,2i0,3i1,4i0]" RX=ReMa:"M2,2[1,2,3,4]"
+Out: EC=0 RX=Real:"1"
+In:  FARG=0 R00=CxMa:"M1,1[NaNi0]" RX=ReMa:"M1,1[NaN]"
+Out: EC=0 RX=Real:"1"
+
+; CONVG? keeps five working digits beyond the strict SDIGS=32 tolerance.
+In:  FARG=16 SD=32 RY=Real:"1" RX=Real:"1.000000000000000000000000000000001"
+Out: EC=0 RX=Real:"1"
+In:  FARG=16 SD=32 RY=Real:"1" RX=Real:"1.00000000000000000000000000000002"
+Out: EC=0 RX=Real:"0"
+In:  FARG=17 SD=32 RY=Real:"9e-33" RX=Real:"0"
+Out: EC=0 RX=Real:"1"
+In:  FARG=17 SD=32 RY=Real:"1e-32" RX=Real:"0"
+Out: EC=0 RX=Real:"0"
+In:  FARG=22 RY=Real:"inf" RX=Real:"-inf"
+Out: EC=0 RX=Real:"1"
+In:  FARG=20 RY=Real:"NaN" RX=Real:"1"
+Out: EC=0 RX=Real:"1"
+
+; Mixed Real34 and long-integer comparisons retain all integer digits.
+Acc: 34
+In:  FARG=2 R00=LonI:"100000000000000000000000000000000000000000000000000000000000000000000000000000001" RX=Real:"1e80"
+Out: EC=0 RX=Real:"1"
+In:  FARG=4 R00=LonI:"99999999999999999999999999999999999999999999999999999999999999999999999999999999" RX=Real:"1e80"
+Out: EC=0 RX=Real:"1"
+In:  FARG=0 R00=LonI:"100000000000000000000000000000000000000000000000000000000000000000000000000000001" RX=Real:"1e80"
+Out: EC=0 RX=Real:"0"
+In:  FARG=4 R00=Real:"1e80" RX=LonI:"100000000000000000000000000000000000000000000000000000000000000000000000000000001"
+Out: EC=0 RX=Real:"1"
+In:  FARG=2 R00=Real:"1e80" RX=LonI:"99999999999999999999999999999999999999999999999999999999999999999999999999999999"
+Out: EC=0 RX=Real:"1"
+; A differing angle tag still uses common-unit conversion.
+In:  FARG=0 AM=DEG R00=LonI:"180" RX=Real:"200":GRAD
+Out: EC=0 RX=Real:"1"
+Acc: 30

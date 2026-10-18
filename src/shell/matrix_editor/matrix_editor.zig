@@ -405,8 +405,8 @@ extern fn decNumberCopy(dst: *real_t, src: *align(1) const real_t) *real_t;
 extern fn decNumberAdd(res: *real_t, a: *const real_t, b: *const real_t, ctx: *const realContext_t) *real_t;
 extern var ctxtReal34: realContext_t;
 
-extern fn realRectangularToPolar(real: *const real_t, imag: *const real_t, magnitude: *real_t, theta: *real_t, ctx: *const realContext_t) void;
-extern fn realPolarToRectangular(magnitude: *const real_t, theta: *const real_t, real: *real_t, imag: *real_t, ctx: *const realContext_t) void;
+extern fn realRectangularToPolar(z: *const cplx_t, magnitude: *real_t, theta: *real_t, ctx: *const realContext_t) void;
+const cplx_t = abi.Complex;
 
 extern fn convert3DtoSPH(matrix: *const real34Matrix_t, r: *real_t, th1: *real_t, th2: *real_t, am: u8, ctx: *const decContext) void;
 extern fn convert3DtoCYL(matrix: *const real34Matrix_t, r: *real_t, th1: *real_t, z: *real_t, am: u8, ctx: *const decContext) void;
@@ -1875,14 +1875,13 @@ pub export fn showComplexMatrix(matrix: *const complex34Matrix_t, prefixWidth: i
                 var im: real34_t = undefined;
                 const elem = &matrix.matrixElements.?[(i + sRow) * @as(usize, @intCast(cols)) + j + sCol];
                 if (polarMode) {
-                    var x: real_t = undefined;
-                    var y: real_t = undefined;
-                    real34ToReal(&elem.real, &x);
-                    real34ToReal(&elem.imag, &y);
-                    realRectangularToPolar(&x, &y, &x, &y, &ctxtReal39);
-                    frontier_conversion_angles.convertAngleFromTo(&y, amRadian, angleMode, &ctxtReal39);
-                    realToReal34(&x, &re);
-                    realToReal34(&y, &im);
+                    var z: cplx_t = undefined;
+                    real34ToReal(&elem.real, &z.Real);
+                    real34ToReal(&elem.imag, &z.Imag);
+                    realRectangularToPolar(&z, z.mag(), z.arg(), &ctxtReal39);
+                    frontier_conversion_angles.convertAngleFromTo(z.arg(), amRadian, angleMode, &ctxtReal39);
+                    realToReal34(z.mag(), &re);
+                    realToReal34(z.arg(), &im);
                 } else {
                     real34Copy(&elem.real, &re);
                     real34Copy(&elem.imag, &im);
@@ -2042,14 +2041,13 @@ pub export fn getComplexMatrixColumnWidths(matrix: *const complex34Matrix_t, pre
                 var c34Val: complex34_t = undefined;
                 complex34Copy(&matrix.matrixElements.?[(i + sRow) * @as(usize, @intCast(actualCols)) + j + sCol], &c34Val);
                 if (polarMode) {
-                    var x: real_t = undefined;
-                    var y: real_t = undefined;
-                    real34ToReal(&c34Val.real, &x);
-                    real34ToReal(&c34Val.imag, &y);
-                    realRectangularToPolar(&x, &y, &x, &y, &ctxtReal39);
-                    frontier_conversion_angles.convertAngleFromTo(&y, amRadian, angleMode, &ctxtReal39);
-                    realToReal34(&x, &c34Val.real);
-                    realToReal34(&y, &c34Val.imag);
+                    var z: cplx_t = undefined;
+                    real34ToReal(&c34Val.real, &z.Real);
+                    real34ToReal(&c34Val.imag, &z.Imag);
+                    realRectangularToPolar(&z, z.mag(), z.arg(), &ctxtReal39);
+                    frontier_conversion_angles.convertAngleFromTo(z.arg(), amRadian, angleMode, &ctxtReal39);
+                    realToReal34(z.mag(), &c34Val.real);
+                    realToReal34(z.arg(), &c34Val.imag);
                 }
 
                 rPadWidth_rPtr[i * MATRIX_MAX_COLUMNS + j] = 0;
@@ -2563,13 +2561,10 @@ pub fn z47_frontier_matrix_load_selected_into_register_x() void {
     if (isComplex) {
         real34Copy(&openMatrixMIMPointer.complexMatrix.matrixElements.?[idx].real, &re);
         real34Copy(&openMatrixMIMPointer.complexMatrix.matrixElements.?[idx].imag, &im);
-        reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
-        real34Copy(&re, &regCplx(REGISTER_X).real);
-        real34Copy(&im, regImag34(REGISTER_X));
+        frontier_register_value_conversions.convertReal34ToComplex34Register(&re, &im, REGISTER_X);
     } else {
         real34Copy(&openMatrixMIMPointer.realMatrix.matrixElements.?[idx], &re);
-        reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
-        real34Copy(&re, reg34(REGISTER_X));
+        frontier_register_value_conversions.convertReal34ToReal34Register(&re, REGISTER_X);
     }
 }
 
@@ -2581,12 +2576,9 @@ pub fn z47_frontier_matrix_run_item_function(func: i16, param: u16) void {
 // is staged there from the value captured before mimEnter.
 pub fn z47_frontier_matrix_stage_dyadic_operand_in_y() void {
     if (saved_is_complex) {
-        reallocateRegister(REGISTER_Y, dtComplex34, 0, amNone);
-        real34Copy(&saved_re, &regCplx(REGISTER_Y).real);
-        real34Copy(&saved_im, regImag34(REGISTER_Y));
+        frontier_register_value_conversions.convertReal34ToComplex34Register(&saved_re, &saved_im, REGISTER_Y);
     } else {
-        reallocateRegister(REGISTER_Y, dtReal34, 0, amNone);
-        real34Copy(&saved_re, reg34(REGISTER_Y));
+        frontier_register_value_conversions.convertReal34ToReal34Register(&saved_re, REGISTER_Y);
     }
 }
 

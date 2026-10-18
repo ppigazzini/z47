@@ -1,4 +1,3 @@
-const abi_constants = @import("abi").constants;
 const check_value_owned = @import("compare/check_value.zig");
 const build_options = @import("math_command_wrappers_build_options");
 const compare_owned = @import("compare/compare.zig");
@@ -252,7 +251,7 @@ comptime {
     }
 }
 
-const PowRealFn = *const fn (x: *const runtime.real_t, res: *runtime.real_t, real_context: *runtime.realContext_t) callconv(.c) void;
+const PowRealFn = powlog_power_owned.PowRealFn;
 const no_register = @as(runtime.calcRegister_t, -1);
 
 pub export fn z47_math_wrappers_owned_C47_WP34S_Atan2(
@@ -273,13 +272,12 @@ pub export fn z47_math_wrappers_owned_C47_WP34S_Atan(
 }
 
 pub export fn z47_math_wrappers_owned_realRectangularToPolar(
-    real: *const runtime.real_t,
-    imag: *const runtime.real_t,
+    z: *const runtime.cplx_t,
     magnitude: *runtime.real_t,
     theta: *runtime.real_t,
     real_context: *runtime.realContext_t,
 ) callconv(.c) void {
-    rectangular_to_polar_owned.rectangularToPolarReal(real, imag, magnitude, theta, real_context);
+    rectangular_to_polar_owned.rectangularToPolarReal(z, magnitude, theta, real_context);
 }
 
 pub export fn z47_math_wrappers_owned_C47_WP34S_Cvt2RadSinCosTan(
@@ -294,23 +292,19 @@ pub export fn z47_math_wrappers_owned_C47_WP34S_Cvt2RadSinCosTan(
 }
 
 pub export fn z47_math_wrappers_owned_lnComplex(
-    real: *const runtime.real_t,
-    imag: *const runtime.real_t,
-    ln_real: *runtime.real_t,
-    ln_imag: *runtime.real_t,
+    z: *const runtime.cplx_t,
+    ln: *runtime.cplx_t,
     real_context: *runtime.realContext_t,
 ) callconv(.c) void {
-    ln_complex_owned.lnComplex(real, imag, ln_real, ln_imag, real_context);
+    ln_complex_owned.lnComplex(z, ln, real_context);
 }
 
 fn publicLnComplex(
-    real: *const runtime.real_t,
-    imag: *const runtime.real_t,
-    ln_real: *runtime.real_t,
-    ln_imag: *runtime.real_t,
+    z: *const runtime.cplx_t,
+    ln: *runtime.cplx_t,
     real_context: *runtime.realContext_t,
 ) callconv(.c) void {
-    ln_complex_owned.lnComplex(real, imag, ln_real, ln_imag, real_context);
+    ln_complex_owned.lnComplex(z, ln, real_context);
 }
 
 comptime {
@@ -377,65 +371,6 @@ fn realLog10Value(
     runtime.realDivide(res, runtime.z47_math_wrappers_const_ln10(), res, real_context);
 }
 
-fn realPower10Value(
-    x: *const runtime.real_t,
-    res: *runtime.real_t,
-    real_context: *runtime.realContext_t,
-) void {
-    runtime.realMultiply(x, runtime.z47_math_wrappers_const_ln10(), res, real_context);
-    transcendental_command_owned.realExp(res, res, real_context);
-}
-
-fn realPower2Value(
-    x: *const runtime.real_t,
-    res: *runtime.real_t,
-    real_context: *runtime.realContext_t,
-) void {
-    runtime.realMultiply(x, runtime.z47_math_wrappers_const_ln2(), res, real_context);
-    transcendental_command_owned.realExp(res, res, real_context);
-}
-
-fn intPowRealValue(powf: PowRealFn) void {
-    var x: runtime.real_t = undefined;
-
-    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &x)) {
-        return;
-    }
-
-    if (runtime.realIsSpecial(&x) and !runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
-        runtime.z47_math_wrappers_report_int_pow_real_domain_error();
-        return;
-    }
-
-    var p: runtime.real_t = undefined;
-
-    if (runtime.realIntegerPowerExact(if (powf == &realPower2) abi_constants.const_2() else abi_constants.const_10(), &x, &p)) { // an integer exponent gives the exact power
-        x = p;
-    } else {
-        powf(&x, &x, &runtime.ctxtReal39);
-    }
-    runtime.convertRealToResultRegister(&x, runtime.REGISTER_X, runtime.amNone);
-}
-
-fn intPowCplxValue(ln_base: *const runtime.real_t) void {
-    var a: runtime.real_t = undefined;
-    var b: runtime.real_t = undefined;
-    var factor: runtime.real_t = undefined;
-
-    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &a, &b)) {
-        return;
-    }
-
-    runtime.realMultiply(ln_base, &a, &a, &runtime.ctxtReal39);
-    runtime.realMultiply(ln_base, &b, &b, &runtime.ctxtReal39);
-
-    transcendental_command_owned.realExp(&a, &factor, &runtime.ctxtReal39);
-    runtime.realPolarToRectangular(runtime.z47_math_wrappers_const_1(), &b, &a, &b, &runtime.ctxtReal39);
-    runtime.realMultiply(&factor, &a, &a, &runtime.ctxtReal39);
-    runtime.realMultiply(&factor, &b, &b, &runtime.ctxtReal39);
-
-    runtime.convertComplexToResultRegister(&a, &b, runtime.REGISTER_X);
-}
 pub export fn pcg32_random_r(rng: *runtime.pcg32_random_t) callconv(.c) u32 {
     return random_primitives_owned.pcg32RandomR(rng);
 }
@@ -457,23 +392,28 @@ pub export fn realRandomU01(res: *runtime.real_t) callconv(.c) void {
 }
 
 pub export fn sinComplex(
-    real: *const runtime.real_t,
-    imag: *const runtime.real_t,
-    res_real: *runtime.real_t,
-    res_imag: *runtime.real_t,
+    z: *const runtime.cplx_t,
+    res: *runtime.cplx_t,
     real_context: *runtime.realContext_t,
 ) callconv(.c) void {
-    trig_complex_primitives_owned.sinComplex(real, imag, res_real, res_imag, real_context);
+    trig_complex_primitives_owned.sinComplex(z, res, real_context);
 }
 
 pub export fn cosComplex(
-    real: *const runtime.real_t,
-    imag: *const runtime.real_t,
-    res_real: *runtime.real_t,
-    res_imag: *runtime.real_t,
+    z: *const runtime.cplx_t,
+    res: *runtime.cplx_t,
     real_context: *runtime.realContext_t,
 ) callconv(.c) void {
-    trig_complex_primitives_owned.cosComplex(real, imag, res_real, res_imag, real_context);
+    trig_complex_primitives_owned.cosComplex(z, res, real_context);
+}
+
+pub export fn multiplyTrigByHyperbolic(
+    trigonometric: *const runtime.real_t,
+    hyperbolic: *const runtime.real_t,
+    res: *runtime.real_t,
+    real_context: *runtime.realContext_t,
+) callconv(.c) void {
+    trig_complex_primitives_owned.multiplyTrigByHyperbolic(trigonometric, hyperbolic, res, real_context);
 }
 
 pub export fn sinCosReal(trig_type: runtime.trigType_t) callconv(.c) void {
@@ -493,23 +433,19 @@ pub export fn sinhCoshCplx(trig_type: runtime.trigType_t) callconv(.c) void {
 }
 
 pub export fn TanComplex(
-    x_real: *const runtime.real_t,
-    x_imag: *const runtime.real_t,
-    r_real: *runtime.real_t,
-    r_imag: *runtime.real_t,
+    x: *const runtime.cplx_t,
+    r: *runtime.cplx_t,
     real_context: *runtime.realContext_t,
 ) callconv(.c) u8 {
-    return trig_complex_primitives_owned.TanComplex(x_real, x_imag, r_real, r_imag, real_context);
+    return trig_complex_primitives_owned.TanComplex(x, r, real_context);
 }
 
 pub export fn TanhComplex(
-    x_real: *const runtime.real_t,
-    x_imag: *const runtime.real_t,
-    r_real: *runtime.real_t,
-    r_imag: *runtime.real_t,
+    x: *const runtime.cplx_t,
+    r: *runtime.cplx_t,
     real_context: *runtime.realContext_t,
 ) callconv(.c) u8 {
-    return trig_complex_primitives_owned.TanhComplex(x_real, x_imag, r_real, r_imag, real_context);
+    return trig_complex_primitives_owned.TanhComplex(x, r, real_context);
 }
 
 pub export fn realExpLimitCheck(
@@ -529,13 +465,11 @@ pub export fn realExp(
 }
 
 pub export fn expComplex(
-    real: *const runtime.real_t,
-    imag: *const runtime.real_t,
-    res_real: *runtime.real_t,
-    res_imag: *runtime.real_t,
+    z: *const runtime.cplx_t,
+    res: *runtime.cplx_t,
     real_context: *runtime.realContext_t,
 ) callconv(.c) void {
-    transcendental_command_owned.expComplex(real, imag, res_real, res_imag, real_context);
+    transcendental_command_owned.expComplex(z, res, real_context);
 }
 
 pub export fn realExpM1(
@@ -559,7 +493,7 @@ pub export fn realPower10(
     res: *runtime.real_t,
     real_context: *runtime.realContext_t,
 ) callconv(.c) void {
-    realPower10Value(x, res, real_context);
+    powlog_power_owned.realPower10(x, res, real_context);
 }
 
 pub export fn realPower2(
@@ -567,15 +501,15 @@ pub export fn realPower2(
     res: *runtime.real_t,
     real_context: *runtime.realContext_t,
 ) callconv(.c) void {
-    realPower2Value(x, res, real_context);
+    powlog_power_owned.realPower2(x, res, real_context);
 }
 
 pub export fn intPowReal(powf: PowRealFn) callconv(.c) void {
-    intPowRealValue(powf);
+    powlog_power_owned.intPowReal(powf);
 }
 
-pub export fn intPowCplx(ln_base: *const runtime.real_t) callconv(.c) void {
-    intPowCplxValue(ln_base);
+pub export fn intPowCplx(powf: PowRealFn, ln_base: *const runtime.real_t) callconv(.c) void {
+    powlog_power_owned.intPowCplx(powf, ln_base);
 }
 
 pub export fn logxyReal(denom: *const runtime.real_t) callconv(.c) void {
@@ -590,24 +524,24 @@ pub export fn logxyLonI(denom: *const runtime.real_t) callconv(.c) void {
     logxy_command_owned.logxyLonI(denom);
 }
 
+pub export fn logBaseCplx(denom: *const runtime.real_t) callconv(.c) void {
+    logxy_command_owned.logBaseCplx(denom);
+}
+
 pub export fn sqrt1Px2Complex(
-    real: *const runtime.real_t,
-    imag: *const runtime.real_t,
-    res_real: *runtime.real_t,
-    res_imag: *runtime.real_t,
+    z: *const runtime.cplx_t,
+    res: *runtime.cplx_t,
     real_context: *runtime.realContext_t,
 ) callconv(.c) void {
-    special_algebraic_command_owned.sqrt1Px2Complex(real, imag, res_real, res_imag, real_context);
+    special_algebraic_command_owned.sqrt1Px2Complex(z, res, real_context);
 }
 
 pub export fn eulersFormula(
-    in_real: *const runtime.real_t,
-    in_imag: *const runtime.real_t,
-    out_real: *runtime.real_t,
-    out_imag: *runtime.real_t,
+    in: *const runtime.cplx_t,
+    out: *runtime.cplx_t,
     real_context: *runtime.realContext_t,
 ) callconv(.c) void {
-    special_algebraic_command_owned.eulersFormula(in_real, in_imag, out_real, out_imag, real_context);
+    special_algebraic_command_owned.eulersFormula(in, out, real_context);
 }
 
 pub export fn fnSqrt1Px2(unused_but_mandatory_parameter: u16) callconv(.c) void {
@@ -634,24 +568,29 @@ pub export fn integerPartCplx(mode: runtime.rounding_t) callconv(.c) void {
     integer_part_owned.integerPartCplx(mode);
 }
 
-pub export fn ArcsinComplex(
-    x_real: *const runtime.real_t,
-    x_imag: *const runtime.real_t,
-    r_real: *runtime.real_t,
-    r_imag: *runtime.real_t,
+pub export fn ArcsinAcosComplex(
+    z: *const runtime.cplx_t,
+    r: *runtime.cplx_t,
+    calculate_acos: bool,
     real_context: *runtime.realContext_t,
 ) callconv(.c) u8 {
-    return inverse_trig_command_owned.ArcsinComplex(x_real, x_imag, r_real, r_imag, real_context);
+    return inverse_trig_command_owned.ArcsinAcosComplex(z, r, calculate_acos, real_context);
+}
+
+pub export fn ArcsinComplex(
+    x: *const runtime.cplx_t,
+    r: *runtime.cplx_t,
+    real_context: *runtime.realContext_t,
+) callconv(.c) u8 {
+    return inverse_trig_command_owned.ArcsinComplex(x, r, real_context);
 }
 
 pub export fn ArctanComplex(
-    x_real: *runtime.real_t,
-    x_imag: *runtime.real_t,
-    r_real: *runtime.real_t,
-    r_imag: *runtime.real_t,
+    x: *runtime.cplx_t,
+    r: *runtime.cplx_t,
     real_context: *runtime.realContext_t,
 ) callconv(.c) u8 {
-    return inverse_trig_command_owned.ArctanComplex(x_real, x_imag, r_real, r_imag, real_context);
+    return inverse_trig_command_owned.ArctanComplex(x, r, real_context);
 }
 
 pub export fn ArcsinhReal(
@@ -663,13 +602,11 @@ pub export fn ArcsinhReal(
 }
 
 pub export fn ArcsinhComplex(
-    x_real: *const runtime.real_t,
-    x_imag: *const runtime.real_t,
-    r_real: *runtime.real_t,
-    r_imag: *runtime.real_t,
+    z: *const runtime.cplx_t,
+    r: *runtime.cplx_t,
     real_context: *runtime.realContext_t,
 ) callconv(.c) u8 {
-    return inverse_trig_command_owned.ArcsinhComplex(x_real, x_imag, r_real, r_imag, real_context);
+    return inverse_trig_command_owned.ArcsinhComplex(z, r, real_context);
 }
 
 pub export fn realArcosh(
@@ -814,8 +751,8 @@ pub export fn fnErf(unused_but_mandatory_parameter: u16) callconv(.c) void {
 }
 
 pub export fn fnErfc(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    // erfc is the normal CDF in disguise, so it goes with OPTION_DIST_NORMAL.
-    if (comptime !runtime.option_dist_normal) return;
+    // erfc is the normal CDF in disguise, so it goes with OPTION_DIST_NORML.
+    if (comptime !runtime.option_dist_norml) return;
     erf_owned.fnErfc(unused_but_mandatory_parameter);
 }
 

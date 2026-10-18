@@ -70,3 +70,37 @@ Out: EC=0 RX=Real:"0"
 Func: fnEqCalcCov
 In:  FARG=19 RX=Real:"0"
 Out: EC=0 RX=Real:"3"
+; The parser's private numeric stack, not the incoming register type, defines
+; the left side of an equality.
+Func: fnEqCalcCov
+In:  FARG=18 RX=ReMa:"M1,1[7]"
+Out: EC=0 RX=Real:"0"
+
+; A NaN imaginary component is not a marker for a real value. It remains part
+; of the complex operand through dyadic, monadic and equality dispatch.
+Func: fnEqCalcCov
+In:  FL_SPCRES=1 FARG=20 RX=Cplx:"1 i NaN"
+Out: EC=0 RX=Cplx:"3 i NaN"
+Func: fnEqCalcCov
+In:  FL_SPCRES=1 FARG=21 RX=Cplx:"1 i NaN"
+Out: EC=0 RX=Real:"NaN"
+Func: fnEqCalcCov
+In:  FL_SPCRES=1 FARG=22 RX=Cplx:"1 i NaN"
+Out: EC=0 RX=Cplx:"1 i NaN"
+
+; The numeric stack must contain exactly one right-side result at the end.
+Func: fnEqCalcCov
+In:  FARG=23 RX=Real:"0"
+Out: EC=45
+Func: fnEqCalcCov
+In:  FARG=24 RX=Real:"0"
+Out: EC=45
+
+; Formula arithmetic is a chain of public Real34 operations, including its
+; selected rounding mode. It is not an extended-precision expression tree.
+Func: fnEqCalcCov
+In:  RMODE=0 FARG=25 RX=Real:"0"
+Out: EC=0 RX=Real:"0"
+Func: fnEqCalcCov
+In:  RMODE=5 FARG=25 RX=Real:"0"
+Out: EC=0 RX=Real:"10"

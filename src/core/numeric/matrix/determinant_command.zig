@@ -15,10 +15,6 @@ const complex34Matrix_t = runtime.complex34Matrix_t;
 const nim_register_line = runtime.REGISTER_X;
 const std_cross = "\x80\xd7";
 
-inline fn real34Copy(source: *const real34_t, destination: *real34_t) void {
-    destination.* = source.*;
-}
-
 fn bufPrintZ(buffer: []u8, comptime format: []const u8, args: anytype) ![:0]u8 {
     return std.mem.printSentinel(buffer, format, args, 0);
 }
@@ -45,8 +41,7 @@ pub export fn fnDeterminant(unused_param_but_mandatory: u16) callconv(.c) void {
         } else {
             runtime.detRealMatrix(&x, &res);
             if (runtime.lastErrorCode == runtime.ERROR_NONE) {
-                runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, runtime.amNone);
-                real34Copy(&res, runtime.registerReal34Data(runtime.REGISTER_X));
+                runtime.convertReal34ToReal34Register(&res, runtime.REGISTER_X);
             }
         }
     } else if (data_type == runtime.dtComplex34Matrix) {
@@ -65,9 +60,7 @@ pub export fn fnDeterminant(unused_param_but_mandatory: u16) callconv(.c) void {
         } else {
             runtime.detComplexMatrix(&x, &res_r, &res_i);
             if (runtime.lastErrorCode == runtime.ERROR_NONE) {
-                runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtComplex34, 0, runtime.amNone);
-                real34Copy(&res_r, runtime.registerReal34Data(runtime.REGISTER_X));
-                real34Copy(&res_i, runtime.registerImag34Data(runtime.REGISTER_X));
+                runtime.convertReal34ToComplex34Register(&res_r, &res_i, runtime.REGISTER_X);
             }
         }
     } else {

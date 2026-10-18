@@ -51,19 +51,18 @@ fn unitVectorError() void {
 }
 
 fn unitVectorComplex() void {
-    var real_value: runtime.real_t = undefined;
-    var imag_value: runtime.real_t = undefined;
     var norm: runtime.real_t = undefined;
+    var x: runtime.cplx_t = undefined;
 
-    runtime.real34ToReal(runtime.registerReal34Ptr(runtime.REGISTER_X), &real_value);
-    runtime.real34ToReal(runtime.registerImag34Ptr(runtime.REGISTER_X), &imag_value);
+    runtime.real34ToReal(runtime.registerReal34Ptr(runtime.REGISTER_X), &x.Real);
+    runtime.real34ToReal(runtime.registerImag34Ptr(runtime.REGISTER_X), &x.Imag);
 
-    runtime.realMultiply(&real_value, &real_value, &norm, &runtime.ctxtReal39);
-    runtime.realFMA(&imag_value, &imag_value, &norm, &norm, &runtime.ctxtReal39);
+    runtime.realMultiply(&x.Real, &x.Real, &norm, &runtime.ctxtReal39);
+    runtime.realFMA(&x.Imag, &x.Imag, &norm, &norm, &runtime.ctxtReal39);
     runtime.realSquareRoot(&norm, &norm, &runtime.ctxtReal39);
-    runtime.realDivide(&real_value, &norm, &real_value, &runtime.ctxtReal39);
-    runtime.realDivide(&imag_value, &norm, &imag_value, &runtime.ctxtReal39);
-    runtime.convertComplexToResultRegister(&real_value, &imag_value, runtime.REGISTER_X);
+    runtime.realDivide(&x.Real, &norm, &x.Real, &runtime.ctxtReal39);
+    runtime.realDivide(&x.Imag, &norm, &x.Imag, &runtime.ctxtReal39);
+    runtime.convertComplexToResultRegister(&x, runtime.REGISTER_X);
 }
 
 // linkTo*MatrixRegister aliases the register's own storage, so both workers below
@@ -98,32 +97,38 @@ fn unitVectorRema() void {
 
 fn unitVectorCxma() void {
     var matrix: runtime.complex34Matrix_t = undefined;
-    var real_value: runtime.real_t = undefined;
-    var imag_value: runtime.real_t = undefined;
-    var sum: runtime.real_t = undefined;
+    var elem: runtime.cplx_t = undefined;
+    var sum: runtime.cplx_t = undefined;
 
     runtime.linkToComplexMatrixRegister(runtime.REGISTER_X, &matrix);
-    runtime.realSetZero(&sum);
+    runtime.realSetZero(&sum.Real);
 
     const count = complexMatrixElementCount(&matrix);
 
     for (0..count) |index| {
-        runtime.real34ToReal(complexMatrixRealPtr(&matrix, index), &real_value);
-        runtime.realMultiply(&real_value, &real_value, &real_value, &runtime.ctxtReal39);
-        runtime.realAdd(&sum, &real_value, &sum, &runtime.ctxtReal39);
-        runtime.real34ToReal(complexMatrixImagPtr(&matrix, index), &imag_value);
-        runtime.realMultiply(&imag_value, &imag_value, &imag_value, &runtime.ctxtReal39);
-        runtime.realAdd(&sum, &imag_value, &sum, &runtime.ctxtReal39);
+        runtime.real34ToReal(complexMatrixRealPtr(&matrix, index), &elem.Real);
+        runtime.realMultiply(&elem.Real, &elem.Real, &elem.Real, &runtime.ctxtReal39);
+        runtime.realAdd(&sum.Real, &elem.Real, &sum.Real, &runtime.ctxtReal39);
+        runtime.real34ToReal(complexMatrixImagPtr(&matrix, index), &elem.Imag);
+        runtime.realMultiply(&elem.Imag, &elem.Imag, &elem.Imag, &runtime.ctxtReal39);
+        runtime.realAdd(&sum.Real, &elem.Imag, &sum.Real, &runtime.ctxtReal39);
     }
+    runtime.realSquareRoot(&sum.Real, &sum.Real, &runtime.ctxtReal39);
+    runtime.realSetZero(&sum.Imag);
 
-    runtime.realSquareRoot(&sum, &sum, &runtime.ctxtReal39);
-
+    // The norm is real, so a finite element divides part by part; a special
+    // element or norm goes through the complex division for its special results.
     for (0..count) |index| {
-        runtime.real34ToReal(complexMatrixRealPtr(&matrix, index), &real_value);
-        runtime.real34ToReal(complexMatrixImagPtr(&matrix, index), &imag_value);
-        runtime.divComplexComplex(&real_value, &imag_value, &sum, runtime.z47_math_wrappers_const_0(), &real_value, &imag_value, &runtime.ctxtReal39);
-        runtime.realToReal34(&real_value, complexMatrixRealPtr(&matrix, index));
-        runtime.realToReal34(&imag_value, complexMatrixImagPtr(&matrix, index));
+        runtime.real34ToReal(complexMatrixRealPtr(&matrix, index), &elem.Real);
+        runtime.real34ToReal(complexMatrixImagPtr(&matrix, index), &elem.Imag);
+        if (runtime.realIsSpecial(&elem.Real) or runtime.realIsSpecial(&elem.Imag) or runtime.realIsSpecial(&sum.Real)) {
+            runtime.divComplexComplex(&elem, &sum, &elem, &runtime.ctxtReal39);
+        } else {
+            runtime.realDivide(&elem.Real, &sum.Real, &elem.Real, &runtime.ctxtReal39);
+            runtime.realDivide(&elem.Imag, &sum.Real, &elem.Imag, &runtime.ctxtReal39);
+        }
+        runtime.realToReal34(&elem.Real, complexMatrixRealPtr(&matrix, index));
+        runtime.realToReal34(&elem.Imag, complexMatrixImagPtr(&matrix, index));
     }
 }
 

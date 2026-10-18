@@ -79,13 +79,15 @@ Out: EC=24 FL_ASLIFT=0 RX=Stri:"String test"
 ;=======================================
 ; binomialR(Real Matrix) --> Error24
 ;=======================================
-
+In:  FL_ASLIFT=0 RP=Real:"0.5" RN=Real:"5" RX=ReMa:"M1,2[0,1]"
+Out: EC=24 FL_ASLIFT=0 RX=ReMa:"M1,2[0,1]"
 
 
 ;=======================================
 ; binomialR(Complex Matrix) --> Error24
 ;=======================================
-
+In:  FL_ASLIFT=0 RP=Real:"0.5" RN=Real:"5" RX=CxMa:"M1,1[1i1]"
+Out: EC=24 FL_ASLIFT=0 RX=CxMa:"M1,1[1i1]"
 
 
 ;=======================================
@@ -143,3 +145,46 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"3" RX=Real:"0.32307319481053396429"
 ;=======================================
 ; binomialR(Complex) --> Error24
 ;=======================================
+
+; Support, integer steps, and degenerate distributions.
+Func: fnBinomialR
+In:  RP=Real:"0.5" RN=Real:"5" RX=Real:"-1"
+Out: EC=0 RX=Real:"1"
+
+Func: fnBinomialR
+In:  RP=Real:"0.5" RN=Real:"5" RX=Real:"5.1"
+Out: EC=0 RX=Real:"0"
+
+Func: fnBinomialR
+In:  RP=Real:"0" RN=Real:"5" RX=Real:"1"
+Out: EC=0 RX=Real:"0"
+
+Func: fnBinomialR
+In:  RP=Real:"1" RN=Real:"5" RX=Real:"5"
+Out: EC=0 RX=Real:"1"
+
+Func: fnBinomialR
+In:  RP=Real:"0.5" RN=Real:"0" RX=Real:"1"
+Out: EC=0 RX=Real:"0"
+
+Func: fnBinomialR
+In:  RP=Real:"0.5" RN=Real:"5" RX=Real:"inf"
+Out: EC=0 RX=Real:"0"
+
+; The upper route evaluates its small side directly.
+Func: fnBinomialR
+In:  RP=Real:"0.5" RN=Real:"1e40" RX=Real:"5e39"
+Out: EC=0 RX=Real:"0.5000000000000000000039894228040143"
+
+; P39 loses result digits in the direct beta tail.
+Func: fnBinomialR
+In:  RP=Real:"0.37" RN=Real:"1000" RZ=Real:"1e40" RY=Real:"0.02711538294560956638941151209365400142996432273249884101178" RX=Real:"400"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnBinomialR
+In:  FL_SPCRES=1 RP=Real:"0.5" RN=Real:"5" RX=Real:"NaN"
+Out: EC=0 RX=Real:"NaN"

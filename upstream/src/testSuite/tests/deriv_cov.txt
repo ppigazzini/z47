@@ -23,11 +23,42 @@ Func: fnDerivEqCov
 In:  FARG=2 RX=Real:"3"
 Out: EC=0 RX=Real:"18"
 
-; the step is relative (h = x scaled down), so at x=0 it collapses to zero and the
-; weighted sum is divided by it. f'(0) of X^3 is 0 and must come back finite.
+; Directed result modes keep an exactly representable polynomial derivative exact.
+Func: fnDerivEqCov
+In:  FARG=1 RMODE=5 RX=Real:"2"
+Out: EC=0 RX=Real:"12"
+Func: fnDerivEqCov
+In:  FARG=1 RMODE=6 RX=Real:"2"
+Out: EC=0 RX=Real:"12"
+
+; At x=0 the relative step uses its unit fallback. Floor mode from the preceding case remains selected; f'(0) of X^3
+; is positive zero, so guard arithmetic must not introduce a negative sign.
 Func: fnDerivEqCov
 In:  FARG=1 RX=Real:"0"
 Out: EC=0 RX=Real:"0"
+
+; A finite real input is required. A complex scalar with a zero imaginary component is real-valued and accepted;
+; non-real complex and matrix inputs retain their type and report INVALID_DATA_TYPE_FOR_OP (24).
+Func: fnDerivEqCov
+In:  FARG=1 RX=Cplx:"2i0"
+Out: EC=0 RX=Real:"12"
+Func: fnDerivEqCov
+In:  FARG=1 RX=Cplx:"2i1"
+Out: EC=24 RX=Cplx:"2i1"
+Func: fnDerivEqCov
+In:  FARG=1 RX=ReMa:"M1,2[2,3]"
+Out: EC=24 RX=ReMa:"M1,2[2,3]"
+Func: fnDerivEqCov
+In:  FARG=1 RX=CxMa:"M1,1[2i0]"
+Out: EC=24 RX=CxMa:"M1,1[2i0]"
+
+; Infinite and NaN points have no finite neighbourhood. They return NaN without evaluating the formula.
+Func: fnDerivEqCov
+In:  FARG=1 RMODE=0 FL_SPCRES=1 RX=Real:"inf"
+Out: EC=0 RX=Real:"NaN"
+Func: fnDerivEqCov
+In:  FARG=2 RMODE=0 FL_SPCRES=1 RX=Real:"NaN"
+Out: EC=0 RX=Real:"NaN"
 
 ; program-derivative entry error paths (derivativeVariable): unknown label letter
 ; -> LABEL_NOT_FOUND (6), out-of-range parameter -> OUT_OF_RANGE (8)

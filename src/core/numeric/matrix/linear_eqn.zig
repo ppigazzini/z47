@@ -1,14 +1,17 @@
 // Zig port of the simultaneous-linear-equation cluster of
 // src/c47/mathematics/matrix.c: the SIMQ command + the Mat_A/Mat_B/Mat_X editor
 // commands, and the real/complex linear-equation solvers (Ax=b via the shared
-// cpxLinearEqn inverse-multiply, owned by the eigen owner). The solvers are
-// public (declared in matrix.h) so they are bridge-renamed alongside the four
-// commands.
+// cpxLinearEqn inverse-multiply, owned by the eigen owner). A real coefficient
+// matrix the exact elimination finds singular is refused before the solve. The
+// solvers are public (declared in matrix.h) so they are bridge-renamed
+// alongside the four commands.
 const std = @import("std");
 const runtime = @import("../command_wrappers/runtime.zig");
+const math_matrix_determinant = @import("determinant.zig");
 const math_matrix_eigen = @import("eigen.zig");
 const math_matrix_named = @import("named.zig");
 const real_t = runtime.real_t;
+const cplx_t = runtime.cplx_t;
 const real34_t = runtime.real34_t;
 const complex34_t = runtime.complex34_t;
 const real34Matrix_t = runtime.real34Matrix_t;
@@ -25,15 +28,16 @@ const MNU_SIMQ: i16 = 3120;
 const MNU_TAM: i16 = 2945;
 const ERROR_UNDEF_SOURCE_VAR: u8 = 36;
 
-extern fn allocC47Blocks(size_in_blocks: usize) ?[*]align(4) real_t;
-extern fn freeC47Blocks(ptr: ?[*]align(4) real_t, size_in_blocks: usize) void;
+extern fn allocC47Blocks(size_in_blocks: usize) ?*anyopaque;
+extern fn freeC47Blocks(ptr: ?*anyopaque, size_in_blocks: usize) void;
 // Softmenu / matrix-editor surface (frontier owners).
 extern fn showSoftmenu(id: i16) void;
 extern fn popSoftmenu() void;
 extern fn fnEditMatrix(unusedButMandatoryParameter: u16) void;
 extern var numberOfTamMenusToPop: i16;
 
-const REAL_SIZE_IN_BLOCKS_75: usize = 15;
+// REAL_SIZE_IN_BLOCKS(75) == 15; a cplx_t is two of them.
+const REAL_SIZE_IN_BLOCKS_75: usize = (@sizeOf(real_t) + 3) >> 2;
 
 inline fn rmEl(m: *const real34Matrix_t, i: usize) *real34_t {
     const e: [*]real34_t = @ptrCast(m.matrixElements);
@@ -59,24 +63,32 @@ pub export fn real_matrix_linear_eqn(a: *const real34Matrix_t, b: *const real34M
     }
     const aBlocks = sz * sz * REAL_SIZE_IN_BLOCKS_75 * 2;
     const vBlocks = sz * REAL_SIZE_IN_BLOCKS_75 * 2;
-    if (allocC47Blocks(aBlocks)) |aa| {
-        if (allocC47Blocks(vBlocks)) |bb| {
-            if (allocC47Blocks(vBlocks)) |rr| {
+    if (allocC47Blocks(aBlocks)) |aa_raw| {
+        const aa: [*]cplx_t = @ptrCast(@alignCast(aa_raw));
+        if (allocC47Blocks(vBlocks)) |bb_raw| {
+            const bb: [*]cplx_t = @ptrCast(@alignCast(bb_raw));
+            if (allocC47Blocks(vBlocks)) |rr_raw| {
+                const rr: [*]cplx_t = @ptrCast(@alignCast(rr_raw));
                 var i: usize = 0;
                 while (i < sz * sz) : (i += 1) {
-                    runtime.real34ToReal(rmEl(a, i), &aa[i * 2]);
-                    runtime.realSetZero(&aa[i * 2 + 1]);
+                    runtime.real34ToReal(rmEl(a, i), &aa[i].Real);
+                    runtime.realSetZero(&aa[i].Imag);
                 }
                 i = 0;
                 while (i < sz) : (i += 1) {
-                    runtime.real34ToReal(rmEl(b, i), &bb[i * 2]);
-                    runtime.realSetZero(&bb[i * 2 + 1]);
+                    runtime.real34ToReal(rmEl(b, i), &bb[i].Real);
+                    runtime.realSetZero(&bb[i].Imag);
                 }
-                math_matrix_eigen.cpxLinearEqn(aa, bb, rr, size, &runtime.ctxtReal51);
+                if (math_matrix_determinant.realMatExactlySingular(a)) {
+                    runtime.displayCalcErrorMessage(runtime.ERROR_SINGULAR_MATRIX, ERR_REGISTER_LINE);
+                    if (runtime.extra_info_on_calc_error) runtime.moreInfoOnError("In function real_matrix_linear_eqn:", "attempt to solve with a singular matrix", null, null);
+                } else {
+                    math_matrix_eigen.cpxLinearEqn(aa, bb, rr, size, 0, &runtime.ctxtReal51);
+                }
                 if (runtime.lastErrorCode == runtime.ERROR_NONE) {
                     if (runtime.realMatrixInit(r, size, 1)) {
                         i = 0;
-                        while (i < sz) : (i += 1) runtime.realToReal34(&rr[i * 2], rmEl(r, i));
+                        while (i < sz) : (i += 1) runtime.realToReal34(&rr[i].Real, rmEl(r, i));
                     } else {
                         nullOutReal(a, b, r);
                         ramFull("In function real_matrix_linear_eqn:", "Ram full, 1ag");
@@ -84,17 +96,17 @@ pub export fn real_matrix_linear_eqn(a: *const real34Matrix_t, b: *const real34M
                 } else {
                     nullOutReal(a, b, r);
                 }
-                freeC47Blocks(rr, vBlocks);
+                freeC47Blocks(rr_raw, vBlocks);
             } else {
                 nullOutReal(a, b, r);
                 ramFull("In function real_matrix_linear_eqn:", "Ram full, 2ah");
             }
-            freeC47Blocks(bb, vBlocks);
+            freeC47Blocks(bb_raw, vBlocks);
         } else {
             nullOutReal(a, b, r);
             ramFull("In function real_matrix_linear_eqn:", "Ram full, 3ai");
         }
-        freeC47Blocks(aa, aBlocks);
+        freeC47Blocks(aa_raw, aBlocks);
     } else {
         nullOutReal(a, b, r);
         ramFull("In function real_matrix_linear_eqn:", "Ram full, 4aj");
@@ -114,26 +126,29 @@ pub export fn complex_matrix_linear_eqn(a: *const complex34Matrix_t, b: *const c
     }
     const aBlocks = sz * sz * REAL_SIZE_IN_BLOCKS_75 * 2;
     const vBlocks = sz * REAL_SIZE_IN_BLOCKS_75 * 2;
-    if (allocC47Blocks(aBlocks)) |aa| {
-        if (allocC47Blocks(vBlocks)) |bb| {
-            if (allocC47Blocks(vBlocks)) |rr| {
+    if (allocC47Blocks(aBlocks)) |aa_raw| {
+        const aa: [*]cplx_t = @ptrCast(@alignCast(aa_raw));
+        if (allocC47Blocks(vBlocks)) |bb_raw| {
+            const bb: [*]cplx_t = @ptrCast(@alignCast(bb_raw));
+            if (allocC47Blocks(vBlocks)) |rr_raw| {
+                const rr: [*]cplx_t = @ptrCast(@alignCast(rr_raw));
                 var i: usize = 0;
                 while (i < sz * sz) : (i += 1) {
-                    runtime.real34ToReal(&cmEl(a, i).real, &aa[i * 2]);
-                    runtime.real34ToReal(&cmEl(a, i).imag, &aa[i * 2 + 1]);
+                    runtime.real34ToReal(&cmEl(a, i).real, &aa[i].Real);
+                    runtime.real34ToReal(&cmEl(a, i).imag, &aa[i].Imag);
                 }
                 i = 0;
                 while (i < sz) : (i += 1) {
-                    runtime.real34ToReal(&cmEl(b, i).real, &bb[i * 2]);
-                    runtime.real34ToReal(&cmEl(b, i).imag, &bb[i * 2 + 1]);
+                    runtime.real34ToReal(&cmEl(b, i).real, &bb[i].Real);
+                    runtime.real34ToReal(&cmEl(b, i).imag, &bb[i].Imag);
                 }
-                math_matrix_eigen.cpxLinearEqn(aa, bb, rr, size, &runtime.ctxtReal51);
+                math_matrix_eigen.cpxLinearEqn(aa, bb, rr, size, 0, &runtime.ctxtReal51);
                 if (runtime.lastErrorCode == runtime.ERROR_NONE) {
                     if (runtime.complexMatrixInit(r, size, 1)) {
                         i = 0;
                         while (i < sz) : (i += 1) {
-                            runtime.realToReal34(&rr[i * 2], &cmEl(r, i).real);
-                            runtime.realToReal34(&rr[i * 2 + 1], &cmEl(r, i).imag);
+                            runtime.realToReal34(&rr[i].Real, &cmEl(r, i).real);
+                            runtime.realToReal34(&rr[i].Imag, &cmEl(r, i).imag);
                         }
                     } else {
                         nullOutComplex(a, b, r);
@@ -142,17 +157,17 @@ pub export fn complex_matrix_linear_eqn(a: *const complex34Matrix_t, b: *const c
                 } else {
                     nullOutComplex(a, b, r);
                 }
-                freeC47Blocks(rr, vBlocks);
+                freeC47Blocks(rr_raw, vBlocks);
             } else {
                 nullOutComplex(a, b, r);
                 ramFull("In function complex_matrix_linear_eqn:", "Ram full, 2al");
             }
-            freeC47Blocks(bb, vBlocks);
+            freeC47Blocks(bb_raw, vBlocks);
         } else {
             nullOutComplex(a, b, r);
             ramFull("In function complex_matrix_linear_eqn:", "Ram full, 3am");
         }
-        freeC47Blocks(aa, aBlocks);
+        freeC47Blocks(aa_raw, aBlocks);
     } else {
         nullOutComplex(a, b, r);
         ramFull("In function complex_matrix_linear_eqn:", "Ram full, 4an");

@@ -120,3 +120,249 @@ Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"-inf":GRAD
 ;=======================================
 ; 10 ^ Complex
 ;=======================================
+Func: fn10Pow
+In:  AM=RAD RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"0 i 1e20"
+Out: EC=0 FL_CPXRES=1
+Func: fnRealPart
+In:  RMODE=0
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"-0.6404623000583477935208924244953045"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e40"
+Out: EC=0 RX=Real:"0"
+
+Func: fn10Pow
+In:  AM=RAD RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"0 i 0"
+Out: EC=0 FL_CPXRES=1 RX=Cplx:"1 i 0"
+
+Func: fn10Pow
+In:  AM=RAD RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"inf i 0"
+Out: EC=0 FL_CPXRES=1 RX=Cplx:"inf i 0"
+
+Func: fn10Pow
+In:  AM=RAD RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"-inf i 0"
+Out: EC=0 FL_CPXRES=1 RX=Cplx:"0 i 0"
+
+Func: fn10Pow
+In:  AM=RAD RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"NaN i 0"
+Out: EC=0 FL_CPXRES=1 RX=Cplx:"NaN i 0"
+
+Func: fn10Pow
+In:  AM=RAD RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"NaN i 1"
+Out: EC=0 FL_CPXRES=1 RX=Cplx:"NaN i NaN"
+
+Func: fn10Pow
+In:  AM=RAD RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"0 i inf"
+Out: EC=0 FL_CPXRES=1 RX=Cplx:"NaN i NaN"
+
+Func: fn10Pow
+In:  AM=RAD RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"0 i 1e20"
+Out: EC=0 FL_CPXRES=1
+Func: fnImaginaryPart
+In:  RMODE=0
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"-0.7679896107396055627451440560882093"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e40"
+Out: EC=0 RX=Real:"0"
+
+
+
+;=======================================
+; Decimal128 boundaries and exact integral powers
+;=======================================
+; Separating the decimal exponent from the fractional exponent avoids losing the last result digit when x * ln(10) contains a four-digit integer part.
+Func: fn10Pow
+In:  RMODE=0 FL_SPCRES=0 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-4852.239021962641007039350671796724"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"5.767372965595711437333965750718134e-4853"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e4900"
+Out: EC=0 RX=Real:"0"
+
+Func: fn10Pow
+In:  RMODE=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-4852.239021962641007039350671796724"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"5.767372965595711437333965750718134e-4853"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e4900"
+Out: EC=0 RX=Real:"0"
+
+Func: fn10Pow
+In:  RMODE=2 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-4852.239021962641007039350671796724"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"5.767372965595711437333965750718134e-4853"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e4900"
+Out: EC=0 RX=Real:"0"
+
+Func: fn10Pow
+In:  RMODE=3 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-4852.239021962641007039350671796724"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"5.767372965595711437333965750718135e-4853"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e4900"
+Out: EC=0 RX=Real:"0"
+
+Func: fn10Pow
+In:  RMODE=4 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-4852.239021962641007039350671796724"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"5.767372965595711437333965750718134e-4853"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e4900"
+Out: EC=0 RX=Real:"0"
+
+Func: fn10Pow
+In:  RMODE=5 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-4852.239021962641007039350671796724"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"5.767372965595711437333965750718135e-4853"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e4900"
+Out: EC=0 RX=Real:"0"
+
+Func: fn10Pow
+In:  RMODE=6 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-4852.239021962641007039350671796724"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"5.767372965595711437333965750718134e-4853"
+Out: EC=0
+Func: fnMultiply
+In:  RY=Real:"1e4900"
+Out: EC=0 RX=Real:"0"
+
+Func: fn10Pow
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"6144"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"1e6144"
+Out: EC=0 RX=Real:"0"
+
+Func: fn10Pow
+In:  RMODE=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"6144"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"1e6144"
+Out: EC=0 RX=Real:"0"
+
+Func: fn10Pow
+In:  RMODE=2 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"6144"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"1e6144"
+Out: EC=0 RX=Real:"0"
+
+Func: fn10Pow
+In:  RMODE=3 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"6144"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"1e6144"
+Out: EC=0 RX=Real:"0"
+
+Func: fn10Pow
+In:  RMODE=4 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"6144"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"1e6144"
+Out: EC=0 RX=Real:"0"
+
+Func: fn10Pow
+In:  RMODE=5 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"6144"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"1e6144"
+Out: EC=0 RX=Real:"0"
+
+Func: fn10Pow
+In:  RMODE=6 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"6144"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"1e6144"
+Out: EC=0 RX=Real:"0"
+
+Func: fn10Pow
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-6176"
+Out: EC=0
+Func: fnSubtract
+In:  RY=Real:"1e-6176"
+Out: EC=0 RX=Real:"0"
+
+Func: fn10Pow
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"6145"
+Out: EC=4 FL_ASLIFT=0 RX=Real:"6145"
+
+Func: fn10Pow
+In:  RMODE=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"6145"
+Out: EC=4 FL_ASLIFT=0 RX=Real:"6145"
+
+Func: fn10Pow
+In:  RMODE=2 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"6145"
+Out: EC=4 FL_ASLIFT=0 RX=Real:"6145"
+
+Func: fn10Pow
+In:  RMODE=3 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"6145"
+Out: EC=4 FL_ASLIFT=0 RX=Real:"6145"
+
+Func: fn10Pow
+In:  RMODE=4 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"6145"
+Out: EC=0 RX=Real:"9.999999999999999999999999999999999e6144"
+
+Func: fn10Pow
+In:  RMODE=5 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"6145"
+Out: EC=4 FL_ASLIFT=0 RX=Real:"6145"
+
+Func: fn10Pow
+In:  RMODE=6 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"6145"
+Out: EC=0 RX=Real:"9.999999999999999999999999999999999e6144"
+
+Func: fn10Pow
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-6177"
+Out: EC=0 RX=Real:"0"
+
+Func: fn10Pow
+In:  RMODE=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-6177"
+Out: EC=0 RX=Real:"0"
+
+Func: fn10Pow
+In:  RMODE=2 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-6177"
+Out: EC=0 RX=Real:"0"
+
+Func: fn10Pow
+In:  RMODE=3 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-6177"
+Out: EC=0 RX=Real:"1e-6176"
+
+Func: fn10Pow
+In:  RMODE=4 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-6177"
+Out: EC=0 RX=Real:"0"
+
+Func: fn10Pow
+In:  RMODE=5 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-6177"
+Out: EC=0 RX=Real:"1e-6176"
+
+Func: fn10Pow
+In:  RMODE=6 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-6177"
+Out: EC=0 RX=Real:"0"
+
+; The values bracket log10(0.5e-6176), the half-even transition between zero and the minimum positive decimal128 value.
+Func: fn10Pow
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-6176.301029995663981195213738894724"
+Out: EC=0 RX=Real:"1e-6176"
+
+Func: fn10Pow
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-6176.301029995663981195213738894725"
+Out: EC=0 RX=Real:"0"

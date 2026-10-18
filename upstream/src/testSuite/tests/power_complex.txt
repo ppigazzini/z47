@@ -91,6 +91,12 @@ Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"2 i NaN" RX=Cplx:"NaN i NaN"
 In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RY=Cplx:"0 i 0" RX=Cplx:"0 i 0"
 Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"0 i 0" RX=Cplx:"NaN i NaN"
 
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RY=Cplx:"0 i 0" RX=Cplx:"NaN i 0"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"NaN i 0" RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RY=Cplx:"0 i 0" RX=Cplx:"1 i NaN"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"1 i NaN" RX=Cplx:"NaN i NaN"
+
 In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RY=Cplx:"1 i 1" RX=Cplx:"200 i 0"
 Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"200 i 0" RX=Cplx:"1267650600228229401496703205376 i 0"
 
@@ -183,3 +189,133 @@ Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"inf i 0"
 
 In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=1 RY=Cplx:"inf i 0" RX=Real:"0.5"
 Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"inf i 0"
+
+; A squared-radius offset below p51 remains in the imaginary component of a power.
+Func: fnPower
+In: RMODE=0 FL_SPCRES=1 FL_CPXRES=1 RT=Real:"1E70" RZ=Cplx:"0.9999999999999999999999999999999999 i 7.620789376619418375247675781283333E-69" RY=Cplx:"1 i 1.234567890123456789012345678901234E-34" RX=Cplx:"0 i 1"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+Func: fnPower
+In: RMODE=1 FL_SPCRES=1 FL_CPXRES=1 RT=Real:"1E70" RZ=Cplx:"0.9999999999999999999999999999999999 i 7.620789376619418375247675781283333E-69" RY=Cplx:"1 i 1.234567890123456789012345678901234E-34" RX=Cplx:"0 i 1"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+Func: fnPower
+In: RMODE=2 FL_SPCRES=1 FL_CPXRES=1 RT=Real:"1E70" RZ=Cplx:"0.9999999999999999999999999999999999 i 7.620789376619418375247675781283333E-69" RY=Cplx:"1 i 1.234567890123456789012345678901234E-34" RX=Cplx:"0 i 1"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+Func: fnPower
+In: RMODE=3 FL_SPCRES=1 FL_CPXRES=1 RT=Real:"1E70" RZ=Cplx:"0.9999999999999999999999999999999999 i 7.620789376619418375247675781283334E-69" RY=Cplx:"1 i 1.234567890123456789012345678901234E-34" RX=Cplx:"0 i 1"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+Func: fnPower
+In: RMODE=4 FL_SPCRES=1 FL_CPXRES=1 RT=Real:"1E70" RZ=Cplx:"0.9999999999999999999999999999999998 i 7.620789376619418375247675781283333E-69" RY=Cplx:"1 i 1.234567890123456789012345678901234E-34" RX=Cplx:"0 i 1"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+Func: fnPower
+In: RMODE=5 FL_SPCRES=1 FL_CPXRES=1 RT=Real:"1E70" RZ=Cplx:"0.9999999999999999999999999999999999 i 7.620789376619418375247675781283334E-69" RY=Cplx:"1 i 1.234567890123456789012345678901234E-34" RX=Cplx:"0 i 1"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+Func: fnPower
+In: RMODE=6 FL_SPCRES=1 FL_CPXRES=1 RT=Real:"1E70" RZ=Cplx:"0.9999999999999999999999999999999998 i 7.620789376619418375247675781283333E-69" RY=Cplx:"1 i 1.234567890123456789012345678901234E-34" RX=Cplx:"0 i 1"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"-0 i -0"
+
+; Large products in the logarithmic exponent need p75 before phase reduction.
+Func: fnPower
+In: RMODE=0 FL_SPCRES=1 FL_CPXRES=1 RZ=Cplx:"-10.31318239437543923917468910327816 i -3.874188494103769723103215819042336" RY=Cplx:"2 i 1" RX=Cplx:"1E34 i 1.735626239831749182700007666635856E34"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0 RX=Cplx:"0 i 0"
+
+; Exact-axis exponent reduction covers the largest decimal128 exponent.
+Func: fnPower
+In: RMODE=0 FL_SPCRES=1 FL_CPXRES=1 RZ=Cplx:"1 i 0" RY=Cplx:"-1 i 0" RX=Cplx:"1E6144 i 0"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0 RX=Cplx:"0 i 0"
+
+Func: fnPower
+In: RMODE=0 FL_SPCRES=1 FL_CPXRES=1 RZ=Cplx:"1 i 0" RY=Cplx:"0 i 1" RX=Cplx:"1E6144 i 0"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0 RX=Cplx:"0 i 0"
+
+; A long integer exponent above 75 digits is rounded as a real, so its exact residue modulo 8 sets the phase: i^(1E80 + 1) = i, (-1)^(1E80 + 1) = -1,
+; and (1 + i)^(1E80 + 2) and (i inf)^(1E80 + 1) point along +i.
+Func: fnPower
+In: RMODE=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"0 i 1" RX=LonI:"100000000000000000000000000000000000000000000000000000000000000000000000000000001"
+Out: EC=0 RX=Cplx:"0 i 1"
+
+Func: fnPower
+In: RMODE=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"-1 i 0" RX=LonI:"100000000000000000000000000000000000000000000000000000000000000000000000000000001"
+Out: EC=0 RX=Cplx:"-1 i 0"
+
+Func: fnPower
+In: RMODE=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"1 i 1" RX=LonI:"100000000000000000000000000000000000000000000000000000000000000000000000000000002"
+Out: EC=0 RX=Cplx:"0 i inf"
+
+Func: fnPower
+In: RMODE=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"0 i inf" RX=LonI:"100000000000000000000000000000000000000000000000000000000000000000000000000000001"
+Out: EC=0 RX=Cplx:"0 i inf"
+
+; Signed zero selects the side of the negative-real branch cut.
+Func: fnPower
+In: RMODE=0 FL_SPCRES=1 FL_CPXRES=1 RZ=Cplx:"0 i 1" RY=Cplx:"-1 i 0" RX=Cplx:"0.5 i 0"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0 RX=Cplx:"0 i 0"
+
+Func: fnPower
+In: RMODE=0 FL_SPCRES=1 FL_CPXRES=1 RZ=Cplx:"0 i -1" RY=Cplx:"-1 i -0" RX=Cplx:"0.5 i 0"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0 RX=Cplx:"0 i 0"
+
+; Exponent one copies a finite base without a logarithm and exponential round trip.
+Func: fnPower
+In: RMODE=6 FL_SPCRES=1 FL_CPXRES=1 RT=Real:"1E40" RZ=Cplx:"1.234567890123456789012345678901234 i -5.678901234567890123456789012345678" RY=Cplx:"1.234567890123456789012345678901234 i -5.678901234567890123456789012345678" RX=Cplx:"1 i 0"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"-0 i -0"
+
+; A negative-real base reduces a real exponent modulo two before forming the phase.
+Func: fnPower
+In: RMODE=0 FL_SPCRES=1 FL_CPXRES=1 RZ=Cplx:"1 i 0" RY=Cplx:"-1 i 0" RX=Cplx:"1000000000 i 0"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0 RX=Cplx:"0 i 0"
+
+Func: fnPower
+In: RMODE=0 FL_SPCRES=1 FL_CPXRES=1 RZ=Cplx:"-1 i 0" RY=Cplx:"-1 i 0" RX=Cplx:"1000000001 i 0"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0 RX=Cplx:"0 i 0"

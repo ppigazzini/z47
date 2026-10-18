@@ -124,10 +124,154 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"NaN"
 In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RX=Real:"-inf"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"NaN"
 
+; A valid scalar radian can have a small reduced phase at the exponent limit.
+In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"5.075769612216191749472115895925863e999":RAD
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"5.075769612216191749472115895925863e999":RAD RX=Real:"-2.029767486356259219375295526031457e-34"
+
+; Exact subtraction and scaling check the selected rounding mode through digit 34.
+Func: fnSin
+In:  AM=RAD RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Real:"0.2955202066613395751053207456850274" RX=Real:"0.3"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnSin
+In:  AM=RAD RMODE=1 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Real:"0.2955202066613395751053207456850274" RX=Real:"0.3"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnSin
+In:  AM=RAD RMODE=2 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Real:"0.2955202066613395751053207456850274" RX=Real:"0.3"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnSin
+In:  AM=RAD RMODE=3 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Real:"0.2955202066613395751053207456850274" RX=Real:"0.3"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnSin
+In:  AM=RAD RMODE=4 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Real:"0.2955202066613395751053207456850273" RX=Real:"0.3"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnSin
+In:  AM=RAD RMODE=5 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Real:"0.2955202066613395751053207456850274" RX=Real:"0.3"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnSin
+In:  AM=RAD RMODE=6 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Real:"0.2955202066613395751053207456850273" RX=Real:"0.3"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
 
 
 ;=======================================
 ; sin(Complex) --> Complex
 ;=======================================
+Func: fnSin
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"6.2 i -7.6"
 Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"6.2 i -7.6" RX=Cplx:"-83.01447260939246956731822669252684923564585757420744504303291 i -995.64291442466093439279120216534258799576102786745168590567828"
+
+; Complex radians span the complete decimal128 exponent range.
+In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"5.829979800222281883747164188135449e6144 i 0"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"5.829979800222281883747164188135449e6144 i 0" RX=Cplx:"-2.908962159350783229012734764285262e-34 i 0"
+
+; Exact subtraction and scaling check both complex components through digit 34.
+Func: fnSin
+In:  AM=RAD RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Cplx:"0.3194787307415647070112334145380352 i 0.3924066848326388389464668048287438" RX=Cplx:"0.3 i 0.4"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+Func: fnSin
+In:  AM=RAD RMODE=1 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Cplx:"0.3194787307415647070112334145380352 i 0.3924066848326388389464668048287438" RX=Cplx:"0.3 i 0.4"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+Func: fnSin
+In:  AM=RAD RMODE=2 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Cplx:"0.3194787307415647070112334145380352 i 0.3924066848326388389464668048287438" RX=Cplx:"0.3 i 0.4"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+Func: fnSin
+In:  AM=RAD RMODE=3 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Cplx:"0.3194787307415647070112334145380353 i 0.3924066848326388389464668048287438" RX=Cplx:"0.3 i 0.4"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+Func: fnSin
+In:  AM=RAD RMODE=4 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Cplx:"0.3194787307415647070112334145380352 i 0.3924066848326388389464668048287437" RX=Cplx:"0.3 i 0.4"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+Func: fnSin
+In:  AM=RAD RMODE=5 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Cplx:"0.3194787307415647070112334145380353 i 0.3924066848326388389464668048287438" RX=Cplx:"0.3 i 0.4"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+Func: fnSin
+In:  AM=RAD RMODE=6 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Cplx:"0.3194787307415647070112334145380352 i 0.3924066848326388389464668048287437" RX=Cplx:"0.3 i 0.4"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+; Infinite hyperbolic factors retain exact trigonometric zeros.
+Func: fnSin
+In:  AM=RAD RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"0 i inf"
+Out: EC=0 RX=Cplx:"0 i inf"
+
+In:  AM=RAD RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"0 i -inf"
+Out: EC=0 RX=Cplx:"0 i -inf"
+
+In:  AM=RAD RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"0 i 1e7"
+Out: EC=0 RX=Cplx:"0 i inf"
+
+; A zero factor also remains exact when the other factor is NaN.
+In:  AM=RAD RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"inf i 0"
+Out: EC=0 RX=Cplx:"NaN i 0"
+
+In:  AM=RAD RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"NaN i 0"
+Out: EC=0 RX=Cplx:"NaN i 0"
+
+In:  AM=RAD RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"0 i NaN"
+Out: EC=0 RX=Cplx:"0 i NaN"

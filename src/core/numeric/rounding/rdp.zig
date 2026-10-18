@@ -20,10 +20,10 @@ const const_1 = consts.const_1;
 const runtime = @import("../command_wrappers/runtime.zig");
 const math_real_predicates = @import("../compare/real_predicates.zig");
 const math_matrix_elementwise = @import("../matrix/elementwise.zig");
-const math_rsd = @import("rsd.zig");
 const real_t = runtime.real_t;
 const real34_t = runtime.real34_t;
 const realContext_t = runtime.realContext_t;
+const cplx_t = runtime.cplx_t;
 const calcRegister_t = runtime.calcRegister_t;
 // ERROR_MESSAGE_LENGTH is 512 (defines.h); upstream formats this hint into the
 // shared errorMessage buffer of that size.
@@ -58,6 +58,10 @@ const getRegisterTag = runtime.getRegisterTag;
 const getSystemFlag = runtime.getSystemFlag;
 const getRegisterDataPointer = runtime.getRegisterDataPointer;
 const realToIntegralValue = runtime.realToIntegralValue;
+const realDivide = runtime.realDivide;
+const realMultiply = runtime.realMultiply;
+const realFromDegToDms = runtime.realFromDegToDms;
+const realFromDmsToDeg = runtime.realFromDmsToDeg;
 const realRectangularToPolar = runtime.realRectangularToPolar;
 const realPolarToRectangular = runtime.realPolarToRectangular;
 const convertRealToReal34ResultRegister = runtime.convertRealToReal34ResultRegister;
@@ -96,8 +100,6 @@ inline fn currentRoundingMode() rounding_t {
     return @intCast(roundingModeTable[roundingMode]);
 }
 
-// rsd.c (sibling owner) provides these for the time path.
-
 // Register data / real34 conversion.
 extern fn decimal128ToNumber(source: *align(1) const real34_t, destination: *real_t) *real_t;
 inline fn real34ToReal(source: *align(1) const real34_t, destination: *real_t) void {
@@ -108,9 +110,9 @@ inline fn realToReal34(source: *const real_t, destination: *align(1) real34_t) v
     _ = decimal128FromNumber(destination, source, &runtime.ctxtReal34);
 }
 
-extern fn real34FromDegToDms(angleDec: *align(1) const real34_t, angleDms: *align(1) real34_t) void;
-extern fn real34FromDmsToDeg(angleDms: *align(1) const real34_t, angleDec: *align(1) real34_t) void;
-extern fn checkDms34(angle34Dms: *align(1) real34_t) void;
+inline fn const_3600() *const real_t {
+    return runtime.z47_math_wrappers_const_3600();
+}
 
 const U16Fn = ?*const fn (u16) callconv(.c) void;
 
@@ -216,7 +218,6 @@ pub export fn fnRdp(digits: u16) linksection(runtime.code_section) callconv(.c) 
 // ===========================================================================
 pub export fn rdpTime(digits: u16) linksection(runtime.code_section) callconv(.c) void {
     var val: real_t = undefined;
-    var i: i32 = undefined;
 
     updateDisplayValueX = true;
     displayValueX[0] = 0;
@@ -224,20 +225,11 @@ pub export fn rdpTime(digits: u16) linksection(runtime.code_section) callconv(.c
     updateDisplayValueX = false;
 
     real34ToReal(registerReal34Data(REGISTER_X), &val);
-
-    i = 0;
-    while (i < 2) : (i += 1) {
-        val.exponent -= 1;
-        math_rsd.senaryDigitToDecimal(false, &val, &runtime.ctxtReal39);
-        val.exponent -= 1;
-    }
+    realDivide(&val, const_3600(), &val, &runtime.ctxtReal39);
+    realFromDegToDms(&val, &val, &runtime.ctxtReal39);
     roundToDecimalPlace(&val, &val, digits, &runtime.ctxtReal39);
-    i = 0;
-    while (i < 2) : (i += 1) {
-        val.exponent += 1;
-        math_rsd.decimalDigitToSenary(false, &val, &runtime.ctxtReal39);
-        val.exponent += 1;
-    }
+    realFromDmsToDeg(&val, &val, &runtime.ctxtReal39);
+    realMultiply(&val, const_3600(), &val, &runtime.ctxtReal39);
 
     realToReal34(&val, registerReal34Data(REGISTER_X));
 }
@@ -258,43 +250,39 @@ pub export fn rdpCxma(digits: u16) linksection(runtime.code_section) callconv(.c
 // ===========================================================================
 pub export fn rdpReal(digits: u16) linksection(runtime.code_section) callconv(.c) void {
     var val: real_t = undefined;
-
-    if (getRegisterAngularMode(REGISTER_X) == amDMS) {
-        real34FromDegToDms(registerReal34Data(REGISTER_X), registerReal34Data(REGISTER_X));
-        checkDms34(registerReal34Data(REGISTER_X));
-    }
+    const dms = getRegisterAngularMode(REGISTER_X) == amDMS;
 
     real34ToReal(registerReal34Data(REGISTER_X), &val);
-    roundToDecimalPlace(&val, &val, digits, &runtime.ctxtReal39);
-    convertRealToReal34ResultRegister(&val, REGISTER_X);
-
-    if (getRegisterAngularMode(REGISTER_X) == amDMS) {
-        real34FromDmsToDeg(registerReal34Data(REGISTER_X), registerReal34Data(REGISTER_X));
+    if (dms and !realIsSpecial(&val)) {
+        realFromDegToDms(&val, &val, &runtime.ctxtReal39);
     }
+    roundToDecimalPlace(&val, &val, digits, if (dms) &runtime.ctxtReal39 else &runtime.ctxtReal34);
+    if (dms and !realIsSpecial(&val)) {
+        realFromDmsToDeg(&val, &val, &runtime.ctxtReal39);
+    }
+    convertRealToReal34ResultRegister(&val, REGISTER_X);
 }
 
 // ===========================================================================
 // rdpCplx
 // ===========================================================================
 pub export fn rdpCplx(digits: u16) linksection(runtime.code_section) callconv(.c) void {
+    var z: cplx_t = undefined;
+
     if (getSystemFlag(FLAG_POLAR)) {
-        var magnitude: real_t = undefined;
-        var theta: real_t = undefined;
-        real34ToReal(registerReal34Data(REGISTER_X), &magnitude);
-        real34ToReal(registerImag34Data(REGISTER_X), &theta);
-        realRectangularToPolar(&magnitude, &theta, &magnitude, &theta, &runtime.ctxtReal39);
-        roundToDecimalPlace(&magnitude, &magnitude, digits, &runtime.ctxtReal39);
-        roundToDecimalPlace(&theta, &theta, digits, &runtime.ctxtReal39);
-        realPolarToRectangular(&magnitude, &theta, &magnitude, &theta, &runtime.ctxtReal39);
-        convertComplexToResultRegister(&magnitude, &theta, REGISTER_X);
+        real34ToReal(registerReal34Data(REGISTER_X), &z.Real);
+        real34ToReal(registerImag34Data(REGISTER_X), &z.Imag);
+        realRectangularToPolar(&z, z.mag(), z.arg(), &runtime.ctxtReal39);
+        roundToDecimalPlace(z.mag(), z.mag(), digits, &runtime.ctxtReal39);
+        roundToDecimalPlace(z.arg(), z.arg(), digits, &runtime.ctxtReal39);
+        realPolarToRectangular(z.mag(), z.arg(), &z, &runtime.ctxtReal39);
+        convertComplexToResultRegister(&z, REGISTER_X);
     } else {
-        var real: real_t = undefined;
-        var imaginary: real_t = undefined;
-        real34ToReal(registerReal34Data(REGISTER_X), &real);
-        real34ToReal(registerImag34Data(REGISTER_X), &imaginary);
-        roundToDecimalPlace(&real, &real, digits, &runtime.ctxtReal39);
-        roundToDecimalPlace(&imaginary, &imaginary, digits, &runtime.ctxtReal39);
-        convertComplexToResultRegister(&real, &imaginary, REGISTER_X);
+        real34ToReal(registerReal34Data(REGISTER_X), &z.Real);
+        real34ToReal(registerImag34Data(REGISTER_X), &z.Imag);
+        roundToDecimalPlace(&z.Real, &z.Real, digits, &runtime.ctxtReal34);
+        roundToDecimalPlace(&z.Imag, &z.Imag, digits, &runtime.ctxtReal34);
+        convertComplexToResultRegister(&z, REGISTER_X);
     }
 }
 

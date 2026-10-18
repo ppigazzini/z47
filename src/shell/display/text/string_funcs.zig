@@ -295,10 +295,12 @@ pub export fn fnXToAlpha(regist: u16) callconv(.c) void { // new version, simila
         },
         dtString => {
             _readDestinationRegister(regist);
-            if (frontier_char_string.stringGlyphLength(tmpString) + frontier_char_string.stringGlyphLength(regString(REGISTER_X)) > MAX_NUMBER_OF_GLYPHS_IN_STRING) {
+            const destLen: i32 = stringByteLength(tmpString); // captured before displayCalcErrorMessage overwrites tmpString
+            const xStrLen: i32 = stringByteLength(regString(REGISTER_X));
+            if (destLen + xStrLen >= MAX_STRING_BYTE_LENGTH) {
                 frontier_error.displayCalcErrorMessage(ERROR_STRING_WOULD_BE_TOO_LONG, ERR_REGISTER_LINE);
                 if (comptime extra_info) {
-                    abi.fmtBufZ(errorMessage[0..512], "the resulting string would be {d} ({d} + {d}) characters long. Maximum is {d}", .{ frontier_char_string.stringGlyphLength(tmpString) + frontier_char_string.stringGlyphLength(regString(REGISTER_X)), frontier_char_string.stringGlyphLength(tmpString), frontier_char_string.stringGlyphLength(regString(REGISTER_X)), MAX_NUMBER_OF_GLYPHS_IN_STRING });
+                    abi.fmtBufZ(errorMessage[0..512], "the resulting string would be {d} ({d} + {d}) bytes long. Maximum is {d}", .{ destLen + xStrLen, destLen, xStrLen, MAX_STRING_BYTE_LENGTH - 1 });
                     moreInfoOnError("In function fnXToAlpha:", errorMessage);
                 }
             } else {
@@ -459,8 +461,6 @@ pub export fn fnAlphaPos(regist: u16) callconv(.c) void {
 // ===========================================================================
 pub export fn fnAlphaRR(regist: u16) callconv(.c) void {
     var lgInt: longInteger_t = undefined;
-    var real: real_t = undefined;
-    var mod: real_t = undefined;
 
     if (getRegisterDataType(@intCast(regist)) != dtString) {
         frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
@@ -483,15 +483,7 @@ pub export fn fnAlphaRR(regist: u16) callconv(.c) void {
             frontier_register_value_conversions.convertLongIntegerRegisterToLongInteger(REGISTER_X, &lgInt[0]);
         },
         dtReal34 => {
-            if (stringGlyphLen == 0) {
-                lgInt[0]._mp_size = 0; // lgInt = 0
-            } else {
-                real34ToReal(reg34(REGISTER_X), &real);
-                realSetPositiveSign(&real);
-                int32ToReal(stringGlyphLen, &mod);
-                WP34S_Mod(&real, &mod, &real, &ctxtReal39);
-                frontier_register_value_conversions.convertRealToLongInteger(&real, &lgInt[0], DEC_ROUND_DOWN);
-            }
+            uInt32ToLongInteger(real34RotationSteps(reg34(REGISTER_X), @intCast(stringGlyphLen)), &lgInt[0]);
         },
         dtShortInteger => {
             longIntegerFree(&lgInt[0]); // the converter re-initialises lgInt; free the pre-init first
@@ -546,8 +538,6 @@ inline fn copyRegisterStringTo(dest: [*c]u8, regist: calcRegister_t) void {
 // ===========================================================================
 pub export fn fnAlphaRL(regist: u16) callconv(.c) void {
     var lgInt: longInteger_t = undefined;
-    var real: real_t = undefined;
-    var mod: real_t = undefined;
 
     if (getRegisterDataType(@intCast(regist)) != dtString) {
         frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
@@ -570,15 +560,7 @@ pub export fn fnAlphaRL(regist: u16) callconv(.c) void {
             frontier_register_value_conversions.convertLongIntegerRegisterToLongInteger(REGISTER_X, &lgInt[0]);
         },
         dtReal34 => {
-            if (stringGlyphLen == 0) {
-                lgInt[0]._mp_size = 0; // lgInt = 0
-            } else {
-                real34ToReal(reg34(REGISTER_X), &real);
-                realSetPositiveSign(&real);
-                int32ToReal(stringGlyphLen, &mod);
-                WP34S_Mod(&real, &mod, &real, &ctxtReal39);
-                frontier_register_value_conversions.convertRealToLongInteger(&real, &lgInt[0], DEC_ROUND_DOWN);
-            }
+            uInt32ToLongInteger(real34RotationSteps(reg34(REGISTER_X), @intCast(stringGlyphLen)), &lgInt[0]);
         },
         dtShortInteger => {
             longIntegerFree(&lgInt[0]); // the converter re-initialises lgInt; free the pre-init first
@@ -855,8 +837,18 @@ pub export fn fn42AlphaRotate(unusedButMandatoryParameter: u16) callconv(.c) voi
             frontier_register_value_conversions.convertLongIntegerRegisterToLongInteger(REGISTER_X, &lgInt[0]);
         },
         dtReal34 => {
-            longIntegerFree(&lgInt[0]); // the converter re-initialises lgInt; free the pre-init first
-            frontier_register_value_conversions.convertReal34ToLongInteger(reg34(REGISTER_X), &lgInt[0], DEC_ROUND_DOWN);
+            // A negative integer part rotates right; the count itself is reduced exactly by the rotation.
+            const count = reg34(REGISTER_X);
+            const negativeIntegerPart = !real34IsSpecial(count) and !real34IsZero(count) and real34IsNegative(count) and
+                decQuadGetExponent(count) + @as(i32, @intCast(decQuadDigits(count))) > 0;
+
+            longIntegerFree(&lgInt[0]);
+            if (negativeIntegerPart) {
+                fnAlphaRR(alphaRegister);
+            } else {
+                fnAlphaRL(alphaRegister);
+            }
+            return;
         },
         dtShortInteger => {
             longIntegerFree(&lgInt[0]); // the converter re-initialises lgInt; free the pre-init first
@@ -1136,7 +1128,9 @@ pub export fn fnAlphaIP(regist: u16) callconv(.c) void {
             copySourceRegisterToDestRegister(SAVED_REGISTER_Y, REGISTER_Y);
         }
         addition[@intCast(getRegisterDataType(REGISTER_X))][@intCast(getRegisterDataType(REGISTER_Y))].?();
-        copySourceRegisterToDestRegister(REGISTER_X, regC);
+        if (lastErrorCode == ERROR_NONE) { // the append may overflow the string limit; leave the destination untouched when it does
+            copySourceRegisterToDestRegister(REGISTER_X, regC);
+        }
     }
 
     if (regC != REGISTER_Y or lastErrorCode != ERROR_NONE) {
@@ -1168,7 +1162,57 @@ const SF_MID: u8 = 2;
 const SF_RIGHT: u8 = 3;
 
 const TMP_STR_LENGTH: i32 = 2560;
-const MAX_NUMBER_OF_GLYPHS_IN_STRING: i32 = 508;
+// A string register's byte limit: 1019 bytes stored plus a terminator (defines.h MAX_STRING_BYTE_LENGTH).
+const MAX_STRING_BYTE_LENGTH: i32 = 1020;
+const DECQUAD_Pmax: usize = 34;
+extern fn decQuadGetCoefficient(source: *align(1) const real34_t, bcd: [*]u8) i32;
+extern fn decQuadGetExponent(source: *align(1) const real34_t) i32;
+extern fn decQuadDigits(source: *align(1) const real34_t) u32;
+extern fn decQuadIsNaN(source: *align(1) const real34_t) u32;
+extern fn decQuadIsInfinite(source: *align(1) const real34_t) u32;
+extern fn decQuadIsZero(source: *align(1) const real34_t) u32;
+inline fn real34IsSpecial(v: *align(1) const real34_t) bool {
+    return decQuadIsNaN(v) != 0 or decQuadIsInfinite(v) != 0;
+}
+inline fn real34IsZero(v: *align(1) const real34_t) bool {
+    return decQuadIsZero(v) != 0;
+}
+inline fn real34IsNegative(v: *align(1) const real34_t) bool {
+    return (v.bytes[15] & 0x80) == 0x80;
+}
+
+/// floor(abs(value)) modulo modulus without a wide decimal remainder: the
+/// coefficient digits are reduced one at a time and the exponent as a power of
+/// ten by squaring. A zero modulus or a special value gives zero, the former
+/// zero-step conversion of a non-finite count.
+fn real34RotationSteps(value: *align(1) const real34_t, modulus: u16) u16 {
+    var bcd: [DECQUAD_Pmax]u8 = undefined;
+
+    if (modulus == 0 or real34IsSpecial(value)) {
+        return 0;
+    }
+
+    _ = decQuadGetCoefficient(value, &bcd);
+    var exponent: i32 = decQuadGetExponent(value);
+    if (exponent <= -@as(i32, DECQUAD_Pmax)) {
+        return 0;
+    }
+
+    const coefficientDigits: usize = @intCast(@as(i32, DECQUAD_Pmax) + @min(exponent, 0));
+    var remainder: u32 = 0;
+    for (bcd[0..coefficientDigits]) |digit| {
+        remainder = (remainder * 10 + digit) % modulus;
+    }
+
+    var power: u32 = 10 % modulus;
+    while (exponent > 0) : (exponent >>= 1) {
+        if ((exponent & 1) != 0) {
+            remainder = remainder * power % modulus;
+        }
+        power = power * power % modulus;
+    }
+    return @intCast(remainder);
+}
 const SCREEN_WIDTH: i16 = 400;
 const NUMBER_OF_DISPLAY_DIGITS: i16 = 20;
 const ERROR_STRING_WOULD_BE_TOO_LONG: u8 = 33;
@@ -1481,10 +1525,11 @@ fn _doXToAlpha(regist: u16) callconv(.c) void {
         tmpString[0] = 0; // If destination register is X just return the alpha character from the character code
     }
 
-    if (frontier_char_string.stringGlyphLength(tmpString) >= MAX_NUMBER_OF_GLYPHS_IN_STRING) {
+    const destLen: i32 = stringByteLength(tmpString); // captured before displayCalcErrorMessage overwrites tmpString
+    if (destLen + 2 >= MAX_STRING_BYTE_LENGTH) {
         frontier_error.displayCalcErrorMessage(ERROR_STRING_WOULD_BE_TOO_LONG, ERR_REGISTER_LINE);
         if (comptime extra_info) {
-            abi.fmtBufZ(errorMessage[0..512], "the resulting string would be {d} characters long. Maximum is {d}", .{ frontier_char_string.stringGlyphLength(tmpString) + 1, MAX_NUMBER_OF_GLYPHS_IN_STRING });
+            abi.fmtBufZ(errorMessage[0..512], "the resulting string would be {d} bytes long. Maximum is {d}", .{ destLen + 2, MAX_STRING_BYTE_LENGTH - 1 });
             moreInfoOnError("In function _doXToAlpha:", errorMessage);
         }
     } else {

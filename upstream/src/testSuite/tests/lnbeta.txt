@@ -166,3 +166,114 @@ Out: EC=0  FL_CPXRES=1 FL_ASLIFT=1 RL=Real:"7" RX=Cplx:"-7.467728209744349569508
 ;=======================================
 In:  WS=64 FL_CPXRES=0 FL_ASLIFT=1 RY=Cplx:"4 i 3" RX=LonI:"7"
 Out: EC=0  FL_CPXRES=1 FL_ASLIFT=1 RL=LonI:"7" RX=Cplx:"-7.46772820974434956950879500952213740086075984580953842855568811 i -3.02443802349483958756564605351459257905798108350033804280573797"
+
+
+;=======================================
+; Cancellation-resistant evaluation
+;=======================================
+; MPFR value next to B(2,y)=1. The integer recurrence avoids cancellation in the Lanczos approximation.
+Func: fnLnBeta
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RT=Real:"1e100" RZ=Real:"3.962381590835922936132875797982839e-35" RY=Real:"0.6180339887498948482045868343656381" RX=Real:"2"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+; p51 loses the last result digits after the Lanczos and final cancellations; p75 retains them.
+Func: fnLnBeta
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RT=Real:"1e100" RZ=Real:"-2.000000000000000000000000000000000e-33" RY=Real:"1.000000000000000000000000000000001" RX=Real:"1.000000000000000000000000000000001"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+; x+y cannot retain x here. The rearranged identity reduces the ratio before taking log1p.
+Func: fnLnBeta
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RT=Real:"1e60" RZ=Real:"-14147.08281135541668260653949758073" RY=Real:"1e6144" RX=Real:"1"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnLnBeta
+In:  RMODE=1 FL_ASLIFT=0 FL_CPXRES=0 RT=Real:"1e60" RZ=Real:"-14147.08281135541668260653949758073" RY=Real:"1e6144" RX=Real:"1"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnLnBeta
+In:  RMODE=2 FL_ASLIFT=0 FL_CPXRES=0 RT=Real:"1e60" RZ=Real:"-14147.08281135541668260653949758073" RY=Real:"1e6144" RX=Real:"1"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnLnBeta
+In:  RMODE=3 FL_ASLIFT=0 FL_CPXRES=0 RT=Real:"1e60" RZ=Real:"-14147.08281135541668260653949758074" RY=Real:"1e6144" RX=Real:"1"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnLnBeta
+In:  RMODE=4 FL_ASLIFT=0 FL_CPXRES=0 RT=Real:"1e60" RZ=Real:"-14147.08281135541668260653949758073" RY=Real:"1e6144" RX=Real:"1"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnLnBeta
+In:  RMODE=5 FL_ASLIFT=0 FL_CPXRES=0 RT=Real:"1e60" RZ=Real:"-14147.08281135541668260653949758073" RY=Real:"1e6144" RX=Real:"1"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnLnBeta
+In:  RMODE=6 FL_ASLIFT=0 FL_CPXRES=0 RT=Real:"1e60" RZ=Real:"-14147.08281135541668260653949758074" RY=Real:"1e6144" RX=Real:"1"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+; Independent 2048-bit Spouge values, with the existing continuous log-Gamma winding.
+Func: fnLnBeta
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RT=Real:"1e60" RZ=Cplx:"-172.7679845059615462622454640441361 i -115.5822265447172083186495271608230" RY=Cplx:"1e100 i 2" RX=Cplx:"0.75 i 0.5"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+Func: fnLnBeta
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RT=Real:"1e60" RZ=Cplx:"63.85021730317076867920654926280505 i -10.15427552785942984162373530866805" RY=Cplx:"2.5 i 0.25" RX=Cplx:"-41.00000000000000000000000000000001 i 1e-34"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+; Elementwise matrix routes share the scalar contexts and formulas.
+Func: fnLnBeta
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RY=ReMa:"M1,2[0.6180339887498948482045868343656381,1e6144]" RX=ReMa:"M1,2[2,1]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,2[2,1]" RX=ReMa:"M1,2[3.962381590835922936132875797982839e-35,-14147.08281135541668260653949758073]"
+
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RY=Cplx:"1e100 i 2" RX=CxMa:"M1,1[0.75i0.5]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M1,1[0.75i0.5]" RX=CxMa:"M1,1[-172.7679845059615462622454640441361i-115.5822265447172083186495271608230]"
+
+; Positive infinity has the limiting value negative infinity only when special results are enabled.
+In:  RMODE=0 FL_SPCRES=0 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"2" RX=Real:"inf"
+Out: EC=1 FL_SPCRES=0 FL_ASLIFT=0 RY=Real:"2" RX=Real:"inf"
+
+In:  RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"2" RX=Real:"inf"
+Out: EC=0 FL_SPCRES=1 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"-inf"

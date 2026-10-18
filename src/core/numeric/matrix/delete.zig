@@ -2,7 +2,8 @@
 // Zig port of the matrix row/column delete cluster of
 // src/c47/mathematics/matrix.c: delRowRealMatrix / delColRealMatrix and
 // delRowComplexMatrix / delColComplexMatrix (shrink the matrix by one row or
-// column). The rest of the engine stays in the matrix bridge.
+// column). Upstream has one body per direction over a kind descriptor, so
+// both kinds report as delRowAnyMatrix / delColAnyMatrix.
 
 const runtime = @import("../command_wrappers/runtime.zig");
 const abi = @import("abi");
@@ -54,7 +55,7 @@ pub export fn delRowRealMatrix(matrix: *real34Matrix_t, before_row_no: u16) call
         matrix.header.matrixColumns = new_mat.header.matrixColumns;
         matrix.matrixElements = new_mat.matrixElements;
     } else {
-        reportRamFull("In function delRowRealMatrix:");
+        reportRamFull("In function delRowAnyMatrix:");
     }
 }
 
@@ -85,7 +86,7 @@ pub export fn delColRealMatrix(matrix: *real34Matrix_t, before_col_no: u16) call
         matrix.header.matrixColumns = new_mat.header.matrixColumns;
         matrix.matrixElements = new_mat.matrixElements;
     } else {
-        reportRamFull("In function delColRealMatrix:");
+        reportRamFull("In function delColAnyMatrix:");
     }
 }
 
@@ -110,7 +111,7 @@ pub export fn delRowComplexMatrix(matrix: *complex34Matrix_t, before_row_no: u16
         matrix.header.matrixColumns = new_mat.header.matrixColumns;
         matrix.matrixElements = new_mat.matrixElements;
     } else {
-        reportRamFull("In function delRowComplexMatrix:");
+        reportRamFull("In function delRowAnyMatrix:");
     }
 }
 
@@ -141,6 +142,6 @@ pub export fn delColComplexMatrix(matrix: *complex34Matrix_t, before_col_no: u16
         matrix.header.matrixColumns = new_mat.header.matrixColumns;
         matrix.matrixElements = new_mat.matrixElements;
     } else {
-        reportRamFull("In function delColComplexMatrix:");
+        reportRamFull("In function delColAnyMatrix:");
     }
 }

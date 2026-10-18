@@ -102,3 +102,22 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.75" RX=Real:"2.34897950039216348640
 ;=======================================
 ; normalI(Complex) --> Error24
 ;=======================================
+
+; A 34-place cancellation needs the p75 quantile and fused scaling.
+Func: fnNormalI
+In:  RMODE=0 RM=Real:"-1e34" RS=Real:"1e34" RZ=Real:"1e40" RY=Real:"-0.928951756928275823225412680004804379085595885622472859625882714699" RX=Real:"0.8413447460685429485852325456320379"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+; A rational location-scale pair cancels 68 places and selects the extended refinement.
+Func: fnNormalI
+In:  RMODE=0 RM=Real:"-3047222357676761574378897691720593" RS=Real:"4517818627771437330773345452549820" RX=Real:"0.75"
+Out: EC=0 RX=Real:"7.056971285873559834177565009898152e-35"
+
+; The extended upper-tail fraction supports the same cancellation in a far tail.
+Func: fnNormalI
+In:  RMODE=0 RM=Real:"9155519981910990852968551163496217" RS=Real:"748253692860273674472512564860700" RX=Real:"1e-34"
+Out: EC=0 RX=Real:"-1.172858943780524142482974481326410e-33"

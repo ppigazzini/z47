@@ -53,6 +53,9 @@ Out: EC=24 FL_ASLIFT=0 RX=Stri:"String test"
 In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=ReMa:"M2,3[0,-1,2,-3,4,-5]"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M2,3[0,-1,2,-3,4,-5]" RX=ReMa:"M2,3[0,-1.17520119364380145688238185059560081516,3.62686040784701876766821398280126170489,-10.0178749274099018989745936194658280602,27.2899171971277524489082715907938185803,-74.2032105777887589770094719960645655996]"
 
+In:  RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=ReMa:"M1,3[NaN,inf,-inf]"
+Out: EC=0 RX=ReMa:"M1,3[NaN,inf,-inf]"
+
 
 
 ;=======================================
@@ -60,6 +63,9 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M2,3[0,-1,2,-3,4,-5]" RX=ReMa:"M2,3[0
 ;=======================================
 In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=CxMa:"M2,3[0,0i-1,2i-1,-3i2,4i3,-5i-4]"
 Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M2,3[0,0i-1,2i-1,-3i2,4i3,-5i-4]" RX=CxMa:"M2,3[0,0i-0.841470984807896506652502321630298999623,1.95960104142160589707035204998935827844i-3.16577851321616814674073461719190553838,4.16890695996656435075481305885375484357i9.15449914691142957346729954460983255916,-27.0168132580039344880975437549921522634i3.8537380379193773216175289404637306671,48.5024552417709127724974953626411138889i56.1622742202323497046628697205879237038]"
+
+In:  RMODE=0 FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=CxMa:"M1,3[NaNi0,0iNaN,infiNaN]"
+Out: EC=0 RX=CxMa:"M1,3[NaNi0,0iNaN,infiNaN]"
 
 
 
@@ -131,10 +137,119 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-inf":MULTPI RX=Real:"-inf"
 In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RX=Real:"-inf":GRAD
 Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"-inf":GRAD
 
+; Exact subtraction and scaling check the selected rounding mode through digit 34.
+Func: fnSinh
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Real:"0.3045202934471426189584352670050952" RX=Real:"0.3"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnSinh
+In:  RMODE=1 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Real:"0.3045202934471426189584352670050952" RX=Real:"0.3"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnSinh
+In:  RMODE=2 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Real:"0.3045202934471426189584352670050952" RX=Real:"0.3"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnSinh
+In:  RMODE=3 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Real:"0.3045202934471426189584352670050953" RX=Real:"0.3"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnSinh
+In:  RMODE=4 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Real:"0.3045202934471426189584352670050952" RX=Real:"0.3"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnSinh
+In:  RMODE=5 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Real:"0.3045202934471426189584352670050953" RX=Real:"0.3"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+Func: fnSinh
+In:  RMODE=6 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Real:"0.3045202934471426189584352670050952" RX=Real:"0.3"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
 
 
 ;=======================================
 ; sinh(Complex) --> Complex
 ;=======================================
+Func: fnSinh
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"6.2 i -7.6"
 Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"6.2 i -7.6" RX=Cplx:"61.903768291613323355620984960713988217315656185239068929429946 i -238.47172728732495776240281548076859679543279877012533924894352"
+
+; Exact digit-34 check of an ordinary finite complex result.
+In:  RMODE=0 FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1e40" RY=Cplx:"0.2804817641764754333380462956035607 i 0.4070739913234486707714762446256426" RX=Cplx:"0.3 i 0.4"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Cplx:"0 i 0"
+
+; Infinite real parts retain exact zero factors.
+Func: fnSinh
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"inf i 0"
+Out: EC=0 RX=Cplx:"inf i 0"
+
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"-inf i 0"
+Out: EC=0 RX=Cplx:"-inf i 0"
+
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"inf i 1"
+Out: EC=0 RX=Cplx:"inf i inf"
+
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"-inf i 1"
+Out: EC=0 RX=Cplx:"-inf i inf"
+
+; A finite real input can overflow the hyperbolic factor; an exact zero factor remains zero.
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"1e7 i 0"
+Out: EC=0 RX=Cplx:"inf i 0"
+
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"-1e7 i 0"
+Out: EC=0 RX=Cplx:"-inf i 0"
+
+; The IEC 60559 complex special cases retain exact zero components and
+; the known infinite component.
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"NaN i 0"
+Out: EC=0 RX=Cplx:"NaN i 0"
+
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"NaN i -0"
+Out: EC=0 RX=Cplx:"NaN i -0"
+
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"0 i NaN"
+Out: EC=0 RX=Cplx:"0 i NaN"
+
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"0 i inf"
+Out: EC=0 RX=Cplx:"0 i NaN"
+
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"inf i NaN"
+Out: EC=0 RX=Cplx:"inf i NaN"
+
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"-inf i NaN"
+Out: EC=0 RX=Cplx:"-inf i NaN"
+
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"inf i inf"
+Out: EC=0 RX=Cplx:"inf i NaN"

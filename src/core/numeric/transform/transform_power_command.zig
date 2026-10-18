@@ -1,5 +1,8 @@
 const runtime = @import("../command_wrappers/runtime.zig");
 
+const real_t = runtime.real_t;
+const cplx_t = runtime.cplx_t;
+
 fn squareLonI() callconv(.c) void {
     var x: runtime.longInteger_t = undefined;
 
@@ -22,7 +25,7 @@ fn squareShoI() callconv(.c) void {
 }
 
 fn squareReal() callconv(.c) void {
-    var x: runtime.real_t = undefined;
+    var x: real_t = undefined;
 
     if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &x)) {
         return;
@@ -33,20 +36,54 @@ fn squareReal() callconv(.c) void {
         return;
     }
 
-    runtime.realMultiply(&x, &x, &x, &runtime.ctxtReal39);
+    runtime.realMultiply(&x, &x, &x, &runtime.ctxtReal34);
     runtime.convertRealToResultRegister(&x, runtime.REGISTER_X, runtime.amNone);
 }
 
-fn squareCplx() callconv(.c) void {
-    var a: runtime.real_t = undefined;
-    var b: runtime.real_t = undefined;
+// Squares a complex number with a compensated real component.
+fn squareComplex(z: *const cplx_t, squared: *cplx_t, real_context: *runtime.realContext_t) void {
+    var product: real_t = undefined;
+    var tmp: real_t = undefined;
+    var term: real_t = undefined;
+    var result: cplx_t = undefined;
 
-    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &a, &b)) {
+    if (runtime.realIsSpecial(&z.Real) or runtime.realIsSpecial(&z.Imag)) {
+        runtime.mulComplexComplex(z, z, squared, real_context);
         return;
     }
 
-    runtime.mulComplexComplex(&a, &b, &a, &b, &a, &b, &runtime.ctxtReal39);
-    runtime.convertComplexToResultRegister(&a, &b, runtime.REGISTER_X);
+    // Real part: compensated a^2 - b^2
+    runtime.realMultiply(&z.Real, &z.Real, &product, real_context);
+    tmp = z.Imag;
+    runtime.realChangeSign(&tmp);
+    runtime.realFMA(&tmp, &z.Imag, &product, &term, real_context);
+    runtime.realChangeSign(&product);
+    runtime.realFMA(&z.Real, &z.Real, &product, &result.Real, real_context);
+    runtime.realAdd(&result.Real, &term, &result.Real, real_context);
+
+    // Imaginary part: 2ab
+    runtime.realAdd(&z.Real, &z.Real, &tmp, real_context);
+    runtime.realMultiply(&tmp, &z.Imag, &result.Imag, real_context);
+
+    if (runtime.realIsZero(&result.Real)) {
+        runtime.realSetZero(&result.Real);
+    }
+    if (runtime.realIsZero(&result.Imag)) {
+        runtime.realSetZero(&result.Imag);
+    }
+    squared.Real = result.Real;
+    squared.Imag = result.Imag;
+}
+
+fn squareCplx() callconv(.c) void {
+    var a: cplx_t = undefined;
+
+    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &a)) {
+        return;
+    }
+
+    squareComplex(&a, &a, &runtime.ctxtReal39);
+    runtime.convertComplexToResultRegister(&a, runtime.REGISTER_X);
 }
 
 fn cubeLonI() callconv(.c) void {
@@ -80,8 +117,8 @@ fn cubeShoI() callconv(.c) void {
 }
 
 fn cubeReal() callconv(.c) void {
-    var x: runtime.real_t = undefined;
-    var x_squared: runtime.real_t = undefined;
+    var x: real_t = undefined;
+    var x_squared: real_t = undefined;
 
     if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &x)) {
         return;
@@ -97,19 +134,66 @@ fn cubeReal() callconv(.c) void {
     runtime.convertRealToResultRegister(&x, runtime.REGISTER_X, runtime.amNone);
 }
 
-fn cubeCplx() callconv(.c) void {
-    var a: runtime.real_t = undefined;
-    var b: runtime.real_t = undefined;
-    var real_square: runtime.real_t = undefined;
-    var imag_square: runtime.real_t = undefined;
+// Cubes a complex number with compensated component factors. An infinite part
+// takes the cube's direction from three times the angle of the infinite octant.
+fn cubeComplex(z: *const cplx_t, cubed: *cplx_t, real_context: *runtime.realContext_t) void {
+    var factor: real_t = undefined;
+    var product: real_t = undefined;
+    var term: real_t = undefined;
+    var correction: real_t = undefined;
+    var result: cplx_t = undefined;
 
-    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &a, &b)) {
+    if (runtime.realIsNaN(&z.Real) or runtime.realIsNaN(&z.Imag)) {
+        runtime.realSetNaN(&cubed.Real);
+        runtime.realSetNaN(&cubed.Imag);
         return;
     }
 
-    runtime.mulComplexComplex(&a, &b, &a, &b, &real_square, &imag_square, &runtime.ctxtReal39);
-    runtime.mulComplexComplex(&real_square, &imag_square, &a, &b, &a, &b, &runtime.ctxtReal39);
-    runtime.convertComplexToResultRegister(&a, &b, runtime.REGISTER_X);
+    if (runtime.realIsInfinite(&z.Real) or runtime.realIsInfinite(&z.Imag)) {
+        runtime.setInfiniteComplexAngle((3 * runtime.getInfiniteComplexAngle(z)) % 8, cubed);
+        return;
+    }
+
+    // Real part: a(a^2 - 3b^2)
+    runtime.realMultiply(runtime.z47_math_wrappers_const_3(), &z.Imag, &factor, real_context);
+    runtime.realMultiply(&z.Real, &z.Real, &product, real_context);
+    runtime.realChangeSign(&factor);
+    runtime.realFMA(&factor, &z.Imag, &product, &term, real_context);
+    runtime.realChangeSign(&product);
+    runtime.realFMA(&z.Real, &z.Real, &product, &correction, real_context);
+    runtime.realAdd(&correction, &term, &correction, real_context);
+    runtime.realMultiply(&z.Real, &correction, &result.Real, real_context);
+
+    // Imaginary part: b(3a^2 - b^2)
+    runtime.realMultiply(runtime.z47_math_wrappers_const_3(), &z.Real, &factor, real_context);
+    runtime.realMultiply(&factor, &z.Real, &product, real_context);
+    correction = z.Imag;
+    runtime.realChangeSign(&correction);
+    runtime.realFMA(&correction, &z.Imag, &product, &term, real_context);
+    runtime.realChangeSign(&product);
+    runtime.realFMA(&factor, &z.Real, &product, &correction, real_context);
+    runtime.realAdd(&correction, &term, &correction, real_context);
+    runtime.realMultiply(&z.Imag, &correction, &result.Imag, real_context);
+
+    if (runtime.realIsZero(&result.Real)) {
+        runtime.realSetZero(&result.Real);
+    }
+    if (runtime.realIsZero(&result.Imag)) {
+        runtime.realSetZero(&result.Imag);
+    }
+    cubed.Real = result.Real;
+    cubed.Imag = result.Imag;
+}
+
+fn cubeCplx() callconv(.c) void {
+    var a: cplx_t = undefined;
+
+    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &a)) {
+        return;
+    }
+
+    cubeComplex(&a, &a, &runtime.ctxtReal39);
+    runtime.convertComplexToResultRegister(&a, runtime.REGISTER_X);
 }
 
 pub fn square(unused_but_mandatory_parameter: u16) void {

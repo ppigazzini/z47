@@ -101,12 +101,16 @@ Out: EC=24 FL_ASLIFT=0 RX=Stri:"String test"
 ;=======================================
 ; negBinomialR(Real Matrix) --> Error24
 ;=======================================
+In:  FL_ASLIFT=0 RP=Real:"0.5" RN=Real:"5" RX=ReMa:"M1,2[0,1]"
+Out: EC=24 FL_ASLIFT=0 RX=ReMa:"M1,2[0,1]"
 
 
 
 ;=======================================
 ; negBinomialR(Complex Matrix) --> Error24
 ;=======================================
+In:  FL_ASLIFT=0 RP=Real:"0.5" RN=Real:"5" RX=CxMa:"M1,1[1i1]"
+Out: EC=24 FL_ASLIFT=0 RX=CxMa:"M1,1[1i1]"
 
 
 
@@ -187,3 +191,42 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"100" RX=Real:"0.017937643107257231829
 ;=======================================
 ; negBinomialR(Complex) --> Error24
 ;=======================================
+
+; Support and integer-step convention.
+Func: fnNegBinomialR
+In:  RP=Real:"0.5" RN=Real:"5" RX=Real:"-1"
+Out: EC=0 RX=Real:"1"
+
+Func: fnNegBinomialR
+In:  RP=Real:"0.5" RN=Real:"5" RX=Real:"0.1"
+Out: EC=0 RX=Real:"0.96875"
+
+Func: fnNegBinomialR
+In:  RP=Real:"0.5" RN=Real:"5" RX=Real:"inf"
+Out: EC=0 RX=Real:"0"
+
+Func: fnNegBinomialR
+In:  RP=Real:"0" RN=Real:"5" RX=Real:"1"
+Out: EC=0 RX=Real:"0"
+
+Func: fnNegBinomialR
+In:  RP=Real:"1e-34" RN=Real:"5" RX=Real:"1"
+Out: EC=0 RX=Real:"4.999999999999999999999999999999999e-34"
+
+; P39 loses result digits in the direct beta tail.
+Func: fnNegBinomialR
+In:  RP=Real:"0.37" RN=Real:"601" RZ=Real:"1e40" RY=Real:"0.02711538294560956638941151209365400142996432273249884101178" RX=Real:"399.1"
+Out: EC=0
+Func: fnSubtract
+Out: EC=0
+Func: fnMultiply
+Out: EC=0 RX=Real:"0"
+
+; Equal shapes and equal probability components give exact symmetry.
+Func: fnNegBinomialR
+In:  RP=Real:"0.5" RN=Real:"1e40" RX=Real:"1e40"
+Out: EC=0 RX=Real:"0.5"
+
+Func: fnNegBinomialR
+In:  FL_SPCRES=1 RP=Real:"0.5" RN=Real:"5" RX=Real:"NaN"
+Out: EC=0 RX=Real:"NaN"
