@@ -64,9 +64,7 @@ extern fn realPower10(x: *const real_t, res: *real_t, ctx: *realContext_t) void;
 // access it unaligned, which arm64/x86/Cortex-M tolerate. Return an align(1)
 // pointer so we match that without asserting 4-byte alignment.
 const cst = consts.cstR;
-inline fn realIsZero(r: *const real_t) bool {
-    return r.digits == 1 and r.lsu[0] == 0 and (r.bits & 0x70) == 0;
-}
+const realIsZero = abi.realIsZero;
 inline fn realIsNegative(r: *const real_t) bool {
     return (r.bits & 0x80) != 0;
 }

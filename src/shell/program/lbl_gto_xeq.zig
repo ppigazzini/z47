@@ -1183,9 +1183,7 @@ fn _putLiteral(literalAddress_arg: [*c]u8) void {
 inline fn real34Copy(src: *const real34_t, dst: *align(1) real34_t) void {
     dst.* = src.*;
 }
-inline fn complex34Copy(src: *const complex34_t, dst: *align(1) complex34_t) void {
-    dst.* = src.*;
-}
+const complex34Copy = abi.complex34Copy;
 const regComplex34 = abi.registerComplex34;
 inline fn stringToLongInteger(source: [*c]const u8, radix: i32, destination: *mpz_struct) i32 {
     return mpz_set_str(destination, source, radix);

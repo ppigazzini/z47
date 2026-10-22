@@ -969,7 +969,6 @@ extern var lastItem: i16;
 extern var lastCenturyHighUsed: u16;
 extern var gapItemLeft: u16;
 extern var gapItemRight: u16;
-extern var gapItemRadix: u16;
 extern var currentSolverStatus: u16;
 extern var lastIntegerBase: u32;
 extern var lastDenominator: u32;
@@ -1097,15 +1096,7 @@ inline fn fnConstantPtr() ?*const fn (u16) callconv(.c) void {
 // RADIX34_MARK_STRING = gapChar1Radix : first two bytes of the radix separator,
 // byte[1]==1 meaning a single-byte separator.
 fn radix34MarkBytes() TwoBytes {
-    const s: [*c]const u8 = &indexOfItems[gapItemRadix].itemSoftmenuName;
-    if (s[0] != 0 and (s[1] == 0 or (s[1] != 0 and s[2] == 0))) {
-        switch (s[0]) {
-            ',' => return .{ .b0 = ',', .b1 = 1 },
-            '.' => return .{ .b0 = '.', .b1 = 1 },
-            else => return .{ .b0 = s[0], .b1 = s[1] },
-        }
-    }
-    return .{ .b0 = s[0], .b1 = s[1] };
+    return twoBytes(frontier_display.getGapChar1Radix());
 }
 inline fn radix34MarkByte0() u8 {
     return radix34MarkBytes().b0;
@@ -1114,10 +1105,10 @@ inline fn radix34MarkByte1() u8 {
     return radix34MarkBytes().b1;
 }
 inline fn separatorLeft() TwoBytes {
-    return gapChar1Bytes(gapItemLeft, false);
+    return twoBytes(frontier_display.getGapChar1Left());
 }
 inline fn separatorRight() TwoBytes {
-    return gapChar1Bytes(gapItemRight, true);
+    return twoBytes(frontier_display.getGapChar1Right());
 }
 const ERROR_MESSAGE_LENGTH: usize = 512;
 
@@ -1163,9 +1154,7 @@ inline fn real34Add(op1: *const real34_t, op2: *const real34_t, res: *real34_t) 
 inline fn real34Divide(op1: *const real34_t, op2: *const real34_t, res: *real34_t) void {
     _ = decQuadDivide(res, op1, op2, &ctxtReal34);
 }
-inline fn real34SetNegativeSign(operand: *real34_t) void {
-    operand.bytes[15] |= 0x80;
-}
+const real34SetNegativeSign = abi.real34SetNegativeSign;
 inline fn real34SetZero(destination: *real34_t) void {
     _ = decQuadZero(destination);
 }
@@ -2125,33 +2114,15 @@ pub export fn fnAlphaCursorEnd(unusedButMandatoryParameter: u16) callconv(.c) vo
 //   SEPARATOR_LEFT[1] / SEPARATOR_RIGHT[1] reproduced via separatorByte1Left/Right.
 // ---------------------------------------------------------------------------
 inline fn separatorLeftByte1() u8 {
-    return gapChar1Bytes(gapItemLeft, false).b1;
+    return separatorLeft().b1;
 }
 inline fn separatorRightByte1() u8 {
-    return gapChar1Bytes(gapItemRight, true).b1;
+    return separatorRight().b1;
 }
 const TwoBytes = struct { b0: u8, b1: u8 };
-// Reproduces Lt/Rt -> gapChar1Left/gapChar1Right: returns the first two bytes of
-// the separator string (byte[1] == 1 means "single-byte separator"). The two
-// macros share the ',' '.' '\'' '_' set but not the length test: the left one
-// requires s[1]==0 && s[2]==0, the right one only s[1]==0 || s[2]==0.
-fn gapChar1Bytes(gapItem: u16, comptime right: bool) TwoBytes {
-    var s: [*c]const u8 = undefined;
-    if (gapItem == 0) {
-        s = "\x01\x01\x00";
-    } else {
-        s = &indexOfItems[gapItem].itemSoftmenuName;
-    }
-    const applies = if (right) (s[0] != 0 and (s[1] == 0 or s[2] == 0)) else (s[0] != 0 and s[1] == 0 and s[2] == 0);
-    if (applies) {
-        switch (s[0]) {
-            ',' => return .{ .b0 = ',', .b1 = 1 },
-            '.' => return .{ .b0 = '.', .b1 = 1 },
-            '\'' => return .{ .b0 = '\'', .b1 = 1 },
-            '_' => return .{ .b0 = '_', .b1 = 1 },
-            else => return .{ .b0 = s[0], .b1 = s[1] },
-        }
-    }
+// The first two bytes of a separator string from getGapChar1Left/Right/Radix
+// (byte[1] == 1 means "single-byte separator").
+fn twoBytes(s: [*c]const u8) TwoBytes {
     return .{ .b0 = s[0], .b1 = s[1] };
 }
 

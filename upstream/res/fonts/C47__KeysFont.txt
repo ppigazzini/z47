@@ -1,0 +1,20 @@
+C47__KeysFont change log:
+
+4. Docs(manual): Negative alpha
+- Replaced alpha with bold version from CMMIB10, height * 140 %
+
+3. Docs(manual): The 2 new fonts "cleaned"
+- Ensured integer coordinates and appropriate extremas
+- No new glyphs
+
+2. Docs(manual): Use the new fonts for rendering the keys and softmenus:
+- Added small letter n from LMSans10-Regular via C47__ManualFont
+
+1. Docs(manual): Add C47__KeysFont, a tiny font dedicated to keyboard rendering
+- Built font by copying a small set of glyphs from C47__ManualFont
+- Built bolder arrows by hand
+- Replaced upwards x and y with italic versions from CMMI10
+  - x and y small letters
+  - x superscript
+  - x and y under root
+  - xthroot

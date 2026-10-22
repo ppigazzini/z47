@@ -447,18 +447,7 @@ pub export fn calcModeNim(unusedButMandatoryParameter: u16) callconv(.c) void {
     cursorFont = &numericFont;
 }
 
-// ---------------------------------------------------------------------------
-// checkHP macro (defines.h):
-// (significantDigits <= 16 && displayStack == 1 && exponentLimit == 99 &&
-//  Input_Default == ID_DP && (calcMode == CM_NORMAL || calcMode == CM_NIM))
-// ---------------------------------------------------------------------------
-extern var significantDigits: u8;
-extern var displayStack: u8;
-extern var exponentLimit: i16;
-extern var Input_Default: u8;
-const ID_DP: u8 = 2;
-inline fn checkHP() bool {
-    return significantDigits <= 16 and displayStack == 1 and exponentLimit == 99 and Input_Default == ID_DP and (calcMode == CM_NORMAL or calcMode == CM_NIM);
-}
+// checkHP macro, which screen.c defines as checkHPMode.
+const checkHP = frontier_screen.checkHPMode;
 
 extern fn sprintf(buf: [*c]u8, fmt: [*:0]const u8, ...) c_int;

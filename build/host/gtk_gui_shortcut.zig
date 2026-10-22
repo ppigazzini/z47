@@ -1,14 +1,4 @@
-const calcKey_t = extern struct {
-    keyId: i16,
-    primary: i16,
-    fShifted: i16,
-    gShifted: i16,
-    keyLblAim: i16,
-    primaryAim: i16,
-    fShiftedAim: i16,
-    gShiftedAim: i16,
-    primaryTam: i16,
-};
+const calcKey_t = @import("gtk_gui_label.zig").calcKey_t;
 
 const tamState_t = extern struct {
     mode: u16,
@@ -45,6 +35,10 @@ const USER_R47bk_fg: u8 = 62;
 const USER_R47fg_bk: u8 = 63;
 const USER_R47fg_g: u8 = 64;
 const USER_R47: u8 = 66;
+const USER_V47: u8 = 40;
+const USER_E47: u8 = 43;
+const USER_D47: u8 = 47;
+const USER_N47: u8 = 51;
 const ITM_NULL: i16 = 0;
 const ITM_SIGMAPLUS: i16 = 433;
 const TI_NO_INFO: u8 = 0;
@@ -72,6 +66,10 @@ extern var kbd_std_R47f_g: [37]calcKey_t;
 extern var kbd_std_R47bk_fg: [37]calcKey_t;
 extern var kbd_std_R47fg_bk: [37]calcKey_t;
 extern var kbd_std_R47fg_g: [37]calcKey_t;
+extern var kbd_std_E47: [37]calcKey_t;
+extern var kbd_std_D47: [37]calcKey_t;
+extern var kbd_std_V47: [37]calcKey_t;
+extern var kbd_std_N47: [37]calcKey_t;
 
 extern fn btnClicked(widget: ?*anyopaque, data: [*:0]const u8) void;
 extern fn refreshStatusBar() void;
@@ -107,6 +105,8 @@ pub fn shortcutProfileValue() u8 {
     return 0;
 }
 
+// The kbd_std macro (c47.h) as the simulator expands it: every layout it can be
+// switched to, including the four PC-only ones.
 pub fn currentStdKeyboard() *const [37]calcKey_t {
     return switch (calcModel) {
         USER_C47 => &kbd_std_C47,
@@ -115,6 +115,10 @@ pub fn currentStdKeyboard() *const [37]calcKey_t {
         USER_R47bk_fg => &kbd_std_R47bk_fg,
         USER_R47fg_bk => &kbd_std_R47fg_bk,
         USER_R47fg_g => &kbd_std_R47fg_g,
+        USER_E47 => &kbd_std_E47,
+        USER_D47 => &kbd_std_D47,
+        USER_V47 => &kbd_std_V47,
+        USER_N47 => &kbd_std_N47,
         else => &kbd_std_C47,
     };
 }

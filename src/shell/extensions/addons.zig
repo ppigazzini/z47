@@ -11,8 +11,8 @@
 //     converters (fnExchangeStkToMx / fnConvertStkToMx / fnConvertMxToStk + the
 //     vecCreate[] bitfield table + processDefaultVector), fnJM_2SI,
 //     exponentToUnitDisplayString, fnDisplayFormatCycle, fnAngularModeJM, DRG_cyc,
-//     fnDRG, shrinkNimBuffer, fnChangeBaseJM / fnChangeBaseMNU, fnInDefault,
-//     fnByteShortcutsS/U, fnStrtoReg / fnStrtoX /
+//     fnDRG, shrinkNimBuffer, fnChangeBaseMode / fnChangeBaseJM / fnChangeBaseMNU,
+//     fnInDefault, fnByteShortcutsS/U, fnStrtoReg / fnStrtoX /
 //     fnStrInputReal34 / fnStrInputLongint / fnIntInputLongint, fnRCL,
 //     timeToReal34, notSexa, fnHrDeg / fnMinute /
 //     fnSecond / fnTimeTo, fnToTime (+ toTimeParamReg), the IRFRAC
@@ -51,8 +51,10 @@
 // const34_* / const39_* are constantPointers.h macros over the shared `constants`
 // blob, bound by byte offset; real34*/real* operations are decQuad*/decNumber*
 // inline wrappers; longInteger_t is mpz via __gmpz_*. The vector / matrix accessor
-// macros (REGISTER_*_DATA, getVectorRegister*Mode, isRegisterMatrix*dVector, etc.)
-// are reproduced inline. The DMCP ROM screen/key calls are reached only under
+// macros (REGISTER_*_DATA, getVectorRegisterAngularMode, etc.) are reproduced
+// inline, and registers.c's vector queries (isRegisterMatrix*dVector,
+// get/setVectorRegisterPolarMode) are reached through abi.registers. The DMCP ROM
+// screen/key calls are reached only under
 // `if (comptime dmcp_build)` via LIBRARY_FN_BASE trampolines.
 
 const std = @import("std");
@@ -496,40 +498,12 @@ const STD_SUP_9_1: u8 = 0x69;
 const STD_op_i_1: u8 = 0x48;
 const STD_op_j_1: u8 = 0x49;
 
-// SEPARATOR_LEFT / SEPARATOR_RIGHT runtime macros (gapChar1 mapping, see display owner).
-const lit_comma1 = ",\x01\x00";
-const lit_dot1 = ".\x01\x00";
-const lit_quote1 = "'\x01\x00";
-const lit_underscore1 = "_\x01\x00";
-const lit_11 = "\x01\x01\x00";
-fn itemStr(gapItem: u16) [*c]const u8 {
-    if (gapItem == 0) return lit_11;
-    return &indexOfItems[gapItem].itemSoftmenuName;
-}
-fn gapChar1LR(gapItem: u16, isRight: bool) [*c]const u8 {
-    const s = itemStr(gapItem);
-    // C gapChar1Left guard is strict 1-byte (s[1]==0 && s[2]==0); gapChar1Right is
-    // more permissive — s[1]==0 || (s[1]!=0 && s[2]==0), i.e. also a 2-byte separator.
-    const match = if (isRight)
-        (s[0] != 0 and (s[1] == 0 or s[2] == 0))
-    else
-        (s[0] != 0 and s[1] == 0 and s[2] == 0);
-    if (match) {
-        return switch (s[0]) {
-            ',' => lit_comma1,
-            '.' => lit_dot1,
-            '\'' => lit_quote1,
-            '_' => lit_underscore1,
-            else => s,
-        };
-    }
-    return s;
-}
+// SEPARATOR_LEFT / SEPARATOR_RIGHT runtime macros, which display.c defines.
 inline fn SEPARATOR_LEFT() [*c]const u8 {
-    return gapChar1LR(gapItemLeft, false);
+    return frontier_display.getGapChar1Left();
 }
 inline fn SEPARATOR_RIGHT() [*c]const u8 {
-    return gapChar1LR(gapItemRight, true);
+    return frontier_display.getGapChar1Right();
 }
 
 // ===========================================================================
@@ -625,12 +599,8 @@ extern var T_cursorPos: i16;
 extern var shiftF: bool_t;
 extern var shiftG: bool_t;
 extern var pemCursorIsZerothStep: bool_t;
-extern var significantDigits: u8;
-extern var displayStack: u8;
-extern var exponentLimit: i16;
 extern var ctxtReal39: realContext_t;
 extern var gapItemLeft: u16;
-extern var gapItemRight: u16;
 
 // fnCFGsettings is owned by frontier.zig; declared extern, not re-exported.
 
@@ -759,10 +729,7 @@ extern fn decNumberCompare(res: *real_t, a: *const real_t, b: *const real_t, ctx
 inline fn realCompare(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberCompare(res, a, b, ctx);
 }
-inline fn realIsZero(r: *const real_t) bool_t {
-    // decNumberIsZero(dn) = *(dn)->lsu==0 && ... ; reproduce via the realIsZeroB form.
-    return @intFromBool(r.lsu[0] == 0 and r.digits == 1 and (r.bits & 0x70) == 0);
-}
+const realIsZero = abi.realIsZero;
 inline fn realIsSpecial(r: *const real_t) bool_t {
     return @intFromBool((r.bits & 0x70) != 0); // DECSPECIAL = 0x70
 }
@@ -953,15 +920,11 @@ extern fn __gmpz_clear(op: [*c]mpz_struct) void;
 // ===========================================================================
 // runtime macros over globals
 // ===========================================================================
-inline fn checkHP() bool {
-    return significantDigits <= 16 and displayStack == 1 and exponentLimit == 99 and Input_Default == ID_DP and (calcMode == CM_NORMAL or calcMode == CM_NIM);
-}
+const checkHP = frontier_screen.checkHPMode;
 inline fn isR47FAM() bool {
     return calcModel == USER_R47f_g or calcModel == USER_R47bk_fg or calcModel == USER_R47fg_bk or calcModel == USER_R47fg_g;
 }
-inline fn registerIsNoAngle(r: calcRegister_t) bool {
-    return (getRegisterDataType(r) == dtReal34 and getRegisterAngularMode(r) == amNone) or getRegisterDataType(r) == dtLongInteger;
-}
+const registerIsNoAngle = abi.registers.registerIsNoAngle;
 inline fn registerIsAngle(r: calcRegister_t) bool {
     return getRegisterDataType(r) == dtReal34 and !registerIsNoAngle(r);
 }
@@ -1027,53 +990,16 @@ inline fn mxRe34(elems: [*c]real34_t, i: usize) *align(1) real34_t {
 }
 
 // vector register macros
-inline fn isMatrix2dVector(rows: u16, cols: u16) bool {
-    return (rows == 1 and cols == 2) or (rows == 2 and cols == 1);
-}
-inline fn isMatrix3dVector(rows: u16, cols: u16) bool {
-    return (rows == 1 and cols == 3) or (rows == 3 and cols == 1);
-}
-inline fn isRegisterMatrix2dVector(reg: calcRegister_t) bool {
-    if (getRegisterDataType(reg) != dtReal34Matrix) return false;
-    const h = regMatrixHeader(reg);
-    return isMatrix2dVector(h.matrixRows, h.matrixColumns);
-}
-inline fn isRegisterMatrix3dVector(reg: calcRegister_t) bool {
-    if (getRegisterDataType(reg) != dtReal34Matrix) return false;
-    const h = regMatrixHeader(reg);
-    return isMatrix3dVector(h.matrixRows, h.matrixColumns);
-}
+const isRegisterMatrix2dVector = abi.registers.isRegisterMatrix2dVector;
+const isRegisterMatrix3dVector = abi.registers.isRegisterMatrix3dVector;
 inline fn getVectorRegisterAngularMode(reg: calcRegister_t) u32 {
     return if (getRegisterDataType(reg) == dtReal34Matrix) (getRegisterTag(reg) & amAngleMask) & amAngleMask else @as(u32, @intCast(amNone));
 }
 inline fn setVectorRegisterAngularMode(reg: calcRegister_t, am: u32) void {
     setRegisterTag(reg, (am & amAngleMask) | (getRegisterTag(reg) & amPolar));
 }
-inline fn getVectorRegisterPolarMode(reg: calcRegister_t) u32 {
-    if (getRegisterDataType(reg) == dtReal34Matrix and (getRegisterTag(reg) & amAngleMask) != @as(u32, @intCast(amNone))) {
-        if (isRegisterMatrix3dVector(reg)) {
-            return if ((getRegisterTag(reg) & amPolar) == amPolar) amPolarSPH else amPolarCYL;
-        } else if (isRegisterMatrix2dVector(reg)) {
-            return getRegisterTag(reg) & amPolar;
-        } else {
-            return 0;
-        }
-    }
-    return 0;
-}
-inline fn setVectorRegisterPolarMode(reg: calcRegister_t, pm: u32) void {
-    const tag = getRegisterTag(reg);
-    var newTag: u32 = undefined;
-    if (pm == 0) {
-        newTag = (tag & ~(amAngleMask | amPolar)) + @as(u32, @intCast(amNone));
-    } else {
-        const orPart: u32 = if (pm == amPolarSPH or pm == amPolar) amPolar else 0;
-        const left = (tag & (amAngleMask | amPolar)) | orPart;
-        const andMask: u32 = if (pm == amPolarCYL) ((~amPolar) & (amAngleMask | amPolar)) else 255;
-        newTag = left & andMask;
-    }
-    setRegisterTag(reg, newTag);
-}
+const getVectorRegisterPolarMode = abi.registers.getVectorRegisterPolarMode;
+const setVectorRegisterPolarMode = abi.registers.setVectorRegisterPolarMode;
 
 // ===========================================================================
 // OPTION_EDIT_X-gated helpers (file-static in C).
@@ -3101,10 +3027,7 @@ pub export fn shrinkNimBuffer() callconv(.c) void {
     }
 }
 
-pub export fn fnChangeBaseJM(BASE: u16) callconv(.c) void {
-    shrinkNimBuffer();
-    frontier_integers.fnChangeBase(BASE);
-
+fn _updateStackShortIntegers(BASE: u16) void {
     if (getSystemFlag(FLAG_HPBASE) != 0) {
         var regist: u16 = REGISTER_X + 1;
         const limit: u16 = @as(u16, @intCast(REGISTER_X)) + (if (getSystemFlag(FLAG_SSIZE8) != 0) @as(u16, 8) else 4);
@@ -3117,7 +3040,38 @@ pub export fn fnChangeBaseJM(BASE: u16) callconv(.c) void {
             }
         }
     }
+}
 
+// BIN, OCT, DEC and HEX as on the HP-42S: an integer or real X converts, and any
+// other X, a complex with an imaginary part among them, only selects the base
+// rather than reporting an error.
+pub export fn fnChangeBaseMode(BASE: u16) void {
+    var rval: real_t = undefined;
+    const regReal = frontier_register_value_conversions.getRegisterAsRealQuiet(REGISTER_X, &rval);
+    shrinkNimBuffer();
+    switch (getRegisterDataType(REGISTER_X)) {
+        dtShortInteger, dtLongInteger => frontier_integers.fnChangeBase(BASE),
+        dtReal34, dtComplex34 => {
+            if (!regReal) {
+                lastIntegerBase = BASE;
+                frontier_radio_button_catalog.fnRefreshState();
+            } else {
+                frontier_integers.fnChangeBase(BASE);
+            }
+        },
+        else => {
+            lastIntegerBase = BASE;
+            frontier_radio_button_catalog.fnRefreshState();
+        },
+    }
+    _updateStackShortIntegers(BASE);
+    frontier_bufferize.nimBufferToDisplayBuffer(aimBuffer, nimBufferDisplay + 2);
+}
+
+pub export fn fnChangeBaseJM(BASE: u16) void {
+    shrinkNimBuffer();
+    frontier_integers.fnChangeBase(BASE);
+    _updateStackShortIntegers(BASE);
     frontier_bufferize.nimBufferToDisplayBuffer(aimBuffer, nimBufferDisplay + 2);
 }
 
@@ -3519,7 +3473,7 @@ pub export fn getSmallestDenom(val: *const real_t) callconv(.c) i32 {
 
         int32ToReal(ai, &temp);
         realSubtract(&xx, &temp, &xx, &ctxtReal_denom_finder);
-        if (realIsZero(&xx) != 0 or realCompareAbsLessThan(&xx, const_1e_24) != 0) {
+        if (realIsZero(&xx) or realCompareAbsLessThan(&xx, const_1e_24) != 0) {
             break; // AF: division by zero
         }
         realDivide(const_1, &xx, &xx, &ctxtReal_denom_finder);

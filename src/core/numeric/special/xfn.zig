@@ -163,10 +163,7 @@ inline fn getRegisterAngularMode(reg: calcRegister_t) angularMode_t {
     return @intCast(getRegisterTag(reg) & amAngleMask);
 }
 
-// registerIsNoAngle(r): (Real34 && am==amNone) || LongInteger
-inline fn registerIsNoAngle(r: calcRegister_t) bool {
-    return (getRegisterDataType(r) == dtReal34 and getRegisterAngularMode(r) == amNone) or getRegisterDataType(r) == dtLongInteger;
-}
+const registerIsNoAngle = runtime.registerIsNoAngle;
 // inputAngleMode3r(r)
 inline fn inputAngleMode3r(r: calcRegister_t) angularMode_t {
     if (registerIsNoAngle(r + 1) and registerIsNoAngle(r + 2)) {
@@ -182,13 +179,7 @@ inline fn inputIsNoAngle3r(r: calcRegister_t) bool {
 inline fn inputAngleError3r(r: calcRegister_t) bool {
     return !registerIsNoAngle(r + 1) or !registerIsNoAngle(r + 2);
 }
-// isXFNregisterValid3r(r)
-inline fn isXFNregisterValid3r(r: calcRegister_t) bool {
-    return (getRegisterDataType(r) == dtReal34 or getRegisterDataType(r) == dtLongInteger) and
-        (getRegisterDataType(r + 1) == dtReal34 or getRegisterDataType(r + 1) == dtLongInteger) and
-        (getRegisterDataType(r + 2) == dtReal34 or getRegisterDataType(r + 2) == dtLongInteger) and
-        !inputAngleError3r(r);
-}
+const isXFNregisterValid3r = runtime.isXFNregisterValid3r;
 
 // real_t op helpers (operands *align(1) const).
 extern fn decNumberCopy(res: *align(1) real_t, source: *align(1) const real_t) *align(1) real_t;
@@ -272,24 +263,8 @@ inline fn realGetDigits(x: *align(1) const real_t) i32 {
 
 extern fn realSCIToDisplayString(work: *align(1) const real_t, displayString: [*]u8, digitsToDisplay: i16, frontSpace: u8, bcd: [*]u8, maxDigits: i16) void;
 
-// The SEPARATOR_RIGHT macro (defines.h gapChar1Right): a lone separator
-// character is normalised to a two-byte form, anything else passes through.
-extern var gapItemRight: u16;
-extern var indexOfItems: [*]abi.Item;
+const separatorRight = runtime.getGapChar1Right;
 const STD_SPACE_FIGURE = "\xa0\x07";
-fn separatorRight() [*c]const u8 {
-    const s: [*c]const u8 = if (gapItemRight == 0) "\x01\x01" else @ptrCast(&indexOfItems[gapItemRight].itemSoftmenuName);
-    if (s[0] != 0 and (s[1] == 0 or s[2] == 0)) {
-        return switch (s[0]) {
-            ',' => ",\x01",
-            '.' => ".\x01",
-            '\'' => "'\x01",
-            '_' => "_\x01",
-            else => s,
-        };
-    }
-    return s;
-}
 
 /// Narrows the rendered string by swapping each digit separator for a figure
 /// space, which is the width of a digit rather than of a punctuation glyph.

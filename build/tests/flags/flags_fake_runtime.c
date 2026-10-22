@@ -70,6 +70,8 @@ static uint32_t popSoftmenuCalls = 0;
 static uint32_t deleteEquationCalls = 0;
 static uint8_t lastClearStatusBarInfo = 0;
 static uint16_t lastChangeBaseArg = 0;
+static uint32_t timeFormatCalls = 0;
+static uint8_t lastTimeFormatAction = 0;
 
 void fnRefreshState(void) {
   refreshStateCalls++;
@@ -89,6 +91,13 @@ void fnChangeBaseJM(uint16_t base) {
   changeBaseCalls++;
   lastChangeBaseArg = base;
   lastIntegerBase = base;
+}
+
+// TDM24 hands DMCP its clk24 flag; a host build has no DMCP to hand it to, so
+// only the call and the action it carries are recorded.
+void timeSetSystemTimeFormat(flagAction_t action) {
+  timeFormatCalls++;
+  lastTimeFormatAction = (uint8_t)action;
 }
 
 void showAlphaModeonGui(void) {
@@ -181,6 +190,8 @@ void flagsParitySeed(uint64_t system_flags0,
   deleteEquationCalls = 0;
   lastClearStatusBarInfo = 0;
   lastChangeBaseArg = 0;
+  timeFormatCalls = 0;
+  lastTimeFormatAction = 0;
 }
 
 void flagsParitySeedCommandState(const uint16_t global_flags[8],
@@ -248,6 +259,8 @@ static void capture(flags_parity_snapshot_t *snapshot,
   snapshot->delete_equation_calls = deleteEquationCalls;
   snapshot->last_clear_status_bar_info = lastClearStatusBarInfo;
   snapshot->last_change_base_arg = lastChangeBaseArg;
+  snapshot->time_format_calls = timeFormatCalls;
+  snapshot->last_time_format_action = lastTimeFormatAction;
 }
 
 void flagsParityCaptureLive(flags_parity_snapshot_t *snapshot) {

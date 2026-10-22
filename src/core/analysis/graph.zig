@@ -231,7 +231,6 @@ const vmNormal: c_int = 0;
 const DECINF: u8 = 0x40;
 const DECNAN: u8 = 0x20;
 const DECSNAN: u8 = 0x10;
-const DECSPECIAL: u8 = DECINF | DECNAN | DECSNAN;
 
 // ---------------------------------------------------------------------------
 // Constant blob (offsets from the generated constantPointers.h)
@@ -402,7 +401,6 @@ extern fn decimal128ToNumber(src: *align(1) const real34_t, dst: *real_t) *real_
 extern fn decimal128FromNumber(dst: *align(1) real34_t, src: *align(1) const real_t, ctx: *realContext_t) *align(1) real34_t;
 extern fn decQuadIsInfinite(v: *align(1) const real34_t) u32;
 extern fn decQuadIsNaN(v: *align(1) const real34_t) u32;
-extern fn decQuadIsSignaling(v: *align(1) const real34_t) u32;
 extern fn decQuadIsZero(v: *align(1) const real34_t) u32;
 extern fn decQuadToString(v: *align(1) const real34_t, s: [*c]u8) [*c]u8;
 extern fn decQuadToInt32(v: *align(1) const real34_t, ctx: *realContext_t, round: c_int) i32;
@@ -473,9 +471,7 @@ inline fn real34ToReal(src: *align(1) const real34_t, dst: *real_t) void {
 inline fn realToReal34(src: *align(1) const real_t, dst: *align(1) real34_t) void {
     _ = decimal128FromNumber(dst, src, &ctxtReal34);
 }
-inline fn real34IsSpecial(v: *align(1) const real34_t) bool {
-    return decQuadIsNaN(v) != 0 or decQuadIsSignaling(v) != 0 or decQuadIsInfinite(v) != 0;
-}
+const real34IsSpecial = abi.real34IsSpecial;
 inline fn real34IsInfinite(v: *align(1) const real34_t) bool {
     return decQuadIsInfinite(v) != 0;
 }
@@ -491,9 +487,7 @@ inline fn real34IsNegative(v: *align(1) const real34_t) bool {
 inline fn real34ToInt32(v: *align(1) const real34_t) i32 {
     return decQuadToInt32(v, &ctxtReal34, 5); // DEC_ROUND_DOWN
 }
-inline fn realIsZero(v: *align(1) const real_t) bool {
-    return v.lsu[0] == 0 and v.digits == 1 and (v.bits & DECSPECIAL) == 0;
-}
+const realIsZero = abi.realIsZero;
 inline fn realIsNaN(v: *const real_t) bool {
     return (v.bits & (DECNAN | DECSNAN)) != 0;
 }

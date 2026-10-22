@@ -1,9 +1,6 @@
 const keyboard_state_build_options = @import("keyboard_state_build_options");
 const state_old_hw = @hasDecl(keyboard_state_build_options, "state_old_hw") and
     keyboard_state_build_options.state_old_hw;
-// CALCMODEL == USER_R47 for the firmware this object is linked into: the R47
-// firmware carries only the R47 layouts, so kbd_std selects among those alone.
-const built_for_r47: bool = keyboard_state_build_options.is_r47;
 // EXTRA_INFO_ON_CALC_ERROR: guards the console hints that accompany a
 // displayCalcErrorMessage. Upstream forces it to 0 for DMCP_BUILD and inside
 // TESTSUITE_BUILD, so on those lanes neither the sprintf into errorMessage nor
@@ -149,14 +146,14 @@ extern fn z47_keyboard_state_fnKeyUp(unused_but_mandatory_parameter: u16) void;
 extern fn z47_keyboard_state_fnKeyDown(unused_but_mandatory_parameter: u16) void;
 extern fn z47_keyboard_state_fnKeyDotD(unused_but_mandatory_parameter: u16) void;
 
-// The kbd_std macro (c47.h:257-267). Three different selectors, chosen by the
-// preprocessor: PC_BUILD walks every layout the simulator can be switched to;
-// a CALCMODEL == USER_R47 firmware only ever reaches the four R47 layouts and
-// falls back to R47f_g; every other firmware only ever reaches DM42 and C47.
-// fnKeysManagement lets the user set calcModel to a foreign model on any build,
-// and upstream answers with its own model's table, not the foreign one.
+// The kbd_std macro (c47.h). The simulator walks every layout it can be switched
+// to, including the four PC-only ones, and a hardware build calls assign.c's
+// getKbdStd, which knows only its own personality's layouts. fnKeysManagement
+// lets the user set calcModel to a foreign model on any build, and upstream
+// answers with its own model's table, not the foreign one.
+extern fn getKbdStd() *const [37]calcKey_t;
 pub inline fn kbdStdAt(index: usize) calcKey_t {
-    const selected: *[37]calcKey_t = if (comptime !is_dmcp_build) switch (calcModel) {
+    const selected: *const [37]calcKey_t = if (comptime is_dmcp_build) getKbdStd() else switch (calcModel) {
         USER_C47 => &kbd_std_C47,
         USER_DM42 => &kbd_std_DM42,
         USER_R47f_g => &kbd_std_R47f_g,
@@ -168,12 +165,7 @@ pub inline fn kbdStdAt(index: usize) calcKey_t {
         USER_V47 => &kbd_std_V47,
         USER_N47 => &kbd_std_N47,
         else => &kbd_std_C47,
-    } else if (comptime built_for_r47) switch (calcModel) {
-        USER_R47bk_fg => &kbd_std_R47bk_fg,
-        USER_R47fg_bk => &kbd_std_R47fg_bk,
-        USER_R47fg_g => &kbd_std_R47fg_g,
-        else => &kbd_std_R47f_g,
-    } else if (calcModel == USER_DM42) &kbd_std_DM42 else &kbd_std_C47;
+    };
     return selected[index];
 }
 
@@ -355,14 +347,9 @@ pub const ERROR_CANNOT_ASSIGN_HERE: u8 = 47;
 pub extern fn assignToMyMenu(position: u16) void;
 pub extern fn assignToMyAlpha(position: u16) void;
 pub extern fn assignToUserMenu(position: u16) void;
-// SHOWMODE macro (defines.h): a normal-mode SHOW/VIEW temporaryInformation state.
-pub inline fn isShowMode() bool {
-    return calcMode == CM_NORMAL and (temporaryInformation == TI_SHOW_REGISTER or
-        temporaryInformation == TI_SHOW_REGISTER_BIG or
-        temporaryInformation == TI_SHOW_REGISTER_SMALL or
-        temporaryInformation == TI_SHOW_REGISTER_TINY or
-        temporaryInformation == TI_SHOWNOTHING);
-}
+// SHOWMODE macro (defines.h): screen.c's showModeActive.
+pub extern fn showModeActive() bool;
+pub const isShowMode = showModeActive;
 
 // --- fnKeyUp / fnKeyDown dependencies ---------------------------------------
 const softmenuStack_t = abi.SoftmenuStack;
@@ -866,8 +853,10 @@ pub const ITM_U: i16 = 570;
 pub const ITM_W: i16 = 572;
 pub const ITM_X: i16 = 573;
 pub const ITM_Y: i16 = 574;
-pub const CHR_caseUP: i16 = 1878;
-pub const CHR_caseDN: i16 = 1879;
+pub const ITM_CASEUP: i16 = 1878;
+pub const ITM_CASEDN: i16 = 1879;
+pub const ITM_SUPUP: i16 = 1881;
+pub const ITM_SUBDN: i16 = 1883;
 pub const CHR_numL: i16 = 2030;
 pub const CHR_numU: i16 = 2031;
 pub const CHR_num: i16 = 2029;
@@ -924,19 +913,9 @@ pub fn lowercaseSelected() bool {
 pub const normKey_t = abi.NormKey;
 pub extern var Norm_Key_00: normKey_t;
 
-// Norm_Key_00_key macro (defines.h:554): key index of the blank/Norm key per model.
-pub fn normKey00Key() i16 {
-    return switch (calcModel) {
-        USER_C47 => 0,
-        USER_DM42 => 0,
-        USER_R47f_g => -1,
-        USER_R47bk_fg => 10,
-        USER_R47fg_bk => 11,
-        else => -1,
-    };
-}
-
-// SHOWMODE macro (defines.h:2187).
+// Norm_Key_00_key macro (defines.h): assign.c's getNormKey00Key.
+pub extern fn getNormKey00Key() i16;
+pub const normKey00Key = getNormKey00Key;
 
 pub extern fn fnC47Show(fn_show_param: u16) void;
 pub extern fn recallShowStatus() void;
@@ -1111,30 +1090,19 @@ pub const ITM_DELITM: i16 = 1455;
 // determineItem dependencies (keyboard.c 1511-1734).
 pub const TO_FN_EXEC: u8 = 4;
 pub const ITM_LBL: i16 = 1;
-pub extern var gapItemRadix: u16;
 pub extern fn fnTimerExec(nr: u8) void;
 pub extern fn Check_Norm_Key_00_Assigned(result: [*c]i16, tempkey: i16) i16;
 pub extern fn Setup_MultiPresses(result: i16) void;
 pub extern fn Check_MultiPresses(result: [*c]i16, key_no: i8) void;
 pub extern fn resetKeytimers() void;
 
-// Norm_Key_00_item_in_layout macro (defines.h:556).
-pub fn normKey00ItemInLayout() i16 {
-    return switch (calcModel) {
-        USER_C47 => ITM_SIGMAPLUS,
-        USER_DM42 => ITM_SIGMAPLUS,
-        USER_R47f_g => -1,
-        USER_R47bk_fg => ITM_NULL,
-        USER_R47fg_bk => ITM_NULL,
-        else => -1,
-    };
-}
-// RADIX34_MARK_* macros (defines.h 2195-2196): gapChar1Radix preserves Rx[0] /
-// Rx[1], so map comma + wide-comma ("\xa7\x88") to ',' else '.'.
-pub fn radix34MarkChar() u8 {
-    const rx = indexOfItemsSoftmenuName(@intCast(gapItemRadix));
-    return if (rx[0] == ',' or (rx[0] == 0xa7 and rx[1] == 0x88)) ',' else '.';
-}
+// Norm_Key_00_item_in_layout macro (defines.h): assign.c's getNormKey00ItemInLayout.
+pub extern fn getNormKey00ItemInLayout() i16;
+pub const normKey00ItemInLayout = getNormKey00ItemInLayout;
+// RADIX34_MARK_* macros (defines.h): RADIX34_MARK_CHAR is display.c's
+// getRadix34MarkChar.
+pub extern fn getRadix34MarkChar() u8;
+const radix34MarkChar = getRadix34MarkChar;
 pub fn radix34MarkDecItm() i16 {
     return if (radix34MarkChar() == '.') ITM_PERIOD else ITM_COMMA;
 }

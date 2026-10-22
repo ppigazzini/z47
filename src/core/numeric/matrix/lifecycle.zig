@@ -53,9 +53,7 @@ inline fn real34Copy(source: *const real34_t, destination: *real34_t) void {
     destination.* = source.*;
 }
 
-inline fn complex34Copy(source: *const complex34_t, destination: *complex34_t) void {
-    destination.* = source.*;
-}
+const complex34Copy = abi.complex34Copy;
 
 fn reportRamFullInfo(comptime function_name: [*:0]const u8) void {
     if (runtime.extra_info_on_calc_error) {

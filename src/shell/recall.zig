@@ -250,9 +250,7 @@ const COMPLEX34_SIZE_IN_BLOCKS: u16 = 8;
 inline fn real34Copy(src: *align(1) const real34_t, dst: *align(1) real34_t) void {
     dst.* = src.*;
 }
-inline fn complex34Copy(src: *align(1) const complex34_t, dst: *align(1) complex34_t) void {
-    dst.* = src.*;
-}
+const complex34Copy = abi.complex34Copy;
 
 // ===========================================================================
 // Indexed-matrix element recall callbacks (static in the C)

@@ -920,29 +920,15 @@ extern const enum rounding roundingModeTable[7];
 #define getComplexRegisterPolarMode(reg) (getRegisterTag(reg) & amPolar)
 #define setComplexRegisterAngularMode(reg, am) setRegisterTag((reg), ((am) & amAngleMask) | (getRegisterTag(reg) & amPolar))
 #define setComplexRegisterPolarMode(reg, pm) setRegisterTag((reg), ((((pm) & amPolar) != 0) ? (getRegisterTag(reg) & amAngleMask) : amNone) | ((pm) & amPolar))
-#define isRegisterMatrix3dVector(reg) ((getRegisterDataType(reg) == dtReal34Matrix) && (((REGISTER_MATRIX_HEADER(reg)->matrixRows == 1) && (REGISTER_MATRIX_HEADER(reg)->matrixColumns == 3)) || ((REGISTER_MATRIX_HEADER(reg)->matrixRows == 3) && (REGISTER_MATRIX_HEADER(reg)->matrixColumns == 1))))
-#define isRegisterMatrix2dVector(reg) ((getRegisterDataType(reg) == dtReal34Matrix) && (((REGISTER_MATRIX_HEADER(reg)->matrixRows == 1) && (REGISTER_MATRIX_HEADER(reg)->matrixColumns == 2)) || ((REGISTER_MATRIX_HEADER(reg)->matrixRows == 2) && (REGISTER_MATRIX_HEADER(reg)->matrixColumns == 1))))
-#define isRegisterMatrixVector(reg) (isRegisterMatrix3dVector(reg) || isRegisterMatrix2dVector(reg))
+// registers.c's vector-register queries, functions upstream; the fake runtime
+// defines them over the fake register file and both implementations call them.
+bool_t isRegisterMatrix3dVector(calcRegister_t regist);
+bool_t isRegisterMatrix2dVector(calcRegister_t regist);
+bool_t isRegisterMatrixVector(calcRegister_t regist);
+uint32_t getVectorRegisterPolarMode(calcRegister_t regist);
+void setVectorRegisterPolarMode(calcRegister_t regist, uint32_t polarMode);
 #define getVectorRegisterAngularMode(reg) ((getRegisterDataType(reg) == dtReal34Matrix) ? (getRegisterTag(reg) & amAngleMask) : amNone)
 #define setVectorRegisterAngularMode(reg, am) setRegisterTag((reg), ((am) & amAngleMask) | (getRegisterTag(reg) & amPolar))
-#define getVectorRegisterPolarMode(reg) (((getRegisterDataType(reg) == dtReal34Matrix) && ((getRegisterTag(reg) & amAngleMask) != amNone)) ? (isRegisterMatrix3dVector(reg) ? ((((getRegisterTag(reg) & amPolar) == amPolar)) ? amPolarSPH : amPolarCYL) : (isRegisterMatrix2dVector(reg) ? (getRegisterTag(reg) & amPolar) : 0)) : 0)
-static inline void z47_test_setVectorRegisterPolarMode(calcRegister_t reg, uint32_t pm) {
-  uint32_t next_tag;
-
-  if(pm == 0) {
-    next_tag = (getRegisterTag(reg) & ~(amAngleMask | amPolar)) + amNone;
-  }
-  else {
-    next_tag = (getRegisterTag(reg) & (amAngleMask | amPolar)) | ((pm == amPolarSPH || pm == amPolar) ? amPolar : 0);
-    if(pm == amPolarCYL) {
-      next_tag &= ((~amPolar) & (amAngleMask | amPolar));
-    }
-  }
-
-  setRegisterTag(reg, next_tag);
-}
-
-#define setVectorRegisterPolarMode(reg, pm) z47_test_setVectorRegisterPolarMode((reg), (pm))
 #define getRegisterLongIntegerSign(reg) getRegisterTag(reg)
 #define getRegisterShortIntegerBase(reg) getRegisterTag(reg)
 #define setRegisterShortIntegerBase(reg, base) setRegisterTag((reg), (base))

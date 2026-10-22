@@ -2131,6 +2131,8 @@ returnKeyPressedFalse:
     * \param void
     * \return void
     ***********************************************/
+    static GtkWidget *arrowKeyHeldWidget = NULL;  //JM the arrow key currently pressed; hideAllWidgets keeps it mapped and it is frozen at its pressed width so the mouse release still lands on it
+
     void hideAllWidgets(void) {
       if(headlessMode) {
         return;
@@ -2275,7 +2277,9 @@ returnKeyPressedFalse:
       gtk_widget_hide(lbl44Fa); //JM AIM2
       gtk_widget_hide(lbl45Fa); //JM
 
-      gtk_widget_hide(btn51);
+      if(btn51 != arrowKeyHeldWidget) {
+        gtk_widget_hide(btn51);
+      }
       gtk_widget_hide(btn52);
       gtk_widget_hide(btn53);
       gtk_widget_hide(btn54);
@@ -2311,7 +2315,9 @@ returnKeyPressedFalse:
       gtk_widget_hide(lbl54Fa);
       gtk_widget_hide(lbl55Fa); //^^
 
-      gtk_widget_hide(btn61);
+      if(btn61 != arrowKeyHeldWidget) {
+        gtk_widget_hide(btn61);
+      }
       gtk_widget_hide(btn62);
       gtk_widget_hide(btn63);
       gtk_widget_hide(btn64);
@@ -2352,7 +2358,9 @@ returnKeyPressedFalse:
       gtk_widget_hide(btn73);
       gtk_widget_hide(btn74);
       gtk_widget_hide(btn75);
-      gtk_widget_hide(btn71A);
+      if(btn71A != arrowKeyHeldWidget) {
+        gtk_widget_hide(btn71A);
+      }
       gtk_widget_hide(btn72A);  //vv dr - new AIM
       gtk_widget_hide(btn73A);
       gtk_widget_hide(btn74A);
@@ -3544,6 +3552,7 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
           stringToUtf8(indexOfItems[numlockReplacements(4,max(key->fShiftedAim, -key->fShiftedAim),getSystemFlag(FLAG_NUMLOCK),true,false)].itemSoftmenuName, lbl);
       }
 
+      //Keyboard AIM f-layer text replacements
       if(lbl[0] == 32 && lbl[1]==0) {
         lbl[0]=0xC2;          //JM SPACE the space character is not in the font. \rather use . . for space.
         lbl[1]=0xB7;          //JM SPACE
@@ -3552,8 +3561,8 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
         lbl[4]=0xb7;          //JM SPACE
         lbl[5]=0;             //JM SPACE
       }
-      else if(key->fShiftedAim == CHR_caseUP || key->fShiftedAim == CHR_caseDN) {
-        lbl[5] = 0;
+      else if(key->fShiftedAim == ITM_CASEUP || key->fShiftedAim == ITM_CASEDN) {
+        lbl[4] = 0;
       }
 
       if(debugLabelConsistency(lbl, "labelCaptionAimFa", key, NULL, false)) {
@@ -3651,6 +3660,11 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
       //GShift set label
       if(gAim == 0) {
         lbl[0] = 0;
+      }
+
+      //Keyboard AIM -layer text replacements
+      if(key->gShiftedAim == ITM_SUPUP || key->gShiftedAim == ITM_SUBDN) {
+        lbl[3] = 0;
       }
 
       gtk_label_set_label(GTK_LABEL(lblG), (gchar *)lbl);
@@ -5464,6 +5478,19 @@ static gboolean clear_ui_active_flag(gpointer data) {
     return FALSE;
 }
 
+  static gboolean arrowKeyHoldTrack(GtkWidget *w, GdkEventButton *e, gpointer data) {  //JM hold the pressed arrow key at its pressed size until the release, so the mouse-up lands on it
+    (void)data;
+    if(e->type == GDK_BUTTON_PRESS) {
+      arrowKeyHeldWidget = w;
+      gtk_widget_set_size_request(w, gtk_widget_get_allocated_width(w), 0);  //JM freeze the pressed width so the key stays present under the pointer
+    }
+    else {
+      gtk_widget_set_size_request(w, KEY_WIDTH_1, 0);  //JM release received, let the key size follow its label again
+      arrowKeyHeldWidget = NULL;
+    }
+    return FALSE;
+  }
+
 // Single handler for all UI events
 gboolean onUIActivity(GtkWidget *w, GdkEvent *event, gpointer data) {
   static gint64 first_call_time = 0;
@@ -6271,11 +6298,17 @@ int keyCntA = 0;
       gtk_widget_set_size_request(btn54A, KEY_WIDTH_2, 0);
       gtk_widget_set_size_request(btn55A, KEY_WIDTH_2, 0);  //^^
 
+      if(!isR47FAM) {
+        g_signal_connect(btn51, "button-press-event", G_CALLBACK(arrowKeyHoldTrack), NULL);  //JM btn51 is the arrow key on C47/DM42 only
+      }
       g_signal_connect(btn51,  "button-press-event",   G_CALLBACK(btnPressed),  "17");
       g_signal_connect(btn52,  "button-press-event",   G_CALLBACK(btnPressed),  "18");
       g_signal_connect(btn53,  "button-press-event",   G_CALLBACK(btnPressed),  "19");
       g_signal_connect(btn54,  "button-press-event",   G_CALLBACK(btnPressed),  "20");
       g_signal_connect(btn55,  "button-press-event",   G_CALLBACK(btnPressed),  "21");
+      if(!isR47FAM) {
+        g_signal_connect(btn51, "button-release-event", G_CALLBACK(arrowKeyHoldTrack), NULL);  //JM btn51 is the arrow key on C47/DM42 only
+      }
       g_signal_connect(btn51,  "button-release-event", G_CALLBACK(btnReleased), "17");
       g_signal_connect(btn52,  "button-release-event", G_CALLBACK(btnReleased), "18");
       g_signal_connect(btn53,  "button-release-event", G_CALLBACK(btnReleased), "19");
@@ -6394,11 +6427,13 @@ int keyCntA = 0;
       gtk_widget_set_size_request(btn64A, KEY_WIDTH_2, 0);
       gtk_widget_set_size_request(btn65A, KEY_WIDTH_2, 0);  //^^
 
+      g_signal_connect(btn61, "button-press-event", G_CALLBACK(arrowKeyHoldTrack), NULL);  //JM mark held before btnPressed rebuilds the keyboard
       g_signal_connect(btn61,  "button-press-event",   G_CALLBACK(btnPressed),  "22");
       g_signal_connect(btn62,  "button-press-event",   G_CALLBACK(btnPressed),  "23");
       g_signal_connect(btn63,  "button-press-event",   G_CALLBACK(btnPressed),  "24");
       g_signal_connect(btn64,  "button-press-event",   G_CALLBACK(btnPressed),  "25");
       g_signal_connect(btn65,  "button-press-event",   G_CALLBACK(btnPressed),  "26");
+      g_signal_connect(btn61, "button-release-event", G_CALLBACK(arrowKeyHoldTrack), NULL);  //JM clear held on release
       g_signal_connect(btn61,  "button-release-event", G_CALLBACK(btnReleased), "22");
       g_signal_connect(btn62,  "button-release-event", G_CALLBACK(btnReleased), "23");
       g_signal_connect(btn63,  "button-release-event", G_CALLBACK(btnReleased), "24");
@@ -6532,11 +6567,17 @@ int keyCntA = 0;
       g_signal_connect(btn73,  "button-release-event", G_CALLBACK(btnReleased), "29");
       g_signal_connect(btn74,  "button-release-event", G_CALLBACK(btnReleased), "30");
       g_signal_connect(btn75,  "button-release-event", G_CALLBACK(btnReleased), "31");
+      if(isR47FAM) {
+        g_signal_connect(btn71A, "button-press-event", G_CALLBACK(arrowKeyHoldTrack), NULL);  //JM btn71A is the AIM arrow key on R47 only
+      }
       g_signal_connect(btn71A, "button-press-event",   G_CALLBACK(btnPressed),  "27");
       g_signal_connect(btn72A, "button-press-event",   G_CALLBACK(btnPressed),  "28");    //vv dr - new AIM
       g_signal_connect(btn73A, "button-press-event",   G_CALLBACK(btnPressed),  "29");
       g_signal_connect(btn74A, "button-press-event",   G_CALLBACK(btnPressed),  "30");
       g_signal_connect(btn75A, "button-press-event",   G_CALLBACK(btnPressed),  "31");
+      if(isR47FAM) {
+        g_signal_connect(btn71A, "button-release-event", G_CALLBACK(arrowKeyHoldTrack), NULL);  //JM btn71A is the AIM arrow key on R47 only
+      }
       g_signal_connect(btn71A, "button-release-event", G_CALLBACK(btnReleased), "27");
       g_signal_connect(btn72A, "button-release-event", G_CALLBACK(btnReleased), "28");
       g_signal_connect(btn73A, "button-release-event", G_CALLBACK(btnReleased), "29");

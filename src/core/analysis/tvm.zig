@@ -215,12 +215,6 @@ extern fn decNumberFromUInt32(res: *real_t, source: u32) *real_t;
 extern fn decNumberFromString(res: *real_t, source: [*:0]const u8, ctxt: *realContext_t) *real_t;
 extern fn realToIntegralValue(source: *const real_t, destination: *real_t, mode: u32, ctxt: *realContext_t) void;
 
-// decNumberIsZero is a decNumber.h macro (DECSPECIAL = 0x70):
-//   (*lsu == 0 && digits == 1 && (bits & 0x70) == 0)
-inline fn decNumberIsZero(dn: *align(1) const real_t) bool {
-    return dn.lsu[0] == 0 and dn.digits == 1 and (dn.bits & 0x70) == 0;
-}
-
 inline fn realCopy(source: *align(1) const real_t, destination: *real_t) void {
     _ = decNumberCopy(destination, source);
 }
@@ -242,9 +236,7 @@ inline fn realFMA(f1: *align(1) const real_t, f2: *align(1) const real_t, term: 
 inline fn realChangeSign(operand: *real_t) void {
     operand.bits ^= 0x80;
 }
-inline fn realIsZero(source: *const real_t) bool {
-    return decNumberIsZero(source);
-}
+const realIsZero = abi.realIsZero;
 inline fn realIsPositive(source: *const real_t) bool {
     return (source.bits & 0x80) == 0x00;
 }

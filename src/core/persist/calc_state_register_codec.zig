@@ -3,9 +3,8 @@
 // textTag (file-static in saveRestoreCalcState.c). The scalar type paths
 // (longInteger, string, shortInteger, real34, complex34, time, date) are Zig and
 // exercised by the enriched parity harness; the matrix vector-tag predicates
-// (isRegisterMatrixVector / getVectorRegister{Angular,Polar}Mode — macros over
-// the matrix subsystem) are reached as direct externs to the canonical core C symbols. The C statics
-// remain for the DMCP retained path.
+// isRegisterMatrixVector and getVectorRegisterPolarMode are registers.c's, reached
+// as direct externs. The C statics remain for the DMCP retained path.
 
 const std = @import("std");
 const abi = @import("abi");
@@ -171,47 +170,14 @@ extern fn __gmpz_clear(li: *MpzStruct) void;
 extern fn convertShortIntegerRegisterToUInt64(regist: i16, sign: *i16, value: *u64) void;
 extern fn decQuadToString(src: [*c]const u8, dst: [*c]u8) [*c]u8;
 
-// matrix vector-tag predicates (registers.h / typeDefinitions.h macros, ported
-// pure: a register is a 2D/3D "vector" matrix by its 1xN / Nx1 dims).
-const amPolarSPH: u8 = 128;
-const amPolarCYL: u8 = 64;
-
-fn matrixRows(regist: i16) u16 {
-    const hdr: *const matrixHeader_t = abi.registerMatrixHeaderAligned(regist);
-    return hdr.matrixRows;
-}
-fn matrixCols(regist: i16) u16 {
-    const hdr: *const matrixHeader_t = abi.registerMatrixHeaderAligned(regist);
-    return hdr.matrixColumns;
-}
-fn isMatrix2dVector(rows: u16, cols: u16) bool {
-    return vector_shape.is2dVector(rows, cols);
-}
-fn isMatrix3dVector(rows: u16, cols: u16) bool {
-    return vector_shape.is3dVector(rows, cols);
-}
-fn isRegisterMatrixVector(regist: i16) bool {
-    if (getRegisterDataType(regist) != dtReal34Matrix) return false;
-    const r = matrixRows(regist);
-    const c = matrixCols(regist);
-    return isMatrix3dVector(r, c) or isMatrix2dVector(r, c);
-}
+// matrix vector-tag predicates: registers.c's isRegisterMatrixVector and
+// getVectorRegisterPolarMode, and the registers.h macro
+// getVectorRegisterAngularMode.
+const isRegisterMatrixVector = abi.registers.isRegisterMatrixVector;
+const getVectorRegisterPolarMode = abi.registers.getVectorRegisterPolarMode;
 fn getVectorRegisterAngularMode(regist: i16) u8 {
     if (getRegisterDataType(regist) != dtReal34Matrix) return amNone;
     return @intCast(getRegisterTag(regist) & amAngleMask);
-}
-fn getVectorRegisterPolarMode(regist: i16) u8 {
-    if (getRegisterDataType(regist) != dtReal34Matrix) return 0;
-    const tag = getRegisterTag(regist);
-    if ((tag & amAngleMask) == @as(u32, amNone)) return 0;
-    const r = matrixRows(regist);
-    const c = matrixCols(regist);
-    if (isMatrix3dVector(r, c)) {
-        return if ((tag & amPolar) == amPolar) amPolarSPH else amPolarCYL;
-    } else if (isMatrix2dVector(r, c)) {
-        return @intCast(tag & amPolar);
-    }
-    return 0;
 }
 
 // restore-side core helpers
@@ -474,7 +440,7 @@ fn matrixToSaveString(regist: i16, is_complex: bool) void {
         _ = strcpy(aim(), "Rema");
         const is_vec = isRegisterMatrixVector(regist);
         const angle: u8 = if (is_vec) getVectorRegisterAngularMode(regist) else amNone;
-        const pol: u8 = if (is_vec) getVectorRegisterPolarMode(regist) else 0;
+        const pol: u8 = if (is_vec) @intCast(getVectorRegisterPolarMode(regist)) else 0;
         textTag(aim(), aimBuffer1.len, angle, pol);
     } else {
         _ = strcpy(aim(), "Cxma");

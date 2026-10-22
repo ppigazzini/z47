@@ -1,0 +1,4 @@
+Site: https://www.gust.org.pl/projects/e-foundry/latin-modern
+License: GUST Font License (GFL) (https://www.gust.org.pl/projects/e-foundry/licenses)
+Fonts:
+- LMSans10-Regular

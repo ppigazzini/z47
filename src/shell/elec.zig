@@ -140,9 +140,7 @@ inline fn realDivide(a: *align(1) const real_t, b: *align(1) const real_t, res: 
 inline fn realSquareRoot(a: *align(1) const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberSquareRoot(res, a, ctx);
 }
-inline fn realIsZero(x: *align(1) const real_t) bool {
-    return x.lsu[0] == 0 and x.digits == 1 and (x.bits & DECSPECIAL) == 0;
-}
+const realIsZero = abi.realIsZero;
 inline fn realIsNaN(x: *align(1) const real_t) bool {
     return (x.bits & (DECNAN | DECSNAN)) != 0;
 }

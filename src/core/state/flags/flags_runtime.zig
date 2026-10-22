@@ -167,6 +167,7 @@ pub extern fn fnRefreshState() void;
 pub extern fn updateShiftOnTline() void;
 pub extern fn reallyClearStatusBar(info: u8) void;
 pub extern fn fnChangeBaseJM(base: u16) void;
+pub extern fn timeSetSystemTimeFormat(action: c_uint) void;
 pub extern fn leaveTamModeIfEnabled() void;
 pub extern fn showAlphaModeonGui() void;
 pub extern fn calcModeNormal() void;

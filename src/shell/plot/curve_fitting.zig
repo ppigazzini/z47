@@ -202,9 +202,7 @@ extern fn realCompareLessThan(a: *align(1) const real_t, b: *align(1) const real
 inline fn realIsSpecial(v: *const real_t) bool {
     return (v.bits & abi.DECSPECIAL) != 0;
 }
-inline fn realIsZero(v: *const real_t) bool {
-    return v.lsu[0] == 0 and v.digits == 1 and (v.bits & abi.DECSPECIAL) == 0;
-}
+const realIsZero = abi.realIsZero;
 inline fn realIsPositive(v: *const real_t) bool {
     return (v.bits & abi.DECNEG) == 0;
 }

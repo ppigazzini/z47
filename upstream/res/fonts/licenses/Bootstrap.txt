@@ -1,0 +1,4 @@
+Site: https://icons.getbootstrap.com/icons/usb-symbol/
+License: Code licensed MIT, docs CC BY 3.0. (https://github.com/twbs/bootstrap/blob/main/LICENSE)
+Glyphs:
+- usb_symbol.svg

@@ -334,10 +334,7 @@ inline fn realToString(source: *const real_t, destination: [*c]u8) [*c]u8 {
 
 extern fn realSetZero(value: *real_t) void;
 extern fn realSetOne(value: *real_t) void;
-// realIsZero macro (decNumberIsZero, DECSPECIAL = 0x70)
-inline fn realIsZero(dn: *align(1) const real_t) bool {
-    return dn.lsu[0] == 0 and dn.digits == 1 and (dn.bits & 0x70) == 0;
-}
+const realIsZero = abi.realIsZero;
 extern fn realSetNaN(value: *real_t) void;
 
 // real34_t macros

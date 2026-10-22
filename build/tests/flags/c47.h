@@ -121,6 +121,7 @@ void fnRefreshState(void);
 void updateShiftOnTline(void);
 void reallyClearStatusBar(uint8_t info);
 void fnChangeBaseJM(uint16_t base);
+void timeSetSystemTimeFormat(flagAction_t action);
 void showAlphaModeonGui(void);
 void leaveTamModeIfEnabled(void);
 void calcModeAim(uint16_t unusedButMandatoryParameter);

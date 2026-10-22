@@ -332,9 +332,7 @@ inline fn absI(x: c_int) u32 {
 inline fn real34IsNegative(v: *align(1) const real34_t) bool {
     return (v.bytes[15] & 0x80) == 0x80;
 }
-inline fn real34SetNegativeSign(v: *real34_t) void {
-    v.bytes[15] |= 0x80;
-}
+const real34SetNegativeSign = abi.real34SetNegativeSign;
 inline fn real34SetPositiveSign(v: *real34_t) void {
     v.bytes[15] &= 0x7f;
 }

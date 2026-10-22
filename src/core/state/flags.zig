@@ -19,6 +19,7 @@ pub export var systemFlags0Changed: u64 = ~@as(u64, 0);
 pub export var systemFlags1Changed: u64 = ~@as(u64, 0);
 pub export var systemFlags2Changed: u64 = ~@as(u64, 0);
 
+// flagAction_t (typeDefinitions.h)
 const FlagAction = enum(u2) {
     clear = 0,
     set = 1,
@@ -451,6 +452,8 @@ fn systemFlagAction(system_flag: u16, action: FlagAction) void {
                 clearSystemFlagBit(runtime.FLAG_CPXPLOT);
             }
         },
+
+        runtime.FLAG_TDM24 => runtime.timeSetSystemTimeFormat(@backingInt(action)),
         else => {},
     }
 

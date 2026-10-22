@@ -20,6 +20,17 @@ const StrLgIntHeader = types.StrLgIntHeader;
 
 pub extern fn getRegisterDataPointer(reg: i16) callconv(.c) ?*anyopaque;
 
+// registers.c's queries over a register's type, tag and matrix header, declared
+// once for every object that calls them.
+pub extern fn copyRegisterStringTo(dest: [*c]u8, regist: i16) void;
+pub extern fn isRegisterMatrix3dVector(regist: i16) bool;
+pub extern fn isRegisterMatrix2dVector(regist: i16) bool;
+pub extern fn isRegisterMatrixVector(regist: i16) bool;
+pub extern fn getVectorRegisterPolarMode(regist: i16) u32;
+pub extern fn setVectorRegisterPolarMode(regist: i16, polarMode: u32) void;
+pub extern fn registerIsNoAngle(regist: i16) bool;
+pub extern fn isXFNregisterValid3r(regist: i16) bool;
+
 pub inline fn registerReal34(reg: i16) *align(1) Real34 {
     return @ptrCast(getRegisterDataPointer(reg).?);
 }

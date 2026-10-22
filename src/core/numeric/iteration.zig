@@ -122,9 +122,7 @@ const real34IsNegative = math_real_predicates.real34IsNegative;
 inline fn real34SetPositiveSign(operand: *real34_t) void {
     operand.bytes[15] &= 0x7F;
 }
-inline fn real34SetNegativeSign(operand: *real34_t) void {
-    operand.bytes[15] |= 0x80;
-}
+const real34SetNegativeSign = abi.real34SetNegativeSign;
 
 inline fn getRegisterAngularMode(reg: calcRegister_t) u32 {
     return getRegisterTag(reg) & amAngleMask;

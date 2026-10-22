@@ -40,9 +40,7 @@ const force: u8 = 1;
 /// decNumber sign bit, in the high byte of the decimal128 encoding.
 const REAL34_SIGN_BIT: u8 = 0x80;
 
-inline fn real34IsSpecial(v: *align(1) const real34_t) bool {
-    return runtime.decQuadIsNaN(v) != 0 or runtime.decQuadIsSignaling(v) != 0 or runtime.decQuadIsInfinite(v) != 0;
-}
+const real34IsSpecial = abi.real34IsSpecial;
 inline fn real34IsZero(v: *align(1) const real34_t) bool {
     return runtime.decQuadIsZero(v) != 0;
 }

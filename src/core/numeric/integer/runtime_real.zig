@@ -14,7 +14,3 @@ pub fn realFromBoolean(comptime RealType: type, value: bool) RealType {
     result.lsu[0] = @intFromBool(value);
     return result;
 }
-
-pub fn isRealZero(value: anytype, dec_special: u8) bool {
-    return value.digits == 1 and value.lsu[0] == 0 and (value.bits & dec_special) == 0;
-}

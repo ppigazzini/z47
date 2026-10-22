@@ -357,9 +357,7 @@ pub inline fn realIsNaN(value: *const real_t) bool {
 pub inline fn realIsNegative(value: *const real_t) bool {
     return (value.bits & DECNEG) != 0;
 }
-pub inline fn realIsZero(value: *const real_t) bool {
-    return value.digits == 1 and value.lsu[0] == 0 and !realIsSpecial(value);
-}
+pub const realIsZero = abi.realIsZero;
 pub inline fn realIsInfinite(value: *const real_t) bool {
     return (value.bits & DECINF) != 0;
 }

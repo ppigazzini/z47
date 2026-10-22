@@ -35,8 +35,10 @@ typedef struct {
   uint32_t show_alpha_mode_calls;
   uint32_t pop_softmenu_calls;
   uint32_t delete_equation_calls;
+  uint32_t time_format_calls;
   uint8_t last_clear_status_bar_info;
   uint16_t last_change_base_arg;
+  uint8_t last_time_format_action;
 } flags_parity_snapshot_t;
 
 // The Zig owner's `systemFlags*Changed` exports, and the oracle's -- which are

@@ -105,6 +105,10 @@ pub export fn getRegisterDataPointer(reg: runtime.calcRegister_t) ?*anyopaque {
     return descriptor_owned.getRegisterDataPointer(reg);
 }
 
+pub export fn copyRegisterStringTo(dest: [*]u8, regist: runtime.calcRegister_t) void {
+    descriptor_owned.copyRegisterStringTo(dest, regist);
+}
+
 pub export fn getRegisterTag(reg: runtime.calcRegister_t) u32 {
     return descriptor_owned.getRegisterTag(reg);
 }
@@ -119,4 +123,32 @@ pub export fn setRegisterDataPointer(reg: runtime.calcRegister_t, mem_ptr: ?*con
 
 pub export fn setRegisterTag(reg: runtime.calcRegister_t, tag: u32) void {
     descriptor_owned.setRegisterTag(reg, tag);
+}
+
+pub export fn isRegisterMatrix3dVector(regist: runtime.calcRegister_t) bool {
+    return descriptor_owned.isRegisterMatrix3dVector(regist);
+}
+
+pub export fn isRegisterMatrix2dVector(regist: runtime.calcRegister_t) bool {
+    return descriptor_owned.isRegisterMatrix2dVector(regist);
+}
+
+pub export fn isRegisterMatrixVector(regist: runtime.calcRegister_t) bool {
+    return descriptor_owned.isRegisterMatrixVector(regist);
+}
+
+pub export fn getVectorRegisterPolarMode(regist: runtime.calcRegister_t) u32 {
+    return descriptor_owned.getVectorRegisterPolarMode(regist);
+}
+
+pub export fn setVectorRegisterPolarMode(regist: runtime.calcRegister_t, polar_mode: u32) void {
+    descriptor_owned.setVectorRegisterPolarMode(regist, polar_mode);
+}
+
+pub export fn registerIsNoAngle(regist: runtime.calcRegister_t) bool {
+    return descriptor_owned.registerIsNoAngle(regist);
+}
+
+pub export fn isXFNregisterValid3r(regist: runtime.calcRegister_t) bool {
+    return descriptor_owned.isXFNregisterValid3r(regist);
 }

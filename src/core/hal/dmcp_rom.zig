@@ -1,12 +1,15 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
 // DMCP ROM function-table shims for the state save/restore owners
-// (calc_state_io_owned, program_serialization_io_owned) and the memory owner's
-// GMP allocator. power_check_screen, sys_timer_disable, sys_timer_start,
-// lcd_refresh, wait_for_key_press and sys_reset are DMCP library function-table
-// macros (lft_ifc.h), not linkable symbols, so a Zig extern cannot resolve them
-// on firmware. This module reconstructs them as lane-aware ROM trampolines. On
-// host (no power button / DMCP timers / DMCP LCD) they are trivial no-ops.
+// (calc_state_io_owned, program_serialization_io_owned), the memory owner's GMP
+// allocator, and the date, time and settings owners. power_check_screen,
+// sys_timer_disable, sys_timer_start, lcd_refresh, wait_for_key_press and
+// sys_reset are DMCP library function-table macros (lft_ifc.h), and
+// get_flag_dmy, set_flag_dmy, is_flag_clk24 and set_flag_clk24 are function
+// pointers in the system data block (dmcp.h), none of them a linkable symbol, so
+// a Zig extern cannot resolve them on firmware. This module reconstructs them as
+// lane-aware ROM trampolines. On host (no power button / DMCP timers / DMCP LCD /
+// system data block) they are trivial no-ops.
 //
 // Offsets verified against lft_ifc.h: lcd_refresh LIBRARY_FN_BASE+48,
 // power_check_screen +340, wait_for_key_press +408, sys_disk_write_enable +480,
@@ -88,4 +91,39 @@ pub fn wait_for_key_press() void {
 }
 pub fn sys_reset() void {
     romVoid(544);
+}
+
+// sys_sdb_t (dmcp.h), up to the four DMCP settings flags. The block sits at a
+// fixed address on each board, selected like LIBRARY_FN_BASE.
+const SDB_BASE: usize = if (builtin.target.cpu.model == &std.Target.arm.cpu.cortex_m4) 0x10002000 else 0x20000000;
+const GetFlagFn = *const fn () callconv(.c) c_int;
+const SetFlagFn = *const fn (val: c_int) callconv(.c) void;
+const SysSdb = extern struct {
+    calc_state: u32,
+    ppgm_fp: ?*anyopaque,
+    key_to_alpha_table: ?[*]const u8,
+    run_menu_item_app: ?*const anyopaque,
+    menu_line_str_app: ?*const anyopaque,
+    after_fat_format: ?*const anyopaque,
+    get_flag_dmy: GetFlagFn,
+    set_flag_dmy: SetFlagFn,
+    is_flag_clk24: GetFlagFn,
+    set_flag_clk24: SetFlagFn,
+};
+fn sdb() *const SysSdb {
+    return @ptrFromInt(SDB_BASE);
+}
+
+// DMCP's date order, SYS_MDY, SYS_DMY or SYS_YMD, and its 24-hour clock flag.
+pub fn get_flag_dmy() c_int {
+    return if (is_dmcp_build) sdb().get_flag_dmy() else 0;
+}
+pub fn set_flag_dmy(val: c_int) void {
+    if (is_dmcp_build) sdb().set_flag_dmy(val);
+}
+pub fn is_flag_clk24() bool {
+    return is_dmcp_build and sdb().is_flag_clk24() != 0;
+}
+pub fn set_flag_clk24(val: c_int) void {
+    if (is_dmcp_build) sdb().set_flag_clk24(val);
 }

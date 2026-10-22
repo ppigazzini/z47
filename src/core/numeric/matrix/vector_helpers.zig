@@ -109,7 +109,7 @@ pub export fn fnComplexToVector(opType: u16) callconv(.c) void {
         elements[1] = runtime.registerImag34Data(TEMP_REGISTER_1).*;
         runtime.adjustResult(runtime.REGISTER_X, false, true, runtime.REGISTER_X, -1, -1);
         runtime.setVectorRegisterAngularMode(runtime.REGISTER_X, runtime.getComplexRegisterAngularMode(TEMP_REGISTER_1));
-        runtime.setVectorRegisterPolarMode(runtime.REGISTER_X, runtime.getComplexRegisterPolarMode(TEMP_REGISTER_1));
+        runtime.setVectorRegisterPolarMode(runtime.REGISTER_X, @intCast(runtime.getComplexRegisterPolarMode(TEMP_REGISTER_1)));
         runtime.clearRegister(TEMP_REGISTER_1);
         return;
     }

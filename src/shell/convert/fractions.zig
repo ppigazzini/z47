@@ -36,10 +36,6 @@ const calcRegister_t = i16;
 
 // decNumber bits.
 const DECNEG: u8 = 0x80;
-const DECINF: u8 = 0x40;
-const DECNAN: u8 = 0x20;
-const DECSNAN: u8 = 0x10;
-const DECSPECIAL: u8 = DECINF | DECNAN | DECSNAN;
 
 // ---------------------------------------------------------------------------
 // Constants / enum values (verified against defines.h)
@@ -113,9 +109,7 @@ inline fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8) void {
     if (comptime extra_info) c_moreInfoOnError(m1, m2, null, null);
 }
 const reg34 = abi.registerReal34;
-inline fn realIsZero(v: *const real_t) bool {
-    return v.lsu[0] == 0 and v.digits == 1 and (v.bits & DECSPECIAL) == 0;
-}
+const realIsZero = abi.realIsZero;
 inline fn realIsNegative(v: *const real_t) bool {
     return (v.bits & 0x80) == 0x80;
 }

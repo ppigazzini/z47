@@ -93,10 +93,6 @@ const realContext_t = abi.RealContext;
 const matrixHeader_t = abi.MatrixHeader;
 const real34Matrix_t = abi.Real34Matrix;
 
-// item_t (typeDefinitions.h): only .itemSoftmenuName is read by RADIX34_MARK_CHAR.
-const ItemFn = ?*const fn (u16) callconv(.c) void;
-const item_t = abi.Item;
-
 // ---------------------------------------------------------------------------
 // Constants (defines.h / plotstat.h / display.h)
 // ---------------------------------------------------------------------------
@@ -202,19 +198,9 @@ const STD_GAUSS_WHITE_R = "\xa4\x31";
 const STD_GAUSS_WHITE_L = "\xa4\x32";
 const STD_SUB_m = "\xa4\xa8";
 const STD_SUB_i = "\xa4\xa4";
-const STD_WCOMMA = "\xa7\x88";
 
 const PLOT_TMP_BUF_SIZE: usize = 32;
 const DISPLAY_VALUE_LEN: usize = 80;
-
-// ---------------------------------------------------------------------------
-// Constant blob (offsets from the generated constantPointers.h)
-// ---------------------------------------------------------------------------
-
-// `indexOfItems` is a C ARRAY (const item_t indexOfItems[]); bind its address
-// with @extern so indexing reads element data (a [*c]const item_t extern would
-// load the first 8 bytes as a pointer -> SEGV).
-const indexOfItems = @extern([*c]const item_t, .{ .name = "indexOfItems" });
 
 // ---------------------------------------------------------------------------
 // File-scope globals DEFINED by plotstat.c (not exported by any sibling).
@@ -272,7 +258,6 @@ extern var histElementXorY: i16;
 extern var loBinR: real34_t;
 extern var hiBinR: real34_t;
 extern var nBins: real34_t;
-extern var gapItemRadix: u16;
 extern var errorMessage: [*c]u8;
 
 // plotStatMx / statMx are fixed-size C char arrays (char xxx[8]); declare as
@@ -571,15 +556,8 @@ inline fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const
     c_moreInfoOnError(m1, m2, m3, m4);
 }
 
-// RADIX34_MARK_CHAR (defines.h): map comma/wide-comma to ',', else '.'
-//   Rx = (char*)indexOfItems[gapItemRadix].itemSoftmenuName
-inline fn radix34MarkChar() u8 {
-    const rx: [*c]const u8 = @ptrCast(&indexOfItems[gapItemRadix].itemSoftmenuName);
-    if (rx[0] == ',' or (rx[0] == STD_WCOMMA[0] and rx[1] == STD_WCOMMA[1])) {
-        return ',';
-    }
-    return '.';
-}
+// RADIX34_MARK_CHAR, which display.c defines.
+const radix34MarkChar = frontier_display.getRadix34MarkChar;
 
 // ===========================================================================
 // statGraphReset

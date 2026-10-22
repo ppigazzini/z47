@@ -226,9 +226,7 @@ inline fn realSetPositiveSign(operand: *real_t) void {
 inline fn realGetSign(source: *const real_t) u8 {
     return source.bits & 0x80;
 }
-inline fn realIsZero(source: *align(1) const real_t) bool {
-    return source.lsu[0] == 0 and source.digits == 1 and (source.bits & 0x70) == 0;
-}
+const realIsZero = abi.realIsZero;
 inline fn realIsSpecial(source: *align(1) const real_t) bool {
     return (source.bits & 0x70) != 0;
 }

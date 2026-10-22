@@ -570,12 +570,7 @@ fn real34IsNegative(value: *align(1) const real34_t) bool {
     return (value.bytes[15] & 0x80) == 0x80;
 }
 
-extern fn decQuadIsNaN(value: *align(1) const real34_t) u32;
-extern fn decQuadIsInfinite(value: *align(1) const real34_t) u32;
-
-fn real34IsSpecial(value: *align(1) const real34_t) bool {
-    return decQuadIsNaN(value) != 0 or decQuadIsInfinite(value) != 0;
-}
+const real34IsSpecial = abi.real34IsSpecial;
 
 const real_t = abi.Real;
 const real34_t = abi.Real34;

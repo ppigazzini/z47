@@ -1,0 +1,68 @@
+C47__ManualFont change log:
+
+6. Docs(manual): The 2 new fonts "cleaned"
+- Ensured integer coordinates and appropriate extremas
+- No new glyphs
+
+5. Docs(manual): C47__ManualFont: Update many glyphs
+- Added a lot of glyphs from LMSans10-Regular
+  - Symbols (! " # % & ' , - . / : [ ] _ °)
+  - digits 0-9 (1 modified)
+  - capital A-Z and small a-z letters
+  - capital greek Α-Ω letters (except PI, Sigma and U+03a2)
+- Added from CMMI10
+  - small greek letters
+  - italic euler e
+- Added BST triangle (U+21c9) from CMR10 Delta increment (U+2206)
+- Added + from CMR10
+- Added × ÷ minus from CMSY10
+- Built glyphs from parts of LMSans10-Regular
+  - y under root (U+0232)
+  - superscript x (U+02e3)
+  - x under root (U+037f)
+- Built superscript digits 0-9 from LMSans10-Regular parts
+- Built squareroot, cuberoot and xthroot from LMSans10-Regular parts
+
+4. Docs(manual): Various chars, some from .SVG icons
+- Added various glyphs copied from the CMR10 font included in C47_R47_calc.pdf
+  - PI (U+03a0)
+  - Sigma (U+03a3)
+  - product (U+220f) - resized
+  - summation (U+2211) - resized
+- Added various glyphs from various origins
+  - stopwatch (U+23f1) from Noto Sans Symbols 2 Regular
+  - power (U+23fb) from UnicodeIECsymbol
+  - USB symbol (U+2434) from Bootstrap usb_symbol.svg
+  - undo (U+238c) from SVG Repo undo-svgrepo-com.svg
+
+3. Docs(manual): Maths characters extracted from the PDF
+- Added math glyphs copied from the MSBM10 font included in C47_R47_calc.pdf
+  - double-struck C (U+2102)
+  - double-struck I (U+2110)
+  - double-struck N (U+2115)
+  - double-struck Q (U+211a)
+  - double-struck R (U+211d)
+  - double-struck Z (U+2124)
+  - smaller double-struck Z (U+2125) - resized
+  - double-struck T (U+2138)
+  - double-struck D (U+2145)
+- Added math glyphs copied from the CMMIB10 font included in C47_R47_calc.pdf
+  - complex i (U+2148)
+  - complex j (U+2149)
+- Added math glyphs copied from Noto Sans Symbols 2 Regular
+  - circled dot (U+2299)
+  - polar indicator (U+229a) - the previous one resized and lowered
+
+2. Docs(manual): Angles copied from another font
+- Added angle glyphs copied from the MSAM10 font included in C47_R47_calc.pdf
+  - angle (U+2220)
+  - measuredangle (U+2221)
+
+1. Docs(manual): Scalable versions of some arrows (+ swap)
+- Added hand drawn glyphs (the C47__StandardFont glyphs kept in the invisible back layer):
+  - arrowleft (U+2190)
+  - arrowup (U+2191)
+  - arrowright (U+2192)
+  - arrowdown (U+2193)
+  - swap (U+21c4)
+  - arrowdblright (U+21d2)

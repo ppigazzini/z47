@@ -36,6 +36,12 @@ const USER_R47bk_fg: u8 = 62;
 const USER_R47f_g: u8 = 61;
 const USER_R47fg_bk: u8 = 63;
 const USER_R47fg_g: u8 = 64;
+const USER_C47: u8 = 46;
+const USER_DM42: u8 = 45;
+const USER_V47: u8 = 40;
+const USER_E47: u8 = 43;
+const USER_D47: u8 = 47;
+const USER_N47: u8 = 51;
 
 const TIMER_IDX_REFRESH_SLEEP: c_int = 0;
 const TO_KB_ACTV: u16 = 10;
@@ -62,10 +68,21 @@ extern fn errorMessageOf(errorCode: u8) callconv(.c) [*c]const u8;
 extern var screenUpdatingMode: u8;
 extern var calcModel: u8;
 extern var kbd_usr: [37]calcKey_t;
+extern const kbd_std_C47: [37]calcKey_t;
+extern const kbd_std_DM42: [37]calcKey_t;
 extern const kbd_std_R47f_g: [37]calcKey_t;
 extern const kbd_std_R47bk_fg: [37]calcKey_t;
 extern const kbd_std_R47fg_bk: [37]calcKey_t;
 extern const kbd_std_R47fg_g: [37]calcKey_t;
+// assign.c defines these four only under PC_BUILD, so kbdStd names them only on
+// the host.
+extern const kbd_std_E47: [37]calcKey_t;
+extern const kbd_std_D47: [37]calcKey_t;
+extern const kbd_std_V47: [37]calcKey_t;
+extern const kbd_std_N47: [37]calcKey_t;
+// assign.c: the hardware selector of kbd_std, and the Norm_Key_00 key index.
+extern fn getKbdStd() *const [37]calcKey_t;
+pub extern fn getNormKey00Key() i16;
 
 extern fn ioFileOpen(path: c_int, mode: c_int) c_int;
 extern fn ioFileClose() void;
@@ -161,14 +178,36 @@ pub fn allowUserKeys(saved_calc_model: u16) bool {
     return saved_calc_model == calc_model_user_id;
 }
 
-pub fn fixupR47ShiftKeys() void {
-    const std_kbd: *const [37]calcKey_t = switch (calcModel) {
+// The kbd_std macro (c47.h). The simulator walks every layout it can be switched
+// to, including the four PC-only ones, and a hardware build calls assign.c's
+// getKbdStd, which knows only its own personality's layouts.
+pub fn kbdStd() *const [37]calcKey_t {
+    if (comptime is_dmcp_build) {
+        return getKbdStd();
+    }
+    return switch (calcModel) {
+        USER_C47 => &kbd_std_C47,
+        USER_DM42 => &kbd_std_DM42,
         USER_R47f_g => &kbd_std_R47f_g,
         USER_R47bk_fg => &kbd_std_R47bk_fg,
         USER_R47fg_bk => &kbd_std_R47fg_bk,
         USER_R47fg_g => &kbd_std_R47fg_g,
-        else => return,
+        USER_E47 => &kbd_std_E47,
+        USER_D47 => &kbd_std_D47,
+        USER_V47 => &kbd_std_V47,
+        USER_N47 => &kbd_std_N47,
+        else => &kbd_std_C47,
     };
+}
+
+// The user primary functions of the R47 yellow and blue shift keys go back to
+// their kbd_std defaults, so a loaded key assignment cannot leave them stale.
+pub fn fixupR47ShiftKeys() void {
+    switch (calcModel) {
+        USER_R47f_g, USER_R47fg_g, USER_R47fg_bk, USER_R47bk_fg => {},
+        else => return,
+    }
+    const std_kbd = kbdStd();
     var i: usize = 10;
     while (i <= 11) : (i += 1) {
         kbd_usr[i].primary = std_kbd[i].primary;

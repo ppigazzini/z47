@@ -102,7 +102,6 @@ extern var ctxtReal39: realContext_t;
 // Function externs
 // ---------------------------------------------------------------------------
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
-extern fn getRegisterDataPointer(regist: calcRegister_t) *anyopaque;
 const c_moreInfoOnError = @extern(*const fn (m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) callconv(.c) void, .{ .name = "moreInfoOnError" });
 extern fn sprintf(buf: [*c]u8, fmt: [*:0]const u8, ...) c_int;
 extern fn strlen(str: [*c]const u8) usize;
@@ -525,13 +524,7 @@ pub export fn fnAlphaRR(regist: u16) callconv(.c) void {
 }
 
 // COPY_REGISTER_STRING_TO macro from registers.h.
-inline fn copyRegisterStringTo(dest: [*c]u8, regist: calcRegister_t) void {
-    const regData: ?*anyopaque = getRegisterDataPointer(regist);
-    if (regData != null) {
-        const regStr: [*c]u8 = @as([*c]u8, @ptrCast(regData.?)) + 4; // sizeof(strLgIntHeader_t)
-        _ = frontier_char_string.xcopy(dest, regStr, @intCast(stringByteLength(regStr) + 1));
-    }
-}
+const copyRegisterStringTo = abi.registers.copyRegisterStringTo;
 
 // ===========================================================================
 // fnAlphaRL
@@ -1168,12 +1161,8 @@ const DECQUAD_Pmax: usize = 34;
 extern fn decQuadGetCoefficient(source: *align(1) const real34_t, bcd: [*]u8) i32;
 extern fn decQuadGetExponent(source: *align(1) const real34_t) i32;
 extern fn decQuadDigits(source: *align(1) const real34_t) u32;
-extern fn decQuadIsNaN(source: *align(1) const real34_t) u32;
-extern fn decQuadIsInfinite(source: *align(1) const real34_t) u32;
 extern fn decQuadIsZero(source: *align(1) const real34_t) u32;
-inline fn real34IsSpecial(v: *align(1) const real34_t) bool {
-    return decQuadIsNaN(v) != 0 or decQuadIsInfinite(v) != 0;
-}
+const real34IsSpecial = abi.real34IsSpecial;
 inline fn real34IsZero(v: *align(1) const real34_t) bool {
     return decQuadIsZero(v) != 0;
 }

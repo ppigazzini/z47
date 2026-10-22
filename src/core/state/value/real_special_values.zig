@@ -2,10 +2,12 @@
 //
 // Zig owner for the real_t special-value setters from src/c47/realType.c:
 // realSetZero / realSetOne / realSetNegativeOne / realSetNaN /
-// realSetPlusInfinity / realSetMinusInfinity. These construct a real_t directly from its decNumber
-// coefficient/exponent/bits fields with no runtime coupling -- they touch only
-// the caller's real_t, so they belong in the headless base kernel rather than
-// the shell. The int-conversion helpers that share realType.c stay on the shell
+// realSetPlusInfinity / realSetMinusInfinity, and the C-ABI symbols of its value
+// helpers realIsZero / copyComplex34 / setReal34NegativeSign, whose one
+// definition is in abi so the Zig owners share it. These construct or inspect a
+// real_t directly from its decNumber coefficient/exponent/bits fields with no
+// runtime coupling -- they touch only the caller's value, so they belong in the
+// headless base kernel rather than the shell. The int-conversion helpers that share realType.c stay on the shell
 // owner for now because they route through the register_value_conversions
 // god-adapter; only the pure constructors move here.
 //
@@ -14,11 +16,16 @@
 
 const abi = @import("abi"); // shared ABI bindings
 const real_t = abi.Real;
+const real34_t = abi.Real34;
 
 // decNumber field bits (decNumberLocal.h): sign, infinity, NaN.
 const DECNEG: u8 = 0x80;
 const DECINF: u8 = 0x40;
 const DECNAN: u8 = 0x20;
+
+pub export fn realIsZero(r: *const real_t) bool {
+    return abi.realIsZero(r);
+}
 
 pub export fn realSetZero(r: *real_t) callconv(.c) void {
     r.bits = 0;
@@ -60,6 +67,16 @@ pub export fn realSetMinusInfinity(r: *real_t) callconv(.c) void {
     r.exponent = 0;
     r.digits = 1;
     r.lsu[0] = 0;
+}
+
+// The real part and the imaginary part of a complex34, which upstream addresses
+// as two consecutive real34_t.
+pub export fn copyComplex34(source: *const [2]real34_t, destination: *[2]real34_t) void {
+    abi.complex34Copy(@ptrCast(source), @ptrCast(destination));
+}
+
+pub export fn setReal34NegativeSign(r: *real34_t) void {
+    abi.real34SetNegativeSign(r);
 }
 
 const std = @import("std");

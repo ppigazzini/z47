@@ -384,9 +384,6 @@ extern fn realCompareGreaterEqual(a: *align(1) const real_t, b: *align(1) const 
 extern fn realToInt32C47(r: *align(1) const real_t, err: ?*bool_t) i32;
 extern fn realToDouble(vv: *align(1) const real_t, v: *f64) void;
 extern fn decimal128ToNumber(src: *align(1) const real34_t, dst: *real_t) *real_t;
-extern fn decQuadIsNaN(v: *align(1) const real34_t) u32;
-extern fn decQuadIsInfinite(v: *align(1) const real34_t) u32;
-extern fn decQuadIsSignaling(v: *align(1) const real34_t) u32;
 
 inline fn realCopy(src: *align(1) const real_t, dst: *real_t) void {
     _ = decNumberCopy(dst, src);
@@ -412,9 +409,7 @@ inline fn stringToReal(s: [*c]const u8, dst: *real_t, ctx: *realContext_t) void 
 inline fn int32ToReal(source: i32, dst: *real_t) void {
     _ = decNumberFromInt32(dst, source);
 }
-inline fn realIsZero(v: *align(1) const real_t) bool {
-    return v.lsu[0] == 0 and v.digits == 1 and (v.bits & 0x70) == 0;
-}
+const realIsZero = abi.realIsZero;
 inline fn realIsNegative(v: *align(1) const real_t) bool {
     return (v.bits & 0x80) == 0x80;
 }
@@ -424,9 +419,7 @@ inline fn realSetPositiveSign(v: *real_t) void {
 inline fn real34ToReal(src: *align(1) const real34_t, dst: *real_t) void {
     _ = decimal128ToNumber(src, dst);
 }
-inline fn real34IsSpecial(v: *align(1) const real34_t) bool {
-    return decQuadIsNaN(v) != 0 or decQuadIsInfinite(v) != 0 or decQuadIsSignaling(v) != 0;
-}
+const real34IsSpecial = abi.real34IsSpecial;
 inline fn convertDoubleToReal(x: f64, dst: *real_t, ctx: *realContext_t) void {
     frontier_register_value_conversions.convertDoubleToReal(x, dst, ctx);
 }

@@ -26,8 +26,6 @@ pub const TI_FALSE: u8 = 12;
 pub const FLAG_CARRY: u32 = 0x800b;
 pub const FLAG_ASLIFT: u32 = 0xc023;
 
-const DECSPECIAL: u8 = 0x70;
-
 const abi = @import("abi"); // shared ABI bindings
 pub const real_t = abi.Real;
 pub const cplx_t = abi.Complex;
@@ -146,9 +144,7 @@ pub fn realFromBoolean(value: bool) real_t {
     return real_owned.realFromBoolean(real_t, value);
 }
 
-pub fn isRealZero(value: *const real_t) bool {
-    return real_owned.isRealZero(value, DECSPECIAL);
-}
+pub const realIsZero = abi.realIsZero;
 
 pub fn setTemporaryInformation(condition: bool) void {
     error_info_owned.setTemporaryInformation(&temporaryInformation, TI_FALSE, condition);

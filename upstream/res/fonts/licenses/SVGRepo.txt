@@ -1,0 +1,6 @@
+Site: https://www.svgrepo.com/svg/441772/undo
+License: CC Attribution License (https://creativecommons.org/licenses/by/4.0/deed.en)
+Author: chikin icons
+Collection: Chikin Variety Glyph Icons
+Glyphs:
+- undo-svgrepo-com.svg
