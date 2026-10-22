@@ -73,7 +73,9 @@ require_tracked_root() {
 }
 
 list_index_top_level_roots() {
-    git ls-files | awk -F/ '{print $1}' | sort -u
+    # core.quotepath=off, as in check_added_imported_paths: a quoted non-ASCII path
+    # (res/PROGRAMS/TRI\342\210\240.p47) otherwise reads as a root named `"upstream`.
+    git -c core.quotepath=off ls-files | awk -F/ '{print $1}' | sort -u
 }
 
 # A z47-owned root must not be gitignored. This is not hypothetical: upstream's
