@@ -80,6 +80,29 @@ Then re-derive the changed C behavior into those owners (never edit `src/`). Pre
 **idiomatic fixed-width Zig** over transliterated C — see the Windows trap in §4 and
 `c-abi-width-types-are-transliteration-debt`.
 
+### 2a. A macro that becomes a function
+
+z47 ports a header macro as a local helper in every owner that expands it, so one
+upstream macro has as many Zig copies as it has users. When upstream turns that
+macro into a function, the port is not finished when the function exists in its
+owner: every copy collapses onto it, the way the C call sites now do. Find the
+copies by the macro's name and by the shape of its body, since some carry a
+suffix or a different name, then point each one at the single definition:
+
+- a pure value helper (no C call, no global) lives once in `src/abi/` and every
+  owner aliases it; the C-ABI symbol upstream exports wraps that definition in the
+  owner of the upstream file;
+- a function over C state is defined in its owner; owners in the same build object
+  `@import` it, and other objects bind it with one `extern` declaration per object
+  (registers.c's queries are declared once, in `src/abi/registers.zig`).
+
+The new external symbols also reach the C lanes. `zig build test` names the ones
+`testSuite.c` calls; the oracles that compile the changed C need a declaration and
+a recording fake in their harness, or the lane stops compiling. Comparing the
+copies against each other before deleting them is worth the time: the 4d050f37e ->
+b847c5844 resync found four copies that disagreed with upstream, a C array bound as
+a Zig pointer variable among them, and no lane had seen any of the four.
+
 ### 2b. The parity oracles — what a resync still owes them
 
 `report-resync-worklist.py` names the Zig owner of a changed C file. That used to
