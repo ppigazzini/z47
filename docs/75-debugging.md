@@ -10,7 +10,7 @@ runnable**. Upstream C47 at the pinned commit answers any question about
 intended behaviour exactly, so the first move on a behavioural divergence is
 never to reason about the Zig -- it is to make the C say what it does.
 
-Last verified: 2026-10-05, Zig `0.17.0` stable. The upstream pin is
+Last verified: 2026-10-23, Zig `0.17.0` stable. The upstream pin is
 `UPSTREAM_COMMIT` in `../.github/project/upstream-pin.env`.
 
 ## What This Page Does Not Cover
@@ -35,10 +35,11 @@ Last verified: 2026-10-05, Zig `0.17.0` stable. The upstream pin is
 | a write into FREE pool space inside `ram` | the pool-poison audit in `zig build state_load_fuzz` (`../src/shell/pool_poison.zig`, host only) | every other lane |
 | **one C47 block overrunning a live neighbour inside `ram`** | **nothing.** No ASan exists here -- see below. The last known instance, an unported matrix-capacity guard, was found by reading the upstream C against the owner; `state_load_fuzz` now reproduces it, but only because the under-allocation trips a Zig safety check first | ASan, which sees `ram` as one allocation; Zig's checks, which never see `[*c]` pointer arithmetic; the pool-poison audit, which sees only free space |
 | malformed `.p47` program file | `zig build pgm_load_fuzz`, now genuinely UBSan-instrumented | the corpus, which only round-trips valid files |
-| malformed `.sav` / `.d47` state file | `zig build state_load_fuzz` -- a generated corpus through the real `doLoad` at four load modes, checked for crash/hang/safety-panic. **Read the caveat in [70](70-tests-and-verification.md): only the files the generator pins with `expect_version` have an expected outcome, so for the rest a green run means "did not crash", not "was rejected correctly"** | `saveload_roundtrip` (round-trip plus golden snapshot), which loads valid files only; and the silent wrong-accept, for any file with no pinned expectation |
-| ABI drift after a pin advance (struct layout, constant blob, item table) | `check-constant-offsets.py`, `audit-constant-parity.py`, `audit-item-table-parity.py`, `abi-layout-parity` | the corpus, which passes until the drift is reached |
+| malformed `.sav` state file (`.d47` data-file import has no malformed-input lane) | `zig build state_load_fuzz` -- a generated corpus through the real `doLoad` at four load modes, checked under UBSan for crash/hang/safety-panic. **Read the caveat in [70](70-tests-and-verification.md): only the files the generator pins with `expect_version` have an expected outcome, so for the rest a green run means "did not crash", not "was rejected correctly"** | `saveload_roundtrip` (round-trip plus golden snapshot), which loads valid files only; and the silent wrong-accept, for any file with no pinned expectation |
+| ABI drift after a pin advance (struct layout, constant blob, item table) | `check-constant-offsets.py`, `audit-constant-parity.py`, `audit-item-table-parity.py`, `abi-layout-parity`; for an item row whose function or parameter changed, `check-item-seam-drift.py` | the corpus, which passes until the drift is reached; and the item-table audit, which checks the table against the C and passes while the row's owner is stale |
 | the same constant given two values in two owners | a cross-owner consistency scan: extract the value from each owner and diff | every runtime lane, until one path is exercised |
-| the same global given two widths in two owners | `check-extern-var-widths.py` and `check-c-type-alias-widths.sh` | every runtime lane on ELF, where the overrun lands in padding |
+| the same helper fixed in one owner and not its twin | `report-twin-divergence.py`: a ranked report over the `src/core/persist/` and `src/core/program/` twins, and `--check` (gate step 4d) holding the members of one upstream `#define` family at zero disagreement; for the Zig copies of one upstream header macro, the comparison section 2a of `../.github/project/upstream-resync-runbook.md` describes | every parity lane, which compares each owner against upstream and never two owners against each other |
+| the same global given two widths in two owners | `check-extern-var-widths.py` and `check-c-type-alias-widths.sh` (CI only; the local gate's closing banner lists them) | every runtime lane on ELF, where the overrun lands in padding; and the width check itself for any type it cannot size -- it compares scalars and fixed arrays against `pub export var` definitions only, so a C array bound as a pointer variable (`extern var indexOfItems: [*]abi.Item` against `pub export const indexOfItems = [N]item_t{...}`) passed it and every lane |
 | **behavioural divergence from upstream with no crash** | **the C-vs-Zig differential (below)** | everything else, by construction |
 | **a code path that never runs** | reading the C, and asking what calls it | every green lane -- see the false-pass catalogue |
 
@@ -66,12 +67,13 @@ differently -- it is which latent write the other targets are absorbing.
 
 ## What The Sanitizer Lanes Actually Run
 
-`zig build test_asan`, `both_asan` and `pgm_load_fuzz` run **UndefinedBehaviorSanitizer**,
+`zig build test_asan`, `both_asan`, `pgm_load_fuzz` and `state_load_fuzz` run **UndefinedBehaviorSanitizer**,
 not AddressSanitizer. The `*_asan` names are historical and wrong.
 
 **There is no AddressSanitizer in this tree and there cannot be one today.** Zig's
 `sanitize_c` is the UBSan knob -- built the same C with `.off`, `.trap` and
-`.full` gives 0, 0 and 34 UBSan symbols, and zero ASan symbols in every case --
+`.full` gives zero `__ubsan` symbols for the first two and a non-zero count for
+`.full` (`nm <binary> | grep -c __ubsan`), and zero ASan symbols in every case --
 and Zig 0.17 ships no ASan runtime, so `-fsanitize=address` compiles and then
 fails to link (`undefined symbol: __asan_report_store1`). Reaching real ASan means
 linking the host's `libclang_rt.asan`, a new host-toolchain dependency for a
@@ -89,7 +91,7 @@ blanket quietening. They live in `sanitizer_exclusions` and
 
 | exclusion | scope | why |
 | --- | --- | --- |
-| `-fno-sanitize=alignment` | all C | `abi.Real34` is `extern struct { bytes: [16]u8 }`, alignment 1, mirroring a C `decQuad` whose `_Alignof` is 4. Real defect; the fix means raising the type's alignment and propagating it through accessors that hand out `*align(1)` pointers, and a few thousand sites reference that spelling -- count them with `grep -ro` over `src` |
+| `-fno-sanitize=alignment` | all C | `abi.Real34` is `extern struct { bytes: [16]u8 }`, alignment 1, mirroring a C `decQuad` whose `_Alignof` is 4. Real defect; the fix means raising the type's alignment and propagating it through accessors that hand out `*align(1)` pointers, and a few thousand sites reference that spelling -- count them with `grep -ro '\*align(1)' src \| wc -l` |
 | `-fno-sanitize=shift` | vendored `upstream/dep/` only | decNumber's own `n = n<<1` signed-shift overflow in `decExpOp`. Third-party code z47 must not diverge from; the fix is an upstream report |
 
 Removing either should turn a lane red with a genuine finding. If it does not,
@@ -146,7 +148,9 @@ Two consequences for debugging:
   way. Do not cite it as evidence that a block-allocator change is safe.
 - The available detector for this class is the differential: run the same input
   through upstream C and through z47 and compare the resulting state, which is
-  what `saveload_roundtrip` and the owner parity lanes do. A corrupted neighbour
+  what the owner parity lanes do (`saveload_roundtrip` is not one: its golden is
+  z47's own save output, so it checks round-trip idempotence and cannot see a
+  divergence from upstream). A corrupted neighbour
   block shows up as a wrong value, not as a crash -- so it is a *wrong value,
   right shape* bug, and belongs to the first row of the table above.
 
@@ -185,14 +189,18 @@ a list file of corpus test names. The runner resolves each entry, and
 `../../c47/items.h` for `Item:` directives, from the list's own directory, and
 exits 255 on an entry it cannot open. On the z47 side keep the list outside
 `upstream/` and give its entries the hop to the corpus, as
-`build/tests/testSuiteList_logical_boolean_ops.txt` does; in the throwaway
+`build/tests/testSuiteList_logical_boolean_ops.txt` does. A list outside
+`upstream/` cannot run a file that uses `Item:` -- the lookup lands on
+`<list dir>/../../c47/items.h` and the run exits 255 -- so
+`grep -l '^\s*Item:' upstream/src/testSuite/tests/*.txt` names the files a
+z47-side reduction must leave out; in the throwaway
 `../c43-pin` worktree, write it in `src/testSuite/tests/`.
 
 Shrink by bisecting the list, not by truncating it: a truncated prefix can drop
 the test that resets the state the failure depends on, so the C fails too and
 the differential goes quiet. A state-dependent failure that survives down to two
-files is worth the minutes it takes to find -- it turns a six-minute suite into
-a two-second loop.
+files is worth the minutes it takes to find -- it turns a full-suite run into a
+two-second loop.
 
 **3. Print the same line from the same place on both sides.** Add the probe to
 the C in the throwaway worktree and to the Zig owner, with an identical format
@@ -308,6 +316,11 @@ Every one of these has passed a broken thing at least once.
    combination is wrong, so only a cross-owner check finds it** --
    `check-extern-var-widths.py` resolves each file's type aliases and compares
    every declaration against its definition.
+9. **A negative-control kill can be a compile error.**
+   `check-oracle-negative-control.py` counts a mutant whose lane fails to build
+   as killed, so a replacement that does not compile says nothing about the
+   lane. Keep each mutant compilable (an unused parameter becomes `_ = param;`)
+   and confirm a new mutant's kill is behavioural before trusting it.
 
 ## Reading The Upstream C
 

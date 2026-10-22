@@ -1,8 +1,9 @@
 # z47 — the C47 calculator, ported to Zig
 
 C47 and R47 are RPN calculator firmware for SwissMicros hardware — two keyboard
-models of the same application, each built for the DM42 (DMCP) and the DM32
-(DMCP5), plus a GTK desktop simulator of each. They are maintained upstream in C
+models of the same application, each built for the original DM42 (DMCP) and
+for the newer DMCP5 hardware (the DM42n for C47, the R47 for R47), plus a GTK
+desktop simulator of each. They are maintained upstream in C
 at [gitlab.com/rpncalculators/c43](https://gitlab.com/rpncalculators/c43) — the
 GitLab path keeps the historical `c43` name — with user-facing information at
 [47calc.com](https://47calc.com).
@@ -16,12 +17,14 @@ asserted here:
 
 ```sh
 python3 .github/project/check-upstream-correspondence.py   # owner for every C file
-python3 .github/project/report-c-dependency-status.py --repo-root .
+bash .github/project/check-c-dependency-phase-i-policy.sh .            # zero first-party C in the product lanes
 ```
 
-Third-party C *is* still compiled in: decNumber and the SwissMicros SDK are
-vendored under `upstream/dep/` and linked as they are. What the imported
-calculator tree still supplies is the headers those owners consume, the
+Third-party C *is* still compiled in: decNumber and the SwissMicros SDKs are
+vendored under `upstream/dep/` and compiled as they are, and the firmware
+cross-builds GMP from source with upstream's `upstream/subprojects/` overlay.
+What the imported calculator tree still supplies is the headers the generators
+and the generated C compile against, the firmware linker scripts, the
 calculator's resources, and the parity reference.
 
 This is an independent port. It is not affiliated with SwissMicros or with the
@@ -39,13 +42,16 @@ honest answer is "a well-defined part of it, not all of it".
 - **Upstream's own test suite, run unmodified.** z47 never adds cases to it: the
   suite is the measuring instrument, so its pass count is only meaningful while
   it stays upstream's. Read the total off the run, never off a number in a doc.
-- **Per-owner parity oracles** that compile upstream's C beside the Zig owner and
-  diff the two, so the reference moves whenever upstream does. How many lanes
-  exist is a fact the build knows:
+- **Per-owner parity lanes**, most of which compile upstream's C beside the Zig
+  owner and diff the two, so their reference moves whenever upstream does; a few
+  are golden or Zig-only checks (`eigen_parity`, `format_parity`, the `*_test`
+  roots). How many lanes exist is a fact the build knows:
   `python3 .github/project/check-parity-lanes-gated.py --repo-root .`
-- **A negative control over those lanes.** `check-oracle-negative-control.py`
-  breaks one behaviour in a Zig owner per lane and requires the lane to notice, so
-  a green lane means "this lane can fail and did not", not "this lane ran".
+- **A negative control over the differential lanes.**
+  `check-oracle-negative-control.py` breaks a behaviour in the Zig owner a lane
+  watches and requires the lane to notice, so for a lane with a mutant a green
+  run means "this lane can fail and did not", not "this lane ran". Its closing
+  lines say how many lanes it mutates and which it only documents.
 
 **What that does not establish.** The suite measures what *upstream* chose to
 test, not where a re-implementation is most likely to drift, and the oracles
@@ -66,7 +72,7 @@ advances.
 | --- | --- |
 | `src/` | the ported calculator — Zig owners |
 | `build/` | the Zig build control plane, harnesses, generators, packaging |
-| `bridge/` | two near-retired C header shims |
+| `bridge/` | near-retired C header shims |
 | `docs/` | developer documentation |
 | `upstream/` | the imported C47 tree, pinned to one upstream commit |
 | `build.zig` | the only supported build entrypoint |
@@ -74,25 +80,29 @@ advances.
 `upstream/` is a vendored snapshot pinned in `.github/project/upstream-pin.env`
 and mounted under `UPSTREAM_ROOT`, which is what leaves the canonical `src/` and
 `docs/` names to z47. Every file it carries is byte-identical to that commit and
-it holds no z47 content; a handful of upstream paths are deliberately not carried
-at all, each declared in `.github/project/imported-tree-divergences.txt`.
-`check-imported-tree-pin.py` enforces both halves.
+it holds no z47 content; some upstream paths are deliberately not carried at all,
+each declared in `.github/project/imported-tree-divergences.txt`.
+`check-imported-tree-pin.py` enforces both halves and prints how many paths are
+declared.
 
 ## Building
 
 Prerequisites, none of which the build vendors:
 
-- **Zig `0.17.0`** — pinned, with the CI toolchain, in `.github/zig-toolchain.env`.
+- **Zig** at the `ZIG_VERSION` in `.github/zig-toolchain.env`
+  (`grep ZIG_VERSION= .github/zig-toolchain.env`), which also pins the CI
+  toolchain.
 - **Host simulator:** GTK 3, GMP, FreeType 2, and optionally PulseAudio, as
   system libraries found through `pkg-config`.
 - **Firmware:** the `arm-none-eabi` GCC toolchain (`gcc`, `ar`, `ranlib`), `make`,
-  `tar`, `python3` and a native `cc` for the GMP 6.2.1 cross-build, `curl` or
+  `tar`, `python3` and a native `cc` for the GMP cross-build, `curl` or
   `wget` to fetch the GMP source on first use, plus the two SwissMicros SDK
   submodules — `git submodule update --init` before any `dmcp*` target, or the
   link fails.
 
-There is no Make and no Meson step. The imported `Makefile` and Meson files are
-upstream's and are kept only as parity references.
+No step drives upstream's Make or Meson build; the only `make` the build runs is
+GMP's own, inside the firmware cross-build. The imported `Makefile` and Meson
+files are upstream's and are kept only as parity references.
 
 ```sh
 git submodule update --init   # required for firmware targets
@@ -107,16 +117,17 @@ Before pushing, run the gate — not `sim` and not `test:unit`, which have both
 been green over changes that CI rejected:
 
 ```sh
+(. .github/project/upstream-pin.env && git fetch --no-tags "$UPSTREAM_REPOSITORY_URL" "$UPSTREAM_BRANCH")   # the pin check diffs upstream/ against UPSTREAM_COMMIT
 uv sync                                                    # repo Python tooling into .venv
 PATH="$PWD/.venv/bin:$PATH" bash .github/project/run-local-gate.sh
 ```
 
-It runs the Linux governance, host-parity and firmware-link lanes: the guards,
-`test:unit`, the host-parity battery, the malformed-input corpora, the oracle
-negative control, the DMCP package 1-3 links (`dmcp_pkgs_all`) and the
-tracked-generated-artifact diff. Its closing banner lists what only CI runs,
-including the docs build, the other firmware links, packaging, and the Windows
-(LLP64) and macOS host lanes.
+The fetch is needed once per clone, and it must be a full fetch: a shallow graft
+breaks the merge-base gates. The gate also links DMCP packages 1-3, so it needs
+the firmware prerequisites above. It runs the Linux governance, host-parity and
+firmware-link lanes;
+[70-tests-and-verification.md](docs/70-tests-and-verification.md) lists the
+steps, and its closing banner lists what only CI runs.
 
 ## Documentation
 

@@ -5,7 +5,7 @@ maintainer docs and the checked-in z47 workflow.
 
 Prefer these exact surfaces over broad summaries or secondary writeups.
 
-Last verified: 2026-10-05, Zig `0.17.0` stable. The upstream pin is
+Last verified: 2026-10-23, Zig `0.17.0` stable. The upstream pin is
 `UPSTREAM_COMMIT` in `../.github/project/upstream-pin.env`. The Zig toolchain,
 memory-safety and idiom reference sets were re-read against the 0.17.0 language
 reference and release notes on that date; the memory-safety set was first
@@ -62,6 +62,10 @@ flowchart TD
   build inputs.
 - [subprojects/gmp-6.2.1.wrap](../upstream/subprojects/gmp-6.2.1.wrap): imported GMP wrap
   reference.
+- [subprojects/packagefiles/gmp-6.2.1](../upstream/subprojects/packagefiles/gmp-6.2.1):
+  imported upstream GMP overlay the wrap lays over the GMP source; the firmware
+  cross-build in `../build/firmware.zig` applies its `gmp-impl.h` and
+  `mpn/generic/gmp-mparam.h` to a staged copy.
 
 ## Companion Upstream-Behaviour Doc Set
 
@@ -123,10 +127,12 @@ built in `small` mode, whose data lives in one static pool.
 Language and toolchain:
 
 - [Zig language reference -- Illegal Behavior](https://ziglang.org/documentation/0.17.0/#Illegal-Behavior):
-  the canonical list of what is checked illegal behaviour (a panic in the safe
-  modes) versus unchecked (silent in every mode). This is the authority for
-  which of z47's several thousand `@intCast` sites are a trap on the host and a
-  silent truncation on the device.
+  the canonical list of what is checked illegal behaviour (a panic in `debug`
+  and `safe`) versus unchecked (never checked in any mode; any behaviour may
+  result). This is the authority for which of z47's several thousand `@intCast`
+  sites trap in the debug-built test lanes and are unchecked illegal behaviour,
+  usually but not reliably a silent truncation, in the `small` firmware and the
+  `-Doptimize=fast` host packages.
 - [Zig 0.17.0 release notes](https://ziglang.org/download/0.17.0/release-notes.html):
   the pinned baseline. Safety-relevant changes: `@bitCast` reinterprets the
   logical bit representation, refuses `extern struct` and `extern union`
@@ -156,7 +162,8 @@ Allocator-level safety:
   `std.heap.DebugAllocator` with `.safety = true` is broken on **freestanding**
   targets. Filed against `DebugAllocator`, which 0.17 deprecates for
   `heap.SafeAllocator`; that one never reuses memory over a non-reusing backing
-  allocator, which alone rules it out for a fixed 256 KiB pool. Either way the
+  allocator, which alone rules it out for a fixed pool of 64 KiB on the DM42 and
+about 256 KiB on the DMCP5. Either way the
   otherwise-obvious "put a checking allocator on the device" move is out,
   independently of the flash cost.
 - [AddressSanitizer manual poisoning](https://github.com/google/sanitizers/wiki/AddressSanitizerManualPoisoning):
@@ -347,7 +354,7 @@ first: it is the only question that matters about a reference.
 | c43's `testSuite` corpus, run unmodified | specified oracle | it **is** c43 | full |
 | `*_parity` lane vs a compiled-from-c43 `.c` | derived / pseudo-oracle (differential) | yes | full |
 | `audit-*.py` preprocessing live c43 source | derived oracle | yes | full |
-| `charstring_diff` (extracts c43 functions at build time) | derived oracle | yes | full |
+| `charstring_diff` (a committed oracle extracted from c43 source, re-extracted and byte-compared by `check-oracle-provenance.py`) | derived oracle | yes | full |
 | `saveload_roundtrip` save→load→save, `backup.cfg` and data-file round-trips | metamorphic relation | n/a — needs none | full, and independent |
 | UBSan lanes, Zig safety panics, `state_load_fuzz` (including its pool-poison audit) | implicit oracle | n/a | weak but free |
 | `save_load_golden.sav` | characterization test | no | change detector only |
@@ -361,11 +368,13 @@ The last three rows are not "weak". The last is negative: it produces evidence o
 parity where none exists, and a passing test is not visible in a coverage
 discussion the way a missing one is. The two above it are the subtler version of
 the same trap — both are real, compiled, currently-green lanes whose *reference*
-is sound, and neither proves what its name suggests. A green `math_wrappers` run
-says the wrappers **called** the same runtime functions with the same arguments;
-it says nothing about whether they computed the right number. That is why
+is sound, and neither proves what its name suggests. A green
+`math_command_wrappers_parity` run says the wrappers **called** the same runtime
+functions with the same arguments; it says nothing about whether they computed
+the right number, which is what `math_wrappers_full_core_parity` checks. That is
+why
 [.github/project/oracle-provenance-manifest.json](../.github/project/oracle-provenance-manifest.json)
-is a list meant to reach zero rather than one to maintain.
+is a list that has reached zero and is meant to stay there, not one to maintain.
 
 Where TigerStyle reaches into this: its ≥2-assertions-per-function rule is an
 **implicit oracle** mandate — assertions turn silent wrong states into loud ones
@@ -408,8 +417,8 @@ real, and z47 does not use it). Argue against the test before adding to the list
 
 The official style guide is the language reference's
 [Style Guide](https://ziglang.org/documentation/0.17.0/#Style-Guide) -- Names,
-Avoid Redundancy in Names, Refrain from Underscore Prefixes, Whitespace and Doc
-Comment Guidance (*assume* for an unchecked invariant, *assert* for a checked
+Avoid Redundancy in Names, Avoid Redundant Names in Fully-Qualified Namespaces,
+Refrain from Underscore Prefixes, Whitespace and Doc Comment Guidance (*assume* for an unchecked invariant, *assert* for a checked
 one) -- plus `zig fmt`. It is advisory: the compiler does not enforce it. Where a
 spelling is in question, the pinned toolchain's own `lib/std` is the reference
 the guide itself points to. The sources below are community references and
@@ -504,7 +513,10 @@ Zig-native replacement (see
 - [FreeType documentation](https://freetype.org/freetype2/docs/): canonical
   FreeType 2 reference; retained external C library linked from Zig (host).
 - [GMP project page](https://gmplib.org/): canonical GMP project and release
-  reference; retained external C library linked from Zig (host).
+  reference; retained external C library, a system library on the host and
+  cross-built for the DMCP firmware from the 6.2.1 source the
+  `upstream/subprojects/gmp-6.2.1.wrap` names, with upstream's packagefiles
+  overlay applied.
 - [SwissMicros DMCP_SDK](https://github.com/swissmicros/DMCP_SDK): canonical
   DMCP hardware SDK repository (from upstream `.gitmodules`); retained external C
   input linked from Zig for DMCP firmware.
@@ -538,7 +550,8 @@ Pins and manifests:
 - [.github/project/upstream-pin.env](../.github/project/upstream-pin.env):
   imported upstream commit, branch, and pin-updated date.
 - [.github/zig-toolchain.env](../.github/zig-toolchain.env): pinned Zig stable
-  version, release date, checksum, and the monitored Zig master snapshot.
+  version, release date and checksum, the audited Zig master snapshot, and the
+  pinned `mlugg/setup-zig` action CI installs them with.
 - [.github/project/source-ownership.txt](../.github/project/source-ownership.txt):
   z47-owned versus imported-upstream surface manifest.
 - [.github/project/upstream-port-ledger.tsv](../.github/project/upstream-port-ledger.tsv):

@@ -9,7 +9,7 @@ while still linking retained C: the SwissMicros DMCP/DMCP5 SDKs, the vendored
 Read [20-zig-build-graph.md](20-zig-build-graph.md) first. This page assumes the
 build-domain split is already clear.
 
-Last verified: 2026-10-05, Zig `0.17.0` stable. The upstream pin is
+Last verified: 2026-10-23, Zig `0.17.0` stable. The upstream pin is
 `UPSTREAM_COMMIT` in `../.github/project/upstream-pin.env`.
 
 The memory a firmware target actually has -- the arenas, which stack a running
@@ -39,25 +39,36 @@ Facts, verified from `../build/firmware.zig`:
   `../build/firmware_console_runtime.zig`, is carried into the link by the io
   object rather than built separately: it defines the console entry points that
   DMCP hardware does not have, which is what keeps newlib's buffered stdio -- and
-  the `FILE` array `findfp.o` would place in SRAM2 -- out of the image.
+  the `FILE` array `findfp.o` would place in SRAM2 -- out of the image. The DMCP
+  ROM trampolines and the system-data-block flag functions are
+  `../src/core/hal/dmcp_rom.zig`, which the frontier, calc-state, memory and
+  program-serialization objects import as the `dmcp_rom` module rather than
+  link as an object of their own.
 - Retained C still compiled into the firmware: the vendored
   `../upstream/dep/decNumberICU` sources, the SwissMicros SDK `pgm_syscalls.c` and
   `startup_pgm.s`, the generated constant-pointer and raster-font C, and a
   cross-built GMP archive (see below).
 - The `-Ibridge` overlay is prepended ahead of the imported `../upstream/src/c47`
-  include path. `../bridge/c47.h` `#include_next`s upstream's `c47.h` and then
-  adjusts macros; in the firmware link it reaches only the generated
-  `rasterFontsData.c`, `constantPointers.c` and `constantPointers2.c`. Owners take
-  `OPTION_*` from their build options, not from this header.
-- Per-package and DM42-board `OPTION_*` values are computed in
-  `../build/firmware.zig` (`frontierDistributionStrip`,
-  `mathematicsPackageOptions`, `solverPackageOptions`, `calcStateBoardOptions`,
-  and inline values for keyboard-state and program-serialization) as build
-  options that mirror the upstream `defines.h` blocks, not by editing imported
-  C. Read the option names out of `defines.h` rather than from prose:
-  upstream renames them, and the `SAVE_SPACE_DM42_*` family they replaced is gone.
-- Package creation is still more than compilation: each firmware build also
-  emits a QSPI image, a linker map, and a size report.
+  include path. `../bridge/c47.h` `#include_next`s upstream's `c47.h`; the
+  per-package block after it predates `dm42Package` and disagrees with it -- it
+  defines `SAVE_SPACE_DM42_*` macros nothing in `../upstream/src` reads any more
+  and undefines options `dm42Package` keeps -- and it is inert only because in the
+  firmware link it reaches nothing but the generated `rasterFontsData.c`,
+  `constantPointers.c` and `constantPointers2.c`. Owners take `OPTION_*` from
+  their build options, not from this header.
+- Per-package and DM42-board `OPTION_*` values are set in `../build/firmware.zig`
+  as build options that mirror the upstream `defines.h` blocks, not by editing
+  imported C: `dm42Package` holds what each package keeps, and
+  `frontierDistributionStrip`, `mathematicsPackageOptions`,
+  `solverPackageOptions`, `calcStateOptions`, `keyboardStateOptions` and
+  `programSerializationOptions` apply it per object, with
+  `applyDistributionGates` writing the per-distribution `option_dist_*` gates.
+  Read the option names out of `defines.h` rather than from prose: upstream
+  renames them, and the `SAVE_SPACE_DM42_*` family they replaced is gone.
+- Package creation is still more than compilation: each firmware step links
+  twice -- a first link whose QSPI image `gen_qspi_crc` turns into a generated
+  QSPI-CRC header, then the final link with that header's `USE_GEN_*QSPI_CRC`
+  define -- and emits a QSPI image, a linker map, and a size report.
 
 ## Firmware Target Matrix
 
@@ -68,7 +79,7 @@ Verified from `registerSteps` in `../build/firmware.zig`:
 | `dmcp` | DMCP (DM42, OLD_HW) | C47 | `.pgm` | honors `-Ddmcp-package`, default `4` |
 | `dmcpr47` | DMCP (DM42, OLD_HW) | R47 | `.pgm` | honors `-Ddmcp-package`, default `4`; built `-DCALCMODEL=USER_R47` |
 | `dmcp5` | DMCP5 (NEW_HW) | C47 | `.pg5` | fixed board family, no DMCP package switch |
-| `dmcp5r47` | DMCP5 (NEW_HW) | R47 | `.pg5` | fixed board family, no DMCP package switch |
+| `dmcp5r47` | DMCP5 (NEW_HW) | R47 | `.pg5` | fixed board family, no DMCP package switch; final link built `-DCALCMODEL=USER_R47` |
 | `dmcp_pkg1` | DMCP | C47 | `.pgm` | fixed package `1` |
 | `dmcp_pkg2` | DMCP | C47 | `.pgm` | fixed package `2` |
 | `dmcp_pkg3` | DMCP | C47 | `.pgm` | fixed package `3` |
@@ -96,7 +107,9 @@ PREL31 exidx relocation range. Code in QSPI makes a program and a QSPI image
 from different builds a hard fault rather than a stale screen, and the loader
 only really checks the QSPI image's size, so the DM42 `program_main` in
 `../src/shell/c47.zig` compares a tag linked into each file and refuses a
-mismatched pair with a message before anything dispatches through QSPI. Treat
+mismatched pair with a message before anything dispatches through QSPI. The tag
+is the build's version string and date, so two builds of one commit on one day
+carry the same tag and pass the check. Treat
 DMCP flash headroom as a real constraint:
 a change that grows an owner can overflow a package even when the host build and
 tests stay green.
@@ -123,6 +136,11 @@ build commands):
 - `make`
 - native `cc` or `gcc` for the cross-GMP bootstrap
 - `curl` or `wget`, to download the GMP 6.2.1 tarball
+- the host generator toolchain of
+  [30-host-and-generated-surfaces.md](30-host-and-generated-surfaces.md#retained-host-dependency-contract):
+  the firmware link takes the generated raster-font, constant-pointer and
+  softmenu-catalog outputs, so a firmware step builds the host generators and
+  needs `pkg-config` with GTK 3, GMP and FreeType 2 development files
 
 Retained C dependency inputs:
 
@@ -138,7 +156,10 @@ Retained C dependency inputs:
   boards); the HAL is the Zig runtime objects above.
 - `../upstream/subprojects/gmp-6.2.1.wrap`: names the GMP 6.2.1 tarball and its
   SHA-256. A `gmp-6.2.1/` source tree beside it is used when present; it is
-  gitignored, so a fresh clone has none.
+  gitignored, so a fresh clone has none. `addArmGmpBuild` takes the wrap only as
+  a step input: it verifies a copy of that hash written into its own script and
+  downloads from its own mirror list, so a resync that moves the wrap must move
+  both.
 - `../upstream/subprojects/packagefiles/gmp-6.2.1/`: upstream's overlay for that
   source tree. Its `meson.build` is upstream's build recipe, which z47 does not
   run; `gmp-impl.h` and `mpn/generic/gmp-mparam.h` are laid over the GMP source
@@ -193,12 +214,16 @@ Verified package entrypoints:
 - `distS`: alias that runs the aggregate `dist` sequence under Zig-only
   orchestration
 
+Every archive above, the firmware ones included, carries a `testPgms.zip` that
+`../build/zig_dist.py make-testpgms` makes by running the host `c47` with
+`--headless --writeexportall` (through `xvfb-run` on a Linux host with no
+display, when it is installed), so any `dist_*` step also builds and runs the
+host simulator.
+
 The distribution surface produces one host archive per supported desktop host OS
 and one firmware archive per supported hardware or model combination.
 
 The local `zig build dist_*` steps emit these zip names under `zig-out/dist/`.
-The Linux CI lane uploads the C47 SwissMicros firmware zip outputs as a separate
-firmware artifact while keeping those checked-in build-surface names unchanged.
 
 ## Host-Specific Packaging Notes
 
@@ -206,28 +231,20 @@ firmware artifact while keeping those checked-in build-surface names unchanged.
   host OS.
 - The host package lanes stage the same simulator binaries produced by the host
   build graph rather than compiling a separate dist-only host executable pair.
-- The published desktop host artifacts use simulator binaries built with
-  `-Doptimize=fast`: Linux via `zig build -Doptimize=fast dist_linux`, and the
-  macOS and Windows workflow lanes rebuild `both` with `-Doptimize=fast` before
-  smoke and staging.
 - On x86 and x86_64 hosts, `../build/common.zig` resolves the host package
   target with a baseline CPU model instead of inheriting runner-native CPU
   features, so Linux and Windows artifacts do not accidentally pick up BMI2 or
   other newer instructions from the machine that built them.
-- The Windows package lane stages GTK runtime directories, runtime tools,
-  launcher helpers, and import-checked DLLs in addition to the simulator
-  executables.
-- The Linux and macOS package lanes publish `-Doptimize=fast` simulator bundles
-  together with the checked-out `../upstream/res/` assets and generated notice
-  metadata.
-- The Linux CI lane also uploads a separate firmware artifact containing the C47
-  SwissMicros package zips produced by `dist_dmcp`, `dist_dmcp_pkg1`,
-  `dist_dmcp_pkg2`, `dist_dmcp_pkg3`, and `dist_dmcp5`.
 - `dist_linux` and `dist_macos` strip both staged simulator copies before
-  archiving them (`../build/zig_dist.py`), so an extracted Linux package can
+  archiving them when a `strip` is on `PATH` (`../build/zig_dist.py` skips it
+  silently otherwise), so an extracted Linux package can
   differ in hash from `zig-out/bin/c47` or `zig-out/bin/r47` while carrying the
   same non-BMI2 code path. The published macOS artifact is staged by the workflow
   straight from `zig-out/bin` and is not stripped.
+- What the CI lanes build, stage and publish -- the `-Doptimize=fast` host
+  artifacts, the Windows runtime staging, the notice metadata and the Linux
+  firmware artifact's contents -- is owned by
+  [60-ci-and-release-workflow.md](60-ci-and-release-workflow.md#artifacts-and-release-proof).
 
 ## DMCP Package Control
 
@@ -244,13 +261,8 @@ Use the dedicated fixed-package steps (`dmcp_pkg1/2/3`, `dist_dmcp_pkg1/2/3`)
 when you want the package number encoded in the step name instead of passed as
 an option.
 
-The Linux CI firmware artifact keeps the default C47 DMCP package from
-`dist_dmcp` and uses `dist_dmcp_pkg1`, `dist_dmcp_pkg2`, and `dist_dmcp_pkg3` so
-each smaller package variant is preserved instead of overwritten.
-
 After any change that reaches a firmware-linked owner, link every package
-variant: `zig build dmcp_pkgs_all --summary none` (the local gate runs exactly
-this), plus `dmcp`, `dmcpr47`, `dmcp5` and `dmcp5r47`.
+variant, as [Flash Budget And QSPI XIP](#flash-budget-and-qspi-xip) says.
 
 ### How An `OPTION_*` Value Is Established
 

@@ -8,7 +8,7 @@ which are retained C.
 Read [20-zig-build-graph.md](20-zig-build-graph.md) first. This page assumes the
 domain split is already clear.
 
-Last verified: 2026-10-05, Zig `0.17.0` stable. The upstream pin is
+Last verified: 2026-10-23, Zig `0.17.0` stable. The upstream pin is
 `UPSTREAM_COMMIT` in `../.github/project/upstream-pin.env`.
 
 ## Host Surface At A Glance
@@ -60,7 +60,10 @@ former `gtk_gui_legacy.c` re-entry bridge is retired; the ported main, GUI, HAL,
 I/O, LCD and HP 82240B print-out window surfaces run entirely from the Zig
 objects added by `gtk_gui.addToModule` (`gtk_gui_runtime.zig`,
 `gtk_hal_runtime.zig`, `gtk_io_runtime.zig`, `gtk_lcd_runtime.zig`,
-`gtk_printer_window.zig`, and the wider `gtk_gui_*.zig` set).
+`gtk_printer_window.zig`, and the wider `gtk_gui_*.zig` set). Upstream's
+`sendByteIR` also sends each printer byte as a UDP datagram to 127.0.0.1:5025;
+the Zig host does not, so `../upstream/tools/printer/printer-udp-monitor.py`
+hears nothing from z47's simulator.
 
 The imported `../upstream/src/c47-gtk/*.c` files stay in the tree as read-only audit and
 parity reference; they are not compiled.
@@ -200,10 +203,11 @@ not replace the maintainer-facing `docs/` set, which is this directory.
 
 - `../build/host/platform.zig` is the central host-platform glue surface.
 - Windows host builds and packaging need explicit native-path and import-library
-  handling for GTK and FreeType rather than generic `-lfoo` names.
+  handling for GTK, FreeType and GMP rather than generic `-lfoo` names.
 - At startup the simulator walks up from its executable directory (up to eight
-  levels) to the first directory holding `res/c47_pre.css` or
-  `upstream/res/c47_pre.css` and changes into it (`relocateToResourceDir` in
+  levels) and, at the first level where `res/c47_pre.css` or
+  `upstream/res/c47_pre.css` exists, changes into the directory that holds that
+  `res/` (`relocateToResourceDir` in
   `../build/host/gtk_c47_main.zig`), so a build under `zig-out/bin` finds
   `../upstream/res/` with no copy or link.
 
