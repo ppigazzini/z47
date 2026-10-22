@@ -26,6 +26,7 @@
 // jm.c is not reachable from the testSuite; verification is by build/link across
 // every target plus the boundary gates.
 
+const frontier_assign = @import("../input/assign.zig");
 const frontier_build_options = @import("frontier_build_options");
 const dmcp_build: bool = frontier_build_options.dmcp_build;
 const option_elec: bool = frontier_build_options.option_elec;
@@ -49,7 +50,6 @@ const real34_t = abi.Real34;
 const realContext_t = abi.RealContext;
 
 const normKey_t = abi.NormKey;
-const calcKey_t = abi.CalcKey;
 
 // ---------------------------------------------------------------------------
 // Constants / enum values (verified against defines.h / typeDefinitions.h)
@@ -80,23 +80,11 @@ const TI_ABBCCA: u8 = 73;
 const TI_012: u8 = 74;
 
 // calcModel values (defines.h).
-const USER_V47: u8 = 40;
-const USER_E47: u8 = 43;
-const USER_DM42: u8 = 45;
-const USER_C47: u8 = 46;
-const USER_D47: u8 = 47;
-const USER_N47: u8 = 51;
-const USER_R47f_g: u8 = 61;
-const USER_R47bk_fg: u8 = 62;
-const USER_R47fg_bk: u8 = 63;
-const USER_R47fg_g: u8 = 64;
-const USER_R47: u8 = 66;
 
 // CALCMODEL for the firmware this object is linked into. An R47 hardware build
 // carries only the R47 layouts: the backup writer refuses to persist a foreign
 // model and the state loader only applies one from a matching file, so gating
 // the selector is what lets the linker drop the other tables.
-const built_for_r47: bool = frontier_build_options.calcmodel == USER_R47;
 
 // fnJM register #defines.
 const JMTEMP: calcRegister_t = TEMP_REGISTER_1; // 135
@@ -117,23 +105,12 @@ const TripleRegI3_95: c_int = 95;
 // ---------------------------------------------------------------------------
 // Globals
 // ---------------------------------------------------------------------------
-extern var calcModel: u8;
 extern var temporaryInformation: u8;
 extern var ctxtReal34: realContext_t;
 extern var Norm_Key_00: normKey_t;
 
-extern const kbd_std_C47: [37]calcKey_t;
-extern const kbd_std_DM42: [37]calcKey_t;
-extern const kbd_std_R47f_g: [37]calcKey_t;
-extern const kbd_std_R47bk_fg: [37]calcKey_t;
-extern const kbd_std_R47fg_bk: [37]calcKey_t;
-extern const kbd_std_R47fg_g: [37]calcKey_t;
 // PC_BUILD-only layouts: c47.h declares them inside `#if defined(PC_BUILD)` and
 // only the simulator's kbd_std selector reaches them.
-extern const kbd_std_E47: [37]calcKey_t;
-extern const kbd_std_D47: [37]calcKey_t;
-extern const kbd_std_V47: [37]calcKey_t;
-extern const kbd_std_N47: [37]calcKey_t;
 
 // ---------------------------------------------------------------------------
 // Function externs
@@ -199,42 +176,9 @@ inline fn setComplexRegisterPolarMode(reg: calcRegister_t, pm: u32) void {
     setRegisterTag(reg, base | (pm & amPolar));
 }
 
-// The kbd_std model-selection macro (c47.h). The preprocessor picks one of three
-// selectors: the simulator walks every layout it can be switched to, including
-// the four PC-only ones; a CALCMODEL == USER_R47 firmware only ever reaches the
-// four R47 layouts and falls back to R47f_g; every other firmware only ever
-// reaches DM42 and C47. fnSigmaAssign lets the user set calcModel to a foreign
-// model on any build, and upstream answers with its own build's table.
-inline fn kbdStd() [*]const calcKey_t {
-    if (comptime !dmcp_build) {
-        return switch (calcModel) {
-            USER_C47 => &kbd_std_C47,
-            USER_DM42 => &kbd_std_DM42,
-            USER_R47f_g => &kbd_std_R47f_g,
-            USER_R47bk_fg => &kbd_std_R47bk_fg,
-            USER_R47fg_bk => &kbd_std_R47fg_bk,
-            USER_R47fg_g => &kbd_std_R47fg_g,
-            USER_E47 => &kbd_std_E47,
-            USER_D47 => &kbd_std_D47,
-            USER_V47 => &kbd_std_V47,
-            USER_N47 => &kbd_std_N47,
-            else => &kbd_std_C47,
-        };
-    } else if (comptime built_for_r47) {
-        return switch (calcModel) {
-            USER_R47bk_fg => &kbd_std_R47bk_fg,
-            USER_R47fg_bk => &kbd_std_R47fg_bk,
-            USER_R47fg_g => &kbd_std_R47fg_g,
-            else => &kbd_std_R47f_g,
-        };
-    } else {
-        return if (calcModel == USER_DM42) &kbd_std_DM42 else &kbd_std_C47;
-    }
-}
-// Norm_Key_00_key (defines.h:554).
-inline fn normKey00Key() i16 {
-    return if (calcModel == USER_C47) 0 else if (calcModel == USER_DM42) 0 else if (calcModel == USER_R47f_g) -1 else if (calcModel == USER_R47bk_fg) 10 else if (calcModel == USER_R47fg_bk) 11 else -1;
-}
+// The kbd_std and Norm_Key_00_key macros, which assign.c defines.
+const kbdStd = frontier_assign.kbdStd;
+const normKey00Key = frontier_assign.getNormKey00Key;
 
 inline fn moreInfoOnErr(m1: [*:0]const u8, m2: [*:0]const u8) void {
     if (comptime extra_info) {

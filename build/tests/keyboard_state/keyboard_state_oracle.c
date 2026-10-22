@@ -121,6 +121,8 @@
 #define removeUserItemAssignments oracle_removeUserItemAssignments
 #define setUserKeyArgument oracle_setUserKeyArgument
 #define updateAssignTamBuffer oracle_updateAssignTamBuffer
+#define getNormKey00Key oracle_getNormKey00Key
+#define getNormKey00ItemInLayout oracle_getNormKey00ItemInLayout
 
 // assign.c calls its own functions before defining them, and assign.h was already
 // pulled in by c47.h above -- under the ORIGINAL names, before these renames -- so

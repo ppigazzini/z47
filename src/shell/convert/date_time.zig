@@ -5,7 +5,8 @@ const consts = abi.constants;
 // composition/decomposition (composeJulianDay/decomposeJulianDay and the
 // Gregorian/Julian halves), leap-year/valid-day checks, the day-of-week and
 // week-of-year computations, the date/time fn* commands, the RTC date/time
-// get/set, and the date/time display-string formatters. It is exercised by the
+// get/set, the date/time display-string formatters, and the DMCP date and
+// 24-hour clock settings kept in step with DMY/MDY/YMD and TDM24. It is exercised by the
 // testSuite (dToJ, jToDT, dtToJ, dateTo, toDate, xToDate, day/month/year/wday,
 // HMStoTM, HRtoTM, addition_date, isLeap...), so correctness is verified by
 // `zig build test`.
@@ -45,6 +46,7 @@ const testsuite_build: bool = frontier_build_options.is_testsuite_build;
 // ---------------------------------------------------------------------------
 const DECNUMUNITS = 25;
 const abi = @import("abi"); // shared ABI bindings
+const rom = @import("dmcp_rom");
 const frontier_addons = @import("../extensions/addons.zig");
 const frontier_bufferize = @import("../display/bufferize.zig");
 const frontier_error = @import("../error.zig");
@@ -235,13 +237,10 @@ extern fn decQuadCopyAbs(r: *real34_t, a: *align(1) const real34_t) *real34_t;
 extern fn decQuadCompare(r: *real34_t, a: *align(1) const real34_t, b: *align(1) const real34_t, ctx: *realContext_t) *real34_t;
 extern fn decQuadIsZero(v: *align(1) const real34_t) u32;
 extern fn decQuadIsNaN(v: *align(1) const real34_t) u32;
-extern fn decQuadIsInfinite(v: *align(1) const real34_t) u32;
 extern fn decNumberAdd(res: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
 extern fn decNumberFromInt32(res: *real_t, value: i32) *real_t;
 extern fn realCompareLessThan(a: *align(1) const real_t, b: *align(1) const real_t) bool;
-inline fn real34IsSpecial(v: *align(1) const real34_t) bool {
-    return decQuadIsNaN(v) != 0 or decQuadIsInfinite(v) != 0;
-}
+const real34IsSpecial = abi.real34IsSpecial;
 inline fn realAdd(a: *align(1) const real_t, b: *align(1) const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberAdd(res, a, b, ctx);
 }
@@ -315,9 +314,7 @@ inline fn getRegisterAngularMode(reg: calcRegister_t) angularMode_t {
 inline fn real34IsNegative(v: *align(1) const real34_t) bool {
     return (v.bytes[15] & 0x80) == 0x80;
 }
-inline fn real34SetNegativeSign(v: *real34_t) void {
-    v.bytes[15] |= 0x80;
-}
+const real34SetNegativeSign = abi.real34SetNegativeSign;
 inline fn real34Copy(src: *align(1) const real34_t, dst: *real34_t) void {
     dst.* = src.*;
 }
@@ -414,6 +411,7 @@ pub export fn fnSetDateFormat(dateFormat: u16) linksection(code_section) callcon
         },
         else => {},
     }
+    timeSetSystemDateFormat();
 }
 
 pub export fn internalDateToJulianDay(source: *const real34_t, destination: *real34_t) linksection(code_section) callconv(.c) void {
@@ -1694,6 +1692,37 @@ pub export fn getWeekOfYearString(weekOfYearString: [*]u8) linksection(code_sect
     var dow: i32 = @intCast(julianDayToDayOfWeek(&jd));
     dow = modulo((dow + 7) - firstDayOfWeek, 7) + 1;
     abi.fmtBufZ(weekOfYearString[0..12], "W{d:0>2}-{d}", .{ woy, dow });
+}
+
+// DMCP date format (defines.h)
+const SYS_MDY: c_int = 0;
+const SYS_DMY: c_int = 1;
+const SYS_YMD: c_int = 2;
+
+// flagAction_t (typeDefinitions.h)
+const FLAG_CLEAR: c_uint = 0;
+const FLAG_SET: c_uint = 1;
+const FLAG_FLIP: c_uint = 2;
+
+// Sets DMCP's date format from DMY, MDY and YMD, so the system menu and the
+// calculator show dates the same way.
+pub export fn timeSetSystemDateFormat() linksection(code_section) void {
+    if (comptime dmcp_build) {
+        const dateFmt: c_int = if (getSystemFlag(FLAG_DMY)) SYS_DMY else if (getSystemFlag(FLAG_MDY)) SYS_MDY else SYS_YMD;
+        rom.set_flag_dmy(dateFmt);
+    }
+}
+
+// Clears, sets or flips DMCP's clk24 flag as the TDM24 flag changes.
+pub export fn timeSetSystemTimeFormat(action: c_uint) linksection(code_section) void {
+    if (comptime dmcp_build) {
+        switch (action) {
+            FLAG_CLEAR => rom.set_flag_clk24(0),
+            FLAG_SET => rom.set_flag_clk24(1),
+            FLAG_FLIP => rom.set_flag_clk24(if (rom.is_flag_clk24()) 0 else 1),
+            else => {},
+        }
+    }
 }
 
 comptime {

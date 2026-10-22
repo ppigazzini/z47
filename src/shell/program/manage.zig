@@ -312,8 +312,8 @@ const ITM_V3toSTK_M: u16 = 2476;
 const ITM_V3toSTK_P: u16 = 2489;
 
 const CHR_case: u16 = 1858;
-const CHR_caseUP: u16 = 1878;
-const CHR_caseDN: u16 = 1879;
+const ITM_CASEUP: u16 = 1878;
+const ITM_CASEDN: u16 = 1879;
 const CHR_num: u16 = 2029;
 const CHR_numL: u16 = 2030;
 const CHR_numU: u16 = 2031;
@@ -1575,11 +1575,11 @@ pub export fn pemAlpha(item_in: i16) callconv(.c) void {
         alphaCase = AC_UPPER;
         SetSetting(indexOfItems[@intCast(CHR_num)].param);
         return;
-    } else if (item == CHR_caseUP and alphaCase != AC_UPPER) { // JM addon
+    } else if (item == ITM_CASEUP and alphaCase != AC_UPPER) { // JM addon
         nextChar = NC_NORMAL;
         SetSetting(indexOfItems[@intCast(CHR_case)].param);
         return;
-    } else if (item == CHR_caseDN and alphaCase != AC_LOWER) { // JM addon
+    } else if (item == ITM_CASEDN and alphaCase != AC_LOWER) { // JM addon
         nextChar = NC_NORMAL;
         SetSetting(indexOfItems[@intCast(CHR_case)].param);
         return;

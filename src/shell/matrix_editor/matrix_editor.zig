@@ -169,21 +169,11 @@ const NP_COMPLEX_FRACTION_DENOMINATOR: u8 = 11;
 const NP_COMPLEX_HP32SII_DENOMINATOR: u8 = 12;
 
 const TI_SHOW_REGISTER: u8 = 14;
-const TI_SHOW_REGISTER_BIG: u8 = 75;
-const TI_SHOW_REGISTER_SMALL: u8 = 76;
-const TI_SHOW_REGISTER_TINY: u8 = 77;
-const TI_SHOWNOTHING: u8 = 93;
-const CM_NORMAL: u8 = 0;
 const CM_MIM: u8 = 12;
 
 // SHOWMODE (defines.h): the whole screen belongs to the SHOW, so a matrix drawn
 // under it may use every row.
-inline fn SHOWMODE() bool {
-    return calcMode == CM_NORMAL and switch (temporaryInformation) {
-        TI_SHOW_REGISTER, TI_SHOW_REGISTER_BIG, TI_SHOW_REGISTER_SMALL, TI_SHOW_REGISTER_TINY, TI_SHOWNOTHING => true,
-        else => false,
-    };
-}
+const SHOWMODE = frontier_screen.showModeActive;
 
 const REGISTER_X: calcRegister_t = 100;
 const REGISTER_Y: calcRegister_t = 101;
@@ -425,47 +415,14 @@ extern fn delRowComplexMatrix(matrix: *complex34Matrix_t, rowNo: u16) void;
 extern fn delColRealMatrix(matrix: *real34Matrix_t, colNo: u16) void;
 extern fn delColComplexMatrix(matrix: *complex34Matrix_t, colNo: u16) void;
 
-extern fn getRegisterTag(regist: calcRegister_t) u32;
-
 // isRegisterMatrixVector / getVectorRegisterPolarMode are `#define` macros in
 // registers.h (not linkable symbols); reproduce them inline.
 // isMatrix2dVector / isMatrix3dVector (defines.h).
-inline fn isMatrix2dVectorRC(rows: u32, cols: u32) bool {
-    return (rows == 1 and cols == 2) or (rows == 2 and cols == 1);
-}
-inline fn isMatrix3dVectorRC(rows: u32, cols: u32) bool {
-    return (rows == 1 and cols == 3) or (rows == 3 and cols == 1);
-}
 inline fn registerMatrixHeader(regist: calcRegister_t) *align(1) const matrixHeader_t {
     return abi.registerMatrixHeader(regist);
 }
-inline fn isRegisterMatrix3dVector(regist: calcRegister_t) bool {
-    if (getRegisterDataType(regist) != dtReal34Matrix) return false;
-    const h = registerMatrixHeader(regist);
-    return isMatrix3dVectorRC(h.matrixRows, h.matrixColumns);
-}
-inline fn isRegisterMatrix2dVector(regist: calcRegister_t) bool {
-    if (getRegisterDataType(regist) != dtReal34Matrix) return false;
-    const h = registerMatrixHeader(regist);
-    return isMatrix2dVectorRC(h.matrixRows, h.matrixColumns);
-}
-inline fn isRegisterMatrixVector(regist: calcRegister_t) bool_t {
-    return isRegisterMatrix3dVector(regist) or isRegisterMatrix2dVector(regist);
-}
-const amPolarSPH: u16 = 128; // virtual bit (registers.h)
-const amPolarCYL: u16 = 64; // virtual bit (registers.h)
-inline fn getVectorRegisterPolarMode(regist: calcRegister_t) u16 {
-    if ((getRegisterDataType(regist) == dtReal34Matrix) and ((getRegisterTag(regist) & amAngleMask) != amNone)) {
-        if (isRegisterMatrix3dVector(regist)) {
-            return if ((getRegisterTag(regist) & amPolar) == amPolar) amPolarSPH else amPolarCYL;
-        } else if (isRegisterMatrix2dVector(regist)) {
-            return @intCast(getRegisterTag(regist) & amPolar);
-        } else {
-            return 0;
-        }
-    }
-    return 0;
-}
+const isRegisterMatrixVector = abi.registers.isRegisterMatrixVector;
+const getVectorRegisterPolarMode = abi.registers.getVectorRegisterPolarMode;
 
 // longInteger (GMP mpz_t) helpers used by getRegisterAsInt/setRegisterAsInt.
 // mpz_t is __mpz_struct[1]; a longInteger_t value decays to mpz_ptr
@@ -514,9 +471,7 @@ inline fn real34SetOne(d: *real34_t) void {
 inline fn real34Copy(src: *const real34_t, dst: *real34_t) void {
     dst.* = src.*;
 }
-inline fn complex34Copy(src: *const complex34_t, dst: *complex34_t) void {
-    dst.* = src.*;
-}
+const complex34Copy = abi.complex34Copy;
 inline fn real34ChangeSign(op: *real34_t) void {
     op.bytes[15] ^= 0x80;
 }
@@ -2224,7 +2179,7 @@ pub fn z47_frontier_matrix_is_register_matrix_vector(regist: u16) bool {
 }
 
 pub fn z47_frontier_matrix_vector_polar_mode(regist: u16) u16 {
-    return getVectorRegisterPolarMode(@bitCast(regist));
+    return @intCast(getVectorRegisterPolarMode(@bitCast(regist)));
 }
 
 pub fn z47_frontier_matrix_open_rows() u16 {

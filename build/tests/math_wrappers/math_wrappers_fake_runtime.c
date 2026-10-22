@@ -2801,6 +2801,72 @@ void setRegisterTag(calcRegister_t reg, uint32_t tag) {
   current_register_tag = tag;
 }
 
+static const matrixHeader_t *realMatrixHeader(calcRegister_t regist) {  // NULL for a register that is not a real matrix
+  if(getRegisterDataType(regist) != dtReal34Matrix) {
+    return NULL;
+  }
+  return REGISTER_MATRIX_HEADER(regist);
+}
+
+static bool_t isMatrix3dShape(uint16_t rows, uint16_t columns) {
+  return (rows == 1 && columns == 3) || (rows == 3 && columns == 1);
+}
+
+static bool_t isMatrix2dShape(uint16_t rows, uint16_t columns) {
+  return (rows == 1 && columns == 2) || (rows == 2 && columns == 1);
+}
+
+bool_t isRegisterMatrix3dVector(calcRegister_t regist) {
+  const matrixHeader_t *header = realMatrixHeader(regist);
+  return header != NULL && isMatrix3dShape(header->matrixRows, header->matrixColumns);
+}
+
+bool_t isRegisterMatrix2dVector(calcRegister_t regist) {
+  const matrixHeader_t *header = realMatrixHeader(regist);
+  return header != NULL && isMatrix2dShape(header->matrixRows, header->matrixColumns);
+}
+
+bool_t isRegisterMatrixVector(calcRegister_t regist) {
+  const matrixHeader_t *header = realMatrixHeader(regist);
+  return header != NULL && (isMatrix3dShape(header->matrixRows, header->matrixColumns) || isMatrix2dShape(header->matrixRows, header->matrixColumns));
+}
+
+uint32_t getVectorRegisterPolarMode(calcRegister_t regist) {
+  const matrixHeader_t *header = realMatrixHeader(regist);
+  if(header == NULL) {
+    return 0;
+  }
+
+  uint32_t tag = getRegisterTag(regist);
+  if((tag & amAngleMask) == amNone) {
+    return 0;
+  }
+  if(isMatrix3dShape(header->matrixRows, header->matrixColumns)) {
+    return (tag & amPolar) != 0 ? amPolarSPH : amPolarCYL;
+  }
+  if(isMatrix2dShape(header->matrixRows, header->matrixColumns)) {
+    return tag & amPolar;
+  }
+  return 0;
+}
+
+void setVectorRegisterPolarMode(calcRegister_t regist, uint32_t polarMode) {
+  uint32_t tag = getRegisterTag(regist);
+  if(polarMode == 0) {
+    tag = (tag & ~(amAngleMask | amPolar)) + amNone;
+  }
+  else {
+    tag &= amAngleMask | amPolar;
+    if(polarMode == amPolarSPH || polarMode == amPolar) {
+      tag |= amPolar;
+    }
+    else if(polarMode == amPolarCYL) {
+      tag &= ~amPolar;
+    }
+  }
+  setRegisterTag(regist, tag);
+}
+
 void setRegisterAngularMode(calcRegister_t reg, angularMode_t mode) {
   setRegisterTag(reg, (current_register_tag & ~amAngleMask) | (uint32_t)mode);
 }

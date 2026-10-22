@@ -275,9 +275,7 @@ inline fn realSquareRoot(operand: *align(1) const real_t, res: *real_t, ctx: *re
 inline fn realFMA(a: *align(1) const real_t, b: *align(1) const real_t, c: *align(1) const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberFMA(res, a, b, c, ctx);
 }
-inline fn realIsZero(v: *align(1) const real_t) bool {
-    return v.lsu[0] == 0 and v.digits == 1 and (v.bits & DECSPECIAL) == 0;
-}
+const realIsZero = abi.realIsZero;
 inline fn realIsNegative(v: *align(1) const real_t) bool {
     return (v.bits & DECNEG) != 0;
 }

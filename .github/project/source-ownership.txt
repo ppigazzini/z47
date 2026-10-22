@@ -59,9 +59,16 @@ res/PACKAGES.md
 res/PROGRAMS
 res/combo
 res/dmcp5/update_R47.txt
+res/fonts/C47__KeysFont.sfd
+res/fonts/C47__KeysFont.ttf
+res/fonts/C47__KeysFont.txt
+res/fonts/C47__ManualFont.sfd
+res/fonts/C47__ManualFont.ttf
+res/fonts/C47__ManualFont.txt
 res/fonts/C47__NumericFontBold.ttf
 res/fonts/Font_snap
 res/fonts/MacOS_Info_Strip
+res/fonts/licenses
 res/offimg/General
 res/r47.cmd
 res/r47.ico

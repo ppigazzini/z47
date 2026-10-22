@@ -54,15 +54,7 @@ inline fn real34Copy(source: *align(1) const real34_t, destination: *align(1) re
     dst[0] = src[0];
     dst[1] = src[1];
 }
-// complex34Copy: copy the 32 raw bytes (four u64 stores in C).
-inline fn complex34Copy(source: *align(1) const complex34_t, destination: *align(1) complex34_t) void {
-    const src: *align(1) const [4]u64 = @ptrCast(source);
-    const dst: *align(1) [4]u64 = @ptrCast(destination);
-    dst[0] = src[0];
-    dst[1] = src[1];
-    dst[2] = src[2];
-    dst[3] = src[3];
-}
+const complex34Copy = abi.complex34Copy;
 extern fn decQuadZero(destination: *align(1) real34_t) *align(1) real34_t;
 inline fn real34SetZero(destination: *align(1) real34_t) void {
     _ = decQuadZero(destination);

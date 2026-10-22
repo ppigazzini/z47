@@ -13,13 +13,10 @@
 // asnBrowser.c is not reachable from the testSuite; verification is by
 // build/link across every target plus the boundary gates.
 
+const frontier_assign = @import("../input/assign.zig");
 const frontier_build_options = @import("frontier_build_options");
 const dmcp_build: bool = frontier_build_options.dmcp_build;
 const old_hw: bool = frontier_build_options.old_hw;
-// CALCMODEL == USER_R47 (66) for the firmware this object is linked into; the
-// C47 family is 46.
-const built_for_r47: bool = frontier_build_options.calcmodel == 66;
-
 const LIBRARY_FN_BASE: usize = if (old_hw) 0x08000201 else 0x08000301;
 
 // ---------------------------------------------------------------------------
@@ -64,16 +61,6 @@ const ITM_RCL: i16 = 51;
 const YOFF: i16 = 32; // local #define in the C
 
 // calcModel values (defines.h).
-const USER_V47: u8 = 40;
-const USER_E47: u8 = 43;
-const USER_DM42: u8 = 45;
-const USER_C47: u8 = 46;
-const USER_D47: u8 = 47;
-const USER_N47: u8 = 51;
-const USER_R47f_g: u8 = 61;
-const USER_R47bk_fg: u8 = 62;
-const USER_R47fg_bk: u8 = 63;
-const USER_R47fg_g: u8 = 64;
 
 // LCD raster ops (dmcp.h).
 const BLT_OR: c_int = 0;
@@ -86,7 +73,6 @@ const LCD_SET_VALUE: c_int = 0;
 // ---------------------------------------------------------------------------
 extern var previousCalcMode: u8;
 extern var calcMode: u8;
-extern var calcModel: u8;
 extern var currentAsnScr: u8;
 extern var fnAsnDisplayUSER: bool_t;
 extern var temporaryInformation: u8;
@@ -103,17 +89,7 @@ extern const standardFont: font_t;
 extern const KEY_X: [7]c_int;
 
 extern var kbd_usr: [37]calcKey_t;
-extern const kbd_std_C47: [37]calcKey_t;
-extern const kbd_std_DM42: [37]calcKey_t;
-extern const kbd_std_R47f_g: [37]calcKey_t;
-extern const kbd_std_R47bk_fg: [37]calcKey_t;
-extern const kbd_std_R47fg_bk: [37]calcKey_t;
-extern const kbd_std_R47fg_g: [37]calcKey_t;
 // PC-only model variants (declared in c47.h only under PC_BUILD).
-extern const kbd_std_E47: [37]calcKey_t;
-extern const kbd_std_D47: [37]calcKey_t;
-extern const kbd_std_V47: [37]calcKey_t;
-extern const kbd_std_N47: [37]calcKey_t;
 
 // C `item_t indexOfItems[]` is an ARRAY: bind the address. The `[*]`
 // pointer form loaded the array's first bytes as the pointer -> wild deref.
@@ -179,42 +155,9 @@ inline fn showStr(str: [*:0]const u8, x: u32, y: u32, videoMode: videoMode_t, sh
     _ = frontier_screen.showString(str, &standardFont, x, y, videoMode, @intFromBool(showLeadingCols), @intFromBool(showEndingCols));
 }
 
-// The kbd_std macro (c47.h:257-267). Three different selectors, chosen by the
-// preprocessor: PC_BUILD walks every layout the simulator can be switched to,
-// including the four E47/D47/V47/N47 tables the header only declares there; a
-// CALCMODEL == USER_R47 firmware only ever reaches the four R47 layouts and
-// falls back to R47f_g; every other firmware only ever reaches DM42 and C47.
-// A firmware carries only its own personality's layouts — the backup writer
-// refuses to persist a foreign model and the state loader only applies one from
-// a matching file — so gating the selector is what lets the linker drop the
-// tables the build can never select.
-inline fn kbdStd() *const [37]calcKey_t {
-    if (comptime !dmcp_build) return switch (calcModel) {
-        USER_C47 => &kbd_std_C47,
-        USER_DM42 => &kbd_std_DM42,
-        USER_R47f_g => &kbd_std_R47f_g,
-        USER_R47bk_fg => &kbd_std_R47bk_fg,
-        USER_R47fg_bk => &kbd_std_R47fg_bk,
-        USER_R47fg_g => &kbd_std_R47fg_g,
-        USER_E47 => &kbd_std_E47,
-        USER_D47 => &kbd_std_D47,
-        USER_V47 => &kbd_std_V47,
-        USER_N47 => &kbd_std_N47,
-        else => &kbd_std_C47,
-    };
-    if (comptime built_for_r47) return switch (calcModel) {
-        USER_R47bk_fg => &kbd_std_R47bk_fg,
-        USER_R47fg_bk => &kbd_std_R47fg_bk,
-        USER_R47fg_g => &kbd_std_R47fg_g,
-        else => &kbd_std_R47f_g,
-    };
-    return if (calcModel == USER_DM42) &kbd_std_DM42 else &kbd_std_C47;
-}
-
-// Norm_Key_00_key (defines.h:554).
-inline fn normKey00Key() i16 {
-    return if (calcModel == USER_C47) 0 else if (calcModel == USER_DM42) 0 else if (calcModel == USER_R47f_g) -1 else if (calcModel == USER_R47bk_fg) 10 else if (calcModel == USER_R47fg_bk) 11 else -1;
-}
+// The kbd_std and Norm_Key_00_key macros, which assign.c defines.
+const kbdStd = frontier_assign.kbdStd;
+const normKey00Key = frontier_assign.getNormKey00Key;
 
 inline fn asnDispShortForm() bool {
     return previousCalcMode == CM_AIM or previousCalcMode == CM_EIM or tam.alpha;

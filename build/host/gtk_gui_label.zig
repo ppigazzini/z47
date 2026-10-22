@@ -43,8 +43,10 @@ const ITM_Z: i16 = 575;
 const MNU_TAMALPHA: i16 = 2946;
 const MNU_ALPHA: i16 = 3003;
 const MNU_MyAlpha: i16 = 3089;
-const CHR_caseUP: i16 = 1878;
-const CHR_caseDN: i16 = 1879;
+const ITM_CASEUP: i16 = 1878;
+const ITM_CASEDN: i16 = 1879;
+const ITM_SUPUP: i16 = 1881;
+const ITM_SUBDN: i16 = 1883;
 const AC_LOWER: u8 = 1;
 const AC_UPPER: u8 = 0;
 const FLAG_NUMLOCK: i32 = 32835;
@@ -65,7 +67,6 @@ const ITM_9: i16 = 549;
 const ITM_PERIOD: i16 = 820;
 const ITM_XEQ: i16 = 3;
 const ITM_RCL: i16 = 51;
-const ITM_SIGMAPLUS: i16 = 433;
 const MNU_DYNAMIC: i16 = 3052;
 const MNU_HOME: i16 = 3070;
 const MNU_MyMenu: i16 = 3090;
@@ -99,7 +100,8 @@ extern var userKeyLabelSize: u16;
 extern fn strcat(dest: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn getNthString(ptr: [*c]u8, n: i16) [*c]u8;
 
-// Norm_Key_00_keyID / Norm_Key_00_item_in_layout (defines.h), model-dependent.
+// Norm_Key_00_keyID (defines.h), model-dependent, and Norm_Key_00_item_in_layout,
+// which assign.c defines.
 fn normKey00KeyID() i16 {
     return switch (calcModel) {
         USER_C47, USER_DM42 => 21,
@@ -108,13 +110,8 @@ fn normKey00KeyID() i16 {
         else => -1,
     };
 }
-fn normKey00ItemInLayout() i16 {
-    return switch (calcModel) {
-        USER_C47, USER_DM42 => ITM_SIGMAPLUS,
-        USER_R47bk_fg, USER_R47fg_bk => ITM_NULL,
-        else => -1,
-    };
-}
+extern fn getNormKey00ItemInLayout() i16;
+const normKey00ItemInLayout = getNormKey00ItemInLayout;
 
 const tamState_t = extern struct {
     mode: u16,
@@ -411,10 +408,11 @@ pub fn labelCaptionAimFa(key: *const calcKey_t, lbl_f: ?*anyopaque) void {
         stringToUtf8(softmenuName(@intCast(numlockReplacements(4, absItem(key.fShiftedAim), getSystemFlag(FLAG_NUMLOCK), true, false))), &lbl);
     }
 
+    // Keyboard AIM f-layer text replacements
     if (lbl[0] == 32 and lbl[1] == 0) {
         patchSpaceLabel(&lbl);
-    } else if (key.fShiftedAim == CHR_caseUP or key.fShiftedAim == CHR_caseDN) {
-        lbl[5] = 0;
+    } else if (key.fShiftedAim == ITM_CASEUP or key.fShiftedAim == ITM_CASEDN) {
+        lbl[4] = 0;
     }
 
     if (debugLabelConsistency(&lbl, "labelCaptionAimFa", key, null, false)) {
@@ -482,6 +480,11 @@ pub fn labelCaptionAim(key: *const calcKey_t, button: ?*anyopaque, lbl_g: ?*anyo
 
     if (gAim == 0) {
         lbl[0] = 0;
+    }
+
+    // Keyboard AIM g-layer text replacements
+    if (key.gShiftedAim == ITM_SUPUP or key.gShiftedAim == ITM_SUBDN) {
+        lbl[3] = 0;
     }
 
     gtk_label_set_label(lbl_g, &lbl);

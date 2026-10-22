@@ -1,3 +1,5 @@
+const std = @import("std");
+const abi = @import("abi"); // shared ABI bindings
 const runtime = @import("register_metadata_runtime.zig");
 const codec = @import("register_descriptor_codec.zig"); // std-only descriptor bit-field codec
 
@@ -110,6 +112,15 @@ pub fn getRegisterDataPointer(reg: runtime.calcRegister_t) ?*anyopaque {
 
     runtime.reportRegisterAboveLastBug("getRegisterDataPointer", reg);
     return null;
+}
+
+// The register's string, terminator included. A register with no data block
+// copies nothing, which is the case GCC's flags on the Windows build.
+pub fn copyRegisterStringTo(dest: [*]u8, regist: runtime.calcRegister_t) void {
+    const reg_data = getRegisterDataPointer(regist) orelse return;
+    const reg_str: [*:0]const u8 = @ptrCast(@as([*]const u8, @ptrCast(reg_data)) + @sizeOf(abi.StrLgIntHeader));
+    const len = std.mem.len(reg_str) + 1;
+    @memmove(dest[0..len], reg_str[0..len]);
 }
 
 pub fn getRegisterTag(reg: runtime.calcRegister_t) u32 {
@@ -288,4 +299,88 @@ pub fn setRegisterTag(reg: runtime.calcRegister_t, tag: u32) void {
     }
 
     runtime.reportRegisterAboveLastBug("setRegisterTag", reg);
+}
+
+// typeDefinitions.h angularMode_t, and the two virtual polar bits registers.h
+// adds above the five tag bits for a 3D vector.
+const amAngleMask: u32 = 15;
+const amPolar: u32 = 16;
+const amPolarCYL: u32 = 64;
+const amPolarSPH: u32 = 128;
+
+fn isMatrix2dVector(rows: u16, cols: u16) bool {
+    return (rows == 1 and cols == 2) or (rows == 2 and cols == 1);
+}
+
+fn isMatrix3dVector(rows: u16, cols: u16) bool {
+    return (rows == 1 and cols == 3) or (rows == 3 and cols == 1);
+}
+
+// null for a register that is not a real matrix
+fn realMatrixHeader(regist: runtime.calcRegister_t) ?*align(1) const abi.MatrixHeader {
+    if (getRegisterDataType(regist) != runtime.dtReal34Matrix) {
+        return null;
+    }
+    return @ptrCast(getRegisterDataPointer(regist).?);
+}
+
+pub fn isRegisterMatrix3dVector(regist: runtime.calcRegister_t) bool {
+    const header = realMatrixHeader(regist) orelse return false;
+    return isMatrix3dVector(header.matrixRows, header.matrixColumns);
+}
+
+pub fn isRegisterMatrix2dVector(regist: runtime.calcRegister_t) bool {
+    const header = realMatrixHeader(regist) orelse return false;
+    return isMatrix2dVector(header.matrixRows, header.matrixColumns);
+}
+
+pub fn isRegisterMatrixVector(regist: runtime.calcRegister_t) bool {
+    const header = realMatrixHeader(regist) orelse return false;
+    return isMatrix3dVector(header.matrixRows, header.matrixColumns) or isMatrix2dVector(header.matrixRows, header.matrixColumns);
+}
+
+// amPolarSPH or amPolarCYL for a 3D vector, amPolar or 0 for a 2D vector, and 0
+// for a vector without an angular mode or for any other register.
+pub fn getVectorRegisterPolarMode(regist: runtime.calcRegister_t) u32 {
+    const header = realMatrixHeader(regist) orelse return 0;
+
+    const tag = getRegisterTag(regist);
+    if ((tag & amAngleMask) == runtime.amNone) {
+        return 0;
+    }
+    if (isMatrix3dVector(header.matrixRows, header.matrixColumns)) {
+        return if ((tag & amPolar) != 0) amPolarSPH else amPolarCYL;
+    }
+    if (isMatrix2dVector(header.matrixRows, header.matrixColumns)) {
+        return tag & amPolar;
+    }
+    return 0;
+}
+
+// polarMode is 0, amPolar, amPolarSPH or amPolarCYL.
+pub fn setVectorRegisterPolarMode(regist: runtime.calcRegister_t, polarMode: u32) void {
+    var tag = getRegisterTag(regist);
+    if (polarMode == 0) {
+        tag = (tag & ~(amAngleMask | amPolar)) + runtime.amNone; // if Polar is cleared, also clear angle
+    } else {
+        tag &= amAngleMask | amPolar;
+        if (polarMode == amPolarSPH or polarMode == amPolar) {
+            tag |= amPolar; // existing status, with polar bit ORred for 2DPolar or SPH
+        } else if (polarMode == amPolarCYL) {
+            tag &= ~amPolar; // ANDed to force Polar 0 for CYL
+        }
+    }
+    setRegisterTag(regist, tag);
+}
+
+// A long integer, or a real without an angular mode.
+pub fn registerIsNoAngle(regist: runtime.calcRegister_t) bool {
+    const data_type = getRegisterDataType(regist);
+    return (data_type == runtime.dtReal34 and (getRegisterTag(regist) & amAngleMask) == runtime.amNone) or data_type == runtime.dtLongInteger;
+}
+
+// inputAngleError3r is true for any other type in the two registers above.
+pub fn isXFNregisterValid3r(regist: runtime.calcRegister_t) bool {
+    const data_type = getRegisterDataType(regist);
+    return (data_type == runtime.dtReal34 or data_type == runtime.dtLongInteger) and registerIsNoAngle(regist + 1) and registerIsNoAngle(regist + 2);
 }

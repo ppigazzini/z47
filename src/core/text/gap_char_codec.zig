@@ -1,5 +1,5 @@
-//! Digit-group gap-character normalization -- the pure core of frontier_display's
-//! gapChar1LR / gapChar1Radix.
+//! Digit-group gap-character normalization -- the pure core of display.c's
+//! getGapChar1Left / getGapChar1Right / getGapChar1Radix.
 //!
 //! A group separator is stored as a softmenu-name byte string; when it is a lone
 //! ASCII separator character it is normalized to the character followed by a
@@ -13,50 +13,58 @@
 
 const std = @import("std");
 
-const lit_comma1 = ",\x01\x00";
-const lit_dot1 = ".\x01\x00";
-const lit_quote1 = "'\x01\x00";
-const lit_underscore1 = "_\x01\x00";
+const lit_comma1 = ",\x01";
+const lit_dot1 = ".\x01";
+const lit_quote1 = "'\x01";
+const lit_underscore1 = "_\x01";
 
-/// Left/right separator normalization: a lone ',' '.' '\'' or '_' becomes the
-/// character plus the 0x01 marker; anything else is returned unchanged.
+/// The separator followed by the 0x01 skip byte, for the four characters the
+/// display draws as a one-byte gap; null for any other.
+fn gapWithSkipByte(separator: u8) ?[*]const u8 {
+    return switch (separator) {
+        ',' => lit_comma1,
+        '.' => lit_dot1,
+        '\'' => lit_quote1,
+        '_' => lit_underscore1,
+        else => null,
+    };
+}
+
+/// Left separator normalization (getGapChar1Left): a lone ',' '.' '\'' or '_'
+/// becomes the character plus the 0x01 marker; anything else is returned
+/// unchanged. The default gap takes two bytes, so the length is tested first.
 pub fn gapChar1LR(s: [*]const u8) [*]const u8 {
-    if (s[0] != 0 and s[1] == 0 and s[2] == 0) {
-        return switch (s[0]) {
-            ',' => lit_comma1,
-            '.' => lit_dot1,
-            '\'' => lit_quote1,
-            '_' => lit_underscore1,
-            else => s,
-        };
+    if (s[1] == 0 and s[2] == 0) {
+        if (gapWithSkipByte(s[0])) |gap| {
+            return gap;
+        }
     }
     return s;
 }
 
-/// Radix separator normalization: only ',' and '.' are normalized, and the
-/// length test accepts a two- or three-byte string.
+/// Radix separator normalization (getGapChar1Radix): only ',' and '.' are
+/// normalized, and the length test accepts a two- or three-byte string. The
+/// default radix mark is a period, so it is tested first.
 pub fn gapChar1Radix(s: [*]const u8) [*]const u8 {
-    if (s[0] != 0 and (s[1] == 0 or s[2] == 0)) {
-        return switch (s[0]) {
-            ',' => lit_comma1,
-            '.' => lit_dot1,
-            else => s,
-        };
+    if (s[1] == 0 or s[2] == 0) {
+        if (s[0] == '.') {
+            return lit_dot1;
+        }
+        if (s[0] == ',') {
+            return lit_comma1;
+        }
     }
     return s;
 }
 
-/// Right-separator normalization (the decode owner's variant): the radix
-/// variant's looser length test but the full ',' '.' '\'' '_' set.
+/// Right separator normalization (getGapChar1Right): the radix variant's looser
+/// length test but the full ',' '.' '\'' '_' set. A gap of two bytes also
+/// satisfies the length test, so the character is tested first.
 pub fn gapChar1RightFull(s: [*]const u8) [*]const u8 {
-    if (s[0] != 0 and (s[1] == 0 or s[2] == 0)) {
-        return switch (s[0]) {
-            ',' => lit_comma1,
-            '.' => lit_dot1,
-            '\'' => lit_quote1,
-            '_' => lit_underscore1,
-            else => s,
-        };
+    if (gapWithSkipByte(s[0])) |gap| {
+        if (s[1] == 0 or s[2] == 0) {
+            return gap;
+        }
     }
     return s;
 }

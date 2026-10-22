@@ -23,9 +23,7 @@ const complexElems = abi.matrixComplexElems;
 inline fn real34Copy(source: *const real34_t, destination: *real34_t) void {
     destination.* = source.*;
 }
-inline fn complex34Copy(source: *const complex34_t, destination: *complex34_t) void {
-    destination.* = source.*;
-}
+const complex34Copy = abi.complex34Copy;
 
 fn reportRamFull(comptime function_name: [*:0]const u8) void {
     runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE);

@@ -45,7 +45,6 @@ const complex34_t = abi.Complex34;
 const abi = @import("abi"); // shared ABI bindings
 const numeral_decode = @import("numeral_decode.zig"); // std-only numeral -> display-string formatter
 const program_step_opcode = @import("program_step_opcode.zig"); // std-only program-step opcode/bound
-const gap_char_codec = @import("../../core/text/gap_char_codec.zig"); // std-only gap-char normalization
 const frontier_char_string = @import("../display/text/char_string.zig");
 const frontier_conversion_units = @import("../convert/conversion_units.zig");
 const frontier_date_time = @import("../convert/date_time.zig");
@@ -190,7 +189,6 @@ const STD_CROSS = "\x80\xd7";
 const STD_DOT = "\x80\xb7";
 const STD_op_i = "\xa1\x48";
 const STD_op_j = "\xa1\x49";
-const STD_WCOMMA = "\xa7\x88";
 
 // ---------------------------------------------------------------------------
 // TO_QSPI data tables (exported: print.c uses shuffleReg, manage.c uses
@@ -242,7 +240,6 @@ extern var decodedIntegerBase: u32;
 extern var currentAngularMode: angularMode_t;
 extern var gapItemLeft: u16;
 extern var gapItemRight: u16;
-extern var gapItemRadix: u16;
 extern var grpGroupingLeft: u8;
 extern var grpGroupingRight: u8;
 extern const indexOfItems: [LAST_ITEM + 1]item_t;
@@ -298,28 +295,10 @@ inline fn complexUnit() [*c]const u8 {
     return if (getSystemFlag(FLAG_CPXj)) STD_op_j else STD_op_i;
 }
 
-// The gap-character macros from defines.h.
-fn ltStr() [*c]const u8 {
-    return if (gapItemLeft == 0) "\x01\x01" else @ptrCast(&indexOfItems[gapItemLeft].itemSoftmenuName);
-}
-fn rtStr() [*c]const u8 {
-    return if (gapItemRight == 0) "\x01\x01" else @ptrCast(&indexOfItems[gapItemRight].itemSoftmenuName);
-}
-fn rxStr() [*c]const u8 {
-    return @ptrCast(&indexOfItems[gapItemRadix].itemSoftmenuName);
-}
-fn gapChar1Left() [*c]const u8 {
-    return gap_char_codec.gapChar1LR(ltStr());
-}
-fn gapChar1Right() [*c]const u8 {
-    return gap_char_codec.gapChar1RightFull(rtStr());
-}
-fn gapChar1Radix() [*c]const u8 {
-    return gap_char_codec.gapChar1Radix(rxStr());
-}
-fn radix34MarkChar() u8 {
-    return gap_char_codec.radix34MarkChar(gapChar1Radix(), STD_WCOMMA);
-}
+// The gap-character macros from defines.h, which display.c defines.
+const gapChar1Left = frontier_display.getGapChar1Left;
+const gapChar1Right = frontier_display.getGapChar1Right;
+const radix34MarkChar = frontier_display.getRadix34MarkChar;
 inline fn groupWidthLeft() u8 {
     return grpGroupingLeft;
 }

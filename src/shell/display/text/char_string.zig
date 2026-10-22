@@ -39,6 +39,7 @@ const glyph_export = @import("../../../core/text/glyph_export.zig");
 const glyph_text_lookup = @import("../../../core/text/glyph_text_lookup.zig");
 const string_edit = @import("../../../core/text/string_edit.zig");
 const gap_char_codec = @import("../../../core/text/gap_char_codec.zig");
+const frontier_screen = @import("../screen.zig");
 const frontier_error = @import("../../error.zig");
 const frontier_fonts = @import("../../../core/text/fonts.zig");
 const dmcp_build: bool = frontier_build_options.dmcp_build;
@@ -63,9 +64,6 @@ const font_t = abi.Font;
 // Constants (defines.h / typeDefinitions.h)
 // ---------------------------------------------------------------------------
 const TI_NO_INFO: u8 = 0;
-const ID_DP: u8 = 2;
-const CM_NORMAL: u8 = 0;
-const CM_NIM: u8 = 2;
 const DOUBLING_A: u16 = 15; // REPLACEFONT defined
 const DOUBLINGBASE_B: u16 = 8;
 const HPFONT1: bool = true; // REPLACEFONT defined
@@ -77,11 +75,6 @@ const bugMsgValueReturnedByFindGlyph: usize = 3;
 // Globals (extern var/const)
 // ---------------------------------------------------------------------------
 extern var temporaryInformation: u8;
-extern var significantDigits: u8;
-extern var displayStack: u8;
-extern var exponentLimit: i16;
-extern var Input_Default: u8;
-extern var calcMode: u8;
 extern var errorMessage: [*c]u8;
 extern const numericFont: font_t;
 extern const standardFont: font_t;
@@ -107,9 +100,7 @@ extern fn free(p: ?*anyopaque) void;
 extern fn exit(code: c_int) noreturn;
 
 // checkHP / HPFONT macros.
-inline fn checkHP() bool {
-    return significantDigits <= 16 and displayStack == 1 and exponentLimit == 99 and Input_Default == ID_DP and (calcMode == CM_NORMAL or calcMode == CM_NIM);
-}
+const checkHP = frontier_screen.checkHPMode;
 inline fn hpFont() bool {
     return if (checkHP()) HPFONT1 else false;
 }

@@ -140,12 +140,6 @@ extern fn decNumberSubtract(res: *real_t, op1: *align(1) const real_t, op2: *ali
 extern fn decNumberMultiply(res: *real_t, op1: *align(1) const real_t, op2: *align(1) const real_t, ctxt: *realContext_t) *real_t;
 extern fn realCompareAbsLessThan(number1: *align(1) const real_t, number2: *align(1) const real_t) bool;
 
-// decNumberIsZero is a decNumber.h macro (DECSPECIAL = 0x70):
-//   (*lsu == 0 && digits == 1 && (bits & 0x70) == 0)
-inline fn decNumberIsZero(dn: *align(1) const real_t) bool {
-    return dn.lsu[0] == 0 and dn.digits == 1 and (dn.bits & 0x70) == 0;
-}
-
 inline fn realCopy(source: *align(1) const real_t, destination: *real_t) void {
     _ = decNumberCopy(destination, source);
 }
@@ -158,9 +152,7 @@ inline fn realMultiply(op1: *align(1) const real_t, op2: *align(1) const real_t,
 inline fn realSubtract(op1: *align(1) const real_t, op2: *align(1) const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberSubtract(res, op1, op2, ctxt);
 }
-inline fn realIsZero(source: *const real_t) bool {
-    return decNumberIsZero(source);
-}
+const realIsZero = abi.realIsZero;
 // realType.h: realIsSpecial tests the DECSPECIAL bits; realGetExponent is the
 // adjusted exponent of the most significant digit.
 inline fn realIsSpecial(source: *const real_t) bool {
@@ -192,7 +184,6 @@ extern fn decQuadMultiply(res: *align(1) real34_t, op1: *align(1) const real34_t
 extern fn decQuadDivide(res: *align(1) real34_t, op1: *align(1) const real34_t, op2: *align(1) const real34_t, ctxt: *realContext_t) *align(1) real34_t;
 extern fn decQuadCompare(res: *align(1) real34_t, op1: *align(1) const real34_t, op2: *align(1) const real34_t, ctxt: *realContext_t) *align(1) real34_t;
 extern fn decQuadIsZero(source: *align(1) const real34_t) bool;
-extern fn decQuadIsFinite(source: *align(1) const real34_t) u32;
 extern fn decQuadToInt32(source: *align(1) const real34_t, ctxt: *realContext_t, mode: c_int) i32;
 extern fn convertReal34ToLongInteger(real34: *align(1) const real34_t, lgInt: *mpz_struct, mode: c_int) void;
 
@@ -225,9 +216,7 @@ inline fn real34IsZero(source: *align(1) const real34_t) bool {
 }
 // realType.h real34IsSpecial: a NaN, a signalling NaN or an infinity, which is
 // every value decQuadIsFinite rejects.
-inline fn real34IsSpecial(source: *align(1) const real34_t) bool {
-    return decQuadIsFinite(source) == 0;
-}
+const real34IsSpecial = abi.real34IsSpecial;
 inline fn real34ToInt32(source: *align(1) const real34_t) i32 {
     return decQuadToInt32(source, &ctxtReal34, DEC_ROUND_DOWN);
 }

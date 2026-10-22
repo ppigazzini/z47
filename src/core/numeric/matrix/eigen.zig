@@ -190,9 +190,7 @@ inline fn realSetZero(r: *align(1) real_t) void {
 inline fn realChangeSign(operand: *align(1) real_t) void {
     operand.bits ^= 0x80;
 }
-inline fn realIsZeroA(source: *align(1) const real_t) bool {
-    return source.digits == 1 and source.lsu[0] == 0 and (source.bits & 0x70) == 0;
-}
+const realIsZero = abi.realIsZero;
 
 // Complex helper used by the 2x2/3x3 closed-form solvers.
 
@@ -301,7 +299,7 @@ pub export fn calculateEigenvalues22(mat: [*]const cplx_t, size: u16, t1: *cplx_
     const d = &mat[(sz - 1) * sz + (sz - 1)];
 
     // determinant ad - bc
-    if (realIsZeroA(&a.Imag) and realIsZeroA(&b.Imag) and realIsZeroA(&c.Imag) and realIsZeroA(&d.Imag)) {
+    if (realIsZero(&a.Imag) and realIsZero(&b.Imag) and realIsZero(&c.Imag) and realIsZero(&d.Imag)) {
         realMultiply(&a.Real, &d.Real, detR, &ctx159);
         realMultiply(&b.Real, &c.Real, trR, &ctx159); // reuse trR as temp
         realSubtract(detR, trR, detR, &ctx159);
@@ -428,7 +426,7 @@ pub export fn QR_decomposition_householder(mat: [*]const cplx_t, size: u16, q: [
 
             // u = x - alpha e1, with alpha's sign opposite to v[0]'s so the
             // subtraction is effectively an addition and cannot cancel.
-            if (realIsZeroA(&v[0].Imag)) {
+            if (realIsZero(&v[0].Imag)) {
                 if (!realIsNegativeA(&v[0].Real)) {
                     realChangeSign(&sum);
                 }
@@ -469,7 +467,7 @@ pub export fn QR_decomposition_householder(mat: [*]const cplx_t, size: u16, q: [
                     // is, which skips this Householder step.
                     realCopy(&v[i].Real, &mt.Real);
                     realCopy(&v[i].Imag, &mt.Imag);
-                } else if (realIsZeroA(&v[i].Imag)) {
+                } else if (realIsZero(&v[i].Imag)) {
                     realDivide(&v[i].Real, &sum, &mt.Real, realContext);
                     realSetZero(&mt.Imag);
                 } else {
@@ -497,7 +495,7 @@ pub export fn QR_decomposition_householder(mat: [*]const cplx_t, size: u16, q: [
                 while (k < sz - j) : (k += 1) {
                     const qe = (i + j) * sz + k + j;
                     realSubtract(const_0(), &v[k].Imag, &sum, realContext);
-                    if (realIsZeroA(&v[i].Imag) and realIsZeroA(&sum)) {
+                    if (realIsZero(&v[i].Imag) and realIsZero(&sum)) {
                         realMultiply(&v[i].Real, &v[k].Real, &mt.Real, realContext);
                         realSetZero(&mt.Imag);
                     } else {
@@ -967,10 +965,10 @@ fn calculateSymmetricEigenvalues(matrix: [*]cplx_t, size: u16, realContext: *rea
         if (realIsSpecial(&matrix[i].Real) or realIsSpecial(&matrix[i].Imag)) {
             return false;
         }
-        if (!realIsZeroA(&matrix[i].Real)) {
+        if (!realIsZero(&matrix[i].Real)) {
             smallestExponent = @min(smallestExponent, realGetExponent(&matrix[i].Real));
         }
-        if (!realIsZeroA(&matrix[i].Imag)) {
+        if (!realIsZero(&matrix[i].Imag)) {
             smallestExponent = @min(smallestExponent, realGetExponent(&matrix[i].Imag));
         }
     }
@@ -978,8 +976,8 @@ fn calculateSymmetricEigenvalues(matrix: [*]cplx_t, size: u16, realContext: *rea
     while (row < sz) : (row += 1) {
         var column: usize = row;
         while (column < sz) : (column += 1) {
-            if (!realIsZeroA(&matrix[row * sz + column].Imag) or
-                !realIsZeroA(&matrix[column * sz + row].Imag) or
+            if (!realIsZero(&matrix[row * sz + column].Imag) or
+                !realIsZero(&matrix[column * sz + row].Imag) or
                 !realCompareEqual(&matrix[row * sz + column].Real, &matrix[column * sz + row].Real))
             {
                 return false;
@@ -995,7 +993,7 @@ fn calculateSymmetricEigenvalues(matrix: [*]cplx_t, size: u16, realContext: *rea
             var q: usize = p + 1;
             while (q < sz) : (q += 1) {
                 const apq = &matrix[p * sz + q].Real;
-                if (realIsZeroA(apq)) {
+                if (realIsZero(apq)) {
                     continue;
                 }
 
@@ -1074,7 +1072,7 @@ fn calculateSymmetricEigenvalues(matrix: [*]cplx_t, size: u16, realContext: *rea
             }
         }
         realCopy(&diagonalMax, &tolerance);
-        if (realIsZeroA(&tolerance)) { // a zero diagonal gives no scale, so the test falls back to one
+        if (realIsZero(&tolerance)) { // a zero diagonal gives no scale, so the test falls back to one
             realSetOne(&tolerance);
         }
         tolerance.exponent -= 60;
@@ -1118,7 +1116,7 @@ fn cxSetZero(z: *cplx_t) linksection(runtime.code_section) void {
 fn cxConj(x: *const cplx_t, z: *cplx_t) linksection(runtime.code_section) void {
     realCopy(&x.Real, &z.Real);
     realCopy(&x.Imag, &z.Imag);
-    if (!realIsZeroA(&z.Imag)) {
+    if (!realIsZero(&z.Imag)) {
         realChangeSign(&z.Imag);
     }
 }
@@ -1133,7 +1131,7 @@ fn cxAbs1(x: *const cplx_t, r: *real_t, ctx: *realContext_t) linksection(runtime
 }
 
 fn cxIsZero(x: *const cplx_t) linksection(runtime.code_section) bool {
-    return realIsZeroA(&x.Real) and realIsZeroA(&x.Imag);
+    return realIsZero(&x.Real) and realIsZero(&x.Imag);
 }
 
 // Principal square root through polar form.
@@ -1175,7 +1173,7 @@ fn hessenbergReduce(a: [*]cplx_t, n: u16, v: [*]cplx_t, w: [*]cplx_t, ctx: *real
             realFMA(&tmp, &tmp, &nrm, &nrm, ctx);
         }
         realSquareRoot(&nrm, &nrm, ctx);
-        if (realIsZeroA(&nrm)) {
+        if (realIsZero(&nrm)) {
             continue;
         }
 
@@ -1197,7 +1195,7 @@ fn hessenbergReduce(a: [*]cplx_t, n: u16, v: [*]cplx_t, w: [*]cplx_t, ctx: *real
             cxCopy(cxAt(a, n, i, k), &v[i]);
         }
         complexMagnitude(&v[k + 1], &alpha, ctx);
-        if (realIsZeroA(&alpha)) {
+        if (realIsZero(&alpha)) {
             realAdd(&v[k + 1].Real, &nrm, &v[k + 1].Real, ctx);
         } else {
             var phase: cplx_t = undefined;
@@ -1213,7 +1211,7 @@ fn hessenbergReduce(a: [*]cplx_t, n: u16, v: [*]cplx_t, w: [*]cplx_t, ctx: *real
             realFMA(&tmp, &tmp, &nrm, &nrm, ctx);
         }
         realSquareRoot(&nrm, &nrm, ctx);
-        if (realIsZeroA(&nrm)) {
+        if (realIsZero(&nrm)) {
             continue;
         }
         i = k + 1;
@@ -1292,13 +1290,13 @@ fn cxGivens(f: *const cplx_t, g: *const cplx_t, c: *real_t, s: *cplx_t, r: *cplx
     complexMagnitude(f, &af, ctx);
     complexMagnitude(g, &ag, ctx);
 
-    if (realIsZeroA(&ag)) {
+    if (realIsZero(&ag)) {
         realSetOne(c);
         cxSetZero(s);
         cxCopy(f, r);
         return;
     }
-    if (realIsZeroA(&af)) {
+    if (realIsZero(&af)) {
         realSetZero(c);
         cxSetZero(s);
         realSetOne(&s.Real); // s = 1
@@ -1460,7 +1458,7 @@ fn cxEig2x2(a: [*]const cplx_t, n: u16, hi: u16, l1: *cplx_t, l2: *cplx_t, ctx: 
     cxSqrt(&y, &y, ctx);
     realMultiply(&x.Real, &y.Real, &r1, ctx);
     realFMA(&x.Imag, &y.Imag, &r1, &r2, ctx);
-    const flipped = realIsNegativeA(&r2) and !realIsZeroA(&r2);
+    const flipped = realIsNegativeA(&r2) and !realIsZero(&r2);
     if (flipped) {
         realChangeSign(&y.Real);
         realChangeSign(&y.Imag);
@@ -1538,7 +1536,7 @@ fn eigenHessenbergQr(a: [*]cplx_t, eig: [*]cplx_t, scratch1: [*]cplx_t, scratch2
     while (i < n) : (i += 1) {
         var j: u16 = 0;
         while (j < n) : (j += 1) {
-            if (!realIsZeroA(&cxAt(a, n, i, j).Imag)) {
+            if (!realIsZero(&cxAt(a, n, i, j).Imag)) {
                 inputWasReal = false;
             }
             complexMagnitude(cxAt(a, n, i, j), &tmp, ctx);
@@ -1565,7 +1563,7 @@ fn eigenHessenbergQr(a: [*]cplx_t, eig: [*]cplx_t, scratch1: [*]cplx_t, scratch2
             cxAbs1(cxAt(a, n, i, i), &t2, ctx);
             realAdd(&t1, &t2, &t1, ctx);
             realMultiply(&t1, &eps, &t1, ctx);
-            if (realIsZeroA(&tmp)) {
+            if (realIsZero(&tmp)) {
                 cxSetZero(cxAt(a, n, i, i - 1));
             } else if (math_comparison_reals.realCompareLessThan(&tmp, &t1)) {
                 // Ahues and Tisseur, the criterion dlahqr adopted: a subdiagonal
@@ -1600,7 +1598,7 @@ fn eigenHessenbergQr(a: [*]cplx_t, eig: [*]cplx_t, scratch1: [*]cplx_t, scratch2
                     realCopy(&t2, &bb);
                 }
                 realAdd(&aa, &ab, &ss, ctx);
-                if (!realIsZeroA(&ss)) {
+                if (!realIsZero(&ss)) {
                     realDivide(&ab, &ss, &lhs, ctx);
                     realMultiply(&ba, &lhs, &lhs, ctx);
                     realDivide(&aa, &ss, &rhs, ctx);
@@ -1700,8 +1698,8 @@ fn eigenHessenbergQr(a: [*]cplx_t, eig: [*]cplx_t, scratch1: [*]cplx_t, scratch2
         i = 0;
         while (i < n) : (i += 1) {
             const d = cxAt(a, n, i, i);
-            if (!realIsZeroA(&d.Imag)) {
-                const top: i32 = if (realIsZeroA(&d.Real)) realGetExponent(&scale) else realGetExponent(&d.Real);
+            if (!realIsZero(&d.Imag)) {
+                const top: i32 = if (realIsZero(&d.Real)) realGetExponent(&scale) else realGetExponent(&d.Real);
                 if (realGetExponent(&d.Imag) < top - toleranceDigits()) {
                     realSetZero(&d.Imag);
                 }
@@ -1864,7 +1862,7 @@ pub fn calculateEigenvalues(a: [*]cplx_t, scratch: [*]cplx_t, eig: [*]cplx_t, si
                 while (j + 1 < sz) : (j += 1) { // j stops on the last row of the block that starts on row i
                     var offdiag_mag: real_t = undefined;
                     complexMagnitude(&eig[(j + 1) * sz + j], &offdiag_mag, realContext);
-                    if (realIsZeroA(&offdiag_mag) or realCompareLessThan(&offdiag_mag, &blockThreshold)) break;
+                    if (realIsZero(&offdiag_mag) or realCompareLessThan(&offdiag_mag, &blockThreshold)) break;
                 }
 
                 var row: usize = j + 1;
@@ -1872,7 +1870,7 @@ pub fn calculateEigenvalues(a: [*]cplx_t, scratch: [*]cplx_t, eig: [*]cplx_t, si
                     var col: usize = i;
                     while (col <= j and !coupled) : (col += 1) {
                         complexMagnitude(&eig[row * sz + col], &mag, realContext);
-                        coupled = !realIsZeroA(&mag) and !realCompareLessThan(&mag, &blockThreshold);
+                        coupled = !realIsZero(&mag) and !realCompareLessThan(&mag, &blockThreshold);
                     }
                 }
                 if (!coupled and (j == i + 1 or j == i + 2)) {
@@ -1922,7 +1920,7 @@ pub fn calculateEigenvalues(a: [*]cplx_t, scratch: [*]cplx_t, eig: [*]cplx_t, si
                 var t: real_t = undefined;
                 var mean: real_t = undefined;
 
-                if (realIsZeroA(&u.Imag) or realIsZeroA(&v.Imag) or realIsNegativeA(&u.Imag) == realIsNegativeA(&v.Imag)) {
+                if (realIsZero(&u.Imag) or realIsZero(&v.Imag) or realIsNegativeA(&u.Imag) == realIsNegativeA(&v.Imag)) {
                     continue;
                 }
                 realSubtract(&u.Real, &v.Real, &du, realContext);
@@ -1999,7 +1997,7 @@ fn realEigenvalues(matrix: *const real34Matrix_t, res: *real34Matrix_t, ires: ?*
         var isComplex = false;
         i = 0;
         while (i < sz) : (i += 1) {
-            if (!realIsZeroA(&eig[i * sz + i].Imag)) {
+            if (!realIsZero(&eig[i * sz + i].Imag)) {
                 isComplex = true;
                 break;
             }
@@ -2292,7 +2290,7 @@ fn solvesTheEigenProblem(matrix: *const real34Matrix_t, isComplex: bool, v: [*]c
             realCopy(&mag, &vmax);
         }
     }
-    if (realIsZeroA(&vmax)) {
+    if (realIsZero(&vmax)) {
         return false;
     }
 
@@ -2585,7 +2583,7 @@ fn calculateEigenvectors(matrix: *const real34Matrix_t, isComplex: bool, a: [*]c
                 var alreadyUsed = false;
                 var kPrev: usize = 0;
                 while (kPrev < k) : (kPrev += 1) {
-                    if (!realIsZeroA(&r[j * sz + kPrev].Real)) {
+                    if (!realIsZero(&r[j * sz + kPrev].Real)) {
                         alreadyUsed = true;
                         break;
                     }
@@ -2657,7 +2655,7 @@ fn calculateEigenvectors(matrix: *const real34Matrix_t, isComplex: bool, a: [*]c
             realCopy(&rowSum, &eps3);
         }
     }
-    if (realIsZeroA(&eps3)) {
+    if (realIsZero(&eps3)) {
         realSetOne(&eps3); // zhsein takes SMLNUM when the norm is zero
     }
     eps3.exponent -= 33;
@@ -2871,7 +2869,7 @@ fn normaliseEigenvectorColumns(vectors: [*]cplx_t, size: u16, realContext: *real
             realCopy(&term, &sum);
         }
         realSquareRoot(&sum, &sum, realContext);
-        if (!realIsZeroA(&sum) and !realIsSpecial(&sum)) {
+        if (!realIsZero(&sum) and !realIsSpecial(&sum)) {
             row = 0;
             while (row < sz) : (row += 1) {
                 realDivide(&vectors[row * sz + column].Real, &sum, &vectors[row * sz + column].Real, realContext);
@@ -2890,7 +2888,7 @@ fn hasZeroColumn(r: [*]const cplx_t, size: u16) linksection(runtime.code_section
         var allZero = true;
         var i: usize = 0;
         while (i < sz) : (i += 1) {
-            if (!realIsZeroA(&r[i * sz + j].Real) or !realIsZeroA(&r[i * sz + j].Imag)) {
+            if (!realIsZero(&r[i * sz + j].Real) or !realIsZero(&r[i * sz + j].Imag)) {
                 allZero = false;
                 break;
             }
@@ -2948,7 +2946,7 @@ fn realEigenvectors(matrix: *const real34Matrix_t, res: *real34Matrix_t, ires: ?
         var isComplex = false;
         i = 0;
         while (i < sz * sz) : (i += 1) {
-            if (!realIsZeroA(&r[i].Imag)) {
+            if (!realIsZero(&r[i].Imag)) {
                 isComplex = true;
                 break;
             }

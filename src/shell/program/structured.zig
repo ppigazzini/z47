@@ -231,7 +231,6 @@ extern fn __gmpz_set_si(rop: *mpz_struct, op: c_long) void;
 // Macro wrappers (realType.h, real34 helpers, registers.h)
 // ---------------------------------------------------------------------------
 const DECNEG: u8 = 0x80;
-const DECSPECIAL: u8 = 0x70;
 
 // const34_0 / const34_1 come out of the constant blob, as every other owner reads
 // them: they are offsets into the shared table, not link-time symbols.
@@ -243,9 +242,7 @@ const reg34 = abi.registerReal34Aligned;
 const regImag34 = abi.registerImag34Aligned;
 const regShortInt = abi.registerShortInteger;
 
-inline fn realIsZero(x: *const real_t) bool {
-    return x.lsu[0] == 0 and x.digits == 1 and (x.bits & DECSPECIAL) == 0;
-}
+const realIsZero = abi.realIsZero;
 inline fn realIsPositive(x: *const real_t) bool {
     return (x.bits & DECNEG) == 0 and !realIsZero(x);
 }

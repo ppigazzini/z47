@@ -224,6 +224,14 @@ fn addRuntimeObject(
         .optimize = optimize,
     });
     root_module.addImport("abi", abi_module);
+    // The DMCP ROM shim the date, time and settings owners reach the system data
+    // block through; the same registered module the state owners import.
+    const dmcp_rom_module = b.createModule(.{
+        .root_source_file = b.path("src/core/hal/dmcp_rom.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    root_module.addImport("dmcp_rom", dmcp_rom_module);
 
     addBuildOptions(b, root_module, name_prefix, options);
 

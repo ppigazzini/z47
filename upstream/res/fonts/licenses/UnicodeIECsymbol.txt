@@ -1,0 +1,5 @@
+Site: https://unicodepowersymbol.com/font/
+License: All these fonts are free to use and reuse. We’d love to see people incorporating these into their existing fonts.
+  (https://github.com/jloughry/Unicode/blob/master/LICENSE.txt)
+Fonts:
+- UnicodeIECsymbol

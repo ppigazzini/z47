@@ -58,9 +58,6 @@ const ir_printing: bool = frontier_build_options.ir_printing;
 const option_samplepgms: bool = frontier_build_options.option_samplepgms;
 const option_lp_dp_timing: bool = frontier_build_options.option_lp_dp_timing;
 const option_atext_fonts: bool = frontier_build_options.option_atext_fonts;
-// CALCMODEL == USER_R47 (66): the R47 personality, which selects among the four
-// R47 keyboard layouts instead of the C47/DM42 pair.
-const is_r47: bool = frontier_build_options.calcmodel == 66;
 
 const code_section = if (dmcp_build and old_hw)
     ".qspi_data"
@@ -100,6 +97,7 @@ const frontier_bufferize = @import("display/bufferize.zig");
 const frontier_calc_mode = @import("calc_mode.zig");
 const frontier_char_string = @import("display/text/char_string.zig");
 const frontier_date_time = @import("convert/date_time.zig");
+const rom = @import("dmcp_rom");
 const frontier_error = @import("error.zig");
 const frontier_font_browser = @import("browsers/font_browser.zig");
 const frontier_fractions = @import("convert/fractions.zig");
@@ -253,7 +251,6 @@ const SETTING_SINT_WS: c_int = 130;
 const SCRUPD_AUTO: u8 = 0;
 const SCRUPD_MANUAL_STATUSBAR: u8 = 1;
 
-const CM_NORMAL: u8 = 0;
 const CM_NIM: u8 = 2;
 const CM_ASSIGN: u8 = 4;
 const CM_CONFIRMATION: u8 = 11;
@@ -361,10 +358,6 @@ const USER_R47f_g: u8 = 61;
 const USER_R47bk_fg: u8 = 62;
 const USER_R47fg_bk: u8 = 63;
 const USER_R47fg_g: u8 = 64;
-const USER_E47: u8 = 43;
-const USER_D47: u8 = 47;
-const USER_V47: u8 = 40;
-const USER_N47: u8 = 51;
 const USER_KRESET: u16 = 50;
 const USER_HRESET: u16 = 58;
 const USER_PRESET: u16 = 59;
@@ -372,8 +365,6 @@ const USER_MRESET: u16 = 49;
 const USER_ARESET: u16 = 48;
 const TO_USER: u16 = 29;
 const FROM_USER: u16 = 30;
-
-const ITM_SIGMAPLUS: i16 = 433;
 
 const PGM_RUNNING: u8 = 1;
 const PGM_STOPPED: u8 = 0;
@@ -682,22 +673,6 @@ else {};
 const allReservedVariables = @extern([*c]const reservedVariableHeader_t, .{ .name = "allReservedVariables" });
 const indexOfItems = @extern([*c]const item_t, .{ .name = "indexOfItems" });
 const kbd_usr = @extern([*c]calcKey_t, .{ .name = "kbd_usr" });
-
-// calcModel-dependent layout tables (kbd_std macro) — bound by address.
-const kbd_std_C47 = @extern([*c]const calcKey_t, .{ .name = "kbd_std_C47" });
-const kbd_std_DM42 = @extern([*c]const calcKey_t, .{ .name = "kbd_std_DM42" });
-// The four R47 layouts are reachable from the host selector and from an R47
-// firmware only; a C47 or DM42 firmware never names them, so nothing pulls them
-// into its image.
-const kbd_std_R47f_g = if (!dmcp_build or is_r47) @extern([*c]const calcKey_t, .{ .name = "kbd_std_R47f_g" }) else {};
-const kbd_std_R47bk_fg = if (!dmcp_build or is_r47) @extern([*c]const calcKey_t, .{ .name = "kbd_std_R47bk_fg" }) else {};
-const kbd_std_R47fg_bk = if (!dmcp_build or is_r47) @extern([*c]const calcKey_t, .{ .name = "kbd_std_R47fg_bk" }) else {};
-const kbd_std_R47fg_g = if (!dmcp_build or is_r47) @extern([*c]const calcKey_t, .{ .name = "kbd_std_R47fg_g" }) else {};
-// PC_BUILD-only extra layouts referenced by the kbd_std macro on host.
-const kbd_std_E47 = if (!dmcp_build) @extern([*c]const calcKey_t, .{ .name = "kbd_std_E47" }) else {};
-const kbd_std_D47 = if (!dmcp_build) @extern([*c]const calcKey_t, .{ .name = "kbd_std_D47" }) else {};
-const kbd_std_V47 = if (!dmcp_build) @extern([*c]const calcKey_t, .{ .name = "kbd_std_V47" }) else {};
-const kbd_std_N47 = if (!dmcp_build) @extern([*c]const calcKey_t, .{ .name = "kbd_std_N47" }) else {};
 
 // kbd_std_C47[37] size for the frontier_char_string.xcopy(kbd_usr, kbd_std, sizeof(kbd_std_C47)) calls.
 const SIZEOF_KBD_STD: u32 = 37 * @sizeOf(calcKey_t);
@@ -1037,51 +1012,14 @@ inline fn shortIntegerModeValue() i32 {
 inline fn isR47FAM() bool_t {
     return calcModel == USER_R47f_g or calcModel == USER_R47bk_fg or calcModel == USER_R47fg_bk or calcModel == USER_R47fg_g;
 }
-// checkHP macro: significantDigits<=16 && displayStack==1 && exponentLimit==99 &&
-//   Input_Default==ID_DP && (calcMode==CM_NORMAL || calcMode==CM_NIM)
-const ID_DP_u8: u8 = 2;
-inline fn checkHP() bool_t {
-    return significantDigits <= 16 and displayStack == 1 and exponentLimit == 99 and Input_Default == ID_DP_u8 and (calcMode == CM_NORMAL or calcMode == CM_NIM);
-}
+// checkHP macro, which screen.c defines as checkHPMode.
+const checkHP = frontier_screen.checkHPMode;
 
-// kbd_std macro: select the layout table by calcModel. Three selectors, chosen
-// by the build: the host walks every layout the simulator can be switched to; an
-// R47 firmware only ever reaches the four R47 layouts and falls back to R47f_g;
-// every other firmware only ever reaches DM42 and C47.
-inline fn kbdStd() [*c]const calcKey_t {
-    if (comptime !dmcp_build) {
-        return switch (calcModel) {
-            USER_C47 => kbd_std_C47,
-            USER_DM42 => kbd_std_DM42,
-            USER_R47f_g => kbd_std_R47f_g,
-            USER_R47bk_fg => kbd_std_R47bk_fg,
-            USER_R47fg_bk => kbd_std_R47fg_bk,
-            USER_R47fg_g => kbd_std_R47fg_g,
-            USER_E47 => kbd_std_E47,
-            USER_D47 => kbd_std_D47,
-            USER_V47 => kbd_std_V47,
-            USER_N47 => kbd_std_N47,
-            else => kbd_std_C47,
-        };
-    }
-    if (comptime is_r47) {
-        return switch (calcModel) {
-            USER_R47bk_fg => kbd_std_R47bk_fg,
-            USER_R47fg_bk => kbd_std_R47fg_bk,
-            USER_R47fg_g => kbd_std_R47fg_g,
-            else => kbd_std_R47f_g,
-        };
-    }
-    return if (calcModel == USER_DM42) kbd_std_DM42 else kbd_std_C47;
-}
-// Norm_Key_00_key macro
-inline fn normKey00Key() i32 {
-    return if (calcModel == USER_C47) 0 else if (calcModel == USER_DM42) 0 else if (calcModel == USER_R47f_g) -1 else if (calcModel == USER_R47bk_fg) 10 else if (calcModel == USER_R47fg_bk) 11 else -1;
-}
-// Norm_Key_00_item_in_layout macro
-inline fn normKey00ItemInLayout() i16 {
-    return if (calcModel == USER_C47) ITM_SIGMAPLUS else if (calcModel == USER_DM42) ITM_SIGMAPLUS else if (calcModel == USER_R47f_g) -1 else if (calcModel == USER_R47bk_fg) @as(i16, @intCast(ITM_NULL)) else if (calcModel == USER_R47fg_bk) @as(i16, @intCast(ITM_NULL)) else -1;
-}
+// The kbd_std, Norm_Key_00_key and Norm_Key_00_item_in_layout macros, which
+// assign.c defines.
+const kbdStd = frontier_assign.kbdStd;
+const normKey00Key = frontier_assign.getNormKey00Key;
+const normKey00ItemInLayout = frontier_assign.getNormKey00ItemInLayout;
 
 // SET_ST(STAT_PGM_END): set the bit in the fixed-address sdb.calc_state word.
 inline fn setStatPgmEnd() void {
@@ -1225,6 +1163,7 @@ pub export fn configCommon(idx: u16) callconv(.c) void {
     forceSystemFlag(FLAG_DMY, @intCast(cs.dmy));
     forceSystemFlag(FLAG_MDY, @intCast(cs.mdy));
     forceSystemFlag(FLAG_YMD, @intCast(cs.ymd));
+    frontier_date_time.timeSetSystemDateFormat();
     firstGregorianDay = cs.gregorianDay;
     frontier_date_time.fnSetWeekOfYearRule(@intCast(cs.woy));
     temporaryInformation = TI_DISP_JULIAN_WOY;
@@ -2983,12 +2922,36 @@ pub export fn runDMCPmenu(confirmation: u16) callconv(.c) void {
         } else {
             cancelFilename = true;
             _ = romRunMenuItemSys(MI_DMCP_MENU);
+
+            // Sync TDM24 flag with DMCP clk24
+            if (rom.is_flag_clk24()) {
+                setSystemFlag(FLAG_TDM24);
+            } else {
+                clearSystemFlag(FLAG_TDM24);
+            }
+
+            // Sync DMY/YMD/MDY flag with DMCP dmy
+            clearSystemFlag(FLAG_DMY);
+            clearSystemFlag(FLAG_MDY);
+            clearSystemFlag(FLAG_YMD);
+            switch (rom.get_flag_dmy()) {
+                SYS_MDY => setSystemFlag(FLAG_MDY),
+                SYS_DMY => setSystemFlag(FLAG_DMY),
+                SYS_YMD => setSystemFlag(FLAG_YMD),
+                else => setSystemFlag(FLAG_YMD),
+            }
+
             clearScreen(200);
             screenUpdatingMode = SCRUPD_AUTO;
         }
     }
 }
 const MI_DMCP_MENU: u8 = 216;
+
+// DMCP date format (defines.h)
+const SYS_MDY: c_int = 0;
+const SYS_DMY: c_int = 1;
+const SYS_YMD: c_int = 2;
 
 pub export fn activateUSBdisk(confirmation: u16) callconv(.c) void {
     if (comptime dmcp_build) {

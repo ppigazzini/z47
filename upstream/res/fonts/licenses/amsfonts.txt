@@ -1,0 +1,5 @@
+Site: https://ctan.org/pkg/amsfonts
+License: The SIL Open Font License (https://ctan.org/license/ofl)
+Fonts:
+- MSAM10
+- MSBM10

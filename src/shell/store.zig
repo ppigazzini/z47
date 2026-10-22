@@ -444,13 +444,8 @@ fn storeIjComplex(matrix: *complex34Matrix_t) callconv(.c) bool {
 // ===========================================================================
 // _storeValue (static in the C)
 // ===========================================================================
-extern fn decQuadIsInfinite(v: *align(1) const real34_t) u32;
-extern fn decQuadIsNaN(v: *align(1) const real34_t) u32;
-extern fn decQuadIsSignaling(v: *align(1) const real34_t) u32;
 
-inline fn real34IsSpecial(v: *align(1) const real34_t) bool {
-    return decQuadIsNaN(v) != 0 or decQuadIsSignaling(v) != 0 or decQuadIsInfinite(v) != 0;
-}
+const real34IsSpecial = abi.real34IsSpecial;
 
 /// The four reserved variables holding the plot window bounds.
 inline fn isPlotRangeVariable(regist: u16) bool {

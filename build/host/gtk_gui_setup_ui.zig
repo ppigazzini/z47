@@ -5,6 +5,7 @@
 // C-defined in gtkGui.c; this Zig code assigns them through extern var.
 // check_all_btn_widgets_for_consistency stays in C and is called via extern.
 
+const display = @import("gtk_gui_display.zig");
 const CSSFILE = "res/c47_pre.css";
 const SCREEN_WIDTH = 400;
 const SCREEN_HEIGHT = 240;
@@ -403,6 +404,12 @@ fn isR47FAM() bool {
 
 fn sig(w: ?*anyopaque, ev: [*:0]const u8, cb: ?*const anyopaque, data: [*:0]const u8) void {
     _ = g_signal_connect_data(w, ev, cb, @ptrCast(@constCast(data)), null, 0);
+}
+
+// Connected ahead of btnPressed / btnReleased, so the key is marked held before
+// the press rebuilds the keyboard.
+fn holdArrowKey(w: ?*anyopaque, ev: [*:0]const u8) void {
+    _ = g_signal_connect_data(w, ev, @ptrCast(&display.arrowKeyHoldTrack), null, null, 0);
 }
 
 pub fn setupUI() void {
@@ -976,11 +983,17 @@ pub fn setupUI() void {
     gtk_widget_set_size_request(btn53A, KEY_WIDTH_2, 0);
     gtk_widget_set_size_request(btn54A, KEY_WIDTH_2, 0);
     gtk_widget_set_size_request(btn55A, KEY_WIDTH_2, 0);
+    if (!isR47FAM()) {
+        holdArrowKey(btn51, "button-press-event"); // btn51 is the arrow key on C47/DM42 only
+    }
     sig(btn51, "button-press-event", @ptrCast(&z47_btnPressed_signal), "17");
     sig(btn52, "button-press-event", @ptrCast(&z47_btnPressed_signal), "18");
     sig(btn53, "button-press-event", @ptrCast(&z47_btnPressed_signal), "19");
     sig(btn54, "button-press-event", @ptrCast(&z47_btnPressed_signal), "20");
     sig(btn55, "button-press-event", @ptrCast(&z47_btnPressed_signal), "21");
+    if (!isR47FAM()) {
+        holdArrowKey(btn51, "button-release-event"); // btn51 is the arrow key on C47/DM42 only
+    }
     sig(btn51, "button-release-event", @ptrCast(&z47_btnReleased_signal), "17");
     sig(btn52, "button-release-event", @ptrCast(&z47_btnReleased_signal), "18");
     sig(btn53, "button-release-event", @ptrCast(&z47_btnReleased_signal), "19");
@@ -1095,11 +1108,13 @@ pub fn setupUI() void {
     gtk_widget_set_size_request(btn63A, KEY_WIDTH_2, 0);
     gtk_widget_set_size_request(btn64A, KEY_WIDTH_2, 0);
     gtk_widget_set_size_request(btn65A, KEY_WIDTH_2, 0);
+    holdArrowKey(btn61, "button-press-event"); // mark held before btnPressed rebuilds the keyboard
     sig(btn61, "button-press-event", @ptrCast(&z47_btnPressed_signal), "22");
     sig(btn62, "button-press-event", @ptrCast(&z47_btnPressed_signal), "23");
     sig(btn63, "button-press-event", @ptrCast(&z47_btnPressed_signal), "24");
     sig(btn64, "button-press-event", @ptrCast(&z47_btnPressed_signal), "25");
     sig(btn65, "button-press-event", @ptrCast(&z47_btnPressed_signal), "26");
+    holdArrowKey(btn61, "button-release-event"); // clear held on release
     sig(btn61, "button-release-event", @ptrCast(&z47_btnReleased_signal), "22");
     sig(btn62, "button-release-event", @ptrCast(&z47_btnReleased_signal), "23");
     sig(btn63, "button-release-event", @ptrCast(&z47_btnReleased_signal), "24");
@@ -1227,11 +1242,17 @@ pub fn setupUI() void {
     sig(btn73, "button-release-event", @ptrCast(&z47_btnReleased_signal), "29");
     sig(btn74, "button-release-event", @ptrCast(&z47_btnReleased_signal), "30");
     sig(btn75, "button-release-event", @ptrCast(&z47_btnReleased_signal), "31");
+    if (isR47FAM()) {
+        holdArrowKey(btn71A, "button-press-event"); // btn71A is the AIM arrow key on R47 only
+    }
     sig(btn71A, "button-press-event", @ptrCast(&z47_btnPressed_signal), "27");
     sig(btn72A, "button-press-event", @ptrCast(&z47_btnPressed_signal), "28");
     sig(btn73A, "button-press-event", @ptrCast(&z47_btnPressed_signal), "29");
     sig(btn74A, "button-press-event", @ptrCast(&z47_btnPressed_signal), "30");
     sig(btn75A, "button-press-event", @ptrCast(&z47_btnPressed_signal), "31");
+    if (isR47FAM()) {
+        holdArrowKey(btn71A, "button-release-event"); // btn71A is the AIM arrow key on R47 only
+    }
     sig(btn71A, "button-release-event", @ptrCast(&z47_btnReleased_signal), "27");
     sig(btn72A, "button-release-event", @ptrCast(&z47_btnReleased_signal), "28");
     sig(btn73A, "button-release-event", @ptrCast(&z47_btnReleased_signal), "29");

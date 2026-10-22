@@ -1,0 +1,6 @@
+License: SIL Open Font License (https://www.fontsquirrel.com/license/computer-modern)
+Fonts:
+- CMMIB10
+- CMR10
+- CMMI10
+- CMSY10

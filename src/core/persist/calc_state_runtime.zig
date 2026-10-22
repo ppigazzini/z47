@@ -1,6 +1,7 @@
 const std = @import("std");
 const io_owned = @import("calc_state_io.zig");
-const line_parse = @import("abi").line_parse; // shared std-only line match / integer parse
+const abi = @import("abi"); // shared ABI bindings
+const line_parse = abi.line_parse; // shared std-only line match / integer parse
 
 pub const FILE_OK: c_int = 1;
 pub const FILE_CANCEL: c_int = 2;
@@ -141,6 +142,12 @@ pub inline fn allowUserKeys(saved_calc_model: u16) bool {
 pub inline fn fixupR47ShiftKeys() void {
     io_owned.fixupR47ShiftKeys();
 }
+
+pub inline fn kbdStd() *const [37]abi.CalcKey {
+    return io_owned.kbdStd();
+}
+
+pub const getNormKey00Key = io_owned.getNormKey00Key;
 
 pub inline fn restartPostLoadTimers() void {
     io_owned.restartPostLoadTimers();

@@ -37,12 +37,7 @@ extern fn fnConvertStkToMx(constVector1: u16) void;
 inline fn angMode(r: calcRegister_t) u32 {
     return @intCast(runtime.getRegisterAngularMode(r));
 }
-// registerIsNoAngle (defines.h macro): a plain real with no angle tag, or a
-// long integer.
-inline fn registerIsNoAngle(r: calcRegister_t) bool {
-    return (runtime.getRegisterDataType(r) == runtime.dtReal34 and angMode(r) == AMNONE) or
-        runtime.getRegisterDataType(r) == runtime.dtLongInteger;
-}
+const registerIsNoAngle = runtime.registerIsNoAngle;
 
 pub export fn is_2D3D_Register_Ready(
     ang2Dx: *u32,

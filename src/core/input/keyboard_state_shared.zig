@@ -650,9 +650,9 @@ pub fn implementation(comptime runtime: type) type {
             } else if (runtime.calcMode == runtime.CM_AIM or (runtime.catalog != 0 and runtime.catalog != runtime.CATALOG_MVAR and runtime.calcMode != runtime.CM_NIM) or runtime.calcMode == runtime.CM_EIM or runtime.tam.alpha or (runtime.calcMode == runtime.CM_ASSIGN and (runtime.previousCalcMode == runtime.CM_AIM or runtime.previousCalcMode == runtime.CM_EIM)) or (runtime.calcMode == runtime.CM_PEM and runtime.getSystemFlag(runtime.FLAG_ALPHA))) {
                 result = if (runtime.shiftF) key.fShiftedAim else if (runtime.shiftG) key.gShiftedAim else key.primaryAim;
                 if (runtime.calcMode == runtime.CM_PEM and runtime.getSystemFlag(runtime.FLAG_ALPHA)) {
-                    if (result == runtime.ITM_DOWN_ARROW or runtime.scrLock == runtime.NC_SUBSCRIPT) {
+                    if (result == runtime.ITM_DOWN_ARROW or result == runtime.ITM_SUBDN or runtime.scrLock == runtime.NC_SUBSCRIPT) {
                         runtime.nextChar = runtime.NC_SUBSCRIPT;
-                    } else if (result == runtime.ITM_UP_ARROW or runtime.scrLock == runtime.NC_SUPERSCRIPT) {
+                    } else if (result == runtime.ITM_UP_ARROW or result == runtime.ITM_SUPUP or runtime.scrLock == runtime.NC_SUPERSCRIPT) {
                         runtime.nextChar = runtime.NC_SUPERSCRIPT;
                     }
                 } else if ((result == runtime.ITM_COMMA or result == runtime.ITM_PERIOD) and (runtime.calcMode == runtime.CM_EIM or runtime.calcMode == runtime.CM_AIM) and runtime.getSystemFlag(runtime.FLAG_ALPHA)) {
@@ -1040,14 +1040,14 @@ pub fn implementation(comptime runtime: type) type {
             } else if (item == runtime.ITM_COLON or item == runtime.ITM_COMMA or item == runtime.ITM_QUESTION_MARK or item == runtime.ITM_SPACE or item == runtime.ITM_UNDERSCORE) {
                 runtime.addItemToBuffer(@bitCast(item));
                 runtime.keyActionProcessed = true;
-            } else if (item == runtime.ITM_DOWN_ARROW) {
+            } else if (item == runtime.ITM_DOWN_ARROW or item == runtime.ITM_SUBDN) {
                 if (runtime.nextChar == runtime.NC_NORMAL) {
                     runtime.nextChar = runtime.NC_SUBSCRIPT;
                 } else if (runtime.nextChar == runtime.NC_SUPERSCRIPT) {
                     runtime.nextChar = runtime.NC_NORMAL;
                 }
                 runtime.keyActionProcessed = true;
-            } else if (item == runtime.ITM_UP_ARROW) {
+            } else if (item == runtime.ITM_UP_ARROW or item == runtime.ITM_SUPUP) {
                 if (runtime.nextChar == runtime.NC_NORMAL) {
                     runtime.nextChar = runtime.NC_SUPERSCRIPT;
                 } else if (runtime.nextChar == runtime.NC_SUBSCRIPT) {
@@ -1280,7 +1280,7 @@ pub fn implementation(comptime runtime: type) type {
                         }
                     },
 
-                    runtime.CHR_caseUP => {
+                    runtime.ITM_CASEUP => {
                         if (runtime.getSystemFlag(runtime.FLAG_NUMLOCK)) {} else if (runtime.alphaCase == runtime.AC_LOWER) {
                             processKeyAction(runtime.CHR_case);
                         } else if (runtime.alphaCase == runtime.AC_UPPER) {
@@ -1290,7 +1290,7 @@ pub fn implementation(comptime runtime: type) type {
                         runtime.keyActionProcessed = true;
                     },
 
-                    runtime.CHR_caseDN => {
+                    runtime.ITM_CASEDN => {
                         if (runtime.getSystemFlag(runtime.FLAG_NUMLOCK)) {
                             runtime.alphaCase = runtime.AC_UPPER;
                             processKeyAction(runtime.CHR_numU);
@@ -2252,6 +2252,10 @@ pub fn implementation(comptime runtime: type) type {
                         runtime.refreshScreen(0);
                     }
                     runtime.calcMode = runtime.previousCalcMode;
+                    if (runtime.calcMode == runtime.CM_AIM or runtime.calcMode == runtime.CM_EIM) {
+                        runtime.setSystemFlag(runtime.FLAG_ALPHA);
+                        runtime.calcModeAimGui();
+                    }
                 },
 
                 runtime.CM_TIMER => {

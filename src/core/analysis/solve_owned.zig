@@ -254,11 +254,6 @@ extern fn decNumberDivide(res: *real_t, op1: *align(1) const real_t, op2: *align
 extern fn decNumberFMA(res: *real_t, f1: *align(1) const real_t, f2: *align(1) const real_t, term: *align(1) const real_t, ctxt: *realContext_t) *real_t;
 extern fn decNumberFromString(res: *real_t, source: [*:0]const u8, ctxt: *realContext_t) *real_t;
 
-// decNumberIsZero macro (DECSPECIAL = 0x70)
-inline fn decNumberIsZero(dn: *align(1) const real_t) bool {
-    return dn.lsu[0] == 0 and dn.digits == 1 and (dn.bits & 0x70) == 0;
-}
-
 inline fn realCopy(source: *align(1) const real_t, destination: *real_t) void {
     _ = decNumberCopy(destination, source);
 }
@@ -289,9 +284,7 @@ inline fn realSetNegativeSign(operand: *real_t) void {
 inline fn realSetPositiveSign(operand: *real_t) void {
     operand.bits &= 0x7F;
 }
-inline fn realIsZero(source: *align(1) const real_t) bool {
-    return decNumberIsZero(source);
-}
+const realIsZero = abi.realIsZero;
 inline fn realIsNegative(source: *align(1) const real_t) bool {
     return (source.bits & 0x80) == 0x80;
 }

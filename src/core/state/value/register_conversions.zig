@@ -419,11 +419,7 @@ inline fn longIntegerDivideQuotientRemainder(n: *const mpz_struct, d: *const mpz
 inline fn longIntegerRoot(op: *const mpz_struct, n: u32, result: *mpz_struct) bool {
     return __gmpz_root(result, op, n) != 0;
 }
-extern fn decQuadIsNaN(v: *align(1) const real34_t) u32;
-extern fn decQuadIsInfinite(v: *align(1) const real34_t) u32;
-inline fn real34IsSpecial(v: *align(1) const real34_t) bool {
-    return decQuadIsNaN(v) != 0 or decQuadIsInfinite(v) != 0;
-}
+const real34IsSpecial = abi.real34IsSpecial;
 // realType.h real34IsNegative: the sign bit, so -0 and a signed NaN count.
 inline fn real34IsNegative(v: *align(1) const real34_t) bool {
     return (v.bytes[15] & 0x80) == 0x80;
@@ -711,9 +707,7 @@ inline fn realIsPositive(v: *const real_t) bool {
     return (v.bits & 0x80) == 0x00;
 }
 
-inline fn realIsZero(v: *const real_t) bool {
-    return v.lsu[0] == 0 and v.digits == 1 and (v.bits & DECSPECIAL) == 0;
-}
+const realIsZero = abi.realIsZero;
 
 inline fn realSetPositiveSign(v: *real_t) void {
     v.bits &= 0x7f;
@@ -1028,9 +1022,7 @@ inline fn real34Multiply(a: *align(1) const real34_t, b: *align(1) const real34_
     _ = decQuadMultiply(res, a, b, &ctxtReal34);
 }
 
-inline fn real34SetNegativeSign(v: *real34_t) void {
-    v.bytes[15] |= 0x80;
-}
+const real34SetNegativeSign = abi.real34SetNegativeSign;
 
 inline fn real34ToIntegralValue(src: *align(1) const real34_t, dst: *real34_t, mode: c_int) void {
     _ = decQuadToIntegralValue(dst, src, &ctxtReal34, mode);

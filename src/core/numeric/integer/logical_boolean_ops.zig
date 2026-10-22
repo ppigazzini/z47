@@ -33,8 +33,8 @@ fn dyadicLogicalOp(table: [4]u8) void {
         return;
     }
 
-    const x = !runtime.isRealZero(&cx.Real) or !runtime.isRealZero(&cx.Imag);
-    const y = !runtime.isRealZero(&cy.Real) or !runtime.isRealZero(&cy.Imag);
+    const x = !runtime.realIsZero(&cx.Real) or !runtime.realIsZero(&cx.Imag);
+    const y = !runtime.realIsZero(&cy.Real) or !runtime.realIsZero(&cy.Imag);
     const table_index: usize = @intFromBool(x) + 2 * @as(usize, @intFromBool(y));
     const res = table[table_index] != 0;
 
@@ -103,7 +103,7 @@ fn notCplx() callconv(.c) void {
         return;
     }
 
-    logicalOpResult(runtime.isRealZero(&x.Real) and runtime.isRealZero(&x.Imag), xtype, xtype);
+    logicalOpResult(runtime.realIsZero(&x.Real) and runtime.realIsZero(&x.Imag), xtype, xtype);
 }
 
 fn notShoI() callconv(.c) void {

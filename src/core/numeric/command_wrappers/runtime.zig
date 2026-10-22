@@ -1367,27 +1367,17 @@ pub fn setComplexRegisterPolarMode(reg: calcRegister_t, mode: angularMode_t) voi
     setRegisterTag(reg, base_tag | (mode_bits & polar_mask));
 }
 
-pub fn isRegisterMatrix3dVector(reg: calcRegister_t) bool {
-    if (getRegisterDataType(reg) != dtReal34Matrix) {
-        return false;
-    }
+// registers.c's angle tests.
+pub const registerIsNoAngle = abi.registers.registerIsNoAngle;
+pub const isXFNregisterValid3r = abi.registers.isXFNregisterValid3r;
 
-    const header = registerMatrixHeaderPtr(reg);
-    return (header.matrixRows == 1 and header.matrixColumns == 3) or (header.matrixRows == 3 and header.matrixColumns == 1);
-}
+// The SEPARATOR_RIGHT macro, which display.c defines.
+pub extern fn getGapChar1Right() [*c]const u8;
 
-pub fn isRegisterMatrix2dVector(reg: calcRegister_t) bool {
-    if (getRegisterDataType(reg) != dtReal34Matrix) {
-        return false;
-    }
-
-    const header = registerMatrixHeaderPtr(reg);
-    return (header.matrixRows == 1 and header.matrixColumns == 2) or (header.matrixRows == 2 and header.matrixColumns == 1);
-}
-
-pub fn isRegisterMatrixVector(reg: calcRegister_t) bool {
-    return isRegisterMatrix2dVector(reg) or isRegisterMatrix3dVector(reg);
-}
+// registers.c's vector-register helpers.
+pub const isRegisterMatrix3dVector = abi.registers.isRegisterMatrix3dVector;
+pub const isRegisterMatrix2dVector = abi.registers.isRegisterMatrix2dVector;
+pub const isRegisterMatrixVector = abi.registers.isRegisterMatrixVector;
 
 pub fn getVectorRegisterAngularMode(reg: calcRegister_t) angularMode_t {
     return if (getRegisterDataType(reg) == dtReal34Matrix) @intCast(getRegisterTag(reg) & amAngleMask) else amNone;
@@ -1398,37 +1388,10 @@ pub fn setVectorRegisterAngularMode(reg: calcRegister_t, mode: angularMode_t) vo
 }
 
 // The vector polar mode is one of {0, amPolar, amPolarCYL, amPolarSPH}, where
-// the "no polar mode" sentinel is a bare 0 and NOT amNone (which is 5): the
-// getter's three zero cases and the setter's clear branch all test the literal,
-// and getComplexRegisterPolarMode feeds the setter a raw `tag & amPolar`.
-pub fn getVectorRegisterPolarMode(reg: calcRegister_t) angularMode_t {
-    if (getRegisterDataType(reg) != dtReal34Matrix or (getRegisterTag(reg) & amAngleMask) == @as(u32, @intCast(amNone))) {
-        return 0;
-    }
-
-    if (isRegisterMatrix3dVector(reg)) {
-        return if ((getRegisterTag(reg) & @as(u32, @intCast(amPolar))) == @as(u32, @intCast(amPolar))) amPolarSPH else amPolarCYL;
-    }
-
-    if (isRegisterMatrix2dVector(reg)) {
-        return @intCast(getRegisterTag(reg) & @as(u32, @intCast(amPolar)));
-    }
-
-    return 0;
-}
-
-pub fn setVectorRegisterPolarMode(reg: calcRegister_t, mode: angularMode_t) void {
-    const current_tag = getRegisterTag(reg);
-    const next_tag: u32 = if (mode == 0)
-        (current_tag & ~(@as(u32, @intCast(amAngleMask | amPolar)))) + @as(u32, @intCast(amNone))
-    else blk: {
-        const with_polar = (current_tag & @as(u32, @intCast(amAngleMask | amPolar))) |
-            (if (mode == amPolarSPH or mode == amPolar) @as(u32, @intCast(amPolar)) else 0);
-        break :blk with_polar & (if (mode == amPolarCYL) ((~@as(u32, @intCast(amPolar))) & @as(u32, @intCast(amAngleMask | amPolar))) else 255);
-    };
-
-    setRegisterTag(reg, next_tag);
-}
+// the "no polar mode" sentinel is a bare 0 and NOT amNone (which is 5), and
+// getComplexRegisterPolarMode feeds the setter a raw `tag & amPolar`.
+pub const getVectorRegisterPolarMode = abi.registers.getVectorRegisterPolarMode;
+pub const setVectorRegisterPolarMode = abi.registers.setVectorRegisterPolarMode;
 
 pub fn setTemporaryInformation(condition: bool) void {
     temporaryInformation = TI_FALSE + @as(u8, @intFromBool(condition));
@@ -1447,9 +1410,7 @@ pub inline fn real34IsNaN(value: *const real34_t) bool {
     return decQuadIsNaN(value) != 0;
 }
 
-pub inline fn real34IsSpecial(value: *const real34_t) bool {
-    return real34IsNaN(value) or real34IsInfinite(value);
-}
+pub const real34IsSpecial = abi.real34IsSpecial;
 
 pub inline fn real34IsZero(value: *const real34_t) bool {
     return decQuadIsZero(value) != 0;

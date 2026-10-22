@@ -136,7 +136,6 @@ extern var lastFunc: i16;
 extern var alphaRegister: u16;
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
 extern fn getRegisterTag(regist: calcRegister_t) u32;
-extern fn getRegisterDataPointer(regist: calcRegister_t) *anyopaque;
 
 // ---------------------------------------------------------------------------
 // Inline wrappers (the C macros / static inlines)
@@ -171,13 +170,7 @@ inline fn regKStoC(regKS: u8) i16 {
     });
 }
 // COPY_REGISTER_STRING_TO(dest, regist) (registers.h).
-inline fn copyRegisterStringTo(dest: [*c]u8, regist: calcRegister_t) void {
-    const regData: ?*anyopaque = getRegisterDataPointer(regist);
-    if (regData != null) {
-        const regStr: [*c]u8 = @as([*c]u8, @ptrCast(regData.?)) + 4; // sizeof(strLgIntHeader_t)
-        _ = frontier_char_string.xcopy(dest, regStr, @intCast(stringByteLength(regStr) + 1));
-    }
-}
+const copyRegisterStringTo = abi.registers.copyRegisterStringTo;
 
 // ===========================================================================
 // _indirectRegister (static in the C)

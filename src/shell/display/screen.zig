@@ -1471,38 +1471,10 @@ inline fn isShift(code: u8) bool_t {
 inline fn orOrtho(a: u16) u16 {
     return if (a == 0) CF_ORTHOGONAL_FITTING else a;
 }
-inline fn isMatrix3dVector(rows: u16, cols: u16) bool {
-    return (rows == 1 and cols == 3) or (rows == 3 and cols == 1);
-}
-inline fn isMatrix2dVector(rows: u16, cols: u16) bool {
-    return (rows == 1 and cols == 2) or (rows == 2 and cols == 1);
-}
-const regMatrixHeaderPtr = abi.registerMatrixHeader;
-inline fn isRegisterMatrix3dVector(reg: calcRegister_t) bool_t {
-    if (getRegisterDataType(reg) != dtReal34Matrix) return 0;
-    const h = regMatrixHeaderPtr(reg);
-    return @intFromBool(isMatrix3dVector(h.matrixRows, h.matrixColumns));
-}
-inline fn isRegisterMatrix2dVector(reg: calcRegister_t) bool_t {
-    if (getRegisterDataType(reg) != dtReal34Matrix) return 0;
-    const h = regMatrixHeaderPtr(reg);
-    return @intFromBool(isMatrix2dVector(h.matrixRows, h.matrixColumns));
-}
-inline fn isRegisterMatrixVector(reg: calcRegister_t) bool_t {
-    return @intFromBool(isRegisterMatrix3dVector(reg) != 0 or isRegisterMatrix2dVector(reg) != 0);
-}
-inline fn getVectorRegisterPolarMode(reg: calcRegister_t) u32 {
-    if ((getRegisterDataType(reg) == dtReal34Matrix) and ((getRegisterTag(reg) & amAngleMask) != amNone)) {
-        if (isRegisterMatrix3dVector(reg) != 0) {
-            return if ((getRegisterTag(reg) & amPolar) == amPolar) amPolarSPH else amPolarCYL;
-        } else if (isRegisterMatrix2dVector(reg) != 0) {
-            return getRegisterTag(reg) & amPolar;
-        } else {
-            return 0;
-        }
-    }
-    return 0;
-}
+const isRegisterMatrix3dVector = abi.registers.isRegisterMatrix3dVector;
+const isRegisterMatrix2dVector = abi.registers.isRegisterMatrix2dVector;
+const isRegisterMatrixVector = abi.registers.isRegisterMatrixVector;
+const getVectorRegisterPolarMode = abi.registers.getVectorRegisterPolarMode;
 
 // register-data accessors (REGISTER_*_DATA macros).
 const REGISTER_REAL34_DATA = abi.registerReal34;
@@ -1534,9 +1506,7 @@ inline fn COPY_REGISTER_STRING_TO(dest: [*c]u8, regist: calcRegister_t) void {
 extern var significantDigits: u8;
 extern var exponentLimit: i16;
 extern var Input_Default: u8;
-inline fn checkHP() bool {
-    return significantDigits <= 16 and displayStack == 1 and exponentLimit == 99 and Input_Default == ID_DP and (calcMode == CM_NORMAL or calcMode == CM_NIM);
-}
+const checkHP = checkHPMode;
 inline fn HPFONT() bool {
     return checkHP() and HPFONT1;
 }
@@ -1556,18 +1526,14 @@ inline fn runningOnSimOrUSB() bool {
 inline fn GRAPHMODE() bool {
     return calcMode == CM_PLOT_STAT or calcMode == CM_GRAPH;
 }
-inline fn SHOWMODE() bool {
-    return calcMode == CM_NORMAL and (temporaryInformation == TI_SHOW_REGISTER or temporaryInformation == TI_SHOW_REGISTER_BIG or temporaryInformation == TI_SHOW_REGISTER_SMALL or temporaryInformation == TI_SHOW_REGISTER_TINY or temporaryInformation == TI_SHOWNOTHING);
-}
+const SHOWMODE = showModeActive;
 inline fn PROBMENU() bool {
     return showingProbMenu() != 0;
 }
 inline fn menuItemOfTop() i16 {
     return softmenu[@intCast(softmenuStack[0].softmenuId)].menuItem;
 }
-inline fn BASEMODEACTIVE() bool {
-    return !PROBMENU() and (lastIntegerBase != 0 or menuItemOfTop() == -MNU_BASE or dispBase > 0);
-}
+const BASEMODEACTIVE = baseModeActive;
 inline fn XXFNMODEACTIVE() bool {
     return !SHOWMODE() and !GRAPHMODE() and menuItemOfTop() == -MNU_XXFCNS and calcMode != CM_NIM and
         ((getRegisterDataType(REGISTER_X) == dtReal34 or getRegisterDataType(REGISTER_X) == dtLongInteger) or
@@ -1582,17 +1548,7 @@ inline fn BASEMODEREGISTERX() bool {
             (calcMode == CM_NIM and getRegisterDataType(REGISTER_Y) == dtShortInteger) or
             (calcMode == CM_NORMAL and getRegisterDataType(REGISTER_X) == dtLongInteger));
 }
-inline fn isXFNregisterValid3r(r: calcRegister_t) bool {
-    const ok = (getRegisterDataType(r) == dtReal34 or getRegisterDataType(r) == dtLongInteger) and
-        (getRegisterDataType(r + 1) == dtReal34 or getRegisterDataType(r + 1) == dtLongInteger) and
-        (getRegisterDataType(r + 2) == dtReal34 or getRegisterDataType(r + 2) == dtLongInteger);
-    // !inputAngleError3r(r): !registerIsNoAngle(r+1) || !registerIsNoAngle(r+2)
-    const angleErr = !registerIsNoAngle(r + 1) or !registerIsNoAngle(r + 2);
-    return ok and !angleErr;
-}
-inline fn registerIsNoAngle(r: calcRegister_t) bool {
-    return (getRegisterDataType(r) == dtReal34 and getRegisterAngularMode(r) == amNone) or getRegisterDataType(r) == dtLongInteger;
-}
+const isXFNregisterValid3r = abi.registers.isXFNregisterValid3r;
 // X_SHIFT / Y_SHIFT
 // X_SHIFT_L=0, X_SHIFT_R = X_PRINTER-1 = 361 (status-bar layout constant).
 const X_SHIFT_R: i32 = 361;
@@ -1672,6 +1628,27 @@ pub export fn setLastintegerBasetoZero() callconv(.c) void {
         refreshScreen(56);
     }
     frontier_radio_button_catalog.fnRefreshState();
+}
+
+// The HP35 settings are in force, so numbers are drawn in the HP 7-segment font.
+// One stack line is the rarest of them, so it comes first; 0 digits are 34.
+pub export fn checkHPMode() bool {
+    return displayStack == 1 and significantDigits != 0 and significantDigits <= 16 and exponentLimit == 99 and Input_Default == ID_DP and (calcMode == CM_NORMAL or calcMode == CM_NIM);
+}
+
+// temporaryInformation is TI_NO_INFO most of the time, in number entry as well.
+pub export fn showModeActive() bool {
+    if (temporaryInformation == TI_NO_INFO) {
+        return false;
+    }
+    return calcMode == CM_NORMAL and (temporaryInformation == TI_SHOW_REGISTER or temporaryInformation == TI_SHOW_REGISTER_BIG or temporaryInformation == TI_SHOW_REGISTER_SMALL or
+        temporaryInformation == TI_SHOW_REGISTER_TINY or temporaryInformation == TI_SHOWNOTHING);
+}
+
+// The three base tests are false most of the time, so the call of showingProbMenu()
+// comes last.
+pub export fn baseModeActive() bool {
+    return (lastIntegerBase != 0 or dispBase > 0 or menuItemOfTop() == -MNU_BASE) and !PROBMENU();
 }
 
 pub export fn execTimerApp(timerType: u16) callconv(.c) void {
@@ -3859,7 +3836,7 @@ pub export fn tiVector(regist: calcRegister_t, prefix: [*c]u8, prefixWidth: *i16
             REGISTER_X => abi.fmtCStr(prefix, "[ {s}] =", .{@as([*:0]const u8, e1())}),
             else => {},
         }
-    } else if (isRegisterMatrix3dVector(regist) != 0) {
+    } else if (isRegisterMatrix3dVector(regist)) {
         if (getVectorRegisterPolarMode(regist) == amPolarSPH) {
             if (getSystemFlag(FLAG_3DPHYS) != 0) {
                 if (shrt != 0) {
@@ -3895,7 +3872,7 @@ pub export fn tiVector(regist: calcRegister_t, prefix: [*c]u8, prefixWidth: *i16
                 abi.fmtCStr(prefix, "[{s}{s}{s}{s}{s}]", .{ @as([*:0]const u8, e0()), interspace, @as([*:0]const u8, e1()), interspace, @as([*:0]const u8, e2()) });
             }
         }
-    } else if (isRegisterMatrix2dVector(regist) != 0) {
+    } else if (isRegisterMatrix2dVector(regist)) {
         if (getVectorRegisterPolarMode(regist) != amPolar) {
             if (shrt != 0) {
                 abi.fmtCStr(prefix, "{s}{s}", .{ @as([*:0]const u8, e0()), @as([*:0]const u8, e1()) });
@@ -5864,7 +5841,7 @@ fn refreshRealMatrix(regist: calcRegister_t, origRegist: calcRegister_t, baseY: 
             _displaySigmaPlus(regist, prefix, prefixWidth_p, noLine);
         } else if (temporaryInformation == TI_NO_INFO and currentInputVariable != INVALID_VARIABLE) {
             inputRegName(prefix, prefixWidth_p);
-        } else if (option_vector and displayVector and isRegisterMatrixVector(regist) != 0) {
+        } else if (option_vector and displayVector and isRegisterMatrixVector(regist)) {
             tiVector(regist, prefix, prefixWidth_p, @intFromBool(temporaryInformation != TI_VECTOR));
         }
 

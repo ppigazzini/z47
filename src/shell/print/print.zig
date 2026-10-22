@@ -231,11 +231,6 @@ const PTP_NONE: u16 = 0;
 const TI_FALSE: u8 = 12;
 const TI_TRUE: u8 = 13;
 const TI_PRINT_COMPLETE: u8 = 136;
-const TI_SHOW_REGISTER: u8 = 14;
-const TI_SHOW_REGISTER_BIG: u8 = 75;
-const TI_SHOW_REGISTER_SMALL: u8 = 76;
-const TI_SHOW_REGISTER_TINY: u8 = 77;
-const TI_SHOWNOTHING: u8 = 93;
 
 const CM_NORMAL: u8 = 0;
 const CM_AIM: u8 = 1;
@@ -480,12 +475,7 @@ extern fn __gmpz_get_ui(p: *const mpz_struct) c_ulong;
 extern fn __gmpz_cmp_ui(p: *const mpz_struct, v: c_ulong) c_int;
 extern fn __gmpz_set_si(p: *mpz_struct, v: c_long) void;
 
-// complex34Copy(source, dest): macro = real34Copy two halves. dest is a complex34
-// register data pointer (real34_t* in our reg34 typing); copy 32 bytes.
-inline fn complex34Copy(source: *const complex34_t, destination: *real34_t) void {
-    const d: *complex34_t = @ptrCast(destination);
-    d.* = source.*;
-}
+const complex34Copy = abi.complex34Copy;
 
 // libc
 extern fn strlen(s: [*c]const u8) usize;
@@ -585,13 +575,7 @@ inline fn numberOfDisplayRealContextDigits() i32 {
     }
     return @as(i32, displayFormatDigits) + 2;
 }
-inline fn showMode() bool {
-    return calcMode == CM_NORMAL and (temporaryInformation == TI_SHOW_REGISTER or
-        temporaryInformation == TI_SHOW_REGISTER_BIG or
-        temporaryInformation == TI_SHOW_REGISTER_SMALL or
-        temporaryInformation == TI_SHOW_REGISTER_TINY or
-        temporaryInformation == TI_SHOWNOTHING);
-}
+const showMode = frontier_screen.showModeActive;
 
 // ---------------------------------------------------------------------------
 // DMCP-ROM trampolines (fixed-address on firmware; only used under dmcp_build).
@@ -1742,7 +1726,7 @@ pub export fn printTraceMatElement(where: u16) callconv(.c) void {
             const matrix = &mat;
             frontier_register_value_conversions.convertComplex34MatrixRegisterToComplex34Matrix(matrixIndexReg(), &mat);
             reallocateRegister(TEMP_REGISTER_1, dtComplex34, 0, amNone);
-            complex34Copy(&matrix.matrixElements.?[@as(usize, @intCast(i)) * matrix.header.matrixColumns + @as(usize, @intCast(j))], reg34(TEMP_REGISTER_1));
+            complex34Copy(&matrix.matrixElements.?[@as(usize, @intCast(i)) * matrix.header.matrixColumns + @as(usize, @intCast(j))], abi.registerComplex34(TEMP_REGISTER_1));
         }
         printRegImpl(@bitCast(TEMP_REGISTER_1), null, false, @intCast(where), false);
         if (comptime !dmcp_build) {
@@ -2367,18 +2351,18 @@ pub fn z47_frontier_print_xy_complex_matrix() void {
         var i: u32 = 0;
         while (i < xc.header.matrixRows) : (i += 1) {
             reallocateRegister(TEMP_REGISTER_1, dtComplex34, 0, amNone);
-            complex34Copy(&xc.matrixElements.?[i * 2], reg34(TEMP_REGISTER_1));
+            complex34Copy(&xc.matrixElements.?[i * 2], abi.registerComplex34(TEMP_REGISTER_1));
             printRegImpl(@bitCast(TEMP_REGISTER_1), null, false, LINE_LEFT, false);
-            complex34Copy(&xc.matrixElements.?[i * 2 + 1], reg34(TEMP_REGISTER_1));
+            complex34Copy(&xc.matrixElements.?[i * 2 + 1], abi.registerComplex34(TEMP_REGISTER_1));
             printRegImpl(@bitCast(TEMP_REGISTER_1), null, false, LINE_RIGHT, false);
         }
     } else if (xc.header.matrixRows == 2) {
         var i: u32 = 0;
         while (i < xc.header.matrixColumns) : (i += 1) {
             reallocateRegister(TEMP_REGISTER_1, dtComplex34, 0, amNone);
-            complex34Copy(&xc.matrixElements.?[i], reg34(TEMP_REGISTER_1));
+            complex34Copy(&xc.matrixElements.?[i], abi.registerComplex34(TEMP_REGISTER_1));
             printRegImpl(@bitCast(TEMP_REGISTER_1), null, false, LINE_LEFT, false);
-            complex34Copy(&xc.matrixElements.?[i + xc.header.matrixColumns], reg34(TEMP_REGISTER_1));
+            complex34Copy(&xc.matrixElements.?[i + xc.header.matrixColumns], abi.registerComplex34(TEMP_REGISTER_1));
             printRegImpl(@bitCast(TEMP_REGISTER_1), null, false, LINE_RIGHT, false);
         }
     } else {

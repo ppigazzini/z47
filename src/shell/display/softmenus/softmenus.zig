@@ -43,6 +43,7 @@
 const std = @import("std");
 const softmenu_math = @import("softmenu_math.zig"); // std-only small integer-math helpers
 const builtin = @import("builtin");
+const frontier_display = @import("../display.zig");
 const frontier_build_options = @import("frontier_build_options");
 const dmcp_build: bool = frontier_build_options.dmcp_build;
 const old_hw: bool = frontier_build_options.old_hw;
@@ -838,11 +839,7 @@ extern fn decimal128ToNumber(d: *const real34_t, dn: *real_t) *real_t;
 inline fn real34ToReal(x: *const real34_t, r: *real_t) void {
     _ = decimal128ToNumber(x, r);
 }
-// realIsZero(x) = decNumberIsZero(x): lsu[0]==0 && digits==1 && !(bits&DECSPECIAL).
-const DECSPECIAL: u8 = 0x70;
-inline fn realIsZero(r: *const real_t) bool_t {
-    return @intFromBool(r.lsu[0] == 0 and r.digits == 1 and (r.bits & DECSPECIAL) == 0);
-}
+const realIsZero = abi.realIsZero;
 extern fn showShiftState() void;
 
 // fnDynamicMenu is owned by shell.zig.
@@ -1278,7 +1275,6 @@ pub export var dynamicSoftmenu = [_]dynamicSoftmenu_t{
 // Additional probe-resolved constants for function bodies.
 const MNU_M_EDIT = 3079;
 const MNU_TAMALPHA = 2946;
-const STD_WCOMMA: [*:0]const u8 = "\xa7\x88";
 
 const DO_compress = 1;
 const nocompress = 0; // screen.h
@@ -1373,14 +1369,8 @@ inline fn BLOCK_DOUBLEPRESS_MENU(m: i16, x: i32, y: i32) bool {
         (m == -MNU_EQ_EDIT and y == 0 and (x == 4 or x == 5)) or
         (m == -MNU_TAMALPHA and y == 0 and (x == 4 or x == 5));
 }
-// RADIX34_MARK_CHAR: maps comma / wide-comma to ',' else '.'.
-inline fn RADIX34_MARK_CHAR() u8 {
-    const rx: [*c]const u8 = &indexOfItems[@intCast(gapItemRadix)].itemSoftmenuName;
-    if (rx[0] == ',' or (rx[0] == STD_WCOMMA[0] and rx[1] == STD_WCOMMA[1])) {
-        return ',';
-    }
-    return '.';
-}
+// RADIX34_MARK_CHAR, which display.c defines.
+const RADIX34_MARK_CHAR = frontier_display.getRadix34MarkChar;
 
 // ---------------------------------------------------------------------------
 // getNthString: advance past n NUL-terminated strings.
@@ -2579,7 +2569,7 @@ fn changeSoftKey(menuNr: i16, itemNr: i16, itemName: [*c]u8, vm: *videoMode_t, s
         switch (itemMod) {
             VAR_ACC => {
                 real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_ACC), &tmpR);
-                if (realIsZero(&tmpR) != 0) {
+                if (realIsZero(&tmpR)) {
                     _ = strcpy(&tmpS, "0");
                 } else {
                     frontier_register_value_conversions.realToFloat(&tmpR, &tmpF);

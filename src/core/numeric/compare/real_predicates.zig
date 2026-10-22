@@ -36,9 +36,7 @@ pub inline fn realIsSpecial(source: *align(1) const abi.Real) bool {
 /// A real_t is zero when it has a single zero coefficient digit and is not a
 /// special value (matches decNumberIsZero on the finite encoding). Sign is
 /// irrelevant: negative zero is still zero.
-pub inline fn realIsZero(source: *align(1) const abi.Real) bool {
-    return source.digits == 1 and source.lsu[0] == 0 and !realIsSpecial(source);
-}
+pub const realIsZero = abi.realIsZero;
 
 /// A real_t is an infinity when the DECINF bit is set (NaN bits distinguish the
 /// other special encodings).

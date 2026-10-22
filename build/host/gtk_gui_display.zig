@@ -7,15 +7,12 @@
 
 const widgets = @import("gtk_gui_widgets.zig");
 const label = @import("gtk_gui_label.zig");
+const shortcut = @import("gtk_gui_shortcut.zig");
 
 const calcKey_t = label.calcKey_t;
 
 const USER_C47: u8 = 46;
 const USER_DM42: u8 = 45;
-const USER_R47f_g: u8 = 61;
-const USER_R47bk_fg: u8 = 62;
-const USER_R47fg_bk: u8 = 63;
-const USER_R47fg_g: u8 = 64;
 const FLAG_USER: i32 = 32788;
 const CM_AIM: u8 = 1;
 
@@ -47,29 +44,13 @@ extern fn printStringToConsole(str: [*c]const u8, before: [*c]const u8, after: [
 
 extern var calcModel: u8;
 extern var kbd_usr: [37]calcKey_t;
-extern const kbd_std_C47: [37]calcKey_t;
-extern const kbd_std_DM42: [37]calcKey_t;
-extern const kbd_std_R47f_g: [37]calcKey_t;
-extern const kbd_std_R47bk_fg: [37]calcKey_t;
-extern const kbd_std_R47fg_bk: [37]calcKey_t;
-extern const kbd_std_R47fg_g: [37]calcKey_t;
 
 extern fn getSystemFlag(sf: i32) bool;
 extern fn gtk_widget_show(widget: ?*anyopaque) void;
 extern fn gtk_widget_hide(widget: ?*anyopaque) void;
 
 // kbd_std macro (c47.h): model-dependent standard keyboard layout.
-fn kbdStd() [*]const calcKey_t {
-    return switch (calcModel) {
-        USER_C47 => &kbd_std_C47,
-        USER_DM42 => &kbd_std_DM42,
-        USER_R47f_g => &kbd_std_R47f_g,
-        USER_R47bk_fg => &kbd_std_R47bk_fg,
-        USER_R47fg_bk => &kbd_std_R47fg_bk,
-        USER_R47fg_g => &kbd_std_R47fg_g,
-        else => &kbd_std_C47,
-    };
-}
+const kbdStd = shortcut.currentStdKeyboard;
 
 // The 37 caption-bearing keys, in the order calcMode*Gui walks `keys`.
 const tam_buttons = .{
@@ -141,11 +122,40 @@ const hide_all = .{
     &widgets.lbl83Fa,  &widgets.lbl84Fa,  &widgets.lbl85Fa,
 };
 
-/// gtkGui.c hideAllWidgets: hide every key button and label in the matrix.
+// The arrow key currently pressed. hideAllWidgets keeps it mapped, and it is
+// frozen at its pressed width, so the mouse release still lands on it.
+var arrowKeyHeldWidget: ?*anyopaque = null;
+
+/// gtkGui.c hideAllWidgets: hide every key button and label in the matrix, but
+/// the arrow key being held.
 pub fn hideAllWidgets() void {
     inline for (hide_all) |w| {
-        gtk_widget_hide(w.*);
+        const arrow_key = w == &widgets.btn51 or w == &widgets.btn61 or w == &widgets.btn71A;
+        if (!arrow_key or w.* != arrowKeyHeldWidget) {
+            gtk_widget_hide(w.*);
+        }
     }
+}
+
+// GdkEventButton, of which only the leading GdkEventType is read.
+const GdkEventButton = extern struct { type: c_int };
+const GDK_BUTTON_PRESS: c_int = 4;
+extern fn gtk_widget_get_allocated_width(widget: ?*anyopaque) c_int;
+extern fn gtk_widget_set_size_request(widget: ?*anyopaque, width: c_int, height: c_int) void;
+
+/// gtkGui.c arrowKeyHoldTrack: hold the pressed arrow key at its pressed size
+/// until the release, so the mouse-up lands on it. Returns FALSE, so the key's
+/// btnPressed / btnReleased run after it.
+pub fn arrowKeyHoldTrack(w: ?*anyopaque, e: *const GdkEventButton, data: ?*anyopaque) callconv(.c) c_int {
+    _ = data;
+    if (e.type == GDK_BUTTON_PRESS) {
+        arrowKeyHeldWidget = w;
+        gtk_widget_set_size_request(w, gtk_widget_get_allocated_width(w), 0); // freeze the pressed width so the key stays present under the pointer
+    } else {
+        gtk_widget_set_size_request(w, KEY_WIDTH_1, 0); // release received, let the key size follow its label again
+        arrowKeyHeldWidget = null;
+    }
+    return 0;
 }
 
 pub fn moveLabels() void {

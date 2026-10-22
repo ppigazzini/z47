@@ -12,6 +12,9 @@
 
 const std = @import("std");
 
+// fonts.h STD_NOCHAR: the second byte of a one-byte separator in its two-byte field.
+const STD_NOCHAR: u8 = 1;
+
 fn strlen(p: [*]const u8) i16 {
     var i: i16 = 0;
     while (p[@intCast(i)] != 0) : (i += 1) {}
@@ -29,7 +32,7 @@ fn moveRight(display: [*]u8, src_at: i16, shift: usize, n: i16) void {
 /// Splice group separators into the NUL-terminated integer string `display`.
 /// `group_left` / `group_left1` are the ordinary and first-group widths,
 /// `group_left1x` the first-group overflow allowance, `sep0`/`sep1` the separator
-/// bytes (sep1 == 1 marks a single-byte separator), `is_hp` the HP-mode flag.
+/// bytes (sep1 == STD_NOCHAR marks a single-byte separator), `is_hp` the HP-mode flag.
 pub fn insertSeps(display: [*]u8, group_left: i16, group_left1: i16, group_left1x: i32, sep0: u8, sep1: u8, is_hp: bool) void {
     var len: i16 = strlen(display);
     const digit_one: i16 = if (display[0] == '-') 1 else 0;
@@ -37,25 +40,25 @@ pub fn insertSeps(display: [*]u8, group_left: i16, group_left1: i16, group_left1
     grp1 = if (len >= (if (is_hp) @as(i16, 10) else 20)) group_left else grp1;
     var ii: i16 = len - grp1;
     if (ii > 0 and (ii != 1 or display[0] != '-')) {
-        if (sep1 != 1) {
+        if (sep1 != STD_NOCHAR) {
             moveRight(display, ii, 2, len - ii + 1);
             display[@intCast(ii)] = sep0;
             display[@intCast(ii + 1)] = sep1;
-        } else if (sep0 != 1) {
+        } else if (sep0 != STD_NOCHAR) {
             moveRight(display, ii, 1, len - ii + 1);
             display[@intCast(ii)] = sep0;
         }
 
         len = strlen(display);
-        ii = len - group_left - (grp1 + (if (sep1 == 1) @as(i16, 1) else 2));
+        ii = len - group_left - (grp1 + (if (sep1 == STD_NOCHAR) @as(i16, 1) else 2));
         while (ii > 0) : (ii -= group_left) {
             if (ii != 1 or display[0] != '-') {
-                if (sep1 != 1) {
+                if (sep1 != STD_NOCHAR) {
                     moveRight(display, ii, 2, len - ii + 1);
                     display[@intCast(ii)] = sep0;
                     display[@intCast(ii + 1)] = sep1;
                     len += 2;
-                } else if (sep0 != 1) {
+                } else if (sep0 != STD_NOCHAR) {
                     moveRight(display, ii, 1, len - ii + 1);
                     display[@intCast(ii)] = sep0;
                     len += 1;
