@@ -8,7 +8,7 @@ build outputs.
 Read [00-project-and-upstream.md](00-project-and-upstream.md) first. This page
 starts after the project and ownership boundary are already clear.
 
-Last verified: 2026-10-05, Zig `0.17.0` stable. The upstream pin is
+Last verified: 2026-10-23, Zig `0.17.0` stable. The upstream pin is
 `UPSTREAM_COMMIT` in `../.github/project/upstream-pin.env`; this page does not
 repeat it.
 
@@ -16,19 +16,16 @@ repeat it.
 
 - `build.zig` is the canonical maintained entrypoint. The repo-root `build.zig`
   stays small and routes work into `build/`.
-- The calculator core is fully ported to Zig. `report-c-dependency-status.py`
-  reports 0 active product-build first-party C files, so `zig build sim`,
-  `zig build dmcp`, and `zig build dmcp5` compile no first-party calculator C.
+- The calculator core is fully ported to Zig: `zig build sim`, `zig build dmcp`
+  and `zig build dmcp5` compile no hand-written first-party calculator C, only the
+  generator-emitted C listed in [00](00-project-and-upstream.md).
 - `build/` holds the Zig build system, the Zig host/firmware/testSuite HAL
   replacements, and the parity harnesses (with their C) under `build/tests/`; the
   ported calculator core lives under `src/`; `bridge/` is near-retired and holds
-  only two header shims.
-- Retained C is explicit: the vendored `upstream/dep/decNumberICU` is compiled
-  by Zig for the host and by `arm-none-eabi-gcc` for the firmware; the host
-  links GTK 3, GMP, FreeType 2 and optional PulseAudio, and the firmware links a
-  cross-built GMP 6.2.1 and the SwissMicros DMCP/DMCP5 SDKs. The remaining
-  first-party C in the tree is parity/oracle/testSuite verification only, not in
-  the product.
+  only header shims.
+- Retained C is explicit; [00](00-project-and-upstream.md) lists what the host
+  and firmware still compile and link, and the first-party C that remains in the
+  tree for verification.
 - Imported upstream paths route through `UPSTREAM_ROOT` in
   `../.github/project/upstream-pin.env`; the current value `upstream` mounts the
   imported baseline under `upstream/`, which leaves the canonical `src/` and
@@ -52,19 +49,19 @@ and live `zig build --help`.
 | `zig build constants`, `zig build catalogs`, `zig build fonts`, `zig build testPgms` | individual generator lanes |
 | `zig build docs` | docs build for the imported `upstream/docs/code` tree |
 | `zig build dmcp`, `zig build dmcpr47`, `zig build dmcp5`, `zig build dmcp5r47` | firmware targets (DMCP and DMCP5, C47 and R47) |
+| `zig build dmcp_pkg1`, `zig build dmcp_pkg2`, `zig build dmcp_pkg3`, `zig build dmcp_pkgs_all` | DM42 package 1-3 variants of `dmcp` (the local gate links all three) |
 | `zig build dist_linux`, `zig build dist_macos`, `zig build dist_windows` | host-package build on the matching host OS |
 | `zig build clean` | clear derived build state |
 
 Verification entrypoints:
 
 - `PATH="$PWD/.venv/bin:$PATH" bash .github/project/run-local-gate.sh`: the local
-  gate, run before pushing. It runs the Linux governance guards, `test:unit`, the
-  host-parity battery, the malformed-input corpora, the oracle negative control,
-  the DMCP package 1-3 links and the tracked-generated-artifact diff, failing
-  fast on the first red; its closing banner lists what only CI runs.
+  gate, run before pushing; [70](70-tests-and-verification.md) lists what it runs
+  and what only CI runs.
 - the per-owner parity and oracle lanes (for example `zig build calc_state_parity`,
-  `zig build math_command_wrappers_parity`, `zig build eigen_parity`) prove each
-  Zig owner matches its retained upstream C; see
+  `zig build math_command_wrappers_parity`) check each Zig owner against its
+  retained upstream C, bounded by the cases each lane drives (`eigen_parity` is
+  a golden oracle against math-truth values, not the C); see
   [70-tests-and-verification.md](70-tests-and-verification.md).
 
 ## Top-Level Locality Map
@@ -102,12 +99,14 @@ zone split is the architectural one; the per-domain build objects under
 
 | Zone | Role |
 | --- | --- |
-| `abi/` | the hand-maintained ABI mirror types (checked by `zig build abi-layout-parity`), the constants blob accessors, and the core-to-shell host-hook table |
+| `abi/` | the hand-maintained ABI mirror types (checked by `zig build abi-layout-parity`), the constants blob accessors, the shared C-ABI bindings (`runtime.zig`'s upstream prototypes, `registers.zig`'s register accessors and registers.c queries), the std-only value helpers `test:unit` runs, and the core-to-shell host-hook table |
 | `core/` | the headless calculator: `numeric/`, `state/`, `persist/`, `text/`, `analysis/`, `program/`, `memory/`, `input/`, `hal/` |
 | `shell/` | the interactive surface: display, softmenus, plotting, printing, browsers, the matrix editor, and the keyboard/program-entry frontends |
 
-`src/frontier.zig` sits beside them as a module-root carrier: it force-imports
-owners so they reach the build even when nothing names them.
+`src/frontier.zig` sits beside them as the frontier object's module root: it
+force-imports owners so they reach the build even when nothing names them, and it
+still holds owner code of its own (`awk -F'\t' '$2 ~ /(^|;)frontier(;|$)/'
+.github/project/upstream-correspondence.tsv` lists the C files it co-owns).
 
 `core/` may not `@import` a `shell/` source file. `check-core-shell-severance.py`
 (inside the local gate) is what holds that line; see
@@ -204,6 +203,7 @@ repo root
    |  `- DMCP5_SDK/
    |- res/
    |- LIBRARY/
+   |- subprojects/        (gmp-6.2.1.wrap and the packagefiles/ overlay the firmware GMP build reads)
    |- Makefile
    |- meson.build
    |- meson_options.txt
@@ -233,6 +233,10 @@ Checked-in build defaults come from these tracked files:
   the current pin and later audited upstream commits
 - `../.github/project/check-upstream-port-ledger.py`: validates ledger shape,
   pinned-commit coverage, and pin-plus-ledger co-updates
+- `../.github/project/imported-tree-divergences.txt` and
+  `../.github/project/check-imported-tree-pin.py`: the upstream paths deliberately
+  not carried (or patched), and the guard that holds every other imported path
+  byte-identical to `UPSTREAM_COMMIT`
 - `../.github/project/c_dependency_audit.py`: shared path extraction and
   classification logic for tracked first-party C telemetry
 - `../.github/project/c-dependency-first-party-baseline.txt` and
@@ -242,8 +246,9 @@ Checked-in build defaults come from these tracked files:
   metrics for the active product-build, retained-bridge, and parity/oracle/test
   buckets
 - `../.github/project/retained-bridge-review.tsv` and
-  `../.github/project/check-retained-bridge-ledger.py`: the file-by-file review
-  ledger and guard for the remaining `bridge` seams
+  `../.github/project/check-retained-bridge-ledger.py`: the review ledger for
+  product-lane bridge C (its data section is empty: no bridge `.c` remains) and
+  its guard, a manual maintainer step that no gate or workflow runs
 - `../.github/project/report-upstream-refresh.py`: summarizes new upstream
   commits, changed imported paths, and z47-owned touchpoints before a refresh
   lands
@@ -257,7 +262,8 @@ Checked-in build defaults come from these tracked files:
   `../.github/project/check-zig-c-boundaries.sh`: the approved checked-in
   `translate-c` roots and direct `extern` boundary files, and their guard
 - `../upstream/docs/code/requirements.txt`: lists the Python packages
-  `zig build docs` needs (`breathe`, `furo`; the step also checks for `sphinx`)
+  `zig build docs` needs (`breathe`, `furo`; the step also checks for `sphinx`,
+  and needs `python3` and `doxygen` on `PATH`)
 
 The live project-specific Zig options are:
 
@@ -291,11 +297,7 @@ of
 - direct legacy-boundary Zig seams use `*_runtime.zig`, for example
   `src/core/persist/calc_state_runtime.zig` and
   `src/core/state/runtime/stack_runtime.zig`
-- pure ABI shim forwarders use `*_export.zig`, for example
-  `src/core/text/glyph_export.zig`
-- internal implementation helpers that exist only behind a paired export shim use
-  `*_owned.zig`, for example `src/core/analysis/solve_owned.zig`
-- `*_runtime.zig`, `*_export.zig`, `pub export`, `extern`, ABI mirror types, and
+- `*_runtime.zig`, `pub export`, `extern`, ABI mirror types, and
   legacy public names may keep upstream-compatible spellings where ABI stability
   or upstream tracking requires them
 - do not force one repo-wide casing rule across owner, runtime, and export

@@ -7,7 +7,7 @@ publishes, and how to reproduce the same Linux verdict locally.
 Read [10-build-and-source-layout.md](10-build-and-source-layout.md) first. This
 page assumes the build entrypoints and output paths are already clear.
 
-Last verified: 2026-10-05, Zig `0.17.0` stable. The upstream pin is
+Last verified: 2026-10-23, Zig `0.17.0` stable. The upstream pin is
 `UPSTREAM_COMMIT` in `../.github/project/upstream-pin.env`.
 
 ## CI At A Glance
@@ -20,8 +20,9 @@ Three tracked workflow files live under `../.github/workflows/`:
 | `upstream-drift.yml` (display name `upstream-drift`) | daily schedule `0 5 * * *`, plus manual dispatch | report whether the pinned upstream commit still matches upstream HEAD (warn-only), plus the enforcing coverage-ratchet and Zig/C boundary jobs; never edits the pin |
 | `c-dependency-zero.yml` (display name `c-dependency-zero`) | manual dispatch only | on-demand proof that the product build carries zero first-party calculator C |
 
-The concurrency group cancels superseded runs per branch and repository. The
-main matrix runs with `permissions: contents: read` only.
+`upstream-oracle.yml` and `upstream-drift.yml` cancel superseded runs per branch
+and repository through a concurrency group; `c-dependency-zero.yml` has none.
+The main matrix runs with `permissions: contents: read` only.
 
 ## Workflow Graph
 
@@ -84,18 +85,11 @@ read the failing log before assuming it is.
 
 ## Shared CI Inputs
 
-The workflow keeps its shared checked-in control data in these files:
-
-- `../.github/zig-toolchain.env`
-- `../.github/project/upstream-pin.env`
-- `../.github/project/upstream-port-ledger.tsv`
-- `../.github/project/report-upstream-refresh.py`
-- `../.github/project/source-ownership.txt`
-- `../.github/project/workflow-imported-root-paths.sh`
-- `../.github/project/zig-c-boundaries.txt`
-- `../.github/project/idiom-status-baseline.json`
-- `../.github/project/portable-int-width-allowlist.txt`
-- `../upstream/docs/code/requirements.txt`
+The toolchain and upstream pins live in `../.github/zig-toolchain.env` and
+`../.github/project/upstream-pin.env`. Every guard's baseline, allowlist, ledger
+or manifest sits beside its script in `../.github/project/`
+(`git ls-files .github/project | grep -E '\.(json|tsv|txt|env)$'` lists them),
+and the docs lane reads `../upstream/docs/code/requirements.txt`.
 
 The Linux docs lane caches the Python package download directory keyed by the
 helper-resolved docs requirements file. The host platform jobs and the Linux
@@ -133,7 +127,7 @@ committed scripts or generators so the same checks run locally.
 | `correspondence-guard` | Verify upstream<->owner correspondence manifest | run `check-upstream-correspondence.py`; fail when an upstream `src/c47` C file has no Zig owner in `upstream-correspondence.tsv` |
 | `zig-c-boundary-guard` | Verify curated Zig/C boundaries | run `check-zig-c-boundaries.sh`; fail if checked-in Zig boundary usage drifts from the approved allowlist |
 | `idiom-ratchet-guard` | Enforce idiomatic-Zig ratchet (no transliteration-debt regressions) | run `check-idiom-ratchet.sh` (monotonic idiom ratchet) and `generate-font-seams.py --check` (generated ABI seams still match upstream C) |
-| `core-shell-severance-guard` | Enforce headless-core severance (core must not reach into shell) | installs Zig, runs `zig build constants`, then `check-core-shell-severance.py` (`core/` may never `@import` a `shell/` source, and the extern-edge count is a frozen ceiling) and the structural gates listed in the job: about thirty, from the transliteration contract to the module graph -- read the job for the current list |
+| `core-shell-severance-guard` | Enforce headless-core severance (core must not reach into shell) | installs Zig, runs `zig build constants`, then `check-core-shell-severance.py` (`core/` may never `@import` a `shell/` source, and the extern-edge count is a frozen ceiling) and every structural gate the job lists after it -- read the job for the current list |
 | `c-dependency-policy` | Verify Phase I C dependency policy | run `check-c-dependency-phase-i-policy.sh .` |
 | `portable-int-width-guard` | Guard against the Windows LLP64 integer-width trap | run `check-portable-int-widths.sh` (reject value-carrying `c_long`/`c_ulong` that would change width under Windows LLP64), `check-c-type-alias-widths.sh` and `check-extern-var-widths.py` |
 | `workflow-imported-root-guard` | Verify workflow imported-root vocabulary | run `workflow-imported-root-paths.sh check-workflow`; keep direct repo-root imported-path literals in workflow YAML at zero |
@@ -157,14 +151,17 @@ runs, in order:
 - the header-constant audits: `constants` then `check-constant-offsets.py`,
   `audit-constant-parity.py`, `audit-item-table-parity.py`, and the
   `abi-layout-parity` struct-layout oracle
-- the keyboard, char-string, constants-command and tone lanes
+- the keyboard, char-string, constants-command and tone lanes, then the Zig test
+  roots that have their own step (`keyboard_ringbuffer_test`,
+  `state-progmem-test`, `idiom-test`)
 - `both` (both host simulators), then the non-blocking `simulator_smoke`, then
   `testPgms`, `${XVFB} test` (the shared testSuite -- the run prints its own case
   count), and `generated`
 
 Read the ordered lane list off the script itself, not off this page.
 `check-parity-lanes-gated.py` proves the script runs every declared step whose
-name ends in `_parity`, `_oracle`, `_diff`, `_suite` or `_test`, so the script
+name ends in `_parity`, `_oracle`, `_diff`, `_suite`, `_test`, `-parity` or
+`-test` (plus `saveload_roundtrip`, which it names explicitly), so the script
 cannot silently fall behind `zig build --help` for those.
 
 The job then re-runs the softmenu audit with `--require-generated`, the harness
@@ -230,8 +227,8 @@ approximates.
 Current artifact classes:
 
 - `upstream-source-index` source manifest from `source-manifest`
-- Linux golden generated-artifact proof (files plus SHA-256) from
-  `linux-host-parity`
+- `linux-host-parity-artifacts`, the Linux golden generated-artifact proof
+  (files plus SHA-256), from `linux-host-parity`
 - packaged simulator artifacts named `z47-linux-<upstream_short>`,
   `z47-macos-<upstream_short>`, and `z47-windows-<upstream_short>` (the short is
   the first 12 chars of `UPSTREAM_COMMIT`)
@@ -240,10 +237,14 @@ Current artifact classes:
   `c47-dmcp-pkg2.zip`, `c47-dmcp-pkg3.zip`, and `c47-dmcp5.zip`
 - the `upstream-drift` report artifact from the scheduled drift workflow
 
+Every upload except `upstream-drift` retries once on failure under its name plus
+`-retry`, so a run can publish `z47-linux-<upstream_short>-retry` and the like
+instead.
+
 The published desktop host artifacts stage simulator binaries built with
-`-Doptimize=fast`, and
-`build/common.zig` resolves x86/x86_64 host-package targets to a baseline CPU
-model rather than runner-native features. Linux packaging stages build metadata,
+`-Doptimize=fast`, on the baseline CPU model
+[40-firmware-and-distribution.md](40-firmware-and-distribution.md#host-specific-packaging-notes)
+describes. Linux packaging stages build metadata,
 source provenance, and a runtime notice inventory; Windows packaging additionally
 records staged GTK runtime directories, tools, launcher files, and DLL notices.
 
@@ -258,19 +259,24 @@ PATH="$PWD/.venv/bin:$PATH" bash .github/project/run-local-gate.sh
 
 It runs most of the governance-check scripts CI runs as separate guard jobs, then
 the `run-host-parity-battery.sh` battery (byte-identical to the
-`linux-host-parity` build/test step), then the post-battery checks -- the
-malformed-input corpora, the lane-gating check and the oracle negative control,
-which rewrites tracked owner files while it runs -- then the DMCP package 1-3
-links (`dmcp_pkgs_all`), then the tracked generated-artifact diff. It fails fast
-on the first red.
+`linux-host-parity` build/test step), then post-battery checks, the DMCP package
+1-3 links (`dmcp_pkgs_all`) and the tracked generated-artifact diff;
+[70-tests-and-verification.md](70-tests-and-verification.md) lists the steps in
+order. It fails fast on the first red. One of those post-battery checks, the
+oracle negative control, runs in no CI job, so a green CI run has not checked
+it.
 
 It needs the project virtualenv on `PATH`: one step self-tests through a
 `>/dev/null` and needs PyYAML, so a `python3` without it makes the gate abort on
-a step banner with no error text. It does not run the sanitizer lanes, the
-coverage floor, the Linux package and its launch, the docs lane, the `dmcp`,
-`dmcpr47`, `dmcp5` and `dmcp5r47` links or any firmware packaging, the font-seam,
-C-type-alias, extern-var-width and workflow-vocabulary checks, or the macOS and
-Windows lanes; its closing banner lists them, and only CI runs them.
+a step banner with no error text. It does not run the UBSan lanes `both_asan`
+and `test_asan`, the coverage floor, the Linux package and its launch, the docs
+lane, the `dmcp`, `dmcpr47`, `dmcp5` and `dmcp5r47` links or any firmware
+packaging, the font-seam, C-type-alias, extern-var-width and
+workflow-vocabulary checks, or the macOS and Windows lanes; its closing banner
+lists them, and only CI runs them. It also skips the toolchain checksum check
+(`validate-toolchain`), the pin-reachability fetch (`source-manifest`), the
+Zig-master monitor (`zig-master-compatibility`) and the `c-dependency-zero`
+workflow, which its banner does not name.
 
 For a narrower rerun that matches a single workflow slice:
 
@@ -279,21 +285,21 @@ For a narrower rerun that matches a single workflow slice:
 | Linux governance, host parity and firmware link | `PATH="$PWD/.venv/bin:$PATH" bash .github/project/run-local-gate.sh` |
 | Linux host parity battery | `bash .github/project/run-host-parity-battery.sh` (set `XVFB="xvfb-run --auto-servernum"` when headless) |
 | toolchain pin | `zig version` plus a read of `../.github/zig-toolchain.env` |
-| zig fmt guard | `bash .github/project/check-fmt.sh` |
-| native unit tests | `zig build test:unit` |
+| zig fmt guard | `bash .github/project/check-fmt.sh && bash .github/project/check-filename-hygiene.sh && bash .github/project/check-file-cohesion.sh` |
+| native unit tests | `zig build test:unit && python3 .github/project/check-parity-lanes-gated.py --repo-root .` |
 | source manifest or upstream pin | `. ./.github/project/upstream-pin.env && git fetch --no-tags "$UPSTREAM_REPOSITORY_URL" "$UPSTREAM_BRANCH" && git merge-base --is-ancestor "$UPSTREAM_COMMIT" FETCH_HEAD && python3 .github/project/check-upstream-port-ledger.py --repo-root . && bash .github/project/check-source-ownership.sh` |
 | upstream<->owner correspondence | `python3 .github/project/check-upstream-correspondence.py --repo-root .` |
 | headless-core severance | `python3 .github/project/check-core-shell-severance.py --repo-root .` |
 | Zig/C boundary guard | `bash .github/project/check-zig-c-boundaries.sh` |
-| idiom ratchet guard | `bash .github/project/check-idiom-ratchet.sh` |
+| idiom ratchet guard | `bash .github/project/check-idiom-ratchet.sh && python3 .github/project/generate-font-seams.py --repo-root . --check` |
 | Phase I C dependency policy | `bash .github/project/check-c-dependency-phase-i-policy.sh .` |
-| Windows LLP64 int-width guard | `bash .github/project/check-portable-int-widths.sh` (approximation; the CI Windows lane is the adjudicator) |
+| Windows LLP64 int-width guard | `bash .github/project/check-portable-int-widths.sh && bash .github/project/check-c-type-alias-widths.sh . && python3 .github/project/check-extern-var-widths.py .` (approximation; the CI Windows lane is the adjudicator) |
 | workflow imported-root contract | `bash .github/project/workflow-imported-root-paths.sh check-workflow` |
-| workflow script locality | `bash .github/project/check-ci-no-local-dev-scripts.sh` |
+| workflow script locality | `bash .github/project/check-ci-no-local-dev-scripts.sh && python3 .github/project/check-ci-build-prerequisites.py --repo-root .` |
 | Linux docs | `zig build docs` |
 | Linux firmware | `zig build dmcp && zig build dmcpr47 && zig build dmcp5 && zig build dmcp5r47` |
 | Linux firmware publication | `zig build dist_dmcp && zig build dist_dmcp_pkg1 && zig build dist_dmcp_pkg2 && zig build dist_dmcp_pkg3 && zig build dist_dmcpr47 && zig build dist_dmcp5 && zig build dist_dmcp5r47` |
-| host package | Linux: `zig build -Doptimize=fast dist_linux`. macOS and Windows: `zig build -Doptimize=fast both`, then the workflow's staging step; no `dist_*` target reproduces those packages |
+| host package | Linux: `zig build -Doptimize=fast dist_linux`. macOS and Windows: `zig build -Doptimize=fast both`, then the workflow's staging step; `dist_macos` and `dist_windows` build a bare archive on the matching host, not the package CI publishes |
 
 See [70-tests-and-verification.md](70-tests-and-verification.md) for the
 per-owner parity lanes and the smallest rerun lane per change class.

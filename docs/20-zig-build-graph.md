@@ -10,7 +10,7 @@ page assumes the entrypoints, pins, and output paths are already clear. For the
 flat list of maintainer entrypoints, see page 10 and the live
 `zig build --help`; this page does not repeat that list.
 
-Last verified: 2026-10-05, Zig `0.17.0` stable. The upstream pin is
+Last verified: 2026-10-23, Zig `0.17.0` stable. The upstream pin is
 `UPSTREAM_COMMIT` in `../.github/project/upstream-pin.env`.
 
 ## Router Contract
@@ -59,8 +59,8 @@ build-registration slices shared by the host and firmware domains.
 | `../build/host/steps.zig` | public host, generator, docs, clean, and verification steps |
 | `../build/host/platform.zig` | GTK, FreeType, Windows pkg-config, and system path glue |
 | `../build/host/gtk_*.zig` | Zig GTK 3 host layer that replaces the imported `../upstream/src/c47-gtk` C |
-| `../build/firmware.zig` | firmware orchestration, SDK integration, CRC helper, cross-GMP bootstrap |
-| `../build/firmware_*_runtime.zig` | Zig DMCP/DMCP5 HAL (audio, file I/O, print IR, console) that replaces the upstream firmware C. The console sinks are not cosmetic: defining them is what keeps newlib's buffered stdio (`findfp.o` and its `FILE` array in SRAM2) out of the firmware link |
+| `../build/firmware.zig` | firmware orchestration, SDK integration, CRC helper, cross-GMP bootstrap, and the DM42 per-package `OPTION_*` table (`dm42Package`) |
+| `../build/firmware_*_runtime.zig` | Zig DMCP/DMCP5 HAL (audio, file I/O, print IR, console) that replaces the upstream firmware C; the console owner's part in the firmware RAM budget is on [40-firmware-and-distribution.md](40-firmware-and-distribution.md) |
 | `../build/firmware/` | `discard_exidx.ld`, the linker fragment applied before the board script |
 | `../build/dist.zig` | host and firmware distribution step registration |
 | `../build/zig_dist.py` | Python packaging helper used by the Zig distribution steps |
@@ -122,33 +122,29 @@ entrypoint list and `zig build --help` for the authoritative set.
 
 The firmware step names `dmcp`, `dmcpr47`, `dmcp5`, `dmcp5r47` and `dmcp_pkg<n>`
 come from `Config` values in `firmware.zig` and reach `b.step` through
-`addFirmwareBuild`, so a grep for `b.step("` finds only `dmcp_pkgs_all`;
-`dist.zig` registers the `dist_dmcp*` steps the same way.
+`addFirmwareBuild`, so a grep for `b.step("` finds only `dmcp_pkgs_all`.
+`dist.zig` registers `dist_dmcp`, `dist_dmcpr47`, `dist_dmcp5` and
+`dist_dmcp5r47` from `firmware_package_specs` and `dist_dmcp_pkg<n>` through
+`addDmcpVariantStep` the same way; its `dist_dmcp_pkgs_*` bundles are literal
+`b.step("` calls.
 
 ## Project-Specific Options
 
-`zig build --help` lists these project-specific options; the defaults are the
-`orelse` values in `../build.zig`:
-
-- `-Doptimize=<debug|safe|fast|small>`
-- `-Dci-commit-tag=<string>`
-- `-Draspberry=<bool>` (default `false`)
-- `-Ddecnumber-fastmul=<bool>` (default `true`)
-- `-Ddmcp-package=<int>` (default `4`)
-- `-Dpgm=<string>` (registered in `../build/host/steps.zig`, read by `pgm_run`)
-
-`dmcp` and `dmcpr47` use `-Ddmcp-package` with a default value of `4`. Dedicated
-fixed-package steps exist for package variants `1`, `2`, and `3`.
+[10-build-and-source-layout.md](10-build-and-source-layout.md) lists the
+project-specific options and their defaults, and `zig build --help` is
+authoritative. `../build.zig` parses all of them except `-Dpgm`, which
+`../build/host/steps.zig` registers for `pgm_run`; `-Ddmcp-package` reaches only
+`dmcp`, `dmcpr47` and the archives built from them, as
+[40-firmware-and-distribution.md](40-firmware-and-distribution.md#dmcp-package-control)
+describes.
 
 ## Generated Output Wiring
 
-The host context wires deterministic generator outputs back into tracked files.
-The public update steps are implemented in `../build/host/steps.zig` and copy
-generator output back to source-controlled locations through
-`addUpdateSourceFiles()`.
-
-That contract keeps the tracked generated calculator sources and generated
-test-program data under explicit Zig build ownership instead of ad hoc scripts.
+The public refresh steps in `../build/host/steps.zig` copy generator output to
+source-tree paths through `addUpdateSourceFiles()`, which keeps generated output
+under explicit Zig build ownership instead of ad hoc scripts. Of those paths only
+`build/generated/testPgms.bin` is tracked; the inventory is in
+[30-host-and-generated-surfaces.md](30-host-and-generated-surfaces.md#generated-artifact-inventory).
 
 ## Version And Packaging Metadata
 

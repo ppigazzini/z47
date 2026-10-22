@@ -8,7 +8,7 @@ Read [00-project-and-upstream.md](00-project-and-upstream.md) first. This page
 assumes the ownership split and the "core fully in Zig, C retained for parity"
 framing are already clear.
 
-Last verified: 2026-10-05, Zig `0.17.0` stable. The upstream pin is
+Last verified: 2026-10-23, Zig `0.17.0` stable. The upstream pin is
 `UPSTREAM_COMMIT` in `../.github/project/upstream-pin.env`; no page repeats it.
 The flash and trap-site figures in the Memory-Safety Posture section were
 measured on 2026-08-16 and not re-taken; the supporting findings are in the
@@ -35,20 +35,28 @@ The C that remains is deliberate and explicit:
 - `upstream/dep/decNumberICU`: vendored decimal library, compiled by Zig into the
   simulator and the constant/catalog/testPgms generators, and by
   `arm-none-eabi-gcc` into the firmware.
+- Generator-emitted C (`rasterFontsData.c`, `constantPointers.c`,
+  `constantPointers2.c`), compiled by Zig into the simulator and by
+  `arm-none-eabi-gcc` into the firmware, and `upstream/dep/forcecrc32.c`,
+  compiled by Zig as the firmware's host CRC tool.
+  [30-host-and-generated-surfaces.md](30-host-and-generated-surfaces.md) and
+  [40-firmware-and-distribution.md](40-firmware-and-distribution.md) own them.
 - GTK 3, GMP, FreeType 2, optional PulseAudio: external host libraries linked from
   Zig. The GTK application layer itself is ported to Zig
   (`build/host/gtk_*.zig`); the upstream `src/c47-gtk` C files it replaces are
   filtered out of the build by `filterGtkSources`.
-- SwissMicros DMCP and DMCP5 SDKs and a cross-built GMP 6.2.1: external firmware
+- SwissMicros DMCP and DMCP5 SDKs and a cross-built GMP: external firmware
   inputs, compiled and linked by `arm-none-eabi-gcc` as driven from
   `../build/firmware.zig`.
 - Parity/oracle/test C: the first-party `.c` files under `build/tests/**` (parity
   oracles, fake runtimes, and harnesses) kept only for verification.
   `report-c-dependency-status.py` owns the count and reports 0 of them in the
   active product build. None of it is under `src/`, which carries no `.c` or `.h`
-  at all. First-party headers also live in `../bridge/` (the firmware option
-  overlay, on the `-Ibridge` include path) and `../build/tools/translate_c/` (the
-  `translate-c` roots).
+  at all. First-party headers also live in `../bridge/` (`c47.h`, the firmware
+  option overlay on the `-Ibridge` include path, and
+  `state/keyboard_statusbar_mask.h`, which only the
+  `keyboard_statusbar_flags_regression` lane includes) and
+  `../build/tools/translate_c/` (the `translate-c` roots).
 
 Do not imply the project is pure Zig. It is Zig-first with the retained C above.
 
@@ -63,8 +71,11 @@ It has two sections:
   (`abi_layout_oracle.h`), translated by the official `translate-c` package
   through `addTranslator` in `../build/common.zig`.
 - `[extern-symbols]`: every file allowed to carry a direct C binding. Most are
-  `src/` owners that reach upstream C globals and libc; the rest are the firmware
-  runtime seams (`build/firmware_*_runtime.zig`), the Zig GTK host layer
+  `src/` owners that bind a C-ABI symbol defined in another build object -- an
+  upstream global or function a Zig owner there exports, decNumber, GMP or
+  libc; the rest are the firmware runtime seams
+  (`build/firmware_audio_runtime.zig`, `build/firmware_io_runtime.zig`,
+  `build/firmware_print_ir_runtime.zig`), the Zig GTK host layer
   (`build/host/gtk_*.zig`), the Zig testSuite HAL and a few generator and
   parity-runtime files. The guard prints the count.
 
@@ -146,11 +157,14 @@ Enforcement split:
   literal, and nothing in the table says which. Check what a pattern is looking
   at before normalising anything else away.
 
-The ratchet now sits at its C-ABI ceiling: the remaining `callconv(.c)`,
-`extern`, `extern struct`, and offset metrics are mandated by the upstream
-testSuite dispatch contract and the firmware object layout, not reducible debt.
-Ongoing owner work is idiomatic refinement within that ceiling. See the
-churn-driven notes in [80-maintainer-workflow.md](80-maintainer-workflow.md).
+The C-ABI metrics -- `callconv(.c)`, `extern`, `extern struct` and the offsets --
+are set by the upstream testSuite dispatch contract and the firmware object
+layout, not by reducible debt. A resync that brings new upstream surface raises
+their ceilings, with the reason in its commit, and collapsing duplicated ports
+lowers them; `bash .github/project/check-idiom-ratchet.sh` prints each live value
+against its ceiling. Ongoing owner work is idiomatic refinement within those
+ceilings; how a resync re-derives an owner is in
+`../.github/project/upstream-resync-runbook.md`.
 
 ## Memory-Safety Posture
 
@@ -203,7 +217,7 @@ closing a real hazard.
 | Rule | How this tree holds it | Gate |
 | --- | --- | --- |
 | **Confine `[*c]` to the C-ABI declaration surface on the load owners, and never let a helper take a pointer where the caller had a length.** A many-item pointer carries no length, so neither producer nor consumer can check one -- and a caller that writes `.ptr` is throwing away a bound it already held. | The four state-file owners (`calc_state_restore` / `_register_codec` / `_save` / `_backup`) carry `[*c]` tokens (`grep -o '\[\*c\]' src/core/persist/calc_state_{restore,register_codec,save,backup}.zig \| wc -l` counts them), most of them on the `extern` declarations for the C globals and libc functions they reach. `calc_state_load.zig`, `calc_state_policy.zig`, `calc_state_runtime.zig`, `calc_state_header.zig` and `program_serialization.zig`, `_header`, `_load_apply`, `_save`, `_screen` and `_export` are `[*c]`-free; the header-line helpers take `[]const u8` and their walks are bounded by `std.mem.sliceTo` rather than by a NUL another function promises. | `check-idiom-ratchet.sh` (`cptr_files` ceiling), `zig build test:unit` |
-| **Bound every count the file names, at the write and not at the loop.** A parser must keep reading one line per claimed entry to stay aligned with the stream; what must be checked is the index before it reaches the array. | `31fb6f755` -- `kbd_usr[37]`, `userMenuItems[18]`, `userAlphaItems[18]`, `userMenus[].menuItem[18]` and the 28 statistical sums; plus an empty `readLine()` treated as end of file, so a lying count cannot make one section parse the next section's header as its data. | `zig build test` -- the run prints its own case count; **and see the corpus note in [70](70-tests-and-verification.md)** |
+| **Bound every count the file names, at the write and not at the loop.** A parser must keep reading one line per claimed entry to stay aligned with the stream; what must be checked is the index before it reaches the array. | `31fb6f755` -- `kbd_usr[37]`, `userMenuItems[18]`, `userAlphaItems[18]`, `userMenus[].menuItem[18]` and the 28 statistical sums; plus an empty `readLine()` treated as end of file, so a lying count cannot make one section parse the next section's header as its data. | `zig build state_load_fuzz` (the count mutations and overfill cases), `zig build test` -- the run prints its own case count; **and see the corpus note in [70](70-tests-and-verification.md)** |
 | **Bound what a file's dimensions IMPLY, in a width that cannot wrap.** A count the file states is not the hazard; the size it multiplies out to is. Do the capacity arithmetic wider than the field it will be stored in, or the product wraps before the test and the comparison is against a number the file never claimed. | `vector_shape.clampToRegisterCapacity` computes `rows * cols * element_blocks + header` in u64 and refuses anything past a u16 block count, which is what `reallocateRegister` takes. All three sites that turn file dimensions into a register go through it -- the `Rema` and `Cxma` branches of `restoreRegister` and `skipMatrixData` -- so the restore and skip sides cannot disagree on the element count. | `zig build test:unit` (the boundary is swept exhaustively for both element widths), `saveload_roundtrip` |
 | **A refused allocation is not a NULL to write through.** | `initUserKeyArgument`, `setUserKeyArgument`, `createMenu` and the EQUATIONS section check the result; `freeListAlloc` checks the region table's bound BEFORE the store, since past it the store is itself the overrun. | `zig build test`, `memory_parity` |
 | **Port C's implicit narrowing as `@truncate` and its unsigned arithmetic as `+%`/`-%`.** This is a PARITY rule before it is a safety rule: where upstream assigns a wider value into a `uint16_t`, C truncates and that is defined; `@intCast` is illegal behaviour on the same input -- a trap in a safety-checked build, unchecked in `small`. Use `@intCast` only where the value provably fits, and saturating `+\|`/`*\|` where the intent is that an absurd size stays absurd. | The program-load fuzz found exactly this class: u32 overflow in the line parser on an oversized size string (the parser is `abi.line_parse.parseU32` today) and `loadProgram` `@intCast` overflow on `program_size > 0xFFFF`, both fixed parity-safe (saturating parse, explicit reject) so valid files are unchanged. | `zig build pgm_load_fuzz`; **every other `@intCast` site in the tree is unsorted -- see gap 4** |
@@ -237,7 +251,7 @@ as live rather than closed.
    `addTestPrograms` and `import_string_from_filename` live in the frontier
    object, where gap 2 says the attribute cannot go at all. Both now carry
    explicit bounds instead, which is the answer wherever that budget applies.
-2. **The OLD_HW `.bss` budget is a few hundred bytes, so runtime safety in the
+2. **The OLD_HW `.bss` headroom is a few hundred bytes at most, so runtime safety in the
    frontier object is priced in RAM.** Every DM42 link asserts
    `_ebss <= 0x10002000` (`upstream/src/c47-dmcp/stm32_program.ld`), and the
    link's `ram` row prints the headroom. When it was four bytes, adding
@@ -299,7 +313,9 @@ as live rather than closed.
    drift:** the line-parse helpers now exist ONCE, in `../src/abi/line_parse.zig`,
    and both families call it. A shared module cannot diverge from itself. Prefer
    that wherever the two families genuinely do the same thing; keep the scan for
-   where they legitimately differ.
+   where they legitimately differ. Section 2a of
+   `../.github/project/upstream-resync-runbook.md` applies the same rule to a
+   header macro z47 had copied into every owner that expands it.
 
    **Twins also live inside one file.** Upstream generates function families
    from a single `#define`, so the members' ports must agree with each other:
@@ -370,6 +386,17 @@ strategy. Repo policy requires:
   this page in the same change.
 - When an owner already has an approved `*_runtime.zig` seam, add new direct
   bindings there, not in the owner file.
+- Declare a shared symbol once, not once per owner. A pure value helper lives in
+  `../src/abi/` and every owner aliases it. Owners in the same build object
+  `@import` a function over C state, and other objects bind it with one `extern`
+  per object (registers.c's queries are declared once, in
+  `../src/abi/registers.zig`). Section 2a of
+  `../.github/project/upstream-resync-runbook.md` owns the procedure for a macro
+  that becomes a function.
+- A new `pub export` whose name is not in the pinned C widens z47's authored
+  ABI. `check-authored-abi.py` (gate step 6h) fails when that set grows, so
+  justify the symbol in the change or reach the definition through `@import`
+  instead; `--list` prints the set.
 - Keep the boundary file narrow and name the C surface it exposes.
 - Add or update the focused validation lane in
   [70-tests-and-verification.md](70-tests-and-verification.md) when a new boundary
@@ -383,15 +410,13 @@ Naming policy is layer-specific, not one global rule.
   `../src/core/persist/calc_state.zig`
 - direct legacy-boundary bindings: `*_runtime.zig`, for example
   `../src/core/persist/calc_state_runtime.zig`
-- thin ABI-facing forwarders: `*_export.zig`; the implementation behind a paired
-  export shim: `*_owned.zig`
 - harness C helper files: `*_runtime_helpers.c`, under `../build/tests/` -- the
   only place first-party `.c` files live
 - inside owner files and coherent internal-only helper clusters, use Zig casing
   only when the full internal-only family can move together in one bounded slice:
   directories and files `snake_case`, types `TitleCase`, functions `camelCase`,
   other values `snake_case`
-- in `*_runtime.zig`, `*_export.zig`, legacy C, `pub export`, and `extern`
+- in `*_runtime.zig`, legacy C, `pub export`, and `extern`
   surfaces, keep upstream-compatible spellings where they model ABI, layout, or
   exact public symbol names
 - the structural naming milestone is complete under this layer-scoped contract;

@@ -113,7 +113,7 @@ Reference material, each documented where it belongs.
 | CI fails fast, so a red governance gate skips the parity job and hides everything behind it. Clear the gates first, then sweep the battery lane by lane. | [docs/60](docs/60-ci-and-release-workflow.md) |
 | A red CI lane is frequently not your change. Read the failing log before assuming it is. | [docs/60](docs/60-ci-and-release-workflow.md) |
 | Python hooks are scoped to z47-owned paths, because reformatting an imported file turns a clean import into a permanent conflict. | [docs/80](docs/80-maintainer-workflow.md) |
-| The highest-yield audit is the cross-owner consistency scan: one symbol carrying different values in two owners. A fix landing in one owner and not its twin is the recurring defect class. | [docs/75](docs/75-debugging.md) |
+| The highest-yield audit is the cross-owner consistency scan: one symbol carrying different values in two owners. A fix landing in one owner and not its twin is the recurring defect class. | [docs/75](docs/75-debugging.md), [docs/50](docs/50-zig-c-boundaries-and-rewrite-policy.md) |
 
 Comments are authoritative about the code they sit beside. They carry no meta, no
 history, and no report or milestone identifiers, and a tracked page never names a

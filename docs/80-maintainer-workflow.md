@@ -9,15 +9,17 @@ Use this page when a task changes the public maintainer contract documented in
 `docs/`, `CONTRIBUTING.md`, or `README.md`, or when advancing the
 imported upstream pin.
 
-Last verified: 2026-10-05, Zig `0.17.0` stable. The upstream pin is
+Last verified: 2026-10-23, Zig `0.17.0` stable. The upstream pin is
 `UPSTREAM_COMMIT` in `../.github/project/upstream-pin.env`. Commands on this page
 run from the repo root.
 
 ## Where The Port Stands
 
-The calculator core is fully ported to Zig; the upstream C tree is retained only
-as the parity oracle (see [00-project-and-upstream.md](00-project-and-upstream.md)
-and [50-zig-c-boundaries-and-rewrite-policy.md](50-zig-c-boundaries-and-rewrite-policy.md)).
+The calculator core is fully ported to Zig.
+[00-project-and-upstream.md](00-project-and-upstream.md) owns the port-status
+split, including the C the imported tree still supplies: the vendored decNumber
+compiled into every product, the generators the build runs, and the parity
+references.
 Ongoing maintainer work is therefore idiomatic-Zig refinement and periodic
 upstream resync, not further core porting. This page assumes that framing.
 
@@ -28,6 +30,7 @@ upstream resync, not further core porting. This page assumes that framing.
 | `docs/` | stable maintainer docs for the live repo | build, rewrite, CI, package, or verification contracts changed |
 | `../CONTRIBUTING.md` | contributor workflow contract | branch policy, focused verification, or doc-promotion rules changed |
 | `../README.md` | root entry point and short Zig build quick start | the main Zig entrypoint or doc routing changed |
+| `../AGENTS.md` (loaded through `../CLAUDE.md`) | agent entry point: setup, the gate, and the trap table that routes into `docs/` | the gate, the setup, or the page that owns a listed trap changed |
 
 ## Doc Promotion Workflow
 
@@ -50,9 +53,9 @@ Use one promotion workflow when a non-trivial change lands.
 - Document tracked repo surfaces only, not ignored local worktrees or ignored
   build outputs.
 - Keep `build/` documented as build-only, `src/` as the live runtime Zig
-  owners, and `bridge/` as the near-retired legacy header shims (two
-  headers; the former product-lane bridge `.c` seams are all retired into their
-  Zig owners).
+  owners, and `bridge/` as the near-retired legacy header shims
+  (`git ls-files bridge/` lists them; the former product-lane bridge `.c` seams
+  are all retired into their Zig owners).
 - Keep these tracked control files and their affected docs aligned when the
   imported-root or tracked top-level ownership contract changes:
   `../.github/project/source-ownership.txt`,
@@ -61,11 +64,13 @@ Use one promotion workflow when a non-trivial change lands.
   `../.github/project/retained-bridge-review.tsv`,
   `../.github/project/check-retained-bridge-ledger.py`,
   `../.github/project/report-c-dependency-status.py`,
+  `../.github/project/imported-tree-divergences.txt`,
   `../.github/project/report-upstream-refresh.py`, and
   `../.github/project/workflow-imported-root-paths.sh`.
-- Use `bash .github/project/check-source-ownership.sh check-worktree` inside a
-  linked-worktree layout pilot; keep the plain `check` subcommand for the
-  maintained baseline and CI.
+- Run `bash .github/project/check-source-ownership.sh` in both of its modes
+  (plain `check` and `check-worktree`) after a layout or ownership change, as
+  `../CONTRIBUTING.md`'s focused-verification rules say; the local gate and CI
+  run only the plain `check`.
 - Keep tracked root maintainer docs short and route detailed material into the
   numbered `docs/` pages.
 - Update the affected docs in the same change that updates the underlying build,
@@ -82,6 +87,7 @@ runner's unpinned `python3`, so they must stay valid there.
 
 ```sh
 uv sync                          # install pre-commit, ruff and ty into .venv
+export PATH="$PWD/.venv/bin:$PATH"   # the pinned tools, as the gate uses them
 pre-commit install               # run the hooks on every commit
 pre-commit run --all-files       # run them over the whole tree now
 ruff check . && ruff format .    # or drive the tools directly
@@ -120,46 +126,13 @@ the gate owns the expensive whole-tree ones.
 
 The ordered procedure for advancing the imported upstream pin and re-deriving
 the Zig port on top of it is the committed runbook
-`.github/project/upstream-resync-runbook.md`. Follow it; do not duplicate its
-steps here. The maintainer-process shape is:
-
-1. Scope the changed paths only (never a whole-tree diff), then re-sync the
-   deterministic seams (item table, constant-blob offsets, abi struct layout,
-   constant/enum mirrors).
-2. Re-port behavioral drift into the Zig owners in idiomatic fixed-width Zig,
-   never by editing the imported `src/` oracle.
-3. Run the local gate before every push:
-   ```bash
-   PATH="$PWD/.venv/bin:$PATH" bash .github/project/run-local-gate.sh
-   ```
-   It runs the Linux governance, host-parity and firmware-link lanes and the
-   tracked-generated-artifact diff; its closing banner lists what only CI runs.
-   `zig build sim` and `zig build test:unit` are NOT the gate. See
-   [70-tests-and-verification.md](70-tests-and-verification.md).
-4. Finalize the pin, ownership manifest, and port ledger together, and do not
-   merge the sync branch to `main` until the local gate and the full CI matrix
-   (Linux, macOS, and Windows) are green. The Linux gate cannot run the Windows
-   and macOS host lanes; on Windows the usual decider is the LLP64 integer-width
-   trap, and the runbook records its guard.
-
-### Re-syncing seam-and-core owners after a pin advance
-
-The enforced contract on a pin advance is behavioral parity, not source-shape
-correspondence (see
-[50-zig-c-boundaries-and-rewrite-policy.md](50-zig-c-boundaries-and-rewrite-policy.md)).
-How to re-sync a changed upstream file depends on which layer it maps to:
-
-1. ABI layer: re-emit the item table (`audit-item-table-parity.py --emit`),
-   remap constant-blob offsets (`check-constant-offsets.py --fix`), and bring
-   `src/abi/types.zig` into line by hand until `zig build abi-layout-parity` is
-   green; regenerate the font seams with `generate-font-seams.py`. The runbook's
-   first section owns the steps.
-2. Transliterated (hot) owner: apply the upstream C diff textually; shape
-   correspondence still holds.
-3. Idiomatized (cold) owner: do not expect a textual diff to apply. Run that
-   owner's parity oracle (`zig build <owner>_parity`); a red oracle pinpoints
-   the diverged function. Re-derive the behavior change in idiomatic Zig and
-   confirm the oracle returns green -- a green oracle is proof of re-sync.
+`.github/project/upstream-resync-runbook.md`, from scoping the range to the
+finalize step and the merge condition; follow it, and do not restate its steps
+here. How a changed file is re-synced depends on whether its owner is hot or
+cold, which
+[50-zig-c-boundaries-and-rewrite-policy.md](50-zig-c-boundaries-and-rewrite-policy.md#seam-and-core-architecture)
+defines, and the gate a resync ends on is in
+[70-tests-and-verification.md](70-tests-and-verification.md).
 
 ## Linked-Worktree Refresh Flow
 
@@ -224,12 +197,22 @@ close-out review.
   naming-milestone closeout state changed
 - update [20-zig-build-graph.md](20-zig-build-graph.md) when public targets,
   options, or build-domain ownership changed
+- update [30-host-and-generated-surfaces.md](30-host-and-generated-surfaces.md)
+  when the host simulator, a generated artifact, the docs build, or a retained
+  host dependency changed
+- update [40-firmware-and-distribution.md](40-firmware-and-distribution.md) when
+  a firmware target, package variant, budget, or host-package rule changed
 - update [60-ci-and-release-workflow.md](60-ci-and-release-workflow.md) when CI
   jobs, artifacts, ownership guards, upstream-ledger guards, imported-root
   workflow guards, or local reproduction changed
 - update [70-tests-and-verification.md](70-tests-and-verification.md) when the
   smallest rerun lane, ownership guard, upstream-ledger guard, workflow
   imported-root guard, or generated-surface validation contract changed
+- update [75-debugging.md](75-debugging.md) when a detector, what it is blind
+  to, the differential procedure, or a false-pass hazard changed
+- update [90-official-references.md](90-official-references.md) when an
+  upstream, Zig, dependency, or companion-doc reference changed
+- update [95-glossary.md](95-glossary.md) when a page introduces a term
 
 ## Maintenance Rules
 

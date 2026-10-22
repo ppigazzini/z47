@@ -54,6 +54,9 @@ The seams re-sync deterministically; run their audits after importing:
   Gate: `zig build constants && python3 .github/project/check-constant-offsets.py`
   (default = check) confirms the abi accessors; the owner tables are testSuite-gated.
 - **abi struct layout** — gate: `zig build abi-layout-parity`.
+- **Font seams** — the printer-font glyph tables under `src/shell/generated/` are
+  regenerated from upstream C: `python3 .github/project/generate-font-seams.py
+  --repo-root .`. Gate: CI runs it with `--check`; the local gate does not.
 - **Constant/enum mirrors** — gate: `audit-constant-parity.py`.
 
 - **Item seam vs owner** -- `check-item-seam-drift.py` FAILS on any changed
@@ -133,7 +136,7 @@ What still needs attention on a resync:
 
 ## 3. THE GATE — run the full local gate before every push
 
-**`bash .github/project/run-local-gate.sh`**
+**`PATH="$PWD/.venv/bin:$PATH" bash .github/project/run-local-gate.sh`**
 
 This reproduces the Linux CI verdict: governance checks + the host-parity
 build/test/oracle battery (`run-host-parity-battery.sh`, byte-identical to the CI

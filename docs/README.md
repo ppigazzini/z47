@@ -5,24 +5,21 @@ Zig-first port workspace.
 
 These pages are code-facing maintainer docs, not end-user usage docs.
 
-Last verified: 2026-10-05, Zig `0.17.0` stable. The upstream pin is
+Last verified: 2026-10-23, Zig `0.17.0` stable. The upstream pin is
 `UPSTREAM_COMMIT` in `../.github/project/upstream-pin.env`, and no page repeats
 its value. Each page carries its own "Last verified" date.
 
 ## Port Status In One Paragraph
 
 The calculator core is fully ported to Zig. The product builds (the GTK host
-simulator and the DMCP/DMCP5 firmware) contain zero first-party calculator C:
-`report-c-dependency-status.py` reports 0 active product-build first-party C
-files. The upstream calculator C (`upstream/src/`) is retained as the
-verification reference: the shared testSuite and the per-owner parity oracles
-check the Zig against it, bounded by what those lanes reach. `upstream/dep/` also
-supplies the retained third-party C, which is explicit and unchanged: the
-vendored `upstream/dep/decNumberICU` is compiled by Zig for the host and by
-`arm-none-eabi-gcc` for the firmware; the host links GTK 3, GMP, FreeType 2 and
-optional PulseAudio, and the firmware links a cross-built GMP 6.2.1 and the
-SwissMicros DMCP/DMCP5 SDKs. Ongoing work is idiomatic-Zig refinement and
-periodic upstream resync, not further core porting.
+simulator and the DMCP/DMCP5 firmware) compile no hand-written first-party
+calculator C, only the C their generators emit. The upstream calculator C
+(`upstream/src/`) is retained as the verification reference: the shared testSuite
+and the per-owner parity lanes check the Zig against it, bounded by what those
+lanes reach. `upstream/dep/` also supplies the retained third-party C;
+[00-project-and-upstream.md](00-project-and-upstream.md) lists it with the rest
+of the split and the command that counts it. Ongoing work is idiomatic-Zig
+refinement and periodic upstream resync, not further core porting.
 
 These pages document tracked, maintained repo surfaces only. They do not define
 ignored local worktrees, ignored build outputs, or other ignored paths.
@@ -150,12 +147,12 @@ Maintainer entrypoints (see [10](10-build-and-source-layout.md) and
 Verification entrypoints:
 
 - `PATH="$PWD/.venv/bin:$PATH" bash .github/project/run-local-gate.sh`: the local
-  gate, run before pushing. It runs the Linux governance guards, `test:unit`, the
-  host-parity battery, the malformed-input corpora, the oracle negative control,
-  the DMCP package 1-3 links and the tracked-generated-artifact diff; its closing
-  banner lists what only CI runs.
-- the parity lanes (`zig build <lane>`, named `*_parity`, `*_oracle`, `*_diff`,
-  `*_suite` or `*_test`) check owners against their retained upstream C; see
+  gate, run before pushing; [70-tests-and-verification.md](70-tests-and-verification.md)
+  lists what it runs, and its closing banner lists what only CI runs.
+- the parity lanes (`zig build <lane>`: the steps `check-parity-lanes-gated.py`
+  matches by their `_parity`, `_oracle`, `_diff`, `_suite`, `_test`, `-parity`
+  or `-test` suffix, plus `saveload_roundtrip`) check owners against their
+  retained upstream C or, for a few, against golden values; see
   [70-tests-and-verification.md](70-tests-and-verification.md)
 
 ## Repo-Owned Automation Layout

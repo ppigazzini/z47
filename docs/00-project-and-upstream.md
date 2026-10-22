@@ -6,16 +6,19 @@ owns, and where the Zig port boundary now sits.
 Read this page first. The rest of the set assumes the ownership split and the
 current upstream pin are already clear.
 
-Last verified: 2026-10-05, Zig `0.17.0` stable.
+Last verified: 2026-10-23, Zig `0.17.0` stable.
 
 ## At A Glance
 
 - z47 is the Zig-first build, CI, packaging, documentation, and port of the
   upstream C47 calculator application.
 - The calculator core is fully ported to Zig. The product builds (host simulator
-  and DMCP/DMCP5 firmware) contain no first-party calculator C:
-  `report-c-dependency-status.py` reports 0 active product-build first-party C
-  files.
+  and DMCP/DMCP5 firmware) compile no hand-written first-party calculator C
+  (`report-c-dependency-status.py` reports 0 active product-build first-party C
+  files). Both do compile the three C data files z47's generators emit
+  (`rasterFontsData.c`, `constantPointers.c`, `constantPointers2.c`), which that
+  scan does not see; see
+  [30-host-and-generated-surfaces.md](30-host-and-generated-surfaces.md).
 - The upstream C tree (`upstream/src/`, `upstream/dep/`) is retained as a
   read-only audit input and the verification reference (the shared testSuite plus
   per-owner parity oracles). z47 never edits a tracked file in it; the generator
@@ -31,7 +34,8 @@ Last verified: 2026-10-05, Zig `0.17.0` stable.
 
 z47 is the working repository that ports the upstream C47 calculator application
 to a Zig-first build and maintenance model while preserving upstream behavior,
-proven by the shared testSuite and per-owner parity oracles.
+checked by the shared testSuite and the per-owner parity oracles as far as those
+lanes reach.
 
 This repo owns:
 
@@ -57,8 +61,9 @@ kept as audit and parity reference.
   the SwissMicros SDKs (see the dependency table below)
 - not a license to treat `translate-c` as a migration path for owner logic: it
   is confined to the roots under `[translate-c-roots]` in
-  `.github/project/zig-c-boundaries.txt` (four generator headers and the
-  ABI-layout oracle), reached only through `addTranslator` in `build/common.zig`
+  `.github/project/zig-c-boundaries.txt` (the generator headers and the
+  ABI-layout oracle listed there), reached only through `addTranslator` in
+  `build/common.zig`
   (see
   [50-zig-c-boundaries-and-rewrite-policy.md](50-zig-c-boundaries-and-rewrite-policy.md))
 
@@ -102,24 +107,25 @@ page map in [90-official-references.md](90-official-references.md).
 | `build.zig` | z47 | repo-root option parsing and top-level step registration |
 | `src/` | z47 | the ported calculator core (zones `abi/`, `core/`, `shell/`, and the `frontier.zig` object root) |
 | `build/` | z47 | host, firmware, distribution, generator, and test build domains, plus the Zig host/firmware/testSuite HAL replacements |
-| `bridge/` | z47 | near-retired legacy header shims (two headers) paired with a few owners |
+| `bridge/` | z47 | near-retired legacy header shims: `c47.h`, the firmware's macro overlay over upstream's `c47.h`, and `state/keyboard_statusbar_mask.h`, read only by the `keyboard_statusbar_flags_regression` lane |
 | `.github/` and `.github/project/` | z47 | CI workflows, toolchain pin, upstream pin, governance guards, boundary and ownership manifests, package helpers |
 | `docs/` | z47 | maintained developer documentation |
-| everything under `upstream/` (`src/`, `dep/`, `res/`, `LIBRARY/`, `docs/`, `Makefile`, `meson.build`, `tools/`) | imported upstream | original calculator C sources, assets, legacy build graph, and helper tools -- read-only audit and parity reference |
+| everything under `upstream/` (`src/`, `dep/`, `res/`, `LIBRARY/`, `docs/`, `subprojects/`, `Makefile`, `meson.build`, `tools/`) | imported upstream | original calculator C sources, assets, legacy build graph, and helper tools -- read-only audit and parity reference |
 | `upstream/dep/DMCP_SDK` and `upstream/dep/DMCP5_SDK` | imported SwissMicros SDKs | hardware build inputs used by the Zig-owned firmware flow |
 
 ## Port Boundary Summary
 
 | Surface | Current state |
 | --- | --- |
-| calculator core (`upstream/src/c47/**` logic) | fully ported to Zig under `src/`; the upstream C is retained only as the parity oracle |
+| calculator core (`upstream/src/c47/**` logic) | fully ported to Zig under `src/`; the upstream C is retained as the parity oracle, and its headers (`defines.h`, `items.h`, `realType.h`, ...) still feed the translate-c generator roots |
+| generator-emitted C (`rasterFontsData.c`, `constantPointers.c`, `constantPointers2.c`) | emitted by z47's generators and compiled into both the simulator and the firmware; see [30-host-and-generated-surfaces.md](30-host-and-generated-surfaces.md) |
 | GTK host layer (`upstream/src/c47-gtk`) | ported to Zig under `build/host/gtk_*.zig`; the ported C files are filtered out of the build (`filterGtkSources`) |
 | DMCP/DMCP5 firmware HAL (`upstream/src/c47-dmcp*`) | audio, file-I/O, print-IR, and console HAL ported to Zig under `build/firmware_*_runtime.zig`; firmware core is the Zig owners |
 | testSuite HAL (`upstream/src/testSuite/hal/*.c`) | ported to Zig (`build/tests/testsuite_hal.zig`) and linked instead of the C HAL |
 | `upstream/dep/decNumberICU` | retained vendored C, compiled by Zig for the host and the generators, and by `arm-none-eabi-gcc` for the firmware |
 | GTK 3, GMP, FreeType 2, optional PulseAudio | retained external C libraries linked from Zig (host) |
-| SwissMicros DMCP/DMCP5 SDKs and GMP 6.2.1 | retained external C compiled and linked by `arm-none-eabi-gcc` (firmware); GMP is cross-built from source by `addArmGmpBuild` in `build/firmware.zig` |
-| first-party C remaining in the tree | the parity/oracle/fake-runtime/test `.c` files under `build/tests/**`, used only for verification, plus headers in `bridge/` and `build/tools/translate_c/` -- not in the product, and none of it under `src/`, which is pure Zig. `report-c-dependency-status.py` prints the current count |
+| SwissMicros DMCP/DMCP5 SDKs and GMP | retained external C compiled and linked by `arm-none-eabi-gcc` (firmware); GMP is cross-built from source by `addArmGmpBuild` in `build/firmware.zig`, with upstream's `upstream/subprojects/packagefiles/gmp-6.2.1/` overlay laid over the staged source (see [40-firmware-and-distribution.md](40-firmware-and-distribution.md)) |
+| first-party C remaining in the tree | the parity/oracle/fake-runtime/test `.c` files under `build/tests/**`, used only for verification, plus headers: the translate-c generator roots in `build/tools/translate_c/`, and `bridge/` (`c47.h` reaches the firmware compile of the generated C; `state/keyboard_statusbar_mask.h` only a test lane). None of it is under `src/`, which is pure Zig. `report-c-dependency-status.py` prints the current count |
 
 ## Runtime And Build Boundary Rules
 
