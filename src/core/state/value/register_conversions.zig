@@ -285,7 +285,7 @@ fn realToInt(r: *const real_t, magnitude_limit: u64, err: ?*bool) u64 {
         const digit: u16 = if (coefficient_position < 0)
             0
         else
-            lsu[@intCast(@divTrunc(coefficient_position, DECDPUN))] / powers_of_ten[@intCast(@mod(coefficient_position, DECDPUN))] % 10;
+            (lsu[@intCast(@divTrunc(coefficient_position, DECDPUN))] / powers_of_ten[@intCast(@mod(coefficient_position, DECDPUN))]) % 10;
         if (value > (magnitude_limit - digit) / 10) {
             return 0;
         }

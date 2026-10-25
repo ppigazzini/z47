@@ -1196,9 +1196,9 @@ fn real34RotationSteps(value: *align(1) const real34_t, modulus: u16) u16 {
     var power: u32 = 10 % modulus;
     while (exponent > 0) : (exponent >>= 1) {
         if ((exponent & 1) != 0) {
-            remainder = remainder * power % modulus;
+            remainder = (remainder * power) % modulus;
         }
-        power = power * power % modulus;
+        power = (power * power) % modulus;
     }
     return @intCast(remainder);
 }

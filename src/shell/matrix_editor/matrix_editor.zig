@@ -2693,13 +2693,13 @@ pub fn z47_frontier_matrix_render_editor_body(colVector: bool, rows: i16, cols: 
             if (ld >= 100) {
                 lb[0] = STD_SUB_0[0];
                 lb += 1;
-                lb[0] = @intCast(@as(u32, STD_SUB_0[1]) + (ld % 1000 / 100));
+                lb[0] = @intCast(@as(u32, STD_SUB_0[1]) + ((ld % 1000) / 100));
                 lb += 1;
             }
             if (ld >= 10) {
                 lb[0] = STD_SUB_0[0];
                 lb += 1;
-                lb[0] = @intCast(@as(u32, STD_SUB_0[1]) + (ld % 100 / 10));
+                lb[0] = @intCast(@as(u32, STD_SUB_0[1]) + ((ld % 100) / 10));
                 lb += 1;
             }
             lb[0] = STD_SUB_0[0];
