@@ -238,6 +238,16 @@ pub fn resolveBuildHostTarget(b: *std.Build) std.Build.ResolvedTarget {
     return b.resolveTargetQuery(query);
 }
 
+/// `link_libc` for a Zig object that a C-rooted executable links. Every hosted
+/// executable in this build links libc, so std inside the object must be compiled
+/// against it too: built without libc, std on Linux reads the auxiliary vector and
+/// static TLS from state that only Zig's own startup code fills in, and the link
+/// fails on the missing `__zig_elf_*` symbols. Firmware objects are freestanding
+/// and stay unset.
+pub fn objectLinkLibc(target: std.Build.ResolvedTarget) ?bool {
+    return if (target.result.os.tag == .freestanding) null else true;
+}
+
 /// Translates a C root header with the official translate-c package. The
 /// translator is a host tool, so it is built for the same host target as the
 /// generators that consume its output.

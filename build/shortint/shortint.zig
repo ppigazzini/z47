@@ -67,6 +67,7 @@ fn addRuntimeObject(
         .root_source_file = b.path(root_source_file),
         .target = target,
         .optimize = optimize,
+        .link_libc = build_common.objectLinkLibc(target),
         .strip = options.strip,
         .unwind_tables = options.unwind_tables,
         .stack_protector = options.stack_protector,

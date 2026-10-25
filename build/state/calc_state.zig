@@ -1,4 +1,5 @@
 const std = @import("std");
+const build_common = @import("../common.zig");
 
 pub const RuntimeObjects = struct {
     calc_state: *std.Build.Step.Compile,
@@ -60,6 +61,7 @@ fn addRuntimeObject(
         .root_source_file = b.path("src/core/persist/calc_state.zig"),
         .target = target,
         .optimize = optimize,
+        .link_libc = build_common.objectLinkLibc(target),
         .strip = options.strip,
         .unwind_tables = options.unwind_tables,
         .stack_protector = options.stack_protector,

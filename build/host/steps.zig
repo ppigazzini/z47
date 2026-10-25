@@ -118,6 +118,7 @@ fn addMathLnComplexOracle(
         .root_source_file = b.path("src/core/numeric/command_wrappers.zig"),
         .target = context.host_target,
         .optimize = optimize,
+        .link_libc = build_common.objectLinkLibc(context.host_target),
     });
     // The owner tree reaches the shared C layouts as `@import("abi")`, so the
     // module has to register it the way every other math oracle here does.
@@ -202,6 +203,7 @@ fn addMathEigenOracle(
         .root_source_file = b.path("src/core/numeric/command_wrappers.zig"),
         .target = context.host_target,
         .optimize = optimize,
+        .link_libc = build_common.objectLinkLibc(context.host_target),
     });
     const eigen_abi_module = b.createModule(.{
         .root_source_file = b.path("src/abi/types.zig"),
@@ -273,6 +275,7 @@ fn addMathRealRectangularToPolarOracle(
         .root_source_file = b.path("src/core/numeric/command_wrappers.zig"),
         .target = context.host_target,
         .optimize = optimize,
+        .link_libc = build_common.objectLinkLibc(context.host_target),
     });
     const helper_abi_module = b.createModule(.{
         .root_source_file = b.path("src/abi/types.zig"),
@@ -344,6 +347,7 @@ fn addMathAtan2Oracle(
         .root_source_file = b.path("src/core/numeric/command_wrappers.zig"),
         .target = context.host_target,
         .optimize = optimize,
+        .link_libc = build_common.objectLinkLibc(context.host_target),
     });
     const helper_abi_module = b.createModule(.{
         .root_source_file = b.path("src/abi/types.zig"),
@@ -415,6 +419,7 @@ fn addMathAtanOracle(
         .root_source_file = b.path("src/core/numeric/command_wrappers.zig"),
         .target = context.host_target,
         .optimize = optimize,
+        .link_libc = build_common.objectLinkLibc(context.host_target),
     });
     const helper_abi_module = b.createModule(.{
         .root_source_file = b.path("src/abi/types.zig"),
@@ -486,6 +491,7 @@ fn addMathRealTrigPrimitivesOracle(
         .root_source_file = b.path("src/core/numeric/command_wrappers.zig"),
         .target = context.host_target,
         .optimize = optimize,
+        .link_libc = build_common.objectLinkLibc(context.host_target),
     });
     const helper_abi_module = b.createModule(.{
         .root_source_file = b.path("src/abi/types.zig"),
@@ -557,6 +563,7 @@ fn addMathCircularTrigOracle(
         .root_source_file = b.path("src/core/numeric/command_wrappers.zig"),
         .target = context.host_target,
         .optimize = optimize,
+        .link_libc = build_common.objectLinkLibc(context.host_target),
     });
     const helper_abi_module = b.createModule(.{
         .root_source_file = b.path("src/abi/types.zig"),
