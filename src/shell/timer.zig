@@ -842,16 +842,16 @@ pub export fn fnShowTimerApp() callconv(.c) void {
             }
 
             if ((timerCraAndDeciseconds & 0x80) != 0) {
-                abi.fmtBufZ(tmpString[0..2560], "{d: >2}:{d:0>2}:{d:0>2}.{d}" ++ STD_SUP_BOLD_T ++ "  ", .{ tmsec / 3600000, tmsec % 3600000 / 60000, tmsec % 60000 / 1000, tmsec % 1000 / 100 });
+                abi.fmtBufZ(tmpString[0..2560], "{d: >2}:{d:0>2}:{d:0>2}.{d}" ++ STD_SUP_BOLD_T ++ "  ", .{ tmsec / 3600000, (tmsec % 3600000) / 60000, (tmsec % 60000) / 1000, (tmsec % 1000) / 100 });
             } else {
-                abi.fmtBufZ(tmpString[0..2560], "{d: >2}:{d:0>2}:{d:0>2}" ++ STD_SUP_BOLD_T ++ STD_SPACE_PUNCTUATION ++ STD_SPACE_FIGURE ++ "  ", .{ tmsec / 3600000, tmsec % 3600000 / 60000, tmsec % 60000 / 1000 });
+                abi.fmtBufZ(tmpString[0..2560], "{d: >2}:{d:0>2}:{d:0>2}" ++ STD_SUP_BOLD_T ++ STD_SPACE_PUNCTUATION ++ STD_SPACE_FIGURE ++ "  ", .{ tmsec / 3600000, (tmsec % 3600000) / 60000, (tmsec % 60000) / 1000 });
             }
         }
 
         if ((timerCraAndDeciseconds & 0x80) != 0) {
-            abi.fmtBufZ(tmpString[strlen(tmpString)..2560], "{d: >2}:{d:0>2}:{d:0>2}.{d} ", .{ msec / 3600000, msec % 3600000 / 60000, msec % 60000 / 1000, msec % 1000 / 100 });
+            abi.fmtBufZ(tmpString[strlen(tmpString)..2560], "{d: >2}:{d:0>2}:{d:0>2}.{d} ", .{ msec / 3600000, (msec % 3600000) / 60000, (msec % 60000) / 1000, (msec % 1000) / 100 });
         } else {
-            abi.fmtBufZ(tmpString[strlen(tmpString)..2560], "{d: >2}:{d:0>2}:{d:0>2}" ++ STD_SPACE_PUNCTUATION ++ STD_SPACE_FIGURE ++ " ", .{ msec / 3600000, msec % 3600000 / 60000, msec % 60000 / 1000 });
+            abi.fmtBufZ(tmpString[strlen(tmpString)..2560], "{d: >2}:{d:0>2}:{d:0>2}" ++ STD_SPACE_PUNCTUATION ++ STD_SPACE_FIGURE ++ " ", .{ msec / 3600000, (msec % 3600000) / 60000, (msec % 60000) / 1000 });
         }
 
         if (rbr1stDigit) {
@@ -867,9 +867,9 @@ pub export fn fnShowTimerApp() callconv(.c) void {
             if (remainingMsec > 0) {
                 tmpString[0] = 0;
                 if ((timerCraAndDeciseconds & 0x80) != 0) {
-                    abi.fmtBufZ(tmpString[0..2560], "{d: >2}:{d:0>2}:{d:0>2}.{d}" ++ STD_HOURGLASS_WH ++ "  ", .{ @as(u32, @intCast(remainingMsec)) / 3600000, @as(u32, @intCast(remainingMsec)) % 3600000 / 60000, @as(u32, @intCast(remainingMsec)) % 60000 / 1000, @as(u32, @intCast(remainingMsec)) % 1000 / 100 });
+                    abi.fmtBufZ(tmpString[0..2560], "{d: >2}:{d:0>2}:{d:0>2}.{d}" ++ STD_HOURGLASS_WH ++ "  ", .{ @as(u32, @intCast(remainingMsec)) / 3600000, (@as(u32, @intCast(remainingMsec)) % 3600000) / 60000, (@as(u32, @intCast(remainingMsec)) % 60000) / 1000, (@as(u32, @intCast(remainingMsec)) % 1000) / 100 });
                 } else {
-                    abi.fmtBufZ(tmpString[0..2560], "{d: >2}:{d:0>2}:{d:0>2}" ++ STD_HOURGLASS_WH ++ STD_SPACE_PUNCTUATION ++ STD_SPACE_FIGURE ++ "  ", .{ @as(u32, @intCast(remainingMsec)) / 3600000, @as(u32, @intCast(remainingMsec)) % 3600000 / 60000, @as(u32, @intCast(remainingMsec)) % 60000 / 1000 });
+                    abi.fmtBufZ(tmpString[0..2560], "{d: >2}:{d:0>2}:{d:0>2}" ++ STD_HOURGLASS_WH ++ STD_SPACE_PUNCTUATION ++ STD_SPACE_FIGURE ++ "  ", .{ @as(u32, @intCast(remainingMsec)) / 3600000, (@as(u32, @intCast(remainingMsec)) % 3600000) / 60000, (@as(u32, @intCast(remainingMsec)) % 60000) / 1000 });
                 }
                 _ = frontier_screen.showString(tmpString, &numericFont, 1, Y_POSITION_OF_REGISTER_Z_LINE, vmNormal, @intFromBool(true), @intFromBool(true));
             } else if (remainingMsec < 0) {
