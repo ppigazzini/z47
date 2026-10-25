@@ -1,12 +1,12 @@
 // Zig port of the column-reduction / search commands of
-const abi = @import("abi");
-const consts = abi.constants;
 // src/c47/mathematics/matrix.c: fnColumnMin / fnColumnMax (min/max of the
 // indexed column, with the row index returned in Y) and fnMatrixFind (locate a
-// scalar in the indexed matrix, returning its I,J). All dispatch through the
-// now-Zig callByIndexedMatrix; the static reducer/search callbacks stay
-// file-local here.
+// scalar in the indexed matrix, returning its I,J). All dispatch through
+// callByIndexedMatrix in elementwise.zig; the static reducer/search callbacks
+// stay file-local here.
 const std = @import("std");
+const abi = @import("abi");
+const consts = abi.constants;
 const runtime = @import("../command_wrappers/runtime.zig");
 const math_comparison_reals = @import("../compare/comparison_reals.zig");
 const math_matrix_elementwise = @import("elementwise.zig");
@@ -57,13 +57,16 @@ fn columnMinMaxReal(matrix: *real34Matrix_t, calcMax: bool) bool {
     const cols: usize = matrix.header.matrixColumns;
     runtime.realToReal34(if (calcMax) const_minusInfinity() else const_plusInfinity(), &res_val);
     if (i >= 0 and j >= 0 and i < matrix.header.matrixRows and j < matrix.header.matrixColumns) {
-        var r: usize = 0;
-        while (r < matrix.header.matrixRows) : (r += 1) {
-            const cell = rmEl(matrix, r * cols + @as(usize, @intCast(j)));
-            if (!calcMax and math_comparison_reals.real34CompareLessThan(cell, &res_val)) {
-                res_val = cell.*;
-                res_r = @intCast(r);
-            } else if (calcMax and math_comparison_reals.real34CompareGreaterThan(cell, &res_val)) {
+        const col: usize = @intCast(j);
+        // A tie moves the result down, so a repeated extreme reports its last
+        // row, as the HP-42S [MIN] and [MAX] do.
+        for (0..matrix.header.matrixRows) |r| {
+            const cell = rmEl(matrix, r * cols + col);
+            const reaches = if (calcMax)
+                math_comparison_reals.real34CompareGreaterEqual(cell, &res_val)
+            else
+                math_comparison_reals.real34CompareLessEqual(cell, &res_val);
+            if (reaches) {
                 res_val = cell.*;
                 res_r = @intCast(r);
             }
