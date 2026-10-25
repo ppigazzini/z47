@@ -1,4 +1,5 @@
 const std = @import("std");
+const build_common = @import("common.zig");
 
 // The single owner of the core-to-shell hook storage (`src/abi/host_state.zig`).
 //
@@ -19,6 +20,7 @@ pub fn addObject(
             .root_source_file = b.path("src/abi/host_state.zig"),
             .target = target,
             .optimize = optimize,
+            .link_libc = build_common.objectLinkLibc(target),
         }),
     });
 }

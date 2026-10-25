@@ -1,4 +1,5 @@
 const std = @import("std");
+const build_common = @import("../common.zig");
 const abi_host = @import("../abi_host.zig");
 
 pub const RuntimeObjects = struct {
@@ -38,6 +39,7 @@ fn addRuntimeObject(
         .root_source_file = b.path("src/core/state/register_metadata.zig"),
         .target = target,
         .optimize = optimize,
+        .link_libc = build_common.objectLinkLibc(target),
         .strip = options.strip,
         .unwind_tables = options.unwind_tables,
         .stack_protector = options.stack_protector,
