@@ -41,6 +41,8 @@ HERE = pathlib.Path(__file__).resolve().parent
 # git prints the enclosing C function on each hunk header after the second @@.
 HUNK_FN = re.compile(r"@@ -\d+(?:,\d+)? \+\d+(?:,\d+)? @@\s*(.*)")
 FN_NAME = re.compile(r"([A-Za-z_][A-Za-z0-9_]*)\s*\(")
+# A file-local Zig function: the port of a C `static`, which no `pub` symbol names.
+PRIVATE_FN = re.compile(r"^\s*(?:inline\s+)?fn ([A-Za-z_][A-Za-z0-9_]*)\s*\(", re.M)
 
 
 def symbol_owner_index(repo: pathlib.Path) -> dict[str, list[str]]:
@@ -60,6 +62,20 @@ def symbol_owner_index(repo: pathlib.Path) -> dict[str, list[str]]:
         for sym, owner in b.zig_owned_symbols(rel, p.read_text(errors="ignore")).items():
             idx.setdefault(sym, []).append(owner)
     return idx
+
+
+def private_fn_owners(repo: pathlib.Path, file_owners: list[str], fn: str) -> list[str]:
+    """The owners of one C file that define `fn` file-locally. A C `static` is
+    ported as a private Zig fn, which the symbol index cannot see, so a change
+    inside one would otherwise fall back to every owner of the file. The search
+    stays inside that file's owners: static names repeat across C files, and a
+    match anywhere else says nothing about this change."""
+    found = []
+    for owner in sorted(set(file_owners)):
+        path = repo / "src" / f"{owner}.zig"
+        if path.is_file() and fn in PRIVATE_FN.findall(path.read_text(errors="ignore")):
+            found.append(owner)
+    return found
 
 
 def load_owners(repo: pathlib.Path) -> dict[str, list[str]]:
@@ -154,11 +170,11 @@ def main() -> int:
         # fall back to the file-level manifest when the hunk has no function
         # context (data tables) or the symbol is not owned by name.
         fns = changed_functions(p)
+        file_owners = owner_of(p)
         pinpointed: dict[str, list[str]] = {}
         for fn in fns:
-            for o in sym_idx.get(fn, []):
+            for o in sym_idx.get(fn) or private_fn_owners(repo, file_owners, fn):
                 pinpointed.setdefault(o, []).append(fn)
-        file_owners = owner_of(p)
         if pinpointed:
             print(f"  {ch:>5}  {rel}  ({len(fns)} fn changed)")
             for o in sorted(pinpointed):
