@@ -48,8 +48,8 @@ The seams re-sync deterministically; run their audits after importing:
   frontier_display/screen/addons, `conversionFactorOffsets[]` + `OFF_const_NAME` in
   frontier_conversion_units, `offset_const_*` in math_runtime_helpers, and the WP34S
   Lanczos base):
-  1. regenerate the OLD `constantPointers.h`: `git checkout <oldpin> -- src/generateConstants/generateConstants.c && rm -rf .zig-cache && zig build constants && cp src/generated/constantPointers.h /tmp/old_cptr.h` (the `rm -rf .zig-cache` is REQUIRED — the constants build caches the generator across a source swap);
-  2. restore + regen the new header: `git checkout <newpin> -- src/generateConstants/generateConstants.c && rm -rf .zig-cache && zig build constants`;
+  1. regenerate the OLD `constantPointers.h`: `git show <oldpin>:src/generateConstants/generateConstants.c > upstream/src/generateConstants/generateConstants.c && rm -rf .zig-cache && zig build constants && cp upstream/src/generated/constantPointers.h /tmp/old_cptr.h` (the `rm -rf .zig-cache` is REQUIRED — the constants build caches the generator across a source swap);
+  2. restore + regen the new header: `git show <newpin>:src/generateConstants/generateConstants.c > upstream/src/generateConstants/generateConstants.c && rm -rf .zig-cache && zig build constants`;
   3. `python3 .github/project/check-constant-offsets.py --fix --old-constant-pointers /tmp/old_cptr.h` — remaps every offset by name (proven byte-identical to the hand remap; idempotent on an in-sync tree). It rewrites OFFSETS only, not the trailing `// = const_X` name comments (update those by hand on the rare digit-count *rename*).
   Gate: `zig build constants && python3 .github/project/check-constant-offsets.py`
   (default = check) confirms the abi accessors; the owner tables are testSuite-gated.
@@ -73,15 +73,29 @@ Get the worklist first, do not grep and hope:
 python3 .github/project/report-resync-worklist.py <oldpin> <newpin>
 ```
 
-It diffs the imported C in `../c43` between the pins and, for each changed
-`src/c47/*.c`, names the owner(s) to re-port — resolved by the FUNCTION the diff
-touched (via the correspondence manifest), so a change inside a many-owner file
-like `matrix.c` points at the single owner that holds it, ranked by churn. It also
-flags added files with no owner yet and deleted files whose owner is now orphaned.
+It diffs the imported C in `../c43` between the pins, so that checkout must hold
+both commits first; fetch it over https
+(`git -C ../c43 fetch https://gitlab.com/rpncalculators/c43.git master`), since
+an ssh remote there can hang. For each changed `src/c47/*.c` it names the
+owner(s) to re-port — resolved by the FUNCTION the diff touched (via the
+correspondence manifest), so a change inside a many-owner file like `matrix.c`
+points at the single owner that holds it, ranked by churn. A C `static` has no
+public symbol, so it resolves to whichever of that file's owners defines it as a
+private `fn`; only a hunk with no function context, such as a data table, falls
+back to every owner of the file. It also flags added files with no owner yet and
+deleted files whose owner is now orphaned.
 
-Then re-derive the changed C behavior into those owners (never edit `src/`). Prefer
+Then re-derive the changed C behavior into those owners (never edit `upstream/`). Prefer
 **idiomatic fixed-width Zig** over transliterated C — see the Windows trap in §4 and
 `c-abi-width-types-are-transliteration-debt`.
+
+A green testSuite proves nothing about a branch no case reaches, and a resync
+that changes a tie, a boundary or an error path often lands on one. Write the
+smallest scratch case list that does reach it, confirm that it fails on the C at
+the old pin and passes on the C at the new one, then run it on the Zig core: the
+C-vs-Zig differential in `docs/75-debugging.md` covers building the reference and
+writing the list. Keep the list out of the tree, since the shared testSuite stays
+upstream's, and record the result in the resync commit.
 
 ### 2a. A macro that becomes a function
 
@@ -148,7 +162,8 @@ under sim+test:unit and only surfaced in CI:
    moved a helper's call site to a TU included before its definition in the
    multi-`#include` oracle harness → needs a forward decl). Caught by the battery,
    not by sim/test:unit.
-2. **A stale generated artifact** (`res/testPgms/testPgms.bin`): the item table grew
+2. **A stale generated artifact** (`build/generated/testPgms.bin`, z47's own image;
+   upstream's `res/testPgms/testPgms.bin` stays at the pin): the item table grew
    but the tracked binary was not regenerated. `zig build testPgms` (deterministic)
    + commit. Caught by the artifact diff. Regenerate it on every item-table/pin
    advance.

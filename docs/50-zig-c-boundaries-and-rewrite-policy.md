@@ -352,6 +352,13 @@ as live rather than closed.
   evaluates `rows - 1` and `a * b` in `int` even when both operands are
   narrower, and a port that does the same arithmetic in the operand width has
   changed the expression, not preserved it.
+- Parenthesize an expression that mixes `%` with `*` or `/`, a shift with `+` or
+  a bitwise operator, two of `&`, `|` and `^`, `and` with `or`, or `orelse` with
+  a comparison. 0.17 groups each by its precedence table, as C does, but the
+  monitored Zig master rejects them as ambiguous, so spell out the grouping the
+  expression already has. `*` with `/`, and `+` with `-`, stay unparenthesized.
+  A master snapshot's `zig ast-check <file>` finds them without a build; it
+  reports the first in each function body, so run it again until it is clean.
 - Raise `@setRuntimeSafety(true)` on a function that walks bytes z47 did not write.
   It works in `small`, so it reaches the device; it is lexical, so it does
   not follow calls and must go on each function; and it is a backstop under the

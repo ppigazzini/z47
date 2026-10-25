@@ -49,7 +49,7 @@ build-registration slices shared by the host and firmware domains.
 | Surface | Domain / role |
 | --- | --- |
 | `../build.zig` | option parsing, root orchestration, `check-c-deps*`, `test:unit` and `object-manifest` |
-| `../build/common.zig` | shared helpers, C flag tables, upstream-path resolution, the configure-time host-read helpers, and `addTranslator` (the `translate_c` package dependency in `../build.zig.zon`) |
+| `../build/common.zig` | shared helpers, C flag tables, upstream-path resolution, the configure-time host-read helpers, `objectLinkLibc` (the `link_libc` of a Zig object a C-rooted executable links), and `addTranslator` (the `translate_c` package dependency in `../build.zig.zon`) |
 | `../build/object_manifest.zig` | the `object-manifest` writer wiring |
 | `../build/abi_host.zig` | the single host object that holds the core-to-shell hook storage |
 | `../build/host.zig` | stable facade for host context creation and host step registration |
@@ -196,6 +196,14 @@ being cached.
   `build/`. `check-clean-step-targets.py` (gate step 6g1) refuses a destructive
   step that targets a z47-owned root; after any rename, grep the destructive
   commands again.
+- Give the root module of every Zig object that a C-rooted executable links
+  `.link_libc = build_common.objectLinkLibc(target)`. Every hosted executable
+  here links libc, and std inside an object built without it reads the auxiliary
+  vector and static TLS from state that only Zig's own startup code fills in.
+  0.17 links such an object anyway; the monitored Zig master exports that state
+  from compiler_rt only for a link without libc, so the object fails there on
+  undefined `__zig_elf_*` symbols. The helper leaves freestanding firmware
+  objects unset.
 - Add new parity oracles, fake runtimes, or harnesses under
   `../build/tests/` and register their steps in `../build/host/steps.zig`.
 - Do not move imported upstream compatibility helpers such as `../upstream/tag2ver.py`
