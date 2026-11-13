@@ -111,7 +111,53 @@ const SIZE_PAIRS = .{
     .{ c.cplx_t, abi.Complex, "Complex" },
     .{ c.cplx159_t, abi.Complex159, "Complex159" },
     .{ c.__mpz_struct, abi.Mpz, "Mpz" },
+    .{ c.pcg32_random_t, abi.Pcg32Random, "Pcg32Random" },
+    .{ c.forLoop_t, abi.ForLoop, "ForLoop" },
+    .{ c.rectToPolarCache_t, abi.RectToPolarCache, "RectToPolarCache" },
+    .{ c.snap_t, abi.RegisterSnapshot, "RegisterSnapshot" },
 };
+
+// The abi extern structs no C type mirrors one-to-one, each with the reason.
+const LAYOUT_EXEMPT = .{
+    .{ "Tm", "the host's struct tm, larger on purpose: glibc's tm_gmtoff and tm_zone are absent from other C libraries, and a callee filling a smaller struct tm writes inside it" },
+    .{ "RealBlob", "an opaque handle owners only pass to C; its size and alignment are Real's, asserted below" },
+    .{ "Real159", "a 159-digit decNumber that upstream declares through REAL_T_PTR rather than a named type; its header is Real's, asserted below" },
+};
+
+// Structs the tests above check by hand rather than through a table.
+const CHECKED_BY_HAND = .{ "Real", "Real34", "RealContext", "Complex34", "DateShort", "TimeShort" };
+
+fn layoutCovered(comptime name: []const u8) bool {
+    @setEvalBranchQuota(200_000);
+    inline for (SIZE_PAIRS) |pair| if (comptime std.mem.eql(u8, pair[2], name)) return true;
+    inline for (BITFIELD_AGGREGATES) |entry| if (comptime std.mem.eql(u8, entry[1], name)) return true;
+    inline for (LAYOUT_EXEMPT) |entry| if (comptime std.mem.eql(u8, entry[0], name)) return true;
+    inline for (CHECKED_BY_HAND) |hand| if (comptime std.mem.eql(u8, hand, name)) return true;
+    return false;
+}
+
+test "every abi extern struct is checked against C or exempted with a reason" {
+    // One comptime name comparison per abi declaration and table entry.
+    @setEvalBranchQuota(200_000);
+    inline for (comptime std.meta.declarations(abi)) |name| {
+        const value = @field(abi, name);
+        if (@TypeOf(value) == type) {
+            const info = @typeInfo(value);
+            if (info == .@"struct" and info.@"struct".layout == .@"extern" and !comptime layoutCovered(name)) {
+                std.debug.print("abi.{s} is an extern struct nothing checks against C: add it to SIZE_PAIRS, or to LAYOUT_EXEMPT with the reason\n", .{name});
+                return error.UncheckedLayout;
+            }
+        }
+    }
+}
+
+test "the exempt real views share Real's header" {
+    try testing.expectEqual(@sizeOf(abi.Real), @sizeOf(abi.RealBlob));
+    try testing.expectEqual(@alignOf(abi.Real), @alignOf(abi.RealBlob));
+    inline for (.{ "digits", "exponent", "bits", "lsu" }) |field| {
+        try testing.expectEqual(@offsetOf(abi.Real, field), @offsetOf(abi.Real159, field));
+    }
+}
 
 test "abi calc structs match upstream C size" {
     inline for (SIZE_PAIRS) |pair| {
