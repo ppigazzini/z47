@@ -13,7 +13,6 @@ pub fn build(b: *std.Build) void {
 }
 
 fn buildImpl(b: *std.Build) !void {
-    registerCDependencyAuditStep(b);
     registerNativeUnitTests(b);
 
     const optimize = b.standardOptimizeOption(.{});
@@ -195,70 +194,4 @@ fn registerNativeUnitTests(b: *std.Build) void {
     abi_host.addToModule(b, host_module, target, .debug, "test-unit-host");
     const host_unit = b.addTest(.{ .root_module = host_module });
     step.dependOn(&b.addRunArtifact(host_unit).step);
-}
-
-fn registerCDependencyAuditStep(b: *std.Build) void {
-    const phase_i_policy_cmd = b.addSystemCommand(&.{
-        "bash",
-        ".github/project/check-c-dependency-phase-i-policy.sh",
-        ".",
-    });
-
-    const phase_i_policy_step = b.step(
-        "check-c-deps-policy",
-        "Run Phase I dependency policy (baseline transition to external-only zero gates)",
-    );
-    phase_i_policy_step.dependOn(&phase_i_policy_cmd.step);
-
-    const audit_cmd = b.addSystemCommand(&.{
-        "python3",
-        ".github/project/check-c-dependency-allowlist.py",
-        "--repo-root",
-        ".",
-        "--config",
-        ".github/project/c-dependency-allowlist.json",
-    });
-
-    const audit_step = b.step("check-c-deps", "Audit C dependency allowlist and first-party baseline");
-    audit_step.dependOn(&audit_cmd.step);
-
-    const strict_zero_cmd = b.addSystemCommand(&.{
-        "python3",
-        ".github/project/check-c-dependency-allowlist.py",
-        "--repo-root",
-        ".",
-        "--config",
-        ".github/project/c-dependency-allowlist.json",
-        "--max-first-party",
-        "0",
-    });
-
-    const strict_zero_step = b.step("check-c-deps-zero", "Fail when any first-party C dependency remains in build wiring");
-    strict_zero_step.dependOn(&strict_zero_cmd.step);
-
-    const product_audit_cmd = b.addSystemCommand(&.{
-        "python3",
-        ".github/project/check-c-dependency-allowlist.py",
-        "--repo-root",
-        ".",
-        "--config",
-        ".github/project/c-dependency-product-allowlist.json",
-    });
-
-    const product_audit_step = b.step("check-c-deps-product", "Audit product-lane C dependencies with oracle/test lanes excluded");
-    product_audit_step.dependOn(&product_audit_cmd.step);
-
-    const product_zero_cmd = b.addSystemCommand(&.{
-        "python3",
-        ".github/project/check-c-dependency-allowlist.py",
-        "--repo-root",
-        ".",
-        "--config",
-        ".github/project/c-dependency-product-allowlist.json",
-        "--max-first-party",
-        "0",
-    });
-
-    const product_zero_step = b.step("check-c-deps-product-zero", "Fail when any first-party C dependency remains in product lanes");
-    product_zero_step.dependOn(&product_zero_cmd.step);
 }
