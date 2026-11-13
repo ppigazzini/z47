@@ -6,6 +6,18 @@ const firmware_steps = @import("build/firmware.zig");
 const host_steps = @import("build/host.zig");
 const object_manifest = @import("build/object_manifest.zig");
 
+// The oldest Zig this build accepts, read from build.zig.zon so the two cannot
+// disagree. A newer Zig, such as the master snapshot CI monitors, passes.
+comptime {
+    const zon = @embedFile("build.zig.zon");
+    const key = ".minimum_zig_version = \"";
+    const start = (std.mem.find(u8, zon, key) orelse @compileError("build.zig.zon names no minimum_zig_version")) + key.len;
+    const end = std.mem.indexOfScalarPos(u8, zon, start, '"') orelse @compileError("build.zig.zon: unterminated minimum_zig_version");
+    const minimum = std.SemanticVersion.parse(zon[start..end]) catch @compileError("build.zig.zon: minimum_zig_version is not a version");
+    if (@import("builtin").zig_version.order(minimum) == .lt)
+        @compileError("z47 needs Zig " ++ zon[start..end] ++ " or later; this is " ++ @import("builtin").zig_version_string);
+}
+
 pub fn build(b: *std.Build) void {
     buildImpl(b) catch |err| {
         std.debug.panic("build.zig configuration failed: {s}", .{@errorName(err)});
