@@ -1,4 +1,5 @@
 const std = @import("std");
+const opts = @import("host_gtk_options");
 
 const FILE_ERROR: c_int = 0;
 const FILE_OK: c_int = 1;
@@ -51,12 +52,7 @@ const IO_MODE_UPDATE: c_int = 2;
 const STATE_FILE_NAME_VAR_LENGTH: usize = 20;
 const DEFAULT_SAVE_NAME_BUFFER_LENGTH: usize = 7 * 11 + 1;
 
-const USER_DM42: u8 = 45;
 const USER_C47: u8 = 46;
-const USER_R47f_g: u8 = 61;
-const USER_R47bk_fg: u8 = 62;
-const USER_R47fg_bk: u8 = 63;
-const USER_R47fg_g: u8 = 64;
 const USER_R47: u8 = 66;
 
 const SAVE_FILE_C47 = "C47.sav";
@@ -115,7 +111,6 @@ extern fn gtk_dialog_run(dialog: ?*GtkDialog) c_int;
 extern fn gtk_widget_destroy(widget: ?*GtkWidget) void;
 
 extern var fileNameSelected: [STATE_FILE_NAME_VAR_LENGTH]u8;
-extern var calcModel: u8;
 extern var frmCalc: ?*GtkWidget;
 extern var tmpStringLabelOrVariableName: [*c]u8;
 
@@ -181,26 +176,20 @@ fn selectedFileNameSource(filename: [*c]u8) [*c]u8 {
     return filename + start;
 }
 
-fn isR47Family(model: u8) bool {
-    return switch (model) {
-        USER_R47, USER_R47f_g, USER_R47bk_fg, USER_R47fg_bk, USER_R47fg_g => true,
-        else => false,
-    };
-}
+// hal/io.h and c47-gtk/hal/io.c name the save files and backup.cfg from the
+// compile-time CALCMODEL, never from the layout chosen at run time.
+const built_for_r47 = opts.calcmodel == USER_R47;
 
 fn saveFileName() [*c]const u8 {
-    return if (isR47Family(calcModel)) SAVE_FILE_R47 else SAVE_FILE_C47;
+    return if (built_for_r47) SAVE_FILE_R47 else SAVE_FILE_C47;
 }
 
 fn autoSaveFileName() [*c]const u8 {
-    return if (isR47Family(calcModel)) AUTO_SAVE_FILE_R47 else AUTO_SAVE_FILE_C47;
+    return if (built_for_r47) AUTO_SAVE_FILE_R47 else AUTO_SAVE_FILE_C47;
 }
 
 fn backupFileName() [*c]const u8 {
-    return switch (calcModel) {
-        USER_C47, USER_DM42 => "backup.cfg",
-        else => "backupR47.cfg",
-    };
+    return if (opts.calcmodel == USER_C47) "backup.cfg" else "backupR47.cfg";
 }
 
 pub fn fileSelectionScreen(
