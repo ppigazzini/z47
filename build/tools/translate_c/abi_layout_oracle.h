@@ -27,3 +27,6 @@
 #include "mathematics/pcg_basic.h"
 typedef struct _GtkWidget GtkWidget;
 #include "typeDefinitions.h"
+#include "mathematics/toPolar.h"
+#include "longIntegerType.h"
+#include "registerValueConversions.h"
