@@ -21,6 +21,9 @@ pub const RuntimeObjectOptions = struct {
     stack_check: ?bool = null,
     omit_frame_pointer: ?bool = null,
     error_tracing: ?bool = null,
+    // The board this object is compiled for, set by the caller that builds
+    // for it; every board fact below derives from it.
+    board: build_common.Board = .host,
     // Build this object with SanitizerCoverage
     // trace-pc-guard so report-zig-coverage.sh can resolve the stack-state Zig
     // owner lines the host coverage harness executes. Measurement-only: set ONLY
@@ -77,7 +80,7 @@ fn addRuntimeObject(
     module.addOptions("stack_state_build_options", build_options);
 
     const descriptor_storage_options = b.addOptions();
-    descriptor_storage_options.addOption(bool, "use_array_backed_global_registers", std.mem.endsWith(u8, name_prefix, "parity") or std.mem.eql(u8, name_prefix, "dmcp"));
+    descriptor_storage_options.addOption(bool, "use_array_backed_global_registers", std.mem.endsWith(u8, name_prefix, "parity") or options.board.isOldHw());
     descriptor_storage_options.addOption(bool, "use_fake_state_harness_surface", std.mem.endsWith(u8, name_prefix, "parity"));
     module.addOptions("state_descriptor_storage_build_options", descriptor_storage_options);
 

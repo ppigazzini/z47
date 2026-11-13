@@ -16,6 +16,9 @@ pub const RuntimeObjectOptions = struct {
     stack_check: ?bool = null,
     omit_frame_pointer: ?bool = null,
     error_tracing: ?bool = null,
+    // The board this object is compiled for, set by the caller that builds
+    // for it; every board fact below derives from it.
+    board: build_common.Board = .host,
     // CALCMODEL as the id typeDefinitions.h gives it: USER_C47 = 46,
     // USER_R47 = 66. The owner stamps it into the save file's identity line
     // ("C47_save_file_00" / "R47_save_file_00") and compares it against the line
@@ -114,11 +117,9 @@ fn addRuntimeObject(
     module.addImport("core_state", core_state_module);
     const build_options = b.addOptions();
     build_options.addOption(u16, "calc_model_user_id", options.calc_model_user_id);
-    // OLD_HW (DMCP / original DM42) uses RAM_SIZE_IN_BLOCKS_OLD_HW and the
-    // OLD_HW program-relocation sign; DMCP5 / DM42n / host are NEW_HW. The
-    // firmware names the OLD_HW calc-state object "dmcp"/"dmcpr47" and the NEW_HW
-    // one "dmcp5"/"dmcp5r47"; host names are NEW_HW.
-    build_options.addOption(bool, "state_old_hw", std.mem.find(u8, name_prefix, "dmcp") != null and std.mem.find(u8, name_prefix, "dmcp5") == null);
+    // OLD_HW (the DM42) uses RAM_SIZE_IN_BLOCKS_OLD_HW and the OLD_HW
+    // program-relocation sign; DMCP5 and host are NEW_HW.
+    build_options.addOption(bool, "state_old_hw", options.board.isOldHw());
     build_options.addOption(bool, "option_xfn_1000", options.option_xfn_1000);
     build_options.addOption(bool, "option_structured_pgm", options.option_structured_pgm);
     build_options.addOption(bool, "ir_printing", options.ir_printing);

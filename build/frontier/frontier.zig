@@ -83,11 +83,11 @@ pub const RuntimeObjectOptions = struct {
     // out on firmware (DMCP_BUILD), so default off there to match and save flash;
     // host/sim keep them. Default true mirrors a normal host build.
     extra_info_on_calc_error: bool = true,
-    // Firmware (DMCP_BUILD) vs host: selects backToSystem error tails, drops the
-    // PC-only allocation tracking, and (with old_hw) the static-array layout of
-    // freeMemoryRegions. Defaults match a host build.
-    dmcp_build: bool = false,
-    old_hw: bool = false,
+    // The board this object is compiled for, set by the caller that builds for
+    // it. DMCP_BUILD selects the backToSystem error tails and drops the PC-only
+    // allocation tracking; OLD_HW selects the static-array layout of
+    // freeMemoryRegions.
+    board: build_common.Board = .host,
     // OPTION_ELEC gates the ELEC functions (fnJM body in c47Extensions/jm.c).
     // Upstream defines.h enables it by default and #undef's it for some DM42
     // packages (build/firmware.zig's dm42Package table); DMCP5 keeps it.
@@ -298,8 +298,8 @@ pub fn addBuildOptions(
     // errorMessage buffer and print on paths the C oracle compiles out.
     build_options.addOption(bool, "extra_info_on_calc_error", options.extra_info_on_calc_error and
         !std.mem.startsWith(u8, name_prefix, "testSuite"));
-    build_options.addOption(bool, "dmcp_build", options.dmcp_build);
-    build_options.addOption(bool, "old_hw", options.old_hw);
+    build_options.addOption(bool, "dmcp_build", options.board.isDmcp());
+    build_options.addOption(bool, "old_hw", options.board.isOldHw());
     build_options.addOption(bool, "option_elec", options.option_elec);
     build_options.addOption(u8, "calcmodel", options.calcmodel);
     build_options.addOption(bool, "ir_printing", options.ir_printing);
@@ -340,7 +340,11 @@ pub fn addBuildOptions(
     const version_str = b.fmt("  {s} {s}.", .{ modeltext, stamp.string(b, sp3) });
     // screen.c: PC_BUILD says Sim, TWO_FILE_PGM (the DM42, OLD_HW) says QSPI,
     // and DMCP5, which has no TWO_FILE_PGM, says No QSPI.
-    const sim_or_qspi = if (!options.dmcp_build) "Sim" else if (options.old_hw) "QSPI" else "No QSPI";
+    const sim_or_qspi = switch (options.board) {
+        .host => "Sim",
+        .dmcp => "QSPI",
+        .dmcp5 => "No QSPI",
+    };
     const version_str2 = b.fmt("  {s} {s} {s}, dd ", .{ modeltext, sim_or_qspi, version1 });
     build_options.addOption([]const u8, "version_str", version_str);
     build_options.addOption([]const u8, "version_str2", version_str2);

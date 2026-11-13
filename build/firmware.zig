@@ -301,14 +301,10 @@ fn applyDistributionGates(opts: anytype, pkg: Dm42Package) void {
     opts.option_dist_unfm = pkg.dist_d;
 }
 
-// Apply the DM42 board and package OPTION_* to a frontier build options value.
-// Only the DM42 (OLD_HW) objects go through here; DMCP5 takes the host-shaped
-// defaults unchanged.
+// Apply the DM42 package OPTION_* to a frontier build options value. Only the
+// DM42 objects go through here; DMCP5 takes the host-shaped defaults unchanged.
 fn frontierDistributionStrip(base: frontier.RuntimeObjectOptions, dmcp_package: ?u8) frontier.RuntimeObjectOptions {
     var opts = base;
-    // The DMCP (DM42) family is OLD_HW, where freeMemoryRegions is a static
-    // array rather than a pointer. DMCP5 (NEW_HW) keeps the pointer layout.
-    opts.old_hw = true;
     // Settled by the block common to packages 1-4, so the same for all four.
     opts.option_vector = false; // !OPTION_VECTOR: no 2D/3D vector commands or TI
     opts.option_xfn_1000 = false; // !OPTION_XFN_1000: no 1000-digit XFN entries
@@ -342,12 +338,9 @@ fn frontierDistributionStrip(base: frontier.RuntimeObjectOptions, dmcp_package: 
 
 // Apply the DM42 board and package OPTION_* to a mathematics build options
 // value. The mathematics owners are the port of upstream's src/c47/mathematics/,
-// so the options that gate bodies there are the ones set here. The DM42 board is
-// OLD_HW, marked here rather than inferred from the object's name prefix: the
-// name is a label, the board is the fact.
+// so the options that gate bodies there are the ones set here.
 fn mathematicsPackageOptions(base: math_command_wrappers.RuntimeObjectOptions, dmcp_package: ?u8) math_command_wrappers.RuntimeObjectOptions {
     var opts = base;
-    opts.old_hw = true;
     // Settled by the block common to packages 1-4, so the same for all four.
     opts.option_vector = false;
     opts.option_xfn_1000 = false;
@@ -382,21 +375,18 @@ fn calcStateOptions(base: calc_state.RuntimeObjectOptions, dmcp_package: ?u8) ca
     return opts;
 }
 
-// Apply the DM42 board and package OPTION_* to a keyboard-state build options
-// value.
+// Apply the DM42 package OPTION_* to a keyboard-state build options value.
 fn keyboardStateOptions(base: keyboard_state.RuntimeObjectOptions, dmcp_package: ?u8) keyboard_state.RuntimeObjectOptions {
     var opts = base;
-    opts.old_hw = true; // DM42: quarter-size pool, read by leavePem
     opts.option_structured_pgm = dm42Package(dmcp_package).structured_pgm; // without it there is no VALID to run on the way out of the editor
     opts.ir_printing = dm42Package(dmcp_package).ir_printing; // without it a program stop neither refreshes the status bar nor traces
     return opts;
 }
 
-// Apply the DM42 board and package OPTION_* to a program-serialization build
-// options value.
+// Apply the DM42 package OPTION_* to a program-serialization build options
+// value.
 fn programSerializationOptions(base: program_serialization.RuntimeObjectOptions, dmcp_package: ?u8) program_serialization.RuntimeObjectOptions {
     var opts = base;
-    opts.old_hw = true; // DM42: quarter-size pool
     opts.option_structured_pgm = dm42Package(dmcp_package).structured_pgm; // without it there is nothing to refuse, to validate, or to indent
     opts.ir_printing = dm42Package(dmcp_package).ir_printing; // without it PRINT PROG to the IR printer does nothing
     return opts;
@@ -535,10 +525,6 @@ pub fn registerSteps(
         // Only the r47 firmware targets are built with -DCALCMODEL=USER_R47; the
         // C47 ones take the defines.h default. The r47 objects below override it.
         .calcmodel = user_c47,
-        // Firmware build: use backToSystem tails and drop the PC allocation
-        // tracking. old_hw (static freeMemoryRegions array) is set per board by
-        // frontierDistributionStrip for DMCP; DMCP5 keeps the default (pointer).
-        .dmcp_build = true,
         // OPTION_SAMPLEPGMS is #undef'd for NEW_HW and again in the block common
         // to packages 1-4, so no DMCP build carries the sample programs.
         .option_samplepgms = false,
@@ -559,12 +545,12 @@ pub fn registerSteps(
     // _SLVP_POLY each empty the matching command bodies upstream, so the object
     // cannot be shared.
     const dmcp_math_command_wrapper_options = mathematicsPackageOptions(firmware_math_command_wrapper_options, dmcp_package);
-    const dmcp_math_command_wrapper_objects = math_command_wrappers.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", dmcp_math_command_wrapper_options);
-    const dmcp5_math_command_wrapper_objects = math_command_wrappers.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5", firmware_math_command_wrapper_options);
+    const dmcp_math_command_wrapper_objects = math_command_wrappers.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", onBoard(.dmcp, dmcp_math_command_wrapper_options));
+    const dmcp5_math_command_wrapper_objects = math_command_wrappers.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5", onBoard(.dmcp5, firmware_math_command_wrapper_options));
     const dmcp_constants_objects = constants.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", firmware_constants_options);
     const dmcp5_constants_objects = constants.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5", firmware_constants_options);
-    const dmcp_tone_objects = tone.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", firmware_tone_options);
-    const dmcp5_tone_objects = tone.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5", firmware_tone_options);
+    const dmcp_tone_objects = tone.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", onBoard(.dmcp, firmware_tone_options));
+    const dmcp5_tone_objects = tone.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5", onBoard(.dmcp5, firmware_tone_options));
     const dmcp_keyboard_state_board: keyboard_state.FirmwareModuleConfig = .{
         .board_source_dir = build_common.upstreamPathString(b, firmwareBoardSourceDir(.dmcp)),
         .sdk_include_dir = build_common.upstreamPathString(b, firmwareSdkIncludeDir(.dmcp)),
@@ -589,7 +575,7 @@ pub fn registerSteps(
     };
     var firmware_r47_keyboard_state_options = firmware_keyboard_state_options;
     firmware_r47_keyboard_state_options.is_r47 = true;
-    const dmcp_keyboard_state_objects = keyboard_state.addFirmwareRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", dmcp_keyboard_state_board, keyboardStateOptions(firmware_keyboard_state_options, dmcp_package));
+    const dmcp_keyboard_state_objects = keyboard_state.addFirmwareRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", dmcp_keyboard_state_board, onBoard(.dmcp, keyboardStateOptions(firmware_keyboard_state_options, dmcp_package)));
     const dmcp5_keyboard_state_objects = keyboard_state.addFirmwareRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5", .{
         .board_source_dir = build_common.upstreamPathString(b, firmwareBoardSourceDir(.dmcp5)),
         .sdk_include_dir = build_common.upstreamPathString(b, firmwareSdkIncludeDir(.dmcp5)),
@@ -607,6 +593,7 @@ pub fn registerSteps(
         .stack_check = false,
         .omit_frame_pointer = true,
         .error_tracing = false,
+        .board = .dmcp5,
         // Firmware is DMCP_BUILD, where upstream compiles the EXTRA_INFO console
         // hints out; match that to stay faithful.
         .extra_info_on_calc_error = false,
@@ -614,7 +601,7 @@ pub fn registerSteps(
     // R47 variants build the keyboard-state object with is_r47 = true so its DMCP
     // key ring buffer keyBuffer_pop applies convertKeyCode, matching the upstream
     // `#if CALCMODEL == USER_R47`. Same board config as the C47 object otherwise.
-    const dmcpr47_keyboard_state_objects = keyboard_state.addFirmwareRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcpr47", dmcp_keyboard_state_board, keyboardStateOptions(firmware_r47_keyboard_state_options, dmcp_package));
+    const dmcpr47_keyboard_state_objects = keyboard_state.addFirmwareRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcpr47", dmcp_keyboard_state_board, onBoard(.dmcp, keyboardStateOptions(firmware_r47_keyboard_state_options, dmcp_package)));
     const dmcp5r47_keyboard_state_objects = keyboard_state.addFirmwareRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5r47", .{
         .board_source_dir = build_common.upstreamPathString(b, firmwareBoardSourceDir(.dmcp5)),
         .sdk_include_dir = build_common.upstreamPathString(b, firmwareSdkIncludeDir(.dmcp5)),
@@ -632,43 +619,42 @@ pub fn registerSteps(
         .stack_check = false,
         .omit_frame_pointer = true,
         .error_tracing = false,
+        .board = .dmcp5,
         .is_r47 = true,
         // Firmware is DMCP_BUILD, where upstream compiles the EXTRA_INFO console
         // hints out; match that to stay faithful.
         .extra_info_on_calc_error = false,
     });
-    const dmcp_memory_state_objects = memory.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", firmware_memory_options);
-    const dmcp5_memory_state_objects = memory.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5", firmware_memory_options);
+    const dmcp_memory_state_objects = memory.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", onBoard(.dmcp, firmware_memory_options));
+    const dmcp5_memory_state_objects = memory.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5", onBoard(.dmcp5, firmware_memory_options));
     // Four calc-state objects, not two: the object carries CALCMODEL, so the R47
-    // firmware of a board cannot share the C47 one. state_old_hw still comes off
-    // the name, and the r47 names keep it right ("dmcpr47" is OLD_HW, "dmcp5r47"
-    // is not).
-    const dmcp_calc_state_objects = calc_state.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", calcStateOptions(firmware_calc_state_options, dmcp_package));
-    const dmcpr47_calc_state_objects = calc_state.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcpr47", calcStateOptions(firmware_r47_calc_state_options, dmcp_package));
-    const dmcp5_calc_state_objects = calc_state.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5", firmware_calc_state_options);
-    const dmcp5r47_calc_state_objects = calc_state.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5r47", firmware_r47_calc_state_options);
-    const dmcp_program_serialization_objects = program_serialization.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", programSerializationOptions(firmware_program_serialization_options, dmcp_package));
-    const dmcp5_program_serialization_objects = program_serialization.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5", firmware_program_serialization_options);
+    // firmware of a board cannot share the C47 one.
+    const dmcp_calc_state_objects = calc_state.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", onBoard(.dmcp, calcStateOptions(firmware_calc_state_options, dmcp_package)));
+    const dmcpr47_calc_state_objects = calc_state.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcpr47", onBoard(.dmcp, calcStateOptions(firmware_r47_calc_state_options, dmcp_package)));
+    const dmcp5_calc_state_objects = calc_state.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5", onBoard(.dmcp5, firmware_calc_state_options));
+    const dmcp5r47_calc_state_objects = calc_state.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5r47", onBoard(.dmcp5, firmware_r47_calc_state_options));
+    const dmcp_program_serialization_objects = program_serialization.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", onBoard(.dmcp, programSerializationOptions(firmware_program_serialization_options, dmcp_package)));
+    const dmcp5_program_serialization_objects = program_serialization.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5", onBoard(.dmcp5, firmware_program_serialization_options));
     // The frontier object embeds package-specific distribution stubbing, so it
     // must be built per package (the DM42 family) rather than shared. The
     // dmcp/dmcpr47 steps both build DMCP_PACKAGE=`dmcp_package`.
-    const dmcp_frontier_objects = frontier.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, b.fmt("dmcp-pkg{d}", .{dmcp_package}), frontierDistributionStrip(firmware_frontier_options, dmcp_package));
-    const dmcp5_frontier_objects = frontier.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5", firmware_frontier_options);
+    const dmcp_frontier_objects = frontier.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, b.fmt("dmcp-pkg{d}", .{dmcp_package}), onBoard(.dmcp, frontierDistributionStrip(firmware_frontier_options, dmcp_package)));
+    const dmcp5_frontier_objects = frontier.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5", onBoard(.dmcp5, firmware_frontier_options));
     // USER_R47 (66) seeds calcModel to USER_R47f_g, which isR47FAM reads to pick
     // the R47 key remap and layout. Only the r47 targets get it.
     var firmware_r47_frontier_options = firmware_frontier_options;
     firmware_r47_frontier_options.calcmodel = user_r47;
-    const dmcpr47_frontier_objects = frontier.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, b.fmt("dmcpr47-pkg{d}", .{dmcp_package}), frontierDistributionStrip(firmware_r47_frontier_options, dmcp_package));
-    const dmcp5r47_frontier_objects = frontier.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5r47", firmware_r47_frontier_options);
+    const dmcpr47_frontier_objects = frontier.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, b.fmt("dmcpr47-pkg{d}", .{dmcp_package}), onBoard(.dmcp, frontierDistributionStrip(firmware_r47_frontier_options, dmcp_package)));
+    const dmcp5r47_frontier_objects = frontier.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5r47", onBoard(.dmcp5, firmware_r47_frontier_options));
     // OPTION_TVM_FORMULAS, _TVM_NEWTON, _TVM_AMORT and _SLVP_POLY differ between
     // the DM42 packages, so the solver object is per package the way the frontier
     // one is.
-    const dmcp_solve_objects = solve.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", solverPackageOptions(firmware_solve_options, dmcp_package));
-    const dmcp5_solve_objects = solve.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5", firmware_solve_options);
-    const dmcp_register_metadata_objects = register_metadata.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", firmware_register_metadata_options);
-    const dmcp5_register_metadata_objects = register_metadata.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5", firmware_register_metadata_options);
-    const dmcp_stack_state_objects = stack.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", firmware_stack_options);
-    const dmcp5_stack_state_objects = stack.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5", firmware_stack_options);
+    const dmcp_solve_objects = solve.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", onBoard(.dmcp, solverPackageOptions(firmware_solve_options, dmcp_package)));
+    const dmcp5_solve_objects = solve.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5", onBoard(.dmcp5, firmware_solve_options));
+    const dmcp_register_metadata_objects = register_metadata.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", onBoard(.dmcp, firmware_register_metadata_options));
+    const dmcp5_register_metadata_objects = register_metadata.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5", onBoard(.dmcp5, firmware_register_metadata_options));
+    const dmcp_stack_state_objects = stack.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", onBoard(.dmcp, firmware_stack_options));
+    const dmcp5_stack_state_objects = stack.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5", onBoard(.dmcp5, firmware_stack_options));
     const dmcp_audio_runtime_object = addFirmwareAudioRuntimeObject(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", firmware_stack_options, .dmcp);
     const dmcp5_audio_runtime_object = addFirmwareAudioRuntimeObject(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5", firmware_stack_options, .dmcp5);
     const dmcp_print_ir_runtime_object = addFirmwarePrintIrRuntimeObject(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", firmware_stack_options, .dmcp);
@@ -727,14 +713,14 @@ pub fn registerSteps(
     const dmcp_packages = [_]u8{ 1, 2, 3 };
     var dmcp_variants: [dmcp_packages.len]VariantBuild = undefined;
     for (dmcp_packages, 0..) |package, index| {
-        const variant_frontier_objects = frontier.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, b.fmt("dmcp-variant-pkg{d}", .{package}), frontierDistributionStrip(firmware_frontier_options, package));
-        const variant_math_command_wrapper_objects = math_command_wrappers.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", mathematicsPackageOptions(firmware_math_command_wrapper_options, package));
-        const variant_solve_objects = solve.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", solverPackageOptions(firmware_solve_options, package));
+        const variant_frontier_objects = frontier.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, b.fmt("dmcp-variant-pkg{d}", .{package}), onBoard(.dmcp, frontierDistributionStrip(firmware_frontier_options, package)));
+        const variant_math_command_wrapper_objects = math_command_wrappers.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", onBoard(.dmcp, mathematicsPackageOptions(firmware_math_command_wrapper_options, package)));
+        const variant_solve_objects = solve.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", onBoard(.dmcp, solverPackageOptions(firmware_solve_options, package)));
         // OPTION_STRUCTURED_PGM differs between the DM42 packages too, so the
         // three state objects that read it are per package as well.
-        const variant_keyboard_state_objects = keyboard_state.addFirmwareRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", dmcp_keyboard_state_board, keyboardStateOptions(firmware_keyboard_state_options, package));
-        const variant_calc_state_objects = calc_state.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", calcStateOptions(firmware_calc_state_options, package));
-        const variant_program_serialization_objects = program_serialization.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", programSerializationOptions(firmware_program_serialization_options, package));
+        const variant_keyboard_state_objects = keyboard_state.addFirmwareRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", dmcp_keyboard_state_board, onBoard(.dmcp, keyboardStateOptions(firmware_keyboard_state_options, package)));
+        const variant_calc_state_objects = calc_state.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", onBoard(.dmcp, calcStateOptions(firmware_calc_state_options, package)));
+        const variant_program_serialization_objects = program_serialization.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", onBoard(.dmcp, programSerializationOptions(firmware_program_serialization_options, package)));
         const variant_build = addFirmwareBuild(b, .{
             .step_name = b.fmt("dmcp_pkg{d}", .{package}),
             .description = b.fmt("Build the C47 DMCP firmware for package {d} without Make or Meson", .{package}),
@@ -1142,6 +1128,21 @@ fn addObjcopyBinary(
     cmd.addFileArg2(input, .{});
     const output = cmd.addOutputFileArg2(basename, .{});
     return .{ .step = &cmd.step, .path = output };
+}
+
+/// The owner-side name of a firmware board.
+fn ownerBoard(board: Board) build_common.Board {
+    return switch (board) {
+        .dmcp => .dmcp,
+        .dmcp5 => .dmcp5,
+    };
+}
+
+/// `options` for an owner object compiled for `board`.
+fn onBoard(board: Board, options: anytype) @TypeOf(options) {
+    var placed = options;
+    placed.board = ownerBoard(board);
+    return placed;
 }
 
 fn firmwareLibraryFnBase(board: Board) usize {

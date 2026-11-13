@@ -13,9 +13,9 @@ pub const RuntimeObjects = struct {
 };
 
 pub const RuntimeObjectOptions = struct {
-    // OLD_HW selects the DM42 memory pool size, which is a quarter of the one
-    // every other target uses.
-    old_hw: bool = false,
+    // The board this object is compiled for, set by the caller that builds
+    // for it; every board fact below derives from it.
+    board: build_common.Board = .host,
     // OPTION_STRUCTURED_PGM: the exported and stored program is refused while a
     // structure carries no partner number, a load runs VALID under AVALID, and the
     // listing indents a structure's body (OPTION_STRUCT_INDENT, which structured.h
@@ -65,7 +65,8 @@ fn addRuntimeObject(
     });
     module.addImport("abi", abi_module);
     const build_options = b.addOptions();
-    build_options.addOption(bool, "state_old_hw", options.old_hw);
+    // OLD_HW selects the DM42 memory pool size.
+    build_options.addOption(bool, "state_old_hw", options.board.isOldHw());
     build_options.addOption(bool, "option_structured_pgm", options.option_structured_pgm);
     build_options.addOption(bool, "ir_printing", options.ir_printing);
     module.addOptions("program_serialization_build_options", build_options);

@@ -34,12 +34,9 @@ pub const RuntimeObjectOptions = struct {
     /// loads the sample programs. The testSuite and the full-core harnesses set
     /// it; the product and the simulator leave it false.
     is_testsuite_build: bool = false,
-    /// The DM42 board (OLD_HW). Its SRAM2 .bss ends exactly at the DMCP system
-    /// data block, and the four inverse-trig result slots are 588 bytes it does
-    /// not have, so that board computes every call instead of caching it. Set by
-    /// the two firmware call sites that build for the board, not inferred from
-    /// the object name.
-    old_hw: bool = false,
+    /// The board this object is compiled for, set by the caller that builds for
+    /// it; every board fact the options carry derives from it.
+    board: build_common.Board = .host,
     strip: ?bool = null,
     unwind_tables: ?std.lang.UnwindTables = null,
     stack_protector: ?bool = null,
@@ -182,19 +179,20 @@ pub fn addBuildOptions(
     // which a test on the target name used to miss or catch only by accident.
     build_options.addOption(bool, "is_testsuite_build", options.is_testsuite_build);
     // Mirror "#if defined(DMCP_BUILD) && HARDWARE_MODEL == HWM_DM42" from wp34s.c:
-    // only the DM42 firmware ("dmcp", not "dmcp5"/sim/testSuite) uses the small
-    // fallback mod buffers / reduced mod precision.
-    build_options.addOption(bool, "wp34s_mod_small_buffers", std.mem.eql(u8, name_prefix, "dmcp"));
-    // The flash-limited DM42 old_hw firmware ("dmcp", not "dmcp5"/sim/testSuite)
-    // runs the heavy/cold math owners (bessel, elliptic, opmod, power, xthRoot)
-    // from executable QSPI (XIP) to keep main FLASH free; same mechanism the
-    // dateTime owner and the distribution owners use.
-    build_options.addOption(bool, "dm42_pkg_xip", std.mem.eql(u8, name_prefix, "dmcp"));
+    // only the DM42 uses the small fallback mod buffers and reduced mod
+    // precision.
+    build_options.addOption(bool, "wp34s_mod_small_buffers", options.board.isOldHw());
+    // The flash-limited DM42 runs the heavy, cold math owners (bessel, elliptic,
+    // opmod, power, xthRoot) from executable QSPI (XIP) to keep main FLASH free;
+    // the dateTime and distribution owners use the same placement.
+    build_options.addOption(bool, "dm42_pkg_xip", options.board.isOldHw());
     // The four inverse-trig result slots are 588 bytes of .bss, which the DM42
     // does not have (its .bss ends exactly at the DMCP system data block). A hit
     // returns what a recompute returns -- that is what upstream's CACHE_VERIFY
     // build asserts -- so leaving them out costs the board speed and nothing else.
-    build_options.addOption(bool, "trig_result_cache", !options.old_hw);
+    // The DM42's SRAM2 .bss ends exactly at the DMCP system data block, and the
+    // four inverse-trig result slots are 588 bytes it does not have.
+    build_options.addOption(bool, "trig_result_cache", !options.board.isOldHw());
     build_options.addOption(bool, "option_xfn_1000", options.option_xfn_1000);
     build_options.addOption(bool, "option_drg_cfg", options.option_drg_cfg);
     build_options.addOption(bool, "option_slvp_poly", options.option_slvp_poly);

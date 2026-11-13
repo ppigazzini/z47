@@ -1,4 +1,5 @@
 const std = @import("std");
+const build_common = @import("../common.zig");
 
 const replaced_core_sources_manifest = @embedFile("solve_replaced_core_sources.txt");
 
@@ -23,6 +24,9 @@ pub const RuntimeObjectOptions = struct {
     stack_check: ?bool = null,
     omit_frame_pointer: ?bool = null,
     error_tracing: ?bool = null,
+    // The board this object is compiled for, set by the caller that builds
+    // for it; every board fact below derives from it.
+    board: build_common.Board = .host,
     // Per-package OPTION_* from defines.h, all defaulting to a host build. Which
     // DM42 packages keep each one is build/firmware.zig's dm42Package table.
     //
@@ -81,23 +85,24 @@ fn addRuntimeObject(
     });
     module.addImport("abi", abi_module);
     const build_options = b.addOptions();
-    // The flash-limited DM42 old_hw firmware ("dmcp", not "dmcp5"/sim/testSuite)
-    // runs the heavy/cold solver owners (tvm, sumprod) from executable QSPI
-    // (XIP) to keep main FLASH free; same mechanism as the mathematics owners.
-    build_options.addOption(bool, "dm42_pkg_xip", std.mem.eql(u8, name_prefix, "dmcp"));
+    // The flash-limited DM42 runs the heavy, cold solver owners (tvm, sumprod)
+    // from executable QSPI (XIP) to keep main FLASH free; the mathematics owners
+    // use the same placement.
+    build_options.addOption(bool, "dm42_pkg_xip", options.board.isOldHw());
     // Passed in by whoever also hands the C sources -DTESTSUITE_BUILD, so the Zig
     // solver owners (tvm.zig) take the testSuite code path -- fnTvmVar's `testing`
     // short-circuit -- in every executable whose C half is a testSuite build. That
     // includes the ASAN lane and the full-core harnesses, which a test on the
     // target name used to miss or catch only by accident.
     build_options.addOption(bool, "is_testsuite_build", options.is_testsuite_build);
-    // DMCP firmware builds (both "dmcp" old_hw and "dmcp5") stub calcModeAimGui()
-    // to a no-op (hal/gui.h: #if defined(DMCP_BUILD) ...); the on-screen-keyboard
-    // sim/testSuite link the real function. equation.zig mirrors this.
-    build_options.addOption(bool, "is_dmcp_build", std.mem.startsWith(u8, name_prefix, "dmcp"));
-    // OLD_HW (DM42, name_prefix "dmcp") vs NEW_HW (DM42n/DMCP5, "dmcp5"): the engine-nesting depth cap
-    // (MAX_ENGINE_NESTING_DEPTH / PLOT_NESTING_ALLOWED) is hardware-tier-specific.
-    build_options.addOption(bool, "is_old_hw", std.mem.eql(u8, name_prefix, "dmcp"));
+    // Both firmware boards stub calcModeAimGui() to a no-op (hal/gui.h: #if
+    // defined(DMCP_BUILD) ...); the on-screen-keyboard sim and testSuite link the
+    // real function. equation.zig mirrors this.
+    build_options.addOption(bool, "is_dmcp_build", options.board.isDmcp());
+    // OLD_HW against NEW_HW: the engine-nesting depth cap
+    // (MAX_ENGINE_NESTING_DEPTH / PLOT_NESTING_ALLOWED) is hardware-tier-specific,
+    // and HARDWARE_MODEL == HWM_DM42 selects TVM's working precision.
+    build_options.addOption(bool, "is_old_hw", options.board.isOldHw());
     build_options.addOption(bool, "option_infsums", options.option_infsums);
     build_options.addOption(bool, "option_slvp_poly", options.option_slvp_poly);
     build_options.addOption(bool, "option_tvm_formulas", options.option_tvm_formulas);

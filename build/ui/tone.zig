@@ -17,22 +17,21 @@ pub const RuntimeObjectOptions = struct {
     stack_check: ?bool = null,
     omit_frame_pointer: ?bool = null,
     error_tracing: ?bool = null,
+    // The board this object is compiled for, set by the caller that builds
+    // for it; every board fact below derives from it.
+    board: build_common.Board = .host,
 };
 
 const replaced_core_sources = [_][]const u8{
     "ui/" ++ "tone.c",
 };
 
-fn firmwareLibraryFnBase(target: std.Build.ResolvedTarget, name_prefix: []const u8) usize {
-    if (target.result.os.tag != .freestanding) {
-        return 0;
-    }
-
-    if (std.mem.startsWith(u8, name_prefix, "dmcp5")) {
-        return 0x08000301;
-    }
-
-    return 0x08000201;
+fn firmwareLibraryFnBase(board: build_common.Board) usize {
+    return switch (board) {
+        .host => 0,
+        .dmcp => 0x08000201,
+        .dmcp5 => 0x08000301,
+    };
 }
 
 fn addRuntimeObject(
@@ -62,7 +61,7 @@ fn addRuntimeObject(
     });
     module.addImport("abi", abi_module);
     const build_options = b.addOptions();
-    build_options.addOption(usize, "library_fn_base", firmwareLibraryFnBase(target, name_prefix));
+    build_options.addOption(usize, "library_fn_base", firmwareLibraryFnBase(options.board));
     module.addOptions("tone_build_options", build_options);
 
     return b.addObject(.{

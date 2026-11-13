@@ -17,6 +17,9 @@ pub const RuntimeObjectOptions = struct {
     stack_check: ?bool = null,
     omit_frame_pointer: ?bool = null,
     error_tracing: ?bool = null,
+    // The board this object is compiled for, set by the caller that builds
+    // for it; every board fact below derives from it.
+    board: build_common.Board = .host,
     // EXTRA_INFO_ON_CALC_ERROR. The register-metadata owners format the
     // "is not defined!" subject and range into the shared errorMessage buffer,
     // which upstream compiles out with the hints; the macro is 0 on firmware and
@@ -69,7 +72,7 @@ fn addRuntimeObject(
     module.addOptions("register_metadata_build_options", register_metadata_options);
 
     const descriptor_storage_options = b.addOptions();
-    descriptor_storage_options.addOption(bool, "use_array_backed_global_registers", std.mem.endsWith(u8, name_prefix, "parity") or std.mem.eql(u8, name_prefix, "dmcp"));
+    descriptor_storage_options.addOption(bool, "use_array_backed_global_registers", std.mem.endsWith(u8, name_prefix, "parity") or options.board.isOldHw());
     descriptor_storage_options.addOption(bool, "use_fake_state_harness_surface", std.mem.endsWith(u8, name_prefix, "parity"));
     module.addOptions("state_descriptor_storage_build_options", descriptor_storage_options);
 
