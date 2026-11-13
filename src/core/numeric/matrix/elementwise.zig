@@ -3,8 +3,7 @@
 // function pointer that reads/writes REGISTER_X / REGISTER_Y) to every element
 // of a matrix, promoting real -> complex on demand. They are the dispatch
 // substrate used by the monadic/dyadic command cells across the math owners, so
-// each is exported under its canonical name and the C copy is bridge-renamed to
-// the legacy prefix.
+// each is exported under its canonical name.
 //
 // callByVectorElement / callByIndexedMatrix are the indexed-matrix element
 // dispatchers used by the MIM-routed commands (fnGetMatrix/fnPutMatrix/...).

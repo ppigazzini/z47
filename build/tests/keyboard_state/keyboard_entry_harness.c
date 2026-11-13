@@ -120,17 +120,8 @@ int main(void) {
   extern uint8_t *lcd_buffer;
   lcd_buffer = (uint8_t *)calloc((size_t)240 * (400 / 8 + 2) + 4, 1) + 2;
 
-  // The kbd_std_C47 FNV-1a layout checksum that used to sit here is GONE
-  //. It existed because "the keyboard Zig owners have no
-  // compiled C oracle (the bridge was deleted)", and that is no longer true:
-  // keyboard_state_parity compiles c43's keyboard.c AND assign.c, and compares all
-  // six layout tables against c43's own, entry for entry, on every run.
-  //
-  // The checksum was strictly weaker than what replaced it. It could say "the
-  // layout changed" and never "which side is wrong", and its refresh instruction
-  // -- "read the printed actual and update KBD_LAYOUT_FNV1A" -- is the same
-  // keystroke whether the change was an intended upstream edit or a porting
-  // mistake. A reference that a human re-pins after a failure is not a reference.
+  // This lane checks key entry only. The layout tables are compared against c43's
+  // own, entry for entry, by keyboard_state_parity.
 
   const keyStep_t seq[] = {
     {"28", ITM_1,     CM_NIM,    "1"},

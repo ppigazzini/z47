@@ -26,8 +26,8 @@
 // INLINE_TEST is #undef'd unconditionally upstream, so its table/render branches
 // take the !INLINE_TEST path.
 //
-// fnDynamicMenu itself is owned by shell.zig. This module provides two bridge
-// helpers (z47_frontier_dynamic_menu_softmenu_id / _item) that read its inputs,
+// fnDynamicMenu itself is owned by shell.zig. This module provides two
+// cross-owner helpers (z47_frontier_dynamic_menu_softmenu_id / _item) that read its inputs,
 // softmenuStack[0].softmenuId and dynamicMenuItem.
 //
 // DMCP ROM trampolines (lcd_fill_rect, bitblt24 behind setBlackPixel/setWhitePixel)
@@ -1401,7 +1401,7 @@ pub export fn getNthString(ptr_in: [*c]u8, n_in: i16) callconv(.c) [*c]u8 {
     return p;
 }
 
-// fnDynamicMenu is owned elsewhere; the two bridge helpers read its inputs.
+// fnDynamicMenu is owned elsewhere; the two cross-owner helpers read its inputs.
 pub fn z47_frontier_dynamic_menu_softmenu_id() i16 {
     return softmenuStack[0].softmenuId;
 }

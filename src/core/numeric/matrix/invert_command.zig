@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // Zig port of the fnInvertMatrix command of src/c47/mathematics/matrix.c:
 // replace register X by the inverse of the square matrix it holds (real or
-// complex). The numeric inverse (invertRealMatrix / invertComplexMatrix) still
-// lives in the matrix bridge; this is the command-level wrapper that links the
+// complex). The numeric inverse (invertRealMatrix / invertComplexMatrix) is
+// invert.zig's; this is the command-level wrapper that links the
 // register, checks squareness, stores the inverted matrix and handles the
 // singular / error paths.
 

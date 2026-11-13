@@ -2,7 +2,7 @@
 // Zig port of the fnMatrixIdentity command of src/c47/mathematics/matrix.c:
 // build an identity matrix of the dimensions read from the stack into register
 // X. The register allocation (initMatrixRegister) and the dimension argument
-// parsing (getDimensionArg) still live in the matrix bridge; this is the
+// parsing (getDimensionArg) have owners of their own; this is the
 // command-level wrapper that drives them and sets the diagonal to one.
 
 const std = @import("std");

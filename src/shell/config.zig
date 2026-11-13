@@ -21,7 +21,7 @@ const display_format = @import("display/display_format.zig");
 // fnFractionType, fnRange, fnHide, fnConfirmationYes, fnConfirmationNo, fnGetRange,
 // fnGetHide, fnGetLastErr, fnClAll, fnKeysManagement.
 //
-// Three keys helper functions and three small bridge helpers
+// Three keys helper functions and three small cross-owner helpers
 // (z47_frontier_keys_to_user_case,
 // z47_frontier_keys_from_user_case, z47_frontier_keys_user_layout_reset_case,
 // z47_frontier_push_u32_to_x, z47_frontier_release_saved_statistical_sums,
@@ -1034,7 +1034,7 @@ inline fn setStatPgmEnd() void {
 }
 
 // ===========================================================================
-// Preserved bridge helpers (other owners extern these).
+// Cross-owner helpers (other owners extern these).
 // ===========================================================================
 pub fn z47_frontier_push_u32_to_x(value: u32) void {
     var tmp: mpz_struct = undefined;

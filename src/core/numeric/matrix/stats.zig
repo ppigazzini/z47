@@ -2,8 +2,7 @@
 // Zig port of the STATS-matrix undo helpers of src/c47/mathematics/matrix.c:
 // saveStatsMatrix backs up the named STATS matrix into a temp register before a
 // statistics operation, and recallStatsMatrix restores it on undo. Both delegate
-// to the still-bridged initMatrixRegister and the register/named-variable
-// surface.
+// to initMatrixRegister and the register/named-variable surface.
 
 const std = @import("std");
 const runtime = @import("../command_wrappers/runtime.zig");

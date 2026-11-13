@@ -2,7 +2,7 @@
 // Zig port of the named-matrix helpers of src/c47/mathematics/matrix.c:
 // allocateNamedMatrix finds-or-allocates a named variable and redimensions it
 // to a matrix; appendRowAtMatrixRegister grows a matrix register by one row.
-// Both delegate to the still-bridged redimMatrixRegister.
+// Both delegate to redimMatrixRegister.
 
 const runtime = @import("../command_wrappers/runtime.zig");
 

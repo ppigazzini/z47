@@ -2,8 +2,8 @@
 // Zig port of the fnQrDecomposition command of src/c47/mathematics/matrix.c:
 // QR-decompose the square matrix in register X (real or complex), leaving the
 // orthogonal/unitary Q in Y and the upper-triangular R in X. The numeric
-// real_QR_decomposition / complex_QR_decomposition still live in the matrix
-// bridge; this is the command-level wrapper that drives them and stores the
+// real_QR_decomposition / complex_QR_decomposition are eigen.zig's; this is the
+// command-level wrapper that drives them and stores the
 // result.
 
 const std = @import("std");

@@ -102,14 +102,11 @@ comptime {
         _ = @import("command_wrappers/helpers.zig");
         _ = @import("command_wrappers/error_reporters.zig");
         // The matrix lifecycle owner replaces the allocate/free/identity/redim,
-        // copy and transpose primitives of mathematics/matrix.c. The matrix
-        // bridge keeps the renamed legacy copies (still called by the rest of
-        // the not-yet-ported matrix engine); the parity harness has its own
-        // matrix surface in math_wrappers_fake_runtime.c.
+        // copy and transpose primitives of mathematics/matrix.c; the parity
+        // harness has its own matrix surface in math_wrappers_fake_runtime.c.
         _ = @import("matrix/lifecycle.zig");
         // The matrix arithmetic owner replaces the elementwise add/subtract and
-        // scalar-multiply functions of mathematics/matrix.c (the matrix*matrix
-        // products, divide family and vector ops stay in the bridge for now).
+        // scalar-multiply functions of mathematics/matrix.c.
         _ = @import("matrix/arithmetic.zig");
         // The matrix-by-matrix product owner replaces multiplyRealMatrices and
         // multiplyComplexMatrices of mathematics/matrix.c.
@@ -160,7 +157,7 @@ comptime {
         // The complex dense core owner exports invCpxMat / mulCpxMat (LU-based
         // inverse and product on interleaved-complex real_t arrays) for the
         // matrix-divide and inverse owners. The upstream copies are file-local
-        // statics, so no bridge rename is needed.
+        // statics.
         _ = @import("matrix/complex_core.zig");
         // The matrix-by-matrix divide owner replaces divideRealMatrices /
         // divideComplexMatrices (y * inverse(x)) via the dense core.

@@ -169,8 +169,8 @@ int main(int argc, char *argv[]) {
   // bytes are non-deterministic (live pointers), so they cannot be byte-compared
   // directly. Instead, verify they PRESERVE STATE by re-using the deterministic
   // c47.sav text as the oracle: dump -> wipe -> restore -> re-serialize and
-  // compare against save1. This gates a future Zig port of saveCalc/restoreCalc
-  // (still C today via the bridge) exactly as Checks A/B gate doSave/doLoad.
+  // compare against save1. This holds saveCalc/restoreCalc to the standard
+  // Checks A/B hold doSave/doLoad to.
   // State at this point == save1's (restored by Check B).
   saveCalcImpl();          // raw dump -> backup.cfg
   fnReset(CONFIRMED);      // wipe live state
