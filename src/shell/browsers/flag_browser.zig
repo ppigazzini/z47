@@ -313,7 +313,7 @@ pub export fn flagBrowser(init: u16) callconv(.c) void {
                     flagNumber[1] = 0;
                 }
 
-                if (@as(i32, frontier_char_string.stringWidth(lineStr(line), &standardFont, true, true)) + @as(i32, frontier_char_string.stringWidth(@ptrCast(&flagNumber), &standardFont, true, false)) <= SCREEN_WIDTH - 1 - 8) {
+                if (@as(i32, frontier_char_string.stringWidth(lineStr(line), &standardFont, true, true)) + @as(i32, frontier_char_string.stringWidth(&flagNumber, &standardFont, true, false)) <= SCREEN_WIDTH - 1 - 8) {
                     if (!firstFlag) {
                         _ = strcat(lineStr(line), " ");
                     } else {
@@ -348,7 +348,7 @@ pub export fn flagBrowser(init: u16) callconv(.c) void {
                         flagNumber[2] = 0;
                     }
 
-                    if (@as(i32, frontier_char_string.stringWidth(lineStr(line), &standardFont, true, true)) + @as(i32, frontier_char_string.stringWidth(@ptrCast(&flagNumber), &standardFont, true, false)) <= SCREEN_WIDTH - 1 - 8) {
+                    if (@as(i32, frontier_char_string.stringWidth(lineStr(line), &standardFont, true, true)) + @as(i32, frontier_char_string.stringWidth(&flagNumber, &standardFont, true, false)) <= SCREEN_WIDTH - 1 - 8) {
                         if (!firstFlag) {
                             _ = strcat(lineStr(line), " ");
                         } else {
@@ -450,7 +450,7 @@ pub export fn flagBrowser(init: u16) callconv(.c) void {
                     LCD_EMPTY_VALUE,
                 );
             }
-            abi.fmtBufZ(tmpString[0..2560], "{s}", .{std.mem.span(@as([*c]const u8, @ptrCast(&indexOfItems[systemFlag].itemCatalogName)))});
+            abi.fmtBufZ(tmpString[0..2560], "{s}", .{std.mem.span(@as([*c]const u8, &indexOfItems[systemFlag].itemCatalogName))});
             _ = frontier_screen.showString(tmpString, &standardFont, @intCast(@divTrunc(@as(i32, x1) + x2 - frontier_char_string.stringWidth(tmpString, &standardFont, false, false), 2)), y1, if (getSystemFlag(@intCast(param))) vmReverse else vmNormal, @intFromBool(true), @intFromBool(true));
         }
     }

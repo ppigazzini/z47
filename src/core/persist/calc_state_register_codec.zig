@@ -239,7 +239,7 @@ fn BigReal(comptime digits: u32) type {
     return struct {
         buf: [10 + 2 * (realMaxDigits(digits) / 3)]u8 align(4) = undefined,
         inline fn bytes(self: *@This()) [*c]u8 {
-            return @ptrCast(&self.buf);
+            return &self.buf;
         }
     };
 }
@@ -702,7 +702,7 @@ pub fn restoreRegister(regist: i16, type_str: [*c]u8, value_in: [*c]u8, loaded_v
         if (savedDMY) setSystemFlag(@intCast(FLAG_DMY));
     } else if (strcmpEq(type_str, "LonI")) {
         const signLength: usize = if (value[0] == '-' or value[0] == '+') 1 else 0;
-        if (std.mem.len(@as([*:0]const u8, @ptrCast(value))) - signLength > MAX_LONG_INTEGER_DIGITS) {
+        if (std.mem.len(@as([*:0]const u8, value)) - signLength > MAX_LONG_INTEGER_DIGITS) {
             displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
             if (comptime EXTRA_INFO_ON_CALC_ERROR) {
                 abi.fmtBufZ(errorMessage[0..512], "long integer of more than {d} digits refused for register {d}", .{ @as(u32, MAX_LONG_INTEGER_DIGITS), @as(i32, regist) });

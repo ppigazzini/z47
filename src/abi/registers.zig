@@ -124,15 +124,15 @@ inline fn elementsAreInline(comptime Matrix: type) bool {
 }
 pub inline fn matrixRealElems(matrix: anytype) [*]Real34 {
     if (comptime elementsAreInline(@TypeOf(matrix))) return &matrix.matrixElements;
-    return @ptrCast(matrix.matrixElements);
+    return matrix.matrixElements;
 }
 pub inline fn matrixConstRealElems(matrix: anytype) [*]const Real34 {
     if (comptime elementsAreInline(@TypeOf(matrix))) return &matrix.matrixElements;
-    return @ptrCast(matrix.matrixElements);
+    return matrix.matrixElements;
 }
 pub inline fn matrixComplexElems(matrix: anytype) [*]Complex34 {
     if (comptime elementsAreInline(@TypeOf(matrix))) return &matrix.matrixElements;
-    return @ptrCast(matrix.matrixElements);
+    return matrix.matrixElements;
 }
 pub inline fn matrixConstComplexElems(matrix: anytype) [*]const Complex34 {
     if (comptime elementsAreInline(@TypeOf(matrix))) return &matrix.matrixElements;

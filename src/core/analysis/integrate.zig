@@ -468,7 +468,7 @@ pub export fn fnIntVar(unusedButMandatoryParameter: u16) linksection(runtime.cod
         return;
     }
     const variable_str: [*c]u8 = getNthString(dynamic.menuContent, dynamicMenuItem);
-    const regist: u16 = @bitCast(@as(i16, @truncate(findOrAllocateNamedVariable(@ptrCast(variable_str)))));
+    const regist: u16 = @bitCast(@as(i16, @truncate(findOrAllocateNamedVariable(variable_str))));
     const doubleVarPress: bool_t = regist == currentSolverVariable;
     currentSolverVariable = regist;
     if (doubleVarPress and (currentSolverStatus & 0x0001) != 0) { // SOLVER_STATUS_READY_TO_EXECUTE

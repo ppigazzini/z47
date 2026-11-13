@@ -891,9 +891,9 @@ fn doDomainAbort() void {
 
 inline fn matrixElementsPtr(matrix: *real34Matrix_t) [*]real34_t {
     if (runtime.harness_surface_is_fake) {
-        return @ptrCast(&matrix.matrixElements);
+        return &matrix.matrixElements;
     } else {
-        return @ptrCast(matrix.matrixElements);
+        return matrix.matrixElements;
     }
 }
 

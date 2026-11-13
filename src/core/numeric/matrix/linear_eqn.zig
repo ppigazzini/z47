@@ -40,11 +40,11 @@ extern var numberOfTamMenusToPop: i16;
 const REAL_SIZE_IN_BLOCKS_75: usize = (@sizeOf(real_t) + 3) >> 2;
 
 inline fn rmEl(m: *const real34Matrix_t, i: usize) *real34_t {
-    const e: [*]real34_t = @ptrCast(m.matrixElements);
+    const e: [*]real34_t = m.matrixElements;
     return &e[i];
 }
 inline fn cmEl(m: *const complex34Matrix_t, i: usize) *complex34_t {
-    const e: [*]complex34_t = @ptrCast(m.matrixElements);
+    const e: [*]complex34_t = m.matrixElements;
     return &e[i];
 }
 

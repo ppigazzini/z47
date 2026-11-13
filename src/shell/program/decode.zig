@@ -327,8 +327,8 @@ inline fn groupRightDisabled() bool {
 // all and reads nothing.
 pub fn getStringLabelOrVariableName(stringAddress: [*c]u8) void {
     const nameStart: [*c]u8 = stringAddress + 1;
-    const stringLength = program_step_opcode.boundProgramNameLength(@ptrCast(nameStart), stringAddress[0], @ptrCast(firstFreeProgramByte));
-    _ = frontier_char_string.xcopy(@ptrCast(tmpStringLabelOrVariableName), @ptrCast(nameStart), stringLength);
+    const stringLength = program_step_opcode.boundProgramNameLength(nameStart, stringAddress[0], firstFreeProgramByte);
+    _ = frontier_char_string.xcopy(tmpStringLabelOrVariableName, nameStart, stringLength);
     tmpStringLabelOrVariableName[stringLength] = 0;
 }
 
@@ -337,11 +337,11 @@ fn getIndirectRegister(paramAddress: [*c]u8, op: [*c]const u8) void {
     if (opParam < REGISTER_X_IN_KS_CODE) { // Global register from 00 to 99
         abi.fmtBufZ(tmpString[0..2560], "{s} " ++ STD_RIGHT_ARROW ++ "{d:0>2}", .{ std.mem.span(op), @as(u32, opParam) });
     } else if (opParam <= REGISTER_K_IN_KS_CODE) { // Lettered register from X to K
-        abi.fmtBufZ(tmpString[0..2560], "{s} " ++ STD_RIGHT_ARROW ++ "{s}", .{ std.mem.span(op), std.mem.span(@as([*c]const u8, @ptrCast(&indexOfItems[ITM_REG_X + opParam - REGISTER_X_IN_KS_CODE].itemSoftmenuName))) });
+        abi.fmtBufZ(tmpString[0..2560], "{s} " ++ STD_RIGHT_ARROW ++ "{s}", .{ std.mem.span(op), std.mem.span(@as([*c]const u8, &indexOfItems[ITM_REG_X + opParam - REGISTER_X_IN_KS_CODE].itemSoftmenuName)) });
     } else if (opParam <= LAST_LOCAL_REGISTER_IN_KS_CODE) { // Local register from .00 to .98
         abi.fmtBufZ(tmpString[0..2560], "{s} " ++ STD_RIGHT_ARROW ++ ".{d:0>2}", .{ std.mem.span(op), @as(u32, @intCast(@as(c_int, opParam) - FIRST_LOCAL_REGISTER_IN_KS_CODE)) });
     } else if (opParam <= REGISTER_W_IN_KS_CODE) { // Lettered register from M to S and E to W
-        abi.fmtBufZ(tmpString[0..2560], "{s} " ++ STD_RIGHT_ARROW ++ "{s}", .{ std.mem.span(op), std.mem.span(@as([*c]const u8, @ptrCast(&indexOfItems[ITM_REG_M + opParam - REGISTER_M_IN_KS_CODE].itemSoftmenuName))) });
+        abi.fmtBufZ(tmpString[0..2560], "{s} " ++ STD_RIGHT_ARROW ++ "{s}", .{ std.mem.span(op), std.mem.span(@as([*c]const u8, &indexOfItems[ITM_REG_M + opParam - REGISTER_M_IN_KS_CODE].itemSoftmenuName)) });
     } else {
         abi.fmtBufZ(tmpString[0..2560], "\nIn function getIndirectRegister: {s} " ++ STD_RIGHT_ARROW ++ " {d} is not a valid parameter!", .{ std.mem.span(op), @as(u32, opParam) });
     }
@@ -408,11 +408,11 @@ fn decodeOp(paramAddress_arg: [*c]u8, opCode: u16, op: [*c]const u8, paramMode: 
             if (opParam < REGISTER_X_IN_KS_CODE) { // Global register from 00 to 99
                 abi.fmtBufZ(tmpString[0..2560], "{s} {d:0>2}", .{ std.mem.span(op), @as(u32, opParam) });
             } else if (opParam <= REGISTER_K_IN_KS_CODE) { // Lettered register from X to K
-                abi.fmtBufZ(tmpString[0..2560], "{s} {s}", .{ std.mem.span(op), std.mem.span(@as([*c]const u8, @ptrCast(&indexOfItems[ITM_REG_X + opParam - REGISTER_X_IN_KS_CODE].itemSoftmenuName))) });
+                abi.fmtBufZ(tmpString[0..2560], "{s} {s}", .{ std.mem.span(op), std.mem.span(@as([*c]const u8, &indexOfItems[ITM_REG_X + opParam - REGISTER_X_IN_KS_CODE].itemSoftmenuName)) });
             } else if (opParam <= LAST_LOCAL_REGISTER_IN_KS_CODE) { // Local register from .00 to .98
                 abi.fmtBufZ(tmpString[0..2560], "{s} .{d:0>2}", .{ std.mem.span(op), @as(u32, @intCast(@as(c_int, opParam) - FIRST_LOCAL_REGISTER_IN_KS_CODE)) });
             } else if (opParam <= REGISTER_W_IN_KS_CODE) { // Lettered register from M to S and E to W
-                abi.fmtBufZ(tmpString[0..2560], "{s} {s}", .{ std.mem.span(op), std.mem.span(@as([*c]const u8, @ptrCast(&indexOfItems[ITM_REG_M + opParam - REGISTER_M_IN_KS_CODE].itemSoftmenuName))) });
+                abi.fmtBufZ(tmpString[0..2560], "{s} {s}", .{ std.mem.span(op), std.mem.span(@as([*c]const u8, &indexOfItems[ITM_REG_M + opParam - REGISTER_M_IN_KS_CODE].itemSoftmenuName)) });
             } else if (opParam == STRING_LABEL_VARIABLE) {
                 var str: [*c]u8 = tmpString;
                 getStringLabelOrVariableName(paramAddress);
@@ -444,9 +444,9 @@ fn decodeOp(paramAddress_arg: [*c]u8, opCode: u16, op: [*c]const u8, paramMode: 
                 abi.fmtBufZ(tmpString[0..2560], "\nIn function decodeOp: case PARAM_FLAG, {s}  {d} is not a valid parameter!", .{ std.mem.span(op), @as(u32, opParam) });
             } else if (opParam == SYSTEM_FLAG_NUMBER) {
                 if (paramAddress[0] < 64) {
-                    abi.fmtBufZ(tmpString[0..2560], "{s} " ++ STD_LEFT_SINGLE_QUOTE ++ "{s}" ++ STD_RIGHT_SINGLE_QUOTE, .{ std.mem.span(op), std.mem.span(@as([*c]const u8, @ptrCast(&indexOfItems[@as(u16, paramAddress[0]) + SFL_TDM24].itemSoftmenuName))) });
+                    abi.fmtBufZ(tmpString[0..2560], "{s} " ++ STD_LEFT_SINGLE_QUOTE ++ "{s}" ++ STD_RIGHT_SINGLE_QUOTE, .{ std.mem.span(op), std.mem.span(@as([*c]const u8, &indexOfItems[@as(u16, paramAddress[0]) + SFL_TDM24].itemSoftmenuName)) });
                 } else {
-                    abi.fmtBufZ(tmpString[0..2560], "{s} " ++ STD_LEFT_SINGLE_QUOTE ++ "{s}" ++ STD_RIGHT_SINGLE_QUOTE, .{ std.mem.span(op), std.mem.span(@as([*c]const u8, @ptrCast(&indexOfItems[@as(u16, paramAddress[0]) + SFL_MONIT - 64].itemSoftmenuName))) });
+                    abi.fmtBufZ(tmpString[0..2560], "{s} " ++ STD_LEFT_SINGLE_QUOTE ++ "{s}" ++ STD_RIGHT_SINGLE_QUOTE, .{ std.mem.span(op), std.mem.span(@as([*c]const u8, &indexOfItems[@as(u16, paramAddress[0]) + SFL_MONIT - 64].itemSoftmenuName)) });
                 }
             } else if (opParam == INDIRECT_REGISTER) {
                 getIndirectRegister(paramAddress, op);
@@ -523,11 +523,11 @@ fn decodeOp(paramAddress_arg: [*c]u8, opCode: u16, op: [*c]const u8, paramMode: 
             if (opParam < REGISTER_X_IN_KS_CODE) { // Global register from 00 to 99
                 abi.fmtBufZ(tmpString[0..2560], "{s} {d:0>2}", .{ std.mem.span(op), @as(u32, opParam) });
             } else if (opParam <= REGISTER_K_IN_KS_CODE) { // Lettered register from X to K
-                abi.fmtBufZ(tmpString[0..2560], "{s} {s}", .{ std.mem.span(op), std.mem.span(@as([*c]const u8, @ptrCast(&indexOfItems[ITM_REG_X + opParam - REGISTER_X_IN_KS_CODE].itemSoftmenuName))) });
+                abi.fmtBufZ(tmpString[0..2560], "{s} {s}", .{ std.mem.span(op), std.mem.span(@as([*c]const u8, &indexOfItems[ITM_REG_X + opParam - REGISTER_X_IN_KS_CODE].itemSoftmenuName)) });
             } else if (opParam <= LAST_LOCAL_REGISTER_IN_KS_CODE) { // Local register from .00 to .98
                 abi.fmtBufZ(tmpString[0..2560], "{s} .{d:0>2}", .{ std.mem.span(op), @as(u32, @intCast(@as(c_int, opParam) - FIRST_LOCAL_REGISTER_IN_KS_CODE)) });
             } else if (opParam <= REGISTER_W_IN_KS_CODE) { // Lettered register from M to S and E to W
-                abi.fmtBufZ(tmpString[0..2560], "{s} {s}", .{ std.mem.span(op), std.mem.span(@as([*c]const u8, @ptrCast(&indexOfItems[ITM_REG_M + opParam - REGISTER_M_IN_KS_CODE].itemSoftmenuName))) });
+                abi.fmtBufZ(tmpString[0..2560], "{s} {s}", .{ std.mem.span(op), std.mem.span(@as([*c]const u8, &indexOfItems[ITM_REG_M + opParam - REGISTER_M_IN_KS_CODE].itemSoftmenuName)) });
             } else if (opParam == STRING_LABEL_VARIABLE) {
                 var str: [*c]u8 = tmpString;
                 getStringLabelOrVariableName(paramAddress);
@@ -551,12 +551,12 @@ fn decodeOp(paramAddress_arg: [*c]u8, opCode: u16, op: [*c]const u8, paramMode: 
         PARAM_KEYG_KEYX => {
             const secondParam: [*c]u8 = frontier_next_step.findKey2ndParam(paramAddress - 3);
             if (secondParam != null) {
-                decodeOp(secondParam + 1, secondParam[0], @ptrCast(&indexOfItems[secondParam[0]].itemCatalogName), PARAM_LABEL, indexOfItems[secondParam[0]].tamMinMax & TAM_MAX_MASK);
-                _ = frontier_char_string.xcopy(@ptrCast(tmpString + TMP_STR_LENGTH / 2), @ptrCast(tmpString), @intCast(stringByteLength(tmpString) + 1));
+                decodeOp(secondParam + 1, secondParam[0], &indexOfItems[secondParam[0]].itemCatalogName, PARAM_LABEL, indexOfItems[secondParam[0]].tamMinMax & TAM_MAX_MASK);
+                _ = frontier_char_string.xcopy(tmpString + TMP_STR_LENGTH / 2, tmpString, @intCast(stringByteLength(tmpString) + 1));
                 decodeOp(paramAddress - 1, secondParam[0], op, PARAM_NUMBER_8, 21);
                 tmpString[@intCast(stringByteLength(tmpString) + 1)] = 0;
                 tmpString[@intCast(stringByteLength(tmpString))] = ' ';
-                _ = frontier_char_string.xcopy(@ptrCast(tmpString + @as(usize, @intCast(stringByteLength(tmpString)))), @ptrCast(tmpString + TMP_STR_LENGTH / 2), @intCast(stringByteLength(tmpString + TMP_STR_LENGTH / 2) + 1));
+                _ = frontier_char_string.xcopy(tmpString + @as(usize, @intCast(stringByteLength(tmpString))), tmpString + TMP_STR_LENGTH / 2, @intCast(stringByteLength(tmpString + TMP_STR_LENGTH / 2) + 1));
             } else {
                 abi.fmtBufZ(tmpString[0..2560], "\nIn function decodeOp: case PARAM_KEYG_KEYX, {s} has no valid second key parameter!", .{std.mem.span(op)});
             }
@@ -641,20 +641,20 @@ fn decodeLiteral(literalAddress_arg: [*c]u8) void {
         BINARY_SHORT_INTEGER => {
             _ = reallocateRegister(TEMP_REGISTER_1, dtShortInteger, 0, literalAddress[0]);
             literalAddress += 1;
-            _ = frontier_char_string.xcopy(getRegisterDataPointer(TEMP_REGISTER_1), @ptrCast(literalAddress), toBytes(SHORT_INTEGER_SIZE_IN_BLOCKS));
+            _ = frontier_char_string.xcopy(getRegisterDataPointer(TEMP_REGISTER_1), literalAddress, toBytes(SHORT_INTEGER_SIZE_IN_BLOCKS));
             frontier_display.shortIntegerToDisplayString(TEMP_REGISTER_1, tmpString, @intFromBool(false), noBaseOverride, SCREEN_WIDTH);
         },
 
         BINARY_REAL34 => {
             var realLiteral: real34_t = undefined;
-            _ = frontier_char_string.xcopy(@ptrCast(&realLiteral), @ptrCast(literalAddress), REAL34_SIZE_IN_BYTES);
+            _ = frontier_char_string.xcopy(&realLiteral, literalAddress, REAL34_SIZE_IN_BYTES);
             frontier_display.real34ToDisplayString(&realLiteral, amNoneU, tmpString, &standardFont, 9999, 34, @intFromBool(false), @intFromBool(false), NOIRFRAC);
         },
 
         BINARY_COMPLEX34 => {
             var complexLiteral: complex34_t = undefined;
-            _ = frontier_char_string.xcopy(@ptrCast(&complexLiteral.real), @ptrCast(literalAddress), REAL34_SIZE_IN_BYTES);
-            _ = frontier_char_string.xcopy(@ptrCast(&complexLiteral.imag), @ptrCast(literalAddress + REAL34_SIZE_IN_BYTES), REAL34_SIZE_IN_BYTES);
+            _ = frontier_char_string.xcopy(&complexLiteral.real, literalAddress, REAL34_SIZE_IN_BYTES);
+            _ = frontier_char_string.xcopy(&complexLiteral.imag, literalAddress + REAL34_SIZE_IN_BYTES, REAL34_SIZE_IN_BYTES);
             frontier_display.complex34ToDisplayString(&complexLiteral, tmpString, &standardFont, 9999, 34, @intFromBool(false), @intFromBool(false), NOIRFRAC, @intCast(@as(u32, @bitCast(currentAngularMode))), @intFromBool(getSystemFlag(FLAG_POLAR)), abi.register_tag.EXP_STEP_OFF);
         },
 
@@ -945,7 +945,7 @@ fn decodeRem(literalAddress_arg: [*c]u8, op: u16) void {
     if (kind == STRING_LABEL_VARIABLE) {
         var str: [*c]u8 = tmpString;
         getStringLabelOrVariableName(literalAddress);
-        str = stringCopy(str, @ptrCast(&indexOfItems[op].itemCatalogName));
+        str = stringCopy(str, &indexOfItems[op].itemCatalogName);
         str = stringCopy(str, " " ++ STD_LEFT_SINGLE_QUOTE);
         str = stringCopy(str, tmpStringLabelOrVariableName);
         str = stringCopy(str, STD_RIGHT_SINGLE_QUOTE);
@@ -968,9 +968,9 @@ fn _decodeOneStep(step_arg: [*c]u8, textVersion: u16) void {
     }
 
     if (op == 0x7fff) { // .END.
-        _ = frontier_char_string.xcopy(@ptrCast(tmpString), ".END.", 6);
+        _ = frontier_char_string.xcopy(tmpString, ".END.", 6);
     } else if (op >= LAST_ITEM) { // render the step rather than index past the item table
-        _ = frontier_char_string.xcopy(@ptrCast(tmpString), "???", 4);
+        _ = frontier_char_string.xcopy(tmpString, "???", 4);
     } else {
         var nameOp: [36]u8 = undefined;
         nameOp[0] = 0;
@@ -979,9 +979,9 @@ fn _decodeOneStep(step_arg: [*c]u8, textVersion: u16) void {
                 if (FIRST_CONSTANT <= op and op <= LAST_CONSTANT) {
                     abi.fmtBufZ(&nameOp, "{d: >2}", .{@as(u32, @intCast(@as(c_int, op) - FIRST_CONSTANT + 1))});
                     _ = strcat(&nameOp, " ");
-                    _ = strcat(&nameOp, @ptrCast(&indexOfItems[op].itemCatalogName));
+                    _ = strcat(&nameOp, &indexOfItems[op].itemCatalogName);
                     _ = strcat(&nameOp, " ");
-                    _ = strcat(&nameOp, @ptrCast(&indexOfItems[op].itemSoftmenuName));
+                    _ = strcat(&nameOp, &indexOfItems[op].itemSoftmenuName);
                 }
                 if (op == ITM_op_j) {
                     abi.fmtBufZ(&nameOp, "op_{s}", .{std.mem.span(complexUnit())});
@@ -992,7 +992,7 @@ fn _decodeOneStep(step_arg: [*c]u8, textVersion: u16) void {
                     if (textVersion == MODE_ALIAS) {
                         if (comptime ir_printing) frontier_print.nameAlias(op, &nameOp);
                     } else {
-                        _ = strcpy(&nameOp, if (indexOfItems[op].itemCatalogName[0] != 0) @as([*c]const u8, @ptrCast(&indexOfItems[op].itemCatalogName)) else @as([*c]const u8, @ptrCast(&indexOfItems[op].itemSoftmenuName)));
+                        _ = strcpy(&nameOp, if (indexOfItems[op].itemCatalogName[0] != 0) @as([*c]const u8, &indexOfItems[op].itemCatalogName) else @as([*c]const u8, &indexOfItems[op].itemSoftmenuName));
                     }
                 }
                 if (frontier_conversion_units.isItemConversion(@intCast(op))) {
@@ -1016,15 +1016,15 @@ fn _decodeOneStep(step_arg: [*c]u8, textVersion: u16) void {
 
             else => {
                 if (op == ITM_INTEGRAL) {
-                    _ = strcpy(&nameOp, @ptrCast(&indexOfItems[op].itemCatalogName));
+                    _ = strcpy(&nameOp, &indexOfItems[op].itemCatalogName);
                 } else if (op == ITM_INTEGRAL_YX) {
-                    _ = strcpy(&nameOp, @ptrCast(&indexOfItems[op].itemCatalogName));
+                    _ = strcpy(&nameOp, &indexOfItems[op].itemCatalogName);
                 } else {
                     if (nameOp[0] == 0) {
                         if (textVersion == MODE_ALIAS) {
                             if (comptime ir_printing) frontier_print.nameAlias(op, &nameOp);
                         } else {
-                            _ = strcpy(&nameOp, @ptrCast(&indexOfItems[op].itemCatalogName));
+                            _ = strcpy(&nameOp, &indexOfItems[op].itemCatalogName);
                         }
                     }
                 }

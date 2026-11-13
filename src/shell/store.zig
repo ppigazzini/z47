@@ -356,7 +356,7 @@ fn _checkReadOnlyVariable(regist: u16) bool {
     if (FIRST_RESERVED_VARIABLE <= regist and regist <= LAST_RESERVED_VARIABLE and allReservedVariables[regist - FIRST_RESERVED_VARIABLE].header.bits.readOnly == 1) {
         frontier_error.displayCalcErrorMessage(ERROR_WRITE_PROTECTED_VAR, ERR_REGISTER_LINE);
         if (comptime extra_info) {
-            abi.fmtBufZ(errorMessage[0..512], "reserved variable {s}", .{std.mem.span(@as([*c]const u8, @ptrCast(&allReservedVariables[regist - FIRST_RESERVED_VARIABLE].reservedVariableName)) + 1)});
+            abi.fmtBufZ(errorMessage[0..512], "reserved variable {s}", .{std.mem.span(@as([*c]const u8, &allReservedVariables[regist - FIRST_RESERVED_VARIABLE].reservedVariableName) + 1)});
             moreInfoOnError("In function _checkReadOnlyVariable:", errorMessage, " is write-protected!");
         }
         return false;
@@ -392,7 +392,7 @@ fn storeElementComplex(matrix: *complex34Matrix_t) callconv(.c) bool {
     const i: i16 = frontier_matrix_editor.getIRegisterAsInt(true);
     const j: i16 = frontier_matrix_editor.getJRegisterAsInt(true);
     const idx: usize = @intCast(@as(i32, i) * @as(i32, @as(u16, matrix.header.matrixColumns)) + @as(i32, j));
-    const elem: *complex34_t = @ptrCast(&matrix.matrixElements.?[idx]);
+    const elem: *complex34_t = &matrix.matrixElements.?[idx];
 
     if (getRegisterDataType(REGISTER_X) == dtLongInteger) {
         frontier_register_value_conversions.convertLongIntegerRegisterToReal34(REGISTER_X, variableReal34(elem));
@@ -725,7 +725,7 @@ pub export fn fnStoreConfig(regist: u16) callconv(.c) void {
     configToStore.roundingMode = roundingMode;
     configToStore.systemFlags0 = systemFlags0;
     configToStore.systemFlags1 = systemFlags1;
-    _ = frontier_char_string.xcopy(@ptrCast(&configToStore.kbd_usr), @ptrCast(&kbd_usr), @sizeOf(@TypeOf(kbd_usr)));
+    _ = frontier_char_string.xcopy(&configToStore.kbd_usr, &kbd_usr, @sizeOf(@TypeOf(kbd_usr)));
     configToStore.compatibility_byte1 = compatibility_byte1;
     configToStore.compatibility_byte19 = compatibility_byte19;
     configToStore.compatibility_byte28 = compatibility_byte28;
@@ -741,7 +741,7 @@ pub export fn fnStoreConfig(regist: u16) callconv(.c) void {
     configToStore.compatibility_float1 = compatibility_float1;
     configToStore.compatibility_float2 = compatibility_float2;
     configToStore.Norm_Key_00.func = Norm_Key_00.func;
-    _ = frontier_char_string.xcopy(@ptrCast(&configToStore.Norm_Key_00.funcParam), @ptrCast(&Norm_Key_00.funcParam), @sizeOf(@TypeOf(Norm_Key_00.funcParam)));
+    _ = frontier_char_string.xcopy(&configToStore.Norm_Key_00.funcParam, &Norm_Key_00.funcParam, @sizeOf(@TypeOf(Norm_Key_00.funcParam)));
     configToStore.Norm_Key_00.used = Norm_Key_00.used;
     configToStore.grpGroupingHex = grpGroupingHex;
     configToStore.grpGroupingBin = grpGroupingBin;

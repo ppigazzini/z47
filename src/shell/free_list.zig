@@ -179,7 +179,7 @@ inline fn toBytes(blocks: u32) u32 {
 
 inline fn toPcMemPtr(blockAddress: u16) ?*anyopaque {
     if (blockAddress == C47_NULL) return null;
-    return @ptrCast(ram + blockAddress);
+    return ram + blockAddress;
 }
 
 inline fn toC47MemPtr(pcMemPtr: ?*const anyopaque) u16 {
@@ -217,7 +217,7 @@ fn untrackAllocation(c47RamPtr: u16) ?u16 {
         if (ar[idx].blockAddress == c47RamPtr) {
             const recorded = ar[idx].sizeInBlocks;
             if (allocated.numberOfAllocatedMemoryRegions - region - 1 != 0) {
-                _ = xcopy(@ptrCast(ar + idx), @ptrCast(ar + idx + 1), regionBytes(allocated.numberOfAllocatedMemoryRegions - region - 1));
+                _ = xcopy(ar + idx, ar + idx + 1, regionBytes(allocated.numberOfAllocatedMemoryRegions - region - 1));
             }
             allocated.numberOfAllocatedMemoryRegions -= 1;
             return recorded;
@@ -243,7 +243,7 @@ pub export fn freeListAlloc(sizeInBlocksArg: usize) callconv(.c) ?*anyopaque {
         const idx: usize = @intCast(i);
         if (fr[idx].sizeInBlocks == sizeInBlocks) {
             const pcMemPtr = toPcMemPtr(fr[idx].blockAddress);
-            _ = xcopy(@ptrCast(fr + idx), @ptrCast(fr + idx + 1), regionBytes(numberOfFreeMemoryRegions - i - 1));
+            _ = xcopy(fr + idx, fr + idx + 1, regionBytes(numberOfFreeMemoryRegions - i - 1));
             numberOfFreeMemoryRegions -= 1;
             if (comptime track_allocations) trackAllocation(pcMemPtr, sizeInBlocks);
             memcheck.makeMemUndefined(blockBytes(pcMemPtr, sizeInBlocks));
@@ -407,7 +407,7 @@ pub export fn freeListFree(pcMemPtr: ?*anyopaque, sizeInBlocksArg: usize) callco
             fr[idx].sizeInBlocks += @as(u16, @intCast(sizeInBlocks));
             if (done) {
                 const jdx: usize = @intCast(j);
-                _ = xcopy(@ptrCast(fr + jdx), @ptrCast(fr + jdx + 1), regionBytes(numberOfFreeMemoryRegions - j - 1));
+                _ = xcopy(fr + jdx, fr + jdx + 1, regionBytes(numberOfFreeMemoryRegions - j - 1));
                 numberOfFreeMemoryRegions -= 1;
             } else {
                 done = true;
@@ -459,7 +459,7 @@ fn insertFreeBlock(c47RamPtr: u16, sizeInBlocks: u16) void {
 
     if (i < numberOfFreeMemoryRegions) {
         const idx: usize = @intCast(i);
-        _ = xcopy(@ptrCast(fr + idx + 1), @ptrCast(fr + idx), regionBytes(numberOfFreeMemoryRegions - i));
+        _ = xcopy(fr + idx + 1, fr + idx, regionBytes(numberOfFreeMemoryRegions - i));
     }
 
     const idx: usize = @intCast(i);

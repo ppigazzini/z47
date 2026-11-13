@@ -697,8 +697,8 @@ fn AddtoDrawMx() void {
         linkToRealMatrixRegister(regStats, &stats);
         rows = stats.header.matrixRows;
         cols = stats.header.matrixColumns;
-        realToReal34(&x, @ptrCast(&stats.matrixElements.?[(@as(u32, rows) - 1) * cols]));
-        realToReal34(&y, @ptrCast(&stats.matrixElements.?[(@as(u32, rows) - 1) * cols + 1]));
+        realToReal34(&x, &stats.matrixElements.?[(@as(u32, rows) - 1) * cols]);
+        realToReal34(&y, &stats.matrixElements.?[(@as(u32, rows) - 1) * cols + 1]);
     } else {
         // Leave the graph screen, or the error line is never rendered and the
         // next fnPlot repaints over it.

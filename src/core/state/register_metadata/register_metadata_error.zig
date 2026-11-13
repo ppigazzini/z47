@@ -23,7 +23,7 @@ extern var errorMessage: [*c]u8;
 extern fn sprintf(buffer: [*c]u8, format: [*c]const u8, ...) c_int;
 
 fn bugFormat(row: usize) [*c]const u8 {
-    return @ptrCast(&commonBugScreenMessages[row]);
+    return &commonBugScreenMessages[row];
 }
 
 pub fn reportNoNamedVariablesBug(function_name: [*:0]const u8) void {
@@ -66,7 +66,7 @@ fn reportNotDefined(function_name: [*:0]const u8, subject_format: [*:0]const u8,
     const range = errorMessage + ERROR_MESSAGE_LENGTH / 2;
     _ = sprintf(errorMessage, subject_format, index);
     _ = sprintf(range, "Must be from 0 to %u", last_index);
-    moreInfoOnError(function_name, @ptrCast(errorMessage), "is not defined!", @ptrCast(range));
+    moreInfoOnError(function_name, errorMessage, "is not defined!", range);
 }
 
 pub fn reportNamedVariableNotDefined(function_name: [*:0]const u8, index: u16, last_index: u16) void {
@@ -89,7 +89,7 @@ pub fn reportLocalRegisterNotDefinedTwoPart(function_name: [*:0]const u8, index:
     const range = errorMessage + ERROR_MESSAGE_LENGTH / 2;
     _ = sprintf(errorMessage, "local register %d is not defined!", @as(c_int, @as(i16, @bitCast(index))));
     _ = sprintf(range, "Must be from 0 to %u", @as(c_uint, last_index));
-    moreInfoOnError(function_name, @ptrCast(errorMessage), @ptrCast(range), null);
+    moreInfoOnError(function_name, errorMessage, range, null);
 }
 
 /// allocateLocalRegisters' refusal names the count that was asked for; the legal
@@ -97,7 +97,7 @@ pub fn reportLocalRegisterNotDefinedTwoPart(function_name: [*:0]const u8, index:
 pub fn reportTooManyLocalRegisters(requested: u16) void {
     if (comptime !extra_info) return;
     _ = sprintf(errorMessage, "You can allocate up to 99 registers, you requested %u", @as(c_uint, requested));
-    moreInfoOnError("In function allocateLocalRegisters:", @ptrCast(errorMessage), null, null);
+    moreInfoOnError("In function allocateLocalRegisters:", errorMessage, null, null);
 }
 
 /// allocateNamedVariable's three name refusals. Each puts the offending name in
@@ -106,7 +106,7 @@ pub fn reportTooManyLocalRegisters(requested: u16) void {
 pub fn reportBadVariableName(variable_name: [*c]const u8, why: [*:0]const u8, why_continued: ?[*:0]const u8) void {
     if (comptime !extra_info) return;
     _ = sprintf(errorMessage, "the name %s", variable_name);
-    moreInfoOnError("In function allocateNamedVariable:", @ptrCast(errorMessage), why, why_continued);
+    moreInfoOnError("In function allocateNamedVariable:", errorMessage, why, why_continued);
 }
 
 /// allocateNamedVariable's "the table is full" refusal: the count goes into
@@ -114,7 +114,7 @@ pub fn reportBadVariableName(variable_name: [*c]const u8, why: [*:0]const u8, wh
 pub fn reportNamedVariableTableFull(capacity: u16) void {
     if (comptime !extra_info) return;
     _ = sprintf(errorMessage, "%d named variables!", @as(c_int, capacity));
-    moreInfoOnError("In function allocateNamedVariable:", "you can allocate up to", @ptrCast(errorMessage), null);
+    moreInfoOnError("In function allocateNamedVariable:", "you can allocate up to", errorMessage, null);
 }
 
 /// reallocateRegister's refusal to retype a reserved variable names it, without
@@ -122,7 +122,7 @@ pub fn reportNamedVariableTableFull(capacity: u16) void {
 pub fn reportReservedVariableRetypeDetail(reserved_variable_name: [*c]const u8) void {
     if (comptime !extra_info) return;
     _ = sprintf(errorMessage, "reserved variable %s", reserved_variable_name);
-    moreInfoOnError("In function reallocateRegister:", @ptrCast(errorMessage), "keeps the data type it was declared with!", null);
+    moreInfoOnError("In function reallocateRegister:", errorMessage, "keeps the data type it was declared with!", null);
 }
 
 fn reportError(error_code: u8) void {

@@ -36,7 +36,7 @@ const bool_t = u8;
 
 // Rank of a charCode in the standard font (replacement-glyph ordering).
 inline fn standardGlyphs() [*]const glyph_t {
-    return @ptrCast(&standardFont.glyphs);
+    return &standardFont.glyphs;
 }
 
 // findGlyph returns -1 for a charCode the standard font (id == 1) does not

@@ -537,7 +537,7 @@ pub export fn fnRecallConfig(regist: u16) callconv(.c) void {
         frontier_config.setRoundingMode(roundingMode);
         systemFlags0 = configToRecall.systemFlags0;
         systemFlags1 = configToRecall.systemFlags1;
-        _ = frontier_char_string.xcopy(@ptrCast(&kbd_usr), @ptrCast(&configToRecall.kbd_usr), @sizeOf(@TypeOf(kbd_usr)));
+        _ = frontier_char_string.xcopy(&kbd_usr, &configToRecall.kbd_usr, @sizeOf(@TypeOf(kbd_usr)));
         // Spare/compatibility slots: the C reads these into unused locals.
         _ = configToRecall.compatibility_byte1;
         _ = configToRecall.compatibility_byte19;
@@ -555,7 +555,7 @@ pub export fn fnRecallConfig(regist: u16) callconv(.c) void {
         _ = configToRecall.compatibility_float1; // spare
         _ = configToRecall.compatibility_float2; // spare
         Norm_Key_00.func = configToRecall.Norm_Key_00.func;
-        _ = frontier_char_string.xcopy(@ptrCast(&Norm_Key_00.funcParam), @ptrCast(&configToRecall.Norm_Key_00.funcParam), @sizeOf(@TypeOf(Norm_Key_00.funcParam)));
+        _ = frontier_char_string.xcopy(&Norm_Key_00.funcParam, &configToRecall.Norm_Key_00.funcParam, @sizeOf(@TypeOf(Norm_Key_00.funcParam)));
         {
             // The descriptor is a raw byte image, so a crafted register can arrive
             // unterminated. Terminating at a fixed offset would leave the lead byte of

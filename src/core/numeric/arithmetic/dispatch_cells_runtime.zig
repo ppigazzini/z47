@@ -26,7 +26,7 @@ pub fn asReal(big: *real159_t) *real_t {
 }
 
 pub fn asConstReal(big: *const real159_t) *const real_t {
-    return @ptrCast(big);
+    return big;
 }
 
 // defines.h values (verified against src/c47/defines.h).

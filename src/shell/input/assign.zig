@@ -894,9 +894,9 @@ pub export fn updateAssignTamBuffer() callconv(.c) void {
             lblPtr += 1;
         }
     } else if (itemToBeAssigned >= ASSIGN_RESERVED_VARIABLES) {
-        tbPtr = stringCopy(tbPtr, @ptrCast(&allReservedVariables[@intCast(itemToBeAssigned - ASSIGN_RESERVED_VARIABLES)].reservedVariableName[1]));
+        tbPtr = stringCopy(tbPtr, &allReservedVariables[@intCast(itemToBeAssigned - ASSIGN_RESERVED_VARIABLES)].reservedVariableName[1]);
     } else if (itemToBeAssigned >= ASSIGN_NAMED_VARIABLES) {
-        tbPtr = stringCopy(tbPtr, @ptrCast(&allNamedVariables[@intCast(itemToBeAssigned - ASSIGN_NAMED_VARIABLES)].variableName[1]));
+        tbPtr = stringCopy(tbPtr, &allNamedVariables[@intCast(itemToBeAssigned - ASSIGN_NAMED_VARIABLES)].variableName[1]);
     } else if (itemToBeAssigned <= ASSIGN_USER_MENU) {
         tbPtr = stringCopy(tbPtr, &userMenus[@intCast(-(itemToBeAssigned - ASSIGN_USER_MENU))].menuName);
     } else if (frontier_conversion_units.isItemConversion(itemToBeAssigned)) {
@@ -951,7 +951,7 @@ pub export fn _assignItem(menuItem: *userMenuItem_t) callconv(.c) void {
         lblPtr = &allNamedVariables[@intCast(itemToBeAssigned - ASSIGN_NAMED_VARIABLES)].variableName;
         menuItem.item = ITM_RCL;
     } else if (itemToBeAssigned <= ASSIGN_USER_MENU) {
-        lblPtr = @ptrCast(&userMenus[@intCast(-(itemToBeAssigned - ASSIGN_USER_MENU))].menuName);
+        lblPtr = &userMenus[@intCast(-(itemToBeAssigned - ASSIGN_USER_MENU))].menuName;
         menuItem.item = -MNU_DYNAMIC;
         _ = frontier_char_string.xcopy(&menuItem.argumentName, lblPtr, @intCast(stringByteLength(lblPtr) + 1));
         lblPtr = null;

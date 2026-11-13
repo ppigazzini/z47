@@ -33,7 +33,7 @@ pub export fn fnMatrixIdentity(unused_but_mandatory_parameter: u16) callconv(.c)
         var res: real34Matrix_t = undefined;
         const n = if (rows < cols) rows else cols;
         runtime.linkToRealMatrixRegister(runtime.REGISTER_X, &res);
-        const elements: [*]real34_t = @ptrCast(res.matrixElements);
+        const elements: [*]real34_t = res.matrixElements;
         var i: u32 = 0;
         while (i < n) : (i += 1) {
             runtime.real34SetOne(&elements[@as(usize, i) * cols + i]);

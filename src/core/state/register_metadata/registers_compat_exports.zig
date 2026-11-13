@@ -649,8 +649,8 @@ fn rewriteInfinityGlyph(str: [*:0]u8, scratch: []u8) void {
     var q: [*]u8 = str;
     while (strstr(p, "Infinity")) |hit| {
         hit[0] = 0;
-        q += @intCast(sprintf(@ptrCast(q), "%s\u{221e}", scratch.ptr));
-        p = @ptrCast(hit + 8);
+        q += @intCast(sprintf(q, "%s\u{221e}", scratch.ptr));
+        p = hit + 8;
         _ = strcpy(scratch.ptr, p);
     }
     _ = strcpy(q, @ptrCast(scratch.ptr));
@@ -709,7 +709,7 @@ pub export fn printC47ShortStringToConsole(s: [*:0]const u8, prefix: ?[*:0]const
             tx += 1;
             var j: usize = 0;
             while (j < n) : (j += 1) {
-                hx += @intCast(sprintf(@ptrCast(hex[hx..].ptr), "%02X", @as(c_int, p[j])));
+                hx += @intCast(sprintf(hex[hx..].ptr, "%02X", @as(c_int, p[j])));
             }
             hex[hx] = ' ';
             hx += 1;

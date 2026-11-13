@@ -828,7 +828,7 @@ const commonBugScreenMessages = @extern([*c]const [100]u8, .{ .name = "commonBug
 // answers a [*c] pointer, which inherits `allowzero` and so is rejected by {s};
 // one localized cast here yields the plain [:0]const u8 the formatter wants.
 inline fn errMsgRow(idx: anytype) [:0]const u8 {
-    return std.mem.sliceTo(@as([*:0]const u8, @ptrCast(errMsg(idx))), 0);
+    return std.mem.sliceTo(@as([*:0]const u8, errMsg(idx)), 0);
 }
 // errorMessageOf (error.c): the message for one error/status code.
 inline fn errMsg(idx: anytype) [*c]const u8 {
@@ -1097,7 +1097,7 @@ extern var alphaCursor: i16;
 
 const SIGMA_N = struct {
     inline fn ptr() *const real_t {
-        return @ptrCast(statisticalSumsPointer);
+        return statisticalSumsPointer;
     }
 };
 
@@ -1395,7 +1395,7 @@ inline fn real34SetPositiveSign(operand: *real34_t) void {
     operand.bytes[15] &= 0x7F;
 }
 inline fn realToReal34(source_: *const real_t, destination: *real34_t) void {
-    _ = decimal128FromNumber(@ptrCast(destination), source_, &ctxtReal34);
+    _ = decimal128FromNumber(destination, source_, &ctxtReal34);
 }
 inline fn realMultiply(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberMultiply(res, a, b, ctx);
@@ -4225,7 +4225,7 @@ pub export fn registerFMA(regist: calcRegister_t, tmp1: *real_t, tmp2: *real_t, 
         }
     }
     _ = decNumberFMA(tmp1, tmp1, tmp2, tmp4, &fmaContext);
-    realToReal34(tmp1, @ptrCast(tmp3));
+    realToReal34(tmp1, tmp3);
     return 1;
 }
 

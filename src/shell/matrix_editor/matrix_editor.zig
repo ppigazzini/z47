@@ -656,7 +656,7 @@ fn extractVectorElement34(matrix: *const real34Matrix_t, j: c_int, ii: c_int, ro
     // ctxtReal39 is opaque to us; copy via byte read using its address. Since we
     // do not know the exact runtime size at comptime safely, reconstruct the
     // fields we touch. The c47 decContext is a fixed POD; copy the whole struct.
-    c = @as(*const decContext, @ptrCast(&ctxtReal39)).*;
+    c = @as(*const decContext, &ctxtReal39).*;
     if (!getSystemFlag(FLAG_IRFRAC)) {
         c.digits = @as(i32, @intCast(digits)) + 3;
     }
@@ -950,7 +950,7 @@ fn showRealMatrixFlat(matrix: *const real34Matrix_t, prefixWidth: i16) void {
 
     // the whole page is one stream, so the integer rule is taken over all of it
     var allIntegers: bool_t = true;
-    getRealMatrixIntegerColumns(matrix, displayFormat, @intCast(cols), 0, 0, @intCast(rows), 1, @ptrCast(&allIntegers));
+    getRealMatrixIntegerColumns(matrix, displayFormat, @intCast(cols), 0, 0, @intCast(rows), 1, &allIntegers);
     var element: usize = 0;
     while (allIntegers and element < rows * cols) : (element += 1) {
         const value = &matrix.matrixElements.?[element];

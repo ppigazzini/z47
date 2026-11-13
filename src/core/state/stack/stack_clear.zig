@@ -14,7 +14,7 @@ fn complexImagPointer(data_ptr: ?*anyopaque) ?*anyopaque {
     const ptr = data_ptr orelse return null;
     const bytes: [*]align(1) u8 = @ptrCast(ptr);
     const imag_offset: usize = @intCast(memory_owned.bytesFromBlocks(runtime.real34SizeInBlocks()));
-    return @ptrCast(bytes + imag_offset);
+    return bytes + imag_offset;
 }
 
 fn clearRange(start: runtime.calcRegister_t, end: runtime.calcRegister_t) void {

@@ -134,7 +134,7 @@ pub fn expandAbbreviations(msg1: [*]u8, binary: BinaryGlyphs) void {
     var jj: i16 = 0;
     msg1[0] = 0;
     while (inStr[@intCast(i)] != 0) {
-        if (compressBinary(@ptrCast(inStr[@intCast(i)..].ptr), msg1, &jj, binary)) {
+        if (compressBinary(inStr[@intCast(i)..].ptr, msg1, &jj, binary)) {
             i += 4;
         } else {
             msg1[@intCast(jj)] = inStr[@intCast(i)];

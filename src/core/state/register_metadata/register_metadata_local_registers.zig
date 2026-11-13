@@ -51,7 +51,7 @@ fn complexImagPointer(data_ptr: ?*anyopaque) ?*anyopaque {
     const ptr = data_ptr orelse return null;
     const bytes: [*]align(1) u8 = @ptrCast(ptr);
     const imag_offset: usize = @intCast(memory_owned.bytesFromBlocks(runtime.real34SizeInBlocks()));
-    return @ptrCast(bytes + imag_offset);
+    return bytes + imag_offset;
 }
 
 fn reportLocalRegisterRangeError(number_of_registers_to_allocate: u16) void {
@@ -141,7 +141,7 @@ fn updateSubroutineLinks() void {
 fn allocateFirstLocalRegisters(number_of_registers_to_allocate: u16) void {
     const old_level = currentSubroutineLevelData;
     const grown_ptr = reallocC47Blocks(
-        if (old_level) |level| @ptrCast(level) else null,
+        if (old_level) |level| level else null,
         headerOnlyBlocks(),
         levelBlocks(number_of_registers_to_allocate),
     ) orelse {
@@ -174,7 +174,7 @@ fn allocateFirstLocalRegisters(number_of_registers_to_allocate: u16) void {
 fn growLocalRegisters(number_of_registers_to_allocate: u16, old_number_of_local_registers: u16) void {
     const old_level = currentSubroutineLevelData;
     const grown_ptr = reallocC47Blocks(
-        if (old_level) |level| @ptrCast(level) else null,
+        if (old_level) |level| level else null,
         levelBlocks(@intCast(old_number_of_local_registers)),
         levelBlocks(number_of_registers_to_allocate),
     ) orelse {
@@ -206,7 +206,7 @@ fn shrinkLocalRegisters(number_of_registers_to_allocate: u16, old_number_of_loca
 
     freeLocalRegisterRange(number_of_registers_to_allocate, old_number_of_local_registers);
     reduceC47Blocks(
-        @ptrCast(level),
+        level,
         levelBlocks(@intCast(old_number_of_local_registers)),
         levelBlocks(number_of_registers_to_allocate),
     );

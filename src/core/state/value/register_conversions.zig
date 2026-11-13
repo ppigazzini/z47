@@ -56,7 +56,7 @@ extern fn sprintf(buffer: [*c]u8, format: [*c]const u8, ...) c_int;
 fn reportBadShortIntegerMode(comptime who: [*:0]const u8) void {
     _ = sprintf(
         errorMessage,
-        @ptrCast(&commonBugScreenMessages[bugMsgValueFor]),
+        &commonBugScreenMessages[bugMsgValueFor],
         who,
         @as(c_int, shortIntegerMode),
         "shortIntegerMode",
@@ -539,7 +539,7 @@ pub export fn convertLongIntegerRegisterToLongInteger(regist: calcRegister_t, lg
 
     mpz_init2(lgInt, 8 * @as(c_ulong, @max(sizeInBytes, LIMB_SIZE)));
 
-    _ = xcopy(@ptrCast(lgInt._mp_d), @ptrCast(regLongIntData(regist)), sizeInBytes);
+    _ = xcopy(lgInt._mp_d, regLongIntData(regist), sizeInBytes);
 
     // Trim trailing zero limbs.
     while (sizeInBytes >= LIMB_SIZE and lgInt._mp_d[sizeInBytes / LIMB_SIZE - 1] == 0) {
@@ -1034,7 +1034,7 @@ pub export fn convertLongIntegerToLongIntegerRegister(lgInt: *const mpz_struct, 
     const sizeInBytes: u16 = longIntegerSizeInBytes(lgInt);
 
     if (reallocateRegister(regist, dtLongInteger, toBlocks(sizeInBytes), longIntegerSignTag(lgInt))) {
-        _ = xcopy(@ptrCast(regLongIntData(regist)), @ptrCast(lgInt._mp_d), sizeInBytes);
+        _ = xcopy(regLongIntData(regist), lgInt._mp_d, sizeInBytes);
     }
 }
 
@@ -1900,7 +1900,7 @@ pub export fn convertReal34MatrixRegisterToReal34Matrix(regist: calcRegister_t, 
 
     if (realMatrixInit(matrix, matrixHeader.matrixRows, matrixHeader.matrixColumns)) {
         if (matrix.matrixElements) |elems| {
-            _ = xcopy(@ptrCast(elems), @ptrCast(regRealMatrixElems(regist)), (@as(u32, matrix.header.matrixColumns) * matrix.header.matrixRows) * REAL34_SIZE_IN_BYTES);
+            _ = xcopy(elems, regRealMatrixElems(regist), (@as(u32, matrix.header.matrixColumns) * matrix.header.matrixRows) * REAL34_SIZE_IN_BYTES);
         }
     } else {
         displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
@@ -1911,8 +1911,8 @@ pub export fn convertReal34MatrixToReal34MatrixRegister(matrix: *const real34Mat
     const neededSizeInBytes: u32 = (@as(u32, matrix.header.matrixColumns) * matrix.header.matrixRows) * REAL34_SIZE_IN_BYTES;
     _ = reallocateRegister(regist, dtReal34Matrix, toBlocks(neededSizeInBytes), amNoneU);
     if (lastErrorCode != ERROR_RAM_FULL) {
-        _ = xcopy(@ptrCast(regMatrixHeader(regist)), @ptrCast(matrix), 4);
-        _ = xcopy(@ptrCast(regRealMatrixElems(regist)), @ptrCast(matrix.matrixElements.?), neededSizeInBytes);
+        _ = xcopy(regMatrixHeader(regist), matrix, 4);
+        _ = xcopy(regRealMatrixElems(regist), matrix.matrixElements.?, neededSizeInBytes);
     }
 }
 
@@ -1921,7 +1921,7 @@ pub export fn convertComplex34MatrixRegisterToComplex34Matrix(regist: calcRegist
 
     if (complexMatrixInit(matrix, matrixHeader.matrixRows, matrixHeader.matrixColumns)) {
         if (matrix.matrixElements) |elems| {
-            _ = xcopy(@ptrCast(elems), @ptrCast(regComplexMatrixElems(regist)), (@as(u32, matrix.header.matrixColumns) * matrix.header.matrixRows) * COMPLEX34_SIZE_IN_BYTES);
+            _ = xcopy(elems, regComplexMatrixElems(regist), (@as(u32, matrix.header.matrixColumns) * matrix.header.matrixRows) * COMPLEX34_SIZE_IN_BYTES);
         }
     } else {
         displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
@@ -1932,8 +1932,8 @@ pub export fn convertComplex34MatrixToComplex34MatrixRegister(matrix: *const com
     const neededSizeInBytes: u32 = (@as(u32, matrix.header.matrixColumns) * matrix.header.matrixRows) * COMPLEX34_SIZE_IN_BYTES;
     _ = reallocateRegister(regist, dtComplex34Matrix, toBlocks(neededSizeInBytes), amNoneU);
     if (lastErrorCode != ERROR_RAM_FULL) {
-        _ = xcopy(@ptrCast(regMatrixHeader(regist)), @ptrCast(matrix), 4);
-        _ = xcopy(@ptrCast(regComplexMatrixElems(regist)), @ptrCast(matrix.matrixElements.?), neededSizeInBytes);
+        _ = xcopy(regMatrixHeader(regist), matrix, 4);
+        _ = xcopy(regComplexMatrixElems(regist), matrix.matrixElements.?, neededSizeInBytes);
     }
 }
 
@@ -2109,7 +2109,7 @@ pub export fn getRegisterAsShortInt(reg: calcRegister_t, sign: *bool, val: *u64,
         dtLongInteger => {
             convertLongIntegerRegisterToLongInteger(reg, &ival);
             if (comptime is32) {
-                const d32: [*]u32 = @ptrCast(ival._mp_d);
+                const d32: [*]u32 = ival._mp_d;
                 u64v = if (ival._mp_size == 0) 0 else d32[0];
                 if (absI(ival._mp_size) > 1) {
                     u64v |= @as(u64, d32[1]) << 32;
@@ -2117,7 +2117,7 @@ pub export fn getRegisterAsShortInt(reg: calcRegister_t, sign: *bool, val: *u64,
                 of = absI(ival._mp_size) > 2 or (u64v & shortIntegerMask) != u64v;
                 u64v &= shortIntegerMask;
             } else {
-                const d64: [*]u64 = @ptrCast(ival._mp_d);
+                const d64: [*]u64 = ival._mp_d;
                 u64v = (if (ival._mp_size == 0) 0 else d64[0]) & shortIntegerMask;
                 of = absI(ival._mp_size) > 1 or (u64v & shortIntegerMask) != u64v;
             }

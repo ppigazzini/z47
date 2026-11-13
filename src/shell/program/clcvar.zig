@@ -245,7 +245,7 @@ fn _clearVar(regist: calcRegister_t) void {
             // calculator error: displayBugScreen switches to CM_BUG_ON_SCREEN in
             // every build, so this arm changes control flow and is not a
             // droppable console diagnostic.
-            _ = sprintf(errorMessage, @ptrCast(&commonBugScreenMessages[bugMsgDataTypeUnknown]), "_clearVar", frontier_debug.getDataTypeName(@truncate(getRegisterDataType(regist)), false, false));
+            _ = sprintf(errorMessage, &commonBugScreenMessages[bugMsgDataTypeUnknown], "_clearVar", frontier_debug.getDataTypeName(@truncate(getRegisterDataType(regist)), false, false));
             frontier_error.displayBugScreen(errorMessage);
         },
     }

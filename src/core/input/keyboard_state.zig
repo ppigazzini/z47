@@ -912,9 +912,9 @@ pub export fn fnSHIFTfg(unused_but_mandatory_parameter: u16) callconv(.c) void {
     // f+g chord = the same path as clicking key 27 (the f/g longpress combo).
     const key27: [*:0]const u8 = "27";
     if (is_dmcp_build) {
-        runtime.btnClickedDmcpOverlay(null, @ptrCast(@constCast(key27)));
+        runtime.btnClickedDmcpOverlay(null, @constCast(key27));
     } else {
-        runtime.btnClickedHostOverlay(null, @ptrCast(@constCast(key27)));
+        runtime.btnClickedHostOverlay(null, @constCast(key27));
     }
 }
 
@@ -1191,7 +1191,7 @@ pub export fn execFnTimeout(key: u16) callconv(.c) void {
     charKey[1] = 0;
     charKey[0] = @truncate(key + 11); // key + (-37 + 48)
     if (!runtime.FN_timed_out_to_NOP_or_Executed) {
-        runtime.btnFnClicked(null, @ptrCast(&charKey));
+        runtime.btnFnClicked(null, &charKey);
     }
 }
 
@@ -1437,7 +1437,7 @@ pub export fn btnFnReleased_StateMachine(unused: ?*anyopaque, data: ?*anyopaque)
         charKey[0] = @intCast(runtime.FN_key_pressed + (-37 + 48));
         runtime.hideFunctionName();
         if (!runtime.FN_timed_out_to_NOP_or_Executed and runtime.fnTimerGetStatus(runtime.TO_FN_EXEC) != runtime.TMR_RUNNING) {
-            runtime.btnFnClicked(unused, @ptrCast(&charKey));
+            runtime.btnFnClicked(unused, &charKey);
         }
         const screenUpdatingModeMeM = runtime.screenUpdatingMode;
         runtime.resetShiftState();

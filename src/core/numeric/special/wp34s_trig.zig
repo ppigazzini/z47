@@ -233,7 +233,7 @@ fn doWP34S_SinCosTanTaylor(
     if (angularMode == amRadian) {
         reduceRadianToFirstOctant(angle, sinNeg, cosNeg, swap, realContext);
     } else {
-        reduceAngleToRange(@ptrCast(angle), &angle45, &angle90, &angle180, &angularMode, savedContextDigits, realContext);
+        reduceAngleToRange(angle, &angle45, &angle90, &angle180, &angularMode, savedContextDigits, realContext);
     }
 
     // The quadrant folds below are for the units reduceAngleToRange returns in

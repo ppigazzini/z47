@@ -35,7 +35,7 @@ fn reportFibonacciLimit() void {
     }
     @memcpy(runtime.tmpString[length..][0..suffix.len], suffix);
     runtime.tmpString[length + suffix.len] = 0;
-    runtime.moreInfoOnError("In function fibLonI:", @ptrCast(runtime.tmpString), null, null);
+    runtime.moreInfoOnError("In function fibLonI:", runtime.tmpString, null, null);
 }
 
 fn fibLonI() callconv(.c) void {

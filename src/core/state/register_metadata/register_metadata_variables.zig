@@ -98,7 +98,7 @@ fn firstMatrixElementPointer(data_ptr: ?*anyopaque) ?*anyopaque {
     const ptr = data_ptr orelse return null;
     const bytes: [*]align(1) u8 = @ptrCast(ptr);
     const payload_offset: usize = @intCast(memory_owned.bytesFromBlocks(runtime.matrixHeaderSizeInBlocks()));
-    return @ptrCast(bytes + payload_offset);
+    return bytes + payload_offset;
 }
 
 // Each matrix is rebuilt on its own: registers.c guards only on the name failing
@@ -130,7 +130,7 @@ fn appendNamedVariableHeader(index: *u16) bool {
     index.* = runtime.numberOfNamedVariables;
 
     const grown_ptr = reallocC47Blocks(
-        if (original_headers) |headers| @ptrCast(headers) else null,
+        if (original_headers) |headers| headers else null,
         namedVariableHeaderBlocks(runtime.numberOfNamedVariables),
         namedVariableHeaderBlocks(runtime.numberOfNamedVariables + 1),
     ) orelse return false;
@@ -142,7 +142,7 @@ fn appendNamedVariableHeader(index: *u16) bool {
 
 fn storeNamedVariableName(index: u16, variable_name: [*c]const u8) void {
     const headers = allNamedVariables orelse return;
-    const text: [*:0]const u8 = @ptrCast(variable_name);
+    const text: [*:0]const u8 = variable_name;
     const slot = &headers[index];
     const len = @min(std.mem.len(text), slot.variableName.len - 1);
 
@@ -170,7 +170,7 @@ fn shrinkNamedVariableHeaderStorage() void {
 
     const headers = allNamedVariables orelse return;
     reduceC47Blocks(
-        @ptrCast(headers),
+        headers,
         namedVariableHeaderBlocks(runtime.numberOfNamedVariables),
         namedVariableHeaderBlocks(runtime.numberOfNamedVariables - 1),
     );
@@ -196,7 +196,7 @@ fn findReservedVariableName(variable_name: [*c]const u8, glyph_length: u8) runti
         }
 
         const reserved_name: [*:0]const u8 = @ptrCast(&allReservedVariables[@intCast(reg)].reservedVariableName[1]);
-        if (compareMenuNames(variable_name, @ptrCast(reserved_name)) == 0) {
+        if (compareMenuNames(variable_name, reserved_name) == 0) {
             return runtime.FIRST_RESERVED_VARIABLE + reg;
         }
     }
@@ -205,7 +205,7 @@ fn findReservedVariableName(variable_name: [*c]const u8, glyph_length: u8) runti
 }
 
 fn namedVariableNameEquals(index: u16, variable_name: [*:0]const u8) bool {
-    return compareMenuNames(runtime.namedVariableName(index), @ptrCast(variable_name)) == 0;
+    return compareMenuNames(runtime.namedVariableName(index), variable_name) == 0;
 }
 
 fn preserveNamedVariableDuringClear(index: u16) bool {
@@ -221,7 +221,7 @@ pub fn validateName(name: [*c]const u8) bool {
         return false;
     }
 
-    const text: [*:0]const u8 = @ptrCast(name);
+    const text: [*:0]const u8 = name;
     const glyph_length = validateNameGlyphLength(text);
 
     if (glyph_length > validate_name_max_glyphs or glyph_length == 0) {
@@ -307,7 +307,7 @@ pub fn allocateNamedVariable(variable_name: [*c]const u8, data_type: u32, full_d
         return;
     }
 
-    const text: [*:0]const u8 = @ptrCast(variable_name);
+    const text: [*:0]const u8 = variable_name;
     const glyph_length = validateNameGlyphLength(text);
 
     // A name of the wrong length is refused with a console hint and NO error
@@ -468,7 +468,7 @@ fn namedVariableHeaderName(index: u16) ?[*]const u8 {
         return null;
     }
     const headers = allNamedVariables orelse return null;
-    return @ptrCast(&headers[index].variableName);
+    return &headers[index].variableName;
 }
 
 // Indices of the last three findNamedVariable() scan hits, trusted only after the entry's stored name
@@ -495,7 +495,7 @@ pub export fn namedVariableIsStats(regist: runtime.calcRegister_t) bool {
 }
 
 pub fn findNamedVariable(variable_name: [*c]const u8) runtime.calcRegister_t {
-    const text: [*:0]const u8 = @ptrCast(variable_name);
+    const text: [*:0]const u8 = variable_name;
     const glyph_length = validateNameGlyphLength(text);
 
     if (glyph_length < 1 or glyph_length > validate_name_max_glyphs) {
@@ -541,7 +541,7 @@ pub fn findNamedVariable(variable_name: [*c]const u8) runtime.calcRegister_t {
 // Allocate half of findOrAllocateNamedVariable(); call only after
 // findNamedVariable() returned INVALID_VARIABLE. The new variable is a real34 zero.
 pub fn allocateNamedVariableOnMiss(variable_name: [*c]const u8) runtime.calcRegister_t {
-    const text: [*:0]const u8 = @ptrCast(variable_name);
+    const text: [*:0]const u8 = variable_name;
     const glyph_length = validateNameGlyphLength(text);
 
     if (glyph_length < 1 or glyph_length > validate_name_max_glyphs) {

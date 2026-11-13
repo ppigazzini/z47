@@ -370,7 +370,7 @@ const errorMessageOffset linksection(code_section) = blk: {
 };
 
 pub export fn errorMessageOf(errorCode: u8) linksection(code_section) callconv(.c) [*c]const u8 {
-    return @ptrCast(&errorMessagePool[errorMessageOffset[errorCode]]);
+    return &errorMessagePool[errorMessageOffset[errorCode]];
 }
 
 // ---------------------------------------------------------------------------
@@ -556,11 +556,11 @@ pub export fn printErrorTrace(errorCode: u8) callconv(.c) void {
 pub export fn reportBugError(errorCode: u8, errMessageRegisterLine: calcRegister_t) callconv(.c) void {
     if (errorCode >= NUMBER_OF_ERROR_CODES or errorCode == 0) {
         abi.fmtBufZ(errorMessage[0..512], "In function {s}:{d} is an unexpected value for {s}!", .{ "displayCalcErrorMessage", @as(c_int, errorCode), "errorCode" });
-        displayBugScreen(@ptrCast(errorMessage));
+        displayBugScreen(errorMessage);
     } else {
         abi.fmtBufZ(errorMessage[0..512], "In function {s}:{d} is an unexpected value for {s}!", .{ "displayCalcErrorMessage", @as(c_int, errMessageRegisterLine), "errMessageRegisterLine" });
         abi.fmtBufZ(errorMessage[strlen(errorMessage)..512], "Must be from 100 (register X) to 103 (register T)", .{});
-        displayBugScreen(@ptrCast(errorMessage));
+        displayBugScreen(errorMessage);
     }
 }
 

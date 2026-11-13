@@ -1608,7 +1608,7 @@ pub export fn fnGetMenu(_: u16) callconv(.c) void {
             lenInBytes += 1;
             menuName[@intCast(lenInBytes)] = 0;
             _add_digitglyph(&tmp, @intCast(@divTrunc(@as(i32, firstItem), 18) + 1));
-            _ = stringCopy(@ptrCast(&menuName[@intCast(stringByteLength(&menuName))]), &tmp);
+            _ = stringCopy(&menuName[@intCast(stringByteLength(&menuName))], &tmp);
             lenInBytes = @intCast(stringByteLength(&menuName) + 1);
         }
         _ = reallocateRegister(REGISTER_X, dtString, TO_BLOCKS(lenInBytes), amNone);
@@ -2036,7 +2036,7 @@ fn showSoftkey2(valid: bool_t, labelSM1: [*c]const u8, xSoftkey: i16, ySoftKey: 
     if (xSoftkey == 0 or xSoftkey == 2 or xSoftkey == 4) {
         xx1 = x1;
         label0[0] = 0;
-        _ = stringCopy(@ptrCast(&label0[@intCast(stringByteLength(&label0))]), labelSM1);
+        _ = stringCopy(&label0[@intCast(stringByteLength(&label0))], labelSM1);
         frontier_char_string.compressConversionName(&label0);
     }
     truncateAtArrow(&label0);
@@ -2045,7 +2045,7 @@ fn showSoftkey2(valid: bool_t, labelSM1: [*c]const u8, xSoftkey: i16, ySoftKey: 
     // it a lone item in an odd slot renders as the partner of the key to its left.
     if ((xSoftkey & 1) != 0 and valid != 0) {
         label1[0] = 0;
-        _ = stringCopy(@ptrCast(&label1[@intCast(stringByteLength(&label1))]), labelSM1);
+        _ = stringCopy(&label1[@intCast(stringByteLength(&label1))], labelSM1);
         frontier_char_string.compressConversionName(&label1);
         truncateAtArrow(&label1);
         showKey2(&label0, &label1, xx1, x2, y1, y2, videoMode, topLine, bottomLine, showCb, showValue, showText, doubleMidLine);
@@ -2467,19 +2467,19 @@ fn placeSubscript(itemNr: i16, flt: bool_t, tmpF: f32, itemName: [*c]u8, tmpS: [
             if (tmpS[0] == '?' or strchr(tmpS, 'E') != null) {
                 switch (itemMod) {
                     VAR_ULIM, VAR_LLIM, VAR_UEST, VAR_LEST => {
-                        _ = stringCopy(@ptrCast(itemName + 3), STD_SPACE_4_PER_EM);
+                        _ = stringCopy(itemName + 3, STD_SPACE_4_PER_EM);
                     },
                     VAR_IPonA, VAR_PPERonA, VAR_CPERonA => {
-                        _ = stringCopy(@ptrCast(itemName + 1), concat2(STD_SUB_a, STD_SPACE_4_PER_EM));
+                        _ = stringCopy(itemName + 1, concat2(STD_SUB_a, STD_SPACE_4_PER_EM));
                     },
                     VAR_PV => {
-                        _ = stringCopy(@ptrCast(itemName + 1), STD_SUB_v);
+                        _ = stringCopy(itemName + 1, STD_SUB_v);
                     },
                     VAR_FV => {
                         itemName[1] = 0;
                     },
                     VAR_PMT => {
-                        _ = stringCopy(@ptrCast(itemName + 1), STD_SUB_m);
+                        _ = stringCopy(itemName + 1, STD_SUB_m);
                     },
                     else => {},
                 }
@@ -2499,7 +2499,7 @@ fn placeSubscript(itemNr: i16, flt: bool_t, tmpF: f32, itemName: [*c]u8, tmpS: [
         abi.fmtCStr(tmpS, "{s}", .{@as([*:0]const u8, tmpSS)});
     }
     // tmpS, not tmpSS: the short-number case above prefixed it with a space.
-    _ = stringCopy(@ptrCast(showText + @as(usize, @intCast(stringByteLength(showText)))), tmpS);
+    _ = stringCopy(showText + @as(usize, @intCast(stringByteLength(showText))), tmpS);
 }
 inline fn cmodNonNeg(n: i32, d: i32) i32 {
     return softmenu_math.cmodNonNeg(n, d);
@@ -2516,7 +2516,7 @@ fn concat2(comptime a: anytype, comptime b: anytype) [*c]const u8 {
         const sb: []const u8 = std.mem.span(@as([*:0]const u8, b));
         break :blk sa ++ sb ++ "\x00";
     };
-    return @ptrCast(joined.ptr);
+    return joined.ptr;
 }
 extern fn strlen(s: [*c]const u8) usize;
 inline fn strlenc(s: [*c]const u8) usize {
@@ -2597,26 +2597,26 @@ fn changeSoftKey(menuNr: i16, itemNr: i16, itemName: [*c]u8, vm: *videoMode_t, s
                         accToString(&tmpS, tmpF);
                     }
                 }
-                _ = stringCopy(@ptrCast(showText + @as(usize, @intCast(stringByteLength(showText)))), &tmpS);
+                _ = stringCopy(showText + @as(usize, @intCast(stringByteLength(showText))), &tmpS);
             },
             ITM_PZOOMY, ITM_MZOOMY => {
                 if (PLOT_ZMY == zoomOverride) {
                     _ = strcpy(&tmpS, concat2(STD_SPACE_6_PER_EM, STD_SUB_X));
                     showValue.* = NOVAL;
-                    _ = stringCopy(@ptrCast(showText + @as(usize, @intCast(stringByteLength(showText)))), &tmpS);
+                    _ = stringCopy(showText + @as(usize, @intCast(stringByteLength(showText))), &tmpS);
                 }
             },
             ITM_IPLUS, ITM_IMINUS => {
                 if (isMatrixIndexed() != 0 and frontier_register_value_conversions.getRegisterAsRealQuiet(REGISTER_I, &tmpR)) {
                     abi.fmtCStr(&tmpS, "\xa0\x04\xa0\x04{d}", .{@as(u32, @as(u16, @truncate(frontier_real_type.realToUint32C47(&tmpR, null))))});
-                    _ = stringCopy(@ptrCast(showText + @as(usize, @intCast(stringByteLength(showText)))), &tmpS);
+                    _ = stringCopy(showText + @as(usize, @intCast(stringByteLength(showText))), &tmpS);
                     showValue.* = NOVAL;
                 }
             },
             ITM_JPLUS, ITM_JMINUS => {
                 if (isMatrixIndexed() != 0 and frontier_register_value_conversions.getRegisterAsRealQuiet(REGISTER_J, &tmpR)) {
                     abi.fmtCStr(&tmpS, "\xa0\x04\xa0\x04{d}", .{@as(u32, @as(u16, @truncate(frontier_real_type.realToUint32C47(&tmpR, null))))});
-                    _ = stringCopy(@ptrCast(showText + @as(usize, @intCast(stringByteLength(showText)))), &tmpS);
+                    _ = stringCopy(showText + @as(usize, @intCast(stringByteLength(showText))), &tmpS);
                     showValue.* = NOVAL;
                 }
             },
@@ -2639,13 +2639,13 @@ fn changeSoftKey(menuNr: i16, itemNr: i16, itemName: [*c]u8, vm: *videoMode_t, s
             },
             ITM_DSP, ITM_UNIT => {
                 if (getSystemFlag(FLAG_2TO10) != 0 and displayFormat == DF_UN) {
-                    _ = stringCopy(@ptrCast(showText + @as(usize, @intCast(stringByteLength(showText)))), STD_SUB_i);
+                    _ = stringCopy(showText + @as(usize, @intCast(stringByteLength(showText))), STD_SUB_i);
                 }
             },
             ITM_DSPCYCLE => {
                 switch (showValue.*) {
                     32700, 32701, 32702, 32703, 32704, 32705 => {
-                        _ = stringCopy(@ptrCast(showText + @as(usize, @intCast(stringByteLength(showText)))), &modeNames[@intCast(showValue.* - 32700)].modeName);
+                        _ = stringCopy(showText + @as(usize, @intCast(stringByteLength(showText))), &modeNames[@intCast(showValue.* - 32700)].modeName);
                         showValue.* = NOVAL;
                     },
                     else => {},
@@ -2657,7 +2657,7 @@ fn changeSoftKey(menuNr: i16, itemNr: i16, itemName: [*c]u8, vm: *videoMode_t, s
                         showValue.* = NOVAL;
                     },
                     NC_SUBSCRIPT => {
-                        _ = stringCopy(@ptrCast(showText + @as(usize, @intCast(stringByteLength(showText)))), if (alphaCase == AC_LOWER) concat3(STD_SUB_s, STD_SUB_u, STD_SUB_b) else if (alphaCase == AC_UPPER) concat3(STD_SUB_S, STD_SUB_U, STD_SUB_B) else "");
+                        _ = stringCopy(showText + @as(usize, @intCast(stringByteLength(showText))), if (alphaCase == AC_LOWER) concat3(STD_SUB_s, STD_SUB_u, STD_SUB_b) else if (alphaCase == AC_UPPER) concat3(STD_SUB_S, STD_SUB_U, STD_SUB_B) else "");
                         showValue.* = NOVAL;
                         _ = stringCopy(itemName, &indexOfItems[@intCast(itemMod)].itemSoftmenuName);
                         itemName[0] = STD_alpha[0];
@@ -2666,7 +2666,7 @@ fn changeSoftKey(menuNr: i16, itemNr: i16, itemName: [*c]u8, vm: *videoMode_t, s
                         return;
                     },
                     NC_SUPERSCRIPT => {
-                        _ = stringCopy(@ptrCast(showText + @as(usize, @intCast(stringByteLength(showText)))), if (alphaCase == AC_LOWER) concat3(STD_SUP_s, STD_SUP_u, STD_SUP_p) else if (alphaCase == AC_UPPER) concat3(STD_SUP_S, STD_SUP_U, STD_SUP_P) else "");
+                        _ = stringCopy(showText + @as(usize, @intCast(stringByteLength(showText))), if (alphaCase == AC_LOWER) concat3(STD_SUP_s, STD_SUP_u, STD_SUP_p) else if (alphaCase == AC_UPPER) concat3(STD_SUP_S, STD_SUP_U, STD_SUP_P) else "");
                         showValue.* = NOVAL;
                         _ = stringCopy(itemName, &indexOfItems[@intCast(itemMod)].itemSoftmenuName);
                         itemName[0] = STD_alpha[0];
@@ -2699,21 +2699,21 @@ fn changeSoftKey(menuNr: i16, itemNr: i16, itemName: [*c]u8, vm: *videoMode_t, s
             },
             ITM_GAP_L => {
                 if (gapItemLeft == ITM_NULL) {
-                    _ = stringCopy(@ptrCast(showText + @as(usize, @intCast(stringByteLength(showText)))), "\x01\x01");
+                    _ = stringCopy(showText + @as(usize, @intCast(stringByteLength(showText))), "\x01\x01");
                 } else {
-                    _ = stringCopy(@ptrCast(showText + @as(usize, @intCast(stringByteLength(showText)))), &indexOfItems[@intCast(gapItemLeft)].itemSoftmenuName);
+                    _ = stringCopy(showText + @as(usize, @intCast(stringByteLength(showText))), &indexOfItems[@intCast(gapItemLeft)].itemSoftmenuName);
                 }
                 showValue.* = NOVAL;
             },
             ITM_GAP_RX => {
-                _ = stringCopy(@ptrCast(showText + @as(usize, @intCast(stringByteLength(showText)))), &indexOfItems[@intCast(gapItemRadix)].itemSoftmenuName);
+                _ = stringCopy(showText + @as(usize, @intCast(stringByteLength(showText))), &indexOfItems[@intCast(gapItemRadix)].itemSoftmenuName);
                 showValue.* = NOVAL;
             },
             ITM_GAP_R => {
                 if (gapItemRight == ITM_NULL) {
-                    _ = stringCopy(@ptrCast(showText + @as(usize, @intCast(stringByteLength(showText)))), "\x01\x01");
+                    _ = stringCopy(showText + @as(usize, @intCast(stringByteLength(showText))), "\x01\x01");
                 } else {
-                    _ = stringCopy(@ptrCast(showText + @as(usize, @intCast(stringByteLength(showText)))), &indexOfItems[@intCast(gapItemRight)].itemSoftmenuName);
+                    _ = stringCopy(showText + @as(usize, @intCast(stringByteLength(showText))), &indexOfItems[@intCast(gapItemRight)].itemSoftmenuName);
                 }
                 showValue.* = NOVAL;
             },
@@ -2741,16 +2741,16 @@ fn changeSoftKey(menuNr: i16, itemNr: i16, itemName: [*c]u8, vm: *videoMode_t, s
                 showValue.* = NOVAL;
             },
             ITM_ROUNDMM => {
-                _ = stringCopy(@ptrCast(showText + @as(usize, @intCast(stringByteLength(showText)))), STD_SPACE_3_PER_EM);
-                _ = stringCopy(@ptrCast(showText + @as(usize, @intCast(stringByteLength(showText)))), &indexOfItems[@intCast(@as(i16, roundingMode) + ITM_RM_HALF_EVEN)].itemSoftmenuName);
+                _ = stringCopy(showText + @as(usize, @intCast(stringByteLength(showText))), STD_SPACE_3_PER_EM);
+                _ = stringCopy(showText + @as(usize, @intCast(stringByteLength(showText))), &indexOfItems[@intCast(@as(i16, roundingMode) + ITM_RM_HALF_EVEN)].itemSoftmenuName);
                 showValue.* = NOVAL;
             },
             ITM_SET_42ALPHA, ITM_SET_42ALPHAX => {
                 if (FIRST_LETTERED_REGISTER <= alphaRegister and alphaRegister <= REGISTER_W) {
-                    abi.fmtCStr(@ptrCast(showText + @as(usize, @intCast(stringByteLength(showText)))), "{s}", .{@as([*:0]const u8, frontier_radio_button_catalog.stringToSub(&registerLetter[alphaRegister - FIRST_LETTERED_REGISTER]))});
+                    abi.fmtCStr(showText + @as(usize, @intCast(stringByteLength(showText))), "{s}", .{@as([*:0]const u8, frontier_radio_button_catalog.stringToSub(&registerLetter[alphaRegister - FIRST_LETTERED_REGISTER]))});
                     showValue.* = NOVAL;
                 } else if (FIRST_NAMED_VARIABLE <= alphaRegister and alphaRegister <= LAST_NAMED_VARIABLE) {
-                    abi.fmtCStr(@ptrCast(showText + @as(usize, @intCast(stringByteLength(showText)))), "{s}", .{@as([*:0]const u8, frontier_radio_button_catalog.stringToSub(if (itemMod == ITM_SET_42ALPHA) "var" else "vr"))});
+                    abi.fmtCStr(showText + @as(usize, @intCast(stringByteLength(showText))), "{s}", .{@as([*:0]const u8, frontier_radio_button_catalog.stringToSub(if (itemMod == ITM_SET_42ALPHA) "var" else "vr"))});
                     showValue.* = NOVAL;
                 }
             },
@@ -2770,13 +2770,13 @@ fn changeSoftKey(menuNr: i16, itemNr: i16, itemName: [*c]u8, vm: *videoMode_t, s
         if (itemNr == -%@as(i16, MNU_PRINTER)) {
             switch (printerState.printer_model) {
                 PRINTER_HP => {
-                    abi.fmtCStr(@ptrCast(showText + @as(usize, @intCast(stringByteLength(showText)))), "\xa0\x04{s}", .{@as([*:0]const u8, frontier_radio_button_catalog.stringToSub(&indexOfItems[@intCast(ITM_PRINTERHP)].itemSoftmenuName))});
+                    abi.fmtCStr(showText + @as(usize, @intCast(stringByteLength(showText))), "\xa0\x04{s}", .{@as([*:0]const u8, frontier_radio_button_catalog.stringToSub(&indexOfItems[@intCast(ITM_PRINTERHP)].itemSoftmenuName))});
                 },
                 PRINTER_MARTEL => {
-                    abi.fmtCStr(@ptrCast(showText + @as(usize, @intCast(stringByteLength(showText)))), "{s}", .{@as([*:0]const u8, frontier_radio_button_catalog.stringToSub(&indexOfItems[@intCast(ITM_PRINTERMARTEL)].itemSoftmenuName))});
+                    abi.fmtCStr(showText + @as(usize, @intCast(stringByteLength(showText))), "{s}", .{@as([*:0]const u8, frontier_radio_button_catalog.stringToSub(&indexOfItems[@intCast(ITM_PRINTERMARTEL)].itemSoftmenuName))});
                 },
                 PRINTER_OTHER => {
-                    abi.fmtCStr(@ptrCast(showText + @as(usize, @intCast(stringByteLength(showText)))), "\xa0\x04{s}", .{@as([*:0]const u8, frontier_radio_button_catalog.stringToSub(&indexOfItems[@intCast(ITM_PRINTEROTHER)].itemSoftmenuName))});
+                    abi.fmtCStr(showText + @as(usize, @intCast(stringByteLength(showText))), "\xa0\x04{s}", .{@as([*:0]const u8, frontier_radio_button_catalog.stringToSub(&indexOfItems[@intCast(ITM_PRINTEROTHER)].itemSoftmenuName))});
                 },
                 else => {},
             }
@@ -2793,7 +2793,7 @@ fn concat3(comptime a: anytype, comptime b: anytype, comptime c: anytype) [*c]co
         const sc: []const u8 = std.mem.span(@as([*:0]const u8, c));
         break :blk sa ++ sb ++ sc ++ "\x00";
     };
-    return @ptrCast(joined.ptr);
+    return joined.ptr;
 }
 
 pub export fn savedspace(itemNr: i16) callconv(.c) bool_t {
@@ -3163,7 +3163,7 @@ pub export fn showSoftmenuCurrentPart() callconv(.c) void {
                     _ = stringCopy(&tmp1, " ");
                     if (1 + x + y * 6 > 9) {
                         tmp1[0] = '1';
-                        _ = stringCopy(@ptrCast(&tmp1[1]), " ");
+                        _ = stringCopy(&tmp1[1], " ");
                         tmp1[1] = @intCast(48 + @rem(@as(i32, 1 + x + y * 6), 10));
                     } else {
                         tmp1[0] = @intCast(48 + 1 + x + y * 6);

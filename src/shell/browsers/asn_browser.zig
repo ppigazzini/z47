@@ -252,7 +252,7 @@ fn fnAsnDisplay(page: u8) void {
             }
         }
 
-        _ = strcpy(&Name, @ptrCast(&indexOfItems[@intCast(maxI(kk, -kk))].itemSoftmenuName));
+        _ = strcpy(&Name, &indexOfItems[@intCast(maxI(kk, -kk))].itemSoftmenuName);
         if (strcmp(&Name, "0000") == 0) {
             Name[0] = 0;
         }
@@ -277,7 +277,7 @@ fn fnAsnDisplay(page: u8) void {
             _ = stringCopy(&Name, &tmp3);
         }
         const videoMode: videoMode_t = if (!Norm_Key_00_used) (if (((kk > 0 or Name[0] == 0) and tmp3[0] == 0)) vmNormal else vmReverse) else vmReverse;
-        frontier_softmenus.showKey(@ptrCast(&Name), x1, x2, YOFF + yy * SOFTMENU_HEIGHT, YOFF + (yy + 1) * SOFTMENU_HEIGHT, videoMode, @intFromBool(true), @intFromBool(true), NOVAL, NOVAL, "");
+        frontier_softmenus.showKey(&Name, x1, x2, YOFF + yy * SOFTMENU_HEIGHT, YOFF + (yy + 1) * SOFTMENU_HEIGHT, videoMode, @intFromBool(true), @intFromBool(true), NOVAL, NOVAL, "");
 
         if (asnDisplayUSER() and
             (((page == 1) and (kbd_std[@intCast(key)].primary == kbd_usr[@intCast(key)].primary)) or

@@ -12,7 +12,7 @@ extern fn decQuadZero(dest: ?*anyopaque) ?*anyopaque;
 extern fn z47_stack_runtime_real34_set_zero(dest: ?*anyopaque) void;
 
 fn constOpaque(ptr: ?*anyopaque) ?*const anyopaque {
-    return if (ptr) |value| @ptrCast(value) else null;
+    return if (ptr) |value| value else null;
 }
 
 pub fn bytesFromBlocks(size_in_blocks: usize) u32 {

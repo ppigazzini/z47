@@ -93,7 +93,7 @@ fn bufPrintZ(buffer: []u8, comptime format: []const u8, args: anytype) ![:0]u8 {
 fn registerStringData(reg: runtime.calcRegister_t) [*c]u8 {
     const ptr = runtime.getRegisterDataPointer(reg) orelse return null;
     const bytes: [*]u8 = @ptrCast(ptr);
-    return @ptrCast(bytes + 4);
+    return bytes + 4;
 }
 
 // stringByteLength is "#define stringByteLength(str) ((int32_t)strlen(str))".

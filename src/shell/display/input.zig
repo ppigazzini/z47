@@ -642,35 +642,35 @@ pub export fn fnPutKey(regist: u16) callconv(.c) void {
         11, 12, 13, 14, 15, 16 => {
             kc[0] = @intCast(keyCode - 10 + '0');
             kc[1] = 0;
-            btnFnClicked(null, @ptrCast(&kc));
+            btnFnClicked(null, &kc);
         },
         21, 22, 23, 24, 25, 26 => {
             abi.fmtBufZ(&kc, "{d:0>2}", .{@as(u32, keyCode - 21 + 0)});
-            btnClicked(null, @ptrCast(&kc));
+            btnClicked(null, &kc);
         },
         31, 32, 33, 34, 35, 36 => {
             abi.fmtBufZ(&kc, "{d:0>2}", .{@as(u32, keyCode - 31 + 6)});
-            btnClicked(null, @ptrCast(&kc));
+            btnClicked(null, &kc);
         },
         41, 42, 43, 44, 45 => {
             abi.fmtBufZ(&kc, "{d:0>2}", .{@as(u32, keyCode - 41 + 12)});
-            btnClicked(null, @ptrCast(&kc));
+            btnClicked(null, &kc);
         },
         51, 52, 53, 54, 55 => {
             abi.fmtBufZ(&kc, "{d:0>2}", .{@as(u32, keyCode - 51 + 17)});
-            btnClicked(null, @ptrCast(&kc));
+            btnClicked(null, &kc);
         },
         61, 62, 63, 64, 65 => {
             abi.fmtBufZ(&kc, "{d:0>2}", .{@as(u32, keyCode - 61 + 22)});
-            btnClicked(null, @ptrCast(&kc));
+            btnClicked(null, &kc);
         },
         71, 72, 73, 74, 75 => {
             abi.fmtBufZ(&kc, "{d:0>2}", .{@as(u32, keyCode - 71 + 27)});
-            btnClicked(null, @ptrCast(&kc));
+            btnClicked(null, &kc);
         },
         81, 82, 83, 84, 85 => {
             abi.fmtBufZ(&kc, "{d:0>2}", .{@as(u32, keyCode - 81 + 32)});
-            btnClicked(null, @ptrCast(&kc));
+            btnClicked(null, &kc);
         },
         else => {
             frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);

@@ -94,7 +94,7 @@ fn runRegister(register_no: u16) void {
         // a named variable's name, at most 15 bytes plus the terminator.
         var label: [16]u8 = @splat(0);
         frontier_print.z47_frontier_format_register_label(register_no, &label, label.len);
-        frontier_print.printReg(register_no, @ptrCast(&label), true, LINE_FULL, false);
+        frontier_print.printReg(register_no, &label, true, LINE_FULL, false);
         return;
     }
 

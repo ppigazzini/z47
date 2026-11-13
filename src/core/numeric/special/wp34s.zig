@@ -1341,7 +1341,7 @@ fn WP34S_Gamma_LnGamma(xin: *const real_t, calculateLnGamma: bool, res: *real_t,
             }
         }
         realMultiply(&t, const75_pi(), &t, realContext); // t = xin*pi
-        wp34s_trig.C47_WP34S_SinCosTanTaylor_temp75(@ptrCast(&t), false, &x, null, null, realContext); // x = sin(xin*pi)
+        wp34s_trig.C47_WP34S_SinCosTanTaylor_temp75(&t, false, &x, null, null, realContext); // x = sin(xin*pi)
 
         if (calculateLnGamma) {
             realDivide(const75_pi(), &x, &t, realContext); // t = pi / sin(pi*xin)

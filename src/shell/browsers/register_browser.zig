@@ -375,7 +375,7 @@ pub export fn registerBrowser(unusedButMandatoryParameter: u16) callconv(.c) voi
         while (row < 10) : (row += 1) {
             var regist: calcRegister_t = currentRegisterBrowserScreen + row;
             if (regist < FIRST_NAMED_VARIABLE + @as(i16, @bitCast(numberOfNamedVariables))) { // Named variables
-                _ = stringCopy(tmpString, @as([*c]u8, @ptrCast(&allNamedVariables[@intCast(regist - FIRST_NAMED_VARIABLE)].variableName)) + 1);
+                _ = stringCopy(tmpString, @as([*c]u8, &allNamedVariables[@intCast(regist - FIRST_NAMED_VARIABLE)].variableName) + 1);
                 _ = stringCopy(tmpString + @as(usize, @intCast(stringByteLength(tmpString))), ":");
 
                 registerNameWidth = @truncate(@as(i32, @bitCast(frontier_screen.showString(tmpString, &standardFont, 1, @intCast(219 - 22 * row), vmNormal, 1, 1))));
@@ -396,7 +396,7 @@ pub export fn registerBrowser(unusedButMandatoryParameter: u16) callconv(.c) voi
                 // Named variables; a retired slot has no name and no data, so it
                 // is skipped rather than shown as an empty row over a null pointer.
                 if (regist <= LAST_RESERVED_VARIABLE and allReservedVariables[@intCast(@as(c_int, regist) - FIRST_RESERVED_VARIABLE)].reservedVariableName[0] != 0) {
-                    abi.fmtBufZ(tmpString[0..2560], "{s}:", .{std.mem.span(@as([*c]const u8, @ptrCast(&allReservedVariables[@intCast(@as(c_int, regist) - FIRST_RESERVED_VARIABLE)].reservedVariableName)) + 1)});
+                    abi.fmtBufZ(tmpString[0..2560], "{s}:", .{std.mem.span(@as([*c]const u8, &allReservedVariables[@intCast(@as(c_int, regist) - FIRST_RESERVED_VARIABLE)].reservedVariableName) + 1)});
 
                     registerNameWidth = @truncate(@as(i32, @bitCast(frontier_screen.showString(tmpString, &standardFont, 1, @intCast(219 - 22 * row), vmNormal, 1, 1))));
 

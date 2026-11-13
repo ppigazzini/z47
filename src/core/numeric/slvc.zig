@@ -375,7 +375,7 @@ fn solveGeneralCubic(a: *const cplx_t, b: *cplx_t, c: *cplx_t, d: *cplx_t, r: *c
     } else {
         solveCubic(a, b, c, d, r, &x[0], &x[1], &x[2]);
     }
-    qsort(@ptrCast(x), 3, @sizeOf(cplx_t), &cmplxSortCompare);
+    qsort(x, 3, @sizeOf(cplx_t), &cmplxSortCompare);
 }
 
 // ===========================================================================
@@ -485,7 +485,7 @@ pub export fn solveCoefficientVector() linksection(runtime.code_section) callcon
         displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE);
         if (runtime.extra_info_on_calc_error) {
             abi.fmtBufZ(errorMessage[0..ERROR_MESSAGE_LENGTH], "a coefficient vector holds 2 to 4 elements, not ({d}\x80\xd7{d})", .{ rows, cols });
-            moreInfoOnError("In function solveCoefficientVector:", @ptrCast(errorMessage), null, null);
+            moreInfoOnError("In function solveCoefficientVector:", errorMessage, null, null);
         }
         return;
     }

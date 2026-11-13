@@ -2895,7 +2895,7 @@ pub export fn nimShortInteger(buffer: [*c]u8, regist: calcRegister_t) callconv(.
     if (shortIntegerWordSize >= 1 and shortIntegerWordSize <= 64) {
         longInteger2Pow(shortIntegerWordSize, &maxVal);
     } else {
-        _ = sprintf(errorMessage, @ptrCast(&commonBugScreenMessages[bugMsgValueFor]), "closeNIM", "shortIntegerWordSize", @as(c_int, shortIntegerWordSize));
+        _ = sprintf(errorMessage, &commonBugScreenMessages[bugMsgValueFor], "closeNIM", "shortIntegerWordSize", @as(c_int, shortIntegerWordSize));
         frontier_error.displayBugScreen(errorMessage);
         longIntegerFree(&maxVal);
         longIntegerFree(&value);
@@ -2964,7 +2964,7 @@ pub export fn nimShortInteger(buffer: [*c]u8, regist: calcRegister_t) callconv(.
             val = (val & shortIntegerMask) | shortIntegerSignBit;
         }
     } else {
-        _ = sprintf(errorMessage, @ptrCast(&commonBugScreenMessages[bugMsgValueFor]), "closeNIM", "shortIntegerMode", @as(c_int, shortIntegerMode));
+        _ = sprintf(errorMessage, &commonBugScreenMessages[bugMsgValueFor], "closeNIM", "shortIntegerMode", @as(c_int, shortIntegerMode));
         frontier_error.displayBugScreen(errorMessage);
         regShortInteger(regist).* = 0;
     }
@@ -3113,7 +3113,7 @@ pub export fn closeNim() callconv(.c) void {
                         _ = reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
                         closeNimWithComplex(reg34(REGISTER_X), regImag34(REGISTER_X));
                     } else {
-                        _ = sprintf(errorMessage, @ptrCast(&commonBugScreenMessages[bugMsgUnexpectedSValue]), "closeNIM", @as(c_uint, nimNumberPart), "nimNumberPart");
+                        _ = sprintf(errorMessage, &commonBugScreenMessages[bugMsgUnexpectedSValue], "closeNIM", @as(c_uint, nimNumberPart), "nimNumberPart");
                         frontier_error.displayBugScreen(errorMessage);
                     }
                 }

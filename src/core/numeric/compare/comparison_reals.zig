@@ -72,7 +72,7 @@ fn maxI32(lhs: i32, rhs: i32) i32 {
 fn bugScreen(comptime message: [:0]const u8) void {
     const destination = errorMessage[0 .. message.len + 1];
     @memcpy(destination, message[0 .. message.len + 1]);
-    displayBugScreen(@ptrCast(errorMessage));
+    displayBugScreen(errorMessage);
 }
 
 inline fn realCompare(
