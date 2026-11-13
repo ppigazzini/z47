@@ -110,7 +110,7 @@ Reference material, each documented where it belongs.
 | Firmware budgets are tight on the DM42, and flash and `.bss` both sit close to their limits. Link every package variant, not just the default. | [docs/40](docs/40-firmware-and-distribution.md) |
 | Resource budgets belong in harness code, never in `ulimit` or a shell `timeout`. A differential that is killed from outside executes the defect it should have reported. | [docs/70](docs/70-tests-and-verification.md) |
 | A test lane that reads an untracked file passes here and fails in CI. Stage inputs before gating. | [docs/70](docs/70-tests-and-verification.md) |
-| CI fails fast, so a red governance gate skips the parity job and hides everything behind it. Clear the gates first, then sweep the battery lane by lane. | [docs/60](docs/60-ci-and-release-workflow.md) |
+| CI starts every lane once the toolchain validates, and the `required` job is the verdict: it lists every job that failed, was cancelled or was skipped. Read each failing log before fixing any. | [docs/60](docs/60-ci-and-release-workflow.md) |
 | A red CI lane is frequently not your change. Read the failing log before assuming it is. | [docs/60](docs/60-ci-and-release-workflow.md) |
 | Python hooks are scoped to z47-owned paths, because reformatting an imported file turns a clean import into a permanent conflict. | [docs/80](docs/80-maintainer-workflow.md) |
 | The highest-yield audit is the cross-owner consistency scan: one symbol carrying different values in two owners. A fix landing in one owner and not its twin is the recurring defect class. | [docs/75](docs/75-debugging.md), [docs/50](docs/50-zig-c-boundaries-and-rewrite-policy.md) |

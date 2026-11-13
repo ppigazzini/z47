@@ -680,13 +680,6 @@ jobs:
     name: Linux host parity, ASAN, generated outputs, and host package
     needs:
       - validate-toolchain
-      - source-manifest
-      - source-ownership-guard
-      - upstream-port-ledger-guard
-      - zig-c-boundary-guard
-      - c-dependency-policy
-      - workflow-imported-root-guard
-      - workflow-locality-guard
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
@@ -1025,9 +1018,6 @@ jobs:
     name: Linux docs surface
     needs:
       - validate-toolchain
-      - upstream-port-ledger-guard
-      - workflow-imported-root-guard
-      - workflow-locality-guard
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -1098,13 +1088,6 @@ jobs:
     name: Linux firmware validation and publication
     needs:
       - validate-toolchain
-      - source-manifest
-      - source-ownership-guard
-      - upstream-port-ledger-guard
-      - zig-c-boundary-guard
-      - c-dependency-policy
-      - workflow-imported-root-guard
-      - workflow-locality-guard
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -1267,12 +1250,6 @@ jobs:
     name: macOS dedicated runner build, test, generated outputs, app smoke run
     needs:
       - validate-toolchain
-      - source-manifest
-      - source-ownership-guard
-      - upstream-port-ledger-guard
-      - zig-c-boundary-guard
-      - c-dependency-policy
-      - workflow-imported-root-guard
     runs-on: macos-latest
     timeout-minutes: 45
     steps:
@@ -1518,12 +1495,6 @@ jobs:
     name: Windows dedicated runner build, test, generated outputs, app smoke run
     needs:
       - validate-toolchain
-      - source-manifest
-      - source-ownership-guard
-      - upstream-port-ledger-guard
-      - zig-c-boundary-guard
-      - c-dependency-policy
-      - workflow-imported-root-guard
     runs-on: windows-latest
     timeout-minutes: 45
     steps:
@@ -2003,3 +1974,47 @@ jobs:
           if-no-files-found: error
           retention-days: 14
           overwrite: true
+
+  # The one job a branch rule or a reader needs to look at. Every job above runs
+  # as soon as the toolchain is validated, so a red guard no longer hides the
+  # platform lanes behind it, and this job fails when any of them failed or was
+  # cancelled. The Zig master monitor is non-blocking and stays out of it.
+  required:
+    name: Every required job passed
+    if: always()
+    needs:
+      - validate-toolchain
+      - zig-fmt-check
+      - zig-native-unit-tests
+      - source-manifest
+      - source-ownership-guard
+      - upstream-port-ledger-guard
+      - correspondence-guard
+      - zig-c-boundary-guard
+      - idiom-ratchet-guard
+      - core-shell-severance-guard
+      - c-dependency-policy
+      - portable-int-width-guard
+      - workflow-imported-root-guard
+      - workflow-locality-guard
+      - linux-host-parity
+      - linux-docs
+      - linux-firmware-artifacts
+      - macos-host-build
+      - windows-host-build
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Fail when a required job failed, was cancelled or was skipped
+        shell: bash
+        env:
+          RESULTS: ${{ toJSON(needs) }}
+        run: |
+          set -euo pipefail
+          printf '%s\n' "$RESULTS" | python3 -c '
+          import json, sys
+          bad = {name: job["result"] for name, job in json.load(sys.stdin).items() if job["result"] != "success"}
+          for name, result in sorted(bad.items()):
+              print(f"{name}: {result}")
+          sys.exit(1 if bad else 0)
+          '

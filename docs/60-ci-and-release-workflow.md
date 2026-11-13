@@ -20,25 +20,28 @@ Three tracked workflow files live under `../.github/workflows/`:
 | `upstream-drift.yml` (display name `upstream-drift`) | daily schedule `0 5 * * *`, plus manual dispatch | report whether the pinned upstream commit still matches upstream HEAD (warn-only), plus the enforcing coverage-ratchet and Zig/C boundary jobs; never edits the pin |
 | `c-dependency-zero.yml` (display name `c-dependency-zero`) | manual dispatch only | on-demand proof that the product build carries zero first-party calculator C |
 
-`upstream-oracle.yml` and `upstream-drift.yml` cancel superseded runs per branch
-and repository through a concurrency group; `c-dependency-zero.yml` has none.
-The main matrix runs with `permissions: contents: read` only.
+`upstream-oracle.yml` cancels a superseded run on any branch but `main`, where
+every run completes so each pushed commit gets its own verdict;
+`upstream-drift.yml` cancels superseded runs per branch and repository, and
+`c-dependency-zero.yml` has no concurrency group. The main matrix runs with
+`permissions: contents: read` only.
 
 ## Workflow Graph
 
-`upstream-oracle.yml` fans every governance guard out from the push or pull
-request event in parallel, then gates each platform job on the subset of guards
-it declares in `needs`.
+`upstream-oracle.yml` starts every job as soon as `validate-toolchain` passes, the
+guards and the platform lanes alike, and the `required` job collects them: it runs
+whatever happened above it and fails when any job other than the Zig master
+monitor failed, was cancelled or was skipped. Every job carries a
+`timeout-minutes` of about three times its warm run, so a hung job fails red
+instead of holding a runner for six hours.
 
 ```mermaid
 flowchart TD
-  A[push or pull request to main or github_ci]
+  A[push or pull request to main or github_ci] --> B[validate-toolchain]
 
   subgraph guards[governance guards]
-    B[validate-toolchain]
     C[zig-fmt-check]
     D[zig-native-unit-tests]
-    E[zig-master-compatibility: monitor only]
     F[source-manifest]
     G[source-ownership-guard]
     H[upstream-port-ledger-guard]
@@ -52,36 +55,26 @@ flowchart TD
     P2[core-shell-severance-guard]
   end
 
-  A --> guards
-  guards --> P[linux-host-parity]
-  guards --> Q[linux-docs]
-  guards --> R[linux-firmware-artifacts]
-  guards --> S[macos-host-build]
-  guards --> T[windows-host-build]
+  subgraph lanes[platform lanes]
+    P[linux-host-parity]
+    Q[linux-docs]
+    R[linux-firmware-artifacts]
+    S[macos-host-build]
+    T[windows-host-build]
+  end
+
+  A --> E[zig-master-compatibility: monitor only]
+  B --> guards
+  B --> lanes
+  guards --> Z[required]
+  lanes --> Z
 ```
 
-Platform-job gating is not uniform. Each platform job waits only on the guards
-it lists:
-
-| Platform job | `needs` (guard gate) |
-| --- | --- |
-| `linux-host-parity` | validate-toolchain, source-manifest, source-ownership-guard, upstream-port-ledger-guard, zig-c-boundary-guard, c-dependency-policy, workflow-imported-root-guard, workflow-locality-guard |
-| `linux-firmware-artifacts` | same eight as `linux-host-parity` |
-| `linux-docs` | validate-toolchain, upstream-port-ledger-guard, workflow-imported-root-guard, workflow-locality-guard |
-| `macos-host-build` | validate-toolchain, source-manifest, source-ownership-guard, upstream-port-ledger-guard, zig-c-boundary-guard, c-dependency-policy, workflow-imported-root-guard |
-| `windows-host-build` | same seven as `macos-host-build` |
-
-`zig-fmt-check`, `zig-native-unit-tests`, `idiom-ratchet-guard`,
-`portable-int-width-guard`, `correspondence-guard`, `core-shell-severance-guard`,
-and `zig-master-compatibility` gate no platform job; they run purely as their own
-required checks (except the compatibility monitor, which is `continue-on-error`).
-
-**Read a red run from its first red guard.** A platform job waits on the guards in
-its `needs`, so one red guard leaves that platform job skipped rather than red,
-and everything it would have run stays unreported. Clear the red guards first,
-then sweep the battery lane by lane. A red lane is also often not your change --
-a runner image, a purged Zig snapshot or a third-party action can fail it -- so
-read the failing log before assuming it is.
+**Read a red run from `required`.** It lists every job that did not succeed. A
+red guard no longer leaves a platform lane skipped, so all of a run's failures
+are reported together; read each failing log before fixing any of them. A red
+lane is also often not your change -- a runner image, a purged Zig snapshot or a
+third-party action can fail it.
 
 ## Shared CI Inputs
 
@@ -225,6 +218,12 @@ over the staged runtime tree. This is the lane that finally adjudicates the
 Windows LLP64 integer-width behavior the `portable-int-width-guard` only
 approximates.
 
+### `required` (Every required job passed)
+
+Runs after every other job whatever their results, and fails when any of them
+but `zig-master-compatibility` failed, was cancelled or was skipped; its log
+lists each one. It is the single check that says whether a run is green.
+
 ## Artifacts And Release Proof
 
 Current artifact classes:
@@ -269,9 +268,8 @@ order. It fails fast on the first red. One of those post-battery checks, the
 oracle negative control, runs in no CI job, so a green CI run has not checked
 it.
 
-It needs the project virtualenv on `PATH`: one step self-tests through a
-`>/dev/null` and needs PyYAML, so a `python3` without it makes the gate abort on
-a step banner with no error text. It does not run the UBSan lanes `both_asan`
+It needs the project virtualenv on `PATH`: several steps import PyYAML, and a
+`python3` without it fails them. It does not run the UBSan lanes `both_asan`
 and `test_asan`, the coverage floor, the Linux package and its launch, the docs
 lane, the `dmcp`, `dmcpr47`, `dmcp5` and `dmcp5r47` links or any firmware
 packaging, the font-seam, C-type-alias, extern-var-width and
