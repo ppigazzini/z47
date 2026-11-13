@@ -622,7 +622,7 @@ const dmcp = struct {
     const key_pop = rom(*const fn () callconv(.c) c_int, 392);
     const lcd_setLine = rom(*const fn (?*anyopaque, c_int) callconv(.c) void, 104);
     const lcd_writeText = rom(*const fn (?*anyopaque, [*]const u8) callconv(.c) void, 124);
-    const wait_for_key_release = rom(*const fn (c_int) callconv(.c) c_int, 420);
+    const wait_for_key_release = rom(*const fn (c_int) callconv(.c) void, 420);
     const rtc_wakeup_delay = rom(*const fn () callconv(.c) void, 228);
     const sys_timer_disable = rom(*const fn (c_int) callconv(.c) void, 500);
     const sys_timer_start = rom(*const fn (c_int, u32) callconv(.c) void, 504);
@@ -926,7 +926,7 @@ const dmcp = struct {
 
             if (key == 44) { // DISP for special SCREEN DUMP key code.
                 standardScreenDump();
-                _ = wait_for_key_release(0);
+                wait_for_key_release(0);
                 charKey[0] = 0;
                 charKey[1] = 0;
                 resetShiftState();

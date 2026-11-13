@@ -73,7 +73,7 @@ const StartBuzzerFn = *const fn (u32) callconv(.c) void;
 const StopBuzzerFn = *const fn () callconv(.c) void;
 const VolumeUpFn = *const fn () callconv(.c) void;
 const VolumeDownFn = *const fn () callconv(.c) void;
-const GetVolumeFn = *const fn () callconv(.c) u16;
+const GetVolumeFn = *const fn () callconv(.c) c_int;
 const KeyEmptyFn = *const fn () callconv(.c) c_int;
 const KeyPopFn = *const fn () callconv(.c) c_int;
 const KeyPopAllFn = *const fn () callconv(.c) void;
@@ -101,7 +101,8 @@ fn volumeDown() void {
 
 fn getBeepVolumeRaw() u16 {
     const function: GetVolumeFn = @ptrFromInt(build_options.library_fn_base + get_beep_volume_offset);
-    return function();
+    // C converts the int to uint16_t modulo 2^16.
+    return @truncate(@as(c_uint, @bitCast(function())));
 }
 
 fn keyQueueEmpty() c_int {

@@ -168,11 +168,12 @@ const LcdWriteTextFn = *const fn (*DispStat, [*c]const u8) callconv(.c) void;
 const VoidFn = *const fn () callconv(.c) void;
 const SetResetStateFileFn = *const fn ([*c]const u8) callconv(.c) void;
 const StringFn = *const fn ([*c]const u8) callconv(.c) void;
+const CheckCreateDirFn = *const fn ([*c]const u8) callconv(.c) c_int;
 const FileSelectionScreenFn = *const fn ([*c]const u8, [*c]const u8, [*c]const u8, ?*const anyopaque, c_int, c_int, ?*anyopaque) callconv(.c) c_int;
 const RunnerGetKeyFn = *const fn (?*anyopaque) callconv(.c) c_int;
 const WaitForKeyReleaseFn = *const fn (c_int) callconv(.c) void;
 const IsMenuAutoOffFn = *const fn () callconv(.c) c_int;
-const DiskWriteEnableFn = *const fn (c_int) callconv(.c) void;
+const DiskWriteEnableFn = *const fn (c_int) callconv(.c) c_int;
 const FileOpenFn = *const fn (?*anyopaque, [*c]const u8, u8) callconv(.c) c_uint;
 const FileCloseFn = *const fn (?*anyopaque) callconv(.c) c_uint;
 const FileReadFn = *const fn (?*anyopaque, ?*anyopaque, u32, [*c]u32) callconv(.c) c_uint;
@@ -267,8 +268,8 @@ fn displayDiskInfo(title: [*c]const u8) void {
 }
 
 fn checkCreateDir(path: [*c]const u8) void {
-    const function: StringFn = @ptrFromInt(build_options.library_fn_base + check_create_dir_offset);
-    function(path);
+    const function: CheckCreateDirFn = @ptrFromInt(build_options.library_fn_base + check_create_dir_offset);
+    _ = function(path);
 }
 
 fn fileSelectionScreen(title: [*c]const u8, base_dir: [*c]const u8, ext: [*c]const u8, callback: ?*const anyopaque, disp_save: c_int, overwrite_check: c_int, data: ?*anyopaque) c_int {

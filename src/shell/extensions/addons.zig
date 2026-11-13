@@ -1728,7 +1728,7 @@ const KeyEmptyFn = *const fn () callconv(.c) c_int;
 const KeyTailFn = *const fn () callconv(.c) c_int;
 const KeyPopFn = *const fn () callconv(.c) c_int;
 const KeyPopAllFn = *const fn () callconv(.c) void;
-const WaitForKeyReleaseFn = *const fn (c_int) callconv(.c) c_int;
+const WaitForKeyReleaseFn = *const fn (c_int) callconv(.c) void;
 
 const c_lcd_fill_rect = @extern(LcdFillRectFn, .{ .name = "lcd_fill_rect" });
 inline fn lcd_fill_rect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void {
@@ -1761,7 +1761,7 @@ inline fn key_pop_all() void {
     const f: KeyPopAllFn = @ptrFromInt(LIBRARY_FN_BASE + 400);
     f();
 }
-inline fn wait_for_key_release(a: c_int) c_int {
+inline fn wait_for_key_release(a: c_int) void {
     const f: WaitForKeyReleaseFn = @ptrFromInt(LIBRARY_FN_BASE + 420);
     f(a);
 }
@@ -1861,7 +1861,7 @@ pub export fn C47PopKeyNoBuffer(displayWaitForRelease: bool_t) callconv(.c) c_in
         if (displayWaitForRelease != 0) {
             frontier_screen.force_refresh(force);
         }
-        _ = wait_for_key_release(0);
+        wait_for_key_release(0);
         var signalToDoScreenDump: bool = false;
         var signalToDoEXIT: bool = false;
         var signalToDoRS: bool = false;
