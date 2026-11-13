@@ -143,7 +143,7 @@ extern fn getSystemFlag(flag: c_int) bool_t;
 
 extern fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void;
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
-extern fn getRegisterDataPointer(regist: calcRegister_t) [*]u8;
+extern fn getRegisterDataPointer(regist: calcRegister_t) [*]align(4) u8;
 extern fn getRegisterTag(regist: calcRegister_t) u32;
 
 extern fn liftStack() void;
@@ -158,10 +158,10 @@ extern fn __gmpz_clear(p: *mpz_struct) void;
 extern fn __gmpz_set_ui(p: *mpz_struct, v: c_ulong) void;
 
 // decQuad (real34) helpers.
-extern fn decQuadToIntegralValue(res: *real34_t, src: *align(1) const real34_t, ctx: *realContext_t, round: c_int) *real34_t;
-extern fn decQuadToUInt32(src: *align(1) const real34_t, ctx: *realContext_t, round: c_int) u32;
-extern fn real34CompareLessThan(a: *align(1) const real34_t, b: *align(1) const real34_t) bool_t;
-extern fn real34CompareGreaterEqual(a: *align(1) const real34_t, b: *align(1) const real34_t) bool_t;
+extern fn decQuadToIntegralValue(res: *real34_t, src: *const real34_t, ctx: *realContext_t, round: c_int) *real34_t;
+extern fn decQuadToUInt32(src: *const real34_t, ctx: *realContext_t, round: c_int) u32;
+extern fn real34CompareLessThan(a: *const real34_t, b: *const real34_t) bool_t;
+extern fn real34CompareGreaterEqual(a: *const real34_t, b: *const real34_t) bool_t;
 
 // GTK / glib (host only). Referenced under !dmcp_build.
 const gpointer = ?*anyopaque;
@@ -237,10 +237,10 @@ const reg34 = abi.registerReal34;
 inline fn getRegisterAngularMode(reg: calcRegister_t) u32 {
     return getRegisterTag(reg) & amAngleMask;
 }
-inline fn real34ToIntegralValue(source: *align(1) const real34_t, destination: *real34_t, mode: c_int) void {
+inline fn real34ToIntegralValue(source: *const real34_t, destination: *real34_t, mode: c_int) void {
     _ = decQuadToIntegralValue(destination, source, &ctxtReal34, mode);
 }
-inline fn real34ToUInt32(source: *align(1) const real34_t) u32 {
+inline fn real34ToUInt32(source: *const real34_t) u32 {
     return decQuadToUInt32(source, &ctxtReal34, DEC_ROUND_DOWN);
 }
 inline fn runningOnSimOrUSB() bool {

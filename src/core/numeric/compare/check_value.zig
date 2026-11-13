@@ -1,4 +1,5 @@
 const std = @import("std");
+const abi = @import("abi");
 const runtime = @import("../command_wrappers/runtime.zig");
 
 const SpecialKind = enum {
@@ -35,7 +36,7 @@ fn typeErrorX() void {
     }
 }
 
-fn matchesRealSpecial(value: *align(1) const runtime.real34_t, comptime kind: SpecialKind) bool {
+fn matchesRealSpecial(value: *const runtime.real34_t, comptime kind: SpecialKind) bool {
     return switch (kind) {
         .nan => runtime.real34IsNaN(value),
         .infinite => runtime.real34IsInfinite(value),
@@ -43,38 +44,20 @@ fn matchesRealSpecial(value: *align(1) const runtime.real34_t, comptime kind: Sp
     };
 }
 
-fn matchesComplexSpecial(value: *align(1) const runtime.complex34_t, comptime kind: SpecialKind) bool {
+fn matchesComplexSpecial(value: *const runtime.complex34_t, comptime kind: SpecialKind) bool {
     return matchesRealSpecial(&value.real, kind) or matchesRealSpecial(&value.imag, kind);
 }
 
 fn checkMatrixElements(register_data_type: u32, comptime kind: SpecialKind) bool {
-    const ptr = runtime.getRegisterDataPointer(runtime.REGISTER_X) orelse unreachable;
-    const header: *align(1) runtime.matrixHeader_t = @ptrCast(ptr);
-    const bytes: [*]align(1) const u8 = @ptrCast(ptr);
-    const elements: usize = @as(usize, header.matrixRows) * @as(usize, header.matrixColumns);
-
     switch (register_data_type) {
-        runtime.dtReal34Matrix => {
-            const values: [*]align(1) const runtime.real34_t = @ptrCast(bytes + @sizeOf(runtime.matrixHeader_t));
-            var index: usize = 0;
-            while (index < elements) : (index += 1) {
-                if (matchesRealSpecial(&values[index], kind)) {
-                    return true;
-                }
-            }
+        runtime.dtReal34Matrix => for (abi.registerMatrixElements(runtime.real34_t, runtime.REGISTER_X)) |*value| {
+            if (matchesRealSpecial(value, kind)) return true;
         },
-        runtime.dtComplex34Matrix => {
-            const values: [*]align(1) const runtime.complex34_t = @ptrCast(bytes + @sizeOf(runtime.matrixHeader_t));
-            var index: usize = 0;
-            while (index < elements) : (index += 1) {
-                if (matchesComplexSpecial(&values[index], kind)) {
-                    return true;
-                }
-            }
+        runtime.dtComplex34Matrix => for (abi.registerMatrixElements(runtime.complex34_t, runtime.REGISTER_X)) |*value| {
+            if (matchesComplexSpecial(value, kind)) return true;
         },
         else => return false,
     }
-
     return false;
 }
 

@@ -83,7 +83,7 @@ extern const addition: [NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS][NUMBER_OF_DATA_TY
 // Function externs
 // ---------------------------------------------------------------------------
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
-extern fn getRegisterDataPointer(regist: calcRegister_t) *anyopaque;
+extern fn getRegisterDataPointer(regist: calcRegister_t) *align(4) anyopaque;
 extern fn fnSwapXY(unusedButMandatoryParameter: u16) void;
 extern fn fnDrop(unusedButMandatoryParameter: u16) void;
 extern fn copySourceRegisterToDestRegister(rSource: calcRegister_t, rDest: calcRegister_t) void;

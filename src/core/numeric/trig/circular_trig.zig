@@ -18,7 +18,7 @@ const halfSec_force: u8 = 1;
 const halfSec_clearZ: bool = true;
 const halfSec_clearT: bool = true;
 const halfSec_disp: bool = true;
-inline fn realGetExponent(source: *align(1) const runtime.real_t) i32 {
+inline fn realGetExponent(source: *const runtime.real_t) i32 {
     return source.digits + source.exponent - 1;
 }
 

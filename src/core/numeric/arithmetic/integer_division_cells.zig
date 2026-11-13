@@ -741,7 +741,7 @@ pub export fn z47_math_wrappers_legacy_fnDblDivideRemainder(unused_but_mandatory
 // ===== round.c =====
 
 // A special real34 is refused unless SPCRES allows it through untouched.
-fn roundSpecial(x: *align(1) const runtime.real34_t) bool {
+fn roundSpecial(x: *const runtime.real34_t) bool {
     var error_code: u16 = 0;
 
     if (!runtime.real34IsSpecial(x)) {

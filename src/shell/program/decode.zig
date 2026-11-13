@@ -258,9 +258,9 @@ extern fn sprintf(buf: [*c]u8, fmt: [*:0]const u8, ...) c_int;
 extern fn getSystemFlag(sf: c_int) bool;
 
 extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) bool;
-extern fn getRegisterDataPointer(regist: calcRegister_t) *anyopaque;
+extern fn getRegisterDataPointer(regist: calcRegister_t) *align(4) anyopaque;
 
-extern fn decQuadFromString(r: *align(1) real34_t, s: [*c]const u8, ctx: *realContext_t) *align(1) real34_t;
+extern fn decQuadFromString(r: *real34_t, s: [*c]const u8, ctx: *realContext_t) *real34_t;
 extern fn abs(x: c_int) c_int;
 
 // ---------------------------------------------------------------------------
@@ -282,7 +282,7 @@ inline fn stringCopy(dest: [*c]u8, source: [*c]const u8) [*c]u8 {
     return d;
 }
 const reg34 = abi.registerReal34;
-inline fn stringToReal34(source: [*c]const u8, destination: *align(1) real34_t) void {
+inline fn stringToReal34(source: [*c]const u8, destination: *real34_t) void {
     _ = decQuadFromString(destination, source, &ctxtReal34);
 }
 inline fn toBytes(n: u16) u32 {

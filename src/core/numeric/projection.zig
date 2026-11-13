@@ -318,7 +318,7 @@ pub fn magnitude() void {
 
 // The imaginary part of a conjugate: the sign flipped, a zero kept positive
 // unless special results are on, then rounded to the selected significant digits.
-fn conjugateComponent(component: *align(1) runtime.real34_t) void {
+fn conjugateComponent(component: *runtime.real34_t) void {
     component.bytes[15] ^= 0x80;
     if (runtime.real34IsZero(component) and !runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
         component.bytes[15] &= 0x7f;

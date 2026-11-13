@@ -33,14 +33,14 @@ pub extern fn adjustResult(
     op3: calcRegister_t,
 ) void;
 pub extern fn setLastintegerBasetoZero() void;
-pub extern fn getRegisterDataPointer(reg: calcRegister_t) ?*anyopaque;
+pub extern fn getRegisterDataPointer(reg: calcRegister_t) ?*align(4) anyopaque;
 pub extern fn reallocateRegister(reg: calcRegister_t, data_type: u32, data_size_without_data_len_blocks: u16, tag: u32) bool;
 pub extern fn realToReal34(source: *const real_t, destination: *real34_t) void;
 pub extern fn convertRealToResultRegister(source: *const real_t, dest: calcRegister_t, angle: angularMode_t) void;
 pub extern fn moreInfoOnError(msg1: [*:0]const u8, msg2: ?[*:0]const u8, msg3: ?[*:0]const u8, msg4: ?[*:0]const u8) void;
 pub extern fn z47_constants_test_register_real34_data(reg: calcRegister_t) *real34_t;
 
-pub fn registerReal34Ptr(reg: calcRegister_t) *align(1) real34_t {
+pub fn registerReal34Ptr(reg: calcRegister_t) *real34_t {
     if (use_fake_harness_surface) {
         return z47_constants_test_register_real34_data(reg);
     }

@@ -32,7 +32,7 @@ extern fn realToIntegralValue(
     mode: runtime.rounding_t,
     real_context: *runtime.realContext_t,
 ) void;
-extern fn decNumberCopyAbs(result: *runtime.real_t, rhs: *align(1) const runtime.real_t) *runtime.real_t;
+extern fn decNumberCopyAbs(result: *runtime.real_t, rhs: *const runtime.real_t) *runtime.real_t;
 extern fn decQuadCompare(
     result: *runtime.real34_t,
     lhs: *const runtime.real34_t,
@@ -76,8 +76,8 @@ fn bugScreen(comptime message: [:0]const u8) void {
 }
 
 inline fn realCompare(
-    operand1: *align(1) const runtime.real_t,
-    operand2: *align(1) const runtime.real_t,
+    operand1: *const runtime.real_t,
+    operand2: *const runtime.real_t,
     res: *runtime.real_t,
     real_context: *runtime.realContext_t,
 ) void {
@@ -244,7 +244,7 @@ pub export fn real34CompareLessThan(number1: *const runtime.real34_t, number2: *
     return !runtime.real34IsNaN(&compare) and runtime.real34IsNegative(&compare) and !runtime.real34IsZero(&compare);
 }
 
-pub export fn realCompareAbsGreaterThan(number1: *align(1) const runtime.real_t, number2: *align(1) const runtime.real_t) callconv(.c) bool {
+pub export fn realCompareAbsGreaterThan(number1: *const runtime.real_t, number2: *const runtime.real_t) callconv(.c) bool {
     var context: runtime.realContext_t = runtime.ctxtReal39;
     var num1: CompareScratch = undefined;
     var num2: CompareScratch = undefined;
@@ -258,7 +258,7 @@ pub export fn realCompareAbsGreaterThan(number1: *align(1) const runtime.real_t,
     return !runtime.realIsNaN(num2.constPtr()) and realIsPositive(num2.constPtr()) and !runtime.realIsZero(num2.constPtr());
 }
 
-pub export fn realCompareAbsLessThan(number1: *align(1) const runtime.real_t, number2: *align(1) const runtime.real_t) callconv(.c) bool {
+pub export fn realCompareAbsLessThan(number1: *const runtime.real_t, number2: *const runtime.real_t) callconv(.c) bool {
     var context: runtime.realContext_t = runtime.ctxtReal39;
     var num1: CompareScratch = undefined;
     var num2: CompareScratch = undefined;
@@ -272,7 +272,7 @@ pub export fn realCompareAbsLessThan(number1: *align(1) const runtime.real_t, nu
     return !runtime.realIsNaN(num2.constPtr()) and runtime.realIsNegative(num2.constPtr()) and !runtime.realIsZero(num2.constPtr());
 }
 
-pub export fn realCompareEqual(number1: *align(1) const runtime.real_t, number2: *align(1) const runtime.real_t) callconv(.c) bool {
+pub export fn realCompareEqual(number1: *const runtime.real_t, number2: *const runtime.real_t) callconv(.c) bool {
     var compare: runtime.real_t = undefined;
     var context: runtime.realContext_t = runtime.ctxtReal39;
 
@@ -283,7 +283,7 @@ pub export fn realCompareEqual(number1: *align(1) const runtime.real_t, number2:
 // True when both real_t are identical: equal digits, exponent and bits, then equal units up to the digit count. A 39-digit
 // value tests 26 of its 36 bytes instead of 60. Faster than realCompareEqual, which subtracts. -0 and +0 differ, and 1 and
 // 1.0 return false: this is a byte compare, not a numeric one.
-pub export fn realCompareIdentical(number1: *align(1) const runtime.real_t, number2: *align(1) const runtime.real_t) callconv(.c) bool {
+pub export fn realCompareIdentical(number1: *const runtime.real_t, number2: *const runtime.real_t) callconv(.c) bool {
     if (number1.digits != number2.digits or number1.exponent != number2.exponent or number1.bits != number2.bits) {
         return false;
     }
@@ -299,7 +299,7 @@ pub export fn realCompareIdentical(number1: *align(1) const runtime.real_t, numb
     return true;
 }
 
-pub export fn realCompareAbsEqual(number1: *align(1) const runtime.real_t, number2: *align(1) const runtime.real_t) callconv(.c) bool {
+pub export fn realCompareAbsEqual(number1: *const runtime.real_t, number2: *const runtime.real_t) callconv(.c) bool {
     var context: runtime.realContext_t = runtime.ctxtReal39;
     var num1: CompareScratch = undefined;
     var num2: CompareScratch = undefined;
@@ -313,7 +313,7 @@ pub export fn realCompareAbsEqual(number1: *align(1) const runtime.real_t, numbe
     return runtime.realIsZero(num2.constPtr());
 }
 
-pub export fn realCompareGreaterEqual(number1: *align(1) const runtime.real_t, number2: *align(1) const runtime.real_t) callconv(.c) bool {
+pub export fn realCompareGreaterEqual(number1: *const runtime.real_t, number2: *const runtime.real_t) callconv(.c) bool {
     var compare: runtime.real_t = undefined;
     var context: runtime.realContext_t = runtime.ctxtReal39;
 
@@ -321,7 +321,7 @@ pub export fn realCompareGreaterEqual(number1: *align(1) const runtime.real_t, n
     return !runtime.realIsNaN(&compare) and (realIsPositive(&compare) or runtime.realIsZero(&compare));
 }
 
-pub export fn realCompareGreaterThan(number1: *align(1) const runtime.real_t, number2: *align(1) const runtime.real_t) callconv(.c) bool {
+pub export fn realCompareGreaterThan(number1: *const runtime.real_t, number2: *const runtime.real_t) callconv(.c) bool {
     var compare: runtime.real_t = undefined;
     var context: runtime.realContext_t = runtime.ctxtReal39;
 
@@ -329,7 +329,7 @@ pub export fn realCompareGreaterThan(number1: *align(1) const runtime.real_t, nu
     return !runtime.realIsNaN(&compare) and realIsPositive(&compare) and !runtime.realIsZero(&compare);
 }
 
-pub export fn realCompareLessEqual(number1: *align(1) const runtime.real_t, number2: *align(1) const runtime.real_t) callconv(.c) bool {
+pub export fn realCompareLessEqual(number1: *const runtime.real_t, number2: *const runtime.real_t) callconv(.c) bool {
     var compare: runtime.real_t = undefined;
     var context: runtime.realContext_t = runtime.ctxtReal39;
 
@@ -337,7 +337,7 @@ pub export fn realCompareLessEqual(number1: *align(1) const runtime.real_t, numb
     return !runtime.realIsNaN(&compare) and (runtime.realIsNegative(&compare) or runtime.realIsZero(&compare));
 }
 
-pub export fn realCompareLessThan(number1: *align(1) const runtime.real_t, number2: *align(1) const runtime.real_t) callconv(.c) bool {
+pub export fn realCompareLessThan(number1: *const runtime.real_t, number2: *const runtime.real_t) callconv(.c) bool {
     var compare: runtime.real_t = undefined;
     var context: runtime.realContext_t = runtime.ctxtReal39;
 

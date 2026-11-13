@@ -60,7 +60,7 @@ extern var ctxtReal34: realContext_t;
 
 extern fn saveLastX() bool;
 extern fn getRegisterDataType(reg: calcRegister_t) u32;
-extern fn getRegisterDataPointer(reg: calcRegister_t) *anyopaque;
+extern fn getRegisterDataPointer(reg: calcRegister_t) *align(4) anyopaque;
 extern fn getRegisterTag(reg: calcRegister_t) u32;
 extern fn setRegisterTag(reg: calcRegister_t, tag: u32) void;
 
@@ -71,12 +71,12 @@ extern fn decimal128FromNumber(dst: *real34_t, src: *const real_t, ctx: *realCon
 
 extern fn decContextClearStatus(ctx: *realContext_t, mask: u32) *realContext_t;
 
-extern fn decNumberMultiply(result: *real_t, lhs: *align(1) const real_t, rhs: *align(1) const real_t, ctx: *realContext_t) *real_t;
-extern fn decNumberDivide(result: *real_t, lhs: *align(1) const real_t, rhs: *align(1) const real_t, ctx: *realContext_t) *real_t;
-extern fn decNumberAdd(result: *real_t, lhs: *align(1) const real_t, rhs: *align(1) const real_t, ctx: *realContext_t) *real_t;
-extern fn decNumberSubtract(result: *real_t, lhs: *align(1) const real_t, rhs: *align(1) const real_t, ctx: *realContext_t) *real_t;
-extern fn realCompareGreaterThan(a: *align(1) const real_t, b: *align(1) const real_t) bool;
-extern fn realCompareEqual(a: *align(1) const real_t, b: *align(1) const real_t) bool;
+extern fn decNumberMultiply(result: *real_t, lhs: *const real_t, rhs: *const real_t, ctx: *realContext_t) *real_t;
+extern fn decNumberDivide(result: *real_t, lhs: *const real_t, rhs: *const real_t, ctx: *realContext_t) *real_t;
+extern fn decNumberAdd(result: *real_t, lhs: *const real_t, rhs: *const real_t, ctx: *realContext_t) *real_t;
+extern fn decNumberSubtract(result: *real_t, lhs: *const real_t, rhs: *const real_t, ctx: *realContext_t) *real_t;
+extern fn realCompareGreaterThan(a: *const real_t, b: *const real_t) bool;
+extern fn realCompareEqual(a: *const real_t, b: *const real_t) bool;
 
 // The scratch buffer the third argument is formatted into; a char* in C.
 extern var errorMessage: [*c]u8;
@@ -89,19 +89,19 @@ inline fn getRegisterAngularMode(reg: calcRegister_t) angularMode_t {
 inline fn setRegisterAngularMode(reg: calcRegister_t, mode: angularMode_t) void {
     setRegisterTag(reg, @intCast(mode));
 }
-inline fn realMul(a: *align(1) const real_t, b: *align(1) const real_t, res: *real_t, ctx: *realContext_t) void {
+inline fn realMul(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberMultiply(res, a, b, ctx);
 }
-inline fn realDiv(a: *align(1) const real_t, b: *align(1) const real_t, res: *real_t, ctx: *realContext_t) void {
+inline fn realDiv(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberDivide(res, a, b, ctx);
 }
-inline fn realAddOp(a: *align(1) const real_t, b: *align(1) const real_t, res: *real_t, ctx: *realContext_t) void {
+inline fn realAddOp(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberAdd(res, a, b, ctx);
 }
-inline fn realSubOp(a: *align(1) const real_t, b: *align(1) const real_t, res: *real_t, ctx: *realContext_t) void {
+inline fn realSubOp(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberSubtract(res, a, b, ctx);
 }
-inline fn realGreaterEqual(a: *align(1) const real_t, b: *align(1) const real_t) bool {
+inline fn realGreaterEqual(a: *const real_t, b: *const real_t) bool {
     return realCompareGreaterThan(a, b) or realCompareEqual(a, b);
 }
 inline fn realIsNegative(v: *const real_t) bool {
@@ -198,7 +198,7 @@ pub export fn convertAngleFromTo(angle: *real_t, from_angular_mode_arg: angularM
     const to = if (to_angular_mode_arg == amNone) currentAngularMode else to_angular_mode_arg;
     const lp = real_context.digits > 39;
     const vlp = real_context.digits > 75;
-    const a: *align(1) const real_t = angle;
+    const a: *const real_t = angle;
     switch (from) {
         amRadian => switch (to) {
             amMultPi => realDiv(a, if (vlp) consts.c9932() else if (lp) consts.c7388() else consts.c1848(), angle, real_context),

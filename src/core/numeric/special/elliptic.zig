@@ -33,57 +33,57 @@ const realContext_t = runtime.realContext_t;
 const calcRegister_t = runtime.calcRegister_t;
 const angularMode_t = runtime.angularMode_t;
 
-// Arithmetic ops accepting *align(1) const operands (blob constants pass here).
-extern fn decNumberAdd(result: *real_t, lhs: *align(1) const real_t, rhs: *align(1) const real_t, ctxt: *realContext_t) *real_t;
-extern fn decNumberSubtract(result: *real_t, lhs: *align(1) const real_t, rhs: *align(1) const real_t, ctxt: *realContext_t) *real_t;
-extern fn decNumberMultiply(result: *real_t, lhs: *align(1) const real_t, rhs: *align(1) const real_t, ctxt: *realContext_t) *real_t;
-extern fn decNumberDivide(result: *real_t, lhs: *align(1) const real_t, rhs: *align(1) const real_t, ctxt: *realContext_t) *real_t;
-extern fn decNumberSquareRoot(result: *real_t, rhs: *align(1) const real_t, ctxt: *realContext_t) *real_t;
-extern fn decNumberFMA(result: *real_t, f1: *align(1) const real_t, f2: *align(1) const real_t, term: *align(1) const real_t, ctxt: *realContext_t) *real_t;
-extern fn decNumberCopy(res: *real_t, source: *align(1) const real_t) *real_t;
-extern fn decNumberCopyAbs(res: *real_t, source: *align(1) const real_t) *real_t;
-extern fn decNumberCopySign(res: *real_t, source: *align(1) const real_t, sign_source: *align(1) const real_t) *real_t;
-extern fn decNumberMinus(res: *real_t, operand: *align(1) const real_t, ctxt: *realContext_t) *real_t;
-extern fn decNumberPlus(res: *real_t, operand: *align(1) const real_t, ctxt: *realContext_t) *real_t;
-extern fn decNumberRemainder(res: *real_t, lhs: *align(1) const real_t, rhs: *align(1) const real_t, ctxt: *realContext_t) *real_t;
+// decNumber arithmetic on real_t operands, blob constants included.
+extern fn decNumberAdd(result: *real_t, lhs: *const real_t, rhs: *const real_t, ctxt: *realContext_t) *real_t;
+extern fn decNumberSubtract(result: *real_t, lhs: *const real_t, rhs: *const real_t, ctxt: *realContext_t) *real_t;
+extern fn decNumberMultiply(result: *real_t, lhs: *const real_t, rhs: *const real_t, ctxt: *realContext_t) *real_t;
+extern fn decNumberDivide(result: *real_t, lhs: *const real_t, rhs: *const real_t, ctxt: *realContext_t) *real_t;
+extern fn decNumberSquareRoot(result: *real_t, rhs: *const real_t, ctxt: *realContext_t) *real_t;
+extern fn decNumberFMA(result: *real_t, f1: *const real_t, f2: *const real_t, term: *const real_t, ctxt: *realContext_t) *real_t;
+extern fn decNumberCopy(res: *real_t, source: *const real_t) *real_t;
+extern fn decNumberCopyAbs(res: *real_t, source: *const real_t) *real_t;
+extern fn decNumberCopySign(res: *real_t, source: *const real_t, sign_source: *const real_t) *real_t;
+extern fn decNumberMinus(res: *real_t, operand: *const real_t, ctxt: *realContext_t) *real_t;
+extern fn decNumberPlus(res: *real_t, operand: *const real_t, ctxt: *realContext_t) *real_t;
+extern fn decNumberRemainder(res: *real_t, lhs: *const real_t, rhs: *const real_t, ctxt: *realContext_t) *real_t;
 extern fn realSetPlusInfinity(value: *real_t) void;
 extern fn realSetMinusInfinity(value: *real_t) void;
 
-inline fn realAdd(lhs: *align(1) const real_t, rhs: *align(1) const real_t, result: *real_t, ctxt: *realContext_t) void {
+inline fn realAdd(lhs: *const real_t, rhs: *const real_t, result: *real_t, ctxt: *realContext_t) void {
     _ = decNumberAdd(result, lhs, rhs, ctxt);
 }
-inline fn realSubtract(lhs: *align(1) const real_t, rhs: *align(1) const real_t, result: *real_t, ctxt: *realContext_t) void {
+inline fn realSubtract(lhs: *const real_t, rhs: *const real_t, result: *real_t, ctxt: *realContext_t) void {
     _ = decNumberSubtract(result, lhs, rhs, ctxt);
 }
-inline fn realMultiply(lhs: *align(1) const real_t, rhs: *align(1) const real_t, result: *real_t, ctxt: *realContext_t) void {
+inline fn realMultiply(lhs: *const real_t, rhs: *const real_t, result: *real_t, ctxt: *realContext_t) void {
     _ = decNumberMultiply(result, lhs, rhs, ctxt);
 }
-inline fn realDivide(lhs: *align(1) const real_t, rhs: *align(1) const real_t, result: *real_t, ctxt: *realContext_t) void {
+inline fn realDivide(lhs: *const real_t, rhs: *const real_t, result: *real_t, ctxt: *realContext_t) void {
     _ = decNumberDivide(result, lhs, rhs, ctxt);
 }
-inline fn realSquareRoot(rhs: *align(1) const real_t, result: *real_t, ctxt: *realContext_t) void {
+inline fn realSquareRoot(rhs: *const real_t, result: *real_t, ctxt: *realContext_t) void {
     _ = decNumberSquareRoot(result, rhs, ctxt);
 }
-inline fn realFMA(f1: *align(1) const real_t, f2: *align(1) const real_t, term: *align(1) const real_t, result: *real_t, ctxt: *realContext_t) void {
+inline fn realFMA(f1: *const real_t, f2: *const real_t, term: *const real_t, result: *real_t, ctxt: *realContext_t) void {
     _ = decNumberFMA(result, f1, f2, term, ctxt);
 }
-inline fn realCopy(source: *align(1) const real_t, destination: *real_t) void {
+inline fn realCopy(source: *const real_t, destination: *real_t) void {
     _ = decNumberCopy(destination, source);
 }
-inline fn realCopyAbs(source: *align(1) const real_t, destination: *real_t) void {
+inline fn realCopyAbs(source: *const real_t, destination: *real_t) void {
     _ = decNumberCopyAbs(destination, source);
 }
 // realSetSignFrom(source, destination): the destination keeps its magnitude and takes the source's sign.
-inline fn realSetSignFrom(source: *align(1) const real_t, destination: *real_t) void {
+inline fn realSetSignFrom(source: *const real_t, destination: *real_t) void {
     _ = decNumberCopySign(destination, destination, source);
 }
-inline fn realMinus(operand: *align(1) const real_t, res: *real_t, ctxt: *realContext_t) void {
+inline fn realMinus(operand: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberMinus(res, operand, ctxt);
 }
-inline fn realPlus(operand: *align(1) const real_t, res: *real_t, ctxt: *realContext_t) void {
+inline fn realPlus(operand: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberPlus(res, operand, ctxt);
 }
-inline fn realDivideRemainder(operand1: *align(1) const real_t, operand2: *align(1) const real_t, res: *real_t, ctxt: *realContext_t) void {
+inline fn realDivideRemainder(operand1: *const real_t, operand2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberRemainder(res, operand1, operand2, ctxt);
 }
 inline fn realSetNegativeSign(value: *real_t) void {

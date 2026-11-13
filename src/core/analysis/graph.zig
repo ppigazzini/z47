@@ -301,7 +301,7 @@ extern var x_max: *real_t;
 extern var y_min: *real_t;
 extern var y_max: *real_t;
 extern var SAVED_SIGMA_lastAddRem: i8;
-extern var tmpString: [*c]u8;
+extern var tmpString: [*c]align(4) u8;
 extern var aimBuffer: [*c]u8;
 extern var ctxtReal34: realContext_t;
 extern var ctxtReal39: realContext_t;
@@ -358,14 +358,14 @@ extern fn fnRealPart(unusedButMandatoryParameter: u16) void;
 extern fn copySourceRegisterToDestRegister(rSource: calcRegister_t, rDest: calcRegister_t) void;
 extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) bool;
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
-extern fn getRegisterDataPointer(regist: calcRegister_t) *anyopaque;
+extern fn getRegisterDataPointer(regist: calcRegister_t) *align(4) anyopaque;
 extern fn getRegisterAsReal(reg: calcRegister_t, val: *real_t) bool;
 extern fn getRegisterAsComplex(reg: calcRegister_t, z: *cplx_t) bool;
 extern fn convertDoubleToReal34Register(x: f64, destination: calcRegister_t) void;
 extern fn convertDoubleToReal34RegisterPush(x: f64, destination: calcRegister_t) void;
 extern fn convertDoubleToReal(x: f64, destination: *real_t, ctxt: *realContext_t) void;
 extern fn convertRegisterToDouble(regist: calcRegister_t) f64;
-extern fn convertRealToResultRegister(x: *align(1) const real_t, dest: calcRegister_t, angle: c_int) void;
+extern fn convertRealToResultRegister(x: *const real_t, dest: calcRegister_t, angle: c_int) void;
 extern fn convertComplexToResultRegister(z: *const cplx_t, dest: calcRegister_t) void;
 extern fn complexMagnitude(a: *const cplx_t, c: *real_t, realContext: *realContext_t) void;
 extern fn divComplexComplex(numer: *const cplx_t, denom: *const cplx_t, quotient: *cplx_t, realContext: *realContext_t) void;
@@ -374,9 +374,9 @@ extern fn addComplex(a: *const cplx_t, b: *const cplx_t, res: *cplx_t, realConte
 extern fn subComplex(a: *const cplx_t, b: *const cplx_t, res: *cplx_t, realContext: *realContext_t) void;
 extern fn realSetZero(r: *real_t) void;
 extern fn realSetOne(r: *real_t) void;
-extern fn realCompareEqual(a: *align(1) const real_t, b: *align(1) const real_t) bool;
-extern fn realCompareLessEqual(a: *align(1) const real_t, b: *align(1) const real_t) bool;
-extern fn realCompareAbsLessThan(a: *align(1) const real_t, b: *align(1) const real_t) bool;
+extern fn realCompareEqual(a: *const real_t, b: *const real_t) bool;
+extern fn realCompareLessEqual(a: *const real_t, b: *const real_t) bool;
+extern fn realCompareAbsLessThan(a: *const real_t, b: *const real_t) bool;
 extern fn showHideHourGlass() void;
 const refreshScreen = abi.host.requestRefresh; // routed through the host-callback boundary
 extern fn realSetNaN(value: *real_t) void;
@@ -392,30 +392,30 @@ const exitKeyWaiting = abi.host.exitKeyWaiting;
 extern fn refreshLcd(unused: ?*anyopaque) c_int;
 
 // decNumber / decQuad externs behind the real* / real34* macros.
-extern fn decNumberCopy(r: *real_t, src: *align(1) const real_t) *real_t;
-extern fn decNumberAdd(r: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
-extern fn decNumberMultiply(r: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
+extern fn decNumberCopy(r: *real_t, src: *const real_t) *real_t;
+extern fn decNumberAdd(r: *real_t, a: *const real_t, b: *const real_t, ctx: *realContext_t) *real_t;
+extern fn decNumberMultiply(r: *real_t, a: *const real_t, b: *const real_t, ctx: *realContext_t) *real_t;
 extern fn decNumberFromString(r: *real_t, s: [*c]const u8, ctx: *realContext_t) *real_t;
 extern fn decNumberToString(r: *const real_t, s: [*c]u8) [*c]u8;
-extern fn decimal128ToNumber(src: *align(1) const real34_t, dst: *real_t) *real_t;
-extern fn decimal128FromNumber(dst: *align(1) real34_t, src: *align(1) const real_t, ctx: *realContext_t) *align(1) real34_t;
-extern fn decQuadIsInfinite(v: *align(1) const real34_t) u32;
-extern fn decQuadIsNaN(v: *align(1) const real34_t) u32;
-extern fn decQuadIsZero(v: *align(1) const real34_t) u32;
-extern fn decQuadToString(v: *align(1) const real34_t, s: [*c]u8) [*c]u8;
-extern fn decQuadToInt32(v: *align(1) const real34_t, ctx: *realContext_t, round: c_int) i32;
+extern fn decimal128ToNumber(src: *const real34_t, dst: *real_t) *real_t;
+extern fn decimal128FromNumber(dst: *real34_t, src: *const real_t, ctx: *realContext_t) *real34_t;
+extern fn decQuadIsInfinite(v: *const real34_t) u32;
+extern fn decQuadIsNaN(v: *const real34_t) u32;
+extern fn decQuadIsZero(v: *const real34_t) u32;
+extern fn decQuadToString(v: *const real34_t, s: [*c]u8) [*c]u8;
+extern fn decQuadToInt32(v: *const real34_t, ctx: *realContext_t, round: c_int) i32;
 extern fn realToFloat(vv: *const real_t, v: *f32) void;
 extern fn realToDouble(vv: *const real_t, v: *f64) void;
 
 // Additional decNumber primitives for the real_t graph walk.
-extern fn decNumberSubtract(r: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
-extern fn decNumberDivide(r: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
-extern fn decNumberFMA(r: *real_t, f1: *align(1) const real_t, f2: *align(1) const real_t, term: *align(1) const real_t, ctx: *realContext_t) *real_t;
-extern fn decNumberPlus(r: *real_t, a: *align(1) const real_t, ctx: *realContext_t) *real_t;
-extern fn decNumberCopyAbs(r: *real_t, src: *align(1) const real_t) *real_t;
+extern fn decNumberSubtract(r: *real_t, a: *const real_t, b: *const real_t, ctx: *realContext_t) *real_t;
+extern fn decNumberDivide(r: *real_t, a: *const real_t, b: *const real_t, ctx: *realContext_t) *real_t;
+extern fn decNumberFMA(r: *real_t, f1: *const real_t, f2: *const real_t, term: *const real_t, ctx: *realContext_t) *real_t;
+extern fn decNumberPlus(r: *real_t, a: *const real_t, ctx: *realContext_t) *real_t;
+extern fn decNumberCopyAbs(r: *real_t, src: *const real_t) *real_t;
 extern fn decNumberFromInt32(r: *real_t, source: i32) *real_t;
-extern fn decQuadZero(v: *align(1) real34_t) *align(1) real34_t;
-extern fn realCompareGreaterEqual(a: *align(1) const real_t, b: *align(1) const real_t) bool;
+extern fn decQuadZero(v: *real34_t) *real34_t;
+extern fn realCompareGreaterEqual(a: *const real_t, b: *const real_t) bool;
 extern fn getRegisterAsRealQuiet(reg: calcRegister_t, val: *real_t) bool;
 extern fn fnSwapXY(unusedButMandatoryParameter: u16) void;
 
@@ -453,38 +453,38 @@ const ctxtSolver2 = &ctxtReal39;
 
 const reg34 = abi.registerReal34;
 const regImag34 = abi.registerImag34;
-inline fn realCopy(src: *align(1) const real_t, dst: *real_t) void {
+inline fn realCopy(src: *const real_t, dst: *real_t) void {
     _ = decNumberCopy(dst, src);
 }
-inline fn realAdd(a: *align(1) const real_t, b: *align(1) const real_t, res: *real_t, ctx: *realContext_t) void {
+inline fn realAdd(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberAdd(res, a, b, ctx);
 }
-inline fn realMultiply(a: *align(1) const real_t, b: *align(1) const real_t, res: *real_t, ctx: *realContext_t) void {
+inline fn realMultiply(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberMultiply(res, a, b, ctx);
 }
 inline fn stringToReal(src: [*c]const u8, dst: *real_t, ctx: *realContext_t) void {
     _ = decNumberFromString(dst, src, ctx);
 }
-inline fn real34ToReal(src: *align(1) const real34_t, dst: *real_t) void {
+inline fn real34ToReal(src: *const real34_t, dst: *real_t) void {
     _ = decimal128ToNumber(src, dst);
 }
-inline fn realToReal34(src: *align(1) const real_t, dst: *align(1) real34_t) void {
+inline fn realToReal34(src: *const real_t, dst: *real34_t) void {
     _ = decimal128FromNumber(dst, src, &ctxtReal34);
 }
 const real34IsSpecial = abi.real34IsSpecial;
-inline fn real34IsInfinite(v: *align(1) const real34_t) bool {
+inline fn real34IsInfinite(v: *const real34_t) bool {
     return decQuadIsInfinite(v) != 0;
 }
-inline fn real34IsNaN(v: *align(1) const real34_t) bool {
+inline fn real34IsNaN(v: *const real34_t) bool {
     return decQuadIsNaN(v) != 0;
 }
-inline fn real34IsZero(v: *align(1) const real34_t) bool {
+inline fn real34IsZero(v: *const real34_t) bool {
     return decQuadIsZero(v) != 0;
 }
-inline fn real34IsNegative(v: *align(1) const real34_t) bool {
+inline fn real34IsNegative(v: *const real34_t) bool {
     return (v.bytes[15] & 0x80) == 0x80;
 }
-inline fn real34ToInt32(v: *align(1) const real34_t) i32 {
+inline fn real34ToInt32(v: *const real34_t) i32 {
     return decQuadToInt32(v, &ctxtReal34, 5); // DEC_ROUND_DOWN
 }
 const realIsZero = abi.realIsZero;
@@ -500,19 +500,19 @@ inline fn realGetSign(v: *const real_t) u8 {
 inline fn realGetExponent(v: *const real_t) i32 {
     return v.digits + v.exponent - 1;
 }
-inline fn realSubtract(a: *align(1) const real_t, b: *align(1) const real_t, res: *real_t, ctx: *realContext_t) void {
+inline fn realSubtract(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberSubtract(res, a, b, ctx);
 }
-inline fn realDivide(a: *align(1) const real_t, b: *align(1) const real_t, res: *real_t, ctx: *realContext_t) void {
+inline fn realDivide(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberDivide(res, a, b, ctx);
 }
-inline fn realFMA(f1: *align(1) const real_t, f2: *align(1) const real_t, term: *align(1) const real_t, res: *real_t, ctx: *realContext_t) void {
+inline fn realFMA(f1: *const real_t, f2: *const real_t, term: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberFMA(res, f1, f2, term, ctx);
 }
-inline fn realPlus(operand: *align(1) const real_t, res: *real_t, ctx: *realContext_t) void {
+inline fn realPlus(operand: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberPlus(res, operand, ctx);
 }
-inline fn realCopyAbs(source: *align(1) const real_t, destination: *real_t) void {
+inline fn realCopyAbs(source: *const real_t, destination: *real_t) void {
     _ = decNumberCopyAbs(destination, source);
 }
 inline fn realDivideBy2(operand: *real_t, ctx: *realContext_t) void {
@@ -521,16 +521,16 @@ inline fn realDivideBy2(operand: *real_t, ctx: *realContext_t) void {
 inline fn int32ToReal(source: i32, destination: *real_t) void {
     _ = decNumberFromInt32(destination, source);
 }
-inline fn real34SetZero(destination: *align(1) real34_t) void {
+inline fn real34SetZero(destination: *real34_t) void {
     _ = decQuadZero(destination);
 }
-inline fn realIsSpecial(v: *align(1) const real_t) bool {
+inline fn realIsSpecial(v: *const real_t) bool {
     return (v.bits & 0x70) != 0;
 }
-inline fn realIsNegative(v: *align(1) const real_t) bool {
+inline fn realIsNegative(v: *const real_t) bool {
     return (v.bits & 0x80) == 0x80;
 }
-inline fn realIsPositive(v: *align(1) const real_t) bool {
+inline fn realIsPositive(v: *const real_t) bool {
     return (v.bits & 0x80) == 0x00;
 }
 inline fn realToDoubleVal(r: *const real_t) f64 {
@@ -541,13 +541,13 @@ inline fn realToDoubleVal(r: *const real_t) f64 {
 // The C wraps realIs*/realChangeSign in noinline graphIs* shims to dodge a
 // GCC bounds-check false positive on the small graph buffers; in Zig they are
 // plain forwarders.
-inline fn graphIsZero(x: *align(1) const real_t) bool {
+inline fn graphIsZero(x: *const real_t) bool {
     return realIsZero(x);
 }
-inline fn graphIsNegative(x: *align(1) const real_t) bool {
+inline fn graphIsNegative(x: *const real_t) bool {
     return realIsNegative(x);
 }
-inline fn graphIsPositive(x: *align(1) const real_t) bool {
+inline fn graphIsPositive(x: *const real_t) bool {
     return realIsPositive(x);
 }
 inline fn graphChangeSign(x: *real_t) void {
@@ -713,12 +713,12 @@ fn AddtoDrawMx() void {
 // ===========================================================================
 // real_t register / evaluation leaves
 // ===========================================================================
-fn convertRealToReal34Register(x: *align(1) const real_t, destination: calcRegister_t) void {
+fn convertRealToReal34Register(x: *const real_t, destination: calcRegister_t) void {
     _ = reallocateRegister(destination, dtReal34, 0, @bitCast(amNone));
     realToReal34(x, reg34(destination));
 }
 
-fn convertRealToReal34RegisterPush(x: *align(1) const real_t, destination: calcRegister_t) void {
+fn convertRealToReal34RegisterPush(x: *const real_t, destination: calcRegister_t) void {
     setSystemFlag(FLAG_ASLIFT);
     liftStack();
     convertRealToReal34Register(x, destination);
@@ -752,7 +752,7 @@ fn convertRegisterToReal(source: calcRegister_t, destination: *real_t) void {
 
 // Normalised read for the jump-back analysis: out = (v - origin) / span,
 // dimensionless and O(1) at any data magnitude.
-fn normCoord(v: *align(1) const real_t, origin: *align(1) const real_t, span: *align(1) const real_t) f64 {
+fn normCoord(v: *const real_t, origin: *const real_t, span: *const real_t) f64 {
     var t: real_t = undefined;
     realSubtract(v, origin, &t, ctxtGraphs);
     realDivide(&t, span, &t, ctxtGraphs);
@@ -834,7 +834,7 @@ pub export fn graphRangeGuard(lo: *real_t, hi: *real_t) callconv(.c) void {
 // ===========================================================================
 // High-res / discontinuity helpers
 // ===========================================================================
-pub export fn validateDiscontinuityResolution(buffer: [*]PlotPoint, count: c_int, yBefore: *align(1) const real_t, yAfter: *align(1) const real_t, discontinuityThreshold: *align(1) const real_t) callconv(.c) bool {
+pub export fn validateDiscontinuityResolution(buffer: [*]PlotPoint, count: c_int, yBefore: *const real_t, yAfter: *const real_t, discontinuityThreshold: *const real_t) callconv(.c) bool {
     if (count < 3) {
         return false;
     }
@@ -894,7 +894,7 @@ pub export fn validateDiscontinuityResolution(buffer: [*]PlotPoint, count: c_int
     return discontinuityResolved and smoothTransition;
 }
 
-pub export fn calculateNewStepSize(discontinuityDetected: c_int, grad1: *align(1) const real_t, grad2: *align(1) const real_t, grad2IncreaseDetected: bool, dx0: *align(1) const real_t, newDx: *real_t) callconv(.c) void {
+pub export fn calculateNewStepSize(discontinuityDetected: c_int, grad1: *const real_t, grad2: *const real_t, grad2IncreaseDetected: bool, dx0: *const real_t, newDx: *real_t) callconv(.c) void {
     if (discontinuityDetected > 0 and discontinuityDetected <= FINE) {
         var djmpReal: real_t = undefined;
         stringToReal("0.2", &djmpReal, ctxtGraphs); // _R_STR_OF(dJMP)
@@ -923,7 +923,7 @@ pub export fn calculateNewStepSize(discontinuityDetected: c_int, grad1: *align(1
     }
 }
 
-pub export fn enterHighResMode(inHighResMode: *bool, highResCount: *c_int, highResStartX: *real_t, baselineCurvatureChange: *real_t, cumulativeCurvatureChange: *real_t, x: *align(1) const real_t, curvatureChange: *align(1) const real_t) callconv(.c) void {
+pub export fn enterHighResMode(inHighResMode: *bool, highResCount: *c_int, highResStartX: *real_t, baselineCurvatureChange: *real_t, cumulativeCurvatureChange: *real_t, x: *const real_t, curvatureChange: *const real_t) callconv(.c) void {
     inHighResMode.* = true;
     highResCount.* = 0;
     realCopy(x, highResStartX);
@@ -956,7 +956,7 @@ pub export fn resetHighResTracking(highResCount: *c_int, inHighResMode: *bool, c
     realSetZero(cumulativeCurvatureChange);
 }
 
-pub export fn detectTrueDiscontinuity(y0: *align(1) const real_t, y1: *align(1) const real_t, y2: *align(1) const real_t, grad0: *align(1) const real_t, grad1: *align(1) const real_t, grad2: *align(1) const real_t, yAvg: *align(1) const real_t, count: c_int) callconv(.c) bool {
+pub export fn detectTrueDiscontinuity(y0: *const real_t, y1: *const real_t, y2: *const real_t, grad0: *const real_t, grad1: *const real_t, grad2: *const real_t, yAvg: *const real_t, count: c_int) callconv(.c) bool {
     // Distinguish between genuine discontinuities and normal peaks
     if (real34IsSpecial(reg34(REGISTER_X)) or ((getRegisterDataType(REGISTER_X) == dtComplex34) and (real34IsSpecial(regImag34(REGISTER_X))))) {
         return true;
@@ -1056,7 +1056,7 @@ pub export fn detectTrueDiscontinuity(y0: *align(1) const real_t, y1: *align(1) 
 // ===========================================================================
 // Asymptote detection and rendering
 // ===========================================================================
-pub export fn detectAndCharacterizeAsymptote(xLeft: *align(1) const real_t, yLeft: *align(1) const real_t, xRight: *align(1) const real_t, yRight: *align(1) const real_t, xGap: *align(1) const real_t, gapWidth: *align(1) const real_t, xMin: *align(1) const real_t, xMax: *align(1) const real_t, yMin: *align(1) const real_t, yMax: *align(1) const real_t, asymptote: *AsymptoteInfo) callconv(.c) bool {
+pub export fn detectAndCharacterizeAsymptote(xLeft: *const real_t, yLeft: *const real_t, xRight: *const real_t, yRight: *const real_t, xGap: *const real_t, gapWidth: *const real_t, xMin: *const real_t, xMax: *const real_t, yMin: *const real_t, yMax: *const real_t, asymptote: *AsymptoteInfo) callconv(.c) bool {
     // Check if gap is significant enough
     var xRange: real_t = undefined;
     var yRange: real_t = undefined;
@@ -1216,7 +1216,7 @@ pub export fn renderAsymptote(asymptote: *AsymptoteInfo) callconv(.c) void {
     }
 }
 
-pub export fn detectTrueDiscontinuityWithAsymptote(y0: *align(1) const real_t, y1: *align(1) const real_t, y2: *align(1) const real_t, grad0: *align(1) const real_t, grad1: *align(1) const real_t, grad2: *align(1) const real_t, yAvg: *align(1) const real_t, count: c_int, x0: *align(1) const real_t, x1: *align(1) const real_t, x2: *align(1) const real_t, xMin: *align(1) const real_t, xMax: *align(1) const real_t, yMin: *align(1) const real_t, yMax: *align(1) const real_t, asymptotes: [*c]AsymptoteInfo, asymptoteCount: *c_int) callconv(.c) bool {
+pub export fn detectTrueDiscontinuityWithAsymptote(y0: *const real_t, y1: *const real_t, y2: *const real_t, grad0: *const real_t, grad1: *const real_t, grad2: *const real_t, yAvg: *const real_t, count: c_int, x0: *const real_t, x1: *const real_t, x2: *const real_t, xMin: *const real_t, xMax: *const real_t, yMin: *const real_t, yMax: *const real_t, asymptotes: [*c]AsymptoteInfo, asymptoteCount: *c_int) callconv(.c) bool {
     _ = x1;
     // NaN/infinite samples are domain gaps, not discontinuities
     if (realIsSpecial(y0) or realIsSpecial(y1) or realIsSpecial(y2)) {

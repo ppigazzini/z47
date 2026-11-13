@@ -84,14 +84,13 @@ pub fn sanitizerVendorCFlags(
 
 const sanitizer_exclusions = [_][]const u8{
     // FILED, not quietened. Removing this reports
-    //   member access within misaligned address ... for type 'const decQuad',
-    //   which requires 4 byte alignment
-    // from decQuadGetCoefficient. Real defect: abi.Real34 is
-    // `extern struct { bytes: [16]u8 }`, alignment 1, mirroring a C decQuad whose
-    // _Alignof is 4 (measured). Correcting it means raising the type's alignment
-    // and propagating it through the accessors that hand out `*align(1)` pointers
-    // -- 1051 sites reference that spelling, so it is a project with an
-    // ABI-layout gate to satisfy, not a line to change here.
+    //   load of misaligned address ... for type 'uint64_t', which requires 8 byte
+    //   alignment
+    // from upstream's testSuite.c (checkExpectedOutParameter), which reads a
+    // short integer as `*REGISTER_SHORT_INTEGER_DATA(r)`: a uint64_t at a pool
+    // block address, which the C47 allocator aligns to 4. The access is
+    // upstream's, in retained C z47 must not diverge from; abi.registers views
+    // the same payload as `*align(4) u64`. The fix is an upstream report.
     "-fno-sanitize=alignment",
 };
 

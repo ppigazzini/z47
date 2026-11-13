@@ -95,9 +95,9 @@ extern fn getRegisterMaxDataLengthInBlocks(regist: calcRegister_t) u16;
 extern fn displayCalcErrorMessage(errorCode: u8, errMessageRegisterLine: calcRegister_t) void;
 extern fn decNumberFromString(r: *real_t, s: [*c]const u8, ctx: *realContext_t) *real_t;
 extern fn decNumberFromUInt32(r: *real_t, v: u32) *real_t;
-extern fn decNumberFMA(r: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, c: *align(1) const real_t, ctx: *realContext_t) *real_t;
-extern fn decQuadIsZero(v: *align(1) const real34_t) u32;
-extern fn decimal128ToNumber(src: *align(1) const real34_t, dst: *real_t) *real_t;
+extern fn decNumberFMA(r: *real_t, a: *const real_t, b: *const real_t, c: *const real_t, ctx: *realContext_t) *real_t;
+extern fn decQuadIsZero(v: *const real34_t) u32;
+extern fn decimal128ToNumber(src: *const real34_t, dst: *real_t) *real_t;
 const mpz_init2 = __gmpz_init2;
 const mpz_clear = __gmpz_clear;
 const complex34_t = abi.Complex34;
@@ -162,12 +162,12 @@ extern fn realMatrixInit(matrix: *real34Matrix_t, rows: u16, cols: u16) bool;
 extern fn complexMatrixInit(matrix: *complex34Matrix_t, rows: u16, cols: u16) bool;
 extern fn complexMatrixFree(matrix: *complex34Matrix_t) void;
 extern fn linkToRealMatrixRegister(regist: calcRegister_t, linked: *real34Matrix_t) void;
-extern fn WP34S_Mod(x: *const real_t, y: *align(1) const real_t, res: *real_t, real_context: *realContext_t) void;
+extern fn WP34S_Mod(x: *const real_t, y: *const real_t, res: *real_t, real_context: *realContext_t) void;
 extern fn getSystemFlag(flag: c_int) bool;
 extern fn setSystemFlag(flag: c_uint) void;
 extern fn realIsAnInteger(x: *const real_t) bool;
-extern fn realCompareGreaterEqual(a: *align(1) const real_t, b: *align(1) const real_t) bool;
-extern fn realCompareGreaterThan(a: *align(1) const real_t, b: *align(1) const real_t) bool;
+extern fn realCompareGreaterEqual(a: *const real_t, b: *const real_t) bool;
+extern fn realCompareGreaterThan(a: *const real_t, b: *const real_t) bool;
 const Fn0 = ?*const fn () callconv(.c) void;
 extern fn elementwiseRema(f: Fn0) void;
 extern fn elementwiseCxma(f: Fn0) void;
@@ -183,18 +183,18 @@ extern fn elementwiseRemaCplx(f: Fn0) void;
 extern fn elementwiseCxmaCplx(f: Fn0) void;
 extern fn decQuadFromUInt32(r: *real34_t, v: u32) *real34_t;
 extern fn decQuadFromString(r: *real34_t, s: [*c]const u8, ctx: *realContext_t) *real34_t;
-extern fn decQuadGetCoefficient(r: *align(1) const real34_t, bcd: [*]u8) i32;
-extern fn decQuadGetExponent(r: *align(1) const real34_t) i32;
+extern fn decQuadGetCoefficient(r: *const real34_t, bcd: [*]u8) i32;
+extern fn decQuadGetExponent(r: *const real34_t) i32;
 extern fn decQuadZero(r: *real34_t) *real34_t;
-extern fn decQuadDivide(r: *real34_t, a: *align(1) const real34_t, b: *align(1) const real34_t, ctx: *realContext_t) *real34_t;
-extern fn decQuadMultiply(r: *real34_t, a: *align(1) const real34_t, b: *align(1) const real34_t, ctx: *realContext_t) *real34_t;
-extern fn decQuadFMA(r: *real34_t, a: *align(1) const real34_t, b: *align(1) const real34_t, c: *align(1) const real34_t, ctx: *realContext_t) *real34_t;
-extern fn decQuadToIntegralValue(r: *real34_t, a: *align(1) const real34_t, ctx: *realContext_t, round: c_int) *real34_t;
+extern fn decQuadDivide(r: *real34_t, a: *const real34_t, b: *const real34_t, ctx: *realContext_t) *real34_t;
+extern fn decQuadMultiply(r: *real34_t, a: *const real34_t, b: *const real34_t, ctx: *realContext_t) *real34_t;
+extern fn decQuadFMA(r: *real34_t, a: *const real34_t, b: *const real34_t, c: *const real34_t, ctx: *realContext_t) *real34_t;
+extern fn decQuadToIntegralValue(r: *real34_t, a: *const real34_t, ctx: *realContext_t, round: c_int) *real34_t;
 extern fn decNumberToString(r: *const real_t, s: [*]u8) [*c]u8;
 extern fn decNumberToUInt64(r: *const real_t, ctx: *realContext_t) u64;
 extern fn decNumberGetBCD(r: *const real_t, bcd: [*]u8) [*c]u8;
-extern fn decNumberPlus(r: *real_t, a: *align(1) const real_t, ctx: *realContext_t) *real_t;
-extern fn decNumberQuantize(r: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
+extern fn decNumberPlus(r: *real_t, a: *const real_t, ctx: *realContext_t) *real_t;
+extern fn decNumberQuantize(r: *real_t, a: *const real_t, b: *const real_t, ctx: *realContext_t) *real_t;
 const mpz_init = __gmpz_init;
 const mpz_set_ui = __gmpz_set_ui;
 const mpz_add_ui = __gmpz_add_ui;
@@ -361,13 +361,13 @@ extern fn __gmpz_root(root: *mpz_struct, op: *const mpz_struct, n: c_ulong) c_in
 extern fn __gmpz_set(r: *mpz_struct, op: *const mpz_struct) void;
 extern var roundingMode: u8;
 extern const roundingModeTable: [7]c_int;
-extern fn real34IsAnInteger(v: *align(1) const real34_t) bool;
-extern fn real34CompareAbsEqual(a: *align(1) const real34_t, b: *align(1) const real34_t) bool;
-extern fn decQuadAdd(res: *real34_t, a: *align(1) const real34_t, b: *align(1) const real34_t, ctx: *realContext_t) *real34_t;
-extern fn decQuadSubtract(res: *real34_t, a: *align(1) const real34_t, b: *align(1) const real34_t, ctx: *realContext_t) *real34_t;
-extern fn decNumberAdd(res: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
-extern fn decNumberSubtract(res: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
-extern fn decNumberMultiply(res: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
+extern fn real34IsAnInteger(v: *const real34_t) bool;
+extern fn real34CompareAbsEqual(a: *const real34_t, b: *const real34_t) bool;
+extern fn decQuadAdd(res: *real34_t, a: *const real34_t, b: *const real34_t, ctx: *realContext_t) *real34_t;
+extern fn decQuadSubtract(res: *real34_t, a: *const real34_t, b: *const real34_t, ctx: *realContext_t) *real34_t;
+extern fn decNumberAdd(res: *real_t, a: *const real_t, b: *const real_t, ctx: *realContext_t) *real_t;
+extern fn decNumberSubtract(res: *real_t, a: *const real_t, b: *const real_t, ctx: *realContext_t) *real_t;
+extern fn decNumberMultiply(res: *real_t, a: *const real_t, b: *const real_t, ctx: *realContext_t) *real_t;
 const const34_1 = consts.const34_1;
 const cplx_t = abi.Complex;
 // decContext.h rounding enum order.
@@ -421,7 +421,7 @@ inline fn longIntegerRoot(op: *const mpz_struct, n: u32, result: *mpz_struct) bo
 }
 const real34IsSpecial = abi.real34IsSpecial;
 // realType.h real34IsNegative: the sign bit, so -0 and a signed NaN count.
-inline fn real34IsNegative(v: *align(1) const real34_t) bool {
+inline fn real34IsNegative(v: *const real34_t) bool {
     return (v.bytes[15] & 0x80) == 0x80;
 }
 inline fn strlenC(str: [*c]const u8) usize {
@@ -595,16 +595,16 @@ pub export fn convertShortIntegerRegisterToUInt64(regist: calcRegister_t, sign: 
     }
 }
 
-inline fn real34ToReal(src: *align(1) const real34_t, dst: *real_t) void {
+inline fn real34ToReal(src: *const real34_t, dst: *real_t) void {
     _ = decimal128ToNumber(src, dst);
 }
 
-inline fn real34IsZero(v: *align(1) const real34_t) bool {
+inline fn real34IsZero(v: *const real34_t) bool {
     return decQuadIsZero(v) != 0;
 }
 
-inline fn regImag34(reg: calcRegister_t) *align(1) real34_t {
-    return @ptrCast(dataPtr(reg) + REAL34_SIZE_IN_BYTES);
+inline fn regImag34(reg: calcRegister_t) *real34_t {
+    return abi.registerImag34(reg);
 }
 
 inline fn dataPtr(reg: calcRegister_t) [*]u8 {
@@ -627,7 +627,7 @@ inline fn uInt32ToReal(src: u32, dst: *real_t) void {
     _ = decNumberFromUInt32(dst, src);
 }
 
-inline fn realFMA(f1: *align(1) const real_t, f2: *align(1) const real_t, term: *align(1) const real_t, res: *real_t, ctx: *realContext_t) void {
+inline fn realFMA(f1: *const real_t, f2: *const real_t, term: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberFMA(res, f1, f2, term, ctx);
 }
 
@@ -657,12 +657,12 @@ inline fn real34SetZero(dst: *real34_t) void {
     _ = decQuadZero(dst);
 }
 
-inline fn regRealMatrixElems(reg: calcRegister_t) [*]align(1) real34_t {
-    return @ptrCast(dataPtr(reg) + 4);
+inline fn regRealMatrixElems(reg: calcRegister_t) [*]real34_t {
+    return abi.registerReal34MatrixElements(reg);
 }
 
-inline fn regComplexMatrixElems(reg: calcRegister_t) [*]align(1) complex34_t {
-    return @ptrCast(dataPtr(reg) + 4);
+inline fn regComplexMatrixElems(reg: calcRegister_t) [*]complex34_t {
+    return abi.registerComplex34MatrixElements(reg);
 }
 
 inline fn getRegisterAngularMode(reg: calcRegister_t) angularMode_t {
@@ -715,15 +715,15 @@ inline fn realGetExponent(v: *const real_t) i32 {
     return v.digits + v.exponent - 1;
 }
 
-inline fn real34FMA(f1: *align(1) const real34_t, f2: *align(1) const real34_t, term: *align(1) const real34_t, res: *real34_t) void {
+inline fn real34FMA(f1: *const real34_t, f2: *const real34_t, term: *const real34_t, res: *real34_t) void {
     _ = decQuadFMA(res, f1, f2, term, &ctxtReal34);
 }
 
-inline fn real34GetCoefficient(src: *align(1) const real34_t, bcd: [*]u8) i32 {
+inline fn real34GetCoefficient(src: *const real34_t, bcd: [*]u8) i32 {
     return decQuadGetCoefficient(src, bcd);
 }
 
-inline fn real34GetExponent(src: *align(1) const real34_t) i32 {
+inline fn real34GetExponent(src: *const real34_t) i32 {
     return decQuadGetExponent(src);
 }
 
@@ -735,7 +735,7 @@ inline fn realGetCoefficient(src: *const real_t, bcd: [*]u8) void {
     _ = decNumberGetBCD(src, bcd);
 }
 
-inline fn realPlus(op: *align(1) const real_t, res: *real_t, ctx: *realContext_t) void {
+inline fn realPlus(op: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberPlus(res, op, ctx);
 }
 
@@ -1008,21 +1008,21 @@ inline fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8) void {
     if (comptime extra_info) c_moreInfoOnError(m1, m2, null, null);
 }
 
-inline fn real34Copy(src: *align(1) const real34_t, dst: *real34_t) void {
+inline fn real34Copy(src: *const real34_t, dst: *real34_t) void {
     dst.* = src.*;
 }
 
-inline fn real34Divide(a: *align(1) const real34_t, b: *align(1) const real34_t, res: *real34_t) void {
+inline fn real34Divide(a: *const real34_t, b: *const real34_t, res: *real34_t) void {
     _ = decQuadDivide(res, a, b, &ctxtReal34);
 }
 
-inline fn real34Multiply(a: *align(1) const real34_t, b: *align(1) const real34_t, res: *real34_t) void {
+inline fn real34Multiply(a: *const real34_t, b: *const real34_t, res: *real34_t) void {
     _ = decQuadMultiply(res, a, b, &ctxtReal34);
 }
 
 const real34SetNegativeSign = abi.real34SetNegativeSign;
 
-inline fn real34ToIntegralValue(src: *align(1) const real34_t, dst: *real34_t, mode: c_int) void {
+inline fn real34ToIntegralValue(src: *const real34_t, dst: *real34_t, mode: c_int) void {
     _ = decQuadToIntegralValue(dst, src, &ctxtReal34, mode);
 }
 
@@ -1123,7 +1123,7 @@ pub export fn convertUInt64ToShortIntegerRegister(sign: i16, value_arg: u64, bas
     regShortInt(regist).* = value & shortIntegerMask;
 }
 
-pub export fn convertReal34ToLongInteger(re34: *align(1) const real34_t, lgInt: *mpz_struct, rounding_mode: c_int) callconv(.c) void {
+pub export fn convertReal34ToLongInteger(re34: *const real34_t, lgInt: *mpz_struct, rounding_mode: c_int) callconv(.c) void {
     var exponent: i32 = undefined;
     var real34: real34_t = undefined;
 
@@ -1181,7 +1181,7 @@ pub export fn getRegisterIntegerParity(regist: calcRegister_t) callconv(.c) i32 
 
 /// Converts a finite Real34 to its signed integer coefficient and decimal
 /// exponent; false, with nothing initialised, for a special value.
-pub export fn convertReal34ToScaledLongInteger(real34: *align(1) const real34_t, coefficient: *mpz_struct, exponent: *i32) callconv(.c) bool {
+pub export fn convertReal34ToScaledLongInteger(real34: *const real34_t, coefficient: *mpz_struct, exponent: *i32) callconv(.c) bool {
     var bcd: [DECQUAD_Pmax]u8 = undefined;
 
     if (real34IsSpecial(real34)) {
@@ -1513,7 +1513,7 @@ pub export fn powerLongIntegerToReal34(base: *const mpz_struct, exponent: i32, r
 
 /// Adds or subtracts a long integer and a finite Real34 exactly before the Real34
 /// conversion; false for a special Real34.
-pub export fn addSubtractLongIntegerReal34(integerRegister: calcRegister_t, real34: *align(1) const real34_t, integerFirst: bool, subtract: bool, result: *real34_t) callconv(.c) bool {
+pub export fn addSubtractLongIntegerReal34(integerRegister: calcRegister_t, real34: *const real34_t, integerFirst: bool, subtract: bool, result: *real34_t) callconv(.c) bool {
     var exponent: i32 = undefined;
     var integer: mpz_struct = undefined;
     var coefficient: mpz_struct = undefined;
@@ -1563,7 +1563,7 @@ fn multiplyScaledLongIntegersToReal34(first: *const mpz_struct, firstExponent: i
 
 /// Multiplies a long integer and a finite Real34 exactly before the Real34
 /// conversion; false for a special Real34.
-pub export fn multiplyLongIntegerReal34(integerRegister: calcRegister_t, real34: *align(1) const real34_t, result: *real34_t) callconv(.c) bool {
+pub export fn multiplyLongIntegerReal34(integerRegister: calcRegister_t, real34: *const real34_t, result: *real34_t) callconv(.c) bool {
     var exponent: i32 = undefined;
     var integer: mpz_struct = undefined;
     var coefficient: mpz_struct = undefined;
@@ -1690,7 +1690,7 @@ pub export fn divideScaledLongIntegersToReal34(numerator: *const mpz_struct, num
 
 /// Divides a long integer and a finite Real34 with one result rounding; false for
 /// a special Real34 or a zero denominator.
-pub export fn divideLongIntegerReal34(integerRegister: calcRegister_t, real34: *align(1) const real34_t, integerFirst: bool, result: *real34_t) callconv(.c) bool {
+pub export fn divideLongIntegerReal34(integerRegister: calcRegister_t, real34: *const real34_t, integerFirst: bool, result: *real34_t) callconv(.c) bool {
     var exponent: i32 = undefined;
     var integer: mpz_struct = undefined;
     var coefficient: mpz_struct = undefined;
@@ -1795,7 +1795,7 @@ pub export fn registerIdentityExponentToReal34(baseRegister: calcRegister_t, exp
     }
 }
 
-pub export fn convertReal34ToLongIntegerRegister(real34: *align(1) const real34_t, dest: calcRegister_t, rounding_mode: c_int) callconv(.c) void {
+pub export fn convertReal34ToLongIntegerRegister(real34: *const real34_t, dest: calcRegister_t, rounding_mode: c_int) callconv(.c) void {
     var lgInt: mpz_struct = undefined;
 
     convertReal34ToLongInteger(real34, &lgInt, rounding_mode);
@@ -1804,12 +1804,12 @@ pub export fn convertReal34ToLongIntegerRegister(real34: *align(1) const real34_
     mpz_clear(&lgInt);
 }
 
-pub export fn convertReal34ToReal34Register(real34: *align(1) const real34_t, dest: calcRegister_t) callconv(.c) void {
+pub export fn convertReal34ToReal34Register(real34: *const real34_t, dest: calcRegister_t) callconv(.c) void {
     _ = reallocateRegister(dest, dtReal34, REAL34_SIZE_IN_BLOCKS, amNoneU);
     real34Copy(real34, reg34(dest));
 }
 
-pub export fn convertReal34ToComplex34Register(real34: *align(1) const real34_t, imag34: *align(1) const real34_t, dest: calcRegister_t) callconv(.c) void {
+pub export fn convertReal34ToComplex34Register(real34: *const real34_t, imag34: *const real34_t, dest: calcRegister_t) callconv(.c) void {
     _ = reallocateRegister(dest, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNoneU);
     real34Copy(real34, reg34(dest));
     real34Copy(imag34, regImag34(dest));
@@ -2316,7 +2316,7 @@ pub export fn getRegisterAsRealAngle(reg: calcRegister_t, val: *real_t, xAngular
 // and frees what it owns, so the pair is used once.
 pub const snap_t = abi.RegisterSnapshot;
 
-extern fn getRegisterDataPointer(regist: calcRegister_t) ?*anyopaque;
+extern fn getRegisterDataPointer(regist: calcRegister_t) ?*align(4) anyopaque;
 extern fn setRegisterDataPointer(regist: calcRegister_t, mem_ptr: ?*const anyopaque) void;
 extern fn getRegisterFullSizeInBlocks(regist: calcRegister_t) u16;
 // freeRegisterData(regist) is a C macro over freeC47Blocks; reproduce it.

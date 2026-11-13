@@ -34,7 +34,7 @@ const TI_THETA_RADIUS: u8 = 3;
 const TI_RE_IM: u8 = 6;
 
 // real34Copy(source, destination): copy the 16 raw bytes (two u64 stores in C).
-inline fn real34Copy(source: *align(1) const real34_t, destination: *align(1) real34_t) void {
+inline fn real34Copy(source: *const real34_t, destination: *real34_t) void {
     const src: *align(1) const [2]u64 = @ptrCast(source);
     const dst: *align(1) [2]u64 = @ptrCast(destination);
     dst[0] = src[0];
@@ -45,10 +45,10 @@ inline fn real34Copy(source: *align(1) const real34_t, destination: *align(1) re
 // angular unit: the angle is converted from radians as a real, before it is
 // shortened to Real34.
 fn rectangularToPolar34InUnit(
-    real34: *align(1) const real34_t,
-    imag34: *align(1) const real34_t,
-    magnitude34: *align(1) real34_t,
-    theta34: *align(1) real34_t,
+    real34: *const real34_t,
+    imag34: *const real34_t,
+    magnitude34: *real34_t,
+    theta34: *real34_t,
     angular_mode: angularMode_t,
 ) void {
     var z: runtime.cplx_t = undefined;
@@ -66,27 +66,27 @@ fn rectangularToPolar34InUnit(
 const displayCalcErrorMessage = runtime.displayCalcErrorMessage;
 const moreInfoOnError = runtime.moreInfoOnError;
 
-inline fn REGISTER_REAL34_DATA(reg: calcRegister_t) *align(1) real34_t {
+inline fn REGISTER_REAL34_DATA(reg: calcRegister_t) *real34_t {
     return runtime.registerReal34Ptr(reg);
 }
-inline fn REGISTER_IMAG34_DATA(reg: calcRegister_t) *align(1) real34_t {
+inline fn REGISTER_IMAG34_DATA(reg: calcRegister_t) *real34_t {
     return runtime.registerImag34Ptr(reg);
 }
-inline fn VARIABLE_REAL34_DATA(elem: *align(1) runtime.complex34_t) *align(1) real34_t {
+inline fn VARIABLE_REAL34_DATA(elem: *runtime.complex34_t) *real34_t {
     return &elem.real;
 }
-inline fn VARIABLE_IMAG34_DATA(elem: *align(1) runtime.complex34_t) *align(1) real34_t {
+inline fn VARIABLE_IMAG34_DATA(elem: *runtime.complex34_t) *real34_t {
     return &elem.imag;
 }
 
-inline fn complexMatrixElements(mat: *complex34Matrix_t) [*]align(1) runtime.complex34_t {
+inline fn complexMatrixElements(mat: *complex34Matrix_t) [*]runtime.complex34_t {
     if (runtime.harness_surface_is_fake) {
         return @ptrCast(&mat.matrixElements);
     } else {
         return @ptrCast(mat.matrixElements);
     }
 }
-inline fn realMatrixElements(mat: *real34Matrix_t) [*]align(1) real34_t {
+inline fn realMatrixElements(mat: *real34Matrix_t) [*]real34_t {
     if (runtime.harness_surface_is_fake) {
         return @ptrCast(&mat.matrixElements);
     } else {

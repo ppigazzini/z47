@@ -2,11 +2,11 @@
   "totals": {
     "extern_struct_files": 17,
     "cptr_files": 106,
-    "ptrcast_sites": 927,
+    "ptrcast_sites": 855,
     "callconv_c_sites": 3276,
-    "extern_fn_sites": 4012,
+    "extern_fn_sites": 4010,
     "printf_family_files": 55,
-    "anyopaque_files": 91,
+    "anyopaque_files": 90,
     "off_offset_sites": 73,
     "constants_blob_sites": 1,
     "qspi_section_files": 26,
@@ -30,7 +30,9 @@
     "qspi_section_files": 2,
     "int_from_float_sites": 0,
     "slice_by_end_sites": 0,
-    "zeroes_scalar_array_sites": 0
+    "zeroes_scalar_array_sites": 0,
+    "dmcp_board_address_sites": 0,
+    "has_decl_sites": 0
   },
   "seam_file_count": 2
 }

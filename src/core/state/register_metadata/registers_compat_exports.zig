@@ -201,9 +201,8 @@ fn regKStoC(reg_ks: i16) i16 {
         local * (@as(i16, stack_runtime.FIRST_LOCAL_REGISTER) - FIRST_LOCAL_REGISTER_IN_KS_CODE);
 }
 
-fn registerReal34Ptr(reg: stack_runtime.calcRegister_t) *align(1) product_real.ProductReal34 {
-    const ptr = stack_runtime.getRegisterDataPointer(reg) orelse unreachable;
-    return @ptrCast(ptr);
+fn registerReal34Ptr(reg: stack_runtime.calcRegister_t) *product_real.ProductReal34 {
+    return abi.registerReal34(reg);
 }
 
 fn registerStringData(reg: stack_runtime.calcRegister_t) [*:0]const u8 {
@@ -569,7 +568,7 @@ const amAngleMask: u32 = 15;
 const displayBugScreen = abi.host.showBugScreen; // routed through the host-callback boundary
 extern var errorMessage: [*c]u8;
 
-fn real34IsNegative(value: *align(1) const real34_t) bool {
+fn real34IsNegative(value: *const real34_t) bool {
     return (value.bytes[15] & 0x80) == 0x80;
 }
 
@@ -594,10 +593,10 @@ extern fn printf(format: [*:0]const u8, ...) c_int;
 extern fn sprintf(buffer: [*c]u8, format: [*:0]const u8, ...) c_int;
 extern fn strstr(haystack: [*:0]const u8, needle: [*:0]const u8) ?[*:0]u8;
 extern fn strcpy(dest: [*]u8, src: [*:0]const u8) [*c]u8;
-extern fn decQuadToString(source: *align(1) const real34_t, destination: [*]u8) [*c]u8;
+extern fn decQuadToString(source: *const real34_t, destination: [*]u8) [*c]u8;
 extern fn decNumberToString(source: *const real_t, destination: [*]u8) [*c]u8;
 extern fn decNumberPlus(result: *real_t, operand: *const real_t, real_context: *abi.RealContext) *real_t;
-extern fn decimal128ToNumber(source: *align(1) const real34_t, destination: *real_t) *real_t;
+extern fn decimal128ToNumber(source: *const real34_t, destination: *real_t) *real_t;
 extern fn getAngularModeName(angular_mode: c_int) [*c]const u8;
 extern fn getDataTypeName(data_type: u16, with_article: bool, pad_with_blanks: bool) [*c]const u8;
 extern fn getRegisterDataTypeName(regist: stack_runtime.calcRegister_t, with_article: bool, pad_with_blanks: bool) [*c]const u8;
@@ -607,7 +606,7 @@ extern fn longIntegerToAllocatedString(lg_int: *const anyopaque, str: [*]u8, str
 extern fn linkToRealMatrixRegister(regist: stack_runtime.calcRegister_t, linked_matrix: *real34Matrix_t) void;
 extern fn linkToComplexMatrixRegister(regist: stack_runtime.calcRegister_t, linked_matrix: *complex34Matrix_t) void;
 
-fn real34ToString(source: *align(1) const real34_t, destination: [*]u8) void {
+fn real34ToString(source: *const real34_t, destination: [*]u8) void {
     _ = decQuadToString(source, destination);
 }
 
@@ -615,7 +614,7 @@ fn realToString(source: *const real_t, destination: [*]u8) void {
     _ = decNumberToString(source, destination);
 }
 
-fn real34ToReal(source: *align(1) const real34_t, destination: *real_t) void {
+fn real34ToReal(source: *const real34_t, destination: *real_t) void {
     _ = decimal128ToNumber(source, destination);
 }
 
@@ -631,10 +630,8 @@ fn realGetExponent(value: *const real_t) i32 {
     return value.digits + value.exponent - 1;
 }
 
-fn registerImag34Ptr(reg: stack_runtime.calcRegister_t) *align(1) real34_t {
-    const ptr = stack_runtime.getRegisterDataPointer(reg) orelse unreachable;
-    const bytes: [*]align(1) u8 = @ptrCast(ptr);
-    return @ptrCast(bytes + @sizeOf(real34_t));
+fn registerImag34Ptr(reg: stack_runtime.calcRegister_t) *real34_t {
+    return abi.registerImag34(reg);
 }
 
 fn toBytes(blocks: u16) u32 {
@@ -734,7 +731,7 @@ pub export fn printC47ShortStringToConsole(s: [*:0]const u8, prefix: ?[*:0]const
     }
 }
 
-pub export fn printReal34ToConsole(value: *align(1) const real34_t, before: [*:0]const u8, after: [*:0]const u8) void {
+pub export fn printReal34ToConsole(value: *const real34_t, before: [*:0]const u8, after: [*:0]const u8) void {
     if (comptime console_build) {
         var str: [100]u8 = undefined;
 
@@ -775,7 +772,7 @@ pub export fn printRealInfoToConsole(value: *const real_t, name: [*:0]const u8) 
     }
 }
 
-pub export fn printComplex34ToConsole(value: *align(1) const complex34_t, before: [*:0]const u8, after: [*:0]const u8) void {
+pub export fn printComplex34ToConsole(value: *const complex34_t, before: [*:0]const u8, after: [*:0]const u8) void {
     if (comptime console_build) {
         var str: [100]u8 = undefined;
 

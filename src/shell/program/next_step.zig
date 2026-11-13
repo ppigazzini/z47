@@ -145,15 +145,15 @@ extern fn fnDropY(unusedButMandatoryParameter: u16) void;
 
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
 extern fn getRegisterTag(regist: calcRegister_t) u32;
-extern fn getRegisterDataPointer(regist: calcRegister_t) *anyopaque;
+extern fn getRegisterDataPointer(regist: calcRegister_t) *align(4) anyopaque;
 
 const c_moreInfoOnError = @extern(*const fn (m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) callconv(.c) void, .{ .name = "moreInfoOnError" });
 extern fn sprintf(buf: [*c]u8, fmt: [*:0]const u8, ...) c_int;
 
-extern fn decQuadToIntegralValue(r: *real34_t, a: *align(1) const real34_t, ctx: *realContext_t, round: c_int) *real34_t;
-extern fn decQuadToUInt32(r: *align(1) const real34_t, ctx: *realContext_t, round: c_int) u32;
-extern fn real34CompareLessThan(a: *align(1) const real34_t, b: *align(1) const real34_t) bool;
-extern fn real34CompareGreaterEqual(a: *align(1) const real34_t, b: *align(1) const real34_t) bool;
+extern fn decQuadToIntegralValue(r: *real34_t, a: *const real34_t, ctx: *realContext_t, round: c_int) *real34_t;
+extern fn decQuadToUInt32(r: *const real34_t, ctx: *realContext_t, round: c_int) u32;
+extern fn real34CompareLessThan(a: *const real34_t, b: *const real34_t) bool;
+extern fn real34CompareGreaterEqual(a: *const real34_t, b: *const real34_t) bool;
 
 // ---------------------------------------------------------------------------
 // Inline wrappers (the C macros)
@@ -168,10 +168,10 @@ const reg34 = abi.registerReal34;
 inline fn getRegisterAngularMode(reg: calcRegister_t) angularMode_t {
     return @intCast(getRegisterTag(reg) & amAngleMask);
 }
-inline fn real34ToIntegralValue(src: *align(1) const real34_t, dst: *real34_t, mode: c_int) void {
+inline fn real34ToIntegralValue(src: *const real34_t, dst: *real34_t, mode: c_int) void {
     _ = decQuadToIntegralValue(dst, src, &ctxtReal34, mode);
 }
-inline fn real34ToUInt32(src: *align(1) const real34_t) u32 {
+inline fn real34ToUInt32(src: *const real34_t) u32 {
     return decQuadToUInt32(src, &ctxtReal34, DEC_ROUND_DOWN);
 }
 inline fn toBytes(n: u16) u32 {

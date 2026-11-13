@@ -41,29 +41,29 @@ const real_t = runtime.real_t;
 const cplx_t = runtime.cplx_t;
 const realContext_t = runtime.realContext_t;
 
-// Arithmetic ops accepting *align(1) const operands (blob constants pass here).
-extern fn decNumberAdd(result: *real_t, lhs: *align(1) const real_t, rhs: *align(1) const real_t, ctxt: *realContext_t) *real_t;
-extern fn decNumberSubtract(result: *real_t, lhs: *align(1) const real_t, rhs: *align(1) const real_t, ctxt: *realContext_t) *real_t;
-extern fn decNumberMultiply(result: *real_t, lhs: *align(1) const real_t, rhs: *align(1) const real_t, ctxt: *realContext_t) *real_t;
-extern fn decNumberDivide(result: *real_t, lhs: *align(1) const real_t, rhs: *align(1) const real_t, ctxt: *realContext_t) *real_t;
-extern fn decNumberSquareRoot(result: *real_t, rhs: *align(1) const real_t, ctxt: *realContext_t) *real_t;
-extern fn decNumberPower(result: *real_t, lhs: *align(1) const real_t, rhs: *align(1) const real_t, ctxt: *realContext_t) *real_t;
-inline fn realAdd(lhs: *align(1) const real_t, rhs: *align(1) const real_t, result: *real_t, ctxt: *realContext_t) void {
+// decNumber arithmetic on real_t operands, blob constants included.
+extern fn decNumberAdd(result: *real_t, lhs: *const real_t, rhs: *const real_t, ctxt: *realContext_t) *real_t;
+extern fn decNumberSubtract(result: *real_t, lhs: *const real_t, rhs: *const real_t, ctxt: *realContext_t) *real_t;
+extern fn decNumberMultiply(result: *real_t, lhs: *const real_t, rhs: *const real_t, ctxt: *realContext_t) *real_t;
+extern fn decNumberDivide(result: *real_t, lhs: *const real_t, rhs: *const real_t, ctxt: *realContext_t) *real_t;
+extern fn decNumberSquareRoot(result: *real_t, rhs: *const real_t, ctxt: *realContext_t) *real_t;
+extern fn decNumberPower(result: *real_t, lhs: *const real_t, rhs: *const real_t, ctxt: *realContext_t) *real_t;
+inline fn realAdd(lhs: *const real_t, rhs: *const real_t, result: *real_t, ctxt: *realContext_t) void {
     _ = decNumberAdd(result, lhs, rhs, ctxt);
 }
-inline fn realSubtract(lhs: *align(1) const real_t, rhs: *align(1) const real_t, result: *real_t, ctxt: *realContext_t) void {
+inline fn realSubtract(lhs: *const real_t, rhs: *const real_t, result: *real_t, ctxt: *realContext_t) void {
     _ = decNumberSubtract(result, lhs, rhs, ctxt);
 }
-inline fn realMultiply(lhs: *align(1) const real_t, rhs: *align(1) const real_t, result: *real_t, ctxt: *realContext_t) void {
+inline fn realMultiply(lhs: *const real_t, rhs: *const real_t, result: *real_t, ctxt: *realContext_t) void {
     _ = decNumberMultiply(result, lhs, rhs, ctxt);
 }
-inline fn realDivide(lhs: *align(1) const real_t, rhs: *align(1) const real_t, result: *real_t, ctxt: *realContext_t) void {
+inline fn realDivide(lhs: *const real_t, rhs: *const real_t, result: *real_t, ctxt: *realContext_t) void {
     _ = decNumberDivide(result, lhs, rhs, ctxt);
 }
-inline fn realSquareRoot(rhs: *align(1) const real_t, result: *real_t, ctxt: *realContext_t) void {
+inline fn realSquareRoot(rhs: *const real_t, result: *real_t, ctxt: *realContext_t) void {
     _ = decNumberSquareRoot(result, rhs, ctxt);
 }
-inline fn realPower(lhs: *align(1) const real_t, rhs: *align(1) const real_t, result: *real_t, ctxt: *realContext_t) void {
+inline fn realPower(lhs: *const real_t, rhs: *const real_t, result: *real_t, ctxt: *realContext_t) void {
     _ = decNumberPower(result, lhs, rhs, ctxt);
 }
 const realChangeSign = runtime.realChangeSign;
@@ -124,13 +124,13 @@ inline fn const_2() *const real_t {
 // Blob-offset constants without a runtime accessor.
 
 // real ops / predicates / copy. Some are C macros; reproduce them.
-extern fn decNumberCopy(res: *real_t, source: *align(1) const real_t) *real_t;
-extern fn decNumberMinus(res: *real_t, operand: *align(1) const real_t, ctxt: *realContext_t) *real_t;
-extern fn decNumberRemainder(res: *real_t, lhs: *align(1) const real_t, rhs: *align(1) const real_t, ctxt: *realContext_t) *real_t;
-inline fn realDivideRemainder(operand1: *align(1) const real_t, operand2: *align(1) const real_t, res: *real_t, ctxt: *realContext_t) void {
+extern fn decNumberCopy(res: *real_t, source: *const real_t) *real_t;
+extern fn decNumberMinus(res: *real_t, operand: *const real_t, ctxt: *realContext_t) *real_t;
+extern fn decNumberRemainder(res: *real_t, lhs: *const real_t, rhs: *const real_t, ctxt: *realContext_t) *real_t;
+inline fn realDivideRemainder(operand1: *const real_t, operand2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberRemainder(res, operand1, operand2, ctxt);
 }
-inline fn realCopy(source: *align(1) const real_t, destination: *real_t) void {
+inline fn realCopy(source: *const real_t, destination: *real_t) void {
     _ = decNumberCopy(destination, source);
 }
 inline fn realCopyAbs(source: *const real_t, destination: *real_t) void {
@@ -138,7 +138,7 @@ inline fn realCopyAbs(source: *const real_t, destination: *real_t) void {
 }
 extern fn decNumberCopyAbs(res: *real_t, source: *const real_t) *real_t;
 // realMinus(operand, res, ctxt) => decNumberMinus(res, operand, ctxt)
-inline fn realMinus(operand: *align(1) const real_t, res: *real_t, ctxt: *realContext_t) void {
+inline fn realMinus(operand: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberMinus(res, operand, ctxt);
 }
 

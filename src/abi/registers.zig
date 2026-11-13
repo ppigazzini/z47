@@ -1,16 +1,21 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
-// Typed register-data accessors. registers.h reinterprets
-// a register's data block as a real34 / complex34 / matrix header / short-integer
-// / string. Centralizing that reinterpretation here -- one @ptrCast per shape,
-// over the shared abi layout types -- replaces the raw per-owner casts of
-// getRegisterDataPointer scattered across ~40 owners.
+// Typed register-data accessors. registers.h reinterprets a register's data block
+// as a real34 / complex34 / matrix header / short-integer / string; each view here
+// is that reinterpretation, over the shared abi layout types, so owners never
+// reach the block untyped.
+//
+// A data block is C47 pool memory, which the allocator hands out in 4-byte
+// blocks, so getRegisterDataPointer is declared 4-aligned and every view below
+// keeps that alignment in its type: std.mem.bytesAsValue and bytesAsSlice check
+// the size at compile time and carry the alignment of the bytes they view.
 //
 // The extern binding of getRegisterDataPointer lives in this file (an approved
 // check-zig-c-boundaries boundary) rather than the pure-layout types.zig;
 // types.zig re-exports these accessors by name so owners reach them as
 // abi.registerReal34(...). The inline fns codegen only where used.
 
+const std = @import("std");
 const types = @import("primitives.zig");
 const Real34 = types.Real34;
 const Complex34 = types.Complex34;
@@ -18,7 +23,9 @@ const MatrixHeader = types.MatrixHeader;
 const DtConfigDescriptor = types.DtConfigDescriptor;
 const StrLgIntHeader = types.StrLgIntHeader;
 
-pub extern fn getRegisterDataPointer(reg: i16) callconv(.c) ?*anyopaque;
+/// The C `void *getRegisterDataPointer(calcRegister_t)`, read as the pool bytes
+/// it points at.
+pub extern fn getRegisterDataPointer(reg: i16) callconv(.c) ?[*]align(4) u8;
 
 // registers.c's queries over a register's type, tag and matrix header, declared
 // once for every object that calls them.
@@ -31,73 +38,71 @@ pub extern fn setVectorRegisterPolarMode(regist: i16, polarMode: u32) void;
 pub extern fn registerIsNoAngle(regist: i16) bool;
 pub extern fn isXFNregisterValid3r(regist: i16) bool;
 
-pub inline fn registerReal34(reg: i16) *align(1) Real34 {
-    return @ptrCast(getRegisterDataPointer(reg).?);
-}
-pub inline fn registerImag34(reg: i16) *align(1) Real34 {
-    const bytes: [*]align(1) u8 = @ptrCast(getRegisterDataPointer(reg).?);
-    return @ptrCast(bytes + @sizeOf(Real34));
-}
-pub inline fn registerComplex34(reg: i16) *align(1) Complex34 {
-    return @ptrCast(getRegisterDataPointer(reg).?);
-}
-pub inline fn registerShortInteger(reg: i16) *align(1) u64 {
-    return @ptrCast(getRegisterDataPointer(reg).?);
-}
-pub inline fn registerString(reg: i16) [*]u8 {
-    const bytes: [*]u8 = @ptrCast(getRegisterDataPointer(reg).?);
-    return bytes + @sizeOf(StrLgIntHeader);
-}
-// Raw byte view of a register's data block: the base pointer as bytes, for the
-// owners that memcpy / pointer-walk the block or reinterpret it themselves. This
-// centralizes the bare `@ptrCast(getRegisterDataPointer(reg).?)` -> [*]u8 that
-// was scattered across ~12 owners; coerces to [*c]u8 / [*]const u8 / [*]align(1)
-// u8 at the call site.
-pub inline fn registerBytes(reg: i16) [*]u8 {
-    return @ptrCast(getRegisterDataPointer(reg).?);
-}
-// Config-descriptor view of a register's data block (dtConfigDescriptor_t). The
-// register block is 4-byte aligned, so the view is *align(4) (DtConfigDescriptor
-// has u64 members whose natural align-8 the block does not guarantee).
-pub inline fn registerConfig(reg: i16) *align(4) DtConfigDescriptor {
-    return @ptrCast(@alignCast(getRegisterDataPointer(reg).?));
-}
-pub inline fn registerMatrixHeader(reg: i16) *align(1) MatrixHeader {
-    return @ptrCast(getRegisterDataPointer(reg).?);
+/// A register's data block: asserts the register has one.
+inline fn block(reg: i16) [*]align(4) u8 {
+    return getRegisterDataPointer(reg).?;
 }
 
-// Fully-aligned variants: some owners @alignCast the register data pointer to a
-// naturally-aligned view instead of the *align(1) one above. Same C symbol, same
-// data; the alignment assumption is the owner's (preserved here verbatim).
-pub inline fn registerReal34Aligned(reg: i16) *Real34 {
-    return @ptrCast(@alignCast(getRegisterDataPointer(reg).?));
+/// The `T` stored `offset` bytes into a register's data block.
+inline fn blockValue(comptime T: type, reg: i16, comptime offset: usize) *align(4) T {
+    return std.mem.bytesAsValue(T, block(reg)[offset..][0..@sizeOf(T)]);
 }
-pub inline fn registerImag34Aligned(reg: i16) *Real34 {
-    const bytes: [*]align(1) u8 = @ptrCast(getRegisterDataPointer(reg).?);
-    return @ptrCast(@alignCast(bytes + @sizeOf(Real34)));
+
+pub inline fn registerReal34(reg: i16) *Real34 {
+    return blockValue(Real34, reg, 0);
 }
-pub inline fn registerComplex34Aligned(reg: i16) *Complex34 {
-    return @ptrCast(@alignCast(getRegisterDataPointer(reg).?));
+pub inline fn registerImag34(reg: i16) *Real34 {
+    return blockValue(Real34, reg, @sizeOf(Real34));
 }
-pub inline fn registerMatrixHeaderAligned(reg: i16) *MatrixHeader {
-    return @ptrCast(@alignCast(getRegisterDataPointer(reg).?));
+pub inline fn registerComplex34(reg: i16) *Complex34 {
+    return blockValue(Complex34, reg, 0);
 }
-// The pool allocates in 4-byte blocks, so a register payload is NOT guaranteed
-// to be 8-byte aligned and an @alignCast to `*u64` traps on the ones that are
-// not. c43 reaches this payload as `(uint64_t *)getRegisterDataPointer(a)`, an
-// under-aligned 64-bit access; `*align(1)` is the spelling that reproduces it.
-// The other views above are safe as written because Real34/Complex34 are
-// `[N]u8` (alignment 1) and registerConfig asks only for align(4).
-pub inline fn registerShortIntegerAligned(reg: i16) *align(1) u64 {
-    return @ptrCast(getRegisterDataPointer(reg).?);
+/// c43 reads this payload as `(uint64_t *)getRegisterDataPointer(a)`: a 64-bit
+/// value at a block address, which is 4-aligned and not necessarily 8-aligned.
+pub inline fn registerShortInteger(reg: i16) *align(4) u64 {
+    return blockValue(u64, reg, 0);
 }
-pub inline fn registerReal34MatrixElements(reg: i16) [*]align(1) Real34 {
-    const base: [*]align(1) u8 = @ptrCast(getRegisterDataPointer(reg).?);
-    return @ptrCast(base + @sizeOf(MatrixHeader));
+pub inline fn registerString(reg: i16) [*]align(4) u8 {
+    return block(reg) + @sizeOf(StrLgIntHeader);
 }
-pub inline fn registerComplex34MatrixElements(reg: i16) [*]align(1) Complex34 {
-    const base: [*]align(1) u8 = @ptrCast(getRegisterDataPointer(reg).?);
-    return @ptrCast(base + @sizeOf(MatrixHeader));
+/// Raw byte view of a register's data block, for the owners that copy or walk
+/// the block themselves.
+pub inline fn registerBytes(reg: i16) [*]align(4) u8 {
+    return block(reg);
+}
+/// Config-descriptor view of a register's data block (dtConfigDescriptor_t). Its
+/// u64 members want align 8, which a pool block does not guarantee, so the view
+/// is align 4 like the block.
+pub inline fn registerConfig(reg: i16) *align(4) DtConfigDescriptor {
+    return blockValue(DtConfigDescriptor, reg, 0);
+}
+pub inline fn registerMatrixHeader(reg: i16) *MatrixHeader {
+    return blockValue(MatrixHeader, reg, 0);
+}
+
+// The pool block is 4-aligned whichever name an owner reaches it by.
+pub const registerReal34Aligned = registerReal34;
+pub const registerImag34Aligned = registerImag34;
+pub const registerComplex34Aligned = registerComplex34;
+pub const registerMatrixHeaderAligned = registerMatrixHeader;
+pub const registerShortIntegerAligned = registerShortInteger;
+
+/// The first element after a matrix register's header. Its address does not
+/// depend on what the header says, so it is right before the header is written.
+inline fn firstMatrixElement(comptime T: type, reg: i16) *[1]T {
+    return blockValue(T, reg, @sizeOf(MatrixHeader));
+}
+/// The elements after a matrix register's header, as many as the header says.
+pub inline fn registerMatrixElements(comptime T: type, reg: i16) []T {
+    const header = registerMatrixHeader(reg);
+    const elements: [*]T = firstMatrixElement(T, reg);
+    return elements[0 .. @as(usize, header.matrixRows) * header.matrixColumns];
+}
+pub inline fn registerReal34MatrixElements(reg: i16) [*]Real34 {
+    return firstMatrixElement(Real34, reg);
+}
+pub inline fn registerComplex34MatrixElements(reg: i16) [*]Complex34 {
+    return firstMatrixElement(Complex34, reg);
 }
 
 // Matrix element views: reinterpret a matrix header's `.matrixElements`

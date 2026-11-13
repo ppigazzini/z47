@@ -152,7 +152,7 @@ const convertLongIntegerToLongIntegerRegister = runtime.convertLongIntegerToLong
 const fnDrop = runtime.fnDrop;
 // align(1) variants (the 1071-digit stack scratch is 4-byte aligned, so this is
 // safe; the runtime declarations require natural alignment).
-extern fn convertAngleFromTo(angle: *align(1) real_t, from: angularMode_t, to: angularMode_t, ctxt: *realContext_t) void;
+extern fn convertAngleFromTo(angle: *real_t, from: angularMode_t, to: angularMode_t, ctxt: *realContext_t) void;
 extern fn fnDropT(unusedButMandatoryParameter: u16) void;
 
 extern var currentAngularMode: angularMode_t;
@@ -185,87 +185,87 @@ inline fn inputAngleError3r(r: calcRegister_t) bool {
 }
 const isXFNregisterValid3r = runtime.isXFNregisterValid3r;
 
-// real_t op helpers (operands *align(1) const).
-extern fn decNumberCopy(res: *align(1) real_t, source: *align(1) const real_t) *align(1) real_t;
-extern fn decNumberPlus(res: *align(1) real_t, operand: *align(1) const real_t, ctxt: *realContext_t) *align(1) real_t;
-extern fn decNumberAdd(res: *align(1) real_t, op1: *align(1) const real_t, op2: *align(1) const real_t, ctxt: *realContext_t) *align(1) real_t;
-extern fn decNumberSubtract(res: *align(1) real_t, op1: *align(1) const real_t, op2: *align(1) const real_t, ctxt: *realContext_t) *align(1) real_t;
-extern fn decNumberMultiply(res: *align(1) real_t, op1: *align(1) const real_t, op2: *align(1) const real_t, ctxt: *realContext_t) *align(1) real_t;
-extern fn decNumberDivide(res: *align(1) real_t, op1: *align(1) const real_t, op2: *align(1) const real_t, ctxt: *realContext_t) *align(1) real_t;
-extern fn decNumberPower(res: *align(1) real_t, op1: *align(1) const real_t, op2: *align(1) const real_t, ctxt: *realContext_t) *align(1) real_t;
-extern fn decNumberExp(res: *align(1) real_t, rhs: *align(1) const real_t, ctxt: *realContext_t) *align(1) real_t;
-extern fn decNumberLn(res: *align(1) real_t, rhs: *align(1) const real_t, ctxt: *realContext_t) *align(1) real_t;
-extern fn decNumberToIntegralExact(res: *align(1) real_t, rhs: *align(1) const real_t, ctxt: *realContext_t) *align(1) real_t;
-extern fn decNumberFromString(res: *align(1) real_t, source: [*:0]const u8, ctxt: *realContext_t) *align(1) real_t;
-extern fn decNumberToString(source: *align(1) const real_t, destination: [*]u8) [*]u8;
-extern fn realSetNaN(value: *align(1) real_t) void;
-extern fn decNumberReduce(res: *align(1) real_t, source: *align(1) const real_t, ctxt: *realContext_t) *align(1) real_t;
-extern fn decNumberFMA(res: *align(1) real_t, op1: *align(1) const real_t, op2: *align(1) const real_t, op3: *align(1) const real_t, ctxt: *realContext_t) *align(1) real_t;
-extern fn realToReal34(source: *align(1) const real_t, destination: *real34_t) void;
+// real_t op helpers.
+extern fn decNumberCopy(res: *real_t, source: *const real_t) *real_t;
+extern fn decNumberPlus(res: *real_t, operand: *const real_t, ctxt: *realContext_t) *real_t;
+extern fn decNumberAdd(res: *real_t, op1: *const real_t, op2: *const real_t, ctxt: *realContext_t) *real_t;
+extern fn decNumberSubtract(res: *real_t, op1: *const real_t, op2: *const real_t, ctxt: *realContext_t) *real_t;
+extern fn decNumberMultiply(res: *real_t, op1: *const real_t, op2: *const real_t, ctxt: *realContext_t) *real_t;
+extern fn decNumberDivide(res: *real_t, op1: *const real_t, op2: *const real_t, ctxt: *realContext_t) *real_t;
+extern fn decNumberPower(res: *real_t, op1: *const real_t, op2: *const real_t, ctxt: *realContext_t) *real_t;
+extern fn decNumberExp(res: *real_t, rhs: *const real_t, ctxt: *realContext_t) *real_t;
+extern fn decNumberLn(res: *real_t, rhs: *const real_t, ctxt: *realContext_t) *real_t;
+extern fn decNumberToIntegralExact(res: *real_t, rhs: *const real_t, ctxt: *realContext_t) *real_t;
+extern fn decNumberFromString(res: *real_t, source: [*:0]const u8, ctxt: *realContext_t) *real_t;
+extern fn decNumberToString(source: *const real_t, destination: [*]u8) [*]u8;
+extern fn realSetNaN(value: *real_t) void;
+extern fn decNumberReduce(res: *real_t, source: *const real_t, ctxt: *realContext_t) *real_t;
+extern fn decNumberFMA(res: *real_t, op1: *const real_t, op2: *const real_t, op3: *const real_t, ctxt: *realContext_t) *real_t;
+extern fn realToReal34(source: *const real_t, destination: *real34_t) void;
 extern fn sprintf(str: [*]u8, format: [*:0]const u8, ...) c_int;
 
 // realIsNaN / realIsInfinite / realIsZero (decNumber.h bit-test macros, inlined).
 const DEC_INF: u8 = 0x40;
 const DEC_NAN_BITS: u8 = 0x20 | 0x10; // DECNAN | DECSNAN
-inline fn realIsInfinite(s: *align(1) const real_t) bool {
+inline fn realIsInfinite(s: *const real_t) bool {
     return (s.bits & DEC_INF) != 0;
 }
-inline fn realIsNaN(s: *align(1) const real_t) bool {
+inline fn realIsNaN(s: *const real_t) bool {
     return (s.bits & DEC_NAN_BITS) != 0;
 }
 const realIsZero = math_real_predicates.realIsZero;
 
-inline fn realCopy(source: *align(1) const real_t, destination: *align(1) real_t) void {
+inline fn realCopy(source: *const real_t, destination: *real_t) void {
     _ = decNumberCopy(destination, source);
 }
-inline fn realPlus(operand: *align(1) const real_t, res: *align(1) real_t, ctxt: *realContext_t) void {
+inline fn realPlus(operand: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberPlus(res, operand, ctxt);
 }
-inline fn realAdd(op1: *align(1) const real_t, op2: *align(1) const real_t, res: *align(1) real_t, ctxt: *realContext_t) void {
+inline fn realAdd(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberAdd(res, op1, op2, ctxt);
 }
-inline fn realSubtract(op1: *align(1) const real_t, op2: *align(1) const real_t, res: *align(1) real_t, ctxt: *realContext_t) void {
+inline fn realSubtract(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberSubtract(res, op1, op2, ctxt);
 }
-inline fn realMultiply(op1: *align(1) const real_t, op2: *align(1) const real_t, res: *align(1) real_t, ctxt: *realContext_t) void {
+inline fn realMultiply(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberMultiply(res, op1, op2, ctxt);
 }
-inline fn realDivide(op1: *align(1) const real_t, op2: *align(1) const real_t, res: *align(1) real_t, ctxt: *realContext_t) void {
+inline fn realDivide(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberDivide(res, op1, op2, ctxt);
 }
-inline fn realPower(op1: *align(1) const real_t, op2: *align(1) const real_t, res: *align(1) real_t, ctxt: *realContext_t) void {
+inline fn realPower(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberPower(res, op1, op2, ctxt);
 }
-inline fn realFMA(factor1: *align(1) const real_t, factor2: *align(1) const real_t, term: *align(1) const real_t, res: *align(1) real_t, ctxt: *realContext_t) void {
+inline fn realFMA(factor1: *const real_t, factor2: *const real_t, term: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberFMA(res, factor1, factor2, term, ctxt);
 }
-inline fn realSetZero(r: *align(1) real_t) void {
+inline fn realSetZero(r: *real_t) void {
     r.bits = 0;
     r.exponent = 0;
     r.digits = 1;
     r.lsu[0] = 0;
 }
-inline fn realLn(operand: *align(1) const real_t, res: *align(1) real_t, ctxt: *realContext_t) void {
+inline fn realLn(operand: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberLn(res, operand, ctxt);
 }
-inline fn realExp(operand: *align(1) const real_t, res: *align(1) real_t, ctxt: *realContext_t) void {
+inline fn realExp(operand: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberExp(res, operand, ctxt);
 }
-inline fn realToString(source: *align(1) const real_t, destination: [*]u8) void {
+inline fn realToString(source: *const real_t, destination: [*]u8) void {
     _ = decNumberToString(source, destination);
 }
-inline fn stringToReal(source: [*:0]const u8, destination: *align(1) real_t, ctxt: *realContext_t) void {
+inline fn stringToReal(source: [*:0]const u8, destination: *real_t, ctxt: *realContext_t) void {
     _ = decNumberFromString(destination, source, ctxt);
 }
 const realIsSpecial = math_real_predicates.realIsSpecial;
-inline fn realGetExponent(source: *align(1) const real_t) i32 {
+inline fn realGetExponent(source: *const real_t) i32 {
     return source.digits + source.exponent - 1;
 }
-inline fn realGetDigits(x: *align(1) const real_t) i32 {
+inline fn realGetDigits(x: *const real_t) i32 {
     return x.digits;
 }
 
-extern fn realSCIToDisplayString(work: *align(1) const real_t, displayString: [*]u8, digitsToDisplay: i16, frontSpace: u8, bcd: [*]u8, maxDigits: i16) void;
+extern fn realSCIToDisplayString(work: *const real_t, displayString: [*]u8, digitsToDisplay: i16, frontSpace: u8, bcd: [*]u8, maxDigits: i16) void;
 
 const separatorRight = runtime.getGapChar1Right;
 const STD_SPACE_FIGURE = "\xa0\x07";
@@ -302,9 +302,9 @@ fn replaceSeparatorWithFigureSpace(displayString: [*]u8) void {
 // roundToDecimalPlace / roundToSignificantDigits live in the rdp/rsd owners.
 
 // Register / longInteger access.
-extern fn getRegisterAsReal(reg: calcRegister_t, value: *align(1) real_t) bool;
+extern fn getRegisterAsReal(reg: calcRegister_t, value: *real_t) bool;
 extern fn getRegisterAsLongInt(reg: calcRegister_t, val: *mpz_struct, fractional: ?*bool) bool;
-extern fn convertLongIntegerToReal(source: *mpz_struct, destination: *align(1) real_t, ctxt: *realContext_t) void;
+extern fn convertLongIntegerToReal(source: *mpz_struct, destination: *real_t, ctxt: *realContext_t) void;
 
 // longInteger helpers.
 extern fn __gmpz_init(op: *mpz_struct) void;
@@ -340,7 +340,7 @@ inline fn setSystemFlagAslift() void {
 // Blob constants.
 
 // modulus(a)
-inline fn modulus(a: angularMode_t) *align(1) const real_t {
+inline fn modulus(a: angularMode_t) *const real_t {
     return if (a == amRadian) const2139_2pi() else if (a == amDegree or a == amDMS) const_360() else if (a == amGrad) const_400() else if (a == amMultPi) const_2() else const_1();
 }
 
@@ -354,7 +354,7 @@ inline fn realSizeInBytes(comptime digits: u32) u32 {
 fn BigReal(comptime digits: u32) type {
     return struct {
         buf: [realSizeInBytes(digits)]u8 align(4) = undefined,
-        inline fn ptr(self: *@This()) *align(1) real_t {
+        inline fn ptr(self: *@This()) *real_t {
             return @ptrCast(&self.buf);
         }
     };
@@ -363,23 +363,23 @@ fn BigReal(comptime digits: u32) type {
 // ---------------------------------------------------------------------------
 // 1071-digit Taylor wrappers (set the explicit-iteration visibility flag).
 // ---------------------------------------------------------------------------
-fn C47Cvt2RadSinCosTan1071(an: *align(1) real_t, angularMode: angularMode_t, sinOut: ?*align(1) real_t, cosOut: ?*align(1) real_t, tanOut: ?*align(1) real_t, realContext: *realContext_t) linksection(runtime.code_section) void {
+fn C47Cvt2RadSinCosTan1071(an: *real_t, angularMode: angularMode_t, sinOut: ?*real_t, cosOut: ?*real_t, tanOut: ?*real_t, realContext: *realContext_t) linksection(runtime.code_section) void {
     explicitTaylorIterVisibilitySelection = true;
     math_wp34s.C47_WP34S_Cvt2RadSinCosTan(an, angularMode, sinOut, cosOut, tanOut, realContext);
 }
-fn C47_WP34S_Asin1071(x: *align(1) const real_t, angle: *align(1) real_t, realContext: *realContext_t) linksection(runtime.code_section) void {
+fn C47_WP34S_Asin1071(x: *const real_t, angle: *real_t, realContext: *realContext_t) linksection(runtime.code_section) void {
     explicitTaylorIterVisibilitySelection = true;
     math_wp34s.C47_WP34S_Asin(x, angle, realContext);
 }
-fn C47_WP34S_Acos1071(x: *align(1) const real_t, angle: *align(1) real_t, realContext: *realContext_t) linksection(runtime.code_section) void {
+fn C47_WP34S_Acos1071(x: *const real_t, angle: *real_t, realContext: *realContext_t) linksection(runtime.code_section) void {
     explicitTaylorIterVisibilitySelection = true;
     math_wp34s.C47_WP34S_Acos(x, angle, realContext);
 }
-fn C47_WP34S_Atan1071(x: *align(1) const real_t, angle: *align(1) real_t, realContext: *realContext_t) linksection(runtime.code_section) void {
+fn C47_WP34S_Atan1071(x: *const real_t, angle: *real_t, realContext: *realContext_t) linksection(runtime.code_section) void {
     explicitTaylorIterVisibilitySelection = true;
     math_wp34s.C47_WP34S_Atan(x, angle, realContext);
 }
-fn C47_WP34S_Atan2_1071(y: *align(1) const real_t, x: *align(1) const real_t, atan: *align(1) real_t, realContext: *realContext_t) linksection(runtime.code_section) void {
+fn C47_WP34S_Atan2_1071(y: *const real_t, x: *const real_t, atan: *real_t, realContext: *realContext_t) linksection(runtime.code_section) void {
     explicitTaylorIterVisibilitySelection = true;
     math_wp34s.C47_WP34S_Atan2(y, x, atan, realContext);
 }
@@ -387,7 +387,7 @@ fn C47_WP34S_Atan2_1071(y: *align(1) const real_t, x: *align(1) const real_t, at
 // ===========================================================================
 // decomposeReal
 // ===========================================================================
-fn decomposeReal(x: *align(1) const real_t, integerPart: *mpz_struct, fractionalPart: *align(1) real_t, c: *realContext_t) linksection(runtime.code_section) void {
+fn decomposeReal(x: *const real_t, integerPart: *mpz_struct, fractionalPart: *real_t, c: *realContext_t) linksection(runtime.code_section) void {
     // pre-check on original x
     var digits: i32 = realGetDigits(x);
     digits = if (digits < c.digits) digits else c.digits;
@@ -514,7 +514,7 @@ fn lookupFunctionAngle(function_id: c_int) linksection(runtime.code_section) c_i
 // ===========================================================================
 // getLongintegerRegisterAsReal1071
 // ===========================================================================
-fn getLongintegerRegisterAsReal1071(registerNo: calcRegister_t, result: *align(1) real_t, c: *realContext_t) linksection(runtime.code_section) bool {
+fn getLongintegerRegisterAsReal1071(registerNo: calcRegister_t, result: *real_t, c: *realContext_t) linksection(runtime.code_section) bool {
     if (getRegisterDataType(registerNo) == dtLongInteger) {
         // getRegisterAsLongInt initialises the value itself on every path, so
         // initialising it here first would strand that first allocation.
@@ -574,7 +574,7 @@ fn getAngleModeForArithmetic3r(registerNo: calcRegister_t, angleMode: *angularMo
     return false;
 }
 
-fn validateExponent(x: *align(1) const real_t) linksection(runtime.code_section) bool {
+fn validateExponent(x: *const real_t) linksection(runtime.code_section) bool {
     if (realGetExponent(x) > maxAllowedDigits) {
         return false;
     }
@@ -584,7 +584,7 @@ fn validateExponent(x: *align(1) const real_t) linksection(runtime.code_section)
 // ===========================================================================
 // readThreeRegisters
 // ===========================================================================
-fn readThreeRegisters(registerNo: calcRegister_t, result: *align(1) real_t, temporary: *align(1) real_t, c: *realContext_t) linksection(runtime.code_section) bool {
+fn readThreeRegisters(registerNo: calcRegister_t, result: *real_t, temporary: *real_t, c: *realContext_t) linksection(runtime.code_section) bool {
     var addend_b = BigReal(1071){};
     const addend = addend_b.ptr();
     var full: realContext_t = c.*;
@@ -608,7 +608,7 @@ fn readThreeRegisters(registerNo: calcRegister_t, result: *align(1) real_t, temp
 // ===========================================================================
 // getCombinedParameter
 // ===========================================================================
-fn getCombinedParameter(param: c_int, registerNo: calcRegister_t, combined: *align(1) real_t, temporary: *align(1) real_t, angleMode: *angularMode_t, c: *realContext_t) linksection(runtime.code_section) bool {
+fn getCombinedParameter(param: c_int, registerNo: calcRegister_t, combined: *real_t, temporary: *real_t, angleMode: *angularMode_t, c: *realContext_t) linksection(runtime.code_section) bool {
     if (!getAngleModeForRegister3r(registerNo, angleMode) and getRegisterDataType(registerNo) != dtLongInteger) {
         displayCalcErrorMessage(ERROR_INPUT_DATA_TYPE_NOT_MATCHING, ERR_REGISTER_LINE);
         moreInfoOnError("In function fnXfn:getCombinedParameter:", "Invalid input registers: getAngleModeForRegister3r ", null, null);
@@ -641,7 +641,7 @@ fn getCombinedParameter(param: c_int, registerNo: calcRegister_t, combined: *ali
 // ===========================================================================
 // getSingleParameter
 // ===========================================================================
-fn getSingleParameter(registerNo: calcRegister_t, combined: *align(1) real_t, angleMode: *angularMode_t, c: *realContext_t) linksection(runtime.code_section) bool {
+fn getSingleParameter(registerNo: calcRegister_t, combined: *real_t, angleMode: *angularMode_t, c: *realContext_t) linksection(runtime.code_section) bool {
     angleMode.* = if (registerIsNoAngle(registerNo)) amNone else getRegisterAngularMode(registerNo);
 
     if (!getLongintegerRegisterAsReal1071(registerNo, combined, c)) {
@@ -760,8 +760,8 @@ fn fnDrop3() linksection(runtime.code_section) void {
 }
 
 const real34_t = runtime.real34_t;
-extern fn decQuadZero(destination: *align(1) real34_t) *align(1) real34_t;
-inline fn real34SetZero(destination: *align(1) real34_t) void {
+extern fn decQuadZero(destination: *real34_t) *real34_t;
+inline fn real34SetZero(destination: *real34_t) void {
     _ = decQuadZero(destination);
 }
 const registerReal34Data = abi.registerReal34;
@@ -1189,9 +1189,9 @@ pub export fn processResultantLongReal(
     registerNo: u16,
     function: c_int,
     functionType: c_int,
-    paramX: *align(1) real_t,
-    paramY: *align(1) real_t,
-    paramTemp: *align(1) real_t,
+    paramX: *real_t,
+    paramY: *real_t,
+    paramTemp: *real_t,
     angleMode: *angularMode_t,
     tmpAngle: *angularMode_t,
 ) linksection(runtime.code_section) callconv(.c) void {

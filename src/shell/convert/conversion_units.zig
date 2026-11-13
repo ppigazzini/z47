@@ -44,10 +44,10 @@ extern var ctxtReal39: realContext_t;
 extern var ctxtReal34: realContext_t;
 // `constants` is an extern byte array; @extern yields a pointer to its base.
 
-extern fn decNumberMultiply(res: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
-extern fn decNumberDivide(res: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
-extern fn decNumberAdd(res: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
-extern fn decNumberSubtract(res: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
+extern fn decNumberMultiply(res: *real_t, a: *const real_t, b: *const real_t, ctx: *realContext_t) *real_t;
+extern fn decNumberDivide(res: *real_t, a: *const real_t, b: *const real_t, ctx: *realContext_t) *real_t;
+extern fn decNumberAdd(res: *real_t, a: *const real_t, b: *const real_t, ctx: *realContext_t) *real_t;
+extern fn decNumberSubtract(res: *real_t, a: *const real_t, b: *const real_t, ctx: *realContext_t) *real_t;
 
 extern fn saveLastX() bool;
 extern fn getSystemFlag(flag: i32) bool;
@@ -60,38 +60,37 @@ extern fn fnToReal(p: u16) void;
 extern fn WP34S_Log10(x: *const real_t, res: *real_t, ctx: *realContext_t) void;
 extern fn realPower10(x: *const real_t, res: *real_t, ctx: *realContext_t) void;
 
-// `constants` is a byte array (alignment 1); the C macros cast (real_t *) and
-// access it unaligned, which arm64/x86/Cortex-M tolerate. Return an align(1)
-// pointer so we match that without asserting 4-byte alignment.
+// Every offset into `constants` is a multiple of 4 and the blob is word-aligned,
+// so cstR hands out an aligned real_t, as the C macros' (real_t *) casts assume.
 const cst = consts.cstR;
 const realIsZero = abi.realIsZero;
 inline fn realIsNegative(r: *const real_t) bool {
     return (r.bits & 0x80) != 0;
 }
-inline fn rMul(a: *align(1) const real_t, b: *align(1) const real_t, res: *real_t) void {
+inline fn rMul(a: *const real_t, b: *const real_t, res: *real_t) void {
     _ = decNumberMultiply(res, a, b, &ctxtReal39);
 }
-inline fn rDiv(a: *align(1) const real_t, b: *align(1) const real_t, res: *real_t) void {
+inline fn rDiv(a: *const real_t, b: *const real_t, res: *real_t) void {
     _ = decNumberDivide(res, a, b, &ctxtReal39);
 }
-inline fn rAdd(a: *align(1) const real_t, b: *align(1) const real_t, res: *real_t) void {
+inline fn rAdd(a: *const real_t, b: *const real_t, res: *real_t) void {
     _ = decNumberAdd(res, a, b, &ctxtReal39);
 }
-inline fn rSub(a: *align(1) const real_t, b: *align(1) const real_t, res: *real_t) void {
+inline fn rSub(a: *const real_t, b: *const real_t, res: *real_t) void {
     _ = decNumberSubtract(res, a, b, &ctxtReal39);
 }
 // The same four at a caller-chosen context: a conversion that ends in one
 // operation rounds it once, at the Real34 context the result takes.
-inline fn rMulCtx(a: *align(1) const real_t, b: *align(1) const real_t, res: *real_t, ctx: *realContext_t) void {
+inline fn rMulCtx(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberMultiply(res, a, b, ctx);
 }
-inline fn rDivCtx(a: *align(1) const real_t, b: *align(1) const real_t, res: *real_t, ctx: *realContext_t) void {
+inline fn rDivCtx(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberDivide(res, a, b, ctx);
 }
-inline fn rAddCtx(a: *align(1) const real_t, b: *align(1) const real_t, res: *real_t, ctx: *realContext_t) void {
+inline fn rAddCtx(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberAdd(res, a, b, ctx);
 }
-inline fn rSubCtx(a: *align(1) const real_t, b: *align(1) const real_t, res: *real_t, ctx: *realContext_t) void {
+inline fn rSubCtx(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberSubtract(res, a, b, ctx);
 }
 inline fn getRegisterAngularMode(reg: i16) c_int {
@@ -310,7 +309,7 @@ const cvtTempOffsets = [12][4]u32{
     .{ OFF_const_273p15, OFF_const_1, OFF_const_9on5, OFF_const_32 }, // K->F
 };
 
-fn unitConversion(coefficient: *align(1) const real_t, multiply_divide: u16, invert: bool) void {
+fn unitConversion(coefficient: *const real_t, multiply_divide: u16, invert: bool) void {
     var re_x: real_t = undefined;
 
     if (!frontier_register_value_conversions.getRegisterAsReal(REGISTER_X, &re_x)) return;

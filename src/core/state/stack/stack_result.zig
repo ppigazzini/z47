@@ -32,7 +32,7 @@ extern var temporaryInformation: u8;
 extern fn setRegisterTag(reg: runtime.calcRegister_t, tag: u32) void;
 extern fn decQuadIsInfinite(value: *const real34_t) u32;
 extern fn decQuadIsZero(value: *const real34_t) u32;
-extern fn decimal128ToNumber(source: *align(1) const real34_t, destination: *real_t) *real_t;
+extern fn decimal128ToNumber(source: *const real34_t, destination: *real_t) *real_t;
 extern fn convertLongIntegerRegisterToReal34Register(source: runtime.calcRegister_t, destination: runtime.calcRegister_t) void;
 extern fn convertShortIntegerRegisterToReal34Register(source: runtime.calcRegister_t, destination: runtime.calcRegister_t) void;
 extern fn convertTimeRegisterToReal34Register(source: runtime.calcRegister_t, destination: runtime.calcRegister_t) void;
@@ -47,20 +47,12 @@ extern var ctxtReal34: abi.RealContext;
 extern fn roundToSignificantDigits(source: *const real_t, destination: *real_t, digits: u16, real_context: *abi.RealContext) void;
 extern fn decimal128FromNumber(destination: *real34_t, source: *const real_t, real_context: *abi.RealContext) *real34_t;
 
-fn real34ToReal(source: *align(1) const real34_t, destination: *real_t) void {
+fn real34ToReal(source: *const real34_t, destination: *real_t) void {
     _ = decimal128ToNumber(source, destination);
 }
 
-fn registerReal34Ptr(reg: runtime.calcRegister_t) *align(1) real34_t {
-    const ptr = runtime.getRegisterDataPointer(reg) orelse unreachable;
-    return @ptrCast(ptr);
-}
-
-fn registerImag34Ptr(reg: runtime.calcRegister_t) *align(1) real34_t {
-    const ptr = runtime.getRegisterDataPointer(reg) orelse unreachable;
-    const bytes: [*]align(1) u8 = @ptrCast(ptr);
-    return @ptrCast(bytes + @sizeOf(real34_t));
-}
+const registerReal34Ptr = abi.registerReal34;
+const registerImag34Ptr = abi.registerImag34;
 
 fn getRegisterAngularMode(reg: runtime.calcRegister_t) u32 {
     return runtime.getRegisterTag(reg) & amAngleMask;
@@ -86,25 +78,12 @@ fn real34SetPositiveSign(value: *real34_t) void {
     real34_sign.setPositiveSign(value);
 }
 
-fn matrixPayloadOffsetBytes() usize {
-    return @intCast(memory_owned.bytesFromBlocks(matrix_header_size_in_blocks));
-}
-
 fn complex34SizeInBlocks() u16 {
     return runtime.real34SizeInBlocks() * 2;
 }
 
-fn realMatrixElementsPtr(res: runtime.calcRegister_t) [*]align(1) real34_t {
-    const ptr = runtime.getRegisterDataPointer(res) orelse unreachable;
-    const bytes: [*]align(1) u8 = @ptrCast(ptr);
-    return @ptrCast(bytes + matrixPayloadOffsetBytes());
-}
-
-fn complexMatrixElementsPtr(res: runtime.calcRegister_t) [*]align(1) complex34_t {
-    const ptr = runtime.getRegisterDataPointer(res) orelse unreachable;
-    const bytes: [*]align(1) u8 = @ptrCast(ptr);
-    return @ptrCast(bytes + matrixPayloadOffsetBytes());
-}
+const realMatrixElementsPtr = abi.registerReal34MatrixElements;
+const complexMatrixElementsPtr = abi.registerComplex34MatrixElements;
 
 fn realMatrixElementCount(res: runtime.calcRegister_t) usize {
     return ((@as(usize, @intCast(runtime.getRegisterFullSizeInBlocks(res))) - matrix_header_size_in_blocks) / @as(usize, @intCast(runtime.real34SizeInBlocks())));
@@ -114,7 +93,7 @@ fn complexMatrixElementCount(res: runtime.calcRegister_t) usize {
     return ((@as(usize, @intCast(runtime.getRegisterFullSizeInBlocks(res))) - matrix_header_size_in_blocks) / @as(usize, @intCast(complex34SizeInBlocks())));
 }
 
-fn normalizeResultRealRegister(value: *align(1) real34_t) void {
+fn normalizeResultRealRegister(value: *real34_t) void {
     if (real34IsInfinite(value)) {
         displayCalcErrorMessage(
             if (real34IsNegative(value)) ERROR_OVERFLOW_MINUS_INF else ERROR_OVERFLOW_PLUS_INF,
@@ -238,7 +217,7 @@ fn adjustRealRegisterComponents(res: runtime.calcRegister_t, result_data_type: u
 
 /// Round one stored Real34 result to the selected significant digits; unchanged
 /// when SDIGS is 0 or 34 (registers.c).
-pub export fn roundReal34ResultToSignificantDigits(val: *align(1) real34_t) callconv(.c) void {
+pub export fn roundReal34ResultToSignificantDigits(val: *real34_t) callconv(.c) void {
     if (significantDigits > 0 and significantDigits < 34) {
         var tmp: real_t = undefined;
         real34ToReal(val, &tmp);

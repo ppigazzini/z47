@@ -419,7 +419,7 @@ extern fn getLineDelay() u32;
 extern fn setLineDelay(delay: u16) void;
 
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
-extern fn getRegisterDataPointer(regist: calcRegister_t) ?*anyopaque;
+extern fn getRegisterDataPointer(regist: calcRegister_t) ?*align(4) anyopaque;
 extern fn getRegisterTag(regist: calcRegister_t) u32;
 
 extern fn linkToComplexMatrixRegister(regist: calcRegister_t, linkedMatrix: *complex34Matrix_t) void;
@@ -441,8 +441,8 @@ inline fn isAtEndOfProgram(step: [*c]const u8) bool_t {
 
 // real34 / decimal helpers. int32ToReal34 / real34ToString / real34IsZero are
 // decQuad* macros in C; bind the underlying decQuad symbols and wrap.
-extern fn real34CompareLessThan(number1: *align(1) const real34_t, number2: *align(1) const real34_t) bool_t;
-extern fn real34CompareLessEqual(number1: *align(1) const real34_t, number2: *align(1) const real34_t) bool_t;
+extern fn real34CompareLessThan(number1: *const real34_t, number2: *const real34_t) bool_t;
+extern fn real34CompareLessEqual(number1: *const real34_t, number2: *const real34_t) bool_t;
 extern fn decQuadFromInt32(dq: *real34_t, v: i32) *real34_t;
 extern fn decQuadToString(dq: *const real34_t, str: [*c]u8) [*c]u8;
 extern fn decQuadIsZero(dq: *const real34_t) u32;

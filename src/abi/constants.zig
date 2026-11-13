@@ -2,41 +2,50 @@
 //
 // Typed accessors into the generated `constants` blob. Each offset lives once,
 // behind a named, typed accessor returning `*const Real`, so no owner reaches the
-// blob with a raw `@extern([*]const u8,"constants") + <magic offset>` and an
-// unchecked `@ptrCast` (the offset-crash class).
+// blob with a raw `@extern` plus a magic offset and an unchecked pointer
+// reinterpretation (the offset-crash class).
 //
 // The offsets are the generateConstants layout (host + DMCP package 3, which
 // share one blob layout; pinned by src/testSuite/tests/elec.txt and the pkg-3
 // build). These named accessors are hand-maintained here from
 // constantPointers.h.
 
+const std = @import("std");
 const types = @import("primitives.zig");
 const Real = types.Real;
+const Real34 = types.Real34;
 
-const constants = @extern([*]const u8, .{ .name = "constants" });
+/// The generated `constants` blob, read in the 4-byte words its C definition is
+/// aligned to (`__attribute__((aligned(4)))` in constantPointers.c).
+const constants = @extern([*]const u32, .{ .name = "constants" });
+
+/// The `T` stored at a blob byte offset. Every offset generateConstants emits is
+/// a multiple of 4, so the view is word-aligned whether the offset is known at
+/// compile time or not.
+inline fn blobValue(comptime T: type, offset: u32) *const T {
+    comptime std.debug.assert(@sizeOf(T) % 4 == 0);
+    std.debug.assert(offset % 4 == 0);
+    const words = constants[offset / 4 ..][0 .. @sizeOf(T) / 4];
+    return std.mem.bytesAsValue(T, std.mem.sliceAsBytes(words)[0..@sizeOf(T)]);
+}
 
 inline fn at(comptime offset: u32) *const Real {
-    return @ptrCast(@alignCast(constants + offset));
+    return blobValue(Real, offset);
 }
 
-/// decQuad (Real34) constant at a blob byte offset (align 1, comptime-safe).
-const Real34 = types.Real34;
-inline fn at34(comptime offset: u32) *align(1) const Real34 {
-    return @ptrCast(constants + offset);
+/// decQuad (Real34) constant at a blob byte offset.
+inline fn at34(comptime offset: u32) *const Real34 {
+    return blobValue(Real34, offset);
 }
 
-/// Dynamic (runtime-offset) blob accessors; align 1 since the offset is not comptime.
-pub inline fn cstR(offset: u32) *align(1) const Real {
-    return @ptrCast(constants + offset);
+/// Runtime-offset blob accessors, for the tables that index the blob.
+pub inline fn cstR(offset: u32) *const Real {
+    return blobValue(Real, offset);
 }
-pub inline fn cst34(offset: u32) *align(1) const Real34 {
-    return @ptrCast(constants + offset);
+pub inline fn cst34(offset: u32) *const Real34 {
+    return blobValue(Real34, offset);
 }
-
-/// Dynamic align-4 Real accessor (offset must be 4-aligned; asserted).
-pub inline fn cstRAligned(offset: u32) *const Real {
-    return @ptrCast(@alignCast(constants + offset));
-}
+pub const cstRAligned = cstR;
 
 // --- Seeded for the elec pilot (mathematics/elec.c) ---
 pub inline fn const1on2() *const Real {
@@ -245,127 +254,127 @@ pub inline fn const_1e_6143() *const Real {
 pub inline fn const_86400() *const Real {
     return at(12884);
 }
-pub inline fn const34_43200() *align(1) const Real34 {
+pub inline fn const34_43200() *const Real34 {
     return at34(29372);
 }
-pub inline fn const34_86400() *align(1) const Real34 {
+pub inline fn const34_86400() *const Real34 {
     return at34(29404);
 }
-pub inline fn const34_2() *align(1) const Real34 {
+pub inline fn const34_2() *const Real34 {
     return at34(28924);
 }
-pub inline fn const34_28() *align(1) const Real34 {
+pub inline fn const34_28() *const Real34 {
     return at34(29084);
 }
-pub inline fn const34_400() *align(1) const Real34 {
+pub inline fn const34_400() *const Real34 {
     return at34(29212);
 }
-pub inline fn const34__4712() *align(1) const Real34 {
+pub inline fn const34__4712() *const Real34 {
     return at34(28812);
 }
-pub inline fn const34_1() *align(1) const Real34 {
+pub inline fn const34_1() *const Real34 {
     return at34(28908);
 }
-pub inline fn const34_31() *align(1) const Real34 {
+pub inline fn const34_31() *const Real34 {
     return at34(29100);
 }
-pub inline fn const34_12() *align(1) const Real34 {
+pub inline fn const34_12() *const Real34 {
     return at34(29036);
 }
-pub inline fn const34_14() *align(1) const Real34 {
+pub inline fn const34_14() *const Real34 {
     return at34(29052);
 }
-pub inline fn const34_4800() *align(1) const Real34 {
+pub inline fn const34_4800() *const Real34 {
     return at34(29308);
 }
-pub inline fn const34_1461() *align(1) const Real34 {
+pub inline fn const34_1461() *const Real34 {
     return at34(29260);
 }
-pub inline fn const34_4() *align(1) const Real34 {
+pub inline fn const34_4() *const Real34 {
     return at34(28956);
 }
-pub inline fn const34_367() *align(1) const Real34 {
+pub inline fn const34_367() *const Real34 {
     return at34(29196);
 }
-pub inline fn const34_4900() *align(1) const Real34 {
+pub inline fn const34_4900() *const Real34 {
     return at34(29324);
 }
-pub inline fn const34_100() *align(1) const Real34 {
+pub inline fn const34_100() *const Real34 {
     return at34(29148);
 }
-pub inline fn const34_3() *align(1) const Real34 {
+pub inline fn const34_3() *const Real34 {
     return at34(28940);
 }
-pub inline fn const34_9() *align(1) const Real34 {
+pub inline fn const34_9() *const Real34 {
     return at34(29004);
 }
-pub inline fn const34_7() *align(1) const Real34 {
+pub inline fn const34_7() *const Real34 {
     return at34(28988);
 }
-pub inline fn const34_5001() *align(1) const Real34 {
+pub inline fn const34_5001() *const Real34 {
     return at34(29340);
 }
-pub inline fn const34_275() *align(1) const Real34 {
+pub inline fn const34_275() *const Real34 {
     return at34(29180);
 }
-pub inline fn const34_1729777() *align(1) const Real34 {
+pub inline fn const34_1729777() *const Real34 {
     return at34(29468);
 }
-pub inline fn const34_1401() *align(1) const Real34 {
+pub inline fn const34_1401() *const Real34 {
     return at34(29244);
 }
-pub inline fn const34_274277() *align(1) const Real34 {
+pub inline fn const34_274277() *const Real34 {
     return at34(29436);
 }
-pub inline fn const34_146097() *align(1) const Real34 {
+pub inline fn const34_146097() *const Real34 {
     return at34(29420);
 }
-pub inline fn const34_38() *align(1) const Real34 {
+pub inline fn const34_38() *const Real34 {
     return at34(29116);
 }
-pub inline fn const34_153() *align(1) const Real34 {
+pub inline fn const34_153() *const Real34 {
     return at34(29164);
 }
-pub inline fn const34_5() *align(1) const Real34 {
+pub inline fn const34_5() *const Real34 {
     return at34(28972);
 }
-pub inline fn const34_4716() *align(1) const Real34 {
+pub inline fn const34_4716() *const Real34 {
     return at34(29292);
 }
-pub inline fn const34_1on2() *align(1) const Real34 {
+pub inline fn const34_1on2() *const Real34 {
     return at34(28892);
 }
-pub inline fn const34_24() *align(1) const Real34 {
+pub inline fn const34_24() *const Real34 {
     return at34(29068);
 }
-pub inline fn const34_3600() *align(1) const Real34 {
+pub inline fn const34_3600() *const Real34 {
     return at34(29276);
 }
-pub inline fn const34_60() *align(1) const Real34 {
+pub inline fn const34_60() *const Real34 {
     return at34(29132);
 }
-pub inline fn const34_maxDate() *align(1) const Real34 {
+pub inline fn const34_maxDate() *const Real34 {
     return at34(29500);
 }
-pub inline fn const34_maxTime() *align(1) const Real34 {
+pub inline fn const34_maxTime() *const Real34 {
     return at34(29516);
 }
-pub inline fn const34_1e6() *align(1) const Real34 {
+pub inline fn const34_1e6() *const Real34 {
     return at34(29452);
 }
-pub inline fn const34_1on10() *align(1) const Real34 {
+pub inline fn const34_1on10() *const Real34 {
     return at34(28876);
 }
-pub inline fn const34_32075() *align(1) const Real34 {
+pub inline fn const34_32075() *const Real34 {
     return at34(29356);
 }
-pub inline fn const34_65535() *align(1) const Real34 {
+pub inline fn const34_65535() *const Real34 {
     return at34(29388);
 }
 pub inline fn const_2p32() *const Real {
     return at(12924);
 }
-pub inline fn const34_2p32() *align(1) const Real34 {
+pub inline fn const34_2p32() *const Real34 {
     return at34(29484);
 }
 pub inline fn const12321_2pi() *const Real {
@@ -374,13 +383,13 @@ pub inline fn const12321_2pi() *const Real {
 pub inline fn const_2p64() *const Real {
     return at(13036);
 }
-pub inline fn const34_1e_4() *align(1) const Real34 {
+pub inline fn const34_1e_4() *const Real34 {
     return at34(28860);
 }
 pub inline fn const_2p63() *const Real {
     return at(13012);
 }
-pub inline fn const34_0() *align(1) const Real34 {
+pub inline fn const34_0() *const Real34 {
     return at34(28796);
 }
 pub inline fn const_3on2() *const Real {
@@ -392,10 +401,10 @@ pub inline fn const_9999() *const Real {
 pub inline fn const39_ln2() *const Real {
     return at(5216);
 }
-pub inline fn q16200() *align(1) const Real34 {
+pub inline fn q16200() *const Real34 {
     return at34(28796);
 }
-pub inline fn q16312() *align(1) const Real34 {
+pub inline fn q16312() *const Real34 {
     return at34(28908);
 }
 pub inline fn c1848() *const Real {
@@ -407,28 +416,28 @@ pub inline fn c1684() *const Real {
 pub inline fn c1696() *const Real {
     return at(1696);
 }
-pub inline fn q16264() *align(1) const Real34 {
+pub inline fn q16264() *const Real34 {
     return at34(28860);
 }
-pub inline fn q16280() *align(1) const Real34 {
+pub inline fn q16280() *const Real34 {
     return at34(28876);
 }
-pub inline fn q16296() *align(1) const Real34 {
+pub inline fn q16296() *const Real34 {
     return at34(28892);
 }
-pub inline fn q16328() *align(1) const Real34 {
+pub inline fn q16328() *const Real34 {
     return at34(28924);
 }
-pub inline fn q16344() *align(1) const Real34 {
+pub inline fn q16344() *const Real34 {
     return at34(28940);
 }
-pub inline fn q16392() *align(1) const Real34 {
+pub inline fn q16392() *const Real34 {
     return at34(28988);
 }
-pub inline fn q16408() *align(1) const Real34 {
+pub inline fn q16408() *const Real34 {
     return at34(29004);
 }
-pub inline fn q16472() *align(1) const Real34 {
+pub inline fn q16472() *const Real34 {
     return at34(29068);
 }
 pub inline fn c1708() *const Real {
@@ -455,7 +464,7 @@ pub inline fn c7532() *const Real {
 pub inline fn c812() *const Real {
     return at(812);
 }
-pub inline fn q16568() *align(1) const Real34 {
+pub inline fn q16568() *const Real34 {
     return at34(29164);
 }
 pub inline fn c4928() *const Real {
@@ -589,7 +598,7 @@ pub inline fn const39_igammaC0_00() *const Real {
     return at(5636);
 }
 const igamma_table_start = [8]u32{ 0, 31, 60, 87, 112, 135, 152, 167 };
-pub inline fn igammaC39(table: u32, k: u32) *align(1) const Real {
+pub inline fn igammaC39(table: u32, k: u32) *const Real {
     return cstR(5636 + (igamma_table_start[table] + k) * 36);
 }
 pub inline fn const75_pi() *const Real {
@@ -693,7 +702,7 @@ pub inline fn const75_gammaC00() *const Real {
 pub inline fn const75_gammaC01() *const Real {
     return at(13504);
 }
-pub inline fn gammaC75(k: u32) *align(1) const Real {
+pub inline fn gammaC75(k: u32) *const Real {
     return cstR(13504 + k * 60);
 }
 pub inline fn c5308() *const Real {
@@ -723,10 +732,10 @@ pub inline fn c2048() *const Real {
 pub inline fn c2648() *const Real {
     return at(2656);
 }
-pub inline fn q16552() *align(1) const Real34 {
+pub inline fn q16552() *const Real34 {
     return at34(29148);
 }
-pub inline fn q16632() *align(1) const Real34 {
+pub inline fn q16632() *const Real34 {
     return at34(29228);
 }
 

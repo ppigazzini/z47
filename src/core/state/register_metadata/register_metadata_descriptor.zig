@@ -29,7 +29,7 @@ fn withPointer(descriptor: runtime.register_descriptor_t, mem_ptr: u16) runtime.
     return codec.withPointer(descriptor, mem_ptr);
 }
 
-pub fn dataPointerFromDescriptor(descriptor: runtime.register_descriptor_t) ?*anyopaque {
+pub fn dataPointerFromDescriptor(descriptor: runtime.register_descriptor_t) ?*align(4) anyopaque {
     return runtime.toPcMemPtr(descriptorPointer(descriptor));
 }
 
@@ -73,7 +73,7 @@ pub fn getRegisterDataType(reg: runtime.calcRegister_t) u32 {
     return invalid_data_type;
 }
 
-pub fn getRegisterDataPointer(reg: runtime.calcRegister_t) ?*anyopaque {
+pub fn getRegisterDataPointer(reg: runtime.calcRegister_t) ?*align(4) anyopaque {
     var descriptor: runtime.register_descriptor_t = 0;
 
     if (reg <= runtime.LAST_GLOBAL_REGISTER) {

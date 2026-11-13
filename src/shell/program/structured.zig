@@ -199,7 +199,7 @@ extern fn saveRegisterSnapshot(reg: calcRegister_t, s: *snap_t) void;
 extern fn restoreRegisterSnapshot(reg: calcRegister_t, s: *snap_t) void;
 extern fn getRegisterAsAnyRealQuiet(reg: calcRegister_t, val: *real_t) bool;
 extern fn getRegisterAsComplexOrAnyRealQuiet(reg: calcRegister_t, z: *cplx_t, cmplx: ?*bool) bool;
-extern fn convertReal34ToComplex34Register(real34: *align(1) const real34_t, imag34: *align(1) const real34_t, dest: calcRegister_t) void;
+extern fn convertReal34ToComplex34Register(real34: *const real34_t, imag34: *const real34_t, dest: calcRegister_t) void;
 extern fn realCompareEqual(a: *const real_t, b: *const real_t) bool;
 extern fn realCompareGreaterThan(a: *const real_t, b: *const real_t) bool;
 extern var ctxtReal75: realContext_t;
@@ -221,8 +221,8 @@ extern fn decNumberCompare(res: *real_t, lhs: *const real_t, rhs: *const real_t,
 extern fn decNumberAdd(res: *real_t, lhs: *const real_t, rhs: *const real_t, ctx: *realContext_t) *real_t;
 extern fn decNumberSubtract(res: *real_t, lhs: *const real_t, rhs: *const real_t, ctx: *realContext_t) *real_t;
 extern fn decNumberMultiply(res: *real_t, lhs: *const real_t, rhs: *const real_t, ctx: *realContext_t) *real_t;
-extern fn decQuadIsInfinite(src: *align(1) const real34_t) u32;
-extern fn decQuadFromInt32(res: *align(1) real34_t, value: i32) *align(1) real34_t;
+extern fn decQuadIsInfinite(src: *const real34_t) u32;
+extern fn decQuadFromInt32(res: *real34_t, value: i32) *real34_t;
 extern fn __gmpz_init(op: *mpz_struct) void;
 extern fn __gmpz_clear(op: *mpz_struct) void;
 extern fn __gmpz_set_si(rop: *mpz_struct, op: c_long) void;
@@ -258,18 +258,18 @@ inline fn realMultiply(a: *const real_t, b: *const real_t, res: *real_t, ctx: *r
 inline fn realCompare(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberCompare(res, a, b, ctx);
 }
-inline fn real34Copy(src: *align(1) const real34_t, dst: *align(1) real34_t) void {
+inline fn real34Copy(src: *const real34_t, dst: *real34_t) void {
     dst.* = src.*;
 }
-inline fn real34IsInfinite(src: *align(1) const real34_t) bool {
+inline fn real34IsInfinite(src: *const real34_t) bool {
     return decQuadIsInfinite(src) != 0;
 }
 // realType.h reads the sign bit of the encoding directly, so a negative zero is
 // not positive and an infinity answers by its sign alone.
-inline fn real34IsPositive(src: *align(1) const real34_t) bool {
+inline fn real34IsPositive(src: *const real34_t) bool {
     return (src.bytes[15] & 0x80) == 0x00;
 }
-inline fn int32ToReal34(src: i32, dst: *align(1) real34_t) void {
+inline fn int32ToReal34(src: i32, dst: *real34_t) void {
     _ = decQuadFromInt32(dst, src);
 }
 inline fn longIntegerInit(op: *mpz_struct) void {
@@ -1026,7 +1026,7 @@ fn forStepWentBackwards(sum: calcRegister_t, counter: calcRegister_t, stepReg: c
 // The out of range refusal adjustResult makes for every other addition. adjustResult
 // itself cannot be called here: it drops the stack and undoes the whole step, where the
 // caller borrows X and Y and puts them back.
-fn forRefuseInfinite(value: *align(1) const real34_t) void {
+fn forRefuseInfinite(value: *const real34_t) void {
     if (real34IsInfinite(value)) {
         displayCalcErrorMessage(if (real34IsPositive(value)) ERROR_OVERFLOW_PLUS_INF else ERROR_OVERFLOW_MINUS_INF, ERR_REGISTER_LINE);
     }

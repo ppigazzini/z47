@@ -496,7 +496,7 @@ extern fn fnT_ARROW(command: u16) void;
 extern fn SetSetting(jmConfig: u16) void;
 
 extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) bool;
-extern fn getRegisterDataPointer(regist: calcRegister_t) *anyopaque;
+extern fn getRegisterDataPointer(regist: calcRegister_t) *align(4) anyopaque;
 
 // findOrAllocateNamedVariable / findNamedVariable / findMenu are not used here.
 

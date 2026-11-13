@@ -248,7 +248,7 @@ extern var numberOfFormulae: u16;
 extern var graphVariabl1: calcRegister_t;
 extern var allFormulae: [*c]formulaHeader_t;
 extern var aimBuffer: [*c]u8;
-extern var tmpString: [*c]u8;
+extern var tmpString: [*c]align(4) u8;
 extern var errorMessage: [*c]u8;
 extern var xCursor: u32;
 extern var yCursor: u32;
@@ -277,72 +277,72 @@ extern var ctxtReal34: realContext_t;
 // ---------------------------------------------------------------------------
 // Constants blob accessors
 // ---------------------------------------------------------------------------
-inline fn const_NaN() *align(1) const real_t {
+inline fn const_NaN() *const real_t {
     return consts.c812();
 }
-inline fn const34_0() *align(1) const real34_t {
+inline fn const34_0() *const real34_t {
     return consts.q16200();
 }
-inline fn const34_1() *align(1) const real34_t {
+inline fn const34_1() *const real34_t {
     return consts.q16312();
 }
 
 // ---------------------------------------------------------------------------
 // real34_t / real_t externs and macros
 // ---------------------------------------------------------------------------
-extern fn decimal128FromNumber(dest: *align(1) real34_t, src: *align(1) const real_t, ctxt: *realContext_t) *align(1) real34_t;
-extern fn decQuadSubtract(res: *align(1) real34_t, op1: *align(1) const real34_t, op2: *align(1) const real34_t, ctxt: *realContext_t) *align(1) real34_t;
-extern fn decQuadZero(dest: *align(1) real34_t) *align(1) real34_t;
-extern fn decQuadIsZero(source: *align(1) const real34_t) bool;
-extern fn decQuadIsNaN(source: *align(1) const real34_t) bool;
-extern fn decQuadFromString(dest: *align(1) real34_t, str: [*:0]const u8, ctxt: *realContext_t) *align(1) real34_t;
-extern fn decQuadIsInfinite(source: *align(1) const real34_t) bool;
-extern fn decQuadToString(source: *align(1) const real34_t, destination: [*]u8) [*c]u8;
-extern fn real34CompareEqual(number1: *align(1) const real34_t, number2: *align(1) const real34_t) bool;
+extern fn decimal128FromNumber(dest: *real34_t, src: *const real_t, ctxt: *realContext_t) *real34_t;
+extern fn decQuadSubtract(res: *real34_t, op1: *const real34_t, op2: *const real34_t, ctxt: *realContext_t) *real34_t;
+extern fn decQuadZero(dest: *real34_t) *real34_t;
+extern fn decQuadIsZero(source: *const real34_t) bool;
+extern fn decQuadIsNaN(source: *const real34_t) bool;
+extern fn decQuadFromString(dest: *real34_t, str: [*:0]const u8, ctxt: *realContext_t) *real34_t;
+extern fn decQuadIsInfinite(source: *const real34_t) bool;
+extern fn decQuadToString(source: *const real34_t, destination: [*]u8) [*c]u8;
+extern fn real34CompareEqual(number1: *const real34_t, number2: *const real34_t) bool;
 
-inline fn realToReal34(source: *align(1) const real_t, destination: *align(1) real34_t) void {
+inline fn realToReal34(source: *const real_t, destination: *real34_t) void {
     _ = decimal128FromNumber(destination, source, &ctxtReal34);
 }
-inline fn real34Copy(source: *align(1) const real34_t, destination: *align(1) real34_t) void {
+inline fn real34Copy(source: *const real34_t, destination: *real34_t) void {
     const src: *align(1) const [2]u64 = @ptrCast(source);
     const dst: *align(1) [2]u64 = @ptrCast(destination);
     dst[0] = src[0];
     dst[1] = src[1];
 }
-inline fn real34Subtract(op1: *align(1) const real34_t, op2: *align(1) const real34_t, res: *align(1) real34_t) void {
+inline fn real34Subtract(op1: *const real34_t, op2: *const real34_t, res: *real34_t) void {
     _ = decQuadSubtract(res, op1, op2, &ctxtReal34);
 }
-inline fn real34SetZero(destination: *align(1) real34_t) void {
+inline fn real34SetZero(destination: *real34_t) void {
     _ = decQuadZero(destination);
 }
-inline fn real34IsZero(source: *align(1) const real34_t) bool {
+inline fn real34IsZero(source: *const real34_t) bool {
     return decQuadIsZero(source);
 }
-inline fn real34IsNaN(source: *align(1) const real34_t) bool {
+inline fn real34IsNaN(source: *const real34_t) bool {
     return decQuadIsNaN(source);
 }
-inline fn real34IsInfinite(source: *align(1) const real34_t) bool {
+inline fn real34IsInfinite(source: *const real34_t) bool {
     return decQuadIsInfinite(source);
 }
 // realType.h reads and clears the sign bit in place rather than going through
 // decQuad: byte 15 bit 7 is the decimal128 sign.
-inline fn real34IsNegative(source: *align(1) const real34_t) bool {
+inline fn real34IsNegative(source: *const real34_t) bool {
     return (source.bytes[15] & 0x80) == 0x80;
 }
-inline fn real34SetPositiveSign(operand: *align(1) real34_t) void {
+inline fn real34SetPositiveSign(operand: *real34_t) void {
     operand.bytes[15] &= 0x7f;
 }
-inline fn real34ToString(source: *align(1) const real34_t, destination: [*]u8) void {
+inline fn real34ToString(source: *const real34_t, destination: [*]u8) void {
     _ = decQuadToString(source, destination);
 }
-inline fn stringToReal34(source: [*:0]const u8, destination: *align(1) real34_t) void {
+inline fn stringToReal34(source: [*:0]const u8, destination: *real34_t) void {
     _ = decQuadFromString(destination, source, &ctxtReal34);
 }
 
 // ---------------------------------------------------------------------------
 // Register / stack / program externs
 // ---------------------------------------------------------------------------
-extern fn getRegisterDataPointer(reg: calcRegister_t) ?*anyopaque;
+extern fn getRegisterDataPointer(reg: calcRegister_t) ?*align(4) anyopaque;
 const registerReal34Ptr = abi.registerReal34;
 const registerImag34Ptr = abi.registerImag34;
 const registerStringPtr = abi.registerString;
@@ -1149,27 +1149,33 @@ fn _menuItem(item: i16, bufPtr: [*c]u8) linksection(runtime.code_section) void {
 // ===========================================================================
 // parser stack helpers (operate on mvarBuffer)
 // ===========================================================================
-inline fn PARSER_OPERATOR_STACK(mvarBuffer: [*c]u8) [*]u16 {
-    return @ptrCast(@alignCast(mvarBuffer));
+/// The real34 slots in mvarBuffer while an equation is parsed: the left value's
+/// real and imaginary parts, then the numeric stack (upstream's
+/// PARSER_LEFT_VALUE_REAL/IMAG and PARSER_NUMERIC_STACK, so C's indices -2 and -1
+/// on the numeric stack are slots 0 and 1 here).
+inline fn parserValues(mvarBuffer: [*c]align(4) u8) *[2 + 2 * PARSER_NUMERIC_STACK_SIZE]real34_t {
+    const bytes = mvarBuffer[PARSER_OPERATOR_STACK_SIZE * 2 ..][0 .. REAL34_SIZE_IN_BYTES * (2 + 2 * PARSER_NUMERIC_STACK_SIZE)];
+    return std.mem.bytesAsSlice(real34_t, bytes)[0 .. 2 + 2 * PARSER_NUMERIC_STACK_SIZE];
 }
-inline fn PARSER_NUMERIC_STACK(mvarBuffer: [*c]u8) [*]align(1) real34_t {
-    return @ptrCast(mvarBuffer + PARSER_OPERATOR_STACK_SIZE * 2 + REAL34_SIZE_IN_BYTES * 2);
+inline fn PARSER_OPERATOR_STACK(mvarBuffer: [*c]align(4) u8) [*]u16 {
+    return std.mem.bytesAsSlice(u16, mvarBuffer[0 .. PARSER_OPERATOR_STACK_SIZE * 2]).ptr;
 }
-inline fn PARSER_LEFT_VALUE_REAL(mvarBuffer: [*c]u8) *align(1) real34_t {
-    return @ptrCast(mvarBuffer + PARSER_OPERATOR_STACK_SIZE * 2);
+inline fn PARSER_NUMERIC_STACK(mvarBuffer: [*c]align(4) u8) [*]real34_t {
+    return parserValues(mvarBuffer)[2..];
 }
-inline fn PARSER_LEFT_VALUE_IMAG(mvarBuffer: [*c]u8) *align(1) real34_t {
-    return @ptrCast(mvarBuffer + PARSER_OPERATOR_STACK_SIZE * 2 + REAL34_SIZE_IN_BYTES);
+inline fn PARSER_LEFT_VALUE_REAL(mvarBuffer: [*c]align(4) u8) *real34_t {
+    return &parserValues(mvarBuffer)[0];
 }
-inline fn PARSER_NUMERIC_STACK_POINTER(mvarBuffer: [*c]u8) [*]u8 {
-    return mvarBuffer + PARSER_OPERATOR_STACK_SIZE * 2 + REAL34_SIZE_IN_BYTES * (2 + 2 * PARSER_NUMERIC_STACK_SIZE);
+inline fn PARSER_LEFT_VALUE_IMAG(mvarBuffer: [*c]align(4) u8) *real34_t {
+    return &parserValues(mvarBuffer)[1];
+}
+inline fn PARSER_NUMERIC_STACK_POINTER(mvarBuffer: [*c]align(4) u8) *[1]u8 {
+    return &mvarBuffer[PARSER_OPERATOR_STACK_SIZE * 2 + REAL34_SIZE_IN_BYTES * (2 + 2 * PARSER_NUMERIC_STACK_SIZE)];
 }
 /// `&PARSER_NUMERIC_STACK[sp * 2 - back]`, where C's index is an `int` and goes
-/// negative on an empty numeric stack. The two real34 slots immediately below
-/// the stack base are PARSER_LEFT_VALUE_REAL (index -2) and
-/// PARSER_LEFT_VALUE_IMAG (index -1), so the address stays inside mvarBuffer.
-inline fn parserNumericSlot(mvarBuffer: [*c]u8, sp: u8, back: usize) *align(1) real34_t {
-    return @ptrCast(mvarBuffer + PARSER_OPERATOR_STACK_SIZE * 2 + REAL34_SIZE_IN_BYTES * (2 + 2 * @as(usize, sp) - back));
+/// negative on an empty numeric stack, onto the left value's two slots.
+inline fn parserNumericSlot(mvarBuffer: [*c]align(4) u8, sp: u8, back: usize) *real34_t {
+    return &parserValues(mvarBuffer)[2 + 2 * @as(usize, sp) - back];
 }
 
 fn _operatorPriority(func: u16) linksection(runtime.code_section) u32 {
@@ -1195,7 +1201,7 @@ fn _operatorPriority(func: u16) linksection(runtime.code_section) u32 {
     }
 }
 
-fn _pushNumericStack(mvarBuffer: [*c]u8, re: *align(1) const real34_t, im: *align(1) const real34_t) linksection(runtime.code_section) void {
+fn _pushNumericStack(mvarBuffer: [*c]align(4) u8, re: *const real34_t, im: *const real34_t) linksection(runtime.code_section) void {
     const sp = PARSER_NUMERIC_STACK_POINTER(mvarBuffer);
     const stack = PARSER_NUMERIC_STACK(mvarBuffer);
     if (sp[0] < PARSER_NUMERIC_STACK_SIZE) {
@@ -1208,7 +1214,7 @@ fn _pushNumericStack(mvarBuffer: [*c]u8, re: *align(1) const real34_t, im: *alig
     }
 }
 
-fn _popNumericStack(mvarBuffer: [*c]u8, re: *align(1) real34_t, im: ?*align(1) real34_t) linksection(runtime.code_section) void {
+fn _popNumericStack(mvarBuffer: [*c]align(4) u8, re: *real34_t, im: ?*real34_t) linksection(runtime.code_section) void {
     const sp = PARSER_NUMERIC_STACK_POINTER(mvarBuffer);
     const stack = PARSER_NUMERIC_STACK(mvarBuffer);
     if (sp[0] > 0) {
@@ -1227,7 +1233,7 @@ fn _popNumericStack(mvarBuffer: [*c]u8, re: *align(1) real34_t, im: ?*align(1) r
     }
 }
 
-fn _runDyadicFunction(mvarBuffer: [*c]u8, item: u16) linksection(runtime.code_section) void {
+fn _runDyadicFunction(mvarBuffer: [*c]align(4) u8, item: u16) linksection(runtime.code_section) void {
     var re: real34_t = undefined;
     var im: real34_t = undefined;
     liftStack();
@@ -1259,7 +1265,7 @@ fn _runDyadicFunction(mvarBuffer: [*c]u8, item: u16) linksection(runtime.code_se
     fnDrop(NOPARAM);
 }
 
-fn _runMonadicFunction(mvarBuffer: [*c]u8, item: u16) linksection(runtime.code_section) void {
+fn _runMonadicFunction(mvarBuffer: [*c]align(4) u8, item: u16) linksection(runtime.code_section) void {
     var re: real34_t = undefined;
     var im: real34_t = undefined;
     liftStack();
@@ -1295,7 +1301,7 @@ pub export fn isDyadicFunction(item: u16) linksection(runtime.code_section) call
     }
 }
 
-fn _runEqFunction(mvarBuffer: [*c]u8, item: u16) linksection(runtime.code_section) void {
+fn _runEqFunction(mvarBuffer: [*c]align(4) u8, item: u16) linksection(runtime.code_section) void {
     if (isDyadicFunction(item)) {
         _runDyadicFunction(mvarBuffer, item);
     } else {
@@ -1303,7 +1309,7 @@ fn _runEqFunction(mvarBuffer: [*c]u8, item: u16) linksection(runtime.code_sectio
     }
 }
 
-fn _processOperator(func: u16, mvarBuffer: [*c]u8) linksection(runtime.code_section) void {
+fn _processOperator(func: u16, mvarBuffer: [*c]align(4) u8) linksection(runtime.code_section) void {
     const opStack = PARSER_OPERATOR_STACK(mvarBuffer);
     var opStackTop: u32 = 0xffffffff;
     {
@@ -1442,7 +1448,7 @@ fn _processOperator(func: u16, mvarBuffer: [*c]u8) linksection(runtime.code_sect
     }
 }
 
-fn _parseWord(strPtr: [*c]u8, parseMode: u16, parserHint: u16, mvarBuffer: [*c]u8, pointerInFormula: [*c]const u8) linksection(runtime.code_section) void {
+fn _parseWord(strPtr: [*c]u8, parseMode: u16, parserHint: u16, mvarBuffer: [*c]align(4) u8, pointerInFormula: [*c]const u8) linksection(runtime.code_section) void {
     var tmpVal: u32 = 0;
     if (parserHint != PARSER_HINT_NUMERIC and stringGlyphLength(strPtr) > 7) {
         displayCalcErrorMessage(ERROR_SYNTAX_ERROR_IN_EQUATION, ERR_REGISTER_LINE);
@@ -1650,7 +1656,7 @@ fn _parseWord(strPtr: [*c]u8, parseMode: u16, parserHint: u16, mvarBuffer: [*c]u
     }
 }
 
-pub export fn parseEquation(equationId: u16, parseMode: u16, buffer: [*c]u8, mvarBuffer: [*c]u8) linksection(runtime.code_section) callconv(.c) void {
+pub export fn parseEquation(equationId: u16, parseMode: u16, buffer: [*c]u8, mvarBuffer: [*c]align(4) u8) linksection(runtime.code_section) callconv(.c) void {
     // No equation, or an empty one: allFormulae is null once numberOfFormulae
     // reaches zero, so this test has to precede the dereference below.
     if (equationId >= numberOfFormulae or allFormulae[equationId].pointerToFormulaData == C47_NULL) {

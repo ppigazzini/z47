@@ -203,7 +203,7 @@ inline fn longIntegerToString(source: *const mpz_struct, destination: [*]u8) voi
 
 // realType.h's int32ToReal34, through a local so the register slot's block
 // alignment is never a question.
-inline fn int32ToReal34(source: i32, destination: *align(1) real34_t) void {
+inline fn int32ToReal34(source: i32, destination: *real34_t) void {
     var value: real34_t = undefined;
     _ = runtime.decQuadFromInt32(&value, source);
     destination.* = value;

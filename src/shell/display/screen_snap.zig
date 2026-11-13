@@ -207,7 +207,7 @@ extern fn setSystemFlag(sf: u32) void;
 extern fn clearSystemFlag(sf: u32) void;
 extern var screenUpdatingMode: u8;
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
-extern fn getRegisterDataPointer(regist: calcRegister_t) [*c]u8;
+extern fn getRegisterDataPointer(regist: calcRegister_t) [*c]align(4) u8;
 extern fn getRegisterTag(regist: calcRegister_t) u32;
 
 extern fn __gmpz_clear(p: *mpz_struct) void;
@@ -381,7 +381,7 @@ pub export fn copyRegisterToClipboardString(regist: calcRegister_t, clipboardStr
                 var len = strlen(buf);
 
                 // Real part
-                real34Reduce(@ptrCast(&complex34[0]), &reduced);
+                real34Reduce(&complex34[0].real, &reduced);
                 real34ToString(&reduced, buf + len);
                 if (strchr(buf + len, '.') == null and strchr(buf + len, 'E') == null) {
                     _ = strcat(buf + len, ".");
@@ -389,7 +389,7 @@ pub export fn copyRegisterToClipboardString(regist: calcRegister_t, clipboardStr
                 len = strlen(buf);
 
                 // Imaginary part
-                const imagPart: *const real34_t = @ptrCast(@as([*]u8, @ptrCast(&complex34[0])) + REAL34_SIZE_IN_BYTES);
+                const imagPart: *const real34_t = &complex34[0].imag;
                 real34Reduce(imagPart, &reduced);
                 if (real34IsNegative(&reduced)) {
                     abi.fmtCStr(buf + len, " - {s}x", .{@as([*:0]const u8, complexUnit())});

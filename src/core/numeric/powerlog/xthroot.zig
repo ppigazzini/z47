@@ -130,7 +130,7 @@ inline fn realSetNegativeSign(source: *real_t) void {
     source.bits |= 0x80;
 }
 const real34SetNegativeSign = abi.real34SetNegativeSign;
-inline fn real34Copy(source: *align(1) const real34_t, destination: *real34_t) void {
+inline fn real34Copy(source: *const real34_t, destination: *real34_t) void {
     destination.bytes = source.bytes;
 }
 

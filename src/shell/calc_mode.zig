@@ -187,7 +187,7 @@ extern fn getSystemFlag(flag: c_int) bool_t;
 extern fn liftStack() void;
 extern fn saveForUndo() void;
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
-extern fn getRegisterDataPointer(regist: calcRegister_t) [*]u8;
+extern fn getRegisterDataPointer(regist: calcRegister_t) [*]align(4) u8;
 extern fn setRegisterTag(regist: calcRegister_t, tag: u32) void;
 
 extern fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void;

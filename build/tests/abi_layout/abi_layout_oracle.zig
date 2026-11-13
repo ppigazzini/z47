@@ -38,14 +38,13 @@ test "abi.Real matches C decNumber (size + every field offset)" {
     }
 }
 
-test "abi.Real34 matches C decQuad (size)" {
-    // decQuad is an opaque 16-byte union (natural align 4). abi.Real34 is a
-    // `{ bytes: [16]u8 }` blob DELIBERATELY at align 1 so registers.zig can view
-    // unaligned register storage as `*align(1) Real34`; that align-1 is benign
-    // because Real34 only ever sits at 16-byte-aligned offsets in the abi
-    // composites (Complex34, matrices). The contract for this opaque blob is its
-    // size, so assert that and not the intentional align divergence.
+test "abi.Real34 matches C decQuad (size and alignment)" {
+    // decQuad is an opaque 16-byte union whose widest member is a uint32_t word,
+    // so C aligns it to 4; abi.Real34 is its bytes, aligned the same way, which
+    // is what lets a pool block or the constants blob be viewed as one.
     try testing.expectEqual(@sizeOf(c.decQuad), @sizeOf(abi.Real34));
+    try testing.expectEqual(@alignOf(c.decQuad), @alignOf(abi.Real34));
+    try testing.expectEqual(@alignOf(c.decQuad), @alignOf(abi.Complex34));
 }
 
 test "abi.RealContext matches C decContext (every mirrored field offset)" {
@@ -66,11 +65,11 @@ test "abi.Complex34 is two back-to-back C decQuads" {
     try testing.expectEqual(@sizeOf(c.decQuad), @offsetOf(abi.Complex34, "imag"));
 }
 
-// The typeDefinitions.h calc structs. Size is the fork-reconciliation invariant
-// (a wrong field type or dropped padding shifts sizeof, the exact bug class
-// [[extern-struct-fork-reconciliation]] documents); alignment is asserted only
-// where abi does not intentionally use an align-1 view. Each pair is
-// {C type, abi type, name} so a mismatch names the culprit struct.
+// The typeDefinitions.h calc structs. Size is the fork-reconciliation invariant:
+// a wrong field type or dropped padding shifts sizeof, which is how two owners'
+// copies of one struct drifted apart. Alignment is asserted too, since a view of
+// pool or blob memory relies on it. Each pair is {C type, abi type, name} so a
+// mismatch names the culprit struct.
 //
 // Size alone does not pin the layout: transposing two equal-width members leaves
 // sizeof untouched. Every field is therefore offset-checked as well, by name,
@@ -159,10 +158,14 @@ test "the exempt real views share Real's header" {
     }
 }
 
-test "abi calc structs match upstream C size" {
+test "abi calc structs match upstream C size and alignment" {
     inline for (SIZE_PAIRS) |pair| {
         testing.expectEqual(@sizeOf(pair[0]), @sizeOf(pair[1])) catch |err| {
             std.debug.print("size mismatch on {s}: C={d} abi={d}\n", .{ pair[2], @sizeOf(pair[0]), @sizeOf(pair[1]) });
+            return err;
+        };
+        testing.expectEqual(@alignOf(pair[0]), @alignOf(pair[1])) catch |err| {
+            std.debug.print("align mismatch on {s}: C={d} abi={d}\n", .{ pair[2], @alignOf(pair[0]), @alignOf(pair[1]) });
             return err;
         };
     }

@@ -162,7 +162,7 @@ fn readComplexToken(tok: [*c]u8, maxLen: usize) void {
 }
 
 extern fn getRegisterDataType(regist: i16) u32;
-extern fn getRegisterDataPointer(regist: i16) [*c]u8;
+extern fn getRegisterDataPointer(regist: i16) [*c]align(4) u8;
 extern fn getRegisterTag(regist: i16) u32;
 extern fn convertLongIntegerRegisterToLongInteger(regist: i16, li: *MpzStruct) void;
 extern fn longIntegerToAllocatedString(li: *const MpzStruct, str: [*c]u8, str_len: i32) void;

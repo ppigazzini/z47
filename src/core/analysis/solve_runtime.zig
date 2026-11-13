@@ -74,9 +74,9 @@ pub extern var screenUpdatingMode: u8;
 pub extern var lastErrorCode: u8;
 
 pub extern fn getRegisterDataType(reg: calcRegister_t) u32;
-pub extern fn getRegisterAsReal34Quiet(reg: calcRegister_t, val: *align(1) real34_t) bool;
-pub extern fn convertReal34ToReal34Register(real34: *align(1) const real34_t, dest: calcRegister_t) void;
-pub extern fn convertReal34ToComplex34Register(real34: *align(1) const real34_t, imag34: *align(1) const real34_t, dest: calcRegister_t) void;
+pub extern fn getRegisterAsReal34Quiet(reg: calcRegister_t, val: *real34_t) bool;
+pub extern fn convertReal34ToReal34Register(real34: *const real34_t, dest: calcRegister_t) void;
+pub extern fn convertReal34ToComplex34Register(real34: *const real34_t, imag34: *const real34_t, dest: calcRegister_t) void;
 pub extern fn saveForUndo() void;
 pub extern fn fnUndo(unused_but_mandatory_parameter: u16) void;
 pub extern fn fnPlotf(unused_but_mandatory_parameter: u16) void;
@@ -152,19 +152,19 @@ pub extern var tmpString: [*c]u8;
 pub extern const standardFont: font_t;
 pub extern fn clearRegisterLine(regist: calcRegister_t, clear_top: bool, clear_bottom: bool) void;
 pub extern fn showString(str: [*c]const u8, font: *const font_t, x: u32, y: u32, video_mode: c_int, show_leading_cols: bool, show_ending_cols: bool) u32;
-pub extern fn real34ToDisplayString(real34: *align(1) const real34_t, tag: u32, display_string: [*c]u8, font: *const font_t, max_width: i16, display_has_n_digits: i16, limit_exponent: bool, front_space: bool, limit_irfrac: c_int) void;
+pub extern fn real34ToDisplayString(real34: *const real34_t, tag: u32, display_string: [*c]u8, font: *const font_t, max_width: i16, display_has_n_digits: i16, limit_exponent: bool, front_space: bool, limit_irfrac: c_int) void;
 pub extern fn longIntegerRegisterToDisplayString(regist: calcRegister_t, display_string: [*c]u8, str_lg: i32, max_width: i16, max_exp: i16, allow_large_li: bool) void;
 pub extern fn convertLongIntegerToLongIntegerRegister(op: *const abi.Mpz, destination: calcRegister_t) void;
 pub extern fn force_refresh(mode: u8) void;
 pub extern fn getSystemFlag(sf: c_int) bool;
 pub extern fn strcat(dest: [*c]u8, src: [*c]const u8) [*c]u8;
-pub extern fn real34CompareGreaterThan(x: *align(1) const real34_t, y: *align(1) const real34_t) bool;
-pub extern fn real34CompareGreaterEqual(x: *align(1) const real34_t, y: *align(1) const real34_t) bool;
+pub extern fn real34CompareGreaterThan(x: *const real34_t, y: *const real34_t) bool;
+pub extern fn real34CompareGreaterEqual(x: *const real34_t, y: *const real34_t) bool;
 // decQuad predicates return decNumber's 0/nonzero, not a bool.
-pub extern fn decQuadIsNaN(v: *align(1) const real34_t) u32;
-pub extern fn decQuadIsSignaling(v: *align(1) const real34_t) u32;
-pub extern fn decQuadIsInfinite(v: *align(1) const real34_t) u32;
-pub extern fn decQuadIsZero(v: *align(1) const real34_t) u32;
+pub extern fn decQuadIsNaN(v: *const real34_t) u32;
+pub extern fn decQuadIsSignaling(v: *const real34_t) u32;
+pub extern fn decQuadIsInfinite(v: *const real34_t) u32;
+pub extern fn decQuadIsZero(v: *const real34_t) u32;
 
 pub fn bufPrintZ(buffer: []u8, comptime format: []const u8, args: anytype) ![:0]u8 {
     return std.mem.printSentinel(buffer, format, args, 0);
@@ -247,5 +247,5 @@ pub inline fn freeReal(ptr: ?*abi.Real) void {
 // comparisonReals.c's real_t orderings, declared once for the whole solver object.
 // Five owners in it each carried their own copy of these two, which is five chances
 // for the signatures to drift apart against one C definition.
-pub extern fn realCompareLessThan(number1: *align(1) const abi.Real, number2: *align(1) const abi.Real) bool;
-pub extern fn realCompareGreaterThan(number1: *align(1) const abi.Real, number2: *align(1) const abi.Real) bool;
+pub extern fn realCompareLessThan(number1: *const abi.Real, number2: *const abi.Real) bool;
+pub extern fn realCompareGreaterThan(number1: *const abi.Real, number2: *const abi.Real) bool;

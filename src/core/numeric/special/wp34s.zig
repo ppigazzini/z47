@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
+const std = @import("std");
 const abi = @import("abi");
 const consts = abi.constants;
 //
@@ -17,9 +18,8 @@ const consts = abi.constants;
 // dropped; the host-only progress / exit-key control flow is preserved.
 //
 // real_t constants without a runtime accessor come from the shared `constants`
-// blob by offset (the conversionAngles pattern); cstR() returns an unaligned
-// pointer so the macOS host build (byte-aligned blob base) does not trap, and
-// the real_t op helpers accept *align(1) const operands. The 1071-digit local
+// blob by offset (the conversionAngles pattern) through cstR(), which hands out
+// a word-aligned real_t like every other real_t here. The 1071-digit local
 // REAL_T_PTR scratch values become naturally-sized, 4-byte-aligned stack byte
 // buffers cast to *real_t. WP34S_Mod / WP34S_BigMod reproduce the DM42-only
 // small-buffer path via the wp34s_mod_small_buffers build option.
@@ -48,35 +48,35 @@ pub const amMultPi = runtime.amMultPi;
 
 // ---------------------------------------------------------------------------
 // real_t constant blob accessors. Use the runtime accessors where they exist
-// (properly aligned *align(1) const real_t); otherwise the byte-offset blob pattern.
+// (properly aligned *const real_t); otherwise the byte-offset blob pattern.
 // ---------------------------------------------------------------------------
 const cstR = consts.cstR;
 
-pub inline fn const_0() *align(1) const real_t {
+pub inline fn const_0() *const real_t {
     return consts.c1708();
 }
-pub inline fn const_1() *align(1) const real_t {
+pub inline fn const_1() *const real_t {
     return consts.c4856();
 }
-pub inline fn const_2() *align(1) const real_t {
+pub inline fn const_2() *const real_t {
     return consts.c4928();
 }
-inline fn const_3() *align(1) const real_t {
+inline fn const_3() *const real_t {
     return consts.c5012();
 }
-inline fn const__1() *align(1) const real_t {
+inline fn const__1() *const real_t {
     return consts.c4376();
 }
-pub inline fn const_1on2() *align(1) const real_t {
+pub inline fn const_1on2() *const real_t {
     return consts.c4580();
 }
-pub inline fn const_1on4() *align(1) const real_t {
+pub inline fn const_1on4() *const real_t {
     return consts.c4532();
 }
-pub inline fn const_1on10() *align(1) const real_t {
+pub inline fn const_1on10() *const real_t {
     return consts.c4520();
 }
-inline fn const_6() *align(1) const real_t {
+inline fn const_6() *const real_t {
     return consts.const_6();
 }
 inline fn const_3on2() *const real_t {
@@ -85,225 +85,225 @@ inline fn const_3on2() *const real_t {
 pub inline fn const_30() *const real_t {
     return consts.const_30();
 }
-inline fn const_29() *align(1) const real_t {
+inline fn const_29() *const real_t {
     return consts.c5180();
 }
-pub inline fn const_45() *align(1) const real_t {
+pub inline fn const_45() *const real_t {
     return consts.c7628();
 }
-inline fn const_47() *align(1) const real_t {
+inline fn const_47() *const real_t {
     return consts.c5236();
 }
-pub inline fn const_50() *align(1) const real_t {
+pub inline fn const_50() *const real_t {
     return consts.c7616();
 }
-pub inline fn const_90() *align(1) const real_t {
+pub inline fn const_90() *const real_t {
     return consts.c7544();
 }
-pub inline fn const_100() *align(1) const real_t {
+pub inline fn const_100() *const real_t {
     return consts.c7532();
 }
-pub inline fn const_180() *align(1) const real_t {
+pub inline fn const_180() *const real_t {
     return consts.c7460();
 }
-pub inline fn const_200() *align(1) const real_t {
+pub inline fn const_200() *const real_t {
     return consts.c7448();
 }
-inline fn const_205() *align(1) const real_t {
+inline fn const_205() *const real_t {
     return consts.c5344();
 }
-pub inline fn const_360() *align(1) const real_t {
+pub inline fn const_360() *const real_t {
     return consts.c5356();
 }
-pub inline fn const_400() *align(1) const real_t {
+pub inline fn const_400() *const real_t {
     return consts.c5368();
 }
-inline fn const_9000() *align(1) const real_t {
+inline fn const_9000() *const real_t {
     return consts.c5460();
 }
-inline fn const_995on1000() *align(1) const real_t {
+inline fn const_995on1000() *const real_t {
     return consts.c5696();
 }
-inline fn const_1e_10000() *align(1) const real_t {
+inline fn const_1e_10000() *const real_t {
     return consts.c5684();
 }
-inline fn const_1e_24() *align(1) const real_t {
+inline fn const_1e_24() *const real_t {
     return consts.c4472();
 }
-inline fn const_1e_37() *align(1) const real_t {
+inline fn const_1e_37() *const real_t {
     return consts.c4436();
 }
-inline fn const_1e_49() *align(1) const real_t {
+inline fn const_1e_49() *const real_t {
     return consts.c4424();
 }
-inline fn const_gammaR() *align(1) const real_t {
+inline fn const_gammaR() *const real_t {
     return consts.c5192();
 }
-inline fn const_NaN() *align(1) const real_t {
+inline fn const_NaN() *const real_t {
     return consts.c812();
 }
-inline fn const_minusInfinity() *align(1) const real_t {
+inline fn const_minusInfinity() *const real_t {
     return consts.c1684();
 }
-pub inline fn const39_pi() *align(1) const real_t {
+pub inline fn const39_pi() *const real_t {
     return consts.c1848();
 }
-inline fn const39_2pi() *align(1) const real_t {
+inline fn const39_2pi() *const real_t {
     return consts.c1812();
 }
-pub inline fn const39_piOn2() *align(1) const real_t {
+pub inline fn const39_piOn2() *const real_t {
     return consts.c4880();
 }
-pub inline fn const39_piOn4() *align(1) const real_t {
+pub inline fn const39_piOn4() *const real_t {
     return consts.c4736();
 }
-pub inline fn const39_3piOn4() *align(1) const real_t {
+pub inline fn const39_3piOn4() *const real_t {
     return consts.c4976();
 }
-inline fn const39_ln2() *align(1) const real_t {
+inline fn const39_ln2() *const real_t {
     return consts.c4628();
 }
-inline fn const39_ln10() *align(1) const real_t {
+inline fn const39_ln10() *const real_t {
     return consts.c4940();
 }
-pub inline fn const39_root2on2() *align(1) const real_t {
+pub inline fn const39_root2on2() *const real_t {
     return consts.c4700();
 }
-inline fn const39_egamma() *align(1) const real_t {
+inline fn const39_egamma() *const real_t {
     return consts.c4592();
 }
-inline fn const39_eE() *align(1) const real_t {
+inline fn const39_eE() *const real_t {
     return consts.c176();
 }
-pub inline fn const39_1on3() *align(1) const real_t {
+pub inline fn const39_1on3() *const real_t {
     return consts.c4544();
 }
-pub inline fn const_1on5() *align(1) const real_t {
+pub inline fn const_1on5() *const real_t {
     return consts.const_1on5();
 }
-pub inline fn const39_1on7() *align(1) const real_t {
+pub inline fn const39_1on7() *const real_t {
     return consts.const39_1on7();
 }
-pub inline fn const39_1on9() *align(1) const real_t {
+pub inline fn const39_1on9() *const real_t {
     return consts.const39_1on9();
 }
-pub inline fn const39_1on11() *align(1) const real_t {
+pub inline fn const39_1on11() *const real_t {
     return consts.const39_1on11();
 }
-pub inline fn const39_1on13() *align(1) const real_t {
+pub inline fn const39_1on13() *const real_t {
     return consts.const39_1on13();
 }
-pub inline fn const39_1on15() *align(1) const real_t {
+pub inline fn const39_1on15() *const real_t {
     return consts.const39_1on15();
 }
-pub inline fn const39_atan1on10() *align(1) const real_t {
+pub inline fn const39_atan1on10() *const real_t {
     return consts.const39_atan1on10();
 }
-pub inline fn const39_atan2on10() *align(1) const real_t {
+pub inline fn const39_atan2on10() *const real_t {
     return consts.const39_atan2on10();
 }
-pub inline fn const39_atan3on10() *align(1) const real_t {
+pub inline fn const39_atan3on10() *const real_t {
     return consts.const39_atan3on10();
 }
-pub inline fn const39_atan4on10() *align(1) const real_t {
+pub inline fn const39_atan4on10() *const real_t {
     return consts.const39_atan4on10();
 }
-pub inline fn const39_atan5on10() *align(1) const real_t {
+pub inline fn const39_atan5on10() *const real_t {
     return consts.const39_atan5on10();
 }
-pub inline fn const39_atan6on10() *align(1) const real_t {
+pub inline fn const39_atan6on10() *const real_t {
     return consts.const39_atan6on10();
 }
-pub inline fn const39_atan7on10() *align(1) const real_t {
+pub inline fn const39_atan7on10() *const real_t {
     return consts.const39_atan7on10();
 }
-pub inline fn const39_atan8on10() *align(1) const real_t {
+pub inline fn const39_atan8on10() *const real_t {
     return consts.const39_atan8on10();
 }
-pub inline fn const39_atan9on10() *align(1) const real_t {
+pub inline fn const39_atan9on10() *const real_t {
     return consts.const39_atan9on10();
 }
-pub inline fn const39_atanP08() *align(1) const real_t {
+pub inline fn const39_atanP08() *const real_t {
     return consts.const39_atanP08();
 }
-pub inline fn const39_atanP09() *align(1) const real_t {
+pub inline fn const39_atanP09() *const real_t {
     return consts.const39_atanP09();
 }
-pub inline fn const39_atanP10() *align(1) const real_t {
+pub inline fn const39_atanP10() *const real_t {
     return consts.const39_atanP10();
 }
-pub inline fn const39_atanP11() *align(1) const real_t {
+pub inline fn const39_atanP11() *const real_t {
     return consts.const39_atanP11();
 }
-pub inline fn const39_atanP12() *align(1) const real_t {
+pub inline fn const39_atanP12() *const real_t {
     return consts.const39_atanP12();
 }
-pub inline fn const75_pi() *align(1) const real_t {
+pub inline fn const75_pi() *const real_t {
     return consts.c7388();
 }
-pub inline fn const75_piOn2() *align(1) const real_t {
+pub inline fn const75_piOn2() *const real_t {
     return consts.c7472();
 }
-pub inline fn const75_piOn4() *align(1) const real_t {
+pub inline fn const75_piOn4() *const real_t {
     return consts.c7556();
 }
-pub inline fn const75_3piOn4() *align(1) const real_t {
+pub inline fn const75_3piOn4() *const real_t {
     return consts.c7700();
 }
-pub inline fn const1071_pi() *align(1) const real_t {
+pub inline fn const1071_pi() *const real_t {
     return consts.c9932();
 }
-pub inline fn const1071_piOn2() *align(1) const real_t {
+pub inline fn const1071_piOn2() *const real_t {
     return consts.c9208();
 }
-pub inline fn const1071_piOn4() *align(1) const real_t {
+pub inline fn const1071_piOn4() *const real_t {
     return consts.c8484();
 }
-pub inline fn const1071_3piOn4() *align(1) const real_t {
+pub inline fn const1071_3piOn4() *const real_t {
     return consts.c7760();
 }
-inline fn const75_gammaC00() *align(1) const real_t {
+inline fn const75_gammaC00() *const real_t {
     return consts.const75_gammaC00();
 }
-inline fn const75_gammaC01(k: u32) *align(1) const real_t {
+inline fn const75_gammaC01(k: u32) *const real_t {
     return consts.gammaC75(k);
 }
-pub inline fn const_4() *align(1) const real_t {
+pub inline fn const_4() *const real_t {
     return consts.const_4();
 }
-pub inline fn const_8() *align(1) const real_t {
+pub inline fn const_8() *const real_t {
     return consts.const_8();
 }
-inline fn const_10() *align(1) const real_t {
+inline fn const_10() *const real_t {
     return consts.const_10();
 }
-inline fn const_1e_6() *align(1) const real_t {
+inline fn const_1e_6() *const real_t {
     return consts.const_1e_6();
 }
-inline fn const_1e_34() *align(1) const real_t {
+inline fn const_1e_34() *const real_t {
     return consts.const_1e_34();
 }
-inline fn const_plusInfinity() *align(1) const real_t {
+inline fn const_plusInfinity() *const real_t {
     return consts.c1696();
 }
-inline fn const75_ln2() *align(1) const real_t {
+inline fn const75_ln2() *const real_t {
     return consts.const75_ln2();
 }
-inline fn const75_ln10() *align(1) const real_t {
+inline fn const75_ln10() *const real_t {
     return consts.const75_ln10();
 }
-inline fn const75_2pi() *align(1) const real_t {
+inline fn const75_2pi() *const real_t {
     return consts.const75_2pi();
 }
-inline fn const39_root2() *align(1) const real_t {
+inline fn const39_root2() *const real_t {
     return consts.const39_root2();
 }
-inline fn const_1on40000() *align(1) const real_t {
+inline fn const_1on40000() *const real_t {
     return consts.const_1on40000();
 }
 // RADIAN_REDUCTION_2PI: the DM42 reduces with the 2139-digit 2pi, since the
 // 12321-digit one NaNs on the DM42 decNumber at the 2139 context.
-pub inline fn radianReduction2Pi() *align(1) const real_t {
+pub inline fn radianReduction2Pi() *const real_t {
     return if (comptime runtime.wp34s_mod_small_buffers) consts.const2139_2pi() else consts.const12321_2pi();
 }
 
@@ -316,31 +316,31 @@ extern var ctxtReal75: realContext_t;
 pub extern var explicitTaylorIterVisibilitySelection: bool;
 
 // decNumber primitives (the realType.h macros expand to these).
-extern fn decNumberCopy(res: *align(1) real_t, source: *align(1) const real_t) *align(1) real_t;
-extern fn decNumberCopyAbs(res: *align(1) real_t, source: *align(1) const real_t) *align(1) real_t;
-extern fn decNumberPlus(res: *align(1) real_t, operand: *align(1) const real_t, ctxt: *realContext_t) *align(1) real_t;
-extern fn decNumberMinus(res: *align(1) real_t, operand: *align(1) const real_t, ctxt: *realContext_t) *align(1) real_t;
-extern fn decNumberAdd(res: *align(1) real_t, op1: *align(1) const real_t, op2: *align(1) const real_t, ctxt: *realContext_t) *align(1) real_t;
-extern fn decNumberSubtract(res: *align(1) real_t, op1: *align(1) const real_t, op2: *align(1) const real_t, ctxt: *realContext_t) *align(1) real_t;
-extern fn decNumberMultiply(res: *align(1) real_t, op1: *align(1) const real_t, op2: *align(1) const real_t, ctxt: *realContext_t) *align(1) real_t;
-extern fn decNumberDivide(res: *align(1) real_t, op1: *align(1) const real_t, op2: *align(1) const real_t, ctxt: *realContext_t) *align(1) real_t;
-extern fn decNumberSquareRoot(res: *align(1) real_t, rhs: *align(1) const real_t, ctxt: *realContext_t) *align(1) real_t;
-extern fn decNumberPower(res: *align(1) real_t, op1: *align(1) const real_t, op2: *align(1) const real_t, ctxt: *realContext_t) *align(1) real_t;
-extern fn decNumberCompare(res: *align(1) real_t, op1: *align(1) const real_t, op2: *align(1) const real_t, ctxt: *realContext_t) *align(1) real_t;
-extern fn decNumberRemainder(res: *align(1) real_t, op1: *align(1) const real_t, op2: *align(1) const real_t, ctxt: *realContext_t) *align(1) real_t;
-extern fn decNumberNextToward(res: *align(1) real_t, from: *align(1) const real_t, toward: *align(1) const real_t, ctxt: *realContext_t) *align(1) real_t;
-extern fn decNumberFMA(res: *align(1) real_t, factor1: *align(1) const real_t, factor2: *align(1) const real_t, term: *align(1) const real_t, ctxt: *realContext_t) *align(1) real_t;
-extern fn decNumberFromString(res: *align(1) real_t, source: [*:0]const u8, ctxt: *realContext_t) *align(1) real_t;
-extern fn decNumberFromInt32(res: *align(1) real_t, source: i32) *align(1) real_t;
-extern fn decNumberFromUInt32(res: *align(1) real_t, source: u32) *align(1) real_t;
+extern fn decNumberCopy(res: *real_t, source: *const real_t) *real_t;
+extern fn decNumberCopyAbs(res: *real_t, source: *const real_t) *real_t;
+extern fn decNumberPlus(res: *real_t, operand: *const real_t, ctxt: *realContext_t) *real_t;
+extern fn decNumberMinus(res: *real_t, operand: *const real_t, ctxt: *realContext_t) *real_t;
+extern fn decNumberAdd(res: *real_t, op1: *const real_t, op2: *const real_t, ctxt: *realContext_t) *real_t;
+extern fn decNumberSubtract(res: *real_t, op1: *const real_t, op2: *const real_t, ctxt: *realContext_t) *real_t;
+extern fn decNumberMultiply(res: *real_t, op1: *const real_t, op2: *const real_t, ctxt: *realContext_t) *real_t;
+extern fn decNumberDivide(res: *real_t, op1: *const real_t, op2: *const real_t, ctxt: *realContext_t) *real_t;
+extern fn decNumberSquareRoot(res: *real_t, rhs: *const real_t, ctxt: *realContext_t) *real_t;
+extern fn decNumberPower(res: *real_t, op1: *const real_t, op2: *const real_t, ctxt: *realContext_t) *real_t;
+extern fn decNumberCompare(res: *real_t, op1: *const real_t, op2: *const real_t, ctxt: *realContext_t) *real_t;
+extern fn decNumberRemainder(res: *real_t, op1: *const real_t, op2: *const real_t, ctxt: *realContext_t) *real_t;
+extern fn decNumberNextToward(res: *real_t, from: *const real_t, toward: *const real_t, ctxt: *realContext_t) *real_t;
+extern fn decNumberFMA(res: *real_t, factor1: *const real_t, factor2: *const real_t, term: *const real_t, ctxt: *realContext_t) *real_t;
+extern fn decNumberFromString(res: *real_t, source: [*:0]const u8, ctxt: *realContext_t) *real_t;
+extern fn decNumberFromInt32(res: *real_t, source: i32) *real_t;
+extern fn decNumberFromUInt32(res: *real_t, source: u32) *real_t;
 
 // real* setters / predicates.
-pub extern fn realSetNaN(value: *align(1) real_t) void;
-extern fn realSetPlusInfinity(value: *align(1) real_t) void;
-extern fn realSetMinusInfinity(value: *align(1) real_t) void;
+pub extern fn realSetNaN(value: *real_t) void;
+extern fn realSetPlusInfinity(value: *real_t) void;
+extern fn realSetMinusInfinity(value: *real_t) void;
 
 // Higher-level real ops / transcendentals from elsewhere in the tree.
-pub extern fn convertAngleFromTo(angle: *align(1) real_t, from: angularMode_t, to: angularMode_t, ctxt: *realContext_t) void;
+pub extern fn convertAngleFromTo(angle: *real_t, from: angularMode_t, to: angularMode_t, ctxt: *realContext_t) void;
 
 // Orthogonal polynomial kind constants (defines.h:2043 — order matters; the C
 // caller in ortho_polynom.c passes these exact values to switch on).
@@ -371,92 +371,92 @@ pub const TaylorIterationMax: i32 = 1000;
 
 // ---------------------------------------------------------------------------
 // real_t op helpers mirroring the realType.h macro argument order. Operands are
-// *align(1) const real_t so blob constants and stack scratch both work.
+// *const real_t so blob constants and stack scratch both work.
 // ---------------------------------------------------------------------------
-pub inline fn realCopy(source: *align(1) const real_t, destination: *align(1) real_t) void {
+pub inline fn realCopy(source: *const real_t, destination: *real_t) void {
     _ = decNumberCopy(destination, source);
 }
-pub inline fn realCopyAbs(source: *align(1) const real_t, destination: *align(1) real_t) void {
+pub inline fn realCopyAbs(source: *const real_t, destination: *real_t) void {
     _ = decNumberCopyAbs(destination, source);
 }
-pub inline fn realPlus(operand: *align(1) const real_t, res: *align(1) real_t, ctxt: *realContext_t) void {
+pub inline fn realPlus(operand: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberPlus(res, operand, ctxt);
 }
-pub inline fn realMinus(operand: *align(1) const real_t, res: *align(1) real_t, ctxt: *realContext_t) void {
+pub inline fn realMinus(operand: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberMinus(res, operand, ctxt);
 }
-pub inline fn realAdd(op1: *align(1) const real_t, op2: *align(1) const real_t, res: *align(1) real_t, ctxt: *realContext_t) void {
+pub inline fn realAdd(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberAdd(res, op1, op2, ctxt);
 }
-pub inline fn realSubtract(op1: *align(1) const real_t, op2: *align(1) const real_t, res: *align(1) real_t, ctxt: *realContext_t) void {
+pub inline fn realSubtract(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberSubtract(res, op1, op2, ctxt);
 }
-pub inline fn realMultiply(op1: *align(1) const real_t, op2: *align(1) const real_t, res: *align(1) real_t, ctxt: *realContext_t) void {
+pub inline fn realMultiply(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberMultiply(res, op1, op2, ctxt);
 }
-pub inline fn realDivide(op1: *align(1) const real_t, op2: *align(1) const real_t, res: *align(1) real_t, ctxt: *realContext_t) void {
+pub inline fn realDivide(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberDivide(res, op1, op2, ctxt);
 }
-pub inline fn realSquareRoot(operand: *align(1) const real_t, res: *align(1) real_t, ctxt: *realContext_t) void {
+pub inline fn realSquareRoot(operand: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberSquareRoot(res, operand, ctxt);
 }
-inline fn realPower(op1: *align(1) const real_t, op2: *align(1) const real_t, res: *align(1) real_t, ctxt: *realContext_t) void {
+inline fn realPower(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberPower(res, op1, op2, ctxt);
 }
-pub inline fn realCompare(op1: *align(1) const real_t, op2: *align(1) const real_t, res: *align(1) real_t, ctxt: *realContext_t) void {
+pub inline fn realCompare(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberCompare(res, op1, op2, ctxt);
 }
-inline fn realNextToward(from: *align(1) const real_t, toward: *align(1) const real_t, res: *align(1) real_t, ctxt: *realContext_t) void {
+inline fn realNextToward(from: *const real_t, toward: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberNextToward(res, from, toward, ctxt);
 }
-pub inline fn realDivideRemainder(op1: *align(1) const real_t, op2: *align(1) const real_t, res: *align(1) real_t, ctxt: *realContext_t) void {
+pub inline fn realDivideRemainder(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberRemainder(res, op1, op2, ctxt);
 }
-inline fn realFMA(factor1: *align(1) const real_t, factor2: *align(1) const real_t, term: *align(1) const real_t, res: *align(1) real_t, ctxt: *realContext_t) void {
+inline fn realFMA(factor1: *const real_t, factor2: *const real_t, term: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberFMA(res, factor1, factor2, term, ctxt);
 }
-inline fn realExp(x: *align(1) const real_t, res: *align(1) real_t, ctxt: *realContext_t) void {
+inline fn realExp(x: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     math_command_wrappers.realExp(@alignCast(x), @alignCast(res), ctxt);
 }
-pub inline fn stringToReal(source: [*:0]const u8, destination: *align(1) real_t, ctxt: *realContext_t) void {
+pub inline fn stringToReal(source: [*:0]const u8, destination: *real_t, ctxt: *realContext_t) void {
     _ = decNumberFromString(destination, source, ctxt);
 }
-inline fn int32ToReal(source: i32, destination: *align(1) real_t) void {
+inline fn int32ToReal(source: i32, destination: *real_t) void {
     _ = decNumberFromInt32(destination, source);
 }
-pub inline fn uInt32ToReal(source: u32, destination: *align(1) real_t) void {
+pub inline fn uInt32ToReal(source: u32, destination: *real_t) void {
     _ = decNumberFromUInt32(destination, source);
 }
 
-pub inline fn realSetOne(r: *align(1) real_t) void {
+pub inline fn realSetOne(r: *real_t) void {
     _ = decNumberFromInt32(r, 1);
 }
-pub inline fn realSetNegativeOne(r: *align(1) real_t) void {
+pub inline fn realSetNegativeOne(r: *real_t) void {
     _ = decNumberFromInt32(r, -1);
 }
-pub inline fn realSetZero(r: *align(1) real_t) void {
+pub inline fn realSetZero(r: *real_t) void {
     _ = decNumberFromInt32(r, 0);
 }
 pub const realIsNegative = math_real_predicates.realIsNegative;
 pub const realIsPositive = math_real_predicates.realIsPositive;
 pub const realIsZero = math_real_predicates.realIsZero;
 const realIsSpecial = math_real_predicates.realIsSpecial;
-pub inline fn realIsInfinite(source: *align(1) const real_t) bool {
+pub inline fn realIsInfinite(source: *const real_t) bool {
     return (source.bits & 0x40) != 0;
 }
-pub inline fn realIsNaN(source: *align(1) const real_t) bool {
+pub inline fn realIsNaN(source: *const real_t) bool {
     return (source.bits & (0x20 | 0x10)) != 0;
 }
-pub inline fn realChangeSign(operand: *align(1) real_t) void {
+pub inline fn realChangeSign(operand: *real_t) void {
     operand.bits ^= 0x80;
 }
-pub inline fn realSetNegativeSign(operand: *align(1) real_t) void {
+pub inline fn realSetNegativeSign(operand: *real_t) void {
     operand.bits |= 0x80;
 }
-pub inline fn realSetPositiveSign(operand: *align(1) real_t) void {
+pub inline fn realSetPositiveSign(operand: *real_t) void {
     operand.bits &= 0x7F;
 }
-pub inline fn realGetExponent(source: *align(1) const real_t) i32 {
+pub inline fn realGetExponent(source: *const real_t) i32 {
     return source.digits + source.exponent - 1;
 }
 
@@ -478,7 +478,7 @@ inline fn realSizeInBytes(comptime digits: u32) u32 {
 pub fn BigReal(comptime digits: u32) type {
     return struct {
         buf: [realSizeInBytes(digits)]u8 align(4) = undefined,
-        pub inline fn ptr(self: *@This()) *align(1) real_t {
+        pub inline fn ptr(self: *@This()) *real_t {
             return @ptrCast(&self.buf);
         }
     };
@@ -488,15 +488,23 @@ pub fn BigReal(comptime digits: u32) type {
 // the frame: eight of them at 724 bytes is 5792 bytes of a 5832-byte frame on an
 // arm build, and that frame is the stack reason XFN 1000 is kept off the DM42
 // (defines.h). Same allocator as REAL_T_ALLOC/REAL_T_FREE.
-extern fn malloc(size: usize) ?*anyopaque;
-extern fn free(ptr: ?*anyopaque) void;
+// C's malloc, read as the 4-byte words this owner lays reals out in: its result
+// is aligned for any object, so a word is a valid view of it. Any pointer
+// coerces to free's parameter.
+extern fn malloc(size: usize) ?[*]u32;
+extern fn free(ptr: ?*const anyopaque) void;
 
-pub inline fn mallocBigReal(comptime digits: u32) ?*align(1) real_t {
-    return @ptrCast(malloc(realSizeInBytes(digits)));
+/// The real_t that starts at `words`.
+fn realAt(words: [*]u32) *real_t {
+    return std.mem.bytesAsValue(real_t, std.mem.sliceAsBytes(words[0 .. @sizeOf(real_t) / 4])[0..@sizeOf(real_t)]);
 }
 
-pub inline fn freeBigReal(ptr: ?*align(1) real_t) void {
-    free(@ptrCast(ptr));
+pub inline fn mallocBigReal(comptime digits: u32) ?*real_t {
+    return realAt(malloc(realSizeInBytes(digits)) orelse return null);
+}
+
+pub inline fn freeBigReal(ptr: ?*real_t) void {
+    free(ptr);
 }
 
 // ===========================================================================
@@ -888,7 +896,7 @@ pub export fn fnDistribution(param: u16) callconv(.c) void {
 }
 
 /// Whether a distribution parameter is positive and finite.
-pub export fn WP34S_IsPositiveFinite(value: *align(1) const real_t) callconv(.c) bool {
+pub export fn WP34S_IsPositiveFinite(value: *const real_t) callconv(.c) bool {
     return !realIsSpecial(value) and math_comparison_reals.realCompareGreaterThan(value, const_0());
 }
 
@@ -898,7 +906,7 @@ pub export fn WP34S_AtLeastContext(realContext: *realContext_t, fallbackContext:
 }
 
 /// p75 when both incomplete-beta shapes enter the concentrated range, p51 otherwise.
-pub export fn WP34S_BetaCalculationContext(a: *align(1) const real_t, b: *align(1) const real_t) callconv(.c) *realContext_t {
+pub export fn WP34S_BetaCalculationContext(a: *const real_t, b: *const real_t) callconv(.c) *realContext_t {
     var threshold: real_t = undefined;
 
     WP34S_SetPowerOfTen(5, &threshold);
@@ -906,13 +914,13 @@ pub export fn WP34S_BetaCalculationContext(a: *align(1) const real_t, b: *align(
 }
 
 /// Sets a real value to a power of ten.
-pub export fn WP34S_SetPowerOfTen(exponent: i32, res: *align(1) real_t) callconv(.c) void {
+pub export fn WP34S_SetPowerOfTen(exponent: i32, res: *real_t) callconv(.c) void {
     realSetOne(res);
     res.exponent = exponent;
 }
 
 /// Retains the strict side of a finite non-endpoint probability.
-pub export fn WP34S_MarkProbability(value: *align(1) real_t, realContext: *realContext_t) callconv(.c) void {
+pub export fn WP34S_MarkProbability(value: *real_t, realContext: *realContext_t) callconv(.c) void {
     if (realIsZero(value)) {
         realNextToward(value, const_1(), value, realContext);
     } else if (math_comparison_reals.realCompareEqual(value, const_1())) {
@@ -921,14 +929,14 @@ pub export fn WP34S_MarkProbability(value: *align(1) real_t, realContext: *realC
 }
 
 /// Retains the positive side of an underflowed finite value.
-pub export fn WP34S_MarkPositive(value: *align(1) real_t, realContext: *realContext_t) callconv(.c) void {
+pub export fn WP34S_MarkPositive(value: *real_t, realContext: *realContext_t) callconv(.c) void {
     if (realIsZero(value)) {
         realNextToward(value, const_1(), value, realContext);
     }
 }
 
 /// Whether a subtraction cancelled more than `places` decimal places.
-pub export fn WP34S_HasCancellation(left: *align(1) const real_t, right: *align(1) const real_t, result: *align(1) const real_t, places: i32) callconv(.c) bool {
+pub export fn WP34S_HasCancellation(left: *const real_t, right: *const real_t, result: *const real_t, places: i32) callconv(.c) bool {
     if (realIsZero(left) or realIsZero(right) or realIsSpecial(result)) {
         return false;
     }
@@ -942,7 +950,7 @@ pub export fn WP34S_HasCancellation(left: *align(1) const real_t, right: *align(
 /// Forms a probability, its complement, their logarithms and their logit without
 /// endpoint cancellation: the logarithm of the smaller of the two is taken
 /// directly and the other through ln(1 - p).
-pub export fn WP34S_DistributionProbabilityData(probability: *align(1) const real_t, complement: *align(1) real_t, logProbability: *align(1) real_t, logComplement: *align(1) real_t, logit: *align(1) real_t, realContext: *realContext_t) callconv(.c) void {
+pub export fn WP34S_DistributionProbabilityData(probability: *const real_t, complement: *real_t, logProbability: *real_t, logComplement: *real_t, logit: *real_t, realContext: *realContext_t) callconv(.c) void {
     var negative: real_t = undefined;
 
     realSubtract(const_1(), probability, complement, realContext);
@@ -963,7 +971,7 @@ const DEC_ROUND_UP: c_int = 1; // decContext.h rounding enum order
 /// Applies real39 positive-underflow rounding to an extended positive value: a
 /// value below the smallest Real34 subnormal rounds to it or to zero by the
 /// rounding mode.
-pub export fn WP34S_AdjustPositiveUnderflow(value: *align(1) real_t) callconv(.c) void {
+pub export fn WP34S_AdjustPositiveUnderflow(value: *real_t) callconv(.c) void {
     var minimum: real_t = undefined;
     var halfMinimum: real_t = undefined;
     var roundUp = false;
@@ -987,7 +995,7 @@ pub export fn WP34S_AdjustPositiveUnderflow(value: *align(1) real_t) callconv(.c
 }
 
 /// ln(1 + x) - x without cancellation for a small argument.
-pub export fn WP34S_Log1pMinus(value: *align(1) const real_t, res: *align(1) real_t, realContext: *realContext_t) callconv(.c) void {
+pub export fn WP34S_Log1pMinus(value: *const real_t, res: *real_t, realContext: *realContext_t) callconv(.c) void {
     var term: real_t = undefined;
     var sum: real_t = undefined;
     var previous: real_t = undefined;
@@ -1030,22 +1038,22 @@ fn realSizeInBytesRuntime(digits: u32) usize {
 // not the DM42 frame.
 fn HeapReals(comptime count: usize) type {
     return struct {
-        block: *anyopaque,
-        size: usize,
+        words: [*]u32,
+        /// Words per real: each one starts on a word, as a real_t must.
+        stride: usize,
 
         fn init(digits: i32) ?@This() {
-            const size = realSizeInBytesRuntime(@intCast(digits));
-            const block = malloc(size * count) orelse return null;
-            return .{ .block = block, .size = size };
+            const stride = @divCeil(realSizeInBytesRuntime(@intCast(digits)), 4);
+            const words = malloc(stride * 4 * count) orelse return null;
+            return .{ .words = words, .stride = stride };
         }
 
         fn deinit(self: @This()) void {
-            free(self.block);
+            free(&self.words[0]);
         }
 
-        fn at(self: @This(), index: usize) *align(1) real_t {
-            const bytes: [*]u8 = @ptrCast(self.block);
-            return @ptrCast(bytes + index * self.size);
+        fn at(self: @This(), index: usize) *real_t {
+            return realAt(self.words + index * self.stride);
         }
     };
 }
@@ -1053,7 +1061,7 @@ fn HeapReals(comptime count: usize) type {
 // The natural logarithm of a value near one: repeated square roots bring it
 // inside [sqrt(2)/2, sqrt(2)], and the atanh series of (z-1)/(z+1) runs at the
 // caller's precision. NaN when the working reals cannot be allocated.
-fn wp34sLnReduced(x: *align(1) const real_t, res: *align(1) real_t, realContext: *realContext_t) void {
+fn wp34sLnReduced(x: *const real_t, res: *real_t, realContext: *realContext_t) void {
     const reals = HeapReals(7).init(realContext.digits) orelse {
         realSetNaN(res);
         return;
@@ -1097,7 +1105,7 @@ fn wp34sLnReduced(x: *align(1) const real_t, res: *align(1) real_t, realContext:
 /// A natural logarithm from decimal range reduction and an atanh series, at the
 /// caller's (extended) precision: the mantissa in [0.1, 1) is reduced, and the
 /// decimal exponent contributes that many times ln 10.
-pub export fn WP34S_LnExtended(x: *align(1) const real_t, res: *align(1) real_t, realContext: *realContext_t) callconv(.c) void {
+pub export fn WP34S_LnExtended(x: *const real_t, res: *real_t, realContext: *realContext_t) callconv(.c) void {
     if (math_comparison_reals.realCompareGreaterEqual(x, const_1on2()) and math_comparison_reals.realCompareLessEqual(x, const_3on2())) {
         wp34sLnReduced(x, res, realContext);
         return;
@@ -1127,10 +1135,10 @@ pub export fn WP34S_LnExtended(x: *align(1) const real_t, res: *align(1) real_t,
 // These wrappers keep the exact C-ABI export symbols and delegate.
 // ===========================================================================
 pub export fn reduceAngleToRange(
-    angle: *align(1) real_t,
-    angle45: *(*align(1) const real_t),
-    angle90: *(*align(1) const real_t),
-    angle180: *(*align(1) const real_t),
+    angle: *real_t,
+    angle45: *(*const real_t),
+    angle90: *(*const real_t),
+    angle180: *(*const real_t),
     angularMode: *angularMode_t,
     savedContextDigits: i32,
     realContext: *realContext_t,
@@ -1138,11 +1146,11 @@ pub export fn reduceAngleToRange(
     wp34s_trig.reduceAngleToRange(angle, angle45, angle90, angle180, angularMode, savedContextDigits, realContext);
 }
 
-pub export fn C47_WP34S_Cvt2RadSinCosTan(an: *align(1) const real_t, angularMode: angularMode_t, sinOut: ?*align(1) real_t, cosOut: ?*align(1) real_t, tanOut: ?*align(1) real_t, realContext: *realContext_t) callconv(.c) void {
+pub export fn C47_WP34S_Cvt2RadSinCosTan(an: *const real_t, angularMode: angularMode_t, sinOut: ?*real_t, cosOut: ?*real_t, tanOut: ?*real_t, realContext: *realContext_t) callconv(.c) void {
     wp34s_trig.C47_WP34S_Cvt2RadSinCosTan(an, angularMode, sinOut, cosOut, tanOut, realContext);
 }
 
-pub export fn C47_WP34S_SinCosTanTaylor(a: *align(1) const real_t, swap: bool, sinOut: ?*align(1) real_t, cosOut: ?*align(1) real_t, tanOut: ?*align(1) real_t, realContext: *realContext_t) callconv(.c) void {
+pub export fn C47_WP34S_SinCosTanTaylor(a: *const real_t, swap: bool, sinOut: ?*real_t, cosOut: ?*real_t, tanOut: ?*real_t, realContext: *realContext_t) callconv(.c) void {
     wp34s_trig.C47_WP34S_SinCosTanTaylor(a, swap, sinOut, cosOut, tanOut, realContext);
 }
 
@@ -1181,19 +1189,19 @@ pub fn formatEminusD(buf: *[16]u8, d: i32) [*:0]const u8 {
 // Inverse-circular family (atan/atan2/asin/acos) -> trig/wp34s_atan.zig.
 // These wrappers keep the exact C-ABI export symbols and delegate.
 // ===========================================================================
-pub export fn C47_WP34S_Atan(x: *align(1) const real_t, angle: *align(1) real_t, realContext: *realContext_t) callconv(.c) void {
+pub export fn C47_WP34S_Atan(x: *const real_t, angle: *real_t, realContext: *realContext_t) callconv(.c) void {
     wp34s_atan.C47_WP34S_Atan(x, angle, realContext);
 }
 
-pub export fn C47_WP34S_Atan2(y: *align(1) const real_t, x: *align(1) const real_t, atan: *align(1) real_t, realContext: *realContext_t) callconv(.c) void {
+pub export fn C47_WP34S_Atan2(y: *const real_t, x: *const real_t, atan: *real_t, realContext: *realContext_t) callconv(.c) void {
     wp34s_atan.C47_WP34S_Atan2(y, x, atan, realContext);
 }
 
-pub export fn C47_WP34S_Asin(x: *align(1) const real_t, angle: *align(1) real_t, realContext: *realContext_t) callconv(.c) void {
+pub export fn C47_WP34S_Asin(x: *const real_t, angle: *real_t, realContext: *realContext_t) callconv(.c) void {
     wp34s_atan.C47_WP34S_Asin(x, angle, realContext);
 }
 
-pub export fn C47_WP34S_Acos(x: *align(1) const real_t, angle: *align(1) real_t, realContext: *realContext_t) callconv(.c) void {
+pub export fn C47_WP34S_Acos(x: *const real_t, angle: *real_t, realContext: *realContext_t) callconv(.c) void {
     wp34s_atan.C47_WP34S_Acos(x, angle, realContext);
 }
 
@@ -1201,7 +1209,7 @@ pub export fn C47_WP34S_Acos(x: *align(1) const real_t, angle: *align(1) real_t,
 // WP34S_LanczosSum + WP34S_Calc_Gamma_LnGamma_Lanczos (static)
 // ===========================================================================
 /// The real Lanczos coefficient sum: C00 + sum over k of C(k+1) / (x + offset - 28 + k).
-pub export fn WP34S_LanczosSum(x: *align(1) const real_t, offset: *align(1) const real_t, res: *align(1) real_t, realContext: *realContext_t) callconv(.c) void {
+pub export fn WP34S_LanczosSum(x: *const real_t, offset: *const real_t, res: *real_t, realContext: *realContext_t) callconv(.c) void {
     var denominator: real_t = undefined;
     var term: real_t = undefined;
 
@@ -1216,7 +1224,7 @@ pub export fn WP34S_LanczosSum(x: *align(1) const real_t, offset: *align(1) cons
     realAdd(res, const75_gammaC00(), res, realContext);
 }
 
-fn WP34S_Calc_Gamma_LnGamma_Lanczos(xin: *align(1) const real_t, res: *align(1) real_t, calculateLnGamma: bool, realContext: *realContext_t) void {
+fn WP34S_Calc_Gamma_LnGamma_Lanczos(xin: *const real_t, res: *real_t, calculateLnGamma: bool, realContext: *realContext_t) void {
     var r: real_t = undefined;
     var s: real_t = undefined;
     var t: real_t = undefined;
@@ -1258,7 +1266,7 @@ fn WP34S_Calc_Gamma_LnGamma_Lanczos(xin: *align(1) const real_t, res: *align(1) 
 // ===========================================================================
 // WP34S_Gamma_LnGamma (static)
 // ===========================================================================
-fn WP34S_Gamma_LnGamma(xin: *align(1) const real_t, calculateLnGamma: bool, res: *align(1) real_t, realContext: *realContext_t) void {
+fn WP34S_Gamma_LnGamma(xin: *const real_t, calculateLnGamma: bool, res: *real_t, realContext: *realContext_t) void {
     var x: real_t = undefined;
     var t: real_t = undefined;
     var reflect: bool = false;
@@ -1349,19 +1357,19 @@ fn WP34S_Gamma_LnGamma(xin: *align(1) const real_t, calculateLnGamma: bool, res:
 // ===========================================================================
 // WP34S_Factorial / WP34S_Gamma / WP34S_LnGamma
 // ===========================================================================
-pub export fn WP34S_Factorial(xin: *align(1) const real_t, res: *align(1) real_t, realContext: *realContext_t) callconv(.c) void {
+pub export fn WP34S_Factorial(xin: *const real_t, res: *real_t, realContext: *realContext_t) callconv(.c) void {
     var x: real_t = undefined;
     realAdd(xin, const_1(), &x, realContext);
     WP34S_Gamma_LnGamma(&x, false, res, realContext);
 }
 
-pub export fn WP34S_Gamma(xin: *align(1) const real_t, res: *align(1) real_t, realContext: *realContext_t) callconv(.c) void {
+pub export fn WP34S_Gamma(xin: *const real_t, res: *real_t, realContext: *realContext_t) callconv(.c) void {
     var x: real_t = undefined;
     realCopy(xin, &x);
     WP34S_Gamma_LnGamma(&x, false, res, realContext);
 }
 
-pub export fn WP34S_LnGamma(xin: *align(1) const real_t, res: *align(1) real_t, realContext: *realContext_t) callconv(.c) void {
+pub export fn WP34S_LnGamma(xin: *const real_t, res: *real_t, realContext: *realContext_t) callconv(.c) void {
     var x: real_t = undefined;
     realCopy(xin, &x);
     WP34S_Gamma_LnGamma(&x, true, res, realContext);
@@ -1370,7 +1378,7 @@ pub export fn WP34S_LnGamma(xin: *align(1) const real_t, res: *align(1) real_t, 
 // ===========================================================================
 // WP34S_Ln
 // ===========================================================================
-pub export fn WP34S_Ln(xin: *align(1) const real_t, res: *align(1) real_t, realContext: *realContext_t) callconv(.c) void {
+pub export fn WP34S_Ln(xin: *const real_t, res: *real_t, realContext: *realContext_t) callconv(.c) void {
     var z: real_t = undefined;
     var t: real_t = undefined;
     var f: real_t = undefined;
@@ -1454,7 +1462,7 @@ pub export fn WP34S_Ln(xin: *align(1) const real_t, res: *align(1) real_t, realC
 // ===========================================================================
 // WP34S_Log / WP34S_Log10 / WP34S_Logxy
 // ===========================================================================
-pub export fn WP34S_Log(xin: *align(1) const real_t, base: *align(1) const real_t, res: *align(1) real_t, realContext: *realContext_t) callconv(.c) void {
+pub export fn WP34S_Log(xin: *const real_t, base: *const real_t, res: *real_t, realContext: *realContext_t) callconv(.c) void {
     var y: real_t = undefined;
 
     if (realIsSpecial(xin)) {
@@ -1472,11 +1480,11 @@ pub export fn WP34S_Log(xin: *align(1) const real_t, base: *align(1) const real_
     realDivide(&y, base, res, realContext);
 }
 
-pub export fn WP34S_Log10(xin: *align(1) const real_t, res: *align(1) real_t, realContext: *realContext_t) callconv(.c) void {
+pub export fn WP34S_Log10(xin: *const real_t, res: *real_t, realContext: *realContext_t) callconv(.c) void {
     WP34S_Log(xin, const39_ln10(), res, realContext);
 }
 
-pub export fn WP34S_Logxy(yin: *align(1) const real_t, xin: *align(1) const real_t, res: *align(1) real_t, realContext: *realContext_t) callconv(.c) void {
+pub export fn WP34S_Logxy(yin: *const real_t, xin: *const real_t, res: *real_t, realContext: *realContext_t) callconv(.c) void {
     var lx: real_t = undefined;
 
     WP34S_Ln(xin, &lx, realContext);
@@ -1486,7 +1494,7 @@ pub export fn WP34S_Logxy(yin: *align(1) const real_t, xin: *align(1) const real
 // ===========================================================================
 // WP34S_RelativeError / WP34S_AbsoluteError
 // ===========================================================================
-pub export fn WP34S_RelativeError(x: *align(1) const real_t, y: *align(1) const real_t, tol: *align(1) const real_t, realContext: *realContext_t) callconv(.c) bool {
+pub export fn WP34S_RelativeError(x: *const real_t, y: *const real_t, tol: *const real_t, realContext: *realContext_t) callconv(.c) bool {
     var a: real_t = undefined;
 
     if (realIsZero(x)) {
@@ -1500,13 +1508,13 @@ pub export fn WP34S_RelativeError(x: *align(1) const real_t, y: *align(1) const 
     return math_comparison_reals.realCompareLessThan(&a, @alignCast(tol));
 }
 
-pub export fn WP34S_AbsoluteError(x: *align(1) const real_t, y: *align(1) const real_t, tol: *align(1) const real_t, realContext: *realContext_t) callconv(.c) bool {
+pub export fn WP34S_AbsoluteError(x: *const real_t, y: *const real_t, tol: *const real_t, realContext: *realContext_t) callconv(.c) bool {
     var a: real_t = undefined;
     realSubtract(x, y, &a, realContext);
     return math_comparison_reals.realCompareAbsLessThan(&a, @alignCast(tol));
 }
 
-pub export fn WP34S_ComplexRelativeError(x: *const cplx_t, y: *const cplx_t, tol: *align(1) const real_t, realContext: *realContext_t) callconv(.c) bool {
+pub export fn WP34S_ComplexRelativeError(x: *const cplx_t, y: *const cplx_t, tol: *const real_t, realContext: *realContext_t) callconv(.c) bool {
     var a: cplx_t = undefined;
 
     if (realIsZero(&x.Real) and realIsZero(&x.Imag)) {
@@ -1520,7 +1528,7 @@ pub export fn WP34S_ComplexRelativeError(x: *const cplx_t, y: *const cplx_t, tol
     return math_comparison_reals.realCompareLessThan(&a.Real, tol);
 }
 
-pub export fn WP34S_ComplexAbsError(x: *const cplx_t, y: *const cplx_t, tol: *align(1) const real_t, realContext: *realContext_t) callconv(.c) bool {
+pub export fn WP34S_ComplexAbsError(x: *const cplx_t, y: *const cplx_t, tol: *const real_t, realContext: *realContext_t) callconv(.c) bool {
     var r: real_t = undefined;
     var a: cplx_t = undefined;
 
@@ -1533,7 +1541,7 @@ pub export fn WP34S_ComplexAbsError(x: *const cplx_t, y: *const cplx_t, tol: *al
 // ===========================================================================
 // WP34S_SinhCosh / WP34S_Tanh
 // ===========================================================================
-pub export fn WP34S_SinhCosh(x: *align(1) const real_t, sinhOut: ?*align(1) real_t, coshOut: ?*align(1) real_t, realContext: *realContext_t) callconv(.c) void {
+pub export fn WP34S_SinhCosh(x: *const real_t, sinhOut: ?*real_t, coshOut: ?*real_t, realContext: *realContext_t) callconv(.c) void {
     var t: real_t = undefined;
     var u: real_t = undefined;
     var v: real_t = undefined;
@@ -1569,7 +1577,7 @@ pub export fn WP34S_SinhCosh(x: *align(1) const real_t, sinhOut: ?*align(1) real
     }
 }
 
-pub export fn WP34S_Tanh(x: *align(1) const real_t, res: *align(1) real_t, realContext: *realContext_t) callconv(.c) void {
+pub export fn WP34S_Tanh(x: *const real_t, res: *real_t, realContext: *realContext_t) callconv(.c) void {
     const negative = realIsNegative(x);
 
     if (realIsNaN(x)) {
@@ -1596,7 +1604,7 @@ pub export fn WP34S_Tanh(x: *align(1) const real_t, res: *align(1) real_t, realC
 /// equals x; one step from x keeps it above or below |x|, so rounding it to 34
 /// digits gives the exact value rounded once. The series runs on |x| and the
 /// result takes the sign of x.
-pub export fn WP34S_TinyOddSeries(x: *align(1) const real_t, divisor: *align(1) const real_t, above: bool, res: *align(1) real_t, realContext: *realContext_t) callconv(.c) void {
+pub export fn WP34S_TinyOddSeries(x: *const real_t, divisor: *const real_t, above: bool, res: *real_t, realContext: *realContext_t) callconv(.c) void {
     var a: real_t = undefined;
     var t: real_t = undefined;
     var s: real_t = undefined;
@@ -1624,7 +1632,7 @@ pub export fn WP34S_TinyOddSeries(x: *align(1) const real_t, divisor: *align(1) 
 // WP34S_ArcSinh / WP34S_ArcTanh
 // ===========================================================================
 // -0 for a negative zero, +0 otherwise: -1 divided by +infinity keeps the sign.
-fn signedZero(negative: bool, res: *align(1) real_t, realContext: *realContext_t) void {
+fn signedZero(negative: bool, res: *real_t, realContext: *realContext_t) void {
     if (negative) {
         realDivide(const__1(), const_plusInfinity(), res, realContext);
     } else {
@@ -1632,7 +1640,7 @@ fn signedZero(negative: bool, res: *align(1) real_t, realContext: *realContext_t
     }
 }
 
-pub export fn WP34S_ArcSinh(x: *align(1) const real_t, res: *align(1) real_t, realContext: *realContext_t) callconv(.c) void {
+pub export fn WP34S_ArcSinh(x: *const real_t, res: *real_t, realContext: *realContext_t) callconv(.c) void {
     var a: real_t = undefined;
     var s: real_t = undefined;
     const negative = realIsNegative(x);
@@ -1666,7 +1674,7 @@ pub export fn WP34S_ArcSinh(x: *align(1) const real_t, res: *align(1) real_t, re
     }
 }
 
-pub export fn WP34S_ArcTanh(x: *align(1) const real_t, res: *align(1) real_t, realContext: *realContext_t) callconv(.c) void {
+pub export fn WP34S_ArcTanh(x: *const real_t, res: *real_t, realContext: *realContext_t) callconv(.c) void {
     var y: real_t = undefined;
     var z: real_t = undefined;
     const negative = realIsNegative(x);
@@ -1691,7 +1699,7 @@ pub export fn WP34S_ArcTanh(x: *align(1) const real_t, res: *align(1) real_t, re
 // ===========================================================================
 // WP34S_Ln1P / WP34S_ExpM1
 // ===========================================================================
-pub export fn WP34S_Ln1P(x: *align(1) const real_t, res: *align(1) real_t, realContext: *realContext_t) callconv(.c) void {
+pub export fn WP34S_Ln1P(x: *const real_t, res: *real_t, realContext: *realContext_t) callconv(.c) void {
     var u: real_t = undefined;
     var v: real_t = undefined;
     var w: real_t = undefined;
@@ -1711,7 +1719,7 @@ pub export fn WP34S_Ln1P(x: *align(1) const real_t, res: *align(1) real_t, realC
     }
 }
 
-pub export fn WP34S_ExpM1(x: *align(1) const real_t, res: *align(1) real_t, realContext: *realContext_t) callconv(.c) void {
+pub export fn WP34S_ExpM1(x: *const real_t, res: *real_t, realContext: *realContext_t) callconv(.c) void {
     var u: real_t = undefined;
     var v: real_t = undefined;
     var w: real_t = undefined;
@@ -1904,7 +1912,7 @@ pub export fn WP34S_ComplexLnGamma(zin: *const cplx_t, res: *cplx_t, realContext
 // ===========================================================================
 // doMod (static) + WP34S_Mod / WP34S_BigMod / mod2Pi
 // ===========================================================================
-fn doMod(x: *align(1) const real_t, y: *align(1) const real_t, res: *align(1) real_t, realContext: *realContext_t, digits: u32, out: *align(1) real_t) void {
+fn doMod(x: *const real_t, y: *const real_t, res: *real_t, realContext: *realContext_t, digits: u32, out: *real_t) void {
     var c: realContext_t = realContext.*;
 
     c.digits = @intCast(digits);
@@ -1915,7 +1923,7 @@ fn doMod(x: *align(1) const real_t, y: *align(1) const real_t, res: *align(1) re
 /// The exact truncated remainder of two finite real34 values, with 68-digit
 /// modular arithmetic: the divisor's power of ten is applied by repeated squaring
 /// of 10 mod |y| rather than by forming the shifted dividend.
-pub export fn WP34S_Real34Remainder(x: *align(1) const real_t, y: *align(1) const real_t, res: *align(1) real_t) callconv(.c) void {
+pub export fn WP34S_Real34Remainder(x: *const real_t, y: *const real_t, res: *real_t) callconv(.c) void {
     var a_buf: BigReal(34) = .{};
     var b_buf: BigReal(34) = .{};
     var comparison_buf: BigReal(1) = .{};
@@ -1982,7 +1990,7 @@ pub export fn WP34S_Real34Remainder(x: *align(1) const real_t, y: *align(1) cons
 // Both buffers come off the heap: at 2139 and 12321 digits they are far past
 // what the DM42 program stack grants, and a failed allocation has to say so
 // rather than compute through a buffer that is not there.
-pub export fn WP34S_Mod(x: *align(1) const real_t, y: *align(1) const real_t, res: *align(1) real_t, realContext: *realContext_t) callconv(.c) void {
+pub export fn WP34S_Mod(x: *const real_t, y: *const real_t, res: *real_t, realContext: *realContext_t) callconv(.c) void {
     if (runtime.wp34s_mod_small_buffers) {
         const small = mallocBigReal(2139);
         defer freeBigReal(small);
@@ -2005,7 +2013,7 @@ pub export fn WP34S_Mod(x: *align(1) const real_t, y: *align(1) const real_t, re
 }
 
 // Same buffer sizes as WP34S_Mod, taken the same way. This is the one mod2Pi calls.
-pub export fn WP34S_BigMod(x: *align(1) const real_t, y: *align(1) const real_t, res: *align(1) real_t, realContext: *realContext_t) callconv(.c) void {
+pub export fn WP34S_BigMod(x: *const real_t, y: *const real_t, res: *real_t, realContext: *realContext_t) callconv(.c) void {
     if (runtime.wp34s_mod_small_buffers) {
         const small = mallocBigReal(2139);
         defer freeBigReal(small);
@@ -2027,7 +2035,7 @@ pub export fn WP34S_BigMod(x: *align(1) const real_t, y: *align(1) const real_t,
     }
 }
 
-pub export fn mod2Pi(x: *align(1) const real_t, res: *align(1) real_t, realContext: *realContext_t) callconv(.c) void {
+pub export fn mod2Pi(x: *const real_t, res: *real_t, realContext: *realContext_t) callconv(.c) void {
     WP34S_BigMod(x, radianReduction2Pi(), res, realContext);
 }
 
@@ -2037,7 +2045,7 @@ pub export fn mod2Pi(x: *align(1) const real_t, res: *align(1) real_t, realConte
 // ===========================================================================
 const igamma_table_lengths = [8]u32{ 31, 29, 27, 25, 23, 17, 15, 13 };
 
-fn igammaTemmePolynomial(table: u32, z: *align(1) const real_t, res: *align(1) real_t, realContext: *realContext_t) void {
+fn igammaTemmePolynomial(table: u32, z: *const real_t, res: *real_t, realContext: *realContext_t) void {
     var coefficient: real_t = undefined;
     const count = igamma_table_lengths[table];
 
@@ -2049,7 +2057,7 @@ fn igammaTemmePolynomial(table: u32, z: *align(1) const real_t, res: *align(1) r
     }
 }
 
-fn igammaTemmePhi(sigma: *align(1) const real_t, res: *align(1) real_t, realContext: *realContext_t) void {
+fn igammaTemmePhi(sigma: *const real_t, res: *real_t, realContext: *realContext_t) void {
     var factor: real_t = undefined;
     var nReal: real_t = undefined;
     var nPlusOne: real_t = undefined;
@@ -2075,7 +2083,7 @@ fn igammaTemmePhi(sigma: *align(1) const real_t, res: *align(1) real_t, realCont
     }
 }
 
-fn igammaTemmeTail(a: *align(1) const real_t, x: *align(1) const real_t, res: *align(1) real_t, realContext: *realContext_t) void {
+fn igammaTemmeTail(a: *const real_t, x: *const real_t, res: *real_t, realContext: *realContext_t) void {
     var correction: real_t = undefined;
     var exponential: real_t = undefined;
     var inverseA: real_t = undefined;
@@ -2126,7 +2134,7 @@ fn igammaTemmeTail(a: *align(1) const real_t, x: *align(1) const real_t, res: *a
 // ===========================================================================
 // gser / gcheckSmall / gcf / gserUpper (static) + WP34S_GammaP
 // ===========================================================================
-fn gser(a: *align(1) const real_t, x: *align(1) const real_t, gln: *align(1) const real_t, res: *align(1) real_t, realContext: *realContext_t) void {
+fn gser(a: *const real_t, x: *const real_t, gln: *const real_t, res: *real_t, realContext: *realContext_t) void {
     var ap: real_t = undefined;
     var del: real_t = undefined;
     var sum: real_t = undefined;
@@ -2160,14 +2168,14 @@ fn gser(a: *align(1) const real_t, x: *align(1) const real_t, gln: *align(1) con
     return;
 }
 
-fn gcheckSmall(v: *align(1) real_t, realContext: *realContext_t) void {
+fn gcheckSmall(v: *real_t, realContext: *realContext_t) void {
     _ = realContext;
     if (math_comparison_reals.realCompareAbsLessThan(@alignCast(v), @alignCast(const_1e_10000()))) {
         realCopy(const_1e_10000(), v);
     }
 }
 
-fn gcf(a: *align(1) const real_t, x: *align(1) const real_t, gln: *align(1) const real_t, res: *align(1) real_t, realContext: *realContext_t) void {
+fn gcf(a: *const real_t, x: *const real_t, gln: *const real_t, res: *real_t, realContext: *realContext_t) void {
     var an: real_t = undefined;
     var b: real_t = undefined;
     var c: real_t = undefined;
@@ -2218,7 +2226,7 @@ fn gcf(a: *align(1) const real_t, x: *align(1) const real_t, gln: *align(1) cons
 // Gamma(a) - gamma(a, x) as (Gamma(1+a)/a - x^a/a) plus the alternating series
 // of the remainder, so the difference of two nearly equal values is formed from
 // expm1 rather than by subtraction.
-fn gserUpper(a: *align(1) const real_t, x: *align(1) const real_t, lga: *align(1) const real_t, res: *align(1) real_t, realContext: *realContext_t, regularised: bool) void {
+fn gserUpper(a: *const real_t, x: *const real_t, lga: *const real_t, res: *real_t, realContext: *realContext_t, regularised: bool) void {
     var ap: real_t = undefined;
     var difference: real_t = undefined;
     var divisor: real_t = undefined;
@@ -2272,7 +2280,7 @@ fn gserUpper(a: *align(1) const real_t, x: *align(1) const real_t, lga: *align(1
     }
 }
 
-pub export fn WP34S_GammaP(x: *align(1) const real_t, a: *align(1) const real_t, res: *align(1) real_t, realContext: *realContext_t, upper: bool, regularised: bool) callconv(.c) void {
+pub export fn WP34S_GammaP(x: *const real_t, a: *const real_t, res: *real_t, realContext: *realContext_t, upper: bool, regularised: bool) callconv(.c) void {
     var lga: real_t = undefined;
     var sigma: real_t = undefined;
     var threshold: real_t = undefined;
@@ -2367,7 +2375,7 @@ pub export fn WP34S_GammaP(x: *align(1) const real_t, a: *align(1) const real_t,
     return;
 }
 
-fn doGammaPInvert(a: *align(1) const real_t, res: *align(1) real_t, regularised: bool, realContext: *realContext_t) void {
+fn doGammaPInvert(a: *const real_t, res: *real_t, regularised: bool, realContext: *realContext_t) void {
     var z: real_t = undefined;
     if (regularised) {
         realSubtract(const_1(), res, res, realContext);
@@ -2382,7 +2390,7 @@ fn doGammaPInvert(a: *align(1) const real_t, res: *align(1) real_t, regularised:
 // WP34S_Erf / WP34S_Erfc
 // ===========================================================================
 // erf x = 2x/sqrt(pi) * sum of (-x^2)^n / (n! (2n+1)), for |x| below 1/10.
-fn erfSeries(x: *align(1) const real_t, res: *align(1) real_t, realContext: *realContext_t) void {
+fn erfSeries(x: *const real_t, res: *real_t, realContext: *realContext_t) void {
     var square: real_t = undefined;
     var term: real_t = undefined;
     var sum: real_t = undefined;
@@ -2416,7 +2424,7 @@ fn erfSeries(x: *align(1) const real_t, res: *align(1) real_t, realContext: *rea
 }
 
 // erf and erfc were embedded library functions on WP 34S
-pub export fn WP34S_Erf(x: *align(1) const real_t, res: *align(1) real_t, realContext: *realContext_t) callconv(.c) void {
+pub export fn WP34S_Erf(x: *const real_t, res: *real_t, realContext: *realContext_t) callconv(.c) void {
     var p: real_t = undefined;
     var q: real_t = undefined;
     const pi = if (realContext.digits > 39) const75_pi() else const39_pi();
@@ -2457,7 +2465,7 @@ pub export fn WP34S_Erf(x: *align(1) const real_t, res: *align(1) real_t, realCo
 /// erfc x, from the upper incomplete gamma for |x| at or above 1/10 and from
 /// 1 - erf x below. Gated on OPTION_DIST_NORML, part of the normal-distribution
 /// build option; without it the symbol survives as an empty function.
-pub export fn WP34S_Erfc(x: *align(1) const real_t, res: *align(1) real_t, realContext: *realContext_t) callconv(.c) void {
+pub export fn WP34S_Erfc(x: *const real_t, res: *real_t, realContext: *realContext_t) callconv(.c) void {
     if (comptime !runtime.option_dist_norml) return;
     var p: real_t = undefined;
     var q: real_t = undefined;
@@ -2506,7 +2514,7 @@ pub export fn WP34S_Erfc(x: *align(1) const real_t, res: *align(1) real_t, realC
 // ===========================================================================
 // betaFractionCheckScale / betaFractionStep (static) + WP34S_BetaFraction
 // ===========================================================================
-fn betaFractionCheckScale(value: *align(1) real_t) void {
+fn betaFractionCheckScale(value: *real_t) void {
     if (math_comparison_reals.realCompareAbsLessThan(value, const_1e_10000())) {
         const negative = realIsNegative(value);
         realCopy(const_1e_10000(), value);
@@ -2516,7 +2524,7 @@ fn betaFractionCheckScale(value: *align(1) real_t) void {
     }
 }
 
-fn betaFractionStep(coefficient: *align(1) const real_t, d: *align(1) real_t, c: *align(1) real_t, realContext: *realContext_t) void {
+fn betaFractionStep(coefficient: *const real_t, d: *real_t, c: *real_t, realContext: *realContext_t) void {
     var term: real_t = undefined;
     var value: real_t = undefined;
 
@@ -2530,7 +2538,7 @@ fn betaFractionStep(coefficient: *align(1) const real_t, d: *align(1) real_t, c:
 
 /// Evaluates an incomplete-beta continued fraction by the modified Lentz method;
 /// true when it converges to the relative exponent within iterationMax steps.
-pub export fn WP34S_BetaFraction(a: *align(1) const real_t, b: *align(1) const real_t, x: *align(1) const real_t, convergenceExponent: i32, iterationMax: i32, res: *align(1) real_t, realContext: *realContext_t) callconv(.c) bool {
+pub export fn WP34S_BetaFraction(a: *const real_t, b: *const real_t, x: *const real_t, convergenceExponent: i32, iterationMax: i32, res: *real_t, realContext: *realContext_t) callconv(.c) bool {
     var coefficient: real_t = undefined;
     var c: real_t = undefined;
     var d: real_t = undefined;
@@ -2604,7 +2612,7 @@ pub export fn WP34S_BetaFraction(a: *align(1) const real_t, b: *align(1) const r
 // ===========================================================================
 // check_low / ib_step / betacf (static) + WP34S_betai
 // ===========================================================================
-fn check_low(d: *align(1) real_t) void {
+fn check_low(d: *real_t) void {
     var real_1e_32: real_t = undefined;
 
     realSetOne(&real_1e_32);
@@ -2614,7 +2622,7 @@ fn check_low(d: *align(1) real_t) void {
     }
 }
 
-fn ib_step(aa: *align(1) const real_t, d: *align(1) real_t, c: *align(1) real_t, realContext: *realContext_t) void {
+fn ib_step(aa: *const real_t, d: *real_t, c: *real_t, realContext: *realContext_t) void {
     var t: real_t = undefined;
     var u: real_t = undefined;
 
@@ -2627,7 +2635,7 @@ fn ib_step(aa: *align(1) const real_t, d: *align(1) real_t, c: *align(1) real_t,
     check_low(c);
 }
 
-fn betacf(a: *align(1) const real_t, b: *align(1) const real_t, x: *align(1) const real_t, r: *align(1) real_t, realContext: *realContext_t) void {
+fn betacf(a: *const real_t, b: *const real_t, x: *const real_t, r: *real_t, realContext: *realContext_t) void {
     var aa: real_t = undefined;
     var c: real_t = undefined;
     var d: real_t = undefined;
@@ -2690,7 +2698,7 @@ fn betacf(a: *align(1) const real_t, b: *align(1) const real_t, x: *align(1) con
     }
 }
 
-pub export fn WP34S_betai(b: *align(1) const real_t, a: *align(1) const real_t, x: *align(1) const real_t, res: *align(1) real_t, realContext: *realContext_t) callconv(.c) void {
+pub export fn WP34S_betai(b: *const real_t, a: *const real_t, x: *const real_t, res: *real_t, realContext: *realContext_t) callconv(.c) void {
     var t: real_t = undefined;
     var u: real_t = undefined;
     var v: real_t = undefined;
@@ -2745,7 +2753,7 @@ pub export fn WP34S_betai(b: *align(1) const real_t, a: *align(1) const real_t, 
 // ===========================================================================
 // WP34S_Bernoulli
 // ===========================================================================
-pub export fn WP34S_Bernoulli(x: *align(1) const real_t, res: *align(1) real_t, bn_star: bool, realContext: *realContext_t) callconv(.c) void {
+pub export fn WP34S_Bernoulli(x: *const real_t, res: *real_t, bn_star: bool, realContext: *realContext_t) callconv(.c) void {
     var p: real_t = undefined;
 
     if ((!math_comparison_reals.realIsAnInteger(@alignCast(x))) or math_comparison_reals.realCompareLessThan(@alignCast(x), @alignCast(const_0()))) {
@@ -2796,7 +2804,7 @@ pub export fn WP34S_Bernoulli(x: *align(1) const real_t, res: *align(1) real_t, 
 // ===========================================================================
 // zeta_calc (static) + WP34S_Zeta
 // ===========================================================================
-fn zeta_calc(x: *align(1) const real_t, reg1: *align(1) const real_t, reg7: *align(1) const real_t, res: *align(1) real_t, realContext: *realContext_t) void {
+fn zeta_calc(x: *const real_t, reg1: *const real_t, reg7: *const real_t, res: *real_t, realContext: *realContext_t) void {
     _ = x;
     _ = reg7;
     var p: real_t = undefined;
@@ -2850,7 +2858,7 @@ fn zeta_calc(x: *align(1) const real_t, reg1: *align(1) const real_t, reg7: *ali
     realDivide(&p, &q, res, realContext);
 }
 
-pub export fn WP34S_Zeta(x: *align(1) const real_t, res: *align(1) real_t, realContext: *realContext_t) callconv(.c) void {
+pub export fn WP34S_Zeta(x: *const real_t, res: *real_t, realContext: *realContext_t) callconv(.c) void {
     var p: real_t = undefined;
     var q: real_t = undefined;
     var r: real_t = undefined;
@@ -2901,7 +2909,7 @@ pub export fn WP34S_Zeta(x: *align(1) const real_t, res: *align(1) real_t, realC
 // ===========================================================================
 // WP34S_LambertW
 // ===========================================================================
-pub export fn WP34S_LambertW(x: *align(1) const real_t, res: *align(1) real_t, negativeBranch: bool, realContext: *realContext_t) callconv(.c) void {
+pub export fn WP34S_LambertW(x: *const real_t, res: *real_t, negativeBranch: bool, realContext: *realContext_t) callconv(.c) void {
     var e: real_t = undefined;
     var p: real_t = undefined;
     var q: real_t = undefined;
@@ -3144,7 +3152,7 @@ pub export fn WP34S_ComplexLambertW(x: *const cplx_t, res: *cplx_t, realContext:
 // ===========================================================================
 // WP34S_InverseW / WP34S_InverseComplexW
 // ===========================================================================
-pub export fn WP34S_InverseW(x: *align(1) const real_t, res: *align(1) real_t, realContext: *realContext_t) callconv(.c) void {
+pub export fn WP34S_InverseW(x: *const real_t, res: *real_t, realContext: *realContext_t) callconv(.c) void {
     var p: real_t = undefined;
 
     if (realIsInfinite(x) and realIsNegative(x)) {
@@ -3176,7 +3184,7 @@ pub export fn WP34S_InverseComplexW(x: *const cplx_t, res: *cplx_t, realContext:
 // ===========================================================================
 // WP34S_OrthoPoly
 // ===========================================================================
-pub export fn WP34S_OrthoPoly(kind: u16, rX: *align(1) const real_t, rN: *align(1) const real_t, rParam: *align(1) const real_t, res: *align(1) real_t, realContext: *realContext_t) callconv(.c) void {
+pub export fn WP34S_OrthoPoly(kind: u16, rX: *const real_t, rN: *const real_t, rParam: *const real_t, res: *real_t, realContext: *realContext_t) callconv(.c) void {
     // The whole body is inside `#if defined(OPTION_ORTHO)`, so without the
     // option the symbol survives as an empty function.
     if (comptime !runtime.option_ortho) return;

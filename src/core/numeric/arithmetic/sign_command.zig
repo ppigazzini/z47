@@ -47,11 +47,11 @@ fn signLonI() callconv(.c) void {
 }
 
 // real34ChangeSign is a decQuad macro over the sign bit.
-inline fn real34ChangeSign(value: *align(1) runtime.real34_t) void {
+inline fn real34ChangeSign(value: *runtime.real34_t) void {
     value.bytes[15] ^= runtime.DECNEG;
 }
 
-fn chsZeroCheck(a: *align(1) runtime.real34_t) void {
+fn chsZeroCheck(a: *runtime.real34_t) void {
     real34ChangeSign(a);
     if (runtime.real34IsZero(a) and !runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
         runtime.real34SetPositiveSign(a);

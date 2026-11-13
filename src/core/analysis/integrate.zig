@@ -142,7 +142,7 @@ extern var currentSolverVariable: u16;
 extern var currentFormula: u16;
 extern var numberOfLabels: u16;
 extern var significantDigits: u8;
-extern var tmpString: [*c]u8;
+extern var tmpString: [*c]align(4) u8;
 
 extern var ctxtReal4: realContext_t;
 extern var ctxtReal34: realContext_t;
@@ -170,40 +170,40 @@ const softmenuStack = @extern([*c]softmenuStack_t, .{ .name = "softmenuStack" })
 // expression arguments (realDivide/realMultiply/realAdd/realSubtract/
 // realCopyAbs) return the destination pointer (decNumber* convention).
 // ---------------------------------------------------------------------------
-extern fn decNumberCopy(res: *real_t, source: *align(1) const real_t) *real_t;
+extern fn decNumberCopy(res: *real_t, source: *const real_t) *real_t;
 extern fn decNumberCopyAbs(res: *real_t, source: *const real_t) *real_t;
-extern fn decNumberAdd(res: *real_t, op1: *align(1) const real_t, op2: *align(1) const real_t, ctxt: *realContext_t) *real_t;
-extern fn decNumberSubtract(res: *real_t, op1: *align(1) const real_t, op2: *align(1) const real_t, ctxt: *realContext_t) *real_t;
-extern fn decNumberMultiply(res: *real_t, op1: *align(1) const real_t, op2: *align(1) const real_t, ctxt: *realContext_t) *real_t;
-extern fn decNumberDivide(res: *real_t, op1: *align(1) const real_t, op2: *align(1) const real_t, ctxt: *realContext_t) *real_t;
-extern fn decNumberFMA(res: *real_t, f1: *align(1) const real_t, f2: *align(1) const real_t, term: *align(1) const real_t, ctxt: *realContext_t) *real_t;
-extern fn decNumberMinus(res: *real_t, operand: *align(1) const real_t, ctxt: *realContext_t) *real_t;
+extern fn decNumberAdd(res: *real_t, op1: *const real_t, op2: *const real_t, ctxt: *realContext_t) *real_t;
+extern fn decNumberSubtract(res: *real_t, op1: *const real_t, op2: *const real_t, ctxt: *realContext_t) *real_t;
+extern fn decNumberMultiply(res: *real_t, op1: *const real_t, op2: *const real_t, ctxt: *realContext_t) *real_t;
+extern fn decNumberDivide(res: *real_t, op1: *const real_t, op2: *const real_t, ctxt: *realContext_t) *real_t;
+extern fn decNumberFMA(res: *real_t, f1: *const real_t, f2: *const real_t, term: *const real_t, ctxt: *realContext_t) *real_t;
+extern fn decNumberMinus(res: *real_t, operand: *const real_t, ctxt: *realContext_t) *real_t;
 extern fn decNumberFromInt32(res: *real_t, source: i32) *real_t;
 extern fn decNumberFromUInt32(res: *real_t, source: u32) *real_t;
-extern fn decNumberNextToward(res: *real_t, from: *align(1) const real_t, toward: *align(1) const real_t, ctxt: *realContext_t) *real_t;
+extern fn decNumberNextToward(res: *real_t, from: *const real_t, toward: *const real_t, ctxt: *realContext_t) *real_t;
 
-inline fn realCopy(source: *align(1) const real_t, destination: *real_t) void {
+inline fn realCopy(source: *const real_t, destination: *real_t) void {
     _ = decNumberCopy(destination, source);
 }
 inline fn realCopyAbs(source: *const real_t, destination: *real_t) *real_t {
     return decNumberCopyAbs(destination, source);
 }
-inline fn realAdd(op1: *align(1) const real_t, op2: *align(1) const real_t, res: *real_t, ctxt: *realContext_t) *real_t {
+inline fn realAdd(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) *real_t {
     return decNumberAdd(res, op1, op2, ctxt);
 }
-inline fn realSubtract(op1: *align(1) const real_t, op2: *align(1) const real_t, res: *real_t, ctxt: *realContext_t) *real_t {
+inline fn realSubtract(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) *real_t {
     return decNumberSubtract(res, op1, op2, ctxt);
 }
-inline fn realMultiply(op1: *align(1) const real_t, op2: *align(1) const real_t, res: *real_t, ctxt: *realContext_t) *real_t {
+inline fn realMultiply(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) *real_t {
     return decNumberMultiply(res, op1, op2, ctxt);
 }
-inline fn realDivide(op1: *align(1) const real_t, op2: *align(1) const real_t, res: *real_t, ctxt: *realContext_t) *real_t {
+inline fn realDivide(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) *real_t {
     return decNumberDivide(res, op1, op2, ctxt);
 }
-inline fn realFMA(f1: *align(1) const real_t, f2: *align(1) const real_t, term: *align(1) const real_t, res: *real_t, ctxt: *realContext_t) void {
+inline fn realFMA(f1: *const real_t, f2: *const real_t, term: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberFMA(res, f1, f2, term, ctxt);
 }
-inline fn realMinus(operand: *align(1) const real_t, res: *real_t, ctxt: *realContext_t) void {
+inline fn realMinus(operand: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberMinus(res, operand, ctxt);
 }
 inline fn int32ToReal(source: i32, destination: *real_t) void {
@@ -212,7 +212,7 @@ inline fn int32ToReal(source: i32, destination: *real_t) void {
 inline fn uInt32ToReal(source: u32, destination: *real_t) void {
     _ = decNumberFromUInt32(destination, source);
 }
-inline fn realNextToward(from: *align(1) const real_t, toward: *align(1) const real_t, res: *real_t, ctxt: *realContext_t) void {
+inline fn realNextToward(from: *const real_t, toward: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberNextToward(res, from, toward, ctxt);
 }
 inline fn realChangeSign(operand: *real_t) void {
@@ -225,13 +225,13 @@ inline fn realGetSign(source: *const real_t) u8 {
     return source.bits & 0x80;
 }
 const realIsZero = abi.realIsZero;
-inline fn realIsSpecial(source: *align(1) const real_t) bool {
+inline fn realIsSpecial(source: *const real_t) bool {
     return (source.bits & 0x70) != 0;
 }
-inline fn realIsInfinite(source: *align(1) const real_t) bool {
+inline fn realIsInfinite(source: *const real_t) bool {
     return (source.bits & 0x40) != 0;
 }
-inline fn realIsNaN(source: *align(1) const real_t) bool {
+inline fn realIsNaN(source: *const real_t) bool {
     return (source.bits & 0x30) != 0;
 }
 
@@ -239,38 +239,38 @@ extern fn realSetZero(value: *real_t) void;
 extern fn realSetOne(value: *real_t) void;
 extern fn realSetNaN(value: *real_t) void;
 extern fn realSetMinusInfinity(value: *real_t) void;
-extern fn realCompareEqual(number1: *align(1) const real_t, number2: *align(1) const real_t) bool;
-extern fn realCompareGreaterEqual(number1: *align(1) const real_t, number2: *align(1) const real_t) bool;
-extern fn realCompareLessEqual(number1: *align(1) const real_t, number2: *align(1) const real_t) bool;
-extern fn realCompareAbsLessThan(number1: *align(1) const real_t, number2: *align(1) const real_t) bool;
-extern fn realExp(rhs: *align(1) const real_t, res: *real_t, ctxt: *realContext_t) void;
+extern fn realCompareEqual(number1: *const real_t, number2: *const real_t) bool;
+extern fn realCompareGreaterEqual(number1: *const real_t, number2: *const real_t) bool;
+extern fn realCompareLessEqual(number1: *const real_t, number2: *const real_t) bool;
+extern fn realCompareAbsLessThan(number1: *const real_t, number2: *const real_t) bool;
+extern fn realExp(rhs: *const real_t, res: *real_t, ctxt: *realContext_t) void;
 extern fn realToInt32C47(r: *const real_t, err: ?*bool) i32;
-extern fn WP34S_Ln(x: *align(1) const real_t, res: *real_t, ctxt: *realContext_t) void;
-extern fn WP34S_SinhCosh(x: *align(1) const real_t, sinOut: ?*real_t, cosOut: ?*real_t, ctxt: *realContext_t) void;
+extern fn WP34S_Ln(x: *const real_t, res: *real_t, ctxt: *realContext_t) void;
+extern fn WP34S_SinhCosh(x: *const real_t, sinOut: ?*real_t, cosOut: ?*real_t, ctxt: *realContext_t) void;
 
 // ---------------------------------------------------------------------------
 // real34_t macros
 // ---------------------------------------------------------------------------
-extern fn decimal128ToNumber(source: *align(1) const real34_t, destination: *real_t) *real_t;
-extern fn decimal128FromNumber(dest: *align(1) real34_t, src: *align(1) const real_t, ctxt: *realContext_t) *align(1) real34_t;
-inline fn real34ToReal(source: *align(1) const real34_t, destination: *real_t) void {
+extern fn decimal128ToNumber(source: *const real34_t, destination: *real_t) *real_t;
+extern fn decimal128FromNumber(dest: *real34_t, src: *const real_t, ctxt: *realContext_t) *real34_t;
+inline fn real34ToReal(source: *const real34_t, destination: *real_t) void {
     _ = decimal128ToNumber(source, destination);
 }
-inline fn realToReal34(source: *align(1) const real_t, destination: *align(1) real34_t) void {
+inline fn realToReal34(source: *const real_t, destination: *real34_t) void {
     _ = decimal128FromNumber(destination, source, &ctxtReal34);
 }
-inline fn real34Copy(source: *align(1) const real34_t, destination: *align(1) real34_t) void {
+inline fn real34Copy(source: *const real34_t, destination: *real34_t) void {
     const src: *align(1) const [2]u64 = @ptrCast(source);
     const dst: *align(1) [2]u64 = @ptrCast(destination);
     dst[0] = src[0];
     dst[1] = src[1];
 }
-extern fn real34CompareEqual(number1: *align(1) const real34_t, number2: *align(1) const real34_t) bool;
+extern fn real34CompareEqual(number1: *const real34_t, number2: *const real34_t) bool;
 
 // ---------------------------------------------------------------------------
 // Register / stack / program externs
 // ---------------------------------------------------------------------------
-extern fn getRegisterDataPointer(reg: calcRegister_t) ?*anyopaque;
+extern fn getRegisterDataPointer(reg: calcRegister_t) ?*align(4) anyopaque;
 const registerReal34Ptr = abi.registerReal34;
 extern fn getRegisterDataType(reg: calcRegister_t) u32;
 extern fn getRegisterAsReal(reg: calcRegister_t, val: *real_t) bool;
@@ -508,7 +508,7 @@ fn _integratorIteration() linksection(runtime.code_section) void {
 // ===========================================================================
 // DEI_xeq_user  (ported from WP34s)
 // ===========================================================================
-fn DEI_xeq_user(regist: calcRegister_t, x: *align(1) const real_t, res: *real_t, realContext: *realContext_t) linksection(runtime.code_section) void {
+fn DEI_xeq_user(regist: calcRegister_t, x: *const real_t, res: *real_t, realContext: *realContext_t) linksection(runtime.code_section) void {
     if (lastErrorCode == ERROR_SOLVER_ABORT) { // Aborted?
         realSetZero(res);
     } else if (!realIsSpecial(x)) { // abscissa is good?
@@ -537,7 +537,7 @@ fn DEI_xeq_user(regist: calcRegister_t, x: *align(1) const real_t, res: *real_t,
 // ===========================================================================
 // _showProgress: the partial integral and the interval still to cover.
 // ===========================================================================
-fn _showProgress(ss: *align(1) const real_t, bma2: *align(1) const real_t, h: *align(1) const real_t, a: *align(1) const real_t, b: *align(1) const real_t, fact: *align(1) const real_t, realContext: *realContext_t) linksection(runtime.code_section) void {
+fn _showProgress(ss: *const real_t, bma2: *const real_t, h: *const real_t, a: *const real_t, b: *const real_t, fact: *const real_t, realContext: *realContext_t) linksection(runtime.code_section) void {
     var res: real_t = undefined;
     var span: real_t = undefined;
     var partial34: real34_t = undefined;
@@ -555,7 +555,7 @@ fn _showProgress(ss: *align(1) const real_t, bma2: *align(1) const real_t, h: *a
 // ===========================================================================
 // DEI_xeq_user_adr  (helper for exp_sinh_opt_d)
 // ===========================================================================
-fn DEI_xeq_user_adr(regist: calcRegister_t, a: *align(1) const real_t, d: *align(1) const real_t, r: *align(1) const real_t, fl: *real_t, fr: *real_t, h: *real_t, realContext: *realContext_t) linksection(runtime.code_section) void {
+fn DEI_xeq_user_adr(regist: calcRegister_t, a: *const real_t, d: *const real_t, r: *const real_t, fl: *real_t, fr: *real_t, h: *real_t, realContext: *realContext_t) linksection(runtime.code_section) void {
     var s1: real_t = undefined;
     _ = realDivide(d, r, &s1, realContext); // s1 = d/r
     _ = realAdd(a, &s1, &s1, realContext); // s1 = a+d/r
@@ -580,7 +580,7 @@ inline fn IS_FINITE(x: *const real_t) bool {
 // ===========================================================================
 // exp_sinh_opt_d  (USE_NEW_DEI_INTEGRATION_CODE == 2)
 // ===========================================================================
-fn exp_sinh_opt_d(regist: calcRegister_t, a: *align(1) const real_t, eps: *align(1) const real_t, d: *real_t, realContext: *realContext_t) linksection(runtime.code_section) *real_t {
+fn exp_sinh_opt_d(regist: calcRegister_t, a: *const real_t, eps: *const real_t, d: *real_t, realContext: *realContext_t) linksection(runtime.code_section) *real_t {
     _ = eps;
     // The ten p39 working reals use heap storage because the plotted-integral
     // call depth leaves insufficient DM42 stack space. Every exit reaches the
@@ -741,7 +741,7 @@ fn exp_sinh_opt_d(regist: calcRegister_t, a: *align(1) const real_t, eps: *align
 // ===========================================================================
 // dbl_exp_int_new  (USE_NEW_DEI_INTEGRATION_CODE > 0)
 // ===========================================================================
-fn dbl_exp_int_new(regist: calcRegister_t, a: *align(1) const real_t, b: *align(1) const real_t, errorp: *real_t, result: *real_t, sign_in: c_int, realContext: *realContext_t) linksection(runtime.code_section) void {
+fn dbl_exp_int_new(regist: calcRegister_t, a: *const real_t, b: *const real_t, errorp: *real_t, result: *real_t, sign_in: c_int, realContext: *realContext_t) linksection(runtime.code_section) void {
     const interruptedLoop: i16 = 0;
     currentKeyCode = 255;
     var exitSignalled: bool_t = false;
@@ -1056,7 +1056,7 @@ fn dbl_exp_int_new(regist: calcRegister_t, a: *align(1) const real_t, b: *align(
 // integrate
 // ===========================================================================
 
-pub export fn integrate(regist: calcRegister_t, a: *align(1) const real_t, b: *align(1) const real_t, acc: *real_t, res: *real_t, realContext: *realContext_t) linksection(runtime.code_section) callconv(.c) void {
+pub export fn integrate(regist: calcRegister_t, a: *const real_t, b: *const real_t, acc: *real_t, res: *real_t, realContext: *realContext_t) linksection(runtime.code_section) callconv(.c) void {
     const was_solving: bool_t = getSystemFlag(@bitCast(FLAG_SOLVING));
     const userRoundingMode = roundingMode;
     setRoundingMode(RM_ENGINE); // the iteration takes no mode from RM

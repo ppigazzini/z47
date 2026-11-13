@@ -418,7 +418,7 @@ extern fn isFunctionAllowingNewVariable(op: u16) bool_t;
 extern fn findNamedVariable(variableName: [*c]const u8) i16;
 extern fn findOrAllocateNamedVariable(variableName: [*c]const u8) i16;
 extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) bool;
-extern fn getRegisterDataPointer(regist: calcRegister_t) *anyopaque;
+extern fn getRegisterDataPointer(regist: calcRegister_t) *align(4) anyopaque;
 extern fn fnLint(unusedButMandatoryParameter: u16) void;
 extern fn fnFp(unusedButMandatoryParameter: u16) void;
 extern fn fnIp(unusedButMandatoryParameter: u16) void;
@@ -440,7 +440,7 @@ inline fn maxI(a: i32, b: i32) i32 {
     return if (a > b) a else b;
 }
 // real34Copy(src,dst): two 8-byte copies.
-inline fn real34Copy(src: *align(1) const real34_t, dst: *real34_t) void {
+inline fn real34Copy(src: *const real34_t, dst: *real34_t) void {
     dst.* = src.*;
 }
 const reg34 = abi.registerReal34;

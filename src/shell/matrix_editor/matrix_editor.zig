@@ -352,7 +352,7 @@ extern var softmenuStack: [SOFTMENU_STACK_SIZE]softmenuStack_t;
 // External functions.
 // ===========================================================================
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
-extern fn getRegisterDataPointer(regist: calcRegister_t) [*]u8;
+extern fn getRegisterDataPointer(regist: calcRegister_t) [*]align(4) u8;
 extern fn setRegisterTag(regist: calcRegister_t, tag: u32) void;
 extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) bool;
 extern fn copySourceRegisterToDestRegister(rSource: calcRegister_t, rDest: calcRegister_t) void;
@@ -386,9 +386,9 @@ extern fn decQuadFromInt32(r: *real34_t, v: i32) *real34_t;
 extern fn decQuadFromString(r: *real34_t, s: [*c]const u8, ctx: *const realContext_t) *real34_t;
 // decQuadFromNumber / decQuadToNumber are `#define`s over the linkable
 // decimal128 functions (decQuad.h); bind the real symbols.
-extern fn decimal128FromNumber(r: *real34_t, n: *align(1) const real_t, ctx: *const realContext_t) *real34_t;
+extern fn decimal128FromNumber(r: *real34_t, n: *const real_t, ctx: *const realContext_t) *real34_t;
 extern fn decimal128ToNumber(r: *const real34_t, n: *real_t) *real_t;
-extern fn decNumberCopy(dst: *real_t, src: *align(1) const real_t) *real_t;
+extern fn decNumberCopy(dst: *real_t, src: *const real_t) *real_t;
 extern fn decNumberAdd(res: *real_t, a: *const real_t, b: *const real_t, ctx: *const realContext_t) *real_t;
 extern var ctxtReal34: realContext_t;
 
@@ -481,10 +481,10 @@ inline fn real34IsNegative(op: *const real34_t) bool {
 inline fn real34ToReal(src: *const real34_t, dst: *real_t) void {
     _ = decimal128ToNumber(src, dst);
 }
-inline fn realToReal34(src: *align(1) const real_t, dst: *real34_t) void {
+inline fn realToReal34(src: *const real_t, dst: *real34_t) void {
     _ = decimal128FromNumber(dst, src, &ctxtReal34);
 }
-inline fn realCopy(src: *align(1) const real_t, dst: *real_t) void {
+inline fn realCopy(src: *const real_t, dst: *real_t) void {
     _ = decNumberCopy(dst, src);
 }
 inline fn realSetPositiveSign(op: *real_t) void {

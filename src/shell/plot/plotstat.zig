@@ -271,7 +271,7 @@ extern var statMx: [8]u8;
 extern const standardFont: font_t;
 
 // SIGMA_N = statisticalSumsPointer[0]  (defines.h)
-inline fn SIGMA_N() *align(1) const real_t {
+inline fn SIGMA_N() *const real_t {
     return &statisticalSumsPointer.?[0];
 }
 
@@ -281,33 +281,33 @@ inline fn SIGMA_N() *align(1) const real_t {
 extern fn linkToRealMatrixRegister(regist: calcRegister_t, linkedMatrix: *real34Matrix_t) void;
 extern fn findNamedVariable(variableName: [*c]const u8) calcRegister_t;
 
-extern fn realLog10(x: *align(1) const real_t, res: *real_t, realContext: *realContext_t) void;
-extern fn realCompareAbsGreaterThan(number1: *align(1) const real_t, number2: *align(1) const real_t) bool_t;
-extern fn realCompareAbsLessThan(number1: *align(1) const real_t, number2: *align(1) const real_t) bool_t;
-extern fn realCompareGreaterThan(number1: *align(1) const real_t, number2: *align(1) const real_t) bool_t;
-extern fn realCompareGreaterEqual(number1: *align(1) const real_t, number2: *align(1) const real_t) bool_t;
+extern fn realLog10(x: *const real_t, res: *real_t, realContext: *realContext_t) void;
+extern fn realCompareAbsGreaterThan(number1: *const real_t, number2: *const real_t) bool_t;
+extern fn realCompareAbsLessThan(number1: *const real_t, number2: *const real_t) bool_t;
+extern fn realCompareGreaterThan(number1: *const real_t, number2: *const real_t) bool_t;
+extern fn realCompareGreaterEqual(number1: *const real_t, number2: *const real_t) bool_t;
 
 // decNumber/decQuad behind the real*/real34* macros.
 // decQuadToNumber/decQuadFromNumber are `#define`s over the linkable decimal128
 // functions (decQuad.h); bind the real symbols.
-extern fn decimal128ToNumber(src: *align(1) const real34_t, dst: *real_t) *real_t;
-extern fn decQuadIsZero(src: *align(1) const real34_t) bool_t;
-extern fn decimal128FromNumber(dst: *align(1) real34_t, src: *const real_t, ctx: *realContext_t) *align(1) real34_t;
+extern fn decimal128ToNumber(src: *const real34_t, dst: *real_t) *real_t;
+extern fn decQuadIsZero(src: *const real34_t) bool_t;
+extern fn decimal128FromNumber(dst: *real34_t, src: *const real_t, ctx: *realContext_t) *real34_t;
 extern fn decNumberFromString(dst: *real_t, src: [*c]const u8, ctx: *realContext_t) *real_t;
-extern fn decNumberMultiply(r: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
+extern fn decNumberMultiply(r: *real_t, a: *const real_t, b: *const real_t, ctx: *realContext_t) *real_t;
 
 // DECNAN | DECSNAN (decNumber.h).
 const DEC_NAN_BITS: u8 = 0x20 | 0x10;
 const DEC_INF_BIT: u8 = 0x40;
 const DEC_SPECIAL_BITS: u8 = DEC_INF_BIT | DEC_NAN_BITS;
 
-inline fn real34ToReal(src: *align(1) const real34_t, dst: *real_t) void {
+inline fn real34ToReal(src: *const real34_t, dst: *real_t) void {
     _ = decimal128ToNumber(src, dst);
 }
-inline fn real34IsZero(src: *align(1) const real34_t) bool_t {
+inline fn real34IsZero(src: *const real34_t) bool_t {
     return decQuadIsZero(src);
 }
-inline fn realToReal34(src: *const real_t, dst: *align(1) real34_t) void {
+inline fn realToReal34(src: *const real_t, dst: *real34_t) void {
     // realToReal34 macro uses &ctxtReal34; decimal128FromNumber needs a ctxt.
     _ = decimal128FromNumber(dst, src, &ctxtReal34);
 }
@@ -315,55 +315,55 @@ extern var ctxtReal34: realContext_t;
 inline fn stringToReal(src: [*c]const u8, dst: *real_t, ctxt: *realContext_t) void {
     _ = decNumberFromString(dst, src, ctxt);
 }
-inline fn realIsNaN(src: *align(1) const real_t) bool_t {
+inline fn realIsNaN(src: *const real_t) bool_t {
     // decNumberIsNaN is a macro: ((dn->bits & (DECNAN|DECSNAN)) != 0).
     return (src.bits & DEC_NAN_BITS) != 0;
 }
-inline fn realIsNegative(src: *align(1) const real_t) bool_t {
+inline fn realIsNegative(src: *const real_t) bool_t {
     return (src.bits & 0x80) == 0x80;
 }
-inline fn realIsInfinite(src: *align(1) const real_t) bool_t {
+inline fn realIsInfinite(src: *const real_t) bool_t {
     // decNumberIsInfinite is a macro: ((dn->bits & DECINF) != 0).
     return (src.bits & DEC_INF_BIT) != 0;
 }
-inline fn realIsSpecial(src: *align(1) const real_t) bool_t {
+inline fn realIsSpecial(src: *const real_t) bool_t {
     // decNumberIsSpecial is a macro: ((dn->bits & DECSPECIAL) != 0).
     return (src.bits & DEC_SPECIAL_BITS) != 0;
 }
-inline fn realMultiply(op1: *align(1) const real_t, op2: *align(1) const real_t, res: *real_t, ctxt: *realContext_t) void {
+inline fn realMultiply(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberMultiply(res, op1, op2, ctxt);
 }
-extern fn decNumberSquareRoot(res: *real_t, rhs: *align(1) const real_t, ctx: *realContext_t) *real_t;
-inline fn realSquareRoot(op: *align(1) const real_t, res: *real_t, ctxt: *realContext_t) void {
+extern fn decNumberSquareRoot(res: *real_t, rhs: *const real_t, ctx: *realContext_t) *real_t;
+inline fn realSquareRoot(op: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberSquareRoot(res, op, ctxt);
 }
 inline fn realSetPositiveSign(v: *real_t) void {
     v.bits &= 0x7F;
 }
 // Additional real_t primitives for the decimal range flow / screen mapping.
-extern fn decNumberCopy(res: *real_t, src: *align(1) const real_t) *real_t;
-extern fn decNumberCopyAbs(res: *real_t, src: *align(1) const real_t) *real_t;
-extern fn decNumberAdd(res: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
-extern fn decNumberSubtract(res: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
-extern fn decNumberDivide(res: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
+extern fn decNumberCopy(res: *real_t, src: *const real_t) *real_t;
+extern fn decNumberCopyAbs(res: *real_t, src: *const real_t) *real_t;
+extern fn decNumberAdd(res: *real_t, a: *const real_t, b: *const real_t, ctx: *realContext_t) *real_t;
+extern fn decNumberSubtract(res: *real_t, a: *const real_t, b: *const real_t, ctx: *realContext_t) *real_t;
+extern fn decNumberDivide(res: *real_t, a: *const real_t, b: *const real_t, ctx: *realContext_t) *real_t;
 extern fn decNumberFromInt32(res: *real_t, source: i32) *real_t;
 extern fn realSetZero(v: *real_t) void;
 extern fn realSetOne(v: *real_t) void;
-extern fn realCompareLessThan(a: *align(1) const real_t, b: *align(1) const real_t) bool_t;
-extern fn realToInt32C47(r: *align(1) const real_t, err: ?*bool_t) i32;
-inline fn realCopy(src: *align(1) const real_t, dst: *real_t) void {
+extern fn realCompareLessThan(a: *const real_t, b: *const real_t) bool_t;
+extern fn realToInt32C47(r: *const real_t, err: ?*bool_t) i32;
+inline fn realCopy(src: *const real_t, dst: *real_t) void {
     _ = decNumberCopy(dst, src);
 }
-inline fn realCopyAbs(src: *align(1) const real_t, dst: *real_t) void {
+inline fn realCopyAbs(src: *const real_t, dst: *real_t) void {
     _ = decNumberCopyAbs(dst, src);
 }
-inline fn realAdd(a: *align(1) const real_t, b: *align(1) const real_t, res: *real_t, ctx: *realContext_t) void {
+inline fn realAdd(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberAdd(res, a, b, ctx);
 }
-inline fn realSubtract(a: *align(1) const real_t, b: *align(1) const real_t, res: *real_t, ctx: *realContext_t) void {
+inline fn realSubtract(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberSubtract(res, a, b, ctx);
 }
-inline fn realDivide(a: *align(1) const real_t, b: *align(1) const real_t, res: *real_t, ctx: *realContext_t) void {
+inline fn realDivide(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberDivide(res, a, b, ctx);
 }
 inline fn int32ToReal(source: i32, dst: *real_t) void {
@@ -383,7 +383,7 @@ inline fn convertDoubleToReal(x: f64, dst: *real_t, ctx: *realContext_t) void {
 // rounded half away from zero, saturated at +-32767, then clamped/flipped into
 // the graph area. The plot curve maps its real_t samples through these so pixel
 // rounding matches the decimal reference at boundary cases.
-fn screenWindowRatio(v_min: *align(1) const real_t, v: *align(1) const real_t, v_max: *align(1) const real_t, scale: i32) i16 {
+fn screenWindowRatio(v_min: *const real_t, v: *const real_t, v_max: *const real_t, scale: i32) i16 {
     var temp: i32 = undefined;
     var tempr: real_t = undefined;
     var den: real_t = undefined;
@@ -409,11 +409,11 @@ fn screenWindowRatio(v_min: *align(1) const real_t, v: *align(1) const real_t, v
     return @intCast(temp);
 }
 
-pub export fn screen_window_x_r(x_minp: *align(1) const real_t, xp: *align(1) const real_t, x_maxp: *align(1) const real_t) callconv(.c) i16 {
+pub export fn screen_window_x_r(x_minp: *const real_t, xp: *const real_t, x_maxp: *const real_t) callconv(.c) i16 {
     return plot_viewport.graphColumn(screenWindowRatio(x_minp, xp, x_maxp, SCREEN_HEIGHT_GRAPH - 1));
 }
 
-fn screenWindowYr(y_minp: *align(1) const real_t, yp: *align(1) const real_t, y_maxp: *align(1) const real_t, nolimit: bool_t) i16 {
+fn screenWindowYr(y_minp: *const real_t, yp: *const real_t, y_maxp: *const real_t, nolimit: bool_t) i16 {
     const row: i32 = plot_viewport.graphRow(screenWindowRatio(y_minp, yp, y_maxp, SCREEN_HEIGHT_GRAPH - 1 - minn), nolimit);
     if (comptime !dmcp_build) {
         // Console telltale for a row outside the graph area. Guarded only by
@@ -432,10 +432,10 @@ fn screenWindowYr(y_minp: *align(1) const real_t, yp: *align(1) const real_t, y_
     return @truncate(row);
 }
 
-pub export fn screen_window_y_r(y_minp: *align(1) const real_t, yp: *align(1) const real_t, y_maxp: *align(1) const real_t) callconv(.c) i16 {
+pub export fn screen_window_y_r(y_minp: *const real_t, yp: *const real_t, y_maxp: *const real_t) callconv(.c) i16 {
     return screenWindowYr(y_minp, yp, y_maxp, false);
 }
-pub export fn screen_window_y_nolimit_r(y_minp: *align(1) const real_t, yp: *align(1) const real_t, y_maxp: *align(1) const real_t) callconv(.c) i16 {
+pub export fn screen_window_y_nolimit_r(y_minp: *const real_t, yp: *const real_t, y_maxp: *const real_t) callconv(.c) i16 {
     return screenWindowYr(y_minp, yp, y_maxp, true);
 }
 
@@ -465,14 +465,14 @@ extern fn clearSystemFlag(sf: c_uint) void;
 const c_moreInfoOnError = @extern(*const fn (m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) callconv(.c) void, .{ .name = "moreInfoOnError" });
 
 extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) bool;
-extern fn getRegisterDataPointer(regist: calcRegister_t) ?*anyopaque;
+extern fn getRegisterDataPointer(regist: calcRegister_t) ?*align(4) anyopaque;
 extern fn liftStack() void;
 extern fn fnKeyExit(unused: u16) void;
 extern fn fnMinExpStdDev(unused: u16) void;
 
 // int32ToReal34 is a macro -> decQuadFromInt32; reproduce via the decQuad fn.
-extern fn decQuadFromInt32(dst: *align(1) real34_t, src: i32) *align(1) real34_t;
-inline fn int32ToReal34(source: i32, destination: *align(1) real34_t) void {
+extern fn decQuadFromInt32(dst: *real34_t, src: i32) *real34_t;
+inline fn int32ToReal34(source: i32, destination: *real34_t) void {
     _ = decQuadFromInt32(destination, source);
 }
 const REGISTER_REAL34_DATA = abi.registerReal34;
@@ -1142,7 +1142,7 @@ fn cleanupTrailingZeros(str: [*c]u8) void {
 // ===========================================================================
 // formatDoubleWidth
 // ===========================================================================
-pub export fn formatDoubleWidth(real34: *align(1) real34_t, digits: c_int, itemName: [*c]const u8, success: *bool_t, actual_max_width: c_int, buf: [*c]u8, digitswidthLimit: c_int) callconv(.c) [*c]u8 {
+pub export fn formatDoubleWidth(real34: *real34_t, digits: c_int, itemName: [*c]const u8, success: *bool_t, actual_max_width: c_int, buf: [*c]u8, digitswidthLimit: c_int) callconv(.c) [*c]u8 {
     const savedDisplayFormatDigits: u8 = displayFormatDigits;
     const saveddisplayFormat: u8 = displayFormat;
     const ovrENG: bool_t = getSystemFlag(FLAG_ENGOVR);
