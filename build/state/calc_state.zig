@@ -19,6 +19,9 @@ pub const RuntimeObjectOptions = struct {
     // The board this object is compiled for, set by the caller that builds
     // for it; every board fact below derives from it.
     board: build_common.Board = .host,
+    // The kind of executable this object is linked into, set by the caller;
+    // see build_common.Linkage.
+    linkage: build_common.Linkage = .product,
     // CALCMODEL as the id typeDefinitions.h gives it: USER_C47 = 46,
     // USER_R47 = 66. The owner stamps it into the save file's identity line
     // ("C47_save_file_00" / "R47_save_file_00") and compares it against the line
@@ -51,10 +54,6 @@ pub const RuntimeObjectOptions = struct {
     // target z47 builds defines it: the block common to the DM42 packages keeps
     // it.
     option_drg_cfg: bool = true,
-    // EXTRA_INFO_ON_CALC_ERROR, for the scalar-state owners this object carries
-    // through its core_state module. 0 on firmware and in the testSuite; default
-    // true mirrors a host build.
-    extra_info_on_calc_error: bool = true,
 };
 
 const replaced_core_sources = [_][]const u8{
@@ -111,8 +110,7 @@ fn addRuntimeObject(
     // with EXTRA_INFO_ON_CALC_ERROR: 0 on firmware and in the testSuite. Same
     // derivation as the stack and register-metadata objects use.
     const core_state_options = b.addOptions();
-    core_state_options.addOption(bool, "extra_info_on_calc_error", options.extra_info_on_calc_error and
-        !std.mem.startsWith(u8, name_prefix, "testSuite"));
+    core_state_options.addOption(bool, "extra_info_on_calc_error", build_common.extraInfoOnCalcError(options.board, options.linkage));
     core_state_module.addOptions("core_state_build_options", core_state_options);
     module.addImport("core_state", core_state_module);
     const build_options = b.addOptions();
@@ -125,12 +123,8 @@ fn addRuntimeObject(
     build_options.addOption(bool, "ir_printing", options.ir_printing);
     build_options.addOption(bool, "option_atext_fonts", options.option_atext_fonts);
     build_options.addOption(bool, "option_drg_cfg", options.option_drg_cfg);
-    // EXTRA_INFO_ON_CALC_ERROR, for the owners rooted in this object. defines.h
-    // forces it to 0 for DMCP_BUILD -- which DMCP5 defines as well as the DM42 --
-    // and again for TESTSUITE_BUILD; the testSuite shares the sim's target, so
-    // only the name_prefix can tell them apart.
-    build_options.addOption(bool, "extra_info_on_calc_error", options.extra_info_on_calc_error and
-        !std.mem.startsWith(u8, name_prefix, "testSuite"));
+    // EXTRA_INFO_ON_CALC_ERROR, for the owners rooted in this object.
+    build_options.addOption(bool, "extra_info_on_calc_error", build_common.extraInfoOnCalcError(options.board, options.linkage));
     module.addOptions("calc_state_build_options", build_options);
 
     return b.addObject(.{
@@ -183,8 +177,9 @@ pub fn addToModule(
     optimize: std.lang.Optimize,
     name_prefix: []const u8,
     calc_model_user_id: u16,
+    linkage: build_common.Linkage,
 ) void {
-    const runtime_object = addRuntimeObject(b, target, optimize, name_prefix, .{ .calc_model_user_id = calc_model_user_id });
+    const runtime_object = addRuntimeObject(b, target, optimize, name_prefix, .{ .calc_model_user_id = calc_model_user_id, .linkage = linkage });
     module.addObject(runtime_object);
 }
 

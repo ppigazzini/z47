@@ -28,15 +28,12 @@ pub const RuntimeObjects = struct {
 };
 
 pub const RuntimeObjectOptions = struct {
-    /// True where this executable's C sources are compiled with
-    /// TESTSUITE_BUILD, so the Zig owners answer the same question the C half
-    /// does: fnSNAP freezes the clock the date/time formatters read, and RESET
-    /// loads the sample programs. The testSuite and the full-core harnesses set
-    /// it; the product and the simulator leave it false.
-    is_testsuite_build: bool = false,
     /// The board this object is compiled for, set by the caller that builds for
     /// it; every board fact the options carry derives from it.
     board: build_common.Board = .host,
+    /// The kind of executable this object is linked into, set by the caller;
+    /// see build_common.Linkage.
+    linkage: build_common.Linkage = .product,
     strip: ?bool = null,
     unwind_tables: ?std.lang.UnwindTables = null,
     stack_protector: ?bool = null,
@@ -150,7 +147,7 @@ fn addRuntimeObject(
         .optimize = optimize,
     });
     module.addImport("abi", abi_module);
-    addBuildOptions(b, module, name_prefix, options);
+    addBuildOptions(b, module, options);
 
     return b.addObject(.{
         .name = b.fmt("{s}-math-command-wrappers", .{name_prefix}),
@@ -166,18 +163,17 @@ fn addRuntimeObject(
 pub fn addBuildOptions(
     b: *std.Build,
     module: *std.Build.Module,
-    name_prefix: []const u8,
     options: RuntimeObjectOptions,
 ) void {
     const build_options = b.addOptions();
-    build_options.addOption(bool, "use_fake_wp34s_model", std.mem.endsWith(u8, name_prefix, "parity"));
-    build_options.addOption(bool, "use_fake_wp34s_harness_surface", std.mem.eql(u8, name_prefix, "parity") or std.mem.eql(u8, name_prefix, "random-parity"));
+    build_options.addOption(bool, "use_fake_wp34s_model", options.linkage == .fake_harness);
+    build_options.addOption(bool, "use_fake_wp34s_harness_surface", options.linkage == .fake_harness);
     build_options.addOption(bool, "export_public_ln_complex", options.export_public_ln_complex);
     // Passed in by whoever also hands the C sources -DTESTSUITE_BUILD, so the Zig
     // random seed is the deterministic test seed in every executable whose C half
     // is a testSuite build -- the ASAN lane and the full-core harnesses included,
     // which a test on the target name used to miss or catch only by accident.
-    build_options.addOption(bool, "is_testsuite_build", options.is_testsuite_build);
+    build_options.addOption(bool, "is_testsuite_build", options.linkage == .testsuite);
     // Mirror "#if defined(DMCP_BUILD) && HARDWARE_MODEL == HWM_DM42" from wp34s.c:
     // only the DM42 uses the small fallback mod buffers and reduced mod
     // precision.
@@ -265,9 +261,9 @@ pub fn addToModule(
     target: std.Build.ResolvedTarget,
     optimize: std.lang.Optimize,
     name_prefix: []const u8,
-    is_testsuite_build: bool,
+    linkage: build_common.Linkage,
 ) void {
-    const runtime_object = addRuntimeObject(b, target, optimize, name_prefix, .{ .is_testsuite_build = is_testsuite_build });
+    const runtime_object = addRuntimeObject(b, target, optimize, name_prefix, .{ .linkage = linkage });
     module.addObject(runtime_object);
 }
 
@@ -276,7 +272,7 @@ pub fn addParityExecutable(
     target: std.Build.ResolvedTarget,
     optimize: std.lang.Optimize,
 ) *std.Build.Step.Compile {
-    const runtime_object = addRuntimeObject(b, target, optimize, "parity", .{});
+    const runtime_object = addRuntimeObject(b, target, optimize, "parity", .{ .linkage = .fake_harness });
     const exe = b.addExecutable(.{
         .name = "math-command-wrappers-parity",
         .root_module = b.createModule(.{
@@ -305,7 +301,7 @@ pub fn addRandomParityExecutable(
     target: std.Build.ResolvedTarget,
     optimize: std.lang.Optimize,
 ) *std.Build.Step.Compile {
-    const runtime_object = addRuntimeObject(b, target, optimize, "random-parity", .{});
+    const runtime_object = addRuntimeObject(b, target, optimize, "random-parity", .{ .linkage = .fake_harness });
     const exe = b.addExecutable(.{
         .name = "math-random-parity",
         .root_module = b.createModule(.{

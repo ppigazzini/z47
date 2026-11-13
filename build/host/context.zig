@@ -46,6 +46,20 @@ pub fn prepareContext(
 
     const gtk_sources = try build_common.collectRelativeCFiles(b, build_common.upstreamPathString(b, "src/c47-gtk"));
 
+    const keyboard_config: keyboard_state.HostModuleConfig = .{
+        .platform_define = common.platform_define,
+        .word_size_define = common.word_size_define,
+        .raspberry = common.raspberry,
+        .decnumber_fastmul = common.decnumber_fastmul,
+        .needs_gnu_source = common.needs_gnu_source,
+        .have_dladdr = common.have_dladdr,
+        .generated_headers = .{
+            .version_headers_dir = version_headers_dir,
+            .softmenu_catalogs_dir = generated.softmenu_catalogs.dirname(),
+            .constant_pointers_h_dir = generated.constant_pointers_h.dirname(),
+        },
+    };
+
     return .{
         .host_target = host_target,
         .common = common,
@@ -55,21 +69,26 @@ pub fn prepareContext(
         .test_sources = try build_common.collectRelativeCFiles(b, build_common.upstreamPathString(b, "src/testSuite")),
         .version_headers_dir = version_headers_dir,
         .generated = generated,
-        .shortint_objects = shortint.addRuntimeObjects(b, host_target, optimize, "host"),
-        .keyboard_state_objects = keyboard_state.addHostRuntimeObjects(b, host_target, optimize, "host", .{
-            .platform_define = common.platform_define,
-            .word_size_define = common.word_size_define,
-            .raspberry = common.raspberry,
-            .decnumber_fastmul = common.decnumber_fastmul,
-            .needs_gnu_source = common.needs_gnu_source,
-            .have_dladdr = common.have_dladdr,
-            .generated_headers = .{
-                .version_headers_dir = version_headers_dir,
-                .softmenu_catalogs_dir = generated.softmenu_catalogs.dirname(),
-                .constant_pointers_h_dir = generated.constant_pointers_h.dirname(),
-            },
-        }),
-        .stack_state_objects = stack.addRuntimeObjects(b, host_target, optimize, "host"),
-        .testsuite_stack_state_objects = stack.addRuntimeObjectsWithOptions(b, host_target, optimize, "testSuite", .{ .is_testsuite_build = true }),
+        .product_objects = addSharedObjects(b, host_target, optimize, .product, "host", keyboard_config),
+        .testsuite_objects = addSharedObjects(b, host_target, optimize, .testsuite, "testSuite", keyboard_config),
+    };
+}
+
+/// The shortint, keyboard-state and stack-state objects for one linkage. The
+/// testSuite needs its own set: TESTSUITE_BUILD compiles the EXTRA_INFO hints
+/// and the testSuite-only paths of these owners differently from the simulator.
+fn addSharedObjects(
+    b: *std.Build,
+    host_target: std.Build.ResolvedTarget,
+    optimize: std.lang.Optimize,
+    linkage: build_common.Linkage,
+    name_prefix: []const u8,
+    keyboard_config: keyboard_state.HostModuleConfig,
+) host_types.SharedObjects {
+    return .{
+        .linkage = linkage,
+        .shortint = shortint.addRuntimeObjectsWithOptions(b, host_target, optimize, name_prefix, .{ .linkage = linkage }),
+        .keyboard_state = keyboard_state.addHostRuntimeObjectsWithOptions(b, host_target, optimize, name_prefix, keyboard_config, .{ .linkage = linkage }),
+        .stack_state = stack.addRuntimeObjectsWithOptions(b, host_target, optimize, name_prefix, .{ .linkage = linkage }),
     };
 }

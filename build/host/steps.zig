@@ -135,7 +135,7 @@ fn addMathLnComplexOracle(
     // real ln.c bodies under their own names, the others the weak stubs in
     // math_wrappers_eigen_link_stubs.c -- so an exported owner copy would be a
     // second definition of each symbol.
-    math_command_wrappers.addBuildOptions(b, math_ln_complex_module, "math-ln-complex-oracle", .{ .export_public_ln_complex = false });
+    math_command_wrappers.addBuildOptions(b, math_ln_complex_module, .{ .export_public_ln_complex = false });
     const math_ln_complex_object = b.addObject(.{
         .name = "math-ln-complex-oracle-owned",
         .root_module = math_ln_complex_module,
@@ -218,7 +218,7 @@ fn addMathEigenOracle(
     // real ln.c bodies under their own names, the others the weak stubs in
     // math_wrappers_eigen_link_stubs.c -- so an exported owner copy would be a
     // second definition of each symbol.
-    math_command_wrappers.addBuildOptions(b, eigen_module, "math-eigen-oracle", .{ .export_public_ln_complex = false });
+    math_command_wrappers.addBuildOptions(b, eigen_module, .{ .export_public_ln_complex = false });
     const eigen_object = b.addObject(.{
         .name = "math-eigen-oracle-owned",
         .root_module = eigen_module,
@@ -290,7 +290,7 @@ fn addMathRealRectangularToPolarOracle(
     // real ln.c bodies under their own names, the others the weak stubs in
     // math_wrappers_eigen_link_stubs.c -- so an exported owner copy would be a
     // second definition of each symbol.
-    math_command_wrappers.addBuildOptions(b, helper_module, "math-real-rectangular-to-polar-oracle", .{ .export_public_ln_complex = false });
+    math_command_wrappers.addBuildOptions(b, helper_module, .{ .export_public_ln_complex = false });
     const helper_object = b.addObject(.{
         .name = "math-real-rectangular-to-polar-oracle-owned",
         .root_module = helper_module,
@@ -363,7 +363,7 @@ fn addMathAtan2Oracle(
     // real ln.c bodies under their own names, the others the weak stubs in
     // math_wrappers_eigen_link_stubs.c -- so an exported owner copy would be a
     // second definition of each symbol.
-    math_command_wrappers.addBuildOptions(b, helper_module, "math-atan2-oracle", .{ .export_public_ln_complex = false });
+    math_command_wrappers.addBuildOptions(b, helper_module, .{ .export_public_ln_complex = false });
     const helper_object = b.addObject(.{
         .name = "math-atan2-oracle-owned",
         .root_module = helper_module,
@@ -436,7 +436,7 @@ fn addMathAtanOracle(
     // real ln.c bodies under their own names, the others the weak stubs in
     // math_wrappers_eigen_link_stubs.c -- so an exported owner copy would be a
     // second definition of each symbol.
-    math_command_wrappers.addBuildOptions(b, helper_module, "math-atan-oracle", .{ .export_public_ln_complex = false });
+    math_command_wrappers.addBuildOptions(b, helper_module, .{ .export_public_ln_complex = false });
     const helper_object = b.addObject(.{
         .name = "math-atan-oracle-owned",
         .root_module = helper_module,
@@ -509,7 +509,7 @@ fn addMathRealTrigPrimitivesOracle(
     // real ln.c bodies under their own names, the others the weak stubs in
     // math_wrappers_eigen_link_stubs.c -- so an exported owner copy would be a
     // second definition of each symbol.
-    math_command_wrappers.addBuildOptions(b, helper_module, "math-real-trig-primitives-oracle", .{ .export_public_ln_complex = false });
+    math_command_wrappers.addBuildOptions(b, helper_module, .{ .export_public_ln_complex = false });
     const helper_object = b.addObject(.{
         .name = "math-real-trig-primitives-oracle-owned",
         .root_module = helper_module,
@@ -582,7 +582,7 @@ fn addMathCircularTrigOracle(
     // real ln.c bodies under their own names, the others the weak stubs in
     // math_wrappers_eigen_link_stubs.c -- so an exported owner copy would be a
     // second definition of each symbol.
-    math_command_wrappers.addBuildOptions(b, helper_module, "math-circular-trig-oracle", .{ .export_public_ln_complex = false });
+    math_command_wrappers.addBuildOptions(b, helper_module, .{ .export_public_ln_complex = false });
     const helper_object = b.addObject(.{
         .name = "math-circular-trig-oracle-owned",
         .root_module = helper_module,
@@ -614,9 +614,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.l
         context.common,
         context.version_headers_dir,
         context.generated,
-        context.shortint_objects,
-        context.keyboard_state_objects,
-        context.stack_state_objects,
+        context.product_objects,
         "USER_C47",
         null,
     );
@@ -639,9 +637,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.l
         context.common,
         context.version_headers_dir,
         context.generated,
-        context.shortint_objects,
-        context.keyboard_state_objects,
-        context.stack_state_objects,
+        context.product_objects,
         "USER_R47",
         null,
     );
@@ -673,9 +669,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.l
         context.common,
         context.version_headers_dir,
         context.generated,
-        context.shortint_objects,
-        context.keyboard_state_objects,
-        context.stack_state_objects,
+        context.product_objects,
         "USER_C47",
         .full,
     );
@@ -690,9 +684,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.l
         context.common,
         context.version_headers_dir,
         context.generated,
-        context.shortint_objects,
-        context.keyboard_state_objects,
-        context.stack_state_objects,
+        context.product_objects,
         "USER_R47",
         .full,
     );
@@ -710,9 +702,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.l
         context.common,
         context.version_headers_dir,
         context.generated,
-        context.shortint_objects,
-        context.keyboard_state_objects,
-        context.testsuite_stack_state_objects,
+        context.testsuite_objects,
         null,
     );
 
@@ -720,7 +710,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.l
         b,
         context.host_target,
         optimize,
-        context.shortint_objects,
+        context.product_objects.shortint,
     );
     const run_logical_shortint_parity = b.addRunArtifact(logical_shortint_parity);
     run_logical_shortint_parity.setCwd(b.path("."));
@@ -731,7 +721,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.l
         b,
         context.host_target,
         optimize,
-        context.shortint_objects.rotate_bits,
+        context.product_objects.shortint.rotate_bits,
     );
     const run_rotate_bits_parity = b.addRunArtifact(rotate_bits_parity);
     run_rotate_bits_parity.setCwd(b.path("."));
@@ -742,7 +732,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.l
     const logical_boolean_ops_suite_step = b.step("logical_boolean_ops_suite", "Run the logical boolean operator suite");
     logical_boolean_ops_suite_step.dependOn(&run_logical_boolean_ops_suite.step);
 
-    const stack_state_parity_objects = stack.addRuntimeObjects(b, context.host_target, optimize, "stack-parity");
+    const stack_state_parity_objects = stack.addRuntimeObjectsWithOptions(b, context.host_target, optimize, "stack-parity", .{ .linkage = .fake_harness });
     const stack_state_parity = stack.addParityExecutable(b, context.host_target, optimize, stack_state_parity_objects);
     const run_stack_state_parity = b.addRunArtifact(stack_state_parity);
     run_stack_state_parity.setCwd(b.path("."));
@@ -771,9 +761,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.l
         context.common,
         context.version_headers_dir,
         context.generated,
-        context.shortint_objects,
-        context.keyboard_state_objects,
-        context.testsuite_stack_state_objects,
+        context.testsuite_objects,
         null,
         false,
     );
@@ -826,9 +814,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.l
         context.common,
         context.version_headers_dir,
         context.generated,
-        context.shortint_objects,
-        context.keyboard_state_objects,
-        context.testsuite_stack_state_objects,
+        context.testsuite_objects,
         null,
         false,
     );
@@ -871,9 +857,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.l
         context.common,
         context.version_headers_dir,
         context.generated,
-        context.shortint_objects,
-        context.keyboard_state_objects,
-        context.testsuite_stack_state_objects,
+        context.testsuite_objects,
         null,
         false,
     );
@@ -911,9 +895,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.l
         context.common,
         context.version_headers_dir,
         context.generated,
-        context.shortint_objects,
-        context.keyboard_state_objects,
-        context.testsuite_stack_state_objects,
+        context.testsuite_objects,
         null,
         false,
     );
@@ -957,14 +939,14 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.l
                 .constant_pointers_h_dir = context.generated.constant_pointers_h.dirname(),
             },
         },
-        .{ .coverage = true },
+        .{ .coverage = true, .linkage = .testsuite },
     );
     const cov_stack_state_objects = stack.addRuntimeObjectsWithOptions(
         b,
         context.host_target,
         optimize,
         "keyboardEntryCov",
-        .{ .coverage = true, .is_testsuite_build = true },
+        .{ .coverage = true, .linkage = .testsuite },
     );
     const coverage_harness = host_builders.addFullCoreHarness(
         b,
@@ -977,9 +959,12 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.l
         context.common,
         context.version_headers_dir,
         context.generated,
-        context.shortint_objects,
-        cov_keyboard_state_objects,
-        cov_stack_state_objects,
+        .{
+            .linkage = .testsuite,
+            .shortint = context.testsuite_objects.shortint,
+            .keyboard_state = cov_keyboard_state_objects,
+            .stack_state = cov_stack_state_objects,
+        },
         null,
         true,
     );
@@ -1020,9 +1005,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.l
         context.common,
         context.version_headers_dir,
         context.generated,
-        context.shortint_objects,
-        context.keyboard_state_objects,
-        context.testsuite_stack_state_objects,
+        context.testsuite_objects,
         null,
         false,
     );
@@ -1077,9 +1060,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.l
         context.common,
         context.version_headers_dir,
         context.generated,
-        context.shortint_objects,
-        context.keyboard_state_objects,
-        context.testsuite_stack_state_objects,
+        context.testsuite_objects,
         null,
         false,
     );
@@ -1108,9 +1089,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.l
         context.common,
         context.version_headers_dir,
         context.generated,
-        context.shortint_objects,
-        context.keyboard_state_objects,
-        context.testsuite_stack_state_objects,
+        context.testsuite_objects,
         .full,
         false,
     );
@@ -1139,9 +1118,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.l
         context.common,
         context.version_headers_dir,
         context.generated,
-        context.shortint_objects,
-        context.keyboard_state_objects,
-        context.testsuite_stack_state_objects,
+        context.testsuite_objects,
         .full,
         false,
     );
@@ -1263,9 +1240,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.l
         context.common,
         context.version_headers_dir,
         context.generated,
-        context.shortint_objects,
-        context.keyboard_state_objects,
-        context.testsuite_stack_state_objects,
+        context.testsuite_objects,
         null,
         false,
     );
@@ -1308,9 +1283,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.l
         context.common,
         context.version_headers_dir,
         context.generated,
-        context.shortint_objects,
-        context.keyboard_state_objects,
-        context.testsuite_stack_state_objects,
+        context.testsuite_objects,
         null,
         false,
     );
@@ -1408,7 +1381,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.l
     // The harness is a host-style link, so every value is the host default: all
     // distributions in, the EXTRA_INFO hints on, and dmcp_build/old_hw false, which
     // is what resolves code_section to .text / __TEXT.
-    frontier.addBuildOptions(b, distribution_owners_module, "distribution-spec", .{});
+    frontier.addBuildOptions(b, distribution_owners_module, .{});
     const distribution_spec = b.addExecutable(.{
         .name = "distribution-spec",
         .root_module = b.createModule(.{
@@ -1469,9 +1442,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.l
         context.common,
         context.version_headers_dir,
         context.generated,
-        context.shortint_objects,
-        context.keyboard_state_objects,
-        context.testsuite_stack_state_objects,
+        context.testsuite_objects,
         .full,
     );
     const run_test_suite_asan = addTestSuiteRun(b, test_suite_asan, build_common.upstreamPathString(b, "src/testSuite/tests/testSuiteList.txt"));

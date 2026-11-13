@@ -29,6 +29,9 @@ pub const RuntimeObjectOptions = struct {
     // The board this object is compiled for, set by the caller that builds
     // for it; every board fact below derives from it.
     board: build_common.Board = .host,
+    // The kind of executable this object is linked into, set by the caller;
+    // see build_common.Linkage.
+    linkage: build_common.Linkage = .product,
     // OPTION_STRUCTURED_PGM: leavePem runs VALID on the way out of the program
     // editor when AVALID is set, and holds the editor open on a fault. It is set
     // per DM42 package, from build/firmware.zig's dm42Package table. Defaults true
@@ -51,12 +54,6 @@ pub const RuntimeObjectOptions = struct {
     // for the dedicated coverage harness variant, never a product/test object,
     // because the sancov handler symbol is linked only into that binary.
     coverage: bool = false,
-    // EXTRA_INFO_ON_CALC_ERROR. Upstream sets it to 1, then forces 0 for
-    // DMCP_BUILD and inside TESTSUITE_BUILD, so the eight `sprintf(errorMessage,
-    // …)` / `moreInfoOnError(…)` blocks in keyboard.c are not compiled on those
-    // lanes and the shared errorMessage buffer is left untouched there. Default
-    // true mirrors a host build.
-    extra_info_on_calc_error: bool = true,
 };
 
 const replaced_core_sources = [_][]const u8{
@@ -127,8 +124,7 @@ fn addRuntimeObjectWithIncludeDir(
     kb_build_options.addOption(bool, "option_eex_prefix", options.option_eex_prefix);
     // The testSuite compiles with EXTRA_INFO_ON_CALC_ERROR forced to 0, as the
     // firmware does; keep the owner's diagnostics out of both.
-    kb_build_options.addOption(bool, "extra_info_on_calc_error", options.extra_info_on_calc_error and
-        !std.mem.startsWith(u8, name_prefix, "testSuite"));
+    kb_build_options.addOption(bool, "extra_info_on_calc_error", build_common.extraInfoOnCalcError(options.board, options.linkage));
     module.addOptions("keyboard_state_build_options", kb_build_options);
 
     const object = b.addObject(.{

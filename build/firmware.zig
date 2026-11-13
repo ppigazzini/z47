@@ -431,9 +431,6 @@ pub fn registerSteps(
         .stack_check = false,
         .omit_frame_pointer = true,
         .error_tracing = false,
-        // Firmware is DMCP_BUILD, where upstream compiles the EXTRA_INFO console
-        // hints out; match that to stay faithful.
-        .extra_info_on_calc_error = false,
     };
     const firmware_math_command_wrapper_options: math_command_wrappers.RuntimeObjectOptions = .{
         .strip = true,
@@ -476,9 +473,6 @@ pub fn registerSteps(
         .error_tracing = false,
         // The C47 firmwares; the r47 value below overrides it for the R47 ones.
         .calc_model_user_id = user_c47,
-        // Firmware is DMCP_BUILD, where upstream compiles the EXTRA_INFO console
-        // hints out; match that to stay faithful.
-        .extra_info_on_calc_error = false,
     };
     var firmware_r47_calc_state_options = firmware_calc_state_options;
     firmware_r47_calc_state_options.calc_model_user_id = user_r47;
@@ -497,9 +491,6 @@ pub fn registerSteps(
         .stack_check = false,
         .omit_frame_pointer = true,
         .error_tracing = false,
-        // Firmware is DMCP_BUILD, where upstream compiles the EXTRA_INFO console
-        // hints out; match that to stay faithful.
-        .extra_info_on_calc_error = false,
     };
     const firmware_stack_options: stack.RuntimeObjectOptions = .{
         .strip = true,
@@ -508,9 +499,6 @@ pub fn registerSteps(
         .stack_check = false,
         .omit_frame_pointer = true,
         .error_tracing = false,
-        // Firmware is DMCP_BUILD, where upstream compiles the EXTRA_INFO console
-        // hints out; match that to stay faithful.
-        .extra_info_on_calc_error = false,
     };
     const firmware_frontier_options: frontier.RuntimeObjectOptions = .{
         .strip = true,
@@ -519,9 +507,6 @@ pub fn registerSteps(
         .stack_check = false,
         .omit_frame_pointer = true,
         .error_tracing = false,
-        // Firmware is DMCP_BUILD, where upstream compiles the EXTRA_INFO console
-        // hints out; match that to stay faithful and reclaim flash.
-        .extra_info_on_calc_error = false,
         // Only the r47 firmware targets are built with -DCALCMODEL=USER_R47; the
         // C47 ones take the defines.h default. The r47 objects below override it.
         .calcmodel = user_c47,
@@ -537,18 +522,18 @@ pub fn registerSteps(
         .omit_frame_pointer = true,
         .error_tracing = false,
     };
-    const dmcp_shortint_objects = shortint.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", firmware_leaf_options);
-    const dmcp5_shortint_objects = shortint.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5", firmware_leaf_options);
-    const dmcp_flags_state_objects = flags.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", firmware_flags_options);
-    const dmcp5_flags_state_objects = flags.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5", firmware_flags_options);
+    const dmcp_shortint_objects = shortint.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", onBoard(.dmcp, firmware_leaf_options));
+    const dmcp5_shortint_objects = shortint.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5", onBoard(.dmcp5, firmware_leaf_options));
+    const dmcp_flags_state_objects = flags.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", onBoard(.dmcp, firmware_flags_options));
+    const dmcp5_flags_state_objects = flags.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5", onBoard(.dmcp5, firmware_flags_options));
     // Per package: OPTION_ELLIPTIC, _BESSEL, _ORTHO, _DIST_NORMAL, _EIGEN and
     // _SLVP_POLY each empty the matching command bodies upstream, so the object
     // cannot be shared.
     const dmcp_math_command_wrapper_options = mathematicsPackageOptions(firmware_math_command_wrapper_options, dmcp_package);
     const dmcp_math_command_wrapper_objects = math_command_wrappers.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", onBoard(.dmcp, dmcp_math_command_wrapper_options));
     const dmcp5_math_command_wrapper_objects = math_command_wrappers.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5", onBoard(.dmcp5, firmware_math_command_wrapper_options));
-    const dmcp_constants_objects = constants.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", firmware_constants_options);
-    const dmcp5_constants_objects = constants.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5", firmware_constants_options);
+    const dmcp_constants_objects = constants.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", onBoard(.dmcp, firmware_constants_options));
+    const dmcp5_constants_objects = constants.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5", onBoard(.dmcp5, firmware_constants_options));
     const dmcp_tone_objects = tone.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", onBoard(.dmcp, firmware_tone_options));
     const dmcp5_tone_objects = tone.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5", onBoard(.dmcp5, firmware_tone_options));
     const dmcp_keyboard_state_board: keyboard_state.FirmwareModuleConfig = .{
@@ -569,9 +554,6 @@ pub fn registerSteps(
         .stack_check = false,
         .omit_frame_pointer = true,
         .error_tracing = false,
-        // Firmware is DMCP_BUILD, where upstream compiles the EXTRA_INFO console
-        // hints out; match that to stay faithful.
-        .extra_info_on_calc_error = false,
     };
     var firmware_r47_keyboard_state_options = firmware_keyboard_state_options;
     firmware_r47_keyboard_state_options.is_r47 = true;
@@ -594,9 +576,6 @@ pub fn registerSteps(
         .omit_frame_pointer = true,
         .error_tracing = false,
         .board = .dmcp5,
-        // Firmware is DMCP_BUILD, where upstream compiles the EXTRA_INFO console
-        // hints out; match that to stay faithful.
-        .extra_info_on_calc_error = false,
     });
     // R47 variants build the keyboard-state object with is_r47 = true so its DMCP
     // key ring buffer keyBuffer_pop applies convertKeyCode, matching the upstream
@@ -621,9 +600,6 @@ pub fn registerSteps(
         .error_tracing = false,
         .board = .dmcp5,
         .is_r47 = true,
-        // Firmware is DMCP_BUILD, where upstream compiles the EXTRA_INFO console
-        // hints out; match that to stay faithful.
-        .extra_info_on_calc_error = false,
     });
     const dmcp_memory_state_objects = memory.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", onBoard(.dmcp, firmware_memory_options));
     const dmcp5_memory_state_objects = memory.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5", onBoard(.dmcp5, firmware_memory_options));
