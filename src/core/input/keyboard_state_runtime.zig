@@ -7,6 +7,7 @@ const state_old_hw = @hasDecl(keyboard_state_build_options, "state_old_hw") and
 // the moreInfoOnError call is compiled.
 pub const extra_info_on_calc_error: bool = keyboard_state_build_options.extra_info_on_calc_error;
 pub const option_structured_pgm: bool = keyboard_state_build_options.option_structured_pgm;
+pub const ir_printing: bool = keyboard_state_build_options.ir_printing;
 pub const option_drg_cfg: bool = keyboard_state_build_options.option_drg_cfg;
 pub const option_eex_prefix: bool = keyboard_state_build_options.option_eex_prefix;
 const std = @import("std");

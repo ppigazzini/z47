@@ -15,6 +15,7 @@ pub const ITM_LBL: u16 = 1;
 // defines inside the same guard: the listing indents a structure's body, and a
 // program carrying an unnumbered structure is refused rather than written.
 pub const option_structured_pgm: bool = build_options.option_structured_pgm;
+pub const ir_printing: bool = build_options.ir_printing;
 pub const option_struct_indent: bool = option_structured_pgm;
 pub const XPORTP_STRUCT_INDENT: i8 = 2; // spaces a structure indents its body by in an exported listing
 pub const XPORTP_MAX_STRUCT_LEVELS: i8 = 99; // a file has no width limit, so this is effectively no limit

@@ -36,6 +36,10 @@ pub const RuntimeObjectOptions = struct {
     // package, from build/firmware.zig's dm42Package table. Defaults true to match a
     // host build.
     option_structured_pgm: bool = true,
+    // OPTION_IR_PRINTING: the IR printer paths. defines.h drops it on DM42
+    // package 1 only; it is set per package from build/firmware.zig's
+    // dm42Package table. Defaults true (host).
+    ir_printing: bool = true,
     // OPTION_ATEXT_FONTS gates graFont's line in the state file and its key in
     // backup.cfg, both written and read. Every target z47 builds defines it: the
     // block common to the DM42 packages keeps it.
@@ -117,6 +121,7 @@ fn addRuntimeObject(
     build_options.addOption(bool, "state_old_hw", std.mem.find(u8, name_prefix, "dmcp") != null and std.mem.find(u8, name_prefix, "dmcp5") == null);
     build_options.addOption(bool, "option_xfn_1000", options.option_xfn_1000);
     build_options.addOption(bool, "option_structured_pgm", options.option_structured_pgm);
+    build_options.addOption(bool, "ir_printing", options.ir_printing);
     build_options.addOption(bool, "option_atext_fonts", options.option_atext_fonts);
     build_options.addOption(bool, "option_drg_cfg", options.option_drg_cfg);
     // EXTRA_INFO_ON_CALC_ERROR, for the owners rooted in this object. defines.h
