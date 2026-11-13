@@ -99,23 +99,21 @@ inline fn realCopy(source: *const real_t, destination: *real_t) void {
 }
 
 extern fn checkMinimumDataPoints(n: *const real_t) bool;
-extern fn findNamedVariable(variableName: [*:0]const u8) calcRegister_t;
-extern fn isStatsMatrix(rows: *u16, mx: [*:0]const u8) bool;
-extern fn allocC47Blocks(sizeInBlocks: usize) ?*anyopaque;
+extern fn findNamedVariable(variableName: [*]const u8) calcRegister_t;
+extern fn isStatsMatrix(rows: *u16, mx: [*]const u8) bool;
 extern fn freeC47Blocks(pcMemPtr: ?*anyopaque, sizeInBlocks: usize) void;
-extern fn qsort(base: ?*anyopaque, nmemb: usize, size: usize, compar: *const fn (?*const anyopaque, ?*const anyopaque) callconv(.c) c_int) void;
+/// libc qsort, bound at the run of real_t this owner sorts with it.
+extern fn qsort(base: [*]real_t, nmemb: usize, size: usize, compar: *const fn (*const real_t, *const real_t) callconv(.c) c_int) void;
 
 // Blob constants.
 const cstR = abi.constants.cstRAligned;
 
 const REAL_SIZE_IN_BYTES_75: usize = 60;
-inline fn dataAt(data: [*]u8, index: usize) *real_t {
-    return @ptrCast(@alignCast(data + index * REAL_SIZE_IN_BYTES_75));
+inline fn dataAt(data: [*]real_t, index: usize) *real_t {
+    return &data[index];
 }
 
-export fn statsRealCompare(v1: ?*const anyopaque, v2: ?*const anyopaque) linksection(runtime.code_section) callconv(.c) c_int {
-    const r1: *const real_t = @ptrCast(@alignCast(v1));
-    const r2: *const real_t = @ptrCast(@alignCast(v2));
+export fn statsRealCompare(r1: *const real_t, r2: *const real_t) linksection(runtime.code_section) callconv(.c) c_int {
     var compare: real_t = undefined;
 
     // Give qsort a strict ordering when statistical data contain NaNs.
@@ -138,10 +136,10 @@ export fn statsRealCompare(v1: ?*const anyopaque, v2: ?*const anyopaque) linksec
     return 1;
 }
 
-const StatsFn = *const fn (data: [*]u8, n: u16, arg: ?*const real_t, res: *real_t) callconv(.c) void;
+const StatsFn = *const fn (data: [*]real_t, n: u16, arg: ?*const real_t, res: *real_t) callconv(.c) void;
 
 // Compute an arbitrary percentile. per is [0, 1] rather than a percentage.
-fn computePercentileSorted(data: [*]u8, n: u16, p: *const real_t, percentile: *real_t) linksection(runtime.code_section) void {
+fn computePercentileSorted(data: [*]real_t, n: u16, p: *const real_t, percentile: *real_t) linksection(runtime.code_section) void {
     var d: real_t = undefined;
     var t: real_t = undefined;
     var k: i32 = undefined;
@@ -166,12 +164,12 @@ fn computePercentileSorted(data: [*]u8, n: u16, p: *const real_t, percentile: *r
     }
 }
 
-fn computePercentileUnsorted(data: [*]u8, n: u16, x: ?*const real_t, percentile: *real_t) linksection(runtime.code_section) callconv(.c) void {
+fn computePercentileUnsorted(data: [*]real_t, n: u16, x: ?*const real_t, percentile: *real_t) linksection(runtime.code_section) callconv(.c) void {
     qsort(data, n, REAL_SIZE_IN_BYTES_75, &statsRealCompare);
     computePercentileSorted(data, n, x.?, percentile);
 }
 
-fn computeMedianSorted(data: [*]u8, n: u16, median: *real_t) linksection(runtime.code_section) void {
+fn computeMedianSorted(data: [*]real_t, n: u16, median: *real_t) linksection(runtime.code_section) void {
     // Compute directly rather than using the percentile function to avoid rounding
     if ((n & 1) != 0) { // Odd number of values
         realCopy(dataAt(data, n / 2), median);
@@ -181,33 +179,33 @@ fn computeMedianSorted(data: [*]u8, n: u16, median: *real_t) linksection(runtime
     }
 }
 
-fn computeQ1Sorted(data: [*]u8, n: u16, quartile: *real_t) linksection(runtime.code_section) void {
+fn computeQ1Sorted(data: [*]real_t, n: u16, quartile: *real_t) linksection(runtime.code_section) void {
     computeMedianSorted(data, n / 2, quartile);
 }
 
-fn computeQ3Sorted(data: [*]u8, n: u16, quartile: *real_t) linksection(runtime.code_section) void {
-    computeMedianSorted(@ptrCast(dataAt(data, @as(usize, n) / 2 + (n & 1))), n / 2, quartile);
+fn computeQ3Sorted(data: [*]real_t, n: u16, quartile: *real_t) linksection(runtime.code_section) void {
+    computeMedianSorted(data + (@as(usize, n) / 2 + (n & 1)), n / 2, quartile);
 }
 
-fn computeMedianUnsorted(data: [*]u8, n: u16, unusedButMandatoryParameter: ?*const real_t, median: *real_t) linksection(runtime.code_section) callconv(.c) void {
+fn computeMedianUnsorted(data: [*]real_t, n: u16, unusedButMandatoryParameter: ?*const real_t, median: *real_t) linksection(runtime.code_section) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     qsort(data, n, REAL_SIZE_IN_BYTES_75, &statsRealCompare);
     computeMedianSorted(data, n, median);
 }
 
-fn computeQ1Unsorted(data: [*]u8, n: u16, unusedButMandatoryParameter: ?*const real_t, quartile: *real_t) linksection(runtime.code_section) callconv(.c) void {
+fn computeQ1Unsorted(data: [*]real_t, n: u16, unusedButMandatoryParameter: ?*const real_t, quartile: *real_t) linksection(runtime.code_section) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     qsort(data, n, REAL_SIZE_IN_BYTES_75, &statsRealCompare);
     computeQ1Sorted(data, n, quartile);
 }
 
-fn computeQ3Unsorted(data: [*]u8, n: u16, unusedButMandatoryParameter: ?*const real_t, quartile: *real_t) linksection(runtime.code_section) callconv(.c) void {
+fn computeQ3Unsorted(data: [*]real_t, n: u16, unusedButMandatoryParameter: ?*const real_t, quartile: *real_t) linksection(runtime.code_section) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     qsort(data, n, REAL_SIZE_IN_BYTES_75, &statsRealCompare);
     computeQ3Sorted(data, n, quartile);
 }
 
-fn getXvalues(n: *u16) linksection(runtime.code_section) ?[*]u8 {
+fn getXvalues(n: *u16) linksection(runtime.code_section) ?[*]real_t {
     var stats: real34Matrix_t = undefined;
     var rows: u16 = undefined;
     var cols: u16 = undefined;
@@ -215,17 +213,17 @@ fn getXvalues(n: *u16) linksection(runtime.code_section) ?[*]u8 {
     var regStats: calcRegister_t = undefined;
 
     setStatMx();
-    regStats = findNamedVariable(@ptrCast(&statMx));
-    if (!isStatsMatrix(&rows, @ptrCast(&statMx))) {
+    regStats = findNamedVariable(&statMx);
+    if (!isStatsMatrix(&rows, &statMx)) {
         displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE);
         return null;
     }
-    const data_raw = allocC47Blocks(@as(usize, rows) * REAL_SIZE_IN_BLOCKS_75);
+    const data_raw = abi.allocC47BlocksAs(real_t, @as(usize, rows) * REAL_SIZE_IN_BLOCKS_75);
     if (data_raw == null) {
         displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
         return null;
     }
-    const data: [*]u8 = @ptrCast(data_raw.?);
+    const data: [*]real_t = data_raw.?;
     linkToRealMatrixRegister(regStats, &stats);
     cols = stats.header.matrixColumns;
     i = 0;
@@ -236,7 +234,7 @@ fn getXvalues(n: *u16) linksection(runtime.code_section) ?[*]u8 {
     return data;
 }
 
-fn getYvalues(data: [*]u8) linksection(runtime.code_section) void {
+fn getYvalues(data: [*]real_t) linksection(runtime.code_section) void {
     var stats: real34Matrix_t = undefined;
     var rows: u16 = undefined;
     var cols: u16 = undefined;
@@ -244,7 +242,7 @@ fn getYvalues(data: [*]u8) linksection(runtime.code_section) void {
     var regStats: calcRegister_t = undefined;
 
     setStatMx();
-    regStats = findNamedVariable(@ptrCast(&statMx));
+    regStats = findNamedVariable(&statMx);
     linkToRealMatrixRegister(regStats, &stats);
     rows = stats.header.matrixRows;
     cols = stats.header.matrixColumns;
@@ -263,7 +261,8 @@ inline fn setStatMx() void {
 }
 
 inline fn matrixElem(stats: *real34Matrix_t, index: usize) *const real34_t {
-    return @ptrCast(&stats.matrixElements[index]);
+    const elements: [*]const real34_t = stats.matrixElements;
+    return &elements[index];
 }
 
 fn doStatsOperation(func: StatsFn, minDataPoints: *const real_t, arg: ?*const real_t, message: u8) linksection(runtime.code_section) void {
@@ -308,7 +307,7 @@ pub export fn fnUpperQuartileXY(unusedButMandatoryParameter: u16) linksection(ru
 }
 
 // Sort the data and compute the median absolute deviation
-fn computeMAD(data: [*]u8, n: u16, unusedButMandatoryParameter: ?*const real_t, mad: *real_t) linksection(runtime.code_section) callconv(.c) void {
+fn computeMAD(data: [*]real_t, n: u16, unusedButMandatoryParameter: ?*const real_t, mad: *real_t) linksection(runtime.code_section) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     var i: u16 = undefined;
 
@@ -329,7 +328,7 @@ pub export fn fnMADXY(unusedButMandatoryParameter: u16) linksection(runtime.code
 }
 
 // Sort the data and compute the inter-quartile range
-fn computeIQR(data: [*]u8, n: u16, unusedButMandatoryParameter: ?*const real_t, iqr: *real_t) linksection(runtime.code_section) callconv(.c) void {
+fn computeIQR(data: [*]real_t, n: u16, unusedButMandatoryParameter: ?*const real_t, iqr: *real_t) linksection(runtime.code_section) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     var t: real_t = undefined;
 

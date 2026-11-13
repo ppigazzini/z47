@@ -376,15 +376,14 @@ const const34_0 = abi.constants.q16200;
 extern const standardFont: font_t;
 
 // C ARRAY symbols: bind by address with @extern (not pointer-typed extern).
-const indexOfItems = @extern([*c]const item_t, .{ .name = "indexOfItems" });
+const indexOfItems = @extern([*]const item_t, .{ .name = "indexOfItems" });
 
-// NUL views of indexOfItems name fields for std.fmt {s} -- the [*c] blob base
-// makes &indexOfItems[i].field allowzero, which {s} rejects.
-inline fn itemSoftName(idx: usize) [:0]const u8 {
-    return std.mem.sliceTo(@as([*:0]const u8, @ptrCast(&indexOfItems[idx].itemSoftmenuName)), 0);
+// The indexOfItems name fields up to their NUL, for std.fmt {s}.
+inline fn itemSoftName(idx: usize) []const u8 {
+    return std.mem.sliceTo(&indexOfItems[idx].itemSoftmenuName, 0);
 }
-inline fn itemCatName(idx: usize) [:0]const u8 {
-    return std.mem.sliceTo(@as([*:0]const u8, @ptrCast(&indexOfItems[idx].itemCatalogName)), 0);
+inline fn itemCatName(idx: usize) []const u8 {
+    return std.mem.sliceTo(&indexOfItems[idx].itemCatalogName, 0);
 }
 const allReservedVariables = @extern([*c]const reservedVariableHeader_t, .{ .name = "allReservedVariables" });
 const baseDigits = @extern([*c]const u8, .{ .name = "baseDigits" });
@@ -494,23 +493,20 @@ const reg34 = abi.registerReal34Aligned;
 inline fn regBytes(reg: calcRegister_t) [*c]u8 {
     return abi.registerBytes(reg);
 }
-inline fn regImag34(reg: calcRegister_t) *real34_t {
-    return @ptrCast(@alignCast(regBytes(reg) + REAL34_SIZE_IN_BYTES));
-}
+const regImag34 = abi.registerImag34;
 inline fn regString(reg: calcRegister_t) [*c]u8 {
     return regBytes(reg) + STR_LGINT_HEADER_SIZE;
 }
 const regShortInt = abi.registerShortIntegerAligned;
 const regMatrixHeader = abi.registerMatrixHeaderAligned;
 inline fn regReal34MatrixElems(reg: calcRegister_t) [*c]real34_t {
-    return @ptrCast(@alignCast(regBytes(reg) + MATRIX_HEADER_SIZE));
+    return abi.registerReal34MatrixElements(reg);
 }
-inline fn varReal34(p: [*c]const complex34_t) *const real34_t {
-    return @ptrCast(p);
+inline fn varReal34(p: *const complex34_t) *const real34_t {
+    return &p.real;
 }
-inline fn varImag34(p: [*c]const complex34_t) *const real34_t {
-    const b: [*c]const u8 = @ptrCast(p);
-    return @ptrCast(@alignCast(b + REAL34_SIZE_IN_BYTES));
+inline fn varImag34(p: *const complex34_t) *const real34_t {
+    return &p.imag;
 }
 inline fn real34Copy(source: *const real34_t, destination: *real34_t) void {
     destination.* = source.*;

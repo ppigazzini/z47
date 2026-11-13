@@ -1,3 +1,4 @@
+const std = @import("std");
 const abi = @import("abi");
 const memory_owned = @import("../runtime/register_memory.zig");
 const block_math = abi.block_math;
@@ -16,27 +17,31 @@ const subroutine_levels_t = abi.SubroutineLevels;
 const subroutine_level_header_t = abi.SubroutineLevelHeader;
 
 extern var allSubroutineLevels: subroutine_levels_t;
-extern var currentSubroutineLevelData: ?*subroutine_level_header_t;
+extern var currentSubroutineLevelData: ?*align(4) subroutine_level_header_t;
 extern var currentLocalFlags: ?*localFlags_t;
 extern var currentLocalRegisters: ?[*]register_header_t;
 
-extern fn reallocC47Blocks(pc_mem_ptr: ?*anyopaque, old_size_in_blocks: usize, new_size_in_blocks: usize) ?*anyopaque;
+/// C's `void *reallocC47Blocks(void *, size_t, size_t)`, bound at the one thing
+/// this owner moves with it: a subroutine level.
+extern fn reallocC47Blocks(pc_mem_ptr: ?*anyopaque, old_size_in_blocks: usize, new_size_in_blocks: usize) ?*align(4) subroutine_level_header_t;
 extern fn reduceC47Blocks(pc_mem_ptr: ?*anyopaque, old_size_in_blocks: usize, new_size_in_blocks: usize) void;
 
 fn toBlocks(bytes: usize) u16 {
     return block_math.toBlocks(u16, bytes);
 }
 
-fn localFlagsAfterHeader(level_data: *subroutine_level_header_t) *localFlags_t {
-    const bytes: [*]align(1) u8 = @ptrCast(level_data);
-    const aligned_bytes: [*]align(@alignOf(localFlags_t)) u8 = @alignCast(bytes + @sizeOf(subroutine_level_header_t));
-    return @ptrCast(aligned_bytes);
+// A subroutine level's pool run holds its header, then its local flags, then its
+// local registers, each straight after the one before; the run is 4-aligned and
+// so is every offset in it.
+fn localFlagsAfterHeader(level_data: *align(4) subroutine_level_header_t) *localFlags_t {
+    const bytes: [*]align(4) u8 = std.mem.asBytes(level_data);
+    return std.mem.bytesAsValue(localFlags_t, bytes[@sizeOf(subroutine_level_header_t)..][0..@sizeOf(localFlags_t)]);
 }
 
 fn localRegistersAfterFlags(flags: *localFlags_t) [*]register_header_t {
-    const bytes: [*]align(1) u8 = @ptrCast(flags);
-    const aligned_bytes: [*]align(@alignOf(register_header_t)) u8 = @alignCast(bytes + @sizeOf(localFlags_t));
-    return @ptrCast(aligned_bytes);
+    const bytes: [*]align(4) u8 = std.mem.asBytes(flags);
+    const first: *[1]register_header_t = std.mem.bytesAsValue(register_header_t, bytes[@sizeOf(localFlags_t)..][0..@sizeOf(register_header_t)]);
+    return first;
 }
 
 fn levelBlocks(register_count: u16) usize {
@@ -47,19 +52,12 @@ fn headerOnlyBlocks() usize {
     return toBlocks(@sizeOf(subroutine_level_header_t));
 }
 
-fn complexImagPointer(data_ptr: ?*anyopaque) ?*anyopaque {
-    const ptr = data_ptr orelse return null;
-    const bytes: [*]align(1) u8 = @ptrCast(ptr);
-    const imag_offset: usize = @intCast(memory_owned.bytesFromBlocks(runtime.real34SizeInBlocks()));
-    return bytes + imag_offset;
-}
-
 fn reportLocalRegisterRangeError(number_of_registers_to_allocate: u16) void {
     stack_runtime.displayCalcErrorMessage(stack_runtime.ERROR_OUT_OF_RANGE, stack_runtime.ERR_REGISTER_LINE);
     runtime.reportTooManyLocalRegisters(number_of_registers_to_allocate);
 }
 
-fn refreshLocalStorage(level_data: *subroutine_level_header_t, register_count: u16) void {
+fn refreshLocalStorage(level_data: *align(4) subroutine_level_header_t, register_count: u16) void {
     currentSubroutineLevelData = level_data;
     currentLocalFlags = localFlagsAfterHeader(level_data);
     level_data.numberOfLocalFlags = NUMBER_OF_LOCAL_FLAGS;
@@ -93,12 +91,12 @@ fn initializeLocalRegister(reg: runtime.calcRegister_t) bool {
 
     if (stack_runtime.lastIntegerBase == 0 and stack_runtime.inputDefault() == stack_runtime.ID_CPXDP) {
         const complex_tag = if (stack_runtime.getSystemFlag(stack_runtime.FLAG_POLAR)) stack_runtime.currentAngularMode | stack_runtime.amPolar else stack_runtime.amNone;
-        const new_mem = stack_runtime.allocC47Blocks(runtime.complex34SizeInBlocks()) orelse return true;
+        const new_mem = abi.allocC47BlocksFor(abi.Complex34, runtime.complex34SizeInBlocks()) orelse return true;
 
         stack_runtime.setRegisterDataType(reg, @intCast(stack_runtime.dtComplex34), complex_tag);
         memory_owned.setRegisterDataPointer(reg, new_mem);
-        memory_owned.zeroReal34(new_mem);
-        memory_owned.zeroReal34(complexImagPointer(new_mem));
+        memory_owned.zeroReal34(&new_mem.real);
+        memory_owned.zeroReal34(&new_mem.imag);
         return false;
     }
 
@@ -133,14 +131,13 @@ fn updateSubroutineLinks() void {
         return;
     }
 
-    const previous_ptr = runtime.toPcMemPtr(current_level.ptrToPreviousLevel) orelse return;
-    const previous_level: *subroutine_level_header_t = @ptrCast(previous_ptr);
+    const previous_level = runtime.toPcMemPtrAs(subroutine_level_header_t, current_level.ptrToPreviousLevel) orelse return;
     previous_level.ptrToNextLevel = runtime.toC47MemPtr(current_level);
 }
 
 fn allocateFirstLocalRegisters(number_of_registers_to_allocate: u16) void {
     const old_level = currentSubroutineLevelData;
-    const grown_ptr = reallocC47Blocks(
+    const level = reallocC47Blocks(
         if (old_level) |level| level else null,
         headerOnlyBlocks(),
         levelBlocks(number_of_registers_to_allocate),
@@ -150,7 +147,6 @@ fn allocateFirstLocalRegisters(number_of_registers_to_allocate: u16) void {
         return;
     };
 
-    const level: *subroutine_level_header_t = @ptrCast(@alignCast(grown_ptr));
     refreshLocalStorage(level, number_of_registers_to_allocate);
     currentLocalFlags.?.* = 0;
 
@@ -158,7 +154,7 @@ fn allocateFirstLocalRegisters(number_of_registers_to_allocate: u16) void {
     while (index < number_of_registers_to_allocate) : (index += 1) {
         if (initializeLocalRegister(runtime.FIRST_LOCAL_REGISTER + @as(runtime.calcRegister_t, @intCast(index)))) {
             freeLocalRegisterRange(0, index);
-            reduceC47Blocks(grown_ptr, levelBlocks(number_of_registers_to_allocate), headerOnlyBlocks());
+            reduceC47Blocks(level, levelBlocks(number_of_registers_to_allocate), headerOnlyBlocks());
             currentSubroutineLevelData = level;
             clearLocalStorage();
             level.numberOfLocalFlags = 0;
@@ -173,7 +169,7 @@ fn allocateFirstLocalRegisters(number_of_registers_to_allocate: u16) void {
 
 fn growLocalRegisters(number_of_registers_to_allocate: u16, old_number_of_local_registers: u16) void {
     const old_level = currentSubroutineLevelData;
-    const grown_ptr = reallocC47Blocks(
+    const level = reallocC47Blocks(
         if (old_level) |level| level else null,
         levelBlocks(@intCast(old_number_of_local_registers)),
         levelBlocks(number_of_registers_to_allocate),
@@ -183,14 +179,13 @@ fn growLocalRegisters(number_of_registers_to_allocate: u16, old_number_of_local_
         return;
     };
 
-    const level: *subroutine_level_header_t = @ptrCast(@alignCast(grown_ptr));
     refreshLocalStorage(level, number_of_registers_to_allocate);
 
     var index = old_number_of_local_registers;
     while (index < number_of_registers_to_allocate) : (index += 1) {
         if (initializeLocalRegister(runtime.FIRST_LOCAL_REGISTER + @as(runtime.calcRegister_t, @intCast(index)))) {
             freeLocalRegisterRange(old_number_of_local_registers, index);
-            reduceC47Blocks(grown_ptr, levelBlocks(number_of_registers_to_allocate), levelBlocks(@intCast(old_number_of_local_registers)));
+            reduceC47Blocks(level, levelBlocks(number_of_registers_to_allocate), levelBlocks(@intCast(old_number_of_local_registers)));
             currentSubroutineLevelData = level;
             refreshLocalStorage(level, @intCast(old_number_of_local_registers));
             runtime.reportRamFull();

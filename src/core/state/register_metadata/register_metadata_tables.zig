@@ -9,6 +9,7 @@
 // reserved variable resolves a one-glyph name such as "X" to the lettered
 // reserved register that aliases the stack.
 
+const std = @import("std");
 const descriptor_storage = @import("../runtime/register_descriptor_storage.zig");
 
 pub const calcRegister_t = i16;
@@ -64,6 +65,16 @@ pub fn toPcMemPtr(mem_ptr: u16) ?*align(4) anyopaque {
         return null;
     }
     return &ram[mem_ptr];
+}
+
+/// The `T` stored at a pool block index, or null for C47_NULL. A pool block is
+/// 4-aligned, and so is the view.
+pub fn toPcMemPtrAs(comptime T: type, mem_ptr: u16) ?*align(4) T {
+    if (mem_ptr == C47_NULL) {
+        return null;
+    }
+    const words = ram[mem_ptr..][0..@divCeil(@sizeOf(T), 4)];
+    return std.mem.bytesAsValue(T, std.mem.sliceAsBytes(words)[0..@sizeOf(T)]);
 }
 
 pub fn toC47MemPtr(mem_ptr: ?*const anyopaque) u16 {

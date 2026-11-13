@@ -37,7 +37,9 @@ extern var alphaRegister: u16;
 extern var allReservedVariables: [reserved_variable_count]reserved_variable_header_t;
 extern fn compareString(left: [*c]const u8, right: [*c]const u8, comparison_type: i32) i32;
 extern fn isMemoryBlockAvailable(size_in_blocks: usize, num_blocks: u16, extra_fraction: f32) bool;
-extern fn reallocC47Blocks(pc_mem_ptr: ?*anyopaque, old_size_in_blocks: usize, new_size_in_blocks: usize) ?*anyopaque;
+/// C's `void *reallocC47Blocks(void *, size_t, size_t)`, bound at the one table
+/// this owner moves with it: the named-variable headers.
+extern fn reallocC47Blocks(pc_mem_ptr: ?*anyopaque, old_size_in_blocks: usize, new_size_in_blocks: usize) ?[*]align(4) named_variable_header_t;
 extern fn reduceC47Blocks(pc_mem_ptr: ?*anyopaque, old_size_in_blocks: usize, new_size_in_blocks: usize) void;
 
 fn validateNameGlyphLength(name: [*:0]const u8) usize {
@@ -67,7 +69,7 @@ fn initializeSimEqMatrix(variable_name: [*:0]const u8, position: runtime.calcReg
     const data_ptr = descriptor_owned.getRegisterDataPointer(runtime.FIRST_NAMED_VARIABLE + position) orelse return;
 
     runtime.initializeMatrixHeader1x1(data_ptr);
-    memory_owned.zeroReal34(firstMatrixElementPointer(data_ptr));
+    memory_owned.zeroReal34(&abi.registerReal34MatrixElements(runtime.FIRST_NAMED_VARIABLE + position)[0]);
 }
 
 // All three are always attempted: config.c chains nothing between them, so a
@@ -91,14 +93,7 @@ fn refreshSimEqMatrix(variable_name: [*:0]const u8) void {
 
     const data_ptr = descriptor_owned.getRegisterDataPointer(register);
     runtime.initializeMatrixRegisterHeader1x1(data_ptr);
-    memory_owned.zeroReal34(firstMatrixElementPointer(data_ptr));
-}
-
-fn firstMatrixElementPointer(data_ptr: ?*anyopaque) ?*anyopaque {
-    const ptr = data_ptr orelse return null;
-    const bytes: [*]align(1) u8 = @ptrCast(ptr);
-    const payload_offset: usize = @intCast(memory_owned.bytesFromBlocks(runtime.matrixHeaderSizeInBlocks()));
-    return bytes + payload_offset;
+    memory_owned.zeroReal34(&abi.registerReal34MatrixElements(register)[0]);
 }
 
 // Each matrix is rebuilt on its own: registers.c guards only on the name failing
@@ -119,8 +114,7 @@ fn namedVariableHeaderBlocks(count: u16) usize {
 }
 
 fn allocateFirstNamedVariableHeader() bool {
-    const data_ptr = stack_runtime.allocC47Blocks(namedVariableHeaderBlocks(1)) orelse return false;
-    allNamedVariables = @ptrCast(@alignCast(data_ptr));
+    allNamedVariables = abi.allocC47BlocksAs(named_variable_header_t, namedVariableHeaderBlocks(1)) orelse return false;
     runtime.numberOfNamedVariables = 1;
     return true;
 }
@@ -129,13 +123,11 @@ fn appendNamedVariableHeader(index: *u16) bool {
     const original_headers = allNamedVariables;
     index.* = runtime.numberOfNamedVariables;
 
-    const grown_ptr = reallocC47Blocks(
+    allNamedVariables = reallocC47Blocks(
         if (original_headers) |headers| headers else null,
         namedVariableHeaderBlocks(runtime.numberOfNamedVariables),
         namedVariableHeaderBlocks(runtime.numberOfNamedVariables + 1),
     ) orelse return false;
-
-    allNamedVariables = @ptrCast(@alignCast(grown_ptr));
     runtime.numberOfNamedVariables += 1;
     return true;
 }
@@ -195,7 +187,7 @@ fn findReservedVariableName(variable_name: [*c]const u8, glyph_length: u8) runti
             continue;
         }
 
-        const reserved_name: [*:0]const u8 = @ptrCast(&allReservedVariables[@intCast(reg)].reservedVariableName[1]);
+        const reserved_name = allReservedVariables[@intCast(reg)].reservedVariableName[1..];
         if (compareMenuNames(variable_name, reserved_name) == 0) {
             return runtime.FIRST_RESERVED_VARIABLE + reg;
         }
