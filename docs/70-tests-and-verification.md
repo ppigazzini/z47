@@ -169,6 +169,7 @@ the companion c47-r47-ci doc set, `docs/04-testing.md`, owns them. See
 | abi struct-layout parity | `../build/tests/abi_layout/` | `zig build abi-layout-parity --summary none` |
 | per-owner behavioral parity | `../src/<domain>/`, `../build/tests/<owner>/` | `zig build <owner>_parity --summary none` (see below) |
 | native Zig unit tests (no C oracle) | `../build/`, `src` module tests | `zig build test:unit --summary none` |
+| every `test` block is a test root (one only imported is never run) | `../.github/project/check-test-reachability.py` | `python3 .github/project/check-test-reachability.py --repo-root .` |
 | host simulator build | `../build/host/` | `zig build sim --summary none` |
 | host live-behavior smoke | `../build/host/simulator_smoke.sh` | `zig build simulator_smoke --summary none` (non-blocking; known Xvfb pixman over-read) |
 | host core regression | `../build/host/`, `../upstream/src/testSuite/` | `zig build test --summary none` |

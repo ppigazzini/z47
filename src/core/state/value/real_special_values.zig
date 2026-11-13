@@ -97,7 +97,6 @@ test "realSetZero/One seed a finite coefficient with clear flag bits" {
     try testing.expectEqual(DECNEG, r.bits);
     try testing.expectEqual(@as(i32, 0), r.exponent);
     try testing.expectEqual(@as(i32, 1), r.digits);
-    try testing.expectEqual(@as(u8, 0), r.bits);
     try testing.expectEqual(@as(u16, 1), r.lsu[0]);
 }
 

@@ -1,4 +1,5 @@
 const std = @import("std");
+const abi_host = @import("build/abi_host.zig");
 const build_common = @import("build/common.zig");
 const dist_steps = @import("build/dist.zig");
 const firmware_steps = @import("build/firmware.zig");
@@ -89,6 +90,7 @@ fn registerNativeUnitTests(b: *std.Build) void {
     const pure_modules = [_][]const u8{
         "src/abi/float_format.zig",
         "src/abi/types.zig",
+        "src/abi/register_tag.zig",
         "src/core/numeric/integer/core.zig",
         "src/core/persist/calc_state_progmem.zig",
         "src/core/state/register_metadata/register_metadata_payload_bytes.zig",
@@ -161,6 +163,8 @@ fn registerNativeUnitTests(b: *std.Build) void {
         "src/abi/trap_panic.zig",
         "src/abi/line_parse.zig",
         "src/shell/pool_poison.zig",
+        "src/core/state/base/byte_copy.zig",
+        "src/core/state/value/real_special_values.zig",
     };
     const target = b.resolveTargetQuery(.{});
     // Some pure owners reference the std-only L1 ABI types via @import("abi");
@@ -181,6 +185,16 @@ fn registerNativeUnitTests(b: *std.Build) void {
         const unit = b.addTest(.{ .root_module = mod });
         step.dependOn(&b.addRunArtifact(unit).step);
     }
+    // host.zig's hook slots live in the host-state object every executable that
+    // links a core object carries, so its tests link one too.
+    const host_module = b.createModule(.{
+        .root_source_file = b.path("src/abi/host.zig"),
+        .target = target,
+        .optimize = .debug,
+    });
+    abi_host.addToModule(b, host_module, target, .debug, "test-unit-host");
+    const host_unit = b.addTest(.{ .root_module = host_module });
+    step.dependOn(&b.addRunArtifact(host_unit).step);
 }
 
 fn registerCDependencyAuditStep(b: *std.Build) void {

@@ -44,6 +44,10 @@ step "[1c/11] file cohesion (NM11-0)"
 bash .github/project/check-file-cohesion.sh
 step "[2/11] native unit tests (zig build test:unit)"
 zig build test:unit
+# A test block runs only from a file the build analyses as a test root; one that
+# is merely imported is left out of the binary with no message.
+python3 .github/project/check-test-reachability.py --self-test >/dev/null
+python3 .github/project/check-test-reachability.py --repo-root .
 step "[3/11] tracked source ownership"
 bash .github/project/check-source-ownership.sh
 step "[4/11] upstream pin + port ledger"
