@@ -100,6 +100,8 @@ fn addRuntimeObject(
     // (MAX_ENGINE_NESTING_DEPTH / PLOT_NESTING_ALLOWED) is hardware-tier-specific,
     // and HARDWARE_MODEL == HWM_DM42 selects TVM's working precision.
     build_options.addOption(bool, "is_old_hw", options.board.isOldHw());
+    // LIBRARY_FN_BASE, from the board's SDK: the ROM function table.
+    build_options.addOption(usize, "library_fn_base", build_common.libraryFnBase(b, options.board));
     build_options.addOption(bool, "option_infsums", options.option_infsums);
     build_options.addOption(bool, "option_slvp_poly", options.option_slvp_poly);
     build_options.addOption(bool, "option_tvm_formulas", options.option_tvm_formulas);

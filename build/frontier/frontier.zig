@@ -222,11 +222,7 @@ fn addRuntimeObject(
     root_module.addImport("abi", abi_module);
     // The DMCP ROM shim the date, time and settings owners reach the system data
     // block through; the same registered module the state owners import.
-    const dmcp_rom_module = b.createModule(.{
-        .root_source_file = b.path("src/core/hal/dmcp_rom.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
+    const dmcp_rom_module = build_common.addDmcpRomModule(b, target, optimize, options.board);
     root_module.addImport("dmcp_rom", dmcp_rom_module);
 
     addBuildOptions(b, root_module, options);
@@ -291,6 +287,12 @@ pub fn addBuildOptions(
     build_options.addOption(bool, "extra_info_on_calc_error", build_common.extraInfoOnCalcError(options.board, options.linkage));
     build_options.addOption(bool, "dmcp_build", options.board.isDmcp());
     build_options.addOption(bool, "old_hw", options.board.isOldHw());
+    // LIBRARY_FN_BASE, from the board's SDK: the ROM function table.
+    build_options.addOption(usize, "library_fn_base", build_common.libraryFnBase(b, options.board));
+    // The system data block, from the board's SDK.
+    build_options.addOption(usize, "sdb_base", build_common.systemDataBlockBase(b, options.board));
+    // RAM_SIZE_IN_BLOCKS, from defines.h.
+    build_options.addOption(u16, "ram_size_in_blocks", build_common.ramSizeInBlocks(b, options.board));
     build_options.addOption(bool, "option_elec", options.option_elec);
     build_options.addOption(u8, "calcmodel", options.calcmodel);
     build_options.addOption(bool, "ir_printing", options.ir_printing);

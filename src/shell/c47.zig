@@ -549,8 +549,8 @@ const dmcp = struct {
     var wp43KbdLayout: bool_t = false;
 
     // ---- DMCP SDK constants ----
-    const LIBRARY_FN_BASE: usize = if (old_hw) 0x08000201 else 0x08000301;
-    const SDB_ADDR: usize = if (old_hw) 0x10002000 else 0x20000000;
+    const LIBRARY_FN_BASE: usize = build_options.library_fn_base;
+    const SDB_ADDR: usize = build_options.sdb_base;
     // calc_state is the volatile u32 at offset 0 of sys_sdb_t.
     const calc_state_ptr: *volatile u32 = @ptrFromInt(SDB_ADDR);
 

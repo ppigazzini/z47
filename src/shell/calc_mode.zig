@@ -22,7 +22,7 @@ const old_hw: bool = frontier_build_options.old_hw;
 
 // DMCP sys_sdb_t base address (dmcp.h: #define sdb (*((sys_sdb_t*)BASE))).
 // calc_state is the first field (volatile uint32_t at offset 0).
-const SDB_BASE: usize = if (old_hw) 0x10002000 else 0x20000000;
+const SDB_BASE: usize = frontier_build_options.sdb_base;
 
 // ---------------------------------------------------------------------------
 // Types

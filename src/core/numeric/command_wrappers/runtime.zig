@@ -326,7 +326,7 @@ pub extern fn fnRefreshState() void;
 // screen refresh, not a state refresh. On the firmware it is a DMCP ROM
 // jump-table call rather than a link symbol.
 const is_dmcp_build = @import("builtin").target.os.tag == .freestanding;
-const refresh_library_fn_base: usize = if (dm42_pkg_xip) 0x08000201 else 0x08000301;
+const refresh_library_fn_base: usize = build_options.library_fn_base;
 extern fn refreshLcd(unused_data: ?*anyopaque) c_int; // gboolean refreshLcd(gpointer) on the host
 pub inline fn refreshScreenNow() void {
     if (comptime is_dmcp_build) {

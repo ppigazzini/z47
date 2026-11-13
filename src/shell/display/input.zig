@@ -29,8 +29,8 @@ const ITM_INPUT: u16 = 43;
 // CALCMODEL == USER_R47 (66); the C47 family is 46.
 const is_r47: bool = frontier_build_options.calcmodel == 66;
 
-const LIBRARY_FN_BASE: usize = if (old_hw) 0x08000201 else 0x08000301;
-const SDB_BASE: usize = if (old_hw) 0x10002000 else 0x20000000;
+const LIBRARY_FN_BASE: usize = frontier_build_options.library_fn_base;
+const SDB_BASE: usize = frontier_build_options.sdb_base;
 
 // ---------------------------------------------------------------------------
 // Types

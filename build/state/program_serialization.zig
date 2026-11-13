@@ -70,6 +70,8 @@ fn addRuntimeObject(
     const build_options = b.addOptions();
     // OLD_HW selects the DM42 memory pool size.
     build_options.addOption(bool, "state_old_hw", options.board.isOldHw());
+    // RAM_SIZE_IN_BLOCKS, from defines.h.
+    build_options.addOption(u16, "ram_size_in_blocks", build_common.ramSizeInBlocks(b, options.board));
     build_options.addOption(bool, "option_structured_pgm", options.option_structured_pgm);
     build_options.addOption(bool, "ir_printing", options.ir_printing);
     build_options.addOption(bool, "extra_info_on_calc_error", build_common.extraInfoOnCalcError(options.board, options.linkage));
@@ -77,11 +79,7 @@ fn addRuntimeObject(
     // The DMCP ROM shim is shared by the calc-state and program-serialization
     // owners, so it is a REGISTERED module: directory-free, letting each owner
     // family live in its own subdirectory without a cross-module relative import.
-    const dmcp_rom_module = b.createModule(.{
-        .root_source_file = b.path("src/core/hal/dmcp_rom.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
+    const dmcp_rom_module = build_common.addDmcpRomModule(b, target, optimize, options.board);
     module.addImport("dmcp_rom", dmcp_rom_module);
 
     return b.addObject(.{

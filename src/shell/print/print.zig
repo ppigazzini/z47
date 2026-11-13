@@ -47,7 +47,7 @@ const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 // OPTION_IR_PRINTING: on for host and dmcp5, and per package on the DM42.
 pub const ir_printing: bool = frontier_build_options.ir_printing;
 
-const LIBRARY_FN_BASE: usize = if (old_hw) 0x08000201 else 0x08000301;
+const LIBRARY_FN_BASE: usize = frontier_build_options.library_fn_base;
 
 // ---------------------------------------------------------------------------
 // Types

@@ -8,6 +8,7 @@
 const abi = @import("abi");
 const std = @import("std");
 const builtin = @import("builtin");
+const keyboard_state_build_options = @import("keyboard_state_build_options");
 
 const is_dmcp_build = builtin.target.os.tag == .freestanding;
 const bool_t = bool;
@@ -29,7 +30,7 @@ extern fn btnClicked(unused: ?*anyopaque, data: ?*anyopaque) void;
 // the DMCP view here by symbol name. lcd_refresh_dma is a DMCP ROM function-table
 // macro (lft_ifc.h, LIBRARY_FN_BASE + 644).
 const refreshLcd = @extern(*const fn () callconv(.c) void, .{ .name = "refreshLcd" });
-const LIBRARY_FN_BASE: usize = if (builtin.target.cpu.model == &std.Target.arm.cpu.cortex_m4) 0x08000201 else 0x08000301;
+const LIBRARY_FN_BASE: usize = keyboard_state_build_options.library_fn_base;
 fn lcdRefreshDma() void {
     const f: *const fn () callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 644);
     f();

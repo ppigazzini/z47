@@ -32,7 +32,7 @@ pub const built_for_r47: bool = build_options.is_r47;
 // key_pop is a DMCP ROM function-table macro (lft_ifc.h, LIBRARY_FN_BASE + 392);
 // keyBuffer_pop drains it on firmware only. convertKeyCode is the (Zig-owned,
 // frontier-exported) DM42 key remap, applied before buffering on R47 builds.
-const LIBRARY_FN_BASE: usize = if (builtin.target.cpu.model == &std.Target.arm.cpu.cortex_m4) 0x08000201 else 0x08000301;
+const LIBRARY_FN_BASE: usize = build_options.library_fn_base;
 fn romKeyPop() c_int {
     const f: *const fn () callconv(.c) c_int = @ptrFromInt(LIBRARY_FN_BASE + 392);
     return f();

@@ -34,7 +34,7 @@ const frontier_build_options = @import("frontier_build_options");
 const dmcp_build: bool = frontier_build_options.dmcp_build;
 const old_hw: bool = frontier_build_options.old_hw;
 // LIBRARY_FN_BASE (lft_ifc.h): the ROM function table of the board's SDK.
-const LIBRARY_FN_BASE: usize = if (old_hw) 0x08000201 else 0x08000301;
+const LIBRARY_FN_BASE: usize = frontier_build_options.library_fn_base;
 const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 const option_structured_pgm: bool = frontier_build_options.option_structured_pgm;
 // OPTION_DRG_CFG: DRG during number entry chooses the unit of the literal, and a

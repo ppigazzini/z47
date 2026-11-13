@@ -429,7 +429,7 @@ extern var eqnDrawLhsOnly: bool;
 // DMCP firmware: lcd_refresh is a ROM jump-table call (matches the lblGtoXeq
 // owner trampoline; offset 48 in both lft_ifc.h files).
 const dm42_pkg_xip: bool = solve_build_options.dm42_pkg_xip;
-const library_fn_base: usize = if (dm42_pkg_xip) 0x08000201 else 0x08000301;
+const library_fn_base: usize = solve_build_options.library_fn_base;
 inline fn lcdRefresh() void {
     if (comptime is_dmcp_build) {
         const f: *const fn () callconv(.c) void = @ptrFromInt(library_fn_base + 48);

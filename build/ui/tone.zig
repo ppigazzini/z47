@@ -26,14 +26,6 @@ const replaced_core_sources = [_][]const u8{
     "ui/" ++ "tone.c",
 };
 
-fn firmwareLibraryFnBase(board: build_common.Board) usize {
-    return switch (board) {
-        .host => 0,
-        .dmcp => 0x08000201,
-        .dmcp5 => 0x08000301,
-    };
-}
-
 fn addRuntimeObject(
     b: *std.Build,
     target: std.Build.ResolvedTarget,
@@ -61,7 +53,7 @@ fn addRuntimeObject(
     });
     module.addImport("abi", abi_module);
     const build_options = b.addOptions();
-    build_options.addOption(usize, "library_fn_base", firmwareLibraryFnBase(options.board));
+    build_options.addOption(usize, "library_fn_base", build_common.libraryFnBase(b, options.board));
     module.addOptions("tone_build_options", build_options);
 
     return b.addObject(.{

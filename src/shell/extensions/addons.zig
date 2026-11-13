@@ -79,7 +79,7 @@ const DRG_AUTO_ADM_BIT: u3 = 6;
 const WRITE_BUFFER_LEN: i32 = 4096;
 
 // DMCP ROM trampoline base (lft_ifc.h offsets; base differs old_hw / new_hw).
-const LIBRARY_FN_BASE: usize = if (old_hw) 0x08000201 else 0x08000301;
+const LIBRARY_FN_BASE: usize = frontier_build_options.library_fn_base;
 
 const code_section = if (dmcp_build and old_hw)
     ".qspi_data"

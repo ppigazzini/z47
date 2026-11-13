@@ -366,7 +366,7 @@ extern fn setLastKeyCode(key: c_int) void;
 // linkable symbols (gtk_lcd_runtime). They are only called inside dmcp_build
 // comptime blocks (lcd_refresh has a host call too, so keep the host extern).
 const old_hw: bool = frontier_build_options.old_hw;
-const library_fn_base: usize = if (old_hw) 0x08000201 else 0x08000301;
+const library_fn_base: usize = frontier_build_options.library_fn_base;
 const lcd_refresh_offset: usize = 48;
 const wait_for_key_release_offset: usize = 420;
 const key_pop_offset: usize = 392;

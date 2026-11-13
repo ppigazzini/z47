@@ -280,10 +280,9 @@ extern fn strcpy(dst: [*]u8, src: [*:0]const u8) [*c]u8;
 extern fn strcat(dst: [*]u8, src: [*:0]const u8) [*c]u8;
 
 // rtc_read/rtc_write are DMCP-ROM jump-table entries (lft_ifc.h,
-// LIBRARY_FN_BASE + 204 / + 208). The table base differs per board -- 0x08000201
-// on the DM42 (old_hw) and 0x08000301 on the DMCP5 one -- so it is selected from
-// the passed build option, never assumed.
-const LIBRARY_FN_BASE: usize = if (old_hw) 0x08000201 else 0x08000301;
+// LIBRARY_FN_BASE + 204 / + 208). The table base differs per board; the build
+// reads it from the board's lft_ifc.h.
+const LIBRARY_FN_BASE: usize = frontier_build_options.library_fn_base;
 const rtc_read: *const fn (*tm_t, *dt_t) callconv(.c) void = if (dmcp_build)
     @ptrFromInt(LIBRARY_FN_BASE + 204)
 else

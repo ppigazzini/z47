@@ -138,6 +138,12 @@ Enforcement split:
   the reference's *Slicing by Length* writes `s[a..][0..n]`; and
   `zeroes_scalar_array_sites` counts an array of numbers zero-filled through
   `std.mem.zeroes`, which is `@splat(0)`.
+- It also holds `dmcp_board_address_sites` at zero: an address one of the DMCP
+  SDK headers defines, either board's ROM function table or system data block.
+  The build reads them from `lft_ifc.h` and `dmcp.h` (`build_common.libraryFnBase`
+  and `systemDataBlockBase`) and hands each owner the value for its board.
+- A metric with no recorded ceiling fails the check, so a new pattern cannot ship
+  unenforced.
 - A seam file lives under a `generated/` path in `src/` AND carries the
   `// SEAM-GENERATED` marker. The reporter fails closed if a file has one but not
   the other, so a hand-written owner cannot smuggle `extern struct` / `[*c]` debt

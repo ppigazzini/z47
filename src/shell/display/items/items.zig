@@ -1011,14 +1011,14 @@ const BAT_MINIMUM: c_int = 2100;
 
 // DMCP ROM trampoline (firmware only); offset from dep/DMCP_SDK/dmcp/lft_ifc.h.
 const UsbPoweredFn = *const fn () callconv(.c) c_int;
-const LIBRARY_FN_BASE: usize = if (old_hw) 0x08000201 else 0x08000301;
+const LIBRARY_FN_BASE: usize = frontier_build_options.library_fn_base;
 inline fn usb_powered() c_int {
     const f: UsbPoweredFn = @ptrFromInt(LIBRARY_FN_BASE + 288);
     return f();
 }
 
 // SET_ST(STAT_PGM_END): set a bit in the fixed-address sdb.calc_state word.
-const SDB_BASE: usize = if (old_hw) 0x10002000 else 0x20000000;
+const SDB_BASE: usize = frontier_build_options.sdb_base;
 const STAT_PGM_END: u32 = 1 << 9;
 inline fn setStatPgmEnd() void {
     const calc_state: *volatile u32 = @ptrFromInt(SDB_BASE);

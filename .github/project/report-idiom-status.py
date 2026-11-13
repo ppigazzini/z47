@@ -130,6 +130,11 @@ PATTERNS = [
         ),
         "site",
     ),
+    # An address one of the DMCP SDK headers defines: either board's ROM function
+    # table (lft_ifc.h) or system data block (dmcp.h). The build reads them from
+    # the headers; a copy in an owner goes stale without a sound, and the DM42's
+    # sends a DMCP5 image to the wrong entry.
+    ("dmcp_board_address_sites", re.compile(r"0x08000[23]01|0x10002000|0x20000000"), "site"),
 ]
 
 
@@ -237,6 +242,12 @@ def main() -> int:
         baseline = json.loads((repo_root / BASELINE_PATH).read_text(encoding="utf-8"))["totals"]
         cur = result["totals"]
         rc = 0
+        for key in sorted(set(cur) - set(baseline)):
+            print(
+                f"IDIOM RATCHET: {key} has no ceiling in the baseline, so nothing would"
+                " stop it growing. Record one with --write-baseline."
+            )
+            rc = 1
         for key, ceiling in baseline.items():
             have = cur.get(key, 0)
             if have > ceiling:

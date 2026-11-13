@@ -189,6 +189,8 @@ pub fn addBuildOptions(
     // The DM42's SRAM2 .bss ends exactly at the DMCP system data block, and the
     // four inverse-trig result slots are 588 bytes it does not have.
     build_options.addOption(bool, "trig_result_cache", !options.board.isOldHw());
+    // LIBRARY_FN_BASE, from the board's SDK: the ROM function table.
+    build_options.addOption(usize, "library_fn_base", build_common.libraryFnBase(b, options.board));
     build_options.addOption(bool, "option_xfn_1000", options.option_xfn_1000);
     build_options.addOption(bool, "option_drg_cfg", options.option_drg_cfg);
     build_options.addOption(bool, "option_slvp_poly", options.option_slvp_poly);

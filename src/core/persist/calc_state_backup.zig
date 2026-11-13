@@ -345,7 +345,7 @@ extern var firstDisplayedStep: [*c]u8;
 extern var currentStep: [*c]u8;
 
 fn geometry() progmem.Geometry {
-    return .{ .ram_base = @intFromPtr(ram), .ram_size_in_blocks = if (state_old_hw) progmem.RAM_SIZE_IN_BLOCKS_OLD_HW else progmem.RAM_SIZE_IN_BLOCKS_NEW_HW, .old_hw = state_old_hw };
+    return .{ .ram_base = @intFromPtr(ram), .ram_size_in_blocks = build_options.ram_size_in_blocks, .old_hw = state_old_hw };
 }
 fn streq(a: [*c]const u8, b: [*c]const u8) bool {
     return strcmp(a, b) == 0;
