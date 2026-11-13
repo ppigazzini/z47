@@ -21,6 +21,9 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   SEGMENT_DOWNLOAD_TIMEOUT_MINS: '5'
   XLSXIO_HELPER_CACHE_VERSION: v2
+  # The xlsxio commit the catalog generator is built from. Pinned, so two runs of
+  # one z47 commit build the same helper; move it deliberately.
+  XLSXIO_COMMIT: a8b74053127033fcd4788c1a3e651e47c79aa21d
   ZIG_BUILD_CACHE_VERSION: v1
 
 permissions:
@@ -154,11 +157,11 @@ jobs:
           set -euo pipefail
           test "$(zig version)" = "${{ steps.master_toolchain.outputs.version }}"
       - id: xlsxio-ref
-        name: Resolve xlsxio upstream HEAD
+        name: Record the pinned xlsxio commit
         shell: bash
         run: |
           set -euo pipefail
-          echo "sha=$(git ls-remote https://github.com/brechtsanders/xlsxio.git HEAD | cut -f1)" >> "$GITHUB_OUTPUT"
+          echo "sha=$XLSXIO_COMMIT" >> "$GITHUB_OUTPUT"
       - id: xlsxio-cache
         name: Restore Linux xlsxio helper cache for monitored Zig master
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
@@ -184,7 +187,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          git clone --depth 1 https://github.com/brechtsanders/xlsxio.git "$RUNNER_TEMP/xlsxio"
+          git init -q "$RUNNER_TEMP/xlsxio"
+          git -C "$RUNNER_TEMP/xlsxio" fetch -q --depth 1 https://github.com/brechtsanders/xlsxio.git "$XLSXIO_COMMIT"
+          git -C "$RUNNER_TEMP/xlsxio" checkout -q FETCH_HEAD
           cmake_version="$(cmake --version | sed -n '1s/^cmake version //p')"
           cmake_major="${cmake_version%%.*}"
           cmake_policy_args=()
@@ -713,11 +718,11 @@ jobs:
             zig-build-linux-host-${{ runner.os }}-${{ runner.arch }}-${{ steps.toolchain.outputs.version }}-${{ env.ZIG_BUILD_CACHE_VERSION }}-${{ github.ref_name }}-
             zig-build-linux-host-${{ runner.os }}-${{ runner.arch }}-${{ steps.toolchain.outputs.version }}-${{ env.ZIG_BUILD_CACHE_VERSION }}-
       - id: xlsxio-ref
-        name: Resolve xlsxio upstream HEAD
+        name: Record the pinned xlsxio commit
         shell: bash
         run: |
           set -euo pipefail
-          echo "sha=$(git ls-remote https://github.com/brechtsanders/xlsxio.git HEAD | cut -f1)" >> "$GITHUB_OUTPUT"
+          echo "sha=$XLSXIO_COMMIT" >> "$GITHUB_OUTPUT"
       - id: xlsxio-cache
         name: Restore Linux xlsxio helper cache
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
@@ -743,7 +748,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          git clone --depth 1 https://github.com/brechtsanders/xlsxio.git "$RUNNER_TEMP/xlsxio"
+          git init -q "$RUNNER_TEMP/xlsxio"
+          git -C "$RUNNER_TEMP/xlsxio" fetch -q --depth 1 https://github.com/brechtsanders/xlsxio.git "$XLSXIO_COMMIT"
+          git -C "$RUNNER_TEMP/xlsxio" checkout -q FETCH_HEAD
           cmake_version="$(cmake --version | sed -n '1s/^cmake version //p')"
           cmake_major="${cmake_version%%.*}"
           cmake_policy_args=()
@@ -1121,11 +1128,11 @@ jobs:
             zig-build-linux-firmware-${{ runner.os }}-${{ runner.arch }}-${{ steps.toolchain.outputs.version }}-${{ env.ZIG_BUILD_CACHE_VERSION }}-${{ github.ref_name }}-
             zig-build-linux-firmware-${{ runner.os }}-${{ runner.arch }}-${{ steps.toolchain.outputs.version }}-${{ env.ZIG_BUILD_CACHE_VERSION }}-
       - id: xlsxio-ref
-        name: Resolve xlsxio upstream HEAD
+        name: Record the pinned xlsxio commit
         shell: bash
         run: |
           set -euo pipefail
-          echo "sha=$(git ls-remote https://github.com/brechtsanders/xlsxio.git HEAD | cut -f1)" >> "$GITHUB_OUTPUT"
+          echo "sha=$XLSXIO_COMMIT" >> "$GITHUB_OUTPUT"
       - id: xlsxio-cache
         name: Restore Linux xlsxio helper cache for firmware lane
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
@@ -1151,7 +1158,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          git clone --depth 1 https://github.com/brechtsanders/xlsxio.git "$RUNNER_TEMP/xlsxio"
+          git init -q "$RUNNER_TEMP/xlsxio"
+          git -C "$RUNNER_TEMP/xlsxio" fetch -q --depth 1 https://github.com/brechtsanders/xlsxio.git "$XLSXIO_COMMIT"
+          git -C "$RUNNER_TEMP/xlsxio" checkout -q FETCH_HEAD
           cmake_version="$(cmake --version | sed -n '1s/^cmake version //p')"
           cmake_major="${cmake_version%%.*}"
           cmake_policy_args=()
@@ -1283,11 +1292,11 @@ jobs:
             zig-build-macos-host-${{ runner.os }}-${{ runner.arch }}-${{ steps.toolchain.outputs.version }}-${{ env.ZIG_BUILD_CACHE_VERSION }}-${{ github.ref_name }}-
             zig-build-macos-host-${{ runner.os }}-${{ runner.arch }}-${{ steps.toolchain.outputs.version }}-${{ env.ZIG_BUILD_CACHE_VERSION }}-
       - id: xlsxio-ref
-        name: Resolve xlsxio upstream HEAD
+        name: Record the pinned xlsxio commit
         shell: bash
         run: |
           set -euo pipefail
-          echo "sha=$(git ls-remote https://github.com/brechtsanders/xlsxio.git HEAD | cut -f1)" >> "$GITHUB_OUTPUT"
+          echo "sha=$XLSXIO_COMMIT" >> "$GITHUB_OUTPUT"
       - id: xlsxio-cache
         name: Restore macOS xlsxio helper cache
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
@@ -1318,7 +1327,9 @@ jobs:
         run: |
           set -euo pipefail
           eval "$(brew shellenv)"
-          git clone --depth 1 https://github.com/brechtsanders/xlsxio.git "$RUNNER_TEMP/xlsxio"
+          git init -q "$RUNNER_TEMP/xlsxio"
+          git -C "$RUNNER_TEMP/xlsxio" fetch -q --depth 1 https://github.com/brechtsanders/xlsxio.git "$XLSXIO_COMMIT"
+          git -C "$RUNNER_TEMP/xlsxio" checkout -q FETCH_HEAD
           cmake_version="$(cmake --version | sed -n '1s/^cmake version //p')"
           cmake_major="${cmake_version%%.*}"
           cmake_policy_args=()
@@ -1554,11 +1565,11 @@ jobs:
             zig-build-windows-host-${{ runner.os }}-${{ runner.arch }}-${{ steps.toolchain.outputs.version }}-${{ env.ZIG_BUILD_CACHE_VERSION }}-${{ github.ref_name }}-
             zig-build-windows-host-${{ runner.os }}-${{ runner.arch }}-${{ steps.toolchain.outputs.version }}-${{ env.ZIG_BUILD_CACHE_VERSION }}-
       - id: xlsxio-ref
-        name: Resolve xlsxio upstream HEAD
+        name: Record the pinned xlsxio commit
         shell: bash
         run: |
           set -euo pipefail
-          echo "sha=$(git ls-remote https://github.com/brechtsanders/xlsxio.git HEAD | cut -f1)" >> "$GITHUB_OUTPUT"
+          echo "sha=$XLSXIO_COMMIT" >> "$GITHUB_OUTPUT"
       - id: xlsxio-cache
         name: Restore Windows xlsxio helper cache
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
@@ -1575,7 +1586,9 @@ jobs:
           set -euo pipefail
           temp_root="$(cygpath -u "$RUNNER_TEMP")"
           prefix="$temp_root/xlsxio-prefix"
-          git clone --depth 1 https://github.com/brechtsanders/xlsxio.git "$temp_root/xlsxio"
+          git init -q "$temp_root/xlsxio"
+          git -C "$temp_root/xlsxio" fetch -q --depth 1 https://github.com/brechtsanders/xlsxio.git "$XLSXIO_COMMIT"
+          git -C "$temp_root/xlsxio" checkout -q FETCH_HEAD
           cmake_version="$(cmake --version | sed -n '1s/^cmake version //p')"
           cmake_major="${cmake_version%%.*}"
           cmake_policy_args=()
