@@ -15,9 +15,11 @@ differentials broken at link time while the full gate stayed green, and
 than a missing one, because it reads as coverage.
 
 HOW IT WORKS. The lane list comes from `zig build --help`, which is the build's own
-declaration, and is diffed against the `zig build <step>` lines in the battery. A
-lane that exists and is not run fails the gate. Nothing here is hand-maintained, so
-adding a lane to build/host/steps.zig and forgetting the battery is a build
+declaration, and is diffed against the `zig build <step>` invocations in the
+battery, the local gate and the workflows. A line that swallows the step's failure
+(`zig build x || echo ...`) does not count: it runs the lane and cannot fail on it.
+A lane that exists and is not run fails the gate. Nothing here is hand-maintained,
+so adding a lane to build/host/steps.zig and forgetting to run it is a build
 failure rather than a silence.
 
 EXEMPTIONS COST A REASON. A lane can be excluded, but only in the manifest below
@@ -43,15 +45,14 @@ from pathlib import Path
 from lane_vocabulary import lane_steps
 
 BATTERY = ".github/project/run-host-parity-battery.sh"
+LOCAL_GATE = ".github/project/run-local-gate.sh"
+WORKFLOW_GLOB = ".github/workflows/*.yml"
 
 # Lanes that exist and are deliberately not in the battery. Each needs a reason.
 # Empty on purpose: every lane the build declares is currently run. The mechanism
 # stays because the honest answer to "why is this one not gated?" is a sentence,
 # not a deletion.
 EXEMPT: dict[str, str] = {}
-
-# Lanes the battery runs whose names do not carry a lane suffix.
-EXTRA_BATTERY_STEPS = ("saveload_roundtrip",)
 
 
 def declared_lanes(repo: Path) -> set[str]:
@@ -66,9 +67,54 @@ def declared_lanes(repo: Path) -> set[str]:
     return lane_steps(completed.stdout)
 
 
-def battery_steps(repo: Path) -> set[str]:
-    text = (repo / BATTERY).read_text(encoding="utf-8")
-    return set(re.findall(r"^\s*(?:retry_once\s+)?zig build (\S+)", text, re.M))
+# `zig build` flags that take their value as the next word.
+VALUE_FLAGS = {
+    "--summary",
+    "--prefix",
+    "-p",
+    "--cache-dir",
+    "--global-cache-dir",
+    "--zig-lib-dir",
+    "--build-file",
+    "--seed",
+    "--color",
+    "--sysroot",
+    "--search-prefix",
+}
+
+
+def logical_lines(text: str) -> list[str]:
+    """Shell lines with backslash continuations joined and comments dropped."""
+    lines = []
+    for line in re.sub(r"\\\n\s*", " ", text).splitlines():
+        if not line.strip() or line.strip().startswith("#"):
+            continue
+        lines.append(re.sub(r"\s#.*$", "", line))
+    return lines
+
+
+def invoked_steps(text: str) -> set[str]:
+    """Steps a script runs such that their failure fails the script."""
+    steps: set[str] = set()
+    for line in logical_lines(text):
+        if "zig build" not in line or "||" in line:
+            continue
+        for tail in re.findall(r"zig build ([^;&|>]*)", line):
+            tokens = iter(tail.split())
+            for token in tokens:
+                if token in VALUE_FLAGS:
+                    next(tokens, None)
+                elif not token.startswith("-"):
+                    steps.add(token)
+    return steps
+
+
+def gated_steps(repo: Path) -> set[str]:
+    sources = [repo / BATTERY, repo / LOCAL_GATE, *sorted(repo.glob(WORKFLOW_GLOB))]
+    steps: set[str] = set()
+    for source in sources:
+        steps |= invoked_steps(source.read_text(encoding="utf-8"))
+    return steps
 
 
 def main() -> int:
@@ -84,13 +130,13 @@ def main() -> int:
         print(f"check-parity-lanes-gated: BROKEN -- {exc}")
         return 1
 
-    gated = battery_steps(repo) | set(EXTRA_BATTERY_STEPS)
+    gated = gated_steps(repo)
     ungated = sorted(lane for lane in lanes if lane not in gated and lane not in EXEMPT)
 
     exempt_here = sorted(lane for lane in lanes if lane in EXEMPT)
     print(
         f"check-parity-lanes-gated: {len(lanes)} lane(s) declared by the build,"
-        f" {len(lanes) - len(ungated) - len(exempt_here)} in the battery,"
+        f" {len(lanes) - len(ungated) - len(exempt_here)} gated,"
         f" {len(exempt_here)} exempt, {len(ungated)} ungated"
     )
 
@@ -113,7 +159,17 @@ def main() -> int:
         if probe not in pretend:
             print("check-parity-lanes-gated: SELF-TEST FAILED -- an ungated lane went unreported")
             return 1
-        print("check-parity-lanes-gated: SELF-TEST OK -- an ungated lane is reported")
+        swallowed = invoked_steps("zig build swallowed || echo warning\n")
+        continued = invoked_steps("zig build kept \\\n  --summary none\n")
+        if swallowed or continued != {"kept"}:
+            print(
+                "check-parity-lanes-gated: SELF-TEST FAILED -- a swallowed or continued line was misread"
+            )
+            return 1
+        print(
+            "check-parity-lanes-gated: SELF-TEST OK -- an ungated lane is reported, and a"
+            " lane whose failure is swallowed is not gated"
+        )
 
     if ungated:
         print("\nPARITY LANES IN NO GATE:")

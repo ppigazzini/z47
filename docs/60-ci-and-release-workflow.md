@@ -119,7 +119,7 @@ committed scripts or generators so the same checks run locally.
 | --- | --- | --- |
 | `validate-toolchain` | Validate pinned Zig toolchain | verify the pinned Zig version and Linux SHA-256 against `ziglang.org/download/index.json`, install it, and confirm `zig version` |
 | `zig-fmt-check` | Enforce zig fmt on z47-owned Zig | run `check-fmt.sh` (`zig fmt --check` over z47-owned Zig), `check-filename-hygiene.sh` and `check-file-cohesion.sh` |
-| `zig-native-unit-tests` | Native Zig unit tests (no C oracle) | run `zig build test:unit`, then `check-parity-lanes-gated.py`, which diffs the build's declared lanes against the battery |
+| `zig-native-unit-tests` | Native Zig unit tests (no C oracle) | run `zig build test:unit`, then `check-test-reachability.py` (every `test` block is a test root) and `check-parity-lanes-gated.py`, which diffs the build's declared lanes against what the battery, the local gate and the workflows run |
 | `zig-master-compatibility` | Zig master compatibility monitor | install the monitored Zig-master snapshot and run `zig build --help`, `logical_shortint_parity`, `rotate_bits_parity` and `logical_boolean_ops_suite`; `continue-on-error: true`, so it reports drift without gating merge. The last probe builds the `translate-c` roots, so it stays red for as long as the pinned `translate-c` release cannot build under that snapshot, which is the dependency's state and not z47's; the first three still report z47's own breaks |
 | `source-manifest` | Verify imported upstream pin and source manifest | confirm the pinned commit is still reachable from `upstream/master`, then upload the `upstream-source-index` manifest built from `source-ownership.txt` |
 | `source-ownership-guard` | Verify tracked source ownership | run `check-source-ownership.sh`; reject unapproved added files under imported upstream-shaped roots (fetches the upstream branch first to diff from the merge base) |
@@ -159,10 +159,10 @@ runs, in order:
   count), and `generated`
 
 Read the ordered lane list off the script itself, not off this page.
-`check-parity-lanes-gated.py` proves the script runs every declared step whose
-name ends in `_parity`, `_oracle`, `_diff`, `_suite`, `_test`, `-parity` or
-`-test` (plus `saveload_roundtrip`, which it names explicitly), so the script
-cannot silently fall behind `zig build --help` for those.
+`check-parity-lanes-gated.py` proves that every step whose name carries a lane
+suffix (the list is `../.github/project/lane_vocabulary.py`) is run by the
+battery, the local gate or a workflow, on a line that does not swallow its
+failure with `||`. So no lane can fall behind `zig build --help` unseen.
 
 The job then re-runs the softmenu audit with `--require-generated`, the harness
 dead-code check and the object-graph gate; runs the sanitizer lanes `both_asan`,
