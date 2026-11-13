@@ -1,4 +1,4 @@
-//! The small-prime lookup list -- the pure core lifted out of prime.zig.
+//! The small-prime lookup list -- the pure core behind prime.zig.
 //!
 //! prime.zig enumerates the first 169 primes for trial division, the
 //! Euler-phi/factoring fast paths, and next-prime search. The first block is a

@@ -4,8 +4,8 @@
 // label and named-variable counts, run/stop status, the current program and
 // step, and the dynamic soft-menu item.
 //
-// Base calculator state relocated out of the shell globals hub; symbols, types
-// and initialisers are byte-identical, so every extern consumer resolves as before.
+// Base calculator state, defined here rather than in the shell globals hub
+// (c47.zig) with c47.c's symbols, types and initialisers.
 
 pub export var numberOfLabels: u16 = 0; // count of program labels
 pub export var numberOfStructureLabels: u16 = 0; // count of STRUCT jump targets, held in labelList after every real label so label indices never move

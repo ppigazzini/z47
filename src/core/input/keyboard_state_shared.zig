@@ -3031,8 +3031,8 @@ pub fn implementation(comptime runtime: type) type {
                     // defines.h, so the default (!NOMATRIXCURSORS) branch is live:
                     // arrows navigate the matrix. Leaving keyActionProcessed=false
                     // lets the ITM_DOWN1 handler add ITM_DOWN_ARROW (moves the cell
-                    // cursor down). The port previously copied the NOMATRIXCURSORS
-                    // branch, so up/down keys did nothing in the matrix editor.
+                    // cursor down). The NOMATRIXCURSORS branch would leave the
+                    // up/down keys doing nothing in the matrix editor.
                     if (runtime.currentSoftmenuScrolls() and runtime.catalog != 0) {
                         runtime.menuDown();
                     } else {

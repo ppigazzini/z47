@@ -21,14 +21,13 @@ const const_1e_34 = consts.const_1e_34;
 // `#if !defined(OPTION_EIGEN)` stub block above it. defines.h #undef's
 // OPTION_EIGEN for some DM42 packages (build/firmware.zig's dm42Package table).
 //
-// The workers are pub-exported so the file is fully analysed before the public
-// commands are wired (the upstream copies are file-static, so the global Zig
-// symbols never clash). The arithmetic is translated 1:1 against the decNumber
-// primitives and the already-Zig-owned solveQuadraticEquation159 (math_slvq);
+// The workers are pub-exported (the upstream copies are file-static, so the
+// global Zig symbols never clash). The arithmetic is translated 1:1 against the
+// decNumber primitives and the Zig-owned solveQuadraticEquation159 (slvq.zig);
 // the whole chain is verified by the Wolfram-referenced eigenvalue cases in the
-// testSuite's matrix.txt once fnEigenvalues lands.
+// testSuite's matrix.txt.
 //
-// This owner mirrors the real-op + BigReal scaffolding of math_slvq.zig.
+// This owner mirrors the real-op + BigReal scaffolding of slvq.zig.
 
 const std = @import("std");
 const runtime = @import("../command_wrappers/runtime.zig");

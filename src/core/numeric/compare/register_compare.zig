@@ -57,7 +57,8 @@ extern fn fnSwapX(regist: u16) void;
 extern fn decQuadZero(result: *runtime.real34_t) *runtime.real34_t;
 // Upstream macro currentNumberOfLocalRegisters expands to
 // currentSubroutineLevelData->numberOfLocalRegisters (defines.h:2281); the
-// struct layout matches src/kernel/register_metadata_local_registers.zig.
+// struct layout is abi.SubroutineLevelHeader, shared with
+// src/core/state/register_metadata/register_metadata_local_registers.zig.
 const subroutine_level_header_t = abi.SubroutineLevelHeader;
 extern var currentSubroutineLevelData: ?*subroutine_level_header_t;
 
@@ -68,7 +69,7 @@ fn localRegisterCount() u16 {
 
 // Upstream macro TO_BYTES(CONFIG_SIZE_IN_BLOCKS) over
 // sizeof(dtConfigDescriptor_t) == 840 bytes (the layout is replicated with a
-// comptime size check in src/frontier/frontier_store.zig).
+// comptime size check in src/shell/store.zig and src/shell/recall.zig).
 const config_size_bytes: u32 = 840;
 
 fn asRegister(regist: u16) calcRegister_t {

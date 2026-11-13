@@ -846,7 +846,7 @@ const MimFunctionsType3Conv = [NUM_CONVERT_PAIRS]fInMim_t{
     .{ .itemNr = 2888 }, // ITM_DBVtoV
 };
 
-// The pair table, findPair, and the lookup predicates now live in
+// The pair table, findPair, and the lookup predicates live in
 // conversion_pairs.zig (std-only, natively tested); these wrappers keep the
 // exact C-ABI export symbols and delegate.
 pub export fn conversionPartner(input: i16, unity: ?*i16, exponent: ?*i8, type_out: ?*u8) callconv(.c) i16 {

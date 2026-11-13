@@ -631,8 +631,8 @@ pub extern var lastPlotMode: u16;
 pub extern var plotSelection: u16;
 pub extern var SAVED_SIGMA_lastAddRem: i8;
 pub extern var BASE_OVERRIDEONCE: bool_t;
-// Upstream packed errorMessages[][] into a static pool reached via this accessor
-// (error.c); the array symbol is gone. errorMessageOf(code) -> message pointer.
+// Upstream keeps errorMessages[][] in a static pool reached via this accessor
+// (error.c), with no array symbol. errorMessageOf(code) -> message pointer.
 pub extern fn errorMessageOf(errorCode: u8) [*c]const u8;
 pub inline fn errorMessageAt(row: usize) [*c]const u8 {
     return errorMessageOf(@intCast(row));
@@ -663,7 +663,7 @@ pub extern fn isAlphaSubmenu(n: u8) bool_t;
 // are reconstructed lane-aware here so handlers that reach clearScreen / the
 // telltale (keyExit, keyBackspace) can run on the DMCP lanes. This mirrors the
 // established, build/link-verified frontier ROM-trampoline pattern (cf.
-// frontier_status_bar.zig, same +60 offset and LIBRARY_FN_BASE).
+// shell/display/statusbar/status_bar.zig, same +60 offset and LIBRARY_FN_BASE).
 const LIBRARY_FN_BASE: usize = keyboard_state_build_options.library_fn_base;
 const LcdFillRectFn = *const fn (x: u32, y: u32, dx: u32, dy: u32, val: c_int) callconv(.c) void;
 const c_lcd_fill_rect = if (!is_dmcp_build) @extern(LcdFillRectFn, .{ .name = "lcd_fill_rect" }) else {};
@@ -815,7 +815,7 @@ pub fn indexOfItemsSoftmenuName(item: i16) [*c]const u8 {
 }
 pub extern var delayCloseNim: bool_t;
 pub extern var userKeyLabel: [*c]u8;
-// assign.c's NULL-tolerant reader for userKeyLabel (added at the 6559a9c59 pin).
+// assign.c's NULL-tolerant reader for userKeyLabel.
 pub extern fn getUserKeyLabelString(n: i16) [*c]u8;
 pub extern fn isAlphabeticSoftmenu() bool_t;
 pub extern fn getNthString(ptr: [*c]u8, n: i16) [*c]u8;

@@ -1,12 +1,10 @@
 // Shared text primitives for the calc-state save/restore owners: the small
 // number/word parse helpers and the uint64->hex formatter that were file-static
 // in saveRestoreCalcState.c (toInt16/toUint8/toUint16/toUint32, the skip_*/
-// next_word navigators, toInt16_next_word, strcmp2, UI64toString). Ported here
-// so the Zig save_sections / restoreOneSection owners no longer trampoline into
-// C for them. Parsing uses libc strtol/strtoul and C sprintf so the conversions
-// remain byte-identical to the C originals (verified by the round-trip parity
-// harness). The C statics still exist for the C DMCP retained path; these are
-// independent Zig copies for the host owners.
+// next_word navigators, toInt16_next_word, strcmp2, UI64toString), ported for the
+// Zig save_sections / restoreOneSection owners. Parsing uses libc strtol/strtoul
+// and C sprintf so the conversions remain byte-identical to the C originals
+// (verified by the round-trip parity harness).
 
 const std = @import("std");
 const abi = @import("abi");

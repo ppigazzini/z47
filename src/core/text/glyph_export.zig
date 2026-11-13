@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-only
-//! Pure glyph -> export-character decoders lifted out of frontier_char_string.zig
+//! Pure glyph -> export-character decoders behind shell/display/text/char_string.zig
 //! (src/c47/charString.c). stringToASCII walks a glyph string and turns each
 //! two-byte glyph into its plain-ASCII form; the range-decode chain at its heart
 //! (superscript/subscript letters and digits, #-prefixed number bases, and the
-//! curly-quote folds) moves here as `asciiFromGlyph`.
+//! curly-quote folds) is here as `asciiFromGlyph`.
 //!
 //! The glyph ranges are threaded in as an AsciiRanges value built from the
 //! owner's STD_* constants, so the module needs none of the shared glyph tables
@@ -259,7 +259,7 @@ test "fileNameChars on an empty string yields an empty result" {
     try testing.expectEqual(@as(u8, 0), out[0]);
 }
 
-// The owner's frontier_char_string.zig glyph constants, verbatim.
+// char_string.zig's glyph constants, verbatim.
 const owner_ranges = AsciiRanges{
     .sup_digit = .{ .lead = 0xa1, .lo = 0x60, .hi = 0x69 }, // STD_SUP_0..9
     .sup_lower = .{ .lead = 0xa4, .lo = 0x82, .hi = 0x9b }, // STD_SUP_a..z

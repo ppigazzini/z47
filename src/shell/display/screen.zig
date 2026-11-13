@@ -1089,7 +1089,7 @@ extern var aimBuffer: [*c]u8;
 extern var tamBuffer: [*c]u8;
 extern var nimBufferDisplay: [*c]u8;
 extern var userKeyLabel: [*c]u8;
-// assign.c's NULL-tolerant reader for userKeyLabel (added at the 6559a9c59 pin).
+// assign.c's NULL-tolerant reader for userKeyLabel.
 extern fn getUserKeyLabelString(n: i16) [*c]u8;
 extern var current_cursor_x: u16;
 extern var current_cursor_y: u16;

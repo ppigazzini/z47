@@ -15,10 +15,10 @@
 // PER-TARGET TABLE GATES: softmenus.c gates several menu_X[] entries on compile
 // macros. They map to frontier build options:
 //   CALCMODEL == USER_R47   <=> built_for_r47 (menu_HOME/EE/ASN_N/KEYS/DRG/XXFCNS/VECT)
-//   OPTION_VECTOR           <=> option_vector (menu_MATX/VECT, menu_HOME tail)
-//   OPTION_ELEC             <=> option_elec   (menu_HOME tail)
+//   OPTION_VECTOR           <=> option_vector (menu_VECT's VF5 slot)
+//   OPTION_DRG_CFG          <=> option_drg_cfg (menu_DRG's softmenu[] row, menu_KEYS' DRC_M slot)
 //   OPTION_XFN_1000         <=> option_xfn_1000 (menu_XFN)
-//   PC_BUILD                <=> !dmcp_build   (menu_PRINT, PAT)
+//   PC_BUILD                <=> !dmcp_build   (menu_PRINT's PAT slot)
 //   !OPTION_DISTRIBUTIONS   <=> strip_15      (menu_PROB's DDMENU; DMCP pkg 4)
 //   !OPTION_HP35            <=> strip_21_hp35 (menu_Dev slot 0, ITM_SetHP35)
 // OPTION_DEVPROFILES is defined for every target z47 builds, so menu_Dev always
@@ -26,7 +26,7 @@
 // INLINE_TEST is #undef'd unconditionally upstream, so its table/render branches
 // take the !INLINE_TEST path.
 //
-// fnDynamicMenu itself is owned by shell.zig. This module provides two
+// fnDynamicMenu itself is owned by src/frontier.zig. This module provides two
 // cross-owner helpers (z47_frontier_dynamic_menu_softmenu_id / _item) that read its inputs,
 // softmenuStack[0].softmenuId and dynamicMenuItem.
 //
@@ -847,7 +847,7 @@ inline fn real34ToReal(x: *const real34_t, r: *real_t) void {
 const realIsZero = abi.realIsZero;
 extern fn showShiftState() void;
 
-// fnDynamicMenu is owned by shell.zig.
+// fnDynamicMenu is owned by src/frontier.zig.
 
 // libc.
 extern fn malloc(n: usize) [*c]u8;
@@ -3052,7 +3052,7 @@ const openMenu: menuOps_t = 0;
 const closeMenu: menuOps_t = 1;
 
 fn setScreenUpdateFromMenu(id: i16, op: menuOps_t) void {
-    _ = op; // the close actions moved to softmenuCloseHandler; the open and close repaints are the same
+    _ = op; // the close actions are in softmenuCloseHandler; the open and close repaints are the same
     switch (id) {
         -%@as(i16, MNU_XXFCNS), -%@as(i16, MNU_EQN), -%@as(i16, MNU_DISTR), -%@as(i16, MNU_EQ_EDIT), -%@as(i16, MNU_Solver_TOOL) => {
             screenUpdatingMode = SCRUPD_AUTO;
@@ -3444,7 +3444,7 @@ pub export fn showSoftmenuCurrentPart() callconv(.c) void {
                         // the conversion-pair table and renders as a plain key.
                         if (frontier_conversion_units.isItemConversion(item)) {
                             // The softkey text for a fixed-menu conversion pair, including the
-                            // HPCONV swap. indexOfItems no longer carries the second text part.
+                            // HPCONV swap. indexOfItems does not carry the second text part.
                             var www: [64]u8 = undefined;
                             frontier_conversion_units.fullConvSoftMenuItemNameInclHPCONV(item, &www);
                             showSoftkey2(1, &www, x, y - @as(i16, @intCast(@divTrunc(currentFirstItem, 6))), vmNormal, @intFromBool(@divTrunc(@as(i32, item), 10000) == 0 or @divTrunc(@as(i32, item), 10000) == 2), @intFromBool(@divTrunc(@as(i32, item), 10000) == 0 or @divTrunc(@as(i32, item), 10000) == 1), showCb, showValue, &showText, 0);
@@ -4063,8 +4063,8 @@ pub export fn dynmenuGetLabel(menuitem: i16) callconv(.c) [*c]u8 {
 /// static one: softmenuStack[].softmenuId ranks in softmenu[] and in
 /// dynamicSoftmenu[], and only the first NUMBER_OF_DYNAMIC_SOFTMENUS ranks agree.
 ///
-/// Exported since the 6559a9c59 pin, where upstream declared it in softmenus.h so
-/// the core solver/integrator owners could take the same test.
+/// Exported because upstream declares it in softmenus.h, so the core
+/// solver/integrator owners take the same test.
 pub export fn currentDynamicSoftmenu() callconv(.c) ?*dynamicSoftmenu_t {
     const id = softmenuStack[0].softmenuId;
     if (0 <= id and id < NUMBER_OF_DYNAMIC_SOFTMENUS) {

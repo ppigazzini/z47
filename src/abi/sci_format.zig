@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
-// Pure WP34S/C47 double->string display formatting, lifted from
-// frontier_register_value_conversions.zig (src/c47/registerValueConversions.c
+// Pure WP34S/C47 double->string display formatting behind
+// src/core/state/value/register_conversions.zig (src/c47/registerValueConversions.c
 // sci_fmt + convertDoubleToString). Distinct from abi.float_format (the
 // byte-exact libc %e/%g family): this is the calculator's own fixed-15-digit
 // scientific form plus the sign/locale-separator normalization the register
@@ -9,7 +9,7 @@
 //
 // The C originals write through a `char *` (a C pointer); here they take a plain
 // `[]u8` slice whose length is the C `n` bound, so the module imports only std and
-// is exercised natively under `zig build test:unit`. The frontier owner keeps its
+// is exercised natively under `zig build test:unit`. The register_conversions owner keeps its
 // `pub export` C-pointer C-ABI wrappers and delegates the buffer work here.
 //
 // These paths are testSuite-BLIND (only the graph/plot/stat/config-battery code

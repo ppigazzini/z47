@@ -308,8 +308,8 @@ extern var ctxtReal39: realContext_t;
 extern var ctxtReal51: realContext_t;
 extern var ctxtReal75: realContext_t;
 extern const standardFont: font_t;
-// Upstream packed errorMessages[][] into a static pool reached via this accessor
-// (error.c); the array symbol is gone. errorMessageOf(code) -> message pointer.
+// Upstream keeps errorMessages[][] in a static pool reached via this accessor
+// (error.c), with no array symbol. errorMessageOf(code) -> message pointer.
 extern fn errorMessageOf(errorCode: u8) [*c]const u8;
 
 // ---------------------------------------------------------------------------
@@ -407,7 +407,7 @@ extern fn decQuadToInt32(v: *align(1) const real34_t, ctx: *realContext_t, round
 extern fn realToFloat(vv: *const real_t, v: *f32) void;
 extern fn realToDouble(vv: *const real_t, v: *f64) void;
 
-// Additional decNumber primitives for the real_t graph walk (M-GRAPH port).
+// Additional decNumber primitives for the real_t graph walk.
 extern fn decNumberSubtract(r: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
 extern fn decNumberDivide(r: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
 extern fn decNumberFMA(r: *real_t, f1: *align(1) const real_t, f2: *align(1) const real_t, term: *align(1) const real_t, ctx: *realContext_t) *real_t;
@@ -711,7 +711,7 @@ fn AddtoDrawMx() void {
 }
 
 // ===========================================================================
-// real_t register / evaluation leaves (M-GRAPH port)
+// real_t register / evaluation leaves
 // ===========================================================================
 fn convertRealToReal34Register(x: *align(1) const real_t, destination: calcRegister_t) void {
     _ = reallocateRegister(destination, dtReal34, 0, @bitCast(amNone));

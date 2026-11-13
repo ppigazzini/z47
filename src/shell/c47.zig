@@ -2,13 +2,15 @@
 //
 // Zig owner for src/c47/c47.c -- the GLOBALS HUB. Its first ~420 lines are the
 // single definitions of the calculator's global variables/arrays that nearly
-// every other owner and the remaining C shims `extern`. Byte-exactness is
-// critical: a wrong type/size/order silently corrupts the calculator. Every
-// global is defined here exactly ONCE with the EXACT C type, EXACT initializer
-// and (for the TO_QSPI arrays) the right section. Then the public functions:
-// convertKeyCode and program_main, both DMCP only.
+// every other owner `extern`s. Byte-exactness is critical: a wrong type/size/order
+// silently corrupts the calculator. The calculator-state globals the core reads
+// (calcMode, displayFormat, tmpString, the decNumber contexts, the system flags,
+// ...) are exported by the core state owners under src/core/state/; every other
+// c47.c global is defined here exactly ONCE with the EXACT C type, EXACT
+// initializer and (for the TO_QSPI arrays) the right section. Then the public
+// functions: convertKeyCode and program_main, both DMCP only.
 //
-// Struct sizes/alignments and the glyphNotFound / pcg32 init bytes were probed
+// Struct sizes/alignments and the pcg32 init bytes were probed
 // against the C build (realContext_t 28/4, subroutineLevels_t 4/2,
 // subroutineLevelHeader_t 12/2, localFlags_t 4/4, font_t 8/8, glyph_t 24/8,
 // printerState_t 16/4, tamState_t 28/2, normKey_t 20/2, calcKey_t 18/2,
@@ -91,8 +93,7 @@ const softmenuStack_t = abi.SoftmenuStack;
 const userMenuItem_t = abi.UserMenuItem; // size 20, align 2
 
 // programmableMenu_t (332 bytes, align 2) is centralized in abi as the typed
-// layout {itemName[18][16], itemParam[21], unused}, oracle-verified == C. The
-// prior opaque [332]u8 blob workaround is replaced by that exact-size type.
+// layout {itemName[18][16], itemParam[21], unused}, oracle-verified == C.
 const ProgrammableMenuBlob = abi.ProgrammableMenu;
 
 const tamState_t = abi.TamState;
@@ -163,7 +164,7 @@ pub export var funcOK: bool_t = false;
 pub export var keyActionProcessed: bool_t = false;
 pub export var fnKeyInCatalog: bool_t = false;
 pub export var hourGlassIconEnabled: bool_t = false;
-pub export var graMod: u8 = 0; // AGRAPH and ATEXT pixel operation, 0..4; a plain byte since the GRAMOD reserved variable was retired
+pub export var graMod: u8 = 0; // AGRAPH and ATEXT pixel operation, 0..4; a plain byte, not a reserved variable
 pub export var graFont: u8 = 0; // GRFNT: the code of the font ATEXT draws with, a row of screen.zig's aTextFonts
 // LP% and DP% minus 1, times 10000: 0 is the nominal delay, 5000 is one and a
 // half times it. Held as a factor so a file without the key restores the nominal.
@@ -202,17 +203,10 @@ pub export var updateOldConstants: bool_t = false;
 // return the lhs and skip the rest of the formula.
 pub export var eqnDrawLhsOnly: bool_t = false;
 
-// ctxtReal4/34/39/51/75 (the shared decNumber contexts) now live in the base
-// kernel at engine/kernel/decimal_context.zig; consumers extern them unchanged.
-
 pub export var allSubroutineLevels: subroutineLevels_t = std.mem.zeroes(subroutineLevels_t);
-// currentSubroutineLevelData moved to the base kernel.
-// statisticalSumsPointer moved to the base kernel.
 pub export var savedStatisticalSumsPointer: ?*real_t = null;
-// ram moved to the base kernel.
 pub export var currentLocalFlags: ?*localFlags_t = null;
 
-// allNamedVariables moved to the base kernel.
 pub export var softmenuStack: [SOFTMENU_STACK_SIZE]softmenuStack_t = std.mem.zeroes([SOFTMENU_STACK_SIZE]softmenuStack_t);
 pub export var menuPageNumber: u16 = 0;
 pub export var userMenuItems: [18]userMenuItem_t = std.mem.zeroes([18]userMenuItem_t);
@@ -220,10 +214,6 @@ pub export var userAlphaItems: [18]userMenuItem_t = std.mem.zeroes([18]userMenuI
 pub export var userMenus: ?*anyopaque = null;
 pub export var programmableMenu: ProgrammableMenuBlob = std.mem.zeroes(ProgrammableMenuBlob);
 pub export var kbd_usr: [37]calcKey_t = std.mem.zeroes([37]calcKey_t);
-// errorMessageRegisterLine moved to the base kernel
-// (engine/kernel/error_state.zig, alongside lastErrorCode).
-// glyphNotFound moved to its owner: core/text/fonts.zig generates and mutates
-// it (generateNotFoundGlyph), so the placeholder glyph lives with the font code.
 
 pub export var currentLocalRegisters: ?*registerHeader_t = null;
 
@@ -253,17 +243,13 @@ var numberOfAllocatedMemoryRegions: i32 = 0;
 pub export var pcg32_global: pcg32_random_t = .{ .state = 0x853c49e6748fea9b, .inc = 0xda3e39cb94b95bdb };
 pub export var labelList: ?*anyopaque = null;
 pub export var programList: ?*anyopaque = null;
-// currentAngularMode moved to the base kernel (engine/kernel/calc_globals.zig).
-// allFormulae moved to the base kernel (memory_model_pointers.zig).
 
 pub export var beginOfCurrentProgram: ?[*]u8 = null;
 pub export var endOfCurrentProgram: ?[*]u8 = null;
 pub export var firstDisplayedStep: ?[*]u8 = null;
 pub export var currentStep: ?[*]u8 = null;
 
-// tmpString moved to the base kernel (engine/kernel/scratch_buffers.zig).
 pub export var tmpStringLabelOrVariableName: ?[*]u8 = null;
-// errorMessage moved to the base kernel.
 pub export var aimBuffer: ?[*]u8 = null;
 pub export var nimBufferDisplay: ?[*]u8 = null;
 pub export var tamBuffer: ?[*]u8 = null;
@@ -279,7 +265,6 @@ pub export var displayValueX: [DISPLAY_VALUE_LEN]u8 = @splat(0);
 pub export var gapItemLeft: u16 = 0;
 pub export var gapItemRight: u16 = 0;
 pub export var gapItemRadix: u16 = 0;
-// lastCenturyHighUsed moved to the base kernel (engine/kernel/calc_globals.zig).
 
 pub export var lcd_buffer: ?[*]u8 = null;
 pub export var numScreensStandardFont: u8 = 0;
@@ -289,14 +274,6 @@ pub export var currentAsnScr: u8 = 0;
 pub export var currentFntScr: u8 = 0;
 pub export var currentFlgScr: u8 = 0;
 pub export var lastFlgScr: u8 = 0;
-// displayFormat moved to the base kernel (engine/kernel/calc_globals.zig).
-// displayFormatDigits moved to the base kernel (engine/kernel/calc_globals.zig).
-// timeDisplayFormatDigits moved to the base kernel (engine/kernel/calc_globals.zig).
-// shortIntegerWordSize moved to the base kernel (engine/kernel/calc_globals.zig).
-// significantDigits (decimal working precision) moved to kernel/decimal_context.zig
-// dispBase moved to the base kernel (engine/kernel/calc_globals.zig).
-// fractionDigits moved to the base kernel (engine/kernel/calc_globals.zig).
-// shortIntegerMode moved to the base kernel (engine/kernel/calc_globals.zig).
 pub export var previousCalcMode: u8 = 0;
 pub export var grpGroupingLeft: u8 = 0;
 pub export var grpGroupingGr1LeftOverflow: u8 = 0;
@@ -304,19 +281,17 @@ pub export var grpGroupingGr1Left: u8 = 0;
 pub export var grpGroupingRight: u8 = 0;
 pub export var grpGroupingHex: u8 = 0;
 pub export var grpGroupingBin: u8 = 0;
-// roundingMode (decimal rounding mode) moved to kernel/decimal_context.zig
-// calcMode moved to the base kernel (engine/kernel/calc_globals.zig);
-// the firmware event loop reaches it through this extern re-declaration.
+// calcMode is exported by src/core/state/scalars/calc_mode_state.zig; the
+// firmware event loop reaches it through this extern re-declaration.
 extern var calcMode: u8;
 pub export var nextChar: u8 = 0;
 pub export var displayStack: u8 = 0;
 pub export var cachedDisplayStack: u8 = 0;
-// alphaCase moved to the base kernel (engine/kernel/calc_globals.zig).
 pub export var numLinesNumericFont: u8 = 0;
 pub export var numLinesStandardFont: u8 = 0;
 pub export var numLinesTinyFont: u8 = 0;
-// New upstream (real master) globals: headless/--dumpMenus + test-load flags,
-// bold numeric-font metrics, the alpha register and the 42S var-menu flag.
+// Headless/--dumpMenus and test-load flags, bold numeric-font metrics, the alpha
+// register and the 42S var-menu flag.
 pub export var headlessMode: bool_t = false;
 // --snapskiprefresh: SNAP captures the screen as it stands instead of forcing a
 // repaint first, so a scripted capture keeps the graphic screen it asked for.
@@ -335,29 +310,23 @@ pub export var nimNumberPart: u8 = 0;
 pub export var nimRealPart: u8 = 0;
 pub export var hexDigits: u8 = 0;
 pub export var previousErrorCode: u8 = 0;
-// temporaryInformation moved to the base kernel
-// (engine/kernel/transient_status.zig).
 pub export var rbrMode: u8 = 0;
 pub export var timerCraAndDeciseconds: u8 = 128;
-// programRunStop moved to the base kernel (engine/kernel/calc_globals.zig);
-// the firmware event loop reaches it through this extern re-declaration.
+// programRunStop is exported by src/core/state/scalars/program_state.zig; the
+// firmware event loop reaches it through this extern re-declaration.
 extern var programRunStop: u8;
 pub export var lastKeyCode: u8 = 0;
 pub export var keyStateCode: u8 = 0;
 pub export var entryStatus: u8 = 0;
-// screenUpdatingMode moved to the base kernel
-// (engine/kernel/screen_update_state.zig); the firmware event loop below reaches
-// it through the extern re-declaration in the dmcp namespace.
+// screenUpdatingMode is exported by src/core/state/scalars/display_state.zig; the
+// firmware event loop below reaches it through this extern re-declaration.
 extern var screenUpdatingMode: u8;
-// beginOfProgramMemory moved to the base kernel (memory_model_pointers.zig).
-// firstFreeProgramByte moved to the base kernel.
 pub export var statisticalSumsUpdate: bool_t = false;
 
 pub export var tam: tamState_t = std.mem.zeroes(tamState_t);
 pub export var currentRegisterBrowserScreen: i16 = 0;
 pub export var lineTWidth: i16 = 0;
 pub export var rbrRegister: i16 = 0;
-// catalog moved to the base kernel (engine/kernel/calc_globals.zig).
 pub export var lastCatalogPosition: [NUMBER_OF_CATALOGS]i16 = @splat(0);
 // The page each retained-page softmenu (softmenus.c's retainedPageMenu[]) reopens
 // on, whatever FLAG_MNUp1 says; backup.cfg and the state file carry it.
@@ -376,9 +345,6 @@ pub export var tvmIKnown: bool_t = false;
 pub export var tvmIChanges: bool_t = false;
 
 pub export var Norm_Key_00: normKey_t = std.mem.zeroes(normKey_t);
-// Input_Default moved to the base kernel (engine/kernel/calc_globals.zig).
-// DRG_Cycling moved to the base kernel (engine/kernel/calc_globals.zig).
-// DM_Cycling moved to the base kernel (engine/kernel/calc_globals.zig).
 // INLINE_TEST never defined: testEnabled / testBitset skipped.
 pub export var longpressDelayedkey2: i16 = 0;
 pub export var longpressDelayedkey3: i16 = 0;
@@ -408,8 +374,6 @@ pub export var ListXYposition: i16 = 0;
 pub export var JM_auto_doublepress_autodrop_enabled: i16 = 0;
 pub export var JM_auto_longpress_enabled: i16 = 0;
 pub export var JM_SHIFT_HOME_TIMER1: u8 = 0;
-// ULFL/ULGL went with upstream's "remove two globals that are never read or written".
-// FN_key_pressed moved to the base kernel (engine/kernel/calc_globals.zig).
 pub export var FN_key_pressed_last: i16 = 0;
 pub export var FN_timeouts_in_progress: bool_t = false;
 pub export var Shft_timeouts: bool_t = false;
@@ -419,11 +383,8 @@ pub export var FN_timed_out_to_RELEASE_EXEC: bool_t = false;
 pub export var FN_handle_timed_out_to_EXEC: bool_t = false;
 pub export var fnAsnDisplayUSER: bool_t = true;
 
-// bcdDisplaySign moved to the base kernel (engine/kernel/calc_globals.zig).
-// LongPressM moved to the base kernel (engine/kernel/calc_globals.zig).
 pub export var LongPressF: u8 = 0;
 pub export var last_CM: u8 = 255;
-// FN_state moved to the base kernel (engine/kernel/calc_globals.zig).
 pub export var editingLiteralType: u8 = 0;
 
 pub export var exponentSignLocation: i16 = 0;
@@ -444,12 +405,7 @@ pub export var freeProgramBytes: u16 = 0;
 pub export var glyphRow: [NUMBER_OF_GLYPH_ROWS]u16 = @splat(0);
 pub export var firstDisplayedLocalStepNumber: u16 = 0;
 pub export var numberOfPrograms: u16 = 0;
-// numberOfNamedVariables moved to the base kernel (engine/kernel/calc_globals.zig).
-// currentLocalStepNumber moved to the base kernel (engine/kernel/calc_globals.zig).
-// currentProgramNumber moved to the base kernel (engine/kernel/calc_globals.zig).
-// lrSelection moved to the base kernel (engine/kernel/calc_globals.zig).
 pub export var lrSelectionUndo: u16 = 0;
-// lrChosen moved to the base kernel (engine/kernel/calc_globals.zig).
 pub export var lrChosenUndo: u16 = 0;
 pub export var lastPlotMode: u16 = 0;
 pub export var plotSelection: u16 = 0;
@@ -464,10 +420,6 @@ pub export var numberOfFreeMemoryRegions: i32 = 0;
 
 pub export var lgCatalogSelection: i32 = 0;
 
-// firstGregorianDay moved to the base kernel (engine/kernel/calc_globals.zig).
-// denMax moved to the base kernel (engine/kernel/calc_globals.zig).
-// lastDenominator moved to the base kernel (engine/kernel/calc_globals.zig).
-// lastIntegerBase moved to the base kernel (engine/kernel/calc_globals.zig).
 pub export var decodedIntegerBase: u32 = 0;
 pub export var xCursor: u32 = 0;
 pub export var yCursor: u32 = 0;
@@ -475,13 +427,7 @@ pub export var tamOverPemYPos: u32 = 0;
 pub export var timerValue: u32 = 0;
 pub export var timerStartTime: u32 = TIMER_APP_STOPPED;
 pub export var timerTotalTime: u32 = 0;
-// pointerOfFlashPgmLibrary/sizeOfFlashPgmLibrary went with upstream's
-// "remove four more globals that nothing reads".
 
-// shortIntegerMask moved to the base kernel (engine/kernel/calc_globals.zig).
-// shortIntegerSignBit moved to the base kernel (engine/kernel/calc_globals.zig).
-// systemFlags0/systemFlags1 moved to the base kernel
-// (engine/kernel/system_flags_state.zig).
 pub export var savedSystemFlags0: u64 = 0;
 pub export var savedSystemFlags1: u64 = 0;
 
@@ -491,9 +437,6 @@ pub export var c47MemInBlocks: usize = 0;
 pub export var SAVED_SIGMA_LASTX: real_t = std.mem.zeroes(real_t);
 pub export var SAVED_SIGMA_LASTY: real_t = std.mem.zeroes(real_t);
 pub export var SAVED_SIGMA_lastAddRem: i8 = 0;
-
-// amortP1 moved to the base kernel (engine/kernel/calc_globals.zig).
-// amortP2 moved to the base kernel (engine/kernel/calc_globals.zig).
 
 pub export var lrSelectionHistobackup: u16 = 0;
 pub export var lrChosenHistobackup: u16 = 0;
@@ -519,9 +462,6 @@ pub export var fileNameSelected: [stateFileNameVarLength]u8 = @splat(0);
 pub export var filename_csv: [FILENAMELEN]u8 = @splat(0);
 pub export var mem__32: u32 = 0;
 pub export var cancelFilename: bool_t = false;
-
-// firstDayOfWeek moved to the base kernel (engine/kernel/calc_globals.zig).
-// firstWeekOfYearDay moved to the base kernel (engine/kernel/calc_globals.zig).
 
 pub export var printerState: printerState_t = std.mem.zeroes(printerState_t);
 pub export var printerColumn: u16 = 0;

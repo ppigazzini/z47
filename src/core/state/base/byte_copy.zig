@@ -4,8 +4,8 @@
 // owners (register codecs, string builders, backup serialisation). It chooses a
 // forward or backward copy direction from the src/dest ordering so overlapping
 // ranges shift correctly, like memmove. It has no coupling to any owner -- pure
-// pointer arithmetic -- so it belongs in the base kernel rather than the shell
-// text owner it was declared in. The testSuite exercises it through every path
+// pointer arithmetic -- so it lives in the core rather than the shell text owner
+// (char_string.zig), which re-declares it. The testSuite exercises it through every path
 // that copies register or string bytes, which is the parity gate for the port.
 
 pub export fn xcopy(dest: ?*anyopaque, source: ?*const anyopaque, nIn: u32) callconv(.c) ?*anyopaque {

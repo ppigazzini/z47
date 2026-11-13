@@ -17,10 +17,10 @@ const abi = @import("abi");
 const build_options = @import("frontier_build_options");
 const frontier_config = @import("config.zig");
 
-// xcopy is defined in core/state/base/byte_copy.zig and reached by C ABI, exactly
-// as the ten other owners that use it do. It was previously imported through
-// char_string.zig, which only re-declares the same extern -- a 1047-line display
-// file pulled in to reach a core primitive.
+// xcopy is defined in core/state/base/byte_copy.zig and reached by C ABI, as the
+// other owners that use it do. Importing it through char_string.zig, which only
+// re-declares the same extern, would pull a display file in to reach a core
+// primitive.
 extern fn xcopy(dest: ?*anyopaque, source: ?*const anyopaque, n: u32) ?*anyopaque;
 const dmcp_build: bool = build_options.dmcp_build;
 const old_hw: bool = build_options.old_hw;

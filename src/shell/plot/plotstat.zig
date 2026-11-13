@@ -18,7 +18,7 @@ const const_1 = consts.const_1;
 // The 5 helpers (z47_frontier_plot_set_plotstatmx_stats /
 // _set_plotstatmx_histo / _set_statmx_histo / _has_source_data /
 // _clear_screen_for_graph_entry) are declared `extern` by the consumers
-// (frontier.zig, frontier_plot_stat.zig); no sibling EXPORTS them, so they are
+// (frontier.zig, plot_stat.zig); no sibling EXPORTS them, so they are
 // defined here as `pub export fn`.
 //
 // BUILD-CONFIG (probed in src/c47/defines.h for the standard frontier build):
@@ -1184,7 +1184,7 @@ pub export fn formatDoubleWidth(real34: *align(1) real34_t, digits: c_int, itemN
         } else { // ddd digits cannot hold the number, so real34ToDisplayString2 leaves its FIX block and
             displayFormat = DF_SF; // prints the SCI form, whose mantissa length is displayFormatDigits. FIX has no
             displayFormatDigits = @intCast(@min(digits, ddd - 2)); // such count, and its 0 gave that form one digit: 1234567 as 1E6. SF is the mode that
-        } // holds one. The ladder ends on that same single digit at ddd 2, so nothing that used to fit stops fitting
+        } // holds one. The ladder ends on that same single digit at ddd 2, so everything FIX fits still fits
         updateDisplayValueX = true;
         displayValueX[0] = 0;
         frontier_display.real34ToDisplayString(real34, amNone, buf, &standardFont, if (digitswidthLimit == 0) 60 else @intCast(digitswidthLimit), @intCast(ddd), @intFromBool(LIMITEXP), @intFromBool(!FRONTSPACE), NOIRFRAC);

@@ -2,8 +2,9 @@
 //
 // Application state the math apps read: the linear-regression model choice and
 // selection the statistics/curve-fit engine reads, and the amortization period
-// bounds the TVM engine reads. Relocated out of the shell globals hub; symbols,
-// types and initialisers are unchanged, so every extern consumer resolves as before.
+// bounds the TVM engine reads. Defined here rather than in the shell globals hub
+// (c47.zig) with c47.c's symbols, types and initialisers, so every extern
+// consumer resolves to them.
 
 pub export var lrChosen: u16 = 0; // the chosen linear-regression model
 pub export var lrSelection: u16 = 0; // the linear-regression model selection bitmap

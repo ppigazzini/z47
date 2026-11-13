@@ -78,7 +78,7 @@ extern var fnAsnDisplayUSER: bool_t;
 extern var temporaryInformation: u8;
 extern var hourGlassIconEnabled: bool_t;
 extern var userKeyLabel: [*c]u8;
-// assign.c's NULL-tolerant reader for userKeyLabel (added at the 6559a9c59 pin).
+// assign.c's NULL-tolerant reader for userKeyLabel.
 extern fn getUserKeyLabelString(n: i16) [*c]u8;
 extern var tam: tamState_t;
 extern var Norm_Key_00: normKey_t;

@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
-// Pure program-step byte-width arithmetic, lifted from next_step.zig
-// (src/c47/programming/nextStep.c). Upstream b18a42df7 refactored the walkers
-// into a shared parameter-tail grammar: paramTailBytes/literalTailBytes report
+// Pure program-step byte-width arithmetic behind next_step.zig
+// (src/c47/programming/nextStep.c). The walkers share one parameter-tail
+// grammar: paramTailBytes/literalTailBytes report
 // one step's tail as a fixed byte count, a length-prefixed form, or invalid,
 // and countOpBytes/countLiteralBytes are thin wrappers over them. The grammar
 // is shared with the program-file screening pass in the saveRestorePrograms

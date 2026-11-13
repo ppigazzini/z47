@@ -531,7 +531,7 @@ fn derivativeEquation(order: u16, ti: u8) linksection(runtime.code_section) void
     // new method to maintain solver variable
     reallyRunFunction(ITM_RCL, currentSolverVariable);
     // The sampling stores each point in the variable, so its own value is kept here and put back after. A register cannot
-    // hold it: for a program the user's code runs in between and reaches every temporary register, which is what used to
+    // hold it: for a program the user's code runs in between and reaches every temporary register, so a register would
     // hand the variable back holding a number out of that program.
     var probeValue: real34_t = undefined; // only the test result is used, and this frame is under every sample
     var savedRegister: snap_t = undefined;

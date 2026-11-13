@@ -296,9 +296,10 @@ extern var hourGlassIconEnabled: bool;
 extern var cancelFilename: bool;
 
 // ---------------------------------------------------------------------------
-// Menu change-over (2026-08-16). Every existing menu moved into one block, so a
-// stored (negative) menu link -- in the user keyboard, in MyMenu, in MyAlpha and
-// in every user menu -- still names the old number and has to be converted.
+// Menu change-over (saveRestoreCalcState.c:69). configFileVersion 10000028 put
+// every menu into one block, so a stored (negative) menu link in an older file --
+// in the user keyboard, in MyMenu, in MyAlpha and in every user menu -- names the
+// old number and has to be converted.
 // ---------------------------------------------------------------------------
 const MenuRenumber = struct { from: u16, to: u16 };
 
@@ -1208,12 +1209,12 @@ fn restoreProgramsSection(load_mode: u16) void {
     // the truncated total while the block loop below still writes numberOfBlocks
     // blocks, straight past the end of the pool. That is an out-of-bounds WRITE,
     // and state_load_fuzz reaches it: count_programs_65535.sav under LM_PROGRAMS
-    // segfaulted before this guard.
+    // is the input that pins this guard.
     //
     // Upstream's own comment on that loop states the invariant it relies on --
     // "this loop writes into memory resizeProgramMemory() sized from the same
     // count" -- so refusing a section whose sum cannot hold restores that
-    // invariant rather than inventing a new rule, in the spirit of 31fb6f755.
+    // invariant rather than inventing a new rule.
     // Neutralise it exactly as a zero count is neutralised above: a mode matching
     // neither LM_ALL nor LM_PROGRAMS leaves program memory untouched while the
     // readLine() calls keep the parser aligned with the stream.
@@ -1226,11 +1227,9 @@ fn restoreProgramsSection(load_mode: u16) void {
     if (programsLoadMode == LM_ALL) {
         resizeProgramMemory(numberOfBlocks);
     } else if (programsLoadMode == LM_PROGRAMS) {
-        // No cast at all, where upstream needs one and the port used to @truncate:
-        // the guard above refused every sum that does not fit, so this u16 addition
-        // provably cannot overflow. Zig's checked add stays as the backstop if that
-        // guard is ever weakened, and the narrowing simply stops existing rather
-        // than being argued about.
+        // No cast at all, where upstream needs one: the guard above refused every
+        // sum that does not fit, so this u16 addition provably cannot overflow.
+        // Zig's checked add stays as the backstop if that guard is ever weakened.
         resizeProgramMemory(oldSizeInBlocks + numberOfBlocks);
         oldFirstFreeProgramByte = beginOfProgramMemory + TO_BYTES(oldSizeInBlocks) - oldFreeProgramBytes - 2;
     }

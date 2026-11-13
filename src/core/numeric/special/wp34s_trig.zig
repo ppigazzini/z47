@@ -1,12 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
 // WP34S forward-circular functions (reduceAngleToRange + the Cvt2RadSinCosTan /
-// SinCosTanTaylor sin/cos/tan Taylor engine), split out of math_wp34s.zig to
-// finish breaking up that grab-bag (the inverse-circular half is in
-// math_wp34s_atan.zig). The shared low-level helpers -- offset-bearing constant
-// accessors, real primitives, BigReal, formatEminusD, and the two mod functions
-// this half reaches (mod2Pi / WP34S_Mod) -- stay single-sourced in the owner
-// (their constant-blob offsets are remapped every pin advance) and are aliased
+// SinCosTanTaylor sin/cos/tan Taylor engine) behind wp34s.zig (the
+// inverse-circular half is in trig/wp34s_atan.zig). The shared low-level
+// helpers -- offset-bearing constant accessors, real primitives, BigReal,
+// formatEminusD, and the two mod functions this half reaches (mod2Pi /
+// WP34S_Mod) -- stay single-sourced in the owner and are aliased
 // here via a benign circular import. The owner keeps three thin pub-export C-ABI
 // wrappers and delegates; the four WP34S trig oracles gate byte-exactness.
 // Transcription is verbatim (the three exported entry points drop their C-ABI

@@ -241,7 +241,7 @@ pub export fn expandConversionName(msg1: [*c]u8) callconv(.c) void {
 const STD_BINARY_ONE = "\xa0\x27";
 const STD_BINARY_ZERO = "\xa2\x0e";
 
-// compressBinary (charString.c:166) now lives in conversion_name_codec.zig,
+// compressBinary (charString.c:166) lives in conversion_name_codec.zig,
 // called from that module's expandAbbreviations.
 
 // ---------------------------------------------------------------------------
@@ -983,10 +983,9 @@ pub export fn stringToFileNameChars(strIn: [*c]const u8, asciiIn: [*c]u8, distin
 // ---------------------------------------------------------------------------
 // xcopy
 // ---------------------------------------------------------------------------
-// Moved to the base kernel (engine/kernel/byte_copy.zig); it is a pure
-// overlap-safe byte copy with no text coupling. Re-declared here so the owners
-// that reach it through this module resolve unchanged; the definition now links
-// from the kernel.
+// Exported by src/core/state/base/byte_copy.zig; it is a pure overlap-safe byte
+// copy with no text coupling. Re-declared here for the owners that reach it
+// through this module.
 pub extern fn xcopy(dest: ?*anyopaque, source: ?*const anyopaque, nIn: u32) callconv(.c) ?*anyopaque;
 
 // On Windows (MINGW) the ucrt has no stpcpy, so charString.h declares stringCopy

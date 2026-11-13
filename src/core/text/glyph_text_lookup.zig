@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-only
-//! Pure two-byte-glyph -> replacement-string table lookup lifted out of
-//! frontier_char_string.zig (getText / getTextRTF in src/c47/charString.c). The
+//! Pure two-byte-glyph -> replacement-string table lookup behind
+//! shell/display/text/char_string.zig (getText / getTextRTF in src/c47/charString.c). The
 //! owner keeps its two translation tables (indexOfStringsASCII with 148 entries,
 //! indexOfStringsRTF with 2), which stay in their firmware code-data section;
-//! the scan-and-append logic that both getText and getTextRTF duplicated moves
-//! here and is parameterised by whichever table the caller passes.
+//! the scan-and-append logic that getText and getTextRTF share is here,
+//! parameterised by whichever table the caller passes.
 //!
 //! The table is taken as `anytype` -- any slice whose entries expose `.item_in`
 //! (a byte pointer indexable at [0]/[1]) and `.item_out` (a NUL-terminated byte

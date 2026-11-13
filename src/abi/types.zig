@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
-// Shared ABI types. Single source of truth for the
-// C numeric layouts the owners previously each hand-mirrored (36 owners defined
-// their own `const real_t = extern struct {...}`; this centralizes that one copy
-// and pins the layout at comptime so a toolchain/pin change is caught here rather
-// than silently corrupting decNumber during a live computation).
+// Shared ABI types. Single source of truth for the C numeric layouts every owner
+// uses (`real_t` and its siblings are defined once here, not per owner), with the
+// layout pinned at comptime so a toolchain/pin change is caught here rather than
+// silently corrupting decNumber during a live computation.
 //
 // These mirror src/c47 (decNumber.h `decNumber`, decQuad `real34_t`,
 // decContext `realContext_t`). The layout is proven by the parity oracles that

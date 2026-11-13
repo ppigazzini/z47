@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
 // Shared ABI bindings -- typed wrappers over the C decNumber complex runtime.
-// Owners previously each declared the raw complex arithmetic externs and a local
-// `addCplx`/`mulCplx`/`divCplx` helper. This centralizes both: the raw extern
-// and the `Complex`-taking wrapper live once, threading the shared ctxtReal39
+// The raw complex arithmetic extern and the `Complex`-taking wrapper
+// (`addCplx`/`mulCplx`/`divCplx`) live once here, threading the shared ctxtReal39
 // context so call sites read as complex arithmetic.
 
 const types = @import("primitives.zig");

@@ -8,9 +8,10 @@ const const_4 = consts.const_4;
 //
 // Zig owner for src/c47/mathematics/slvq.c: solve quadratic (SLVQ). Exports
 // slvq.h's fnSlvq, solveQuadratic, solveQuadraticEquation and
-// solveQuadraticEquation159. Covered by slvq.txt (fnSlvq) plus eigen.txt
-// (matrix.c calls the 159 solver when OPTION_EIGEN_159 is defined, which it is
-// on every z47 build).
+// solveQuadraticEquation159. Covered by slvq.txt (fnSlvq) plus matrix.txt,
+// matrix_cov.txt and matrixops_cov.txt (fnEigenvalues reaches matrix.c's
+// calculateEigenvalues22, which calls the 159 solver when OPTION_EIGEN_159 is
+// defined, which it is on every z47 build).
 //
 // Faithful line-by-line translation preserving the exact order of every real_t
 // operation (the testSuite checks results to the last ULP). Complex values are

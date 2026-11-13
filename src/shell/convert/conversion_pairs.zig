@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
-// Pure unit-conversion pair table + lookup predicates, lifted from
-// conversion_units.zig (src/c47/conversionUnits.c). The table pairs each
+// Pure unit-conversion pair table + lookup predicates for conversion_units.zig
+// (src/c47/conversionUnits.c). The table pairs each
 // convertible item with its partner, unity step, decimal exponent, and unit type;
 // findPair binary-searches it (the table is sorted by item) and the predicates
 // answer partner / is-conversion / same-configurable-type / standard-pair /
@@ -11,9 +11,10 @@
 // conversion_pairs.zig. The owner keeps its pub-export C-ABI wrappers and
 // its runConversion* side effects (which call findPair here) and delegates.
 //
-// testSuite-covered transitively via src/testSuite/tests/unitConversion.txt (the
-// CONV menu paths exercise conversionPartner/isStandardPair); the native tests
-// below are the first DIRECT coverage of the predicates. Transcription is verbatim
+// testSuite-covered transitively via src/testSuite/tests/conversions.txt (every
+// convertPairs[] item through the real dispatch chain) and conversionsSI.txt (the
+// runConversionToSI/runConversionFromSI halves behind custom pairs); the native
+// tests below cover the predicates directly. Transcription is verbatim
 // (raw integer literals -- no ITM_*/UT_* symbol coupling in the rows).
 
 const std = @import("std");

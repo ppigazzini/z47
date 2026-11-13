@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
-// Pure glyph-table binary search, lifted from the fonts owner fonts.zig
+// Pure glyph-table binary search behind the fonts owner fonts.zig
 // (src/c47/display.c findGlyph). A font stores its glyphs sorted by charCode; the
 // search is a plain index computation over the caller-supplied abi.Font -- no
 // register, dec, GTK, or global state -- so it lives here as a std+abi module
 // exercised natively under `zig build test:unit`. The owner keeps its C-ABI
-// export wrappers (and leaves the QSPI-placed not-found-glyph generation behind)
-// and delegates.
+// export wrappers (and the QSPI-placed not-found-glyph generation) and
+// delegates.
 //
 // findGlyph is testSuite-covered pervasively (every character-display test walks
 // it); the native tests below pin the binary-search boundaries and the id-based

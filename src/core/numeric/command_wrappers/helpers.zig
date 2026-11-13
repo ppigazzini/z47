@@ -314,8 +314,7 @@ pub export fn real34Subtract(operand1: *const real34_t, operand2: *const real34_
 }
 
 // ---------------------------------------------------------------------------
-// Complex helpers previously forwarded to the retained upstream copies of
-// magnitude.c / conjugate.c; ported faithfully from those upstream sources.
+// Complex helpers, ported faithfully from upstream magnitude.c / conjugate.c.
 // ---------------------------------------------------------------------------
 // c may be the same variable as a.Real, not as a.Imag. The square is formed in c, which needs room for the digits of realContext.
 pub export fn complexMagnitude2(a: *const cplx_t, c: *real_t, real_context: *realContext_t) linksection(runtime.code_section) callconv(.c) void {

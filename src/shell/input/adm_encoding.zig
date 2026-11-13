@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
-// Pure legacy external-ADM angular-mode encoding, lifted from config.zig
+// Pure legacy external-ADM angular-mode encoding behind config.zig
 // (src/c47/config.c). The RCL/SET ADM interface stores the angular mode in an
 // external encoding (0=DEG, 1=D.MS, 2=RAD, 3=MULT-pi, 4=GRAD) that differs from
 // angularMode_t order (amRadian, amGrad, amDegree, amDMS, amMultPi). It is a pure
@@ -10,7 +10,7 @@
 // currentAngularMode, and delegates.
 //
 // testSuite-BLIND (config ADM save/restore is not in the oracle suite), so the
-// native tests below are the first automated coverage of the encoding.
+// native tests below are the automated coverage of the encoding.
 
 const std = @import("std");
 

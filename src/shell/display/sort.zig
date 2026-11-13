@@ -20,7 +20,7 @@ const CMP_NAME: i32 = 3;
 const CMP_COMMAND: i32 = 4;
 
 // Glyph table layout copied from upstream fonts.h. findGlyph (Zig-owned in
-// frontier_fonts.zig) and standardFont need this exact extern layout.
+// core/text/fonts.zig) and standardFont need this exact extern layout.
 const glyph_t = abi.Glyph;
 
 const font_t = abi.Font;

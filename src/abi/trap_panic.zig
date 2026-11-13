@@ -17,8 +17,8 @@
 //! there is no bound for a check to test -- what safety catches here is the
 //! INTEGER class:
 //! overflowing arithmetic and out-of-range `@intCast`. That is not a
-//! consolation prize. It is precisely the class of the three bugs the M1 fuzz
-//! found and of the matrix-capacity defect. The spatial class
+//! consolation prize. It is precisely the class the malformed-input fuzz lanes
+//! find, and the class of the matrix-capacity defect. The spatial class
 //! stays invisible until those regions become slices.
 //!
 //! So the namespace is chosen by target, not by build mode: freestanding traps,

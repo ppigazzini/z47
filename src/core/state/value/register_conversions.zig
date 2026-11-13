@@ -7,12 +7,12 @@
 // int/real/complex monadic and dyadic numeric operations. Pure value-model
 // operations on the core's own registers; every dependency is engine-side, a
 // decNumber/GMP leaf, or the host boundary. The math and distribution parity
-// oracles keep their fake-real versions (they do not link the kernel); the real
+// oracles keep their fake-real versions (they do not link this owner); the real
 // implementations are exercised by the testSuite.
 //
-// The date/time and WP34S integer-helper conversions still live on the shell
-// register_value_conversions adapter (they reach convert/date_time and
-// convert/integers) and follow once those owners move.
+// The date/time and WP34S integer-helper conversions are on the shell
+// register_value_conversions adapter, because they reach convert/date_time and
+// convert/integers.
 
 const abi = @import("abi");
 const std = @import("std");

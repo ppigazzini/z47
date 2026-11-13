@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
-//! Pure display-string post-processing transforms lifted out of
-//! frontier_plotstat.zig (the stat-plot drawing/formatting owner). Each walks a
+//! Pure display-string post-processing transforms behind
+//! shell/plot/plotstat.zig (the stat-plot drawing/formatting owner). Each walks a
 //! NUL-terminated input buffer and writes a transformed NUL-terminated output
 //! buffer, returning the number of bytes written (excluding the terminator).
 //!
@@ -432,7 +432,7 @@ test "cleanupTrailingZeros upcases a lowercase e and then cleans" {
     try testing.expectEqualStrings("1.2E3", std.mem.sliceTo(&a, 0));
 }
 
-// The owner's frontier_char_string.zig glyph constants, verbatim.
+// char_string.zig's glyph constants, verbatim.
 const owner_glyphs = SubscriptGlyphs{
     .sub_0 = .{ 0xa0, 0x80 },
     .sub_a = .{ 0xa4, 0x9c },

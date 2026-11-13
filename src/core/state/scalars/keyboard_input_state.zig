@@ -3,8 +3,8 @@
 // Keyboard and input-entry state the headless engine reads to drive key
 // handling, long-press timing, alpha case and catalog navigation.
 //
-// Base calculator state relocated out of the shell globals hub; symbols, types
-// and initialisers are byte-identical, so every extern consumer resolves as before.
+// Base calculator state, defined here rather than in the shell globals hub
+// (c47.zig) with c47.c's symbols, types and initialisers.
 
 pub export var currentKeyCode: u8 = 0; // last key code; polled for R/S/EXIT during long ops
 pub export var FN_key_pressed: i16 = 0; // function key currently pressed

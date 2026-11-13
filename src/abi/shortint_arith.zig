@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
-// Pure WP34S short-integer *mode* arithmetic, lifted from frontier_integers.zig
+// Pure WP34S short-integer *mode* arithmetic behind src/shell/convert/integers.zig
 // (src/c47/integers.c). Where abi.int_math holds the mode-free primitives
 // (gcd/isqrt/modpow), these interpret a u64 word under a short-integer mode
 // (unsigned / 1's-complement / 2's-complement / sign-magnitude) with a mask +
@@ -10,13 +10,13 @@
 // IntMode parameter (never read from a global), and every FLAG_OVERFLOW side
 // effect is RETURNED rather than set -- so this stays a std-only, deterministic
 // module that `zig build test:unit` exercises natively, reachable as
-// `abi.shortint_arith` from any owner. frontier_integers keeps its global reads
+// `abi.shortint_arith` from any owner. The integers owner keeps its global reads
 // and flag writes and delegates the raw arithmetic here (cf. abi/int_math and
 // abi/float_format for the same seam-and-delegate pattern).
 
 const std = @import("std");
 
-// Short-integer interpretation modes (SIM_* in integers.c / frontier_integers.zig).
+// Short-integer interpretation modes (SIM_* in integers.c / convert/integers.zig).
 pub const UNSIGNED: u8 = 0;
 pub const ONES_COMPLEMENT: u8 = 1;
 pub const TWOS_COMPLEMENT: u8 = 2;

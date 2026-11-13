@@ -1070,9 +1070,8 @@ fn printLineImpl(buff_in: [*c]const u8, with_lf: c_int) void {
 }
 
 fn printJustifiedImpl(buff: [*c]const u8) void {
-    // One width model for every print mode: the per-mode pixel measurement was
-    // retired upstream, where the line that read print_mode survives only as a
-    // comment.
+    // One width model for every print mode: upstream's per-mode pixel measurement,
+    // the line that read print_mode, is commented out.
     // C computes this in int and narrows on the assignment: an empty name
     // gives -1, which lands as 65535 and the clamp below turns into a no-op.
     var len: u16 = @truncate(@as(u32, @bitCast(frontier_char_string.stringGlyphLength(buff) * 7 - 1)));
@@ -1092,9 +1091,8 @@ fn printJustifiedImpl(buff: [*c]const u8) void {
 }
 
 fn printJustifiedLeft(buff: [*c]const u8) void {
-    // One width model for every print mode: the per-mode pixel measurement was
-    // retired upstream, where the line that read print_mode survives only as a
-    // comment.
+    // One width model for every print mode: upstream's per-mode pixel measurement,
+    // the line that read print_mode, is commented out.
     // C computes this in int and narrows on the assignment: an empty name
     // gives -1, which lands as 65535 and the clamp below turns into a no-op.
     var len: u16 = @truncate(@as(u32, @bitCast(frontier_char_string.stringGlyphLength(buff) * 7 - 1)));

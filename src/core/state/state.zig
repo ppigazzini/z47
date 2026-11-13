@@ -8,11 +8,11 @@
 // nothing imports them by path and nothing would otherwise pull them into a
 // compilation.
 //
-// This root exists so that no unrelated subsystem has to carry them. The calc-state
-// (persistence) owner was previously conscripted as their compilation carrier,
-// which pinned persistence to this directory: moving it dropped twelve owners out
-// of every build. Importing this module by NAME is directory-free, so the owners
-// and their consumers can each live where they belong.
+// This root exists so that no unrelated subsystem has to carry them: a carrier
+// owner would pin its own location to this directory, and moving it would drop
+// these owners out of every build. Importing this module by NAME is
+// directory-free, so the owners and their consumers can each live where they
+// belong.
 comptime {
     _ = @import("base/byte_copy.zig");
     _ = @import("base/decimal_context.zig");

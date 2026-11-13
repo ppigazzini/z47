@@ -16,9 +16,14 @@ const const34_1e6 = consts.const34_1e6;
 //
 // Zig owner for src/c47/registerValueConversions.c: the central register-datatype
 // conversion layer. It bridges GMP long integers, real/real34, short integers,
-// matrices, date/time and complex register payloads, hosts the getRegisterAs*
-// family and the monadic/dyadic real/complex dispatchers. It is exercised by the
-// entire testSuite, so correctness is verified by `zig build test`.
+// matrices, date/time and complex register payloads. The core owner
+// src/core/state/value/register_conversions.zig exports most of the bodies (the
+// getRegisterAs* family, the monadic/dyadic real/complex dispatchers, the
+// long-integer, matrix, double and time converters); the `pub extern`
+// declarations below re-declare them for the shell owners that reach them through
+// this module, and this owner keeps the date, short-integer and bad-type-detail
+// bodies. It is exercised by the entire testSuite, so correctness is verified by
+// `zig build test`.
 //
 // This is a faithful, line-by-line port of the C. Numeric constants come from the
 // shared `constants` blob by byte offset; cst34()/cstR() return align(1) pointers
@@ -203,7 +208,6 @@ extern fn realCompareGreaterEqual(a: *align(1) const real_t, b: *align(1) const 
 extern fn realCompareGreaterThan(a: *align(1) const real_t, b: *align(1) const real_t) bool;
 extern fn real34CompareGreaterEqual(a: *align(1) const real34_t, b: *align(1) const real34_t) bool;
 extern fn real34CompareLessThan(a: *align(1) const real34_t, b: *align(1) const real34_t) bool;
-// real34SetZero moved to engine/kernel/register_convert_bulk.zig.
 
 // elementwise matrix dispatchers.
 const Fn0 = ?*const fn () callconv(.c) void;
@@ -291,41 +295,28 @@ extern fn localtime(t: *const i64) *Tm;
 inline fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8) void {
     if (comptime extra_info) c_moreInfoOnError(m1, m2, null, null);
 }
-// dataPtr moved to engine/kernel/register_convert_bulk.zig.
 const reg34 = abi.registerReal34;
-// regImag34 moved to engine/kernel/register_convert_bulk.zig.
-// regLongIntData moved to engine/kernel/register_convert_bulk.zig.
 const regShortInt = abi.registerShortInteger;
-// regMatrixHeader moved to engine/kernel/register_convert_bulk.zig.
-// regRealMatrixElems moved to engine/kernel/register_convert_bulk.zig.
-// regComplexMatrixElems moved to engine/kernel/register_convert_bulk.zig.
-// getRegisterAngularMode moved to engine/kernel/register_convert_bulk.zig.
 inline fn getRegisterShortIntegerBase(reg: calcRegister_t) u32 {
     return getRegisterTag(reg);
 }
 inline fn getRegisterLongIntegerSign(reg: calcRegister_t) u32 {
     return getRegisterTag(reg);
 }
-// setComplexRegisterAngularMode moved to engine/kernel/register_convert_bulk.zig.
-// setComplexRegisterPolarMode moved to engine/kernel/register_convert_bulk.zig.
 const amNoneU: u32 = @bitCast(amNone);
 
-// TO_BLOCKS / TO_BYTES
-// toBlocks moved to engine/kernel/register_convert_bulk.zig.
+// TO_BYTES
 inline fn toBytes(n: u16) u32 {
     return @as(u32, n) << 2;
 }
 
 // long integer helpers.
-// longIntegerSizeInBytes moved to engine/kernel/register_convert_bulk.zig.
-// longIntegerSignTag moved to engine/kernel/register_convert_bulk.zig.
 inline fn longIntegerIsNegative(lg: *const mpz_struct) bool {
     return lg._mp_size < 0;
 }
 inline fn longIntegerIsZero(lg: *const mpz_struct) bool {
     return lg._mp_size == 0;
 }
-// longIntegerChangeSign moved to engine/kernel/register_convert_bulk.zig.
 inline fn absI(x: c_int) u32 {
     return if (x < 0) @intCast(-x) else @intCast(x);
 }
@@ -343,16 +334,9 @@ inline fn real34Copy(src: *align(1) const real34_t, dst: *real34_t) void {
 }
 
 // real bit macros.
-// realIsNaN moved to engine/kernel/register_convert_bulk.zig.
-// realIsNegative moved to engine/kernel/register_convert_bulk.zig.
-// realIsPositive moved to engine/kernel/register_convert_bulk.zig.
-// realIsSpecial moved to engine/kernel/register_convert_bulk.zig.
-// realIsZero moved to engine/kernel/register_convert_bulk.zig.
-// realSetPositiveSign moved to engine/kernel/register_convert_bulk.zig.
 inline fn realSetNegativeSign(v: *real_t) void {
     v.bits |= 0x80;
 }
-// realGetExponent moved to engine/kernel/register_convert_bulk.zig.
 
 // real34 ops (use &ctxtReal34).
 inline fn uInt32ToReal34(src: u32, dst: *real34_t) void {
@@ -361,7 +345,6 @@ inline fn uInt32ToReal34(src: u32, dst: *real34_t) void {
 inline fn int32ToReal34(src: i32, dst: *real34_t) void {
     _ = decQuadFromInt32(dst, src);
 }
-// real34FMA moved to engine/kernel/register_convert_bulk.zig.
 inline fn real34Add(a: *align(1) const real34_t, b: *align(1) const real34_t, res: *real34_t) void {
     _ = decQuadAdd(res, a, b, &ctxtReal34);
 }
@@ -380,44 +363,28 @@ inline fn real34CopyAbs(src: *align(1) const real34_t, dst: *real34_t) void {
 inline fn real34ToIntegralValue(src: *align(1) const real34_t, dst: *real34_t, mode: c_int) void {
     _ = decQuadToIntegralValue(dst, src, &ctxtReal34, mode);
 }
-// real34GetCoefficient moved to engine/kernel/register_convert_bulk.zig.
-// real34GetExponent moved to engine/kernel/register_convert_bulk.zig.
 inline fn real34ToInt32(src: *align(1) const real34_t) i32 {
     return decQuadToInt32(src, &ctxtReal34, DEC_ROUND_DOWN);
 }
-// real34ToReal moved to engine/kernel/register_convert_bulk.zig.
-// stringToReal34 moved to engine/kernel/register_convert_bulk.zig.
 
 // real ops.
-// uInt32ToReal moved to engine/kernel/register_convert_bulk.zig.
 inline fn realFMA(f1: *align(1) const real_t, f2: *align(1) const real_t, term: *align(1) const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberFMA(res, f1, f2, term, ctx);
 }
-// realGetCoefficient moved to engine/kernel/register_convert_bulk.zig.
-// realPlus moved to engine/kernel/register_convert_bulk.zig.
-// stringToReal moved to engine/kernel/register_convert_bulk.zig.
 
 // ===========================================================================
 // Long integer <-> register
 // ===========================================================================
-// convertLongIntegerToLongIntegerRegister moved to engine/kernel/register_convert_bulk.zig.
 pub extern fn convertLongIntegerToLongIntegerRegister(lgInt: *const mpz_struct, regist: calcRegister_t) callconv(.c) void;
 
-// convertLongIntegerRegisterToLongInteger moved to engine/kernel/register_integer_convert.zig.
 pub extern fn convertLongIntegerRegisterToLongInteger(regist: calcRegister_t, lgInt: *mpz_struct) callconv(.c) void;
 
-// convertLongIntegerRegisterToReal34Register moved to engine/kernel/register_convert_bulk.zig.
 pub extern fn convertLongIntegerRegisterToReal34Register(source: calcRegister_t, destination: calcRegister_t) callconv(.c) void;
 
-// convertLongIntegerRegisterToReal34 moved to engine/kernel/register_convert_bulk.zig.
 pub extern fn convertLongIntegerRegisterToReal34(source: calcRegister_t, destination: *real34_t) callconv(.c) void;
 
-// convertLongIntegerRegisterToReal moved to engine/kernel/register_integer_convert.zig.
 pub extern fn convertLongIntegerRegisterToReal(source: calcRegister_t, destination: *real_t, ctxt: *realContext_t) callconv(.c) void;
 
-// convertLongIntegerToReal moved to engine/kernel/register_integer_convert.zig.
-
-// convertLongIntegerToReal34 moved to engine/kernel/register_convert_bulk.zig.
 pub extern fn convertLongIntegerToReal34(source: *mpz_struct, destination: *real34_t) callconv(.c) void;
 
 pub export fn convertLongIntegerToShortIntegerRegister(lgInt: *mpz_struct, base: u32, destination: calcRegister_t) callconv(.c) void {
@@ -465,58 +432,40 @@ pub export fn convertLongIntegerRegisterToShortIntegerRegister(source: calcRegis
 // ===========================================================================
 // Short integer <-> register
 // ===========================================================================
-// convertShortIntegerRegisterToReal34Register moved to engine/kernel/register_convert_bulk.zig.
 pub extern fn convertShortIntegerRegisterToReal34Register(source: calcRegister_t, destination: calcRegister_t) callconv(.c) void;
 
-// convertShortIntegerRegisterToReal moved to engine/kernel/register_integer_convert.zig.
 pub extern fn convertShortIntegerRegisterToReal(source: calcRegister_t, destination: *real_t, ctxt: *realContext_t) callconv(.c) void;
 
-// convertShortIntegerRegisterToUInt64 moved to engine/kernel/register_integer_convert.zig.
 pub extern fn convertShortIntegerRegisterToUInt64(regist: calcRegister_t, sign: *i16, value: *u64) callconv(.c) void;
 
-// convertShortIntegerRegisterToLongInteger moved to engine/kernel/register_convert_bulk.zig.
 pub extern fn convertShortIntegerRegisterToLongInteger(source: calcRegister_t, lgInt: *mpz_struct) callconv(.c) void;
 
-// convertShortIntegerRegisterToLongIntegerRegister moved to engine/kernel/register_convert_bulk.zig.
 pub extern fn convertShortIntegerRegisterToLongIntegerRegister(source: calcRegister_t, destination: calcRegister_t) callconv(.c) void;
 
-// convertUInt64ToShortIntegerRegister moved to engine/kernel/register_convert_bulk.zig.
 pub extern fn convertUInt64ToShortIntegerRegister(sign: i16, value_arg: u64, base: u32, regist: calcRegister_t) callconv(.c) void;
 
 // ===========================================================================
 // real34 / real <-> long integer
 // ===========================================================================
-// convertReal34ToLongInteger moved to engine/kernel/register_convert_bulk.zig.
 pub extern fn convertReal34ToLongInteger(re34: *align(1) const real34_t, lgInt: *mpz_struct, roundingMode: c_int) callconv(.c) void;
 
-// convertReal34ToLongIntegerRegister moved to engine/kernel/register_convert_bulk.zig.
 pub extern fn convertReal34ToLongIntegerRegister(real34: *align(1) const real34_t, dest: calcRegister_t, roundingMode: c_int) callconv(.c) void;
 
-// convertRealToLongInteger moved to engine/kernel/register_convert_bulk.zig.
 pub extern fn convertRealToLongInteger(re: *const real_t, lgInt: *mpz_struct, roundingMode: c_int) callconv(.c) void;
 
-// convertRealToLongIntegerRegister moved to engine/kernel/register_convert_bulk.zig.
 pub extern fn convertRealToLongIntegerRegister(real: *const real_t, dest: calcRegister_t, roundingMode: c_int) callconv(.c) void;
 
-// Moved to the base kernel (engine/kernel/register_real34_convert.zig).
 pub extern fn realToIntegralValue(source: *const real_t, destination: *real_t, mode: c_int, realContext: *realContext_t) callconv(.c) void;
 
 // ===========================================================================
 // real result registers
 // ===========================================================================
-// Moved to the base kernel (engine/kernel/register_real34_convert.zig); the shell
-// owners that reach it through this module resolve it via this re-declaration.
 pub extern fn convertRealToReal34ResultRegister(real: *const real_t, dest: calcRegister_t) callconv(.c) void;
 
-// convertRealToImag34ResultRegister moved to engine/kernel/register_convert_bulk.zig.
 pub extern fn convertRealToImag34ResultRegister(real: *const real_t, dest: calcRegister_t) callconv(.c) void;
 
-// realToReal34 moved to engine/kernel/register_convert_bulk.zig.
-
-// Moved to the base kernel (engine/kernel/register_real34_convert.zig).
 pub extern fn convertRealToResultRegister(x: *const real_t, dest: calcRegister_t, angle: angularMode_t) callconv(.c) void;
 
-// convertComplexToResultRegister moved to engine/kernel/register_convert_bulk.zig.
 pub extern fn convertComplexToResultRegister(z: *const cplx_t, dest: calcRegister_t) callconv(.c) void;
 
 // convertComplexToResultRegister for a real and an imaginary part that are not one cplx_t, such as constants or parts computed apart.
@@ -526,19 +475,15 @@ pub extern fn convertComplexPartsToResultRegister(real: *const real_t, imag: *co
 pub extern fn convertReal34ToReal34Register(real34: *align(1) const real34_t, dest: calcRegister_t) callconv(.c) void;
 pub extern fn convertReal34ToComplex34Register(real34: *align(1) const real34_t, imag34: *align(1) const real34_t, dest: calcRegister_t) callconv(.c) void;
 
-// convertComplexToResultRegisterRPangle moved to engine/kernel/register_convert_bulk.zig.
 pub extern fn convertComplexToResultRegisterRPangle(real: *const real_t, imag: *const real_t, dest: calcRegister_t, angl: angularMode_t, polarTag: u8) callconv(.c) void;
 
 // ===========================================================================
 // Time / Date
 // ===========================================================================
-// convertTimeRegisterToReal34Register moved to engine/kernel/register_convert_bulk.zig.
 pub extern fn convertTimeRegisterToReal34Register(source: calcRegister_t, destination: calcRegister_t) callconv(.c) void;
 
-// convertReal34RegisterToTimeRegister moved to engine/kernel/register_convert_bulk.zig.
 pub extern fn convertReal34RegisterToTimeRegister(source: calcRegister_t, destination: calcRegister_t) callconv(.c) void;
 
-// convertLongIntegerRegisterToTimeRegister moved to engine/kernel/register_convert_bulk.zig.
 pub extern fn convertLongIntegerRegisterToTimeRegister(source: calcRegister_t, destination: calcRegister_t) callconv(.c) void;
 
 pub export fn convertDateRegisterToReal34Register(source: calcRegister_t, destination: calcRegister_t) callconv(.c) void {
@@ -707,75 +652,48 @@ pub export fn convertReal34RegisterToDateRegister(source: calcRegister_t, destin
 // ===========================================================================
 // Matrices
 // ===========================================================================
-// convertReal34MatrixRegisterToReal34Matrix moved to engine/kernel/register_convert_bulk.zig.
 pub extern fn convertReal34MatrixRegisterToReal34Matrix(regist: calcRegister_t, matrix: *real34Matrix_t) callconv(.c) void;
 
-// convertReal34MatrixToReal34MatrixRegister moved to engine/kernel/register_convert_bulk.zig.
 pub extern fn convertReal34MatrixToReal34MatrixRegister(matrix: *const real34Matrix_t, regist: calcRegister_t) callconv(.c) void;
 
-// convertComplex34MatrixRegisterToComplex34Matrix moved to engine/kernel/register_convert_bulk.zig.
 pub extern fn convertComplex34MatrixRegisterToComplex34Matrix(regist: calcRegister_t, matrix: *complex34Matrix_t) callconv(.c) void;
 
-// convertComplex34MatrixToComplex34MatrixRegister moved to engine/kernel/register_convert_bulk.zig.
 pub extern fn convertComplex34MatrixToComplex34MatrixRegister(matrix: *const complex34Matrix_t, regist: calcRegister_t) callconv(.c) void;
 
-// convertReal34MatrixToComplex34Matrix moved to engine/kernel/register_convert_bulk.zig.
 pub extern fn convertReal34MatrixToComplex34Matrix(source: *const real34Matrix_t, destination: *complex34Matrix_t) callconv(.c) void;
 
-// convertReal34MatrixRegisterToComplex34Matrix moved to engine/kernel/register_convert_bulk.zig.
 pub extern fn convertReal34MatrixRegisterToComplex34Matrix(source: calcRegister_t, destination: *complex34Matrix_t) callconv(.c) void;
 
-// convertReal34MatrixRegisterToComplex34MatrixRegister moved to engine/kernel/register_convert_bulk.zig.
 pub extern fn convertReal34MatrixRegisterToComplex34MatrixRegister(source: calcRegister_t, destination: calcRegister_t) callconv(.c) void;
 
 // ===========================================================================
 // Doubles and floats
 // ===========================================================================
-// sci_fmt moved to engine/kernel/register_convert_bulk.zig.
 pub extern fn sci_fmt(buf: [*c]u8, n: c_int, x_arg: f64) callconv(.c) void;
 
-// convertDoubleToString moved to engine/kernel/register_convert_bulk.zig.
 pub extern fn convertDoubleToString(x: f64, n: i16, buff: [*c]u8) callconv(.c) void;
 
-// convertDoubleToReal moved to engine/kernel/register_convert_bulk.zig.
 pub extern fn convertDoubleToReal(x: f64, destination: *real_t, ctxt: *realContext_t) callconv(.c) void;
 
-// convertDoubleToReal34Register moved to engine/kernel/register_convert_bulk.zig.
 pub extern fn convertDoubleToReal34Register(x: f64, destination: calcRegister_t) callconv(.c) void;
 
-// convertDoubleToReal34RegisterPush moved to engine/kernel/register_convert_bulk.zig.
 pub extern fn convertDoubleToReal34RegisterPush(x: f64, destination: calcRegister_t) callconv(.c) void;
 
-// convertRegisterToDouble moved to engine/kernel/register_convert_bulk.zig.
 pub extern fn convertRegisterToDouble(regist: calcRegister_t) callconv(.c) f64;
 
-// exps moved to engine/kernel/register_convert_bulk.zig.
-
-// fnRealToFloat moved to engine/kernel/register_convert_bulk.zig.
-
-// makeNanF32 moved to engine/kernel/register_convert_bulk.zig.
-// makeInfF32 moved to engine/kernel/register_convert_bulk.zig.
-
-// realToFloat moved to engine/kernel/register_convert_bulk.zig.
 pub extern fn realToFloat(vv: *const real_t, v: *f32) callconv(.c) void;
-
-// fnRealToDouble moved to engine/kernel/register_convert_bulk.zig.
 
 // Locale-free strtod: normalise '.'/',' to the locale radix, then strtod.
 // (Ports registerValueConversions.c stringToDouble; used by the save-state
 // float->real migration path.)
-// stringToDouble moved to engine/kernel/register_convert_bulk.zig.
 pub extern fn stringToDouble(str: [*c]const u8) callconv(.c) f64;
 
-// realToDouble moved to engine/kernel/register_convert_bulk.zig.
 pub extern fn realToDouble(vv: *const real_t, v: *f64) callconv(.c) void;
 
 // ===========================================================================
 // Type checks / error helpers
 // ===========================================================================
-// typeIsNumber moved to engine/kernel/register_convert_bulk.zig.
 
-// badTypeError moved to engine/kernel/register_integer_convert.zig.
 pub extern fn badTypeError(reg: calcRegister_t) callconv(.c) void;
 
 // Shell implementation of the host bad-register-type diagnostic hook: append the
@@ -794,37 +712,27 @@ inline fn errorMessageBuf() []u8 {
     return errorMessage[0..256];
 }
 
-// badDomainError moved to engine/kernel/register_convert_bulk.zig.
 pub extern fn badDomainError(reg: calcRegister_t) callconv(.c) void;
 
-// badTypeErrorX moved to engine/kernel/register_convert_bulk.zig.
 pub extern fn badTypeErrorX() callconv(.c) void;
 
-// badDomainErrorX moved to engine/kernel/register_convert_bulk.zig.
 pub extern fn badDomainErrorX() callconv(.c) void;
 
 // ===========================================================================
 // getRegisterAs* family
 // ===========================================================================
-// getRegisterAsComplex moved to engine/kernel/register_convert_bulk.zig.
 pub extern fn getRegisterAsComplex(reg: calcRegister_t, z: *cplx_t) callconv(.c) bool;
 
-// getRegisterAsComplexOrAnyRealQuiet moved to engine/kernel/register_convert_bulk.zig.
 pub extern fn getRegisterAsComplexOrAnyRealQuiet(reg: calcRegister_t, z: *cplx_t, cmplx: ?*bool) callconv(.c) bool;
 
-// getRegisterAsComplexOrAnyReal moved to engine/kernel/register_convert_bulk.zig.
 pub extern fn getRegisterAsComplexOrAnyReal(reg: calcRegister_t, z: *cplx_t, cmplx: ?*bool) callconv(.c) bool;
 
-// getRegisterAsComplexOrRealQuiet moved to engine/kernel/register_convert_bulk.zig.
 pub extern fn getRegisterAsComplexOrRealQuiet(reg: calcRegister_t, z: *cplx_t, cmplx: ?*bool) callconv(.c) bool;
 
-// getRegisterAsComplexOrReal moved to engine/kernel/register_convert_bulk.zig.
 pub extern fn getRegisterAsComplexOrReal(reg: calcRegister_t, z: *cplx_t, cmplx: ?*bool) callconv(.c) bool;
 
-// getRegisterAsAnyRealQuiet moved to engine/kernel/register_integer_convert.zig.
 pub extern fn getRegisterAsAnyRealQuiet(reg: calcRegister_t, val: *real_t) callconv(.c) bool;
 
-// convertComplexRegisterToRealIfZeroImag moved to engine/kernel/register_convert_bulk.zig.
 pub extern fn convertComplexRegisterToRealIfZeroImag(regist: calcRegister_t) callconv(.c) void;
 
 inline fn real34IsZero(v: *align(1) const real34_t) bool {
@@ -832,19 +740,14 @@ inline fn real34IsZero(v: *align(1) const real34_t) bool {
 }
 extern fn decQuadIsZero(v: *align(1) const real34_t) u32;
 
-// getRegisterAsRealQuiet moved to engine/kernel/register_integer_convert.zig.
 pub extern fn getRegisterAsRealQuiet(reg: calcRegister_t, val: *real_t) callconv(.c) bool;
 
-// getRegisterAsReal moved to engine/kernel/register_integer_convert.zig.
 pub extern fn getRegisterAsReal(reg: calcRegister_t, val: *real_t) callconv(.c) bool;
 
-// getRegisterAsAnyReal moved to engine/kernel/register_convert_bulk.zig.
 pub extern fn getRegisterAsAnyReal(reg: calcRegister_t, val: *real_t) callconv(.c) bool;
 
-// getRegisterAsReal34Quiet moved to engine/kernel/register_convert_bulk.zig.
 pub extern fn getRegisterAsReal34Quiet(reg: calcRegister_t, val: *real34_t) callconv(.c) bool;
 
-// getRegisterAsShortInt moved to engine/kernel/register_convert_bulk.zig.
 pub extern fn getRegisterAsShortInt(reg: calcRegister_t, sign: *bool, val: *u64, overflow: ?*bool, fractional: ?*bool) callconv(.c) bool;
 
 pub export fn getRegisterAsRawShortInt(reg: calcRegister_t, val: *u64, base: ?*u32) callconv(.c) bool {
@@ -875,10 +778,8 @@ pub export fn getRegisterAsRawShortInt(reg: calcRegister_t, val: *u64, base: ?*u
     return true;
 }
 
-// getRegisterAsLongIntQuiet moved to engine/kernel/register_convert_bulk.zig.
 pub extern fn getRegisterAsLongIntQuiet(reg: calcRegister_t, val: *mpz_struct, fractional: ?*bool) callconv(.c) c_int;
 
-// getRegisterAsLongInt moved to engine/kernel/register_convert_bulk.zig.
 pub extern fn getRegisterAsLongInt(reg: calcRegister_t, val: *mpz_struct, fractional: ?*bool) callconv(.c) bool;
 
 // A setter's non-negative long-integer argument as a uint32, and its signed twin.
@@ -886,31 +787,17 @@ pub extern fn getRegisterAsLongInt(reg: calcRegister_t, val: *mpz_struct, fracti
 pub extern fn getRegisterAsUint32Param(regist: u16, value: *u32) callconv(.c) bool;
 pub extern fn getRegisterAsInt32Param(regist: u16, value: *i32) callconv(.c) bool;
 
-// longIntegerAngleReduction moved to engine/kernel/register_convert_bulk.zig.
-
-// longIntegerBase10Digits moved to engine/kernel/register_convert_bulk.zig.
-// longIntegerModuloUInt moved to engine/kernel/register_convert_bulk.zig.
-
-// REAL_SIZE_IN_BYTES(2139): REAL_MAX_DIGITS = ((2139+2)/6)*6+3 = 356*6+3 = 2139;
-// REAL_SIZE_IN_BYTES = 10 + 2*(2139/3) = 10 + 2*713 = 1436; rounded to mult of 4.
-// REAL_2139_BYTES moved to engine/kernel/register_convert_bulk.zig.
-
-// getRegisterAsRealAngle moved to engine/kernel/register_convert_bulk.zig.
 pub extern fn getRegisterAsRealAngle(reg: calcRegister_t, val: *real_t, xAngularMode: *angularMode_t, reduceLongintegerAngle: bool) callconv(.c) bool;
 
 // ===========================================================================
 // Monadic / dyadic dispatchers
 // ===========================================================================
-// processRealComplexMonadicFunction moved to engine/kernel/register_convert_bulk.zig.
 pub extern fn processRealComplexMonadicFunction(realf: Fn0, complexf: Fn0) callconv(.c) void;
 
-// processIntRealComplexMonadicFunction moved to engine/kernel/register_convert_bulk.zig.
 pub extern fn processIntRealComplexMonadicFunction(realf: Fn0, complexf: Fn0, shortintf: Fn0, longintf: Fn0) callconv(.c) void;
 
-// processRealComplexDyadicFunction moved to engine/kernel/register_convert_bulk.zig.
 pub extern fn processRealComplexDyadicFunction(realf: Fn0, complexf: Fn0) callconv(.c) void;
 
-// processIntRealComplexDyadicFunction moved to engine/kernel/register_convert_bulk.zig.
 pub extern fn processIntRealComplexDyadicFunction(realf: Fn0, complexf: Fn0, shortintf: Fn0, longintf: Fn0) callconv(.c) void;
 
 fn bufPrintZ(buf: []u8, comptime fmt: []const u8, args: anytype) ![:0]u8 {

@@ -1,12 +1,10 @@
 const std = @import("std");
 const abi = @import("abi");
 const builtin = @import("builtin");
-// No harness fork here. The parity lane used to build this owner with
-// `use_fake_program_serialization_harness_surface`, which replaced twenty of the
-// helpers below with counting stubs -- so the lane compared c43 against a build
-// of the owner that never ran selectProgram, the label walk, or the pre-load
-// screening pass at all. Now that the oracle IS c43's saveRestorePrograms.c
-//, the harness supplies ioFileOpen / readLine /
+// No harness fork here: counting stubs in place of the helpers below would have
+// the lane compare c43 against a build of the owner that never runs
+// selectProgram, the label walk, or the pre-load screening pass. The oracle is
+// c43's saveRestorePrograms.c, the harness supplies ioFileOpen / readLine /
 // scanLabelsAndPrograms / show_warning and the rest under their real c43 names,
 // and both sides run their production path through the same environment.
 

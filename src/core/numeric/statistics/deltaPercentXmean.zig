@@ -9,9 +9,9 @@ const const_1 = consts.const_1;
 // the result context. UNCOVERED by the testSuite (no gate); this is a faithful
 // line-by-line translation preserving the exact real_t operation order.
 //
-// deltaPercentXmeanReal() is exported with C linkage because
-// percentSigmaDeltaPercentXmean.c (now also a Zig owner) calls it via the
-// math_percentSigmaDeltaPercentXmean.zig owner. fnDeltaPercentXmean is
+// deltaPercentXmeanReal() is exported with C linkage because the
+// percentSigmaDeltaPercentXmean.c owner,
+// arithmetic/percentSigmaDeltaPercentXmean.zig, calls it. fnDeltaPercentXmean is
 // the only .h-declared command. The EXTRA_INFO_ON_CALC_ERROR hints become fixed
 // moreInfoOnError strings (no-op under TESTSUITE/DMCP).
 //

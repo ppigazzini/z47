@@ -6,10 +6,10 @@
 // helpers realIsZero / copyComplex34 / setReal34NegativeSign, whose one
 // definition is in abi so the Zig owners share it. These construct or inspect a
 // real_t directly from its decNumber coefficient/exponent/bits fields with no
-// runtime coupling -- they touch only the caller's value, so they belong in the
-// headless base kernel rather than the shell. The int-conversion helpers that share realType.c stay on the shell
-// owner for now because they route through the register_value_conversions
-// god-adapter; only the pure constructors move here.
+// runtime coupling -- they touch only the caller's value, so they live in the
+// headless core rather than the shell. The int-conversion helpers that share
+// realType.c (realToInt32C47, realToUint32C47) are exported by
+// register_conversions.zig.
 //
 // The testSuite exercises these pervasively (every math path that seeds a NaN,
 // zero, one, or infinity), which is the behavioral parity gate for the port.

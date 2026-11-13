@@ -40,22 +40,18 @@ const dmcp_build: bool = frontier_build_options.dmcp_build;
 extern fn printf(fmt: [*:0]const u8, ...) c_int;
 
 comptime {
-    // These owners hold the dispatch wrappers that used to live in this root. The
-    // root's own bodies were what pulled them into the frontier object; with the
-    // wrappers moved to them, nothing references them and Zig would not analyse
-    // them at all -- their exports would vanish from the link. A root force-imports
-    // its members; it does not export on their behalf.
+    // These owners hold dispatch wrappers that nothing in this root references, so
+    // without the force-import Zig would not analyse them at all -- their exports
+    // would vanish from the link. A root force-imports its members; it does not
+    // export on their behalf.
     _ = @import("shell/clear_all.zig");
     _ = @import("shell/matrix_editor/matrix_editor_refresh.zig");
     _ = @import("shell/plot/plot_regression.zig");
     _ = @import("shell/print/print_all_regs.zig");
     _ = @import("shell/program/keys_management.zig");
     _ = @import("shell/program/program_clear.zig");
-    // These owners hold the dispatch wrappers that used to live in this root.
-    // The root's own bodies were what pulled them into the frontier object; with
-    // the wrappers moved to them, nothing references them any more and Zig would
-    // not analyse them at all -- their exports would silently vanish from the
-    // link. A root force-imports its members; it does not export on their behalf.
+    // The same holds for these owners: their C-ABI exports are reached by extern,
+    // not by this root, so the force-import is what keeps them in the link.
     _ = @import("shell/free_list.zig");
     _ = @import("core/text/fonts.zig");
     _ = @import("shell/generated/frontier_martel_fonts.zig");

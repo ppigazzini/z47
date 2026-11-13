@@ -5,11 +5,9 @@
 // Named-variable storage is deliberately NOT here. The header block's allocate /
 // append / rename / clear / shrink helpers and the reserved-name lookup live with
 // their only caller, in register_metadata_variables.zig, so there is exactly one
-// copy of each. A second set used to sit in this file behind unreferenced
-// forwarders, and the two had drifted apart: that lookup scanned from the first
-// reserved variable, so a one-glyph name such as "X" resolved to the lettered
-// reserved register that aliases the stack, and its slot clear zeroed the whole
-// sixteen-byte name where registers.c zeroes two bytes.
+// copy of each: a second copy drifts, and a lookup that scans from the first
+// reserved variable resolves a one-glyph name such as "X" to the lettered
+// reserved register that aliases the stack.
 
 const descriptor_storage = @import("../runtime/register_descriptor_storage.zig");
 
