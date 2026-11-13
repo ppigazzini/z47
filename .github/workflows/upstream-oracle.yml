@@ -214,10 +214,21 @@ jobs:
           set -euo pipefail
           export PATH="$RUNNER_TEMP/xlsxio-prefix/bin:$PATH"
           export LD_LIBRARY_PATH="$RUNNER_TEMP/xlsxio-prefix/lib:$RUNNER_TEMP/xlsxio-prefix/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
-          zig build --help --summary none
-          zig build logical_shortint_parity --summary none
-          zig build rotate_bits_parity --summary none
-          zig build logical_boolean_ops_suite --summary none
+          # The job is continue-on-error, so its tick says nothing; the summary
+          # names each probe's result, and every probe runs whatever the one
+          # before it did.
+          status=0
+          {
+            echo "### Zig master monitor: $(zig version)"
+            echo
+            echo "| probe | result |"
+            echo "| --- | --- |"
+          } >> "$GITHUB_STEP_SUMMARY"
+          for probe in --help logical_shortint_parity rotate_bits_parity logical_boolean_ops_suite; do
+            if zig build "$probe" --summary none; then result=pass; else result=FAIL; status=1; fi
+            echo "| \`zig build $probe\` | $result |" >> "$GITHUB_STEP_SUMMARY"
+          done
+          exit "$status"
 
   source-manifest:
     name: Verify imported upstream pin and source manifest
