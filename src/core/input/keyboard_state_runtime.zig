@@ -772,11 +772,10 @@ pub const ITM_toINT: i16 = 1687;
 const item_t = abi.Item;
 const indexOfItems = @extern([*c]const item_t, .{ .name = "indexOfItems" });
 pub fn itemFuncIsAddItemToBuffer(item: i16) bool {
-    const f: ?*const anyopaque = @ptrCast(indexOfItems[@intCast(item)].func);
-    return f == @as(?*const anyopaque, @ptrCast(&addItemToBuffer));
+    return itemFuncEquals(item, &addItemToBuffer);
 }
-pub fn itemFuncEquals(item: i16, f: ?*const anyopaque) bool {
-    return @as(?*const anyopaque, @ptrCast(indexOfItems[@intCast(item)].func)) == f;
+pub fn itemFuncEquals(item: i16, f: std.meta.Child(@FieldType(item_t, "func"))) bool {
+    return indexOfItems[@intCast(item)].func == f;
 }
 pub fn indexOfItemsParam(item: i16) u16 {
     return indexOfItems[@intCast(item)].param;
