@@ -249,50 +249,54 @@ fn readyToExit() void {
     _ = win_console.FreeConsole();
 }
 
-fn printHelp() void {
+// c47-gtk.c's --help, in its order and wording. The T47 DSL switches it lists
+// (--script, --exec, --e, --dslcommands) and the example that uses them are left
+// out: this simulator has no DSL.
+fn printHelp(activated: [*:0]const u8) void {
     const cc: [*:0]const u8 = if (CALCMODEL == USER_R47) "r" else "c";
     const modeltext: [*:0]const u8 = if (CALCMODEL == USER_R47) "R47" else "C47";
-    _ = printf("\n-------------------------------------------------------------\n");
     var version_ascii: [100]u8 = undefined;
     stringToASCII(opts.version_string ++ "\x00", &version_ascii);
-    _ = printf("%s Sim " ++ opts.version1 ++ ", SHA %s.\n", modeltext, &version_ascii);
+    _ = printf("\n-------------------------------------------------------------\n");
     _ = printf("C47/R47 info to be found on 47calc.com\n");
-    _ = printf("C47/R47 license GPL3, details on 47calc.com\n\n");
-    _ = printf("%s47 --background     : specify background picture\n", cc);
-    _ = printf("%s47 --functionkeys   : display function key labels\n\n", cc);
-    _ = printf("%s47 --landscape      : landscape orientation\n", cc);
-    _ = printf("%s47 --portrait       : portrait orientation\n", cc);
-    _ = printf("%s47 --auto           : automatic orientation\n\n", cc);
-    _ = printf("%s47 --c47            : C47\n", cc);
-    _ = printf("%s47 --r47            : R47v0 layout (f g)\n", cc);
-    _ = printf("%s47 --r47v0          : R47v0 layout (f g)\n", cc);
-    _ = printf("%s47 --r47v1          : R47v1 layout (fg bk)\n", cc);
-    _ = printf("%s47 --r47v2          : R47v2 layout (fg g)\n", cc);
-    _ = printf("%s47 --r47v3          : R47v3 layout (bk fg) \n", cc);
-    _ = printf("%s47 --dm42           : DM42 layout\n", cc);
-    _ = printf("%s47 --e47            : E47 layout (SIM only) (sunsetting)\n", cc);
-    _ = printf("%s47 --n47            : N47 layout (SIM only) (sunsetting)\n", cc);
-    _ = printf("%s47 --v47            : V47 layout (SIM only) (sunsetting)\n", cc);
-    _ = printf("%s47 --d47            : D47 layout (SIM only) (sunsetting)\n\n", cc);
-    _ = printf("%s47 --reset          : factory defaults, do not load backup.cfg\n\n", cc);
-    _ = printf("%s47 --jm             : Setting profile: Jaco preferences\n", cc);
-    _ = printf("%s47 --rj             : Setting profile: RJvM preferences\n", cc);
-    _ = printf("%s47 --hp35           : Setting profile: HP-35 tribute\n\n", cc);
-    _ = printf("%s47 --deadkeys       : typewriter style dead keys\n", cc);
-    _ = printf("%s47 --swapctrlcode   : ctrl fix for Swiss keyboards\n", cc);
-    _ = printf("%s47 --mockup         : output demo status bar layout\n", cc);
+    _ = printf("C47/R47 license GPL3, details on 47calc.com\n");
+    _ = printf("\n%s Sim " ++ opts.version1 ++ ", SHA %s.\n", modeltext, &version_ascii);
+    _ = printf("Activated: %s\n\n", activated);
+    _ = printf("%s47 --background          : specify background picture\n", cc);
+    _ = printf("%s47 --functionkeys        : display function key labels\n\n", cc);
+    _ = printf("%s47 --landscape           : landscape orientation\n", cc);
+    _ = printf("%s47 --portrait            : portrait orientation\n", cc);
+    _ = printf("%s47 --auto                : automatic orientation\n\n", cc);
+    _ = printf("%s47 --c47                 : C47\n", cc);
+    _ = printf("%s47 --r47                 : R47v0 layout (f g)\n", cc);
+    _ = printf("%s47 --r47v0               : R47v0 layout (f g)\n", cc);
+    _ = printf("%s47 --r47v1               : R47v1 layout (fg bk)\n", cc);
+    _ = printf("%s47 --r47v2               : R47v2 layout (fg g)\n", cc);
+    _ = printf("%s47 --r47v3               : R47v3 layout (bk fg) \n", cc);
+    _ = printf("%s47 --dm42                : DM42 layout\n", cc);
+    _ = printf("%s47 --e47                 : E47 layout (SIM only) (retired, historical info only)\n", cc);
+    _ = printf("%s47 --n47                 : N47 layout (SIM only) (retired, historical info only)\n", cc);
+    _ = printf("%s47 --v47                 : V47 layout (SIM only) (retired, historical info only)\n", cc);
+    _ = printf("%s47 --d47                 : D47 layout (SIM only) (retired, historical info only)\n\n", cc);
+    _ = printf("%s47 --reset               : factory defaults, do not load backup.cfg (scripted --exec/--script runs never write it back either)\n", cc);
+    _ = printf("%s47 --jm                  : Setting profile: Jaco preferences\n", cc);
+    _ = printf("%s47 --rj                  : Setting profile: RJvM preferences\n", cc);
+    _ = printf("%s47 --hp35                : Setting profile: HP-35 tribute\n\n", cc);
+    _ = printf("%s47 --deadkeys            : typewriter style dead keys\n", cc);
+    _ = printf("%s47 --swapctrlcode        : ctrl fix for Swiss keyboards\n", cc);
+    _ = printf("%s47 --testPgms            : load the test programs testPgms.bin if present; reset calculator with testPgms and create new backup.cfg when exit\n", cc);
+    _ = printf("%s47 --testData            : load the test data in Reg 10 to Reg 38\n", cc);
+    _ = printf("%s47 --help                : list all SIM switches\n", cc);
+    _ = printf("%s47 --h, %s47 -h           : see --help\n\n", cc, cc);
+    _ = printf("Dev and Automation\n%s47 --mockup              : output demo status bar layout\n", cc);
     _ = printf("%s47 --dumpMenus1 [path]   : output all static menus to drive; old file name format 'Menu_140_p1_RIBBONS.bmp'; default folder 'menuDump' (auto headless mode)\n", cc);
     _ = printf("%s47 --dumpMenus2 [path]   : output all static menus to drive; new file name format 'RIBBONS.1.bmp';           default folder 'menuDump' (auto headless mode)\n", cc);
     _ = printf("%s47 --dumpMenusAll [path] : RefDB47 superset: every static menu incl. 1stDeriv/2ndDeriv/Sf/Solver/Grapher/SHOW; new file name format; default folder 'menuDump' (auto headless mode)\n", cc);
-    _ = printf("%s47 --testPgms       : load the test programs testPgms.bin if present; reset calculator with testPgms and create new backup.cfg when exit\n", cc);
-    _ = printf("%s47 --testData       : load the test data in Reg 10 to Reg 38\n", cc);
-    _ = printf("%s47 --headless       : suppress GTK interface startup\n", cc);
-    _ = printf("%s47 --writeexportall : output all PROGs (internal use)\n", cc);
+    _ = printf("%s47 --writeexportall      : output all PROGs (internal use)\n", cc);
+    _ = printf("%s47 --headless            : suppress GTK interface startup\n", cc);
     _ = printf("%s47 --snapskiprefresh     : prevents refresh spoiling the graphic screens for DSL snap\n", cc);
     _ = printf("%s47 --snapkeepshift       : SNAP keeps the f or g shift and its glyph in the capture\n", cc);
     _ = printf("%s47 --catsequence         : produce function and menu tables in %s and %s\n", cc, catFcnsFileName, catMenusFileName);
-    _ = printf("%s47 --help           : list all SIM switches\n", cc);
-    _ = printf("%s47 --h              : see --help\n", cc);
 }
 
 // Resources (res/c47_pre.css, res/<model>.png backgrounds, fonts) are opened
@@ -521,8 +525,7 @@ pub export fn main(argc: c_int, argv: [*][*:0]u8) callconv(.c) c_int {
         }
 
         if (argEql(argv[arg], "--help") or argEql(argv[arg], "--h") or argEql(argv[arg], "-h")) {
-            printHelp();
-            _ = printf("Activated: %s\n\n", argv[arg]);
+            printHelp(argv[arg]);
             return 0;
         }
     }
