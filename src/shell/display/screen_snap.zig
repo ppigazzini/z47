@@ -719,7 +719,7 @@ pub export fn copyAllRegistersToClipboard() callconv(.c) void {
     }
 
     if (statisticalSumsPointer != null) {
-        const ssp: [*]real_t = @ptrCast(statisticalSumsPointer);
+        const ssp: [*]real_t = statisticalSumsPointer;
         var sumName: [40]u8 = undefined;
         var sum: i32 = 0;
         while (sum < NUMBER_OF_STATISTICAL_SUMS) : (sum += 1) {

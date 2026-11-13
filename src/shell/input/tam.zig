@@ -1109,7 +1109,7 @@ fn _tamProcessInput(item: u16) void {
             } else {
                 if (calcMode == CM_PEM and indexOfItems[item].param >= FIRST_RESERVED_VARIABLE and indexOfItems[item].param <= LAST_RESERVED_VARIABLE) {
                     tam.alpha = true;
-                    _ = strcpy(aimBuffer, @ptrCast(&allReservedVariables[@intCast(@as(i32, @intCast(indexOfItems[item].param)) - FIRST_RESERVED_VARIABLE)].reservedVariableName[1]));
+                    _ = strcpy(aimBuffer, &allReservedVariables[@intCast(@as(i32, @intCast(indexOfItems[item].param)) - FIRST_RESERVED_VARIABLE)].reservedVariableName[1]);
                     forceTry = true;
                 } else {
                     tam.value = @intCast(indexOfItems[item].param);

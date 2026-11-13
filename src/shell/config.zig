@@ -974,7 +974,7 @@ inline fn toBytes(n: u32) u32 {
 // TO_PCMEMPTR(p): (p==C47_NULL)?NULL:ram+p  (p is a 16-bit block index)
 inline fn toPcMemPtr(p: u32) ?*anyopaque {
     if (p == C47_NULL) return null;
-    return @ptrCast(ram + p);
+    return ram + p;
 }
 // TO_C47MEMPTR(p): (p==NULL)?C47_NULL:(uint16_t)((uint32_t*)p - ram)
 inline fn toC47MemPtr(p: ?*anyopaque) u16 {
@@ -990,7 +990,7 @@ inline fn realCopy(source: *const real_t, destination: *real_t) void {
     _ = decNumberCopy(destination, source);
 }
 inline fn realToReal34(source: *const real_t, destination: *real34_t) void {
-    _ = decimal128FromNumber(destination, @ptrCast(source), &ctxtReal34);
+    _ = decimal128FromNumber(destination, source, &ctxtReal34);
 }
 inline fn real34SetZero(destination: *real34_t) void {
     _ = decQuadZero(destination);
@@ -1466,7 +1466,7 @@ const roundingModeName = [7]RoundingModeName{
 pub export fn getRoundModeName(RM: u16, abbreviated: bool_t) callconv(.c) [*:0]const u8 {
     if (RM >= roundingModeName.len) {
         _ = sprintf(errorMessage, @ptrCast(&commonBugScreenMessages[bugMsgNotDefinedMustBe]), "getRoundModeName", "rounding mode", @as(c_int, RM), @as(c_int, roundingModeName.len - 1));
-        frontier_error.displayBugScreen(@ptrCast(errorMessage));
+        frontier_error.displayBugScreen(errorMessage);
         return "???";
     }
     const row = roundingModeName[RM];
@@ -2305,7 +2305,7 @@ pub export fn doFnReset(confirmation: u16, autoSav: bool_t) callconv(.c) void {
 
         const lastResIdx = LAST_RESERVED_VARIABLE - FIRST_RESERVED_VARIABLE;
         const lastResBlk = (allReservedVariables[lastResIdx].header.descriptor & 0xFFFF) + REAL34_SIZE_IN_BLOCKS;
-        const region0Addr = toC47MemPtr(@ptrCast(ram + lastResBlk));
+        const region0Addr = toC47MemPtr(ram + lastResBlk);
         freeRegion0().blockAddress = region0Addr;
         freeRegion0().sizeInBlocks = @intCast(RAM_SIZE_IN_BLOCKS - region0Addr - 1);
 
@@ -2395,7 +2395,7 @@ pub export fn doFnReset(confirmation: u16, autoSav: bool_t) callconv(.c) void {
 
         allSubroutineLevels.numberOfSubroutineLevels = 1;
         currentSubroutineLevelData = @ptrCast(@alignCast(allocC47Blocks(3)));
-        allSubroutineLevels.ptrToSubroutineLevel0Header = toC47MemPtr(@ptrCast(currentSubroutineLevelData));
+        allSubroutineLevels.ptrToSubroutineLevel0Header = toC47MemPtr(currentSubroutineLevelData);
         currentSubroutineLevelData.*.returnProgramNumber = 0;
         currentSubroutineLevelData.*.returnLocalStep = 0;
         currentSubroutineLevelData.*.numberOfLocalRegisters = 0;
@@ -2707,7 +2707,7 @@ inline fn printerState_delay(v: u32) void {
 // freeMemoryRegions[0] — array on host/new_hw, pointer-target on old_hw.
 inline fn freeRegion0() *freeMemoryRegion_t {
     if (comptime globalRegister_is_array) {
-        const p: [*]freeMemoryRegion_t = @ptrCast(freeMemoryRegions_array);
+        const p: [*]freeMemoryRegion_t = freeMemoryRegions_array;
         return &p[0];
     } else {
         const p: [*]freeMemoryRegion_t = @ptrCast(@alignCast(freeMemoryRegions_ptr.*));

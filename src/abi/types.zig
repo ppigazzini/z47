@@ -271,7 +271,7 @@ pub const Font = extern struct {
     /// glyphs[] begins at offset 8 (the [0]Glyph align-8 field). Single-source
     /// accessor so every owner's font_t == abi.Font.
     pub inline fn glyphsPtr(self: *const Font) [*]const Glyph {
-        return @ptrCast(&self.glyphs);
+        return &self.glyphs;
     }
 };
 

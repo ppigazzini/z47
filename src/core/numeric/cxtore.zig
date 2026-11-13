@@ -81,16 +81,16 @@ inline fn VARIABLE_IMAG34_DATA(elem: *runtime.complex34_t) *real34_t {
 
 inline fn complexMatrixElements(mat: *complex34Matrix_t) [*]runtime.complex34_t {
     if (runtime.harness_surface_is_fake) {
-        return @ptrCast(&mat.matrixElements);
+        return &mat.matrixElements;
     } else {
-        return @ptrCast(mat.matrixElements);
+        return mat.matrixElements;
     }
 }
 inline fn realMatrixElements(mat: *real34Matrix_t) [*]real34_t {
     if (runtime.harness_surface_is_fake) {
-        return @ptrCast(&mat.matrixElements);
+        return &mat.matrixElements;
     } else {
-        return @ptrCast(mat.matrixElements);
+        return mat.matrixElements;
     }
 }
 

@@ -41,11 +41,11 @@ extern fn __gmpz_clear(op: *runtime.mpz_struct) void;
 extern fn convertLongIntegerRegisterToReal34(regist: calcRegister_t, r: *real34_t) void;
 
 inline fn rmEl(m: *const real34Matrix_t, i: usize) *real34_t {
-    const e: [*]real34_t = @ptrCast(m.matrixElements);
+    const e: [*]real34_t = m.matrixElements;
     return &e[i];
 }
 inline fn cmEl(m: *const complex34Matrix_t, i: usize) *complex34_t {
-    const e: [*]complex34_t = @ptrCast(m.matrixElements);
+    const e: [*]complex34_t = m.matrixElements;
     return &e[i];
 }
 

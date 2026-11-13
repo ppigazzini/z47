@@ -662,8 +662,8 @@ fn calcMax(maxOffset: u16) void {
         var y: real_t = undefined;
         var i: u16 = 0;
         while (@as(i32, i) < @as(i32, rows) - @as(i32, maxOffset)) : (i += 1) {
-            real34ToReal(@ptrCast(&stats.matrixElements.?[@as(usize, i) * cols]), &x);
-            real34ToReal(@ptrCast(&stats.matrixElements.?[@as(usize, i) * cols + 1]), &y);
+            real34ToReal(&stats.matrixElements.?[@as(usize, i) * cols], &x);
+            real34ToReal(&stats.matrixElements.?[@as(usize, i) * cols + 1], &y);
             _ = addMax(&x, &y);
         }
     }
@@ -683,8 +683,8 @@ fn calcMin(maxOffset: u16) void {
         var y: real_t = undefined;
         var i: u16 = 0;
         while (@as(i32, i) < @as(i32, rows) - @as(i32, maxOffset)) : (i += 1) {
-            real34ToReal(@ptrCast(&stats.matrixElements.?[@as(usize, i) * cols]), &x);
-            real34ToReal(@ptrCast(&stats.matrixElements.?[@as(usize, i) * cols + 1]), &y);
+            real34ToReal(&stats.matrixElements.?[@as(usize, i) * cols], &x);
+            real34ToReal(&stats.matrixElements.?[@as(usize, i) * cols + 1], &y);
             _ = addMin(&x, &y);
         }
     }
@@ -712,10 +712,10 @@ pub export fn calcSigma(maxOffset: u16) callconv(.c) void {
         clearRegisterLine(REGISTER_T, true, true); //   here, before the first one, and nothing of what is on screen is cut in half
         var i: u16 = 0;
         while (@as(i32, i) < @as(i32, rows) - @as(i32, maxOffset)) : (i += 1) {
-            abi.fmtBufZ(&aa, "{s}{s} ({d} of {d})", .{ std.mem.span(@as([*:0]const u8, @ptrCast(errorMessageOf(RECALC_SUMS)))), std.mem.span(@as([*c]const u8, @ptrCast(&statMx))), @as(u32, i), @as(u32, @bitCast(@as(i32, rows) - @as(i32, maxOffset))) });
+            abi.fmtBufZ(&aa, "{s}{s} ({d} of {d})", .{ std.mem.span(@as([*:0]const u8, errorMessageOf(RECALC_SUMS))), std.mem.span(@as([*c]const u8, &statMx)), @as(u32, i), @as(u32, @bitCast(@as(i32, rows) - @as(i32, maxOffset))) });
             frontier_graph_text.printStatus(0, &aa, timed);
-            real34ToReal(@ptrCast(&stats.matrixElements.?[@as(usize, i) * cols]), &x);
-            real34ToReal(@ptrCast(&stats.matrixElements.?[@as(usize, i) * cols + 1]), &y);
+            real34ToReal(&stats.matrixElements.?[@as(usize, i) * cols], &x);
+            real34ToReal(&stats.matrixElements.?[@as(usize, i) * cols + 1], &y);
             addSigma(&x, &y);
         }
     }
@@ -765,8 +765,8 @@ fn getLastRowStatsMatrix(x: *real_t, y: *real_t) void {
         rows = stats.header.matrixRows;
         cols = stats.header.matrixColumns;
         const lastRow = lastRowOfStats(stats.matrixElements.?, rows, cols);
-        real34ToReal(@ptrCast(&lastRow[0]), x);
-        real34ToReal(@ptrCast(&lastRow[1]), y);
+        real34ToReal(&lastRow[0], x);
+        real34ToReal(&lastRow[1], y);
     } else {
         frontier_error.displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE); // Invalid input data type for this operation
         if (comptime extra_info) {
@@ -797,8 +797,8 @@ fn AddtoStatsMatrix(x: *real_t, y: *real_t) bool {
         rows = stats.header.matrixRows;
         cols = stats.header.matrixColumns;
         const lastRow = lastRowOfStats(stats.matrixElements.?, rows, cols);
-        realToReal34(x, @ptrCast(&lastRow[0]));
-        realToReal34(y, @ptrCast(&lastRow[1]));
+        realToReal34(x, &lastRow[0]);
+        realToReal34(y, &lastRow[1]);
     } else {
         frontier_error.displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE); // Invalid input data type for this operation
         if (comptime extra_info) {
@@ -868,7 +868,7 @@ fn fnClHisto(deleteVariable: bool) calcRegister_t {
 pub export fn setStatisticalSumsUpdate(para: bool) callconv(.c) void {
     // if going off auto, or confirming it is still on auto off, clear sums
     if (!para) {
-        freeC47Blocks(@ptrCast(statisticalSumsPointer), @as(usize, @intCast(NUMBER_OF_STATISTICAL_SUMS)) * REAL_75_SIZE_IN_BLOCKS);
+        freeC47Blocks(statisticalSumsPointer, @as(usize, @intCast(NUMBER_OF_STATISTICAL_SUMS)) * REAL_75_SIZE_IN_BLOCKS);
         statisticalSumsPointer = null;
         if (lastErrorCode != ERROR_NONE) {
             return;
@@ -917,7 +917,7 @@ pub export fn fnClSigma(unusedButMandatoryParameter: u16) callconv(.c) void {
     drawHistogram = 0;
     histElementXorY = -1;
 
-    freeC47Blocks(@ptrCast(statisticalSumsPointer), @as(usize, @intCast(NUMBER_OF_STATISTICAL_SUMS)) * REAL_75_SIZE_IN_BLOCKS);
+    freeC47Blocks(statisticalSumsPointer, @as(usize, @intCast(NUMBER_OF_STATISTICAL_SUMS)) * REAL_75_SIZE_IN_BLOCKS);
     statisticalSumsPointer = null;
 }
 
@@ -1284,7 +1284,7 @@ pub export fn fnConvertStatsToHisto(statsVariableToHistogram: u16) callconv(.c) 
     } else {
         frontier_error.displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE); // Invalid input data type for this operation
         if (comptime extra_info) {
-            abi.fmtBufZ(errorMessage[0..512], "Wrong statistical matrix is selected: {s}!", .{std.mem.span(@as([*c]const u8, @ptrCast(&statMx)))});
+            abi.fmtBufZ(errorMessage[0..512], "Wrong statistical matrix is selected: {s}!", .{std.mem.span(@as([*c]const u8, &statMx))});
             moreInfoOnError("In function fnConvertStatsToHisto:", errorMessage);
         }
         return;
@@ -1308,7 +1308,7 @@ fn convertStatsMatrixToHistoMatrix(statsVariableToHistogram: u16) void {
     if (statMx[0] != 'S') {
         frontier_error.displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE); // Invalid input data type for this operation
         if (comptime extra_info) {
-            abi.fmtBufZ(errorMessage[0..512], "Wrong statistical matrix is selected: {s}!", .{std.mem.span(@as([*c]const u8, @ptrCast(&statMx)))});
+            abi.fmtBufZ(errorMessage[0..512], "Wrong statistical matrix is selected: {s}!", .{std.mem.span(@as([*c]const u8, &statMx))});
             moreInfoOnError("In function convertStatsMatrixToHistoMatrix:", errorMessage);
         }
         return;
@@ -1339,14 +1339,14 @@ fn convertStatsMatrixToHistoMatrix(statsVariableToHistogram: u16) void {
                 while (@as(i32, i) < NN) : (i += 1) {
                     var midpoint: real_t = undefined;
                     histogramMidpoint(i, NN, &lb, &hb, &midpoint);
-                    realToReal34(&midpoint, @ptrCast(&histo.matrixElements.?[@as(usize, i) * @as(u16, histo.header.matrixColumns)]));
-                    real34SetZero(@ptrCast(&histo.matrixElements.?[@as(usize, i) * @as(u16, histo.header.matrixColumns) + 1]));
+                    realToReal34(&midpoint, &histo.matrixElements.?[@as(usize, i) * @as(u16, histo.header.matrixColumns)]);
+                    real34SetZero(&histo.matrixElements.?[@as(usize, i) * @as(u16, histo.header.matrixColumns) + 1]);
                 }
                 linkToRealMatrixRegister(regStats, &stats); // redimMatrixRegister can move the STATS data
                 i = 0;
                 while (i < rows) : (i += 1) {
                     var t: real_t = undefined;
-                    real34ToReal(@ptrCast(&stats.matrixElements.?[@as(usize, i) * cols + @as(usize, @intCast(histElementXorY))]), &t); // from X or Y, depending
+                    real34ToReal(&stats.matrixElements.?[@as(usize, i) * cols + @as(usize, @intCast(histElementXorY))], &t); // from X or Y, depending
                     if (realCompareGreaterEqual(&t, &lb) and realCompareLessEqual(&t, &hb)) {
                         j = @intCast(NN - 1);
                         if (!realCompareEqual(&lb, &hb)) {
@@ -1358,7 +1358,7 @@ fn convertStatsMatrixToHistoMatrix(statsVariableToHistogram: u16) void {
                                 }
                             }
                         }
-                        real34Add(@ptrCast(&histo.matrixElements.?[@as(usize, j) * @as(u16, histo.header.matrixColumns) + 1]), const34_1(), @ptrCast(&histo.matrixElements.?[@as(usize, j) * @as(u16, histo.header.matrixColumns) + 1]));
+                        real34Add(&histo.matrixElements.?[@as(usize, j) * @as(u16, histo.header.matrixColumns) + 1], const34_1(), &histo.matrixElements.?[@as(usize, j) * @as(u16, histo.header.matrixColumns) + 1]);
                     }
                 }
             }
@@ -1379,7 +1379,7 @@ fn convertStatsMatrixToHistoMatrix(statsVariableToHistogram: u16) void {
         } else {
             frontier_error.displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE); // Invalid input data type for this operation
             if (comptime extra_info) {
-                abi.fmtBufZ(errorMessage[0..512], " Matrix columns not right: {s}!", .{std.mem.span(@as([*c]const u8, @ptrCast(&statMx)))});
+                abi.fmtBufZ(errorMessage[0..512], " Matrix columns not right: {s}!", .{std.mem.span(@as([*c]const u8, &statMx))});
                 moreInfoOnError("In function convertStatsMatrixToHistoMatrix:", errorMessage);
             }
             return;

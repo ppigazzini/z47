@@ -395,7 +395,7 @@ pub export fn convertLongIntegerToShortIntegerRegister(lgInt: *mpz_struct, base:
         regShortInt(destination).* = 0;
     } else {
         if (comptime is32) {
-            const d32: [*]u32 = @ptrCast(lgInt._mp_d);
+            const d32: [*]u32 = lgInt._mp_d;
             u64v = d32[0];
             if (absI(lgInt._mp_size) > 1) {
                 u64v |= @as(u64, d32[1]) << 32;
@@ -403,7 +403,7 @@ pub export fn convertLongIntegerToShortIntegerRegister(lgInt: *mpz_struct, base:
             overflow = absI(lgInt._mp_size) > 2 or (u64v & shortIntegerMask) != u64v;
             regShortInt(destination).* = u64v & shortIntegerMask;
         } else {
-            const d64: [*]u64 = @ptrCast(lgInt._mp_d);
+            const d64: [*]u64 = lgInt._mp_d;
             u64v = d64[0];
             overflow = absI(lgInt._mp_size) > 1 or (u64v & shortIntegerMask) != u64v;
             regShortInt(destination).* = u64v & shortIntegerMask;

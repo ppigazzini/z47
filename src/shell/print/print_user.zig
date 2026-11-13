@@ -110,12 +110,12 @@ const PrintUserContext = struct {
     }
 
     fn shouldSkipLabel(self: *PrintUserContext) bool {
-        return frontier_print.z47_frontier_user_variable_should_skip(@ptrCast(&self.label));
+        return frontier_print.z47_frontier_user_variable_should_skip(&self.label);
     }
 
     fn printVariableLine(self: *PrintUserContext) void {
-        const variable = frontier_print.z47_frontier_find_named_variable_register(@ptrCast(&self.label));
-        frontier_print.printReg(@intCast(variable), @ptrCast(&self.label), true, LINE_FULL, false);
+        const variable = frontier_print.z47_frontier_find_named_variable_register(&self.label);
+        frontier_print.printReg(@intCast(variable), &self.label, true, LINE_FULL, false);
         self.user_variable_found = true;
     }
 
@@ -162,7 +162,7 @@ const PrintUserContext = struct {
 
     fn printProgramLabel(self: *PrintUserContext) void {
         frontier_print.printLine(frontier_print.z47_frontier_program_label_prefix(), 0);
-        frontier_print.printLine(@ptrCast(&self.label), 0);
+        frontier_print.printLine(&self.label, 0);
         frontier_print.printLine(frontier_print.z47_frontier_program_label_suffix(), if (self.first_program_label) 0 else 1);
 
         if (self.first_program_label) {

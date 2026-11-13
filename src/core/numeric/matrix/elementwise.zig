@@ -45,11 +45,11 @@ inline fn registerComplex34Data(reg: calcRegister_t) *complex34_t {
     return abi.registerComplex34Aligned(reg);
 }
 inline fn rmEl(m: *const real34Matrix_t, i: usize) *real34_t {
-    const e: [*]real34_t = @ptrCast(m.matrixElements);
+    const e: [*]real34_t = m.matrixElements;
     return &e[i];
 }
 inline fn cmEl(m: *const complex34Matrix_t, i: usize) *complex34_t {
-    const e: [*]complex34_t = @ptrCast(m.matrixElements);
+    const e: [*]complex34_t = m.matrixElements;
     return &e[i];
 }
 inline fn realloc(reg: calcRegister_t, dt: u32) void {

@@ -1501,8 +1501,8 @@ fn _parseWord(strPtr: [*c]u8, parseMode: u16, parserHint: u16, mvarBuffer: [*c]a
                         }
                     }
                 }
-                if (validateName(@ptrCast(strPtr))) {
-                    const variable: calcRegister_t = findOrAllocateNamedVariable(@ptrCast(strPtr));
+                if (validateName(strPtr)) {
+                    const variable: calcRegister_t = findOrAllocateNamedVariable(strPtr);
                     _ = xcopy(bufPtr, strPtr, @intCast(stringByteLength(strPtr) + 1));
                     bufPtr += @as(usize, @intCast(stringByteLength(strPtr) + 1));
                     bufPtr[0] = 0;
@@ -1566,8 +1566,8 @@ fn _parseWord(strPtr: [*c]u8, parseMode: u16, parserHint: u16, mvarBuffer: [*c]a
                         }
                     }
                 }
-                if (validateName(@ptrCast(strPtr))) {
-                    reallyRunFunction(ITM_RCL, @bitCast(@as(i16, @truncate(findNamedVariable(@ptrCast(strPtr))))));
+                if (validateName(strPtr)) {
+                    reallyRunFunction(ITM_RCL, @bitCast(@as(i16, @truncate(findNamedVariable(strPtr)))));
                     if (getRegisterDataType(REGISTER_X) == dtComplex34) {
                         _pushNumericStack(mvarBuffer, registerReal34Ptr(REGISTER_X), registerImag34Ptr(REGISTER_X));
                     } else {
@@ -1588,7 +1588,7 @@ fn _parseWord(strPtr: [*c]u8, parseMode: u16, parserHint: u16, mvarBuffer: [*c]a
                     }
                     jj -= 1;
                 }
-                stringToReal34(@ptrCast(strPtr), &val);
+                stringToReal34(strPtr, &val);
                 _pushNumericStack(mvarBuffer, &val, const34_0());
             } else if (parserHint == PARSER_HINT_OPERATOR) {
                 if (compareString("+", strPtr, CMP_BINARY) == 0) {

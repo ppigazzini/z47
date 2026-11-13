@@ -658,11 +658,11 @@ pub export fn getItemCatalogName(itemNr: i16) callconv(.c) [*c]u8 {
         tbPtr[0] = 0;
         itemName = tmpStringLabelOrVariableName;
     } else if (itemNr >= ASSIGN_RESERVED_VARIABLES) { // Reserved variable
-        itemName = @ptrCast(@constCast(&allReservedVariables[@intCast(itemNr - ASSIGN_RESERVED_VARIABLES)].reservedVariableName[1]));
+        itemName = @constCast(&allReservedVariables[@intCast(itemNr - ASSIGN_RESERVED_VARIABLES)].reservedVariableName[1]);
     } else if (itemNr >= ASSIGN_NAMED_VARIABLES) { // User variable
-        itemName = @ptrCast(&allNamedVariables[@intCast(itemNr - ASSIGN_NAMED_VARIABLES)].variableName[1]);
+        itemName = &allNamedVariables[@intCast(itemNr - ASSIGN_NAMED_VARIABLES)].variableName[1];
     } else if (itemNr <= ASSIGN_USER_MENU) { // User menu
-        itemName = @ptrCast(&userMenus[@intCast(ASSIGN_USER_MENU - itemNr)].menuName);
+        itemName = &userMenus[@intCast(ASSIGN_USER_MENU - itemNr)].menuName;
     } else { // unknown item, return empty string
         tmpStringLabelOrVariableName[0] = 0;
         itemName = tmpStringLabelOrVariableName;

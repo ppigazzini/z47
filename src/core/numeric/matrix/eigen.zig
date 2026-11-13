@@ -217,7 +217,7 @@ fn BigReal(comptime digits: u32) linksection(runtime.code_section) type {
     return struct {
         buf: [realSizeInBytes(digits)]u8 align(4) = undefined,
         inline fn ptr(self: *@This()) *real_t {
-            return @ptrCast(&self.buf);
+            return &self.buf;
         }
     };
 }
@@ -2002,12 +2002,12 @@ fn realEigenvalues(matrix: *const real34Matrix_t, res: *real34Matrix_t, ires: ?*
             }
         }
         if (@intFromPtr(matrix) == @intFromPtr(res) or runtime.realMatrixInit(res, size, size)) {
-            const resElems: [*]real34_t = @ptrCast(res.matrixElements);
+            const resElems: [*]real34_t = res.matrixElements;
             i = 0;
             while (i < sz) : (i += 1) runtime.realToReal34(&eig[i * sz + i].Real, &resElems[i * sz + i]);
             if (isComplex and ires != null) {
                 if (@intFromPtr(matrix) == @intFromPtr(ires.?) or @intFromPtr(res) == @intFromPtr(ires.?) or runtime.realMatrixInit(ires.?, size, size)) {
-                    const iresElems: [*]real34_t = @ptrCast(ires.?.matrixElements);
+                    const iresElems: [*]real34_t = ires.?.matrixElements;
                     i = 0;
                     while (i < sz) : (i += 1) runtime.realToReal34(&eig[i * sz + i].Imag, &iresElems[i * sz + i]);
                 } else {
@@ -2040,7 +2040,7 @@ fn complexEigenvalues(matrix: *const complex34Matrix_t, res: *complex34Matrix_t)
         }
         calculateEigenvalues(a, scratch, eig, size, true, true, &runtime.ctxtReal75);
         if (@intFromPtr(matrix) == @intFromPtr(res) or runtime.complexMatrixInit(res, size, size)) {
-            const resElems: [*]runtime.complex34_t = @ptrCast(res.matrixElements);
+            const resElems: [*]runtime.complex34_t = res.matrixElements;
             i = 0;
             while (i < sz) : (i += 1) {
                 runtime.realToReal34(&eig[i * sz + i].Real, &resElems[i * sz + i].real);
@@ -2099,9 +2099,9 @@ pub export fn fnEigenvalues(unusedParamButMandatory: u16) linksection(runtime.co
                 if (ires.matrixElements != null) {
                     var cres: complex34Matrix_t = undefined;
                     if (runtime.complexMatrixInit(&cres, res.header.matrixRows, res.header.matrixColumns)) {
-                        const resElems: [*]real34_t = @ptrCast(res.matrixElements);
-                        const iresElems: [*]real34_t = @ptrCast(ires.matrixElements);
-                        const cresElems: [*]runtime.complex34_t = @ptrCast(cres.matrixElements);
+                        const resElems: [*]real34_t = res.matrixElements;
+                        const iresElems: [*]real34_t = ires.matrixElements;
+                        const cresElems: [*]runtime.complex34_t = cres.matrixElements;
                         const n: usize = @as(usize, x.header.matrixRows) * x.header.matrixColumns;
                         var i: usize = 0;
                         while (i < n) : (i += 1) {
@@ -2213,8 +2213,8 @@ fn extractDiagonalToRowReal34Matrix(source: *const real34Matrix_t, dest: *real34
     const size: u16 = source.header.matrixRows;
     const sz: usize = size;
     if (runtime.realMatrixInit(dest, 1, size)) {
-        const srcElems: [*]const real34_t = @ptrCast(source.matrixElements);
-        const dstElems: [*]real34_t = @ptrCast(dest.matrixElements);
+        const srcElems: [*]const real34_t = source.matrixElements;
+        const dstElems: [*]real34_t = dest.matrixElements;
         var i: usize = 0;
         while (i < sz) : (i += 1) {
             real34Plus(&srcElems[i * sz + i], &dstElems[i]);
@@ -2228,8 +2228,8 @@ fn extractDiagonalToRowComplex34Matrix(source: *const complex34Matrix_t, dest: *
     const size: u16 = source.header.matrixRows;
     const sz: usize = size;
     if (runtime.complexMatrixInit(dest, 1, size)) {
-        const srcElems: [*]const runtime.complex34_t = @ptrCast(source.matrixElements);
-        const dstElems: [*]runtime.complex34_t = @ptrCast(dest.matrixElements);
+        const srcElems: [*]const runtime.complex34_t = source.matrixElements;
+        const dstElems: [*]runtime.complex34_t = dest.matrixElements;
         var i: usize = 0;
         while (i < sz) : (i += 1) {
             real34Plus(&srcElems[i * sz + i].real, &dstElems[i].real);
@@ -2250,7 +2250,7 @@ fn extractDiagonalToRowComplex34Matrix(source: *const complex34Matrix_t, dest: *
 pub export fn cpxLinearEqn(a: [*]const cplx_t, b: [*]const cplx_t, r: [*]cplx_t, size: u16, toleranceExponent: i32, realContext: *realContext_t) linksection(runtime.code_section) callconv(.c) void {
     const blocks: usize = @as(usize, size) * size * realSizeInBlocks(75) * 2;
     if (allocCplx(blocks)) |inv_a| {
-        _ = runtime.xcopy(@ptrCast(inv_a), @ptrCast(a), @intCast(blocks << 2)); // TO_BYTES, BPB=2
+        _ = runtime.xcopy(inv_a, a, @intCast(blocks << 2)); // TO_BYTES, BPB=2
         if (math_matrix_complex_core.invCpxMat(inv_a, size, toleranceExponent, realContext)) {
             math_matrix_complex_core.mulCpxMat(inv_a, b, size, size, 1, r, realContext);
         } else if (runtime.lastErrorCode != runtime.ERROR_RAM_FULL) {
@@ -2954,12 +2954,12 @@ fn realEigenvectors(matrix: *const real34Matrix_t, res: *real34Matrix_t, ires: ?
         normaliseEigenvectorColumns(r, size, &runtime.ctxtReal75);
 
         if (@intFromPtr(matrix) == @intFromPtr(res) or runtime.realMatrixInit(res, size, size)) {
-            const resElems: [*]real34_t = @ptrCast(res.matrixElements);
+            const resElems: [*]real34_t = res.matrixElements;
             i = 0;
             while (i < sz * sz) : (i += 1) runtime.realToReal34(&r[i].Real, &resElems[i]);
             if (isComplex and ires != null) {
                 if (@intFromPtr(matrix) == @intFromPtr(ires.?) or @intFromPtr(res) == @intFromPtr(ires.?) or runtime.realMatrixInit(ires.?, size, size)) {
-                    const iresElems: [*]real34_t = @ptrCast(ires.?.matrixElements);
+                    const iresElems: [*]real34_t = ires.?.matrixElements;
                     i = 0;
                     while (i < sz * sz) : (i += 1) runtime.realToReal34(&r[i].Imag, &iresElems[i]);
                 } else {
@@ -3029,7 +3029,7 @@ fn complexEigenvectors(matrix: *const complex34Matrix_t, res: *complex34Matrix_t
         normaliseEigenvectorColumns(r, size, &runtime.ctxtReal75);
 
         if (@intFromPtr(matrix) == @intFromPtr(res) or runtime.complexMatrixInit(res, size, size)) {
-            const resElems: [*]runtime.complex34_t = @ptrCast(res.matrixElements);
+            const resElems: [*]runtime.complex34_t = res.matrixElements;
             i = 0;
             while (i < sz * sz) : (i += 1) {
                 runtime.realToReal34(&r[i].Real, &resElems[i].real);
@@ -3064,7 +3064,7 @@ fn createEigenVectorIf1x1(rows: u16, cols: u16, isComplex: bool) linksection(run
             runtime.fnDrop(runtime.NOPARAM);
             var cmatrix: complex34Matrix_t = undefined;
             runtime.linkToComplexMatrixRegister(runtime.REGISTER_X, &cmatrix);
-            const ce: [*]runtime.complex34_t = @ptrCast(cmatrix.matrixElements);
+            const ce: [*]runtime.complex34_t = cmatrix.matrixElements;
             runtime.realToReal34(const_1(), &ce[0].real);
             runtime.real34SetZero(&ce[0].imag);
         } else {
@@ -3072,7 +3072,7 @@ fn createEigenVectorIf1x1(rows: u16, cols: u16, isComplex: bool) linksection(run
             runtime.fnDrop(runtime.NOPARAM);
             var rmatrix: real34Matrix_t = undefined;
             runtime.linkToRealMatrixRegister(runtime.REGISTER_X, &rmatrix);
-            const re: [*]real34_t = @ptrCast(rmatrix.matrixElements);
+            const re: [*]real34_t = rmatrix.matrixElements;
             runtime.realToReal34(const_1(), &re[0]);
         }
         runtime.adjustResult(runtime.REGISTER_X, false, true, runtime.REGISTER_X, -1, -1);
@@ -3124,9 +3124,9 @@ pub export fn fnEigenvectors(unusedParamButMandatory: u16) linksection(runtime.c
                     if (ires.matrixElements != null) {
                         var cres: complex34Matrix_t = undefined;
                         if (runtime.complexMatrixInit(&cres, res.header.matrixRows, res.header.matrixColumns)) {
-                            const resElems: [*]real34_t = @ptrCast(res.matrixElements);
-                            const iresElems: [*]real34_t = @ptrCast(ires.matrixElements);
-                            const cresElems: [*]runtime.complex34_t = @ptrCast(cres.matrixElements);
+                            const resElems: [*]real34_t = res.matrixElements;
+                            const iresElems: [*]real34_t = ires.matrixElements;
+                            const cresElems: [*]runtime.complex34_t = cres.matrixElements;
                             const n: usize = @as(usize, x.header.matrixRows) * x.header.matrixColumns;
                             var i: usize = 0;
                             while (i < n) : (i += 1) {
@@ -3252,20 +3252,20 @@ fn verifySqrtMatrix(inputReal: ?*const real34Matrix_t, resultReal: ?*const real3
     var residual = std.mem.zeroes(complex34Matrix_t);
 
     if (runtime.complexMatrixInit(&inputCopy, rows, cols) and runtime.complexMatrixInit(&resultCopy, rows, cols)) {
-        const inC: [*]runtime.complex34_t = @ptrCast(inputCopy.matrixElements);
-        const reC: [*]runtime.complex34_t = @ptrCast(resultCopy.matrixElements);
+        const inC: [*]runtime.complex34_t = inputCopy.matrixElements;
+        const reC: [*]runtime.complex34_t = resultCopy.matrixElements;
         var i: usize = 0;
         while (i < total) : (i += 1) {
             if (isComplex) {
-                const ie: [*]const runtime.complex34_t = @ptrCast(inputComplex.?.matrixElements);
-                const re: [*]const runtime.complex34_t = @ptrCast(resultComplex.?.matrixElements);
+                const ie: [*]const runtime.complex34_t = inputComplex.?.matrixElements;
+                const re: [*]const runtime.complex34_t = resultComplex.?.matrixElements;
                 inC[i].real = ie[i].real;
                 inC[i].imag = ie[i].imag;
                 reC[i].real = re[i].real;
                 reC[i].imag = re[i].imag;
             } else {
-                const ie: [*]const real34_t = @ptrCast(inputReal.?.matrixElements);
-                const re: [*]const real34_t = @ptrCast(resultReal.?.matrixElements);
+                const ie: [*]const real34_t = inputReal.?.matrixElements;
+                const re: [*]const real34_t = resultReal.?.matrixElements;
                 inC[i].real = ie[i];
                 reC[i].real = re[i];
                 runtime.real34SetZero(&inC[i].imag);
@@ -3338,7 +3338,7 @@ fn sqrtSymmetricRealMatrix2x2(matrix: *const real34Matrix_t, res: *real34Matrix_
         return false;
     }
 
-    const re: [*]real34_t = @ptrCast(res.matrixElements);
+    const re: [*]real34_t = res.matrixElements;
     realAdd(&a, &rootDeterminant, &value, &runtime.ctxtReal39);
     realDivide(&value, &denominator, &value, &runtime.ctxtReal39);
     runtime.realToReal34(&value, &re[0]);
@@ -3376,7 +3376,7 @@ fn sqrtRealMatrixEigen(matrix: *const real34Matrix_t, res: *real34Matrix_t) link
             runtime.euclideanNormRealMatrix(matrix, 2, &inputNorm34);
             runtime.real34ToReal(&inputNorm34, &scale);
             realMultiply(&scale, const_1e_34(), &tol, &runtime.ctxtReal39);
-            const li: [*]const real34_t = @ptrCast(LambdaImag.matrixElements);
+            const li: [*]const real34_t = LambdaImag.matrixElements;
             var hasGenuine = false;
             var i: usize = 0;
             while (i < nn) : (i += 1) {
@@ -3393,7 +3393,7 @@ fn sqrtRealMatrixEigen(matrix: *const real34Matrix_t, res: *real34Matrix_t) link
             }
         }
 
-        const lam: [*]real34_t = @ptrCast(Lambda.matrixElements);
+        const lam: [*]real34_t = Lambda.matrixElements;
         var i: usize = 0;
         while (i < nn) : (i += 1) {
             var a: real_t = undefined;
@@ -3419,7 +3419,7 @@ fn sqrtRealMatrixEigen(matrix: *const real34Matrix_t, res: *real34Matrix_t) link
             runtime.euclideanNormRealMatrix(matrix, 2, &inputNorm34);
             runtime.real34ToReal(&inputNorm34, &scale);
             realMultiply(&scale, const_1e_34(), &tol, &runtime.ctxtReal39);
-            const qi: [*]const real34_t = @ptrCast(QImag.matrixElements);
+            const qi: [*]const real34_t = QImag.matrixElements;
             var hasGenuine = false;
             var k: usize = 0;
             while (k < nn * nn) : (k += 1) {
@@ -3482,7 +3482,7 @@ fn sqrtComplexMatrixEigen(matrix: *const complex34Matrix_t, res: *complex34Matri
             failed = true;
             break :blk;
         }
-        const lam: [*]runtime.complex34_t = @ptrCast(Lambda.matrixElements);
+        const lam: [*]runtime.complex34_t = Lambda.matrixElements;
         var i: usize = 0;
         while (i < nn) : (i += 1) {
             var a: cplx_t = undefined;
@@ -3543,14 +3543,14 @@ fn sqrtRealMatrix(matrix: *const real34Matrix_t, res: *real34Matrix_t) linksecti
         if (runtime.realIsNegative(&a)) return;
         if (!runtime.realMatrixInit(res, 1, 1)) return;
         realSquareRoot(&a, &a, &runtime.ctxtReal39);
-        const re: [*]real34_t = @ptrCast(res.matrixElements);
+        const re: [*]real34_t = res.matrixElements;
         runtime.realToReal34(&a, &re[0]);
         return;
     }
 
     if (isRealMatrixDiagonal(matrix)) {
         if (!runtime.realMatrixInit(res, n, n)) return;
-        const re: [*]real34_t = @ptrCast(res.matrixElements);
+        const re: [*]real34_t = res.matrixElements;
         var i: usize = 0;
         while (i < nn) : (i += 1) {
             runtime.real34ToReal(&elems[i * nn + i], &a);
@@ -3596,7 +3596,7 @@ fn sqrtComplexMatrix(matrix: *const complex34Matrix_t, res: *complex34Matrix_t) 
     if (isComplexMatrixDiagonal(matrix)) {
         if (!runtime.complexMatrixInit(res, n, n)) return;
         const me: [*]const runtime.complex34_t = abi.matrixConstComplexElems(matrix);
-        const re: [*]runtime.complex34_t = @ptrCast(res.matrixElements);
+        const re: [*]runtime.complex34_t = res.matrixElements;
         var i: usize = 0;
         while (i < nn) : (i += 1) {
             var a: cplx_t = undefined;
@@ -3666,7 +3666,7 @@ pub export fn fnMatrixSquareRoot(unusedParamButMandatory: u16) linksection(runti
                         if (runtime.lastErrorCode == runtime.ERROR_NONE) {
                             if (cres.matrixElements != null) {
                                 const total: usize = @as(usize, cres.header.matrixRows) * cres.header.matrixColumns;
-                                const ce: [*]runtime.complex34_t = @ptrCast(cres.matrixElements);
+                                const ce: [*]runtime.complex34_t = cres.matrixElements;
                                 var allRealResult = true;
                                 var i: usize = 0;
                                 while (i < total) : (i += 1) {
@@ -3678,7 +3678,7 @@ pub export fn fnMatrixSquareRoot(unusedParamButMandatory: u16) linksection(runti
                                 if (allRealResult) {
                                     var rres: real34Matrix_t = undefined;
                                     if (runtime.realMatrixInit(&rres, cres.header.matrixRows, cres.header.matrixColumns)) {
-                                        const re: [*]real34_t = @ptrCast(rres.matrixElements);
+                                        const re: [*]real34_t = rres.matrixElements;
                                         i = 0;
                                         while (i < total) : (i += 1) re[i] = ce[i].real;
                                         runtime.convertReal34MatrixToReal34MatrixRegister(&rres, runtime.REGISTER_X);
@@ -3769,11 +3769,11 @@ pub export fn real_QR_decomposition(matrix: *const real34Matrix_t, q: *real34Mat
         if (runtime.lastErrorCode == runtime.ERROR_NONE) {
             const rr: usize = @as(usize, rows) * rows;
             if (runtime.realMatrixInit(q, rows, rows)) {
-                const qe: [*]real34_t = @ptrCast(q.matrixElements);
+                const qe: [*]real34_t = q.matrixElements;
                 i = 0;
                 while (i < rr) : (i += 1) runtime.realToReal34(&matq[i].Real, &qe[i]);
                 if (runtime.realMatrixInit(r, rows, rows)) {
-                    const re: [*]real34_t = @ptrCast(r.matrixElements);
+                    const re: [*]real34_t = r.matrixElements;
                     i = 0;
                     while (i < rr) : (i += 1) runtime.realToReal34(&matr[i].Real, &re[i]);
                 } else {
@@ -3807,14 +3807,14 @@ pub export fn complex_QR_decomposition(matrix: *const complex34Matrix_t, q: *com
         }
         QR_decomposition_householder(mat, rows, matq, matr, &runtime.ctxtReal75);
         if (runtime.complexMatrixInit(q, rows, rows)) {
-            const qe: [*]runtime.complex34_t = @ptrCast(q.matrixElements);
+            const qe: [*]runtime.complex34_t = q.matrixElements;
             i = 0;
             while (i < n2) : (i += 1) {
                 runtime.realToReal34(&matq[i].Real, &qe[i].real);
                 runtime.realToReal34(&matq[i].Imag, &qe[i].imag);
             }
             if (runtime.complexMatrixInit(r, rows, rows)) {
-                const re: [*]runtime.complex34_t = @ptrCast(r.matrixElements);
+                const re: [*]runtime.complex34_t = r.matrixElements;
                 i = 0;
                 while (i < n2) : (i += 1) {
                     runtime.realToReal34(&matr[i].Real, &re[i].real);

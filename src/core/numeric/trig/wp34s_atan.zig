@@ -773,7 +773,7 @@ fn doAtan2(y: *const real_t, x: *const real_t, atan: *real_t, r: *real_t, t: *re
     }
 
     realDivide(y, x, t, realContext);
-    C47_WP34S_Atan(@ptrCast(t), @ptrCast(r), realContext);
+    C47_WP34S_Atan(t, r, realContext);
     if (xNeg) {
         realCopy(pi_d(realContext.digits), t);
         if (yNeg) {

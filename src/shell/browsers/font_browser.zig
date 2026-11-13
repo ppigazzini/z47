@@ -30,7 +30,7 @@ const videoMode_t = c_int;
 const glyph_t = abi.Glyph;
 const font_t = abi.Font;
 inline fn glyphsOf(font: *const font_t) [*]const glyph_t {
-    return @ptrCast(&font.glyphs);
+    return &font.glyphs;
 }
 
 // ---------------------------------------------------------------------------

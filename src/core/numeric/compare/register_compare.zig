@@ -341,7 +341,7 @@ fn compareMatrix01(regist: u16, mode: u8, type_x: u32) void {
     var m_real: runtime.real34Matrix_t = undefined;
     var actual_mode: u8 = COMPARE_MODE_NOT_EQUAL;
     var zero34: runtime.real34_t = undefined;
-    const r: *const runtime.real34_t = @ptrCast(runtime.registerReal34Ptr(asRegister(regist)));
+    const r: *const runtime.real34_t = runtime.registerReal34Ptr(asRegister(regist));
 
     _ = decQuadZero(&zero34);
 

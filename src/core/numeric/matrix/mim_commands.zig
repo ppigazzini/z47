@@ -56,7 +56,7 @@ inline fn realCopy(source: *const real_t, destination: *real_t) void {
 const realIsPositive = math_real_predicates.realIsPositive;
 
 inline fn rmEl(m: *const real34Matrix_t, i: usize) *real34_t {
-    const e: [*]real34_t = @ptrCast(m.matrixElements);
+    const e: [*]real34_t = m.matrixElements;
     return &e[i];
 }
 
@@ -77,7 +77,7 @@ inline fn cmElAt(m: *const complex34Matrix_t, index: isize) *complex34_t {
     return @ptrFromInt(@intFromPtr(m.matrixElements) +% off);
 }
 inline fn cmEl(m: *const complex34Matrix_t, i: usize) *complex34_t {
-    const e: [*]complex34_t = @ptrCast(m.matrixElements);
+    const e: [*]complex34_t = m.matrixElements;
     return &e[i];
 }
 inline fn truncToU16(v: i32) u16 {

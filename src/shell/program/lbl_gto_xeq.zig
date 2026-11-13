@@ -428,7 +428,7 @@ inline fn toBytes(n: u16) u32 {
 // TO_PCMEMPTR / TO_C47MEMPTR (ram is uint32_t*; offset in u32 words).
 inline fn toPcMemPtr(p: u16) ?*anyopaque {
     if (p == C47_NULL) return null;
-    return @ptrCast(&ram[p]);
+    return &ram[p];
 }
 inline fn toC47MemPtr(p: ?*const anyopaque) u16 {
     const ptr = p orelse return C47_NULL;
@@ -1042,12 +1042,12 @@ fn _putLiteral(literalAddress_arg: [*c]u8) void {
             setSystemFlag(FLAG_ASLIFT);
             _ = reallocateRegister(REGISTER_X, dtShortInteger, 0, literalAddress[0]);
             literalAddress += 1;
-            _ = frontier_char_string.xcopy(getRegisterDataPointer(REGISTER_X), @ptrCast(literalAddress), toBytes(SHORT_INTEGER_SIZE_IN_BLOCKS));
+            _ = frontier_char_string.xcopy(getRegisterDataPointer(REGISTER_X), literalAddress, toBytes(SHORT_INTEGER_SIZE_IN_BLOCKS));
         },
 
         BINARY_REAL34 => {
             var realLiteral: real34_t = undefined;
-            _ = frontier_char_string.xcopy(@ptrCast(&realLiteral), @ptrCast(literalAddress), REAL34_SIZE_IN_BYTES);
+            _ = frontier_char_string.xcopy(&realLiteral, literalAddress, REAL34_SIZE_IN_BYTES);
             liftStack();
             setSystemFlag(FLAG_ASLIFT);
             frontier_register_value_conversions.convertReal34ToReal34Register(&realLiteral, REGISTER_X);
@@ -1058,8 +1058,8 @@ fn _putLiteral(literalAddress_arg: [*c]u8) void {
             liftStack();
             setSystemFlag(FLAG_ASLIFT);
             _ = reallocateRegister(REGISTER_X, dtComplex34, 0, @bitCast(amNone));
-            _ = frontier_char_string.xcopy(@ptrCast(&complexLiteral.real), @ptrCast(literalAddress), REAL34_SIZE_IN_BYTES);
-            _ = frontier_char_string.xcopy(@ptrCast(&complexLiteral.imag), @ptrCast(literalAddress + REAL34_SIZE_IN_BYTES), REAL34_SIZE_IN_BYTES);
+            _ = frontier_char_string.xcopy(&complexLiteral.real, literalAddress, REAL34_SIZE_IN_BYTES);
+            _ = frontier_char_string.xcopy(&complexLiteral.imag, literalAddress + REAL34_SIZE_IN_BYTES, REAL34_SIZE_IN_BYTES);
             complex34Copy(&complexLiteral, regComplex34(REGISTER_X));
         },
 
@@ -1151,7 +1151,7 @@ fn _putLiteral(literalAddress_arg: [*c]u8) void {
             liftStack();
             setSystemFlag(FLAG_ASLIFT);
             _ = reallocateRegister(REGISTER_X, dtString, toBlocks(@as(u32, @intCast(stringByteLength(tmpStringLabelOrVariableName) + 1))), @bitCast(amNone));
-            _ = frontier_char_string.xcopy(@ptrCast(regStringData(REGISTER_X)), @ptrCast(tmpStringLabelOrVariableName), @intCast(stringByteLength(tmpStringLabelOrVariableName) + 1));
+            _ = frontier_char_string.xcopy(regStringData(REGISTER_X), tmpStringLabelOrVariableName, @intCast(stringByteLength(tmpStringLabelOrVariableName) + 1));
         },
 
         STRING_DATE => {

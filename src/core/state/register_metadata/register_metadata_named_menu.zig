@@ -22,7 +22,7 @@ pub fn userMenuName(index: u32) [*c]const u8 {
         return "";
     }
 
-    return @ptrCast(&userMenus[index].menuName[0]);
+    return &userMenus[index].menuName[0];
 }
 
 pub fn namedVariableName(index: u16) [*c]const u8 {
@@ -31,7 +31,7 @@ pub fn namedVariableName(index: u16) [*c]const u8 {
     }
 
     const headers = allNamedVariables orelse return "";
-    return @ptrCast(&headers[index].variableName[1]);
+    return &headers[index].variableName[1];
 }
 
 pub fn removeNamedVariableRecallAssignment(index: u16) void {
@@ -40,5 +40,5 @@ pub fn removeNamedVariableRecallAssignment(index: u16) void {
     }
 
     const headers = allNamedVariables orelse return;
-    removeUserItemAssignments(@intCast(ITM_RCL), @ptrCast(&headers[index].variableName[1]));
+    removeUserItemAssignments(@intCast(ITM_RCL), &headers[index].variableName[1]);
 }

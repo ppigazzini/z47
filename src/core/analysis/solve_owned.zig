@@ -540,7 +540,7 @@ pub export fn fnSolveVar(unusedButMandatoryParameter: u16) linksection(runtime.c
         return;
     }
     const variable_str: [*c]u8 = getNthString(dynamic.menuContent, dynamicMenuItem);
-    const regist: u16 = @bitCast(@as(i16, @truncate(findOrAllocateNamedVariable(@ptrCast(variable_str)))));
+    const regist: u16 = @bitCast(@as(i16, @truncate(findOrAllocateNamedVariable(variable_str))));
     const nameLength: u16 = @intCast(stringByteLength(variable_str) + 1);
     if (currentMvarLabel != INVALID_VARIABLE) {
         if ((currentSolverStatus & SOLVER_STATUS_INTERACTIVE) != 0) { // MNU_MVAR was displayed by the Solver

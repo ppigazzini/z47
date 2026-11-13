@@ -562,7 +562,7 @@ fn reportFactorialArgument(comptime function_name: [*:0]const u8) linksection(ru
     }
     tmpString[length] = ')';
     tmpString[length + 1] = 0;
-    runtime.moreInfoOnError(function_name, @ptrCast(tmpString), null, null);
+    runtime.moreInfoOnError(function_name, tmpString, null, null);
 }
 
 // Preallocation size estimate used by the LINUX branch of factLonI

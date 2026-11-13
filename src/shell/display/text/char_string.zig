@@ -995,8 +995,8 @@ pub extern fn xcopy(dest: ?*anyopaque, source: ?*const anyopaque, nIn: u32) call
 // stringCopy is the macro, so this symbol must not exist / would be unused).
 fn stringCopyWindows(dest: [*c]u8, source: [*c]const u8) callconv(.c) [*c]u8 {
     const l: u32 = @intCast(stringByteLength(source));
-    const p: [*c]u8 = @ptrCast(xcopy(dest, source, l + 1));
-    return p + @as(usize, l);
+    _ = xcopy(dest, source, l + 1); // xcopy returns dest
+    return dest + @as(usize, l);
 }
 
 // charString.h's stringCopy for every owner that copies a string and wants the
@@ -1047,8 +1047,8 @@ extern var gapItemRadix: u16;
 // carries a wide glyph, in which case the marker to look for is the normalized
 // RADIX34_MARK_STRING rather than Rx itself.
 fn radixMarker() [*]const u8 {
-    const rx: [*]const u8 = @ptrCast(&indexOfItems[gapItemRadix].itemSoftmenuName);
-    return if ((rx[0] & 0x80) != 0) @ptrCast(gap_char_codec.gapChar1Radix(rx)) else rx;
+    const rx: [*]const u8 = &indexOfItems[gapItemRadix].itemSoftmenuName;
+    return if ((rx[0] & 0x80) != 0) gap_char_codec.gapChar1Radix(rx) else rx;
 }
 
 pub export fn stripTrailingRadix(str: [*c]u8) callconv(.c) void {

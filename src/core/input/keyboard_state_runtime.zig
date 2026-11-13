@@ -281,7 +281,7 @@ const SIZE_OF_EACH_BUG_SCREEN_MESSAGE: usize = 100;
 const bugMsgCalcModeWhileProcKey: usize = 1;
 const commonBugScreenMessages = @extern([*c]const [SIZE_OF_EACH_BUG_SCREEN_MESSAGE]u8, .{ .name = "commonBugScreenMessages" });
 fn bugFormat(row: usize) [*c]const u8 {
-    return @ptrCast(&commonBugScreenMessages[row]);
+    return &commonBugScreenMessages[row];
 }
 pub fn bugScreenWhileProcKey(func_name: [*:0]const u8, key_str: [*:0]const u8) void {
     _ = sprintf(errorMessage, bugFormat(bugMsgCalcModeWhileProcKey), func_name, @as(c_int, calcMode), key_str);
@@ -805,7 +805,7 @@ pub fn itemFuncIsMultiplySI(item: i16) bool {
     return itemFuncEquals(item, &fnMultiplySI);
 }
 pub fn addItemToBufferPtr() ?*const anyopaque {
-    return @ptrCast(&addItemToBuffer);
+    return &addItemToBuffer;
 }
 pub fn indexOfItemsCatalogName(item: i16) [*c]const u8 {
     return &indexOfItems[@intCast(item)].itemCatalogName;

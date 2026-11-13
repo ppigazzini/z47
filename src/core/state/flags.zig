@@ -159,7 +159,7 @@ const displayBugScreen = abi.host.showBugScreen; // routed through the host-call
 /// bug screen rather than raising an error code.
 fn reportLocalFlagNotDefined(who: [*:0]const u8, local_flag: u16) void {
     runtime.formatNotDefinedBugScreen(
-        @ptrCast(&commonBugScreenMessages[bugMsgNotDefinedMustBe]),
+        &commonBugScreenMessages[bugMsgNotDefinedMustBe],
         who,
         "local flag",
         @as(c_int, local_flag),

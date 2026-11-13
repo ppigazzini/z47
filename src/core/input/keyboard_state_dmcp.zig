@@ -48,7 +48,7 @@ fn execAutoRepeat(key: u16) callconv(.c) void {
 
     fnTimerStart(TO_AUTO_REPEAT, key, KEY_AUTOREPEAT_PERIOD);
 
-    btnClicked(null, @ptrCast(&char_key[0]));
+    btnClicked(null, &char_key[0]);
     screenUpdatingMode = orig_screen_updating_mode;
     shiftF = f;
     shiftG = g;

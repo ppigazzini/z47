@@ -115,7 +115,7 @@ const ClipBoardMsg linksection(code_section) = [NUMBER_OF_CLIPBOARD_MSG][SIZE_OF
 };
 
 inline fn clipMsg(n: usize) [*c]const u8 {
-    return @ptrCast(&ClipBoardMsg[n]);
+    return &ClipBoardMsg[n];
 }
 
 // ===========================================================================
@@ -184,7 +184,7 @@ pub export fn stackregister_csv_out(reg_b: i16, reg_e: i16, oneLine: bool_t) cal
         } else if (FIRST_LOCAL_REGISTER <= ix and ix <= LAST_LOCAL_REGISTER) {
             abi.fmtBufZ(&tmp_b, CSV_STR ++ "R.{d:0>2}" ++ CSV_STR ++ CSV_TAB, .{@as(u32, @intCast(ix - FIRST_LOCAL_REGISTER))});
         } else if (FIRST_NAMED_VARIABLE <= ix and ix <= LAST_NAMED_VARIABLE) {
-            abi.fmtBufZ(&tmp_b, CSV_STR ++ "{s}" ++ CSV_STR ++ CSV_TAB, .{std.mem.span(@as([*c]const u8, @ptrCast(&allNamedVariables[@intCast(ix - FIRST_NAMED_VARIABLE)].variableName)) + 1)});
+            abi.fmtBufZ(&tmp_b, CSV_STR ++ "{s}" ++ CSV_STR ++ CSV_TAB, .{std.mem.span(@as([*c]const u8, &allNamedVariables[@intCast(ix - FIRST_NAMED_VARIABLE)].variableName) + 1)});
         } else if (FIRST_RESERVED_VARIABLE <= ix and ix <= LAST_RESERVED_VARIABLE) {
             abi.fmtBufZ(&tmp_b, CSV_STR ++ "{s}" ++ CSV_STR ++ CSV_TAB, .{std.mem.span(@as([*c]const u8, &allReservedVariables[@intCast(ix - FIRST_RESERVED_VARIABLE)].reservedVariableName) + 1)});
         }

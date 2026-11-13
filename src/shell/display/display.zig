@@ -756,10 +756,10 @@ inline fn stringByteLength(str: [*c]const u8) i32 {
 // real34 / real arithmetic wrappers (the realType.h macros).
 // ---------------------------------------------------------------------------
 inline fn real34ToReal(source_: *const real34_t, destination: *real_t) void {
-    _ = decimal128ToNumber(@ptrCast(source_), destination);
+    _ = decimal128ToNumber(source_, destination);
 }
 inline fn realToReal34(source_: *const real_t, destination: *real34_t) void {
-    _ = decimal128FromNumber(@ptrCast(destination), source_, &ctxtReal34);
+    _ = decimal128FromNumber(destination, source_, &ctxtReal34);
 }
 inline fn real34Copy(source_: *const real34_t, destination: *real34_t) void {
     _ = decQuadCopy(destination, source_);
@@ -1267,7 +1267,7 @@ pub export fn angle34ToDisplayString2(angle34: *const real34_t, modeIn: u8, disp
             _ = strcat(displayString, angularUnitGlyph(mode));
         } else {
             _ = strcat(displayString, "?");
-            _ = sprintf(errorMessage, @ptrCast(&commonBugScreenMessages[bugMsgValueFor]), "angle34ToDisplayString2", @as(c_int, mode), "mode");
+            _ = sprintf(errorMessage, &commonBugScreenMessages[bugMsgValueFor], "angle34ToDisplayString2", @as(c_int, mode), "mode");
             frontier_error.displayBugScreen(errorMessage);
         }
     }
@@ -2543,7 +2543,7 @@ pub export fn fractionToDisplayString(regist: calcRegister_t, displayString: [*c
             abi.fmtCStr(displayString, "{c}" ++ STD_SPACE_PUNCTUATION ++ "<" ++ STD_SPACE_PUNCTUATION, .{@as(u8, @intCast(@as(c_int, xyzt[@intCast(regist - REGISTER_X)])))});
         } else {
             _ = strcpy(displayString, "?" ++ STD_SPACE_PUNCTUATION);
-            _ = sprintf(errorMessage, @ptrCast(&commonBugScreenMessages[bugMsgValueFor]), "fractionToDisplayString", @as(c_int, lessEqualGreater), "lessEqualGreater");
+            _ = sprintf(errorMessage, &commonBugScreenMessages[bugMsgValueFor], "fractionToDisplayString", @as(c_int, lessEqualGreater), "lessEqualGreater");
             frontier_error.displayBugScreen(errorMessage);
         }
     } else if (prependFraction) {
@@ -2555,7 +2555,7 @@ pub export fn fractionToDisplayString(regist: calcRegister_t, displayString: [*c
             abi.fmtCStr(displayString, "<" ++ STD_SPACE_PUNCTUATION, .{});
         } else {
             _ = strcpy(displayString, "?" ++ STD_SPACE_PUNCTUATION);
-            _ = sprintf(errorMessage, @ptrCast(&commonBugScreenMessages[bugMsgValueFor]), "fractionToDisplayString", @as(c_int, lessEqualGreater), "lessEqualGreater");
+            _ = sprintf(errorMessage, &commonBugScreenMessages[bugMsgValueFor], "fractionToDisplayString", @as(c_int, lessEqualGreater), "lessEqualGreater");
             frontier_error.displayBugScreen(errorMessage);
         }
     } else {
@@ -2758,7 +2758,7 @@ pub export fn shortIntegerToDisplayString(regist: calcRegister_t, displayString:
     } else if (baseOverride == 0) {
         base = @intCast(getRegisterTag(regist));
         if (base <= 1 or base >= 17) {
-            _ = sprintf(errorMessage, @ptrCast(&commonBugScreenMessages[bugMsgValueFor]), "shortIntegerToDisplayString", @as(c_int, base), "base");
+            _ = sprintf(errorMessage, &commonBugScreenMessages[bugMsgValueFor], "shortIntegerToDisplayString", @as(c_int, base), "base");
             frontier_error.displayBugScreen(errorMessage);
             base = 10;
         }
@@ -2781,7 +2781,7 @@ pub export fn shortIntegerToDisplayString(regist: calcRegister_t, displayString:
         } else if (shortIntegerMode == SIM_SIGNMT) {
             number &= ~shortIntegerSignBit;
         } else {
-            _ = sprintf(errorMessage, @ptrCast(&commonBugScreenMessages[bugMsgValueFor]), "shortIntegerToDisplayString", @as(c_int, shortIntegerMode), "shortIntegerMode");
+            _ = sprintf(errorMessage, &commonBugScreenMessages[bugMsgValueFor], "shortIntegerToDisplayString", @as(c_int, shortIntegerMode), "shortIntegerMode");
             frontier_error.displayBugScreen(errorMessage);
         }
         number &= shortIntegerMask;

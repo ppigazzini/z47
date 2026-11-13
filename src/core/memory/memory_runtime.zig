@@ -32,7 +32,7 @@ pub extern fn freeListAlloc(sizeInBlocks: usize) ?*anyopaque;
 pub extern fn freeListRealloc(pcMemPtr: ?*anyopaque, oldSizeInBlocks: usize, newSizeInBlocks: usize) ?*anyopaque;
 pub extern fn freeListReduce(pcMemPtr: ?*anyopaque, oldSizeInBlocks: usize, newSizeInBlocks: usize) void;
 pub extern fn freeListFree(pcMemPtr: ?*anyopaque, sizeInBlocks: usize) void;
-pub extern fn xcopy(dest: [*c]u8, source: [*c]const u8, n: u32) ?*anyopaque;
+pub extern fn xcopy(dest: ?*anyopaque, source: ?*const anyopaque, n: u32) ?*anyopaque;
 pub extern fn backToSystem(confirmation: u16) void;
 pub extern fn malloc(sizeInBytes: usize) ?*anyopaque;
 pub extern fn realloc(pcMemPtr: ?*anyopaque, newSizeInBytes: usize) ?*anyopaque;

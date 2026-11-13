@@ -1859,7 +1859,7 @@ fn formatStatValue(value: f64, buf: []u8) [*:0]const u8 {
         abi.fmtBufZ(buf, "{s}", .{special});
         return @ptrCast(buf.ptr);
     }
-    return frontier_plotstat.formatCore(value, 10, false, @ptrCast(buf.ptr), @intCast(buf.len));
+    return frontier_plotstat.formatCore(value, 10, false, buf.ptr, @intCast(buf.len));
 }
 
 pub export fn fnStatList() callconv(.c) void {

@@ -1114,7 +1114,7 @@ fn atoiTail(text: []const u8) i32 {
 // On a narrow key the radix mark of 1.2E6 is the one glyph that will not fit. The same number with the mantissa digits shifted left and the exponent taken down by the
 // same count needs no mark: 12E5. Second choice only, tried after the marked form has been refused, so a key with room for 1.2E6 still draws it.
 fn dropRadixMark(str: [*c]u8) void {
-    const text = std.mem.span(@as([*:0]u8, @ptrCast(str)));
+    const text = std.mem.span(@as([*:0]u8, str));
     const decimal_pos = std.mem.findScalar(u8, text, '.') orelse return;
     const e_pos = std.mem.findScalarPos(u8, text, decimal_pos, 'E') orelse return;
     if (e_pos == decimal_pos + 1) {

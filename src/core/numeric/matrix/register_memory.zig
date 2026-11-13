@@ -165,7 +165,7 @@ pub export fn redimMatrixRegister(regist: calcRegister_t, rows: u16, cols: u16, 
                 header.matrixColumns = @truncate(cols);
                 copyAndZeroMatrixElements(
                     real34_t,
-                    @ptrCast(newMatrix.matrixElements),
+                    newMatrix.matrixElements,
                     registerRealElements(regist),
                     origRows,
                     origCols,
@@ -197,7 +197,7 @@ pub export fn redimMatrixRegister(regist: calcRegister_t, rows: u16, cols: u16, 
                 header.matrixColumns = @truncate(cols);
                 copyAndZeroMatrixElements(
                     complex34_t,
-                    @ptrCast(newMatrix.matrixElements),
+                    newMatrix.matrixElements,
                     registerComplexElements(regist),
                     origRows,
                     origCols,

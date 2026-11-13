@@ -1308,7 +1308,7 @@ pub fn real34SetPositiveSign(value: *real34_t) void {
 
 pub fn registerReal34Bytes(reg: calcRegister_t) *align(1) [16]u8 {
     const ptr = getRegisterDataPointer(reg) orelse unreachable;
-    return @ptrCast(ptr);
+    return ptr;
 }
 
 pub fn registerReal34Ptr(reg: calcRegister_t) *real34_t {

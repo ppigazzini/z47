@@ -853,10 +853,10 @@ inline fn realCopyAbs(source_: *const real_t, destination: *real_t) void {
 
 // real34 wrappers (realType.h macros)
 inline fn real34ToReal(source_: *const real34_t, destination: *real_t) void {
-    _ = decimal128ToNumber(@ptrCast(source_), destination);
+    _ = decimal128ToNumber(source_, destination);
 }
 inline fn realToReal34(source_: *const real_t, destination: *real34_t) void {
-    _ = decimal128FromNumber(@ptrCast(destination), source_, &ctxtReal34);
+    _ = decimal128FromNumber(destination, source_, &ctxtReal34);
 }
 inline fn real34Copy(source_: *const real34_t, destination: *real34_t) void {
     _ = decQuadCopy(destination, source_);
@@ -995,7 +995,7 @@ inline fn varImag34(elems: [*c]complex34_t, i: usize) *real34_t {
 }
 // real matrix element accessor (matrixElements is [*c]real34_t = allowzero).
 inline fn mxRe34(elems: [*c]real34_t, i: usize) *real34_t {
-    const p: [*]real34_t = @ptrCast(elems);
+    const p: [*]real34_t = elems;
     return &p[i];
 }
 
