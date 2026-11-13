@@ -164,7 +164,7 @@ pub const UserMenu = extern struct {
     menuItem: [18]UserMenuItem,
 };
 
-/// TAM-mode state (tamState_t, typeDefinitions.h): 26 bytes, align 2. The C
+/// TAM-mode state (tamState_t, typeDefinitions.h): 28 bytes, align 2. The C
 /// bool_t members are `bool` (1 byte); the owners that had forked these to `u8`
 /// (int-style `!= 0` / `= 1`) are converted to bool idiom at their access sites.
 pub const TamState = extern struct {

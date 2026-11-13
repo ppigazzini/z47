@@ -196,6 +196,56 @@ int main(int argc, char *argv[]) {
     printf("PASS: backup.cfg round-trip preserves state (%ld bytes)\n", n1);
   }
 
+  // --- Check C2: backup.cfg keeps every tamState_t field saveRestoreBackup.c names ---
+  // c47.sav carries no TAM state, so Check C cannot see a TAM field backup.cfg
+  // skips or reads from the wrong offset. Distinct values go in, the dump -> wipe
+  // -> restore cycle runs, and each named field must come back.
+  {
+    const tamState_t saved = tam;
+    tamState_t sample = saved;
+    sample.mode = 3;
+    sample.function = 1234;
+    sample.alpha = true;
+    sample.currentOperation = 77;
+    sample.dot = true;
+    sample.colon = false;
+    sample.indirect = true;
+    sample.digitsSoFar = 5;
+    sample.value = 42;
+    sample.min = -7;
+    sample.max = 999;
+    tam = sample;
+    saveCalcImpl();
+    fnReset(CONFIRMED);
+    memset(&tam, 0, sizeof(tam)); // fnReset leaves tam alone: a field the file skips must not survive by staying put
+    restoreCalcImpl();
+    const tamState_t back = tam;
+    int tamFailed = 0;
+    #define TAM_FIELD_MUST_SURVIVE(field) \
+      if(back.field != sample.field) { \
+        printf("FAIL: backup.cfg lost tam." #field ": wrote %d, read back %d\n", (int)sample.field, (int)back.field); \
+        tamFailed = 1; \
+      }
+    TAM_FIELD_MUST_SURVIVE(mode)
+    TAM_FIELD_MUST_SURVIVE(function)
+    TAM_FIELD_MUST_SURVIVE(alpha)
+    TAM_FIELD_MUST_SURVIVE(currentOperation)
+    TAM_FIELD_MUST_SURVIVE(dot)
+    TAM_FIELD_MUST_SURVIVE(indirect)
+    TAM_FIELD_MUST_SURVIVE(digitsSoFar)
+    TAM_FIELD_MUST_SURVIVE(value)
+    TAM_FIELD_MUST_SURVIVE(min)
+    TAM_FIELD_MUST_SURVIVE(max)
+    #undef TAM_FIELD_MUST_SURVIVE
+    if(tamFailed) {
+      failed = 1;
+    }
+    else {
+      printf("PASS: backup.cfg round-trip keeps the 10 tam fields it saves\n");
+    }
+    tam = saved;
+  }
+
   // --- Check D: register data-file (DATA_FILE format) save/load round-trip ---
   // Exercises the NEW M10.4 XFN save/load family: fnSaveLetteredRegisters ->
   // doSaveDataFile -> fnSaveDataRegisters (the dataFileMode codec forms: lettered
