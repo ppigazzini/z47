@@ -350,7 +350,9 @@ pub fn addBuildOptions(
     const cdate = build_common.commandOutput(b, &.{ "date", "+%b %e %Y" }) orelse "Jan  1 1970";
     const version_string = b.fmt("custom{s}build{s}{s}{s}{s}", .{ sp3, sp3, vcs, sp3, today });
     const version_str = b.fmt("  {s} {s}.", .{ modeltext, version_string });
-    const sim_or_qspi = if (options.dmcp_build) "QSPI" else "Sim";
+    // screen.c: PC_BUILD says Sim, TWO_FILE_PGM (the DM42, OLD_HW) says QSPI,
+    // and DMCP5, which has no TWO_FILE_PGM, says No QSPI.
+    const sim_or_qspi = if (!options.dmcp_build) "Sim" else if (options.old_hw) "QSPI" else "No QSPI";
     const version_str2 = b.fmt("  {s} {s} {s}, dd ", .{ modeltext, sim_or_qspi, version1 });
     build_options.addOption([]const u8, "version_str", version_str);
     build_options.addOption([]const u8, "version_str2", version_str2);
