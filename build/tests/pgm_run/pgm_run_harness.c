@@ -66,6 +66,7 @@ int main(int argc, char **argv) {
   // install the GMP allocators, reset, load the configuration defaults that
   // fnReset does not, and allocate the LCD framebuffer any render path touches.
   harnessInstallResourceBudget("pgm-run");
+  harnessBudgetSetCase(pgm_path); // arms the per-file wall-clock budget
   fnReset(CONFIRMED);
   resetOtherConfigurationStuff(true);
   extern uint8_t *lcd_buffer;

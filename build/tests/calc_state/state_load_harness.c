@@ -124,6 +124,7 @@ int main(int argc, char **argv) {
   // does not, and allocate the LCD framebuffer any render path touches. The
   // restore path refreshes the screen, so the framebuffer is not optional.
   harnessInstallResourceBudget("calc-state load");
+  harnessBudgetSetCase(state_path); // arms the per-file wall-clock budget
   fnReset(CONFIRMED);
   resetOtherConfigurationStuff(true);
   extern uint8_t *lcd_buffer;

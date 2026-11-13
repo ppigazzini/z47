@@ -68,11 +68,15 @@ LOAD_MODES="0 1 2 5"
 # the list shrinking is the measure of progress on finding 22.
 POISON_KNOWN="matrix_dims_at_u16_block_limit.sav matrix_rows_exceed_header_12_bits.sav"
 
+# An empty corpus must not run the literal pattern as one "file".
+shopt -s nullglob
 for f in "$corpus"/*.sav; do
  for mode in $LOAD_MODES; do
   total=$((total + 1))
   label="$f (mode $mode)"
-  out="$(timeout 60 "$harness" "$f" "$mode" 2>&1)"
+  # The harness bounds each file itself (harnessBudgetSetCase): a hang ends in its
+  # BUDGET EXCEEDED report, never in a kill from out here.
+  out="$("$harness" "$f" "$mode" 2>&1)"
   rc=$?
 
   # Read the expectation up front: it decides whether a REFUSAL is acceptable for
@@ -112,8 +116,9 @@ for f in "$corpus"/*.sav; do
       printf '%s\n' "$out" | grep -E "POOL POISON" | head -3
       fail=$((fail + 1))
     fi
-  elif [ "$rc" -eq 124 ]; then
-    echo "FAIL (hang / infinite loop on malformed input): $label"
+  elif printf '%s' "$out" | grep -q "BUDGET EXCEEDED"; then
+    echo "FAIL (unbounded on malformed input -- the harness budget stopped it): $label"
+    printf '%s\n' "$out" | grep -E "BUDGET EXCEEDED" | head -1
     fail=$((fail + 1))
   elif [ "$rc" -eq 253 ] && printf '%s' "$out" | grep -q "OUT OF MEMORY"; then
     # exit(-3) -> 253, from resizeProgramMemory's out-of-memory path. That exit
