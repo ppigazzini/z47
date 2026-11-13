@@ -78,7 +78,9 @@ Facts, verified from `../build/firmware.zig`:
   read QSPI headroom off the `qspi` row of the size report, never off an image
   that predates it.
 - The firmware io object names the save files after the model (`C47.sav` or
-  `R47.sav`, and `*auto.sav`), so each model of a board links its own.
+  `R47.sav`, and `*auto.sav`), so each model of a board links its own. On the
+  DM42 it also resets the menu auto-off timer before every file selection, as
+  `c47-dmcp/hal/io.c` does.
 
 ## Firmware Target Matrix
 
