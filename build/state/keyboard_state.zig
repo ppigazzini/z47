@@ -26,9 +26,9 @@ pub const RuntimeObjectOptions = struct {
     // that compile-time model, and the keyboard-state object is shared between a
     // HW's C47 and R47 builds, so the distinction is threaded as a build option.
     is_r47: bool = false,
-    // OLD_HW selects the DM42 memory pool size, which leavePem uses to find the
-    // end of RAM. A quarter of what every other target gets.
-    old_hw: bool = false,
+    // The board this object is compiled for, set by the caller that builds
+    // for it; every board fact below derives from it.
+    board: build_common.Board = .host,
     // OPTION_STRUCTURED_PGM: leavePem runs VALID on the way out of the program
     // editor when AVALID is set, and holds the editor open on a fault. It is set
     // per DM42 package, from build/firmware.zig's dm42Package table. Defaults true
@@ -118,7 +118,9 @@ fn addRuntimeObjectWithIncludeDir(
 
     const kb_build_options = b.addOptions();
     kb_build_options.addOption(bool, "is_r47", options.is_r47);
-    kb_build_options.addOption(bool, "state_old_hw", options.old_hw);
+    // OLD_HW selects the DM42 memory pool size, which leavePem uses to find the
+    // end of RAM.
+    kb_build_options.addOption(bool, "state_old_hw", options.board.isOldHw());
     kb_build_options.addOption(bool, "option_structured_pgm", options.option_structured_pgm);
     kb_build_options.addOption(bool, "ir_printing", options.ir_printing);
     kb_build_options.addOption(bool, "option_drg_cfg", options.option_drg_cfg);

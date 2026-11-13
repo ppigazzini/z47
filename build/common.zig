@@ -293,6 +293,30 @@ fn defineStringValue(text: []const u8, name: []const u8) ?[]const u8 {
     return null;
 }
 
+/// The hardware an owner object is compiled for. Every board fact an owner's
+/// build options carry -- DMCP_BUILD, OLD_HW, HARDWARE_MODEL == HWM_DM42 -- is
+/// derived from this value, which the caller sets from the target it builds.
+/// An object's name is a label and carries no fact.
+pub const Board = enum {
+    /// The simulators and every host lane.
+    host,
+    /// The DM42: the DMCP SDK, OLD_HW, HARDWARE_MODEL == HWM_DM42.
+    dmcp,
+    /// The DM42n and the DM32: the DMCP5 SDK, NEW_HW.
+    dmcp5,
+
+    /// DMCP_BUILD.
+    pub fn isDmcp(board: Board) bool {
+        return board != .host;
+    }
+
+    /// OLD_HW. It is also HARDWARE_MODEL == HWM_DM42: defines.h gives every
+    /// DMCP build that does not define NEW_HW the DM42 model.
+    pub fn isOldHw(board: Board) bool {
+        return board == .dmcp;
+    }
+};
+
 pub fn addBashCommand(b: *std.Build, script: []const u8) *std.Build.Step.Run {
     return addBashCommandFmt(b, "{s}", .{script});
 }

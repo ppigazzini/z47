@@ -17,6 +17,9 @@ pub const RuntimeObjectOptions = struct {
     stack_check: ?bool = null,
     omit_frame_pointer: ?bool = null,
     error_tracing: ?bool = null,
+    // The board this object is compiled for, set by the caller that builds
+    // for it; every board fact below derives from it.
+    board: build_common.Board = .host,
 };
 
 const replaced_core_sources = [_][]const u8{
@@ -59,7 +62,7 @@ fn addRuntimeObject(
     module.addImport("dmcp_rom", dmcp_rom_module);
     const build_options = b.addOptions();
     const use_fake_harness_surface = std.mem.endsWith(u8, name_prefix, "parity");
-    const free_regions_are_inline_array = target.result.os.tag == .freestanding and std.mem.eql(u8, name_prefix, "dmcp");
+    const free_regions_are_inline_array = options.board.isOldHw();
     build_options.addOption(bool, "use_fake_harness_surface", use_fake_harness_surface);
     build_options.addOption(bool, "free_regions_are_inline_array", free_regions_are_inline_array);
     build_options.addOption(usize, "max_free_regions", if (free_regions_are_inline_array) 50 else 200);

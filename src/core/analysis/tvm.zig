@@ -19,13 +19,12 @@ const consts = abi.constants;
 //
 // Build-target context selection mirrors the C
 //   #if defined(DMCP_BUILD) && (HARDWARE_MODEL == HWM_DM42)
-// which is exactly the "dmcp" old-hw firmware package; that is the same flag
-// (solve_build_options.dm42_pkg_xip) used to place this owner in QSPI XIP.
+// which holds exactly on the OLD_HW board.
 
 const runtime = @import("solve_runtime.zig");
 const solve_build_options = @import("solve_build_options");
 
-const dmcp_dm42 = solve_build_options.dm42_pkg_xip;
+const dmcp_dm42 = solve_build_options.is_old_hw;
 const option_tvm_formulas = runtime.option_tvm_formulas;
 const option_tvm_newton = runtime.option_tvm_newton;
 const option_tvm_amort = runtime.option_tvm_amort;
