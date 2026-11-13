@@ -81,7 +81,7 @@ removed=$(comm -13 <(printf '%s\n' "${carriers[@]}") <(printf '%s\n' "${sanction
 
 if [ -n "$unexpected" ]; then
     echo "NEW COMPILATION CARRIER: a force-import block appeared in a file that is not a sanctioned module root."
-    echo "$unexpected" | sed 's/^/  /'
+    printf '  %s\n' "${unexpected//$'\n'/$'\n  '}"
     echo ""
     echo "A comptime force-import makes this file the compilation carrier of what it"
     echo "imports: both it and the carried owners are then pinned to this directory."
@@ -93,7 +93,7 @@ fi
 
 if [ -n "$removed" ]; then
     echo "check-module-carriers: sanctioned carriers no longer present (re-pin with --bump):"
-    echo "$removed" | sed 's/^/  /'
+    printf '  %s\n' "${removed//$'\n'/$'\n  '}"
     exit 1
 fi
 

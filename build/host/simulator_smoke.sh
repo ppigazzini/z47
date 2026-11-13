@@ -47,14 +47,13 @@ trap cleanup EXIT
 
 start_xvfb() {
   local candidate
-  local probe
 
   for candidate in $(seq 200 260); do
     Xvfb ":$candidate" -screen 0 1280x800x24 >"$work_dir/xvfb.log" 2>&1 &
     xvfb_pid=$!
     export DISPLAY=":$candidate"
 
-    for probe in $(seq 1 200); do
+    for _ in $(seq 1 200); do
       if ! kill -0 "$xvfb_pid" >/dev/null 2>&1; then
         break
       fi
@@ -228,7 +227,7 @@ probe_pointer_input() {
     kill -0 "$app_pid" >/dev/null 2>&1 || return 1
 
     for coords in "567 125" "567 125" "515 160"; do
-      xdotool mousemove --sync --window "$window_id" ${coords% *} ${coords#* }
+      xdotool mousemove --sync --window "$window_id" "${coords% *}" "${coords#* }"
       xdotool click --window "$window_id" 1
 
       if wait_for_lcd_change "$window_id" "$baseline_hash" "after-click-${attempt}"; then

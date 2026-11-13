@@ -680,6 +680,12 @@ jobs:
           sudo apt-get install -qq -y python3-yaml
           python3 .github/project/check-ci-build-prerequisites.py --self-test
           python3 .github/project/check-ci-build-prerequisites.py --repo-root .
+      - name: Lint every z47-owned shell script
+        shell: bash
+        run: |
+          set -euo pipefail
+          shellcheck --version
+          git ls-files -z '*.sh' ':!upstream' | xargs -0 shellcheck
       - name: Enforce one commit-pinned version per workflow action
         shell: bash
         run: |

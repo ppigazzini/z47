@@ -16,7 +16,7 @@
 # Run from the repo root.
 set -uo pipefail
 
-cd "$(dirname "$0")/../.."
+cd "$(dirname "$0")/../.." || exit 1
 GATE=".github/project/check-core-shell-severance.py"
 VICTIM="src/core/text/word_break.zig"
 failures=0
