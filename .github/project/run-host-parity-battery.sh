@@ -19,17 +19,11 @@
 #          CI and headless Linux set XVFB="xvfb-run --auto-servernum".
 set -euo pipefail
 
-# register_metadata_parity is occasionally flaky on first run under cold caches;
-# CI retries it once, so mirror that here.
-retry_once() {
-  "$@" || "$@"
-}
-
 zig build logical_shortint_parity
 zig build rotate_bits_parity
 zig build logical_boolean_ops_suite
 zig build stack_state_parity
-retry_once zig build register_metadata_parity
+zig build register_metadata_parity
 zig build flags_parity
 zig build memory_parity
 zig build program_serialization_parity
