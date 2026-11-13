@@ -16,12 +16,7 @@ const complex34Matrix_t = runtime.complex34Matrix_t;
 
 // REGISTER_MATRIX_HEADER(a) == (matrixHeader_t *)getRegisterDataPointer(a);
 // the element arrays start sizeof(matrixHeader_t) bytes after the header.
-inline fn registerHeader(regist: calcRegister_t) *matrixHeader_t {
-    return @ptrCast(runtime.getRegisterDataPointer(regist).?);
-}
-inline fn registerBytes(regist: calcRegister_t) [*]u8 {
-    return abi.registerBytes(regist);
-}
+const registerHeader = runtime.registerMatrixHeader;
 
 // isMatrixVector(rows, cols) (defines.h): a 2D or 3D row/column vector.
 inline fn isMatrixVector(rows: u16, cols: u16) bool {
@@ -40,8 +35,7 @@ pub export fn linkToRealMatrixRegister(regist: calcRegister_t, linked_matrix: *r
         // Any register class: SHOW and VIEW link registers outside X-T.
         linked_matrix.header.mtag = @truncate(runtime.getRegisterTag(regist));
     }
-    const elements = registerBytes(regist) + @sizeOf(matrixHeader_t);
-    linked_matrix.matrixElements = @ptrCast(@alignCast(elements));
+    linked_matrix.matrixElements = abi.registerReal34MatrixElements(regist);
 }
 
 pub export fn linkToComplexMatrixRegister(regist: calcRegister_t, linked_matrix: *complex34Matrix_t) callconv(.c) void {
@@ -50,6 +44,5 @@ pub export fn linkToComplexMatrixRegister(regist: calcRegister_t, linked_matrix:
     linked_matrix.header.matrixColumns = header.matrixColumns;
     // Same as the real link: keep mtag defined for readers.
     linked_matrix.header.mtag = @intCast(runtime.amNone);
-    const elements = registerBytes(regist) + @sizeOf(matrixHeader_t);
-    linked_matrix.matrixElements = @ptrCast(@alignCast(elements));
+    linked_matrix.matrixElements = abi.registerComplex34MatrixElements(regist);
 }

@@ -240,6 +240,14 @@ else
         matrixElements: [*c]complex34_t,
     };
 
+/// any34Matrix_t (typeDefinitions.h): a real or a complex matrix, as the
+/// eigenvector routines take either.
+pub const any34Matrix_t = extern union {
+    header: matrixHeader_t,
+    realMatrix: real34Matrix_t,
+    complexMatrix: complex34Matrix_t,
+};
+
 pub const realContext_t = abi.RealContext;
 
 pub const mpz_struct = abi.Mpz;
@@ -270,7 +278,9 @@ pub extern fn saveLastX() bool;
 pub extern fn saveForUndo() void;
 pub extern fn getRegisterDataType(reg: calcRegister_t) u32;
 pub extern fn getRegisterTag(reg: calcRegister_t) u32;
-pub extern fn getRegisterDataPointer(reg: calcRegister_t) ?*align(4) anyopaque;
+/// C's `void *getRegisterDataPointer(calcRegister_t)`, read as the 4-aligned pool
+/// bytes it points at.
+pub extern fn getRegisterDataPointer(reg: calcRegister_t) ?[*]align(4) u8;
 pub extern fn registerMin(regist1: calcRegister_t, regist2: calcRegister_t, dest: calcRegister_t) void;
 pub extern fn registerMax(regist1: calcRegister_t, regist2: calcRegister_t, dest: calcRegister_t) void;
 pub extern fn adjustResult(
@@ -455,15 +465,19 @@ pub const TI_INACCURATE: u8 = 48;
 // REGISTER_MATRIX_HEADER / REGISTER_REAL34_DATA / REGISTER_IMAG34_DATA
 // (registers.h): the register data pointer reinterpreted as a matrix header or
 // the real/imag halves of a real34/complex34 value.
+/// The `T` stored `offset` bytes into a register's data block. Generic over `T`
+/// because the harness surfaces stand in their own matrixHeader_t and real34_t.
+inline fn registerValue(comptime T: type, reg: calcRegister_t, comptime offset: usize) *align(4) T {
+    return std.mem.bytesAsValue(T, getRegisterDataPointer(reg).?[offset..][0..@sizeOf(T)]);
+}
 pub inline fn registerMatrixHeader(reg: calcRegister_t) *matrixHeader_t {
-    return @ptrCast(getRegisterDataPointer(reg).?);
+    return registerValue(matrixHeader_t, reg, 0);
 }
 pub inline fn registerReal34Data(reg: calcRegister_t) *real34_t {
-    return @ptrCast(getRegisterDataPointer(reg).?);
+    return registerValue(real34_t, reg, 0);
 }
 pub inline fn registerImag34Data(reg: calcRegister_t) *real34_t {
-    const base: [*]u8 = @ptrCast(getRegisterDataPointer(reg).?);
-    return @ptrCast(@alignCast(base + @sizeOf(real34_t)));
+    return registerValue(real34_t, reg, @sizeOf(real34_t));
 }
 
 // Error / program-state constants the matrix command owners need (defines.h).
@@ -1321,9 +1335,8 @@ pub fn registerComplex34Ptr(reg: calcRegister_t) *complex34_t {
 
 pub fn registerMatrixHeaderPtr(reg: calcRegister_t) *align(1) matrixHeader_t {
     // Not delegated to abi.registerMatrixHeader: matrixHeader_t is faked to a
-    // distinct type under use_fake_wp34s_harness_surface, so the cast stays local.
-    const ptr = getRegisterDataPointer(reg) orelse unreachable;
-    return @ptrCast(ptr);
+    // distinct type under use_fake_wp34s_harness_surface.
+    return registerValue(matrixHeader_t, reg, 0);
 }
 
 pub fn registerImag34Ptr(reg: calcRegister_t) *real34_t {

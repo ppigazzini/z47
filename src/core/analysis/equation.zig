@@ -304,10 +304,7 @@ inline fn realToReal34(source: *const real_t, destination: *real34_t) void {
     _ = decimal128FromNumber(destination, source, &ctxtReal34);
 }
 inline fn real34Copy(source: *const real34_t, destination: *real34_t) void {
-    const src: *align(1) const [2]u64 = @ptrCast(source);
-    const dst: *align(1) [2]u64 = @ptrCast(destination);
-    dst[0] = src[0];
-    dst[1] = src[1];
+    destination.* = source.*;
 }
 inline fn real34Subtract(op1: *const real34_t, op2: *const real34_t, res: *real34_t) void {
     _ = decQuadSubtract(res, op1, op2, &ctxtReal34);
@@ -377,8 +374,9 @@ inline fn calcModeAimGui() void {
 }
 
 // memory blocks
-extern fn allocC47Blocks(sizeInBlocks: usize) ?*anyopaque;
-extern fn reallocC47Blocks(pcMemPtr: ?*anyopaque, oldSizeInBlocks: usize, newSizeInBlocks: usize) ?*anyopaque;
+/// C's `void *reallocC47Blocks(void *, size_t, size_t)`, bound at the formula
+/// text this owner moves with it.
+extern fn reallocC47Blocks(pcMemPtr: ?*anyopaque, oldSizeInBlocks: usize, newSizeInBlocks: usize) ?[*]align(4) u8;
 extern fn reduceC47Blocks(pcMemPtr: ?*anyopaque, oldSizeInBlocks: usize, newSizeInBlocks: usize) void;
 extern fn freeC47Blocks(pcMemPtr: ?*anyopaque, sizeInBlocks: usize) void;
 
@@ -405,12 +403,11 @@ inline fn PRODUCT_SIGN() [*:0]const u8 {
 
 inline fn TO_PCMEMPTR(p: u16) [*c]u8 {
     if (p == C47_NULL) return null;
-    return @ptrCast(ram + p);
+    return std.mem.asBytes(&ram[p]);
 }
 inline fn TO_C47MEMPTR(p: ?*anyopaque) u16 {
     if (p == null) return C47_NULL;
-    const pu: [*]u32 = @ptrCast(@alignCast(p.?));
-    return @intCast((@intFromPtr(pu) - @intFromPtr(ram)) / @sizeOf(u32));
+    return @intCast((@intFromPtr(p.?) - @intFromPtr(ram)) / @sizeOf(u32));
 }
 inline fn TO_BLOCKS(n: u32) usize {
     return (n + 3) >> 2; // BYTES_PER_BLOCK=4, BPB=2
@@ -603,9 +600,9 @@ pub export fn setEquation(equationId: u16, equationString: [*c]const u8) linksec
         }
     }
     const newSizeInBlocks: usize = TO_BLOCKS(byteLen + 1);
-    var newPtr: ?*anyopaque = undefined;
+    var newPtr: ?[*]align(4) u8 = undefined;
     if (allFormulae[equationId].sizeInBlocks == 0) {
-        newPtr = allocC47Blocks(newSizeInBlocks);
+        newPtr = abi.registers.allocC47Blocks(newSizeInBlocks);
     } else {
         newPtr = reallocC47Blocks(TO_PCMEMPTR(allFormulae[equationId].pointerToFormulaData), allFormulae[equationId].sizeInBlocks, newSizeInBlocks);
     }
@@ -618,7 +615,7 @@ pub export fn setEquation(equationId: u16, equationString: [*c]const u8) linksec
     }
     // The cut above keeps the block count within the 8-bit field.
     allFormulae[equationId].sizeInBlocks = @intCast(newSizeInBlocks);
-    const bytes: [*]u8 = @ptrCast(newPtr.?);
+    const bytes = newPtr.?;
     _ = xcopy(bytes, equationString, byteLen);
     bytes[byteLen] = 0;
 }

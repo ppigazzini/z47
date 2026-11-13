@@ -32,7 +32,8 @@ const frontier_screen = @import("../display/screen.zig");
 const frontier_sort = @import("../display/sort.zig");
 const frontier_textfiles = @import("../extensions/textfiles.zig");
 const frontier_plotstat = @import("plotstat.zig");
-extern fn malloc(n: usize) ?*anyopaque;
+/// C's malloc, read as the byte buffers this owner asks it for.
+extern fn malloc(n: usize) ?[*]u8;
 extern fn free(p: ?*anyopaque) void;
 const frontier_timer = @import("../timer.zig");
 const dmcp_build: bool = frontier_build_options.dmcp_build;
@@ -265,7 +266,7 @@ pub export fn print_inlinestr(line1: [*c]const u8, endline: bool_t) callconv(.c)
 pub export fn print_Register_line(regist: calcRegister_t, before: [*c]u8, after: [*c]u8, line_init: bool_t) callconv(.c) void {
     // Off the stack: copyRegisterToClipboardString2 holds another buffer of this
     // size, and the two together overrun the program stack on hardware.
-    const str: [*c]u8 = @ptrCast(malloc(TMP_STR_LENGTH) orelse return);
+    const str: [*c]u8 = malloc(TMP_STR_LENGTH) orelse return;
     defer free(str);
 
     frontier_textfiles.copyRegisterToClipboardString2(regist, str);
@@ -539,7 +540,7 @@ pub export fn export_xy_to_file(x: f32, y: f32) callconv(.c) i16 {
     if (comptime dmcp_build) {
         // Line buffer on the heap: this calls export_append_string_to_file, and
         // the pair overran the DM42 stack grant.
-        const line: [*c]u8 = @ptrCast(malloc(TMP_STR_LENGTH) orelse return 1);
+        const line: [*c]u8 = malloc(TMP_STR_LENGTH) orelse return 1;
         defer free(line);
         var xs: [24]u8 = undefined;
         var ys: [24]u8 = undefined;
@@ -549,7 +550,7 @@ pub export fn export_xy_to_file(x: f32, y: f32) callconv(.c) i16 {
         // Radix mark setting, as REGS.TSV does.
         _ = frontier_plotstat.radixProcess(&xs, &xs);
         _ = frontier_plotstat.radixProcess(&ys, &ys);
-        abi.fmtCStr(line[0..TMP_STR_LENGTH], "{s}\t{s}\n", .{ @as([*:0]const u8, @ptrCast(&xs)), @as([*:0]const u8, @ptrCast(&ys)) });
+        abi.fmtCStr(line[0..TMP_STR_LENGTH], "{s}\t{s}\n", .{ std.mem.sliceTo(&xs, 0), std.mem.sliceTo(&ys, 0) });
         if (export_append_string_to_file(line, APPEND, &filename_csv) != 0) {
             return 1; // error already announced
         }
@@ -564,7 +565,7 @@ pub export fn export_xy_to_file(x: f32, y: f32) callconv(.c) i16 {
         // Radix mark setting, as REGS.TSV does.
         _ = frontier_plotstat.radixProcess(&xs, &xs);
         _ = frontier_plotstat.radixProcess(&ys, &ys);
-        abi.fmtCStr(&line, "{s}\t{s}\n", .{ @as([*:0]const u8, @ptrCast(&xs)), @as([*:0]const u8, @ptrCast(&ys)) });
+        abi.fmtCStr(&line, "{s}\t{s}\n", .{ std.mem.sliceTo(&xs, 0), std.mem.sliceTo(&ys, 0) });
         _ = export_append_line(&line);
         return 0;
     }
@@ -755,18 +756,8 @@ fn putc_flush(pb: *putbuff) c_int {
     }
     return EOF;
 }
-fn mem_set(dst: ?*anyopaque, val: c_int, cntIn: UINT) void {
-    var d: [*c]BYTE = @ptrCast(dst);
-    var cnt = cntIn;
-    while (true) {
-        d[0] = @intCast(val);
-        d += 1;
-        cnt -%= 1;
-        if (cnt == 0) break;
-    }
-}
 fn putc_init(pb: *putbuff, fp: *FIL) void {
-    mem_set(pb, 0, @sizeOf(putbuff));
+    @memset(std.mem.asBytes(pb), 0);
     pb.fp = fp;
 }
 // f_putc: one buffered character with LF -> CRLF conversion. Unused in the tree
