@@ -242,7 +242,6 @@ zig-pkg/
 !/build/
 !/src/
 !/docs/
-!/bridge/
 
 # Python bytecode cache (governance scripts under .github/project/)
 __pycache__/

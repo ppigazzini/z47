@@ -42,7 +42,6 @@ RUNTIME_ZIG_CLASS = "runtime-zig"
 BUILD_TOOL_ZIG_CLASS = "build-tool-zig"
 BUILD_LOGIC_CLASS = "build-logic"
 BUILD_MANIFEST_CLASS = "build-manifest"
-RETAINED_C_CLASS = "retained-c-wrapper"
 WORKFLOW_DOC_CLASS = "workflow-or-doc"
 
 
@@ -217,7 +216,7 @@ def collect_manifest_touchpoints(repo_root: Path) -> dict[str, dict[str, set[str
 def iter_owned_text_paths(repo_root: Path) -> list[Path]:
     paths: list[Path] = []
 
-    for root_name in (".github", "build", "src", "bridge"):
+    for root_name in (".github", "build", "src"):
         root = repo_root / root_name
         if not root.exists():
             continue
@@ -291,8 +290,6 @@ def classify_touchpoint(touchpoint_path: str, reasons: set[str]) -> str:
         return BUILD_TOOL_ZIG_CLASS
     if touchpoint_path.startswith("build/"):
         return BUILD_LOGIC_CLASS
-    if touchpoint_path.startswith("bridge/"):
-        return RETAINED_C_CLASS
     return WORKFLOW_DOC_CLASS
 
 
@@ -370,11 +367,11 @@ def main() -> int:
         for changed_path in covered_paths:
             for touchpoint_class in changed_path_classes(touchpoints[changed_path]):
                 class_counts[touchpoint_class] += 1
-        retained_only_paths = [
+        manifest_or_doc_only_paths = [
             changed_path
             for changed_path in covered_paths
             if changed_path_classes(touchpoints[changed_path]).issubset(
-                {RETAINED_C_CLASS, BUILD_MANIFEST_CLASS, WORKFLOW_DOC_CLASS}
+                {BUILD_MANIFEST_CLASS, WORKFLOW_DOC_CLASS}
             )
         ]
     except ValueError as exc:
@@ -400,9 +397,8 @@ def main() -> int:
     print(f"- {BUILD_TOOL_ZIG_CLASS}: {class_counts[BUILD_TOOL_ZIG_CLASS]}")
     print(f"- {BUILD_LOGIC_CLASS}: {class_counts[BUILD_LOGIC_CLASS]}")
     print(f"- {BUILD_MANIFEST_CLASS}: {class_counts[BUILD_MANIFEST_CLASS]}")
-    print(f"- {RETAINED_C_CLASS}: {class_counts[RETAINED_C_CLASS]}")
     print(f"- {WORKFLOW_DOC_CLASS}: {class_counts[WORKFLOW_DOC_CLASS]}")
-    print(f"- retained-or-manifest-only changed paths: {len(retained_only_paths)}")
+    print(f"- manifest-or-doc-only changed paths: {len(manifest_or_doc_only_paths)}")
     print(f"- no explicit z47 touchpoint: {len(uncovered_paths)}")
 
     print(f"\nChanged imported paths with explicit z47 touchpoints ({len(covered_paths)}):")

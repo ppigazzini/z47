@@ -72,7 +72,6 @@ advances.
 | --- | --- |
 | `src/` | the ported calculator — Zig owners |
 | `build/` | the Zig build control plane, harnesses, generators, packaging |
-| `bridge/` | near-retired C header shims |
 | `docs/` | developer documentation |
 | `upstream/` | the imported C47 tree, pinned to one upstream commit |
 | `build.zig` | the only supported build entrypoint |

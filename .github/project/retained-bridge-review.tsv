@@ -1,7 +1,0 @@
-# Active retained bridge review ledger for product-lane first-party C.
-# Empty data section: the first-party C-to-Zig product runtime port is complete.
-# Every former bridge/**/*.c seam (math wrappers, random, calc_state, flags,
-# keyboard_state, program_serialization, register_metadata, registers, stack)
-# has been retired into its Zig owner, so there are zero active product-lane
-# bridge references for this ledger to track.
-bridge_path	local_owner	parity_target	status	notes

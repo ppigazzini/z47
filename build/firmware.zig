@@ -1033,7 +1033,6 @@ fn addFirmwareElfBuild(
     if (phase == .final) cmd.addArg(b.fmt("-D{s}", .{config.qspi_macro}));
 
     cmd.addArg(b.fmt("-I{s}", .{build_common.upstreamPathString(b, "dep/decNumberICU")}));
-    cmd.addArg("-Ibridge");
     cmd.addArg(b.fmt("-I{s}", .{build_common.upstreamPathString(b, "src/c47")}));
     cmd.addArg(b.fmt("-I{s}", .{build_common.upstreamPathString(b, firmwareBoardSourceDir(config.board))}));
     cmd.addArg(b.fmt("-I{s}", .{build_common.upstreamPathString(b, firmwareSdkIncludeDir(config.board))}));

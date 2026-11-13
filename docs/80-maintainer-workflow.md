@@ -52,17 +52,13 @@ Use one promotion workflow when a non-trivial change lands.
 
 - Document tracked repo surfaces only, not ignored local worktrees or ignored
   build outputs.
-- Keep `build/` documented as build-only, `src/` as the live runtime Zig
-  owners, and `bridge/` as the near-retired legacy header shims
-  (`git ls-files bridge/` lists them; the former product-lane bridge `.c` seams
-  are all retired into their Zig owners).
+- Keep `build/` documented as build-only and `src/` as the live runtime Zig
+  owners.
 - Keep these tracked control files and their affected docs aligned when the
   imported-root or tracked top-level ownership contract changes:
   `../.github/project/source-ownership.txt`,
   `../.github/project/upstream-pin.env`,
   `../.github/project/upstream-port-ledger.tsv`,
-  `../.github/project/retained-bridge-review.tsv`,
-  `../.github/project/check-retained-bridge-ledger.py`,
   `../.github/project/report-c-dependency-status.py`,
   `../.github/project/imported-tree-divergences.txt`,
   `../.github/project/report-upstream-refresh.py`, and
@@ -154,15 +150,11 @@ Use the tracked C-dependency status helper when a maintainer report needs
 current first-party C telemetry.
 
 1. Run `python3 .github/project/report-c-dependency-status.py --repo-root .`.
-2. Run `python3 .github/project/check-retained-bridge-ledger.py --repo-root .`.
-3. Keep these buckets separate in the maintained wording; do not collapse them
+2. Keep these buckets separate in the maintained wording; do not collapse them
    into one closure sentence:
    - active product-build first-party C (target 0)
-   - retained-bridge subset (the near-retired `bridge/` shims)
    - repo-wide non-product parity, oracle, fake-runtime, and test first-party C
-4. Keep the retained-bridge set justified through
-   `../.github/project/retained-bridge-review.tsv`.
-5. Pair the split C report with
+3. Pair the split C report with
    `python3 .github/project/report-upstream-refresh.py --repo-root . --fetch`
    when the report also makes an upstream-sync freshness claim.
 

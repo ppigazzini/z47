@@ -21,7 +21,6 @@ README.md
 build.zig
 build.zig.zon
 pyproject.toml
-bridge
 build
 docs
 src

@@ -197,7 +197,7 @@ C43_DEFINITION_RE = re.compile(r"^(?:static\s+)?[A-Za-z_][\w \*]*?\b(\w+)\s*\([^
 C_KEYWORDS = frozenset({"if", "else", "for", "while", "switch", "do", "return", "sizeof"})
 
 FUNCTION_RATCHET = ".github/project/oracle-function-baseline.json"
-TRACKED_C_GLOBS = ("build/**/*.c", "bridge/**/*.c")
+TRACKED_C_GLOBS = ("build/**/*.c",)
 
 
 def c43_function_names(repo: Path) -> set[str]:

@@ -48,14 +48,10 @@ Facts, verified from `../build/firmware.zig`:
   `../upstream/dep/decNumberICU` sources, the SwissMicros SDK `pgm_syscalls.c` and
   `startup_pgm.s`, the generated constant-pointer and raster-font C, and a
   cross-built GMP archive (see below).
-- The `-Ibridge` overlay is prepended ahead of the imported `../upstream/src/c47`
-  include path. `../bridge/c47.h` `#include_next`s upstream's `c47.h`; the
-  per-package block after it predates `dm42Package` and disagrees with it -- it
-  defines `SAVE_SPACE_DM42_*` macros nothing in `../upstream/src` reads any more
-  and undefines options `dm42Package` keeps -- and it is inert only because in the
-  firmware link it reaches nothing but the generated `rasterFontsData.c`,
-  `constantPointers.c` and `constantPointers2.c`. Owners take `OPTION_*` from
-  their build options, not from this header.
+- The generated `rasterFontsData.c`, `constantPointers.c` and
+  `constantPointers2.c` compile against upstream's own `c47.h`, the only C the
+  firmware link reaches outside the vendored and SDK sources. Owners take
+  `OPTION_*` from their build options, not from any C header.
 - Per-package and DM42-board `OPTION_*` values are set in `../build/firmware.zig`
   as build options that mirror the upstream `defines.h` blocks, not by editing
   imported C: `dm42Package` holds what each package keeps, and

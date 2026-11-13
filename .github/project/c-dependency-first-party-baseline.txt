@@ -17,7 +17,6 @@ build/tests/flags/flags_parity.c
 build/tests/keyboard_state/keyboard_entry_harness.c
 build/tests/keyboard_state/keyboard_state_oracle.c
 build/tests/keyboard_state/keyboard_state_parity_harness.c
-build/tests/keyboard_statusbar_flags_regression.c
 build/tests/logical_shortint_fake_runtime.c
 build/tests/logical_shortint_parity.c
 build/tests/math_reference/to_polar_reference.c

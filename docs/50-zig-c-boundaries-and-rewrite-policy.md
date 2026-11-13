@@ -52,11 +52,8 @@ The C that remains is deliberate and explicit:
   oracles, fake runtimes, and harnesses) kept only for verification.
   `report-c-dependency-status.py` owns the count and reports 0 of them in the
   active product build. None of it is under `src/`, which carries no `.c` or `.h`
-  at all. First-party headers also live in `../bridge/` (`c47.h`, the firmware
-  option overlay on the `-Ibridge` include path, and
-  `state/keyboard_statusbar_mask.h`, which only the
-  `keyboard_statusbar_flags_regression` lane includes) and
-  `../build/tools/translate_c/` (the `translate-c` roots).
+  at all. The only other first-party headers are the `translate-c` roots in
+  `../build/tools/translate_c/`.
 
 Do not imply the project is pure Zig. It is Zig-first with the retained C above.
 

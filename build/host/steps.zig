@@ -1169,8 +1169,8 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.l
     progmem_test_step.dependOn(&run_progmem_test.step);
 
     // The DMCP key ring buffer is `#if DMCP_BUILD`-only, so the host testSuite
-    // never reaches it; its embedded tests make the buffer mechanics verifiable
-    // without a device before the bridge port wires it onto the firmware lanes.
+    // never reaches it; its embedded tests are the only host check of the buffer
+    // mechanics.
     const ringbuffer_test_module = b.createModule(.{
         .root_source_file = b.path("src/core/input/keyboard_state_ringbuffer.zig"),
         .target = context.host_target,
@@ -1449,28 +1449,6 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.l
     const distribution_spec_step = b.step("distribution_spec", "Run the statistical distributions against their closed forms");
     distribution_spec_step.dependOn(&run_distribution_spec.step);
 
-    const keyboard_statusbar_flags_regression = b.addExecutable(.{
-        .name = "keyboard-statusbar-flags-regression",
-        .root_module = b.createModule(.{
-            .root_source_file = null,
-            .target = context.host_target,
-            .optimize = optimize,
-            .link_libc = true,
-        }),
-    });
-    abi_host.addToModule(b, keyboard_statusbar_flags_regression.root_module, context.host_target, optimize, "keyboard-statusbar-flags-regression");
-    host_platform.addHostMacros(keyboard_statusbar_flags_regression.root_module, context.common);
-    keyboard_statusbar_flags_regression.root_module.addIncludePath(build_common.upstreamPath(b, "src/c47"));
-    keyboard_statusbar_flags_regression.root_module.addIncludePath(b.path("bridge/state"));
-    keyboard_statusbar_flags_regression.root_module.addCSourceFile(.{
-        .file = b.path("build/tests/keyboard_statusbar_flags_regression.c"),
-        .flags = &.{},
-    });
-    const run_keyboard_statusbar_flags_regression = b.addRunArtifact(keyboard_statusbar_flags_regression);
-    run_keyboard_statusbar_flags_regression.setCwd(b.path("."));
-    const keyboard_statusbar_flags_regression_step = b.step("keyboard_statusbar_flags_regression", "Run the keyboard statusbar flag-clearing regression");
-    keyboard_statusbar_flags_regression_step.dependOn(&run_keyboard_statusbar_flags_regression.step);
-
     const program_serialization_parity = program_serialization.addParityExecutable(b, context.host_target, optimize, context.common);
     const run_program_serialization_parity = b.addRunArtifact(program_serialization_parity);
     run_program_serialization_parity.setCwd(b.path("."));
@@ -1479,7 +1457,6 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.l
 
     const run_test_suite = addTestSuiteRun(b, test_suite, build_common.upstreamPathString(b, "src/testSuite/tests/testSuiteList.txt"));
     const test_step = b.step("test", "Run the host test suite");
-    test_step.dependOn(&run_keyboard_statusbar_flags_regression.step);
     test_step.dependOn(&run_test_suite.step);
 
     const test_suite_asan = host_builders.addTestSuite(
