@@ -269,7 +269,7 @@ extern real_t *savedStatisticalSumsPointer;
 extern real_t SAVED_SIGMA_LASTX;
 extern real_t SAVED_SIGMA_LASTY;
 
-uint16_t z47_stack_runtime_get_stack_top(void);
+calcRegister_t z47_stack_runtime_get_stack_top(void);
 uint16_t z47_stack_runtime_real34_size_in_blocks(void);
 bool_t z47_stack_runtime_try_fn_to_real_complex_zero(void);
 bool_t z47_stack_runtime_try_fn_to_real_real34(void);
