@@ -43,11 +43,12 @@ from __future__ import annotations
 
 import argparse
 import json
-import re
 import signal
 import subprocess
 import sys
 from pathlib import Path
+
+from lane_vocabulary import lane_steps
 
 MANIFEST = ".github/project/oracle-negative-control.json"
 COVERAGE_BASELINE = ".github/project/oracle-negative-control-coverage.json"
@@ -76,27 +77,28 @@ def _on_signal(signum, _frame):  # pragma: no cover - signal path
     sys.exit(128 + signum)
 
 
-def declared_lane_steps(repo: Path) -> list[str]:
-    """The build's own lane list, the same source check-parity-lanes-gated.py uses."""
+def declared_lane_steps(repo: Path) -> list[str] | None:
+    """The build's own lane list, read with the vocabulary check-parity-lanes-gated.py
+    uses. None when `zig build --help` fails: an empty list would read as "every
+    lane has a mutant"."""
     completed = subprocess.run(["zig", "build", "--help"], cwd=repo, capture_output=True, text=True)
     if completed.returncode != 0:
-        return []
-    return sorted(
-        set(
-            re.findall(
-                r"^\s{2}([\w-]+(?:_parity|_oracle|_diff|_suite|-parity))\s", completed.stdout, re.M
-            )
-        )
-    )
+        return None
+    return sorted(lane_steps(completed.stdout))
 
 
-def covered_lane_count(entries: list[dict]) -> int:
-    return len({entry["step"] for entry in entries})
+def mutated_steps(entries: list[dict]) -> set[str]:
+    """Lanes with at least one real mutant. A `no_mutation` entry documents why a
+    lane has none; it is not coverage."""
+    return {entry["step"] for entry in entries if not entry.get("no_mutation")}
 
 
-def uncovered_lanes(repo: Path, entries: list[dict]) -> list[str]:
-    covered = {entry["step"] for entry in entries}
-    return [lane for lane in declared_lane_steps(repo) if lane not in covered]
+def uncovered_lanes(repo: Path, entries: list[dict]) -> list[str] | None:
+    declared = declared_lane_steps(repo)
+    if declared is None:
+        return None
+    covered = mutated_steps(entries)
+    return [lane for lane in declared if lane not in covered]
 
 
 def run_lane(repo: Path, step: str) -> int:
@@ -219,6 +221,12 @@ def main() -> int:
     # a clean bill for what it did not.
     if not args.only:
         uncovered = uncovered_lanes(repo, entries)
+        if uncovered is None:
+            print(
+                "check-oracle-negative-control: FAIL -- `zig build --help` failed, so the"
+                " lane list is unknown and coverage cannot be judged"
+            )
+            return 1
         coverage_path = repo / COVERAGE_BASELINE
         if args.bump_coverage:
             coverage_path.write_text(
@@ -247,7 +255,7 @@ def main() -> int:
                 "lanes_without_a_mutant", []
             )
         print(
-            f"  {len(uncovered)} lane(s) still have NO mutant, of {len(uncovered) + covered_lane_count(entries)}:"
+            f"  {len(uncovered)} lane(s) still have NO mutant, of {len(uncovered) + len(mutated_steps(entries))}:"
         )
         for lane in uncovered:
             print(f"    {lane}")

@@ -1,4 +1,9 @@
 {
   "_why": "Parity lanes with no mutant in oracle-negative-control.json. They run, but nothing proves they would fail if the owner were wrong. The count may FALL and may not rise; the endpoint is an empty list.",
-  "lanes_without_a_mutant": []
+  "lanes_without_a_mutant": [
+    "abi-layout-parity",
+    "idiom-test",
+    "keyboard_ringbuffer_test",
+    "state-progmem-test"
+  ]
 }
