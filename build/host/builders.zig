@@ -16,22 +16,6 @@ const tone = @import("../ui/tone.zig");
 const host_types = @import("types.zig");
 const abi_host = @import("../abi_host.zig");
 
-const state_bridge_sources_manifest = @embedFile("builders_state_bridge_sources.txt");
-
-fn addManifestCSources(
-    b: *std.Build,
-    module: *std.Build.Module,
-    manifest: []const u8,
-    c_flags: []const []const u8,
-) void {
-    var lines = std.mem.tokenizeAny(u8, manifest, "\r\n");
-    while (lines.next()) |line_raw| {
-        const source = std.mem.trim(u8, line_raw, " \t");
-        if (source.len == 0 or source[0] == '#') continue;
-        module.addCSourceFile(.{ .file = b.path(source), .flags = c_flags });
-    }
-}
-
 pub fn addSimulator(
     b: *std.Build,
     host_target: std.Build.ResolvedTarget,
@@ -99,22 +83,21 @@ pub fn addSimulator(
     // save-file identity line and the calcModel global cannot disagree about
     // which calculator this binary is.
     const calc_model_id: u8 = if (std.mem.eql(u8, calc_model, "USER_R47")) 66 else 46;
-    gtk_gui.addToModule(b, exe.root_module, host_target, optimize, artifact_name, build_common.common_gtk_c_flags, calc_model_id);
-    addManifestCSources(b, exe.root_module, state_bridge_sources_manifest, core_c_flags);
+    gtk_gui.addToModule(b, exe.root_module, host_target, optimize, artifact_name, calc_model_id);
     abi_host.addToModule(b, exe.root_module, host_target, optimize, artifact_name);
-    memory.addToModule(b, exe.root_module, host_target, optimize, artifact_name, core_c_flags);
-    calc_state.addToModule(b, exe.root_module, host_target, optimize, artifact_name, core_c_flags, calc_model_id);
-    program_serialization.addToModule(b, exe.root_module, host_target, optimize, artifact_name, core_c_flags);
-    register_metadata.addToModule(b, exe.root_module, host_target, optimize, artifact_name, core_c_flags);
-    flags.addToModule(b, exe.root_module, host_target, optimize, artifact_name, core_c_flags);
-    math_command_wrappers.addToModule(b, exe.root_module, host_target, optimize, artifact_name, core_c_flags, false);
-    solve.addToModule(b, exe.root_module, host_target, optimize, artifact_name, core_c_flags, false);
+    memory.addToModule(b, exe.root_module, host_target, optimize, artifact_name);
+    calc_state.addToModule(b, exe.root_module, host_target, optimize, artifact_name, calc_model_id);
+    program_serialization.addToModule(b, exe.root_module, host_target, optimize, artifact_name);
+    register_metadata.addToModule(b, exe.root_module, host_target, optimize, artifact_name);
+    flags.addToModule(b, exe.root_module, host_target, optimize, artifact_name);
+    math_command_wrappers.addToModule(b, exe.root_module, host_target, optimize, artifact_name, false);
+    solve.addToModule(b, exe.root_module, host_target, optimize, artifact_name, false);
     // The frontier calcModel seed makes the R47 sim boot isR47FAM()=true (correct
     // window title + keyboard layout) at startup, matching upstream's -DCALCMODEL
     // static init of calcModel.
-    frontier.addToModule(b, exe.root_module, host_target, optimize, artifact_name, core_c_flags, calc_model_id, false, false);
-    constants.addToModule(b, exe.root_module, host_target, optimize, artifact_name, core_c_flags);
-    tone.addToModule(b, exe.root_module, host_target, optimize, artifact_name, core_c_flags);
+    frontier.addToModule(b, exe.root_module, host_target, optimize, artifact_name, calc_model_id, false, false);
+    constants.addToModule(b, exe.root_module, host_target, optimize, artifact_name);
+    tone.addToModule(b, exe.root_module, host_target, optimize, artifact_name);
     exe.root_module.addCSourceFile(.{ .file = generated.raster_fonts_data, .flags = core_c_flags });
     exe.root_module.addCSourceFile(.{ .file = generated.constant_pointers_c, .flags = core_c_flags });
     exe.root_module.addCSourceFile(.{ .file = generated.constant_pointers2_c, .flags = core_c_flags });
@@ -271,18 +254,17 @@ pub fn addTestSuite(
     exe.root_module.addCSourceFile(.{ .file = build_common.upstreamPath(b, "src/testSuite/" ++ testsuite_main_source), .flags = testsuite_main_flags });
     exe.root_module.addObject(addTestSuiteHalObject(b, host_target, optimize, name));
     exe.root_module.addObject(addTestSuiteMainObject(b, host_target, optimize, name));
-    addManifestCSources(b, exe.root_module, state_bridge_sources_manifest, core_c_flags);
     abi_host.addToModule(b, exe.root_module, host_target, optimize, name);
-    memory.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);
-    calc_state.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags, 46); // testSuite is the C47 model
-    program_serialization.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);
-    register_metadata.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);
-    flags.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);
-    math_command_wrappers.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags, true);
-    solve.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags, true);
-    frontier.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags, 46, false, true); // testSuite is the C47 model
-    constants.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);
-    tone.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);
+    memory.addToModule(b, exe.root_module, host_target, optimize, name);
+    calc_state.addToModule(b, exe.root_module, host_target, optimize, name, 46); // testSuite is the C47 model
+    program_serialization.addToModule(b, exe.root_module, host_target, optimize, name);
+    register_metadata.addToModule(b, exe.root_module, host_target, optimize, name);
+    flags.addToModule(b, exe.root_module, host_target, optimize, name);
+    math_command_wrappers.addToModule(b, exe.root_module, host_target, optimize, name, true);
+    solve.addToModule(b, exe.root_module, host_target, optimize, name, true);
+    frontier.addToModule(b, exe.root_module, host_target, optimize, name, 46, false, true); // testSuite is the C47 model
+    constants.addToModule(b, exe.root_module, host_target, optimize, name);
+    tone.addToModule(b, exe.root_module, host_target, optimize, name);
     exe.root_module.addCSourceFile(.{ .file = generated.raster_fonts_data, .flags = core_c_flags });
     exe.root_module.addCSourceFile(.{ .file = generated.constant_pointers_c, .flags = core_c_flags });
     exe.root_module.addCSourceFile(.{ .file = generated.constant_pointers2_c, .flags = core_c_flags });
@@ -344,18 +326,17 @@ pub fn addFullCoreHarness(
     _ = test_sources;
     exe.root_module.addCSourceFile(.{ .file = b.path(harness_source), .flags = core_c_flags });
     exe.root_module.addObject(addTestSuiteHalObject(b, host_target, optimize, name));
-    addManifestCSources(b, exe.root_module, state_bridge_sources_manifest, core_c_flags);
     abi_host.addToModule(b, exe.root_module, host_target, optimize, name);
-    memory.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);
-    calc_state.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags, 46); // testSuite is the C47 model
-    program_serialization.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);
-    register_metadata.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);
-    flags.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);
-    math_command_wrappers.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags, true);
-    solve.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags, true);
-    frontier.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags, 46, coverage, true); // C47 model
-    constants.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);
-    tone.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);
+    memory.addToModule(b, exe.root_module, host_target, optimize, name);
+    calc_state.addToModule(b, exe.root_module, host_target, optimize, name, 46); // testSuite is the C47 model
+    program_serialization.addToModule(b, exe.root_module, host_target, optimize, name);
+    register_metadata.addToModule(b, exe.root_module, host_target, optimize, name);
+    flags.addToModule(b, exe.root_module, host_target, optimize, name);
+    math_command_wrappers.addToModule(b, exe.root_module, host_target, optimize, name, true);
+    solve.addToModule(b, exe.root_module, host_target, optimize, name, true);
+    frontier.addToModule(b, exe.root_module, host_target, optimize, name, 46, coverage, true); // C47 model
+    constants.addToModule(b, exe.root_module, host_target, optimize, name);
+    tone.addToModule(b, exe.root_module, host_target, optimize, name);
     exe.root_module.addCSourceFile(.{ .file = generated.raster_fonts_data, .flags = core_c_flags });
     exe.root_module.addCSourceFile(.{ .file = generated.constant_pointers_c, .flags = core_c_flags });
     exe.root_module.addCSourceFile(.{ .file = generated.constant_pointers2_c, .flags = core_c_flags });

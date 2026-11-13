@@ -4,7 +4,6 @@ const abi_host = @import("../abi_host.zig");
 const host_platform = @import("../host/platform.zig");
 
 const replaced_core_sources_manifest = @embedFile("math_command_wrapper_replaced_core_sources.txt");
-const runtime_helper_sources_manifest = @embedFile("math_command_wrapper_runtime_helper_sources.txt");
 
 fn manifestContainsPath(manifest: []const u8, needle: []const u8) bool {
     var lines = std.mem.tokenizeAny(u8, manifest, "\r\n");
@@ -24,14 +23,6 @@ pub const RuntimeObjects = struct {
     math_command_wrappers: *std.Build.Step.Compile,
 
     pub fn addToCommand(self: RuntimeObjects, cmd: *std.Build.Step.Run) void {
-        var lines = std.mem.tokenizeAny(u8, runtime_helper_sources_manifest, "\r\n");
-        while (lines.next()) |line_raw| {
-            const source = std.mem.trim(u8, line_raw, " \t");
-            if (source.len == 0 or source[0] == '#') {
-                continue;
-            }
-            cmd.addArg(source);
-        }
         cmd.addFileArg2(self.math_command_wrappers.getEmittedBin(), .{});
     }
 };
@@ -276,17 +267,8 @@ pub fn addToModule(
     target: std.Build.ResolvedTarget,
     optimize: std.lang.Optimize,
     name_prefix: []const u8,
-    c_flags: []const []const u8,
     is_testsuite_build: bool,
 ) void {
-    var lines = std.mem.tokenizeAny(u8, runtime_helper_sources_manifest, "\r\n");
-    while (lines.next()) |line_raw| {
-        const source = std.mem.trim(u8, line_raw, " \t");
-        if (source.len == 0 or source[0] == '#') {
-            continue;
-        }
-        module.addCSourceFile(.{ .file = b.path(source), .flags = c_flags });
-    }
     const runtime_object = addRuntimeObject(b, target, optimize, name_prefix, .{ .is_testsuite_build = is_testsuite_build });
     module.addObject(runtime_object);
 }

@@ -1,2 +1,0 @@
-# Runtime legacy helper C units for mathematics command wrappers.
-# (empty: mathematics/matrix.c fully ported to Zig; the bridge is retired.)

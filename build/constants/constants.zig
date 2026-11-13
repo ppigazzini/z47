@@ -103,9 +103,7 @@ pub fn addToModule(
     target: std.Build.ResolvedTarget,
     optimize: std.lang.Optimize,
     name_prefix: []const u8,
-    c_flags: []const []const u8,
 ) void {
-    _ = c_flags;
     module.addObject(addRuntimeObject(b, target, optimize, name_prefix, .{}));
 }
 

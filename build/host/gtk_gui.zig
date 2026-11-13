@@ -2,7 +2,6 @@ const std = @import("std");
 const build_common = @import("../common.zig");
 
 const legacy_gtk_sources_manifest = @embedFile("gtk_gui_legacy_gtk_sources.txt");
-const runtime_helper_sources_manifest = @embedFile("gtk_gui_runtime_helper_sources.txt");
 
 fn manifestContainsPath(manifest: []const u8, needle: []const u8) bool {
     var lines = std.mem.tokenizeAny(u8, manifest, "\r\n");
@@ -34,15 +33,8 @@ pub fn addToModule(
     target: std.Build.ResolvedTarget,
     optimize: std.lang.Optimize,
     name_prefix: []const u8,
-    c_flags: []const []const u8,
     calcmodel: u8,
 ) void {
-    var lines = std.mem.tokenizeAny(u8, runtime_helper_sources_manifest, "\r\n");
-    while (lines.next()) |line_raw| {
-        const source = std.mem.trim(u8, line_raw, " \t");
-        if (source.len == 0 or source[0] == '#') continue;
-        module.addCSourceFile(.{ .file = b.path(source), .flags = c_flags });
-    }
 
     // Options consumed by gtk_c47_main.zig (the ported main()): the
     // compile-time calc model + the version stamps shown by --help.

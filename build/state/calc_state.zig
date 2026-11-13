@@ -181,15 +181,9 @@ pub fn addToModule(
     target: std.Build.ResolvedTarget,
     optimize: std.lang.Optimize,
     name_prefix: []const u8,
-    c_flags: []const []const u8,
     calc_model_user_id: u16,
 ) void {
     const runtime_object = addRuntimeObject(b, target, optimize, name_prefix, .{ .calc_model_user_id = calc_model_user_id });
-
-    // The calc-state save/restore/load path is now fully Zig-owned; the former
-    // calc_state_legacy.c bridge is gone. The DMCP ROM-macro shims it once needed
-    // (power_check_screen / sys_timer) are now Zig-owned in core/hal/dmcp_rom.zig.
-    _ = c_flags;
     module.addObject(runtime_object);
 }
 

@@ -2,20 +2,11 @@ const std = @import("std");
 const build_common = @import("../common.zig");
 
 const replaced_core_sources_manifest = @embedFile("frontier_replaced_core_sources.txt");
-const runtime_helper_sources_manifest = @embedFile("frontier_runtime_helper_sources.txt");
 
 pub const RuntimeObjects = struct {
     frontier_root: *std.Build.Step.Compile,
 
     pub fn addToCommand(self: RuntimeObjects, cmd: *std.Build.Step.Run) void {
-        var lines = std.mem.tokenizeAny(u8, runtime_helper_sources_manifest, "\r\n");
-        while (lines.next()) |line_raw| {
-            const source = std.mem.trim(u8, line_raw, " \t");
-            if (source.len == 0 or source[0] == '#') {
-                continue;
-            }
-            cmd.addArg(source);
-        }
         cmd.addFileArg2(self.frontier_root.getEmittedBin(), .{});
     }
 };
@@ -403,19 +394,10 @@ pub fn addToModule(
     target: std.Build.ResolvedTarget,
     optimize: std.lang.Optimize,
     name_prefix: []const u8,
-    c_flags: []const []const u8,
     calcmodel: u8,
     coverage: bool,
     is_testsuite_build: bool,
 ) void {
-    var lines = std.mem.tokenizeAny(u8, runtime_helper_sources_manifest, "\r\n");
-    while (lines.next()) |line_raw| {
-        const source = std.mem.trim(u8, line_raw, " \t");
-        if (source.len == 0 or source[0] == '#') {
-            continue;
-        }
-        module.addCSourceFile(.{ .file = b.path(source), .flags = c_flags });
-    }
     const runtime_object = addRuntimeObject(b, target, optimize, name_prefix, .{ .calcmodel = calcmodel, .coverage = coverage, .is_testsuite_build = is_testsuite_build });
     module.addObject(runtime_object);
 }
