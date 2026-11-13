@@ -120,7 +120,7 @@ extern var tamBuffer: [*c]u8;
 extern var asmBuffer: [5]u8;
 extern var oldTime: [8]u8;
 extern var dateTimeString: [12]u8;
-extern var softmenuStack: [64]u8;
+extern var softmenuStack: [8]abi.SoftmenuStack; // SOFTMENU_STACK_SIZE
 extern var kbd_usr: [666]u8;
 extern var userMenuItems: [360]u8;
 extern var userAlphaItems: [360]u8;
@@ -293,7 +293,7 @@ extern var nBins: [16]u8;
 extern var hiBinR: [16]u8;
 extern var histElementXorY: [2]u8;
 extern var screenUpdatingMode: [1]u8;
-extern var Norm_Key_00: [64]u8;
+extern var Norm_Key_00: abi.NormKey;
 extern var Input_Default: [1]u8;
 extern var T_cursorPos: [2]u8;
 extern var multiEdLines: [1]u8;
@@ -327,7 +327,7 @@ extern var grpGroupingBin: [1]u8;
 extern var firstDayOfWeek: [1]u8;
 extern var firstWeekOfYearDay: [1]u8;
 extern var dispBase: [1]u8;
-extern var printerState: [64]u8;
+extern var printerState: abi.PrinterState;
 extern var allNamedVariables: [*c]u8;
 extern var allFormulae: [*c]u8;
 extern var userMenus: [*c]u8;
@@ -501,7 +501,7 @@ pub fn saveCalc() void {
     sv(&asmBuffer[0], 5, "asmBuffer", "hexDump");
     sv(&oldTime[0], 8, "oldTime", "hexDump");
     sv(&dateTimeString[0], 12, "dateTimeString", "hexDump");
-    sv(&softmenuStack[0], 64, "softmenuStack", "hexDump");
+    sv(&softmenuStack, @sizeOf(@TypeOf(softmenuStack)), "softmenuStack", "hexDump");
     if (comptime option_structured_pgm) {
         sv(&forLoopTable[0], FOR_LOOP_TABLE_BYTES, "forLoopTable", "hexDump");
     }
@@ -672,9 +672,9 @@ pub fn saveCalc() void {
     sv(&hiBinR[0], 16, "hiBinR", "real34");
     sv(&histElementXorY[0], 2, "histElementXorY", "int16");
     sv(&screenUpdatingMode[0], 1, "screenUpdatingMode", "uint8");
-    sv(&Norm_Key_00[0], 2, "Norm_Key_00.func", "int16");
-    sv(&Norm_Key_00[2], 16, "Norm_Key_00.funcParam", "hexDump");
-    sv(&Norm_Key_00[18], 1, "Norm_Key_00.used", "bool");
+    sv(&Norm_Key_00.func, @sizeOf(@TypeOf(Norm_Key_00.func)), "Norm_Key_00.func", "int16");
+    sv(&Norm_Key_00.funcParam, @sizeOf(@TypeOf(Norm_Key_00.funcParam)), "Norm_Key_00.funcParam", "hexDump");
+    sv(&Norm_Key_00.used, @sizeOf(@TypeOf(Norm_Key_00.used)), "Norm_Key_00.used", "bool");
     sv(&Input_Default[0], 1, "Input_Default", "uint8");
     sv(&T_cursorPos[0], 2, "T_cursorPos", "int16");
     sv(&multiEdLines[0], 1, "multiEdLines", "uint8");
@@ -708,9 +708,9 @@ pub fn saveCalc() void {
     sv(&firstDayOfWeek[0], 1, "firstDayOfWeek", "uint8");
     sv(&firstWeekOfYearDay[0], 1, "firstWeekOfYearDay", "uint8");
     sv(&dispBase[0], 1, "dispBase", "uint8");
-    sv(&printerState[0], 1, "printerState.print_on", "bool");
-    sv(&printerState[8], 4, "printerState.printer_model", "uint8");
-    sv(&printerState[12], 2, "printerState.delay", "uint16");
+    sv(&printerState.print_on, @sizeOf(@TypeOf(printerState.print_on)), "printerState.print_on", "bool");
+    sv(&printerState.printer_model, @sizeOf(@TypeOf(printerState.printer_model)), "printerState.printer_model", "uint8");
+    sv(&printerState.delay, @sizeOf(@TypeOf(printerState.delay)), "printerState.delay", "uint16");
     sv(&programmableMenu[0], 332, "programmableMenu", "hexDump");
     {
         var cf: i8 = cursorFontId();
@@ -1230,7 +1230,7 @@ pub fn restoreCalc() void {
     rv(&asmBuffer[0], 5, "asmBuffer", "hexDump");
     rv(&oldTime[0], 8, "oldTime", "hexDump");
     rv(&dateTimeString[0], 12, "dateTimeString", "hexDump");
-    rv(&softmenuStack[0], 64, "softmenuStack", "hexDump");
+    rv(&softmenuStack, @sizeOf(@TypeOf(softmenuStack)), "softmenuStack", "hexDump");
     if (comptime option_structured_pgm) {
         forClearLoops(); // a file without the keyword below then leaves no loop running
         rv(&forLoopTable[0], FOR_LOOP_TABLE_BYTES, "forLoopTable", "hexDump");
@@ -1434,9 +1434,9 @@ pub fn restoreCalc() void {
     rv(&hiBinR[0], 16, "hiBinR", "real34");
     rv(&histElementXorY[0], 2, "histElementXorY", "int16");
     rv(&screenUpdatingMode[0], 1, "screenUpdatingMode", "uint8");
-    rv(&Norm_Key_00[0], 2, "Norm_Key_00.func", "int16");
-    rv(&Norm_Key_00[2], 16, "Norm_Key_00.funcParam", "hexDump");
-    rv(&Norm_Key_00[18], 1, "Norm_Key_00.used", "bool");
+    rv(&Norm_Key_00.func, @sizeOf(@TypeOf(Norm_Key_00.func)), "Norm_Key_00.func", "int16");
+    rv(&Norm_Key_00.funcParam, @sizeOf(@TypeOf(Norm_Key_00.funcParam)), "Norm_Key_00.funcParam", "hexDump");
+    rv(&Norm_Key_00.used, @sizeOf(@TypeOf(Norm_Key_00.used)), "Norm_Key_00.used", "bool");
     rv(&Input_Default[0], 1, "Input_Default", "uint8");
     set_def_Input_Default();
     rv(&T_cursorPos[0], 2, "T_cursorPos", "int16");
@@ -1472,9 +1472,9 @@ pub fn restoreCalc() void {
     rv(&firstDayOfWeek[0], 1, "firstDayOfWeek", "uint8");
     rv(&firstWeekOfYearDay[0], 1, "firstWeekOfYearDay", "uint8");
     rv(&dispBase[0], 1, "dispBase", "uint8");
-    rv(&printerState[0], 1, "printerState.print_on", "bool");
-    rv(&printerState[8], 4, "printerState.printer_model", "uint8");
-    rv(&printerState[12], 2, "printerState.delay", "uint16");
+    rv(&printerState.print_on, @sizeOf(@TypeOf(printerState.print_on)), "printerState.print_on", "bool");
+    rv(&printerState.printer_model, @sizeOf(@TypeOf(printerState.printer_model)), "printerState.printer_model", "uint8");
+    rv(&printerState.delay, @sizeOf(@TypeOf(printerState.delay)), "printerState.delay", "uint16");
     rv(&programmableMenu[0], 332, "programmableMenu", "hexDump");
     rv(&alphaRegister, 2, "alphaRegister", "uint16");
     graphVariabl1 = INVALID_VARIABLE;

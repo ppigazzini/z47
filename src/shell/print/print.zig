@@ -162,8 +162,6 @@ const TO_CL_DROP: u8 = 6;
 const JM_CLRDROP_TIMER: u32 = if (dmcp_build) 900 else 500; // defines.h: DMCP 900 / host 500
 const TMR_RUNNING: u8 = 2;
 
-const KEY_EXIT: c_int = 32; // host EXIT key code (currentKeyCode == 32)
-
 const REGISTER_X: calcRegister_t = 100;
 const REGISTER_Y: calcRegister_t = 101;
 const REGISTER_T: calcRegister_t = 103;
