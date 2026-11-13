@@ -21,6 +21,7 @@ typedef struct {
 } atan2Case_t;
 
 void z47_math_wrappers_owned_C47_WP34S_Atan2(const real_t *y, const real_t *x, real_t *angle, realContext_t *realContext);
+void oracle_C47_WP34S_Atan2(const real_t *y, const real_t *x, real_t *angle, realContext_t *realContext);
 void C47_WP34S_Atan2(const real_t *y, const real_t *x, real_t *angle, realContext_t *realContext);
 
 static const atan2Case_t atan2Cases[] = {
@@ -99,10 +100,19 @@ static int runCase(const atan2Case_t *testCase) {
   initInput(&y, testCase->yKind, testCase->yText);
   initInput(&x, testCase->xKind, testCase->xText);
 
-  C47_WP34S_Atan2(&y, &x, &expected, &ctxtReal39);
+  oracle_C47_WP34S_Atan2(&y, &x, &expected, &ctxtReal39);
   z47_math_wrappers_owned_C47_WP34S_Atan2(&y, &x, &actual, &ctxtReal39);
 
   if(!sameReal(&expected, &actual)) {
+    printMismatch(testCase, &expected, &actual);
+    return 1;
+  }
+
+  // The exported port, which C callers reach, is a second Zig implementation;
+  // it answers to c43 as well.
+  C47_WP34S_Atan2(&y, &x, &actual, &ctxtReal39);
+  if(!sameReal(&expected, &actual)) {
+    printf("exported C47_WP34S_Atan2:\n");
     printMismatch(testCase, &expected, &actual);
     return 1;
   }

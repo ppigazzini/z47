@@ -28,6 +28,7 @@ typedef struct {
 } circularTrigCase_t;
 
 void z47_math_wrappers_owned_C47_WP34S_Cvt2RadSinCosTan(const real_t *angle, angularMode_t mode, real_t *sin, real_t *cos, real_t *tan, realContext_t *realContext);
+void oracle_C47_WP34S_Cvt2RadSinCosTan(const real_t *angle, angularMode_t mode, real_t *sin, real_t *cos, real_t *tan, realContext_t *realContext);
 void C47_WP34S_Cvt2RadSinCosTan(const real_t *angle, angularMode_t mode, real_t *sin, real_t *cos, real_t *tan, realContext_t *realContext);
 
 static const circularTrigCase_t circularTrigCases[] = {
@@ -133,10 +134,19 @@ static int runCase(const circularTrigCase_t *testCase) {
   realContext_t *realContext = selectContext(testCase->contextKind);
 
   initInput(&angle, testCase->inputKind, testCase->text, realContext);
-  C47_WP34S_Cvt2RadSinCosTan(&angle, testCase->mode, &expectedSin, &expectedCos, &expectedTan, realContext);
+  oracle_C47_WP34S_Cvt2RadSinCosTan(&angle, testCase->mode, &expectedSin, &expectedCos, &expectedTan, realContext);
   z47_math_wrappers_owned_C47_WP34S_Cvt2RadSinCosTan(&angle, testCase->mode, &actualSin, &actualCos, &actualTan, realContext);
 
   if(!sameReal(&expectedSin, &actualSin) || !sameReal(&expectedCos, &actualCos) || !sameReal(&expectedTan, &actualTan)) {
+    printMismatch(testCase, &expectedSin, &expectedCos, &expectedTan, &actualSin, &actualCos, &actualTan);
+    return 1;
+  }
+
+  // The exported port, which C callers reach, is a second Zig implementation;
+  // it answers to c43 as well.
+  C47_WP34S_Cvt2RadSinCosTan(&angle, testCase->mode, &actualSin, &actualCos, &actualTan, realContext);
+  if(!sameReal(&expectedSin, &actualSin) || !sameReal(&expectedCos, &actualCos) || !sameReal(&expectedTan, &actualTan)) {
+    printf("exported C47_WP34S_Cvt2RadSinCosTan:\n");
     printMismatch(testCase, &expectedSin, &expectedCos, &expectedTan, &actualSin, &actualCos, &actualTan);
     return 1;
   }

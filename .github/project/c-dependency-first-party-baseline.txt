@@ -20,6 +20,8 @@ build/tests/keyboard_state/keyboard_state_parity_harness.c
 build/tests/keyboard_statusbar_flags_regression.c
 build/tests/logical_shortint_fake_runtime.c
 build/tests/logical_shortint_parity.c
+build/tests/math_reference/to_polar_reference.c
+build/tests/math_reference/wp34s_reference.c
 build/tests/math_wrappers/math_ln_complex_reference.c
 build/tests/math_wrappers/math_random_dispatch_stubs.c
 build/tests/math_wrappers/math_random_oracle.c
