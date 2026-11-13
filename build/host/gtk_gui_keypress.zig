@@ -242,6 +242,8 @@ const ITM_REG_U = 2347;
 const ITM_REG_V = 2348;
 const ITM_REG_W = 2349;
 const ITM_REG_X = 527;
+const ITM_A = 550;
+const NP_INT_BASE: u8 = 3;
 const ITM_REG_Y = 528;
 const ITM_REG_Z = 529;
 const ITM_RI = 1871;
@@ -317,6 +319,8 @@ extern var calcModel: u8;
 extern var catalog: i16;
 extern var temporaryInformation: u8;
 extern var screenUpdatingMode: u8;
+extern var lastIntegerBase: u32;
+extern var nimNumberPart: u8;
 extern var shiftF: bool;
 extern var shiftG: bool;
 extern var lastshiftF: bool;
@@ -458,10 +462,30 @@ pub fn keyPressedCImpl(w: ?*anyopaque, event_opaque: ?*anyopaque, data: ?*anyopa
                 }
             }
 
-            if ((CTRL_State != 65536 or allow_altgr) and
+            // Hex entry: in NIM with an integer base already chosen, A-F and # are
+            // digits of the number being typed, and no command shortcut runs.
+            const hex_entry = (CTRL_State != 65536 or allow_altgr) and
+                (calcMode == CM_NIM or calcMode == CM_PEM) and
+                !getSystemFlag(FLAG_ALPHA) and calcMode == CM_NIM and lastIntegerBase > 0 and nimNumberPart != NP_INT_BASE;
+            if (hex_entry) {
+                const digit: ?u16 = if (event.keyval >= GDK_KEY_A and event.keyval <= GDK_KEY_F)
+                    @intCast(ITM_A + event.keyval - GDK_KEY_A)
+                else if (event.keyval >= GDK_KEY_a and event.keyval <= GDK_KEY_f)
+                    @intCast(ITM_A + event.keyval - GDK_KEY_a)
+                else if (event.keyval == GDK_KEY_numbersign)
+                    ITM_HASH_JM
+                else
+                    null;
+                if (digit) |item| {
+                    addItemToBuffer(item);
+                    screenUpdatingMode = SCRUPD_AUTO;
+                    refreshScreen(3);
+                    return 0;
+                }
+            } else if ((CTRL_State != 65536 or allow_altgr) and
                 (catalog == 0 or (catalog != 0 and currentMenu() == -MNU_MVAR)) and
                 (!(tamArrowsMacro() or tam.mode == TM_STORCL or tam.mode == TM_MENU) or @as(u8, @truncate(event.keyval)) == GDK_KEY_apostrophe) and
-                (calcMode == CM_NORMAL or calcMode == CM_NIM or calcMode == CM_PEM or calcMode == CM_TIMER or
+                (calcMode == CM_NORMAL or (calcMode == CM_NIM and nimNumberPart != NP_INT_BASE) or calcMode == CM_PEM or calcMode == CM_TIMER or
                     // matrix editor: the STO and RCL shortcuts are allowed
                     (calcMode == CM_MIM and (eventKeyStripCapslock(event) == GDK_KEY_m or eventKeyStripCapslock(event) == GDK_KEY_r)) or
                     // ASN TO is not included: assigning needs a KEY or a SOFTKEY under the mouse
