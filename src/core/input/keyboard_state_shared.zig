@@ -238,7 +238,7 @@ pub fn implementation(comptime runtime: type) type {
                             }
                         } else if ((runtime.tam.mode != 0 or runtime.getItemFunc(item) != runtime.addItemToBufferPtr()) and runtime.calcMode == runtime.CM_PEM and runtime.catalog != 0 and runtime.catalog != runtime.CATALOG_MVAR and !(runtime.tam.mode != 0 and runtime.tam.function == runtime.ITM_DELP)) {
                             runtime.fnKeyInCatalog = true;
-                            if (runtime.itemFuncEquals(item, @ptrCast(&runtime.fnGetSystemFlag)) and (runtime.tam.mode == runtime.TM_FLAGR or runtime.tam.mode == runtime.TM_FLAGW) and !runtime.tam.indirect) {
+                            if (runtime.itemFuncEquals(item, &runtime.fnGetSystemFlag) and (runtime.tam.mode == runtime.TM_FLAGR or runtime.tam.mode == runtime.TM_FLAGW) and !runtime.tam.indirect) {
                                 runtime.tam.value = @intCast(runtime.indexOfItemsParam(item) & 0xff);
                                 runtime.tam.alpha = true;
                                 runtime.addStepInProgram(runtime.tamOperation());
@@ -329,7 +329,7 @@ pub fn implementation(comptime runtime: type) type {
                                 if (runtime.calcMode == runtime.CM_NIM and item != runtime.ITM_CC and item != runtime.ITM_op_j and item != runtime.ITM_op_j_pol and item != runtime.ITM_HASH_JM and item != runtime.ITM_toINT and item != runtime.ITM_ms) {
                                     runtime.closeNim();
                                     if (runtime.calcMode != runtime.CM_NIM) {
-                                        if (runtime.itemFuncEquals(item, @ptrCast(&runtime.fnConstant))) {
+                                        if (runtime.itemFuncEquals(item, &runtime.fnConstant)) {
                                             runtime.setSystemFlag(runtime.FLAG_ASLIFT);
                                         }
                                     }
