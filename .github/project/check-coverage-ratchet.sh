@@ -6,8 +6,10 @@
 # differential and the full-core parity harnesses), so a future change cannot
 # quietly delete them. Raise a floor in the same commit that adds coverage.
 #
-# Usage: check-coverage-ratchet.sh        # enforce (CI)
-#        check-coverage-ratchet.sh --bump # rewrite the baseline to current values
+# Usage: check-coverage-ratchet.sh                     # enforce
+#        check-coverage-ratchet.sh --require-coverage  # enforce, and fail when the
+#                                                      # owner-coverage floor cannot be measured
+#        check-coverage-ratchet.sh --bump              # rewrite the baseline to current values
 # Exit: 0 if every metric >= its floor; 1 on any regression.
 set -euo pipefail
 
@@ -64,6 +66,11 @@ if [[ -f cov_pcs.txt && -n "$cov_bin" ]] && command -v llvm-symbolizer >/dev/nul
   fi
 fi
 
+require_coverage=0
+if [[ "${1:-}" == "--require-coverage" ]]; then
+  require_coverage=1
+fi
+
 if [[ "${1:-}" == "--bump" ]]; then
   for m in "${metrics[@]}"; do
     cur="cur_$m"
@@ -101,6 +108,11 @@ if [[ -n "$cur_zig_src_covered_lines" ]]; then
   else
     echo "zig_src_covered_lines = $have (>= collapse floor $want; margined for symbolizer noise)"
   fi
+elif (( require_coverage )); then
+  echo "FAIL: zig_src_covered_lines could not be measured (needs llvm-symbolizer, cov_pcs.txt"
+  echo "  and the keyboardEntryCov binary from 'zig build coverage'), and --require-coverage"
+  echo "  says it must be."
+  rc=1
 else
   echo "zig_src_covered_lines: skipped (no coverage build present; run 'zig build coverage' first)"
 fi

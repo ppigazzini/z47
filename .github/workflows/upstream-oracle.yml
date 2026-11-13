@@ -823,7 +823,7 @@ jobs:
           # present. Makes a push that de-instruments an owner object fail CI
           # (coverage gate).
           zig build coverage
-          bash .github/project/check-coverage-ratchet.sh
+          bash .github/project/check-coverage-ratchet.sh --require-coverage
       - name: Run Linux distribution surface
         shell: bash
         run: |
