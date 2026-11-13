@@ -176,9 +176,12 @@ generated-files-and-hashes artifact. Docs and firmware publication moved to thei
 own Linux jobs, so this lane no longer installs Doxygen, the Python docs
 packages, or Arm GCC.
 
-The headless `simulator_smoke` GUI lane never fails the battery: a
-version-independent pixman SSE2 composite over-read under Xvfb software rendering
-trips a SIGSEGV that is not a product regression. The packaged-archive launch
+The headless `simulator_smoke` GUI lane tolerates one end and only one: the
+simulator dying of SIGSEGV, the version-independent pixman SSE2 composite
+over-read under Xvfb software rendering, which is not a product regression.
+`../build/host/simulator_smoke.sh` reaps the simulator and warns on exit 139;
+a missing tool, a hang, another signal or a failed screen assertion fails the
+battery. The packaged-archive launch
 tolerates only that SIGSEGV (exit 139), with a warning; any other non-zero exit
 except the 10 s timeout fails the job.
 

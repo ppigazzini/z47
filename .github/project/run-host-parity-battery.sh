@@ -99,11 +99,10 @@ zig build keyboard_ringbuffer_test
 zig build state-progmem-test
 zig build idiom-test
 zig build both
-# NON-BLOCKING: the headless GUI smoke trips a pixman SSE2 composite over-read
-# under Xvfb software rendering (version-independent; not a product regression;
-# see the workflow for the full diagnosis). Warn, do not fail.
-zig build simulator_smoke \
-  || echo "WARNING: simulator_smoke crashed in pixman composite under Xvfb software rendering (version-independent); not a product regression"
+# The headless GUI smoke. simulator_smoke.sh itself tolerates exactly one end:
+# the simulator dying of SIGSEGV, the pixman SSE2 composite over-read under Xvfb
+# software rendering. Every other failure fails this line.
+zig build simulator_smoke
 zig build testPgms
 ${XVFB:-} zig build test
 zig build generated
