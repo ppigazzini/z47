@@ -423,7 +423,7 @@ fn decomposeReal(x: *const real_t, integerPart: *mpz_struct, fractionalPart: *re
     mantissa.bits &= 0x7F; // realSetPositiveSign
     realToString(mantissa, tmpString);
 
-    const len: i32 = @intCast(strlen(@ptrCast(tmpString)));
+    const len: i32 = @intCast(strlen(tmpString));
     var i: i32 = len - 1;
     while (i >= 0 and tmpString[@intCast(i)] == '0') : (i -= 1) {
         if (i == actualExponent and i <= 34) {
@@ -431,7 +431,7 @@ fn decomposeReal(x: *const real_t, integerPart: *mpz_struct, fractionalPart: *re
         }
         tmpString[@intCast(i)] = 0;
     }
-    if (strlen(@ptrCast(tmpString)) == 0) {
+    if (strlen(tmpString) == 0) {
         _ = strcpy(tmpString, "0");
     }
 
@@ -680,7 +680,7 @@ pub export fn registerFMAOutputString(regist: calcRegister_t, prefix: [*:0]const
     c.round = runtime.roundingModeTable[runtime.displayRoundingMode]; // the SHOW string is X x Y + Z rounded once to 1000 digits by DRM
     if (getCombinedParameter(1, regist, tmp1, tmp2, &angle, &c)) {
         _ = strcpy(displayString, prefix);
-        realSCIToDisplayString(tmp1, displayString + strlen(@ptrCast(displayString)), 1000, 0, tmpString, 2560);
+        realSCIToDisplayString(tmp1, displayString + strlen(displayString), 1000, 0, tmpString, 2560);
         if (realGetExponent(tmp1) > 672 or tmp1.digits > 672) {
             replaceSeparatorWithFigureSpace(displayString);
         }
@@ -712,13 +712,13 @@ pub export fn registerFMAOutputPlainString(regist: calcRegister_t, prefix: [*:0]
         _ = strcpy(displayString, prefix);
         if (realIsNaN(tmp1) or realIsInfinite(tmp1) or realIsZero(tmp1)) {
             // zero / infinity / NaN have no coefficient/exponent split: print untouched
-            realToString(tmp1, displayString + strlen(@ptrCast(displayString)));
+            realToString(tmp1, displayString + strlen(displayString));
         } else {
             _ = decNumberReduce(tmp1, tmp1, &c); // drop trailing zeros: significant digits only
             const sciExp: i32 = tmp1.exponent + tmp1.digits - 1; // power of the leading digit
             tmp1.exponent = 1 - tmp1.digits; // one digit . rest, so decNumber prints it plainly
-            realToString(tmp1, displayString + strlen(@ptrCast(displayString)));
-            abi.fmtCStr(@ptrCast(displayString + strlen(@ptrCast(displayString))), "E{s}{d}", .{ if (sciExp >= 0) @as([*:0]const u8, "+") else @as([*:0]const u8, "-"), @abs(@as(i64, sciExp)) });
+            realToString(tmp1, displayString + strlen(displayString));
+            abi.fmtCStr(displayString + strlen(displayString), "E{s}{d}", .{ if (sciExp >= 0) @as([*:0]const u8, "+") else @as([*:0]const u8, "-"), @abs(@as(i64, sciExp)) });
         }
         return true;
     }
