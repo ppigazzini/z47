@@ -201,8 +201,10 @@ step "[6e/11] transliteration contract (hot 1:1 ports intact)"
 python3 .github/project/check-transliteration-contract.py --repo-root .
 step "[7/11] Phase I C dependency policy"
 bash .github/project/check-c-dependency-phase-i-policy.sh .
-step "[8/11] workflow script locality"
+step "[8/11] workflow script locality and action pins"
 bash .github/project/check-ci-no-local-dev-scripts.sh
+quiet python3 .github/project/check-action-pins.py --self-test
+python3 .github/project/check-action-pins.py --repo-root .
 step "[9/11] portable integer widths (Windows LLP64 trap)"
 bash .github/project/check-portable-int-widths.sh
 step "[9b/11] extern declarations match their definitions"
