@@ -42,7 +42,8 @@ jobs:
         run: |
           set -euo pipefail
           # Guards the checker logic itself. The full graph check
-          # (verify-product-c-link-isolation.py --target sim) requires a built
-          # toolchain and runs in the build lane / locally; this step keeps the
-          # literal-scan-independent verifier honest without a build.
+          # (verify-product-c-link-isolation.py --target sim) needs a cold build to
+          # see any compile command, so it is a maintainer step, not a gate; the
+          # literal-scan audit above and the build's core_sources.len == 0 assert
+          # are what gate product-lane C on every run.
           python3 .github/project/verify-product-c-link-isolation.py --self-test
