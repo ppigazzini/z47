@@ -50,7 +50,7 @@ pub fn addToModule(
     const gtk_options = b.addOptions();
     gtk_options.addOption(u8, "calcmodel", calcmodel);
     gtk_options.addOption([]const u8, "vcs_commit_id", vcs);
-    gtk_options.addOption([]const u8, "version1", "00.109.05.00a0.ALPHA"); // mirrors defines.h VERSION1
+    gtk_options.addOption([]const u8, "version1", build_common.upstreamVersion1(b));
     // OPTION_IR_PRINTING, read by the print-out window. defines.h #undef's it
     // only in DM42 package blocks, so every simulator build has it.
     gtk_options.addOption(bool, "ir_printing", true);
