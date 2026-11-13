@@ -245,9 +245,7 @@ extern fn realCompareEqual(number1: *align(1) const real_t, number2: *align(1) c
 extern fn realCompareGreaterEqual(number1: *align(1) const real_t, number2: *align(1) const real_t) bool;
 extern fn realCompareLessEqual(number1: *align(1) const real_t, number2: *align(1) const real_t) bool;
 extern fn realCompareAbsLessThan(number1: *align(1) const real_t, number2: *align(1) const real_t) bool;
-extern fn realCompareAbsGreaterEqual(number1: *align(1) const real_t, number2: *align(1) const real_t) bool;
 extern fn realExp(rhs: *align(1) const real_t, res: *real_t, ctxt: *realContext_t) void;
-extern fn realSquareRoot(operand: *align(1) const real_t, res: *real_t, ctxt: *realContext_t) void;
 extern fn realToInt32C47(r: *const real_t, err: ?*bool) i32;
 extern fn WP34S_Ln(x: *align(1) const real_t, res: *real_t, ctxt: *realContext_t) void;
 extern fn WP34S_SinhCosh(x: *align(1) const real_t, sinOut: ?*real_t, cosOut: ?*real_t, ctxt: *realContext_t) void;

@@ -99,18 +99,18 @@ pub extern var ListXYposition: i16;
 pub extern var calcModel: u8;
 pub extern var lastKeyItemDetermined: i16;
 
-pub extern var kbd_std_C47: [37]calcKey_t;
-pub extern var kbd_std_DM42: [37]calcKey_t;
-pub extern var kbd_std_R47f_g: [37]calcKey_t;
-pub extern var kbd_std_R47bk_fg: [37]calcKey_t;
-pub extern var kbd_std_R47fg_bk: [37]calcKey_t;
-pub extern var kbd_std_R47fg_g: [37]calcKey_t;
+pub extern const kbd_std_C47: [37]calcKey_t;
+pub extern const kbd_std_DM42: [37]calcKey_t;
+pub extern const kbd_std_R47f_g: [37]calcKey_t;
+pub extern const kbd_std_R47bk_fg: [37]calcKey_t;
+pub extern const kbd_std_R47fg_bk: [37]calcKey_t;
+pub extern const kbd_std_R47fg_g: [37]calcKey_t;
 // assign.c:95-274 defines these four only under PC_BUILD, so kbdStdAt may only
 // name them on the host.
-pub extern var kbd_std_E47: [37]calcKey_t;
-pub extern var kbd_std_D47: [37]calcKey_t;
-pub extern var kbd_std_V47: [37]calcKey_t;
-pub extern var kbd_std_N47: [37]calcKey_t;
+pub extern const kbd_std_E47: [37]calcKey_t;
+pub extern const kbd_std_D47: [37]calcKey_t;
+pub extern const kbd_std_V47: [37]calcKey_t;
+pub extern const kbd_std_N47: [37]calcKey_t;
 
 pub const USER_V47: u8 = 40;
 pub const USER_E47: u8 = 43;
