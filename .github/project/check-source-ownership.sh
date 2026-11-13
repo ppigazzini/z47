@@ -160,18 +160,26 @@ validate_manifest_coverage() {
     fi
 }
 
+# Approvals some added path fell under, so check_added_imported_paths can refuse
+# the ones that cover nothing.
+declare -A approval_used=()
+
 is_approved_imported_addition() {
     local path="$1"
     local approved
+    local matched=1
 
+    # Every approval the path falls under is marked, not just the first, so a
+    # narrower entry listed after a broader one is not reported as unused.
     for approved in "${approved_imported_additions[@]}"; do
         [[ -z "$approved" ]] && continue
         if [[ "$path" == "$approved" || "$path" == "$approved"/* ]]; then
-            return 0
+            approval_used[$approved]=1
+            matched=0
         fi
     done
 
-    return 1
+    return "$matched"
 }
 
 print_roots() {
@@ -252,6 +260,23 @@ check_added_imported_paths() {
 
     if [[ "$violations" -ne 0 ]]; then
         printf 'Additions under imported upstream roots require an explicit exception in %s.\n' "$manifest_file" >&2
+        exit 1
+    fi
+
+    # An approval no added path falls under is an exception for nothing: a file
+    # that is gone, or one that is not new since the diff base. Left in place it
+    # would silently approve whatever later lands at that path.
+    local approved
+    local unused=0
+    for approved in "${approved_imported_additions[@]}"; do
+        if [[ -z "${approval_used[$approved]+x}" ]]; then
+            printf 'Approval matches no added path under the imported root: %s\n' "$approved" >&2
+            unused=1
+        fi
+    done
+
+    if [[ "$unused" -ne 0 ]]; then
+        printf 'Remove the unused approvals from %s.\n' "$manifest_file" >&2
         exit 1
     fi
 }
