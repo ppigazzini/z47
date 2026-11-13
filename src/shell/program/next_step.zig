@@ -114,8 +114,8 @@ extern var errorMessage: [*c]u8;
 extern var beginOfProgramMemory: [*c]u8;
 extern var firstFreeProgramByte: [*c]u8;
 extern var numberOfLabels: u16;
-extern var labelList: [*c]labelList_t;
-extern var programList: [*c]programList_t;
+extern var labelList: [*c]align(4) labelList_t;
+extern var programList: [*c]align(4) programList_t;
 extern const indexOfItems: [LAST_ITEM + 1]item_t;
 
 extern var currentStep: [*c]u8;

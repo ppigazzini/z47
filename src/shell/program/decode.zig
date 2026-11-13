@@ -1056,8 +1056,8 @@ const ITM_LBL: u16 = 1;
 const ITM_END: u16 = 1458;
 
 extern var beginOfProgramMemory: [*c]u8;
-extern var labelList: [*c]labelList_t;
-extern var programList: [*c]programList_t;
+extern var labelList: [*c]align(4) labelList_t;
+extern var programList: [*c]align(4) programList_t;
 extern var numberOfLabels: u16;
 extern var numberOfPrograms: u16;
 extern fn printf(fmt: [*:0]const u8, ...) c_int;

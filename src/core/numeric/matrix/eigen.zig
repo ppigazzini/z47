@@ -101,7 +101,7 @@ const freeC47Blocks = runtime.freeC47Blocks;
 
 // A pool block of cplx_t; the pool hands out 4-aligned blocks, which cplx_t needs.
 inline fn allocCplx(size_in_blocks: usize) ?[*]cplx_t {
-    return @ptrCast(@alignCast(allocC47Blocks(size_in_blocks) orelse return null));
+    return abi.allocC47BlocksAs(cplx_t, size_in_blocks);
 }
 extern fn decNumberCopyAbs(res: *real_t, source: *const real_t) *real_t;
 extern var currentKeyCode: u8;

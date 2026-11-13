@@ -54,8 +54,7 @@ fn luReal() void {
 
     if (x.header.matrixRows != x.header.matrixColumns) {
         reportNotSquare(x.header.matrixRows, x.header.matrixColumns);
-    } else if (runtime.allocC47Blocks(@as(usize, x.header.matrixRows) * @sizeOf(u16))) |p_raw| {
-        const p: [*]u16 = @ptrCast(@alignCast(p_raw));
+    } else if (abi.allocC47BlocksAs(u16, @as(usize, x.header.matrixRows) * @sizeOf(u16))) |p| {
         var l: real34Matrix_t = undefined;
         runtime.WP34S_LU_decomposition(&x, &l, p);
         if (l.matrixElements != null) {
@@ -108,7 +107,7 @@ fn luReal() void {
         } else {
             reportSingular();
         }
-        runtime.freeC47Blocks(p_raw, @as(usize, x.header.matrixRows) * @sizeOf(u16));
+        runtime.freeC47Blocks(p, @as(usize, x.header.matrixRows) * @sizeOf(u16));
     } else {
         reportRamFull("Ram full, 1a");
     }
@@ -122,8 +121,7 @@ fn luComplex() void {
 
     if (x.header.matrixRows != x.header.matrixColumns) {
         reportNotSquare(x.header.matrixRows, x.header.matrixColumns);
-    } else if (runtime.allocC47Blocks(@as(usize, x.header.matrixRows) * @sizeOf(u16))) |p_raw| {
-        const p: [*]u16 = @ptrCast(@alignCast(p_raw));
+    } else if (abi.allocC47BlocksAs(u16, @as(usize, x.header.matrixRows) * @sizeOf(u16))) |p| {
         var l: complex34Matrix_t = undefined;
         runtime.complex_LU_decomposition(&x, &l, p);
         if (l.matrixElements != null) {
@@ -185,7 +183,7 @@ fn luComplex() void {
         } else {
             reportSingular();
         }
-        runtime.freeC47Blocks(p_raw, @as(usize, x.header.matrixRows) * @sizeOf(u16));
+        runtime.freeC47Blocks(p, @as(usize, x.header.matrixRows) * @sizeOf(u16));
     } else {
         reportRamFull("Ram full, 4d");
     }

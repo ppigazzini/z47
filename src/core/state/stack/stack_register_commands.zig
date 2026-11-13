@@ -1,3 +1,4 @@
+const abi = @import("abi");
 const runtime = @import("../runtime/stack_runtime.zig");
 const register_range_ops = @import("register_range_ops.zig"); // std-only register-range geometry
 
@@ -33,14 +34,12 @@ pub fn sortRegisterRange(range_start: u16, range_end: u16) void {
     var pos2: u16 = range_center + 1;
     // TO_BLOCKS(sizeof(registerHeader_t)) is 1: the descriptor is a single block.
     const scratch_blocks: usize = @as(usize, range_span) + 1;
-    const scratch = runtime.allocC47Blocks(scratch_blocks);
+    const scratch = abi.allocC47BlocksAs(runtime.register_descriptor_t, scratch_blocks);
     if (runtime.lastErrorCode == runtime.ERROR_RAM_FULL) {
         return;
     }
 
-    if (scratch) |block| {
-        const sorted: [*]runtime.register_descriptor_t = @ptrCast(@alignCast(block));
-
+    if (scratch) |sorted| {
         sortRegisterRange(range_start, range_center);
         sortRegisterRange(range_center + 1, range_end);
 
@@ -68,7 +67,7 @@ pub fn sortRegisterRange(range_start: u16, range_end: u16) void {
             runtime.setGlobalDescriptor(@intCast(range_start + i), sorted[i]);
         }
 
-        runtime.freeC47Blocks(block, scratch_blocks);
+        runtime.freeC47Blocks(sorted, scratch_blocks);
     } else {
         runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE);
     }

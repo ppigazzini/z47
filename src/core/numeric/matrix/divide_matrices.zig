@@ -54,12 +54,9 @@ pub export fn divideRealMatrices(y: *const real34Matrix_t, x: *const real34Matri
 
     const yx_blocks = @as(usize, size_y) * size * real_size_in_blocks * 2;
     const xx_blocks = @as(usize, size) * size * real_size_in_blocks * 2;
-    if (runtime.allocC47Blocks(yx_blocks)) |yy_raw| {
-        const yy: [*]cplx_t = @ptrCast(@alignCast(yy_raw));
-        if (runtime.allocC47Blocks(xx_blocks)) |xx_raw| {
-            const xx: [*]cplx_t = @ptrCast(@alignCast(xx_raw));
-            if (runtime.allocC47Blocks(yx_blocks)) |rr_raw| {
-                const rr: [*]cplx_t = @ptrCast(@alignCast(rr_raw));
+    if (abi.allocC47BlocksAs(cplx_t, yx_blocks)) |yy| {
+        if (abi.allocC47BlocksAs(cplx_t, xx_blocks)) |xx| {
+            if (abi.allocC47BlocksAs(cplx_t, yx_blocks)) |rr| {
                 const xe = constRealElems(x);
                 var i: usize = 0;
                 while (i < @as(usize, size) * size) : (i += 1) {
@@ -87,17 +84,17 @@ pub export fn divideRealMatrices(y: *const real34Matrix_t, x: *const real34Matri
                 } else { // singular matrix
                     if (distinctFromRes(y, x, res)) clearResult(res);
                 }
-                runtime.freeC47Blocks(rr_raw, yx_blocks);
+                runtime.freeC47Blocks(rr, yx_blocks);
             } else {
                 if (distinctFromRes(y, x, res)) clearResult(res);
                 reportRamFull("In function divideRealMatrices:", "Ram full, 2z");
             }
-            runtime.freeC47Blocks(xx_raw, xx_blocks);
+            runtime.freeC47Blocks(xx, xx_blocks);
         } else {
             if (distinctFromRes(y, x, res)) clearResult(res);
             reportRamFull("In function divideRealMatrices:", "Ram full, 3aa");
         }
-        runtime.freeC47Blocks(yy_raw, yx_blocks);
+        runtime.freeC47Blocks(yy, yx_blocks);
     } else {
         if (distinctFromRes(y, x, res)) clearResult(res);
         reportRamFull("In function divideRealMatrices:", "Ram full, 4ab");
@@ -115,12 +112,9 @@ pub export fn divideComplexMatrices(y: *const complex34Matrix_t, x: *const compl
 
     const yx_blocks = @as(usize, size_y) * size * real_size_in_blocks * 2;
     const xx_blocks = @as(usize, size) * size * real_size_in_blocks * 2;
-    if (runtime.allocC47Blocks(yx_blocks)) |yy_raw| {
-        const yy: [*]cplx_t = @ptrCast(@alignCast(yy_raw));
-        if (runtime.allocC47Blocks(xx_blocks)) |xx_raw| {
-            const xx: [*]cplx_t = @ptrCast(@alignCast(xx_raw));
-            if (runtime.allocC47Blocks(yx_blocks)) |rr_raw| {
-                const rr: [*]cplx_t = @ptrCast(@alignCast(rr_raw));
+    if (abi.allocC47BlocksAs(cplx_t, yx_blocks)) |yy| {
+        if (abi.allocC47BlocksAs(cplx_t, xx_blocks)) |xx| {
+            if (abi.allocC47BlocksAs(cplx_t, yx_blocks)) |rr| {
                 const xe = constComplexElems(x);
                 var i: usize = 0;
                 while (i < @as(usize, size) * size) : (i += 1) {
@@ -149,17 +143,17 @@ pub export fn divideComplexMatrices(y: *const complex34Matrix_t, x: *const compl
                 } else { // singular matrix
                     if (distinctFromRes(y, x, res)) clearResult(res);
                 }
-                runtime.freeC47Blocks(rr_raw, yx_blocks);
+                runtime.freeC47Blocks(rr, yx_blocks);
             } else {
                 if (distinctFromRes(y, x, res)) clearResult(res);
                 reportRamFull("In function divideComplexMatrices:", "Ram full, 2ad");
             }
-            runtime.freeC47Blocks(xx_raw, xx_blocks);
+            runtime.freeC47Blocks(xx, xx_blocks);
         } else {
             if (distinctFromRes(y, x, res)) clearResult(res);
             reportRamFull("In function divideComplexMatrices:", "Ram full, 3ae");
         }
-        runtime.freeC47Blocks(yy_raw, yx_blocks);
+        runtime.freeC47Blocks(yy, yx_blocks);
     } else {
         if (distinctFromRes(y, x, res)) clearResult(res);
         reportRamFull("In function divideComplexMatrices:", "Ram full, 4af");

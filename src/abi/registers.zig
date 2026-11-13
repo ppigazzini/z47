@@ -38,6 +38,25 @@ pub extern fn setVectorRegisterPolarMode(regist: i16, polarMode: u32) void;
 pub extern fn registerIsNoAngle(regist: i16) bool;
 pub extern fn isXFNregisterValid3r(regist: i16) bool;
 
+/// C47's block allocator, `void *allocC47Blocks(size_t)`: `size_in_blocks`
+/// 4-byte blocks of pool memory, or null when the pool cannot hold them.
+pub extern fn allocC47Blocks(size_in_blocks: usize) ?[*]align(4) u8;
+
+/// `size_in_blocks` blocks of pool memory holding one `T` at their start. The
+/// views below are as aligned as a pool block, 4, which a T holding pointers
+/// exceeds on a 64-bit host.
+pub inline fn allocC47BlocksFor(comptime T: type, size_in_blocks: usize) ?*align(4) T {
+    const bytes = allocC47Blocks(size_in_blocks) orelse return null;
+    return std.mem.bytesAsValue(T, bytes[0..@sizeOf(T)]);
+}
+
+/// `size_in_blocks` blocks of pool memory, as the `T`s an owner stores in them.
+/// The pointer is the block's address whatever the size, as the C cast is.
+pub inline fn allocC47BlocksAs(comptime T: type, size_in_blocks: usize) ?[*]align(4) T {
+    const first: *align(4) [1]T = allocC47BlocksFor(T, size_in_blocks) orelse return null;
+    return first;
+}
+
 /// A register's data block: asserts the register has one.
 inline fn block(reg: i16) [*]align(4) u8 {
     return getRegisterDataPointer(reg).?;

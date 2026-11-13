@@ -376,8 +376,8 @@ extern var pemCursorIsZerothStep: bool_t;
 extern var programListEnd: bool_t;
 extern var currentStep: [*c]u8;
 extern var firstFreeProgramByte: [*c]u8;
-extern var programList: [*c]programList_t;
-extern var labelList: [*c]labelList_t;
+extern var programList: [*c]align(4) programList_t;
+extern var labelList: [*c]align(4) labelList_t;
 const allReservedVariables = @extern([*c]const reservedVariableHeader_t, .{ .name = "allReservedVariables" });
 // indexOfItems is a C ARRAY (const item_t indexOfItems[]); bind its address
 // with @extern, not a pointer-typed extern (which would deref the data as an

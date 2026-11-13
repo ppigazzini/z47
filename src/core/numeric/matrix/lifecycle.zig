@@ -23,7 +23,6 @@ const nim_register_line = runtime.REGISTER_X;
 
 // matrix.c extern surface: the C47 block allocator and the decQuad element
 // setters that back real34SetZero / real34SetOne.
-extern fn allocC47Blocks(size_in_blocks: usize) callconv(.c) ?*anyopaque;
 extern fn freeC47Blocks(ptr: ?*anyopaque, size_in_blocks: usize) callconv(.c) void;
 extern fn isMemoryBlockAvailable(size_in_blocks: usize, num_blocks: u16, extra_fraction: f32) callconv(.c) bool;
 extern fn decQuadZero(result: *real34_t) callconv(.c) *real34_t;
@@ -78,7 +77,7 @@ pub export fn realMatrixInit(matrix: *real34Matrix_t, rows: u16, cols: u16) call
         reportRamFullInfo("In function realMatrixInit:");
         return false;
     }
-    matrix.matrixElements = @ptrCast(@alignCast(allocC47Blocks(needed_size)));
+    matrix.matrixElements = abi.allocC47BlocksAs(real34_t, needed_size);
     // The header fields are 12-bit, and the C assignment truncates into them.
     matrix.header.matrixColumns = @truncate(cols);
     matrix.header.matrixRows = @truncate(rows);
@@ -129,7 +128,7 @@ pub export fn complexMatrixInit(matrix: *complex34Matrix_t, rows: u16, cols: u16
         reportRamFullInfo("In function complexMatrixInit:");
         return false;
     }
-    matrix.matrixElements = @ptrCast(@alignCast(allocC47Blocks(needed_size)));
+    matrix.matrixElements = abi.allocC47BlocksAs(complex34_t, needed_size);
     // The header fields are 12-bit, and the C assignment truncates into them.
     matrix.header.matrixColumns = @truncate(cols);
     matrix.header.matrixRows = @truncate(rows);

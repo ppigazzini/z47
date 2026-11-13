@@ -388,7 +388,7 @@ const STRING_LABEL_VARIABLE: u8 = 253;
 const MAX_LABEL_NAME_LENGTH: usize = 14;
 extern var programRunStop: u8;
 extern var numberOfLabels: u16;
-extern var labelList: [*c]abi.LabelList;
+extern var labelList: [*c]align(4) abi.LabelList;
 extern fn exitKeyWaiting() bool_t;
 extern fn getRegisterAsRealQuiet(reg: calcRegister_t, val: *real_t) bool;
 extern fn findOrAllocateNamedVariable(variable_name: [*:0]const u8) calcRegister_t;

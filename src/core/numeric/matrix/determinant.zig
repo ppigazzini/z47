@@ -32,7 +32,6 @@ const real_size_in_blocks: usize = (@sizeOf(real_t) + 3) >> 2;
 const DEC_Inexact: u32 = 0x00000020;
 
 // matrix.c block allocator.
-extern fn allocC47Blocks(size_in_blocks: usize) callconv(.c) ?*anyopaque;
 extern fn freeC47Blocks(ptr: ?*anyopaque, size_in_blocks: usize) callconv(.c) void;
 
 const constRealElems = abi.matrixConstRealElems;
@@ -58,12 +57,10 @@ fn reportRamFull(comptime function_name: [*:0]const u8, comptime info: [*:0]cons
 fn detCpxMat(matrix: [*]const cplx_t, size: u16, res: *cplx_t, real_context: *realContext_t) void {
     const n: usize = size;
     const lu_blocks = n * n * real_size_in_blocks * 2;
-    if (allocC47Blocks(lu_blocks)) |lu_raw| {
-        const lu: [*]cplx_t = @ptrCast(@alignCast(lu_raw));
+    if (abi.allocC47BlocksAs(cplx_t, lu_blocks)) |lu| {
         @memcpy(lu[0 .. n * n], matrix[0 .. n * n]);
         const p_blocks = (n * @sizeOf(u16) + 3) >> 2;
-        if (allocC47Blocks(p_blocks)) |p_raw| {
-            const p: [*]u16 = @ptrCast(@alignCast(p_raw));
+        if (abi.allocC47BlocksAs(u16, p_blocks)) |p| {
             var t: cplx_t = undefined;
             runtime.realSetOne(&t.Real);
             runtime.realSetZero(&t.Imag);
@@ -85,13 +82,13 @@ fn detCpxMat(matrix: [*]const cplx_t, size: u16, res: *cplx_t, real_context: *re
                 runtime.realSetZero(&res.Real);
                 runtime.realSetZero(&res.Imag);
             }
-            freeC47Blocks(p_raw, p_blocks);
+            freeC47Blocks(p, p_blocks);
         } else {
             reportRamFull("In function detCpxMat:", "Ram full, 1o");
             runtime.realSetNaN(&res.Real);
             runtime.realSetNaN(&res.Imag);
         }
-        freeC47Blocks(lu_raw, lu_blocks);
+        freeC47Blocks(lu, lu_blocks);
     } else {
         reportRamFull("In function detCpxMat:", "Ram full, 2p");
         runtime.realSetNaN(&res.Real);
@@ -182,8 +179,7 @@ pub fn realMatExactlySingular(matrix: *const real34Matrix_t) bool {
     var singular = false;
 
     if (n > 1) {
-        if (allocC47Blocks(work_blocks)) |work_raw| {
-            const work: [*]cplx_t = @ptrCast(@alignCast(work_raw));
+        if (abi.allocC47BlocksAs(cplx_t, work_blocks)) |work| {
             const me = constRealElems(matrix);
             var i: usize = 0;
             while (i < nn) : (i += 1) {
@@ -191,7 +187,7 @@ pub fn realMatExactlySingular(matrix: *const real34Matrix_t) bool {
                 runtime.realSetZero(&work[i].Imag);
             }
             singular = detRealMatExact(work, n, &det) and runtime.realIsZero(&det);
-            freeC47Blocks(work_raw, work_blocks);
+            freeC47Blocks(work, work_blocks);
         }
     }
     return singular;
@@ -211,8 +207,7 @@ pub export fn detRealMatrix(matrix: *const real34Matrix_t, res: *real34_t) callc
 
     const nn = @as(usize, n) * @as(usize, n);
     const lu_blocks = nn * real_size_in_blocks * 2;
-    if (allocC47Blocks(lu_blocks)) |lu_raw| {
-        const lu: [*]cplx_t = @ptrCast(@alignCast(lu_raw));
+    if (abi.allocC47BlocksAs(cplx_t, lu_blocks)) |lu| {
         var i: usize = 0;
         while (i < nn) : (i += 1) {
             runtime.real34ToReal(&me[i], &lu[i].Real);
@@ -226,7 +221,7 @@ pub export fn detRealMatrix(matrix: *const real34Matrix_t, res: *real34_t) callc
             }
             detCpxMat(lu, n, &det, &runtime.ctxtReal75);
         }
-        freeC47Blocks(lu_raw, lu_blocks);
+        freeC47Blocks(lu, lu_blocks);
         runtime.realToReal34(&det.Real, res);
     } else {
         reportRamFull("In function detRealMatrix:", "Ram full");
@@ -250,8 +245,7 @@ pub export fn detComplexMatrix(matrix: *const complex34Matrix_t, res_r: *real34_
 
     const nn = @as(usize, n) * @as(usize, n);
     const lu_blocks = nn * real_size_in_blocks * 2;
-    if (allocC47Blocks(lu_blocks)) |lu_raw| {
-        const lu: [*]cplx_t = @ptrCast(@alignCast(lu_raw));
+    if (abi.allocC47BlocksAs(cplx_t, lu_blocks)) |lu| {
         var i: usize = 0;
         while (i < nn) : (i += 1) {
             runtime.real34ToReal(&me[i].real, &lu[i].Real);
@@ -259,7 +253,7 @@ pub export fn detComplexMatrix(matrix: *const complex34Matrix_t, res_r: *real34_
         }
         var det: cplx_t = undefined;
         detCpxMat(lu, n, &det, &runtime.ctxtReal75);
-        freeC47Blocks(lu_raw, lu_blocks);
+        freeC47Blocks(lu, lu_blocks);
         runtime.realToReal34(&det.Real, res_r);
         runtime.realToReal34(&det.Imag, res_i);
     } else {

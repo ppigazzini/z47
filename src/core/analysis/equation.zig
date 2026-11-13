@@ -496,7 +496,7 @@ const bugScreenUnknownFormulaParserMode: [*:0]const u8 = "In function _parseWord
 pub export fn fnEqNew(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     if (numberOfFormulae == 0) {
-        allFormulae = @ptrCast(@alignCast(allocC47Blocks(TO_BLOCKS(@sizeOf(formulaHeader_t)))));
+        allFormulae = abi.allocC47BlocksAs(formulaHeader_t, TO_BLOCKS(@sizeOf(formulaHeader_t)));
         if (allFormulae != null) {
             numberOfFormulae = 1;
             currentFormula = 0;
@@ -510,7 +510,7 @@ pub export fn fnEqNew(unusedButMandatoryParameter: u16) linksection(runtime.code
             return;
         }
     } else {
-        const newPtr: [*c]formulaHeader_t = @ptrCast(@alignCast(allocC47Blocks(TO_BLOCKS(@sizeOf(formulaHeader_t)) * (numberOfFormulae + 1))));
+        const newPtr: [*c]formulaHeader_t = abi.allocC47BlocksAs(formulaHeader_t, TO_BLOCKS(@sizeOf(formulaHeader_t)) * (numberOfFormulae + 1));
         if (newPtr != null) {
             var i: u32 = 0;
             while (i < numberOfFormulae) : (i += 1) {

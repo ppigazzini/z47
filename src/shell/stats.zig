@@ -210,7 +210,6 @@ extern fn fnDeleteVariable(regist: u16) void;
 extern fn clearRegister(regist: calcRegister_t) void;
 extern fn linkToRealMatrixRegister(regist: calcRegister_t, linkedMatrix: *real34Matrix_t) void;
 extern fn restoreStats() void; // config.zig owns it; any stats operation restores an HNORM takeover
-extern fn allocC47Blocks(sizeInBlocks: usize) ?*anyopaque;
 extern fn freeC47Blocks(pcMemPtr: ?*anyopaque, sizeInBlocks: usize) void;
 
 extern fn saveLastX() bool;
@@ -633,7 +632,7 @@ pub export fn clearStatisticalSums() callconv(.c) void {
 pub export fn initStatisticalSums() callconv(.c) void {
     if (statisticalSumsUpdate) {
         if (statisticalSumsPointer == null) {
-            statisticalSumsPointer = @ptrCast(@alignCast(allocC47Blocks(@as(usize, @intCast(NUMBER_OF_STATISTICAL_SUMS)) * REAL_75_SIZE_IN_BLOCKS)));
+            statisticalSumsPointer = abi.allocC47BlocksAs(real_t, @as(usize, @intCast(NUMBER_OF_STATISTICAL_SUMS)) * REAL_75_SIZE_IN_BLOCKS);
             if (statisticalSumsPointer == null) { // no room for the sums; raise the error so no caller writes through a NULL pointer
                 frontier_error.displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
                 return;

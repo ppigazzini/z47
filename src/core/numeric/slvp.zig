@@ -191,14 +191,13 @@ pub export fn fnSlvp(unused_but_mandatory_parameter: u16) linksection(runtime.co
 
     // m coefficient slots plus up to m-1 root slots.
     const wsSize: usize = real_size_in_blocks_75 * m * 4;
-    const coefRaw = runtime.allocC47Blocks(wsSize) orelse {
+    const coef = abi.allocC47BlocksAs(cplx_t, wsSize) orelse {
         displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
         if (runtime.extra_info_on_calc_error) {
             moreInfoOnError("In function fnSlvp:", "Ram full", null, null);
         }
         return;
     };
-    const coef: [*]cplx_t = @ptrCast(@alignCast(coefRaw));
     const roots: [*]cplx_t = coef + m;
 
     var realContent = true;
@@ -222,7 +221,7 @@ pub export fn fnSlvp(unused_but_mandatory_parameter: u16) linksection(runtime.co
     var lead: u32 = 0;
     while (lead < m and slotIsZero(&coef[lead])) lead += 1;
     if (m - lead < 2) { // a constant, or nothing at all, has no roots
-        runtime.freeC47Blocks(coefRaw, wsSize);
+        runtime.freeC47Blocks(coef, wsSize);
         displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
         if (runtime.extra_info_on_calc_error) {
             moreInfoOnError("In function fnSlvp:", "the polynomial needs degree 1 or higher after leading zeros are dropped", null, null);
@@ -280,7 +279,7 @@ pub export fn fnSlvp(unused_but_mandatory_parameter: u16) linksection(runtime.co
                 const dz: usize = d;
                 const bulkSize: usize = real_size_in_blocks_75 * (dz * dz * 2 * 2 + dz * 7);
                 const bulkRaw = runtime.allocC47Blocks(bulkSize) orelse {
-                    runtime.freeC47Blocks(coefRaw, wsSize);
+                    runtime.freeC47Blocks(coef, wsSize);
                     displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
                     if (runtime.extra_info_on_calc_error) {
                         moreInfoOnError("In function fnSlvp:", "Ram full", null, null);
@@ -320,7 +319,7 @@ pub export fn fnSlvp(unused_but_mandatory_parameter: u16) linksection(runtime.co
                 if (runtime.lastErrorCode != runtime.ERROR_NONE) {
                     // Abort or refusal: write nothing, the central undo puts X and L back.
                     runtime.freeC47Blocks(bulkRaw, bulkSize);
-                    runtime.freeC47Blocks(coefRaw, wsSize);
+                    runtime.freeC47Blocks(coef, wsSize);
                     return;
                 }
                 {
@@ -388,7 +387,7 @@ pub export fn fnSlvp(unused_but_mandatory_parameter: u16) linksection(runtime.co
     if (isComplex) {
         var res: complex34Matrix_t = undefined;
         if (!complexMatrixInit(&res, 1, n)) {
-            runtime.freeC47Blocks(coefRaw, wsSize);
+            runtime.freeC47Blocks(coef, wsSize);
             displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
             if (runtime.extra_info_on_calc_error) {
                 moreInfoOnError("In function fnSlvp:", "Ram full", null, null);
@@ -397,7 +396,7 @@ pub export fn fnSlvp(unused_but_mandatory_parameter: u16) linksection(runtime.co
         }
         if (!saveLastX()) {
             complexMatrixFree(&res);
-            runtime.freeC47Blocks(coefRaw, wsSize);
+            runtime.freeC47Blocks(coef, wsSize);
             return;
         }
         const elems = complexElems(&res);
@@ -411,7 +410,7 @@ pub export fn fnSlvp(unused_but_mandatory_parameter: u16) linksection(runtime.co
     } else {
         var res: real34Matrix_t = undefined;
         if (!realMatrixInit(&res, 1, n)) {
-            runtime.freeC47Blocks(coefRaw, wsSize);
+            runtime.freeC47Blocks(coef, wsSize);
             displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
             if (runtime.extra_info_on_calc_error) {
                 moreInfoOnError("In function fnSlvp:", "Ram full", null, null);
@@ -420,7 +419,7 @@ pub export fn fnSlvp(unused_but_mandatory_parameter: u16) linksection(runtime.co
         }
         if (!saveLastX()) {
             realMatrixFree(&res);
-            runtime.freeC47Blocks(coefRaw, wsSize);
+            runtime.freeC47Blocks(coef, wsSize);
             return;
         }
         const elems = realElems(&res);
@@ -433,5 +432,5 @@ pub export fn fnSlvp(unused_but_mandatory_parameter: u16) linksection(runtime.co
     }
 
     adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
-    runtime.freeC47Blocks(coefRaw, wsSize);
+    runtime.freeC47Blocks(coef, wsSize);
 }

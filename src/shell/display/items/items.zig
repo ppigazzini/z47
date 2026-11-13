@@ -373,7 +373,7 @@ extern var lastFunc: i16;
 extern var lastParam: i16;
 const lastTemp = @extern([*c]u8, .{ .name = "lastTemp" }); // char lastTemp[16]
 extern var tmpStringLabelOrVariableName: [*c]u8;
-extern var labelList: [*c]labelList_t2;
+extern var labelList: [*c]align(4) labelList_t2;
 const allReservedVariables = @extern([*c]const reservedVariableHeader_t, .{ .name = "allReservedVariables" });
 extern var allNamedVariables: [*c]namedVariableHeader_t;
 extern var userMenus: [*c]userMenu_t;
