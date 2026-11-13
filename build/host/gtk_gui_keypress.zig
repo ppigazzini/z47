@@ -332,7 +332,7 @@ extern var softmenuStack: [8]softmenuStack_t;
 extern fn btnClicked(widget: ?*anyopaque, data: [*:0]const u8) void;
 extern fn btnFnClicked(widget: ?*anyopaque, data: [*:0]const u8) void;
 extern fn btnFnClickedP(widget: ?*anyopaque, data: [*:0]const u8) void;
-extern fn getSystemFlag(flag: u16) bool;
+extern fn getSystemFlag(flag: i32) bool;
 extern fn currentMenu() i16;
 extern fn refreshStatusBar() void;
 extern fn showShiftState() void;

@@ -377,7 +377,7 @@ const registerStringPtr = abi.registerString;
 const STR_LGINT_HEADER_SIZE: usize = 4; // sizeof(strLgIntHeader_t)
 
 extern fn getRegisterDataType(reg: calcRegister_t) u32;
-extern fn reallocateRegister(regist: calcRegister_t, data_type: u32, data_len: u16, tag: u32) void;
+extern fn reallocateRegister(regist: calcRegister_t, data_type: u32, data_len: u16, tag: u32) bool;
 extern fn clearRegister(regist: calcRegister_t) void;
 extern fn convertRealToReal34ResultRegister(real: *const real_t, dest: calcRegister_t) void;
 extern fn copySourceRegisterToDestRegister(rSource: calcRegister_t, rDest: calcRegister_t) void;
@@ -555,7 +555,7 @@ pub export fn fnSolveVar(unusedButMandatoryParameter: u16) linksection(runtime.c
                 temporaryInformation = TI_SOLVER_VARIABLE;
             } else { // store the variable name in the alpha register (42S) or K, and continue program execution
                 const alpha_register: calcRegister_t = if (varMenu42) @intCast(alphaRegister) else REGISTER_K;
-                reallocateRegister(alpha_register, dtString, TO_BLOCKS(nameLength), amNone);
+                _ = reallocateRegister(alpha_register, dtString, TO_BLOCKS(nameLength), amNone);
                 _ = xcopy(registerStringPtr(alpha_register), variable_str, nameLength);
                 dynamicMenuItem = -1;
                 runProgram(false, INVALID_VARIABLE);

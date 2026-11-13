@@ -359,7 +359,7 @@ pub export fn conjCplx() linksection(runtime.code_section) callconv(.c) void {
         var r34: real34_t = undefined;
         real34Copy(runtime.registerReal34Ptr(runtime.REGISTER_X), &r34);
         runtime.roundReal34ResultToSignificantDigits(&r34);
-        runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtComplex34, 0, @intCast(runtime.amNone));
+        _ = runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtComplex34, 0, @intCast(runtime.amNone));
         if (runtime.lastErrorCode == runtime.ERROR_RAM_FULL) {
             return;
         }
@@ -371,7 +371,7 @@ pub export fn conjCplx() linksection(runtime.code_section) callconv(.c) void {
     if (data_type == runtime.dtLongInteger and (runtime.significantDigits == 0 or runtime.significantDigits == 34)) {
         var r34: real34_t = undefined;
         runtime.convertLongIntegerRegisterToReal34(runtime.REGISTER_X, &r34);
-        runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtComplex34, 0, @intCast(runtime.amNone));
+        _ = runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtComplex34, 0, @intCast(runtime.amNone));
         if (runtime.lastErrorCode == runtime.ERROR_RAM_FULL) {
             return;
         }
@@ -388,7 +388,7 @@ pub export fn conjCplx() linksection(runtime.code_section) callconv(.c) void {
     if (runtime.realIsZero(&x.Imag) and !runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
         runtime.realSetPositiveSign(&x.Imag);
     }
-    runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtComplex34, 0, @intCast(runtime.amNone));
+    _ = runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtComplex34, 0, @intCast(runtime.amNone));
     runtime.convertComplexToResultRegister(&x, runtime.REGISTER_X);
 }
 

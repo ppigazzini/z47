@@ -38,7 +38,7 @@ pub fn edit(regist: u16) void {
     }
 
     frontier_tam.leaveTamModeIfEnabled();
-    saveStatsMatrix();
+    _ = saveStatsMatrix();
 
     if (dt != dtReal34Matrix and dt != dtComplex34Matrix) {
         reportInvalidDataType(dt, "is not a matrix.");
@@ -102,7 +102,7 @@ extern var nimBufferDisplay: [*]u8;
 extern var scrollRow: u16;
 extern var scrollColumn: u16;
 
-extern fn saveStatsMatrix() void;
+extern fn saveStatsMatrix() bool;
 extern fn getRegisterDataType(regist: i16) u32;
 extern fn getMatrixFromRegister(regist: u16) void;
 

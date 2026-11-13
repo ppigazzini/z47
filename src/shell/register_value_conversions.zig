@@ -173,7 +173,7 @@ extern var ctxtReal75: realContext_t;
 // ---------------------------------------------------------------------------
 // Linkable function externs
 // ---------------------------------------------------------------------------
-extern fn reallocateRegister(regist: calcRegister_t, data_type: u32, size_blocks: u16, tag: u32) void;
+extern fn reallocateRegister(regist: calcRegister_t, data_type: u32, size_blocks: u16, tag: u32) bool;
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
 extern fn getRegisterDataPointer(regist: calcRegister_t) *anyopaque;
 extern fn getRegisterTag(regist: calcRegister_t) u32;
@@ -424,7 +424,7 @@ pub export fn convertLongIntegerToShortIntegerRegister(lgInt: *mpz_struct, base:
     var u64v: u64 = undefined;
     var overflow: bool = undefined;
 
-    reallocateRegister(destination, dtShortInteger, SHORT_INTEGER_SIZE_IN_BLOCKS, base);
+    _ = reallocateRegister(destination, dtShortInteger, SHORT_INTEGER_SIZE_IN_BLOCKS, base);
     if (longIntegerIsZero(lgInt)) {
         regShortInt(destination).* = 0;
     } else {
@@ -564,7 +564,7 @@ pub export fn convertDateRegisterToReal34Register(source: calcRegister_t, destin
         real34Divide(&y, const34_1e6(), &y);
     }
 
-    reallocateRegister(destination, dtReal34, REAL34_SIZE_IN_BLOCKS, amNoneU);
+    _ = reallocateRegister(destination, dtReal34, REAL34_SIZE_IN_BLOCKS, amNoneU);
     real34Add(&y, &m, reg34(destination));
     real34Add(reg34(destination), &d, reg34(destination));
     if (isNegative) {
@@ -691,7 +691,7 @@ pub export fn convertReal34RegisterToDateRegister(source: calcRegister_t, destin
         lastCenturyHighUsed = (lastCenturyHighUsed & ~(YY_MASK_TRACKING - 1)) | (lastCenturyHighUsedtmp & (YY_MASK_TRACKING - 1));
     }
 
-    reallocateRegister(destination, dtDate, REAL34_SIZE_IN_BLOCKS, amNoneU);
+    _ = reallocateRegister(destination, dtDate, REAL34_SIZE_IN_BLOCKS, amNoneU);
     if (getSystemFlag(FLAG_YMD)) {
         frontier_date_time.composeJulianDay(&part1, &part2, &part3, reg34(destination));
     } else if (getSystemFlag(FLAG_MDY)) {

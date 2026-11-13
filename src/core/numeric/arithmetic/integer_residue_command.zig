@@ -81,7 +81,7 @@ pub export fn mixedIntegerRealRemainder(modulo: bool) callconv(.c) bool {
         if (modulo and !runtime.longIntegerIsZero(&y[0]) and runtime.longIntegerIsNegative(&y[0]) != runtime.real34IsNegative(runtime.registerReal34Ptr(runtime.REGISTER_X))) {
             runtime.setRegisterAngularMode(runtime.REGISTER_X, runtime.amNone);
         } else {
-            runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, REAL34_SIZE_IN_BLOCKS, @intCast(runtime.amNone));
+            _ = runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, REAL34_SIZE_IN_BLOCKS, @intCast(runtime.amNone));
             runtime.convertScaledLongIntegerToReal34(&y[0], exponent_y, runtime.registerReal34Ptr(runtime.REGISTER_X));
         }
         runtime.__gmpz_clear(&y[0]);
@@ -118,7 +118,7 @@ pub export fn mixedIntegerRealRemainder(modulo: bool) callconv(.c) bool {
         runtime.__gmpz_clear(&divisor[0]);
     }
 
-    runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, REAL34_SIZE_IN_BLOCKS, @intCast(runtime.amNone));
+    _ = runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, REAL34_SIZE_IN_BLOCKS, @intCast(runtime.amNone));
     runtime.convertScaledLongIntegerToReal34(&remainder[0], remainder_exponent, runtime.registerReal34Ptr(runtime.REGISTER_X));
     runtime.__gmpz_clear(&remainder[0]);
     runtime.__gmpz_clear(&quotient[0]);

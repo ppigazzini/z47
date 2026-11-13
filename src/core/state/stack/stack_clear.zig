@@ -39,7 +39,7 @@ pub fn clearRegister(reg: runtime.calcRegister_t) void {
             memory_owned.zeroReal34(runtime.getRegisterDataPointer(reg));
             runtime.setRegisterDataType(reg, @intCast(runtime.dtReal34), runtime.amNone);
         } else {
-            runtime.reallocateRegister(reg, runtime.dtReal34, 0, runtime.amNone);
+            _ = runtime.reallocateRegister(reg, runtime.dtReal34, 0, runtime.amNone);
             if (runtime.lastErrorCode == runtime.ERROR_RAM_FULL) {
                 return;
             }
@@ -57,7 +57,7 @@ pub fn clearRegister(reg: runtime.calcRegister_t) void {
             memory_owned.zeroReal34(complexImagPointer(data_ptr));
             runtime.setRegisterDataType(reg, @intCast(runtime.dtComplex34), complex_tag);
         } else {
-            runtime.reallocateRegister(reg, runtime.dtComplex34, runtime.real34SizeInBlocks() * 2, complex_tag);
+            _ = runtime.reallocateRegister(reg, runtime.dtComplex34, runtime.real34SizeInBlocks() * 2, complex_tag);
             if (runtime.lastErrorCode == runtime.ERROR_RAM_FULL) {
                 return;
             }

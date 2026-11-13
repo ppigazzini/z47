@@ -53,7 +53,7 @@ inline fn cmEl(m: *const complex34Matrix_t, i: usize) *complex34_t {
     return &e[i];
 }
 inline fn realloc(reg: calcRegister_t, dt: u32) void {
-    runtime.reallocateRegister(reg, dt, 0, runtime.amNone);
+    _ = runtime.reallocateRegister(reg, dt, 0, runtime.amNone);
 }
 inline fn numElems(rows: u16, cols: u16) usize {
     return @as(usize, rows) * cols;

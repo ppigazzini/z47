@@ -113,7 +113,7 @@ pub export fn initMatrixRegister(regist: calcRegister_t, rows: u16, cols: u16, c
     // it only printfs to the developer console and has no calc-state effect.)
     const blocks: u16 = if (complex) runtime.COMPLEX34_SIZE_IN_BLOCKS else runtime.REAL34_SIZE_IN_BLOCKS;
     const neededSize: u16 = @truncate(@as(u32, rows) * cols * blocks);
-    runtime.reallocateRegister(
+    _ = runtime.reallocateRegister(
         regist,
         if (complex) runtime.dtComplex34Matrix else runtime.dtReal34Matrix,
         neededSize,
@@ -158,7 +158,7 @@ pub export fn redimMatrixRegister(regist: calcRegister_t, rows: u16, cols: u16, 
         var newMatrix: runtime.real34Matrix_t = undefined;
         runtime.convertReal34MatrixRegisterToReal34Matrix(regist, &newMatrix);
         if (runtime.lastErrorCode == runtime.ERROR_NONE) {
-            runtime.reallocateRegister(regist, runtime.dtReal34Matrix, newSize, runtime.amNone);
+            _ = runtime.reallocateRegister(regist, runtime.dtReal34Matrix, newSize, runtime.amNone);
             if (runtime.lastErrorCode == runtime.ERROR_NONE) {
                 const header = runtime.registerMatrixHeader(regist);
                 header.matrixRows = @truncate(rows);
@@ -190,7 +190,7 @@ pub export fn redimMatrixRegister(regist: calcRegister_t, rows: u16, cols: u16, 
         var newMatrix: runtime.complex34Matrix_t = undefined;
         runtime.convertComplex34MatrixRegisterToComplex34Matrix(regist, &newMatrix);
         if (runtime.lastErrorCode == runtime.ERROR_NONE) {
-            runtime.reallocateRegister(regist, runtime.dtComplex34Matrix, newSize, runtime.amNone);
+            _ = runtime.reallocateRegister(regist, runtime.dtComplex34Matrix, newSize, runtime.amNone);
             if (runtime.lastErrorCode == runtime.ERROR_NONE) {
                 const header = runtime.registerMatrixHeader(regist);
                 header.matrixRows = @truncate(rows);

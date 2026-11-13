@@ -137,7 +137,7 @@ fn addLongIntegerMatrixElement(integer_register: runtime.calcRegister_t, integer
 
         runtime.real34ToReal(element, &value);
         runtime.realAdd(integer, &value, &value, &runtime.ctxtReal39);
-        runtime.roundToSignificantDigits(&value, &value, significantDigitsOr34(), &runtime.ctxtReal39);
+        runtime.roundToSignificantDigits(&value, &value, @intCast(significantDigitsOr34()), &runtime.ctxtReal39);
         runtime.realToReal34(&value, element);
     }
 }
@@ -178,7 +178,7 @@ pub export fn addRegYStri() callconv(.c) void {
 
     var tmp = [2]u8{ 0, 0 };
     const len: i32 = stringByteLength(&tmp) + 1;
-    runtime.reallocateRegister(runtime.REGISTER_Y, runtime.dtString, toBlocks(@intCast(len)), runtime.amNone);
+    _ = runtime.reallocateRegister(runtime.REGISTER_Y, runtime.dtString, toBlocks(@intCast(len)), runtime.amNone);
     _ = runtime.xcopy(registerStringData(runtime.REGISTER_Y), &tmp, @intCast(len));
 
     addition[runtime.getRegisterDataType(runtime.REGISTER_X)][runtime.getRegisterDataType(runtime.REGISTER_Y)]();
@@ -242,7 +242,7 @@ pub export fn addSubDateLonI(op: real34Op_t) callconv(.c) void {
     var val: runtime.real34_t = undefined;
     runtime.convertLongIntegerRegisterToReal34Register(runtime.REGISTER_X, runtime.REGISTER_X);
     runtime.real34Multiply(runtime.registerReal34Ptr(runtime.REGISTER_X), const34_86400(), &val);
-    runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtDate, 0, runtime.amNone);
+    _ = runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtDate, 0, runtime.amNone);
     op(runtime.registerReal34Ptr(runtime.REGISTER_Y), &val, runtime.registerReal34Ptr(runtime.REGISTER_X));
 }
 
@@ -302,14 +302,14 @@ pub export fn realLonIOp(fast: longIntegerReal34Op_t, op: realOp_t) callconv(.c)
         } else {
             runtime.real34ToReal(runtime.registerReal34Ptr(runtime.REGISTER_Y), &y);
             runtime.convertLongIntegerRegisterToReal(runtime.REGISTER_X, &x, &runtime.ctxtReal39);
-            runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, runtime.amNone);
+            _ = runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, runtime.amNone);
             op(&y, &x, &x, &runtime.ctxtReal39);
             runtime.convertRealToReal34ResultRegister(&x, runtime.REGISTER_X);
         }
     } else {
         runtime.real34ToReal(runtime.registerReal34Ptr(runtime.REGISTER_Y), &y);
         runtime.convertLongIntegerRegisterToReal(runtime.REGISTER_X, &x, &runtime.ctxtReal39);
-        runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, runtime.amNone);
+        _ = runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, runtime.amNone);
         runtime.convertAngleFromTo(&y, y_angular_mode, runtime.currentAngularMode, &runtime.ctxtReal39);
         op(&y, &x, &x, &runtime.ctxtReal39);
         runtime.convertRealToReal34ResultRegister(&x, runtime.REGISTER_X);
@@ -365,13 +365,13 @@ pub export fn addCplxLonI() callconv(.c) void {
 
     b = runtime.registerImag34Ptr(runtime.REGISTER_Y).*;
     if (runtime.addSubtractLongIntegerReal34(runtime.REGISTER_X, runtime.registerReal34Ptr(runtime.REGISTER_Y), false, false, &result)) {
-        runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtComplex34, 0, runtime.amNone);
+        _ = runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtComplex34, 0, runtime.amNone);
         runtime.registerReal34Ptr(runtime.REGISTER_X).* = result;
     } else {
         runtime.real34ToReal(runtime.registerReal34Ptr(runtime.REGISTER_Y), &a);
         runtime.convertLongIntegerRegisterToReal(runtime.REGISTER_X, &c, &runtime.ctxtReal39);
         runtime.realAdd(&a, &c, &c, &runtime.ctxtReal39);
-        runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtComplex34, 0, runtime.amNone);
+        _ = runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtComplex34, 0, runtime.amNone);
         runtime.convertRealToReal34ResultRegister(&c, runtime.REGISTER_X);
     }
     runtime.registerImag34Ptr(runtime.REGISTER_X).* = b;
@@ -418,7 +418,7 @@ pub export fn addDateReal() callconv(.c) void {
     if (x_angular_mode == runtime.amNone) {
         runtime.real34ToIntegralValue(runtime.registerReal34Ptr(runtime.REGISTER_X), runtime.registerReal34Ptr(runtime.REGISTER_X), runtime.roundingModeTable[runtime.roundingMode]);
         runtime.real34Multiply(runtime.registerReal34Ptr(runtime.REGISTER_X), const34_86400(), &val);
-        runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtDate, 0, runtime.amNone);
+        _ = runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtDate, 0, runtime.amNone);
         runtime.real34Add(runtime.registerReal34Ptr(runtime.REGISTER_Y), &val, runtime.registerReal34Ptr(runtime.REGISTER_X));
     } else {
         addError();
@@ -460,7 +460,7 @@ fn addString(string_to_append: [*c]const u8) void {
         const len1 = stringByteLength(registerStringData(runtime.REGISTER_Y));
         const len2 = stringByteLength(string_to_append) + 1;
 
-        runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtString, toBlocks(@intCast(len1 + len2)), runtime.amNone);
+        _ = runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtString, toBlocks(@intCast(len1 + len2)), runtime.amNone);
 
         _ = runtime.xcopy(registerStringData(runtime.REGISTER_X), registerStringData(runtime.REGISTER_Y), @intCast(len1));
         _ = runtime.xcopy(registerStringData(runtime.REGISTER_X) + @as(usize, @intCast(len1)), string_to_append, @intCast(len2));
@@ -921,7 +921,7 @@ pub export fn addRealShoI() callconv(.c) void {
 
         runtime.real34ToReal(runtime.registerReal34Ptr(runtime.REGISTER_Y), &y);
         runtime.convertShortIntegerRegisterToReal(runtime.REGISTER_X, &x, &runtime.ctxtReal39);
-        runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, runtime.amNone);
+        _ = runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, runtime.amNone);
         runtime.convertAngleFromTo(&y, y_angular_mode, runtime.currentAngularMode, &runtime.ctxtReal39);
         runtime.realAdd(&y, &x, &x, &runtime.ctxtReal39);
         runtime.convertRealToReal34ResultRegister(&x, runtime.REGISTER_X);

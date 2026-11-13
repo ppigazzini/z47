@@ -63,7 +63,7 @@ fn divideLongIntegerMatrixElement(integer_register: runtime.calcRegister_t, inte
         } else {
             runtime.realDivide(&value, integer, &value, &runtime.ctxtReal39);
         }
-        runtime.roundToSignificantDigits(&value, &value, significantDigitsOr34(), &runtime.ctxtReal39);
+        runtime.roundToSignificantDigits(&value, &value, @intCast(significantDigitsOr34()), &runtime.ctxtReal39);
         runtime.realToReal34(&value, element);
     }
 }
@@ -299,9 +299,9 @@ pub export fn divLonILonI() linksection(runtime.code_section) callconv(.c) void 
     runtime.convertLongIntegerRegisterToLongInteger(REGISTER_Y, &y[0]);
 
     if (x[0]._mp_size == 0) { // longIntegerIsZero(x)
-        runtime.reallocateRegister(REGISTER_X, runtime.dtReal34, 0, @intCast(runtime.amNone));
+        _ = runtime.reallocateRegister(REGISTER_X, runtime.dtReal34, 0, @intCast(runtime.amNone));
         support.convertLongIntegerToReal34(&x[0], runtime.registerReal34Ptr(REGISTER_X));
-        runtime.reallocateRegister(REGISTER_Y, runtime.dtReal34, 0, @intCast(runtime.amNone));
+        _ = runtime.reallocateRegister(REGISTER_Y, runtime.dtReal34, 0, @intCast(runtime.amNone));
         support.convertLongIntegerToReal34(&y[0], runtime.registerReal34Ptr(REGISTER_Y));
         divRealReal();
     } else {
@@ -408,7 +408,7 @@ pub export fn divRealLonI() linksection(runtime.code_section) callconv(.c) void 
     runtime.convertLongIntegerRegisterToReal(REGISTER_X, &x, &runtime.ctxtReal39);
 
     if (runtime.realIsZero(&x)) {
-        runtime.reallocateRegister(REGISTER_X, runtime.dtReal34, 0, @intCast(runtime.amNone));
+        _ = runtime.reallocateRegister(REGISTER_X, runtime.dtReal34, 0, @intCast(runtime.amNone));
         if (runtime.getSystemFlag(support.FLAG_SPCRES)) {
             runtime.real34Divide(runtime.registerReal34Ptr(REGISTER_Y), runtime.z47_math_wrappers_const34_0(), runtime.registerReal34Ptr(REGISTER_X));
         } else {
@@ -426,13 +426,13 @@ pub export fn divRealLonI() linksection(runtime.code_section) callconv(.c) void 
                 runtime.convertReal34ToReal34Register(&result, REGISTER_X);
             } else {
                 runtime.real34ToReal(runtime.registerReal34Ptr(REGISTER_Y), &y);
-                runtime.reallocateRegister(REGISTER_X, runtime.dtReal34, 0, @intCast(runtime.amNone));
+                _ = runtime.reallocateRegister(REGISTER_X, runtime.dtReal34, 0, @intCast(runtime.amNone));
                 runtime.realDivide(&y, &x, &x, &runtime.ctxtReal39);
                 runtime.convertRealToReal34ResultRegister(&x, REGISTER_X);
             }
         } else {
             runtime.real34ToReal(runtime.registerReal34Ptr(REGISTER_Y), &y);
-            runtime.reallocateRegister(REGISTER_X, runtime.dtReal34, 0, @intCast(runtime.amNone));
+            _ = runtime.reallocateRegister(REGISTER_X, runtime.dtReal34, 0, @intCast(runtime.amNone));
             runtime.convertAngleFromTo(&y, y_angular_mode, runtime.currentAngularMode, &runtime.ctxtReal39);
             runtime.realDivide(&y, &x, &x, &runtime.ctxtReal39);
             runtime.convertRealToReal34ResultRegister(&x, REGISTER_X);
@@ -465,7 +465,7 @@ pub export fn divCplxLonI() linksection(runtime.code_section) callconv(.c) void 
     runtime.realDivide(&y.Real, &c, &y.Real, &runtime.ctxtReal39);
     runtime.realDivide(&y.Imag, &c, &y.Imag, &runtime.ctxtReal39);
 
-    runtime.reallocateRegister(REGISTER_X, runtime.dtComplex34, 0, @intCast(runtime.amNone));
+    _ = runtime.reallocateRegister(REGISTER_X, runtime.dtComplex34, 0, @intCast(runtime.amNone));
     runtime.convertComplexToResultRegister(&y, REGISTER_X);
 }
 
@@ -476,7 +476,7 @@ pub export fn divTimeLonI() linksection(runtime.code_section) callconv(.c) void 
     var x: runtime.real_t = undefined;
 
     runtime.convertLongIntegerRegisterToReal(REGISTER_X, &x, &runtime.ctxtReal39);
-    runtime.reallocateRegister(REGISTER_X, runtime.dtTime, 0, @intCast(runtime.amNone));
+    _ = runtime.reallocateRegister(REGISTER_X, runtime.dtTime, 0, @intCast(runtime.amNone));
 
     if (runtime.realIsZero(&x)) {
         if (runtime.real34IsZero(runtime.registerReal34Ptr(REGISTER_Y))) {
@@ -513,7 +513,7 @@ pub export fn divTimeShoI() linksection(runtime.code_section) callconv(.c) void 
     var x: runtime.real_t = undefined;
 
     runtime.convertShortIntegerRegisterToReal(REGISTER_X, &x, &runtime.ctxtReal39);
-    runtime.reallocateRegister(REGISTER_X, runtime.dtTime, 0, @intCast(runtime.amNone));
+    _ = runtime.reallocateRegister(REGISTER_X, runtime.dtTime, 0, @intCast(runtime.amNone));
 
     if (runtime.realIsZero(&x)) {
         if (runtime.real34IsZero(runtime.registerReal34Ptr(REGISTER_Y))) {
@@ -548,14 +548,14 @@ pub export fn divShoITime() linksection(runtime.code_section) callconv(.c) void 
 pub export fn divTimeReal() linksection(runtime.code_section) callconv(.c) void {
     if (runtime.real34IsZero(runtime.registerReal34Ptr(REGISTER_Y)) and runtime.real34IsZero(runtime.registerReal34Ptr(REGISTER_X))) {
         if (runtime.getSystemFlag(support.FLAG_SPCRES)) {
-            runtime.reallocateRegister(REGISTER_X, runtime.dtTime, 0, @intCast(runtime.amNone));
+            _ = runtime.reallocateRegister(REGISTER_X, runtime.dtTime, 0, @intCast(runtime.amNone));
             runtime.convertRealToReal34ResultRegister(runtime.const_NaN, REGISTER_X);
         } else {
             divisionDomainError("In function divTimeReal:", "cannot divide 0 by 0");
         }
     } else if (runtime.real34IsZero(runtime.registerReal34Ptr(REGISTER_X))) {
         if (runtime.getSystemFlag(support.FLAG_SPCRES)) {
-            runtime.reallocateRegister(REGISTER_X, runtime.dtTime, 0, @intCast(runtime.amNone));
+            _ = runtime.reallocateRegister(REGISTER_X, runtime.dtTime, 0, @intCast(runtime.amNone));
             runtime.realToReal34(
                 if (support.real34IsPositive(runtime.registerReal34Ptr(REGISTER_Y))) runtime.z47_math_wrappers_const_plus_infinity() else runtime.z47_math_wrappers_const_minus_infinity(),
                 runtime.registerReal34Ptr(REGISTER_X),
@@ -570,7 +570,7 @@ pub export fn divTimeReal() linksection(runtime.code_section) callconv(.c) void 
         const x_angular_mode = runtime.getRegisterAngularMode(REGISTER_X);
 
         if (x_angular_mode == runtime.amNone) { // time / real
-            runtime.reallocateRegister(REGISTER_X, runtime.dtTime, 0, @intCast(runtime.amNone));
+            _ = runtime.reallocateRegister(REGISTER_X, runtime.dtTime, 0, @intCast(runtime.amNone));
             runtime.real34Divide(runtime.registerReal34Ptr(REGISTER_Y), &x, runtime.registerReal34Ptr(REGISTER_X));
         } else { // time / angle
             divError();
@@ -603,7 +603,7 @@ pub export fn divTimeTime() linksection(runtime.code_section) callconv(.c) void 
         var b: runtime.real34_t = undefined;
 
         b = runtime.registerReal34Ptr(REGISTER_X).*;
-        runtime.reallocateRegister(REGISTER_X, runtime.dtReal34, 0, @intCast(runtime.amNone));
+        _ = runtime.reallocateRegister(REGISTER_X, runtime.dtReal34, 0, @intCast(runtime.amNone));
         runtime.real34Divide(runtime.registerReal34Ptr(REGISTER_Y), &b, runtime.registerReal34Ptr(REGISTER_X));
         runtime.setRegisterAngularMode(REGISTER_X, runtime.amNone);
     }
@@ -951,13 +951,13 @@ pub export fn divRealShoI() linksection(runtime.code_section) callconv(.c) void 
 
             runtime.realToReal34(&x, &denominator);
             runtime.real34SetPositiveSign(&denominator);
-            runtime.reallocateRegister(REGISTER_X, runtime.dtReal34, 0, @intCast(runtime.amNone));
+            _ = runtime.reallocateRegister(REGISTER_X, runtime.dtReal34, 0, @intCast(runtime.amNone));
             runtime.real34Divide(runtime.registerReal34Ptr(REGISTER_Y), &denominator, runtime.registerReal34Ptr(REGISTER_X));
             if (negative_zero and !runtime.real34IsNaN(runtime.registerReal34Ptr(REGISTER_X))) {
                 real34ChangeSign(runtime.registerReal34Ptr(REGISTER_X));
             }
         } else {
-            runtime.reallocateRegister(REGISTER_X, runtime.dtReal34, 0, @intCast(runtime.amNone));
+            _ = runtime.reallocateRegister(REGISTER_X, runtime.dtReal34, 0, @intCast(runtime.amNone));
             if (runtime.real34IsZero(runtime.registerReal34Ptr(REGISTER_Y))) {
                 divisionDomainError("In function divRealShoI:", "cannot divide 0 by 0");
             } else {
@@ -972,7 +972,7 @@ pub export fn divRealShoI() linksection(runtime.code_section) callconv(.c) void 
             runtime.real34Divide(runtime.registerReal34Ptr(REGISTER_Y), runtime.registerReal34Ptr(REGISTER_X), runtime.registerReal34Ptr(REGISTER_X));
         } else {
             runtime.real34ToReal(runtime.registerReal34Ptr(REGISTER_Y), &y);
-            runtime.reallocateRegister(REGISTER_X, runtime.dtReal34, 0, @intCast(runtime.amNone));
+            _ = runtime.reallocateRegister(REGISTER_X, runtime.dtReal34, 0, @intCast(runtime.amNone));
             runtime.convertAngleFromTo(&y, y_angular_mode, runtime.currentAngularMode, &runtime.ctxtReal39);
             runtime.realDivide(&y, &x, &x, &runtime.ctxtReal39);
             runtime.convertRealToReal34ResultRegister(&x, REGISTER_X);

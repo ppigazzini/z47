@@ -298,7 +298,7 @@ fn isMenuAutoOff() c_int {
 
 fn sysDiskWriteEnable(enabled: c_int) void {
     const function: DiskWriteEnableFn = @ptrFromInt(build_options.library_fn_base + sys_disk_write_enable_offset);
-    function(enabled);
+    _ = function(enabled);
 }
 
 fn fileOpen(file: ?*anyopaque, path: [*c]const u8, mode: u8) c_uint {

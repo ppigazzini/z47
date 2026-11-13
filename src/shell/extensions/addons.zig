@@ -628,7 +628,7 @@ extern var drgConfig: u8;
 extern fn __gmpz_cmpabs(a: [*c]const mpz_struct, b: [*c]const mpz_struct) c_int;
 extern fn __gmpz_ui_pow_ui(r: [*c]mpz_struct, base: c_ulong, exponent: c_ulong) void;
 extern fn setRegisterTag(regist: calcRegister_t, tag: u32) void;
-extern fn setRegisterDataType(regist: calcRegister_t, dataType: u32, tag: u32) void;
+extern fn setRegisterDataType(regist: calcRegister_t, dataType: u16, tag: u32) void;
 // freeRegisterData is a macro = freeC47Blocks(ptr, getRegisterFullSizeInBlocks).
 extern fn freeC47Blocks(pcMemPtr: ?*anyopaque, sizeInBlocks: usize) void;
 extern fn malloc(size: usize) ?*anyopaque;
@@ -637,7 +637,7 @@ extern fn getRegisterFullSizeInBlocks(regist: calcRegister_t) u16;
 inline fn freeRegisterData(regist: calcRegister_t) void {
     freeC47Blocks(getRegisterDataPointer(regist), getRegisterFullSizeInBlocks(regist));
 }
-extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeInBytes: u32, tag: u32) void;
+extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) bool;
 extern fn allocC47Blocks(numberOfBlocks: usize) [*c]u8;
 extern fn moreInfoOnError(m1: [*c]const u8, m2: [*c]const u8, m3: [*c]const u8, m4: [*c]const u8) void;
 extern fn fnDrop(unusedButMandatoryParameter: u16) void;
@@ -781,7 +781,7 @@ inline fn setBlackPixel(x: u32, y: u32) void {
 inline fn setWhitePixel(x: u32, y: u32) void {
     if (comptime dmcp_build) frontier_screen.setWhitePixel(x, y) else bitblt24(x, 1, y, 1, BLT_ANDN, BLT_NONE);
 }
-extern fn _Buzz(a: i32, b: i32) void;
+extern fn _Buzz(a: u32, b: u32) void;
 extern fn resetShiftState() void;
 extern fn clearKeyBuffer() void;
 extern fn interruptKeyInBuffer() bool;
@@ -1144,7 +1144,7 @@ fn _hmsTimeToReal() void {
     tmpString[@intCast(j)] = 0;
 
     if (tmpString[0] != 0) {
-        reallocateRegister(REGISTER_X, dtReal34, @intCast(REAL34_SIZE_IN_BYTES), amNone);
+        _ = reallocateRegister(REGISTER_X, dtReal34, @intCast(REAL34_SIZE_IN_BYTES), amNone);
         stringToReal34(tmpString, reg34(REGISTER_X));
     }
 }
@@ -1387,7 +1387,7 @@ fn _editX() void {
     freeRegisterData(REGISTER_X);
     setRegisterDataPointer(REGISTER_X, allocC47Blocks(REAL34_SIZE_IN_BLOCKS));
     // A time and a date keep their types for the close.
-    setRegisterDataType(REGISTER_X, if (dataType == dtTime or dataType == dtDate) dataType else dtReal34, @intCast(xangularMode));
+    setRegisterDataType(REGISTER_X, @intCast(if (dataType == dtTime or dataType == dtDate) dataType else dtReal34), @intCast(xangularMode));
     real34SetZero(reg34(REGISTER_X));
 
     const inputDefault = Input_Default;
@@ -1763,7 +1763,7 @@ inline fn key_pop_all() void {
 }
 inline fn wait_for_key_release(a: c_int) c_int {
     const f: WaitForKeyReleaseFn = @ptrFromInt(LIBRARY_FN_BASE + 420);
-    return f(a);
+    f(a);
 }
 
 const force: u8 = 1;
@@ -1989,7 +1989,7 @@ fn fnFrom_msRegisterImpl(regist: i16) void {
         }
 
         if (tmpString100_OUT[0] != 0) {
-            reallocateRegister(regist, dtReal34, 0, amNone);
+            _ = reallocateRegister(regist, dtReal34, 0, amNone);
             stringToReal34(&tmpString100_OUT, reg34(regist));
             if (comptime extra_info) {
                 if (comptime !dmcp_build) {
@@ -3140,7 +3140,7 @@ pub export fn fnByteShortcutsU(size: u16) callconv(.c) void {
 
 pub export fn fnStrtoReg(buffer: [*c]const u8, regist: calcRegister_t) callconv(.c) void {
     const mem: i16 = @intCast(stringByteLength(buffer) + 1);
-    reallocateRegister(regist, dtString, TO_BLOCKS(@intCast(mem)), amNone);
+    _ = reallocateRegister(regist, dtString, @intCast(TO_BLOCKS(@intCast(mem))), amNone);
     _ = frontier_char_string.xcopy(regString(regist), buffer, @intCast(mem));
 }
 
@@ -3156,7 +3156,7 @@ pub export fn fnStrInputReal34(inp1: [*c]const u8) callconv(.c) void {
     _ = strcat(tmpString, inp1);
     setSystemFlag(FLAG_ASLIFT);
     liftStack();
-    reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+    _ = reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
     stringToReal34(tmpString, reg34(REGISTER_X));
     setSystemFlag(FLAG_ASLIFT);
 }
@@ -3272,7 +3272,7 @@ pub export fn timeToReal34(hms: u16) callconv(.c) void {
         else => ptr = null,
     }
 
-    reallocateRegister(regist, dtReal34, 0, amNone);
+    _ = reallocateRegister(regist, dtReal34, 0, amNone);
     if (ptr) |p| {
         real34Copy(p, reg34(regist));
         if (sign != 0) {
@@ -3415,7 +3415,7 @@ pub export fn fnToTime(unusedButMandatoryParameter: u16) callconv(.c) void {
     real34Add(&hr, &m, &hr);
     real34Add(&hr, &s, &hr);
 
-    reallocateRegister(REGISTER_X, dtTime, 0, amNone);
+    _ = reallocateRegister(REGISTER_X, dtTime, 0, amNone);
     real34Copy(&hr, reg34(REGISTER_X));
 }
 

@@ -153,24 +153,24 @@ pub export fn fnSlvq(unused_but_mandatory_parameter: u16) linksection(runtime.co
     realRoots = realRoots and realIsZero(&x1.Imag) and realIsZero(&x2.Imag);
 
     if (realRoots) {
-        reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
-        reallocateRegister(REGISTER_Y, dtReal34, 0, amNone);
+        _ = reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+        _ = reallocateRegister(REGISTER_Y, dtReal34, 0, amNone);
         convertRealToReal34ResultRegister(&x1.Real, REGISTER_X);
         convertRealToReal34ResultRegister(&x2.Real, REGISTER_Y);
     } else { // !realRoots
         if (realIsZero(&x1.Imag)) { // x1 is real
-            reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+            _ = reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
             convertRealToReal34ResultRegister(&x1.Real, REGISTER_X);
         } else {
-            reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
+            _ = reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
             convertComplexToResultRegister(&x1, REGISTER_X);
         }
 
         if (realIsZero(&x2.Imag)) { // x2 is real
-            reallocateRegister(REGISTER_Y, dtReal34, 0, amNone);
+            _ = reallocateRegister(REGISTER_Y, dtReal34, 0, amNone);
             convertRealToReal34ResultRegister(&x2.Real, REGISTER_Y);
         } else {
-            reallocateRegister(REGISTER_Y, dtComplex34, 0, amNone);
+            _ = reallocateRegister(REGISTER_Y, dtComplex34, 0, amNone);
             convertComplexToResultRegister(&x2, REGISTER_Y);
         }
     }

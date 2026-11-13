@@ -496,7 +496,7 @@ extern fn numlockReplacements(id: u16, item: i16, NL: bool_t, SHFT: bool_t, GSHF
 extern fn fnT_ARROW(command: u16) void;
 extern fn SetSetting(jmConfig: u16) void;
 
-extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) void;
+extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) bool;
 extern fn getRegisterDataPointer(regist: calcRegister_t) *anyopaque;
 
 // findOrAllocateNamedVariable / findNamedVariable / findMenu are not used here.
@@ -1992,7 +1992,7 @@ fn _pemCloseDateInput() void {
             tmpPtr[0] = STRING_DATE;
             tmpPtr += 1;
 
-            reallocateRegister(TEMP_REGISTER_1, dtReal34, 0, amNone);
+            _ = reallocateRegister(TEMP_REGISTER_1, dtReal34, 0, amNone);
             stringToReal34(numBuffer, reg34(TEMP_REGISTER_1));
             frontier_register_value_conversions.convertReal34RegisterToDateRegister(TEMP_REGISTER_1, TEMP_REGISTER_1, false);
             frontier_date_time.internalDateToJulianDay(reg34(TEMP_REGISTER_1), reg34(TEMP_REGISTER_1));

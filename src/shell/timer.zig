@@ -177,7 +177,7 @@ extern fn getRegisterDataPointer(regist: calcRegister_t) *anyopaque;
 
 extern fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void;
 
-extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) void;
+extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) bool;
 extern fn clearRegister(regist: calcRegister_t) void;
 
 extern fn fnSwapXY(unusedButMandatoryParameter: u16) void;
@@ -923,7 +923,7 @@ pub export fn fnRegAddTimerApp(unusedButMandatoryParameter: u16) callconv(.c) vo
         var tmp: real_t = undefined;
         uInt32ToReal(getTimerValue() / 100, &tmp);
         tmp.exponent -= 1;
-        reallocateRegister(timerCraAndDeciseconds & 0x7f, dtTime, 0, amNone);
+        _ = reallocateRegister(timerCraAndDeciseconds & 0x7f, dtTime, 0, amNone);
         realToReal34(&tmp, reg34(@as(calcRegister_t, timerCraAndDeciseconds & 0x7f)));
         fnUpTimerApp();
     } else if (aimBuffer[AIM_BUFFER_LENGTH / 2] == 0) {
@@ -947,7 +947,7 @@ pub export fn fnRegAddLapTimerApp(unusedButMandatoryParameter: u16) callconv(.c)
 
     uInt32ToReal(msec / 100, &tmp);
     tmp.exponent -= 1;
-    reallocateRegister(timerCraAndDeciseconds & 0x7f, dtTime, 0, amNone);
+    _ = reallocateRegister(timerCraAndDeciseconds & 0x7f, dtTime, 0, amNone);
     realToReal34(&tmp, reg34(@as(calcRegister_t, timerCraAndDeciseconds & 0x7f)));
 
     fnUpTimerApp();

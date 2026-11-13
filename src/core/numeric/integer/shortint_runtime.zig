@@ -54,7 +54,7 @@ pub extern fn getRegisterAsComplex(reg: calcRegister_t, z: *cplx_t) bool;
 pub extern fn saveLastX() bool;
 pub extern fn liftStack() void;
 pub extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: calcRegister_t) void;
-pub extern fn reallocateRegister(regist: calcRegister_t, data_type: u32, data_size_without_data_len_blocks: u16, tag: u32) void;
+pub extern fn reallocateRegister(regist: calcRegister_t, data_type: u32, data_size_without_data_len_blocks: u16, tag: u32) bool;
 pub extern fn getRegisterDataPointer(regist: calcRegister_t) ?*anyopaque;
 pub extern fn getRegisterTag(regist: calcRegister_t) u32;
 pub extern fn setRegisterTag(regist: calcRegister_t, tag: u32) void;

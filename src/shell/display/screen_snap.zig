@@ -203,8 +203,8 @@ extern fn strcat(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn strchr(s: [*c]const u8, c: c_int) [*c]u8;
 
 extern fn getSystemFlag(sf: c_int) bool_t;
-extern fn setSystemFlag(sf: c_int) void;
-extern fn clearSystemFlag(sf: c_int) void;
+extern fn setSystemFlag(sf: u32) void;
+extern fn clearSystemFlag(sf: u32) void;
 extern var screenUpdatingMode: u8;
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
 extern fn getRegisterDataPointer(regist: calcRegister_t) [*c]u8;

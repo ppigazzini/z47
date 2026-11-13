@@ -146,7 +146,7 @@ pub export fn fnReToCx(unusedButMandatoryParameter: u16) callconv(.c) void {
 
         real34Copy(REGISTER_REAL34_DATA(REGISTER_Y), VARIABLE_REAL34_DATA(&temp));
         real34Copy(REGISTER_REAL34_DATA(REGISTER_X), VARIABLE_IMAG34_DATA(&temp));
-        runtime.reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
+        _ = runtime.reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
 
         if (runtime.getSystemFlag(FLAG_POLAR)) { // polar mode
             if (math_comparison_reals.real34CompareEqual(VARIABLE_REAL34_DATA(&temp), const34_0())) {

@@ -121,7 +121,7 @@ extern fn getRegisterTag(regist: calcRegister_t) u32;
 extern fn setRegisterTag(regist: calcRegister_t, tag: u32) void;
 
 extern fn copySourceRegisterToDestRegister(rSource: calcRegister_t, rDest: calcRegister_t) void;
-extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) void;
+extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) bool;
 extern fn adjustResult(result: calcRegister_t, dropY: bool_t, setCpxRes: bool_t, op1: calcRegister_t, op2: calcRegister_t, op3: calcRegister_t) void;
 extern fn saveForUndo() void;
 extern fn liftStack() void;
@@ -371,7 +371,7 @@ pub export fn fnJM(JM_OPCODE: u16) callconv(.c) void {
         fnAdd(0);
         fnAdd(0);
         liftStack();
-        reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
+        _ = reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
         stringToReal34("3", reg34(REGISTER_X));
         stringToReal34("0", regImag34(REGISTER_X));
         copySourceRegisterToDestRegister(REGISTER_X, JMTEMP);

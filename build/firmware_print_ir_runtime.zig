@@ -10,7 +10,7 @@ const PrintByteFn = *const fn (u8) callconv(.c) void;
 const PrinterGetDelayFn = *const fn () callconv(.c) u32;
 const PrinterSetDelayFn = *const fn (u32) callconv(.c) void;
 
-extern fn getSystemFlag(flag: u16) c_int;
+extern fn getSystemFlag(flag: i32) bool;
 
 fn printerGetDelay() u32 {
     const get_delay: PrinterGetDelayFn = @ptrFromInt(firmware_print_ir_build_options.library_fn_base + printer_get_delay_offset);
@@ -38,7 +38,7 @@ pub export fn setLineDelay(delay: u16) callconv(.c) void {
 }
 
 pub export fn sendByteIR(byte: u8) callconv(.c) void {
-    if (getSystemFlag(FLAG_PRTACT) != 0) {
+    if (getSystemFlag(FLAG_PRTACT)) {
         printByte(byte);
     }
 }

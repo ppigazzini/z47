@@ -120,7 +120,7 @@ pub extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line:
 // from the EXTRA_INFO_ON_CALC_ERROR arms below.
 extern var errorMessage: [*c]u8;
 extern fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void;
-extern fn convertRealToResultRegister(value: *const real_t, dest: calcRegister_t, angle: u32) void;
+extern fn convertRealToResultRegister(value: *const real_t, dest: calcRegister_t, angle: i32) void;
 extern fn convertLongIntegerToLongIntegerRegister(long_integer: *const longIntegerValue_t, regist: calcRegister_t) void;
 extern fn convertLongIntegerToShortIntegerRegister(long_integer: *const longIntegerValue_t, base: u32, regist: calcRegister_t) void;
 
@@ -143,9 +143,9 @@ pub extern fn setRegisterDataType(reg: calcRegister_t, data_type: u16, tag: u32)
 pub extern fn xcopy(dest: ?*anyopaque, source: ?*const anyopaque, n: u32) ?*anyopaque;
 pub extern fn copySourceRegisterToDestRegister(source_register: calcRegister_t, dest_register: calcRegister_t) void;
 pub extern fn fnRecall(reg: u16) void;
-pub extern fn recallStatsMatrix() void;
+pub extern fn recallStatsMatrix() bool;
 pub extern fn fnSigmaAddRem(selection: u16) void;
-pub extern fn reallocateRegister(reg: calcRegister_t, data_type: u32, data_size_without_data_len_blocks: u16, tag: u32) void;
+pub extern fn reallocateRegister(reg: calcRegister_t, data_type: u32, data_size_without_data_len_blocks: u16, tag: u32) bool;
 pub extern fn calcModeNormal() void;
 
 pub extern var currentInputVariable: u16;

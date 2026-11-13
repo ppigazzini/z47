@@ -1015,7 +1015,7 @@ extern fn getRegisterDataType(regist: calcRegister_t) u32;
 extern fn getRegisterDataPointer(regist: calcRegister_t) [*c]u8;
 extern fn getRegisterTag(regist: calcRegister_t) u32;
 extern fn setRegisterTag(regist: calcRegister_t, tag: u32) void;
-extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) void;
+extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) bool;
 extern fn copySourceRegisterToDestRegister(rSource: calcRegister_t, rDest: calcRegister_t) void;
 extern fn realPolarToRectangularInUnit(magnitude: *const real_t, theta: *const real_t, angularMode: angularMode_t, z: *cplx_t, realContext: *realContext_t) void;
 const cplx_t = abi.Complex;
@@ -2269,7 +2269,7 @@ pub export fn closeAim() callconv(.c) void {
         undo();
     } else {
         const len: i16 = @intCast(stringByteLength(aimBuffer) + 1);
-        reallocateRegister(REGISTER_X, dtString, toBlocks(@intCast(len)), amNone);
+        _ = reallocateRegister(REGISTER_X, dtString, toBlocks(@intCast(len)), amNone);
         _ = frontier_char_string.xcopy(regString(REGISTER_X), aimBuffer, @intCast(len));
         aimBuffer[0] = 0;
         setSystemFlag(FLAG_ASLIFT);
@@ -2941,7 +2941,7 @@ pub export fn nimShortInteger(buffer: [*c]u8, regist: calcRegister_t) callconv(.
         return false;
     }
 
-    reallocateRegister(regist, dtShortInteger, 0, @intCast(base));
+    _ = reallocateRegister(regist, dtShortInteger, 0, @intCast(base));
 
     var strValue: [22]u8 = undefined;
     frontier_display.longIntegerToAllocatedString(&value[0], &strValue, @intCast(strValue.len));
@@ -3041,7 +3041,7 @@ pub export fn closeNim() callconv(.c) void {
                         const xangularMode: angularMode_t = if ((getRegisterDataType(REGISTER_X) == dtReal34) == (dtReal34 != 0)) getRegisterAngularMode(REGISTER_X) else amNone;
 
                         if (xangularMode < amNone) { // editing with angular mode -> convert to real, preserve angular mode
-                            reallocateRegister(REGISTER_X, dtReal34, 0, @intCast(getRegisterAngularMode(REGISTER_X)));
+                            _ = reallocateRegister(REGISTER_X, dtReal34, 0, @intCast(getRegisterAngularMode(REGISTER_X)));
                             stringToReal34(aimBuffer, reg34(REGISTER_X));
                             if (xangularMode == amDMS) {
                                 frontier_conversion_angles.real34FromDmsToDeg(reg34(REGISTER_X), reg34(REGISTER_X));
@@ -3062,7 +3062,7 @@ pub export fn closeNim() callconv(.c) void {
                     } else if (nimNumberPart == NP_REAL_FLOAT_PART or nimNumberPart == NP_REAL_EXPONENT) {
                         const dataType: u16 = @intCast(getRegisterDataType(REGISTER_X));
                         if (dataType == dtTime) {
-                            reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+                            _ = reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
                             stringToReal34(aimBuffer, reg34(REGISTER_X));
 
                             if (calcMode != CM_NIM and lastErrorCode == 0) {
@@ -3077,7 +3077,7 @@ pub export fn closeNim() callconv(.c) void {
                                 }
                             }
                         } else if (dataType == dtDate) {
-                            reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+                            _ = reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
                             stringToReal34(aimBuffer, reg34(REGISTER_X));
 
                             if (calcMode != CM_NIM and lastErrorCode == 0) {
@@ -3093,13 +3093,13 @@ pub export fn closeNim() callconv(.c) void {
                             }
                         } else {
                             if (lastIntegerBase == 0 and Input_Default == ID_CPXDP) {
-                                reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
+                                _ = reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
                                 stringToReal34(aimBuffer, reg34(REGISTER_X));
                                 stringToReal34("0", regImag34(REGISTER_X));
                             } else {
                                 const xangularMode: angularMode_t = if ((getRegisterDataType(REGISTER_X) == dtReal34) == (dtReal34 != 0)) getRegisterAngularMode(REGISTER_X) else amNone;
 
-                                reallocateRegister(REGISTER_X, dtReal34, 0, @intCast(xangularMode));
+                                _ = reallocateRegister(REGISTER_X, dtReal34, 0, @intCast(xangularMode));
                                 stringToReal34(aimBuffer, reg34(REGISTER_X));
                                 if (xangularMode == amDMS) {
                                     frontier_conversion_angles.real34FromDmsToDeg(reg34(REGISTER_X), reg34(REGISTER_X));
@@ -3107,10 +3107,10 @@ pub export fn closeNim() callconv(.c) void {
                             }
                         }
                     } else if (nimNumberPart == NP_FRACTION_DENOMINATOR or nimNumberPart == NP_HP32SII_DENOMINATOR) {
-                        reallocateRegister(REGISTER_X, dtReal34, 0, @intCast(getRegisterAngularMode(REGISTER_X)));
+                        _ = reallocateRegister(REGISTER_X, dtReal34, 0, @intCast(getRegisterAngularMode(REGISTER_X)));
                         closeNimWithFraction(reg34(REGISTER_X));
                     } else if (nimNumberPart == NP_COMPLEX_INT_PART or nimNumberPart == NP_COMPLEX_FLOAT_PART or nimNumberPart == NP_COMPLEX_EXPONENT or nimNumberPart == NP_COMPLEX_FRACTION_DENOMINATOR or nimNumberPart == NP_COMPLEX_HP32SII_DENOMINATOR) {
-                        reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
+                        _ = reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
                         closeNimWithComplex(reg34(REGISTER_X), regImag34(REGISTER_X));
                     } else {
                         _ = sprintf(errorMessage, @ptrCast(&commonBugScreenMessages[bugMsgUnexpectedSValue]), "closeNIM", @as(c_uint, nimNumberPart), "nimNumberPart");

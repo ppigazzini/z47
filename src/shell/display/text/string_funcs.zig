@@ -110,7 +110,7 @@ extern fn saveLastX() bool;
 extern fn fnSwapX(regist: u16) void;
 extern fn elementwiseRema_UInt16(f: ?*const fn (u16) callconv(.c) void, param: u16) void;
 extern fn getSystemFlag(flag: c_int) bool;
-extern fn reallocateRegister(regist: calcRegister_t, data_type: u32, size_blocks: u16, tag: u32) void;
+extern fn reallocateRegister(regist: calcRegister_t, data_type: u32, size_blocks: u16, tag: u32) bool;
 extern fn WP34S_Mod(x: *const real_t, y: *align(1) const real_t, res: *real_t, real_context: *realContext_t) void;
 extern fn real34CompareAbsGreaterThan(number1: *align(1) const real34_t, number2: *align(1) const real34_t) bool;
 extern fn decimal128ToNumber(src: *align(1) const real34_t, dst: *real_t) *real_t;
@@ -306,7 +306,7 @@ pub export fn fnXToAlpha(regist: u16) callconv(.c) void { // new version, simila
                 var l: i32 = stringByteLength(tmpString);
                 _ = frontier_char_string.xcopy(tmpString + @as(usize, @intCast(l)), regString(REGISTER_X), @intCast(stringByteLength(regString(REGISTER_X)) + 1));
                 l = stringByteLength(tmpString);
-                reallocateRegister(@intCast(regist), dtString, @intCast(l + 1), amNone);
+                _ = reallocateRegister(@intCast(regist), dtString, @intCast(l + 1), amNone);
                 _ = frontier_char_string.xcopy(regString(@intCast(regist)), tmpString, @intCast(l + 1));
             }
             return;
@@ -315,7 +315,7 @@ pub export fn fnXToAlpha(regist: u16) callconv(.c) void { // new version, simila
             if (regist != REGISTER_X) {
                 elementwiseRema_UInt16(&_doXToAlpha, regist);
             } else { // X is the destination: return in X a string of the character codes from the matrix in X
-                reallocateRegister(REGISTER_L, dtString, 1, amNone);
+                _ = reallocateRegister(REGISTER_L, dtString, 1, amNone);
                 _ = frontier_char_string.xcopy(regString(REGISTER_L), "", 1);
                 elementwiseRema_UInt16(&_doXToAlpha, @intCast(REGISTER_L));
                 fnSwapX(REGISTER_L);
@@ -398,7 +398,7 @@ pub export fn fnXToAlphaOld(unusedButMandatoryParameter: u16) callconv(.c) void 
 
     longIntegerFree(&lgInt[0]);
 
-    reallocateRegister(REGISTER_X, dtString, 1, amNone);
+    _ = reallocateRegister(REGISTER_X, dtString, 1, amNone);
     regString(REGISTER_X)[0] = char1;
     (regString(REGISTER_X) + 1)[0] = char2;
     (regString(REGISTER_X) + 2)[0] = 0;
@@ -867,7 +867,7 @@ pub export fn fn42AlphaRotate(unusedButMandatoryParameter: u16) callconv(.c) voi
 
 // fnClearAlpha: reset a register to an empty string.
 pub export fn fnClearAlpha(regist: u16) callconv(.c) void {
-    reallocateRegister(@intCast(regist), dtString, 1, amNone);
+    _ = reallocateRegister(@intCast(regist), dtString, 1, amNone);
     regString(@intCast(regist))[0] = 0;
 }
 
@@ -999,7 +999,7 @@ pub export fn fnGet42Alpha(unusedButMandatoryParameter: u16) callconv(.c) void {
     } else if (isNamedVariable(alphaRegister)) { // Named variable
         const nameLength: u16 = 16;
         liftStack();
-        reallocateRegister(REGISTER_X, dtString, (nameLength + 3) >> 2, amNone); // TO_BLOCKS(nameLength)
+        _ = reallocateRegister(REGISTER_X, dtString, (nameLength + 3) >> 2, amNone); // TO_BLOCKS(nameLength)
         _ = frontier_char_string.xcopy(regString(REGISTER_X), &allNamedVariables[alphaRegister - FIRST_NAMED_VARIABLE].variableName[1], nameLength);
     } else {
         reportAlphaRegisterOutOfRange("In function fnGet42Alpha:", alphaRegister);
@@ -1049,7 +1049,7 @@ inline fn TO_BLOCKS(n: i32) u16 {
 pub export fn fn42Alpha(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     const alphaString: [*c]u8 = if (programRunStop == PGM_RUNNING) tmpStringLabelOrVariableName else aimBuffer;
-    reallocateRegister(@intCast(alphaRegister), dtString, TO_BLOCKS(stringByteLength(alphaString) + 1), amNone);
+    _ = reallocateRegister(@intCast(alphaRegister), dtString, TO_BLOCKS(stringByteLength(alphaString) + 1), amNone);
     _ = frontier_char_string.xcopy(regString(@intCast(alphaRegister)), alphaString, @intCast(stringByteLength(alphaString) + 1));
 }
 
@@ -1058,7 +1058,7 @@ pub export fn fn42Append(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     const alphaString: [*c]u8 = if (programRunStop == PGM_RUNNING) tmpStringLabelOrVariableName else aimBuffer;
     copySourceRegisterToDestRegister(REGISTER_X, LAST_TEMP_REGISTER);
-    reallocateRegister(REGISTER_X, dtString, TO_BLOCKS(stringByteLength(alphaString) + 1), amNone);
+    _ = reallocateRegister(REGISTER_X, dtString, TO_BLOCKS(stringByteLength(alphaString) + 1), amNone);
     _ = frontier_char_string.xcopy(regString(REGISTER_X), alphaString, @intCast(stringByteLength(alphaString) + 1));
     frontier_store.fnStoreAdd(alphaRegister);
     truncateAlphaRegisterTo44Char();
@@ -1301,7 +1301,7 @@ fn _alphaMid(ptrString: [*c]u8, start_arg: i32, len_arg: i32) void {
     // Extract the substring into the scratch buffer, then reallocate REGISTER_X
     // to hold it and copy it in. The clamp + glyph-walk copy is the pure core.
     _ = alpha_substring.alphaMid(tmpString, ptrString, start_arg, len_arg, lgString);
-    reallocateRegister(REGISTER_X, dtString, TO_BLOCKS(stringByteLength(tmpString) + 1), amNone);
+    _ = reallocateRegister(REGISTER_X, dtString, TO_BLOCKS(stringByteLength(tmpString) + 1), amNone);
     _ = frontier_char_string.xcopy(regString(REGISTER_X), tmpString, @intCast(stringByteLength(tmpString) + 1));
 }
 
@@ -1531,7 +1531,7 @@ fn _doXToAlpha(regist: u16) callconv(.c) void {
         }
         l += 1;
 
-        reallocateRegister(@intCast(regist), dtString, @intCast(l + 1), amNone);
+        _ = reallocateRegister(@intCast(regist), dtString, @intCast(l + 1), amNone);
         _ = frontier_char_string.xcopy(regString(@intCast(regist)), tmpString, @intCast(l + 1));
     }
 }

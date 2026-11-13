@@ -46,7 +46,7 @@ pub export fn fnVectorAngle(unused_but_mandatory_parameter: u16) callconv(.c) vo
         } else {
             runtime.vectorAngle(&y, &x, &res);
             runtime.convertAngleFromTo(&res, runtime.amRadian, runtime.currentAngularMode, &runtime.ctxtReal39);
-            runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, @intCast(runtime.currentAngularMode));
+            _ = runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, @intCast(runtime.currentAngularMode));
             runtime.convertRealToReal34ResultRegister(&res, runtime.REGISTER_X);
         }
     } else {

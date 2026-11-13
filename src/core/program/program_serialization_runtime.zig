@@ -52,7 +52,7 @@ pub const CM_PEM: u8 = 3;
 pub extern fn resizeProgramMemory(newSizeInBlocks: u16) void;
 pub extern fn defineCurrentProgramFromCurrentStep() void;
 pub const GLOBAL_LABELS: u8 = 253; // namedLabels_t: STRING_LABEL_VARIABLE
-pub extern fn findNamedLabel(labelName: [*c]const u8, labelType: u8) u16;
+pub extern fn findNamedLabel(labelName: [*c]const u8, labelType: u8) i16;
 
 // selectProgram() goes through fnGoto(), which moves the step, the step number, the program number, the displayed step
 // and its number, and the program bounds. WRITEP and XPORTP put all six back, not just the two step numbers.

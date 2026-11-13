@@ -149,7 +149,7 @@ fn m1PowShoI() callconv(.c) void {
         runtime.clearSystemFlag(runtime.FLAG_OVERFLOW);
     }
 
-    runtime.registerShortIntegerPtr(runtime.REGISTER_X).* = runtime.WP34S_build_value(1, odd);
+    runtime.registerShortIntegerPtr(runtime.REGISTER_X).* = @bitCast(runtime.WP34S_build_value(1, odd));
 }
 
 // (-1)^x on an exact axis: the sector is 2x reduced to 0..3 and picks which

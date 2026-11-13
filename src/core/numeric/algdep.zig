@@ -836,7 +836,7 @@ pub export fn fnAlgdep(maxDegree: u16) linksection(runtime.code_section) callcon
         }
         runtime.temporaryInformation = TI_ALGDEP_POLY; // only when the matrix write succeeded, so a RAM full error keeps its message line
     }
-    runtime.reallocateRegister(REGISTER_Y, dtReal34, 0, amNone);
+    _ = runtime.reallocateRegister(REGISTER_Y, dtReal34, 0, amNone);
     int32ToReal34(out.margin, runtime.registerReal34Ptr(REGISTER_Y));
 
     latticeFree(frame);
@@ -1005,7 +1005,7 @@ pub export fn fnLindep(unused_but_mandatory_parameter: u16) linksection(runtime.
             convertLongIntegerToReal34(&L.coeff[i], &resultElems[i]);
         }
     }
-    runtime.reallocateRegister(REGISTER_Y, dtReal34, 0, amNone);
+    _ = runtime.reallocateRegister(REGISTER_Y, dtReal34, 0, amNone);
     int32ToReal34(margin, runtime.registerReal34Ptr(REGISTER_Y));
     latticeFree(frame);
 }

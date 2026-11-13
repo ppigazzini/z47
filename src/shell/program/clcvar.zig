@@ -148,7 +148,7 @@ const bugMsgDataTypeUnknown: usize = 5; // commonBugScreenMessageCode_t
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
 extern fn getRegisterTag(regist: calcRegister_t) u32;
 extern fn getRegisterDataPointer(regist: calcRegister_t) *anyopaque;
-extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) void;
+extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) bool;
 
 extern fn linkToRealMatrixRegister(regist: calcRegister_t, linkedMatrix: *real34Matrix_t) void;
 extern fn linkToComplexMatrixRegister(regist: calcRegister_t, linkedMatrix: *complex34Matrix_t) void;
@@ -210,7 +210,7 @@ fn _clearVar(regist: calcRegister_t) void {
         },
 
         dtString => {
-            reallocateRegister(regist, dtString, 1, amNoneU);
+            _ = reallocateRegister(regist, dtString, 1, amNoneU);
         },
 
         dtReal34Matrix => {

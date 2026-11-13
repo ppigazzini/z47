@@ -456,7 +456,7 @@ pub export fn screenY(y: f64) callconv(.c) i16 {
 
 // stats/curvefit helpers
 extern fn drawMxN() i32;
-extern fn processCurvefitSA(sa0: *real_t, sa1: *real_t) void;
+extern fn processCurvefitSA(sa0: *real_t, sa1: *real_t) bool;
 
 // misc / register / mode
 extern fn getSystemFlag(sf: i32) bool_t;
@@ -464,7 +464,7 @@ extern fn setSystemFlag(sf: c_uint) void;
 extern fn clearSystemFlag(sf: c_uint) void;
 const c_moreInfoOnError = @extern(*const fn (m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) callconv(.c) void, .{ .name = "moreInfoOnError" });
 
-extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) void;
+extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) bool;
 extern fn getRegisterDataPointer(regist: calcRegister_t) ?*anyopaque;
 extern fn liftStack() void;
 extern fn fnKeyExit(unused: u16) void;
@@ -1653,12 +1653,12 @@ pub export fn demo_plot() callconv(.c) void {
         const mv: c_int = 11000 + @rem(rand(), 110) - 55;
 
         setSystemFlag(FLAG_ASLIFT);
-        reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+        _ = reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
         int32ToReal34(mv + @rem(rand(), 4) - 2, REGISTER_REAL34_DATA(REGISTER_X));
 
         setSystemFlag(FLAG_ASLIFT);
         liftStack();
-        reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+        _ = reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
         int32ToReal34(mv + @rem(rand(), 4) - 2, REGISTER_REAL34_DATA(REGISTER_X));
 
         frontier_items.runFunction(ITM_SIGMAPLUS);
@@ -1677,7 +1677,7 @@ pub export fn graphDrawLRline(selection: u16) callconv(.c) void {
                 frontier_real_type.realSetNaN(&lr_sa0);
                 frontier_real_type.realSetNaN(&lr_sa1);
             } else {
-                processCurvefitSA(&lr_sa0, &lr_sa1);
+                _ = processCurvefitSA(&lr_sa0, &lr_sa1);
             }
         }
         drawline(selection, &lr_RR, &lr_SMI, &lr_aa0, &lr_aa1, &lr_aa2, &lr_sa0, &lr_sa1);

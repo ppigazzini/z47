@@ -355,8 +355,8 @@ extern fn getRegisterDataPointer(reg: calcRegister_t) ?*anyopaque;
 const registerReal34Ptr = abi.registerReal34;
 extern fn getRegisterDataType(reg: calcRegister_t) u32;
 extern fn getRegisterAsReal(reg: calcRegister_t, val: *real_t) bool;
-extern fn reallocateRegister(regist: calcRegister_t, data_type: u32, data_len: u16, tag: u32) void;
-extern fn convertRealToResultRegister(x: *const real_t, dest: calcRegister_t, angle: u32) void;
+extern fn reallocateRegister(regist: calcRegister_t, data_type: u32, data_len: u16, tag: u32) bool;
+extern fn convertRealToResultRegister(x: *const real_t, dest: calcRegister_t, angle: i32) void;
 
 extern fn getSystemFlag(sf: i32) bool;
 extern fn setSystemFlag(sf: c_uint) void;
@@ -673,7 +673,7 @@ fn deriv_pgm_variable(label: calcRegister_t, usesDelta: ?*bool_t) linksection(ru
 }
 
 fn _differentiatorIteration(label: calcRegister_t, variable: calcRegister_t, r0: *real_t) linksection(runtime.code_section) void {
-    reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+    _ = reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
     realToReal34(r0, registerReal34Ptr(REGISTER_X));
     fnFillStack(NOPARAM);
 

@@ -82,7 +82,7 @@ extern const tinyFont: font_t;
 extern fn sprintf(buf: [*c]u8, fmt: [*:0]const u8, ...) c_int;
 extern fn printf(fmt: [*:0]const u8, ...) c_int;
 extern fn exit(status: c_int) noreturn;
-extern fn getSystemFlag(sf: c_uint) bool;
+extern fn getSystemFlag(sf: i32) bool;
 extern fn setSystemFlag(sf: c_uint) void;
 extern fn clearSystemFlag(flag: c_uint) void;
 

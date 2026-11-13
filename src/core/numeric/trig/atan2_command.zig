@@ -150,7 +150,7 @@ fn atan2RealReal() callconv(.c) void {
 
     atan2_owned.arctan2Real(&y_value, &x_value, &x_value, &runtime.ctxtReal39);
     runtime.convertAngleFromTo(&x_value, runtime.amRadian, runtime.currentAngularMode, &runtime.ctxtReal39);
-    runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, @intCast(runtime.currentAngularMode));
+    _ = runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, @intCast(runtime.currentAngularMode));
     runtime.convertRealToReal34ResultRegister(&x_value, runtime.REGISTER_X);
 }
 

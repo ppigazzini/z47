@@ -17,11 +17,11 @@ pub fn writeResult(
 
     if (real_coefs) {
         if (type_y == runtime.dtTime) {
-            runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, runtime.amNone);
+            _ = runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, runtime.amNone);
             runtime.convertRealToReal34ResultRegister(&result.Real, runtime.REGISTER_X);
             runtime.convertReal34RegisterToTimeRegister(runtime.REGISTER_X, runtime.REGISTER_X);
         } else if (type_y == runtime.dtDate) {
-            runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtDate, 0, runtime.amNone);
+            _ = runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtDate, 0, runtime.amNone);
             runtime.realToReal34(&result.Real, runtime.registerReal34Ptr(runtime.REGISTER_X));
             runtime.real34ToIntegralValue(runtime.registerReal34Ptr(runtime.REGISTER_X), runtime.registerReal34Ptr(runtime.REGISTER_X), runtime.DEC_ROUND_CEILING);
             runtime.julianDayToInternalDate(runtime.registerReal34Ptr(runtime.REGISTER_X), runtime.registerReal34Ptr(runtime.REGISTER_X));
@@ -34,7 +34,7 @@ pub fn writeResult(
                 output_tag = runtime.amNone;
             }
 
-            runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, @as(u32, @intCast(output_tag)));
+            _ = runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, @as(u32, @intCast(output_tag)));
             if (exact_result) |exact| {
                 runtime.convertRealToReal34ResultRegister(exact, runtime.REGISTER_X);
             } else {
@@ -45,6 +45,6 @@ pub fn writeResult(
         return;
     }
 
-    runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtComplex34, 0, runtime.amNone);
+    _ = runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtComplex34, 0, runtime.amNone);
     runtime.convertComplexToResultRegister(result, runtime.REGISTER_X);
 }

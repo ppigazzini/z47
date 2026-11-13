@@ -124,7 +124,7 @@ pub fn getStackSize() void {
 }
 
 pub fn fillStackWithReal0() void {
-    runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, runtime.amNone);
+    _ = runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, runtime.amNone);
     memory_owned.zeroReal34(runtime.getRegisterDataPointer(runtime.REGISTER_X));
     fillStack();
 }

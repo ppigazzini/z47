@@ -35,7 +35,8 @@ pub fn saveAllPrograms() void {
         if (!runtime.globalLabelNameAt(i, &label_name)) {
             continue;
         }
-        const label = runtime.findNamedLabel(&label_name, runtime.GLOBAL_LABELS);
+        // calcRegister_t into the uint16_t the C callers take, modulo 2^16 as C does.
+        const label: u16 = @bitCast(runtime.findNamedLabel(&label_name, runtime.GLOBAL_LABELS));
         runtime.selectProgram(label);
         if (runtime.currentProgramNumber != old_program_number) {
             runtime.reportProgramExported(label, runtime.currentProgramNumber, &label_name);

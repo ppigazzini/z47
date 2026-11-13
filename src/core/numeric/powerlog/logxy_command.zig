@@ -217,7 +217,7 @@ pub fn logxyReal(denom: *const runtime.real_t) callconv(.c) void {
         if (math_real_predicates.realIsPositive(&a)) {
             copyReal(&a, runtime.z47_math_wrappers_const_plus_infinity());
         } else if (runtime.getFlag(@intCast(runtime.FLAG_CPXRES))) {
-            runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtComplex34, 0, runtime.amNone);
+            _ = runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtComplex34, 0, runtime.amNone);
             runtime.realDivide(runtime.z47_math_wrappers_const_pi(), denom, &a, &runtime.ctxtReal39);
             runtime.convertComplexPartsToResultRegister(runtime.z47_math_wrappers_const_plus_infinity(), &a, runtime.REGISTER_X);
             return;

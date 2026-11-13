@@ -47,7 +47,7 @@ fn mantLonI() void {
     const exponent: i32 = 1 - @as(i32, @intCast(digits));
     const suffix = runtime.bufPrintZ(buffer[length..], "e{d}", .{exponent}) catch unreachable;
     const text: [:0]const u8 = buffer[0 .. length + suffix.len :0];
-    runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, runtime.REAL34_SIZE_IN_BLOCKS, runtime.amNone);
+    _ = runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, runtime.REAL34_SIZE_IN_BLOCKS, runtime.amNone);
     runtime.stringToReal34(text.ptr, runtime.registerReal34Ptr(runtime.REGISTER_X));
 }
 

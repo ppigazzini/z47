@@ -115,8 +115,8 @@ fn tryToPolar2Real34Pair() bool {
     rectangular_to_polar_owned.rectangularToPolarReal(&z, z.mag(), z.arg(), &runtime.ctxtReal39);
     runtime.convertAngleFromTo(z.arg(), runtime.amRadian, runtime.currentAngularMode, &runtime.ctxtReal39);
 
-    runtime.reallocateRegister(real_reg, runtime.dtReal34, 0, runtime.amNone);
-    runtime.reallocateRegister(imag_reg, runtime.dtReal34, 0, @intCast(runtime.currentAngularMode));
+    _ = runtime.reallocateRegister(real_reg, runtime.dtReal34, 0, runtime.amNone);
+    _ = runtime.reallocateRegister(imag_reg, runtime.dtReal34, 0, @intCast(runtime.currentAngularMode));
     runtime.convertRealToReal34ResultRegister(z.constMag(), real_reg);
     runtime.convertRealToReal34ResultRegister(z.constArg(), imag_reg);
     runtime.temporaryInformation = if (runtime.getSystemFlag(runtime.FLAG_HPRP))
@@ -214,8 +214,8 @@ fn tryToRect2Real34Pair() bool {
         angle_reg = runtime.REGISTER_X;
     }
 
-    runtime.reallocateRegister(radius_reg, runtime.dtReal34, 0, runtime.amNone);
-    runtime.reallocateRegister(angle_reg, runtime.dtReal34, 0, runtime.amNone);
+    _ = runtime.reallocateRegister(radius_reg, runtime.dtReal34, 0, runtime.amNone);
+    _ = runtime.reallocateRegister(angle_reg, runtime.dtReal34, 0, runtime.amNone);
     runtime.convertRealToReal34ResultRegister(&z.Real, radius_reg);
     runtime.convertRealToReal34ResultRegister(&z.Imag, angle_reg);
     runtime.temporaryInformation = if (runtime.getSystemFlag(runtime.FLAG_HPRP))
@@ -263,8 +263,8 @@ fn tryToRectReal34Pair(angle_in_y: i8) bool {
         angle_reg = runtime.REGISTER_X;
     }
 
-    runtime.reallocateRegister(radius_reg, runtime.dtReal34, 0, runtime.amNone);
-    runtime.reallocateRegister(angle_reg, runtime.dtReal34, 0, runtime.amNone);
+    _ = runtime.reallocateRegister(radius_reg, runtime.dtReal34, 0, runtime.amNone);
+    _ = runtime.reallocateRegister(angle_reg, runtime.dtReal34, 0, runtime.amNone);
     runtime.convertRealToReal34ResultRegister(&z.Real, radius_reg);
     runtime.convertRealToReal34ResultRegister(&z.Imag, angle_reg);
     runtime.temporaryInformation = if (runtime.getSystemFlag(runtime.FLAG_HPRP))
