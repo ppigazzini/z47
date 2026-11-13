@@ -25,6 +25,14 @@ void z47_math_wrappers_owned_WP34S_Tanh(const real_t *x, real_t *res, realContex
 void z47_math_wrappers_owned_WP34S_ArcSinh(const real_t *x, real_t *res, realContext_t *realContext);
 void z47_math_wrappers_owned_WP34S_ArcTanh(const real_t *x, real_t *res, realContext_t *realContext);
 
+// c43's own wp34s.c bodies, from build/tests/math_reference/wp34s_reference.c.
+void oracle_C47_WP34S_Asin(const real_t *x, real_t *angle, realContext_t *realContext);
+void oracle_C47_WP34S_Acos(const real_t *x, real_t *angle, realContext_t *realContext);
+void oracle_WP34S_SinhCosh(const real_t *x, real_t *sinhOut, real_t *coshOut, realContext_t *realContext);
+void oracle_WP34S_Tanh(const real_t *x, real_t *res, realContext_t *realContext);
+void oracle_WP34S_ArcSinh(const real_t *x, real_t *res, realContext_t *realContext);
+void oracle_WP34S_ArcTanh(const real_t *x, real_t *res, realContext_t *realContext);
+
 static const unaryCase_t asinCases[] = {
   {"nan", INPUT_NAN, NULL},
   {"plus_zero", INPUT_TEXT, "0"},
@@ -156,11 +164,19 @@ static int runAsinCase(const unaryCase_t *testCase) {
   real_t actual;
 
   initInput(&x, testCase->kind, testCase->text);
-  C47_WP34S_Asin(&x, &expected, &ctxtReal39);
+  oracle_C47_WP34S_Asin(&x, &expected, &ctxtReal39);
   z47_math_wrappers_owned_C47_WP34S_Asin(&x, &actual, &ctxtReal39);
 
   if(!sameReal(&expected, &actual)) {
     printUnaryMismatch("asin", testCase, &expected, &actual);
+    return 1;
+  }
+
+  // The exported port, which C callers reach, is a second Zig implementation;
+  // it answers to c43 as well.
+  C47_WP34S_Asin(&x, &actual, &ctxtReal39);
+  if(!sameReal(&expected, &actual)) {
+    printUnaryMismatch("exported C47_WP34S_Asin", testCase, &expected, &actual);
     return 1;
   }
 
@@ -173,11 +189,19 @@ static int runAcosCase(const unaryCase_t *testCase) {
   real_t actual;
 
   initInput(&x, testCase->kind, testCase->text);
-  C47_WP34S_Acos(&x, &expected, &ctxtReal39);
+  oracle_C47_WP34S_Acos(&x, &expected, &ctxtReal39);
   z47_math_wrappers_owned_C47_WP34S_Acos(&x, &actual, &ctxtReal39);
 
   if(!sameReal(&expected, &actual)) {
     printUnaryMismatch("acos", testCase, &expected, &actual);
+    return 1;
+  }
+
+  // The exported port, which C callers reach, is a second Zig implementation;
+  // it answers to c43 as well.
+  C47_WP34S_Acos(&x, &actual, &ctxtReal39);
+  if(!sameReal(&expected, &actual)) {
+    printUnaryMismatch("exported C47_WP34S_Acos", testCase, &expected, &actual);
     return 1;
   }
 
@@ -192,7 +216,7 @@ static int runSinhCoshCase(const unaryCase_t *testCase) {
   real_t actualCosh;
 
   initInput(&x, testCase->kind, testCase->text);
-  WP34S_SinhCosh(&x, &expectedSinh, &expectedCosh, &ctxtReal39);
+  oracle_WP34S_SinhCosh(&x, &expectedSinh, &expectedCosh, &ctxtReal39);
   z47_math_wrappers_owned_WP34S_SinhCosh(&x, &actualSinh, &actualCosh, &ctxtReal39);
 
   if(!sameReal(&expectedSinh, &actualSinh)) {
@@ -205,6 +229,14 @@ static int runSinhCoshCase(const unaryCase_t *testCase) {
     return 1;
   }
 
+  // The exported port, which C callers reach, is a second Zig implementation;
+  // it answers to c43 as well.
+  WP34S_SinhCosh(&x, &actualSinh, &actualCosh, &ctxtReal39);
+  if(!sameReal(&expectedSinh, &actualSinh) || !sameReal(&expectedCosh, &actualCosh)) {
+    printUnaryMismatch("exported WP34S_SinhCosh", testCase, &expectedSinh, &actualSinh);
+    return 1;
+  }
+
   return 0;
 }
 
@@ -214,11 +246,19 @@ static int runTanhCase(const unaryCase_t *testCase) {
   real_t actual;
 
   initInput(&x, testCase->kind, testCase->text);
-  WP34S_Tanh(&x, &expected, &ctxtReal39);
+  oracle_WP34S_Tanh(&x, &expected, &ctxtReal39);
   z47_math_wrappers_owned_WP34S_Tanh(&x, &actual, &ctxtReal39);
 
   if(!sameReal(&expected, &actual)) {
     printUnaryMismatch("tanh", testCase, &expected, &actual);
+    return 1;
+  }
+
+  // The exported port, which C callers reach, is a second Zig implementation;
+  // it answers to c43 as well.
+  WP34S_Tanh(&x, &actual, &ctxtReal39);
+  if(!sameReal(&expected, &actual)) {
+    printUnaryMismatch("exported WP34S_Tanh", testCase, &expected, &actual);
     return 1;
   }
 
@@ -231,11 +271,19 @@ static int runArcSinhCase(const unaryCase_t *testCase) {
   real_t actual;
 
   initInput(&x, testCase->kind, testCase->text);
-  WP34S_ArcSinh(&x, &expected, &ctxtReal51);
+  oracle_WP34S_ArcSinh(&x, &expected, &ctxtReal51);
   z47_math_wrappers_owned_WP34S_ArcSinh(&x, &actual, &ctxtReal51);
 
   if(!sameReal(&expected, &actual)) {
     printUnaryMismatch("arcsinh", testCase, &expected, &actual);
+    return 1;
+  }
+
+  // The exported port, which C callers reach, is a second Zig implementation;
+  // it answers to c43 as well.
+  WP34S_ArcSinh(&x, &actual, &ctxtReal51);
+  if(!sameReal(&expected, &actual)) {
+    printUnaryMismatch("exported WP34S_ArcSinh", testCase, &expected, &actual);
     return 1;
   }
 
@@ -248,11 +296,19 @@ static int runArcTanhCase(const unaryCase_t *testCase) {
   real_t actual;
 
   initInput(&x, testCase->kind, testCase->text);
-  WP34S_ArcTanh(&x, &expected, &ctxtReal39);
+  oracle_WP34S_ArcTanh(&x, &expected, &ctxtReal39);
   z47_math_wrappers_owned_WP34S_ArcTanh(&x, &actual, &ctxtReal39);
 
   if(!sameReal(&expected, &actual)) {
     printUnaryMismatch("arctanh", testCase, &expected, &actual);
+    return 1;
+  }
+
+  // The exported port, which C callers reach, is a second Zig implementation;
+  // it answers to c43 as well.
+  WP34S_ArcTanh(&x, &actual, &ctxtReal39);
+  if(!sameReal(&expected, &actual)) {
+    printUnaryMismatch("exported WP34S_ArcTanh", testCase, &expected, &actual);
     return 1;
   }
 

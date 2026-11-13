@@ -19,6 +19,7 @@ typedef struct {
 } realRectangularToPolarCase_t;
 
 void z47_math_wrappers_owned_realRectangularToPolar(const cplx_t *z, real_t *magnitude, real_t *theta, realContext_t *realContext);
+void oracle_realRectangularToPolar(const cplx_t *z, real_t *magnitude, real_t *theta, realContext_t *realContext);
 void realRectangularToPolar(const cplx_t *z, real_t *magnitude, real_t *theta, realContext_t *realContext);
 
 static const realRectangularToPolarCase_t realRectangularToPolarCases[] = {
@@ -99,10 +100,19 @@ static int runCase(const realRectangularToPolarCase_t *testCase) {
   initInput(&z.Real, testCase->realKind, testCase->realText);
   initInput(&z.Imag, testCase->imagKind, testCase->imagText);
 
-  realRectangularToPolar(&z, &expectedMagnitude, &expectedTheta, &ctxtReal39);
+  oracle_realRectangularToPolar(&z, &expectedMagnitude, &expectedTheta, &ctxtReal39);
   z47_math_wrappers_owned_realRectangularToPolar(&z, &actualMagnitude, &actualTheta, &ctxtReal39);
 
   if(!sameReal(&expectedMagnitude, &actualMagnitude) || !sameReal(&expectedTheta, &actualTheta)) {
+    printMismatch(testCase, &expectedMagnitude, &expectedTheta, &actualMagnitude, &actualTheta);
+    return 1;
+  }
+
+  // The exported port, which C callers reach, is a second Zig implementation;
+  // it answers to c43 as well.
+  realRectangularToPolar(&z, &actualMagnitude, &actualTheta, &ctxtReal39);
+  if(!sameReal(&expectedMagnitude, &actualMagnitude) || !sameReal(&expectedTheta, &actualTheta)) {
+    printf("exported realRectangularToPolar:\n");
     printMismatch(testCase, &expectedMagnitude, &expectedTheta, &actualMagnitude, &actualTheta);
     return 1;
   }
