@@ -649,10 +649,10 @@ static void seedRealMinusOne(void) {
 // bring across -- a zero long integer, a polar complex, and an angular mode on a
 // matrix of either kind.
 //
-// The last two matter most. M31-37 unified matrixHeader_t with c43's bitfield
-// specifically so `mtag` would exist here, and then nothing ever set it: every
-// matrix fixture leaves amNone, so the eight owner sites that read or write a
-// matrix's angular mode were reachable in principle and reached by nothing.
+// The last two matter most. matrixHeader_t carries c43's bitfield, `mtag`
+// included, and no other fixture sets it: every one leaves amNone, so without
+// these the eight owner sites that read or write a matrix's angular mode are
+// reachable in principle and reached by nothing.
 // ---------------------------------------------------------------------------
 
 static void seedLongIntegerZero(void) {

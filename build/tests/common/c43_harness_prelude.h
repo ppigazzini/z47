@@ -26,7 +26,7 @@
 // fields and prototypes that a state or register harness never touches, so only
 // the NAMES have to exist -- no layout, no ABI, no linkage.
 //
-// THE SET IS MINIMAL, BY LEAVE-ONE-OUT. Measured 2026-08-03 at pin b9e1cc0c1:
+// THE SET IS MINIMAL, BY LEAVE-ONE-OUT:
 // dropping any one of the six breaks the compile of `registers.c` or
 // `saveRestoreCalcState.c`, and five further candidates tried (`guint`, `gint`,
 // `gchar`, `GdkEventButton`, `GdkEventKey`) are redundant. To re-derive after a

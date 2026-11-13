@@ -11,7 +11,7 @@
 // four pure translation helpers with a hand-written reference, which is the shape
 // this report exists to remove.
 //
-// WHY THE FULL CORE IS THE ONLY SHAPE THAT WORKS HERE (Annex A.3). keyboard.c is
+// WHY THE FULL CORE IS THE ONLY SHAPE THAT WORKS HERE. keyboard.c is
 // the one file the compile-from-c43 unit recipe fails on: it reads `GdkEvent`
 // FIELDS and declares a `GdkEventButton` BY VALUE, so the six placeholder typedefs
 // in build/tests/common are not enough and it needs real gtk+-3.0 headers -- and

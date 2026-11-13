@@ -18,7 +18,7 @@ pub const RuntimeObjectOptions = struct {
     stack_check: ?bool = null,
     omit_frame_pointer: ?bool = null,
     error_tracing: ?bool = null,
-    // Annex A0: instrument the frontier owner object with SanitizerCoverage
+    // Instrument the frontier owner object with SanitizerCoverage
     // trace-pc-guard (requires the LLVM backend) so report-zig-coverage.sh can
     // measure which src owner lines a host harness executes. Only the
     // dedicated `coverage` harness sets this; every product/test build keeps it

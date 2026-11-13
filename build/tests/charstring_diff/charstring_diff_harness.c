@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
-// C-vs-Zig DIFFERENTIAL harness (Annex A5).
+// C-vs-Zig DIFFERENTIAL harness.
 //
 // The A7 dry-run proved the host suites are structurally blind to upstream
 // changes in the replaced (Zig-owned, C-compiled-out) owners: advancing the

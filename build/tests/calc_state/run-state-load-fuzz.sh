@@ -51,7 +51,7 @@ export UBSAN_OPTIONS="halt_on_error=1:print_stacktrace=1"
 total=0
 fail=0
 # The restore path branches on the load mode, so sweeping only LM_ALL leaves a
-# third of the 31fb6f755 guard commit's arms unreachable no matter how broad the
+# third of the restore path's guard arms unreachable no matter how broad the
 # corpus gets -- restoreProgramsSection's LM_PROGRAMS arm and restoreOneSection's
 # skip-the-matrix-data else-arm are both mode-gated. Measured: LM_ALL alone
 # reached 19 of 30 added arms.

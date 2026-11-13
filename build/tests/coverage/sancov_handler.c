@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
-// SanitizerCoverage trace-pc-guard runtime for Zig-owner coverage (Annex A0).
+// SanitizerCoverage trace-pc-guard runtime for Zig-owner coverage.
 //
 // Linked into a host harness built with `sanitize_coverage_trace_pc_guard`
 // (Zig's `-fsanitize-coverage-trace-pc-guard`, LLVM backend). The compiler
