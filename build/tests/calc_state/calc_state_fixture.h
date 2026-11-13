@@ -135,15 +135,20 @@ static void buildState(void) {
   allocateNamedVariable("TESTVAR", dtReal34, REAL34_SIZE_IN_BLOCKS);
   int32ToReal34(777, REGISTER_REAL34_DATA(findNamedVariable("TESTVAR")));
   {
+    // A named variable is created as a real and retyped, as the product does:
+    // reallocateRegister writes the length word a string or long integer
+    // carries, and allocateNamedVariable leaves the block unwritten.
     const char *sv = "named string!";
-    allocateNamedVariable("STRVAR", dtString, TO_BLOCKS((int)strlen(sv) + 1));
-    strcpy(REGISTER_STRING_DATA(findNamedVariable("STRVAR")), sv);
+    allocateNamedVariable("STRVAR", dtReal34, REAL34_SIZE_IN_BLOCKS);
+    calcRegister_t sr = findNamedVariable("STRVAR");
+    reallocateRegister(sr, dtString, TO_BLOCKS((int)strlen(sv) + 1), amNone);
+    strcpy(REGISTER_STRING_DATA(sr), sv);
   }
   {
     longInteger_t li;
     longIntegerInit(li);
     stringToLongInteger("9999999999999999999999", 10, li);
-    allocateNamedVariable("LIVAR", dtLongInteger, 1);
+    allocateNamedVariable("LIVAR", dtReal34, REAL34_SIZE_IN_BLOCKS);
     convertLongIntegerToLongIntegerRegister(li, findNamedVariable("LIVAR"));
     longIntegerFree(li);
   }
