@@ -1,7 +1,9 @@
 name: host-platform-parity
 
+# A newer push to a branch cancels that branch's older run; every run on main
+# completes, so each pushed commit gets its own verdict.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.head.repo.full_name || github.repository }}-${{ github.head_ref || github.ref_name }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.head.repo.full_name || github.repository }}-${{ github.ref_name != 'main' && (github.head_ref || github.ref_name) || github.run_id }}
   cancel-in-progress: true
 
 on:
