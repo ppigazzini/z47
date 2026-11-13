@@ -17,16 +17,16 @@ const abi = @import("abi");
 
 /// A real_t is flagged negative by the DECNEG bit of its `bits` byte; positive
 /// (or zero/NaN) otherwise. Mirrors the decNumber sign convention.
-pub inline fn realIsPositive(source: *align(1) const abi.Real) bool {
+pub inline fn realIsPositive(source: *const abi.Real) bool {
     return (source.bits & abi.DECNEG) == 0;
 }
 
-pub inline fn realIsNegative(source: *align(1) const abi.Real) bool {
+pub inline fn realIsNegative(source: *const abi.Real) bool {
     return (source.bits & abi.DECNEG) != 0;
 }
 
 /// A real_t carries a special (Inf/NaN/sNaN) encoding in the top nibble of `bits`.
-pub inline fn realIsSpecial(source: *align(1) const abi.Real) bool {
+pub inline fn realIsSpecial(source: *const abi.Real) bool {
     return (source.bits & abi.DECSPECIAL) != 0;
 }
 
@@ -37,12 +37,12 @@ pub const realIsZero = abi.realIsZero;
 
 /// A real_t is an infinity when the DECINF bit is set (NaN bits distinguish the
 /// other special encodings).
-pub inline fn realIsInfinite(source: *align(1) const abi.Real) bool {
+pub inline fn realIsInfinite(source: *const abi.Real) bool {
     return (source.bits & abi.DECINF) != 0;
 }
 
 /// A real_t is a (quiet or signalling) NaN when either NaN bit is set.
-pub inline fn realIsNaN(source: *align(1) const abi.Real) bool {
+pub inline fn realIsNaN(source: *const abi.Real) bool {
     return (source.bits & (abi.DECNAN | abi.DECSNAN)) != 0;
 }
 
@@ -52,7 +52,7 @@ pub inline fn realIsNaN(source: *align(1) const abi.Real) bool {
 /// `DFISSIGNED && !DFISZERO && !DFISNAN` and so answers false for -0 and for a
 /// sign-set NaN. c43 calls decQuadIsNegative nowhere, so no ported owner wants
 /// those semantics; runtime.real34IsNegative is this same test.
-pub inline fn real34IsNegative(source: *align(1) const abi.Real34) bool {
+pub inline fn real34IsNegative(source: *const abi.Real34) bool {
     return (source.bytes[15] & 0x80) == 0x80;
 }
 

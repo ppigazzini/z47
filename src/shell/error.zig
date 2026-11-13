@@ -117,7 +117,7 @@ extern const standardFont: font_t;
 // Function externs
 // ---------------------------------------------------------------------------
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
-extern fn getRegisterDataPointer(regist: calcRegister_t) *anyopaque;
+extern fn getRegisterDataPointer(regist: calcRegister_t) *align(4) anyopaque;
 extern fn getRegisterTag(regist: calcRegister_t) u32;
 extern fn getSystemFlag(flag: c_int) bool;
 extern fn clearSystemFlag(flag: c_uint) void;
@@ -142,16 +142,16 @@ inline fn lcdFillRect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void {
 // from the now-Zig register-value-conversions owner.
 
 // real34 compares (mathematics/comparisonReals.c).
-extern fn real34CompareLessEqual(a: *align(1) const real34_t, b: *align(1) const real34_t) bool;
+extern fn real34CompareLessEqual(a: *const real34_t, b: *const real34_t) bool;
 const mpz_struct = abi.Mpz;
 extern fn __gmpz_cmp_ui(op: *const mpz_struct, value: c_ulong) c_int;
 extern fn __gmpz_get_ui(op: *const mpz_struct) c_ulong;
 extern fn __gmpz_clear(op: *mpz_struct) void;
-extern fn real34CompareLessThan(a: *align(1) const real34_t, b: *align(1) const real34_t) bool;
+extern fn real34CompareLessThan(a: *const real34_t, b: *const real34_t) bool;
 
 // decQuad helpers (the real34 macros).
 extern fn decQuadFromUInt32(r: *real34_t, v: u32) *real34_t;
-extern fn decQuadToUInt32(r: *align(1) const real34_t, ctx: *realContext_t, round: c_int) u32;
+extern fn decQuadToUInt32(r: *const real34_t, ctx: *realContext_t, round: c_int) u32;
 
 // libc.
 extern fn strlen(s: [*c]const u8) usize;
@@ -168,10 +168,10 @@ const reg34 = abi.registerReal34;
 inline fn uInt32ToReal34(src: u32, dst: *real34_t) void {
     _ = decQuadFromUInt32(dst, src);
 }
-inline fn real34ToUInt32(src: *align(1) const real34_t) u32 {
+inline fn real34ToUInt32(src: *const real34_t) u32 {
     return decQuadToUInt32(src, &ctxtReal34, DEC_ROUND_DOWN);
 }
-inline fn real34Copy(src: *align(1) const real34_t, dst: *real34_t) void {
+inline fn real34Copy(src: *const real34_t, dst: *real34_t) void {
     dst.* = src.*;
 }
 

@@ -240,18 +240,18 @@ inline fn const_1() *const real_t {
 }
 
 // real34Copy(source, destination): copy the 16 raw bytes (two u64 stores in C).
-inline fn real34Copy(source: *align(1) const real34_t, destination: *align(1) real34_t) void {
+inline fn real34Copy(source: *const real34_t, destination: *real34_t) void {
     const src: *align(1) const [2]u64 = @ptrCast(source);
     const dst: *align(1) [2]u64 = @ptrCast(destination);
     dst[0] = src[0];
     dst[1] = src[1];
 }
-extern fn convertLongIntegerToReal34(source: *mpz_struct, destination: *align(1) real34_t) void;
-extern fn decQuadFromUInt32(destination: *align(1) real34_t, source: u32) *align(1) real34_t;
-inline fn uInt32ToReal34Impl(source: u32, destination: *align(1) real34_t) void {
+extern fn convertLongIntegerToReal34(source: *mpz_struct, destination: *real34_t) void;
+extern fn decQuadFromUInt32(destination: *real34_t, source: u32) *real34_t;
+inline fn uInt32ToReal34Impl(source: u32, destination: *real34_t) void {
     _ = decQuadFromUInt32(destination, source);
 }
-extern fn convertReal34ToLongInteger(real34: *align(1) const real34_t, lgInt: *mpz_struct, mode: c_int) void;
+extern fn convertReal34ToLongInteger(real34: *const real34_t, lgInt: *mpz_struct, mode: c_int) void;
 extern fn convertLongIntegerToReal(source: *mpz_struct, destination: *real_t, ctxt: *realContext_t) void;
 
 // real34SetZero(destination) => decQuadZero(destination)
@@ -366,8 +366,8 @@ const realIsNegative = math_real_predicates.realIsNegative;
 inline fn realMultiply(operand1: *const real_t, operand2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = runtime.decNumberMultiply(res, operand1, operand2, ctxt);
 }
-extern fn decimal128ToNumber(source: *align(1) const real34_t, destination: *real_t) *real_t;
-inline fn real34ToReal(source: *align(1) const real34_t, destination: *real_t) void {
+extern fn decimal128ToNumber(source: *const real34_t, destination: *real_t) *real_t;
+inline fn real34ToReal(source: *const real34_t, destination: *real_t) void {
     _ = decimal128ToNumber(source, destination);
 }
 
@@ -392,7 +392,7 @@ extern var tmpString: [*c]u8;
 extern const standardFont: font_t;
 extern fn clearRegisterLine(regist: calcRegister_t, clearTop: bool, clearBottom: bool) void;
 extern fn showString(str: [*c]const u8, font: *const font_t, x: u32, y: u32, videoMode: c_int, showLeadingCols: bool, showEndingCols: bool) u32;
-extern fn real34ToDisplayString(real34: *align(1) const real34_t, tag: u32, displayString: [*c]u8, font: *const font_t, maxWidth: i16, displayHasNDigits: i16, limitExponent: bool, frontSpace: bool, limitIrfrac: c_int) void;
+extern fn real34ToDisplayString(real34: *const real34_t, tag: u32, displayString: [*c]u8, font: *const font_t, maxWidth: i16, displayHasNDigits: i16, limitExponent: bool, frontSpace: bool, limitIrfrac: c_int) void;
 extern fn strcpy(dest: [*c]u8, src: [*c]const u8) [*c]u8;
 const refreshScreen = abi.host.requestRefresh; // routed through the host-callback boundary
 extern fn clearScreenOld(clearStatusBar: bool, clearRegisterLines: bool, clearSoftkeys: bool) void;
@@ -484,7 +484,7 @@ inline fn maxIter(self: *const pollard_t) c_int {
 // The two strings are laid down with their label and then overwritten from
 // offset 5 on, which is what leaves the five-character prefix visible.
 // ---------------------------------------------------------------------------
-fn _showProgress(ss: *align(1) const real34_t, nextp: *mpz_struct) void {
+fn _showProgress(ss: *const real34_t, nextp: *mpz_struct) void {
     var rr: real34_t = undefined;
 
     clearRegisterLine(REGISTER_Z, true, true);
@@ -889,7 +889,7 @@ fn doDomainAbort() void {
     refreshScreen(253);
 }
 
-inline fn matrixElementsPtr(matrix: *real34Matrix_t) [*]align(1) real34_t {
+inline fn matrixElementsPtr(matrix: *real34Matrix_t) [*]real34_t {
     if (runtime.harness_surface_is_fake) {
         return @ptrCast(&matrix.matrixElements);
     } else {

@@ -219,28 +219,28 @@ extern fn setSystemFlag(flag: c_uint) void;
 
 extern fn WP34S_Ln(x: *const real_t, res: *real_t, realContext: *realContext_t) void;
 
-extern fn realCompareEqual(number1: *align(1) const real_t, number2: *align(1) const real_t) bool;
-extern fn realCompareGreaterThan(number1: *align(1) const real_t, number2: *align(1) const real_t) bool;
-extern fn realCompareGreaterEqual(number1: *align(1) const real_t, number2: *align(1) const real_t) bool;
-extern fn realCompareLessThan(number1: *align(1) const real_t, number2: *align(1) const real_t) bool;
-extern fn realCompareLessEqual(number1: *align(1) const real_t, number2: *align(1) const real_t) bool;
-extern fn realCompareAbsGreaterThan(number1: *align(1) const real_t, number2: *align(1) const real_t) bool;
+extern fn realCompareEqual(number1: *const real_t, number2: *const real_t) bool;
+extern fn realCompareGreaterThan(number1: *const real_t, number2: *const real_t) bool;
+extern fn realCompareGreaterEqual(number1: *const real_t, number2: *const real_t) bool;
+extern fn realCompareLessThan(number1: *const real_t, number2: *const real_t) bool;
+extern fn realCompareLessEqual(number1: *const real_t, number2: *const real_t) bool;
+extern fn realCompareAbsGreaterThan(number1: *const real_t, number2: *const real_t) bool;
 extern fn realIsAnInteger(x: *const real_t) bool;
 extern fn realToInt32C47(source: *const real_t, err: ?*bool) i32;
 
 // decNumber / decQuad externs behind the real*/real34* macros.
-extern fn decNumberAdd(r: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
-extern fn decNumberSubtract(r: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
-extern fn decNumberMultiply(r: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
-extern fn decNumberDivide(r: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
-extern fn decNumberSquareRoot(r: *real_t, a: *align(1) const real_t, ctx: *realContext_t) *real_t;
-extern fn decNumberFMA(r: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, c: *align(1) const real_t, ctx: *realContext_t) *real_t;
-extern fn decNumberCopy(r: *real_t, src: *align(1) const real_t) *real_t;
-extern fn decimal128ToNumber(src: *align(1) const real34_t, dst: *real_t) *real_t;
-extern fn decimal128FromNumber(dst: *align(1) real34_t, src: *const real_t, ctx: *realContext_t) *align(1) real34_t;
-extern fn decQuadToInt32(r: *align(1) const real34_t, ctx: *realContext_t, round: c_int) i32;
-extern fn decQuadAdd(r: *align(1) real34_t, a: *align(1) const real34_t, b: *align(1) const real34_t, ctx: *realContext_t) *align(1) real34_t;
-extern fn decQuadZero(r: *align(1) real34_t) *align(1) real34_t;
+extern fn decNumberAdd(r: *real_t, a: *const real_t, b: *const real_t, ctx: *realContext_t) *real_t;
+extern fn decNumberSubtract(r: *real_t, a: *const real_t, b: *const real_t, ctx: *realContext_t) *real_t;
+extern fn decNumberMultiply(r: *real_t, a: *const real_t, b: *const real_t, ctx: *realContext_t) *real_t;
+extern fn decNumberDivide(r: *real_t, a: *const real_t, b: *const real_t, ctx: *realContext_t) *real_t;
+extern fn decNumberSquareRoot(r: *real_t, a: *const real_t, ctx: *realContext_t) *real_t;
+extern fn decNumberFMA(r: *real_t, a: *const real_t, b: *const real_t, c: *const real_t, ctx: *realContext_t) *real_t;
+extern fn decNumberCopy(r: *real_t, src: *const real_t) *real_t;
+extern fn decimal128ToNumber(src: *const real34_t, dst: *real_t) *real_t;
+extern fn decimal128FromNumber(dst: *real34_t, src: *const real_t, ctx: *realContext_t) *real34_t;
+extern fn decQuadToInt32(r: *const real34_t, ctx: *realContext_t, round: c_int) i32;
+extern fn decQuadAdd(r: *real34_t, a: *const real34_t, b: *const real34_t, ctx: *realContext_t) *real34_t;
+extern fn decQuadZero(r: *real34_t) *real34_t;
 
 // ---------------------------------------------------------------------------
 // Inline wrappers (the C macros)
@@ -251,53 +251,53 @@ inline fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8) void {
 inline fn sigma(sum: usize) *real_t {
     return &statisticalSumsPointer.?[sum];
 }
-inline fn realIsSpecial(v: *align(1) const real_t) bool {
+inline fn realIsSpecial(v: *const real_t) bool {
     return (v.bits & DECSPECIAL) != 0;
 }
-inline fn realCopy(src: *align(1) const real_t, dst: *real_t) void {
+inline fn realCopy(src: *const real_t, dst: *real_t) void {
     _ = decNumberCopy(dst, src);
 }
-inline fn realAdd(a: *align(1) const real_t, b: *align(1) const real_t, res: *real_t, ctx: *realContext_t) void {
+inline fn realAdd(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberAdd(res, a, b, ctx);
 }
-inline fn realSubtract(a: *align(1) const real_t, b: *align(1) const real_t, res: *real_t, ctx: *realContext_t) void {
+inline fn realSubtract(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberSubtract(res, a, b, ctx);
 }
-inline fn realMultiply(a: *align(1) const real_t, b: *align(1) const real_t, res: *real_t, ctx: *realContext_t) void {
+inline fn realMultiply(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberMultiply(res, a, b, ctx);
 }
-inline fn realDivide(a: *align(1) const real_t, b: *align(1) const real_t, res: *real_t, ctx: *realContext_t) void {
+inline fn realDivide(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberDivide(res, a, b, ctx);
 }
-inline fn realSquareRoot(operand: *align(1) const real_t, res: *real_t, ctx: *realContext_t) void {
+inline fn realSquareRoot(operand: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberSquareRoot(res, operand, ctx);
 }
-inline fn realFMA(a: *align(1) const real_t, b: *align(1) const real_t, c: *align(1) const real_t, res: *real_t, ctx: *realContext_t) void {
+inline fn realFMA(a: *const real_t, b: *const real_t, c: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberFMA(res, a, b, c, ctx);
 }
 const realIsZero = abi.realIsZero;
-inline fn realIsNegative(v: *align(1) const real_t) bool {
+inline fn realIsNegative(v: *const real_t) bool {
     return (v.bits & DECNEG) != 0;
 }
-inline fn real34Copy(src: *align(1) const real34_t, dst: *align(1) real34_t) void {
+inline fn real34Copy(src: *const real34_t, dst: *real34_t) void {
     const s: *align(1) const [2]u64 = @ptrCast(src);
     const d: *align(1) [2]u64 = @ptrCast(dst);
     d[0] = s[0];
     d[1] = s[1];
 }
-inline fn real34ToReal(src: *align(1) const real34_t, dst: *real_t) void {
+inline fn real34ToReal(src: *const real34_t, dst: *real_t) void {
     _ = decimal128ToNumber(src, dst);
 }
-inline fn realToReal34(src: *const real_t, dst: *align(1) real34_t) void {
+inline fn realToReal34(src: *const real_t, dst: *real34_t) void {
     _ = decimal128FromNumber(dst, src, &ctxtReal34);
 }
-inline fn real34ToInt32(src: *align(1) const real34_t) i32 {
+inline fn real34ToInt32(src: *const real34_t) i32 {
     return decQuadToInt32(src, &ctxtReal34, DEC_ROUND_DOWN);
 }
-inline fn real34Add(a: *align(1) const real34_t, b: *align(1) const real34_t, res: *align(1) real34_t) void {
+inline fn real34Add(a: *const real34_t, b: *const real34_t, res: *real34_t) void {
     _ = decQuadAdd(res, a, b, &ctxtReal34);
 }
-inline fn real34SetZero(dst: *align(1) real34_t) void {
+inline fn real34SetZero(dst: *real34_t) void {
     _ = decQuadZero(dst);
 }
 inline fn int32ToReal(src: i32, dst: *real_t) void {
@@ -335,7 +335,7 @@ pub export fn isStatsMatrix(rows: *u16, mx: [*c]const u8) callconv(.c) bool {
 // ===========================================================================
 // Accumulation engine (static in the C)
 // ===========================================================================
-const AccumulateFn = *const fn (sum: *real_t, z: *align(1) const real_t) bool;
+const AccumulateFn = *const fn (sum: *real_t, z: *const real_t) bool;
 const MinMaxFn = *const fn (r1: *const real_t, r2: *const real_t) bool;
 const accumulateFuncs_t = struct {
     accumulate: AccumulateFn,
@@ -547,12 +547,12 @@ fn subMin(x: *const real_t, y: *const real_t) bool {
     return true;
 }
 
-fn accumulate(sum: *real_t, x: *align(1) const real_t) bool {
+fn accumulate(sum: *real_t, x: *const real_t) bool {
     realAdd(sum, x, sum, &ctxtReal75);
     return true;
 }
 
-fn unaccumulate(sum: *real_t, x: *align(1) const real_t) bool {
+fn unaccumulate(sum: *real_t, x: *const real_t) bool {
     if (realIsSpecial(sum) or realIsSpecial(x)) {
         calcSigma(1);
         return false;
@@ -586,7 +586,7 @@ fn subSigma(x: *const real_t, y: *const real_t) void {
 // ===========================================================================
 // checkMinimumDataPoints
 // ===========================================================================
-pub export fn checkMinimumDataPoints(n: *align(1) const real_t) callconv(.c) bool {
+pub export fn checkMinimumDataPoints(n: *const real_t) callconv(.c) bool {
     if (statisticalSumsPointer == null) {
         frontier_error.displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE);
         if (comptime extra_info) {

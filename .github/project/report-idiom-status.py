@@ -108,7 +108,7 @@ PATTERNS = [
     ("off_offset_sites", re.compile(r"\bOFF_[A-Za-z0-9_]+"), "site"),
     (
         "constants_blob_sites",
-        re.compile(r'@extern\(\[\*\]const u8, \.\{ \.name = "constants"'),
+        re.compile(r'@extern\(\[\*\]const \w+, \.\{ \.name = "constants"'),
         "site",
     ),
     ("qspi_section_files", re.compile(r'"\.qspi_data"'), "file"),

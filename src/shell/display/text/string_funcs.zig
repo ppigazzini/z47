@@ -111,9 +111,9 @@ extern fn fnSwapX(regist: u16) void;
 extern fn elementwiseRema_UInt16(f: ?*const fn (u16) callconv(.c) void, param: u16) void;
 extern fn getSystemFlag(flag: c_int) bool;
 extern fn reallocateRegister(regist: calcRegister_t, data_type: u32, size_blocks: u16, tag: u32) bool;
-extern fn WP34S_Mod(x: *const real_t, y: *align(1) const real_t, res: *real_t, real_context: *realContext_t) void;
-extern fn real34CompareAbsGreaterThan(number1: *align(1) const real34_t, number2: *align(1) const real34_t) bool;
-extern fn decimal128ToNumber(src: *align(1) const real34_t, dst: *real_t) *real_t;
+extern fn WP34S_Mod(x: *const real_t, y: *const real_t, res: *real_t, real_context: *realContext_t) void;
+extern fn real34CompareAbsGreaterThan(number1: *const real34_t, number2: *const real34_t) bool;
+extern fn decimal128ToNumber(src: *const real34_t, dst: *real_t) *real_t;
 extern fn decNumberFromInt32(r: *real_t, v: i32) *real_t;
 
 // Converters exported by the registerValueConversions owner.
@@ -179,7 +179,7 @@ inline fn longIntegerIsZero(op: *const mpz_struct) bool {
 inline fn longIntegerSetPositiveSign(op: *mpz_struct) void {
     op._mp_size = if (op._mp_size < 0) -op._mp_size else op._mp_size;
 }
-inline fn real34ToReal(src: *align(1) const real34_t, dst: *real_t) void {
+inline fn real34ToReal(src: *const real34_t, dst: *real_t) void {
     _ = decimal128ToNumber(src, dst);
 }
 inline fn int32ToReal(src: i32, dst: *real_t) void {
@@ -1158,15 +1158,15 @@ const TMP_STR_LENGTH: i32 = 2560;
 // A string register's byte limit: 1019 bytes stored plus a terminator (defines.h MAX_STRING_BYTE_LENGTH).
 const MAX_STRING_BYTE_LENGTH: i32 = 1020;
 const DECQUAD_Pmax: usize = 34;
-extern fn decQuadGetCoefficient(source: *align(1) const real34_t, bcd: [*]u8) i32;
-extern fn decQuadGetExponent(source: *align(1) const real34_t) i32;
-extern fn decQuadDigits(source: *align(1) const real34_t) u32;
-extern fn decQuadIsZero(source: *align(1) const real34_t) u32;
+extern fn decQuadGetCoefficient(source: *const real34_t, bcd: [*]u8) i32;
+extern fn decQuadGetExponent(source: *const real34_t) i32;
+extern fn decQuadDigits(source: *const real34_t) u32;
+extern fn decQuadIsZero(source: *const real34_t) u32;
 const real34IsSpecial = abi.real34IsSpecial;
-inline fn real34IsZero(v: *align(1) const real34_t) bool {
+inline fn real34IsZero(v: *const real34_t) bool {
     return decQuadIsZero(v) != 0;
 }
-inline fn real34IsNegative(v: *align(1) const real34_t) bool {
+inline fn real34IsNegative(v: *const real34_t) bool {
     return (v.bytes[15] & 0x80) == 0x80;
 }
 
@@ -1174,7 +1174,7 @@ inline fn real34IsNegative(v: *align(1) const real34_t) bool {
 /// coefficient digits are reduced one at a time and the exponent as a power of
 /// ten by squaring. A zero modulus or a special value gives zero, the former
 /// zero-step conversion of a non-finite count.
-fn real34RotationSteps(value: *align(1) const real34_t, modulus: u16) u16 {
+fn real34RotationSteps(value: *const real34_t, modulus: u16) u16 {
     var bcd: [DECQUAD_Pmax]u8 = undefined;
 
     if (modulus == 0 or real34IsSpecial(value)) {

@@ -59,7 +59,7 @@ extern fn convertUInt64ToShortIntegerRegister(sign: i16, value: u64, base: u32, 
 extern fn convertShortIntegerRegisterToLongIntegerRegister(source: i16, destination: i16) void;
 extern fn getRegisterAsLongIntQuiet(reg: i16, val: [*c]GmpInt, fractional: ?*bool) c_int;
 extern fn getRegisterDataType(regist: i16) u32;
-extern fn getRegisterDataPointer(regist: i16) ?*anyopaque;
+extern fn getRegisterDataPointer(regist: i16) ?*align(4) anyopaque;
 extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: i16) void;
 extern var screenUpdatingMode: u8;
 extern fn __gmpz_init(x: [*c]GmpInt) void;

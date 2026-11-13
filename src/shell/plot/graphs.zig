@@ -301,8 +301,8 @@ extern fn findNamedVariable(variableName: [*c]const u8) calcRegister_t;
 
 // real34 macros: real34SetZero(d) == decQuadZero(d); real34IsZero(s) == decQuadIsZero(s)
 extern fn decQuadZero(d: *real34_t) *real34_t;
-extern fn decQuadIsZero(s: *align(1) const real34_t) u32;
-extern fn getRegisterDataPointer(regist: calcRegister_t) *anyopaque;
+extern fn decQuadIsZero(s: *const real34_t) u32;
+extern fn getRegisterDataPointer(regist: calcRegister_t) *align(4) anyopaque;
 
 // longInteger (GMP) helpers
 
@@ -367,40 +367,40 @@ inline fn real34IsZero(s: *real34_t) bool {
 // matching the upstream decimal grapher so pixels round the same at boundaries.
 // ---------------------------------------------------------------------------
 const consts = abi.constants;
-extern fn decNumberCopy(res: *real_t, src: *align(1) const real_t) *real_t;
-extern fn decNumberCopyAbs(res: *real_t, src: *align(1) const real_t) *real_t;
-extern fn decNumberAdd(res: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
-extern fn decNumberSubtract(res: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
-extern fn decNumberMultiply(res: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
-extern fn decNumberDivide(res: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
+extern fn decNumberCopy(res: *real_t, src: *const real_t) *real_t;
+extern fn decNumberCopyAbs(res: *real_t, src: *const real_t) *real_t;
+extern fn decNumberAdd(res: *real_t, a: *const real_t, b: *const real_t, ctx: *realContext_t) *real_t;
+extern fn decNumberSubtract(res: *real_t, a: *const real_t, b: *const real_t, ctx: *realContext_t) *real_t;
+extern fn decNumberMultiply(res: *real_t, a: *const real_t, b: *const real_t, ctx: *realContext_t) *real_t;
+extern fn decNumberDivide(res: *real_t, a: *const real_t, b: *const real_t, ctx: *realContext_t) *real_t;
 extern fn decNumberFromString(res: *real_t, s: [*c]const u8, ctx: *realContext_t) *real_t;
 extern fn decNumberFromInt32(res: *real_t, source: i32) *real_t;
 extern fn realSetZero(v: *real_t) void;
 extern fn realSetOne(v: *real_t) void;
-extern fn realCompareGreaterThan(a: *align(1) const real_t, b: *align(1) const real_t) bool;
-extern fn realCompareLessThan(a: *align(1) const real_t, b: *align(1) const real_t) bool;
-extern fn realCompareLessEqual(a: *align(1) const real_t, b: *align(1) const real_t) bool;
-extern fn realCompareGreaterEqual(a: *align(1) const real_t, b: *align(1) const real_t) bool;
-extern fn realToInt32C47(r: *align(1) const real_t, err: ?*bool_t) i32;
-extern fn realToDouble(vv: *align(1) const real_t, v: *f64) void;
-extern fn decimal128ToNumber(src: *align(1) const real34_t, dst: *real_t) *real_t;
+extern fn realCompareGreaterThan(a: *const real_t, b: *const real_t) bool;
+extern fn realCompareLessThan(a: *const real_t, b: *const real_t) bool;
+extern fn realCompareLessEqual(a: *const real_t, b: *const real_t) bool;
+extern fn realCompareGreaterEqual(a: *const real_t, b: *const real_t) bool;
+extern fn realToInt32C47(r: *const real_t, err: ?*bool_t) i32;
+extern fn realToDouble(vv: *const real_t, v: *f64) void;
+extern fn decimal128ToNumber(src: *const real34_t, dst: *real_t) *real_t;
 
-inline fn realCopy(src: *align(1) const real_t, dst: *real_t) void {
+inline fn realCopy(src: *const real_t, dst: *real_t) void {
     _ = decNumberCopy(dst, src);
 }
-inline fn realCopyAbs(src: *align(1) const real_t, dst: *real_t) void {
+inline fn realCopyAbs(src: *const real_t, dst: *real_t) void {
     _ = decNumberCopyAbs(dst, src);
 }
-inline fn realAdd(a: *align(1) const real_t, b: *align(1) const real_t, res: *real_t, ctx: *realContext_t) void {
+inline fn realAdd(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberAdd(res, a, b, ctx);
 }
-inline fn realSubtract(a: *align(1) const real_t, b: *align(1) const real_t, res: *real_t, ctx: *realContext_t) void {
+inline fn realSubtract(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberSubtract(res, a, b, ctx);
 }
-inline fn realMultiply(a: *align(1) const real_t, b: *align(1) const real_t, res: *real_t, ctx: *realContext_t) void {
+inline fn realMultiply(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberMultiply(res, a, b, ctx);
 }
-inline fn realDivide(a: *align(1) const real_t, b: *align(1) const real_t, res: *real_t, ctx: *realContext_t) void {
+inline fn realDivide(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberDivide(res, a, b, ctx);
 }
 inline fn stringToReal(s: [*c]const u8, dst: *real_t, ctx: *realContext_t) void {
@@ -410,20 +410,20 @@ inline fn int32ToReal(source: i32, dst: *real_t) void {
     _ = decNumberFromInt32(dst, source);
 }
 const realIsZero = abi.realIsZero;
-inline fn realIsNegative(v: *align(1) const real_t) bool {
+inline fn realIsNegative(v: *const real_t) bool {
     return (v.bits & 0x80) == 0x80;
 }
 inline fn realSetPositiveSign(v: *real_t) void {
     v.bits &= 0x7F;
 }
-inline fn real34ToReal(src: *align(1) const real34_t, dst: *real_t) void {
+inline fn real34ToReal(src: *const real34_t, dst: *real_t) void {
     _ = decimal128ToNumber(src, dst);
 }
 const real34IsSpecial = abi.real34IsSpecial;
 inline fn convertDoubleToReal(x: f64, dst: *real_t, ctx: *realContext_t) void {
     frontier_register_value_conversions.convertDoubleToReal(x, dst, ctx);
 }
-inline fn realToDoubleVal(r: *align(1) const real_t) f64 {
+inline fn realToDoubleVal(r: *const real_t) f64 {
     var d: f64 = undefined;
     realToDouble(r, &d);
     return d;

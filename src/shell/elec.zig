@@ -91,7 +91,7 @@ extern var temporaryInformation: u8;
 
 extern fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void;
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
-extern fn getRegisterDataPointer(regist: calcRegister_t) ?*anyopaque;
+extern fn getRegisterDataPointer(regist: calcRegister_t) ?*align(4) anyopaque;
 extern fn getRegisterTag(regist: calcRegister_t) u32;
 extern fn setRegisterTag(regist: calcRegister_t, tag: u32) void;
 extern fn getSystemFlag(flag: c_int) bool;
@@ -103,49 +103,49 @@ extern fn fnSwapX(regist: u16) void;
 extern fn fnToRect2(unusedButMandatoryParameter: u16) void;
 extern fn copySourceRegisterToDestRegister(src: calcRegister_t, dst: calcRegister_t) void;
 
-extern fn decNumberCopy(dst: *real_t, src: *align(1) const real_t) *real_t;
-extern fn decNumberAdd(res: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
-extern fn decNumberSubtract(res: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
-extern fn decNumberDivide(res: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
-extern fn decNumberSquareRoot(res: *real_t, a: *align(1) const real_t, ctx: *realContext_t) *real_t;
-extern fn realCompareAbsLessThan(a: *align(1) const real_t, b: *align(1) const real_t) bool;
+extern fn decNumberCopy(dst: *real_t, src: *const real_t) *real_t;
+extern fn decNumberAdd(res: *real_t, a: *const real_t, b: *const real_t, ctx: *realContext_t) *real_t;
+extern fn decNumberSubtract(res: *real_t, a: *const real_t, b: *const real_t, ctx: *realContext_t) *real_t;
+extern fn decNumberDivide(res: *real_t, a: *const real_t, b: *const real_t, ctx: *realContext_t) *real_t;
+extern fn decNumberSquareRoot(res: *real_t, a: *const real_t, ctx: *realContext_t) *real_t;
+extern fn realCompareAbsLessThan(a: *const real_t, b: *const real_t) bool;
 
 // The complex arithmetic of the mathematics owners, at the context each site names.
 extern fn addComplex(a: *const cplx_t, b: *const cplx_t, res: *cplx_t, ctx: *realContext_t) void;
 extern fn mulComplexComplex(factor1: *const cplx_t, factor2: *const cplx_t, product: *cplx_t, ctx: *realContext_t) void;
 extern fn divComplexComplex(numer: *const cplx_t, denom: *const cplx_t, quotient: *cplx_t, ctx: *realContext_t) void;
 
-extern fn decQuadIsZero(x: *align(1) const real34_t) u32;
+extern fn decQuadIsZero(x: *const real34_t) u32;
 
 // ---------------------------------------------------------------------------
 // Real-number helper macros (realType.h), inlined.
 // ---------------------------------------------------------------------------
-inline fn realCopy(src: *align(1) const real_t, dst: *real_t) void {
+inline fn realCopy(src: *const real_t, dst: *real_t) void {
     _ = decNumberCopy(dst, src);
 }
 inline fn realChangeSign(x: *real_t) void {
     x.bits ^= DECNEG;
 }
-inline fn realAdd(a: *align(1) const real_t, b: *align(1) const real_t, res: *real_t, ctx: *realContext_t) void {
+inline fn realAdd(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberAdd(res, a, b, ctx);
 }
-inline fn realSubtract(a: *align(1) const real_t, b: *align(1) const real_t, res: *real_t, ctx: *realContext_t) void {
+inline fn realSubtract(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberSubtract(res, a, b, ctx);
 }
-inline fn realDivide(a: *align(1) const real_t, b: *align(1) const real_t, res: *real_t, ctx: *realContext_t) void {
+inline fn realDivide(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberDivide(res, a, b, ctx);
 }
-inline fn realSquareRoot(a: *align(1) const real_t, res: *real_t, ctx: *realContext_t) void {
+inline fn realSquareRoot(a: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberSquareRoot(res, a, ctx);
 }
 const realIsZero = abi.realIsZero;
-inline fn realIsNaN(x: *align(1) const real_t) bool {
+inline fn realIsNaN(x: *const real_t) bool {
     return (x.bits & (DECNAN | DECSNAN)) != 0;
 }
-inline fn realIsSpecial(x: *align(1) const real_t) bool {
+inline fn realIsSpecial(x: *const real_t) bool {
     return (x.bits & DECSPECIAL) != 0;
 }
-inline fn real34IsZero(x: *align(1) const real34_t) bool {
+inline fn real34IsZero(x: *const real34_t) bool {
     return decQuadIsZero(x) != 0;
 }
 const registerImag34Data = abi.registerImag34;
@@ -167,7 +167,7 @@ inline fn putRegCplx(c: *const cplx_t, reg: calcRegister_t) void {
 // ---------------------------------------------------------------------------
 // Static helpers (elec.c)
 // ---------------------------------------------------------------------------
-fn elecImagIsDust(im: *align(1) const real_t) bool {
+fn elecImagIsDust(im: *const real_t) bool {
     if (realIsZero(im)) {
         return true;
     }

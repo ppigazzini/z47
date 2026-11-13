@@ -632,7 +632,7 @@ const _TVM: i16 = 7;
 // ---------------------------------------------------------------------------
 extern var ram: [*c]u32;
 extern var loadTestData: bool_t; // c47.c global; default false, set only by the host test-data option
-extern var tmpString: [*c]u8;
+extern var tmpString: [*c]align(4) u8;
 extern var errorMessage: [*c]u8;
 extern var aimBuffer: [*c]u8;
 extern var nimBufferDisplay: [*c]u8;
@@ -870,7 +870,9 @@ extern var numberOfPrograms: u16;
 // libc / runtime function externs
 // ---------------------------------------------------------------------------
 extern fn memset(s: ?*anyopaque, c: c_int, n: usize) ?*anyopaque;
-extern fn malloc(n: usize) ?*anyopaque;
+/// C's malloc, read as the bytes this owner asks it for: its result is aligned
+/// for any object, which is at least 8 on every target z47 builds.
+extern fn malloc(n: usize) ?[*]align(8) u8;
 extern fn strcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn strcat(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn sprintf(buf: [*c]u8, fmt: [*:0]const u8, ...) c_int;
@@ -886,9 +888,9 @@ inline fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8) void {
 // decNumber primitives behind int32ToReal / realToReal34 / real34SetZero / realSetZero.
 extern fn decNumberFromInt32(result: *real_t, rhs: i32) *real_t;
 // realCopy(src,dst) macro -> decNumberCopy(dst, src) (used by doFnReset range init).
-extern fn decNumberCopy(res: *real_t, src: *align(1) const real_t) *real_t;
+extern fn decNumberCopy(res: *real_t, src: *const real_t) *real_t;
 // realToReal34/decQuadFromNumber are macros over decimal128FromNumber.
-extern fn decimal128FromNumber(dst: *real34_t, src: *align(1) const real_t, ctx: *realContext_t) *real34_t;
+extern fn decimal128FromNumber(dst: *real34_t, src: *const real_t, ctx: *realContext_t) *real34_t;
 extern fn decQuadZero(dst: *real34_t) *real34_t;
 extern fn decQuadFromInt32(dst: *real34_t, v: i32) *real34_t;
 
@@ -909,7 +911,7 @@ extern fn setSystemFlagChanged(sf: i32) void;
 // register / long-integer helpers
 
 extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) bool;
-extern fn getRegisterDataPointer(regist: calcRegister_t) *anyopaque;
+extern fn getRegisterDataPointer(regist: calcRegister_t) *align(4) anyopaque;
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
 extern fn setRegisterDataType(regist: calcRegister_t, dataType: u16, tag: u32) void;
 extern fn setRegisterDataPointer(regist: calcRegister_t, memPtr: *const anyopaque) void;
@@ -984,7 +986,7 @@ inline fn toC47MemPtr(p: ?*anyopaque) u16 {
 inline fn int32ToReal(source: i32, destination: *real_t) void {
     _ = decNumberFromInt32(destination, source);
 }
-inline fn realCopy(source: *align(1) const real_t, destination: *real_t) void {
+inline fn realCopy(source: *const real_t, destination: *real_t) void {
     _ = decNumberCopy(destination, source);
 }
 inline fn realToReal34(source: *const real_t, destination: *real34_t) void {
@@ -2284,7 +2286,7 @@ pub export fn doFnReset(confirmation: u16, autoSav: bool_t) callconv(.c) void {
         var memPtr: ?*anyopaque = undefined;
 
         if (ram == null) {
-            ram = @ptrCast(@alignCast(malloc(toBytes(RAM_SIZE_IN_BLOCKS))));
+            ram = @ptrCast(malloc(toBytes(RAM_SIZE_IN_BLOCKS)));
         }
         // A reset can follow a session whose freed blocks memcheck holds as
         // no-access; the whole pool is ordinary memory again until it is re-formed.
@@ -2321,8 +2323,8 @@ pub export fn doFnReset(confirmation: u16, autoSav: bool_t) callconv(.c) void {
                 tmpString = romAuxBufPtr();
                 errorMessage = @ptrCast(romWriteBufPtr());
             } else {
-                tmpString = @ptrCast(malloc(TMP_STR_LENGTH));
-                errorMessage = @ptrCast(malloc(WRITE_BUFFER_LEN));
+                tmpString = malloc(TMP_STR_LENGTH);
+                errorMessage = malloc(WRITE_BUFFER_LEN);
             }
 
             aimBuffer = errorMessage + ERROR_MESSAGE_LENGTH;
@@ -2354,7 +2356,7 @@ pub export fn doFnReset(confirmation: u16, autoSav: bool_t) callconv(.c) void {
         frontier_manage.scanLabelsAndPrograms();
 
         if (glyphNotFound.data == null) {
-            glyphNotFound.data = @ptrCast(malloc(38));
+            glyphNotFound.data = malloc(38);
         }
         _ = frontier_char_string.xcopy(glyphNotFound.data, &msg2[0].str2, 38);
 
@@ -2744,7 +2746,7 @@ const UsbPoweredFn = *const fn () callconv(.c) c_int;
 const KeyEmptyFn = *const fn () callconv(.c) c_int;
 const ResetAutoOffFn = *const fn () callconv(.c) void;
 const RunMenuItemSysFn = *const fn (line_id: u8) callconv(.c) c_int;
-const AuxBufPtrFn = *const fn () callconv(.c) [*c]u8;
+const AuxBufPtrFn = *const fn () callconv(.c) [*c]align(4) u8;
 const WriteBufPtrFn = *const fn () callconv(.c) ?*anyopaque;
 const FOpenFn = *const fn (fp: ?*anyopaque, path: [*:0]const u8, mode: u8) callconv(.c) FRESULT;
 const FCloseFn = *const fn (fp: ?*anyopaque) callconv(.c) FRESULT;
@@ -2770,7 +2772,7 @@ inline fn romRunMenuItemSys(line_id: u8) c_int {
     const f: RunMenuItemSysFn = @ptrFromInt(LIBRARY_FN_BASE + 728);
     return f(line_id);
 }
-inline fn romAuxBufPtr() [*c]u8 {
+inline fn romAuxBufPtr() [*c]align(4) u8 {
     const f: AuxBufPtrFn = @ptrFromInt(LIBRARY_FN_BASE + 292);
     return f();
 }

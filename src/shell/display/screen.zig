@@ -1227,7 +1227,7 @@ extern fn getSystemFlag(sf: c_int) bool_t;
 extern fn setSystemFlag(sf: c_uint) void;
 extern fn clearSystemFlag(sf: c_uint) void;
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
-extern fn getRegisterDataPointer(regist: calcRegister_t) [*c]u8;
+extern fn getRegisterDataPointer(regist: calcRegister_t) [*c]align(4) u8;
 extern fn getRegisterTag(regist: calcRegister_t) u32;
 extern fn copySourceRegisterToDestRegister(source: calcRegister_t, dest: calcRegister_t) void;
 extern var calcModel: u8;
@@ -1245,10 +1245,10 @@ const keypress_long_f: bool = false; // #define keypress_long_f false
 extern fn fnDisplayStack(numberOfStackLines: u16) void;
 extern fn linkToRealMatrixRegister(regist: calcRegister_t, matrix: *real34Matrix_t) void;
 extern fn linkToComplexMatrixRegister(regist: calcRegister_t, matrix: *complex34Matrix_t) void;
-extern fn real34CompareLessThan(a: *align(1) const real34_t, b: *align(1) const real34_t) bool_t;
-extern fn real34CompareLessEqual(a: *align(1) const real34_t, b: *align(1) const real34_t) bool_t;
-extern fn real34CompareAbsLessThan(a: *align(1) const real34_t, b: *align(1) const real34_t) bool_t;
-extern fn real34IsAnInteger(x: *align(1) const real34_t) bool_t;
+extern fn real34CompareLessThan(a: *const real34_t, b: *const real34_t) bool_t;
+extern fn real34CompareLessEqual(a: *const real34_t, b: *const real34_t) bool_t;
+extern fn real34CompareAbsLessThan(a: *const real34_t, b: *const real34_t) bool_t;
+extern fn real34IsAnInteger(x: *const real34_t) bool_t;
 extern fn realIsAnInteger(r: *const real_t) bool_t;
 extern fn findNamedVariable(name: [*c]const u8) calcRegister_t;
 extern fn processKeyAction(item: i16) void;
@@ -1359,9 +1359,9 @@ extern fn printf(fmt: [*c]const u8, ...) c_int;
 const C47_PATH_MAX = 1024;
 
 // real34 = decQuad helpers (libdecnumber).
-extern fn decQuadReduce(r: *align(1) real34_t, a: *align(1) const real34_t, ctx: *realContext_t) *align(1) real34_t;
-extern fn decQuadToString(d: *align(1) const real34_t, str: [*c]u8) [*c]u8;
-extern fn decQuadIsZero(d: *align(1) const real34_t) u32;
+extern fn decQuadReduce(r: *real34_t, a: *const real34_t, ctx: *realContext_t) *real34_t;
+extern fn decQuadToString(d: *const real34_t, str: [*c]u8) [*c]u8;
+extern fn decQuadIsZero(d: *const real34_t) u32;
 extern fn decimal128ToNumber(d: *const real34_t, dn: *real_t) *real_t;
 extern fn decimal128FromNumber(d: *real34_t, dn: *const real_t, set: *realContext_t) *real34_t;
 extern fn decNumberMultiply(res: *real_t, a: *const real_t, b: *const real_t, ctx: *realContext_t) *real_t;
@@ -1379,22 +1379,22 @@ extern fn __gmpz_clear(op: [*c]mpz_struct) void;
 // ---------------------------------------------------------------------------
 // realType.h / longIntegerType.h inline wrappers.
 // ---------------------------------------------------------------------------
-inline fn real34Reduce(operand: *align(1) const real34_t, res: *align(1) real34_t) void {
+inline fn real34Reduce(operand: *const real34_t, res: *real34_t) void {
     _ = decQuadReduce(res, operand, &ctxtReal34);
 }
-inline fn real34ToString(source_: *align(1) const real34_t, destination: [*c]u8) void {
+inline fn real34ToString(source_: *const real34_t, destination: [*c]u8) void {
     _ = decQuadToString(source_, destination);
 }
-inline fn real34IsZero(source_: *align(1) const real34_t) bool {
+inline fn real34IsZero(source_: *const real34_t) bool {
     return decQuadIsZero(source_) != 0;
 }
-inline fn real34IsNegative(source_: *align(1) const real34_t) bool {
+inline fn real34IsNegative(source_: *const real34_t) bool {
     return (source_.bytes[15] & 0x80) == 0x80;
 }
-inline fn real34SetPositiveSign(operand: *align(1) real34_t) void {
+inline fn real34SetPositiveSign(operand: *real34_t) void {
     operand.bytes[15] &= 0x7F;
 }
-inline fn realToReal34(source_: *const real_t, destination: *align(1) real34_t) void {
+inline fn realToReal34(source_: *const real_t, destination: *real34_t) void {
     _ = decimal128FromNumber(@ptrCast(destination), source_, &ctxtReal34);
 }
 inline fn realMultiply(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
@@ -1418,9 +1418,9 @@ inline fn stringByteLength(str: [*c]const u8) i32 {
 }
 
 // macro reproductions (defines.h / registers.h / realType.h / longIntegerType.h)
-extern fn decQuadFromInt32(r: *align(1) real34_t, v: i32) *align(1) real34_t;
-extern fn decQuadFromUInt32(r: *align(1) real34_t, v: u32) *align(1) real34_t;
-extern fn decQuadToInt32(d: *align(1) const real34_t, ctx: *realContext_t, round: c_int) i32;
+extern fn decQuadFromInt32(r: *real34_t, v: i32) *real34_t;
+extern fn decQuadFromUInt32(r: *real34_t, v: u32) *real34_t;
+extern fn decQuadToInt32(d: *const real34_t, ctx: *realContext_t, round: c_int) i32;
 extern fn __gmpz_get_ui(op: [*c]const mpz_struct) c_ulong;
 extern fn __gmpz_get_si(op: [*c]const mpz_struct) c_long;
 extern fn __gmpz_cmp_ui(op: [*c]const mpz_struct, v: c_ulong) c_int;
@@ -1433,13 +1433,13 @@ inline fn stringCopy(dest: [*c]u8, source: [*c]const u8) [*c]u8 {
 inline fn getRegisterShortIntegerBase(reg: calcRegister_t) u32 {
     return getRegisterTag(reg);
 }
-inline fn int32ToReal34(source_: i32, destination: *align(1) real34_t) void {
+inline fn int32ToReal34(source_: i32, destination: *real34_t) void {
     _ = decQuadFromInt32(destination, source_);
 }
-inline fn uInt32ToReal34(source_: u32, destination: *align(1) real34_t) void {
+inline fn uInt32ToReal34(source_: u32, destination: *real34_t) void {
     _ = decQuadFromUInt32(destination, source_);
 }
-inline fn real34ToInt32(source_: *align(1) const real34_t) i32 {
+inline fn real34ToInt32(source_: *const real34_t) i32 {
     return decQuadToInt32(source_, &ctxtReal34, DEC_ROUND_DOWN);
 }
 // decNumberIsSpecial(dn) = (dn->bits & DECSPECIAL) != 0; DECSPECIAL = 0x70.

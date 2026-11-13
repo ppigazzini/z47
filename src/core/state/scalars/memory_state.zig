@@ -7,7 +7,10 @@
 // Defined here rather than in the shell globals hub (c47.zig) with c47.c's
 // symbols, types and null initialisers.
 
-pub export var tmpString: ?[*]u8 = null; // general-purpose temporary string workspace
+/// General-purpose temporary workspace: a malloc'd block on the host, DMCP's aux
+/// buffer on the device. Upstream reads it as words and as real34_t (the equation
+/// parser's stacks live in it), so it is word-aligned on every target.
+pub export var tmpString: ?[*]align(4) u8 = null;
 pub export var errorMessage: ?[*]u8 = null; // error/bug-report formatting workspace
 pub export var ram: ?[*]u32 = null; // the calculator RAM image
 pub export var statisticalSumsPointer: ?*anyopaque = null; // the statistical sums block (real_t*)

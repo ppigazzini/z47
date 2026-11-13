@@ -106,16 +106,16 @@ const realSetNaN = owner.realSetNaN;
 // doAtan (static)
 // ===========================================================================
 fn doAtan(
-    a: *align(1) real_t,
-    angle: *align(1) real_t,
-    a2: *align(1) real_t,
-    t: *align(1) real_t,
-    j: *align(1) real_t,
-    z: *align(1) real_t,
-    x: *align(1) const real_t,
-    b: *align(1) real_t,
-    epsilon: *align(1) real_t,
-    last: *align(1) real_t,
+    a: *real_t,
+    angle: *real_t,
+    a2: *real_t,
+    t: *real_t,
+    j: *real_t,
+    z: *real_t,
+    x: *const real_t,
+    b: *real_t,
+    epsilon: *real_t,
+    last: *real_t,
     doEpsilon: bool,
     epsilonDigits: i32,
     doubles: *i32,
@@ -271,9 +271,9 @@ const Cache1 = struct {
 
     fn call(
         self: *Cache1,
-        comptime compute: fn (*align(1) const real_t, *align(1) real_t, *realContext_t) void,
-        x: *align(1) const real_t,
-        out: *align(1) real_t,
+        comptime compute: fn (*const real_t, *real_t, *realContext_t) void,
+        x: *const real_t,
+        out: *real_t,
         effDigits: i32,
         ctx: *realContext_t,
     ) void {
@@ -305,10 +305,10 @@ const Cache2 = struct {
 
     fn call(
         self: *Cache2,
-        comptime compute: fn (*align(1) const real_t, *align(1) const real_t, *align(1) real_t, *realContext_t) void,
-        y: *align(1) const real_t,
-        x: *align(1) const real_t,
-        out: *align(1) real_t,
+        comptime compute: fn (*const real_t, *const real_t, *real_t, *realContext_t) void,
+        y: *const real_t,
+        x: *const real_t,
+        out: *real_t,
         effDigits: i32,
         ctx: *realContext_t,
     ) void {
@@ -366,7 +366,7 @@ fn atanEffectiveDigits(requestedDigits: i32) i32 {
 // tenth is, 1/12 is not, and its rounding would break the identity the reduction
 // rests on.
 const ATAN_TABLE_STEP: i32 = 10;
-fn atanTable(j: usize) *align(1) const real_t {
+fn atanTable(j: usize) *const real_t {
     return switch (j) {
         0 => const_0(),
         1 => const39_atan1on10(),
@@ -389,7 +389,7 @@ fn atanTable(j: usize) *align(1) const real_t {
 // term; a ninth would not fit. Holding the first at exactly 1 is what makes
 // atan(x) come out as exactly x for tiny x rather than merely rounding to it.
 const ATAN_COEFFICIENTS: i32 = 13;
-fn atanPoly(k: usize) *align(1) const real_t {
+fn atanPoly(k: usize) *const real_t {
     return switch (k) {
         0 => const_1(),
         1 => const39_1on3(),
@@ -424,7 +424,7 @@ fn atanPoly(k: usize) *align(1) const real_t {
 /// magnitude under the 5e-40 the 39 digit table constants contribute anyway, so
 /// the polynomial is not what limits the answer. At 39 digits this returns about
 /// 38 correct digits, a little better than the Taylor path it replaces.
-fn WP34S_Atan_table_compute(x: *align(1) const real_t, angle: *align(1) real_t, realContext: *realContext_t) void {
+fn WP34S_Atan_table_compute(x: *const real_t, angle: *real_t, realContext: *realContext_t) void {
     // Upstream declares these four REAL_T_ALLOC(name, 39), but the first thing the
     // function does is copy the caller's real_t whole, and decNumberCopyAbs copies
     // the SOURCE's digit count: a wide argument -- a long integer converted at 75
@@ -535,7 +535,7 @@ fn WP34S_Atan_table_compute(x: *align(1) const real_t, angle: *align(1) real_t, 
 // WP34S_Atan_75_compute (static)
 // ===========================================================================
 // The Taylor series with sqrt halving, now reached only for requests above 39 digits.
-fn WP34S_Atan_75_compute(x: *align(1) const real_t, angle: *align(1) real_t, realContext: *realContext_t) void {
+fn WP34S_Atan_75_compute(x: *const real_t, angle: *real_t, realContext: *realContext_t) void {
     var doEpsilon: bool = false;
 
     // The eight working reals come from the heap, not the frame: eight
@@ -599,7 +599,7 @@ fn WP34S_Atan_75_compute(x: *align(1) const real_t, angle: *align(1) real_t, rea
 // The eight working reals come from the heap, not the frame: eight 1071-digit
 // decNumbers at 724 bytes each is 5792 bytes, nearly all of what was the largest
 // frame in the build.
-fn C47do_WP34S_Atan_1071temp(x: *align(1) const real_t, angle: *align(1) real_t, realContext: *realContext_t) void {
+fn C47do_WP34S_Atan_1071temp(x: *const real_t, angle: *real_t, realContext: *realContext_t) void {
     const a = mallocBigReal(1071);
     const b = mallocBigReal(1071);
     const a2 = mallocBigReal(1071);
@@ -641,7 +641,7 @@ const slots = if (cache_slots_enabled) struct {
 
 // Cached wrapper for WP34S_Atan. Returns the previous result when the input, the effective precision and the rounding mode
 // all match; see Cache1.call.
-fn WP34S_Atan_75_helper(x: *align(1) const real_t, angle: *align(1) real_t, realContext: *realContext_t) void {
+fn WP34S_Atan_75_helper(x: *const real_t, angle: *real_t, realContext: *realContext_t) void {
     const effDigits: i32 = atanEffectiveDigits(realContext.digits); // the precision actually computed at, not the request
     // The table path serves every request at or below 39 digits; above it the
     // Taylor series at 75. Cache1.call takes its worker at comptime, so the choice
@@ -664,7 +664,7 @@ fn WP34S_Atan_75_helper(x: *align(1) const real_t, angle: *align(1) real_t, real
 // ===========================================================================
 // C47_WP34S_Atan
 // ===========================================================================
-pub fn C47_WP34S_Atan(x: *align(1) const real_t, angle: *align(1) real_t, realContext: *realContext_t) void {
+pub fn C47_WP34S_Atan(x: *const real_t, angle: *real_t, realContext: *realContext_t) void {
     if (runtime.option_xfn_1000 and realContext.digits >= 1071) {
         C47do_WP34S_Atan_1071temp(x, angle, realContext);
     } else {
@@ -673,23 +673,23 @@ pub fn C47_WP34S_Atan(x: *align(1) const real_t, angle: *align(1) real_t, realCo
 }
 
 // pi-family selectors used by doAtan2 (the _pi/_piOn2/... macros).
-inline fn pi_d(d: i32) *align(1) const real_t {
+inline fn pi_d(d: i32) *const real_t {
     return if (d > 51) (if (d > 75) const1071_pi() else const75_pi()) else const39_pi();
 }
-inline fn piOn2_d(d: i32) *align(1) const real_t {
+inline fn piOn2_d(d: i32) *const real_t {
     return if (d > 51) (if (d > 75) const1071_piOn2() else const75_piOn2()) else const39_piOn2();
 }
-inline fn piOn4_d(d: i32) *align(1) const real_t {
+inline fn piOn4_d(d: i32) *const real_t {
     return if (d > 51) (if (d > 75) const1071_piOn4() else const75_piOn4()) else const39_piOn4();
 }
-inline fn threePiOn4_d(d: i32) *align(1) const real_t {
+inline fn threePiOn4_d(d: i32) *const real_t {
     return if (d > 51) (if (d > 75) const1071_3piOn4() else const75_3piOn4()) else const39_3piOn4();
 }
 
 // ===========================================================================
 // doAtan2 (static)
 // ===========================================================================
-fn doAtan2(y: *align(1) const real_t, x: *align(1) const real_t, atan: *align(1) real_t, r: *align(1) real_t, t: *align(1) real_t, realContext: *realContext_t) bool {
+fn doAtan2(y: *const real_t, x: *const real_t, atan: *real_t, r: *real_t, t: *real_t, realContext: *realContext_t) bool {
     const xNeg = realIsNegative(x);
     const yNeg = realIsNegative(y);
 
@@ -793,7 +793,7 @@ fn doAtan2(y: *align(1) const real_t, x: *align(1) const real_t, atan: *align(1)
 // ===========================================================================
 // WP34S_Atan2_75_compute / 1071temp (static) + dispatcher
 // ===========================================================================
-fn WP34S_Atan2_75_compute(y: *align(1) const real_t, x: *align(1) const real_t, atan: *align(1) real_t, realContext: *realContext_t) void {
+fn WP34S_Atan2_75_compute(y: *const real_t, x: *const real_t, atan: *real_t, realContext: *realContext_t) void {
     // These bodies work at real75; a wider caller context is narrowed for the
     // duration and put back on every exit.
     const savedContextDigits = realContext.digits;
@@ -809,7 +809,7 @@ fn WP34S_Atan2_75_compute(y: *align(1) const real_t, x: *align(1) const real_t, 
 }
 
 // Two 1071-digit decNumbers at 724 bytes each were nearly the whole frame.
-fn C47do_WP34S_Atan2_1071temp(y: *align(1) const real_t, x: *align(1) const real_t, atan: *align(1) real_t, realContext: *realContext_t) void {
+fn C47do_WP34S_Atan2_1071temp(y: *const real_t, x: *const real_t, atan: *real_t, realContext: *realContext_t) void {
     const r = mallocBigReal(1071);
     const t = mallocBigReal(1071);
     defer {
@@ -827,7 +827,7 @@ fn C47do_WP34S_Atan2_1071temp(y: *align(1) const real_t, x: *align(1) const real
 
 // Cached wrapper for WP34S_Atan2. Returns the previous result when both inputs, the effective precision and the rounding
 // mode match; see Cache2.call.
-fn WP34S_Atan2_75_helper(y: *align(1) const real_t, x: *align(1) const real_t, atan: *align(1) real_t, realContext: *realContext_t) void {
+fn WP34S_Atan2_75_helper(y: *const real_t, x: *const real_t, atan: *real_t, realContext: *realContext_t) void {
     if (comptime !cache_slots_enabled) {
         WP34S_Atan2_75_compute(y, x, atan, realContext);
         return;
@@ -836,7 +836,7 @@ fn WP34S_Atan2_75_helper(y: *align(1) const real_t, x: *align(1) const real_t, a
     slots.atan2.call(WP34S_Atan2_75_compute, y, x, atan, effDigits, realContext);
 }
 
-pub fn C47_WP34S_Atan2(y: *align(1) const real_t, x: *align(1) const real_t, atan: *align(1) real_t, realContext: *realContext_t) void {
+pub fn C47_WP34S_Atan2(y: *const real_t, x: *const real_t, atan: *real_t, realContext: *realContext_t) void {
     if (runtime.option_xfn_1000 and realContext.digits >= 1071) {
         C47do_WP34S_Atan2_1071temp(y, x, atan, realContext);
     } else {
@@ -847,7 +847,7 @@ pub fn C47_WP34S_Atan2(y: *align(1) const real_t, x: *align(1) const real_t, ata
 // ===========================================================================
 // doAsin (static) + dispatchers
 // ===========================================================================
-fn doAsin(x: *align(1) const real_t, angle: *align(1) real_t, abx: *align(1) real_t, z: *align(1) real_t, realContext: *realContext_t) bool {
+fn doAsin(x: *const real_t, angle: *real_t, abx: *real_t, z: *real_t, realContext: *realContext_t) bool {
     if (realIsNaN(x)) {
         realSetNaN(angle);
         return false;
@@ -866,7 +866,7 @@ fn doAsin(x: *align(1) const real_t, angle: *align(1) real_t, abx: *align(1) rea
     return true;
 }
 
-fn WP34S_Asin_75_compute(x: *align(1) const real_t, angle: *align(1) real_t, realContext: *realContext_t) void {
+fn WP34S_Asin_75_compute(x: *const real_t, angle: *real_t, realContext: *realContext_t) void {
     // These bodies work at real75; a wider caller context is narrowed for the
     // duration and put back on every exit.
     const savedContextDigits = realContext.digits;
@@ -881,7 +881,7 @@ fn WP34S_Asin_75_compute(x: *align(1) const real_t, angle: *align(1) real_t, rea
     }
 }
 
-fn C47do_WP34S_Asin_1071temp(x: *align(1) const real_t, angle: *align(1) real_t, realContext: *realContext_t) void {
+fn C47do_WP34S_Asin_1071temp(x: *const real_t, angle: *real_t, realContext: *realContext_t) void {
     const abx = mallocBigReal(1071);
     const z = mallocBigReal(1071);
     defer {
@@ -898,7 +898,7 @@ fn C47do_WP34S_Asin_1071temp(x: *align(1) const real_t, angle: *align(1) real_t,
 }
 
 // Cached wrapper for WP34S_Asin. See Cache1.call.
-fn WP34S_Asin_75_helper(x: *align(1) const real_t, angle: *align(1) real_t, realContext: *realContext_t) void {
+fn WP34S_Asin_75_helper(x: *const real_t, angle: *real_t, realContext: *realContext_t) void {
     if (comptime !cache_slots_enabled) {
         WP34S_Asin_75_compute(x, angle, realContext);
         return;
@@ -907,7 +907,7 @@ fn WP34S_Asin_75_helper(x: *align(1) const real_t, angle: *align(1) real_t, real
     slots.asin.call(WP34S_Asin_75_compute, x, angle, effDigits, realContext);
 }
 
-pub fn C47_WP34S_Asin(x: *align(1) const real_t, angle: *align(1) real_t, realContext: *realContext_t) void {
+pub fn C47_WP34S_Asin(x: *const real_t, angle: *real_t, realContext: *realContext_t) void {
     if (runtime.option_xfn_1000 and realContext.digits >= 1071) {
         C47do_WP34S_Asin_1071temp(x, angle, realContext);
     } else {
@@ -918,7 +918,7 @@ pub fn C47_WP34S_Asin(x: *align(1) const real_t, angle: *align(1) real_t, realCo
 // ===========================================================================
 // doAcos (static) + dispatchers
 // ===========================================================================
-fn doAcos(x: *align(1) const real_t, angle: *align(1) real_t, abx: *align(1) real_t, z: *align(1) real_t, realContext: *realContext_t) bool {
+fn doAcos(x: *const real_t, angle: *real_t, abx: *real_t, z: *real_t, realContext: *realContext_t) bool {
     if (realIsNaN(x)) {
         realSetNaN(angle);
         return false;
@@ -937,7 +937,7 @@ fn doAcos(x: *align(1) const real_t, angle: *align(1) real_t, abx: *align(1) rea
     return true;
 }
 
-fn WP34S_Acos_75_compute(x: *align(1) const real_t, angle: *align(1) real_t, realContext: *realContext_t) void {
+fn WP34S_Acos_75_compute(x: *const real_t, angle: *real_t, realContext: *realContext_t) void {
     // These bodies work at real75; a wider caller context is narrowed for the
     // duration and put back on every exit.
     const savedContextDigits = realContext.digits;
@@ -952,7 +952,7 @@ fn WP34S_Acos_75_compute(x: *align(1) const real_t, angle: *align(1) real_t, rea
     }
 }
 
-fn C47do_WP34S_Acos_1071temp(x: *align(1) const real_t, angle: *align(1) real_t, realContext: *realContext_t) void {
+fn C47do_WP34S_Acos_1071temp(x: *const real_t, angle: *real_t, realContext: *realContext_t) void {
     const abx = mallocBigReal(1071);
     const z = mallocBigReal(1071);
     defer {
@@ -969,7 +969,7 @@ fn C47do_WP34S_Acos_1071temp(x: *align(1) const real_t, angle: *align(1) real_t,
 }
 
 // Cached wrapper for WP34S_Acos. See Cache1.call.
-fn WP34S_Acos_75_helper(x: *align(1) const real_t, angle: *align(1) real_t, realContext: *realContext_t) void {
+fn WP34S_Acos_75_helper(x: *const real_t, angle: *real_t, realContext: *realContext_t) void {
     if (comptime !cache_slots_enabled) {
         WP34S_Acos_75_compute(x, angle, realContext);
         return;
@@ -978,7 +978,7 @@ fn WP34S_Acos_75_helper(x: *align(1) const real_t, angle: *align(1) real_t, real
     slots.acos.call(WP34S_Acos_75_compute, x, angle, effDigits, realContext);
 }
 
-pub fn C47_WP34S_Acos(x: *align(1) const real_t, angle: *align(1) real_t, realContext: *realContext_t) void {
+pub fn C47_WP34S_Acos(x: *const real_t, angle: *real_t, realContext: *realContext_t) void {
     if (runtime.option_xfn_1000 and realContext.digits >= 1071) {
         C47do_WP34S_Acos_1071temp(x, angle, realContext);
     } else {

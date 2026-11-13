@@ -1007,12 +1007,12 @@ inline fn stringCopy(dest: [*c]u8, source: [*c]const u8) [*c]u8 {
     return frontier_char_string.stringCopy(dest, source);
 }
 // stringToReal34(source, destination) = decQuadFromString(destination, source, &ctxtReal34).
-extern fn decQuadFromString(r: *align(1) real34_t, str: [*c]const u8, ctx: *realContext_t) *align(1) real34_t;
-inline fn stringToReal34(str: [*c]const u8, dst: *align(1) real34_t) void {
+extern fn decQuadFromString(r: *real34_t, str: [*c]const u8, ctx: *realContext_t) *real34_t;
+inline fn stringToReal34(str: [*c]const u8, dst: *real34_t) void {
     _ = decQuadFromString(dst, str, &ctxtReal34);
 }
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
-extern fn getRegisterDataPointer(regist: calcRegister_t) [*c]u8;
+extern fn getRegisterDataPointer(regist: calcRegister_t) [*c]align(4) u8;
 extern fn getRegisterTag(regist: calcRegister_t) u32;
 extern fn setRegisterTag(regist: calcRegister_t, tag: u32) void;
 extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) bool;

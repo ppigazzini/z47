@@ -94,10 +94,10 @@ const stringToReal = owner.stringToReal;
 // reduceAngleToRange
 // ===========================================================================
 pub fn reduceAngleToRange(
-    angle: *align(1) real_t,
-    angle45: *(*align(1) const real_t),
-    angle90: *(*align(1) const real_t),
-    angle180: *(*align(1) const real_t),
+    angle: *real_t,
+    angle45: *(*const real_t),
+    angle90: *(*const real_t),
+    angle180: *(*const real_t),
     angularMode: *angularMode_t,
     savedContextDigits: i32,
     realContext: *realContext_t,
@@ -151,7 +151,7 @@ const radian_reduction_digits: u32 = if (runtime.wp34s_mod_small_buffers) 2139 e
 // reduction width, four times it names the quadrant, its upper half is folded,
 // and only the final division by eight rounds to the caller's context. The
 // working real comes off the heap; without one the angle becomes NaN.
-fn reduceRadianToFirstOctant(angle: *align(1) real_t, sinNeg: *bool, cosNeg: *bool, swap: *bool, realContext: *realContext_t) void {
+fn reduceRadianToFirstOctant(angle: *real_t, sinNeg: *bool, cosNeg: *bool, swap: *bool, realContext: *realContext_t) void {
     const work_buffer = mallocBigReal(radian_reduction_digits);
     defer freeBigReal(work_buffer);
     var c: realContext_t = realContext.*;
@@ -208,21 +208,21 @@ fn reduceRadianToFirstOctant(angle: *align(1) real_t, sinNeg: *bool, cosNeg: *bo
 // doWP34S_SinCosTanTaylor (static)
 // ===========================================================================
 fn doWP34S_SinCosTanTaylor(
-    angle: *align(1) real_t,
+    angle: *real_t,
     sinNeg: *bool,
     cosNeg: *bool,
     swap: *bool,
-    sinOut: ?*align(1) real_t,
-    cosOut: ?*align(1) real_t,
-    tanOut: ?*align(1) real_t,
+    sinOut: ?*real_t,
+    cosOut: ?*real_t,
+    tanOut: ?*real_t,
     angularMode_arg: angularMode_t,
     savedContextDigits: i32,
     realContext: *realContext_t,
 ) void {
     var angularMode = angularMode_arg;
-    var angle45: *align(1) const real_t = const_0();
-    var angle90: *align(1) const real_t = const_0();
-    var angle180: *align(1) const real_t = const_0();
+    var angle45: *const real_t = const_0();
+    var angle90: *const real_t = const_0();
+    var angle180: *const real_t = const_0();
 
     // sin(-x) = -sin(x), cos(-x) = cos(x)
     if (realIsNegative(angle)) {
@@ -330,7 +330,7 @@ fn doWP34S_SinCosTanTaylor(
 // ===========================================================================
 // C47_WP34S_Cvt2RadSinCosTan_75_helper (static)
 // ===========================================================================
-fn C47_WP34S_Cvt2RadSinCosTan_75_helper(an: *align(1) const real_t, angularMode: angularMode_t, sinOut: ?*align(1) real_t, cosOut: ?*align(1) real_t, tanOut: ?*align(1) real_t, realContext: *realContext_t) void {
+fn C47_WP34S_Cvt2RadSinCosTan_75_helper(an: *const real_t, angularMode: angularMode_t, sinOut: ?*real_t, cosOut: ?*real_t, tanOut: ?*real_t, realContext: *realContext_t) void {
     var sinNeg: bool = false;
     var cosNeg: bool = false;
     var swap: bool = false;
@@ -359,17 +359,17 @@ fn C47_WP34S_Cvt2RadSinCosTan_75_helper(an: *align(1) const real_t, angularMode:
 // doTaylorIterations (static)
 // ===========================================================================
 fn doTaylorIterations(
-    a: *align(1) const real_t,
-    angle: *align(1) real_t,
-    a2: *align(1) real_t,
-    t: *align(1) real_t,
-    j: *align(1) real_t,
-    z: *align(1) real_t,
-    sin: *align(1) real_t,
-    cos: *align(1) real_t,
-    sinOut: ?*align(1) real_t,
-    cosOut: ?*align(1) real_t,
-    epsilonOrCompare: *align(1) real_t,
+    a: *const real_t,
+    angle: *real_t,
+    a2: *real_t,
+    t: *real_t,
+    j: *real_t,
+    z: *real_t,
+    sin: *real_t,
+    cos: *real_t,
+    sinOut: ?*real_t,
+    cosOut: ?*real_t,
+    epsilonOrCompare: *real_t,
     doEpsilon: bool,
     epsilonDigits: i32,
     realContext: *realContext_t,
@@ -451,7 +451,7 @@ fn doTaylorIterations(
 // ===========================================================================
 // C47_WP34S_SinCosTanTaylor_temp75
 // ===========================================================================
-pub fn C47_WP34S_SinCosTanTaylor_temp75(a: *align(1) const real_t, swap: bool, sinOut: ?*align(1) real_t, cosOut: ?*align(1) real_t, tanOut: ?*align(1) real_t, realContext: *realContext_t) void {
+pub fn C47_WP34S_SinCosTanTaylor_temp75(a: *const real_t, swap: bool, sinOut: ?*real_t, cosOut: ?*real_t, tanOut: ?*real_t, realContext: *realContext_t) void {
     var doEpsilon: bool = false;
     var epsilonDigits: i32 = undefined;
 
@@ -533,7 +533,7 @@ pub fn C47_WP34S_SinCosTanTaylor_temp75(a: *align(1) const real_t, swap: bool, s
 // ===========================================================================
 // C47_WP34S_Cvt2RadSinCosTan_1071temp (static)
 // ===========================================================================
-fn C47_WP34S_Cvt2RadSinCosTan_1071_helper(an: *align(1) const real_t, angularMode: angularMode_t, sinOut: ?*align(1) real_t, cosOut: ?*align(1) real_t, tanOut: ?*align(1) real_t, realContext: *realContext_t) void {
+fn C47_WP34S_Cvt2RadSinCosTan_1071_helper(an: *const real_t, angularMode: angularMode_t, sinOut: ?*real_t, cosOut: ?*real_t, tanOut: ?*real_t, realContext: *realContext_t) void {
     var sinNeg: bool = false;
     var cosNeg: bool = false;
     var swap: bool = false;
@@ -562,7 +562,7 @@ fn C47_WP34S_Cvt2RadSinCosTan_1071_helper(an: *align(1) const real_t, angularMod
 // ===========================================================================
 // C47_WP34S_Cvt2RadSinCosTan
 // ===========================================================================
-pub fn C47_WP34S_Cvt2RadSinCosTan(an: *align(1) const real_t, angularMode: angularMode_t, sinOut: ?*align(1) real_t, cosOut: ?*align(1) real_t, tanOut: ?*align(1) real_t, realContext: *realContext_t) void {
+pub fn C47_WP34S_Cvt2RadSinCosTan(an: *const real_t, angularMode: angularMode_t, sinOut: ?*real_t, cosOut: ?*real_t, tanOut: ?*real_t, realContext: *realContext_t) void {
     // wp34s.c wraps the 1071-digit arm and the helper it calls in
     // `#if defined(OPTION_XFN_1000)`, so without the option the dispatcher is an
     // unconditional 75-digit call. defines.h #undef's OPTION_XFN_1000 for every
@@ -581,7 +581,7 @@ pub fn C47_WP34S_Cvt2RadSinCosTan(an: *align(1) const real_t, angularMode: angul
 // `if (!option) return` head is a comptime-known branch, so with the option off
 // the whole 1071-digit body is unreachable and dropped, which is what upstream's
 // `#if defined(OPTION_XFN_1000)` around this function achieves.
-fn C47_WP34S_SinCosTanTaylor_temp1071(a: *align(1) const real_t, swap: bool, sinOut: ?*align(1) real_t, cosOut: ?*align(1) real_t, tanOut: ?*align(1) real_t, realContext: *realContext_t) void {
+fn C47_WP34S_SinCosTanTaylor_temp1071(a: *const real_t, swap: bool, sinOut: ?*real_t, cosOut: ?*real_t, tanOut: ?*real_t, realContext: *realContext_t) void {
     if (comptime !runtime.option_xfn_1000) return;
     // The eight working reals come from the heap, not the frame: eight 1071-digit
     // decNumbers at 724 bytes is 5792 of this function's 5832-byte frame on an arm
@@ -645,7 +645,7 @@ fn C47_WP34S_SinCosTanTaylor_temp1071(a: *align(1) const real_t, swap: bool, sin
 // ===========================================================================
 // C47_WP34S_SinCosTanTaylor (dispatcher) - not in wp34s.h but defined in C
 // ===========================================================================
-pub fn C47_WP34S_SinCosTanTaylor(a: *align(1) const real_t, swap: bool, sinOut: ?*align(1) real_t, cosOut: ?*align(1) real_t, tanOut: ?*align(1) real_t, realContext: *realContext_t) void {
+pub fn C47_WP34S_SinCosTanTaylor(a: *const real_t, swap: bool, sinOut: ?*real_t, cosOut: ?*real_t, tanOut: ?*real_t, realContext: *realContext_t) void {
     if (runtime.option_xfn_1000 and realContext.digits >= 1071) {
         C47_WP34S_SinCosTanTaylor_temp1071(a, swap, sinOut, cosOut, tanOut, realContext);
     } else {

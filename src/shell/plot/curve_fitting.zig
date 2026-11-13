@@ -163,13 +163,13 @@ extern fn printf(fmt: [*:0]const u8, ...) c_int;
 extern fn fnStatR(RR: *real_t, SXY: *real_t, SX: *real_t, SY: *real_t) void;
 extern fn fnStatSMI(SMI: *real_t) void;
 
-extern fn realExp(rhs: *align(1) const real_t, res: *real_t, set: *realContext_t) void;
-extern fn realPower(base: *align(1) const real_t, exponent: *align(1) const real_t, result: *real_t, real_context: *realContext_t) void;
+extern fn realExp(rhs: *const real_t, res: *real_t, set: *realContext_t) void;
+extern fn realPower(base: *const real_t, exponent: *const real_t, result: *real_t, real_context: *realContext_t) void;
 extern fn xthRootReal(yy: *const real_t, xx: *const real_t, real_context: *realContext_t) void;
-extern fn WP34S_Ln(x: *align(1) const real_t, res: *real_t, realContext: *realContext_t) void;
+extern fn WP34S_Ln(x: *const real_t, res: *real_t, realContext: *realContext_t) void;
 
-extern fn realCompareGreaterThan(a: *align(1) const real_t, b: *align(1) const real_t) bool;
-extern fn realCompareLessEqual(a: *align(1) const real_t, b: *align(1) const real_t) bool;
+extern fn realCompareGreaterThan(a: *const real_t, b: *const real_t) bool;
+extern fn realCompareLessEqual(a: *const real_t, b: *const real_t) bool;
 
 // libm (the double-precision forecast path).
 /// b^e through the single-precision exp and log. Every caller narrows its result to
@@ -181,12 +181,12 @@ fn fastPowF(b: f64, e: f64) f64 {
 }
 
 // decNumber externs behind the real* macros.
-extern fn decNumberAdd(r: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
-extern fn decNumberSubtract(r: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
-extern fn decNumberMultiply(r: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
-extern fn decNumberDivide(r: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
-extern fn decNumberSquareRoot(r: *real_t, a: *align(1) const real_t, ctx: *realContext_t) *real_t;
-extern fn decNumberCopy(r: *real_t, src: *align(1) const real_t) *real_t;
+extern fn decNumberAdd(r: *real_t, a: *const real_t, b: *const real_t, ctx: *realContext_t) *real_t;
+extern fn decNumberSubtract(r: *real_t, a: *const real_t, b: *const real_t, ctx: *realContext_t) *real_t;
+extern fn decNumberMultiply(r: *real_t, a: *const real_t, b: *const real_t, ctx: *realContext_t) *real_t;
+extern fn decNumberDivide(r: *real_t, a: *const real_t, b: *const real_t, ctx: *realContext_t) *real_t;
+extern fn decNumberSquareRoot(r: *real_t, a: *const real_t, ctx: *realContext_t) *real_t;
+extern fn decNumberCopy(r: *real_t, src: *const real_t) *real_t;
 extern fn decNumberFromUInt32(r: *real_t, v: u32) *real_t;
 
 // ---------------------------------------------------------------------------
@@ -198,7 +198,7 @@ inline fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8) void {
 inline fn sigma(sum: usize) *real_t {
     return &statisticalSumsPointer.?[sum];
 }
-extern fn realCompareLessThan(a: *align(1) const real_t, b: *align(1) const real_t) bool;
+extern fn realCompareLessThan(a: *const real_t, b: *const real_t) bool;
 inline fn realIsSpecial(v: *const real_t) bool {
     return (v.bits & abi.DECSPECIAL) != 0;
 }
@@ -206,22 +206,22 @@ const realIsZero = abi.realIsZero;
 inline fn realIsPositive(v: *const real_t) bool {
     return (v.bits & abi.DECNEG) == 0;
 }
-inline fn realCopy(src: *align(1) const real_t, dst: *real_t) void {
+inline fn realCopy(src: *const real_t, dst: *real_t) void {
     _ = decNumberCopy(dst, src);
 }
-inline fn realAdd(a: *align(1) const real_t, b: *align(1) const real_t, res: *real_t, ctx: *realContext_t) void {
+inline fn realAdd(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberAdd(res, a, b, ctx);
 }
-inline fn realSubtract(a: *align(1) const real_t, b: *align(1) const real_t, res: *real_t, ctx: *realContext_t) void {
+inline fn realSubtract(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberSubtract(res, a, b, ctx);
 }
-inline fn realMultiply(a: *align(1) const real_t, b: *align(1) const real_t, res: *real_t, ctx: *realContext_t) void {
+inline fn realMultiply(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberMultiply(res, a, b, ctx);
 }
-inline fn realDivide(a: *align(1) const real_t, b: *align(1) const real_t, res: *real_t, ctx: *realContext_t) void {
+inline fn realDivide(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberDivide(res, a, b, ctx);
 }
-inline fn realSquareRoot(operand: *align(1) const real_t, res: *real_t, ctx: *realContext_t) void {
+inline fn realSquareRoot(operand: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberSquareRoot(res, operand, ctx);
 }
 inline fn realChangeSign(operand: *real_t) void {

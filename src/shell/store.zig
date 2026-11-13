@@ -206,7 +206,7 @@ extern var timeDisplayFormatDigits: u8;
 // Function externs
 // ---------------------------------------------------------------------------
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
-extern fn getRegisterDataPointer(regist: calcRegister_t) *anyopaque;
+extern fn getRegisterDataPointer(regist: calcRegister_t) *align(4) anyopaque;
 
 const c_moreInfoOnError = @extern(*const fn (m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) callconv(.c) void, .{ .name = "moreInfoOnError" });
 extern fn sprintf(buf: [*c]u8, fmt: [*:0]const u8, ...) c_int;
@@ -235,7 +235,7 @@ extern fn strcmp(a: [*c]const u8, b: [*c]const u8) c_int;
 extern fn __gmpz_clear(p: *mpz_struct) void;
 extern fn __gmpz_cmp_si(op: *const mpz_struct, c: c_long) c_int;
 extern fn decQuadZero(r: *real34_t) *real34_t;
-extern fn realToReal34(source: *const real_t, destination: *align(1) real34_t) void;
+extern fn realToReal34(source: *const real_t, destination: *real34_t) void;
 extern fn realSetZero(value: *real_t) void;
 extern fn saveLastX() bool;
 extern fn initMatrixRegister(regist: calcRegister_t, rows: u16, cols: u16, complex: bool) bool;
@@ -261,10 +261,10 @@ inline fn getStackTop() calcRegister_t {
 inline fn currentNumberOfLocalRegisters() u16 {
     return currentSubroutineLevelData.?.numberOfLocalRegisters;
 }
-inline fn real34Copy(src: *align(1) const real34_t, dst: *align(1) real34_t) void {
+inline fn real34Copy(src: *const real34_t, dst: *real34_t) void {
     dst.* = src.*;
 }
-inline fn real34SetZero(dst: *align(1) real34_t) void {
+inline fn real34SetZero(dst: *real34_t) void {
     var tmp: real34_t = undefined;
     _ = decQuadZero(&tmp);
     dst.* = tmp;
@@ -273,11 +273,11 @@ inline fn longIntegerCompareInt(op: *const mpz_struct, sint: i32) i32 {
     return __gmpz_cmp_si(op, sint);
 }
 // VARIABLE_REAL34_DATA / VARIABLE_IMAG34_DATA on a complex34_t element.
-inline fn variableReal34(elem: *align(1) complex34_t) *align(1) real34_t {
-    return @ptrCast(elem);
+inline fn variableReal34(elem: *complex34_t) *real34_t {
+    return &elem.real;
 }
-inline fn variableImag34(elem: *align(1) complex34_t) *align(1) real34_t {
-    return @ptrCast(@as([*]u8, @ptrCast(elem)) + 16);
+inline fn variableImag34(elem: *complex34_t) *real34_t {
+    return &elem.imag;
 }
 
 // ===========================================================================
@@ -392,7 +392,7 @@ fn storeElementComplex(matrix: *complex34Matrix_t) callconv(.c) bool {
     const i: i16 = frontier_matrix_editor.getIRegisterAsInt(true);
     const j: i16 = frontier_matrix_editor.getJRegisterAsInt(true);
     const idx: usize = @intCast(@as(i32, i) * @as(i32, @as(u16, matrix.header.matrixColumns)) + @as(i32, j));
-    const elem: *align(1) complex34_t = @ptrCast(&matrix.matrixElements.?[idx]);
+    const elem: *complex34_t = @ptrCast(&matrix.matrixElements.?[idx]);
 
     if (getRegisterDataType(REGISTER_X) == dtLongInteger) {
         frontier_register_value_conversions.convertLongIntegerRegisterToReal34(REGISTER_X, variableReal34(elem));
@@ -882,7 +882,7 @@ fn registerToElement(r: calcRegister_t, ix: u16) bool {
     const sourceType = getRegisterDataType(r);
     if (sourceType == dtReal34) {
         if (getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {
-            const halves: [*]align(1) real34_t = @ptrCast(&abi.registerComplex34MatrixElements(REGISTER_X)[idx]);
+            const halves: [*]real34_t = @ptrCast(&abi.registerComplex34MatrixElements(REGISTER_X)[idx]);
             real34Copy(abi.registerReal34(r), &halves[0]);
             real34SetZero(&halves[1]);
         } else {
@@ -919,7 +919,7 @@ fn registerToElement(r: calcRegister_t, ix: u16) bool {
     if (getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {
         // VARIABLE_REAL34_DATA / VARIABLE_IMAG34_DATA: the two real34 halves of
         // the complex element.
-        const halves: [*]align(1) real34_t = @ptrCast(&abi.registerComplex34MatrixElements(REGISTER_X)[idx]);
+        const halves: [*]real34_t = @ptrCast(&abi.registerComplex34MatrixElements(REGISTER_X)[idx]);
         realToReal34(&z.Real, &halves[0]);
         realToReal34(&z.Imag, &halves[1]);
     } else {

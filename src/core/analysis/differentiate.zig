@@ -266,7 +266,7 @@ extern var graphAccActive: bool;
 inline fn significantDigitsForEqnGraphs() i32 {
     return if (significantDigits == 0) 12 else significantDigits;
 }
-extern var tmpString: [*c]u8;
+extern var tmpString: [*c]align(4) u8;
 extern var errorMessage: [*c]u8;
 
 extern var ctxtReal4: realContext_t;
@@ -275,14 +275,14 @@ extern var ctxtReal39: realContext_t;
 // ---------------------------------------------------------------------------
 // Constants blob accessor: const_1
 // ---------------------------------------------------------------------------
-inline fn const_1() *align(1) const real_t {
+inline fn const_1() *const real_t {
     return consts.c4856();
 }
 
 // ---------------------------------------------------------------------------
 // decNumber primitives / real_t macro reproductions
 // ---------------------------------------------------------------------------
-extern fn decNumberCopy(res: *real_t, source: *align(1) const real_t) *real_t;
+extern fn decNumberCopy(res: *real_t, source: *const real_t) *real_t;
 extern fn decNumberFMA(res: *real_t, f1: *const real_t, f2: *const real_t, term: *const real_t, ctxt: *realContext_t) *real_t;
 extern fn decNumberMultiply(res: *real_t, op1: *const real_t, op2: *const real_t, ctxt: *realContext_t) *real_t;
 extern fn decNumberDivide(res: *real_t, op1: *const real_t, op2: *const real_t, ctxt: *realContext_t) *real_t;
@@ -293,9 +293,9 @@ extern fn decNumberToString(source: *const real_t, dest: [*c]u8) [*c]u8;
 extern fn decNumberCopyAbs(res: *real_t, source: *const real_t) *real_t;
 extern fn decNumberSubtract(res: *real_t, op1: *const real_t, op2: *const real_t, ctxt: *realContext_t) *real_t;
 extern fn decNumberAdd(res: *real_t, op1: *const real_t, op2: *const real_t, ctxt: *realContext_t) *real_t;
-extern fn realCompareAbsLessThan(number1: *align(1) const real_t, number2: *align(1) const real_t) bool;
+extern fn realCompareAbsLessThan(number1: *const real_t, number2: *const real_t) bool;
 
-inline fn realCopy(source: *align(1) const real_t, destination: *real_t) void {
+inline fn realCopy(source: *const real_t, destination: *real_t) void {
     _ = decNumberCopy(destination, source);
 }
 inline fn realFMA(f1: *const real_t, f2: *const real_t, term: *const real_t, res: *real_t, ctxt: *realContext_t) void {
@@ -338,20 +338,20 @@ const realIsZero = abi.realIsZero;
 extern fn realSetNaN(value: *real_t) void;
 
 // real34_t macros
-extern fn decimal128ToNumber(source: *align(1) const real34_t, destination: *real_t) *real_t;
-extern fn decimal128FromNumber(dest: *align(1) real34_t, src: *const real_t, ctxt: *realContext_t) *align(1) real34_t;
+extern fn decimal128ToNumber(source: *const real34_t, destination: *real_t) *real_t;
+extern fn decimal128FromNumber(dest: *real34_t, src: *const real_t, ctxt: *realContext_t) *real34_t;
 extern var ctxtReal34: realContext_t;
-inline fn real34ToReal(source: *align(1) const real34_t, destination: *real_t) void {
+inline fn real34ToReal(source: *const real34_t, destination: *real_t) void {
     _ = decimal128ToNumber(source, destination);
 }
-inline fn realToReal34(source: *const real_t, destination: *align(1) real34_t) void {
+inline fn realToReal34(source: *const real_t, destination: *real34_t) void {
     _ = decimal128FromNumber(destination, source, &ctxtReal34);
 }
 
 // ---------------------------------------------------------------------------
 // Register / stack / program externs
 // ---------------------------------------------------------------------------
-extern fn getRegisterDataPointer(reg: calcRegister_t) ?*anyopaque;
+extern fn getRegisterDataPointer(reg: calcRegister_t) ?*align(4) anyopaque;
 const registerReal34Ptr = abi.registerReal34;
 extern fn getRegisterDataType(reg: calcRegister_t) u32;
 extern fn getRegisterAsReal(reg: calcRegister_t, val: *real_t) bool;

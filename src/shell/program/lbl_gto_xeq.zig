@@ -345,7 +345,7 @@ extern fn allocateNamedVariableOnMiss(variableName: [*c]const u8) calcRegister_t
 
 extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) bool;
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
-extern fn getRegisterDataPointer(regist: calcRegister_t) *anyopaque;
+extern fn getRegisterDataPointer(regist: calcRegister_t) *align(4) anyopaque;
 extern fn setRegisterTag(regist: calcRegister_t, tag: u32) void;
 
 extern fn strlen(s: [*c]const u8) usize;
@@ -1188,7 +1188,7 @@ fn _putLiteral(literalAddress_arg: [*c]u8) void {
     }
 }
 
-inline fn real34Copy(src: *const real34_t, dst: *align(1) real34_t) void {
+inline fn real34Copy(src: *const real34_t, dst: *real34_t) void {
     dst.* = src.*;
 }
 const complex34Copy = abi.complex34Copy;

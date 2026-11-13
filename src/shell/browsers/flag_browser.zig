@@ -191,7 +191,7 @@ extern fn clearSystemFlag(flag: c_uint) void;
 
 extern fn getFreeRamMemory() u32;
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
-extern fn getRegisterDataPointer(regist: calcRegister_t) [*]u8;
+extern fn getRegisterDataPointer(regist: calcRegister_t) [*]align(4) u8;
 
 extern fn sprintf(buf: [*c]u8, fmt: [*:0]const u8, ...) c_int;
 extern fn strcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8;
@@ -199,11 +199,11 @@ extern fn strcat(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn strlen(s: [*c]const u8) usize;
 
 // decQuad (real34) helpers (the real34 macros).
-extern fn decQuadIsInfinite(r: *align(1) const real34_t) u32;
-extern fn decQuadNextPlus(res: *real34_t, operand: *align(1) const real34_t, ctx: *realContext_t) *real34_t;
-extern fn decQuadNextMinus(res: *real34_t, operand: *align(1) const real34_t, ctx: *realContext_t) *real34_t;
-extern fn decQuadSubtract(res: *real34_t, op1: *align(1) const real34_t, op2: *align(1) const real34_t, ctx: *realContext_t) *real34_t;
-extern fn decQuadGetExponent(src: *align(1) const real34_t) i32;
+extern fn decQuadIsInfinite(r: *const real34_t) u32;
+extern fn decQuadNextPlus(res: *real34_t, operand: *const real34_t, ctx: *realContext_t) *real34_t;
+extern fn decQuadNextMinus(res: *real34_t, operand: *const real34_t, ctx: *realContext_t) *real34_t;
+extern fn decQuadSubtract(res: *real34_t, op1: *const real34_t, op2: *const real34_t, ctx: *realContext_t) *real34_t;
+extern fn decQuadGetExponent(src: *const real34_t) i32;
 
 // lcd_fill_rect — DMCP-ROM fixed-address call on firmware; real symbol on host.
 const LcdFillRectFn = *const fn (x: u32, y: u32, dx: u32, dy: u32, val: c_int) callconv(.c) void;
@@ -221,19 +221,19 @@ inline fn lcdFillRect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void {
 // Inline wrappers (the C macros)
 // ---------------------------------------------------------------------------
 const reg34 = abi.registerReal34;
-inline fn real34IsInfinite(src: *align(1) const real34_t) bool {
+inline fn real34IsInfinite(src: *const real34_t) bool {
     return decQuadIsInfinite(src) != 0;
 }
-inline fn real34NextPlus(operand: *align(1) const real34_t, res: *real34_t) void {
+inline fn real34NextPlus(operand: *const real34_t, res: *real34_t) void {
     _ = decQuadNextPlus(res, operand, &ctxtReal34);
 }
-inline fn real34NextMinus(operand: *align(1) const real34_t, res: *real34_t) void {
+inline fn real34NextMinus(operand: *const real34_t, res: *real34_t) void {
     _ = decQuadNextMinus(res, operand, &ctxtReal34);
 }
-inline fn real34Subtract(op1: *align(1) const real34_t, op2: *align(1) const real34_t, res: *real34_t) void {
+inline fn real34Subtract(op1: *const real34_t, op2: *const real34_t, res: *real34_t) void {
     _ = decQuadSubtract(res, op1, op2, &ctxtReal34);
 }
-inline fn real34GetExponent(src: *align(1) const real34_t) i32 {
+inline fn real34GetExponent(src: *const real34_t) i32 {
     return decQuadGetExponent(src);
 }
 inline fn minI(a: i16, b: i16) i16 {

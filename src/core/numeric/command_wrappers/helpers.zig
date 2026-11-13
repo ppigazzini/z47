@@ -25,15 +25,13 @@ const SCREEN_WIDTH: i16 = 400; // defines.h:1504
 // ---------------------------------------------------------------------------
 // decNumber / decQuad entry points. The upstream realXxx/real34Xxx names are
 // macros (src/c47/realType.h), so the linkable decNumber symbols are used.
-// real_t source pointers are declared align(1) because constant accessors can
-// hand out pointers into the byte-packed generated `constants` blob.
 // ---------------------------------------------------------------------------
 extern fn decNumberFromInt32(result: *real_t, source: i32) *real_t;
-extern fn decNumberNextToward(result: *real_t, x: *align(1) const real_t, y: *align(1) const real_t, set: *realContext_t) *real_t;
-extern fn decNumberPower(result: *real_t, lhs: *align(1) const real_t, rhs: *align(1) const real_t, set: *realContext_t) *real_t;
-extern fn decNumberAdd(result: *real_t, lhs: *align(1) const real_t, rhs: *align(1) const real_t, set: *realContext_t) *real_t;
+extern fn decNumberNextToward(result: *real_t, x: *const real_t, y: *const real_t, set: *realContext_t) *real_t;
+extern fn decNumberPower(result: *real_t, lhs: *const real_t, rhs: *const real_t, set: *realContext_t) *real_t;
+extern fn decNumberAdd(result: *real_t, lhs: *const real_t, rhs: *const real_t, set: *realContext_t) *real_t;
 // decQuadFromNumber is a macro over decimal128FromNumber (dep/decNumberICU/decQuad.h).
-extern fn decimal128FromNumber(result: *real34_t, source: *align(1) const real_t, set: *realContext_t) *real34_t;
+extern fn decimal128FromNumber(result: *real34_t, source: *const real_t, set: *realContext_t) *real34_t;
 extern fn decQuadToIntegralValue(result: *real34_t, source: *const real34_t, set: *realContext_t, mode: c_int) *real34_t;
 extern fn decQuadIsInfinite(value: *const real34_t) u32;
 extern fn decQuadGetExponent(value: *const real34_t) i32;
@@ -62,8 +60,7 @@ extern var tmpString: [*c]u8;
 // The generated constants blob (constantPointers.h / constantPointers.c) backs
 // the accessors whose C implementation returned constantPointers.h macros in
 // product builds. Offsets are byte offsets into `extern const uint8_t
-// constants[]` and must match the generated constantPointers.h. align(1) is
-// mandatory: the blob is a byte array (macOS alignment trap otherwise).
+// constants[]` and must match the generated constantPointers.h.
 // ---------------------------------------------------------------------------
 const abi = @import("abi");
 const consts = abi.constants;
@@ -111,155 +108,155 @@ const const_2e6_value = makeConstant(6, 0, 2);
 const const_plus_infinity_value = makeConstant(0, 0x40, 0);
 const const_minus_infinity_value = makeConstant(0, 0xc0, 0);
 
-pub export fn z47_math_wrappers_const_0() linksection(runtime.code_section) callconv(.c) *align(1) const real_t {
+pub export fn z47_math_wrappers_const_0() linksection(runtime.code_section) callconv(.c) *const real_t {
     return &const_0_value;
 }
 
-pub export fn z47_math_wrappers_const_1() linksection(runtime.code_section) callconv(.c) *align(1) const real_t {
+pub export fn z47_math_wrappers_const_1() linksection(runtime.code_section) callconv(.c) *const real_t {
     return &const_1_value;
 }
 
-pub export fn z47_math_wrappers_const_minus_1() linksection(runtime.code_section) callconv(.c) *align(1) const real_t {
+pub export fn z47_math_wrappers_const_minus_1() linksection(runtime.code_section) callconv(.c) *const real_t {
     return &const_minus_1_value;
 }
 
-pub export fn z47_math_wrappers_const_2() linksection(runtime.code_section) callconv(.c) *align(1) const real_t {
+pub export fn z47_math_wrappers_const_2() linksection(runtime.code_section) callconv(.c) *const real_t {
     return constantPointer(offset_const_2);
 }
 
-pub export fn z47_math_wrappers_const_3() linksection(runtime.code_section) callconv(.c) *align(1) const real_t {
+pub export fn z47_math_wrappers_const_3() linksection(runtime.code_section) callconv(.c) *const real_t {
     return constantPointer(offset_const_3);
 }
 
-pub export fn z47_math_wrappers_const_5() linksection(runtime.code_section) callconv(.c) *align(1) const real_t {
+pub export fn z47_math_wrappers_const_5() linksection(runtime.code_section) callconv(.c) *const real_t {
     return constantPointer(offset_const_5);
 }
 
-pub export fn z47_math_wrappers_const_1on2() linksection(runtime.code_section) callconv(.c) *align(1) const real_t {
+pub export fn z47_math_wrappers_const_1on2() linksection(runtime.code_section) callconv(.c) *const real_t {
     return constantPointer(offset_const_1on2);
 }
 
-pub export fn z47_math_wrappers_const_1on3() linksection(runtime.code_section) callconv(.c) *align(1) const real_t {
+pub export fn z47_math_wrappers_const_1on3() linksection(runtime.code_section) callconv(.c) *const real_t {
     return constantPointer(offset_const39_1on3);
 }
 
-pub export fn z47_math_wrappers_const_2e6() linksection(runtime.code_section) callconv(.c) *align(1) const real_t {
+pub export fn z47_math_wrappers_const_2e6() linksection(runtime.code_section) callconv(.c) *const real_t {
     return &const_2e6_value;
 }
 
-pub export fn z47_math_wrappers_const_1oneE() linksection(runtime.code_section) callconv(.c) *align(1) const real_t {
+pub export fn z47_math_wrappers_const_1oneE() linksection(runtime.code_section) callconv(.c) *const real_t {
     return constantPointer(offset_const39_1oneE);
 }
 
-pub export fn z47_math_wrappers_const_90() linksection(runtime.code_section) callconv(.c) *align(1) const real_t {
+pub export fn z47_math_wrappers_const_90() linksection(runtime.code_section) callconv(.c) *const real_t {
     return constantPointer(offset_const_90);
 }
 
-pub export fn z47_math_wrappers_const_100() linksection(runtime.code_section) callconv(.c) *align(1) const real_t {
+pub export fn z47_math_wrappers_const_100() linksection(runtime.code_section) callconv(.c) *const real_t {
     return constantPointer(offset_const_100);
 }
 
-pub export fn z47_math_wrappers_const_180() linksection(runtime.code_section) callconv(.c) *align(1) const real_t {
+pub export fn z47_math_wrappers_const_180() linksection(runtime.code_section) callconv(.c) *const real_t {
     return constantPointer(offset_const_180);
 }
 
-pub export fn z47_math_wrappers_const_ln2() linksection(runtime.code_section) callconv(.c) *align(1) const real_t {
+pub export fn z47_math_wrappers_const_ln2() linksection(runtime.code_section) callconv(.c) *const real_t {
     return constantPointer(offset_const39_ln2);
 }
 
-pub export fn z47_math_wrappers_const_ln10() linksection(runtime.code_section) callconv(.c) *align(1) const real_t {
+pub export fn z47_math_wrappers_const_ln10() linksection(runtime.code_section) callconv(.c) *const real_t {
     return constantPointer(offset_const39_ln10);
 }
 
-pub export fn z47_math_wrappers_const_phi() linksection(runtime.code_section) callconv(.c) *align(1) const real_t {
+pub export fn z47_math_wrappers_const_phi() linksection(runtime.code_section) callconv(.c) *const real_t {
     return constantPointer(offset_const39_PHI);
 }
 
-pub export fn z47_math_wrappers_const_pi() linksection(runtime.code_section) callconv(.c) *align(1) const real_t {
+pub export fn z47_math_wrappers_const_pi() linksection(runtime.code_section) callconv(.c) *const real_t {
     return constantPointer(offset_const39_pi);
 }
 
-pub export fn z47_math_wrappers_const_piOn4() linksection(runtime.code_section) callconv(.c) *align(1) const real_t {
+pub export fn z47_math_wrappers_const_piOn4() linksection(runtime.code_section) callconv(.c) *const real_t {
     return constantPointer(offset_const39_piOn4);
 }
 
-pub export fn z47_math_wrappers_const_piOn2() linksection(runtime.code_section) callconv(.c) *align(1) const real_t {
+pub export fn z47_math_wrappers_const_piOn2() linksection(runtime.code_section) callconv(.c) *const real_t {
     return constantPointer(offset_const39_piOn2);
 }
 
-pub export fn z47_math_wrappers_const_3piOn4() linksection(runtime.code_section) callconv(.c) *align(1) const real_t {
+pub export fn z47_math_wrappers_const_3piOn4() linksection(runtime.code_section) callconv(.c) *const real_t {
     return constantPointer(offset_const39_3piOn4);
 }
 
-pub export fn z47_math_wrappers_const_3piOn2() linksection(runtime.code_section) callconv(.c) *align(1) const real_t {
+pub export fn z47_math_wrappers_const_3piOn2() linksection(runtime.code_section) callconv(.c) *const real_t {
     return constantPointer(offset_const39_3piOn2);
 }
 
-pub export fn z47_math_wrappers_const75_pi() linksection(runtime.code_section) callconv(.c) *align(1) const real_t {
+pub export fn z47_math_wrappers_const75_pi() linksection(runtime.code_section) callconv(.c) *const real_t {
     return constantPointer(offset_const75_pi);
 }
 
-pub export fn z47_math_wrappers_const75_piOn2() linksection(runtime.code_section) callconv(.c) *align(1) const real_t {
+pub export fn z47_math_wrappers_const75_piOn2() linksection(runtime.code_section) callconv(.c) *const real_t {
     return constantPointer(offset_const75_piOn2);
 }
 
-pub export fn z47_math_wrappers_const75_piOn4() linksection(runtime.code_section) callconv(.c) *align(1) const real_t {
+pub export fn z47_math_wrappers_const75_piOn4() linksection(runtime.code_section) callconv(.c) *const real_t {
     return constantPointer(offset_const75_piOn4);
 }
 
-pub export fn z47_math_wrappers_const_3600() linksection(runtime.code_section) callconv(.c) *align(1) const real_t {
+pub export fn z47_math_wrappers_const_3600() linksection(runtime.code_section) callconv(.c) *const real_t {
     return constantPointer(offset_const_3600);
 }
 
-pub export fn z47_math_wrappers_const_4() linksection(runtime.code_section) callconv(.c) *align(1) const real_t {
+pub export fn z47_math_wrappers_const_4() linksection(runtime.code_section) callconv(.c) *const real_t {
     return consts.const_4();
 }
 
-pub export fn z47_math_wrappers_const_6() linksection(runtime.code_section) callconv(.c) *align(1) const real_t {
+pub export fn z47_math_wrappers_const_6() linksection(runtime.code_section) callconv(.c) *const real_t {
     return consts.const_6();
 }
 
-pub export fn z47_math_wrappers_const_1on10() linksection(runtime.code_section) callconv(.c) *align(1) const real_t {
+pub export fn z47_math_wrappers_const_1on10() linksection(runtime.code_section) callconv(.c) *const real_t {
     return consts.const_1on10();
 }
 
-pub export fn z47_math_wrappers_const_1e_6() linksection(runtime.code_section) callconv(.c) *align(1) const real_t {
+pub export fn z47_math_wrappers_const_1e_6() linksection(runtime.code_section) callconv(.c) *const real_t {
     return consts.const_1e_6();
 }
 
-pub export fn z47_math_wrappers_const_minus_4() linksection(runtime.code_section) callconv(.c) *align(1) const real_t {
+pub export fn z47_math_wrappers_const_minus_4() linksection(runtime.code_section) callconv(.c) *const real_t {
     return consts.const__4();
 }
 
-pub export fn z47_math_wrappers_const75_ln2() linksection(runtime.code_section) callconv(.c) *align(1) const real_t {
+pub export fn z47_math_wrappers_const75_ln2() linksection(runtime.code_section) callconv(.c) *const real_t {
     return consts.const75_ln2();
 }
 
-pub export fn z47_math_wrappers_const75_ln10() linksection(runtime.code_section) callconv(.c) *align(1) const real_t {
+pub export fn z47_math_wrappers_const75_ln10() linksection(runtime.code_section) callconv(.c) *const real_t {
     return consts.const75_ln10();
 }
 
-pub export fn z47_math_wrappers_const75_3piOn4() linksection(runtime.code_section) callconv(.c) *align(1) const real_t {
+pub export fn z47_math_wrappers_const75_3piOn4() linksection(runtime.code_section) callconv(.c) *const real_t {
     return consts.const75_3piOn4();
 }
 
-pub export fn z47_math_wrappers_const34_0() linksection(runtime.code_section) callconv(.c) *align(1) const real34_t {
+pub export fn z47_math_wrappers_const34_0() linksection(runtime.code_section) callconv(.c) *const real34_t {
     return consts.const34_0();
 }
 
-pub export fn z47_math_wrappers_const34_1() linksection(runtime.code_section) callconv(.c) *align(1) const real34_t {
+pub export fn z47_math_wrappers_const34_1() linksection(runtime.code_section) callconv(.c) *const real34_t {
     return consts.const34_1();
 }
 
-pub export fn z47_math_wrappers_const34_3600() linksection(runtime.code_section) callconv(.c) *align(1) const real34_t {
+pub export fn z47_math_wrappers_const34_3600() linksection(runtime.code_section) callconv(.c) *const real34_t {
     return consts.const34_3600();
 }
 
-pub export fn z47_math_wrappers_const_plus_infinity() linksection(runtime.code_section) callconv(.c) *align(1) const real_t {
+pub export fn z47_math_wrappers_const_plus_infinity() linksection(runtime.code_section) callconv(.c) *const real_t {
     return &const_plus_infinity_value;
 }
 
-pub export fn z47_math_wrappers_const_minus_infinity() linksection(runtime.code_section) callconv(.c) *align(1) const real_t {
+pub export fn z47_math_wrappers_const_minus_infinity() linksection(runtime.code_section) callconv(.c) *const real_t {
     return &const_minus_infinity_value;
 }
 
@@ -277,15 +274,15 @@ pub export fn int32ToReal(source: i32, destination: *real_t) linksection(runtime
     _ = decNumberFromInt32(destination, source);
 }
 
-pub export fn realNextToward(x: *align(1) const real_t, y: *align(1) const real_t, result: *real_t, real_context: *realContext_t) linksection(runtime.code_section) callconv(.c) void {
+pub export fn realNextToward(x: *const real_t, y: *const real_t, result: *real_t, real_context: *realContext_t) linksection(runtime.code_section) callconv(.c) void {
     _ = decNumberNextToward(result, x, y, real_context);
 }
 
-pub export fn realPower(base: *align(1) const real_t, exponent: *align(1) const real_t, result: *real_t, real_context: *realContext_t) linksection(runtime.code_section) callconv(.c) void {
+pub export fn realPower(base: *const real_t, exponent: *const real_t, result: *real_t, real_context: *realContext_t) linksection(runtime.code_section) callconv(.c) void {
     _ = decNumberPower(result, base, exponent, real_context);
 }
 
-pub export fn realToReal34(source: *align(1) const real_t, destination: *real34_t) linksection(runtime.code_section) callconv(.c) void {
+pub export fn realToReal34(source: *const real_t, destination: *real34_t) linksection(runtime.code_section) callconv(.c) void {
     _ = decimal128FromNumber(destination, source, &runtime.ctxtReal34);
 }
 
@@ -328,15 +325,15 @@ pub export fn complexMagnitude(a: *const cplx_t, c: *real_t, real_context: *real
 }
 
 // real34ChangeSign and real34Copy are realType.h macros over the 16 decQuad bytes.
-inline fn real34ChangeSign(value: *align(1) real34_t) void {
+inline fn real34ChangeSign(value: *real34_t) void {
     value.bytes[15] ^= 0x80;
 }
 
-inline fn real34Copy(source: *align(1) const real34_t, destination: *align(1) real34_t) void {
+inline fn real34Copy(source: *const real34_t, destination: *real34_t) void {
     destination.bytes = source.bytes;
 }
 
-fn conjugateComponent(component: *align(1) real34_t) linksection(runtime.code_section) void {
+fn conjugateComponent(component: *real34_t) linksection(runtime.code_section) void {
     real34ChangeSign(component);
     if (runtime.real34IsZero(component) and !runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
         component.bytes[15] &= 0x7f;

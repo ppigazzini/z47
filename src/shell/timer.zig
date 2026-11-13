@@ -173,7 +173,7 @@ const const34_1 = consts.q16312();
 extern fn liftStack() void;
 
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
-extern fn getRegisterDataPointer(regist: calcRegister_t) *anyopaque;
+extern fn getRegisterDataPointer(regist: calcRegister_t) *align(4) anyopaque;
 
 extern fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void;
 
@@ -199,13 +199,13 @@ extern fn __gmpz_add_ui(r: *mpz_struct, op: *const mpz_struct, v: c_ulong) void;
 
 // decNumber / decQuad behind the real* macros.
 extern fn decNumberFromUInt32(r: *real_t, v: u32) *real_t;
-extern fn decNumberMultiply(r: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
-extern fn decNumberDivide(r: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
-extern fn decNumberGetBCD(src: *align(1) const real_t, bcd: [*c]u8) *real_t;
+extern fn decNumberMultiply(r: *real_t, a: *const real_t, b: *const real_t, ctx: *realContext_t) *real_t;
+extern fn decNumberDivide(r: *real_t, a: *const real_t, b: *const real_t, ctx: *realContext_t) *real_t;
+extern fn decNumberGetBCD(src: *const real_t, bcd: [*c]u8) *real_t;
 // decQuadToNumber/decQuadFromNumber are macros over decimal128ToNumber/From.
-extern fn decimal128ToNumber(src: *align(1) const real34_t, dst: *real_t) *real_t;
-extern fn decimal128FromNumber(dst: *real34_t, src: *align(1) const real_t, ctx: *realContext_t) *real34_t;
-extern fn decQuadAdd(r: *real34_t, a: *align(1) const real34_t, b: *align(1) const real34_t, ctx: *realContext_t) *real34_t;
+extern fn decimal128ToNumber(src: *const real34_t, dst: *real_t) *real_t;
+extern fn decimal128FromNumber(dst: *real34_t, src: *const real_t, ctx: *realContext_t) *real34_t;
+extern fn decQuadAdd(r: *real34_t, a: *const real34_t, b: *const real34_t, ctx: *realContext_t) *real34_t;
 
 // libc.
 
@@ -249,22 +249,22 @@ const reg34 = abi.registerReal34;
 inline fn uInt32ToReal(source: u32, destination: *real_t) void {
     _ = decNumberFromUInt32(destination, source);
 }
-inline fn realMultiply(a: *align(1) const real_t, b: *align(1) const real_t, res: *real_t, ctx: *realContext_t) void {
+inline fn realMultiply(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberMultiply(res, a, b, ctx);
 }
-inline fn realDivide(a: *align(1) const real_t, b: *align(1) const real_t, res: *real_t, ctx: *realContext_t) void {
+inline fn realDivide(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberDivide(res, a, b, ctx);
 }
-inline fn realGetCoefficient(source: *align(1) const real_t, destination: [*c]u8) void {
+inline fn realGetCoefficient(source: *const real_t, destination: [*c]u8) void {
     _ = decNumberGetBCD(source, destination);
 }
-inline fn real34ToReal(source: *align(1) const real34_t, destination: *real_t) void {
+inline fn real34ToReal(source: *const real34_t, destination: *real_t) void {
     _ = decimal128ToNumber(source, destination);
 }
-inline fn realToReal34(source: *align(1) const real_t, destination: *real34_t) void {
+inline fn realToReal34(source: *const real_t, destination: *real34_t) void {
     _ = decimal128FromNumber(destination, source, &ctxtReal34);
 }
-inline fn real34Add(o1: *align(1) const real34_t, o2: *align(1) const real34_t, res: *real34_t) void {
+inline fn real34Add(o1: *const real34_t, o2: *const real34_t, res: *real34_t) void {
     _ = decQuadAdd(res, o1, o2, &ctxtReal34);
 }
 inline fn longIntegerInit(op: *mpz_struct) void {

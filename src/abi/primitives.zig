@@ -26,8 +26,9 @@ pub const Real = extern struct {
     lsu: [DECNUMUNITS]u16,
 };
 
-/// decQuad-backed 34-digit real (16 raw bytes).
-pub const Real34 = extern struct { bytes: [16]u8 };
+/// decQuad-backed 34-digit real (16 raw bytes), aligned as C aligns `decQuad`:
+/// its widest member is a `uint32_t` word, so its alignment is 4.
+pub const Real34 = extern struct { bytes: [16]u8 align(4) };
 
 /// decContext.
 pub const RealContext = extern struct {

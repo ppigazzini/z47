@@ -198,7 +198,7 @@ extern var timeDisplayFormatDigits: u8;
 // Function externs
 // ---------------------------------------------------------------------------
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
-extern fn getRegisterDataPointer(regist: calcRegister_t) *anyopaque;
+extern fn getRegisterDataPointer(regist: calcRegister_t) *align(4) anyopaque;
 
 const c_moreInfoOnError = @extern(*const fn (m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) callconv(.c) void, .{ .name = "moreInfoOnError" });
 extern fn sprintf(buf: [*c]u8, fmt: [*:0]const u8, ...) c_int;
@@ -251,7 +251,7 @@ inline fn currentNumberOfLocalRegisters() u16 {
 const REAL34_SIZE_IN_BLOCKS: u16 = 4;
 const COMPLEX34_SIZE_IN_BLOCKS: u16 = 8;
 
-inline fn real34Copy(src: *align(1) const real34_t, dst: *align(1) real34_t) void {
+inline fn real34Copy(src: *const real34_t, dst: *real34_t) void {
     dst.* = src.*;
 }
 const complex34Copy = abi.complex34Copy;

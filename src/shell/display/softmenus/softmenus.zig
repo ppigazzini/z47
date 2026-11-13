@@ -825,7 +825,7 @@ inline fn stringCopy(dst: [*c]u8, src: [*c]const u8) [*c]u8 {
 }
 extern fn moreInfoOnError(m1: [*c]const u8, m2: [*c]const u8, m3: [*c]const u8, m4: [*c]const u8) void;
 extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) bool;
-extern fn getRegisterDataPointer(regist: calcRegister_t) [*c]u8;
+extern fn getRegisterDataPointer(regist: calcRegister_t) [*c]align(4) u8;
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
 inline fn getRegisterAngularMode(reg: calcRegister_t) c_int {
     return @intCast(getRegisterTag(reg) & amAngleMask);

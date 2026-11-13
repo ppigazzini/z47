@@ -93,7 +93,7 @@ blanket quietening. They live in `sanitizer_exclusions` and
 
 | exclusion | scope | why |
 | --- | --- | --- |
-| `-fno-sanitize=alignment` | all C | `abi.Real34` is `extern struct { bytes: [16]u8 }`, alignment 1, mirroring a C `decQuad` whose `_Alignof` is 4. Real defect; the fix means raising the type's alignment and propagating it through accessors that hand out `*align(1)` pointers, and a few thousand sites reference that spelling -- count them with `grep -ro '\*align(1)' src \| wc -l` |
+| `-fno-sanitize=alignment` | all C | upstream's testSuite reads a short integer as `*REGISTER_SHORT_INTEGER_DATA(r)`, a `uint64_t` at a pool block address that the C47 allocator aligns to 4, not 8. The access is upstream's own C; the fix is an upstream report. `abi.Real34` carries `decQuad`'s alignment of 4 (`zig build abi-layout-parity` asserts it), so decNumber's `decQuad` reads are aligned |
 | `-fno-sanitize=shift` | vendored `upstream/dep/` only | decNumber's own `n = n<<1` signed-shift overflow in `decExpOp`. Third-party code z47 must not diverge from; the fix is an upstream report |
 
 Removing either should turn a lane red with a genuine finding. If it does not,

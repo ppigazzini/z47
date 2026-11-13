@@ -273,7 +273,7 @@ pub fn reportNamedVariableTableFull(capacity: u16) void {
     error_owned.reportNamedVariableTableFull(capacity);
 }
 
-pub fn toPcMemPtr(mem_ptr: u16) ?*anyopaque {
+pub fn toPcMemPtr(mem_ptr: u16) ?*align(4) anyopaque {
     return tables_owned.toPcMemPtr(mem_ptr);
 }
 

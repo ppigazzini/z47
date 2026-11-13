@@ -443,7 +443,7 @@ extern fn getSystemFlag(sf: c_int) bool_t;
 extern fn setSystemFlag(sf: c_uint) void;
 extern fn clearSystemFlag(sf: c_uint) void;
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
-extern fn getRegisterDataPointer(regist: calcRegister_t) [*c]u8;
+extern fn getRegisterDataPointer(regist: calcRegister_t) [*c]align(4) u8;
 extern fn getRegisterTag(regist: calcRegister_t) u32;
 extern fn setRegisterTag(regist: calcRegister_t, tag: u32) void;
 extern fn registerFMAOutputString(regist: calcRegister_t, prefix: [*c]const u8, displayString: [*c]u8) bool_t;
@@ -473,21 +473,21 @@ extern fn memmove(d: ?*anyopaque, s: ?*const anyopaque, n: usize) ?*anyopaque;
 // real34 / real arithmetic = decQuad/decNumber (libdecnumber).
 extern fn decimal128ToNumber(d: *const real34_t, dn: *real_t) *real_t;
 extern fn decimal128FromNumber(d: *real34_t, dn: *const real_t, set: *realContext_t) *real34_t;
-extern fn decQuadCopy(r: *align(1) real34_t, a: *align(1) const real34_t) *align(1) real34_t;
-extern fn decQuadDigits(d: *align(1) const real34_t) u32;
-extern fn decQuadGetExponent(d: *align(1) const real34_t) i32;
-extern fn decQuadGetCoefficient(d: *align(1) const real34_t, bcd: [*c]u8) i32;
-extern fn decQuadZero(r: *align(1) real34_t) *align(1) real34_t;
-extern fn decQuadReduce(r: *align(1) real34_t, a: *align(1) const real34_t, ctx: *realContext_t) *align(1) real34_t;
-extern fn decQuadIsZero(d: *align(1) const real34_t) u32;
-extern fn decQuadIsInfinite(d: *align(1) const real34_t) u32;
-extern fn decQuadIsNaN(d: *align(1) const real34_t) u32;
-extern fn decQuadToString(d: *align(1) const real34_t, str: [*c]u8) [*c]u8;
-extern fn decQuadFromString(r: *align(1) real34_t, str: [*c]const u8, ctx: *realContext_t) *align(1) real34_t;
-extern fn decQuadRemainder(r: *align(1) real34_t, a: *align(1) const real34_t, b: *align(1) const real34_t, ctx: *realContext_t) *align(1) real34_t;
-extern fn decQuadDivide(r: *align(1) real34_t, a: *align(1) const real34_t, b: *align(1) const real34_t, ctx: *realContext_t) *align(1) real34_t;
-extern fn decQuadToIntegralValue(r: *align(1) real34_t, a: *align(1) const real34_t, ctx: *realContext_t, round: c_int) *align(1) real34_t;
-extern fn decQuadToUInt32(d: *align(1) const real34_t, ctx: *realContext_t, round: c_int) u32;
+extern fn decQuadCopy(r: *real34_t, a: *const real34_t) *real34_t;
+extern fn decQuadDigits(d: *const real34_t) u32;
+extern fn decQuadGetExponent(d: *const real34_t) i32;
+extern fn decQuadGetCoefficient(d: *const real34_t, bcd: [*c]u8) i32;
+extern fn decQuadZero(r: *real34_t) *real34_t;
+extern fn decQuadReduce(r: *real34_t, a: *const real34_t, ctx: *realContext_t) *real34_t;
+extern fn decQuadIsZero(d: *const real34_t) u32;
+extern fn decQuadIsInfinite(d: *const real34_t) u32;
+extern fn decQuadIsNaN(d: *const real34_t) u32;
+extern fn decQuadToString(d: *const real34_t, str: [*c]u8) [*c]u8;
+extern fn decQuadFromString(r: *real34_t, str: [*c]const u8, ctx: *realContext_t) *real34_t;
+extern fn decQuadRemainder(r: *real34_t, a: *const real34_t, b: *const real34_t, ctx: *realContext_t) *real34_t;
+extern fn decQuadDivide(r: *real34_t, a: *const real34_t, b: *const real34_t, ctx: *realContext_t) *real34_t;
+extern fn decQuadToIntegralValue(r: *real34_t, a: *const real34_t, ctx: *realContext_t, round: c_int) *real34_t;
+extern fn decQuadToUInt32(d: *const real34_t, ctx: *realContext_t, round: c_int) u32;
 
 // real (decNumber) helpers used by display.c
 extern fn real34IsAnInteger(x: *const real34_t) bool_t;
@@ -731,12 +731,11 @@ const regMatrixHeader = abi.registerMatrixHeader;
 const SIZEOF_STR_LG_INT_HEADER: usize = 4; // sizeof(strLgIntHeader_t)
 const regString = abi.registerString;
 // VARIABLE_REAL34_DATA(a)=((real34_t*)(a)); VARIABLE_IMAG34_DATA(a)=((real34_t*)(a)+1)
-inline fn varReal34(c: *align(1) const complex34_t) *align(1) const real34_t {
-    return @ptrCast(c);
+inline fn varReal34(c: *const complex34_t) *const real34_t {
+    return &c.real;
 }
-inline fn varImag34(c: *align(1) const complex34_t) *align(1) const real34_t {
-    const p: [*]align(1) const real34_t = @ptrCast(c);
-    return &p[1];
+inline fn varImag34(c: *const complex34_t) *const real34_t {
+    return &c.imag;
 }
 inline fn getRegisterAngularMode(reg: calcRegister_t) angularMode_t {
     return @intCast(getRegisterTag(reg) & amAngleMask);
@@ -756,69 +755,69 @@ inline fn stringByteLength(str: [*c]const u8) i32 {
 // ---------------------------------------------------------------------------
 // real34 / real arithmetic wrappers (the realType.h macros).
 // ---------------------------------------------------------------------------
-inline fn real34ToReal(source_: *align(1) const real34_t, destination: *real_t) void {
+inline fn real34ToReal(source_: *const real34_t, destination: *real_t) void {
     _ = decimal128ToNumber(@ptrCast(source_), destination);
 }
-inline fn realToReal34(source_: *const real_t, destination: *align(1) real34_t) void {
+inline fn realToReal34(source_: *const real_t, destination: *real34_t) void {
     _ = decimal128FromNumber(@ptrCast(destination), source_, &ctxtReal34);
 }
-inline fn real34Copy(source_: *align(1) const real34_t, destination: *align(1) real34_t) void {
+inline fn real34Copy(source_: *const real34_t, destination: *real34_t) void {
     _ = decQuadCopy(destination, source_);
 }
 // C narrows the uint32_t/int32_t decQuad results to int16_t (truncation). The
 // special-value sentinel exponents (e.g. for Inf/NaN) overflow i16, which is fine
 // in C; reproduce with a low-16-bit truncation rather than a checked @intCast.
-inline fn real34Digits(source_: *align(1) const real34_t) i16 {
+inline fn real34Digits(source_: *const real34_t) i16 {
     return @bitCast(@as(u16, @truncate(decQuadDigits(source_))));
 }
-inline fn real34GetExponent(source_: *align(1) const real34_t) i16 {
+inline fn real34GetExponent(source_: *const real34_t) i16 {
     return @bitCast(@as(u16, @truncate(@as(u32, @bitCast(decQuadGetExponent(source_))))));
 }
-inline fn real34GetCoefficient(source_: *align(1) const real34_t, bcd: [*c]u8) i32 {
+inline fn real34GetCoefficient(source_: *const real34_t, bcd: [*c]u8) i32 {
     return decQuadGetCoefficient(source_, bcd);
 }
-inline fn real34IsNegative(source_: *align(1) const real34_t) bool {
+inline fn real34IsNegative(source_: *const real34_t) bool {
     return (source_.bytes[15] & 0x80) == 0x80;
 }
-inline fn real34IsPositive(source_: *align(1) const real34_t) bool {
+inline fn real34IsPositive(source_: *const real34_t) bool {
     return (source_.bytes[15] & 0x80) == 0;
 }
 const real34SetNegativeSign = abi.real34SetNegativeSign;
-inline fn real34SetPositiveSign(operand: *align(1) real34_t) void {
+inline fn real34SetPositiveSign(operand: *real34_t) void {
     operand.bytes[15] &= 0x7F;
 }
-inline fn real34IsZero(source_: *align(1) const real34_t) bool {
+inline fn real34IsZero(source_: *const real34_t) bool {
     return decQuadIsZero(source_) != 0;
 }
-inline fn real34IsInfinite(source_: *align(1) const real34_t) bool {
+inline fn real34IsInfinite(source_: *const real34_t) bool {
     return decQuadIsInfinite(source_) != 0;
 }
-inline fn real34IsNaN(source_: *align(1) const real34_t) bool {
+inline fn real34IsNaN(source_: *const real34_t) bool {
     return decQuadIsNaN(source_) != 0;
 }
-inline fn real34Reduce(operand: *align(1) const real34_t, res: *align(1) real34_t) void {
+inline fn real34Reduce(operand: *const real34_t, res: *real34_t) void {
     _ = decQuadReduce(res, operand, &ctxtReal34);
 }
-inline fn real34ToString(source_: *align(1) const real34_t, destination: [*c]u8) void {
+inline fn real34ToString(source_: *const real34_t, destination: [*c]u8) void {
     _ = decQuadToString(source_, destination);
 }
-inline fn real34SetZero(destination: *align(1) real34_t) void {
+inline fn real34SetZero(destination: *real34_t) void {
     _ = decQuadZero(destination);
 }
-inline fn real34CopyAbs(source_: *align(1) const real34_t, destination: *align(1) real34_t) void {
+inline fn real34CopyAbs(source_: *const real34_t, destination: *real34_t) void {
     real34Copy(source_, destination);
     real34SetPositiveSign(destination);
 }
-inline fn real34Divide(a: *align(1) const real34_t, b: *align(1) const real34_t, res: *align(1) real34_t) void {
+inline fn real34Divide(a: *const real34_t, b: *const real34_t, res: *real34_t) void {
     _ = decQuadDivide(res, a, b, &ctxtReal34);
 }
-inline fn real34DivideRemainder(a: *align(1) const real34_t, b: *align(1) const real34_t, res: *align(1) real34_t) void {
+inline fn real34DivideRemainder(a: *const real34_t, b: *const real34_t, res: *real34_t) void {
     _ = decQuadRemainder(res, a, b, &ctxtReal34);
 }
-inline fn real34ToIntegralValue(a: *align(1) const real34_t, res: *align(1) real34_t, round: c_int) void {
+inline fn real34ToIntegralValue(a: *const real34_t, res: *real34_t, round: c_int) void {
     _ = decQuadToIntegralValue(res, a, &ctxtReal34, round);
 }
-inline fn real34ToUInt32(a: *align(1) const real34_t) u32 {
+inline fn real34ToUInt32(a: *const real34_t) u32 {
     return decQuadToUInt32(a, &ctxtReal34, DEC_ROUND_DOWN);
 }
 inline fn realCopy(source_: *const real_t, destination: *real_t) void {
@@ -1097,7 +1096,7 @@ pub export fn fnEngExpRight(unusedButMandatoryParameter: u16) callconv(.c) void 
     engExpShift(-1);
 }
 
-pub export fn real34ToDisplayString(real34: *align(1) const real34_t, tag_in: u32, displayString: [*c]u8, font: *const font_t, maxWidth: i16, displayHasNDigits_in: i16, limitExponent: bool_t, frontSpace: bool_t, limitIrfrac: irfracOption_t) callconv(.c) void {
+pub export fn real34ToDisplayString(real34: *const real34_t, tag_in: u32, displayString: [*c]u8, font: *const font_t, maxWidth: i16, displayHasNDigits_in: i16, limitExponent: bool_t, frontSpace: bool_t, limitIrfrac: irfracOption_t) callconv(.c) void {
     var displayHasNDigits = displayHasNDigits_in;
     var tag = tag_in;
     const savedDisplayFormatDigits = displayFormatDigits;
@@ -1166,7 +1165,7 @@ const isReal: bool_t = 0;
 // ===========================================================================
 // angle34ToDisplayString2
 // ===========================================================================
-pub export fn angle34ToDisplayString2(angle34: *align(1) const real34_t, modeIn: u8, displayString: [*c]u8, displayHasNDigits: i16, limitExponent: bool_t, frontSpace: bool_t, limitIrfrac: irfracOption_t) callconv(.c) void {
+pub export fn angle34ToDisplayString2(angle34: *const real34_t, modeIn: u8, displayString: [*c]u8, displayHasNDigits: i16, limitExponent: bool_t, frontSpace: bool_t, limitIrfrac: irfracOption_t) callconv(.c) void {
     const mode: u8 = modeIn & @as(u8, @intCast(amAngleMask));
     if (mode == amDMS) {
         var degStr: [100]u8 = undefined;
@@ -1456,9 +1455,9 @@ fn renderEngFixed(bcd: [*c]const u8, firstDigit: i16, lastDigit: i16, exponent: 
     }
 }
 
-fn real34ToDisplayString2(real34_in: *align(1) const real34_t, displayString: [*c]u8, displayHasNDigits: i16, limitExponent: bool_t, noFix: bool_t, frontSpace: bool_t, complex: bool_t, limitIrfrac: irfracOption_t) void {
+fn real34ToDisplayString2(real34_in: *const real34_t, displayString: [*c]u8, displayHasNDigits: i16, limitExponent: bool_t, noFix: bool_t, frontSpace: bool_t, complex: bool_t, limitIrfrac: irfracOption_t) void {
     // real34 is passed const but the 2TO10/UN path mutates *real34 then restores it.
-    const real34: *align(1) real34_t = @constCast(real34_in);
+    const real34: *real34_t = @constCast(real34_in);
     const exponentUNlimit1024max: i32 = if (getSystemFlag(FLAG_PFX_ALL) != 0) 7 else 5;
     // TRL0: when set, DF_SF and DF_ALL keep trailing significant zeros (and DF_SF
     // rounds at the sig boundary); when clear, no trailing zeros are emitted.
@@ -2281,7 +2280,7 @@ fn real34ToDisplayString2(real34_in: *align(1) const real34_t, displayString: [*
 // ===========================================================================
 // complex34ToDisplayString / complex34ToDisplayString2 / strPrepend
 // ===========================================================================
-pub export fn complex34ToDisplayString(complex34: *align(1) const complex34_t, displayString: [*c]u8, font: *const font_t, maxWidth: i16, displayHasNDigits_in: i16, limitExponent: bool_t, frontSpace: bool_t, limitIrfrac: irfracOption_t, tagAngle: u16, tagPolar: bool_t, expStep: i16) callconv(.c) void {
+pub export fn complex34ToDisplayString(complex34: *const complex34_t, displayString: [*c]u8, font: *const font_t, maxWidth: i16, displayHasNDigits_in: i16, limitExponent: bool_t, frontSpace: bool_t, limitIrfrac: irfracOption_t, tagAngle: u16, tagPolar: bool_t, expStep: i16) callconv(.c) void {
     var displayHasNDigits = displayHasNDigits_in;
     const savedDisplayFormatDigits = displayFormatDigits;
     const saveddisplayFormat = displayFormat;
@@ -2380,7 +2379,7 @@ pub export fn strPrepend(dest: [*c]u8, prefix: [*c]u8) callconv(.c) void {
     }
 }
 
-fn complex34ToDisplayString2(complex34: *align(1) const complex34_t, displayString: [*c]u8, displayHasNDigits: i16, limitExponent: bool_t, frontSpace: bool_t, tagAngle: u16, tagPolar: bool_t, expStep: i16, limitIrfrac: irfracOption_t, cache: *abi.RectToPolarCache) void {
+fn complex34ToDisplayString2(complex34: *const complex34_t, displayString: [*c]u8, displayHasNDigits: i16, limitExponent: bool_t, frontSpace: bool_t, tagAngle: u16, tagPolar: bool_t, expStep: i16, limitIrfrac: irfracOption_t, cache: *abi.RectToPolarCache) void {
     const imagOffset: i16 = 100;
     var real34_: real34_t = undefined;
     var imag34: real34_t = undefined;
@@ -3911,7 +3910,7 @@ pub export fn vectorToDisplayString(regist: calcRegister_t, displayString: [*c]u
     return 0;
 }
 
-fn _complex34ToShowTmpString(r: *align(1) const real34_t, im: *align(1) const real34_t) void {
+fn _complex34ToShowTmpString(r: *const real34_t, im: *const real34_t) void {
     var last: i16 = undefined;
     var real34_: real34_t = undefined;
 
@@ -3971,10 +3970,10 @@ pub export fn mimShowElement() callconv(.c) void {
     const cols = openMatrixMIMPointer.realMatrix.header.matrixColumns;
     const elemIdx: usize = @intCast(@as(i32, i) * @as(i32, cols) + @as(i32, j));
     if (getRegisterDataType(@intCast(matrixIndex)) == dtReal34Matrix) {
-        const elems: [*]align(1) real34_t = @ptrCast(openMatrixMIMPointer.realMatrix.matrixElements);
+        const elems: [*]real34_t = @ptrCast(openMatrixMIMPointer.realMatrix.matrixElements);
         real34ToDisplayString(&elems[elemIdx], amNone, tmpString, &standardFont, 2000, 34, @intFromBool(LIMITEXP == 0), @intFromBool(FRONTSPACE == 0), NOIRFRAC);
     } else {
-        const celems: [*]align(1) complex34_t = @ptrCast(openMatrixMIMPointer.complexMatrix.matrixElements);
+        const celems: [*]complex34_t = @ptrCast(openMatrixMIMPointer.complexMatrix.matrixElements);
         _complex34ToShowTmpString(varReal34(&celems[elemIdx]), varImag34(&celems[elemIdx]));
     }
 

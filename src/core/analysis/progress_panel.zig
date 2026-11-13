@@ -13,7 +13,7 @@ const consts = abi.constants;
 const real_t = abi.Real;
 const real34_t = abi.Real34;
 
-inline fn const34_0() *align(1) const real34_t {
+inline fn const34_0() *const real34_t {
     return consts.q16200();
 }
 const calcRegister_t = runtime.calcRegister_t;
@@ -41,10 +41,10 @@ const force: u8 = 1;
 const REAL34_SIGN_BIT: u8 = 0x80;
 
 const real34IsSpecial = abi.real34IsSpecial;
-inline fn real34IsZero(v: *align(1) const real34_t) bool {
+inline fn real34IsZero(v: *const real34_t) bool {
     return runtime.decQuadIsZero(v) != 0;
 }
-inline fn real34IsNegative(v: *align(1) const real34_t) bool {
+inline fn real34IsNegative(v: *const real34_t) bool {
     return (v.bytes[15] & REAL34_SIGN_BIT) != 0;
 }
 
@@ -64,12 +64,12 @@ fn endPanel(saved: u8) void {
     runtime.force_refresh(force);
 }
 
-fn showValueAt(value: *align(1) const real34_t, y: u32) void {
+fn showValueAt(value: *const real34_t, y: u32) void {
     runtime.real34ToDisplayString(value, amNone, runtime.tmpString, &runtime.standardFont, 9999, 34, false, true, 0);
     _ = runtime.showString(runtime.tmpString, &runtime.standardFont, 1, y, vmNormal, true, true);
 }
 
-fn signMark(v: *align(1) const real34_t) [*c]const u8 {
+fn signMark(v: *const real34_t) [*c]const u8 {
     if (real34IsSpecial(v)) return "?";
     if (real34IsZero(v)) return "";
     return if (real34IsNegative(v)) "-" else "+";
@@ -77,7 +77,7 @@ fn signMark(v: *align(1) const real34_t) [*c]const u8 {
 
 /// The solver's bracket panel: the two endpoints, each with the sign of the
 /// function there. The endpoints are shown in increasing order.
-pub fn showSolverBracket(a_in: *align(1) const real34_t, b_in: *align(1) const real34_t, fa_in: *align(1) const real34_t, fb_in: *align(1) const real34_t) void {
+pub fn showSolverBracket(a_in: *const real34_t, b_in: *const real34_t, fa_in: *const real34_t, fb_in: *const real34_t) void {
     var a = a_in;
     var b = b_in;
     var fa = fa_in;
@@ -116,7 +116,7 @@ fn lcdRefreshOnFirmware() void {
 
 /// The integrator's panel: the partial integral on X and the remaining interval
 /// width on Y.
-pub fn showIntegralPartial(partial: *align(1) const real34_t, span: *align(1) const real34_t) void {
+pub fn showIntegralPartial(partial: *const real34_t, span: *const real34_t) void {
     const saved = beginPanel();
     showValueAt(partial, Y_POSITION_OF_REGISTER_X_LINE + 6);
     showValueAt(span, Y_POSITION_OF_REGISTER_Y_LINE + 6);
@@ -136,7 +136,7 @@ pub fn showLongIntegerPartial(a: *const abi.Mpz) void {
 
 /// The real sum/product panel: one line for a real running value, two for a
 /// complex one with the imaginary part signed and unit-tagged.
-pub fn showRealPartial(a: *align(1) const real34_t, ai: *align(1) const real34_t, cpx: bool) void {
+pub fn showRealPartial(a: *const real34_t, ai: *const real34_t, cpx: bool) void {
     const saved = beginPanel();
     if (!cpx) {
         showValueAt(a, Y_POSITION_OF_REGISTER_X_LINE + 6);

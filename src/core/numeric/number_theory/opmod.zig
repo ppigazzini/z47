@@ -46,18 +46,18 @@ inline fn const_1() *const real_t {
     return runtime.z47_math_wrappers_const_1();
 }
 
-extern fn decimal128ToNumber(source: *align(1) const real34_t, destination: *real_t) *real_t;
-inline fn real34ToReal(source: *align(1) const real34_t, destination: *real_t) void {
+extern fn decimal128ToNumber(source: *const real34_t, destination: *real_t) *real_t;
+inline fn real34ToReal(source: *const real34_t, destination: *real_t) void {
     _ = decimal128ToNumber(source, destination);
 }
 // real34GetCoefficient / real34GetExponent (realType.h): the BCD digits, the
 // sign and the exponent of a decQuad, read without any rounding.
-extern fn decQuadGetCoefficient(source: *align(1) const real34_t, bcd: [*]u8) i32;
-extern fn decQuadGetExponent(source: *align(1) const real34_t) i32;
-inline fn real34GetCoefficient(source: *align(1) const real34_t, bcd: [*]u8) i32 {
+extern fn decQuadGetCoefficient(source: *const real34_t, bcd: [*]u8) i32;
+extern fn decQuadGetExponent(source: *const real34_t) i32;
+inline fn real34GetCoefficient(source: *const real34_t, bcd: [*]u8) i32 {
     return decQuadGetCoefficient(source, bcd);
 }
-inline fn real34GetExponent(source: *align(1) const real34_t) i32 {
+inline fn real34GetExponent(source: *const real34_t) i32 {
     return decQuadGetExponent(source);
 }
 // decQuad.h DECQUAD_Pmax: the digits of a decQuad coefficient.

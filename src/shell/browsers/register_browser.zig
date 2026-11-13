@@ -131,7 +131,7 @@ extern const standardFont: font_t;
 // Function externs
 // ---------------------------------------------------------------------------
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
-extern fn getRegisterDataPointer(regist: calcRegister_t) [*]u8;
+extern fn getRegisterDataPointer(regist: calcRegister_t) [*]align(4) u8;
 extern fn getRegisterTag(regist: calcRegister_t) u32;
 extern fn getRegisterMaxDataLengthInBlocks(regist: calcRegister_t) u16;
 extern fn copySourceRegisterToDestRegister(rSource: calcRegister_t, rDest: calcRegister_t) void;

@@ -89,19 +89,19 @@ inline fn const_minusInfinity() *const real_t {
 extern fn realSetPlusInfinity(value: *real_t) void;
 extern fn decNumberCopy(res: *real_t, source: *const real_t) *real_t;
 extern fn decNumberCopyAbs(res: *real_t, source: *const real_t) *real_t;
-extern fn decNumberRemainder(res: *real_t, lhs: *align(1) const real_t, rhs: *align(1) const real_t, ctxt: *realContext_t) *real_t;
+extern fn decNumberRemainder(res: *real_t, lhs: *const real_t, rhs: *const real_t, ctxt: *realContext_t) *real_t;
 // real34ToInt32 (realType.h): decQuadToInt32 rounding down in the Real34 context.
-extern fn decQuadToInt32(source: *align(1) const real34_t, ctxt: *realContext_t, round: c_int) i32;
+extern fn decQuadToInt32(source: *const real34_t, ctxt: *realContext_t, round: c_int) i32;
 inline fn realCopy(source: *const real_t, destination: *real_t) void {
     _ = decNumberCopy(destination, source);
 }
 inline fn realCopyAbs(source: *const real_t, destination: *real_t) void {
     _ = decNumberCopyAbs(destination, source);
 }
-inline fn realDivideRemainder(operand1: *align(1) const real_t, operand2: *align(1) const real_t, res: *real_t, ctxt: *realContext_t) void {
+inline fn realDivideRemainder(operand1: *const real_t, operand2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberRemainder(res, operand1, operand2, ctxt);
 }
-inline fn real34ToInt32(source: *align(1) const real34_t) i32 {
+inline fn real34ToInt32(source: *const real34_t) i32 {
     return decQuadToInt32(source, &runtime.ctxtReal34, runtime.DEC_ROUND_DOWN);
 }
 const realIsPositive = math_real_predicates.realIsPositive;

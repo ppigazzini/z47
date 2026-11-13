@@ -43,26 +43,26 @@ const FLAG_POLAR: i32 = 0x8006;
 const FLAG_ASLIFT: i32 = 0xc023;
 const NOPARAM: u16 = 9876;
 
-inline fn const34_0() *align(1) const real34_t {
+inline fn const34_0() *const real34_t {
     return consts.q16200();
 }
 
 // real34Copy: copy the 16 raw bytes (two u64 stores in C).
-inline fn real34Copy(source: *align(1) const real34_t, destination: *align(1) real34_t) void {
+inline fn real34Copy(source: *const real34_t, destination: *real34_t) void {
     const src: *align(1) const [2]u64 = @ptrCast(source);
     const dst: *align(1) [2]u64 = @ptrCast(destination);
     dst[0] = src[0];
     dst[1] = src[1];
 }
 const complex34Copy = abi.complex34Copy;
-extern fn decQuadZero(destination: *align(1) real34_t) *align(1) real34_t;
-inline fn real34SetZero(destination: *align(1) real34_t) void {
+extern fn decQuadZero(destination: *real34_t) *real34_t;
+inline fn real34SetZero(destination: *real34_t) void {
     _ = decQuadZero(destination);
 }
 
-// real34ToReal with a register-resident (unaligned) real34 source.
-extern fn decimal128ToNumber(source: *align(1) const real34_t, destination: *real_t) *real_t;
-inline fn real34ToReal(source: *align(1) const real34_t, destination: *real_t) void {
+// real34ToReal with a register-resident real34 source.
+extern fn decimal128ToNumber(source: *const real34_t, destination: *real_t) *real_t;
+inline fn real34ToReal(source: *const real34_t, destination: *real_t) void {
     _ = decimal128ToNumber(source, destination);
 }
 extern fn convertRealToReal34ResultRegister(real: *const real_t, dest: calcRegister_t) void;
@@ -76,29 +76,29 @@ const std_cross = "\x80\xd7"; // STD_CROSS
 // the shared errorMessage buffer of that size.
 const ERROR_MESSAGE_LENGTH = 512;
 
-inline fn REGISTER_REAL34_DATA(reg: calcRegister_t) *align(1) real34_t {
+inline fn REGISTER_REAL34_DATA(reg: calcRegister_t) *real34_t {
     return runtime.registerReal34Ptr(reg);
 }
-inline fn REGISTER_IMAG34_DATA(reg: calcRegister_t) *align(1) real34_t {
+inline fn REGISTER_IMAG34_DATA(reg: calcRegister_t) *real34_t {
     return runtime.registerImag34Ptr(reg);
 }
-inline fn REGISTER_COMPLEX34_DATA(reg: calcRegister_t) *align(1) complex34_t {
+inline fn REGISTER_COMPLEX34_DATA(reg: calcRegister_t) *complex34_t {
     return runtime.registerComplex34Ptr(reg);
 }
-inline fn VARIABLE_REAL34_DATA(elem: *align(1) complex34_t) *align(1) real34_t {
+inline fn VARIABLE_REAL34_DATA(elem: *complex34_t) *real34_t {
     return &elem.real;
 }
-inline fn VARIABLE_IMAG34_DATA(elem: *align(1) complex34_t) *align(1) real34_t {
+inline fn VARIABLE_IMAG34_DATA(elem: *complex34_t) *real34_t {
     return &elem.imag;
 }
-inline fn realMatrixElements(mat: *real34Matrix_t) [*]align(1) real34_t {
+inline fn realMatrixElements(mat: *real34Matrix_t) [*]real34_t {
     if (runtime.harness_surface_is_fake) {
         return @ptrCast(&mat.matrixElements);
     } else {
         return @ptrCast(mat.matrixElements);
     }
 }
-inline fn complexMatrixElements(mat: *complex34Matrix_t) [*]align(1) complex34_t {
+inline fn complexMatrixElements(mat: *complex34Matrix_t) [*]complex34_t {
     if (runtime.harness_surface_is_fake) {
         return @ptrCast(&mat.matrixElements);
     } else {

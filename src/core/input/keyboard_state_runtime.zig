@@ -566,7 +566,7 @@ pub extern fn deleteEquation(equation_id: u16) void;
 pub extern fn refreshRegisterLine(regist: i16) void;
 pub extern fn fnRegAddTimerApp(unused: u16) void;
 pub extern fn printTraceX(where_: u16) void;
-pub extern fn getRegisterDataPointer(regist: i16) [*c]u8; // void* in C (byte arithmetic)
+pub extern fn getRegisterDataPointer(regist: i16) [*c]align(4) u8; // void* in C (byte arithmetic)
 pub extern fn reallocateRegister(regist: i16, data_type: u32, data_size_without_data_len_blocks: u16, tag: u32) bool;
 pub extern fn xcopy(dest: [*c]u8, source: [*c]const u8, n: u32) [*c]u8;
 

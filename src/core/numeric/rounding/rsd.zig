@@ -74,16 +74,16 @@ extern var ctxtReal4: realContext_t;
 
 // real_t op helpers (realType.h macros).
 extern fn decNumberCopy(res: *real_t, source: *const real_t) *real_t;
-extern fn decNumberCompare(res: *real_t, op1: *align(1) const real_t, op2: *align(1) const real_t, ctxt: *realContext_t) *real_t;
+extern fn decNumberCompare(res: *real_t, op1: *const real_t, op2: *const real_t, ctxt: *realContext_t) *real_t;
 extern fn decNumberAdd(res: *real_t, op1: *const real_t, op2: *const real_t, ctxt: *realContext_t) *real_t;
 extern fn decNumberSubtract(res: *real_t, op1: *const real_t, op2: *const real_t, ctxt: *realContext_t) *real_t;
 extern fn decNumberMultiply(res: *real_t, op1: *const real_t, op2: *const real_t, ctxt: *realContext_t) *real_t;
-extern fn decNumberDivide(res: *real_t, op1: *align(1) const real_t, op2: *align(1) const real_t, ctxt: *realContext_t) *real_t;
-extern fn decNumberRemainder(res: *real_t, op1: *const real_t, op2: *align(1) const real_t, ctxt: *realContext_t) *real_t;
+extern fn decNumberDivide(res: *real_t, op1: *const real_t, op2: *const real_t, ctxt: *realContext_t) *real_t;
+extern fn decNumberRemainder(res: *real_t, op1: *const real_t, op2: *const real_t, ctxt: *realContext_t) *real_t;
 inline fn realCopy(source: *const real_t, destination: *real_t) void {
     _ = decNumberCopy(destination, source);
 }
-inline fn realCompare(op1: *align(1) const real_t, op2: *align(1) const real_t, res: *real_t, ctxt: *realContext_t) void {
+inline fn realCompare(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberCompare(res, op1, op2, ctxt);
 }
 inline fn realAdd(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
@@ -95,10 +95,10 @@ inline fn realSubtract(op1: *const real_t, op2: *const real_t, res: *real_t, ctx
 inline fn realMultiply(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberMultiply(res, op1, op2, ctxt);
 }
-inline fn realDivide(op1: *align(1) const real_t, op2: *align(1) const real_t, res: *real_t, ctxt: *realContext_t) void {
+inline fn realDivide(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberDivide(res, op1, op2, ctxt);
 }
-inline fn realDivideRemainder(op1: *const real_t, op2: *align(1) const real_t, res: *real_t, ctxt: *realContext_t) void {
+inline fn realDivideRemainder(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberRemainder(res, op1, op2, ctxt);
 }
 
@@ -112,12 +112,12 @@ inline fn currentRoundingMode() rounding_t {
 }
 
 // Register data / real34 conversion.
-extern fn decimal128ToNumber(source: *align(1) const real34_t, destination: *real_t) *real_t;
-inline fn real34ToReal(source: *align(1) const real34_t, destination: *real_t) void {
+extern fn decimal128ToNumber(source: *const real34_t, destination: *real_t) *real_t;
+inline fn real34ToReal(source: *const real34_t, destination: *real_t) void {
     _ = decimal128ToNumber(source, destination);
 }
-extern fn decimal128FromNumber(destination: *align(1) real34_t, source: *const real_t, ctxt: *realContext_t) *align(1) real34_t;
-inline fn realToReal34(source: *const real_t, destination: *align(1) real34_t) void {
+extern fn decimal128FromNumber(destination: *real34_t, source: *const real_t, ctxt: *realContext_t) *real34_t;
+inline fn realToReal34(source: *const real_t, destination: *real34_t) void {
     _ = decimal128FromNumber(destination, source, &runtime.ctxtReal34);
 }
 

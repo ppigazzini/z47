@@ -66,7 +66,7 @@ inline fn real34Subtract(operand1: *const runtime.real34_t, operand2: *const run
     runtime.real34SubtractMacro(operand1, operand2, res);
 }
 
-inline fn real34ChangeSign(operand: *align(1) runtime.real34_t) void {
+inline fn real34ChangeSign(operand: *runtime.real34_t) void {
     operand.bytes[15] ^= 0x80;
 }
 
@@ -87,7 +87,7 @@ fn cplxElem(matrix: *runtime.complex34Matrix_t, index: i32) *runtime.complex34_t
 // module-level real34_t instead put it, and its init flag, in RAM -- which on
 // the DM42 comes out of the 8Kb of SRAM2 that .data + .bss share below the DMCP
 // system data block.
-fn const34_86400() *align(1) const runtime.real34_t {
+fn const34_86400() *const runtime.real34_t {
     return abi.constants.const34_86400();
 }
 

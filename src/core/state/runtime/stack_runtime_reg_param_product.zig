@@ -1,3 +1,4 @@
+const abi = @import("abi");
 const build_options = @import("stack_state_build_options");
 const product_real_owned = @import("stack_runtime_product_real.zig");
 const register_range_owned = @import("stack_runtime_register_range.zig");
@@ -27,15 +28,14 @@ const ERROR_NONE: u8 = 0;
 const ERROR_OUT_OF_RANGE: u8 = 8;
 const ERROR_INVALID_DATA_TYPE_FOR_OP: u8 = 24;
 
-extern fn getRegisterDataPointer(reg: calcRegister_t) ?*anyopaque;
+extern fn getRegisterDataPointer(reg: calcRegister_t) ?*align(4) anyopaque;
 extern fn getRegisterDataType(reg: calcRegister_t) u32;
 extern fn realCompareAbsLessThan(number1: *const ProductReal, number2: *const ProductReal) bool;
 extern fn realToIntegralValue(source: *const ProductReal, destination: *ProductReal, mode: product_rounding_t, real_context: *ProductRealContext) void;
 extern fn realToInt32C47(source: *const ProductReal, err: ?*bool) i32;
 
-fn registerReal34Ptr(reg: calcRegister_t) *align(1) ProductReal34 {
-    const ptr = getRegisterDataPointer(reg) orelse unreachable;
-    return @ptrCast(ptr);
+fn registerReal34Ptr(reg: calcRegister_t) *ProductReal34 {
+    return abi.registerReal34(reg);
 }
 
 fn productReal34ToReal(source: *const ProductReal34, destination: *ProductReal) void {

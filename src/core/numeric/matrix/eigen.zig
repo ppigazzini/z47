@@ -74,8 +74,8 @@ const realCompareEqual = math_comparison_reals.realCompareEqual;
 
 // fnEigenvalues command-handler dependencies (matrix.c).
 extern fn fnRecallVElement(n: u16) void;
-extern fn decQuadPlus(res: *align(1) real34_t, operand: *align(1) const real34_t, ctxt: *realContext_t) *align(1) real34_t;
-inline fn real34Plus(operand: *align(1) const real34_t, res: *align(1) real34_t) void {
+extern fn decQuadPlus(res: *real34_t, operand: *const real34_t, ctxt: *realContext_t) *real34_t;
+inline fn real34Plus(operand: *const real34_t, res: *real34_t) void {
     _ = decQuadPlus(res, operand, &runtime.ctxtReal34);
 }
 const FLAG_ASLIFT: i32 = 0xc023;
@@ -85,17 +85,17 @@ fn bufPrintZ(buffer: []u8, comptime format: []const u8, args: anytype) ![:0]u8 {
     return std.mem.printSentinel(buffer, format, args, 0);
 }
 
-// --- decNumber primitives (operands *align(1) so blob constants + 159-digit
-// stack scratch both pass) ------------------------------------------------
-extern fn decNumberCopy(res: *align(1) real_t, source: *align(1) const real_t) *align(1) real_t;
-extern fn decNumberPlus(res: *align(1) real_t, operand: *align(1) const real_t, ctxt: *realContext_t) *align(1) real_t;
-extern fn decNumberAdd(res: *align(1) real_t, op1: *align(1) const real_t, op2: *align(1) const real_t, ctxt: *realContext_t) *align(1) real_t;
-extern fn decNumberSubtract(res: *align(1) real_t, op1: *align(1) const real_t, op2: *align(1) const real_t, ctxt: *realContext_t) *align(1) real_t;
-extern fn decNumberMultiply(res: *align(1) real_t, op1: *align(1) const real_t, op2: *align(1) const real_t, ctxt: *realContext_t) *align(1) real_t;
-extern fn decNumberDivide(res: *align(1) real_t, op1: *align(1) const real_t, op2: *align(1) const real_t, ctxt: *realContext_t) *align(1) real_t;
-extern fn decNumberSquareRoot(res: *align(1) real_t, rhs: *align(1) const real_t, ctxt: *realContext_t) *align(1) real_t;
-extern fn decNumberFMA(res: *align(1) real_t, f1: *align(1) const real_t, f2: *align(1) const real_t, term: *align(1) const real_t, ctxt: *realContext_t) *align(1) real_t;
-extern fn realSetOne(r: *align(1) real_t) void;
+// --- decNumber primitives (blob constants and 159-digit stack scratch both
+// pass) -------------------------------------------------------------------
+extern fn decNumberCopy(res: *real_t, source: *const real_t) *real_t;
+extern fn decNumberPlus(res: *real_t, operand: *const real_t, ctxt: *realContext_t) *real_t;
+extern fn decNumberAdd(res: *real_t, op1: *const real_t, op2: *const real_t, ctxt: *realContext_t) *real_t;
+extern fn decNumberSubtract(res: *real_t, op1: *const real_t, op2: *const real_t, ctxt: *realContext_t) *real_t;
+extern fn decNumberMultiply(res: *real_t, op1: *const real_t, op2: *const real_t, ctxt: *realContext_t) *real_t;
+extern fn decNumberDivide(res: *real_t, op1: *const real_t, op2: *const real_t, ctxt: *realContext_t) *real_t;
+extern fn decNumberSquareRoot(res: *real_t, rhs: *const real_t, ctxt: *realContext_t) *real_t;
+extern fn decNumberFMA(res: *real_t, f1: *const real_t, f2: *const real_t, term: *const real_t, ctxt: *realContext_t) *real_t;
+extern fn realSetOne(r: *real_t) void;
 const allocC47Blocks = runtime.allocC47Blocks;
 const freeC47Blocks = runtime.freeC47Blocks;
 
@@ -103,12 +103,12 @@ const freeC47Blocks = runtime.freeC47Blocks;
 inline fn allocCplx(size_in_blocks: usize) ?[*]cplx_t {
     return @ptrCast(@alignCast(allocC47Blocks(size_in_blocks) orelse return null));
 }
-extern fn decNumberCopyAbs(res: *align(1) real_t, source: *align(1) const real_t) *align(1) real_t;
+extern fn decNumberCopyAbs(res: *real_t, source: *const real_t) *real_t;
 extern var currentKeyCode: u8;
 extern var currentSolverNestingDepth: u16;
 extern var significantDigits: u8;
 
-inline fn realGetExponent(source: *align(1) const real_t) i32 {
+inline fn realGetExponent(source: *const real_t) i32 {
     return source.digits + source.exponent - 1;
 }
 
@@ -131,18 +131,18 @@ fn eigenTolerance() i32 {
 
 const ERROR_SOLVER_ABORT: u8 = 60;
 
-inline fn realCopyAbs(source: *align(1) const real_t, destination: *align(1) real_t) void {
+inline fn realCopyAbs(source: *const real_t, destination: *real_t) void {
     _ = decNumberCopyAbs(destination, source);
 }
 const realIsSpecial = math_real_predicates.realIsSpecial;
 
-inline fn realFMA(f1: *align(1) const real_t, f2: *align(1) const real_t, term: *align(1) const real_t, res: *align(1) real_t, ctxt: *realContext_t) void {
+inline fn realFMA(f1: *const real_t, f2: *const real_t, term: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberFMA(res, f1, f2, term, ctxt);
 }
-inline fn realIsNegativeA(source: *align(1) const real_t) bool {
+inline fn realIsNegativeA(source: *const real_t) bool {
     return (source.bits & 0x80) == 0x80;
 }
-inline fn realSetPositiveSign(operand: *align(1) real_t) void {
+inline fn realSetPositiveSign(operand: *real_t) void {
     operand.bits &= 0x7f;
 }
 
@@ -159,34 +159,34 @@ const eigenNoiseThreshold: i32 = 70;
 // The post-QR block threshold, relative to the average diagonal magnitude.
 const finalBlockTolerance: i32 = 30;
 
-inline fn realCopy(source: *align(1) const real_t, destination: *align(1) real_t) void {
+inline fn realCopy(source: *const real_t, destination: *real_t) void {
     _ = decNumberCopy(destination, source);
 }
-inline fn realPlus(operand: *align(1) const real_t, res: *align(1) real_t, ctxt: *realContext_t) void {
+inline fn realPlus(operand: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberPlus(res, operand, ctxt);
 }
-inline fn realAdd(op1: *align(1) const real_t, op2: *align(1) const real_t, res: *align(1) real_t, ctxt: *realContext_t) void {
+inline fn realAdd(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberAdd(res, op1, op2, ctxt);
 }
-inline fn realSubtract(op1: *align(1) const real_t, op2: *align(1) const real_t, res: *align(1) real_t, ctxt: *realContext_t) void {
+inline fn realSubtract(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberSubtract(res, op1, op2, ctxt);
 }
-inline fn realMultiply(op1: *align(1) const real_t, op2: *align(1) const real_t, res: *align(1) real_t, ctxt: *realContext_t) void {
+inline fn realMultiply(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberMultiply(res, op1, op2, ctxt);
 }
-inline fn realDivide(op1: *align(1) const real_t, op2: *align(1) const real_t, res: *align(1) real_t, ctxt: *realContext_t) void {
+inline fn realDivide(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberDivide(res, op1, op2, ctxt);
 }
-inline fn realSquareRoot(operand: *align(1) const real_t, res: *align(1) real_t, ctxt: *realContext_t) void {
+inline fn realSquareRoot(operand: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberSquareRoot(res, operand, ctxt);
 }
-inline fn realSetZero(r: *align(1) real_t) void {
+inline fn realSetZero(r: *real_t) void {
     r.bits = 0;
     r.exponent = 0;
     r.digits = 1;
     r.lsu[0] = 0;
 }
-inline fn realChangeSign(operand: *align(1) real_t) void {
+inline fn realChangeSign(operand: *real_t) void {
     operand.bits ^= 0x80;
 }
 const realIsZero = abi.realIsZero;
@@ -202,9 +202,9 @@ extern var blockMonitoring: bool;
 
 const ERROR_NO_ROOT_FOUND: u8 = 20;
 
-// The NaN setter, taken at align(1) like the decNumber primitives above.
-extern fn realSetNaN(value: *align(1) real_t) void;
-extern fn real34CompareEqual(number1: *align(1) const real34_t, number2: *align(1) const real34_t) bool;
+// The NaN setter, declared like the decNumber primitives above.
+extern fn realSetNaN(value: *real_t) void;
+extern fn real34CompareEqual(number1: *const real34_t, number2: *const real34_t) bool;
 
 // --- BigReal(159): REAL_T_PTR(name, 159) stack scratch -------------------
 inline fn realMaxDigits(comptime digits: u32) u32 {
@@ -216,7 +216,7 @@ inline fn realSizeInBytes(comptime digits: u32) u32 {
 fn BigReal(comptime digits: u32) linksection(runtime.code_section) type {
     return struct {
         buf: [realSizeInBytes(digits)]u8 align(4) = undefined,
-        inline fn ptr(self: *@This()) *align(1) real_t {
+        inline fn ptr(self: *@This()) *real_t {
             return @ptrCast(&self.buf);
         }
     };
@@ -873,7 +873,7 @@ pub export fn dropNoise(eig: [*]cplx_t, size: u16, dig: u16) linksection(runtime
     }
 }
 
-fn isElementWithinTolerance(value_re: *align(1) const real_t, value_im: *align(1) const real_t, tol: *align(1) const real_t, realContext: *realContext_t) linksection(runtime.code_section) bool {
+fn isElementWithinTolerance(value_re: *const real_t, value_im: *const real_t, tol: *const real_t, realContext: *realContext_t) linksection(runtime.code_section) bool {
     var mag: real_t = undefined;
     // |value| with the operations of complexMagnitude(), on separate parts.
     realMultiply(value_re, value_re, &mag, realContext);

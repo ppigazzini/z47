@@ -489,24 +489,24 @@ pub const DECSPECIAL: u8 = DECINF | DECNAN | DECSNAN;
 // macro at every use, and every owner aliases these rather than keeping a copy.
 
 /// realIsZero: a finite zero of either sign.
-pub fn realIsZero(r: *align(1) const Real) bool {
+pub fn realIsZero(r: *const Real) bool {
     return r.lsu[0] == 0 and r.digits == 1 and (r.bits & DECSPECIAL) == 0;
 }
 
 /// real34IsSpecial: `!decQuadIsFinite`, which is decNumber's DFISSPECIAL test of
 /// the combination field, true for an infinity and for either NaN.
-pub fn real34IsSpecial(r: *align(1) const Real34) bool {
+pub fn real34IsSpecial(r: *const Real34) bool {
     return (r.bytes[15] & 0x78) == 0x78;
 }
 
 /// real34SetNegativeSign: decQuadCopyAbs then decQuadCopyNegate, which leaves the
 /// sign bit set and every other bit as it was.
-pub fn real34SetNegativeSign(r: *align(1) Real34) void {
+pub fn real34SetNegativeSign(r: *Real34) void {
     r.bytes[15] |= 0x80;
 }
 
 /// complex34Copy (copyComplex34): the real part, then the imaginary part.
-pub fn complex34Copy(source: *align(1) const Complex34, destination: *align(1) Complex34) void {
+pub fn complex34Copy(source: *const Complex34, destination: *Complex34) void {
     destination.* = source.*;
 }
 
@@ -615,6 +615,7 @@ pub const registerMatrixHeaderAligned = registers.registerMatrixHeaderAligned;
 pub const registerShortIntegerAligned = registers.registerShortIntegerAligned;
 pub const registerReal34MatrixElements = registers.registerReal34MatrixElements;
 pub const registerComplex34MatrixElements = registers.registerComplex34MatrixElements;
+pub const registerMatrixElements = registers.registerMatrixElements;
 pub const matrixRealElems = registers.matrixRealElems;
 pub const matrixConstRealElems = registers.matrixConstRealElems;
 pub const matrixComplexElems = registers.matrixComplexElems;

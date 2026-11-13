@@ -102,7 +102,7 @@ pub export fn getRegisterDataType(reg: runtime.calcRegister_t) u32 {
     return descriptor_owned.getRegisterDataType(reg);
 }
 
-pub export fn getRegisterDataPointer(reg: runtime.calcRegister_t) ?*anyopaque {
+pub export fn getRegisterDataPointer(reg: runtime.calcRegister_t) ?*align(4) anyopaque {
     return descriptor_owned.getRegisterDataPointer(reg);
 }
 

@@ -270,7 +270,7 @@ pub extern fn saveLastX() bool;
 pub extern fn saveForUndo() void;
 pub extern fn getRegisterDataType(reg: calcRegister_t) u32;
 pub extern fn getRegisterTag(reg: calcRegister_t) u32;
-pub extern fn getRegisterDataPointer(reg: calcRegister_t) ?*anyopaque;
+pub extern fn getRegisterDataPointer(reg: calcRegister_t) ?*align(4) anyopaque;
 pub extern fn registerMin(regist1: calcRegister_t, regist2: calcRegister_t, dest: calcRegister_t) void;
 pub extern fn registerMax(regist1: calcRegister_t, regist2: calcRegister_t, dest: calcRegister_t) void;
 pub extern fn adjustResult(
@@ -891,14 +891,14 @@ pub extern fn longIntegerSquare(op: *const mpz_struct, result: *mpz_struct) void
 pub extern fn longIntegerAdd(op_y: *const mpz_struct, op_x: *const mpz_struct, result: *mpz_struct) void;
 pub extern fn longIntegerSubtract(op_y: *const mpz_struct, op_x: *const mpz_struct, result: *mpz_struct) void;
 pub extern fn int32ToReal(source: i32, destination: *real_t) void;
-pub extern fn decNumberCompare(result: *real_t, lhs: *align(1) const real_t, rhs: *align(1) const real_t, real_context: *realContext_t) *real_t;
+pub extern fn decNumberCompare(result: *real_t, lhs: *const real_t, rhs: *const real_t, real_context: *realContext_t) *real_t;
 pub extern fn decNumberFromString(result: *real_t, source: [*:0]const u8, real_context: *realContext_t) *real_t;
 pub extern fn decNumberPlus(result: *real_t, rhs: *const real_t, real_context: *realContext_t) *real_t;
 pub extern fn decNumberReduce(result: *real_t, rhs: *const real_t, real_context: *realContext_t) *real_t;
 pub extern fn decNumberMinus(result: *real_t, rhs: *const real_t, real_context: *realContext_t) *real_t;
 /// The IEEE 754 remainder, whose sign follows the dividend -- not decNumberDivide's
 /// quotient. sinc reduces its argument with it before the pi-multiple test.
-pub extern fn decNumberRemainder(result: *real_t, lhs: *align(1) const real_t, rhs: *align(1) const real_t, real_context: *realContext_t) *real_t;
+pub extern fn decNumberRemainder(result: *real_t, lhs: *const real_t, rhs: *const real_t, real_context: *realContext_t) *real_t;
 
 /// realType.h:157 -- `decNumberMinus(res, operand, ctxt)`, an ARITHMETIC negation
 /// (0 - x under the context's rules). NOT the same as realChangeSign, which is a
@@ -986,7 +986,7 @@ pub extern fn convertLongIntegerRegisterToReal34(source: calcRegister_t, destina
 // integers.c: the scaled integer quotient and remainder the integer division commands share.
 pub extern fn longIntegerScaledDivide(op_y: *const mpz_struct, y_exp: i32, op_x: *const mpz_struct, x_exp: i32, quotient: *mpz_struct, remainder: *mpz_struct, remainder_exp: *i32) void;
 // registers.c: one stored Real34 result rounded to the selected significant digits; unchanged when SDIGS is 0 or 34.
-pub extern fn roundReal34ResultToSignificantDigits(val: *align(1) real34_t) void;
+pub extern fn roundReal34ResultToSignificantDigits(val: *real34_t) void;
 // comparisonReals.c: an exact comparison of a finite Real34 with a long integer, or of two of either kind.
 pub extern fn compareFiniteReal34LongIntegerRegisters(first: calcRegister_t, second: calcRegister_t, comparison: *i32) bool;
 // conversionAngles.c
@@ -1288,8 +1288,8 @@ pub extern fn real34MatrixToDisplayString(regist: calcRegister_t, display_string
 pub extern fn complex34MatrixToDisplayString(regist: calcRegister_t, display_string: [*c]u8) void;
 pub extern fn shortIntegerToDisplayString(regist: calcRegister_t, display_string: [*c]u8, determine_font: bool, base_override: u8, max_width: i16) void;
 pub extern fn fractionToDisplayString(regist: calcRegister_t, display_string: [*c]u8) void;
-pub extern fn real34ToDisplayString(real34: *align(1) const real34_t, tag: u32, display_string: [*c]u8, font: *const font_t, max_width: i16, display_has_n_digits: i16, limit_exponent: bool, front_space: bool, limit_irfrac: c_int) void;
-pub extern fn complex34ToDisplayString(complex34: *align(1) const complex34_t, display_string: [*c]u8, font: *const font_t, max_width: i16, display_has_n_digits: i16, limit_exponent: bool, front_space: bool, limit_irfrac: c_int, tag_angle: u16, tag_polar: bool, exp_step: i16) void;
+pub extern fn real34ToDisplayString(real34: *const real34_t, tag: u32, display_string: [*c]u8, font: *const font_t, max_width: i16, display_has_n_digits: i16, limit_exponent: bool, front_space: bool, limit_irfrac: c_int) void;
+pub extern fn complex34ToDisplayString(complex34: *const complex34_t, display_string: [*c]u8, font: *const font_t, max_width: i16, display_has_n_digits: i16, limit_exponent: bool, front_space: bool, limit_irfrac: c_int, tag_angle: u16, tag_polar: bool, exp_step: i16) void;
 
 pub fn registerShortIntegerPtr(reg: calcRegister_t) *align(1) u64 {
     return abi.registerShortInteger(reg);
@@ -1311,11 +1311,11 @@ pub fn registerReal34Bytes(reg: calcRegister_t) *align(1) [16]u8 {
     return @ptrCast(ptr);
 }
 
-pub fn registerReal34Ptr(reg: calcRegister_t) *align(1) real34_t {
+pub fn registerReal34Ptr(reg: calcRegister_t) *real34_t {
     return abi.registerReal34(reg);
 }
 
-pub fn registerComplex34Ptr(reg: calcRegister_t) *align(1) complex34_t {
+pub fn registerComplex34Ptr(reg: calcRegister_t) *complex34_t {
     return abi.registerComplex34(reg);
 }
 
@@ -1326,7 +1326,7 @@ pub fn registerMatrixHeaderPtr(reg: calcRegister_t) *align(1) matrixHeader_t {
     return @ptrCast(ptr);
 }
 
-pub fn registerImag34Ptr(reg: calcRegister_t) *align(1) real34_t {
+pub fn registerImag34Ptr(reg: calcRegister_t) *real34_t {
     return abi.registerImag34(reg);
 }
 
