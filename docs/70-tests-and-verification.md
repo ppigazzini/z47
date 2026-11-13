@@ -165,6 +165,7 @@ the companion c47-r47-ci doc set, `docs/04-testing.md`, owns them. See
 | constant-blob offset parity | `../src/abi/constants.zig`, `../.github/project/check-constant-offsets.py` | `zig build constants && python3 .github/project/check-constant-offsets.py` |
 | constant/enum mirror parity | `../.github/project/audit-constant-parity.py` | `python3 .github/project/audit-constant-parity.py` |
 | item-table parity | `../src/shell/display/items/items.zig`, `../.github/project/audit-item-table-parity.py` | `python3 .github/project/audit-item-table-parity.py` |
+| softmenu-table parity, judged for the C47 and R47 models on the host and on DMCP5 (not per DM42 package) | `../src/shell/display/softmenus/softmenus.zig`, `../.github/project/audit-softmenu-table-parity.py` | `zig build generated && python3 .github/project/audit-softmenu-table-parity.py --require-generated` |
 | abi struct-layout parity | `../build/tests/abi_layout/` | `zig build abi-layout-parity --summary none` |
 | per-owner behavioral parity | `../src/<domain>/`, `../build/tests/<owner>/` | `zig build <owner>_parity --summary none` (see below) |
 | native Zig unit tests (no C oracle) | `../build/`, `src` module tests | `zig build test:unit --summary none` |

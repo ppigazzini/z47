@@ -7,13 +7,19 @@ M3.3 port, and nothing has compared them against upstream since -- so a resync
 that changes a menu leaves the Zig copy silently stale. The testSuite cannot see
 it: it drives commands, not softkey layouts.
 
-Ground truth is the C preprocessor, not a regex. softmenus.c is preprocessed for
-the host build, which resolves the per-target `#if`s and expands every ITM_/MNU_
-constant to its number, and the resulting initialisers are compared against the
-Zig literals with the same host build options applied to their comptime gates.
+Ground truth is the C preprocessor, not a regex. softmenus.c is preprocessed once
+per configuration in CONFIGURATIONS, which resolves the per-target `#if`s and
+expands every ITM_/MNU_ constant to its number, and the resulting initialisers are
+compared against the Zig literals with that configuration's build options applied
+to their comptime gates. The configurations are the C47 and R47 models on the
+host and on DMCP5: a table gated on the model or the board can only be judged in
+a configuration that sets it, and a single host C47 pass once let every C47
+firmware ship the R47 menus. The DM42 packages are not among them: their
+OPTION_* strips are set by dm42Package in build/firmware.zig, and a Python copy
+of that table would be a second source that can drift.
 
-gtk/gdk are stubbed with empty headers: this only preprocesses, so the real
-GUI headers are never needed. The six catalogs that come from the generated
+gtk/gdk and the DMCP SDK header are stubbed with empty headers: this only
+preprocesses, so the real headers are never needed. The six catalogs that come from the generated
 softmenuCatalogs.h (menu_FCNS and friends) need that header; if no build output
 is present they are reported as SKIPPED, never silently dropped.
 
@@ -55,6 +61,7 @@ from upstream_paths import upstream_path
 # (build/frontier/frontier.zig defaults; only the dmcp* variants override).
 HOST_OPTIONS = {
     "dmcp_build": False,
+    "built_for_r47": False,
     "old_hw": False,
     "option_vector": True,
     "option_elec": True,
@@ -76,6 +83,24 @@ HOST_OPTIONS = {
     "strip_bessel": False,
     "strip_elliptic": False,
 }
+
+HOST_DEFINES = ("-DPC_BUILD=1", "-DLINUX=1", "-DOS64BIT=1")
+# DMCP5 (NEW_HW) keeps the host option values (build/firmware.zig applies the
+# DM42 package strips only to OLD_HW objects) apart from the board itself and
+# EXTRA_INFO_ON_CALC_ERROR, which upstream compiles out of every DMCP build.
+DMCP5_DEFINES = ("-DDMCP_BUILD=1", "-DNEW_HW=1", "-DOS32BIT=1")
+DMCP5_OPTIONS = {"dmcp_build": True, "extra_info": False}
+R47 = ("-DCALCMODEL=USER_R47",)
+
+# (label, preprocessor defines, frontier option overrides). The first is the
+# host C47 build, whose findings keep their bare menu name in the baseline; the
+# others are recorded as `<menu>@<label>`.
+CONFIGURATIONS = (
+    ("c47-host", HOST_DEFINES, {}),
+    ("r47-host", HOST_DEFINES + R47, {"built_for_r47": True}),
+    ("c47-dmcp5", DMCP5_DEFINES, DMCP5_OPTIONS),
+    ("r47-dmcp5", DMCP5_DEFINES + R47, {**DMCP5_OPTIONS, "built_for_r47": True}),
+)
 
 # Menus whose initialiser lives in the generated softmenuCatalogs.h.
 GENERATED_CATALOGS = {
@@ -101,13 +126,13 @@ ZIG_GATED_RE = re.compile(r"\(if \((.+?)\) (.+?) else (.+?)\)", re.S)
 ZIG_AS_RE = re.compile(r"@as\(i16, (-?\d+)\)")
 
 
-def preprocess(repo: Path, catalogs_dir: Path | None) -> str:
+def preprocess(repo: Path, catalogs_dir: Path | None, defines: tuple[str, ...]) -> str:
     cc = os.environ.get("CC") or shutil.which("cc") or shutil.which("gcc")
     if cc is None:
         raise SystemExit2("no C preprocessor found (set CC)")
     with tempfile.TemporaryDirectory() as tmp:
         stub = Path(tmp)
-        for header in ("gtk/gtk.h", "gdk/gdk.h"):
+        for header in ("gtk/gtk.h", "gdk/gdk.h", "dmcp.h"):
             path = stub / header
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text("")
@@ -127,9 +152,7 @@ def preprocess(repo: Path, catalogs_dir: Path | None) -> str:
             cc,
             "-E",
             "-P",
-            "-DPC_BUILD=1",
-            "-DLINUX=1",
-            "-DOS64BIT=1",
+            *defines,
             *includes,
             str(upstream_path(repo, "src/c47/softmenus.c")),
         ]
@@ -171,38 +194,40 @@ def split_top_level(body: str) -> list[str]:
     return [i for i in items if i.strip()]
 
 
-def host_condition(condition: str) -> bool:
+def gate_holds(condition: str, options: dict[str, bool]) -> bool:
     expression = condition
-    for name, value in HOST_OPTIONS.items():
+    for name, value in options.items():
         expression = re.sub(rf"\b{name}\b", str(value), expression)
     return bool(eval(expression.replace("!", " not "), {"__builtins__": {}}, {}))
 
 
-def zig_value(token: str) -> int:
+def zig_value(token: str, options: dict[str, bool]) -> int:
     token = token.strip()
     gated = ZIG_GATED_RE.fullmatch(token)
     if gated:
         condition, when_true, when_false = gated.groups()
-        return zig_value(when_true if host_condition(condition) else when_false)
+        return zig_value(when_true if gate_holds(condition, options) else when_false, options)
     coerced = ZIG_AS_RE.fullmatch(token)
     return int(coerced.group(1)) if coerced else int(token)
 
 
-def zig_table(body: str) -> list[int]:
-    return [zig_value(t) for t in split_top_level(re.sub(r"//.*", "", body))]
+def zig_table(body: str, options: dict[str, bool]) -> list[int]:
+    return [zig_value(t, options) for t in split_top_level(re.sub(r"//.*", "", body))]
 
 
-def zig_menus(source: str) -> dict[str, list[int] | None]:
+def zig_menus(source: str, options: dict[str, bool]) -> dict[str, list[int] | None]:
     out: dict[str, list[int] | None] = {}
     for match in ZIG_MENU_RE.finditer(source):
         try:
-            out[match.group(1)] = zig_table(match.group(2))
+            out[match.group(1)] = zig_table(match.group(2), options)
         except Exception:
             out[match.group(1)] = None
     for match in ZIG_WHOLE_GATED_RE.finditer(source):
         name, condition, when_true, when_false = match.groups()
         try:
-            out[name] = zig_table(when_true if host_condition(condition) else when_false)
+            out[name] = zig_table(
+                when_true if gate_holds(condition, options) else when_false, options
+            )
         except Exception:
             out[name] = None
     return out
@@ -276,14 +301,15 @@ def main() -> int:
     )
     owner = repo / "src/shell/display/softmenus/softmenus.zig"
 
+    source = owner.read_text(encoding="utf-8", errors="replace")
     try:
-        preprocessed = preprocess(repo, find_catalogs_dir(repo))
+        catalogs_dir = find_catalogs_dir(repo)
+        preprocessed = {
+            label: preprocess(repo, catalogs_dir, defines) for label, defines, _ in CONFIGURATIONS
+        }
     except SystemExit2 as error:
         print(f"softmenu-table parity: CANNOT RUN -- {error}")
         return 2
-
-    from_c = c_menus(preprocessed)
-    from_zig = zig_menus(owner.read_text(encoding="utf-8", errors="replace"))
 
     drifted: dict[str, dict[str, object]] = {}
     missing: list[str] = []
@@ -294,43 +320,53 @@ def main() -> int:
     unjudged: set[str] = set()
     compared = 0
 
-    for name in sorted(set(from_c)):
-        c_values = from_c[name]
-        if c_values is None:
-            skipped.append(f"{name} (C initialiser not constant-foldable)")
-            unjudged.add(name)
-            continue
-        if name not in from_zig:
-            if name in GENERATED_CATALOGS:
-                skipped.append(f"{name} (generated catalog, no Zig literal)")
-                unjudged.add(name)
-            else:
-                missing.append(name)
-            continue
-        zig_values = from_zig[name]
-        if zig_values is None:
-            skipped.append(f"{name} (Zig literal not evaluable)")
-            unjudged.add(name)
-            continue
-        compared += 1
-        if c_values != zig_values:
-            drifted[name] = {
-                "c_len": len(c_values),
-                "zig_len": len(zig_values),
-                "differing": sum(1 for x, y in zip(c_values, zig_values, strict=False) if x != y)
-                + abs(len(c_values) - len(zig_values)),
-                "digest": digest(c_values, zig_values),
-            }
+    for index, (label, _, overrides) in enumerate(CONFIGURATIONS):
+        from_c = c_menus(preprocessed[label])
+        from_zig = zig_menus(source, {**HOST_OPTIONS, **overrides})
 
-    if absent_catalogs := sorted(n for n in GENERATED_CATALOGS if n not in from_c):
-        unjudged.update(absent_catalogs)
-        skipped.append(
-            f"{len(absent_catalogs)} generated catalogs absent, no build output to read "
-            f"softmenuCatalogs.h from: {', '.join(absent_catalogs)}"
-        )
+        def key(name: str, label: str = label, index: int = index) -> str:
+            return name if index == 0 else f"{name}@{label}"
+
+        for name in sorted(set(from_c)):
+            c_values = from_c[name]
+            if c_values is None:
+                skipped.append(f"{key(name)} (C initialiser not constant-foldable)")
+                unjudged.add(key(name))
+                continue
+            if name not in from_zig:
+                if name in GENERATED_CATALOGS:
+                    skipped.append(f"{key(name)} (generated catalog, no Zig literal)")
+                    unjudged.add(key(name))
+                else:
+                    missing.append(key(name))
+                continue
+            zig_values = from_zig[name]
+            if zig_values is None:
+                skipped.append(f"{key(name)} (Zig literal not evaluable)")
+                unjudged.add(key(name))
+                continue
+            compared += 1
+            if c_values != zig_values:
+                drifted[key(name)] = {
+                    "c_len": len(c_values),
+                    "zig_len": len(zig_values),
+                    "differing": sum(
+                        1 for x, y in zip(c_values, zig_values, strict=False) if x != y
+                    )
+                    + abs(len(c_values) - len(zig_values)),
+                    "digest": digest(c_values, zig_values),
+                }
+
+        if absent_catalogs := sorted(n for n in GENERATED_CATALOGS if n not in from_c):
+            unjudged.update(key(n) for n in absent_catalogs)
+            skipped.append(
+                f"{len(absent_catalogs)} generated catalogs absent in {label}, no build output "
+                f"to read softmenuCatalogs.h from: {', '.join(absent_catalogs)}"
+            )
 
     print(
-        f"softmenu-table parity: compared {compared} menus, "
+        f"softmenu-table parity: compared {compared} menu tables over {len(CONFIGURATIONS)} "
+        "configurations, "
         f"{len(drifted)} drifted, {len(missing)} absent from the Zig owner, {len(skipped)} skipped"
     )
     for entry in skipped:

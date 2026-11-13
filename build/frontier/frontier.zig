@@ -105,8 +105,9 @@ pub const RuntimeObjectOptions = struct {
     // CALCMODEL selects the firmware/sim model the way upstream's compile-time
     // -DCALCMODEL does: it seeds the calcModel global (c47.c) so isR47FAM() and
     // the early startup render (window title, keyboard layout) are correct
-    // BEFORE c47-gtk.c re-sets calcModel after restore. USER_C47 = 46 (host C47
-    // sim + testSuite default), USER_R47 = 66 (host R47 sim + DMCP firmware).
+    // BEFORE c47-gtk.c re-sets calcModel after restore, and it picks the model's
+    // softmenu tables. USER_C47 = 46 (the C47 sim and firmware, and the testSuite
+    // default), USER_R47 = 66 (the R47 sim and firmware).
     calcmodel: u8 = 46,
     // IR_PRINTING gates the IR printer paths (printViewAview / printInputPrompt
     // in display.c's fnView/fnAview/fnPrompt). Upstream defines.h enables it by
