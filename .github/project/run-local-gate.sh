@@ -201,6 +201,12 @@ step "[8/11] workflow script locality"
 bash .github/project/check-ci-no-local-dev-scripts.sh
 step "[9/11] portable integer widths (Windows LLP64 trap)"
 bash .github/project/check-portable-int-widths.sh
+step "[9b/11] extern declarations match their definitions"
+# Owners reach each other through the C ABI, which no compiler checks across
+# objects: a declaration claiming void over a bool, or u16 over u32, links and
+# runs. ROM calls are judged against the SDK header that names their offset.
+quiet python3 .github/project/check-extern-signatures.py --self-test
+python3 .github/project/check-extern-signatures.py --repo-root .
 step "[10/11] host-parity build/test/oracle battery"
 bash .github/project/run-host-parity-battery.sh
 step "[10c/11] every softmenu table was actually judged"

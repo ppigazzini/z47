@@ -598,6 +598,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # The extern-signature check reads lft_ifc.h and dmcp.h from both SDKs.
+          submodules: recursive
       - name: Enforce portable integer widths (no value-carrying c_long/c_ulong)
         shell: bash
         run: |
@@ -613,6 +616,12 @@ jobs:
         run: |
           set -euo pipefail
           python3 .github/project/check-extern-var-widths.py .
+      - name: Enforce extern fn and ROM call signatures match their definitions
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 .github/project/check-extern-signatures.py --self-test
+          python3 .github/project/check-extern-signatures.py --repo-root .
 
   workflow-imported-root-guard:
     name: Verify workflow imported-root vocabulary
