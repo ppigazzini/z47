@@ -103,7 +103,7 @@ fn clampOneShortIntegerRegister(regist: stack_runtime.calcRegister_t) void {
     // REGISTER_SHORT_INTEGER_DATA(a) is `(uint64_t *)getRegisterDataPointer(a)`.
     // A dtShortInteger register always has a payload, so a null here would be the
     // descriptor lying about the type -- let it trap rather than silently skip.
-    const ptr: *align(1) u64 = @ptrCast(stack_runtime.getRegisterDataPointer(regist) orelse unreachable);
+    const ptr: *align(1) u64 = abi.registerShortInteger(regist);
     ptr.* &= shortIntegerMask;
 }
 
@@ -205,10 +205,9 @@ fn registerReal34Ptr(reg: stack_runtime.calcRegister_t) *product_real.ProductRea
     return abi.registerReal34(reg);
 }
 
-fn registerStringData(reg: stack_runtime.calcRegister_t) [*:0]const u8 {
-    const data_ptr = stack_runtime.getRegisterDataPointer(reg) orelse return "";
-    const bytes: [*]const u8 = @ptrCast(data_ptr);
-    return @ptrCast(bytes + 4);
+fn registerStringData(reg: stack_runtime.calcRegister_t) [*c]const u8 {
+    const bytes = abi.registers.getRegisterDataPointer(reg) orelse return "";
+    return bytes + 4;
 }
 
 fn parseRealRegisterToNonNegativeInt(reg: stack_runtime.calcRegister_t, max_value: i16, value_out: *i16) bool {
@@ -640,12 +639,12 @@ fn toBytes(blocks: u16) u32 {
 
 // realToString writes decNumber's "Infinity"; the console form is the glyph.
 // Rewrites str in place, exactly as the C does with its two scratch buffers.
-fn rewriteInfinityGlyph(str: [*:0]u8, scratch: []u8) void {
+fn rewriteInfinityGlyph(str: [*c]u8, scratch: []u8) void {
     if (strstr(str, "Infinity") == null) {
         return;
     }
     _ = strcpy(scratch.ptr, str);
-    var p: [*:0]u8 = @ptrCast(scratch.ptr);
+    var p: [*c]u8 = scratch.ptr;
     var q: [*]u8 = str;
     while (strstr(p, "Infinity")) |hit| {
         hit[0] = 0;
@@ -666,7 +665,7 @@ pub export fn printStringToConsole(str: [*:0]const u8, before: [*:0]const u8, af
         _ = printf("\"%s\"", &s2);
 
         var ii: i16 = 0;
-        const ascii_len: i32 = @intCast(std.mem.len(@as([*:0]const u8, @ptrCast(&s2))));
+        const ascii_len: i32 = @intCast(std.mem.sliceTo(&s2, 0).len);
         while (ii < ascii_len and ii < 40) : (ii += 1) {
             _ = printf(" ");
         }
@@ -817,8 +816,7 @@ pub export fn printRegisterDescriptorToConsole(regist: stack_runtime.calcRegiste
             // The size word comes from globalRegister indexed by `reg`, which in
             // the two variable branches is a block index and therefore names an
             // unrelated global register, not the one the header above describes.
-            const block = register_runtime.toPcMemPtr(codec.pointer(stack_runtime.globalDescriptor(reg))) orelse unreachable;
-            const data_size: *align(1) const u16 = @ptrCast(block);
+            const data_size = register_runtime.toPcMemPtrAs(u16, codec.pointer(stack_runtime.globalDescriptor(reg))) orelse unreachable;
             _ = printf("    data size = %u\n", @as(c_uint, data_size.*));
         }
         _ = printf("    tag       = %u\n", @as(c_uint, codec.tag(descriptor)));
@@ -918,7 +916,7 @@ pub export fn printRegisterToConsole(regist: stack_runtime.calcRegister_t, befor
                         _ = printf("[\u{2248}0 ");
                     } else {
                         realToString(&tmpr, &element_str);
-                        rewriteInfinityGlyph(@ptrCast(&element_str), &scratch);
+                        rewriteInfinityGlyph(&element_str, &scratch);
                         _ = printf("[%s", &element_str);
                     }
                     real34ToReal(&element.imag, &tmpr);
@@ -927,7 +925,7 @@ pub export fn printRegisterToConsole(regist: stack_runtime.calcRegister_t, befor
                         _ = printf(" i\u{2248}0] ");
                     } else {
                         realToString(&tmpr, &element_str);
-                        rewriteInfinityGlyph(@ptrCast(&element_str), &scratch);
+                        rewriteInfinityGlyph(&element_str, &scratch);
                         _ = printf(" i%s] ", &element_str);
                     }
                 }

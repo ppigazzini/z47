@@ -277,6 +277,10 @@ pub fn toPcMemPtr(mem_ptr: u16) ?*align(4) anyopaque {
     return tables_owned.toPcMemPtr(mem_ptr);
 }
 
+pub fn toPcMemPtrAs(comptime T: type, mem_ptr: u16) ?*align(4) T {
+    return tables_owned.toPcMemPtrAs(T, mem_ptr);
+}
+
 pub fn toC47MemPtr(mem_ptr: ?*const anyopaque) u16 {
     return tables_owned.toC47MemPtr(mem_ptr);
 }
