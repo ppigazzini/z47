@@ -33,6 +33,8 @@ const builtin = @import("builtin");
 const frontier_build_options = @import("frontier_build_options");
 const dmcp_build: bool = frontier_build_options.dmcp_build;
 const old_hw: bool = frontier_build_options.old_hw;
+// LIBRARY_FN_BASE (lft_ifc.h): the ROM function table of the board's SDK.
+const LIBRARY_FN_BASE: usize = if (old_hw) 0x08000201 else 0x08000301;
 const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 const option_structured_pgm: bool = frontier_build_options.option_structured_pgm;
 // OPTION_DRG_CFG: DRG during number entry chooses the unit of the literal, and a
@@ -578,7 +580,7 @@ const c_lcd_fill_rect = @extern(LcdFillRectFn, .{ .name = "lcd_fill_rect" });
 
 inline fn lcdFillRect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void {
     if (comptime dmcp_build) {
-        const f: LcdFillRectFn = @ptrFromInt(0x08000201 + 60);
+        const f: LcdFillRectFn = @ptrFromInt(LIBRARY_FN_BASE + 60);
         f(x, y, dx, dy, val);
     } else {
         c_lcd_fill_rect(x, y, dx, dy, val);
@@ -1351,7 +1353,7 @@ extern fn emptyKeyBuffer() bool_t;
 const KeyEmptyFn = *const fn () callconv(.c) c_int;
 inline fn keyEmpty() c_int {
     if (comptime dmcp_build) {
-        const f: KeyEmptyFn = @ptrFromInt(0x08000201 + 360);
+        const f: KeyEmptyFn = @ptrFromInt(LIBRARY_FN_BASE + 380);
         return f();
     } else {
         return 1;
