@@ -109,14 +109,12 @@ def main():
         doc = {
             "note": (
                 "`pub export` symbols ABSENT from the pinned C "
-                "tree: z47's own ABI surface. The other ~2599 exports are the parity "
-                "contract and are deliberately NOT counted here -- driving those down "
+                "tree: z47's own ABI surface. Every other export is part of the parity "
+                "contract and is deliberately NOT counted here -- driving those down "
                 "would mean deviating from the C that parity requires. This list may "
                 "shrink (prefer @import to extern, which moves a symbol from the link "
                 "graph into the module graph) and must not grow without review."
             ),
-            "exported_total": len(exported),
-            "authored_count": len(authored),
             "authored": authored,
         }
         with open(path, "w", encoding="utf-8") as fh:

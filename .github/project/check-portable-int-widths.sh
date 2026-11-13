@@ -6,7 +6,8 @@
 # truncates and PANICS at runtime on Win64 only — invisible to the Linux local
 # gate, caught only by the Windows CI lane. saveStateValue cast a full 64-bit state
 # word to c_ulong and panicked the Windows testSuite ("integer does not fit in
-# destination type"). See [[c-abi-width-types-are-transliteration-debt]].
+# destination type"). AGENTS.md states the rule: fixed-width types in ported
+# logic, C types only at real ABI boundaries.
 #
 # The '@as(c_long, ...)' / '@as(c_ulong, ...)' cast syntax (and ': c_(u)long ='
 # bindings with @intCast/@bitCast) only appears in value-carrying LOGIC — never in

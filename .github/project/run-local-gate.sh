@@ -11,12 +11,11 @@
 # macOS host lanes cannot run here, and CI additionally packages and publishes the
 # firmware artifacts. Do not read a green run as more than it claims.
 #
-# This is the gate the first all-Zig resync (0caee2adc) needed: three of its four
-# host-parity failures — an oracle that stopped compiling, a stale generated
-# artifact, and a source-ownership violation — were invisible to `zig build sim`
-# and `zig build test:unit`, and only surfaced in CI. Running this catches all
-# three locally. (The fourth, a Windows LLP64 int-width panic, is inherently a
-# Windows-lane finding; see upstream-resync-runbook.md.)
+# An oracle that stopped compiling, a stale generated artifact and a
+# source-ownership violation are all invisible to `zig build sim` and
+# `zig build test:unit`; this catches them before CI does. A Windows LLP64
+# int-width panic is not among them: only the Windows lane can show it (see
+# upstream-resync-runbook.md).
 #
 # Usage:
 #   bash .github/project/run-local-gate.sh
@@ -48,9 +47,9 @@ quiet() {
 
 step "[1/11] zig fmt"
 ./.github/project/check-fmt.sh
-step "[1b/11] filename hygiene (NM10-0)"
+step "[1b/11] filename hygiene"
 bash .github/project/check-filename-hygiene.sh
-step "[1c/11] file cohesion (NM11-0)"
+step "[1c/11] file cohesion"
 bash .github/project/check-file-cohesion.sh
 step "[2/11] native unit tests (zig build test:unit)"
 zig build test:unit
@@ -66,9 +65,9 @@ step "[4b/11] upstream correspondence (symbol join owner coverage)"
 python3 .github/project/check-upstream-correspondence.py
 step "[4c/11] clamp correspondence (upstream guards inside owned functions)"
 # The symbol join above answers "which owner absorbs this .c" and is blind to
-# upstream adding a GUARD inside a function the Zig already has -- how the matrix
-# capacity clamp survived four resyncs and how the config-descriptor
-# Ratchets the load-path queue; the version gate itself was once missing.
+# upstream adding a GUARD inside a function the Zig already has, which is how a
+# matrix capacity clamp and a config-descriptor version gate went unported.
+# Ratchets the queue of upstream guards with no Zig counterpart.
 python3 .github/project/report-clamp-correspondence.py --check
 step "[4d/11] macro-family correspondence (one #define, one behaviour)"
 # Upstream generates function families from a single #define, so their ports must
@@ -100,10 +99,10 @@ python3 .github/project/check-dead-force-imports.py --repo-root .
 step "[6h/11] authored ABI surface"
 python3 .github/project/check-authored-abi.py --repo-root .
 step "[6h2/11] every governance gate is run by something"
-# REPORT-31 Annex N: six of the nine gates that report built ran in NO workflow --
-# only here, when somebody chose to type this command. This gate is the inventory
-# that makes the difference visible; the endpoint is not zero CI-exempt gates, it is
-# zero gates that are neither.
+# A gate that no workflow runs is checked only when somebody types this command,
+# and a gate nothing runs at all checks nothing. This inventory makes the
+# difference visible: a gate may be CI-exempt for a stated reason, but never run
+# by nothing.
 quiet python3 .github/project/check-gate-inventory.py --self-test
 python3 .github/project/check-gate-inventory.py --repo-root .
 bash .github/project/check-build-paths.sh
@@ -215,9 +214,9 @@ python3 .github/project/check-extern-signatures.py --repo-root .
 step "[10/11] host-parity build/test/oracle battery"
 bash .github/project/run-host-parity-battery.sh
 step "[10c/11] every softmenu table was actually judged"
-# 6j above runs before anything is built, so on a clean tree the six GENERATED
-# catalogs skip and the verdict still reads OK -- how menu_FCNS held a 364-entry
-# drift. The battery has now populated the cache, so demand a verdict per menu.
+# 6j above runs before the battery, and a GENERATED catalog it cannot find is
+# skipped while the verdict still reads OK -- how menu_FCNS once held a drift
+# nobody saw. The battery has now populated the cache, so demand a verdict per menu.
 python3 .github/project/audit-softmenu-table-parity.py --repo-root . --require-generated
 step "[10a/11] malformed-input corpora through the real load paths"
 # ~1 s each once built, and they are the ONLY adversarial coverage the load paths
@@ -243,19 +242,19 @@ step "[6g2e/11] every varying upstream OPTION_* guard has a Zig consumer"
 python3 .github/project/check-option-guard-consumers.py
 
 step "[10e/11] every parity lane the build declares is actually run"
-# Enumerates the lanes from `zig build --help` and diffs them against the battery,
-# because "they are all in there" was a claim checked by reading and it was wrong
-# four times over.
-# Long integer arithmetic goes through the width-checked operators. The two call
-# sites that mattered were inside a squaring loop, so the missing refusal did not
-# produce a wrong answer -- it produced an allocation that ended the session.
 # A CI job that runs `zig build` must provision what that build links. The gate
 # inventory cannot see this: it asks whether a workflow names a script, not whether
 # the job naming it can run it. Both questions have to be asked.
 quiet python3 .github/project/check-ci-build-prerequisites.py --self-test
 python3 .github/project/check-ci-build-prerequisites.py --repo-root .
+# Long integer arithmetic goes through the width-checked operators. A raw GMP call
+# inside a squaring loop does not produce a wrong answer when it skips the
+# refusal -- it produces an allocation that ends the session.
 quiet python3 .github/project/check-raw-gmp-call-sites.py --self-test
 python3 .github/project/check-raw-gmp-call-sites.py --repo-root .
+# Enumerates the lanes from `zig build --help` and diffs them against what the
+# battery, this gate and the workflows run, because "they are all in there" is a
+# claim nobody can check by reading.
 python3 .github/project/check-parity-lanes-gated.py --repo-root .
 
 step "[10d/11] the parity lanes still fail when the owner is wrong"

@@ -5,34 +5,27 @@ Measures two directed couplings from `src/core/` to `src/shell/`:
 
   * import edges -- a core file that `@import`s a shell SOURCE file. This is a
                     real Zig-level dependency and a genuine invariant: it must
-                    stay at ZERO. It is zero today.
+                    stay at ZERO.
   * extern edges -- a core file that `extern`-consumes a symbol whose sole
                     first-party `pub export` lives in shell. FROZEN at the
-                    current count as a non-regression guard. It may not rise.
+                    baseline count as a non-regression guard. It may not rise.
 
-WHY EXTERN EDGES ARE FROZEN AND NOT RATCHETED TO ZERO. This lint used to call
-the extern edges "up-couplings NM9 severs by moving each symbol's definition
-into its correct zone" and allowed them "only to shrink". That goal was wrong,
-and it generated three separate milestones that measurement then killed.
-
-Upstream C47 is ONE library (src/c47) plus a hal; it has no core/shell split.
-z47's split is a z47 construct laid over that library. So a core file calling a
-library-wide global is how UPSTREAM'S OWN CODE IS WRITTEN, not a defect: of the
-469 shell-owned symbols core consumes, 465 (99.1%) are declared in upstream's
-own src/c47 headers, and upstream's counterparts of z47's core files call them
-freely (keyboard.c uses indexOfItems 21 times, solver/equation.c 7 times).
-Driving these to zero would mean deviating from upstream in its hottest files.
-There is no "correct zone" to move an upstream library global into.
+WHY EXTERN EDGES ARE FROZEN AND NOT RATCHETED TO ZERO. Upstream C47 is ONE
+library (src/c47) plus a hal; it has no core/shell split. z47's split is a z47
+construct laid over that library. So a core file calling a library-wide global is
+how UPSTREAM'S OWN CODE IS WRITTEN, not a defect: nearly every shell-owned symbol
+core consumes is declared in upstream's own src/c47 headers (`--list` prints the
+edges), and upstream's counterparts of z47's core files call them freely
+(keyboard.c uses indexOfItems throughout). Driving these to zero would mean
+deviating from upstream in its hottest files. There is no "correct zone" to move
+an upstream library global into.
 
 So this asks only the question that has a right answer, exactly as the sibling
 platform-purity gate does: "did z47 ADD a core->shell coupling it did not have?"
 Lowering the count is a real architectural act, not a score: it means a
 definition genuinely belonged in core. Re-pin with --update when that happens.
-
-The 4 symbols that are NOT in upstream's headers were real debt, and asking this
-question is what found them: PLOT_RMS/PLOT_INTG/PLOT_DIFF/PLOT_SHADE, globals
-upstream replaced with system flags (FLAG_PRMS..FLAG_PSHADE) and z47 did not
-follow.
+An edge whose symbol upstream's headers do NOT declare is the one worth reading:
+it is a z47 global upstream does not have.
 
 Baseline lives in core-shell-severance-baseline.json.
 """

@@ -167,7 +167,11 @@ close-out review.
    `python3 .github/project/check-local-roadmap-sync.py --roadmap <local-roadmap.md>`.
 2. Treat any reported duplicate, missing, or drifted milestone row as a real
    validation failure, not editorial cleanup.
-3. Keep tracked docs, tracked workflow files, and CI jobs free of hard
+3. When the close-out has a local iteration report, run
+   `python3 .github/project/check-iteration-report-sections.py --report <local-report.md>`;
+   it fails a milestone closure section that lacks one of the subsections the
+   script's `REQUIRED_SUBHEADINGS` names.
+4. Keep tracked docs, tracked workflow files, and CI jobs free of hard
    references to local-only roadmap paths.
 
 ## When To Update Which Page

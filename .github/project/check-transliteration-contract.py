@@ -4,23 +4,20 @@
 WHAT THIS PROTECTS, AND WHY IT LOOKS BACKWARDS
 
 Every large z47 owner is a 1:1 port of a same-named upstream C file of near
-identical size: screen.zig 6334 lines against screen.c 6623, items.zig 4699
-against items.c 4734. Ordinary judgement says a 6000-line file is a design
-failure to be split. Here that judgement is WRONG, and measurably so.
+identical size (the baseline's pairs carry each ratio). Ordinary judgement says a
+6000-line file is a design failure to be split. Here that judgement is WRONG.
 
-Those files are exactly the hot ones. Measured over two years of upstream
-history: items.c 551 commits (the hottest file in the repository), softmenus.c
-424, screen.c 345, addons.c 198. The 1:1 file shape is what lets a maintainer
-apply an upstream C diff textually, and z47 re-syncs constantly -- every resync
+Those files are exactly the hot ones: the baseline records each one's upstream
+commit count over two years. The 1:1 file shape is what lets a maintainer apply
+an upstream C diff textually, and z47 re-syncs constantly -- every resync
 re-ports behavioural changes concentrated in precisely these files. Splitting
 screen.zig into eight cohesive owners would look like an architecture win and
 would silently make every future resync a manual reconstruction.
 
-So this gate encodes the rule from PROMPT.md: file shape is a per-file trade
-against that file's churn, not an all-or-nothing style. Hot files stay
-transliterated. Cold files may be idiomatised freely -- their parity oracle
-proves the re-sync. This gate constrains ONLY the hot, 1:1 files; it says
-nothing about the rest of the tree.
+The rule: file shape is a per-file trade against that file's churn, not an
+all-or-nothing style. Hot files stay transliterated. Cold files may be
+idiomatised freely -- their parity oracle proves the re-sync. This gate
+constrains ONLY the hot, 1:1 files; it says nothing about the rest of the tree.
 
 WHAT IT CHECKS. For each pinned pair: the z47 owner still exists, and its size
 still tracks the C original. A collapsing ratio means the owner was split or
@@ -28,8 +25,8 @@ gutted -- the sync contract broken -- even though the code would still compile
 and every test would still pass. Nothing else catches that.
 
 NOT CHECKED HERE: files z47 has already decomposed by deliberate decision
-(registers.c -> 18 owners, matrix.c -> 54, keyboard.c -> 7, solve.c -> 8). They
-are not 1:1 and this gate has no opinion on them.
+(registers.c, matrix.c, keyboard.c, solve.c; upstream-correspondence.tsv lists
+their owners). They are not 1:1 and this gate has no opinion on them.
 
 CHURN IS PINNED, NOT RECOMPUTED. Churn needs the upstream history, which is a
 sibling checkout that CI does not have. It is measured at --bump time and
@@ -135,8 +132,6 @@ def bump(repo_root):
                 "c": c_path,
                 "zig": zig_rel,
                 "upstream_commits_2yr": commits,
-                "c_lines": c_lines,
-                "zig_lines": zig_lines,
                 "ratio": round(ratio, 3),
             }
         )

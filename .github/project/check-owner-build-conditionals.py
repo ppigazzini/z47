@@ -121,7 +121,7 @@ ALLOWED: dict[str, str] = {
     "library_fn_base": "LIBRARY_FN_BASE -- lft_ifc.h's ROM function-table base, which differs per board",
     "sdb_base": "dmcp.h's sdb -- the system data block address, which differs per board",
     "ram_size_in_blocks": "RAM_SIZE_IN_BLOCKS -- defines.h selects RAM_SIZE_IN_BLOCKS_OLD_HW or _NEW_HW by OLD_HW",
-    "wp34s_mod_small_buffers": "WP34S_MOD_SMALL_BUFFERS",
+    "wp34s_mod_small_buffers": "defined(DMCP_BUILD) && HARDWARE_MODEL == HWM_DM42 -- wp34s.c reduces radians with the 2139-digit 2pi (RADIAN_REDUCTION_DIGITS) under it, and WP34S_Mod and WP34S_BigMod size their buffers by the same guard",
     "is_testsuite_build": "TESTSUITE_BUILD -- c43 uses it itself (random.c seeds 0xDeadBeef under it)",
     "compile_date": "__DATE__ -- screen.c collapses it into versionDateStr, and the build supplies the stamp because Zig has no __DATE__",
     "strip_15": "!OPTION_DISTRIBUTIONS",
@@ -174,9 +174,9 @@ LINK_SET: dict[str, str] = {}
 HARNESS_ONLY: dict[str, str] = {
     "free_regions_are_inline_array": (
         "BLOCKED. FreeRegionsStorage becomes [N]T instead of [*]T because the fake"
-        " runtime cannot allocate. Same obstacle as M31-37's matrix element half:"
-        " unblocking it means the fake modelling allocation, which is the full-core"
-        " conversion by another route."
+        " runtime cannot allocate. The fake surface's matrix elements meet the same"
+        " obstacle: unblocking either means the fake modelling allocation, which is"
+        " the full-core conversion by another route."
     ),
     "use_array_backed_global_registers": (
         "BLOCKED. The global register file becomes an array instead of a pointer, for"

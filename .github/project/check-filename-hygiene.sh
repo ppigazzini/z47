@@ -2,9 +2,9 @@
 #
 # Filename hygiene gate. A source filename must name its
 # RESPONSIBILITY, never how it was produced. This fails the build on any src
-# filename that carries a migration-artifact / dumping-ground token, so the
-# "*_bulk"-class regression that the NM9 severance push introduced cannot come
-# back. See [[severance-destinations-must-be-designed-owners]].
+# filename that carries a migration-artifact / dumping-ground token: code moved
+# out of an owner must land in an owner named for what it owns, not in a
+# "*_bulk"-class file named for the move.
 #
 # Banned tokens (as a whole word inside the snake_case basename): bulk, misc,
 # extracted, moved, stuff, junk, tmp, temp, misc, various, part1/part2, etc.

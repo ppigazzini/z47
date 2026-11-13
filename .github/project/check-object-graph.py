@@ -232,15 +232,15 @@ def main():
                 "object set the build DECLARES (zig build object-manifest). Distinct "
                 "from the @import graph in check-module-graph.py: moving a file "
                 "between directories changes that one and cannot change this one. "
-                "Cycles/size/trapped are gated and must not rise. ccd/acd/nccd and "
-                "the one-symbol cycle edges are REPORTED: Lakos's NCCD threshold "
+                "Cycles/size/trapped are gated and must not rise, and are all this "
+                "file stores. ccd/acd/nccd and the one-symbol cycle edges are printed "
+                "on every run, not gated: Lakos's NCCD threshold "
                 "assumes cycles cost compile time, and z47's cost neither compile "
                 "time, flash (--gc-sections) nor test isolation (owners already link "
                 "standalone)."
             ),
             "targets": {
-                t: {k: v for k, v in m.items() if k != "one_symbol_edge_list"}
-                for t, m in measured.items()
+                t: {k: m[k] for k in ("cycles", "objects_in_cycles")} for t, m in measured.items()
             },
         }
         with open(path, "w", encoding="utf-8") as fh:

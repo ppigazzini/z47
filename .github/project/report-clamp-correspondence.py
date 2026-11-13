@@ -40,26 +40,24 @@ expands once, because the call graph is cyclic and a deeper walk dilutes the
 evidence until everything looks covered.
 
 CALIBRATION. `--calibrate` reproduces the matrix-clamp miss: run against a worktree of
-`75dbb6034^` and the matrix clamp must appear. Note that the milestone spec named
-`811c9905d` as the calibration tree; at that pin `restoreRegister` had not been
-ported to Zig at all, so there was no owner for the guard to be missing FROM. The
-first tree where the miss is expressible is the parent of the commit that fixed it.
+`75dbb6034^` and the matrix clamp must appear. An earlier tree does not work: before
+`restoreRegister` was ported to Zig there was no owner for the guard to be missing
+FROM, so the first tree where the miss is expressible is the parent of the commit
+that fixed it.
 
-A REPORT that also RATCHETS, which is a deliberate departure from the milestone's
-"gate only once the queue is empty". The queue is not empty: two load-path entries
-remain, both triaged and neither a dropped guard (`fnDeleteBackup` is a reduced
-port that branches on nothing, and the state-file version range lives in
-`calc_state_header.zig` rather than in `restoreOneSection`). Waiting for zero
-before gating would leave the next resync unprotected for the sake of a number,
-and resync protection is the entire reason this exists. So `--check` fixes the
-count where it stands and fails if it RISES -- the same shape as the absence
-ratchet in check-upstream-correspondence.py. The objection is to
+A REPORT that also RATCHETS, rather than one gated only once its queue is empty.
+A queue entry can be triaged and still not be a dropped guard (a reduced port that
+branches on nothing, or a range check that lives in another owner), and waiting
+for zero before gating would leave the next resync unprotected for the sake of a
+number; resync protection is the entire reason this exists. So `--check` holds the
+count at clamp-correspondence-baseline.json and fails if it RISES -- the same shape
+as the absence ratchet in check-upstream-correspondence.py. The objection is to
 judging before calibrating; this is calibrated in both directions, against a tree
 with the bug and a tree without it.
 
 `--check` runs the self-test first. A scan whose extractor has quietly broken
 reports a clean queue, and a clean queue from a broken tool is precisely the
-failure this milestone was written to end.
+failure this report exists to end.
 
 Run from the repo root:
   python3 .github/project/report-clamp-correspondence.py

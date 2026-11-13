@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
-"""Enumerate the DMCP-only firmware surface in the Zig owners (Annex A4).
+"""Enumerate the DMCP-only firmware surface in the Zig owners.
 
 Code guarded by `dmcp_build` runs only on the DM42/DM42n firmware target; the
 host build compiles it but never executes it, so host tests cannot catch a
-regression there. For M10 readiness every such region must be ACCOUNTED FOR --
-either host-executed by a test (e.g. the ring-buffer drain) or listed in the
-M9 hardware-smoke checklist -- so nothing firmware-only is silently uncovered.
+regression there. Every such region must be ACCOUNTED FOR -- either
+host-executed by a test (e.g. the ring-buffer drain) or listed in the
+hardware-smoke checklist -- so nothing firmware-only is silently uncovered.
 
 This report lists every `dmcp_build`-gated region in src/, with its file,
 line, and enclosing `pub fn`, grouped by owner. It is the inventory the
-checklist (.github/project/M9-hardware-smoke-checklist.md) must cover.
+checklist (.github/project/hardware-smoke-checklist.md) must cover.
 
 Usage: report-firmware-host-gap.py [--repo-root .] [--owner-summary]
 Exit code: 0 always (report).

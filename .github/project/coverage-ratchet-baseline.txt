@@ -1,13 +1,14 @@
-# Coverage ratchet baseline (Annex A6). Monotonic floors -- these numbers may
-# only go UP. Raise them in the same commit that adds coverage; never lower them
-# without an explicit, reviewed justification in the commit message.
+# Coverage ratchet baseline for check-coverage-ratchet.sh. Monotonic floors --
+# these numbers may only go UP. Raise them in the same commit that adds coverage;
+# never lower them without an explicit, reviewed justification in the commit
+# message.
 #
-# Why these metrics: the A7 dry-run proved the host suites are blind to upstream
-# changes in the replaced owners, so the real M10 protection is the C-vs-Zig
-# differential (A5) and the full-core parity harnesses, NOT raw line coverage of
-# vendored deps. The ratchet therefore guards the count of owner functions under
-# differential and the number of full-core parity harnesses -- the gains that
-# actually catch a bad re-port -- so a future change cannot quietly delete them.
+# Why these metrics: the host suites are blind to an upstream change inside a
+# replaced owner (run-upstream-reportgap-dryrun.sh demonstrates it), so what
+# catches a bad re-port is the C-vs-Zig differential and the full-core parity
+# harnesses, NOT raw line coverage of vendored deps. The ratchet therefore guards
+# the count of owner functions under differential and the number of full-core
+# parity harnesses, so a future change cannot quietly delete them.
 #
 # Owner functions under the C-vs-Zig differential (extract_oracle.sh FUNCS).
 differential_functions=6
@@ -18,10 +19,10 @@ differential_functions=6
 # fails.
 fullcore_harness_steps=11
 
-# Annex A0: distinct src/ owner source lines executed by the instrumented
+# Owner coverage: distinct src/ owner source lines executed by the instrumented
 # keyboardEntryCov harness (frontier + keyboard_state + stack_state owner objects
-# built with coverage=true). Measured ~1790 on the pinned toolchain. This is a
-# COLLAPSE floor, not an exact tracker: llvm-symbolizer resolves a few lines
+# built with coverage=true); check-coverage-ratchet.sh prints the measured value
+# after `zig build coverage`. This is a COLLAPSE floor, not an exact tracker: llvm-symbolizer resolves a few lines
 # differently across runs and LLVM versions, so the floor sits well below the
 # measured value with a deliberate margin. It catches an owner losing its
 # coverage=true instrumentation (hundreds of lines) but not symbolizer wobble.

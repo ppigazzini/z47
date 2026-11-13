@@ -3,7 +3,7 @@
 # File-cohesion gate. The complement of the drawer ban:
 # this fails the build on OVER-FRAGMENTATION -- micro-files that hold a single
 # fn/var where a cohesive owner belonged. Granularity is cohesion in BOTH
-# directions: don't pile unrelated things into a drawer (NM10-0), and don't split
+# directions: don't pile unrelated things into a drawer (check-filename-hygiene.sh), and don't split
 # a cohesive thing into barnacles (this gate).
 #
 # Two checks:

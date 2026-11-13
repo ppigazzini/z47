@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Audit save/load field coverage for the calc-state golden (Annex A3).
+"""Audit save/load field coverage for the calc-state golden.
 
 The save/load parity golden only catches an upstream change to a save field if
 that field has a DETERMINISTIC value in the harness's built state. A field that
 is never set on the reset path holds uninitialised memory: the golden then pins
-garbage that happens to be stable on one machine (e.g. exponentLimit = -6145,
-found 2026-06-24) and a real upstream change can hide behind that noise -- or the
+garbage that happens to be stable on one machine (e.g. exponentLimit = -6145)
+and a real upstream change can hide behind that noise -- or the
 golden flakes across environments.
 
 This audit lists every `saveStateValue(&field, ...)` serialised by
@@ -18,16 +18,16 @@ saveRestoreCalcState.c and classifies each by where it is assigned:
                     field only when its setting-group is applied, so a field here
                     can still be uninitialised at runtime -- exponentLimit lived
                     in exactly this bucket yet held garbage (-6145) in the bare
-                    harness (found 2026-06-24). Fields ONLY here deserve runtime
+                    harness. Fields ONLY here deserve runtime
                     confirmation too.
   - SET-BY-HARNESS: assigned in the save_load_roundtrip_harness buildState().
   - UNCOVERED     : no assignment found on any of those paths -> a strong
                     candidate for an uninitialised, non-deterministic golden
-                    field. REVIEW before M10.
+                    field. REVIEW before a pin advance.
 
 WHY STATIC ANALYSIS IS NOT THE LAST WORD: whether a field is deterministic
 depends on runtime data flow, not just on a textual assignment existing (the
-exponentLimit case proves it). The AUTHORITATIVE A3 check is a runtime
+exponentLimit case proves it). The AUTHORITATIVE check is a runtime
 poison-diff -- memset the calc state to two different sentinel bytes, run
 reset+buildState+save for each, and diff the two saves; any differing byte is an
 uninitialised field. This script is the cheap first pass that produces the review
@@ -119,7 +119,7 @@ def main() -> int:
         (
             "CONFIG-DRIVEN",
             "set only by configCommon's data-driven switch -- NOT a "
-            "runtime guarantee; confirm via the runtime poison-diff before M10",
+            "runtime guarantee; confirm via the runtime poison-diff before a pin advance",
         ),
         (
             "UNCOVERED",

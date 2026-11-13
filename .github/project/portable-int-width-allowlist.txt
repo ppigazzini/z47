@@ -3,9 +3,9 @@
 # The check flags value-carrying casts to c_long / c_ulong — types that are
 # 64-bit on LP64 (Linux/macOS) but 32-bit on Windows LLP64, so an @intCast of a
 # wider value silently truncates and @intCast-panics at runtime on Win64 only
-# (invisible to the Linux local gate). The first all-Zig resync hit exactly this:
-# saveStateValue cast a full 64-bit state word to c_ulong and panicked the Windows
-# testSuite. See [[c-abi-width-types-are-transliteration-debt]].
+# (invisible to the Linux local gate). saveStateValue casting a full 64-bit state
+# word to c_ulong is the shape: it panicked the Windows testSuite. AGENTS.md states
+# the rule: fixed-width types in ported logic, C types only at real ABI boundaries.
 #
 # Every entry below is a cast whose value is PROVABLY bounded to <= 32 bits, so it
 # is safe on Win64. Casts that carry a genuine 64-bit value must NOT be allowlisted

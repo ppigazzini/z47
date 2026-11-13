@@ -28,12 +28,11 @@ buy silence by adding fixtures for branches nothing runs, which is the failure t
 whole report is about, inverted.
 
 WHAT IT COUNTS OVER, AND THE ROW THAT WAS WRONG BECAUSE OF IT. This subtracts one
-lane's fixture tables from the owners' branch sites, and for one pass it said OPEN
-in a voice that sounded like it had looked at the tree. It had not. `FLAG_CARRY`
-was listed as "no fixture varies it" while `rotate_bits_parity` had been seeding it
-as a case parameter since long before this report existed -- 38 cases, 32 with the
-flag clear and 6 with it set, compared in its snapshot. That is standing clause 6
-inside the instrument written for clause 5.
+lane's fixture tables from the owners' branch sites, so on its own it can say OPEN
+for a property another lane covers. `FLAG_CARRY` was listed as "no fixture varies
+it" while `rotate_bits_parity` seeds it as a case parameter, with the flag both
+clear and set, compared in its snapshot: a verdict that sounded like it had looked
+at the tree, from an instrument that had looked at one lane.
 
 So a property now carries the lane that covers it, and four verdicts stand between
 OPEN and a property:
@@ -167,7 +166,7 @@ REVIEWED: dict[str, str] = {
         " cleared by fnIndexMatrix; the only reads in the whole of c43 are the WRPEDG"
         " and WRPEND catalog items dispatching fnGetSystemFlag. No math wrapper reads"
         " either, so this lane would be partitioning another owner's output. It is the"
-        " matrix-editor differential's property -- M31-75."
+        " matrix-editor differential's property."
     ),
     "FLAG_WRAPEND": "The same, and set at the same four sites. See FLAG_WRAPEDG.",
     "FLAG_PROPFR": "Proper-fraction DISPLAY mode.",
@@ -217,8 +216,9 @@ BLOCKED: dict[str, dict[str, object]] = {}
 OPEN: dict[str, str] = {
     "isMatrixDiagonal": (
         "A matrix shape class the fixture set has no representative for. eigen.zig:845,"
-        " reached only from calculateEigenvalues -- so it is behind M31-37's stop"
-        " condition and eigen_golden's recorded tolerance survivor, not just a fixture."
+        " reached only from calculateEigenvalues -- so it is behind the fake"
+        " runtime's matrix-element limit and eigen_golden's recorded tolerance"
+        " survivor, not just a fixture."
     ),
     "isMatrixIndexed": (
         "A matrix shape class the fixture set has no representative for."

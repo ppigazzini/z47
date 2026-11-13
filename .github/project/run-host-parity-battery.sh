@@ -74,7 +74,7 @@ python3 .github/project/check-constant-offsets.py
 # ERROR_*, FLAG_*, dt*, ...) must match upstream C. Catches the stale-mirror class
 # (TM_CMP was 10021, dtReal34 was 0) the behavioral oracle does not cover.
 python3 .github/project/audit-constant-parity.py
-# Item-table parity audit: frontier_items.zig's hand-mirrored indexOfItems must
+# Item-table parity audit: items.zig's hand-mirrored indexOfItems must
 # match the C-compiled items.c byte-for-byte. Catches the exact class that crashed
 # a pin advance (LAST_ITEM grew, the Zig table went out of bounds) before merge.
 python3 .github/project/audit-item-table-parity.py --require-deps

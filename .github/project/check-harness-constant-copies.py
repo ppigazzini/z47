@@ -338,14 +338,12 @@ def main() -> int:
                         " against upstream's own c47.h and declare nothing."
                     ),
                     "_drifted": (
-                        "Copies whose value ALREADY disagrees with c43, measured 2026-08-03."
-                        " Recorded rather than fixed: ~20 is the point to"
-                        " stop and report instead of fixing, and this is 64 across 6 headers,"
-                        " which is a finding about the harness layer and not part of that"
-                        " milestone. Each run reprints them. A drifted name NOT on this list"
-                        " fails the gate. Most of them are a mock header inventing its own"
-                        " compact numbering for a c43 enum (keyboard_state's CM_*/ITM_*,"
-                        " math_wrappers' ERROR_*), which the conversions delete outright."
+                        "Copies whose value ALREADY disagrees with c43 and is not deliberate."
+                        " Recorded rather than fixed, and reprinted on every run; a drifted"
+                        " name NOT on this list fails the gate. The usual cause is a mock"
+                        " header inventing its own compact numbering for a c43 enum, which"
+                        " converting the lane to compile against upstream's c47.h deletes"
+                        " outright."
                     ),
                     "_deliberate": (
                         "Divergences from c43 that are DESIGN DECISIONS, not stale copies,"
