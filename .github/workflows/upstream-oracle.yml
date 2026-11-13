@@ -110,6 +110,12 @@ jobs:
         run: |
           set -euo pipefail
           zig build test:unit
+      - name: Enforce that every Zig test block is a test root
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 .github/project/check-test-reachability.py --self-test
+          python3 .github/project/check-test-reachability.py --repo-root .
       - name: Enforce every declared parity lane is in the battery
         shell: bash
         run: |
