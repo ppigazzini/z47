@@ -653,7 +653,7 @@ fn rewriteInfinityGlyph(str: [*:0]u8, scratch: []u8) void {
         p = hit + 8;
         _ = strcpy(scratch.ptr, p);
     }
-    _ = strcpy(q, @ptrCast(scratch.ptr));
+    _ = strcpy(q, scratch.ptr);
 }
 
 pub export fn printStringToConsole(str: [*:0]const u8, before: [*:0]const u8, after: [*:0]const u8) void {
