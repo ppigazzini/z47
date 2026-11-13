@@ -45,8 +45,10 @@ quiet() {
     fi
 }
 
-step "[1/11] zig fmt"
+step "[1/11] zig fmt and shellcheck"
 ./.github/project/check-fmt.sh
+# Every z47-owned shell script; the imported tree is upstream's to lint.
+git ls-files -z '*.sh' ':!upstream' | xargs -0 shellcheck
 step "[1b/11] filename hygiene"
 bash .github/project/check-filename-hygiene.sh
 step "[1c/11] file cohesion"

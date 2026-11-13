@@ -11,7 +11,7 @@
 # Run from the repo root. Requires `zig build object-manifest` to have run.
 set -uo pipefail
 
-cd "$(dirname "$0")/../.."
+cd "$(dirname "$0")/../.." || exit 1
 GATE=".github/project/check-object-graph.py"
 BASELINE=".github/project/object-graph-baseline.json"
 MANIFEST="zig-out/object-graph/sim-objects.txt"
@@ -74,9 +74,11 @@ mv "$BASELINE.bak" "$BASELINE"
 cp "$MANIFEST" "$MANIFEST.bak"
 : > "$MANIFEST"
 out=$(python3 "$GATE" --repo-root . 2>&1); rc=$?
-[ "$rc" -ne 0 ] \
-    && echo "  ok   empty manifest refused (exit $rc)" \
-    || { echo "  FAIL empty manifest was accepted"; failures=$((failures + 1)); }
+if [ "$rc" -ne 0 ]; then
+    echo "  ok   empty manifest refused (exit $rc)"
+else
+    echo "  FAIL empty manifest was accepted"; failures=$((failures + 1))
+fi
 echo "$out" | grep -q "BROKEN" \
     || { echo "  FAIL: refusal did not say BROKEN"; failures=$((failures + 1)); }
 mv "$MANIFEST.bak" "$MANIFEST"

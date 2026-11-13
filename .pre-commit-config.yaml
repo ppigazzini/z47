@@ -90,6 +90,15 @@ repos:
         entry: zig fmt --check
         language: system
         types: [zig]
+      # The same shellcheck the local gate and CI run, on the same z47-owned
+      # scripts; a system hook for the same reason as zig fmt.
+      - id: shellcheck
+        name: shellcheck
+        entry: shellcheck
+        language: system
+        types: [shell]
+        # Z47_OWNED
+        files: '^(\.github/|build/|docs/|src/|build\.zig|build\.zig\.zon|CONTRIBUTING\.md|pyproject\.toml|\.pre-commit-config\.yaml)'
 
 # Deliberately NOT here: the governance gates in .github/project/ (correspondence,
 # the idiom and narrowing ratchets, the clamp/macro-family/width-contract scans,

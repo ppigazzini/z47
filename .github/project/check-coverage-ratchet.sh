@@ -17,9 +17,12 @@ cd "$repo_root"
 baseline=".github/project/coverage-ratchet-baseline.txt"
 
 # --- measure current values ---
+# Each cur_<metric> is read through ${!cur} in the loops below.
+# shellcheck disable=SC2034
 cur_differential_functions="$(grep -E '^FUNCS=' \
   build/tests/charstring_diff/extract_oracle.sh \
   | grep -oE 'string[A-Za-z_]+' | grep -c . )"
+# shellcheck disable=SC2034
 cur_fullcore_harness_steps="$(grep -c 'addFullCoreHarness(' build/host/steps.zig)"
 
 metrics=(differential_functions fullcore_harness_steps)

@@ -85,18 +85,19 @@ apply)
     git mv "$old" "$new"
     # (1) bare-name @imports, repo-wide. A legitimate "no match" is not an error;
     # guard the pipeline so set -e/pipefail does not abort the batch.
-    { grep -rlZ "@import(\"$oldb\")" $(ref_files) 2>/dev/null || true; } \
+    mapfile -t refs < <(ref_files)
+    { grep -rlZ "@import(\"$oldb\")" "${refs[@]}" 2>/dev/null || true; } \
       | { xargs -0 -r sed -i "s#@import(\"$oldb\")#@import(\"$newb\")#g" || true; }
     # (2) build-system path literals (b.path("src/..") + bare string literals)
-    { grep -rlZ -- "$old" $(ref_files) 2>/dev/null || true; } \
+    { grep -rlZ -- "$old" "${refs[@]}" 2>/dev/null || true; } \
       | { xargs -0 -r sed -i "s#$old#$new#g" || true; }
   done < "$mapfile"
   ;;
 verify)
   bad=0
-  for tgt in $(grep -rho '@import("[a-z_0-9]*\.zig")' src | sed -E 's/@import\("(.*)"\)/\1/' | sort -u); do
+  while IFS= read -r tgt; do
     git ls-files "src/**/$tgt" | grep -q . || { echo "DANGLING @import: $tgt"; bad=1; }
-  done
+  done < <(grep -rho '@import("[a-z_0-9]*\.zig")' src | sed -E 's/@import\("(.*)"\)/\1/' | sort -u)
   [ $bad -eq 0 ] && echo "verify OK: no dangling owner @imports"
   ;;
 *) echo "unknown: $cmd"; exit 2;;
