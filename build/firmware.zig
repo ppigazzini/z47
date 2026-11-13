@@ -669,8 +669,12 @@ pub fn registerSteps(
     const dmcp5_audio_runtime_object = addFirmwareAudioRuntimeObject(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5", firmware_stack_options, .dmcp5);
     const dmcp_print_ir_runtime_object = addFirmwarePrintIrRuntimeObject(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", firmware_stack_options, .dmcp);
     const dmcp5_print_ir_runtime_object = addFirmwarePrintIrRuntimeObject(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5", firmware_stack_options, .dmcp5);
-    const dmcp_io_runtime_object = addFirmwareIoRuntimeObject(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", firmware_stack_options, .dmcp);
-    const dmcp5_io_runtime_object = addFirmwareIoRuntimeObject(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5", firmware_stack_options, .dmcp5);
+    // The io object names the save files, which follow CALCMODEL, so each model
+    // of a board gets its own.
+    const dmcp_io_runtime_object = addFirmwareIoRuntimeObject(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", firmware_stack_options, .dmcp, user_c47);
+    const dmcpr47_io_runtime_object = addFirmwareIoRuntimeObject(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcpr47", firmware_stack_options, .dmcp, user_r47);
+    const dmcp5_io_runtime_object = addFirmwareIoRuntimeObject(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5", firmware_stack_options, .dmcp5, user_c47);
+    const dmcp5r47_io_runtime_object = addFirmwareIoRuntimeObject(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5r47", firmware_stack_options, .dmcp5, user_r47);
     const dmcp = addFirmwareBuild(b, .{
         .step_name = "dmcp",
         .description = b.fmt("Build the C47 DMCP firmware (package {d}) without Make or Meson", .{dmcp_package}),
@@ -693,7 +697,7 @@ pub fn registerSteps(
         .pre_calcmodel_define = "USER_R47",
         .final_calcmodel_define = "USER_R47",
         .dmcp_package = dmcp_package,
-    }, context.core_sources, context.version_headers_dir, context.generated, arm_gmp_dmcp, dmcp_shortint_objects, dmcp_flags_state_objects, dmcp_math_command_wrapper_objects, dmcp_constants_objects, dmcp_tone_objects, dmcp_audio_runtime_object, dmcp_print_ir_runtime_object, dmcp_io_runtime_object, dmcpr47_keyboard_state_objects, dmcp_memory_state_objects, dmcpr47_calc_state_objects, dmcp_program_serialization_objects, dmcpr47_frontier_objects, dmcp_solve_objects, dmcp_register_metadata_objects, dmcp_stack_state_objects, forcecrc32, decnumber_fastmul);
+    }, context.core_sources, context.version_headers_dir, context.generated, arm_gmp_dmcp, dmcp_shortint_objects, dmcp_flags_state_objects, dmcp_math_command_wrapper_objects, dmcp_constants_objects, dmcp_tone_objects, dmcp_audio_runtime_object, dmcp_print_ir_runtime_object, dmcpr47_io_runtime_object, dmcpr47_keyboard_state_objects, dmcp_memory_state_objects, dmcpr47_calc_state_objects, dmcp_program_serialization_objects, dmcpr47_frontier_objects, dmcp_solve_objects, dmcp_register_metadata_objects, dmcp_stack_state_objects, forcecrc32, decnumber_fastmul);
 
     const dmcp5 = addFirmwareBuild(b, .{
         .step_name = "dmcp5",
@@ -714,7 +718,7 @@ pub fn registerSteps(
         .generated_qspi_header_name = "generated_qspi_crc.h",
         .qspi_macro = "USE_GEN_QSPI_CRC",
         .final_calcmodel_define = "USER_R47",
-    }, context.core_sources, context.version_headers_dir, context.generated, arm_gmp_dmcp5, dmcp5_shortint_objects, dmcp5_flags_state_objects, dmcp5_math_command_wrapper_objects, dmcp5_constants_objects, dmcp5_tone_objects, dmcp5_audio_runtime_object, dmcp5_print_ir_runtime_object, dmcp5_io_runtime_object, dmcp5r47_keyboard_state_objects, dmcp5_memory_state_objects, dmcp5r47_calc_state_objects, dmcp5_program_serialization_objects, dmcp5r47_frontier_objects, dmcp5_solve_objects, dmcp5_register_metadata_objects, dmcp5_stack_state_objects, forcecrc32, decnumber_fastmul);
+    }, context.core_sources, context.version_headers_dir, context.generated, arm_gmp_dmcp5, dmcp5_shortint_objects, dmcp5_flags_state_objects, dmcp5_math_command_wrapper_objects, dmcp5_constants_objects, dmcp5_tone_objects, dmcp5_audio_runtime_object, dmcp5_print_ir_runtime_object, dmcp5r47_io_runtime_object, dmcp5r47_keyboard_state_objects, dmcp5_memory_state_objects, dmcp5r47_calc_state_objects, dmcp5_program_serialization_objects, dmcp5r47_frontier_objects, dmcp5_solve_objects, dmcp5_register_metadata_objects, dmcp5_stack_state_objects, forcecrc32, decnumber_fastmul);
 
     const dmcp_packages = [_]u8{ 1, 2, 3 };
     var dmcp_variants: [dmcp_packages.len]VariantBuild = undefined;
@@ -1206,6 +1210,7 @@ fn addFirmwareIoRuntimeObject(
     name_prefix: []const u8,
     options: stack.RuntimeObjectOptions,
     board: Board,
+    calcmodel: u8,
 ) *std.Build.Step.Compile {
     const module = b.createModule(.{
         .root_source_file = b.path("build/firmware_io_runtime.zig"),
@@ -1221,6 +1226,7 @@ fn addFirmwareIoRuntimeObject(
     const build_options = b.addOptions();
     build_options.addOption(usize, "library_fn_base", firmwareLibraryFnBase(board));
     build_options.addOption(usize, "sdb_base", firmwareSdbBase(board));
+    build_options.addOption(u8, "calcmodel", calcmodel);
     module.addOptions("firmware_io_build_options", build_options);
 
     return b.addObject(.{

@@ -27,6 +27,12 @@ const FA_WRITE: u8 = 0x02;
 const FA_OPEN_EXISTING: u8 = 0x00;
 const FA_CREATE_ALWAYS: u8 = 0x08;
 
+// hal/io.h: the save files carry the model CALCMODEL builds.
+const USER_R47: u8 = 66;
+const built_for_r47 = build_options.calcmodel == USER_R47;
+const SAVE_FILE = if (built_for_r47) "R47.sav" else "C47.sav";
+const AUTO_SAVE_FILE = if (built_for_r47) "R47auto.sav" else "C47auto.sav";
+
 const IO_PATH_MANUAL_SAVE: c_int = 0;
 const IO_PATH_AUTO_SAVE: c_int = 1;
 const IO_PATH_PGM_FILE: c_int = 2;
@@ -381,12 +387,12 @@ pub export fn _ioFileNameFromFilePath(path: c_int, filename: [*c]u8) callconv(.c
     switch (path) {
         IO_PATH_MANUAL_SAVE => {
             checkCreateDir("SAVFILES");
-            copyCString(filename, "SAVFILES\\C47.sav");
+            copyCString(filename, "SAVFILES\\" ++ SAVE_FILE);
             return FILE_OK;
         },
         IO_PATH_AUTO_SAVE => {
             checkCreateDir("SAVFILES");
-            copyCString(filename, "SAVFILES\\C47auto.sav");
+            copyCString(filename, "SAVFILES\\" ++ AUTO_SAVE_FILE);
             return FILE_OK;
         },
         IO_PATH_PGM_FILE => {

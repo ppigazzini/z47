@@ -69,6 +69,8 @@ Facts, verified from `../build/firmware.zig`:
   twice -- a first link whose QSPI image `gen_qspi_crc` turns into a generated
   QSPI-CRC header, then the final link with that header's `USE_GEN_*QSPI_CRC`
   define -- and emits a QSPI image, a linker map, and a size report.
+- The firmware io object names the save files after the model (`C47.sav` or
+  `R47.sav`, and `*auto.sav`), so each model of a board links its own.
 
 ## Firmware Target Matrix
 
