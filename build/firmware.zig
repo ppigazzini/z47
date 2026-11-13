@@ -58,8 +58,10 @@ pub const Config = struct {
     program_extension: []const u8,
     generated_qspi_header_name: []const u8,
     qspi_macro: []const u8,
-    pre_calcmodel_define: ?[]const u8 = null,
-    final_calcmodel_define: ?[]const u8 = null,
+    // -DCALCMODEL for the R47 images; null takes the defines.h default (C47).
+    // One value for both link passes: the pre pass sizes the QSPI image the
+    // final one embeds, so the two must compile the same program.
+    calcmodel_define: ?[]const u8 = null,
     dmcp_package: ?u8 = null,
 };
 
@@ -665,8 +667,7 @@ pub fn registerSteps(
         .program_extension = ".pgm",
         .generated_qspi_header_name = "generated_r47_qspi_crc.h",
         .qspi_macro = "USE_GEN_R47_QSPI_CRC",
-        .pre_calcmodel_define = "USER_R47",
-        .final_calcmodel_define = "USER_R47",
+        .calcmodel_define = "USER_R47",
         .dmcp_package = dmcp_package,
     }, context.core_sources, context.version_headers_dir, context.generated, arm_gmp_dmcp, dmcp_shortint_objects, dmcp_flags_state_objects, dmcp_math_command_wrapper_objects, dmcp_constants_objects, dmcp_tone_objects, dmcp_audio_runtime_object, dmcp_print_ir_runtime_object, dmcpr47_io_runtime_object, dmcpr47_keyboard_state_objects, dmcp_memory_state_objects, dmcpr47_calc_state_objects, dmcp_program_serialization_objects, dmcpr47_frontier_objects, dmcp_solve_objects, dmcp_register_metadata_objects, dmcp_stack_state_objects, forcecrc32, decnumber_fastmul);
 
@@ -688,7 +689,7 @@ pub fn registerSteps(
         .program_extension = ".pg5",
         .generated_qspi_header_name = "generated_qspi_crc.h",
         .qspi_macro = "USE_GEN_QSPI_CRC",
-        .final_calcmodel_define = "USER_R47",
+        .calcmodel_define = "USER_R47",
     }, context.core_sources, context.version_headers_dir, context.generated, arm_gmp_dmcp5, dmcp5_shortint_objects, dmcp5_flags_state_objects, dmcp5_math_command_wrapper_objects, dmcp5_constants_objects, dmcp5_tone_objects, dmcp5_audio_runtime_object, dmcp5_print_ir_runtime_object, dmcp5r47_io_runtime_object, dmcp5r47_keyboard_state_objects, dmcp5_memory_state_objects, dmcp5r47_calc_state_objects, dmcp5_program_serialization_objects, dmcp5r47_frontier_objects, dmcp5_solve_objects, dmcp5_register_metadata_objects, dmcp5_stack_state_objects, forcecrc32, decnumber_fastmul);
 
     const dmcp_packages = [_]u8{ 1, 2, 3 };
@@ -1000,11 +1001,7 @@ fn addFirmwareElfBuild(
         if (config.dmcp_package) |package| cmd.addArg(b.fmt("-DDMCP_PACKAGE={d}", .{package}));
     }
 
-    const calcmodel_define = switch (phase) {
-        .pre => config.pre_calcmodel_define,
-        .final => config.final_calcmodel_define,
-    };
-    if (calcmodel_define) |define| cmd.addArg(b.fmt("-DCALCMODEL={s}", .{define}));
+    if (config.calcmodel_define) |define| cmd.addArg(b.fmt("-DCALCMODEL={s}", .{define}));
     if (phase == .final) cmd.addArg(b.fmt("-D{s}", .{config.qspi_macro}));
 
     cmd.addArg(b.fmt("-I{s}", .{build_common.upstreamPathString(b, "dep/decNumberICU")}));
@@ -1054,7 +1051,7 @@ fn addFirmwareElfBuild(
     // (HARDWARE_MODEL == HWM_DM42). CALCMODEL is USER_C47 when no -DCALCMODEL is
     // passed (defines.h), and the image is the same in both phases because the
     // QSPI CRC the pre-pass computes covers it.
-    if (config.board == .dmcp and config.final_calcmodel_define == null) {
+    if (config.board == .dmcp and config.calcmodel_define == null) {
         const dm42_qspi_image = "src/c47-dmcp/DM42_qspi_3.x.bin";
         cmd.addArg(b.fmt("-DDM42_QSPI_BIN=\"{s}\"", .{build_common.upstreamPathString(b, dm42_qspi_image)}));
         cmd.addFileInput(build_common.upstreamPath(b, dm42_qspi_image));
