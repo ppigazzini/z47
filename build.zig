@@ -16,12 +16,13 @@ fn buildImpl(b: *std.Build) !void {
     registerNativeUnitTests(b);
 
     const optimize = b.standardOptimizeOption(.{});
-    const ci_commit_tag = b.option([]const u8, "ci-commit-tag", "Commit tag for version information") orelse "";
+    const version_stamp = build_common.versionStamp(b);
+    const ci_commit_tag = version_stamp.ci_commit_tag;
     const raspberry = b.option(bool, "raspberry", "Enable Raspberry Pi layout") orelse false;
     const decnumber_fastmul = b.option(bool, "decnumber-fastmul", "Enable DECNUMBER_FASTMUL") orelse true;
     const dmcp_package = b.option(u8, "dmcp-package", "Select the upstream DMCP package variant") orelse 4;
 
-    const host_context = try host_steps.prepareContext(b, optimize, ci_commit_tag, raspberry, decnumber_fastmul);
+    const host_context = try host_steps.prepareContext(b, optimize, raspberry, decnumber_fastmul);
     const host_outputs = host_steps.registerSteps(b, host_context, optimize);
 
     const firmware_bundle = firmware_steps.registerSteps(
@@ -67,10 +68,7 @@ fn buildImpl(b: *std.Build) !void {
         }
     }
 
-    const dist_version = if (ci_commit_tag.len > 0)
-        ci_commit_tag
-    else
-        build_common.commandOutput(b, &.{ "git", "describe", "--match=NeVeRmAtCh", "--always", "--abbrev=8", "--dirty=-mod" }) orelse "unknown";
+    const dist_version = version_stamp.short();
 
     try dist_steps.registerSteps(
         b,

@@ -148,11 +148,15 @@ under explicit Zig build ownership instead of ad hoc scripts. Of those paths onl
 
 ## Version And Packaging Metadata
 
-`../build.zig` resolves the package version from the explicit `-Dci-commit-tag`
-option when present and otherwise falls back to
-`git describe --match=NeVeRmAtCh --always --abbrev=8 --dirty=-mod`, then hands the
-result to `dist.zig`. `../build/host/generated.zig` derives the simulator's own
-version header from the same fallback.
+`versionStamp` in `../build/common.zig` declares `-Dci-commit-tag` and is the one
+source of the build's version identity: the tag when one is given, otherwise
+`git describe --match=NeVeRmAtCh --always --abbrev=8 --dirty=-mod`, plus the build
+date. `../build.zig` hands its short form to `dist.zig`;
+`../build/host/generated.zig` writes `version.h` from it; the frontier owners'
+version lines and CAT sequence header and the simulator's `--help` read the same
+stamp, so a tagged build shows its tag everywhere. VERSION1, the release string
+beside it, is read from the pinned `defines.h` by `upstreamVersion1`, never
+transcribed.
 
 That fallback is a z47 packaging convenience. It does not replace the separate
 checked-in upstream pin under `../.github/project/upstream-pin.env`.

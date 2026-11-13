@@ -162,6 +162,7 @@ extern fn allocGmp(size: usize) callconv(.c) ?*anyopaque;
 extern fn reallocGmp(ptr: ?*anyopaque, old_size: usize, new_size: usize) callconv(.c) ?*anyopaque;
 extern fn freeGmp(ptr: ?*anyopaque, size: usize) callconv(.c) void;
 extern fn printf(format: [*:0]const u8, ...) c_int;
+extern fn stringToASCII(str: [*c]const u8, ascii: [*c]u8) void;
 extern fn fflush(stream: ?*anyopaque) c_int;
 extern fn chdir(path: [*:0]const u8) c_int;
 extern fn access(path: [*:0]const u8, mode: c_int) c_int;
@@ -252,7 +253,9 @@ fn printHelp() void {
     const cc: [*:0]const u8 = if (CALCMODEL == USER_R47) "r" else "c";
     const modeltext: [*:0]const u8 = if (CALCMODEL == USER_R47) "R47" else "C47";
     _ = printf("\n-------------------------------------------------------------\n");
-    _ = printf("%s Sim " ++ opts.version1 ++ ", SHA " ++ opts.vcs_commit_id ++ ".\n", modeltext);
+    var version_ascii: [100]u8 = undefined;
+    stringToASCII(opts.version_string ++ "\x00", &version_ascii);
+    _ = printf("%s Sim " ++ opts.version1 ++ ", SHA %s.\n", modeltext, &version_ascii);
     _ = printf("C47/R47 info to be found on 47calc.com\n");
     _ = printf("C47/R47 license GPL3, details on 47calc.com\n\n");
     _ = printf("%s47 --background     : specify background picture\n", cc);

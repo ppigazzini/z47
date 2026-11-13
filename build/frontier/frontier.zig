@@ -345,22 +345,19 @@ pub fn addBuildOptions(
     const sp3 = "\xa0\x04";
     const modeltext = if (options.calcmodel == 66) "R47" else "C47";
     const version1 = build_common.upstreamVersion1(b);
-    const vcs = build_common.commandOutput(b, &.{ "git", "describe", "--match=NeVeRmAtCh", "--always", "--abbrev=8", "--dirty=-mod" }) orelse "unknown";
-    const today = build_common.commandOutput(b, &.{ "date", "+%Y-%m-%d" }) orelse "1970-01-01";
-    const cdate = build_common.commandOutput(b, &.{ "date", "+%b %e %Y" }) orelse "Jan  1 1970";
-    const version_string = b.fmt("custom{s}build{s}{s}{s}{s}", .{ sp3, sp3, vcs, sp3, today });
-    const version_str = b.fmt("  {s} {s}.", .{ modeltext, version_string });
+    const stamp = build_common.versionStamp(b);
+    const version_str = b.fmt("  {s} {s}.", .{ modeltext, stamp.string(b, sp3) });
     // screen.c: PC_BUILD says Sim, TWO_FILE_PGM (the DM42, OLD_HW) says QSPI,
     // and DMCP5, which has no TWO_FILE_PGM, says No QSPI.
     const sim_or_qspi = if (!options.dmcp_build) "Sim" else if (options.old_hw) "QSPI" else "No QSPI";
     const version_str2 = b.fmt("  {s} {s} {s}, dd ", .{ modeltext, sim_or_qspi, version1 });
     build_options.addOption([]const u8, "version_str", version_str);
     build_options.addOption([]const u8, "version_str2", version_str2);
-    // VERSION1 and VERSION_SHORT for the CAT sequence header; VERSION_SHORT is the
-    // VCS id, as version.h defines it for the custom build version_str names.
+    // VERSION1 and VERSION_SHORT for the CAT sequence header, as version.h
+    // defines VERSION_SHORT.
     build_options.addOption([]const u8, "version1", version1);
-    build_options.addOption([]const u8, "version_short", vcs);
-    build_options.addOption([]const u8, "compile_date", cdate);
+    build_options.addOption([]const u8, "version_short", stamp.short());
+    build_options.addOption([]const u8, "compile_date", stamp.compile_date);
 
     module.addOptions("frontier_build_options", build_options);
 }

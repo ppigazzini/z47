@@ -34,9 +34,11 @@ fn addTranslatorHostMacros(translator: *const Translator, common: host_types.Com
     }
 }
 
-pub fn addVersionHeaders(b: *std.Build, ci_commit_tag: []const u8) !std.Build.LazyPath {
-    const vcs_tag = build_common.commandOutput(b, &.{ "git", "describe", "--match=NeVeRmAtCh", "--always", "--abbrev=8", "--dirty=-mod" }) orelse "unknown";
-    const today = build_common.commandOutput(b, &.{ "date", "+%Y-%m-%d" }) orelse "1970-01-01";
+pub fn addVersionHeaders(b: *std.Build) !std.Build.LazyPath {
+    const stamp = build_common.versionStamp(b);
+    const ci_commit_tag = stamp.ci_commit_tag;
+    const vcs_tag = stamp.vcs;
+    const today = stamp.today;
 
     const vcs_content = try b.allocator.print(
         \\// SPDX-License-Identifier: GPL-3.0-only

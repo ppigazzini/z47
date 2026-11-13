@@ -46,10 +46,10 @@ pub fn addToModule(
 
     // Options consumed by gtk_c47_main.zig (the ported main()): the
     // compile-time calc model + the version stamps shown by --help.
-    const vcs = build_common.commandOutput(b, &.{ "git", "describe", "--match=NeVeRmAtCh", "--always", "--abbrev=8", "--dirty=-mod" }) orelse "unknown";
+    // version_string is VERSION_STRING, its words joined by STD_SPACE_3_PER_EM.
     const gtk_options = b.addOptions();
     gtk_options.addOption(u8, "calcmodel", calcmodel);
-    gtk_options.addOption([]const u8, "vcs_commit_id", vcs);
+    gtk_options.addOption([]const u8, "version_string", build_common.versionStamp(b).string(b, "\xa0\x04"));
     gtk_options.addOption([]const u8, "version1", build_common.upstreamVersion1(b));
     // OPTION_IR_PRINTING, read by the print-out window. defines.h #undef's it
     // only in DM42 package blocks, so every simulator build has it.

@@ -21,7 +21,6 @@ const host_types = @import("types.zig");
 pub fn prepareContext(
     b: *std.Build,
     optimize: std.lang.Optimize,
-    ci_commit_tag: []const u8,
     raspberry: bool,
     decnumber_fastmul: bool,
 ) !host_types.Context {
@@ -42,7 +41,7 @@ pub fn prepareContext(
     const core_sources_without_constants = try constants.filterCoreSources(b, core_sources_without_frontier);
     const core_sources_without_tone = try tone.filterCoreSources(b, core_sources_without_constants);
 
-    const version_headers_dir = try host_generated.addVersionHeaders(b, ci_commit_tag);
+    const version_headers_dir = try host_generated.addVersionHeaders(b);
     const generated = try host_generated.addGeneratorSteps(b, host_target, optimize, common);
 
     const gtk_sources = try build_common.collectRelativeCFiles(b, build_common.upstreamPathString(b, "src/c47-gtk"));

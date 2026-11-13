@@ -15,11 +15,10 @@ pub const SimulatorOutputs = host_types.SimulatorOutputs;
 pub fn prepareContext(
     b: *std.Build,
     optimize: std.lang.Optimize,
-    ci_commit_tag: []const u8,
     raspberry: bool,
     decnumber_fastmul: bool,
 ) !Context {
-    return host_context.prepareContext(b, optimize, ci_commit_tag, raspberry, decnumber_fastmul);
+    return host_context.prepareContext(b, optimize, raspberry, decnumber_fastmul);
 }
 
 pub fn registerSteps(b: *std.Build, context: Context, optimize: std.lang.Optimize) SimulatorOutputs {
