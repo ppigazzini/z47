@@ -1,23 +1,21 @@
 #!/usr/bin/env python3
 """Every governance script under .github/project/ is run by something, or says why not.
 
-WHY THIS EXISTS. REPORT-31 built nine gates. Measured in Annex N, **six of them ran
-in no CI workflow at all** -- they fired only when a developer chose to type
-`bash .github/project/run-local-gate.sh`. One of the six was
-`check-parity-lanes-gated.py`, which exists because four parity lanes were declared,
-buildable, green and run by nothing. The same defect, one level up, inside the
-instrument built to stop it.
+WHY THIS EXISTS. A gate that no workflow runs fires only when a developer chooses
+to type `bash .github/project/run-local-gate.sh`. check-parity-lanes-gated.py
+exists because parity lanes can be declared, buildable, green and run by nothing;
+a governance script can fall into the same state one level up.
 
-That is standing clause 7: **a check is in force only where it RUNS.** "It is in the
-local gate" is a claim about a person's habits; "it is in CI" is a claim about a
-system. This gate makes the difference visible and refuses the third state -- a
-script that is neither, which is a check nobody runs and which still reads as
-coverage on the page that names it.
+The rule: **a check is in force only where it RUNS.** "It is in the local gate" is
+a claim about a person's habits; "it is in CI" is a claim about a system. This
+gate makes the difference visible and refuses the third state -- a script that is
+neither, which is a check nobody runs and which still reads as coverage on the
+page that names it.
 
 HOW IT CLASSIFIES. Automatically, from what actually references the script:
 
-  CI      named in .github/workflows/*.yml, or in run-host-parity-battery.sh
-          (which a workflow runs), or in a build file (which CI builds).
+  CI      named in .github/workflows/*.yml, or in a CI_RUNNERS script (which a
+          workflow runs), or in a build file (which CI builds).
   LOCAL   named in run-local-gate.sh and nowhere above. Allowed ONLY with a
           recorded reason in LOCAL_ONLY, because the endpoint here is not zero:
           some checks genuinely cannot run in CI.
@@ -27,14 +25,14 @@ HOW IT CLASSIFIES. Automatically, from what actually references the script:
           a report that measures without judging. Allowed only with a reason.
   ORPHAN  none of the above. Fails.
 
-WHAT IT DOES NOT CHECK -- stated per clause 6, because this gate is the one that
-should least pretend otherwise. It does not know whether a script that IS run is
-run over the right inputs, nor whether a workflow that names it is enabled, nor
-whether a LOCAL reason is still true. It reads the reference, not the intent. The
-exemption tables are the second half of it and they rot the way every table rots:
-an entry whose script is gone, or whose script has since reached CI, is reported so
-that the table cannot outlive its reason -- pass 9 lost a whole seam to a plausible
-sentence attached to a file that no longer justified it.
+WHAT IT DOES NOT CHECK -- stated because this gate is the one that should least
+pretend otherwise. It does not know whether a script that IS run is run over the
+right inputs, nor whether a workflow that names it is enabled, nor whether a LOCAL
+reason is still true, nor whether a MANUAL reason's document still names the
+script. It reads the reference, not the intent. The exemption tables are the
+second half of it and they rot the way every table rots: an entry whose script is
+gone, or whose script has since reached CI, is reported so that the table cannot
+outlive its reason.
 
 Usage:
   check-gate-inventory.py [--repo-root .]
@@ -53,8 +51,15 @@ PROJECT_DIR = ".github/project"
 WORKFLOW_GLOB = ".github/workflows/*.yml"
 BUILD_GLOBS = ("build.zig", "build/**/*.zig")
 
-# A workflow runs this, so anything it names is in CI transitively.
-CI_RUNNERS = ("run-host-parity-battery.sh",)
+# A workflow runs these, so anything they name is in CI transitively. The two
+# gates among them delegate their verdict: check-idiom-ratchet.sh to the `--check`
+# runs of the idiom and narrowing reporters, and
+# check-c-dependency-phase-i-policy.sh to check-c-dependency-allowlist.py.
+CI_RUNNERS = (
+    "run-host-parity-battery.sh",
+    "check-idiom-ratchet.sh",
+    "check-c-dependency-phase-i-policy.sh",
+)
 # A human runs this.
 LOCAL_RUNNER = "run-local-gate.sh"
 
@@ -64,8 +69,9 @@ SCRIPT_RE = re.compile(r"[A-Za-z0-9_.-]+\.(?:py|sh)")
 # a full rebuild per case belongs where somebody is already waiting for a build.
 LOCAL_ONLY: dict[str, str] = {
     "check-oracle-negative-control.py": (
-        "One full rebuild per mutant, 36 mutants. In CI that is 36 builds to prove"
-        " what one local run proves before a push. Recorded as a cost, not as an"
+        "One full rebuild per mutant in oracle-negative-control.json's `mutants`. In"
+        " CI that is one build per mutant to prove what one local run proves before"
+        " a push. Recorded as a cost, not as an"
         " oversight -- and the lane-coverage half of it (which lanes have no mutant"
         " at all) is a JSON baseline that the reviewer can read without running it."
     ),
@@ -74,19 +80,15 @@ LOCAL_ONLY: dict[str, str] = {
 # Invoked by a person, following a document that says to. The reason must name it.
 MANUAL_ONLY: dict[str, str] = {
     "check-local-roadmap-sync.py": (
-        "Maintainer step for the local roadmap, documented in CONTRIBUTING.md and"
-        " docs/80-maintainer-workflow.md. It compares tracked docs against an"
+        "Maintainer step for the local roadmap, documented in"
+        " docs/80-maintainer-workflow.md (Local Roadmap Sync Flow), where"
+        " CONTRIBUTING.md routes it. It compares tracked docs against an"
         " untracked working roadmap, so CI has nothing to compare against."
     ),
     "check-iteration-report-sections.py": (
-        "Lints the section structure of __DEV/ iteration reports. __DEV/ is"
-        " gitignored, so CI never has the files this reads."
-    ),
-    "audit-saveload-field-coverage.py": (
-        "Run when the calc-state golden changes. It CLASSIFIES every saved field by"
-        " where it is assigned (RESET-DIRECT / CONFIG-DRIVEN / neither) so a human"
-        " can see which ones the golden is pinning uninitialised memory for. A"
-        " classification is not a verdict and gating it would invent one."
+        "Maintainer step in docs/80-maintainer-workflow.md (Local Roadmap Sync"
+        " Flow): it lints the closure sections of a local iteration report on the"
+        " ignored __DEV/ surface, so CI never has the files this reads."
     ),
 }
 
@@ -106,8 +108,12 @@ NOT_A_GATE: dict[str, str] = {
     "run-host-parity-battery.sh": "Runner: the shared battery CI and the local gate both invoke.",
     "run-upstream-sync-checks.sh": "Runner: the resync helper sequence, invoked during a sync.",
     "run-upstream-reportgap-dryrun.sh": "Runner: dry-run helper for the upstream report gap.",
-    "report-idiom-status.py": "Report: prints the idiom metrics that check-idiom-ratchet.sh gates.",
-    "report-narrowing-status.py": "Report: prints the narrowing metrics behind the ratchet.",
+    "audit-saveload-field-coverage.py": (
+        "Report: classifies every saved calc-state field by where it is assigned"
+        " (RESET-DIRECT / CONFIG-DRIVEN / neither) so a human can see which ones the"
+        " golden may pin uninitialised memory for. It always exits 0: a"
+        " classification is not a verdict, and gating it would invent one."
+    ),
     "report-c-dependency-status.py": "Report: prints the C-dependency picture the Phase I policy gates.",
     "report-firmware-host-gap.py": "Report: prints where the firmware and host builds differ.",
     "report-resync-worklist.py": (
@@ -278,7 +284,7 @@ def main() -> int:
             print(f"  {problem}")
         print(
             "\nA gate that is in no workflow fires only when somebody remembers, and a"
-            "\nreport that says it ran is then a claim about that person. Clause 7."
+            "\nreport that says it ran is then a claim about that person."
         )
         return 1
 
