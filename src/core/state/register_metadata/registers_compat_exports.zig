@@ -591,8 +591,8 @@ extern var ctxtReal4: abi.RealContext;
 
 extern fn printf(format: [*:0]const u8, ...) c_int;
 extern fn sprintf(buffer: [*c]u8, format: [*:0]const u8, ...) c_int;
-extern fn strstr(haystack: [*:0]const u8, needle: [*:0]const u8) ?[*:0]u8;
-extern fn strcpy(dest: [*]u8, src: [*:0]const u8) [*c]u8;
+extern fn strstr(haystack: [*c]const u8, needle: [*c]const u8) ?[*:0]u8;
+extern fn strcpy(dest: [*]u8, src: [*c]const u8) [*c]u8;
 extern fn decQuadToString(source: *const real34_t, destination: [*]u8) [*c]u8;
 extern fn decNumberToString(source: *const real_t, destination: [*]u8) [*c]u8;
 extern fn decNumberPlus(result: *real_t, operand: *const real_t, real_context: *abi.RealContext) *real_t;

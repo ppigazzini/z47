@@ -517,7 +517,7 @@ pub fn implementation(comptime runtime: type) type {
             }
         }
 
-        pub fn assignToMenu(data: [*c]u8) runtime.bool_t {
+        pub fn assignToMenu(data: [*c]const u8) runtime.bool_t {
             // keyboard.c _assignToMenu (748-807). goto endReturnTrue -> labeled block.
             // The C computes this inside each menu case, so the arms that never use
             // it never evaluate it. Truncating keeps a key byte below '1' -- which

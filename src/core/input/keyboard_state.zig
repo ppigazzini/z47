@@ -44,9 +44,9 @@ pub export fn checkKeyShifts(data: [*c]const u8) callconv(.c) runtime.bool_t {
 // exports it as btnFnClicked and the DMCP lanes through btnFnClickedDmcp (the
 // export block below). This is also the live caller that forces
 // executeFunction's compile-analysis.
-fn btnFnClickedHost(not_used: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {
+fn btnFnClickedHost(not_used: ?*anyopaque, data: [*c]const u8) callconv(.c) void {
     _ = not_used;
-    shared.executeFunction(@ptrCast(data), 0);
+    shared.executeFunction(data, 0);
 }
 
 // These handlers are all `#ifdef`-free in both the upstream C and
@@ -122,11 +122,11 @@ fn convertXYToKey(x: c_int, y: c_int) void {
 }
 
 // keyboard.c frmCalcMouseButtonPressed (1980-1994).
-fn frmCalcMouseButtonPressedHost(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {
+fn frmCalcMouseButtonPressedHost(not_used: ?*anyopaque, event: ?*const GdkEventButton, data: [*c]const u8) callconv(.c) void {
     _ = not_used;
     _ = data;
     if (mouse_key[0] == 0) {
-        const ev: *const GdkEventButton = @ptrCast(@alignCast(event));
+        const ev = event.?;
         convertXYToKey(@trunc(ev.x), @trunc(ev.y));
         if (mouse_key[0] == 0) {
             return;
@@ -140,7 +140,7 @@ fn frmCalcMouseButtonPressedHost(not_used: ?*anyopaque, event: ?*anyopaque, data
 }
 
 // keyboard.c frmCalcMouseButtonReleased (1996-2009).
-fn frmCalcMouseButtonReleasedHost(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {
+fn frmCalcMouseButtonReleasedHost(not_used: ?*anyopaque, event: ?*const GdkEventButton, data: [*c]const u8) callconv(.c) void {
     _ = not_used;
     _ = data;
     if (mouse_key[0] == 0) {
@@ -161,9 +161,9 @@ var btnPressedDepth: i16 = 0;
 var btnPressedKey: [*c]const u8 = null; // the key the outermost btnPressed handles
 var btnReleasedDeferred: bool = false; // that key's release arrived meanwhile
 
-fn btnPressedHost(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {
+fn btnPressedHost(not_used: ?*anyopaque, event: ?*const GdkEventButton, data: [*c]const u8) callconv(.c) void {
     if (btnPressedDepth == 0) {
-        btnPressedKey = @ptrCast(data);
+        btnPressedKey = data;
     }
     btnPressedDepth += 1;
     btnPressedBody(not_used, event, data);
@@ -183,12 +183,12 @@ fn sameKey(a: [*c]const u8, b: [*c]const u8) bool {
 // keyboard.c btnPressed (1778-1943), lane-merged: the host body plus the DMCP
 // divergences gated by comptime is_dmcp_build (btnPressedDmcp calls it with the
 // DMCP signature, past the host-only guard above).
-fn btnPressedBody(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) void {
+fn btnPressedBody(not_used: ?*anyopaque, event: ?*const GdkEventButton, data: [*c]const u8) void {
     _ = not_used;
     // event is the GdkEvent on the host lane only; the DMCP btnPressed body takes
     // just the key string and has no double/triple-click or middle/right shift.
     if (comptime is_dmcp_build) _ = &event;
-    const dat: [*c]u8 = @ptrCast(data);
+    const dat = data;
 
     // This press closes a SHOW or WHO screen, which clears temporaryInformation
     // before the release handles EXIT; the release needs to know it happened so
@@ -220,7 +220,7 @@ fn btnPressedBody(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) 
     }
 
     if (comptime !is_dmcp_build) {
-        const ev: *const GdkEventButton = @ptrCast(@alignCast(event));
+        const ev = event.?;
         if (ev.type == GDK_DOUBLE_BUTTON_PRESS or ev.type == GDK_TRIPLE_BUTTON_PRESS) {
             return;
         }
@@ -338,14 +338,14 @@ inline fn softkeyUnderlineMask(key: i16) u16 {
     return @truncate(@as(u32, 1) << count);
 }
 
-fn btnFnPressedHost(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {
+fn btnFnPressedHost(not_used: ?*anyopaque, event: ?*const GdkEventButton, data: [*c]const u8) callconv(.c) void {
     _ = not_used;
     // event is the GdkEvent on the host lane only; the DMCP btnFnPressed body takes
     // just the key string and has no double/triple-click or middle/right shift. The
     // rest of the body is lane-identical (keyboard.c 593-744 has no other #ifdef).
     if (comptime is_dmcp_build) _ = &event;
     if (comptime !is_dmcp_build) {
-        const ev: *const GdkEventButton = @ptrCast(@alignCast(event));
+        const ev = event.?;
         if (ev.type == GDK_DOUBLE_BUTTON_PRESS or ev.type == GDK_TRIPLE_BUTTON_PRESS) {
             return;
         }
@@ -359,7 +359,7 @@ fn btnFnPressedHost(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque
         }
     }
 
-    const dat: [*c]u8 = @ptrCast(data);
+    const dat = data;
     if (runtime.isShowMode() or runtime.currentMenu() == -runtime.MNU_SHOW) {
         runtime.closeShowMenu();
         runtime.releaseOverride = true; // the key that dismissed the screen is swallowed: neither press nor release acts
@@ -434,10 +434,10 @@ fn btnFnPressedHost(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque
 // keyboard.c btnFnReleased (811-917) for the host lane; `event` is unused.  The
 // soft-function-key release: TAM-key digit pairs, the assign-to-menu commit,
 // and otherwise the long/double-press state machine.
-fn btnFnReleasedHost(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {
+fn btnFnReleasedHost(not_used: ?*anyopaque, event: ?*const GdkEventButton, data: [*c]const u8) callconv(.c) void {
     _ = not_used;
     _ = event;
-    const dat: [*c]u8 = @ptrCast(data);
+    const dat = data;
 
     if (runtime.catalog != 0) {
         runtime.resetAlphaSelectionBuffer();
@@ -532,10 +532,10 @@ fn btnFnReleasedHost(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaqu
 // Full keyboard.c btnReleased (2032-2306) for the host lane; `event` is unused.
 // The C `goto RELEASE_END` is modeled as a labeled block so the release tail
 // runs on every non-early-return exit.  DMCP keeps the C body.
-fn btnReleasedHost(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {
+fn btnReleasedHost(not_used: ?*anyopaque, event: ?*const GdkEventButton, data: [*c]const u8) callconv(.c) void {
     _ = not_used;
     _ = event;
-    const dat: [*c]u8 = @ptrCast(data);
+    const dat = data;
     if (comptime !is_dmcp_build) {
         if (btnPressedDepth > 0 and sameKey(dat, btnPressedKey)) {
             btnReleasedDeferred = true;
@@ -789,7 +789,7 @@ fn btnReleasedHost(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque)
 // btnClicked / btnClickedP/R / btnFnClickedP/R synthesize a left-click GdkEvent
 // (type 0, button 1) and drive the now-Zig press/release handlers.  Host-only;
 // DMCP keeps the C btnClicked via btnClickedDmcp.
-fn btnClickedHost(not_used: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {
+fn btnClickedHost(not_used: ?*anyopaque, data: [*c]const u8) callconv(.c) void {
     var ev: GdkEventButton = undefined;
     ev.button = 1;
     ev.type = 0;
@@ -797,38 +797,38 @@ fn btnClickedHost(not_used: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {
     btnReleasedHost(not_used, &ev, data);
 }
 
-fn btnClickedPHost(w: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {
+fn btnClickedPHost(w: ?*anyopaque, data: [*c]const u8) callconv(.c) void {
     var ev: GdkEventButton = undefined;
     ev.button = 1;
     ev.type = 0;
     btnPressedHost(w, &ev, data);
 }
 
-fn btnClickedRHost(w: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {
+fn btnClickedRHost(w: ?*anyopaque, data: [*c]const u8) callconv(.c) void {
     var ev: GdkEventButton = undefined;
     ev.button = 1; // btnReleased ignores event.type, so it is left undefined as in C
     btnReleasedHost(w, &ev, data);
 }
 
-fn btnFnClickedPHost(not_used: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {
+fn btnFnClickedPHost(not_used: ?*anyopaque, data: [*c]const u8) callconv(.c) void {
     var ev: GdkEventButton = undefined;
     ev.button = 1;
     ev.type = 0;
     btnFnPressedHost(not_used, &ev, data);
 }
 
-fn btnFnClickedRHost(not_used: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {
+fn btnFnClickedRHost(not_used: ?*anyopaque, data: [*c]const u8) callconv(.c) void {
     var ev: GdkEventButton = undefined;
     ev.button = 1;
     ev.type = 0;
     btnFnReleasedHost(not_used, &ev, data);
 }
 
-fn btnPressedDmcp(data: ?*anyopaque) callconv(.c) void {
+fn btnPressedDmcp(data: [*c]const u8) callconv(.c) void {
     btnPressedBody(null, null, data);
 }
 
-fn btnClickedDmcp(unused: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {
+fn btnClickedDmcp(unused: ?*anyopaque, data: [*c]const u8) callconv(.c) void {
     runtime.btnClickedDmcpOverlay(unused, data);
 }
 
@@ -839,16 +839,16 @@ fn btnClickedDmcp(unused: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {
 // btnPressed/btnFnPressed are likewise lane-merged: their host bodies carry the
 // DMCP-specific blocks under `comptime is_dmcp_build`, and btnPressedDmcp /
 // btnFnPressedDmcp wrap them for the single-`data` DMCP signature.
-fn btnReleasedDmcp(data: ?*anyopaque) callconv(.c) void {
+fn btnReleasedDmcp(data: [*c]const u8) callconv(.c) void {
     btnReleasedHost(null, null, data);
 }
-fn btnFnReleasedDmcp(data: ?*anyopaque) callconv(.c) void {
+fn btnFnReleasedDmcp(data: [*c]const u8) callconv(.c) void {
     btnFnReleasedHost(null, null, data);
 }
-fn btnFnClickedDmcp(unused: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {
+fn btnFnClickedDmcp(unused: ?*anyopaque, data: [*c]const u8) callconv(.c) void {
     btnFnClickedHost(unused, data);
 }
-fn btnFnPressedDmcp(data: ?*anyopaque) callconv(.c) void {
+fn btnFnPressedDmcp(data: [*c]const u8) callconv(.c) void {
     btnFnPressedHost(null, null, data);
 }
 
@@ -912,7 +912,7 @@ pub export fn fnSHIFTfg(unused_but_mandatory_parameter: u16) callconv(.c) void {
     // f+g chord = the same path as clicking key 27 (the f/g longpress combo).
     const key27: [*:0]const u8 = "27";
     if (is_dmcp_build) {
-        runtime.btnClickedDmcpOverlay(null, @constCast(key27));
+        runtime.btnClickedDmcpOverlay(null, key27);
     } else {
         runtime.btnClickedHostOverlay(null, @constCast(key27));
     }
@@ -1317,7 +1317,7 @@ pub export fn Setup_MultiPresses(result: i16) callconv(.c) void {
 // FN_key_pressed assignment is commented out). DEBUGSFN is false, so the
 // dynmenu-label override is live and the "SF:U"/"SF:V"/"SF:W" placeholders
 // only survive when no dynamic menu item is under the key.
-pub export fn btnFnPressed_StateMachine(unused: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {
+pub export fn btnFnPressed_StateMachine(unused: ?*anyopaque, data: [*c]const u8) callconv(.c) void {
     _ = unused;
     _ = data;
     var exexute_double_g: bool = undefined;
@@ -1410,7 +1410,7 @@ pub export fn btnFnPressed_StateMachine(unused: ?*anyopaque, data: ?*anyopaque) 
 
 // keyboardTweak.c btnFnReleased_StateMachine (870-957): function-key release
 // state machine; executes the long-press / double-release result.
-pub export fn btnFnReleased_StateMachine(unused: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {
+pub export fn btnFnReleased_StateMachine(unused: ?*anyopaque, data: [*c]const u8) callconv(.c) void {
     _ = data;
     if (runtime.FN_state == runtime.ST_3_PRESS2) {
         runtime.FN_state = runtime.ST_4_REL2;

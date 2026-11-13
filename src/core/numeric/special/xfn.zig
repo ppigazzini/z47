@@ -330,8 +330,8 @@ inline fn longIntegerToString(source: *const mpz_struct, radix: c_int, destinati
 const longIntegerIsZero = math_real_predicates.longIntegerIsZero;
 
 // libc string ops.
-extern fn strlen(s: [*:0]const u8) usize;
-extern fn strcpy(dst: [*]u8, src: [*:0]const u8) [*]u8;
+extern fn strlen(s: [*]const u8) usize;
+extern fn strcpy(dst: [*]u8, src: [*]const u8) [*]u8;
 
 inline fn setSystemFlagAslift() void {
     setSystemFlag(FLAG_ASLIFT);
