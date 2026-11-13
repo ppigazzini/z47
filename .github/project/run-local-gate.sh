@@ -35,6 +35,16 @@ if [[ -z "${XVFB+x}" ]]; then
 fi
 
 step() { printf '\n\033[1m==> %s\033[0m\n' "$*"; }
+# Runs a command quietly and prints what it said only when it fails. A command
+# whose output goes to /dev/null kills the gate at its step banner with nothing
+# on the screen when it fails, which tells nobody what broke.
+quiet() {
+    local out
+    if ! out="$("$@" 2>&1)"; then
+        printf '%s\n' "$out"
+        return 1
+    fi
+}
 
 step "[1/11] zig fmt"
 ./.github/project/check-fmt.sh
@@ -46,7 +56,7 @@ step "[2/11] native unit tests (zig build test:unit)"
 zig build test:unit
 # A test block runs only from a file the build analyses as a test root; one that
 # is merely imported is left out of the binary with no message.
-python3 .github/project/check-test-reachability.py --self-test >/dev/null
+quiet python3 .github/project/check-test-reachability.py --self-test
 python3 .github/project/check-test-reachability.py --repo-root .
 step "[3/11] tracked source ownership"
 bash .github/project/check-source-ownership.sh
@@ -66,14 +76,14 @@ step "[4d/11] macro-family correspondence (one #define, one behaviour)"
 # different base and a different overflow answer, which
 # neither the twin scan (all six live in one file) nor the parity oracles (decimal
 # only) could see. Gated at zero, not ratcheted: the queue really is empty.
-python3 .github/project/report-twin-divergence.py --self-test >/dev/null
+quiet python3 .github/project/report-twin-divergence.py --self-test
 python3 .github/project/report-twin-divergence.py --check
 step "[4e/11] strtoul width contract (every parse site has a decided verdict)"
 # `unsigned long` is 64-bit on the Linux/macOS hosts and 32-bit on the firmware and
 # on Windows, so upstream's own answer differs by target and the oracles only check
 # the host. This does not judge a verdict, it insists one
 # exists: a resync that adds a parse site fails until somebody decides its answer.
-python3 .github/project/check-strtoul-width-contract.py --self-test >/dev/null
+quiet python3 .github/project/check-strtoul-width-contract.py --self-test
 python3 .github/project/check-strtoul-width-contract.py
 step "[5/11] curated Zig/C boundaries"
 bash .github/project/check-zig-c-boundaries.sh
@@ -94,7 +104,7 @@ step "[6h2/11] every governance gate is run by something"
 # only here, when somebody chose to type this command. This gate is the inventory
 # that makes the difference visible; the endpoint is not zero CI-exempt gates, it is
 # zero gates that are neither.
-python3 .github/project/check-gate-inventory.py --self-test >/dev/null
+quiet python3 .github/project/check-gate-inventory.py --self-test
 python3 .github/project/check-gate-inventory.py --repo-root .
 bash .github/project/check-build-paths.sh
 step "[6g0/11] imported tree matches its pinned SHA"
@@ -121,14 +131,14 @@ step "[6g2b/11] oracle provenance (no hand-written references, extractors fresh)
 # beside it, and such a file was never eligible for the frozen list -- which is how
 # 1960 lines survived the first close-out. Ratcheted per file; the endpoint is zero.
 # And it re-runs the one GENERATED oracle's extractor (charstring_diff).
-python3 .github/project/check-oracle-provenance.py --self-test >/dev/null
+quiet python3 .github/project/check-oracle-provenance.py --self-test
 python3 .github/project/check-oracle-provenance.py --repo-root .
 step "[6g2b2/11] every harness source is compiled by something"
 # The lane gate asks whether a declared lane is RUN; the provenance gate asks where
 # a reference CAME FROM. Neither asks whether a harness file is connected to
 # anything, and four were not -- one of them a finished compile-from-c43 conversion
 # sitting beside the 73 hand-written lines its lane was still using.
-python3 .github/project/check-harness-sources-compiled.py --self-test >/dev/null
+quiet python3 .github/project/check-harness-sources-compiled.py --self-test
 python3 .github/project/check-harness-sources-compiled.py --repo-root .
 step "[6g2b3/11] the fixture partition names the properties it partitions"
 # A fixture table is an equivalence-class partition, and the full-core one was drawn
@@ -138,15 +148,15 @@ step "[6g2b3/11] the fixture partition names the properties it partitions"
 # the types; sign was empty because nobody listed the properties. This gate is that
 # list -- and it fires in both directions, so a new shape cannot arrive without
 # somebody saying what it is a representative OF.
-python3 .github/project/check-fixture-partition.py --self-test >/dev/null
+quiet python3 .github/project/check-fixture-partition.py --self-test
 python3 .github/project/check-fixture-partition.py --repo-root .
 # The completeness half. The GAP is deliberately not gated at zero -- fixtures for
 # branches nothing runs is this report's failure mode inverted -- but its BOOKKEEPING
 # is: an OPEN row another lane demonstrably covers, or a COVERED/BLOCKED row whose
 # evidence has moved, is a verdict outliving its reason. FLAG_CARRY sat in OPEN for a
 # pass while rotate_bits_parity had been varying it in 38 cases all along.
-python3 .github/project/report-fixture-partition-gap.py --self-test >/dev/null
-python3 .github/project/report-fixture-partition-gap.py --repo-root . --check >/dev/null
+quiet python3 .github/project/report-fixture-partition-gap.py --self-test
+quiet python3 .github/project/report-fixture-partition-gap.py --repo-root . --check
 step "[6g2b4/11] no unreachable code in the harness sources"
 # 94 of the 135 are `configure*` fixtures whose wrappers migrated to another lane:
 # the cases were deleted and the fixtures left behind. They are the only record of
@@ -154,7 +164,7 @@ step "[6g2b4/11] no unreachable code in the harness sources"
 # dropped. The same technique found four DRIFTED c43 mirrors that nothing called.
 # Two ratchets: the dead count, and the files this check cannot analyse -- otherwise
 # the cheapest way to pass would be to make a file harder to compile.
-python3 .github/project/check-harness-dead-code.py --self-test >/dev/null
+quiet python3 .github/project/check-harness-dead-code.py --self-test
 python3 .github/project/check-harness-dead-code.py --repo-root .
 step "[6g2c/11] harness headers do not hand-copy c43 constants"
 # The same defect one level down. A frozen oracle is caught by
@@ -163,7 +173,7 @@ step "[6g2c/11] harness headers do not hand-copy c43 constants"
 # Compiles one _Static_assert per hand-declared constant against c43's own headers,
 # so enum members and cross-referencing #defines are resolved by the compiler
 # rather than guessed at by a regex.
-python3 .github/project/check-harness-constant-copies.py --self-test >/dev/null
+quiet python3 .github/project/check-harness-constant-copies.py --self-test
 python3 .github/project/check-harness-constant-copies.py --repo-root .
 step "[6g3/11] imported-tree paths not anchored to the repo root"
 # Same class as 6g2, other language: a governance script reaching an upstream file
@@ -210,7 +220,7 @@ step "[6g2d/11] owners do not change behaviour when they are being tested"
 # exists only because z47 has a harness: the lane then tests a program that does
 # not ship. That is how four error codes came to differ between the harness and
 # the product build while both sides agreed with each other.
-python3 .github/project/check-owner-build-conditionals.py --self-test >/dev/null
+quiet python3 .github/project/check-owner-build-conditionals.py --self-test
 python3 .github/project/check-owner-build-conditionals.py --repo-root .
 
 step "[6g2e/11] every varying upstream OPTION_* guard has a Zig consumer"
@@ -231,9 +241,9 @@ step "[10e/11] every parity lane the build declares is actually run"
 # A CI job that runs `zig build` must provision what that build links. The gate
 # inventory cannot see this: it asks whether a workflow names a script, not whether
 # the job naming it can run it. Both questions have to be asked.
-python3 .github/project/check-ci-build-prerequisites.py --self-test >/dev/null
+quiet python3 .github/project/check-ci-build-prerequisites.py --self-test
 python3 .github/project/check-ci-build-prerequisites.py --repo-root .
-python3 .github/project/check-raw-gmp-call-sites.py --self-test >/dev/null
+quiet python3 .github/project/check-raw-gmp-call-sites.py --self-test
 python3 .github/project/check-raw-gmp-call-sites.py --repo-root .
 python3 .github/project/check-parity-lanes-gated.py --repo-root .
 
