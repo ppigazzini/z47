@@ -1,21 +1,19 @@
 #!/usr/bin/env bash
 #
-# Re-port DRY-RUN / coverage-gap prove-out (Annex A7).
+# Re-port DRY-RUN / coverage-gap prove-out.
 #
-# Rehearses the M10 upstream re-port in a throwaway worktree to answer the only
-# question that matters for M10 readiness: when the imported upstream C is
-# advanced to the new pin, does ANY host suite go red -- or do the changes slip
-# through green because the changed owners are compiled-out (Zig replaces them)
-# and nothing compares the new upstream C against the Zig port?
+# Rehearses an upstream re-port in a throwaway worktree to answer one question:
+# when the imported upstream C is advanced to the new pin, does ANY host suite go
+# red -- or do the changes slip through green because the changed owners are
+# compiled-out (Zig replaces them) and nothing compares the new upstream C against
+# the Zig port?
 #
-# Demonstrated 2026-06-24 (pin bb439ccd -> upstream/master 52ab333b, 9 ported
-# files changed): advancing all 14 changed src/c47 files to master left sim,
-# keyboard_entry_spec, saveload_roundtrip and the testSuite ALL GREEN. The
-# upstream changes to the replaced owners (screen/softmenus/print/bufferize/items
-# .c) are invisible on host. Any such file that is compiled-out AND green after
-# refresh is a SILENT COVERAGE HOLE: a wrong or forgotten re-port of its Zig
-# owner would be caught by nothing. The fix is a live C-vs-Zig differential
-# (Annex A5) -- this script is what proves whether that gap is still open.
+# A changed upstream file whose owner Zig replaces is invisible on host: sim,
+# keyboard_entry_spec, saveload_roundtrip and the testSuite can all stay green
+# across the refresh. Any such file that is compiled-out AND green after refresh
+# is a SILENT COVERAGE HOLE: a wrong or forgotten re-port of its Zig owner would
+# be caught by nothing. The fix is a live C-vs-Zig differential -- this script is
+# what proves whether that gap is still open.
 #
 # Usage: run-upstream-reportgap-dryrun.sh [--classify-only]
 #   (no arg)        full empirical dry-run: worktree + refresh + build + suites
@@ -75,7 +73,7 @@ trap 'git worktree remove --force "$wt" 2>/dev/null; git worktree prune' EXIT
   if [[ "$rc" == 0 ]]; then
     echo "VERDICT: all suites GREEN after refresh. Every compiled-out changed"
     echo "owner above is an unverified re-port -- host catches nothing. Close the"
-    echo "gap with a C-vs-Zig differential (A5) before trusting M10 'run parity'."
+    echo "gap with a C-vs-Zig differential before trusting a green parity run."
   else
     echo "VERDICT: at least one suite went RED -- that change IS caught on host."
   fi

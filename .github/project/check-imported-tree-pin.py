@@ -1,26 +1,15 @@
 #!/usr/bin/env python3
 """The imported tree must BE the commit the pin names.
 
-WHY THIS EXISTS. `UPSTREAM_COMMIT` in upstream-pin.env was a claim nobody checked.
-Every other invariant about the imported tree was gated -- ownership, added paths,
-correspondence, the port ledger -- but not the one they all rest on: that the tree
-actually equals the SHA. A resync imports "only the changed paths" (the whole-tree
-alternative clobbers z47's divergences), and nothing verified the result.
+WHY THIS EXISTS. Every other invariant about the imported tree -- ownership,
+added paths, correspondence, the port ledger -- rests on the tree equalling the
+SHA in upstream-pin.env. A resync imports only the changed paths (the whole-tree
+alternative clobbers z47's divergences), so a path the import missed leaves the
+tree behind its pin without a sound: an asset still at its old name, an upstream
+program never staged into the host package, a file one revision behind.
 
-It had drifted. Found 2026-08-02, all of it pre-existing:
-
-  - res/combo/DMCP5_flash_3.57.bin was never imported; the tree still carried
-    3.56.bin, and zig_dist.py hardcodes that name, so the R47 combo package
-    shipped an outdated DMCP5 firmware image.
-  - res/PROGRAMS was missing eleven example programs upstream ships, including the
-    BinetV4 rename -- and res/PROGRAMS is staged into the host package, so users
-    got a smaller program library than upstream's.
-  - Five files sat behind upstream, among them a font changelog entry describing a
-    STD-font glyph move.
-
-Two of those hid from a casual `git diff --diff-filter=M` because they are RENAME
-pairs, and from `--diff-filter=D` for the same reason. This gate takes A, D, M and
-R together.
+A rename hides from a lone `git diff --diff-filter=M` and from
+`--diff-filter=D`, so this gate takes A, D, M and R together.
 
 WHAT IT DOES NOT DO. It does not fetch. The pinned commit has to be present
 locally, which it is after `git fetch upstream`, and the gate says so rather than

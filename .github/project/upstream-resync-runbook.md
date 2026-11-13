@@ -12,7 +12,7 @@ below as guardrails so the next resync is a checklist, not a rediscovery.
 - Import **only the changed paths that already exist in z47**:
   `git diff --name-only <oldpin>..<newpin>` intersected with the tracked tree.
   A whole-tree diff vs the new pin clobbers z47's own divergences (removed files,
-  patched `tools/size.py`, etc.). See `upstream-sync-import-only-changed-paths`.
+  patched `tools/size.py`, etc.).
 - z47's imported tree is a SNAPSHOT, not a git descendant of the pin —
   `merge-base(pin, HEAD)` is an old ancestor, so ownership/ledger diffs use the
   pin as the base.
@@ -37,7 +37,7 @@ below as guardrails so the next resync is a checklist, not a rediscovery.
 
 The seams re-sync deterministically; run their audits after importing:
 
-- **Item table** — `LAST_ITEM` and `frontier_items.zig`'s `indexOfItems` mirror
+- **Item table** — `LAST_ITEM` and `src/shell/display/items/items.zig`'s `indexOfItems` mirror
   `items.c`. Re-emit with `audit-item-table-parity.py --emit`; the row→line splicer
   counts `.{ .func` rows (NOT `line = base + N`). Gate: `audit-item-table-parity.py`.
 - **Constant blob offsets** — when upstream changes constants (adds one, or even
@@ -87,7 +87,7 @@ deleted files whose owner is now orphaned.
 
 Then re-derive the changed C behavior into those owners (never edit `upstream/`). Prefer
 **idiomatic fixed-width Zig** over transliterated C — see the Windows trap in §4 and
-`c-abi-width-types-are-transliteration-debt`.
+the `c_long`/`c_ulong` rule in AGENTS.md.
 
 A green testSuite proves nothing about a branch no case reaches, and a resync
 that changes a tie, a boundary or an error path often lands on one. Write the

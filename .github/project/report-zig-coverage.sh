@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Coverage report for the host harness (Annex A0).
+# Coverage report for the host harness.
 #
 # `zig build coverage` builds the keyboard harness with SanitizerCoverage
 # trace-pc-guard (LLVM backend) + build/tests/coverage/sancov_handler.c, which

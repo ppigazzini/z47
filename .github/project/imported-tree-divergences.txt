@@ -76,5 +76,5 @@ dep/jimtcl
 # EMPTY, and it should stay that way. z47 is a port: the imported tree is the thing
 # being measured, so z47 content inside it is a category error. Everything that used
 # to be listed here has a proper home -- the cov probes belong in z47's parity
-# harnesses (see c43-testsuite-is-the-oracle-never-extend), tools/size.py is now
+# harnesses (the testSuite is the oracle and is never extended), tools/size.py is now
 # build/tools/size.py, and the generated testPgms baseline is build/generated/.

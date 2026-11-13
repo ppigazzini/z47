@@ -1,25 +1,16 @@
 #!/usr/bin/env python3
 """Unreachable code in a test harness reads as coverage. Count it.
 
-WHY THIS EXISTS. `clang -Wunused-function` over the harness sources finds 135
-unreachable `static` functions, and 94 of them are `configure*` fixtures in the
-math-wrapper driver whose names say exactly what happened: `configureUnitVector*`,
-`configureCheckInteger*`, `configureCheckForZero*`, `configureCompare*` -- every
-one belongs to a wrapper whose coverage MOVED to the full-core lane. The cases were
-deleted and the fixtures were left behind.
+WHY THIS EXISTS. `clang -Wunused-function` over the harness sources finds the
+`static` functions nothing calls. In a harness they are evidence rather than
+litter. A `configure*` fixture left behind when its wrapper's cases moved to
+another lane is the only record of a register shape somebody once thought worth
+driving, and it can name a shape the move dropped. A dead mirror of a c43 helper
+drifts silently, because nothing calls it. Both read as coverage.
 
-That makes them evidence rather than litter. Each is a register configuration
-somebody once thought worth driving, and at least one names a shape the migration
-dropped: `configureDecompLongInteger` seeds `dtLongInteger, LI_NEGATIVE`, and the
-lane it moved to had no negative long integer until the sign partition was added.
-
-The same technique found the twenty dead statics deleted from
-`math_wrappers_oracle.c` -- four of which were mirrors of c43 helpers that had
-DRIFTED, silently, because nothing called them.
-
-WHY TEN FILES STAY BLIND. The discovery above took the blind set from 23 to 10.
-The remaining ten all live beside a harness-local `c47.h` -- the fake surface --
-while also reaching upstream headers by relative path. A nested `#include "c47.h"`
+WHY SOME FILES STAY BLIND. The files the baseline lists as `unanalysable` all
+live beside a harness-local `c47.h` -- the fake surface -- while also reaching
+upstream headers by relative path. A nested `#include "c47.h"`
 inside an upstream header then resolves to whichever of the two the include path
 offers first, and the two disagree about `angularMode_t` and `decQuad`. A single
 flat include path cannot serve both, so this is the fake-surface seam showing up
@@ -34,14 +25,12 @@ check CANNOT cover is ratcheted alongside the dead-code count. Otherwise the
 cheapest way to pass this gate would be to make a file harder to compile.
 
 THE INPUT IS DECLARED, NOT DISCOVERED, AND A MISSING INPUT IS NOT A REGRESSION.
-This check needs the generated headers below. It used to hunt for them under
-.zig-cache and say, in this docstring, that a tree without them "simply keeps the
-old blind set". It did not: it reported 13 extra blind files and exited 1, so a
-missing input and a real regression printed the same kind of failure, and the
-verdict depended on whether the machine happened to have built recently. That is
-REPORT-31 Annex N.2, and the fix is here: the roots are NAMED, a missing header is
-reported as CANNOT MEASURE with the command that produces it, and the baselines are
-not consulted at all in that case.
+This check needs the generated headers below. A check that hunted for them and
+counted a file it could not compile as blind would print the same kind of failure
+for a missing input as for a real regression, and its verdict would depend on
+whether the machine happened to have built recently. So the roots are NAMED, a
+missing header is reported as CANNOT MEASURE with the command that produces it,
+and the baselines are not consulted at all in that case.
 
 Exit codes:
   0  measured, within both baselines
@@ -211,11 +200,11 @@ def compare(
 def self_test() -> int:
     """SYNTHETIC, deliberately, and it never touches the tree.
 
-    The first version probed the LIVE measurement, so it worked only while dead code
-    existed and the milestone that deleted the last of it turned the self-test into a
-    hard failure inside the gate runner. The second version still needed the
-    generated headers to be present, which is the input this check now declares --
-    so a self-test could only run where the thing it was proving was already true.
+    A self-test that probed the LIVE measurement would work only while dead code
+    existed, and would turn into a hard failure inside the gate runner once the last
+    of it was deleted. One that needed the generated headers could only run where
+    the input this check declares was already present, which is the thing it has
+    to prove the check handles.
     """
     if not compare({"probe.c": 1}, [], {}, set()):
         print("check-harness-dead-code: SELF-TEST FAILED -- a file that gained dead code passed")

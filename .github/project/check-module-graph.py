@@ -161,15 +161,18 @@ def main():
 
     path = os.path.join(root, BASELINE)
     if args.bump:
-        m["note"] = (
+        # Only what the gate compares is stored; the rest is printed on every run,
+        # and a stored copy would only go stale.
+        doc = {k: m[k] for k in ("abi_cycles", "cycles", "files_in_cycles")}
+        doc["note"] = (
             "Cycles in the @import graph, frozen by (size, zone) so a "
             "new cycle cannot hide behind a disappearing one. abi_cycles must reach 0 "
-            "(the contract layer is the bottom). ccd/acd/nccd are REPORTED, not gated: "
-            "Lakos's NCCD threshold assumes cycles cost compile time, and in z47 they "
-            "cost neither compile time, flash nor test isolation."
+            "(the contract layer is the bottom). ccd/acd/nccd are printed, not gated "
+            "or stored: Lakos's NCCD threshold assumes cycles cost compile time, and "
+            "in z47 they cost neither compile time, flash nor test isolation."
         )
         with open(path, "w", encoding="utf-8") as fh:
-            json.dump(m, fh, indent=1, sort_keys=True)
+            json.dump(doc, fh, indent=1, sort_keys=True)
             fh.write("\n")
         print(
             f"check-module-graph: re-pinned {len(m['cycles'])} cycles, "
@@ -187,7 +190,7 @@ def main():
     if m["abi_cycles"] > base["abi_cycles"]:
         fails.append(
             f"abi/ cycles rose {base['abi_cycles']} -> {m['abi_cycles']}. "
-            "The contract layer is imported by 41% of the tree; it must be "
+            "The contract layer is imported across the tree; it must be "
             "the acyclic bottom."
         )
 

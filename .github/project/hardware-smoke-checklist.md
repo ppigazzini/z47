@@ -1,12 +1,12 @@
-# M9 hardware-smoke checklist (Annex A4)
+# Hardware-smoke checklist
 
-The host test suites exercise the portable calculator core, but **397
-`dmcp_build`-gated regions across 39 Zig owners** (run
+The host test suites exercise the portable calculator core, but the
+**`dmcp_build`-gated regions of the Zig owners** (run
 `report-firmware-host-gap.py` for the live inventory) compile on host yet only
 **execute on the DM42/DM42n firmware**, plus the genuinely host-unreachable ROM
 and LCD-DMA calls. This checklist is the **only catch** for that surface: each
-ported firmware feature below must be smoke-tested on real hardware before M9
-ships and before any M10 pin advance that touches a firmware-facing owner.
+ported firmware feature below must be smoke-tested on real hardware before a
+firmware release and before any pin advance that touches a firmware-facing owner.
 
 Run on **DM42 with C47**, **DM42 with R47**, and **DM42n** (the three targets the
 build produces). For each: flash the freshly built `.pgm`, then walk the items.
@@ -65,7 +65,7 @@ firmware build hash and the date.
 ## Sign-off
 - [ ] All boxes PASS on DM42(C47), DM42(R47), DM42n. Firmware hashes + date
       recorded here.
-- [ ] Any FAIL filed as an issue and triaged before merge/push (M9.1/M9.3).
+- [ ] Any FAIL filed as an issue and triaged before merge/push.
 
 _Maintenance: when `report-firmware-host-gap.py` reports a new owner or a large
 region delta, add/repoint a checklist item so the firmware surface stays fully

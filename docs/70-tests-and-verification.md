@@ -328,13 +328,14 @@ rather than assumed.
 
 **Owners with no upstream counterpart.** Part of `src/` is port scaffolding that
 c43 has no file for: the shared ABI module, the typed constant-blob accessors,
-the dispatch and predicate helpers, the command-wrapper runtime. Which owners
-these are is recorded by the join in
-`.github/project/upstream-correspondence.tsv` and checked by
+the dispatch and predicate helpers, the command-wrapper runtime. Nothing records
+which owners these are. The join in
+`.github/project/upstream-correspondence.tsv` starts from upstream's C files, so
+such an owner simply appears in no row, and
 [check-upstream-correspondence.py](../.github/project/check-upstream-correspondence.py)
-— read the manifest for the current set rather than a number written here. A
-1:1 diff says nothing about that code, and neither do the per-owner parity
-oracles, because there is no c43 function to compile as the reference. It is held
+checks only that every C file has an owner. A 1:1 diff says nothing about that
+code, and neither do the per-owner parity oracles, because there is no c43
+function to compile as the reference. It is held
 by the shared testSuite and the native unit tests alone, and a change there needs
 a behavioural test, not a reading.
 

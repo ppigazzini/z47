@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Phase A: audit C dependency allowlist and first-party baseline.
+"""Audit the C dependency allowlist and first-party baseline.
 
 This tool scans build wiring files for path-like string literals used by C wiring,
 classifies them, and fails if new first-party entries are introduced relative to
@@ -13,7 +13,13 @@ import os
 import sys
 from pathlib import Path
 
-from c_dependency_audit import load_baseline, load_json, scan_classified_entries, write_baseline
+from c_dependency_audit import (
+    load_baseline,
+    load_json,
+    scan_classified_entries,
+    update_baseline_command,
+    write_baseline,
+)
 
 
 def main() -> int:
@@ -43,6 +49,12 @@ def main() -> int:
         (repo_root / args.config).resolve() if not os.path.isabs(args.config) else Path(args.config)
     )
     cfg = load_json(config_path)
+    # The config as the regenerate command should spell it: repo-relative when it
+    # lives in the repo.
+    try:
+        config_rel = config_path.relative_to(repo_root).as_posix()
+    except ValueError:
+        config_rel = str(config_path)
 
     scan_files, classified = scan_classified_entries(repo_root, cfg)
 
@@ -57,7 +69,7 @@ def main() -> int:
         return 0
 
     if args.update_baseline:
-        write_baseline(baseline_path, classified["first-party"])
+        write_baseline(baseline_path, classified["first-party"], config_rel)
         print(f"Updated baseline: {baseline_path}")
         print(f"First-party entries: {len(classified['first-party'])}")
         return 0
@@ -78,9 +90,7 @@ def main() -> int:
         for e in new_first_party:
             print(f"  {e}")
         print("\nIf intentional, update baseline with:")
-        print(
-            "  python3 .github/project/check-c-dependency-allowlist.py --repo-root . --config .github/project/c-dependency-allowlist.json --update-baseline"
-        )
+        print(f"  {update_baseline_command(config_rel)}")
         return 1
 
     if args.max_first_party is not None and len(classified["first-party"]) > args.max_first_party:

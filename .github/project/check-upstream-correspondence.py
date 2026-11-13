@@ -1,26 +1,25 @@
 #!/usr/bin/env python3
 """Gate the upstream<->owner correspondence manifest.
 
-A fitness function in the Software Reflexion Model sense (Murphy & Notkin, FSE
-1995): it recomputes the symbol join from the live tree and checks it against the
-committed manifest, computing the three reflexion outcomes --
+It recomputes build-correspondence-manifest.py's symbol join from the live tree
+and checks two things against what is committed --
 
   convergence  the committed via=symbol rows equal the recomputed join. If a
                resync moved a C symbol to a new owner (or added a C file), the
                recompute diverges and the gate FAILS "manifest stale" until
-               build-correspondence-manifest.py is re-run and committed. THIS is
-               the derivability property: every resync that touches src/c47 forces
-               a manifest edit, so "which owner absorbs this .c" is always answered.
+               build-correspondence-manifest.py is re-run and committed, so every
+               resync that touches src/c47 forces a manifest edit and "which owner
+               absorbs this .c" is always answered.
   absence      a src/c47 .c whose symbols no owner implements. Ratcheted: the
                count may fall, never rise above the baseline. A resync that adds
                an unowned upstream file trips this. Pure data/generator files with
                no runtime symbol are listed in NON_OWNER_ALLOW.
-  divergence   handled by check-upstream-mirror.py's reverse class for path twins;
-               here a stale manifest row is caught by the convergence diff.
 
-Unlike check-upstream-mirror.py (path identity), this sees the aggregates: sin.c
-has no sin.zig twin yet is OWNED by circular_trig_command, so the mirror gate calls
-it a forward violation and this gate calls it covered. Coverage, not shape.
+The join is by symbol, not by path, so it sees aggregates: sin.c has no sin.zig
+twin yet is covered by circular_trig_command, which defines its symbols. It
+checks coverage, not shape. The via=comment rows are not compared, and nothing
+here looks the other way: an owner with no upstream counterpart is simply absent
+from the manifest, and no gate reports it.
 
 Usage:
   check-upstream-correspondence.py            recompute, diff, ratchet (default)

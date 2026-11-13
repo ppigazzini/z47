@@ -77,13 +77,13 @@ jobs:
           set -euo pipefail
           ./.github/project/check-fmt.sh
 
-      - name: Check filename hygiene (NM10-0)
+      - name: Check filename hygiene
         shell: bash
         run: |
           set -euo pipefail
           bash .github/project/check-filename-hygiene.sh
 
-      - name: Check file cohesion (NM11-0)
+      - name: Check file cohesion
         shell: bash
         run: |
           set -euo pipefail
@@ -557,18 +557,17 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          # Cheap, and it was run by nothing at all until REPORT-31 Annex N counted
-          # what runs each gate: a rename that desyncs a build root from its owner.
+          # Cheap, and it catches a rename that desyncs a build root from its owner,
+          # which neither the compiler nor any lane reports until that root is built.
           bash .github/project/check-build-paths.sh
       - name: Enforce every governance gate is run by something
         shell: bash
         run: |
           set -euo pipefail
-          # REPORT-31 Annex N: six of the nine gates that report built ran in NO
-          # workflow -- they fired only when a developer chose to type the local-gate
-          # command. That is the same defect check-parity-lanes-gated.py exists to
-          # stop, one level up, in the gates rather than the lanes. A gate that is
-          # neither in CI nor recorded as deliberately local is a check nobody runs.
+          # A gate no workflow runs fires only when a developer chooses to type the
+          # local-gate command. That is the defect check-parity-lanes-gated.py
+          # stops for lanes, one level up, in the gates. A gate that is neither in
+          # CI nor recorded as deliberately local is a check nobody runs.
           python3 .github/project/check-gate-inventory.py --self-test
           python3 .github/project/check-gate-inventory.py --repo-root .
       - name: Enforce module-graph cycles do not grow
@@ -754,7 +753,7 @@ jobs:
           sudo apt-get install -qq -y unzip
           sudo apt-get install -qq -y libfreetype6-dev libgmp-dev libgtk-3-dev
           sudo apt-get install -qq -y xvfb xdotool x11-utils imagemagick libpulse-dev
-          # llvm-symbolizer for the Annex A0 coverage floor (report-zig-coverage.sh)
+          # llvm-symbolizer for the owner-coverage floor (report-zig-coverage.sh)
           sudo apt-get install -qq -y llvm
       - name: Run Linux host build, tests, and generated artifacts
         shell: bash
@@ -782,9 +781,9 @@ jobs:
           # Same reason as the step above: this check DECLARES that it needs the
           # generated headers and exits 2 -- CANNOT MEASURE, not a ratchet failure --
           # where they are absent, so it belongs after the battery has produced them
-          # rather than in the pure-Python governance job. 94 orphaned `configure*`
-          # fixtures once sat here as the only record of what a lane covered before
-          # its cases moved, and one of them named a shape the move had dropped.
+          # rather than in the pure-Python governance job. A `configure*` fixture
+          # left behind when its cases move to another lane is the only record of
+          # what that lane covered, and can name a shape the move dropped.
           python3 .github/project/check-harness-dead-code.py --self-test
           python3 .github/project/check-harness-dead-code.py --repo-root .
       - name: Enforce the object graph matches the build's own declaration
@@ -818,9 +817,9 @@ jobs:
           # decode-literal-base-oob). NOT under AddressSanitizer despite the harness
           # names: there is none in this tree (see docs/75-debugging.md). The
           # detectors are UBSan over the retained C and Zig's own safety checks.
-          zig build pgm_load_fuzz      # M1: .p47 programs
+          zig build pgm_load_fuzz      # .p47 programs
           zig build state_load_fuzz    # .sav / .d47 state files
-      - name: Enforce the owner-coverage floor (Annex A0)
+      - name: Enforce the owner-coverage floor
         shell: bash
         run: |
           set -euo pipefail

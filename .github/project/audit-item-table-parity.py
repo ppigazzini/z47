@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Item-table parity audit: the Zig indexOfItems mirror must match upstream items.c.
 
-frontier_items.zig hand-mirrors the byte-exact data of the C-compiled
+src/shell/display/items/items.zig hand-mirrors the byte-exact data of the C-compiled
 `indexOfItems[]` command table (param, catalog/softmenu name bytes, tamMinMax,
 status) for every one of the ~2861 items. That table is C-DERIVED DATA maintained
 by hand, so an upstream items.c change (new items, changed status/param/name)
@@ -22,7 +22,7 @@ rather than literals; they are reported and skipped (they carry no literal to
 diff). Everything else is compared byte-exact.
 
 Run standalone (exit 1 on drift) or, when a pin advance HAS drifted the table,
-`--emit` prints the corrected frontier_items.zig `.{ ... }` literal for every
+`--emit` prints the corrected items.zig `.{ ... }` literal for every
 changed row and every new row (with the array-resize target), so re-syncing the
 mirror is copy-paste instead of hand-building a probe. Build-varying (comptime)
 rows are flagged for manual re-derivation rather than emitted.
@@ -280,7 +280,7 @@ def parse_zig_rows():
 
 
 def zig_row_literal(centry, c_func):
-    """Render the frontier_items.zig `.{ ... }` literal for a probed C row."""
+    """Render the items.zig `.{ ... }` literal for a probed C row."""
     param, tam, status, cat_hex, sm_hex = centry
 
     def bytes_lit(h):

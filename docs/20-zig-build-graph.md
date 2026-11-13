@@ -21,20 +21,19 @@ owns no source lists, platform glue, or packaging logic.
 
 Its current top-level responsibilities, in order, are:
 
-1. register the C-dependency audit steps (`check-c-deps*`)
-2. register the native Zig unit-test step (`test:unit`)
-3. parse the project-specific options
-4. create the shared host context through `build/host.zig`
+1. register the native Zig unit-test step (`test:unit`)
+2. parse the project-specific options
+3. create the shared host context through `build/host.zig`
    (`prepareContext`)
-5. register host steps (`host.zig` -> `host/steps.zig`)
-6. register firmware steps (`firmware.zig`)
-7. register the `object-manifest` step (`../build/object_manifest.zig`), which
+4. register host steps (`host.zig` -> `host/steps.zig`)
+5. register firmware steps (`firmware.zig`)
+6. register the `object-manifest` step (`../build/object_manifest.zig`), which
    declares the linked object sets of `sim`, `dmcp` and `dmcp5` for the
    object-graph gate
-8. resolve the distribution version, then register distribution steps
+7. resolve the distribution version, then register distribution steps
    (`dist.zig`)
 
-`check-c-deps*`, `test:unit`, and `object-manifest` are self-contained and are
+`test:unit` and `object-manifest` are self-contained and are
 registered directly in `../build.zig`; every other public step is registered
 inside its domain module. `object-manifest` has to live here because it asks the
 BUILD for each product's object set rather than inferring it from a cache glob or
@@ -48,7 +47,7 @@ build-registration slices shared by the host and firmware domains.
 
 | Surface | Domain / role |
 | --- | --- |
-| `../build.zig` | option parsing, root orchestration, `check-c-deps*`, `test:unit` and `object-manifest` |
+| `../build.zig` | option parsing, root orchestration, `test:unit` and `object-manifest` |
 | `../build/common.zig` | shared helpers, C flag tables, upstream-path resolution, the configure-time host-read helpers, `objectLinkLibc` (the `link_libc` of a Zig object a C-rooted executable links), and `addTranslator` (the `translate_c` package dependency in `../build.zig.zon`) |
 | `../build/object_manifest.zig` | the `object-manifest` writer wiring |
 | `../build/abi_host.zig` | the single host object that holds the core-to-shell hook storage |
@@ -115,7 +114,7 @@ entrypoint list and `zig build --help` for the authoritative set.
 | Host simulators | `host/steps.zig` | `sim`/`all`, `simr47`, `both`, `both_asan`, `simulator_smoke` |
 | Generators | `host/steps.zig` (driving `tools/`) | `fonts`, `constants`, `catalogs`, `testpgms`/`testPgms`, `generated` |
 | Docs and cleanup | `host/steps.zig` | `docs`, `clean` |
-| Tests and verification | `host/steps.zig` (driving `tests/`) and `build.zig` | grouped host lanes `test`, `test_asan`, `repeattest`; native `test:unit`; the `pgm_load_fuzz` and `state_load_fuzz` malformed-input load lanes; C-dependency audits `check-c-deps*`; `object-manifest` (in `build.zig`); the per-owner `*_parity` suites, `*_oracle` helpers, and focused regression/harness lanes |
+| Tests and verification | `host/steps.zig` (driving `tests/`) and `build.zig` | grouped host lanes `test`, `test_asan`, `repeattest`; native `test:unit`; the `pgm_load_fuzz` and `state_load_fuzz` malformed-input load lanes; `object-manifest` (in `build.zig`); the per-owner `*_parity` suites, `*_oracle` helpers, and focused regression/harness lanes |
 | Firmware | `firmware.zig` | `dmcp`, `dmcpr47`, `dmcp5`, `dmcp5r47`, the fixed-package `dmcp_pkg1`/`2`/`3`, and `dmcp_pkgs_all` |
 | Distribution | `dist.zig` | host `dist_linux`/`dist_macos`/`dist_windows`, firmware `dist_dmcp*`, the `dist_dmcp_pkgs_*` bundles, and the aggregate `dist`/`distS` |
 

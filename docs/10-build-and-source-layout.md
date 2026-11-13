@@ -83,7 +83,8 @@ bash .github/project/check-source-ownership.sh check
 Root-clutter guardrails:
 
 - `.github/project/check-source-ownership.sh` rejects missing or unclassified
-  tracked top-level roots.
+  tracked top-level roots, and (in `check` mode) an approved exception that no
+  added imported path falls under.
 - `.github/project/source-ownership.txt` is the single classification surface
   for owned versus imported tracked roots (including the reviewed
   `[approved-z47-additions-under-imported]` exceptions).

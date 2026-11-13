@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
 #
-# Coverage ratchet (Annex A6): fail if a guarded coverage metric drops below its
-# committed floor in coverage-ratchet-baseline.txt. The floors are monotonic --
-# they protect the gains that actually catch a bad M10 re-port (the C-vs-Zig
-# differential and the full-core parity harnesses), so a future change cannot
-# quietly delete them. Raise a floor in the same commit that adds coverage.
+# Coverage ratchet: fail if a guarded coverage metric drops below its committed
+# floor in coverage-ratchet-baseline.txt. The floors are monotonic -- they protect
+# the gains that actually catch a bad re-port (the C-vs-Zig differential and the
+# full-core parity harnesses), so a future change cannot quietly delete them. Raise a floor in the same commit that adds coverage.
 #
 # Usage: check-coverage-ratchet.sh                     # enforce
 #        check-coverage-ratchet.sh --require-coverage  # enforce, and fail when the
@@ -25,7 +24,7 @@ cur_fullcore_harness_steps="$(grep -c 'addFullCoreHarness(' build/host/steps.zig
 
 metrics=(differential_functions fullcore_harness_steps)
 
-# Annex A0 owner-coverage floor: distinct src/ owner source lines executed by
+# Owner-coverage floor: distinct src/ owner source lines executed by
 # the instrumented keyboardEntryCov harness (frontier + keyboard_state + stack_state
 # owner objects built with coverage=true). Measured only when a `zig build coverage`
 # build is present, so this script stays usable in the nightly grep-only run.

@@ -23,7 +23,8 @@ set, and the corpus never sets it -- so a blob shift could move them with no lan
 able to notice. Check 2 is what makes this worth running: after a shift every
 offset is still SOME constant's boundary, so only the name join catches it.
 
-Exit 1 on any failure. Run standalone or via `zig build constant-offset-parity`.
+Exit 1 on any failure. run-host-parity-battery.sh runs it after `zig build
+constants`; it also runs standalone once that step has generated its input.
 """
 
 import pathlib

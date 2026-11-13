@@ -5,23 +5,21 @@ not from file names or header comments.
 WHY SYMBOLS. z47's contract is behavioural parity at the ABI-swappable boundary:
 the exported symbol names + signatures the parity oracles and other owners link.
 Those symbol names are the ONE ontology shared across the C<->Zig boundary
-unchanged. A path-identity gate (check-upstream-mirror.py) proves sameness of
-*name*; it is silent on the aggregates -- circular_trig_command.zig owns
-fnSin/fnCos/fnTan/... with no sin.zig/cos.zig twin, so the mirror gate calls
-sin.c a forward violation while this join calls it OWNED. That is the coverage the
-mirror gate structurally cannot see, and the reason this join exists.
+unchanged. A match on file paths is silent on the aggregates:
+circular_trig_command.zig owns fnSin/fnCos/fnTan/... with no sin.zig/cos.zig twin,
+so a path match calls sin.c unowned while this join calls it owned. A file name
+is not a symbol, and a match on names drifts with every rename.
 
 THE JOIN. For every src/c47/**/*.c, collect the function symbols it DEFINES. For
 every src owner, collect the symbols it defines or exports, EXCLUDING pure
 single-line forwarders (`X_owned.same(args);`) -- those are the dispatch/export
 surface (command_wrappers.zig), not the behavioural owner. Join on symbol: the
 C file maps to the owner(s) that implement its symbols. Provenance is recorded per
-row: `symbol` (compiler-visible join), `comment` (only a header declaration,
-pure-Zig helper with no C-visible symbol), or a typed z47-only kind carried from
-upstream-mirror-exceptions.txt.
+row: `symbol` (compiler-visible join) or `comment` (an owner names the C file in
+its first 12 lines but the join did not map it there).
 
-This supersedes report-owner-drift.py's stem matching, which drifts each resync
-precisely because a file name is not a symbol.
+Every row starts from a C file, so an owner with no upstream counterpart appears
+in no row; the manifest records no z47-only owners.
 
 Usage:
   build-correspondence-manifest.py            write the .tsv (default)
@@ -40,7 +38,6 @@ from upstream_paths import upstream_path
 C_ROOT = "src/c47"
 Z_ROOT = "src"
 MANIFEST = ".github/project/upstream-correspondence.tsv"
-EXCEPTIONS = ".github/project/upstream-mirror-exceptions.txt"
 
 # A C function definition, two shapes (C has no nested functions, so a
 # type-led name-then-paren at statement position is always a definition):
@@ -135,24 +132,6 @@ def zig_owned_symbols(rel: str, text: str) -> dict[str, str]:
     return owners
 
 
-def load_exception_rows(path: pathlib.Path) -> dict[str, str]:
-    """z47-authored entries -> a kind tag, from the exceptions file sections."""
-    kinds: dict[str, str] = {}
-    if not path.exists():
-        return kinds
-    section = None
-    for line in path.read_text().splitlines():
-        line = line.split("#", 1)[0].strip()
-        if not line:
-            continue
-        if line.startswith("[") and line.endswith("]"):
-            section = line[1:-1]
-            continue
-        if section == "zig-authored":
-            kinds[line] = "z47-only"
-    return kinds
-
-
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--repo-root", default=".")
@@ -216,8 +195,6 @@ def main() -> int:
         if twin not in file_owners or owner not in file_owners.get(twin, set()):
             comment_rows.setdefault(twin, set()).add(owner)
 
-    exc_kinds = load_exception_rows(root / EXCEPTIONS)
-
     covered = sorted(file_owners)
     uncovered = sorted(set(c_files) - set(file_owners))
 
@@ -227,7 +204,7 @@ def main() -> int:
         )
         print(f"  comment-only twins (no symbol join): {len(comment_rows)}")
         print(f"  uncovered C files (no owner at all):  {len(uncovered)}")
-        # aggregates the mirror gate cannot see: covered but path-unmirrored
+        # aggregates a path match cannot see: owned, but by no same-named owner
         agg = [
             cf
             for cf, ow in file_owners.items()
@@ -235,7 +212,7 @@ def main() -> int:
             and any((root / Z_ROOT / f"{o}.zig").exists() for o in ow)
             and all(pathlib.Path(o).name != pathlib.Path(cf).name for o in ow)
         ]
-        print(f"  owned-but-not-path-mirrored (mirror-gate-blind): {len(agg)}")
+        print(f"  owned but by no same-named owner:     {len(agg)}")
         return 0
 
     lines = [
@@ -249,14 +226,9 @@ def main() -> int:
     for cf in sorted(comment_rows):
         owners = ";".join(sorted(comment_rows[cf]))
         lines.append(f"{cf}\t{owners}\tport\tcomment")
-    for name, kind in sorted(exc_kinds.items()):
-        lines.append(f"-\t{name}\t{kind}\tz47-only")
 
     (root / MANIFEST).write_text("\n".join(lines) + "\n")
-    print(
-        f"wrote {MANIFEST}: {len(covered)} symbol rows, "
-        f"{len(comment_rows)} comment rows, {len(exc_kinds)} z47-only rows"
-    )
+    print(f"wrote {MANIFEST}: {len(covered)} symbol rows, {len(comment_rows)} comment rows")
     return 0
 
 
