@@ -1,6 +1,5 @@
 const keyboard_state_build_options = @import("keyboard_state_build_options");
-const state_old_hw = @hasDecl(keyboard_state_build_options, "state_old_hw") and
-    keyboard_state_build_options.state_old_hw;
+const state_old_hw = keyboard_state_build_options.state_old_hw;
 // EXTRA_INFO_ON_CALC_ERROR: guards the console hints that accompany a
 // displayCalcErrorMessage. Upstream forces it to 0 for DMCP_BUILD and inside
 // TESTSUITE_BUILD, so on those lanes neither the sprintf into errorMessage nor

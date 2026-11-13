@@ -135,6 +135,10 @@ PATTERNS = [
     # the headers; a copy in an owner goes stale without a sound, and the DM42's
     # sends a DMCP5 image to the wrong entry.
     ("dmcp_board_address_sites", re.compile(r"0x08000[23]01|0x10002000|0x20000000"), "site"),
+    # A comptime probe for a declaration or field. AGENTS.md forbids it in owner
+    # code: an options module emits every option it carries, so a probe can only
+    # hide a missing one behind a silent default.
+    ("has_decl_sites", re.compile(r"@has(?:Decl|Field)\("), "site"),
 ]
 
 

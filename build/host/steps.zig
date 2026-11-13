@@ -1153,10 +1153,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.l
         .target = context.host_target,
         .optimize = optimize,
     });
-    const ringbuffer_build_options = b.addOptions();
-    ringbuffer_build_options.addOption(bool, "is_r47", false);
-    ringbuffer_build_options.addOption(usize, "library_fn_base", build_common.libraryFnBase(b, .host));
-    ringbuffer_test_module.addOptions("keyboard_state_build_options", ringbuffer_build_options);
+    keyboard_state.addBuildOptions(b, ringbuffer_test_module, .{});
     const ringbuffer_test = b.addTest(.{ .root_module = ringbuffer_test_module });
     const run_ringbuffer_test = b.addRunArtifact(ringbuffer_test);
     const ringbuffer_test_step = b.step("keyboard_ringbuffer_test", "Run the DMCP key ring-buffer mechanics tests");
