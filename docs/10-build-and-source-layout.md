@@ -267,8 +267,8 @@ Checked-in build defaults come from these tracked files:
 
 The live project-specific Zig options are:
 
-- `-Dci-commit-tag=<string>`: optional version tag input for packaging (default
-  empty)
+- `-Dci-commit-tag=<string>`: optional version tag for packaging and for every
+  version string the build stamps (default empty)
 - `-Draspberry=<bool>`: Raspberry Pi layout switch, default `false`
 - `-Ddecnumber-fastmul=<bool>`: `DECNUMBER_FASTMUL` switch, default `true`
 - `-Ddmcp-package=<int>`: DMCP package selector for `dmcp` and `dmcpr47`,

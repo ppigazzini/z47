@@ -212,6 +212,49 @@ pub fn upstreamPath(b: *std.Build, relative: []const u8) std.Build.LazyPath {
     return b.path(upstreamPathString(b, relative));
 }
 
+/// The build's version identity, the one source for version.h, the frontier's
+/// version lines and the simulator's --help. VERSION_STRING and VERSION_SHORT
+/// follow generated.zig's version.h: a CI build names its tag, a local build
+/// its git describe.
+pub const VersionStamp = struct {
+    /// -Dci-commit-tag, or "" for a local build.
+    ci_commit_tag: []const u8,
+    /// git describe of the tree: vcs.h's VCS_COMMIT_ID.
+    vcs: []const u8,
+    /// yyyy-mm-dd, the date VERSION_STRING ends with.
+    today: []const u8,
+    /// __DATE__'s "Mmm dd yyyy" shape, the day space-padded to two columns.
+    compile_date: []const u8,
+
+    /// VERSION_STRING with `space` between its words: upstream joins them with
+    /// STD_SPACE_3_PER_EM.
+    pub fn string(stamp: VersionStamp, b: *std.Build, space: []const u8) []const u8 {
+        if (stamp.ci_commit_tag.len > 0) return b.fmt("v{s}{s}{s}", .{ stamp.ci_commit_tag, space, stamp.today });
+        return b.fmt("custom{s}build{s}{s}{s}{s}", .{ space, space, stamp.vcs, space, stamp.today });
+    }
+
+    /// VERSION_SHORT: the tag when there is one, else the VCS id.
+    pub fn short(stamp: VersionStamp) []const u8 {
+        return if (stamp.ci_commit_tag.len > 0) stamp.ci_commit_tag else stamp.vcs;
+    }
+};
+
+var cached_version_stamp: ?VersionStamp = null;
+
+/// Declares -Dci-commit-tag the one time it is read and stamps the build.
+pub fn versionStamp(b: *std.Build) VersionStamp {
+    if (cached_version_stamp) |stamp| return stamp;
+
+    const stamp: VersionStamp = .{
+        .ci_commit_tag = b.option([]const u8, "ci-commit-tag", "Commit tag for version information") orelse "",
+        .vcs = commandOutput(b, &.{ "git", "describe", "--match=NeVeRmAtCh", "--always", "--abbrev=8", "--dirty=-mod" }) orelse "unknown",
+        .today = commandOutput(b, &.{ "date", "+%Y-%m-%d" }) orelse "1970-01-01",
+        .compile_date = commandOutput(b, &.{ "date", "+%b %e %Y" }) orelse "Jan  1 1970",
+    };
+    cached_version_stamp = stamp;
+    return stamp;
+}
+
 var cached_upstream_version1: ?[]const u8 = null;
 
 /// VERSION1 as the pinned defines.h defines it: the release string every
