@@ -5,6 +5,7 @@
     "both_asan",
     "idiom-test",
     "keyboard_ringbuffer_test",
+    "memcheck_suite",
     "pgm_load_fuzz",
     "state-progmem-test",
     "state_load_fuzz",

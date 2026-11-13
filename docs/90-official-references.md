@@ -177,7 +177,9 @@ about 256 KiB on the DMCP5. Either way the
   accept that a 4-byte overrun into the next block's first word is not
   detectable. Without it, z47's free-space poison pattern
   (`../src/shell/pool_poison.zig`, run by `state_load_fuzz`) covers writes into
-  free pool space; per-allocation redzones for gap 3 in the posture would need
+  free pool space, and Valgrind's client requests (`std.valgrind.memcheck`, run
+  by `memcheck_suite`) cover reads and writes of free blocks; per-allocation
+  redzones for gap 3 in the posture would need
   this API or a pool-layout change.
 
 What Zig does not give you:
@@ -356,7 +358,7 @@ first: it is the only question that matters about a reference.
 | `audit-*.py` preprocessing live c43 source | derived oracle | yes | full |
 | `charstring_diff` (a committed oracle extracted from c43 source, re-extracted and byte-compared by `check-oracle-provenance.py`) | derived oracle | yes | full |
 | `saveload_roundtrip` save→load→save, `backup.cfg` and data-file round-trips | metamorphic relation | n/a — needs none | full, and independent |
-| UBSan lanes, Zig safety panics, `state_load_fuzz` (including its pool-poison audit) | implicit oracle | n/a | weak but free |
+| UBSan lanes, Zig safety panics, `state_load_fuzz` (including its pool-poison audit), `memcheck_suite` | implicit oracle | n/a | weak but free |
 | `save_load_golden.sav` | characterization test | no | change detector only |
 | unit lane on a hand-built `c47.h` + fake runtime | fake-hosted derived oracle | partly — the *reference* does, the *environment* does not | full for control flow, **none** for anything the fake cannot compute |
 | snapshot of call counts and arguments | interaction (spy) oracle | no — it pins the port's call pattern | change detector; breaks on refactor, misses wrong results |

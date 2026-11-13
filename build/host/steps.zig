@@ -1129,6 +1129,33 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.l
     const state_load_fuzz_step = b.step("state_load_fuzz", "Run malformed state files through the real restore path");
     state_load_fuzz_step.dependOn(&state_load_fuzz_cmd.step);
 
+    // The pool under valgrind's memcheck: both malformed-load corpora and the
+    // save/load round-trip. free_list.zig keeps the pool's free blocks no-access
+    // and each newly claimed block undefined, so a read or write through a freed
+    // block, or a decision taken on bytes nothing wrote, is reported at the
+    // instruction; every run fails on any memcheck report. The runs share one
+    // working directory and its c47.sav, so they are chained, not parallel.
+    const memcheck_args = [_][]const u8{ "valgrind", "--quiet", "--error-exitcode=97", "--exit-on-first-error=yes" };
+    const memcheck_wrapper = "valgrind --quiet --error-exitcode=97 --exit-on-first-error=yes";
+    const pgm_load_valgrind_cmd = b.addSystemCommand(&.{ "bash", "build/tests/pgm_run/run-pgm-load-fuzz.sh" });
+    pgm_load_valgrind_cmd.addArtifactArg2(pgm_run_asan, .{});
+    pgm_load_valgrind_cmd.addArg("build/tests/pgm_run/malformed");
+    pgm_load_valgrind_cmd.setCwd(b.path("."));
+    pgm_load_valgrind_cmd.setEnvironmentVariable("HARNESS_WRAPPER", memcheck_wrapper);
+    const state_load_valgrind_cmd = b.addSystemCommand(&.{ "bash", "build/tests/calc_state/run-state-load-fuzz.sh" });
+    state_load_valgrind_cmd.addArtifactArg2(state_load_harness, .{});
+    state_load_valgrind_cmd.addArg("build/tests/calc_state/malformed");
+    state_load_valgrind_cmd.setCwd(b.path("."));
+    state_load_valgrind_cmd.setEnvironmentVariable("HARNESS_WRAPPER", memcheck_wrapper);
+    state_load_valgrind_cmd.step.dependOn(&pgm_load_valgrind_cmd.step);
+    const saveload_valgrind_cmd = b.addSystemCommand(&memcheck_args);
+    saveload_valgrind_cmd.addArtifactArg2(saveload_roundtrip_harness, .{});
+    saveload_valgrind_cmd.addFileArg2(b.path("build/tests/calc_state/save_load_golden.sav"), .{});
+    saveload_valgrind_cmd.setCwd(upstreamCwd(b));
+    saveload_valgrind_cmd.step.dependOn(&state_load_valgrind_cmd.step);
+    const memcheck_suite_step = b.step("memcheck_suite", "Run the load corpora and the save/load round-trip under valgrind's memcheck");
+    memcheck_suite_step.dependOn(&saveload_valgrind_cmd.step);
+
     // Program-memory pointer-math harness: verifies the HW-geometry-dependent
     // save/load logic (RAM_SIZE_IN_BLOCKS + the cross-hardware relocation) for
     // BOTH the NEW_HW (host/DMCP5/DM42n) and OLD_HW (DMCP/original DM42) lanes.

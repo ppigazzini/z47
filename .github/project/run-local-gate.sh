@@ -286,4 +286,4 @@ mapfile -t generated_artifacts < <(bash .github/project/workflow-imported-root-p
 git diff --exit-code -- "${generated_artifacts[@]}"
 
 printf '\n\033[1;32mLOCAL GATE PASSED\033[0m — the Linux governance, host-parity and firmware-link lanes.\n'
-printf 'Still CI-only: the UBSan lanes (both_asan, test_asan), the coverage floor, the docs build, the dmcp, dmcpr47, dmcp5 and dmcp5r47 links and all packaging, the font-seam, C-type-alias, extern-var-width and workflow-vocabulary checks, and the Windows (LLP64) and macOS host lanes.\n'
+printf 'Still CI-only: the UBSan lanes (both_asan, test_asan), the memcheck lane (memcheck_suite), the coverage floor, the docs build, the dmcp, dmcpr47, dmcp5 and dmcp5r47 links and all packaging, the font-seam, C-type-alias, extern-var-width and workflow-vocabulary checks, and the Windows (LLP64) and macOS host lanes.\n'

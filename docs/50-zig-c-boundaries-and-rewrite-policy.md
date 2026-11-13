@@ -280,7 +280,9 @@ as live rather than closed.
    because blocks are reached by `[*c]` arithmetic. Writes into FREE pool space
    are covered by a poison pattern that needs no sanitizer runtime
    (`../src/shell/pool_poison.zig`, armed by `zig build state_load_fuzz`, host
-   only). An overrun from one live block into another live block stays invisible;
+   only), and reads and writes of free blocks by Valgrind's memcheck, which the
+   free list keeps informed (`zig build memcheck_suite`, CI only). An overrun from
+   one live block into another live block stays invisible;
    reaching it needs per-allocation redzones, which would change the pool layout
    and so the firmware.
 4. **The narrowing population is split and ratcheted on the load owners, but the
