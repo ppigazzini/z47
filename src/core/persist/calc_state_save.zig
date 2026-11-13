@@ -216,6 +216,14 @@ inline fn b() [*c]u8 {
     return buf_ptr;
 }
 
+// One save line into the save buffer, bounded by the buffer itself. A register
+// line carries the whole value -- a 1019-byte string or a long integer of about a
+// thousand digits -- so it is formatted in place rather than through a smaller
+// staging buffer.
+fn saveLine(comptime fmt: []const u8, args: anytype) void {
+    abi.fmtBufZ(buf_ptr[0..SAVE_BUFFER_SIZE], fmt, args);
+}
+
 fn save(bytes: [*c]const u8) void {
     ioFileWrite(bytes, @intCast(strlen(bytes)));
 }
@@ -255,24 +263,24 @@ pub fn writeSaveSections() void {
     defer releaseBuf();
 
     // SAV file version number + identifying model line.
-    abi.fmtCStr(b(), "SAVE_FILE_REVISION\n{d}\n", .{cu(@as(u8, 0))});
+    saveLine("SAVE_FILE_REVISION\n{d}\n", .{cu(@as(u8, 0))});
     save(b());
     // Identify which model wrote the file: the reader compares this against its
     // own model before it will restore keyboard assignments.
-    abi.fmtCStr(b(), if (calc_model_user_id == USER_R47)
+    saveLine(if (calc_model_user_id == USER_R47)
         "R47_save_file_00\n{d}\n"
     else
         "C47_save_file_00\n{d}\n", .{cu(configFileVersion)});
     save(b());
 
     // Global registers
-    abi.fmtCStr(b(), "GLOBAL_REGISTERS\n{d}\n", .{cu(@as(u16, @intCast(LAST_GLOBAL_REGISTER + 1)))});
+    saveLine("GLOBAL_REGISTERS\n{d}\n", .{cu(@as(u16, @intCast(LAST_GLOBAL_REGISTER + 1)))});
     save(b());
     {
         var regist: i16 = FIRST_GLOBAL_REGISTER;
         while (regist <= LAST_GLOBAL_REGISTER) : (regist += 1) {
             codec.registerToSaveString(regist, false);
-            abi.fmtCStr(b(), "R{d:0>3}\n{s}\n{s}\n", .{ @as(u32, @intCast(ci(regist))), std.mem.sliceTo(aimBuffer1[0..], 0), @as([*:0]const u8, codec.regValueBuf()) });
+            saveLine("R{d:0>3}\n{s}\n{s}\n", .{ @as(u32, @intCast(ci(regist))), std.mem.sliceTo(aimBuffer1[0..], 0), @as([*:0]const u8, codec.regValueBuf()) });
             save(b());
             codec.saveMatrixElements(regist);
         }
@@ -280,18 +288,18 @@ pub fn writeSaveSections() void {
 
     // Global flags
     save("GLOBAL_FLAGS\n");
-    abi.fmtCStr(b(), "{d} {d} {d} {d} {d} {d} {d} {d}\n", .{ cu(globalFlags[0]), cu(globalFlags[1]), cu(globalFlags[2]), cu(globalFlags[3]), cu(globalFlags[4]), cu(globalFlags[5]), cu(globalFlags[6]), cu(globalFlags[7]) });
+    saveLine("{d} {d} {d} {d} {d} {d} {d} {d}\n", .{ cu(globalFlags[0]), cu(globalFlags[1]), cu(globalFlags[2]), cu(globalFlags[3]), cu(globalFlags[4]), cu(globalFlags[5]), cu(globalFlags[6]), cu(globalFlags[7]) });
     save(b());
 
     // Local registers
     const localRegisterCount: u8 = currentSubroutineLevelData.?.numberOfLocalRegisters;
-    abi.fmtCStr(b(), "LOCAL_REGISTERS\n{d}\n", .{cu(localRegisterCount)});
+    saveLine("LOCAL_REGISTERS\n{d}\n", .{cu(localRegisterCount)});
     save(b());
     {
         var i: u32 = 0;
         while (i < localRegisterCount) : (i += 1) {
             codec.registerToSaveString(@intCast(FIRST_LOCAL_REGISTER + @as(i32, @intCast(i))), false);
-            abi.fmtCStr(b(), "R.{d:0>2}\n{s}\n{s}\n", .{ cu(i), std.mem.sliceTo(aimBuffer1[0..], 0), @as([*:0]const u8, codec.regValueBuf()) });
+            saveLine("R.{d:0>2}\n{s}\n{s}\n", .{ cu(i), std.mem.sliceTo(aimBuffer1[0..], 0), @as([*:0]const u8, codec.regValueBuf()) });
             save(b());
             codec.saveMatrixElements(@intCast(FIRST_LOCAL_REGISTER + @as(i32, @intCast(i))));
         }
@@ -299,12 +307,12 @@ pub fn writeSaveSections() void {
 
     // Local flags
     if (currentLocalRegisters != null) {
-        abi.fmtCStr(b(), "LOCAL_FLAGS\n{d}\n", .{cu(currentLocalFlags.?.*)});
+        saveLine("LOCAL_FLAGS\n{d}\n", .{cu(currentLocalFlags.?.*)});
         save(b());
     }
 
     // Named variables
-    abi.fmtCStr(b(), "NAMED_VARIABLES\n{d}\n", .{cu(numberOfNamedVariables)});
+    saveLine("NAMED_VARIABLES\n{d}\n", .{cu(numberOfNamedVariables)});
     save(b());
     {
         var i: u32 = 0;
@@ -312,7 +320,7 @@ pub fn writeSaveSections() void {
             codec.registerToSaveString(@intCast(FIRST_NAMED_VARIABLE + @as(i32, @intCast(i))), false);
             stringToUtf8(&allNamedVariables[i].variableName[1], b());
             const n = strlen(b());
-            abi.fmtCStr(b() + n, "\n{s}\n{s}\n", .{ std.mem.sliceTo(aimBuffer1[0..], 0), @as([*:0]const u8, codec.regValueBuf()) });
+            abi.fmtBufZ(buf_ptr[n..SAVE_BUFFER_SIZE], "\n{s}\n{s}\n", .{ std.mem.sliceTo(aimBuffer1[0..], 0), @as([*:0]const u8, codec.regValueBuf()) });
             save(b());
             codec.saveMatrixElements(@intCast(FIRST_NAMED_VARIABLE + @as(i32, @intCast(i))));
         }
@@ -320,13 +328,13 @@ pub fn writeSaveSections() void {
 
     // Statistical sums
     const sumsCount: u16 = if (statisticalSumsPointer != null) NUMBER_OF_STATISTICAL_SUMS else 0;
-    abi.fmtCStr(b(), "STATISTICAL_SUMS\n{d}\n", .{cu(sumsCount)});
+    saveLine("STATISTICAL_SUMS\n{d}\n", .{cu(sumsCount)});
     save(b());
     {
         var i: u16 = 0;
         while (i < sumsCount) : (i += 1) {
             codec.statSumToString(i);
-            abi.fmtCStr(b(), "{s}\n", .{@as([*:0]const u8, codec.regValueBuf())});
+            saveLine("{s}\n", .{@as([*:0]const u8, codec.regValueBuf())});
             save(b());
         }
     }
@@ -335,10 +343,10 @@ pub fn writeSaveSections() void {
     var yy1: [35]u8 = undefined;
     var yy2: [35]u8 = undefined;
     text.ui64ToString(systemFlags0, &yy1[0]);
-    abi.fmtCStr(b(), "SYSTEM_FLAGS\n{s}\n", .{std.mem.sliceTo(yy1[0..], 0)});
+    saveLine("SYSTEM_FLAGS\n{s}\n", .{std.mem.sliceTo(yy1[0..], 0)});
     save(b());
     text.ui64ToString(systemFlags1, &yy1[0]);
-    abi.fmtCStr(b(), "SYSTEM_FLAGS1\n{s}\n", .{std.mem.sliceTo(yy1[0..], 0)});
+    saveLine("SYSTEM_FLAGS1\n{s}\n", .{std.mem.sliceTo(yy1[0..], 0)});
     save(b());
 
     // Keyboard assignments
@@ -347,7 +355,7 @@ pub fn writeSaveSections() void {
         var i: usize = 0;
         while (i < 37) : (i += 1) {
             const k = kbd_usr[i];
-            abi.fmtCStr(b(), "{d} {d} {d} {d} {d} {d} {d} {d} {d}\n", .{ ci(k.keyId), ci(k.primary), ci(k.fShifted), ci(k.gShifted), ci(k.keyLblAim), ci(k.primaryAim), ci(k.fShiftedAim), ci(k.gShiftedAim), ci(k.primaryTam) });
+            saveLine("{d} {d} {d} {d} {d} {d} {d} {d} {d}\n", .{ ci(k.keyId), ci(k.primary), ci(k.fShifted), ci(k.gShifted), ci(k.keyLblAim), ci(k.primaryAim), ci(k.fShiftedAim), ci(k.gShiftedAim), ci(k.primaryTam) });
             save(b());
         }
     }
@@ -363,13 +371,13 @@ pub fn writeSaveSections() void {
                 num += 1;
             }
         }
-        abi.fmtCStr(b(), "{d}\n", .{cu(num)});
+        saveLine("{d}\n", .{cu(num)});
         save(b());
 
         i = 0;
         while (i < 37 * 6) : (i += 1) {
             if (getUserKeyLabelString(@intCast(i))[0] != 0) {
-                abi.fmtCStr(b(), "{d} ", .{cu(i)});
+                saveLine("{d} ", .{cu(i)});
                 stringToUtf8(getUserKeyLabelString(@intCast(i)), b() + strlen(b()));
                 _ = strcat(b(), "\n");
                 save(b());
@@ -387,7 +395,7 @@ pub fn writeSaveSections() void {
 
     // User menus
     save("USER_MENUS\n");
-    abi.fmtCStr(b(), "{d}\n", .{cu(numberOfUserMenus)});
+    saveLine("{d}\n", .{cu(numberOfUserMenus)});
     save(b());
     {
         var j: u32 = 0;
@@ -401,19 +409,19 @@ pub fn writeSaveSections() void {
 
     // Programs
     const currentSizeInBlocks: u16 = progmem.programSizeInBlocks(geometry(), @intFromPtr(beginOfProgramMemory));
-    abi.fmtCStr(b(), "PROGRAMS\n{d}\n", .{cu(currentSizeInBlocks)});
+    saveLine("PROGRAMS\n{d}\n", .{cu(currentSizeInBlocks)});
     save(b());
-    abi.fmtCStr(b(), "{d}\n{d}\n", .{ cu(toC47memptr(currentStep)), cu(offsetWithinBlock(currentStep)) });
+    saveLine("{d}\n{d}\n", .{ cu(toC47memptr(currentStep)), cu(offsetWithinBlock(currentStep)) });
     save(b());
-    abi.fmtCStr(b(), "{d}\n{d}\n", .{ cu(toC47memptr(firstFreeProgramByte)), cu(offsetWithinBlock(firstFreeProgramByte)) });
+    saveLine("{d}\n{d}\n", .{ cu(toC47memptr(firstFreeProgramByte)), cu(offsetWithinBlock(firstFreeProgramByte)) });
     save(b());
-    abi.fmtCStr(b(), "{d}\n", .{cu(freeProgramBytes)});
+    saveLine("{d}\n", .{cu(freeProgramBytes)});
     save(b());
     {
         const progWords: [*c]u32 = @ptrCast(@alignCast(beginOfProgramMemory));
         var i: u16 = 0;
         while (i < currentSizeInBlocks) : (i += 1) {
-            abi.fmtCStr(b(), "{d}\n", .{cu(progWords[i])});
+            saveLine("{d}\n", .{cu(progWords[i])});
             save(b());
         }
     }
@@ -436,7 +444,7 @@ pub fn writeSaveSections() void {
                 formulaeWithText += 1;
             }
         }
-        abi.fmtCStr(b(), "EQUATIONS\n{d}\n", .{cu(formulaeWithText)});
+        saveLine("EQUATIONS\n{d}\n", .{cu(formulaeWithText)});
         save(b());
 
         i = 0;
@@ -451,7 +459,7 @@ pub fn writeSaveSections() void {
     }
 
     // Other configuration stuff
-    abi.fmtCStr(b(), "OTHER_CONFIGURATION_STUFF\n00\n", .{});
+    saveLine("OTHER_CONFIGURATION_STUFF\n00\n", .{});
     save(b());
     save(b()); // historical repeat (now a short-circuit marker on load)
 
@@ -488,7 +496,7 @@ pub fn writeSaveSections() void {
 
     text.ui64ToString(pcg32_global.state, &yy1[0]);
     text.ui64ToString(pcg32_global.inc, &yy2[0]);
-    abi.fmtCStr(b(), "rngState\n{s} {s}\n", .{ std.mem.sliceTo(yy1[0..], 0), std.mem.sliceTo(yy2[0..], 0) });
+    saveLine("rngState\n{s} {s}\n", .{ std.mem.sliceTo(yy1[0..], 0), std.mem.sliceTo(yy2[0..], 0) });
     save(b());
 
     saveField("exponentLimit", "%d\n", .{ci(exponentLimit)});
@@ -499,7 +507,7 @@ pub fn writeSaveSections() void {
     saveField("Norm_Key_00.func", "%d\n", .{ci(Norm_Key_00.func)});
     {
         const paramPtr: [*c]const u8 = if (Norm_Key_00.funcParam[0] == 0) "NoNormKeyParamDef" else &Norm_Key_00.funcParam[0];
-        abi.fmtCStr(b(), "Norm_Key_00.funcParam\n{s}\n", .{@as([*:0]const u8, paramPtr)});
+        saveLine("Norm_Key_00.funcParam\n{s}\n", .{@as([*:0]const u8, paramPtr)});
         save(b());
     }
     saveField("Norm_Key_00.used", "%u\n", .{cu(@intFromBool(Norm_Key_00.used))});
@@ -519,10 +527,10 @@ pub fn writeSaveSections() void {
     saveField("PLOT_ZMY", "%u\n", .{cu(@as(u8, @bitCast(PLOT_ZMY)))});
     saveField("firstDayOfWeek", "%u\n", .{cu(firstDayOfWeek)});
     saveField("firstWeekOfYearDay", "%u\n", .{cu(firstWeekOfYearDay)});
-    abi.fmtCStr(b(), "retainedPageFirstItem\n", .{});
+    saveLine("retainedPageFirstItem\n", .{});
     save(b());
     for (retainedPageFirstItem, 0..) |first_item, n| { // one firstItem per entry of retainedPageMenu[], space separated on one line
-        abi.fmtCStr(b(), "{d}{s}", .{ first_item, if (n == retainedPageFirstItem.len - 1) "\n" else " " });
+        saveLine("{d}{s}", .{ first_item, if (n == retainedPageFirstItem.len - 1) "\n" else " " });
         save(b());
     }
 
@@ -534,7 +542,7 @@ pub fn writeSaveSections() void {
     }
     saveField("alphaRegister", "%u\n", .{cu(alphaRegister)});
 
-    abi.fmtCStr(b(), "END_OTHER_PARAM\n", .{});
+    saveLine("END_OTHER_PARAM\n", .{});
     save(b());
 }
 
@@ -549,7 +557,7 @@ fn saveField(comptime name: []const u8, comptime value_format: []const u8, args:
         "{d}\n"
     else
         @compileError("saveField: unhandled value_format \"" ++ value_format ++ "\"");
-    abi.fmtCStr(b(), name ++ "\n" ++ zfmt, args);
+    saveLine(name ++ "\n" ++ zfmt, args);
     save(b());
 }
 
@@ -558,7 +566,7 @@ fn saveField(comptime name: []const u8, comptime value_format: []const u8, args:
 fn saveUserMenuBlock(items: [*c]const userMenuItem_t) void {
     var i: usize = 0;
     while (i < 18) : (i += 1) {
-        abi.fmtCStr(b(), "{d}", .{ci(items[i].item)});
+        saveLine("{d}", .{ci(items[i].item)});
         if (items[i].argumentName[0] != 0) {
             _ = strcat(b(), " ");
             stringToUtf8(&items[i].argumentName[0], b() + strlen(b()));
@@ -630,10 +638,10 @@ pub fn fnSaveDataRegisters(beginR: ?*const u16, endR: ?*const u16, registerName:
     if (registerName != null) {
         const regist = findNamedVariable(registerName); // read-only lookup: must not allocate
         if (regist == INVALID_VARIABLE) return false;
-        abi.fmtCStr(b(), "NAMED_VARIABLES\n{d}\n", .{cu(@as(u16, 1))});
+        saveLine("NAMED_VARIABLES\n{d}\n", .{cu(@as(u16, 1))});
         save(b());
         codec.registerToSaveString(regist, !isXFN);
-        abi.fmtCStr(b(), "{s}\n{s}\n{s}\n", .{ @as([*:0]const u8, registerName), std.mem.sliceTo(aimBuffer1[0..], 0), @as([*:0]const u8, codec.regValueBuf()) });
+        saveLine("{s}\n{s}\n{s}\n", .{ @as([*:0]const u8, registerName), std.mem.sliceTo(aimBuffer1[0..], 0), @as([*:0]const u8, codec.regValueBuf()) });
         save(b());
         codec.saveMatrixElements(regist);
         return true;
@@ -641,14 +649,14 @@ pub fn fnSaveDataRegisters(beginR: ?*const u16, endR: ?*const u16, registerName:
 
     if (beginR == null or endR == null or endR.?.* < beginR.?.*) return false;
 
-    abi.fmtCStr(b(), "GLOBAL_REGISTERS\n{d}\n", .{cu(@as(u16, @intCast(endR.?.* - beginR.?.* + 1)))});
+    saveLine("GLOBAL_REGISTERS\n{d}\n", .{cu(@as(u16, @intCast(endR.?.* - beginR.?.* + 1)))});
     save(b());
     var regName: [16]u8 = undefined;
     var regist: i16 = @intCast(beginR.?.*);
     while (regist <= @as(i16, @intCast(endR.?.*))) : (regist += 1) {
         codec.registerToSaveString(regist, isXFNRegister);
         registerNumberToString(regist, &regName[0]);
-        abi.fmtCStr(b(), "{s}\n{s}\n{s}\n", .{ std.mem.sliceTo(regName[0..], 0), std.mem.sliceTo(aimBuffer1[0..], 0), @as([*:0]const u8, codec.regValueBuf()) });
+        saveLine("{s}\n{s}\n{s}\n", .{ std.mem.sliceTo(regName[0..], 0), std.mem.sliceTo(aimBuffer1[0..], 0), @as([*:0]const u8, codec.regValueBuf()) });
         save(b());
         codec.saveMatrixElements(regist); // only emits when the register really is a matrix
     }
@@ -675,12 +683,12 @@ fn doSaveDataFile(beginR: ?*const u16, endR: ?*const u16, registerName: [*c]cons
     showHideHourGlass();
 
     codec.dataFileMode = true; // compact human-readable value forms for this file
-    abi.fmtCStr(b(), "DATA_FILE_REVISION\n{d}\n", .{cu(@as(u8, 0))});
+    saveLine("DATA_FILE_REVISION\n{d}\n", .{cu(@as(u8, 0))});
     save(b());
     // Data file version number, mirroring the state file convention. The tag is
     // model-independent, unlike the save file's C47_/R47_ tags: a data file
     // carries no model-specific content, so C47 and R47 read each other's.
-    abi.fmtCStr(b(), "C47/R47_data_file_00\n{d}\n", .{cu(configFileVersion)});
+    saveLine("C47/R47_data_file_00\n{d}\n", .{cu(configFileVersion)});
     save(b());
 
     _ = fnSaveDataRegisters(beginR, endR, registerName, isXFNRegister);
@@ -788,12 +796,12 @@ fn doSaveFlagFile(kind: FlagKind, count: u16) void {
     hourGlassIconEnabled = true;
     showHideHourGlass();
 
-    abi.fmtCStr(b(), "DATA_FILE_REVISION\n{d}\n", .{cu(@as(u8, 0))});
+    saveLine("DATA_FILE_REVISION\n{d}\n", .{cu(@as(u8, 0))});
     save(b());
-    abi.fmtCStr(b(), "C47/R47_data_file_00\n{d}\n", .{cu(configFileVersion)});
+    saveLine("C47/R47_data_file_00\n{d}\n", .{cu(configFileVersion)});
     save(b());
 
-    abi.fmtCStr(b(), "NAMED_FLAGS\n{d}\n", .{cu(count)});
+    saveLine("NAMED_FLAGS\n{d}\n", .{cu(count)});
     save(b());
 
     switch (kind) {
@@ -804,7 +812,7 @@ fn doSaveFlagFile(kind: FlagKind, count: u16) void {
                 if (isSystemFlagItem(item)) {
                     var flagName: [64]u8 = undefined; // room for the UTF-8 of a 15-glyph catalogue name
                     stringToUtf8(&item.itemCatalogName, &flagName);
-                    abi.fmtCStr(b(), "{s} {d}\n", .{ std.mem.sliceTo(flagName[0..], 0), cu(@intFromBool(getSystemFlag(@intCast(item.param)))) });
+                    saveLine("{s} {d}\n", .{ std.mem.sliceTo(flagName[0..], 0), cu(@intFromBool(getSystemFlag(@intCast(item.param)))) });
                     save(b());
                 }
             }
@@ -812,14 +820,14 @@ fn doSaveFlagFile(kind: FlagKind, count: u16) void {
         .local => {
             var i: u16 = 0;
             while (i < count) : (i += 1) {
-                abi.fmtCStr(b(), "FLAG_.{d:0>2} {d}\n", .{ cu(i), cu(@intFromBool(getFlag(FIRST_LOCAL_FLAG + i))) });
+                saveLine("FLAG_.{d:0>2} {d}\n", .{ cu(i), cu(@intFromBool(getFlag(FIRST_LOCAL_FLAG + i))) });
                 save(b());
             }
         },
         .global => {
             var i: u16 = 0;
             while (i < count) : (i += 1) {
-                abi.fmtCStr(b(), "FLAG_{d:0>2} {d}\n", .{ cu(i), cu(@intFromBool(getFlag(i))) });
+                saveLine("FLAG_{d:0>2} {d}\n", .{ cu(i), cu(@intFromBool(getFlag(i))) });
                 save(b());
             }
         },
