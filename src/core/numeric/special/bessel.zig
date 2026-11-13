@@ -177,7 +177,7 @@ fn fnBesselJCore() BesselError!void {
     if (getRegisterAsReal(REGISTER_X, &x) and getRegisterAsReal(REGISTER_Y, &n)) {
         if (realIsAnInteger(&n) or (!realIsNegative(&x))) {
             WP34S_BesselJ(&n, &x, &res.Real, &runtime.ctxtReal75);
-            reallocateRegister(REGISTER_X, dtReal34, 0, @intCast(amNone));
+            _ = reallocateRegister(REGISTER_X, dtReal34, 0, @intCast(amNone));
             convertRealToReal34ResultRegister(&res.Real, REGISTER_X);
         } else if (getSystemFlag(FLAG_CPXRES)) { // Real -> Complex
             realSetPositiveSign(&x);
@@ -185,7 +185,7 @@ fn fnBesselJCore() BesselError!void {
             WP34S_Mod(&n, const_2(), res.arg(), &runtime.ctxtReal75);
             realMultiply(res.arg(), const75_pi(), res.arg(), &runtime.ctxtReal75);
             realPolarToRectangular(res.mag(), res.arg(), &res, &runtime.ctxtReal75);
-            reallocateRegister(REGISTER_X, dtComplex34, 0, @intCast(amNone));
+            _ = reallocateRegister(REGISTER_X, dtComplex34, 0, @intCast(amNone));
             convertComplexToResultRegister(&res, REGISTER_X);
         } else {
             return error.BesselJNegArg;
@@ -219,7 +219,7 @@ fn fnBesselYCore() BesselError!void {
     if (getRegisterAsReal(REGISTER_X, &x) and getRegisterAsReal(REGISTER_Y, &n)) {
         if (!realIsNegative(&x)) {
             WP34S_BesselY(&n, &x, &res.Real, &runtime.ctxtReal75);
-            reallocateRegister(REGISTER_X, dtReal34, 0, @intCast(amNone));
+            _ = reallocateRegister(REGISTER_X, dtReal34, 0, @intCast(amNone));
             convertRealToReal34ResultRegister(&res.Real, REGISTER_X);
         } else if (getSystemFlag(FLAG_CPXRES)) { // Real -> Complex
             realSetPositiveSign(&x);
@@ -235,7 +235,7 @@ fn fnBesselYCore() BesselError!void {
             realAdd(&b, &b, &b, &runtime.ctxtReal75);
             realAdd(&res.Imag, &b, &res.Imag, &runtime.ctxtReal75);
 
-            reallocateRegister(REGISTER_X, dtComplex34, 0, @intCast(amNone));
+            _ = reallocateRegister(REGISTER_X, dtComplex34, 0, @intCast(amNone));
             convertComplexToResultRegister(&res, REGISTER_X);
         } else {
             return error.BesselYNegArg;

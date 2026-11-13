@@ -14,6 +14,6 @@ pub fn setRawShortIntegerRegister(
     base: u32,
     value: u64,
 ) void {
-    reallocate_register(regist, dt_short_integer, short_integer_size_in_blocks, base);
+    _ = reallocate_register(regist, dt_short_integer, short_integer_size_in_blocks, base);
     registerShortIntegerPtr(get_register_data_pointer, regist).* = value;
 }

@@ -400,7 +400,7 @@ extern fn fnSetFlag(flag: u16) void;
 extern fn fnClearFlag(flag: u16) void;
 extern fn resetShiftState() void;
 extern fn setLineDelay(delay: u16) void;
-extern fn saveStatsMatrix() void;
+extern fn saveStatsMatrix() bool;
 extern fn getMatrixFromRegister(regist: u16) void;
 extern fn allocateLocalRegisters(number_of_registers_to_allocate: u16) void;
 extern fn clearRegister(regist: i16) void;

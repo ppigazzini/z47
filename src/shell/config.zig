@@ -908,7 +908,7 @@ extern fn setSystemFlagChanged(sf: i32) void;
 
 // register / long-integer helpers
 
-extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) void;
+extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) bool;
 extern fn getRegisterDataPointer(regist: calcRegister_t) *anyopaque;
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
 extern fn setRegisterDataType(regist: calcRegister_t, dataType: u16, tag: u32) void;
@@ -1253,7 +1253,7 @@ fn Sett(grp: i16) void {
                 RESERVED_VARIABLE_PPERONA,
                 RESERVED_VARIABLE_CPERONA,
                 => {
-                    reallocateRegister(@intCast(opcode), dtReal34, 0, amNone);
+                    _ = reallocateRegister(@intCast(opcode), dtReal34, 0, amNone);
                     int32ToReal34(value, reg34(@intCast(opcode)));
                 },
 

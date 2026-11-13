@@ -122,7 +122,7 @@ pub fn arcsinReal() callconv(.c) void {
         runtime.convertAngleFromTo(&x, runtime.amRadian, runtime.currentAngularMode, &runtime.ctxtReal39);
     }
 
-    runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, @intCast(runtime.currentAngularMode));
+    _ = runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, @intCast(runtime.currentAngularMode));
     runtime.convertRealToResultRegister(&x, runtime.REGISTER_X, runtime.currentAngularMode);
 }
 

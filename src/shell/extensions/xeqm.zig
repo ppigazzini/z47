@@ -87,7 +87,7 @@ extern fn getRegisterDataPointer(regist: calcRegister_t) *anyopaque;
 extern fn fnSwapXY(unusedButMandatoryParameter: u16) void;
 extern fn fnDrop(unusedButMandatoryParameter: u16) void;
 extern fn copySourceRegisterToDestRegister(rSource: calcRegister_t, rDest: calcRegister_t) void;
-extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) void;
+extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) bool;
 
 extern fn adjustResult(result: calcRegister_t, dropY: bool, setCpxRes: bool, op1: calcRegister_t, op2: calcRegister_t, op3: calcRegister_t) void;
 extern fn clearRegister(regist: calcRegister_t) void;
@@ -145,7 +145,7 @@ pub export fn fnXSWAP(mode: u16) callconv(.c) void {
             _ = frontier_char_string.xcopy(tmpString, src, @intCast(len));
             setEquation(currentFormula, regString(REGISTER_X));
             if (isSwap) {
-                reallocateRegister(REGISTER_X, dtString, toBlocks(len), amNone);
+                _ = reallocateRegister(REGISTER_X, dtString, toBlocks(len), amNone);
                 _ = frontier_char_string.xcopy(regString(REGISTER_X), tmpString, @intCast(len));
             } else {
                 fnDrop(NOPARAM);
@@ -172,7 +172,7 @@ pub export fn fnXSWAP(mode: u16) callconv(.c) void {
             var tmp: [2]u8 = undefined;
             tmp[0] = 0;
             const len: i16 = @intCast(stringByteLength(&tmp) + 1);
-            reallocateRegister(REGISTER_Y, dtString, toBlocks(len), amNone); // Make blank string in Y
+            _ = reallocateRegister(REGISTER_Y, dtString, toBlocks(len), amNone); // Make blank string in Y
             _ = frontier_char_string.xcopy(regString(REGISTER_Y), &tmp, @intCast(len));
             addition[type_x][getRegisterDataType(REGISTER_Y)].?(); // Convert X (number) to string in X
             adjustResult(REGISTER_X, false, false, -1, -1, -1);
@@ -191,7 +191,7 @@ pub export fn fnXSWAP(mode: u16) callconv(.c) void {
         if (isSwap) {
             // Save aimbuffer to TEMP1 as a string register
             const len: i16 = @intCast(stringByteLength(aimBuffer) + 1);
-            reallocateRegister(TEMP_REGISTER_1, dtString, toBlocks(len), amNone);
+            _ = reallocateRegister(TEMP_REGISTER_1, dtString, toBlocks(len), amNone);
             _ = frontier_char_string.xcopy(regString(TEMP_REGISTER_1), aimBuffer, @intCast(len));
         }
         // In essence, after conversions,
@@ -245,7 +245,7 @@ pub export fn fnXSWAP(mode: u16) callconv(.c) void {
             setSystemFlag(FLAG_ASLIFT); // JM NEWERPN OVERRIDE SLS, AS ERPN ENTER ALWAYS HAS SLS SET
         } // JM NEWERPN
         liftStack();
-        reallocateRegister(REGISTER_X, dtString, toBlocks(len), amNone);
+        _ = reallocateRegister(REGISTER_X, dtString, toBlocks(len), amNone);
         _ = strcpy(regString(REGISTER_X), line1);
         free(line1);
         fnXSWAP(0);

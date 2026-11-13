@@ -180,7 +180,7 @@ fn incDecAndCompare(regist: u16, mode: u16) linksection(runtime.code_section) vo
     // ISZ and DSZ on a real34 or time counter set their own step and compare
     // against a constant below. Skip the reallocation and the decode for those.
     if (dataType != dtLongInteger and !(((mode & 2) == 2) and (dataType == dtReal34 or dataType == dtTime))) {
-        reallocateRegister(TEMP_REGISTER_1, dtReal34, 0, @intCast(amNone));
+        _ = reallocateRegister(TEMP_REGISTER_1, dtReal34, 0, @intCast(amNone));
         getIterParam(regist, &fp, registerReal34Data(TEMP_REGISTER_1), &step);
     }
     switch (dataType) {

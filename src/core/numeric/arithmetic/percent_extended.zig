@@ -245,7 +245,7 @@ pub fn percentPlusMG(unused_but_mandatory_parameter: u16) void {
         runtime.realDivide(&y_value, &result, &result, &runtime.ctxtReal39);
     }
 
-    runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, runtime.amNone);
+    _ = runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, runtime.amNone);
     if (exact_quotient) {
         runtime.registerReal34Ptr(runtime.REGISTER_X).* = exact_result;
     } else {
@@ -345,7 +345,7 @@ pub fn deltaPercent(unused_but_mandatory_parameter: u16) void {
         return;
     }
 
-    runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, runtime.amNone);
+    _ = runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, runtime.amNone);
     if (exact_quotient) {
         runtime.registerReal34Ptr(runtime.REGISTER_X).* = exact_result;
     } else {

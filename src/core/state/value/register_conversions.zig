@@ -2326,7 +2326,7 @@ inline fn freeRegisterData(regist: calcRegister_t) void {
 extern fn allocC47Blocks(size_in_blocks: usize) ?*anyopaque;
 extern fn freeC47Blocks(ptr: ?*anyopaque, size_in_blocks: usize) void;
 extern fn getRegisterAsRawShortInt(reg: calcRegister_t, val: *u64, base: ?*u32) bool;
-extern fn setRegisterDataType(regist: calcRegister_t, data_type: u32, tag: u32) void;
+extern fn setRegisterDataType(regist: calcRegister_t, data_type: u16, tag: u32) void;
 
 pub export fn saveRegisterSnapshot(reg: calcRegister_t, s: *snap_t) callconv(.c) void {
     s.mem = null;

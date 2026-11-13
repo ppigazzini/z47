@@ -193,7 +193,7 @@ extern var ctxtReal39: realContext_t;
 // ---------------------------------------------------------------------------
 // Linkable function externs
 // ---------------------------------------------------------------------------
-extern fn reallocateRegister(regist: calcRegister_t, data_type: u32, size_blocks: u16, tag: u32) void;
+extern fn reallocateRegister(regist: calcRegister_t, data_type: u32, size_blocks: u16, tag: u32) bool;
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
 extern fn getRegisterDataPointer(regist: calcRegister_t) *anyopaque;
 extern fn getRegisterTag(regist: calcRegister_t) u32;
@@ -433,7 +433,7 @@ pub export fn checkDateArgument(regist: calcRegister_t, jd: *real34_t) linksecti
         },
         dtReal34 => {
             if (getRegisterAngularMode(regist) == amNone) {
-                reallocateRegister(TEMP_REGISTER_1, dtReal34, 0, amNoneU); // make sure TEMP_REGISTER_1 is not of dtDate type here
+                _ = reallocateRegister(TEMP_REGISTER_1, dtReal34, 0, amNoneU); // make sure TEMP_REGISTER_1 is not of dtDate type here
                 frontier_register_value_conversions.convertReal34RegisterToDateRegister(regist, TEMP_REGISTER_1, false); //no !YYsystem needed here
                 if (getRegisterDataType(TEMP_REGISTER_1) != dtDate) {
                     return false; // invalid date
@@ -754,7 +754,7 @@ pub export fn hmmssInRegisterToSeconds(regist: calcRegister_t) linksection(code_
     var real34: real34_t = undefined;
 
     real34Copy(reg34(regist), &real34);
-    reallocateRegister(regist, dtTime, 0, amNoneU);
+    _ = reallocateRegister(regist, dtTime, 0, amNoneU);
     hmmssToSeconds(&real34, reg34(regist));
     // The range compare reads a NaN as too large. A NaN passes through.
     if (!real34IsNaN(reg34(regist))) {
@@ -818,9 +818,9 @@ fn fnJulianToDateTimeCore() error{JulianBadType}!void {
             liftStack();
             frontier_register_value_conversions.convertLongIntegerRegisterToReal34Register(REGISTER_Y, REGISTER_Y);
             julianDayToInternalDate(reg34(REGISTER_Y), &date);
-            reallocateRegister(REGISTER_Y, dtDate, 0, amNoneU);
+            _ = reallocateRegister(REGISTER_Y, dtDate, 0, amNoneU);
             real34Copy(&date, reg34(REGISTER_Y));
-            reallocateRegister(REGISTER_X, dtTime, 0, amNoneU);
+            _ = reallocateRegister(REGISTER_X, dtTime, 0, amNoneU);
             real34Copy(const34_1on2, reg34(REGISTER_X)); //Added offset so 0.00 -> 12:00:00
             real34Multiply(reg34(REGISTER_X), const34_3600, reg34(REGISTER_X));
             real34Multiply(reg34(REGISTER_X), const34_24, reg34(REGISTER_X));
@@ -864,13 +864,13 @@ fn fnJulianToDateTimeCore() error{JulianBadType}!void {
             }
 
             //Convert date to Y
-            reallocateRegister(REGISTER_Y, dtDate, 0, amNoneU);
+            _ = reallocateRegister(REGISTER_Y, dtDate, 0, amNoneU);
             realToReal34(&integerPart, reg34(REGISTER_Y));
             julianDayToInternalDate(reg34(REGISTER_Y), &date);
             real34Copy(&date, reg34(REGISTER_Y));
 
             //Convert x to time to X
-            reallocateRegister(REGISTER_X, dtTime, 0, amNoneU); // this must be in front of the next line, otherwise accuracy is gone
+            _ = reallocateRegister(REGISTER_X, dtTime, 0, amNoneU); // this must be in front of the next line, otherwise accuracy is gone
             frontier_register_value_conversions.convertRealToReal34ResultRegister(&milliseconds, REGISTER_X);
         },
         else => return error.JulianBadType,
@@ -929,7 +929,7 @@ pub export fn fnDateTimeToJulian(unusedButMandatoryParameter: u16) linksection(c
         frontier_register_value_conversions.convertReal34ToLongIntegerRegister(&jd34, REGISTER_Y, DEC_ROUND_DOWN); //Y is truncated date in real
         frontier_register_value_conversions.convertLongIntegerRegisterToReal34Register(REGISTER_Y, REGISTER_Y);
         real34ToReal(reg34(REGISTER_X), &seconds);
-        reallocateRegister(REGISTER_X, dtReal34, 0, amNoneU);
+        _ = reallocateRegister(REGISTER_X, dtReal34, 0, amNoneU);
         real34ToReal(const34_43200, &noon);
         realSubtract(&seconds, &noon, &seconds, &ctxtReal39);
         realDivide(&seconds, const_86400, &seconds, &ctxtReal39);
@@ -1001,7 +1001,7 @@ pub export fn fnGetFirstGregorianDay(unusedButMandatoryParameter: u16) linksecti
 
     uInt32ToReal34(firstGregorianDay, &j);
     liftStack();
-    reallocateRegister(REGISTER_X, dtDate, 0, amNoneU);
+    _ = reallocateRegister(REGISTER_X, dtDate, 0, amNoneU);
     julianDayToInternalDate(&j, reg34(REGISTER_X));
 }
 
@@ -1227,7 +1227,7 @@ fn fnToDateCore(badRegister: *calcRegister_t) DateError!void {
         fnDropY(NOPARAM);
         if (lastErrorCode == ERROR_NONE) {
             composeJulianDay(&y, &m, &d, &j);
-            reallocateRegister(REGISTER_X, dtDate, 0, amNoneU);
+            _ = reallocateRegister(REGISTER_X, dtDate, 0, amNoneU);
             julianDayToInternalDate(&j, reg34(REGISTER_X));
 
             // check range
@@ -1387,7 +1387,7 @@ pub export fn fnDate(unusedButMandatoryParameter: u16) linksection(code_section)
 
     composeJulianDay(&y, &m, &d, &j);
     liftStack();
-    reallocateRegister(REGISTER_X, dtDate, 0, amNoneU);
+    _ = reallocateRegister(REGISTER_X, dtDate, 0, amNoneU);
     julianDayToInternalDate(&j, reg34(REGISTER_X));
     temporaryInformation = TI_DAY_OF_WEEK;
 }
@@ -1419,7 +1419,7 @@ pub export fn fnTime(unusedButMandatoryParameter: u16) linksection(code_section)
     real34Divide(&time34, const34_100, &time34);
 
     liftStack();
-    reallocateRegister(REGISTER_X, dtTime, 0, amNoneU);
+    _ = reallocateRegister(REGISTER_X, dtTime, 0, amNoneU);
     real34Copy(&time34, reg34(REGISTER_X));
 }
 
@@ -1547,7 +1547,7 @@ pub export fn fnGetWeekOfYearRule(unusedButMandatoryParameter: u16) linksection(
     uInt32ToReal34(firstWeekOfYearDay, &fwoyd);
     real34Multiply(&fwoyd, const34_1on10, &fwoyd);
     liftStack();
-    reallocateRegister(REGISTER_X, dtReal34, 0, amNoneU);
+    _ = reallocateRegister(REGISTER_X, dtReal34, 0, amNoneU);
     real34Add(&fdow, &fwoyd, reg34(REGISTER_X));
     temporaryInformation = TI_WOY_RULE;
 }

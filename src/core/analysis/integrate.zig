@@ -289,7 +289,7 @@ const DECQUAD_Emax: i32 = 6144;
 inline fn realAdjustExponent(destination: *real_t, adjustment: i32) void {
     destination.exponent += adjustment;
 }
-extern fn reallocateRegister(regist: calcRegister_t, data_type: u32, data_len: u16, tag: u32) void;
+extern fn reallocateRegister(regist: calcRegister_t, data_type: u32, data_len: u16, tag: u32) bool;
 extern fn convertRealToReal34ResultRegister(real: *const real_t, dest: calcRegister_t) void;
 
 extern fn getSystemFlag(sf: i32) bool;
@@ -516,13 +516,13 @@ fn DEI_xeq_user(regist: calcRegister_t, x: *align(1) const real_t, res: *real_t,
     if (lastErrorCode == ERROR_SOLVER_ABORT) { // Aborted?
         realSetZero(res);
     } else if (!realIsSpecial(x)) { // abscissa is good?
-        reallocateRegister(regist, dtReal34, 0, amNone);
+        _ = reallocateRegister(regist, dtReal34, 0, amNone);
         realToReal34(x, registerReal34Ptr(regist));
         // Put the node's x value in REGISTER_X too (like _executeSolver) so
         // fnFillStack feeds a program integrand its x on the stack, not a stale
         // prior result. Without this a program that reads stack X (rather than the
         // integration variable) integrates garbage.
-        reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+        _ = reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
         realToReal34(x, registerReal34Ptr(REGISTER_X));
         fnFillStack(NOPARAM);
         _integratorIteration();

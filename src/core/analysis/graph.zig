@@ -356,7 +356,7 @@ extern fn statMxN() i32;
 extern fn fnImaginaryPart(unusedButMandatoryParameter: u16) void;
 extern fn fnRealPart(unusedButMandatoryParameter: u16) void;
 extern fn copySourceRegisterToDestRegister(rSource: calcRegister_t, rDest: calcRegister_t) void;
-extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) void;
+extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) bool;
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
 extern fn getRegisterDataPointer(regist: calcRegister_t) *anyopaque;
 extern fn getRegisterAsReal(reg: calcRegister_t, val: *real_t) bool;
@@ -389,7 +389,7 @@ const progressHalfSecUpdate_Integer = abi.host.progressHalfSecUpdate_Integer; //
 // exitKeyWaiting now routes through the host-callback boundary (abi.host),
 // severing the direct engine->shell link; it reports "no abort" when headless.
 const exitKeyWaiting = abi.host.exitKeyWaiting;
-extern fn refreshLcd(unused: ?*anyopaque) void;
+extern fn refreshLcd(unused: ?*anyopaque) c_int;
 
 // decNumber / decQuad externs behind the real* / real34* macros.
 extern fn decNumberCopy(r: *real_t, src: *align(1) const real_t) *real_t;
@@ -435,7 +435,7 @@ inline fn lcdRefresh() void {
         const f: *const fn () callconv(.c) void = @ptrFromInt(library_fn_base + 48);
         f();
     } else {
-        refreshLcd(null);
+        _ = refreshLcd(null);
     }
 }
 
@@ -627,7 +627,7 @@ fn execute_rpn_function() void {
         if (lastErrorCode != 0) { // failed sample: NaN it so stale register content is not plotted
             var nanR: real_t = undefined;
             realSetNaN(&nanR);
-            reallocateRegister(REGISTER_X, dtReal34, 0, @bitCast(amNone));
+            _ = reallocateRegister(REGISTER_X, dtReal34, 0, @bitCast(amNone));
             realToReal34(&nanR, reg34(REGISTER_X));
             if (lastErrorCode != ERROR_SOLVER_ABORT) { // keep an abort alive to stop the plot; ordinary errors just NaN this sample
                 lastErrorCode = 0;
@@ -639,7 +639,7 @@ fn execute_rpn_function() void {
     } else { // invalid plot variable: NaN REGISTER_Y so the caller does not sample stale content
         var nanR: real_t = undefined;
         realSetNaN(&nanR);
-        reallocateRegister(REGISTER_Y, dtReal34, 0, @bitCast(amNone));
+        _ = reallocateRegister(REGISTER_Y, dtReal34, 0, @bitCast(amNone));
         realToReal34(&nanR, reg34(REGISTER_Y));
         lastErrorCode = 0;
     }
@@ -714,7 +714,7 @@ fn AddtoDrawMx() void {
 // real_t register / evaluation leaves (M-GRAPH port)
 // ===========================================================================
 fn convertRealToReal34Register(x: *align(1) const real_t, destination: calcRegister_t) void {
-    reallocateRegister(destination, dtReal34, 0, @bitCast(amNone));
+    _ = reallocateRegister(destination, dtReal34, 0, @bitCast(amNone));
     realToReal34(x, reg34(destination));
 }
 
@@ -770,7 +770,7 @@ fn reduceRegisterYToComponent() void {
         }
         fnSwapXY(NOPARAM);
     } else if (getSystemFlag(FLAG_IMPLOT)) {
-        reallocateRegister(REGISTER_Y, dtReal34, REAL34_SIZE_IN_BLOCKS, @bitCast(amNone));
+        _ = reallocateRegister(REGISTER_Y, dtReal34, REAL34_SIZE_IN_BLOCKS, @bitCast(amNone));
         real34SetZero(reg34(REGISTER_Y));
     }
 }
@@ -2492,9 +2492,9 @@ pub export fn fnEqSolvGraph(func: u16) callconv(.c) void {
             if (getRegisterAsReal(RESERVED_VARIABLE_LEST, &y) and getRegisterAsReal(RESERVED_VARIABLE_UEST, &x)) {
                 liftStack();
                 setSystemFlag(FLAG_ASLIFT);
-                reallocateRegister(REGISTER_X, dtReal34, 0, amNoneU);
+                _ = reallocateRegister(REGISTER_X, dtReal34, 0, amNoneU);
                 liftStack();
-                reallocateRegister(REGISTER_X, dtReal34, 0, amNoneU);
+                _ = reallocateRegister(REGISTER_X, dtReal34, 0, amNoneU);
                 realToReal34(&x, reg34(REGISTER_X));
                 realToReal34(&y, reg34(REGISTER_Y));
                 solverEstimatesUsed = true;
@@ -2502,8 +2502,8 @@ pub export fn fnEqSolvGraph(func: u16) callconv(.c) void {
         },
         EQ_CPXSOLVE, EQ_REALSOLVE => {
             if (getRegisterAsReal(REGISTER_X, &x) and getRegisterAsReal(REGISTER_Y, &y)) {
-                reallocateRegister(RESERVED_VARIABLE_UEST, dtReal34, 0, amNoneU);
-                reallocateRegister(RESERVED_VARIABLE_LEST, dtReal34, 0, amNoneU);
+                _ = reallocateRegister(RESERVED_VARIABLE_UEST, dtReal34, 0, amNoneU);
+                _ = reallocateRegister(RESERVED_VARIABLE_LEST, dtReal34, 0, amNoneU);
                 realToReal34(&x, reg34(RESERVED_VARIABLE_UEST));
                 realToReal34(&y, reg34(RESERVED_VARIABLE_LEST));
                 solverEstimatesUsed = false;
@@ -2513,9 +2513,9 @@ pub export fn fnEqSolvGraph(func: u16) callconv(.c) void {
             if (getRegisterAsReal(RESERVED_VARIABLE_LX, &y) and getRegisterAsReal(RESERVED_VARIABLE_UX, &x)) {
                 liftStack();
                 setSystemFlag(FLAG_ASLIFT);
-                reallocateRegister(REGISTER_X, dtReal34, 0, amNoneU);
+                _ = reallocateRegister(REGISTER_X, dtReal34, 0, amNoneU);
                 liftStack();
-                reallocateRegister(REGISTER_X, dtReal34, 0, amNoneU);
+                _ = reallocateRegister(REGISTER_X, dtReal34, 0, amNoneU);
                 realToReal34(&x, reg34(REGISTER_X));
                 realToReal34(&y, reg34(REGISTER_Y));
             }
@@ -2531,8 +2531,8 @@ pub export fn fnEqSolvGraph(func: u16) callconv(.c) void {
                     moreInfoOnError("In function fnEqSolvGraph:", "plot range limits must be finite and distinct", null, null);
                     return;
                 }
-                reallocateRegister(RESERVED_VARIABLE_UX, dtReal34, 0, amNoneU);
-                reallocateRegister(RESERVED_VARIABLE_LX, dtReal34, 0, amNoneU);
+                _ = reallocateRegister(RESERVED_VARIABLE_UX, dtReal34, 0, amNoneU);
+                _ = reallocateRegister(RESERVED_VARIABLE_LX, dtReal34, 0, amNoneU);
                 realToReal34(&x, reg34(RESERVED_VARIABLE_UX));
                 realToReal34(&y, reg34(RESERVED_VARIABLE_LX));
             }

@@ -343,7 +343,7 @@ extern fn findNamedVariable(variableName: [*c]const u8) calcRegister_t;
 extern fn findOrAllocateNamedVariable(variableName: [*c]const u8) calcRegister_t;
 extern fn allocateNamedVariableOnMiss(variableName: [*c]const u8) calcRegister_t;
 
-extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) void;
+extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) bool;
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
 extern fn getRegisterDataPointer(regist: calcRegister_t) *anyopaque;
 extern fn setRegisterTag(regist: calcRegister_t, tag: u32) void;
@@ -982,11 +982,11 @@ fn _executeOp(paramAddress_arg: [*c]u8, op: u16, paramMode: u16) void {
                     }
                 }
             } else if (paramMode == PARAM_COMPARE and opParam == VALUE_0) {
-                reallocateRegister(TEMP_REGISTER_1, dtReal34, 0, @bitCast(amNone));
+                _ = reallocateRegister(TEMP_REGISTER_1, dtReal34, 0, @bitCast(amNone));
                 real34SetZero(reg34(TEMP_REGISTER_1));
                 frontier_items.reallyRunFunction(@bitCast(op), TEMP_REGISTER_1);
             } else if (paramMode == PARAM_COMPARE and opParam == VALUE_1) {
-                reallocateRegister(TEMP_REGISTER_1, dtReal34, 0, @bitCast(amNone));
+                _ = reallocateRegister(TEMP_REGISTER_1, dtReal34, 0, @bitCast(amNone));
                 real34SetOne(reg34(TEMP_REGISTER_1));
                 frontier_items.reallyRunFunction(@bitCast(op), TEMP_REGISTER_1);
             } else if (opParam == INDIRECT_REGISTER) {
@@ -1040,7 +1040,7 @@ fn _putLiteral(literalAddress_arg: [*c]u8) void {
         BINARY_SHORT_INTEGER => {
             liftStack();
             setSystemFlag(FLAG_ASLIFT);
-            reallocateRegister(REGISTER_X, dtShortInteger, 0, literalAddress[0]);
+            _ = reallocateRegister(REGISTER_X, dtShortInteger, 0, literalAddress[0]);
             literalAddress += 1;
             _ = frontier_char_string.xcopy(getRegisterDataPointer(REGISTER_X), @ptrCast(literalAddress), toBytes(SHORT_INTEGER_SIZE_IN_BLOCKS));
         },
@@ -1057,7 +1057,7 @@ fn _putLiteral(literalAddress_arg: [*c]u8) void {
             var complexLiteral: complex34_t = undefined;
             liftStack();
             setSystemFlag(FLAG_ASLIFT);
-            reallocateRegister(REGISTER_X, dtComplex34, 0, @bitCast(amNone));
+            _ = reallocateRegister(REGISTER_X, dtComplex34, 0, @bitCast(amNone));
             _ = frontier_char_string.xcopy(@ptrCast(&complexLiteral.real), @ptrCast(literalAddress), REAL34_SIZE_IN_BYTES);
             _ = frontier_char_string.xcopy(@ptrCast(&complexLiteral.imag), @ptrCast(literalAddress + REAL34_SIZE_IN_BYTES), REAL34_SIZE_IN_BYTES);
             complex34Copy(&complexLiteral, regComplex34(REGISTER_X));
@@ -1101,7 +1101,7 @@ fn _putLiteral(literalAddress_arg: [*c]u8) void {
             frontier_decode.getStringLabelOrVariableName(literalAddress);
             liftStack();
             setSystemFlag(FLAG_ASLIFT);
-            reallocateRegister(REGISTER_X, dtReal34, 0, @bitCast(amNone));
+            _ = reallocateRegister(REGISTER_X, dtReal34, 0, @bitCast(amNone));
             stringToReal34(tmpStringLabelOrVariableName, reg34(REGISTER_X));
         },
 
@@ -1109,7 +1109,7 @@ fn _putLiteral(literalAddress_arg: [*c]u8) void {
             frontier_decode.getStringLabelOrVariableName(literalAddress);
             liftStack();
             setSystemFlag(FLAG_ASLIFT);
-            reallocateRegister(REGISTER_X, dtReal34, 0, @bitCast(amNone));
+            _ = reallocateRegister(REGISTER_X, dtReal34, 0, @bitCast(amNone));
             stringToReal34(tmpStringLabelOrVariableName, reg34(REGISTER_X));
             const tmpAngle: angularMode_t = switch ((literalAddress - 1)[0]) {
                 STRING_ANGLE_RADIAN => amRadian,
@@ -1141,7 +1141,7 @@ fn _putLiteral(literalAddress_arg: [*c]u8) void {
             }
             liftStack();
             setSystemFlag(FLAG_ASLIFT);
-            reallocateRegister(REGISTER_X, dtComplex34, 0, @bitCast(amNone));
+            _ = reallocateRegister(REGISTER_X, dtComplex34, 0, @bitCast(amNone));
             stringToReal34(tmpStringLabelOrVariableName, reg34(REGISTER_X));
             stringToReal34(imag, regImag34(REGISTER_X));
         },
@@ -1150,7 +1150,7 @@ fn _putLiteral(literalAddress_arg: [*c]u8) void {
             frontier_decode.getStringLabelOrVariableName(literalAddress);
             liftStack();
             setSystemFlag(FLAG_ASLIFT);
-            reallocateRegister(REGISTER_X, dtString, toBlocks(@as(u32, @intCast(stringByteLength(tmpStringLabelOrVariableName) + 1))), @bitCast(amNone));
+            _ = reallocateRegister(REGISTER_X, dtString, toBlocks(@as(u32, @intCast(stringByteLength(tmpStringLabelOrVariableName) + 1))), @bitCast(amNone));
             _ = frontier_char_string.xcopy(@ptrCast(regStringData(REGISTER_X)), @ptrCast(tmpStringLabelOrVariableName), @intCast(stringByteLength(tmpStringLabelOrVariableName) + 1));
         },
 
@@ -1158,7 +1158,7 @@ fn _putLiteral(literalAddress_arg: [*c]u8) void {
             frontier_decode.getStringLabelOrVariableName(literalAddress);
             liftStack();
             setSystemFlag(FLAG_ASLIFT);
-            reallocateRegister(REGISTER_X, dtDate, 0, @bitCast(amNone));
+            _ = reallocateRegister(REGISTER_X, dtDate, 0, @bitCast(amNone));
             stringToReal34(tmpStringLabelOrVariableName, reg34(REGISTER_X));
             frontier_date_time.julianDayToInternalDate(reg34(REGISTER_X), reg34(REGISTER_X));
         },
@@ -1167,7 +1167,7 @@ fn _putLiteral(literalAddress_arg: [*c]u8) void {
             frontier_decode.getStringLabelOrVariableName(literalAddress);
             liftStack();
             setSystemFlag(FLAG_ASLIFT);
-            reallocateRegister(REGISTER_X, dtReal34, 0, @bitCast(amNone));
+            _ = reallocateRegister(REGISTER_X, dtReal34, 0, @bitCast(amNone));
             stringToReal34(tmpStringLabelOrVariableName, reg34(REGISTER_X));
             frontier_date_time.hmmssInRegisterToSeconds(REGISTER_X);
         },
@@ -1176,7 +1176,7 @@ fn _putLiteral(literalAddress_arg: [*c]u8) void {
             frontier_decode.getStringLabelOrVariableName(literalAddress);
             liftStack();
             setSystemFlag(FLAG_ASLIFT);
-            reallocateRegister(REGISTER_X, dtReal34, 0, @bitCast(amDMS));
+            _ = reallocateRegister(REGISTER_X, dtReal34, 0, @bitCast(amDMS));
             stringToReal34(tmpStringLabelOrVariableName, reg34(REGISTER_X));
             frontier_conversion_angles.real34FromDmsToDeg(reg34(REGISTER_X), reg34(REGISTER_X));
         },

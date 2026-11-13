@@ -25,7 +25,7 @@ pub fn percent(unused_but_mandatory_parameter: u16) void {
         return;
     }
 
-    runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, runtime.amNone);
+    _ = runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, runtime.amNone);
     if (exact_product) {
         runtime.registerReal34Ptr(runtime.REGISTER_X).* = exact_result;
     } else {

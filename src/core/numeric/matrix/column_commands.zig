@@ -81,7 +81,7 @@ fn columnMinMaxReal(matrix: *real34Matrix_t, calcMax: bool) bool {
         runtime.convertLongIntegerToLongIntegerRegister(&longIntVar[0], REGISTER_Y);
         __gmpz_clear(&longIntVar[0]);
 
-        runtime.reallocateRegister(REGISTER_X, runtime.dtReal34, REAL34_SIZE_IN_BYTES, runtime.amNone);
+        _ = runtime.reallocateRegister(REGISTER_X, runtime.dtReal34, REAL34_SIZE_IN_BYTES, runtime.amNone);
         runtime.registerReal34Data(REGISTER_X).* = res_val;
     } else {
         runtime.displayCalcErrorMessage(runtime.ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);

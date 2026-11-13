@@ -751,11 +751,11 @@ fn fnDrop3() linksection(runtime.code_section) void {
     fnDrop(NOPARAM);
     fnDrop(NOPARAM);
     fnDrop(NOPARAM);
-    reallocateRegister(REGISTER_T, dtReal34, REAL34_SIZE_IN_BYTES, amNone);
+    _ = reallocateRegister(REGISTER_T, dtReal34, REAL34_SIZE_IN_BYTES, amNone);
     real34SetZero(registerReal34Data(REGISTER_T));
-    reallocateRegister(REGISTER_A, dtReal34, REAL34_SIZE_IN_BYTES, amNone);
+    _ = reallocateRegister(REGISTER_A, dtReal34, REAL34_SIZE_IN_BYTES, amNone);
     real34SetZero(registerReal34Data(REGISTER_A));
-    reallocateRegister(REGISTER_B, dtReal34, REAL34_SIZE_IN_BYTES, amNone);
+    _ = reallocateRegister(REGISTER_B, dtReal34, REAL34_SIZE_IN_BYTES, amNone);
     real34SetZero(registerReal34Data(REGISTER_B));
 }
 
@@ -1212,7 +1212,7 @@ pub export fn processResultantLongReal(
     // Step 1: Send a 0 addition term to the stack output
     setSystemFlagAslift();
     liftStack();
-    reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+    _ = reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
     realSetZero(&tmpR);
     convertRealToReal34ResultRegister(&tmpR, REGISTER_X);
     adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);

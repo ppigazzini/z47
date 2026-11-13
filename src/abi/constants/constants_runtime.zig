@@ -34,7 +34,7 @@ pub extern fn adjustResult(
 ) void;
 pub extern fn setLastintegerBasetoZero() void;
 pub extern fn getRegisterDataPointer(reg: calcRegister_t) ?*anyopaque;
-pub extern fn reallocateRegister(reg: calcRegister_t, data_type: u32, data_size_without_data_len_blocks: u16, tag: u32) void;
+pub extern fn reallocateRegister(reg: calcRegister_t, data_type: u32, data_size_without_data_len_blocks: u16, tag: u32) bool;
 pub extern fn realToReal34(source: *const real_t, destination: *real34_t) void;
 pub extern fn convertRealToResultRegister(source: *const real_t, dest: calcRegister_t, angle: angularMode_t) void;
 pub extern fn moreInfoOnError(msg1: [*:0]const u8, msg2: ?[*:0]const u8, msg3: ?[*:0]const u8, msg4: ?[*:0]const u8) void;
@@ -73,7 +73,7 @@ pub inline fn validateConstant(constant: u16) bool {
 }
 
 pub inline fn storeConstantInX(constant: u16) void {
-    reallocateRegister(REGISTER_X, dtReal34, 0, @as(u32, @intCast(amNone)));
+    _ = reallocateRegister(REGISTER_X, dtReal34, 0, @as(u32, @intCast(amNone)));
     realToReal34(realtConstants[constant], registerReal34Ptr(REGISTER_X));
 }
 

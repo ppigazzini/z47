@@ -93,7 +93,7 @@ extern var swapCtrlCode: bool;
 extern var tam: tamState_t;
 extern var kbd_usr: [37]calcKey_t;
 extern var ui_is_active: c_int;
-extern fn getSystemFlag(flag: u16) bool;
+extern fn getSystemFlag(flag: i32) bool;
 extern fn btnClicked(widget: ?*anyopaque, data: [*:0]const u8) void;
 extern fn btnFnClickedR(widget: ?*anyopaque, data: [*:0]const u8) void;
 extern fn btnFnPressed(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) void;

@@ -29,7 +29,7 @@ extern fn btnClicked(unused: ?*anyopaque, data: ?*anyopaque) void;
 // binds the divergent PC_BUILD signature (gboolean refreshLcd(gpointer)), so bind
 // the DMCP view here by symbol name. lcd_refresh_dma is a DMCP ROM function-table
 // macro (lft_ifc.h, LIBRARY_FN_BASE + 644).
-const refreshLcd = @extern(*const fn () callconv(.c) void, .{ .name = "refreshLcd" });
+const refreshLcd = @extern(*const fn (?*anyopaque) callconv(.c) c_int, .{ .name = "refreshLcd" });
 const LIBRARY_FN_BASE: usize = keyboard_state_build_options.library_fn_base;
 fn lcdRefreshDma() void {
     const f: *const fn () callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 644);
@@ -52,7 +52,7 @@ fn execAutoRepeat(key: u16) callconv(.c) void {
     screenUpdatingMode = orig_screen_updating_mode;
     shiftF = f;
     shiftG = g;
-    refreshLcd();
+    _ = refreshLcd(null);
     lcdRefreshDma();
 }
 

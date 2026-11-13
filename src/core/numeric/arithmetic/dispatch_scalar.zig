@@ -105,7 +105,7 @@ fn tryScalarIntRealArithmetic(operation: u8) bool {
                 } else {
                     runtime.real34ToReal(real34DataPointer(runtime.REGISTER_Y), &y_value);
                     runtime.convertLongIntegerRegisterToReal(runtime.REGISTER_X, &x_value, &runtime.ctxtReal39);
-                    runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, runtime.amNone);
+                    _ = runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, runtime.amNone);
                     applyDyadicRealOperation(operation, &y_value, &x_value, &x_value);
                     runtime.convertRealToReal34ResultRegister(&x_value, runtime.REGISTER_X);
                 }
@@ -120,7 +120,7 @@ fn tryScalarIntRealArithmetic(operation: u8) bool {
             } else {
                 runtime.convertShortIntegerRegisterToReal(runtime.REGISTER_X, &x_value, &runtime.ctxtReal39);
             }
-            runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, runtime.amNone);
+            _ = runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, runtime.amNone);
             runtime.convertAngleFromTo(&y_value, y_angular_mode, runtime.currentAngularMode, &runtime.ctxtReal39);
             applyDyadicRealOperation(operation, &y_value, &x_value, &x_value);
             runtime.convertRealToReal34ResultRegister(&x_value, runtime.REGISTER_X);
@@ -279,13 +279,13 @@ fn tryScalarRealOverIntegerDivide() bool {
 
             runtime.realToReal34(&x_value, &denominator);
             runtime.real34SetPositiveSign(&denominator);
-            runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, runtime.amNone);
+            _ = runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, runtime.amNone);
             runtime.real34Divide(real34DataPointer(runtime.REGISTER_Y), &denominator, real34DataPointer(runtime.REGISTER_X));
             if (negative_zero and !runtime.real34IsNaN(real34DataPointer(runtime.REGISTER_X))) {
                 real34DataPointer(runtime.REGISTER_X).bytes[15] ^= runtime.DECNEG;
             }
         } else {
-            runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, runtime.amNone);
+            _ = runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, runtime.amNone);
             if (runtime.real34IsZero(real34DataPointer(runtime.REGISTER_Y))) {
                 divisionDomainError(function_name, "cannot divide 0 by 0");
             } else {
@@ -302,7 +302,7 @@ fn tryScalarRealOverIntegerDivide() bool {
                     runtime.convertReal34ToReal34Register(&result, runtime.REGISTER_X);
                 } else {
                     runtime.real34ToReal(real34DataPointer(runtime.REGISTER_Y), &y_value);
-                    runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, runtime.amNone);
+                    _ = runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, runtime.amNone);
                     runtime.realDivide(&y_value, &x_value, &x_value, &runtime.ctxtReal39);
                     runtime.convertRealToReal34ResultRegister(&x_value, runtime.REGISTER_X);
                 }
@@ -312,7 +312,7 @@ fn tryScalarRealOverIntegerDivide() bool {
             }
         } else {
             runtime.real34ToReal(real34DataPointer(runtime.REGISTER_Y), &y_value);
-            runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, runtime.amNone);
+            _ = runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, runtime.amNone);
             runtime.convertAngleFromTo(&y_value, y_angular_mode, runtime.currentAngularMode, &runtime.ctxtReal39);
             runtime.realDivide(&y_value, &x_value, &x_value, &runtime.ctxtReal39);
             runtime.convertRealToReal34ResultRegister(&x_value, runtime.REGISTER_X);

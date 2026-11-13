@@ -217,7 +217,7 @@ extern fn adjustResult(result: calcRegister_t, dropY: bool, setCpxRes: bool, op1
 extern fn registerMin(regist1: calcRegister_t, regist2: calcRegister_t, dest: calcRegister_t) void;
 extern fn registerMax(regist1: calcRegister_t, regist2: calcRegister_t, dest: calcRegister_t) void;
 
-extern fn reallocateRegister(regist: calcRegister_t, data_type: u32, size_blocks: u16, tag: u32) void;
+extern fn reallocateRegister(regist: calcRegister_t, data_type: u32, size_blocks: u16, tag: u32) bool;
 
 extern fn getMatrixDims(regist: calcRegister_t, funcName: [*:0]const u8, rows: *u16, cols: *u16) bool;
 
@@ -274,7 +274,7 @@ fn recallElementComplex(matrix: *complex34Matrix_t) callconv(.c) bool {
     const j: i16 = frontier_matrix_editor.getJRegisterAsInt(true);
 
     liftStack();
-    reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
+    _ = reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
     const idx: usize = @intCast(@as(i32, i) * @as(i32, @as(u16, matrix.header.matrixColumns)) + @as(i32, j));
     complex34Copy(&matrix.matrixElements.?[idx], regComplex34(REGISTER_X));
     return false;
@@ -698,7 +698,7 @@ fn elementToRegister(ix: u16, r: calcRegister_t) void {
     if (getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {
         var c: complex34_t = undefined;
         complex34Copy(&abi.registerComplex34MatrixElements(REGISTER_X)[idx], &c);
-        reallocateRegister(r, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
+        _ = reallocateRegister(r, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
         complex34Copy(&c, regComplex34(r));
     } else {
         var v: real34_t = undefined;

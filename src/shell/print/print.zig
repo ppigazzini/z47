@@ -426,7 +426,7 @@ extern fn getRegisterTag(regist: calcRegister_t) u32;
 
 extern fn linkToComplexMatrixRegister(regist: calcRegister_t, linkedMatrix: *complex34Matrix_t) void;
 
-extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) void;
+extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) bool;
 extern fn getRegParam(f: ?*bool_t, s: *u16, n: *u16, d: ?*u16) u8;
 extern fn findNamedVariable(variableName: [*c]const u8) calcRegister_t;
 
@@ -1719,13 +1719,13 @@ pub export fn printTraceMatElement(where: u16) callconv(.c) void {
             var mat: real34Matrix_t = undefined;
             const matrix = &mat;
             frontier_register_value_conversions.convertReal34MatrixRegisterToReal34Matrix(matrixIndexReg(), &mat);
-            reallocateRegister(TEMP_REGISTER_1, dtReal34, 0, amNone);
+            _ = reallocateRegister(TEMP_REGISTER_1, dtReal34, 0, amNone);
             real34Copy(&matrix.matrixElements.?[@as(usize, @intCast(i)) * matrix.header.matrixColumns + @as(usize, @intCast(j))], reg34(TEMP_REGISTER_1));
         } else {
             var mat: complex34Matrix_t = undefined;
             const matrix = &mat;
             frontier_register_value_conversions.convertComplex34MatrixRegisterToComplex34Matrix(matrixIndexReg(), &mat);
-            reallocateRegister(TEMP_REGISTER_1, dtComplex34, 0, amNone);
+            _ = reallocateRegister(TEMP_REGISTER_1, dtComplex34, 0, amNone);
             complex34Copy(&matrix.matrixElements.?[@as(usize, @intCast(i)) * matrix.header.matrixColumns + @as(usize, @intCast(j))], abi.registerComplex34(TEMP_REGISTER_1));
         }
         printRegImpl(@bitCast(TEMP_REGISTER_1), null, false, @intCast(where), false);
@@ -1744,7 +1744,7 @@ pub export fn printTraceString(string: [*c]u8, where: u16) callconv(.c) void {
     if (comptime !ir_printing) return;
     const lenInBytes: i16 = @intCast(stringByteLength(string) + 1);
     if ((getSystemFlag(FLAG_TRACE) or getSystemFlag(@bitCast(FLAG_NORM))) and getSystemFlag(FLAG_PRTACT)) {
-        reallocateRegister(TEMP_REGISTER_1, dtString, toBlocks(@intCast(lenInBytes)), amNone);
+        _ = reallocateRegister(TEMP_REGISTER_1, dtString, toBlocks(@intCast(lenInBytes)), amNone);
         _ = frontier_char_string.xcopy(regString(TEMP_REGISTER_1), string, @intCast(lenInBytes));
         printRegImpl(@bitCast(TEMP_REGISTER_1), null, false, @intCast(where), false);
         if (comptime !dmcp_build) {
@@ -2312,7 +2312,7 @@ pub fn z47_frontier_print_xy_real_matrix() void {
     if (x.header.matrixColumns == 2) {
         var i: u32 = 0;
         while (i < x.header.matrixRows) : (i += 1) {
-            reallocateRegister(TEMP_REGISTER_1, dtReal34, @intCast(REAL34_SIZE_IN_BYTES), amNone);
+            _ = reallocateRegister(TEMP_REGISTER_1, dtReal34, @intCast(REAL34_SIZE_IN_BYTES), amNone);
             real34Copy(&x.matrixElements.?[i * 2], reg34(TEMP_REGISTER_1));
             printRegImpl(@bitCast(TEMP_REGISTER_1), null, false, LINE_LEFT, false);
             real34Copy(&x.matrixElements.?[i * 2 + 1], reg34(TEMP_REGISTER_1));
@@ -2321,7 +2321,7 @@ pub fn z47_frontier_print_xy_real_matrix() void {
     } else if (x.header.matrixRows == 2) {
         var i: u32 = 0;
         while (i < x.header.matrixColumns) : (i += 1) {
-            reallocateRegister(TEMP_REGISTER_1, dtReal34, @intCast(REAL34_SIZE_IN_BYTES), amNone);
+            _ = reallocateRegister(TEMP_REGISTER_1, dtReal34, @intCast(REAL34_SIZE_IN_BYTES), amNone);
             real34Copy(&x.matrixElements.?[i], reg34(TEMP_REGISTER_1));
             printRegImpl(@bitCast(TEMP_REGISTER_1), null, false, LINE_LEFT, false);
             real34Copy(&x.matrixElements.?[i + x.header.matrixColumns], reg34(TEMP_REGISTER_1));
@@ -2350,7 +2350,7 @@ pub fn z47_frontier_print_xy_complex_matrix() void {
     if (xc.header.matrixColumns == 2) {
         var i: u32 = 0;
         while (i < xc.header.matrixRows) : (i += 1) {
-            reallocateRegister(TEMP_REGISTER_1, dtComplex34, 0, amNone);
+            _ = reallocateRegister(TEMP_REGISTER_1, dtComplex34, 0, amNone);
             complex34Copy(&xc.matrixElements.?[i * 2], abi.registerComplex34(TEMP_REGISTER_1));
             printRegImpl(@bitCast(TEMP_REGISTER_1), null, false, LINE_LEFT, false);
             complex34Copy(&xc.matrixElements.?[i * 2 + 1], abi.registerComplex34(TEMP_REGISTER_1));
@@ -2359,7 +2359,7 @@ pub fn z47_frontier_print_xy_complex_matrix() void {
     } else if (xc.header.matrixRows == 2) {
         var i: u32 = 0;
         while (i < xc.header.matrixColumns) : (i += 1) {
-            reallocateRegister(TEMP_REGISTER_1, dtComplex34, 0, amNone);
+            _ = reallocateRegister(TEMP_REGISTER_1, dtComplex34, 0, amNone);
             complex34Copy(&xc.matrixElements.?[i], abi.registerComplex34(TEMP_REGISTER_1));
             printRegImpl(@bitCast(TEMP_REGISTER_1), null, false, LINE_LEFT, false);
             complex34Copy(&xc.matrixElements.?[i + xc.header.matrixColumns], abi.registerComplex34(TEMP_REGISTER_1));

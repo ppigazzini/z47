@@ -163,7 +163,7 @@ fn lnGammaReal() callconv(.c) void {
             runtime.convertRealToReal34ResultRegister(&xReal, REGISTER_X);
         } else { // the result is a complex
             if (runtime.getFlag(FLAG_CPXRES)) { // We can calculate a complex
-                reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
+                _ = reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
                 realToIntegralValue(&xImag, &xImag, DEC_ROUND_FLOOR, &runtime.ctxtReal39);
                 realMultiply(&xImag, const39_pi(), &xImag, &runtime.ctxtReal39);
                 runtime.convertComplexPartsToResultRegister(&xReal, &xImag, REGISTER_X);

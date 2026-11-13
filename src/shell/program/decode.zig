@@ -257,7 +257,7 @@ extern fn strcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn sprintf(buf: [*c]u8, fmt: [*:0]const u8, ...) c_int;
 extern fn getSystemFlag(sf: c_int) bool;
 
-extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) void;
+extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) bool;
 extern fn getRegisterDataPointer(regist: calcRegister_t) *anyopaque;
 
 extern fn decQuadFromString(r: *align(1) real34_t, s: [*c]const u8, ctx: *realContext_t) *align(1) real34_t;
@@ -639,7 +639,7 @@ fn decodeLiteral(literalAddress_arg: [*c]u8) void {
     literalAddress += 1;
     switch (kind) {
         BINARY_SHORT_INTEGER => {
-            reallocateRegister(TEMP_REGISTER_1, dtShortInteger, 0, literalAddress[0]);
+            _ = reallocateRegister(TEMP_REGISTER_1, dtShortInteger, 0, literalAddress[0]);
             literalAddress += 1;
             _ = frontier_char_string.xcopy(getRegisterDataPointer(TEMP_REGISTER_1), @ptrCast(literalAddress), toBytes(SHORT_INTEGER_SIZE_IN_BLOCKS));
             frontier_display.shortIntegerToDisplayString(TEMP_REGISTER_1, tmpString, @intFromBool(false), noBaseOverride, SCREEN_WIDTH);
@@ -801,7 +801,7 @@ fn decodeLiteral(literalAddress_arg: [*c]u8) void {
 
         STRING_DATE => {
             getStringLabelOrVariableName(literalAddress);
-            reallocateRegister(TEMP_REGISTER_1, dtDate, 0, amNoneU);
+            _ = reallocateRegister(TEMP_REGISTER_1, dtDate, 0, amNoneU);
             stringToReal34(tmpStringLabelOrVariableName, reg34(TEMP_REGISTER_1));
             frontier_date_time.julianDayToInternalDate(reg34(TEMP_REGISTER_1), reg34(TEMP_REGISTER_1));
             frontier_display.dateToDisplayString(TEMP_REGISTER_1, tmpString);

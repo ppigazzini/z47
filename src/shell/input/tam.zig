@@ -417,7 +417,7 @@ extern fn indirectAddressing(regist: calcRegister_t, parameterType: u16, minValu
 extern fn isFunctionAllowingNewVariable(op: u16) bool_t;
 extern fn findNamedVariable(variableName: [*c]const u8) i16;
 extern fn findOrAllocateNamedVariable(variableName: [*c]const u8) i16;
-extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) void;
+extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) bool;
 extern fn getRegisterDataPointer(regist: calcRegister_t) *anyopaque;
 extern fn fnLint(unusedButMandatoryParameter: u16) void;
 extern fn fnFp(unusedButMandatoryParameter: u16) void;
@@ -1123,7 +1123,7 @@ fn _tamProcessInput(item: u16) void {
             }
         }
     } else if (item == ITM_0P or item == ITM_1P) {
-        reallocateRegister(TEMP_REGISTER_1, dtReal34, 0, amNone);
+        _ = reallocateRegister(TEMP_REGISTER_1, dtReal34, 0, amNone);
         real34Copy(if (item == ITM_1P) const34_1 else const34_0, reg34(TEMP_REGISTER_1));
         if (tam.digitsSoFar == 0 and (frontier_items.isFunctionOldParam16(@bitCast(tam.function)) == 0) and tam.mode != TM_VALUE and tam.mode != TM_VALUE_CHB) {
             tam.value = TEMP_REGISTER_1;

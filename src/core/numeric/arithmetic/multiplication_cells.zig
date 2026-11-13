@@ -74,7 +74,7 @@ fn multiplyLongIntegerMatrixElement(integer_register: runtime.calcRegister_t, in
 
         runtime.real34ToReal(element, &value);
         runtime.realMultiply(integer, &value, &value, &runtime.ctxtReal39);
-        runtime.roundToSignificantDigits(&value, &value, significantDigitsOr34(), &runtime.ctxtReal39);
+        runtime.roundToSignificantDigits(&value, &value, @intCast(significantDigitsOr34()), &runtime.ctxtReal39);
         runtime.realToReal34(&value, element);
     }
 }
@@ -333,7 +333,7 @@ pub export fn mulTimeLonI() linksection(runtime.code_section) callconv(.c) void 
 
     runtime.real34ToReal(runtime.registerReal34Ptr(REGISTER_Y), &y);
     runtime.convertLongIntegerRegisterToReal(REGISTER_X, &x, &runtime.ctxtReal39);
-    runtime.reallocateRegister(REGISTER_X, runtime.dtTime, 0, @intCast(runtime.amNone));
+    _ = runtime.reallocateRegister(REGISTER_X, runtime.dtTime, 0, @intCast(runtime.amNone));
 
     runtime.realMultiply(&y, &x, &x, &runtime.ctxtReal39);
     runtime.realToReal34(&x, runtime.registerReal34Ptr(REGISTER_X));
@@ -468,7 +468,7 @@ pub export fn mulCplxLonI() linksection(runtime.code_section) callconv(.c) void 
         runtime.convertLongIntegerRegisterToReal(REGISTER_X, &c, &runtime.ctxtReal39);
         runtime.realMultiply(&y.Real, &c, &y.Real, &runtime.ctxtReal39);
         runtime.realMultiply(&y.Imag, &c, &y.Imag, &runtime.ctxtReal39);
-        runtime.reallocateRegister(REGISTER_X, runtime.dtComplex34, 0, @intCast(runtime.amNone));
+        _ = runtime.reallocateRegister(REGISTER_X, runtime.dtComplex34, 0, @intCast(runtime.amNone));
         runtime.convertComplexToResultRegister(&y, REGISTER_X);
     }
 }
@@ -481,7 +481,7 @@ pub export fn mulTimeShoI() linksection(runtime.code_section) callconv(.c) void 
 
     runtime.real34ToReal(runtime.registerReal34Ptr(REGISTER_Y), &y);
     runtime.convertShortIntegerRegisterToReal(REGISTER_X, &x, &runtime.ctxtReal39);
-    runtime.reallocateRegister(REGISTER_X, runtime.dtTime, 0, @intCast(runtime.amNone));
+    _ = runtime.reallocateRegister(REGISTER_X, runtime.dtTime, 0, @intCast(runtime.amNone));
 
     runtime.realMultiply(&y, &x, &x, &runtime.ctxtReal39);
     runtime.realToReal34(&x, runtime.registerReal34Ptr(REGISTER_X));
@@ -505,7 +505,7 @@ pub export fn mulTimeReal() linksection(runtime.code_section) callconv(.c) void 
         var b: runtime.real34_t = undefined;
 
         b = runtime.registerReal34Ptr(REGISTER_X).*;
-        runtime.reallocateRegister(REGISTER_X, runtime.dtTime, 0, @intCast(runtime.amNone));
+        _ = runtime.reallocateRegister(REGISTER_X, runtime.dtTime, 0, @intCast(runtime.amNone));
         runtime.real34Multiply(runtime.registerReal34Ptr(REGISTER_Y), &b, runtime.registerReal34Ptr(REGISTER_X));
     } else {
         mulError();
@@ -731,7 +731,7 @@ pub export fn mulRealShoI() linksection(runtime.code_section) callconv(.c) void 
 
         runtime.real34ToReal(runtime.registerReal34Ptr(REGISTER_Y), &y);
         runtime.convertShortIntegerRegisterToReal(REGISTER_X, &x, &runtime.ctxtReal39);
-        runtime.reallocateRegister(REGISTER_X, runtime.dtReal34, 0, @intCast(runtime.amNone));
+        _ = runtime.reallocateRegister(REGISTER_X, runtime.dtReal34, 0, @intCast(runtime.amNone));
         runtime.convertAngleFromTo(&y, y_angular_mode, runtime.currentAngularMode, &runtime.ctxtReal39);
         runtime.realMultiply(&y, &x, &x, &runtime.ctxtReal39);
         runtime.convertRealToReal34ResultRegister(&x, REGISTER_X);

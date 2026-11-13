@@ -134,7 +134,7 @@ pub export fn integerDivideFiniteRegisters(return_remainder: bool) linksection(r
     runtime.convertLongIntegerToLongIntegerRegister(&quotient[0], REGISTER_X);
 
     if (return_remainder) {
-        runtime.reallocateRegister(REGISTER_Y, runtime.dtReal34, 0, @intCast(runtime.amNone));
+        _ = runtime.reallocateRegister(REGISTER_Y, runtime.dtReal34, 0, @intCast(runtime.amNone));
         runtime.convertScaledLongIntegerToReal34(&remainder[0], remainder_exponent, runtime.registerReal34Ptr(REGISTER_Y));
     }
 

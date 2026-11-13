@@ -101,7 +101,7 @@ fn imaginaryPartComplexMatrix() void {
 }
 
 fn imaginaryPartReal() callconv(.c) void {
-    runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, runtime.amNone);
+    _ = runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, runtime.amNone);
     runtime.real34SetZero(runtime.registerReal34Data(runtime.REGISTER_X));
 }
 
@@ -179,7 +179,7 @@ fn argComplex() callconv(.c) void {
     runtime.C47_WP34S_Atan2(&value.Imag, &value.Real, value.arg(), &runtime.ctxtReal39);
     runtime.convertAngleFromTo(value.arg(), runtime.amRadian, runtime.currentAngularMode, &runtime.ctxtReal39);
 
-    runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, @intCast(runtime.currentAngularMode));
+    _ = runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, @intCast(runtime.currentAngularMode));
     runtime.convertRealToReal34ResultRegister(value.arg(), runtime.REGISTER_X);
 }
 
@@ -283,7 +283,7 @@ fn magnitudeComplexMatrix() void {
         runtime.real34ToReal(complexMatrixRealPtr(&complex_matrix, index), &z.Real);
         runtime.real34ToReal(complexMatrixImagPtr(&complex_matrix, index), &z.Imag);
         runtime.complexMagnitude(&z, &magnitude_value, &runtime.ctxtReal39);
-        runtime.roundToSignificantDigits(&magnitude_value, &magnitude_value, digits, &runtime.ctxtReal39);
+        runtime.roundToSignificantDigits(&magnitude_value, &magnitude_value, @intCast(digits), &runtime.ctxtReal39);
         runtime.realToReal34(&magnitude_value, realMatrixElementPtr(&real_matrix, index));
     }
 
@@ -369,7 +369,7 @@ fn conjugateComplexMatrix() void {
 // A real34 or a long integer the conjugate turns into a complex34 with a zero
 // imaginary part, its real part as stored (the real34 rounded to SDIGS).
 fn conjugateRealIntoComplex(real: runtime.real34_t) void {
-    runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtComplex34, 0, runtime.amNone);
+    _ = runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtComplex34, 0, runtime.amNone);
     if (runtime.lastErrorCode == runtime.ERROR_RAM_FULL) {
         return;
     }
@@ -409,7 +409,7 @@ fn conjugateComplex() callconv(.c) void {
         runtime.realSetPositiveSign(&value.Imag);
     }
 
-    runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtComplex34, 0, runtime.amNone);
+    _ = runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtComplex34, 0, runtime.amNone);
     runtime.convertComplexToResultRegister(&value, runtime.REGISTER_X);
 }
 
@@ -483,7 +483,7 @@ fn swapRealImaginaryComplexMatrix() void {
 // A real34 or a long integer swapped into a complex34: zero real part, the value
 // as the imaginary part.
 fn swapRealIntoComplex(real: runtime.real34_t) void {
-    runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtComplex34, 0, runtime.amNone);
+    _ = runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtComplex34, 0, runtime.amNone);
     if (runtime.lastErrorCode == runtime.ERROR_RAM_FULL) {
         return;
     }

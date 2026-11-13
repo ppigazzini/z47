@@ -84,7 +84,7 @@ pub export fn fnComplexToVector(opType: u16) callconv(.c) void {
     if (runtime.isRegisterMatrix2dVector(runtime.REGISTER_X) and (opType == ITM_CPXexV or opType == ITM_VtoCPX)) {
         // MatrixVector2D ==> Complex
         runtime.copySourceRegisterToDestRegister(runtime.REGISTER_X, TEMP_REGISTER_1);
-        runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtComplex34, 0, runtime.amNone);
+        _ = runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtComplex34, 0, runtime.amNone);
         runtime.linkToRealMatrixRegister(TEMP_REGISTER_1, &matrix);
         const elements: [*]const real34_t = abi.matrixConstRealElems(matrix);
         runtime.registerReal34Data(runtime.REGISTER_X).* = elements[0];

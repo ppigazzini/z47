@@ -357,7 +357,7 @@ extern var softmenuStack: [SOFTMENU_STACK_SIZE]softmenuStack_t;
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
 extern fn getRegisterDataPointer(regist: calcRegister_t) [*]u8;
 extern fn setRegisterTag(regist: calcRegister_t, tag: u32) void;
-extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) void;
+extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) bool;
 extern fn copySourceRegisterToDestRegister(rSource: calcRegister_t, rDest: calcRegister_t) void;
 extern fn saveForUndo() void;
 inline fn getStackTop() calcRegister_t {

@@ -349,7 +349,7 @@ const registerStringPtr = abi.registerString;
 const STR_LGINT_HEADER_SIZE: usize = 4;
 
 extern fn getRegisterDataType(reg: calcRegister_t) u32;
-extern fn reallocateRegister(regist: calcRegister_t, data_type: u32, data_len: u16, tag: u32) void;
+extern fn reallocateRegister(regist: calcRegister_t, data_type: u32, data_len: u16, tag: u32) bool;
 extern fn clearRegister(regist: calcRegister_t) void;
 
 extern fn setSystemFlag(sf: c_uint) void;
@@ -744,7 +744,7 @@ pub export fn fnVecToEqn(unusedButMandatoryParameter: u16) linksection(runtime.c
         return;
     }
     // x dangles from here: the linked matrix memory is gone.
-    reallocateRegister(REGISTER_X, dtString, @intCast(TO_BLOCKS(len)), amNone);
+    _ = reallocateRegister(REGISTER_X, dtString, @intCast(TO_BLOCKS(len)), amNone);
     _ = xcopy(registerStringPtr(REGISTER_X), tmpString, len);
     adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
 }
@@ -1386,10 +1386,10 @@ fn _processOperator(func: u16, mvarBuffer: [*c]u8) linksection(runtime.code_sect
                     const leftImag = PARSER_LEFT_VALUE_IMAG(mvarBuffer);
                     const stack = PARSER_NUMERIC_STACK(mvarBuffer);
                     if (real34IsZero(leftImag) and real34IsZero(&stack[1])) {
-                        reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+                        _ = reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
                         real34Subtract(&stack[0], leftReal, registerReal34Ptr(REGISTER_X));
                     } else {
-                        reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
+                        _ = reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
                         real34Subtract(&stack[0], leftReal, registerReal34Ptr(REGISTER_X));
                         real34Subtract(&stack[1], leftImag, registerImag34Ptr(REGISTER_X));
                     }

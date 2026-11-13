@@ -225,8 +225,8 @@ extern fn processResultantLongReal(
     paramX: [*c]u8,
     paramY: [*c]u8,
     paramTemp: [*c]u8,
-    angleMode: *u32,
-    tmpAngle: *u32,
+    angleMode: *c_int,
+    tmpAngle: *c_int,
 ) void;
 
 // c43's REAL_T_PTR(name, 1071): a decNumber wide enough for `digits`, on the
@@ -649,8 +649,8 @@ pub fn restoreRegister(regist: i16, type_str: [*c]u8, value_in: [*c]u8, loaded_v
         var paramTemp_b = BigReal(1071){};
         var c: abi.RealContext = ctxtReal75;
         c.digits = 1034;
-        var angleMode: u32 = tag;
-        var tmpAngle: u32 = undefined;
+        var angleMode: c_int = @bitCast(tag);
+        var tmpAngle: c_int = undefined;
 
         if (dataFileMode) dataFileCommaToPeriod(value);
         _ = decNumberFromString(paramX_b.bytes(), value, @ptrCast(&c));

@@ -94,7 +94,7 @@ pub fn undo() void {
 
     const last_error_code_mem = runtime.lastErrorCode;
     runtime.lastErrorCode = runtime.ERROR_NONE;
-    runtime.recallStatsMatrix();
+    _ = runtime.recallStatsMatrix();
     if (runtime.lastErrorCode == runtime.ERROR_NONE) {
         runtime.lastErrorCode = last_error_code_mem;
     }

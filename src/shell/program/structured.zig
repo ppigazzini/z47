@@ -183,7 +183,7 @@ extern const subtraction: [NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS][NUMBER_OF_DATA
 // ---------------------------------------------------------------------------
 extern fn displayCalcErrorMessage(errorCode: u8, errMessageRegisterLine: calcRegister_t) void;
 extern fn getSystemFlag(sf: c_int) bool;
-extern fn setSystemFlag(sf: c_int) void;
+extern fn setSystemFlag(sf: u32) void;
 extern fn fnSkip(numberOfSteps: u16) void;
 extern fn fnDrop(unusedButMandatoryParameter: u16) void;
 extern fn fnReturn(skip: u16) void;
@@ -193,7 +193,7 @@ extern fn getRegisterDataType(reg: calcRegister_t) u32;
 extern fn getRegisterTag(reg: calcRegister_t) u32;
 extern fn copySourceRegisterToDestRegister(sourceRegister: calcRegister_t, destRegister: calcRegister_t) void;
 extern fn allocateLocalRegisters(numberOfRegistersToAllocate: u16) void;
-extern fn reallocateRegister(reg: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) void;
+extern fn reallocateRegister(reg: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) bool;
 extern fn registerCmp(regist1: calcRegister_t, regist2: calcRegister_t, res: *i8) bool;
 extern fn saveRegisterSnapshot(reg: calcRegister_t, s: *snap_t) void;
 extern fn restoreRegisterSnapshot(reg: calcRegister_t, s: *snap_t) void;

@@ -217,7 +217,7 @@ extern fn adjustResult(result: calcRegister_t, dropY: bool, setCpxRes: bool, op1
 extern fn registerMin(regist1: calcRegister_t, regist2: calcRegister_t, dest: calcRegister_t) void;
 extern fn registerMax(regist1: calcRegister_t, regist2: calcRegister_t, dest: calcRegister_t) void;
 
-extern fn reallocateRegister(regist: calcRegister_t, data_type: u32, size_blocks: u16, tag: u32) void;
+extern fn reallocateRegister(regist: calcRegister_t, data_type: u32, size_blocks: u16, tag: u32) bool;
 
 extern fn getMatrixDims(regist: calcRegister_t, funcName: [*:0]const u8, rows: *u16, cols: *u16) bool;
 extern fn getDimensionArg(rows: *u32, cols: *u32) bool;
@@ -694,7 +694,7 @@ pub export fn fnStoreConfig(regist: u16) callconv(.c) void {
     const compatibility_byte31: bool = false;
     const compatibility_float1: f32 = 0.1;
     const compatibility_float2: f32 = 0.2;
-    reallocateRegister(@intCast(regist), dtConfig, 0, amNone);
+    _ = reallocateRegister(@intCast(regist), dtConfig, 0, amNone);
     if (getRegisterDataType(@intCast(regist)) != dtConfig) {
         // Store only into a register that holds a configuration, the test
         // fnRecallConfig() already makes. A reserved variable reaches here through
@@ -1042,7 +1042,7 @@ pub export fn fn42AlphaStore(regist: u16) callconv(.c) void {
     if (regInRange(regist)) {
         if (getRegisterDataType(@intCast(alphaRegister)) == dtString) {
             var source: [*c]u8 = regStringData(@intCast(alphaRegister));
-            reallocateRegister(@intCast(regist), dtString, 7, amNone);
+            _ = reallocateRegister(@intCast(regist), dtString, 7, amNone);
             var dest: [*c]u8 = regStringData(@intCast(regist));
             var i: u16 = 0;
             while (i < 6) : (i += 1) {

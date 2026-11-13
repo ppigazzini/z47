@@ -31,8 +31,8 @@ fn getMatrixDimensionsToStack(regist: calcRegister_t, consume_x: bool) void {
         runtime.liftStack();
         runtime.setSystemFlag(runtime.FLAG_ASLIFT);
         runtime.liftStack();
-        runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, runtime.amNone);
-        runtime.reallocateRegister(runtime.REGISTER_Y, runtime.dtReal34, 0, runtime.amNone);
+        _ = runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, runtime.amNone);
+        _ = runtime.reallocateRegister(runtime.REGISTER_Y, runtime.dtReal34, 0, runtime.amNone);
         _ = runtime.__gmpz_init(&li[0]);
         _ = runtime.__gmpz_set_ui(&li[0], rows);
         runtime.convertLongIntegerToLongIntegerRegister(&li[0], runtime.REGISTER_Y);

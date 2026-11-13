@@ -212,7 +212,7 @@ extern fn decNumberExp(res: *real_t, rhs: *align(1) const real_t, ctxt: *realCon
 extern fn decNumberFromInt32(res: *real_t, source: i32) *real_t;
 extern fn decNumberFromUInt32(res: *real_t, source: u32) *real_t;
 extern fn decNumberFromString(res: *real_t, source: [*:0]const u8, ctxt: *realContext_t) *real_t;
-extern fn realToIntegralValue(source: *const real_t, destination: *real_t, mode: u32, ctxt: *realContext_t) void;
+extern fn realToIntegralValue(source: *const real_t, destination: *real_t, mode: c_int, ctxt: *realContext_t) void;
 
 inline fn realCopy(source: *align(1) const real_t, destination: *real_t) void {
     _ = decNumberCopy(destination, source);
@@ -256,7 +256,7 @@ extern fn realSetNaN(value: *real_t) void;
 extern fn realCompareEqual(number1: *align(1) const real_t, number2: *align(1) const real_t) bool;
 extern fn realCompareAbsLessThan(number1: *align(1) const real_t, number2: *align(1) const real_t) bool;
 extern fn realExp(x: *align(1) const real_t, res: *real_t, ctxt: *realContext_t) void;
-extern fn roundToSignificantDigits(source: *const real_t, destination: *real_t, digits: i32, ctxt: *realContext_t) void;
+extern fn roundToSignificantDigits(source: *const real_t, destination: *real_t, digits: u16, ctxt: *realContext_t) void;
 extern fn realToUint32C47(r: *const real_t, err: ?*bool) u32;
 
 // WP34S real-op helpers (math_wp34s.zig exports).
@@ -336,7 +336,7 @@ inline fn registerReal34Ptr(reg: anytype) *align(1) real34_t {
     return abi.registerReal34(r);
 }
 
-extern fn reallocateRegister(regist: calcRegister_t, data_type: u32, data_len: u16, tag: u32) void;
+extern fn reallocateRegister(regist: calcRegister_t, data_type: u32, data_len: u16, tag: u32) bool;
 extern fn convertRealToReal34ResultRegister(real: *const real_t, dest: calcRegister_t) void;
 extern fn getRegisterAsReal(reg: calcRegister_t, val: *real_t) bool;
 extern fn getRegisterAsRealQuiet(reg: calcRegister_t, val: *real_t) bool;
@@ -916,7 +916,7 @@ fn solveTvmVariable51(variable: u16) linksection(runtime.code_section) c_int {
         return err;
     }
 
-    reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+    _ = reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
     convertRealToReal34ResultRegister(&result, REGISTER_X);
     setSystemFlag(FLAG_ASLIFT);
     return 0;
@@ -1193,7 +1193,7 @@ pub export fn fnTvmVarIp(unusedButMandatoryParameter: u16) linksection(runtime.c
         fnTvmVar(RESERVED_VARIABLE_IPONA);
         if (lastErrorCode == ERROR_NONE) {
             real34ToReal(registerReal34Ptr(RESERVED_VARIABLE_IP), &v);
-            reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+            _ = reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
             convertRealToReal34ResultRegister(&v, REGISTER_X);
             currentSolverVariable = RESERVED_VARIABLE_IP; // the answer line names i%, not the annual rate the engine solved
         }
@@ -1253,7 +1253,7 @@ fn fnEffCore() TvmError!void {
         }
         tmp.exponent += 2; // tmp = tmp * 100
 
-        reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+        _ = reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
         convertRealToReal34ResultRegister(&tmp, REGISTER_X);
         temporaryInformation = TI_TVM_EFF;
     } else {
@@ -1287,7 +1287,7 @@ fn fnEffToICore() TvmError!void {
 
         realToReal34(&tmp, registerReal34Ptr(RESERVED_VARIABLE_IPONA));
         tvmSyncIp(RESERVED_VARIABLE_IPONA);
-        reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+        _ = reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
         convertRealToReal34ResultRegister(&tmp, REGISTER_X);
 
         temporaryInformation = TI_TVM_IA;
@@ -1725,7 +1725,7 @@ fn amortStoreResult(value: *const real_t, tiTag: u8) linksection(runtime.code_se
     saveForUndo();
     thereIsSomethingToUndo = true;
     liftStack();
-    reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+    _ = reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
     convertRealToReal34ResultRegister(value, REGISTER_X);
     temporaryInformation = tiTag;
 }

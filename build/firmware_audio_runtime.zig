@@ -53,11 +53,11 @@ const Real34Matrix = extern struct {
     matrixElements: [*c]DecQuad,
 };
 
-extern fn getSystemFlag(flag: u16) c_int;
+extern fn getSystemFlag(flag: i32) bool;
 extern fn liftStack() void;
 extern fn convertUInt64ToShortIntegerRegister(sign: i16, value: u64, base: u32, regist: i16) void;
 extern fn convertShortIntegerRegisterToLongIntegerRegister(source: i16, destination: i16) void;
-extern fn getRegisterAsLongIntQuiet(reg: i16, val: [*c]GmpInt, fractional: [*c]c_int) c_int;
+extern fn getRegisterAsLongIntQuiet(reg: i16, val: [*c]GmpInt, fractional: ?*bool) c_int;
 extern fn getRegisterDataType(regist: i16) u32;
 extern fn getRegisterDataPointer(regist: i16) ?*anyopaque;
 extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: i16) void;
@@ -153,7 +153,7 @@ fn registerToUInt32(reg: i16) ?u32 {
     __gmpz_init(&li[0]);
     defer __gmpz_clear(&li[0]);
 
-    var fractional: c_int = 0;
+    var fractional: bool = false;
     if (getRegisterAsLongIntQuiet(reg, &li[0], &fractional) != ERROR_NONE) {
         return null;
     }
@@ -168,7 +168,7 @@ pub export fn audioTone(frequency: u32) callconv(.c) void {
 }
 
 pub export fn dm42_squeak() callconv(.c) void {
-    if (getSystemFlag(FLAG_QUIET) == 0) {
+    if (!getSystemFlag(FLAG_QUIET)) {
         startBuzzerFrequency(1835000);
         delayMilliseconds(125);
         stopBuzzer();
@@ -228,7 +228,7 @@ pub export fn _Buzz(frequency: u32, ms_delay: u32) callconv(.c) void {
 pub export fn fnBuzz(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
 
-    if (getSystemFlag(FLAG_QUIET) != 0) {
+    if (getSystemFlag(FLAG_QUIET)) {
         return;
     }
 
@@ -245,7 +245,7 @@ pub export fn fnPlay(regist: u16) callconv(.c) void {
         return;
     }
 
-    if (getSystemFlag(FLAG_QUIET) != 0) {
+    if (getSystemFlag(FLAG_QUIET)) {
         return;
     }
 

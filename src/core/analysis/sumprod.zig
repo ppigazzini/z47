@@ -236,7 +236,7 @@ const registerReal34Ptr = abi.registerReal34;
 const registerImag34Ptr = abi.registerImag34;
 
 extern fn getRegisterDataType(reg: calcRegister_t) u32;
-extern fn reallocateRegister(regist: calcRegister_t, data_type: u32, data_len: u16, tag: u32) void;
+extern fn reallocateRegister(regist: calcRegister_t, data_type: u32, data_len: u16, tag: u32) bool;
 extern fn convertRealToReal34ResultRegister(real: *const real_t, dest: calcRegister_t) void;
 extern fn convertRealToImag34ResultRegister(real: *const real_t, dest: calcRegister_t) void;
 
@@ -497,7 +497,7 @@ fn _programmableSumProd(label: u16, prod: bool_t, early: ?*EarlyAbort) linksecti
             }
 
             if (getRegisterDataType(REGISTER_X) != dtReal34) {
-                reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+                _ = reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
             }
             real34Copy(&counter, registerReal34Ptr(REGISTER_X));
             fnFillStack(NOPARAM);
@@ -618,12 +618,12 @@ fn _programmableSumProd(label: u16, prod: bool_t, early: ?*EarlyAbort) linksecti
             }
             if (!changedOverToComplex) {
                 if (getRegisterDataType(REGISTER_X) != dtReal34) {
-                    reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+                    _ = reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
                 }
                 convertRealToReal34ResultRegister(&resultR.Real, REGISTER_X);
             } else {
                 if (getRegisterDataType(REGISTER_X) != dtComplex34) {
-                    reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
+                    _ = reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
                 }
                 convertRealToReal34ResultRegister(&resultR.Real, REGISTER_X);
                 convertRealToImag34ResultRegister(&resultR.Imag, REGISTER_X);

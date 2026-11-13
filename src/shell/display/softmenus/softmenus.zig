@@ -824,7 +824,7 @@ inline fn stringCopy(dst: [*c]u8, src: [*c]const u8) [*c]u8 {
     return frontier_char_string.stringCopy(dst, src);
 }
 extern fn moreInfoOnError(m1: [*c]const u8, m2: [*c]const u8, m3: [*c]const u8, m4: [*c]const u8) void;
-extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) void;
+extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) bool;
 extern fn getRegisterDataPointer(regist: calcRegister_t) [*c]u8;
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
 inline fn getRegisterAngularMode(reg: calcRegister_t) c_int {
@@ -833,7 +833,7 @@ inline fn getRegisterAngularMode(reg: calcRegister_t) c_int {
 extern fn fnUndo(p: u16) void;
 extern fn liftStack() void;
 extern fn findOrAllocateNamedVariable(name: [*c]const u8) i16;
-extern fn parseEquation(equation: u16, parseMode: u16, buffer: [*c]u8, dest: [*c]u8) [*c]u8;
+extern fn parseEquation(equation: u16, parseMode: u16, buffer: [*c]u8, dest: [*c]u8) void;
 extern fn saveForUndo() void;
 extern fn fn1stDerivEq(p: u16) void;
 extern fn fn2ndDerivEq(p: u16) void;
@@ -1611,7 +1611,7 @@ pub export fn fnGetMenu(_: u16) callconv(.c) void {
             _ = stringCopy(@ptrCast(&menuName[@intCast(stringByteLength(&menuName))]), &tmp);
             lenInBytes = @intCast(stringByteLength(&menuName) + 1);
         }
-        reallocateRegister(REGISTER_X, dtString, TO_BLOCKS(lenInBytes), amNone);
+        _ = reallocateRegister(REGISTER_X, dtString, TO_BLOCKS(lenInBytes), amNone);
         if (lastErrorCode == ERROR_RAM_FULL) {
             frontier_error.displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
             fnUndo(NOPARAM);
@@ -1620,7 +1620,7 @@ pub export fn fnGetMenu(_: u16) callconv(.c) void {
         _ = frontier_char_string.xcopy(REGISTER_STRING_DATA(REGISTER_X), &menuName, @intCast(lenInBytes));
     } else {
         lenInBytes = @intCast(stringByteLength(&userMenus[@intCast(userMenuId)].menuName) + 1);
-        reallocateRegister(REGISTER_X, dtString, TO_BLOCKS(lenInBytes), amNone);
+        _ = reallocateRegister(REGISTER_X, dtString, TO_BLOCKS(lenInBytes), amNone);
         if (lastErrorCode == ERROR_RAM_FULL) {
             frontier_error.displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
             fnUndo(NOPARAM);

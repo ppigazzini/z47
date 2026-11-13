@@ -20,7 +20,7 @@ fn sqrtShoI() callconv(.c) void {
         var value: real_t = undefined;
 
         runtime.convertShortIntegerRegisterToReal(runtime.REGISTER_X, &value, &runtime.ctxtReal39);
-        runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtComplex34, 0, runtime.amNone);
+        _ = runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtComplex34, 0, runtime.amNone);
         runtime.realSetPositiveSign(&value);
         runtime.realSquareRoot(&value, &value, &runtime.ctxtReal39);
         runtime.convertComplexPartsToResultRegister(runtime.z47_math_wrappers_const_0(), &value, runtime.REGISTER_X);
@@ -161,10 +161,10 @@ fn curtShoI() callconv(.c) void {
 
     cube_root = runtime.realToInt32C47(&value, null);
     if (cube_root >= 0) {
-        runtime.registerShortIntegerPtr(runtime.REGISTER_X).* = runtime.WP34S_build_value(@intCast(cube_root), 0);
+        runtime.registerShortIntegerPtr(runtime.REGISTER_X).* = @bitCast(runtime.WP34S_build_value(@intCast(cube_root), 0));
     } else {
         // Widen before negating, as the C cast does: -INT32_MIN has no i32.
-        runtime.registerShortIntegerPtr(runtime.REGISTER_X).* = runtime.WP34S_build_value(@intCast(-@as(i64, cube_root)), 1);
+        runtime.registerShortIntegerPtr(runtime.REGISTER_X).* = @bitCast(runtime.WP34S_build_value(@intCast(-@as(i64, cube_root)), 1));
     }
 }
 

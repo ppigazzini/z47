@@ -1890,7 +1890,7 @@ pub fn implementation(comptime runtime: type) type {
                     } else {
                         const lenInBytes: i16 = @intCast(runtime.strlen(runtime.aimBuffer) + 1);
 
-                        runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtString, runtime.toBlocks(@intCast(lenInBytes)), runtime.amNone);
+                        _ = runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtString, runtime.toBlocks(@intCast(lenInBytes)), runtime.amNone);
                         _ = runtime.xcopy(runtime.registerStringData(runtime.REGISTER_X), runtime.aimBuffer, @intCast(lenInBytes));
 
                         runtime.printTraceX(runtime.LINE_FULL); // IR_PRINTING

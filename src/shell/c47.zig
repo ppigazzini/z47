@@ -636,7 +636,7 @@ const dmcp = struct {
     extern fn doFnReset(confirmation: u16, autoSav: bool_t) void;
     extern fn refreshScreen(source: u16) void;
     extern fn installCoreHostHooks() void;
-    extern fn refreshLcd() void;
+    extern fn refreshLcd(unused_data: ?*anyopaque) c_int;
     extern fn refreshTimer() void;
     extern fn fnTimerReset() void;
     extern fn fnTimerConfig(nr: u8, func: *const fn (u16) callconv(.c) void, param: u16) void;
@@ -854,7 +854,7 @@ const dmcp = struct {
             if (ST(STAT_CLK_WKUP_FLAG) != 0) {
                 if (ST(STAT_OFF) == 0 and (nextTimerRefresh == 0)) {
                     _ = updateVbatIntegrated(true);
-                    refreshLcd();
+                    _ = refreshLcd(null);
                     lcd_refresh_wait();
                 }
                 CLR_ST(STAT_CLK_WKUP_FLAG);
@@ -862,7 +862,7 @@ const dmcp = struct {
             }
             if (ST(STAT_POWER_CHANGE) != 0) {
                 showHideUsbLowBattery();
-                refreshLcd();
+                _ = refreshLcd(null);
                 lcd_refresh_wait();
                 if (ST(STAT_OFF) == 0 and (fnTimerGetStatus(TO_KB_ACTV) != TMR_RUNNING)) {
                     fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, 40);
@@ -986,7 +986,7 @@ const dmcp = struct {
                     nextScreenRefresh = now + SCREEN_REFRESH_PERIOD; // we were out longer than expected; just skip ahead.
                 }
                 if ((calcMode != CM_TIMER_v) or (fnTimerGetStatus(TO_TIMER_APP) != TMR_RUNNING)) {
-                    refreshLcd();
+                    _ = refreshLcd(null);
                     if (key >= 0) {
                         lcd_refresh();
                     } else {

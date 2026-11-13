@@ -103,7 +103,7 @@ pub export fn fnCxToRe(unusedButMandatoryParameter: u16) callconv(.c) void {
         if (!runtime.saveLastX()) {
             return;
         }
-        runtime.reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+        _ = runtime.reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
 
         runtime.setSystemFlag(FLAG_ASLIFT);
         if (runtime.getComplexRegisterPolarMode(REGISTER_L) != 0) { // polar mode
@@ -111,14 +111,14 @@ pub export fn fnCxToRe(unusedButMandatoryParameter: u16) callconv(.c) void {
                 tempAngle = runtime.getComplexRegisterAngularMode(REGISTER_L);
             }
             runtime.liftStack();
-            runtime.reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+            _ = runtime.reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
             rectangularToPolar34InUnit(REGISTER_REAL34_DATA(REGISTER_L), REGISTER_IMAG34_DATA(REGISTER_L), REGISTER_REAL34_DATA(REGISTER_Y), REGISTER_REAL34_DATA(REGISTER_X), tempAngle);
             runtime.setRegisterAngularMode(REGISTER_X, tempAngle);
             runtime.temporaryInformation = TI_THETA_RADIUS;
         } else { // rectangular mode
             real34Copy(REGISTER_REAL34_DATA(REGISTER_L), REGISTER_REAL34_DATA(REGISTER_X));
             runtime.liftStack();
-            runtime.reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+            _ = runtime.reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
             real34Copy(REGISTER_IMAG34_DATA(REGISTER_L), REGISTER_REAL34_DATA(REGISTER_X));
             runtime.temporaryInformation = TI_RE_IM;
         }
