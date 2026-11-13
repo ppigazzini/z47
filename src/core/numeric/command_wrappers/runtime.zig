@@ -1,6 +1,6 @@
 const std = @import("std");
 const build_options = @import("math_command_wrappers_build_options");
-const use_fake_wp34s_harness_surface = @hasDecl(build_options, "use_fake_wp34s_harness_surface") and build_options.use_fake_wp34s_harness_surface;
+const use_fake_wp34s_harness_surface = build_options.use_fake_wp34s_harness_surface;
 pub const harness_surface_is_fake = use_fake_wp34s_harness_surface;
 pub const is_testsuite_build = build_options.is_testsuite_build;
 // Mirrors "#if defined(DMCP_BUILD) && HARDWARE_MODEL == HWM_DM42" in wp34s.c:

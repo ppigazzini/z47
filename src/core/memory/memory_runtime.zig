@@ -10,10 +10,10 @@ pub const freeMemoryRegion_t = abi.FreeMemoryRegion;
 pub const BPB: u5 = 2;
 pub const BYTES_PER_BLOCK: u32 = 1 << BPB;
 
-const use_fake_harness_surface = @hasDecl(build_options, "use_fake_harness_surface") and build_options.use_fake_harness_surface;
-const free_regions_are_inline_array = @hasDecl(build_options, "free_regions_are_inline_array") and build_options.free_regions_are_inline_array;
-const max_free_regions: usize = if (@hasDecl(build_options, "max_free_regions")) build_options.max_free_regions else 200;
-const ram_size_in_blocks: u16 = if (@hasDecl(build_options, "ram_size_in_blocks")) build_options.ram_size_in_blocks else 65534;
+const use_fake_harness_surface = build_options.use_fake_harness_surface;
+const free_regions_are_inline_array = build_options.free_regions_are_inline_array;
+const max_free_regions: usize = build_options.max_free_regions;
+const ram_size_in_blocks: u16 = build_options.ram_size_in_blocks;
 
 const C47_NULL: u16 = 65535;
 const NOPARAM: u16 = 9876;

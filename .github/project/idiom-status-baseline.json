@@ -13,7 +13,8 @@
     "int_from_float_sites": 0,
     "slice_by_end_sites": 0,
     "zeroes_scalar_array_sites": 0,
-    "dmcp_board_address_sites": 0
+    "dmcp_board_address_sites": 0,
+    "has_decl_sites": 0
   },
   "owner_count": 417,
   "seam_totals": {

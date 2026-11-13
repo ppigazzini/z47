@@ -1,6 +1,6 @@
 const std = @import("std");
 const build_options = @import("constants_build_options");
-const use_fake_harness_surface = @hasDecl(build_options, "use_fake_harness_surface") and build_options.use_fake_harness_surface;
+const use_fake_harness_surface = build_options.use_fake_harness_surface;
 
 fn bufPrintZ(buffer: []u8, comptime format: []const u8, args: anytype) ![:0]u8 {
     return std.mem.printSentinel(buffer, format, args, 0);

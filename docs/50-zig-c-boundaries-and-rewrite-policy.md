@@ -142,6 +142,9 @@ Enforcement split:
   SDK headers defines, either board's ROM function table or system data block.
   The build reads them from `lft_ifc.h` and `dmcp.h` (`build_common.libraryFnBase`
   and `systemDataBlockBase`) and hands each owner the value for its board.
+- `has_decl_sites` holds `@hasDecl` and `@hasField` at zero: every options
+  module emits all of its options, so a probe could only turn a missing one into
+  a silent default.
 - A metric with no recorded ceiling fails the check, so a new pattern cannot ship
   unenforced.
 - A seam file lives under a `generated/` path in `src/` AND carries the

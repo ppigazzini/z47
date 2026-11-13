@@ -113,23 +113,7 @@ fn addRuntimeObjectWithIncludeDir(
     });
     module.addImport("abi", abi_module);
 
-    const kb_build_options = b.addOptions();
-    kb_build_options.addOption(bool, "is_r47", options.is_r47);
-    // OLD_HW selects the DM42 memory pool size, which leavePem uses to find the
-    // end of RAM.
-    kb_build_options.addOption(bool, "state_old_hw", options.board.isOldHw());
-    // RAM_SIZE_IN_BLOCKS, from defines.h.
-    kb_build_options.addOption(u16, "ram_size_in_blocks", build_common.ramSizeInBlocks(b, options.board));
-    // LIBRARY_FN_BASE, from the board's SDK: the ROM function table.
-    kb_build_options.addOption(usize, "library_fn_base", build_common.libraryFnBase(b, options.board));
-    kb_build_options.addOption(bool, "option_structured_pgm", options.option_structured_pgm);
-    kb_build_options.addOption(bool, "ir_printing", options.ir_printing);
-    kb_build_options.addOption(bool, "option_drg_cfg", options.option_drg_cfg);
-    kb_build_options.addOption(bool, "option_eex_prefix", options.option_eex_prefix);
-    // The testSuite compiles with EXTRA_INFO_ON_CALC_ERROR forced to 0, as the
-    // firmware does; keep the owner's diagnostics out of both.
-    kb_build_options.addOption(bool, "extra_info_on_calc_error", build_common.extraInfoOnCalcError(options.board, options.linkage));
-    module.addOptions("keyboard_state_build_options", kb_build_options);
+    addBuildOptions(b, module, options);
 
     const object = b.addObject(.{
         .name = b.fmt("{s}-keyboard-state", .{name_prefix}),
@@ -186,6 +170,28 @@ fn configureFirmwareModule(module: *std.Build.Module, config: FirmwareModuleConf
     module.addIncludePath(module.owner.path(config.board_source_dir));
     module.addIncludePath(module.owner.path(config.sdk_include_dir));
     addGeneratedHeaderDirs(module, config.generated_headers);
+}
+
+/// Adds `keyboard_state_build_options` to `module`: every option the keyboard
+/// owners read, always all of them, so an owner never has to probe for one.
+pub fn addBuildOptions(b: *std.Build, module: *std.Build.Module, options: RuntimeObjectOptions) void {
+    const kb_build_options = b.addOptions();
+    kb_build_options.addOption(bool, "is_r47", options.is_r47);
+    // OLD_HW selects the DM42 memory pool size, which leavePem uses to find the
+    // end of RAM.
+    kb_build_options.addOption(bool, "state_old_hw", options.board.isOldHw());
+    // RAM_SIZE_IN_BLOCKS, from defines.h.
+    kb_build_options.addOption(u16, "ram_size_in_blocks", build_common.ramSizeInBlocks(b, options.board));
+    // LIBRARY_FN_BASE, from the board's SDK: the ROM function table.
+    kb_build_options.addOption(usize, "library_fn_base", build_common.libraryFnBase(b, options.board));
+    kb_build_options.addOption(bool, "option_structured_pgm", options.option_structured_pgm);
+    kb_build_options.addOption(bool, "ir_printing", options.ir_printing);
+    kb_build_options.addOption(bool, "option_drg_cfg", options.option_drg_cfg);
+    kb_build_options.addOption(bool, "option_eex_prefix", options.option_eex_prefix);
+    // The testSuite compiles with EXTRA_INFO_ON_CALC_ERROR forced to 0, as the
+    // firmware does; keep the owner's diagnostics out of both.
+    kb_build_options.addOption(bool, "extra_info_on_calc_error", build_common.extraInfoOnCalcError(options.board, options.linkage));
+    module.addOptions("keyboard_state_build_options", kb_build_options);
 }
 
 pub fn addRuntimeObjects(
