@@ -118,7 +118,9 @@ ALLOWED: dict[str, str] = {
     "option_atext_fonts": "OPTION_ATEXT_FONTS",
     "option_drg_cfg": "OPTION_DRG_CFG",
     "option_eex_prefix": "OPTION_EEX_PREFIX",
-    "library_fn_base": "the DMCP ROM function-table base, which moves with the XIP packaging",
+    "library_fn_base": "LIBRARY_FN_BASE -- lft_ifc.h's ROM function-table base, which differs per board",
+    "sdb_base": "dmcp.h's sdb -- the system data block address, which differs per board",
+    "ram_size_in_blocks": "RAM_SIZE_IN_BLOCKS -- defines.h selects RAM_SIZE_IN_BLOCKS_OLD_HW or _NEW_HW by OLD_HW",
     "wp34s_mod_small_buffers": "WP34S_MOD_SMALL_BUFFERS",
     "is_testsuite_build": "TESTSUITE_BUILD -- c43 uses it itself (random.c seeds 0xDeadBeef under it)",
     "compile_date": "__DATE__ -- screen.c collapses it into versionDateStr, and the build supplies the stamp because Zig has no __DATE__",
@@ -184,12 +186,6 @@ HARNESS_ONLY: dict[str, str] = {
         "METHOD. Caps the free-region table so a host binary can exhaust and walk it."
         " The allocator LOGIC is what is under test and it is size-independent;"
         " upstream's size makes every full-pool case unrunnable. Endpoint is not zero."
-    ),
-    "ram_size_in_blocks": (
-        "METHOD. 64 against c43's 65534, so a host binary can exhaust and diff the"
-        " whole pool. Already recorded as a reasoned deliberate divergence in"
-        " check-harness-constant-copies.py; this is the same decision seen from the"
-        " owner side. Endpoint is not zero."
     ),
     "export_public_ln_complex": (
         "REMOVABLE. Exports a worker so a focused oracle can link it -- the same"

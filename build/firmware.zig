@@ -977,6 +977,9 @@ fn addFirmwareElfBuild(
     generated_qspi_header: ?std.Build.LazyPath,
 ) ElfBuildOutputs {
     const cmd = b.addSystemCommand(&.{"arm-none-eabi-gcc"});
+    // The SDK headers come from submodules; without them the owners' ROM and
+    // data-block addresses read 0, so the link must not run.
+    if (!build_common.sdkPresent(b, ownerBoard(config.board))) cmd.step.dependOn(build_common.missingSdkStep(b, ownerBoard(config.board)));
     cmd.setCwd(b.path("."));
 
     for (firmwareArchFlags(config.board)) |flag| cmd.addArg(flag);
@@ -1121,20 +1124,6 @@ fn onBoard(board: Board, options: anytype) @TypeOf(options) {
     return placed;
 }
 
-fn firmwareLibraryFnBase(board: Board) usize {
-    return switch (board) {
-        .dmcp => 0x08000201,
-        .dmcp5 => 0x08000301,
-    };
-}
-
-fn firmwareSdbBase(board: Board) usize {
-    return switch (board) {
-        .dmcp => 0x10002000,
-        .dmcp5 => 0x20000000,
-    };
-}
-
 fn addFirmwarePrintIrRuntimeObject(
     b: *std.Build,
     target: std.Build.ResolvedTarget,
@@ -1155,7 +1144,7 @@ fn addFirmwarePrintIrRuntimeObject(
         .error_tracing = options.error_tracing,
     });
     const build_options = b.addOptions();
-    build_options.addOption(usize, "library_fn_base", firmwareLibraryFnBase(board));
+    build_options.addOption(usize, "library_fn_base", build_common.libraryFnBase(b, ownerBoard(board)));
     module.addOptions("firmware_print_ir_build_options", build_options);
 
     return b.addObject(.{
@@ -1184,7 +1173,7 @@ fn addFirmwareAudioRuntimeObject(
         .error_tracing = options.error_tracing,
     });
     const build_options = b.addOptions();
-    build_options.addOption(usize, "library_fn_base", firmwareLibraryFnBase(board));
+    build_options.addOption(usize, "library_fn_base", build_common.libraryFnBase(b, ownerBoard(board)));
     module.addOptions("firmware_audio_build_options", build_options);
 
     return b.addObject(.{
@@ -1214,8 +1203,8 @@ fn addFirmwareIoRuntimeObject(
         .error_tracing = options.error_tracing,
     });
     const build_options = b.addOptions();
-    build_options.addOption(usize, "library_fn_base", firmwareLibraryFnBase(board));
-    build_options.addOption(usize, "sdb_base", firmwareSdbBase(board));
+    build_options.addOption(usize, "library_fn_base", build_common.libraryFnBase(b, ownerBoard(board)));
+    build_options.addOption(usize, "sdb_base", build_common.systemDataBlockBase(b, ownerBoard(board)));
     build_options.addOption(u8, "calcmodel", calcmodel);
     build_options.addOption(bool, "dm42_board", board == .dmcp);
     module.addOptions("firmware_io_build_options", build_options);

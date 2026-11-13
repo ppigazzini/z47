@@ -4,7 +4,6 @@
     "export_public_ln_complex": 1,
     "free_regions_are_inline_array": 2,
     "max_free_regions": 2,
-    "ram_size_in_blocks": 2,
     "use_array_backed_global_registers": 1,
     "use_fake_harness_surface": 13,
     "use_fake_stack_state_harness_surface": 10,

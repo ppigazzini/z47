@@ -263,20 +263,24 @@ var cached_upstream_version1: ?[]const u8 = null;
 pub fn upstreamVersion1(b: *std.Build) []const u8 {
     if (cached_upstream_version1) |version1| return version1;
 
-    const relative = "src/c47/defines.h";
-    const path = upstreamPathString(b, relative);
-    b.dependOnFileContents(upstreamPath(b, relative));
-    const full_path = b.root.joinString(b.allocator, path) catch @panic("OOM");
-    const text = std.Io.Dir.cwd().readFileAlloc(b.graph.io, full_path, b.allocator, .limited(4 << 20)) catch |err|
-        std.debug.panic("cannot read {s}: {t}", .{ full_path, err });
-    const version1 = defineStringValue(text, "VERSION1") orelse
-        std.debug.panic("{s} defines no VERSION1 string", .{path});
+    const header = "src/c47/defines.h";
+    const version1 = defineStringValue(readUpstreamFile(b, header), "VERSION1") orelse
+        std.debug.panic("{s} defines no VERSION1 string", .{header});
     cached_upstream_version1 = version1;
     return version1;
 }
 
 /// The string literal a `#define <name> "..."` line gives, or null.
 fn defineStringValue(text: []const u8, name: []const u8) ?[]const u8 {
+    const value = defineValue(text, name) orelse return null;
+    if (value.len == 0 or value[0] != '"') return null;
+    const end = std.mem.indexOfScalarPos(u8, value, 1, '"') orelse return null;
+    return value[1..end];
+}
+
+/// The text after the name of a `#define <name> <value>` line, without a
+/// trailing `//` comment, or null.
+fn defineValue(text: []const u8, name: []const u8) ?[]const u8 {
     var lines = std.mem.splitScalar(u8, text, '\n');
     while (lines.next()) |line| {
         var rest = std.mem.trim(u8, line, " \t\r");
@@ -285,12 +289,29 @@ fn defineStringValue(text: []const u8, name: []const u8) ?[]const u8 {
         if (!std.mem.startsWith(u8, rest, name)) continue;
         rest = rest[name.len..];
         if (rest.len == 0 or (rest[0] != ' ' and rest[0] != '\t')) continue;
-        rest = std.mem.trimStart(u8, rest, " \t");
-        if (rest.len == 0 or rest[0] != '"') continue;
-        const end = std.mem.indexOfScalarPos(u8, rest, 1, '"') orelse continue;
-        return rest[1..end];
+        if (std.mem.find(u8, rest, "//")) |comment| rest = rest[0..comment];
+        return std.mem.trim(u8, rest, " \t");
     }
     return null;
+}
+
+/// The value of the `0x` literal `text` starts with, or null.
+fn parseHexPrefix(text: []const u8) ?usize {
+    if (!std.mem.startsWith(u8, text, "0x")) return null;
+    const digits = text[2..];
+    const end = std.mem.indexOfNone(u8, digits, "0123456789abcdefABCDEF") orelse digits.len;
+    if (end == 0) return null;
+    return std.fmt.parseInt(usize, digits[0..end], 16) catch null;
+}
+
+/// An imported file's text, read at configure time; a change to the file
+/// reconfigures the build.
+fn readUpstreamFile(b: *std.Build, relative: []const u8) []const u8 {
+    const path = upstreamPathString(b, relative);
+    b.dependOnFileContents(upstreamPath(b, relative));
+    const full_path = b.root.joinString(b.allocator, path) catch @panic("OOM");
+    return std.Io.Dir.cwd().readFileAlloc(b.graph.io, full_path, b.allocator, .limited(4 << 20)) catch |err|
+        std.debug.panic("cannot read {s}: {t}", .{ full_path, err });
 }
 
 /// The hardware an owner object is compiled for. Every board fact an owner's
@@ -315,7 +336,93 @@ pub const Board = enum {
     pub fn isOldHw(board: Board) bool {
         return board == .dmcp;
     }
+
+    /// The imported directory holding the board's SDK headers.
+    pub fn sdkHeaderDir(board: Board) []const u8 {
+        return switch (board) {
+            .host => unreachable,
+            .dmcp => "dep/DMCP_SDK/dmcp",
+            .dmcp5 => "dep/DMCP5_SDK/dmcp",
+        };
+    }
 };
+
+/// Whether the board's SDK headers are checked out. They come from git
+/// submodules, which a checkout that builds only host targets may skip, so
+/// configuring must not need them: without them the board's values read 0 and
+/// every firmware link of that board fails with `missingSdkStep`'s message.
+pub fn sdkPresent(b: *std.Build, board: Board) bool {
+    if (board == .host) return true;
+    const path = upstreamPathString(b, b.fmt("{s}/lft_ifc.h", .{board.sdkHeaderDir()}));
+    const full_path = b.root.joinString(b.allocator, path) catch @panic("OOM");
+    std.Io.Dir.cwd().access(b.graph.io, full_path, .{}) catch return false;
+    return true;
+}
+
+/// A step that fails a firmware build of `board` whose SDK is not checked out.
+pub fn missingSdkStep(b: *std.Build, board: Board) *std.Build.Step {
+    return &b.addFail(b.fmt(
+        "the {t} SDK headers are missing ({s}); run `git submodule update --init`",
+        .{ board, upstreamPathString(b, board.sdkHeaderDir()) },
+    )).step;
+}
+
+/// LIBRARY_FN_BASE as the board's SDK defines it in lft_ifc.h: the ROM function
+/// table every DMCP library call goes through. 0 on host, which has none.
+pub fn libraryFnBase(b: *std.Build, board: Board) usize {
+    if (board == .host or !sdkPresent(b, board)) return 0;
+    const header = b.fmt("{s}/lft_ifc.h", .{board.sdkHeaderDir()});
+    const value = defineValue(readUpstreamFile(b, header), "LIBRARY_FN_BASE") orelse
+        std.debug.panic("{s} defines no LIBRARY_FN_BASE", .{header});
+    return parseHexPrefix(value) orelse
+        std.debug.panic("{s}: LIBRARY_FN_BASE is not an address: {s}", .{ header, value });
+}
+
+/// The address dmcp.h's `sdb` macro casts to the board's system data block. 0 on
+/// host, which has none.
+pub fn systemDataBlockBase(b: *std.Build, board: Board) usize {
+    if (board == .host or !sdkPresent(b, board)) return 0;
+    const header = b.fmt("{s}/dmcp.h", .{board.sdkHeaderDir()});
+    const value = defineValue(readUpstreamFile(b, header), "sdb") orelse
+        std.debug.panic("{s} defines no sdb", .{header});
+    const address = std.mem.find(u8, value, "0x") orelse
+        std.debug.panic("{s}: sdb names no address: {s}", .{ header, value });
+    return parseHexPrefix(value[address..]) orelse
+        std.debug.panic("{s}: sdb names no address: {s}", .{ header, value });
+}
+
+/// RAM_SIZE_IN_BLOCKS as the pinned defines.h selects it: the OLD_HW count on
+/// the DM42 and the NEW_HW count everywhere else, host included.
+pub fn ramSizeInBlocks(b: *std.Build, board: Board) u16 {
+    const header = "src/c47/defines.h";
+    const name = if (board.isOldHw()) "RAM_SIZE_IN_BLOCKS_OLD_HW" else "RAM_SIZE_IN_BLOCKS_NEW_HW";
+    const value = defineValue(readUpstreamFile(b, header), name) orelse
+        std.debug.panic("{s} defines no {s}", .{ header, name });
+    const digits = std.mem.trim(u8, value, "() \t");
+    const end = std.mem.indexOfNone(u8, digits, "0123456789") orelse digits.len;
+    return std.fmt.parseInt(u16, digits[0..end], 10) catch
+        std.debug.panic("{s}: {s} is not a block count: {s}", .{ header, name, value });
+}
+
+/// The DMCP ROM shim (src/core/hal/dmcp_rom.zig), a registered module several
+/// owners import, with the board's ROM table and system data block addresses.
+pub fn addDmcpRomModule(
+    b: *std.Build,
+    target: std.Build.ResolvedTarget,
+    optimize: std.lang.Optimize,
+    board: Board,
+) *std.Build.Module {
+    const module = b.createModule(.{
+        .root_source_file = b.path("src/core/hal/dmcp_rom.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const options = b.addOptions();
+    options.addOption(usize, "library_fn_base", libraryFnBase(b, board));
+    options.addOption(usize, "sdb_base", systemDataBlockBase(b, board));
+    module.addOptions("dmcp_rom_build_options", options);
+    return module;
+}
 
 /// The kind of executable an owner object is linked into, for the facts that
 /// differ between executables built for one target. Like the board, it is set

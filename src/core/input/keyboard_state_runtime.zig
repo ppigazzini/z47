@@ -665,7 +665,7 @@ pub extern fn isAlphaSubmenu(n: u8) bool_t;
 // telltale (keyExit, keyBackspace) can run on the DMCP lanes. This mirrors the
 // established, build/link-verified frontier ROM-trampoline pattern (cf.
 // frontier_status_bar.zig, same +60 offset and LIBRARY_FN_BASE).
-const LIBRARY_FN_BASE: usize = if (builtin.target.cpu.model == &std.Target.arm.cpu.cortex_m4) 0x08000201 else 0x08000301;
+const LIBRARY_FN_BASE: usize = keyboard_state_build_options.library_fn_base;
 const LcdFillRectFn = *const fn (x: u32, y: u32, dx: u32, dy: u32, val: c_int) callconv(.c) void;
 const c_lcd_fill_rect = if (!is_dmcp_build) @extern(LcdFillRectFn, .{ .name = "lcd_fill_rect" }) else {};
 pub inline fn lcd_fill_rect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void {
@@ -1307,11 +1307,9 @@ pub fn isEqn2ndDer() bool {
 pub extern var FN_timed_out_to_NOP_or_Executed: bool_t;
 pub extern fn btnFnClicked(not_used: ?*anyopaque, data: ?*anyopaque) void;
 
-// leavePem dependencies (keyboard.c 2309-2334). defines.h: 16384 blocks on DM42
-// (DMCP without NEW_HW), 65534 everywhere else. leavePem is a shared both-lane
-// body, so this object is linked into the DM42 firmware and has to follow the
-// board.
-pub const RAM_SIZE_IN_BLOCKS: u32 = if (state_old_hw) 16384 else 65534;
+// leavePem dependencies (keyboard.c 2309-2334). RAM_SIZE_IN_BLOCKS follows the
+// board; the build reads it from defines.h.
+pub const RAM_SIZE_IN_BLOCKS: u32 = keyboard_state_build_options.ram_size_in_blocks;
 pub extern var freeProgramBytes: u16;
 pub extern var beginOfProgramMemory: [*c]u8;
 pub extern var firstDisplayedStep: [*c]u8;

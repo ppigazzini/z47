@@ -23,6 +23,12 @@ const progmem = @import("calc_state_progmem.zig");
 const build_options = @import("calc_state_build_options");
 
 const state_old_hw: bool = build_options.state_old_hw;
+
+// calc_state_progmem keeps both boards' counts, to relocate a program saved on
+// the other one; the count for this board must be the one defines.h gives.
+comptime {
+    std.debug.assert(build_options.ram_size_in_blocks == if (state_old_hw) progmem.RAM_SIZE_IN_BLOCKS_OLD_HW else progmem.RAM_SIZE_IN_BLOCKS_NEW_HW);
+}
 const option_atext_fonts: bool = build_options.option_atext_fonts;
 // OPTION_DRG_CFG: the units the DRG menu chose are saved after DRG_Cycling.
 const option_drg_cfg: bool = build_options.option_drg_cfg;
@@ -32,7 +38,7 @@ const calc_model_user_id: u16 = build_options.calc_model_user_id;
 fn geometry() progmem.Geometry {
     return .{
         .ram_base = @intFromPtr(ram),
-        .ram_size_in_blocks = if (state_old_hw) progmem.RAM_SIZE_IN_BLOCKS_OLD_HW else progmem.RAM_SIZE_IN_BLOCKS_NEW_HW,
+        .ram_size_in_blocks = build_options.ram_size_in_blocks,
         .old_hw = state_old_hw,
     };
 }

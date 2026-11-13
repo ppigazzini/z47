@@ -118,6 +118,10 @@ fn addRuntimeObjectWithIncludeDir(
     // OLD_HW selects the DM42 memory pool size, which leavePem uses to find the
     // end of RAM.
     kb_build_options.addOption(bool, "state_old_hw", options.board.isOldHw());
+    // RAM_SIZE_IN_BLOCKS, from defines.h.
+    kb_build_options.addOption(u16, "ram_size_in_blocks", build_common.ramSizeInBlocks(b, options.board));
+    // LIBRARY_FN_BASE, from the board's SDK: the ROM function table.
+    kb_build_options.addOption(usize, "library_fn_base", build_common.libraryFnBase(b, options.board));
     kb_build_options.addOption(bool, "option_structured_pgm", options.option_structured_pgm);
     kb_build_options.addOption(bool, "ir_printing", options.ir_printing);
     kb_build_options.addOption(bool, "option_drg_cfg", options.option_drg_cfg);

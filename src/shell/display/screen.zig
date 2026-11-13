@@ -32,8 +32,8 @@ const frontier_screen_snap = @import("screen_snap.zig");
 //     the GTK refreshLcd are host-only (comptime !dmcp_build); drawScreen / the
 //     copy*ToClipboard / get_binary_bits / refreshLcd are PC-only exports.
 //
-// DMCP-ROM trampolines (only under dmcp_build; base 0x08000201 old_hw /
-// 0x08000301 new_hw, from dep/DMCP_SDK/dmcp/lft_ifc.h):
+// DMCP-ROM trampolines (only under dmcp_build; LIBRARY_FN_BASE is read from the
+// board's lft_ifc.h by the build):
 //   lcd_fill_rect      +60  (lft_ifc.h:61)
 //   lcd_refresh        +48  (lft_ifc.h:58)
 //   lcd_refresh_lines  +56  (lft_ifc.h:60)
@@ -1121,7 +1121,7 @@ inline fn mod(n: i32, d: i32) i32 {
 // ---------------------------------------------------------------------------
 // DMCP-ROM trampolines (only under dmcp_build; from lft_ifc.h).
 // ---------------------------------------------------------------------------
-const LIBRARY_FN_BASE: usize = if (old_hw) 0x08000201 else 0x08000301;
+const LIBRARY_FN_BASE: usize = frontier_build_options.library_fn_base;
 
 const LcdFillRectFn = *const fn (x: u32, y: u32, dx: u32, dy: u32, val: c_int) callconv(.c) void;
 const c_lcd_fill_rect = @extern(LcdFillRectFn, .{ .name = "lcd_fill_rect" });

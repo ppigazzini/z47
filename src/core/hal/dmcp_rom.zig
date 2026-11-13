@@ -14,15 +14,14 @@
 // Offsets verified against lft_ifc.h: lcd_refresh LIBRARY_FN_BASE+48,
 // power_check_screen +340, wait_for_key_press +408, sys_disk_write_enable +480,
 // sys_timer_disable +500, sys_timer_start +504, sys_reset +544, f_unlink +768.
-// LIBRARY_FN_BASE is selected by
-// the firmware cpu model (cortex-m4 = old_hw, else cortex-m33). Verified by
-// build/link across every target (the established frontier ROM-trampoline
-// pattern; these are not testSuite-reachable).
+// LIBRARY_FN_BASE and the system data block address come from the board's SDK
+// headers, through the build options. These shims are not testSuite-reachable.
 const std = @import("std");
 const builtin = @import("builtin");
+const dmcp_rom_build_options = @import("dmcp_rom_build_options");
 
 const is_dmcp_build = builtin.target.os.tag == .freestanding;
-const LIBRARY_FN_BASE: usize = if (builtin.target.cpu.model == &std.Target.arm.cpu.cortex_m4) 0x08000201 else 0x08000301;
+const LIBRARY_FN_BASE: usize = dmcp_rom_build_options.library_fn_base;
 
 const PowerCheckScreenFn = *const fn () callconv(.c) c_int;
 const SysTimerDisableFn = *const fn (timer_ix: c_int) callconv(.c) void;
@@ -94,8 +93,8 @@ pub fn sys_reset() void {
 }
 
 // sys_sdb_t (dmcp.h), up to the four DMCP settings flags. The block sits at a
-// fixed address on each board, selected like LIBRARY_FN_BASE.
-const SDB_BASE: usize = if (builtin.target.cpu.model == &std.Target.arm.cpu.cortex_m4) 0x10002000 else 0x20000000;
+// fixed address on each board.
+const SDB_BASE: usize = dmcp_rom_build_options.sdb_base;
 const GetFlagFn = *const fn () callconv(.c) c_int;
 const SetFlagFn = *const fn (val: c_int) callconv(.c) void;
 const SysSdb = extern struct {

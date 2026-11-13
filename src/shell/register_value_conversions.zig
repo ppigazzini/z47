@@ -32,7 +32,7 @@ const frontier_build_options = @import("frontier_build_options");
 const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 const dmcp_build: bool = frontier_build_options.dmcp_build;
 // LIBRARY_FN_BASE (lft_ifc.h): the ROM function table of the board's SDK.
-const LIBRARY_FN_BASE: usize = if (frontier_build_options.old_hw) 0x08000201 else 0x08000301;
+const LIBRARY_FN_BASE: usize = frontier_build_options.library_fn_base;
 
 // ---------------------------------------------------------------------------
 // Types

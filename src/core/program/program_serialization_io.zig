@@ -20,9 +20,9 @@ const ERR_REGISTER_LINE: i16 = REGISTER_Z;
 
 const FIRST_LABEL: u16 = 2200;
 const LAST_LABEL: u16 = 6999;
-// defines.h: 16384 blocks on DM42 (DMCP without NEW_HW), 65534 everywhere else.
-// 65535 is excluded throughout because it is the C47_NULL pointer value.
-const RAM_SIZE_IN_BLOCKS: u16 = if (is_dmcp_build and state_old_hw) 16384 else 65534;
+// RAM_SIZE_IN_BLOCKS for the board, read from defines.h by the build. 65535 is
+// never a count because it is the C47_NULL pointer value.
+const RAM_SIZE_IN_BLOCKS: u16 = build_options.ram_size_in_blocks;
 
 const ioPathLoadProgram: c_int = 11;
 const ioModeWrite: c_int = 1;

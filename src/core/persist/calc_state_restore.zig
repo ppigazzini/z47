@@ -34,7 +34,7 @@ const ir_printing: bool = build_options.ir_printing;
 fn geometry() progmem.Geometry {
     return .{
         .ram_base = @intFromPtr(ram),
-        .ram_size_in_blocks = if (state_old_hw) progmem.RAM_SIZE_IN_BLOCKS_OLD_HW else progmem.RAM_SIZE_IN_BLOCKS_NEW_HW,
+        .ram_size_in_blocks = build_options.ram_size_in_blocks,
         .old_hw = state_old_hw,
     };
 }

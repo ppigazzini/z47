@@ -106,7 +106,7 @@ pub fn showSolverBracket(a_in: *align(1) const real34_t, b_in: *align(1) const r
 const solve_build_options = @import("solve_build_options");
 const is_dmcp_build = @import("builtin").target.os.tag == .freestanding;
 const dm42_pkg_xip = solve_build_options.dm42_pkg_xip;
-const library_fn_base: usize = if (dm42_pkg_xip) 0x08000201 else 0x08000301;
+const library_fn_base: usize = solve_build_options.library_fn_base;
 fn lcdRefreshOnFirmware() void {
     if (comptime is_dmcp_build) {
         const f: *const fn () callconv(.c) void = @ptrFromInt(library_fn_base + 48);

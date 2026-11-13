@@ -77,8 +77,8 @@ else
     ".rodata";
 
 // DMCP ROM trampoline base + the fixed sdb.calc_state address.
-const LIBRARY_FN_BASE: usize = if (old_hw) 0x08000201 else 0x08000301;
-const SDB_BASE: usize = if (old_hw) 0x10002000 else 0x20000000;
+const LIBRARY_FN_BASE: usize = frontier_build_options.library_fn_base;
+const SDB_BASE: usize = frontier_build_options.sdb_base;
 const STAT_PGM_END: u32 = 1 << 9;
 
 // ---------------------------------------------------------------------------
@@ -280,9 +280,9 @@ const LAST_RESERVED_VARIABLE: u16 = 2047;
 const VAR_NO_ACC: usize = 31;
 const VAR_NO_LY: usize = 47;
 
-// defines.h: 16384 blocks on DM42 (DMCP without NEW_HW), 65534 everywhere else.
-// 65535 is excluded throughout because it is the C47_NULL pointer value.
-const RAM_SIZE_IN_BLOCKS: u32 = if (dmcp_build and old_hw) 16384 else 65534;
+// RAM_SIZE_IN_BLOCKS for the board, read from defines.h by the build. 65535 is
+// never a count because it is the C47_NULL pointer value.
+const RAM_SIZE_IN_BLOCKS: u32 = frontier_build_options.ram_size_in_blocks;
 const NUMBER_OF_GLOBAL_REGISTERS: usize = 137;
 // defines.h caps the free list at 50 on the DM42, which has ~64Kb of user RAM,
 // and at 200 everywhere else. Only the second arm is live below -- the DM42 is
