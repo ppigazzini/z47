@@ -2257,8 +2257,11 @@ fn addTestPrograms() void {
         _ = printf("freeProgramBytes = %u\n", @as(c_uint, freeProgramBytes));
     }
 }
-const FA_READ: c_int = 0x01;
-const FR_OK: c_int = 0;
+const FA_READ: u8 = 0x01;
+// FRESULT (ff_ifc.h) is an enum with no negative value, which GCC lays out as
+// unsigned int.
+const FRESULT = u32;
+const FR_OK: FRESULT = 0;
 // sdb layout: volatile uint32_t calc_state; FIL *ppgm_fp; ... -> ppgm_fp at +4.
 const SDB_PPGM_FP_OFF: usize = 4;
 extern fn fopen(path: [*:0]const u8, mode: [*:0]const u8) ?*anyopaque;
@@ -2736,9 +2739,9 @@ const ResetAutoOffFn = *const fn () callconv(.c) void;
 const RunMenuItemSysFn = *const fn (line_id: u8) callconv(.c) c_int;
 const AuxBufPtrFn = *const fn () callconv(.c) [*c]u8;
 const WriteBufPtrFn = *const fn () callconv(.c) ?*anyopaque;
-const FOpenFn = *const fn (fp: ?*anyopaque, path: [*:0]const u8, mode: c_int) callconv(.c) c_int;
-const FCloseFn = *const fn (fp: ?*anyopaque) callconv(.c) c_int;
-const FReadFn = *const fn (fp: ?*anyopaque, buff: ?*anyopaque, btr: c_uint, br: *c_uint) callconv(.c) c_int;
+const FOpenFn = *const fn (fp: ?*anyopaque, path: [*:0]const u8, mode: u8) callconv(.c) FRESULT;
+const FCloseFn = *const fn (fp: ?*anyopaque) callconv(.c) FRESULT;
+const FReadFn = *const fn (fp: ?*anyopaque, buff: ?*anyopaque, btr: c_uint, br: *c_uint) callconv(.c) FRESULT;
 
 inline fn romGetVbat() c_int {
     const f: GetVbatFn = @ptrFromInt(LIBRARY_FN_BASE + 240);
@@ -2768,15 +2771,15 @@ inline fn romWriteBufPtr() ?*anyopaque {
     const f: WriteBufPtrFn = @ptrFromInt(LIBRARY_FN_BASE + 296);
     return f();
 }
-inline fn romFOpen(fp: ?*anyopaque, path: [*:0]const u8, mode: c_int) c_int {
+inline fn romFOpen(fp: ?*anyopaque, path: [*:0]const u8, mode: u8) FRESULT {
     const f: FOpenFn = @ptrFromInt(LIBRARY_FN_BASE + 564);
     return f(fp, path, mode);
 }
-inline fn romFClose(fp: ?*anyopaque) c_int {
+inline fn romFClose(fp: ?*anyopaque) FRESULT {
     const f: FCloseFn = @ptrFromInt(LIBRARY_FN_BASE + 568);
     return f(fp);
 }
-inline fn romFRead(fp: ?*anyopaque, buff: ?*anyopaque, btr: c_uint, br: *c_uint) c_int {
+inline fn romFRead(fp: ?*anyopaque, buff: ?*anyopaque, btr: c_uint, br: *c_uint) FRESULT {
     const f: FReadFn = @ptrFromInt(LIBRARY_FN_BASE + 572);
     return f(fp, buff, btr, br);
 }

@@ -330,8 +330,8 @@ const refresh_library_fn_base: usize = build_options.library_fn_base;
 extern fn refreshLcd(unused_data: ?*anyopaque) c_int; // gboolean refreshLcd(gpointer) on the host
 pub inline fn refreshScreenNow() void {
     if (comptime is_dmcp_build) {
-        const f: *const fn () callconv(.c) void = @ptrFromInt(refresh_library_fn_base + 48);
-        f();
+        const lcd_refresh: *const fn () callconv(.c) void = @ptrFromInt(refresh_library_fn_base + 48);
+        lcd_refresh();
     } else {
         _ = refreshLcd(null);
     }

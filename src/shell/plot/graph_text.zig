@@ -76,7 +76,10 @@ const timed: u8 = 0;
 const EOF: c_int = -1;
 
 // FatFs (ff_ifc.h)
-const FR_OK: c_int = 0;
+// FRESULT (ff_ifc.h) is an enum with no negative value, which GCC lays out as
+// unsigned int.
+const FRESULT = u32;
+const FR_OK: FRESULT = 0;
 const FA_READ: u8 = 0x01;
 const FA_WRITE: u8 = 0x02;
 const FA_CREATE_ALWAYS: u8 = 0x08;
@@ -376,7 +379,7 @@ pub export fn import_string_from_filename(line1: [*c]u8, dirname: [*c]u8, filena
         _ = strcat(&dirfile, "\\");
         _ = strcat(&dirfile, filename_short);
 
-        fr = f_open(&fil, &dirfile, FA_READ);
+        fr = @intCast(f_open(&fil, &dirfile, FA_READ));
         if (fr != FR_OK) {
             _ = f_close(&fil);
 
@@ -385,7 +388,7 @@ pub export fn import_string_from_filename(line1: [*c]u8, dirname: [*c]u8, filena
                 _ = strcat(&dirfile, "\\");
                 _ = strcat(&dirfile, filename);
 
-                fr = f_open(&fil, &dirfile, FA_READ);
+                fr = @intCast(f_open(&fil, &dirfile, FA_READ));
                 if (fr != FR_OK) {
                     _ = f_close(&fil);
                     _ = strcpy(line1, fallback);
@@ -619,24 +622,24 @@ inline fn sys_is_disk_write_enable() c_int {
     const f: *const fn () callconv(.c) c_int = @ptrFromInt(LIBRARY_FN_BASE + 488);
     return f();
 }
-inline fn f_open(fp: *FIL, path: [*c]const u8, mode: u8) c_int {
-    const f: *const fn (*FIL, [*c]const u8, u8) callconv(.c) c_int = @ptrFromInt(LIBRARY_FN_BASE + 564);
+inline fn f_open(fp: *FIL, path: [*c]const u8, mode: u8) FRESULT {
+    const f: *const fn (*FIL, [*c]const u8, u8) callconv(.c) FRESULT = @ptrFromInt(LIBRARY_FN_BASE + 564);
     return f(fp, path, mode);
 }
-inline fn f_close(fp: *FIL) c_int {
-    const f: *const fn (*FIL) callconv(.c) c_int = @ptrFromInt(LIBRARY_FN_BASE + 568);
+inline fn f_close(fp: *FIL) FRESULT {
+    const f: *const fn (*FIL) callconv(.c) FRESULT = @ptrFromInt(LIBRARY_FN_BASE + 568);
     return f(fp);
 }
-inline fn f_read(fp: *FIL, buff: ?*anyopaque, btr: UINT, br: *UINT) c_int {
-    const f: *const fn (*FIL, ?*anyopaque, UINT, *UINT) callconv(.c) c_int = @ptrFromInt(LIBRARY_FN_BASE + 572);
+inline fn f_read(fp: *FIL, buff: ?*anyopaque, btr: UINT, br: *UINT) FRESULT {
+    const f: *const fn (*FIL, ?*anyopaque, UINT, *UINT) callconv(.c) FRESULT = @ptrFromInt(LIBRARY_FN_BASE + 572);
     return f(fp, buff, btr, br);
 }
-inline fn f_write(fp: *FIL, buff: ?*const anyopaque, btw: UINT, bw: *UINT) c_int {
-    const f: *const fn (*FIL, ?*const anyopaque, UINT, *UINT) callconv(.c) c_int = @ptrFromInt(LIBRARY_FN_BASE + 576);
+inline fn f_write(fp: *FIL, buff: ?*const anyopaque, btw: UINT, bw: *UINT) FRESULT {
+    const f: *const fn (*FIL, ?*const anyopaque, UINT, *UINT) callconv(.c) FRESULT = @ptrFromInt(LIBRARY_FN_BASE + 576);
     return f(fp, buff, btw, bw);
 }
-inline fn f_lseek(fp: *FIL, ofs: FSIZE_t) c_int {
-    const f: *const fn (*FIL, FSIZE_t) callconv(.c) c_int = @ptrFromInt(LIBRARY_FN_BASE + 580);
+inline fn f_lseek(fp: *FIL, ofs: FSIZE_t) FRESULT {
+    const f: *const fn (*FIL, FSIZE_t) callconv(.c) FRESULT = @ptrFromInt(LIBRARY_FN_BASE + 580);
     return f(fp, ofs);
 }
 // lcd_refresh_wait is a fixed-address ROM jump-table call on firmware
@@ -804,9 +807,9 @@ fn export_append_string_to_file(line1: [*c]const u8, mode: u8, filedir: [*c]cons
     }
 
     if (mode == APPEND) {
-        fr = f_open(&fil, filedir, FA_OPEN_APPEND | FA_WRITE);
+        fr = @intCast(f_open(&fil, filedir, FA_OPEN_APPEND | FA_WRITE));
     } else {
-        fr = f_open(&fil, filedir, FA_WRITE | FA_CREATE_ALWAYS);
+        fr = @intCast(f_open(&fil, filedir, FA_WRITE | FA_CREATE_ALWAYS));
     }
     if (fr != 0) {
         abi.fmtBufZ(&line, "{s}{d}    \n", .{ std.mem.sliceTo(&IOMsgs[2].itemName, 0), fr });
@@ -817,7 +820,7 @@ fn export_append_string_to_file(line1: [*c]const u8, mode: u8, filedir: [*c]cons
     }
 
     if (mode == APPEND) {
-        fr = f_lseek(&fil, f_size(&fil));
+        fr = @intCast(f_lseek(&fil, f_size(&fil)));
         if (fr != 0) {
             abi.fmtBufZ(&line, "{s}{d}    \n", .{ std.mem.sliceTo(&IOMsgs[3].itemName, 0), fr });
             print_linestr(&line, false);
@@ -836,7 +839,7 @@ fn export_append_string_to_file(line1: [*c]const u8, mode: u8, filedir: [*c]cons
         return fr;
     }
 
-    fr = f_close(&fil);
+    fr = @intCast(f_close(&fil));
     if (fr != 0) {
         abi.fmtBufZ(&line, "{s}{d}    \n", .{ std.mem.sliceTo(&IOMsgs[4].itemName, 0), fr });
         print_linestr(&line, false);
@@ -867,9 +870,9 @@ fn export_append_string_to_file_n(line1: [*c]const u8, mode: u8, filedir: [*c]co
                 return fr;
             }
             if (mode == APPEND) {
-                fr = f_open(&eastfn_fil, filedir, FA_OPEN_APPEND | FA_WRITE);
+                fr = @intCast(f_open(&eastfn_fil, filedir, FA_OPEN_APPEND | FA_WRITE));
             } else {
-                fr = f_open(&eastfn_fil, filedir, FA_WRITE | FA_CREATE_ALWAYS);
+                fr = @intCast(f_open(&eastfn_fil, filedir, FA_WRITE | FA_CREATE_ALWAYS));
             }
             if (fr != 0) {
                 abi.fmtBufZ(&line, "{s}{d}    \n", .{ std.mem.sliceTo(&IOMsgs[2].itemName, 0), fr });
@@ -879,7 +882,7 @@ fn export_append_string_to_file_n(line1: [*c]const u8, mode: u8, filedir: [*c]co
                 return fr;
             }
             if (mode == APPEND) {
-                fr = f_lseek(&eastfn_fil, f_size(&eastfn_fil));
+                fr = @intCast(f_lseek(&eastfn_fil, f_size(&eastfn_fil)));
                 if (fr != 0) {
                     abi.fmtBufZ(&line, "{s}{d}    \n", .{ std.mem.sliceTo(&IOMsgs[3].itemName, 0), fr });
                     print_linestr(&line, false);
@@ -900,7 +903,7 @@ fn export_append_string_to_file_n(line1: [*c]const u8, mode: u8, filedir: [*c]co
             }
         },
         CLOSE => {
-            fr = f_close(&eastfn_fil);
+            fr = @intCast(f_close(&eastfn_fil));
             if (fr != 0) {
                 abi.fmtBufZ(&line, "{s}{d}    \n", .{ std.mem.sliceTo(&IOMsgs[5].itemName, 0), fr });
                 print_linestr(&line, false);
@@ -990,7 +993,7 @@ fn export_append_line_short(inputstring: [*c]const u8) c_int {
         return fr;
     }
 
-    fr = f_open(&fil, &filename_csv, FA_OPEN_APPEND | FA_WRITE);
+    fr = @intCast(f_open(&fil, &filename_csv, FA_OPEN_APPEND | FA_WRITE));
     if (fr != 0) {
         abi.fmtBufZ(&line, "{s}{d}    \n", .{ std.mem.sliceTo(&IOMsgs[2].itemName, 0), fr });
         print_linestr(&line, false);
@@ -999,7 +1002,7 @@ fn export_append_line_short(inputstring: [*c]const u8) c_int {
         return fr;
     }
 
-    fr = f_lseek(&fil, f_size(&fil));
+    fr = @intCast(f_lseek(&fil, f_size(&fil)));
     if (fr != 0) {
         abi.fmtBufZ(&line, "{s}{d}    \n", .{ std.mem.sliceTo(&IOMsgs[3].itemName, 0), fr });
         print_linestr(&line, false);
@@ -1018,7 +1021,7 @@ fn export_append_line_short(inputstring: [*c]const u8) c_int {
         return fr;
     }
 
-    fr = f_close(&fil);
+    fr = @intCast(f_close(&fil));
     if (fr != 0) {
         abi.fmtBufZ(&line, "{s}{d}    \n", .{ std.mem.sliceTo(&IOMsgs[5].itemName, 0), fr });
         print_linestr(&line, false);
