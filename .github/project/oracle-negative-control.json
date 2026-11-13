@@ -165,7 +165,7 @@
     },
     {
       "lane": "format",
-      "step": "format_parity",
+      "step": "format_spec",
       "what": "no single owner behaviour to mutate",
       "file": "src/abi/sci_format.zig",
       "no_mutation": "This lane proves every migrated sprintf->std.fmt translation is byte-identical to libc's. A mutation of the Zig side is exactly what it is built to catch, so it is already its own negative control: the lane exists because the translation could differ. A separate mutant would restate the lane."
@@ -199,7 +199,7 @@
     },
     {
       "lane": "distribution",
-      "step": "distribution_parity",
+      "step": "distribution_spec",
       "what": "uniformP answers zero where a zero-width range gives one",
       "file": "src/shell/distributions/uniform.zig",
       "find": "            if (dr.realIsZero(&range)) {\n                res = dr.const1();",
@@ -209,7 +209,7 @@
     },
     {
       "lane": "distribution",
-      "step": "distribution_parity",
+      "step": "distribution_spec",
       "what": "the equal-limits rule refuses the discrete one-point uniform instead of the continuous one",
       "file": "src/shell/distributions/uniform.zig",
       "find": "    if (discrete == 0 and dr.realEqual(l, h)) {",
@@ -218,7 +218,7 @@
     },
     {
       "lane": "eigen",
-      "step": "eigen_parity",
+      "step": "eigen_golden",
       "what": "dropNoise rounds at a fixed 39 digits instead of the requested precision",
       "file": "src/core/numeric/matrix/eigen.zig",
       "find": "    var c: realContext_t = runtime.ctxtReal39; // ctxtDeNoise\n    c.digits = dig;\n    c.round = runtime.DEC_ROUND_HALF_UP;",
@@ -227,7 +227,7 @@
     },
     {
       "lane": "keyboard_entry",
-      "step": "keyboard_entry_parity",
+      "step": "keyboard_entry_spec",
       "what": "determineItem decodes the key index in base 11",
       "file": "src/core/input/keyboard_state_shared.zig",
       "find": "            const key_no: i8 = @intCast((@as(i32, data[0]) - '0') * 10 + @as(i32, data[1]) - '0');",
@@ -327,7 +327,7 @@
     },
     {
       "lane": "eigen",
-      "step": "eigen_parity",
+      "step": "eigen_golden",
       "what": "the eigenvalue engine's deflation tolerance halves",
       "file": "src/core/numeric/matrix/eigen.zig",
       "find": "    return @min(70, toleranceDigits() * 2);",

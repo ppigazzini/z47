@@ -305,7 +305,7 @@ Secondary — why an ungated lane is worse than a missing one:
   [ch. 23 "Continuous Integration"](https://abseil.io/resources/swe-book/html/ch23.html):
   a test's value is realised by the system that runs it continuously. Seven math
   differentials were broken at link time while the full local gate stayed green,
-  and `distribution_parity` had stopped compiling entirely — both invisible
+  and `distribution_spec` had stopped compiling entirely — both invisible
   because neither was in a gate. Hence the rule in
   [70-tests-and-verification.md](70-tests-and-verification.md): **a parity lane
   that is in no gate is not a lane.**

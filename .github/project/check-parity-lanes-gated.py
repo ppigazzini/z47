@@ -6,12 +6,12 @@ claim verified by opening run-host-parity-battery.sh and looking. That is the sa
 mistake the oracle work kept finding one level down: a fact asserted in prose and
 checked by a human who already believes it.
 
-It was wrong four times over. `keyboard_entry_parity`, `charstring_diff`,
+It was wrong four times over. `keyboard_entry_spec`, `charstring_diff`,
 `constants_parity` and `tone_parity` were declared by the build, buildable, green,
 and run by NOTHING -- not this battery, not the local gate, not CI. Two earlier
 instances of the same shape had already been found by accident: seven math
 differentials broken at link time while the full gate stayed green, and
-`distribution_parity` which had stopped compiling entirely. An unrun lane is worse
+`distribution_spec` which had stopped compiling entirely. An unrun lane is worse
 than a missing one, because it reads as coverage.
 
 HOW IT WORKS. The lane list comes from `zig build --help`, which is the build's own
@@ -40,13 +40,9 @@ import subprocess
 import sys
 from pathlib import Path
 
-BATTERY = ".github/project/run-host-parity-battery.sh"
+from lane_vocabulary import lane_steps
 
-# A build step is a lane when its name says so. The suffixes are the vocabulary
-# the tree already uses: `_parity` for a differential against c43, `_oracle` for
-# a focused worker-level one, `_diff` for a script-extracted reference, `_suite`
-# for a grouped set, and `_test` for a Zig test root with its own step.
-LANE_RE = re.compile(r"^\s{2}([\w-]+(?:_parity|_oracle|_diff|_suite|_test|-parity|-test))\s", re.M)
+BATTERY = ".github/project/run-host-parity-battery.sh"
 
 # Lanes that exist and are deliberately not in the battery. Each needs a reason.
 # Empty on purpose: every lane the build declares is currently run. The mechanism
@@ -67,7 +63,7 @@ def declared_lanes(repo: Path) -> set[str]:
     )
     if completed.returncode != 0:
         raise RuntimeError(f"zig build --help failed:\n{completed.stderr[-2000:]}")
-    return set(LANE_RE.findall(completed.stdout))
+    return lane_steps(completed.stdout)
 
 
 def battery_steps(repo: Path) -> set[str]:

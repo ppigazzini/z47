@@ -15,7 +15,7 @@
 // pair that mismatches (e.g. `%04d` vs `{d:0>4}` on negatives -- C sign-then-pad
 // vs Zig fill-then-sign) is reported and MUST NOT be applied over that range.
 //
-// Run: `zig build format_parity`. Exit 1 on any mismatch.
+// Run: `zig build format_spec`. Exit 1 on any mismatch.
 
 const std = @import("std");
 const float_format = @import("float_format");

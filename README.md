@@ -44,7 +44,7 @@ honest answer is "a well-defined part of it, not all of it".
   it stays upstream's. Read the total off the run, never off a number in a doc.
 - **Per-owner parity lanes**, most of which compile upstream's C beside the Zig
   owner and diff the two, so their reference moves whenever upstream does; a few
-  are golden or Zig-only checks (`eigen_parity`, `format_parity`, the `*_test`
+  are golden or Zig-only checks (`eigen_golden`, `format_spec`, the `*_test`
   roots). How many lanes exist is a fact the build knows:
   `python3 .github/project/check-parity-lanes-gated.py --repo-root .`
 - **A negative control over the differential lanes.**

@@ -146,7 +146,7 @@ runs, in order:
   state owners (`stack_state`, `register_metadata` -- retried once for cold-cache
   flakiness -- `flags`, `memory`, `program_serialization`, `calc_state`), the
   save/load round-trip, and the mathematics owners including the focused
-  `math_*_oracle` helpers and `eigen_parity`
+  `math_*_oracle` helpers and `eigen_golden`
 - the distribution and format-equivalence oracles
 - the header-constant audits: `constants` then `check-constant-offsets.py`,
   `audit-constant-parity.py`, `audit-item-table-parity.py`, and the
