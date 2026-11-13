@@ -397,7 +397,10 @@ void longIntegerSubtract(longInteger_t opY, longInteger_t opX, longInteger_t res
 #define realIsNegative(source) (((source)->bits & 0x80) != 0)
 #define realIsPositive(source) (!realIsNegative(source))
 #define realGetSign(source) (realIsNegative(source) ? -1 : 1)
-#define realIsZero(source) ((source)->lsu[0] == 0 && !realIsSpecial(source))
+// Functions in realType.c, so functions here: a #define of an upstream
+// function changes what c43's compiled code calls. The fake runtime defines
+// them over this model's encoding.
+bool_t realIsZero(const real_t *r);
 #define realGetExponent(source) ((source)->digits + (source)->exponent - 1)
 #define realGetUnadjustedExponent(source) ((source)->exponent)
 #define realStoredDigits(source) ((source)->digits)
@@ -486,8 +489,8 @@ extern uint64_t systemFlags1;
 #define const75_piOn2 ((real_t *)z47_math_wrappers_const75_piOn2())
 #define const75_3piOn4 ((real_t *)z47_math_wrappers_const75_3piOn4())
 
-#define realSetPlusInfinity(value) realCopy(const_plusInfinity, (value))
-#define realSetMinusInfinity(value) realCopy(const_minusInfinity, (value))
+void realSetPlusInfinity(real_t *r);
+void realSetMinusInfinity(real_t *r);
 #define real34ToReal(source, destination) decimal128ToNumber((const real34_t *)(source), (destination))
 // realType.h:145 spells this decNumberRemainder, not WP34S_Mod, and the two
 // differ in the one property sinc reduces its argument for: WP34S_Mod normalises
@@ -506,7 +509,8 @@ bool_t realCompareAbsLessThan(const real_t *number1, const real_t *number2);
 bool_t realCompareGreaterEqual(const real_t *number1, const real_t *number2);
 bool_t realCompareLessEqual(const real_t *number1, const real_t *number2);
 bool_t realCompareGreaterThan(const real_t *number1, const real_t *number2);
-#define WP34S_BigMod(x, y, res, real_context) WP34S_Mod((x), (y), (res), (real_context))
+// A function upstream; the fake runtime models it on its WP34S_Mod.
+void WP34S_BigMod(const real_t *x, const real_t *y, real_t *res, realContext_t *realContext);
 #define EXTRA_INFO_MESSAGE(function, msg) do { moreInfoOnError((function), (msg), NULL, NULL); } while(0)
 #define real34Copy(source, destination) (*(destination) = *(source))
 #define complex34Copy(source, destination) (*(destination) = *(source))
