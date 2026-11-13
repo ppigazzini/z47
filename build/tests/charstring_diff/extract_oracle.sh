@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Generate the C-vs-Zig differential oracle (Annex A5).
+# Generate the C-vs-Zig differential oracle.
 #
 # Extracts the PINNED upstream C bodies of a set of self-contained pure functions
 # from src/c47/charString.c, renamed with an `oracle_` prefix (definitions AND

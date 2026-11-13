@@ -166,7 +166,7 @@ write("version_wrap_forges_valid.sav", patch_version("4304967321"), expect_versi
 # =====================================================================
 
 SECTION_COUNTS = {
-    # section header -> the guard its count feeds (31fb6f755), for the record
+    # section header -> the restore-path guard its count feeds
     "GLOBAL_REGISTERS": "register loop",
     "NAMED_VARIABLES": "named-variable loop",
     "STATISTICAL_SUMS": "the 28 statistical sums",
@@ -234,7 +234,7 @@ for section in SECTION_COUNTS:
         write(f"count_{section.lower()}_{value}.sav", set_section_count(section, value))
 
 # Truncation sweep. The cheapest generator of unexamined parser states, and the
-# one class most likely to reach the end-of-section handling 31fb6f755 rewrote --
+# one class most likely to reach the restore path's end-of-section handling --
 # every section must treat an empty read as end of file rather than parsing the
 # next section's header as its own data.
 TRUNCATION_POINTS = 12
@@ -254,9 +254,8 @@ write("header_only.sav", base[:4])
 # a section against its fixed-size array: the loop hits end of file first and
 # takes the "the count was a lie" break instead. Reaching a capacity guard needs a
 # count above the array's size WITH the entries to match, so the loop keeps
-# feeding it real data all the way past the end. Measuring branch coverage of the
-# 31fb6f755 guard commit is what showed this up: no count mutation above ever
-# evaluated a capacity bound, because every one of them ran out of data first.
+# feeding it real data all the way past the end. No count mutation above ever
+# evaluates a capacity bound, because every one of them runs out of data first.
 CAPACITY_SECTIONS = {
     "MYMENU": "userMenuItems[18]",
     "MYALPHA": "userAlphaItems[18]",
@@ -301,8 +300,8 @@ def _keyboard_arguments(n: int, key_of) -> list[str]:
     """Populate KEYBOARD_ARGUMENTS, which the base file leaves EMPTY (count 0).
 
     Its two bounds -- `i < userMenuItems.len` and `key < 37 * 6` -- guard indices
-    the section itself supplies, and an empty section evaluates neither: they were
-    the last of 31fb6f755's arms no corpus file reached. The entry format the
+    the section itself supplies, and an empty section evaluates neither, so only a
+    populated MYMENU file reaches them. The entry format the
     parser wants is `<key> <argument name>`, the key read with toUint16 and the
     name taken after the space."""
     out = list(base)

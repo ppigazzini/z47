@@ -904,7 +904,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.l
     const keyboard_entry_step = b.step("keyboard_entry_spec", "Run the keyboard entry-layer (btnClicked) harness against its specified expectations");
     keyboard_entry_step.dependOn(&run_keyboard_entry.step);
 
-    // Annex A0: a coverage build of the keyboard harness -- the same full core,
+    // A coverage build of the keyboard harness -- the same full core,
     // but instrumented with sancov trace-pc-guard (LLVM backend) plus a
     // PC-recording runtime, so report-zig-coverage.sh can measure which
     // Zig-owner source lines the host harness actually executes. kcov is not
@@ -985,14 +985,14 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.l
         "Z47_COV_PCS_PATH",
         b.pathJoin(&.{ buildRootFromUpstreamCwd(b), "cov_pcs.txt" }),
     );
-    const coverage_step = b.step("coverage", "Build+run the sancov-instrumented keyboard harness, emitting cov_pcs.txt for report-zig-coverage.sh (Annex A0)");
+    const coverage_step = b.step("coverage", "Build+run the sancov-instrumented keyboard harness, emitting cov_pcs.txt for report-zig-coverage.sh");
     coverage_step.dependOn(&run_coverage.step);
 
-    // Annex A5: C-vs-Zig differential. The same full core, plus the pinned
+    // C-vs-Zig differential. The same full core, plus the pinned
     // upstream C oracle (extract_oracle.sh -> charstring_diff_oracle.c) linked
     // beside the Zig owner export, so the harness can byte-compare the two over
     // an enumerated input space. This is the catch the parity suites cannot give
-    // for the replaced (compiled-out) owners -- on an M10 pin bump the oracle
+    // for the replaced (compiled-out) owners -- on a pin advance the oracle
     // tracks the new upstream C, so a Zig owner not re-ported to match goes RED.
     const charstring_diff_harness = host_builders.addFullCoreHarness(
         b,
@@ -1015,7 +1015,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.l
     });
     const run_charstring_diff = b.addRunArtifact(charstring_diff_harness);
     run_charstring_diff.setCwd(b.path("."));
-    const charstring_diff_step = b.step("charstring_diff", "Run the C-vs-Zig differential (stringGlyphLength vs the pinned upstream oracle) (Annex A5)");
+    const charstring_diff_step = b.step("charstring_diff", "Run the C-vs-Zig differential (stringGlyphLength vs the pinned upstream oracle)");
     charstring_diff_step.dependOn(&run_charstring_diff.step);
 
     // Format-equivalence oracle: a self-contained differential that proves
@@ -1101,9 +1101,9 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.l
     pgm_load_fuzz_step.dependOn(&pgm_load_fuzz_cmd.step);
 
     // The same treatment for STATE files. saveload_roundtrip
-    // and saveload_golden only round-trip files the calculator just wrote, so the
-    // 137 lines of bounds 31fb6f755 added to calc_state_restore.zig, and the
-    // ported matrix-dimension guard had no adversarial coverage at all.
+    // and saveload_golden only round-trip files the calculator just wrote, so
+    // without it the bounds checks in calc_state_restore.zig and the
+    // matrix-dimension guard would have no adversarial coverage at all.
     // Built at the default optimize level on purpose: Zig's safety checks are the
     // detector here, since an out-of-range @intCast on the load path traps in a
     // safe build and wraps silently in the firmware, which builds `small`.

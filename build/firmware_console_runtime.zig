@@ -17,10 +17,10 @@
 //! buffer without touching FILE machinery, and the calculator relies on
 //! newlib's string formatter for them.
 //!
-//! `exit` is the subtle one, and upstream added it in the 4697e526a resync with
-//! the note "newlib's exit references __stdio_exit_handler, which links
-//! findfp.o and its 312 byte __sf FILE array into SRAM2". Overriding exit is
-//! what actually keeps findfp out; stubbing the printers alone is not enough.
+//! `exit` is the subtle one. Upstream's own note on it: "newlib's exit
+//! references __stdio_exit_handler, which links findfp.o and its 312 byte __sf
+//! FILE array into SRAM2". Overriding exit is what keeps findfp out; stubbing
+//! the printers alone is not enough.
 //! Upstream applies it only to the DM42 copy (the DMCP5 has RAM to spare), but
 //! there is nothing to return to on either board once the program calls exit,
 //! so parking the CPU is correct for both and costs a handful of bytes.

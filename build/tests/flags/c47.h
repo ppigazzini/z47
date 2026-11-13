@@ -18,8 +18,8 @@
 // of their own, so they cost five opaque placeholder typedefs and buy every
 // constant and struct straight from the pin.
 //
-// WHY THIS IS NOT `build/tests/c43_oracle.zig`'s SHAPE (decided
-// 2026-08-03). Later conversions do not build a mock header at all: they put
+// WHY THIS IS NOT `build/tests/c43_oracle.zig`'s SHAPE. The other conversions
+// do not build a mock header at all: they put
 // upstream's OWN `src/c47/c47.h` on the include path with the six placeholder
 // typedefs from `build/tests/common/c43_harness_prelude.h`, which is cheaper and
 // strictly more faithful. This lane was NOT retrofitted onto that. It is green,

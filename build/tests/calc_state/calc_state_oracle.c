@@ -28,8 +28,8 @@
 //
 // In a full core every one of those 210 symbols is already defined and the codecs
 // are shared by construction, because both implementations are literally calling
-// the same ones. The stub burden is ZERO -- the same inversion Annex A.3 recorded
-// for keyboard.c. `charstring_diff` is the in-tree precedent for the shape: lift
+// the same ones. The stub burden is ZERO -- the same inversion keyboard_state_oracle.c
+// relies on. `charstring_diff` is the in-tree precedent for the shape: lift
 // c43 functions under `oracle_*` renames and link them beside the Zig owner that
 // replaced them, in one binary, so the two can be diffed directly.
 //

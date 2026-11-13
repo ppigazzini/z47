@@ -16,7 +16,7 @@
 // against a hand-written reference. That is the shape this report exists to
 // remove, and it was the last one in the tree.
 //
-// THE REAL WORK HERE IS THE STATE DIFF, not the linking (Annex A.3). A keystroke
+// THE REAL WORK HERE IS THE STATE DIFF, not the linking. A keystroke
 // may change the calculator mode, the input buffers, the stack, the softmenu
 // stack, the shift state, the error and the temporary-information line -- and a
 // full core carries orders of magnitude more state than a unit harness, so

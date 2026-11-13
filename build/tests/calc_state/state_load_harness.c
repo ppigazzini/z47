@@ -7,9 +7,9 @@
 // bug lived on (the 577 statefile overflow), and until this existed nothing in
 // the tree fed it anything but files the calculator itself had just written:
 // `saveload_roundtrip` and `saveload_golden` round-trip valid state, and
-// `pgm_load_fuzz` covers `.p47` programs only. The bounds commit 31fb6f755 added
-// to calc_state_restore.zig -- 137 lines of them -- had no adversarial coverage
-// at all, and the ported matrix-dimension guard had none either.
+// `pgm_load_fuzz` covers `.p47` programs only. Without this lane the bounds
+// checks in calc_state_restore.zig and the matrix-dimension guard would have no
+// adversarial coverage at all.
 //
 // Usage:  state_load <file.sav> [loadMode]
 //
@@ -17,9 +17,8 @@
 // BRANCHES on it: restoreProgramsSection has a whole LM_PROGRAMS arm, and
 // restoreOneSection's local-register guard reads
 // `load_mode == LM_ALL or load_mode == LM_REGISTERS`, so its skip-the-matrix-data
-// else-arm is unreachable while only LM_ALL is ever driven. Measuring branch
-// coverage of the 31fb6f755 guard commit showed 19 of 30 arms reached with
-// LM_ALL alone; the modes the runner sweeps cover the mode-dependent rest.
+// else-arm is unreachable while only LM_ALL is ever driven; the modes the
+// runner sweeps cover the mode-dependent arms.
 // Exit:   0 = the restore path returned. A malformed file that is REFUSED exits
 //             0 as well, and that is the point: refusing is correct behaviour,
 //             so the pass condition is "returned without dying", exactly as the

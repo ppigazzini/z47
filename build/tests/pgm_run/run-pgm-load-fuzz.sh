@@ -63,8 +63,8 @@ if [ "$total" -eq 0 ]; then
 fi
 
 if [ "$fail" -eq 0 ]; then
-  echo "M1 pgm_load_fuzz: $total malformed .p47 inputs handled with no crash / hang / sanitizer report (UBSan)."
+  echo "pgm_load_fuzz: $total malformed .p47 inputs handled with no crash / hang / sanitizer report (UBSan)."
 else
-  echo "M1 pgm_load_fuzz: $fail of $total malformed inputs triggered a memory bug (see above)."
+  echo "pgm_load_fuzz: $fail of $total malformed inputs triggered a memory bug (see above)."
   exit 1
 fi
