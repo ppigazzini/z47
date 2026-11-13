@@ -28,6 +28,9 @@ const build_options = @import("calc_state_build_options");
 const state_old_hw: bool = build_options.state_old_hw;
 const option_atext_fonts: bool = build_options.option_atext_fonts;
 const option_drg_cfg: bool = build_options.option_drg_cfg;
+// OPTION_IR_PRINTING: the state file's printer keys are restored only when the
+// printer is built in; otherwise they are unknown keys and skipped.
+const ir_printing: bool = build_options.ir_printing;
 fn geometry() progmem.Geometry {
     return .{
         .ram_base = @intFromPtr(ram),
@@ -1568,11 +1571,11 @@ fn applyConfigField(loaded_version: u32, allow_user_keys: bool, saved_calc_model
         for (&retainedPageFirstItem) |*first_item| { // a line with fewer values than retainedPageMenu[] gives 0, the first page, for the others
             str = text.toInt16NextWord(str, first_item);
         }
-    } else if (cmpName(ab, "printerOn")) {
+    } else if (ir_printing and cmpName(ab, "printerOn")) {
         setPrinterOn(text.toUint8(tmpString));
-    } else if (cmpName(ab, "printerModel")) {
+    } else if (ir_printing and cmpName(ab, "printerModel")) {
         setPrinterModel(text.toUint8(tmpString));
-    } else if (cmpName(ab, "printerLineDelay")) {
+    } else if (ir_printing and cmpName(ab, "printerLineDelay")) {
         const delay = text.toUint16(tmpString);
         setPrinterDelay(delay);
         setLineDelay(delay);

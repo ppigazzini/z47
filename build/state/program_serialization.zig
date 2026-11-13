@@ -22,6 +22,10 @@ pub const RuntimeObjectOptions = struct {
     // defines inside the same guard). It is set per DM42 package, from
     // build/firmware.zig's dm42Package table; DMCP5 and host have it.
     option_structured_pgm: bool = true,
+    // OPTION_IR_PRINTING: the IR printer paths. defines.h drops it on DM42
+    // package 1 only; it is set per package from build/firmware.zig's
+    // dm42Package table. Defaults true (host).
+    ir_printing: bool = true,
     strip: ?bool = null,
     unwind_tables: ?std.lang.UnwindTables = null,
     stack_protector: ?bool = null,
@@ -63,6 +67,7 @@ fn addRuntimeObject(
     const build_options = b.addOptions();
     build_options.addOption(bool, "state_old_hw", options.old_hw);
     build_options.addOption(bool, "option_structured_pgm", options.option_structured_pgm);
+    build_options.addOption(bool, "ir_printing", options.ir_printing);
     module.addOptions("program_serialization_build_options", build_options);
     // The DMCP ROM shim is shared by the calc-state and program-serialization
     // owners, so it is a REGISTERED module: directory-free, letting each owner

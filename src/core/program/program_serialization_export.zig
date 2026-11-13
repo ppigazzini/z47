@@ -321,8 +321,11 @@ pub fn exportProgram(label: u16, path: c_int) void {
     }
 
     if (runtime.systemFlag(runtime.FLAG_PRTACT) and runtime.lastFunction() == runtime.ITM_PRINTERPROG) {
-        runtime.printProgramListing(runtime.PROG, 0);
-        runtime.temporaryInformation = runtime.TI_PRINT_COMPLETE;
+        // Without OPTION_IR_PRINTING the arm is empty: no print, no export, no message.
+        if (comptime runtime.ir_printing) {
+            runtime.printProgramListing(runtime.PROG, 0);
+            runtime.temporaryInformation = runtime.TI_PRINT_COMPLETE;
+        }
     } else {
         exportProgramToPath(path);
         runtime.temporaryInformation = runtime.TI_SAVED;

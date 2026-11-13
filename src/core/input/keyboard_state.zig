@@ -257,9 +257,11 @@ fn btnPressedBody(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) 
                 runtime.screenUpdatingMode = runtime.SCRUPD_AUTO;
                 runtime.programRunStop = runtime.PGM_WAITING;
                 runtime.showFunctionNameItem = 0;
-                // IR_PRINTING (defined on host): trace the STOP.
-                runtime.refreshStatusBar();
-                runtime.printTrace(runtime.ITM_STOP, runtime.NOPARAM);
+                // OPTION_IR_PRINTING: trace the STOP.
+                if (comptime runtime.ir_printing) {
+                    runtime.refreshStatusBar();
+                    runtime.printTrace(runtime.ITM_STOP, runtime.NOPARAM);
+                }
             } else if (runtime.programRunStop == runtime.PGM_PAUSED) {
                 runtime.programRunStop = runtime.PGM_KEY_PRESSED_WHILE_PAUSED;
             }

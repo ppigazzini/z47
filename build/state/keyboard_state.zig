@@ -35,6 +35,10 @@ pub const RuntimeObjectOptions = struct {
     // per DM42 package, from build/firmware.zig's dm42Package table. Defaults true
     // (host).
     option_structured_pgm: bool = true,
+    // OPTION_IR_PRINTING: the IR printer paths. defines.h drops it on DM42
+    // package 1 only; it is set per package from build/firmware.zig's
+    // dm42Package table. Defaults true (host).
+    ir_printing: bool = true,
     // OPTION_DRG_CFG: DRG during number entry chooses the unit of the number and
     // leaves the entry open. Every target z47 builds defines it. Defaults true.
     option_drg_cfg: bool = true,
@@ -117,6 +121,7 @@ fn addRuntimeObjectWithIncludeDir(
     kb_build_options.addOption(bool, "is_r47", options.is_r47);
     kb_build_options.addOption(bool, "state_old_hw", options.old_hw);
     kb_build_options.addOption(bool, "option_structured_pgm", options.option_structured_pgm);
+    kb_build_options.addOption(bool, "ir_printing", options.ir_printing);
     kb_build_options.addOption(bool, "option_drg_cfg", options.option_drg_cfg);
     kb_build_options.addOption(bool, "option_eex_prefix", options.option_eex_prefix);
     // The testSuite compiles with EXTRA_INFO_ON_CALC_ERROR forced to 0, as the

@@ -377,6 +377,8 @@ fn calcStateOptions(base: calc_state.RuntimeObjectOptions, dmcp_package: ?u8) ca
     // !OPTION_STRUCTURED_PGM: backup.cfg carries no forLoopTable block, and a
     // load has no running FOR structure to clear.
     opts.option_structured_pgm = dm42Package(dmcp_package).structured_pgm;
+    // !OPTION_IR_PRINTING: the state file's printer keys are not restored.
+    opts.ir_printing = dm42Package(dmcp_package).ir_printing;
     return opts;
 }
 
@@ -386,6 +388,7 @@ fn keyboardStateOptions(base: keyboard_state.RuntimeObjectOptions, dmcp_package:
     var opts = base;
     opts.old_hw = true; // DM42: quarter-size pool, read by leavePem
     opts.option_structured_pgm = dm42Package(dmcp_package).structured_pgm; // without it there is no VALID to run on the way out of the editor
+    opts.ir_printing = dm42Package(dmcp_package).ir_printing; // without it a program stop neither refreshes the status bar nor traces
     return opts;
 }
 
@@ -395,6 +398,7 @@ fn programSerializationOptions(base: program_serialization.RuntimeObjectOptions,
     var opts = base;
     opts.old_hw = true; // DM42: quarter-size pool
     opts.option_structured_pgm = dm42Package(dmcp_package).structured_pgm; // without it there is nothing to refuse, to validate, or to indent
+    opts.ir_printing = dm42Package(dmcp_package).ir_printing; // without it PRINT PROG to the IR printer does nothing
     return opts;
 }
 
