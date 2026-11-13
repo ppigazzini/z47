@@ -56,8 +56,7 @@ then `../build/host/gtk_gui.zig` `filterGtkSources` drops every path listed in
 upstream GTK C file (`c47-gtk.c`, `gtkGui.c`, and the `hal/` set), so no
 first-party GTK C reaches the simulator link; `ls ../upstream/src/c47-gtk/*.c
 ../upstream/src/c47-gtk/hal/*.c` against the manifest shows the two agree. The
-former `gtk_gui_legacy.c` re-entry bridge is retired; the ported main, GUI, HAL,
-I/O, LCD and HP 82240B print-out window surfaces run entirely from the Zig
+ported main, GUI, HAL, I/O, LCD and HP 82240B print-out window surfaces run entirely from the Zig
 objects added by `gtk_gui.addToModule` (`gtk_gui_runtime.zig`,
 `gtk_hal_runtime.zig`, `gtk_io_runtime.zig`, `gtk_lcd_runtime.zig`,
 `gtk_printer_window.zig`, and the wider `gtk_gui_*.zig` set). Upstream's
@@ -85,8 +84,7 @@ The host build graph also registers the grouped regression lanes (`test`,
 `../build.zig` registers the native Zig unit lane (`test:unit`).
 
 `test`, `test_asan`, and `repeattest` run the imported upstream corpus list
-`../upstream/src/testSuite/tests/testSuiteList.txt` and no z47 list; `test` also
-runs the `keyboard_statusbar_flags_regression` harness. That is the
+`../upstream/src/testSuite/tests/testSuiteList.txt` and no z47 list. That is the
 point: the shared testSuite is the measuring instrument, so z47 runs it
 unmodified and never appends to it. z47's own focused coverage goes in its own
 lanes with their own lists -- `../build/tests/testSuiteList_logical_boolean_ops.txt`

@@ -65,11 +65,10 @@ build-registration slices shared by the host and firmware domains.
 | `../build/dist.zig` | host and firmware distribution step registration |
 | `../build/zig_dist.py` | Python packaging helper used by the Zig distribution steps |
 | `../build/tools/` | Zig-owned deterministic generator entrypoints (constants, catalogs, testPgms, fonts, reserved-register lookup, object-manifest writer) plus the `translate_c` root headers and the `size.py` / `xlsx_to_sorting_csv.py` helpers |
-| `../build/tests/` | parity oracles, fake runtimes, harnesses, and `testsuite_hal.zig` (the Zig testSuite HAL that replaces the imported `../upstream/src/testSuite/hal/*.c`). All of z47's first-party `.c` files live here; the only other first-party C is the `../bridge/` headers and the `translate_c` root headers |
+| `../build/tests/` | parity oracles, fake runtimes, harnesses, and `testsuite_hal.zig` (the Zig testSuite HAL that replaces the imported `../upstream/src/testSuite/hal/*.c`). All of z47's first-party `.c` files live here; the only other first-party C is the `translate_c` root headers |
 | `../build/generated/` | z47's tracked `testPgms.bin` |
 | `../build/{constants,shortint,state,mathematics,frontier,solver,ui}/` | per-owner build registration that wires the `src/` owners into both the host and firmware builds |
 | `../src/` | the ported calculator core (the live Zig owners) |
-| `../bridge/` | near-retired legacy header shims paired with a few owners |
 
 The Zig HAL replacements (`host/gtk_*.zig`, `firmware_*_runtime.zig`,
 `tests/testsuite_hal.zig`) are compiled and linked in place of the corresponding
@@ -91,7 +90,7 @@ flowchart TD
   D[firmware steps]
   E[distribution steps]
   F[generator outputs]
-  G[src owners + per-owner slices + bridge shims]
+  G[src owners + per-owner slices]
   H[audit + test:unit]
 
   A --> H

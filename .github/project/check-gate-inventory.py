@@ -78,11 +78,6 @@ MANUAL_ONLY: dict[str, str] = {
         " docs/80-maintainer-workflow.md. It compares tracked docs against an"
         " untracked working roadmap, so CI has nothing to compare against."
     ),
-    "check-retained-bridge-ledger.py": (
-        "Maintainer step documented in docs/10, docs/70 and docs/80: it reviews the"
-        " retained C bridge ledger, a judgement about what SHOULD still be C, which"
-        " is a decision to make rather than an invariant to enforce."
-    ),
     "check-iteration-report-sections.py": (
         "Lints the section structure of __DEV/ iteration reports. __DEV/ is"
         " gitignored, so CI never has the files this reads."
@@ -100,7 +95,6 @@ MANUAL_ONLY: dict[str, str] = {
 NOT_A_GATE: dict[str, str] = {
     "upstream_paths.py": "Library: imported by the checks that resolve imported-tree paths.",
     "c_dependency_audit.py": "Library: imported by the C-dependency checks and reports.",
-    "retained_bridge_review.py": "Library: imported by check-retained-bridge-ledger.py.",
     "lane_vocabulary.py": "Library: imported by check-parity-lanes-gated.py and check-oracle-negative-control.py.",
     "build-correspondence-manifest.py": (
         "Generator: writes upstream-correspondence.tsv, which"

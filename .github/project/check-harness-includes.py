@@ -53,7 +53,7 @@ BLOCK_COMMENT_RE = re.compile(r"/\*.*?\*/", re.DOTALL)
 # 13 dead oracle lanes that every other gate called green, while a false positive
 # costs one confused reader who can see the `#if 0` on the same screen. The gate
 # stays conservative. There are no `#if 0` blocks in this tree today.
-TRACKED_GLOBS = ("build/**/*.c", "build/**/*.h", "bridge/**/*.c", "bridge/**/*.h")
+TRACKED_GLOBS = ("build/**/*.c", "build/**/*.h")
 
 
 def tracked_sources(repo: Path) -> list[Path]:

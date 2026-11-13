@@ -128,8 +128,7 @@ decides most Windows failures; `check-portable-int-widths.sh` (inside the gate)
 approximates it, and the CI Windows lane is the final adjudicator. See
 `.github/project/upstream-resync-runbook.md`.
 
-`zig build test` runs upstream's testSuite unmodified, plus one z47 regression
-(`keyboard_statusbar_flags_regression`), and refreshes
+`zig build test` runs upstream's testSuite unmodified and refreshes
 `build/generated/testPgms.bin`. The run prints its own case total; read it
 there, because the count moves with every pin advance and a number written on
 this page would be stale by the next one. Confirm it exits 0, not just that it
@@ -154,7 +153,6 @@ the companion c47-r47-ci doc set, `docs/04-testing.md`, owns them. See
 | upstream refresh report | `../.github/project/report-upstream-refresh.py` | `python3 .github/project/report-upstream-refresh.py --repo-root . --fetch` |
 | upstream port ledger | `../.github/project/check-upstream-port-ledger.py` | `python3 .github/project/check-upstream-port-ledger.py --repo-root .` |
 | split first-party C status | `../.github/project/report-c-dependency-status.py` | `python3 .github/project/report-c-dependency-status.py --repo-root .` |
-| retained bridge review ledger | `../.github/project/retained-bridge-review.tsv`, `../.github/project/check-retained-bridge-ledger.py` | `python3 .github/project/check-retained-bridge-ledger.py --repo-root .` |
 | tracked top-level ownership | `../.github/project/source-ownership.txt`, `../.github/project/check-source-ownership.sh` | `bash .github/project/check-source-ownership.sh && bash .github/project/check-source-ownership.sh check-worktree` |
 | workflow imported-root vocabulary | `../.github/project/workflow-imported-root-paths.sh` | `bash .github/project/workflow-imported-root-paths.sh check-workflow` |
 | checked-in Zig/C boundaries | `../.github/project/zig-c-boundaries.txt`, `../.github/project/check-zig-c-boundaries.sh` | `bash .github/project/check-zig-c-boundaries.sh` |

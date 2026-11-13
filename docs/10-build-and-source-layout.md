@@ -21,8 +21,7 @@ repeat it.
   generator-emitted C listed in [00](00-project-and-upstream.md).
 - `build/` holds the Zig build system, the Zig host/firmware/testSuite HAL
   replacements, and the parity harnesses (with their C) under `build/tests/`; the
-  ported calculator core lives under `src/`; `bridge/` is near-retired and holds
-  only header shims.
+  ported calculator core lives under `src/`.
 - Retained C is explicit; [00](00-project-and-upstream.md) lists what the host
   and firmware still compile and link, and the first-party C that remains in the
   tree for verification.
@@ -43,7 +42,7 @@ and live `zig build --help`.
 | --- | --- |
 | `zig build` / `zig build sim` | canonical host simulator build (C47) |
 | `zig build simr47` / `zig build both` | R47 simulator / build both simulators |
-| `zig build test` | grouped host regression lane: the shared upstream testSuite plus z47's `keyboard_statusbar_flags_regression` |
+| `zig build test` | the shared upstream testSuite, run unmodified |
 | `zig build test:unit` | native Zig unit tests, no C oracle |
 | `zig build generated` | regenerate the host generator outputs (gitignored, under `upstream/src/generated/`) and the tracked `build/generated/testPgms.bin` |
 | `zig build constants`, `zig build catalogs`, `zig build fonts`, `zig build testPgms` | individual generator lanes |
@@ -89,7 +88,7 @@ Root-clutter guardrails:
   for owned versus imported tracked roots (including the reviewed
   `[approved-z47-additions-under-imported]` exceptions).
 - avoid adding new top-level roots; prefer adding paths under the existing
-  `build/`, `src/`, `bridge/`, `.github/`, or `docs/` trees.
+  `build/`, `src/`, `.github/`, or `docs/` trees.
 
 ## Repo-Owned Source Domains
 
@@ -128,9 +127,6 @@ level includes `host.zig`, `firmware.zig`, `dist.zig`, `common.zig`,
 `host/`, `firmware/`, `tools/`, `tests/`, `generated/`, and per-domain
 subdirectories.
 
-`bridge/` is near-retired: it holds only `c47.h` and
-`state/keyboard_statusbar_mask.h`.
-
 ## Build-Relevant File Layout
 
 ```text
@@ -166,9 +162,6 @@ repo root
 |  |- core/
 |  |- shell/
 |  `- frontier.zig
-|- bridge/
-|  |- c47.h
-|  `- state/keyboard_statusbar_mask.h
 |- .github/
 |  |- zig-toolchain.env
 |  |- workflows/
@@ -211,7 +204,7 @@ repo root
 ```
 
 The `.github/project/` list above is a triage subset; that directory also carries
-the C-dependency baselines and allowlists, the retained-bridge review ledger, the
+the C-dependency baselines and allowlists, the
 idiom ratchet, and other governance guards. Run `ls .github/project/` for the
 full set.
 
@@ -243,12 +236,7 @@ Checked-in build defaults come from these tracked files:
   `../.github/project/c-dependency-product-first-party-baseline.txt`: the tracked
   first-party C baselines the Phase I policy check compares against
 - `../.github/project/report-c-dependency-status.py`: prints split first-party C
-  metrics for the active product-build, retained-bridge, and parity/oracle/test
-  buckets
-- `../.github/project/retained-bridge-review.tsv` and
-  `../.github/project/check-retained-bridge-ledger.py`: the review ledger for
-  product-lane bridge C (its data section is empty: no bridge `.c` remains) and
-  its guard, a manual maintainer step that no gate or workflow runs
+  metrics for the active product-build and parity/oracle/test buckets
 - `../.github/project/report-upstream-refresh.py`: summarizes new upstream
   commits, changed imported paths, and z47-owned touchpoints before a refresh
   lands
@@ -346,7 +334,7 @@ outputs by hand.
   paths, and likely z47-owned follow-up surfaces before the pin moves.
 - Run `../.github/project/report-c-dependency-status.py` when a maintainer report
   or closure claim needs live split first-party C telemetry; keep the active
-  product-build, retained-bridge, and parity/oracle/test buckets separate.
+  product-build and parity/oracle/test buckets separate.
 - Keep `../README.md`, `docs/`, and the live `zig build --help` surface
   aligned when target names or options change.
 - Keep imported upstream build files readable and auditable even when they are no

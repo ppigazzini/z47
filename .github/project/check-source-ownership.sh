@@ -80,7 +80,7 @@ list_index_top_level_roots() {
 
 # A z47-owned root must not be gitignored. This is not hypothetical: upstream's
 # .gitignore ignores a root `/build`, `.gitignore` is hand-reconciled on every
-# resync, and z47 owns `build/`, `src/`, `docs/` and `bridge/`. The z47 section
+# resync, and z47 owns `build/`, `src/` and `docs/`. The z47 section
 # carries `!/build/`-style negations, but gitignore resolves by LAST MATCH, so that
 # protection holds only while the imported block stays above the z47 section. An
 # import that lands the other way round would not untrack anything -- ignore rules
@@ -94,7 +94,7 @@ require_unignored_root() {
     if git check-ignore --no-index -q -- "$root"; then
         printf 'z47-owned root is gitignored: %s\n' "$root" >&2
         printf 'A re-imported upstream .gitignore rule is shadowing it. The z47 negations\n' >&2
-        printf '(!/build/, !/src/, !/docs/, !/bridge/) must stay BELOW the imported block.\n' >&2
+        printf '(!/build/, !/src/, !/docs/) must stay BELOW the imported block.\n' >&2
         exit 1
     fi
 }

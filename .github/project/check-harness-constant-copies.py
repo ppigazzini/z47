@@ -69,7 +69,7 @@ from upstream_paths import upstream_path
 
 BASELINE = ".github/project/harness-constant-copy-baseline.json"
 
-TRACKED_GLOBS = ("build/**/*.h", "bridge/**/*.h")
+TRACKED_GLOBS = ("build/**/*.h",)
 
 # Object-like #define with a replacement list. A VALUELESS define is skipped on
 # purpose: that is an include guard or a feature switch, not a copied constant --

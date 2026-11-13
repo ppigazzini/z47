@@ -131,9 +131,8 @@ Maintainer entrypoints (see [10](10-build-and-source-layout.md) and
 
 - `zig build` or `zig build sim`: canonical host build entrypoint
 - `zig build both`: build both host simulators (C47 and R47)
-- `zig build test`: canonical grouped host regression lane (the shared upstream
-  testSuite plus z47's `keyboard_statusbar_flags_regression`; it also refreshes
-  `build/generated/testPgms.bin`, and the run prints the case total)
+- `zig build test`: the shared upstream testSuite, run unmodified (it also
+  refreshes `build/generated/testPgms.bin`, and the run prints the case total)
 - `zig build test:unit`: native Zig unit tests with no C oracle
 - `zig build generated`: regenerate the host generator outputs (gitignored, under
   `upstream/src/generated/`) and the tracked `build/generated/testPgms.bin`

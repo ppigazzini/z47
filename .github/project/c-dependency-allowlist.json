@@ -13,7 +13,6 @@
   ],
   "first_party_prefixes": [
     "src/",
-    "bridge/",
     "build/tests/"
   ],
   "generated_prefixes": [
