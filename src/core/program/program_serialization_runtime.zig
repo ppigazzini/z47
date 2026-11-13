@@ -153,7 +153,7 @@ pub const ioPathExportRTFAllPrograms: c_int = 13;
 
 pub extern var firstDisplayedLocalStepNumber: u16;
 pub extern var programListEnd: bool;
-pub extern var programList: [*c]abi.ProgramList;
+pub extern var programList: [*c]align(4) abi.ProgramList;
 pub extern fn findNextStep(step: [*c]u8) [*c]u8;
 pub extern fn isAtEndOfPrograms(step: [*c]const u8) bool;
 pub extern var lastProgramListEnd: bool;

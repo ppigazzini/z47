@@ -65,8 +65,7 @@ pub export fn WP34S_LU_decomposition(matrix: *const real34Matrix_t, lu: *real34M
     }
 
     const blocks = @as(usize, m) * n * real_size_in_blocks;
-    if (runtime.allocC47Blocks(blocks)) |tmp_raw| {
-        const tmp_mat: [*]real_t = @ptrCast(@alignCast(tmp_raw));
+    if (abi.allocC47BlocksAs(real_t, blocks)) |tmp_mat| {
         if (!samePtr(matrix, lu)) {
             runtime.copyRealMatrix(matrix, lu);
         }
@@ -121,7 +120,7 @@ pub export fn WP34S_LU_decomposition(matrix: *const real34Matrix_t, lu: *real34M
                 realCopy(&tmp_mat[k * nz + k], &t);
                 if (runtime.realIsZero(&t)) {
                     runtime.realMatrixFree(lu);
-                    runtime.freeC47Blocks(tmp_raw, blocks);
+                    runtime.freeC47Blocks(tmp_mat, blocks);
                     return;
                 }
 
@@ -161,7 +160,7 @@ pub export fn WP34S_LU_decomposition(matrix: *const real34Matrix_t, lu: *real34M
             reportRamFull("Ram full, 1k");
         }
 
-        runtime.freeC47Blocks(tmp_raw, blocks);
+        runtime.freeC47Blocks(tmp_mat, blocks);
     } else {
         if (!samePtr(matrix, lu)) {
             lu.matrixElements = null;

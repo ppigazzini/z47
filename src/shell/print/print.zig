@@ -361,7 +361,7 @@ extern var statisticalSumsPointer: [*c]real_t;
 extern var beginOfProgramMemory: [*c]u8;
 extern var currentStep: [*c]u8;
 extern var allNamedVariables: [*c]namedVariableHeader_t;
-extern var labelList: [*c]labelList_t;
+extern var labelList: [*c]align(4) labelList_t;
 extern var userMenus: [*c]userMenu_t;
 extern var programmableMenu: programmableMenu_t;
 extern var currentSubroutineLevelData: [*c]subroutineLevelHeader_t;

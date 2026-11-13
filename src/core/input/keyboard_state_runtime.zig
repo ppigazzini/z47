@@ -1317,7 +1317,7 @@ pub extern var endOfCurrentProgram: [*c]u8;
 pub extern var currentProgramNumber: u16;
 pub extern var firstDisplayedLocalStepNumber: u16;
 pub const programList_t = abi.ProgramList;
-pub extern var programList: [*c]programList_t;
+pub extern var programList: [*c]align(4) programList_t;
 pub extern fn resizeProgramMemory(new_size_in_blocks: u16) void;
 pub extern fn scanLabelsAndPrograms() void;
 pub extern fn defineFirstDisplayedStep() void;

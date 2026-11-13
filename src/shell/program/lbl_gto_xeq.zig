@@ -275,8 +275,8 @@ extern var tam: tamState_t;
 extern var calcMode: u8;
 extern var dynamicMenuItem: i16;
 extern var numberOfLabels: u16;
-extern var labelList: [*c]labelList_t;
-extern var programList: [*c]programList_t;
+extern var labelList: [*c]align(4) labelList_t;
+extern var programList: [*c]align(4) programList_t;
 const LAST_ITEM: u32 = 3536;
 extern const indexOfItems: [LAST_ITEM + 1]item_t;
 const SOFTMENU_STACK_SIZE: usize = 8;
@@ -452,7 +452,6 @@ inline fn localRegistersAfterFlags(flags: *localFlags_t) [*]register_header_t {
 }
 
 // allocC47Blocks / freeC47Blocks / reduceC47Blocks / allocateLocalRegisters.
-extern fn allocC47Blocks(size_in_blocks: usize) ?*anyopaque;
 extern fn freeC47Blocks(pc_mem_ptr: ?*anyopaque, size_in_blocks: usize) void;
 extern fn reduceC47Blocks(pc_mem_ptr: ?*anyopaque, old_size_in_blocks: usize, new_size_in_blocks: usize) void;
 extern fn allocateLocalRegisters(number_of_registers_to_allocate: u16) void;
@@ -650,7 +649,7 @@ pub export fn fnExecute(label: u16) callconv(.c) void {
     if (programRunStop == PGM_RUNNING) {
         const oldCurrentSubroutineLevelData = currentSubroutineLevelData;
         allSubroutineLevels.numberOfSubroutineLevels += 1;
-        currentSubroutineLevelData = @ptrCast(@alignCast(allocC47Blocks(3)));
+        currentSubroutineLevelData = abi.allocC47BlocksFor(subroutineLevelHeader_t, 3);
         if (currentSubroutineLevelData != null) {
             oldCurrentSubroutineLevelData.?.ptrToNextLevel = toC47MemPtr(currentSubroutineLevelData);
             cur().returnProgramNumber = @bitCast(currentProgramNumber);

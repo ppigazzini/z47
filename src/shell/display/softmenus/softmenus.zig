@@ -708,7 +708,7 @@ const allReservedVariables = @extern([*c]const reservedVariableHeader_t, .{ .nam
 extern var userMenus: [*c]userMenu_t;
 const userMenuItems = @extern([*c]userMenuItem_t, .{ .name = "userMenuItems" });
 const userAlphaItems = @extern([*c]userMenuItem_t, .{ .name = "userAlphaItems" });
-extern var labelList: [*c]labelList_t;
+extern var labelList: [*c]align(4) labelList_t;
 const lastCatalogPosition = @extern([*c]i16, .{ .name = "lastCatalogPosition" });
 const retainedPageFirstItem = @extern([*c]i16, .{ .name = "retainedPageFirstItem" });
 // KEY_X is const int[7] (C int = c_int), not int16_t.

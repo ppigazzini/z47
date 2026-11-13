@@ -642,8 +642,8 @@ extern var beginOfProgramMemory: [*c]u8;
 extern var currentStep: [*c]u8;
 extern var firstFreeProgramByte: [*c]u8;
 extern var firstDisplayedStep: [*c]u8;
-extern var labelList: [*c]abi.LabelList;
-extern var programList: [*c]abi.ProgramList;
+extern var labelList: [*c]align(4) abi.LabelList;
+extern var programList: [*c]align(4) abi.ProgramList;
 extern var allNamedVariables: [*c]abi.NamedVariableHeader;
 extern var currentSubroutineLevelData: [*c]subroutineLevelHeader_t;
 extern var currentLocalFlags: [*c]abi.LocalFlags;
@@ -2394,7 +2394,7 @@ pub export fn doFnReset(confirmation: u16, autoSav: bool_t) callconv(.c) void {
         _ = memset(&globalFlags, 0, @sizeOf(@TypeOf(globalFlags)));
 
         allSubroutineLevels.numberOfSubroutineLevels = 1;
-        currentSubroutineLevelData = @ptrCast(@alignCast(allocC47Blocks(3)));
+        currentSubroutineLevelData = abi.allocC47BlocksAs(subroutineLevelHeader_t, 3);
         allSubroutineLevels.ptrToSubroutineLevel0Header = toC47MemPtr(currentSubroutineLevelData);
         currentSubroutineLevelData.*.returnProgramNumber = 0;
         currentSubroutineLevelData.*.returnLocalStep = 0;

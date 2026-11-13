@@ -199,7 +199,7 @@ extern var userMenuItems: [18]userMenuItem_t;
 extern var userAlphaItems: [18]userMenuItem_t;
 extern var kbd_usr: [37]calcKey_t;
 const softmenu = @extern([*c]const softmenu_t, .{ .name = "softmenu" });
-extern var labelList: [*c]labelList_t;
+extern var labelList: [*c]align(4) labelList_t;
 const allReservedVariables = @extern([*c]const reservedVariableHeader_t, .{ .name = "allReservedVariables" });
 extern var allNamedVariables: [*c]namedVariableHeader_t;
 // indexOfItems is a C ARRAY (const item_t indexOfItems[]); bind its address
@@ -233,8 +233,9 @@ extern fn setSystemFlag(sf: c_uint) void;
 extern fn clearSystemFlag(sf: c_uint) void;
 extern fn getSystemFlag(sf: i32) bool_t;
 
-extern fn allocC47Blocks(sizeInBlocks: usize) ?*anyopaque;
-extern fn reallocC47Blocks(pcMemPtr: ?*anyopaque, oldSizeInBlocks: usize, newSizeInBlocks: usize) ?*anyopaque;
+/// C's `void *reallocC47Blocks(void *, size_t, size_t)`, bound at the one type
+/// this owner moves with it: the user-menu table.
+extern fn reallocC47Blocks(pcMemPtr: ?*anyopaque, oldSizeInBlocks: usize, newSizeInBlocks: usize) [*c]userMenu_t;
 extern fn freeC47Blocks(pcMemPtr: ?*anyopaque, sizeInBlocks: usize) void;
 extern fn reduceC47Blocks(pcMemPtr: ?*anyopaque, oldSizeInBlocks: usize, newSizeInBlocks: usize) void;
 
@@ -1317,7 +1318,7 @@ extern var calcModel: u8;
 // ===========================================================================
 pub export fn initUserKeyArgument() callconv(.c) void {
     userKeyLabelSize = 37 * 6 * 1 + 1;
-    userKeyLabel = @ptrCast(allocC47Blocks(TO_BLOCKS(userKeyLabelSize)));
+    userKeyLabel = abi.allocC47BlocksAs(u8, TO_BLOCKS(userKeyLabelSize));
     if (userKeyLabel == null) { // the memset below writes through this pointer
         userKeyLabelSize = 0;
         frontier_error.displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
@@ -1356,7 +1357,7 @@ pub export fn setUserKeyArgument(position: u16, name: [*c]const u8) callconv(.c)
     const userKeyLabelPtr2: [*c]u8 = frontier_softmenus.getNthString(userKeyLabel, @intCast(position + 1));
     const userKeyLabelPtr3: [*c]u8 = frontier_softmenus.getNthString(userKeyLabel, 37 * 6);
     const newUserKeyLabelSize: u16 = userKeyLabelSize -% @as(u16, @intCast(stringByteLength(userKeyLabelPtr1))) +% @as(u16, @intCast(stringByteLength(name)));
-    const newUserKeyLabel: [*c]u8 = @ptrCast(allocC47Blocks(TO_BLOCKS(newUserKeyLabelSize)));
+    const newUserKeyLabel: [*c]u8 = abi.allocC47BlocksAs(u8, TO_BLOCKS(newUserKeyLabelSize));
     var newUserKeyLabelPtr: [*c]u8 = newUserKeyLabel;
 
     // The pool can be empty when a state file restores a key argument, and the
@@ -1396,9 +1397,9 @@ pub export fn createMenu(name: [*c]const u8) callconv(.c) void {
             // but the assignment below throws the pointer away, so keep a copy.
             const oldUserMenus = userMenus;
             if (numberOfUserMenus == 0) {
-                userMenus = @ptrCast(@alignCast(allocC47Blocks(TO_BLOCKS(SIZEOF_USERMENU))));
+                userMenus = abi.allocC47BlocksAs(userMenu_t, TO_BLOCKS(SIZEOF_USERMENU));
             } else {
-                userMenus = @ptrCast(@alignCast(reallocC47Blocks(userMenus, TO_BLOCKS(SIZEOF_USERMENU) * numberOfUserMenus, TO_BLOCKS(SIZEOF_USERMENU) * (numberOfUserMenus + 1))));
+                userMenus = reallocC47Blocks(userMenus, TO_BLOCKS(SIZEOF_USERMENU) * numberOfUserMenus, TO_BLOCKS(SIZEOF_USERMENU) * (numberOfUserMenus + 1));
             }
             if (userMenus == null) { // the memset below writes through this pointer
                 userMenus = oldUserMenus; // the menus already held survive, and the old block is not orphaned

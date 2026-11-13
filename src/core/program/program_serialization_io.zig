@@ -55,8 +55,8 @@ comptime {
     std.debug.assert(@offsetOf(tamState_t, "digitsSoFar") == 12);
 }
 
-extern var labelList: ?[*]labelList_t;
-extern var programList: ?[*]programList_t;
+extern var labelList: ?[*]align(4) labelList_t;
+extern var programList: ?[*]align(4) programList_t;
 extern var tam: tamState_t;
 pub extern var dynamicMenuItem: i16;
 extern var numberOfLabels: u16;

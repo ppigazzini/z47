@@ -281,7 +281,7 @@ extern var currentProgramNumber: u16;
 extern var currentLocalStepNumber: u16;
 extern var firstDisplayedLocalStepNumber: u16;
 extern var pemCursorIsZerothStep: bool;
-extern var programList: [*c]programList_t;
+extern var programList: [*c]align(4) programList_t;
 extern fn findNextStep(step: [*c]u8) [*c]u8;
 extern fn defineFirstDisplayedStep() void;
 extern fn defineCurrentProgramFromCurrentStep() void;
@@ -970,7 +970,7 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
         if (allow_user_keys and (load_mode == LM_ALL or load_mode == LM_SYSTEM_STATE)) {
             freeC47Blocks(userKeyLabel, TO_BLOCKS(userKeyLabelSize));
             userKeyLabelSize = 37 * 6 * 1 + 1;
-            userKeyLabel = @ptrCast(allocC47Blocks(TO_BLOCKS(userKeyLabelSize)));
+            userKeyLabel = abi.allocC47BlocksAs(u8, TO_BLOCKS(userKeyLabelSize));
             if (userKeyLabel == null) { // the memset below writes through this pointer, and this section's entries then walk it
                 userKeyLabelSize = 0;
                 displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
@@ -1105,7 +1105,7 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
             // loop below writes through that pointer, so take no equations rather
             // than write through NULL; the rest of the section still reads its lines
             // and discards them, which keeps the parser aligned with the stream.
-            allFormulae = @ptrCast(@alignCast(allocC47Blocks(TO_BLOCKS(@sizeOf(formulaHeader_t)) * formulae)));
+            allFormulae = abi.allocC47BlocksAs(formulaHeader_t, TO_BLOCKS(@sizeOf(formulaHeader_t)) * formulae);
             if (allFormulae == null) {
                 numberOfFormulae = 0;
                 currentFormula = 0;

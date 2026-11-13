@@ -9,6 +9,7 @@
 // canonical names so the divide / invert owners reach them. The upstream copies
 // are file-local statics.
 
+const abi = @import("abi");
 const runtime = @import("../command_wrappers/runtime.zig");
 const math_comparison_reals = @import("../compare/comparison_reals.zig");
 const math_wp34s = @import("../special/wp34s.zig");
@@ -198,18 +199,16 @@ pub export fn invCpxMat(matrix: [*]cplx_t, n_in: u16, tolerance_exponent: i32, r
     const pivot_blocks = (n * @sizeOf(u16) + 3) >> 2;
     const vec_blocks = n * real_size_in_blocks * 2;
 
-    if (runtime.allocC47Blocks(lu_blocks)) |lu_raw| {
-        const lu: [*]cplx_t = @ptrCast(@alignCast(lu_raw));
-        if (runtime.allocC47Blocks(pivot_blocks)) |pivots_raw| {
-            const pivots: [*]u16 = @ptrCast(@alignCast(pivots_raw));
+    if (abi.allocC47BlocksAs(cplx_t, lu_blocks)) |lu| {
+        if (abi.allocC47BlocksAs(u16, pivot_blocks)) |pivots| {
             var i: usize = 0;
             while (i < n * n) : (i += 1) {
                 realCopy(&matrix[i].Real, &lu[i].Real);
                 realCopy(&matrix[i].Imag, &lu[i].Imag);
             }
             if (!luCpxMat(lu, n_in, pivots, tolerance_exponent, real_context)) {
-                runtime.freeC47Blocks(lu_raw, lu_blocks);
-                runtime.freeC47Blocks(pivots_raw, pivot_blocks);
+                runtime.freeC47Blocks(lu, lu_blocks);
+                runtime.freeC47Blocks(pivots, pivot_blocks);
                 return false;
             }
 
@@ -240,10 +239,8 @@ pub export fn invCpxMat(matrix: [*]cplx_t, n_in: u16, tolerance_exponent: i32, r
                 }
             }
 
-            if (runtime.allocC47Blocks(vec_blocks)) |x_raw| {
-                const x: [*]cplx_t = @ptrCast(@alignCast(x_raw));
-                if (runtime.allocC47Blocks(vec_blocks)) |b_raw| {
-                    const b: [*]cplx_t = @ptrCast(@alignCast(b_raw));
+            if (abi.allocC47BlocksAs(cplx_t, vec_blocks)) |x| {
+                if (abi.allocC47BlocksAs(cplx_t, vec_blocks)) |b| {
                     i = 0;
                     while (i < n) : (i += 1) {
                         var j: usize = 0;
@@ -262,19 +259,19 @@ pub export fn invCpxMat(matrix: [*]cplx_t, n_in: u16, tolerance_exponent: i32, r
                             realCopy(&x[j].Imag, &matrix[j * n + i].Imag);
                         }
                     }
-                    runtime.freeC47Blocks(b_raw, vec_blocks);
+                    runtime.freeC47Blocks(b, vec_blocks);
                 } else {
                     reportRamFull("Ram full, 1q");
                 }
-                runtime.freeC47Blocks(x_raw, vec_blocks);
+                runtime.freeC47Blocks(x, vec_blocks);
             } else {
                 reportRamFull("Ram full, 2r");
             }
-            runtime.freeC47Blocks(pivots_raw, pivot_blocks);
+            runtime.freeC47Blocks(pivots, pivot_blocks);
         } else {
             reportRamFull("Ram full, 3s");
         }
-        runtime.freeC47Blocks(lu_raw, lu_blocks);
+        runtime.freeC47Blocks(lu, lu_blocks);
     } else {
         reportRamFull("Ram full, 4t");
     }

@@ -478,7 +478,6 @@ extern fn sprintf(buf: [*c]u8, fmt: [*:0]const u8, ...) c_int;
 extern fn printf(fmt: [*:0]const u8, ...) c_int;
 
 extern fn freeC47Blocks(pcMemPtr: ?*anyopaque, sizeInBlocks: usize) void;
-extern fn allocC47Blocks(sizeInBlocks: usize) ?*anyopaque;
 extern fn resizeProgramMemory(newSizeInBlocks: u16) void;
 
 extern fn fnFlipFlag(flag: u16) void;
@@ -707,14 +706,14 @@ pub export fn scanLabelsAndPrograms() callconv(.c) void {
     // The STRUCT branch ends go in the same table, after every real label.
     // Appending them keeps every existing label index unchanged, which matters
     // because a key assignment holds an index and a menu entry is built from one.
-    labelList = @ptrCast(@alignCast(allocC47Blocks(toBlocks(@sizeOf(labelList_t)) * (numberOfLabels +% numberOfStructureLabels))));
+    labelList = abi.allocC47BlocksAs(labelList_t, toBlocks(@sizeOf(labelList_t)) * (numberOfLabels +% numberOfStructureLabels));
     if (labelList == null) {
         // unlikely
         lastErrorCode = ERROR_RAM_FULL;
         return;
     }
 
-    programList = @ptrCast(@alignCast(allocC47Blocks(toBlocks(@sizeOf(programList_t)) * numberOfPrograms)));
+    programList = abi.allocC47BlocksAs(programList_t, toBlocks(@sizeOf(programList_t)) * numberOfPrograms);
     if (programList == null) {
         // unlikely
         lastErrorCode = ERROR_RAM_FULL;
