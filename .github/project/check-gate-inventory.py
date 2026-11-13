@@ -116,6 +116,14 @@ NOT_A_GATE: dict[str, str] = {
     "report-narrowing-status.py": "Report: prints the narrowing metrics behind the ratchet.",
     "report-c-dependency-status.py": "Report: prints the C-dependency picture the Phase I policy gates.",
     "report-firmware-host-gap.py": "Report: prints where the firmware and host builds differ.",
+    "report-resync-worklist.py": (
+        "Report: names the owner of every C file a resync range changes; the"
+        " runbook's first step, run by hand during a sync."
+    ),
+    "report-zig-coverage.sh": (
+        "Report: symbolizes the coverage build's PCs into owner lines;"
+        " check-coverage-ratchet.sh gates the floor."
+    ),
 }
 
 
@@ -125,11 +133,28 @@ def scripts(repo: Path) -> list[str]:
     )
 
 
+ZIG_SCRIPT_PATH_RE = re.compile(r"\.github/project/([A-Za-z0-9_.-]+\.(?:py|sh))")
+
+
+def live_text(path: Path) -> str:
+    """The text of `path` that can run something: comments dropped. A script a
+    workflow only mentions in a comment is not run by it."""
+    text = path.read_text(encoding="utf-8", errors="replace")
+    if path.suffix == ".zig":
+        return "\n".join(line.split("//", 1)[0] for line in text.splitlines())
+    return "\n".join(re.sub(r"(^|\s)#.*$", "", line) for line in text.splitlines())
+
+
 def referenced(repo: Path, paths: list[Path]) -> set[str]:
     names: set[str] = set()
     for path in paths:
-        if path.is_file():
-            names.update(SCRIPT_RE.findall(path.read_text(encoding="utf-8", errors="replace")))
+        if not path.is_file():
+            continue
+        text = live_text(path)
+        # A build file runs a script by its path; a bare name there is prose, as in
+        # a step's help text.
+        pattern = ZIG_SCRIPT_PATH_RE if path.suffix == ".zig" else SCRIPT_RE
+        names.update(pattern.findall(text))
     return names
 
 
