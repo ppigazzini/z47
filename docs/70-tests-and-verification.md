@@ -227,8 +227,8 @@ Concretely, when writing or touching an oracle:
   `upstream/src/c47/c47.h`, the harness header must claim upstream's own `C47_H` guard — a
   quoted `#include "c47.h"` searches the including file's directory first and no
   `-I` outranks that.
-- Do not hand-copy c43 constants into the harness header either; that is the same
-  defect one level down, and
+- Do not hand-copy c43 constants into the harness header, or into a Zig harness
+  file, either; that is the same defect one level down, and
   [check-harness-constant-copies.py](../.github/project/check-harness-constant-copies.py)
   now measures it, and `EXTRA_INFO_ON_CALC_ERROR` should be upstream's own value so
   c43's diagnostic branches COMPILE rather than being configured away.

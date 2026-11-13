@@ -19,7 +19,8 @@ Two models of the reserved-variable block coexist in the tree, and this copy is 
 of the places the stale one lives.
 
 WHAT THIS GATE DOES. It extracts every constant a z47-owned harness header declares
-by hand -- object-like `#define`s and `enum` members -- and compiles one
+by hand -- object-like `#define`s and `enum` members -- and every UPPER_CASE integer
+constant a Zig harness file under build/tests/ declares, and compiles one
 `_Static_assert` per name against c43's own headers. Three outcomes:
 
   * the name is NOT declared by c43        -> harness-local, not a copy, ignored
@@ -69,7 +70,9 @@ from upstream_paths import upstream_path
 
 BASELINE = ".github/project/harness-constant-copy-baseline.json"
 
-TRACKED_GLOBS = ("build/**/*.h",)
+# Harness headers, and the Zig harness files that carry their own copies (a fake
+# runtime written in Zig hand-copies c43 constants the same way a mock c47.h does).
+TRACKED_GLOBS = ("build/**/*.h", "build/tests/**/*.zig")
 
 # Object-like #define with a replacement list. A VALUELESS define is skipped on
 # purpose: that is an include guard or a feature switch, not a copied constant --
@@ -142,6 +145,28 @@ def extract_constants(text: str) -> dict[str, str | None]:
             value = value.strip()
             found.setdefault(name, as_int_literal(value))
 
+    return found
+
+
+# A Zig integer constant spelled like a C macro: `const NAME = 12;`,
+# `pub const NAME: u16 = 0x10;` or `const NAME = @as(u8, 3);`. Only UPPER_CASE
+# names are read, because those are the ones that copy a c43 #define or enum.
+ZIG_CONST_RE = re.compile(
+    r"^[ \t]*(?:pub[ \t]+)?const[ \t]+([A-Z][A-Z0-9_]*)[ \t]*(?::[ \t]*[\w.\[\]*]+[ \t]*)?=[ \t]*([^;]+);",
+    re.M,
+)
+ZIG_AS_RE = re.compile(r"^@as\([^,]+,[ \t]*(.+)\)$")
+
+
+def extract_zig_constants(text: str) -> dict[str, str | None]:
+    """{name: int-literal-value or None} for every UPPER_CASE Zig integer constant."""
+    found: dict[str, str | None] = {}
+    for name, value in ZIG_CONST_RE.findall(LINE_COMMENT_RE.sub("", text)):
+        value = value.strip()
+        wrapped = ZIG_AS_RE.match(value)
+        if wrapped:
+            value = wrapped.group(1).strip()
+        found.setdefault(name, as_int_literal(value.replace("_", "")))
     return found
 
 
@@ -263,7 +288,8 @@ def main() -> int:
     owners: list[tuple[str, str, str | None]] = []
     for header in headers:
         rel = header.relative_to(repo).as_posix()
-        for name, value in sorted(extract_constants(header.read_text(errors="replace")).items()):
+        extract = extract_zig_constants if header.suffix == ".zig" else extract_constants
+        for name, value in sorted(extract(header.read_text(errors="replace")).items()):
             owners.append((rel, name, value))
 
     # One assert per DISTINCT (name, value): the compile is the expensive part and
@@ -277,11 +303,27 @@ def main() -> int:
             candidates.append(key)
 
     if args.self_test:
+        # The Zig extractor reads the three spellings a Zig harness uses and skips a
+        # lower-case name, which is never a copy of a c43 #define or enum.
+        zig_sample = (
+            "pub const REGISTER_X: u16 = 0x10;\n"
+            "const ITM_SAMPLE = @as(u16, 1_234);\n"
+            "const local_count = 3;\n"
+        )
+        zig_found = extract_zig_constants(zig_sample)
+        if zig_found != {"REGISTER_X": "16", "ITM_SAMPLE": "1234"}:
+            print(
+                f"check-harness-constant-copies: SELF-TEST FAILED -- Zig extractor read {zig_found}"
+            )
+            return 1
         # The gate fires when a harness constant disagrees with c43. Prove it with a
         # value c43 cannot possibly hold, through the SAME compile path as a real run.
         undeclared, diverged = classify(repo, zig, [("REGISTER_X", "424242")])
         if 0 in diverged:
-            print("check-harness-constant-copies: SELF-TEST OK -- a wrong value is detected")
+            print(
+                "check-harness-constant-copies: SELF-TEST OK -- a wrong value is detected"
+                " and the Zig extractor reads its three spellings"
+            )
             return 0
         print("check-harness-constant-copies: SELF-TEST FAILED -- a wrong value went unseen")
         print(f"  undeclared={sorted(undeclared)} diverged={diverged}")
