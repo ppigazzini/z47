@@ -31,6 +31,8 @@ const std = @import("std");
 const frontier_build_options = @import("frontier_build_options");
 const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 const dmcp_build: bool = frontier_build_options.dmcp_build;
+// LIBRARY_FN_BASE (lft_ifc.h): the ROM function table of the board's SDK.
+const LIBRARY_FN_BASE: usize = if (frontier_build_options.old_hw) 0x08000201 else 0x08000301;
 
 // ---------------------------------------------------------------------------
 // Types
@@ -571,7 +573,7 @@ pub export fn convertDateRegisterToReal34Register(source: calcRegister_t, destin
 }
 
 const rtc_read: *const fn (*tm_t, *dt_t) callconv(.c) void = if (dmcp_build)
-    @ptrFromInt(0x08000201 + 204)
+    @ptrFromInt(LIBRARY_FN_BASE + 204)
 else
     undefined;
 
