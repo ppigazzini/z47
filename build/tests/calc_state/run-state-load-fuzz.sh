@@ -58,14 +58,6 @@ fail=0
 #   0 = LM_ALL   1 = LM_PROGRAMS   2 = LM_REGISTERS   5 = LM_SYSTEM_STATE
 LOAD_MODES="0 1 2 5"
 
-# The pool poison detector reports these two files, whose write into freed pool
-# memory is not yet traced to its writer. They are reported and do not fail; a
-# poison report from any OTHER file fails.
-#
-# Do NOT add a file here to quieten a report. Each entry is an open defect, and
-# the list shrinking is the measure of progress on it.
-POISON_KNOWN=(matrix_dims_at_u16_block_limit.sav matrix_rows_exceed_header_12_bits.sav)
-
 # An empty corpus must not run the literal pattern as one "file".
 shopt -s nullglob
 for f in "$corpus"/*.sav; do
@@ -101,19 +93,12 @@ for f in "$corpus"/*.sav; do
     echo "FAIL (sanitizer exitcode): $label"
     fail=$((fail + 1))
   elif [ "$rc" -eq 87 ]; then
-    # The pool poison detector. Something wrote past its allocation
-    # into free pool space -- the class ASan cannot see here, because `ram` is one
-    # allocation to it. This is finding 5's only detector.
-    # ' %s ' on BOTH sides: '%s ' alone leaves the first entry without a leading
-    # space, so it never matches and the list silently covers all but its head.
-    if printf ' %s ' "${POISON_KNOWN[@]}" | grep -qF " $(basename "$f") "; then
-      echo "KNOWN pool-poison report (open defect, not yet traced): $label"
-      printf '%s\n' "$out" | grep -E "POOL POISON DISTURBED" | head -1
-    else
-      echo "FAIL (pool poison disturbed -- in-pool overrun): $label"
-      printf '%s\n' "$out" | grep -E "POOL POISON" | head -3
-      fail=$((fail + 1))
-    fi
+    # The pool poison detector: something wrote past its allocation into free
+    # pool space -- the class ASan cannot see here, because `ram` is one
+    # allocation to it. Every report fails; there is no list of tolerated files.
+    echo "FAIL (pool poison disturbed -- in-pool overrun): $label"
+    printf '%s\n' "$out" | grep -E "POOL POISON" | head -3
+    fail=$((fail + 1))
   elif printf '%s' "$out" | grep -q "BUDGET EXCEEDED"; then
     echo "FAIL (unbounded on malformed input -- the harness budget stopped it): $label"
     printf '%s\n' "$out" | grep -E "BUDGET EXCEEDED" | head -1
