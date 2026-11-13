@@ -28,9 +28,13 @@ export UBSAN_OPTIONS="halt_on_error=1:print_stacktrace=1"
 
 total=0
 fail=0
+# An empty corpus must not run the literal pattern as one "file".
+shopt -s nullglob
 for f in "$corpus"/*.p47; do
   total=$((total + 1))
-  out="$(timeout 20 "$harness" "$f" 2>&1)"
+  # The harness bounds each file itself (harnessBudgetSetCase): a hang ends in its
+  # BUDGET EXCEEDED report, never in a kill from out here.
+  out="$("$harness" "$f" 2>&1)"
   rc=$?
   if printf '%s' "$out" | grep -qE "ERROR: AddressSanitizer|SUMMARY: AddressSanitizer|runtime error:"; then
     echo "FAIL (the sanitizer caught a bug): $f"
@@ -39,15 +43,24 @@ for f in "$corpus"/*.p47; do
   elif [ "$rc" -eq 86 ]; then
     echo "FAIL (sanitizer exitcode): $f"
     fail=$((fail + 1))
-  elif [ "$rc" -eq 124 ]; then
-    echo "FAIL (hang / infinite loop on malformed input): $f"
+  elif printf '%s' "$out" | grep -q "BUDGET EXCEEDED"; then
+    echo "FAIL (unbounded on malformed input -- the harness budget stopped it): $f"
     fail=$((fail + 1))
   elif [ "$rc" -gt 128 ]; then
     echo "FAIL (killed by signal $((rc - 128))): $f"
     fail=$((fail + 1))
+  elif [ "$rc" -ne 0 ] && [ "$rc" -ne 1 ]; then
+    echo "FAIL (harness error, exit $rc): $f"
+    printf '%s\n' "$out" | tail -3
+    fail=$((fail + 1))
   fi
   # rc 0 (ran) or rc 1 (graceful "load produced no labels") => PASS, no output.
 done
+
+if [ "$total" -eq 0 ]; then
+  echo "FAIL: no .p47 files in $corpus"
+  exit 1
+fi
 
 if [ "$fail" -eq 0 ]; then
   echo "M1 pgm_load_fuzz: $total malformed .p47 inputs handled with no crash / hang / sanitizer report (UBSan)."

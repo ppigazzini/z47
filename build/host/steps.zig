@@ -1327,43 +1327,43 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.l
 
     const math_ln_complex_oracle = addMathLnComplexOracle(b, context, optimize);
     const run_math_ln_complex_oracle = b.addRunArtifact(math_ln_complex_oracle);
-    run_math_ln_complex_oracle.setCwd(b.path("."));
+    run_math_ln_complex_oracle.setCwd(upstreamCwd(b));
     const math_ln_complex_oracle_step = b.step("math_ln_complex_oracle", "Run the direct lnComplex helper oracle");
     math_ln_complex_oracle_step.dependOn(&run_math_ln_complex_oracle.step);
 
     const math_eigen_oracle = addMathEigenOracle(b, context, optimize);
     const run_math_eigen_oracle = b.addRunArtifact(math_eigen_oracle);
-    run_math_eigen_oracle.setCwd(b.path("."));
+    run_math_eigen_oracle.setCwd(upstreamCwd(b));
     const eigen_golden_step = b.step("eigen_golden", "Run the eigenvalue workers against hand-verified golden values");
     eigen_golden_step.dependOn(&run_math_eigen_oracle.step);
 
     const math_real_rectangular_to_polar_oracle = addMathRealRectangularToPolarOracle(b, context, optimize);
     const run_math_real_rectangular_to_polar_oracle = b.addRunArtifact(math_real_rectangular_to_polar_oracle);
-    run_math_real_rectangular_to_polar_oracle.setCwd(b.path("."));
+    run_math_real_rectangular_to_polar_oracle.setCwd(upstreamCwd(b));
     const math_real_rectangular_to_polar_oracle_step = b.step("math_real_rectangular_to_polar_oracle", "Run the direct realRectangularToPolar helper oracle");
     math_real_rectangular_to_polar_oracle_step.dependOn(&run_math_real_rectangular_to_polar_oracle.step);
 
     const math_atan_oracle = addMathAtanOracle(b, context, optimize);
     const run_math_atan_oracle = b.addRunArtifact(math_atan_oracle);
-    run_math_atan_oracle.setCwd(b.path("."));
+    run_math_atan_oracle.setCwd(upstreamCwd(b));
     const math_atan_oracle_step = b.step("math_atan_oracle", "Run the direct C47_WP34S_Atan helper oracle");
     math_atan_oracle_step.dependOn(&run_math_atan_oracle.step);
 
     const math_real_trig_primitives_oracle = addMathRealTrigPrimitivesOracle(b, context, optimize);
     const run_math_real_trig_primitives_oracle = b.addRunArtifact(math_real_trig_primitives_oracle);
-    run_math_real_trig_primitives_oracle.setCwd(b.path("."));
+    run_math_real_trig_primitives_oracle.setCwd(upstreamCwd(b));
     const math_real_trig_primitives_oracle_step = b.step("math_real_trig_primitives_oracle", "Run the direct real trig primitive oracle");
     math_real_trig_primitives_oracle_step.dependOn(&run_math_real_trig_primitives_oracle.step);
 
     const math_circular_trig_oracle = addMathCircularTrigOracle(b, context, optimize);
     const run_math_circular_trig_oracle = b.addRunArtifact(math_circular_trig_oracle);
-    run_math_circular_trig_oracle.setCwd(b.path("."));
+    run_math_circular_trig_oracle.setCwd(upstreamCwd(b));
     const math_circular_trig_oracle_step = b.step("math_circular_trig_oracle", "Run the direct circular trig helper oracle");
     math_circular_trig_oracle_step.dependOn(&run_math_circular_trig_oracle.step);
 
     const math_atan2_oracle = addMathAtan2Oracle(b, context, optimize);
     const run_math_atan2_oracle = b.addRunArtifact(math_atan2_oracle);
-    run_math_atan2_oracle.setCwd(b.path("."));
+    run_math_atan2_oracle.setCwd(upstreamCwd(b));
     const math_atan2_oracle_step = b.step("math_atan2_oracle", "Run the direct C47_WP34S_Atan2 helper oracle");
     math_atan2_oracle_step.dependOn(&run_math_atan2_oracle.step);
 
