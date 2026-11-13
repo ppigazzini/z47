@@ -159,6 +159,7 @@ the companion c47-r47-ci doc set, `docs/04-testing.md`, owns them. See
 | idiomatic-Zig ratchet | `../.github/project/idiom-status-baseline.json`, `../.github/project/check-idiom-ratchet.sh` | `bash .github/project/check-idiom-ratchet.sh` |
 | Windows LLP64 int-width trap | `../.github/project/portable-int-width-allowlist.txt`, `../.github/project/check-portable-int-widths.sh` | `bash .github/project/check-portable-int-widths.sh` |
 | cross-owner global widths | `../.github/project/check-extern-var-widths.py` | `python3 .github/project/check-extern-var-widths.py .` |
+| extern fn and ROM call signatures | `../.github/project/check-extern-signatures.py` (gate step 9b): every Zig `extern fn` and `@extern` against the Zig `export fn` it binds, and every `LIBRARY_FN_BASE + N` call against the function `lft_ifc.h` puts at `N` and its `dmcp.h` prototype | `python3 .github/project/check-extern-signatures.py --repo-root .` |
 | cross-owner C type alias widths | `../.github/project/check-c-type-alias-widths.sh` | `bash .github/project/check-c-type-alias-widths.sh .` |
 | constant-blob offset parity | `../src/abi/constants.zig`, `../.github/project/check-constant-offsets.py` | `zig build constants && python3 .github/project/check-constant-offsets.py` |
 | constant/enum mirror parity | `../.github/project/audit-constant-parity.py` | `python3 .github/project/audit-constant-parity.py` |
