@@ -15,6 +15,9 @@
 const std = @import("std");
 const frontier_build_options = @import("frontier_build_options");
 const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
+const option_drg_cfg: bool = frontier_build_options.option_drg_cfg;
+// The units DRG steps through after RESET: radian, grad and degree.
+const DRG_CONFIG_DEFAULT: u8 = (1 << 0) | (1 << 1) | (1 << 2);
 
 // ---------------------------------------------------------------------------
 // Types
@@ -168,6 +171,7 @@ extern var grpGroupingHex: u8;
 extern var grpGroupingBin: u8;
 extern var graMod: u8;
 extern var graFont: u8;
+extern var drgConfig: u8;
 extern var currentAngularMode: angularMode_t;
 extern var lrSelection: u16;
 extern var lrChosen: u16;
@@ -664,7 +668,6 @@ pub export fn fnStoreConfig(regist: u16) callconv(.c) void {
     const compatibility_int1: i16 = 0;
     const compatibility_byte00: bool = false;
     const compatibility_byte1: u8 = 0;
-    const compatibility_byte6: bool = false;
     const compatibility_byte7: bool = false;
     const compatibility_byte8: bool = false;
     const compatibility_byte9: bool = false;
@@ -744,7 +747,8 @@ pub export fn fnStoreConfig(regist: u16) callconv(.c) void {
     configToStore.grpGroupingBin = grpGroupingBin;
     configToStore.graMod = graMod;
     configToStore.graFont = graFont;
-    configToStore.compatibility_byte6 = compatibility_byte6;
+    // Relative to the default, so a 0 in the byte recalls the default configuration.
+    configToStore.drgConfig = if (comptime option_drg_cfg) drgConfig ^ DRG_CONFIG_DEFAULT else 0;
     configToStore.compatibility_byte7 = compatibility_byte7;
     configToStore.compatibility_byte8 = compatibility_byte8;
     configToStore.compatibility_byte9 = compatibility_byte9;

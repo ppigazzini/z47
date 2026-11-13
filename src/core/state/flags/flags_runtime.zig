@@ -11,6 +11,7 @@ pub const FLAG_SBadm: u16 = 0x806f;
 pub const FLAG_AUTOVALID: u16 = 0x8070;
 pub const FLAG_M_ALL: u16 = 0x8072;
 pub const FLAG_PL_2L: u16 = 0x8073;
+pub const FLAG_TOPFX: u16 = 0x8074;
 pub const FLAG_SBtime: u16 = 0x802d;
 pub const FLAG_SBwoy: u16 = 0x8057;
 pub const FLAG_CPXj: u16 = 0x8005;

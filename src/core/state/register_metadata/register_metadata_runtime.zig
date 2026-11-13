@@ -361,5 +361,5 @@ pub fn allocateLocalRegistersRetained(number_of_registers_to_allocate: u16) void
 }
 
 pub fn reallocateRegisterRetained(reg: calcRegister_t, data_type: u32, data_size_without_data_len_blocks: u16, tag: u32) void {
-    register_metadata.reallocateRegister(reg, data_type, data_size_without_data_len_blocks, tag);
+    _ = register_metadata.reallocateRegister(reg, data_type, data_size_without_data_len_blocks, tag);
 }

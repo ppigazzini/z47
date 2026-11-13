@@ -66,6 +66,7 @@ const amNone = runtime.amNone;
 const amRadian = runtime.amRadian;
 const amGrad = runtime.amGrad;
 const amDegree = runtime.amDegree;
+const amDMS = runtime.amDMS;
 const amMultPi = runtime.amMultPi;
 const amAngleMask = runtime.amAngleMask;
 
@@ -164,6 +165,9 @@ inline fn getRegisterAngularMode(reg: calcRegister_t) angularMode_t {
 }
 
 const registerIsNoAngle = runtime.registerIsNoAngle;
+// The DRG menu's unit steps, which addons.c owns (shell object).
+extern fn drgAutoAdm(unit: u16) void;
+extern fn drgXfnUnit(unit: u16) u16;
 // inputAngleMode3r(r)
 inline fn inputAngleMode3r(r: calcRegister_t) angularMode_t {
     if (registerIsNoAngle(r + 1) and registerIsNoAngle(r + 2)) {
@@ -337,7 +341,7 @@ inline fn setSystemFlagAslift() void {
 
 // modulus(a)
 inline fn modulus(a: angularMode_t) *align(1) const real_t {
-    return if (a == amRadian) const2139_2pi() else if (a == amDegree) const_360() else if (a == amGrad) const_400() else if (a == amMultPi) const_2() else const_1();
+    return if (a == amRadian) const2139_2pi() else if (a == amDegree or a == amDMS) const_360() else if (a == amGrad) const_400() else if (a == amMultPi) const_2() else const_1();
 }
 
 // REAL_T_PTR(name, 1071).
@@ -1008,11 +1012,17 @@ fn doXfn(registerNo: calcRegister_t, function: c_int, functionType: c_int, funct
                 }
             },
             ITM_DRG_XFN => {
-                const nextAngleMode: angularMode_t = if (angleMode == amDegree) amRadian else if (angleMode == amRadian) amGrad else if (angleMode == amGrad) amMultPi else if (angleMode == amMultPi) amDegree else amDegree;
-                if (inputIsNoAngle3r(registerNo)) {
-                    angleMode = currentAngularMode;
+                if (registerIsNoAngle(registerNo)) { // a value with no unit takes ADM, or DEG for D.MS, and keeps its number
+                    angleMode = if (currentAngularMode == amDMS) amDegree else currentAngularMode;
+                    if (comptime runtime.option_drg_cfg) {
+                        drgAutoAdm(@intCast(angleMode));
+                    }
                 } else {
-                    if (!inputAngleError3r(registerNo) and angleMode != nextAngleMode) {
+                    // The next unit the DRG menu chose; D.MS is never chosen, and DEG takes its place.
+                    const nextAngleMode: angularMode_t = if (comptime runtime.option_drg_cfg)
+                        @intCast(drgXfnUnit(@intCast(angleMode)))
+                    else if (angleMode == amDegree) amRadian else if (angleMode == amRadian) amGrad else if (angleMode == amGrad) amMultPi else if (angleMode == amMultPi) amDegree else amDegree;
+                    if (angleMode != nextAngleMode) {
                         realDivide(paramX, modulus(angleMode), paramX, &c);
                         realMultiply(paramX, modulus(nextAngleMode), paramX, &c);
                     }

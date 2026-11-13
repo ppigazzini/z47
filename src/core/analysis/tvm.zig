@@ -388,8 +388,9 @@ fn doubleExp(x: *const real_t, exp: *real_t, expm1: *real_t, realContext: *realC
 // ===========================================================================
 // OPTION_TVM_FORMULAS section
 // ===========================================================================
-// The ten refusals the analytical formulas can raise, indexed by the code
-// tvmRangeError is given and returns.
+// The refusals the analytical formulas can raise, indexed by the code
+// tvmRangeError is given. Code 0 is the callers' success return, so a division
+// by zero is returned as 10, the stop code fnTvmVar does not retry.
 const tvmErrorMessages = [_][*:0]const u8{
     "TVM: Division by zero", // 0
     "TVM: Invalid interest rate", // 1
@@ -401,9 +402,10 @@ const tvmErrorMessages = [_][*:0]const u8{
     "TVM: Present value cannot be zero", // 7
     "TCM: Invalid variable requested", // 8
     "TCM: Exit to proceed to old solver", // 9
+    "TVM: Division by zero", // 10
 };
 
-// Every code this module produces names one of the ten; a code outside the
+// Every code this module produces names one of the eleven; a code outside the
 // table names no message, so it falls back to the plain out-of-range text
 // rather than reading past the table.
 fn tvmErrorMessage(errorCode: c_int) [*:0]const u8 {
@@ -414,7 +416,7 @@ fn tvmErrorMessage(errorCode: c_int) [*:0]const u8 {
 fn tvmRangeError(errorCode: c_int) linksection(runtime.code_section) c_int {
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
     moreInfoOnError("In function tvmRangeError:", tvmErrorMessage(errorCode), " Out of range error", null);
-    return errorCode;
+    return if (errorCode == 0) 10 else errorCode;
 }
 
 fn calculateEffectiveRate(iPercentPerYear: *const real_t, compoundPerYear: *const real_t, paymentPerYear: *const real_t, ip: *real_t, err: *c_int) linksection(runtime.code_section) void {
@@ -955,6 +957,12 @@ pub export fn fnTvmVar(variable: u16) linksection(runtime.code_section) callconv
                         if (errv == 0) {
                             // Analytic solution found; nothing else to do.
                             temporaryInformation = TI_SOLVER_VARIABLE;
+                            return;
+                        } else if (errv == 10) {
+                            // The TVM equation has no solution and the error is
+                            // already displayed, so the iterative solver is not tried.
+                            adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
+                            setSystemFlag(FLAG_ASLIFT);
                             return;
                         } else {
                             // The analytical section failed and said so on the

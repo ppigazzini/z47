@@ -481,13 +481,13 @@ void displayBugScreen(const char *message) {
   lastErrorCode = ERROR_OUT_OF_RANGE;
 }
 
-void reallocateRegister(calcRegister_t reg, uint32_t data_type, uint16_t data_size_without_data_len_blocks, uint32_t tag) {
+bool_t reallocateRegister(calcRegister_t reg, uint32_t data_type, uint16_t data_size_without_data_len_blocks, uint32_t tag) {
   registerHeader_t *header = mutableRegisterHeader(reg);
   uint16_t size_in_blocks = data_size_without_data_len_blocks;
   void *ptr = NULL;
 
   if(header == NULL) {
-    return;
+    return false;
   }
 
   freeRegisterData(reg);
@@ -504,11 +504,12 @@ void reallocateRegister(calcRegister_t reg, uint32_t data_type, uint16_t data_si
     ptr = allocC47Blocks(size_in_blocks);
     if(ptr == NULL) {
       lastErrorCode = ERROR_RAM_FULL;
-      return;
+      return false;
     }
     setRegisterDataPointer(reg, ptr);
     memset(ptr, 0, TO_BYTES(size_in_blocks));
   }
+  return true;
 }
 
 // roundReal34ResultToSignificantDigits is exported by the stack-result owner in

@@ -1,4 +1,6 @@
-This directory contains auto-generated files that should be included in the
-Codeblocks project. These files are not used by the CMake build which will
-use auto-generated files instead, but after generation they are copied here
-(with the exception of `version.h`).
+`make sim` and `make simr47` copy the generated sources here, for tools outside the meson build. The meson build itself does not look in this directory: it
+compiles the files it generates in its own build directory.
+
+`src/generateTests/constantsCheck.py` writes its report, `constantsVerification.txt`, here during a testSuite build.
+
+Git ignores every untracked file here. The report is the only tracked file and is is committed only by a project owner at a release tag.

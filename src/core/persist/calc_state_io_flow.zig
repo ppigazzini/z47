@@ -25,6 +25,8 @@ const SCRUPD_AUTO: u8 = 0x00;
 const TI_DATA_LOADED: u16 = 143;
 const ERROR_CANNOT_READ_FILE: u8 = 35;
 const ERROR_INVALID_CORRUPTED_DATA: u8 = 18;
+const ERROR_RAM_FULL: u8 = 11;
+const TI_NO_INFO: u8 = 0;
 const ERR_REGISTER_LINE: i16 = 102; // REGISTER_Z
 const REGISTER_X_LINE: i16 = 100;
 const CONFIRMED: u16 = 9877; // items.h: confirmation for RESET, CLPALL, CLALL
@@ -91,13 +93,18 @@ pub fn doLoad(load_mode: u16, s: u16, n: u16, d: u16, load_type: u16) void {
 
     const header = header_owned.parseSaveFileRevision();
     const enable_load = policy_owned.canEnableLoad(load_mode, load_type, header.loaded_version);
+    // An entry that did not fit the pool is skipped. The RAM full it raised is
+    // reported once the load ends, since NAMED_VARIABLES clears lastErrorCode.
+    var ramFull = false;
     if (enable_load) {
         const allow_user_keys = runtime.allowUserKeys(header.saved_calc_model);
         // restoreOneSection() only returns false at END_CONFIG, which a file that
         // stops short -- truncated, or with a count that swallowed its last section --
         // never reaches: every further call then reads an empty section name, matches
         // nothing and returns true. Loop on ioEof() as well, as doLoadDataFile() does.
-        while (runtime.ioEof() == 0 and runtime.restoreOneSection(load_mode, s, n, d, allow_user_keys)) {}
+        while (runtime.ioEof() == 0 and runtime.restoreOneSection(load_mode, s, n, d, allow_user_keys)) {
+            ramFull = ramFull or runtime.lastErrorCode == ERROR_RAM_FULL;
+        }
 
         // Menu items renumbered into one block: move the stored menu links. This
         // covers LOADR and LOADV too, which restore a Conf register.
@@ -117,6 +124,9 @@ pub fn doLoad(load_mode: u16, s: u16, n: u16, d: u16, load_type: u16) void {
 
     runtime.lastErrorCode = runtime.ERROR_NONE;
     runtime.previousErrorCode = runtime.lastErrorCode;
+    if (ramFull) {
+        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
+    }
 
     // The PROGRAMS section is applied in place, so a file claiming a label name longer than MAX_LABEL_NAME_LENGTH leaves nothing to roll back to.
     // Clear the program area to an empty .END. and report the file as corrupt. fnClPAll also removes all XEQ key assignments, the right scope once every label is gone.
@@ -130,6 +140,9 @@ pub fn doLoad(load_mode: u16, s: u16, n: u16, d: u16, load_type: u16) void {
     runtime.closeFile();
     runtime.restartPostLoadTimers();
     policy_owned.setPostLoadTemporaryInformation(load_mode, load_type, header.loaded_version);
+    if (runtime.lastErrorCode != runtime.ERROR_NONE) {
+        runtime.temporaryInformation = TI_NO_INFO; // the error is displayed instead of the confirmation
+    }
     runtime.cachedDynamicMenu = 0;
 }
 
@@ -201,7 +214,7 @@ pub fn doLoadDataFile(load_mode: u16, s: u16, n: u16, d: u16) void {
 
     codec.dataFileMode = false;
     ioFileClose();
-    temporaryInformation = TI_DATA_LOADED;
+    temporaryInformation = if (runtime.lastErrorCode == runtime.ERROR_NONE) @as(u8, TI_DATA_LOADED) else TI_NO_INFO;
 
     screenUpdatingMode = SCRUPD_AUTO;
     refreshScreen(2999);

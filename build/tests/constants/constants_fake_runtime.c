@@ -65,12 +65,13 @@ void liftStack(void) {
   snapshot.lift_stack_calls++;
 }
 
-void reallocateRegister(calcRegister_t regist, uint32_t dataType, uint16_t dataSizeWithoutDataLenBlocks, uint32_t tag) {
+bool_t reallocateRegister(calcRegister_t regist, uint32_t dataType, uint16_t dataSizeWithoutDataLenBlocks, uint32_t tag) {
   snapshot.reallocate_register_calls++;
   snapshot.reallocate_register_reg = regist;
   snapshot.reallocate_register_data_type = dataType;
   snapshot.reallocate_register_data_size_without_data_len_blocks = dataSizeWithoutDataLenBlocks;
   snapshot.reallocate_register_tag = tag;
+  return true;
 }
 
 void realToReal34(const real_t *source, real34_t *destination) {

@@ -53,6 +53,7 @@ const flip_flags = [_]u16{
     runtime.FLAG_CPXRES,
     runtime.FLAG_SPCRES,
     runtime.FLAG_ERPN,
+    runtime.FLAG_TOPFX,
     runtime.FLAG_M_ALL,
     runtime.FLAG_CARRY,
     runtime.FLAG_OVERFLOW,

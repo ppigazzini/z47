@@ -115,9 +115,9 @@ pub const Item = extern struct {
 pub const RegisterHeaderBits = packed struct(u32) {
     pointerToRegisterData: u16,
     dataType: u4,
-    tag: u5,
+    tag: u9,
     readOnly: u1,
-    notUsed: u6,
+    notUsed: u2,
 };
 
 /// Register header (registerHeader_t, typeDefinitions.h): a C union of the raw
@@ -552,7 +552,8 @@ comptime {
     std.debug.assert(@sizeOf(RegisterHeader) == 4);
     std.debug.assert(@alignOf(RegisterHeader) == 4);
     std.debug.assert(@bitOffsetOf(RegisterHeaderBits, "dataType") == 16);
-    std.debug.assert(@bitOffsetOf(RegisterHeaderBits, "readOnly") == 25);
+    std.debug.assert(@bitOffsetOf(RegisterHeaderBits, "tag") == 20);
+    std.debug.assert(@bitOffsetOf(RegisterHeaderBits, "readOnly") == 29);
     // printerState_t's two enum fields follow the target's C enum width, so the
     // whole struct has two shapes. Assert both exactly rather than relaxing to
     // the loosest one -- this block is the seam that catches a forked layout.
@@ -721,6 +722,12 @@ pub const pcg32 = @import("pcg32.zig");
 // last, numeric-template validation, code-point<->UTF-8). Reachable as
 // `abi.c47_string.*`; frontier_char_string delegates its stringFuncs primitives here.
 pub const c47_string = @import("c47_string.zig");
+
+// Shared std-only register tag arithmetic: the angle, Polar and expFixed fields
+// of registerHeader_t.tag and the registers.h macros over them. Reachable as
+// `abi.register_tag.*`; every owner that expands one of those macros reads and
+// writes the tag through these.
+pub const register_tag = @import("register_tag.zig");
 
 /// Byte-exact C `%.<precision>e` written to a raw C pointer + trailing NUL, like
 /// `sprintf(dst, "%.Pe", value)`. The [*c] dest wrappers live here (beside

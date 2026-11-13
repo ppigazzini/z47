@@ -34,7 +34,7 @@ pub export fn copySourceRegisterToDestRegister(source_register: runtime.calcRegi
     reallocate_owned.copySourceRegisterToDestRegister(source_register, dest_register);
 }
 
-pub export fn reallocateRegister(reg: runtime.calcRegister_t, data_type: u32, data_size_without_data_len_blocks: u16, tag: u32) void {
+pub export fn reallocateRegister(reg: runtime.calcRegister_t, data_type: u32, data_size_without_data_len_blocks: u16, tag: u32) bool {
     // registers.c tests nothing here, and a register id in neither the global,
     // named, reserved nor local band takes it through getRegisterDataType and
     // freeRegisterData with an index computed before the array it addresses -- it
@@ -45,12 +45,13 @@ pub export fn reallocateRegister(reg: runtime.calcRegister_t, data_type: u32, da
     // Doing nothing is what the caller then observes, error status included: the
     // refusal raises no error code, so lastErrorCode reads exactly what it read in
     // c43, and every id the four bands do contain takes the upstream path
-    // unchanged.
+    // unchanged. The answer is false, as for a refused allocation: nothing was
+    // written, so a caller must not write into the register.
     if (!isValidRegisterId(reg, runtime.LAST_GLOBAL_REGISTER, runtime.FIRST_NAMED_VARIABLE, runtime.LAST_RESERVED_VARIABLE, runtime.FIRST_LOCAL_REGISTER, runtime.LAST_LOCAL_REGISTER)) {
-        return;
+        return false;
     }
 
-    reallocate_owned.reallocateRegister(reg, data_type, data_size_without_data_len_blocks, tag);
+    return reallocate_owned.reallocateRegister(reg, data_type, data_size_without_data_len_blocks, tag);
 }
 
 pub export fn allocateLocalRegisters(number_of_registers_to_allocate: u16) void {

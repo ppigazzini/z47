@@ -516,7 +516,8 @@ pub export fn addStriShoI() callconv(.c) void {
 
 /// Y(string) + X(real34) ==> X(string)
 pub export fn addStriReal() callconv(.c) void {
-    if (runtime.getSystemFlag(FLAG_FRACT)) {
+    // A D.MS angle keeps its degrees, minutes and seconds.
+    if (runtime.getSystemFlag(FLAG_FRACT) and !(runtime.option_drg_cfg and runtime.getRegisterAngularMode(runtime.REGISTER_X) == runtime.amDMS)) {
         runtime.fractionToDisplayString(runtime.REGISTER_X, runtime.tmpString);
     } else {
         runtime.real34ToDisplayString(
@@ -548,6 +549,7 @@ pub export fn addStriCplx() callconv(.c) void {
         FULLIRFRAC,
         @intCast(runtime.currentAngularMode),
         runtime.getSystemFlag(FLAG_POLAR),
+        abi.register_tag.EXP_STEP_OFF,
     );
     trimLeadingSpace(runtime.tmpString);
     addString(runtime.tmpString);

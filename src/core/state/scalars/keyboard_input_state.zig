@@ -12,6 +12,11 @@ pub export var FN_state: u8 = 0; // function-key state machine
 pub export var LongPressM: u8 = 0; // long-press state of the M key
 pub export var DM_Cycling: u8 = 0; // date/mode key-cycling state
 pub export var DRG_Cycling: u8 = 0; // degree/radian/grad key-cycling state
+// The DRG menu: bit n set for each angularMode_t n that DRG steps through, then
+// DRG_NIM_BIT (5) and DRG_AUTO_ADM_BIT (6). RESET loads DRG_CONFIG_DEFAULT.
+// OPTION_DRG_CFG gates every reader and its persistence; the byte itself is
+// defined on every build.
+pub export var drgConfig: u8 = 0;
 pub export var Input_Default: u8 = 0; // default input mode
 pub export var alphaCase: u8 = 0; // alpha entry case (upper/lower)
 pub export var catalog: i16 = 0; // active catalog index

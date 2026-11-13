@@ -1,5 +1,30 @@
 C47__ManualFont change log:
 
+11. \menuArrows, \catArrows
+- Added 4 glyphs not existing in C47__StandardFont
+  - small black up (U+25b4) and down (U+25be) triangles, for the menus arrow navigation
+  - small white up (U+25b5) and down (U+25bf) triangles, for the catalogs arrow navigation
+
+10. \mflag, \cb, \rb, \cbflag, \rbflag, \rbcmd
+- Added 2 "invented" glyphs, built by hand
+  - undefined check box (U+2680)
+  - undefined radio button (U+2681)
+
+9. LM Math for small greek letters
+- removed small greek letters from CMMI10
+
+8. Doc(manual): Higher complex i and j
+- increased height of complex i and j (from CMMIB10)
+
+7. Docs(manual): Simplify C47__xxxFonts with fallbacks
+- Remove all glyphs from LMSans10-Regular, except:
+  - °
+  - built from parts:
+    - y under root (U+0232)
+    - superscript x (U+02e3)
+    - x under root (U+037f)
+    - squareroot, cuberoot and xthroot
+
 6. Docs(manual): The 2 new fonts "cleaned"
 - Ensured integer coordinates and appropriate extremas
 - No new glyphs

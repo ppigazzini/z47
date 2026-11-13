@@ -66,19 +66,22 @@ fn readSelection(geometry: Geometry) Selection {
 }
 
 fn computeScrollRow(rows: i16, selected_row: i16, current_scroll_row: i16) i16 {
+    var scroll_row = current_scroll_row;
     if (selected_row == 0 or rows <= 5) {
-        return 0;
+        scroll_row = 0;
+    } else if (selected_row == rows - 1) {
+        scroll_row = selected_row - 4;
+    } else if (selected_row < current_scroll_row + 1) {
+        scroll_row = selected_row - 1;
+    } else if (selected_row > current_scroll_row + 3) {
+        scroll_row = selected_row - 3;
     }
-    if (selected_row == rows - 1) {
-        return selected_row - 4;
+    // The five rows shown from the offset end on the last row when DELR has
+    // shortened the matrix.
+    if (rows > 5 and scroll_row > rows - 5) {
+        scroll_row = rows - 5;
     }
-    if (selected_row < current_scroll_row + 1) {
-        return selected_row - 1;
-    }
-    if (selected_row > current_scroll_row + 3) {
-        return selected_row - 3;
-    }
-    return current_scroll_row;
+    return scroll_row;
 }
 
 fn updateScrollRow(geometry: Geometry, selection: Selection) void {

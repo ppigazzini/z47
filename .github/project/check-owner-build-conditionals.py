@@ -116,6 +116,8 @@ ALLOWED: dict[str, str] = {
     "option_lp_dp_timing": "OPTION_LP_DP_TIMING",
     "option_atext": "OPTION_ATEXT",
     "option_atext_fonts": "OPTION_ATEXT_FONTS",
+    "option_drg_cfg": "OPTION_DRG_CFG",
+    "option_eex_prefix": "OPTION_EEX_PREFIX",
     "library_fn_base": "the DMCP ROM function-table base, which moves with the XIP packaging",
     "wp34s_mod_small_buffers": "WP34S_MOD_SMALL_BUFFERS",
     "is_testsuite_build": "TESTSUITE_BUILD -- c43 uses it itself (random.c seeds 0xDeadBeef under it)",

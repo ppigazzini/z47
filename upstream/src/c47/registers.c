@@ -2235,7 +2235,7 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
 
 
 
-void reallocateRegister(calcRegister_t regist, uint32_t dataType, uint16_t dataSizeWithoutDataLenBlocks, uint32_t tag) { // dataSize without data length in blocks, this includes the trailing 0 for strings
+bool_t reallocateRegister(calcRegister_t regist, uint32_t dataType, uint16_t dataSizeWithoutDataLenBlocks, uint32_t tag) { // dataSize without data length in blocks, this includes the trailing 0 for strings
   switch(dataType) {
     case dtComplex34:       dataSizeWithoutDataLenBlocks = COMPLEX34_SIZE_IN_BLOCKS;     break;
 
@@ -2273,7 +2273,7 @@ void reallocateRegister(calcRegister_t regist, uint32_t dataType, uint16_t dataS
         sprintf(errorMessage, "reserved variable %s", allReservedVariables[regist - FIRST_RESERVED_VARIABLE].reservedVariableName + 1);
         moreInfoOnError("In function reallocateRegister:", errorMessage, "keeps the data type it was declared with!", NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-      return;
+      return false;
     }
 
     if(!isMemoryBlockAvailable(dataSizeWithDataLenBlocks, 2, 0.1f)) {
@@ -2282,7 +2282,7 @@ void reallocateRegister(calcRegister_t regist, uint32_t dataType, uint16_t dataS
         fflush(stdout);
       #endif // PC_BUILD
       displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
-      return;
+      return false;
     }
     freeRegisterData(regist);
     setRegisterDataPointer(regist, allocC47Blocks(dataSizeWithDataLenBlocks));
@@ -2307,6 +2307,7 @@ void reallocateRegister(calcRegister_t regist, uint32_t dataType, uint16_t dataS
 
   //sprintf(tmpString, "reallocateRegister %d to %s tag=%u (%u bytes including dataLen) done", regist, getDataTypeName(dataType, false, false), tag, dataSizeWithDataLenBlocks);
   //memoryDump(tmpString);
+  return true;
 }
 
 
@@ -2339,7 +2340,10 @@ void fnToReal(uint16_t unusedButMandatoryParameter) {
 
     case dtReal34: {
       copySourceRegisterToDestRegister(REGISTER_X, REGISTER_L);
-      if(getRegisterAngularMode(REGISTER_X) != amNone) {
+      if(getRegisterExpFixed(REGISTER_X)) {
+        clearRegisterExpFixed(REGISTER_X);                                        // .d clears the fixed-exponent nibble; the angle bits and the Polar bit are kept
+      }
+      else if(getRegisterAngularMode(REGISTER_X) != amNone) {
         if(getRegisterAngularMode(REGISTER_X) == amDMS) {
           temporaryInformation = TI_FROM_DMS;
         }

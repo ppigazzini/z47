@@ -20,6 +20,7 @@ const dm42_pkg_xip = build_options.dm42_pkg_xip;
 /// constraint", ~5Kb of flash).
 pub const trig_result_cache = build_options.trig_result_cache;
 pub const option_xfn_1000 = build_options.option_xfn_1000;
+pub const option_drg_cfg = build_options.option_drg_cfg;
 // Each of these empties the matching command bodies upstream, so a build
 // without one answers nothing rather than computing on a stubbed helper.
 pub const option_elliptic = build_options.option_elliptic;
@@ -1291,7 +1292,7 @@ pub extern fn complex34MatrixToDisplayString(regist: calcRegister_t, display_str
 pub extern fn shortIntegerToDisplayString(regist: calcRegister_t, display_string: [*c]u8, determine_font: bool, base_override: u8, max_width: i16) void;
 pub extern fn fractionToDisplayString(regist: calcRegister_t, display_string: [*c]u8) void;
 pub extern fn real34ToDisplayString(real34: *align(1) const real34_t, tag: u32, display_string: [*c]u8, font: *const font_t, max_width: i16, display_has_n_digits: i16, limit_exponent: bool, front_space: bool, limit_irfrac: c_int) void;
-pub extern fn complex34ToDisplayString(complex34: *align(1) const complex34_t, display_string: [*c]u8, font: *const font_t, max_width: i16, display_has_n_digits: i16, limit_exponent: bool, front_space: bool, limit_irfrac: c_int, tag_angle: u16, tag_polar: bool) void;
+pub extern fn complex34ToDisplayString(complex34: *align(1) const complex34_t, display_string: [*c]u8, font: *const font_t, max_width: i16, display_has_n_digits: i16, limit_exponent: bool, front_space: bool, limit_irfrac: c_int, tag_angle: u16, tag_polar: bool, exp_step: i16) void;
 
 pub fn registerShortIntegerPtr(reg: calcRegister_t) *align(1) u64 {
     return abi.registerShortInteger(reg);
@@ -1353,18 +1354,11 @@ pub fn getComplexRegisterPolarMode(reg: calcRegister_t) angularMode_t {
 }
 
 pub fn setComplexRegisterAngularMode(reg: calcRegister_t, mode: angularMode_t) void {
-    setRegisterTag(reg, (@as(u32, @intCast(mode)) & amAngleMask) | (getRegisterTag(reg) & @as(u32, @intCast(amPolar))));
+    setRegisterTag(reg, abi.register_tag.complexWithAngularMode(getRegisterTag(reg), @intCast(mode)));
 }
 
 pub fn setComplexRegisterPolarMode(reg: calcRegister_t, mode: angularMode_t) void {
-    const polar_mask: u32 = @intCast(amPolar);
-    const mode_bits: u32 = @intCast(mode);
-    const base_tag = if ((mode_bits & polar_mask) != 0)
-        getRegisterTag(reg) & amAngleMask
-    else
-        @as(u32, @intCast(amNone));
-
-    setRegisterTag(reg, base_tag | (mode_bits & polar_mask));
+    setRegisterTag(reg, abi.register_tag.complexWithPolarMode(getRegisterTag(reg), @intCast(mode)));
 }
 
 // registers.c's angle tests.

@@ -655,7 +655,7 @@ fn decodeLiteral(literalAddress_arg: [*c]u8) void {
             var complexLiteral: complex34_t = undefined;
             _ = frontier_char_string.xcopy(@ptrCast(&complexLiteral.real), @ptrCast(literalAddress), REAL34_SIZE_IN_BYTES);
             _ = frontier_char_string.xcopy(@ptrCast(&complexLiteral.imag), @ptrCast(literalAddress + REAL34_SIZE_IN_BYTES), REAL34_SIZE_IN_BYTES);
-            frontier_display.complex34ToDisplayString(&complexLiteral, tmpString, &standardFont, 9999, 34, @intFromBool(false), @intFromBool(false), NOIRFRAC, @intCast(@as(u32, @bitCast(currentAngularMode))), @intFromBool(getSystemFlag(FLAG_POLAR)));
+            frontier_display.complex34ToDisplayString(&complexLiteral, tmpString, &standardFont, 9999, 34, @intFromBool(false), @intFromBool(false), NOIRFRAC, @intCast(@as(u32, @bitCast(currentAngularMode))), @intFromBool(getSystemFlag(FLAG_POLAR)), abi.register_tag.EXP_STEP_OFF);
         },
 
         STRING_SHORT_INTEGER => {

@@ -56,14 +56,16 @@ _Static_assert(offsetof(reservedVariableHeader_t, reservedVariableName) == 4, "n
 // packing against these, proving the hand-written packed struct is bit-identical
 // to the C bitfield on the target ABI. Indices match the Zig test's field lists.
 uint32_t z47_reg_header_field_mask(int field) {
+  // ~0u stored into an unsigned bitfield keeps exactly the field's declared width,
+  // so the mask follows typeDefinitions.h rather than a copy of its widths.
   registerHeader_t h;
   h.descriptor = 0;
   switch (field) {
-    case 0: h.pointerToRegisterData = 0xFFFFu; break;
-    case 1: h.dataType = 0xFu; break;
-    case 2: h.tag = 0x1Fu; break;
-    case 3: h.readOnly = 0x1u; break;
-    case 4: h.notUsed = 0x3Fu; break;
+    case 0: h.pointerToRegisterData = ~0u; break;
+    case 1: h.dataType = ~0u; break;
+    case 2: h.tag = ~0u; break;
+    case 3: h.readOnly = ~0u; break;
+    case 4: h.notUsed = ~0u; break;
   }
   return h.descriptor;
 }

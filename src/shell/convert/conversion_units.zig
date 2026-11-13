@@ -871,17 +871,29 @@ pub export fn isOneOfAConvertPair(x: u16, itemNr: i16, oddNrPartner: *i16) callc
 
 pub export fn runConversionToSI(itemNr: i16) callconv(.c) void {
     const entry = conversion_pairs.findPair(itemNr) orelse return; // not a conversion item; nothing to do
+    // 100 + exponent must stay below fnMultiplySI's base-2 span and not go negative.
+    if (entry.exponent < -100 or entry.exponent > 99) {
+        frontier_error.displayBugScreen("In function runConversionToSI: conversion exponent out of range");
+        return;
+    }
     if (entry.unity != ITM_NULL) {
         frontier_items.runFunction(entry.unity); // execute a conversion
     }
     if (entry.exponent != 0) {
+        frontier_addons.convertIntRegisterToReal(REGISTER_X); // a conversion acts on a real, with no out-of-range refusal
         frontier_addons.fnMultiplySI(@intCast(@as(i32, 100) + entry.exponent)); // scale by 10^exponent
     }
 }
 
 pub export fn runConversionFromSI(itemNr: i16) callconv(.c) void {
     const entry = conversion_pairs.findPair(itemNr) orelse return;
+    // 100 - exponent must stay below fnMultiplySI's base-2 span and not go negative.
+    if (entry.exponent < -99 or entry.exponent > 100) {
+        frontier_error.displayBugScreen("In function runConversionFromSI: conversion exponent out of range");
+        return;
+    }
     if (entry.exponent != 0) {
+        frontier_addons.convertIntRegisterToReal(REGISTER_X); // a conversion acts on a real, with no out-of-range refusal
         frontier_addons.fnMultiplySI(@intCast(@as(i32, 100) - entry.exponent)); // undo the exponent
     }
     if (entry.unity != ITM_NULL) {

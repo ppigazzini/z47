@@ -52,6 +52,7 @@ const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 const ir_printing: bool = frontier_build_options.ir_printing;
 const option_vector: bool = frontier_build_options.option_vector;
 const option_mx_show: bool = frontier_build_options.option_mx_show;
+const option_drg_cfg: bool = frontier_build_options.option_drg_cfg;
 
 // ---------------------------------------------------------------------------
 // Types (matching the C build's layout, mirrored from sibling owners)
@@ -63,6 +64,8 @@ const angularMode_t = c_int;
 const DECNUMUNITS = 25;
 const abi = @import("abi"); // shared ABI bindings
 const frontier_addons = @import("../extensions/addons.zig");
+const frontier_bufferize = @import("bufferize.zig");
+const register_tag = abi.register_tag;
 const frontier_char_string = @import("text/char_string.zig");
 const numeral_grouping = @import("../../core/text/numeral_grouping.zig"); // std-only digit-group separator math
 const fraction_encode = @import("../convert/fraction_encode.zig"); // std-only fraction glyph encoder
@@ -117,6 +120,7 @@ const DF_SF: u8 = 4;
 const DF_UN: u8 = 5;
 
 const CM_PEM: u8 = 3;
+const CM_NIM: u8 = 2;
 
 const CF_OFF: u8 = 0;
 const CF_NORMAL: u8 = 1;
@@ -158,6 +162,7 @@ const SHOWLineMax: u8 = @intCast(TMP_STR_LENGTH / @as(usize, @intCast(SHOWLineSi
 
 const REGISTER_X: calcRegister_t = 100;
 const REGISTER_T: calcRegister_t = 103;
+const REGISTER_D: calcRegister_t = 107;
 const REGISTER_Z: calcRegister_t = 102;
 const FIRST_GLOBAL_REGISTER: calcRegister_t = 0;
 const LAST_SPARE_REGISTER: calcRegister_t = 125;
@@ -241,6 +246,7 @@ const RM_FLOOR: u8 = 6;
 
 // System flags (defines.h hex codes).
 const FLAG_SIGZEROS: c_int = 0x806a;
+const FLAG_SSIZE8: c_int = 0x8018;
 const FLAG_TDM24: c_int = 0x8000;
 const FLAG_DMY: c_int = 0xc002;
 const FLAG_MDY: c_int = 0xc003;
@@ -444,6 +450,8 @@ extern fn registerFMAOutputString(regist: calcRegister_t, prefix: [*c]const u8, 
 extern fn linkToRealMatrixRegister(regist: calcRegister_t, matrix: *real34Matrix_t) void;
 extern fn linkToComplexMatrixRegister(regist: calcRegister_t, matrix: *complex34Matrix_t) void;
 extern fn moreInfoOnError(m1: [*c]const u8, m2: [*c]const u8, m3: [*c]const u8, m4: [*c]const u8) void;
+extern fn fnCln(unusedButMandatoryParameter: u16) void;
+extern fn realRectangularToPolar(z: *const abi.Complex, magnitude: *real_t, theta: *real_t, ctx: *realContext_t) void;
 
 // IR_PRINTING-only print helpers (only referenced when ir_printing is on).
 const printViewAview = if (ir_printing) @extern(*const fn (func: u16, regist: u16) callconv(.c) void, .{ .name = "printViewAview" }) else {};
@@ -982,8 +990,116 @@ pub export fn subNumberToDisplayString(subNumber_in: i32, displayString_in: [*c]
 // ===========================================================================
 // real34ToDisplayString (public wrapper: shrink digits until it fits maxWidth)
 // ===========================================================================
-pub export fn real34ToDisplayString(real34: *align(1) const real34_t, tag: u32, displayString: [*c]u8, font: *const font_t, maxWidth: i16, displayHasNDigits_in: i16, limitExponent: bool_t, frontSpace: bool_t, limitIrfrac: irfracOption_t) callconv(.c) void {
+// Set while a register with the fixed-exponent nibble is rendered, so the ENG
+// display is forced, and the shown exponent it is forced to: three times the
+// signed step the tag holds.
+var engFixedActive: bool = false;
+var engFixedExp: i32 = 0;
+
+// Steps X's fixed display exponent by three, keeping the stored value. The first
+// press seeds the step at the natural ENG exponent and sets the tag; when X
+// already sits on a multiple of three the first press also steps one in the key's
+// direction. Later presses step the signed tag step. direction +1 raises the shown
+// exponent (<-ENG), -1 lowers it (ENG->). A long or short integer X is converted
+// to a real first, and refused with an error when that would lose digits.
+fn engExpShift(direction: i16) void {
+    if (calcMode == CM_NIM) {
+        frontier_bufferize.closeNim(); // finish the entry first, then act on X as in normal mode
+    }
+    const isCplx = getRegisterDataType(REGISTER_X) == dtComplex34;
+
+    if (getRegisterDataType(REGISTER_X) == dtLongInteger or getRegisterDataType(REGISTER_X) == dtShortInteger) {
+        if (frontier_addons.convertIntRegisterToRealOrError(REGISTER_X) == 0) {
+            return; // X is out of range for the conversion: the error is shown and X is unchanged
+        }
+    }
+
+    if (getRegisterDataType(REGISTER_X) != dtReal34 and !isCplx) {
+        return; // only a real scalar or a complex takes the fixed exponent
+    }
+    if (!isCplx and (abi.real34IsSpecial(reg34(REGISTER_X)) or real34IsZero(reg34(REGISTER_X)))) {
+        return; // a special or zero real has no exponent to fix
+    }
+    // The keys write only this per-register tag, never the global display format.
+    const bitSet = register_tag.expFixed(getRegisterTag(REGISTER_X));
+    var step: i16 = undefined;
+    const oldTag = getRegisterTag(REGISTER_X);
+    const savedUpd = updateDisplayValueX;
+    var fitStr: [128]u8 = undefined;
+    // The fixed-exponent register shows the TE prefix on the left, so a step is
+    // measured against the line less that width.
+    const teWidth: i16 = @intCast(@as(i32, frontier_char_string.stringWidth("TE", &standardFont, true, true)) + frontier_screen.noShiftOffset);
+    if (bitSet) {
+        step = register_tag.expStep(getRegisterTag(REGISTER_X)) + direction; // already on the ladder: step the signed tag step
+    } else {
+        var x: real_t = undefined;
+        if (isCplx and getComplexRegisterPolarMode(REGISTER_X) == amPolar) {
+            // A polar complex shows its magnitude, so the arrows seed from the
+            // magnitude, not the rectangular real part.
+            var z: abi.Complex = undefined;
+            var arg: real_t = undefined;
+            real34ToReal(varReal34(regComplex34(REGISTER_X)), &z.Real);
+            real34ToReal(varImag34(regComplex34(REGISTER_X)), &z.Imag);
+            realRectangularToPolar(&z, &x, &arg, &ctxtReal39);
+        } else {
+            real34ToReal(reg34(REGISTER_X), &x);
+        }
+        const e = realGetExponent(&x); // the adjusted base-ten exponent of the leading digit
+        step = @intCast(@divTrunc(e - modulo(e, 3), 3)); // the first press seeds the scaler to the natural ENG exponent
+        if (modulo(e, 3) == 0) {
+            step += direction; // already on a triplen exponent: step on to the next boundary in the key's direction
+        }
+    }
+    // The usable step range is -7..+7; -8 (nibble 0) is the off sentinel and is
+    // never set by stepping.
+    if (step >= -7 and step <= 7) {
+        // Set the nibble, then render and measure the real width of the fixed display.
+        setRegisterTag(REGISTER_X, register_tag.withExpStep(getRegisterTag(REGISTER_X), step));
+        updateDisplayValueX = 0;
+        if (isCplx) {
+            complex34ToDisplayString(regComplex34(REGISTER_X), &fitStr, &numericFont, SCREEN_WIDTH - teWidth, NUMBER_OF_DISPLAY_DIGITS, LIMITEXP, FRONTSPACE, NOIRFRAC, @intCast(getComplexRegisterAngularMode(REGISTER_X)), @intFromBool(getComplexRegisterPolarMode(REGISTER_X) == amPolar), step);
+        } else {
+            real34ToDisplayString(reg34(REGISTER_X), getRegisterTag(REGISTER_X), &fitStr, &numericFont, SCREEN_WIDTH - teWidth, NUMBER_OF_DISPLAY_DIGITS, LIMITEXP, FRONTSPACE, NOIRFRAC);
+        }
+        updateDisplayValueX = savedUpd;
+        if (frontier_char_string.stringWidth(&fitStr, &numericFont, false, true) > SCREEN_WIDTH - teWidth) {
+            setRegisterTag(REGISTER_X, oldTag); // too wide for the line beside the TE prefix: refuse the step, the tag as it was
+        }
+    }
+    frontier_radio_button_catalog.fnRefreshState(); // the integer conversion, and the step when it was kept
+}
+
+// CLENG: clears the fixed display exponent of every stack register, keeping their
+// angle and Polar bits.
+pub export fn fnEngExpClear(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
+    if (calcMode == CM_NIM) {
+        fnCln(0);
+    }
+    const top: calcRegister_t = if (getSystemFlag(FLAG_SSIZE8) != 0) REGISTER_D else REGISTER_T;
+    var regist: calcRegister_t = REGISTER_X;
+    while (regist <= top) : (regist += 1) {
+        setRegisterTag(regist, register_tag.withoutExpFixed(getRegisterTag(regist)));
+    }
+}
+
+// <-ENG: steps X's shown exponent up by three, moving the radix left; the stored
+// value is unchanged.
+pub export fn fnEngExpLeft(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
+    engExpShift(1);
+}
+
+// ENG->: steps X's shown exponent down by three, moving the radix right; the
+// stored value is unchanged.
+pub export fn fnEngExpRight(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
+    engExpShift(-1);
+}
+
+pub export fn real34ToDisplayString(real34: *align(1) const real34_t, tag_in: u32, displayString: [*c]u8, font: *const font_t, maxWidth: i16, displayHasNDigits_in: i16, limitExponent: bool_t, frontSpace: bool_t, limitIrfrac: irfracOption_t) callconv(.c) void {
     var displayHasNDigits = displayHasNDigits_in;
+    var tag = tag_in;
     const savedDisplayFormatDigits = displayFormatDigits;
     const savedDisplayFormat = displayFormat;
     const ovrENG: bool = getSystemFlag(FLAG_ENGOVR) != 0;
@@ -991,6 +1107,21 @@ pub export fn real34ToDisplayString(real34: *align(1) const real34_t, tag: u32, 
     if (calcMode == CM_PEM) {
         displayFormat = DF_ALL;
         clearSystemFlag(@intCast(FLAG_ENGOVR));
+    }
+
+    const expFixedFlag = register_tag.expFixed(tag);
+    engFixedActive = expFixedFlag and !abi.real34IsSpecial(real34) and !real34IsZero(real34);
+    if (expFixedFlag) {
+        engFixedExp = @as(i32, register_tag.expStep(tag)) * 3;
+        tag = amNone; // a fixed real has no angle: the dispatch and the scalar path read it as amNone
+    }
+    tag = register_tag.withoutExpFixed(tag); // the angle dispatch below reads the angle bits alone
+
+    // The fixed view ignores the global format: ENG, or UNIT when the global is
+    // UNIT, at max(n, 12) digits, 19 under ALL.
+    if (engFixedActive and calcMode != CM_PEM) {
+        displayFormatDigits = if (displayFormat == DF_ALL) 19 else @max(displayFormatDigits, 12);
+        displayFormat = if (displayFormat == DF_UN) DF_UN else DF_ENG;
     }
 
     if (displayFormat == DF_SF and checkHP()) {
@@ -1026,6 +1157,7 @@ pub export fn real34ToDisplayString(real34: *align(1) const real34_t, tag: u32, 
     if (ovrENG) {
         setSystemFlag(@intCast(FLAG_ENGOVR));
     }
+    engFixedActive = false;
 }
 
 const isComplex: bool_t = 1;
@@ -1122,14 +1254,8 @@ pub export fn angle34ToDisplayString2(angle34: *align(1) const real34_t, modeIn:
         // remove the '.' radix indicating it is a real
         frontier_char_string.stripTrailingRadix(&degStr);
 
-        const radix = RADIX34_MARK_STRING();
         var tt: [4]u8 = undefined;
-        if (radix[1] != 1) {
-            _ = strcpy(&tt, radix);
-        } else {
-            tt[0] = radix[0];
-            tt[1] = 0;
-        }
+        radixMarkToString(&tt);
 
         abi.fmtCStr(displayString, "{s}{s}" ++ STD_DEGREE ++ "{s}{d}" ++ STD_RIGHT_SINGLE_QUOTE ++ "{s}{d}{s}{d:0>2}" ++ STD_RIGHT_DOUBLE_QUOTE, .{ @as([*:0]const u8, @as([*c]const u8, if (sign != 0) "-" else " ")), @as([*:0]const u8, @as([*c]const u8, &degStr)), @as([*:0]const u8, @as([*c]const u8, if (m < 10) " " else "")), m, @as([*:0]const u8, @as([*c]const u8, if (s < 10) " " else "")), s, @as([*:0]const u8, @as([*c]const u8, &tt)), fs });
     } else if (mode == amMultPi) {
@@ -1138,14 +1264,8 @@ pub export fn angle34ToDisplayString2(angle34: *align(1) const real34_t, modeIn:
     } else {
         real34ToDisplayString2(angle34, displayString, displayHasNDigits, limitExponent, @intFromBool(mode == amSecond), frontSpace, isReal, limitIrfrac);
 
-        if (mode == amRadian) {
-            _ = strcat(displayString, STD_SUP_BOLD_r);
-        } else if (mode == amGrad) {
-            _ = strcat(displayString, STD_SUP_BOLD_g);
-        } else if (mode == amDegree) {
-            _ = strcat(displayString, STD_DEGREE);
-        } else if (mode == amSecond) {
-            _ = strcat(displayString, "s");
+        if (mode == amRadian or mode == amGrad or mode == amDegree or mode == amSecond) {
+            _ = strcat(displayString, angularUnitGlyph(mode));
         } else {
             _ = strcat(displayString, "?");
             _ = sprintf(errorMessage, @ptrCast(&commonBugScreenMessages[bugMsgValueFor]), "angle34ToDisplayString2", @as(c_int, mode), "mode");
@@ -1185,8 +1305,9 @@ fn irfracReplacements() [15]IrfracReplacement {
     };
 }
 
-// radix mark into tt[4]; returns nothing, the C code copies bytes then strcat.
-fn radixTT(tt: *[4]u8) void {
+// RADIX34_MARK_STRING is 2 bytes or 1; copies it into a NUL-terminated buffer the
+// callers splice.
+fn radixMarkToString(tt: *[4]u8) void {
     const radix = RADIX34_MARK_STRING();
     if (radix[1] != 1) {
         var i: usize = 0;
@@ -1198,6 +1319,16 @@ fn radixTT(tt: *[4]u8) void {
         tt[0] = radix[0];
         tt[1] = 0;
     }
+}
+
+// Every render that writes a point borrows this. The C returns int32_t, which
+// real34ToDisplayString2 narrows back into its uint8_t charIndex.
+fn appendRadixMark(displayString: [*c]u8, charIndex: i32) i32 {
+    var tt: [4]u8 = undefined;
+    displayString[@intCast(charIndex)] = 0;
+    radixMarkToString(&tt);
+    _ = strcat(displayString, &tt);
+    return charIndex + @as(i32, @intCast(strlen(&tt)));
 }
 
 /// The ALL-mode digit bounds once roundBcdAt has rounded at lastDigit and its carry reached roundedAt.
@@ -1228,6 +1359,101 @@ fn appendSeparatorRight(displayString: [*c]u8, charIndex: u8) u8 {
     const sepLen: u8 = if (sepRight[0] != STD_NOCHAR) (if (sepRight[1] != STD_NOCHAR) 2 else 1) else 0;
     _ = frontier_char_string.xcopy(displayString + charIndex, sepRight, sepLen);
     return charIndex +% sepLen;
+}
+
+// SEPARATOR_LEFT is 2 bytes, 1 byte or absent; the fixed ENG view borrows it to
+// group the integer part. Narrowed into charIndex exactly as appendSeparatorRight.
+fn appendSeparatorLeft(displayString: [*c]u8, charIndex: u8) u8 {
+    const sepLeft = SEPARATOR_LEFT();
+    const sepLen: u8 = if (sepLeft[0] != STD_NOCHAR) (if (sepLeft[1] != STD_NOCHAR) 2 else 1) else 0;
+    _ = frontier_char_string.xcopy(displayString + charIndex, sepLeft, sepLen);
+    return charIndex +% sepLen;
+}
+
+// The ENG branch of real34ToDisplayString2 for a register with a fixed exponent:
+// the rounded digits bcd[firstDigit..lastDigit] of a value whose leading digit sits
+// at `exponent` are written at engFixedExp, the integer part grouped with
+// SEPARATOR_LEFT and the fraction (leading zeros first, below one) with
+// SEPARATOR_RIGHT, then the power of ten, or the SI prefix under UNIT. The key
+// handler already refused a step too wide for the line. charIndex and valueIndex
+// are the caller's, past the sign.
+fn renderEngFixed(bcd: [*c]const u8, firstDigit: i16, lastDigit: i16, exponent: i16, flag2To10: bool, displayString: [*c]u8, charIndex_in: u8, valueIndex_in: u8) void {
+    var charIndex = charIndex_in;
+    var valueIndex = valueIndex_in;
+    const shownExp: i32 = engFixedExp;
+    const intDigits: i32 = @as(i32, exponent) - engFixedExp + 1; // digits left of the radix in the value over ten to engFixedExp
+    var pos: i32 = firstDigit;
+    if (intDigits >= 1) {
+        var d: i32 = 0;
+        while (d < intDigits) : ({
+            d += 1;
+            pos += 1;
+        }) {
+            if (d != 0 and !GROUPLEFT_DISABLED() and GROUPWIDTH_LEFT() != 0 and @rem(intDigits - d, GROUPWIDTH_LEFT()) == 0) {
+                charIndex = appendSeparatorLeft(displayString, charIndex);
+            }
+            const ch: u8 = if (pos <= lastDigit) '0' + bcd[@intCast(pos)] else '0';
+            displayString[charIndex] = ch;
+            charIndex +%= 1;
+            if (updateDisplayValueX != 0) {
+                displayValueX[valueIndex] = ch;
+                valueIndex +%= 1;
+            }
+        }
+    } else {
+        displayString[charIndex] = '0';
+        charIndex +%= 1;
+        if (updateDisplayValueX != 0) {
+            displayValueX[valueIndex] = '0';
+            valueIndex +%= 1;
+        }
+    }
+    charIndex = @truncate(@as(u32, @bitCast(appendRadixMark(displayString, charIndex))));
+    if (updateDisplayValueX != 0) {
+        displayValueX[valueIndex] = '.';
+        valueIndex +%= 1;
+    }
+    // Leading zeros when the value is below one, grouped with the fraction.
+    var f: i32 = 0;
+    while (f < -intDigits) : (f += 1) {
+        if (f != 0 and !GROUPRIGHT_DISABLED() and GROUPWIDTH_RIGHT() != 0 and @rem(f, GROUPWIDTH_RIGHT()) == 0) {
+            charIndex = appendSeparatorRight(displayString, charIndex);
+        }
+        displayString[charIndex] = '0';
+        charIndex +%= 1;
+        if (updateDisplayValueX != 0) {
+            displayValueX[valueIndex] = '0';
+            valueIndex +%= 1;
+        }
+    }
+    // The significant digits as the fraction, the grouping continuing from the leading zeros.
+    while (pos <= lastDigit) : ({
+        pos += 1;
+        f += 1;
+    }) {
+        if (f != 0 and !GROUPRIGHT_DISABLED() and GROUPWIDTH_RIGHT() != 0 and @rem(f, GROUPWIDTH_RIGHT()) == 0) {
+            charIndex = appendSeparatorRight(displayString, charIndex);
+        }
+        const ch: u8 = '0' + bcd[@intCast(pos)];
+        displayString[charIndex] = ch;
+        charIndex +%= 1;
+        if (updateDisplayValueX != 0) {
+            displayValueX[valueIndex] = ch;
+            valueIndex +%= 1;
+        }
+    }
+    displayString[charIndex] = 0;
+    if (updateDisplayValueX != 0) {
+        displayValueX[valueIndex] = 0;
+    }
+    if (shownExp != 0) {
+        const valueTail: [*c]u8 = if (updateDisplayValueX != 0) @as([*c]u8, &displayValueX) + valueIndex else null;
+        if (displayFormat == DF_UN) {
+            frontier_addons.exponentToUnitDisplayString(shownExp, @intFromBool(flag2To10), displayString + charIndex, valueTail, 0); // UNIT shows the SI prefix
+        } else {
+            exponentToDisplayString(shownExp, displayString + charIndex, valueTail, 0); // ENG shows the power of ten
+        }
+    }
 }
 
 fn real34ToDisplayString2(real34_in: *align(1) const real34_t, displayString: [*c]u8, displayHasNDigits: i16, limitExponent: bool_t, noFix: bool_t, frontSpace: bool_t, complex: bool_t, limitIrfrac: irfracOption_t) void {
@@ -1581,11 +1807,7 @@ fn real34ToDisplayString2(real34_in: *align(1) const real34_t, displayString: [*
                     displayValueX[valueIndex] = '0';
                     valueIndex += 1;
                 }
-                displayString[charIndex] = 0;
-                var tt: [4]u8 = undefined;
-                radixTT(&tt);
-                _ = strcat(displayString, &tt);
-                charIndex +%= @intCast(strlen(&tt));
+                charIndex = @truncate(@as(u32, @bitCast(appendRadixMark(displayString, charIndex))));
                 if (updateDisplayValueX != 0) {
                     displayValueX[valueIndex] = '.';
                     valueIndex += 1;
@@ -1650,11 +1872,7 @@ fn real34ToDisplayString2(real34_in: *align(1) const real34_t, displayString: [*
                         }
                     }
                     if (digitCount == 0) {
-                        displayString[charIndex] = 0;
-                        var tt: [4]u8 = undefined;
-                        radixTT(&tt);
-                        _ = strcat(displayString, &tt);
-                        charIndex +%= @intCast(strlen(&tt));
+                        charIndex = @truncate(@as(u32, @bitCast(appendRadixMark(displayString, charIndex))));
                         if (updateDisplayValueX != 0) {
                             displayValueX[valueIndex] = '.';
                             valueIndex += 1;
@@ -1762,11 +1980,7 @@ fn real34ToDisplayString2(real34_in: *align(1) const real34_t, displayString: [*
                     displayValueX[valueIndex] = '0';
                     valueIndex += 1;
                 }
-                displayString[charIndex] = 0;
-                var tt: [4]u8 = undefined;
-                radixTT(&tt);
-                _ = strcat(displayString, &tt);
-                charIndex +%= @intCast(strlen(&tt));
+                charIndex = @truncate(@as(u32, @bitCast(appendRadixMark(displayString, charIndex))));
                 if (updateDisplayValueX != 0) {
                     displayValueX[valueIndex] = '.';
                     valueIndex += 1;
@@ -1856,11 +2070,7 @@ fn real34ToDisplayString2(real34_in: *align(1) const real34_t, displayString: [*
                         }
                     }
                     if (digitCount == 0) {
-                        displayString[charIndex] = 0;
-                        var tt: [4]u8 = undefined;
-                        radixTT(&tt);
-                        _ = strcat(displayString, &tt);
-                        charIndex +%= @intCast(strlen(&tt));
+                        charIndex = @truncate(@as(u32, @bitCast(appendRadixMark(displayString, charIndex))));
                         if (updateDisplayValueX != 0) {
                             displayValueX[valueIndex] = '.';
                             valueIndex += 1;
@@ -1893,6 +2103,16 @@ fn real34ToDisplayString2(real34_in: *align(1) const real34_t, displayString: [*
             digitsToDisplay = displayFormatDigits;
             digitToRound = @intCast(minI(firstDigit + digitsToDisplay, lastDigit));
         }
+        // The fixed view keeps the integer digits at the forced exponent and rounds
+        // the fraction to displayFormatDigits+1 significant figures, keeping more only
+        // where the forced exponent's integer part needs them, so no leading digit is
+        // fabricated.
+        if (engFixedActive) {
+            const fixedIntDigits: i32 = @as(i32, exponent) - engFixedExp + 1;
+            const keep: i32 = maxI(fixedIntDigits, @as(i32, displayFormatDigits) + 1);
+            digitsToDisplay = @truncate(keep);
+            digitToRound = @truncate(minI(firstDigit + keep - 1, lastDigit));
+        }
 
         roundedAt = roundBcdAt(bcd, digitToRound, lastDigit + digitsToTruncate, sign != 0);
 
@@ -1902,6 +2122,10 @@ fn real34ToDisplayString2(real34_in: *align(1) const real34_t, displayString: [*
 
         numDigits -= digitToRound - roundedAt;
         digitToRound = roundedAt;
+
+        if (engFixedActive) {
+            lastDigit = digitToRound; // rounded to the display digits, so the digits stop at the rounded one and the fixed view fits
+        }
 
         // Case when 9.9999 rounds to 10.0000
         if (digitToRound < firstDigit) {
@@ -1935,6 +2159,10 @@ fn real34ToDisplayString2(real34_in: *align(1) const real34_t, displayString: [*
             }
         }
 
+        if (engFixedActive) {
+            renderEngFixed(bcd, firstDigit, lastDigit, exponent, flag2To10, displayString, charIndex, valueIndex);
+            return;
+        }
         displayString[charIndex] = '0' + bcd[@intCast(firstDigit)];
         charIndex += 1;
         if (updateDisplayValueX != 0) {
@@ -1976,11 +2204,7 @@ fn real34ToDisplayString2(real34_in: *align(1) const real34_t, displayString: [*
             }
         }
 
-        displayString[charIndex] = 0;
-        var tt: [4]u8 = undefined;
-        radixTT(&tt);
-        _ = strcat(displayString, &tt);
-        charIndex +%= @intCast(strlen(&tt));
+        charIndex = @truncate(@as(u32, @bitCast(appendRadixMark(displayString, charIndex))));
         if (updateDisplayValueX != 0) {
             displayValueX[valueIndex] = '.';
             valueIndex += 1;
@@ -2057,10 +2281,17 @@ fn real34ToDisplayString2(real34_in: *align(1) const real34_t, displayString: [*
 // ===========================================================================
 // complex34ToDisplayString / complex34ToDisplayString2 / strPrepend
 // ===========================================================================
-pub export fn complex34ToDisplayString(complex34: *align(1) const complex34_t, displayString: [*c]u8, font: *const font_t, maxWidth: i16, displayHasNDigits_in: i16, limitExponent: bool_t, frontSpace: bool_t, limitIrfrac: irfracOption_t, tagAngle: u16, tagPolar: bool_t) callconv(.c) void {
+pub export fn complex34ToDisplayString(complex34: *align(1) const complex34_t, displayString: [*c]u8, font: *const font_t, maxWidth: i16, displayHasNDigits_in: i16, limitExponent: bool_t, frontSpace: bool_t, limitIrfrac: irfracOption_t, tagAngle: u16, tagPolar: bool_t, expStep: i16) callconv(.c) void {
     var displayHasNDigits = displayHasNDigits_in;
     const savedDisplayFormatDigits = displayFormatDigits;
     const saveddisplayFormat = displayFormat;
+
+    // The fixed view ignores the global format: ENG, or UNIT when the global is
+    // UNIT, at max(n, 4) digits, 6 under ALL.
+    if (expStep != register_tag.EXP_STEP_OFF) {
+        displayFormatDigits = if (displayFormat == DF_ALL) 6 else @max(displayFormatDigits, 4);
+        displayFormat = if (displayFormat == DF_UN) DF_UN else DF_ENG;
+    }
 
     const digitWidth: i16 = frontier_char_string.stringWidth("0", font, false, false);
 
@@ -2072,7 +2303,7 @@ pub export fn complex34ToDisplayString(complex34: *align(1) const complex34_t, d
     // form it asks for a second time is exactly the one already computed.
     var cache: abi.RectToPolarCache = .{ .valid = false, .digits = 0, .round = 0, .real = undefined, .imag = undefined, .mag = undefined, .theta = undefined };
 
-    complex34ToDisplayString2(complex34, displayString, displayHasNDigits, limitExponent, frontSpace, tagAngle, tagPolar, limitIrfrac, &cache);
+    complex34ToDisplayString2(complex34, displayString, displayHasNDigits, limitExponent, frontSpace, tagAngle, tagPolar, expStep, limitIrfrac, &cache);
     var noFix: bool = false;
     var overflow: i16 = frontier_char_string.stringWidth(displayString, font, true, true) - maxWidth;
     while (overflow > 0) {
@@ -2093,6 +2324,13 @@ pub export fn complex34ToDisplayString(complex34: *align(1) const complex34_t, d
                 } else {
                     displayFormatDigits = @intCast(maxI(@as(i32, displayFormatDigits) - overflowDigits, 0));
                 }
+            } else if (expStep != register_tag.EXP_STEP_OFF) {
+                // The fixed view shrinks toward zero digits to fit, never dropping to
+                // ALL; a step too wide even at zero was refused by the key handler.
+                displayFormatDigits = @intCast(maxI(@as(i32, displayFormatDigits) - overflowDigits, 0));
+                if (displayFormatDigits == 0) {
+                    break;
+                }
             } else {
                 displayFormatDigits = @intCast(maxI(@as(i32, displayFormatDigits) - overflowDigits, 3));
                 if (displayFormatDigits == 3) {
@@ -2105,7 +2343,7 @@ pub export fn complex34ToDisplayString(complex34: *align(1) const complex34_t, d
             displayValueX[0] = 0;
         }
 
-        complex34ToDisplayString2(complex34, displayString, displayHasNDigits, limitExponent, frontSpace, tagAngle, tagPolar, limitIrfrac, &cache);
+        complex34ToDisplayString2(complex34, displayString, displayHasNDigits, limitExponent, frontSpace, tagAngle, tagPolar, expStep, limitIrfrac, &cache);
         overflow = frontier_char_string.stringWidth(displayString, font, true, true) - maxWidth;
     }
 
@@ -2142,7 +2380,7 @@ pub export fn strPrepend(dest: [*c]u8, prefix: [*c]u8) callconv(.c) void {
     }
 }
 
-fn complex34ToDisplayString2(complex34: *align(1) const complex34_t, displayString: [*c]u8, displayHasNDigits: i16, limitExponent: bool_t, frontSpace: bool_t, tagAngle: u16, tagPolar: bool_t, limitIrfrac: irfracOption_t, cache: *abi.RectToPolarCache) void {
+fn complex34ToDisplayString2(complex34: *align(1) const complex34_t, displayString: [*c]u8, displayHasNDigits: i16, limitExponent: bool_t, frontSpace: bool_t, tagAngle: u16, tagPolar: bool_t, expStep: i16, limitIrfrac: irfracOption_t, cache: *abi.RectToPolarCache) void {
     const imagOffset: i16 = 100;
     var real34_: real34_t = undefined;
     var imag34: real34_t = undefined;
@@ -2177,7 +2415,16 @@ fn complex34ToDisplayString2(complex34: *align(1) const complex34_t, displayStri
             real34Copy(varImag34(complex34), &imag34);
         }
 
+        // A fixed exponent on a complex shows the real and imaginary parts
+        // (rectangular), or the magnitude (polar), at that one exponent; the polar
+        // angle is never scaled.
+        const cplxExpOn = expStep != register_tag.EXP_STEP_OFF;
+        if (cplxExpOn) {
+            engFixedExp = @as(i32, expStep) * 3;
+        }
+        engFixedActive = cplxExpOn and !abi.real34IsSpecial(&real34_) and !real34IsZero(&real34_);
         real34ToDisplayString2(&real34_, displayString, displayHasNDigits, limitExponent, 0, frontSpace, isComplex, limitIrfrac);
+        engFixedActive = false;
         if (updateDisplayValueX != 0) {
             if (tagPolar != 0) {
                 _ = strcat(&displayValueX, "j");
@@ -2188,7 +2435,9 @@ fn complex34ToDisplayString2(complex34: *align(1) const complex34_t, displayStri
 
         const savedUpdateDisplayValueX = updateDisplayValueX;
         updateDisplayValueX = @intFromBool(updateDisplayValueX != 0 and tagPolar == 0); // the polar angle is written into displayValueX by angle34ToDisplayString2 below
+        engFixedActive = cplxExpOn and tagPolar == 0 and !abi.real34IsSpecial(&imag34) and !real34IsZero(&imag34);
         real34ToDisplayString2(&imag34, displayString + @as(usize, @intCast(imagOffset)), displayHasNDigits, limitExponent, 0, @intFromBool(FRONTSPACE == 0), isComplex, limitIrfrac);
+        engFixedActive = false;
         updateDisplayValueX = savedUpdateDisplayValueX;
 
         if (!real34IsZero(&real34_) and strncmp(displayString + @as(usize, @intCast(imagOffset)), STD_ALMOST_EQUAL, 2) == 0) {
@@ -2367,6 +2616,22 @@ pub export fn fractionToDisplayString(regist: calcRegister_t, displayString: [*c
     endingZero += 1;
 
     _denominator(denom, displayString, &endingZero);
+    if (comptime option_drg_cfg) {
+        _ = strcat(displayString, angularUnitGlyph(@intCast(getRegisterAngularMode(regist)))); // a tagged angle shows its unit after the fraction, as the decimal display does
+    }
+}
+
+// The mark after a number in that angular unit; nothing for no unit, and for D.MS,
+// whose marks are among the digits.
+pub export fn angularUnitGlyph(mode: u8) callconv(.c) [*:0]const u8 {
+    return switch (mode) {
+        amRadian => STD_SUP_BOLD_r,
+        amGrad => STD_SUP_BOLD_g,
+        amDegree => STD_DEGREE,
+        amMultPi => STD_SUP_pir,
+        amSecond => "s",
+        else => "",
+    };
 }
 
 // ===========================================================================
@@ -3005,11 +3270,7 @@ fn emitSciDigits(bcd: [*c]u8, firstDigit_in: i16, lastDigit: i16, numDigits_in: 
         valueIndex += 1;
     }
     // Radix mark
-    displayString[@intCast(charIndex)] = 0;
-    var tt: [4]u8 = undefined;
-    radixTT(&tt);
-    _ = strcat(displayString, &tt);
-    charIndex +%= @intCast(strlen(&tt));
+    charIndex = appendRadixMark(displayString, charIndex);
     if (updateDisplayValueX != 0) {
         displayValueX[@intCast(valueIndex)] = '.';
         valueIndex += 1;
@@ -3576,13 +3837,7 @@ pub export fn timeToDisplayString(regist: calcRegister_t, displayString: [*c]u8,
 
             if (digits == 0) {
                 var tt: [4]u8 = undefined;
-                const radix = RADIX34_MARK_STRING();
-                if (radix[1] != 1) {
-                    _ = strcpy(&tt, radix);
-                } else {
-                    tt[0] = radix[0];
-                    tt[1] = 0;
-                }
+                radixMarkToString(&tt);
                 _ = strcat(displayString, &tt);
             } else if (@rem(digits, @as(u32, @intCast(GROUPWIDTH_RIGHT()))) == 0) {
                 var tt: [4]u8 = undefined;
@@ -3770,7 +4025,7 @@ fn printXSHOW(am: i16, d: i16, df: i16, dfd: i16, dt: i16, tagPolar: bool_t) voi
         frontier_conversion_angles.convertAngle34FromTo(&real34_, getRegisterAngularMode(sreg), @intCast(am));
         real34ToDisplayString(&real34_, @intCast(am), tmpString + 2100 + @as(usize, @intCast(stringByteLength(tmpString + 2100))), &numericFont, SCREEN_WIDTH - ww - 8 * 2, 34, @intFromBool(LIMITEXP == 0), @intFromBool(FRONTSPACE == 0), NOIRFRAC);
     } else if (dt == dtComplex34) {
-        complex34ToDisplayString(regComplex34(sreg), tmpString + 2100 + @as(usize, @intCast(stringByteLength(tmpString + 2100))), &numericFont, SCREEN_WIDTH - ww - 8 * 2, 34, @intFromBool(LIMITEXP == 0), @intFromBool(FRONTSPACE == 0), NOIRFRAC, @intCast(getComplexRegisterAngularMode(sreg)), tagPolar);
+        complex34ToDisplayString(regComplex34(sreg), tmpString + 2100 + @as(usize, @intCast(stringByteLength(tmpString + 2100))), &numericFont, SCREEN_WIDTH - ww - 8 * 2, 34, @intFromBool(LIMITEXP == 0), @intFromBool(FRONTSPACE == 0), NOIRFRAC, @intCast(getComplexRegisterAngularMode(sreg)), tagPolar, register_tag.expStep(getRegisterTag(sreg)));
     }
 
     if (frontier_char_string.stringWidth(tmpString + 2100, &numericFont, true, true) > SCREEN_WIDTH) {
@@ -4209,7 +4464,7 @@ pub export fn fnC47Show(fnShow_param: u16) callconv(.c) void {
         } else if (selection == dtComplex34) {
             temporaryInformation = TI_SHOW_REGISTER_BIG;
 
-            complex34ToDisplayString(regComplex34(@intCast(showRegis)), tmpString, &numericFont, 2000, 34, LIMITEXP, FRONTSPACE, NOIRFRAC, @intCast(getComplexRegisterAngularMode(@intCast(showRegis))), @intFromBool(getComplexRegisterPolarMode(@intCast(showRegis)) != 0));
+            complex34ToDisplayString(regComplex34(@intCast(showRegis)), tmpString, &numericFont, 2000, 34, LIMITEXP, FRONTSPACE, NOIRFRAC, @intCast(getComplexRegisterAngularMode(@intCast(showRegis))), @intFromBool(getComplexRegisterPolarMode(@intCast(showRegis)) != 0), register_tag.expStep(getRegisterTag(@intCast(showRegis))));
             i = @as(i16, @intCast(stringByteLength(tmpString))) - 1;
             while (i > 0) : (i -= 1) {
                 if (tmpString[@intCast(i)] == 0x08) {

@@ -127,6 +127,7 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
   {ITM_PRTACT,           FLAG_PRTACT ,           CB_JC},  // SFL_PRTACT
 //  {ITM_TRACE,            FLAG_TRACE ,            CB_JC},  // SFL_TRACE
   {ITM_ERPN,             FLAG_ERPN   ,           CB_JC},  //SetSetting
+  {ITM_TOPFX,            FLAG_TOPFX  ,           CB_JC},  //SetSetting
   {ITM_M_ALL,            FLAG_M_ALL  ,           CB_JC},  //SetSetting
   {ITM_CARRY,            FLAG_CARRY  ,           CB_JC},  //SetSetting
   {ITM_OVERFLOW,         FLAG_OVERFLOW,          CB_JC},  //SetSetting
@@ -219,6 +220,15 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
   {ITM_RM_DOWN,          4,                      RB_RM},
   {ITM_RM_CEILING,       5,                      RB_RM},
   {ITM_RM_FLOOR,         6,                      RB_RM},
+  #if defined(OPTION_DRG_CFG)
+    {ITM_DRG_DEG,          amDegree,               CB_DRG},
+    {ITM_DRG_RAD,          amRadian,               CB_DRG},
+    {ITM_DRG_GRAD,         amGrad,                 CB_DRG},
+    {ITM_DRG_DMS,          amDMS,                  CB_DRG},
+    {ITM_DRG_MULPI,        amMultPi,               CB_DRG},
+    {ITM_DRG_NIM,          DRG_NIM_BIT,            CB_DRG},
+    {ITM_DRG_AUTADM,       DRG_AUTO_ADM_BIT,       CB_DRG},
+  #endif // OPTION_DRG_CFG
 
   {ITM_S08,              ITM_S08,                MB_MAC},
   {ITM_U08,              ITM_U08,                MB_MAC},
@@ -280,6 +290,7 @@ TO_QSPI const uint16_t systemFlagParams[] = {  // CB_JC CHECK BOX System flags c
   FLAG_FRACT,
   FLAG_PRTACT,
   FLAG_ERPN,
+  FLAG_TOPFX,
   FLAG_M_ALL,
   FLAG_CARRY,
   FLAG_OVERFLOW,
@@ -424,6 +435,12 @@ int8_t fnCbIsSet(int16_t item) {
 
         case RB_RM:  rb_param = displayRoundActive() ? displayRoundingMode : roundingMode;
                      break;
+
+        #if defined(OPTION_DRG_CFG)
+          case CB_DRG: is_cb = true;
+                       cb_param = (drgConfig >> param) & 1;
+                       break;
+        #endif // OPTION_DRG_CFG
 
         case RB_KY:  rb_param = calcModel;
                      if(itemNr == ITM_USER_R47) {

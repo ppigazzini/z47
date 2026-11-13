@@ -3,6 +3,7 @@
 
 #include "c47.h"
 
+#define EEX_TOPFX_AUTO true   //JM when set, a prefix run from the EEX SI prefix menu switches the display to PFX, and a binary prefix also sets the 1024 grouping
 
 TO_QSPI static const char bugScreenNonexistentMenu[] = "In function determineFunctionKeyItem: nonexistent menu specified!";
 TO_QSPI static const char bugScreenItemNotDetermined[] = "In function determineItem: item was not determined!";
@@ -974,6 +975,23 @@ endReturnTrue:
         lastKeyItemDetermined = item;
       }
 
+#if defined(OPTION_EEX_PREFIX)
+      if(currentMenu() == -MNU_EEXPFX || currentMenu() == -MNU_PREFIX) {                   //JM close EEXPFX before the item runs; PFX closes it too
+        if(EEX_TOPFX_AUTO && item > 0 && indexOfItems[item].func == fnMultiplySI) {        //JM a prefix from this menu switches the display to UNIT
+          if(getSystemFlag(FLAG_TOPFX)) {
+            displayFormat = DF_UN;
+            if(indexOfItems[item].param > 200) {   //JM a binary prefix (param over 200) also sets the 1024 grouping
+              setSystemFlag(FLAG_2TO10);
+            }
+            fnRefreshState();
+          }
+        }
+        if(currentMenu() == -MNU_EEXPFX) {
+          popSoftmenu();
+        }
+      }
+#endif // OPTION_EEX_PREFIX
+
       // in graph plot menu, wanting to change Normal Mode items, so open the correct menu first and return to Normal Mode, and stop the processing.
       if(calcMode == CM_GRAPH && currentMenu() == -MNU_PLOT_FUNC && (item == VAR_LX || item == VAR_UX)) {
         calcMode = CM_NORMAL;
@@ -1265,6 +1283,11 @@ endReturnTrue:
           else if((calcMode == CM_NIM) && ((/*item==ITM_DRG ||*/ item == ITM_DMS2 || item == ITM_dotD) && !catalog)) {   //JM Remove DRG from here, there seems to be no need to send DRG to the buffer
             addItemToNimBuffer(item);
           }                                                                                      //JM
+          #if defined(OPTION_DRG_CFG)
+            else if(calcMode == CM_NIM && item == ITM_DRG && !catalog && nimDrgChoosesUnit()) {  // DRG chooses the unit of the number and leaves the input open
+              addItemToNimBuffer(item);
+            }
+          #endif // OPTION_DRG_CFG
           else if(calcMode == CM_MIM && currentMenu() != -MNU_M_EDIT && (item != ITM_CC && item != ITM_op_j && item != ITM_op_j_pol)) { //JM added ITM_CC to let it work in matrix edit
             addItemToBuffer(item);
           }
@@ -1829,7 +1852,24 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
 
 
 #if defined(PC_BUILD)
-    void btnPressed(GtkWidget *notUsed, GdkEvent *event, gpointer data) {
+static int16_t btnPressedDepth = 0;                 // btnPressed is running; a refresh inside it pumps GTK, which can deliver the release of the key it handles
+static char   *btnPressedKey = NULL;                // the key the outermost btnPressed handles
+static bool_t  btnReleasedDeferred = false;         // that key's release arrived meanwhile and runs after btnPressed has returned, the order DMCP keeps
+
+static void _btnPressed(GtkWidget *notUsed, GdkEvent *event, gpointer data);
+
+void btnPressed(GtkWidget *notUsed, GdkEvent *event, gpointer data) {
+  if(btnPressedDepth++ == 0) {
+    btnPressedKey = (char *)data;
+  }
+  _btnPressed(notUsed, event, data);
+  if(--btnPressedDepth == 0 && btnReleasedDeferred) {
+    btnReleasedDeferred = false;
+    btnReleased(notUsed, event, data);
+  }
+}
+
+  static void _btnPressed(GtkWidget *notUsed, GdkEvent *event, gpointer data) {
 #endif //PC_BUILD
   #if defined(DMCP_BUILD)
     void btnPressed(void *data) {
@@ -1958,6 +1998,14 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
                     #endif //PC_BUILD_TELLTALE
 
         processKeyAction(item);
+
+#if defined(OPTION_EEX_PREFIX)
+        if(item == ITM_EXPONENT && calcMode == CM_NIM && currentMenu() != -MNU_EEXPFX) {   //JM EEX primary press opens the SI prefix menu at once, no long press; cancel the armed long press so a hold does not open it twice
+          showSoftmenu(-MNU_EEXPFX);
+          screenUpdatingMode = SCRUPD_AUTO;
+          refreshScreen(1997);
+        }
+#endif // OPTION_EEX_PREFIX
 
                     #if defined(PC_BUILD_TELLTALE)
                       sprintf(tmp, "keyboard.c: btnPressed 2--> processKeyAction(%d) which is str:%s; keyActionProcessed=%u\n", item, (char *)data, keyActionProcessed);
@@ -2091,6 +2139,10 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
 
   #if defined(PC_BUILD)
     void btnReleased(GtkWidget *notUsed, GdkEvent *event, gpointer data) {
+      if(btnPressedDepth > 0 && strncmp((char *)data, btnPressedKey, 2) == 0) {
+        btnReleasedDeferred = true;
+        return;
+      }
                     #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
                       printf(">>> btnReleased showFunctionNameItem=%i screenUpdatingMode=%d temporaryInformation=%u tam=%i getSystemFlag(FLAG_ALPHA)=%i\n", showFunctionNameItem, screenUpdatingMode, temporaryInformation, tam.mode, getSystemFlag(FLAG_ALPHA));
                     #endif // PC_BUILD &&MONITOR_CLRSCR
@@ -2206,8 +2258,26 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
             recallShowStatus();
             fnC47Show(ITM_NOP);
           }
+#if defined(OPTION_EEX_PREFIX)
+          if(currentMenu() == -MNU_EEXPFX) {                                    //JM the EEX long press ran out to NOP: close the SI prefix menu so none is left open; NIM stays
+            popSoftmenu();
+          }
+#endif // OPTION_EEX_PREFIX
           goto RELEASE_END;
         }
+
+#if defined(OPTION_EEX_PREFIX)
+        if(item == ITM_EXIT1 && currentMenu() == -MNU_PREFIX && menu(1) == -MNU_EEXPFX) {   //JM EXIT from PFX opened off EEXPFX pops back to EEXPFX; NIM stays
+          popSoftmenu();
+          screenUpdatingMode = SCRUPD_AUTO;
+          goto RELEASE_END;
+        }
+        if(item == ITM_EXIT1 && currentMenu() == -MNU_EEXPFX) {                //JM EXIT closes only EEXPFX; NIM stays
+          popSoftmenu();
+          screenUpdatingMode = SCRUPD_AUTO;
+          goto RELEASE_END;
+        }
+#endif // OPTION_EEX_PREFIX
 
         bool_t Norm_Key_00_released = !getSystemFlag(FLAG_USER) && (keyStateCode == 0) && (keyCode == Norm_Key_00_key) && Norm_Key_00.used && (!(lastIntegerBase >= 2 && getSystemFlag(FLAG_TOPHEX)));
 
@@ -2324,6 +2394,15 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
               leaveTamModeIfEnabled();
             }
 
+              if(item == ITM_ENGR && calcMode == CM_NIM) {                         // there is only one way it can come while in NIM, that is via the long press
+                closeNim();
+                runFunction(ITM_CHS);                                              // the press ran ITM_CHS on this key; undo the sign change so the long-press eng step keeps the value's sign
+              }
+#if defined(OPTION_EEX_PREFIX)
+              if(currentMenu() == -MNU_EEXPFX && item != ITM_EXIT1) {              //JM the long-press stage runs here via runFunction, which the processKeyAction close does not reach, so close EEXPFX on this path too
+                popSoftmenu();
+              }
+#endif // OPTION_EEX_PREFIX
               runFunction(item);
 
                     #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
@@ -2434,6 +2513,12 @@ RELEASE_END:
                     #endif // PC_BUILD &&MONITOR_CLRSCR
 
     keyActionProcessed = false;
+
+#if defined(OPTION_EEX_PREFIX)
+    if(currentMenu() == -MNU_EEXPFX && item != ITM_EXIT1) {             //JM the EEX SI prefix menu closes on the next key, before dispatch, and leaves NIM open; EXIT closes it on release only so NIM stays
+      popSoftmenu();
+    }
+#endif // OPTION_EEX_PREFIX
 
     if(lastErrorCode != 0 && item != ITM_EXIT1 && item != ITM_BACKSPACE) {
       lastErrorCode = 0;
@@ -5000,6 +5085,7 @@ void fnKeyDotD(uint16_t unusedButMandatoryParameter) {
         else {
           runFunction(ITM_toREAL);
         }
+        setLastintegerBasetoZero();
         break;
       }
 

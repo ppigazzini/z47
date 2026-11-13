@@ -196,6 +196,7 @@ BINGRP,                              xxx,        _gprbin,                       
 3,                                   1,          FLAG_ERPN,                      xxx,             FLAG_ERPN,            FLAG_ERPN,              FLAG_ERPN,       xxx,             xxx,
 3,                                   1,          FLAG_M_ALL,                     FLAG_M_ALL,      FLAG_M_ALL,           FLAG_M_ALL,             FLAG_M_ALL,      xxx,             xxx,
 3,                                   0,          FLAG_PL_2L,                     FLAG_PL_2L,      FLAG_PL_2L,           FLAG_PL_2L,             FLAG_PL_2L,      xxx,             xxx,
+3,                                   0,          FLAG_TOPFX,                     FLAG_TOPFX,      FLAG_TOPFX,           FLAG_TOPFX,             FLAG_TOPFX,      xxx,             xxx,
 3,                                   0,          FLAG_CPXMULT,                   xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,
 3,                                   1,          FLAG_LARGELI,                   xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,
 3,                                   0,          FLAG_PFX_ALL,                   xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,
@@ -1742,6 +1743,9 @@ void resetOtherConfigurationStuff(bool_t allowUserKeys) {
   displayStackSHOIDISP = 2;            //See if the refresh is needed. fnShoiXRepeats(2); //displayStackSHOIDISP
   bcdDisplaySign = BCDu;
   DRG_Cycling = 0;
+  #if defined(OPTION_DRG_CFG)
+    drgConfig = DRG_CONFIG_DEFAULT;
+  #endif // OPTION_DRG_CFG
   DM_Cycling = 0;
   LongPressM = RBX_M1234;
   LongPressF = RBX_F124;

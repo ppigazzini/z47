@@ -10,6 +10,9 @@
 void fnDisplayFormatFix                (uint16_t displayFormatN);
 void fnDisplayFormatSci                (uint16_t displayFormatN);
 void fnDisplayFormatEng                (uint16_t displayFormatN);
+void fnEngExpClear                     (uint16_t unusedButMandatoryParameter);
+void fnEngExpLeft                      (uint16_t unusedButMandatoryParameter);
+void fnEngExpRight                     (uint16_t unusedButMandatoryParameter);
 void fnDisplayFormatAll                (uint16_t displayFormatN);
 void fnDisplayFormatDsp                (uint16_t displayFormatN);
 void fnDisplayFormatTime               (uint16_t displayFormatN);
@@ -31,11 +34,12 @@ typedef enum {
 #define FRONTSPACE  true
 void real34ToDisplayString             (const real34_t *real34, uint32_t tag, char *displayString, const font_t *font, int16_t maxWidth, int16_t displayHasNDigits, bool_t limitExponent, bool_t frontSpace, irfracOption_t limitIrfrac);
 void dateToDisplayString               (calcRegister_t regist, char *displayString);
-void complex34ToDisplayString          (const complex34_t *complex34, char *displayString, const font_t *font, int16_t maxWidth, int16_t displayHasNDigits, bool_t limitExponent, bool_t frontSpace, irfracOption_t limitIrfrac, const uint16_t tagAngle, const bool_t tagPolar);
+void complex34ToDisplayString          (const complex34_t *complex34, char *displayString, const font_t *font, int16_t maxWidth, int16_t displayHasNDigits, bool_t limitExponent, bool_t frontSpace, irfracOption_t limitIrfrac, const uint16_t tagAngle, const bool_t tagPolar, const int16_t expStep);
 void angle34ToDisplayString2           (const real34_t *angle34, uint8_t modeIn, char *displayString, int16_t displayHasNDigits, bool_t limitExponent, bool_t frontSpace, irfracOption_t limitIrfrac);
 void _numerator                        (uint64_t numer, char *displayString, int16_t *endingZero);
 void _denominator                      (uint64_t denom, char *displayString, int16_t *endingZero);
 void fractionToDisplayString           (calcRegister_t regist, char *displayString);
+const char *angularUnitGlyph           (uint8_t mode);
 char *getGapChar1Left                  (void);
 char *getGapChar1Right                 (void);
 char *getGapChar1Radix                 (void);

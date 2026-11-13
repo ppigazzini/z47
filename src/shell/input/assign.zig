@@ -74,6 +74,7 @@ const ITM_USERMODE: i16 = 1729;
 const ITM_UP1: i16 = 1733;
 const ITM_DOWN1: i16 = 1735;
 const ITM_BACKSPACE: i16 = 1738;
+const ITM_CFG: i16 = 1941;
 const ITM_PLUS: i16 = 817;
 const ITM_MINUS: i16 = 819;
 const ITM_CROSS: i16 = 855;
@@ -1484,6 +1485,8 @@ pub export fn assignGetName1() callconv(.c) void {
         itemToBeAssigned = ITM_DOWN1;
     } else if (frontier_sort.compareString(aimBuffer, "BKSPC", CMP_NAME) == 0) {
         itemToBeAssigned = ITM_BACKSPACE;
+    } else if (frontier_sort.compareString(aimBuffer, "CFLG", CMP_NAME) == 0) {
+        itemToBeAssigned = ITM_CFG;
     } else if (aimBuffer[0] == 0) {
         itemToBeAssigned = ITM_NULL;
     } else {

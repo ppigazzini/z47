@@ -463,7 +463,7 @@ pub export fn fnPause(dur: u16) callconv(.c) void {
                 sys_delay(100);
             }
         }
-        if (dur != 0 and (dur == 99 or previousProgramRunStop != PGM_RUNNING)) {
+        if (dur != 0 and previousProgramRunStop != PGM_RUNNING) {
             screenUpdatingMode = SCRUPD_AUTO;
             frontier_screen.refreshScreen(1201);
             lcd_refresh();

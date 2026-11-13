@@ -181,7 +181,7 @@ fn getVectorRegisterAngularMode(regist: i16) u8 {
 }
 
 // restore-side core helpers
-extern fn reallocateRegister(regist: i16, data_type: u32, data_size: u16, tag: u32) void;
+extern fn reallocateRegister(regist: i16, data_type: u32, data_size: u16, tag: u32) bool;
 extern fn decQuadFromString(dst: [*c]u8, src: [*c]const u8, ctx: *OpaqueCtx) [*c]u8;
 extern fn convertLongIntegerToLongIntegerRegister(li: *const MpzStruct, regist: i16) void;
 extern fn convertUInt64ToShortIntegerRegister(sign: i16, value: u64, base: u32, regist: i16) void;
@@ -595,8 +595,11 @@ fn standardiseComplex(src_in: [*c]const u8, dest: [*c]u8) void {
 
 // Parse one register value (the inverse of registerToSaveString). `type_str`
 // (the 4-char type tag, possibly with a ":TAG[p]" suffix) and `value` are
-// mutated in place exactly as the C does.
-pub fn restoreRegister(regist: i16, type_str: [*c]u8, value_in: [*c]u8, loaded_version: u32) void {
+// mutated in place exactly as the C does. With the pool full reallocateRegister
+// leaves the register as it is and nothing is written to it. True when the
+// matrix elements after this entry are still to be read into the register; a
+// matrix that did not fit has its elements skipped here.
+pub fn restoreRegister(regist: i16, type_str: [*c]u8, value_in: [*c]u8, loaded_version: u32) bool {
     @setRuntimeSafety(true); // untrusted file input -- see calc_state.zig's panic decl
     var tag: u32 = amNone;
     var value = value_in;
@@ -621,7 +624,9 @@ pub fn restoreRegister(regist: i16, type_str: [*c]u8, value_in: [*c]u8, loaded_v
     }
 
     if (strcmpEq(type_str, "Real")) {
-        reallocateRegister(regist, dtReal34, 0, tag);
+        if (!reallocateRegister(regist, dtReal34, 0, tag)) {
+            return false;
+        }
         if (dataFileMode) dataFileCommaToPeriod(value);
         _ = decQuadFromString(regReal34Data(regist), value, &ctxtReal34);
     } else if (option_xfn_1000 and strcmpEq(type_str, "RXFN")) {
@@ -636,7 +641,7 @@ pub fn restoreRegister(regist: i16, type_str: [*c]u8, value_in: [*c]u8, loaded_v
                 abi.fmtBufZ(errorMessage[0..512], "XFN import only to REGISTER_X (stack), got register {d}", .{@as(c_int, regist)});
                 moreInfoOnError("In function restoreRegister:", &errorMessage[0], null, null);
             }
-            return;
+            return false;
         }
 
         var paramX_b = BigReal(1071){};
@@ -652,14 +657,18 @@ pub fn restoreRegister(regist: i16, type_str: [*c]u8, value_in: [*c]u8, loaded_v
 
         processResultantLongReal(@bitCast(REGISTER_X), 0, FT_EXTERNAL, paramX_b.bytes(), paramY_b.bytes(), paramTemp_b.bytes(), &angleMode, &tmpAngle);
     } else if (strcmpEq(type_str, "Time")) {
-        reallocateRegister(regist, dtTime, 0, amNone);
+        if (!reallocateRegister(regist, dtTime, 0, amNone)) {
+            return false;
+        }
         _ = decQuadFromString(regReal34Data(regist), value, &ctxtReal34);
     } else if (strcmpEq(type_str, "Date")) {
-        reallocateRegister(regist, dtDate, 0, amNone);
+        if (!reallocateRegister(regist, dtDate, 0, amNone)) {
+            return false;
+        }
         _ = decQuadFromString(regReal34Data(regist), value, &ctxtReal34);
     } else if (strcmpEq(type_str, "THMS")) {
         // data-file time: HHMMSS-coded real -> seconds, in a temp register
-        reallocateRegister(TEMP_REGISTER_1, dtReal34, 0, amNone);
+        _ = reallocateRegister(TEMP_REGISTER_1, dtReal34, 0, amNone);
         if (dataFileMode) dataFileCommaToPeriod(value);
         _ = decQuadFromString(regReal34Data(TEMP_REGISTER_1), value, &ctxtReal34);
         hmmssInRegisterToSeconds(TEMP_REGISTER_1);
@@ -680,7 +689,7 @@ pub fn restoreRegister(regist: i16, type_str: [*c]u8, value_in: [*c]u8, loaded_v
         } else {
             setSystemFlag(@intCast(FLAG_DMY));
         }
-        reallocateRegister(TEMP_REGISTER_1, dtReal34, 0, amNone);
+        _ = reallocateRegister(TEMP_REGISTER_1, dtReal34, 0, amNone);
         if (dataFileMode) dataFileCommaToPeriod(value);
         _ = decQuadFromString(regReal34Data(TEMP_REGISTER_1), value, &ctxtReal34);
         convertReal34RegisterToDateRegister(TEMP_REGISTER_1, TEMP_REGISTER_1, false);
@@ -699,7 +708,7 @@ pub fn restoreRegister(regist: i16, type_str: [*c]u8, value_in: [*c]u8, loaded_v
                 abi.fmtBufZ(errorMessage[0..512], "long integer of more than {d} digits refused for register {d}", .{ @as(u32, MAX_LONG_INTEGER_DIGITS), @as(i32, regist) });
                 moreInfoOnError("In function restoreRegister:", &errorMessage[0], null, null);
             }
-            return;
+            return false;
         }
 
         var li: MpzStruct = undefined;
@@ -720,7 +729,9 @@ pub fn restoreRegister(regist: i16, type_str: [*c]u8, value_in: [*c]u8, loaded_v
         }
         errorMessage[len] = 0; // more bytes than a register takes are cut on a glyph boundary
         len += 1;
-        reallocateRegister(regist, dtString, @intCast((len + 3) >> 2), amNone);
+        if (!reallocateRegister(regist, dtString, @intCast((len + 3) >> 2), amNone)) {
+            return false;
+        }
         _ = xcopy(regStringData(regist), errorMessage, @intCast(len));
     } else if (strcmpEq(type_str, "ShoI")) {
         const sign: i16 = if (value[0] == '-') 1 else 0;
@@ -730,7 +741,9 @@ pub fn restoreRegister(regist: i16, type_str: [*c]u8, value_in: [*c]u8, loaded_v
         const base = text.toUint32(value);
         convertUInt64ToShortIntegerRegister(sign, val, base, regist);
     } else if (strcmpEq(type_str, "Cplx")) {
-        reallocateRegister(regist, dtComplex34, 0, tag);
+        if (!reallocateRegister(regist, dtComplex34, 0, tag)) {
+            return false;
+        }
         var stdTmp: [abi.complex_text.STANDARDISED_COMPLEX_LENGTH]u8 = undefined;
         if (dataFileMode) {
             // accept (3-i4) / 3-i4 / +3+i4 / stock "re im"; emit the stock form
@@ -754,8 +767,12 @@ pub fn restoreRegister(regist: i16, type_str: [*c]u8, value_in: [*c]u8, loaded_v
         const rows = text.toUint16(value);
         const cols = text.toUint16(numOfCols);
         const dims = clampMatrixDims(rows, cols, REAL34_SIZE_IN_BLOCKS);
-        reallocateRegister(regist, dtReal34Matrix, matrixDataBlocks(dims, REAL34_SIZE_IN_BLOCKS), tag);
+        if (!reallocateRegister(regist, dtReal34Matrix, matrixDataBlocks(dims, REAL34_SIZE_IN_BLOCKS), tag)) {
+            skipMatrixElements(@as(u32, dims.rows) * dims.cols, false); // value is gone: the error display writes tmpString
+            return false;
+        }
         setMatrixDims(regist, dims);
+        return true;
     } else if (strcmpEq(type_str, "Cxma")) {
         var numOfCols = text.skipWord(value);
         numOfCols[0] = 0;
@@ -763,8 +780,12 @@ pub fn restoreRegister(regist: i16, type_str: [*c]u8, value_in: [*c]u8, loaded_v
         const rows = text.toUint16(value);
         const cols = text.toUint16(numOfCols);
         const dims = clampMatrixDims(rows, cols, COMPLEX34_SIZE_IN_BLOCKS);
-        reallocateRegister(regist, dtComplex34Matrix, matrixDataBlocks(dims, COMPLEX34_SIZE_IN_BLOCKS), tag);
+        if (!reallocateRegister(regist, dtComplex34Matrix, matrixDataBlocks(dims, COMPLEX34_SIZE_IN_BLOCKS), tag)) {
+            skipMatrixElements(@as(u32, dims.rows) * dims.cols, true); // value is gone: the error display writes tmpString
+            return false;
+        }
         setMatrixDims(regist, dims);
+        return true;
     } else if (strcmpEq(type_str, "Conf")) {
         // The config register is a raw byte image of dtConfigDescriptor_t, whose
         // field layout is only guaranteed from version 10000020. Upstream gates
@@ -787,7 +808,9 @@ pub fn restoreRegister(regist: i16, type_str: [*c]u8, value_in: [*c]u8, loaded_v
         // this class: an upstream guard living inside a function the Zig already
         // has, where symbol-level correspondence sees nothing missing.
         if (loaded_version >= 10000020) {
-            reallocateRegister(regist, dtConfig, 0, amNone);
+            if (!reallocateRegister(regist, dtConfig, 0, amNone)) {
+                return false;
+            }
             var cfg: [*c]u8 = getRegisterDataPointer(regist);
             var t: usize = 0;
             while (t < CONFIG_DESCRIPTOR_SIZE) : (t += 1) {
@@ -800,6 +823,7 @@ pub fn restoreRegister(regist: i16, type_str: [*c]u8, value_in: [*c]u8, loaded_v
         abi.fmtBufZ(errorMessage[0..512], "In function restoreRegister: Data: Reg {d}, type {s}, value {s} to be coded!", .{ @as(c_int, regist), @as([*:0]const u8, type_str), @as([*:0]const u8, value) });
         displayBugScreen(errorMessage);
     }
+    return false;
 }
 
 pub fn restoreMatrixData(regist: i16) void {
@@ -868,19 +892,23 @@ pub fn skipMatrixData(type_str: [*c]u8, value_in: [*c]u8) void {
             cols,
             if (is_complex) COMPLEX34_SIZE_IN_BLOCKS else REAL34_SIZE_IN_BLOCKS,
         );
-        const count = @as(u32, dims.rows) * @as(u32, dims.cols);
-        var i: u32 = 0;
-        while (i < count) : (i += 1) {
-            if (dataFileMode) {
-                // skip exactly as restoreMatrixData reads, or the file position desyncs
-                if (is_complex) {
-                    readComplexToken(tmpString, @intCast(TMP_STR_LENGTH));
-                } else {
-                    readToken(tmpString, @intCast(TMP_STR_LENGTH));
-                }
+        skipMatrixElements(@as(u32, dims.rows) * @as(u32, dims.cols), is_complex);
+    }
+}
+
+// Reads past `elements` matrix elements, exactly as restoreMatrixData reads them,
+// or the file position desyncs.
+fn skipMatrixElements(elements: u32, is_complex: bool) void {
+    var i: u32 = 0;
+    while (i < elements) : (i += 1) {
+        if (dataFileMode) {
+            if (is_complex) {
+                readComplexToken(tmpString, @intCast(TMP_STR_LENGTH));
             } else {
-                calc_state.readLine(tmpString, @intCast(TMP_STR_LENGTH));
+                readToken(tmpString, @intCast(TMP_STR_LENGTH));
             }
+        } else {
+            calc_state.readLine(tmpString, @intCast(TMP_STR_LENGTH));
         }
     }
 }

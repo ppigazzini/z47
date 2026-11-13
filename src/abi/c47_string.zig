@@ -216,15 +216,14 @@ pub fn utf8ToCodePoint(utf8: [*]const u8, codePoint: *u32) u32 {
 pub fn stringToUtf8(strIn: [*]const u8, utf8In: [*]u8) void {
     var str = strIn;
     var utf8 = utf8In;
-    // The C stores the length in an int16_t, which truncates.
-    const len: i16 = @truncate(glyphLength(str));
+    const len: i32 = glyphLength(str);
 
     if (len == 0) {
         utf8[0] = 0;
         return;
     }
 
-    var i: i16 = 0;
+    var i: i32 = 0;
     while (i < len) : (i += 1) {
         if (str[0] & 0x80 != 0) {
             codePointToUtf8((@as(u32, str[0]) & 0x7F) * 256 + @as(u32, str[1]), utf8);

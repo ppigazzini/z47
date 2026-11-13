@@ -93,7 +93,7 @@ bool_t getRegisterAsRawShortInt(calcRegister_t reg, uint64_t *val, uint32_t *bas
 bool_t saveLastX(void);
 void liftStack(void);
 void displayCalcErrorMessage(uint8_t errorCode, calcRegister_t errMessageRegisterLine);
-void reallocateRegister(calcRegister_t regist, uint32_t dataType, uint16_t dataSizeWithoutDataLenBlocks, uint32_t tag);
+bool_t reallocateRegister(calcRegister_t regist, uint32_t dataType, uint16_t dataSizeWithoutDataLenBlocks, uint32_t tag);
 void *getRegisterDataPointer(calcRegister_t regist);
 bool_t getSystemFlag(int32_t sf);
 void setSystemFlag(unsigned int sf);

@@ -63,6 +63,7 @@ HOST_OPTIONS = {
     "option_eigen": True,
     "option_xfn_1000": True,
     "option_tvm_amort": True,
+    "option_drg_cfg": True,
     "ir_printing": True,
     "extra_info": True,
     "strip_15": False,

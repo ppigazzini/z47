@@ -67,7 +67,7 @@ real34_t *z47_constants_test_register_real34_data(calcRegister_t reg);
 
 void moreInfoOnError(const char *m1, const char *m2, const char *m3, const char *m4);
 void liftStack(void);
-void reallocateRegister(calcRegister_t regist, uint32_t dataType, uint16_t dataSizeWithoutDataLenBlocks, uint32_t tag);
+bool_t reallocateRegister(calcRegister_t regist, uint32_t dataType, uint16_t dataSizeWithoutDataLenBlocks, uint32_t tag);
 void realToReal34(const real_t *source, real34_t *destination);
 void convertRealToResultRegister(const real_t *source, calcRegister_t dest, angularMode_t angle);
 void adjustResult(calcRegister_t res,

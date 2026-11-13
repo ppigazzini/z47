@@ -24,6 +24,8 @@ const build_options = @import("calc_state_build_options");
 
 const state_old_hw: bool = build_options.state_old_hw;
 const option_atext_fonts: bool = build_options.option_atext_fonts;
+// OPTION_DRG_CFG: the units the DRG menu chose are saved after DRG_Cycling.
+const option_drg_cfg: bool = build_options.option_drg_cfg;
 
 const USER_R47: u16 = 66;
 const calc_model_user_id: u16 = build_options.calc_model_user_id;
@@ -156,6 +158,7 @@ extern var Input_Default: u8;
 extern var displayStackSHOIDISP: u8;
 extern var bcdDisplaySign: u8;
 extern var DRG_Cycling: u8;
+extern var drgConfig: u8;
 extern var DM_Cycling: u8;
 extern var LongPressM: u8;
 extern var LongPressF: u8;
@@ -515,6 +518,9 @@ pub fn writeSaveSections() void {
     saveField("displayStackSHOIDISP", "%u\n", .{cu(displayStackSHOIDISP)});
     saveField("bcdDisplaySign", "%u\n", .{cu(bcdDisplaySign)});
     saveField("DRG_Cycling", "%u\n", .{cu(DRG_Cycling)});
+    if (comptime option_drg_cfg) {
+        saveField("drgConfig", "%u\n", .{cu(drgConfig)});
+    }
     saveField("DM_Cycling", "%u\n", .{cu(DM_Cycling)});
     saveField("LongPressM", "%u\n", .{cu(LongPressM)});
     saveField("LongPressF", "%u\n", .{cu(LongPressF)});

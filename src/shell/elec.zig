@@ -49,8 +49,6 @@ const ERR_REGISTER_LINE: calcRegister_t = REGISTER_Z;
 
 const dtComplex34: u32 = 2;
 const amPolar: u32 = 16;
-const amAngleMask: u32 = 15;
-const amNone: u32 = 5;
 
 const FLAG_CPXRES = 0x8004;
 const FLAG_SPCRES = 0x8017;
@@ -155,8 +153,7 @@ inline fn getComplexRegisterPolarMode(reg: calcRegister_t) u32 {
     return getRegisterTag(reg) & amPolar;
 }
 inline fn setComplexRegisterPolarMode(reg: calcRegister_t, pm: u32) void {
-    const angle = if ((pm & amPolar) != 0) (getRegisterTag(reg) & amAngleMask) else amNone;
-    setRegisterTag(reg, angle | (pm & amPolar));
+    setRegisterTag(reg, abi.register_tag.complexWithPolarMode(getRegisterTag(reg), pm));
 }
 
 // Register reads and writes carry one cplx_t.

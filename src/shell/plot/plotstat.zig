@@ -140,6 +140,8 @@ const CF_ORTHOGONAL_FITTING: u16 = 512;
 const ERROR_OVERFLOW_PLUS_INF: u8 = 4;
 const ERROR_OVERFLOW_MINUS_INF: u8 = 5;
 const ERROR_NO_SUMMATION_DATA: u8 = 28;
+const ERROR_NOT_INITIALIZED: u8 = 75;
+const ERROR_NONE: u8 = 0;
 const REGISTER_X: calcRegister_t = 100;
 const REGISTER_Z: calcRegister_t = 102;
 const ERR_REGISTER_LINE: calcRegister_t = REGISTER_Z;
@@ -234,6 +236,7 @@ pub export var plotXYn: u16 = 0;
 // Externs - globals
 // ---------------------------------------------------------------------------
 extern var currentKeyCode: u8;
+extern var lastErrorCode: u8;
 extern var x_min: *real_t;
 extern var x_max: *real_t;
 extern var y_min: *real_t;
@@ -1327,7 +1330,7 @@ pub export fn graphPlotstat(selection: u16) callconv(.c) void {
 
     if ((plotStatMx[0] == 'S' and frontier_stats.checkMinimumDataPoints(const_2())) or
         (plotStatMx[0] == 'D' and drawMxN() >= 2) or
-        (plotStatMx[0] == 'H' and statMxN() >= 3))
+        (plotStatMx[0] == 'H' and statMxN() >= 2)) // the bin count is checked again in histogramBinCount
     {
         // The C assigns an int32 count to a uint16 and takes whatever the
         // narrowing leaves, exactly as drawline's NN does; a checked cast would
@@ -1572,16 +1575,32 @@ pub export fn graphPlotstat(selection: u16) callconv(.c) void {
             index += 1;
         }
     } else {
-        calcMode = CM_NORMAL; // upstream plotstat.c:1541 -- leave graph mode, or the next refresh re-enters this same failing branch
+        calcMode = CM_NORMAL; // leave graph mode, or the next refresh re-enters this same failing branch
+        z47_frontier_plot_report_no_data();
+    }
+    return;
+}
+
+// Why there is nothing to plot. A histogram has no bins until HISTOX or HISTOY
+// has run; other data reports no data, unless an error is already standing.
+pub fn z47_frontier_plot_report_no_data() void {
+    if (plotStatMx[0] == 'H') {
+        frontier_error.displayCalcErrorMessage(ERROR_NOT_INITIALIZED, ERR_REGISTER_LINE);
+        if (comptime extra_info) {
+            if (comptime !dmcp_build) {
+                abi.fmtBufZ(errorMessage[0..512], "HISTOX or HISTOY needs to be selected first!", .{});
+                moreInfoOnError("In function fnPlotStat:", errorMessage, null, null);
+            }
+        }
+    } else if (lastErrorCode == ERROR_NONE) {
         frontier_error.displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE);
         if (comptime extra_info) {
             if (comptime !dmcp_build) {
-                abi.fmtBufZ(errorMessage[0..512], "There is no statistical data available!", .{});
-                moreInfoOnError("In function graphPlotstat:", errorMessage, null, null);
+                abi.fmtBufZ(errorMessage[0..512], "There is no statistical/plot data available!", .{});
+                moreInfoOnError("In function fnPlotStat:", errorMessage, null, null);
             }
         }
     }
-    return;
 }
 
 inline fn yLine(off: i32) u32 {
@@ -1979,7 +1998,7 @@ pub fn z47_frontier_plot_set_statmx_histo() void {
 pub fn z47_frontier_plot_has_source_data() bool_t {
     return (plotStatMx[0] == 'S' and frontier_stats.checkMinimumDataPoints(const_2())) or
         (plotStatMx[0] == 'D' and drawMxN() >= 2) or
-        (plotStatMx[0] == 'H' and statMxN() >= 3);
+        (plotStatMx[0] == 'H' and statMxN() >= 2); // the bin count is checked again in histogramBinCount
 }
 
 pub fn z47_frontier_plot_clear_screen_for_graph_entry() void {

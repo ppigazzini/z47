@@ -71,6 +71,12 @@ const old_hw: bool = frontier_build_options.old_hw;
 const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 const option_vector: bool = frontier_build_options.option_vector;
 const option_elec: bool = frontier_build_options.option_elec;
+// OPTION_DRG_CFG: the DRG menu chooses the units DRG steps through, NIMDRG lets
+// DRG choose the unit of the number being entered, and A.AUTO makes the unit ADM.
+const option_drg_cfg: bool = frontier_build_options.option_drg_cfg;
+const DRG_NIM_BIT: u3 = 5;
+const DRG_AUTO_ADM_BIT: u3 = 6;
+const WRITE_BUFFER_LEN: i32 = 4096;
 
 // DMCP ROM trampoline base (lft_ifc.h offsets; base differs old_hw / new_hw).
 const LIBRARY_FN_BASE: usize = if (old_hw) 0x08000201 else 0x08000301;
@@ -223,6 +229,7 @@ const NP_REAL_FLOAT_PART: u8 = 4;
 const NP_REAL_EXPONENT: u8 = 5;
 const NP_FRACTION_DENOMINATOR: u8 = 6;
 const NP_COMPLEX_INT_PART: u8 = 7;
+const NP_EMPTY: u8 = 0;
 const NP_COMPLEX_FLOAT_PART: u8 = 8;
 const NP_COMPLEX_EXPONENT: u8 = 9;
 
@@ -387,6 +394,7 @@ const FLAG_BASE_MYM: c_uint = 32860;
 
 // errors
 const ERROR_INVALID_DATA_TYPE_FOR_OP: u8 = 24;
+const ERROR_OUT_OF_RANGE: u8 = 8;
 const ERROR_MATRIX_MISMATCH: u8 = 21;
 const ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX: u8 = 39;
 const ERROR_INVALID_DATA_TYPE_FOR_POLAR_RECT: u8 = 52;
@@ -616,6 +624,9 @@ extern fn getRegisterDataType(regist: calcRegister_t) u32;
 extern fn getRegisterDataPointer(regist: calcRegister_t) [*c]u8;
 extern fn setRegisterDataPointer(regist: calcRegister_t, p: [*c]u8) void;
 extern fn getRegisterTag(regist: calcRegister_t) u32;
+extern var drgConfig: u8;
+extern fn __gmpz_cmpabs(a: [*c]const mpz_struct, b: [*c]const mpz_struct) c_int;
+extern fn __gmpz_ui_pow_ui(r: [*c]mpz_struct, base: c_ulong, exponent: c_ulong) void;
 extern fn setRegisterTag(regist: calcRegister_t, tag: u32) void;
 extern fn setRegisterDataType(regist: calcRegister_t, dataType: u32, tag: u32) void;
 // freeRegisterData is a macro = freeC47Blocks(ptr, getRegisterFullSizeInBlocks).
@@ -692,11 +703,10 @@ inline fn setRegisterAngularMode(regist: calcRegister_t, am: u16) void {
     setRegisterTag(regist, am);
 }
 inline fn setComplexRegisterAngularMode(regist: calcRegister_t, am: u16) void {
-    setRegisterTag(regist, (am & amAngleMask) | (getRegisterTag(regist) & amPolar));
+    setRegisterTag(regist, abi.register_tag.complexWithAngularMode(getRegisterTag(regist), am));
 }
 inline fn setComplexRegisterPolarMode(regist: calcRegister_t, pm: u16) void {
-    const base: u32 = if ((pm & amPolar) != 0) (getRegisterTag(regist) & amAngleMask) else @as(u32, @intCast(amNone));
-    setRegisterTag(regist, base | (pm & amPolar));
+    setRegisterTag(regist, abi.register_tag.complexWithPolarMode(getRegisterTag(regist), pm));
 }
 
 // complex / matrix
@@ -1140,6 +1150,8 @@ fn _hmsTimeToReal() void {
 }
 
 // OPTION_EDIT_X
+// The text EDIT types for a real into nimInput, with its sign and a radix mark;
+// nimDisplay is scratch for the digits.
 fn _real34ToNim(real34: *align(1) const real34_t, nimInput: [*c]u8, nimDisplay: [*c]u8) void {
     var i: u16 = undefined;
     const grpGroupingLeftOld = grpGroupingLeft;
@@ -1166,7 +1178,7 @@ fn _real34ToNim(real34: *align(1) const real34_t, nimInput: [*c]u8, nimDisplay: 
     grpGroupingRight = grpGroupingRightOld;
     grpGroupingLeft = grpGroupingLeftOld;
     var dotFound: bool = false;
-    if (noDisplayExponent) {
+    if (noDisplayExponent) { // no exponent in the display string but one in real34ToString: use the display string
         i = 0;
         while (i < strlen(nimDisplay)) : (i += 1) {
             if ((nimDisplay[i] == 'e') or (nimDisplay[i] == 'E')) {
@@ -1194,51 +1206,214 @@ fn _real34ToNim(real34: *align(1) const real34_t, nimInput: [*c]u8, nimDisplay: 
     } else {
         _ = strcpy(nimInput, nimDisplay);
     }
-    var exponentFound: bool = false;
     dotFound = false;
     i = 0;
     while (i < strlen(nimInput)) : (i += 1) {
         if (nimInput[i] == 'E') {
             nimInput[i] = 'e';
             dotFound = true;
-            exponentFound = true;
-            exponentSignLocation = @intCast(i + 1);
-            nimNumberPart = NP_REAL_EXPONENT;
         }
         if (nimInput[i] == '.') {
             dotFound = true;
-            nimNumberPart = NP_REAL_FLOAT_PART;
         }
     }
     if (!dotFound) {
         nimInput[i] = '.';
-        nimNumberPart = NP_REAL_FLOAT_PART;
+        nimInput[i + 1] = 0;
     }
-    _ = strcpy(nimDisplay, STD_SPACE_HAIR);
-    frontier_bufferize.nimBufferToDisplayBuffer(nimInput, nimDisplay + 2);
-    i = @intCast(stringByteLength(nimDisplay) - 1);
-    while (i > 0) : (i -%= 1) {
-        if (nimDisplay[i] == 0xab) { // token
-            nimDisplay[i] = SEPARATOR_LEFT()[0];
-            if (nimDisplay[i + 1] == 1) {
-                nimDisplay[i + 1] = SEPARATOR_LEFT()[1];
-            }
+}
+
+// A key of the number EDIT types: to the program step in PEM and to X otherwise.
+fn _editAddItem(item: i16) void {
+    if (calcMode == CM_PEM) {
+        frontier_manage.pemAddNumber(item, false);
+    } else {
+        frontier_bufferize.addItemToNimBuffer(item);
+    }
+}
+
+// The number in tempBuffer typed as the keys that enter it, so the entry and its
+// display are those of the keys.
+fn _editReplay(tempBuffer: [*c]const u8, opParam: u8, base: u8) void {
+    var chsNeeded: bool = false;
+    const isDate: bool = (opParam == STRING_DATE);
+    const iMax: u16 = @intCast(strlen(tempBuffer));
+    var decimalflag: bool = false;
+    lastIntegerBase = base;
+    hexDigits = 0;
+    var i: u16 = 0;
+    while (i < iMax) : (i += 1) {
+        switch (tempBuffer[i]) {
+            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' => {
+                _editAddItem(@as(i16, ITM_0) + @as(i16, tempBuffer[i]) - '0');
+            },
+            'A', 'B', 'C', 'D', 'E', 'F' => {
+                _editAddItem(@as(i16, ITM_A) + @as(i16, tempBuffer[i]) - 'A');
+            },
+            '.', ':' => {
+                if (!decimalflag) {
+                    decimalflag = true;
+                    _editAddItem(ITM_PERIOD);
+                }
+            },
+            '+' => {
+                if (chsNeeded) {
+                    _editAddItem(ITM_CHS); // '-' was already encountered: negate the real part first
+                }
+                chsNeeded = false;
+                if (opParam == BINARY_COMPLEX34) {
+                    _editAddItem(ITM_CC);
+                    decimalflag = false;
+                }
+            },
+            '-' => {
+                if (isDate) {
+                    if (!decimalflag) {
+                        decimalflag = true;
+                        _editAddItem(ITM_PERIOD);
+                    }
+                } else {
+                    if (chsNeeded) {
+                        _editAddItem(ITM_CHS); // the second '-': negate the real part first
+                    }
+                    chsNeeded = true;
+                    if (opParam == BINARY_COMPLEX34) {
+                        _editAddItem(ITM_CC);
+                        decimalflag = false;
+                    }
+                }
+            },
+            '/' => {
+                if (isDate) {
+                    if (!decimalflag) {
+                        decimalflag = true;
+                        _editAddItem(ITM_PERIOD);
+                    }
+                } else { // a fraction: 1 2/3 is typed 1.2.3 and 2/3 is typed 2..3
+                    if (!decimalflag) {
+                        _editAddItem(ITM_PERIOD);
+                    }
+                    decimalflag = true;
+                    _editAddItem(ITM_PERIOD);
+                }
+            },
+            ' ' => { // the gap of the fraction 1 2/3
+                decimalflag = true;
+                _editAddItem(ITM_PERIOD);
+            },
+            'e' => {
+                if (chsNeeded) {
+                    _editAddItem(ITM_CHS); // change the mantissa sign before entering the exponent
+                }
+                chsNeeded = false;
+                _editAddItem(ITM_EXPONENT);
+            },
+            'i' => {
+                _editAddItem(ITM_CC);
+                decimalflag = false;
+            },
+            0x80 => {
+                i += 1;
+                if ((tempBuffer[i] == STD_CROSS[1]) and (nimNumberPart != NP_COMPLEX_INT_PART)) {
+                    i += 2; // Skip next character (STD_BASE_10)
+                    if (chsNeeded) {
+                        _editAddItem(ITM_CHS); // change the mantissa sign before entering the exponent
+                    }
+                    chsNeeded = false;
+                    _editAddItem(ITM_EXPONENT);
+                } else if ((tempBuffer[i] == STD_DEGREE[1]) and (opParam == STRING_ANGLE_DMS)) {
+                    decimalflag = true; // the radix mark of the seconds is not a second one
+                    _editAddItem(ITM_PERIOD);
+                }
+            },
+            0xa1 => {
+                i += 1;
+                if ((tempBuffer[i] >= STD_SUP_0[1]) and (tempBuffer[i] <= STD_SUP_9_1)) {
+                    _editAddItem(@as(i16, ITM_0) + @as(i16, tempBuffer[i]) - STD_SUP_0[1]);
+                } else if (tempBuffer[i] == STD_SUP_MINUS[1]) {
+                    chsNeeded = true;
+                } else if (((tempBuffer[i] == STD_op_i_1) or (tempBuffer[i] == STD_op_j_1)) and (nimNumberPart != NP_COMPLEX_INT_PART)) {
+                    _editAddItem(ITM_CC);
+                    decimalflag = false;
+                }
+            },
+            0x81, 0x82, 0x83, 0x9d, 0x9e, 0xa0, 0xa2, 0xa3, 0xa4, 0xa5, 0xa6, 0xa7, 0xa9, 0xab, 0xac => {
+                i += 1; // Ignore non supported unicode characters, including base subscripts
+            },
+            else => {},
         }
-        if (nimDisplay[i] == 0xbb) { // token
-            nimDisplay[i] = SEPARATOR_RIGHT()[0];
-            if (nimDisplay[i + 1] == 1) {
-                nimDisplay[i + 1] = SEPARATOR_RIGHT()[1];
-            }
+        lastIntegerBase = base;
+    }
+    if (chsNeeded) {
+        _editAddItem(ITM_CHS);
+    }
+}
+
+// X opens in NIM as its number typed from the keys. A long integer wider than the
+// two lines NIM shows stays in X unedited.
+fn _editX() void {
+    const text: [*c]u8 = errorMessage + 3000;
+    const dataType = getRegisterDataType(REGISTER_X);
+    var xangularMode: angularMode_t = amNone;
+    var base: u8 = 0;
+
+    if (dataType == dtLongInteger) {
+        var lgInt: longInteger_t = undefined;
+        frontier_register_value_conversions.convertLongIntegerRegisterToLongInteger(REGISTER_X, &lgInt[0]);
+        frontier_display.longIntegerToAllocatedString(&lgInt[0], text, WRITE_BUFFER_LEN - 3000);
+        longIntegerFree(&lgInt);
+        if (stringByteLength(text) > 200) { // far wider than the two lines, so the digits are not typed
+            return;
+        }
+        copySourceRegisterToDestRegister(REGISTER_X, TEMP_REGISTER_1);
+    } else if (dataType == dtShortInteger) {
+        base = @intCast(getRegisterTag(REGISTER_X));
+        _shortIntegerToString(REGISTER_X, text);
+    } else { // a real, and a time or a date in the real form it is edited in
+        xangularMode = getRegisterAngularMode(REGISTER_X);
+        if (xangularMode == amDMS) {
+            frontier_conversion_angles.real34FromDegToDms(reg34(REGISTER_X), reg34(REGISTER_X));
+        }
+        var lessEqualGreater: i16 = 1;
+        // A D.MS angle keeps its degrees, minutes and seconds, as on the display.
+        if (getSystemFlag(FLAG_FRACT) != 0 and !(option_drg_cfg and xangularMode == amDMS)) {
+            _fractionToString(REGISTER_X, text, &lessEqualGreater);
+        }
+        if (lessEqualGreater != 0) { // not a fraction, or one only near the value
+            _real34ToNim(reg34(REGISTER_X), text, nimBufferDisplay);
         }
     }
-    if (exponentFound) {
-        frontier_display.exponentToDisplayString(stringToInt32(nimInput + @as(usize, @intCast(exponentSignLocation))), nimDisplay + @as(usize, @intCast(stringByteLength(nimDisplay))), null, 1);
-        if (nimInput[@as(usize, @intCast(exponentSignLocation)) + 1] == 0 and nimInput[@intCast(exponentSignLocation)] == '-') {
-            _ = strcat(nimDisplay, STD_SUP_MINUS);
-        } else if (nimInput[@as(usize, @intCast(exponentSignLocation)) + 1] == '0' and nimInput[@intCast(exponentSignLocation)] == '+') {
-            _ = strcat(nimDisplay, STD_SUP_0);
-        }
+
+    freeRegisterData(REGISTER_X);
+    setRegisterDataPointer(REGISTER_X, allocC47Blocks(REAL34_SIZE_IN_BLOCKS));
+    // A time and a date keep their types for the close.
+    setRegisterDataType(REGISTER_X, if (dataType == dtTime or dataType == dtDate) dataType else dtReal34, @intCast(xangularMode));
+    real34SetZero(reg34(REGISTER_X));
+
+    const inputDefault = Input_Default;
+    Input_Default = ID_DP; // i LI refuses a radix mark from the keyboard, not one in the number of X
+    calcMode = CM_NIM; // the entry is open, so the keys do not lift the stack
+    frontier_bufferize.nimStartNumber(ITM_0);
+    hexDigits = 0;
+    _editReplay(text, if (base == 0) 0 else BINARY_SHORT_INTEGER, base);
+    Input_Default = inputDefault;
+
+    if (dataType == dtLongInteger and frontier_char_string.stringWidth(nimBufferDisplay + 2, &standardFont, true, true) >= (SCREEN_WIDTH * 2) - 8) { // 8 is the standard font cursor width
+        copySourceRegisterToDestRegister(TEMP_REGISTER_1, REGISTER_X);
+        calcMode = CM_NORMAL;
+        aimBuffer[0] = 0;
+        nimBufferDisplay[0] = 0;
+        nimNumberPart = NP_EMPTY;
+        return;
     }
+
+    clearSystemFlag(FLAG_ALPHA);
+    if (!checkHP()) {
+        frontier_screen.clearRegisterLine(NIM_REGISTER_LINE, true, true);
+    }
+    xCursor = 1;
+    cursorEnabled = 1;
+    cursorFont = &numericFont;
 }
 
 // ===========================================================================
@@ -1247,13 +1422,10 @@ fn _real34ToNim(real34: *align(1) const real34_t, nimInput: [*c]u8, nimDisplay: 
 pub export fn fnEdit(unusedParamButMandatory: u16) callconv(.c) void {
     _ = unusedParamButMandatory;
     var index: i16 = 0;
-    var grpGroupingLeftOld: u8 = 0;
-    var grpGroupingRightOld: u8 = 0;
     var varOrLblName: [32]u8 = undefined; // C: char varOrLblName[32]; a name's byte length (opParam2) can exceed 7 with multi-byte glyphs
 
     if (tam.mode != 0) {
-        frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
-        moreInfoOnErr("In function fnEdit:", "Calculator mode or type not supported for EDIT command");
+        editErr();
         return;
     }
     switch (calcMode) {
@@ -1264,18 +1436,17 @@ pub export fn fnEdit(unusedParamButMandatory: u16) callconv(.c) void {
                 frontier_softmenus.showSoftmenu(-MNU_EQN);
                 frontier_items.runFunction(ITM_EQ_EDI);
             } else {
-                editNormalDispatch(&index, &grpGroupingLeftOld, &grpGroupingRightOld);
+                editNormalDispatch();
             }
         },
         CM_AIM => {
             frontier_items.runFunction(ITM_XEDIT);
         },
         CM_PEM => {
-            editPem(&index, &grpGroupingLeftOld, &grpGroupingRightOld, &varOrLblName);
+            editPem(&index, &varOrLblName);
         },
         else => {
-            frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
-            moreInfoOnErr("In function fnEdit:", "Calculator mode or type not supported for EDIT command");
+            editErr();
         },
     }
 }
@@ -1286,32 +1457,26 @@ fn editErr() void {
 }
 
 // CM_NORMAL data-type dispatch arm of fnEdit.
-fn editNormalDispatch(index: *i16, grpGroupingLeftOld: *u8, grpGroupingRightOld: *u8) void {
-    const dt = getRegisterDataType(REGISTER_X);
-    switch (dt) {
-        dtLongInteger => {
-            editLongInteger();
-            return;
-        },
+fn editNormalDispatch() void {
+    switch (getRegisterDataType(REGISTER_X)) {
+        dtLongInteger, dtShortInteger => _editX(),
         dtReal34 => {
-            editReal34(index, grpGroupingLeftOld, grpGroupingRightOld);
-            return;
+            if (abi.real34IsSpecial(reg34(REGISTER_X))) { // infinity and NaN have no digits to type
+                editErr();
+                return;
+            }
+            _editX();
         },
         dtTime => {
             _hmsTimeToReal();
-            setRegisterDataType(REGISTER_X, dtTime, amNone);
-            editReal34(index, grpGroupingLeftOld, grpGroupingRightOld);
-            return;
+            setRegisterDataType(REGISTER_X, dtTime, amNone); // the time type survives the close of NIM
+            _editX();
         },
         dtDate => {
             frontier_register_value_conversions.convertDateRegisterToReal34Register(REGISTER_X, REGISTER_X);
-            setRegisterDataType(REGISTER_X, dtDate, amNone);
-            editReal34(index, grpGroupingLeftOld, grpGroupingRightOld);
-            return;
+            setRegisterDataType(REGISTER_X, dtDate, amNone); // the date type survives the close of NIM
+            _editX();
         },
-        else => {},
-    }
-    switch (dt) {
         dtString => {
             setSystemFlag(FLAG_ASLIFT);
             if (stringByteLength(regString(REGISTER_X)) < @as(i32, @intCast(AIM_BUFFER_LENGTH))) {
@@ -1327,180 +1492,12 @@ fn editNormalDispatch(index: *i16, grpGroupingLeftOld: *u8, grpGroupingRightOld:
         dtReal34Matrix, dtComplex34Matrix => {
             matrix_editor_entry.fnEditMatrix(NOPARAM);
         },
-        else => {
-            if (dt == dtShortInteger) {
-                editShortInteger(grpGroupingLeftOld, grpGroupingRightOld);
-                return;
-            }
-            editErr();
-        },
+        else => editErr(),
     }
-}
-
-fn editLongInteger() void {
-    @memset(nimBufferDisplay[0..NIM_BUFFER_EXTENDED_LENGTH], 0);
-    var lgInt: longInteger_t = undefined;
-    frontier_register_value_conversions.convertLongIntegerRegisterToLongInteger(REGISTER_X, &lgInt[0]);
-    frontier_display.longIntegerToAllocatedString(&lgInt[0], nimBufferDisplay, NIM_BUFFER_EXTENDED_LENGTH);
-    if (longIntegerIsPositiveOrZero(&lgInt)) {
-        aimBuffer[0] = '+';
-        _ = strcpy(aimBuffer + 1, nimBufferDisplay);
-    } else {
-        _ = strcpy(aimBuffer, nimBufferDisplay);
-    }
-    longIntegerFree(&lgInt);
-    if (grpGroupingLeft > 0) {
-        var len: i16 = @intCast(strlen(nimBufferDisplay));
-        var i: i16 = len - @as(i16, @intCast(grpGroupingLeft));
-        while (i > 0) : (i -= @intCast(grpGroupingLeft)) {
-            if (i != 1 or nimBufferDisplay[0] != '-') {
-                if (gapItemLeft != ITM_NULL) { // insert gapCharLeft
-                    const lenGapItem: u8 = @intCast(strlen(&indexOfItems[gapItemLeft].itemSoftmenuName));
-                    _ = frontier_char_string.xcopy(nimBufferDisplay + @as(usize, @intCast(i)) + lenGapItem, nimBufferDisplay + @as(usize, @intCast(i)), @intCast(len - i + 1));
-                    _ = frontier_char_string.xcopy(nimBufferDisplay + @as(usize, @intCast(i)), &indexOfItems[gapItemLeft].itemSoftmenuName, lenGapItem);
-                    len += @intCast(lenGapItem);
-                }
-            }
-        }
-    }
-
-    if (frontier_char_string.stringWidth(nimBufferDisplay, &standardFont, true, true) < (SCREEN_WIDTH * 2) - 8) {
-        calcMode = CM_NIM;
-        clearSystemFlag(FLAG_ALPHA);
-        freeRegisterData(REGISTER_X);
-        setRegisterDataPointer(REGISTER_X, allocC47Blocks(REAL34_SIZE_IN_BLOCKS));
-        setRegisterDataType(REGISTER_X, dtReal34, amNone);
-        real34SetZero(reg34(REGISTER_X));
-        hexDigits = 0;
-        nimNumberPart = NP_INT_10;
-        if (!checkHP()) {
-            frontier_screen.clearRegisterLine(NIM_REGISTER_LINE, true, true);
-        }
-        xCursor = 1;
-        cursorEnabled = 1;
-        cursorFont = &numericFont;
-    } else {
-        @memset(nimBufferDisplay[0..NIM_BUFFER_EXTENDED_LENGTH], 0);
-        aimBuffer[0] = 0;
-        nimBufferDisplay[0] = 0;
-    }
-}
-
-fn editReal34(index: *i16, grpGroupingLeftOld: *u8, grpGroupingRightOld: *u8) void {
-    grpGroupingLeftOld.* = grpGroupingLeft;
-    grpGroupingRightOld.* = grpGroupingRight;
-    const xangularMode = getRegisterAngularMode(REGISTER_X);
-
-    @memset(aimBuffer[0..AIM_BUFFER_LENGTH], 0);
-    @memset(nimBufferDisplay[0..NIM_BUFFER_LENGTH], 0);
-
-    if (xangularMode == amDMS) {
-        frontier_conversion_angles.real34FromDegToDms(reg34(REGISTER_X), reg34(REGISTER_X));
-    }
-
-    var lessEqualGreater: i16 = 0;
-    if (getSystemFlag(FLAG_FRACT) != 0) {
-        grpGroupingLeft = 0;
-        grpGroupingRight = 0;
-        _fractionToString(REGISTER_X, aimBuffer, &lessEqualGreater);
-        grpGroupingRight = grpGroupingRightOld.*;
-        grpGroupingLeft = grpGroupingLeftOld.*;
-
-        if (lessEqualGreater == 0) { // display fraction
-            nimNumberPart = NP_FRACTION_DENOMINATOR;
-            _ = strcpy(nimBufferDisplay, STD_SPACE_HAIR);
-            frontier_bufferize.nimBufferToDisplayBuffer(aimBuffer, nimBufferDisplay + 2);
-            _ = strcat(nimBufferDisplay, STD_SPACE_4_PER_EM);
-            index.* = 2;
-            while (aimBuffer[@intCast(index.*)] != ' ') : (index.* += 1) {}
-            frontier_display.supNumberToDisplayString(stringToInt32(aimBuffer + @as(usize, @intCast(index.* + 1))), nimBufferDisplay + @as(usize, @intCast(stringByteLength(nimBufferDisplay))), null, 1);
-
-            _ = strcat(nimBufferDisplay, "/");
-
-            while (aimBuffer[@intCast(index.*)] != '/') : (index.* += 1) {}
-            index.* += 1;
-            if (aimBuffer[@intCast(index.*)] != 0) {
-                frontier_display.subNumberToDisplayString(stringToInt32(aimBuffer + @as(usize, @intCast(index.*))), nimBufferDisplay + @as(usize, @intCast(stringByteLength(nimBufferDisplay))), null);
-            }
-        } else { // display real34
-            _real34ToNim(reg34(REGISTER_X), aimBuffer, nimBufferDisplay);
-        }
-    } else { // display real34
-        _real34ToNim(reg34(REGISTER_X), aimBuffer, nimBufferDisplay);
-    }
-
-    calcMode = CM_NIM;
-    clearSystemFlag(FLAG_ALPHA);
-    const dataType = getRegisterDataType(REGISTER_X);
-    freeRegisterData(REGISTER_X);
-    setRegisterDataPointer(REGISTER_X, allocC47Blocks(REAL34_SIZE_IN_BLOCKS));
-    if ((dataType == dtTime) or (dataType == dtDate)) {
-        setRegisterDataType(REGISTER_X, dataType, @intCast(xangularMode));
-    } else {
-        setRegisterDataType(REGISTER_X, dtReal34, @intCast(xangularMode));
-    }
-    real34SetZero(reg34(REGISTER_X));
-    hexDigits = 0;
-    if (!checkHP()) {
-        frontier_screen.clearRegisterLine(NIM_REGISTER_LINE, true, true);
-    }
-    xCursor = 1;
-    cursorEnabled = 1;
-    cursorFont = &numericFont;
-}
-
-fn editShortInteger(grpGroupingLeftOld: *u8, grpGroupingRightOld: *u8) void {
-    var i: u16 = undefined;
-    grpGroupingLeftOld.* = grpGroupingLeft;
-    grpGroupingRightOld.* = grpGroupingRight;
-
-    @memset(aimBuffer[0..AIM_BUFFER_LENGTH], 0);
-    @memset(nimBufferDisplay[0..NIM_BUFFER_LENGTH], 0);
-
-    lastIntegerBase = getRegisterTag(REGISTER_X);
-    nimNumberPart = if (lastIntegerBase <= 10) NP_INT_10 else NP_INT_16;
-
-    grpGroupingLeft = 0;
-    grpGroupingRight = 0;
-    _shortIntegerToString(REGISTER_X, aimBuffer);
-    grpGroupingRight = grpGroupingRightOld.*;
-    grpGroupingLeft = grpGroupingLeftOld.*;
-
-    hexDigits = 0;
-    i = 0;
-    while (i < strlen(aimBuffer)) : (i += 1) {
-        if ((aimBuffer[i] >= 'A') and (aimBuffer[i] <= 'F')) {
-            hexDigits += 1;
-        }
-    }
-
-    _ = strcpy(nimBufferDisplay, STD_SPACE_HAIR);
-    frontier_bufferize.nimBufferToDisplayBuffer(aimBuffer, nimBufferDisplay + 2);
-    i = @intCast(stringByteLength(nimBufferDisplay) - 1);
-    while (i > 0) : (i -%= 1) {
-        if (nimBufferDisplay[i] == 0xab) { // token
-            nimBufferDisplay[i] = SEPARATOR_LEFT()[0];
-            if (nimBufferDisplay[i + 1] == 1) {
-                nimBufferDisplay[i + 1] = SEPARATOR_LEFT()[1];
-            }
-        }
-    }
-
-    calcMode = CM_NIM;
-    clearSystemFlag(FLAG_ALPHA);
-    freeRegisterData(REGISTER_X);
-    setRegisterDataPointer(REGISTER_X, allocC47Blocks(REAL34_SIZE_IN_BLOCKS));
-    setRegisterDataType(REGISTER_X, dtReal34, amNone);
-    if (!checkHP()) {
-        frontier_screen.clearRegisterLine(NIM_REGISTER_LINE, true, true);
-    }
-    xCursor = 1;
-    cursorEnabled = 1;
-    cursorFont = &numericFont;
 }
 
 // CM_PEM arm of fnEdit (the program-step editor).
-fn editPem(index: *i16, grpGroupingLeftOld: *u8, grpGroupingRightOld: *u8, varOrLblName: *[32]u8) void {
+fn editPem(index: *i16, varOrLblName: *[32]u8) void {
     if ((pemCursorIsZerothStep != 0) or isAtEndOfProgram(currentStep) != 0 or frontier_manage.isAtEndOfPrograms(currentStep)) {
         return; // Don't try to edit step 000 or END or .END.
     }
@@ -1531,138 +1528,34 @@ fn editPem(index: *i16, grpGroupingLeftOld: *u8, grpGroupingRightOld: *u8, varOr
             (opParam == STRING_ANGLE_RADIAN) or (opParam == STRING_ANGLE_GRAD) or
             (opParam == STRING_ANGLE_DEGREE) or (opParam == STRING_ANGLE_MULTPI))
         {
-            editPemLiteral(opParam, opParam2, grpGroupingLeftOld, grpGroupingRightOld);
+            editPemLiteral(opParam, opParam2);
         }
     } else {
         editPemNonLiteral(func, opParam, opParam2, opParam3, &i, index, varOrLblName);
     }
 }
 
-fn editPemLiteral(opParam_in: u8, opParam2: u8, grpGroupingLeftOld: *u8, grpGroupingRightOld: *u8) void {
-    const opParam = opParam_in;
+// A literal step reopens as its number typed into the program editor.
+fn editPemLiteral(opParam: u8, opParam2: u8) void {
     const tempBuffer: [*c]u8 = errorMessage + 3000;
-    var chsNeeded: bool = false;
-    const isDate: bool = (opParam == STRING_DATE);
 
     if ((opParam == STRING_REAL34) or (opParam == STRING_COMPLEX34)) {
         frontier_decode.getStringLabelOrVariableName(&currentStep[2]);
         _ = strcpy(tempBuffer, tmpStringLabelOrVariableName);
     } else {
-        grpGroupingLeftOld.* = grpGroupingLeft;
-        grpGroupingRightOld.* = grpGroupingRight;
+        const grpGroupingLeftOld = grpGroupingLeft;
+        const grpGroupingRightOld = grpGroupingRight;
         grpGroupingRight = 0;
         grpGroupingLeft = 0;
         frontier_decode.decodeOneStep(currentStep);
-        grpGroupingRight = grpGroupingRightOld.*;
-        grpGroupingLeft = grpGroupingLeftOld.*;
+        grpGroupingRight = grpGroupingRightOld;
+        grpGroupingLeft = grpGroupingLeftOld;
         _ = strcpy(tempBuffer, tmpString);
     }
     lastIntegerBase = if (opParam == BINARY_SHORT_INTEGER) opParam2 else if (opParam == STRING_SHORT_INTEGER) opParam2 else 0;
     frontier_manage.deleteStepsFromTo(currentStep, frontier_next_step.findNextStep(currentStep));
 
-    var i: u16 = 0;
-    const iMax: u16 = @intCast(strlen(tempBuffer));
-    var decimalflag: bool = false;
-    while (i < iMax) : (i += 1) {
-        switch (tempBuffer[i]) {
-            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' => {
-                frontier_manage.pemAddNumber(@as(i16, ITM_0) + @as(i16, tempBuffer[i]) - '0', false);
-            },
-            'A', 'B', 'C', 'D', 'E', 'F' => {
-                frontier_manage.pemAddNumber(@as(i16, ITM_A) + @as(i16, tempBuffer[i]) - 'A', false);
-            },
-            '.' => {
-                if (!decimalflag) {
-                    decimalflag = true;
-                    frontier_manage.pemAddNumber(ITM_PERIOD, false);
-                }
-            },
-            ':' => {
-                if (!decimalflag) {
-                    decimalflag = true;
-                    frontier_manage.pemAddNumber(ITM_PERIOD, false);
-                }
-            },
-            '+' => {
-                if (chsNeeded) {
-                    frontier_manage.pemAddNumber(ITM_CHS, false);
-                }
-                chsNeeded = false;
-                if (opParam == BINARY_COMPLEX34) {
-                    frontier_manage.pemAddNumber(ITM_CC, false);
-                    decimalflag = false;
-                }
-            },
-            '-' => {
-                if (isDate) {
-                    if (!decimalflag) {
-                        decimalflag = true;
-                        frontier_manage.pemAddNumber(ITM_PERIOD, false);
-                    }
-                } else {
-                    if (chsNeeded) {
-                        frontier_manage.pemAddNumber(ITM_CHS, false);
-                    }
-                    chsNeeded = true;
-                    if (opParam == BINARY_COMPLEX34) {
-                        frontier_manage.pemAddNumber(ITM_CC, false);
-                        decimalflag = false;
-                    }
-                }
-            },
-            '/' => {
-                if (isDate) {
-                    if (!decimalflag) {
-                        decimalflag = true;
-                        frontier_manage.pemAddNumber(ITM_PERIOD, false);
-                    }
-                }
-            },
-            'e' => {
-                if (chsNeeded) {
-                    frontier_manage.pemAddNumber(ITM_CHS, false);
-                }
-                chsNeeded = false;
-                frontier_manage.pemAddNumber(ITM_EXPONENT, false);
-            },
-            'i' => {
-                frontier_manage.pemAddNumber(ITM_CC, false);
-                decimalflag = false;
-            },
-            0x80 => {
-                i += 1;
-                if ((tempBuffer[i] == STD_CROSS[1]) and (nimNumberPart != NP_COMPLEX_INT_PART)) {
-                    i += 2; // Skip next character (STD_BASE_10)
-                    if (chsNeeded) {
-                        frontier_manage.pemAddNumber(ITM_CHS, false);
-                    }
-                    chsNeeded = false;
-                    frontier_manage.pemAddNumber(ITM_EXPONENT, false);
-                } else if ((tempBuffer[i] == STD_DEGREE[1]) and (opParam == STRING_ANGLE_DMS)) {
-                    frontier_manage.pemAddNumber(ITM_PERIOD, false);
-                }
-            },
-            0xa1 => {
-                i += 1;
-                if ((tempBuffer[i] >= STD_SUP_0[1]) and (tempBuffer[i] <= STD_SUP_9_1)) {
-                    frontier_manage.pemAddNumber(@as(i16, ITM_0) + @as(i16, tempBuffer[i]) - STD_SUP_0[1], false);
-                } else if (tempBuffer[i] == STD_SUP_MINUS[1]) {
-                    chsNeeded = true;
-                } else if (((tempBuffer[i] == STD_op_i_1) or (tempBuffer[i] == STD_op_j_1)) and (nimNumberPart != NP_COMPLEX_INT_PART)) {
-                    frontier_manage.pemAddNumber(ITM_CC, false);
-                    decimalflag = false;
-                }
-            },
-            0x81, 0x82, 0x83, 0x9d, 0x9e, 0xa0, 0xa2, 0xa3, 0xa4, 0xa5, 0xa6, 0xa7, 0xa9, 0xab, 0xac => {
-                i += 1; // Ignore non supported unicode characters, including base subscripts
-            },
-            else => {},
-        }
-        lastIntegerBase = if (opParam == BINARY_SHORT_INTEGER) opParam2 else if (opParam == STRING_SHORT_INTEGER) opParam2 else 0;
-    }
-    if (chsNeeded) {
-        frontier_manage.pemAddNumber(ITM_CHS, false);
-    }
+    _editReplay(tempBuffer, opParam, @intCast(lastIntegerBase));
     switch (opParam) {
         STRING_DATE, STRING_TIME, STRING_ANGLE_RADIAN, STRING_ANGLE_GRAD, STRING_ANGLE_DEGREE, STRING_ANGLE_DMS, STRING_ANGLE_MULTPI => {
             editingLiteralType = opParam;
@@ -2165,7 +2058,53 @@ pub export fn addzeroes(st: [*c]u8, ix: u8) callconv(.c) void {
     st[1 + @as(usize, ix)] = 0;
 }
 
+// Converts a long integer or a short integer in the register to a real34 in
+// place. A long integer of more than 34 digits is rounded to 34; a short integer
+// takes its value in any base. No test and no error: a caller that needs the
+// out-of-range gate uses convertIntRegisterToRealOrError.
+pub export fn convertIntRegisterToReal(regist: calcRegister_t) callconv(.c) void {
+    if (getRegisterDataType(regist) == dtLongInteger) {
+        frontier_register_value_conversions.convertLongIntegerRegisterToReal34Register(regist, regist);
+    } else if (getRegisterDataType(regist) == dtShortInteger) {
+        frontier_register_value_conversions.convertShortIntegerRegisterToReal34Register(regist, regist);
+    }
+}
+
+// Converts as convertIntRegisterToReal, but refuses a value that would lose data:
+// a long integer of more than 34 digits, or a short integer in a base other than
+// ten. Such a value is left unchanged, the out-of-range error is displayed, and
+// the answer is false.
+pub export fn convertIntRegisterToRealOrError(regist: calcRegister_t) callconv(.c) bool_t {
+    if (getRegisterDataType(regist) == dtLongInteger) {
+        var value: longInteger_t = undefined;
+        var boundary: longInteger_t = undefined;
+        longIntegerInit(&value);
+        longIntegerInit(&boundary);
+        frontier_register_value_conversions.convertLongIntegerRegisterToLongInteger(regist, &value[0]);
+        __gmpz_ui_pow_ui(&boundary[0], 10, 34); // 10^34 is the first 35-digit magnitude; a smaller value fits a real34's 34 digits exactly
+        const fits = __gmpz_cmpabs(&value[0], &boundary[0]) < 0;
+        longIntegerFree(&value);
+        longIntegerFree(&boundary);
+        if (!fits) {
+            frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
+            return 0;
+        }
+    } else if (getRegisterDataType(regist) == dtShortInteger) {
+        if (getRegisterTag(regist) != 10) { // the short integer's base
+            frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
+            return 0;
+        }
+    }
+    convertIntRegisterToReal(regist);
+    return 1;
+}
+
 pub export fn fnMultiplySI(multiplier: u16) callconv(.c) void {
+    if (getRegisterDataType(REGISTER_X) == dtLongInteger or getRegisterDataType(REGISTER_X) == dtShortInteger) {
+        if (convertIntRegisterToRealOrError(REGISTER_X) == 0) {
+            return; // X is out of range for the conversion: the error is shown and X is unchanged
+        }
+    }
     copySourceRegisterToDestRegister(REGISTER_L, TEMP_REGISTER_1);
     var mult: [64]u8 = undefined;
     var divi: [64]u8 = undefined;
@@ -2784,20 +2723,17 @@ pub export fn fnJM_2SI(unusedButMandatoryParameter: u16) callconv(.c) void {
     switch (getRegisterDataType(REGISTER_X)) {
         dtLongInteger => {
             frontier_register_value_conversions.convertLongIntegerRegisterToLongInteger(REGISTER_X, &tmp3[0]);
-            if (shortIntegerMode == SIM_UNSIGN and longIntegerIsNegative(&tmp3)) {
-                temporaryInformation = TI_DATA_NEG_OVRFL;
-            }
             frontier_register_value_conversions.convertLongIntegerRegisterToShortIntegerRegister(REGISTER_X, REGISTER_X); // default to 10
             if (lastIntegerBase >= 2 and lastIntegerBase <= 16 and lastIntegerBase != 10) {
                 frontier_integers.fnChangeBase(@intCast(lastIntegerBase));
             }
             frontier_register_value_conversions.convertShortIntegerRegisterToLongInteger(REGISTER_X, &tmp1[0]);
 
+            // The short integer does not round-trip back to the original: the value
+            // does not fit the word size, so it is refused and X keeps the long integer.
             if (longIntegerCompare(&tmp1[0], &tmp3[0]) != 0) {
-                if (temporaryInformation != TI_DATA_NEG_OVRFL) {
-                    temporaryInformation = TI_DATA_LOSS;
-                }
-                setSystemFlag(FLAG_OVERFLOW);
+                frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
+                frontier_register_value_conversions.convertLongIntegerToLongIntegerRegister(&tmp3[0], REGISTER_X);
             }
             longIntegerFree(&tmp1);
             longIntegerFree(&tmp3);
@@ -2877,7 +2813,7 @@ const FLAG_MULTx: c_int = 32795; // 0x801b
 
 pub export fn fnDisplayFormatCycle(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
-    if (DM_Cycling == 0 and softmenu[@intCast(softmenuStack[0].softmenuId)].menuItem == -MNU_PREFIX) {
+    if (DM_Cycling == 0 and displayFormat != DF_UN and softmenu[@intCast(softmenuStack[0].softmenuId)].menuItem == -MNU_PREFIX) {
         display_format.fnDisplayFormatUnit(@as(u16, displayFormatDigits));
     } else if (displayFormat == DF_UN) {
         display_format.fnDisplayFormatSigFig(@as(u16, displayFormatDigits));
@@ -2946,16 +2882,82 @@ pub export fn fnAngularModeJM(AMODE: u16) callconv(.c) void {
     copySourceRegisterToDestRegister(TEMP_REGISTER_1, REGISTER_L);
 }
 
+// The unit after each angularMode_t when DRG steps. With the DRG menu it is the
+// menu's order, D, R, G, D.MS, MULπ and back to D; without it R, G, D, and D.MS
+// goes to D and MULπ to R.
+const drgNextUnit linksection(code_section) = if (option_drg_cfg)
+    [_]u8{ amGrad, amDMS, amRadian, amMultPi, amDegree }
+else
+    [_]u8{ amGrad, amDegree, amRadian, amDegree, amRadian };
+
+// The first unit after unit, in the order of the DRG menu, that is set in
+// drgConfig, or stop when none comes before it. noDms skips D.MS, and DEG takes
+// its place when no other unit is set.
+noinline fn drgNextSetUnit(unit_in: u16, stop: u16, noDms: bool) u16 {
+    var units: u16 = drgConfig;
+    if (noDms) {
+        units &= ((1 << DRG_NIM_BIT) - 1) & ~@as(u16, 1 << amDMS);
+        if (units == 0) {
+            units = 1 << amDegree;
+        }
+    }
+    var unit = unit_in;
+    while (true) {
+        unit = drgNextUnit[unit];
+        if (unit == stop or (units & (@as(u16, 1) << @intCast(unit))) != 0) break;
+    }
+    return unit;
+}
+
 pub export fn DRG_cyc(dest: *u16) callconv(.c) void {
     DRG_Cycling = 1;
-    switch (dest.*) {
-        amNone => dest.* = @intCast(currentAngularMode),
-        amRadian => dest.* = amGrad,
-        amGrad => dest.* = amDegree,
-        amDegree => dest.* = amRadian,
-        amDMS => dest.* = amDegree,
-        amMultPi => dest.* = amRadian,
-        else => {},
+    if (dest.* == amNone) {
+        dest.* = @intCast(currentAngularMode); // converts from to the same, i.e. get to current angle mode
+    } else if (dest.* <= amMultPi) { // the next unit set in drgConfig, or the same unit when no other is set
+        dest.* = if (option_drg_cfg) drgNextSetUnit(dest.*, dest.*, false) else drgNextUnit[dest.*];
+    }
+    if (comptime option_drg_cfg) {
+        drgAutoAdm(dest.*);
+    }
+}
+
+// A.AUTO: the unit DRG chose becomes ADM.
+pub fn drgAutoAdm(unit: u16) callconv(.c) void {
+    if ((drgConfig & (1 << DRG_AUTO_ADM_BIT)) != 0 and unit <= amMultPi and unit != currentAngularMode) {
+        frontend_settings.fnAngularMode(unit);
+    }
+}
+
+// DRG in number entry: ADM first, then the next units set in drgConfig, and no
+// unit before ADM again. A.AUTO waits for the entry to close.
+pub fn DRG_cycNim(dest: *u16) callconv(.c) void {
+    if (dest.* == amNone) {
+        dest.* = @intCast(currentAngularMode);
+        return;
+    }
+    const unit = drgNextSetUnit(dest.*, @intCast(currentAngularMode), false);
+    dest.* = if (unit == currentAngularMode) amNone else unit;
+}
+
+// XDRG on a value with a unit: the next unit set in drgConfig. D.MS is never
+// chosen, and DEG takes its place.
+pub fn drgXfnUnit(unit_in: u16) callconv(.c) u16 {
+    const unit = drgNextSetUnit(unit_in, unit_in, true);
+    drgAutoAdm(unit);
+    return unit;
+}
+
+// A.DEG to A.AUTO: toggles the unit or the switch bit of the DRG menu.
+pub fn fnDrgToggle(bit: u16) callconv(.c) void {
+    drgConfig ^= @truncate(@as(u32, 1) << @intCast(bit));
+}
+
+comptime {
+    if (option_drg_cfg) {
+        @export(&drgAutoAdm, .{ .name = "drgAutoAdm" });
+        @export(&DRG_cycNim, .{ .name = "DRG_cycNim" });
+        @export(&drgXfnUnit, .{ .name = "drgXfnUnit" });
+        @export(&fnDrgToggle, .{ .name = "fnDrgToggle" });
     }
 }
 

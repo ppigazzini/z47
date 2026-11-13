@@ -18,6 +18,7 @@ const builtin = @import("builtin");
 const frontier_build_options = @import("frontier_build_options");
 const option_lp_dp_timing: bool = frontier_build_options.option_lp_dp_timing;
 const option_atext_fonts: bool = frontier_build_options.option_atext_fonts;
+const option_drg_cfg: bool = frontier_build_options.option_drg_cfg;
 
 const code_section = if (frontier_build_options.dmcp_build and frontier_build_options.old_hw)
     ".qspi_data"
@@ -87,6 +88,7 @@ const RB_IP: u8 = 150;
 const RB_FP: u8 = 151;
 const RB_RX: u8 = 152;
 const RB_RM: u8 = 167; // RMODE
+const CB_DRG: u8 = 168; // DRG menu
 
 extern var longPressFactor: i16;
 extern var doublePressFactor: i16;
@@ -262,6 +264,7 @@ const SUM_N: u16 = 0;
 extern var currentAngularMode: angularMode_t;
 extern var displayFormat: u8;
 extern var Input_Default: u8;
+extern var drgConfig: u8;
 extern var shortIntegerMode: u8;
 extern var shortIntegerWordSize: u8;
 extern var LongPressF: u8;
@@ -459,6 +462,7 @@ pub export const indexOfRadioCbEepromItems linksection(code_section) = [_]radioc
     .{ .itemNr = 1744, .param = 32775, .radioButton = 142 },
     .{ .itemNr = 1948, .param = 49184, .radioButton = 142 },
     .{ .itemNr = 1853, .param = 32837, .radioButton = 142 },
+    .{ .itemNr = 1860, .param = 32884, .radioButton = 142 }, // ITM_TOPFX FLAG_TOPFX
     .{ .itemNr = 2730, .param = 32882, .radioButton = 142 }, // ITM_M_ALL FLAG_M_ALL
     .{ .itemNr = 1851, .param = 32779, .radioButton = 142 },
     .{ .itemNr = 1852, .param = 32780, .radioButton = 142 },
@@ -542,6 +546,15 @@ pub export const indexOfRadioCbEepromItems linksection(code_section) = [_]radioc
     .{ .itemNr = 1321, .param = 4, .radioButton = RB_RM },
     .{ .itemNr = 1322, .param = 5, .radioButton = RB_RM },
     .{ .itemNr = 1323, .param = 6, .radioButton = RB_RM },
+} ++ (if (option_drg_cfg) [_]radiocb_t{
+    .{ .itemNr = 1351, .param = 2, .radioButton = CB_DRG }, // ITM_DRG_DEG amDegree
+    .{ .itemNr = 1352, .param = 0, .radioButton = CB_DRG }, // ITM_DRG_RAD amRadian
+    .{ .itemNr = 1353, .param = 1, .radioButton = CB_DRG }, // ITM_DRG_GRAD amGrad
+    .{ .itemNr = 1354, .param = 3, .radioButton = CB_DRG }, // ITM_DRG_DMS amDMS
+    .{ .itemNr = 1355, .param = 4, .radioButton = CB_DRG }, // ITM_DRG_MULPI amMultPi
+    .{ .itemNr = 1356, .param = 5, .radioButton = CB_DRG }, // ITM_DRG_NIM DRG_NIM_BIT
+    .{ .itemNr = 1357, .param = 6, .radioButton = CB_DRG }, // ITM_DRG_AUTADM DRG_AUTO_ADM_BIT
+} else [_]radiocb_t{}) ++ [_]radiocb_t{
     .{ .itemNr = 1990, .param = 1990, .radioButton = 244 },
     .{ .itemNr = 1995, .param = 1995, .radioButton = 244 },
     .{ .itemNr = 1991, .param = 1991, .radioButton = 244 },
@@ -598,6 +611,7 @@ pub export const systemFlagParams linksection(code_section) = [_]u16{
     32775, // FLAG_FRACT
     49184, // FLAG_PRTACT
     32837, // FLAG_ERPN
+    32884, // FLAG_TOPFX
     32882, // FLAG_M_ALL
     32779, // FLAG_CARRY
     32780, // FLAG_OVERFLOW
@@ -706,6 +720,10 @@ pub export fn fnCbIsSet(item: i16) callconv(.c) i8 {
                 RB_IP => rb_param = gapItemLeft,
                 RB_RX => rb_param = gapItemRadix,
                 RB_RM => rb_param = if (frontier_config.displayRoundActive()) displayRoundingMode else roundingMode,
+                CB_DRG => if (comptime option_drg_cfg) {
+                    is_cb = true;
+                    cb_param = ((drgConfig >> @intCast(param)) & 1) != 0;
+                },
                 RB_KY => {
                     rb_param = calcModel;
                     if (itemNr == ITM_USER_R47) {

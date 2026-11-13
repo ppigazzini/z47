@@ -1314,6 +1314,32 @@ static int snapxCmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 }
 
 /**
+ * disprealx - Return a real X as the display shows it, the rounded as-displayed text that displayValueX takes under the live format. A non-real X returns nothing.
+ */
+static int disprealxCmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
+  if(argc != 1) {
+    char got[DSL_NUM_LEN];
+    Jim_SetResultFormatted(interp, "disprealx: wrong # args: expected 0, got %s", dslNum(got, argc - 1));
+    return JIM_ERR;
+  }
+  if(getRegisterDataType(REGISTER_X) != dtReal34) {
+    Jim_SetResultString(interp, "", -1);                            // only a real34 X fills displayValueX safely; other types return nothing
+    return JIM_OK;
+  }
+
+  uint8_t savedTemporaryInformation = temporaryInformation;
+  temporaryInformation = TI_NO_INFO;  // a pending TI, such as the reset splash, would replace the X line
+  updateDisplayValueX = true;
+  displayValueX[0] = 0;
+  refreshRegisterLine(REGISTER_X);
+  updateDisplayValueX = false;
+  temporaryInformation = savedTemporaryInformation;
+
+  Jim_SetResultString(interp, displayValueX, -1);
+  return JIM_OK;
+}
+
+/**
  * tsvfn [<path>] - Set the TSV output file name.  Affects virtual
  * printing, stats, graphs…  With no argument: clear the override.
  */
@@ -1465,6 +1491,7 @@ void initDSL(void) {
   Jim_CreateCommand(interp, "snap",   snapCmd,   NULL, NULL);
   Jim_CreateCommand(interp, "snapmenu", snapmenuCmd, NULL, NULL);
   Jim_CreateCommand(interp, "snapx",  snapxCmd,  NULL, NULL);
+  Jim_CreateCommand(interp, "disprealx", disprealxCmd, NULL, NULL);
   Jim_CreateCommand(interp, "tsvfn",  tsvfnCmd,  NULL, NULL);
   Jim_CreateCommand(interp, "var",    varCmd,    NULL, NULL);
   Jim_CreateCommand(interp, "xeq",    xeqCmd,    NULL, NULL);

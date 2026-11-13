@@ -69,6 +69,7 @@
 #define OPTION_ATEXT                   //                   // ATEXT: the string in a register, displayed from the PIXEL position
 #define OPTION_ATEXT_FONTS             //                   // GRFNT, GRFNT#: the ATEXT font (requires OPTION_ATEXT)
 #define OPTION_LP_DP_TIMING            //                   // LP%, DP% long press and double press timing in percent
+#define OPTION_DRG_CFG                 //                   // DRG menu: A.DEG to A.MULπ choose the units DRG steps through, NIMDRG sets DRG in NIM, A.AUTO makes the unit ADM
 #define OPTION_ELLIPTIC                //                   // Elliptic functions
 #define OPTION_BESSEL                  //                   // Bessel functions
 #define OPTION_ORTHO                   //                   // Orthogonal-polynomials menu (ORTHO)
@@ -82,6 +83,7 @@
 #define OPTION_DEVPROFILES             //                   // Dev profile shortcuts (JM, RJ, HP35)
 #define OPTION_IR_PRINTING             //                   // Enable printing everywhere
 #define OPTION_STRUCTURED_PGM          //                   // STRUCT: IF/ELSE/ENDIF, DO/WHILE/ENDDO, FOR/NEXT, REPEAT/UNTIL; 63 nesting levels, 18 FOR loops, 255 numbers
+#define OPTION_EEX_PREFIX              //                   // EEX SI prefix menu on the EEX key in NIM, and the centi deci deca hecto items
 
 #undef  OPTION_VECTOR_EDIT  //NOT AN OPTION. TEST, TO REMOVE, TO PHASE OUT. Enable vector editing in matrix editor: to be removed altogether?
 
@@ -317,13 +319,15 @@
     #define OPTION_DEVPROFILES           // ✓   360 bytes // Without any dev profile shortcuts, and no JM, RJ & HP35
             #undef  OPTION_SAMPLEPGMS    // ✓   200 bytes // All hardware without Load programming sample programs testPgms
     #define OPTION_STOPWATCH             // ✓  1432 bytes // Without STOPW
-    #define OPTION_EDIT_X                // ✓  3240 bytes // Without number editing in X-register. Not complete EDIT removal.
-    #define OPTION_EDIT_PEM              // ✓  1808 bytes // Without number and function parameter editing in PEM. Not complete EDIT removal.
+    #define OPTION_EDIT_X                // ✓  1560 bytes // Without number editing in X-register. Not complete EDIT removal.
+    #define OPTION_EDIT_PEM              // ✓  1368 bytes // Without number and function parameter editing in PEM. Not complete EDIT removal.
     #define OPTION_LONGPRESS_CFG         // ✓  1248 bytes // Logic for longpress assignment to the f/g key
     #define OPTION_INFSUMS               // ?   400 bytes // Infinity sum with the early stop; the plain programmable sum and product stay
     #define OPTION_ATEXT                 // ✓   504 bytes // ATEXT: the string in a register, displayed from the PIXEL position
     #define OPTION_ATEXT_FONTS           // ✓   592 bytes // GRFNT, GRFNT#: the ATEXT font
     #define OPTION_LP_DP_TIMING          // ✓   296 bytes // LP%, DP% long press and double press timing in percent
+    #define OPTION_DRG_CFG               // ✓  2304 bytes // DRG menu: A.DEG to A.MULπ choose the units DRG steps through, NIMDRG sets DRG in NIM, A.AUTO makes the unit ADM
+    #define OPTION_EEX_PREFIX            // ✓   288 bytes // EEX SI prefix menu on the EEX key, and the centi deci deca hecto items
   //Large packages developed for DM42/DM42n. Could arguably work on DM42.
             #undef  OPTION_CUBIC_159     // ✓  2880 bytes // C47 SLVC function is 159 digits internally
             #undef  OPTION_SQUARE_159    // ✓  2656 bytes // C47 SLVQ function is 159 digits internally
@@ -944,7 +948,8 @@
 #define ERROR_NEXT_WITHOUT_FOR                    72
 #define ERROR_INVALID_COUNTER_REGISTER            73
 #define ERROR_STEP_OF_ZERO                        74
-#define LAST_ERROR_MESSAGE                        74
+#define ERROR_NOT_INITIALIZED                     75
+#define LAST_ERROR_MESSAGE                        75
 
 //Status output messages for time consuming tasks, to keep user informed
 #define LOADING_STATE_FILE                       100
@@ -1144,8 +1149,9 @@
 #define FLAG_AUTOVALID                        0x8070 //49
 #define FLAG_M_ALL                            0x8072 //50
 #define FLAG_PL_2L                            0x8073 //51
+#define FLAG_TOPFX                            0x8074 //52
 
-#define NUMBER_OF_SYSTEM_FLAGS                 64+51 // We can have a maximum of 128 system flags
+#define NUMBER_OF_SYSTEM_FLAGS                 64+52 // We can have a maximum of 128 system flags
 
                                                      // only used as bit count for setting change detection
 #define SETTING_AMODE                         0x0080 // current angle mode
@@ -1802,6 +1808,11 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define DF_DMY                                     0
 #define DF_YMD                                     1
 #define DF_MDY                                     2
+
+// DRG configuration: bit n for angularMode_t n, then the switches of the DRG menu
+#define DRG_NIM_BIT                                5   // NIMDRG: DRG during number input chooses the unit and leaves the input open
+#define DRG_AUTO_ADM_BIT                           6   // AUTADM: the unit DRG lands on becomes ADM
+#define DRG_CONFIG_DEFAULT                         ((1 << amRadian) | (1 << amGrad) | (1 << amDegree))
 
 // DMCP date format
 #define SYS_MDY                                    0
@@ -2495,8 +2506,8 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define SHOWMODE                             (showModeActive())
 #define GRAPHMODE                            (calcMode == CM_PLOT_STAT || calcMode == CM_GRAPH)
 
-#define SNAP_REGISTERS_OK                    (currentMenu() != -MNU_SHOW && calcMode == CM_NORMAL && !tam.mode)  // X register capture
-#define SNAP_MENUS_OK                        (currentMenu() != -MNU_SHOW && calcMode == CM_NORMAL && !tam.mode)  // menu capture
+#define SNAP_REGISTERS_OK                    (currentMenu() != -MNU_SHOW)                                        // X register capture, any mode bar a SHOW page
+#define SNAP_MENUS_OK                        (currentMenu() != -MNU_SHOW)                                        // menu capture, any mode bar a SHOW page
 #define SNAP_PROPER_OK                       true                                                                // full screen snap: valid in every mode
 
 #define COMPLEX_UNIT                         (getSystemFlag(FLAG_CPXj)   ? STD_op_j  : STD_op_i)  //Do not change back to single byte character - code must also change accordingly

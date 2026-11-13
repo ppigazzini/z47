@@ -16,6 +16,9 @@ const std = @import("std");
 const frontier_build_options = @import("frontier_build_options");
 const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 const option_atext_fonts: bool = frontier_build_options.option_atext_fonts;
+const option_drg_cfg: bool = frontier_build_options.option_drg_cfg;
+// The units DRG steps through after RESET: radian, grad and degree.
+const DRG_CONFIG_DEFAULT: u8 = (1 << 0) | (1 << 1) | (1 << 2);
 
 // ---------------------------------------------------------------------------
 // Types
@@ -160,6 +163,7 @@ extern var grpGroupingHex: u8;
 extern var grpGroupingBin: u8;
 extern var graMod: u8;
 extern var graFont: u8;
+extern var drgConfig: u8;
 extern var currentAngularMode: angularMode_t;
 extern var lrSelection: u16;
 extern var lrChosen: u16;
@@ -585,7 +589,8 @@ pub export fn fnRecallConfig(regist: u16) callconv(.c) void {
             graFont = configToRecall.graFont;
             frontier_screen.graFontCheck();
         }
-        _ = configToRecall.compatibility_byte6;
+        // Stored relative to the default, so a 0 in the byte recalls the default.
+        if (comptime option_drg_cfg) drgConfig = configToRecall.drgConfig ^ DRG_CONFIG_DEFAULT;
         _ = configToRecall.compatibility_byte7;
         _ = configToRecall.compatibility_byte8;
         _ = configToRecall.compatibility_byte9;

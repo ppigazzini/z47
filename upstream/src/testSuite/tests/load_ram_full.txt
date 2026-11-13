@@ -1,0 +1,20 @@
+;*************************************************************
+;** A state file entry that does not fit in the pool leaves  **
+;** its register as it is, and the entries after it load.    **
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+
+; a 30x30 matrix over a 1x1 matrix
+Func: fnLoadRamFullCov
+In:  FARG=0
+Out: EC=0 RX=Real:"1"
+
+; a string over a real
+Func: fnLoadRamFullCov
+In:  FARG=1
+Out: EC=0 RX=Real:"1"
+
+; a long integer over a real
+Func: fnLoadRamFullCov
+In:  FARG=2
+Out: EC=0 RX=Real:"1"

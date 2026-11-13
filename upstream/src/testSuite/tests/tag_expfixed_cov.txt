@@ -1,0 +1,44 @@
+;******************************************************************************************************************************
+;** Coverage: the expFixed exponent-step tag nibble (tag bits 5-8). Each probe sets a step on a real or complex register and  **
+;** checks the nibble round-trips, that step -8 (nibble 0) reads as off and every other step as on, that the step never       **
+;** reaches the angle bits, and that setting the step keeps the complex Polar bit and angle, and vice versa. The driver       **
+;** covExpFixedTag aborts on any mismatch, so EC=0 is the pass. This guards the overloaded-bit-4 regression that printed a    **
+;** stray angle on an operation result once an ENG step had been taken.                                                       **
+;******************************************************************************************************************************
+Acc: 34
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+
+Func: fnExpFixedTagCov
+
+In:  FARG=0
+Out: EC=0
+
+In:  FARG=1
+Out: EC=0
+
+In:  FARG=2
+Out: EC=0
+
+In:  FARG=3
+Out: EC=0
+
+In:  FARG=4
+Out: EC=0
+
+In:  FARG=5
+Out: EC=0
+
+In:  FARG=6
+Out: EC=0
+
+In:  FARG=7
+Out: EC=0
+
+In:  FARG=8
+Out: EC=0
+
+In:  FARG=9
+Out: EC=0
+
+In:  FARG=10
+Out: EC=0

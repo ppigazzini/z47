@@ -198,24 +198,25 @@ test "abi mirrors that rename a member still match the C offsets" {
 // the SAME field all-ones in the abi packed struct, bitcast to u32, and require
 // an exact match -- proving abi's hand-written packing is bit-identical to the C
 // bitfield (a wrong bit position keeps sizeof==4 but mis-routes register/matrix
-// dispatch). The all-ones value per field is its declared bit width.
+// dispatch). The all-ones value per field comes from the abi field's own width,
+// so a width that disagrees with the C shows up as a mask mismatch.
 extern fn z47_reg_header_field_mask(field: c_int) u32;
 extern fn z47_matrix_header_field_mask(field: c_int) u32;
 
 test "abi.RegisterHeaderBits packs bit-identically to C registerHeader_t" {
     const FIELDS = .{
-        .{ "pointerToRegisterData", @as(u16, 0xFFFF), 0 },
-        .{ "dataType", @as(u4, 0xF), 1 },
-        .{ "tag", @as(u5, 0x1F), 2 },
-        .{ "readOnly", @as(u1, 1), 3 },
-        .{ "notUsed", @as(u6, 0x3F), 4 },
+        .{ "pointerToRegisterData", 0 },
+        .{ "dataType", 1 },
+        .{ "tag", 2 },
+        .{ "readOnly", 3 },
+        .{ "notUsed", 4 },
     };
     inline for (FIELDS) |f| {
         var z: abi.RegisterHeaderBits = @fromBackingInt(0);
-        @field(z, f[0]) = f[1];
+        @field(z, f[0]) = std.math.maxInt(@FieldType(abi.RegisterHeaderBits, f[0]));
         const zmask: u32 = @backingInt(z);
-        testing.expectEqual(z47_reg_header_field_mask(f[2]), zmask) catch |err| {
-            std.debug.print("registerHeader bit mismatch on {s}: C=0x{x:0>8} abi=0x{x:0>8}\n", .{ f[0], z47_reg_header_field_mask(f[2]), zmask });
+        testing.expectEqual(z47_reg_header_field_mask(f[1]), zmask) catch |err| {
+            std.debug.print("registerHeader bit mismatch on {s}: C=0x{x:0>8} abi=0x{x:0>8}\n", .{ f[0], z47_reg_header_field_mask(f[1]), zmask });
             return err;
         };
     }

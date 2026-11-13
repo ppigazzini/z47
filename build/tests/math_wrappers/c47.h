@@ -539,7 +539,7 @@ void processIntRealComplexDyadicFunction(void (*realf)(void),
                                         void (*longintf)(void));
 
 void liftStack(void);
-void reallocateRegister(calcRegister_t regist, uint32_t data_type, uint16_t data_size_without_data_len_blocks, uint32_t tag);
+bool_t reallocateRegister(calcRegister_t regist, uint32_t data_type, uint16_t data_size_without_data_len_blocks, uint32_t tag);
 void fnDrop(uint16_t unusedButMandatoryParameter);
 void fnUndo(uint16_t unusedButMandatoryParameter);
 uint32_t getUptimeMs(void);
@@ -785,7 +785,7 @@ void xcopy(void *destination, const void *source, size_t length);
 void fractionToDisplayString(calcRegister_t regist, char *displayString);
 void shortIntegerToDisplayString(calcRegister_t regist, char *displayString, bool_t determineFont, uint8_t baseOverride, int16_t maxWidth);
 void real34ToDisplayString(const real34_t *real34, uint32_t tag, char *displayString, const font_t *font, int16_t maxWidth, int16_t displayHasNDigits, bool_t limitExponent, bool_t frontSpace, irfracOption_t limitIrfrac);
-void complex34ToDisplayString(const complex34_t *complex34, char *displayString, const font_t *font, int16_t maxWidth, int16_t displayHasNDigits, bool_t limitExponent, bool_t frontSpace, irfracOption_t limitIrfrac, uint16_t tagAngle, bool_t tagPolar);
+void complex34ToDisplayString(const complex34_t *complex34, char *displayString, const font_t *font, int16_t maxWidth, int16_t displayHasNDigits, bool_t limitExponent, bool_t frontSpace, irfracOption_t limitIrfrac, uint16_t tagAngle, bool_t tagPolar, int16_t expStep);
 void dateToDisplayString(calcRegister_t regist, char *displayString);
 void timeToDisplayString(calcRegister_t regist, char *displayString, bool_t ignoreTDisp);
 void real34MatrixToDisplayString(calcRegister_t regist, char *displayString);
@@ -918,8 +918,13 @@ extern const enum rounding roundingModeTable[7];
 #define getRegisterAngularMode(reg) (getRegisterTag(reg) & amAngleMask)
 #define getComplexRegisterAngularMode(reg) (getRegisterTag(reg) & amAngleMask)
 #define getComplexRegisterPolarMode(reg) (getRegisterTag(reg) & amPolar)
-#define setComplexRegisterAngularMode(reg, am) setRegisterTag((reg), ((am) & amAngleMask) | (getRegisterTag(reg) & amPolar))
-#define setComplexRegisterPolarMode(reg, pm) setRegisterTag((reg), ((((pm) & amPolar) != 0) ? (getRegisterTag(reg) & amAngleMask) : amNone) | ((pm) & amPolar))
+// Tag bits 5-8 hold the temporary-ENG exponent step plus 8; 0 is off. A change
+// of angular or polar mode keeps that nibble.
+#define EXP_FIELD_SHIFT 5
+#define EXP_FIELD_MASK (15u << EXP_FIELD_SHIFT)
+#define EXP_STEP_OFF (-8)
+#define setComplexRegisterAngularMode(reg, am) setRegisterTag((reg), ((am) & amAngleMask) | (getRegisterTag(reg) & (amPolar | EXP_FIELD_MASK)))
+#define setComplexRegisterPolarMode(reg, pm) setRegisterTag((reg), ((((pm) & amPolar) != 0) ? (getRegisterTag(reg) & amAngleMask) : amNone) | ((pm) & amPolar) | (getRegisterTag(reg) & EXP_FIELD_MASK))
 // registers.c's vector-register queries, functions upstream; the fake runtime
 // defines them over the fake register file and both implementations call them.
 bool_t isRegisterMatrix3dVector(calcRegister_t regist);

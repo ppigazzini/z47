@@ -322,7 +322,7 @@ void fnSigmaAddRem(uint16_t selection);
 void displayBugScreen(const char *message);
 void displayCalcErrorMessage(uint8_t error_code, calcRegister_t err_message_register_line);
 void moreInfoOnError(const char *m1, const char *m2, const char *m3, const char *m4);
-void reallocateRegister(calcRegister_t reg, uint32_t data_type, uint16_t data_size_without_data_len_blocks, uint32_t tag);
+bool_t reallocateRegister(calcRegister_t reg, uint32_t data_type, uint16_t data_size_without_data_len_blocks, uint32_t tag);
 void real34SetZero(real34_t *dest);
 void longIntegerInit(longInteger_t value);
 void uInt32ToLongInteger(uint32_t source, longInteger_t dest);

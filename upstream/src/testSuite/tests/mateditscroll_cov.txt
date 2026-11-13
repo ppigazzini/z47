@@ -1,13 +1,16 @@
 ;*************************************************************
 ;** Coverage: the matrix editor's column scroll offset      **
 ;** across a reshape (showRealMatrix, showComplexMatrix).   **
-;** Each case opens the editor on the 16x1 vector in X,     **
+;** Each case opens the editor on the matrix in X,          **
 ;** presses the down arrow NN times and reports one number. **
 ;** FARG=0NN scrolled, 1NN the offset after M.COL+1 widens  **
 ;** to two columns, 2NN whether it is past the new shape,   **
 ;** 3NN the offset when widened to the offset itself, 4NN   **
 ;** whether that made the two equal. 1NN and 3NN are the    **
 ;** gate: unbounded they kill the run, not just fail.       **
+;** 5NN whether the screen stays the same across values     **
+;** past the last row, 6NN the row offset after two up      **
+;** arrows and DELR.                                        **
 ;*************************************************************
 In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
 
@@ -71,3 +74,31 @@ Out: EC=0 RX=Real:"1"
 Func: fnMatEditScrollCov
 In:  FARG=315 RX=CxMa:"M16,1[1i1,2i2,3i3,4i4,5i5,6i6,7i7,8i8,9i9,10i10,11i11,12i12,13i13,14i14,15i15,16i16]"
 Out: EC=0 RX=Real:"0"
+
+;=======================================
+; Rows: a window of 5, a measure of 9
+;=======================================
+
+; the last row of 6 scrolls one row: 9 rows from that offset exceed the matrix by one row
+Func: fnMatEditScrollCov
+In:  FARG=505 RX=ReMa:"M6,2[1.5,2.5,3.5,4.5,5.5,6.5,7.5,8.5,9.5,10.5,11.5,12.5]"
+Out: EC=0 RX=Real:"1"
+Func: fnMatEditScrollCov
+In:  FARG=505 RX=CxMa:"M6,2[1.5i1,2.5i2,3.5i3,4.5i4,5.5i5,6.5i6,7.5i7,8.5i8,9.5i9,10.5i10,11.5i11,12.5i12]"
+Out: EC=0 RX=Real:"1"
+
+; the last row of 16 scrolls eleven rows: 9 rows from that offset exceed the matrix by four rows
+Func: fnMatEditScrollCov
+In:  FARG=515 RX=ReMa:"M16,2[1.5,2.5,3.5,4.5,5.5,6.5,7.5,8.5,9.5,10.5,11.5,12.5,13.5,14.5,15.5,16.5,17.5,18.5,19.5,20.5,21.5,22.5,23.5,24.5,25.5,26.5,27.5,28.5,29.5,30.5,31.5,32.5]"
+Out: EC=0 RX=Real:"1"
+Func: fnMatEditScrollCov
+In:  FARG=515 RX=CxMa:"M16,2[1.5i1,2.5i2,3.5i3,4.5i4,5.5i5,6.5i6,7.5i7,8.5i8,9.5i9,10.5i10,11.5i11,12.5i12,13.5i13,14.5i14,15.5i15,16.5i16,17.5i17,18.5i18,19.5i19,20.5i20,21.5i21,22.5i22,23.5i23,24.5i24,25.5i25,26.5i26,27.5i27,28.5i28,29.5i29,30.5i30,31.5i31,32.5i32]"
+Out: EC=0 RX=Real:"1"
+
+; row 8 of 8 scrolls three rows, then DELR on row 6 leaves 7 rows: the window of 5 starts at row offset 2
+Func: fnMatEditScrollCov
+In:  FARG=607 RX=ReMa:"M8,2[1.5,2.5,3.5,4.5,5.5,6.5,7.5,8.5,9.5,10.5,11.5,12.5,13.5,14.5,15.5,16.5]"
+Out: EC=0 RX=Real:"2"
+Func: fnMatEditScrollCov
+In:  FARG=607 RX=CxMa:"M8,2[1.5i1,2.5i2,3.5i3,4.5i4,5.5i5,6.5i6,7.5i7,8.5i8,9.5i9,10.5i10,11.5i11,12.5i12,13.5i13,14.5i14,15.5i15,16.5i16]"
+Out: EC=0 RX=Real:"2"

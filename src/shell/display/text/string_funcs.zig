@@ -1440,7 +1440,7 @@ fn _readDestinationRegister(regist: u16) void {
             trimLeadingSpace(tmpString);
         },
         dtComplex34 => {
-            frontier_display.complex34ToDisplayString(reg34c(@intCast(regist)), tmpString, &numericFont, SCREEN_WIDTH, NUMBER_OF_DISPLAY_DIGITS, 0, @intFromBool(STD_SPACE_PUNCTUATION_AS_BOOL), 1, @truncate(getComplexRegisterAngularMode(@intCast(regist))), @intFromBool(getComplexRegisterPolarMode(@intCast(regist)) != 0));
+            frontier_display.complex34ToDisplayString(reg34c(@intCast(regist)), tmpString, &numericFont, SCREEN_WIDTH, NUMBER_OF_DISPLAY_DIGITS, 0, @intFromBool(STD_SPACE_PUNCTUATION_AS_BOOL), 1, @truncate(getComplexRegisterAngularMode(@intCast(regist))), @intFromBool(getComplexRegisterPolarMode(@intCast(regist)) != 0), abi.register_tag.expStep(getRegisterTag(@intCast(regist))));
             trimLeadingSpace(tmpString);
         },
         else => {

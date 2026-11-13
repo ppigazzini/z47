@@ -29,7 +29,10 @@ extern const int16_t menu_REGIST[];
 extern const softmenu_t softmenu[];
 const char *_ioFileNameFromFilePath(ioFilePath_t path); // the suite's own HAL (hal/io.c); no public header declares it
 static uint32_t parseComplexLiteral(char *r, char *real, char *imag, char *angMod, bool_t *polarLiteral); // the In: and Out: Cplx literal, rectangular or polar
-char line[100000], lastInParameters[10000], fileName[1000], *filePath, filePathName[2000], registerExpectedAndValue[2400], realString[2400];
+#define UTF8_STRING_LENGTH   (MAX_STRING_BYTE_LENGTH * 3 / 2 + 1) // a string register as UTF-8: an internal two-byte glyph takes up to three bytes
+#define REGISTER_TEXT_LENGTH 3040                                 // printRegisterToString: the 3000-byte long integer text behind its prefix, the longest of the types
+#define EXPECTED_TEXT_LENGTH (REGISTER_TEXT_LENGTH + 4006 + 100)  // expectedAndShouldBeValueForElement: its prefixes, a 4006-byte expected element and the register text
+char line[100000], lastInParameters[10000], fileName[1000], *filePath, filePathName[2000], registerExpectedAndValue[EXPECTED_TEXT_LENGTH], realString[2400];
 char testCaseName[1000], testCasePrefix[1000], testCaseSuffix[1000];
 int32_t lineNumber, numTestsFile, numTestsTotal, successfulTests, failedTests;
 int32_t functionIndex, funcType, correctSignificantDigits;
@@ -62,6 +65,7 @@ void covConvToSI(uint16_t itemNr);
 void covConvFromSI(uint16_t itemNr);
 void covStateRoundtrip(uint16_t unusedButMandatoryParameter);
 void covShortIntWordSizeRestore(uint16_t unusedButMandatoryParameter);
+void covLoadRamFull(uint16_t which);
 void covConfigRounding(uint16_t which);
 void covEqCalc(uint16_t unusedButMandatoryParameter);
 void covDerivEq(uint16_t order);
@@ -88,6 +92,7 @@ void covPolarDisplayCap(uint16_t unusedButMandatoryParameter);
 void covDecimalDisplay(uint16_t which);
 void covScreenFma(uint16_t unusedButMandatoryParameter);
 void covPrinterNumber(uint16_t unusedButMandatoryParameter);
+void covExpFixedTag(uint16_t which);
 void covRegParam(uint16_t options);
 void covIndirectRegParam(uint16_t localCount);
 void covDerivPgm(uint16_t order);
@@ -317,6 +322,7 @@ const funcTest_t funcTestNoParam[] = {
   {"fnTimerInputCov",            covTimerInput,                1 },
   {"fnStateRoundtrip",           covStateRoundtrip,           1 },
   {"fnShortIntWSRestoreCov",     covShortIntWordSizeRestore,  1 },
+  {"fnLoadRamFullCov",           covLoadRamFull,              1 },
   {"fnConfigRoundingCov",        covConfigRounding,           1 },
   {"fnEqCalcCov",                covEqCalc,                   1 },
   {"fnVecToEqnRtCov",            covVecToEqnRoundTrip,        1 },
@@ -344,6 +350,7 @@ const funcTest_t funcTestNoParam[] = {
   {"fnDecimalDisplayCov",        covDecimalDisplay,           1 },
   {"fnScreenFmaCov",             covScreenFma,                1 },
   {"fnPrinterNumberCov",         covPrinterNumber,            1 },
+  {"fnExpFixedTagCov",           covExpFixedTag,              1 },
   {"fnRegParamCov",              covRegParam,                 1 },
   {"fnIndirectRegParamCov",      covIndirectRegParam,         1 },
   {"fnDerivPgmCov",              covDerivPgm,                 1 },
@@ -799,8 +806,8 @@ const funcTest_t funcTestNoParam[] = {
 
 
 
-void printRegisterToString(calcRegister_t regist, char *registerContent) {
-  char str[1000];
+void printRegisterToString(calcRegister_t regist, char *registerContent) { // registerContent takes REGISTER_TEXT_LENGTH bytes
+  char str[UTF8_STRING_LENGTH];
 
   if(getRegisterDataType(regist) == dtReal34) {
     real34ToString(REGISTER_REAL34_DATA(regist), str);
@@ -1147,6 +1154,85 @@ void covShortIntWordSizeRestore(uint16_t unusedButMandatoryParameter) {
   fnSetWordSize(64);                                             // shortIntegerMask := -1
   fnLoad(LM_STATE_LOAD);                                         // restores word size 8; the fix rederives the mask
   convertUInt64ToShortIntegerRegister(0, 300u, 10u, REGISTER_X); // masks with shortIntegerMask -> 44 or 300
+}
+
+void covLoadRamFull(uint16_t which) {
+  // Load a state file while the pool has no room for the entry of R00, a 30x30 matrix over a 1x1 matrix (0), a string over a real (1) or a long integer over a real (2).
+  // R00 must keep its value, and R01, the next entry in the file, must come back: that shows the file position is kept. X is 1 when both are true, RAM full is reported
+  // and the load confirmation is not displayed.
+  const size_t room = (which == 0 ? 5000 : 150);
+  void *pool[8];
+  size_t poolBlocks[8];
+  int32_t poolAreas = 0;
+  bool_t correct;
+  real34_t expected;
+
+  if(which == 0) {
+    initMatrixRegister(0, 30, 30, false);
+  }
+  else if(which == 1) {
+    reallocateRegister(0, dtString, TO_BLOCKS(1000), amNone);
+    memset(REGISTER_STRING_DATA(0), 'a', 999);
+    REGISTER_STRING_DATA(0)[999] = 0;
+  }
+  else {
+    longInteger_t lgInt;
+
+    memset(tmpString, '7', 1000);
+    tmpString[1000] = 0;
+    longIntegerInit(lgInt);
+    stringToLongInteger(tmpString, 10, lgInt);
+    convertLongIntegerToLongIntegerRegister(lgInt, 0);
+    longIntegerFree(lgInt);
+  }
+  reallocateRegister(1, dtReal34, 0, amNone);
+  int32ToReal34(7, REGISTER_REAL34_DATA(1));
+  findOrAllocateNamedVariable("RAMFUL");
+  fnSave(SM_STATE_SAVE);
+  fnDeleteVariable(findNamedVariable("RAMFUL"));                // restoring a variable that does not exist clears lastErrorCode
+
+  if(which == 0) {
+    initMatrixRegister(0, 1, 1, false);
+    int32ToReal34(5, REGISTER_REAL34_MATRIX_ELEMENTS(0));
+  }
+  else {
+    reallocateRegister(0, dtReal34, 0, amNone);
+    int32ToReal34(5, REGISTER_REAL34_DATA(0));
+  }
+  int32ToReal34(8, REGISTER_REAL34_DATA(1));
+
+  while(poolAreas < 8 && TO_BLOCKS(getFreeRamMemory()) > room) {
+    size_t largest = 0;
+
+    for(int32_t i = 0; i < numberOfFreeMemoryRegions; ++i) {
+      largest = max(largest, (size_t)freeMemoryRegions[i].sizeInBlocks);
+    }
+    poolBlocks[poolAreas] = min(largest, TO_BLOCKS(getFreeRamMemory()) - room);
+    pool[poolAreas] = allocC47Blocks(poolBlocks[poolAreas]);
+    poolAreas++;
+  }
+
+  fnLoad(LM_STATE_LOAD);
+
+  int32ToReal34(5, &expected);
+  if(which == 0) {
+    correct = getRegisterDataType(0) == dtReal34Matrix && REGISTER_MATRIX_HEADER(0)->matrixRows == 1 && REGISTER_MATRIX_HEADER(0)->matrixColumns == 1
+              && real34CompareEqual(REGISTER_REAL34_MATRIX_ELEMENTS(0), &expected);
+  }
+  else {
+    correct = getRegisterDataType(0) == dtReal34 && real34CompareEqual(REGISTER_REAL34_DATA(0), &expected);
+  }
+  int32ToReal34(7, &expected);
+  correct = correct && lastErrorCode == ERROR_RAM_FULL && temporaryInformation == TI_NO_INFO
+            && getRegisterDataType(1) == dtReal34 && real34CompareEqual(REGISTER_REAL34_DATA(1), &expected);
+  lastErrorCode = ERROR_NONE;
+
+  while(poolAreas > 0) {
+    poolAreas--;
+    freeC47Blocks(pool[poolAreas], poolBlocks[poolAreas]);
+  }
+  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+  int32ToReal34(correct ? 1 : 0, REGISTER_REAL34_DATA(REGISTER_X));
 }
 
 void covEqCalc(uint16_t formulaIndex) {
@@ -2276,6 +2362,52 @@ void covDecimalDisplay(uint16_t which) {
   }
 }
 
+void covExpFixedTag(uint16_t which) {
+  // The expFixed step is a dedicated tag nibble (bits 5-8), separate from the angle bits and the Polar bit. This checks the encoding round-trip and the off sentinel,
+  // and that the step never reaches the angle bits or clears the Polar bit: the overloaded bit 4 it replaces printed a stray angle on a result (the "1.476 k degree" fault).
+  static const struct {
+    const char *value;
+    int16_t     step;
+    bool_t      complex;
+  } probes[] = {
+    {"123",     -8, false}, {"123",     -7, false}, {"123",     -1, false}, {"123",      0, false}, {"123",      7, false},
+    {"1500000",  1, false}, {"1500000",  2, false}, {"1500000", -2, false},
+    {"3",        3, true  }, {"3",       -3, true  }, {"3",        0, true  },
+  };
+  if(which >= nbrOfElements(probes)) {
+    abortTest();
+    return;
+  }
+  const int16_t step = probes[which].step;
+
+  if(probes[which].complex) {
+    reallocateRegister(REGISTER_X, dtComplex34, 0, amDegree);
+    stringToReal34(probes[which].value, REGISTER_REAL34_DATA(REGISTER_X));
+    setComplexRegisterPolarMode(REGISTER_X, amPolar);
+    setRegisterExpStep(REGISTER_X, step);
+    if(getComplexRegisterPolarMode(REGISTER_X) != amPolar || getComplexRegisterAngularMode(REGISTER_X) != amDegree || getRegisterExpStep(REGISTER_X) != step) {
+      printf("\nexpFixed probe %u complex: polar=%u angle=%u step=%d\n", which, (unsigned)getComplexRegisterPolarMode(REGISTER_X), (unsigned)getComplexRegisterAngularMode(REGISTER_X), (int)getRegisterExpStep(REGISTER_X));
+      abortTest();
+      return;
+    }
+    setComplexRegisterAngularMode(REGISTER_X, amRadian);                                      // changing the angle keeps the step, as it keeps the Polar bit
+    if(getRegisterExpStep(REGISTER_X) != step) {
+      abortTest();
+      return;
+    }
+  }
+  else {
+    reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+    stringToReal34(probes[which].value, REGISTER_REAL34_DATA(REGISTER_X));
+    setRegisterExpStep(REGISTER_X, step);
+    if(getRegisterAngularMode(REGISTER_X) != amNone || getRegisterExpStep(REGISTER_X) != step || getRegisterExpFixed(REGISTER_X) != (step != EXP_STEP_OFF)) {
+      printf("\nexpFixed probe %u real (%s step %d): angle=%u step=%d fixed=%d\n", which, probes[which].value, (int)step, (unsigned)getRegisterAngularMode(REGISTER_X), (int)getRegisterExpStep(REGISTER_X), (int)getRegisterExpFixed(REGISTER_X));
+      abortTest();
+      return;
+    }
+  }
+}
+
 void covScreenFma(uint16_t unusedButMandatoryParameter) {
   real_t factor1, factor2, term;
   real34_t result;
@@ -3292,6 +3424,7 @@ void covMvarKey(uint16_t which) {
 }
 
 extern uint16_t scrollColumn;
+extern uint16_t scrollRow;
 
 static uint16_t covMatrixEditorColumns(void) {
   // showRealMatrix() displays a column vector transposed.
@@ -3300,16 +3433,54 @@ static uint16_t covMatrixEditorColumns(void) {
   return (cols == 1 && rows > 1) ? rows : cols;
 }
 
+/**
+ * Displays the editor on a copy of the elements followed by MATRIX_MAX_ROWS - MATRIX_MAX_ROWS_ON_STACK rows, zero and then wide, and compares the two screens.
+ */
+static bool_t covMatrixEditorScreenUnchangedPastLastRow(void) {
+  const uint32_t realsPerElement = (getRegisterDataType(matrixIndex) == dtReal34Matrix) ? 1 : 2;
+  const uint32_t reals = openMatrixMIMPointer.header.matrixRows * openMatrixMIMPointer.header.matrixColumns * realsPerElement;
+  const uint32_t pastEnd = (MATRIX_MAX_ROWS - MATRIX_MAX_ROWS_ON_STACK) * openMatrixMIMPointer.header.matrixColumns * realsPerElement;
+  const size_t frameSize = SCREEN_HEIGHT * (SCREEN_WIDTH / 8 + 2);
+  real34_t *elements = openMatrixMIMPointer.realMatrix.matrixElements;
+  real34_t *copy = allocC47Blocks((reals + pastEnd) * REAL34_SIZE_IN_BLOCKS);
+  uint8_t *frame = malloc(frameSize);
+  real34_t wide;
+  bool_t same;
+
+  stringToReal34("1.234567890123456E+300", &wide);
+  memcpy(copy, elements, reals * REAL34_SIZE_IN_BYTES);
+  for(uint32_t i = 0; i < pastEnd; i++) {
+    real34SetZero(copy + reals + i);
+  }
+  openMatrixMIMPointer.realMatrix.matrixElements = copy;
+  lcd_fill_rect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0);
+  showMatrixEditor();
+  memcpy(frame, lcd_buffer, frameSize);
+
+  for(uint32_t i = 0; i < pastEnd; i++) {
+    real34Copy(&wide, copy + reals + i);
+  }
+  lcd_fill_rect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0);
+  showMatrixEditor();
+  same = (memcmp(frame, lcd_buffer, frameSize) == 0);
+
+  openMatrixMIMPointer.realMatrix.matrixElements = elements;
+  freeC47Blocks(copy, (reals + pastEnd) * REAL34_SIZE_IN_BLOCKS);
+  free(frame);
+  return same;
+}
+
 void covMatrixEditorScroll(uint16_t which) {
   // which is SNN: NN down-arrow presses, S what is reported - 0 scrolled, 1 the offset
   // after M.COL+1 widens to two columns, 2 whether it is past the widened matrix, 3 the
   // offset when widened to the offset itself, 4 whether that made the two equal.
+  // 5 whether the screen stays the same across values past the last row, 6 the row offset after two up-arrow presses and DELR.
   const uint16_t select  = which / 100;
   const uint16_t presses = which % 100;
   uint16_t offset;
   int32_t reported;
 
-  if(select > 4 || presses > 20 || (getRegisterDataType(REGISTER_X) != dtReal34Matrix && getRegisterDataType(REGISTER_X) != dtComplex34Matrix)) {
+  if(select > 6 || presses > 20 || (getRegisterDataType(REGISTER_X) != dtReal34Matrix && getRegisterDataType(REGISTER_X) != dtComplex34Matrix)) {
     printf("\nUnknown matrix editor scroll selector: %u\n", which);
     abortTest();
     return;
@@ -3329,6 +3500,16 @@ void covMatrixEditorScroll(uint16_t which) {
 
   if(select == 0) {
     reported = (offset > 0) ? 1 : 0;
+  }
+  else if(select == 5) {
+    reported = covMatrixEditorScreenUnchangedPastLastRow() ? 1 : 0;
+  }
+  else if(select == 6) {
+    addItemToBuffer(ITM_UP_ARROW);
+    addItemToBuffer(ITM_UP_ARROW);
+    fnDelRow(NOPARAM);
+    showMatrixEditor();
+    reported = scrollRow;
   }
   else if(select >= 3 && offset < 2) {
     printf("\nThe presses left an offset of %u, which no reshape can make the column count equal\n", offset);
@@ -4397,117 +4578,10 @@ char *endOfString(char *string) { // string must point on the 1st "
 
 
 void strToShortInteger(char *nimBuffer, calcRegister_t regist) {
-  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Any change in this function must be reported in the function closeNim from file bufferize.c after the line: else if(nimNumberPart == NP_INT_BASE) {
-  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  longInteger_t minVal, value, maxVal;
-  int16_t posHash, i, lg;
-  int32_t base;
-
-  lg = strlen(nimBuffer);
-  posHash = 0;
-  for(i=1; i<lg; i++) {
-    if(nimBuffer[i] == '#') {
-      posHash = i;
-      break;
-    }
-  }
-
-  for(i=posHash+1; i<lg; i++) {
-    if(nimBuffer[i]<'0' || nimBuffer[i]>'9') {
-      printf("\nError while initializing a short integer: there is a non numeric character in the base of the integer!\n");
-      abortTest();
-    }
-  }
-
-  base = atoi(nimBuffer + posHash + 1);
-  if(base < 2 || base > 16) {
-    printf("\nError while initializing a short integer: the base of the integer must be from 2 to 16!\n");
+  if(!nimShortInteger(nimBuffer, regist)) {
+    printf("\nError while initializing a short integer: the digits, the base or the word size refuse it!\n");
     abortTest();
   }
-
-  for(i=nimBuffer[0] == '-' ? 1 : 0; i<posHash; i++) {
-    if((nimBuffer[i] > '9' ? nimBuffer[i] - 'A' + 10 : nimBuffer[i] - '0') >= base) {
-      printf("\nError while initializing a short integer: digit %c is not allowed in base %d!\n", nimBuffer[i], base);
-      abortTest();
-    }
-  }
-
-  longIntegerInit(value);
-  nimBuffer[posHash] = 0;
-  stringToLongInteger(nimBuffer + (nimBuffer[0] == '+' ? 1 : 0), base, value);
-
-  // maxVal = 2^shortIntegerWordSize
-  longIntegerInit(maxVal);
-  if(shortIntegerWordSize >= 1 && shortIntegerWordSize <= 64) {
-    longInteger2Pow(shortIntegerWordSize, maxVal);
-  }
-  else {
-    printf("\nError while initializing a short integer: shortIntegerWordSize must be fom 1 to 64\n");
-    abortTest();
-  }
-
-  // minVal = -maxVal/2
-  longIntegerInit(minVal);
-  longIntegerDivideUInt(maxVal, 2, minVal); // minVal = maxVal / 2
-  longIntegerSetNegativeSign(minVal); // minVal = -minVal
-
-  if((base != 2) && (base != 4) && (base != 8) && (base != 16) && (shortIntegerMode != SIM_UNSIGN)) {
-    longIntegerDivideUInt(maxVal, 2, maxVal); // maxVal /= 2
-  }
-
-  longIntegerSubtractUInt(maxVal, 1, maxVal); // maxVal--
-
-  if(shortIntegerMode == SIM_UNSIGN) {
-    longIntegerSetZero(minVal); // minVal = 0
-  }
-
-  if(shortIntegerMode == SIM_1COMPL || shortIntegerMode == SIM_SIGNMT) {
-    longIntegerAddUInt(minVal, 1, minVal); // minVal++
-  }
-
-  if(longIntegerCompare(value, minVal) < 0 || longIntegerCompare(value, maxVal) > 0) {
-    char strMin[22], strMax[22];
-    longIntegerToAllocatedString(minVal, strMin, sizeof(strMin));
-    longIntegerToAllocatedString(maxVal, strMax, sizeof(strMax));
-    printf("\nError while initializing a short integer: for a word size of %d bit%s and integer mode %s, the entered number must be from %s to %s!\n", shortIntegerWordSize, shortIntegerWordSize>1 ? "s" : "", getShortIntegerModeName(shortIntegerMode), strMin, strMax);
-    abortTest();
-  }
-
-  reallocateRegister(regist, dtShortInteger, 0, base);
-
-  char strValue[22];
-  longIntegerToAllocatedString(value, strValue, sizeof(strValue));
-
-  uint64_t val = strtoull(strValue + (longIntegerIsNegative(value) ? 1 : 0), NULL, 10); // when value is negative: discard the minus sign
-
-  if(shortIntegerMode == SIM_UNSIGN) {
-  }
-  else if(shortIntegerMode == SIM_2COMPL) {
-    if(longIntegerIsNegative(value)) {
-      val = (~val + 1) & shortIntegerMask;
-    }
-  }
-  else if(shortIntegerMode == SIM_1COMPL) {
-    if(longIntegerIsNegative(value)) {
-      val = ~val & shortIntegerMask;
-    }
-  }
-  else if(shortIntegerMode == SIM_SIGNMT) {
-    if(longIntegerIsNegative(value)) {
-      val = (val & shortIntegerMask) | shortIntegerSignBit;
-    }
-  }
-  else {
-    printf("\nBad integer mode while initializing a short integer\n");
-    abortTest();
-  }
-
-  *(REGISTER_SHORT_INTEGER_DATA(regist)) = val;
-
-  longIntegerFree(minVal);
-  longIntegerFree(value);
-  longIntegerFree(maxVal);
 }
 
 
@@ -5918,7 +5992,7 @@ void wrongRegisterMatrixSize(calcRegister_t regist, char letter, int expectedRow
 
 
 void expectedAndShouldBeValueForElement(calcRegister_t regist, char letter, int row, int col, char *expectedValue, char *expectedAndValue) {
-  char str[300];
+  char str[REGISTER_TEXT_LENGTH];
 
   if(letter == 0) {
     sprintf(expectedAndValue, "\nRegister %d value should be ", regist);
@@ -7013,7 +7087,7 @@ var2:
 
       char *expected, *is;
       if(stringByteLength(r + 1) != stringByteLength(REGISTER_STRING_DATA(regist))) {
-        char stringUtf8[1200];
+        char stringUtf8[UTF8_STRING_LENGTH];
         stringToUtf8(REGISTER_STRING_DATA(regist), (uint8_t *)stringUtf8);
         printf("\nThe 2 strings are not of the same size.\nRegister string: %s\n", stringUtf8);
         for(i=0, is=REGISTER_STRING_DATA(regist); i<=stringByteLength(REGISTER_STRING_DATA(regist)); i++, is++) {

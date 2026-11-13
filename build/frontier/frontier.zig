@@ -180,6 +180,17 @@ pub const RuntimeObjectOptions = struct {
     // without OPTION_ATEXT, and addBuildOptions applies that rule. Defaults true
     // (host).
     option_atext_fonts: bool = true,
+    // OPTION_DRG_CFG gates the DRG menu: A.DEG to A.MULπ choose the angular units
+    // DRG steps through, NIMDRG lets DRG choose the unit of the number being
+    // entered and leave the entry open, and A.AUTO makes the unit DRG lands on the
+    // angular mode. It also gates the drgConfig byte that holds those choices and
+    // its config, state-file and backup round trips. Every target z47 builds
+    // defines it. Defaults true (host).
+    option_drg_cfg: bool = true,
+    // OPTION_EEX_PREFIX gates the SI prefix menu (EEXPFX) that a long press of EEX
+    // opens during number entry, and the centi, deci, deca and hecto items on it.
+    // Every target z47 builds defines it. Defaults true (host).
+    option_eex_prefix: bool = true,
 };
 
 fn manifestContainsPath(manifest: []const u8, needle: []const u8) bool {
@@ -313,6 +324,8 @@ pub fn addBuildOptions(
     build_options.addOption(bool, "option_lp_dp_timing", options.option_lp_dp_timing);
     build_options.addOption(bool, "option_atext", options.option_atext);
     build_options.addOption(bool, "option_atext_fonts", options.option_atext_fonts and options.option_atext);
+    build_options.addOption(bool, "option_drg_cfg", options.option_drg_cfg);
+    build_options.addOption(bool, "option_eex_prefix", options.option_eex_prefix);
     // Passed in by whoever also hands the C sources -DTESTSUITE_BUILD, so the Zig
     // owners and the C half of the same executable agree on which build this is:
     // fnSNAP freezes the clock the date/time formatters read, and RESET loads the

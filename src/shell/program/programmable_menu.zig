@@ -354,7 +354,7 @@ fn _setCaption(keyNum: u16) void {
                 frontier_display.real34ToDisplayString(regReal34(stringRegister), getRegisterAngularMode(stringRegister), tmpString, &standardFont, SCREEN_WIDTH, NUMBER_OF_DISPLAY_DIGITS, @intFromBool(!LIMITEXP), @intFromBool(FRONTSPACE), NOIRFRAC);
             },
             dtComplex34 => {
-                frontier_display.complex34ToDisplayString(regComplex34(stringRegister), tmpString, &numericFont, SCREEN_WIDTH, NUMBER_OF_DISPLAY_DIGITS, @intFromBool(!LIMITEXP), @intFromBool(FRONTSPACE), NOIRFRAC, @intCast(getComplexRegisterAngularMode(stringRegister)), @intFromBool(getComplexRegisterPolarMode(stringRegister) != 0));
+                frontier_display.complex34ToDisplayString(regComplex34(stringRegister), tmpString, &numericFont, SCREEN_WIDTH, NUMBER_OF_DISPLAY_DIGITS, @intFromBool(!LIMITEXP), @intFromBool(FRONTSPACE), NOIRFRAC, @intCast(getComplexRegisterAngularMode(stringRegister)), @intFromBool(getComplexRegisterPolarMode(stringRegister) != 0), abi.register_tag.expStep(getRegisterTag(stringRegister)));
             },
             dtConfig => {
                 _ = frontier_char_string.xcopy(tmpString, "Configu", 8);

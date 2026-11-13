@@ -200,7 +200,7 @@ fn showRegisterInRbr(regist: calcRegister_t, registerNameWidth: i16) void {
         },
         dtComplex34 => {
             if (showContent) {
-                frontier_display.complex34ToDisplayString(regComplex34(regist), tmpString, &standardFont, SCREEN_WIDTH - 1 - registerNameWidth, 34, @intFromBool(!LIMITEXP), @intFromBool(!FRONTSPACE), LIMITIRFRAC, @intCast(getComplexRegisterAngularMode(regist)), @intFromBool(getComplexRegisterPolarMode(regist) != 0));
+                frontier_display.complex34ToDisplayString(regComplex34(regist), tmpString, &standardFont, SCREEN_WIDTH - 1 - registerNameWidth, 34, @intFromBool(!LIMITEXP), @intFromBool(!FRONTSPACE), LIMITIRFRAC, @intCast(getComplexRegisterAngularMode(regist)), @intFromBool(getComplexRegisterPolarMode(regist) != 0), abi.register_tag.expStep(getRegisterTag(regist)));
             } else {
                 abi.fmtBufZ(tmpString[0..2560], "{d} bytes", .{@as(i32, COMPLEX34_SIZE_IN_BYTES)});
             }

@@ -283,7 +283,7 @@ const errorMessageTexts = [NUMBER_OF_ERROR_CODES][]const u8{
     "NEXT without FOR", // 72  ERROR_NEXT_WITHOUT_FOR
     "Invalid counter register", // 73  ERROR_INVALID_COUNTER_REGISTER
     "Step of zero", // 74  ERROR_STEP_OF_ZERO
-    "", // 75
+    "Data not initialized", // 75  ERROR_NOT_INITIALIZED
     "", // 76
     "", // 77
     "", // 78
