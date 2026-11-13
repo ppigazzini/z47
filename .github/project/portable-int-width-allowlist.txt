@@ -16,16 +16,6 @@
 # Double-width shift exponent: bounded by 2 * shortIntegerWordSize (<= 128).
 runtime.__gmpz_mul_2exp(result, result, @as(c_ulong, @intCast(exponent)));
 
-# Factorial operand: overflows the real domain long before 2^32; validated small.
-const n_c_ulong: c_ulong = @intCast(n);
-
-# Rational-decomposition numerator/denominator fed to GMP mpz_set_ui (unsigned
-# long ABI arg). Bounded in practice by the display-precision rational approx.
-# REVISIT if Win64 DENMAX/decomposition coverage is added — a >2^32 num/den would
-# panic here on Win64 just as saveStateValue did.
-runtime.__gmpz_set_ui(&value[0], @as(c_ulong, @intCast(numer)));
-runtime.__gmpz_set_ui(&value[0], @as(c_ulong, @intCast(denom)));
-
 # longInteger2Pow exponent: shortIntegerWordSize <= 64, so the products are <= 128.
 longInteger2Pow(@as(c_ulong, runtime.shortIntegerWordSize) * 2 - 1, &wd[0]);
 longInteger2Pow(@as(c_ulong, runtime.shortIntegerWordSize) * 2, &wd[0]);
