@@ -20,6 +20,9 @@ pub const RuntimeObjectOptions = struct {
     // The board this object is compiled for, set by the caller that builds
     // for it; every board fact below derives from it.
     board: build_common.Board = .host,
+    // The kind of executable this object is linked into, set by the caller;
+    // see build_common.Linkage.
+    linkage: build_common.Linkage = .product,
 };
 
 const replaced_core_sources = [_][]const u8{
@@ -61,7 +64,7 @@ fn addRuntimeObject(
     });
     module.addImport("dmcp_rom", dmcp_rom_module);
     const build_options = b.addOptions();
-    const use_fake_harness_surface = std.mem.endsWith(u8, name_prefix, "parity");
+    const use_fake_harness_surface = options.linkage == .fake_harness;
     const free_regions_are_inline_array = options.board.isOldHw();
     build_options.addOption(bool, "use_fake_harness_surface", use_fake_harness_surface);
     build_options.addOption(bool, "free_regions_are_inline_array", free_regions_are_inline_array);
@@ -129,7 +132,7 @@ pub fn addParityExecutable(
     target: std.Build.ResolvedTarget,
     optimize: std.lang.Optimize,
 ) *std.Build.Step.Compile {
-    const runtime_object = addRuntimeObject(b, target, optimize, "parity", .{});
+    const runtime_object = addRuntimeObject(b, target, optimize, "parity", .{ .linkage = .fake_harness });
     const exe = b.addExecutable(.{
         .name = "memory-parity",
         .root_module = b.createModule(.{

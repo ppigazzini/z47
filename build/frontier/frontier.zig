@@ -12,12 +12,6 @@ pub const RuntimeObjects = struct {
 };
 
 pub const RuntimeObjectOptions = struct {
-    /// True where this executable's C sources are compiled with
-    /// TESTSUITE_BUILD, so the Zig owners answer the same question the C half
-    /// does: fnSNAP freezes the clock the date/time formatters read, and RESET
-    /// loads the sample programs. The testSuite and the full-core harnesses set
-    /// it; the product and the simulator leave it false.
-    is_testsuite_build: bool = false,
     strip: ?bool = null,
     unwind_tables: ?std.lang.UnwindTables = null,
     stack_protector: ?bool = null,
@@ -79,15 +73,14 @@ pub const RuntimeObjectOptions = struct {
     strip_ortho: bool = false,
     strip_bessel: bool = false,
     strip_elliptic: bool = false,
-    // Emit the EXTRA_INFO_ON_CALC_ERROR console hints. Upstream compiles these
-    // out on firmware (DMCP_BUILD), so default off there to match and save flash;
-    // host/sim keep them. Default true mirrors a normal host build.
-    extra_info_on_calc_error: bool = true,
     // The board this object is compiled for, set by the caller that builds for
     // it. DMCP_BUILD selects the backToSystem error tails and drops the PC-only
     // allocation tracking; OLD_HW selects the static-array layout of
     // freeMemoryRegions.
     board: build_common.Board = .host,
+    // The kind of executable this object is linked into, set by the caller;
+    // see build_common.Linkage.
+    linkage: build_common.Linkage = .product,
     // OPTION_ELEC gates the ELEC functions (fnJM body in c47Extensions/jm.c).
     // Upstream defines.h enables it by default and #undef's it for some DM42
     // packages (build/firmware.zig's dm42Package table); DMCP5 keeps it.
@@ -236,7 +229,7 @@ fn addRuntimeObject(
     });
     root_module.addImport("dmcp_rom", dmcp_rom_module);
 
-    addBuildOptions(b, root_module, name_prefix, options);
+    addBuildOptions(b, root_module, options);
 
     const runtime_obj = b.addObject(.{
         .name = b.fmt("{s}-frontier-root", .{name_prefix}),
@@ -264,7 +257,6 @@ fn addRuntimeObject(
 pub fn addBuildOptions(
     b: *std.Build,
     module: *std.Build.Module,
-    name_prefix: []const u8,
     options: RuntimeObjectOptions,
 ) void {
     const build_options = b.addOptions();
@@ -294,10 +286,9 @@ pub fn addBuildOptions(
     build_options.addOption(bool, "strip_bessel", options.strip_bessel);
     build_options.addOption(bool, "strip_elliptic", options.strip_elliptic);
     // The testSuite build forces EXTRA_INFO_ON_CALC_ERROR to 0, as the firmware
-    // does. Leaving the hints in made the tested owners write the shared
-    // errorMessage buffer and print on paths the C oracle compiles out.
-    build_options.addOption(bool, "extra_info_on_calc_error", options.extra_info_on_calc_error and
-        !std.mem.startsWith(u8, name_prefix, "testSuite"));
+    // does. Left in, the hints would write the shared errorMessage buffer and
+    // print on paths the C oracle compiles out.
+    build_options.addOption(bool, "extra_info_on_calc_error", build_common.extraInfoOnCalcError(options.board, options.linkage));
     build_options.addOption(bool, "dmcp_build", options.board.isDmcp());
     build_options.addOption(bool, "old_hw", options.board.isOldHw());
     build_options.addOption(bool, "option_elec", options.option_elec);
@@ -324,7 +315,7 @@ pub fn addBuildOptions(
     // sample programs. Derived from the target NAME before, which silently left
     // every full-core harness -- all of which define the macro for their C -- on
     // the product's answer.
-    build_options.addOption(bool, "is_testsuite_build", options.is_testsuite_build);
+    build_options.addOption(bool, "is_testsuite_build", options.linkage == .testsuite);
 
     // versionStr / versionStr2: assembled here the same way generated.zig builds
     // version.h, so the ported owner needs no C preprocessor stamp.
@@ -400,8 +391,8 @@ pub fn addToModule(
     name_prefix: []const u8,
     calcmodel: u8,
     coverage: bool,
-    is_testsuite_build: bool,
+    linkage: build_common.Linkage,
 ) void {
-    const runtime_object = addRuntimeObject(b, target, optimize, name_prefix, .{ .calcmodel = calcmodel, .coverage = coverage, .is_testsuite_build = is_testsuite_build });
+    const runtime_object = addRuntimeObject(b, target, optimize, name_prefix, .{ .calcmodel = calcmodel, .coverage = coverage, .linkage = linkage });
     module.addObject(runtime_object);
 }

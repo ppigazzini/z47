@@ -24,20 +24,15 @@ pub const RuntimeObjectOptions = struct {
     // The board this object is compiled for, set by the caller that builds
     // for it; every board fact below derives from it.
     board: build_common.Board = .host,
+    // The kind of executable this object is linked into, set by the caller;
+    // see build_common.Linkage.
+    linkage: build_common.Linkage = .product,
     // Build this object with SanitizerCoverage
     // trace-pc-guard so report-zig-coverage.sh can resolve the stack-state Zig
     // owner lines the host coverage harness executes. Measurement-only: set ONLY
     // for the dedicated coverage harness variant, never a product/test object,
     // because the sancov handler symbol is linked only into that binary.
     coverage: bool = false,
-    // EXTRA_INFO_ON_CALC_ERROR. Upstream compiles the swap-target diagnostics out
-    // on firmware and in the testSuite, where an out-of-range swap target is
-    // silently ignored rather than reported. Default true mirrors a host build.
-    extra_info_on_calc_error: bool = true,
-    // TESTSUITE_BUILD. adjustResult undoes an erroring command itself only in the
-    // testSuite, which runs commands without reallyRunFunction's own undo; the
-    // simulator and the firmware leave that undo to reallyRunFunction.
-    is_testsuite_build: bool = false,
 };
 
 const replaced_core_sources = [_][]const u8{
@@ -71,17 +66,16 @@ fn addRuntimeObject(
     });
     module.addImport("abi", abi_module);
     const build_options = b.addOptions();
-    build_options.addOption(bool, "use_fake_stack_state_harness_surface", std.mem.endsWith(u8, name_prefix, "parity"));
+    build_options.addOption(bool, "use_fake_stack_state_harness_surface", options.linkage == .fake_harness);
     // The testSuite compiles with EXTRA_INFO_ON_CALC_ERROR forced to 0, as the
     // firmware does; keep the owner's diagnostics out of both.
-    build_options.addOption(bool, "extra_info_on_calc_error", options.extra_info_on_calc_error and
-        !std.mem.startsWith(u8, name_prefix, "testSuite"));
-    build_options.addOption(bool, "is_testsuite_build", options.is_testsuite_build);
+    build_options.addOption(bool, "extra_info_on_calc_error", build_common.extraInfoOnCalcError(options.board, options.linkage));
+    build_options.addOption(bool, "is_testsuite_build", options.linkage == .testsuite);
     module.addOptions("stack_state_build_options", build_options);
 
     const descriptor_storage_options = b.addOptions();
-    descriptor_storage_options.addOption(bool, "use_array_backed_global_registers", std.mem.endsWith(u8, name_prefix, "parity") or options.board.isOldHw());
-    descriptor_storage_options.addOption(bool, "use_fake_state_harness_surface", std.mem.endsWith(u8, name_prefix, "parity"));
+    descriptor_storage_options.addOption(bool, "use_array_backed_global_registers", options.linkage == .fake_harness or options.board.isOldHw());
+    descriptor_storage_options.addOption(bool, "use_fake_state_harness_surface", options.linkage == .fake_harness);
     module.addOptions("state_descriptor_storage_build_options", descriptor_storage_options);
 
     const object = b.addObject(.{

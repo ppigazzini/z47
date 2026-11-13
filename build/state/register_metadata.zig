@@ -20,11 +20,9 @@ pub const RuntimeObjectOptions = struct {
     // The board this object is compiled for, set by the caller that builds
     // for it; every board fact below derives from it.
     board: build_common.Board = .host,
-    // EXTRA_INFO_ON_CALC_ERROR. The register-metadata owners format the
-    // "is not defined!" subject and range into the shared errorMessage buffer,
-    // which upstream compiles out with the hints; the macro is 0 on firmware and
-    // in the testSuite. Default true mirrors a host build.
-    extra_info_on_calc_error: bool = true,
+    // The kind of executable this object is linked into, set by the caller;
+    // see build_common.Linkage.
+    linkage: build_common.Linkage = .product,
 };
 
 const replaced_core_sources = [_][]const u8{
@@ -58,22 +56,20 @@ fn addRuntimeObject(
     });
     module.addImport("abi", abi_module);
     const stack_build_options = b.addOptions();
-    stack_build_options.addOption(bool, "use_fake_stack_state_harness_surface", std.mem.endsWith(u8, name_prefix, "parity"));
-    // Same option set, and the same derivation, as the stack object builds under
-    // this name: the two objects share owner files, so a fact carried by one copy
-    // of the module and not the other makes one of the two read a default.
-    stack_build_options.addOption(bool, "extra_info_on_calc_error", options.extra_info_on_calc_error and
-        !std.mem.startsWith(u8, name_prefix, "testSuite"));
+    stack_build_options.addOption(bool, "use_fake_stack_state_harness_surface", options.linkage == .fake_harness);
+    // Same option set, and the same derivation, as the stack object: the two
+    // objects share owner files, so a fact carried by one copy of the module and
+    // not the other makes one of the two read a default.
+    stack_build_options.addOption(bool, "extra_info_on_calc_error", build_common.extraInfoOnCalcError(options.board, options.linkage));
     module.addOptions("stack_state_build_options", stack_build_options);
 
     const register_metadata_options = b.addOptions();
-    register_metadata_options.addOption(bool, "extra_info_on_calc_error", options.extra_info_on_calc_error and
-        !std.mem.startsWith(u8, name_prefix, "testSuite"));
+    register_metadata_options.addOption(bool, "extra_info_on_calc_error", build_common.extraInfoOnCalcError(options.board, options.linkage));
     module.addOptions("register_metadata_build_options", register_metadata_options);
 
     const descriptor_storage_options = b.addOptions();
-    descriptor_storage_options.addOption(bool, "use_array_backed_global_registers", std.mem.endsWith(u8, name_prefix, "parity") or options.board.isOldHw());
-    descriptor_storage_options.addOption(bool, "use_fake_state_harness_surface", std.mem.endsWith(u8, name_prefix, "parity"));
+    descriptor_storage_options.addOption(bool, "use_array_backed_global_registers", options.linkage == .fake_harness or options.board.isOldHw());
+    descriptor_storage_options.addOption(bool, "use_fake_state_harness_surface", options.linkage == .fake_harness);
     module.addOptions("state_descriptor_storage_build_options", descriptor_storage_options);
 
     return b.addObject(.{
@@ -125,8 +121,9 @@ pub fn addToModule(
     target: std.Build.ResolvedTarget,
     optimize: std.lang.Optimize,
     name_prefix: []const u8,
+    linkage: build_common.Linkage,
 ) void {
-    const runtime_object = addRuntimeObject(b, target, optimize, name_prefix, .{});
+    const runtime_object = addRuntimeObject(b, target, optimize, name_prefix, .{ .linkage = linkage });
 
     module.addObject(runtime_object);
 }

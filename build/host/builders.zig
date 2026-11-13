@@ -27,12 +27,11 @@ pub fn addSimulator(
     common: host_types.CommonConfig,
     version_headers_dir: std.Build.LazyPath,
     generated: host_types.GeneratedOutputs,
-    shortint_objects: host_types.ShortIntObjects,
-    keyboard_state_objects: host_types.KeyboardStateObjects,
-    stack_state_objects: host_types.StackStateObjects,
+    shared: host_types.SharedObjects,
     calc_model: []const u8,
     sanitize_c: ?std.zig.SanitizeC,
 ) *std.Build.Step.Compile {
+    std.debug.assert(shared.linkage == .product);
     const core_c_flags = build_common.sanitizerCFlags(host_target, sanitize_c);
 
     const exe = b.addExecutable(.{
@@ -86,24 +85,24 @@ pub fn addSimulator(
     gtk_gui.addToModule(b, exe.root_module, host_target, optimize, artifact_name, calc_model_id);
     abi_host.addToModule(b, exe.root_module, host_target, optimize, artifact_name);
     memory.addToModule(b, exe.root_module, host_target, optimize, artifact_name);
-    calc_state.addToModule(b, exe.root_module, host_target, optimize, artifact_name, calc_model_id);
-    program_serialization.addToModule(b, exe.root_module, host_target, optimize, artifact_name);
-    register_metadata.addToModule(b, exe.root_module, host_target, optimize, artifact_name);
-    flags.addToModule(b, exe.root_module, host_target, optimize, artifact_name);
-    math_command_wrappers.addToModule(b, exe.root_module, host_target, optimize, artifact_name, false);
-    solve.addToModule(b, exe.root_module, host_target, optimize, artifact_name, false);
+    calc_state.addToModule(b, exe.root_module, host_target, optimize, artifact_name, calc_model_id, shared.linkage);
+    program_serialization.addToModule(b, exe.root_module, host_target, optimize, artifact_name, shared.linkage);
+    register_metadata.addToModule(b, exe.root_module, host_target, optimize, artifact_name, shared.linkage);
+    flags.addToModule(b, exe.root_module, host_target, optimize, artifact_name, shared.linkage);
+    math_command_wrappers.addToModule(b, exe.root_module, host_target, optimize, artifact_name, shared.linkage);
+    solve.addToModule(b, exe.root_module, host_target, optimize, artifact_name, shared.linkage);
     // The frontier calcModel seed makes the R47 sim boot isR47FAM()=true (correct
     // window title + keyboard layout) at startup, matching upstream's -DCALCMODEL
     // static init of calcModel.
-    frontier.addToModule(b, exe.root_module, host_target, optimize, artifact_name, calc_model_id, false, false);
-    constants.addToModule(b, exe.root_module, host_target, optimize, artifact_name);
+    frontier.addToModule(b, exe.root_module, host_target, optimize, artifact_name, calc_model_id, false, shared.linkage);
+    constants.addToModule(b, exe.root_module, host_target, optimize, artifact_name, shared.linkage);
     tone.addToModule(b, exe.root_module, host_target, optimize, artifact_name);
     exe.root_module.addCSourceFile(.{ .file = generated.raster_fonts_data, .flags = core_c_flags });
     exe.root_module.addCSourceFile(.{ .file = generated.constant_pointers_c, .flags = core_c_flags });
     exe.root_module.addCSourceFile(.{ .file = generated.constant_pointers2_c, .flags = core_c_flags });
-    shortint_objects.link(exe.root_module);
-    exe.root_module.addObject(keyboard_state_objects.keyboard_state);
-    exe.root_module.addObject(stack_state_objects.stack_state);
+    shared.shortint.link(exe.root_module);
+    exe.root_module.addObject(shared.keyboard_state.keyboard_state);
+    exe.root_module.addObject(shared.stack_state.stack_state);
     host_platform.linkGtk3(exe.root_module, common);
     host_platform.linkGmp(exe.root_module, host_target);
     exe.root_module.linkSystemLibrary("m", .{});
@@ -217,11 +216,10 @@ pub fn addTestSuite(
     common: host_types.CommonConfig,
     version_headers_dir: std.Build.LazyPath,
     generated: host_types.GeneratedOutputs,
-    shortint_objects: host_types.ShortIntObjects,
-    keyboard_state_objects: host_types.KeyboardStateObjects,
-    stack_state_objects: host_types.StackStateObjects,
+    shared: host_types.SharedObjects,
     sanitize_c: ?std.zig.SanitizeC,
 ) *std.Build.Step.Compile {
+    std.debug.assert(shared.linkage == .testsuite);
     const core_c_flags = build_common.sanitizerCFlags(host_target, sanitize_c);
 
     const exe = b.addExecutable(.{
@@ -256,21 +254,21 @@ pub fn addTestSuite(
     exe.root_module.addObject(addTestSuiteMainObject(b, host_target, optimize, name));
     abi_host.addToModule(b, exe.root_module, host_target, optimize, name);
     memory.addToModule(b, exe.root_module, host_target, optimize, name);
-    calc_state.addToModule(b, exe.root_module, host_target, optimize, name, 46); // testSuite is the C47 model
-    program_serialization.addToModule(b, exe.root_module, host_target, optimize, name);
-    register_metadata.addToModule(b, exe.root_module, host_target, optimize, name);
-    flags.addToModule(b, exe.root_module, host_target, optimize, name);
-    math_command_wrappers.addToModule(b, exe.root_module, host_target, optimize, name, true);
-    solve.addToModule(b, exe.root_module, host_target, optimize, name, true);
-    frontier.addToModule(b, exe.root_module, host_target, optimize, name, 46, false, true); // testSuite is the C47 model
-    constants.addToModule(b, exe.root_module, host_target, optimize, name);
+    calc_state.addToModule(b, exe.root_module, host_target, optimize, name, 46, shared.linkage); // testSuite is the C47 model
+    program_serialization.addToModule(b, exe.root_module, host_target, optimize, name, shared.linkage);
+    register_metadata.addToModule(b, exe.root_module, host_target, optimize, name, shared.linkage);
+    flags.addToModule(b, exe.root_module, host_target, optimize, name, shared.linkage);
+    math_command_wrappers.addToModule(b, exe.root_module, host_target, optimize, name, shared.linkage);
+    solve.addToModule(b, exe.root_module, host_target, optimize, name, shared.linkage);
+    frontier.addToModule(b, exe.root_module, host_target, optimize, name, 46, false, shared.linkage); // testSuite is the C47 model
+    constants.addToModule(b, exe.root_module, host_target, optimize, name, shared.linkage);
     tone.addToModule(b, exe.root_module, host_target, optimize, name);
     exe.root_module.addCSourceFile(.{ .file = generated.raster_fonts_data, .flags = core_c_flags });
     exe.root_module.addCSourceFile(.{ .file = generated.constant_pointers_c, .flags = core_c_flags });
     exe.root_module.addCSourceFile(.{ .file = generated.constant_pointers2_c, .flags = core_c_flags });
-    shortint_objects.link(exe.root_module);
-    exe.root_module.addObject(keyboard_state_objects.keyboard_state);
-    exe.root_module.addObject(stack_state_objects.stack_state);
+    shared.shortint.link(exe.root_module);
+    exe.root_module.addObject(shared.keyboard_state.keyboard_state);
+    exe.root_module.addObject(shared.stack_state.stack_state);
     host_platform.linkGtk3(exe.root_module, common);
     host_platform.linkGmp(exe.root_module, host_target);
     exe.root_module.linkSystemLibrary("m", .{});
@@ -292,12 +290,11 @@ pub fn addFullCoreHarness(
     common: host_types.CommonConfig,
     version_headers_dir: std.Build.LazyPath,
     generated: host_types.GeneratedOutputs,
-    shortint_objects: host_types.ShortIntObjects,
-    keyboard_state_objects: host_types.KeyboardStateObjects,
-    stack_state_objects: host_types.StackStateObjects,
+    shared: host_types.SharedObjects,
     sanitize_c: ?std.zig.SanitizeC,
     coverage: bool,
 ) *std.Build.Step.Compile {
+    std.debug.assert(shared.linkage == .testsuite);
     const core_c_flags = build_common.sanitizerCFlags(host_target, sanitize_c);
 
     const exe = b.addExecutable(.{
@@ -328,21 +325,21 @@ pub fn addFullCoreHarness(
     exe.root_module.addObject(addTestSuiteHalObject(b, host_target, optimize, name));
     abi_host.addToModule(b, exe.root_module, host_target, optimize, name);
     memory.addToModule(b, exe.root_module, host_target, optimize, name);
-    calc_state.addToModule(b, exe.root_module, host_target, optimize, name, 46); // testSuite is the C47 model
-    program_serialization.addToModule(b, exe.root_module, host_target, optimize, name);
-    register_metadata.addToModule(b, exe.root_module, host_target, optimize, name);
-    flags.addToModule(b, exe.root_module, host_target, optimize, name);
-    math_command_wrappers.addToModule(b, exe.root_module, host_target, optimize, name, true);
-    solve.addToModule(b, exe.root_module, host_target, optimize, name, true);
-    frontier.addToModule(b, exe.root_module, host_target, optimize, name, 46, coverage, true); // C47 model
-    constants.addToModule(b, exe.root_module, host_target, optimize, name);
+    calc_state.addToModule(b, exe.root_module, host_target, optimize, name, 46, shared.linkage); // testSuite is the C47 model
+    program_serialization.addToModule(b, exe.root_module, host_target, optimize, name, shared.linkage);
+    register_metadata.addToModule(b, exe.root_module, host_target, optimize, name, shared.linkage);
+    flags.addToModule(b, exe.root_module, host_target, optimize, name, shared.linkage);
+    math_command_wrappers.addToModule(b, exe.root_module, host_target, optimize, name, shared.linkage);
+    solve.addToModule(b, exe.root_module, host_target, optimize, name, shared.linkage);
+    frontier.addToModule(b, exe.root_module, host_target, optimize, name, 46, coverage, shared.linkage); // C47 model
+    constants.addToModule(b, exe.root_module, host_target, optimize, name, shared.linkage);
     tone.addToModule(b, exe.root_module, host_target, optimize, name);
     exe.root_module.addCSourceFile(.{ .file = generated.raster_fonts_data, .flags = core_c_flags });
     exe.root_module.addCSourceFile(.{ .file = generated.constant_pointers_c, .flags = core_c_flags });
     exe.root_module.addCSourceFile(.{ .file = generated.constant_pointers2_c, .flags = core_c_flags });
-    shortint_objects.link(exe.root_module);
-    exe.root_module.addObject(keyboard_state_objects.keyboard_state);
-    exe.root_module.addObject(stack_state_objects.stack_state);
+    shared.shortint.link(exe.root_module);
+    exe.root_module.addObject(shared.keyboard_state.keyboard_state);
+    exe.root_module.addObject(shared.stack_state.stack_state);
     host_platform.linkGtk3(exe.root_module, common);
     host_platform.linkGmp(exe.root_module, host_target);
     exe.root_module.linkSystemLibrary("m", .{});

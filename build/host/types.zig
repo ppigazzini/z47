@@ -1,4 +1,5 @@
 const std = @import("std");
+const build_common = @import("../common.zig");
 const keyboard_state = @import("../state/keyboard_state.zig");
 const shortint = @import("../shortint/shortint.zig");
 const stack = @import("../state/stack.zig");
@@ -27,6 +28,16 @@ pub const ShortIntObjects = shortint.RuntimeObjects;
 pub const KeyboardStateObjects = keyboard_state.RuntimeObjects;
 pub const StackStateObjects = stack.RuntimeObjects;
 
+/// The host objects compiled once per linkage and shared by every executable
+/// of that linkage. A builder takes the whole set, so an executable cannot link
+/// one linkage's keyboard object beside another's stack object.
+pub const SharedObjects = struct {
+    linkage: build_common.Linkage,
+    shortint: ShortIntObjects,
+    keyboard_state: KeyboardStateObjects,
+    stack_state: StackStateObjects,
+};
+
 pub const Context = struct {
     host_target: std.Build.ResolvedTarget,
     common: CommonConfig,
@@ -36,12 +47,11 @@ pub const Context = struct {
     test_sources: [][]const u8,
     version_headers_dir: std.Build.LazyPath,
     generated: GeneratedOutputs,
-    shortint_objects: ShortIntObjects,
-    keyboard_state_objects: KeyboardStateObjects,
-    stack_state_objects: StackStateObjects,
-    // The stack-state object built with TESTSUITE_BUILD's behaviour, for every
-    // executable that compiles its C with TESTSUITE_BUILD defined.
-    testsuite_stack_state_objects: StackStateObjects,
+    /// The shared objects the simulators link.
+    product_objects: SharedObjects,
+    /// The shared objects every executable whose C half is compiled with
+    /// TESTSUITE_BUILD links.
+    testsuite_objects: SharedObjects,
 };
 
 pub const SimulatorOutputs = struct {

@@ -17,6 +17,12 @@ pub const RuntimeObjectOptions = struct {
     stack_check: ?bool = null,
     omit_frame_pointer: ?bool = null,
     error_tracing: ?bool = null,
+    // The board this object is compiled for, set by the caller that builds
+    // for it; every board fact below derives from it.
+    board: build_common.Board = .host,
+    // The kind of executable this object is linked into, set by the caller;
+    // see build_common.Linkage.
+    linkage: build_common.Linkage = .product,
 };
 
 const replaced_core_sources = [_][]const u8{
@@ -50,8 +56,8 @@ fn addRuntimeObject(
     });
     module.addImport("abi", abi_module);
     const build_options = b.addOptions();
-    build_options.addOption(bool, "extra_info_on_calc_error", std.mem.eql(u8, name_prefix, "host") or std.mem.endsWith(u8, name_prefix, "parity"));
-    build_options.addOption(bool, "use_fake_harness_surface", std.mem.endsWith(u8, name_prefix, "parity"));
+    build_options.addOption(bool, "extra_info_on_calc_error", build_common.extraInfoOnCalcError(options.board, options.linkage));
+    build_options.addOption(bool, "use_fake_harness_surface", options.linkage == .fake_harness);
     module.addOptions("constants_build_options", build_options);
 
     return b.addObject(.{
@@ -103,8 +109,9 @@ pub fn addToModule(
     target: std.Build.ResolvedTarget,
     optimize: std.lang.Optimize,
     name_prefix: []const u8,
+    linkage: build_common.Linkage,
 ) void {
-    module.addObject(addRuntimeObject(b, target, optimize, name_prefix, .{}));
+    module.addObject(addRuntimeObject(b, target, optimize, name_prefix, .{ .linkage = linkage }));
 }
 
 /// The three artefacts `generateConstants` emits, as the parity lane consumes
@@ -129,7 +136,7 @@ pub fn addParityExecutable(
     optimize: std.lang.Optimize,
     generated: GeneratedConstants,
 ) *std.Build.Step.Compile {
-    const runtime_object = addRuntimeObject(b, target, optimize, "parity", .{});
+    const runtime_object = addRuntimeObject(b, target, optimize, "parity", .{ .linkage = .fake_harness });
     const parity_driver = b.addObject(.{
         .name = "constants-parity-driver",
         .root_module = b.createModule(.{

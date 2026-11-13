@@ -12,12 +12,6 @@ pub const RuntimeObjects = struct {
 };
 
 pub const RuntimeObjectOptions = struct {
-    /// True where this executable's C sources are compiled with
-    /// TESTSUITE_BUILD, so the Zig owners answer the same question the C half
-    /// does: fnSNAP freezes the clock the date/time formatters read, and RESET
-    /// loads the sample programs. The testSuite and the full-core harnesses set
-    /// it; the product and the simulator leave it false.
-    is_testsuite_build: bool = false,
     strip: ?bool = null,
     unwind_tables: ?std.lang.UnwindTables = null,
     stack_protector: ?bool = null,
@@ -27,6 +21,9 @@ pub const RuntimeObjectOptions = struct {
     // The board this object is compiled for, set by the caller that builds
     // for it; every board fact below derives from it.
     board: build_common.Board = .host,
+    // The kind of executable this object is linked into, set by the caller;
+    // see build_common.Linkage.
+    linkage: build_common.Linkage = .product,
     // Per-package OPTION_* from defines.h, all defaulting to a host build. Which
     // DM42 packages keep each one is build/firmware.zig's dm42Package table.
     //
@@ -94,7 +91,7 @@ fn addRuntimeObject(
     // short-circuit -- in every executable whose C half is a testSuite build. That
     // includes the ASAN lane and the full-core harnesses, which a test on the
     // target name used to miss or catch only by accident.
-    build_options.addOption(bool, "is_testsuite_build", options.is_testsuite_build);
+    build_options.addOption(bool, "is_testsuite_build", options.linkage == .testsuite);
     // Both firmware boards stub calcModeAimGui() to a no-op (hal/gui.h: #if
     // defined(DMCP_BUILD) ...); the on-screen-keyboard sim and testSuite link the
     // real function. equation.zig mirrors this.
@@ -156,8 +153,8 @@ pub fn addToModule(
     target: std.Build.ResolvedTarget,
     optimize: std.lang.Optimize,
     name_prefix: []const u8,
-    is_testsuite_build: bool,
+    linkage: build_common.Linkage,
 ) void {
-    const runtime_object = addRuntimeObject(b, target, optimize, name_prefix, .{ .is_testsuite_build = is_testsuite_build });
+    const runtime_object = addRuntimeObject(b, target, optimize, name_prefix, .{ .linkage = linkage });
     module.addObject(runtime_object);
 }

@@ -19,11 +19,12 @@ pub const RuntimeObjectOptions = struct {
     stack_check: ?bool = null,
     omit_frame_pointer: ?bool = null,
     error_tracing: ?bool = null,
-    // EXTRA_INFO_ON_CALC_ERROR. flags.c wraps every moreInfoOnError call, and the
-    // errorMessage formatting that feeds one of them, in `#if
-    // (EXTRA_INFO_ON_CALC_ERROR == 1)`; the macro is 0 on firmware and in the
-    // testSuite. Default true mirrors a host build.
-    extra_info_on_calc_error: bool = true,
+    // The board this object is compiled for, set by the caller that builds
+    // for it; every board fact below derives from it.
+    board: build_common.Board = .host,
+    // The kind of executable this object is linked into, set by the caller;
+    // see build_common.Linkage.
+    linkage: build_common.Linkage = .product,
 };
 
 const replaced_core_sources = [_][]const u8{
@@ -59,8 +60,7 @@ fn addRuntimeObject(
     const build_options = b.addOptions();
     // The testSuite compiles with EXTRA_INFO_ON_CALC_ERROR forced to 0, as the
     // firmware does; keep the owner's diagnostics out of both.
-    build_options.addOption(bool, "extra_info_on_calc_error", options.extra_info_on_calc_error and
-        !std.mem.startsWith(u8, name_prefix, "testSuite"));
+    build_options.addOption(bool, "extra_info_on_calc_error", build_common.extraInfoOnCalcError(options.board, options.linkage));
     module.addOptions("flags_state_build_options", build_options);
 
     return b.addObject(.{
@@ -112,8 +112,9 @@ pub fn addToModule(
     target: std.Build.ResolvedTarget,
     optimize: std.lang.Optimize,
     name_prefix: []const u8,
+    linkage: build_common.Linkage,
 ) void {
-    const runtime_object = addRuntimeObject(b, target, optimize, name_prefix, .{});
+    const runtime_object = addRuntimeObject(b, target, optimize, name_prefix, .{ .linkage = linkage });
     module.addObject(runtime_object);
 }
 
@@ -123,7 +124,7 @@ pub fn addParityExecutable(
     optimize: std.lang.Optimize,
     common: host_types.CommonConfig,
 ) *std.Build.Step.Compile {
-    const runtime_object = addRuntimeObject(b, target, optimize, "parity", .{});
+    const runtime_object = addRuntimeObject(b, target, optimize, "parity", .{ .linkage = .fake_harness });
     const exe = b.addExecutable(.{
         .name = "flags-parity",
         .root_module = b.createModule(.{

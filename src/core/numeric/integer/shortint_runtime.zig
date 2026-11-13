@@ -42,13 +42,9 @@ pub extern var shortIntegerSignBit: u64;
 pub extern var thereIsSomethingToUndo: bool;
 pub extern var temporaryInformation: u8;
 
-// EXTRA_INFO_ON_CALC_ERROR (defines.h), as far as this object can resolve it.
-// The three short-integer command objects are compiled once and linked into
-// both the simulator and the testSuite, so the TESTSUITE_BUILD half of the
-// macro is not a compile-time fact here. It does not have to be: the
-// moreInfoOnError symbol is a no-op stub on every build that compiles the hints
-// out, so this gate only keeps the message formatting off the firmware.
-pub const extra_info_on_calc_error = @import("builtin").target.os.tag != .freestanding;
+// EXTRA_INFO_ON_CALC_ERROR (defines.h): 1, forced to 0 on firmware and in the
+// testSuite.
+pub const extra_info_on_calc_error = @import("shortint_build_options").extra_info_on_calc_error;
 
 pub extern fn getRegisterDataType(regist: calcRegister_t) u32;
 pub extern fn getRegisterDataTypeName(regist: calcRegister_t, article: bool, abbreviated: bool) [*:0]const u8;

@@ -317,6 +317,25 @@ pub const Board = enum {
     }
 };
 
+/// The kind of executable an owner object is linked into, for the facts that
+/// differ between executables built for one target. Like the board, it is set
+/// by the caller and never read off the object's name.
+pub const Linkage = enum {
+    /// A simulator, a firmware image, or a lane that links the owner as they do.
+    product,
+    /// An executable whose C half is compiled with -DTESTSUITE_BUILD: the
+    /// testSuite, its sanitizer lane and the full-core harnesses.
+    testsuite,
+    /// A unit parity lane, which links a fake runtime in place of the core.
+    fake_harness,
+};
+
+/// EXTRA_INFO_ON_CALC_ERROR as defines.h resolves it: 1, forced to 0 for
+/// DMCP_BUILD and again for TESTSUITE_BUILD.
+pub fn extraInfoOnCalcError(board: Board, linkage: Linkage) bool {
+    return !board.isDmcp() and linkage != .testsuite;
+}
+
 pub fn addBashCommand(b: *std.Build, script: []const u8) *std.Build.Step.Run {
     return addBashCommandFmt(b, "{s}", .{script});
 }

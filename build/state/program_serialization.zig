@@ -16,6 +16,9 @@ pub const RuntimeObjectOptions = struct {
     // The board this object is compiled for, set by the caller that builds
     // for it; every board fact below derives from it.
     board: build_common.Board = .host,
+    // The kind of executable this object is linked into, set by the caller;
+    // see build_common.Linkage.
+    linkage: build_common.Linkage = .product,
     // OPTION_STRUCTURED_PGM: the exported and stored program is refused while a
     // structure carries no partner number, a load runs VALID under AVALID, and the
     // listing indents a structure's body (OPTION_STRUCT_INDENT, which structured.h
@@ -69,6 +72,7 @@ fn addRuntimeObject(
     build_options.addOption(bool, "state_old_hw", options.board.isOldHw());
     build_options.addOption(bool, "option_structured_pgm", options.option_structured_pgm);
     build_options.addOption(bool, "ir_printing", options.ir_printing);
+    build_options.addOption(bool, "extra_info_on_calc_error", build_common.extraInfoOnCalcError(options.board, options.linkage));
     module.addOptions("program_serialization_build_options", build_options);
     // The DMCP ROM shim is shared by the calc-state and program-serialization
     // owners, so it is a REGISTERED module: directory-free, letting each owner
@@ -129,8 +133,9 @@ pub fn addToModule(
     target: std.Build.ResolvedTarget,
     optimize: std.lang.Optimize,
     name_prefix: []const u8,
+    linkage: build_common.Linkage,
 ) void {
-    const runtime_object = addRuntimeObject(b, target, optimize, name_prefix, .{});
+    const runtime_object = addRuntimeObject(b, target, optimize, name_prefix, .{ .linkage = linkage });
 
     module.addObject(runtime_object);
 }
@@ -141,7 +146,7 @@ pub fn addParityExecutable(
     optimize: std.lang.Optimize,
     common: host_types.CommonConfig,
 ) *std.Build.Step.Compile {
-    const runtime_object = addRuntimeObject(b, target, optimize, "parity", .{});
+    const runtime_object = addRuntimeObject(b, target, optimize, "parity", .{ .linkage = .fake_harness });
     const exe = b.addExecutable(.{
         .name = "program-serialization-parity",
         .root_module = b.createModule(.{

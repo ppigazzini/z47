@@ -105,9 +105,9 @@ const scanLabelsAndProgramsC = @extern(*const fn () callconv(.c) void, .{ .name 
 extern fn goToGlobalStep(step: i32) void;
 extern fn fnGoto(label: u16) void;
 extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: i16) void;
-// EXTRA_INFO_ON_CALC_ERROR: on wherever the console exists, i.e. off the
-// firmware. The hint is staged in errorMessage exactly as the C sprintf does.
-const extra_info: bool = !is_dmcp_build;
+// EXTRA_INFO_ON_CALC_ERROR: 1, forced to 0 on firmware and in the testSuite.
+// The hint is staged in errorMessage exactly as the C sprintf does.
+const extra_info: bool = build_options.extra_info_on_calc_error;
 extern var errorMessage: [*c]u8;
 extern fn sprintf(buffer: [*c]u8, format: [*c]const u8, ...) c_int;
 extern fn moreInfoOnError(m1: [*:0]const u8, m2: [*c]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void;
