@@ -69,6 +69,14 @@ Facts, verified from `../build/firmware.zig`:
   twice -- a first link whose QSPI image `gen_qspi_crc` turns into a generated
   QSPI-CRC header, then the final link with that header's `USE_GEN_*QSPI_CRC`
   define -- and emits a QSPI image, a linker map, and a size report.
+- The C47 DM42 QSPI image starts with the stock DM42 QSPI image, as upstream's
+  `IMPORT_BIN(".qspi_dm42", ...)` in `c47.c` places it, so the DM42 program
+  still finds its QSPI data after a C47 QSPI is flashed. Both links of `dmcp`
+  and `dmcp_pkg1..3` assemble `../build/firmware/dm42_qspi_image.S` over
+  `../upstream/src/c47-dmcp/DM42_qspi_3.x.bin`; the R47 and DMCP5 images carry
+  none. The image takes 1,370,864 bytes of the 2,084,864-byte QSPI region, so
+  read QSPI headroom off the `qspi` row of the size report, never off an image
+  that predates it.
 - The firmware io object names the save files after the model (`C47.sav` or
   `R47.sav`, and `*auto.sav`), so each model of a board links its own.
 

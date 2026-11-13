@@ -1072,6 +1072,16 @@ fn addFirmwareElfBuild(
     cmd.addFileArg2(generated.raster_fonts_data, .{});
     cmd.addFileArg2(generated.constant_pointers_c, .{});
     cmd.addFileArg2(generated.constant_pointers2_c, .{});
+    // c47.c imports the stock DM42 QSPI image when (CALCMODEL == USER_C47) &&
+    // (HARDWARE_MODEL == HWM_DM42). CALCMODEL is USER_C47 when no -DCALCMODEL is
+    // passed (defines.h), and the image is the same in both phases because the
+    // QSPI CRC the pre-pass computes covers it.
+    if (config.board == .dmcp and config.final_calcmodel_define == null) {
+        const dm42_qspi_image = "src/c47-dmcp/DM42_qspi_3.x.bin";
+        cmd.addArg(b.fmt("-DDM42_QSPI_BIN=\"{s}\"", .{build_common.upstreamPathString(b, dm42_qspi_image)}));
+        cmd.addFileInput(build_common.upstreamPath(b, dm42_qspi_image));
+        cmd.addFileArg2(b.path("build/firmware/dm42_qspi_image.S"), .{});
+    }
 
     for (firmware_common_link_flags) |flag| cmd.addArg(flag);
     for (firmwareLinkFlags(config.board)) |flag| cmd.addArg(flag);
