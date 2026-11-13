@@ -55,8 +55,10 @@ zig build math_circular_trig_oracle
 # to the module rooting of src/shell/distributions: an @import there that escapes
 # the harness module's path breaks this lane and nothing else.
 zig build distribution_spec
-# Format-equivalence oracle: every migrated sprintf->std.fmt translation
-# must stay byte-identical to libc.
+# Format-equivalence spec: each (C spec -> Zig fmt) pair in format_spec.zig's
+# TABLE must match libc byte for byte over its value range. Nothing ties a
+# product call site to the table, so a migrated site is covered only when its
+# pair is listed there.
 zig build format_spec
 # Constant-offset oracle: every abi/constants.zig typed
 # accessor's blob offset must match the C constantPointers.h ground truth, so the
