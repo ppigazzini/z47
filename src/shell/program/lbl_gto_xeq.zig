@@ -314,7 +314,7 @@ extern var currentInputVariable: u16;
 extern var currentSolverStatus: u16;
 
 extern var allSubroutineLevels: subroutineLevels_t;
-extern var currentSubroutineLevelData: ?*subroutineLevelHeader_t;
+extern var currentSubroutineLevelData: ?*align(4) subroutineLevelHeader_t;
 extern var currentLocalFlags: ?*localFlags_t;
 extern var currentLocalRegisters: ?[*]register_header_t;
 
@@ -328,7 +328,7 @@ extern var ctxtReal34: anyopaque;
 // ---------------------------------------------------------------------------
 // Function externs
 // ---------------------------------------------------------------------------
-const c_moreInfoOnError = @extern(*const fn (m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) callconv(.c) void, .{ .name = "moreInfoOnError" });
+const c_moreInfoOnError = @extern(*const fn (m1: [*:0]const u8, m2: [*c]const u8, m3: [*c]const u8, m4: [*c]const u8) callconv(.c) void, .{ .name = "moreInfoOnError" });
 
 extern fn liftStack() void;
 extern fn setSystemFlag(sf: c_uint) void;
@@ -436,19 +436,27 @@ inline fn toC47MemPtr(p: ?*const anyopaque) u16 {
 }
 
 // current* accessors (defines.h macros over currentSubroutineLevelData).
-inline fn cur() *subroutineLevelHeader_t {
+inline fn cur() *align(4) subroutineLevelHeader_t {
     return currentSubroutineLevelData.?;
 }
 
-inline fn localFlagsAfterHeader(level: *subroutineLevelHeader_t) *localFlags_t {
-    const bytes: [*]align(1) u8 = @ptrCast(level);
-    const aligned: [*]align(@alignOf(localFlags_t)) u8 = @alignCast(bytes + @sizeOf(subroutineLevelHeader_t));
-    return @ptrCast(aligned);
+// A subroutine level's pool run holds its header, then its local flags, then its
+// local registers, each straight after the one before; the run is 4-aligned and
+// so is every offset in it.
+inline fn localFlagsAfterHeader(level: *align(4) subroutineLevelHeader_t) *localFlags_t {
+    const bytes: [*]align(4) u8 = std.mem.asBytes(level);
+    return std.mem.bytesAsValue(localFlags_t, bytes[@sizeOf(subroutineLevelHeader_t)..][0..@sizeOf(localFlags_t)]);
 }
 inline fn localRegistersAfterFlags(flags: *localFlags_t) [*]register_header_t {
-    const bytes: [*]align(1) u8 = @ptrCast(flags);
-    const aligned: [*]align(@alignOf(register_header_t)) u8 = @alignCast(bytes + @sizeOf(localFlags_t));
-    return @ptrCast(aligned);
+    const bytes: [*]align(4) u8 = std.mem.asBytes(flags);
+    const first: *[1]register_header_t = std.mem.bytesAsValue(register_header_t, bytes[@sizeOf(localFlags_t)..][0..@sizeOf(register_header_t)]);
+    return first;
+}
+/// The subroutine level stored at a pool block index, or null for C47_NULL.
+inline fn levelAt(p: u16) ?*align(4) subroutineLevelHeader_t {
+    if (p == C47_NULL) return null;
+    const words = ram[p..][0..@divCeil(@sizeOf(subroutineLevelHeader_t), 4)];
+    return std.mem.bytesAsValue(subroutineLevelHeader_t, std.mem.sliceAsBytes(words)[0..@sizeOf(subroutineLevelHeader_t)]);
 }
 
 // allocC47Blocks / freeC47Blocks / reduceC47Blocks / allocateLocalRegisters.
@@ -732,7 +740,7 @@ pub export fn fnReturn(skip: u16) callconv(.c) void {
             oldCurrentSubroutineLevelData = currentSubroutineLevelData;
         }
         sizeToBeFreedInBlocks = toBlocks(@as(u32, @sizeOf(subroutineLevelHeader_t)) + @as(u32, @sizeOf(localFlags_t)) * @intFromBool(cur().numberOfLocalFlags > 0));
-        currentSubroutineLevelData = @ptrCast(@alignCast(toPcMemPtr(cur().ptrToPreviousLevel)));
+        currentSubroutineLevelData = levelAt(cur().ptrToPreviousLevel);
         freeC47Blocks(oldCurrentSubroutineLevelData, sizeToBeFreedInBlocks);
         cur().ptrToNextLevel = C47_NULL;
         allSubroutineLevels.numberOfSubroutineLevels -= 1;
@@ -1298,7 +1306,7 @@ pub export fn executeOneStep(step_arg: [*c]u8) callconv(.c) i16 {
                     if (comptime extra_info) {
                         // Four arguments: moreInfoOnError prints one line each,
                         // so the operator sees the offending item's name.
-                        c_moreInfoOnError("In function executeOneStep:", "non-programmable function", @ptrCast(&indexOfItems[op].itemCatalogName), "appeared in the program!");
+                        c_moreInfoOnError("In function executeOneStep:", "non-programmable function", &indexOfItems[op].itemCatalogName, "appeared in the program!");
                     }
                     return 0;
                 },

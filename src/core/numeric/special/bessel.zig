@@ -144,7 +144,6 @@ inline fn realMinus(operand: *const real_t, res: *real_t, ctxt: *realContext_t) 
 
 // Cross-domain WP34S / trig / hyperbolic helpers.
 
-extern fn allocC47Blocks(sizeInBlocks: usize) ?*anyopaque;
 extern fn freeC47Blocks(ptr: ?*anyopaque, sizeInBlocks: usize) void;
 extern fn monitorExit(loop: *i32, str: [*:0]const u8) bool;
 
@@ -397,12 +396,12 @@ fn Sigma_u_k(nu: *const real_t, t: *const cplx_t, odd: i32, even: i32, res: *cpl
 
     const blocks = NUMBER_OF_COEFF * REAL_SIZE_IN_BLOCKS_75;
 
-    if (allocC47Blocks(blocks)) |cc| {
-        coeff_current = @ptrCast(@alignCast(cc));
-        if (allocC47Blocks(blocks)) |cd| {
-            coeff_deriv = @ptrCast(@alignCast(cd));
-            if (allocC47Blocks(blocks)) |cn| {
-                coeff_next = @ptrCast(@alignCast(cn));
+    if (abi.allocC47BlocksAs(real_t, blocks)) |cc| {
+        coeff_current = cc;
+        if (abi.allocC47BlocksAs(real_t, blocks)) |cd| {
+            coeff_deriv = cd;
+            if (abi.allocC47BlocksAs(real_t, blocks)) |cn| {
+                coeff_next = cn;
                 realSetZero(&prev_r);
                 realSetZero(&prev_i);
                 realCopy(if (even != 0) const_1() else const_0(), &res.Real);

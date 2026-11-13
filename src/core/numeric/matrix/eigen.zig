@@ -48,6 +48,7 @@ const real_t = runtime.real_t;
 const real34_t = runtime.real34_t;
 const real34Matrix_t = runtime.real34Matrix_t;
 const complex34Matrix_t = runtime.complex34Matrix_t;
+const any34Matrix_t = runtime.any34Matrix_t;
 const realContext_t = runtime.realContext_t;
 const calcRegister_t = runtime.calcRegister_t;
 
@@ -58,6 +59,12 @@ const cplx159_t = runtime.cplx159_t;
 comptime {
     std.debug.assert(@sizeOf(cplx_t) == 2 * @sizeOf(real_t));
     std.debug.assert(@offsetOf(cplx_t, "Imag") == @sizeOf(real_t));
+}
+
+/// The complex values stored as consecutive (real, imaginary) pairs from `reals`.
+fn complexRun(reals: [*]real_t) [*]cplx_t {
+    const first: *[1]cplx_t = std.mem.bytesAsValue(cplx_t, std.mem.sliceAsBytes(reals[0..2])[0..@sizeOf(cplx_t)]);
+    return first;
 }
 
 // The cplx_t arithmetic the engine calls, by the names matrix.c calls it.
@@ -1508,7 +1515,7 @@ fn eigenHessenbergQr(a: [*]cplx_t, eig: [*]cplx_t, scratch1: [*]cplx_t, scratch2
     const v = scratch1; // n complex
     const w = scratch1 + n; // n complex
     const cs = scratch2; // n real
-    const sn: [*]cplx_t = @ptrCast(scratch2 + n); // n complex
+    const sn = complexRun(scratch2 + n); // n complex
     var eps: real_t = undefined;
     var tmp: real_t = undefined;
     var t1: real_t = undefined;
@@ -1750,7 +1757,8 @@ pub fn calculateEigenvalues(a: [*]cplx_t, scratch: [*]cplx_t, eig: [*]cplx_t, si
     const eigen_tolerance = eigenTolerance();
     var converged: bool = false;
     // The engine's real_t scratch follows the 2 * size cplx_t of its own.
-    const scratch2: [*]real_t = @ptrCast(&scratch[sz * 2].Real);
+    const scratch2_first: *[1]real_t = &scratch[sz * 2].Real;
+    const scratch2: [*]real_t = scratch2_first;
 
     const is_real_symmetric = isRealSymmetric(a, size, realContext);
 
@@ -2268,10 +2276,10 @@ pub export fn cpxLinearEqn(a: [*]const cplx_t, b: [*]const cplx_t, r: [*]cplx_t,
 // wrong ones meets the augmented rows while leaving the original ones unmet, so
 // the vector it returns solves a different problem. LAPACK zlaein sets INFO
 // instead, when inverse iteration does not reach its growth test.
-fn solvesTheEigenProblem(matrix: *const real34Matrix_t, isComplex: bool, v: [*]const cplx_t, lambda: *const cplx_t, size: u16, eps3: *const real_t, realContext: *realContext_t) linksection(runtime.code_section) bool {
+fn solvesTheEigenProblem(matrix: *const any34Matrix_t, isComplex: bool, v: [*]const cplx_t, lambda: *const cplx_t, size: u16, eps3: *const real_t, realContext: *realContext_t) linksection(runtime.code_section) bool {
     const sz: usize = size;
-    const rElems: [*]const real34_t = abi.matrixConstRealElems(matrix);
-    const cElems: [*]const runtime.complex34_t = abi.matrixConstComplexElems(matrix);
+    const rElems: [*]const real34_t = abi.matrixConstRealElems(&matrix.realMatrix);
+    const cElems: [*]const runtime.complex34_t = abi.matrixConstComplexElems(&matrix.complexMatrix);
     var acc: cplx_t = undefined;
     var elem: cplx_t = undefined;
     var prod: cplx_t = undefined;
@@ -2426,10 +2434,10 @@ fn isRepeatedEigenvalue(u: *const cplx_t, v: *const cplx_t, eps3: *const real_t,
 // (1976) take the SVD for the rank: a pivot misjudged here gives a vector that
 // fails solvesTheEigenProblem, or a copy with no vector, and both are reported
 // as a defective matrix.
-fn nullSpaceOfShiftedMatrix(matrix: *const real34Matrix_t, isComplex: bool, lambda: *const cplx_t, size: u16, eps3: *const real_t, b: [*]cplx_t, freeCol: [*]u16, zeroRow: [*]u16, realContext: *realContext_t) linksection(runtime.code_section) u16 {
+fn nullSpaceOfShiftedMatrix(matrix: *const any34Matrix_t, isComplex: bool, lambda: *const cplx_t, size: u16, eps3: *const real_t, b: [*]cplx_t, freeCol: [*]u16, zeroRow: [*]u16, realContext: *realContext_t) linksection(runtime.code_section) u16 {
     const sz: usize = size;
-    const rElems: [*]const real34_t = abi.matrixConstRealElems(matrix);
-    const cElems: [*]const runtime.complex34_t = abi.matrixConstComplexElems(matrix);
+    const rElems: [*]const real34_t = abi.matrixConstRealElems(&matrix.realMatrix);
+    const cElems: [*]const runtime.complex34_t = abi.matrixConstComplexElems(&matrix.complexMatrix);
     var rank: u16 = 0;
     var nullity: u16 = 0;
     var tol: real_t = undefined;
@@ -2524,7 +2532,7 @@ fn nullSpaceOfShiftedMatrix(matrix: *const real34Matrix_t, isComplex: bool, lamb
 // complex34Matrix_t (shared header); the C copy stays file-local so the Zig
 // signature is chosen for convenience.
 // ===========================================================================
-fn calculateEigenvectors(matrix: *const real34Matrix_t, isComplex: bool, a: [*]cplx_t, q: [*]cplx_t, r: [*]cplx_t, eig: [*]cplx_t, realContext: *realContext_t) linksection(runtime.code_section) void {
+fn calculateEigenvectors(matrix: *const any34Matrix_t, isComplex: bool, a: [*]cplx_t, q: [*]cplx_t, r: [*]cplx_t, eig: [*]cplx_t, realContext: *realContext_t) linksection(runtime.code_section) void {
     // Call after the eigenvalues are calculated. real34Matrix_t and
     // complex34Matrix_t share the {header, matrixElements} layout; the complex
     // element view reinterprets the same element pointer.
@@ -2532,8 +2540,8 @@ fn calculateEigenvectors(matrix: *const real34Matrix_t, isComplex: bool, a: [*]c
     const sz: usize = size;
     if (matrix.header.matrixRows != matrix.header.matrixColumns) return;
 
-    const rElems: [*]const real34_t = abi.matrixConstRealElems(matrix);
-    const cElems: [*]const runtime.complex34_t = abi.matrixConstComplexElems(matrix);
+    const rElems: [*]const real34_t = abi.matrixConstRealElems(&matrix.realMatrix);
+    const cElems: [*]const runtime.complex34_t = abi.matrixConstComplexElems(&matrix.complexMatrix);
 
     var i: usize = 0;
     while (i < sz * sz) : (i += 1) {
@@ -2669,8 +2677,7 @@ fn calculateEigenvectors(matrix: *const real34Matrix_t, isComplex: bool, a: [*]c
     var pairedSlack = false;
     var basisSize: u16 = 0;
     const utBlocks: usize = sz * 2 * realSizeInBlocks(75) * 2;
-    if (allocC47Blocks(utBlocks)) |utBuf| {
-        const unknownsToFill: [*]u16 = @ptrCast(@alignCast(utBuf));
+    if (abi.allocC47BlocksAs(u16, utBlocks)) |unknownsToFill| {
         const slackRow = unknownsToFill + sz;
         const basis = q + sz * sz * 2; // the right-hand side and the elimination use the first half of q
         k = 0;
@@ -2836,7 +2843,7 @@ fn calculateEigenvectors(matrix: *const real34Matrix_t, isComplex: bool, a: [*]c
                 }
             }
         }
-        freeC47Blocks(utBuf, utBlocks);
+        freeC47Blocks(unknownsToFill, utBlocks);
     } else {
         ramFull("In function calculateEigenvectors:", "Ram full, 2aw");
         var ii: usize = 0;
@@ -2923,7 +2930,7 @@ fn realEigenvectors(matrix: *const real34Matrix_t, res: *real34Matrix_t, ires: ?
             freeC47Blocks(bulk, bulkSize);
             return;
         }
-        calculateEigenvectors(matrix, false, a, q, r, eig, &runtime.ctxtReal75);
+        calculateEigenvectors(&.{ .realMatrix = matrix.* }, false, a, q, r, eig, &runtime.ctxtReal75);
         if (runtime.lastErrorCode == runtime.ERROR_RAM_FULL) { // RAM is full, so no eigenvectors are returned
             res.matrixElements = null;
             res.header.matrixRows = 0;
@@ -3010,7 +3017,7 @@ fn complexEigenvectors(matrix: *const complex34Matrix_t, res: *complex34Matrix_t
             freeC47Blocks(bulk, bulkSize);
             return;
         }
-        calculateEigenvectors(@ptrCast(matrix), true, a, q, r, eig, &runtime.ctxtReal75);
+        calculateEigenvectors(&.{ .complexMatrix = matrix.* }, true, a, q, r, eig, &runtime.ctxtReal75);
         if (runtime.lastErrorCode == runtime.ERROR_RAM_FULL) { // RAM is full, so no eigenvectors are returned
             res.matrixElements = null;
             res.header.matrixRows = 0;
