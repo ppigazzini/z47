@@ -16,6 +16,10 @@ set -uo pipefail
 harness="${1:?harness binary path required}"
 corpus="${2:?corpus dir required}"
 
+# HARNESS_WRAPPER, when set, prefixes every harness run: memcheck_suite sets it
+# to valgrind's memcheck, whose reports the checks below fail on.
+read -r -a wrapper <<<"${HARNESS_WRAPPER:-}"
+
 # abort_on_error=0 so a sanitizer prints its report and exits (exitcode below) rather than
 # raising SIGABRT; the marker grep is the primary signal either way.
 export PGM_LOAD_ONLY=1
@@ -34,9 +38,13 @@ for f in "$corpus"/*.p47; do
   total=$((total + 1))
   # The harness bounds each file itself (harnessBudgetSetCase): a hang ends in its
   # BUDGET EXCEEDED report, never in a kill from out here.
-  out="$("$harness" "$f" 2>&1)"
+  out="$("${wrapper[@]}" "$harness" "$f" 2>&1)"
   rc=$?
-  if printf '%s' "$out" | grep -qE "ERROR: AddressSanitizer|SUMMARY: AddressSanitizer|runtime error:"; then
+  if printf '%s' "$out" | grep -qE "^==[0-9]+== (Invalid (read|write|free)|Conditional jump|Use of uninitialised|Syscall param)"; then
+    echo "FAIL (memcheck caught a bug): $f"
+    printf '%s\n' "$out" | grep -E "^==[0-9]+==" | head -12
+    fail=$((fail + 1))
+  elif printf '%s' "$out" | grep -qE "ERROR: AddressSanitizer|SUMMARY: AddressSanitizer|runtime error:"; then
     echo "FAIL (the sanitizer caught a bug): $f"
     printf '%s\n' "$out" | grep -E "AddressSanitizer|runtime error:|#[0-9]+ 0x" | head -6
     fail=$((fail + 1))

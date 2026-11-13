@@ -796,6 +796,8 @@ jobs:
           sudo apt-get install -qq -y xvfb xdotool x11-utils imagemagick libpulse-dev
           # llvm-symbolizer for the owner-coverage floor (report-zig-coverage.sh)
           sudo apt-get install -qq -y llvm
+          # memcheck for memcheck_suite
+          sudo apt-get install -qq -y valgrind
       - name: Run Linux host build, tests, and generated artifacts
         shell: bash
         run: |
@@ -860,6 +862,10 @@ jobs:
           # detectors are UBSan over the retained C and Zig's own safety checks.
           zig build pgm_load_fuzz      # .p47 programs
           zig build state_load_fuzz    # .sav / .d47 state files
+          # Both corpora and the save/load round-trip under valgrind's memcheck,
+          # with the pool's free blocks no-access: a freed-block read or write, or
+          # a decision on bytes nothing wrote, fails at the instruction.
+          zig build memcheck_suite
       - name: Enforce the owner-coverage floor
         shell: bash
         run: |

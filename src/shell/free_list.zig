@@ -73,13 +73,12 @@ const poison_state = if (track_allocations) struct {
 /// lane failed on a third of the corpus, none of it real.
 fn poisonReleased(pcMemPtr: ?*anyopaque, sizeInBlocks: usize) void {
     if (comptime !track_allocations) return;
-    // ARMED ONLY. Poisoning on every free in every host build turned
-    // `saveload_roundtrip` into a SEGV: something in that lane READS pool memory
-    // after it is freed and happened to survive on the stale contents. That is
-    // worth chasing (finding 23) and is not this detector's business to force on
-    // every other lane, so the pattern is written only inside a window a harness
-    // has explicitly opened. Nothing that does not call
-    // z47_free_list_poison_free_space() changes behaviour at all.
+    // ARMED ONLY. A read of a freed block is memcheck's to report (zig build
+    // memcheck_suite); poisoning every free in every host build would instead
+    // change what such a read returns in every lane, the testSuite included. So
+    // the pattern is written only inside a window a harness has explicitly
+    // opened, and nothing that does not call z47_free_list_poison_free_space()
+    // changes behaviour at all.
     if (!poison_state.armed) return;
     const p = pcMemPtr orelse return;
     const start = toC47MemPtr(p);

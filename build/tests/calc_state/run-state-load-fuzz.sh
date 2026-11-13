@@ -23,6 +23,10 @@ set -uo pipefail
 harness="${1:?usage: run-state-load-fuzz.sh <harness> <corpus-dir>}"
 corpus="${2:?usage: run-state-load-fuzz.sh <harness> <corpus-dir>}"
 
+# HARNESS_WRAPPER, when set, prefixes every harness run: memcheck_suite sets it
+# to valgrind's memcheck, whose reports the checks below fail on.
+read -r -a wrapper <<<"${HARNESS_WRAPPER:-}"
+
 # The corpus is generated, not tracked: derived .sav files the generator rebuilds
 # deterministically from build/tests/calc_state/save_load_golden.sav.
 #
@@ -66,7 +70,7 @@ for f in "$corpus"/*.sav; do
   label="$f (mode $mode)"
   # The harness bounds each file itself (harnessBudgetSetCase): a hang ends in its
   # BUDGET EXCEEDED report, never in a kill from out here.
-  out="$("$harness" "$f" "$mode" 2>&1)"
+  out="$("${wrapper[@]}" "$harness" "$f" "$mode" 2>&1)"
   rc=$?
 
   # Read the expectation up front: it decides whether a REFUSAL is acceptable for
@@ -81,7 +85,11 @@ for f in "$corpus"/*.sav; do
     want="$(awk -v n="$(basename "$f")" '$1 == n { print $2 }' "$corpus/expectations.txt")"
   fi
 
-  if printf '%s' "$out" | grep -qE "ERROR: AddressSanitizer|SUMMARY: AddressSanitizer|runtime error:"; then
+  if printf '%s' "$out" | grep -qE "^==[0-9]+== (Invalid (read|write|free)|Conditional jump|Use of uninitialised|Syscall param)"; then
+    echo "FAIL (memcheck caught a bug): $label"
+    printf '%s\n' "$out" | grep -E "^==[0-9]+==" | head -12
+    fail=$((fail + 1))
+  elif printf '%s' "$out" | grep -qE "ERROR: AddressSanitizer|SUMMARY: AddressSanitizer|runtime error:"; then
     echo "FAIL (the sanitizer caught a bug): $label"
     printf '%s\n' "$out" | grep -E "AddressSanitizer|runtime error:|#[0-9]+ 0x" | head -6
     fail=$((fail + 1))

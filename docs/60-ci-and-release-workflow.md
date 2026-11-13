@@ -160,7 +160,11 @@ failure with `||`. So no lane can fall behind `zig build --help` unseen.
 The job then re-runs the softmenu audit with `--require-generated`, the harness
 dead-code check and the object-graph gate; runs the sanitizer lanes `both_asan`,
 `test_asan`, `pgm_load_fuzz` and `state_load_fuzz` (UBSan and Zig safety checks,
-no AddressSanitizer -- see [75-debugging.md](75-debugging.md)); builds the
+no AddressSanitizer -- see [75-debugging.md](75-debugging.md)), then
+`memcheck_suite`, which re-runs both load corpora and the save/load round-trip
+under Valgrind's memcheck
+(the local gate runs the two fuzz lanes but not this one, nor the two UBSan
+testSuite lanes); builds the
 coverage harness and enforces `check-coverage-ratchet.sh`; builds the published
 Linux archive with `zig build -Doptimize=fast dist_linux`,
 launches a smoke test from the unpacked archive, diffs and hashes the tracked
