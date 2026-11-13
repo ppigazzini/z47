@@ -1241,6 +1241,7 @@ fn addFirmwareIoRuntimeObject(
     build_options.addOption(usize, "library_fn_base", firmwareLibraryFnBase(board));
     build_options.addOption(usize, "sdb_base", firmwareSdbBase(board));
     build_options.addOption(u8, "calcmodel", calcmodel);
+    build_options.addOption(bool, "dm42_board", board == .dmcp);
     module.addOptions("firmware_io_build_options", build_options);
 
     return b.addObject(.{

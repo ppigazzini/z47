@@ -383,7 +383,14 @@ fn fileSelectionHelper(title: [*c]const u8, base_dir: [*c]const u8, ext: [*c]con
     return if (ret == MRET_EXIT) FILE_CANCEL else FILE_OK;
 }
 
+// config.c's DMCP ROM wrapper.
+extern fn dmcpResetAutoOff() void;
+
 pub export fn _ioFileNameFromFilePath(path: c_int, filename: [*c]u8) callconv(.c) c_int {
+    // c47-dmcp/hal/io.c: a long keyless program run leaves the menu auto-off
+    // timer expired, which makes file_selection_screen exit at once. DMCP5's
+    // io.c has no such reset.
+    if (comptime build_options.dm42_board) dmcpResetAutoOff();
     switch (path) {
         IO_PATH_MANUAL_SAVE => {
             checkCreateDir("SAVFILES");
