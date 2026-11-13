@@ -60,6 +60,8 @@ pub fn addToModule(
     // layout still finds res/ directly and ignores it.
     gtk_options.addOption([]const u8, "upstream_root", build_common.upstreamRootString(b));
 
+    const gtk_options_module = gtk_options.createModule();
+
     const gui_runtime = b.addObject(.{
         .name = b.fmt("{s}-gtk-gui-runtime", .{name_prefix}),
         .root_module = b.createModule(.{
@@ -67,7 +69,7 @@ pub fn addToModule(
             .target = target,
             .optimize = optimize,
             .link_libc = true,
-            .imports = &.{.{ .name = "host_gtk_options", .module = gtk_options.createModule() }},
+            .imports = &.{.{ .name = "host_gtk_options", .module = gtk_options_module }},
         }),
     });
 
@@ -88,6 +90,7 @@ pub fn addToModule(
             .target = target,
             .optimize = optimize,
             .link_libc = true,
+            .imports = &.{.{ .name = "host_gtk_options", .module = gtk_options_module }},
         }),
     });
 
