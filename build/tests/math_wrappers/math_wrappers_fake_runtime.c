@@ -2889,7 +2889,23 @@ void WP34S_Mod(const real_t *x, const real_t *y, real_t *res, realContext_t *rea
   setFakeReal(res, remainder, 0);
 }
 
-#undef WP34S_BigMod
+// realType.c's value helpers, as functions the way upstream defines them. Their
+// bodies speak this model's encoding, not decNumber's: a fake real carries its
+// whole coefficient across lsu[] and leaves digits at whatever a zero-filled
+// local holds, so zero is a zero coefficient that is not special -- the lowest
+// unit alone says nothing -- and the infinities are the model's own constants.
+bool_t realIsZero(const real_t *r) {
+  return loadFakeCoeff(r) == 0 && !realIsSpecial(r);
+}
+
+void realSetPlusInfinity(real_t *r) {
+  realCopy(const_plusInfinity, r);
+}
+
+void realSetMinusInfinity(real_t *r) {
+  realCopy(const_minusInfinity, r);
+}
+
 void WP34S_BigMod(const real_t *x, const real_t *y, real_t *res, realContext_t *realContext) {
   WP34S_Mod(x, y, res, realContext);
 }
