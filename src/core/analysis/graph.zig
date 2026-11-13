@@ -1298,7 +1298,7 @@ const GraphWork = extern struct {
     asymptotes: [MAX_ASYMPTOTES]AsymptoteInfo,
 };
 fn allocGraphWork() ?*GraphWork {
-    return @ptrCast(@alignCast(malloc(@sizeOf(GraphWork))));
+    return @ptrCast(malloc(@sizeOf(GraphWork)));
 }
 fn freeGraphWork(w: *GraphWork) void {
     free(@ptrCast(w));

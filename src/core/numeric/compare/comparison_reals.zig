@@ -381,5 +381,5 @@ pub export fn realIsAnInteger(x: *const runtime.real_t) callconv(.c) bool {
     realToIntegralValue(x, y.ptr(), runtime.DEC_ROUND_DOWN, &c);
     _ = runtime.decNumberSubtract(y.ptr(), x, y.constPtr(), &c);
 
-    return realCompareEqual(y.constPtr(), @alignCast(math_runtime_helpers.z47_math_wrappers_const_0()));
+    return realCompareEqual(y.constPtr(), math_runtime_helpers.z47_math_wrappers_const_0());
 }

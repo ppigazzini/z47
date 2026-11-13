@@ -1577,12 +1577,12 @@ pub export fn fnSetWordSize(WS_in: u16) callconv(.c) void {
         while (regist <= top) : (regist += 1) {
             if (getRegisterDataType(regist) == dtShortInteger) {
                 // Register data is only 4-byte (block) aligned on the 64-bit host.
-                const p: *align(4) u64 = @ptrCast(@alignCast(getRegisterDataPointer(regist)));
+                const p: *align(4) u64 = @ptrCast(getRegisterDataPointer(regist));
                 p.* &= shortIntegerMask;
             }
         }
         if (getRegisterDataType(REGISTER_L) == dtShortInteger) {
-            const p: *align(4) u64 = @ptrCast(@alignCast(getRegisterDataPointer(REGISTER_L)));
+            const p: *align(4) u64 = @ptrCast(getRegisterDataPointer(REGISTER_L));
             p.* &= shortIntegerMask;
         }
     }
@@ -1913,7 +1913,7 @@ inline fn setMatrixDims(h: *matrixHeader_t, rows: u32, cols: u32) void {
 // REAL34_MATRIX_ELEMENTS_AFTER_MATRIX_HEADER(ptr): (real34_t*)((matrixHeader_t*)ptr + 1)
 inline fn matrixElementsAfterHeader(h: *matrixHeader_t) *real34_t {
     const p: [*]matrixHeader_t = @ptrCast(h);
-    return @ptrCast(@alignCast(p + 1));
+    return @ptrCast(p + 1);
 }
 
 // ===========================================================================

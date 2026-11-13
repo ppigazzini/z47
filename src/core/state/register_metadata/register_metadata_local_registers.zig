@@ -134,7 +134,7 @@ fn updateSubroutineLinks() void {
     }
 
     const previous_ptr = runtime.toPcMemPtr(current_level.ptrToPreviousLevel) orelse return;
-    const previous_level: *subroutine_level_header_t = @ptrCast(@alignCast(previous_ptr));
+    const previous_level: *subroutine_level_header_t = @ptrCast(previous_ptr);
     previous_level.ptrToNextLevel = runtime.toC47MemPtr(current_level);
 }
 

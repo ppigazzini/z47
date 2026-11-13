@@ -656,7 +656,7 @@ fn extractVectorElement34(matrix: *const real34Matrix_t, j: c_int, ii: c_int, ro
     // ctxtReal39 is opaque to us; copy via byte read using its address. Since we
     // do not know the exact runtime size at comptime safely, reconstruct the
     // fields we touch. The c47 decContext is a fixed POD; copy the whole struct.
-    c = @as(*const decContext, @ptrCast(@alignCast(&ctxtReal39))).*;
+    c = @as(*const decContext, @ptrCast(&ctxtReal39)).*;
     if (!getSystemFlag(FLAG_IRFRAC)) {
         c.digits = @as(i32, @intCast(digits)) + 3;
     }

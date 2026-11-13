@@ -144,7 +144,7 @@ fn doAtan(
     }
 
     // reduce range to 0 <= a < 1, using atan(x) = pi/2 - atan(1/x)
-    invert.* = @intFromBool(math_comparison_reals.realCompareGreaterThan(@alignCast(a), @alignCast(const_1())));
+    invert.* = @intFromBool(math_comparison_reals.realCompareGreaterThan(a, const_1()));
     if (invert.* != 0) {
         realDivide(const_1(), a, a, realContext);
     }
@@ -153,9 +153,9 @@ fn doAtan(
     {
         var n: i32 = 0;
         while (n < TaylorIterationMax) : (n += 1) {
-            if (!doEpsilon and math_comparison_reals.realCompareLessEqual(@alignCast(a), @alignCast(const_1on10()))) {
+            if (!doEpsilon and math_comparison_reals.realCompareLessEqual(a, const_1on10())) {
                 break;
-            } else if (doEpsilon and math_comparison_reals.realCompareLessEqual(@alignCast(a), @alignCast(const_1on10()))) {
+            } else if (doEpsilon and math_comparison_reals.realCompareLessEqual(a, const_1on10())) {
                 break;
             }
 
@@ -462,7 +462,7 @@ fn WP34S_Atan_table_compute(x: *const real_t, angle: *real_t, realContext: *real
     const neg = realIsNegative(x); // kept: the result is negated again at the end
     realCopyAbs(x, a);
 
-    const invert = math_comparison_reals.realCompareGreaterThan(@alignCast(a), @alignCast(const_1()));
+    const invert = math_comparison_reals.realCompareGreaterThan(a, const_1());
     if (invert) {
         realDivide(const_1(), a, a, realContext); // 1/inf is 0, which lands on j = 0 and gives pi/2
     }
@@ -477,11 +477,11 @@ fn WP34S_Atan_table_compute(x: *const real_t, angle: *real_t, realContext: *real
     // every one of its failure paths returns 0.
     realCopy(a, c);
     c.exponent += 1;
-    runtime.realToIntegralValue(@alignCast(c), @alignCast(c), runtime.DEC_ROUND_HALF_UP, realContext);
-    const j: i32 = runtime.realToInt32C47(@alignCast(c), null);
+    runtime.realToIntegralValue(c, c, runtime.DEC_ROUND_HALF_UP, realContext);
+    const j: i32 = runtime.realToInt32C47(c, null);
 
     // c = j/10, exact for the same reason and for j = 0 too, since a zero stays a zero
-    runtime.int32ToReal(j, @alignCast(c));
+    runtime.int32ToReal(j, c);
     c.exponent -= 1;
     realMultiply(a, c, v, realContext);
     realAdd(v, const_1(), v, realContext);
@@ -698,9 +698,9 @@ fn doAtan2(y: *const real_t, x: *const real_t, atan: *real_t, r: *real_t, t: *re
         return false;
     }
 
-    if (math_comparison_reals.realCompareEqual(@alignCast(y), @alignCast(const_0()))) {
+    if (math_comparison_reals.realCompareEqual(y, const_0())) {
         if (yNeg) {
-            if (math_comparison_reals.realCompareEqual(@alignCast(x), @alignCast(const_0()))) {
+            if (math_comparison_reals.realCompareEqual(x, const_0())) {
                 if (xNeg) {
                     realMinus(pi_d(realContext.digits), atan, realContext);
                 } else {
@@ -712,7 +712,7 @@ fn doAtan2(y: *const real_t, x: *const real_t, atan: *real_t, r: *real_t, t: *re
                 realCopy(y, atan);
             }
         } else {
-            if (math_comparison_reals.realCompareEqual(@alignCast(x), @alignCast(const_0()))) {
+            if (math_comparison_reals.realCompareEqual(x, const_0())) {
                 if (xNeg) {
                     realCopy(pi_d(realContext.digits), atan);
                 } else {
@@ -727,7 +727,7 @@ fn doAtan2(y: *const real_t, x: *const real_t, atan: *real_t, r: *real_t, t: *re
         return true;
     }
 
-    if (math_comparison_reals.realCompareEqual(@alignCast(x), @alignCast(const_0()))) {
+    if (math_comparison_reals.realCompareEqual(x, const_0())) {
         realCopy(piOn2_d(realContext.digits), atan);
         if (yNeg) {
             realSetNegativeSign(atan);
@@ -784,7 +784,7 @@ fn doAtan2(y: *const real_t, x: *const real_t, atan: *real_t, r: *real_t, t: *re
     }
 
     realAdd(r, t, atan, realContext);
-    if (math_comparison_reals.realCompareEqual(@alignCast(atan), @alignCast(const_0())) and yNeg) {
+    if (math_comparison_reals.realCompareEqual(atan, const_0()) and yNeg) {
         realSetNegativeSign(atan);
     }
     return true;
@@ -853,7 +853,7 @@ fn doAsin(x: *const real_t, angle: *real_t, abx: *real_t, z: *real_t, realContex
         return false;
     }
     realCopyAbs(x, abx);
-    if (math_comparison_reals.realCompareGreaterThan(@alignCast(abx), @alignCast(const_1()))) {
+    if (math_comparison_reals.realCompareGreaterThan(abx, const_1())) {
         realSetNaN(angle);
         return false;
     }
@@ -924,7 +924,7 @@ fn doAcos(x: *const real_t, angle: *real_t, abx: *real_t, z: *real_t, realContex
         return false;
     }
     realCopyAbs(x, abx);
-    if (math_comparison_reals.realCompareGreaterThan(@alignCast(abx), @alignCast(const_1()))) {
+    if (math_comparison_reals.realCompareGreaterThan(abx, const_1())) {
         realSetNaN(angle);
         return false;
     }

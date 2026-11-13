@@ -1087,10 +1087,10 @@ fn doXfn(registerNo: calcRegister_t, function: c_int, functionType: c_int, funct
                 }
             },
             ITM_RDP_XFN => {
-                math_rdp.roundToDecimalPlace(@alignCast(paramX), @alignCast(paramX), functionParam, &c);
+                math_rdp.roundToDecimalPlace(paramX, paramX, functionParam, &c);
             },
             ITM_RSD_XFN => {
-                math_rsd.roundToSignificantDigits(@alignCast(paramX), @alignCast(paramX), functionParam, &c);
+                math_rsd.roundToSignificantDigits(paramX, paramX, functionParam, &c);
             },
             ITM_CHS_XFN => {
                 realMultiply(const__1(), paramX, paramX, &c);
