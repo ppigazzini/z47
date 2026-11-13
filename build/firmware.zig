@@ -34,6 +34,11 @@ pub const Outputs = struct {
     program: std.Build.LazyPath,
     qspi: std.Build.LazyPath,
     map: std.Build.LazyPath,
+    // The file names each output is installed under. A generated LazyPath has
+    // no name until it is built, so the names travel with the paths.
+    program_name: []const u8,
+    qspi_name: []const u8,
+    map_name: []const u8,
 };
 
 pub const Build = struct {
@@ -927,9 +932,11 @@ fn addFirmwareBuild(
 
     const final_build = addFirmwareElfBuild(b, config, .final, core_sources, version_headers_dir, generated, arm_gmp, shortint_objects, flags_state_objects, math_command_wrapper_objects, constants_objects, tone_objects, audio_runtime_object, print_ir_runtime_object, io_runtime_object, keyboard_state_objects, memory_state_objects, calc_state_objects, program_serialization_objects, frontier_objects, solve_objects, register_metadata_objects, stack_state_objects, decnumber_fastmul, generated_qspi_header.path);
     const flash = addObjcopyBinary(b, final_build.elf, b.fmt("{s}_flash.bin", .{config.program_name}), .{ .section_mode = .remove });
-    const program = addPgmChecksumStep(b, flash.path, b.fmt("{s}{s}", .{ config.program_name, config.program_extension }));
+    const program_name = b.fmt("{s}{s}", .{ config.program_name, config.program_extension });
+    const program = addPgmChecksumStep(b, flash.path, program_name);
     const qspi_bad = addObjcopyBinary(b, final_build.elf, b.fmt("{s}_qspi_incorrect_crc.bin", .{config.program_name}), .{ .section_mode = .only });
-    const qspi = addModifyCrcStep(b, forcecrc32, qspi_bad.path, b.fmt("{s}_qspi.bin", .{config.program_name}));
+    const qspi_name = b.fmt("{s}_qspi.bin", .{config.program_name});
+    const qspi = addModifyCrcStep(b, forcecrc32, qspi_bad.path, qspi_name);
     const section_sizes = addReadelfSectionSizesStep(b, final_build.elf, b.fmt("{s}_section_sizes.txt", .{config.program_name}));
     const size_report = addFirmwareSizeReportStep(b, config.board, section_sizes.path);
 
@@ -945,6 +952,9 @@ fn addFirmwareBuild(
             .program = program.path,
             .qspi = qspi.path,
             .map = final_build.map,
+            .program_name = program_name,
+            .qspi_name = qspi_name,
+            .map_name = b.fmt("{s}.map", .{config.map_name}),
         },
     };
 }
@@ -1266,9 +1276,10 @@ fn addFirmwareSizeReportStep(b: *std.Build, board: Board, section_sizes: std.Bui
 }
 
 fn installFirmwareOutputs(b: *std.Build, subdir: []const u8, firmware_build: Build) void {
-    const program_install = b.addInstallFileWithDir(firmware_build.outputs.program, .prefix, b.fmt("firmware/{s}/{f}", .{ subdir, firmware_build.outputs.program }));
-    const qspi_install = b.addInstallFileWithDir(firmware_build.outputs.qspi, .prefix, b.fmt("firmware/{s}/{f}", .{ subdir, firmware_build.outputs.qspi }));
-    const map_install = b.addInstallFileWithDir(firmware_build.outputs.map, .prefix, b.fmt("firmware/{s}/{f}", .{ subdir, firmware_build.outputs.map }));
+    const outputs = firmware_build.outputs;
+    const program_install = b.addInstallFileWithDir(outputs.program, .prefix, b.fmt("firmware/{s}/{s}", .{ subdir, outputs.program_name }));
+    const qspi_install = b.addInstallFileWithDir(outputs.qspi, .prefix, b.fmt("firmware/{s}/{s}", .{ subdir, outputs.qspi_name }));
+    const map_install = b.addInstallFileWithDir(outputs.map, .prefix, b.fmt("firmware/{s}/{s}", .{ subdir, outputs.map_name }));
     firmware_build.step.dependOn(&program_install.step);
     firmware_build.step.dependOn(&qspi_install.step);
     firmware_build.step.dependOn(&map_install.step);
