@@ -337,14 +337,14 @@ pub fn addBuildOptions(
 
     // versionStr / versionStr2: assembled here the same way generated.zig builds
     // version.h, so the ported owner needs no C preprocessor stamp.
-    // STD_SPACE_3_PER_EM = "\xa0\x04" (fonts.h). VERSION1 mirrors defines.h;
-    // QSPI on firmware, Sim on host. compile_date stands in for __DATE__ and so
+    // STD_SPACE_3_PER_EM = "\xa0\x04" (fonts.h). VERSION1 is read from the pinned
+    // defines.h. compile_date stands in for __DATE__ and so
     // must keep its exact "Mmm dd yyyy" shape with the day space-padded to two
     // columns (date %e, not %-d): the owner reproduces versionDateStr by
     // indexing those eleven columns.
     const sp3 = "\xa0\x04";
     const modeltext = if (options.calcmodel == 66) "R47" else "C47";
-    const version1 = "00.109.05.00a0.ALPHA";
+    const version1 = build_common.upstreamVersion1(b);
     const vcs = build_common.commandOutput(b, &.{ "git", "describe", "--match=NeVeRmAtCh", "--always", "--abbrev=8", "--dirty=-mod" }) orelse "unknown";
     const today = build_common.commandOutput(b, &.{ "date", "+%Y-%m-%d" }) orelse "1970-01-01";
     const cdate = build_common.commandOutput(b, &.{ "date", "+%b %e %Y" }) orelse "Jan  1 1970";

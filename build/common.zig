@@ -212,6 +212,44 @@ pub fn upstreamPath(b: *std.Build, relative: []const u8) std.Build.LazyPath {
     return b.path(upstreamPathString(b, relative));
 }
 
+var cached_upstream_version1: ?[]const u8 = null;
+
+/// VERSION1 as the pinned defines.h defines it: the release string every
+/// version line and the CAT sequence header show. Read at configure time, so a
+/// resync that moves it moves every target with it.
+pub fn upstreamVersion1(b: *std.Build) []const u8 {
+    if (cached_upstream_version1) |version1| return version1;
+
+    const relative = "src/c47/defines.h";
+    const path = upstreamPathString(b, relative);
+    b.dependOnFileContents(upstreamPath(b, relative));
+    const full_path = b.root.joinString(b.allocator, path) catch @panic("OOM");
+    const text = std.Io.Dir.cwd().readFileAlloc(b.graph.io, full_path, b.allocator, .limited(4 << 20)) catch |err|
+        std.debug.panic("cannot read {s}: {t}", .{ full_path, err });
+    const version1 = defineStringValue(text, "VERSION1") orelse
+        std.debug.panic("{s} defines no VERSION1 string", .{path});
+    cached_upstream_version1 = version1;
+    return version1;
+}
+
+/// The string literal a `#define <name> "..."` line gives, or null.
+fn defineStringValue(text: []const u8, name: []const u8) ?[]const u8 {
+    var lines = std.mem.splitScalar(u8, text, '\n');
+    while (lines.next()) |line| {
+        var rest = std.mem.trim(u8, line, " \t\r");
+        if (!std.mem.startsWith(u8, rest, "#define")) continue;
+        rest = std.mem.trimStart(u8, rest["#define".len..], " \t");
+        if (!std.mem.startsWith(u8, rest, name)) continue;
+        rest = rest[name.len..];
+        if (rest.len == 0 or (rest[0] != ' ' and rest[0] != '\t')) continue;
+        rest = std.mem.trimStart(u8, rest, " \t");
+        if (rest.len == 0 or rest[0] != '"') continue;
+        const end = std.mem.indexOfScalarPos(u8, rest, 1, '"') orelse continue;
+        return rest[1..end];
+    }
+    return null;
+}
+
 pub fn addBashCommand(b: *std.Build, script: []const u8) *std.Build.Step.Run {
     return addBashCommandFmt(b, "{s}", .{script});
 }
