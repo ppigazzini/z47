@@ -407,17 +407,16 @@ pub const Mpz = extern struct {
 /// date, a matrix of either kind and a configuration are held in `mem` as a copy
 /// of the register's own blocks, `blocks` wide.
 ///
-/// The two real34 slots carry an explicit alignment because the ABI binding
-/// cannot: real34_t is decQuad, a union over `uint64_t longs[2]`, so C aligns it
-/// to 8 and lays the struct out t@0, r@8, i@24, li@40, siVal@56, siBase@64,
-/// tag@68, mem@72. Real34 is a byte array with alignment 1, which would pack r@1
-/// and i@17 -- seven and seven bytes off. Everything up to and including `mem`
-/// sits at the same offset on both word sizes; `blocks` follows the pointer, so
-/// the firmware's 32-bit ARM puts it at 76 where a 64-bit host puts it at 80.
+/// The two real34 slots carry the alignment the ABI binding cannot: real34_t is
+/// decQuad, a union of byte, short and word arrays. decQuad.h adds `uint64_t
+/// longs[2]` only under DECUSE64, which decNumber's own sources define and the
+/// c47 sources that declare snap_t do not, so there it aligns to 4. Real34 is a
+/// byte array with alignment 1, which would pack r@1. The abi-layout oracle
+/// compares every field offset with snap_t's.
 pub const RegisterSnapshot = extern struct {
     t: u8 = 0,
-    r: Real34 align(8) = undefined,
-    i: Real34 align(8) = undefined,
+    r: Real34 align(4) = undefined,
+    i: Real34 align(4) = undefined,
     li: Mpz = undefined,
     siVal: u64 = 0,
     siBase: u32 = 0,
@@ -526,14 +525,6 @@ comptime {
     std.debug.assert(@offsetOf(Complex159, "Imag") == @sizeOf(Real159));
     std.debug.assert(@sizeOf(Complex34) == 32);
     std.debug.assert(@sizeOf(SubroutineLevelHeader) == 12);
-    std.debug.assert(@offsetOf(RegisterSnapshot, "r") == 8);
-    std.debug.assert(@offsetOf(RegisterSnapshot, "i") == 24);
-    std.debug.assert(@offsetOf(RegisterSnapshot, "li") == 40);
-    std.debug.assert(@offsetOf(RegisterSnapshot, "siVal") == 56);
-    std.debug.assert(@offsetOf(RegisterSnapshot, "siBase") == 64);
-    std.debug.assert(@offsetOf(RegisterSnapshot, "tag") == 68);
-    std.debug.assert(@offsetOf(RegisterSnapshot, "mem") == 72);
-    std.debug.assert(@offsetOf(RegisterSnapshot, "blocks") == 72 + @sizeOf(?*anyopaque));
     std.debug.assert(@sizeOf(CalcKey) == 18);
     std.debug.assert(@offsetOf(Softmenu, "numItems") == 2);
     std.debug.assert(@sizeOf(SoftmenuStack) == 8);
