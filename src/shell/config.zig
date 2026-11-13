@@ -2286,6 +2286,10 @@ pub export fn doFnReset(confirmation: u16, autoSav: bool_t) callconv(.c) void {
         if (ram == null) {
             ram = @ptrCast(@alignCast(malloc(toBytes(RAM_SIZE_IN_BLOCKS))));
         }
+        // A reset can follow a session whose freed blocks memcheck holds as
+        // no-access; the whole pool is ordinary memory again until it is re-formed.
+        const pool = std.mem.sliceAsBytes(ram[0..RAM_SIZE_IN_BLOCKS]);
+        std.valgrind.memcheck.makeMemUndefined(pool);
         _ = memset(ram, 0, toBytes(RAM_SIZE_IN_BLOCKS));
 
         // #if !defined(DMCP_BUILD) || !defined(OLD_HW): malloc the pointer-form
@@ -2304,6 +2308,9 @@ pub export fn doFnReset(confirmation: u16, autoSav: bool_t) callconv(.c) void {
         freeRegion0().sizeInBlocks = @intCast(RAM_SIZE_IN_BLOCKS - region0Addr - 1);
 
         numberOfFreeMemoryRegions = 1;
+        // The one free region is no-access to memcheck until the free list hands
+        // a block of it out (free_list.zig).
+        std.valgrind.memcheck.makeMemNoAccess(pool[toBytes(region0Addr)..][0..toBytes(freeRegion0().sizeInBlocks)]);
 
         if (comptime !dmcp_build) {
             numberOfAllocatedMemoryRegions = 0;

@@ -794,7 +794,12 @@ pub fn saveCalc() void {
         var v: u32 = offWithin(currentStep);
         sv(&v, 4, "currentStepOffset", "uint32");
     }
-    sv(@ptrCast(ram), (geometry().ram_size_in_blocks) << 2, "ram", "hexDump");
+    // The dump reads the whole pool, free blocks and the unwritten tail of a
+    // claimed one included, which memcheck holds as no-access or undefined (see
+    // free_list.zig). It is the one reader entitled to those bytes.
+    std.valgrind.memcheck.makeMemDefined(poolBytes());
+    sv(poolBytes().ptr, (geometry().ram_size_in_blocks) << 2, "ram", "hexDump");
+    closeFreeRegions();
 
     sv(&graMod, 1, "graMod", "uint8");
     if (comptime option_atext_fonts) {
@@ -829,6 +834,25 @@ const DEC_Inexact: u32 = 0x00000020;
 const DEC_Overflow: u32 = 0x00000200;
 const DEC_Underflow: u32 = 0x00002000;
 const DEC_REJECTED: u32 = DEC_Conversion_syntax | DEC_Overflow | DEC_Underflow | DEC_Inexact;
+
+/// The whole pool as bytes, the image both directions of the backup carry.
+fn poolBytes() []u8 {
+    return std.mem.sliceAsBytes(ram[0..geometry().ram_size_in_blocks]);
+}
+
+/// Marks every free region no-access for memcheck, as the free list keeps it
+/// (free_list.zig). Both directions of the backup handle the pool as one raw
+/// image, so each hands the free regions back to memcheck after it.
+fn closeFreeRegions() void {
+    const Region = extern struct { blockAddress: u16, sizeInBlocks: u16 };
+    const regions: [*]const Region = @ptrCast(@alignCast(freeMemoryRegions orelse return));
+    const pool = poolBytes();
+    var i: usize = 0;
+    while (i < @as(usize, @intCast(@max(numberOfFreeMemoryRegions, 0)))) : (i += 1) {
+        const start = @as(usize, regions[i].blockAddress) << 2;
+        std.valgrind.memcheck.makeMemNoAccess(pool[start..][0 .. @as(usize, regions[i].sizeInBlocks) << 2]);
+    }
+}
 
 // The config-param list (was the file-static cfgFileParam_t paramHead chain),
 // now Zig-owned. Built from the open backup.cfg, walked by restoreStateValue.
@@ -1155,7 +1179,10 @@ pub fn restoreCalc() void {
     numberOfFreeMemoryRegions = restoredFreeRegions;
     numberOfAllocatedMemoryRegions = restoredAllocatedRegions;
 
-    rv(@ptrCast(ram), (geometry().ram_size_in_blocks) << 2, "ram", "hexDump");
+    // The raw pool image lands over blocks memcheck may hold as no-access (see
+    // free_list.zig); it is ordinary memory until the free list is read back below.
+    std.valgrind.memcheck.makeMemUndefined(poolBytes());
+    rv(poolBytes().ptr, (geometry().ram_size_in_blocks) << 2, "ram", "hexDump");
 
     graMod = 0;
     if (backupVersion >= 1020) {
@@ -1183,6 +1210,7 @@ pub fn restoreCalc() void {
     // has, the way every other call here passes a sizeof(). These writes cannot leave their table whatever
     // count the file carries.
     rv(freeMemoryRegions, FREE_MEM_REGION_SIZE * MAX_FREE_REGIONS, "freeMemoryRegions", "hexDump");
+    closeFreeRegions();
     rv(&allocatedMemoryRegions[0], FREE_MEM_REGION_SIZE * MAX_ALLOCATED_REGIONS, "allocatedMemoryRegions", "hexDump");
     rv(globalRegister, REGISTER_HEADER_SIZE * NUMBER_OF_GLOBAL_REGISTERS, "globalRegister", "hexDump");
     rv(&calcMode, 1, "calcMode", "uint8");
