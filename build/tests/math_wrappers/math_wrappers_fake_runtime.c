@@ -692,12 +692,12 @@ int16_t stringByteLength(const char *value) {
   return value == NULL ? 0 : (int16_t)strlen(value);
 }
 
-int16_t stringGlyphLength(const char *value) {
+int32_t stringGlyphLength(const char *value) {
   return stringByteLength(value);
 }
 
-void xcopy(void *destination, const void *source, size_t length) {
-  memcpy(destination, source, length);
+void *xcopy(void *destination, const void *source, uint32_t length) {
+  return memcpy(destination, source, length);
 }
 
 void fractionToDisplayString(calcRegister_t regist, char *displayString) {
@@ -1709,7 +1709,7 @@ static uint64_t longIntegerMagnitudeLow64(const longInteger_t longInteger) {
   return raw;
 }
 
-void convertLongIntegerToShortIntegerRegister(const longInteger_t longInteger, uint32_t base, calcRegister_t reg) {
+void convertLongIntegerToShortIntegerRegister(longInteger_t longInteger, uint32_t base, calcRegister_t reg) {
   const uint64_t magnitude = longIntegerMagnitudeLow64(longInteger);
   const uint64_t sign_bit = (uint64_t)(mpz_sgn(longInteger) < 0) << 63;
 
@@ -3694,13 +3694,13 @@ void convertAngleFromTo(real_t *angle, angularMode_t fromAngularMode, angularMod
   setFakeReal(angle, fakeRealValue(angle) + fromAngularMode - toAngularMode, angle->bits & 0x70);
 }
 
-void roundToSignificantDigits(const real_t *source, real_t *destination, int32_t digits, realContext_t *realContext) {
+void roundToSignificantDigits(const real_t *source, real_t *destination, uint16_t digits, realContext_t *realContext) {
   (void)digits;
   (void)realContext;
   *destination = *source;
 }
 
-void fnSetFlag(int32_t flag) {
+void fnSetFlag(uint16_t flag) {
   snapshot.fn_set_flag_calls++;
   snapshot.fn_set_flag_last_flag = flag;
 }
@@ -3778,7 +3778,7 @@ bool_t getSystemFlag(int32_t flag) {
   return false;
 }
 
-void setSystemFlag(int32_t flag) {
+void setSystemFlag(unsigned int flag) {
   if(flag == FLAG_CARRY) {
     carry_flag = true;
   }
@@ -3790,7 +3790,7 @@ void setSystemFlag(int32_t flag) {
   }
 }
 
-void clearSystemFlag(int32_t flag) {
+void clearSystemFlag(unsigned int flag) {
   if(flag == FLAG_CARRY) {
     carry_flag = false;
   }
@@ -3854,13 +3854,13 @@ void convertReal34RegisterToTimeRegister(calcRegister_t source, calcRegister_t d
   }
 }
 
-void internalDateToJulianDay(real34_t *source, real34_t *destination) {
+void internalDateToJulianDay(const real34_t *source, real34_t *destination) {
   if(destination != source) {
     *destination = *source;
   }
 }
 
-void julianDayToInternalDate(real34_t *source, real34_t *destination) {
+void julianDayToInternalDate(const real34_t *source, real34_t *destination) {
   if(destination != source) {
     *destination = *source;
   }
@@ -3952,9 +3952,10 @@ void fnDropY(uint16_t unusedButMandatoryParameter) {
   fnDrop(unusedButMandatoryParameter);
 }
 
-void refreshLcd(void *unused) {
+int refreshLcd(void *unused) {
   (void)unused;
   snapshot.fn_refresh_state_calls++;
+  return 1;
 }
 
 void lcd_refresh(void) {
@@ -4035,7 +4036,7 @@ const char *getRegisterDataTypeName(calcRegister_t reg, bool_t article, bool_t a
   return "test";
 }
 
-const char *getDataTypeName(uint32_t data_type, bool_t article, bool_t abbreviated) {
+const char *getDataTypeName(uint16_t data_type, bool_t article, bool_t abbreviated) {
   (void)article;
   (void)abbreviated;
 
@@ -4051,7 +4052,7 @@ const char *getDataTypeName(uint32_t data_type, bool_t article, bool_t abbreviat
   }
 }
 
-void longIntegerRegisterToDisplayString(calcRegister_t reg, char *buffer, int bufferLength, int screenWidth, int limit, bool_t allowLarge) {
+void longIntegerRegisterToDisplayString(calcRegister_t reg, char *buffer, int32_t bufferLength, int16_t screenWidth, int16_t limit, bool_t allowLarge) {
   (void)reg;
   (void)screenWidth;
   (void)limit;
@@ -4140,7 +4141,7 @@ void longIntegerSubtract(longInteger_t opY, longInteger_t opX, longInteger_t res
   }
 }
 
-void longInteger2Pow(int32_t exponent, longInteger_t result) {
+void longInteger2Pow(unsigned long exponent, longInteger_t result) {
   mpz_ui_pow_ui(result, 2, (unsigned long)exponent);
 }
 

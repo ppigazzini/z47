@@ -763,7 +763,7 @@ void fnSigmaAddRem(uint16_t selection) {
   SAVED_SIGMA_lastAddRem = (int8_t)selection;
 }
 
-uint16_t z47_stack_runtime_get_stack_top(void) {
+calcRegister_t z47_stack_runtime_get_stack_top(void) {
   return getSystemFlag(FLAG_SSIZE8) ? REGISTER_D : REGISTER_T;
 }
 
