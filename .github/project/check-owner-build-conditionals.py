@@ -283,6 +283,7 @@ def main() -> int:
         print(
             "check-owner-build-conditionals: SELF-TEST OK -- a use_fake_ option is caught, allowed ones are not"
         )
+        return 0
 
     # An option that is neither allowed nor banned is a decision nobody has made.
     unclassified = sorted(o for o in seen if o not in ALLOWED and not is_harness_only(o))
