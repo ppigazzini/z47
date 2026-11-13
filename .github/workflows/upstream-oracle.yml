@@ -680,6 +680,12 @@ jobs:
           sudo apt-get install -qq -y python3-yaml
           python3 .github/project/check-ci-build-prerequisites.py --self-test
           python3 .github/project/check-ci-build-prerequisites.py --repo-root .
+      - name: Enforce one commit-pinned version per workflow action
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 .github/project/check-action-pins.py --self-test
+          python3 .github/project/check-action-pins.py --repo-root .
 
   linux-host-parity:
     name: Linux host parity, ASAN, generated outputs, and host package
