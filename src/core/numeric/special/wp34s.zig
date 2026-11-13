@@ -484,10 +484,10 @@ pub fn BigReal(comptime digits: u32) type {
     };
 }
 
-// The heap twin of BigReal, for the 1071-digit working reals upstream moved off
-// the frame at the 6559a9c59 pin: eight of them at 724 bytes is 5792 bytes of a
-// 5832-byte frame on an arm build, and that frame is the stack reason XFN 1000 is
-// kept off the DM42 (defines.h). Same allocator as REAL_T_ALLOC/REAL_T_FREE.
+// The heap twin of BigReal, for the 1071-digit working reals upstream keeps off
+// the frame: eight of them at 724 bytes is 5792 bytes of a 5832-byte frame on an
+// arm build, and that frame is the stack reason XFN 1000 is kept off the DM42
+// (defines.h). Same allocator as REAL_T_ALLOC/REAL_T_FREE.
 extern fn malloc(size: usize) ?*anyopaque;
 extern fn free(ptr: ?*anyopaque) void;
 
@@ -1123,7 +1123,7 @@ pub export fn WP34S_LnExtended(x: *align(1) const real_t, res: *align(1) real_t,
 }
 
 // ===========================================================================
-// Forward-circular family (reduceAngleToRange + sin/cos/tan) -> math_wp34s_trig.zig.
+// Forward-circular family (reduceAngleToRange + sin/cos/tan) -> wp34s_trig.zig.
 // These wrappers keep the exact C-ABI export symbols and delegate.
 // ===========================================================================
 pub export fn reduceAngleToRange(
@@ -1178,7 +1178,7 @@ pub fn formatEminusD(buf: *[16]u8, d: i32) [*:0]const u8 {
 }
 
 // ===========================================================================
-// Inverse-circular family (atan/atan2/asin/acos) -> math_wp34s_atan.zig.
+// Inverse-circular family (atan/atan2/asin/acos) -> trig/wp34s_atan.zig.
 // These wrappers keep the exact C-ABI export symbols and delegate.
 // ===========================================================================
 pub export fn C47_WP34S_Atan(x: *align(1) const real_t, angle: *align(1) real_t, realContext: *realContext_t) callconv(.c) void {

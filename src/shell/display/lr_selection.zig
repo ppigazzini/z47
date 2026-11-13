@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
-// Pure linear-regression / curve-fit selection-bitmask helpers, lifted from
-// frontier_curve_fitting.zig (lrCountOnes, minLRDataPoints). Both are plain u16
+// Pure linear-regression / curve-fit selection-bitmask helpers behind
+// src/shell/plot/curve_fitting.zig (lrCountOnes, minLRDataPoints). Both are plain u16
 // bitmask arithmetic with no register/dec/GMP coupling, so they live here as a
 // std-only module exercised natively under `zig build test:unit`; the owner keeps
 // its pub-export C-ABI wrappers and delegates.

@@ -1,22 +1,21 @@
 //! Header-line matching and integer parsing -- the ONE implementation shared by
 //! both file families.
 //!
-//! It lives under `abi/` rather than beside either owner on purpose. These
-//! helpers previously existed twice, once per family, and the two copies drifted:
-//! a fuzz lane made the program-side parser saturating and the state-side twin
-//! kept wrapping for three weeks, which is the version forgery this fixes.
-//! A shared module cannot drift from itself, which is a stronger guarantee than
-//! any scan that reports drift after the fact.
+//! It lives under `abi/` rather than beside either owner on purpose: one copy
+//! per family drifts, and a saturating program-side parser beside a wrapping
+//! state-side twin is the version forgery `parseU32` documents. A shared module
+//! cannot drift from itself, which is a stronger guarantee than any scan that
+//! reports drift after the fact.
 //!
 //! Both take the caller's BUFFER, not a pointer into it. Every caller reads a
-//! line into a fixed local array and therefore knows its length; the previous
-//! shape passed `.ptr` and discarded that at the boundary, leaving each walk
-//! bounded only by a NUL that `readLine()` promises from inside another function,
-//! in C. A slice keeps the bound local and `std.mem.sliceTo` cannot leave it.
+//! line into a fixed local array and therefore knows its length; passing `.ptr`
+//! would discard that at the boundary, leaving each walk bounded only by a NUL
+//! that `readLine()` promises from inside another function, in C. A slice keeps
+//! the bound local and `std.mem.sliceTo` cannot leave it.
 //!
-//! Lifted here for native coverage: the owner these came from reaches libc and
-//! the file I/O globals, so it is only testable through the C oracle, and
-//! `parseU32` in particular has already carried a real defect (see below).
+//! The module is std-only for native coverage: the owners that call it reach
+//! libc and the file I/O globals, so they are only testable through the C
+//! oracle, and `parseU32` guards a forgery class (see below).
 
 const std = @import("std");
 
@@ -48,9 +47,8 @@ pub fn equals(line: []const u8, expected: []const u8) bool {
 /// the parse layout for the whole rest of the file. Plain `*`/`+` on a u32 wraps,
 /// which lets a crafted line land anywhere inside that window and FORGE a
 /// version: the digits 4304967321 wrap to exactly 10000025. Saturating keeps an
-/// absurd version absurd, so the range check rejects it. The sibling parser in
-/// program_serialization_runtime.zig was fixed this way by the M1 malformed-input
-/// fuzz; this twin was missed and kept wrapping for longer.
+/// absurd version absurd, so the range check rejects it. Both callers, in
+/// program_serialization_runtime.zig and calc_state_runtime.zig, share it.
 ///
 /// ON PARITY, because there is no single upstream behaviour to match here.
 /// Upstream's `toUint32` is `strtoul(str, NULL, 10)` assigned into a `uint32_t`,
@@ -67,8 +65,8 @@ pub fn equals(line: []const u8, expected: []const u8) bool {
 /// the firmware's answer: it is the build that ships, it is the safe one, and the
 /// divergence is confined to inputs above 2^32, which no valid state file
 /// contains -- every version the caller can accept is eight digits and parses
-/// identically either way. See the c_long width note in the maintainer memory:
-/// this is the same class as the LLP64 trap, on the restore path.
+/// identically either way. This is the same class as the c_long LLP64 trap, on
+/// the restore path.
 pub fn parseU32(line: []const u8) u32 {
     var value: u32 = 0;
     for (std.mem.sliceTo(line, 0)) |c| {
@@ -103,7 +101,7 @@ test "equals matches only the NUL-terminated prefix" {
 }
 
 test "equals treats an unterminated buffer as the whole buffer" {
-    // readLine() always terminates, but the type no longer depends on that: a
+    // readLine() always terminates, but the type does not depend on that: a
     // buffer with no NUL compares as its full contents instead of reading on.
     const full = "abcd".*;
     try std.testing.expect(equals(&full, "abcd"));

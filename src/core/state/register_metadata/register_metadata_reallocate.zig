@@ -80,9 +80,9 @@ pub fn copySourceRegisterToDestRegister(source_register: runtime.calcRegister_t,
 // retyped, and a full pool refuses the allocation with ERROR_RAM_FULL.
 pub fn reallocateRegister(reg: runtime.calcRegister_t, data_type: u32, data_size_without_data_len_blocks: u16, tag: u32) bool {
     // The upstream reallocateRegister applies the same allocation path to every
-    // register except a reserved variable, which since the 6559a9c59 pin is refused
-    // outright rather than retyped. The earlier retained dispatch recursed back
-    // through the exported reallocateRegister; this local path does not.
+    // register except a reserved variable, which is refused outright rather than
+    // retyped. This local path does not recurse back through the exported
+    // reallocateRegister.
     const normalized_payload_size = payload_owned.normalizePayloadSizeInBlocks(data_type, data_size_without_data_len_blocks);
     const allocated_size = payload_owned.allocationSizeInBlocks(data_type, normalized_payload_size);
 

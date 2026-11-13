@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
-// Pure C47 glyph-string navigation + UTF-8 codec, lifted from
-// frontier_char_string.zig (src/c47/stringFuncs.c). The C47 internal encoding
+// Pure C47 glyph-string navigation + UTF-8 codec behind
+// src/shell/display/text/char_string.zig (src/c47/charString.c). The C47 internal encoding
 // stores a glyph as one byte, or two bytes when the lead byte's high bit is set.
 // These primitives walk that encoding (glyph count, next/prev glyph offset, last
 // glyph, previous numeric glyph, template validation) and convert code points to
 // and from UTF-8. They depend on nothing but the byte buffer, so they live here as
 // a std-only module exercised natively under `zig build test:unit`, reachable as
-// abi.c47_string. The frontier owner keeps its pub-export C-ABI wrappers (and the
+// abi.c47_string. The char_string owner keeps its pub-export C-ABI wrappers (and the
 // stringLastGlyph null guard) and delegates.
 //
 // stringNextGlyph/stringGlyphLength are testSuite-covered via compareString

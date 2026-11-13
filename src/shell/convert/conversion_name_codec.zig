@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
-//! Pure unit-conversion-name compress/expand codec lifted out of
-//! frontier_char_string.zig (src/c47/charString.c). These rewrite a conversion
+//! Pure unit-conversion-name compress/expand codec behind
+//! shell/display/text/char_string.zig (src/c47/charString.c). These rewrite a conversion
 //! menu name in place between its stored form and its display form: the "100km"
 //! binary-prefix run becomes the two-glyph STD_BINARY pair and back, and the
 //! "/kWh" <-> "/E" energy-unit shorthands are swapped.
@@ -193,7 +193,7 @@ pub fn compressConversionName(msg1: [*]u8, binary: BinaryGlyphs) void {
 
 const testing = std.testing;
 
-// The owner's frontier_char_string.zig STD_BINARY glyphs, verbatim.
+// char_string.zig's STD_BINARY glyphs, verbatim.
 const owner_binary = BinaryGlyphs{
     .one = .{ 0xa0, 0x27 },
     .zero = .{ 0xa2, 0x0e },

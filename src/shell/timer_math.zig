@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
-// Pure stopwatch elapsed-time math, lifted from timer.zig
+// Pure stopwatch elapsed-time math behind timer.zig
 // (src/c47/timer.c). The timer polls a wall clock; antirewinder corrects for the
 // clock wrapping past midnight or rolling over an hour between reads, and
 // timerElapsed returns the accumulated milliseconds. It is std-only u32 arithmetic
@@ -9,7 +9,7 @@
 // `zig build test:unit`.
 //
 // testSuite-BLIND (the timer app is not in the oracle suite), so the native tests
-// below are the first automated coverage of the wraparound corrections.
+// below are the automated coverage of the wraparound corrections.
 // Transcription is verbatim.
 
 const std = @import("std");

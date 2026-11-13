@@ -17,8 +17,8 @@ const const_0 = consts.const_0;
 //   - checkMinimumDataPoints / isStatsMatrix / isStatsMatrixN: externed by the
 //     mathematics owners (mean/variance/percentSigma/median/linpol pipeline).
 //   - calcSigma / clearStatisticalSums: externed by the store owner.
-//   - fnClSigma(u16): externed by state/register_metadata_clear_sigma_owned.
-//   - fnSigmaAddRem(u16): externed by math_command_wrappers.
+//   - fnClSigma(u16): externed by core/state/register_metadata/register_metadata_runtime.zig.
+//   - fnSigmaAddRem(u16): externed by core/state/runtime/stack_runtime.zig.
 // The statisticalSumsPointer / statMx / statisticalSumsUpdate globals stay
 // defined in c47.c and are externed
 // here, exactly as the other Zig owners do.

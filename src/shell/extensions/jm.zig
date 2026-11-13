@@ -79,13 +79,6 @@ const TI_ABC: u8 = 72;
 const TI_ABBCCA: u8 = 73;
 const TI_012: u8 = 74;
 
-// calcModel values (defines.h).
-
-// CALCMODEL for the firmware this object is linked into. An R47 hardware build
-// carries only the R47 layouts: the backup writer refuses to persist a foreign
-// model and the state loader only applies one from a matching file, so gating
-// the selector is what lets the linker drop the other tables.
-
 // fnJM register #defines.
 const JMTEMP: calcRegister_t = TEMP_REGISTER_1; // 135
 const JM_TEMP_I: calcRegister_t = REGISTER_I; // 109

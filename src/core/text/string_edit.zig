@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
-//! Pure in-place string-edit helpers lifted out of frontier_char_string.zig
+//! Pure in-place string-edit helpers behind shell/display/text/char_string.zig
 //! (src/c47/charString.c): wrap a NUL-terminated buffer with a character or a
 //! pair of affix strings, and find the first adjacent character pair. They
 //! depend on nothing but their byte arguments, so this module imports only std

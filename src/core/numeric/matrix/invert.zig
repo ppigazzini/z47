@@ -2,7 +2,7 @@
 // Zig port of the matrix inverse primitives of src/c47/mathematics/matrix.c:
 // invertRealMatrix / invertComplexMatrix invert a square matrix in place into a
 // cplx_t scratch array via the dense core invCpxMat (owned by
-// math_matrix_complex_core.zig) and write the result back, copying the
+// complex_core.zig) and write the result back, copying the
 // source first when res differs from the input. A real matrix that is exactly
 // singular is refused before the LU is attempted.
 

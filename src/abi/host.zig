@@ -3,15 +3,13 @@
 // The host-callback boundary between the headless core and the interactive
 // shell. The core signals the host through this installable hook table instead
 // of linking the shell owners directly, so the core keeps no link-time
-// dependency on the shell (the headless-engine severance goal). The host
+// dependency on the shell. The host
 // installs its implementations once at app startup; every hook defaults to a
 // neutral value so an uninstalled core -- the parity harnesses and headless
 // fuzzing -- runs correctly.
 //
-// This is the transitional home of the `core/host` port from the architecture
-// design: it lives in the ABI seam because both zones already depend on the
-// seam, so no owner reaches across the engine/shell boundary to reach it. Later
-// capabilities (redraw, progress, text metrics) extend this table.
+// It lives in the ABI seam because both zones depend on the seam, so no owner
+// reaches across the core/shell boundary to reach it.
 
 const builtin = @import("builtin");
 

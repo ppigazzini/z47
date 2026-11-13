@@ -658,7 +658,7 @@ extern var allFormulae: [*c]abi.FormulaHeader;
 
 // globalRegister/freeMemoryRegions are STATIC ARRAYS only on DMCP+OLD_HW; on the
 // host and new_hw firmware they are malloc'd POINTERS (c47.h:#if DMCP_BUILD &&
-// OLD_HW). This must match frontier_free_list.zig's free_regions_is_array.
+// OLD_HW). This must match free_list.zig's free_regions_is_array.
 const globalRegister_is_array = dmcp_build and old_hw;
 const globalRegister_array = if (globalRegister_is_array)
     @extern([*c]registerHeader_t, .{ .name = "globalRegister" })

@@ -3,8 +3,8 @@
 // Display state the headless engine drives: the number/fraction/time format
 // parameters and calendar rules its formatting reads (the format parity oracle
 // covers these), plus the transient-info and screen-update status it sets for the
-// shell to render. Relocated out of the shell globals hub; symbols, types and
-// initialisers are byte-identical, so every extern consumer resolves as before.
+// shell to render. Defined here rather than in the shell globals hub (c47.zig)
+// with c47.c's symbols, types and initialisers.
 
 pub export var displayFormat: u8 = 0; // number display mode (SCI/ENG/FIX/ALL)
 pub export var displayFormatDigits: u8 = 0; // significant/decimal digits for the display mode

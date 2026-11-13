@@ -68,8 +68,8 @@ pub const FLAG_FGGR: u16 = 0x8064;
 pub const FLAG_NORM: u16 = 0x8068;
 pub const FLAG_BOLD: u16 = 0x8069;
 pub const FLAG_SIGZEROS: u16 = 0x806a;
-// Graph plot overlays. Upstream replaced the PLOT_* globals with these system
-// flags in c43 cfd637bb2 (defines.h:934-937).
+// Graph plot overlays: upstream's system flags for the plot overlays
+// (defines.h:1144-1147).
 pub const FLAG_PRMS: u16 = 0x806b;
 pub const FLAG_PINTG: u16 = 0x806c;
 pub const FLAG_PDIFF: u16 = 0x806d;
@@ -200,13 +200,12 @@ pub fn formatNotDefinedBugScreen(
     _ = sprintf(errorMessage, format, who, what, value, limit);
 }
 
-// No harness fork here. The parity lane used to build this owner with
-// `use_fake_harness_surface`, which swapped these four bodies for counting stubs
-// -- so the lane compared an oracle against a build of the owner that skipped
-// the very branches the oracle was taking. Now that the oracle IS c43's flags.c
-//, the harness supplies calcModeAim / calcModeNormal /
-// popSoftmenu / setConfirmationMode / displayCalcErrorMessage under their real
-// names and both sides run their production path through the same environment.
+// No harness fork here: counting stubs in place of these four bodies would have
+// the lane compare an oracle against a build of the owner that skips the very
+// branches the oracle takes. The oracle is c43's flags.c, the harness supplies
+// calcModeAim / calcModeNormal / popSoftmenu / setConfirmationMode /
+// displayCalcErrorMessage under their real names, and both sides run their
+// production path through the same environment.
 
 pub fn handleWriteProtectedFlag() void {
     temporaryInformation = TI_NO_INFO;

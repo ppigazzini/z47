@@ -564,9 +564,9 @@ fn _lnBetaReal(xReal: *real_t, yReal: *real_t, r: *cplx_t, realContext: *realCon
 
 // Deliberately outside OPTION_ZETA_BETA, which gates only the LN-beta key: the F
 // distribution calls this from f.c, and WP34S_betai in wp34s.c calls it too.
-// Gating it would leave both calling an empty function, the way erfc did before
-// it went with OPTION_DIST_NORMAL. _lnBetaReal and the LnGamma helpers it reaches
-// stay outside for the same reason. Only _lnBetaComplex, which nothing but the
+// Gating it would leave both calling an empty function. _lnBetaReal and the
+// LnGamma helpers it reaches stay outside for the same reason. Only
+// _lnBetaComplex, which nothing but the
 // key uses, sits inside the option.
 pub export fn LnBeta(x: *const real_t, y: *const real_t, res: *real_t, realContext: *realContext_t) callconv(.c) void {
     var r: cplx_t = undefined;

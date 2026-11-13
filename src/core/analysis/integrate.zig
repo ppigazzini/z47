@@ -87,10 +87,8 @@ const pc_build: bool = @import("builtin").target.os.tag != .freestanding;
 extern fn printf(fmt: [*:0]const u8, ...) c_int;
 const old_hw: bool = solve_build_options.is_old_hw;
 // Total PLOT, INT and SOLVE engines that may run at once, in any combination, counted by
-// engineNestingDepth: OLD_HW (DM42) 2, NEW_HW (DM42n/DMCP5) 3, host 4.
-// OLD_HW dropped 2 -> 1 at the 6559a9c59 pin: the DM42's measured stack use
-// leaves it the least room, and the same pin moved the solvers' working reals
-// off the frame for the same reason.
+// engineNestingDepth (defines.h): OLD_HW (DM42) 1, NEW_HW (DM42n/DMCP5) 3, host 4.
+// The DM42's measured stack use leaves it the least room.
 const MAX_ENGINE_NESTING_DEPTH: u16 = if (dmcp_build and old_hw) 1 else if (dmcp_build) 3 else 4;
 
 const FLAG_ASLIFT: u32 = 0xc023;
@@ -496,8 +494,8 @@ fn _integratorIteration() linksection(runtime.code_section) void {
     if ((currentSolverStatus & SOLVER_STATUS_USES_FORMULA) != 0) {
         equation.parseEquation(currentFormula, EQUATION_PARSER_XEQ, tmpString, tmpString + AIM_BUFFER_LENGTH);
     } else {
-        // mirror of the solver's guard (Mihail, 9bb487e44 "Fix integral nested in
-        // SOLVE"); a nested program may repoint currentSolverProgram. Enables
+        // mirror of the solver's guard: a nested program may repoint
+        // currentSolverProgram, so it is restored after the call. Enables
         // INT(INT).
         const savedCurrentSolverProgram: u16 = currentSolverProgram;
         dynamicMenuItem = -1;

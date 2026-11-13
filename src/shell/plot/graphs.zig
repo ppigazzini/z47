@@ -168,7 +168,7 @@ const FLAG_SCALE = 0x8052;
 const FLAG_VECT = 0x8053;
 const FLAG_NVECT = 0x8054;
 const FLAG_PCURVE = 0x805A;
-// Upstream replaced the PLOT_* globals with these system flags (c43 cfd637bb2).
+// The plot-overlay system flags (defines.h:1144-1147).
 const FLAG_PRMS = 0x806B;
 const FLAG_PINTG = 0x806C;
 const FLAG_PDIFF = 0x806D;
@@ -625,7 +625,7 @@ pub export fn fnPlotZoom(unusedButMandatoryParameter: u16) callconv(.c) void {
 // ===========================================================================
 /// Multiplies `aa` by stepBase^-zoomLevel. The zoom levels are small integers, so the
 /// power is reached by repeated double multiplication rather than libm's pow, and
-/// stepBase carries what used to be the 4.5^0.75 or 4.5^0.55 step per level.
+/// stepBase carries the 4.5^0.75 or 4.5^0.55 step per level.
 fn calculateZoomFactor(stepBase: f64, zoomLevel: i16, aa: *f32) void {
     var m: f64 = 1.0;
     var z: i16 = if (zoomLevel < 0) -zoomLevel else zoomLevel;

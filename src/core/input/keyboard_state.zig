@@ -40,10 +40,10 @@ pub export fn checkKeyShifts(data: [*c]const u8) callconv(.c) runtime.bool_t {
     return shared.checkKeyShifts(data);
 }
 
-// btnFnClicked: a function-key click runs the function directly. Host-only
-// export (its body reaches executeFunction -> clearScreen -> lcd_fill_rect,
-// which only resolves on the host lane); DMCP keeps the canonical C.  This is
-// also the live caller that forces executeFunction's compile-analysis.
+// btnFnClicked: a function-key click runs the function directly. The host
+// exports it as btnFnClicked and the DMCP lanes through btnFnClickedDmcp (the
+// export block below). This is also the live caller that forces
+// executeFunction's compile-analysis.
 fn btnFnClickedHost(not_used: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {
     _ = not_used;
     shared.executeFunction(@ptrCast(data), 0);
@@ -51,7 +51,7 @@ fn btnFnClickedHost(not_used: ?*anyopaque, data: ?*anyopaque) callconv(.c) void 
 
 // These handlers are all `#ifdef`-free in both the upstream C and
 // shared.* (identical across lanes, reaching only lane-independent calc / display
-// helpers), so they are exported for ALL lanes. Host behaviour is unchanged.
+// helpers), so they are exported for ALL lanes.
 pub export fn determineFunctionKeyItem_C47(data: [*c]const u8, shiftF: runtime.bool_t, shiftG: runtime.bool_t) callconv(.c) i16 {
     return shared.determineFunctionKeyItem_C47(data, shiftF, shiftG);
 }
@@ -60,8 +60,8 @@ pub export fn fnKeyEnter(unused_but_mandatory_parameter: u16) callconv(.c) void 
     shared.keyEnter(unused_but_mandatory_parameter);
 }
 
-// keyExit + keyBackspace are now exported for ALL lanes. Both are divergence-free;
-// they reach clearScreen -> lcd_fill_rect and jm_show_calc_state, which are now
+// keyExit + keyBackspace are exported for ALL lanes. Both are divergence-free;
+// they reach clearScreen -> lcd_fill_rect and jm_show_calc_state, which are
 // lane-aware ROM trampolines / no-ops in the runtime, so they link and run on the
 // DMCP lanes.
 pub export fn fnKeyExit(unused_but_mandatory_parameter: u16) callconv(.c) void {

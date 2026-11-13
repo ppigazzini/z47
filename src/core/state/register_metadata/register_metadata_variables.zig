@@ -376,12 +376,10 @@ pub fn deleteVariable(regist: u16) void {
         //
         // c43 shifts with `allNamedVariables[i] = allNamedVariables[i + 1]` and then
         // zeroes exactly `.descriptor`, `.variableName[0]` and `.variableName[1]` of
-        // the vacated last slot. z47 used to decompose that into a descriptor write
-        // plus storeNamedVariableName (which re-zeroes the whole name array) and a
-        // clearNamedVariableSlot that @memset the array. Tidier, and WRONG: the RAM
-        // image ends up different from c43's, and backup.cfg is a raw RAM dump, so
-        // the difference reaches a user-visible file. Found by the
-        // differential, which compares the slab byte for byte.
+        // the vacated last slot. Re-zeroing the whole name array instead would
+        // leave the RAM image different from c43's, and backup.cfg is a raw RAM
+        // dump, so the difference would reach a user-visible file. The
+        // differential compares the slab byte for byte.
         const headers = allNamedVariables orelse return;
         var shift_index = index;
         while (shift_index + 1 < runtime.numberOfNamedVariables) : (shift_index += 1) {

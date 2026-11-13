@@ -160,11 +160,11 @@ pub const ifLongIntegerDoAngleReduction = true;
 
 pub const ERROR_NONE: u8 = 0;
 pub const ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN: u8 = 1;
-// defines.h's values, unconditionally. These used to take different values when
-// built for the unit harness, which meant the lane compared an owner carrying
-// error codes c43 never uses against an oracle carrying the same wrong ones: the
-// two agreed, and the agreement was about nothing. An owner must not change what
-// it does because it is being tested.
+// defines.h's values, unconditionally, the unit harness build included. Values
+// that differed there would compare an owner carrying error codes c43 never uses
+// against an oracle carrying the same wrong ones: the two would agree, and the
+// agreement would be about nothing. An owner must not change what it does because
+// it is being tested.
 pub const ERROR_INVALID_DATA_TYPE_FOR_OP: u8 = 24;
 pub const ERROR_OUT_OF_RANGE: u8 = 8;
 pub const ERROR_OVERFLOW_PLUS_INF: u8 = 4;
@@ -213,9 +213,9 @@ pub const cplx_t = abi.Complex;
 /// cplx159_t: the 159-digit complex of the SLVC, SLVQ and EIGEN high-precision paths.
 pub const cplx159_t = abi.Complex159;
 
-// One header shape for every build. This used to be selected by the harness flag:
-// the unit lane got `{u16 rows, u16 cols}` with no `mtag`, so the owner compiled a
-// different struct there and no matrix angular-mode behaviour could be reached.
+// One header shape for every build, the unit lane included: a harness-only
+// `{u16 rows, u16 cols}` with no `mtag` would compile a different struct there, and
+// no matrix angular-mode behaviour could be reached.
 pub const matrixHeader_t = abi.MatrixHeader;
 
 pub const real34Matrix_t = if (use_fake_wp34s_harness_surface)

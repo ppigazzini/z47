@@ -16,7 +16,7 @@ const complex34Matrix_t = runtime.complex34Matrix_t;
 
 const nim_register_line = runtime.REGISTER_X;
 
-// Owned by math_matrix_lifecycle.zig.
+// Owned by lifecycle.zig.
 extern fn decQuadZero(result: *real34_t) callconv(.c) *real34_t;
 
 const realElems = abi.matrixRealElems;

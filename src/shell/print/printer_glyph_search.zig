@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
-// Pure printer glyph-table binary searches, lifted from frontier_print.zig
+// Pure printer glyph-table binary searches behind src/shell/print/print.zig
 // (src/c47/printing/print.c findPrinterGlyph / findMartelGlyph). Each printer
 // font stores its glyphs sorted by charCode; the search is index arithmetic over
 // the caller-supplied glyph array -- no register, dec, GTK, or global state -- so
@@ -10,7 +10,7 @@
 // pointer + count so the module needs no extern-struct wrapper.
 //
 // testSuite-BLIND (the IR/82240 printer path is not in the suite, unlike the
-// pervasively-covered display findGlyph), so the native tests below are the first
+// pervasively-covered display findGlyph), so the native tests below are the
 // automated coverage of the boundaries + not-found fallbacks. Transcription is
 // verbatim.
 

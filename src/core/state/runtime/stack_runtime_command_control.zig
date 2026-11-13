@@ -43,9 +43,9 @@ pub fn sortRegisterRange(range_start: u16, range_end: u16) void {
 }
 
 // registers.c reports every REGCLR / REGSWAP / REGCOPY / REGSORT failure on
-// ERR_REGISTER_LINE, which is Z. The harness surface used to pass X, so the
-// differential measured a build that annotated a different register line than
-// the C it was compared against -- the one place a divergence must never live.
+// ERR_REGISTER_LINE, which is Z, on every build including the harness surface:
+// a harness that annotated a different register line would measure a build that
+// diverges from the C it is compared against.
 pub fn reportRegisterCommandError(error_code: u8) void {
     displayCalcErrorMessage(error_code, ERR_REGISTER_LINE);
 }

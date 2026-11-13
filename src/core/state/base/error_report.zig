@@ -5,26 +5,25 @@
 // lastErrorCode is THE error status: every operation across the engine sets and
 // checks it via `extern var`, and it is part of the saved backup.
 // errorMessageRegisterLine is the companion state -- which register line the
-// pending error message annotates -- also part of the backup. Both were defined
-// in the shell globals hub (c47.zig), so the headless engine reached up into
-// shell for its own error status; they live here now, owned alongside the one
-// entry point that writes them. Symbols, types and zero initialisers are
-// unchanged, so every extern consumer resolves as before.
+// pending error message annotates -- also part of the backup. Both live here,
+// beside the one entry point that writes them, rather than in the shell globals
+// hub (c47.zig), so the headless engine does not reach up into the shell for its
+// own error status. Symbols, types and zero initialisers are c47.c's.
 //
 // displayCalcErrorMessage: the calculator's error-report entry point, called
 // pervasively across the engine (~133 owners) to raise a calculation error. Its
 // name is a misnomer inherited from the C source -- the normal path does no
 // display at all, it just records the error status the shell later renders:
-// lastErrorCode, errorMessageRegisterLine and screenUpdatingMode, all base kernel
+// lastErrorCode, errorMessageRegisterLine and screenUpdatingMode, all core
 // state. Only the defensive branch, taken for a malformed error code or register
 // line (a programming error, never a real calculation error), needs the
 // interactive bug screen, and that is handed to the shell through the host
 // boundary (abi.host.reportBugError) rather than linked directly.
 //
-// Moving the entry point here severs the engine's dependency on the shell error
-// owner: the engine's calls become intra-core, and the shell's own calls become
-// a downstream shell->core dependency. The bug-screen rendering and the message
-// tables stay in shell/error.zig.
+// With the entry point here the engine does not depend on the shell error owner:
+// the engine's calls are intra-core, and the shell's own calls are a downstream
+// shell->core dependency. The bug-screen rendering and the message tables are in
+// shell/error.zig.
 
 const abi = @import("abi");
 

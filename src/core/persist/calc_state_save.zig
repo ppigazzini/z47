@@ -108,7 +108,7 @@ extern var statisticalSumsPointer: ?*anyopaque;
 extern var systemFlags0: u64;
 extern var systemFlags1: u64;
 extern var userKeyLabel: [*c]u8;
-// assign.c's NULL-tolerant reader for userKeyLabel (added at the 6559a9c59 pin).
+// assign.c's NULL-tolerant reader for userKeyLabel.
 extern fn getUserKeyLabelString(n: i16) [*c]u8;
 extern var userMenuItems: [18]userMenuItem_t;
 extern var userAlphaItems: [18]userMenuItem_t;

@@ -4,8 +4,8 @@
 // base pointers into the RAM image, named-variable table, statistical sums,
 // subroutine level, program memory and formula table. The headless engine reads
 // and writes these throughout; the shell allocates their backing at startup.
-// Relocated out of the shell globals hub; symbols, types and null initialisers are
-// unchanged, so every extern consumer resolves as before.
+// Defined here rather than in the shell globals hub (c47.zig) with c47.c's
+// symbols, types and null initialisers.
 
 pub export var tmpString: ?[*]u8 = null; // general-purpose temporary string workspace
 pub export var errorMessage: ?[*]u8 = null; // error/bug-report formatting workspace

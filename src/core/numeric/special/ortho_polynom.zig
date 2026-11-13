@@ -13,7 +13,7 @@ const const__1 = consts.const__1;
 // empties these commands rather than removing them, and each body below returns
 // immediately when option_ortho is false. Do not read the gate as dead code. The EXTRA_INFO_ON_CALC_ERROR hints become fixed
 // moreInfoOnError strings (no-op under TESTSUITE/DMCP). WP34S_OrthoPoly is the
-// Zig-ported owner in math_wp34s.zig (extern'd here). The ORTHOPOLY_*
+// Zig-ported owner in wp34s.zig (extern'd here). The ORTHOPOLY_*
 // kind values are verified against defines.h (H=0, HE=1, L=2, L_ALPHA=3,
 // LEGENDRE_P=4, CHEBYSHEV_T=5, CHEBYSHEV_U=6).
 
@@ -56,7 +56,7 @@ const moreInfoOnError = runtime.moreInfoOnError;
 
 // realCompareLessEqual is not in runtime; extern it.
 
-// WP34S_OrthoPoly is the Zig-ported owner in math_wp34s.zig.
+// WP34S_OrthoPoly is the Zig-ported owner in wp34s.zig.
 
 extern var ctxtReal39: realContext_t;
 

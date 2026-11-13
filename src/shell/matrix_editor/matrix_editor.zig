@@ -9,17 +9,17 @@ const consts = abi.constants;
 // that the sibling matrix_* owners do NOT already provide.
 //
 // Division of labour (verified by grep across src/shell/):
-//   * The ~30 PUBLIC matrixEditor.c functions (fnEditMatrix, fnOldMatrix,
+//   * Most PUBLIC matrixEditor.c functions (fnEditMatrix, fnOldMatrix,
 //     fnGoToElement, fnGoToRow, fnGoToColumn, fnSetGrowMode, fnIncDecI,
-//     fnIncDecJ, fnInsRow, fnAddRow, fnInsCol, fnAddCol, fnDelRow, fnDelCol,
-//     getIRegisterAsInt, getJRegisterAsInt, setIRegisterAsInt,
-//     setJRegisterAsInt, wrapIJ, _fnInsRow, _fnInsCol, mimFinalize, mimRestore,
-//     mimAddNumber, mimRunFunction, showMatrixEditor, mimEnter) are reimplemented
-//     in Zig and exported by shell.zig (which dispatches into the matrix_*
-//     module owners: matrix_editor_entry, matrix_editor_refresh, matrix_nav,
-//     matrix_goto_grow, matrix_lifecycle, matrix_mim_add, matrix_mim_run,
-//     matrix_mutation).
-//     => This owner does NOT export any of them.
+//     fnInsRow, fnAddRow, fnInsCol, fnAddCol, fnDelRow, fnDelCol, wrapIJ,
+//     _fnInsRow, _fnInsCol, mimFinalize, mimRestore, showMatrixEditor,
+//     mimEnter) are reimplemented in Zig and exported by src/frontier.zig and
+//     the matrix_* module owners (matrix_editor_entry, matrix_editor_refresh,
+//     matrix_nav, matrix_goto_grow, matrix_lifecycle, matrix_mim_add,
+//     matrix_mim_run, matrix_mutation).
+//     => This owner exports only fnIncDecJ, getIRegisterAsInt,
+//        getJRegisterAsInt, setIRegisterAsInt, setJRegisterAsInt, mimAddNumber
+//        and mimRunFunction of them.
 //
 //   * The parts of matrixEditor.c that no sibling matrix_* owner provides:
 //       (a) the 4 NON-renamed publics of matrixEditor.c:
@@ -27,16 +27,15 @@ const consts = abi.constants;
 //           getComplexMatrixColumnWidths;
 //       (b) the file-scope globals: openMatrixMIMPointer, scrollRow,
 //           scrollColumn, tmpRow, matrixIndex (the sibling owners declare these
-//           `extern` — calc_mode_owned, goto_grow_owned, etc. — but the
-//           DEFINITION lives here);
-//       (c) all 49 z47_frontier_matrix_* helpers the sibling modules call
-//           (defined here, declared `extern fn` by the siblings).
+//           `extern`, but the DEFINITION lives here);
+//       (c) the z47_frontier_matrix_* helpers the sibling modules call
+//           (pub fns here, reached by the siblings through @import).
 //     => This owner provides (a)+(b)+(c). It is, in effect, the rest of
 //        matrixEditor.c plus the cross-owner helper layer.
 //
 // Build flavour, matching the sibling owners and the dominant C config:
-//   OPTION_VECTOR is ON (defines.h:70; only #undef'd in space-saving DMCP
-//   packages). OPTION_VECTOR_EDIT is OFF (defines.h:73). The two OPTION_IR_PRINTING
+//   OPTION_VECTOR is ON (defines.h:47; only #undef'd in space-saving DMCP
+//   packages). OPTION_VECTOR_EDIT is OFF (defines.h:88). The two OPTION_IR_PRINTING
 //   trace calls matrixEditor.c makes — printTraceString for the number-entry
 //   buffer mimEnter closes, printTrace for the j/CC complex promotion — are
 //   reproduced here behind the print owner's ir_printing flag. The PC_BUILD
@@ -276,8 +275,6 @@ const FLAG_CPXj: c_int = 0x8005;
 
 // ===========================================================================
 // Globals — DEFINED HERE (the siblings declare these `extern`).
-// matEditMode went with upstream's "remove two globals that are never read or
-// written" at the 6559a9c59 pin.
 // ===========================================================================
 // These are mutable RAM globals (matrixEditor.c file-scope, normal .data/.bss);
 // they must NOT go into .qspi (read-only XIP flash). Default section.
@@ -2745,7 +2742,7 @@ pub fn z47_frontier_matrix_mim_enter_commit_open_matrix() void {
 
 // ===========================================================================
 // wrapIJ — file-local copy used by the inc/dec helpers above. The PUBLIC wrapIJ
-// is exported by shell.zig (matrix_nav module); this private impl mirrors it
+// is exported by src/frontier.zig; this private impl mirrors it
 // so callByIndexedMatrix stays self-contained without taking a dependency on the
 // sibling's internal name.
 // ===========================================================================

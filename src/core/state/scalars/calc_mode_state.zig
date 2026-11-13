@@ -4,8 +4,8 @@
 // overall mode, the angular mode, the short-integer word/sign model and the
 // integer base.
 //
-// Base calculator state relocated out of the shell globals hub; symbols, types
-// and initialisers are byte-identical, so every extern consumer resolves as before.
+// Base calculator state, defined here rather than in the shell globals hub
+// (c47.zig) with c47.c's symbols, types and initialisers.
 
 const angularMode_t = c_int;
 

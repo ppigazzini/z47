@@ -3,7 +3,7 @@
 // src/c47/mathematics/matrix.c: divideRealMatrices / divideComplexMatrices
 // compute y * inverse(x) by inverting x (invCpxMat) and multiplying (mulCpxMat)
 // on cplx_t scratch arrays. The dense core invCpxMat / mulCpxMat is owned by
-// math_matrix_complex_core.zig; this owner drives it and packs/unpacks the
+// complex_core.zig; this owner drives it and packs/unpacks the
 // real34/complex34 matrices. A real divisor that is exactly singular is refused
 // before the LU is attempted.
 

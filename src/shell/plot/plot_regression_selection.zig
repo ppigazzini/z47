@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
-// Pure LR / orthogonal-fit curve-selection state machine, lifted from
-// frontier_plot_regression.zig (src/c47/statistics plotstat.c). Given a plot
+// Pure LR / orthogonal-fit curve-selection state machine behind
+// src/shell/plot/plot_regression.zig (src/c47/plotstat.c). Given a plot
 // command it advances a 10-bit selection word to the next/previous ALLOWED fit
 // model (bit-shift scanning filtered by the lr-selection mask, with overflow wrap
 // at bit 1024). It is std-only u16 bit arithmetic over a Context value -- the

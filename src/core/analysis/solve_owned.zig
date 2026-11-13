@@ -81,10 +81,8 @@ const ERROR_SOLVER_ABORT: u8 = 60;
 const ERROR_RAM_FULL: u8 = 11;
 
 // Total PLOT, INT and SOLVE engines that may run at once, in any combination, counted by
-// engineNestingDepth: OLD_HW (DM42) 2, NEW_HW (DM42n/DMCP5) 3, host 4.
-// OLD_HW dropped 2 -> 1 at the 6559a9c59 pin: the DM42's measured stack use
-// leaves it the least room, and the same pin moved the solvers' working reals
-// off the frame for the same reason.
+// engineNestingDepth (defines.h): OLD_HW (DM42) 1, NEW_HW (DM42n/DMCP5) 3, host 4.
+// The DM42's measured stack use leaves it the least room.
 const MAX_ENGINE_NESTING_DEPTH: u16 = if (dmcp_build and old_hw) 1 else if (dmcp_build) 3 else 4;
 // Whether INT or SOLVE may run inside a plot: 0 (false) on OLD_HW, 1 (true) otherwise.
 const PLOT_NESTING_ALLOWED: bool = !(dmcp_build and old_hw);
@@ -189,9 +187,9 @@ inline fn ctxtSolverHi() *realContext_t {
     return &ctxtReal39;
 }
 
-// Upstream packed the fixed-width errorMessages[N][M] 2D array into a static pool
-// reached through this accessor (error.c), so the array symbol no longer exists;
-// errorMessageOf(code) returns the message pointer for one error/status code.
+// Upstream keeps the error messages in a static pool reached through this
+// accessor (error.c), with no array symbol; errorMessageOf(code) returns the
+// message pointer for one error/status code.
 extern fn errorMessageOf(errorCode: u8) [*c]const u8;
 
 // softmenu globals

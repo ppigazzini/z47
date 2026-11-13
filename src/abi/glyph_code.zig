@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
-// Pure glyph char-code helpers lifted from shell/display/sort.zig (src/c47/sort.c):
+// Pure glyph char-code helpers for shell/display/sort.zig (src/c47/sort.c):
 // the 1-or-2-byte glyph-code decode, the super/subscript/struck-through folding
 // used by CMP_NAME ordering, and the compareChar lead-glyph difference. These
 // depend on nothing but their byte inputs (the fold tables are baked from
@@ -9,8 +9,8 @@
 // sort owner keeps its C-ABI compareChar/compareString wrappers and delegates.
 //
 // compareString (hence foldUnSupSubStruck) is exercised by the testSuite's
-// checkCatalogsSorting (CMP_EXTENSIVE/CMP_NAME), so the extraction is byte-checked
-// at 9674/9674 in addition to the native tests below.
+// checkCatalogsSorting (CMP_EXTENSIVE/CMP_NAME) in addition to the native tests
+// below.
 
 const std = @import("std");
 

@@ -498,9 +498,9 @@ inline fn moreInfoOnErr(where: [*:0]const u8, hint: [*:0]const u8) void {
 // ---------------------------------------------------------------------------
 // displayCalcErrorMessage
 // ---------------------------------------------------------------------------
-// The error-report entry point moved to the base kernel
-// (engine/kernel/error_report.zig): its normal path is pure state recording, not
-// display. Only the defensive bug-screen branch is UI, and it is installed here
+// The error-report entry point is exported by src/core/state/base/error_report.zig:
+// its normal path is pure state recording, not display. Only the defensive
+// bug-screen branch is UI, and it is installed here
 // as the host boundary's reportBugError hook. The engine reaches the entry point
 // intra-core; the shell owners that call it (displayDomainErrorMessage below)
 // resolve it through this extern re-declaration.

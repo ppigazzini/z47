@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
-// Pure graph-viewport clamping for the plot/stat screen, lifted from the tails of
-// upstream plotstat.c screen_window_x_r / _screen_window_y_r. Those functions
+// Pure graph-viewport clamping for the plot/stat screen: the tails of upstream
+// plotstat.c screen_window_x_r / _screen_window_y_r. Those functions
 // compute their ratio in decimal (screenWindowRatio, which needs decNumber and
 // therefore stays with the plotstat owner) and then clamp the saturated int16
 // ratio into the graph area; the clamping half reads no register, dec, GTK or

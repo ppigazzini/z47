@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
-// Formerly the shell owner for src/c47/realType.c. Its contents -- the real_t
+// Re-declaration shim for src/c47/realType.c. Its contents -- the real_t
 // special-value setters and the real_t <-> integer conversions -- are pure
-// numeric primitives with no shell coupling, so they now live in the base kernel
-// (engine/kernel/real_special_values.zig and register_real34_convert.zig). This
-// module survives only as the re-declaration shim the shell owners reach these
-// symbols through; the definitions link from the kernel.
+// numeric primitives with no shell coupling, exported by the core owners
+// src/core/state/value/real_special_values.zig and
+// src/core/state/value/register_conversions.zig. The shell owners reach these
+// symbols through this module.
 
 const abi = @import("abi"); // shared ABI bindings
 const real_t = abi.Real;

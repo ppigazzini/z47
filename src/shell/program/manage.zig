@@ -8,10 +8,9 @@
 // reproduced exactly.
 //
 // fnClPAll is NOT exported here, so it does not collide with the canonical owner:
-// src/frontier.zig exports `pub export fn fnClPAll` (delegating to
-// program_clear.run in program_clear.zig, a faithful copy of manage.c's fnClPAll
-// body). The internal callers below (_clearProgram / fnClP) invoke that canonical
-// fnClPAll through the `frontier` (../shell.zig) import. This owner also provides
+// program_clear.zig exports `pub export fn fnClPAll` (a faithful copy of
+// manage.c's fnClPAll body). The internal callers below (_clearProgram / fnClP)
+// invoke that canonical fnClPAll through the `program_clear` import. This owner also provides
 // z47_frontier_program_current_program_in_ram, defined below as a pub fn.
 //
 // manage.c carries no build-option guard, so the bodies of scanLabelsAndPrograms
@@ -511,7 +510,7 @@ const FnPtr = ?*const fn (u16) callconv(.c) void;
 const c_addItemToBuffer = @extern(FnPtr, .{ .name = "addItemToBuffer" });
 const c_fnT_ARROW = @extern(FnPtr, .{ .name = "fnT_ARROW" });
 
-// The canonical fnClPAll symbol (provided by shell.zig). We reference its
+// The canonical fnClPAll symbol (provided by program_clear.zig). We reference its
 // address for setConfirmationMode and call it from _clearProgram / insertStepInProgram.
 
 // ---------------------------------------------------------------------------
@@ -836,12 +835,12 @@ fn _removeLabelsAssignments() void {
     }
 }
 
-// fnClPAll is NOT defined here; the canonical fnClPAll is exported by shell.zig
-// (delegating to program_clear.zig, a faithful copy of manage.c's fnClPAll body).
+// fnClPAll is NOT defined here; the canonical fnClPAll is exported by
+// program_clear.zig (a faithful copy of manage.c's fnClPAll body).
 // The internal callers below must use that CANONICAL fnClPAll, because the
 // confirmation system (config.c:1013) compares the registered confirmedFunction
 // against indexOfItems[ITM_DELPALL].func, which is the canonical fnClPAll. So we
-// call it through the `frontier` (../shell.zig) import, not a local copy.
+// call it through the `program_clear` import, not a local copy.
 
 // _clearProgram (static) -> int
 fn _clearProgram() c_int {

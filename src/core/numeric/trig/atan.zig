@@ -6,9 +6,7 @@ const runtime = @import("../command_wrappers/runtime.zig");
 // This owner carries a second reading of what that helper does at 39 digits, so
 // the math_atan lane is a differential between two implementations rather than a
 // function compared with itself; every other precision is handed to the helper.
-// At the 9af328a87 pin the 39-digit answer stopped coming from the Taylor series
-// with sqrt halving and started coming from a tenth-spaced table, and this copy
-// followed it.
+// The 39-digit answer comes from a tenth-spaced table, as upstream's does.
 
 const atan_table_step: i32 = 10;
 const atan_coefficients: i32 = 13;

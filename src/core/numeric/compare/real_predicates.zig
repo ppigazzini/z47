@@ -2,13 +2,10 @@
 //
 // Shared sign / pointer predicates for the mathematics owners.
 //
-// These trivial field- and bit-test predicates were copy-pasted verbatim across
-// many math owners (`realIsPositive` alone appeared identically in 13 files). They
-// read only the std-only abi layout types -- `Real.bits`, `Real34.bytes`,
-// `Mpz._mp_size` -- so they collect here as one shared, C-oracle-independent
-// module that `zig build test:unit` exercises natively. This is a testable seam
-// carved out of the mathematics module: behavior is byte-identical to the former
-// per-file copies, and the owners alias these instead of redefining them.
+// These trivial field- and bit-test predicates read only the std-only abi layout
+// types -- `Real.bits`, `Real34.bytes`, `Mpz._mp_size` -- so they live here as one
+// shared, C-oracle-independent module that `zig build test:unit` exercises
+// natively. The math owners alias these instead of redefining them.
 //
 // Only genuinely-pure predicates belong here. Sign tests that dispatch into
 // decNumber/decQuad (`realIsZero`'s special-value check, `real34IsZero` via

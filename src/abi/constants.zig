@@ -1,16 +1,14 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
-// Typed accessors into the generated `constants` blob. Owners previously
-// reached the blob with a raw
-// `@extern([*]const u8,"constants") + <magic offset>` then an unchecked
-// `@ptrCast` (773 offset refs across the tree, the offset-crash class). Here the
-// offset lives once, behind a named, typed accessor returning `*const Real`.
+// Typed accessors into the generated `constants` blob. Each offset lives once,
+// behind a named, typed accessor returning `*const Real`, so no owner reaches the
+// blob with a raw `@extern([*]const u8,"constants") + <magic offset>` and an
+// unchecked `@ptrCast` (the offset-crash class).
 //
-// The offsets are the post-pin-advance generateConstants layout (host + DMCP
-// package 3, which share one blob layout; pinned by src/testSuite/tests/elec.txt
-// and the pkg-3 build). These named accessors are hand-maintained here from
-// constantPointers.h, seeded with the elec pilot's constants and grown per
-// owner as the refactor rolls out.
+// The offsets are the generateConstants layout (host + DMCP package 3, which
+// share one blob layout; pinned by src/testSuite/tests/elec.txt and the pkg-3
+// build). These named accessors are hand-maintained here from
+// constantPointers.h.
 
 const types = @import("primitives.zig");
 const Real = types.Real;

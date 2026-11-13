@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-only
-//! Pure register data-type classification lifted out of the frontier owners.
-//! isPrintableScalarType was duplicated verbatim in frontier.zig and
-//! frontier_print_all_regs.zig; dataTypeNameKnown backed getDataTypeName in
-//! frontier_debug.zig. All three are switch predicates over the defines.h `dt`
-//! enum with no runtime coupling, so they move here (imports only std, runs
-//! under `zig build test:unit`). The owners delegate.
+//! Pure register data-type classification for the frontier owners.
+//! isPrintableScalarType serves frontier.zig and print/print_all_regs.zig;
+//! dataTypeNameKnown backs getDataTypeName in debug.zig. All three are switch
+//! predicates over the defines.h `dt` enum with no runtime coupling, so they
+//! live here (imports only std, runs under `zig build test:unit`). The owners
+//! delegate.
 //!
 //! The dt values mirror defines.h and are verified against upstream C by the
 //! audit-constant-parity gate, so they cannot drift silently.

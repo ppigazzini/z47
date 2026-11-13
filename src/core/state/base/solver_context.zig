@@ -3,10 +3,10 @@
 // The shared solver/plot/integrate context: which program and variable the
 // SOLVE/PLOT/INTEGRATE engines are currently bound to, the solver status word,
 // and the active equation formula id. This is base calculator state (it is part
-// of the saved backup) read across the analysis engine via `extern var`; it was
-// defined in the shell globals hub (c47.zig) but belongs in the base kernel so
-// the headless engine does not reach up into shell for it. Symbols, types and
-// zero-initialisers are unchanged, so every extern consumer resolves as before.
+// of the saved backup) read across the analysis engine via `extern var`. It lives
+// in the core rather than the shell globals hub (c47.zig) so the headless engine
+// does not reach up into the shell for it. Symbols, types and zero-initialisers
+// are c47.c's.
 
 const calcRegister_t = i16;
 const INVALID_VARIABLE: u16 = 2199;

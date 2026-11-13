@@ -325,12 +325,8 @@ pub fn reportTooManyVariables() void {
     error_owned.reportTooManyVariables(ERROR_TOO_MANY_VARIABLES);
 }
 
-// Folded in from register_metadata_clear_sigma.zig and
-// register_metadata_confirmation.zig. Both were one-line
-// forwarders wrapped around a build-option fork that swapped the real call for a
-// harness stub; with the unit lane and its fake surface gone, each was left as a
-// twelve-line file holding a single call to an extern this module already owns
-// the declarations for. That is the barnacle check-file-cohesion.sh names.
+// The clear-sigma and confirmation calls this module makes, declared beside the
+// other externs it owns rather than in one-call files of their own.
 extern fn fnClSigma(confirmation: u16) callconv(.c) void;
 extern fn setConfirmationMode(handler: *const fn (confirmation: u16) callconv(.c) void) void;
 

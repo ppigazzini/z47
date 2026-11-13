@@ -17,8 +17,9 @@ const const_2916 = consts.const_2916;
 // Zig owner for src/c47/mathematics/slvc.c: solve cubic (SLVC). Exports
 // slvc.h's fnSlvc, solveCubic, solveCoefficientVector, solveCubicEquation,
 // solveCubicEquation159 and realCubicHasOnlyRealRoots. Covered by slvc.txt
-// (fnSlvc) plus eigen.txt (matrix.c calls both cubic solvers) and slvp.txt
-// (slvp.c calls realCubicHasOnlyRealRoots).
+// (fnSlvc) plus matrix.txt, matrix_cov.txt and matrixops_cov.txt (fnEigenvalues reaches
+// matrix.c's calculateEigenvalues33, which calls both cubic solvers) and
+// slvp.txt (slvp.c calls realCubicHasOnlyRealRoots).
 //
 // Faithful line-by-line translation preserving the exact order of every real_t
 // operation (the testSuite checks results to the last ULP). Complex values are

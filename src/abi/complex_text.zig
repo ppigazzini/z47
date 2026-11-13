@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
-// Pure complex-number text normalization lifted from calc_state_register_codec.zig
+// Pure complex-number text normalization for calc_state_register_codec.zig
 // (saveRestoreCalcState.c standardiseComplex): accept any saved/data-file complex
 // form -- "(3-i4)", "3-i4", "+3+i4", the bare "i4", or the stock "re im" -- and
 // emit the stock "re im" form the restore parser expects.

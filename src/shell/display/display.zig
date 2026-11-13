@@ -3589,7 +3589,7 @@ pub export fn longIntegerToDisplayString(lgInt: [*c]mpz_struct, displayString: [
     }
 }
 
-// Moved to the base kernel (engine/kernel/long_integer_format.zig).
+// Exported by src/core/state/value/register_conversions.zig.
 pub extern fn longIntegerToAllocatedString(lgInt: [*c]const mpz_struct, str: [*c]u8, strLen: i32) callconv(.c) void;
 
 // ===========================================================================

@@ -259,7 +259,7 @@ extern fn realExp(x: *align(1) const real_t, res: *real_t, ctxt: *realContext_t)
 extern fn roundToSignificantDigits(source: *const real_t, destination: *real_t, digits: u16, ctxt: *realContext_t) void;
 extern fn realToUint32C47(r: *const real_t, err: ?*bool) u32;
 
-// WP34S real-op helpers (math_wp34s.zig exports).
+// WP34S real-op helpers (special/wp34s.zig exports).
 extern fn WP34S_Ln(x: *align(1) const real_t, res: *real_t, ctxt: *realContext_t) void;
 extern fn WP34S_Ln1P(x: *align(1) const real_t, res: *real_t, ctxt: *realContext_t) void;
 extern fn WP34S_ExpM1(x: *align(1) const real_t, res: *real_t, ctxt: *realContext_t) void;
