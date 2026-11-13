@@ -158,12 +158,15 @@ python3 .github/project/check-fixture-partition.py --repo-root .
 quiet python3 .github/project/report-fixture-partition-gap.py --self-test
 quiet python3 .github/project/report-fixture-partition-gap.py --repo-root . --check
 step "[6g2b4/11] no unreachable code in the harness sources"
-# 94 of the 135 are `configure*` fixtures whose wrappers migrated to another lane:
-# the cases were deleted and the fixtures left behind. They are the only record of
-# what that lane covered before the move, and one of them names a shape the move
-# dropped. The same technique found four DRIFTED c43 mirrors that nothing called.
-# Two ratchets: the dead count, and the files this check cannot analyse -- otherwise
-# the cheapest way to pass would be to make a file harder to compile.
+# A `configure*` fixture left behind when its cases moved to another lane is the
+# only record of what that lane covered before the move, and a c43 mirror nothing
+# calls drifts unseen. Two ratchets: the dead count, and the files this check
+# cannot analyse -- otherwise the cheapest way to pass would be to make a file
+# harder to compile.
+# This check and 6g2c compile against the generated constantPointers.h and
+# softmenuCatalogs.h, and refuse to measure without them; generate them first,
+# as the CI jobs do.
+zig build constants catalogs --summary none
 quiet python3 .github/project/check-harness-dead-code.py --self-test
 python3 .github/project/check-harness-dead-code.py --repo-root .
 step "[6g2c/11] harness headers do not hand-copy c43 constants"
@@ -173,8 +176,10 @@ step "[6g2c/11] harness headers do not hand-copy c43 constants"
 # Compiles one _Static_assert per hand-declared constant against c43's own headers,
 # so enum members and cross-referencing #defines are resolved by the compiler
 # rather than guessed at by a regex.
-quiet python3 .github/project/check-harness-constant-copies.py --self-test
-python3 .github/project/check-harness-constant-copies.py --repo-root .
+# --require-tools, as CI passes it: without zig or the generated constantPointers.h
+# every c43 name comes back undeclared and the downward-only ratchet passes on zero.
+quiet python3 .github/project/check-harness-constant-copies.py --self-test --require-tools
+python3 .github/project/check-harness-constant-copies.py --repo-root . --require-tools
 step "[6g3/11] imported-tree paths not anchored to the repo root"
 # Same class as 6g2, other language: a governance script reaching an upstream file
 # as `repo_root / "COPYING"`. Found the dead notice-staging path and a dead
