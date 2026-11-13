@@ -3065,7 +3065,7 @@ fn createEigenVectorIf1x1(rows: u16, cols: u16, isComplex: bool) linksection(run
             var cmatrix: complex34Matrix_t = undefined;
             runtime.linkToComplexMatrixRegister(runtime.REGISTER_X, &cmatrix);
             const ce: [*]runtime.complex34_t = @ptrCast(cmatrix.matrixElements);
-            runtime.realToReal34(@alignCast(const_1()), &ce[0].real);
+            runtime.realToReal34(const_1(), &ce[0].real);
             runtime.real34SetZero(&ce[0].imag);
         } else {
             // consume incoming X = [n]
@@ -3073,7 +3073,7 @@ fn createEigenVectorIf1x1(rows: u16, cols: u16, isComplex: bool) linksection(run
             var rmatrix: real34Matrix_t = undefined;
             runtime.linkToRealMatrixRegister(runtime.REGISTER_X, &rmatrix);
             const re: [*]real34_t = @ptrCast(rmatrix.matrixElements);
-            runtime.realToReal34(@alignCast(const_1()), &re[0]);
+            runtime.realToReal34(const_1(), &re[0]);
         }
         runtime.adjustResult(runtime.REGISTER_X, false, true, runtime.REGISTER_X, -1, -1);
         return 1;

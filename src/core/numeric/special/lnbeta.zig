@@ -84,7 +84,7 @@ inline fn const_minusInfinity() *const real_t {
 // The 75-digit Lanczos coefficients c01..c29: each sits at a 60-byte stride
 // from the first, which is a 4-aligned blob offset, so the cast holds.
 inline fn const75_gammaC01(k: u32) *const real_t {
-    return @alignCast(consts.gammaC75(k));
+    return consts.gammaC75(k);
 }
 
 const realIsPositive = math_real_predicates.realIsPositive;

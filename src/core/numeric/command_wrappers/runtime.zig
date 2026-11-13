@@ -456,10 +456,10 @@ pub const TI_INACCURATE: u8 = 48;
 // (registers.h): the register data pointer reinterpreted as a matrix header or
 // the real/imag halves of a real34/complex34 value.
 pub inline fn registerMatrixHeader(reg: calcRegister_t) *matrixHeader_t {
-    return @ptrCast(@alignCast(getRegisterDataPointer(reg).?));
+    return @ptrCast(getRegisterDataPointer(reg).?);
 }
 pub inline fn registerReal34Data(reg: calcRegister_t) *real34_t {
-    return @ptrCast(@alignCast(getRegisterDataPointer(reg).?));
+    return @ptrCast(getRegisterDataPointer(reg).?);
 }
 pub inline fn registerImag34Data(reg: calcRegister_t) *real34_t {
     const base: [*]u8 = @ptrCast(getRegisterDataPointer(reg).?);

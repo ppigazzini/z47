@@ -416,7 +416,7 @@ inline fn realFMA(factor1: *const real_t, factor2: *const real_t, term: *const r
     _ = decNumberFMA(res, factor1, factor2, term, ctxt);
 }
 inline fn realExp(x: *const real_t, res: *real_t, ctxt: *realContext_t) void {
-    math_command_wrappers.realExp(@alignCast(x), @alignCast(res), ctxt);
+    math_command_wrappers.realExp(x, res, ctxt);
 }
 pub inline fn stringToReal(source: [*:0]const u8, destination: *real_t, ctxt: *realContext_t) void {
     _ = decNumberFromString(destination, source, ctxt);
@@ -1283,7 +1283,7 @@ fn WP34S_Gamma_LnGamma(xin: *const real_t, calculateLnGamma: bool, res: *real_t,
     }
 
     // Handle x approximately zero case
-    if (math_comparison_reals.realCompareAbsLessThan(@alignCast(xin), @alignCast(const_1e_24()))) {
+    if (math_comparison_reals.realCompareAbsLessThan(xin, const_1e_24())) {
         if (realIsZero(xin)) {
             realSetNaN(res);
             return;
@@ -1297,7 +1297,7 @@ fn WP34S_Gamma_LnGamma(xin: *const real_t, calculateLnGamma: bool, res: *real_t,
     }
 
     // Correct our argument and begin the inversion if it is negative
-    if (math_comparison_reals.realCompareLessEqual(@alignCast(xin), @alignCast(const_0()))) {
+    if (math_comparison_reals.realCompareLessEqual(xin, const_0())) {
         reflect = true;
         realSubtract(const_1(), xin, &t, realContext); // t = 1 - xin
         if (math_comparison_reals.realIsAnInteger(&t)) {
@@ -1306,10 +1306,10 @@ fn WP34S_Gamma_LnGamma(xin: *const real_t, calculateLnGamma: bool, res: *real_t,
         }
     } else {
         // Fast path for positive integer args that aren't too large (<= 205).
-        if (math_comparison_reals.realIsAnInteger(@alignCast(xin)) and math_comparison_reals.realCompareLessEqual(@alignCast(xin), @alignCast(const_205()))) {
+        if (math_comparison_reals.realIsAnInteger(xin) and math_comparison_reals.realCompareLessEqual(xin, const_205())) {
             realSubtract(xin, const_1(), &x, realContext); // x = xin - 1
             realSetOne(res);
-            while (math_comparison_reals.realCompareGreaterEqual(&x, @alignCast(const_2()))) {
+            while (math_comparison_reals.realCompareGreaterEqual(&x, const_2())) {
                 realMultiply(res, &x, res, realContext);
                 realSubtract(&x, const_1(), &x, realContext);
             }
@@ -1400,7 +1400,7 @@ pub export fn WP34S_Ln(xin: *const real_t, res: *real_t, realContext: *realConte
         return;
     }
 
-    if (math_comparison_reals.realCompareLessEqual(@alignCast(xin), @alignCast(const_0()))) {
+    if (math_comparison_reals.realCompareLessEqual(xin, const_0())) {
         if (realIsNegative(xin)) {
             realSetNaN(res);
             return;
@@ -1415,7 +1415,7 @@ pub export fn WP34S_Ln(xin: *const real_t, res: *real_t, realContext: *realConte
     realSubtract(xin, const_1(), &t, realContext);
     realCopy(&t, &v);
     realSetPositiveSign(&v);
-    if (math_comparison_reals.realCompareGreaterThan(&v, @alignCast(const_1on2()))) {
+    if (math_comparison_reals.realCompareGreaterThan(&v, const_1on2())) {
         expon = z.exponent + z.digits;
         z.exponent = -z.digits;
     } else {
@@ -1423,7 +1423,7 @@ pub export fn WP34S_Ln(xin: *const real_t, res: *real_t, realContext: *realConte
     }
 
     // Range reduce the value by repeated square roots.
-    while (math_comparison_reals.realCompareLessEqual(&z, @alignCast(const39_root2on2()))) {
+    while (math_comparison_reals.realCompareLessEqual(&z, const39_root2on2())) {
         realMultiply(&f, const_2(), &f, realContext);
         realSquareRoot(&z, &z, realContext);
     }
@@ -1499,19 +1499,19 @@ pub export fn WP34S_RelativeError(x: *const real_t, y: *const real_t, tol: *cons
 
     if (realIsZero(x)) {
         realCopyAbs(y, &a);
-        return math_comparison_reals.realCompareLessThan(&a, @alignCast(tol));
+        return math_comparison_reals.realCompareLessThan(&a, tol);
     }
 
     realSubtract(x, y, &a, realContext);
     realDivide(&a, x, &a, realContext);
     realSetPositiveSign(&a);
-    return math_comparison_reals.realCompareLessThan(&a, @alignCast(tol));
+    return math_comparison_reals.realCompareLessThan(&a, tol);
 }
 
 pub export fn WP34S_AbsoluteError(x: *const real_t, y: *const real_t, tol: *const real_t, realContext: *realContext_t) callconv(.c) bool {
     var a: real_t = undefined;
     realSubtract(x, y, &a, realContext);
-    return math_comparison_reals.realCompareAbsLessThan(&a, @alignCast(tol));
+    return math_comparison_reals.realCompareAbsLessThan(&a, tol);
 }
 
 pub export fn WP34S_ComplexRelativeError(x: *const cplx_t, y: *const cplx_t, tol: *const real_t, realContext: *realContext_t) callconv(.c) bool {
@@ -1553,7 +1553,7 @@ pub export fn WP34S_SinhCosh(x: *const real_t, sinhOut: ?*real_t, coshOut: ?*rea
     }
 
     if (sinhOut) |sinh| {
-        if (math_comparison_reals.realCompareAbsLessThan(@alignCast(x), @alignCast(const_1on2()))) {
+        if (math_comparison_reals.realCompareAbsLessThan(x, const_1on2())) {
             WP34S_ExpM1(x, &u, realContext); // u = e^x - 1
             realMultiply(&u, const_1on2(), &t, realContext); // t = (e^x - 1) / 2
 
@@ -1563,14 +1563,14 @@ pub export fn WP34S_SinhCosh(x: *const real_t, sinhOut: ?*real_t, coshOut: ?*rea
             realAdd(&u, const_1(), &u, realContext); // u = e^x + 1
             realMultiply(&u, &v, sinh, realContext); // sinhOut = (e^x - 1)(e^x + 1) / 2e^x
         } else {
-            math_command_wrappers.realExp(@alignCast(x), &u, realContext); // u = e^x
+            math_command_wrappers.realExp(x, &u, realContext); // u = e^x
             realDivide(const_1(), &u, &v, realContext); // v = e^-x
             realSubtract(&u, &v, sinh, realContext); // sinhOut = (e^x - e^-x)
             realMultiply(sinh, const_1on2(), sinh, realContext); // sinhOut = (e^x - e^-x)/2
         }
     }
     if (coshOut) |cosh| {
-        math_command_wrappers.realExp(@alignCast(x), &u, realContext); // u = e^x
+        math_command_wrappers.realExp(x, &u, realContext); // u = e^x
         realDivide(const_1(), &u, &v, realContext); // v = e^-x
         realAdd(&u, &v, cosh, realContext); // coshOut = (e^x + e^-x)
         realMultiply(cosh, const_1on2(), cosh, realContext); // coshOut = (e^x + e^-x)/2
@@ -1724,17 +1724,17 @@ pub export fn WP34S_ExpM1(x: *const real_t, res: *real_t, realContext: *realCont
     var v: real_t = undefined;
     var w: real_t = undefined;
 
-    if (!math_command_wrappers.realExpLimitCheck(@alignCast(x), @alignCast(res), @alignCast(const__1()))) {
+    if (!math_command_wrappers.realExpLimitCheck(x, res, const__1())) {
         return;
     }
 
-    math_command_wrappers.realExp(@alignCast(x), &u, realContext);
+    math_command_wrappers.realExp(x, &u, realContext);
     realSubtract(&u, const_1(), &v, realContext);
     if (realIsZero(&v)) { // |x| is very little
         realCopy(x, res);
-    } else if (math_comparison_reals.realCompareEqual(&v, @alignCast(const__1()))) {
+    } else if (math_comparison_reals.realCompareEqual(&v, const__1())) {
         realSetNegativeOne(res);
-    } else if (math_comparison_reals.realCompareAbsLessThan(@alignCast(x), @alignCast(const_1on10()))) {
+    } else if (math_comparison_reals.realCompareAbsLessThan(x, const_1on10())) {
         realMultiply(&v, x, &w, realContext);
         WP34S_Ln(&u, &v, realContext);
         realDivide(&w, &v, res, realContext);
@@ -2141,7 +2141,7 @@ fn gser(a: *const real_t, x: *const real_t, gln: *const real_t, res: *real_t, re
     var t: real_t = undefined;
     var u: real_t = undefined;
 
-    if (math_comparison_reals.realCompareLessEqual(@alignCast(x), @alignCast(const_0()))) {
+    if (math_comparison_reals.realCompareLessEqual(x, const_0())) {
         realSetZero(res);
         return;
     }
@@ -2170,7 +2170,7 @@ fn gser(a: *const real_t, x: *const real_t, gln: *const real_t, res: *real_t, re
 
 fn gcheckSmall(v: *real_t, realContext: *realContext_t) void {
     _ = realContext;
-    if (math_comparison_reals.realCompareAbsLessThan(@alignCast(v), @alignCast(const_1e_10000()))) {
+    if (math_comparison_reals.realCompareAbsLessThan(v, const_1e_10000())) {
         realCopy(const_1e_10000(), v);
     }
 }
@@ -2286,7 +2286,7 @@ pub export fn WP34S_GammaP(x: *const real_t, a: *const real_t, res: *real_t, rea
     var threshold: real_t = undefined;
     var z: real_t = undefined;
 
-    if (realIsNegative(x) or math_comparison_reals.realCompareLessEqual(@alignCast(a), @alignCast(const_0())) or realIsNaN(x) or realIsNaN(a) or realIsInfinite(a)) {
+    if (realIsNegative(x) or math_comparison_reals.realCompareLessEqual(a, const_0()) or realIsNaN(x) or realIsNaN(a) or realIsInfinite(a)) {
         realSetNaN(res);
         return;
     }
@@ -2346,10 +2346,10 @@ pub export fn WP34S_GammaP(x: *const real_t, a: *const real_t, res: *real_t, rea
     var use_cf: bool = false;
     if (realIsNegative(&z)) {
         // Deal with a difficult case by using the other expansion
-        if (math_comparison_reals.realCompareGreaterThan(@alignCast(a), @alignCast(const_9000()))) {
+        if (math_comparison_reals.realCompareGreaterThan(a, const_9000())) {
             realCopy(const_995on1000(), &z);
             realMultiply(a, &z, &z, realContext);
-            if (math_comparison_reals.realCompareGreaterThan(@alignCast(x), &z)) {
+            if (math_comparison_reals.realCompareGreaterThan(x, &z)) {
                 use_cf = true;
             }
         }
@@ -2617,7 +2617,7 @@ fn check_low(d: *real_t) void {
 
     realSetOne(&real_1e_32);
     real_1e_32.exponent -= 32;
-    if (math_comparison_reals.realCompareAbsLessThan(@alignCast(d), &real_1e_32)) {
+    if (math_comparison_reals.realCompareAbsLessThan(d, &real_1e_32)) {
         realCopy(d, &real_1e_32);
     }
 }
@@ -2689,7 +2689,7 @@ fn betacf(a: *const real_t, b: *const real_t, x: *const real_t, r: *real_t, real
         ib_step(&aa, &d, &c, realContext);
         realMultiply(&d, &c, &v, realContext);
         realMultiply(r, &v, r, realContext); // r *= d*c
-        if (math_comparison_reals.realCompareEqual(&oldr, @alignCast(r))) {
+        if (math_comparison_reals.realCompareEqual(&oldr, r)) {
             break;
         }
         if (monitorExit(&loop, "Iter: ")) {
@@ -2715,7 +2715,7 @@ pub export fn WP34S_betai(b: *const real_t, a: *const real_t, x: *const real_t, 
     if (realIsZero(x) or realIsZero(&t)) {
         limit = 1;
     } else {
-        math_lnbeta.LnBeta(@alignCast(a), @alignCast(b), &u, realContext);
+        math_lnbeta.LnBeta(a, b, &u, realContext);
         WP34S_Ln(x, &v, realContext); // v = ln(x)
         realMultiply(a, &v, &t, realContext);
         realSubtract(&t, &u, &v, realContext); // v = lng(...)+a.ln(x)
@@ -2730,7 +2730,7 @@ pub export fn WP34S_betai(b: *const real_t, a: *const real_t, x: *const real_t, 
     realAdd(&v, const_2(), &u, realContext); // u = a+b+2
     realAdd(a, const_1(), &t, realContext); // t = a+1
     realDivide(&t, &u, &v, realContext); // u = (a+1)/(a+b+2)
-    if (math_comparison_reals.realCompareLessThan(@alignCast(x), &v)) {
+    if (math_comparison_reals.realCompareLessThan(x, &v)) {
         if (limit != 0) {
             realSetZero(res);
         } else {
@@ -2756,7 +2756,7 @@ pub export fn WP34S_betai(b: *const real_t, a: *const real_t, x: *const real_t, 
 pub export fn WP34S_Bernoulli(x: *const real_t, res: *real_t, bn_star: bool, realContext: *realContext_t) callconv(.c) void {
     var p: real_t = undefined;
 
-    if ((!math_comparison_reals.realIsAnInteger(@alignCast(x))) or math_comparison_reals.realCompareLessThan(@alignCast(x), @alignCast(const_0()))) {
+    if ((!math_comparison_reals.realIsAnInteger(x)) or math_comparison_reals.realCompareLessThan(x, const_0())) {
         realSetNaN(res);
         return;
     }
@@ -2765,7 +2765,7 @@ pub export fn WP34S_Bernoulli(x: *const real_t, res: *real_t, bn_star: bool, rea
         return;
     }
     if (!bn_star) {
-        if (math_comparison_reals.realCompareEqual(@alignCast(x), @alignCast(const_1()))) { // zeta_0
+        if (math_comparison_reals.realCompareEqual(x, const_1())) { // zeta_0
             realCopy(const_1on2(), res);
             realChangeSign(res);
             return;
@@ -2847,7 +2847,7 @@ fn zeta_calc(x: *const real_t, reg1: *const real_t, reg7: *const real_t, res: *r
         if (monitorExit(&loop, "Iter: ")) {
             break;
         }
-        if (!math_comparison_reals.realCompareGreaterThan(&reg0, @alignCast(const_0()))) {
+        if (!math_comparison_reals.realCompareGreaterThan(&reg0, const_0())) {
             break;
         }
     }
@@ -2876,7 +2876,7 @@ pub export fn WP34S_Zeta(x: *const real_t, res: *real_t, realContext: *realConte
         realSetPlusInfinity(res);
         return;
     }
-    if (realIsNegative(x) and math_comparison_reals.realIsAnInteger(@alignCast(x))) { // the trivial zeros at the negative even integers
+    if (realIsNegative(x) and math_comparison_reals.realIsAnInteger(x)) { // the trivial zeros at the negative even integers
         realMultiply(x, const_1on2(), &p, realContext);
         if (math_comparison_reals.realIsAnInteger(&p)) {
             realSetZero(res);
@@ -2887,7 +2887,7 @@ pub export fn WP34S_Zeta(x: *const real_t, res: *real_t, realContext: *realConte
     // zeta_int
     realCopy(x, &reg1);
     realCopy(x, &reg7);
-    if (math_comparison_reals.realCompareGreaterThan(@alignCast(x), @alignCast(const_1on2()))) {
+    if (math_comparison_reals.realCompareGreaterThan(x, const_1on2())) {
         zeta_calc(x, &reg1, &reg7, res, realContext);
     } else { // zeta_neg
         realSubtract(const_1(), x, &q, realContext);
@@ -2982,7 +2982,7 @@ pub export fn WP34S_LambertW(x: *const real_t, res: *real_t, negativeBranch: boo
             }
             realSubtract(&reg1, const_1(), &reg1, realContext);
             realCopy(&p, &q);
-            if (!math_comparison_reals.realCompareGreaterThan(&reg1, @alignCast(const_0()))) {
+            if (!math_comparison_reals.realCompareGreaterThan(&reg1, const_0())) {
                 break;
             }
         }
@@ -2997,7 +2997,7 @@ pub export fn WP34S_LambertW(x: *const real_t, res: *real_t, negativeBranch: boo
             realSubtract(&q, &r, &q, realContext);
         } else {
             WP34S_Ln1P(&reg0, &q, realContext);
-            if (math_comparison_reals.realCompareGreaterThan(&q, @alignCast(const_1()))) {
+            if (math_comparison_reals.realCompareGreaterThan(&q, const_1())) {
                 WP34S_Ln(&q, &r, realContext);
                 realSubtract(&q, &r, &q, realContext);
             }
@@ -3026,7 +3026,7 @@ pub export fn WP34S_LambertW(x: *const real_t, res: *real_t, negativeBranch: boo
             }
             realSubtract(&reg1, const_1(), &reg1, realContext);
             realCopy(&r, &q);
-            if (!math_comparison_reals.realCompareGreaterThan(&reg1, @alignCast(const_0()))) {
+            if (!math_comparison_reals.realCompareGreaterThan(&reg1, const_0())) {
                 break;
             }
         }
@@ -3202,7 +3202,7 @@ pub export fn WP34S_OrthoPoly(kind: u16, rX: *const real_t, rN: *const real_t, r
     var incC: bool = false;
 
     // ortho_default
-    if (realIsSpecial(rX) or (!math_comparison_reals.realIsAnInteger(@alignCast(rN))) or realIsNegative(rN)) {
+    if (realIsSpecial(rX) or (!math_comparison_reals.realIsAnInteger(rN)) or realIsNegative(rN)) {
         realSetNaN(res);
         return;
     }
@@ -3235,7 +3235,7 @@ pub export fn WP34S_OrthoPoly(kind: u16, rX: *const real_t, rN: *const real_t, r
         },
         ORTHOPOLY_LAGUERRE_L, ORTHOPOLY_LAGUERRE_L_ALPHA => {
             // laguerre_common
-            if (realIsSpecial(rParam) or math_comparison_reals.realCompareLessEqual(@alignCast(rParam), @alignCast(const__1()))) {
+            if (realIsSpecial(rParam) or math_comparison_reals.realCompareLessEqual(rParam, const__1())) {
                 realSetNaN(res);
                 return;
             }
@@ -3272,7 +3272,7 @@ pub export fn WP34S_OrthoPoly(kind: u16, rX: *const real_t, rN: *const real_t, r
     }
 
     // ortho_common
-    while (math_comparison_reals.realCompareLessEqual(&i, @alignCast(rN))) { // ortho_loop
+    while (math_comparison_reals.realCompareLessEqual(&i, rN)) { // ortho_loop
         realMultiply(&rT1, &a, &p, realContext);
         realMultiply(&rT0, &b, &q, realContext);
         realCopy(&rT1, &rT0);

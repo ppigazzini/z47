@@ -1336,7 +1336,7 @@ pub export fn graphPlotstat(selection: u16) callconv(.c) void {
         // narrowing leaves, exactly as drawline's NN does; a checked cast would
         // instead abort the plot on a count the C merely wraps.
         switch (plotStatMx[0]) {
-            'S' => numberOfPlotPoints = pointCount(frontier_real_type.realToInt32C47(@alignCast(SIGMA_N()), null)),
+            'S' => numberOfPlotPoints = pointCount(frontier_real_type.realToInt32C47(SIGMA_N(), null)),
             'D' => numberOfPlotPoints = pointCount(drawMxN()),
             'H' => numberOfPlotPoints = pointCount(statMxN()),
             else => {},
@@ -1698,7 +1698,7 @@ fn drawline(selection: u16, RR: *real_t, SMI: *real_t, aa0: *real_t, aa1: *real_
     var tmpbuf: [PLOT_TMP_BUF_SIZE]u8 = undefined;
 
     switch (plotStatMx[0]) {
-        'S' => n = frontier_real_type.realToInt32C47(@alignCast(SIGMA_N()), null),
+        'S' => n = frontier_real_type.realToInt32C47(SIGMA_N(), null),
         'D' => n = drawMxN(),
         'H' => n = statMxN(),
         else => {},

@@ -239,21 +239,21 @@ fn doWP34S_SinCosTanTaylor(
     // The quadrant folds below are for the units reduceAngleToRange returns in
     // [0, 360); a radian angle already arrives in the first octant.
     // sin(180+x) = -sin(x), cos(180+x) = -cos(x)
-    if (angularMode != amRadian and math_comparison_reals.realCompareGreaterEqual(@alignCast(angle), @alignCast(angle180))) { // angle >= 180
+    if (angularMode != amRadian and math_comparison_reals.realCompareGreaterEqual(angle, angle180)) { // angle >= 180
         realSubtract(angle, angle180, angle, realContext); // angle - 180 --> angle
         sinNeg.* = !(sinNeg.*);
         cosNeg.* = !(cosNeg.*);
     }
 
     // sin(90+x) = cos(x), cos(90+x) = -sin(x)
-    if (angularMode != amRadian and math_comparison_reals.realCompareGreaterEqual(@alignCast(angle), @alignCast(angle90))) { // angle >= 90
+    if (angularMode != amRadian and math_comparison_reals.realCompareGreaterEqual(angle, angle90)) { // angle >= 90
         realSubtract(angle, angle90, angle, realContext); // angle - 90 --> angle
         swap.* = true;
         cosNeg.* = !(cosNeg.*);
     }
 
     // sin(90-x) = cos(x), cos(90-x) = sin(x)
-    if (angularMode != amRadian and math_comparison_reals.realCompareEqual(@alignCast(angle), @alignCast(angle45))) { // angle == 45
+    if (angularMode != amRadian and math_comparison_reals.realCompareEqual(angle, angle45)) { // angle == 45
         if (sinOut) |s| {
             realCopy(const39_root2on2(), s);
         }
@@ -264,11 +264,11 @@ fn doWP34S_SinCosTanTaylor(
             realSetOne(t);
         }
     } else { // angle < 90
-        if (angularMode != amRadian and math_comparison_reals.realCompareGreaterThan(@alignCast(angle), @alignCast(angle45))) { // angle > 45
+        if (angularMode != amRadian and math_comparison_reals.realCompareGreaterThan(angle, angle45)) { // angle > 45
             realSubtract(angle90, angle, angle, realContext); // 90 - angle --> angle
             swap.* = !(swap.*);
         }
-        const angle30 = (angularMode == amDegree and math_comparison_reals.realCompareEqual(@alignCast(angle), const_30())); // exactly 30 degrees: its sine is 1/2
+        const angle30 = (angularMode == amDegree and math_comparison_reals.realCompareEqual(angle, const_30())); // exactly 30 degrees: its sine is 1/2
         if (angularMode != amRadian) {
             convertAngleFromTo(angle, angularMode, amRadian, realContext);
         }
@@ -404,7 +404,7 @@ fn doTaylorIterations(
             } else {
                 realCompare(cos, z, epsilonOrCompare, realContext);
             }
-            endCos = (!doEpsilon and realIsZero(epsilonOrCompare)) or (doEpsilon and math_comparison_reals.realCompareLessThan(@alignCast(z), @alignCast(epsilonOrCompare)));
+            endCos = (!doEpsilon and realIsZero(epsilonOrCompare)) or (doEpsilon and math_comparison_reals.realCompareLessThan(z, epsilonOrCompare));
         }
 
         realAdd(j, const_1(), j, realContext);
@@ -419,7 +419,7 @@ fn doTaylorIterations(
             } else {
                 realCompare(sin, z, epsilonOrCompare, realContext);
             }
-            endSin = (!doEpsilon and realIsZero(epsilonOrCompare)) or (doEpsilon and math_comparison_reals.realCompareLessThan(@alignCast(z), @alignCast(epsilonOrCompare)));
+            endSin = (!doEpsilon and realIsZero(epsilonOrCompare)) or (doEpsilon and math_comparison_reals.realCompareLessThan(z, epsilonOrCompare));
         }
 
         if (owner.explicitTaylorIterVisibilitySelection and checkHalfSec()) {

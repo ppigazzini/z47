@@ -17,7 +17,7 @@ const complex34Matrix_t = runtime.complex34Matrix_t;
 // REGISTER_MATRIX_HEADER(a) == (matrixHeader_t *)getRegisterDataPointer(a);
 // the element arrays start sizeof(matrixHeader_t) bytes after the header.
 inline fn registerHeader(regist: calcRegister_t) *matrixHeader_t {
-    return @ptrCast(@alignCast(runtime.getRegisterDataPointer(regist).?));
+    return @ptrCast(runtime.getRegisterDataPointer(regist).?);
 }
 inline fn registerBytes(regist: calcRegister_t) [*]u8 {
     return abi.registerBytes(regist);
