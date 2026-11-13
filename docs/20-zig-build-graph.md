@@ -193,7 +193,17 @@ being cached.
   `b.graph.environ_map`, `std.process.run` or a filesystem call of your own.
 - Derive a build fact from an option the caller passed, never from the name of a
   target or step. A name-derived fact and the real one can disagree with nothing
-  to notice, as `is_testsuite_build` and `-DTESTSUITE_BUILD` once did.
+  to notice. Every owner's `RuntimeObjectOptions` carries a `board`
+  (`build_common.Board`: host, the DM42, DMCP5) and a `linkage`
+  (`build_common.Linkage`: product, testSuite, fake-runtime harness); OLD_HW,
+  DMCP_BUILD, TESTSUITE_BUILD, EXTRA_INFO_ON_CALC_ERROR and the fake surfaces all
+  derive from those two, and an object's name is a label. The host context builds
+  one set of its shared objects per linkage, and a builder asserts the set it was
+  given.
+- Take a value an imported header defines from the `build_common` reader for it
+  (`upstreamVersion1`, `libraryFnBase`, `systemDataBlockBase`,
+  `ramSizeInBlocks`), never from a copy. The readers parse the pinned header at
+  configure time, so a resync that moves the value moves every owner with it.
 - A destructive step inherits upstream's vocabulary along with its behaviour:
   `zig build clean` ported upstream's `rm -rf build` and deleted z47's own
   `build/`. `check-clean-step-targets.py` (gate step 6g1) refuses a destructive
