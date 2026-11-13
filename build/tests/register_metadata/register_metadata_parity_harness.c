@@ -239,7 +239,11 @@ static void buildFixture(void) {
 
   allocateNamedVariable("TESTVAR", dtReal34, REAL34_SIZE_IN_BLOCKS);
   int32ToReal34(777, REGISTER_REAL34_DATA(findNamedVariable("TESTVAR")));
-  allocateNamedVariable("STRV", dtString, TO_BLOCKS(8));
+  // Created as a real and retyped, as the product does: reallocateRegister
+  // writes the length word a string carries, allocateNamedVariable does not.
+  allocateNamedVariable("STRV", dtReal34, REAL34_SIZE_IN_BLOCKS);
+  reallocateRegister(findNamedVariable("STRV"), dtString, TO_BLOCKS(8), amNone);
+  strcpy(REGISTER_STRING_DATA(findNamedVariable("STRV")), "strval");
 
   allocateLocalRegisters(3);
   reallocateRegister(FIRST_LOCAL_REGISTER + 0, dtReal34, 0, amNone);
