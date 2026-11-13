@@ -96,7 +96,7 @@ void displayCalcErrorMessage(uint8_t errorCode, calcRegister_t errMessageRegiste
   parityRuntimeState.last_error_message_register = errMessageRegisterLine;
 }
 
-void reallocateRegister(calcRegister_t regist, uint32_t dataType, uint16_t dataSizeWithoutDataLenBlocks, uint32_t tag) {
+bool_t reallocateRegister(calcRegister_t regist, uint32_t dataType, uint16_t dataSizeWithoutDataLenBlocks, uint32_t tag) {
   (void)dataSizeWithoutDataLenBlocks;
 
   if(registerType(regist) != NULL) {
@@ -105,6 +105,7 @@ void reallocateRegister(calcRegister_t regist, uint32_t dataType, uint16_t dataS
   if(registerBase(regist) != NULL) {
     *registerBase(regist) = tag;
   }
+  return true;
 }
 
 void *getRegisterDataPointer(calcRegister_t regist) {

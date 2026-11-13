@@ -227,6 +227,7 @@ const SHORT_INTEGER_SIZE_IN_BLOCKS: u16 = 2;
 const ERROR_NONE: u8 = 0;
 const ERROR_LABEL_NOT_FOUND: u8 = 6;
 const ERROR_RAM_FULL: u8 = 11;
+const ERROR_INVALID_INTEGER_INPUT: u8 = 9;
 const ERROR_UNDEF_SOURCE_VAR: u8 = 36;
 const ERROR_UNDEFINED_OPCODE: u8 = 3;
 const ERROR_NON_PROGRAMMABLE_COMMAND: u8 = 50;
@@ -1068,10 +1069,17 @@ fn _putLiteral(literalAddress_arg: [*c]u8) void {
             mpz_init(&val);
 
             frontier_decode.getStringLabelOrVariableName(literalAddress + 1);
-            _ = stringToLongInteger(tmpStringLabelOrVariableName, base, &val);
-            liftStack();
-            setSystemFlag(FLAG_ASLIFT);
-            frontier_register_value_conversions.convertLongIntegerToShortIntegerRegister(&val, literalAddress[0], REGISTER_X);
+            if (stringToLongInteger(tmpStringLabelOrVariableName, base, &val) == 0) { // every digit is valid in the base
+                liftStack();
+                setSystemFlag(FLAG_ASLIFT);
+                frontier_register_value_conversions.convertLongIntegerToShortIntegerRegister(&val, literalAddress[0], REGISTER_X);
+            } else {
+                frontier_error.displayCalcErrorMessage(ERROR_INVALID_INTEGER_INPUT, ERR_REGISTER_LINE);
+                if (comptime extra_info) {
+                    abi.fmtBufZ(errorMessage[0..512], "string {s} contain a digit not allowed in base {d}!", .{ std.mem.span(tmpStringLabelOrVariableName), base });
+                    c_moreInfoOnError("In function _putLiteral:", errorMessage, null, null);
+                }
+            }
 
             mpz_clear(&val);
         },

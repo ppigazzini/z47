@@ -7,6 +7,8 @@ const state_old_hw = @hasDecl(keyboard_state_build_options, "state_old_hw") and
 // the moreInfoOnError call is compiled.
 pub const extra_info_on_calc_error: bool = keyboard_state_build_options.extra_info_on_calc_error;
 pub const option_structured_pgm: bool = keyboard_state_build_options.option_structured_pgm;
+pub const option_drg_cfg: bool = keyboard_state_build_options.option_drg_cfg;
+pub const option_eex_prefix: bool = keyboard_state_build_options.option_eex_prefix;
 const std = @import("std");
 const solver_status = @import("solver_status.zig"); // std-only solver equation-mode predicates
 const builtin = @import("builtin");
@@ -782,6 +784,25 @@ pub fn indexOfItemsParam(item: i16) u16 {
 }
 pub fn indexOfItemsStatus(item: i16) u16 {
     return indexOfItems[@intCast(item)].status;
+}
+// EEX SI prefix menu: a prefix run from it switches the display to PFX when
+// FLAG_TOPFX is set, and a binary prefix (param over 200) sets the 1024 grouping
+// as well. EEX_TOPFX_AUTO is upstream's switch for that behaviour, on.
+pub const EEX_TOPFX_AUTO = true;
+pub const MNU_EEXPFX: i16 = 3153;
+pub const MNU_PREFIX: i16 = 3105;
+pub const FLAG_TOPFX: i32 = 0x8074;
+pub const FLAG_2TO10: i32 = 0x803d;
+pub const DF_UN: u8 = 5;
+pub const ITM_XexY: i16 = 36;
+pub const ITM_ENGCL: i16 = 1913;
+pub const ITM_ENGL: i16 = 1925;
+pub const ITM_ENGR: i16 = 1927;
+pub extern var displayFormat: u8;
+pub extern fn fnMultiplySI(multiplier: u16) void;
+pub extern fn nimDrgChoosesUnit() bool;
+pub fn itemFuncIsMultiplySI(item: i16) bool {
+    return itemFuncEquals(item, &fnMultiplySI);
 }
 pub fn addItemToBufferPtr() ?*const anyopaque {
     return @ptrCast(&addItemToBuffer);

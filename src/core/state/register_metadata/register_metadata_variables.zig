@@ -84,7 +84,7 @@ fn refreshSimEqMatrix(variable_name: [*:0]const u8) void {
         return;
     }
 
-    reallocate_owned.reallocateRegister(register, runtime.dtReal34Matrix, runtime.real34SizeInBlocks(), runtime.amNone);
+    _ = reallocate_owned.reallocateRegister(register, runtime.dtReal34Matrix, runtime.real34SizeInBlocks(), runtime.amNone);
     if (stack_runtime.lastErrorCode != stack_runtime.ERROR_NONE) {
         return;
     }

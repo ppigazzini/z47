@@ -22,8 +22,31 @@ TO_QSPI static const char bugScreenNoParam[] = "In function addItemToBuffer:item
     }
   }
 
+  bool_t checkShortIntegerDigits(char *buffer) {
+    char *numBuffer = buffer[0] == '+' ? buffer + 1 : buffer;
+    char *basePtr = numBuffer;
+    int16_t posHash, i;
+    posHash = 0;
+    while(*basePtr != '#') {
+      ++basePtr;
+      ++posHash;
+    }
+    uint8_t base = (uint8_t)atoi(++basePtr);
+    for(i=numBuffer[0] == '-' ? 1 : 0; i<posHash; i++) {
+      if((numBuffer[i] > '9' ? numBuffer[i] - 'A' + 10 : numBuffer[i] - '0') >= base) {
+        displayCalcErrorMessage(ERROR_INVALID_INTEGER_INPUT, ERR_REGISTER_LINE);
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+          sprintf(errorMessage, "digit %c is not allowed in base %d!", numBuffer[i], base);
+          moreInfoOnError("In function checkShortIntegerDigits:", errorMessage, NULL, NULL);
+        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+        return false;
+      }
+    }
+    return true;
+  }
 
-uint16_t convertItemToSubOrSup(uint16_t item, int16_t subOrSup) {
+
+  uint16_t convertItemToSubOrSup(uint16_t item, int16_t subOrSup) {
     if(subOrSup == NC_SUBSCRIPT) {
       nextChar = NC_NORMAL;            //JM de-latching superscript / suscript /sup/sub, removing the lock. Comment out to let sup/sub lock
            if(item >= ITM_0 && item <= ITM_9) return (uint16_t)((int16_t)item + (int16_t)ITM_SUB_0 - (int16_t)ITM_0); //JM optimized
@@ -162,6 +185,9 @@ TO_QSPI const fInMim_t MimFunctionsType0[] =
     {ITM_8        },
     {ITM_9        },
     {ITM_CHS      },
+    #if defined(OPTION_DRG_CFG)
+      {ITM_DRG      },
+    #endif // OPTION_DRG_CFG
     {ITM_CONSTpi  }, // do mimAddNumber(item);
   };
 
@@ -834,6 +860,215 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
     return posHash > 0;
   }
 
+  bool_t nimPolarEntry(void) {  // the complex number being entered is polar: i∠ was pressed, or POLAR is set and i was not
+    return (getSystemFlag(FLAG_POLAR) && !temporaryFlagRect) || temporaryFlagPolar;
+  }
+
+  bool_t nimComplexPart(void) {  // the imaginary part or the angle of a complex number is being entered
+    switch(nimNumberPart) {
+      case NP_COMPLEX_INT_PART:
+      case NP_COMPLEX_FLOAT_PART:
+      case NP_COMPLEX_EXPONENT:
+      case NP_COMPLEX_FRACTION_DENOMINATOR:
+      case NP_COMPLEX_HP32SII_DENOMINATOR: {
+        return true;
+      }
+      default: {
+        return false;
+      }
+    }
+  }
+
+  static bool_t nimPartIsFraction(uint8_t part) {
+    return part == NP_FRACTION_DENOMINATOR || part == NP_HP32SII_DENOMINATOR || part == NP_COMPLEX_FRACTION_DENOMINATOR || part == NP_COMPLEX_HP32SII_DENOMINATOR;
+  }
+
+  bool_t nimPiAfterI(void) {  // π right after i is the imaginary part: its digits end the number, which the caller closes
+    if(nimNumberPart == NP_COMPLEX_INT_PART && aimBuffer[strlen(aimBuffer) - 1] == 'i') {
+      strcat(aimBuffer, "3.141592653589793238462643383279503");
+      return true;
+    }
+    return false;
+  }
+
+#if defined(OPTION_DRG_CFG)
+  bool_t nimRealOrFractionPart(void) {  // a real number or a fraction is being entered
+    switch(nimNumberPart) {
+      case NP_INT_10:
+      case NP_REAL_FLOAT_PART:
+      case NP_REAL_EXPONENT:
+      case NP_FRACTION_DENOMINATOR:
+      case NP_HP32SII_DENOMINATOR: {
+        return true;
+      }
+      default: {
+        return false;
+      }
+    }
+  }
+
+  bool_t nimDrgChoosesUnit(void) {  // NIMDRG is set and the number being entered closes as a real or a complex number, which takes the unit DRG chooses
+    if(!(drgConfig & (1 << DRG_NIM_BIT))) {
+      return false;
+    }
+    if(nimComplexPart()) {
+      return true;
+    }
+    return nimRealOrFractionPart() && calcMode == CM_NIM && lastIntegerBase == 0 && Input_Default != ID_CPXDP;  // X is the real liftStack made for the entry
+  }
+
+  static bool_t nimDmsDigits(void) {  // the number being entered has the unit D.MS, so the digits after the radix mark are minutes and seconds
+    if(nimComplexPart()) {
+      return nimPolarAngularMode == amDMS;
+    }
+    if(calcMode == CM_PEM) {
+      return editingLiteralType == STRING_ANGLE_DMS;
+    }
+    return calcMode == CM_NIM && getRegisterAngularMode(REGISTER_X) == amDMS;
+  }
+
+  static int16_t nimDmsExponentDigits(const char *number, char *digits, int16_t *integerDigits) {  // the digits of a D.MS number with an exponent, without its radix mark; returns how many of them are degrees once the exponent moves the radix mark, below 0 or above their count included
+    int16_t count = 0;
+    *integerDigits = -1;
+    for(; *number != 'e' && *number != 0; number++) {
+      if(*number == '.') {
+        *integerDigits = count;
+      }
+      else {
+        digits[count++] = *number;
+      }
+    }
+    digits[count] = 0;
+    if(*integerDigits < 0) {
+      *integerDigits = count;
+    }
+    return *integerDigits + (*number == 'e' ? atoi(number + 1) : 0);
+  }
+
+  static char *nimDmsDigit(char *text, char digit, int16_t count, bool_t radixMark) {  // the count-th D.MS digit after the degree mark, then the minute mark after the second digit and, with radixMark, the radix mark after the fourth
+    *(text++) = digit;
+    if(count == 2) {
+      text = stringCopy(text, STD_RIGHT_SINGLE_QUOTE);
+    }
+    else if(count == 4 && radixMark) {
+      *(text++) = RADIX34_MARK_STRING[0];
+      if(RADIX34_MARK_STRING[1] != 1) {  // a radix mark of two bytes
+        *(text++) = RADIX34_MARK_STRING[1];
+      }
+    }
+    return text;
+  }
+
+  const char *nimDmsMark(void) {  // the marks after the cursor in a D.MS entry: all three with no radix mark, minutes and seconds until two digits follow it, then seconds
+    const char *marks = STD_DEGREE STD_RIGHT_SINGLE_QUOTE STD_RIGHT_DOUBLE_QUOTE;
+    if(nimNumberPart == NP_INT_10 || nimNumberPart == NP_COMPLEX_INT_PART) {
+      return marks;
+    }
+    if(nimNumberPart == NP_REAL_EXPONENT || nimNumberPart == NP_COMPLEX_EXPONENT) {  // the exponent moves the radix mark, so the digits after it are shown as the minutes and seconds they become
+      static char tail[64];  // the degree mark, up to 34 digits and three marks
+      char digits[48];
+      int16_t integerDigits;
+      int16_t degrees = nimDmsExponentDigits(nimComplexPart() ? aimBuffer + imaginaryMantissaSignLocation + 2 : aimBuffer + 1, digits, &integerDigits);
+      int16_t count = strlen(digits);
+      int16_t shown = 0;
+      char *t = stringCopy(tail, STD_DEGREE);
+      for(int16_t i = degrees; i < count && (shown < 4 || i >= 0); i++, shown++) {  // the zeros the exponent puts in front fill the minutes and seconds only
+        t = nimDmsDigit(t, (i < 0 ? '0' : digits[i]), shown + 1, i + 1 < count && i + 1 >= 0);  // the radix mark only when a digit follows it
+      }
+      if(shown == 1 || shown == 3) {  // a lone digit is the tens of the minutes or of the seconds
+        *(t++) = '0';
+      }
+      if(shown < 2) {
+        t = stringCopy(t, STD_RIGHT_SINGLE_QUOTE);
+      }
+      strcpy(t, STD_RIGHT_DOUBLE_QUOTE);
+      return tail;
+    }
+    if(nimNumberPart == NP_REAL_FLOAT_PART || nimNumberPart == NP_COMPLEX_FLOAT_PART || nimPartIsFraction(nimNumberPart)) {
+      bool_t barIsMark = (nimNumberPart == NP_HP32SII_DENOMINATOR || nimNumberPart == NP_COMPLEX_HP32SII_DENOMINATOR);  // 5/3 has no gap, so its bar is the degree mark
+      int16_t digits = 0;
+      for(const char *c = aimBuffer + strlen(aimBuffer) - 1; *c != '.' && *c != ' ' && (*c != '/' || !barIsMark); c--) {
+        if(*c != '/') {
+          digits++;
+        }
+      }
+      if(digits < 2) {  // fewer than two digits after the degree mark
+        return marks + 2;
+      }
+    }
+    return marks + 4;
+  }
+#endif // OPTION_DRG_CFG
+
+  void nimStartNumber(int16_t item) {  // the buffer of a new number: 1. before an exponent, 0 before a radix mark, and nothing before a digit
+    switch(item) {
+      case ITM_EXPONENT: {
+        aimBuffer[0] = '+';
+        aimBuffer[1] = '1';
+        aimBuffer[2] = '.';
+        aimBuffer[3] = 0;
+        nimNumberPart = NP_REAL_FLOAT_PART;
+        break;
+      }
+
+      case ITM_PERIOD: {
+        aimBuffer[0] = '+';
+        aimBuffer[1] = '0';
+        aimBuffer[2] = 0;
+        nimNumberPart = NP_INT_10;
+        break;
+      }
+
+      case ITM_0 :
+      case ITM_1 :
+      case ITM_2 :
+      case ITM_3 :
+      case ITM_4 :
+      case ITM_5 :
+      case ITM_6 :
+      case ITM_7 :
+      case ITM_8 :
+      case ITM_9 :
+      case ITM_A :
+      case ITM_B :
+      case ITM_C :
+      case ITM_D :
+      case ITM_E :
+      case ITM_F: {
+        aimBuffer[0] = '+';
+        aimBuffer[1] = 0;
+        nimNumberPart = NP_EMPTY;
+        break;
+      }
+
+      default: {
+      }
+    }
+  }
+
+  void nimHint(char *hint) {  // the text after the cursor: the base of an integer, or the denominator a fraction takes when none is typed
+    hint[0] = 0;
+    if(lastIntegerBase != 0) {
+      hint[0] = '#';
+      if(lastIntegerBase > 9) {
+        hint[1] = '1';
+        hint[2] = '0' + (lastIntegerBase - 10);
+        hint[3] = 0;
+      }
+      else {
+        hint[1] = '0' + lastIntegerBase;
+        hint[2] = 0;
+      }
+    }
+    else if(aimBuffer[0] != 0 && aimBuffer[strlen(aimBuffer) - 1] == '/'
+            #if defined(OPTION_DRG_CFG)
+              && !nimDmsDigits()  // a bar in a D.MS entry makes no fraction
+            #endif // OPTION_DRG_CFG
+           ) {
+      subNumberToDisplayString(lastDenominator, hint, NULL);
+    }
+  }
+
   void addItemToNimBuffer(int16_t item) {
     int16_t lastChar, index;
     uint8_t savedNimNumberPart;
@@ -862,23 +1097,10 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
 
     if(calcMode == CM_NORMAL) {
       switch(item) {
-        case ITM_EXPONENT: {
-          calcModeNim(NOPARAM);
-          aimBuffer[0] = '+';
-          aimBuffer[1] = '1';
-          aimBuffer[2] = '.';
-          aimBuffer[3] = 0;
-          nimNumberPart = NP_REAL_FLOAT_PART;
-          setLastintegerBasetoZero();
-          break;
-        }
-
+        case ITM_EXPONENT:
         case ITM_PERIOD: {
           calcModeNim(NOPARAM);
-          aimBuffer[0] = '+';
-          aimBuffer[1] = '0';
-          aimBuffer[2] = 0;
-          nimNumberPart = NP_INT_10;
+          nimStartNumber(item);
           setLastintegerBasetoZero();
           break;
         }
@@ -900,9 +1122,7 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
         case ITM_E :
         case ITM_F: {
           calcModeNim(NOPARAM);
-          aimBuffer[0] = '+';
-          aimBuffer[1] = 0;
-          nimNumberPart = NP_EMPTY;
+          nimStartNumber(item);
           break;
         }
 
@@ -1139,6 +1359,11 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
           }
 
           case NP_REAL_FLOAT_PART: {
+            #if defined(OPTION_DRG_CFG)
+              if(nimDmsDigits()) {  // a D.MS number takes one radix mark and no fraction
+                break;
+              }
+            #endif // OPTION_DRG_CFG
             bool_t HP32SII = false;
             if(aimBuffer[strlen(aimBuffer) - 1] == '.') {
               HP32SII = true; //This is the 123 .. 4 meaning 123/4 shortcut
@@ -1175,6 +1400,11 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
           }
 
           case NP_COMPLEX_FLOAT_PART: {
+            #if defined(OPTION_DRG_CFG)
+              if(nimDmsDigits()) {  // a D.MS angle takes one radix mark and no fraction
+                break;
+              }
+            #endif // OPTION_DRG_CFG
             bool_t HP32SII = false;
             if(aimBuffer[strlen(aimBuffer) - 1] == '.') {
               HP32SII = true; //This is the 123 .. 4 meaning 123/4 shortcut
@@ -1269,6 +1499,11 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
           nimNumberPart = NP_INT_BASE;
           //debugNIM();
         }
+        else if(nimNumberPart == NP_INT_BASE) {  // Clear previous base value
+          while((strlen(aimBuffer) != 0) && (aimBuffer[strlen(aimBuffer)-1] != '#')) {
+            aimBuffer[strlen(aimBuffer)-1] = 0;
+          }
+        }
         break;
       }
 
@@ -1342,6 +1577,8 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
         case ITM_CC: {
         if(item == ITM_op_j || item == ITM_op_j_pol) {
           resetShiftState();    //JM HP35s compatible, in NIM
+          temporaryFlagRect = (item == ITM_op_j);  // the key sets the form, as fnKeyCC does before ITM_CC
+          temporaryFlagPolar = (item == ITM_op_j_pol);
         }
         lastChar = strlen(aimBuffer) - 1;
 
@@ -1389,13 +1626,23 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
           default: {
           }
         }
+        #if defined(OPTION_DRG_CFG)
+          if(nimComplexPart()) {  // i or i∠ sets the unit of the angle: ADM for a polar entry when NIMDRG is set, none otherwise, and never the unit DRG gave the real part
+            nimPolarAngularMode = amNone;
+            if(nimDrgChoosesUnit() && nimPolarEntry()) {
+              nimPolarAngularMode = currentAngularMode;
+            }
+            if(calcMode == CM_NIM) {
+              setRegisterAngularMode(REGISTER_X, amNone);
+            }
+          }
+        #endif // OPTION_DRG_CFG
         break;
       }
 
       case ITM_CONSTpi: {
-        if(nimNumberPart == NP_COMPLEX_INT_PART && aimBuffer[strlen(aimBuffer) - 1] == 'i') {
+        if(nimPiAfterI()) {
           done = true;
-          strcat(aimBuffer, "3.141592653589793238462643383279503");
           reallyRunFunction(ITM_EXIT1, NOPARAM);
           setLastintegerBasetoZero();
           return;  // NIM is closed and the value is on the stack, skip the buffer-to-display conversion
@@ -1814,6 +2061,24 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
 
       case ITM_DRG:{                       //JM
         DRG_Cycling = 0;
+        #if defined(OPTION_DRG_CFG)
+          if(nimDrgChoosesUnit()) {
+            done = true;
+            if(nimComplexPart()) {           // no unit is a rectangular entry, a unit is a polar entry with its angle in that unit
+              uint16_t unit = nimPolarAngularMode;
+              DRG_cycNim(&unit);
+              nimPolarAngularMode = unit;
+              temporaryFlagRect = (unit == amNone);
+              temporaryFlagPolar = (unit != amNone);
+            }
+            else {                           // the tag of X is the unit closeNim gives the number
+              uint16_t unit = getRegisterAngularMode(REGISTER_X);
+              DRG_cycNim(&unit);
+              setRegisterAngularMode(REGISTER_X, unit);
+            }
+            break;
+          }
+        #endif // OPTION_DRG_CFG
         if(nimNumberPart == NP_INT_10 || nimNumberPart == NP_REAL_FLOAT_PART || nimNumberPart == NP_REAL_EXPONENT) {
           done = true;
 
@@ -1854,6 +2119,11 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
       }
 
       case ITM_NOP: {   // NOP: do nothing in NIM
+        #if defined(OPTION_DRG_CFG)
+          if(calcMode == CM_PEM) {  // the display follows a literal type DRG changed
+            done = true;
+          }
+        #endif // OPTION_DRG_CFG
         break;
       }
 
@@ -1908,13 +2178,13 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
 
           nimNumberPart = savedNimNumberPart;
           // Complex "separator"
-          if((getSystemFlag(FLAG_POLAR) && !temporaryFlagRect) || temporaryFlagPolar) { // polar mode
+          if(nimPolarEntry()) { // polar mode
             strcat(nimBufferDisplay, STD_SPACE_4_PER_EM STD_MEASURED_ANGLE STD_SPACE_4_PER_EM);
             if(aimBuffer[imaginaryMantissaSignLocation] == '-') {
               strcat(nimBufferDisplay, "-");
             }
           }
-          else if((!getSystemFlag(FLAG_POLAR) && !temporaryFlagPolar) || temporaryFlagRect) { // rectangular mode
+          else { // rectangular mode
             if(strncmp(nimBufferDisplay + stringByteLength(nimBufferDisplay) - 2, STD_SPACE_HAIR, 2) != 0) {
               strcat(nimBufferDisplay, STD_SPACE_HAIR);
             }
@@ -2094,6 +2364,37 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
     }
     buffer++;
 
+    #if defined(OPTION_DRG_CFG)
+      char degrees[52];  // up to 34 digits, the radix mark and the 'e' that ends them
+      if((nimNumberPart == NP_REAL_EXPONENT || nimNumberPart == NP_COMPLEX_EXPONENT) && nimDmsDigits()) {  // the mantissa shows the degrees the exponent leaves, and nimDmsMark the minutes and seconds
+        char digits[48];
+        int16_t integerDigits;
+        int16_t whole = nimDmsExponentDigits(buffer, digits, &integerDigits);
+        int16_t count = strlen(digits);
+        if(whole < count) {
+          char *d = degrees;
+          if(whole <= 0) {
+            *(d++) = '0';
+          }
+          else if(whole <= integerDigits) {  // the digits after the degrees become zeros, so the mantissa times the power of ten is the degrees
+            memcpy(d, digits, whole);
+            memset(d + whole, '0', integerDigits - whole);
+            d += integerDigits;
+          }
+          else {
+            memcpy(d, digits, integerDigits);
+            d += integerDigits;
+            *(d++) = '.';
+            memcpy(d, digits + integerDigits, whole - integerDigits);
+            d += whole - integerDigits;
+          }
+          *d = 'e';
+          d[1] = 0;
+          buffer = degrees;
+        }
+      }
+    #endif // OPTION_DRG_CFG
+
     int16_t GROUPWIDTH_LEFTM = GROUPWIDTH_LEFT;                       //JMGAP vv
     switch(nimNumberPart) {
       case NP_INT_10:                    // +12345 longint; Do not change GROUPWIDTH_LEFT. Leave at user setting, default 3.
@@ -2124,7 +2425,7 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
       default: ;
     }                                                         //JMGAP ^^
 
-    for(numDigits=0; buffer[numDigits]!=0 && buffer[numDigits]!='e' && buffer[numDigits]!='.' && buffer[numDigits]!=' ' && buffer[numDigits]!='#' && buffer[numDigits]!='+' && buffer[numDigits]!='-'; numDigits++) {
+    for(numDigits=0; buffer[numDigits]!=0 && buffer[numDigits]!='e' && buffer[numDigits]!='.' && buffer[numDigits]!=' ' && buffer[numDigits]!='/' && buffer[numDigits]!='#' && buffer[numDigits]!='+' && buffer[numDigits]!='-'; numDigits++) {
     }
 
     for(source=0, dest=0; source<numDigits; source++) {
@@ -2135,8 +2436,26 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
     GROUPWIDTH_LEFT = GROUPWIDTH_LEFTM;                               //JMGAP
     displayBuffer[dest] = 0;
 
-    if(nimNumberPart == NP_REAL_FLOAT_PART || nimNumberPart == NP_REAL_EXPONENT || nimNumberPart == NP_COMPLEX_FLOAT_PART || nimNumberPart == NP_COMPLEX_EXPONENT) {
-      displayBuffer[dest++] = '.';
+    #if defined(OPTION_DRG_CFG)
+      bool_t dms = (nimNumberPart == NP_REAL_FLOAT_PART || nimNumberPart == NP_COMPLEX_FLOAT_PART || nimPartIsFraction(nimNumberPart)) && nimDmsDigits();  // D.MS digits show their marks as typed and no gaps
+      int16_t dmsDigits = 0;
+    #endif // OPTION_DRG_CFG
+    if(nimNumberPart == NP_REAL_FLOAT_PART || nimNumberPart == NP_REAL_EXPONENT || nimNumberPart == NP_COMPLEX_FLOAT_PART || nimNumberPart == NP_COMPLEX_EXPONENT
+       #if defined(OPTION_DRG_CFG)
+         || dms  // a fraction in D.MS shows as its digits: the gap, or a bar with no gap before it, is the degree mark
+       #endif // OPTION_DRG_CFG
+      ) {
+      #if defined(OPTION_DRG_CFG)
+        if(dms) {
+          strcpy(displayBuffer + dest, STD_DEGREE);
+          dest += 2;
+        }
+        else {
+          displayBuffer[dest++] = '.';
+        }
+      #else // !OPTION_DRG_CFG
+        displayBuffer[dest++] = '.';
+      #endif // OPTION_DRG_CFG
 
       buffer += source + 1;
 
@@ -2144,6 +2463,14 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
       }
 
       for(source=0; source<numDigits; source++) {
+        #if defined(OPTION_DRG_CFG)
+          if(dms) {
+            if(buffer[source] != '/') {  // a later bar is no D.MS digit
+              dest = nimDmsDigit(displayBuffer + dest, buffer[source], ++dmsDigits, true) - displayBuffer;
+            }
+            continue;
+          }
+        #endif // OPTION_DRG_CFG
         displayBuffer[dest++] = buffer[source];
         dest += insertGapFP(displayBuffer + dest, numDigits, source);
       }
@@ -2158,6 +2485,13 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
 
   void nimFractionToDisplayBuffer(const char *buffer, char *displayBuffer) {
     int16_t index;
+
+    #if defined(OPTION_DRG_CFG)
+      if(nimDmsDigits()) {  // a D.MS entry shows the fraction as its digits, and another unit shows the fraction again
+        nimBufferToDisplayBuffer(buffer, displayBuffer);
+        return;
+      }
+    #endif // OPTION_DRG_CFG
 
     if(nimNumberPart == NP_FRACTION_DENOMINATOR || nimNumberPart == NP_COMPLEX_FRACTION_DENOMINATOR) {
       nimBufferToDisplayBuffer(buffer, displayBuffer);
@@ -2299,13 +2633,27 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
     }
   }
 
+  bool_t nimFractionEntered(void) {  // the real number, or a part of the complex number, being entered is a fraction
+    return nimPartIsFraction(nimNumberPart) || (nimComplexPart() && nimPartIsFraction(nimRealPart));
+  }
+
   void closeNimWithFraction(real34_t *dest) {
     // Set Fraction mode
     nimFractionToReal34(aimBuffer, dest);
   }
 
 
-  void closeNimWithComplex(real34_t *dest_r, real34_t *dest_i) {
+  void nimRealValue(real34_t *dest) {  // the real number or the fraction being entered
+    if(nimNumberPart == NP_FRACTION_DENOMINATOR || nimNumberPart == NP_HP32SII_DENOMINATOR) {
+      closeNimWithFraction(dest);
+    }
+    else {
+      stringToReal34(aimBuffer, dest);
+    }
+  }
+
+
+  void nimComplexValue(real34_t *dest_r, real34_t *dest_i) {  // the complex number being entered, a polar entry converted from its angle in the unit DRG chose or in ADM
     aimBuffer[imaginaryMantissaSignLocation+1] = aimBuffer[imaginaryMantissaSignLocation];
     aimBuffer[imaginaryMantissaSignLocation] = 0;
 
@@ -2323,28 +2671,277 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
       stringToReal34(aimBuffer + imaginaryMantissaSignLocation + 1, dest_i);
     }
 
-    if((getSystemFlag(FLAG_POLAR) && !temporaryFlagRect) || temporaryFlagPolar) { // polar mode
+    if(nimPolarEntry()) { // polar mode
       if(real34CompareEqual(dest_r, const34_0)) {
         real34SetZero(dest_r);
         real34SetZero(dest_i);
       }
       else {
         cplx_t z;
+        #if defined(OPTION_DRG_CFG)
+          if(nimPolarAngularMode == amDMS) {  // the angle digits are degrees, minutes and seconds
+            real34FromDmsToDeg(dest_i, dest_i);
+          }
+        #endif // OPTION_DRG_CFG
         real34ToReal(dest_r, &z.Mag);
         real34ToReal(dest_i, &z.Arg);
-        realPolarToRectangularInUnit(&z.Mag, &z.Arg, currentAngularMode, &z, &ctxtReal39);
+        #if defined(OPTION_DRG_CFG)
+          realPolarToRectangularInUnit(&z.Mag, &z.Arg, nimPolarAngularMode == amNone ? currentAngularMode : nimPolarAngularMode, &z, &ctxtReal39);
+        #else // !OPTION_DRG_CFG
+          realPolarToRectangularInUnit(&z.Mag, &z.Arg, currentAngularMode, &z, &ctxtReal39);
+        #endif // OPTION_DRG_CFG
         realToReal34(&z.Real, dest_r);
         realToReal34(&z.Imag, dest_i);
       }
+    }
+  }
+
+
+  void closeNimWithComplex(real34_t *dest_r, real34_t *dest_i) {
+    nimComplexValue(dest_r, dest_i);
+
+    if(nimPolarEntry()) { // polar mode
       fnToPolar2(0);
+      #if defined(OPTION_DRG_CFG)
+        if(nimPolarAngularMode != amNone && calcMode != CM_MIM) {  // the number in X shows its angle in the unit DRG chose
+          setComplexRegisterAngularMode(REGISTER_X, nimPolarAngularMode);
+        }
+      #endif // OPTION_DRG_CFG
     }
 
-    else if((!getSystemFlag(FLAG_POLAR) && !temporaryFlagPolar) || temporaryFlagRect) { // rect mode
+    else { // rect mode
       fnToRect2(0);
     }
     temporaryFlagRect = false;
     temporaryFlagPolar = false;
+    #if defined(OPTION_DRG_CFG)
+      drgAutoAdm(nimPolarAngularMode);
+      nimPolarAngularMode = amNone;
+    #endif // OPTION_DRG_CFG
     fnSetFlag(FLAG_CPXRES);
+  }
+
+
+  void nimLiteralValue(real34_t *re, real34_t *im) {  // the value NIM gives a fraction or a complex number being entered, for a program literal; program entry leaves the fraction display as it was
+    bool_t fract  = getSystemFlag(FLAG_FRACT);
+    bool_t irFrac = getSystemFlag(FLAG_IRFRAC);
+    realToReal34(const_NaN, re);  // the value when the denominator is refused
+    if(nimComplexPart()) {
+      realToReal34(const_NaN, im);
+      nimComplexValue(re, im);
+    }
+    else {
+      closeNimWithFraction(re);
+    }
+    if(!fract) {  // entering a fraction sets fraction display
+      clearSystemFlag(FLAG_FRACT);
+    }
+    if(!irFrac) {
+      clearSystemFlag(FLAG_IRFRAC);
+    }
+  }
+
+
+  void nimCompleteNumber(void) {  // before a close: an exponent without digits is left out, an empty imaginary part becomes 1 and an empty angle 0
+    #if defined(OPTION_DRG_CFG)
+      if(nimPartIsFraction(nimNumberPart) && nimDmsDigits()) {  // a fraction in D.MS closes as its digits: the gap, or a bar with no gap before it, is the radix mark and a later bar is skipped
+        bool_t complexPart = nimComplexPart();
+        char *digits = (complexPart ? aimBuffer + imaginaryMantissaSignLocation + 2 : aimBuffer + 1);
+        bool_t mark = false;
+        for(const char *source = digits; *source != 0; source++) {
+          if(*source != ' ' && *source != '/') {
+            *(digits++) = *source;
+          }
+          else if(!mark) {
+            *(digits++) = '.';
+            mark = true;
+          }
+        }
+        *digits = 0;
+        nimNumberPart = (complexPart ? NP_COMPLEX_FLOAT_PART : NP_REAL_FLOAT_PART);
+      }
+    #endif // OPTION_DRG_CFG
+    int16_t lastChar = strlen(aimBuffer) - 1;
+    if((nimNumberPart == NP_COMPLEX_EXPONENT || nimNumberPart == NP_REAL_EXPONENT) && (aimBuffer[lastChar] == '+' || aimBuffer[lastChar] == '-') && aimBuffer[lastChar - 1] == 'e') {
+      aimBuffer[--lastChar] = 0;
+      lastChar--;
+    }
+    else if(nimNumberPart == NP_REAL_EXPONENT && aimBuffer[lastChar] == 'e') {
+      aimBuffer[lastChar--] = 0;
+    }
+    #if defined(OPTION_DRG_CFG)
+      if((nimNumberPart == NP_REAL_EXPONENT || nimNumberPart == NP_COMPLEX_EXPONENT) && nimDmsDigits()) {  // the exponent moves the radix mark of the D.MS digits, so the number is written without it when at most 34 digits result
+        bool_t complexPart = nimComplexPart();
+        char *number = (complexPart ? aimBuffer + imaginaryMantissaSignLocation + 2 : aimBuffer + 1);
+        char digits[48];
+        int16_t integerDigits;
+        int16_t whole = nimDmsExponentDigits(number, digits, &integerDigits);
+        int16_t count = strlen(digits);
+        if((whole > 0 ? whole : 1) + (whole < count ? count - whole : 0) <= 34) {
+          char *write = number;
+          if(whole <= 0) {
+            *(write++) = '0';
+          }
+          for(int16_t i = 0; i < whole; i++) {
+            *(write++) = (i < count ? digits[i] : '0');
+          }
+          *(write++) = '.';
+          for(int16_t i = whole; i < count; i++) {
+            *(write++) = (i < 0 ? '0' : digits[i]);
+          }
+          *write = 0;
+          while(number[0] == '0' && number[1] != '.') {  // the zeros in front of the degrees
+            memmove(number, number + 1, strlen(number));
+          }
+          nimNumberPart = (complexPart ? NP_COMPLEX_FLOAT_PART : NP_REAL_FLOAT_PART);
+          lastChar = strlen(aimBuffer) - 1;
+        }
+      }
+    #endif // OPTION_DRG_CFG
+    bool_t is_i     = nimNumberPart == NP_COMPLEX_INT_PART && aimBuffer[lastChar] == 'i';
+    bool_t is_theta = nimNumberPart == NP_COMPLEX_INT_PART && aimBuffer[lastChar-1]*256 + aimBuffer[lastChar]*256 == 0xa221;
+    if((is_i || is_theta) && !nimPolarEntry()) {                                                           //  i          //JM 2026-08-22 nothing typed after ix: the imaginary part becomes 1, in POLAR mode too
+      aimBuffer[++lastChar] = '1';                                                                                        //JM 2020-06-22 CHANGED FROM "1" to "0". DEFAULTING TO 0+0xi WHEN ABORTING CC ENTRY. #6072aee
+      aimBuffer[lastChar + 1] = 0;                                                                                        //JM 2023-09-18 reverted partially (for RECT) from "0" to "1", specifically for a blank i
+    }
+    else if((is_i || is_theta) && nimPolarEntry()) {                                                           // i_pol   //JM 2026-08-22 nothing typed after i_pol: the angle becomes 0, in RECT mode too
+      aimBuffer[++lastChar] = '0';                                                                                        //JM 2020-06-22 CHANGED FROM "1" to '0'. DEFAULTING TO 0+0xi WHEN ABORTING CC ENTRY. #6072aee
+      aimBuffer[lastChar + 1] = 0;
+    }
+  }
+
+
+  bool_t nimShortInteger(char *buffer, calcRegister_t regist) {  // the short integer typed as digits#base, into regist; false with the error displayed when the digits, the base or the word size refuse it
+    longInteger_t minVal, value, maxVal;
+    int16_t posHash, i, lg;
+    int32_t base;
+
+    lg = strlen(buffer);
+    posHash = 0;
+    for(i=1; i<lg; i++) {
+      if(buffer[i] == '#') {
+        posHash = i;
+        break;
+      }
+    }
+
+    for(i=posHash+1; i<lg; i++) {
+      if(buffer[i]<'0' || buffer[i]>'9') {
+        // This should never happen
+        displayCalcErrorMessage(ERROR_INVALID_INTEGER_INPUT, ERR_REGISTER_LINE);
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+          moreInfoOnError("In function closeNIM:", "there is a non numeric character in the base of the integer!", NULL, NULL);
+        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+        return false;
+      }
+    }
+
+    base = stringToInt32(buffer + posHash + 1);
+    if(base < 2 || base > 16) {
+      displayCalcErrorMessage(ERROR_INVALID_INTEGER_INPUT, ERR_REGISTER_LINE);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+       moreInfoOnError("In function closeNIM:", "the base of the integer must be from 2 to 16!", NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      return false;
+    }
+
+    if(checkShortIntegerDigits(buffer) == false) {
+      undo();
+      #if defined(DEBUGUNDO)
+        printf(">>> undo from addItemToNimBufferD\n");
+      #endif // DEBUGUNDO
+      return false;
+    }
+
+    longIntegerInit(value);
+    buffer[posHash] = 0;
+    stringToLongInteger(buffer + (buffer[0] == '+' ? 1 : 0), base, value);
+
+    // maxVal = 2^shortIntegerWordSize
+    longIntegerInit(maxVal);
+    if(shortIntegerWordSize >= 1 && shortIntegerWordSize <= 64) {
+      longInteger2Pow(shortIntegerWordSize, maxVal);
+    }
+    else {
+      sprintf(errorMessage, commonBugScreenMessages[bugMsgValueFor], "closeNIM", "shortIntegerWordSize", shortIntegerWordSize);
+      displayBugScreen(errorMessage);
+      longIntegerFree(maxVal);
+      longIntegerFree(value);
+      return false;
+    }
+
+    // minVal = -maxVal/2
+    longIntegerInit(minVal);
+    longIntegerSetZero(minVal); // Mandatory! Else segmentation fault at next instruction
+    longIntegerDivideUInt(maxVal, 2, minVal); // minVal = maxVal / 2
+    longIntegerSetNegativeSign(minVal); // minVal = -minVal
+
+    if((base != 2) && (base != 4) && (base != 8) && (base != 16) && (shortIntegerMode != SIM_UNSIGN)) {
+      longIntegerDivideUInt(maxVal, 2, maxVal); // maxVal /= 2
+    }
+
+    longIntegerSubtractUInt(maxVal, 1, maxVal); // maxVal--
+
+    if(shortIntegerMode == SIM_UNSIGN) {
+      longIntegerSetZero(minVal); // minVal = 0
+    }
+
+    if(shortIntegerMode == SIM_1COMPL || shortIntegerMode == SIM_SIGNMT) {
+      longIntegerAddUInt(minVal, 1, minVal); // minVal++
+    }
+
+    if(longIntegerCompare(value, minVal) < 0 || longIntegerCompare(value, maxVal) > 0) {
+      displayCalcErrorMessage(ERROR_WORD_SIZE_TOO_SMALL, ERR_REGISTER_LINE);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        char strMin[22], strMax[22];
+        longIntegerToAllocatedString(minVal, strMin, sizeof(strMin));
+        longIntegerToAllocatedString(maxVal, strMax, sizeof(strMax));
+        sprintf(errorMessage, "For word size of %d bit%s and integer mode %s,", shortIntegerWordSize, shortIntegerWordSize>1 ? "s" : "", getShortIntegerModeName(shortIntegerMode));
+        sprintf(errorMessage + ERROR_MESSAGE_LENGTH/2, "the entered number must be from %s to %s!", strMin, strMax);
+        moreInfoOnError("In function closeNIM:", errorMessage, errorMessage + ERROR_MESSAGE_LENGTH/2, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      longIntegerFree(maxVal);
+      longIntegerFree(minVal);
+      longIntegerFree(value);
+      return false;
+    }
+
+    reallocateRegister(regist, dtShortInteger, 0, base);
+
+    char strValue[22];
+    longIntegerToAllocatedString(value, strValue, sizeof(strValue));
+
+    uint64_t val = strtoull(strValue + (longIntegerIsNegative(value) ? 1 : 0), NULL, 10); // when value is negative:discard the minus sign
+
+    if(shortIntegerMode == SIM_UNSIGN) {
+    }
+    else if(shortIntegerMode == SIM_2COMPL) {
+      if(longIntegerIsNegative(value)) {
+        val = (~val + 1) & shortIntegerMask;
+      }
+    }
+    else if(shortIntegerMode == SIM_1COMPL) {
+      if(longIntegerIsNegative(value)) {
+        val = ~val & shortIntegerMask;
+      }
+    }
+    else if(shortIntegerMode == SIM_SIGNMT) {
+      if(longIntegerIsNegative(value)) {
+        val = (val & shortIntegerMask) | shortIntegerSignBit;
+      }
+    }
+    else {
+      sprintf(errorMessage, commonBugScreenMessages[bugMsgValueFor], "closeNIM", "shortIntegerMode", shortIntegerMode);
+      displayBugScreen(errorMessage);
+      *(REGISTER_SHORT_INTEGER_DATA(regist)) = 0;
+    }
+
+    *(REGISTER_SHORT_INTEGER_DATA(regist)) = val;
+
+    longIntegerFree(maxVal);
+    longIntegerFree(minVal);
+    longIntegerFree(value);
+    return true;
   }
 
 
@@ -2391,6 +2988,9 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
       return;
     }
 
+    #if defined(OPTION_DRG_CFG)
+      angularMode_t drgUnit = (calcMode == CM_NIM ? getRegisterAngularMode(REGISTER_X) : amNone);  // the unit DRG gave the number
+    #endif // OPTION_DRG_CFG
     bool_t delayedShortIntegerCHS = false;
     //#if defined(PC_BUILD)
     //  printf("closeNIM: aimBuffer=%s volid=%d nimNumberPart=%d NP_INT_BASE=%d\n",aimBuffer, validShortIntegerInX(), nimNumberPart, NP_INT_BASE);
@@ -2405,23 +3005,8 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
 
     if(nimNumberPart != NP_INT_16) { // We need a # and a base
       if(nimNumberPart != NP_INT_BASE || aimBuffer[lastChar] != '#') { // We need a base
-        if((nimNumberPart == NP_COMPLEX_EXPONENT || nimNumberPart == NP_REAL_EXPONENT) && (aimBuffer[lastChar] == '+' || aimBuffer[lastChar] == '-') && aimBuffer[lastChar - 1] == 'e') {
-          aimBuffer[--lastChar] = 0;
-          lastChar--;
-        }
-        else if(nimNumberPart == NP_REAL_EXPONENT && aimBuffer[lastChar] == 'e') {
-          aimBuffer[lastChar--] = 0;
-        }
-        bool_t is_i     = nimNumberPart == NP_COMPLEX_INT_PART && aimBuffer[lastChar] == 'i';
-        bool_t is_theta = nimNumberPart == NP_COMPLEX_INT_PART && aimBuffer[lastChar-1]*256 + aimBuffer[lastChar]*256 == 0xa221;
-        if((is_i || is_theta) && !((getSystemFlag(FLAG_POLAR) && !temporaryFlagRect) || temporaryFlagPolar)) { //  i          //JM 2026-08-22 nothing typed after ix: the imaginary part becomes 1, in POLAR mode too
-          aimBuffer[++lastChar] = '1';                                                                                        //JM 2020-06-22 CHANGED FROM "1" to "0". DEFAULTING TO 0+0xi WHEN ABORTING CC ENTRY. #6072aee
-          aimBuffer[lastChar + 1] = 0;                                                                                        //JM 2023-09-18 reverted partially (for RECT) from "0" to "1", specifically for a blank i
-        }
-        else if((is_i || is_theta) && ((getSystemFlag(FLAG_POLAR) && !temporaryFlagRect) || temporaryFlagPolar)) { // i_pol   //JM 2026-08-22 nothing typed after i_pol: the angle becomes 0, in RECT mode too
-          aimBuffer[++lastChar] = '0';                                                                                        //JM 2020-06-22 CHANGED FROM "1" to '0'. DEFAULTING TO 0+0xi WHEN ABORTING CC ENTRY. #6072aee
-          aimBuffer[lastChar + 1] = 0;
-        }
+        nimCompleteNumber();
+        lastChar = strlen(aimBuffer) - 1;
 
         if((aimBuffer[0] != '-' || aimBuffer[1] != 0) && (aimBuffer[lastChar] != '-')) { // The buffer is not just the minus sign AND The last char of the buffer is not the minus sign
           calcModeNormal();
@@ -2446,149 +3031,12 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
             }
           }
           else if(nimNumberPart == NP_INT_BASE) {
-            //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            // Any change in this part must be reported in the function strToShortInteger from file testSuite.c after the line:else if(nimNumberPart == NP_INT_BASE) {
-            //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            longInteger_t minVal, value, maxVal;
-            int16_t posHash, i, lg;
-            int32_t base;
-
-            lg = strlen(aimBuffer);
-            posHash = 0;
-            for(i=1; i<lg; i++) {
-              if(aimBuffer[i] == '#') {
-                posHash = i;
-                break;
-              }
-            }
-
-            for(i=posHash+1; i<lg; i++) {
-              if(aimBuffer[i]<'0' || aimBuffer[i]>'9') {
-                // This should never happen
-                displayCalcErrorMessage(ERROR_INVALID_INTEGER_INPUT, ERR_REGISTER_LINE);
-                #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-                  moreInfoOnError("In function closeNIM:", "there is a non numeric character in the base of the integer!", NULL, NULL);
-                #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-                goto closeNim_exit;
-              }
-            }
-
-            base = stringToInt32(aimBuffer + posHash + 1);
-            if(base < 2 || base > 16) {
-              displayCalcErrorMessage(ERROR_INVALID_INTEGER_INPUT, ERR_REGISTER_LINE);
-              #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-               moreInfoOnError("In function closeNIM:", "the base of the integer must be from 2 to 16!", NULL, NULL);
-              #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+            if(!nimShortInteger(aimBuffer, REGISTER_X)) {
               goto closeNim_exit;
             }
-
-            for(i=aimBuffer[0] == '-' ? 1 : 0; i<posHash; i++) {
-              if((aimBuffer[i] > '9' ? aimBuffer[i] - 'A' + 10 : aimBuffer[i] - '0') >= base) {
-                displayCalcErrorMessage(ERROR_INVALID_INTEGER_INPUT, ERR_REGISTER_LINE);
-                #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-                  sprintf(errorMessage, "digit %c is not allowed in base %d!", aimBuffer[i], base);
-                  moreInfoOnError("In function closeNIM:", errorMessage, NULL, NULL);
-                #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-
-                #if defined(DEBUGUNDO)
-                  printf(">>> undo from addItemToNimBufferD\n");
-                #endif // DEBUGUNDO
-                undo();
-                goto closeNim_exit;
-              }
-            }
-
-            longIntegerInit(value);
-            aimBuffer[posHash] = 0;
-            stringToLongInteger(aimBuffer + (aimBuffer[0] == '+' ? 1 : 0), base, value);
-
-            // maxVal = 2^shortIntegerWordSize
-            longIntegerInit(maxVal);
-            if(shortIntegerWordSize >= 1 && shortIntegerWordSize <= 64) {
-              longInteger2Pow(shortIntegerWordSize, maxVal);
-            }
-            else {
-              sprintf(errorMessage, commonBugScreenMessages[bugMsgValueFor], "closeNIM", "shortIntegerWordSize", shortIntegerWordSize);
-              displayBugScreen(errorMessage);
-              longIntegerFree(maxVal);
-              longIntegerFree(value);
-              goto closeNim_exit;
-            }
-
-            // minVal = -maxVal/2
-            longIntegerInit(minVal);
-            longIntegerSetZero(minVal); // Mandatory! Else segmentation fault at next instruction
-            longIntegerDivideUInt(maxVal, 2, minVal); // minVal = maxVal / 2
-            longIntegerSetNegativeSign(minVal); // minVal = -minVal
-
-            if((base != 2) && (base != 4) && (base != 8) && (base != 16) && (shortIntegerMode != SIM_UNSIGN)) {
-              longIntegerDivideUInt(maxVal, 2, maxVal); // maxVal /= 2
-            }
-
-            longIntegerSubtractUInt(maxVal, 1, maxVal); // maxVal--
-
-            if(shortIntegerMode == SIM_UNSIGN) {
-              longIntegerSetZero(minVal); // minVal = 0
-            }
-
-            if(shortIntegerMode == SIM_1COMPL || shortIntegerMode == SIM_SIGNMT) {
-              longIntegerAddUInt(minVal, 1, minVal); // minVal++
-            }
-
-            if(longIntegerCompare(value, minVal) < 0 || longIntegerCompare(value, maxVal) > 0) {
-              displayCalcErrorMessage(ERROR_WORD_SIZE_TOO_SMALL, ERR_REGISTER_LINE);
-              #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-                char strMin[22], strMax[22];
-                longIntegerToAllocatedString(minVal, strMin, sizeof(strMin));
-                longIntegerToAllocatedString(maxVal, strMax, sizeof(strMax));
-                sprintf(errorMessage, "For word size of %d bit%s and integer mode %s,", shortIntegerWordSize, shortIntegerWordSize>1 ? "s" : "", getShortIntegerModeName(shortIntegerMode));
-                sprintf(errorMessage + ERROR_MESSAGE_LENGTH/2, "the entered number must be from %s to %s!", strMin, strMax);
-                moreInfoOnError("In function closeNIM:", errorMessage, errorMessage + ERROR_MESSAGE_LENGTH/2, NULL);
-              #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-              longIntegerFree(maxVal);
-              longIntegerFree(minVal);
-              longIntegerFree(value);
-              goto closeNim_exit;
-            }
-
-            reallocateRegister(REGISTER_X, dtShortInteger, 0, base);
-
-            char strValue[22];
-            longIntegerToAllocatedString(value, strValue, sizeof(strValue));
-
-            uint64_t val = strtoull(strValue + (longIntegerIsNegative(value) ? 1 : 0), NULL, 10); // when value is negative:discard the minus sign
-
-            if(shortIntegerMode == SIM_UNSIGN) {
-            }
-            else if(shortIntegerMode == SIM_2COMPL) {
-              if(longIntegerIsNegative(value)) {
-                val = (~val + 1) & shortIntegerMask;
-              }
-            }
-            else if(shortIntegerMode == SIM_1COMPL) {
-              if(longIntegerIsNegative(value)) {
-                val = ~val & shortIntegerMask;
-              }
-            }
-            else if(shortIntegerMode == SIM_SIGNMT) {
-              if(longIntegerIsNegative(value)) {
-                val = (val & shortIntegerMask) | shortIntegerSignBit;
-              }
-            }
-            else {
-              sprintf(errorMessage, commonBugScreenMessages[bugMsgValueFor], "closeNIM", "shortIntegerMode", shortIntegerMode);
-              displayBugScreen(errorMessage);
-              *(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)) = 0;
-            }
-
-            *(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)) = val;
-            lastIntegerBase = base;
+            lastIntegerBase = getRegisterTag(REGISTER_X);
             fnRefreshState();                                                //JMNIM
             aimBuffer[0]=0;                                      //JMNIM Clear the NIM input buffer once written to register successfully.
-
-            longIntegerFree(maxVal);
-            longIntegerFree(minVal);
-            longIntegerFree(value);
           }
           else if(nimNumberPart == NP_REAL_FLOAT_PART || nimNumberPart == NP_REAL_EXPONENT) {
 
@@ -2698,6 +3146,11 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
     closeNim_exit:
     if(calcMode != CM_NIM) {      // a refused close keeps NIM open
       nimNumberPart = NP_EMPTY;   //Added to ensure test for nimNumberPart in insertStepInProgram() will have the correct value
+      #if defined(OPTION_DRG_CFG)
+        if(lastErrorCode == 0) {
+          drgAutoAdm(drgUnit);
+        }
+      #endif // OPTION_DRG_CFG
     }
   }
 

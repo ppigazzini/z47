@@ -82,6 +82,8 @@ const ERR_REGISTER_LINE: calcRegister_t = REGISTER_Z;
 const ERROR_INVALID_DATA_TYPE_FOR_OP: u8 = 24;
 
 const TI_NO_INFO: u8 = 0;
+const TI_FALSE: u8 = 12;
+const TI_TRUE: u8 = 13;
 
 const dtLongInteger: u32 = 0;
 const dtReal34: u32 = 1;
@@ -430,8 +432,11 @@ fn _sstInPem() void {
 }
 
 pub export fn showStep() callconv(.c) void {
+    const testResultShown = temporaryInformation == TI_TRUE or temporaryInformation == TI_FALSE;
     temporaryInformation = TI_NO_INFO;
-    frontier_screen.refreshRegisterLine(REGISTER_Z); // Clear previous test result, if any
+    if (testResultShown) {
+        frontier_screen.refreshRegisterLine(REGISTER_Z); // clear the test result on the Z line, and nothing else
+    }
     _showStep();
 }
 

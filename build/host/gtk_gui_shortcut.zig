@@ -42,6 +42,7 @@ const USER_N47: u8 = 51;
 const ITM_NULL: i16 = 0;
 const ITM_SIGMAPLUS: i16 = 433;
 const TI_NO_INFO: u8 = 0;
+const TI_WHO: u8 = 11;
 const SCRUPD_AUTO: u8 = 0x00;
 const TM_FLAGR: u16 = 10004;
 const TM_FLAGW: u16 = 10005;
@@ -80,6 +81,7 @@ extern fn clearSystemFlag(flag: u16) void;
 extern fn setSystemFlag(flag: u16) void;
 extern fn getSystemFlag(flag: u16) bool;
 extern fn currentMenu() i16;
+extern fn closeShowMenu() void;
 extern fn showSoftmenu(id: i16) void;
 extern fn runFunction(func: i16) void;
 extern fn closeNim() void;
@@ -194,6 +196,11 @@ pub fn shortCutCommand(
     }
 
     if (key == keyCode and condition1) {
+        // No key press follows a menu or a direct command, so btnPressed does not
+        // close the WHO screen.
+        if (temporaryInformation == TI_WHO and (itemForRunFunction < 0 or keyForBtnClicked[0] == '-')) {
+            closeShowMenu();
+        }
         temporaryInformation = TI_NO_INFO;
 
         if (exitIfInNIM and calcMode == CM_NIM and calcMode != requiredCalcMode2) {

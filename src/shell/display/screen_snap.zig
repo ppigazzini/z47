@@ -23,8 +23,8 @@
 //     by the print / textfiles / solver owners and upstream C.
 //
 //  5. The host-only (PC_BUILD) GTK clipboard / cairo helpers: drawScreen,
-//     copy{Screen,Menu,RegisterX,StackRegisters,AllRegisters}ToClipboard and the
-//     copyStackRegistersToClipboardString builder. These bind the GTK clipboard,
+//     copy{Screen,Menu,RegisterX,RegisterXImage,StackRegisters,AllRegisters}ToClipboard
+//     and the copyStackRegistersToClipboardString builder. These bind the GTK clipboard,
 //     cairo surface and gdk-pixbuf APIs and are dead on firmware (gated by
 //     comptime !dmcp_build; GTK/cairo are not linked into the DMCP build).
 
@@ -67,6 +67,10 @@ const TAM_BUFFER_LENGTH: u32 = 56;
 
 const SCREEN_WIDTH: c_int = 400;
 const SCREEN_HEIGHT: c_int = 240;
+const SOFTMENU_HEIGHT: c_int = 23;
+const Y_POSITION_OF_REGISTER_X_LINE: c_int = 132;
+const Y_POSITION_OF_MENU_TOP: c_int = SCREEN_HEIGHT - SOFTMENU_HEIGHT * 3;
+const SCRUPD_AUTO: u8 = 0;
 
 const FIRST_LETTERED_REGISTER: calcRegister_t = 100;
 const FIRST_LOCAL_REGISTER: calcRegister_t = 7000;
@@ -97,6 +101,7 @@ const amNone: angularMode_t = 5;
 const amAngleMask: u32 = 15;
 
 const FLAG_CPXj: c_int = 0x8005;
+const FLAG_BOLD: c_int = 0x8069;
 
 // STD_* glyph byte sequences (fonts.h).
 const STD_pi = "\x83\xc0";
@@ -128,7 +133,21 @@ const CLIPBOARD_LINEBREAK = if (dmcp_build) LINEBREAK else "\n";
 
 // CLIPSTR: 30000 on host (PC_BUILD), TMP_STR_LENGTH (2560) on firmware.
 const CLIPSTR: usize = if (dmcp_build) 2560 else 30000;
-extern fn malloc(size: usize) ?*anyopaque;
+
+// The bytes copyRegisterToClipboardString needs for a register, terminator
+// included. On the host a matrix adds the element sizes the matrix writer takes:
+// 46 bytes a real element, 92 a complex one. The firmware writes into CLIPSTR.
+fn clipboardBytes(regist: calcRegister_t) usize {
+    if (comptime dmcp_build) return CLIPSTR;
+    const dataType = getRegisterDataType(regist);
+    if (dataType == dtReal34Matrix or dataType == dtComplex34Matrix) {
+        const matrixHeader = regMatrixHeader(regist);
+        const elementBytes: usize = if (dataType == dtReal34Matrix) 46 else 92;
+        return CLIPSTR + @as(usize, matrixHeader.matrixRows) * matrixHeader.matrixColumns * elementBytes;
+    }
+    return CLIPSTR;
+}
+extern fn malloc(size: usize) ?[*]u8;
 extern fn free(ptr: ?*anyopaque) void;
 
 // cairo / gdk constants.
@@ -185,6 +204,9 @@ extern fn strcat(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn strchr(s: [*c]const u8, c: c_int) [*c]u8;
 
 extern fn getSystemFlag(sf: c_int) bool_t;
+extern fn setSystemFlag(sf: c_int) void;
+extern fn clearSystemFlag(sf: c_int) void;
+extern var screenUpdatingMode: u8;
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
 extern fn getRegisterDataPointer(regist: calcRegister_t) [*c]u8;
 extern fn getRegisterTag(regist: calcRegister_t) u32;
@@ -293,10 +315,10 @@ fn angularUnitToString(angularMode: angularMode_t, string: [*c]u8) void {
 pub export fn copyRegisterToClipboardString(regist: calcRegister_t, clipboardString: [*c]u8, forPrinter: bool_t) callconv(.c) void {
     // Off the stack: this runs under stackregister_csv_out, and the pair overran
     // the DM42 stack grant.
-    const buf: [*c]u8 = @ptrCast(malloc(CLIPSTR) orelse {
+    const buf: [*c]u8 = malloc(clipboardBytes(regist)) orelse {
         clipboardString[0] = 0;
         return;
-    });
+    };
     defer free(buf);
 
     switch (getRegisterDataType(regist)) {
@@ -512,6 +534,10 @@ extern fn gdk_pixbuf_get_from_surface(surface: ?*anyopaque, src_x: c_int, src_y:
 inline fn stride4() c_int {
     return @as(c_int, screenStride.*) * 4;
 }
+// A cairo surface over the top `height` rows of the LCD framebuffer.
+inline fn screenSurface(height: c_int) ?*anyopaque {
+    return cairo_image_surface_create_for_data(@ptrCast(screenData()), CAIRO_FORMAT_RGB24, SCREEN_WIDTH, height, stride4());
+}
 inline fn clipboardForClear() ?*anyopaque {
     const clipboard = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
     gtk_clipboard_clear(clipboard);
@@ -526,7 +552,7 @@ pub export fn drawScreen(widget: ?*anyopaque, cr: ?*anyopaque, data: ?*anyopaque
     // lint would conflict with its host use below) and return FALSE.
     if (comptime dmcp_build) return @intFromBool(cr != cr);
     if (headlessMode) return 0; // FALSE: C returns before touching cairo at all
-    const imageSurface = cairo_image_surface_create_for_data(@ptrCast(screenData()), CAIRO_FORMAT_RGB24, SCREEN_WIDTH, SCREEN_HEIGHT, stride4());
+    const imageSurface = screenSurface(SCREEN_HEIGHT);
     cairo_set_source_surface(cr, imageSurface, 0, 0);
     cairo_surface_mark_dirty(imageSurface);
     cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST); // Quartz antialiases GOOD at device scale, so a 1 px damage strip covers its row only in part
@@ -538,7 +564,7 @@ pub export fn drawScreen(widget: ?*anyopaque, cr: ?*anyopaque, data: ?*anyopaque
 pub export fn copyScreenToClipboard() callconv(.c) void {
     if (comptime dmcp_build) return;
     const clipboard = clipboardForClear();
-    const imageSurface = cairo_image_surface_create_for_data(@ptrCast(screenData()), CAIRO_FORMAT_RGB24, SCREEN_WIDTH, SCREEN_HEIGHT, stride4());
+    const imageSurface = screenSurface(SCREEN_HEIGHT);
     gtk_clipboard_set_image(clipboard, gdk_pixbuf_get_from_surface(imageSurface, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT));
 }
 
@@ -548,16 +574,55 @@ pub export fn copyMenuToClipboard() callconv(.c) void {
         return;
     }
     const clipboard = clipboardForClear();
-    const imageSurface = cairo_image_surface_create_for_data(@ptrCast(screenData()), CAIRO_FORMAT_RGB24, SCREEN_WIDTH, SCREEN_HEIGHT - 170, stride4());
+    const imageSurface = screenSurface(SCREEN_HEIGHT - 170);
     gtk_clipboard_set_image(clipboard, gdk_pixbuf_get_from_surface(imageSurface, 0, 170, SCREEN_WIDTH, SCREEN_HEIGHT - 170));
+}
+
+// The X register band to the clipboard: the bold numericFont band fnSNAPX writes
+// to disk. FLAG_BOLD is forced and the band repainted before the grab, and the
+// flag is put back afterwards.
+pub export fn copyRegisterXImageToClipboard() callconv(.c) void {
+    if (comptime dmcp_build) return;
+    if (!frontier_screen.snapRegistersOk()) {
+        return;
+    }
+    const boldWasSet = getSystemFlag(FLAG_BOLD) != 0;
+    const isString = getRegisterDataType(REGISTER_X) == dtString;
+    const bandFirst: c_int = Y_POSITION_OF_REGISTER_X_LINE - @as(c_int, if (isString) 0 else 3);
+    const bandLast: c_int = Y_POSITION_OF_MENU_TOP - @as(c_int, if (isString) 1 else 1 + 3);
+    setSystemFlag(FLAG_BOLD);
+    screenUpdatingMode = SCRUPD_AUTO; // paint the bold X line into screenData before the grab, as fnSNAPX does before its capture
+    frontier_screen.refreshScreen(165);
+
+    const clipboard = clipboardForClear();
+    const imageSurface = screenSurface(SCREEN_HEIGHT);
+    gtk_clipboard_set_image(clipboard, gdk_pixbuf_get_from_surface(imageSurface, 0, bandFirst, SCREEN_WIDTH, bandLast - bandFirst + 1));
+
+    if (!boldWasSet) {
+        clearSystemFlag(FLAG_BOLD);
+        screenUpdatingMode = SCRUPD_AUTO; // a full repaint, else the X line stays bold on screen
+        frontier_screen.refreshScreen(166);
+    }
 }
 
 pub export fn copyRegisterXToClipboard() callconv(.c) void {
     if (comptime dmcp_build) return;
+    const clipboardString: [*c]u8 = malloc(clipboardBytes(REGISTER_X)) orelse return;
+    defer free(clipboardString);
     const clipboard = clipboardForClear();
-    var clipboardString: [CLIPSTR]u8 = undefined;
-    copyRegisterToClipboardString(REGISTER_X, &clipboardString, 0);
-    gtk_clipboard_set_text(clipboard, &clipboardString, -1);
+    copyRegisterToClipboardString(REGISTER_X, clipboardString, 0);
+    gtk_clipboard_set_text(clipboard, clipboardString, -1);
+}
+
+// CLIPSTR for the register names and the statistical sums, and each stack
+// register's own share.
+fn stackClipboardBytes() usize {
+    var bytes: usize = CLIPSTR;
+    var r: calcRegister_t = LAST_SPARE_REGISTER;
+    while (r >= REGISTER_X) : (r -= 1) {
+        bytes += clipboardBytes(r);
+    }
+    return bytes;
 }
 
 fn copyStackRegistersToClipboardString(clipboardString: [*c]u8, lastRegist: calcRegister_t) void {
@@ -574,18 +639,15 @@ fn copyStackRegistersToClipboardString(clipboardString: [*c]u8, lastRegist: calc
 
 pub export fn copyStackRegistersToClipboard() callconv(.c) void {
     if (comptime dmcp_build) return;
+    const clipboardString: [*c]u8 = malloc(stackClipboardBytes()) orelse return;
+    defer free(clipboardString);
     const clipboard = clipboardForClear();
-    var clipboardString: [10000]u8 = undefined;
-    copyStackRegistersToClipboardString(&clipboardString, LAST_SPARE_REGISTER);
-    gtk_clipboard_set_text(clipboard, &clipboardString, -1);
+    copyStackRegistersToClipboardString(clipboardString, LAST_SPARE_REGISTER);
+    gtk_clipboard_set_text(clipboard, clipboardString, -1);
 }
 
 // StatSumNames[NUMBER_OF_STATISTICAL_SUMS]: fixed-width 14-glyph-column labels,
 // one per SUM_* index, so SRnn is labelled with the name of the sum it prints.
-// screen.c's copy of this table has no row for SUM_X2lnY (14) and so holds 27
-// labels for 28 sums: it names SR14..SR26 after the following sum and strcpy()s
-// the absent 28th pointer for SR27. The missing row is restored here -- a
-// deliberate divergence, because the C reads one past its own initialiser list.
 // The 28 rows and their order match summationRegisterName in the print owner.
 const StatSumNames = [_][]const u8{
     "n             ",
@@ -624,9 +686,19 @@ comptime {
 
 pub export fn copyAllRegistersToClipboard() callconv(.c) void {
     if (comptime dmcp_build) return;
+    var bytes: usize = stackClipboardBytes();
+    var r: i32 = 99;
+    while (r >= 0) : (r -= 1) {
+        bytes += clipboardBytes(@intCast(r));
+    }
+    r = @as(i32, currentNumberOfLocalRegisters()) - 1;
+    while (r >= 0) : (r -= 1) {
+        bytes += clipboardBytes(@intCast(FIRST_LOCAL_REGISTER + r));
+    }
+    const clipboardString: [*c]u8 = malloc(bytes) orelse return;
+    defer free(clipboardString);
+    var ptr: [*c]u8 = clipboardString;
     const clipboard = clipboardForClear();
-    var clipboardString: [15000]u8 = undefined;
-    var ptr: [*c]u8 = &clipboardString;
 
     copyStackRegistersToClipboardString(ptr, LAST_SPARE_REGISTER);
 
@@ -669,7 +741,7 @@ pub export fn copyAllRegistersToClipboard() callconv(.c) void {
         }
     }
 
-    gtk_clipboard_set_text(clipboard, &clipboardString, -1);
+    gtk_clipboard_set_text(clipboard, clipboardString, -1);
 }
 
 // currentNumberOfLocalRegisters: currentSubroutineLevelData->numberOfLocalRegisters.

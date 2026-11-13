@@ -35,6 +35,10 @@ const dmcp_build: bool = frontier_build_options.dmcp_build;
 const old_hw: bool = frontier_build_options.old_hw;
 const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 const option_structured_pgm: bool = frontier_build_options.option_structured_pgm;
+// OPTION_DRG_CFG: DRG during number entry chooses the unit of the literal, and a
+// D.MS literal shows its marks as it is typed.
+const option_drg_cfg: bool = frontier_build_options.option_drg_cfg;
+const DRG_NIM_BIT: u3 = 5;
 // structured.h defines OPTION_STRUCT_INDENT inside the OPTION_STRUCTURED_PGM guard,
 // so the editor indents a structure's body exactly when the structures are compiled
 // in; without it the columns are those of the build before STRUCT.
@@ -69,9 +73,11 @@ const abi = @import("abi"); // shared ABI bindings
 const program_step_opcode = @import("program_step_opcode.zig"); // std-only program-step opcode inspection
 const ks_register_remap = @import("ks_register_remap.zig"); // std-only KS-code register remap
 const frontier_assign = @import("../input/assign.zig");
+const frontier_addons = @import("../extensions/addons.zig");
 const frontier_bufferize = @import("../display/bufferize.zig");
 const frontier_calc_mode = @import("../calc_mode.zig");
 const frontier_char_string = @import("../display/text/char_string.zig");
+const frontier_conversion_angles = @import("../convert/conversion_angles.zig");
 const frontier_date_time = @import("../convert/date_time.zig");
 const frontier_decode = @import("decode.zig");
 const frontier_error = @import("../error.zig");
@@ -132,6 +138,8 @@ const NP_COMPLEX_INT_PART: u8 = 7;
 const NP_COMPLEX_FLOAT_PART: u8 = 8;
 const NP_COMPLEX_EXPONENT: u8 = 9;
 const NP_HP32SII_DENOMINATOR: u8 = 10;
+const NP_COMPLEX_FRACTION_DENOMINATOR: u8 = 11;
+const NP_COMPLEX_HP32SII_DENOMINATOR: u8 = 12;
 
 const PTP_STATUS: u16 = 7680;
 const PTP_DISABLED: u16 = 7680;
@@ -188,6 +196,7 @@ const dtReal34: u32 = 1;
 const amNone: u32 = 5;
 
 const ERROR_NONE: u8 = 0;
+const ERROR_INVALID_INTEGER_INPUT: u8 = 9;
 const ERROR_LABEL_NOT_FOUND: u8 = 6;
 const ERROR_OUT_OF_RANGE: u8 = 8;
 const ERROR_RAM_FULL: u8 = 11;
@@ -211,6 +220,7 @@ const PGM_RUNNING: u8 = 1;
 const SCRUPD_AUTO: u8 = 0;
 const SCRUPD_MANUAL_MENU: u8 = 4;
 const CM_PEM: u8 = 3;
+const CM_CONFIRMATION: u8 = 11;
 
 const TM_VALUE: u16 = 10001;
 const TM_CMP: u16 = 10022; // defines.h: 10022 (matches comparison items' .param=10022); was 10021 (=TM_STRING) -> interactive comparisons broke
@@ -298,6 +308,7 @@ const ITM_op_j: u16 = 1830;
 const ITM_toPOL2: u16 = 1849;
 const ITM_toREC2: u16 = 1850;
 const ITM_DRG: u16 = 1873;
+const ITM_NOP: i16 = 1542;
 const ITM_CLA: u16 = 1874;
 const ITM_ms: u16 = 1909;
 const ITM_toPOL_HP: u16 = 1981;
@@ -404,6 +415,9 @@ extern var lastIntegerBase: u32; // uint32_t lastIntegerBase;
 extern var decodedIntegerBase: u32; // uint32_t decodedIntegerBase;
 extern var nimNumberPart: u8; // uint8_t nimNumberPart;
 extern var editingLiteralType: u8; // uint8_t editingLiteralType;
+extern var nimPolarAngularMode: u8;
+extern var drgConfig: u8;
+extern var DRG_Cycling: u8;
 extern var catalog: i16; // int16_t catalog;
 extern var alphaCase: u8; // uint8_t alphaCase;
 extern var nextChar: u8; // uint8_t nextChar;
@@ -1053,7 +1067,7 @@ pub export fn fnPem(unusedButMandatoryParameter: u16) callconv(.c) void {
     var linesOfCurrentStep: u16 = 1;
     lastIntegerBase = 0;
 
-    if (calcMode != CM_PEM) {
+    if ((calcMode != CM_PEM) and (calcMode != CM_CONFIRMATION)) {
         calcMode = CM_PEM;
         frontier_softmenus.showSoftmenu(-MNU_PFN);
         screenUpdatingMode &= ~@as(u8, SCRUPD_MANUAL_MENU);
@@ -1211,32 +1225,36 @@ pub export fn fnPem(unusedButMandatoryParameter: u16) callconv(.c) void {
                     tmpString[2 + @as(usize, @intCast(cursorInString))] = STD_CURSOR[0];
                     tmpString[2 + @as(usize, @intCast(cursorInString)) + 1] = STD_CURSOR[1];
                 } else if (aimBuffer[0] != 0) {
-                    var tstr: [*c]u8 = tmpString + @as(usize, @intCast(stringByteLength(tmpString)));
+                    // The number is shown as in NIM while it is entered, with its
+                    // base, denominator or unit after the cursor.
+                    var hint: [20]u8 = undefined;
                     lastIntegerBase = decodedIntegerBase;
-                    if ((lastIntegerBase != 0) and ((nimNumberPart == NP_INT_10) or (nimNumberPart == NP_INT_16))) {
-                        tstr -= 2;
-                        tstr[0] = STD_CURSOR[0];
-                        tstr += 1;
-                        tstr[0] = STD_CURSOR[1];
-                        tstr += 1;
-                        tstr[0] = baseChars[lastIntegerBase * 2];
-                        tstr += 1;
-                        tstr[0] = baseChars[lastIntegerBase * 2 + 1];
-                        tstr += 1;
+                    var tstr: [*c]u8 = frontier_char_string.stringCopy(tmpString, nimBufferDisplay + 2);
+                    tstr[0] = STD_CURSOR[0];
+                    tstr += 1;
+                    tstr[0] = STD_CURSOR[1];
+                    tstr += 1;
+                    frontier_bufferize.nimHint(&hint);
+                    tstr = frontier_char_string.stringCopy(tstr, &hint);
+                    if (comptime option_drg_cfg) {
+                        const unit: u8 = if (frontier_bufferize.nimComplexPart())
+                            nimPolarAngularMode
+                        else if (editingLiteralType >= STRING_ANGLE_RADIAN and editingLiteralType <= STRING_ANGLE_MULTPI)
+                            editingLiteralType - STRING_ANGLE_RADIAN
+                        else
+                            amNone;
+                        if (unit == amDMS) {
+                            tstr = frontier_char_string.stringCopy(tstr, frontier_bufferize.nimDmsMark());
+                        } else if (unit < amNone) {
+                            tstr[0] = angleChars[@as(usize, unit) * 2];
+                            tstr += 1;
+                            tstr[0] = angleChars[@as(usize, unit) * 2 + 1];
+                            tstr += 1;
+                        }
                     } else if (_isAngleType(editingLiteralType)) {
-                        tstr -= 2; // to overwrite angle symbol with cursor
-                        tstr[0] = STD_CURSOR[0];
-                        tstr += 1;
-                        tstr[0] = STD_CURSOR[1];
-                        tstr += 1;
                         tstr[0] = angleChars[@as(usize, @intCast((editingLiteralType - STRING_ANGLE_RADIAN))) * 2];
                         tstr += 1;
                         tstr[0] = angleChars[@as(usize, @intCast((editingLiteralType - STRING_ANGLE_RADIAN))) * 2 + 1];
-                        tstr += 1;
-                    } else {
-                        tstr[0] = STD_CURSOR[0];
-                        tstr += 1;
-                        tstr[0] = STD_CURSOR[1];
                         tstr += 1;
                     }
                     tstr[0] = 0;
@@ -1453,6 +1471,17 @@ fn _closeAlphaMenus() void {
     }
 }
 
+// The length and the text of a literal after its header in tmpString, inserted
+// as one step. The C narrows the length into the step's length byte.
+fn _pemInsertText(tmpPtr_in: [*c]u8, text: [*c]const u8) void {
+    var tmpPtr = tmpPtr_in;
+    const length: u32 = @intCast(stringByteLength(text));
+    tmpPtr[0] = @truncate(length);
+    tmpPtr += 1;
+    _ = frontier_char_string.xcopy(tmpPtr, text, @intCast(length));
+    _insertInProgram(tmpString, @intCast(length + @as(u32, @intCast(@intFromPtr(tmpPtr) - @intFromPtr(tmpString)))));
+}
+
 // ===========================================================================
 // pemAlpha (public)
 // ===========================================================================
@@ -1611,16 +1640,12 @@ pub export fn pemAlpha(item_in: i16) callconv(.c) void {
     if (aimFunc2 < 128) { // literal
         tmpString[0] = @intCast(aimFunc2);
         tmpString[1] = STRING_LABEL_VARIABLE;
-        tmpString[2] = @intCast(stringByteLength(aimBuffer));
-        _ = frontier_char_string.xcopy(tmpString + 3, aimBuffer, @intCast(stringByteLength(aimBuffer)));
-        _insertInProgram(tmpString, @intCast(stringByteLength(aimBuffer) + 3));
+        _pemInsertText(tmpString + 2, aimBuffer);
     } else { // rem or 42str
         tmpString[0] = @intCast((@as(u16, @bitCast(aimFunc2)) >> 8) | 0x80);
         tmpString[1] = @intCast(@as(u16, @bitCast(aimFunc2)) & 0xff);
         tmpString[2] = STRING_LABEL_VARIABLE;
-        tmpString[3] = @intCast(stringByteLength(aimBuffer));
-        _ = frontier_char_string.xcopy(tmpString + 4, aimBuffer, @intCast(stringByteLength(aimBuffer)));
-        _insertInProgram(tmpString, @intCast(stringByteLength(aimBuffer) + 4));
+        _pemInsertText(tmpString + 3, aimBuffer);
     }
     currentLocalStepNumber -= 1;
     currentStep = frontier_next_step.findPreviousStep(currentStep);
@@ -1683,29 +1708,7 @@ pub export fn pemAddNumber(item: i16, doInsertInProgram: bool) callconv(.c) void
         _ = memset(nimBufferDisplay, 0, NIM_BUFFER_LENGTH);
         currentLocalStepNumber -= 1;
         currentStep = frontier_next_step.findPreviousStep(currentStep);
-        switch (@as(u16, @bitCast(item))) {
-            ITM_EXPONENT => {
-                aimBuffer[0] = '+';
-                aimBuffer[1] = '1';
-                aimBuffer[2] = '.';
-                aimBuffer[3] = 0;
-                nimNumberPart = NP_REAL_FLOAT_PART;
-            },
-            ITM_PERIOD => {
-                aimBuffer[0] = '+';
-                aimBuffer[1] = '0';
-                aimBuffer[2] = 0;
-                nimNumberPart = NP_INT_10;
-            },
-            else => {
-                // ITM_0..ITM_9, ITM_A..ITM_F
-                if ((item >= ITM_0 and item <= ITM_9) or (item >= ITM_A and item <= ITM_F)) {
-                    aimBuffer[0] = '+';
-                    aimBuffer[1] = 0;
-                    nimNumberPart = NP_EMPTY;
-                }
-            },
-        }
+        frontier_bufferize.nimStartNumber(item);
     }
 
     if (item == ITM_BACKSPACE and ((aimBuffer[0] == '+' and aimBuffer[1] != 0 and aimBuffer[2] == 0) or aimBuffer[1] == 0)) {
@@ -1724,7 +1727,6 @@ pub export fn pemAddNumber(item: i16, doInsertInProgram: bool) callconv(.c) void
         }
         if (aimBuffer[0] != 0) {
             var tmpPtr: [*c]u8 = tmpString;
-            var offset: u8 = 3;
             const numBuffer: [*c]u8 = if (aimBuffer[0] == '+') aimBuffer + 1 else aimBuffer;
             tmpPtr[0] = @intCast(ITM_LITERAL);
             tmpPtr += 1;
@@ -1735,7 +1737,6 @@ pub export fn pemAddNumber(item: i16, doInsertInProgram: bool) callconv(.c) void
                         tmpPtr += 1;
                         tmpPtr[0] = @intCast(lastIntegerBase);
                         tmpPtr += 1;
-                        offset += 1;
                     } else {
                         tmpPtr[0] = STRING_LONG_INTEGER;
                         tmpPtr += 1;
@@ -1757,11 +1758,8 @@ pub export fn pemAddNumber(item: i16, doInsertInProgram: bool) callconv(.c) void
             if (_isAngleType(editingLiteralType)) {
                 (tmpPtr - 1)[0] = editingLiteralType; // [DL] force literal type when editing angles
             }
-            tmpPtr[0] = @intCast(stringByteLength(numBuffer));
-            tmpPtr += 1;
-            _ = frontier_char_string.xcopy(tmpPtr, numBuffer, @intCast(stringByteLength(numBuffer)));
             if (doInsertInProgram) {
-                _insertInProgram(tmpString, @intCast(stringByteLength(numBuffer) + offset));
+                _pemInsertText(tmpPtr, numBuffer);
                 currentLocalStepNumber -= 1;
                 currentStep = frontier_next_step.findPreviousStep(currentStep);
                 if (!programListEnd) {
@@ -1780,42 +1778,46 @@ pub export fn pemAddNumber(item: i16, doInsertInProgram: bool) callconv(.c) void
 // pemCloseNumberInput (public)
 // ===========================================================================
 pub export fn pemCloseNumberInput() callconv(.c) void {
+    frontier_bufferize.nimCompleteNumber();
     if (editingLiteralType > 0) { // For EDIT: close with right data/angle type
         switch (editingLiteralType) {
             STRING_DATE => _pemCloseDateInput(),
             STRING_TIME => _pemCloseTimeInput(),
-            STRING_ANGLE_RADIAN => _pemCloseAngleInput(ITM_RAD2),
-            STRING_ANGLE_GRAD => _pemCloseAngleInput(ITM_GRAD2),
-            STRING_ANGLE_DEGREE => _pemCloseAngleInput(ITM_DEG2),
-            STRING_ANGLE_DMS => _pemCloseAngleInput(ITM_DMS2),
-            STRING_ANGLE_MULTPI => _pemCloseAngleInput(ITM_MULPI2),
+            STRING_ANGLE_RADIAN, STRING_ANGLE_GRAD, STRING_ANGLE_DEGREE, STRING_ANGLE_DMS, STRING_ANGLE_MULTPI => _pemCloseAngleInput(editingLiteralType),
             else => {},
         }
         return;
     }
-    deleteStepsFromTo(currentStep, frontier_next_step.findNextStep(currentStep));
+
     if (aimBuffer[0] != 0) {
         const numBuffer: [*c]u8 = if (aimBuffer[0] == '+') aimBuffer + 1 else aimBuffer;
         var tmpPtr: [*c]u8 = tmpString;
         var inputLength: u32 = @intCast(stringByteLength(numBuffer));
         var doneWithBinaryLiteral: bool_t = false;
-        var lastChar: i16 = @intCast(@as(i64, @intCast(strlen(aimBuffer))) - 1);
 
         if ((lastIntegerBase != 0) and (nimNumberPart == NP_INT_10 or nimNumberPart == NP_INT_16)) {
-            abi.fmtBufZ(aimBuffer[strlen(aimBuffer)..AIM_BUFFER_LENGTH], "#{d}", .{@as(u32, @intCast(lastIntegerBase))});
+            const hashPos = strlen(aimBuffer);
+            abi.fmtBufZ(aimBuffer[hashPos..AIM_BUFFER_LENGTH], "#{d}", .{@as(u32, @intCast(lastIntegerBase))});
+            if (!frontier_bufferize.checkShortIntegerDigits(aimBuffer)) {
+                aimBuffer[hashPos] = 0;
+                return;
+            }
             nimNumberPart = NP_INT_BASE;
+        } else if (nimNumberPart == NP_INT_BASE) {
+            if (!frontier_bufferize.checkShortIntegerDigits(aimBuffer)) {
+                return;
+            }
+        } else if (nimNumberPart == NP_INT_16) {
+            frontier_error.displayCalcErrorMessage(ERROR_INVALID_INTEGER_INPUT, ERR_REGISTER_LINE);
+            if (comptime extra_info) {
+                moreInfoErr("In function pemCloseNumberInput:", "An hexdigit is not allowed in a long integer!", null);
+            }
+            return;
         }
 
+        deleteStepsFromTo(currentStep, frontier_next_step.findNextStep(currentStep));
         tmpPtr[0] = @intCast(ITM_LITERAL);
         tmpPtr += 1;
-        if ((nimNumberPart == NP_COMPLEX_EXPONENT or nimNumberPart == NP_REAL_EXPONENT) and (aimBuffer[@intCast(lastChar)] == '+' or aimBuffer[@intCast(lastChar)] == '-') and aimBuffer[@intCast(lastChar - 1)] == 'e') {
-            lastChar -= 1;
-            aimBuffer[@intCast(lastChar)] = 0;
-            lastChar -= 1;
-        } else if (nimNumberPart == NP_REAL_EXPONENT and aimBuffer[@intCast(lastChar)] == 'e') {
-            aimBuffer[@intCast(lastChar)] = 0;
-            lastChar -= 1;
-        }
         switch (nimNumberPart) {
             NP_INT_BASE => {
                 var basePtr: [*c]u8 = numBuffer;
@@ -1862,11 +1864,17 @@ pub export fn pemCloseNumberInput() callconv(.c) void {
                 }
             },
             NP_REAL_FLOAT_PART, NP_REAL_EXPONENT, NP_HP32SII_DENOMINATOR, NP_FRACTION_DENOMINATOR => {
-                if (inputLength >= REAL34_SIZE_IN_BYTES) {
+                // A program literal takes no fraction, so a fraction is written as its value.
+                const fraction = frontier_bufferize.nimFractionEntered();
+                if (inputLength >= REAL34_SIZE_IN_BYTES or fraction) {
                     var val: real34_t = undefined;
                     tmpPtr[0] = BINARY_REAL34;
                     tmpPtr += 1;
-                    stringToReal34(numBuffer, &val);
+                    if (fraction) {
+                        frontier_bufferize.nimLiteralValue(&val, null);
+                    } else {
+                        stringToReal34(numBuffer, &val);
+                    }
                     const valBytes: [*]const u8 = @ptrCast(&val);
                     var i: u32 = 0;
                     while (i < REAL34_SIZE_IN_BYTES) : (i += 1) {
@@ -1880,36 +1888,39 @@ pub export fn pemCloseNumberInput() callconv(.c) void {
                     tmpPtr += 1;
                 }
             },
-            NP_COMPLEX_INT_PART, NP_COMPLEX_FLOAT_PART, NP_COMPLEX_EXPONENT => {
-                if (aimBuffer[@intCast(stringByteLength(aimBuffer) - 1)] == 'i') {
-                    _ = strcat(aimBuffer, "1");
-                    inputLength += 1;
-                }
-
-                if (inputLength >= toBytes(COMPLEX34_SIZE_IN_BLOCKS)) {
+            NP_COMPLEX_INT_PART, NP_COMPLEX_FLOAT_PART, NP_COMPLEX_EXPONENT, NP_COMPLEX_FRACTION_DENOMINATOR, NP_COMPLEX_HP32SII_DENOMINATOR => {
+                // A program literal takes no fraction and no polar form, so these
+                // are written as their value.
+                const polar = frontier_bufferize.nimPolarEntry();
+                const fraction = frontier_bufferize.nimFractionEntered();
+                if (inputLength >= toBytes(COMPLEX34_SIZE_IN_BLOCKS) or fraction or polar) {
                     var re: real34_t = undefined;
                     var im: real34_t = undefined;
-                    var imag: [*c]u8 = numBuffer;
-                    while (imag[0] != 'i' and imag[0] != 0) {
-                        imag += 1;
-                    }
-                    if (imag[0] == 'i') {
-                        if (@intFromPtr(imag) > @intFromPtr(numBuffer) and (imag - 1)[0] == '-') {
-                            imag[0] = '-';
-                            (imag - 1)[0] = 0;
-                        } else if (@intFromPtr(imag) > @intFromPtr(numBuffer) and (imag - 1)[0] == '+') {
-                            imag[0] = 0;
-                            (imag - 1)[0] = 0;
+                    if (fraction or polar) {
+                        frontier_bufferize.nimLiteralValue(&re, &im);
+                    } else {
+                        var imag: [*c]u8 = numBuffer;
+                        while (imag[0] != 'i' and imag[0] != 0) {
                             imag += 1;
-                        } else {
-                            imag[0] = 0;
                         }
+                        if (imag[0] == 'i') {
+                            if (@intFromPtr(imag) > @intFromPtr(numBuffer) and (imag - 1)[0] == '-') {
+                                imag[0] = '-';
+                                (imag - 1)[0] = 0;
+                            } else if (@intFromPtr(imag) > @intFromPtr(numBuffer) and (imag - 1)[0] == '+') {
+                                imag[0] = 0;
+                                (imag - 1)[0] = 0;
+                                imag += 1;
+                            } else {
+                                imag[0] = 0;
+                            }
+                        }
+                        stringToReal34(numBuffer, &re);
+                        stringToReal34(imag, &im);
                     }
 
                     tmpPtr[0] = BINARY_COMPLEX34;
                     tmpPtr += 1;
-                    stringToReal34(numBuffer, &re);
-                    stringToReal34(imag, &im);
                     const reBytes: [*]const u8 = @ptrCast(&re);
                     var i: u32 = 0;
                     while (i < REAL34_SIZE_IN_BYTES) : (i += 1) {
@@ -1935,12 +1946,11 @@ pub export fn pemCloseNumberInput() callconv(.c) void {
             },
         }
         if (!doneWithBinaryLiteral) {
-            tmpPtr[0] = @intCast(inputLength);
-            tmpPtr += 1;
-            _ = frontier_char_string.xcopy(tmpPtr, numBuffer, inputLength);
-            _insertInProgram(tmpString, @intCast(@as(i64, @intCast(inputLength)) + @as(i64, @intCast(@intFromPtr(tmpPtr) - @intFromPtr(tmpString)))));
+            _pemInsertText(tmpPtr, numBuffer);
             pemCursorIsZerothStep = false;
         }
+    } else {
+        deleteStepsFromTo(currentStep, frontier_next_step.findNextStep(currentStep));
     }
 
     aimBuffer[0] = '!';
@@ -1960,10 +1970,7 @@ fn _pemCloseTimeInput() void {
                 tmpPtr += 1;
                 tmpPtr[0] = STRING_TIME;
                 tmpPtr += 1;
-                tmpPtr[0] = @intCast(stringByteLength(numBuffer));
-                tmpPtr += 1;
-                _ = frontier_char_string.xcopy(tmpPtr, numBuffer, @intCast(stringByteLength(numBuffer)));
-                _insertInProgram(tmpString, @intCast(stringByteLength(numBuffer) + @as(i32, @intCast(@intFromPtr(tmpPtr) - @intFromPtr(tmpString)))));
+                _pemInsertText(tmpPtr, numBuffer);
             }
             aimBuffer[0] = '!';
         },
@@ -1989,57 +1996,60 @@ fn _pemCloseDateInput() void {
             frontier_date_time.internalDateToJulianDay(reg34(TEMP_REGISTER_1), reg34(TEMP_REGISTER_1));
 
             if (lastErrorCode == 0) {
-                real34ToString(reg34(TEMP_REGISTER_1), tmpPtr + 1);
-                tmpPtr[0] = @intCast(stringByteLength(tmpPtr + 1));
-                tmpPtr += 1;
-
-                _insertInProgram(tmpString, @intCast(stringByteLength(tmpPtr) + @as(i32, @intCast(@intFromPtr(tmpPtr) - @intFromPtr(tmpString)))));
+                real34ToString(reg34(TEMP_REGISTER_1), numBuffer); // the Julian day number, written over the typed date
+                _pemInsertText(tmpPtr, numBuffer);
             }
         }
         aimBuffer[0] = '!';
     }
 }
 
-// _pemCloseAngleInput (static)
-fn _pemCloseAngleInput(item: c_int) void {
+// _pemCloseAngleInput (static): the number closes as an angle literal of that type.
+fn _pemCloseAngleInput(literalType: u8) void {
+    frontier_bufferize.nimCompleteNumber();
     switch (nimNumberPart) {
-        NP_INT_10, NP_REAL_FLOAT_PART => {
+        NP_FRACTION_DENOMINATOR, NP_HP32SII_DENOMINATOR, NP_INT_10, NP_REAL_FLOAT_PART, NP_REAL_EXPONENT => {
+            if (nimNumberPart == NP_FRACTION_DENOMINATOR or nimNumberPart == NP_HP32SII_DENOMINATOR) {
+                // An angle literal is text, so a fraction is written as the text of its value.
+                var value: real34_t = undefined;
+                frontier_bufferize.nimLiteralValue(&value, null);
+                if (literalType == STRING_ANGLE_DMS) {
+                    frontier_conversion_angles.real34FromDegToDms(&value, &value);
+                }
+                real34ToString(&value, aimBuffer);
+                var exponent: usize = 0;
+                while (aimBuffer[exponent] != 0 and aimBuffer[exponent] != 'E') : (exponent += 1) {}
+                if (aimBuffer[exponent] == 'E') {
+                    aimBuffer[exponent] = 'e'; // a literal takes its exponent in lower case
+                }
+            }
             deleteStepsFromTo(currentStep, frontier_next_step.findNextStep(currentStep));
             if (aimBuffer[0] != 0) {
                 const numBuffer: [*c]u8 = if (aimBuffer[0] == '+') aimBuffer + 1 else aimBuffer;
                 var tmpPtr: [*c]u8 = tmpString;
                 tmpPtr[0] = @intCast(ITM_LITERAL);
                 tmpPtr += 1;
-                // designated-initializer table angle_ids[item]
-                var id: c_int = -1;
-                const mapped: c_int = switch (item) {
-                    @as(c_int, @intCast(ITM_DEG2)) => STRING_ANGLE_DEGREE,
-                    @as(c_int, @intCast(ITM_DMS2)) => STRING_ANGLE_DMS,
-                    @as(c_int, @intCast(ITM_GRAD2)) => STRING_ANGLE_GRAD,
-                    @as(c_int, @intCast(ITM_MULPI2)) => STRING_ANGLE_MULTPI,
-                    @as(c_int, @intCast(ITM_RAD2)) => STRING_ANGLE_RADIAN,
-                    else => -2,
-                };
-                // The C table covers indices 0..max(ITM_*); any other in-range index is 0,
-                // but the only callers pass the five ITM_*2 codes (or DMS handled above),
-                // so unmapped -> id stays -1 (no byte written). Negative/out-of-range -> -1.
-                if (mapped != -2) {
-                    id = mapped;
-                }
-                if (id != -1) {
-                    tmpPtr[0] = @intCast(id);
-                    tmpPtr += 1;
-                }
-                tmpPtr[0] = @intCast(stringByteLength(numBuffer));
+                tmpPtr[0] = literalType;
                 tmpPtr += 1;
-                _ = frontier_char_string.xcopy(tmpPtr, numBuffer, @intCast(stringByteLength(numBuffer)));
-                _insertInProgram(tmpString, @intCast(stringByteLength(numBuffer) + @as(i32, @intCast(@intFromPtr(tmpPtr) - @intFromPtr(tmpString)))));
+                _pemInsertText(tmpPtr, numBuffer);
             }
             editingLiteralType = 0;
             aimBuffer[0] = '!';
         },
         else => {},
     }
+}
+
+// The literal type an angle key gives the number being entered, 0 for any other key.
+fn _angleLiteralType(func: i16) u8 {
+    return switch (func) {
+        ITM_DEG2 => STRING_ANGLE_DEGREE,
+        ITM_DMS2 => STRING_ANGLE_DMS,
+        ITM_GRAD2 => STRING_ANGLE_GRAD,
+        ITM_MULPI2 => STRING_ANGLE_MULTPI,
+        ITM_RAD2 => STRING_ANGLE_RADIAN,
+        else => 0,
+    };
 }
 
 // ===========================================================================
@@ -2093,9 +2103,7 @@ pub export fn insertStepInProgram(newFunc: i16) callconv(.c) void {
         tmpString[0] = @intCast((@as(u16, @bitCast(func)) >> 8) | 0x80);
         tmpString[1] = @truncate(@as(u16, @bitCast(func)) & 0xff);
         tmpString[2] = @intCast(STRING_LABEL_VARIABLE);
-        tmpString[3] = @intCast(stringByteLength(aimBuffer));
-        _ = frontier_char_string.xcopy(tmpString + 4, aimBuffer, @intCast(stringByteLength(aimBuffer)));
-        _insertInProgram(tmpString, @intCast(stringByteLength(aimBuffer) + 4));
+        _pemInsertText(tmpString + 3, aimBuffer);
         aimBuffer[0] = 0;
         return;
     }
@@ -2111,28 +2119,37 @@ pub export fn insertStepInProgram(newFunc: i16) callconv(.c) void {
         return;
     } else if (nimNumberPart == NP_INT_BASE) {
         return;
-    } else if (ufunc == ITM_CONSTpi and aimBuffer[0] != 0 and !getSystemFlag(FLAG_ALPHA) and nimNumberPart == NP_COMPLEX_INT_PART and aimBuffer[strlen(aimBuffer) - 1] == 'i') {
-        _ = strcat(aimBuffer, "3.141592653589793238462643383279503");
+    } else if (ufunc == ITM_CONSTpi and aimBuffer[0] != 0 and !getSystemFlag(FLAG_ALPHA) and frontier_bufferize.nimPiAfterI()) {
         pemCloseNumberInput();
         aimBuffer[0] = 0;
         return;
-    } else if ((ufunc == ITM_DMS or ufunc == ITM_DMS2 or ufunc == ITM_DEG2 or ufunc == ITM_GRAD2 or ufunc == ITM_RAD2 or ufunc == ITM_MULPI2) and aimBuffer[0] != 0 and !getSystemFlag(FLAG_ALPHA) and (nimNumberPart == NP_INT_10 or nimNumberPart == NP_REAL_FLOAT_PART)) {
-        _pemCloseAngleInput(func);
+    } else if (_angleLiteralType(func) != 0 and aimBuffer[0] != 0 and !getSystemFlag(FLAG_ALPHA) and (nimNumberPart == NP_INT_10 or nimNumberPart == NP_REAL_FLOAT_PART)) {
+        _pemCloseAngleInput(_angleLiteralType(func));
         aimBuffer[0] = 0;
         return;
     } else if ((ufunc == ITM_dotD) and editingLiteralType != 0 and aimBuffer[0] != 0 and !getSystemFlag(FLAG_ALPHA)) {
         editingLiteralType = 0;
         pemCloseNumberInput();
         aimBuffer[0] = '!';
-    } else if ((ufunc == ITM_DRG) and aimBuffer[0] != 0 and !getSystemFlag(FLAG_ALPHA) and (nimNumberPart == NP_INT_10 or nimNumberPart == NP_REAL_FLOAT_PART)) {
-        switch (currentAngularMode) {
-            amRadian => _pemCloseAngleInput(ITM_RAD2),
-            amGrad => _pemCloseAngleInput(ITM_GRAD2),
-            amDegree => _pemCloseAngleInput(ITM_DEG2),
-            amDMS => _pemCloseAngleInput(ITM_DMS2),
-            amMultPi => _pemCloseAngleInput(ITM_MULPI2),
-            else => return,
+    } else if (option_drg_cfg and (ufunc == ITM_DRG) and aimBuffer[0] != 0 and !getSystemFlag(FLAG_ALPHA) and (drgConfig & (1 << DRG_NIM_BIT)) != 0 and (frontier_bufferize.nimComplexPart() or frontier_bufferize.nimRealOrFractionPart())) {
+        if (frontier_bufferize.nimComplexPart()) {
+            pemAddNumber(ITM_DRG, true); // the angle takes the unit DRG chooses, as in NIM, and the input stays open
+            return;
         }
+        var unit: u16 = editingLiteralType -% STRING_ANGLE_RADIAN; // STRING_ANGLE_* follow angularMode_t
+        if (unit > amMultPi) {
+            unit = amNone;
+        }
+        frontier_addons.DRG_cycNim(&unit);
+        DRG_Cycling = 0;
+        editingLiteralType = if (unit == amNone) 0 else STRING_ANGLE_RADIAN + @as(u8, @intCast(unit));
+        pemAddNumber(ITM_NOP, true); // the step becomes a literal of that unit, and the input stays open
+        return;
+    } else if ((ufunc == ITM_DRG) and aimBuffer[0] != 0 and !getSystemFlag(FLAG_ALPHA) and (nimNumberPart == NP_INT_10 or nimNumberPart == NP_REAL_FLOAT_PART)) {
+        if (currentAngularMode > amMultPi) {
+            return;
+        }
+        _pemCloseAngleInput(STRING_ANGLE_RADIAN + @as(u8, @intCast(currentAngularMode))); // STRING_ANGLE_* follow angularMode_t
         aimBuffer[0] = 0;
         return;
     }
@@ -2151,15 +2168,10 @@ pub export fn insertStepInProgram(newFunc: i16) callconv(.c) void {
                 return;
             }
         } else {
-            switch (editingLiteralType) {
-                STRING_ANGLE_RADIAN => _pemCloseAngleInput(ITM_RAD2),
-                STRING_ANGLE_GRAD => _pemCloseAngleInput(ITM_GRAD2),
-                STRING_ANGLE_DEGREE => _pemCloseAngleInput(ITM_DEG2),
-                STRING_ANGLE_DMS => _pemCloseAngleInput(ITM_DMS2),
-                STRING_ANGLE_MULTPI => _pemCloseAngleInput(ITM_MULPI2),
-                else => pemCloseNumberInput(),
+            pemCloseNumberInput(); // for EDIT this closes with the right angle type
+            if (lastErrorCode == ERROR_NONE) {
+                aimBuffer[0] = 0;
             }
-            aimBuffer[0] = 0;
             if (ufunc == ITM_ENTER) { // just close number editing, don't insert ENTER
                 return;
             }

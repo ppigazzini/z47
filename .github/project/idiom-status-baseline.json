@@ -1,10 +1,10 @@
 {
   "totals": {
     "extern_struct_files": 17,
-    "cptr_files": 107,
-    "ptrcast_sites": 929,
-    "callconv_c_sites": 3250,
-    "extern_fn_sites": 4002,
+    "cptr_files": 106,
+    "ptrcast_sites": 927,
+    "callconv_c_sites": 3276,
+    "extern_fn_sites": 4012,
     "printf_family_files": 55,
     "anyopaque_files": 91,
     "off_offset_sites": 73,
@@ -14,7 +14,7 @@
     "slice_by_end_sites": 0,
     "zeroes_scalar_array_sites": 0
   },
-  "owner_count": 416,
+  "owner_count": 417,
   "seam_totals": {
     "extern_struct_files": 2,
     "cptr_files": 0,

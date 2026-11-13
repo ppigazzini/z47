@@ -171,9 +171,7 @@ inline fn getComplexRegisterPolarMode(reg: calcRegister_t) u32 {
     return getRegisterTag(reg) & amPolar;
 }
 inline fn setComplexRegisterPolarMode(reg: calcRegister_t, pm: u32) void {
-    // setRegisterTag(reg, (((pm & amPolar) != 0) ? (getRegisterTag(reg) & amAngleMask) : amNone) | (pm & amPolar))
-    const base: u32 = if ((pm & amPolar) != 0) (getRegisterTag(reg) & 15) else @as(u32, @intCast(amNone));
-    setRegisterTag(reg, base | (pm & amPolar));
+    setRegisterTag(reg, abi.register_tag.complexWithPolarMode(getRegisterTag(reg), pm));
 }
 
 // The kbd_std and Norm_Key_00_key macros, which assign.c defines.

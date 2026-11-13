@@ -16,6 +16,9 @@ const state_old_hw: bool = build_options.state_old_hw;
 const option_structured_pgm: bool = build_options.option_structured_pgm;
 // OPTION_ATEXT_FONTS: the font ATEXT draws with is saved beside the GRMOD byte.
 const option_atext_fonts: bool = build_options.option_atext_fonts;
+// OPTION_DRG_CFG: the units the DRG menu chose are saved beside DRG_Cycling. A
+// file without the key leaves the RESET default standing.
+const option_drg_cfg: bool = build_options.option_drg_cfg;
 const FOR_MAX_LOOPS: u32 = if (state_old_hw) 4 else 18;
 const FOR_LOOP_TABLE_BYTES: u32 = FOR_MAX_LOOPS * 10; // sizeof(forLoop_t) is 10 on every target
 // backup.cfg is the simulator's own state store: upstream wraps the whole file
@@ -303,6 +306,7 @@ extern var overrideShowBottomLine: [1]u8;
 extern var displayStackSHOIDISP: [1]u8;
 extern var ListXYposition: [2]u8;
 extern var DRG_Cycling: [1]u8;
+extern var drgConfig: u8;
 extern var lastFlgScr: [1]u8;
 extern var displayAIMbufferoffset: [2]u8;
 extern var bcdDisplaySign: [1]u8;
@@ -683,6 +687,7 @@ pub fn saveCalc() void {
     sv(&displayStackSHOIDISP[0], 1, "displayStackSHOIDISP", "uint8");
     sv(&ListXYposition[0], 2, "ListXYposition", "int16");
     sv(&DRG_Cycling[0], 1, "DRG_Cycling", "uint8");
+    if (comptime option_drg_cfg) sv(&drgConfig, 1, "drgConfig", "uint8");
     sv(&lastFlgScr[0], 1, "lastFlgScr", "uint8");
     sv(&displayAIMbufferoffset[0], 2, "displayAIMbufferoffset", "int16");
     sv(&bcdDisplaySign[0], 1, "bcdDisplaySign", "uint8");
@@ -1445,6 +1450,7 @@ pub fn restoreCalc() void {
     rv(&displayStackSHOIDISP[0], 1, "displayStackSHOIDISP", "uint8");
     rv(&ListXYposition[0], 2, "ListXYposition", "int16");
     rv(&DRG_Cycling[0], 1, "DRG_Cycling", "uint8");
+    if (comptime option_drg_cfg) rv(&drgConfig, 1, "drgConfig", "uint8");
     rv(&lastFlgScr[0], 1, "lastFlgScr", "uint8");
     rv(&displayAIMbufferoffset[0], 2, "displayAIMbufferoffset", "int16");
     rv(&bcdDisplaySign[0], 1, "bcdDisplaySign", "uint8");

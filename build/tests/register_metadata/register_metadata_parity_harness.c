@@ -51,7 +51,7 @@ extern void     oracle_setRegisterDataType(calcRegister_t regist, uint16_t dataT
 extern void     oracle_setRegisterDataPointer(calcRegister_t regist, const void *memPtr);
 extern void     oracle_setRegisterTag(calcRegister_t regist, uint32_t tag);
 extern void     oracle_setRegisterMaxDataLengthInBlocks(calcRegister_t regist, uint16_t maxDataLen);
-extern void     oracle_reallocateRegister(calcRegister_t regist, uint32_t dataType, uint16_t dataSizeWithoutDataLenBlocks, uint32_t tag);
+extern bool_t   oracle_reallocateRegister(calcRegister_t regist, uint32_t dataType, uint16_t dataSizeWithoutDataLenBlocks, uint32_t tag);
 extern void     oracle_clearRegister(calcRegister_t regist);
 extern void     oracle_copySourceRegisterToDestRegister(calcRegister_t sourceRegister, calcRegister_t destRegister);
 extern void     oracle_allocateLocalRegisters(uint16_t numberOfRegistersToAllocate);
@@ -111,12 +111,17 @@ typedef struct {
   uint8_t          localRegisterCount; // currentNumberOfLocalRegisters is a defines.h macro
   uint8_t          lastErrorCode;
   uint8_t          temporaryInformation;
+  uint8_t          returned; // the mutator's own verdict, for the ones that return one
   uint32_t         freeMemoryBlocks;
   uint8_t          ram[RAM_SIZE_IN_BLOCKS * 4];
 } snapshot_t;
 
 static snapshot_t snapshotA;
 static snapshot_t snapshotB;
+
+// What the case body returned. runSide clears it, so a mutator with no verdict
+// leaves 0 on both sides.
+static uint8_t caseReturned;
 
 static void takeSnapshot(snapshot_t *out) {
   memset(out, 0, sizeof(*out));
@@ -125,6 +130,7 @@ static void takeSnapshot(snapshot_t *out) {
   out->localRegisterCount = currentSubroutineLevelData == NULL ? 0 : currentNumberOfLocalRegisters;
   out->lastErrorCode = lastErrorCode;
   out->temporaryInformation = temporaryInformation;
+  out->returned = caseReturned;
   out->freeMemoryBlocks = getFreeRamMemory();
   memcpy(out->ram, ram, sizeof(out->ram));
 }
@@ -174,6 +180,10 @@ static int reportSnapshotMismatch(const char *caseName) {
   if(snapshotA.temporaryInformation != snapshotB.temporaryInformation) {
     fail("%s: temporaryInformation z47=%u c43=%u", caseName,
          snapshotA.temporaryInformation, snapshotB.temporaryInformation);
+    return 1;
+  }
+  if(snapshotA.returned != snapshotB.returned) {
+    fail("%s: returned z47=%u c43=%u", caseName, snapshotA.returned, snapshotB.returned);
     return 1;
   }
   if(snapshotA.freeMemoryBlocks != snapshotB.freeMemoryBlocks) {
@@ -239,6 +249,7 @@ static void buildFixture(void) {
 // Run one side of a mutating case: rebuild the fixture, run `body`, snapshot.
 static void runSide(void (*body)(void), snapshot_t *out) {
   buildFixture();
+  caseReturned = 0;
   body();
   takeSnapshot(out);
 }
@@ -400,8 +411,8 @@ static uint16_t caseSize;
 static uint32_t caseTag;
 static const char *caseName;
 
-static void zigReallocate(void)    { reallocateRegister(caseRegister, caseDataType, caseSize, caseTag); }
-static void c43Reallocate(void)    { oracle_reallocateRegister(caseRegister, caseDataType, caseSize, caseTag); }
+static void zigReallocate(void)    { caseReturned = reallocateRegister(caseRegister, caseDataType, caseSize, caseTag); }
+static void c43Reallocate(void)    { caseReturned = oracle_reallocateRegister(caseRegister, caseDataType, caseSize, caseTag); }
 static void zigClear(void)         { clearRegister(caseRegister); }
 static void c43Clear(void)         { oracle_clearRegister(caseRegister); }
 static void zigSetDataType(void)   { setRegisterDataType(caseRegister, (uint16_t)caseDataType, caseTag); }
@@ -446,6 +457,7 @@ static const struct {
   {"reallocateRegister named -> string",    FIRST_NAMED_VARIABLE, dtString, 6, amNone},
   {"reallocateRegister local -> longInt",   FIRST_LOCAL_REGISTER, dtLongInteger, 2, 0},
   {"reallocateRegister lettered reserved",  FIRST_RESERVED_VARIABLE, dtReal34, 0, amNone},
+  {"reallocateRegister reserved retyped",   FIRST_RESERVED_VARIABLE, dtString, 2, amNone},
   {"reallocateRegister SPARE1",             FIRST_RESERVED_VARIABLE + 26, dtReal34, 0, amNone},
   {"reallocateRegister ACC",                FIRST_NAMED_RESERVED_VARIABLE, dtReal34, 0, amNone},
   // NO out-of-range case here. c43 indexes its arrays unguarded, so

@@ -727,7 +727,7 @@ void real34ToDisplayString(const real34_t *real34, uint32_t tag, char *displaySt
   snprintf(displayString, ERROR_MESSAGE_LENGTH, "%d", fakeReal34Value(real34));
 }
 
-void complex34ToDisplayString(const complex34_t *complex34, char *displayString, const font_t *font, int16_t maxWidth, int16_t displayHasNDigits, bool_t limitExponent, bool_t frontSpace, irfracOption_t limitIrfrac, uint16_t tagAngle, bool_t tagPolar) {
+void complex34ToDisplayString(const complex34_t *complex34, char *displayString, const font_t *font, int16_t maxWidth, int16_t displayHasNDigits, bool_t limitExponent, bool_t frontSpace, irfracOption_t limitIrfrac, uint16_t tagAngle, bool_t tagPolar, int16_t expStep) {
   (void)font;
   (void)maxWidth;
   (void)displayHasNDigits;
@@ -736,6 +736,7 @@ void complex34ToDisplayString(const complex34_t *complex34, char *displayString,
   (void)limitIrfrac;
   (void)tagAngle;
   (void)tagPolar;
+  (void)expStep;
   snprintf(displayString,
            ERROR_MESSAGE_LENGTH,
            "%d%+di",
@@ -3912,7 +3913,7 @@ const real_t *z47_math_wrappers_const_piOn2(void) {
   return &fake_const_pi_on2_value;
 }
 
-void reallocateRegister(calcRegister_t regist, uint32_t data_type, uint16_t data_size_without_data_len_blocks, uint32_t tag) {
+bool_t reallocateRegister(calcRegister_t regist, uint32_t data_type, uint16_t data_size_without_data_len_blocks, uint32_t tag) {
   snapshot.reallocate_register_calls++;
   snapshot.reallocate_register_reg = regist;
   snapshot.reallocate_register_data_type = data_type;
@@ -3923,6 +3924,7 @@ void reallocateRegister(calcRegister_t regist, uint32_t data_type, uint16_t data
   if(regist == REGISTER_X && data_type != dtReal34 && data_type != dtTime && data_type != dtDate) {
     register_scalar_available = false;
   }
+  return true;
 }
 
 void fnDrop(uint16_t unusedButMandatoryParameter) {

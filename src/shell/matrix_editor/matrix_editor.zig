@@ -1406,10 +1406,10 @@ pub export fn getRealMatrixColumnWidths(matrix: *const real34Matrix_t, prefixWid
     const actualCols: c_int = if (verticalVector) 1 else if (colVector) matrix.header.matrixRows else matrix.header.matrixColumns;
     const cols: c_int = if (actualCols > @as(c_int, maxColsIn)) @as(c_int, maxColsIn) else actualCols;
     const rowLimit: c_int = if (showPage) MATRIX_MAX_ROWS_ON_SHOW else MATRIX_MAX_ROWS; // SHOW takes more rows
-    const maxRows: c_int = if (rowsReal > rowLimit) rowLimit else rowsReal;
     const forEditor = matrix == &openMatrixMIMPointer.realMatrix;
     const sRow: u16 = if (forEditor) scrollRow else 0;
     const sCol: u16 = if (forEditor) scrollColumn else 0;
+    const maxRows: c_int = if (rowsReal - sRow > rowLimit) rowLimit else rowsReal - sRow; // the rows from the scroll offset to the last row
     // The width budget
     const maxWidth: i16 = if (verticalVector) showsVerticalVectorMaxWidth(&matrix.header, font, prefixWidth) else MATRIX_LINE_WIDTH_C - prefixWidth;
     var totalWidth: i16 = 0;
@@ -1928,10 +1928,10 @@ pub export fn getComplexMatrixColumnWidths(matrix: *const complex34Matrix_t, pre
     const actualCols: c_int = if (verticalVector) 1 else if (colVector) matrix.header.matrixRows else matrix.header.matrixColumns;
     const cols: c_int = if (actualCols > @as(c_int, maxColsIn)) @as(c_int, maxColsIn) else actualCols;
     const rowLimit: c_int = if (showPage) MATRIX_MAX_ROWS_ON_SHOW else MATRIX_MAX_ROWS; // SHOW takes more rows
-    const maxRows: c_int = if (rows > rowLimit) rowLimit else rows;
     const forEditor = matrix == &openMatrixMIMPointer.complexMatrix;
     const sRow: u16 = if (forEditor) scrollRow else 0;
     const sCol: u16 = if (forEditor) scrollColumn else 0;
+    const maxRows: c_int = if (rows - sRow > rowLimit) rowLimit else rows - sRow; // the rows from the scroll offset to the last row
     // The width budget, widened by one figure space on the vertical page
     const maxWidth: i16 = if (verticalVector) showsVerticalVectorMaxWidth(&matrix.header, font, prefixWidth) + frontier_char_string.stringWidth(STD_SPACE_FIGURE, font, true, true) else MATRIX_LINE_WIDTH_C - prefixWidth;
     var totalWidth: i16 = 0;
@@ -2334,28 +2334,19 @@ pub fn z47_frontier_matrix_reset_cursor_pos() void {
     resetCursorPos();
 }
 
-pub fn z47_frontier_matrix_init_aim_exponent() void {
-    aimBuffer[0] = '+';
-    aimBuffer[1] = '1';
-    aimBuffer[2] = '.';
-    aimBuffer[3] = 0;
-    nimNumberPart = NP_REAL_FLOAT_PART;
+pub fn z47_frontier_matrix_start_number(item: i16) void {
+    frontier_bufferize.nimStartNumber(item);
     resetCursorPos();
 }
-
-pub fn z47_frontier_matrix_init_aim_period() void {
-    aimBuffer[0] = '+';
-    aimBuffer[1] = '0';
-    aimBuffer[2] = 0;
-    nimNumberPart = NP_INT_10;
-    resetCursorPos();
+// π right after i ends the imaginary part and enters the element.
+pub fn z47_frontier_matrix_pi_after_i_enter() void {
+    if (frontier_bufferize.nimPiAfterI()) {
+        frontier_items.reallyRunFunction(ITM_ENTER, NOPARAM);
+    }
 }
-
-pub fn z47_frontier_matrix_init_aim_digit() void {
-    aimBuffer[0] = '+';
-    aimBuffer[1] = 0;
-    nimNumberPart = NP_INT_10;
-    resetCursorPos();
+// DRG chooses the angular unit of a complex element being entered.
+pub fn z47_frontier_matrix_drg_chooses_unit() bool {
+    return frontier_bufferize.nimDrgChoosesUnit();
 }
 
 pub fn z47_frontier_matrix_aim_is_single_plus_digit() bool {
@@ -2411,7 +2402,7 @@ pub fn z47_frontier_matrix_make_j_element(item: i16) void {
         frontier_register_value_conversions.convertReal34MatrixToComplex34Matrix(&openMatrixMIMPointer.realMatrix, &cxma);
         realMatrixFree(&openMatrixMIMPointer.realMatrix);
         frontier_register_value_conversions.convertComplex34MatrixToComplex34MatrixRegister(&cxma, @bitCast(matrixIndex));
-        if ((getSystemFlag(FLAG_POLAR) and !temporaryFlagRect) or temporaryFlagPolar) {
+        if (frontier_bufferize.nimPolarEntry()) {
             setRegisterTag(@bitCast(matrixIndex), @as(u32, @bitCast(@as(i32, currentAngularMode))) | amPolar);
         }
         openMatrixMIMPointer.complexMatrix.header.matrixRows = cxma.header.matrixRows;
@@ -2419,7 +2410,7 @@ pub fn z47_frontier_matrix_make_j_element(item: i16) void {
         openMatrixMIMPointer.complexMatrix.matrixElements = cxma.matrixElements;
     } else {
         const elm = &openMatrixMIMPointer.complexMatrix.matrixElements.?[@intCast(@as(c_int, row) * cols + @as(c_int, col))];
-        if ((getSystemFlag(FLAG_POLAR) and !temporaryFlagRect) or temporaryFlagPolar) {
+        if (frontier_bufferize.nimPolarEntry()) {
             var theta: real_t = undefined;
             realCopy(const39_piOn2, &theta);
             frontier_conversion_angles.convertAngleFromTo(&theta, amRadian, currentAngularMode, &ctxtReal39);
@@ -2453,15 +2444,6 @@ pub fn z47_frontier_matrix_set_current_to_pi() void {
         realToReal34(const39_pi, &openMatrixMIMPointer.complexMatrix.matrixElements.?[idx].real);
         real34SetZero(&openMatrixMIMPointer.complexMatrix.matrixElements.?[idx].imag);
     }
-}
-
-pub fn z47_frontier_matrix_can_append_pi_literal() bool {
-    return nimNumberPart == NP_COMPLEX_INT_PART and aimBuffer[strlen(aimBuffer) - 1] == 'i';
-}
-
-pub fn z47_frontier_matrix_append_pi_literal_and_enter() void {
-    _ = strcat(aimBuffer, "3.141592653589793238462643383279503");
-    frontier_items.reallyRunFunction(ITM_ENTER, NOPARAM);
 }
 
 pub fn z47_frontier_matrix_add_item_to_nim_buffer(item: i16) void {
@@ -2675,42 +2657,14 @@ pub fn z47_frontier_matrix_render_editor_body(colVector: bool, rows: i16, cols: 
         if (getRegisterDataType(@bitCast(matrixIndex)) == dtReal34Matrix) {
             frontier_display.real34ToDisplayString(&openMatrixMIMPointer.realMatrix.matrixElements.?[selIdx], amNone, tmpString + strlen(tmpString), &numericFont, SCREEN_WIDTH - width, NUMBER_OF_DISPLAY_DIGITS, @intFromBool(LIMITEXP), @intFromBool(FRONTSPACE), LIGHTIRFRAC);
         } else {
-            frontier_display.complex34ToDisplayString(&openMatrixMIMPointer.complexMatrix.matrixElements.?[selIdx], tmpString + strlen(tmpString), &numericFont, SCREEN_WIDTH - width, NUMBER_OF_DISPLAY_DIGITS, @intFromBool(LIMITEXP), @intFromBool(FRONTSPACE), LIMITIRFRAC, @as(u16, @bitCast(@as(i16, @truncate(currentAngularMode)))), @intFromBool(getSystemFlag(FLAG_POLAR)));
+            frontier_display.complex34ToDisplayString(&openMatrixMIMPointer.complexMatrix.matrixElements.?[selIdx], tmpString + strlen(tmpString), &numericFont, SCREEN_WIDTH - width, NUMBER_OF_DISPLAY_DIGITS, @intFromBool(LIMITEXP), @intFromBool(FRONTSPACE), LIMITIRFRAC, @as(u16, @bitCast(@as(i16, @truncate(currentAngularMode)))), @intFromBool(getSystemFlag(FLAG_POLAR)), abi.register_tag.EXP_STEP_OFF);
         }
 
         _ = frontier_screen.showString(tmpString, &numericFont, 0, Y_POSITION_OF_NIM_LINE, 0, 1, 0);
     } else {
-        if (aimBuffer[0] != 0 and aimBuffer[strlen(aimBuffer) - 1] == '/') {
-            var lastBase: [12]u8 = @splat(0);
-            var lb: [*c]u8 = &lastBase;
-            const ld: u32 = lastDenominator;
-            if (ld >= 1000) {
-                lb[0] = STD_SUB_0[0];
-                lb += 1;
-                lb[0] = @intCast(@as(u32, STD_SUB_0[1]) + (ld / 1000));
-                lb += 1;
-            }
-            if (ld >= 100) {
-                lb[0] = STD_SUB_0[0];
-                lb += 1;
-                lb[0] = @intCast(@as(u32, STD_SUB_0[1]) + ((ld % 1000) / 100));
-                lb += 1;
-            }
-            if (ld >= 10) {
-                lb[0] = STD_SUB_0[0];
-                lb += 1;
-                lb[0] = @intCast(@as(u32, STD_SUB_0[1]) + ((ld % 100) / 10));
-                lb += 1;
-            }
-            lb[0] = STD_SUB_0[0];
-            lb += 1;
-            lb[0] = @intCast(@as(u32, STD_SUB_0[1]) + (ld % 10));
-            lb += 1;
-            lb[0] = 0;
-            frontier_screen.displayNim(tmpString, &lastBase, frontier_char_string.stringWidth(&lastBase, &numericFont, true, true), frontier_char_string.stringWidth(&lastBase, &standardFont, true, true));
-        } else {
-            frontier_screen.displayNim(tmpString, "", 0, 0);
-        }
+        var hint: [20]u8 = undefined;
+        frontier_bufferize.nimHint(&hint);
+        frontier_screen.displayNim(tmpString, &hint, frontier_char_string.stringWidth(&hint, &numericFont, true, true), frontier_char_string.stringWidth(&hint, &standardFont, true, true));
     }
 
     if (temporaryInformation == TI_SHOW_REGISTER and calcMode == CM_MIM) {
@@ -2732,13 +2686,13 @@ pub fn z47_frontier_matrix_mim_enter_apply_aim_buffer() void {
     const cols: c_int = openMatrixMIMPointer.header.matrixColumns;
     const row: i16 = getIRegisterAsInt(true);
     const col: i16 = getJRegisterAsInt(true);
-    var realChanged: bool_t = false;
     const idx: usize = @intCast(@as(c_int, row) * cols + @as(c_int, col));
 
     if (aimBuffer[0] == 0) {
         return;
     }
 
+    frontier_bufferize.nimCompleteNumber();
     // The value being closed goes to the printer before it is applied. The
     // leading '+' the number-entry buffer carries is a sign placeholder, not
     // part of the typed number, so a positive entry is traced without it.
@@ -2748,50 +2702,27 @@ pub fn z47_frontier_matrix_mim_enter_apply_aim_buffer() void {
         frontier_print.printTraceString(aimBuffer, LINE_NOLF);
     }
 
-    if (getRegisterDataType(@bitCast(matrixIndex)) == dtReal34Matrix) {
+    if (getRegisterDataType(@bitCast(matrixIndex)) == dtReal34Matrix and !frontier_bufferize.nimComplexPart()) {
         var real34tmp: real34_t = undefined;
-        const real34Ptr = &openMatrixMIMPointer.realMatrix.matrixElements.?[idx];
-
-        switch (nimNumberPart) {
-            NP_FRACTION_DENOMINATOR, NP_HP32SII_DENOMINATOR => {
-                frontier_bufferize.closeNimWithFraction(&real34tmp);
-                realChanged = true;
-            },
-            NP_COMPLEX_INT_PART, NP_COMPLEX_FLOAT_PART, NP_COMPLEX_EXPONENT, NP_COMPLEX_FRACTION_DENOMINATOR, NP_COMPLEX_HP32SII_DENOMINATOR => {
-                var cxma: complex34Matrix_t = undefined;
-                frontier_register_value_conversions.convertReal34MatrixToComplex34Matrix(&openMatrixMIMPointer.realMatrix, &cxma);
-                realMatrixFree(&openMatrixMIMPointer.realMatrix);
-                frontier_register_value_conversions.convertComplex34MatrixToComplex34MatrixRegister(&cxma, @bitCast(matrixIndex));
-                openMatrixMIMPointer.complexMatrix.header.matrixRows = cxma.header.matrixRows;
-                openMatrixMIMPointer.complexMatrix.header.matrixColumns = cxma.header.matrixColumns;
-                openMatrixMIMPointer.complexMatrix.matrixElements = cxma.matrixElements;
-                const complex34Ptr = &openMatrixMIMPointer.complexMatrix.matrixElements.?[idx];
-                frontier_bufferize.closeNimWithComplex(&complex34Ptr.real, &complex34Ptr.imag);
-            },
-            else => {
-                stringToReal34(aimBuffer, &real34tmp);
-                realChanged = true;
-            },
-        }
-
-        if (realChanged) {
-            real34Copy(&real34tmp, real34Ptr);
-        }
+        frontier_bufferize.nimRealValue(&real34tmp);
+        real34Copy(&real34tmp, &openMatrixMIMPointer.realMatrix.matrixElements.?[idx]);
     } else {
+        if (getRegisterDataType(@bitCast(matrixIndex)) == dtReal34Matrix) { // a complex number makes the matrix complex
+            var cxma: complex34Matrix_t = undefined;
+            frontier_register_value_conversions.convertReal34MatrixToComplex34Matrix(&openMatrixMIMPointer.realMatrix, &cxma);
+            realMatrixFree(&openMatrixMIMPointer.realMatrix);
+            frontier_register_value_conversions.convertComplex34MatrixToComplex34MatrixRegister(&cxma, @bitCast(matrixIndex));
+            openMatrixMIMPointer.complexMatrix.header.matrixRows = cxma.header.matrixRows;
+            openMatrixMIMPointer.complexMatrix.header.matrixColumns = cxma.header.matrixColumns;
+            openMatrixMIMPointer.complexMatrix.matrixElements = cxma.matrixElements;
+        }
         const complex34Ptr = &openMatrixMIMPointer.complexMatrix.matrixElements.?[idx];
 
-        switch (nimNumberPart) {
-            NP_FRACTION_DENOMINATOR, NP_HP32SII_DENOMINATOR => {
-                frontier_bufferize.closeNimWithFraction(&complex34Ptr.real);
-                real34SetZero(&complex34Ptr.imag);
-            },
-            NP_COMPLEX_INT_PART, NP_COMPLEX_FLOAT_PART, NP_COMPLEX_EXPONENT, NP_COMPLEX_FRACTION_DENOMINATOR, NP_COMPLEX_HP32SII_DENOMINATOR => {
-                frontier_bufferize.closeNimWithComplex(&complex34Ptr.real, &complex34Ptr.imag);
-            },
-            else => {
-                stringToReal34(aimBuffer, &complex34Ptr.real);
-                real34SetZero(&complex34Ptr.imag);
-            },
+        if (frontier_bufferize.nimComplexPart()) {
+            frontier_bufferize.closeNimWithComplex(&complex34Ptr.real, &complex34Ptr.imag);
+        } else {
+            frontier_bufferize.nimRealValue(&complex34Ptr.real);
+            real34SetZero(&complex34Ptr.imag);
         }
     }
 

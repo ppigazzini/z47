@@ -1,5 +1,10 @@
 C47__KeysFont change log:
 
+5. Docs(manual): Simplify C47__xxxFonts with fallbacks
+- Remove all glyphs from LMSans10-Regular, except (built from parts):
+  - superscript 2
+  - xthroot
+
 4. Docs(manual): Negative alpha
 - Replaced alpha with bold version from CMMIB10, height * 140 %
 

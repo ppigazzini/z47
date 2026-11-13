@@ -236,10 +236,57 @@ TO_QSPI static const char *nameOfWday_pt[8] = {"dia inv" STD_a_ACUTE "lido da se
     gtk_clipboard_set_image(clipboard, gdk_pixbuf_get_from_surface(imageSurface, 0, 170, SCREEN_WIDTH, SCREEN_HEIGHT-170));
   }
 
+  // The X register band to the clipboard, the bold numericFont band fnSNAPX writes to disk. BOLD is forced, the band repainted, grabbed, and the flag put back.
+  void copyRegisterXImageToClipboard(void) {
+    cairo_surface_t *imageSurface;
+    GtkClipboard *clipboard;
+
+    if(!SNAP_REGISTERS_OK) {
+      return;
+    }
+
+    bool_t boldWasSet = getSystemFlag(FLAG_BOLD);
+    int32_t bandFirst = Y_POSITION_OF_REGISTER_X_LINE - (getRegisterDataType(REGISTER_X) == dtString ? 0 : 0+3);
+    int32_t bandLast  = Y_POSITION_OF_MENU_TOP        - (getRegisterDataType(REGISTER_X) == dtString ? 1 : 1+3);
+    setSystemFlag(FLAG_BOLD);
+    screenUpdatingMode = SCRUPD_AUTO;                                            // paint the bold X line into screenData before the grab, as fnSNAPX paints it before the disk capture
+    refreshScreen(165);
+
+    clipboard = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
+    gtk_clipboard_clear(clipboard);
+    gtk_clipboard_set_text(clipboard, "", 0); //JM FOUND TIP TO PROPERLY CLEAR CLIPBOARD: https://stackoverflow.com/questions/2418487/clear-the-system-clipboard-using-the-gtk-lib-in-c/2419673#2419673
+
+    imageSurface = cairo_image_surface_create_for_data((unsigned char *)screenData, CAIRO_FORMAT_RGB24, SCREEN_WIDTH, SCREEN_HEIGHT, screenStride * 4);
+    gtk_clipboard_set_image(clipboard, gdk_pixbuf_get_from_surface(imageSurface, 0, bandFirst, SCREEN_WIDTH, bandLast - bandFirst + 1));
+
+    if(!boldWasSet) {
+      clearSystemFlag(FLAG_BOLD);
+      screenUpdatingMode = SCRUPD_AUTO;                                          // force a full repaint, else the X line stays bold on screen
+      refreshScreen(166);
+    }
+  }
+
 
   #define CLIPSTR 30000                                         //JMCSV
+
+  /**
+   * Returns the bytes copyRegisterToClipboardString needs for a register. A matrix takes the element sizes of copyRegisterToClipboardString2.
+   *
+   * \param[in] regist Register
+   * \return Size in bytes, terminator included
+   */
+  static uint32_t clipboardBytes(calcRegister_t regist) {
+    const uint32_t dataType = getRegisterDataType(regist);
+
+    if(dataType == dtReal34Matrix || dataType == dtComplex34Matrix) {
+      const matrixHeader_t *matrixHeader = REGISTER_MATRIX_HEADER(regist);
+      return CLIPSTR + (uint32_t)matrixHeader->matrixRows * matrixHeader->matrixColumns * (dataType == dtReal34Matrix ? 46 : 92);
+    }
+    return CLIPSTR;
+  }
 #else // !PC_BUILD
   #define CLIPSTR TMP_STR_LENGTH                              //JMCSV
+  #define clipboardBytes(regist) CLIPSTR
 #endif // PC_BUILD                                            //JMCSV
 
 #if defined(PC_BUILD) || defined(DMCP_BUILD)        //JMCSV
@@ -259,7 +306,7 @@ TO_QSPI static const char *nameOfWday_pt[8] = {"dia inv" STD_a_ACUTE "lido da se
     longInteger_t lgInt;
     int16_t base, sign, n;
     uint64_t shortInt;
-    char *string = malloc(CLIPSTR);                           // off the stack: this runs under stackregister_csv_out, and the pair overran the DM42 stack grant
+    char *string = malloc(clipboardBytes(regist));            // off the stack: this runs under stackregister_csv_out, and the pair overran the DM42 stack grant
     if(string == NULL) {
       clipboardString[0] = 0;
       return;
@@ -458,7 +505,11 @@ char letteredRegisterName(calcRegister_t regist) {
 #if defined(PC_BUILD)                                         //JMCSV
   void copyRegisterXToClipboard(void) {
     GtkClipboard *clipboard;
-    char clipboardString[CLIPSTR];
+    char *clipboardString = malloc(clipboardBytes(REGISTER_X));
+
+    if(clipboardString == NULL) {
+      return;
+    }
 
     clipboard = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
     gtk_clipboard_clear(clipboard);
@@ -466,6 +517,17 @@ char letteredRegisterName(calcRegister_t regist) {
 
     copyRegisterToClipboardString(REGISTER_X, clipboardString, false);
     gtk_clipboard_set_text(clipboard, clipboardString, -1);
+    free(clipboardString);
+  }
+
+
+  static uint32_t stackClipboardBytes(void) {
+    uint32_t bytes = CLIPSTR;                                 // the register names and the statistical sums
+
+    for(calcRegister_t r = LAST_SPARE_REGISTER; r >= REGISTER_X; r--) {
+      bytes += clipboardBytes(r);
+    }
+    return bytes;
   }
 
 
@@ -484,7 +546,11 @@ char letteredRegisterName(calcRegister_t regist) {
 
   void copyStackRegistersToClipboard(void) {
     GtkClipboard *clipboard;
-    char clipboardString[10000];
+    char *clipboardString = malloc(stackClipboardBytes());
+
+    if(clipboardString == NULL) {
+      return;
+    }
 
     clipboard = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
     gtk_clipboard_clear(clipboard);
@@ -493,12 +559,27 @@ char letteredRegisterName(calcRegister_t regist) {
     copyStackRegistersToClipboardString(clipboardString, LAST_SPARE_REGISTER);
 
     gtk_clipboard_set_text(clipboard, clipboardString, -1);
+    free(clipboardString);
   }
 
 
   void copyAllRegistersToClipboard(void) {
     GtkClipboard *clipboard;
-    char clipboardString[15000], *ptr = clipboardString;
+    uint32_t bytes = stackClipboardBytes();
+    char *clipboardString, *ptr;
+
+    for(int32_t regist=99; regist>=0; --regist) {
+      bytes += clipboardBytes(regist);
+    }
+    for(int32_t regist=currentNumberOfLocalRegisters-1; regist>=0; --regist) {
+      bytes += clipboardBytes(FIRST_LOCAL_REGISTER + regist);
+    }
+
+    clipboardString = malloc(bytes);
+    if(clipboardString == NULL) {
+      return;
+    }
+    ptr = clipboardString;
 
     clipboard = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
     gtk_clipboard_clear(clipboard);
@@ -536,19 +617,20 @@ char letteredRegisterName(calcRegister_t regist) {
         /*11*/ STD_SIGMA "(ln(y))      ",
         /*12*/ STD_SIGMA "(ln" STD_SUP_2 "(y))     ",
         /*13*/ STD_SIGMA "(x ln(y))    ",
-        /*14*/ STD_SIGMA "(ln(y)/x)    ",
-        /*15*/ STD_SIGMA "(x" STD_SUP_2 "/y)       ",
-        /*16*/ STD_SIGMA "(1/x)        ",
-        /*17*/ STD_SIGMA "(1/x" STD_SUP_2 ")       ",
-        /*18*/ STD_SIGMA "(x/y)        ",
-        /*19*/ STD_SIGMA "(1/y)        ",
-        /*20*/ STD_SIGMA "(1/y" STD_SUP_2 ")       ",
-        /*21*/ STD_SIGMA "(x" STD_SUP_3 ")         ",
-        /*22*/ STD_SIGMA "(x" STD_SUP_4 ")         ",
-        /*23*/ "x min         ",
-        /*24*/ "x max         ",
-        /*25*/ "y min         ",
-        /*26*/ "y max         "
+        /*14*/ STD_SIGMA "(x" STD_SUP_2 "ln(y))    ",
+        /*15*/ STD_SIGMA "(ln(y)/x)    ",
+        /*16*/ STD_SIGMA "(x" STD_SUP_2 "/y)       ",
+        /*17*/ STD_SIGMA "(1/x)        ",
+        /*18*/ STD_SIGMA "(1/x" STD_SUP_2 ")       ",
+        /*19*/ STD_SIGMA "(x/y)        ",
+        /*20*/ STD_SIGMA "(1/y)        ",
+        /*21*/ STD_SIGMA "(1/y" STD_SUP_2 ")       ",
+        /*22*/ STD_SIGMA "(x" STD_SUP_3 ")         ",
+        /*23*/ STD_SIGMA "(x" STD_SUP_4 ")         ",
+        /*24*/ "x min         ",
+        /*25*/ "x max         ",
+        /*26*/ "y min         ",
+        /*27*/ "y max         "
       };
 
       char sumName[40];
@@ -571,6 +653,7 @@ char letteredRegisterName(calcRegister_t regist) {
     }
 
     gtk_clipboard_set_text(clipboard, clipboardString, -1);
+    free(clipboardString);
   }
 
 
@@ -860,7 +943,7 @@ void execTimerApp(uint16_t timerType) {
         lineSetWhiteRange(xPos - FUNC_FRAME_MARGIN, xStart + FUNC_FRAME_MIN_WIDTH - FUNC_FRAME_MARGIN);   //   because only the glyph cells and the two margins are
         xPos = xStart + FUNC_FRAME_MIN_WIDTH;                   //   cleared to blank part of the register line showing through the widened box
       }
-      if(yRel == 0 || yRel == STANDARD_FONT_HEIGHT) {          // the top row and the bottom row 
+      if(yRel == 0 || yRel == STANDARD_FONT_HEIGHT) {          // the top row and the bottom row
         uint16_t fx;
         for(fx = xStart; fx < xPos; fx++) {
           lineSetBlackPixel(fx);
@@ -1213,6 +1296,19 @@ void execTimerApp(uint16_t timerType) {
         char *funcParam;
         int keyStateCode = (getSystemFlag(FLAG_ALPHA) ? 3 : 0) + ((LongPressM == RBX_M124) ? 1 : longpressDelayedkey3 ? 1 : 2);
         funcParam = (char *)getUserKeyLabelString(currentKeyCode * 6 + keyStateCode);
+
+#if defined(OPTION_EEX_PREFIX)
+        if(JM_auto_longpress_enabled == -MNU_EEXPFX) {   //JM EEX SI prefix menu opens on the timeout, no preview label and no NOP stage, as the R47 f/g key long press
+          JM_auto_longpress_enabled = 0;
+          longpressDelayedkey2 = 0;
+          longpressDelayedkey3 = 0;
+          hideFunctionName();
+          showSoftmenu(-MNU_EEXPFX);
+          screenUpdatingMode = SCRUPD_AUTO;
+          refreshScreen(1216);
+          return;
+        }
+#endif // OPTION_EEX_PREFIX
 
         if(calcMode == CM_NORMAL && programRunStop == PGM_STOPPED && (isArrowUp(currentKeyCode))) {
           aimBuffer[0] = 0;
@@ -2913,7 +3009,11 @@ void createSubstrings(uint8_t number) {
 
     if(getRegisterDataType(REGISTER_X) == dtReal34) {
       clearRegisterLine(REGISTER_X, true, true);
-      if(getSystemFlag(FLAG_FRACT)) {
+      #if defined(OPTION_DRG_CFG)
+        if(getSystemFlag(FLAG_FRACT) && getRegisterAngularMode(REGISTER_X) != amDMS) {
+      #else // !OPTION_DRG_CFG
+        if(getSystemFlag(FLAG_FRACT)) {
+      #endif // OPTION_DRG_CFG
         fractionToDisplayString(REGISTER_X, tmpString);
       }
       else {
@@ -2925,7 +3025,7 @@ void createSubstrings(uint8_t number) {
     }
     else if(getRegisterDataType(REGISTER_X) == dtComplex34) {
       clearRegisterLine(REGISTER_X, true, true);
-      complex34ToDisplayString(REGISTER_COMPLEX34_DATA(REGISTER_X), tmpString, &numericFont, SCREEN_WIDTH - prefixWidth, NUMBER_OF_DISPLAY_DIGITS, LIMITEXP, FRONTSPACE, LIMITIRFRAC, getComplexRegisterAngularMode(REGISTER_X),  getComplexRegisterPolarMode(REGISTER_X) == amPolar);
+      complex34ToDisplayString(REGISTER_COMPLEX34_DATA(REGISTER_X), tmpString, &numericFont, SCREEN_WIDTH - prefixWidth, NUMBER_OF_DISPLAY_DIGITS, LIMITEXP, FRONTSPACE, LIMITIRFRAC, getComplexRegisterAngularMode(REGISTER_X),  getComplexRegisterPolarMode(REGISTER_X) == amPolar, getRegisterExpStep(REGISTER_X));
       w = stringWidth(tmpString, &numericFont, false, true);
       showString(prefix, &standardFont, noShiftOffset, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
       showString(tmpString, &numericFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE, vmNormal, false, true);
@@ -3782,7 +3882,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
           showStringEnhanced(whoStr1, &standardFont, 1, Y_POSITION_OF_REGISTER_T_LINE +30 -33, vmNormal, true, true, NO_compress, NO_raise, DO_Show, NO_Bold, DO_LF);
           showStringEnhanced(whoStr2, &tinyFont,     1, Y_POSITION_OF_REGISTER_X_LINE +50 -78, vmNormal, true, true, NO_compress, NO_raise, DO_Show, NO_Bold, DO_LF);
           screenUpdatingMode |=  SCRUPD_MANUAL_MENU;
-        } 
+        }
         if(regist == REGISTER_T || regist == REGISTER_Z || regist == REGISTER_Y || regist == REGISTER_X) {
           return;
         }
@@ -4277,69 +4377,9 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
         }
 
         else if(regist == NIM_REGISTER_LINE && calcMode == CM_NIM) {
-          if(lastIntegerBase != 0) {
-            lastBase[0] = '#';
-            if(lastIntegerBase > 9) {
-              lastBase[1] = '1';
-              lastBase[2] = '0' + (lastIntegerBase - 10);
-              lastBase[3] = 0;
-            }
-            else {
-              lastBase[1] = '0' + lastIntegerBase;
-              lastBase[2] = 0;
-            }
-            wLastBaseNumeric  = stringWidth(lastBase, &numericFont,  true, true);
-            wLastBaseStandard = stringWidth(lastBase, &standardFont, true, true);
-          }
-          else if(aimBuffer[0] != 0 && aimBuffer[strlen(aimBuffer)-1]=='/') {
-            char *lb = lastBase;
-
-            uint32_t iDigit = 1;                     // smallest power of ten above lastDenominator, as pow(10, log10+1) computed it, without libm
-            while(iDigit <= lastDenominator) {
-              iDigit *= 10;
-            }
-            uint32_t iDigit1;
-            while(iDigit >= 10) {
-              iDigit1 = iDigit / 10;
-              if(lastDenominator >= iDigit1) {
-                //printf("%i %i %i\n",lastDenominator, iDigit, iDigit1);
-                *(lb++) = STD_SUB_0[0];
-                *(lb++) = STD_SUB_0[1] + (lastDenominator % iDigit) / (iDigit1);
-              }
-              iDigit = iDigit1;
-            }
-
-    //        if(lastDenominator >= 100000) {
-    //          *(lb++) = STD_SUB_0[0];
-    //          *(lb++) = STD_SUB_0[1] + (lastDenominator / 100000);
-    //        }
-    //        if(lastDenominator >= 10000) {
-    //          *(lb++) = STD_SUB_0[0];
-    //          *(lb++) = STD_SUB_0[1] + (lastDenominator % 100000 / 10000);
-    //        }
-    //        if(lastDenominator >= 1000) {
-    //          *(lb++) = STD_SUB_0[0];
-    //          *(lb++) = STD_SUB_0[1] + (lastDenominator % 10000 / 1000);
-    //        }
-    //        if(lastDenominator >= 100) {
-    //          *(lb++) = STD_SUB_0[0];
-    //          *(lb++) = STD_SUB_0[1] + (lastDenominator % 1000 / 100);     // 210 % 1000 / 100 ==> 210/100 = 2
-    //        }
-    //        if(lastDenominator >= 10) {
-    //          *(lb++) = STD_SUB_0[0];
-    //          *(lb++) = STD_SUB_0[1] + (lastDenominator % 100 / 10);       // 50 % 100 / 10  ==> 50 / 10 = 5
-    //        }
-    //        *(lb++) = STD_SUB_0[0];
-    //        *(lb++) = STD_SUB_0[1] + (lastDenominator % 10);
-
-            *(lb++) = 0;
-            wLastBaseNumeric  = stringWidth(lastBase, &numericFont,  true, true);
-            wLastBaseStandard = stringWidth(lastBase, &standardFont, true, true);
-          }
-          else {
-            wLastBaseNumeric  = 0;
-            wLastBaseStandard = 0;
-          }
+          nimHint(lastBase);
+          wLastBaseNumeric  = stringWidth(lastBase, &numericFont,  true, true);
+          wLastBaseStandard = stringWidth(lastBase, &standardFont, true, true);
 
           displayBaseMode(regist);
           //printStringToConsole(nimBufferDisplay,"XX: nimBufferDisplay:","\n");
@@ -4410,6 +4450,9 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
 /*Main type dtReal34 FLAG_FRACT*/
         else if(getSystemFlag(FLAG_FRACT)
                     && (    getRegisterDataType(regist) == dtReal34
+                         #if defined(OPTION_DRG_CFG)
+                           && getRegisterAngularMode(regist) != amDMS            // a D.MS angle keeps its degrees, minutes and seconds
+                         #endif // OPTION_DRG_CFG
                          && (
                                 real34CompareAbsLessThan(REGISTER_REAL34_DATA(regist), const34_1e6)
                              || real34IsZero(REGISTER_REAL34_DATA(regist))
@@ -5185,6 +5228,9 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
           }
 #endif //OPTION_VECTOR
 
+          else if(getRegisterExpFixed(regist)) {                     // temporary ENG active on this register: TE on the left, a permanent label that any fleeting TI above overrides
+            prefixWidth = setPrefix(prefix, "TE", indent);
+          }
 
           if(prefixWidth > 0 && temporaryInformation != TI_VIEW_REGISTER) {
             if(regist == REGISTER_X) {
@@ -5199,7 +5245,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
           }
                                                                       //JM EE ^
 
-          real34ToDisplayString(REGISTER_REAL34_DATA(regist), getRegisterAngularMode(regist), tmpString, &numericFont, SCREEN_WIDTH - prefixWidth, NUMBER_OF_DISPLAY_DIGITS, LIMITEXP, FRONTSPACE, FULLIRFRAC);
+          real34ToDisplayString(REGISTER_REAL34_DATA(regist), getRegisterTag(regist), tmpString, &numericFont, SCREEN_WIDTH - prefixWidth, NUMBER_OF_DISPLAY_DIGITS, LIMITEXP, FRONTSPACE, FULLIRFRAC);
 
           w = stringWidth(tmpString, &numericFont, false, true);
           lineWidth = w;
@@ -5269,7 +5315,9 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
           else if(temporaryInformation == TI_STORCL && regist == REGISTER_X) {
             viewStoRcl(prefix, &prefixWidth);
           }
-
+          else if(getRegisterExpFixed(regist)) {                     // temporary ENG active on this register: TE on the left, a permanent label that any fleeting TI above overrides
+            prefixWidth = setPrefix(prefix, "TE", indent);
+          }
 
           if(prefixWidth > 0) {
             if(regist == REGISTER_X) {
@@ -5283,7 +5331,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
             }
           }
                                                                        //JM EE ^
-          complex34ToDisplayString(REGISTER_COMPLEX34_DATA(regist), tmpString, &numericFont, SCREEN_WIDTH - prefixWidth, NUMBER_OF_DISPLAY_DIGITS, LIMITEXP, FRONTSPACE, FULLIRFRAC, getComplexRegisterAngularMode(regist),  getComplexRegisterPolarMode(regist) == amPolar);
+          complex34ToDisplayString(REGISTER_COMPLEX34_DATA(regist), tmpString, &numericFont, SCREEN_WIDTH - prefixWidth, NUMBER_OF_DISPLAY_DIGITS, LIMITEXP, FRONTSPACE, FULLIRFRAC, getComplexRegisterAngularMode(regist),  getComplexRegisterPolarMode(regist) == amPolar, getRegisterExpStep(regist));
 
           w = stringWidth(tmpString, &numericFont, false, true);
           lineWidth = w;
@@ -5899,46 +5947,38 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
   }
 
   static void _showAngularModeGlyph(angularMode_t angularMode, const font_t *font, uint32_t x, uint32_t y) {
-    switch(angularMode) {
-      case amMultPi: {
-        showString(STD_SUP_pir, font, x, y, vmNormal, true, true);
-        break;
-      }
-      case amRadian: {
-        showString(STD_SUP_BOLD_r, font, x, y, vmNormal, true, true);
-        break;
-      }
-      case amGrad: {
-        showString(STD_SUP_BOLD_g, font, x, y, vmNormal, true, true);
-        break;
-      }
-      case amDegree: {
-        showString(STD_DEGREE, font, x, y, vmNormal, true, true);
-        break;
-      }
-      case amSecond: {
-        showString("s", font, x, y, vmNormal, true, true);
-        break;
-      }
-      default: {
-      }
-    }
+    #if defined(OPTION_DRG_CFG)
+      showString(angularMode == amDMS ? nimDmsMark() : angularUnitGlyph(angularMode), font, x, y, vmNormal, true, true);  // a D.MS entry shows the mark the next digit takes
+    #else // !OPTION_DRG_CFG
+      showString(angularUnitGlyph(angularMode), font, x, y, vmNormal, true, true);
+    #endif // OPTION_DRG_CFG
   }
 
 
   void displayNim(const char *nim, const char *lastBase, int16_t wLastBaseNumeric, int16_t wLastBaseStandard) {
     int16_t w;
-    angularMode_t xangularMode = getRegisterAngularMode(REGISTER_X);
+    bool_t showLastBase = lastIntegerBase != 0 || (aimBuffer[0] != 0 && aimBuffer[strlen(aimBuffer)-1] == '/');
+    angularMode_t xangularMode = (getRegisterDataType(REGISTER_X) == dtReal34) ? getRegisterAngularMode(REGISTER_X) : amNone;
+    #if defined(OPTION_DRG_CFG)
+      if(nimPolarAngularMode != amNone && nimComplexPart()) {
+        xangularMode = nimPolarAngularMode;  // a polar entry shows the unit DRG chose for its angle
+      }
+    #else // !OPTION_DRG_CFG
+      if(showLastBase) {
+        xangularMode = amNone;  // the base or the denominator takes the place of the unit
+      }
+    #endif // OPTION_DRG_CFG
     if(stringWidth(nim, &numericFont, true, true) + wLastBaseNumeric <= SCREEN_WIDTH - 16) { // 16 is the numeric font cursor width
       xCursor = showString(nim, &numericFont, 0, Y_POSITION_OF_NIM_LINE - checkHPoffset, vmNormal, true, true);
       yCursor = Y_POSITION_OF_NIM_LINE;
       cursorFont = &numericFont;
 
-      if(lastIntegerBase != 0 || (aimBuffer[0] != 0 && aimBuffer[strlen(aimBuffer)-1]=='/')) {
-        showString(lastBase, &numericFont, xCursor + 16, Y_POSITION_OF_NIM_LINE - checkHPoffset, vmNormal, true, true);
+      uint32_t xUnit = xCursor + 16;
+      if(showLastBase) {
+        xUnit = showString(lastBase, &numericFont, xCursor + 16, Y_POSITION_OF_NIM_LINE - checkHPoffset, vmNormal, true, true);
       }
-      else if((getRegisterDataType(REGISTER_X) == dtReal34) && (xangularMode < amNone)) {
-        _showAngularModeGlyph(xangularMode, &numericFont, xCursor + 16, Y_POSITION_OF_NIM_LINE - checkHPoffset);
+      if(xangularMode < amNone) {
+        _showAngularModeGlyph(xangularMode, &numericFont, xUnit, Y_POSITION_OF_NIM_LINE - checkHPoffset);
       }
     }
     else if(stringWidth(nim, &standardFont, true, true) + wLastBaseStandard <= SCREEN_WIDTH - 8) { // 8 is the standard font cursor width
@@ -5946,11 +5986,12 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
       yCursor = Y_POSITION_OF_NIM_LINE + 6;
       cursorFont = &standardFont;
 
-      if(lastIntegerBase != 0 || (aimBuffer[0] != 0 && aimBuffer[strlen(aimBuffer)-1]=='/')) {
-        showString(lastBase, &standardFont, xCursor + 8, Y_POSITION_OF_NIM_LINE + 6, vmNormal, true, true);
+      uint32_t xUnit = xCursor + 8;
+      if(showLastBase) {
+        xUnit = showString(lastBase, &standardFont, xCursor + 8, Y_POSITION_OF_NIM_LINE + 6, vmNormal, true, true);
       }
-      else if((getRegisterDataType(REGISTER_X) == dtReal34) && (xangularMode < amNone)) {
-        _showAngularModeGlyph(xangularMode, &standardFont, xCursor + 8, Y_POSITION_OF_NIM_LINE + 6);
+      if(xangularMode < amNone) {
+        _showAngularModeGlyph(xangularMode, &standardFont, xUnit, Y_POSITION_OF_NIM_LINE + 6);
       }
     }
     else {
@@ -5972,11 +6013,12 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
         yCursor = Y_POSITION_OF_NIM_LINE + 18;
         cursorFont = &standardFont;
 
-        if(lastIntegerBase != 0 || (aimBuffer[0] != 0 && aimBuffer[strlen(aimBuffer)-1] == '/')) {
-          showString(lastBase, &standardFont, xCursor + 8, Y_POSITION_OF_NIM_LINE + 18, vmNormal, true, true);
+        uint32_t xUnit = xCursor + 8;
+        if(showLastBase) {
+          xUnit = showString(lastBase, &standardFont, xCursor + 8, Y_POSITION_OF_NIM_LINE + 18, vmNormal, true, true);
         }
-        else if((getRegisterDataType(REGISTER_X) == dtReal34) && (xangularMode < amNone)) {
-          _showAngularModeGlyph(xangularMode, &standardFont, xCursor + 8, Y_POSITION_OF_NIM_LINE + 18);
+        if(xangularMode < amNone) {
+          _showAngularModeGlyph(xangularMode, &standardFont, xUnit, Y_POSITION_OF_NIM_LINE + 18);
         }
       }
     }
@@ -6274,6 +6316,16 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
           #endif //TEST_BATTERY_POWERED_SIMULATION
 
       #endif//!DMCP_BUILD PC_BUILD
+
+      if(temporaryInformation == TI_ARE_YOU_SURE) {
+        uint16_t id = getConfirmationTiId();
+        showString(confirmationTI[id].string, &standardFont, 1, Y_POSITION_OF_MENU_TOP + 6, vmNormal, true, true);
+      }
+      else if(temporaryInformation == TI_DEL_ALL_PRGMS) {
+        sprintf(tmpString, "%s", errorMessageOf(TI_All_user_prgms_deleted));
+        int32_t w = stringWidth(tmpString, &standardFont, true, true);
+        showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
+      }
     doRefreshSoftMenu = false;
 
     force_refresh(force);
@@ -6748,6 +6800,8 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
 // PIXEL etc.:    screenHoldsDrawnPixels keeps a CLLCD, PIXEL, POINT or AGRAPH screen blank. snapSkipRefresh keeps the raw screen.
 // testSuite:     TESTSUITE_BUILD freezes the clock across fnSNAP (testClockFrozen) so stored capture hashes hold.
 void fnSNAP(uint16_t unusedButMandatoryParameter) {
+  const bool_t showPage = (currentMenu() == -MNU_SHOW && temporaryInformation != TI_WHO && !screenHoldsDrawnPixels);  //the WHO screen uses the SHOW menu as well
+
   if(!SNAP_PROPER_OK) {
     return;
   }
@@ -6765,7 +6819,7 @@ void fnSNAP(uint16_t unusedButMandatoryParameter) {
     testClockFrozen = true;           // the capture carries the date and time, so the test build reads a fixed clock and the stored hashes stay put
   #endif // TESTSUITE_BUILD
   if(!snapSkipRefresh && !screenHoldsDrawnPixels) {   //--snapskiprefresh, or a screen a program drew, keeps the raw graphic screen
-    if(currentMenu() == -MNU_SHOW) {                  //a SHOW page: repaint the page on screen so the capture keeps its top line, as f+DISP does; the longpress preview clears the SHOW TI, so test the menu, not SHOWMODE
+    if(showPage) {                                    //a SHOW page: repaint the page on screen so the capture keeps its top line, as f+DISP does; the longpress preview clears the SHOW TI, so test the menu, not SHOWMODE
       recallShowStatus();
       fnC47Show(ITM_NOP);
     }
@@ -6794,7 +6848,7 @@ void fnSNAP(uint16_t unusedButMandatoryParameter) {
     fnP_All_Regs(PRN_STK); //print stack
   }
   xcopy(tamBuffer, ss, TAM_BUFFER_LENGTH);      //Backup the TamBuffer, in case we are in a TAM screen when doing screenshot
-  if(currentMenu() == -MNU_SHOW && !screenHoldsDrawnPixels) {   //fnP_All_Regs above formats the registers through the SHOW display buffer; repaint the page so the screen the release refresh leaves is the clean SHOW page, not the register print's TSV text
+  if(showPage) {                                    //fnP_All_Regs above formats the registers through the SHOW display buffer; repaint the page so the screen the release refresh leaves is the clean SHOW page, not the register print's TSV text
     recallShowStatus();
     fnC47Show(ITM_NOP);
   }

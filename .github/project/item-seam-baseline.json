@@ -1574,32 +1574,32 @@
    "9876"
   ],
   "1351": [
-   "&itemToBeCoded",
-   "9876"
+   "if (option_drg_cfg) ext_fnDrgToggle else &itemToBeCoded",
+   "2"
   ],
   "1352": [
-   "&itemToBeCoded",
-   "9876"
+   "if (option_drg_cfg) ext_fnDrgToggle else &itemToBeCoded",
+   "0"
   ],
   "1353": [
-   "&itemToBeCoded",
-   "9876"
+   "if (option_drg_cfg) ext_fnDrgToggle else &itemToBeCoded",
+   "1"
   ],
   "1354": [
-   "&itemToBeCoded",
-   "9876"
+   "if (option_drg_cfg) ext_fnDrgToggle else &itemToBeCoded",
+   "3"
   ],
   "1355": [
-   "&itemToBeCoded",
-   "9876"
+   "if (option_drg_cfg) ext_fnDrgToggle else &itemToBeCoded",
+   "4"
   ],
   "1356": [
-   "&itemToBeCoded",
-   "9876"
+   "if (option_drg_cfg) ext_fnDrgToggle else &itemToBeCoded",
+   "5"
   ],
   "1357": [
-   "&itemToBeCoded",
-   "9876"
+   "if (option_drg_cfg) ext_fnDrgToggle else &itemToBeCoded",
+   "6"
   ],
   "1358": [
    "&itemToBeCoded",
@@ -3834,8 +3834,8 @@
    "58"
   ],
   "1860": [
-   "&itemToBeCoded",
-   "9876"
+   "ext_SetSetting",
+   "32884"
   ],
   "1861": [
    "ext_SetSetting",
@@ -4070,7 +4070,7 @@
    "9876"
   ],
   "1913": [
-   "&itemToBeCoded",
+   "ext_fnEngExpClear",
    "9876"
   ],
   "1914": [
@@ -4102,27 +4102,27 @@
    "64"
   ],
   "1920": [
-   "&itemToBeCoded",
-   "9876"
+   "ext_fnMultiplySI",
+   "98"
   ],
   "1921": [
-   "&itemToBeCoded",
-   "9876"
+   "ext_fnMultiplySI",
+   "99"
   ],
   "1922": [
-   "&itemToBeCoded",
-   "9876"
+   "ext_fnMultiplySI",
+   "101"
   ],
   "1923": [
-   "&itemToBeCoded",
-   "9876"
+   "ext_fnMultiplySI",
+   "102"
   ],
   "1924": [
    "ext_SetSetting",
    "32854"
   ],
   "1925": [
-   "&itemToBeCoded",
+   "ext_fnEngExpLeft",
    "9876"
   ],
   "1926": [
@@ -4130,7 +4130,7 @@
    "1926"
   ],
   "1927": [
-   "&itemToBeCoded",
+   "ext_fnEngExpRight",
    "9876"
   ],
   "1928": [
@@ -5802,8 +5802,8 @@
    "32883"
   ],
   "2302": [
-   "&itemToBeCoded",
-   "9876"
+   "ext_fnGetSystemFlag",
+   "32884"
   ],
   "2303": [
    "&itemToBeCoded",

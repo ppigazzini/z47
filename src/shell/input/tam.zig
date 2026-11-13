@@ -1687,6 +1687,7 @@ pub export fn leaveTamModeIfEnabled() callconv(.c) void {
     }
 
     tam.alpha = false;
+    tam.colon = false;
     tam.mode = 0;
     clearSystemFlag(FLAG_ALPHA);
 

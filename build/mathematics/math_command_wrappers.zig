@@ -100,6 +100,10 @@ pub const RuntimeObjectOptions = struct {
     // upstream #undef's it in the same "common to packages 1-4" block, so it is
     // off for every DM42 package and on for DMCP5 and host.
     option_xfn_1000: bool = true,
+    // OPTION_DRG_CFG: XDRG steps through the units the DRG menu chose, and the
+    // unit it lands on becomes ADM under A.AUTO. Every target z47 builds defines
+    // it. Defaults true.
+    option_drg_cfg: bool = true,
     // OPTION_SLVP_POLY gates SLVP (every root of a polynomial, through the
     // companion matrix and the QR eigensolver) in slvp.c and matrix.c. It is set
     // per DM42 package, from build/firmware.zig's dm42Package table. defines.h also
@@ -201,6 +205,7 @@ pub fn addBuildOptions(
     // build asserts -- so leaving them out costs the board speed and nothing else.
     build_options.addOption(bool, "trig_result_cache", !options.old_hw);
     build_options.addOption(bool, "option_xfn_1000", options.option_xfn_1000);
+    build_options.addOption(bool, "option_drg_cfg", options.option_drg_cfg);
     build_options.addOption(bool, "option_slvp_poly", options.option_slvp_poly);
     build_options.addOption(bool, "option_algdep", options.option_algdep);
     build_options.addOption(bool, "option_cubic_159", options.option_cubic_159);

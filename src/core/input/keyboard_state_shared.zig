@@ -134,6 +134,23 @@ pub fn implementation(comptime runtime: type) type {
                     runtime.lastKeyItemDetermined = item;
                 }
 
+                // EEXPFX closes before the item runs, and PFX closes it too. A prefix
+                // run from either menu switches the display to PFX.
+                if (runtime.option_eex_prefix and (runtime.currentMenu() == -runtime.MNU_EEXPFX or runtime.currentMenu() == -runtime.MNU_PREFIX)) {
+                    if (runtime.EEX_TOPFX_AUTO and item > 0 and runtime.itemFuncIsMultiplySI(item)) {
+                        if (runtime.getSystemFlag(runtime.FLAG_TOPFX)) {
+                            runtime.displayFormat = runtime.DF_UN;
+                            if (runtime.indexOfItemsParam(item) > 200) { // a binary prefix also sets the 1024 grouping
+                                runtime.setSystemFlag(@intCast(runtime.FLAG_2TO10));
+                            }
+                            runtime.fnRefreshState();
+                        }
+                    }
+                    if (runtime.currentMenu() == -runtime.MNU_EEXPFX) {
+                        runtime.popSoftmenu();
+                    }
+                }
+
                 if (runtime.calcMode == runtime.CM_GRAPH and runtime.currentMenu() == -runtime.MNU_PLOT_FUNC and (item == runtime.VAR_LX or item == runtime.VAR_UX)) {
                     runtime.calcMode = runtime.CM_NORMAL;
                     runtime.screenUpdatingMode = runtime.SCRUPD_AUTO;
@@ -317,6 +334,8 @@ pub fn implementation(comptime runtime: type) type {
                             runtime.addItemToNimBuffer(item);
                         } else if ((runtime.calcMode == runtime.CM_NIM) and ((item == runtime.ITM_DMS2 or item == runtime.ITM_dotD) and runtime.catalog == 0)) {
                             runtime.addItemToNimBuffer(item);
+                        } else if (runtime.option_drg_cfg and runtime.calcMode == runtime.CM_NIM and item == runtime.ITM_DRG and runtime.catalog == 0 and runtime.nimDrgChoosesUnit()) {
+                            runtime.addItemToNimBuffer(item); // DRG chooses the unit of the number and leaves the input open
                         } else if (runtime.calcMode == runtime.CM_MIM and runtime.currentMenu() != -runtime.MNU_M_EDIT and (item != runtime.ITM_CC and item != runtime.ITM_op_j and item != runtime.ITM_op_j_pol)) {
                             runtime.addItemToBuffer(@bitCast(item));
                         } else if (item > 0) { // function
@@ -1081,6 +1100,12 @@ pub fn implementation(comptime runtime: type) type {
             const INVALID_VARIABLE: i16 = @intCast(runtime.INVALID_VARIABLE);
 
             runtime.keyActionProcessed = false;
+
+            // The EEX SI prefix menu closes on the next key, before dispatch, and
+            // leaves NIM open. EXIT closes it on release only, so NIM stays.
+            if (runtime.option_eex_prefix and runtime.currentMenu() == -runtime.MNU_EEXPFX and item != runtime.ITM_EXIT1) {
+                runtime.popSoftmenu();
+            }
 
             if (runtime.lastErrorCode != 0 and item != runtime.ITM_EXIT1 and item != runtime.ITM_BACKSPACE) {
                 runtime.lastErrorCode = 0;
@@ -3055,6 +3080,7 @@ pub fn implementation(comptime runtime: type) type {
                     } else {
                         runtime.runFunction(runtime.ITM_toREAL);
                     }
+                    runtime.setLastintegerBasetoZero(); // .d always leaves the integer base
                     return;
                 },
                 runtime.CM_NIM => {

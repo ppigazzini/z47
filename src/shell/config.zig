@@ -57,6 +57,9 @@ const is_testsuite_build: bool = frontier_build_options.is_testsuite_build;
 const ir_printing: bool = frontier_build_options.ir_printing;
 const option_samplepgms: bool = frontier_build_options.option_samplepgms;
 const option_lp_dp_timing: bool = frontier_build_options.option_lp_dp_timing;
+const option_drg_cfg: bool = frontier_build_options.option_drg_cfg;
+// The units DRG steps through after RESET: radian, grad and degree.
+const DRG_CONFIG_DEFAULT: u8 = (1 << 0) | (1 << 1) | (1 << 2);
 const option_atext_fonts: bool = frontier_build_options.option_atext_fonts;
 
 const code_section = if (dmcp_build and old_hw)
@@ -460,9 +463,11 @@ const Settings = [_]i32{
     3,    1,      -10001, -10001, 49224,  49224,  -10001, -10001, -10001,
     3,    0,      -10001, 32837,  -10001, -10001, -10001, -10001, -10001,
     3,    1,      32837,  -10001, 32837,  32837,  32837,  -10001, -10001,
-    // FLAG_M_ALL (32882) set on every profile, FLAG_PL_2L (32883) cleared on every one.
+    // FLAG_M_ALL (32882) set on every profile, FLAG_PL_2L (32883) and FLAG_TOPFX
+    // (32884) cleared on every one.
     3,    1,      32882,  32882,  32882,  32882,  32882,  -10001, -10001,
     3,    0,      32883,  32883,  32883,  32883,  32883,  -10001, -10001,
+    3,    0,      32884,  32884,  32884,  32884,  32884,  -10001, -10001,
     3,    0,      32836,  -10001, -10001, -10001, -10001, -10001, -10001,
     3,    1,      32838,  -10001, -10001, -10001, -10001, -10001, -10001,
     3,    0,      32841,  -10001, -10001, -10001, -10001, -10001, -10001,
@@ -749,6 +754,7 @@ extern var Input_Default: u8;
 extern var displayStackSHOIDISP: u8;
 extern var bcdDisplaySign: u8;
 extern var DRG_Cycling: u8;
+extern var drgConfig: u8;
 extern var DM_Cycling: u8;
 extern var LongPressM: u8;
 extern var LongPressF: u8;
@@ -2075,6 +2081,7 @@ pub export fn resetOtherConfigurationStuff(allowUserKeys: bool_t) callconv(.c) v
     displayStackSHOIDISP = 2;
     bcdDisplaySign = BCDu;
     DRG_Cycling = 0;
+    if (comptime option_drg_cfg) drgConfig = DRG_CONFIG_DEFAULT;
     DM_Cycling = 0;
     LongPressM = RBX_M1234;
     LongPressF = RBX_F124;

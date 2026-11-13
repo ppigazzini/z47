@@ -42,6 +42,9 @@ const dmcp_build: bool = frontier_build_options.dmcp_build;
 const ir_printing: bool = frontier_build_options.ir_printing;
 // TESTSUITE_BUILD undefines VERBOSE_MINIMUM but leaves MONITOR_IRPRINT defined.
 const is_testsuite_build: bool = frontier_build_options.is_testsuite_build;
+// OPTION_DRG_CFG: DRG during number entry chooses the unit of the number, and a
+// D.MS entry shows and closes as degrees, minutes and seconds.
+const option_drg_cfg: bool = frontier_build_options.option_drg_cfg;
 
 // ---------------------------------------------------------------------------
 // Types
@@ -893,6 +896,11 @@ const STD_op_i = "\xa1\x48";
 const STD_op_j = "\xa1\x49";
 const STD_CROSS = "\x80\xd7";
 const STD_WCOMMA = "\xa7\x88";
+const STD_DEGREE = "\x80\xb0";
+const STD_RIGHT_SINGLE_QUOTE = "\xa0\x19";
+const STD_RIGHT_DOUBLE_QUOTE = "\xa0\x1d";
+const STRING_ANGLE_DMS = 21;
+const DRG_NIM_BIT = 5;
 
 // ---------------------------------------------------------------------------
 // C arrays (bind by address) and extern globals.
@@ -955,6 +963,9 @@ extern var hourGlassIconEnabled: bool_t;
 extern var temporaryFlagRect: bool_t;
 extern var temporaryFlagPolar: bool_t;
 extern var currentAngularMode: angularMode_t;
+extern var nimPolarAngularMode: u8;
+extern var drgConfig: u8;
+extern var editingLiteralType: u8;
 extern var catalog: i16;
 extern var T_cursorPos: i16;
 extern var alphaCursor: i16;
@@ -982,6 +993,7 @@ extern var tam: tamState_t;
 // ---------------------------------------------------------------------------
 extern fn getSystemFlag(sf: c_int) bool_t;
 extern fn setSystemFlag(sf: c_uint) void;
+extern fn clearSystemFlag(sf: c_uint) void;
 extern fn fnSetFlag(flag: u16) void;
 extern fn resetShiftState() void;
 extern fn moreInfoOnError(m1: [*c]const u8, m2: [*c]const u8, m3: [*c]const u8, m4: [*c]const u8) void;
@@ -1232,6 +1244,7 @@ const MimFunctionsType0 = [_]fInMim_t{
     .{ .itemNr = ITM_8 },
     .{ .itemNr = ITM_9 },
     .{ .itemNr = ITM_CHS },
+} ++ (if (option_drg_cfg) [_]fInMim_t{.{ .itemNr = ITM_DRG }} else [_]fInMim_t{}) ++ [_]fInMim_t{
     .{ .itemNr = ITM_CONSTpi },
 };
 const MimFunctionsType1 = [_]fInMim_t{
@@ -2011,6 +2024,241 @@ pub export fn validShortIntegerInX() callconv(.c) bool_t {
 }
 
 // ---------------------------------------------------------------------------
+// checkShortIntegerDigits
+// ---------------------------------------------------------------------------
+// Every digit of the short integer typed as digits#base is below the base; when
+// one is not, the error is displayed and the answer is false.
+pub export fn checkShortIntegerDigits(buffer: [*c]u8) callconv(.c) bool {
+    const numBuffer: [*c]u8 = if (buffer[0] == '+') buffer + 1 else buffer;
+    var posHash: i16 = 0;
+    while (numBuffer[@intCast(posHash)] != '#') : (posHash += 1) {}
+    const base: u8 = @truncate(@as(c_uint, @bitCast(atoi(numBuffer + @as(usize, @intCast(posHash)) + 1))));
+    var i: i16 = if (numBuffer[0] == '-') 1 else 0;
+    while (i < posHash) : (i += 1) {
+        const c: i32 = numBuffer[@intCast(i)];
+        const digit: i32 = if (c > '9') c - 'A' + 10 else c - '0';
+        if (digit >= base) {
+            frontier_error.displayCalcErrorMessage(ERROR_INVALID_INTEGER_INPUT, ERR_REGISTER_LINE);
+            if (comptime extra_info) {
+                abi.fmtBufZ(errorMessage[0..ERROR_MESSAGE_LENGTH], "digit {c} is not allowed in base {d}!", .{ numBuffer[@intCast(i)], base });
+                moreInfoOnError("In function checkShortIntegerDigits:", errorMessage, null, null);
+            }
+            return false;
+        }
+    }
+    return true;
+}
+
+// ---------------------------------------------------------------------------
+// The number being entered: its parts, its unit and its value
+// ---------------------------------------------------------------------------
+// The complex number being entered is polar: i∠ was pressed, or POLAR is set and
+// i was not.
+pub export fn nimPolarEntry() callconv(.c) bool {
+    return (getSystemFlag(FLAG_POLAR) != 0 and temporaryFlagRect == 0) or temporaryFlagPolar != 0;
+}
+
+// The imaginary part or the angle of a complex number is being entered.
+pub export fn nimComplexPart() callconv(.c) bool {
+    return switch (nimNumberPart) {
+        NP_COMPLEX_INT_PART, NP_COMPLEX_FLOAT_PART, NP_COMPLEX_EXPONENT, NP_COMPLEX_FRACTION_DENOMINATOR, NP_COMPLEX_HP32SII_DENOMINATOR => true,
+        else => false,
+    };
+}
+
+fn nimPartIsFraction(part: u8) bool {
+    return part == NP_FRACTION_DENOMINATOR or part == NP_HP32SII_DENOMINATOR or part == NP_COMPLEX_FRACTION_DENOMINATOR or part == NP_COMPLEX_HP32SII_DENOMINATOR;
+}
+
+// π right after i is the imaginary part: its digits end the number, which the
+// caller closes.
+pub export fn nimPiAfterI() callconv(.c) bool {
+    if (nimNumberPart == NP_COMPLEX_INT_PART and aimBuffer[strlen(aimBuffer) - 1] == 'i') {
+        _ = strcat(aimBuffer, "3.141592653589793238462643383279503");
+        return true;
+    }
+    return false;
+}
+
+// A real number or a fraction is being entered.
+pub export fn nimRealOrFractionPart() callconv(.c) bool {
+    return switch (nimNumberPart) {
+        NP_INT_10, NP_REAL_FLOAT_PART, NP_REAL_EXPONENT, NP_FRACTION_DENOMINATOR, NP_HP32SII_DENOMINATOR => true,
+        else => false,
+    };
+}
+
+// NIMDRG is set and the number being entered closes as a real or a complex
+// number, which takes the unit DRG chooses. A real number takes it through the
+// tag of the real liftStack made X for the entry.
+pub export fn nimDrgChoosesUnit() callconv(.c) bool {
+    if ((drgConfig & (1 << DRG_NIM_BIT)) == 0) {
+        return false;
+    }
+    if (nimComplexPart()) {
+        return true;
+    }
+    return nimRealOrFractionPart() and calcMode == CM_NIM and lastIntegerBase == 0 and Input_Default != ID_CPXDP;
+}
+
+// The number being entered has the unit D.MS, so the digits after the radix mark
+// are minutes and seconds.
+fn nimDmsDigits() bool {
+    if (nimComplexPart()) {
+        return nimPolarAngularMode == amDMS;
+    }
+    if (calcMode == CM_PEM) {
+        return editingLiteralType == STRING_ANGLE_DMS;
+    }
+    return calcMode == CM_NIM and getRegisterAngularMode(REGISTER_X) == amDMS;
+}
+
+// The digits of a D.MS number with an exponent, without its radix mark, into
+// digits; integerDigits receives how many of them stand before the radix mark.
+// Returns how many are degrees once the exponent moves the radix mark, which can
+// fall below 0 or above their count. The C narrows that int sum to int16_t.
+fn nimDmsExponentDigits(number_in: [*c]const u8, digits: [*c]u8, integerDigits: *i16) i16 {
+    var number = number_in;
+    var count: i16 = 0;
+    integerDigits.* = -1;
+    while (number[0] != 'e' and number[0] != 0) : (number += 1) {
+        if (number[0] == '.') {
+            integerDigits.* = count;
+        } else {
+            digits[@intCast(count)] = number[0];
+            count += 1;
+        }
+    }
+    digits[@intCast(count)] = 0;
+    if (integerDigits.* < 0) {
+        integerDigits.* = count;
+    }
+    const shift: c_int = if (number[0] == 'e') atoi(number + 1) else 0;
+    return @truncate(@as(c_int, integerDigits.*) + shift);
+}
+
+// The count-th D.MS digit after the degree mark, then the minute mark after the
+// second digit and, with radixMark, the radix mark after the fourth.
+fn nimDmsDigit(text_in: [*c]u8, digit: u8, count: i16, radixMark: bool) [*c]u8 {
+    var text = text_in;
+    text[0] = digit;
+    text += 1;
+    if (count == 2) {
+        text = stringCopy(text, STD_RIGHT_SINGLE_QUOTE);
+    } else if (count == 4 and radixMark) {
+        text[0] = radix34MarkByte0();
+        text += 1;
+        if (radix34MarkByte1() != 1) { // a radix mark of two bytes
+            text[0] = radix34MarkByte1();
+            text += 1;
+        }
+    }
+    return text;
+}
+
+// nimDmsMark's buffer for an entry with an exponent: the degree mark, up to 34
+// digits and three marks.
+var nimDmsTail: [64]u8 = undefined;
+
+// The marks after the cursor in a D.MS entry: all three with no radix mark,
+// minutes and seconds until two digits follow it, then seconds. With an exponent
+// the digits it moves past the radix mark are shown as the minutes and seconds
+// they become.
+pub export fn nimDmsMark() callconv(.c) [*c]const u8 {
+    const marks: [*c]const u8 = STD_DEGREE ++ STD_RIGHT_SINGLE_QUOTE ++ STD_RIGHT_DOUBLE_QUOTE;
+    if (nimNumberPart == NP_INT_10 or nimNumberPart == NP_COMPLEX_INT_PART) {
+        return marks;
+    }
+    if (nimNumberPart == NP_REAL_EXPONENT or nimNumberPart == NP_COMPLEX_EXPONENT) {
+        var digits: [48]u8 = undefined;
+        var integerDigits: i16 = undefined;
+        const number: [*c]const u8 = if (nimComplexPart()) aimBuffer + @as(usize, @intCast(imaginaryMantissaSignLocation + 2)) else aimBuffer + 1;
+        const degrees = nimDmsExponentDigits(number, &digits, &integerDigits);
+        const count: i16 = @intCast(strlen(&digits));
+        var shown: i16 = 0;
+        var t: [*c]u8 = stringCopy(&nimDmsTail, STD_DEGREE);
+        // The zeros the exponent puts in front fill the minutes and seconds only.
+        var i: i16 = degrees;
+        while (i < count and (shown < 4 or i >= 0)) : ({
+            i += 1;
+            shown += 1;
+        }) {
+            // The radix mark only when a digit follows it.
+            t = nimDmsDigit(t, if (i < 0) '0' else digits[@intCast(i)], shown + 1, i + 1 < count and i + 1 >= 0);
+        }
+        if (shown == 1 or shown == 3) { // a lone digit is the tens of the minutes or of the seconds
+            t[0] = '0';
+            t += 1;
+        }
+        if (shown < 2) {
+            t = stringCopy(t, STD_RIGHT_SINGLE_QUOTE);
+        }
+        _ = strcpy(t, STD_RIGHT_DOUBLE_QUOTE);
+        return &nimDmsTail;
+    }
+    if (nimNumberPart == NP_REAL_FLOAT_PART or nimNumberPart == NP_COMPLEX_FLOAT_PART or nimPartIsFraction(nimNumberPart)) {
+        // 5/3 has no gap, so its bar is the degree mark.
+        const barIsMark = nimNumberPart == NP_HP32SII_DENOMINATOR or nimNumberPart == NP_COMPLEX_HP32SII_DENOMINATOR;
+        var digits: i16 = 0;
+        var c: [*c]const u8 = aimBuffer + strlen(aimBuffer) - 1;
+        while (c[0] != '.' and c[0] != ' ' and (c[0] != '/' or !barIsMark)) : (c -= 1) {
+            if (c[0] != '/') {
+                digits += 1;
+            }
+        }
+        if (digits < 2) { // fewer than two digits after the degree mark
+            return marks + 2;
+        }
+    }
+    return marks + 4;
+}
+
+// The buffer of a new number: 1. before an exponent, 0 before a radix mark, and
+// nothing before a digit.
+pub export fn nimStartNumber(item: i16) callconv(.c) void {
+    switch (item) {
+        ITM_EXPONENT => {
+            aimBuffer[0] = '+';
+            aimBuffer[1] = '1';
+            aimBuffer[2] = '.';
+            aimBuffer[3] = 0;
+            nimNumberPart = NP_REAL_FLOAT_PART;
+        },
+        ITM_PERIOD => {
+            aimBuffer[0] = '+';
+            aimBuffer[1] = '0';
+            aimBuffer[2] = 0;
+            nimNumberPart = NP_INT_10;
+        },
+        ITM_0, ITM_1, ITM_2, ITM_3, ITM_4, ITM_5, ITM_6, ITM_7, ITM_8, ITM_9, ITM_A, ITM_B, ITM_C, ITM_D, ITM_E, ITM_F => {
+            aimBuffer[0] = '+';
+            aimBuffer[1] = 0;
+            nimNumberPart = NP_EMPTY;
+        },
+        else => {},
+    }
+}
+
+// The text after the cursor: the base of an integer, or the denominator a
+// fraction takes when none is typed.
+pub export fn nimHint(hint: [*c]u8) callconv(.c) void {
+    hint[0] = 0;
+    if (lastIntegerBase != 0) {
+        hint[0] = '#';
+        if (lastIntegerBase > 9) {
+            hint[1] = '1';
+            hint[2] = @intCast('0' + (lastIntegerBase - 10));
+            hint[3] = 0;
+        } else {
+            hint[1] = @intCast('0' + lastIntegerBase);
+            hint[2] = 0;
+        }
+    } else if (aimBuffer[0] != 0 and aimBuffer[strlen(aimBuffer) - 1] == '/' and !(option_drg_cfg and nimDmsDigits())) { // a bar in a D.MS entry makes no fraction
+        frontier_display.subNumberToDisplayString(@bitCast(lastDenominator), hint, null);
+    }
+}
+
+// ---------------------------------------------------------------------------
 // closeAim
 // ---------------------------------------------------------------------------
 pub export fn closeAim() callconv(.c) void {
@@ -2154,6 +2402,42 @@ pub export fn nimBufferToDisplayBuffer(buffer_in: [*c]const u8, displayBuffer_in
     }
     buffer += 1;
 
+    // A D.MS mantissa with an exponent shows the degrees the exponent leaves, and
+    // nimDmsMark the minutes and seconds: up to 34 digits, the radix mark and the
+    // 'e' that ends them.
+    var degrees: [52]u8 = undefined;
+    if (option_drg_cfg and (nimNumberPart == NP_REAL_EXPONENT or nimNumberPart == NP_COMPLEX_EXPONENT) and nimDmsDigits()) {
+        var digits: [48]u8 = undefined;
+        var integerDigits: i16 = undefined;
+        const whole = nimDmsExponentDigits(buffer, &digits, &integerDigits);
+        const count: i16 = @intCast(strlen(&digits));
+        if (whole < count) {
+            var d: usize = 0;
+            if (whole <= 0) {
+                degrees[d] = '0';
+                d += 1;
+            } else if (whole <= integerDigits) {
+                // The digits after the degrees become zeros, so the mantissa times
+                // the power of ten is the degrees.
+                const w: usize = @intCast(whole);
+                const n: usize = @intCast(integerDigits);
+                @memcpy(degrees[0..w], digits[0..w]);
+                @memset(degrees[w..n], '0');
+                d = n;
+            } else {
+                const w: usize = @intCast(whole);
+                const n: usize = @intCast(integerDigits);
+                @memcpy(degrees[0..n], digits[0..n]);
+                degrees[n] = '.';
+                @memcpy(degrees[n + 1 .. w + 1], digits[n..w]);
+                d = w + 1;
+            }
+            degrees[d] = 'e';
+            degrees[d + 1] = 0;
+            buffer = &degrees;
+        }
+    }
+
     const GROUPWIDTH_LEFTM: u8 = grpGroupingLeft;
     switch (nimNumberPart) {
         NP_INT_10, NP_INT_BASE => {
@@ -2174,7 +2458,7 @@ pub export fn nimBufferToDisplayBuffer(buffer_in: [*c]const u8, displayBuffer_in
     }
 
     numDigits = 0;
-    while (buffer[@intCast(numDigits)] != 0 and buffer[@intCast(numDigits)] != 'e' and buffer[@intCast(numDigits)] != '.' and buffer[@intCast(numDigits)] != ' ' and buffer[@intCast(numDigits)] != '#' and buffer[@intCast(numDigits)] != '+' and buffer[@intCast(numDigits)] != '-') : (numDigits += 1) {}
+    while (buffer[@intCast(numDigits)] != 0 and buffer[@intCast(numDigits)] != 'e' and buffer[@intCast(numDigits)] != '.' and buffer[@intCast(numDigits)] != ' ' and buffer[@intCast(numDigits)] != '/' and buffer[@intCast(numDigits)] != '#' and buffer[@intCast(numDigits)] != '+' and buffer[@intCast(numDigits)] != '-') : (numDigits += 1) {}
 
     source = 0;
     dest = 0;
@@ -2187,9 +2471,18 @@ pub export fn nimBufferToDisplayBuffer(buffer_in: [*c]const u8, displayBuffer_in
     grpGroupingLeft = GROUPWIDTH_LEFTM;
     displayBuffer[@intCast(dest)] = 0;
 
-    if (nimNumberPart == NP_REAL_FLOAT_PART or nimNumberPart == NP_REAL_EXPONENT or nimNumberPart == NP_COMPLEX_FLOAT_PART or nimNumberPart == NP_COMPLEX_EXPONENT) {
-        displayBuffer[@intCast(dest)] = '.';
-        dest += 1;
+    // D.MS digits show their marks as typed and no gaps; in a fraction the gap, or
+    // a bar with no gap before it, is the degree mark.
+    const dms = option_drg_cfg and (nimNumberPart == NP_REAL_FLOAT_PART or nimNumberPart == NP_COMPLEX_FLOAT_PART or nimPartIsFraction(nimNumberPart)) and nimDmsDigits();
+    var dmsDigits: i16 = 0;
+    if (nimNumberPart == NP_REAL_FLOAT_PART or nimNumberPart == NP_REAL_EXPONENT or nimNumberPart == NP_COMPLEX_FLOAT_PART or nimNumberPart == NP_COMPLEX_EXPONENT or dms) {
+        if (dms) {
+            _ = strcpy(displayBuffer + @as(usize, @intCast(dest)), STD_DEGREE);
+            dest += 2;
+        } else {
+            displayBuffer[@intCast(dest)] = '.';
+            dest += 1;
+        }
 
         buffer += @as(usize, @intCast(source)) + 1;
 
@@ -2198,6 +2491,13 @@ pub export fn nimBufferToDisplayBuffer(buffer_in: [*c]const u8, displayBuffer_in
 
         source = 0;
         while (source < numDigits) : (source += 1) {
+            if (dms) {
+                if (buffer[@intCast(source)] != '/') { // a later bar is no D.MS digit
+                    dmsDigits += 1;
+                    dest = @intCast(nimDmsDigit(displayBuffer + @as(usize, @intCast(dest)), buffer[@intCast(source)], dmsDigits, true) - displayBuffer);
+                }
+                continue;
+            }
             displayBuffer[@intCast(dest)] = buffer[@intCast(source)];
             dest += 1;
             dest += insertGapFP(displayBuffer + @as(usize, @intCast(dest)), numDigits, source);
@@ -2214,6 +2514,13 @@ pub export fn nimBufferToDisplayBuffer(buffer_in: [*c]const u8, displayBuffer_in
 // ---------------------------------------------------------------------------
 pub export fn nimFractionToDisplayBuffer(buffer: [*c]const u8, displayBuffer: [*c]u8) callconv(.c) void {
     var index: i16 = undefined;
+
+    // A D.MS entry shows the fraction as its digits; another unit shows the
+    // fraction again.
+    if (option_drg_cfg and nimDmsDigits()) {
+        nimBufferToDisplayBuffer(buffer, displayBuffer);
+        return;
+    }
 
     if (nimNumberPart == NP_FRACTION_DENOMINATOR or nimNumberPart == NP_COMPLEX_FRACTION_DENOMINATOR) {
         nimBufferToDisplayBuffer(buffer, displayBuffer);
@@ -2356,6 +2663,11 @@ pub export fn nimFractionToReal34(source: [*c]u8, dest: *real34_t) callconv(.c) 
     }
 }
 
+// The real number, or a part of the complex number, being entered is a fraction.
+pub export fn nimFractionEntered() callconv(.c) bool {
+    return nimPartIsFraction(nimNumberPart) or (nimComplexPart() and nimPartIsFraction(nimRealPart));
+}
+
 // ---------------------------------------------------------------------------
 // closeNimWithFraction
 // ---------------------------------------------------------------------------
@@ -2363,10 +2675,18 @@ pub export fn closeNimWithFraction(dest: *real34_t) callconv(.c) void {
     nimFractionToReal34(aimBuffer, dest);
 }
 
-// ---------------------------------------------------------------------------
-// closeNimWithComplex
-// ---------------------------------------------------------------------------
-pub export fn closeNimWithComplex(dest_r: *real34_t, dest_i: *real34_t) callconv(.c) void {
+// The real number or the fraction being entered.
+pub export fn nimRealValue(dest: *real34_t) callconv(.c) void {
+    if (nimNumberPart == NP_FRACTION_DENOMINATOR or nimNumberPart == NP_HP32SII_DENOMINATOR) {
+        closeNimWithFraction(dest);
+    } else {
+        stringToReal34(aimBuffer, dest);
+    }
+}
+
+// The complex number being entered; a polar entry is converted from its angle in
+// the unit DRG chose for it, or in ADM.
+pub export fn nimComplexValue(dest_r: *real34_t, dest_i: *real34_t) callconv(.c) void {
     aimBuffer[@intCast(imaginaryMantissaSignLocation + 1)] = aimBuffer[@intCast(imaginaryMantissaSignLocation)];
     aimBuffer[@intCast(imaginaryMantissaSignLocation)] = 0;
 
@@ -2382,25 +2702,279 @@ pub export fn closeNimWithComplex(dest_r: *real34_t, dest_i: *real34_t) callconv
         stringToReal34(aimBuffer + @as(usize, @intCast(imaginaryMantissaSignLocation)) + 1, dest_i);
     }
 
-    if ((getSystemFlag(FLAG_POLAR) != 0 and temporaryFlagRect == 0) or temporaryFlagPolar != 0) { // polar mode
+    if (nimPolarEntry()) {
         if (real34CompareEqual(dest_r, const34_0) != 0) {
             real34SetZero(dest_r);
             real34SetZero(dest_i);
         } else {
             var z: cplx_t = undefined;
+            if (option_drg_cfg and nimPolarAngularMode == amDMS) { // the angle digits are degrees, minutes and seconds
+                frontier_conversion_angles.real34FromDmsToDeg(dest_i, dest_i);
+            }
             real34ToReal(dest_r, z.mag());
             real34ToReal(dest_i, z.arg());
-            realPolarToRectangularInUnit(z.mag(), z.arg(), currentAngularMode, &z, &ctxtReal39);
+            const unit: angularMode_t = if (option_drg_cfg and nimPolarAngularMode != amNone) nimPolarAngularMode else currentAngularMode;
+            realPolarToRectangularInUnit(z.mag(), z.arg(), unit, &z, &ctxtReal39);
             realToReal34(&z.Real, dest_r);
             realToReal34(&z.Imag, dest_i);
         }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// closeNimWithComplex
+// ---------------------------------------------------------------------------
+pub export fn closeNimWithComplex(dest_r: *real34_t, dest_i: *real34_t) callconv(.c) void {
+    nimComplexValue(dest_r, dest_i);
+
+    if (nimPolarEntry()) {
         fnToPolar2(0);
-    } else if ((getSystemFlag(FLAG_POLAR) == 0 and temporaryFlagPolar == 0) or temporaryFlagRect != 0) { // rect mode
+        if (option_drg_cfg and nimPolarAngularMode != amNone and calcMode != CM_MIM) { // X shows its angle in the unit DRG chose
+            setRegisterTag(REGISTER_X, abi.register_tag.complexWithAngularMode(getRegisterTag(REGISTER_X), nimPolarAngularMode));
+        }
+    } else {
         fnToRect2(0);
     }
     temporaryFlagRect = 0;
     temporaryFlagPolar = 0;
+    if (comptime option_drg_cfg) {
+        frontier_addons.drgAutoAdm(nimPolarAngularMode);
+        nimPolarAngularMode = amNone;
+    }
     fnSetFlag(FLAG_CPXRES);
+}
+
+// The value NIM gives a fraction or a complex number being entered, for a
+// program literal: NaN where the denominator is refused. im is read only for a
+// complex number. Program entry leaves the fraction display as it was, although
+// entering a fraction sets it.
+pub export fn nimLiteralValue(re: *real34_t, im: ?*real34_t) callconv(.c) void {
+    const fract = getSystemFlag(FLAG_FRACT) != 0;
+    const irFrac = getSystemFlag(FLAG_IRFRAC) != 0;
+    realToReal34(abi.constants.const_NaN(), re);
+    if (nimComplexPart()) {
+        realToReal34(abi.constants.const_NaN(), im.?);
+        nimComplexValue(re, im.?);
+    } else {
+        closeNimWithFraction(re);
+    }
+    if (!fract) {
+        clearSystemFlag(FLAG_FRACT);
+    }
+    if (!irFrac) {
+        clearSystemFlag(FLAG_IRFRAC);
+    }
+}
+
+// Before a close: an exponent without digits is left out, an empty imaginary
+// part becomes 1 and an empty angle 0. A D.MS fraction closes as its digits, and
+// a D.MS number with an exponent is written without it when at most 34 digits
+// result.
+pub export fn nimCompleteNumber() callconv(.c) void {
+    if (option_drg_cfg and nimPartIsFraction(nimNumberPart) and nimDmsDigits()) {
+        // The gap, or a bar with no gap before it, is the radix mark, and a later
+        // bar is skipped.
+        const complexPart = nimComplexPart();
+        var digits: [*c]u8 = if (complexPart) aimBuffer + @as(usize, @intCast(imaginaryMantissaSignLocation + 2)) else aimBuffer + 1;
+        var mark = false;
+        var source: [*c]const u8 = digits;
+        while (source[0] != 0) : (source += 1) {
+            if (source[0] != ' ' and source[0] != '/') {
+                digits[0] = source[0];
+                digits += 1;
+            } else if (!mark) {
+                digits[0] = '.';
+                digits += 1;
+                mark = true;
+            }
+        }
+        digits[0] = 0;
+        nimNumberPart = if (complexPart) NP_COMPLEX_FLOAT_PART else NP_REAL_FLOAT_PART;
+    }
+    var lastChar: i16 = @intCast(strlen(aimBuffer) - 1);
+    if ((nimNumberPart == NP_COMPLEX_EXPONENT or nimNumberPart == NP_REAL_EXPONENT) and (aimBuffer[@intCast(lastChar)] == '+' or aimBuffer[@intCast(lastChar)] == '-') and aimBuffer[@intCast(lastChar - 1)] == 'e') {
+        lastChar -= 1;
+        aimBuffer[@intCast(lastChar)] = 0;
+        lastChar -= 1;
+    } else if (nimNumberPart == NP_REAL_EXPONENT and aimBuffer[@intCast(lastChar)] == 'e') {
+        aimBuffer[@intCast(lastChar)] = 0;
+        lastChar -= 1;
+    }
+    if (option_drg_cfg and (nimNumberPart == NP_REAL_EXPONENT or nimNumberPart == NP_COMPLEX_EXPONENT) and nimDmsDigits()) {
+        // The exponent moves the radix mark of the D.MS digits.
+        const complexPart = nimComplexPart();
+        const number: [*c]u8 = if (complexPart) aimBuffer + @as(usize, @intCast(imaginaryMantissaSignLocation + 2)) else aimBuffer + 1;
+        var digits: [48]u8 = undefined;
+        var integerDigits: i16 = undefined;
+        const whole = nimDmsExponentDigits(number, &digits, &integerDigits);
+        const count: i16 = @intCast(strlen(&digits));
+        if (@max(whole, 1) + (if (whole < count) count - whole else 0) <= 34) {
+            var write = number;
+            if (whole <= 0) {
+                write[0] = '0';
+                write += 1;
+            }
+            var i: i16 = 0;
+            while (i < whole) : (i += 1) {
+                write[0] = if (i < count) digits[@intCast(i)] else '0';
+                write += 1;
+            }
+            write[0] = '.';
+            write += 1;
+            i = whole;
+            while (i < count) : (i += 1) {
+                write[0] = if (i < 0) '0' else digits[@intCast(i)];
+                write += 1;
+            }
+            write[0] = 0;
+            while (number[0] == '0' and number[1] != '.') { // the zeros in front of the degrees
+                _ = frontier_char_string.xcopy(number, number + 1, @intCast(strlen(number)));
+            }
+            nimNumberPart = if (complexPart) NP_COMPLEX_FLOAT_PART else NP_REAL_FLOAT_PART;
+            lastChar = @intCast(strlen(aimBuffer) - 1);
+        }
+    }
+    const is_i: bool = nimNumberPart == NP_COMPLEX_INT_PART and aimBuffer[@intCast(lastChar)] == 'i';
+    const is_theta: bool = nimNumberPart == NP_COMPLEX_INT_PART and (@as(i32, aimBuffer[@intCast(lastChar - 1)]) * 256 + @as(i32, aimBuffer[@intCast(lastChar)]) * 256) == 0xa221;
+    if ((is_i or is_theta) and !nimPolarEntry()) { // i: nothing typed after it, so the imaginary part is 1
+        lastChar += 1;
+        aimBuffer[@intCast(lastChar)] = '1';
+        aimBuffer[@intCast(lastChar + 1)] = 0;
+    } else if ((is_i or is_theta) and nimPolarEntry()) { // i∠: nothing typed after it, so the angle is 0
+        lastChar += 1;
+        aimBuffer[@intCast(lastChar)] = '0';
+        aimBuffer[@intCast(lastChar + 1)] = 0;
+    }
+}
+
+// The short integer typed as digits#base, into regist. False with the error
+// displayed when the digits, the base or the word size refuse it.
+pub export fn nimShortInteger(buffer: [*c]u8, regist: calcRegister_t) callconv(.c) bool {
+    var minVal: longInteger_t = undefined;
+    var value: longInteger_t = undefined;
+    var maxVal: longInteger_t = undefined;
+
+    const lg: i16 = @intCast(strlen(buffer));
+    var posHash: i16 = 0;
+    var ii: i16 = 1;
+    while (ii < lg) : (ii += 1) {
+        if (buffer[@intCast(ii)] == '#') {
+            posHash = ii;
+            break;
+        }
+    }
+
+    ii = posHash + 1;
+    while (ii < lg) : (ii += 1) {
+        if (buffer[@intCast(ii)] < '0' or buffer[@intCast(ii)] > '9') {
+            // This should never happen
+            frontier_error.displayCalcErrorMessage(ERROR_INVALID_INTEGER_INPUT, ERR_REGISTER_LINE);
+            moreInfoOnErr("In function closeNIM:", "there is a non numeric character in the base of the integer!");
+            return false;
+        }
+    }
+
+    const base: i32 = stringToInt32(buffer + @as(usize, @intCast(posHash)) + 1);
+    if (base < 2 or base > 16) {
+        frontier_error.displayCalcErrorMessage(ERROR_INVALID_INTEGER_INPUT, ERR_REGISTER_LINE);
+        moreInfoOnErr("In function closeNIM:", "the base of the integer must be from 2 to 16!");
+        return false;
+    }
+
+    if (!checkShortIntegerDigits(buffer)) {
+        undo();
+        return false;
+    }
+
+    longIntegerInit(&value);
+    buffer[@intCast(posHash)] = 0;
+    _ = stringToLongInteger(buffer + @as(usize, if (buffer[0] == '+') 1 else 0), base, &value);
+
+    // maxVal = 2^shortIntegerWordSize
+    longIntegerInit(&maxVal);
+    if (shortIntegerWordSize >= 1 and shortIntegerWordSize <= 64) {
+        longInteger2Pow(shortIntegerWordSize, &maxVal);
+    } else {
+        _ = sprintf(errorMessage, @ptrCast(&commonBugScreenMessages[bugMsgValueFor]), "closeNIM", "shortIntegerWordSize", @as(c_int, shortIntegerWordSize));
+        frontier_error.displayBugScreen(errorMessage);
+        longIntegerFree(&maxVal);
+        longIntegerFree(&value);
+        return false;
+    }
+
+    // minVal = -maxVal/2
+    longIntegerInit(&minVal);
+    longIntegerSetZero(&minVal); // Mandatory! Else SEGV at next instruction
+    longIntegerDivideUInt(&maxVal, 2, &minVal); // minVal = maxVal / 2
+    longIntegerSetNegativeSign(&minVal); // minVal = -minVal
+
+    if ((base != 2) and (base != 4) and (base != 8) and (base != 16) and (shortIntegerMode != SIM_UNSIGN)) {
+        longIntegerDivideUInt(&maxVal, 2, &maxVal); // maxVal /= 2
+    }
+
+    longIntegerSubtractUInt(&maxVal, 1, &maxVal); // maxVal--
+
+    if (shortIntegerMode == SIM_UNSIGN) {
+        longIntegerSetZero(&minVal); // minVal = 0
+    }
+
+    if (shortIntegerMode == SIM_1COMPL or shortIntegerMode == SIM_SIGNMT) {
+        longIntegerAddUInt(&minVal, 1, &minVal); // minVal++
+    }
+
+    if (longIntegerCompare(&value, &minVal) < 0 or longIntegerCompare(&value, &maxVal) > 0) {
+        frontier_error.displayCalcErrorMessage(ERROR_WORD_SIZE_TOO_SMALL, ERR_REGISTER_LINE);
+        if (comptime extra_info) {
+            if (comptime !dmcp_build) {
+                var strMin: [22]u8 = undefined;
+                var strMax: [22]u8 = undefined;
+                frontier_display.longIntegerToAllocatedString(&minVal[0], &strMin, @intCast(strMin.len));
+                frontier_display.longIntegerToAllocatedString(&maxVal[0], &strMax, @intCast(strMax.len));
+                abi.fmtBufZ(errorMessage[0..512], "For word size of {d} bit{s} and integer mode {s},", .{ @as(i32, shortIntegerWordSize), std.mem.span(if (shortIntegerWordSize > 1) @as([*c]const u8, "s") else @as([*c]const u8, "")), std.mem.span(frontier_debug.getShortIntegerModeName(shortIntegerMode)) });
+                abi.fmtCStr(errorMessage + ERROR_MESSAGE_LENGTH / 2, "the entered number must be from {s} to {s}!", .{ std.mem.sliceTo(&strMin, 0), std.mem.sliceTo(&strMax, 0) });
+                moreInfoOnError("In function closeNIM:", errorMessage, errorMessage + ERROR_MESSAGE_LENGTH / 2, null);
+            }
+        }
+        longIntegerFree(&maxVal);
+        longIntegerFree(&minVal);
+        longIntegerFree(&value);
+        return false;
+    }
+
+    reallocateRegister(regist, dtShortInteger, 0, @intCast(base));
+
+    var strValue: [22]u8 = undefined;
+    frontier_display.longIntegerToAllocatedString(&value[0], &strValue, @intCast(strValue.len));
+
+    // WIDTH-CONTRACT: no-width-question -- `long long` is 64-bit on every target
+    // z47 builds for, and the string is one this function just formatted rather
+    // than file input.
+    var val: u64 = strtoull(@as([*c]const u8, &strValue) + @as(usize, if (longIntegerIsNegative(&value)) 1 else 0), null, 10);
+
+    if (shortIntegerMode == SIM_UNSIGN) {} else if (shortIntegerMode == SIM_2COMPL) {
+        if (longIntegerIsNegative(&value)) {
+            val = (~val +% 1) & shortIntegerMask;
+        }
+    } else if (shortIntegerMode == SIM_1COMPL) {
+        if (longIntegerIsNegative(&value)) {
+            val = ~val & shortIntegerMask;
+        }
+    } else if (shortIntegerMode == SIM_SIGNMT) {
+        if (longIntegerIsNegative(&value)) {
+            val = (val & shortIntegerMask) | shortIntegerSignBit;
+        }
+    } else {
+        _ = sprintf(errorMessage, @ptrCast(&commonBugScreenMessages[bugMsgValueFor]), "closeNIM", "shortIntegerMode", @as(c_int, shortIntegerMode));
+        frontier_error.displayBugScreen(errorMessage);
+        regShortInteger(regist).* = 0;
+    }
+
+    regShortInteger(regist).* = val;
+
+    longIntegerFree(&maxVal);
+    longIntegerFree(&minVal);
+    longIntegerFree(&value);
+    return true;
 }
 
 // ---------------------------------------------------------------------------
@@ -2443,6 +3017,8 @@ pub export fn closeNim() callconv(.c) void {
         return;
     }
 
+    // The unit DRG gave the number, made ADM by A.AUTO once the close succeeds.
+    const drgUnit: angularMode_t = if (option_drg_cfg and calcMode == CM_NIM) getRegisterAngularMode(REGISTER_X) else amNone;
     var delayedShortIntegerCHS: bool = false;
     if (aimBuffer[0] == '-' and validShortIntegerInX() != 0) {
         aimBuffer[0] = ' ';
@@ -2454,28 +3030,8 @@ pub export fn closeNim() callconv(.c) void {
     closeNim_exit: {
         if (nimNumberPart != NP_INT_16) { // We need a # and a base
             if (nimNumberPart != NP_INT_BASE or aimBuffer[@intCast(lastChar)] != '#') { // We need a base
-                if ((nimNumberPart == NP_COMPLEX_EXPONENT or nimNumberPart == NP_REAL_EXPONENT) and (aimBuffer[@intCast(lastChar)] == '+' or aimBuffer[@intCast(lastChar)] == '-') and aimBuffer[@intCast(lastChar - 1)] == 'e') {
-                    lastChar -= 1;
-                    aimBuffer[@intCast(lastChar)] = 0;
-                    lastChar -= 1;
-                } else if (nimNumberPart == NP_REAL_EXPONENT and aimBuffer[@intCast(lastChar)] == 'e') {
-                    aimBuffer[@intCast(lastChar)] = 0;
-                    lastChar -= 1;
-                }
-                const is_i: bool = nimNumberPart == NP_COMPLEX_INT_PART and aimBuffer[@intCast(lastChar)] == 'i';
-                const is_theta: bool = nimNumberPart == NP_COMPLEX_INT_PART and (@as(i32, aimBuffer[@intCast(lastChar - 1)]) * 256 + @as(i32, aimBuffer[@intCast(lastChar)]) * 256) == 0xa221;
-                // The mode the entry is IN, not the mode the flag alone names: a
-                // temporary rect or polar tag typed on this number decides it.
-                const polarEntry = (getSystemFlag(FLAG_POLAR) != 0 and temporaryFlagRect == 0) or temporaryFlagPolar != 0;
-                if ((is_i or is_theta) and !polarEntry) { // i: nothing typed after it, so the imaginary part is 1
-                    lastChar += 1;
-                    aimBuffer[@intCast(lastChar)] = '1';
-                    aimBuffer[@intCast(lastChar + 1)] = 0;
-                } else if ((is_i or is_theta) and polarEntry) { // i_pol: nothing typed after it, so the angle is 0
-                    lastChar += 1;
-                    aimBuffer[@intCast(lastChar)] = '0';
-                    aimBuffer[@intCast(lastChar + 1)] = 0;
-                }
+                nimCompleteNumber();
+                lastChar = @intCast(strlen(aimBuffer) - 1);
 
                 if ((aimBuffer[0] != '-' or aimBuffer[1] != 0) and (aimBuffer[@intCast(lastChar)] != '-')) {
                     frontier_calc_mode.calcModeNormal();
@@ -2497,148 +3053,12 @@ pub export fn closeNim() callconv(.c) void {
                             longIntegerFree(&lgInt);
                         }
                     } else if (nimNumberPart == NP_INT_BASE) {
-                        // Any change here must be reported in strToShortInteger in testSuite.c.
-                        var minVal: longInteger_t = undefined;
-                        var value: longInteger_t = undefined;
-                        var maxVal: longInteger_t = undefined;
-                        var posHash: i16 = undefined;
-                        var ii: i16 = undefined;
-                        var lg: i16 = undefined;
-                        var base: i32 = undefined;
-
-                        lg = @intCast(strlen(aimBuffer));
-                        posHash = 0;
-                        ii = 1;
-                        while (ii < lg) : (ii += 1) {
-                            if (aimBuffer[@intCast(ii)] == '#') {
-                                posHash = ii;
-                                break;
-                            }
-                        }
-
-                        ii = posHash + 1;
-                        while (ii < lg) : (ii += 1) {
-                            if (aimBuffer[@intCast(ii)] < '0' or aimBuffer[@intCast(ii)] > '9') {
-                                frontier_error.displayCalcErrorMessage(ERROR_INVALID_INTEGER_INPUT, ERR_REGISTER_LINE);
-                                moreInfoOnErr("In function closeNIM:", "there is a non numeric character in the base of the integer!");
-                                break :closeNim_exit;
-                            }
-                        }
-
-                        base = stringToInt32(aimBuffer + @as(usize, @intCast(posHash)) + 1);
-                        if (base < 2 or base > 16) {
-                            frontier_error.displayCalcErrorMessage(ERROR_INVALID_INTEGER_INPUT, ERR_REGISTER_LINE);
-                            moreInfoOnErr("In function closeNIM:", "the base of the integer must be from 2 to 16!");
+                        if (!nimShortInteger(aimBuffer, REGISTER_X)) {
                             break :closeNim_exit;
                         }
-
-                        ii = if (aimBuffer[0] == '-') 1 else 0;
-                        while (ii < posHash) : (ii += 1) {
-                            const digitVal: i32 = if (aimBuffer[@intCast(ii)] > '9') @as(i32, aimBuffer[@intCast(ii)]) - 'A' + 10 else @as(i32, aimBuffer[@intCast(ii)]) - '0';
-                            if (digitVal >= base) {
-                                frontier_error.displayCalcErrorMessage(ERROR_INVALID_INTEGER_INPUT, ERR_REGISTER_LINE);
-                                if (comptime extra_info) {
-                                    if (comptime !dmcp_build) {
-                                        abi.fmtBufZ(errorMessage[0..512], "digit {c} is not allowed in base {d}!", .{ aimBuffer[@intCast(ii)], @as(i32, base) });
-                                        moreInfoOnError("In function closeNIM:", errorMessage, null, null);
-                                    }
-                                }
-                                undo();
-                                break :closeNim_exit;
-                            }
-                        }
-
-                        longIntegerInit(&value);
-                        aimBuffer[@intCast(posHash)] = 0;
-                        _ = stringToLongInteger(aimBuffer + @as(usize, if (aimBuffer[0] == '+') 1 else 0), base, &value);
-
-                        // maxVal = 2^shortIntegerWordSize
-                        longIntegerInit(&maxVal);
-                        if (shortIntegerWordSize >= 1 and shortIntegerWordSize <= 64) {
-                            longInteger2Pow(shortIntegerWordSize, &maxVal);
-                        } else {
-                            _ = sprintf(errorMessage, @ptrCast(&commonBugScreenMessages[bugMsgValueFor]), "closeNIM", "shortIntegerWordSize", @as(c_int, shortIntegerWordSize));
-                            frontier_error.displayBugScreen(errorMessage);
-                            longIntegerFree(&maxVal);
-                            longIntegerFree(&value);
-                            break :closeNim_exit;
-                        }
-
-                        // minVal = -maxVal/2
-                        longIntegerInit(&minVal);
-                        longIntegerSetZero(&minVal); // Mandatory! Else SEGV at next instruction
-                        longIntegerDivideUInt(&maxVal, 2, &minVal); // minVal = maxVal / 2
-                        longIntegerSetNegativeSign(&minVal); // minVal = -minVal
-
-                        if ((base != 2) and (base != 4) and (base != 8) and (base != 16) and (shortIntegerMode != SIM_UNSIGN)) {
-                            longIntegerDivideUInt(&maxVal, 2, &maxVal); // maxVal /= 2
-                        }
-
-                        longIntegerSubtractUInt(&maxVal, 1, &maxVal); // maxVal--
-
-                        if (shortIntegerMode == SIM_UNSIGN) {
-                            longIntegerSetZero(&minVal); // minVal = 0
-                        }
-
-                        if (shortIntegerMode == SIM_1COMPL or shortIntegerMode == SIM_SIGNMT) {
-                            longIntegerAddUInt(&minVal, 1, &minVal); // minVal++
-                        }
-
-                        if (longIntegerCompare(&value, &minVal) < 0 or longIntegerCompare(&value, &maxVal) > 0) {
-                            frontier_error.displayCalcErrorMessage(ERROR_WORD_SIZE_TOO_SMALL, ERR_REGISTER_LINE);
-                            if (comptime extra_info) {
-                                if (comptime !dmcp_build) {
-                                    var strMin: [22]u8 = undefined;
-                                    var strMax: [22]u8 = undefined;
-                                    frontier_display.longIntegerToAllocatedString(&minVal[0], &strMin, @intCast(strMin.len));
-                                    frontier_display.longIntegerToAllocatedString(&maxVal[0], &strMax, @intCast(strMax.len));
-                                    abi.fmtBufZ(errorMessage[0..512], "For word size of {d} bit{s} and integer mode {s},", .{ @as(i32, shortIntegerWordSize), std.mem.span(if (shortIntegerWordSize > 1) @as([*c]const u8, "s") else @as([*c]const u8, "")), std.mem.span(frontier_debug.getShortIntegerModeName(shortIntegerMode)) });
-                                    abi.fmtCStr(errorMessage + ERROR_MESSAGE_LENGTH / 2, "the entered number must be from {s} to {s}!", .{ std.mem.sliceTo(&strMin, 0), std.mem.sliceTo(&strMax, 0) });
-                                    moreInfoOnError("In function closeNIM:", errorMessage, errorMessage + ERROR_MESSAGE_LENGTH / 2, null);
-                                }
-                            }
-                            longIntegerFree(&maxVal);
-                            longIntegerFree(&minVal);
-                            longIntegerFree(&value);
-                            break :closeNim_exit;
-                        }
-
-                        reallocateRegister(REGISTER_X, dtShortInteger, 0, @intCast(base));
-
-                        var strValue: [22]u8 = undefined;
-                        frontier_display.longIntegerToAllocatedString(&value[0], &strValue, @intCast(strValue.len));
-
-                        // WIDTH-CONTRACT: no-width-question -- `long long` is
-                        // 64-bit on every target z47 builds for, and the string is
-                        // one this function just formatted rather than file input.
-                        var val: u64 = strtoull(@as([*c]const u8, &strValue) + @as(usize, if (longIntegerIsNegative(&value)) 1 else 0), null, 10);
-
-                        if (shortIntegerMode == SIM_UNSIGN) {} else if (shortIntegerMode == SIM_2COMPL) {
-                            if (longIntegerIsNegative(&value)) {
-                                val = (~val +% 1) & shortIntegerMask;
-                            }
-                        } else if (shortIntegerMode == SIM_1COMPL) {
-                            if (longIntegerIsNegative(&value)) {
-                                val = ~val & shortIntegerMask;
-                            }
-                        } else if (shortIntegerMode == SIM_SIGNMT) {
-                            if (longIntegerIsNegative(&value)) {
-                                val = (val & shortIntegerMask) | shortIntegerSignBit;
-                            }
-                        } else {
-                            _ = sprintf(errorMessage, @ptrCast(&commonBugScreenMessages[bugMsgValueFor]), "closeNIM", "shortIntegerMode", @as(c_int, shortIntegerMode));
-                            frontier_error.displayBugScreen(errorMessage);
-                            regShortInteger(REGISTER_X).* = 0;
-                        }
-
-                        regShortInteger(REGISTER_X).* = val;
-                        lastIntegerBase = @intCast(base);
+                        lastIntegerBase = getRegisterTag(REGISTER_X);
                         frontier_radio_button_catalog.fnRefreshState();
                         aimBuffer[0] = 0; // Clear the NIM input buffer once written successfully.
-
-                        longIntegerFree(&maxVal);
-                        longIntegerFree(&minVal);
-                        longIntegerFree(&value);
                     } else if (nimNumberPart == NP_REAL_FLOAT_PART or nimNumberPart == NP_REAL_EXPONENT) {
                         const dataType: u16 = @intCast(getRegisterDataType(REGISTER_X));
                         if (dataType == dtTime) {
@@ -2719,6 +3139,9 @@ pub export fn closeNim() callconv(.c) void {
 
     if (calcMode != CM_NIM) { // a refused close keeps NIM open
         nimNumberPart = NP_EMPTY; // Ensure insertStepInProgram sees the correct value.
+        if (option_drg_cfg and lastErrorCode == 0) {
+            frontier_addons.drgAutoAdm(@intCast(drgUnit));
+        }
     }
 }
 
@@ -3000,28 +3423,14 @@ pub export fn addItemToNimBuffer(item: i16) callconv(.c) void {
 
     if (calcMode == CM_NORMAL) {
         switch (item) {
-            ITM_EXPONENT => {
+            ITM_EXPONENT, ITM_PERIOD => {
                 frontier_calc_mode.calcModeNim(NOPARAM);
-                aimBuffer[0] = '+';
-                aimBuffer[1] = '1';
-                aimBuffer[2] = '.';
-                aimBuffer[3] = 0;
-                nimNumberPart = NP_REAL_FLOAT_PART;
-                frontier_screen.setLastintegerBasetoZero();
-            },
-            ITM_PERIOD => {
-                frontier_calc_mode.calcModeNim(NOPARAM);
-                aimBuffer[0] = '+';
-                aimBuffer[1] = '0';
-                aimBuffer[2] = 0;
-                nimNumberPart = NP_INT_10;
+                nimStartNumber(item);
                 frontier_screen.setLastintegerBasetoZero();
             },
             ITM_0, ITM_1, ITM_2, ITM_3, ITM_4, ITM_5, ITM_6, ITM_7, ITM_8, ITM_9, ITM_A, ITM_B, ITM_C, ITM_D, ITM_E, ITM_F => {
                 frontier_calc_mode.calcModeNim(NOPARAM);
-                aimBuffer[0] = '+';
-                aimBuffer[1] = 0;
-                nimNumberPart = NP_EMPTY;
+                nimStartNumber(item);
             },
             else => {
                 abi.fmtBufZ(errorMessage[0..512], "In function addItemToNimBuffer:{d} is an unexpected item value when initializing NIM!", .{@as(i32, item)});
@@ -3187,6 +3596,9 @@ pub export fn addItemToNimBuffer(item: i16) callconv(.c) void {
                         nimNumberPart = NP_REAL_FLOAT_PART;
                     },
                     NP_REAL_FLOAT_PART => {
+                        if (option_drg_cfg and nimDmsDigits()) { // a D.MS number takes one radix mark and no fraction
+                            break :sw;
+                        }
                         var HP32SII: bool = false;
                         if (aimBuffer[strlen(aimBuffer) - 1] == '.') {
                             HP32SII = true;
@@ -3210,6 +3622,9 @@ pub export fn addItemToNimBuffer(item: i16) callconv(.c) void {
                         nimNumberPart = NP_COMPLEX_FLOAT_PART;
                     },
                     NP_COMPLEX_FLOAT_PART => {
+                        if (option_drg_cfg and nimDmsDigits()) { // a D.MS angle takes one radix mark and no fraction
+                            break :sw;
+                        }
                         var HP32SII: bool = false;
                         if (aimBuffer[strlen(aimBuffer) - 1] == '.') {
                             HP32SII = true;
@@ -3279,6 +3694,10 @@ pub export fn addItemToNimBuffer(item: i16) callconv(.c) void {
                 if (nimNumberPart == NP_INT_10 or nimNumberPart == NP_INT_16) {
                     _ = strcat(aimBuffer, "#");
                     nimNumberPart = NP_INT_BASE;
+                } else if (nimNumberPart == NP_INT_BASE) { // a second # clears the base typed after the first
+                    while (strlen(aimBuffer) != 0 and aimBuffer[strlen(aimBuffer) - 1] != '#') {
+                        aimBuffer[strlen(aimBuffer) - 1] = 0;
+                    }
                 }
             },
 
@@ -3326,6 +3745,9 @@ pub export fn addItemToNimBuffer(item: i16) callconv(.c) void {
             ITM_op_j_pol, ITM_op_j, ITM_CC => {
                 if (item == ITM_op_j or item == ITM_op_j_pol) {
                     resetShiftState();
+                    // The key sets the form, as fnKeyCC does before ITM_CC.
+                    temporaryFlagRect = @intFromBool(item == ITM_op_j);
+                    temporaryFlagPolar = @intFromBool(item == ITM_op_j_pol);
                 }
                 lastChar = @intCast(strlen(aimBuffer) - 1);
                 done = true;
@@ -3358,12 +3780,22 @@ pub export fn addItemToNimBuffer(item: i16) callconv(.c) void {
                     },
                     else => {},
                 }
+                // i or i∠ sets the unit of the angle: ADM for a polar entry when
+                // NIMDRG is set, none otherwise, and never the unit DRG gave the real part.
+                if (option_drg_cfg and nimComplexPart()) {
+                    nimPolarAngularMode = amNone;
+                    if (nimDrgChoosesUnit() and nimPolarEntry()) {
+                        nimPolarAngularMode = @intCast(currentAngularMode);
+                    }
+                    if (calcMode == CM_NIM) {
+                        setRegisterAngularMode(REGISTER_X, amNone);
+                    }
+                }
             },
 
             ITM_CONSTpi => {
-                if (nimNumberPart == NP_COMPLEX_INT_PART and aimBuffer[strlen(aimBuffer) - 1] == 'i') {
+                if (nimPiAfterI()) {
                     done = true;
-                    _ = strcat(aimBuffer, "3.141592653589793238462643383279503");
                     frontier_items.reallyRunFunction(ITM_EXIT1, NOPARAM);
                     frontier_screen.setLastintegerBasetoZero();
                     return; // NIM is closed and the value is on the stack, skip the buffer-to-display conversion
@@ -3685,6 +4117,21 @@ pub export fn addItemToNimBuffer(item: i16) callconv(.c) void {
 
             ITM_DRG => {
                 DRG_Cycling = 0;
+                if (option_drg_cfg and nimDrgChoosesUnit()) {
+                    done = true;
+                    if (nimComplexPart()) { // no unit is a rectangular entry, a unit is a polar entry with its angle in that unit
+                        var unit: u16 = nimPolarAngularMode;
+                        frontier_addons.DRG_cycNim(&unit);
+                        nimPolarAngularMode = @intCast(unit);
+                        temporaryFlagRect = @intFromBool(unit == amNone);
+                        temporaryFlagPolar = @intFromBool(unit != amNone);
+                    } else { // the tag of X is the unit closeNim gives the number
+                        var unit: u16 = @intCast(getRegisterAngularMode(REGISTER_X));
+                        frontier_addons.DRG_cycNim(&unit);
+                        setRegisterAngularMode(REGISTER_X, unit);
+                    }
+                    break :sw;
+                }
                 if (nimNumberPart == NP_INT_10 or nimNumberPart == NP_REAL_FLOAT_PART or nimNumberPart == NP_REAL_EXPONENT) {
                     done = true;
                     closeNim();
@@ -3715,7 +4162,11 @@ pub export fn addItemToNimBuffer(item: i16) callconv(.c) void {
                 }
             },
 
-            ITM_NOP => {},
+            ITM_NOP => {
+                if (option_drg_cfg and calcMode == CM_PEM) { // the display follows a literal type DRG changed
+                    done = true;
+                }
+            },
 
             else => {
                 keyActionProcessed = 0;
@@ -3752,12 +4203,12 @@ pub export fn addItemToNimBuffer(item: i16) callconv(.c) void {
 
                     nimNumberPart = savedNimNumberPart;
                     // Complex "separator"
-                    if ((getSystemFlag(FLAG_POLAR) != 0 and temporaryFlagRect == 0) or temporaryFlagPolar != 0) { // polar mode
+                    if (nimPolarEntry()) { // polar mode
                         _ = strcat(nimBufferDisplay, STD_SPACE_4_PER_EM ++ STD_MEASURED_ANGLE ++ STD_SPACE_4_PER_EM);
                         if (aimBuffer[@intCast(imaginaryMantissaSignLocation)] == '-') {
                             _ = strcat(nimBufferDisplay, "-");
                         }
-                    } else if ((getSystemFlag(FLAG_POLAR) == 0 and temporaryFlagPolar == 0) or temporaryFlagRect != 0) { // rectangular mode
+                    } else { // rectangular mode
                         if (strncmp(nimBufferDisplay + @as(usize, @intCast(stringByteLength(nimBufferDisplay) - 2)), STD_SPACE_HAIR, 2) != 0) {
                             _ = strcat(nimBufferDisplay, STD_SPACE_HAIR);
                         }

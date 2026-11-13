@@ -507,6 +507,8 @@ pub export var regStatsXY: calcRegister_t = 0;
 
 pub export var temporaryFlagRect: bool_t = false;
 pub export var temporaryFlagPolar: bool_t = false;
+// The unit DRG chose for the angle of a polar entry, or amNone (5) to take ADM.
+pub export var nimPolarAngularMode: u8 = 5;
 pub export var vbatVIntegrated: c_int = 3000;
 pub export var timeLastOp: u32 = 0;
 pub export var timeLastOp0: u32 = 0;

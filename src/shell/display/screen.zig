@@ -72,6 +72,8 @@ const option_tvm_amort: bool = frontier_build_options.option_tvm_amort;
 // #undef'd in the block common to DM42 packages 1-4; DMCP5 and host keep it.
 const option_algdep: bool = frontier_build_options.option_algdep;
 const option_xfn_1000: bool = frontier_build_options.option_xfn_1000;
+const option_drg_cfg: bool = frontier_build_options.option_drg_cfg;
+const option_eex_prefix: bool = frontier_build_options.option_eex_prefix;
 // The relation x->POLY recovered, rendered as x^3 - x - 1 (algdep.h). Empty until a search succeeded.
 extern fn algdepPolynomialString() callconv(.c) [*:0]const u8;
 
@@ -389,6 +391,7 @@ const MNU_NORML: i16 = 2985;
 const MNU_UNIFORM: i16 = 2990;
 const MNU_DISUNIFORM: i16 = 2978;
 const MNU_SHOW: i16 = 3119;
+const MNU_EEXPFX: i16 = 3153;
 
 // false: the FINISH message sits at the ERR line, left-aligned, as a calc error;
 // true: at the TI line on X, right-aligned.
@@ -984,6 +987,7 @@ pub export var refreshScreenCounter: i16 = 0;
 // Extern globals (defined in the c47 globals hub / sibling owners).
 // ---------------------------------------------------------------------------
 extern var lastIntegerBase: u32;
+extern var nimPolarAngularMode: u8;
 extern var screenUpdatingMode: u8;
 // c47.c: a program drew this screen and no refresh has repainted over it since.
 extern var screenHoldsDrawnPixels: bool;
@@ -1208,13 +1212,13 @@ pub fn flipPixel(x: u32, y: u32) void {
 }
 
 // SNAP_REGISTERS_OK / SNAP_MENUS_OK (defines.h): the X register and menu captures
-// are valid in the normal mode only, outside SHOW and with no TAM open; the full
-// screen capture is valid in every mode.
+// are valid in any mode bar a SHOW page; the full screen capture is valid in
+// every mode.
 pub inline fn snapRegistersOk() bool {
-    return frontier_softmenus.currentMenu() != -MNU_SHOW and calcMode == CM_NORMAL and tam.mode == 0;
+    return frontier_softmenus.currentMenu() != -MNU_SHOW;
 }
 pub inline fn snapMenusOk() bool {
-    return frontier_softmenus.currentMenu() != -MNU_SHOW and calcMode == CM_NORMAL and tam.mode == 0;
+    return frontier_softmenus.currentMenu() != -MNU_SHOW;
 }
 // ---------------------------------------------------------------------------
 // First-party / runtime / libc externs.
@@ -2162,6 +2166,19 @@ pub export fn LongpressKey_handler() callconv(.c) void {
             var funcParam: [*c]const u8 = undefined;
             const keyStateCodeLocal: c_int = (if (getSystemFlag(FLAG_ALPHA) != 0) @as(c_int, 3) else 0) + (if (LongPressM == RBX_M124) @as(c_int, 1) else if (longpressDelayedkey3 != 0) @as(c_int, 1) else 2);
             funcParam = getUserKeyLabelString(@intCast(@as(c_int, currentKeyCode) * 6 + keyStateCodeLocal));
+
+            // The EEX SI prefix menu opens on the timeout, with no preview label and
+            // no NOP stage, as the R47 f/g key long press does.
+            if (option_eex_prefix and JM_auto_longpress_enabled == -MNU_EEXPFX) {
+                JM_auto_longpress_enabled = 0;
+                longpressDelayedkey2 = 0;
+                longpressDelayedkey3 = 0;
+                hideFunctionName();
+                frontier_softmenus.showSoftmenu(-MNU_EEXPFX);
+                screenUpdatingMode = SCRUPD_AUTO;
+                refreshScreen(1216);
+                return;
+            }
 
             if (calcMode == CM_NORMAL and programRunStop == PGM_STOPPED and (isArrowUp(currentKeyCode) != 0)) {
                 aimBuffer[0] = 0;
@@ -3679,7 +3696,7 @@ pub export fn displayTemporaryInformationOnX(prefix: [*c]u8) callconv(.c) void {
 
     if (getRegisterDataType(REGISTER_X) == dtReal34) {
         clearRegisterLine(REGISTER_X, true, true);
-        if (getSystemFlag(FLAG_FRACT) != 0) {
+        if (getSystemFlag(FLAG_FRACT) != 0 and !(option_drg_cfg and getRegisterAngularMode(REGISTER_X) == amDMS)) {
             frontier_display.fractionToDisplayString(REGISTER_X, tmpString);
         } else {
             frontier_display.real34ToDisplayString(REGISTER_REAL34_DATA(REGISTER_X), @intCast(getRegisterAngularMode(REGISTER_X)), tmpString, &numericFont, @intCast(@as(i32, SCREEN_WIDTH) - prefixWidth), NUMBER_OF_DISPLAY_DIGITS, LIMITEXP, FRONTSPACE, LIMITIRFRAC);
@@ -3689,7 +3706,7 @@ pub export fn displayTemporaryInformationOnX(prefix: [*c]u8) callconv(.c) void {
         _ = showString(tmpString, &numericFont, @intCast(@as(i32, SCREEN_WIDTH) - w), Y_POSITION_OF_REGISTER_X_LINE, vmNormal, 0, 1);
     } else if (getRegisterDataType(REGISTER_X) == dtComplex34) {
         clearRegisterLine(REGISTER_X, true, true);
-        frontier_display.complex34ToDisplayString(REGISTER_COMPLEX34_DATA(REGISTER_X), tmpString, &numericFont, @intCast(@as(i32, SCREEN_WIDTH) - prefixWidth), NUMBER_OF_DISPLAY_DIGITS, LIMITEXP, FRONTSPACE, LIMITIRFRAC, @intCast(getComplexRegisterAngularMode(REGISTER_X)), @intFromBool(getComplexRegisterPolarMode(REGISTER_X) == amPolar));
+        frontier_display.complex34ToDisplayString(REGISTER_COMPLEX34_DATA(REGISTER_X), tmpString, &numericFont, @intCast(@as(i32, SCREEN_WIDTH) - prefixWidth), NUMBER_OF_DISPLAY_DIGITS, LIMITEXP, FRONTSPACE, LIMITIRFRAC, @intCast(getComplexRegisterAngularMode(REGISTER_X)), @intFromBool(getComplexRegisterPolarMode(REGISTER_X) == amPolar), abi.register_tag.expStep(getRegisterTag(REGISTER_X)));
         w = frontier_char_string.stringWidth(tmpString, &numericFont, false, true);
         _ = showString(prefix, &standardFont, noShiftOffset, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, 1, 1);
         _ = showString(tmpString, &numericFont, @intCast(@as(i32, SCREEN_WIDTH) - w), Y_POSITION_OF_REGISTER_X_LINE, vmNormal, 0, 1);
@@ -4776,48 +4793,9 @@ fn refreshRegisterDataDispatch(regist_p: *calcRegister_t, origRegist: calcRegist
             _ = showString(tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - w_p.*), @intCast(@as(i32, Y_POSITION_OF_REGISTER_X_LINE) - @as(i32, REGISTER_LINE_HEIGHT) * @as(i32, regist - REGISTER_X) + 6), vmNormal, 1, 1);
         }
     } else if (regist == NIM_REGISTER_LINE and calcMode == CM_NIM) {
-        if (lastIntegerBase != 0) {
-            lastBase[0] = '#';
-            if (lastIntegerBase > 9) {
-                lastBase[1] = '1';
-                lastBase[2] = @intCast('0' + (lastIntegerBase - 10));
-                lastBase[3] = 0;
-            } else {
-                lastBase[1] = @intCast('0' + lastIntegerBase);
-                lastBase[2] = 0;
-            }
-            wLastBaseNumeric_p.* = frontier_char_string.stringWidth(lastBase, &numericFont, true, true);
-            wLastBaseStandard_p.* = frontier_char_string.stringWidth(lastBase, &standardFont, true, true);
-        } else if (aimBuffer[0] != 0 and aimBuffer[strlen(aimBuffer) - 1] == '/') {
-            var lb: [*c]u8 = lastBase;
-
-            // Smallest power of ten strictly above lastDenominator, by repeated
-            // multiplication: the value pow(10, log10(d) + 1) computed, reached without
-            // libm and without its rounding at the decade boundaries.
-            var iDigit: u32 = 1;
-            while (iDigit <= lastDenominator) {
-                iDigit *= 10;
-            }
-            var iDigit1: u32 = undefined;
-            while (iDigit >= 10) {
-                iDigit1 = iDigit / 10;
-                if (lastDenominator >= iDigit1) {
-                    lb[0] = STD_SUB_0[0];
-                    lb += 1;
-                    lb[0] = @intCast(STD_SUB_0[1] + (lastDenominator % iDigit) / iDigit1);
-                    lb += 1;
-                }
-                iDigit = iDigit1;
-            }
-
-            lb[0] = 0;
-            lb += 1;
-            wLastBaseNumeric_p.* = frontier_char_string.stringWidth(lastBase, &numericFont, true, true);
-            wLastBaseStandard_p.* = frontier_char_string.stringWidth(lastBase, &standardFont, true, true);
-        } else {
-            wLastBaseNumeric_p.* = 0;
-            wLastBaseStandard_p.* = 0;
-        }
+        frontier_bufferize.nimHint(lastBase);
+        wLastBaseNumeric_p.* = frontier_char_string.stringWidth(lastBase, &numericFont, true, true);
+        wLastBaseStandard_p.* = frontier_char_string.stringWidth(lastBase, &standardFont, true, true);
 
         displayBaseMode(regist);
         displayNim(nimBufferDisplay, lastBase, wLastBaseNumeric_p.*, wLastBaseStandard_p.*);
@@ -4844,7 +4822,8 @@ fn refreshRegisterDataDispatch(regist_p: *calcRegister_t, origRegist: calcRegist
         }
     }
     // Main type dtReal34 FLAG_FRACT
-    else if (getSystemFlag(FLAG_FRACT) != 0 and (getRegisterDataType(regist) == dtReal34 and (real34CompareAbsLessThan(REGISTER_REAL34_DATA(regist), const34_1e6) != 0 or real34IsZero(REGISTER_REAL34_DATA(regist))))) {
+    // A D.MS angle keeps its degrees, minutes and seconds.
+    else if (getSystemFlag(FLAG_FRACT) != 0 and (getRegisterDataType(regist) == dtReal34 and !(option_drg_cfg and getRegisterAngularMode(regist) == amDMS) and (real34CompareAbsLessThan(REGISTER_REAL34_DATA(regist), const34_1e6) != 0 or real34IsZero(REGISTER_REAL34_DATA(regist))))) {
         if (temporaryInformation == TI_VIEW_REGISTER and origRegist == REGISTER_T) {
             viewRegName(prefix, prefixWidth_p, indent);
         } else if (temporaryInformation == TI_VIEW_REGISTER) {
@@ -5475,6 +5454,10 @@ fn refreshReal34(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16,
     } else if (option_vector and temporaryInformation >= TI_VECTORCOMP_3DSPH and temporaryInformation <= TI_VECTORCOMP_2DRECT) {
         // C passes `!compact`, and `compact` is #define'd true in this file.
         tiVector(regist, prefix, prefixWidth_p, 0);
+    } else if (abi.register_tag.expFixed(getRegisterTag(regist))) {
+        // Temporary ENG on this register: TE on the left, a permanent label any
+        // fleeting TI above overrides.
+        prefixWidth_p.* = setPrefix(prefix, "TE", indent);
     }
 
     if (prefixWidth_p.* > 0 and temporaryInformation != TI_VIEW_REGISTER) {
@@ -5487,7 +5470,7 @@ fn refreshReal34(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16,
         }
     }
 
-    frontier_display.real34ToDisplayString(REGISTER_REAL34_DATA(regist), @intCast(getRegisterAngularMode(regist)), tmpString, &numericFont, @intCast(@as(i32, SCREEN_WIDTH) - prefixWidth_p.*), NUMBER_OF_DISPLAY_DIGITS, LIMITEXP, FRONTSPACE, FULLIRFRAC);
+    frontier_display.real34ToDisplayString(REGISTER_REAL34_DATA(regist), getRegisterTag(regist), tmpString, &numericFont, @intCast(@as(i32, SCREEN_WIDTH) - prefixWidth_p.*), NUMBER_OF_DISPLAY_DIGITS, LIMITEXP, FRONTSPACE, FULLIRFRAC);
 
     w_p.* = frontier_char_string.stringWidth(tmpString, &numericFont, false, true);
     lineWidth_p.* = @intCast(w_p.*);
@@ -5528,6 +5511,10 @@ fn refreshComplex34(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i
         _displayIJ(regist, prefix, prefixWidth_p);
     } else if (temporaryInformation == TI_STORCL and regist == REGISTER_X) {
         viewStoRcl(prefix, prefixWidth_p);
+    } else if (abi.register_tag.expFixed(getRegisterTag(regist))) {
+        // Temporary ENG on this register: TE on the left, a permanent label any
+        // fleeting TI above overrides.
+        prefixWidth_p.* = setPrefix(prefix, "TE", indent);
     }
 
     if (prefixWidth_p.* > 0) {
@@ -5539,7 +5526,7 @@ fn refreshComplex34(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i
             _ = showString(prefix, &standardFont, @intCast(indent), Y_POSITION_OF_REGISTER_Z_LINE + TEMPORARY_INFO_OFFSET, vmNormal, 1, 1);
         }
     }
-    frontier_display.complex34ToDisplayString(REGISTER_COMPLEX34_DATA(regist), tmpString, &numericFont, @intCast(@as(i32, SCREEN_WIDTH) - prefixWidth_p.*), NUMBER_OF_DISPLAY_DIGITS, LIMITEXP, FRONTSPACE, FULLIRFRAC, @intCast(getComplexRegisterAngularMode(regist)), @intFromBool(getComplexRegisterPolarMode(regist) == amPolar));
+    frontier_display.complex34ToDisplayString(REGISTER_COMPLEX34_DATA(regist), tmpString, &numericFont, @intCast(@as(i32, SCREEN_WIDTH) - prefixWidth_p.*), NUMBER_OF_DISPLAY_DIGITS, LIMITEXP, FRONTSPACE, FULLIRFRAC, @intCast(getComplexRegisterAngularMode(regist)), @intFromBool(getComplexRegisterPolarMode(regist) == amPolar), abi.register_tag.expStep(getRegisterTag(regist)));
 
     w_p.* = frontier_char_string.stringWidth(tmpString, &numericFont, false, true);
     lineWidth_p.* = @intCast(w_p.*);
@@ -5939,48 +5926,45 @@ fn refreshRegisterLineRestoreT() void {
 }
 
 fn _showAngularModeGlyph(angularMode: angularMode_t, font: *const font_t, x: u32, y: u32) void {
-    switch (angularMode) {
-        amMultPi => {
-            _ = showString(STD_SUP_pir, font, x, y, vmNormal, 1, 1);
-        },
-        amRadian => {
-            _ = showString(STD_SUP_BOLD_r, font, x, y, vmNormal, 1, 1);
-        },
-        amGrad => {
-            _ = showString(STD_SUP_BOLD_g, font, x, y, vmNormal, 1, 1);
-        },
-        amDegree => {
-            _ = showString(STD_DEGREE, font, x, y, vmNormal, 1, 1);
-        },
-        amSecond => {
-            _ = showString("s", font, x, y, vmNormal, 1, 1);
-        },
-        else => {},
-    }
+    // A D.MS entry shows the mark its next digit takes.
+    const glyph = if (option_drg_cfg and angularMode == amDMS) frontier_bufferize.nimDmsMark() else frontier_display.angularUnitGlyph(@intCast(angularMode));
+    _ = showString(glyph, font, x, y, vmNormal, 1, 1);
 }
 
 pub export fn displayNim(nim: [*c]const u8, lastBase: [*c]const u8, wLastBaseNumeric: i16, wLastBaseStandard: i16) callconv(.c) void {
     var w: i16 = undefined;
-    const xangularMode: angularMode_t = getRegisterAngularMode(REGISTER_X);
+    const showLastBase = lastIntegerBase != 0 or (aimBuffer[0] != 0 and aimBuffer[strlen(aimBuffer) - 1] == '/');
+    var xangularMode: angularMode_t = if (getRegisterDataType(REGISTER_X) == dtReal34) getRegisterAngularMode(REGISTER_X) else amNone;
+    if (comptime option_drg_cfg) {
+        if (nimPolarAngularMode != amNone and frontier_bufferize.nimComplexPart()) {
+            xangularMode = nimPolarAngularMode; // a polar entry shows the unit DRG chose for its angle
+        }
+    } else if (showLastBase) {
+        xangularMode = amNone; // the base or the denominator takes the place of the unit
+    }
     if (frontier_char_string.stringWidth(nim, &numericFont, true, true) + wLastBaseNumeric <= SCREEN_WIDTH - 16) {
         xCursor = showString(nim, &numericFont, 0, @intCast(@as(i32, Y_POSITION_OF_NIM_LINE) - checkHPoffset()), vmNormal, 1, 1);
         yCursor = Y_POSITION_OF_NIM_LINE;
         cursorFont = &numericFont;
 
-        if (lastIntegerBase != 0 or (aimBuffer[0] != 0 and aimBuffer[strlen(aimBuffer) - 1] == '/')) {
-            _ = showString(lastBase, &numericFont, xCursor + 16, @intCast(@as(i32, Y_POSITION_OF_NIM_LINE) - checkHPoffset()), vmNormal, 1, 1);
-        } else if ((getRegisterDataType(REGISTER_X) == dtReal34) and (xangularMode < amNone)) {
-            _showAngularModeGlyph(xangularMode, &numericFont, xCursor + 16, @intCast(@as(i32, Y_POSITION_OF_NIM_LINE) - checkHPoffset()));
+        var xUnit: u32 = xCursor + 16;
+        if (showLastBase) {
+            xUnit = showString(lastBase, &numericFont, xCursor + 16, @intCast(@as(i32, Y_POSITION_OF_NIM_LINE) - checkHPoffset()), vmNormal, 1, 1);
+        }
+        if (xangularMode < amNone) {
+            _showAngularModeGlyph(xangularMode, &numericFont, xUnit, @intCast(@as(i32, Y_POSITION_OF_NIM_LINE) - checkHPoffset()));
         }
     } else if (frontier_char_string.stringWidth(nim, &standardFont, true, true) + wLastBaseStandard <= SCREEN_WIDTH - 8) {
         xCursor = showString(nim, &standardFont, 0, Y_POSITION_OF_NIM_LINE + 6, vmNormal, 1, 1);
         yCursor = Y_POSITION_OF_NIM_LINE + 6;
         cursorFont = &standardFont;
 
-        if (lastIntegerBase != 0 or (aimBuffer[0] != 0 and aimBuffer[strlen(aimBuffer) - 1] == '/')) {
-            _ = showString(lastBase, &standardFont, xCursor + 8, Y_POSITION_OF_NIM_LINE + 6, vmNormal, 1, 1);
-        } else if ((getRegisterDataType(REGISTER_X) == dtReal34) and (xangularMode < amNone)) {
-            _showAngularModeGlyph(xangularMode, &standardFont, xCursor + 8, Y_POSITION_OF_NIM_LINE + 6);
+        var xUnit: u32 = xCursor + 8;
+        if (showLastBase) {
+            xUnit = showString(lastBase, &standardFont, xCursor + 8, Y_POSITION_OF_NIM_LINE + 6, vmNormal, 1, 1);
+        }
+        if (xangularMode < amNone) {
+            _showAngularModeGlyph(xangularMode, &standardFont, xUnit, Y_POSITION_OF_NIM_LINE + 6);
         }
     } else {
         var nimw: [*c]u8 = undefined;
@@ -6000,10 +5984,12 @@ pub export fn displayNim(nim: [*c]const u8, lastBase: [*c]const u8, wLastBaseNum
             yCursor = Y_POSITION_OF_NIM_LINE + 18;
             cursorFont = &standardFont;
 
-            if (lastIntegerBase != 0 or (aimBuffer[0] != 0 and aimBuffer[strlen(aimBuffer) - 1] == '/')) {
-                _ = showString(lastBase, &standardFont, xCursor + 8, Y_POSITION_OF_NIM_LINE + 18, vmNormal, 1, 1);
-            } else if ((getRegisterDataType(REGISTER_X) == dtReal34) and (xangularMode < amNone)) {
-                _showAngularModeGlyph(xangularMode, &standardFont, xCursor + 8, Y_POSITION_OF_NIM_LINE + 18);
+            var xUnit: u32 = xCursor + 8;
+            if (showLastBase) {
+                xUnit = showString(lastBase, &standardFont, xCursor + 8, Y_POSITION_OF_NIM_LINE + 18, vmNormal, 1, 1);
+            }
+            if (xangularMode < amNone) {
+                _showAngularModeGlyph(xangularMode, &standardFont, xUnit, Y_POSITION_OF_NIM_LINE + 18);
             }
         }
     }
@@ -6255,6 +6241,16 @@ fn _refreshPemScreen() void {
             clearScreenOld(clrStatusBar, @intFromBool(false), @intFromBool(false));
             frontier_status_bar.refreshStatusBar();
         }
+    }
+
+    // DELPALL asks its question and answers it over the program listing.
+    if (temporaryInformation == TI_ARE_YOU_SURE) {
+        const id = frontier_config.getConfirmationTiId();
+        _ = showString(&confirmationTI[id].string, &standardFont, 1, Y_POSITION_OF_MENU_TOP + 6, vmNormal, 1, 1);
+    } else if (temporaryInformation == TI_DEL_ALL_PRGMS) {
+        abi.fmtBufZ(tmpString[0..2560], "{s}", .{errMsgRow(TI_All_user_prgms_deleted)});
+        const w = frontier_char_string.stringWidth(tmpString, &standardFont, true, true);
+        _ = showString(tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - w), Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, 1, 1);
     }
     doRefreshSoftMenu = 0;
     force_refresh(force);
@@ -7082,6 +7078,9 @@ var snapRowLast: i32 = SCREEN_HEIGHT - 1;
 
 pub export fn fnSNAP(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
+    // A SHOW page is repainted around the capture. The WHO screen uses the SHOW menu
+    // as well and is not one, and neither is a screen a program drew.
+    const showPage = frontier_softmenus.currentMenu() == -MNU_SHOW and temporaryInformation != TI_WHO and !screenHoldsDrawnPixels;
 
     // f or g would otherwise show top left of the capture; the host's
     // --snapkeepshift keeps the shift and its glyph in it.
@@ -7106,7 +7105,7 @@ pub export fn fnSNAP(unused_but_mandatory_parameter: u16) callconv(.c) void {
     // destroys the graphic screen the capture wants: --snapskiprefresh, and a
     // screen CLLCD/PIXEL/POINT/AGRAPH painted that nothing has refreshed over.
     if (!snapSkipRefresh and !screenHoldsDrawnPixels) {
-        if (frontier_softmenus.currentMenu() == -MNU_SHOW) {
+        if (showPage) {
             // A SHOW page: repaint the page on screen so the capture keeps its top
             // line, as f+DISP does. The longpress preview clears the SHOW TI, so the
             // menu is tested, not SHOWMODE.
@@ -7134,7 +7133,7 @@ pub export fn fnSNAP(unused_but_mandatory_parameter: u16) callconv(.c) void {
     // fnP_All_Regs formats the registers through the SHOW display buffer; the page is
     // repainted so the screen the release refresh leaves is the clean SHOW page, not
     // the register print's TSV text.
-    if (frontier_softmenus.currentMenu() == -MNU_SHOW and !screenHoldsDrawnPixels) {
+    if (showPage) {
         frontier_display.recallShowStatus();
         frontier_display.fnC47Show(ITM_NOP);
     }

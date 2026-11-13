@@ -32,7 +32,7 @@ extern var ctxtReal75: realContext_t;
 extern fn roundToSignificantDigits(source: *const real_t, destination: *real_t, digits: u16, real_context: *realContext_t) void;
 extern fn decimal128FromNumber(dst: *real34_t, src: *const real_t, ctx: *realContext_t) *real34_t;
 extern fn decNumberToIntegralValue(dst: *real_t, src: *const real_t, ctx: *realContext_t) *real_t;
-extern fn reallocateRegister(regist: calcRegister_t, data_type: u32, size_blocks: u16, tag: u32) void;
+extern fn reallocateRegister(regist: calcRegister_t, data_type: u32, size_blocks: u16, tag: u32) bool;
 const DECDPUN = 3;
 const DECNEG: u8 = 0x80;
 const DECSPECIAL: u8 = 0x70;
@@ -231,7 +231,7 @@ pub export fn convertRealToReal34ResultRegister(real: *const real_t, dest: calcR
 }
 
 pub export fn convertRealToResultRegister(x: *const real_t, dest: calcRegister_t, angle: angularMode_t) callconv(.c) void {
-    reallocateRegister(dest, dtReal34, REAL34_SIZE_IN_BLOCKS, @bitCast(angle));
+    _ = reallocateRegister(dest, dtReal34, REAL34_SIZE_IN_BLOCKS, @bitCast(angle));
     convertRealToReal34ResultRegister(x, dest);
 }
 
@@ -670,13 +670,11 @@ inline fn getRegisterAngularMode(reg: calcRegister_t) angularMode_t {
 }
 
 inline fn setComplexRegisterAngularMode(reg: calcRegister_t, am: angularMode_t) void {
-    const amu: u32 = @bitCast(am);
-    setRegisterTag(reg, (amu & amAngleMask) | (getRegisterTag(reg) & amPolar));
+    setRegisterTag(reg, abi.register_tag.complexWithAngularMode(getRegisterTag(reg), @bitCast(am)));
 }
 
 inline fn setComplexRegisterPolarMode(reg: calcRegister_t, pm: u32) void {
-    const base = if ((pm & amPolar) != 0) (getRegisterTag(reg) & amAngleMask) else amNoneU;
-    setRegisterTag(reg, base | (pm & amPolar));
+    setRegisterTag(reg, abi.register_tag.complexWithPolarMode(getRegisterTag(reg), pm));
 }
 
 inline fn toBlocks(n: u32) u16 {
@@ -1035,8 +1033,9 @@ inline fn uInt32ToReal34(src: u32, dst: *real34_t) void {
 pub export fn convertLongIntegerToLongIntegerRegister(lgInt: *const mpz_struct, regist: calcRegister_t) callconv(.c) void {
     const sizeInBytes: u16 = longIntegerSizeInBytes(lgInt);
 
-    reallocateRegister(regist, dtLongInteger, toBlocks(sizeInBytes), longIntegerSignTag(lgInt));
-    _ = xcopy(@ptrCast(regLongIntData(regist)), @ptrCast(lgInt._mp_d), sizeInBytes);
+    if (reallocateRegister(regist, dtLongInteger, toBlocks(sizeInBytes), longIntegerSignTag(lgInt))) {
+        _ = xcopy(@ptrCast(regLongIntData(regist)), @ptrCast(lgInt._mp_d), sizeInBytes);
+    }
 }
 
 pub export fn convertLongIntegerRegisterToReal34Register(source: calcRegister_t, destination: calcRegister_t) callconv(.c) void {
@@ -1045,7 +1044,7 @@ pub export fn convertLongIntegerRegisterToReal34Register(source: calcRegister_t,
     convertLongIntegerRegisterToLongInteger(source, &lgInt);
     longIntegerToAllocatedString(&lgInt, tmpString, TMP_STR_LENGTH);
     mpz_clear(&lgInt);
-    reallocateRegister(destination, dtReal34, REAL34_SIZE_IN_BLOCKS, amNoneU);
+    _ = reallocateRegister(destination, dtReal34, REAL34_SIZE_IN_BLOCKS, amNoneU);
     stringToReal34(tmpString, reg34(destination));
 }
 
@@ -1069,7 +1068,7 @@ pub export fn convertShortIntegerRegisterToReal34Register(source: calcRegister_t
     var lowWord: real34_t = undefined;
 
     convertShortIntegerRegisterToUInt64(source, &sign, &value);
-    reallocateRegister(destination, dtReal34, REAL34_SIZE_IN_BLOCKS, amNoneU);
+    _ = reallocateRegister(destination, dtReal34, REAL34_SIZE_IN_BLOCKS, amNoneU);
 
     uInt32ToReal34(@intCast(value >> 32), reg34(destination));
     uInt32ToReal34(@intCast(value & 0x00000000ffffffff), &lowWord);
@@ -1120,7 +1119,7 @@ pub export fn convertUInt64ToShortIntegerRegister(sign: i16, value_arg: u64, bas
         }
     }
 
-    reallocateRegister(regist, dtShortInteger, SHORT_INTEGER_SIZE_IN_BLOCKS, base);
+    _ = reallocateRegister(regist, dtShortInteger, SHORT_INTEGER_SIZE_IN_BLOCKS, base);
     regShortInt(regist).* = value & shortIntegerMask;
 }
 
@@ -1806,12 +1805,12 @@ pub export fn convertReal34ToLongIntegerRegister(real34: *align(1) const real34_
 }
 
 pub export fn convertReal34ToReal34Register(real34: *align(1) const real34_t, dest: calcRegister_t) callconv(.c) void {
-    reallocateRegister(dest, dtReal34, REAL34_SIZE_IN_BLOCKS, amNoneU);
+    _ = reallocateRegister(dest, dtReal34, REAL34_SIZE_IN_BLOCKS, amNoneU);
     real34Copy(real34, reg34(dest));
 }
 
 pub export fn convertReal34ToComplex34Register(real34: *align(1) const real34_t, imag34: *align(1) const real34_t, dest: calcRegister_t) callconv(.c) void {
-    reallocateRegister(dest, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNoneU);
+    _ = reallocateRegister(dest, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNoneU);
     real34Copy(real34, reg34(dest));
     real34Copy(imag34, regImag34(dest));
 }
@@ -1872,7 +1871,7 @@ pub export fn convertComplexToResultRegister(z: *const cplx_t, dest: calcRegiste
 /// convertComplexToResultRegister for a real and an imaginary part that are not
 /// one cplx_t, such as constants or parts computed apart.
 pub export fn convertComplexPartsToResultRegister(real: *const real_t, imag: *const real_t, dest: calcRegister_t) callconv(.c) void {
-    reallocateRegister(dest, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNoneU);
+    _ = reallocateRegister(dest, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNoneU);
     convertRealToReal34ResultRegister(real, dest);
     convertRealToImag34ResultRegister(imag, dest);
 }
@@ -1880,14 +1879,14 @@ pub export fn convertComplexPartsToResultRegister(real: *const real_t, imag: *co
 pub export fn convertTimeRegisterToReal34Register(source: calcRegister_t, destination: calcRegister_t) callconv(.c) void {
     var real34: real34_t = undefined;
     real34Copy(reg34(source), &real34);
-    reallocateRegister(destination, dtReal34, REAL34_SIZE_IN_BLOCKS, amNoneU);
+    _ = reallocateRegister(destination, dtReal34, REAL34_SIZE_IN_BLOCKS, amNoneU);
     real34Divide(&real34, const34_3600(), reg34(destination));
 }
 
 pub export fn convertReal34RegisterToTimeRegister(source: calcRegister_t, destination: calcRegister_t) callconv(.c) void {
     var real34: real34_t = undefined;
     real34Copy(reg34(source), &real34);
-    reallocateRegister(destination, dtTime, REAL34_SIZE_IN_BLOCKS, amNoneU);
+    _ = reallocateRegister(destination, dtTime, REAL34_SIZE_IN_BLOCKS, amNoneU);
     real34Multiply(&real34, const34_3600(), reg34(destination));
 }
 
@@ -1910,7 +1909,7 @@ pub export fn convertReal34MatrixRegisterToReal34Matrix(regist: calcRegister_t, 
 
 pub export fn convertReal34MatrixToReal34MatrixRegister(matrix: *const real34Matrix_t, regist: calcRegister_t) callconv(.c) void {
     const neededSizeInBytes: u32 = (@as(u32, matrix.header.matrixColumns) * matrix.header.matrixRows) * REAL34_SIZE_IN_BYTES;
-    reallocateRegister(regist, dtReal34Matrix, toBlocks(neededSizeInBytes), amNoneU);
+    _ = reallocateRegister(regist, dtReal34Matrix, toBlocks(neededSizeInBytes), amNoneU);
     if (lastErrorCode != ERROR_RAM_FULL) {
         _ = xcopy(@ptrCast(regMatrixHeader(regist)), @ptrCast(matrix), 4);
         _ = xcopy(@ptrCast(regRealMatrixElems(regist)), @ptrCast(matrix.matrixElements.?), neededSizeInBytes);
@@ -1931,7 +1930,7 @@ pub export fn convertComplex34MatrixRegisterToComplex34Matrix(regist: calcRegist
 
 pub export fn convertComplex34MatrixToComplex34MatrixRegister(matrix: *const complex34Matrix_t, regist: calcRegister_t) callconv(.c) void {
     const neededSizeInBytes: u32 = (@as(u32, matrix.header.matrixColumns) * matrix.header.matrixRows) * COMPLEX34_SIZE_IN_BYTES;
-    reallocateRegister(regist, dtComplex34Matrix, toBlocks(neededSizeInBytes), amNoneU);
+    _ = reallocateRegister(regist, dtComplex34Matrix, toBlocks(neededSizeInBytes), amNoneU);
     if (lastErrorCode != ERROR_RAM_FULL) {
         _ = xcopy(@ptrCast(regMatrixHeader(regist)), @ptrCast(matrix), 4);
         _ = xcopy(@ptrCast(regComplexMatrixElems(regist)), @ptrCast(matrix.matrixElements.?), neededSizeInBytes);
@@ -1982,7 +1981,7 @@ pub export fn convertDoubleToReal(x: f64, destination: *real_t, ctxt: *realConte
 pub export fn convertDoubleToReal34Register(x: f64, destination: calcRegister_t) callconv(.c) void {
     var buff: [100]u8 = undefined;
 
-    reallocateRegister(destination, dtReal34, REAL34_SIZE_IN_BLOCKS, amNoneU);
+    _ = reallocateRegister(destination, dtReal34, REAL34_SIZE_IN_BLOCKS, amNoneU);
     convertDoubleToString(x, 100, &buff);
     stringToReal34(&buff, reg34(destination));
 
@@ -2367,12 +2366,12 @@ pub export fn saveRegisterSnapshot(reg: calcRegister_t, s: *snap_t) callconv(.c)
 pub export fn restoreRegisterSnapshot(reg: calcRegister_t, s: *snap_t) callconv(.c) void {
     switch (@as(u32, s.t)) {
         dtComplex34 => {
-            reallocateRegister(reg, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, s.tag);
+            _ = reallocateRegister(reg, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, s.tag);
             real34Copy(&s.i, regImag34(reg));
             real34Copy(&s.r, reg34(reg));
         },
         dtReal34, dtTime, dtDate => {
-            reallocateRegister(reg, s.t, REAL34_SIZE_IN_BLOCKS, s.tag);
+            _ = reallocateRegister(reg, s.t, REAL34_SIZE_IN_BLOCKS, s.tag);
             real34Copy(&s.r, reg34(reg));
         },
         dtLongInteger => {
@@ -2380,7 +2379,7 @@ pub export fn restoreRegisterSnapshot(reg: calcRegister_t, s: *snap_t) callconv(
             mpz_clear(&s.li);
         },
         dtShortInteger => {
-            reallocateRegister(reg, dtShortInteger, SHORT_INTEGER_SIZE_IN_BLOCKS, s.siBase);
+            _ = reallocateRegister(reg, dtShortInteger, SHORT_INTEGER_SIZE_IN_BLOCKS, s.siBase);
             // The pool allocates in 4-byte blocks, so a register payload is only
             // 4-byte aligned and an @alignCast to u64 traps on half of them.
             // REGISTER_SHORT_INTEGER_DATA is `(uint64_t *)getRegisterDataPointer(a)`,
@@ -2585,7 +2584,7 @@ pub export fn processIntRealComplexDyadicFunction(realf: Fn0, complexf: Fn0, sho
 }
 
 pub export fn convertComplexToResultRegisterRPangle(real: *const real_t, imag: *const real_t, dest: calcRegister_t, angl: angularMode_t, polarTag: u8) callconv(.c) void {
-    reallocateRegister(dest, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, @bitCast(angl));
+    _ = reallocateRegister(dest, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, @bitCast(angl));
     convertRealToReal34ResultRegister(real, dest);
     convertRealToImag34ResultRegister(imag, dest);
     setComplexRegisterPolarMode(dest, polarTag);

@@ -154,10 +154,36 @@ fn frmCalcMouseButtonReleasedHost(not_used: ?*anyopaque, event: ?*anyopaque, dat
     mouse_key[0] = 0;
 }
 
-// keyboard.c btnPressed (1778-1943), lane-merged: the host body plus the DMCP
-// divergences gated by comptime is_dmcp_build (btnPressedDmcp wraps it for the
-// DMCP signature).
+// btnPressed is running, and a refresh inside it pumps GTK, which can deliver the
+// release of the key it handles. That release runs after btnPressed has returned,
+// the order DMCP keeps. Host only: the firmware delivers no event mid-handler.
+var btnPressedDepth: i16 = 0;
+var btnPressedKey: [*c]const u8 = null; // the key the outermost btnPressed handles
+var btnReleasedDeferred: bool = false; // that key's release arrived meanwhile
+
 fn btnPressedHost(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {
+    if (btnPressedDepth == 0) {
+        btnPressedKey = @ptrCast(data);
+    }
+    btnPressedDepth += 1;
+    btnPressedBody(not_used, event, data);
+    btnPressedDepth -= 1;
+    if (btnPressedDepth == 0 and btnReleasedDeferred) {
+        btnReleasedDeferred = false;
+        btnReleasedHost(not_used, event, data);
+    }
+}
+
+// strncmp(a, b, 2) == 0 over two key strings.
+fn sameKey(a: [*c]const u8, b: [*c]const u8) bool {
+    if (a[0] != b[0]) return false;
+    return a[0] == 0 or a[1] == b[1];
+}
+
+// keyboard.c btnPressed (1778-1943), lane-merged: the host body plus the DMCP
+// divergences gated by comptime is_dmcp_build (btnPressedDmcp calls it with the
+// DMCP signature, past the host-only guard above).
+fn btnPressedBody(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) void {
     _ = not_used;
     // event is the GdkEvent on the host lane only; the DMCP btnPressed body takes
     // just the key string and has no double/triple-click or middle/right shift.
@@ -262,6 +288,12 @@ fn btnPressedHost(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) 
 
     if (item != runtime.ITM_NOP and item != runtime.ITM_NULL) {
         shared.processKeyAction(item);
+        // EEX opens the SI prefix menu at once in number entry, with no long press.
+        if (runtime.option_eex_prefix and item == runtime.ITM_EXPONENT and runtime.calcMode == runtime.CM_NIM and runtime.currentMenu() != -runtime.MNU_EEXPFX) {
+            runtime.showSoftmenu(-runtime.MNU_EEXPFX);
+            runtime.screenUpdatingMode = runtime.SCRUPD_AUTO;
+            runtime.refreshScreen(1997);
+        }
         if (!runtime.keyActionProcessed) {
             runtime.showFunctionName(item, 1000, funcParam);
         }
@@ -502,6 +534,12 @@ fn btnReleasedHost(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque)
     _ = not_used;
     _ = event;
     const dat: [*c]u8 = @ptrCast(data);
+    if (comptime !is_dmcp_build) {
+        if (btnPressedDepth > 0 and sameKey(dat, btnPressedKey)) {
+            btnReleasedDeferred = true;
+            return;
+        }
+    }
     const keyCode: c_int = (@as(c_int, dat[0]) - '0') * 10 + @as(c_int, dat[1]) - '0';
 
     if (runtime.isShowMode() and (runtime.lastItem == runtime.KEY_fg or runtime.lastItem == runtime.ITM_SHIFTf) and runtime.lastItem != runtime.SCREENDUMP) {
@@ -601,7 +639,22 @@ fn btnReleasedHost(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque)
                     runtime.recallShowStatus();
                     runtime.fnC47Show(runtime.ITM_NOP);
                 }
+                // The EEX long press ran out to NOP: the SI prefix menu closes so
+                // none is left open, and NIM stays.
+                if (runtime.option_eex_prefix and runtime.currentMenu() == -runtime.MNU_EEXPFX) {
+                    runtime.popSoftmenu();
+                }
                 break :rel;
+            }
+
+            if (runtime.option_eex_prefix and item == runtime.ITM_EXIT1) {
+                // EXIT from a PFX opened off EEXPFX goes back to EEXPFX, and EXIT
+                // closes only EEXPFX. NIM stays either way.
+                if ((runtime.currentMenu() == -runtime.MNU_PREFIX and runtime.menu(1) == -runtime.MNU_EEXPFX) or runtime.currentMenu() == -runtime.MNU_EEXPFX) {
+                    runtime.popSoftmenu();
+                    runtime.screenUpdatingMode = runtime.SCRUPD_AUTO;
+                    break :rel;
+                }
             }
 
             const Norm_Key_00_released = !runtime.getSystemFlag(runtime.FLAG_USER) and (runtime.keyStateCode == 0) and (@as(i16, runtime.currentKeyCode) == runtime.normKey00Key()) and runtime.Norm_Key_00.used and !(runtime.lastIntegerBase >= 2 and runtime.getSystemFlag(runtime.FLAG_TOPHEX));
@@ -685,6 +738,17 @@ fn btnReleasedHost(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque)
                     if (item == runtime.ITM_BASEMENU) {
                         runtime.leaveTamModeIfEnabled();
                     }
+                    // ENG-> reaches NIM only through the long press of +/-, whose press
+                    // already changed the sign: the entry closes and the sign is put back.
+                    if (item == runtime.ITM_ENGR and runtime.calcMode == runtime.CM_NIM) {
+                        runtime.closeNim();
+                        runtime.runFunction(runtime.ITM_CHS);
+                    }
+                    // The long-press stage runs here, which the processKeyAction close
+                    // does not reach, so EEXPFX closes on this path too.
+                    if (runtime.option_eex_prefix and runtime.currentMenu() == -runtime.MNU_EEXPFX and item != runtime.ITM_EXIT1) {
+                        runtime.popSoftmenu();
+                    }
                     runtime.runFunction(item);
                 }
             }
@@ -759,7 +823,7 @@ fn btnFnClickedRHost(not_used: ?*anyopaque, data: ?*anyopaque) callconv(.c) void
 }
 
 fn btnPressedDmcp(data: ?*anyopaque) callconv(.c) void {
-    btnPressedHost(null, null, data);
+    btnPressedBody(null, null, data);
 }
 
 fn btnClickedDmcp(unused: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {
@@ -1526,6 +1590,12 @@ pub export fn Check_MultiPresses(result: [*c]i16, key_no: i8) callconv(.c) void 
         lp1 = runtime.longpressExit1();
         runtime.longpressDelayedkey2 = 0;
         runtime.longpressDelayedkey3 = runtime.ITM_CLRMOD;
+    } else if ((runtime.calcMode == runtime.CM_NORMAL or runtime.calcMode == runtime.CM_NIM) and result.* == runtime.ITM_XexY) {
+        runtime.longpressDelayedkey2 = lp1; // x<>y's long press steps the shown exponent up first
+        lp1 = runtime.ITM_ENGL;
+    } else if ((runtime.calcMode == runtime.CM_NORMAL or runtime.calcMode == runtime.CM_NIM) and result.* == runtime.ITM_CHS) {
+        runtime.longpressDelayedkey2 = lp1; // +/-'s long press steps the shown exponent down first
+        lp1 = runtime.ITM_ENGR;
     } else if ((runtime.calcMode == runtime.CM_NORMAL or runtime.calcMode == runtime.CM_NIM) and result.* == runtime.ITM_DRG) {
         lp1 = 0;
         runtime.longpressDelayedkey2 = 0;
@@ -1540,6 +1610,10 @@ pub export fn Check_MultiPresses(result: [*c]i16, key_no: i8) callconv(.c) void 
                 runtime.longpressDelayedkey3 = tmpg;
             }
         }
+    } else if (runtime.option_eex_prefix and (runtime.calcMode == runtime.CM_NORMAL or runtime.calcMode == runtime.CM_NIM) and result.* == runtime.ITM_EXPONENT and runtime.tam.mode == 0) {
+        // EEX's long press clears the temporary ENG of the stack. EEX enters NIM
+        // on the press, so the menu is reached in NIM by the timeout.
+        lp1 = runtime.ITM_ENGCL;
     } else {
         switch (runtime.calcMode) {
             runtime.CM_NIM => {

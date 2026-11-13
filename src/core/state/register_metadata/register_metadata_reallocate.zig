@@ -53,7 +53,7 @@ pub fn copySourceRegisterToDestRegister(source_register: runtime.calcRegister_t,
         // error the caller was already carrying is put back once it has run.
         const lastErrorCodeMeM = stack_runtime.lastErrorCode;
         stack_runtime.lastErrorCode = stack_runtime.ERROR_NONE;
-        reallocateRegister(normalized_dest, source_type, payload_size, runtime.amNone);
+        _ = reallocateRegister(normalized_dest, source_type, payload_size, runtime.amNone);
         if (stack_runtime.lastErrorCode == stack_runtime.ERROR_RAM_FULL) {
             return;
         }
@@ -76,7 +76,9 @@ pub fn copySourceRegisterToDestRegister(source_register: runtime.calcRegister_t,
     }
 }
 
-pub fn reallocateRegister(reg: runtime.calcRegister_t, data_type: u32, data_size_without_data_len_blocks: u16, tag: u32) void {
+// False when the register keeps what it held: a reserved variable refuses to be
+// retyped, and a full pool refuses the allocation with ERROR_RAM_FULL.
+pub fn reallocateRegister(reg: runtime.calcRegister_t, data_type: u32, data_size_without_data_len_blocks: u16, tag: u32) bool {
     // The upstream reallocateRegister applies the same allocation path to every
     // register except a reserved variable, which since the 6559a9c59 pin is refused
     // outright rather than retyped. The earlier retained dispatch recursed back
@@ -90,13 +92,13 @@ pub fn reallocateRegister(reg: runtime.calcRegister_t, data_type: u32, data_size
         // allocate or retype.
         if (runtime.FIRST_RESERVED_VARIABLE <= reg and reg <= runtime.LAST_RESERVED_VARIABLE) {
             runtime.reportReservedVariableRetype(reg);
-            return;
+            return false;
         }
 
         if (!runtime.memoryBlockAvailable(allocated_size)) {
             runtime.traceReallocateRamFull(normalized_payload_size, reg);
             runtime.reportRamFull();
-            return;
+            return false;
         }
 
         memory_owned.freeRegisterData(reg);
@@ -120,4 +122,5 @@ pub fn reallocateRegister(reg: runtime.calcRegister_t, data_type: u32, data_size
     } else {
         descriptor_owned.setRegisterTag(reg, tag);
     }
+    return true;
 }

@@ -347,6 +347,7 @@ extern fn fnSNAPXBold(unused: u16) void;
 extern fn copyScreenToClipboard() void;
 extern fn copyMenuToClipboard() void;
 extern fn copyRegisterXToClipboard() void;
+extern fn copyRegisterXImageToClipboard() void;
 extern fn copyStackRegistersToClipboard() void;
 extern fn copyAllRegistersToClipboard() void;
 extern fn printf(format: [*:0]const u8, ...) c_int;
@@ -854,9 +855,14 @@ pub fn keyPressedCImpl(w: ?*anyopaque, event_opaque: ?*anyopaque, data: ?*anyopa
                 _ = printf("key pressed: CTRL+n Menu image to disk\n");
                 fnSNAPMENU(NOPARAM);
             },
-            66 + 65536, 98 + 65536 => {
+            75 + 65536, 107 + 65536 => {
                 CTRL_State = 0;
-                _ = printf("key pressed: CTRL+b X register image to disk\n");
+                _ = printf("key pressed: CTRL+k X register image to clipboard\n");
+                copyRegisterXImageToClipboard();
+            },
+            74 + 65536, 106 + 65536 => {
+                CTRL_State = 0;
+                _ = printf("key pressed: CTRL+j X register image to disk\n");
                 fnSNAPXBold(NOPARAM);
             },
             else => {},

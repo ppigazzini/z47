@@ -504,6 +504,7 @@ named_variable_cov
 stats_register_cov
 polar_display_cov
 display_cov
+tag_expfixed_cov
 serialize_state_cov
 pgm_solve_cov
 mvarmenu_cov
@@ -529,6 +530,7 @@ readp_cov
 ; and changes the word size, so it runs after the other state tests and before
 ; serialize_cov resets the calculator.
 shortint_restore_cov
+load_ram_full
 
 serialize_cov
 

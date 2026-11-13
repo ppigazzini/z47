@@ -159,11 +159,14 @@ extern fn realToIntegralValue(source: *const product_real.ProductReal, destinati
 extern fn realToInt32C47(source: *const product_real.ProductReal, err: ?*bool) i32;
 
 fn makeDescriptor(pointer_to_data: u16, data_type: u8, tag: u8, read_only: u8, not_used: u8) u32 {
-    return @as(u32, pointer_to_data) |
-        (@as(u32, data_type) << 16) |
-        (@as(u32, tag) << 20) |
-        (@as(u32, read_only) << 25) |
-        (@as(u32, not_used) << 26);
+    const bits: abi.RegisterHeaderBits = .{
+        .pointerToRegisterData = pointer_to_data,
+        .dataType = @intCast(data_type),
+        .tag = tag,
+        .readOnly = @intCast(read_only),
+        .notUsed = @intCast(not_used),
+    };
+    return @bitCast(bits);
 }
 
 fn desc(comptime text: []const u8) reserved_variable_desc_t {

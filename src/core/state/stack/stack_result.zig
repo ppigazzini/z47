@@ -149,7 +149,11 @@ fn tryToRealReal34() bool {
     }
 
     runtime.copySourceRegisterToDestRegister(runtime.REGISTER_X, runtime.REGISTER_L);
-    if (getRegisterAngularMode(runtime.REGISTER_X) != runtime.amNone) {
+    const tag = runtime.getRegisterTag(runtime.REGISTER_X);
+    if (abi.register_tag.expFixed(tag)) {
+        // .d clears the fixed exponent first; the angle bits and the Polar bit are kept.
+        setRegisterTag(runtime.REGISTER_X, abi.register_tag.withoutExpFixed(tag));
+    } else if (getRegisterAngularMode(runtime.REGISTER_X) != runtime.amNone) {
         if (getRegisterAngularMode(runtime.REGISTER_X) == amDMS) {
             temporaryInformation = TI_FROM_DMS;
         }

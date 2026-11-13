@@ -40,6 +40,10 @@ pub const RuntimeObjectOptions = struct {
     // backup.cfg, both written and read. Every target z47 builds defines it: the
     // block common to the DM42 packages keeps it.
     option_atext_fonts: bool = true,
+    // OPTION_DRG_CFG gates drgConfig's key in backup.cfg, written and read. Every
+    // target z47 builds defines it: the block common to the DM42 packages keeps
+    // it.
+    option_drg_cfg: bool = true,
     // EXTRA_INFO_ON_CALC_ERROR, for the scalar-state owners this object carries
     // through its core_state module. 0 on firmware and in the testSuite; default
     // true mirrors a host build.
@@ -114,6 +118,7 @@ fn addRuntimeObject(
     build_options.addOption(bool, "option_xfn_1000", options.option_xfn_1000);
     build_options.addOption(bool, "option_structured_pgm", options.option_structured_pgm);
     build_options.addOption(bool, "option_atext_fonts", options.option_atext_fonts);
+    build_options.addOption(bool, "option_drg_cfg", options.option_drg_cfg);
     // EXTRA_INFO_ON_CALC_ERROR, for the owners rooted in this object. defines.h
     // forces it to 0 for DMCP_BUILD -- which DMCP5 defines as well as the DM42 --
     // and again for TESTSUITE_BUILD; the testSuite shares the sim's target, so

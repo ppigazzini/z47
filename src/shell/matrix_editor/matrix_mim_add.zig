@@ -1,4 +1,7 @@
 const frontier_matrix_editor = @import("matrix_editor.zig");
+const frontier_build_options = @import("frontier_build_options");
+// OPTION_DRG_CFG: DRG chooses the angular unit of a complex element being entered.
+const option_drg_cfg: bool = frontier_build_options.option_drg_cfg;
 const CM_MIM: u8 = 12;
 
 const ITM_CHS: i16 = 97;
@@ -19,6 +22,7 @@ const ITM_CC: i16 = 1730;
 const ITM_BACKSPACE: i16 = 1738;
 const ITM_op_j_pol: i16 = 1795;
 const ITM_op_j: i16 = 1830;
+const ITM_DRG: i16 = 1873;
 
 const ItemClass = enum {
     exponent,
@@ -27,6 +31,7 @@ const ItemClass = enum {
     backspace,
     sign,
     imaginary_unit,
+    drg,
     pi,
     unsupported,
 };
@@ -48,6 +53,7 @@ fn classify(item: i16) ItemClass {
         ITM_BACKSPACE => .backspace,
         ITM_CHS => .sign,
         ITM_op_j_pol, ITM_op_j, ITM_CC => .imaginary_unit,
+        ITM_DRG => if (option_drg_cfg) .drg else .unsupported,
         ITM_CONSTpi => .pi,
         else => .unsupported,
     };
@@ -58,21 +64,20 @@ fn enqueue(item: i16) void {
     calcMode = CM_MIM;
 }
 
-fn initAim(class: ItemClass) void {
-    switch (class) {
-        .exponent => frontier_matrix_editor.z47_frontier_matrix_init_aim_exponent(),
-        .period => frontier_matrix_editor.z47_frontier_matrix_init_aim_period(),
-        .digit => frontier_matrix_editor.z47_frontier_matrix_init_aim_digit(),
-        else => {},
+// DRG goes to the entry only where it chooses the unit of a complex element.
+fn enqueueDrg(item: i16) void {
+    if (frontier_matrix_editor.z47_frontier_matrix_drg_chooses_unit()) {
+        enqueue(item);
     }
 }
 
 fn handleAimEmpty(class: ItemClass, item: i16) void {
     switch (class) {
         .exponent, .period, .digit => {
-            initAim(class);
+            frontier_matrix_editor.z47_frontier_matrix_start_number(item);
             enqueue(item);
         },
+        .drg => enqueueDrg(item),
         .backspace => frontier_matrix_editor.z47_frontier_matrix_zero_current_element(),
         .sign => frontier_matrix_editor.z47_frontier_matrix_change_sign_current_element(),
         .imaginary_unit => frontier_matrix_editor.z47_frontier_matrix_make_j_element(item),
@@ -90,11 +95,8 @@ fn handleAimNonEmpty(class: ItemClass, item: i16) void {
             }
             enqueue(item);
         },
-        .pi => {
-            if (frontier_matrix_editor.z47_frontier_matrix_can_append_pi_literal()) {
-                frontier_matrix_editor.z47_frontier_matrix_append_pi_literal_and_enter();
-            }
-        },
+        .drg => enqueueDrg(item),
+        .pi => frontier_matrix_editor.z47_frontier_matrix_pi_after_i_enter(),
         .unsupported => {},
     }
 }

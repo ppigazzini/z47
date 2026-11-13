@@ -640,9 +640,6 @@ pub export fn initStatisticalSums() callconv(.c) void {
             }
             clearStatisticalSums();
             _ = strcpy(&statMx, "STATS"); // any stats operation restores the stats matrix. The purpose of the changed names are just to be able to exchange the matrixes for reading and graphing
-        } else {
-            // Asked to initialise sums that already exist.
-            frontier_error.displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
         }
     }
 }
@@ -918,7 +915,7 @@ pub export fn fnClSigma(unusedButMandatoryParameter: u16) callconv(.c) void {
     plotSelection = 0; // Currently selected linear regression mode
     PLOT_ZOOM = 0; // Currently selected plot zoom level
     drawHistogram = 0;
-    histElementXorY = 0;
+    histElementXorY = -1;
 
     freeC47Blocks(@ptrCast(statisticalSumsPointer), @as(usize, @intCast(NUMBER_OF_STATISTICAL_SUMS)) * REAL_75_SIZE_IN_BLOCKS);
     statisticalSumsPointer = null;
@@ -1121,7 +1118,8 @@ fn histogramBoundsAreValid(lb: *const real_t, hb: *const real_t) bool {
 fn histogramBinCount(nb: *const real_t, count: *i32) bool {
     var conversionError: bool = undefined;
 
-    if (realIsSpecial(nb) or !realIsAnInteger(nb) or !realCompareGreaterThan(nb, const_0())) {
+    // NaN, infinity, a fraction, or fewer than two bins: not a count at all.
+    if (realIsSpecial(nb) or !realIsAnInteger(nb) or !realCompareGreaterThan(nb, const_1())) {
         frontier_error.displayCalcErrorMessage(ERROR_INVALID_INTEGER_INPUT, ERR_REGISTER_LINE);
         return false;
     }

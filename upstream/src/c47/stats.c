@@ -332,9 +332,6 @@ void initStatisticalSums(void) {
       clearStatisticalSums();
       strcpy(statMx, "STATS");                     //any stats operation restores the stats matrix. The purpose of the changed names are just to be able to exchange the matrixes for reading and graphing
     }
-    else {
-      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
-    }
   }
 }
 
@@ -596,7 +593,7 @@ void fnClSigma(uint16_t unusedButMandatoryParameter) {
   plotSelection = 0;                        // Currently selected linear regression mode
   PLOT_ZOOM = 0;                            // Currently selected plot zoom level
   drawHistogram = 0;
-  histElementXorY = 0;
+  histElementXorY = -1;
 
 
   freeC47Blocks(statisticalSumsPointer, NUMBER_OF_STATISTICAL_SUMS * REAL_SIZE_IN_BLOCKS(75));
@@ -817,7 +814,7 @@ void fnRangeXY(uint16_t unusedButMandatoryParameter) {
   static bool_t histogramBinCount(const real_t *nb, int32_t *count) {
     bool_t conversionError;
 
-    if(realIsSpecial(nb) || !realIsAnInteger(nb) || !realCompareGreaterThan(nb, const_0)) {
+    if(realIsSpecial(nb) || !realIsAnInteger(nb) || !realCompareGreaterThan(nb, const_1)) {              // NaN, infinity or a fraction: not a count at all
       displayCalcErrorMessage(ERROR_INVALID_INTEGER_INPUT, ERR_REGISTER_LINE);
       return false;
     }

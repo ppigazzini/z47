@@ -27,6 +27,7 @@ const build_options = @import("calc_state_build_options");
 
 const state_old_hw: bool = build_options.state_old_hw;
 const option_atext_fonts: bool = build_options.option_atext_fonts;
+const option_drg_cfg: bool = build_options.option_drg_cfg;
 fn geometry() progmem.Geometry {
     return .{
         .ram_base = @intFromPtr(ram),
@@ -586,6 +587,7 @@ extern var Input_Default: u8;
 extern var displayStackSHOIDISP: u8;
 extern var bcdDisplaySign: u8;
 extern var DRG_Cycling: u8;
+extern var drgConfig: u8;
 extern var DM_Cycling: u8;
 extern var LongPressM: u8;
 extern var LongPressF: u8;
@@ -780,8 +782,9 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
                 // bytes of DMCP flash, measured. A narrowing that is provably in
                 // range says something true about the code -- spell it @intCast.
                 const target: i16 = if (load_mode == LM_REGISTERS_PARTIAL) @intCast(@as(i32, regist) - @as(i32, s) + @as(i32, d)) else regist;
-                codec.restoreRegister(target, aimBuffer, tmpString, loaded_version);
-                codec.restoreMatrixData(target);
+                if (codec.restoreRegister(target, aimBuffer, tmpString, loaded_version)) {
+                    codec.restoreMatrixData(target);
+                }
             } else {
                 codec.skipMatrixData(aimBuffer, tmpString);
             }
@@ -818,8 +821,9 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
                 if ((regist >= FIRST_LOCAL_REGISTER and regist < FIRST_LOCAL_REGISTER + @as(i16, @intCast(currentNumberOfLocalRegisters()))) and // reject an out-of-range register number from a malformed state file
                     (load_mode == LM_ALL or load_mode == LM_REGISTERS))
                 {
-                    codec.restoreRegister(regist, aimBuffer, tmpString, loaded_version);
-                    codec.restoreMatrixData(regist);
+                    if (codec.restoreRegister(regist, aimBuffer, tmpString, loaded_version)) {
+                        codec.restoreMatrixData(regist);
+                    }
                 } else {
                     codec.skipMatrixData(aimBuffer, tmpString);
                 }
@@ -864,8 +868,9 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
                 utf8ToStringWithLength(errorMessage, varName, MAX_LABEL_NAME_LENGTH + 1);
                 regist = findOrAllocateNamedVariable(varName);
                 if (regist != INVALID_VARIABLE) {
-                    codec.restoreRegister(regist, aimBuffer, tmpString, loaded_version);
-                    codec.restoreMatrixData(regist);
+                    if (codec.restoreRegister(regist, aimBuffer, tmpString, loaded_version)) {
+                        codec.restoreMatrixData(regist);
+                    }
                 } else {
                     codec.skipMatrixData(aimBuffer, tmpString);
                 }
@@ -1532,7 +1537,7 @@ fn applyConfigField(loaded_version: u32, allow_user_keys: bool, saved_calc_model
         if (loaded_version < 10000019) forceSystemFlag(FLAG_TOPHEX, @intFromBool(text.toUint8(tmpString) != 0));
     } else if (cmpName(ab, "bcdDisplaySign")) {
         bcdDisplaySign = calc_state.convert001090400T001090500(text.toUint8(tmpString), BCDu);
-    } else if (matchU8("DRG_Cycling", &DRG_Cycling)) {} else if (matchU8("DM_Cycling", &DM_Cycling)) {} else if (cmpName(ab, "LongPressM")) {
+    } else if (matchU8("DRG_Cycling", &DRG_Cycling)) {} else if (option_drg_cfg and matchU8("drgConfig", &drgConfig)) {} else if (matchU8("DM_Cycling", &DM_Cycling)) {} else if (cmpName(ab, "LongPressM")) {
         LongPressM = calc_state.convert001090400T001090500(text.toUint8(tmpString), RBX_M14);
     } else if (cmpName(ab, "LongPressF")) {
         LongPressF = calc_state.convert001090400T001090500(text.toUint8(tmpString), RBX_F14);

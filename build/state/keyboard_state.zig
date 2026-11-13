@@ -35,6 +35,13 @@ pub const RuntimeObjectOptions = struct {
     // per DM42 package, from build/firmware.zig's dm42Package table. Defaults true
     // (host).
     option_structured_pgm: bool = true,
+    // OPTION_DRG_CFG: DRG during number entry chooses the unit of the number and
+    // leaves the entry open. Every target z47 builds defines it. Defaults true.
+    option_drg_cfg: bool = true,
+    // OPTION_EEX_PREFIX: EEX in number entry opens the SI prefix menu, its long
+    // press clears the temporary ENG, and the menu closes on the next key. Every
+    // target z47 builds defines it. Defaults true.
+    option_eex_prefix: bool = true,
     // Build this object with SanitizerCoverage
     // trace-pc-guard so report-zig-coverage.sh can resolve the keyboard-state Zig
     // owner lines the host coverage harness executes. Measurement-only: set ONLY
@@ -110,6 +117,8 @@ fn addRuntimeObjectWithIncludeDir(
     kb_build_options.addOption(bool, "is_r47", options.is_r47);
     kb_build_options.addOption(bool, "state_old_hw", options.old_hw);
     kb_build_options.addOption(bool, "option_structured_pgm", options.option_structured_pgm);
+    kb_build_options.addOption(bool, "option_drg_cfg", options.option_drg_cfg);
+    kb_build_options.addOption(bool, "option_eex_prefix", options.option_eex_prefix);
     // The testSuite compiles with EXTRA_INFO_ON_CALC_ERROR forced to 0, as the
     // firmware does; keep the owner's diagnostics out of both.
     kb_build_options.addOption(bool, "extra_info_on_calc_error", options.extra_info_on_calc_error and
