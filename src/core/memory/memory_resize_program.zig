@@ -1,3 +1,4 @@
+const std = @import("std");
 const runtime = @import("memory_runtime.zig");
 const abi = @import("abi");
 const block_math = abi.block_math;
@@ -54,6 +55,18 @@ pub fn resizeProgramMemory(newSizeInBlocks_in: u16) void {
         runtime.setFreeRegion(last_region_index, last_region);
     }
 
+    // Program memory grows down into the last free region and shrinks back into
+    // it without passing through the free list, so memcheck's view of the pool
+    // (see free_list.zig) moves here: the claimed blocks become addressable before
+    // the copy, and the released ones no-access after it.
+    const delta_byte_count = toBytesU32(delta_blocks);
+    if (new_program_memory_pointer != null and new_program_memory_pointer < runtime.beginOfProgramMemory) {
+        std.valgrind.memcheck.makeMemUndefined(new_program_memory_pointer[0..delta_byte_count]);
+    }
+    const released_from = runtime.beginOfProgramMemory;
     runtime.copyBytes(new_program_memory_pointer, runtime.beginOfProgramMemory, toBytesU32(blocks_to_move));
     runtime.beginOfProgramMemory = new_program_memory_pointer;
+    if (new_program_memory_pointer != null and new_program_memory_pointer > released_from) {
+        std.valgrind.memcheck.makeMemNoAccess(released_from[0..delta_byte_count]);
+    }
 }

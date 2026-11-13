@@ -92,6 +92,21 @@ fn poolBytes(e: pool_poison.Extent) []u8 {
     return base[toBytes(e.start)..][0..toBytes(e.blocks)];
 }
 
+// Memcheck's view of the pool. Under valgrind a block on the free list is
+// no-access and an allocated one is addressable, so a read or write through a
+// freed pointer is reported where it happens rather than found later by the
+// poison audit. Every owner that moves bytes between the free list and use --
+// this allocator, the pool reset, program-memory resizing and both directions
+// of the backup -- updates it. The client requests compile to nothing on a target
+// without valgrind support, the firmware included.
+const memcheck = std.valgrind.memcheck;
+
+fn blockBytes(pcMemPtr: ?*anyopaque, sizeInBlocks: usize) []u8 {
+    const start = toC47MemPtr(pcMemPtr);
+    if (start == C47_NULL) return &.{};
+    return poolBytes(.{ .start = start, .blocks = @intCast(sizeInBlocks) });
+}
+
 /// Fill every free region with the poison pattern and record what was filled.
 /// Everything between this and the next audit that writes into free space is a
 /// defect the audit will name.
@@ -107,7 +122,9 @@ pub export fn z47_free_list_poison_free_space() callconv(.c) void {
             .blocks = fr[idx].sizeInBlocks,
         };
         if (e.isEmpty()) continue;
+        memcheck.makeMemUndefined(poolBytes(e));
         @memset(poolBytes(e), pool_poison.POISON);
+        memcheck.makeMemNoAccess(poolBytes(e));
         poison_state.snapshot[poison_state.snapshot_len] = e;
         poison_state.snapshot_len += 1;
     }
@@ -134,6 +151,8 @@ pub export fn z47_free_list_audit_free_space() callconv(.c) c_int {
         for (poison_state.snapshot[0..poison_state.snapshot_len]) |was| {
             const both = pool_poison.intersect(now, was) orelse continue;
             const bytes = poolBytes(both);
+            memcheck.makeMemDefined(bytes);
+            defer memcheck.makeMemNoAccess(bytes);
             if (pool_poison.firstDisturbed(bytes)) |off| {
                 std.debug.print(
                     "POOL POISON DISTURBED: block {d} (+{d} bytes) inside free extent [{d}, {d}) -- something wrote past its allocation into free pool space\n",
@@ -228,6 +247,7 @@ pub export fn freeListAlloc(sizeInBlocksArg: usize) callconv(.c) ?*anyopaque {
             _ = xcopy(@ptrCast(fr + idx), @ptrCast(fr + idx + 1), regionBytes(numberOfFreeMemoryRegions - i - 1));
             numberOfFreeMemoryRegions -= 1;
             if (comptime track_allocations) trackAllocation(pcMemPtr, sizeInBlocks);
+            memcheck.makeMemUndefined(blockBytes(pcMemPtr, sizeInBlocks));
             return pcMemPtr;
         } else if (fr[idx].sizeInBlocks > sizeInBlocks and fr[idx].sizeInBlocks < minSizeInBlocks) {
             minSizeInBlocks = fr[idx].sizeInBlocks;
@@ -252,6 +272,7 @@ pub export fn freeListAlloc(sizeInBlocksArg: usize) callconv(.c) ?*anyopaque {
     fr[mb].blockAddress += @as(u16, @intCast(sizeInBlocks));
     fr[mb].sizeInBlocks -= @as(u16, @intCast(sizeInBlocks));
     if (comptime track_allocations) trackAllocation(pcMemPtr, sizeInBlocks);
+    memcheck.makeMemUndefined(blockBytes(pcMemPtr, sizeInBlocks));
     return pcMemPtr;
 }
 
@@ -288,6 +309,9 @@ pub export fn freeListReduce(pcMemPtr: ?*anyopaque, oldSizeInBlocksArg: usize, n
                 oldSizeInBlocks - newSizeInBlocks,
             );
         }
+    }
+    if (oldSizeInBlocks > newSizeInBlocks and c47RamPtr != C47_NULL) {
+        memcheck.makeMemNoAccess(blockBytes(toPcMemPtr(c47RamPtr + @as(u16, @intCast(newSizeInBlocks))), oldSizeInBlocks - newSizeInBlocks));
     }
 
     if (comptime track_allocations) {
@@ -342,6 +366,7 @@ pub export fn freeListFree(pcMemPtr: ?*anyopaque, sizeInBlocksArg: usize) callco
     if (sizeInBlocks == 0) sizeInBlocks = 1;
 
     if (comptime track_allocations) poisonReleased(pcMemPtr, sizeInBlocks);
+    memcheck.makeMemNoAccess(blockBytes(pcMemPtr, sizeInBlocks));
 
     const c47RamPtr = toC47MemPtr(pcMemPtr);
     const fr = freeRegions();
