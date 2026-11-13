@@ -136,8 +136,8 @@ and the local gate execute byte-identical steps and cannot drift. That battery
 runs, in order:
 
 - the value parity oracles, in order: the short-integer and boolean suites, the
-  state owners (`stack_state`, `register_metadata` -- retried once for cold-cache
-  flakiness -- `flags`, `memory`, `program_serialization`, `calc_state`), the
+  state owners (`stack_state`, `register_metadata`, `flags`, `memory`,
+  `program_serialization`, `calc_state`), the
   save/load round-trip, and the mathematics owners including the focused
   `math_*_oracle` helpers and `eigen_golden`
 - the distribution and format-equivalence oracles
