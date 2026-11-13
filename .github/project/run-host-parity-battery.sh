@@ -77,7 +77,7 @@ python3 .github/project/audit-constant-parity.py
 # Item-table parity audit: frontier_items.zig's hand-mirrored indexOfItems must
 # match the C-compiled items.c byte-for-byte. Catches the exact class that crashed
 # a pin advance (LAST_ITEM grew, the Zig table went out of bounds) before merge.
-python3 .github/project/audit-item-table-parity.py
+python3 .github/project/audit-item-table-parity.py --require-deps
 # abi struct-layout oracle: the abi/types.zig numeric mirrors must match the
 # translate-c'd upstream decNumber-family layout, so a wrong layout (silent
 # corruption) fails here.

@@ -207,8 +207,9 @@ def build_probe_and_dump(zig, tmp):
     # default include path (e.g. Windows MSYS2, the Zig-master monitor). If a bare
     # `#include "c47.h"` will not compile, this host lacks the item-table probe's
     # build deps -- SKIP rather than mis-report an environment gap as table drift.
-    # The audit still gates on the Linux host-parity lane where the deps exist, and
-    # the table is platform-independent data so one lane is sufficient.
+    # The battery, which the Linux host-parity lane and the local gate run, passes
+    # --require-deps, so there a SKIP fails; the table is platform-independent data,
+    # so one lane is sufficient.
     (tmp / "preflight.c").write_text('#include "c47.h"\nint main(void){return 0;}\n')
     pf = subprocess.run(
         [*cc, str(tmp / "preflight.c"), "-o", str(tmp / "pf")], capture_output=True, text=True
@@ -295,10 +296,14 @@ def zig_row_literal(centry, c_func):
 
 def main():
     emit = "--emit" in sys.argv[1:]
+    # --require-deps: a lane that has the probe's build deps passes it, so a SKIP
+    # there is a failure. Without it a resync that breaks the preflight -- a new
+    # generated header, a define change -- turns the audit silently green.
+    require_deps = "--require-deps" in sys.argv[1:]
     zig = shutil.which("zig")
     if not zig:
         print("SKIP: zig not on PATH", file=sys.stderr)
-        return 0
+        return 1 if require_deps else 0
 
     last_m = re.search(r"#define\s+LAST_ITEM\s+(\d+)", ITEMS_H.read_text())
     if last_m is None:
@@ -315,6 +320,9 @@ def main():
     tmp = pathlib.Path(tempfile.mkdtemp())
     cdump, ccount, cfuncs = build_probe_and_dump(zig, tmp)
     if cdump == "SKIP":
+        if require_deps:
+            print("FAIL: item-table probe could not compile c47.h, and --require-deps says it must")
+            return 1
         print("SKIP: item-table probe deps unavailable on this host; gated on the Linux lane")
         return 0
     if cdump is None:
