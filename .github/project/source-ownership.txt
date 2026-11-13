@@ -33,21 +33,21 @@ upstream
 # UPSTREAM-relative (the path upstream uses), not repo-relative.
 #
 # DESPITE THE SECTION NAME, most of these are not z47's additions. The check diffs
-# against merge-base(UPSTREAM_COMMIT, HEAD) -- an OLD ancestor, 2025-12-04 -- so any
-# file UPSTREAM added after that base also reads as an addition and needs listing
+# against merge-base(UPSTREAM_COMMIT, HEAD) -- an old ancestor -- so any file
+# UPSTREAM added after that base also reads as an addition and needs listing
 # here. That is what src/testSuite/tests/*.txt and res/PROGRAMS are.
 #
 # So an entry here answers "is this path new since the diff base?", NOT "does z47
 # modify it?". z47 modifications are imported-tree-divergences.txt [patched], a
 # different question against a different base. Removing an entry here because z47
-# stopped patching the file breaks the source-ownership-guard lane; that happened
-# with graphs_cov.txt on 2026-08-02.
+# stopped patching the file breaks the source-ownership-guard lane. The check
+# fails the other way too: an entry no added path falls under is reported, so
+# prune it when the file is gone or no longer new since the diff base.
 # Upstream's GitLab CI include directory, which the .gitlab-ci.yml already here
 # pulls its release rules from. The directory itself is newer than the diff base,
 # so every file under it reads as an addition.
 .gitlab
 BUILD.md
-dist
 distS
 docs/decimal-context-configuration.md
 docs/decimal-context-display.md
@@ -192,7 +192,6 @@ src/testSuite/tests/tempConv.txt
 src/testSuite/tests/tvm.txt
 src/testSuite/tests/tvm_cov.txt
 src/testSuite/tests/undo_on_error.txt
-src/testSuite/tests/unitConversion.txt
 src/testSuite/tests/validate_tvm.py
 src/testSuite/tests/validate_tvm.txt
 src/testSuite/tests/vecreg.txt
