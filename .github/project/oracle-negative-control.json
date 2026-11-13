@@ -166,9 +166,11 @@
     {
       "lane": "format",
       "step": "format_spec",
-      "what": "no single owner behaviour to mutate",
-      "file": "src/abi/sci_format.zig",
-      "no_mutation": "This lane proves every migrated sprintf->std.fmt translation is byte-identical to libc's. A mutation of the Zig side is exactly what it is built to catch, so it is already its own negative control: the lane exists because the translation could differ. A separate mutant would restate the lane."
+      "what": "round-half-even on an exact tie becomes round-half-up",
+      "file": "src/abi/float_format.zig",
+      "find": "        roundup = if (!allzero) true else ((out[K - 1] - '0') & 1) == 1;",
+      "replace": "        roundup = true;",
+      "why": "printf rounds an exact decimal tie to even; the exp-rand pairs include ties, so the lane must report the last digit rounded up where libc keeps it even."
     },
     {
       "lane": "math_command_wrappers",
