@@ -18,8 +18,8 @@ Names that resolve in C but legitimately differ are listed in KNOWN_DIVERGENCES
 with a reason (currently only the deferred stale reserved-variable base). Any
 un-listed divergence exits 1.
 
-Run standalone or via `zig build constant-parity-audit`. Requires zig + the
-upstream headers under src/c47 and dep/decNumberICU.
+run-host-parity-battery.sh runs it; it also runs standalone. Requires zig + the
+upstream headers under src/c47 and dep/decNumberICU, and fails without zig.
 """
 
 import pathlib
@@ -231,8 +231,10 @@ def collect_mirrors():
 def main():
     zig = shutil.which("zig")
     if not zig:
-        print("SKIP: zig not on PATH", file=sys.stderr)
-        return 0
+        # The audit decides by compiling; without a compiler it measures nothing,
+        # and nothing is not a pass.
+        print("constant-parity audit: FAIL -- zig not on PATH", file=sys.stderr)
+        return 1
 
     mirrors, conflicts = collect_mirrors()
     tmp = pathlib.Path(tempfile.mkdtemp())
