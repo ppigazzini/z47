@@ -218,7 +218,7 @@ OPEN: dict[str, str] = {
     "isMatrixDiagonal": (
         "A matrix shape class the fixture set has no representative for. eigen.zig:845,"
         " reached only from calculateEigenvalues -- so it is behind M31-37's stop"
-        " condition and eigen_parity's recorded tolerance survivor, not just a fixture."
+        " condition and eigen_golden's recorded tolerance survivor, not just a fixture."
     ),
     "isMatrixIndexed": (
         "A matrix shape class the fixture set has no representative for."

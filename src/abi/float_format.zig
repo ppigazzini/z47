@@ -2,7 +2,7 @@
 //
 // Byte-exact C `%.<P>e` / `%.<P>f` / `%<w>.<P>g` float formatters. std-only,
 // zero externs -- so the format oracle
-// (`build/tests/format/format_parity.zig`) imports and proves THIS exact
+// (`build/tests/format/format_spec.zig`) imports and proves THIS exact
 // code byte-identical to libc over a fuzz matrix, and the shipping `abi`
 // re-exports it.
 //

@@ -32,7 +32,7 @@ build/host/gtk_printer_window.zig
 build/tests/testsuite_hal.zig
 build/tests/testsuite_main.zig
 build/tests/constants/constants_parity.zig
-build/tests/format/format_parity.zig
+build/tests/format/format_spec.zig
 build/tests/distributions/distribution_fake_runtime.zig
 build/tests/abi_layout/abi_layout_oracle.zig
 build/tools/generate_catalogs.zig

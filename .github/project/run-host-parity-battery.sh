@@ -43,13 +43,14 @@ zig build math_command_wrappers_parity
 # when a rename stops taking, which still LINKS, so nothing else catches it.
 zig build math_wrappers_full_core_parity
 zig build math_random_parity
-# The seven focused math differentials. Each links the real c43 worker beside the
-# Zig owner, so together they are the differential coverage for the numeric core.
-# They break at LINK time when an owner starts exporting a symbol one of their
-# stub files also defines, and nothing else in this battery builds them, so a
-# duplicate-symbol regression is invisible unless they run here.
+# The focused math lanes. Six are differentials: each compiles c43's own ln.c,
+# toPolar.c or wp34s.c beside the Zig owner, renamed to oracle_* by a reference
+# shim, so the expected value is c43's code. eigen_golden checks hand-verified
+# values. They break at LINK time when an owner starts exporting a symbol one of
+# their stub files also defines, and nothing else in this battery builds them, so
+# a duplicate-symbol regression is invisible unless they run here.
 zig build math_ln_complex_oracle
-zig build eigen_parity
+zig build eigen_golden
 zig build math_real_rectangular_to_polar_oracle
 zig build math_atan2_oracle
 zig build math_atan_oracle
@@ -59,10 +60,10 @@ zig build math_circular_trig_oracle
 # distribution's closed form, which makes it a specified oracle. It is sensitive
 # to the module rooting of src/shell/distributions: an @import there that escapes
 # the harness module's path breaks this lane and nothing else.
-zig build distribution_parity
+zig build distribution_spec
 # Format-equivalence oracle: every migrated sprintf->std.fmt translation
 # must stay byte-identical to libc.
-zig build format_parity
+zig build format_spec
 # Constant-offset oracle: every abi/constants.zig typed
 # accessor's blob offset must match the C constantPointers.h ground truth, so the
 # offset-crash class stays caught after each pin advance. constantPointers.h is a
@@ -86,7 +87,7 @@ zig build keyboard_state_parity
 # not in CI. They were found by enumerating the build's own lane list and diffing
 # it against this file, which is what check-parity-lanes-gated.py now does on
 # every run so the next one cannot hide the same way.
-zig build keyboard_entry_parity
+zig build keyboard_entry_spec
 zig build charstring_diff
 zig build constants_parity
 zig build tone_parity

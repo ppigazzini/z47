@@ -202,8 +202,8 @@ touched, for example:
 - `zig build math_command_wrappers_parity`, `zig build math_random_parity`,
   and the focused `zig build math_*_oracle` lanes (mathematics owners)
 - `zig build constants_parity`, `zig build tone_parity`,
-  `zig build format_parity`, `zig build distribution_parity`,
-  `zig build eigen_parity`
+  `zig build format_spec`, `zig build distribution_spec`,
+  `zig build eigen_golden`
 
 `zig build saveload_roundtrip` runs beside them in the battery but is not a parity
 lane: its golden is z47's own save output, so it checks that save, load and save
@@ -263,8 +263,15 @@ is converted and the `frozen` list in
 same claim. Hand-written reference bodies can live inside a file that *also*
 `#include`s c43 source, which is exactly why such a file is never eligible for
 that list. `check-oracle-provenance.py` counts those separately and **both counts
-are now zero**. Keep them there: every reference in the tree is c43's own code,
-and the ratchet does not go back up.
+are now zero**. Keep them there: every `oracle_*` reference body is c43's own
+code, and the ratchet does not go back up.
+
+Four lanes are not differentials against c43, and their names say so:
+`eigen_golden` checks hand-verified values, `distribution_spec` the closed forms,
+`keyboard_entry_spec` hand-written expectations, and `format_spec` libc's
+`printf`. The `_spec` and `_golden` suffixes are part of the lane vocabulary in
+`.github/project/lane_vocabulary.py`, so the battery and the negative control
+still see them.
 
 `math_wrappers` is a special case worth knowing before you touch it: its
 `real_t` is a hand-declared struct, decNumber is not linked, and its `const39_*`
@@ -347,7 +354,7 @@ branches gated on it are outside the testSuite's reach even on the host.
 
 This is not theoretical. Both known instances were found by accident, not by a
 gate: the seven focused math differentials were broken at LINK time while the full
-local gate stayed green, and `distribution_parity` had stopped COMPILING
+local gate stayed green, and `distribution_spec` had stopped COMPILING
 entirely at HEAD — its module was rooted one directory too deep for its own
 imports, and it had never been given the `abi` module, a second failure the first
 one masked. Both are in the battery now.

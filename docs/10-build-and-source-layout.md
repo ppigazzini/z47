@@ -60,7 +60,7 @@ Verification entrypoints:
   and what only CI runs.
 - the per-owner parity and oracle lanes (for example `zig build calc_state_parity`,
   `zig build math_command_wrappers_parity`) check each Zig owner against its
-  retained upstream C, bounded by the cases each lane drives (`eigen_parity` is
+  retained upstream C, bounded by the cases each lane drives (`eigen_golden` is
   a golden oracle against math-truth values, not the C); see
   [70-tests-and-verification.md](70-tests-and-verification.md).
 

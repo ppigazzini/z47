@@ -101,6 +101,7 @@ NOT_A_GATE: dict[str, str] = {
     "upstream_paths.py": "Library: imported by the checks that resolve imported-tree paths.",
     "c_dependency_audit.py": "Library: imported by the C-dependency checks and reports.",
     "retained_bridge_review.py": "Library: imported by check-retained-bridge-ledger.py.",
+    "lane_vocabulary.py": "Library: imported by check-parity-lanes-gated.py and check-oracle-negative-control.py.",
     "build-correspondence-manifest.py": (
         "Generator: writes upstream-correspondence.tsv, which"
         " check-upstream-correspondence.py then enforces in CI."

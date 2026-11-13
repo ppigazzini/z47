@@ -919,7 +919,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.l
     );
     const run_keyboard_entry = b.addRunArtifact(keyboard_entry_harness);
     run_keyboard_entry.setCwd(upstreamCwd(b));
-    const keyboard_entry_step = b.step("keyboard_entry_parity", "Run the keyboard entry-layer (btnClicked) parity harness");
+    const keyboard_entry_step = b.step("keyboard_entry_spec", "Run the keyboard entry-layer (btnClicked) harness against its specified expectations");
     keyboard_entry_step.dependOn(&run_keyboard_entry.step);
 
     // Annex A0: a coverage build of the keyboard harness -- the same full core,
@@ -1040,10 +1040,10 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.l
     // matrix (libc snprintf is the ground truth). Gates the sprintf->std.fmt
     // migration -- a translation may only be applied at a call site once it is
     // GREEN here. Pure Zig + libc; no core link needed.
-    const format_parity_exe = b.addExecutable(.{
-        .name = "format-parity-oracle",
+    const format_spec_exe = b.addExecutable(.{
+        .name = "format-spec-oracle",
         .root_module = b.createModule(.{
-            .root_source_file = b.path("build/tests/format/format_parity.zig"),
+            .root_source_file = b.path("build/tests/format/format_spec.zig"),
             .target = context.host_target,
             .optimize = optimize,
             .link_libc = true,
@@ -1056,10 +1056,10 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.l
             },
         }),
     });
-    const run_format_parity = b.addRunArtifact(format_parity_exe);
-    run_format_parity.setCwd(b.path("."));
-    const format_parity_step = b.step("format_parity", "Run the sprintf<->std.fmt format-equivalence oracle");
-    format_parity_step.dependOn(&run_format_parity.step);
+    const run_format_spec = b.addRunArtifact(format_spec_exe);
+    run_format_spec.setCwd(b.path("."));
+    const format_spec_step = b.step("format_spec", "Run the sprintf<->std.fmt format-equivalence check against libc");
+    format_spec_step.dependOn(&run_format_spec.step);
 
     // Headless .p47 program runner: load a user program file through the real
     // load path and XEQ it from the top on the full calc core (no GTK). Catches
@@ -1334,8 +1334,8 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.l
     const math_eigen_oracle = addMathEigenOracle(b, context, optimize);
     const run_math_eigen_oracle = b.addRunArtifact(math_eigen_oracle);
     run_math_eigen_oracle.setCwd(b.path("."));
-    const eigen_parity_step = b.step("eigen_parity", "Run the eigenvalue worker golden oracle (matrix.c eigen engine)");
-    eigen_parity_step.dependOn(&run_math_eigen_oracle.step);
+    const eigen_golden_step = b.step("eigen_golden", "Run the eigenvalue workers against hand-verified golden values");
+    eigen_golden_step.dependOn(&run_math_eigen_oracle.step);
 
     const math_real_rectangular_to_polar_oracle = addMathRealRectangularToPolarOracle(b, context, optimize);
     const run_math_real_rectangular_to_polar_oracle = b.addRunArtifact(math_real_rectangular_to_polar_oracle);
@@ -1408,11 +1408,11 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.l
     // The harness is a host-style link, so every value is the host default: all
     // distributions in, the EXTRA_INFO hints on, and dmcp_build/old_hw false, which
     // is what resolves code_section to .text / __TEXT.
-    frontier.addBuildOptions(b, distribution_owners_module, "distribution-parity", .{});
-    const distribution_parity = b.addExecutable(.{
-        .name = "distribution-parity",
+    frontier.addBuildOptions(b, distribution_owners_module, "distribution-spec", .{});
+    const distribution_spec = b.addExecutable(.{
+        .name = "distribution-spec",
         .root_module = b.createModule(.{
-            .root_source_file = b.path("build/tests/distributions/distribution_parity.zig"),
+            .root_source_file = b.path("build/tests/distributions/distribution_spec.zig"),
             .target = context.host_target,
             .optimize = optimize,
             .link_libc = true,
@@ -1421,7 +1421,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.l
             },
         }),
     });
-    abi_host.addToModule(b, distribution_parity.root_module, context.host_target, optimize, "distribution-parity");
+    abi_host.addToModule(b, distribution_spec.root_module, context.host_target, optimize, "distribution-spec");
     // Match the production decNumber compile: it includes decNumber.h directly
     // (not c47.h), so DECNUMDIGITS keeps its default of 1 and the library mallocs
     // working buffers per operation. Forcing DECNUMDIGITS=75 instead sized those
@@ -1430,8 +1430,8 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.l
         &.{ "-Wno-date-time", "-fno-sanitize=undefined", "-fno-strict-aliasing", "-DDECNUMBER_FASTMUL=1" }
     else
         &.{ "-Wno-date-time", "-fno-sanitize=undefined", "-DDECNUMBER_FASTMUL=1" };
-    distribution_parity.root_module.addIncludePath(build_common.upstreamPath(b, "dep/decNumberICU"));
-    distribution_parity.root_module.addCSourceFiles(.{
+    distribution_spec.root_module.addIncludePath(build_common.upstreamPath(b, "dep/decNumberICU"));
+    distribution_spec.root_module.addCSourceFiles(.{
         .root = build_common.upstreamPath(b, "dep"),
         .files = build_common.decnumber_sources,
         .flags = distribution_dec_flags,
@@ -1441,13 +1441,13 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.l
     // than a copy of it. The blob is a byte array that needs nothing from the core
     // headers, and the constants lane's mock `c47.h` is the header that compiles it
     // headless; the generated directory supplies the constantPointers.h it includes.
-    distribution_parity.root_module.addIncludePath(b.path("build/tests/constants"));
-    distribution_parity.root_module.addIncludePath(context.generated.constant_pointers_h.dirname());
-    distribution_parity.root_module.addCSourceFile(.{ .file = context.generated.constant_pointers_c, .flags = &.{} });
-    const run_distribution_parity = b.addRunArtifact(distribution_parity);
-    run_distribution_parity.setCwd(b.path("."));
-    const distribution_parity_step = b.step("distribution_parity", "Run the statistical-distribution parity suite");
-    distribution_parity_step.dependOn(&run_distribution_parity.step);
+    distribution_spec.root_module.addIncludePath(b.path("build/tests/constants"));
+    distribution_spec.root_module.addIncludePath(context.generated.constant_pointers_h.dirname());
+    distribution_spec.root_module.addCSourceFile(.{ .file = context.generated.constant_pointers_c, .flags = &.{} });
+    const run_distribution_spec = b.addRunArtifact(distribution_spec);
+    run_distribution_spec.setCwd(b.path("."));
+    const distribution_spec_step = b.step("distribution_spec", "Run the statistical distributions against their closed forms");
+    distribution_spec_step.dependOn(&run_distribution_spec.step);
 
     const keyboard_statusbar_flags_regression = b.addExecutable(.{
         .name = "keyboard-statusbar-flags-regression",
