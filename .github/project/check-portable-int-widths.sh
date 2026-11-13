@@ -57,17 +57,23 @@ for entry in "${candidates[@]}"; do
   fi
 done
 
-# Report stale allowlist entries (present but no longer matched) so the allowlist
-# does not rot into hidden risk. Informational, non-failing.
+# A stale entry (allowlisted, no longer present) fails: it pre-approves exactly
+# the line the guard exists to stop, should that line come back.
+stale=0
 for a in "${allowed[@]}"; do
   hit=0
   for m in "${matched_allow[@]:-}"; do
     if [[ "$m" == "$a" ]]; then hit=1; break; fi
   done
   if [[ "$hit" -eq 0 ]]; then
-    echo "note: stale allowlist entry (no longer present), please prune: $a"
+    echo "stale allowlist entry (no longer present), prune it: $a" >&2
+    stale=$((stale + 1))
   fi
 done
+if [[ "$stale" -gt 0 ]]; then
+  echo "FAIL: $stale stale entr(y/ies) in $allowlist." >&2
+  exit 1
+fi
 
 if [[ "$violations" -gt 0 ]]; then
   echo >&2
