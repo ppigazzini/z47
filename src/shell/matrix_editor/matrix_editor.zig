@@ -29,10 +29,10 @@ const consts = abi.constants;
 //           scrollColumn, tmpRow, matrixIndex (the sibling owners declare these
 //           `extern` — calc_mode_owned, goto_grow_owned, etc. — but the
 //           DEFINITION lives here);
-//       (c) all 49 z47_frontier_matrix_* bridge helpers the sibling modules call
+//       (c) all 49 z47_frontier_matrix_* helpers the sibling modules call
 //           (defined here, declared `extern fn` by the siblings).
 //     => This owner provides (a)+(b)+(c). It is, in effect, the rest of
-//        matrixEditor.c plus the bridge layer.
+//        matrixEditor.c plus the cross-owner helper layer.
 //
 // Build flavour, matching the sibling owners and the dominant C config:
 //   OPTION_VECTOR is ON (defines.h:70; only #undef'd in space-saving DMCP
@@ -2162,7 +2162,7 @@ inline fn strcmpEq(a: [*c]const u8, b: [*c]const u8) bool {
 }
 
 // ===========================================================================
-// z47_frontier_matrix_* BRIDGE HELPERS.
+// z47_frontier_matrix_* CROSS-OWNER HELPERS.
 // Signatures must match the siblings' `extern fn` declarations exactly.
 // ===========================================================================
 

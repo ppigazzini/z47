@@ -4,7 +4,7 @@
 // _SetMatrixDimensions): redimension the matrix in the given register to the
 // dimensions read from the stack, in the normal or grow dimension mode. The
 // register redim (redimMatrixRegister) and the dimension argument parsing
-// (getDimensionArg) still live in the matrix bridge; this is the command-level
+// (getDimensionArg) have owners of their own; this is the command-level
 // wrapper that drives them.
 
 const std = @import("std");

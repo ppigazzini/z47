@@ -3,7 +3,7 @@
 // src/c47/mathematics/matrix.c (with their shared static worker
 // getMatrixDimensionsToStack): push the row and column counts of a register
 // matrix onto the stack as long integers (Y = rows, X = columns). The register
-// and long-integer surface stays in the bridge / runtime.
+// and long-integer surface is reached through the runtime.
 
 const std = @import("std");
 const runtime = @import("../command_wrappers/runtime.zig");

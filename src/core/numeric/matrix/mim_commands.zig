@@ -4,7 +4,7 @@
 // and fnPNorm, and getMatrixFromRegister (loads a matrix register into the MIM
 // edit pointer). The numeric helpers (getArg, _swap*, get/putMatrix*,
 // _row_columnNorm) are static in matrix.c, so they stay file-local here; only
-// the public commands are bridge-renamed. Upstream has one get and one put body
+// the public commands are exported. Upstream has one get and one put body
 // over a kind descriptor, so both kinds report as getMatrixAny / putMatrixAny.
 const std = @import("std");
 const math_mim_util = @import("mim_util.zig"); // std-only matrix-input helpers

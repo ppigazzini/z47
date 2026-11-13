@@ -1,9 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // Zig port of the matrix elementwise-arithmetic cluster of
 // src/c47/mathematics/matrix.c: add/subtract of two matrices and multiply of a
-// matrix by a real34/real scalar (real34 and complex34). The matrix*matrix
-// products, the divide family and the vector ops stay in the matrix bridge
-// for now.
+// matrix by a real34/real scalar (real34 and complex34).
 
 const runtime = @import("../command_wrappers/runtime.zig");
 const abi = @import("abi");

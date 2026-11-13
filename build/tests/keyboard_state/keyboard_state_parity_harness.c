@@ -519,18 +519,10 @@ static int runProcessKeyActionDifferential(void) {
 }
 
 // ---------------------------------------------------------------------------
-// Check 4 -- the keyboard LAYOUT tables, entry by entry.
-//
-// keyboard_entry_harness.c guards kbd_std_C47 with a frozen FNV-1a checksum, whose
-// own comment says it exists because "the keyboard Zig owners have no compiled C
-// oracle (the bridge was deleted), so an upstream change to the layout would
-// otherwise be caught by nothing". That stopped being true when this lane started
-// compiling c43's keyboard.c: assign.c, where the tables live, compiles beside it.
-//
-// A checksum a human re-pins after "an intended upstream layout change" is a
-// characterization test -- it detects change, it cannot say which side is right,
-// and re-pinning it is indistinguishable from accepting a porting mistake. The
-// table itself is the reference, and it moves with c43 for free.
+// Check 4 -- the keyboard LAYOUT tables, entry by entry, against c43's own from
+// assign.c. The table is the reference, not a checksum of it: a checksum detects a
+// change but cannot say which side is right, and re-pinning one is
+// indistinguishable from accepting a porting mistake.
 // ---------------------------------------------------------------------------
 static int compareKeyTable(const char *name, const calcKey_t *mine, const calcKey_t *theirs) {
   int bad = 0;

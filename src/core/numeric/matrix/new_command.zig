@@ -2,7 +2,7 @@
 // Zig port of the fnNewMatrix command of src/c47/mathematics/matrix.c: allocate
 // a fresh zero-filled real matrix of the dimensions read from the stack into
 // register X. The register allocation (initMatrixRegister) and the dimension
-// argument parsing (getDimensionArg) still live in the matrix bridge; this is
+// argument parsing (getDimensionArg) have owners of their own; this is
 // the command-level wrapper that drives them.
 
 const std = @import("std");

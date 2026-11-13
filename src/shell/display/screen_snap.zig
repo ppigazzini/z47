@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
-// Zig owner for bridge/frontier/screen_snap_helpers.c (the last residual C
-// helper of the frontier screen subsystem). Ports, verbatim:
+// Frontier screen helpers. Ports, verbatim:
 //
 //  1. versionStr / versionStr2 — the two version strings shown by the
 //     TI_VERSION / TI_BACKUP_RESTORED render branches in frontier_screen_owned.

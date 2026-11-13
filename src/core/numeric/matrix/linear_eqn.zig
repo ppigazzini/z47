@@ -3,8 +3,8 @@
 // commands, and the real/complex linear-equation solvers (Ax=b via the shared
 // cpxLinearEqn inverse-multiply, owned by the eigen owner). A real coefficient
 // matrix the exact elimination finds singular is refused before the solve. The
-// solvers are public (declared in matrix.h) so they are bridge-renamed
-// alongside the four commands.
+// solvers are public (declared in matrix.h), so they are exported alongside the
+// four commands.
 const std = @import("std");
 const runtime = @import("../command_wrappers/runtime.zig");
 const math_matrix_determinant = @import("determinant.zig");

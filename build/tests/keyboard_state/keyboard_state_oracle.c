@@ -81,15 +81,9 @@
 #include "../../../upstream/src/c47/keyboard.c"
 
 // ---------------------------------------------------------------------------
-// c43's OWN keyboard layout tables, for the table differential.
-//
-// keyboard_entry_harness.c guarded kbd_std_C47 with a frozen FNV-1a checksum and a
-// comment saying "the keyboard Zig owners have no compiled C oracle (the bridge was
-// deleted), so an upstream change to the layout would otherwise be caught by
-// nothing". That was true when it was written and is not any more: this lane
-// compiles c43's keyboard.c, and assign.c -- where the tables actually live --
-// compiles clean beside it. A checksum somebody has to re-pin by hand is a
-// characterization test; the table itself is the reference.
+// c43's OWN keyboard layout tables, for the table differential. They live in
+// assign.c, included below under oracle_* names so the harness can compare z47's
+// tables against them entry by entry.
 // ---------------------------------------------------------------------------
 #define kbd_std_C47 oracle_kbd_std_C47
 #define kbd_std_D47 oracle_kbd_std_D47

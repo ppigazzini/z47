@@ -363,10 +363,8 @@ pub extern fn detComplexMatrix(matrix: *const complex34Matrix_t, res_r: *real34_
 pub extern fn euclideanNormRealMatrix(matrix: *const real34Matrix_t, p_param: u16, res: *real34_t) void;
 pub extern fn euclideanNormComplexMatrix(matrix: *const complex34Matrix_t, p_param: u16, res: *real34_t) void;
 pub extern fn vectorAngle(y: *const real34Matrix_t, x: *const real34Matrix_t, radians: *real_t) void;
-// Still in the matrix bridge (renamed-or-original C); the command owners call
-// the canonical names, which resolve to the C engine until those land in Zig.
-// invertRealMatrix / invertComplexMatrix are public; the matrix sqrt and eigen
-// functions are static in matrix.c and cannot be wrapped from here.
+// The matrix kernels the command owners call by their canonical names: inverse
+// (invert.zig), LU (real_lu.zig, complex_lu.zig) and QR (eigen.zig).
 pub extern fn invertRealMatrix(matrix: *const real34Matrix_t, res: *real34Matrix_t) void;
 pub extern fn invertComplexMatrix(matrix: *const complex34Matrix_t, res: *complex34Matrix_t) void;
 pub extern fn WP34S_LU_decomposition(matrix: *const real34Matrix_t, lu: *real34Matrix_t, p: [*]u16) void;
@@ -423,8 +421,8 @@ pub inline fn uInt32ToReal34(value: u32, destination: *real34_t) void {
 }
 // The canonical subtract command (subtraction.c), used by fnVectorDist.
 pub extern fn fnSubtract(parameter: u16) void;
-// Matrix register allocation and the dimension-argument parser, still in the
-// matrix bridge; the command owners reach them through the runtime.
+// Matrix register allocation (register_memory.zig) and the dimension-argument
+// parser (dimension_arg.zig); the command owners reach them through the runtime.
 pub extern fn getDimensionArg(rows: *u32, cols: *u32) bool;
 pub extern fn initMatrixRegister(reg: calcRegister_t, rows: u16, cols: u16, complex: bool) bool;
 pub extern fn redimMatrixRegister(reg: calcRegister_t, rows: u16, cols: u16, dim_mode: u16) bool;
@@ -1249,10 +1247,9 @@ pub extern fn moreInfoOnError(msg1: [*:0]const u8, msg2: ?[*:0]const u8, msg3: ?
 pub extern fn z47_math_wrappers_do_int_random_i() void;
 
 // Extern surface for the Zig-owned addition/subtraction dispatch cells
-// (math_addition_cells.zig / math_subtraction_cells.zig). These
-// resolve against the C product surface still in the dispatch bridge or the
-// frontier/state owners; the cell owners are excluded from the fake-harness
-// parity lanes.
+// (addition_cells.zig / subtraction_cells.zig). These resolve against the
+// vendored decNumber library and the frontier/state owners; the cell owners are
+// excluded from the fake-harness parity lanes.
 pub extern fn decQuadSubtract(res: *real34_t, operand1: *const real34_t, operand2: *const real34_t, context: *realContext_t) *real34_t;
 
 pub inline fn real34SubtractMacro(operand1: *const real34_t, operand2: *const real34_t, res: *real34_t) void {

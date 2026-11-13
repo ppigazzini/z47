@@ -7,7 +7,7 @@
 // complex_matrix_pivoting_solve back-substitution. These back the
 // matrix-by-matrix divide and the matrix inverse; both are exported under their
 // canonical names so the divide / invert owners reach them. The upstream copies
-// are file-local statics, so no bridge rename is needed.
+// are file-local statics.
 
 const runtime = @import("../command_wrappers/runtime.zig");
 const math_comparison_reals = @import("../compare/comparison_reals.zig");

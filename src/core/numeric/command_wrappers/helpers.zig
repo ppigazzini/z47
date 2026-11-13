@@ -1,12 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-only
-//! Zig owner for the math command wrapper runtime helper surface that used to
-//! be provided to product builds by
-//! bridge/mathematics/math_wrappers_runtime_helpers.c (now parity-only,
-//! relocated to build/tests/math_wrappers/).
-//!
-//! Every `pub export` below keeps the exact symbol name and ABI of the retired
-//! C definition. The error reporters live in
-//! error_reporters.zig.
+//! Zig owner for the math command wrapper runtime helper surface. The parity
+//! lanes link build/tests/math_wrappers/math_wrappers_runtime_helpers.c in its
+//! place, so every `pub export` below keeps that file's symbol name and ABI.
+//! The error reporters live in error_reporters.zig.
 
 const std = @import("std");
 const builtin = @import("builtin");

@@ -3,7 +3,7 @@
 // LU-decompose the square matrix in register X (real or complex) with partial
 // pivoting, leaving the permutation matrix in Z, the unit-lower-triangular L in
 // Y and the upper-triangular U in X. The numeric WP34S_LU_decomposition /
-// complex_LU_decomposition still live in the matrix bridge; this is the
+// complex_LU_decomposition are real_lu.zig's and complex_lu.zig's; this is the
 // command-level wrapper that drives them and splits the packed result into the
 // L, U and permutation matrices.
 

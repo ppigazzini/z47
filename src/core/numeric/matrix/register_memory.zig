@@ -10,12 +10,9 @@
 //     function pointers + an elementSize, which a typed Zig generic replaces
 //     1:1: struct assignment is the byte-for-byte copy, real34SetZero the zero).
 //
-// initMatrixRegister/redimMatrixRegister are still externed by many already
-// ported owners (allocateNamedMatrix, the fnNewMatrix/fnMatrixIdentity/stats/
-// set-dimensions commands, math_prime) and by the not-yet-ported matrix engine
-// inside the bridge; the bridge renames the upstream copies to
-// z47_math_wrappers_legacy_* so those internal C cross-calls keep working while
-// every canonical consumer resolves to this owner.
+// initMatrixRegister/redimMatrixRegister are externed by allocateNamedMatrix,
+// the fnNewMatrix/fnMatrixIdentity/stats/set-dimensions commands and
+// math_prime.
 
 const abi = @import("abi");
 const runtime = @import("../command_wrappers/runtime.zig");

@@ -2,8 +2,7 @@
 // Zig port of the matrix register-linking helpers of
 // src/c47/mathematics/matrix.c: linkToRealMatrixRegister and
 // linkToComplexMatrixRegister point a stack-local matrix descriptor at a
-// register's in-place data (header + elements) without copying. The register
-// store, allocation and the rest of the engine stay in the matrix bridge.
+// register's in-place data (header + elements) without copying.
 
 const abi = @import("abi");
 const runtime = @import("../command_wrappers/runtime.zig");
