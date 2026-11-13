@@ -83,6 +83,14 @@ def audit_target(repo_root: Path, target: str) -> tuple[int, list[str]]:
             violations += 1
             lines.append(f"  VIOLATION [{name}] links first-party C: {fp}")
     lines.insert(0, f"target '{target}': checked {checked} product compile/link commands")
+    if checked == 0:
+        # A cached build prints no compiler invocations, so there was nothing to
+        # check -- which is not the same as nothing to find.
+        violations += 1
+        lines.append(
+            f"  CANNOT JUDGE: 'zig build {target} --verbose' printed no product command;"
+            " run it on a cold cache (--cache-dir to an empty directory)"
+        )
     if proc.returncode != 0 and violations == 0:
         # build itself failed for an unrelated reason -- surface it, do not pass
         lines.append(f"  NOTE: 'zig build {target}' exited {proc.returncode}")

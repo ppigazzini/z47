@@ -325,7 +325,11 @@ regression.
 `zig-c-boundary-guard`, then a `c-dependency-zero` job that runs
 `check-c-dependency-phase-i-policy.sh .` -- the zero cap on the product graph
 (`c-dependency-product-allowlist.json`) and baseline no-regression on the wider
-config -- and self-tests `verify-product-c-link-isolation.py`.
+config -- and self-tests `verify-product-c-link-isolation.py`. The full
+`--target sim` run of that verifier is a maintainer step: it reads the
+compiler commands `zig build --verbose` prints, which a cached build does not,
+so it needs a cold `--cache-dir` and fails rather than passing when it sees
+none.
 
 ## CI Change Rules
 
