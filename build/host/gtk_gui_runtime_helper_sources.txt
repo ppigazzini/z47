@@ -1,1 +1,0 @@
-# (gtk_gui_legacy.c bridge retired — gtkGui.c fully ported to Zig owners)
