@@ -218,19 +218,19 @@ pub fn btnClickedHostOverlay(not_used: ?*anyopaque, data: ?*anyopaque) void {
 }
 extern fn btnClicked(not_used: ?*anyopaque, data: ?*anyopaque) void;
 
-pub fn btnPressedDmcpOverlay(data: ?*anyopaque) void {
+pub fn btnPressedDmcpOverlay(data: [*c]const u8) void {
     btnPressed(data);
 }
 
-pub fn btnClickedDmcpOverlay(unused: ?*anyopaque, data: ?*anyopaque) void {
+pub fn btnClickedDmcpOverlay(unused: ?*anyopaque, data: [*c]const u8) void {
     _ = unused;
     btnPressedDmcpOverlay(data);
     btnReleased(data);
 }
 
-extern fn btnReleased(data: ?*anyopaque) void;
+extern fn btnReleased(data: [*c]const u8) void;
 // Resolves to the Zig DMCP btnPressed export (keyboard_state.zig btnPressedDmcp).
-extern fn btnPressed(data: ?*anyopaque) void;
+extern fn btnPressed(data: [*c]const u8) void;
 
 // --- fnKeyCC dependencies ---------------------------------------------------
 pub const REGISTER_X: i16 = 100;
@@ -977,7 +977,7 @@ pub const ITM_5: i16 = 545;
 pub const ITM_6: i16 = 546;
 pub const ITM_7: i16 = 547;
 pub const ITM_8: i16 = 548;
-pub extern fn btnFnReleased_StateMachine(unused: ?*anyopaque, data: ?*anyopaque) void;
+pub extern fn btnFnReleased_StateMachine(unused: ?*anyopaque, data: [*c]const u8) void;
 pub extern fn displayShiftAndTamBuffer() void;
 
 // btnFnPressed dependencies (keyboard.c 579-742).
@@ -987,7 +987,7 @@ pub export var releaseOverride: bool_t = false;
 pub export var showScreenDismissed: bool_t = false;
 pub extern var FN_key_pressed: i16;
 pub extern fn updateAssignTamBuffer() void;
-pub extern fn btnFnPressed_StateMachine(unused: ?*anyopaque, data: ?*anyopaque) void;
+pub extern fn btnFnPressed_StateMachine(unused: ?*anyopaque, data: [*c]const u8) void;
 
 // btnReleased dependencies (keyboard.c 2032-2306).
 pub const SCREENDUMP: i16 = 9875;

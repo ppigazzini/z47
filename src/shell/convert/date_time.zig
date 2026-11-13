@@ -276,8 +276,8 @@ extern fn time(t: ?*i64) i64;
 extern fn localtime(t: *const i64) *Tm;
 extern fn strftime(buf: [*]u8, max: usize, fmt: [*:0]const u8, tm: *const Tm) usize;
 extern fn sprintf(buf: [*]u8, fmt: [*:0]const u8, ...) c_int;
-extern fn strcpy(dst: [*]u8, src: [*:0]const u8) [*c]u8;
-extern fn strcat(dst: [*]u8, src: [*:0]const u8) [*c]u8;
+extern fn strcpy(dst: [*]u8, src: [*c]const u8) [*c]u8;
+extern fn strcat(dst: [*]u8, src: [*c]const u8) [*c]u8;
 
 // rtc_read/rtc_write are DMCP-ROM jump-table entries (lft_ifc.h,
 // LIBRARY_FN_BASE + 204 / + 208). The table base differs per board; the build
