@@ -5,7 +5,7 @@
     "ptrcast_sites": 1,
     "constcast_sites": 1,
     "ptr_from_int_sites": 109,
-    "callconv_c_sites": 3274,
+    "callconv_c_sites": 3253,
     "extern_fn_sites": 4002,
     "printf_family_files": 55,
     "anyopaque_files": 79,
@@ -18,7 +18,7 @@
     "dmcp_board_address_sites": 0,
     "has_decl_sites": 0
   },
-  "owner_count": 417,
+  "owner_count": 418,
   "seam_totals": {
     "extern_struct_files": 2,
     "cptr_files": 0,

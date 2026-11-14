@@ -1,6 +1,6 @@
 const runtime = @import("../command_wrappers/runtime.zig");
 const abi = @import("abi");
-const legacy = runtime.legacy;
+const bodies = @import("../command_bodies.zig");
 
 const Operation = enum {
     inc,
@@ -100,7 +100,7 @@ fn incDecRegister(regist: runtime.calcRegister_t, operation: Operation) void {
 
 pub fn dec(unused_but_mandatory_parameter: u16) callconv(.c) void {
     if (!isOwnedStackRegister(unused_but_mandatory_parameter)) {
-        legacy.fnDec(unused_but_mandatory_parameter);
+        bodies.fnDec(unused_but_mandatory_parameter);
         return;
     }
 
@@ -109,7 +109,7 @@ pub fn dec(unused_but_mandatory_parameter: u16) callconv(.c) void {
 
 pub fn inc(unused_but_mandatory_parameter: u16) callconv(.c) void {
     if (!isOwnedStackRegister(unused_but_mandatory_parameter)) {
-        legacy.fnInc(unused_but_mandatory_parameter);
+        bodies.fnInc(unused_but_mandatory_parameter);
         return;
     }
 

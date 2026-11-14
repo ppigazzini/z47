@@ -4,6 +4,7 @@ const compare_owned = @import("compare/compare.zig");
 const convergence_owned = @import("convergence.zig");
 const integer_part_owned = @import("rounding/integer_part.zig");
 const runtime = @import("command_wrappers/runtime.zig");
+const command_bodies = @import("command_bodies.zig");
 const get_type_owned = @import("compare/get_type.zig");
 const projection_owned = @import("projection.zig");
 const arithmetic_dispatch_command_owned = @import("arithmetic/dispatch_command.zig");
@@ -72,24 +73,21 @@ comptime {
         // (sqrtComplex, realRectangularToPolar, ...) that the parity harness
         // already gets from math_wrappers_fake_runtime.c.
         _ = @import("transform/transform_complex_helpers.zig");
-        // The compare/incDec cluster owners export the legacy fallback names
-        // (z47_math_wrappers_legacy_fnXLessThan, ...) that the parity harness
-        // gets from math_wrappers_legacy_link_stubs.c.
+        // The compare/incDec cluster owners hold the fnX*/fnDec/fnInc command
+        // bodies that command_bodies.zig hands the fronts.
         _ = @import("compare/comparison_reals.zig");
         _ = @import("compare/register_compare.zig");
         // The addition/subtraction cell owners export the dispatch matrices
-        // and every add*/sub* cell plus the z47_math_wrappers_legacy_fnAdd
-        // and ..._fnSubtract fallback commands; the parity harness keeps its
-        // link stubs and oracle copies instead.
+        // and every add*/sub* cell plus the fnAdd and fnSubtract command
+        // bodies; the parity harness keeps its oracle copies instead.
         _ = @import("arithmetic/addition_cells.zig");
         _ = @import("arithmetic/subtraction_cells.zig");
         // The multiplication/division/integer-division cell owners export the
         // remaining arithmetic dispatch matrices and every mul*/div*/idiv*/
-        // dbl*/round/decomp cell plus the z47_math_wrappers_legacy_fnMultiply,
-        // ..._fnDivide, ..._fnIDiv, ..._fnIDivR, ..._fnDblMultiply,
-        // ..._fnDblDivide, ..._fnDblDivideRemainder, ..._fnRound and
-        // ..._fnDecomp fallback commands; the parity harness keeps its link
-        // stubs and oracle copies instead.
+        // dbl*/round/decomp cell plus the fnMultiply, fnDivide, fnIDiv,
+        // fnIDivR, fnDblMultiply, fnDblDivide, fnDblDivideRemainder and
+        // fnRound command bodies; the parity harness keeps its oracle copies
+        // instead.
         _ = @import("arithmetic/multiplication_cells.zig");
         _ = @import("arithmetic/division_cells.zig");
         _ = @import("arithmetic/integer_division_cells.zig");
@@ -932,7 +930,7 @@ pub export fn fnRound(unused_but_mandatory_parameter: u16) callconv(.c) void {
     const register_data_type = runtime.getRegisterDataType(runtime.REGISTER_X);
 
     if (register_data_type != runtime.dtLongInteger and register_data_type != runtime.dtShortInteger) {
-        runtime.legacy.fnRound(unused_but_mandatory_parameter);
+        command_bodies.fnRound(unused_but_mandatory_parameter);
         return;
     }
 

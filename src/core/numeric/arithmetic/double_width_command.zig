@@ -1,6 +1,6 @@
 const build_options = @import("math_command_wrappers_build_options");
 const runtime = @import("../command_wrappers/runtime.zig");
-const legacy = runtime.legacy;
+const bodies = @import("../command_bodies.zig");
 
 fn setPositiveSign(value: *runtime.mpz_struct) void {
     if (value._mp_size < 0) {
@@ -254,7 +254,7 @@ pub fn dblMultiply(unused_but_mandatory_parameter: u16) void {
         return;
     }
 
-    legacy.fnDblMultiply(unused_but_mandatory_parameter);
+    bodies.fnDblMultiply(unused_but_mandatory_parameter);
 }
 
 pub fn dblDivide(unused_but_mandatory_parameter: u16) void {
@@ -263,7 +263,7 @@ pub fn dblDivide(unused_but_mandatory_parameter: u16) void {
         return;
     }
 
-    legacy.fnDblDivide(unused_but_mandatory_parameter);
+    bodies.fnDblDivide(unused_but_mandatory_parameter);
 }
 
 pub fn dblDivideRemainder(unused_but_mandatory_parameter: u16) void {
@@ -272,5 +272,5 @@ pub fn dblDivideRemainder(unused_but_mandatory_parameter: u16) void {
         return;
     }
 
-    legacy.fnDblDivideRemainder(unused_but_mandatory_parameter);
+    bodies.fnDblDivideRemainder(unused_but_mandatory_parameter);
 }

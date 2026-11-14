@@ -4,9 +4,9 @@
 // (`addition`, consumed by store.c, recall.c and xeqm.c) plus every cell
 // function, the shared add/subtract bodies the subtraction and multiplication
 // owners call, and the addComplex helpers. Faithful, line-by-line port of the C;
-// upstream symbol names are kept at the export boundary. The legacy C fnAdd
-// body lives on as z47_math_wrappers_legacy_fnAdd, the fallback the Zig
-// fnAdd wrapper uses for the string/error cells not handled natively.
+// upstream symbol names are kept at the export boundary. fnAdd is upstream's
+// command body, which the fnAdd front reaches through command_bodies.zig for
+// the string and error cells it does not handle itself.
 //
 // The `addition` table is TO_QSPI in C; it goes to the executable QSPI
 // region on the flash-limited DM42 old_hw firmware via linksection while the
@@ -156,10 +156,10 @@ pub export fn addError() callconv(.c) void {
     runtime.moreInfoOnError("In function fnAdd:", message, second, null);
 }
 
-/// The legacy C fnAdd body: saveLastX, matrix dispatch, adjustResult. The Zig
-/// fnAdd wrapper (command_wrappers.zig) calls this for the cells it does
-/// not handle natively (string rows/columns and the error cells).
-pub export fn z47_math_wrappers_legacy_fnAdd(unused_but_mandatory_parameter: u16) callconv(.c) void {
+/// Upstream's fnAdd body: saveLastX, matrix dispatch, adjustResult. The fnAdd
+/// front calls it for the cells it does not handle itself (string rows and
+/// columns and the error cells).
+pub noinline fn fnAdd(unused_but_mandatory_parameter: u16) void {
     _ = unused_but_mandatory_parameter;
 
     if (!runtime.saveLastX()) {

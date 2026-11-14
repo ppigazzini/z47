@@ -64,7 +64,7 @@ logicalOps/xnor	core/numeric/integer/logical_boolean_ops	port	symbol
 logicalOps/xor	core/numeric/integer/logical_boolean_ops	port	symbol
 mathematics/10pow	core/numeric/powerlog/powlog_power	port	symbol
 mathematics/2pow	core/numeric/powerlog/powlog_power	port	symbol
-mathematics/addition	core/numeric/arithmetic/addition_cells;core/numeric/arithmetic/dispatch_command	port	symbol
+mathematics/addition	core/numeric/arithmetic/addition_cells;core/numeric/arithmetic/dispatch_command;core/numeric/command_bodies	port	symbol
 mathematics/agm	core/numeric/special/agm	port	symbol
 mathematics/algdep	core/numeric/algdep	port	symbol
 mathematics/arccos	core/numeric/trig/inverse_trig_command;core/numeric/trig/inverse_trig_complex_command;core/numeric/trig/inverse_trig_real_command;core/numeric/trig/real_trig	port	symbol
@@ -81,7 +81,7 @@ mathematics/bn	core/numeric/special/exponent_bernoulli_command	port	symbol
 mathematics/ceil	core/numeric/rounding/integer_part	port	symbol
 mathematics/changeSign	core/numeric/arithmetic/sign_command	port	symbol
 mathematics/checkValue	core/numeric/command_wrappers;core/numeric/compare/check_value	port	symbol
-mathematics/compare	core/numeric/compare/compare;core/numeric/compare/register_compare;core/numeric/convergence	port	symbol
+mathematics/compare	core/numeric/command_bodies;core/numeric/compare/compare;core/numeric/compare/register_compare;core/numeric/convergence	port	symbol
 mathematics/comparisonReals	core/numeric/compare/comparison_reals	port	symbol
 mathematics/conjugate	core/numeric/command_wrappers;core/numeric/command_wrappers/helpers	port	symbol
 mathematics/cos	core/numeric/trig/circular_trig_command;core/numeric/trig/trig_complex_primitives	port	symbol
@@ -91,12 +91,12 @@ mathematics/cross	core/numeric/command_wrappers;core/numeric/matrix/vector_cross
 mathematics/cube	core/numeric/transform/transform_power_command	port	symbol
 mathematics/cubeRoot	core/numeric/transform/transform_complex_helpers;core/numeric/transform/transform_root_command	port	symbol
 mathematics/cxToRe	core/numeric/cxtore	port	symbol
-mathematics/dblDivision	core/numeric/arithmetic/double_width_command;core/numeric/arithmetic/integer_division_cells	port	symbol
-mathematics/dblMultiplication	core/numeric/arithmetic/double_width_command	port	symbol
+mathematics/dblDivision	core/numeric/arithmetic/double_width_command;core/numeric/arithmetic/integer_division_cells;core/numeric/command_bodies	port	symbol
+mathematics/dblMultiplication	core/numeric/arithmetic/double_width_command;core/numeric/command_bodies	port	symbol
 mathematics/decomp	core/numeric/arithmetic/integer_division_cells;core/numeric/arithmetic/scalar_integer_decomp_command	port	symbol
 mathematics/deltaPercent	core/numeric/arithmetic/percent_extended	port	symbol
 mathematics/deltaPercentXmean	core/numeric/statistics/deltaPercentXmean	port	symbol
-mathematics/division	core/numeric/arithmetic/dispatch_command;core/numeric/arithmetic/division_cells	port	symbol
+mathematics/division	core/numeric/arithmetic/dispatch_command;core/numeric/arithmetic/division_cells;core/numeric/command_bodies	port	symbol
 mathematics/dot	core/numeric/command_wrappers;core/numeric/matrix/vector_dot_scalar	port	symbol
 mathematics/elec	shell/elec;shell/extensions/jm	port	symbol
 mathematics/elliptic	core/numeric/special/elliptic	port	symbol
@@ -114,10 +114,10 @@ mathematics/gamma	core/numeric/special/gamma	port	symbol
 mathematics/gammaX	core/numeric/special/gammaX	port	symbol
 mathematics/gcd	core/numeric/arithmetic/integer_residue_command	port	symbol
 mathematics/gd	core/numeric/special/gd	port	symbol
-mathematics/idiv	core/numeric/arithmetic/dispatch_command;core/numeric/arithmetic/integer_division_cells	port	symbol
-mathematics/idivr	core/numeric/arithmetic/dispatch_command;core/numeric/arithmetic/integer_division_cells	port	symbol
+mathematics/idiv	core/numeric/arithmetic/dispatch_command;core/numeric/arithmetic/integer_division_cells;core/numeric/command_bodies	port	symbol
+mathematics/idivr	core/numeric/arithmetic/dispatch_command;core/numeric/arithmetic/integer_division_cells;core/numeric/command_bodies	port	symbol
 mathematics/imaginaryPart	core/numeric/command_wrappers	port	symbol
-mathematics/incDec	core/numeric/arithmetic/increment_decrement_command;core/numeric/compare/register_compare	port	symbol
+mathematics/incDec	core/numeric/arithmetic/increment_decrement_command;core/numeric/command_bodies;core/numeric/compare/register_compare	port	symbol
 mathematics/int	core/numeric/compare/check_value	port	symbol
 mathematics/integerPart	core/numeric/rounding/integer_part	port	symbol
 mathematics/integerPartLonginteger	core/numeric/rounding/integer_part	port	symbol
@@ -142,7 +142,7 @@ mathematics/median	core/numeric/statistics/median	port	symbol
 mathematics/min	core/numeric/rounding/integer_part	port	symbol
 mathematics/minusOnePow	core/numeric/special/special_algebraic_command	port	symbol
 mathematics/modulo	core/numeric/arithmetic/integer_residue_command	port	symbol
-mathematics/multiplication	core/numeric/arithmetic/dispatch_command;core/numeric/arithmetic/multiplication_cells	port	symbol
+mathematics/multiplication	core/numeric/arithmetic/dispatch_command;core/numeric/arithmetic/multiplication_cells;core/numeric/command_bodies	port	symbol
 mathematics/neighb	core/numeric/arithmetic/integer_residue_command	port	symbol
 mathematics/opmod	core/numeric/number_theory/opmod	port	symbol
 mathematics/ortho_polynom	core/numeric/special/ortho_polynom	port	symbol
@@ -161,7 +161,7 @@ mathematics/rdp	core/numeric/rounding/rdp	port	symbol
 mathematics/reToCx	core/numeric/transform/retocx	port	symbol
 mathematics/realPart	core/numeric/command_wrappers	port	symbol
 mathematics/remainder	core/numeric/arithmetic/integer_residue_command	port	symbol
-mathematics/round	core/numeric/arithmetic/integer_division_cells;core/numeric/command_wrappers	port	symbol
+mathematics/round	core/numeric/arithmetic/integer_division_cells;core/numeric/command_bodies;core/numeric/command_wrappers	port	symbol
 mathematics/roundi	core/numeric/rounding/scalar_integer_precision	port	symbol
 mathematics/rsd	core/numeric/rounding/rsd	port	symbol
 mathematics/shiftDigits	core/numeric/arithmetic/shift_digits_command	port	symbol
@@ -176,7 +176,7 @@ mathematics/slvq	core/numeric/slvq	port	symbol
 mathematics/sqrt1Px2	core/numeric/special/special_algebraic_command	port	symbol
 mathematics/square	core/numeric/transform/transform_power_command	port	symbol
 mathematics/squareRoot	core/numeric/transform/transform_complex_helpers;core/numeric/transform/transform_root_command	port	symbol
-mathematics/subtraction	core/numeric/arithmetic/dispatch_command;core/numeric/arithmetic/subtraction_cells	port	symbol
+mathematics/subtraction	core/numeric/arithmetic/dispatch_command;core/numeric/arithmetic/subtraction_cells;core/numeric/command_bodies	port	symbol
 mathematics/swapRealImaginary	core/numeric/command_wrappers	port	symbol
 mathematics/tan	core/numeric/trig/circular_trig_command;core/numeric/trig/trig_complex_primitives	port	symbol
 mathematics/tanh	core/numeric/trig/circular_trig_command;core/numeric/trig/real_trig;core/numeric/trig/trig_complex_primitives	port	symbol
@@ -249,10 +249,10 @@ distributions/t	shell/distributions/t	port	comment
 distributions/uniform	shell/distributions/uniform	port	comment
 distributions/weibull	shell/distributions/weibull	port	comment
 integers	abi/shortint_arith	port	comment
+plotstat	shell/plot/plot_regression_selection	port	comment
 printing/martelFonts	shell/generated/frontier_martel_fonts	port	comment
 printing/printerFont8	shell/generated/frontier_printer_font8	port	comment
 realType	shell/real_type	port	comment
 saveRestorePrograms	core/program/program_serialization_screen	port	comment
 solver/isumprod	core/analysis/isumprod	port	comment
-stringFuncs	abi/c47_string	port	comment
 timer	shell/timer_math	port	comment

@@ -95,7 +95,7 @@ pub export fn idivError() linksection(runtime.code_section) callconv(.c) void {
     runtime.moreInfoOnError("In function fnIDiv:", message1, message2, null);
 }
 
-pub export fn z47_math_wrappers_legacy_fnIDiv(unused_but_mandatory_parameter: u16) linksection(runtime.code_section) callconv(.c) void {
+pub noinline fn fnIDiv(unused_but_mandatory_parameter: u16) linksection(runtime.code_section) void {
     _ = unused_but_mandatory_parameter;
 
     if (!runtime.saveLastX()) {
@@ -324,7 +324,7 @@ pub export fn idivrError() linksection(runtime.code_section) callconv(.c) void {
     runtime.moreInfoOnError("In function fnIDivR:", message1, message2, null);
 }
 
-pub export fn z47_math_wrappers_legacy_fnIDivR(unused_but_mandatory_parameter: u16) linksection(runtime.code_section) callconv(.c) void {
+pub noinline fn fnIDivR(unused_but_mandatory_parameter: u16) linksection(runtime.code_section) void {
     _ = unused_but_mandatory_parameter;
 
     if (!runtime.saveLastX()) {
@@ -532,7 +532,7 @@ fn dblTypeError(comptime function_name: [:0]const u8, comptime operator_glyph: [
     runtime.moreInfoOnError(function_name, message, null, null);
 }
 
-pub export fn z47_math_wrappers_legacy_fnDblMultiply(unused_but_mandatory_parameter: u16) linksection(runtime.code_section) callconv(.c) void {
+pub noinline fn fnDblMultiply(unused_but_mandatory_parameter: u16) linksection(runtime.code_section) void {
     _ = unused_but_mandatory_parameter;
 
     const sim = runtime.shortIntegerMode;
@@ -728,12 +728,12 @@ pub export fn dblDivide(remainder_mode: bool) linksection(runtime.code_section) 
     dblDivideImpl(remainder_mode);
 }
 
-pub export fn z47_math_wrappers_legacy_fnDblDivide(unused_but_mandatory_parameter: u16) linksection(runtime.code_section) callconv(.c) void {
+pub noinline fn fnDblDivide(unused_but_mandatory_parameter: u16) linksection(runtime.code_section) void {
     _ = unused_but_mandatory_parameter;
     dblDivideImpl(false);
 }
 
-pub export fn z47_math_wrappers_legacy_fnDblDivideRemainder(unused_but_mandatory_parameter: u16) linksection(runtime.code_section) callconv(.c) void {
+pub noinline fn fnDblDivideRemainder(unused_but_mandatory_parameter: u16) linksection(runtime.code_section) void {
     _ = unused_but_mandatory_parameter;
     dblDivideImpl(true);
 }
@@ -779,7 +779,7 @@ pub export fn roundError() linksection(runtime.code_section) callconv(.c) void {
     runtime.moreInfoOnError("In function roundError:", message, null, null);
 }
 
-pub export fn z47_math_wrappers_legacy_fnRound(unused_but_mandatory_parameter: u16) linksection(runtime.code_section) callconv(.c) void {
+pub noinline fn fnRound(unused_but_mandatory_parameter: u16) linksection(runtime.code_section) void {
     _ = unused_but_mandatory_parameter;
 
     if (!runtime.saveLastX()) {
@@ -1020,7 +1020,7 @@ pub export fn decompError() linksection(runtime.code_section) callconv(.c) void 
     runtime.moreInfoOnError("In function fnDecomp:", message, null, null);
 }
 
-pub export fn z47_math_wrappers_legacy_fnDecomp(unused_but_mandatory_parameter: u16) linksection(runtime.code_section) callconv(.c) void {
+pub fn fnDecomp(unused_but_mandatory_parameter: u16) linksection(runtime.code_section) void {
     _ = unused_but_mandatory_parameter;
 
     if (!runtime.saveLastX()) {
