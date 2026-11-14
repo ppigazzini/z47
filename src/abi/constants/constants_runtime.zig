@@ -15,7 +15,7 @@ pub const dtReal34: u32 = 1;
 pub const amNone: angularMode_t = 5;
 pub const NOUC: usize = 84;
 
-pub const real_t = opaque {};
+pub const real_t = abi.Real;
 const abi = @import("abi"); // shared ABI bindings
 pub const real34_t = abi.Real34;
 
@@ -33,7 +33,7 @@ pub extern fn adjustResult(
     op3: calcRegister_t,
 ) void;
 pub extern fn setLastintegerBasetoZero() void;
-pub extern fn getRegisterDataPointer(reg: calcRegister_t) ?*align(4) anyopaque;
+pub extern fn getRegisterDataPointer(reg: calcRegister_t) ?[*]align(4) u8;
 pub extern fn reallocateRegister(reg: calcRegister_t, data_type: u32, data_size_without_data_len_blocks: u16, tag: u32) bool;
 pub extern fn realToReal34(source: *const real_t, destination: *real34_t) void;
 pub extern fn convertRealToResultRegister(source: *const real_t, dest: calcRegister_t, angle: angularMode_t) void;
@@ -46,7 +46,7 @@ pub fn registerReal34Ptr(reg: calcRegister_t) *real34_t {
     }
 
     const ptr = getRegisterDataPointer(reg) orelse unreachable;
-    return @ptrCast(ptr);
+    return std.mem.bytesAsValue(real34_t, ptr[0..@sizeOf(real34_t)]);
 }
 
 /// The out-of-range refusal. Upstream puts the whole check -- not just its
@@ -81,7 +81,7 @@ pub inline fn storePiInX() void {
     // fnPi names const39_pi, it does not index realtConstants: the generated
     // blob's order is not a contract, and inserting a constant ahead of pi would
     // silently repoint an index into it.
-    convertRealToResultRegister(@ptrCast(abi.constants.const39_pi()), REGISTER_X, amNone);
+    convertRealToResultRegister(abi.constants.const39_pi(), REGISTER_X, amNone);
 }
 
 pub inline fn setLastIntegerBaseToZero() void {
