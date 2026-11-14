@@ -39,7 +39,9 @@ C_PREFIX = "src/c47/"
 MANIFEST = ".github/project/upstream-correspondence.tsv"
 HERE = pathlib.Path(__file__).resolve().parent
 # git prints the enclosing C function on each hunk header after the second @@.
-HUNK_FN = re.compile(r"@@ -\d+(?:,\d+)? \+\d+(?:,\d+)? @@\s*(.*)")
+# The context is matched on the header line only: `\s*` would cross the newline
+# of a header with no context and read the first changed line as the function.
+HUNK_FN = re.compile(r"^@@ -\d+(?:,\d+)? \+\d+(?:,\d+)? @@[ \t]*(.*)$", re.M)
 FN_NAME = re.compile(r"([A-Za-z_][A-Za-z0-9_]*)\s*\(")
 # A file-local Zig function: the port of a C `static`, which no `pub` symbol names.
 PRIVATE_FN = re.compile(r"^\s*(?:inline\s+)?fn ([A-Za-z_][A-Za-z0-9_]*)\s*\(", re.M)
@@ -127,7 +129,13 @@ def main() -> int:
         diff = git(sibling, "diff", args.oldpin, args.newpin, "--", path)
         fns = []
         for m in HUNK_FN.finditer(diff):
-            fn = FN_NAME.search(m.group(1))
+            context = m.group(1).rstrip()
+            # A context line ending in `;` is a prototype or a statement that git's
+            # heuristic picked up, not the function the change sits in; such a hunk
+            # falls back to the file's owners like one with no context at all.
+            if context.endswith(";"):
+                continue
+            fn = FN_NAME.search(context)
             if fn:
                 fns.append(fn.group(1))
         return sorted(set(fns))
