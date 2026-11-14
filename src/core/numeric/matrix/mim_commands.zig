@@ -63,18 +63,20 @@ inline fn rmEl(m: *const real34Matrix_t, i: usize) *real34_t {
 // I and J reach these commands as `register - 1`, so a register holding 0 or a
 // non-numeric type yields a negative origin. C forms the element address in
 // signed arithmetic and lets the pointer run before the array; these helpers
-// compute the same address with wrapping integer arithmetic so the out-of-range
-// case lands where C lands rather than trapping on a negative-to-unsigned cast.
+// step the element pointer back for a negative index, so the out-of-range case
+// lands where C lands rather than trapping on a negative-to-unsigned cast.
 inline fn subIndex(r: usize, i: i16, cols: usize, c: usize, j: i16) isize {
     return (@as(isize, @intCast(r)) + i) * @as(isize, @intCast(cols)) + @as(isize, @intCast(c)) + j;
 }
+inline fn elementAt(comptime T: type, elements: [*]T, index: isize) *T {
+    const from: [*]T = if (index < 0) elements - @abs(index) else elements + @as(usize, @intCast(index));
+    return &from[0];
+}
 inline fn rmElAt(m: *const real34Matrix_t, index: isize) *real34_t {
-    const off: usize = @bitCast(index *% @as(isize, @sizeOf(real34_t)));
-    return @ptrFromInt(@intFromPtr(m.matrixElements) +% off);
+    return elementAt(real34_t, m.matrixElements, index);
 }
 inline fn cmElAt(m: *const complex34Matrix_t, index: isize) *complex34_t {
-    const off: usize = @bitCast(index *% @as(isize, @sizeOf(complex34_t)));
-    return @ptrFromInt(@intFromPtr(m.matrixElements) +% off);
+    return elementAt(complex34_t, m.matrixElements, index);
 }
 inline fn cmEl(m: *const complex34Matrix_t, i: usize) *complex34_t {
     const e: [*]complex34_t = m.matrixElements;

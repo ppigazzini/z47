@@ -267,16 +267,18 @@ inline fn toBlocks(bytes: usize) usize {
 const lattice_blocks: usize = toBlocks(@sizeOf(Lattice)) + (if (@alignOf(Lattice) > 4) @as(usize, 1) else 0);
 
 const LatticeFrame = struct {
-    raw: *anyopaque,
+    raw: [*]align(4) u8,
     lattice: *Lattice,
 };
 
 fn latticeAlloc() ?LatticeFrame {
-    const raw = runtime.allocC47Blocks(lattice_blocks) orelse {
+    const raw = abi.allocC47BlocksAs(u8, lattice_blocks) orelse {
         displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
         return null;
     };
-    const lattice: *Lattice = @ptrFromInt(std.mem.alignForward(usize, @intFromPtr(raw), @alignOf(Lattice)));
+    // lattice_blocks leaves room for the alignment, so an aligned frame always fits.
+    const frame = std.mem.alignInBytes(raw[0 .. lattice_blocks * 4], @alignOf(Lattice)).?;
+    const lattice = std.mem.bytesAsValue(Lattice, frame[0..@sizeOf(Lattice)]);
     for (latticeMembers(lattice)) |*member| {
         longIntegerInit(member);
     }
