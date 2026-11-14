@@ -84,7 +84,7 @@ const RESERVED_VARIABLE_IPONA: i16 = 2035;
 extern fn tvmSyncIp(written: i16) void;
 extern fn graFontCheck() void; // screen.zig: a GRFNT code missing from the font table becomes 20
 const DECINF: u8 = 0x40; // decNumberIsInfinite(dn) = (dn->bits & DECINF) != 0; bits@8
-const real_t = opaque {}; // decNumber; range globals hold a *real_t (see graphs.zig)
+const real_t = abi.Real;
 // REAL_SIZE_IN_BYTES(34) = 10 + sizeof(decNumberUnit=2) * (REAL_MAX_DIGITS(34)=39 / DECDPUN=3) = 36.
 const REAL_SIZE_IN_BYTES_34: u32 = 36; // C realType.h REAL_SIZE_IN_BYTES(34)
 extern fn ioFileOpen(path: c_int, mode: c_int) c_int;
@@ -94,11 +94,11 @@ extern var calcModel: u8;
 extern var calcMode: u8;
 extern var previousCalcMode: u8;
 extern var graphVariabl1: i16;
-extern var freeMemoryRegions: ?*anyopaque; // pointer on host (NEW_HW)
+extern var freeMemoryRegions: ?[*]abi.FreeMemoryRegion; // pointer on host (NEW_HW)
 extern var allocatedMemoryRegions: [4]u8; // array on host (!DMCP_BUILD) -> &[0]
 extern var numberOfFreeMemoryRegions: i32;
 extern var numberOfAllocatedMemoryRegions: i32;
-extern var globalRegister: ?*anyopaque; // pointer on host (NEW_HW)
+extern var globalRegister: ?[*]abi.RegisterHeader; // pointer on host (NEW_HW)
 extern var ram: [*c]u32;
 extern var graMod: u8;
 extern var graFont: u8;
@@ -350,8 +350,12 @@ fn geometry() progmem.Geometry {
 fn streq(a: [*c]const u8, b: [*c]const u8) bool {
     return strcmp(a, b) == 0;
 }
-fn rd(comptime T: type, buffer: ?*const anyopaque) T {
-    return @as(*const T, @ptrCast(@alignCast(buffer))).*;
+fn rd(comptime T: type, buffer: [*]const u8) T {
+    return std.mem.bytesToValue(T, buffer[0..@sizeOf(T)]);
+}
+/// Store `value` at `buffer`, whose alignment the caller does not promise.
+fn wr(comptime T: type, buffer: [*]u8, value: T) void {
+    @memcpy(buffer[0..@sizeOf(T)], std.mem.asBytes(&value));
 }
 fn save(bytes: [*c]const u8) void {
     ioFileWrite(bytes, @intCast(strlen(bytes)));
@@ -366,10 +370,10 @@ fn changeCommaToPeriod(str: [*c]u8) void {
 }
 
 // Typed value serializer (saveRestoreCalcState.c saveStateValue, host-only).
-fn sv(buffer: ?*const anyopaque, size: u32, name: [*c]const u8, type_str: [*c]const u8) void {
+fn sv(buffer: [*]const u8, size: u32, name: [*c]const u8, type_str: [*c]const u8) void {
     var value: [200]u8 = undefined;
     const v: [*c]u8 = &value[0];
-    const buf: [*c]const u8 = @ptrCast(buffer);
+    const buf: [*c]const u8 = buffer;
     if (streq(type_str, "int64")) {
         // C uses PRIi64/PRIu64: the full 64-bit value on every platform. Casting
         // to c_long/c_ulong truncates (and @intCast-panics on overflow) on Windows
@@ -481,318 +485,318 @@ pub fn saveCalc() void {
         refreshScreen(90);
     }
     var bv: u32 = BACKUP_VERSION;
-    sv(&bv, 4, "backupVersion", "uint32");
+    sv(std.mem.asBytes(&bv), 4, "backupVersion", "uint32");
     var rsib: u32 = geometry().ram_size_in_blocks;
-    sv(&rsib, 4, "ramSizeInBlocks", "uint32");
-    sv(&numberOfFreeMemoryRegions, 4, "numberOfFreeMemoryRegions", "int32");
-    sv(freeMemoryRegions, FREE_MEM_REGION_SIZE * @as(u32, @bitCast(numberOfFreeMemoryRegions)), "freeMemoryRegions", "hexDump");
-    sv(&numberOfAllocatedMemoryRegions, 4, "numberOfAllocatedMemoryRegions", "int32");
-    sv(&allocatedMemoryRegions[0], FREE_MEM_REGION_SIZE * @as(u32, @bitCast(numberOfAllocatedMemoryRegions)), "allocatedMemoryRegions", "hexDump");
-    sv(globalRegister, REGISTER_HEADER_SIZE * NUMBER_OF_GLOBAL_REGISTERS, "globalRegister", "hexDump");
-    sv(&calcMode, 1, "calcMode", "uint8");
-    sv(&previousCalcMode, 1, "previousCalcMode", "uint8");
-    sv(&graphToRemainOnScreen, 1, "graphToRemainOnScreen", "bool");
-    sv(&calcModel, 1, "calcModel", "uint8");
-    sv(&globalFlags[0], 16, "globalFlags", "hexDump");
-    sv(&errorMessage[0], 512, "errorMessage", "hexDump");
-    sv(&aimBuffer[0], 1024, "aimBuffer", "hexDump");
-    sv(&nimBufferDisplay[0], 200, "nimBufferDisplay", "hexDump");
-    sv(&tamBuffer[0], 56, "tamBuffer", "hexDump");
-    sv(&asmBuffer[0], 5, "asmBuffer", "hexDump");
-    sv(&oldTime[0], 8, "oldTime", "hexDump");
-    sv(&dateTimeString[0], 12, "dateTimeString", "hexDump");
-    sv(&softmenuStack, @sizeOf(@TypeOf(softmenuStack)), "softmenuStack", "hexDump");
+    sv(std.mem.asBytes(&rsib), 4, "ramSizeInBlocks", "uint32");
+    sv(std.mem.asBytes(&numberOfFreeMemoryRegions), 4, "numberOfFreeMemoryRegions", "int32");
+    sv(std.mem.asBytes(&freeMemoryRegions.?[0]), FREE_MEM_REGION_SIZE * @as(u32, @bitCast(numberOfFreeMemoryRegions)), "freeMemoryRegions", "hexDump");
+    sv(std.mem.asBytes(&numberOfAllocatedMemoryRegions), 4, "numberOfAllocatedMemoryRegions", "int32");
+    sv(std.mem.asBytes(&allocatedMemoryRegions[0]), FREE_MEM_REGION_SIZE * @as(u32, @bitCast(numberOfAllocatedMemoryRegions)), "allocatedMemoryRegions", "hexDump");
+    sv(std.mem.asBytes(&globalRegister.?[0]), REGISTER_HEADER_SIZE * NUMBER_OF_GLOBAL_REGISTERS, "globalRegister", "hexDump");
+    sv(std.mem.asBytes(&calcMode), 1, "calcMode", "uint8");
+    sv(std.mem.asBytes(&previousCalcMode), 1, "previousCalcMode", "uint8");
+    sv(std.mem.asBytes(&graphToRemainOnScreen), 1, "graphToRemainOnScreen", "bool");
+    sv(std.mem.asBytes(&calcModel), 1, "calcModel", "uint8");
+    sv(std.mem.asBytes(&globalFlags[0]), 16, "globalFlags", "hexDump");
+    sv(std.mem.asBytes(&errorMessage[0]), 512, "errorMessage", "hexDump");
+    sv(std.mem.asBytes(&aimBuffer[0]), 1024, "aimBuffer", "hexDump");
+    sv(std.mem.asBytes(&nimBufferDisplay[0]), 200, "nimBufferDisplay", "hexDump");
+    sv(std.mem.asBytes(&tamBuffer[0]), 56, "tamBuffer", "hexDump");
+    sv(std.mem.asBytes(&asmBuffer[0]), 5, "asmBuffer", "hexDump");
+    sv(std.mem.asBytes(&oldTime[0]), 8, "oldTime", "hexDump");
+    sv(std.mem.asBytes(&dateTimeString[0]), 12, "dateTimeString", "hexDump");
+    sv(std.mem.asBytes(&softmenuStack), @sizeOf(@TypeOf(softmenuStack)), "softmenuStack", "hexDump");
     if (comptime option_structured_pgm) {
-        sv(&forLoopTable[0], FOR_LOOP_TABLE_BYTES, "forLoopTable", "hexDump");
+        sv(std.mem.asBytes(&forLoopTable[0]), FOR_LOOP_TABLE_BYTES, "forLoopTable", "hexDump");
     }
-    sv(&kbd_usr[0], 666, "kbd_usr", "hexDump");
-    sv(&userMenuItems[0], 360, "userMenuItems", "hexDump");
-    sv(&userAlphaItems[0], 360, "userAlphaItems", "hexDump");
-    sv(&lastTemp[0], 16, "lastTemp", "hexDump");
-    sv(&lastStateFileOpened[0], 32, "lastStateFileOpened", "hexDump");
+    sv(std.mem.asBytes(&kbd_usr[0]), 666, "kbd_usr", "hexDump");
+    sv(std.mem.asBytes(&userMenuItems[0]), 360, "userMenuItems", "hexDump");
+    sv(std.mem.asBytes(&userAlphaItems[0]), 360, "userAlphaItems", "hexDump");
+    sv(std.mem.asBytes(&lastTemp[0]), 16, "lastTemp", "hexDump");
+    sv(std.mem.asBytes(&lastStateFileOpened[0]), 32, "lastStateFileOpened", "hexDump");
     if (comptime !is_dmcp_build) {
-        sv(&lastFolderData[0], C47_PATH_MAX, "lastFolderData", "hexDump");
-        sv(&lastFolderState[0], C47_PATH_MAX, "lastFolderState", "hexDump");
-        sv(&lastFolderPrograms[0], C47_PATH_MAX, "lastFolderPrograms", "hexDump");
+        sv(std.mem.asBytes(&lastFolderData[0]), C47_PATH_MAX, "lastFolderData", "hexDump");
+        sv(std.mem.asBytes(&lastFolderState[0]), C47_PATH_MAX, "lastFolderState", "hexDump");
+        sv(std.mem.asBytes(&lastFolderPrograms[0]), C47_PATH_MAX, "lastFolderPrograms", "hexDump");
     }
-    sv(&lastI[0], 2, "lastI", "int16");
-    sv(&lastJ[0], 2, "lastJ", "int16");
-    sv(&lastFunc[0], 2, "lastFunc", "int16");
-    sv(&lastParam[0], 2, "lastParam", "int16");
-    sv(&tam.mode, @sizeOf(@TypeOf(tam.mode)), "tam.mode", "uint16");
-    sv(&tam.function, @sizeOf(@TypeOf(tam.function)), "tam.function", "int16");
-    sv(&tam.alpha, @sizeOf(@TypeOf(tam.alpha)), "tam.alpha", "bool");
-    sv(&tam.currentOperation, @sizeOf(@TypeOf(tam.currentOperation)), "tam.currentOperation", "int16");
-    sv(&tam.dot, @sizeOf(@TypeOf(tam.dot)), "tam.dot", "bool");
-    sv(&tam.indirect, @sizeOf(@TypeOf(tam.indirect)), "tam.indirect", "bool");
-    sv(&tam.digitsSoFar, @sizeOf(@TypeOf(tam.digitsSoFar)), "tam.digitsSoFar", "int16");
-    sv(&tam.value, @sizeOf(@TypeOf(tam.value)), "tam.value", "int16");
-    sv(&tam.min, @sizeOf(@TypeOf(tam.min)), "tam.min", "int16");
-    sv(&tam.max, @sizeOf(@TypeOf(tam.max)), "tam.max", "int16");
-    sv(&rbrRegister[0], 2, "rbrRegister", "int16");
-    sv(&numberOfNamedVariables[0], 2, "numberOfNamedVariables", "int16");
-    sv(&xCursor[0], 4, "xCursor", "uint32");
-    sv(&yCursor[0], 4, "yCursor", "uint32");
-    sv(&firstGregorianDay[0], 4, "firstGregorianDay", "uint32");
-    sv(&denMax[0], 4, "denMax", "uint32");
-    sv(&lastDenominator[0], 4, "lastDenominator", "uint32");
-    sv(&currentRegisterBrowserScreen[0], 2, "currentRegisterBrowserScreen", "int16");
-    sv(&currentFntScr[0], 1, "currentFntScr", "uint8");
-    sv(&currentFlgScr[0], 1, "currentFlgScr", "uint8");
-    sv(&displayFormat[0], 1, "displayFormat", "uint8");
-    sv(&displayFormatDigits[0], 1, "displayFormatDigits", "uint8");
-    sv(&timeDisplayFormatDigits[0], 1, "timeDisplayFormatDigits", "uint8");
-    sv(&shortIntegerWordSize[0], 1, "shortIntegerWordSize", "uint8");
-    sv(&significantDigits[0], 1, "significantDigits", "uint8");
-    sv(&fractionDigits[0], 1, "fractionDigits", "uint8");
-    sv(&shortIntegerMode[0], 1, "shortIntegerMode", "uint8");
-    sv(&currentAngularMode[0], 4, "currentAngularMode", "uint32");
-    sv(&scrLock[0], 1, "scrLock", "uint8");
-    sv(&displayRoundingMode[0], 1, "displayRoundingMode", "uint8");
-    sv(&roundingMode[0], 1, "roundingMode", "uint8");
-    sv(&nextChar[0], 1, "nextChar", "uint8");
-    sv(&alphaCase[0], 1, "alphaCase", "uint8");
-    sv(&hourGlassIconEnabled[0], 1, "hourGlassIconEnabled", "bool");
-    sv(&watchIconEnabled[0], 1, "watchIconEnabled", "bool");
-    sv(&serialIOIconEnabled[0], 1, "serialIOIconEnabled", "bool");
-    sv(&printerIconEnabled[0], 1, "printerIconEnabled", "bool");
-    sv(&programRunStop[0], 1, "programRunStop", "uint8");
-    sv(&entryStatus[0], 1, "entryStatus", "uint8");
-    sv(&cursorEnabled[0], 1, "cursorEnabled", "uint8");
-    sv(&rbr1stDigit[0], 1, "rbr1stDigit", "bool");
-    sv(&shiftF[0], 1, "shiftF", "bool");
-    sv(&shiftG[0], 1, "shiftG", "bool");
-    sv(&rbrMode[0], 1, "rbrMode", "uint8");
-    sv(&showContent[0], 1, "showContent", "bool");
-    sv(&numScreensNumericFont[0], 1, "numScreensNumericFont", "uint8");
-    sv(&numScreensNumericFontBold[0], 1, "numScreensNumericFontBold", "uint8");
-    sv(&numLinesNumericFont[0], 1, "numLinesNumericFont", "uint8");
-    sv(&numLinesNumericFontBold[0], 1, "numLinesNumericFontBold", "uint8");
-    sv(&numScreensStandardFont[0], 1, "numScreensStandardFont", "uint8");
-    sv(&numLinesStandardFont[0], 1, "numLinesStandardFont", "uint8");
-    sv(&numScreensTinyFont[0], 1, "numScreensTinyFont", "uint8");
-    sv(&numLinesTinyFont[0], 1, "numLinesTinyFont", "uint8");
-    sv(&lastErrorCode[0], 1, "lastErrorCode", "uint8");
-    sv(&previousErrorCode[0], 1, "previousErrorCode", "uint8");
-    sv(&nimNumberPart[0], 1, "nimNumberPart", "uint8");
-    sv(&displayStack[0], 1, "displayStack", "uint8");
-    sv(&hexDigits[0], 1, "hexDigits", "uint8");
-    sv(&errorMessageRegisterLine[0], 2, "errorMessageRegisterLine", "int16");
-    sv(&shortIntegerMask[0], 8, "shortIntegerMask", "uint64");
-    sv(&shortIntegerSignBit[0], 8, "shortIntegerSignBit", "uint64");
-    sv(&temporaryInformation[0], 1, "temporaryInformation", "uint8");
-    sv(&funcOK[0], 1, "funcOK", "bool");
-    sv(&screenChange[0], 1, "screenChange", "bool");
-    sv(&exponentSignLocation[0], 2, "exponentSignLocation", "int16");
-    sv(&denominatorLocation[0], 2, "denominatorLocation", "int16");
-    sv(&imaginaryExponentSignLocation[0], 2, "imaginaryExponentSignLocation", "int16");
-    sv(&imaginaryMantissaSignLocation[0], 2, "imaginaryMantissaSignLocation", "int16");
-    sv(&lineTWidth[0], 2, "lineTWidth", "int16");
-    sv(&lastIntegerBase[0], 4, "lastIntegerBase", "uint32");
-    sv(&c47MemInBlocks[0], 8, "c47MemInBlocks", "uint64");
-    sv(&gmpMemInBytes[0], 8, "gmpMemInBytes", "uint64");
-    sv(&catalog[0], 2, "catalog", "int16");
-    sv(&lastCatalogPosition[0], 48, "lastCatalogPosition", "hexDump");
-    sv(&retainedPageFirstItem[0], 4, "retainedPageFirstItem", "hexDump");
-    sv(&displayValueX[0], 80, "displayValueX", "hexDump");
-    sv(&pcg32_global[0], 16, "pcg32_global", "hexDump");
-    sv(&exponentLimit[0], 2, "exponentLimit", "int16");
-    sv(&exponentHideLimit[0], 2, "exponentHideLimit", "int16");
-    sv(&keyActionProcessed[0], 1, "keyActionProcessed", "bool");
-    sv(&systemFlags0[0], 8, "systemFlags", "uint64");
-    sv(&systemFlags1[0], 8, "systemFlags1", "uint64");
-    sv(&savedSystemFlags0[0], 8, "savedSystemFlags", "uint64");
-    sv(&savedSystemFlags1[0], 8, "savedSystemFlags1", "uint64");
-    sv(&thereIsSomethingToUndo[0], 1, "thereIsSomethingToUndo", "bool");
-    sv(&freeProgramBytes[0], 2, "freeProgramBytes", "uint16");
-    sv(&firstDisplayedLocalStepNumber[0], 2, "firstDisplayedLocalStepNumber", "uint16");
-    sv(&numberOfLabels[0], 2, "numberOfLabels", "uint16");
-    sv(&numberOfStructureLabels[0], 2, "numberOfStructureLabels", "uint16");
-    sv(&numberOfPrograms[0], 2, "numberOfPrograms", "uint16");
-    sv(&currentLocalStepNumber[0], 2, "currentLocalStepNumber", "uint16");
-    sv(&currentProgramNumber[0], 2, "currentProgramNumber", "uint16");
-    sv(&lastProgramListEnd[0], 1, "lastProgramListEnd", "bool");
-    sv(&programListEnd[0], 1, "programListEnd", "bool");
-    sv(&allSubroutineLevels[0], 4, "allSubroutineLevels", "uint32");
-    sv(&pemCursorIsZerothStep[0], 1, "pemCursorIsZerothStep", "bool");
-    sv(&skippedStackLines[0], 1, "skippedStackLines", "bool");
-    sv(&iterations[0], 1, "iterations", "bool");
-    sv(&numberOfTamMenusToPop[0], 2, "numberOfTamMenusToPop", "int16");
-    sv(&lrSelection[0], 2, "lrSelection", "uint16");
-    sv(&lrSelectionUndo[0], 2, "lrSelectionUndo", "uint16");
-    sv(&amortP1[0], 2, "amortP1", "uint16");
-    sv(&amortP2[0], 2, "amortP2", "uint16");
-    sv(&lrChosen[0], 2, "lrChosen", "uint16");
-    sv(&lrChosenUndo[0], 2, "lrChosenUndo", "uint16");
-    sv(&lastPlotMode[0], 2, "lastPlotMode", "uint16");
-    sv(&plotSelection[0], 2, "plotSelection", "uint16");
-    sv(&roundedTicks[0], 1, "roundedTicks", "bool");
-    sv(&PLOT_AXIS[0], 1, "PLOT_AXIS", "bool");
-    sv(&PLOT_ZMY[0], 1, "PLOT_ZMY", "int8");
-    sv(&PLOT_ZOOM[0], 1, "PLOT_ZOOM", "uint8");
-    sv(&plotmode[0], 1, "plotmode", "int8");
-    sv(&tick_int_x[0], 8, "tick_int_x", "double");
-    sv(&tick_int_y[0], 8, "tick_int_y", "double");
-    sv(x_min, REAL_SIZE_IN_BYTES_34, "x_min", "real");
-    sv(x_max, REAL_SIZE_IN_BYTES_34, "x_max", "real");
-    sv(y_min, REAL_SIZE_IN_BYTES_34, "y_min", "real");
-    sv(y_max, REAL_SIZE_IN_BYTES_34, "y_max", "real");
-    sv(&xzero[0], 4, "xzero", "uint32");
-    sv(&yzero[0], 4, "yzero", "uint32");
-    sv(&regStatsXY[0], 2, "regStatsXY", "int16");
-    sv(&matrixIndex[0], 2, "matrixIndex", "uint16");
-    sv(&shadowI[0], 2, "shadowI", "int16");
-    sv(&shadowJ[0], 2, "shadowJ", "int16");
-    sv(&currentViewRegister[0], 2, "currentViewRegister", "uint16");
-    sv(&currentSolverStatus[0], 2, "currentSolverStatus", "uint16");
-    sv(&currentSolverProgram[0], 2, "currentSolverProgram", "uint16");
-    sv(&currentDerivProgram[0], 2, "currentDerivProgram", "uint16");
-    sv(&currentSolverVariable[0], 2, "currentSolverVariable", "uint16");
-    sv(&numberOfFormulae[0], 2, "numberOfFormulae", "uint16");
-    sv(&currentFormula[0], 2, "currentFormula", "uint16");
-    sv(&numberOfUserMenus[0], 2, "numberOfUserMenus", "uint16");
-    sv(&currentUserMenu[0], 2, "currentUserMenu", "uint16");
-    sv(&userKeyLabelSize[0], 2, "userKeyLabelSize", "uint16");
-    sv(&timerCraAndDeciseconds[0], 1, "timerCraAndDeciseconds", "uint8");
-    sv(&timerValue[0], 4, "timerValue", "uint32");
-    sv(&timerTotalTime[0], 4, "timerTotalTime", "uint32");
-    sv(&currentInputVariable[0], 2, "currentInputVariable", "uint16");
-    sv(&SAVED_SIGMA_LASTX[0], 60, "SAVED_SIGMA_LASTX", "real");
-    sv(&SAVED_SIGMA_LASTY[0], 60, "SAVED_SIGMA_LASTY", "real");
-    sv(&SAVED_SIGMA_lastAddRem[0], 1, "SAVED_SIGMA_lastAddRem", "int8");
-    sv(&currentMvarLabel[0], 2, "currentMvarLabel", "uint16");
-    sv(&plotStatMx[0], 8, "plotStatMx", "hexDump");
-    sv(&drawHistogram[0], 1, "drawHistogram", "uint8");
-    sv(&plotStatScale[0], 1, "plotStatScale", "uint8");
-    sv(&statMx[0], 8, "statMx", "hexDump");
-    sv(&lrSelectionHistobackup[0], 2, "lrSelectionHistobackup", "uint16");
-    sv(&lrChosenHistobackup[0], 2, "lrChosenHistobackup", "uint16");
-    sv(&loBinR[0], 16, "loBinR", "real34");
-    sv(&nBins[0], 16, "nBins", "real34");
-    sv(&hiBinR[0], 16, "hiBinR", "real34");
-    sv(&histElementXorY[0], 2, "histElementXorY", "int16");
-    sv(&screenUpdatingMode[0], 1, "screenUpdatingMode", "uint8");
-    sv(&Norm_Key_00.func, @sizeOf(@TypeOf(Norm_Key_00.func)), "Norm_Key_00.func", "int16");
-    sv(&Norm_Key_00.funcParam, @sizeOf(@TypeOf(Norm_Key_00.funcParam)), "Norm_Key_00.funcParam", "hexDump");
-    sv(&Norm_Key_00.used, @sizeOf(@TypeOf(Norm_Key_00.used)), "Norm_Key_00.used", "bool");
-    sv(&Input_Default[0], 1, "Input_Default", "uint8");
-    sv(&T_cursorPos[0], 2, "T_cursorPos", "int16");
-    sv(&multiEdLines[0], 1, "multiEdLines", "uint8");
-    sv(&current_cursor_x[0], 2, "current_cursor_x", "uint16");
-    sv(&current_cursor_y[0], 2, "current_cursor_y", "uint16");
-    sv(&xMultiLineEdOffset[0], 1, "xMultiLineEdOffset", "uint8");
-    sv(&yMultiLineEdOffset[0], 1, "yMultiLineEdOffset", "uint8");
-    sv(&showRegis[0], 2, "showRegis", "int16");
-    sv(&overrideShowBottomLine[0], 1, "overrideShowBottomLine", "uint8");
-    sv(&displayStackSHOIDISP[0], 1, "displayStackSHOIDISP", "uint8");
-    sv(&ListXYposition[0], 2, "ListXYposition", "int16");
-    sv(&DRG_Cycling[0], 1, "DRG_Cycling", "uint8");
-    if (comptime option_drg_cfg) sv(&drgConfig, 1, "drgConfig", "uint8");
-    sv(&lastFlgScr[0], 1, "lastFlgScr", "uint8");
-    sv(&displayAIMbufferoffset[0], 2, "displayAIMbufferoffset", "int16");
-    sv(&bcdDisplaySign[0], 1, "bcdDisplaySign", "uint8");
-    sv(&DM_Cycling[0], 1, "DM_Cycling", "uint8");
-    sv(&LongPressM[0], 1, "LongPressM", "uint8");
-    sv(&LongPressF[0], 1, "LongPressF", "uint8");
-    sv(&currentAsnScr[0], 1, "currentAsnScr", "uint8");
-    sv(&gapItemLeft[0], 2, "gapItemLeft", "uint16");
-    sv(&gapItemRight[0], 2, "gapItemRight", "uint16");
-    sv(&gapItemRadix[0], 2, "gapItemRadix", "uint16");
-    sv(&lastCenturyHighUsed[0], 2, "lastCenturyHighUsed", "uint16");
-    sv(&grpGroupingLeft[0], 1, "grpGroupingLeft", "uint8");
-    sv(&grpGroupingGr1LeftOverflow[0], 1, "grpGroupingGr1LeftOverflow", "uint8");
-    sv(&grpGroupingGr1Left[0], 1, "grpGroupingGr1Left", "uint8");
-    sv(&grpGroupingRight[0], 1, "grpGroupingRight", "uint8");
-    sv(&grpGroupingHex[0], 1, "grpGroupingHex", "uint8");
-    sv(&grpGroupingBin[0], 1, "grpGroupingBin", "uint8");
-    sv(&firstDayOfWeek[0], 1, "firstDayOfWeek", "uint8");
-    sv(&firstWeekOfYearDay[0], 1, "firstWeekOfYearDay", "uint8");
-    sv(&dispBase[0], 1, "dispBase", "uint8");
-    sv(&printerState.print_on, @sizeOf(@TypeOf(printerState.print_on)), "printerState.print_on", "bool");
-    sv(&printerState.printer_model, @sizeOf(@TypeOf(printerState.printer_model)), "printerState.printer_model", "uint8");
-    sv(&printerState.delay, @sizeOf(@TypeOf(printerState.delay)), "printerState.delay", "uint16");
-    sv(&programmableMenu[0], 332, "programmableMenu", "hexDump");
+    sv(std.mem.asBytes(&lastI[0]), 2, "lastI", "int16");
+    sv(std.mem.asBytes(&lastJ[0]), 2, "lastJ", "int16");
+    sv(std.mem.asBytes(&lastFunc[0]), 2, "lastFunc", "int16");
+    sv(std.mem.asBytes(&lastParam[0]), 2, "lastParam", "int16");
+    sv(std.mem.asBytes(&tam.mode), @sizeOf(@TypeOf(tam.mode)), "tam.mode", "uint16");
+    sv(std.mem.asBytes(&tam.function), @sizeOf(@TypeOf(tam.function)), "tam.function", "int16");
+    sv(std.mem.asBytes(&tam.alpha), @sizeOf(@TypeOf(tam.alpha)), "tam.alpha", "bool");
+    sv(std.mem.asBytes(&tam.currentOperation), @sizeOf(@TypeOf(tam.currentOperation)), "tam.currentOperation", "int16");
+    sv(std.mem.asBytes(&tam.dot), @sizeOf(@TypeOf(tam.dot)), "tam.dot", "bool");
+    sv(std.mem.asBytes(&tam.indirect), @sizeOf(@TypeOf(tam.indirect)), "tam.indirect", "bool");
+    sv(std.mem.asBytes(&tam.digitsSoFar), @sizeOf(@TypeOf(tam.digitsSoFar)), "tam.digitsSoFar", "int16");
+    sv(std.mem.asBytes(&tam.value), @sizeOf(@TypeOf(tam.value)), "tam.value", "int16");
+    sv(std.mem.asBytes(&tam.min), @sizeOf(@TypeOf(tam.min)), "tam.min", "int16");
+    sv(std.mem.asBytes(&tam.max), @sizeOf(@TypeOf(tam.max)), "tam.max", "int16");
+    sv(std.mem.asBytes(&rbrRegister[0]), 2, "rbrRegister", "int16");
+    sv(std.mem.asBytes(&numberOfNamedVariables[0]), 2, "numberOfNamedVariables", "int16");
+    sv(std.mem.asBytes(&xCursor[0]), 4, "xCursor", "uint32");
+    sv(std.mem.asBytes(&yCursor[0]), 4, "yCursor", "uint32");
+    sv(std.mem.asBytes(&firstGregorianDay[0]), 4, "firstGregorianDay", "uint32");
+    sv(std.mem.asBytes(&denMax[0]), 4, "denMax", "uint32");
+    sv(std.mem.asBytes(&lastDenominator[0]), 4, "lastDenominator", "uint32");
+    sv(std.mem.asBytes(&currentRegisterBrowserScreen[0]), 2, "currentRegisterBrowserScreen", "int16");
+    sv(std.mem.asBytes(&currentFntScr[0]), 1, "currentFntScr", "uint8");
+    sv(std.mem.asBytes(&currentFlgScr[0]), 1, "currentFlgScr", "uint8");
+    sv(std.mem.asBytes(&displayFormat[0]), 1, "displayFormat", "uint8");
+    sv(std.mem.asBytes(&displayFormatDigits[0]), 1, "displayFormatDigits", "uint8");
+    sv(std.mem.asBytes(&timeDisplayFormatDigits[0]), 1, "timeDisplayFormatDigits", "uint8");
+    sv(std.mem.asBytes(&shortIntegerWordSize[0]), 1, "shortIntegerWordSize", "uint8");
+    sv(std.mem.asBytes(&significantDigits[0]), 1, "significantDigits", "uint8");
+    sv(std.mem.asBytes(&fractionDigits[0]), 1, "fractionDigits", "uint8");
+    sv(std.mem.asBytes(&shortIntegerMode[0]), 1, "shortIntegerMode", "uint8");
+    sv(std.mem.asBytes(&currentAngularMode[0]), 4, "currentAngularMode", "uint32");
+    sv(std.mem.asBytes(&scrLock[0]), 1, "scrLock", "uint8");
+    sv(std.mem.asBytes(&displayRoundingMode[0]), 1, "displayRoundingMode", "uint8");
+    sv(std.mem.asBytes(&roundingMode[0]), 1, "roundingMode", "uint8");
+    sv(std.mem.asBytes(&nextChar[0]), 1, "nextChar", "uint8");
+    sv(std.mem.asBytes(&alphaCase[0]), 1, "alphaCase", "uint8");
+    sv(std.mem.asBytes(&hourGlassIconEnabled[0]), 1, "hourGlassIconEnabled", "bool");
+    sv(std.mem.asBytes(&watchIconEnabled[0]), 1, "watchIconEnabled", "bool");
+    sv(std.mem.asBytes(&serialIOIconEnabled[0]), 1, "serialIOIconEnabled", "bool");
+    sv(std.mem.asBytes(&printerIconEnabled[0]), 1, "printerIconEnabled", "bool");
+    sv(std.mem.asBytes(&programRunStop[0]), 1, "programRunStop", "uint8");
+    sv(std.mem.asBytes(&entryStatus[0]), 1, "entryStatus", "uint8");
+    sv(std.mem.asBytes(&cursorEnabled[0]), 1, "cursorEnabled", "uint8");
+    sv(std.mem.asBytes(&rbr1stDigit[0]), 1, "rbr1stDigit", "bool");
+    sv(std.mem.asBytes(&shiftF[0]), 1, "shiftF", "bool");
+    sv(std.mem.asBytes(&shiftG[0]), 1, "shiftG", "bool");
+    sv(std.mem.asBytes(&rbrMode[0]), 1, "rbrMode", "uint8");
+    sv(std.mem.asBytes(&showContent[0]), 1, "showContent", "bool");
+    sv(std.mem.asBytes(&numScreensNumericFont[0]), 1, "numScreensNumericFont", "uint8");
+    sv(std.mem.asBytes(&numScreensNumericFontBold[0]), 1, "numScreensNumericFontBold", "uint8");
+    sv(std.mem.asBytes(&numLinesNumericFont[0]), 1, "numLinesNumericFont", "uint8");
+    sv(std.mem.asBytes(&numLinesNumericFontBold[0]), 1, "numLinesNumericFontBold", "uint8");
+    sv(std.mem.asBytes(&numScreensStandardFont[0]), 1, "numScreensStandardFont", "uint8");
+    sv(std.mem.asBytes(&numLinesStandardFont[0]), 1, "numLinesStandardFont", "uint8");
+    sv(std.mem.asBytes(&numScreensTinyFont[0]), 1, "numScreensTinyFont", "uint8");
+    sv(std.mem.asBytes(&numLinesTinyFont[0]), 1, "numLinesTinyFont", "uint8");
+    sv(std.mem.asBytes(&lastErrorCode[0]), 1, "lastErrorCode", "uint8");
+    sv(std.mem.asBytes(&previousErrorCode[0]), 1, "previousErrorCode", "uint8");
+    sv(std.mem.asBytes(&nimNumberPart[0]), 1, "nimNumberPart", "uint8");
+    sv(std.mem.asBytes(&displayStack[0]), 1, "displayStack", "uint8");
+    sv(std.mem.asBytes(&hexDigits[0]), 1, "hexDigits", "uint8");
+    sv(std.mem.asBytes(&errorMessageRegisterLine[0]), 2, "errorMessageRegisterLine", "int16");
+    sv(std.mem.asBytes(&shortIntegerMask[0]), 8, "shortIntegerMask", "uint64");
+    sv(std.mem.asBytes(&shortIntegerSignBit[0]), 8, "shortIntegerSignBit", "uint64");
+    sv(std.mem.asBytes(&temporaryInformation[0]), 1, "temporaryInformation", "uint8");
+    sv(std.mem.asBytes(&funcOK[0]), 1, "funcOK", "bool");
+    sv(std.mem.asBytes(&screenChange[0]), 1, "screenChange", "bool");
+    sv(std.mem.asBytes(&exponentSignLocation[0]), 2, "exponentSignLocation", "int16");
+    sv(std.mem.asBytes(&denominatorLocation[0]), 2, "denominatorLocation", "int16");
+    sv(std.mem.asBytes(&imaginaryExponentSignLocation[0]), 2, "imaginaryExponentSignLocation", "int16");
+    sv(std.mem.asBytes(&imaginaryMantissaSignLocation[0]), 2, "imaginaryMantissaSignLocation", "int16");
+    sv(std.mem.asBytes(&lineTWidth[0]), 2, "lineTWidth", "int16");
+    sv(std.mem.asBytes(&lastIntegerBase[0]), 4, "lastIntegerBase", "uint32");
+    sv(std.mem.asBytes(&c47MemInBlocks[0]), 8, "c47MemInBlocks", "uint64");
+    sv(std.mem.asBytes(&gmpMemInBytes[0]), 8, "gmpMemInBytes", "uint64");
+    sv(std.mem.asBytes(&catalog[0]), 2, "catalog", "int16");
+    sv(std.mem.asBytes(&lastCatalogPosition[0]), 48, "lastCatalogPosition", "hexDump");
+    sv(std.mem.asBytes(&retainedPageFirstItem[0]), 4, "retainedPageFirstItem", "hexDump");
+    sv(std.mem.asBytes(&displayValueX[0]), 80, "displayValueX", "hexDump");
+    sv(std.mem.asBytes(&pcg32_global[0]), 16, "pcg32_global", "hexDump");
+    sv(std.mem.asBytes(&exponentLimit[0]), 2, "exponentLimit", "int16");
+    sv(std.mem.asBytes(&exponentHideLimit[0]), 2, "exponentHideLimit", "int16");
+    sv(std.mem.asBytes(&keyActionProcessed[0]), 1, "keyActionProcessed", "bool");
+    sv(std.mem.asBytes(&systemFlags0[0]), 8, "systemFlags", "uint64");
+    sv(std.mem.asBytes(&systemFlags1[0]), 8, "systemFlags1", "uint64");
+    sv(std.mem.asBytes(&savedSystemFlags0[0]), 8, "savedSystemFlags", "uint64");
+    sv(std.mem.asBytes(&savedSystemFlags1[0]), 8, "savedSystemFlags1", "uint64");
+    sv(std.mem.asBytes(&thereIsSomethingToUndo[0]), 1, "thereIsSomethingToUndo", "bool");
+    sv(std.mem.asBytes(&freeProgramBytes[0]), 2, "freeProgramBytes", "uint16");
+    sv(std.mem.asBytes(&firstDisplayedLocalStepNumber[0]), 2, "firstDisplayedLocalStepNumber", "uint16");
+    sv(std.mem.asBytes(&numberOfLabels[0]), 2, "numberOfLabels", "uint16");
+    sv(std.mem.asBytes(&numberOfStructureLabels[0]), 2, "numberOfStructureLabels", "uint16");
+    sv(std.mem.asBytes(&numberOfPrograms[0]), 2, "numberOfPrograms", "uint16");
+    sv(std.mem.asBytes(&currentLocalStepNumber[0]), 2, "currentLocalStepNumber", "uint16");
+    sv(std.mem.asBytes(&currentProgramNumber[0]), 2, "currentProgramNumber", "uint16");
+    sv(std.mem.asBytes(&lastProgramListEnd[0]), 1, "lastProgramListEnd", "bool");
+    sv(std.mem.asBytes(&programListEnd[0]), 1, "programListEnd", "bool");
+    sv(std.mem.asBytes(&allSubroutineLevels[0]), 4, "allSubroutineLevels", "uint32");
+    sv(std.mem.asBytes(&pemCursorIsZerothStep[0]), 1, "pemCursorIsZerothStep", "bool");
+    sv(std.mem.asBytes(&skippedStackLines[0]), 1, "skippedStackLines", "bool");
+    sv(std.mem.asBytes(&iterations[0]), 1, "iterations", "bool");
+    sv(std.mem.asBytes(&numberOfTamMenusToPop[0]), 2, "numberOfTamMenusToPop", "int16");
+    sv(std.mem.asBytes(&lrSelection[0]), 2, "lrSelection", "uint16");
+    sv(std.mem.asBytes(&lrSelectionUndo[0]), 2, "lrSelectionUndo", "uint16");
+    sv(std.mem.asBytes(&amortP1[0]), 2, "amortP1", "uint16");
+    sv(std.mem.asBytes(&amortP2[0]), 2, "amortP2", "uint16");
+    sv(std.mem.asBytes(&lrChosen[0]), 2, "lrChosen", "uint16");
+    sv(std.mem.asBytes(&lrChosenUndo[0]), 2, "lrChosenUndo", "uint16");
+    sv(std.mem.asBytes(&lastPlotMode[0]), 2, "lastPlotMode", "uint16");
+    sv(std.mem.asBytes(&plotSelection[0]), 2, "plotSelection", "uint16");
+    sv(std.mem.asBytes(&roundedTicks[0]), 1, "roundedTicks", "bool");
+    sv(std.mem.asBytes(&PLOT_AXIS[0]), 1, "PLOT_AXIS", "bool");
+    sv(std.mem.asBytes(&PLOT_ZMY[0]), 1, "PLOT_ZMY", "int8");
+    sv(std.mem.asBytes(&PLOT_ZOOM[0]), 1, "PLOT_ZOOM", "uint8");
+    sv(std.mem.asBytes(&plotmode[0]), 1, "plotmode", "int8");
+    sv(std.mem.asBytes(&tick_int_x[0]), 8, "tick_int_x", "double");
+    sv(std.mem.asBytes(&tick_int_y[0]), 8, "tick_int_y", "double");
+    sv(std.mem.asBytes(x_min), REAL_SIZE_IN_BYTES_34, "x_min", "real");
+    sv(std.mem.asBytes(x_max), REAL_SIZE_IN_BYTES_34, "x_max", "real");
+    sv(std.mem.asBytes(y_min), REAL_SIZE_IN_BYTES_34, "y_min", "real");
+    sv(std.mem.asBytes(y_max), REAL_SIZE_IN_BYTES_34, "y_max", "real");
+    sv(std.mem.asBytes(&xzero[0]), 4, "xzero", "uint32");
+    sv(std.mem.asBytes(&yzero[0]), 4, "yzero", "uint32");
+    sv(std.mem.asBytes(&regStatsXY[0]), 2, "regStatsXY", "int16");
+    sv(std.mem.asBytes(&matrixIndex[0]), 2, "matrixIndex", "uint16");
+    sv(std.mem.asBytes(&shadowI[0]), 2, "shadowI", "int16");
+    sv(std.mem.asBytes(&shadowJ[0]), 2, "shadowJ", "int16");
+    sv(std.mem.asBytes(&currentViewRegister[0]), 2, "currentViewRegister", "uint16");
+    sv(std.mem.asBytes(&currentSolverStatus[0]), 2, "currentSolverStatus", "uint16");
+    sv(std.mem.asBytes(&currentSolverProgram[0]), 2, "currentSolverProgram", "uint16");
+    sv(std.mem.asBytes(&currentDerivProgram[0]), 2, "currentDerivProgram", "uint16");
+    sv(std.mem.asBytes(&currentSolverVariable[0]), 2, "currentSolverVariable", "uint16");
+    sv(std.mem.asBytes(&numberOfFormulae[0]), 2, "numberOfFormulae", "uint16");
+    sv(std.mem.asBytes(&currentFormula[0]), 2, "currentFormula", "uint16");
+    sv(std.mem.asBytes(&numberOfUserMenus[0]), 2, "numberOfUserMenus", "uint16");
+    sv(std.mem.asBytes(&currentUserMenu[0]), 2, "currentUserMenu", "uint16");
+    sv(std.mem.asBytes(&userKeyLabelSize[0]), 2, "userKeyLabelSize", "uint16");
+    sv(std.mem.asBytes(&timerCraAndDeciseconds[0]), 1, "timerCraAndDeciseconds", "uint8");
+    sv(std.mem.asBytes(&timerValue[0]), 4, "timerValue", "uint32");
+    sv(std.mem.asBytes(&timerTotalTime[0]), 4, "timerTotalTime", "uint32");
+    sv(std.mem.asBytes(&currentInputVariable[0]), 2, "currentInputVariable", "uint16");
+    sv(std.mem.asBytes(&SAVED_SIGMA_LASTX[0]), 60, "SAVED_SIGMA_LASTX", "real");
+    sv(std.mem.asBytes(&SAVED_SIGMA_LASTY[0]), 60, "SAVED_SIGMA_LASTY", "real");
+    sv(std.mem.asBytes(&SAVED_SIGMA_lastAddRem[0]), 1, "SAVED_SIGMA_lastAddRem", "int8");
+    sv(std.mem.asBytes(&currentMvarLabel[0]), 2, "currentMvarLabel", "uint16");
+    sv(std.mem.asBytes(&plotStatMx[0]), 8, "plotStatMx", "hexDump");
+    sv(std.mem.asBytes(&drawHistogram[0]), 1, "drawHistogram", "uint8");
+    sv(std.mem.asBytes(&plotStatScale[0]), 1, "plotStatScale", "uint8");
+    sv(std.mem.asBytes(&statMx[0]), 8, "statMx", "hexDump");
+    sv(std.mem.asBytes(&lrSelectionHistobackup[0]), 2, "lrSelectionHistobackup", "uint16");
+    sv(std.mem.asBytes(&lrChosenHistobackup[0]), 2, "lrChosenHistobackup", "uint16");
+    sv(std.mem.asBytes(&loBinR[0]), 16, "loBinR", "real34");
+    sv(std.mem.asBytes(&nBins[0]), 16, "nBins", "real34");
+    sv(std.mem.asBytes(&hiBinR[0]), 16, "hiBinR", "real34");
+    sv(std.mem.asBytes(&histElementXorY[0]), 2, "histElementXorY", "int16");
+    sv(std.mem.asBytes(&screenUpdatingMode[0]), 1, "screenUpdatingMode", "uint8");
+    sv(std.mem.asBytes(&Norm_Key_00.func), @sizeOf(@TypeOf(Norm_Key_00.func)), "Norm_Key_00.func", "int16");
+    sv(std.mem.asBytes(&Norm_Key_00.funcParam), @sizeOf(@TypeOf(Norm_Key_00.funcParam)), "Norm_Key_00.funcParam", "hexDump");
+    sv(std.mem.asBytes(&Norm_Key_00.used), @sizeOf(@TypeOf(Norm_Key_00.used)), "Norm_Key_00.used", "bool");
+    sv(std.mem.asBytes(&Input_Default[0]), 1, "Input_Default", "uint8");
+    sv(std.mem.asBytes(&T_cursorPos[0]), 2, "T_cursorPos", "int16");
+    sv(std.mem.asBytes(&multiEdLines[0]), 1, "multiEdLines", "uint8");
+    sv(std.mem.asBytes(&current_cursor_x[0]), 2, "current_cursor_x", "uint16");
+    sv(std.mem.asBytes(&current_cursor_y[0]), 2, "current_cursor_y", "uint16");
+    sv(std.mem.asBytes(&xMultiLineEdOffset[0]), 1, "xMultiLineEdOffset", "uint8");
+    sv(std.mem.asBytes(&yMultiLineEdOffset[0]), 1, "yMultiLineEdOffset", "uint8");
+    sv(std.mem.asBytes(&showRegis[0]), 2, "showRegis", "int16");
+    sv(std.mem.asBytes(&overrideShowBottomLine[0]), 1, "overrideShowBottomLine", "uint8");
+    sv(std.mem.asBytes(&displayStackSHOIDISP[0]), 1, "displayStackSHOIDISP", "uint8");
+    sv(std.mem.asBytes(&ListXYposition[0]), 2, "ListXYposition", "int16");
+    sv(std.mem.asBytes(&DRG_Cycling[0]), 1, "DRG_Cycling", "uint8");
+    if (comptime option_drg_cfg) sv(std.mem.asBytes(&drgConfig), 1, "drgConfig", "uint8");
+    sv(std.mem.asBytes(&lastFlgScr[0]), 1, "lastFlgScr", "uint8");
+    sv(std.mem.asBytes(&displayAIMbufferoffset[0]), 2, "displayAIMbufferoffset", "int16");
+    sv(std.mem.asBytes(&bcdDisplaySign[0]), 1, "bcdDisplaySign", "uint8");
+    sv(std.mem.asBytes(&DM_Cycling[0]), 1, "DM_Cycling", "uint8");
+    sv(std.mem.asBytes(&LongPressM[0]), 1, "LongPressM", "uint8");
+    sv(std.mem.asBytes(&LongPressF[0]), 1, "LongPressF", "uint8");
+    sv(std.mem.asBytes(&currentAsnScr[0]), 1, "currentAsnScr", "uint8");
+    sv(std.mem.asBytes(&gapItemLeft[0]), 2, "gapItemLeft", "uint16");
+    sv(std.mem.asBytes(&gapItemRight[0]), 2, "gapItemRight", "uint16");
+    sv(std.mem.asBytes(&gapItemRadix[0]), 2, "gapItemRadix", "uint16");
+    sv(std.mem.asBytes(&lastCenturyHighUsed[0]), 2, "lastCenturyHighUsed", "uint16");
+    sv(std.mem.asBytes(&grpGroupingLeft[0]), 1, "grpGroupingLeft", "uint8");
+    sv(std.mem.asBytes(&grpGroupingGr1LeftOverflow[0]), 1, "grpGroupingGr1LeftOverflow", "uint8");
+    sv(std.mem.asBytes(&grpGroupingGr1Left[0]), 1, "grpGroupingGr1Left", "uint8");
+    sv(std.mem.asBytes(&grpGroupingRight[0]), 1, "grpGroupingRight", "uint8");
+    sv(std.mem.asBytes(&grpGroupingHex[0]), 1, "grpGroupingHex", "uint8");
+    sv(std.mem.asBytes(&grpGroupingBin[0]), 1, "grpGroupingBin", "uint8");
+    sv(std.mem.asBytes(&firstDayOfWeek[0]), 1, "firstDayOfWeek", "uint8");
+    sv(std.mem.asBytes(&firstWeekOfYearDay[0]), 1, "firstWeekOfYearDay", "uint8");
+    sv(std.mem.asBytes(&dispBase[0]), 1, "dispBase", "uint8");
+    sv(std.mem.asBytes(&printerState.print_on), @sizeOf(@TypeOf(printerState.print_on)), "printerState.print_on", "bool");
+    sv(std.mem.asBytes(&printerState.printer_model), @sizeOf(@TypeOf(printerState.printer_model)), "printerState.printer_model", "uint8");
+    sv(std.mem.asBytes(&printerState.delay), @sizeOf(@TypeOf(printerState.delay)), "printerState.delay", "uint16");
+    sv(std.mem.asBytes(&programmableMenu[0]), 332, "programmableMenu", "hexDump");
     {
         var cf: i8 = cursorFontId();
-        sv(&cf, 1, "cursorFont", "int8");
+        sv(std.mem.asBytes(&cf), 1, "cursorFont", "int8");
     }
     graphVariabl1 = INVALID_VARIABLE;
-    sv(&graphVariabl1, 2, "graphVariabl1", "int16");
+    sv(std.mem.asBytes(&graphVariabl1), 2, "graphVariabl1", "int16");
     {
         var v: u32 = c47ptr(allNamedVariables);
-        sv(&v, 4, "allNamedVariables", "c47Ptr");
+        sv(std.mem.asBytes(&v), 4, "allNamedVariables", "c47Ptr");
     }
     {
         var v: u32 = c47ptr(allFormulae);
-        sv(&v, 4, "allFormulae", "c47Ptr");
+        sv(std.mem.asBytes(&v), 4, "allFormulae", "c47Ptr");
     }
     {
         var v: u32 = c47ptr(userMenus);
-        sv(&v, 4, "userMenus", "c47Ptr");
+        sv(std.mem.asBytes(&v), 4, "userMenus", "c47Ptr");
     }
     {
         var v: u32 = c47ptr(userKeyLabel);
-        sv(&v, 4, "userKeyLabel", "c47Ptr");
+        sv(std.mem.asBytes(&v), 4, "userKeyLabel", "c47Ptr");
     }
     {
         var v: u32 = c47ptr(statisticalSumsPointer);
-        sv(&v, 4, "statisticalSumsPointer", "c47Ptr");
+        sv(std.mem.asBytes(&v), 4, "statisticalSumsPointer", "c47Ptr");
     }
     {
         var v: u32 = c47ptr(savedStatisticalSumsPointer);
-        sv(&v, 4, "savedStatisticalSumsPointer", "c47Ptr");
+        sv(std.mem.asBytes(&v), 4, "savedStatisticalSumsPointer", "c47Ptr");
     }
     {
         var v: u32 = c47ptr(labelList);
-        sv(&v, 4, "labelList", "c47Ptr");
+        sv(std.mem.asBytes(&v), 4, "labelList", "c47Ptr");
     }
     {
         var v: u32 = c47ptr(programList);
-        sv(&v, 4, "programList", "c47Ptr");
+        sv(std.mem.asBytes(&v), 4, "programList", "c47Ptr");
     }
     {
         var v: u32 = c47ptr(currentSubroutineLevelData);
-        sv(&v, 4, "currentSubroutineLevelData", "c47Ptr");
+        sv(std.mem.asBytes(&v), 4, "currentSubroutineLevelData", "c47Ptr");
     }
     {
         var v: u32 = c47ptr(currentLocalFlags);
-        sv(&v, 4, "currentLocalFlags", "c47Ptr");
+        sv(std.mem.asBytes(&v), 4, "currentLocalFlags", "c47Ptr");
     }
     {
         var v: u32 = c47ptr(currentLocalRegisters);
-        sv(&v, 4, "currentLocalRegisters", "c47Ptr");
+        sv(std.mem.asBytes(&v), 4, "currentLocalRegisters", "c47Ptr");
     }
     {
         var v: u32 = c47ptr(beginOfProgramMemory);
-        sv(&v, 4, "beginOfProgramMemory", "c47Ptr");
+        sv(std.mem.asBytes(&v), 4, "beginOfProgramMemory", "c47Ptr");
     }
     {
         var v: u32 = offWithin(beginOfProgramMemory);
-        sv(&v, 4, "beginOfProgramMemoryOffset", "uint32");
+        sv(std.mem.asBytes(&v), 4, "beginOfProgramMemoryOffset", "uint32");
     }
     {
         var v: u32 = c47ptr(firstFreeProgramByte);
-        sv(&v, 4, "firstFreeProgramByte", "c47Ptr");
+        sv(std.mem.asBytes(&v), 4, "firstFreeProgramByte", "c47Ptr");
     }
     {
         var v: u32 = offWithin(firstFreeProgramByte);
-        sv(&v, 4, "firstFreeProgramByteOffset", "uint32");
+        sv(std.mem.asBytes(&v), 4, "firstFreeProgramByteOffset", "uint32");
     }
     {
         var v: u32 = c47ptr(firstDisplayedStep);
-        sv(&v, 4, "firstDisplayedStep", "c47Ptr");
+        sv(std.mem.asBytes(&v), 4, "firstDisplayedStep", "c47Ptr");
     }
     {
         var v: u32 = offWithin(firstDisplayedStep);
-        sv(&v, 4, "firstDisplayedStepOffset", "uint32");
+        sv(std.mem.asBytes(&v), 4, "firstDisplayedStepOffset", "uint32");
     }
     {
         var v: u32 = c47ptr(currentStep);
-        sv(&v, 4, "currentStep", "c47Ptr");
+        sv(std.mem.asBytes(&v), 4, "currentStep", "c47Ptr");
     }
     {
         var v: u32 = offWithin(currentStep);
-        sv(&v, 4, "currentStepOffset", "uint32");
+        sv(std.mem.asBytes(&v), 4, "currentStepOffset", "uint32");
     }
     // The dump reads the whole pool, free blocks and the unwritten tail of a
     // claimed one included, which memcheck holds as no-access or undefined (see
@@ -801,14 +805,14 @@ pub fn saveCalc() void {
     sv(poolBytes().ptr, (geometry().ram_size_in_blocks) << 2, "ram", "hexDump");
     closeFreeRegions();
 
-    sv(&graMod, 1, "graMod", "uint8");
+    sv(std.mem.asBytes(&graMod), 1, "graMod", "uint8");
     if (comptime option_atext_fonts) {
-        sv(&graFont, 1, "graFont", "uint8");
+        sv(std.mem.asBytes(&graFont), 1, "graFont", "uint8");
     }
-    sv(&longPressFactor, 2, "longPressFactor", "int16");
-    sv(&doublePressFactor, 2, "doublePressFactor", "int16");
+    sv(std.mem.asBytes(&longPressFactor), 2, "longPressFactor", "int16");
+    sv(std.mem.asBytes(&doublePressFactor), 2, "doublePressFactor", "int16");
 
-    sv(&alphaRegister, 2, "alphaRegister", "uint16");
+    sv(std.mem.asBytes(&alphaRegister), 2, "alphaRegister", "uint16");
 
     ioFileClose();
 }
@@ -817,16 +821,18 @@ pub fn saveCalc() void {
 // labelList/savedStatisticalSumsPointer are pointer globals not declared above.
 // --- backup.cfg parser + typed value deserializer (host-only) ---
 extern fn ioEof() c_int;
-extern fn malloc(n: usize) ?*anyopaque;
+/// C's malloc, read as the bytes this owner asks it for: aligned for any object,
+/// at least 8 on every target z47 builds.
+extern fn malloc(n: usize) ?[*]align(8) u8;
 extern fn free(p: ?*anyopaque) void;
 extern fn strncmp(a: [*c]const u8, b: [*c]const u8, n: usize) c_int;
-extern fn decNumberFromString(dst: [*c]u8, src: [*c]const u8, ctx: *OpaqueCtx) [*c]u8; // stringToReal
-extern fn decQuadFromString(dst: [*c]u8, src: [*c]const u8, ctx: *OpaqueCtx) [*c]u8; // stringToReal34
-const OpaqueCtx = abi.RealContext;
-extern var ctxtReal34: OpaqueCtx;
-extern var ctxtReal39: OpaqueCtx;
-extern var ctxtReal51: OpaqueCtx;
-extern var ctxtReal75: OpaqueCtx;
+extern fn decNumberFromString(dst: *abi.Real, src: [*c]const u8, ctx: *RealContext) *abi.Real; // stringToReal
+extern fn decQuadFromString(dst: *abi.Real34, src: [*c]const u8, ctx: *RealContext) *abi.Real34; // stringToReal34
+const RealContext = abi.RealContext;
+extern var ctxtReal34: RealContext;
+extern var ctxtReal39: RealContext;
+extern var ctxtReal51: RealContext;
+extern var ctxtReal75: RealContext;
 // decContext.h status bits (DECEXTFLAG): a conversion that raised any of these did
 // not read the text as the number it names.
 const DEC_Conversion_syntax: u32 = 0x00000001;
@@ -844,8 +850,7 @@ fn poolBytes() []u8 {
 /// (free_list.zig). Both directions of the backup handle the pool as one raw
 /// image, so each hands the free regions back to memcheck after it.
 fn closeFreeRegions() void {
-    const Region = extern struct { blockAddress: u16, sizeInBlocks: u16 };
-    const regions: [*]const Region = @ptrCast(@alignCast(freeMemoryRegions orelse return));
+    const regions = freeMemoryRegions orelse return;
     const pool = poolBytes();
     var i: usize = 0;
     while (i < @as(usize, @intCast(@max(numberOfFreeMemoryRegions, 0)))) : (i += 1) {
@@ -860,22 +865,28 @@ const CfgParam = extern struct { param: [*c]u8, next: ?*CfgParam };
 var paramHead: ?*CfgParam = null;
 var paramCurrent: ?*CfgParam = null;
 
+/// One list node from malloc, as the C list allocates it.
+fn newCfgParam() ?*CfgParam {
+    const bytes = malloc(@sizeOf(CfgParam)) orelse return null;
+    return std.mem.bytesAsValue(CfgParam, bytes[0..@sizeOf(CfgParam)]);
+}
+
 fn backupOpenParse() c_int {
     var oneParam: [200]u8 = undefined;
     const op: [*c]u8 = &oneParam[0];
     const ret = ioFileOpen(ioPathBackup, ioModeRead);
     if (ret != FILE_OK) return ret;
     calc_state.readLine(op, oneParam.len);
-    paramHead = @ptrCast(@alignCast(malloc(@sizeOf(CfgParam))));
+    paramHead = newCfgParam();
     paramCurrent = paramHead;
-    paramCurrent.?.param = @ptrCast(malloc(strlen(op) + 1));
+    paramCurrent.?.param = malloc(strlen(op) + 1);
     _ = strcpy(paramCurrent.?.param, op);
     paramCurrent.?.next = null;
     calc_state.readLine(op, oneParam.len);
     while (ioEof() == 0) {
-        paramCurrent.?.next = @ptrCast(@alignCast(malloc(@sizeOf(CfgParam))));
+        paramCurrent.?.next = newCfgParam();
         paramCurrent = paramCurrent.?.next;
-        paramCurrent.?.param = @ptrCast(malloc(strlen(op) + 1));
+        paramCurrent.?.param = malloc(strlen(op) + 1);
         _ = strcpy(paramCurrent.?.param, op);
         paramCurrent.?.next = null;
         calc_state.readLine(op, oneParam.len);
@@ -896,7 +907,7 @@ fn hexNibble(c: u8) u8 {
     return c - (if (c <= '9') @as(u8, '0') else 'a' - 10);
 }
 // Typed value deserializer (saveRestoreCalcState.c restoreStateValue).
-fn restoreStateValue(buffer: ?*anyopaque, size: u32, name: [*c]const u8, type_str: [*c]const u8) void {
+fn restoreStateValue(buffer: [*]u8, size: u32, name: [*c]const u8, type_str: [*c]const u8) void {
     _ = size;
     var value: [200]u8 = undefined;
     const v: [*c]u8 = &value[0];
@@ -926,35 +937,35 @@ fn restoreStateValue(buffer: ?*anyopaque, size: u32, name: [*c]const u8, type_st
     if (strcmp(type_str, v) != 0) return;
 
     if (streq(type_str, "int64")) {
-        @as(*i64, @ptrCast(@alignCast(buffer))).* = calc_state.stringToInt64(vp);
+        wr(i64, buffer, calc_state.stringToInt64(vp));
     } else if (streq(type_str, "uint64")) {
-        @as(*u64, @ptrCast(@alignCast(buffer))).* = calc_state.stringToUint64(vp);
+        wr(u64, buffer, calc_state.stringToUint64(vp));
     } else if (streq(type_str, "int32")) {
-        @as(*i32, @ptrCast(@alignCast(buffer))).* = calc_state.stringToInt32(vp);
+        wr(i32, buffer, calc_state.stringToInt32(vp));
     } else if (streq(type_str, "uint32")) {
-        @as(*u32, @ptrCast(@alignCast(buffer))).* = calc_state.stringToUint32(vp);
+        wr(u32, buffer, calc_state.stringToUint32(vp));
     } else if (streq(type_str, "int16")) {
-        @as(*i16, @ptrCast(@alignCast(buffer))).* = calc_state.stringToInt16(vp);
+        wr(i16, buffer, calc_state.stringToInt16(vp));
     } else if (streq(type_str, "uint16")) {
-        @as(*u16, @ptrCast(@alignCast(buffer))).* = calc_state.stringToUint16(vp);
+        wr(u16, buffer, calc_state.stringToUint16(vp));
     } else if (streq(type_str, "int8")) {
-        @as(*i8, @ptrCast(buffer)).* = calc_state.stringToInt8(vp);
+        wr(i8, buffer, calc_state.stringToInt8(vp));
     } else if (streq(type_str, "uint8")) {
-        @as(*u8, @ptrCast(buffer)).* = calc_state.stringToUint8(vp);
+        wr(u8, buffer, calc_state.stringToUint8(vp));
     } else if (streq(type_str, "float")) {
-        @as(*f32, @ptrCast(@alignCast(buffer))).* = @floatCast(atof(vp));
+        wr(f32, buffer, @floatCast(atof(vp)));
     } else if (streq(type_str, "double")) {
-        @as(*f64, @ptrCast(@alignCast(buffer))).* = atof(vp);
+        wr(f64, buffer, atof(vp));
     } else if (streq(type_str, "real")) {
         // The saved infinities are spelt as the out-of-range decimals the save writes; a
         // value that does not parse cleanly leaves the default in place.
         var restored: abi.Real = undefined;
-        var context: OpaqueCtx = ctxtReal39;
+        var context: RealContext = ctxtReal39;
         const numericValue: [*c]const u8 = if (strcmp(vp, "9.9e9999999") == 0) "Infinity" else if (strcmp(vp, "-9.9e9999999") == 0) "-Infinity" else vp;
         context.status = 0;
-        _ = decNumberFromString(@ptrCast(&restored), numericValue, &context);
+        _ = decNumberFromString(&restored, numericValue, &context);
         if ((context.status & DEC_REJECTED) == 0) {
-            @as(*align(1) abi.Real, @ptrCast(buffer)).* = restored;
+            wr(abi.Real, buffer, restored);
         } else {
             _ = printf("Invalid real value for parameter %s in file %s, using default\n", name, backupFileName());
         }
@@ -968,19 +979,19 @@ fn restoreStateValue(buffer: ?*anyopaque, size: u32, name: [*c]const u8, type_st
         const savedReal75 = ctxtReal75;
         const numericValue: [*c]const u8 = if (strcmp(vp, "9.9e9999") == 0) "Infinity" else if (strcmp(vp, "-9.9e9999") == 0) "-Infinity" else vp;
         ctxtReal34.status = 0;
-        _ = decQuadFromString(@ptrCast(&restored), numericValue, &ctxtReal34);
+        _ = decQuadFromString(&restored, numericValue, &ctxtReal34);
         const status = ctxtReal34.status;
         ctxtReal34 = savedReal34;
         ctxtReal39 = savedReal39;
         ctxtReal51 = savedReal51;
         ctxtReal75 = savedReal75;
         if ((status & DEC_REJECTED) == 0) {
-            @as(*align(1) abi.Real34, @ptrCast(buffer)).* = restored;
+            wr(abi.Real34, buffer, restored);
         } else {
             _ = printf("Invalid real34 value for parameter %s in file %s, using default\n", name, backupFileName());
         }
     } else if (streq(type_str, "bool")) {
-        @as(*u8, @ptrCast(buffer)).* = if (calc_state.stringToInt8(vp) != 0) 1 else 0;
+        wr(u8, buffer, if (calc_state.stringToInt8(vp) != 0) 1 else 0);
     } else if (streq(type_str, "c47Ptr")) {
         // WIDTH-CONTRACT: accepted -- a backup field holding a pool block index.
         // A window value gives the host the true low bits and the firmware
@@ -989,10 +1000,10 @@ fn restoreStateValue(buffer: ?*anyopaque, size: u32, name: [*c]const u8, type_st
         // cannot hold, on both targets. That check is the reason this one can be
         // accepted -- and it is the check the STATE owner was missing until
         // It was ported across.
-        @as(*u32, @ptrCast(@alignCast(buffer))).* = @truncate(strtoul(vp, null, 0));
+        wr(u32, buffer, @truncate(strtoul(vp, null, 0)));
     } else if (streq(type_str, "hexDump")) {
         const numberOfBytes = calc_state.stringToUint32(vp);
-        var bufp: [*c]u8 = @ptrCast(buffer);
+        var bufp: [*c]u8 = buffer;
         // The two hex digits of byte b sit at offset 7 + 3*b of a dump line saveStateValue() wrote. A line in
         // the file need not be that long, so index it against its own length. Offsets rather than pointers: a
         // line shorter than 7 has no such position to point at, one-past-the-end or otherwise.
@@ -1053,16 +1064,16 @@ const FLAG_MYM_TRIPLE: c_uint = 0x805F;
 const FLAG_HOME_TRIPLE: c_uint = 0x8060;
 const FLAG_SHFT_4s: c_uint = 0x8061;
 
-fn rv(buffer: ?*anyopaque, size: u32, name: [*c]const u8, type_str: [*c]const u8) void {
+fn rv(buffer: [*]u8, size: u32, name: [*c]const u8, type_str: [*c]const u8) void {
     restoreStateValue(buffer, size, name, type_str);
 }
 extern fn stringToDouble(str: [*c]const u8) f64; // locale-free strtod (accepts '.' or ',')
-extern fn convertDoubleToReal(x: f64, destination: *real_t, ctxt: *OpaqueCtx) void;
-// One-time migration of a pre-1016 float parameter into its new real (or double)
-// variable (saveRestoreBackup.c migrateFloatValue). Not an error: the old value is
-// converted and the next save writes the new type. Leaves the default in place when
-// no old float value is present.
-fn migrateFloatValue(buffer: ?*anyopaque, valueName: [*c]const u8, newType: [*c]const u8) void {
+extern fn convertDoubleToReal(x: f64, destination: *real_t, ctxt: *RealContext) void;
+// A pre-1016 backup stored each graph setting as a float (saveRestoreBackup.c
+// migrateFloatValue). Returns that old value, or null when the file holds none,
+// which leaves the default in place; a value that is not finite migrates as 0.
+// The caller stores it at the new type and the next save writes that type.
+fn oldFloatValue(valueName: [*c]const u8) ?f64 {
     var search: [60]u8 = undefined;
     const s: [*c]u8 = &search[0];
     _ = strcpy(s, valueName);
@@ -1072,14 +1083,9 @@ fn migrateFloatValue(buffer: ?*anyopaque, valueName: [*c]const u8, newType: [*c]
         if (strncmp(pc.param, s, strlen(s)) == 0) break;
         paramCurrent = pc.next;
     }
-    if (paramCurrent == null) return; // old float value absent: keep the default
-    var d = stringToDouble(paramCurrent.?.param + strlen(s));
-    if (!std.math.isFinite(d)) d = 0; // unusable old value: store the default 0
-    if (streq(newType, "real")) {
-        convertDoubleToReal(d, @ptrCast(buffer), &ctxtReal39);
-    } else {
-        @as(*f64, @ptrCast(@alignCast(buffer))).* = d;
-    }
+    const found = paramCurrent orelse return null;
+    const d = stringToDouble(found.param + strlen(s));
+    return if (std.math.isFinite(d)) d else 0;
 }
 fn toPcmem(blk: u32) [*c]u8 {
     return @ptrFromInt(progmem.toPcmemptr(geometry(), @intCast(blk)));
@@ -1112,9 +1118,9 @@ fn restoredPoolPointer(current: [*c]u8, valueName: [*c]const u8, offsetValueName
     var blockAddress: u32 = progmem.toC47memptr(geo, @intFromPtr(current));
     var byteOffset: u32 = if (current == null) 0 else progmem.offsetWithinBlock(geo, @intFromPtr(current));
 
-    rv(&blockAddress, 4, valueName, "c47Ptr");
+    rv(std.mem.asBytes(&blockAddress), 4, valueName, "c47Ptr");
     if (offsetValueName) |ovn| {
-        rv(&byteOffset, 4, ovn, "uint32");
+        rv(std.mem.asBytes(&byteOffset), 4, ovn, "uint32");
     }
 
     if (blockAddress == C47_NULL and byteOffset == 0) {
@@ -1139,7 +1145,7 @@ fn wrU16(p: [*c]u8, value: u16) void {
 }
 fn programStep(idx: u16) i32 {
     const base = programList + @as(usize, idx) * 16;
-    return @as(*const i32, @ptrCast(@alignCast(base))).*;
+    return std.mem.bytesToValue(i32, base[0..4]);
 }
 
 pub fn restoreCalc() void {
@@ -1151,9 +1157,9 @@ pub fn restoreCalc() void {
     }
     if (backupOpenParse() != FILE_OK) return;
     var backupVersion: u32 = 0;
-    rv(&backupVersion, 4, "backupVersion", "uint32");
+    rv(std.mem.asBytes(&backupVersion), 4, "backupVersion", "uint32");
     var ramSizeInBlocks: u32 = 0;
-    rv(&ramSizeInBlocks, 4, "ramSizeInBlocks", "uint32");
+    rv(std.mem.asBytes(&ramSizeInBlocks), 4, "ramSizeInBlocks", "uint32");
     if (ramSizeInBlocks != geometry().ram_size_in_blocks) {
         backupFreeParams();
         return;
@@ -1168,8 +1174,8 @@ pub fn restoreCalc() void {
     // other field.
     var restoredFreeRegions: i32 = numberOfFreeMemoryRegions;
     var restoredAllocatedRegions: i32 = numberOfAllocatedMemoryRegions;
-    rv(&restoredFreeRegions, 4, "numberOfFreeMemoryRegions", "int32");
-    rv(&restoredAllocatedRegions, 4, "numberOfAllocatedMemoryRegions", "int32");
+    rv(std.mem.asBytes(&restoredFreeRegions), 4, "numberOfFreeMemoryRegions", "int32");
+    rv(std.mem.asBytes(&restoredAllocatedRegions), 4, "numberOfAllocatedMemoryRegions", "int32");
     if (!restoredRegionCountIsUsable(restoredFreeRegions, MAX_FREE_REGIONS) or
         !restoredRegionCountIsUsable(restoredAllocatedRegions, MAX_ALLOCATED_REGIONS))
     {
@@ -1186,7 +1192,7 @@ pub fn restoreCalc() void {
 
     graMod = 0;
     if (backupVersion >= 1020) {
-        rv(&graMod, 1, "graMod", "uint8");
+        rv(std.mem.asBytes(&graMod), 1, "graMod", "uint8");
     } else {
         // Pre-1020 backups: GRAMOD as a long integer reserved variable in the ram
         // image, block 36. Take its value over, convert, then clear the slot.
@@ -1201,22 +1207,22 @@ pub fn restoreCalc() void {
     }
     if (comptime option_atext_fonts) {
         graFont = 20;
-        rv(&graFont, 1, "graFont", "uint8"); // a file without the key leaves 20, the standard font
+        rv(std.mem.asBytes(&graFont), 1, "graFont", "uint8"); // a file without the key leaves 20, the standard font
         graFontCheck();
     }
-    rv(&longPressFactor, 2, "longPressFactor", "int16"); // a file without the key leaves 0, factor 1
-    rv(&doublePressFactor, 2, "doublePressFactor", "int16");
+    rv(std.mem.asBytes(&longPressFactor), 2, "longPressFactor", "int16"); // a file without the key leaves 0, factor 1
+    rv(std.mem.asBytes(&doublePressFactor), 2, "doublePressFactor", "int16");
     // The size argument is what stops the reader writing off the end, so it is the room the destination
     // has, the way every other call here passes a sizeof(). These writes cannot leave their table whatever
     // count the file carries.
-    rv(freeMemoryRegions, FREE_MEM_REGION_SIZE * MAX_FREE_REGIONS, "freeMemoryRegions", "hexDump");
+    rv(std.mem.asBytes(&freeMemoryRegions.?[0]), FREE_MEM_REGION_SIZE * MAX_FREE_REGIONS, "freeMemoryRegions", "hexDump");
     closeFreeRegions();
-    rv(&allocatedMemoryRegions[0], FREE_MEM_REGION_SIZE * MAX_ALLOCATED_REGIONS, "allocatedMemoryRegions", "hexDump");
-    rv(globalRegister, REGISTER_HEADER_SIZE * NUMBER_OF_GLOBAL_REGISTERS, "globalRegister", "hexDump");
-    rv(&calcMode, 1, "calcMode", "uint8");
-    rv(&previousCalcMode, 1, "previousCalcMode", "uint8");
-    rv(&graphToRemainOnScreen, 1, "graphToRemainOnScreen", "bool");
-    rv(&calcModel, 1, "calcModel", "uint8");
+    rv(std.mem.asBytes(&allocatedMemoryRegions[0]), FREE_MEM_REGION_SIZE * MAX_ALLOCATED_REGIONS, "allocatedMemoryRegions", "hexDump");
+    rv(std.mem.asBytes(&globalRegister.?[0]), REGISTER_HEADER_SIZE * NUMBER_OF_GLOBAL_REGISTERS, "globalRegister", "hexDump");
+    rv(std.mem.asBytes(&calcMode), 1, "calcMode", "uint8");
+    rv(std.mem.asBytes(&previousCalcMode), 1, "previousCalcMode", "uint8");
+    rv(std.mem.asBytes(&graphToRemainOnScreen), 1, "graphToRemainOnScreen", "bool");
+    rv(std.mem.asBytes(&calcModel), 1, "calcModel", "uint8");
 
     var poolPointersInRange = true;
     allNamedVariables = restoredPoolPointer(allNamedVariables, "allNamedVariables", null, &poolPointersInRange);
@@ -1250,263 +1256,263 @@ pub fn restoreCalc() void {
         doFnReset(CONFIRMED, loadAutoSav);
         return;
     }
-    rv(&globalFlags[0], 16, "globalFlags", "hexDump");
-    rv(&errorMessage[0], 512, "errorMessage", "hexDump");
-    rv(&aimBuffer[0], 1024, "aimBuffer", "hexDump");
-    rv(&nimBufferDisplay[0], 200, "nimBufferDisplay", "hexDump");
-    rv(&tamBuffer[0], 56, "tamBuffer", "hexDump");
-    rv(&asmBuffer[0], 5, "asmBuffer", "hexDump");
-    rv(&oldTime[0], 8, "oldTime", "hexDump");
-    rv(&dateTimeString[0], 12, "dateTimeString", "hexDump");
-    rv(&softmenuStack, @sizeOf(@TypeOf(softmenuStack)), "softmenuStack", "hexDump");
+    rv(std.mem.asBytes(&globalFlags[0]), 16, "globalFlags", "hexDump");
+    rv(std.mem.asBytes(&errorMessage[0]), 512, "errorMessage", "hexDump");
+    rv(std.mem.asBytes(&aimBuffer[0]), 1024, "aimBuffer", "hexDump");
+    rv(std.mem.asBytes(&nimBufferDisplay[0]), 200, "nimBufferDisplay", "hexDump");
+    rv(std.mem.asBytes(&tamBuffer[0]), 56, "tamBuffer", "hexDump");
+    rv(std.mem.asBytes(&asmBuffer[0]), 5, "asmBuffer", "hexDump");
+    rv(std.mem.asBytes(&oldTime[0]), 8, "oldTime", "hexDump");
+    rv(std.mem.asBytes(&dateTimeString[0]), 12, "dateTimeString", "hexDump");
+    rv(std.mem.asBytes(&softmenuStack), @sizeOf(@TypeOf(softmenuStack)), "softmenuStack", "hexDump");
     if (comptime option_structured_pgm) {
         forClearLoops(); // a file without the keyword below then leaves no loop running
-        rv(&forLoopTable[0], FOR_LOOP_TABLE_BYTES, "forLoopTable", "hexDump");
+        rv(std.mem.asBytes(&forLoopTable[0]), FOR_LOOP_TABLE_BYTES, "forLoopTable", "hexDump");
     }
-    rv(&kbd_usr[0], 666, "kbd_usr", "hexDump");
-    rv(&userMenuItems[0], 360, "userMenuItems", "hexDump");
-    rv(&userAlphaItems[0], 360, "userAlphaItems", "hexDump");
-    rv(&lastTemp[0], 16, "lastTemp", "hexDump");
-    rv(&lastStateFileOpened[0], 32, "lastStateFileOpened", "hexDump");
+    rv(std.mem.asBytes(&kbd_usr[0]), 666, "kbd_usr", "hexDump");
+    rv(std.mem.asBytes(&userMenuItems[0]), 360, "userMenuItems", "hexDump");
+    rv(std.mem.asBytes(&userAlphaItems[0]), 360, "userAlphaItems", "hexDump");
+    rv(std.mem.asBytes(&lastTemp[0]), 16, "lastTemp", "hexDump");
+    rv(std.mem.asBytes(&lastStateFileOpened[0]), 32, "lastStateFileOpened", "hexDump");
     if (comptime !is_dmcp_build) {
-        rv(&lastFolderData[0], C47_PATH_MAX, "lastFolderData", "hexDump");
-        rv(&lastFolderState[0], C47_PATH_MAX, "lastFolderState", "hexDump");
-        rv(&lastFolderPrograms[0], C47_PATH_MAX, "lastFolderPrograms", "hexDump");
+        rv(std.mem.asBytes(&lastFolderData[0]), C47_PATH_MAX, "lastFolderData", "hexDump");
+        rv(std.mem.asBytes(&lastFolderState[0]), C47_PATH_MAX, "lastFolderState", "hexDump");
+        rv(std.mem.asBytes(&lastFolderPrograms[0]), C47_PATH_MAX, "lastFolderPrograms", "hexDump");
     }
-    rv(&lastI[0], 2, "lastI", "int16");
-    rv(&lastJ[0], 2, "lastJ", "int16");
-    rv(&lastFunc[0], 2, "lastFunc", "int16");
-    rv(&lastParam[0], 2, "lastParam", "int16");
-    rv(&tam.mode, @sizeOf(@TypeOf(tam.mode)), "tam.mode", "uint16");
-    rv(&tam.function, @sizeOf(@TypeOf(tam.function)), "tam.function", "int16");
-    rv(&tam.alpha, @sizeOf(@TypeOf(tam.alpha)), "tam.alpha", "bool");
-    rv(&tam.currentOperation, @sizeOf(@TypeOf(tam.currentOperation)), "tam.currentOperation", "int16");
-    rv(&tam.dot, @sizeOf(@TypeOf(tam.dot)), "tam.dot", "bool");
-    rv(&tam.indirect, @sizeOf(@TypeOf(tam.indirect)), "tam.indirect", "bool");
-    rv(&tam.digitsSoFar, @sizeOf(@TypeOf(tam.digitsSoFar)), "tam.digitsSoFar", "int16");
-    rv(&tam.value, @sizeOf(@TypeOf(tam.value)), "tam.value", "int16");
-    rv(&tam.min, @sizeOf(@TypeOf(tam.min)), "tam.min", "int16");
-    rv(&tam.max, @sizeOf(@TypeOf(tam.max)), "tam.max", "int16");
-    rv(&rbrRegister[0], 2, "rbrRegister", "int16");
-    rv(&numberOfNamedVariables[0], 2, "numberOfNamedVariables", "int16");
-    rv(&xCursor[0], 4, "xCursor", "uint32");
-    rv(&yCursor[0], 4, "yCursor", "uint32");
-    rv(&firstGregorianDay[0], 4, "firstGregorianDay", "uint32");
-    rv(&denMax[0], 4, "denMax", "uint32");
-    rv(&lastDenominator[0], 4, "lastDenominator", "uint32");
-    rv(&currentRegisterBrowserScreen[0], 2, "currentRegisterBrowserScreen", "int16");
-    rv(&currentFntScr[0], 1, "currentFntScr", "uint8");
-    rv(&currentFlgScr[0], 1, "currentFlgScr", "uint8");
-    rv(&displayFormat[0], 1, "displayFormat", "uint8");
-    rv(&displayFormatDigits[0], 1, "displayFormatDigits", "uint8");
-    rv(&timeDisplayFormatDigits[0], 1, "timeDisplayFormatDigits", "uint8");
-    rv(&shortIntegerWordSize[0], 1, "shortIntegerWordSize", "uint8");
+    rv(std.mem.asBytes(&lastI[0]), 2, "lastI", "int16");
+    rv(std.mem.asBytes(&lastJ[0]), 2, "lastJ", "int16");
+    rv(std.mem.asBytes(&lastFunc[0]), 2, "lastFunc", "int16");
+    rv(std.mem.asBytes(&lastParam[0]), 2, "lastParam", "int16");
+    rv(std.mem.asBytes(&tam.mode), @sizeOf(@TypeOf(tam.mode)), "tam.mode", "uint16");
+    rv(std.mem.asBytes(&tam.function), @sizeOf(@TypeOf(tam.function)), "tam.function", "int16");
+    rv(std.mem.asBytes(&tam.alpha), @sizeOf(@TypeOf(tam.alpha)), "tam.alpha", "bool");
+    rv(std.mem.asBytes(&tam.currentOperation), @sizeOf(@TypeOf(tam.currentOperation)), "tam.currentOperation", "int16");
+    rv(std.mem.asBytes(&tam.dot), @sizeOf(@TypeOf(tam.dot)), "tam.dot", "bool");
+    rv(std.mem.asBytes(&tam.indirect), @sizeOf(@TypeOf(tam.indirect)), "tam.indirect", "bool");
+    rv(std.mem.asBytes(&tam.digitsSoFar), @sizeOf(@TypeOf(tam.digitsSoFar)), "tam.digitsSoFar", "int16");
+    rv(std.mem.asBytes(&tam.value), @sizeOf(@TypeOf(tam.value)), "tam.value", "int16");
+    rv(std.mem.asBytes(&tam.min), @sizeOf(@TypeOf(tam.min)), "tam.min", "int16");
+    rv(std.mem.asBytes(&tam.max), @sizeOf(@TypeOf(tam.max)), "tam.max", "int16");
+    rv(std.mem.asBytes(&rbrRegister[0]), 2, "rbrRegister", "int16");
+    rv(std.mem.asBytes(&numberOfNamedVariables[0]), 2, "numberOfNamedVariables", "int16");
+    rv(std.mem.asBytes(&xCursor[0]), 4, "xCursor", "uint32");
+    rv(std.mem.asBytes(&yCursor[0]), 4, "yCursor", "uint32");
+    rv(std.mem.asBytes(&firstGregorianDay[0]), 4, "firstGregorianDay", "uint32");
+    rv(std.mem.asBytes(&denMax[0]), 4, "denMax", "uint32");
+    rv(std.mem.asBytes(&lastDenominator[0]), 4, "lastDenominator", "uint32");
+    rv(std.mem.asBytes(&currentRegisterBrowserScreen[0]), 2, "currentRegisterBrowserScreen", "int16");
+    rv(std.mem.asBytes(&currentFntScr[0]), 1, "currentFntScr", "uint8");
+    rv(std.mem.asBytes(&currentFlgScr[0]), 1, "currentFlgScr", "uint8");
+    rv(std.mem.asBytes(&displayFormat[0]), 1, "displayFormat", "uint8");
+    rv(std.mem.asBytes(&displayFormatDigits[0]), 1, "displayFormatDigits", "uint8");
+    rv(std.mem.asBytes(&timeDisplayFormatDigits[0]), 1, "timeDisplayFormatDigits", "uint8");
+    rv(std.mem.asBytes(&shortIntegerWordSize[0]), 1, "shortIntegerWordSize", "uint8");
     shortIntegerWordSize[0] = boundShortIntegerWordSize(shortIntegerWordSize[0]);
     updateShortIntegerMasks(); // rederive shortIntegerMask and shortIntegerSignBit from the word size just restored; the file copies (older backups) are ignored
-    rv(&significantDigits[0], 1, "significantDigits", "uint8");
+    rv(std.mem.asBytes(&significantDigits[0]), 1, "significantDigits", "uint8");
     fractionDigits[0] = 34; // the default a backup that carries no fractionDigits entry restores to
-    rv(&fractionDigits[0], 1, "fractionDigits", "uint8");
-    rv(&shortIntegerMode[0], 1, "shortIntegerMode", "uint8");
-    rv(&currentAngularMode[0], 4, "currentAngularMode", "uint32");
-    rv(&scrLock[0], 1, "scrLock", "uint8");
+    rv(std.mem.asBytes(&fractionDigits[0]), 1, "fractionDigits", "uint8");
+    rv(std.mem.asBytes(&shortIntegerMode[0]), 1, "shortIntegerMode", "uint8");
+    rv(std.mem.asBytes(&currentAngularMode[0]), 4, "currentAngularMode", "uint32");
+    rv(std.mem.asBytes(&scrLock[0]), 1, "scrLock", "uint8");
     scrLock[0] &= 0x03;
 
     displayRoundingMode[0] = DRM_DFLT;
-    rv(&displayRoundingMode[0], 1, "displayRoundingMode", "uint8");
+    rv(std.mem.asBytes(&displayRoundingMode[0]), 1, "displayRoundingMode", "uint8");
     if (displayRoundingMode[0] > RM_FLOOR) {
         displayRoundingMode[0] = DRM_DFLT;
     }
-    rv(&roundingMode[0], 1, "roundingMode", "uint8");
+    rv(std.mem.asBytes(&roundingMode[0]), 1, "roundingMode", "uint8");
     if (roundingMode[0] > RM_FLOOR) {
         roundingMode[0] = RM_HALF_EVEN;
     }
     setRoundingMode(roundingMode[0]);
-    rv(&nextChar[0], 1, "nextChar", "uint8");
-    rv(&alphaCase[0], 1, "alphaCase", "uint8");
-    rv(&hourGlassIconEnabled[0], 1, "hourGlassIconEnabled", "bool");
-    rv(&watchIconEnabled[0], 1, "watchIconEnabled", "bool");
-    rv(&serialIOIconEnabled[0], 1, "serialIOIconEnabled", "bool");
-    rv(&printerIconEnabled[0], 1, "printerIconEnabled", "bool");
-    rv(&programRunStop[0], 1, "programRunStop", "uint8");
-    rv(&entryStatus[0], 1, "entryStatus", "uint8");
-    rv(&cursorEnabled[0], 1, "cursorEnabled", "uint8");
-    rv(&rbr1stDigit[0], 1, "rbr1stDigit", "bool");
-    rv(&shiftF[0], 1, "shiftF", "bool");
-    rv(&shiftG[0], 1, "shiftG", "bool");
-    rv(&rbrMode[0], 1, "rbrMode", "uint8");
-    rv(&showContent[0], 1, "showContent", "bool");
-    rv(&numScreensNumericFont[0], 1, "numScreensNumericFont", "uint8");
-    rv(&numScreensNumericFontBold[0], 1, "numScreensNumericFontBold", "uint8");
-    rv(&numLinesNumericFont[0], 1, "numLinesNumericFont", "uint8");
-    rv(&numLinesNumericFontBold[0], 1, "numLinesNumericFontBold", "uint8");
-    rv(&numScreensStandardFont[0], 1, "numScreensStandardFont", "uint8");
-    rv(&numLinesStandardFont[0], 1, "numLinesStandardFont", "uint8");
-    rv(&numScreensTinyFont[0], 1, "numScreensTinyFont", "uint8");
-    rv(&numLinesTinyFont[0], 1, "numLinesTinyFont", "uint8");
-    rv(&lastErrorCode[0], 1, "lastErrorCode", "uint8");
-    rv(&previousErrorCode[0], 1, "previousErrorCode", "uint8");
-    rv(&nimNumberPart[0], 1, "nimNumberPart", "uint8");
-    rv(&displayStack[0], 1, "displayStack", "uint8");
-    rv(&hexDigits[0], 1, "hexDigits", "uint8");
-    rv(&errorMessageRegisterLine[0], 2, "errorMessageRegisterLine", "int16");
+    rv(std.mem.asBytes(&nextChar[0]), 1, "nextChar", "uint8");
+    rv(std.mem.asBytes(&alphaCase[0]), 1, "alphaCase", "uint8");
+    rv(std.mem.asBytes(&hourGlassIconEnabled[0]), 1, "hourGlassIconEnabled", "bool");
+    rv(std.mem.asBytes(&watchIconEnabled[0]), 1, "watchIconEnabled", "bool");
+    rv(std.mem.asBytes(&serialIOIconEnabled[0]), 1, "serialIOIconEnabled", "bool");
+    rv(std.mem.asBytes(&printerIconEnabled[0]), 1, "printerIconEnabled", "bool");
+    rv(std.mem.asBytes(&programRunStop[0]), 1, "programRunStop", "uint8");
+    rv(std.mem.asBytes(&entryStatus[0]), 1, "entryStatus", "uint8");
+    rv(std.mem.asBytes(&cursorEnabled[0]), 1, "cursorEnabled", "uint8");
+    rv(std.mem.asBytes(&rbr1stDigit[0]), 1, "rbr1stDigit", "bool");
+    rv(std.mem.asBytes(&shiftF[0]), 1, "shiftF", "bool");
+    rv(std.mem.asBytes(&shiftG[0]), 1, "shiftG", "bool");
+    rv(std.mem.asBytes(&rbrMode[0]), 1, "rbrMode", "uint8");
+    rv(std.mem.asBytes(&showContent[0]), 1, "showContent", "bool");
+    rv(std.mem.asBytes(&numScreensNumericFont[0]), 1, "numScreensNumericFont", "uint8");
+    rv(std.mem.asBytes(&numScreensNumericFontBold[0]), 1, "numScreensNumericFontBold", "uint8");
+    rv(std.mem.asBytes(&numLinesNumericFont[0]), 1, "numLinesNumericFont", "uint8");
+    rv(std.mem.asBytes(&numLinesNumericFontBold[0]), 1, "numLinesNumericFontBold", "uint8");
+    rv(std.mem.asBytes(&numScreensStandardFont[0]), 1, "numScreensStandardFont", "uint8");
+    rv(std.mem.asBytes(&numLinesStandardFont[0]), 1, "numLinesStandardFont", "uint8");
+    rv(std.mem.asBytes(&numScreensTinyFont[0]), 1, "numScreensTinyFont", "uint8");
+    rv(std.mem.asBytes(&numLinesTinyFont[0]), 1, "numLinesTinyFont", "uint8");
+    rv(std.mem.asBytes(&lastErrorCode[0]), 1, "lastErrorCode", "uint8");
+    rv(std.mem.asBytes(&previousErrorCode[0]), 1, "previousErrorCode", "uint8");
+    rv(std.mem.asBytes(&nimNumberPart[0]), 1, "nimNumberPart", "uint8");
+    rv(std.mem.asBytes(&displayStack[0]), 1, "displayStack", "uint8");
+    rv(std.mem.asBytes(&hexDigits[0]), 1, "hexDigits", "uint8");
+    rv(std.mem.asBytes(&errorMessageRegisterLine[0]), 2, "errorMessageRegisterLine", "int16");
     // No read-back of shortIntegerMask / shortIntegerSignBit here: both were
     // rederived from the restored word size above, and the file copies are
     // deliberately ignored.
-    rv(&temporaryInformation[0], 1, "temporaryInformation", "uint8");
-    rv(&funcOK[0], 1, "funcOK", "bool");
-    rv(&screenChange[0], 1, "screenChange", "bool");
-    rv(&exponentSignLocation[0], 2, "exponentSignLocation", "int16");
-    rv(&denominatorLocation[0], 2, "denominatorLocation", "int16");
-    rv(&imaginaryExponentSignLocation[0], 2, "imaginaryExponentSignLocation", "int16");
-    rv(&imaginaryMantissaSignLocation[0], 2, "imaginaryMantissaSignLocation", "int16");
-    rv(&lineTWidth[0], 2, "lineTWidth", "int16");
-    rv(&lastIntegerBase[0], 4, "lastIntegerBase", "uint32");
-    rv(&c47MemInBlocks[0], 8, "c47MemInBlocks", "uint64");
-    rv(&gmpMemInBytes[0], 8, "gmpMemInBytes", "uint64");
-    rv(&catalog[0], 2, "catalog", "int16");
+    rv(std.mem.asBytes(&temporaryInformation[0]), 1, "temporaryInformation", "uint8");
+    rv(std.mem.asBytes(&funcOK[0]), 1, "funcOK", "bool");
+    rv(std.mem.asBytes(&screenChange[0]), 1, "screenChange", "bool");
+    rv(std.mem.asBytes(&exponentSignLocation[0]), 2, "exponentSignLocation", "int16");
+    rv(std.mem.asBytes(&denominatorLocation[0]), 2, "denominatorLocation", "int16");
+    rv(std.mem.asBytes(&imaginaryExponentSignLocation[0]), 2, "imaginaryExponentSignLocation", "int16");
+    rv(std.mem.asBytes(&imaginaryMantissaSignLocation[0]), 2, "imaginaryMantissaSignLocation", "int16");
+    rv(std.mem.asBytes(&lineTWidth[0]), 2, "lineTWidth", "int16");
+    rv(std.mem.asBytes(&lastIntegerBase[0]), 4, "lastIntegerBase", "uint32");
+    rv(std.mem.asBytes(&c47MemInBlocks[0]), 8, "c47MemInBlocks", "uint64");
+    rv(std.mem.asBytes(&gmpMemInBytes[0]), 8, "gmpMemInBytes", "uint64");
+    rv(std.mem.asBytes(&catalog[0]), 2, "catalog", "int16");
     if (backupVersion < 1012) { // the FNCS_EIM catalog was added at 1012
-        rv(&lastCatalogPosition[0], 48 - 4, "lastCatalogPosition", "int16");
+        rv(std.mem.asBytes(&lastCatalogPosition[0]), 48 - 4, "lastCatalogPosition", "int16");
         lastCatalogPosition[22 * 2] = 0;
         lastCatalogPosition[22 * 2 + 1] = 0;
     } else if (backupVersion < 1023) { // int16 wrote element 0 only
-        rv(&lastCatalogPosition[0], 48, "lastCatalogPosition", "int16");
+        rv(std.mem.asBytes(&lastCatalogPosition[0]), 48, "lastCatalogPosition", "int16");
     } else {
-        rv(&lastCatalogPosition[0], 48, "lastCatalogPosition", "hexDump");
+        rv(std.mem.asBytes(&lastCatalogPosition[0]), 48, "lastCatalogPosition", "hexDump");
     }
-    rv(&retainedPageFirstItem[0], 4, "retainedPageFirstItem", "hexDump");
-    rv(&displayValueX[0], 80, "displayValueX", "hexDump");
-    rv(&pcg32_global[0], 16, "pcg32_global", "hexDump");
-    rv(&exponentLimit[0], 2, "exponentLimit", "int16");
-    rv(&exponentHideLimit[0], 2, "exponentHideLimit", "int16");
-    rv(&keyActionProcessed[0], 1, "keyActionProcessed", "bool");
-    rv(&systemFlags0[0], 8, "systemFlags", "uint64");
-    rv(&systemFlags1[0], 8, "systemFlags1", "uint64");
-    rv(&savedSystemFlags0[0], 8, "savedSystemFlags", "uint64");
-    rv(&savedSystemFlags1[0], 8, "savedSystemFlags1", "uint64");
-    rv(&thereIsSomethingToUndo[0], 1, "thereIsSomethingToUndo", "bool");
-    rv(&freeProgramBytes[0], 2, "freeProgramBytes", "uint16");
-    rv(&firstDisplayedLocalStepNumber[0], 2, "firstDisplayedLocalStepNumber", "uint16");
-    rv(&numberOfLabels[0], 2, "numberOfLabels", "uint16");
-    rv(&numberOfStructureLabels[0], 2, "numberOfStructureLabels", "uint16");
-    rv(&numberOfPrograms[0], 2, "numberOfPrograms", "uint16");
-    rv(&currentLocalStepNumber[0], 2, "currentLocalStepNumber", "uint16");
-    rv(&currentProgramNumber[0], 2, "currentProgramNumber", "uint16");
-    rv(&lastProgramListEnd[0], 1, "lastProgramListEnd", "bool");
-    rv(&programListEnd[0], 1, "programListEnd", "bool");
-    rv(&allSubroutineLevels[0], 4, "allSubroutineLevels", "uint32");
-    rv(&pemCursorIsZerothStep[0], 1, "pemCursorIsZerothStep", "bool");
-    rv(&skippedStackLines[0], 1, "skippedStackLines", "bool");
-    rv(&iterations[0], 1, "iterations", "bool");
-    rv(&numberOfTamMenusToPop[0], 2, "numberOfTamMenusToPop", "int16");
-    rv(&lrSelection[0], 2, "lrSelection", "uint16");
-    rv(&lrSelectionUndo[0], 2, "lrSelectionUndo", "uint16");
-    rv(&amortP1[0], 2, "amortP1", "uint16");
-    rv(&amortP2[0], 2, "amortP2", "uint16");
-    rv(&lrChosen[0], 2, "lrChosen", "uint16");
-    rv(&lrChosenUndo[0], 2, "lrChosenUndo", "uint16");
-    rv(&lastPlotMode[0], 2, "lastPlotMode", "uint16");
-    rv(&plotSelection[0], 2, "plotSelection", "uint16");
-    rv(&roundedTicks[0], 1, "roundedTicks", "bool");
-    rv(&PLOT_AXIS[0], 1, "PLOT_AXIS", "bool");
-    rv(&PLOT_ZMY[0], 1, "PLOT_ZMY", "int8");
-    rv(&PLOT_ZOOM[0], 1, "PLOT_ZOOM", "uint8");
-    rv(&plotmode[0], 1, "plotmode", "int8");
+    rv(std.mem.asBytes(&retainedPageFirstItem[0]), 4, "retainedPageFirstItem", "hexDump");
+    rv(std.mem.asBytes(&displayValueX[0]), 80, "displayValueX", "hexDump");
+    rv(std.mem.asBytes(&pcg32_global[0]), 16, "pcg32_global", "hexDump");
+    rv(std.mem.asBytes(&exponentLimit[0]), 2, "exponentLimit", "int16");
+    rv(std.mem.asBytes(&exponentHideLimit[0]), 2, "exponentHideLimit", "int16");
+    rv(std.mem.asBytes(&keyActionProcessed[0]), 1, "keyActionProcessed", "bool");
+    rv(std.mem.asBytes(&systemFlags0[0]), 8, "systemFlags", "uint64");
+    rv(std.mem.asBytes(&systemFlags1[0]), 8, "systemFlags1", "uint64");
+    rv(std.mem.asBytes(&savedSystemFlags0[0]), 8, "savedSystemFlags", "uint64");
+    rv(std.mem.asBytes(&savedSystemFlags1[0]), 8, "savedSystemFlags1", "uint64");
+    rv(std.mem.asBytes(&thereIsSomethingToUndo[0]), 1, "thereIsSomethingToUndo", "bool");
+    rv(std.mem.asBytes(&freeProgramBytes[0]), 2, "freeProgramBytes", "uint16");
+    rv(std.mem.asBytes(&firstDisplayedLocalStepNumber[0]), 2, "firstDisplayedLocalStepNumber", "uint16");
+    rv(std.mem.asBytes(&numberOfLabels[0]), 2, "numberOfLabels", "uint16");
+    rv(std.mem.asBytes(&numberOfStructureLabels[0]), 2, "numberOfStructureLabels", "uint16");
+    rv(std.mem.asBytes(&numberOfPrograms[0]), 2, "numberOfPrograms", "uint16");
+    rv(std.mem.asBytes(&currentLocalStepNumber[0]), 2, "currentLocalStepNumber", "uint16");
+    rv(std.mem.asBytes(&currentProgramNumber[0]), 2, "currentProgramNumber", "uint16");
+    rv(std.mem.asBytes(&lastProgramListEnd[0]), 1, "lastProgramListEnd", "bool");
+    rv(std.mem.asBytes(&programListEnd[0]), 1, "programListEnd", "bool");
+    rv(std.mem.asBytes(&allSubroutineLevels[0]), 4, "allSubroutineLevels", "uint32");
+    rv(std.mem.asBytes(&pemCursorIsZerothStep[0]), 1, "pemCursorIsZerothStep", "bool");
+    rv(std.mem.asBytes(&skippedStackLines[0]), 1, "skippedStackLines", "bool");
+    rv(std.mem.asBytes(&iterations[0]), 1, "iterations", "bool");
+    rv(std.mem.asBytes(&numberOfTamMenusToPop[0]), 2, "numberOfTamMenusToPop", "int16");
+    rv(std.mem.asBytes(&lrSelection[0]), 2, "lrSelection", "uint16");
+    rv(std.mem.asBytes(&lrSelectionUndo[0]), 2, "lrSelectionUndo", "uint16");
+    rv(std.mem.asBytes(&amortP1[0]), 2, "amortP1", "uint16");
+    rv(std.mem.asBytes(&amortP2[0]), 2, "amortP2", "uint16");
+    rv(std.mem.asBytes(&lrChosen[0]), 2, "lrChosen", "uint16");
+    rv(std.mem.asBytes(&lrChosenUndo[0]), 2, "lrChosenUndo", "uint16");
+    rv(std.mem.asBytes(&lastPlotMode[0]), 2, "lastPlotMode", "uint16");
+    rv(std.mem.asBytes(&plotSelection[0]), 2, "plotSelection", "uint16");
+    rv(std.mem.asBytes(&roundedTicks[0]), 1, "roundedTicks", "bool");
+    rv(std.mem.asBytes(&PLOT_AXIS[0]), 1, "PLOT_AXIS", "bool");
+    rv(std.mem.asBytes(&PLOT_ZMY[0]), 1, "PLOT_ZMY", "int8");
+    rv(std.mem.asBytes(&PLOT_ZOOM[0]), 1, "PLOT_ZOOM", "uint8");
+    rv(std.mem.asBytes(&plotmode[0]), 1, "plotmode", "int8");
     if (backupVersion >= 1016) {
-        rv(&tick_int_x[0], 8, "tick_int_x", "double");
-        rv(&tick_int_y[0], 8, "tick_int_y", "double");
-        rv(x_min, REAL_SIZE_IN_BYTES_34, "x_min", "real");
-        rv(x_max, REAL_SIZE_IN_BYTES_34, "x_max", "real");
-        rv(y_min, REAL_SIZE_IN_BYTES_34, "y_min", "real");
-        rv(y_max, REAL_SIZE_IN_BYTES_34, "y_max", "real");
+        rv(std.mem.asBytes(&tick_int_x[0]), 8, "tick_int_x", "double");
+        rv(std.mem.asBytes(&tick_int_y[0]), 8, "tick_int_y", "double");
+        rv(std.mem.asBytes(x_min), REAL_SIZE_IN_BYTES_34, "x_min", "real");
+        rv(std.mem.asBytes(x_max), REAL_SIZE_IN_BYTES_34, "x_max", "real");
+        rv(std.mem.asBytes(y_min), REAL_SIZE_IN_BYTES_34, "y_min", "real");
+        rv(std.mem.asBytes(y_max), REAL_SIZE_IN_BYTES_34, "y_max", "real");
     } else {
         // pre-1016 backups stored the graph settings as float: convert each once; the next save writes the new types.
-        migrateFloatValue(&tick_int_x[0], "tick_int_x", "double");
-        migrateFloatValue(&tick_int_y[0], "tick_int_y", "double");
-        migrateFloatValue(x_min, "x_min", "real");
-        migrateFloatValue(x_max, "x_max", "real");
-        migrateFloatValue(y_min, "y_min", "real");
-        migrateFloatValue(y_max, "y_max", "real");
+        if (oldFloatValue("tick_int_x")) |d| wr(f64, &tick_int_x, d);
+        if (oldFloatValue("tick_int_y")) |d| wr(f64, &tick_int_y, d);
+        if (oldFloatValue("x_min")) |d| convertDoubleToReal(d, x_min, &ctxtReal39);
+        if (oldFloatValue("x_max")) |d| convertDoubleToReal(d, x_max, &ctxtReal39);
+        if (oldFloatValue("y_min")) |d| convertDoubleToReal(d, y_min, &ctxtReal39);
+        if (oldFloatValue("y_max")) |d| convertDoubleToReal(d, y_max, &ctxtReal39);
     }
-    rv(&xzero[0], 4, "xzero", "uint32");
-    rv(&yzero[0], 4, "yzero", "uint32");
-    rv(&regStatsXY[0], 2, "regStatsXY", "int16");
-    rv(&matrixIndex[0], 2, "matrixIndex", "uint16");
-    rv(&shadowI[0], 2, "shadowI", "int16");
-    rv(&shadowJ[0], 2, "shadowJ", "int16");
-    rv(&currentViewRegister[0], 2, "currentViewRegister", "uint16");
-    rv(&currentSolverStatus[0], 2, "currentSolverStatus", "uint16");
-    rv(&currentSolverProgram[0], 2, "currentSolverProgram", "uint16");
-    rv(&currentDerivProgram[0], 2, "currentDerivProgram", "uint16");
-    rv(&currentSolverVariable[0], 2, "currentSolverVariable", "uint16");
-    rv(&numberOfFormulae[0], 2, "numberOfFormulae", "uint16");
-    rv(&currentFormula[0], 2, "currentFormula", "uint16");
-    rv(&numberOfUserMenus[0], 2, "numberOfUserMenus", "uint16");
-    rv(&currentUserMenu[0], 2, "currentUserMenu", "uint16");
-    rv(&userKeyLabelSize[0], 2, "userKeyLabelSize", "uint16");
-    rv(&timerCraAndDeciseconds[0], 1, "timerCraAndDeciseconds", "uint8");
-    rv(&timerValue[0], 4, "timerValue", "uint32");
-    rv(&timerTotalTime[0], 4, "timerTotalTime", "uint32");
-    rv(&currentInputVariable[0], 2, "currentInputVariable", "uint16");
-    rv(&SAVED_SIGMA_LASTX[0], 60, "SAVED_SIGMA_LASTX", "real");
-    rv(&SAVED_SIGMA_LASTY[0], 60, "SAVED_SIGMA_LASTY", "real");
-    rv(&SAVED_SIGMA_lastAddRem[0], 1, "SAVED_SIGMA_lastAddRem", "int8");
-    rv(&currentMvarLabel[0], 2, "currentMvarLabel", "uint16");
-    rv(&plotStatMx[0], 8, "plotStatMx", "hexDump");
-    rv(&drawHistogram[0], 1, "drawHistogram", "uint8");
-    rv(&plotStatScale[0], 1, "plotStatScale", "uint8");
-    rv(&statMx[0], 8, "statMx", "hexDump");
-    rv(&lrSelectionHistobackup[0], 2, "lrSelectionHistobackup", "uint16");
-    rv(&lrChosenHistobackup[0], 2, "lrChosenHistobackup", "uint16");
-    rv(&loBinR[0], 16, "loBinR", "real34");
-    rv(&nBins[0], 16, "nBins", "real34");
-    rv(&hiBinR[0], 16, "hiBinR", "real34");
-    rv(&histElementXorY[0], 2, "histElementXorY", "int16");
-    rv(&screenUpdatingMode[0], 1, "screenUpdatingMode", "uint8");
-    rv(&Norm_Key_00.func, @sizeOf(@TypeOf(Norm_Key_00.func)), "Norm_Key_00.func", "int16");
-    rv(&Norm_Key_00.funcParam, @sizeOf(@TypeOf(Norm_Key_00.funcParam)), "Norm_Key_00.funcParam", "hexDump");
-    rv(&Norm_Key_00.used, @sizeOf(@TypeOf(Norm_Key_00.used)), "Norm_Key_00.used", "bool");
-    rv(&Input_Default[0], 1, "Input_Default", "uint8");
+    rv(std.mem.asBytes(&xzero[0]), 4, "xzero", "uint32");
+    rv(std.mem.asBytes(&yzero[0]), 4, "yzero", "uint32");
+    rv(std.mem.asBytes(&regStatsXY[0]), 2, "regStatsXY", "int16");
+    rv(std.mem.asBytes(&matrixIndex[0]), 2, "matrixIndex", "uint16");
+    rv(std.mem.asBytes(&shadowI[0]), 2, "shadowI", "int16");
+    rv(std.mem.asBytes(&shadowJ[0]), 2, "shadowJ", "int16");
+    rv(std.mem.asBytes(&currentViewRegister[0]), 2, "currentViewRegister", "uint16");
+    rv(std.mem.asBytes(&currentSolverStatus[0]), 2, "currentSolverStatus", "uint16");
+    rv(std.mem.asBytes(&currentSolverProgram[0]), 2, "currentSolverProgram", "uint16");
+    rv(std.mem.asBytes(&currentDerivProgram[0]), 2, "currentDerivProgram", "uint16");
+    rv(std.mem.asBytes(&currentSolverVariable[0]), 2, "currentSolverVariable", "uint16");
+    rv(std.mem.asBytes(&numberOfFormulae[0]), 2, "numberOfFormulae", "uint16");
+    rv(std.mem.asBytes(&currentFormula[0]), 2, "currentFormula", "uint16");
+    rv(std.mem.asBytes(&numberOfUserMenus[0]), 2, "numberOfUserMenus", "uint16");
+    rv(std.mem.asBytes(&currentUserMenu[0]), 2, "currentUserMenu", "uint16");
+    rv(std.mem.asBytes(&userKeyLabelSize[0]), 2, "userKeyLabelSize", "uint16");
+    rv(std.mem.asBytes(&timerCraAndDeciseconds[0]), 1, "timerCraAndDeciseconds", "uint8");
+    rv(std.mem.asBytes(&timerValue[0]), 4, "timerValue", "uint32");
+    rv(std.mem.asBytes(&timerTotalTime[0]), 4, "timerTotalTime", "uint32");
+    rv(std.mem.asBytes(&currentInputVariable[0]), 2, "currentInputVariable", "uint16");
+    rv(std.mem.asBytes(&SAVED_SIGMA_LASTX[0]), 60, "SAVED_SIGMA_LASTX", "real");
+    rv(std.mem.asBytes(&SAVED_SIGMA_LASTY[0]), 60, "SAVED_SIGMA_LASTY", "real");
+    rv(std.mem.asBytes(&SAVED_SIGMA_lastAddRem[0]), 1, "SAVED_SIGMA_lastAddRem", "int8");
+    rv(std.mem.asBytes(&currentMvarLabel[0]), 2, "currentMvarLabel", "uint16");
+    rv(std.mem.asBytes(&plotStatMx[0]), 8, "plotStatMx", "hexDump");
+    rv(std.mem.asBytes(&drawHistogram[0]), 1, "drawHistogram", "uint8");
+    rv(std.mem.asBytes(&plotStatScale[0]), 1, "plotStatScale", "uint8");
+    rv(std.mem.asBytes(&statMx[0]), 8, "statMx", "hexDump");
+    rv(std.mem.asBytes(&lrSelectionHistobackup[0]), 2, "lrSelectionHistobackup", "uint16");
+    rv(std.mem.asBytes(&lrChosenHistobackup[0]), 2, "lrChosenHistobackup", "uint16");
+    rv(std.mem.asBytes(&loBinR[0]), 16, "loBinR", "real34");
+    rv(std.mem.asBytes(&nBins[0]), 16, "nBins", "real34");
+    rv(std.mem.asBytes(&hiBinR[0]), 16, "hiBinR", "real34");
+    rv(std.mem.asBytes(&histElementXorY[0]), 2, "histElementXorY", "int16");
+    rv(std.mem.asBytes(&screenUpdatingMode[0]), 1, "screenUpdatingMode", "uint8");
+    rv(std.mem.asBytes(&Norm_Key_00.func), @sizeOf(@TypeOf(Norm_Key_00.func)), "Norm_Key_00.func", "int16");
+    rv(std.mem.asBytes(&Norm_Key_00.funcParam), @sizeOf(@TypeOf(Norm_Key_00.funcParam)), "Norm_Key_00.funcParam", "hexDump");
+    rv(std.mem.asBytes(&Norm_Key_00.used), @sizeOf(@TypeOf(Norm_Key_00.used)), "Norm_Key_00.used", "bool");
+    rv(std.mem.asBytes(&Input_Default[0]), 1, "Input_Default", "uint8");
     set_def_Input_Default();
-    rv(&T_cursorPos[0], 2, "T_cursorPos", "int16");
-    rv(&multiEdLines[0], 1, "multiEdLines", "uint8");
-    rv(&current_cursor_x[0], 2, "current_cursor_x", "uint16");
-    rv(&current_cursor_y[0], 2, "current_cursor_y", "uint16");
-    rv(&xMultiLineEdOffset[0], 1, "xMultiLineEdOffset", "uint8");
-    rv(&yMultiLineEdOffset[0], 1, "yMultiLineEdOffset", "uint8");
-    rv(&showRegis[0], 2, "showRegis", "int16");
-    rv(&overrideShowBottomLine[0], 1, "overrideShowBottomLine", "uint8");
-    rv(&displayStackSHOIDISP[0], 1, "displayStackSHOIDISP", "uint8");
-    rv(&ListXYposition[0], 2, "ListXYposition", "int16");
-    rv(&DRG_Cycling[0], 1, "DRG_Cycling", "uint8");
-    if (comptime option_drg_cfg) rv(&drgConfig, 1, "drgConfig", "uint8");
-    rv(&lastFlgScr[0], 1, "lastFlgScr", "uint8");
-    rv(&displayAIMbufferoffset[0], 2, "displayAIMbufferoffset", "int16");
-    rv(&bcdDisplaySign[0], 1, "bcdDisplaySign", "uint8");
-    rv(&DM_Cycling[0], 1, "DM_Cycling", "uint8");
-    rv(&LongPressM[0], 1, "LongPressM", "uint8");
-    rv(&LongPressF[0], 1, "LongPressF", "uint8");
-    rv(&currentAsnScr[0], 1, "currentAsnScr", "uint8");
-    rv(&gapItemLeft[0], 2, "gapItemLeft", "uint16");
-    rv(&gapItemRight[0], 2, "gapItemRight", "uint16");
-    rv(&gapItemRadix[0], 2, "gapItemRadix", "uint16");
-    rv(&lastCenturyHighUsed[0], 2, "lastCenturyHighUsed", "uint16");
-    rv(&grpGroupingLeft[0], 1, "grpGroupingLeft", "uint8");
-    rv(&grpGroupingGr1LeftOverflow[0], 1, "grpGroupingGr1LeftOverflow", "uint8");
-    rv(&grpGroupingGr1Left[0], 1, "grpGroupingGr1Left", "uint8");
-    rv(&grpGroupingRight[0], 1, "grpGroupingRight", "uint8");
-    rv(&grpGroupingHex[0], 1, "grpGroupingHex", "uint8");
-    rv(&grpGroupingBin[0], 1, "grpGroupingBin", "uint8");
+    rv(std.mem.asBytes(&T_cursorPos[0]), 2, "T_cursorPos", "int16");
+    rv(std.mem.asBytes(&multiEdLines[0]), 1, "multiEdLines", "uint8");
+    rv(std.mem.asBytes(&current_cursor_x[0]), 2, "current_cursor_x", "uint16");
+    rv(std.mem.asBytes(&current_cursor_y[0]), 2, "current_cursor_y", "uint16");
+    rv(std.mem.asBytes(&xMultiLineEdOffset[0]), 1, "xMultiLineEdOffset", "uint8");
+    rv(std.mem.asBytes(&yMultiLineEdOffset[0]), 1, "yMultiLineEdOffset", "uint8");
+    rv(std.mem.asBytes(&showRegis[0]), 2, "showRegis", "int16");
+    rv(std.mem.asBytes(&overrideShowBottomLine[0]), 1, "overrideShowBottomLine", "uint8");
+    rv(std.mem.asBytes(&displayStackSHOIDISP[0]), 1, "displayStackSHOIDISP", "uint8");
+    rv(std.mem.asBytes(&ListXYposition[0]), 2, "ListXYposition", "int16");
+    rv(std.mem.asBytes(&DRG_Cycling[0]), 1, "DRG_Cycling", "uint8");
+    if (comptime option_drg_cfg) rv(std.mem.asBytes(&drgConfig), 1, "drgConfig", "uint8");
+    rv(std.mem.asBytes(&lastFlgScr[0]), 1, "lastFlgScr", "uint8");
+    rv(std.mem.asBytes(&displayAIMbufferoffset[0]), 2, "displayAIMbufferoffset", "int16");
+    rv(std.mem.asBytes(&bcdDisplaySign[0]), 1, "bcdDisplaySign", "uint8");
+    rv(std.mem.asBytes(&DM_Cycling[0]), 1, "DM_Cycling", "uint8");
+    rv(std.mem.asBytes(&LongPressM[0]), 1, "LongPressM", "uint8");
+    rv(std.mem.asBytes(&LongPressF[0]), 1, "LongPressF", "uint8");
+    rv(std.mem.asBytes(&currentAsnScr[0]), 1, "currentAsnScr", "uint8");
+    rv(std.mem.asBytes(&gapItemLeft[0]), 2, "gapItemLeft", "uint16");
+    rv(std.mem.asBytes(&gapItemRight[0]), 2, "gapItemRight", "uint16");
+    rv(std.mem.asBytes(&gapItemRadix[0]), 2, "gapItemRadix", "uint16");
+    rv(std.mem.asBytes(&lastCenturyHighUsed[0]), 2, "lastCenturyHighUsed", "uint16");
+    rv(std.mem.asBytes(&grpGroupingLeft[0]), 1, "grpGroupingLeft", "uint8");
+    rv(std.mem.asBytes(&grpGroupingGr1LeftOverflow[0]), 1, "grpGroupingGr1LeftOverflow", "uint8");
+    rv(std.mem.asBytes(&grpGroupingGr1Left[0]), 1, "grpGroupingGr1Left", "uint8");
+    rv(std.mem.asBytes(&grpGroupingRight[0]), 1, "grpGroupingRight", "uint8");
+    rv(std.mem.asBytes(&grpGroupingHex[0]), 1, "grpGroupingHex", "uint8");
+    rv(std.mem.asBytes(&grpGroupingBin[0]), 1, "grpGroupingBin", "uint8");
     grpGroupingHexBinDefault();
-    rv(&firstDayOfWeek[0], 1, "firstDayOfWeek", "uint8");
-    rv(&firstWeekOfYearDay[0], 1, "firstWeekOfYearDay", "uint8");
-    rv(&dispBase[0], 1, "dispBase", "uint8");
-    rv(&printerState.print_on, @sizeOf(@TypeOf(printerState.print_on)), "printerState.print_on", "bool");
-    rv(&printerState.printer_model, @sizeOf(@TypeOf(printerState.printer_model)), "printerState.printer_model", "uint8");
-    rv(&printerState.delay, @sizeOf(@TypeOf(printerState.delay)), "printerState.delay", "uint16");
-    rv(&programmableMenu[0], 332, "programmableMenu", "hexDump");
-    rv(&alphaRegister, 2, "alphaRegister", "uint16");
+    rv(std.mem.asBytes(&firstDayOfWeek[0]), 1, "firstDayOfWeek", "uint8");
+    rv(std.mem.asBytes(&firstWeekOfYearDay[0]), 1, "firstWeekOfYearDay", "uint8");
+    rv(std.mem.asBytes(&dispBase[0]), 1, "dispBase", "uint8");
+    rv(std.mem.asBytes(&printerState.print_on), @sizeOf(@TypeOf(printerState.print_on)), "printerState.print_on", "bool");
+    rv(std.mem.asBytes(&printerState.printer_model), @sizeOf(@TypeOf(printerState.printer_model)), "printerState.printer_model", "uint8");
+    rv(std.mem.asBytes(&printerState.delay), @sizeOf(@TypeOf(printerState.delay)), "printerState.delay", "uint16");
+    rv(std.mem.asBytes(&programmableMenu[0]), 332, "programmableMenu", "hexDump");
+    rv(std.mem.asBytes(&alphaRegister), 2, "alphaRegister", "uint16");
     graphVariabl1 = INVALID_VARIABLE;
-    rv(&graphVariabl1, 2, "graphVariabl1", "int16");
+    rv(std.mem.asBytes(&graphVariabl1), 2, "graphVariabl1", "int16");
     if (backupVersion < 1013) {
         // Six flags that lived under their own parameter names until 1013.
         // BASE_HOME and BASE_MYM each have two old spellings; the later one wins.
@@ -1524,7 +1530,7 @@ pub fn restoreCalc() void {
         // omits leaves the previous transfer's value standing.
         var tmp1: u8 = 0;
         for (transfers) |t| {
-            rv(&tmp1, 1, t.name, "bool");
+            rv(std.mem.asBytes(&tmp1), 1, t.name, "bool");
             if (tmp1 != 0) setSystemFlag(t.flag) else clearSystemFlag(t.flag);
         }
     }
