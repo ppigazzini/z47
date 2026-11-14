@@ -606,6 +606,25 @@
 #define mulComplexReal159 oracle_mulComplexReal159
 #define divComplexReal159 oracle_divComplexReal159
 
+// --- the double-width pair and INC/DEC (3 files, 1 STATE) ---
+// dblDivision.c's dblDivide is the body its two commands share, and the Zig owner
+// exports it under the same name. incDec.h declares incDecError unconditionally,
+// so unlike the per-file `*Error` handlers above it is a function in every
+// configuration and is renamed with the rest.
+#define fnDblMultiply oracle_fnDblMultiply
+#define dblDivide oracle_dblDivide
+#define fnDblDivide oracle_fnDblDivide
+#define fnDblDivideRemainder oracle_fnDblDivideRemainder
+#define incDec oracle_incDec  // dispatch table, not a function
+#define incDecError oracle_incDecError
+#define fnDec oracle_fnDec
+#define fnInc oracle_fnInc
+#define incDecLonI oracle_incDecLonI
+#define incDecReal oracle_incDecReal
+#define incDecCplx oracle_incDecCplx
+#define incDecTime oracle_incDecTime
+#define incDecShoI oracle_incDecShoI
+
 #include "../../../upstream/src/c47/mathematics/checkValue.c"
 #include "../../../upstream/src/c47/mathematics/compare.c"
 #include "../../../upstream/src/c47/mathematics/int.c"
@@ -671,6 +690,9 @@
 #include "../../../upstream/src/c47/mathematics/minusOnePow.c"
 #include "../../../upstream/src/c47/mathematics/invert.c"
 #include "../../../upstream/src/c47/mathematics/changeSign.c"
+#include "../../../upstream/src/c47/mathematics/dblMultiplication.c"
+#include "../../../upstream/src/c47/mathematics/dblDivision.c"
+#include "../../../upstream/src/c47/mathematics/incDec.c"
 
 // The one function in this file that is not c43's own body. c43's fnToRect is
 // static, so the harness cannot call it across a translation unit; this hands it
