@@ -372,11 +372,9 @@ void roundiReal(void);
 #include "../../../upstream/src/c47/mathematics/ixyz.c"
 #undef fnIxyz
 
-#define log z47_math_wrappers_log
 #define fnFactorial oracle_fnFactorial
 #include "../../../upstream/src/c47/mathematics/factorial.c"
 #undef fnFactorial
-#undef log
 
 #define realRandomU01 oracle_realRandomU01
 #define fnRandom oracle_fnRandom
