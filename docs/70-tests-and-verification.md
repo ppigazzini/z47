@@ -439,12 +439,13 @@ maps each of those surfaces to its job.
 ## Generated Artifact Diff Contract
 
 After `zig build generated`, compare only the generated artifacts that step
-refreshes -- the list `workflow-imported-root-paths.sh generated-artifacts`
-prints, which is what the `run-local-gate.sh` final step diffs. Only
-`build/generated/testPgms.bin` in that list is tracked; the
-`upstream/src/generated/` outputs are gitignored, so `git diff --exit-code`
-cannot see them, and only CI's `linux-host-parity-artifacts` upload (files plus
-SHA-256) records them. Do not use unrelated diffs as proof the
+refreshes. `workflow-imported-root-paths.sh generated-artifacts` prints all of
+them, and CI's `linux-host-parity-artifacts` upload records them (files plus
+SHA-256); the `upstream/src/generated/` outputs are gitignored, so that upload
+is the only record of them. `workflow-imported-root-paths.sh
+tracked-generated-artifacts` prints the tracked one, `build/generated/testPgms.bin`,
+and is what CI's and `run-local-gate.sh`'s final `git diff --exit-code` takes; it
+fails if a path on it is not tracked. Do not use unrelated diffs as proof the
 generated-artifact contract moved.
 
 Regenerate `build/generated/testPgms.bin` after any item-table change that adds,

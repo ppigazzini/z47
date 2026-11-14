@@ -142,10 +142,10 @@ from those copies.
 | `generated` | all of the above | every output above |
 
 `../.github/project/workflow-imported-root-paths.sh generated-artifacts` prints
-that list; it is the vocabulary CI and the local gate's final diff both consume,
-so read it from there rather than from this table. That diff is `git diff
---exit-code`, so of these paths it can only ever flag the tracked
-`build/generated/testPgms.bin`.
+that list, which CI hashes into the golden-artifact proof; read it from there
+rather than from this table. The `git diff --exit-code` that CI and the local
+gate end with takes `tracked-generated-artifacts` instead, the tracked
+`build/generated/testPgms.bin`, and fails if a path on that list is untracked.
 
 **The testPgms image is the one output that does NOT live in the imported tree.**
 It is z47's own baseline under `build/generated/`, deliberately outside
