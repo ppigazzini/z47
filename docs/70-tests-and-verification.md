@@ -204,6 +204,11 @@ touched, for example:
   one that holds the `.sav` **format** to c43: it links c43's own
   `saveRestoreCalcState.c` beside the Zig owner in a full core and compares the
   saved bytes, so a c43 format change turns it red rather than passing silently.
+- `zig build matrix_editor_parity` (matrix editor). It links c43's own
+  `ui/matrixEditor.c` beside the owners in `../src/shell/matrix_editor/` and
+  compares what the editor leaves behind: I and J, the wrap and grow flags, the
+  editor's variables, the open matrix and the matrix register. The editor's
+  drawing goes through the same display code on both sides and is not compared.
 - `zig build math_command_wrappers_parity`, `zig build math_random_parity`,
   and the focused `zig build math_*_oracle` lanes (mathematics owners)
 - `zig build constants_parity`, `zig build tone_parity`,

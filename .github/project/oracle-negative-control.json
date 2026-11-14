@@ -94,6 +94,15 @@
       "why": "The .sav/.d47 writer's section tag for full-precision XFN registers, reached through the data-file export the lane now drives."
     },
     {
+      "lane": "matrix_editor",
+      "step": "matrix_editor_parity",
+      "what": "I+ and I- are refused outside the matrix editor",
+      "file": "src/frontier.zig",
+      "find": "pub export fn fnIncDecI(mode: u16) callconv(.c) void {\n    matrix_nav.incDec(.row, mode);",
+      "replace": "pub export fn fnIncDecI(mode: u16) callconv(.c) void {\n    if (calcMode != CM_MIM) return;\n    matrix_nav.incDec(.row, mode);",
+      "why": "c43 moves I on an indexed matrix in any mode, which is what STOSEQ, RCLSEQ and the I+ key need; a mode guard here was a real defect, and only the indexed cases reach it."
+    },
+    {
       "lane": "flags",
       "step": "flags_parity",
       "what": "a user flag resolves to the wrong bank word",
