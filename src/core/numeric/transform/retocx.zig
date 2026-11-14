@@ -192,8 +192,9 @@ pub export fn fnReToCx(unusedButMandatoryParameter: u16) callconv(.c) void {
                 const rElems = realMatrixElements(&rMat);
                 const iElems = realMatrixElements(&iMat);
                 const cElems = complexMatrixElements(&cMat);
+                // A uint16_t index, incremented modulo 2^16 as upstream's is.
                 var i: u16 = 0;
-                while (i < @as(u32, rMat.header.matrixRows) * @as(u32, rMat.header.matrixColumns)) : (i += 1) {
+                while (i < @as(u32, rMat.header.matrixRows) * @as(u32, rMat.header.matrixColumns)) : (i +%= 1) {
                     real34Copy(&rElems[i], VARIABLE_REAL34_DATA(&cElems[i]));
                     real34Copy(&iElems[i], VARIABLE_IMAG34_DATA(&cElems[i]));
 
