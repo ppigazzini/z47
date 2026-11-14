@@ -140,11 +140,9 @@ extern fn getSystemFlag(flag: c_int) bool_t;
 
 extern fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void;
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
-extern fn getRegisterDataPointer(regist: calcRegister_t) [*]align(4) u8;
 extern fn getRegisterTag(regist: calcRegister_t) u32;
 
 extern fn liftStack() void;
-extern fn sprintf(buf: [*c]u8, fmt: [*:0]const u8, ...) c_int;
 
 extern var labelList: [*c]align(4) labelList_t;
 extern var numberOfLabels: u16;
