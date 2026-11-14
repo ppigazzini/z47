@@ -237,6 +237,30 @@ a spin cannot be diagnosed by attaching. Print a counter from the suspect on
 both sides and diff the sequences instead -- that is what located a solver that
 never converged, in one pass.
 
+## Type-Checking Another Target's Code Before CI
+
+Zig analyses only what a build reaches, so a function behind
+`builtin.os.tag == .windows` or `.macos` is never type-checked by a Linux build.
+A type error there -- a binding changed in one owner and not in an OS-gated
+caller -- passes every local lane and fails only on that platform's runner. The
+host build's own object commands, retargeted and emitting nothing, close the gap
+in minutes:
+
+```sh
+cache=$(mktemp -d)   # a fresh cache, so every object compiles and is printed
+zig build both --verbose --cache-dir "$cache" 2>&1 \
+  | sed -n 's/^info(verbose): //p' | grep -- '-Mroot=src' > objcmds.txt
+while IFS= read -r cmd; do
+  echo "$cmd" | sed -E 's/-target x86_64-[a-z0-9_-]+/-target x86_64-windows-gnu/g;
+                        s/ --listen=-//; s/$/ -fno-emit-bin/' | bash
+done < objcmds.txt
+```
+
+Swap the target for `aarch64-macos` to cover the macOS runner. Each command is
+an ordinary `zig build-obj`, so an error names the file and line as a build
+would. It checks types, not behaviour: the platform's runner still has to run
+the code.
+
 ## Finding A Stray Write On A Lane You Cannot Run
 
 The differential above needs both sides in front of you. When a target fails and
