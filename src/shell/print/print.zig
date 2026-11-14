@@ -96,12 +96,12 @@ const font_t = abi.Font;
 const glyphPrinter_t = abi.GlyphPrinter;
 const printerFont_t = extern struct {
     numberOfGlyphs: u16,
-    // glyphPrinter_t glyphs[]; flexible array member - accessed via pointer math
+    glyphs: [0]glyphPrinter_t, // the C flexible array member
 };
 const glyphMartelPrinter_t = abi.GlyphMartelPrinter;
 const martelFont24_t = extern struct {
     numberOfGlyphs: u16,
-    // glyphMartelPrinter_t glyphs[];
+    glyphs: [0]glyphMartelPrinter_t, // the C flexible array member
 };
 const glyph_t = abi.Glyph;
 // nameAlias_t / summationRegisterName_t layouts centralized in abi
@@ -761,15 +761,15 @@ fn charMap(charCode: u16) u8 {
     return printer_char_map.charMap(&hp82240CharMap, lastFunc == ITM_PRINTERALPHA, charCode);
 }
 
-// Thin wrappers: compute the flexible-array glyphs pointer past the font header
-// and delegate the pure binary search to printer_glyph_search (std+abi, tested).
+// Thin wrappers: hand the font's flexible glyph array to the pure binary search
+// in printer_glyph_search (std+abi, tested).
 fn findPrinterGlyph(font: *const printerFont_t, charCode: u16) i16 {
-    const glyphs: [*]const glyphPrinter_t = @ptrFromInt(@intFromPtr(font) + @sizeOf(printerFont_t));
+    const glyphs: [*]const glyphPrinter_t = &font.glyphs;
     return printer_glyph_search.findPrinterGlyph(glyphs, font.numberOfGlyphs, charCode);
 }
 
 fn findMartelGlyph(font: *const martelFont24_t, charCode: u16) u16 {
-    const glyphs: [*]const glyphMartelPrinter_t = @ptrFromInt(@intFromPtr(font) + @sizeOf(martelFont24_t));
+    const glyphs: [*]const glyphMartelPrinter_t = &font.glyphs;
     return printer_glyph_search.findMartelGlyph(glyphs, font.numberOfGlyphs, charCode);
 }
 
@@ -934,7 +934,7 @@ fn printGraphic24(glen_in: u8, graphic_in: [*c]const u8) void {
 
 fn printGlyph8(charCode: u16, font: *const printerFont_t) void {
     const glyphId = findPrinterGlyph(font, charCode);
-    const glyphs: [*]const glyphPrinter_t = @ptrFromInt(@intFromPtr(font) + @sizeOf(printerFont_t));
+    const glyphs: [*]const glyphPrinter_t = &font.glyphs;
     const glyph = &glyphs[@intCast(glyphId)];
     printGraphic8(5, &glyph.data);
 }
@@ -944,7 +944,7 @@ fn printMartelGlyph(charCode: u16) void {
     if (glyphId == 255) {
         printGlyph8(charCode, printerFont8);
     } else {
-        const glyphs: [*]const glyphMartelPrinter_t = @ptrFromInt(@intFromPtr(martelFont24) + @sizeOf(martelFont24_t));
+        const glyphs: [*]const glyphMartelPrinter_t = &martelFont24.glyphs;
         const glyph = &glyphs[glyphId];
         printGraphic24(48, &glyph.data);
         printerColumn += 8;
@@ -956,10 +956,9 @@ fn printGlyph24(charCode: u16, font: *const font_t) void {
     _ = memset(&graphic, 0, 42);
     const glyphId = frontier_fonts.findGlyph(font, charCode);
 
-    var glyph: *glyph_t = undefined;
+    var glyph: *const glyph_t = undefined;
     if (glyphId >= 0) {
-        const glyphs: [*]glyph_t = @ptrFromInt(@intFromPtr(font) + 4); // font_t header (id:i8 + numberOfGlyphs:u16 padded to 4)
-        glyph = &glyphs[@intCast(glyphId)];
+        glyph = &font.glyphsPtr()[@intCast(glyphId)];
     } else if (glyphId == -1) {
         frontier_fonts.generateNotFoundGlyph(-1, charCode);
         glyph = glyphNotFound;
