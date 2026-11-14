@@ -31,12 +31,9 @@ const option_drg_cfg: bool = build_options.option_drg_cfg;
 // OPTION_IR_PRINTING: the state file's printer keys are restored only when the
 // printer is built in; otherwise they are unknown keys and skipped.
 const ir_printing: bool = build_options.ir_printing;
-fn geometry() progmem.Geometry {
-    return .{
-        .ram_base = @intFromPtr(ram),
-        .ram_size_in_blocks = build_options.ram_size_in_blocks,
-        .old_hw = state_old_hw,
-    };
+/// The RAM pool at this build's geometry.
+fn pool() progmem.Ram {
+    return progmem.Ram.of(ram, build_options.ram_size_in_blocks, state_old_hw);
 }
 const codec = @import("calc_state_register_codec.zig");
 
@@ -532,8 +529,9 @@ pub export fn convertOldMenuNumbers() callconv(.c) void {
     convertOldMenuItems(userAlphaItems[0..]);
     if (userMenus != null) {
         // numberOfUserMenus comes from the file; clamp it to the space left after userMenus.
-        const g = geometry();
-        const menus_in_pool: u16 = @intCast((TO_BYTES(g.ram_size_in_blocks) - TO_BYTES(progmem.toC47memptr(g, @intFromPtr(userMenus)))) / @sizeOf(userMenu_t));
+        const g = pool();
+        const menus: [*]const userMenu_t = userMenus;
+        const menus_in_pool: u16 = @intCast((TO_BYTES(g.size_in_blocks) - TO_BYTES(g.toC47memptr(std.mem.sliceAsBytes(menus[0..1]).ptr))) / @sizeOf(userMenu_t));
         const count = @min(numberOfUserMenus, menus_in_pool);
         var m: u16 = 0;
         while (m < count) : (m += 1) {
@@ -692,7 +690,7 @@ fn restoreNamedFlag(line: [*c]u8) void {
 // separately-tested progmem module (`zig build state-progmem-test`).
 fn toPcmemptr(p: u32) [*c]u8 {
     @setRuntimeSafety(true); // untrusted file input -- see calc_state.zig's panic decl
-    return @ptrFromInt(progmem.toPcmemptr(geometry(), @intCast(p)));
+    return pool().toPcmemptr(@intCast(p));
 }
 /// The pool pointer a saved (block, offset) pair names, or null if the pair is not
 /// one the save format can have produced.
@@ -715,7 +713,7 @@ fn toPcmemptr(p: u32) [*c]u8 {
 /// inside the pool and its offsets are remainders below one block.
 fn restoredPoolPointer(block: u32, offset: u32) ?[*c]u8 {
     @setRuntimeSafety(true); // untrusted file input -- see calc_state.zig's panic decl
-    const geo = geometry();
+    const geo = pool();
     // `std.math.cast`, not `@intCast`: a block index too large to be one at all is
     // the same refusal as one outside the pool, and saying so with a checked cast
     // that RETURNS NULL keeps the whole function's answer in one shape. @intCast
@@ -723,15 +721,15 @@ fn restoredPoolPointer(block: u32, offset: u32) ?[*c]u8 {
     // add a narrowing to the untrusted-file ratchet for a value the next line
     // already bounds.
     const blk = std.math.cast(u16, block) orelse return null;
-    if (blk >= geo.ram_size_in_blocks or offset >= 4) {
+    if (blk >= geo.size_in_blocks or offset >= 4) {
         return null;
     }
-    return @as([*c]u8, @ptrFromInt(progmem.toPcmemptr(geo, blk))) + offset;
+    return geo.at(@as(usize, blk) * 4 + offset);
 }
 
 fn toC47memptr(p: [*c]const u8) u16 {
     @setRuntimeSafety(true); // untrusted file input -- see calc_state.zig's panic decl
-    return progmem.toC47memptr(geometry(), @intFromPtr(p));
+    return pool().toC47memptr(p);
 }
 
 pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys: bool) bool {
@@ -1184,7 +1182,7 @@ fn parseMenuItem(item: [*c]userMenuItem_t) void {
 
 fn restoreProgramsSection(load_mode: u16) void {
     @setRuntimeSafety(true); // untrusted file input -- see calc_state.zig's panic decl
-    const oldSizeInBlocks: u16 = progmem.programSizeInBlocks(geometry(), @intFromPtr(beginOfProgramMemory));
+    const oldSizeInBlocks: u16 = pool().programSizeInBlocks(beginOfProgramMemory);
     var oldFirstFreeProgramByte: [*c]u8 = firstFreeProgramByte;
     const oldFreeProgramBytes: u16 = freeProgramBytes;
 
@@ -1270,16 +1268,17 @@ fn restoreProgramsSection(load_mode: u16) void {
     // Cross-hardware RAM-size relocation correction (sign differs OLD_HW vs
     // NEW_HW); the geometry-parameterized progmem module covers both lanes and
     // is verified by `zig build state-progmem-test`.
-    {
+    if (currentStep != null and firstFreeProgramByte != null and beginOfProgramMemory != null) {
+        const r = pool();
         const reloc = progmem.relocatePrograms(.{
-            .first_free_program_byte = @intFromPtr(firstFreeProgramByte),
+            .first_free_program_byte = r.offsetOf(firstFreeProgramByte),
             .free_program_bytes = freeProgramBytes,
-            .begin_of_program_memory = @intFromPtr(beginOfProgramMemory),
+            .begin_of_program_memory = r.offsetOf(beginOfProgramMemory),
             .number_of_blocks = numberOfBlocks,
-            .current_step = @intFromPtr(currentStep),
+            .current_step = r.offsetOf(currentStep),
         }, state_old_hw);
-        currentStep = @ptrFromInt(reloc.current_step);
-        firstFreeProgramByte = @ptrFromInt(reloc.first_free_program_byte);
+        currentStep = r.at(reloc.current_step);
+        firstFreeProgramByte = r.at(reloc.first_free_program_byte);
     }
 
     if (programsLoadMode == LM_PROGRAMS) {

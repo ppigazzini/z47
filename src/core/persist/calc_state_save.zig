@@ -35,12 +35,9 @@ const option_drg_cfg: bool = build_options.option_drg_cfg;
 
 const USER_R47: u16 = 66;
 const calc_model_user_id: u16 = build_options.calc_model_user_id;
-fn geometry() progmem.Geometry {
-    return .{
-        .ram_base = @intFromPtr(ram),
-        .ram_size_in_blocks = build_options.ram_size_in_blocks,
-        .old_hw = state_old_hw,
-    };
+/// The RAM pool at this build's geometry.
+fn pool() progmem.Ram {
+    return progmem.Ram.of(ram, build_options.ram_size_in_blocks, state_old_hw);
 }
 
 // --- Resolved constants (probed from the real headers) ---
@@ -248,13 +245,13 @@ fn ci(value: anytype) c_int {
 // Program-memory pointer arithmetic, delegated to the geometry-parameterized,
 // separately-tested progmem module (`zig build state-progmem-test`).
 fn toC47memptr(p: [*c]const u8) u16 {
-    return progmem.toC47memptr(geometry(), @intFromPtr(p));
+    return pool().toC47memptr(p);
 }
 fn offsetWithinBlock(p: [*c]const u8) u32 {
-    return progmem.offsetWithinBlock(geometry(), @intFromPtr(p));
+    return pool().offsetWithinBlock(p);
 }
 fn toPcmemptr(p: u16) [*c]u8 {
-    return @ptrFromInt(progmem.toPcmemptr(geometry(), p));
+    return pool().toPcmemptr(p);
 }
 
 /// True when equation `id` has text a state file can carry. A formula with none
@@ -417,7 +414,7 @@ pub fn writeSaveSections() void {
     }
 
     // Programs
-    const currentSizeInBlocks: u16 = progmem.programSizeInBlocks(geometry(), @intFromPtr(beginOfProgramMemory));
+    const currentSizeInBlocks: u16 = pool().programSizeInBlocks(beginOfProgramMemory);
     saveLine("PROGRAMS\n{d}\n", .{cu(currentSizeInBlocks)});
     save(b());
     saveLine("{d}\n{d}\n", .{ cu(toC47memptr(currentStep)), cu(offsetWithinBlock(currentStep)) });
