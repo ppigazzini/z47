@@ -167,13 +167,6 @@ inline fn moreInfo(where: [*:0]const u8, what: [*:0]const u8) void {
     }
 }
 
-inline fn realBlocks(p: *anyopaque) [*]real_t {
-    return @ptrCast(@alignCast(p));
-}
-inline fn cplxBlocks(p: *anyopaque) [*]cplx_t {
-    return @ptrCast(@alignCast(p));
-}
-
 // ===========================================================================
 // _ellipseE / fnEllipse / fnKtoM / fnMtoK / fnMtoTheta / fnThetatoM
 // ===========================================================================
@@ -269,18 +262,14 @@ fn _calc_real_elliptic(sn: *real_t, cn: *real_t, dn: *real_t, u: *const real_t, 
     var r: real_t = undefined;
 
     const blocks = ELLIPTIC_N * REAL_SIZE_IN_BLOCKS_75;
-    const MU_p = runtime.allocC47Blocks(blocks) orelse return snCnDnNaN(sn, cn, dn);
-    defer runtime.freeC47Blocks(MU_p, blocks);
-    const NU_p = runtime.allocC47Blocks(blocks) orelse return snCnDnNaN(sn, cn, dn);
-    defer runtime.freeC47Blocks(NU_p, blocks);
-    const C_p = runtime.allocC47Blocks(blocks) orelse return snCnDnNaN(sn, cn, dn);
-    defer runtime.freeC47Blocks(C_p, blocks);
-    const D_p = runtime.allocC47Blocks(blocks) orelse return snCnDnNaN(sn, cn, dn);
-    defer runtime.freeC47Blocks(D_p, blocks);
-    const MU = realBlocks(MU_p);
-    const NU = realBlocks(NU_p);
-    const C = realBlocks(C_p);
-    const D = realBlocks(D_p);
+    const MU = abi.allocC47BlocksAs(real_t, blocks) orelse return snCnDnNaN(sn, cn, dn);
+    defer runtime.freeC47Blocks(MU, blocks);
+    const NU = abi.allocC47BlocksAs(real_t, blocks) orelse return snCnDnNaN(sn, cn, dn);
+    defer runtime.freeC47Blocks(NU, blocks);
+    const C = abi.allocC47BlocksAs(real_t, blocks) orelse return snCnDnNaN(sn, cn, dn);
+    defer runtime.freeC47Blocks(C, blocks);
+    const D = abi.allocC47BlocksAs(real_t, blocks) orelse return snCnDnNaN(sn, cn, dn);
+    defer runtime.freeC47Blocks(D, blocks);
 
     if (realIsNegative(m) or realCompareLessThan(const_1(), m)) {
         realSetNaN(sn);
@@ -1437,14 +1426,13 @@ pub export fn ellipticE(amplitude: *const cplx_t, m: *const real_t, res: *cplx_t
 
         runtime.mulComplexi(&a, res);
     } else {
-        const tmp_p = runtime.allocC47Blocks(E_TMP_BLOCKS) orelse {
+        const tmpVal = abi.allocC47BlocksAs(cplx_t, E_TMP_BLOCKS) orelse {
             runtime.displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
             realSetNaN(&res.Real);
             realSetNaN(&res.Imag);
             return;
         };
-        defer runtime.freeC47Blocks(tmp_p, E_TMP_BLOCKS);
-        const tmpVal = cplxBlocks(tmp_p);
+        defer runtime.freeC47Blocks(tmpVal, E_TMP_BLOCKS);
         const LAMBDA = &tmpVal[ETmp.LAMBDA];
         const MU = &tmpVal[ETmp.MU];
         const B1 = &tmpVal[ETmp.B1];
@@ -1552,22 +1540,20 @@ fn _jacobiZeta_Agm(amplitude: *const cplx_t, m: *const real_t, res: *cplx_t, rea
         return;
     }
     const blocks = ELLIPTIC_N * 2 * REAL_SIZE_IN_BLOCKS_75;
-    const a_p = runtime.allocC47Blocks(blocks) orelse {
+    const a = abi.allocC47BlocksAs(cplx_t, blocks) orelse {
         runtime.displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
         realSetNaN(&res.Real);
         realSetNaN(&res.Imag);
         return;
     };
-    defer runtime.freeC47Blocks(a_p, blocks);
-    const b_p = runtime.allocC47Blocks(blocks) orelse {
+    defer runtime.freeC47Blocks(a, blocks);
+    const b = abi.allocC47BlocksAs(cplx_t, blocks) orelse {
         runtime.displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
         realSetNaN(&res.Real);
         realSetNaN(&res.Imag);
         return;
     };
-    defer runtime.freeC47Blocks(b_p, blocks);
-    const a = cplxBlocks(a_p);
-    const b = cplxBlocks(b_p);
+    defer runtime.freeC47Blocks(b, blocks);
 
     var k: cplx_t = undefined;
     var c: cplx_t = undefined;

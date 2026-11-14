@@ -24,16 +24,21 @@ inline fn realCopy(source: *const real_t, destination: *real_t) void {
     destination.* = source.*;
 }
 
-pub export fn realVectorSize(matrix: *const real34Matrix_t) callconv(.c) u16 {
-    if (matrix.header.matrixColumns != 1 and matrix.header.matrixRows != 1) {
+// The element count of a row or column vector, 0 for anything else. Only the
+// header is read, and a real and a complex matrix share it.
+fn vectorSize(header: *const abi.MatrixHeader) u16 {
+    if (header.matrixColumns != 1 and header.matrixRows != 1) {
         return 0;
     }
-    return @intCast(@as(u32, matrix.header.matrixColumns) * @as(u32, matrix.header.matrixRows));
+    return @intCast(@as(u32, header.matrixColumns) * @as(u32, header.matrixRows));
+}
+
+pub export fn realVectorSize(matrix: *const real34Matrix_t) callconv(.c) u16 {
+    return vectorSize(&matrix.header);
 }
 
 pub export fn complexVectorSize(matrix: *const complex34Matrix_t) callconv(.c) u16 {
-    // Upstream reinterpret-casts to a real matrix; the headers share a layout.
-    return realVectorSize(@ptrCast(matrix));
+    return vectorSize(&matrix.header);
 }
 
 // base^exponent for a finite base in [0, 1] and a positive integer exponent, by

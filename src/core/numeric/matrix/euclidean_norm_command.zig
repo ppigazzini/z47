@@ -60,9 +60,8 @@ pub export fn _fnEuclideanNorm(p_param: u16) callconv(.c) void {
     runtime.adjustResult(runtime.REGISTER_X, false, true, runtime.REGISTER_X, -1, -1);
 }
 
-// The element block of the matrix a register holds, read as either kind.
-const MatrixOperand = struct {
-    is_complex: bool,
+// The element block of the matrix a register holds, of whichever kind it is.
+const MatrixOperand = union(enum) {
     real: [*]const real34_t,
     complex: [*]const complex34_t,
 
@@ -70,22 +69,23 @@ const MatrixOperand = struct {
         if (data_type == runtime.dtReal34Matrix) {
             var m: real34Matrix_t = undefined;
             runtime.linkToRealMatrixRegister(reg, &m);
-            const elems = abi.matrixConstRealElems(&m);
-            return .{ .is_complex = false, .real = elems, .complex = @ptrCast(elems) };
+            return .{ .real = abi.matrixConstRealElems(&m) };
         }
         var m: complex34Matrix_t = undefined;
         runtime.linkToComplexMatrixRegister(reg, &m);
-        const elems = abi.matrixConstComplexElems(&m);
-        return .{ .is_complex = true, .real = @ptrCast(elems), .complex = elems };
+        return .{ .complex = abi.matrixConstComplexElems(&m) };
     }
 
     fn element(self: MatrixOperand, index: usize, value: *cplx_t) void {
-        if (self.is_complex) {
-            runtime.real34ToReal(&self.complex[index].real, &value.Real);
-            runtime.real34ToReal(&self.complex[index].imag, &value.Imag);
-        } else {
-            runtime.real34ToReal(&self.real[index], &value.Real);
-            runtime.realSetZero(&value.Imag);
+        switch (self) {
+            .complex => |elements| {
+                runtime.real34ToReal(&elements[index].real, &value.Real);
+                runtime.real34ToReal(&elements[index].imag, &value.Imag);
+            },
+            .real => |elements| {
+                runtime.real34ToReal(&elements[index], &value.Real);
+                runtime.realSetZero(&value.Imag);
+            },
         }
     }
 };
@@ -101,7 +101,7 @@ fn matrixElementDifferenceMagnitude(y: MatrixOperand, x: MatrixOperand, element:
     x.element(element, &x_element);
 
     runtime.realSubtract(&y_element.Real, &x_element.Real, &y_element.Real, &runtime.ctxtReal39);
-    if (!y.is_complex and !x.is_complex) {
+    if (y == .real and x == .real) {
         runtime.realSetPositiveSign(&y_element.Real);
         realCopy(&y_element.Real, magnitude);
     } else {

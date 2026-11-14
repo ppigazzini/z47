@@ -27,18 +27,8 @@ const ITM_M_DIM_GR: u16 = 1739;
 
 // Matrix elements live immediately after the matrixHeader_t (matrix.c:
 // REGISTER_*_MATRIX_ELEMENTS = getRegisterDataPointer + sizeof(matrixHeader_t)).
-fn elementBase(regist: calcRegister_t) [*]u8 {
-    const p: [*]u8 = abi.registerBytes(regist);
-    return p + @sizeOf(runtime.matrixHeader_t);
-}
-
-fn registerRealElements(regist: calcRegister_t) [*]real34_t {
-    return @ptrCast(@alignCast(elementBase(regist)));
-}
-
-fn registerComplexElements(regist: calcRegister_t) [*]complex34_t {
-    return @ptrCast(@alignCast(elementBase(regist)));
-}
+const registerRealElements = abi.registerReal34MatrixElements;
+const registerComplexElements = abi.registerComplex34MatrixElements;
 
 fn zeroElement(comptime T: type, dst: *T) void {
     if (T == real34_t) {

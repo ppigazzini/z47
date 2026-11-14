@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
+const std = @import("std");
 const abi = @import("abi");
 const consts = abi.constants;
 const const34_0 = consts.const34_0;
@@ -239,12 +240,9 @@ inline fn const_1() *const real_t {
     return runtime.z47_math_wrappers_const_1();
 }
 
-// real34Copy(source, destination): copy the 16 raw bytes (two u64 stores in C).
+// real34Copy(source, destination): copy the 16 raw bytes.
 inline fn real34Copy(source: *const real34_t, destination: *real34_t) void {
-    const src: *align(1) const [2]u64 = @ptrCast(source);
-    const dst: *align(1) [2]u64 = @ptrCast(destination);
-    dst[0] = src[0];
-    dst[1] = src[1];
+    destination.* = source.*;
 }
 extern fn convertLongIntegerToReal34(source: *mpz_struct, destination: *real34_t) void;
 extern fn decQuadFromUInt32(destination: *real34_t, source: u32) *real34_t;
@@ -1777,7 +1775,8 @@ extern var filename_csv: [FILENAMELEN]u8;
 fn printTitles(input: *mpz_struct) void {
     if (addFactorsToTSV) {
         create_filename("");
-        fnStrtoReg(@ptrCast(&filename_csv), TEMP_REGISTER_1);
+        const filename_length = std.mem.findScalar(u8, &filename_csv, 0).?;
+        fnStrtoReg(filename_csv[0..filename_length :0].ptr, TEMP_REGISTER_1);
         cancelFilename = true;
         fnP_All_Regs(PRN_TMP);
 

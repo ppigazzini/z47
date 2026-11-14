@@ -171,14 +171,13 @@ extern var ctxtReal39: realContext_t;
 extern var ctxtReal75: realContext_t;
 
 // libc qsort for the exact (unstable) ordering of the 3 roots.
-extern fn qsort(base: *anyopaque, nmemb: usize, size: usize, compar: *const fn (?*const anyopaque, ?*const anyopaque) callconv(.c) c_int) void;
+/// C's qsort, bound at the one element type this owner sorts.
+extern fn qsort(base: [*]cplx_t, nmemb: usize, size: usize, compar: *const fn (*const cplx_t, *const cplx_t) callconv(.c) c_int) void;
 
 // ===========================================================================
 // cmplxSortCompare
 // ===========================================================================
-fn cmplxSortCompare(v1: ?*const anyopaque, v2: ?*const anyopaque) linksection(runtime.code_section) callconv(.c) c_int {
-    const p1: *const cplx_t = @ptrCast(@alignCast(v1.?));
-    const p2: *const cplx_t = @ptrCast(@alignCast(v2.?));
+fn cmplxSortCompare(p1: *const cplx_t, p2: *const cplx_t) linksection(runtime.code_section) callconv(.c) c_int {
     var v1a: real_t = undefined;
     var v2a: real_t = undefined;
     var c: real_t = undefined;

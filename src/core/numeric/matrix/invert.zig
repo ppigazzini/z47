@@ -56,8 +56,7 @@ pub export fn invertRealMatrix(matrix: *const real34Matrix_t, res: *real34Matrix
 
     const blocks = @as(usize, n) * n * real_size_in_blocks * 2;
     const count = @as(usize, n) * n;
-    if (runtime.allocC47Blocks(blocks)) |tmp_raw| {
-        const tmp_mat: [*]cplx_t = @ptrCast(@alignCast(tmp_raw));
+    if (abi.allocC47BlocksAs(cplx_t, blocks)) |tmp_mat| {
         const me = constRealElems(matrix);
         var k: usize = 0;
         while (k < count) : (k += 1) {
@@ -82,7 +81,7 @@ pub export fn invertRealMatrix(matrix: *const real34Matrix_t, res: *real34Matrix
             if (!samePtr(matrix, res)) clearResult(res);
         }
 
-        runtime.freeC47Blocks(tmp_raw, blocks);
+        runtime.freeC47Blocks(tmp_mat, blocks);
     } else {
         reportRamFull("In function invertRealMatrix:", "Ram full, 2v");
     }
@@ -99,8 +98,7 @@ pub export fn invertComplexMatrix(matrix: *const complex34Matrix_t, res: *comple
 
     const blocks = @as(usize, n) * n * real_size_in_blocks * 2;
     const count = @as(usize, n) * n;
-    if (runtime.allocC47Blocks(blocks)) |tmp_raw| {
-        const tmp_mat: [*]cplx_t = @ptrCast(@alignCast(tmp_raw));
+    if (abi.allocC47BlocksAs(cplx_t, blocks)) |tmp_mat| {
         const me = constComplexElems(matrix);
         var k: usize = 0;
         while (k < count) : (k += 1) {
@@ -126,7 +124,7 @@ pub export fn invertComplexMatrix(matrix: *const complex34Matrix_t, res: *comple
             if (!samePtr(matrix, res)) clearResult(res);
         }
 
-        runtime.freeC47Blocks(tmp_raw, blocks);
+        runtime.freeC47Blocks(tmp_mat, blocks);
     } else {
         reportRamFull("In function invertComplexMatrix:", "Ram full, 2x");
     }

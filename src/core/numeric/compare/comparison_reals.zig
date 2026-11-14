@@ -58,10 +58,10 @@ const CompareScratch = extern struct {
     storage: if (allow_159) Real159 else runtime.real_t,
 
     inline fn ptr(self: *CompareScratch) *runtime.real_t {
-        return @ptrCast(&self.storage);
+        return if (allow_159) self.storage.ptr() else &self.storage;
     }
     inline fn constPtr(self: *const CompareScratch) *const runtime.real_t {
-        return @ptrCast(&self.storage);
+        return if (allow_159) self.storage.constPtr() else &self.storage;
     }
 };
 
