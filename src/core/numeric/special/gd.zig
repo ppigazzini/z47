@@ -36,23 +36,23 @@ const amRadian = runtime.amRadian;
 const displayCalcErrorMessage = runtime.displayCalcErrorMessage;
 const moreInfoOnError = runtime.moreInfoOnError;
 
-inline fn const_2() *const real_t {
+fn const_2() *const real_t {
     return runtime.z47_math_wrappers_const_2();
 }
-inline fn const_1on2() *const real_t {
+fn const_1on2() *const real_t {
     return runtime.z47_math_wrappers_const_1on2();
 }
-inline fn const__1() *const real_t {
+fn const__1() *const real_t {
     return runtime.z47_math_wrappers_const_minus_1();
 }
-inline fn const_plusInfinity() *const real_t {
+fn const_plusInfinity() *const real_t {
     return runtime.z47_math_wrappers_const_plus_infinity();
 }
 // pi/2 and 2 pi at the caller's width: 75 digits above a 39-digit context.
-inline fn piOn2For(realContext: *const realContext_t) *const real_t {
+fn piOn2For(realContext: *const realContext_t) *const real_t {
     return if (realContext.digits > 39) runtime.z47_math_wrappers_const75_piOn2() else runtime.z47_math_wrappers_const_piOn2();
 }
-inline fn twoPiFor(realContext: *const realContext_t) *const real_t {
+fn twoPiFor(realContext: *const realContext_t) *const real_t {
     return if (realContext.digits > 39) consts.const75_2pi() else consts.const39_2pi();
 }
 
@@ -63,7 +63,7 @@ const math_inverse_trig_command = @import("../trig/inverse_trig_command.zig");
 const math_wp34s = @import("wp34s.zig");
 const consts = abi.constants;
 
-inline fn realCopy(source: *const real_t, destination: *real_t) void {
+fn realCopy(source: *const real_t, destination: *real_t) void {
     destination.* = source.*;
 }
 

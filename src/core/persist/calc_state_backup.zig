@@ -72,7 +72,7 @@ extern fn strcmp(a: [*c]const u8, b: [*c]const u8) c_int;
 extern fn strchr(s: [*c]const u8, c: c_int) [*c]u8;
 extern fn printf(fmt: [*:0]const u8, ...) c_int;
 // backupFileName: the model's own backup file.
-inline fn backupFileName() [*:0]const u8 {
+fn backupFileName() [*:0]const u8 {
     return if (calc_model_user_id == USER_R47) "backupR47.cfg" else "backup.cfg";
 }
 extern fn ioFileWrite(buffer: ?*const anyopaque, size: u32) void;

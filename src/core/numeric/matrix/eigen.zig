@@ -82,7 +82,7 @@ const realCompareEqual = math_comparison_reals.realCompareEqual;
 // fnEigenvalues command-handler dependencies (matrix.c).
 extern fn fnRecallVElement(n: u16) void;
 extern fn decQuadPlus(res: *real34_t, operand: *const real34_t, ctxt: *realContext_t) *real34_t;
-inline fn real34Plus(operand: *const real34_t, res: *real34_t) void {
+fn real34Plus(operand: *const real34_t, res: *real34_t) void {
     _ = decQuadPlus(res, operand, &runtime.ctxtReal34);
 }
 const FLAG_ASLIFT: i32 = 0xc023;
@@ -107,7 +107,7 @@ const allocC47Blocks = runtime.allocC47Blocks;
 const freeC47Blocks = runtime.freeC47Blocks;
 
 // A pool block of cplx_t; the pool hands out 4-aligned blocks, which cplx_t needs.
-inline fn allocCplx(size_in_blocks: usize) ?[*]cplx_t {
+fn allocCplx(size_in_blocks: usize) ?[*]cplx_t {
     return abi.allocC47BlocksAs(cplx_t, size_in_blocks);
 }
 extern fn decNumberCopyAbs(res: *real_t, source: *const real_t) *real_t;
@@ -115,7 +115,7 @@ extern var currentKeyCode: u8;
 extern var currentSolverNestingDepth: u16;
 extern var significantDigits: u8;
 
-inline fn realGetExponent(source: *const real_t) i32 {
+fn realGetExponent(source: *const real_t) i32 {
     return source.digits + source.exponent - 1;
 }
 
@@ -138,18 +138,18 @@ fn eigenTolerance() i32 {
 
 const ERROR_SOLVER_ABORT: u8 = 60;
 
-inline fn realCopyAbs(source: *const real_t, destination: *real_t) void {
+fn realCopyAbs(source: *const real_t, destination: *real_t) void {
     _ = decNumberCopyAbs(destination, source);
 }
 const realIsSpecial = math_real_predicates.realIsSpecial;
 
-inline fn realFMA(f1: *const real_t, f2: *const real_t, term: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+fn realFMA(f1: *const real_t, f2: *const real_t, term: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberFMA(res, f1, f2, term, ctxt);
 }
-inline fn realIsNegativeA(source: *const real_t) bool {
+fn realIsNegativeA(source: *const real_t) bool {
     return (source.bits & 0x80) == 0x80;
 }
-inline fn realSetPositiveSign(operand: *real_t) void {
+fn realSetPositiveSign(operand: *real_t) void {
     operand.bits &= 0x7f;
 }
 
@@ -166,34 +166,34 @@ const eigenNoiseThreshold: i32 = 70;
 // The post-QR block threshold, relative to the average diagonal magnitude.
 const finalBlockTolerance: i32 = 30;
 
-inline fn realCopy(source: *const real_t, destination: *real_t) void {
+fn realCopy(source: *const real_t, destination: *real_t) void {
     _ = decNumberCopy(destination, source);
 }
-inline fn realPlus(operand: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+fn realPlus(operand: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberPlus(res, operand, ctxt);
 }
-inline fn realAdd(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+fn realAdd(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberAdd(res, op1, op2, ctxt);
 }
-inline fn realSubtract(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+fn realSubtract(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberSubtract(res, op1, op2, ctxt);
 }
-inline fn realMultiply(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+fn realMultiply(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberMultiply(res, op1, op2, ctxt);
 }
-inline fn realDivide(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+fn realDivide(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberDivide(res, op1, op2, ctxt);
 }
-inline fn realSquareRoot(operand: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+fn realSquareRoot(operand: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberSquareRoot(res, operand, ctxt);
 }
-inline fn realSetZero(r: *real_t) void {
+fn realSetZero(r: *real_t) void {
     r.bits = 0;
     r.exponent = 0;
     r.digits = 1;
     r.lsu[0] = 0;
 }
-inline fn realChangeSign(operand: *real_t) void {
+fn realChangeSign(operand: *real_t) void {
     operand.bits ^= 0x80;
 }
 const realIsZero = abi.realIsZero;
@@ -223,7 +223,7 @@ inline fn realSizeInBytes(comptime digits: u32) u32 {
 fn BigReal(comptime digits: u32) linksection(runtime.code_section) type {
     return struct {
         buf: [realSizeInBytes(digits)]u8 align(4) = undefined,
-        inline fn ptr(self: *@This()) *real_t {
+        fn ptr(self: *@This()) *real_t {
             return &self.buf;
         }
     };
@@ -239,10 +239,10 @@ const eigen_block_digits: u32 = if (runtime.option_eigen_159) 159 else 75;
 const BlockCplx = if (runtime.option_eigen_159) cplx159_t else cplx_t;
 
 // A part of a BlockCplx, as the real_t the decNumber primitives take.
-inline fn blockRe(z: *BlockCplx) *real_t {
+fn blockRe(z: *BlockCplx) *real_t {
     return if (comptime runtime.option_eigen_159) z.Real.ptr() else &z.Real;
 }
-inline fn blockIm(z: *BlockCplx) *real_t {
+fn blockIm(z: *BlockCplx) *real_t {
     return if (comptime runtime.option_eigen_159) z.Imag.ptr() else &z.Imag;
 }
 
@@ -268,7 +268,7 @@ fn eigenMul(f1r: *const real_t, f1i: *const real_t, f2r: *const real_t, f2i: *co
         mulComplexComplex(&f1, &f2, product, ctx159);
     }
 }
-inline fn eigenMulElem(f1: *const cplx_t, f2: *const cplx_t, product: *BlockCplx, ctx159: *realContext_t) void {
+fn eigenMulElem(f1: *const cplx_t, f2: *const cplx_t, product: *BlockCplx, ctx159: *realContext_t) void {
     eigenMul(&f1.Real, &f1.Imag, &f2.Real, &f2.Imag, product, ctx159);
 }
 
@@ -1105,7 +1105,7 @@ fn calculateSymmetricEigenvalues(matrix: [*]cplx_t, size: u16, realContext: *rea
 // ===========================================================================
 
 // Element (i, j) of the n x n complex matrix m (matrix.c's CX).
-inline fn cxAt(m: anytype, n: u16, i: usize, j: usize) @TypeOf(&m[0]) {
+fn cxAt(m: anytype, n: u16, i: usize, j: usize) @TypeOf(&m[0]) {
     return &m[i * n + j];
 }
 

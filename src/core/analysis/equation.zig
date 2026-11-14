@@ -279,13 +279,13 @@ extern var ctxtReal34: realContext_t;
 // ---------------------------------------------------------------------------
 // Constants blob accessors
 // ---------------------------------------------------------------------------
-inline fn const_NaN() *const real_t {
+fn const_NaN() *const real_t {
     return consts.c812();
 }
-inline fn const34_0() *const real34_t {
+fn const34_0() *const real34_t {
     return consts.q16200();
 }
-inline fn const34_1() *const real34_t {
+fn const34_1() *const real34_t {
     return consts.q16312();
 }
 
@@ -302,39 +302,39 @@ extern fn decQuadIsInfinite(source: *const real34_t) bool;
 extern fn decQuadToString(source: *const real34_t, destination: [*]u8) [*c]u8;
 extern fn real34CompareEqual(number1: *const real34_t, number2: *const real34_t) bool;
 
-inline fn realToReal34(source: *const real_t, destination: *real34_t) void {
+fn realToReal34(source: *const real_t, destination: *real34_t) void {
     _ = decimal128FromNumber(destination, source, &ctxtReal34);
 }
-inline fn real34Copy(source: *const real34_t, destination: *real34_t) void {
+fn real34Copy(source: *const real34_t, destination: *real34_t) void {
     destination.* = source.*;
 }
-inline fn real34Subtract(op1: *const real34_t, op2: *const real34_t, res: *real34_t) void {
+fn real34Subtract(op1: *const real34_t, op2: *const real34_t, res: *real34_t) void {
     _ = decQuadSubtract(res, op1, op2, &ctxtReal34);
 }
-inline fn real34SetZero(destination: *real34_t) void {
+fn real34SetZero(destination: *real34_t) void {
     _ = decQuadZero(destination);
 }
-inline fn real34IsZero(source: *const real34_t) bool {
+fn real34IsZero(source: *const real34_t) bool {
     return decQuadIsZero(source);
 }
-inline fn real34IsNaN(source: *const real34_t) bool {
+fn real34IsNaN(source: *const real34_t) bool {
     return decQuadIsNaN(source);
 }
-inline fn real34IsInfinite(source: *const real34_t) bool {
+fn real34IsInfinite(source: *const real34_t) bool {
     return decQuadIsInfinite(source);
 }
 // realType.h reads and clears the sign bit in place rather than going through
 // decQuad: byte 15 bit 7 is the decimal128 sign.
-inline fn real34IsNegative(source: *const real34_t) bool {
+fn real34IsNegative(source: *const real34_t) bool {
     return (source.bytes[15] & 0x80) == 0x80;
 }
-inline fn real34SetPositiveSign(operand: *real34_t) void {
+fn real34SetPositiveSign(operand: *real34_t) void {
     operand.bytes[15] &= 0x7f;
 }
-inline fn real34ToString(source: *const real34_t, destination: [*]u8) void {
+fn real34ToString(source: *const real34_t, destination: [*]u8) void {
     _ = decQuadToString(source, destination);
 }
-inline fn stringToReal34(source: [*:0]const u8, destination: *real34_t) void {
+fn stringToReal34(source: [*:0]const u8, destination: *real34_t) void {
     _ = decQuadFromString(destination, source, &ctxtReal34);
 }
 
@@ -368,7 +368,7 @@ extern fn findNamedVariable(variableName: [*:0]const u8) calcRegister_t;
 extern fn findOrAllocateNamedVariable(variableName: [*:0]const u8) calcRegister_t;
 extern fn validateName(name: [*:0]const u8) bool;
 extern fn refreshRegisterLine(regist: calcRegister_t) void;
-inline fn calcModeAimGui() void {
+fn calcModeAimGui() void {
     if (!is_dmcp_build) {
         const f = @extern(*const fn () callconv(.c) void, .{ .name = "calcModeAimGui" });
         f();
@@ -394,24 +394,24 @@ extern fn xcopy(dest: ?*anyopaque, source: ?*const anyopaque, n: u32) ?*anyopaqu
 const real34Matrix_t = abi.Real34Matrix;
 extern fn linkToRealMatrixRegister(regist: calcRegister_t, linkedMatrix: *real34Matrix_t) void;
 extern fn saveLastX() bool;
-inline fn stringByteLength(s: [*c]const u8) i32 {
+fn stringByteLength(s: [*c]const u8) i32 {
     return @intCast(strlen(s));
 }
 
 // PRODUCT_SIGN macro: getSystemFlag(FLAG_MULTx) ? STD_CROSS : STD_DOT
-inline fn PRODUCT_SIGN() [*:0]const u8 {
+fn PRODUCT_SIGN() [*:0]const u8 {
     return if (getSystemFlag(FLAG_MULTx)) STD_CROSS else STD_DOT;
 }
 
-inline fn TO_PCMEMPTR(p: u16) [*c]u8 {
+fn TO_PCMEMPTR(p: u16) [*c]u8 {
     if (p == C47_NULL) return null;
     return std.mem.asBytes(&ram[p]);
 }
-inline fn TO_C47MEMPTR(p: ?*anyopaque) u16 {
+fn TO_C47MEMPTR(p: ?*anyopaque) u16 {
     if (p == null) return C47_NULL;
     return @intCast((@intFromPtr(p.?) - @intFromPtr(ram)) / @sizeOf(u32));
 }
-inline fn TO_BLOCKS(n: u32) usize {
+fn TO_BLOCKS(n: u32) usize {
     return (n + 3) >> 2; // BYTES_PER_BLOCK=4, BPB=2
 }
 
@@ -552,7 +552,7 @@ pub export fn fnEqEdit(unusedButMandatoryParameter: u16) linksection(runtime.cod
     }
 }
 
-inline fn CAPS_EQN_DEFAULT() u8 {
+fn CAPS_EQN_DEFAULT() u8 {
     return AC_LOWER;
 }
 
@@ -1152,28 +1152,28 @@ fn _menuItem(item: i16, bufPtr: [*c]u8) linksection(runtime.code_section) void {
 /// real and imaginary parts, then the numeric stack (upstream's
 /// PARSER_LEFT_VALUE_REAL/IMAG and PARSER_NUMERIC_STACK, so C's indices -2 and -1
 /// on the numeric stack are slots 0 and 1 here).
-inline fn parserValues(mvarBuffer: [*c]align(4) u8) *[2 + 2 * PARSER_NUMERIC_STACK_SIZE]real34_t {
+fn parserValues(mvarBuffer: [*c]align(4) u8) *[2 + 2 * PARSER_NUMERIC_STACK_SIZE]real34_t {
     const bytes = mvarBuffer[PARSER_OPERATOR_STACK_SIZE * 2 ..][0 .. REAL34_SIZE_IN_BYTES * (2 + 2 * PARSER_NUMERIC_STACK_SIZE)];
     return std.mem.bytesAsSlice(real34_t, bytes)[0 .. 2 + 2 * PARSER_NUMERIC_STACK_SIZE];
 }
-inline fn PARSER_OPERATOR_STACK(mvarBuffer: [*c]align(4) u8) [*]u16 {
+fn PARSER_OPERATOR_STACK(mvarBuffer: [*c]align(4) u8) [*]u16 {
     return std.mem.bytesAsSlice(u16, mvarBuffer[0 .. PARSER_OPERATOR_STACK_SIZE * 2]).ptr;
 }
-inline fn PARSER_NUMERIC_STACK(mvarBuffer: [*c]align(4) u8) [*]real34_t {
+fn PARSER_NUMERIC_STACK(mvarBuffer: [*c]align(4) u8) [*]real34_t {
     return parserValues(mvarBuffer)[2..];
 }
-inline fn PARSER_LEFT_VALUE_REAL(mvarBuffer: [*c]align(4) u8) *real34_t {
+fn PARSER_LEFT_VALUE_REAL(mvarBuffer: [*c]align(4) u8) *real34_t {
     return &parserValues(mvarBuffer)[0];
 }
-inline fn PARSER_LEFT_VALUE_IMAG(mvarBuffer: [*c]align(4) u8) *real34_t {
+fn PARSER_LEFT_VALUE_IMAG(mvarBuffer: [*c]align(4) u8) *real34_t {
     return &parserValues(mvarBuffer)[1];
 }
-inline fn PARSER_NUMERIC_STACK_POINTER(mvarBuffer: [*c]align(4) u8) *[1]u8 {
+fn PARSER_NUMERIC_STACK_POINTER(mvarBuffer: [*c]align(4) u8) *[1]u8 {
     return &mvarBuffer[PARSER_OPERATOR_STACK_SIZE * 2 + REAL34_SIZE_IN_BYTES * (2 + 2 * PARSER_NUMERIC_STACK_SIZE)];
 }
 /// `&PARSER_NUMERIC_STACK[sp * 2 - back]`, where C's index is an `int` and goes
 /// negative on an empty numeric stack, onto the left value's two slots.
-inline fn parserNumericSlot(mvarBuffer: [*c]align(4) u8, sp: u8, back: usize) *real34_t {
+fn parserNumericSlot(mvarBuffer: [*c]align(4) u8, sp: u8, back: usize) *real34_t {
     return &parserValues(mvarBuffer)[2 + 2 * @as(usize, sp) - back];
 }
 
@@ -2039,6 +2039,6 @@ pub export fn parseEquation(equationId: u16, parseMode: u16, buffer: [*c]u8, mva
 }
 
 // PARSER_HINT_REGULAR macro
-inline fn PARSER_HINT_REGULAR(buffer: [*c]const u8, numericCount: i16) u16 {
+fn PARSER_HINT_REGULAR(buffer: [*c]const u8, numericCount: i16) u16 {
     return if (stringGlyphLength(buffer) == numericCount) PARSER_HINT_NUMERIC else PARSER_HINT_VARIABLE;
 }

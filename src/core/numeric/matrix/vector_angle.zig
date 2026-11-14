@@ -17,7 +17,7 @@ const real34Matrix_t = runtime.real34Matrix_t;
 
 const constRealElems = abi.matrixConstRealElems;
 
-inline fn realCopy(source: *const real_t, destination: *real_t) void {
+fn realCopy(source: *const real_t, destination: *real_t) void {
     destination.* = source.*;
 }
 

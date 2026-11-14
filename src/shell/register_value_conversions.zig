@@ -291,83 +291,83 @@ extern fn localtime(t: *const i64) *Tm;
 // ---------------------------------------------------------------------------
 // Inline wrappers (the C macros)
 // ---------------------------------------------------------------------------
-inline fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8) void {
+fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8) void {
     if (comptime extra_info) c_moreInfoOnError(m1, m2, null, null);
 }
 const reg34 = abi.registerReal34;
 const regShortInt = abi.registerShortInteger;
-inline fn getRegisterShortIntegerBase(reg: calcRegister_t) u32 {
+fn getRegisterShortIntegerBase(reg: calcRegister_t) u32 {
     return getRegisterTag(reg);
 }
-inline fn getRegisterLongIntegerSign(reg: calcRegister_t) u32 {
+fn getRegisterLongIntegerSign(reg: calcRegister_t) u32 {
     return getRegisterTag(reg);
 }
 const amNoneU: u32 = @bitCast(amNone);
 
 // TO_BYTES
-inline fn toBytes(n: u16) u32 {
+fn toBytes(n: u16) u32 {
     return @as(u32, n) << 2;
 }
 
 // long integer helpers.
-inline fn longIntegerIsNegative(lg: *const mpz_struct) bool {
+fn longIntegerIsNegative(lg: *const mpz_struct) bool {
     return lg._mp_size < 0;
 }
-inline fn longIntegerIsZero(lg: *const mpz_struct) bool {
+fn longIntegerIsZero(lg: *const mpz_struct) bool {
     return lg._mp_size == 0;
 }
-inline fn absI(x: c_int) u32 {
+fn absI(x: c_int) u32 {
     return if (x < 0) @intCast(-x) else @intCast(x);
 }
 
 // real34 bit macros.
-inline fn real34IsNegative(v: *const real34_t) bool {
+fn real34IsNegative(v: *const real34_t) bool {
     return (v.bytes[15] & 0x80) == 0x80;
 }
 const real34SetNegativeSign = abi.real34SetNegativeSign;
-inline fn real34SetPositiveSign(v: *real34_t) void {
+fn real34SetPositiveSign(v: *real34_t) void {
     v.bytes[15] &= 0x7f;
 }
-inline fn real34Copy(src: *const real34_t, dst: *real34_t) void {
+fn real34Copy(src: *const real34_t, dst: *real34_t) void {
     dst.* = src.*;
 }
 
 // real bit macros.
-inline fn realSetNegativeSign(v: *real_t) void {
+fn realSetNegativeSign(v: *real_t) void {
     v.bits |= 0x80;
 }
 
 // real34 ops (use &ctxtReal34).
-inline fn uInt32ToReal34(src: u32, dst: *real34_t) void {
+fn uInt32ToReal34(src: u32, dst: *real34_t) void {
     _ = decQuadFromUInt32(dst, src);
 }
-inline fn int32ToReal34(src: i32, dst: *real34_t) void {
+fn int32ToReal34(src: i32, dst: *real34_t) void {
     _ = decQuadFromInt32(dst, src);
 }
-inline fn real34Add(a: *const real34_t, b: *const real34_t, res: *real34_t) void {
+fn real34Add(a: *const real34_t, b: *const real34_t, res: *real34_t) void {
     _ = decQuadAdd(res, a, b, &ctxtReal34);
 }
-inline fn real34Subtract(a: *const real34_t, b: *const real34_t, res: *real34_t) void {
+fn real34Subtract(a: *const real34_t, b: *const real34_t, res: *real34_t) void {
     _ = decQuadSubtract(res, a, b, &ctxtReal34);
 }
-inline fn real34Multiply(a: *const real34_t, b: *const real34_t, res: *real34_t) void {
+fn real34Multiply(a: *const real34_t, b: *const real34_t, res: *real34_t) void {
     _ = decQuadMultiply(res, a, b, &ctxtReal34);
 }
-inline fn real34Divide(a: *const real34_t, b: *const real34_t, res: *real34_t) void {
+fn real34Divide(a: *const real34_t, b: *const real34_t, res: *real34_t) void {
     _ = decQuadDivide(res, a, b, &ctxtReal34);
 }
-inline fn real34CopyAbs(src: *const real34_t, dst: *real34_t) void {
+fn real34CopyAbs(src: *const real34_t, dst: *real34_t) void {
     _ = decQuadCopyAbs(dst, src);
 }
-inline fn real34ToIntegralValue(src: *const real34_t, dst: *real34_t, mode: c_int) void {
+fn real34ToIntegralValue(src: *const real34_t, dst: *real34_t, mode: c_int) void {
     _ = decQuadToIntegralValue(dst, src, &ctxtReal34, mode);
 }
-inline fn real34ToInt32(src: *const real34_t) i32 {
+fn real34ToInt32(src: *const real34_t) i32 {
     return decQuadToInt32(src, &ctxtReal34, DEC_ROUND_DOWN);
 }
 
 // real ops.
-inline fn realFMA(f1: *const real_t, f2: *const real_t, term: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn realFMA(f1: *const real_t, f2: *const real_t, term: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberFMA(res, f1, f2, term, ctx);
 }
 
@@ -701,7 +701,7 @@ pub export fn reportBadTypeDetail(reg: calcRegister_t) callconv(.c) void {
     }
 }
 
-inline fn errorMessageBuf() []u8 {
+fn errorMessageBuf() []u8 {
     // errorMessage is a host buffer of ample size; bound to a reasonable slice.
     return errorMessage[0..256];
 }
@@ -729,7 +729,7 @@ pub extern fn getRegisterAsAnyRealQuiet(reg: calcRegister_t, val: *real_t) callc
 
 pub extern fn convertComplexRegisterToRealIfZeroImag(regist: calcRegister_t) callconv(.c) void;
 
-inline fn real34IsZero(v: *const real34_t) bool {
+fn real34IsZero(v: *const real34_t) bool {
     return decQuadIsZero(v) != 0;
 }
 extern fn decQuadIsZero(v: *const real34_t) u32;

@@ -157,33 +157,33 @@ const reg34 = abi.registerReal34;
 const regComplex34 = abi.registerComplex34;
 const regStringData = abi.registerString;
 const regMatrixHeader = abi.registerMatrixHeader;
-inline fn getRegisterAngularMode(reg: calcRegister_t) u32 {
+fn getRegisterAngularMode(reg: calcRegister_t) u32 {
     return getRegisterTag(reg) & amAngleMask;
 }
-inline fn getComplexRegisterAngularMode(reg: calcRegister_t) u32 {
+fn getComplexRegisterAngularMode(reg: calcRegister_t) u32 {
     return getRegisterTag(reg) & amAngleMask;
 }
-inline fn getComplexRegisterPolarMode(reg: calcRegister_t) u32 {
+fn getComplexRegisterPolarMode(reg: calcRegister_t) u32 {
     return getRegisterTag(reg) & amPolar;
 }
-inline fn getRegisterLongIntegerSign(reg: calcRegister_t) u32 {
+fn getRegisterLongIntegerSign(reg: calcRegister_t) u32 {
     return getRegisterTag(reg);
 }
-inline fn stringByteLength(str: [*c]const u8) i32 {
+fn stringByteLength(str: [*c]const u8) i32 {
     return @intCast(strlen(str));
 }
 // TO_BYTES(n) = ((uint32_t)n) << 2.
-inline fn toBytes(n: u32) u32 {
+fn toBytes(n: u32) u32 {
     return n << 2;
 }
 // modulo(n, d) with d > 0: (n%d<0 ? n%d+d : n%d). All in C int arithmetic.
-inline fn modulo(n: c_int, d: c_int) c_int {
+fn modulo(n: c_int, d: c_int) c_int {
     const r = @rem(n, d);
     return if (r < 0) r + d else r;
 }
 
 const currentNumberOfLocalRegisters = struct {
-    inline fn get() u8 {
+    fn get() u8 {
         return currentSubroutineLevelData.numberOfLocalRegisters;
     }
 };

@@ -61,124 +61,124 @@ pub extern fn ioEof() c_int;
 // for the saturation the version parse depends on. Shared with the program family
 // rather than duplicated: the two copies this replaced had already drifted.
 
-pub inline fn resetLoadContext() void {
+pub fn resetLoadContext() void {
     z47_calc_state_reset_load_context();
 }
 
-pub inline fn setSavedCalcModel(saved_calc_model: u16) void {
+pub fn setSavedCalcModel(saved_calc_model: u16) void {
     z47_calc_state_set_saved_calc_model(saved_calc_model);
 }
 
-pub inline fn getSavedCalcModel() u16 {
+pub fn getSavedCalcModel() u16 {
     return z47_calc_state_get_saved_calc_model();
 }
 
-pub inline fn setLoadedVersion(version: u32) void {
+pub fn setLoadedVersion(version: u32) void {
     z47_calc_state_set_loaded_version(version);
 }
 
-pub inline fn getLoadedVersion() u32 {
+pub fn getLoadedVersion() u32 {
     return z47_calc_state_get_loaded_version();
 }
 
-pub inline fn versionAllowed() u32 {
+pub fn versionAllowed() u32 {
     return VERSION_ALLOWED;
 }
 
-pub inline fn configFileVersion() u32 {
+pub fn configFileVersion() u32 {
     return CONFIG_FILE_VERSION;
 }
 
-pub inline fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys: bool) bool {
+pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys: bool) bool {
     return z47_calc_state_restore_one_section(load_mode, s, n, d, allow_user_keys);
 }
 
-pub inline fn checkPower() bool {
+pub fn checkPower() bool {
     return io_owned.checkPower();
 }
 
-pub inline fn openSave(save_type: u16) c_int {
+pub fn openSave(save_type: u16) c_int {
     return io_owned.openSave(save_type);
 }
 
-pub inline fn openLoad(load_type: u16) c_int {
+pub fn openLoad(load_type: u16) c_int {
     return io_owned.openLoad(load_type);
 }
 
-pub inline fn closeFile() void {
+pub fn closeFile() void {
     io_owned.closeFile();
 }
 
-pub inline fn displayWriteError() void {
+pub fn displayWriteError() void {
     io_owned.displayWriteError();
 }
 
-pub inline fn displayReadError() void {
+pub fn displayReadError() void {
     io_owned.displayReadError();
 }
 
-pub inline fn unwindAllSubroutines() void {
+pub fn unwindAllSubroutines() void {
     io_owned.unwindAllSubroutines();
 }
 
 // structured.c owns the running FOR structures; a state file carries none.
 pub extern fn forClearLoops() void;
 
-pub inline fn readLine(buffer: []u8) void {
+pub fn readLine(buffer: []u8) void {
     io_owned.readLineInto(buffer.ptr, buffer.len);
 }
 
-pub inline fn lineEquals(line: []const u8, expected: []const u8) bool {
+pub fn lineEquals(line: []const u8, expected: []const u8) bool {
     return line_parse.equals(line, expected);
 }
 
-pub inline fn parseU32Line(line: []const u8) u32 {
+pub fn parseU32Line(line: []const u8) u32 {
     return line_parse.parseU32(line);
 }
 
-pub inline fn allowUserKeys(saved_calc_model: u16) bool {
+pub fn allowUserKeys(saved_calc_model: u16) bool {
     return io_owned.allowUserKeys(saved_calc_model);
 }
 
-pub inline fn fixupR47ShiftKeys() void {
+pub fn fixupR47ShiftKeys() void {
     io_owned.fixupR47ShiftKeys();
 }
 
-pub inline fn kbdStd() *const [37]abi.CalcKey {
+pub fn kbdStd() *const [37]abi.CalcKey {
     return io_owned.kbdStd();
 }
 
 pub const getNormKey00Key = io_owned.getNormKey00Key;
 
-pub inline fn restartPostLoadTimers() void {
+pub fn restartPostLoadTimers() void {
     io_owned.restartPostLoadTimers();
 }
 
-pub inline fn stampLastStateFileOpened() void {
+pub fn stampLastStateFileOpened() void {
     io_owned.stampLastStateFileOpened();
 }
 
-pub inline fn showSavingStatus() void {
+pub fn showSavingStatus() void {
     io_owned.showSavingStatus();
 }
 
-pub inline fn showLoadingStatus() void {
+pub fn showLoadingStatus() void {
     io_owned.showLoadingStatus();
 }
 
-pub inline fn writeSaveSections() void {
+pub fn writeSaveSections() void {
     io_owned.writeSaveSections();
 }
 
-pub inline fn finishLoadUi(refresh_code: u16) void {
+pub fn finishLoadUi(refresh_code: u16) void {
     io_owned.finishLoadUi(refresh_code);
 }
 
-pub inline fn saveCalcBackup() void {
+pub fn saveCalcBackup() void {
     io_owned.saveCalc();
 }
 
-pub inline fn restoreCalcBackup() void {
+pub fn restoreCalcBackup() void {
     io_owned.restoreCalc();
 }
 

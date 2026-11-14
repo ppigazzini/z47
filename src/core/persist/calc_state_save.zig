@@ -219,7 +219,7 @@ fn releaseBuf() void {
     }
 }
 
-inline fn b() [*c]u8 {
+fn b() [*c]u8 {
     return buf_ptr;
 }
 

@@ -49,44 +49,44 @@ extern fn decNumberRemainder(res: *real_t, lhs: *const real_t, rhs: *const real_
 extern fn realSetPlusInfinity(value: *real_t) void;
 extern fn realSetMinusInfinity(value: *real_t) void;
 
-inline fn realAdd(lhs: *const real_t, rhs: *const real_t, result: *real_t, ctxt: *realContext_t) void {
+fn realAdd(lhs: *const real_t, rhs: *const real_t, result: *real_t, ctxt: *realContext_t) void {
     _ = decNumberAdd(result, lhs, rhs, ctxt);
 }
-inline fn realSubtract(lhs: *const real_t, rhs: *const real_t, result: *real_t, ctxt: *realContext_t) void {
+fn realSubtract(lhs: *const real_t, rhs: *const real_t, result: *real_t, ctxt: *realContext_t) void {
     _ = decNumberSubtract(result, lhs, rhs, ctxt);
 }
-inline fn realMultiply(lhs: *const real_t, rhs: *const real_t, result: *real_t, ctxt: *realContext_t) void {
+fn realMultiply(lhs: *const real_t, rhs: *const real_t, result: *real_t, ctxt: *realContext_t) void {
     _ = decNumberMultiply(result, lhs, rhs, ctxt);
 }
-inline fn realDivide(lhs: *const real_t, rhs: *const real_t, result: *real_t, ctxt: *realContext_t) void {
+fn realDivide(lhs: *const real_t, rhs: *const real_t, result: *real_t, ctxt: *realContext_t) void {
     _ = decNumberDivide(result, lhs, rhs, ctxt);
 }
-inline fn realSquareRoot(rhs: *const real_t, result: *real_t, ctxt: *realContext_t) void {
+fn realSquareRoot(rhs: *const real_t, result: *real_t, ctxt: *realContext_t) void {
     _ = decNumberSquareRoot(result, rhs, ctxt);
 }
-inline fn realFMA(f1: *const real_t, f2: *const real_t, term: *const real_t, result: *real_t, ctxt: *realContext_t) void {
+fn realFMA(f1: *const real_t, f2: *const real_t, term: *const real_t, result: *real_t, ctxt: *realContext_t) void {
     _ = decNumberFMA(result, f1, f2, term, ctxt);
 }
-inline fn realCopy(source: *const real_t, destination: *real_t) void {
+fn realCopy(source: *const real_t, destination: *real_t) void {
     _ = decNumberCopy(destination, source);
 }
-inline fn realCopyAbs(source: *const real_t, destination: *real_t) void {
+fn realCopyAbs(source: *const real_t, destination: *real_t) void {
     _ = decNumberCopyAbs(destination, source);
 }
 // realSetSignFrom(source, destination): the destination keeps its magnitude and takes the source's sign.
-inline fn realSetSignFrom(source: *const real_t, destination: *real_t) void {
+fn realSetSignFrom(source: *const real_t, destination: *real_t) void {
     _ = decNumberCopySign(destination, destination, source);
 }
-inline fn realMinus(operand: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+fn realMinus(operand: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberMinus(res, operand, ctxt);
 }
-inline fn realPlus(operand: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+fn realPlus(operand: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberPlus(res, operand, ctxt);
 }
-inline fn realDivideRemainder(operand1: *const real_t, operand2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+fn realDivideRemainder(operand1: *const real_t, operand2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberRemainder(res, operand1, operand2, ctxt);
 }
-inline fn realSetNegativeSign(value: *real_t) void {
+fn realSetNegativeSign(value: *real_t) void {
     value.bits |= 0x80;
 }
 
@@ -137,31 +137,31 @@ const REAL_SIZE_IN_BLOCKS_75: usize = 15; // REAL_SIZE_IN_BLOCKS(75)
 extern var temporaryInformation: u8;
 extern var currentAngularMode: angularMode_t;
 
-inline fn const_0() *const real_t {
+fn const_0() *const real_t {
     return runtime.z47_math_wrappers_const_0();
 }
-inline fn const_1() *const real_t {
+fn const_1() *const real_t {
     return runtime.z47_math_wrappers_const_1();
 }
-inline fn const_2() *const real_t {
+fn const_2() *const real_t {
     return runtime.z47_math_wrappers_const_2();
 }
 
 // ELLIPTIC_PI and friends: the 75-digit constant above 39 digits of context.
-inline fn ellipticPiConst(c: *const realContext_t) *const real_t {
+fn ellipticPiConst(c: *const realContext_t) *const real_t {
     return if (c.digits > 39) runtime.z47_math_wrappers_const75_pi() else consts.const39_pi();
 }
-inline fn ellipticPiOn2(c: *const realContext_t) *const real_t {
+fn ellipticPiOn2(c: *const realContext_t) *const real_t {
     return if (c.digits > 39) consts.const75_piOn2() else consts.const39_piOn2();
 }
-inline fn ellipticPiOn4(c: *const realContext_t) *const real_t {
+fn ellipticPiOn4(c: *const realContext_t) *const real_t {
     return if (c.digits > 39) runtime.z47_math_wrappers_const75_piOn4() else consts.const39_piOn4();
 }
-inline fn elliptic2Pi(c: *const realContext_t) *const real_t {
+fn elliptic2Pi(c: *const realContext_t) *const real_t {
     return if (c.digits > 39) consts.const75_2pi() else consts.const39_2pi();
 }
 
-inline fn moreInfo(where: [*:0]const u8, what: [*:0]const u8) void {
+fn moreInfo(where: [*:0]const u8, what: [*:0]const u8) void {
     if (comptime runtime.extra_info_on_calc_error) {
         runtime.moreInfoOnError(where, what, null, null);
     }
@@ -764,7 +764,7 @@ fn _ellipticFE_lambda_mu(amplitude: *const cplx_t, m: *const real_t, lambda: *cp
 // ===========================================================================
 // Carlson symmetric integrals
 // ===========================================================================
-inline fn carlsonTolerance(realContext: *const realContext_t) *const real_t {
+fn carlsonTolerance(realContext: *const realContext_t) *const real_t {
     return if (realContext.digits <= 39) consts.const_1e_37() else consts.const_1e_49();
 }
 

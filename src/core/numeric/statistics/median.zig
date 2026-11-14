@@ -90,11 +90,11 @@ extern var ctxtReal39: realContext_t;
 extern var statMx: [8]u8;
 
 extern fn decNumberCompare(res: *real_t, op1: *const real_t, op2: *const real_t, ctxt: *realContext_t) *real_t;
-inline fn realCompare(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+fn realCompare(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberCompare(res, op1, op2, ctxt);
 }
 extern fn decNumberCopy(res: *real_t, source: *const real_t) *real_t;
-inline fn realCopy(source: *const real_t, destination: *real_t) void {
+fn realCopy(source: *const real_t, destination: *real_t) void {
     _ = decNumberCopy(destination, source);
 }
 
@@ -109,7 +109,7 @@ extern fn qsort(base: [*]real_t, nmemb: usize, size: usize, compar: *const fn (*
 const cstR = abi.constants.cstRAligned;
 
 const REAL_SIZE_IN_BYTES_75: usize = 60;
-inline fn dataAt(data: [*]real_t, index: usize) *real_t {
+fn dataAt(data: [*]real_t, index: usize) *real_t {
     return &data[index];
 }
 
@@ -252,7 +252,7 @@ fn getYvalues(data: [*]real_t) linksection(runtime.code_section) void {
     }
 }
 
-inline fn setStatMx() void {
+fn setStatMx() void {
     const s = "STATS";
     inline for (s, 0..) |ch, idx| {
         statMx[idx] = ch;
@@ -260,7 +260,7 @@ inline fn setStatMx() void {
     statMx[s.len] = 0;
 }
 
-inline fn matrixElem(stats: *real34Matrix_t, index: usize) *const real34_t {
+fn matrixElem(stats: *real34Matrix_t, index: usize) *const real34_t {
     const elements: [*]const real34_t = stats.matrixElements;
     return &elements[index];
 }

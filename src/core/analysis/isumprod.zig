@@ -35,28 +35,28 @@ extern fn __gmpz_cmp_ui(op1: *const mpz_struct, op2: c_ulong) c_int;
 extern fn __gmpz_tdiv_q(q: *mpz_struct, n: *const mpz_struct, d: *const mpz_struct) void;
 extern fn __gmpz_fdiv_ui(op: *const mpz_struct, d: c_ulong) c_ulong;
 
-inline fn longIntegerInit(op: *mpz_struct) void {
+fn longIntegerInit(op: *mpz_struct) void {
     __gmpz_init(op);
 }
-inline fn longIntegerFree(op: *mpz_struct) void {
+fn longIntegerFree(op: *mpz_struct) void {
     __gmpz_clear(op);
 }
-inline fn uInt32ToLongInteger(source: u32, destination: *mpz_struct) void {
+fn uInt32ToLongInteger(source: u32, destination: *mpz_struct) void {
     __gmpz_set_ui(destination, source);
 }
-inline fn longIntegerIsZero(op: *const mpz_struct) bool {
+fn longIntegerIsZero(op: *const mpz_struct) bool {
     return op._mp_size == 0;
 }
-inline fn longIntegerCompare(op1: *const mpz_struct, op2: *const mpz_struct) i32 {
+fn longIntegerCompare(op1: *const mpz_struct, op2: *const mpz_struct) i32 {
     return __gmpz_cmp(op1, op2);
 }
-inline fn longIntegerCompareUInt(op: *const mpz_struct, u: u32) i32 {
+fn longIntegerCompareUInt(op: *const mpz_struct, u: u32) i32 {
     return __gmpz_cmp_ui(op, u);
 }
-inline fn longIntegerDivide(op1: *const mpz_struct, op2: *const mpz_struct, result: *mpz_struct) void {
+fn longIntegerDivide(op1: *const mpz_struct, op2: *const mpz_struct, result: *mpz_struct) void {
     __gmpz_tdiv_q(result, op1, op2);
 }
-inline fn longIntegerModuloUInt(op: *const mpz_struct, u: u32) u32 {
+fn longIntegerModuloUInt(op: *const mpz_struct, u: u32) u32 {
     return @truncate(__gmpz_fdiv_ui(op, u));
 }
 

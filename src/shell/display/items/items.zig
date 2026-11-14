@@ -428,7 +428,7 @@ const FILE = opaque {};
 extern fn printf(fmt: [*c]const u8, ...) c_int;
 extern fn fflush(stream: ?*FILE) c_int;
 
-inline fn cabs16(v: i16) i16 {
+fn cabs16(v: i16) i16 {
     return if (v < 0) -v else v;
 }
 
@@ -1009,17 +1009,17 @@ const ITM_CLSTRUC: u16 = 2937;
 
 const RESULT_IN_X: u16 = 32768;
 const REGISTER_Y_v: calcRegister_t = 101;
-inline fn isXYRegisterMatrix() bool {
+fn isXYRegisterMatrix() bool {
     return (getRegisterDataType(REGISTER_X) == dtReal34Matrix) or (getRegisterDataType(REGISTER_X) == dtComplex34Matrix) or (getRegisterDataType(REGISTER_Y_v) == dtReal34Matrix) or (getRegisterDataType(REGISTER_Y_v) == dtComplex34Matrix);
 }
 // frontier_screen.force_refresh(timed); timed == 0 (PC_BUILD only)
 const timed_val: u8 = 0;
 
 // IR_PRINTING trace externs
-inline fn ext_printTraceTI() void {
+fn ext_printTraceTI() void {
     frontier_print.printTraceTI();
 }
-inline fn ext_printTraceX(where: i16) void {
+fn ext_printTraceX(where: i16) void {
     frontier_print.printTraceX(@bitCast(where));
 }
 
@@ -1034,7 +1034,7 @@ const rom = @import("dmcp_rom");
 
 // SET_ST(STAT_PGM_END): set a bit in the fixed-address sdb.calc_state word.
 const STAT_PGM_END: u32 = 1 << 9;
-inline fn setStatPgmEnd() void {
+fn setStatPgmEnd() void {
     rom.sdb().calc_state |= STAT_PGM_END;
 }
 

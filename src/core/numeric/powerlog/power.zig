@@ -42,7 +42,7 @@ const realChangeSign = runtime.realChangeSign;
 const realToInt32C47 = runtime.realToInt32C47;
 const realPolarToRectangular = runtime.realPolarToRectangular;
 const realSetPositiveSign = runtime.realSetPositiveSign;
-inline fn realSetNegativeSign(operand: *real_t) void {
+fn realSetNegativeSign(operand: *real_t) void {
     operand.bits |= 0x80;
 }
 const int32ToReal = runtime.int32ToReal;
@@ -73,19 +73,19 @@ const ERROR_MESSAGE_LENGTH = 512;
 const displayCalcErrorMessage = runtime.displayCalcErrorMessage;
 const moreInfoOnError = runtime.moreInfoOnError;
 
-inline fn const_0() *const real_t {
+fn const_0() *const real_t {
     return runtime.z47_math_wrappers_const_0();
 }
-inline fn const_1() *const real_t {
+fn const_1() *const real_t {
     return runtime.z47_math_wrappers_const_1();
 }
-inline fn const_2() *const real_t {
+fn const_2() *const real_t {
     return runtime.z47_math_wrappers_const_2();
 }
-inline fn const_plusInfinity() *const real_t {
+fn const_plusInfinity() *const real_t {
     return runtime.z47_math_wrappers_const_plus_infinity();
 }
-inline fn const_minusInfinity() *const real_t {
+fn const_minusInfinity() *const real_t {
     return runtime.z47_math_wrappers_const_minus_infinity();
 }
 
@@ -96,16 +96,16 @@ extern fn decNumberCopyAbs(res: *real_t, source: *const real_t) *real_t;
 extern fn decNumberRemainder(res: *real_t, lhs: *const real_t, rhs: *const real_t, ctxt: *realContext_t) *real_t;
 // real34ToInt32 (realType.h): decQuadToInt32 rounding down in the Real34 context.
 extern fn decQuadToInt32(source: *const real34_t, ctxt: *realContext_t, round: c_int) i32;
-inline fn realCopy(source: *const real_t, destination: *real_t) void {
+fn realCopy(source: *const real_t, destination: *real_t) void {
     _ = decNumberCopy(destination, source);
 }
-inline fn realCopyAbs(source: *const real_t, destination: *real_t) void {
+fn realCopyAbs(source: *const real_t, destination: *real_t) void {
     _ = decNumberCopyAbs(destination, source);
 }
-inline fn realDivideRemainder(operand1: *const real_t, operand2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+fn realDivideRemainder(operand1: *const real_t, operand2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberRemainder(res, operand1, operand2, ctxt);
 }
-inline fn real34ToInt32(source: *const real34_t) i32 {
+fn real34ToInt32(source: *const real34_t) i32 {
     return decQuadToInt32(source, &runtime.ctxtReal34, runtime.DEC_ROUND_DOWN);
 }
 const realIsPositive = math_real_predicates.realIsPositive;
@@ -124,30 +124,30 @@ extern fn __gmpz_cmp_si(op: *const mpz_struct, v: c_long) c_int;
 extern fn __gmpz_fdiv_q_2exp(q: *mpz_struct, n: *const mpz_struct, b: c_ulong) void;
 extern fn __gmpz_fdiv_ui(n: *const mpz_struct, d: c_ulong) c_ulong;
 
-inline fn longIntegerInit(op: *mpz_struct) void {
+fn longIntegerInit(op: *mpz_struct) void {
     __gmpz_init(op);
 }
-inline fn longIntegerFree(op: *mpz_struct) void {
+fn longIntegerFree(op: *mpz_struct) void {
     __gmpz_clear(op);
 }
-inline fn longIntegerCopy(source: *const mpz_struct, destination: *mpz_struct) void {
+fn longIntegerCopy(source: *const mpz_struct, destination: *mpz_struct) void {
     __gmpz_set(destination, source);
 }
-inline fn uInt32ToLongInteger(source: u32, destination: *mpz_struct) void {
+fn uInt32ToLongInteger(source: u32, destination: *mpz_struct) void {
     __gmpz_set_ui(destination, source);
 }
 const longIntegerIsZero = math_real_predicates.longIntegerIsZero;
 const longIntegerIsNegative = math_real_predicates.longIntegerIsNegative;
-inline fn longIntegerIsOdd(op: *const mpz_struct) bool {
+fn longIntegerIsOdd(op: *const mpz_struct) bool {
     return op._mp_size != 0 and (op._mp_d[0] & 1) != 0;
 }
-inline fn longIntegerCompareInt(op: *const mpz_struct, sint: i32) i32 {
+fn longIntegerCompareInt(op: *const mpz_struct, sint: i32) i32 {
     return __gmpz_cmp_si(op, sint);
 }
-inline fn longIntegerDivide2(op: *const mpz_struct, result: *mpz_struct) void {
+fn longIntegerDivide2(op: *const mpz_struct, result: *mpz_struct) void {
     __gmpz_fdiv_q_2exp(result, op, 1);
 }
-inline fn longIntegerModuloUInt(op: *const mpz_struct, u: u32) u32 {
+fn longIntegerModuloUInt(op: *const mpz_struct, u: u32) u32 {
     return @truncate(__gmpz_fdiv_ui(op, u));
 }
 
@@ -160,13 +160,13 @@ const ShortInteger = u64;
 extern fn WP34S_extract_value(val: ShortInteger, sign: *i32) ShortInteger;
 extern fn WP34S_intPower(base: ShortInteger, exponent: ShortInteger) ShortInteger;
 // setRegisterShortIntegerBase/getRegisterShortIntegerBase are C macros over setRegisterTag/getRegisterTag.
-inline fn setRegisterShortIntegerBase(reg: runtime.calcRegister_t, base: u32) void {
+fn setRegisterShortIntegerBase(reg: runtime.calcRegister_t, base: u32) void {
     runtime.setRegisterTag(reg, base);
 }
-inline fn getRegisterShortIntegerBase(reg: runtime.calcRegister_t) u32 {
+fn getRegisterShortIntegerBase(reg: runtime.calcRegister_t) u32 {
     return runtime.getRegisterTag(reg);
 }
-inline fn registerShortIntegerData(reg: runtime.calcRegister_t) *align(1) ShortInteger {
+fn registerShortIntegerData(reg: runtime.calcRegister_t) *align(1) ShortInteger {
     return abi.registerShortInteger(reg);
 }
 
@@ -221,11 +221,11 @@ const realIsSpecial = runtime.realIsSpecial;
 const realCompareEqual = runtime.realCompareEqual;
 const realCompareGreaterThan = runtime.realCompareGreaterThan;
 
-inline fn realGetExponent(source: *const real_t) i32 {
+fn realGetExponent(source: *const real_t) i32 {
     return source.digits + source.exponent - 1;
 }
 
-inline fn realPlus(operand: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+fn realPlus(operand: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = runtime.decNumberPlus(res, operand, ctxt);
 }
 

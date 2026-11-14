@@ -84,16 +84,16 @@ const getSystemFlag = runtime.getSystemFlag;
 const getFlag = runtime.getFlag;
 const getRegisterDataType = runtime.getRegisterDataType;
 
-inline fn const_0() *const real_t {
+fn const_0() *const real_t {
     return runtime.z47_math_wrappers_const_0();
 }
-inline fn const_1() *const real_t {
+fn const_1() *const real_t {
     return runtime.z47_math_wrappers_const_1();
 }
-inline fn const_2() *const real_t {
+fn const_2() *const real_t {
     return runtime.z47_math_wrappers_const_2();
 }
-inline fn const_plusInfinity() *const real_t {
+fn const_plusInfinity() *const real_t {
     return runtime.z47_math_wrappers_const_plus_infinity();
 }
 const const39_3piOn4 = consts.const39_3piOn4;
@@ -107,30 +107,30 @@ extern fn decNumberRemainder(res: *real_t, lhs: *const real_t, rhs: *const real_
 extern fn decNumberCopyAbs(res: *real_t, source: *const real_t) *real_t;
 extern fn decNumberReduce(res: *real_t, source: *const real_t, ctxt: *realContext_t) *real_t;
 extern fn decNumberPlus(res: *real_t, source: *const real_t, ctxt: *realContext_t) *real_t;
-inline fn realCopy(source: *const real_t, destination: *real_t) void {
+fn realCopy(source: *const real_t, destination: *real_t) void {
     _ = decNumberCopy(destination, source);
 }
-inline fn realDivideRemainder(operand1: *const real_t, operand2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+fn realDivideRemainder(operand1: *const real_t, operand2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberRemainder(res, operand1, operand2, ctxt);
 }
-inline fn realCopyAbs(source: *const real_t, destination: *real_t) void {
+fn realCopyAbs(source: *const real_t, destination: *real_t) void {
     _ = decNumberCopyAbs(destination, source);
 }
-inline fn realReduce(source: *const real_t, destination: *real_t, ctxt: *realContext_t) void {
+fn realReduce(source: *const real_t, destination: *real_t, ctxt: *realContext_t) void {
     _ = decNumberReduce(destination, source, ctxt);
 }
-inline fn realPlus(source: *const real_t, destination: *real_t, ctxt: *realContext_t) void {
+fn realPlus(source: *const real_t, destination: *real_t, ctxt: *realContext_t) void {
     _ = decNumberPlus(destination, source, ctxt);
 }
 const realIsPositive = math_real_predicates.realIsPositive;
-inline fn realSetPositiveSign(source: *real_t) void {
+fn realSetPositiveSign(source: *real_t) void {
     source.bits &= ~@as(@TypeOf(source.bits), 0x80);
 }
-inline fn realSetNegativeSign(source: *real_t) void {
+fn realSetNegativeSign(source: *real_t) void {
     source.bits |= 0x80;
 }
 const real34SetNegativeSign = abi.real34SetNegativeSign;
-inline fn real34Copy(source: *const real34_t, destination: *real34_t) void {
+fn real34Copy(source: *const real34_t, destination: *real34_t) void {
     destination.bytes = source.bytes;
 }
 
@@ -161,44 +161,44 @@ extern fn __gmpz_cmp_si(op: *const mpz_struct, v: c_long) c_int;
 extern fn __gmpz_cmp_ui(op: *const mpz_struct, v: c_ulong) c_int;
 extern fn __gmpz_root(rop: *mpz_struct, op: *const mpz_struct, n: c_ulong) c_int;
 
-inline fn longIntegerInit(op: *mpz_struct) void {
+fn longIntegerInit(op: *mpz_struct) void {
     __gmpz_init(op);
 }
-inline fn longIntegerFree(op: *mpz_struct) void {
+fn longIntegerFree(op: *mpz_struct) void {
     __gmpz_clear(op);
 }
-inline fn longIntegerCopy(source: *const mpz_struct, destination: *mpz_struct) void {
+fn longIntegerCopy(source: *const mpz_struct, destination: *mpz_struct) void {
     __gmpz_set(destination, source);
 }
-inline fn uInt32ToLongInteger(source: u32, destination: *mpz_struct) void {
+fn uInt32ToLongInteger(source: u32, destination: *mpz_struct) void {
     __gmpz_set_ui(destination, source);
 }
-inline fn longIntegerToInt32(op: *const mpz_struct) i32 {
+fn longIntegerToInt32(op: *const mpz_struct) i32 {
     return @truncate(__gmpz_get_si(op));
 }
 const longIntegerIsZero = math_real_predicates.longIntegerIsZero;
-inline fn longIntegerIsPositive(op: *const mpz_struct) bool {
+fn longIntegerIsPositive(op: *const mpz_struct) bool {
     return op._mp_size > 0;
 }
 const longIntegerIsNegative = math_real_predicates.longIntegerIsNegative;
-inline fn longIntegerIsOdd(op: *const mpz_struct) bool {
+fn longIntegerIsOdd(op: *const mpz_struct) bool {
     return op._mp_size != 0 and (op._mp_d[0] & 1) != 0;
 }
-inline fn longIntegerChangeSign(op: *mpz_struct) void {
+fn longIntegerChangeSign(op: *mpz_struct) void {
     op._mp_size = -op._mp_size;
 }
-inline fn longIntegerSetPositiveSign(op: *mpz_struct) void {
+fn longIntegerSetPositiveSign(op: *mpz_struct) void {
     if (op._mp_size < 0) {
         op._mp_size = -op._mp_size;
     }
 }
-inline fn longIntegerCompareInt(op: *const mpz_struct, sint: i32) i32 {
+fn longIntegerCompareInt(op: *const mpz_struct, sint: i32) i32 {
     return __gmpz_cmp_si(op, sint);
 }
-inline fn longIntegerCompareUInt(op: *const mpz_struct, u: u32) i32 {
+fn longIntegerCompareUInt(op: *const mpz_struct, u: u32) i32 {
     return __gmpz_cmp_ui(op, u);
 }
-inline fn longIntegerRoot(op: *const mpz_struct, n: u32, result: *mpz_struct) i32 {
+fn longIntegerRoot(op: *const mpz_struct, n: u32, result: *mpz_struct) i32 {
     return __gmpz_root(result, op, n);
 }
 
@@ -211,10 +211,10 @@ const reciprocalRootLongIntegerToReal34 = runtime.reciprocalRootLongIntegerToRea
 extern fn convertShortIntegerRegisterToLongIntegerRegister(source: runtime.calcRegister_t, dest: runtime.calcRegister_t) void;
 extern fn convertLongIntegerRegisterToShortIntegerRegister(source: runtime.calcRegister_t, dest: runtime.calcRegister_t) void;
 // setRegisterShortIntegerBase/getRegisterShortIntegerBase are C macros over setRegisterTag/getRegisterTag.
-inline fn setRegisterShortIntegerBase(reg: runtime.calcRegister_t, base: u32) void {
+fn setRegisterShortIntegerBase(reg: runtime.calcRegister_t, base: u32) void {
     runtime.setRegisterTag(reg, base);
 }
-inline fn getRegisterShortIntegerBase(reg: runtime.calcRegister_t) u32 {
+fn getRegisterShortIntegerBase(reg: runtime.calcRegister_t) u32 {
     return runtime.getRegisterTag(reg);
 }
 

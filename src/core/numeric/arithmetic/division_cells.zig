@@ -47,7 +47,7 @@ fn elementCount(header: anytype) i32 {
 }
 
 // real34ChangeSign is a decQuad macro over the sign bit.
-inline fn real34ChangeSign(operand: *runtime.real34_t) void {
+fn real34ChangeSign(operand: *runtime.real34_t) void {
     operand.bytes[15] ^= 0x80;
 }
 

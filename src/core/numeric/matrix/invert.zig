@@ -41,7 +41,7 @@ fn reportRamFull(comptime function_name: [*:0]const u8, comptime info: [*:0]cons
 }
 
 // A 1x1 matrix inverts at 39 digits; larger ones at 75.
-inline fn inverseContext(n: u16) *runtime.realContext_t {
+fn inverseContext(n: u16) *runtime.realContext_t {
     return if (n == 1) &runtime.ctxtReal39 else &runtime.ctxtReal75;
 }
 

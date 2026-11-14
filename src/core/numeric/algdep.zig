@@ -89,7 +89,7 @@ const ALGDEP_POLY_LEN: usize = 96;
 // divided inexactly, which GMP does not flag, so the reduction would otherwise
 // spin forever. A hang on a handheld is indistinguishable from a dead
 // calculator: fail loudly instead.
-inline fn algdepGuard(n: i32) i64 {
+fn algdepGuard(n: i32) i64 {
     return 20000 * @as(i64, n);
 }
 
@@ -135,81 +135,81 @@ fn mpzSub(rop: *mpz_struct, op1: *const mpz_struct, op2: *const mpz_struct) void
 }
 
 // mpz_sgn is a gmp.h macro over _mp_size.
-inline fn mpzSgn(op: *const mpz_struct) i32 {
+fn mpzSgn(op: *const mpz_struct) i32 {
     return if (op._mp_size < 0) -1 else if (op._mp_size > 0) 1 else 0;
 }
-inline fn mpzSet(rop: *mpz_struct, op: *const mpz_struct) void {
+fn mpzSet(rop: *mpz_struct, op: *const mpz_struct) void {
     __gmpz_set(rop, op);
 }
-inline fn mpzSetUi(rop: *mpz_struct, op: u32) void {
+fn mpzSetUi(rop: *mpz_struct, op: u32) void {
     __gmpz_set_ui(rop, op);
 }
-inline fn mpzMulUi(rop: *mpz_struct, op1: *const mpz_struct, op2: u32) void {
+fn mpzMulUi(rop: *mpz_struct, op1: *const mpz_struct, op2: u32) void {
     __gmpz_mul_ui(rop, op1, op2);
 }
-inline fn mpzMul2exp(rop: *mpz_struct, op1: *const mpz_struct, op2: u32) void {
+fn mpzMul2exp(rop: *mpz_struct, op1: *const mpz_struct, op2: u32) void {
     __gmpz_mul_2exp(rop, op1, op2);
 }
-inline fn mpzNeg(rop: *mpz_struct, op: *const mpz_struct) void {
+fn mpzNeg(rop: *mpz_struct, op: *const mpz_struct) void {
     __gmpz_neg(rop, op);
 }
-inline fn mpzAbs(rop: *mpz_struct, op: *const mpz_struct) void {
+fn mpzAbs(rop: *mpz_struct, op: *const mpz_struct) void {
     __gmpz_abs(rop, op);
 }
-inline fn mpzFdivQ(q: *mpz_struct, n: *const mpz_struct, d: *const mpz_struct) void {
+fn mpzFdivQ(q: *mpz_struct, n: *const mpz_struct, d: *const mpz_struct) void {
     __gmpz_fdiv_q(q, n, d);
 }
-inline fn mpzDivexact(q: *mpz_struct, n: *const mpz_struct, d: *const mpz_struct) void {
+fn mpzDivexact(q: *mpz_struct, n: *const mpz_struct, d: *const mpz_struct) void {
     __gmpz_divexact(q, n, d);
 }
-inline fn mpzSwap(rop1: *mpz_struct, rop2: *mpz_struct) void {
+fn mpzSwap(rop1: *mpz_struct, rop2: *mpz_struct) void {
     __gmpz_swap(rop1, rop2);
 }
-inline fn mpzCmp(op1: *const mpz_struct, op2: *const mpz_struct) i32 {
+fn mpzCmp(op1: *const mpz_struct, op2: *const mpz_struct) i32 {
     return __gmpz_cmp(op1, op2);
 }
-inline fn mpzCmpUi(op1: *const mpz_struct, op2: u32) i32 {
+fn mpzCmpUi(op1: *const mpz_struct, op2: u32) i32 {
     return __gmpz_cmp_ui(op1, op2);
 }
-inline fn mpzPowUi(rop: *mpz_struct, base: *const mpz_struct, exp: u32) void {
+fn mpzPowUi(rop: *mpz_struct, base: *const mpz_struct, exp: u32) void {
     __gmpz_pow_ui(rop, base, exp);
 }
 
 // longIntegerType.h inlines.
-inline fn longIntegerInit(op: *mpz_struct) void {
+fn longIntegerInit(op: *mpz_struct) void {
     __gmpz_init(op);
 }
-inline fn longIntegerFree(op: *mpz_struct) void {
+fn longIntegerFree(op: *mpz_struct) void {
     __gmpz_clear(op);
 }
-inline fn longIntegerChangeSign(op: *mpz_struct) void {
+fn longIntegerChangeSign(op: *mpz_struct) void {
     op._mp_size = -op._mp_size;
 }
-inline fn longIntegerPowerUIntUInt(base: u32, exponent: u32, result: *mpz_struct) void {
+fn longIntegerPowerUIntUInt(base: u32, exponent: u32, result: *mpz_struct) void {
     __gmpz_ui_pow_ui(result, base, exponent);
 }
-inline fn longIntegerBase10Digits(op: *const mpz_struct) i32 {
+fn longIntegerBase10Digits(op: *const mpz_struct) i32 {
     return @intCast(__gmpz_sizeinbase(op, 10));
 }
-inline fn longIntegerGcd(op1: *const mpz_struct, op2: *const mpz_struct, result: *mpz_struct) void {
+fn longIntegerGcd(op1: *const mpz_struct, op2: *const mpz_struct, result: *mpz_struct) void {
     __gmpz_gcd(result, op1, op2);
 }
-inline fn stringToLongInteger(source: [*:0]const u8, destination: *mpz_struct) void {
+fn stringToLongInteger(source: [*:0]const u8, destination: *mpz_struct) void {
     _ = __gmpz_set_str(destination, source, 10);
 }
-inline fn longIntegerToString(source: *const mpz_struct, destination: [*]u8) void {
+fn longIntegerToString(source: *const mpz_struct, destination: [*]u8) void {
     _ = __gmpz_get_str(destination, 10, source);
 }
 
 // realType.h's int32ToReal34, through a local so the register slot's block
 // alignment is never a question.
-inline fn int32ToReal34(source: i32, destination: *real34_t) void {
+fn int32ToReal34(source: i32, destination: *real34_t) void {
     var value: real34_t = undefined;
     _ = runtime.decQuadFromInt32(&value, source);
     destination.* = value;
 }
 
-inline fn ix(value: anytype) usize {
+fn ix(value: anytype) usize {
     return @intCast(value);
 }
 
@@ -256,7 +256,7 @@ pub export fn algdepPolynomialString() linksection(runtime.code_section) callcon
 // ------------------------------------------------------------ lattice lifetime
 
 // TO_BLOCKS (defines.h): BYTES_PER_BLOCK is 4.
-inline fn toBlocks(bytes: usize) usize {
+fn toBlocks(bytes: usize) usize {
     return (bytes + 3) >> 2;
 }
 

@@ -24,12 +24,12 @@ const constRealElems = abi.matrixConstRealElems;
 const complexElems = abi.matrixComplexElems;
 const constComplexElems = abi.matrixConstComplexElems;
 
-inline fn realCopy(source: *const real_t, destination: *real_t) void {
+fn realCopy(source: *const real_t, destination: *real_t) void {
     destination.* = source.*;
 }
 
 // realGetExponent(x): the exponent of the leading digit of x.
-inline fn realGetExponent(source: *const real_t) i32 {
+fn realGetExponent(source: *const real_t) i32 {
     return source.digits + source.exponent - 1;
 }
 

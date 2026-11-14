@@ -42,24 +42,24 @@ extern fn getIRegisterAsInt(asArrayPointer: bool) i16;
 extern fn getJRegisterAsInt(asArrayPointer: bool) i16;
 extern fn regInRange(r: u16) bool;
 
-inline fn registerComplex34Data(reg: calcRegister_t) *complex34_t {
+fn registerComplex34Data(reg: calcRegister_t) *complex34_t {
     return abi.registerComplex34Aligned(reg);
 }
-inline fn rmEl(m: *const real34Matrix_t, i: usize) *real34_t {
+fn rmEl(m: *const real34Matrix_t, i: usize) *real34_t {
     const e: [*]real34_t = m.matrixElements;
     return &e[i];
 }
-inline fn cmEl(m: *const complex34Matrix_t, i: usize) *complex34_t {
+fn cmEl(m: *const complex34Matrix_t, i: usize) *complex34_t {
     const e: [*]complex34_t = m.matrixElements;
     return &e[i];
 }
-inline fn realloc(reg: calcRegister_t, dt: u32) void {
+fn realloc(reg: calcRegister_t, dt: u32) void {
     _ = runtime.reallocateRegister(reg, dt, 0, runtime.amNone);
 }
-inline fn numElems(rows: u16, cols: u16) usize {
+fn numElems(rows: u16, cols: u16) usize {
     return @as(usize, rows) * cols;
 }
-inline fn otherRegister(matrix_reg: calcRegister_t) calcRegister_t {
+fn otherRegister(matrix_reg: calcRegister_t) calcRegister_t {
     return if (matrix_reg == REGISTER_X) REGISTER_Y else REGISTER_X;
 }
 

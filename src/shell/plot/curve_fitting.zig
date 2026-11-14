@@ -192,45 +192,45 @@ extern fn decNumberFromUInt32(r: *real_t, v: u32) *real_t;
 // ---------------------------------------------------------------------------
 // Inline wrappers (the C macros)
 // ---------------------------------------------------------------------------
-inline fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8) void {
+fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8) void {
     if (comptime extra_info) c_moreInfoOnError(m1, m2, null, null);
 }
-inline fn sigma(sum: usize) *real_t {
+fn sigma(sum: usize) *real_t {
     return &statisticalSumsPointer.?[sum];
 }
 extern fn realCompareLessThan(a: *const real_t, b: *const real_t) bool;
-inline fn realIsSpecial(v: *const real_t) bool {
+fn realIsSpecial(v: *const real_t) bool {
     return (v.bits & abi.DECSPECIAL) != 0;
 }
 const realIsZero = abi.realIsZero;
-inline fn realIsPositive(v: *const real_t) bool {
+fn realIsPositive(v: *const real_t) bool {
     return (v.bits & abi.DECNEG) == 0;
 }
-inline fn realCopy(src: *const real_t, dst: *real_t) void {
+fn realCopy(src: *const real_t, dst: *real_t) void {
     _ = decNumberCopy(dst, src);
 }
-inline fn realAdd(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn realAdd(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberAdd(res, a, b, ctx);
 }
-inline fn realSubtract(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn realSubtract(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberSubtract(res, a, b, ctx);
 }
-inline fn realMultiply(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn realMultiply(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberMultiply(res, a, b, ctx);
 }
-inline fn realDivide(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn realDivide(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberDivide(res, a, b, ctx);
 }
-inline fn realSquareRoot(operand: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn realSquareRoot(operand: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberSquareRoot(res, operand, ctx);
 }
-inline fn realChangeSign(operand: *real_t) void {
+fn realChangeSign(operand: *real_t) void {
     operand.bits ^= 0x80;
 }
-inline fn uInt32ToReal(source: u32, destination: *real_t) void {
+fn uInt32ToReal(source: u32, destination: *real_t) void {
     _ = decNumberFromUInt32(destination, source);
 }
-inline fn orOrtho(a: u16) u16 {
+fn orOrtho(a: u16) u16 {
     return if (a == 0) CF_ORTHOGONAL_FITTING else a;
 }
 

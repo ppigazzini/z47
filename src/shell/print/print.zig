@@ -308,7 +308,7 @@ const PRINT_GRA_LN: c_int = 1;
 // STD_* byte sequences (fonts.h, verified via C probe).
 const STD_MEASURED_ANGLE = "\xa2\x21";
 const STD_DOT = "\x80\xb7";
-inline fn PRODUCT_SIGN() [*c]const u8 {
+fn PRODUCT_SIGN() [*c]const u8 {
     return if (getSystemFlag(FLAG_MULTx)) STD_CROSS else STD_DOT;
 }
 const STD_CROSS = "\x80\xd7";
@@ -378,10 +378,10 @@ extern const standardFont: font_t;
 const indexOfItems = @extern([*]const item_t, .{ .name = "indexOfItems" });
 
 // The indexOfItems name fields up to their NUL, for std.fmt {s}.
-inline fn itemSoftName(idx: usize) []const u8 {
+fn itemSoftName(idx: usize) []const u8 {
     return std.mem.sliceTo(&indexOfItems[idx].itemSoftmenuName, 0);
 }
-inline fn itemCatName(idx: usize) []const u8 {
+fn itemCatName(idx: usize) []const u8 {
     return std.mem.sliceTo(&indexOfItems[idx].itemCatalogName, 0);
 }
 const allReservedVariables = @extern([*c]const reservedVariableHeader_t, .{ .name = "allReservedVariables" });
@@ -431,7 +431,7 @@ extern fn longIntegerToAllocatedString(lgInt: *const mpz_struct, str: [*c]u8, st
 
 // isAtEndOfProgram is a static inline in manage.h: frontier_manage.checkOpCodeOfStep(step, ITM_END).
 const ITM_END: u16 = 1458;
-inline fn isAtEndOfProgram(step: [*c]const u8) bool_t {
+fn isAtEndOfProgram(step: [*c]const u8) bool_t {
     return frontier_manage.checkOpCodeOfStep(step, ITM_END);
 }
 
@@ -444,13 +444,13 @@ extern fn real34CompareLessEqual(number1: *const real34_t, number2: *const real3
 extern fn decQuadFromInt32(dq: *real34_t, v: i32) *real34_t;
 extern fn decQuadToString(dq: *const real34_t, str: [*c]u8) [*c]u8;
 extern fn decQuadIsZero(dq: *const real34_t) u32;
-inline fn int32ToReal34(source: i32, destination: *real34_t) void {
+fn int32ToReal34(source: i32, destination: *real34_t) void {
     _ = decQuadFromInt32(destination, source);
 }
-inline fn real34ToString(source: *const real34_t, destination: [*c]u8) [*c]u8 {
+fn real34ToString(source: *const real34_t, destination: [*c]u8) [*c]u8 {
     return decQuadToString(source, destination);
 }
-inline fn real34IsZero(source: *const real34_t) u32 {
+fn real34IsZero(source: *const real34_t) u32 {
     return decQuadIsZero(source);
 }
 
@@ -489,67 +489,67 @@ extern fn fflush(f: ?*anyopaque) c_int;
 // real34 macro reproductions
 // ---------------------------------------------------------------------------
 const reg34 = abi.registerReal34Aligned;
-inline fn regBytes(reg: calcRegister_t) [*c]u8 {
+fn regBytes(reg: calcRegister_t) [*c]u8 {
     return abi.registerBytes(reg);
 }
 const regImag34 = abi.registerImag34;
-inline fn regString(reg: calcRegister_t) [*c]u8 {
+fn regString(reg: calcRegister_t) [*c]u8 {
     return regBytes(reg) + STR_LGINT_HEADER_SIZE;
 }
 const regShortInt = abi.registerShortIntegerAligned;
 const regMatrixHeader = abi.registerMatrixHeaderAligned;
-inline fn regReal34MatrixElems(reg: calcRegister_t) [*c]real34_t {
+fn regReal34MatrixElems(reg: calcRegister_t) [*c]real34_t {
     return abi.registerReal34MatrixElements(reg);
 }
-inline fn varReal34(p: *const complex34_t) *const real34_t {
+fn varReal34(p: *const complex34_t) *const real34_t {
     return &p.real;
 }
-inline fn varImag34(p: *const complex34_t) *const real34_t {
+fn varImag34(p: *const complex34_t) *const real34_t {
     return &p.imag;
 }
-inline fn real34Copy(source: *const real34_t, destination: *real34_t) void {
+fn real34Copy(source: *const real34_t, destination: *real34_t) void {
     destination.* = source.*;
 }
-inline fn real34ToReal(source: *const real34_t, destination: *real_t) void {
+fn real34ToReal(source: *const real34_t, destination: *real_t) void {
     _ = decimal128ToNumber(source, destination);
 }
-inline fn realToReal34(source: *const real_t, destination: *real34_t) void {
+fn realToReal34(source: *const real_t, destination: *real34_t) void {
     _ = decimal128FromNumber(destination, source, &ctxtReal34);
 }
-inline fn real34Reduce(operand: *const real34_t, res: *real34_t) void {
+fn real34Reduce(operand: *const real34_t, res: *real34_t) void {
     _ = decQuadReduce(res, operand, &ctxtReal34);
 }
-inline fn real34ToInt32(source: *const real34_t) i32 {
+fn real34ToInt32(source: *const real34_t) i32 {
     return decQuadToInt32(source, &ctxtReal34, DEC_ROUND_DOWN);
 }
-inline fn getComplexRegisterAngularMode(reg: calcRegister_t) u16 {
+fn getComplexRegisterAngularMode(reg: calcRegister_t) u16 {
     return @intCast(getRegisterTag(reg) & amAngleMask);
 }
-inline fn getComplexRegisterPolarMode(reg: calcRegister_t) u16 {
+fn getComplexRegisterPolarMode(reg: calcRegister_t) u16 {
     return @intCast(getRegisterTag(reg) & amPolar);
 }
-inline fn getRegisterAngularMode(reg: calcRegister_t) u32 {
+fn getRegisterAngularMode(reg: calcRegister_t) u32 {
     return getRegisterTag(reg) & amAngleMask;
 }
-inline fn getRegisterShortIntegerBase(reg: calcRegister_t) u32 {
+fn getRegisterShortIntegerBase(reg: calcRegister_t) u32 {
     return getRegisterTag(reg);
 }
-inline fn longIntegerInit(op: *mpz_struct) void {
+fn longIntegerInit(op: *mpz_struct) void {
     __gmpz_init(op);
 }
-inline fn longIntegerFree(op: *mpz_struct) void {
+fn longIntegerFree(op: *mpz_struct) void {
     __gmpz_clear(op);
 }
-inline fn longIntegerToUInt32(op: *const mpz_struct) u32 {
+fn longIntegerToUInt32(op: *const mpz_struct) u32 {
     return @truncate(__gmpz_get_ui(op));
 }
-inline fn longIntegerCompareUInt(op: *const mpz_struct, v: u32) i32 {
+fn longIntegerCompareUInt(op: *const mpz_struct, v: u32) i32 {
     return __gmpz_cmp_ui(op, v);
 }
-inline fn stringByteLength(s: [*c]const u8) i32 {
+fn stringByteLength(s: [*c]const u8) i32 {
     return @intCast(strlen(s));
 }
-inline fn currentNumberOfLocalRegisters() u8 {
+fn currentNumberOfLocalRegisters() u8 {
     return currentSubroutineLevelData[0].numberOfLocalRegisters;
 }
 inline fn cMax(comptime T: type, a: T, b: T) T {
@@ -559,14 +559,14 @@ inline fn cMax(comptime T: type, a: T, b: T) T {
 // so these print there too, unlike the EXTRA_INFO_ON_CALC_ERROR ones; the
 // `moreInfoOnError` symbol is the no-op stub wherever EXTRA_INFO is off, so they
 // go to the popup body directly, as in the sibling print owners.
-inline fn pcBuildHint(where: [*:0]const u8, hint1: ?[*:0]const u8, hint2: ?[*:0]const u8, hint3: ?[*:0]const u8) void {
+fn pcBuildHint(where: [*:0]const u8, hint1: ?[*:0]const u8, hint2: ?[*:0]const u8, hint3: ?[*:0]const u8) void {
     if (comptime !dmcp_build) {
         frontier_error.moreInfoOnErrorImpl(where, hint1, hint2, hint3);
     }
 }
 
 // NUMBER_OF_DISPLAY_REAL_CONTEXT_DIGITS and SHOWMODE macros.
-inline fn numberOfDisplayRealContextDigits() i32 {
+fn numberOfDisplayRealContextDigits() i32 {
     if (displayFormat == DF_ALL or getSystemFlag(FLAG_2TO10)) {
         return NUMBER_OF_DISPLAY_DIGITS + 1;
     }
@@ -589,7 +589,7 @@ const showMode = frontier_screen.showModeActive;
 // volume to 11 without ever restoring it (the OUT_VOL_MAX form at least saves
 // and puts back getBeepVolume()), and it ignored FLAG_QUIET. So a single beep
 // left the calculator permanently loud, and beeped through the quiet flag.
-pub inline fn beep(frequence: u32, length: u32) void {
+pub fn beep(frequence: u32, length: u32) void {
     if (getSystemFlag(FLAG_QUIET)) {
         return;
     }
@@ -599,13 +599,13 @@ pub inline fn beep(frequence: u32, length: u32) void {
 }
 
 // key handling on DMCP uses the key_pop / key_pop_all ROM macros.
-inline fn key_pop() c_int {
+fn key_pop() c_int {
     if (comptime dmcp_build) {
         return rom.key_pop();
     }
     return 0;
 }
-inline fn key_pop_all() void {
+fn key_pop_all() void {
     if (comptime dmcp_build) {
         // key_pop_all loops key_pop until empty.
         while (key_pop() != -1) {}
@@ -1693,7 +1693,7 @@ pub export fn printTraceMatElement(where: u16) callconv(.c) void {
     }
 }
 extern var matrixIndex: u16;
-inline fn matrixIndexReg() calcRegister_t {
+fn matrixIndexReg() calcRegister_t {
     return @bitCast(matrixIndex);
 }
 
@@ -1710,7 +1710,7 @@ pub export fn printTraceString(string: [*c]u8, where: u16) callconv(.c) void {
         }
     }
 }
-inline fn toBlocks(n: u32) u16 {
+fn toBlocks(n: u32) u16 {
     return abi.block_math.toBlocks(u16, n);
 }
 

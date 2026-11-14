@@ -55,7 +55,7 @@ fn toBytes(blocks: anytype) u64 {
     return block_math.toBytes(u64, blocks);
 }
 
-pub inline fn getRamSizeInBlocks() u16 {
+pub fn getRamSizeInBlocks() u16 {
     if (use_fake_harness_surface) {
         return z47_memory_runtime_get_ram_size_in_blocks();
     }
@@ -63,7 +63,7 @@ pub inline fn getRamSizeInBlocks() u16 {
     return ram_size_in_blocks;
 }
 
-pub inline fn getFreeRegion(index: u16) freeMemoryRegion_t {
+pub fn getFreeRegion(index: u16) freeMemoryRegion_t {
     if (use_fake_harness_surface) {
         return z47_memory_runtime_get_free_region(index);
     }
@@ -71,7 +71,7 @@ pub inline fn getFreeRegion(index: u16) freeMemoryRegion_t {
     return freeMemoryRegions[index];
 }
 
-pub inline fn setFreeRegion(index: u16, region: freeMemoryRegion_t) void {
+pub fn setFreeRegion(index: u16, region: freeMemoryRegion_t) void {
     if (use_fake_harness_surface) {
         z47_memory_runtime_set_free_region(index, region);
         return;
@@ -80,7 +80,7 @@ pub inline fn setFreeRegion(index: u16, region: freeMemoryRegion_t) void {
     freeMemoryRegions[index] = region;
 }
 
-pub inline fn toC47MemPtr(mem_ptr: [*c]u8) u16 {
+pub fn toC47MemPtr(mem_ptr: [*c]u8) u16 {
     if (use_fake_harness_surface) {
         return z47_memory_runtime_to_c47_mem_ptr(mem_ptr);
     }
@@ -94,7 +94,7 @@ pub inline fn toC47MemPtr(mem_ptr: [*c]u8) u16 {
     return @intCast(@divExact(mem_addr - ram_addr, @as(usize, BYTES_PER_BLOCK)));
 }
 
-pub inline fn scaleExtraSize(sizeInBlocks: usize, extraFraction: f32) usize {
+pub fn scaleExtraSize(sizeInBlocks: usize, extraFraction: f32) usize {
     if (use_fake_harness_surface) {
         return z47_memory_runtime_scale_extra_size(sizeInBlocks, extraFraction);
     }
@@ -102,7 +102,7 @@ pub inline fn scaleExtraSize(sizeInBlocks: usize, extraFraction: f32) usize {
     return @trunc(@as(f64, @floatFromInt(sizeInBlocks)) * @as(f64, extraFraction));
 }
 
-pub inline fn copyBytes(dest: [*c]u8, source: [*c]const u8, n: u32) void {
+pub fn copyBytes(dest: [*c]u8, source: [*c]const u8, n: u32) void {
     if (use_fake_harness_surface) {
         _ = z47_memory_runtime_copy_bytes(dest, source, n);
         return;
@@ -115,7 +115,7 @@ pub inline fn copyBytes(dest: [*c]u8, source: [*c]const u8, n: u32) void {
     _ = xcopy(dest, source, n);
 }
 
-pub inline fn handleResizeProgramMemoryOutOfMemory(deltaBlocks: u16) void {
+pub fn handleResizeProgramMemoryOutOfMemory(deltaBlocks: u16) void {
     if (use_fake_harness_surface) {
         z47_memory_runtime_handle_resize_program_memory_out_of_memory(deltaBlocks);
         return;
@@ -152,7 +152,7 @@ pub fn stopOnGmpExhaustion() void {
     exit(255);
 }
 
-pub inline fn allocGmpBytes(sizeInBytes: usize) ?*anyopaque {
+pub fn allocGmpBytes(sizeInBytes: usize) ?*anyopaque {
     if (use_fake_harness_surface) {
         return z47_memory_runtime_alloc_gmp_bytes(sizeInBytes);
     }
@@ -160,7 +160,7 @@ pub inline fn allocGmpBytes(sizeInBytes: usize) ?*anyopaque {
     return malloc(sizeInBytes);
 }
 
-pub inline fn reallocGmpBytes(pcMemPtr: ?*anyopaque, newSizeInBytes: usize) ?*anyopaque {
+pub fn reallocGmpBytes(pcMemPtr: ?*anyopaque, newSizeInBytes: usize) ?*anyopaque {
     if (use_fake_harness_surface) {
         return z47_memory_runtime_realloc_gmp_bytes(pcMemPtr, newSizeInBytes);
     }
@@ -168,7 +168,7 @@ pub inline fn reallocGmpBytes(pcMemPtr: ?*anyopaque, newSizeInBytes: usize) ?*an
     return realloc(pcMemPtr, newSizeInBytes);
 }
 
-pub inline fn freeGmpBytes(pcMemPtr: ?*anyopaque) void {
+pub fn freeGmpBytes(pcMemPtr: ?*anyopaque) void {
     if (use_fake_harness_surface) {
         z47_memory_runtime_free_gmp_bytes(pcMemPtr);
         return;

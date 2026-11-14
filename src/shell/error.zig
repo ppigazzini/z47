@@ -122,7 +122,7 @@ extern fn clearSystemFlag(flag: c_uint) void;
 const rom = @import("dmcp_rom");
 const LcdFillRectFn = *const fn (x: u32, y: u32, dx: u32, dy: u32, val: c_int) callconv(.c) void;
 const c_lcd_fill_rect = @extern(LcdFillRectFn, .{ .name = "lcd_fill_rect" });
-inline fn lcdFillRect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void {
+fn lcdFillRect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void {
     if (comptime dmcp_build) {
         rom.lcd_fill_rect(x, y, dx, dy, val);
     } else {
@@ -152,17 +152,17 @@ extern fn printf(fmt: [*:0]const u8, ...) c_int;
 // ---------------------------------------------------------------------------
 // Inline wrappers (the C macros)
 // ---------------------------------------------------------------------------
-inline fn getRegisterAngularMode(reg: calcRegister_t) angularMode_t {
+fn getRegisterAngularMode(reg: calcRegister_t) angularMode_t {
     return @intCast(getRegisterTag(reg) & amAngleMask);
 }
 const reg34 = abi.registerReal34;
-inline fn uInt32ToReal34(src: u32, dst: *real34_t) void {
+fn uInt32ToReal34(src: u32, dst: *real34_t) void {
     _ = decQuadFromUInt32(dst, src);
 }
-inline fn real34ToUInt32(src: *const real34_t) u32 {
+fn real34ToUInt32(src: *const real34_t) u32 {
     return decQuadToUInt32(src, &ctxtReal34, DEC_ROUND_DOWN);
 }
-inline fn real34Copy(src: *const real34_t, dst: *real34_t) void {
+fn real34Copy(src: *const real34_t, dst: *real34_t) void {
     dst.* = src.*;
 }
 
@@ -480,7 +480,7 @@ fn badDataType() void {
 }
 
 // EXTRA_INFO console hint helper (compiled out on firmware, like the siblings).
-inline fn moreInfoOnErr(where: [*:0]const u8, hint: [*:0]const u8) void {
+fn moreInfoOnErr(where: [*:0]const u8, hint: [*:0]const u8) void {
     if (comptime extra_info) {
         if (comptime !dmcp_build) {
             moreInfoOnErrorImpl(where, hint, null, null);

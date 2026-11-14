@@ -265,7 +265,7 @@ extern var significantDigits: u8;
 extern var graphAccActive: bool;
 
 // defines.h: significantDigits == 0 ? 12 : significantDigits.
-inline fn significantDigitsForEqnGraphs() i32 {
+fn significantDigitsForEqnGraphs() i32 {
     return if (significantDigits == 0) 12 else significantDigits;
 }
 extern var tmpString: [*c]align(4) u8;
@@ -277,7 +277,7 @@ extern var ctxtReal39: realContext_t;
 // ---------------------------------------------------------------------------
 // Constants blob accessor: const_1
 // ---------------------------------------------------------------------------
-inline fn const_1() *const real_t {
+fn const_1() *const real_t {
     return consts.c4856();
 }
 
@@ -297,40 +297,40 @@ extern fn decNumberSubtract(res: *real_t, op1: *const real_t, op2: *const real_t
 extern fn decNumberAdd(res: *real_t, op1: *const real_t, op2: *const real_t, ctxt: *realContext_t) *real_t;
 extern fn realCompareAbsLessThan(number1: *const real_t, number2: *const real_t) bool;
 
-inline fn realCopy(source: *const real_t, destination: *real_t) void {
+fn realCopy(source: *const real_t, destination: *real_t) void {
     _ = decNumberCopy(destination, source);
 }
-inline fn realFMA(f1: *const real_t, f2: *const real_t, term: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+fn realFMA(f1: *const real_t, f2: *const real_t, term: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberFMA(res, f1, f2, term, ctxt);
 }
-inline fn realMultiply(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+fn realMultiply(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberMultiply(res, op1, op2, ctxt);
 }
-inline fn realDivide(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+fn realDivide(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberDivide(res, op1, op2, ctxt);
 }
-inline fn realPlus(operand: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+fn realPlus(operand: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberPlus(res, operand, ctxt);
 }
-inline fn realCopyAbs(source: *const real_t, destination: *real_t) void {
+fn realCopyAbs(source: *const real_t, destination: *real_t) void {
     _ = decNumberCopyAbs(destination, source);
 }
-inline fn realSubtract(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+fn realSubtract(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberSubtract(res, op1, op2, ctxt);
 }
-inline fn realAdd(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+fn realAdd(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberAdd(res, op1, op2, ctxt);
 }
-inline fn int32ToReal(source: i32, destination: *real_t) void {
+fn int32ToReal(source: i32, destination: *real_t) void {
     _ = decNumberFromInt32(destination, source);
 }
-inline fn uInt32ToReal(source: u32, destination: *real_t) void {
+fn uInt32ToReal(source: u32, destination: *real_t) void {
     _ = decNumberFromUInt32(destination, source);
 }
-inline fn realIsSpecial(source: *const real_t) bool {
+fn realIsSpecial(source: *const real_t) bool {
     return (source.bits & 0x70) != 0;
 }
-inline fn realToString(source: *const real_t, destination: [*c]u8) [*c]u8 {
+fn realToString(source: *const real_t, destination: [*c]u8) [*c]u8 {
     return decNumberToString(source, destination);
 }
 
@@ -343,10 +343,10 @@ extern fn realSetNaN(value: *real_t) void;
 extern fn decimal128ToNumber(source: *const real34_t, destination: *real_t) *real_t;
 extern fn decimal128FromNumber(dest: *real34_t, src: *const real_t, ctxt: *realContext_t) *real34_t;
 extern var ctxtReal34: realContext_t;
-inline fn real34ToReal(source: *const real34_t, destination: *real_t) void {
+fn real34ToReal(source: *const real34_t, destination: *real_t) void {
     _ = decimal128ToNumber(source, destination);
 }
-inline fn realToReal34(source: *const real_t, destination: *real34_t) void {
+fn realToReal34(source: *const real_t, destination: *real34_t) void {
     _ = decimal128FromNumber(destination, source, &ctxtReal34);
 }
 
@@ -413,7 +413,7 @@ const snap_t = abi.RegisterSnapshot;
 extern fn strcpy(dest: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn strcat(dest: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn strlen(s: [*c]const u8) usize;
-inline fn stringByteLength(s: [*c]const u8) i32 {
+fn stringByteLength(s: [*c]const u8) i32 {
     return @intCast(strlen(s));
 }
 

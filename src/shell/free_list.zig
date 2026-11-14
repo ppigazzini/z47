@@ -38,7 +38,7 @@ const freeMemoryRegion_t = abi.FreeMemoryRegion;
 extern var ram: [*c]u32;
 extern var numberOfFreeMemoryRegions: i32;
 
-inline fn freeRegions() [*c]freeMemoryRegion_t {
+fn freeRegions() [*c]freeMemoryRegion_t {
     if (comptime free_regions_is_array) {
         return @extern([*c]freeMemoryRegion_t, .{ .name = "freeMemoryRegions" });
     } else {
@@ -168,26 +168,26 @@ pub export fn z47_free_list_audit_free_space() callconv(.c) c_int {
 // PC-only allocation tracking.
 const allocated = if (track_allocations) struct {
     extern var numberOfAllocatedMemoryRegions: i32;
-    inline fn regions() [*c]freeMemoryRegion_t {
+    fn regions() [*c]freeMemoryRegion_t {
         return @extern([*c]freeMemoryRegion_t, .{ .name = "allocatedMemoryRegions" });
     }
 } else struct {};
 
-inline fn toBytes(blocks: u32) u32 {
+fn toBytes(blocks: u32) u32 {
     return abi.block_math.toBytes(u32, blocks);
 }
 
-inline fn toPcMemPtr(blockAddress: u16) ?*anyopaque {
+fn toPcMemPtr(blockAddress: u16) ?*anyopaque {
     if (blockAddress == C47_NULL) return null;
     return ram + blockAddress;
 }
 
-inline fn toC47MemPtr(pcMemPtr: ?*const anyopaque) u16 {
+fn toC47MemPtr(pcMemPtr: ?*const anyopaque) u16 {
     const p = pcMemPtr orelse return C47_NULL;
     return @intCast((@intFromPtr(p) - @intFromPtr(ram)) >> BPB);
 }
 
-inline fn regionBytes(count: i32) u32 {
+fn regionBytes(count: i32) u32 {
     return @intCast(@as(i64, count) * @sizeOf(freeMemoryRegion_t));
 }
 

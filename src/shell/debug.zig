@@ -87,15 +87,15 @@ extern fn printf(fmt: [*:0]const u8, ...) c_int;
 // Inline wrappers (the C macros)
 // ---------------------------------------------------------------------------
 // orOrtho(a) == (a == 0 ? CF_ORTHOGONAL_FITTING : a)
-inline fn orOrtho(a: u16) u16 {
+fn orOrtho(a: u16) u16 {
     return if (a == 0) CF_ORTHOGONAL_FITTING else a;
 }
 // getComplexRegisterPolarMode(reg) == (getRegisterTag(reg) & amPolar)
-inline fn getComplexRegisterPolarMode(reg: calcRegister_t) u32 {
+fn getComplexRegisterPolarMode(reg: calcRegister_t) u32 {
     return getRegisterTag(reg) & amPolar;
 }
 // stringByteLength(str) == (int32_t)strlen(str)
-inline fn stringByteLength(s: [*c]const u8) i32 {
+fn stringByteLength(s: [*c]const u8) i32 {
     return @intCast(strlen(s));
 }
 

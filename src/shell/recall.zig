@@ -229,29 +229,29 @@ extern fn __gmpz_clear(p: *mpz_struct) void;
 // ---------------------------------------------------------------------------
 // Inline wrappers (the C macros)
 // ---------------------------------------------------------------------------
-inline fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8) void {
+fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8) void {
     if (comptime extra_info) c_moreInfoOnError(m1, m2, m3, null);
 }
-inline fn dataPtr(reg: calcRegister_t) [*]u8 {
+fn dataPtr(reg: calcRegister_t) [*]u8 {
     return abi.registerBytes(reg);
 }
 const reg34 = abi.registerReal34;
 const regComplex34 = abi.registerComplex34;
 const regShortInt = abi.registerShortInteger;
-inline fn regConfig(reg: calcRegister_t) *align(4) dtConfigDescriptor_t {
+fn regConfig(reg: calcRegister_t) *align(4) dtConfigDescriptor_t {
     return abi.registerConfig(reg);
 }
-inline fn getStackTop() calcRegister_t {
+fn getStackTop() calcRegister_t {
     return if (getSystemFlag(FLAG_SSIZE8)) REGISTER_D else REGISTER_T;
 }
-inline fn currentNumberOfLocalRegisters() u16 {
+fn currentNumberOfLocalRegisters() u16 {
     return currentSubroutineLevelData.?.numberOfLocalRegisters;
 }
 // TO_BLOCKS(sizeof(real34_t) = 16) and TO_BLOCKS(sizeof(complex34_t) = 32).
 const REAL34_SIZE_IN_BLOCKS: u16 = 4;
 const COMPLEX34_SIZE_IN_BLOCKS: u16 = 8;
 
-inline fn real34Copy(src: *const real34_t, dst: *real34_t) void {
+fn real34Copy(src: *const real34_t, dst: *real34_t) void {
     dst.* = src.*;
 }
 const complex34Copy = abi.complex34Copy;

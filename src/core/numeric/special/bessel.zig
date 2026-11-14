@@ -48,22 +48,22 @@ extern fn decNumberMultiply(result: *real_t, lhs: *const real_t, rhs: *const rea
 extern fn decNumberDivide(result: *real_t, lhs: *const real_t, rhs: *const real_t, ctxt: *realContext_t) *real_t;
 extern fn decNumberSquareRoot(result: *real_t, rhs: *const real_t, ctxt: *realContext_t) *real_t;
 extern fn decNumberPower(result: *real_t, lhs: *const real_t, rhs: *const real_t, ctxt: *realContext_t) *real_t;
-inline fn realAdd(lhs: *const real_t, rhs: *const real_t, result: *real_t, ctxt: *realContext_t) void {
+fn realAdd(lhs: *const real_t, rhs: *const real_t, result: *real_t, ctxt: *realContext_t) void {
     _ = decNumberAdd(result, lhs, rhs, ctxt);
 }
-inline fn realSubtract(lhs: *const real_t, rhs: *const real_t, result: *real_t, ctxt: *realContext_t) void {
+fn realSubtract(lhs: *const real_t, rhs: *const real_t, result: *real_t, ctxt: *realContext_t) void {
     _ = decNumberSubtract(result, lhs, rhs, ctxt);
 }
-inline fn realMultiply(lhs: *const real_t, rhs: *const real_t, result: *real_t, ctxt: *realContext_t) void {
+fn realMultiply(lhs: *const real_t, rhs: *const real_t, result: *real_t, ctxt: *realContext_t) void {
     _ = decNumberMultiply(result, lhs, rhs, ctxt);
 }
-inline fn realDivide(lhs: *const real_t, rhs: *const real_t, result: *real_t, ctxt: *realContext_t) void {
+fn realDivide(lhs: *const real_t, rhs: *const real_t, result: *real_t, ctxt: *realContext_t) void {
     _ = decNumberDivide(result, lhs, rhs, ctxt);
 }
-inline fn realSquareRoot(rhs: *const real_t, result: *real_t, ctxt: *realContext_t) void {
+fn realSquareRoot(rhs: *const real_t, result: *real_t, ctxt: *realContext_t) void {
     _ = decNumberSquareRoot(result, rhs, ctxt);
 }
-inline fn realPower(lhs: *const real_t, rhs: *const real_t, result: *real_t, ctxt: *realContext_t) void {
+fn realPower(lhs: *const real_t, rhs: *const real_t, result: *real_t, ctxt: *realContext_t) void {
     _ = decNumberPower(result, lhs, rhs, ctxt);
 }
 const realChangeSign = runtime.realChangeSign;
@@ -111,13 +111,13 @@ const getRegisterAsReal = runtime.getRegisterAsReal;
 const convertRealToReal34ResultRegister = runtime.convertRealToReal34ResultRegister;
 const convertComplexToResultRegister = runtime.convertComplexToResultRegister;
 
-inline fn const_0() *const real_t {
+fn const_0() *const real_t {
     return runtime.z47_math_wrappers_const_0();
 }
-inline fn const_1() *const real_t {
+fn const_1() *const real_t {
     return runtime.z47_math_wrappers_const_1();
 }
-inline fn const_2() *const real_t {
+fn const_2() *const real_t {
     return runtime.z47_math_wrappers_const_2();
 }
 
@@ -127,18 +127,18 @@ inline fn const_2() *const real_t {
 extern fn decNumberCopy(res: *real_t, source: *const real_t) *real_t;
 extern fn decNumberMinus(res: *real_t, operand: *const real_t, ctxt: *realContext_t) *real_t;
 extern fn decNumberRemainder(res: *real_t, lhs: *const real_t, rhs: *const real_t, ctxt: *realContext_t) *real_t;
-inline fn realDivideRemainder(operand1: *const real_t, operand2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+fn realDivideRemainder(operand1: *const real_t, operand2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberRemainder(res, operand1, operand2, ctxt);
 }
-inline fn realCopy(source: *const real_t, destination: *real_t) void {
+fn realCopy(source: *const real_t, destination: *real_t) void {
     _ = decNumberCopy(destination, source);
 }
-inline fn realCopyAbs(source: *const real_t, destination: *real_t) void {
+fn realCopyAbs(source: *const real_t, destination: *real_t) void {
     _ = decNumberCopyAbs(destination, source);
 }
 extern fn decNumberCopyAbs(res: *real_t, source: *const real_t) *real_t;
 // realMinus(operand, res, ctxt) => decNumberMinus(res, operand, ctxt)
-inline fn realMinus(operand: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+fn realMinus(operand: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberMinus(res, operand, ctxt);
 }
 

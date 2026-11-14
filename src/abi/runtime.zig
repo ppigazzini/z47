@@ -17,14 +17,14 @@ extern fn mulComplexComplex(factor1: *const Complex, factor2: *const Complex, pr
 extern fn divComplexComplex(numer: *const Complex, denom: *const Complex, quotient: *Complex, ctx: *RealContext) void;
 
 /// r = a + b  (in ctxtReal39).
-pub inline fn add(a: *const Complex, b: *const Complex, r: *Complex) void {
+pub fn add(a: *const Complex, b: *const Complex, r: *Complex) void {
     addComplex(a, b, r, &ctxtReal39);
 }
 /// r = a * b  (in ctxtReal39).
-pub inline fn mul(a: *const Complex, b: *const Complex, r: *Complex) void {
+pub fn mul(a: *const Complex, b: *const Complex, r: *Complex) void {
     mulComplexComplex(a, b, r, &ctxtReal39);
 }
 /// r = a / b  (in ctxtReal39).
-pub inline fn div(a: *const Complex, b: *const Complex, r: *Complex) void {
+pub fn div(a: *const Complex, b: *const Complex, r: *Complex) void {
     divComplexComplex(a, b, r, &ctxtReal39);
 }

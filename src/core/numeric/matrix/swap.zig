@@ -23,7 +23,7 @@ const complexElems = abi.matrixComplexElems;
 const samePtr = math_real_predicates.samePtr;
 
 // real34Copy upstream is a raw element copy (defines.h).
-inline fn real34Copy(source: *const real34_t, destination: *real34_t) void {
+fn real34Copy(source: *const real34_t, destination: *real34_t) void {
     destination.* = source.*;
 }
 

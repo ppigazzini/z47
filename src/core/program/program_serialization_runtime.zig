@@ -100,43 +100,43 @@ fn isAtEndOfProgramZ(step: [*c]const u8) bool {
     return step[0] == ITM_END_HIGH and step[1] == ITM_END_LOW;
 }
 
-pub inline fn displayOperationUndefined() void {
+pub fn displayOperationUndefined() void {
     io_owned.displayOperationUndefined();
 }
 
-pub inline fn displayStructureNotNumbered() void {
+pub fn displayStructureNotNumbered() void {
     io_owned.displayStructureNotNumbered();
 }
 
-pub inline fn checkPower() bool {
+pub fn checkPower() bool {
     return io_owned.checkPower();
 }
 
-pub inline fn selectProgram(label: u16) void {
+pub fn selectProgram(label: u16) void {
     io_owned.selectProgram(label);
 }
 
-pub inline fn openSaveProgram(path: c_int) c_int {
+pub fn openSaveProgram(path: c_int) c_int {
     return io_owned.openSaveProgram(path);
 }
 
-pub inline fn globalLabelNameAt(i: u16, buf: *[256]u8) bool {
+pub fn globalLabelNameAt(i: u16, buf: *[256]u8) bool {
     return io_owned.globalLabelNameAt(i, buf);
 }
 
-pub inline fn openLoadProgram() c_int {
+pub fn openLoadProgram() c_int {
     return io_owned.openLoadProgram();
 }
 
-pub inline fn writeLiteral(text: [*c]const u8) void {
+pub fn writeLiteral(text: [*c]const u8) void {
     io_owned.writeLiteral(text);
 }
 
-pub inline fn writeU32Line(value: u32) void {
+pub fn writeU32Line(value: u32) void {
     io_owned.writeU32Line(value);
 }
 
-pub inline fn writeU8Line(value: u8) void {
+pub fn writeU8Line(value: u8) void {
     io_owned.writeU8Line(value);
 }
 
@@ -159,128 +159,128 @@ pub extern fn findNextStep(step: [*c]u8) [*c]u8;
 pub extern fn isAtEndOfPrograms(step: [*c]const u8) bool;
 pub extern var lastProgramListEnd: bool;
 
-pub inline fn tmpStringContent() []const u8 {
+pub fn tmpStringContent() []const u8 {
     return io_owned.tmpStringContent();
 }
 
-pub inline fn tmpStringSet(text: []const u8) void {
+pub fn tmpStringSet(text: []const u8) void {
     io_owned.tmpStringSet(text);
 }
 
-pub inline fn tmpStringAppend(text: []const u8) void {
+pub fn tmpStringAppend(text: []const u8) void {
     io_owned.tmpStringAppend(text);
 }
 
-pub inline fn tmpStringIndent(indent: usize, scratch: []u8) void {
+pub fn tmpStringIndent(indent: usize, scratch: []u8) void {
     io_owned.tmpStringIndent(indent, scratch);
 }
 
-pub inline fn writeTmpString() void {
+pub fn writeTmpString() void {
     io_owned.writeTmpString();
 }
 
-pub inline fn tmpStringToRTFInPlace(source: [*c]const u8) void {
+pub fn tmpStringToRTFInPlace(source: [*c]const u8) void {
     io_owned.tmpStringToRTFInPlace(source);
 }
 
-pub inline fn decodeStepForExport(step: [*c]u8) void {
+pub fn decodeStepForExport(step: [*c]u8) void {
     io_owned.decodeStepForExport(step);
 }
 
-pub inline fn nextStep(step: [*c]u8) [*c]u8 {
+pub fn nextStep(step: [*c]u8) [*c]u8 {
     return io_owned.nextStep(step);
 }
 
-pub inline fn defineFirstStep() void {
+pub fn defineFirstStep() void {
     io_owned.defineFirstStep();
 }
 
-pub inline fn numberOfSteps() u16 {
+pub fn numberOfSteps() u16 {
     return io_owned.numberOfSteps();
 }
 
-pub inline fn programSize() u32 {
+pub fn programSize() u32 {
     return io_owned.programSize();
 }
 
-pub inline fn systemFlag(sf: i32) bool {
+pub fn systemFlag(sf: i32) bool {
     return io_owned.systemFlag(sf);
 }
 
-pub inline fn lastFunction() i16 {
+pub fn lastFunction() i16 {
     return io_owned.lastFunction();
 }
 
-pub inline fn printProgramListing(list: bool, lines: u16) void {
+pub fn printProgramListing(list: bool, lines: u16) void {
     io_owned.printProgramListing(list, lines);
 }
 
-pub inline fn displayExportWriteError() void {
+pub fn displayExportWriteError() void {
     io_owned.displayExportWriteError();
 }
 
 pub const is_host_build = io_owned.is_host_build;
 
-pub inline fn reportProgramExported(label: u16, program_number: u16, name: [*c]const u8) void {
+pub fn reportProgramExported(label: u16, program_number: u16, name: [*c]const u8) void {
     io_owned.reportProgramExported(label, program_number, name);
 }
 
-pub inline fn reportProgramNotExported(program_number: u16, name: [*c]const u8) void {
+pub fn reportProgramNotExported(program_number: u16, name: [*c]const u8) void {
     io_owned.reportProgramNotExported(program_number, name);
 }
 
-pub inline fn readLine(buffer: []u8) void {
+pub fn readLine(buffer: []u8) void {
     io_owned.readLineInto(buffer.ptr, buffer.len);
 }
 
-pub inline fn closeFile() void {
+pub fn closeFile() void {
     io_owned.closeFile();
 }
 
-pub inline fn displayWriteError() void {
+pub fn displayWriteError() void {
     io_owned.displayWriteError();
 }
 
-pub inline fn displayReadError() void {
+pub fn displayReadError() void {
     io_owned.displayReadError();
 }
 
-pub inline fn displayRamFullError() void {
+pub fn displayRamFullError() void {
     io_owned.displayRamFullError();
 }
 
-pub inline fn displayCorruptedDataError() void {
+pub fn displayCorruptedDataError() void {
     io_owned.displayCorruptedDataError();
 }
 
-pub inline fn getFreeRamMemoryBytes() u32 {
+pub fn getFreeRamMemoryBytes() u32 {
     return io_owned.getFreeRamMemoryBytes();
 }
 
-pub inline fn seekLoadFileStart() void {
+pub fn seekLoadFileStart() void {
     io_owned.seekLoadFileStart();
 }
 
-pub inline fn showWarning(message: [*c]const u8) void {
+pub fn showWarning(message: [*c]const u8) void {
     io_owned.showWarning(message);
 }
 
-pub inline fn scanLabelsAndPrograms() void {
+pub fn scanLabelsAndPrograms() void {
     io_owned.scanLabelsAndPrograms();
 }
 
 /// goToGlobalStep reads a dynamic-menu label whenever this is >= 0; a load
 /// clears it so the step it lands on is the program's own.
-pub inline fn setDynamicMenuItemNone() void {
+pub fn setDynamicMenuItemNone() void {
     io_owned.dynamicMenuItem = -1;
 }
 
-pub inline fn goToLastProgram() void {
+pub fn goToLastProgram() void {
     io_owned.goToLastProgram();
 }
 
 /// checkOpCodeOfStep for a two-byte op: the 0x80 marker is part of the match.
-pub inline fn checkOpCodeOfStep(step: [*c]const u8, op: u16) bool {
+pub fn checkOpCodeOfStep(step: [*c]const u8, op: u16) bool {
     if (step == null) {
         return false;
     }
@@ -290,26 +290,26 @@ pub inline fn checkOpCodeOfStep(step: [*c]const u8, op: u16) bool {
     return step[0] == ((op >> 8) | 0x80) and step[1] == (op & 0xff);
 }
 
-pub inline fn isAtEndOfProgram(step: [*c]const u8) bool {
+pub fn isAtEndOfProgram(step: [*c]const u8) bool {
     return isAtEndOfProgramZ(step);
 }
 
-pub inline fn getRamSizeInBlocks() u16 {
+pub fn getRamSizeInBlocks() u16 {
     return io_owned.getRamSizeInBlocks();
 }
 
-pub inline fn toC47MemPtr(mem_ptr: [*c]const u8) u16 {
+pub fn toC47MemPtr(mem_ptr: [*c]const u8) u16 {
     return io_owned.toC47MemPtr(mem_ptr);
 }
 
-pub inline fn parseU32Line(line: []const u8) u32 {
+pub fn parseU32Line(line: []const u8) u32 {
     return line_parse.parseU32(line);
 }
 
-pub inline fn parseU8Line(line: []const u8) u8 {
+pub fn parseU8Line(line: []const u8) u8 {
     return line_parse.parseU8(line);
 }
 
-pub inline fn lineEquals(line: []const u8, expected: []const u8) bool {
+pub fn lineEquals(line: []const u8, expected: []const u8) bool {
     return line_parse.equals(line, expected);
 }

@@ -158,23 +158,23 @@ extern fn real34CompareGreaterEqual(a: *const real34_t, b: *const real34_t) bool
 // ---------------------------------------------------------------------------
 // Inline wrappers (the C macros)
 // ---------------------------------------------------------------------------
-inline fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8) void {
+fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8) void {
     if (comptime extra_info) c_moreInfoOnError(m1, m2, null, null);
 }
-inline fn isAtEndOfProgram(step: [*c]const u8) bool {
+fn isAtEndOfProgram(step: [*c]const u8) bool {
     return frontier_manage.checkOpCodeOfStep(step, ITM_END);
 }
 const reg34 = abi.registerReal34;
-inline fn getRegisterAngularMode(reg: calcRegister_t) angularMode_t {
+fn getRegisterAngularMode(reg: calcRegister_t) angularMode_t {
     return @intCast(getRegisterTag(reg) & amAngleMask);
 }
-inline fn real34ToIntegralValue(src: *const real34_t, dst: *real34_t, mode: c_int) void {
+fn real34ToIntegralValue(src: *const real34_t, dst: *real34_t, mode: c_int) void {
     _ = decQuadToIntegralValue(dst, src, &ctxtReal34, mode);
 }
-inline fn real34ToUInt32(src: *const real34_t) u32 {
+fn real34ToUInt32(src: *const real34_t) u32 {
     return decQuadToUInt32(src, &ctxtReal34, DEC_ROUND_DOWN);
 }
-inline fn toBytes(n: u16) u32 {
+fn toBytes(n: u16) u32 {
     return abi.block_math.toBytes(u32, n);
 }
 

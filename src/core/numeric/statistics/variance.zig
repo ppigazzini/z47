@@ -52,7 +52,7 @@ const CF_EXPONENTIAL_FITTING: u16 = 2;
 const CF_LOGARITHMIC_FITTING: u16 = 4;
 const CF_POWER_FITTING: u16 = 8;
 const CF_ORTHOGONAL_FITTING: u16 = 512;
-inline fn orOrtho(a: u16) u16 {
+fn orOrtho(a: u16) u16 {
     return if (a == 0) CF_ORTHOGONAL_FITTING else a;
 }
 
@@ -107,16 +107,16 @@ const realElems = abi.matrixRealElems;
 // also the one safe read of a blob constant shorter than a real_t.
 extern fn decNumberCopy(res: *real_t, source: *const real_t) *real_t;
 extern fn decNumberCopyAbs(res: *real_t, source: *const real_t) *real_t;
-inline fn realCopy(source: *const real_t, destination: *real_t) void {
+fn realCopy(source: *const real_t, destination: *real_t) void {
     _ = decNumberCopy(destination, source);
 }
-inline fn realCopyAbs(source: *const real_t, destination: *real_t) void {
+fn realCopyAbs(source: *const real_t, destination: *real_t) void {
     _ = decNumberCopyAbs(destination, source);
 }
 
 // constantPointers.h const_1e32: the magnitude from which a 34-digit STATS
 // entry no longer squares to what addSigma summed.
-inline fn const_1e32() *const real_t {
+fn const_1e32() *const real_t {
     return consts.const_1e32();
 }
 
@@ -154,23 +154,23 @@ const IDX_SIGMA_XMAX: usize = 25;
 const IDX_SIGMA_YMIN: usize = 26;
 const IDX_SIGMA_YMAX: usize = 27;
 
-inline fn sigma(index: usize) *real_t {
+fn sigma(index: usize) *real_t {
     return &statisticalSumsPointer.?[index];
 }
-inline fn SIGMA_N() *real_t {
+fn SIGMA_N() *real_t {
     return sigma(IDX_SIGMA_N);
 }
-inline fn SIGMA_X() *real_t {
+fn SIGMA_X() *real_t {
     return sigma(IDX_SIGMA_X);
 }
-inline fn SIGMA_Y() *real_t {
+fn SIGMA_Y() *real_t {
     return sigma(IDX_SIGMA_Y);
 }
-inline fn SIGMA_XY() *real_t {
+fn SIGMA_XY() *real_t {
     return sigma(IDX_SIGMA_XY);
 }
 
-inline fn statMxName() [*:0]const u8 {
+fn statMxName() [*:0]const u8 {
     return statMx[0..std.mem.findScalar(u8, &statMx, 0).? :0].ptr;
 }
 

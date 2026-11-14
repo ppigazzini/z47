@@ -367,7 +367,7 @@ const old_hw: bool = frontier_build_options.old_hw;
 const rom = @import("dmcp_rom");
 
 extern fn lcd_refresh() void; // host symbol; firmware path uses the ROM entry.
-inline fn lcdRefresh() void {
+fn lcdRefresh() void {
     if (comptime dmcp_build) {
         rom.lcd_refresh();
     } else {
@@ -378,64 +378,64 @@ inline fn lcdRefresh() void {
 // ---------------------------------------------------------------------------
 // Inline wrappers (the C macros / static inlines)
 // ---------------------------------------------------------------------------
-inline fn real34SetOne(destination: *real34_t) void {
+fn real34SetOne(destination: *real34_t) void {
     _ = decQuadFromInt32(destination, 1);
 }
-inline fn real34SetZero(destination: *real34_t) void {
+fn real34SetZero(destination: *real34_t) void {
     _ = decQuadZero(destination);
 }
-inline fn stringToReal34(source: [*c]const u8, destination: *real34_t) void {
+fn stringToReal34(source: [*c]const u8, destination: *real34_t) void {
     _ = decQuadFromString(destination, source, &ctxtReal34);
 }
-inline fn setRegisterAngularMode(reg: calcRegister_t, am: angularMode_t) void {
+fn setRegisterAngularMode(reg: calcRegister_t, am: angularMode_t) void {
     setRegisterTag(reg, @bitCast(am));
 }
-inline fn stringByteLength(str: [*c]const u8) i32 {
+fn stringByteLength(str: [*c]const u8) i32 {
     return @intCast(strlen(str));
 }
 const reg34 = abi.registerReal34;
 const regImag34 = abi.registerImag34;
-inline fn regStringData(reg: calcRegister_t) [*]u8 {
+fn regStringData(reg: calcRegister_t) [*]u8 {
     const bytes: [*]u8 = abi.registerBytes(reg);
     return bytes + 4; // sizeof(strLgIntHeader_t)
 }
 
-inline fn toBlocks(n: u32) u16 {
+fn toBlocks(n: u32) u16 {
     return @intCast((n + 3) >> 2);
 }
-inline fn toBytes(n: u16) u32 {
+fn toBytes(n: u16) u32 {
     return @as(u32, n) << 2;
 }
 
 // TO_PCMEMPTR / TO_C47MEMPTR (ram is uint32_t*; offset in u32 words).
-inline fn toPcMemPtr(p: u16) ?*anyopaque {
+fn toPcMemPtr(p: u16) ?*anyopaque {
     if (p == C47_NULL) return null;
     return &ram[p];
 }
-inline fn toC47MemPtr(p: ?*const anyopaque) u16 {
+fn toC47MemPtr(p: ?*const anyopaque) u16 {
     const ptr = p orelse return C47_NULL;
     return @intCast((@intFromPtr(ptr) - @intFromPtr(ram)) / @sizeOf(u32));
 }
 
 // current* accessors (defines.h macros over currentSubroutineLevelData).
-inline fn cur() *align(4) subroutineLevelHeader_t {
+fn cur() *align(4) subroutineLevelHeader_t {
     return currentSubroutineLevelData.?;
 }
 
 // A subroutine level's pool run holds its header, then its local flags, then its
 // local registers, each straight after the one before; the run is 4-aligned and
 // so is every offset in it.
-inline fn localFlagsAfterHeader(level: *align(4) subroutineLevelHeader_t) *localFlags_t {
+fn localFlagsAfterHeader(level: *align(4) subroutineLevelHeader_t) *localFlags_t {
     const bytes: [*]align(4) u8 = std.mem.asBytes(level);
     return std.mem.bytesAsValue(localFlags_t, bytes[@sizeOf(subroutineLevelHeader_t)..][0..@sizeOf(localFlags_t)]);
 }
-inline fn localRegistersAfterFlags(flags: *localFlags_t) [*]register_header_t {
+fn localRegistersAfterFlags(flags: *localFlags_t) [*]register_header_t {
     const bytes: [*]align(4) u8 = std.mem.asBytes(flags);
     const first: *[1]register_header_t = std.mem.bytesAsValue(register_header_t, bytes[@sizeOf(localFlags_t)..][0..@sizeOf(register_header_t)]);
     return first;
 }
 /// The subroutine level stored at a pool block index, or null for C47_NULL.
-inline fn levelAt(p: u16) ?*align(4) subroutineLevelHeader_t {
+fn levelAt(p: u16) ?*align(4) subroutineLevelHeader_t {
     if (p == C47_NULL) return null;
     const words = ram[p..][0..@divCeil(@sizeOf(subroutineLevelHeader_t), 4)];
     return std.mem.bytesAsValue(subroutineLevelHeader_t, std.mem.sliceAsBytes(words)[0..@sizeOf(subroutineLevelHeader_t)]);
@@ -447,7 +447,7 @@ extern fn reduceC47Blocks(pc_mem_ptr: ?*anyopaque, old_size_in_blocks: usize, ne
 extern fn allocateLocalRegisters(number_of_registers_to_allocate: u16) void;
 
 // regKStoC (static inline in defines.h).
-inline fn regKStoC(regKS: u8) i16 {
+fn regKStoC(regKS: u8) i16 {
     return ks_register_remap.regKStoC(regKS, .{
         .first_stat = FIRST_STAT_REGISTER_IN_KS_CODE,
         .last_spare = LAST_SPARE_REGISTERS_IN_KS_CODE,
@@ -458,11 +458,11 @@ inline fn regKStoC(regKS: u8) i16 {
     });
 }
 
-inline fn isAtEndOfProgram(step: [*c]const u8) bool_t {
+fn isAtEndOfProgram(step: [*c]const u8) bool_t {
     return @intFromBool(frontier_manage.checkOpCodeOfStep(step, ITM_END));
 }
 
-inline fn absI32(x: i32) i32 {
+fn absI32(x: i32) i32 {
     return if (x < 0) -x else x;
 }
 
@@ -1177,12 +1177,12 @@ fn _putLiteral(literalAddress_arg: [*c]u8) void {
     }
 }
 
-inline fn real34Copy(src: *const real34_t, dst: *real34_t) void {
+fn real34Copy(src: *const real34_t, dst: *real34_t) void {
     dst.* = src.*;
 }
 const complex34Copy = abi.complex34Copy;
 const regComplex34 = abi.registerComplex34;
-inline fn stringToLongInteger(source: [*c]const u8, radix: i32, destination: *mpz_struct) i32 {
+fn stringToLongInteger(source: [*c]const u8, radix: i32, destination: *mpz_struct) i32 {
     return mpz_set_str(destination, source, radix);
 }
 

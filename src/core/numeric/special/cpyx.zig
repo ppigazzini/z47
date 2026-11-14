@@ -47,13 +47,13 @@ const moreInfoOnError = runtime.moreInfoOnError;
 const CP_PERMUTATION: u16 = 0;
 const CP_COMBINATION: u16 = 1;
 
-inline fn const_0() *const real_t {
+fn const_0() *const real_t {
     return runtime.z47_math_wrappers_const_0();
 }
-inline fn const_1() *const real_t {
+fn const_1() *const real_t {
     return runtime.z47_math_wrappers_const_1();
 }
-inline fn realCopy(source: *const real_t, destination: *real_t) void {
+fn realCopy(source: *const real_t, destination: *real_t) void {
     destination.* = source.*;
 }
 const realIsPositive = math_real_predicates.realIsPositive;
@@ -69,41 +69,41 @@ extern fn convertShortIntegerRegisterToLongInteger(reg: calcRegister_t, lgInt: *
 extern fn __gmpz_cmp_si(op: *const mpz_struct, v: c_long) c_int;
 extern fn __gmpz_set(rop: *mpz_struct, op: *const mpz_struct) void;
 
-inline fn longIntegerInit(op: *mpz_struct) void {
+fn longIntegerInit(op: *mpz_struct) void {
     runtime.__gmpz_init(op);
 }
-inline fn longIntegerFree(op: *mpz_struct) void {
+fn longIntegerFree(op: *mpz_struct) void {
     runtime.__gmpz_clear(op);
 }
-inline fn longIntegerCopy(source: *const mpz_struct, destination: *mpz_struct) void {
+fn longIntegerCopy(source: *const mpz_struct, destination: *mpz_struct) void {
     __gmpz_set(destination, source);
 }
-inline fn uInt32ToLongInteger(source: u32, destination: *mpz_struct) void {
+fn uInt32ToLongInteger(source: u32, destination: *mpz_struct) void {
     runtime.__gmpz_set_ui(destination, source);
 }
-inline fn longIntegerToUInt32(op: *const mpz_struct) u32 {
+fn longIntegerToUInt32(op: *const mpz_struct) u32 {
     // c_ulong is 32-bit on Win64 LLP64; truncate directly (a @bitCast to a
     // fixed-width usize would size-mismatch there).
     return @truncate(runtime.__gmpz_get_ui(op));
 }
-inline fn longIntegerCompareInt(op: *const mpz_struct, v: i32) i32 {
+fn longIntegerCompareInt(op: *const mpz_struct, v: i32) i32 {
     return __gmpz_cmp_si(op, v);
 }
-inline fn longIntegerCompare(op1: *const mpz_struct, op2: *const mpz_struct) i32 {
+fn longIntegerCompare(op1: *const mpz_struct, op2: *const mpz_struct) i32 {
     return runtime.__gmpz_cmp(op1, op2);
 }
-inline fn longIntegerAddUInt(op: *const mpz_struct, u: u32, result: *mpz_struct) void {
+fn longIntegerAddUInt(op: *const mpz_struct, u: u32, result: *mpz_struct) void {
     runtime.__gmpz_add_ui(result, op, u);
 }
-inline fn longIntegerSubtractUInt(op: *const mpz_struct, u: u32, result: *mpz_struct) void {
+fn longIntegerSubtractUInt(op: *const mpz_struct, u: u32, result: *mpz_struct) void {
     runtime.__gmpz_sub_ui(result, op, u);
 }
-inline fn longIntegerDivideUInt(op: *const mpz_struct, u: u32, result: *mpz_struct) void {
+fn longIntegerDivideUInt(op: *const mpz_struct, u: u32, result: *mpz_struct) void {
     _ = runtime.__gmpz_tdiv_q_ui(result, op, u);
 }
 const longIntegerIsNegative = math_real_predicates.longIntegerIsNegative;
 
-inline fn getRegisterShortIntegerBase(reg: calcRegister_t) u32 {
+fn getRegisterShortIntegerBase(reg: calcRegister_t) u32 {
     return runtime.getRegisterShortIntegerBase(reg);
 }
 

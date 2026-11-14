@@ -160,7 +160,7 @@ extern var lastErrorCode: u8;
 extern var explicitTaylorIterVisibilitySelection: bool;
 extern var tmpString: [*:0]u8;
 
-inline fn getRegisterAngularMode(reg: calcRegister_t) angularMode_t {
+fn getRegisterAngularMode(reg: calcRegister_t) angularMode_t {
     return @intCast(getRegisterTag(reg) & amAngleMask);
 }
 
@@ -169,18 +169,18 @@ const registerIsNoAngle = runtime.registerIsNoAngle;
 extern fn drgAutoAdm(unit: u16) void;
 extern fn drgXfnUnit(unit: u16) u16;
 // inputAngleMode3r(r)
-inline fn inputAngleMode3r(r: calcRegister_t) angularMode_t {
+fn inputAngleMode3r(r: calcRegister_t) angularMode_t {
     if (registerIsNoAngle(r + 1) and registerIsNoAngle(r + 2)) {
         return if (!registerIsNoAngle(r)) getRegisterAngularMode(r) else amNone;
     }
     return amNone;
 }
 // inputIsNoAngle3r(r)
-inline fn inputIsNoAngle3r(r: calcRegister_t) bool {
+fn inputIsNoAngle3r(r: calcRegister_t) bool {
     return registerIsNoAngle(r) or !registerIsNoAngle(r + 1) or !registerIsNoAngle(r + 2);
 }
 // inputAngleError3r(r)
-inline fn inputAngleError3r(r: calcRegister_t) bool {
+fn inputAngleError3r(r: calcRegister_t) bool {
     return !registerIsNoAngle(r + 1) or !registerIsNoAngle(r + 2);
 }
 const isXFNregisterValid3r = runtime.isXFNregisterValid3r;
@@ -207,61 +207,61 @@ extern fn sprintf(str: [*]u8, format: [*:0]const u8, ...) c_int;
 // realIsNaN / realIsInfinite / realIsZero (decNumber.h bit-test macros, inlined).
 const DEC_INF: u8 = 0x40;
 const DEC_NAN_BITS: u8 = 0x20 | 0x10; // DECNAN | DECSNAN
-inline fn realIsInfinite(s: *const real_t) bool {
+fn realIsInfinite(s: *const real_t) bool {
     return (s.bits & DEC_INF) != 0;
 }
-inline fn realIsNaN(s: *const real_t) bool {
+fn realIsNaN(s: *const real_t) bool {
     return (s.bits & DEC_NAN_BITS) != 0;
 }
 const realIsZero = math_real_predicates.realIsZero;
 
-inline fn realCopy(source: *const real_t, destination: *real_t) void {
+fn realCopy(source: *const real_t, destination: *real_t) void {
     _ = decNumberCopy(destination, source);
 }
-inline fn realPlus(operand: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+fn realPlus(operand: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberPlus(res, operand, ctxt);
 }
-inline fn realAdd(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+fn realAdd(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberAdd(res, op1, op2, ctxt);
 }
-inline fn realSubtract(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+fn realSubtract(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberSubtract(res, op1, op2, ctxt);
 }
-inline fn realMultiply(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+fn realMultiply(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberMultiply(res, op1, op2, ctxt);
 }
-inline fn realDivide(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+fn realDivide(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberDivide(res, op1, op2, ctxt);
 }
-inline fn realPower(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+fn realPower(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberPower(res, op1, op2, ctxt);
 }
-inline fn realFMA(factor1: *const real_t, factor2: *const real_t, term: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+fn realFMA(factor1: *const real_t, factor2: *const real_t, term: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberFMA(res, factor1, factor2, term, ctxt);
 }
-inline fn realSetZero(r: *real_t) void {
+fn realSetZero(r: *real_t) void {
     r.bits = 0;
     r.exponent = 0;
     r.digits = 1;
     r.lsu[0] = 0;
 }
-inline fn realLn(operand: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+fn realLn(operand: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberLn(res, operand, ctxt);
 }
-inline fn realExp(operand: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+fn realExp(operand: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberExp(res, operand, ctxt);
 }
-inline fn realToString(source: *const real_t, destination: [*]u8) void {
+fn realToString(source: *const real_t, destination: [*]u8) void {
     _ = decNumberToString(source, destination);
 }
-inline fn stringToReal(source: [*:0]const u8, destination: *real_t, ctxt: *realContext_t) void {
+fn stringToReal(source: [*:0]const u8, destination: *real_t, ctxt: *realContext_t) void {
     _ = decNumberFromString(destination, source, ctxt);
 }
 const realIsSpecial = math_real_predicates.realIsSpecial;
-inline fn realGetExponent(source: *const real_t) i32 {
+fn realGetExponent(source: *const real_t) i32 {
     return source.digits + source.exponent - 1;
 }
-inline fn realGetDigits(x: *const real_t) i32 {
+fn realGetDigits(x: *const real_t) i32 {
     return x.digits;
 }
 
@@ -312,19 +312,19 @@ extern fn __gmpz_clear(op: *mpz_struct) void;
 extern fn __gmpz_set_ui(rop: *mpz_struct, op: c_ulong) void;
 extern fn __gmpz_set_str(rop: *mpz_struct, str: [*:0]const u8, base: c_int) c_int;
 extern fn __gmpz_get_str(str: ?[*]u8, base: c_int, op: *const mpz_struct) [*]u8;
-inline fn longIntegerInit(op: *mpz_struct) void {
+fn longIntegerInit(op: *mpz_struct) void {
     __gmpz_init(op);
 }
-inline fn longIntegerFree(op: *mpz_struct) void {
+fn longIntegerFree(op: *mpz_struct) void {
     __gmpz_clear(op);
 }
-inline fn uInt32ToLongInteger(source: u32, destination: *mpz_struct) void {
+fn uInt32ToLongInteger(source: u32, destination: *mpz_struct) void {
     __gmpz_set_ui(destination, source);
 }
-inline fn stringToLongInteger(source: [*:0]const u8, radix: c_int, destination: *mpz_struct) c_int {
+fn stringToLongInteger(source: [*:0]const u8, radix: c_int, destination: *mpz_struct) c_int {
     return __gmpz_set_str(destination, source, radix);
 }
-inline fn longIntegerToString(source: *const mpz_struct, radix: c_int, destination: [*]u8) void {
+fn longIntegerToString(source: *const mpz_struct, radix: c_int, destination: [*]u8) void {
     _ = __gmpz_get_str(destination, radix, source);
 }
 const longIntegerIsZero = math_real_predicates.longIntegerIsZero;
@@ -333,14 +333,14 @@ const longIntegerIsZero = math_real_predicates.longIntegerIsZero;
 extern fn strlen(s: [*]const u8) usize;
 extern fn strcpy(dst: [*]u8, src: [*]const u8) [*]u8;
 
-inline fn setSystemFlagAslift() void {
+fn setSystemFlagAslift() void {
     setSystemFlag(FLAG_ASLIFT);
 }
 
 // Blob constants.
 
 // modulus(a)
-inline fn modulus(a: angularMode_t) *const real_t {
+fn modulus(a: angularMode_t) *const real_t {
     return if (a == amRadian) const2139_2pi() else if (a == amDegree or a == amDMS) const_360() else if (a == amGrad) const_400() else if (a == amMultPi) const_2() else const_1();
 }
 
@@ -356,7 +356,7 @@ fn BigReal(comptime digits: u32) type {
     return extern union {
         real: real_t,
         storage: [realSizeInBytes(digits) / 4]u32,
-        inline fn ptr(self: *@This()) *real_t {
+        fn ptr(self: *@This()) *real_t {
             return &self.real;
         }
     };
@@ -763,7 +763,7 @@ fn fnDrop3() linksection(runtime.code_section) void {
 
 const real34_t = runtime.real34_t;
 extern fn decQuadZero(destination: *real34_t) *real34_t;
-inline fn real34SetZero(destination: *real34_t) void {
+fn real34SetZero(destination: *real34_t) void {
     _ = decQuadZero(destination);
 }
 const registerReal34Data = abi.registerReal34;

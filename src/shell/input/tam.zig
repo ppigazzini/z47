@@ -424,29 +424,29 @@ extern fn calcModeTamGui() void;
 extern fn calcModeAimGui() void;
 
 // stringCopy = stpcpy (non-MINGW64).
-inline fn stringCopy(dest: [*c]u8, source: [*c]const u8) [*c]u8 {
+fn stringCopy(dest: [*c]u8, source: [*c]const u8) [*c]u8 {
     return frontier_char_string.stringCopy(dest, source);
 }
-inline fn stringByteLength(s: [*c]const u8) i32 {
+fn stringByteLength(s: [*c]const u8) i32 {
     return @intCast(strlen(s));
 }
-inline fn maxI(a: i32, b: i32) i32 {
+fn maxI(a: i32, b: i32) i32 {
     return if (a > b) a else b;
 }
 // real34Copy(src,dst): two 8-byte copies.
-inline fn real34Copy(src: *const real34_t, dst: *real34_t) void {
+fn real34Copy(src: *const real34_t, dst: *real34_t) void {
     dst.* = src.*;
 }
 const reg34 = abi.registerReal34;
 // REGISTER_STRING_DATA(a): char* at getRegisterDataPointer(a)+sizeof(strLgIntHeader_t) (=4).
 const regStringData = abi.registerString;
-inline fn currentNumberOfLocalRegisters() u8 {
+fn currentNumberOfLocalRegisters() u8 {
     return currentSubroutineLevelData.*.numberOfLocalRegisters;
 }
-inline fn isR47FAM() bool {
+fn isR47FAM() bool {
     return calcModel == USER_R47f_g or calcModel == USER_R47bk_fg or calcModel == USER_R47fg_bk or calcModel == USER_R47fg_g;
 }
-inline fn moreInfoErr(where: [*:0]const u8, m2: [*:0]const u8, m3: ?[*:0]const u8) void {
+fn moreInfoErr(where: [*:0]const u8, m2: [*:0]const u8, m3: ?[*:0]const u8) void {
     if (comptime extra_info) {
         if (comptime !dmcp_build) moreInfoOnError(where, m2, m3, null);
     }
@@ -457,7 +457,7 @@ inline fn moreInfoErr(where: [*:0]const u8, m2: [*:0]const u8, m3: ?[*:0]const u
 // TAM function that asked for it. printTraceErrorFunction also leaves TAM mode, so
 // the trace is part of the refusal, not a decoration on it. errorMessage is the
 // scratch both this and the console hint below use, in that order.
-inline fn traceTamNameFailure(name: [*c]const u8) void {
+fn traceTamNameFailure(name: [*c]const u8) void {
     if (comptime frontier_print.ir_printing) {
         abi.fmtBufZ(errorMessage[0..512], "'{s}'", .{std.mem.span(name)});
         frontier_print.printTraceErrorFunction(tam.function, errorMessage);
@@ -1477,7 +1477,7 @@ fn _tamProcessInput(item: u16) void {
 // indexOfItems[item].func == fnGetSystemFlag : compare against the C symbol's address.
 const FnPtr = ?*const fn (u16) callconv(.c) void;
 const c_fnGetSystemFlag = @extern(FnPtr, .{ .name = "fnGetSystemFlag" });
-inline fn fnGetSystemFlag_ptr() FnPtr {
+fn fnGetSystemFlag_ptr() FnPtr {
     return c_fnGetSystemFlag;
 }
 

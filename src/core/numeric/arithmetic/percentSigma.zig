@@ -48,7 +48,7 @@ extern var ctxtReal34: realContext_t;
 
 // realCopy is not in runtime; extern the underlying C.
 extern fn decNumberCopy(res: *real_t, source: *const real_t) *real_t;
-inline fn realCopy(source: *const real_t, destination: *real_t) void {
+fn realCopy(source: *const real_t, destination: *real_t) void {
     _ = decNumberCopy(destination, source);
 }
 
@@ -57,7 +57,7 @@ extern fn checkMinimumDataPoints(n: *const real_t) bool;
 extern var statisticalSumsPointer: ?[*]real_t;
 
 const SUM_X: usize = 1;
-inline fn SIGMA_X() *real_t {
+fn SIGMA_X() *real_t {
     return &statisticalSumsPointer.?[SUM_X];
 }
 

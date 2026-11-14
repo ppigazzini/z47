@@ -58,7 +58,7 @@ pub inline fn allocC47BlocksAs(comptime T: type, size_in_blocks: usize) ?[*]alig
 }
 
 /// A register's data block: asserts the register has one.
-inline fn block(reg: i16) [*]align(4) u8 {
+fn block(reg: i16) [*]align(4) u8 {
     return getRegisterDataPointer(reg).?;
 }
 
@@ -67,35 +67,35 @@ inline fn blockValue(comptime T: type, reg: i16, comptime offset: usize) *align(
     return std.mem.bytesAsValue(T, block(reg)[offset..][0..@sizeOf(T)]);
 }
 
-pub inline fn registerReal34(reg: i16) *Real34 {
+pub fn registerReal34(reg: i16) *Real34 {
     return blockValue(Real34, reg, 0);
 }
-pub inline fn registerImag34(reg: i16) *Real34 {
+pub fn registerImag34(reg: i16) *Real34 {
     return blockValue(Real34, reg, @sizeOf(Real34));
 }
-pub inline fn registerComplex34(reg: i16) *Complex34 {
+pub fn registerComplex34(reg: i16) *Complex34 {
     return blockValue(Complex34, reg, 0);
 }
 /// c43 reads this payload as `(uint64_t *)getRegisterDataPointer(a)`: a 64-bit
 /// value at a block address, which is 4-aligned and not necessarily 8-aligned.
-pub inline fn registerShortInteger(reg: i16) *align(4) u64 {
+pub fn registerShortInteger(reg: i16) *align(4) u64 {
     return blockValue(u64, reg, 0);
 }
-pub inline fn registerString(reg: i16) [*]align(4) u8 {
+pub fn registerString(reg: i16) [*]align(4) u8 {
     return block(reg) + @sizeOf(StrLgIntHeader);
 }
 /// Raw byte view of a register's data block, for the owners that copy or walk
 /// the block themselves.
-pub inline fn registerBytes(reg: i16) [*]align(4) u8 {
+pub fn registerBytes(reg: i16) [*]align(4) u8 {
     return block(reg);
 }
 /// Config-descriptor view of a register's data block (dtConfigDescriptor_t). Its
 /// u64 members want align 8, which a pool block does not guarantee, so the view
 /// is align 4 like the block.
-pub inline fn registerConfig(reg: i16) *align(4) DtConfigDescriptor {
+pub fn registerConfig(reg: i16) *align(4) DtConfigDescriptor {
     return blockValue(DtConfigDescriptor, reg, 0);
 }
-pub inline fn registerMatrixHeader(reg: i16) *MatrixHeader {
+pub fn registerMatrixHeader(reg: i16) *MatrixHeader {
     return blockValue(MatrixHeader, reg, 0);
 }
 
@@ -117,10 +117,10 @@ pub inline fn registerMatrixElements(comptime T: type, reg: i16) []T {
     const elements: [*]T = firstMatrixElement(T, reg);
     return elements[0 .. @as(usize, header.matrixRows) * header.matrixColumns];
 }
-pub inline fn registerReal34MatrixElements(reg: i16) [*]Real34 {
+pub fn registerReal34MatrixElements(reg: i16) [*]Real34 {
     return firstMatrixElement(Real34, reg);
 }
-pub inline fn registerComplex34MatrixElements(reg: i16) [*]Complex34 {
+pub fn registerComplex34MatrixElements(reg: i16) [*]Complex34 {
     return firstMatrixElement(Complex34, reg);
 }
 
@@ -145,25 +145,25 @@ inline fn elementsAreInline(comptime Matrix: type) bool {
 // A pointer field may be the C `[*c]` or the nullable `?[*]`; either way the view
 // is of a matrix that has its storage, so a null pointer stops here rather than
 // at the first element read.
-pub inline fn matrixRealElems(matrix: anytype) [*]Real34 {
+pub fn matrixRealElems(matrix: anytype) [*]Real34 {
     if (comptime elementsAreInline(@TypeOf(matrix))) return &matrix.matrixElements;
     return @as(?[*]Real34, matrix.matrixElements).?;
 }
-pub inline fn matrixConstRealElems(matrix: anytype) [*]const Real34 {
+pub fn matrixConstRealElems(matrix: anytype) [*]const Real34 {
     if (comptime elementsAreInline(@TypeOf(matrix))) return &matrix.matrixElements;
     return @as(?[*]const Real34, matrix.matrixElements).?;
 }
-pub inline fn matrixComplexElems(matrix: anytype) [*]Complex34 {
+pub fn matrixComplexElems(matrix: anytype) [*]Complex34 {
     if (comptime elementsAreInline(@TypeOf(matrix))) return &matrix.matrixElements;
     return @as(?[*]Complex34, matrix.matrixElements).?;
 }
-pub inline fn matrixConstComplexElems(matrix: anytype) [*]const Complex34 {
+pub fn matrixConstComplexElems(matrix: anytype) [*]const Complex34 {
     if (comptime elementsAreInline(@TypeOf(matrix))) return &matrix.matrixElements;
     return @as(?[*]const Complex34, matrix.matrixElements).?;
 }
 /// Whether a matrix has element storage: false after a failed allocation, the
 /// C `matrix.matrixElements != NULL`. Inline storage always has it.
-pub inline fn matrixHasElements(matrix: anytype) bool {
+pub fn matrixHasElements(matrix: anytype) bool {
     if (comptime elementsAreInline(@TypeOf(matrix))) return true;
     return matrix.matrixElements != null;
 }

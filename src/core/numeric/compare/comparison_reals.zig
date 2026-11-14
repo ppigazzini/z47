@@ -57,10 +57,10 @@ const max_compare_digits: i32 = if (allow_159) 159 else 75;
 const CompareScratch = extern struct {
     storage: if (allow_159) Real159 else runtime.real_t,
 
-    inline fn ptr(self: *CompareScratch) *runtime.real_t {
+    fn ptr(self: *CompareScratch) *runtime.real_t {
         return if (allow_159) self.storage.ptr() else &self.storage;
     }
-    inline fn constPtr(self: *const CompareScratch) *const runtime.real_t {
+    fn constPtr(self: *const CompareScratch) *const runtime.real_t {
         return if (allow_159) self.storage.constPtr() else &self.storage;
     }
 };
@@ -75,7 +75,7 @@ fn bugScreen(comptime message: [:0]const u8) void {
     displayBugScreen(errorMessage);
 }
 
-inline fn realCompare(
+fn realCompare(
     operand1: *const runtime.real_t,
     operand2: *const runtime.real_t,
     res: *runtime.real_t,
@@ -86,7 +86,7 @@ inline fn realCompare(
 
 const realIsPositive = math_real_predicates.realIsPositive;
 
-inline fn real34Compare(
+fn real34Compare(
     operand1: *const runtime.real34_t,
     operand2: *const runtime.real34_t,
     res: *runtime.real34_t,
@@ -94,11 +94,11 @@ inline fn real34Compare(
     _ = decQuadCompare(res, operand1, operand2, &runtime.ctxtReal34);
 }
 
-inline fn real34CopyAbs(source: *const runtime.real34_t, destination: *runtime.real34_t) void {
+fn real34CopyAbs(source: *const runtime.real34_t, destination: *runtime.real34_t) void {
     _ = decQuadCopyAbs(destination, source);
 }
 
-inline fn real34IsPositive(value: *const runtime.real34_t) bool {
+fn real34IsPositive(value: *const runtime.real34_t) bool {
     return (value.bytes[15] & 0x80) == 0x00;
 }
 

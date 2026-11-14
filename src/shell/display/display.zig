@@ -516,34 +516,34 @@ extern fn decNumberGetBCD(dn: *const real_t, bcd: [*c]u8) [*c]u8;
 // real symbols (true functions, not macros).
 extern fn realRectangularToPolarCached(z: *const abi.Complex, magnitude: *real_t, theta: *real_t, ctx: *realContext_t, cache: *abi.RectToPolarCache) void;
 // inline wrappers matching the realType.h macro call shapes.
-inline fn stringToReal(str: [*c]const u8, r: *real_t, ctx: *realContext_t) void {
+fn stringToReal(str: [*c]const u8, r: *real_t, ctx: *realContext_t) void {
     _ = decNumberFromString(r, str, ctx);
 }
-inline fn realToString(r: *const real_t, str: [*c]u8) void {
+fn realToString(r: *const real_t, str: [*c]u8) void {
     _ = decNumberToString(r, str);
 }
-inline fn realDivide(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn realDivide(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberDivide(res, a, b, ctx);
 }
-inline fn realMultiply(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn realMultiply(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberMultiply(res, a, b, ctx);
 }
-inline fn realPower(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn realPower(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberPower(res, a, b, ctx);
 }
-inline fn realAdd(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn realAdd(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberAdd(res, a, b, ctx);
 }
-inline fn realSubtract(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn realSubtract(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberSubtract(res, a, b, ctx);
 }
-inline fn realPlus(a: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn realPlus(a: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberPlus(res, a, ctx);
 }
-inline fn realDivideRemainder(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn realDivideRemainder(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberRemainder(res, a, b, ctx);
 }
-inline fn int32ToReal(v: i32, r: *real_t) void {
+fn int32ToReal(v: i32, r: *real_t) void {
     _ = decNumberFromInt32(r, v);
 }
 
@@ -580,18 +580,18 @@ const SHOWTNY: i16 = 2;
 // ---------------------------------------------------------------------------
 // min / max / modulo (C macros).
 // ---------------------------------------------------------------------------
-inline fn minI(a: i32, b: i32) i32 {
+fn minI(a: i32, b: i32) i32 {
     return if (a < b) a else b;
 }
-inline fn maxI(a: i32, b: i32) i32 {
+fn maxI(a: i32, b: i32) i32 {
     return if (a > b) a else b;
 }
 // modulo(n,d) for d>0 : ((n%d)<0 ? n%d+d : n%d)
-inline fn modulo(n: i32, d: i32) i32 {
+fn modulo(n: i32, d: i32) i32 {
     const r = @rem(n, d);
     return if (r < 0) r + d else r;
 }
-inline fn absI(a: i32) i32 {
+fn absI(a: i32) i32 {
     return if (a < 0) -a else a;
 }
 
@@ -599,7 +599,7 @@ inline fn absI(a: i32) i32 {
 // runtime macros over globals
 // ---------------------------------------------------------------------------
 const checkHP = frontier_screen.checkHPMode;
-inline fn runningOnSimOrUSB() bool {
+fn runningOnSimOrUSB() bool {
     if (comptime dmcp_build) {
         return getSystemFlag(FLAG_USB) != 0;
     } else {
@@ -608,14 +608,14 @@ inline fn runningOnSimOrUSB() bool {
 }
 const showmode = frontier_screen.showModeActive;
 // NUMBER_OF_DISPLAY_REAL_CONTEXT_DIGITS
-inline fn nbrDispRealCtxDigits() c_int {
+fn nbrDispRealCtxDigits() c_int {
     return if (displayFormat == DF_ALL or getSystemFlag(FLAG_2TO10) != 0) NUMBER_OF_DISPLAY_DIGITS + 1 else @as(c_int, displayFormatDigits) + 2;
 }
 
-inline fn productSign() [*c]const u8 {
+fn productSign() [*c]const u8 {
     return if (getSystemFlag(FLAG_MULTx) != 0) STD_CROSS else STD_DOT;
 }
-inline fn complexUnit() [*c]const u8 {
+fn complexUnit() [*c]const u8 {
     return if (getSystemFlag(FLAG_CPXj) != 0) STD_op_j else STD_op_i;
 }
 
@@ -656,42 +656,42 @@ pub export fn getGapChar1Radix() [*c]const u8 {
 pub export fn getRadix34MarkChar() u8 {
     return gap_char_codec.radix34MarkChar(getGapChar1Radix(), STD_WCOMMA);
 }
-inline fn SEPARATOR_LEFT() [*c]const u8 {
+fn SEPARATOR_LEFT() [*c]const u8 {
     return getGapChar1Left();
 }
-inline fn SEPARATOR_RIGHT() [*c]const u8 {
+fn SEPARATOR_RIGHT() [*c]const u8 {
     return getGapChar1Right();
 }
 // SEPARATOR_FRAC = gapItemFrac==0 ? STD_NOCHAR_NOCHAR : indexOfItems[gapItemFrac].itemSoftmenuName
 // gapItemFrac = gapItemLeft==0 ? 0 : ITM_SPACE_4_PER_EM
 const ITM_SPACE_4_PER_EM: u16 = 870;
-inline fn gapItemFrac() u16 {
+fn gapItemFrac() u16 {
     return if (gapItemLeft == 0) 0 else ITM_SPACE_4_PER_EM;
 }
-inline fn SEPARATOR_FRAC() [*c]const u8 {
+fn SEPARATOR_FRAC() [*c]const u8 {
     return gapItemStr(gapItemFrac());
 }
 // Rx = indexOfItems[gapItemRadix].itemSoftmenuName (raw, no gapChar1 mapping)
-inline fn Rx() [*c]const u8 {
+fn Rx() [*c]const u8 {
     return &indexOfItems[gapItemRadix].itemSoftmenuName;
 }
 // RADIX34_MARK_STRING = gapChar1Radix
-inline fn RADIX34_MARK_STRING() [*c]const u8 {
+fn RADIX34_MARK_STRING() [*c]const u8 {
     return getGapChar1Radix();
 }
 
 // SEPARATOR_(digitCount) / GROUPWIDTH_(digitCount)
-inline fn SEPARATOR_(digitCount: i32) [*c]const u8 {
+fn SEPARATOR_(digitCount: i32) [*c]const u8 {
     return if (digitCount >= 0) SEPARATOR_LEFT() else SEPARATOR_RIGHT();
 }
-inline fn GROUPWIDTH_LEFT() i32 {
+fn GROUPWIDTH_LEFT() i32 {
     return grpGroupingLeft;
 }
-inline fn GROUPWIDTH_RIGHT() i32 {
+fn GROUPWIDTH_RIGHT() i32 {
     return grpGroupingRight;
 }
 // The four grouping-width settings, read into the pure numeral_grouping core.
-inline fn currentGrouping() numeral_grouping.Grouping {
+fn currentGrouping() numeral_grouping.Grouping {
     return .{
         .left = grpGroupingLeft,
         .right = grpGroupingRight,
@@ -699,25 +699,25 @@ inline fn currentGrouping() numeral_grouping.Grouping {
         .gr1_overflow = grpGroupingGr1LeftOverflow,
     };
 }
-inline fn GROUPWIDTH_LEFT1() u16 {
+fn GROUPWIDTH_LEFT1() u16 {
     return numeral_grouping.groupWidthLeft1(currentGrouping());
 }
-inline fn GROUPWIDTH_LEFT1X() i32 {
+fn GROUPWIDTH_LEFT1X() i32 {
     return grpGroupingGr1LeftOverflow;
 }
-inline fn GROUPWIDTH_(digitCount: i32) i32 {
+fn GROUPWIDTH_(digitCount: i32) i32 {
     return if (digitCount >= 0) GROUPWIDTH_LEFT() else GROUPWIDTH_RIGHT();
 }
-inline fn GROUP1_OVFL(digitCount: i32, exp: i32) i32 {
+fn GROUP1_OVFL(digitCount: i32, exp: i32) i32 {
     return numeral_grouping.group1Overflow(currentGrouping(), digitCount, exp);
 }
-inline fn IS_SEPARATOR_(digitCount: i32) bool {
+fn IS_SEPARATOR_(digitCount: i32) bool {
     return numeral_grouping.isSeparator(currentGrouping(), digitCount);
 }
-inline fn GROUPLEFT_DISABLED() bool {
+fn GROUPLEFT_DISABLED() bool {
     return GROUPWIDTH_LEFT() == 0 or gapItemLeft == 0;
 }
-inline fn GROUPRIGHT_DISABLED() bool {
+fn GROUPRIGHT_DISABLED() bool {
     return GROUPWIDTH_RIGHT() == 0 or gapItemRight == 0;
 }
 
@@ -731,142 +731,142 @@ const regMatrixHeader = abi.registerMatrixHeader;
 const SIZEOF_STR_LG_INT_HEADER: usize = 4; // sizeof(strLgIntHeader_t)
 const regString = abi.registerString;
 // VARIABLE_REAL34_DATA(a)=((real34_t*)(a)); VARIABLE_IMAG34_DATA(a)=((real34_t*)(a)+1)
-inline fn varReal34(c: *const complex34_t) *const real34_t {
+fn varReal34(c: *const complex34_t) *const real34_t {
     return &c.real;
 }
-inline fn varImag34(c: *const complex34_t) *const real34_t {
+fn varImag34(c: *const complex34_t) *const real34_t {
     return &c.imag;
 }
-inline fn getRegisterAngularMode(reg: calcRegister_t) angularMode_t {
+fn getRegisterAngularMode(reg: calcRegister_t) angularMode_t {
     return @intCast(getRegisterTag(reg) & amAngleMask);
 }
-inline fn getComplexRegisterAngularMode(reg: calcRegister_t) angularMode_t {
+fn getComplexRegisterAngularMode(reg: calcRegister_t) angularMode_t {
     return @intCast(getRegisterTag(reg) & amAngleMask);
 }
-inline fn getComplexRegisterPolarMode(reg: calcRegister_t) u32 {
+fn getComplexRegisterPolarMode(reg: calcRegister_t) u32 {
     return getRegisterTag(reg) & amPolar;
 }
 
 // stringByteLength(str)=(int32_t)strlen(str)
-inline fn stringByteLength(str: [*c]const u8) i32 {
+fn stringByteLength(str: [*c]const u8) i32 {
     return @intCast(strlen(str));
 }
 
 // ---------------------------------------------------------------------------
 // real34 / real arithmetic wrappers (the realType.h macros).
 // ---------------------------------------------------------------------------
-inline fn real34ToReal(source_: *const real34_t, destination: *real_t) void {
+fn real34ToReal(source_: *const real34_t, destination: *real_t) void {
     _ = decimal128ToNumber(source_, destination);
 }
-inline fn realToReal34(source_: *const real_t, destination: *real34_t) void {
+fn realToReal34(source_: *const real_t, destination: *real34_t) void {
     _ = decimal128FromNumber(destination, source_, &ctxtReal34);
 }
-inline fn real34Copy(source_: *const real34_t, destination: *real34_t) void {
+fn real34Copy(source_: *const real34_t, destination: *real34_t) void {
     _ = decQuadCopy(destination, source_);
 }
 // C narrows the uint32_t/int32_t decQuad results to int16_t (truncation). The
 // special-value sentinel exponents (e.g. for Inf/NaN) overflow i16, which is fine
 // in C; reproduce with a low-16-bit truncation rather than a checked @intCast.
-inline fn real34Digits(source_: *const real34_t) i16 {
+fn real34Digits(source_: *const real34_t) i16 {
     return @bitCast(@as(u16, @truncate(decQuadDigits(source_))));
 }
-inline fn real34GetExponent(source_: *const real34_t) i16 {
+fn real34GetExponent(source_: *const real34_t) i16 {
     return @bitCast(@as(u16, @truncate(@as(u32, @bitCast(decQuadGetExponent(source_))))));
 }
-inline fn real34GetCoefficient(source_: *const real34_t, bcd: [*c]u8) i32 {
+fn real34GetCoefficient(source_: *const real34_t, bcd: [*c]u8) i32 {
     return decQuadGetCoefficient(source_, bcd);
 }
-inline fn real34IsNegative(source_: *const real34_t) bool {
+fn real34IsNegative(source_: *const real34_t) bool {
     return (source_.bytes[15] & 0x80) == 0x80;
 }
-inline fn real34IsPositive(source_: *const real34_t) bool {
+fn real34IsPositive(source_: *const real34_t) bool {
     return (source_.bytes[15] & 0x80) == 0;
 }
 const real34SetNegativeSign = abi.real34SetNegativeSign;
-inline fn real34SetPositiveSign(operand: *real34_t) void {
+fn real34SetPositiveSign(operand: *real34_t) void {
     operand.bytes[15] &= 0x7F;
 }
-inline fn real34IsZero(source_: *const real34_t) bool {
+fn real34IsZero(source_: *const real34_t) bool {
     return decQuadIsZero(source_) != 0;
 }
-inline fn real34IsInfinite(source_: *const real34_t) bool {
+fn real34IsInfinite(source_: *const real34_t) bool {
     return decQuadIsInfinite(source_) != 0;
 }
-inline fn real34IsNaN(source_: *const real34_t) bool {
+fn real34IsNaN(source_: *const real34_t) bool {
     return decQuadIsNaN(source_) != 0;
 }
-inline fn real34Reduce(operand: *const real34_t, res: *real34_t) void {
+fn real34Reduce(operand: *const real34_t, res: *real34_t) void {
     _ = decQuadReduce(res, operand, &ctxtReal34);
 }
-inline fn real34ToString(source_: *const real34_t, destination: [*c]u8) void {
+fn real34ToString(source_: *const real34_t, destination: [*c]u8) void {
     _ = decQuadToString(source_, destination);
 }
-inline fn real34SetZero(destination: *real34_t) void {
+fn real34SetZero(destination: *real34_t) void {
     _ = decQuadZero(destination);
 }
-inline fn real34CopyAbs(source_: *const real34_t, destination: *real34_t) void {
+fn real34CopyAbs(source_: *const real34_t, destination: *real34_t) void {
     real34Copy(source_, destination);
     real34SetPositiveSign(destination);
 }
-inline fn real34Divide(a: *const real34_t, b: *const real34_t, res: *real34_t) void {
+fn real34Divide(a: *const real34_t, b: *const real34_t, res: *real34_t) void {
     _ = decQuadDivide(res, a, b, &ctxtReal34);
 }
-inline fn real34DivideRemainder(a: *const real34_t, b: *const real34_t, res: *real34_t) void {
+fn real34DivideRemainder(a: *const real34_t, b: *const real34_t, res: *real34_t) void {
     _ = decQuadRemainder(res, a, b, &ctxtReal34);
 }
-inline fn real34ToIntegralValue(a: *const real34_t, res: *real34_t, round: c_int) void {
+fn real34ToIntegralValue(a: *const real34_t, res: *real34_t, round: c_int) void {
     _ = decQuadToIntegralValue(res, a, &ctxtReal34, round);
 }
-inline fn real34ToUInt32(a: *const real34_t) u32 {
+fn real34ToUInt32(a: *const real34_t) u32 {
     return decQuadToUInt32(a, &ctxtReal34, DEC_ROUND_DOWN);
 }
-inline fn realCopy(source_: *const real_t, destination: *real_t) void {
+fn realCopy(source_: *const real_t, destination: *real_t) void {
     destination.* = source_.*;
 }
-inline fn realCopyAbs(source_: *const real_t, destination: *real_t) void {
+fn realCopyAbs(source_: *const real_t, destination: *real_t) void {
     destination.* = source_.*;
     destination.bits &= 0x7F;
 }
-inline fn realIsNegative(r: *const real_t) bool {
+fn realIsNegative(r: *const real_t) bool {
     return (r.bits & 0x80) != 0;
 }
 const realIsZero = abi.realIsZero;
-inline fn realSetPositiveSign(operand: *real_t) void {
+fn realSetPositiveSign(operand: *real_t) void {
     operand.bits &= 0x7F;
 }
-inline fn realSetNegativeSign(operand: *real_t) void {
+fn realSetNegativeSign(operand: *real_t) void {
     operand.bits |= 0x80;
 }
-inline fn realGetExponent(r: *const real_t) i32 {
+fn realGetExponent(r: *const real_t) i32 {
     return r.digits + r.exponent - 1;
 }
 
 // longInteger wrappers (longIntegerType.h static inlines).
-inline fn longIntegerInit(op: *longInteger_t) void {
+fn longIntegerInit(op: *longInteger_t) void {
     __gmpz_init(&op[0]);
 }
-inline fn longIntegerFree(op: *longInteger_t) void {
+fn longIntegerFree(op: *longInteger_t) void {
     __gmpz_clear(&op[0]);
 }
-inline fn longIntegerIsZero(op: *const longInteger_t) bool {
+fn longIntegerIsZero(op: *const longInteger_t) bool {
     return op[0]._mp_size == 0;
 }
-inline fn longIntegerIsNegative(op: *const longInteger_t) bool {
+fn longIntegerIsNegative(op: *const longInteger_t) bool {
     return op[0]._mp_size < 0;
 }
-inline fn longIntegerBits(op: *const longInteger_t) u32 {
+fn longIntegerBits(op: *const longInteger_t) u32 {
     return @intCast(__gmpz_sizeinbase(&op[0], 2));
 }
-inline fn longIntegerModuloUInt(op: *const longInteger_t, d: u32) u32 {
+fn longIntegerModuloUInt(op: *const longInteger_t, d: u32) u32 {
     return @intCast(__gmpz_fdiv_ui(&op[0], d));
 }
 /// op/d => q*d + remainder == op; returns |remainder|, which is below d.
-inline fn longIntegerDivideUInt(op: *const longInteger_t, d: u32, q: *longInteger_t) u32 {
+fn longIntegerDivideUInt(op: *const longInteger_t, d: u32, q: *longInteger_t) u32 {
     return @intCast(__gmpz_tdiv_q_ui(&q[0], &op[0], d));
 }
 
 // extra-info hint (host only, gated like siblings).
-inline fn moreInfoOnErr(where: [*c]const u8, hint: [*c]const u8, displayString: [*c]const u8) void {
+fn moreInfoOnErr(where: [*c]const u8, hint: [*c]const u8, displayString: [*c]const u8) void {
     if (comptime extra_info) {
         if (comptime !dmcp_build) {
             moreInfoOnError(where, hint, displayString, null);
@@ -3989,7 +3989,7 @@ pub export fn mimShowElement() callconv(.c) void {
 // ===========================================================================
 
 const isXFNregisterValid3r = abi.registers.isXFNregisterValid3r;
-inline fn isXFNShowing(r: calcRegister_t) bool {
+fn isXFNShowing(r: calcRegister_t) bool {
     return frontier_softmenus.menu(0) == -MNU_SHOW and frontier_softmenus.menu(1) == -MNU_XXFCNS and isXFNregisterValid3r(r);
 }
 

@@ -35,7 +35,7 @@ const AMNONE: u32 = @intCast(runtime.amNone);
 
 extern fn fnConvertStkToMx(constVector1: u16) void;
 
-inline fn angMode(r: calcRegister_t) u32 {
+fn angMode(r: calcRegister_t) u32 {
     return @intCast(runtime.getRegisterAngularMode(r));
 }
 const registerIsNoAngle = runtime.registerIsNoAngle;

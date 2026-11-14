@@ -352,7 +352,7 @@ extern fn setRegisterTag(regist: calcRegister_t, tag: u32) void;
 extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) bool;
 extern fn copySourceRegisterToDestRegister(rSource: calcRegister_t, rDest: calcRegister_t) void;
 extern fn saveForUndo() void;
-inline fn getStackTop() calcRegister_t {
+fn getStackTop() calcRegister_t {
     return if (getSystemFlag(FLAG_SSIZE8)) REGISTER_D else REGISTER_T;
 }
 
@@ -362,7 +362,7 @@ extern fn getSystemFlag(sf: c_int) bool_t;
 
 extern fn real34IsAnInteger(x: *const real34_t) bool_t;
 extern fn decQuadIsZero(d: *const real34_t) u32;
-inline fn real34IsZero(source_: *const real34_t) bool {
+fn real34IsZero(source_: *const real34_t) bool {
     return decQuadIsZero(source_) != 0;
 }
 extern fn realCompareLessThan(n1: *const real_t, n2: *const real_t) bool_t;
@@ -371,10 +371,10 @@ extern fn decQuadDigits(d: *const real34_t) u32;
 extern fn decQuadGetExponent(d: *const real34_t) i32;
 // C narrows both decQuad results to int16_t; the special-value sentinel exponents
 // overflow i16, which is fine there, so truncate rather than @intCast.
-inline fn real34Digits(source_: *const real34_t) i16 {
+fn real34Digits(source_: *const real34_t) i16 {
     return @bitCast(@as(u16, @truncate(decQuadDigits(source_))));
 }
-inline fn real34GetExponent(source_: *const real34_t) i16 {
+fn real34GetExponent(source_: *const real34_t) i16 {
     return @bitCast(@as(u16, @truncate(@as(u32, @bitCast(decQuadGetExponent(source_))))));
 }
 extern fn decQuadFromInt32(r: *real34_t, v: i32) *real34_t;
@@ -410,7 +410,7 @@ extern fn delColComplexMatrix(matrix: *complex34Matrix_t, colNo: u16) void;
 // isRegisterMatrixVector / getVectorRegisterPolarMode are `#define` macros in
 // registers.h (not linkable symbols); reproduce them inline.
 // isMatrix2dVector / isMatrix3dVector (defines.h).
-inline fn registerMatrixHeader(regist: calcRegister_t) *align(1) const matrixHeader_t {
+fn registerMatrixHeader(regist: calcRegister_t) *align(1) const matrixHeader_t {
     return abi.registerMatrixHeader(regist);
 }
 const isRegisterMatrixVector = abi.registers.isRegisterMatrixVector;
@@ -436,7 +436,7 @@ extern fn sprintf(buf: [*c]u8, fmt: [*c]const u8, ...) c_int;
 // host. (Mirrors asn_browser owner.)
 const LcdFillRectFn = *const fn (x: u32, y: u32, dx: u32, dy: u32, val: c_int) callconv(.c) void;
 const c_lcd_fill_rect = @extern(LcdFillRectFn, .{ .name = "lcd_fill_rect" });
-inline fn lcdFillRect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void {
+fn lcdFillRect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void {
     if (comptime dmcp_build) {
         rom.lcd_fill_rect(x, y, dx, dy, val);
     } else {
@@ -449,52 +449,52 @@ inline fn lcdFillRect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void {
 // ===========================================================================
 // calcModeNormalGui: empty macro on firmware (hal/gui.h), real symbol on host.
 const VoidFn = *const fn () callconv(.c) void;
-inline fn calcModeNormalGui() void {
+fn calcModeNormalGui() void {
     if (comptime !dmcp_build) @extern(VoidFn, .{ .name = "calcModeNormalGui" })();
 }
 
-inline fn real34SetZero(d: *real34_t) void {
+fn real34SetZero(d: *real34_t) void {
     _ = decQuadZero(d);
 }
-inline fn real34SetOne(d: *real34_t) void {
+fn real34SetOne(d: *real34_t) void {
     _ = decQuadFromInt32(d, 1);
 }
-inline fn real34Copy(src: *const real34_t, dst: *real34_t) void {
+fn real34Copy(src: *const real34_t, dst: *real34_t) void {
     dst.* = src.*;
 }
 const complex34Copy = abi.complex34Copy;
-inline fn real34ChangeSign(op: *real34_t) void {
+fn real34ChangeSign(op: *real34_t) void {
     op.bytes[15] ^= 0x80;
 }
-inline fn real34SetPositiveSign(op: *real34_t) void {
+fn real34SetPositiveSign(op: *real34_t) void {
     op.bytes[15] &= 0x7F;
 }
-inline fn real34IsNegative(op: *const real34_t) bool {
+fn real34IsNegative(op: *const real34_t) bool {
     return (op.bytes[15] & 0x80) == 0x80;
 }
-inline fn real34ToReal(src: *const real34_t, dst: *real_t) void {
+fn real34ToReal(src: *const real34_t, dst: *real_t) void {
     _ = decimal128ToNumber(src, dst);
 }
-inline fn realToReal34(src: *const real_t, dst: *real34_t) void {
+fn realToReal34(src: *const real_t, dst: *real34_t) void {
     _ = decimal128FromNumber(dst, src, &ctxtReal34);
 }
-inline fn realCopy(src: *const real_t, dst: *real_t) void {
+fn realCopy(src: *const real_t, dst: *real_t) void {
     _ = decNumberCopy(dst, src);
 }
-inline fn realSetPositiveSign(op: *real_t) void {
+fn realSetPositiveSign(op: *real_t) void {
     op.bits &= 0x7F;
 }
-inline fn realAdd(a: *const real_t, b: *const real_t, res: *real_t, ctx: *const realContext_t) void {
+fn realAdd(a: *const real_t, b: *const real_t, res: *real_t, ctx: *const realContext_t) void {
     _ = decNumberAdd(res, a, b, ctx);
 }
-inline fn stringToReal34(src: [*c]const u8, dst: *real34_t) void {
+fn stringToReal34(src: [*c]const u8, dst: *real34_t) void {
     _ = decQuadFromString(dst, src, &ctxtReal34);
 }
 // VARIABLE_REAL34_DATA / VARIABLE_IMAG34_DATA on a complex34_t*.
-inline fn cRe(c: *complex34_t) *real34_t {
+fn cRe(c: *complex34_t) *real34_t {
     return &c.real;
 }
-inline fn cIm(c: *complex34_t) *real34_t {
+fn cIm(c: *complex34_t) *real34_t {
     return &c.imag;
 }
 const reg34 = abi.registerReal34Aligned;
@@ -502,55 +502,55 @@ const regCplx = abi.registerComplex34Aligned;
 const regImag34 = abi.registerImag34Aligned;
 
 // Vector geometry macros (OPTION_VECTOR; defines.h).
-inline fn isMatrix2dVector(rows: c_int, cols: c_int) bool {
+fn isMatrix2dVector(rows: c_int, cols: c_int) bool {
     return (rows == 1 and cols == 2) or (rows == 2 and cols == 1);
 }
-inline fn isMatrix3dVector(rows: c_int, cols: c_int) bool {
+fn isMatrix3dVector(rows: c_int, cols: c_int) bool {
     return (rows == 1 and cols == 3) or (rows == 3 and cols == 1);
 }
-inline fn isMatrixVector(rows: c_int, cols: c_int) bool {
+fn isMatrixVector(rows: c_int, cols: c_int) bool {
     return isMatrix3dVector(rows, cols) or isMatrix2dVector(rows, cols);
 }
-inline fn getTagAngularMode(tag: u32) u8 {
+fn getTagAngularMode(tag: u32) u8 {
     return @intCast(tag & amAngleMask);
 }
-inline fn is2dVectorPolar(tag: u32) bool {
+fn is2dVectorPolar(tag: u32) bool {
     return (tag & amPolar) == amPolar;
 }
 // is3dVectorPolarSPHCYL: the SPH/CYL discriminator. In c47 this is
 // `((tag & amPolar) == amPolar)` selecting SPH; here SPH=polar-bit-set,
 // CYL=polar-bit-clear with a non-amNone angular mode. (defines.h)
-inline fn is3dVectorPolarSPHCYL(tag: u32) bool {
+fn is3dVectorPolarSPHCYL(tag: u32) bool {
     return (tag & amPolar) == amPolar;
 }
-inline fn is3dVectorPolarSPH(tag: u32) bool {
+fn is3dVectorPolarSPH(tag: u32) bool {
     return getTagAngularMode(tag) != amNone and is3dVectorPolarSPHCYL(tag);
 }
-inline fn is3dVectorPolarCYL(tag: u32) bool {
+fn is3dVectorPolarCYL(tag: u32) bool {
     return getTagAngularMode(tag) != amNone and !is3dVectorPolarSPHCYL(tag);
 }
-inline fn isMatrix2dVectorPOL(rows: c_int, cols: c_int, tag: u32) bool {
+fn isMatrix2dVectorPOL(rows: c_int, cols: c_int, tag: u32) bool {
     return isMatrix2dVector(rows, cols) and is2dVectorPolar(tag);
 }
-inline fn isMatrix3dVectorSPH(rows: c_int, cols: c_int, tag: u32) bool {
+fn isMatrix3dVectorSPH(rows: c_int, cols: c_int, tag: u32) bool {
     return isMatrix3dVector(rows, cols) and is3dVectorPolarSPH(tag);
 }
-inline fn isMatrix3dVectorCYL(rows: c_int, cols: c_int, tag: u32) bool {
+fn isMatrix3dVectorCYL(rows: c_int, cols: c_int, tag: u32) bool {
     return isMatrix3dVector(rows, cols) and is3dVectorPolarCYL(tag);
 }
 
-inline fn imax(a: anytype, b: anytype) @TypeOf(a, b) {
+fn imax(a: anytype, b: anytype) @TypeOf(a, b) {
     return if (a > b) a else b;
 }
-inline fn imin(a: anytype, b: anytype) @TypeOf(a, b) {
+fn imin(a: anytype, b: anytype) @TypeOf(a, b) {
     return if (a < b) a else b;
 }
 
 // COMPLEX_UNIT / PRODUCT_SIGN runtime macros.
-inline fn complexUnit() [*c]const u8 {
+fn complexUnit() [*c]const u8 {
     return if (getSystemFlag(FLAG_CPXj)) STD_op_j else STD_op_i;
 }
-inline fn productSign() [*c]const u8 {
+fn productSign() [*c]const u8 {
     return if (getSystemFlag(FLAG_MULTx)) STD_CROSS else STD_DOT;
 }
 
@@ -702,7 +702,7 @@ const MATRIX_LINE_WIDTH_C: i16 = MATRIX_LINE_WIDTH;
 // implicit conversion. MATRIX_LINE_WIDTH leaves no room for the brackets, so a
 // matrix that only just fits it starts left of column zero and the value is
 // negative; wrap it exactly as C does rather than refusing the cast.
-inline fn screenPos(v: i16) u32 {
+fn screenPos(v: i16) u32 {
     return @bitCast(@as(i32, v));
 }
 
@@ -731,7 +731,7 @@ pub export fn getRealMatrixIntegerColumns(matrix: *const real34Matrix_t, dispFor
 }
 
 // The SHOW page test: not used on VIEW or on the stack display.
-inline fn MX_SHOW_PAGE(prefixWidth: i16, regXposition: bool_t) bool {
+fn MX_SHOW_PAGE(prefixWidth: i16, regXposition: bool_t) bool {
     return option_mx_show and SHOWMODE() and prefixWidth > 0 and !regXposition;
 }
 
@@ -2148,7 +2148,7 @@ pub export fn getComplexMatrixColumnWidths(matrix: *const complex34Matrix_t, pre
 }
 
 extern fn strcmp(a: [*c]const u8, b: [*c]const u8) c_int;
-inline fn strcmpEq(a: [*c]const u8, b: [*c]const u8) bool {
+fn strcmpEq(a: [*c]const u8, b: [*c]const u8) bool {
     return strcmp(a, b) == 0;
 }
 

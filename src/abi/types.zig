@@ -44,10 +44,10 @@ pub const Real159 = extern union {
     real: Real,
     storage: [116 / 4]u32,
 
-    pub inline fn ptr(self: *Real159) *Real {
+    pub fn ptr(self: *Real159) *Real {
         return &self.real;
     }
-    pub inline fn constPtr(self: *const Real159) *const Real {
+    pub fn constPtr(self: *const Real159) *const Real {
         return &self.real;
     }
 };
@@ -267,7 +267,7 @@ pub const Font = extern struct {
     glyphs: [0]Glyph,
     /// glyphs[] begins at offset 8 (the [0]Glyph align-8 field). Single-source
     /// accessor so every owner's font_t == abi.Font.
-    pub inline fn glyphsPtr(self: *const Font) [*]const Glyph {
+    pub fn glyphsPtr(self: *const Font) [*]const Glyph {
         return &self.glyphs;
     }
 };

@@ -435,15 +435,15 @@ const USER_R47f_g: u8 = 61;
 const USER_R47bk_fg: u8 = 62;
 const USER_R47fg_bk: u8 = 63;
 const USER_R47fg_g: u8 = 64;
-inline fn isR47FAM() bool_t {
+fn isR47FAM() bool_t {
     return calcModel == USER_R47f_g or calcModel == USER_R47bk_fg or calcModel == USER_R47fg_bk or calcModel == USER_R47fg_g;
 }
 
 // currentSubroutineLevel macro: currentSubroutineLevelData->subroutineLevel
-inline fn currentSubroutineLevel() u16 {
+fn currentSubroutineLevel() u16 {
     return currentSubroutineLevelData.*.subroutineLevel;
 }
-inline fn currentNumberOfLocalRegisters() u8 {
+fn currentNumberOfLocalRegisters() u8 {
     return currentSubroutineLevelData.*.numberOfLocalRegisters;
 }
 
@@ -510,16 +510,16 @@ const c_fnT_ARROW = @extern(FnPtr, .{ .name = "fnT_ARROW" });
 // ---------------------------------------------------------------------------
 // Small helpers mirroring c47.h macros / libc idioms.
 // ---------------------------------------------------------------------------
-inline fn stringByteLength(s: [*c]const u8) i32 {
+fn stringByteLength(s: [*c]const u8) i32 {
     return @intCast(strlen(s));
 }
-inline fn absI(x: i32) i32 {
+fn absI(x: i32) i32 {
     return if (x < 0) -x else x;
 }
-inline fn maxI(a: i32, b: i32) i32 {
+fn maxI(a: i32, b: i32) i32 {
     return if (a > b) a else b;
 }
-inline fn moreInfoErr(where: [*:0]const u8, m2: [*:0]const u8, m3: ?[*:0]const u8) void {
+fn moreInfoErr(where: [*:0]const u8, m2: [*:0]const u8, m3: ?[*:0]const u8) void {
     if (comptime extra_info) {
         if (comptime !dmcp_build) moreInfoOnError(where, m2, m3, null);
     }
@@ -527,35 +527,35 @@ inline fn moreInfoErr(where: [*:0]const u8, m2: [*:0]const u8, m3: ?[*:0]const u
 
 // REGISTER_REAL34_DATA(a)
 const reg34 = abi.registerReal34Aligned;
-inline fn stringToReal34(src: [*c]const u8, dst: *real34_t) void {
+fn stringToReal34(src: [*c]const u8, dst: *real34_t) void {
     _ = decQuadFromString(dst, src, &ctxtReal34);
 }
-inline fn real34ToString(src: *const real34_t, dst: [*c]u8) void {
+fn real34ToString(src: *const real34_t, dst: [*c]u8) void {
     _ = decQuadToString(src, dst);
 }
-inline fn real34IsZero(src: *const real34_t) bool {
+fn real34IsZero(src: *const real34_t) bool {
     return decQuadIsZero(src) != 0;
 }
 
 // TO_BLOCKS / TO_BYTES
-inline fn toBlocks(n: u32) u32 {
+fn toBlocks(n: u32) u32 {
     return (n + (BYTES_PER_BLOCK - 1)) >> BPB;
 }
-inline fn toBytes(n: u32) u32 {
+fn toBytes(n: u32) u32 {
     return n << BPB;
 }
 // TO_C47MEMPTR(p): (p==NULL)?C47_NULL:(uint16_t)((uint32_t *)p - ram)
-inline fn toC47MemPtr(p: [*c]u8) u16 {
+fn toC47MemPtr(p: [*c]u8) u16 {
     if (p == null) return C47_NULL;
     return @intCast((@intFromPtr(p) - @intFromPtr(ram)) / @sizeOf(u32));
 }
 // (uint8_t *)(ram + RAM_SIZE_IN_BLOCKS)
-inline fn ramEnd() [*c]u8 {
+fn ramEnd() [*c]u8 {
     return std.mem.asBytes(&ram[RAM_SIZE_IN_BLOCKS]);
 }
 
 // regCtoKS (defines.h static inline)
-inline fn regCtoKS(regC: i16) u8 {
+fn regCtoKS(regC: i16) u8 {
     return ks_register_remap.regCtoKS(regC, .{
         .first_stat = FIRST_STAT_REGISTER,
         .last_spare = LAST_SPARE_REGISTER,
@@ -570,14 +570,14 @@ inline fn regCtoKS(regC: i16) u8 {
 const LcdFillRectFn = *const fn (x: u32, y: u32, dx: u32, dy: u32, val: c_int) callconv(.c) void;
 const c_lcd_fill_rect = @extern(LcdFillRectFn, .{ .name = "lcd_fill_rect" });
 
-inline fn lcdFillRect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void {
+fn lcdFillRect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void {
     if (comptime dmcp_build) {
         rom.lcd_fill_rect(x, y, dx, dy, val);
     } else {
         c_lcd_fill_rect(x, y, dx, dy, val);
     }
 }
-inline fn clearScreen() void {
+fn clearScreen() void {
     lcdFillRect(0, 0, SCREEN_WIDTH, 240, LCD_SET_VALUE);
     frontier_status_bar.forceSBupdate();
 }
@@ -585,10 +585,10 @@ inline fn clearScreen() void {
 // calcMode* GUI hooks are no-op macros on firmware, real externs on host.
 extern fn calcModeNormalGui() void;
 extern fn calcModeAimGui() void;
-inline fn calcModeNormalGuiCall() void {
+fn calcModeNormalGuiCall() void {
     if (comptime !dmcp_build) calcModeNormalGui();
 }
-inline fn calcModeAimGuiCall() void {
+fn calcModeAimGuiCall() void {
     if (comptime !dmcp_build) calcModeAimGui();
 }
 
@@ -607,7 +607,7 @@ pub export fn checkOpCodeOfStep(step: [*c]const u8, op: u16) callconv(.c) bool_t
 }
 
 // isAtEndOfProgram (static inline in manage.h): checkOpCodeOfStep(step, ITM_END)
-inline fn isAtEndOfProgram(step: [*c]const u8) bool_t {
+fn isAtEndOfProgram(step: [*c]const u8) bool_t {
     return checkOpCodeOfStep(step, ITM_END);
 }
 
@@ -1011,7 +1011,7 @@ pub export fn scrollPemForwards() callconv(.c) void {
 // T line at all is the screen owner's shiftOnTline.
 // ===========================================================================
 const FLAG_SBshfR: i32 = 0x803B;
-inline fn xShiftIsRight() bool_t {
+fn xShiftIsRight() bool_t {
     return getSystemFlag(FLAG_SBshfR);
 }
 pub export fn pemLeftOffset(y: i32) callconv(.c) i32 {
@@ -1024,7 +1024,7 @@ pub export fn pemLeftOffset(y: i32) callconv(.c) i32 {
 
 // The reverse-video row number is padded on its left up to the line's indent, so the
 // highlight reaches the edge the text starts from.
-inline fn padSelectedRowNumber(y: i32) void {
+fn padSelectedRowNumber(y: i32) void {
     lcdFillRect(@intCast(pemLeftOffset(y) - frontier_screen.noShiftOffset), @intCast(y), @intCast(frontier_screen.noShiftOffset), 20, 1);
 }
 
@@ -1335,13 +1335,13 @@ pub export fn fnPem(unusedButMandatoryParameter: u16) callconv(.c) void {
     }
 }
 
-inline fn setCurrentInputVariableInvalid() void {
+fn setCurrentInputVariableInvalid() void {
     currentInputVariable = @intCast(INVALID_VARIABLE);
 }
 
 // DMCP-only helpers for the fnPem battery skip guard.
 extern fn emptyKeyBuffer() bool_t;
-inline fn keyEmpty() c_int {
+fn keyEmpty() c_int {
     if (comptime dmcp_build) {
         return rom.key_empty();
     } else {
@@ -1349,7 +1349,7 @@ inline fn keyEmpty() c_int {
     }
 }
 const FLAG_USB: i32 = 0xc028; // runningOnSimOrUSB = getSystemFlag(FLAG_USB) on firmware; true on host
-inline fn runningOnSimOrUSB() bool_t {
+fn runningOnSimOrUSB() bool_t {
     if (comptime dmcp_build) {
         return getSystemFlag(FLAG_USB);
     } else {

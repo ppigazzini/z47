@@ -63,41 +63,41 @@ const displayCalcErrorMessage = runtime.displayCalcErrorMessage;
 const moreInfoOnError = runtime.moreInfoOnError;
 
 // const_0/const_1/const_2 have runtime accessors.
-inline fn const_0() *const real_t {
+fn const_0() *const real_t {
     return runtime.z47_math_wrappers_const_0();
 }
-inline fn const_1() *const real_t {
+fn const_1() *const real_t {
     return runtime.z47_math_wrappers_const_1();
 }
-inline fn const_2() *const real_t {
+fn const_2() *const real_t {
     return runtime.z47_math_wrappers_const_2();
 }
-inline fn const_1on2() *const real_t {
+fn const_1on2() *const real_t {
     return runtime.z47_math_wrappers_const_1on2();
 }
-inline fn const_plusInfinity() *const real_t {
+fn const_plusInfinity() *const real_t {
     return runtime.z47_math_wrappers_const_plus_infinity();
 }
-inline fn const_minusInfinity() *const real_t {
+fn const_minusInfinity() *const real_t {
     return runtime.z47_math_wrappers_const_minus_infinity();
 }
 // The 75-digit Lanczos coefficients c01..c29: each sits at a 60-byte stride
 // from the first, which is a 4-aligned blob offset, so the cast holds.
-inline fn const75_gammaC01(k: u32) *const real_t {
+fn const75_gammaC01(k: u32) *const real_t {
     return consts.gammaC75(k);
 }
 
 const realIsPositive = math_real_predicates.realIsPositive;
-inline fn realCopy(source: *const real_t, destination: *real_t) void {
+fn realCopy(source: *const real_t, destination: *real_t) void {
     destination.* = source.*;
 }
-inline fn realCompareLessEqual(a: *const real_t, b: *const real_t) bool {
+fn realCompareLessEqual(a: *const real_t, b: *const real_t) bool {
     return math_comparison_reals.realCompareLessEqual(a, b);
 }
-inline fn realCompareGreaterThan(a: *const real_t, b: *const real_t) bool {
+fn realCompareGreaterThan(a: *const real_t, b: *const real_t) bool {
     return math_comparison_reals.realCompareGreaterThan(a, b);
 }
-inline fn realCompareEqual(a: *const real_t, b: *const real_t) bool {
+fn realCompareEqual(a: *const real_t, b: *const real_t) bool {
     return math_comparison_reals.realCompareEqual(a, b);
 }
 

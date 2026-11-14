@@ -72,7 +72,7 @@ const realIsSpecial = runtime.realIsSpecial;
 const realIsNegative = runtime.realIsNegative;
 const realIsPositive = math_real_predicates.realIsPositive;
 
-inline fn getRegisterAngularMode(reg: calcRegister_t) u32 {
+fn getRegisterAngularMode(reg: calcRegister_t) u32 {
     return getRegisterTag(reg) & amAngleMask;
 }
 
@@ -84,10 +84,10 @@ const ctxtReal39 = &runtime.ctxtReal39;
 // real_t op helpers (realType.h macros).
 extern fn decNumberCopy(res: *real_t, source: *const real_t) *real_t;
 extern fn decNumberCompare(res: *real_t, op1: *const real_t, op2: *const real_t, ctxt: *realContext_t) *real_t;
-inline fn realCopy(source: *const real_t, destination: *real_t) void {
+fn realCopy(source: *const real_t, destination: *real_t) void {
     _ = decNumberCopy(destination, source);
 }
-inline fn realCompare(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+fn realCompare(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberCompare(res, op1, op2, ctxt);
 }
 
@@ -96,21 +96,21 @@ inline fn realCompare(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt
 // roundingMode / roundingModeTable.
 extern var roundingMode: u8;
 const roundingModeTable = @extern([*]const c_int, .{ .name = "roundingModeTable" });
-inline fn currentRoundingMode() rounding_t {
+fn currentRoundingMode() rounding_t {
     return @intCast(roundingModeTable[roundingMode]);
 }
 
 // Register data / real34 conversion.
 extern fn decimal128ToNumber(source: *const real34_t, destination: *real_t) *real_t;
-inline fn real34ToReal(source: *const real34_t, destination: *real_t) void {
+fn real34ToReal(source: *const real34_t, destination: *real_t) void {
     _ = decimal128ToNumber(source, destination);
 }
 extern fn decimal128FromNumber(destination: *real34_t, source: *const real_t, ctxt: *realContext_t) *real34_t;
-inline fn realToReal34(source: *const real_t, destination: *real34_t) void {
+fn realToReal34(source: *const real_t, destination: *real34_t) void {
     _ = decimal128FromNumber(destination, source, &runtime.ctxtReal34);
 }
 
-inline fn const_3600() *const real_t {
+fn const_3600() *const real_t {
     return runtime.z47_math_wrappers_const_3600();
 }
 

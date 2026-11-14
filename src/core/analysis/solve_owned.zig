@@ -169,7 +169,7 @@ extern var significantDigits: u8;
 extern var graphAccActive: bool;
 
 // defines.h: significantDigits == 0 ? 12 : significantDigits.
-inline fn significantDigitsForEqnGraphs() i32 {
+fn significantDigitsForEqnGraphs() i32 {
     return if (significantDigits == 0) 12 else significantDigits;
 }
 extern var screenUpdatingMode: u8;
@@ -182,10 +182,10 @@ extern var ctxtReal34: realContext_t;
 extern var ctxtReal39: realContext_t;
 
 // Context aliases (solve.c #define ctxtSolver ctxtReal39, ctxtSolverHi ctxtReal39)
-inline fn ctxtSolver() *realContext_t {
+fn ctxtSolver() *realContext_t {
     return &ctxtReal39;
 }
-inline fn ctxtSolverHi() *realContext_t {
+fn ctxtSolverHi() *realContext_t {
     return &ctxtReal39;
 }
 
@@ -212,34 +212,34 @@ const softmenuStack = @extern([*c]softmenuStack_t, .{ .name = "softmenuStack" })
 // Constants blob accessors (offsets verified vs generated constantPointers.h)
 // ---------------------------------------------------------------------------
 
-inline fn const_NaN() *const real_t {
+fn const_NaN() *const real_t {
     return consts.c812();
 }
-inline fn const_minusInfinity() *const real_t {
+fn const_minusInfinity() *const real_t {
     return consts.c1684();
 }
-inline fn const_plusInfinity() *const real_t {
+fn const_plusInfinity() *const real_t {
     return consts.c1696();
 }
-inline fn const_1on2() *const real_t {
+fn const_1on2() *const real_t {
     return consts.c4580();
 }
-inline fn const_1() *const real_t {
+fn const_1() *const real_t {
     return consts.c4856();
 }
-inline fn const_2() *const real_t {
+fn const_2() *const real_t {
     return consts.c4928();
 }
-inline fn const_1e_16() *const real_t {
+fn const_1e_16() *const real_t {
     return consts.c4484();
 }
-inline fn const_1e_32() *const real_t {
+fn const_1e_32() *const real_t {
     return consts.c5708();
 }
-inline fn const_100() *const real_t {
+fn const_100() *const real_t {
     return consts.c7532();
 }
-inline fn const34_153() *const real34_t {
+fn const34_153() *const real34_t {
     return consts.q16568();
 }
 
@@ -254,44 +254,44 @@ extern fn decNumberDivide(res: *real_t, op1: *const real_t, op2: *const real_t, 
 extern fn decNumberFMA(res: *real_t, f1: *const real_t, f2: *const real_t, term: *const real_t, ctxt: *realContext_t) *real_t;
 extern fn decNumberFromString(res: *real_t, source: [*:0]const u8, ctxt: *realContext_t) *real_t;
 
-inline fn realCopy(source: *const real_t, destination: *real_t) void {
+fn realCopy(source: *const real_t, destination: *real_t) void {
     _ = decNumberCopy(destination, source);
 }
-inline fn realAdd(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+fn realAdd(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberAdd(res, op1, op2, ctxt);
 }
-inline fn realSubtract(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+fn realSubtract(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberSubtract(res, op1, op2, ctxt);
 }
-inline fn realMultiply(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+fn realMultiply(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberMultiply(res, op1, op2, ctxt);
 }
-inline fn realDivide(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+fn realDivide(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberDivide(res, op1, op2, ctxt);
 }
-inline fn realFMA(f1: *const real_t, f2: *const real_t, term: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+fn realFMA(f1: *const real_t, f2: *const real_t, term: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberFMA(res, f1, f2, term, ctxt);
 }
-inline fn stringToReal(source: [*:0]const u8, destination: *real_t, ctxt: *realContext_t) void {
+fn stringToReal(source: [*:0]const u8, destination: *real_t, ctxt: *realContext_t) void {
     _ = decNumberFromString(destination, source, ctxt);
 }
-inline fn realChangeSign(operand: *real_t) void {
+fn realChangeSign(operand: *real_t) void {
     operand.bits ^= 0x80;
 }
-inline fn realSetNegativeSign(operand: *real_t) void {
+fn realSetNegativeSign(operand: *real_t) void {
     operand.bits |= 0x80;
 }
-inline fn realSetPositiveSign(operand: *real_t) void {
+fn realSetPositiveSign(operand: *real_t) void {
     operand.bits &= 0x7F;
 }
 const realIsZero = abi.realIsZero;
-inline fn realIsNegative(source: *const real_t) bool {
+fn realIsNegative(source: *const real_t) bool {
     return (source.bits & 0x80) == 0x80;
 }
-inline fn realIsSpecial(source: *const real_t) bool {
+fn realIsSpecial(source: *const real_t) bool {
     return (source.bits & 0x70) != 0;
 }
-inline fn realIsInfinite(source: *const real_t) bool {
+fn realIsInfinite(source: *const real_t) bool {
     return (source.bits & 0x40) != 0;
 }
 
@@ -319,47 +319,47 @@ extern fn decQuadMinus(res: *real34_t, operand: *const real34_t, ctxt: *realCont
 extern fn decQuadNextPlus(res: *real34_t, operand: *const real34_t, ctxt: *realContext_t) *real34_t;
 extern fn decQuadNextMinus(res: *real34_t, operand: *const real34_t, ctxt: *realContext_t) *real34_t;
 
-inline fn real34ToReal(source: *const real34_t, destination: *real_t) void {
+fn real34ToReal(source: *const real34_t, destination: *real_t) void {
     _ = decimal128ToNumber(source, destination);
 }
-inline fn realToReal34(source: *const real_t, destination: *real34_t) void {
+fn realToReal34(source: *const real_t, destination: *real34_t) void {
     _ = decimal128FromNumber(destination, source, &ctxtReal34);
 }
-inline fn real34Copy(source: *const real34_t, destination: *real34_t) void {
+fn real34Copy(source: *const real34_t, destination: *real34_t) void {
     destination.* = source.*;
 }
-inline fn real34Subtract(op1: *const real34_t, op2: *const real34_t, res: *real34_t) void {
+fn real34Subtract(op1: *const real34_t, op2: *const real34_t, res: *real34_t) void {
     _ = decQuadSubtract(res, op1, op2, &ctxtReal34);
 }
-inline fn real34Multiply(op1: *const real34_t, op2: *const real34_t, res: *real34_t) void {
+fn real34Multiply(op1: *const real34_t, op2: *const real34_t, res: *real34_t) void {
     _ = decQuadMultiply(res, op1, op2, &ctxtReal34);
 }
-inline fn real34SetZero(destination: *real34_t) void {
+fn real34SetZero(destination: *real34_t) void {
     _ = decQuadZero(destination);
 }
-inline fn real34IsZero(source: *const real34_t) bool {
+fn real34IsZero(source: *const real34_t) bool {
     return decQuadIsZero(source);
 }
-inline fn real34IsInfinite(source: *const real34_t) bool {
+fn real34IsInfinite(source: *const real34_t) bool {
     return decQuadIsInfinite(source);
 }
-inline fn real34ChangeSign(operand: *real34_t) void {
+fn real34ChangeSign(operand: *real34_t) void {
     operand.bytes[15] ^= 0x80;
 }
-inline fn real34Minus(operand: *const real34_t, res: *real34_t) void {
+fn real34Minus(operand: *const real34_t, res: *real34_t) void {
     _ = decQuadMinus(res, operand, &ctxtReal34);
 }
-inline fn real34NextPlus(operand: *const real34_t, res: *real34_t) void {
+fn real34NextPlus(operand: *const real34_t, res: *real34_t) void {
     _ = decQuadNextPlus(res, operand, &ctxtReal34);
 }
-inline fn real34NextMinus(operand: *const real34_t, res: *real34_t) void {
+fn real34NextMinus(operand: *const real34_t, res: *real34_t) void {
     _ = decQuadNextMinus(res, operand, &ctxtReal34);
 }
-inline fn int32ToReal34(source: i32, destination: *real34_t) void {
+fn int32ToReal34(source: i32, destination: *real34_t) void {
     _ = decQuadFromInt32(destination, source);
 }
 
-inline fn real34IsPositive(source: *const real34_t) bool {
+fn real34IsPositive(source: *const real34_t) bool {
     return (source.bytes[15] & 0x80) == 0x00;
 }
 extern fn real34CompareEqual(number1: *const real34_t, number2: *const real34_t) bool;
@@ -418,10 +418,10 @@ const progressHalfSecUpdate_Integer = abi.host.progressHalfSecUpdate_Integer; //
 // libc helpers
 extern fn strlen(s: [*c]const u8) usize;
 extern fn xcopy(dest: ?*anyopaque, source: ?*const anyopaque, n: u32) ?*anyopaque;
-inline fn stringByteLength(s: [*c]const u8) i32 {
+fn stringByteLength(s: [*c]const u8) i32 {
     return @intCast(strlen(s));
 }
-inline fn TO_BLOCKS(n: u32) u16 {
+fn TO_BLOCKS(n: u32) u16 {
     return @intCast((n + 3) >> 2); // BYTES_PER_BLOCK=4, BPB=2
 }
 
@@ -757,7 +757,7 @@ const SOLVER_METHOD_NEWTON: u8 = 1;
 // The OPTION_TVM_NEWTON working reals are allocated and null-checked together at
 // the head of solver(); with the option out none of them exists and nothing
 // reads the result.
-inline fn newtonReal(p: ?*real_t) *real_t {
+fn newtonReal(p: ?*real_t) *real_t {
     return if (option_tvm_newton) p.? else undefined;
 }
 

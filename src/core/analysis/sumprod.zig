@@ -46,16 +46,16 @@ extern fn __gmpz_fdiv_ui(op: *const mpz_struct, d: c_ulong) c_ulong;
 extern fn __gmpz_set_ui(rop: *mpz_struct, op: c_ulong) void;
 extern fn convertLongIntegerToLongIntegerRegister(longInteger: *const mpz_struct, regist: calcRegister_t) void;
 
-inline fn longIntegerInit(op: *mpz_struct) void {
+fn longIntegerInit(op: *mpz_struct) void {
     __gmpz_init(op);
 }
-inline fn uInt32ToLongInteger(source: u32, destination: *mpz_struct) void {
+fn uInt32ToLongInteger(source: u32, destination: *mpz_struct) void {
     __gmpz_set_ui(destination, source);
 }
-inline fn longIntegerFree(op: *mpz_struct) void {
+fn longIntegerFree(op: *mpz_struct) void {
     __gmpz_clear(op);
 }
-inline fn longIntegerModuloUInt(op: *const mpz_struct, u: u32) u32 {
+fn longIntegerModuloUInt(op: *const mpz_struct, u: u32) u32 {
     return @truncate(__gmpz_fdiv_ui(op, u));
 }
 
@@ -120,13 +120,13 @@ extern fn decimal128FromNumber(dest: *real34_t, src: *const real_t, ctxt: *realC
 // Constants blob accessors
 // ---------------------------------------------------------------------------
 
-inline fn const_0() *const real_t {
+fn const_0() *const real_t {
     return consts.c1708();
 }
-inline fn const_1() *const real_t {
+fn const_1() *const real_t {
     return consts.c4856();
 }
-inline fn const34_0() *const real34_t {
+fn const34_0() *const real34_t {
     return consts.q16200();
 }
 const const_10 = consts.const_10;
@@ -140,34 +140,34 @@ extern fn decNumberSubtract(res: *real_t, op1: *const real_t, op2: *const real_t
 extern fn decNumberMultiply(res: *real_t, op1: *const real_t, op2: *const real_t, ctxt: *realContext_t) *real_t;
 extern fn realCompareAbsLessThan(number1: *const real_t, number2: *const real_t) bool;
 
-inline fn realCopy(source: *const real_t, destination: *real_t) void {
+fn realCopy(source: *const real_t, destination: *real_t) void {
     _ = decNumberCopy(destination, source);
 }
-inline fn realAdd(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+fn realAdd(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberAdd(res, op1, op2, ctxt);
 }
-inline fn realMultiply(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+fn realMultiply(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberMultiply(res, op1, op2, ctxt);
 }
-inline fn realSubtract(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+fn realSubtract(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberSubtract(res, op1, op2, ctxt);
 }
 const realIsZero = abi.realIsZero;
 // realType.h: realIsSpecial tests the DECSPECIAL bits; realGetExponent is the
 // adjusted exponent of the most significant digit.
-inline fn realIsSpecial(source: *const real_t) bool {
+fn realIsSpecial(source: *const real_t) bool {
     return (source.bits & 0x70) != 0;
 }
-inline fn realGetExponent(source: *const real_t) i32 {
+fn realGetExponent(source: *const real_t) i32 {
     return source.digits + source.exponent - 1;
 }
 extern fn realSetZero(value: *real_t) void;
 extern fn decNumberDivide(res: *real_t, op1: *const real_t, op2: *const real_t, ctxt: *realContext_t) *real_t;
 // realType.h macros, not functions.
-inline fn realSetPositiveSign(value: *real_t) void {
+fn realSetPositiveSign(value: *real_t) void {
     value.bits &= 0x7F;
 }
-inline fn realDivide(dividend: *const real_t, divisor: *const real_t, quotient: *real_t, real_context: *realContext_t) void {
+fn realDivide(dividend: *const real_t, divisor: *const real_t, quotient: *real_t, real_context: *realContext_t) void {
     _ = decNumberDivide(quotient, dividend, divisor, real_context);
 }
 extern fn realPower(base: *const real_t, exponent: *const real_t, result: *real_t, real_context: *realContext_t) void;
@@ -187,34 +187,34 @@ extern fn decQuadIsZero(source: *const real34_t) bool;
 extern fn decQuadToInt32(source: *const real34_t, ctxt: *realContext_t, mode: c_int) i32;
 extern fn convertReal34ToLongInteger(real34: *const real34_t, lgInt: *mpz_struct, mode: c_int) void;
 
-inline fn real34ToReal(source: *const real34_t, destination: *real_t) void {
+fn real34ToReal(source: *const real34_t, destination: *real_t) void {
     _ = decimal128ToNumber(source, destination);
 }
-inline fn real34Copy(source: *const real34_t, destination: *real34_t) void {
+fn real34Copy(source: *const real34_t, destination: *real34_t) void {
     destination.* = source.*;
 }
-inline fn real34Add(op1: *const real34_t, op2: *const real34_t, res: *real34_t) void {
+fn real34Add(op1: *const real34_t, op2: *const real34_t, res: *real34_t) void {
     _ = decQuadAdd(res, op1, op2, &ctxtReal34);
 }
-inline fn real34Subtract(op1: *const real34_t, op2: *const real34_t, res: *real34_t) void {
+fn real34Subtract(op1: *const real34_t, op2: *const real34_t, res: *real34_t) void {
     _ = decQuadSubtract(res, op1, op2, &ctxtReal34);
 }
-inline fn real34Multiply(op1: *const real34_t, op2: *const real34_t, res: *real34_t) void {
+fn real34Multiply(op1: *const real34_t, op2: *const real34_t, res: *real34_t) void {
     _ = decQuadMultiply(res, op1, op2, &ctxtReal34);
 }
-inline fn real34Divide(op1: *const real34_t, op2: *const real34_t, res: *real34_t) void {
+fn real34Divide(op1: *const real34_t, op2: *const real34_t, res: *real34_t) void {
     _ = decQuadDivide(res, op1, op2, &ctxtReal34);
 }
-inline fn real34Compare(op1: *const real34_t, op2: *const real34_t, res: *real34_t) void {
+fn real34Compare(op1: *const real34_t, op2: *const real34_t, res: *real34_t) void {
     _ = decQuadCompare(res, op1, op2, &ctxtReal34);
 }
-inline fn real34IsZero(source: *const real34_t) bool {
+fn real34IsZero(source: *const real34_t) bool {
     return decQuadIsZero(source);
 }
 // realType.h real34IsSpecial: a NaN, a signalling NaN or an infinity, which is
 // every value decQuadIsFinite rejects.
 const real34IsSpecial = abi.real34IsSpecial;
-inline fn real34ToInt32(source: *const real34_t) i32 {
+fn real34ToInt32(source: *const real34_t) i32 {
     return decQuadToInt32(source, &ctxtReal34, DEC_ROUND_DOWN);
 }
 

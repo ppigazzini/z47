@@ -72,7 +72,7 @@ pub const PARAM_TAIL_INVALID: i16 = -1;
 pub const PARAM_TAIL_LENGTH_PREFIXED: i16 = -2;
 pub const PARAM_TAIL_BASE_LENGTH_PREFIXED: i16 = -3;
 
-inline fn toBytes(n: u16) u32 {
+fn toBytes(n: u16) u32 {
     return abi.block_math.toBytes(u32, n);
 }
 

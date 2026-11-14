@@ -677,12 +677,12 @@ extern fn stringToInt16(str: [*c]const u8) i16;
 extern fn stringToInt32(str: [*c]const u8) i32;
 extern fn toInt32(str: [*c]const u8) i32;
 // stringCopy(dest, source) = frontier_char_string.stringCopy(dest, source) (charString.h, non-MINGW64).
-inline fn stringCopy(dest: [*c]u8, source: [*c]const u8) [*c]u8 {
+fn stringCopy(dest: [*c]u8, source: [*c]const u8) [*c]u8 {
     return frontier_char_string.stringCopy(dest, source);
 }
 // stringToReal34(source, destination) = decQuadFromString(destination, source, &ctxtReal34).
 extern fn decQuadFromString(r: *real34_t, str: [*c]const u8, ctx: *realContext_t) *real34_t;
-inline fn stringToReal34(str: [*c]const u8, dst: *real34_t) void {
+fn stringToReal34(str: [*c]const u8, dst: *real34_t) void {
     _ = decQuadFromString(dst, str, &ctxtReal34);
 }
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
@@ -740,13 +740,13 @@ const jm_show_calc_state = if (!dmcp_build) @extern(*const fn (comment: [*c]u8) 
 // ---------------------------------------------------------------------------
 // Inline helpers (the C macros).
 // ---------------------------------------------------------------------------
-inline fn stringByteLength(str: [*c]const u8) i32 {
+fn stringByteLength(str: [*c]const u8) i32 {
     return @intCast(strlen(str));
 }
-inline fn getRegisterAngularMode(reg: calcRegister_t) angularMode_t {
+fn getRegisterAngularMode(reg: calcRegister_t) angularMode_t {
     return @intCast(getRegisterTag(reg) & amAngleMask);
 }
-inline fn setRegisterAngularMode(reg: calcRegister_t, am: angularMode_t) void {
+fn setRegisterAngularMode(reg: calcRegister_t, am: angularMode_t) void {
     setRegisterTag(reg, @intCast(am));
 }
 // Typed register views, declared once in abi.
@@ -757,7 +757,7 @@ const regString = abi.registerString;
 // TO_BLOCKS rounds its byte count up to the next 4-byte block and hands the
 // uint32_t result to reallocateRegister's uint16_t block-count parameter, which
 // keeps only the low 16 bits.
-inline fn toBlocks(n: u32) u16 {
+fn toBlocks(n: u32) u16 {
     return @truncate((n +% (BYTES_PER_BLOCK - 1)) >> BPB);
 }
 const BPB: u5 = 2;
@@ -775,7 +775,7 @@ const LINE_FULL_U: u16 = 0; // LINE_FULL (printTraceMatElement takes uint16_t)
 const LINE_FULL_C: c_int = 0; // LINE_FULL (printTraceX takes int)
 
 extern fn fnConstant(constant: u16) callconv(.c) void;
-inline fn fnConstantPtr() ?*const fn (u16) callconv(.c) void {
+fn fnConstantPtr() ?*const fn (u16) callconv(.c) void {
     return &fnConstant;
 }
 
@@ -784,29 +784,29 @@ inline fn fnConstantPtr() ?*const fn (u16) callconv(.c) void {
 fn radix34MarkBytes() TwoBytes {
     return twoBytes(frontier_display.getGapChar1Radix());
 }
-inline fn radix34MarkByte0() u8 {
+fn radix34MarkByte0() u8 {
     return radix34MarkBytes().b0;
 }
-inline fn radix34MarkByte1() u8 {
+fn radix34MarkByte1() u8 {
     return radix34MarkBytes().b1;
 }
-inline fn separatorLeft() TwoBytes {
+fn separatorLeft() TwoBytes {
     return twoBytes(frontier_display.getGapChar1Left());
 }
-inline fn separatorRight() TwoBytes {
+fn separatorRight() TwoBytes {
     return twoBytes(frontier_display.getGapChar1Right());
 }
 const ERROR_MESSAGE_LENGTH: usize = 512;
 
 // EXTRA_INFO console-hint helpers (compiled out on firmware, like the siblings).
-inline fn moreInfoOnErr(where: [*c]const u8, hint: [*c]const u8) void {
+fn moreInfoOnErr(where: [*c]const u8, hint: [*c]const u8) void {
     if (comptime extra_info) {
         if (comptime !dmcp_build) {
             moreInfoOnError(where, hint, null, null);
         }
     }
 }
-inline fn moreInfoOnErr3(where: [*c]const u8, hint: [*c]const u8, hint2: [*c]const u8) void {
+fn moreInfoOnErr3(where: [*c]const u8, hint: [*c]const u8, hint2: [*c]const u8) void {
     if (comptime extra_info) {
         if (comptime !dmcp_build) {
             moreInfoOnError(where, hint, hint2, null);
@@ -815,89 +815,89 @@ inline fn moreInfoOnErr3(where: [*c]const u8, hint: [*c]const u8, hint2: [*c]con
 }
 
 // COMPLEX_UNIT / PRODUCT_SIGN runtime macros.
-inline fn complexUnit() [*c]const u8 {
+fn complexUnit() [*c]const u8 {
     return if (getSystemFlag(FLAG_CPXj) != 0) STD_op_j else STD_op_i;
 }
-inline fn productSign() [*c]const u8 {
+fn productSign() [*c]const u8 {
     return if (getSystemFlag(FLAG_MULTx) != 0) STD_CROSS else STD_DOT;
 }
 
 // isR47FAM / INTEGERSHORTCUTS runtime macros.
-inline fn isR47FAM() bool {
+fn isR47FAM() bool {
     return calcModel == USER_R47f_g or calcModel == USER_R47bk_fg or calcModel == USER_R47fg_bk or calcModel == USER_R47fg_g;
 }
-inline fn integerShortcuts() bool {
+fn integerShortcuts() bool {
     return (calcMode == CM_NIM or calcMode == CM_PEM) and (calcModel == USER_C47 or isR47FAM());
 }
 
 // real34/real arithmetic macros over decQuad/decNumber.
-inline fn int32ToReal34(source: i32, destination: *real34_t) void {
+fn int32ToReal34(source: i32, destination: *real34_t) void {
     _ = decQuadFromInt32(destination, source);
 }
-inline fn real34Add(op1: *const real34_t, op2: *const real34_t, res: *real34_t) void {
+fn real34Add(op1: *const real34_t, op2: *const real34_t, res: *real34_t) void {
     _ = decQuadAdd(res, op1, op2, &ctxtReal34);
 }
-inline fn real34Divide(op1: *const real34_t, op2: *const real34_t, res: *real34_t) void {
+fn real34Divide(op1: *const real34_t, op2: *const real34_t, res: *real34_t) void {
     _ = decQuadDivide(res, op1, op2, &ctxtReal34);
 }
 const real34SetNegativeSign = abi.real34SetNegativeSign;
-inline fn real34SetZero(destination: *real34_t) void {
+fn real34SetZero(destination: *real34_t) void {
     _ = decQuadZero(destination);
 }
-inline fn real34ToReal(source: *const real34_t, destination: *real_t) void {
+fn real34ToReal(source: *const real34_t, destination: *real_t) void {
     _ = decimal128ToNumber(source, destination);
 }
-inline fn realToReal34(source: *const real_t, destination: *real34_t) void {
+fn realToReal34(source: *const real_t, destination: *real34_t) void {
     _ = decimal128FromNumber(destination, source, &ctxtReal34);
 }
-inline fn realAdd(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+fn realAdd(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberAdd(res, op1, op2, ctxt);
 }
-inline fn realSetPositiveSign(operand: *real_t) void {
+fn realSetPositiveSign(operand: *real_t) void {
     operand.bits &= 0x7F;
 }
 
 // longInteger (mpz) wrappers (longIntegerType.h).
-inline fn longIntegerInit(op: *longInteger_t) void {
+fn longIntegerInit(op: *longInteger_t) void {
     __gmpz_init(&op[0]);
 }
-inline fn longIntegerFree(op: *longInteger_t) void {
+fn longIntegerFree(op: *longInteger_t) void {
     __gmpz_clear(&op[0]);
 }
-inline fn stringToLongInteger(source: [*c]const u8, radix: i32, destination: *longInteger_t) i32 {
+fn stringToLongInteger(source: [*c]const u8, radix: i32, destination: *longInteger_t) i32 {
     return __gmpz_set_str(&destination[0], source, @intCast(radix));
 }
-inline fn longInteger2Pow(exp: u32, result: *longInteger_t) void {
+fn longInteger2Pow(exp: u32, result: *longInteger_t) void {
     __gmpz_setbit(&result[0], exp);
 }
-inline fn longIntegerSetZero(op: *longInteger_t) void {
+fn longIntegerSetZero(op: *longInteger_t) void {
     __gmpz_clear(&op[0]);
     __gmpz_init(&op[0]);
 }
-inline fn longIntegerSetNegativeSign(op: *longInteger_t) void {
+fn longIntegerSetNegativeSign(op: *longInteger_t) void {
     op[0]._mp_size = -absI32(op[0]._mp_size);
 }
-inline fn longIntegerDivideUInt(op: *const longInteger_t, uint: u32, result: *longInteger_t) void {
+fn longIntegerDivideUInt(op: *const longInteger_t, uint: u32, result: *longInteger_t) void {
     _ = __gmpz_tdiv_q_ui(&result[0], &op[0], uint);
 }
-inline fn longIntegerSubtractUInt(op: *const longInteger_t, uint: u32, result: *longInteger_t) void {
+fn longIntegerSubtractUInt(op: *const longInteger_t, uint: u32, result: *longInteger_t) void {
     __gmpz_sub_ui(&result[0], &op[0], uint);
 }
-inline fn longIntegerAddUInt(op: *const longInteger_t, uint: u32, result: *longInteger_t) void {
+fn longIntegerAddUInt(op: *const longInteger_t, uint: u32, result: *longInteger_t) void {
     __gmpz_add_ui(&result[0], &op[0], uint);
 }
-inline fn longIntegerCompare(op1: *const longInteger_t, op2: *const longInteger_t) i32 {
+fn longIntegerCompare(op1: *const longInteger_t, op2: *const longInteger_t) i32 {
     return __gmpz_cmp(&op1[0], &op2[0]);
 }
-inline fn longIntegerIsNegative(op: *const longInteger_t) bool {
+fn longIntegerIsNegative(op: *const longInteger_t) bool {
     return op[0]._mp_size < 0;
 }
-inline fn absI32(v: i32) i32 {
+fn absI32(v: i32) i32 {
     return if (v < 0) -v else v;
 }
 
 // C int-promotion abs() and small helpers.
-inline fn absInt(v: i32) i32 {
+fn absInt(v: i32) i32 {
     return if (v < 0) -v else v;
 }
 
@@ -1715,10 +1715,10 @@ pub export fn fnAlphaCursorEnd(unusedButMandatoryParameter: u16) callconv(.c) vo
 //   GROUPWIDTH_LEFT  = grpGroupingLeft ; GROUPWIDTH_RIGHT = grpGroupingRight
 //   SEPARATOR_LEFT[1] / SEPARATOR_RIGHT[1] reproduced via separatorByte1Left/Right.
 // ---------------------------------------------------------------------------
-inline fn separatorLeftByte1() u8 {
+fn separatorLeftByte1() u8 {
     return separatorLeft().b1;
 }
-inline fn separatorRightByte1() u8 {
+fn separatorRightByte1() u8 {
     return separatorRight().b1;
 }
 const TwoBytes = struct { b0: u8, b1: u8 };

@@ -43,25 +43,25 @@ const OPMOD_POWER: u16 = 1;
 const displayCalcErrorMessage = runtime.displayCalcErrorMessage;
 const moreInfoOnError = runtime.moreInfoOnError;
 
-inline fn const_0() *const real_t {
+fn const_0() *const real_t {
     return runtime.z47_math_wrappers_const_0();
 }
-inline fn const_1() *const real_t {
+fn const_1() *const real_t {
     return runtime.z47_math_wrappers_const_1();
 }
 
 extern fn decimal128ToNumber(source: *const real34_t, destination: *real_t) *real_t;
-inline fn real34ToReal(source: *const real34_t, destination: *real_t) void {
+fn real34ToReal(source: *const real34_t, destination: *real_t) void {
     _ = decimal128ToNumber(source, destination);
 }
 // real34GetCoefficient / real34GetExponent (realType.h): the BCD digits, the
 // sign and the exponent of a decQuad, read without any rounding.
 extern fn decQuadGetCoefficient(source: *const real34_t, bcd: [*]u8) i32;
 extern fn decQuadGetExponent(source: *const real34_t) i32;
-inline fn real34GetCoefficient(source: *const real34_t, bcd: [*]u8) i32 {
+fn real34GetCoefficient(source: *const real34_t, bcd: [*]u8) i32 {
     return decQuadGetCoefficient(source, bcd);
 }
-inline fn real34GetExponent(source: *const real34_t) i32 {
+fn real34GetExponent(source: *const real34_t) i32 {
     return decQuadGetExponent(source);
 }
 // decQuad.h DECQUAD_Pmax: the digits of a decQuad coefficient.
@@ -91,10 +91,10 @@ extern fn convertUInt64ToShortIntegerRegister(sign: i16, value: u64, base: u32, 
 extern fn convertLongIntegerToLongIntegerRegister(long_integer: *const mpz_struct, regist: calcRegister_t) void;
 const setRegisterTag = runtime.setRegisterTag;
 const getRegisterTag = runtime.getRegisterTag;
-inline fn getRegisterShortIntegerBase(reg: calcRegister_t) u32 {
+fn getRegisterShortIntegerBase(reg: calcRegister_t) u32 {
     return getRegisterTag(reg);
 }
-inline fn setRegisterShortIntegerBase(reg: calcRegister_t, base: u32) void {
+fn setRegisterShortIntegerBase(reg: calcRegister_t, base: u32) void {
     setRegisterTag(reg, base);
 }
 
@@ -122,62 +122,62 @@ extern fn __gmpz_tdiv_qr(q: *mpz_struct, r: *mpz_struct, n: *const mpz_struct, d
 extern fn __gmpz_fdiv_ui(op: *const mpz_struct, d: c_ulong) c_ulong;
 extern fn __gmpz_sizeinbase(op: *const mpz_struct, base: c_int) usize;
 
-inline fn longIntegerInit(op: *mpz_struct) void {
+fn longIntegerInit(op: *mpz_struct) void {
     __gmpz_init(op);
 }
-inline fn longIntegerFree(op: *mpz_struct) void {
+fn longIntegerFree(op: *mpz_struct) void {
     __gmpz_clear(op);
 }
-inline fn longIntegerCopy(source: *const mpz_struct, destination: *mpz_struct) void {
+fn longIntegerCopy(source: *const mpz_struct, destination: *mpz_struct) void {
     __gmpz_set(destination, source);
 }
-inline fn uInt32ToLongInteger(source: u32, destination: *mpz_struct) void {
+fn uInt32ToLongInteger(source: u32, destination: *mpz_struct) void {
     __gmpz_set_ui(destination, source);
 }
-inline fn longIntegerSetZero(op: *mpz_struct) void {
+fn longIntegerSetZero(op: *mpz_struct) void {
     // Previous implementation matched C: clear + init.
     __gmpz_clear(op);
     __gmpz_init(op);
 }
-inline fn longIntegerIsPositive(op: *const mpz_struct) bool {
+fn longIntegerIsPositive(op: *const mpz_struct) bool {
     return op._mp_size > 0;
 }
-inline fn longIntegerIsOdd(op: *const mpz_struct) bool {
+fn longIntegerIsOdd(op: *const mpz_struct) bool {
     return op._mp_size != 0 and (op._mp_d[0] & 1) != 0;
 }
-inline fn longIntegerCompareInt(op: *const mpz_struct, sint: i32) i32 {
+fn longIntegerCompareInt(op: *const mpz_struct, sint: i32) i32 {
     return __gmpz_cmp_si(op, sint);
 }
-inline fn longIntegerMultiplyUInt(op: *const mpz_struct, u: u32, result: *mpz_struct) void {
+fn longIntegerMultiplyUInt(op: *const mpz_struct, u: u32, result: *mpz_struct) void {
     __gmpz_mul_ui(result, op, u);
 }
-inline fn longIntegerDivideUInt(op: *const mpz_struct, u: u32, result: *mpz_struct) void {
+fn longIntegerDivideUInt(op: *const mpz_struct, u: u32, result: *mpz_struct) void {
     _ = __gmpz_tdiv_q_ui(result, op, u);
 }
-inline fn longIntegerModulo(op1: *const mpz_struct, op2: *const mpz_struct, result: *mpz_struct) void {
+fn longIntegerModulo(op1: *const mpz_struct, op2: *const mpz_struct, result: *mpz_struct) void {
     __gmpz_mod(result, op1, op2);
 }
-inline fn longIntegerAddUInt(op: *const mpz_struct, u: u32, result: *mpz_struct) void {
+fn longIntegerAddUInt(op: *const mpz_struct, u: u32, result: *mpz_struct) void {
     __gmpz_add_ui(result, op, u);
 }
-inline fn longIntegerChangeSign(op: *mpz_struct) void {
+fn longIntegerChangeSign(op: *mpz_struct) void {
     op._mp_size = -op._mp_size;
 }
-inline fn longIntegerPowerUIntUInt(base: u32, exponent: u32, result: *mpz_struct) void {
+fn longIntegerPowerUIntUInt(base: u32, exponent: u32, result: *mpz_struct) void {
     __gmpz_ui_pow_ui(result, base, exponent);
 }
 // op1/op2 => quotient*op2 + remainder == op1
-inline fn longIntegerDivideQuotientRemainder(op1: *const mpz_struct, op2: *const mpz_struct, quotient: *mpz_struct, remainder: *mpz_struct) void {
+fn longIntegerDivideQuotientRemainder(op1: *const mpz_struct, op2: *const mpz_struct, quotient: *mpz_struct, remainder: *mpz_struct) void {
     __gmpz_tdiv_qr(quotient, remainder, op1, op2);
 }
 // result = op mod uint, 0 <= result < uint
-inline fn longIntegerModuloUInt(op: *const mpz_struct, u: u32) u32 {
+fn longIntegerModuloUInt(op: *const mpz_struct, u: u32) u32 {
     return @truncate(__gmpz_fdiv_ui(op, u));
 }
-inline fn longIntegerIsZero(op: *const mpz_struct) bool {
+fn longIntegerIsZero(op: *const mpz_struct) bool {
     return op._mp_size == 0;
 }
-inline fn longIntegerBase10Digits(op: *const mpz_struct) u32 {
+fn longIntegerBase10Digits(op: *const mpz_struct) u32 {
     return @intCast(__gmpz_sizeinbase(op, 10));
 }
 

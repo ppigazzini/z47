@@ -43,10 +43,10 @@ const mpz_mul = __gmpz_mul;
 const mpz_add = __gmpz_add;
 const mpz_sub = __gmpz_sub;
 
-inline fn longIntegerSign(op: *const mpz_struct) i32 {
+fn longIntegerSign(op: *const mpz_struct) i32 {
     return if (op._mp_size < 0) -1 else if (op._mp_size > 0) 1 else 0;
 }
-inline fn longIntegerBits(op: *const mpz_struct) u32 {
+fn longIntegerBits(op: *const mpz_struct) u32 {
     return @intCast(__gmpz_sizeinbase(op, 2));
 }
 
@@ -92,7 +92,7 @@ extern fn clearSystemFlag(flag: c_uint) void;
 
 // Snapshot the live short-integer mode globals into the value passed to the pure
 // abi.shortint_arith core (which reads no globals of its own).
-inline fn intMode() arith.IntMode {
+fn intMode() arith.IntMode {
     return .{
         .mode = shortIntegerMode,
         .mask = shortIntegerMask,

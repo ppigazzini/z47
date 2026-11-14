@@ -125,7 +125,7 @@ extern fn time(t: ?*time_t) time_t;
 extern fn localtime(t: *const time_t) *tm;
 extern fn strftime(s: [*c]u8, maxsize: usize, format: [*:0]const u8, timeptr: *const tm) usize;
 
-inline fn stringByteLength(s: [*c]const u8) i32 {
+fn stringByteLength(s: [*c]const u8) i32 {
     return @intCast(strlen(s));
 }
 
@@ -578,7 +578,7 @@ const UINT = rom.UINT;
 const BYTE = u8;
 const TCHAR = u8;
 const FIL = rom.FIL;
-inline fn f_size(fp: *FIL) FSIZE_t {
+fn f_size(fp: *FIL) FSIZE_t {
     return fp.obj.objsize;
 }
 

@@ -39,14 +39,14 @@ ABI = ROOT / "src/abi/constants.zig"
 
 # C: #define const_1 ((real_t *)(constants + 4856))  /  real34_t variant too
 C_DEF = re.compile(r"#define\s+(const\w+)\s+\(\(real(?:34)?_t \*\)\(constants \+ (\d+)\)\)")
-# abi: pub inline fn const_1() ... { return at(4856); }  (at | at34; the dynamic
+# abi: pub fn const_1() ... { return at(4856); }  (at | at34; the dynamic
 # cstR(offset) helpers take an argument so `\(\)` excludes them). Matches EVERY
 # zero-arg fixed-offset accessor, not just const*-named ones: the semantic
 # root3on2() and the offset-named cNNNN()/qNNNN() accessors were previously skipped
 # by a `const\w+` name anchor, so a stale offset on them went undetected (root3on2
 # silently pointed at sqrt2/2 after a pin advance). See the name-check note below.
 ABI_FN = re.compile(
-    r"pub inline fn (?P<name>\w+)\(\)[^\{]*\{\s*return at3?4?\((?P<off>\d+)\);", re.S
+    r"pub (?:inline )?fn (?P<name>\w+)\(\)[^\{]*\{\s*return at3?4?\((?P<off>\d+)\);", re.S
 )
 
 

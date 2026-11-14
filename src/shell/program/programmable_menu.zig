@@ -140,26 +140,26 @@ extern fn getRegisterTag(regist: calcRegister_t) u32;
 // ---------------------------------------------------------------------------
 // Inline wrappers (the C macros / static inlines)
 // ---------------------------------------------------------------------------
-inline fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8) void {
+fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8) void {
     if (comptime extra_info) c_moreInfoOnError(m1, m2, null, null);
 }
-inline fn stringByteLength(str: [*c]const u8) i32 {
+fn stringByteLength(str: [*c]const u8) i32 {
     return @intCast(strlen(str));
 }
 const regReal34 = abi.registerReal34;
 const regComplex34 = abi.registerComplex34;
-inline fn getRegisterAngularMode(reg: calcRegister_t) u32 {
+fn getRegisterAngularMode(reg: calcRegister_t) u32 {
     return getRegisterTag(reg) & amAngleMask;
 }
-inline fn getComplexRegisterAngularMode(reg: calcRegister_t) u32 {
+fn getComplexRegisterAngularMode(reg: calcRegister_t) u32 {
     return getRegisterTag(reg) & amAngleMask;
 }
-inline fn getComplexRegisterPolarMode(reg: calcRegister_t) u32 {
+fn getComplexRegisterPolarMode(reg: calcRegister_t) u32 {
     return getRegisterTag(reg) & amPolar;
 }
 // regKStoC (static inline, defines.h): the band remap has one implementation,
 // in ks_register_remap, so a change to the KS band layout has one place to go.
-inline fn regKStoC(regKS: u8) i16 {
+fn regKStoC(regKS: u8) i16 {
     return ks_register_remap.regKStoC(regKS, .{
         .first_stat = FIRST_STAT_REGISTER_IN_KS_CODE,
         .last_spare = LAST_SPARE_REGISTERS_IN_KS_CODE,
@@ -386,7 +386,7 @@ fn _setCaption(keyNum: u16) void {
 // key 0 addresses the element *before* itemParam -- the tail of itemName[17].
 // Pointer arithmetic keeps that -1 offset; a u16 index would instead wrap to
 // 65535 and address far past the struct.
-inline fn itemParamSlot(keyNum: u16) *u16 {
+fn itemParamSlot(keyNum: u16) *u16 {
     const base: [*]u16 = &programmableMenu.itemParam;
     return &(base + keyNum - 1)[0];
 }

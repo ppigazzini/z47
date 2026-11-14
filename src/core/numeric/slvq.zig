@@ -78,16 +78,16 @@ const realIsNegative = runtime.realIsNegative;
 // decNumberCopy moves the header plus only the units `digits` covers, so it is
 // the one copy that is right for a 159-digit value.
 extern fn decNumberCopy(res: *real_t, source: *const real_t) *real_t;
-inline fn realCopy(source: *const real_t, destination: *real_t) void {
+fn realCopy(source: *const real_t, destination: *real_t) void {
     _ = decNumberCopy(destination, source);
 }
-inline fn realPlus(operand: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+fn realPlus(operand: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = runtime.decNumberPlus(res, operand, ctxt);
 }
-inline fn realIsPositive(source: *const real_t) bool {
+fn realIsPositive(source: *const real_t) bool {
     return (source.bits & 0x80) == 0x00;
 }
-inline fn realGetExponent(source: *const real_t) i32 {
+fn realGetExponent(source: *const real_t) i32 {
     return source.digits + source.exponent - 1;
 }
 

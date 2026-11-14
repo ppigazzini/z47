@@ -69,7 +69,7 @@ const PLOT_REAL_SIZE_IN_BYTES = 10 + @sizeOf(u16) * (PLOT_REAL_MAX_DIGITS / 3);
 const PlotReal = extern struct {
     data: [PLOT_REAL_SIZE_IN_BYTES / 4]u32,
 
-    inline fn r(self: *PlotReal) *real_t {
+    fn r(self: *PlotReal) *real_t {
         return @ptrCast(self);
     }
 };
@@ -433,7 +433,7 @@ extern var eqnDrawLhsOnly: bool;
 // DMCP firmware: lcd_refresh is a ROM function-table entry, not a link symbol.
 const dm42_pkg_xip: bool = solve_build_options.dm42_pkg_xip;
 const rom = @import("dmcp_rom");
-inline fn lcdRefresh() void {
+fn lcdRefresh() void {
     if (comptime is_dmcp_build) {
         rom.lcd_refresh();
     } else {
@@ -455,87 +455,87 @@ const ctxtSolver2 = &ctxtReal39;
 
 const reg34 = abi.registerReal34;
 const regImag34 = abi.registerImag34;
-inline fn realCopy(src: *const real_t, dst: *real_t) void {
+fn realCopy(src: *const real_t, dst: *real_t) void {
     _ = decNumberCopy(dst, src);
 }
-inline fn realAdd(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn realAdd(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberAdd(res, a, b, ctx);
 }
-inline fn realMultiply(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn realMultiply(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberMultiply(res, a, b, ctx);
 }
-inline fn stringToReal(src: [*c]const u8, dst: *real_t, ctx: *realContext_t) void {
+fn stringToReal(src: [*c]const u8, dst: *real_t, ctx: *realContext_t) void {
     _ = decNumberFromString(dst, src, ctx);
 }
-inline fn real34ToReal(src: *const real34_t, dst: *real_t) void {
+fn real34ToReal(src: *const real34_t, dst: *real_t) void {
     _ = decimal128ToNumber(src, dst);
 }
-inline fn realToReal34(src: *const real_t, dst: *real34_t) void {
+fn realToReal34(src: *const real_t, dst: *real34_t) void {
     _ = decimal128FromNumber(dst, src, &ctxtReal34);
 }
 const real34IsSpecial = abi.real34IsSpecial;
-inline fn real34IsInfinite(v: *const real34_t) bool {
+fn real34IsInfinite(v: *const real34_t) bool {
     return decQuadIsInfinite(v) != 0;
 }
-inline fn real34IsNaN(v: *const real34_t) bool {
+fn real34IsNaN(v: *const real34_t) bool {
     return decQuadIsNaN(v) != 0;
 }
-inline fn real34IsZero(v: *const real34_t) bool {
+fn real34IsZero(v: *const real34_t) bool {
     return decQuadIsZero(v) != 0;
 }
-inline fn real34IsNegative(v: *const real34_t) bool {
+fn real34IsNegative(v: *const real34_t) bool {
     return (v.bytes[15] & 0x80) == 0x80;
 }
-inline fn real34ToInt32(v: *const real34_t) i32 {
+fn real34ToInt32(v: *const real34_t) i32 {
     return decQuadToInt32(v, &ctxtReal34, 5); // DEC_ROUND_DOWN
 }
 const realIsZero = abi.realIsZero;
-inline fn realIsNaN(v: *const real_t) bool {
+fn realIsNaN(v: *const real_t) bool {
     return (v.bits & (DECNAN | DECSNAN)) != 0;
 }
-inline fn realIsInfinite(v: *const real_t) bool {
+fn realIsInfinite(v: *const real_t) bool {
     return (v.bits & DECINF) != 0;
 }
-inline fn realGetSign(v: *const real_t) u8 {
+fn realGetSign(v: *const real_t) u8 {
     return v.bits & 0x80;
 }
-inline fn realGetExponent(v: *const real_t) i32 {
+fn realGetExponent(v: *const real_t) i32 {
     return v.digits + v.exponent - 1;
 }
-inline fn realSubtract(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn realSubtract(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberSubtract(res, a, b, ctx);
 }
-inline fn realDivide(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn realDivide(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberDivide(res, a, b, ctx);
 }
-inline fn realFMA(f1: *const real_t, f2: *const real_t, term: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn realFMA(f1: *const real_t, f2: *const real_t, term: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberFMA(res, f1, f2, term, ctx);
 }
-inline fn realPlus(operand: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn realPlus(operand: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberPlus(res, operand, ctx);
 }
-inline fn realCopyAbs(source: *const real_t, destination: *real_t) void {
+fn realCopyAbs(source: *const real_t, destination: *real_t) void {
     _ = decNumberCopyAbs(destination, source);
 }
-inline fn realDivideBy2(operand: *real_t, ctx: *realContext_t) void {
+fn realDivideBy2(operand: *real_t, ctx: *realContext_t) void {
     _ = decNumberMultiply(operand, operand, consts.const_1on2(), ctx);
 }
-inline fn int32ToReal(source: i32, destination: *real_t) void {
+fn int32ToReal(source: i32, destination: *real_t) void {
     _ = decNumberFromInt32(destination, source);
 }
-inline fn real34SetZero(destination: *real34_t) void {
+fn real34SetZero(destination: *real34_t) void {
     _ = decQuadZero(destination);
 }
-inline fn realIsSpecial(v: *const real_t) bool {
+fn realIsSpecial(v: *const real_t) bool {
     return (v.bits & 0x70) != 0;
 }
-inline fn realIsNegative(v: *const real_t) bool {
+fn realIsNegative(v: *const real_t) bool {
     return (v.bits & 0x80) == 0x80;
 }
-inline fn realIsPositive(v: *const real_t) bool {
+fn realIsPositive(v: *const real_t) bool {
     return (v.bits & 0x80) == 0x00;
 }
-inline fn realToDoubleVal(r: *const real_t) f64 {
+fn realToDoubleVal(r: *const real_t) f64 {
     var d: f64 = undefined;
     realToDouble(r, &d);
     return d;
@@ -543,23 +543,23 @@ inline fn realToDoubleVal(r: *const real_t) f64 {
 // The C wraps realIs*/realChangeSign in noinline graphIs* shims to dodge a
 // GCC bounds-check false positive on the small graph buffers; in Zig they are
 // plain forwarders.
-inline fn graphIsZero(x: *const real_t) bool {
+fn graphIsZero(x: *const real_t) bool {
     return realIsZero(x);
 }
-inline fn graphIsNegative(x: *const real_t) bool {
+fn graphIsNegative(x: *const real_t) bool {
     return realIsNegative(x);
 }
-inline fn graphIsPositive(x: *const real_t) bool {
+fn graphIsPositive(x: *const real_t) bool {
     return realIsPositive(x);
 }
-inline fn graphChangeSign(x: *real_t) void {
+fn graphChangeSign(x: *real_t) void {
     x.bits ^= 0x80;
 }
-inline fn realChangeSign(v: *real_t) void {
+fn realChangeSign(v: *real_t) void {
     v.bits ^= 0x80;
 }
 // significantDigitsForEqnGraphs / significantDigitsForScreen (defines.h).
-inline fn significantDigitsForEqnGraphs() i32 {
+fn significantDigitsForEqnGraphs() i32 {
     return if (significantDigits == 0) 12 else significantDigits;
 }
 const significantDigitsForScreen: i32 = 3;
@@ -1920,11 +1920,11 @@ pub export fn graph_stat(unusedButMandatoryParameter: u16) callconv(.c) void {
 // ===========================================================================
 // COMPLEX SOLVER helpers
 // ===========================================================================
-inline fn checkRealZeroTol(a: *const real_t, tol: *const real_t) bool {
+fn checkRealZeroTol(a: *const real_t, tol: *const real_t) bool {
     return realIsZero(a) or realCompareAbsLessThan(a, tol);
 }
 
-inline fn checkComplexZeroTol(z: *const cplx_t, tol: *const real_t) bool {
+fn checkComplexZeroTol(z: *const cplx_t, tol: *const real_t) bool {
     return checkRealZeroTol(&z.Real, tol) and checkRealZeroTol(&z.Imag, tol);
 }
 
@@ -1996,16 +1996,16 @@ fn printComplexToConsole(z: *const cplx_t, before: [*:0]const u8, after: [*:0]co
 extern fn malloc(size: usize) ?[*]align(8) u8;
 extern fn free(ptr: ?*const anyopaque) void;
 
-inline fn mallocCplx() ?*cplx_t {
+fn mallocCplx() ?*cplx_t {
     const bytes = malloc(@sizeOf(cplx_t)) orelse return null;
     return std.mem.bytesAsValue(cplx_t, bytes[0..@sizeOf(cplx_t)]);
 }
 
-inline fn freeCplx(ptr: ?*cplx_t) void {
+fn freeCplx(ptr: ?*cplx_t) void {
     free(ptr);
 }
 
-inline fn copyComplex(from: *const cplx_t, to: *cplx_t) void {
+fn copyComplex(from: *const cplx_t, to: *cplx_t) void {
     realCopy(&from.Real, &to.Real);
     realCopy(&from.Imag, &to.Imag);
 }
@@ -2026,7 +2026,7 @@ fn execute_rpn_function_reals(from: *const cplx_t, to: *cplx_t, magnitude: *real
     return false;
 }
 
-inline fn powCplxNat(base: *const cplx_t, exp: *const u8, res: *cplx_t) void {
+fn powCplxNat(base: *const cplx_t, exp: *const u8, res: *cplx_t) void {
     var tmp: cplx_t = undefined;
     copyComplex(base, &tmp);
     var i: u8 = 1;

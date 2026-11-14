@@ -34,7 +34,7 @@ const amNone = runtime.amNone;
 const FLAG_SPCRES = runtime.FLAG_SPCRES;
 
 // const_0 has a runtime accessor.
-inline fn const_0() *const real_t {
+fn const_0() *const real_t {
     return runtime.z47_math_wrappers_const_0();
 }
 

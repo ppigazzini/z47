@@ -81,16 +81,16 @@ pub extern fn engineNestingRefused(isPlot: bool) callconv(.c) bool;
 pub const refreshScreen = abi.host.requestRefresh; // routed through the host-callback boundary
 pub extern fn adjustResult(res: calcRegister_t, drop_y: bool, set_cpx_res: bool, error_reg: calcRegister_t, op1: calcRegister_t, op2: calcRegister_t) void;
 
-pub inline fn isNamedVariable(v: u16) bool {
+pub fn isNamedVariable(v: u16) bool {
     return v >= FIRST_NAMED_VARIABLE and v <= LAST_NAMED_VARIABLE;
 }
-pub inline fn isLabelOrStackRegister(v: u16) bool {
+pub fn isLabelOrStackRegister(v: u16) bool {
     return (v >= FIRST_LABEL and v <= LAST_LABEL) or (v >= REGISTER_X and v <= REGISTER_T);
 }
 // The operand band the interactive arm of SOLVE, the integral, PLT f and the derivatives accept: a local label A to l as
 // well as a global label or a lettered register. The local-label band starts at FIRST_UC_LOCAL_LABEL and already covers
 // REGISTER_X..REGISTER_T, which findProgramLabel resolves as local labels first.
-pub inline fn isLocalLabelOrLabelOrStackRegister(v: u16) bool {
+pub fn isLocalLabelOrLabelOrStackRegister(v: u16) bool {
     return (v >= FIRST_UC_LOCAL_LABEL and v <= LAST_LOCAL_LABEL) or isLabelOrStackRegister(v);
 }
 
@@ -114,22 +114,22 @@ pub extern fn z47_solver_fnProgrammableiSum(label: u16) void;
 pub extern fn z47_solver_fnProgrammableiProduct(label: u16) void;
 
 const label_range = @import("label_range.zig"); // std-only label/register band predicates
-inline fn labelBands() label_range.Bands {
+fn labelBands() label_range.Bands {
     return .{ .first_label = FIRST_LABEL, .last_label = LAST_LABEL, .reg_x = REGISTER_X, .reg_t = REGISTER_T, .invalid_variable = INVALID_VARIABLE };
 }
-pub inline fn isLabel(label: u16) bool {
+pub fn isLabel(label: u16) bool {
     return label_range.isLabel(labelBands(), label);
 }
 
-pub inline fn isStackRegister(label: u16) bool {
+pub fn isStackRegister(label: u16) bool {
     return label_range.isStackRegister(labelBands(), label);
 }
 
-pub inline fn isInvalidVariable(variable: u16) bool {
+pub fn isInvalidVariable(variable: u16) bool {
     return label_range.isInvalidVariable(labelBands(), variable);
 }
 
-pub inline fn labelToProgram(label: u16) u16 {
+pub fn labelToProgram(label: u16) u16 {
     return label_range.labelToProgram(labelBands(), label);
 }
 
@@ -193,35 +193,35 @@ pub fn infoNotARealNumber(fnName: [*:0]const u8, dataType: u32) void {
     moreInfoOnError(fnName, message, "is not a real number.", "");
 }
 
-pub inline fn reportLabelNotFound(buf: [*:0]const u8) void {
+pub fn reportLabelNotFound(buf: [*:0]const u8) void {
     displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE);
     infoNotANamedLabel("In function fnPgmSlv:", buf);
 }
 
-pub inline fn reportOutOfRange(label: u16) void {
+pub fn reportOutOfRange(label: u16) void {
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
     infoUnexpectedParameter("In function fnPgmSlv:", label);
 }
 
-pub inline fn reportLabelNotFoundPgmInt(buf: [*:0]const u8) void {
+pub fn reportLabelNotFoundPgmInt(buf: [*:0]const u8) void {
     displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE);
     infoNotANamedLabel("In function fnPgmInt:", buf);
 }
 
-pub inline fn reportOutOfRangePgmInt(label: u16) void {
+pub fn reportOutOfRangePgmInt(label: u16) void {
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
     infoUnexpectedParameter("In function fnPgmInt:", label);
 }
 
-pub inline fn clearUsesFormulaStatus() void {
+pub fn clearUsesFormulaStatus() void {
     currentSolverStatus &= ~SOLVER_STATUS_USES_FORMULA;
 }
 
-pub inline fn tvmBeginMode() void {
+pub fn tvmBeginMode() void {
     clearSystemFlag(FLAG_ENDPMT);
 }
 
-pub inline fn tvmEndMode() void {
+pub fn tvmEndMode() void {
     setSystemFlag(FLAG_ENDPMT);
 }
 
@@ -233,11 +233,11 @@ pub inline fn tvmEndMode() void {
 extern fn malloc(size: usize) ?*abi.Real;
 extern fn free(ptr: ?*abi.Real) void;
 
-pub inline fn mallocReal() ?*abi.Real {
+pub fn mallocReal() ?*abi.Real {
     return malloc(@sizeOf(abi.Real));
 }
 
-pub inline fn freeReal(ptr: ?*abi.Real) void {
+pub fn freeReal(ptr: ?*abi.Real) void {
     free(ptr);
 }
 

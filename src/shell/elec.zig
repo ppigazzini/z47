@@ -120,47 +120,47 @@ extern fn decQuadIsZero(x: *const real34_t) u32;
 // ---------------------------------------------------------------------------
 // Real-number helper macros (realType.h), inlined.
 // ---------------------------------------------------------------------------
-inline fn realCopy(src: *const real_t, dst: *real_t) void {
+fn realCopy(src: *const real_t, dst: *real_t) void {
     _ = decNumberCopy(dst, src);
 }
-inline fn realChangeSign(x: *real_t) void {
+fn realChangeSign(x: *real_t) void {
     x.bits ^= DECNEG;
 }
-inline fn realAdd(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn realAdd(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberAdd(res, a, b, ctx);
 }
-inline fn realSubtract(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn realSubtract(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberSubtract(res, a, b, ctx);
 }
-inline fn realDivide(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn realDivide(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberDivide(res, a, b, ctx);
 }
-inline fn realSquareRoot(a: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn realSquareRoot(a: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberSquareRoot(res, a, ctx);
 }
 const realIsZero = abi.realIsZero;
-inline fn realIsNaN(x: *const real_t) bool {
+fn realIsNaN(x: *const real_t) bool {
     return (x.bits & (DECNAN | DECSNAN)) != 0;
 }
-inline fn realIsSpecial(x: *const real_t) bool {
+fn realIsSpecial(x: *const real_t) bool {
     return (x.bits & DECSPECIAL) != 0;
 }
-inline fn real34IsZero(x: *const real34_t) bool {
+fn real34IsZero(x: *const real34_t) bool {
     return decQuadIsZero(x) != 0;
 }
 const registerImag34Data = abi.registerImag34;
-inline fn getComplexRegisterPolarMode(reg: calcRegister_t) u32 {
+fn getComplexRegisterPolarMode(reg: calcRegister_t) u32 {
     return getRegisterTag(reg) & amPolar;
 }
-inline fn setComplexRegisterPolarMode(reg: calcRegister_t, pm: u32) void {
+fn setComplexRegisterPolarMode(reg: calcRegister_t, pm: u32) void {
     setRegisterTag(reg, abi.register_tag.complexWithPolarMode(getRegisterTag(reg), pm));
 }
 
 // Register reads and writes carry one cplx_t.
-inline fn getRegCplx(reg: calcRegister_t, c: *cplx_t) void {
+fn getRegCplx(reg: calcRegister_t, c: *cplx_t) void {
     _ = frontier_register_value_conversions.getRegisterAsComplex(reg, c);
 }
-inline fn putRegCplx(c: *const cplx_t, reg: calcRegister_t) void {
+fn putRegCplx(c: *const cplx_t, reg: calcRegister_t) void {
     frontier_register_value_conversions.convertComplexToResultRegister(c, reg);
 }
 

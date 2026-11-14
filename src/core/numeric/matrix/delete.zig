@@ -20,7 +20,7 @@ const nim_register_line = runtime.REGISTER_X;
 const realElems = abi.matrixRealElems;
 const complexElems = abi.matrixComplexElems;
 
-inline fn real34Copy(source: *const real34_t, destination: *real34_t) void {
+fn real34Copy(source: *const real34_t, destination: *real34_t) void {
     destination.* = source.*;
 }
 const complex34Copy = abi.complex34Copy;

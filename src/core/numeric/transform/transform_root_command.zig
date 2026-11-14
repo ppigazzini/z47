@@ -4,7 +4,7 @@ const runtime = @import("../command_wrappers/runtime.zig");
 const real_t = runtime.real_t;
 const cplx_t = runtime.cplx_t;
 
-inline fn realSetNegativeSign(operand: *real_t) void {
+fn realSetNegativeSign(operand: *real_t) void {
     operand.bits |= 0x80;
 }
 

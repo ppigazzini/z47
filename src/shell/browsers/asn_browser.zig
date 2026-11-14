@@ -117,7 +117,7 @@ fn stringCopy(dest: [*c]u8, source: [*c]const u8) [*c]u8 {
 // host they are real symbols.
 const LcdFillRectFn = *const fn (x: u32, y: u32, dx: u32, dy: u32, val: c_int) callconv(.c) void;
 const c_lcd_fill_rect = @extern(LcdFillRectFn, .{ .name = "lcd_fill_rect" });
-inline fn lcdFillRect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void {
+fn lcdFillRect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void {
     if (comptime dmcp_build) {
         rom.lcd_fill_rect(x, y, dx, dy, val);
     } else {
@@ -126,7 +126,7 @@ inline fn lcdFillRect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void {
 }
 const Bitblt24Fn = *const fn (x: u32, dx: u32, y: u32, val: u32, blt_op: c_int, fill: c_int) callconv(.c) void;
 const c_bitblt24 = @extern(Bitblt24Fn, .{ .name = "bitblt24" });
-inline fn bitblt24(x: u32, dx: u32, y: u32, val: u32, blt_op: c_int, fill: c_int) void {
+fn bitblt24(x: u32, dx: u32, y: u32, val: u32, blt_op: c_int, fill: c_int) void {
     if (comptime dmcp_build) {
         rom.bitblt24(x, dx, y, val, blt_op, fill);
     } else {
@@ -145,13 +145,13 @@ fn setWhitePixel(x: u32, y: u32) callconv(.c) void {
 // ---------------------------------------------------------------------------
 // Inline wrappers (the C macros)
 // ---------------------------------------------------------------------------
-inline fn stringByteLength(str: [*c]const u8) i32 {
+fn stringByteLength(str: [*c]const u8) i32 {
     return @intCast(strlen(str));
 }
-inline fn maxI(a: i32, b: i32) i32 {
+fn maxI(a: i32, b: i32) i32 {
     return if (a > b) a else b;
 }
-inline fn showStr(str: [*:0]const u8, x: u32, y: u32, videoMode: videoMode_t, showLeadingCols: bool_t, showEndingCols: bool_t) void {
+fn showStr(str: [*:0]const u8, x: u32, y: u32, videoMode: videoMode_t, showLeadingCols: bool_t, showEndingCols: bool_t) void {
     _ = frontier_screen.showString(str, &standardFont, x, y, videoMode, @intFromBool(showLeadingCols), @intFromBool(showEndingCols));
 }
 
@@ -159,10 +159,10 @@ inline fn showStr(str: [*:0]const u8, x: u32, y: u32, videoMode: videoMode_t, sh
 const kbdStd = frontier_assign.kbdStd;
 const normKey00Key = frontier_assign.getNormKey00Key;
 
-inline fn asnDispShortForm() bool {
+fn asnDispShortForm() bool {
     return previousCalcMode == CM_AIM or previousCalcMode == CM_EIM or tam.alpha;
 }
-inline fn asnDisplayUSER() bool {
+fn asnDisplayUSER() bool {
     // (fnAsnDisplayUSER ^ (AsnDispShortForm & !getSystemFlag(FLAG_USER)))
     const lhs: u1 = @intFromBool(fnAsnDisplayUSER);
     const rhs: u1 = @intFromBool(asnDispShortForm()) & @intFromBool(!getSystemFlag(FLAG_USER));
