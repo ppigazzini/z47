@@ -19,10 +19,11 @@ const consts = abi.constants;
 //
 // real_t constants without a runtime accessor come from the shared `constants`
 // blob by offset (the conversionAngles pattern) through cstR(), which hands out
-// a word-aligned real_t like every other real_t here. The 1071-digit local
-// REAL_T_PTR scratch values become naturally-sized, 4-byte-aligned stack byte
-// buffers cast to *real_t. WP34S_Mod / WP34S_BigMod reproduce the DM42-only
-// small-buffer path via the wp34s_mod_small_buffers build option.
+// a word-aligned real_t like every other real_t here. A REAL_T_PTR scratch
+// value is a BigReal, a union of a real_t and storage for its digits, and a
+// REAL_T_ALLOC one comes from mallocBigReal. WP34S_Mod / WP34S_BigMod
+// reproduce the DM42-only small-buffer path via the wp34s_mod_small_buffers
+// build option.
 
 const runtime = @import("../command_wrappers/runtime.zig");
 const math_command_wrappers = @import("../command_wrappers.zig");
@@ -465,9 +466,8 @@ pub inline fn maxI32(a: i32, b: i32) i32 {
 }
 
 // ---------------------------------------------------------------------------
-// REAL_T_PTR(name, digits): a stack scratch real_t with `digits` capacity. The
-// underlying buffer is REAL_SIZE_IN_BYTES(digits) = 10 + 2*(REAL_MAX_DIGITS/3),
-// 4-byte aligned, cast to *real_t.
+// REAL_T_PTR(name, digits): a stack scratch real_t with `digits` capacity, in
+// REAL_SIZE_IN_BYTES(digits) = 10 + 2*(REAL_MAX_DIGITS/3) bytes.
 // ---------------------------------------------------------------------------
 inline fn realMaxDigits(comptime digits: u32) u32 {
     return ((digits + 2) / 6) * 6 + 3;

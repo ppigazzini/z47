@@ -66,8 +66,8 @@ const angularMode_t = c_int;
 
 // GMP mpz_struct. The limb width == pointer width on every target z47 builds
 // (64-bit on Linux and Win64, 32-bit on ARM32 firmware). NOT c_ulong: Win64 is
-// LLP64, where `unsigned long` is 32-bit yet GMP limbs are 64-bit — that mismatch
-// mis-sized _mp_d and broke the @ptrCast to [*]u64 below on the Windows CI lane.
+// LLP64, where `unsigned long` is 32-bit yet GMP limbs are 64-bit, and a 32-bit
+// limb type would not coerce to the [*]u64 limb view below.
 const mp_limb_t = usize;
 const mpz_struct = abi.Mpz;
 /// cplx_t: two back-to-back real_t, Mag and Arg as the polar-form view.

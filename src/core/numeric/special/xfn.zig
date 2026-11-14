@@ -22,9 +22,9 @@ const const2139_2pi = consts.const2139_2pi;
 //
 // Faithful line-by-line translation preserving the exact order of every real_t
 // operation (the testSuite checks results to the last ULP). The 1071-digit
-// REAL_T_PTR scratch values become 4-byte-aligned stack byte buffers cast to
-// *real_t. The context digit count (maxContextDigits / maxAllowedDigits) follows
-// use1071, which xfn.c declares as a plain `const bool_t use1071 = true`. Every
+// REAL_T_PTR scratch values are BigReal unions of a real_t and storage for
+// their digits. The context digit count (maxContextDigits / maxAllowedDigits)
+// follows use1071, which xfn.c declares as a plain `const bool_t use1071 = true`. Every
 // exported entry point in xfn.c's
 // `#if !defined(OPTION_XFN_1000)` stub block opens here with a comptime-false
 // early return, so with the option out the command answers nothing and the
