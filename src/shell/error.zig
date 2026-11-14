@@ -650,6 +650,15 @@ fn nextWord(part: []const ?[*:0]const u8, p: *i16, pos: *i16, word: []u8) bool {
 // ---------------------------------------------------------------------------
 // displayBugScreen
 // ---------------------------------------------------------------------------
+/// commonBugScreenMessages[bugMsgValueFor], "In function %s:%d is an
+/// unexpected value for %s!", formatted into errorMessage and shown on the bug
+/// screen, as the callers' C does with sprintf and displayBugScreen.
+pub fn bugScreenUnexpectedValue(function: [*:0]const u8, value: c_int, variable: [*:0]const u8) void {
+    const row = &commonBugScreenMessages[bugMsgValueFor];
+    _ = sprintf(errorMessage, row[0..std.mem.findScalar(u8, row, 0).? :0], function, value, variable);
+    displayBugScreen(errorMessage);
+}
+
 pub export fn displayBugScreen(msg: [*:0]const u8) callconv(.c) void {
     if (calcMode != CM_BUG_ON_SCREEN) {
         const bugScreenTail: [*:0]const u8 = "Try to reproduce this and report a bug. Press EXIT to leave.";

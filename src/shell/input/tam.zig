@@ -154,10 +154,10 @@ const ITM_INDIRECTION = 539;
 const ITM_INFINITY = 924;
 const ITM_IP = 93;
 const ITM_KEYX = 1499;
-const ITM_42STRING = 2775; // items.h:2880
-const ITM_42APPEND = 2776; // items.h:2881
-const ITM_42KEYG = 2795; // items.h:2900
-const ITM_42KEYX = 2796; // items.h:2901
+const ITM_42STRING = 2775; // items.h
+const ITM_42APPEND = 2776; // items.h
+const ITM_42KEYG = 2795; // items.h
+const ITM_42KEYX = 2796; // items.h
 const ITM_LBL = 1;
 const ITM_SET_42ALPHA = 1332;
 const ITM_LBLQ = 1503;
@@ -319,7 +319,7 @@ const TM_REGISTER = 10003;
 const TM_SHUFFLE = 10008;
 const TM_SOLVE = 10010;
 const TM_STORCL = 10006;
-const TM_STRING = 10021; // defines.h:1697
+const TM_STRING = 10021; // defines.h
 const TM_VALUE = 10001;
 const TM_VALUE_CHB = 10002;
 const TM_VALUE_MAX = 10015;
@@ -328,7 +328,6 @@ const TM_VALUE_TRK = 10016;
 const TM_VARONLY = 10019;
 const USER_C47 = 46;
 const amNone = 5;
-const bugMsgValueFor = 0;
 const dtReal34 = 1;
 const pNorm_0_NNZ = 0;
 const pNorm_1_CNORM = 1;
@@ -400,7 +399,6 @@ const STD_CURSOR = "\xa4\x27";
 extern fn strcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn strlen(s: [*c]const u8) usize;
 extern fn strchr(s: [*c]const u8, c: c_int) [*c]u8;
-extern fn sprintf(buf: [*c]u8, fmt: [*c]const u8, ...) c_int;
 extern fn printf(fmt: [*:0]const u8, ...) c_int;
 
 extern fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void;
@@ -1634,8 +1632,7 @@ pub export fn tamEnterMode(funcIn: i16) callconv(.c) void {
             screenUpdatingMode &= ~@as(u8, SCRUPD_MANUAL_MENU);
         },
         else => {
-            _ = sprintf(errorMessage, &commonBugScreenMessages[bugMsgValueFor], "tamEnterMode", @as(c_int, @intCast(tam.mode)), "tam.mode");
-            frontier_error.displayBugScreen(errorMessage);
+            frontier_error.bugScreenUnexpectedValue("tamEnterMode", @as(c_int, @intCast(tam.mode)), "tam.mode");
             return;
         },
     }
@@ -1663,7 +1660,6 @@ pub export fn tamEnterMode(funcIn: i16) callconv(.c) void {
         }
     }
 }
-extern const commonBugScreenMessages: [10][100]u8;
 
 // ===========================================================================
 // leaveTamModeIfEnabled
