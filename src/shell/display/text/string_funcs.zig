@@ -103,7 +103,6 @@ extern var ctxtReal39: realContext_t;
 // ---------------------------------------------------------------------------
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
 const c_moreInfoOnError = @extern(*const fn (m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) callconv(.c) void, .{ .name = "moreInfoOnError" });
-extern fn sprintf(buf: [*c]u8, fmt: [*:0]const u8, ...) c_int;
 extern fn strlen(str: [*c]const u8) usize;
 extern fn liftStack() void;
 extern fn saveLastX() bool;
@@ -111,7 +110,6 @@ extern fn fnSwapX(regist: u16) void;
 extern fn elementwiseRema_UInt16(f: ?*const fn (u16) callconv(.c) void, param: u16) void;
 extern fn getSystemFlag(flag: c_int) bool;
 extern fn reallocateRegister(regist: calcRegister_t, data_type: u32, size_blocks: u16, tag: u32) bool;
-extern fn WP34S_Mod(x: *const real_t, y: *const real_t, res: *real_t, real_context: *realContext_t) void;
 extern fn real34CompareAbsGreaterThan(number1: *const real34_t, number2: *const real34_t) bool;
 extern fn decimal128ToNumber(src: *const real34_t, dst: *real_t) *real_t;
 extern fn decNumberFromInt32(r: *real_t, v: i32) *real_t;

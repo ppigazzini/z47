@@ -201,9 +201,9 @@ const SCRUPD_MANUAL_STATUSBAR: u8 = 1;
 const CATALOG_MVAR: i16 = 18;
 
 // menu IDs used by showTvmMode.
-const MNU_TVM_v: i16 = 3136;
-const MNU_FIN_v: i16 = 3061;
-const MNU_AMORT_v: i16 = 3011;
+const MNU_TVM: i16 = 3136;
+const MNU_FIN: i16 = 3061;
+const MNU_AMORT: i16 = 3011;
 
 // STD_* byte sequences (fonts.h).
 const STD_SPACE_3_PER_EM = "\xa0\x04";
@@ -863,7 +863,7 @@ fn showTvmMode() bool_t {
         return false;
     }
     const mi = softmenu[@intCast(softmenuStack[0].softmenuId)].menuItem;
-    const enable: bool_t = mi == -MNU_TVM_v or mi == -MNU_FIN_v or mi == -MNU_AMORT_v;
+    const enable: bool_t = mi == -MNU_TVM or mi == -MNU_FIN or mi == -MNU_AMORT;
     if (enable) {
         reInstateOCModeDisplay = true;
         reInstateIntegerModeDisplay = true;
