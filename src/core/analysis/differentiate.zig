@@ -21,6 +21,7 @@ const consts = abi.constants;
 const runtime = @import("solve_runtime.zig");
 
 // DECNUMDIGITS=75, DECDPUN=3 => DECNUMUNITS=ceil(75/3)=25; decNumberUnit=u16.
+const std = @import("std");
 const abi = @import("abi"); // shared ABI bindings
 const equation = @import("equation.zig");
 const real_t = abi.Real;
@@ -658,7 +659,7 @@ fn deriv_pgm_variable(label: calcRegister_t, usesDelta: ?*bool_t) linksection(ru
         if (usesDelta != null and compareString(&name, STD_delta_SUB_d, CMP_NAME) == 0) { // the program declares the step variable, so it writes it and it is no step
             usesDelta.?.* = true;
         }
-        const variable = findOrAllocateNamedVariable(@ptrCast(&name));
+        const variable = findOrAllocateNamedVariable(name[0..nameLength :0].ptr);
         if (variable != @as(calcRegister_t, @bitCast(INVALID_VARIABLE))) {
             if (@as(u16, @bitCast(variable)) == currentSolverVariable) {
                 return variable;
@@ -807,15 +808,14 @@ fn calcFuncValues(label: calcRegister_t, variable: calcRegister_t, x: *const rea
 fn calcDeriv(label: calcRegister_t, finDiff: [*]const ?*const FINITE_DIFF_COEFF) linksection(runtime.code_section) void {
     // One heap block for the working reals: this frame is on the stack under every sample and every nested derivative.
     const workBlocks = DERIV_WORK_REALS * REAL_SIZE_IN_BLOCKS_75;
-    const workRaw = allocC47Blocks(workBlocks) orelse {
+    const work = abi.allocC47BlocksAs(real_t, workBlocks) orelse {
         displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
         return;
     };
-    defer freeC47Blocks(workRaw, workBlocks);
+    defer freeC47Blocks(work, workBlocks);
     const userRoundingMode = roundingMode;
     setRoundingMode(RM_ENGINE); // the iteration takes no mode from RM
     defer setRoundingMode(userRoundingMode);
-    const work: [*]real_t = @ptrCast(@alignCast(workRaw));
     const x = &work[0];
     const h = &work[1];
     const scratch = &work[2]; // the MVAR probe, then working space for calcOneDeriv and deriv_agrees

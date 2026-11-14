@@ -288,10 +288,7 @@ inline fn realToReal34(source: *const real_t, destination: *real34_t) void {
     _ = decimal128FromNumber(destination, source, &ctxtReal34);
 }
 inline fn real34Copy(source: *const real34_t, destination: *real34_t) void {
-    const src: *align(1) const [2]u64 = @ptrCast(source);
-    const dst: *align(1) [2]u64 = @ptrCast(destination);
-    dst[0] = src[0];
-    dst[1] = src[1];
+    destination.* = source.*;
 }
 inline fn real34Multiply(op1: *const real34_t, op2: *const real34_t, res: *real34_t) void {
     _ = decQuadMultiply(res, op1, op2, &ctxtReal34);
