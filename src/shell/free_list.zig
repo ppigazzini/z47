@@ -83,7 +83,11 @@ fn poisonReleased(pcMemPtr: ?*anyopaque, sizeInBlocks: usize) void {
     const p = pcMemPtr orelse return;
     const start = toC47MemPtr(p);
     if (start == C47_NULL or sizeInBlocks == 0) return;
-    @memset(poolBytes(.{ .start = start, .blocks = @intCast(sizeInBlocks) }), pool_poison.POISON);
+    const released = poolBytes(.{ .start = start, .blocks = @intCast(sizeInBlocks) });
+    // A guarded allocation is released with its guard block, which memcheck
+    // holds as no-access; the caller closes the whole extent again after this.
+    memcheck.makeMemUndefined(released);
+    @memset(released, pool_poison.POISON);
 }
 
 fn poolBytes(e: pool_poison.Extent) []u8 {
@@ -94,7 +98,10 @@ fn poolBytes(e: pool_poison.Extent) []u8 {
 // Memcheck's view of the pool. Under valgrind a block on the free list is
 // no-access and an allocated one is addressable, so a read or write through a
 // freed pointer is reported where it happens rather than found later by the
-// poison audit. Every owner that moves bytes between the free list and use --
+// poison audit. Under valgrind each allocation also carries a no-access guard
+// block (see "Guard blocks" below), so a write off the end of one live
+// allocation is reported before it reaches the next. Every owner that moves
+// bytes between the free list and use --
 // this allocator, the pool reset, program-memory resizing and both directions
 // of the backup -- updates it. The client requests compile to nothing on a target
 // without valgrind support, the firmware included.
@@ -226,7 +233,119 @@ fn untrackAllocation(c47RamPtr: u16) ?u16 {
     return null;
 }
 
-pub export fn freeListAlloc(sizeInBlocksArg: usize) callconv(.c) ?*anyopaque {
+// ---------------------------------------------------------------------------
+// Guard blocks. Two claimed blocks the free list placed side by side are one
+// addressable run to memcheck, so a write that runs off the end of the first
+// lands in the second without a report. Under valgrind each allocation is
+// therefore taken GUARD_BLOCKS longer than asked for, and the extra block is
+// marked no-access: the first byte written past the end stops at the
+// instruction.
+//
+// On only under valgrind, decided once at run time, the way GLib's slice
+// allocator changes strategy under the same check. Every other run keeps
+// upstream's pool layout, which is what the testSuite measures, and a target
+// without valgrind support, the firmware included, compiles the guards out.
+//
+// The allocation table records the guarded size, and a release reads it there
+// to learn whether the block carries a guard. The backup saves and restores
+// that table with the pool, so a guarded block restored from a state file is
+// still released whole. The backup does open the guards: it reads and writes the
+// pool as one image and marks all of it addressable, so a block that lives
+// through a save or a load is unguarded until it is freed.
+//
+// A guard is taken only when a free region can hold it. A request that fits a
+// region exactly is served unguarded, as upstream serves it, so filling the pool
+// to its last block behaves the same under valgrind as without it.
+// ---------------------------------------------------------------------------
+
+/// One block, four bytes. An overrun that walks off the end of an allocation
+/// touches the block straight after it first, and memcheck stops at the first
+/// no-access byte. A wider guard would catch nothing more of those writes and
+/// would take pool space the testSuite's memory-pressure cases are sized against.
+const GUARD_BLOCKS: usize = 1;
+
+const guards_compiled_in = track_allocations and @import("builtin").valgrind_support;
+
+const guard_state = if (guards_compiled_in) struct {
+    var decided = false;
+    var on = false;
+} else struct {};
+
+fn guardsOn() bool {
+    if (!guard_state.decided) {
+        guard_state.on = std.valgrind.runningOnValgrind() != 0;
+        guard_state.decided = true;
+    }
+    return guard_state.on;
+}
+
+/// The free list serves a request for zero blocks as one, so a guard sits after that one.
+fn servedBlocks(sizeInBlocks: usize) usize {
+    return @max(sizeInBlocks, 1);
+}
+
+fn guardFits(sizeInBlocks: usize) bool {
+    const fr = freeRegions();
+    var i: i32 = 0;
+    while (i < numberOfFreeMemoryRegions) : (i += 1) {
+        if (fr[@as(usize, @intCast(i))].sizeInBlocks >= servedBlocks(sizeInBlocks) + GUARD_BLOCKS) return true;
+    }
+    return false;
+}
+
+fn isGuarded(pcMemPtr: ?*anyopaque, sizeInBlocks: usize) bool {
+    if (pcMemPtr == null) return false;
+    const c47RamPtr = toC47MemPtr(pcMemPtr);
+    const ar = allocated.regions();
+    var region: i32 = 0;
+    while (region < allocated.numberOfAllocatedMemoryRegions) : (region += 1) {
+        const idx: usize = @intCast(region);
+        if (ar[idx].blockAddress == c47RamPtr) return ar[idx].sizeInBlocks == servedBlocks(sizeInBlocks) + GUARD_BLOCKS;
+    }
+    return false;
+}
+
+fn closeGuard(pcMemPtr: ?*anyopaque, sizeInBlocks: usize) void {
+    const start = @as(usize, toC47MemPtr(pcMemPtr)) + servedBlocks(sizeInBlocks);
+    const words: [*]u32 = ram;
+    memcheck.makeMemNoAccess(std.mem.sliceAsBytes(words[start..][0..GUARD_BLOCKS]));
+}
+
+pub export fn freeListAlloc(sizeInBlocks: usize) callconv(.c) ?*anyopaque {
+    if (comptime guards_compiled_in) {
+        if (guardsOn() and guardFits(sizeInBlocks)) {
+            const pcMemPtr = allocBlocks(servedBlocks(sizeInBlocks) + GUARD_BLOCKS) orelse return null;
+            closeGuard(pcMemPtr, sizeInBlocks);
+            return pcMemPtr;
+        }
+    }
+    return allocBlocks(sizeInBlocks);
+}
+
+// A guarded allocation shrinks with its guard: the tail beyond the new guard goes
+// back to the free list, and the block after the new size becomes the guard.
+pub export fn freeListReduce(pcMemPtr: ?*anyopaque, oldSizeInBlocks: usize, newSizeInBlocks: usize) callconv(.c) void {
+    if (comptime guards_compiled_in) {
+        if (guardsOn() and isGuarded(pcMemPtr, oldSizeInBlocks)) {
+            reduceBlocks(pcMemPtr, servedBlocks(oldSizeInBlocks) + GUARD_BLOCKS, newSizeInBlocks + GUARD_BLOCKS);
+            closeGuard(pcMemPtr, newSizeInBlocks);
+            return;
+        }
+    }
+    reduceBlocks(pcMemPtr, oldSizeInBlocks, newSizeInBlocks);
+}
+
+pub export fn freeListFree(pcMemPtr: ?*anyopaque, sizeInBlocks: usize) callconv(.c) void {
+    if (comptime guards_compiled_in) {
+        if (guardsOn() and isGuarded(pcMemPtr, sizeInBlocks)) {
+            freeBlocks(pcMemPtr, servedBlocks(sizeInBlocks) + GUARD_BLOCKS);
+            return;
+        }
+    }
+    freeBlocks(pcMemPtr, sizeInBlocks);
+}
+
+fn allocBlocks(sizeInBlocksArg: usize) ?*anyopaque {
     var sizeInBlocks = sizeInBlocksArg;
     var minSizeInBlocks: u16 = 65535;
     var minBlock: u16 = C47_NULL;
@@ -292,7 +411,7 @@ pub export fn freeListRealloc(pcMemPtr: ?*anyopaque, oldSizeInBlocksArg: usize, 
     return null; // not enough memory
 }
 
-pub export fn freeListReduce(pcMemPtr: ?*anyopaque, oldSizeInBlocksArg: usize, newSizeInBlocks: usize) callconv(.c) void {
+fn reduceBlocks(pcMemPtr: ?*anyopaque, oldSizeInBlocksArg: usize, newSizeInBlocks: usize) void {
     var oldSizeInBlocks = oldSizeInBlocksArg;
     if (oldSizeInBlocks == 0) oldSizeInBlocks = 1;
 
@@ -355,7 +474,7 @@ pub export fn freeListReduce(pcMemPtr: ?*anyopaque, oldSizeInBlocksArg: usize, n
     }
 }
 
-pub export fn freeListFree(pcMemPtr: ?*anyopaque, sizeInBlocksArg: usize) callconv(.c) void {
+fn freeBlocks(pcMemPtr: ?*anyopaque, sizeInBlocksArg: usize) void {
     // GMP never calls free with pcMemPtr being NULL.
     if (pcMemPtr == null) {
         return;
