@@ -511,9 +511,10 @@ pub export fn fnTimerConfig(nr: u8, func: TimerFn, param: u16) callconv(.c) void
 // ===========================================================================
 pub export fn fnTimerStartImpl(nr: u8, param: u16, delay: u32) callconv(.c) void {
     // LP% and DP% scale the two press timeouts; every other timer keeps its delay.
+    // The factor converts to uint32_t for the product, which wraps as C's does.
     const time: u32 = if (comptime option_lp_dp_timing) switch (nr) {
-        TO_CL_LONG, TO_FN_LONG => @intCast(@as(u64, delay) * @as(u64, @intCast(10000 + @as(i32, longPressFactor))) / 10000),
-        TO_FN_EXEC => @intCast(@as(u64, delay) * @as(u64, @intCast(10000 + @as(i32, doublePressFactor))) / 10000),
+        TO_CL_LONG, TO_FN_LONG => delay *% @as(u32, @bitCast(10000 + @as(i32, longPressFactor))) / 10000,
+        TO_FN_EXEC => delay *% @as(u32, @bitCast(10000 + @as(i32, doublePressFactor))) / 10000,
         else => delay,
     } else delay;
     if (comptime dmcp_build) {
@@ -527,9 +528,10 @@ pub export fn fnTimerStartImpl(nr: u8, param: u16, delay: u32) callconv(.c) void
         const now: i64 = g_get_monotonic_time();
         if (nr < TMR_NUMBER) {
             timer[nr].param = param;
-            timer[nr].timer_will_expire = now + @as(i64, time) * 1000;
+            // time * 1000 is uint32_t arithmetic, widened only when it meets now.
+            timer[nr].timer_will_expire = now + @as(i64, time *% 1000);
             if (timer[nr].timer_will_expire < 0) {
-                timer[nr].timer_will_expire = @as(i64, time) * 1000;
+                timer[nr].timer_will_expire = time *% 1000;
             }
             timer[nr].state = TMR_RUNNING;
         }
