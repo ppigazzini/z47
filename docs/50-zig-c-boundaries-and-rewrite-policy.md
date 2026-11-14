@@ -282,7 +282,7 @@ as live rather than closed.
    are covered by a poison pattern that needs no sanitizer runtime
    (`../src/shell/pool_poison.zig`, armed by `zig build state_load_fuzz`, host
    only), and reads and writes of free blocks by Valgrind's memcheck, which the
-   free list keeps informed (`zig build memcheck_suite`, CI only). An overrun from
+   free list keeps informed (`zig build memcheck_suite` and `test_memcheck`, CI only). An overrun from
    one live block into another live block stays invisible;
    reaching it needs per-allocation redzones, which would change the pool layout
    and so the firmware.

@@ -1488,6 +1488,22 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.l
     const test_asan_step = b.step("test_asan", "Run the host test suite with native Zig C sanitizing");
     test_asan_step.dependOn(&run_test_suite_asan.step);
 
+    // The host test suite under valgrind's memcheck: free_list.zig marks the
+    // pool's free blocks no-access and each newly claimed block undefined, so a
+    // read through a freed block, or a decision on bytes nothing wrote, fails
+    // the run at the instruction. decNumber's word scans past its last digit
+    // are suppressed line by line (decNumberWordScanSuppressions). The range
+    // below the stack pointer is where the compiler's stack probes land: a
+    // 4-byte read one to four pages below it, before a large frame claims
+    // them.
+    const run_test_suite_memcheck = b.addSystemCommand(&.{ "valgrind", "--error-exitcode=97", "--ignore-range-below-sp=16384-4093" });
+    run_test_suite_memcheck.addPrefixedFileArg("--suppressions=", build_common.decNumberWordScanSuppressions(b));
+    run_test_suite_memcheck.addArtifactArg(test_suite);
+    run_test_suite_memcheck.addFileArg(b.path(build_common.upstreamPathString(b, "src/testSuite/tests/testSuiteList.txt")));
+    run_test_suite_memcheck.setCwd(upstreamCwd(b));
+    const test_memcheck_step = b.step("test_memcheck", "Run the host test suite under valgrind's memcheck");
+    test_memcheck_step.dependOn(&run_test_suite_memcheck.step);
+
     const repeattest_step = b.step("repeattest", "Run the host test suite incrementally");
     repeattest_step.dependOn(&run_test_suite.step);
 

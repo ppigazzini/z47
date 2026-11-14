@@ -313,6 +313,29 @@ fn readUpstreamFile(b: *std.Build, relative: []const u8) []const u8 {
         std.debug.panic("cannot read {s}: {t}", .{ full_path, err });
 }
 
+/// Valgrind suppressions for decNumber's word-at-a-time coefficient scans: one
+/// `src:` entry per line of decBasic.c and decCommon.c that reads a coefficient
+/// four bytes at a time (UBTOUI, ISCOEFFZERO). Those reads run past the last
+/// digit into the rounded-up end of decNumber's own buffers, which nothing
+/// writes; decBasic.c's comment on them is "tests are safe because acc and coe
+/// are rounded up to uInts". The entries come from the source, so a change to
+/// decNumber cannot leave one on the wrong line.
+pub fn decNumberWordScanSuppressions(b: *std.Build) std.Build.LazyPath {
+    var text: std.ArrayList(u8) = .empty;
+    for ([_][]const u8{ "decBasic.c", "decCommon.c" }) |name| {
+        const source = readUpstreamFile(b, b.fmt("dep/decNumberICU/{s}", .{name}));
+        var lines = std.mem.splitScalar(u8, source, '\n');
+        var number: usize = 0;
+        while (lines.next()) |line| {
+            number += 1;
+            const scans = std.mem.indexOf(u8, line, "UBTOUI(") != null or std.mem.indexOf(u8, line, "ISCOEFFZERO(") != null;
+            if (!scans) continue;
+            text.print(b.allocator, "{{\n   decnumber-word-scan-{s}-{d}\n   Memcheck:Cond\n   src:{s}:{d}\n}}\n", .{ name, number, name, number }) catch @panic("OOM");
+        }
+    }
+    return b.addWriteFiles().add("decnumber-word-scans.supp", text.items);
+}
+
 /// The hardware an owner object is compiled for. Every board fact an owner's
 /// build options carry -- DMCP_BUILD, OLD_HW, HARDWARE_MODEL == HWM_DM42 -- is
 /// derived from this value, which the caller sets from the target it builds.
