@@ -232,46 +232,46 @@ const refreshLcd = @extern(RefreshLcdFn, .{ .name = "refreshLcd" });
 // real* macro wrappers
 // ---------------------------------------------------------------------------
 const reg34 = abi.registerReal34;
-inline fn uInt32ToReal(source: u32, destination: *real_t) void {
+fn uInt32ToReal(source: u32, destination: *real_t) void {
     _ = decNumberFromUInt32(destination, source);
 }
-inline fn realMultiply(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn realMultiply(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberMultiply(res, a, b, ctx);
 }
-inline fn realDivide(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn realDivide(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberDivide(res, a, b, ctx);
 }
-inline fn realGetCoefficient(source: *const real_t, destination: [*c]u8) void {
+fn realGetCoefficient(source: *const real_t, destination: [*c]u8) void {
     _ = decNumberGetBCD(source, destination);
 }
-inline fn real34ToReal(source: *const real34_t, destination: *real_t) void {
+fn real34ToReal(source: *const real34_t, destination: *real_t) void {
     _ = decimal128ToNumber(source, destination);
 }
-inline fn realToReal34(source: *const real_t, destination: *real34_t) void {
+fn realToReal34(source: *const real_t, destination: *real34_t) void {
     _ = decimal128FromNumber(destination, source, &ctxtReal34);
 }
-inline fn real34Add(o1: *const real34_t, o2: *const real34_t, res: *real34_t) void {
+fn real34Add(o1: *const real34_t, o2: *const real34_t, res: *real34_t) void {
     _ = decQuadAdd(res, o1, o2, &ctxtReal34);
 }
-inline fn longIntegerInit(op: *mpz_struct) void {
+fn longIntegerInit(op: *mpz_struct) void {
     __gmpz_init(op);
 }
-inline fn longIntegerFree(op: *mpz_struct) void {
+fn longIntegerFree(op: *mpz_struct) void {
     __gmpz_clear(op);
 }
-inline fn uInt32ToLongInteger(source: u32, destination: *mpz_struct) void {
+fn uInt32ToLongInteger(source: u32, destination: *mpz_struct) void {
     __gmpz_set_ui(destination, source);
 }
-inline fn longIntegerMultiplyUInt(op: *const mpz_struct, uint: u32, result: *mpz_struct) void {
+fn longIntegerMultiplyUInt(op: *const mpz_struct, uint: u32, result: *mpz_struct) void {
     __gmpz_mul_ui(result, op, uint);
 }
-inline fn longIntegerAddUInt(op: *const mpz_struct, uint: u32, result: *mpz_struct) void {
+fn longIntegerAddUInt(op: *const mpz_struct, uint: u32, result: *mpz_struct) void {
     __gmpz_add_ui(result, op, uint);
 }
-inline fn stringByteLength(s: [*c]const u8) i32 {
+fn stringByteLength(s: [*c]const u8) i32 {
     return @intCast(strlen(s));
 }
-inline fn moreInfoOnErr(where: [*:0]const u8, hint: [*:0]const u8) void {
+fn moreInfoOnErr(where: [*:0]const u8, hint: [*:0]const u8) void {
     if (comptime extra_info) {
         moreInfoOnError(where, hint, null, null);
     }

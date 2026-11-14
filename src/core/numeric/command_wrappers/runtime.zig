@@ -329,7 +329,7 @@ pub extern fn fnRefreshState() void;
 const is_dmcp_build = @import("builtin").target.os.tag == .freestanding;
 const rom = @import("dmcp_rom");
 extern fn refreshLcd(unused_data: ?*anyopaque) c_int; // gboolean refreshLcd(gpointer) on the host
-pub inline fn refreshScreenNow() void {
+pub fn refreshScreenNow() void {
     if (comptime is_dmcp_build) {
         rom.lcd_refresh();
     } else {
@@ -386,18 +386,18 @@ pub extern var explicitTaylorIterVisibilitySelection: bool;
 extern fn malloc(size: usize) ?*real_t;
 extern fn free(ptr: ?*real_t) void;
 
-pub inline fn mallocReal() ?*real_t {
+pub fn mallocReal() ?*real_t {
     return malloc(@sizeOf(real_t));
 }
 
-pub inline fn freeReal(ptr: ?*real_t) void {
+pub fn freeReal(ptr: ?*real_t) void {
     free(ptr);
 }
 
 /// REAL_SIZE_IN_BYTES(digits): the bytes a decNumber of that many digits takes
 /// (DECDPUN = 3, 4-byte alignment), for the REAL_T_ALLOC(name, digits) buffers
 /// the owners take off the heap and free with freeReal.
-pub inline fn mallocRealDigits(digits: u32) ?*real_t {
+pub fn mallocRealDigits(digits: u32) ?*real_t {
     return malloc(10 + 2 * ((((digits + 2) / 6) * 6 + 3) / 3));
 }
 // The complex dense core (matrix/complex_core.zig): in-place inverse, product
@@ -410,13 +410,13 @@ pub extern fn realExp(x: *const real_t, res: *real_t, real_context: *realContext
 // slvc.c: the SLVC/SLVQ coefficient-vector entry, which slvq.c hands a vector in X to.
 pub extern fn solveCoefficientVector() void;
 pub extern fn decQuadZero(result: *real34_t) *real34_t;
-pub inline fn real34SetZero(destination: *real34_t) void {
+pub fn real34SetZero(destination: *real34_t) void {
     _ = decQuadZero(destination);
 }
 
 pub extern fn decQuadFromUInt32(result: *real34_t, value: u32) *real34_t;
 // uInt32ToReal34 (realType.h): the decQuad form, distinct from uInt32ToReal.
-pub inline fn uInt32ToReal34(value: u32, destination: *real34_t) void {
+pub fn uInt32ToReal34(value: u32, destination: *real34_t) void {
     _ = decQuadFromUInt32(destination, value);
 }
 // The canonical subtract command (subtraction.c), used by fnVectorDist.
@@ -446,7 +446,7 @@ pub const REAL34_SIZE_IN_BLOCKS: u16 = 4;
 pub const COMPLEX34_SIZE_IN_BLOCKS: u16 = 8;
 pub const ERROR_TI_UNDO_FAILED: u8 = 128; // defines.h 128
 pub extern fn decQuadFromInt32(result: *real34_t, source: i32) *real34_t;
-pub inline fn real34SetOne(destination: *real34_t) void {
+pub fn real34SetOne(destination: *real34_t) void {
     _ = decQuadFromInt32(destination, 1);
 }
 pub const ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX: u8 = 39;
@@ -460,13 +460,13 @@ pub const TI_INACCURATE: u8 = 48;
 inline fn registerValue(comptime T: type, reg: calcRegister_t, comptime offset: usize) *align(4) T {
     return std.mem.bytesAsValue(T, getRegisterDataPointer(reg).?[offset..][0..@sizeOf(T)]);
 }
-pub inline fn registerMatrixHeader(reg: calcRegister_t) *matrixHeader_t {
+pub fn registerMatrixHeader(reg: calcRegister_t) *matrixHeader_t {
     return registerValue(matrixHeader_t, reg, 0);
 }
-pub inline fn registerReal34Data(reg: calcRegister_t) *real34_t {
+pub fn registerReal34Data(reg: calcRegister_t) *real34_t {
     return registerValue(real34_t, reg, 0);
 }
-pub inline fn registerImag34Data(reg: calcRegister_t) *real34_t {
+pub fn registerImag34Data(reg: calcRegister_t) *real34_t {
     return registerValue(real34_t, reg, @sizeOf(real34_t));
 }
 
@@ -557,21 +557,21 @@ pub extern fn real34NextMinus(source: *const real34_t, destination: *real34_t) v
 pub extern fn realToReal34(source: *const real_t, destination: *real34_t) void;
 pub extern fn real34Subtract(operand1: *const real34_t, operand2: *const real34_t, res: *real34_t) void;
 
-pub inline fn real34Add(operand1: *const real34_t, operand2: *const real34_t, res: *real34_t) void {
+pub fn real34Add(operand1: *const real34_t, operand2: *const real34_t, res: *real34_t) void {
     _ = decQuadAdd(res, operand1, operand2, &ctxtReal34);
 }
 
 pub extern fn decQuadFromString(result: *real34_t, string: [*:0]const u8, context: *realContext_t) *real34_t;
 
-pub inline fn stringToReal34(source: [*:0]const u8, destination: *real34_t) void {
+pub fn stringToReal34(source: [*:0]const u8, destination: *real34_t) void {
     _ = decQuadFromString(destination, source, &ctxtReal34);
 }
 
-pub inline fn real34Divide(operand1: *const real34_t, operand2: *const real34_t, res: *real34_t) void {
+pub fn real34Divide(operand1: *const real34_t, operand2: *const real34_t, res: *real34_t) void {
     _ = decQuadDivide(res, operand1, operand2, &ctxtReal34);
 }
 
-pub inline fn real34Multiply(operand1: *const real34_t, operand2: *const real34_t, res: *real34_t) void {
+pub fn real34Multiply(operand1: *const real34_t, operand2: *const real34_t, res: *real34_t) void {
     _ = decQuadMultiply(res, operand1, operand2, &ctxtReal34);
 }
 pub extern fn convertAngle34FromTo(angle: *real34_t, from_mode: angularMode_t, to_mode: angularMode_t) void;
@@ -722,23 +722,23 @@ pub extern fn __gmpz_fdiv_q_ui(result: *mpz_struct, op: *const mpz_struct, divis
 pub extern fn __gmpz_rootrem(root: *mpz_struct, rem: *mpz_struct, op: *const mpz_struct, n: c_ulong) void;
 
 // The longIntegerType.h inline wrappers the owners read as named operations.
-pub inline fn longIntegerIsZero(op: *const mpz_struct) bool {
+pub fn longIntegerIsZero(op: *const mpz_struct) bool {
     return op._mp_size == 0;
 }
-pub inline fn longIntegerIsNegative(op: *const mpz_struct) bool {
+pub fn longIntegerIsNegative(op: *const mpz_struct) bool {
     return op._mp_size < 0;
 }
-pub inline fn longIntegerIsPositive(op: *const mpz_struct) bool {
+pub fn longIntegerIsPositive(op: *const mpz_struct) bool {
     return op._mp_size > 0;
 }
 /// mpz_odd_p: the low limb's low bit, zero when there is no limb.
-pub inline fn longIntegerIsOdd(op: *const mpz_struct) bool {
+pub fn longIntegerIsOdd(op: *const mpz_struct) bool {
     return op._mp_size != 0 and (op._mp_d[0] & 1) != 0;
 }
-pub inline fn longIntegerCompareAbs(op1: *const mpz_struct, op2: *const mpz_struct) i32 {
+pub fn longIntegerCompareAbs(op1: *const mpz_struct, op2: *const mpz_struct) i32 {
     return __gmpz_cmpabs(op1, op2);
 }
-pub inline fn longIntegerBase10Digits(op: *const mpz_struct) u32 {
+pub fn longIntegerBase10Digits(op: *const mpz_struct) u32 {
     return @intCast(__gmpz_sizeinbase(op, 10));
 }
 
@@ -766,7 +766,7 @@ pub extern fn decNumberRemainder(result: *real_t, lhs: *const real_t, rhs: *cons
 /// raw `bits ^= 0x80`: the two agree on every finite value and disagree on NaN,
 /// where the arithmetic form canonicalises the result positive and the bit flip
 /// produces a negative NaN. Use whichever c43 uses at the site being ported.
-pub inline fn realMinus(operand: *const real_t, result: *real_t, real_context: *realContext_t) void {
+pub fn realMinus(operand: *const real_t, result: *real_t, real_context: *realContext_t) void {
     _ = decNumberMinus(result, operand, real_context);
 }
 pub extern fn realToIntegralValue(source: *const real_t, destination: *real_t, mode: rounding_t, real_context: *realContext_t) void;
@@ -958,7 +958,7 @@ pub extern fn z47_math_wrappers_do_int_random_i() void;
 // excluded from the fake-harness parity lanes.
 pub extern fn decQuadSubtract(res: *real34_t, operand1: *const real34_t, operand2: *const real34_t, context: *realContext_t) *real34_t;
 
-pub inline fn real34SubtractMacro(operand1: *const real34_t, operand2: *const real34_t, res: *real34_t) void {
+pub fn real34SubtractMacro(operand1: *const real34_t, operand2: *const real34_t, res: *real34_t) void {
     _ = decQuadSubtract(res, operand1, operand2, &ctxtReal34);
 }
 
@@ -1102,13 +1102,13 @@ pub const realIsInfinite = math_real_predicates.realIsInfinite;
 pub const realIsNaN = math_real_predicates.realIsNaN;
 pub const realIsNegative = math_real_predicates.realIsNegative;
 
-pub inline fn real34IsNaN(value: *const real34_t) bool {
+pub fn real34IsNaN(value: *const real34_t) bool {
     return decQuadIsNaN(value) != 0;
 }
 
 pub const real34IsSpecial = abi.real34IsSpecial;
 
-pub inline fn real34IsZero(value: *const real34_t) bool {
+pub fn real34IsZero(value: *const real34_t) bool {
     return decQuadIsZero(value) != 0;
 }
 
@@ -1117,49 +1117,49 @@ pub inline fn real34IsZero(value: *const real34_t) bool {
 // `DFISSIGNED && !DFISZERO && !DFISNAN` and which therefore answers false for -0
 // and for a sign-set NaN. c43 never calls decQuadIsNegative anywhere, so every
 // upstream `real34IsNegative` call site means the sign bit.
-pub inline fn real34IsNegative(value: *const real34_t) bool {
+pub fn real34IsNegative(value: *const real34_t) bool {
     return (value.bytes[15] & 0x80) == 0x80;
 }
 
-pub inline fn real34ToReal(source: *const real34_t, destination: *real_t) void {
+pub fn real34ToReal(source: *const real34_t, destination: *real_t) void {
     _ = decimal128ToNumber(source, destination);
 }
 
 pub const realIsZero = math_real_predicates.realIsZero;
 
-pub inline fn realChangeSign(value: *real_t) void {
+pub fn realChangeSign(value: *real_t) void {
     value.bits ^= 0x80;
 }
 
-pub inline fn realSetPositiveSign(value: *real_t) void {
+pub fn realSetPositiveSign(value: *real_t) void {
     value.bits &= 0x7f;
 }
 
-pub inline fn realMultiply(lhs: *const real_t, rhs: *const real_t, result: *real_t, real_context: *realContext_t) void {
+pub fn realMultiply(lhs: *const real_t, rhs: *const real_t, result: *real_t, real_context: *realContext_t) void {
     _ = decNumberMultiply(result, lhs, rhs, real_context);
 }
 
-pub inline fn realDivide(lhs: *const real_t, rhs: *const real_t, result: *real_t, real_context: *realContext_t) void {
+pub fn realDivide(lhs: *const real_t, rhs: *const real_t, result: *real_t, real_context: *realContext_t) void {
     _ = decNumberDivide(result, lhs, rhs, real_context);
 }
 
-pub inline fn realSquareRoot(rhs: *const real_t, result: *real_t, real_context: *realContext_t) void {
+pub fn realSquareRoot(rhs: *const real_t, result: *real_t, real_context: *realContext_t) void {
     _ = decNumberSquareRoot(result, rhs, real_context);
 }
 
-pub inline fn realAdd(lhs: *const real_t, rhs: *const real_t, result: *real_t, real_context: *realContext_t) void {
+pub fn realAdd(lhs: *const real_t, rhs: *const real_t, result: *real_t, real_context: *realContext_t) void {
     _ = decNumberAdd(result, lhs, rhs, real_context);
 }
 
-pub inline fn realSubtract(lhs: *const real_t, rhs: *const real_t, result: *real_t, real_context: *realContext_t) void {
+pub fn realSubtract(lhs: *const real_t, rhs: *const real_t, result: *real_t, real_context: *realContext_t) void {
     _ = decNumberSubtract(result, lhs, rhs, real_context);
 }
 
-pub inline fn realFMA(factor1: *const real_t, factor2: *const real_t, term: *const real_t, result: *real_t, real_context: *realContext_t) void {
+pub fn realFMA(factor1: *const real_t, factor2: *const real_t, term: *const real_t, result: *real_t, real_context: *realContext_t) void {
     _ = decNumberFMA(result, factor1, factor2, term, real_context);
 }
 
-pub inline fn uInt32ToReal(source: u32, destination: *real_t) void {
+pub fn uInt32ToReal(source: u32, destination: *real_t) void {
     _ = decNumberFromUInt32(destination, source);
 }
 

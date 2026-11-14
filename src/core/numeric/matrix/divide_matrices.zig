@@ -26,7 +26,7 @@ const realElems = abi.matrixRealElems;
 const constComplexElems = abi.matrixConstComplexElems;
 const complexElems = abi.matrixComplexElems;
 
-inline fn distinctFromRes(y: anytype, x: anytype, res: anytype) bool {
+fn distinctFromRes(y: anytype, x: anytype, res: anytype) bool {
     return @intFromPtr(y) != @intFromPtr(res) and @intFromPtr(x) != @intFromPtr(res);
 }
 

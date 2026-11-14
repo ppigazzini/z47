@@ -238,7 +238,7 @@ inline fn realMaxDigits(comptime digits: u32) u32 {
 fn BigReal(comptime digits: u32) type {
     return struct {
         buf: [10 + 2 * (realMaxDigits(digits) / 3)]u8 align(4) = undefined,
-        inline fn bytes(self: *@This()) [*c]u8 {
+        fn bytes(self: *@This()) [*c]u8 {
             return &self.buf;
         }
     };

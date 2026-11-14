@@ -216,7 +216,7 @@ pub export fn realToIntegralValue(source: *const real_t, destination: *real_t, m
     realContext.round = savedRoundingMode;
 }
 
-inline fn realToReal34(src: *const real_t, dst: *real34_t) void {
+fn realToReal34(src: *const real_t, dst: *real34_t) void {
     _ = decimal128FromNumber(dst, src, &ctxtReal34);
 }
 
@@ -235,11 +235,11 @@ pub export fn convertRealToResultRegister(x: *const real_t, dest: calcRegister_t
     convertRealToReal34ResultRegister(x, dest);
 }
 
-inline fn realIsSpecial(r: *const real_t) bool {
+fn realIsSpecial(r: *const real_t) bool {
     return (r.bits & DECSPECIAL) != 0;
 }
 
-inline fn realIsNegative(r: *const real_t) bool {
+fn realIsNegative(r: *const real_t) bool {
     return (r.bits & DECNEG) != 0;
 }
 
@@ -378,53 +378,53 @@ const DEC_ROUND_HALF_EVEN: c_int = 3;
 const DEC_ROUND_HALF_DOWN: c_int = 4;
 const DEC_ROUND_FLOOR: c_int = 6;
 
-inline fn longIntegerIsZero(lg: *const mpz_struct) bool {
+fn longIntegerIsZero(lg: *const mpz_struct) bool {
     return lg._mp_size == 0;
 }
-inline fn longIntegerIsPositive(lg: *const mpz_struct) bool {
+fn longIntegerIsPositive(lg: *const mpz_struct) bool {
     return lg._mp_size > 0;
 }
 /// mpz_odd_p: the low bit of the low limb, zero when there is no limb.
-inline fn longIntegerIsOdd(lg: *const mpz_struct) bool {
+fn longIntegerIsOdd(lg: *const mpz_struct) bool {
     return lg._mp_size != 0 and (lg._mp_d[0] & 1) != 0;
 }
-inline fn longIntegerSetPositiveSign(lg: *mpz_struct) void {
+fn longIntegerSetPositiveSign(lg: *mpz_struct) void {
     if (lg._mp_size < 0) lg._mp_size = -lg._mp_size;
 }
-inline fn longIntegerCopy(src: *const mpz_struct, dst: *mpz_struct) void {
+fn longIntegerCopy(src: *const mpz_struct, dst: *mpz_struct) void {
     __gmpz_set(dst, src);
 }
-inline fn longIntegerCompare(a: *const mpz_struct, b: *const mpz_struct) i32 {
+fn longIntegerCompare(a: *const mpz_struct, b: *const mpz_struct) i32 {
     return __gmpz_cmp(a, b);
 }
-inline fn longIntegerCompareAbs(a: *const mpz_struct, b: *const mpz_struct) i32 {
+fn longIntegerCompareAbs(a: *const mpz_struct, b: *const mpz_struct) i32 {
     return __gmpz_cmpabs(a, b);
 }
-inline fn longIntegerPowerUIntUInt(base: u32, exponent: u32, result: *mpz_struct) void {
+fn longIntegerPowerUIntUInt(base: u32, exponent: u32, result: *mpz_struct) void {
     __gmpz_ui_pow_ui(result, base, exponent);
 }
-inline fn longIntegerMultiplyUnbounded(a: *const mpz_struct, b: *const mpz_struct, result: *mpz_struct) void {
+fn longIntegerMultiplyUnbounded(a: *const mpz_struct, b: *const mpz_struct, result: *mpz_struct) void {
     __gmpz_mul(result, a, b);
 }
-inline fn longIntegerAddUnbounded(a: *const mpz_struct, b: *const mpz_struct, result: *mpz_struct) void {
+fn longIntegerAddUnbounded(a: *const mpz_struct, b: *const mpz_struct, result: *mpz_struct) void {
     __gmpz_add(result, a, b);
 }
-inline fn longIntegerSubtractUnbounded(a: *const mpz_struct, b: *const mpz_struct, result: *mpz_struct) void {
+fn longIntegerSubtractUnbounded(a: *const mpz_struct, b: *const mpz_struct, result: *mpz_struct) void {
     __gmpz_sub(result, a, b);
 }
-inline fn longIntegerDivideQuotientRemainder(n: *const mpz_struct, d: *const mpz_struct, q: *mpz_struct, r: *mpz_struct) void {
+fn longIntegerDivideQuotientRemainder(n: *const mpz_struct, d: *const mpz_struct, q: *mpz_struct, r: *mpz_struct) void {
     __gmpz_tdiv_qr(q, r, n, d);
 }
 /// mpz_root: the truncated n-th root; true when it is exact.
-inline fn longIntegerRoot(op: *const mpz_struct, n: u32, result: *mpz_struct) bool {
+fn longIntegerRoot(op: *const mpz_struct, n: u32, result: *mpz_struct) bool {
     return __gmpz_root(result, op, n) != 0;
 }
 const real34IsSpecial = abi.real34IsSpecial;
 // realType.h real34IsNegative: the sign bit, so -0 and a signed NaN count.
-inline fn real34IsNegative(v: *const real34_t) bool {
+fn real34IsNegative(v: *const real34_t) bool {
     return (v.bytes[15] & 0x80) == 0x80;
 }
-inline fn strlenC(str: [*c]const u8) usize {
+fn strlenC(str: [*c]const u8) usize {
     var index: usize = 0;
     while (str[index] != 0) : (index += 1) {}
     return index;
@@ -595,47 +595,47 @@ pub export fn convertShortIntegerRegisterToUInt64(regist: calcRegister_t, sign: 
     }
 }
 
-inline fn real34ToReal(src: *const real34_t, dst: *real_t) void {
+fn real34ToReal(src: *const real34_t, dst: *real_t) void {
     _ = decimal128ToNumber(src, dst);
 }
 
-inline fn real34IsZero(v: *const real34_t) bool {
+fn real34IsZero(v: *const real34_t) bool {
     return decQuadIsZero(v) != 0;
 }
 
-inline fn regImag34(reg: calcRegister_t) *real34_t {
+fn regImag34(reg: calcRegister_t) *real34_t {
     return abi.registerImag34(reg);
 }
 
-inline fn dataPtr(reg: calcRegister_t) [*]u8 {
+fn dataPtr(reg: calcRegister_t) [*]u8 {
     return abi.registerBytes(reg);
 }
 
-inline fn regLongIntData(reg: calcRegister_t) [*]u8 {
+fn regLongIntData(reg: calcRegister_t) [*]u8 {
     return dataPtr(reg) + 4; // sizeof(strLgIntHeader_t)
 }
 
-inline fn getRegisterLongIntegerSign(reg: calcRegister_t) u32 {
+fn getRegisterLongIntegerSign(reg: calcRegister_t) u32 {
     return getRegisterTag(reg);
 }
 
-inline fn toBytes(n: u16) u32 {
+fn toBytes(n: u16) u32 {
     return @as(u32, n) << 2;
 }
 
-inline fn uInt32ToReal(src: u32, dst: *real_t) void {
+fn uInt32ToReal(src: u32, dst: *real_t) void {
     _ = decNumberFromUInt32(dst, src);
 }
 
-inline fn realFMA(f1: *const real_t, f2: *const real_t, term: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn realFMA(f1: *const real_t, f2: *const real_t, term: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberFMA(res, f1, f2, term, ctx);
 }
 
-inline fn realSetNegativeSign(v: *real_t) void {
+fn realSetNegativeSign(v: *real_t) void {
     v.bits |= 0x80;
 }
 
-inline fn stringToReal(src: [*c]const u8, dst: *real_t, ctx: *realContext_t) void {
+fn stringToReal(src: [*c]const u8, dst: *real_t, ctx: *realContext_t) void {
     _ = decNumberFromString(dst, src, ctx);
 }
 
@@ -653,89 +653,89 @@ extern fn __gmpz_fdiv_ui(op: *const mpz_struct, c: c_ulong) c_ulong;
 
 extern fn __gmpz_get_str(str: [*c]u8, radix: c_int, op: *const mpz_struct) [*c]u8;
 
-inline fn real34SetZero(dst: *real34_t) void {
+fn real34SetZero(dst: *real34_t) void {
     _ = decQuadZero(dst);
 }
 
-inline fn regRealMatrixElems(reg: calcRegister_t) [*]real34_t {
+fn regRealMatrixElems(reg: calcRegister_t) [*]real34_t {
     return abi.registerReal34MatrixElements(reg);
 }
 
-inline fn regComplexMatrixElems(reg: calcRegister_t) [*]complex34_t {
+fn regComplexMatrixElems(reg: calcRegister_t) [*]complex34_t {
     return abi.registerComplex34MatrixElements(reg);
 }
 
-inline fn getRegisterAngularMode(reg: calcRegister_t) angularMode_t {
+fn getRegisterAngularMode(reg: calcRegister_t) angularMode_t {
     return @intCast(getRegisterTag(reg) & amAngleMask);
 }
 
-inline fn setComplexRegisterAngularMode(reg: calcRegister_t, am: angularMode_t) void {
+fn setComplexRegisterAngularMode(reg: calcRegister_t, am: angularMode_t) void {
     setRegisterTag(reg, abi.register_tag.complexWithAngularMode(getRegisterTag(reg), @bitCast(am)));
 }
 
-inline fn setComplexRegisterPolarMode(reg: calcRegister_t, pm: u32) void {
+fn setComplexRegisterPolarMode(reg: calcRegister_t, pm: u32) void {
     setRegisterTag(reg, abi.register_tag.complexWithPolarMode(getRegisterTag(reg), pm));
 }
 
-inline fn toBlocks(n: u32) u16 {
+fn toBlocks(n: u32) u16 {
     return @intCast((n + 3) >> 2);
 }
 
 // longIntegerType.h returns uint32_t and every caller stores it in a uint16_t,
 // so C truncates. No register-sized long integer reaches 65536 bytes, but the
 // port must wrap where C wraps rather than trap on a value C accepts.
-inline fn longIntegerSizeInBytes(lg: *const mpz_struct) u16 {
+fn longIntegerSizeInBytes(lg: *const mpz_struct) u16 {
     return @truncate(absI(lg._mp_size) * @as(u32, LIMB_SIZE));
 }
 
-inline fn longIntegerSignTag(lg: *const mpz_struct) u32 {
+fn longIntegerSignTag(lg: *const mpz_struct) u32 {
     if (lg._mp_size == 0) return LI_ZERO;
     return if (lg._mp_size > 0) LI_POSITIVE else LI_NEGATIVE;
 }
 
-inline fn longIntegerChangeSign(lg: *mpz_struct) void {
+fn longIntegerChangeSign(lg: *mpz_struct) void {
     lg._mp_size = -lg._mp_size;
 }
 
-inline fn realIsNaN(v: *const real_t) bool {
+fn realIsNaN(v: *const real_t) bool {
     return (v.bits & (DECNAN | DECSNAN)) != 0;
 }
 
-inline fn realIsPositive(v: *const real_t) bool {
+fn realIsPositive(v: *const real_t) bool {
     return (v.bits & 0x80) == 0x00;
 }
 
 const realIsZero = abi.realIsZero;
 
-inline fn realSetPositiveSign(v: *real_t) void {
+fn realSetPositiveSign(v: *real_t) void {
     v.bits &= 0x7f;
 }
 
-inline fn realGetExponent(v: *const real_t) i32 {
+fn realGetExponent(v: *const real_t) i32 {
     return v.digits + v.exponent - 1;
 }
 
-inline fn real34FMA(f1: *const real34_t, f2: *const real34_t, term: *const real34_t, res: *real34_t) void {
+fn real34FMA(f1: *const real34_t, f2: *const real34_t, term: *const real34_t, res: *real34_t) void {
     _ = decQuadFMA(res, f1, f2, term, &ctxtReal34);
 }
 
-inline fn real34GetCoefficient(src: *const real34_t, bcd: [*]u8) i32 {
+fn real34GetCoefficient(src: *const real34_t, bcd: [*]u8) i32 {
     return decQuadGetCoefficient(src, bcd);
 }
 
-inline fn real34GetExponent(src: *const real34_t) i32 {
+fn real34GetExponent(src: *const real34_t) i32 {
     return decQuadGetExponent(src);
 }
 
-inline fn stringToReal34(src: [*c]const u8, dst: *real34_t) void {
+fn stringToReal34(src: [*c]const u8, dst: *real34_t) void {
     _ = decQuadFromString(dst, src, &ctxtReal34);
 }
 
-inline fn realGetCoefficient(src: *const real_t, bcd: [*]u8) void {
+fn realGetCoefficient(src: *const real_t, bcd: [*]u8) void {
     _ = decNumberGetBCD(src, bcd);
 }
 
-inline fn realPlus(op: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn realPlus(op: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberPlus(res, op, ctx);
 }
 
@@ -793,11 +793,11 @@ fn fnRealToFloat(r: *const real_t) f32 {
     return @as(f32, @floatFromInt(s)) * exps[@intCast(e + 45)];
 }
 
-inline fn makeNanF32() f32 {
+fn makeNanF32() f32 {
     return std.math.nan(f32);
 }
 
-inline fn makeInfF32() f32 {
+fn makeInfF32() f32 {
     return std.math.inf(f32);
 }
 
@@ -970,11 +970,11 @@ pub export fn reduceLongIntegerRegisterAngle(regist: calcRegister_t, angularMode
     return true;
 }
 
-inline fn longIntegerBase10Digits(op: *const mpz_struct) u32 {
+fn longIntegerBase10Digits(op: *const mpz_struct) u32 {
     return @intCast(mpz_sizeinbase(op, 10));
 }
 
-inline fn longIntegerModuloUInt(op: *const mpz_struct, u: u32) u32 {
+fn longIntegerModuloUInt(op: *const mpz_struct, u: u32) u32 {
     return @truncate(mpz_fdiv_ui(op, u));
 }
 
@@ -990,43 +990,43 @@ const REAL_2139_BYTES: usize = blk: {
 extern fn malloc(size: usize) ?*real_t;
 extern fn free(ptr: ?*anyopaque) void;
 
-inline fn mallocReal2139() ?*real_t {
+fn mallocReal2139() ?*real_t {
     return malloc(REAL_2139_BYTES);
 }
 
 const c_lconv = extern struct { decimal_point: [*:0]const u8 };
 
-inline fn absI(x: c_int) u32 {
+fn absI(x: c_int) u32 {
     return if (x < 0) @intCast(-x) else @intCast(x);
 }
 
-inline fn longIntegerIsNegative(lg: *const mpz_struct) bool {
+fn longIntegerIsNegative(lg: *const mpz_struct) bool {
     return lg._mp_size < 0;
 }
 
-inline fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8) void {
+fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8) void {
     if (comptime extra_info) c_moreInfoOnError(m1, m2, null, null);
 }
 
-inline fn real34Copy(src: *const real34_t, dst: *real34_t) void {
+fn real34Copy(src: *const real34_t, dst: *real34_t) void {
     dst.* = src.*;
 }
 
-inline fn real34Divide(a: *const real34_t, b: *const real34_t, res: *real34_t) void {
+fn real34Divide(a: *const real34_t, b: *const real34_t, res: *real34_t) void {
     _ = decQuadDivide(res, a, b, &ctxtReal34);
 }
 
-inline fn real34Multiply(a: *const real34_t, b: *const real34_t, res: *real34_t) void {
+fn real34Multiply(a: *const real34_t, b: *const real34_t, res: *real34_t) void {
     _ = decQuadMultiply(res, a, b, &ctxtReal34);
 }
 
 const real34SetNegativeSign = abi.real34SetNegativeSign;
 
-inline fn real34ToIntegralValue(src: *const real34_t, dst: *real34_t, mode: c_int) void {
+fn real34ToIntegralValue(src: *const real34_t, dst: *real34_t, mode: c_int) void {
     _ = decQuadToIntegralValue(dst, src, &ctxtReal34, mode);
 }
 
-inline fn uInt32ToReal34(src: u32, dst: *real34_t) void {
+fn uInt32ToReal34(src: u32, dst: *real34_t) void {
     _ = decQuadFromUInt32(dst, src);
 }
 
@@ -2320,7 +2320,7 @@ extern fn getRegisterDataPointer(regist: calcRegister_t) ?*align(4) anyopaque;
 extern fn setRegisterDataPointer(regist: calcRegister_t, mem_ptr: ?*const anyopaque) void;
 extern fn getRegisterFullSizeInBlocks(regist: calcRegister_t) u16;
 // freeRegisterData(regist) is a C macro over freeC47Blocks; reproduce it.
-inline fn freeRegisterData(regist: calcRegister_t) void {
+fn freeRegisterData(regist: calcRegister_t) void {
     freeC47Blocks(getRegisterDataPointer(regist), getRegisterFullSizeInBlocks(regist));
 }
 extern fn allocC47Blocks(size_in_blocks: usize) ?*anyopaque;

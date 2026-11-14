@@ -109,15 +109,15 @@ extern fn displayCalcErrorMessage(errorCode: u8, errMessageRegisterLine: calcReg
 // ---------------------------------------------------------------------------
 // REGISTER_STRING_DATA: data pointer + sizeof(strLgIntHeader_t) == 4.
 const regString = abi.registerString;
-inline fn stringByteLength(str: [*c]const u8) i32 {
+fn stringByteLength(str: [*c]const u8) i32 {
     return @intCast(strlen(str));
 }
 // TO_BLOCKS(n) == ((uint32_t)n + 3) >> 2.
-inline fn toBlocks(n: i32) u16 {
+fn toBlocks(n: i32) u16 {
     return @intCast((@as(u32, @bitCast(n)) +% 3) >> 2);
 }
 // TO_PCMEMPTR: byte pointer for a block index, or null for C47_NULL.
-inline fn TO_PCMEMPTR(p: u16) [*c]u8 {
+fn TO_PCMEMPTR(p: u16) [*c]u8 {
     if (p == C47_NULL) return null;
     return std.mem.asBytes(&ram[p]);
 }

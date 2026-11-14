@@ -138,13 +138,13 @@ extern fn fnToRect2(p: u16) void;
 
 // These three are called with register codes (int/int16); the C ABI param is
 // uint16_t, so truncate exactly as the implicit C conversion does.
-inline fn fnSwapX(regist: anytype) void {
+fn fnSwapX(regist: anytype) void {
     c_fnSwapX(@bitCast(@as(i16, @intCast(regist))));
 }
-inline fn fnRCL(regist: anytype) void {
+fn fnRCL(regist: anytype) void {
     c_fnRCL(@bitCast(@as(i16, @intCast(regist))));
 }
-inline fn fn3Sto(regist: anytype) void {
+fn fn3Sto(regist: anytype) void {
     c_fn3Sto(@bitCast(@as(i16, @intCast(regist))));
 }
 
@@ -157,13 +157,13 @@ extern fn decQuadFromString(r: *real34_t, str: [*:0]const u8, ctx: *realContext_
 const reg34 = abi.registerReal34Aligned;
 // REGISTER_IMAG34_DATA(a) = getRegisterDataPointer(a) + REAL34_SIZE_IN_BYTES (16).
 const regImag34 = abi.registerImag34Aligned;
-inline fn stringToReal34(source: [*:0]const u8, destination: *real34_t) void {
+fn stringToReal34(source: [*:0]const u8, destination: *real34_t) void {
     _ = decQuadFromString(destination, source, &ctxtReal34);
 }
-inline fn getComplexRegisterPolarMode(reg: calcRegister_t) u32 {
+fn getComplexRegisterPolarMode(reg: calcRegister_t) u32 {
     return getRegisterTag(reg) & amPolar;
 }
-inline fn setComplexRegisterPolarMode(reg: calcRegister_t, pm: u32) void {
+fn setComplexRegisterPolarMode(reg: calcRegister_t, pm: u32) void {
     setRegisterTag(reg, abi.register_tag.complexWithPolarMode(getRegisterTag(reg), pm));
 }
 
@@ -171,7 +171,7 @@ inline fn setComplexRegisterPolarMode(reg: calcRegister_t, pm: u32) void {
 const kbdStd = frontier_assign.kbdStd;
 const normKey00Key = frontier_assign.getNormKey00Key;
 
-inline fn moreInfoOnErr(m1: [*:0]const u8, m2: [*:0]const u8) void {
+fn moreInfoOnErr(m1: [*:0]const u8, m2: [*:0]const u8) void {
     if (comptime extra_info) {
         moreInfoOnError(m1, m2, null, null);
     }

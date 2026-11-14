@@ -2,7 +2,7 @@
 const runtime = @import("../command_wrappers/runtime.zig");
 
 // decNumber's +Infinity: a zero coefficient with the infinity bit set.
-inline fn realSetPlusInfinity(res: *runtime.real_t) void {
+fn realSetPlusInfinity(res: *runtime.real_t) void {
     runtime.realSetZero(res);
     res.bits = 0x40;
 }

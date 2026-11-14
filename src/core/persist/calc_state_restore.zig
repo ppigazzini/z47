@@ -48,7 +48,7 @@ extern fn setRoundingMode(RM: u16) void;
 // currentNumberOfLocalRegisters macro: currentSubroutineLevelData->numberOfLocalRegisters.
 const subroutineLevelHeader_t = abi.SubroutineLevelHeader;
 extern var currentSubroutineLevelData: [*c]subroutineLevelHeader_t;
-inline fn currentNumberOfLocalRegisters() u8 {
+fn currentNumberOfLocalRegisters() u8 {
     return currentSubroutineLevelData[0].numberOfLocalRegisters;
 }
 const FIRST_NAMED_VARIABLE: i16 = 256;

@@ -35,7 +35,7 @@ const glyph_code = abi.glyph_code;
 const bool_t = u8;
 
 // Rank of a charCode in the standard font (replacement-glyph ordering).
-inline fn standardGlyphs() [*]const glyph_t {
+fn standardGlyphs() [*]const glyph_t {
     return &standardFont.glyphs;
 }
 
@@ -43,12 +43,12 @@ inline fn standardGlyphs() [*]const glyph_t {
 // carry, and C indexes glyphs[-1] with it, reading the bytes in front of the
 // glyph array. Ranking an absent glyph 0 keeps the read inside the array; every
 // charCode the font does carry is unaffected.
-inline fn glyphRank1(charCode: u16) i16 {
+fn glyphRank1(charCode: u16) i16 {
     const id = frontier_fonts.findGlyph(&standardFont, charCode);
     return if (id < 0) 0 else standardGlyphs()[@intCast(id)].rank1;
 }
 
-inline fn glyphRank2(charCode: u16) i16 {
+fn glyphRank2(charCode: u16) i16 {
     const id = frontier_fonts.findGlyph(&standardFont, charCode);
     return if (id < 0) 0 else standardGlyphs()[@intCast(id)].rank2;
 }
@@ -70,7 +70,7 @@ pub export fn nameEqualsPrefolded(candidate: [*c]const u8, folded: [*c]const u16
 }
 
 // Read the glyph char-code at byte offset `pos` (delegates to the shared decode).
-inline fn glyphCodeAt(str: [*c]const u8, pos: i16) u16 {
+fn glyphCodeAt(str: [*c]const u8, pos: i16) u16 {
     return glyph_code.decodeGlyphAt(str, @intCast(pos));
 }
 

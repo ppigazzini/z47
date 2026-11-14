@@ -19,7 +19,7 @@ const complex34Matrix_t = runtime.complex34Matrix_t;
 const registerHeader = runtime.registerMatrixHeader;
 
 // isMatrixVector(rows, cols) (defines.h): a 2D or 3D row/column vector.
-inline fn isMatrixVector(rows: u16, cols: u16) bool {
+fn isMatrixVector(rows: u16, cols: u16) bool {
     return (rows == 1 and cols == 2) or (rows == 2 and cols == 1) or
         (rows == 1 and cols == 3) or (rows == 3 and cols == 1);
 }

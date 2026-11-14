@@ -118,32 +118,32 @@ const realCompareAbsLessThan = math_comparison_reals.realCompareAbsLessThan;
 extern fn decNumberCopy(res: *real_t, source: *const real_t) *real_t;
 extern fn decNumberCopyAbs(res: *real_t, source: *const real_t) *real_t;
 
-inline fn realCopy(source: *const real_t, destination: *real_t) void {
+fn realCopy(source: *const real_t, destination: *real_t) void {
     _ = decNumberCopy(destination, source);
 }
-inline fn realCopyAbs(source: *const real_t, destination: *real_t) void {
+fn realCopyAbs(source: *const real_t, destination: *real_t) void {
     _ = decNumberCopyAbs(destination, source);
 }
-inline fn realPlus(operand: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+fn realPlus(operand: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = runtime.decNumberPlus(res, operand, ctxt);
 }
-inline fn realCompare(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+fn realCompare(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = runtime.decNumberCompare(res, op1, op2, ctxt);
 }
-inline fn realIsPositive(source: *const real_t) bool {
+fn realIsPositive(source: *const real_t) bool {
     return (source.bits & 0x80) == 0x00;
 }
-inline fn realGetExponent(source: *const real_t) i32 {
+fn realGetExponent(source: *const real_t) i32 {
     return source.digits + source.exponent - 1;
 }
-inline fn realGetUnadjustedExponent(source: *const real_t) i32 {
+fn realGetUnadjustedExponent(source: *const real_t) i32 {
     return source.exponent;
 }
 
 // decContext.h DEC_Inexact.
 const DEC_Inexact: u32 = 0x00000020;
 
-inline fn chsComplex(a: *cplx_t) void {
+fn chsComplex(a: *cplx_t) void {
     realChangeSign(&a.Real);
     realChangeSign(&a.Imag);
 }

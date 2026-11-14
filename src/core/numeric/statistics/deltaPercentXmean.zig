@@ -53,10 +53,10 @@ extern var statisticalSumsPointer: ?[*]real_t;
 
 const SUM_N: usize = 0;
 const SUM_X: usize = 1;
-inline fn SIGMA_N() *real_t {
+fn SIGMA_N() *real_t {
     return &statisticalSumsPointer.?[SUM_N];
 }
-inline fn SIGMA_X() *real_t {
+fn SIGMA_X() *real_t {
     return &statisticalSumsPointer.?[SUM_X];
 }
 

@@ -66,13 +66,13 @@ const IDX_SIGMA_lnY: usize = 11;
 const IDX_SIGMA_1onX: usize = 17;
 const IDX_SIGMA_1onY: usize = 20;
 
-inline fn sigma(index: usize) *real_t {
+fn sigma(index: usize) *real_t {
     return &statisticalSumsPointer.?[index];
 }
-inline fn SIGMA_Y() *real_t {
+fn SIGMA_Y() *real_t {
     return sigma(IDX_SIGMA_Y);
 }
-inline fn SIGMA_XY() *real_t {
+fn SIGMA_XY() *real_t {
     return sigma(6);
 }
 

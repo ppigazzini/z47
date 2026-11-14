@@ -43,23 +43,23 @@ const FLAG_POLAR: i32 = 0x8006;
 const FLAG_ASLIFT: i32 = 0xc023;
 const NOPARAM: u16 = 9876;
 
-inline fn const34_0() *const real34_t {
+fn const34_0() *const real34_t {
     return consts.q16200();
 }
 
 // real34Copy: copy the 16 raw bytes.
-inline fn real34Copy(source: *const real34_t, destination: *real34_t) void {
+fn real34Copy(source: *const real34_t, destination: *real34_t) void {
     destination.* = source.*;
 }
 const complex34Copy = abi.complex34Copy;
 extern fn decQuadZero(destination: *real34_t) *real34_t;
-inline fn real34SetZero(destination: *real34_t) void {
+fn real34SetZero(destination: *real34_t) void {
     _ = decQuadZero(destination);
 }
 
 // real34ToReal with a register-resident real34 source.
 extern fn decimal128ToNumber(source: *const real34_t, destination: *real_t) *real_t;
-inline fn real34ToReal(source: *const real34_t, destination: *real_t) void {
+fn real34ToReal(source: *const real34_t, destination: *real_t) void {
     _ = decimal128ToNumber(source, destination);
 }
 extern fn convertRealToReal34ResultRegister(real: *const real_t, dest: calcRegister_t) void;
@@ -73,29 +73,29 @@ const std_cross = "\x80\xd7"; // STD_CROSS
 // the shared errorMessage buffer of that size.
 const ERROR_MESSAGE_LENGTH = 512;
 
-inline fn REGISTER_REAL34_DATA(reg: calcRegister_t) *real34_t {
+fn REGISTER_REAL34_DATA(reg: calcRegister_t) *real34_t {
     return runtime.registerReal34Ptr(reg);
 }
-inline fn REGISTER_IMAG34_DATA(reg: calcRegister_t) *real34_t {
+fn REGISTER_IMAG34_DATA(reg: calcRegister_t) *real34_t {
     return runtime.registerImag34Ptr(reg);
 }
-inline fn REGISTER_COMPLEX34_DATA(reg: calcRegister_t) *complex34_t {
+fn REGISTER_COMPLEX34_DATA(reg: calcRegister_t) *complex34_t {
     return runtime.registerComplex34Ptr(reg);
 }
-inline fn VARIABLE_REAL34_DATA(elem: *complex34_t) *real34_t {
+fn VARIABLE_REAL34_DATA(elem: *complex34_t) *real34_t {
     return &elem.real;
 }
-inline fn VARIABLE_IMAG34_DATA(elem: *complex34_t) *real34_t {
+fn VARIABLE_IMAG34_DATA(elem: *complex34_t) *real34_t {
     return &elem.imag;
 }
-inline fn realMatrixElements(mat: *real34Matrix_t) [*]real34_t {
+fn realMatrixElements(mat: *real34Matrix_t) [*]real34_t {
     if (runtime.harness_surface_is_fake) {
         return &mat.matrixElements;
     } else {
         return mat.matrixElements;
     }
 }
-inline fn complexMatrixElements(mat: *complex34Matrix_t) [*]complex34_t {
+fn complexMatrixElements(mat: *complex34Matrix_t) [*]complex34_t {
     if (runtime.harness_surface_is_fake) {
         return &mat.matrixElements;
     } else {

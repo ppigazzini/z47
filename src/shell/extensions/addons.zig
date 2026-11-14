@@ -163,7 +163,7 @@ const NUMBER_OF_DISPLAY_DIGITS: c_int = 20;
 const MAX_DENMAX: i32 = 9999;
 const MAX_INTERNAL_DENMAX: i32 = 32500;
 // BYTES_PER_BLOCK = 4 -> TO_BLOCKS(n) = (n + 3) >> 2
-inline fn TO_BLOCKS(n: u32) u32 {
+fn TO_BLOCKS(n: u32) u32 {
     return (n + 3) >> 2;
 }
 
@@ -497,10 +497,10 @@ const STD_op_i_1: u8 = 0x48;
 const STD_op_j_1: u8 = 0x49;
 
 // SEPARATOR_LEFT / SEPARATOR_RIGHT runtime macros, which display.c defines.
-inline fn SEPARATOR_LEFT() [*c]const u8 {
+fn SEPARATOR_LEFT() [*c]const u8 {
     return frontier_display.getGapChar1Left();
 }
-inline fn SEPARATOR_RIGHT() [*c]const u8 {
+fn SEPARATOR_RIGHT() [*c]const u8 {
     return frontier_display.getGapChar1Right();
 }
 
@@ -624,7 +624,7 @@ extern fn freeC47Blocks(pcMemPtr: ?*anyopaque, sizeInBlocks: usize) void;
 extern fn malloc(size: usize) ?[*]u8;
 extern fn free(ptr: ?*anyopaque) void;
 extern fn getRegisterFullSizeInBlocks(regist: calcRegister_t) u16;
-inline fn freeRegisterData(regist: calcRegister_t) void {
+fn freeRegisterData(regist: calcRegister_t) void {
     freeC47Blocks(getRegisterDataPointer(regist), getRegisterFullSizeInBlocks(regist));
 }
 extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) bool;
@@ -639,7 +639,7 @@ extern fn copySourceRegisterToDestRegister(source: calcRegister_t, dest: calcReg
 // edit / pem helpers
 // isAtEndOfProgram is a static inline = frontier_manage.checkOpCodeOfStep(step, ITM_END).
 const ITM_END: u16 = 1458;
-inline fn isAtEndOfProgram(step: [*c]const u8) bool_t {
+fn isAtEndOfProgram(step: [*c]const u8) bool_t {
     return @intFromBool(frontier_manage.checkOpCodeOfStep(step, ITM_END));
 }
 // regKStoC is a static inline (registers.h).
@@ -647,7 +647,7 @@ const FIRST_STAT_REGISTER_IN_KS_CODE: u16 = 211;
 const NUMBER_OF_LOCAL_REGISTERS: u16 = 99;
 const FIRST_LOCAL_REGISTER_IN_KS_CODE: u16 = 112;
 const LAST_LOCAL_REGISTER_IN_KS_CODE: u16 = 210;
-inline fn regKStoC(regKS: u16) u16 {
+fn regKStoC(regKS: u16) u16 {
     const k: i32 = @intCast(regKS);
     const a: i32 = @intFromBool(FIRST_STAT_REGISTER_IN_KS_CODE <= regKS and regKS <= LAST_SPARE_REGISTERS_IN_KS_CODE);
     const b: i32 = @intFromBool(FIRST_LOCAL_REGISTER_IN_KS_CODE <= regKS and regKS <= LAST_LOCAL_REGISTER_IN_KS_CODE);
@@ -660,22 +660,22 @@ inline fn regKStoC(regKS: u16) u16 {
 // number / register conversions
 // stringToLongInteger is a static inline = mpz_set_str.
 extern fn __gmpz_set_str(rop: [*c]mpz_struct, str: [*c]const u8, base: c_int) c_int;
-inline fn stringToLongInteger(str: [*c]const u8, base: u32, lgInt: [*c]mpz_struct) void {
+fn stringToLongInteger(str: [*c]const u8, base: u32, lgInt: [*c]mpz_struct) void {
     _ = __gmpz_set_str(lgInt, str, @intCast(base));
 }
 // int32ToLongInteger is a static inline = mpz_set_si.
 extern fn __gmpz_set_si(rop: [*c]mpz_struct, op: c_long) void;
-inline fn int32ToLongInteger(value: i32, lgInt: [*c]mpz_struct) void {
+fn int32ToLongInteger(value: i32, lgInt: [*c]mpz_struct) void {
     __gmpz_set_si(lgInt, value);
 }
 // longIntegerCompare is a static inline = mpz_cmp.
 extern fn __gmpz_cmp(a: [*c]const mpz_struct, b: [*c]const mpz_struct) c_int;
-inline fn longIntegerCompare(a: [*c]const mpz_struct, b: [*c]const mpz_struct) i32 {
+fn longIntegerCompare(a: [*c]const mpz_struct, b: [*c]const mpz_struct) i32 {
     return __gmpz_cmp(a, b);
 }
 // stringToReal34 is a macro = decQuadFromString(dst, src, &ctxtReal34).
 extern fn decQuadFromString(r: *real34_t, str: [*c]const u8, ctx: *realContext_t) *real34_t;
-inline fn stringToReal34(str: [*c]const u8, r: *real34_t) void {
+fn stringToReal34(str: [*c]const u8, r: *real34_t) void {
     _ = decQuadFromString(r, str, &ctxtReal34);
 }
 extern fn stringToInt32(str: [*c]const u8) i32;
@@ -689,13 +689,13 @@ extern fn fnDivide(unusedButMandatoryParameter: u16) void;
 extern fn adjustResult(result: calcRegister_t, dropY: bool_t, setCpxRes: bool_t, op1: calcRegister_t, op2: calcRegister_t, op3: calcRegister_t) void;
 extern fn fnToReal(unusedButMandatoryParameter: u16) void;
 // setRegisterAngularMode / setComplex* are setRegisterTag macros (registers.h).
-inline fn setRegisterAngularMode(regist: calcRegister_t, am: u16) void {
+fn setRegisterAngularMode(regist: calcRegister_t, am: u16) void {
     setRegisterTag(regist, am);
 }
-inline fn setComplexRegisterAngularMode(regist: calcRegister_t, am: u16) void {
+fn setComplexRegisterAngularMode(regist: calcRegister_t, am: u16) void {
     setRegisterTag(regist, abi.register_tag.complexWithAngularMode(getRegisterTag(regist), am));
 }
-inline fn setComplexRegisterPolarMode(regist: calcRegister_t, pm: u16) void {
+fn setComplexRegisterPolarMode(regist: calcRegister_t, pm: u16) void {
     setRegisterTag(regist, abi.register_tag.complexWithPolarMode(getRegisterTag(regist), pm));
 }
 
@@ -726,23 +726,23 @@ extern fn realCompareAbsLessThan(a: *const real_t, b: *const real_t) bool_t;
 extern fn realCompareAbsGreaterThan(a: *const real_t, b: *const real_t) bool_t;
 // real* sign/zero/compare are decNumber macros (realType.h), reproduced inline.
 extern fn decNumberCompare(res: *real_t, a: *const real_t, b: *const real_t, ctx: *realContext_t) *real_t;
-inline fn realCompare(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn realCompare(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberCompare(res, a, b, ctx);
 }
 const realIsZero = abi.realIsZero;
-inline fn realIsSpecial(r: *const real_t) bool_t {
+fn realIsSpecial(r: *const real_t) bool_t {
     return @intFromBool((r.bits & 0x70) != 0); // DECSPECIAL = 0x70
 }
-inline fn realIsPositive(r: *const real_t) bool_t {
+fn realIsPositive(r: *const real_t) bool_t {
     return @intFromBool((r.bits & 0x80) == 0);
 }
-inline fn realIsNegative(r: *const real_t) bool_t {
+fn realIsNegative(r: *const real_t) bool_t {
     return @intFromBool((r.bits & 0x80) == 0x80);
 }
-inline fn realSetPositiveSign(operand: *real_t) void {
+fn realSetPositiveSign(operand: *real_t) void {
     operand.bits &= 0x7F;
 }
-inline fn realSetNegativeSign(operand: *real_t) void {
+fn realSetNegativeSign(operand: *real_t) void {
     operand.bits |= 0x80;
 }
 
@@ -753,7 +753,7 @@ inline fn realSetNegativeSign(operand: *real_t) void {
 // DMCP ROM function-table entry; on host it is linkable.
 const Bitblt24Fn = *const fn (x: u32, dx: u32, y: u32, val: u32, blt_op: c_int, fill: c_int) callconv(.c) void;
 const c_bitblt24 = if (!dmcp_build) @extern(Bitblt24Fn, .{ .name = "bitblt24" }) else {};
-inline fn bitblt24(x: u32, dx: u32, y: u32, val: u32, blt_op: c_int, fill: c_int) void {
+fn bitblt24(x: u32, dx: u32, y: u32, val: u32, blt_op: c_int, fill: c_int) void {
     if (comptime dmcp_build) {
         rom.bitblt24(x, dx, y, val, blt_op, fill);
     } else {
@@ -764,10 +764,10 @@ const BLT_OR: c_int = 0;
 const BLT_ANDN: c_int = 1;
 const BLT_NONE: c_int = 0;
 // hal/lcd.h: on the DMCP firmware the pixel routines are written once, in screen.c.
-inline fn setBlackPixel(x: u32, y: u32) void {
+fn setBlackPixel(x: u32, y: u32) void {
     if (comptime dmcp_build) frontier_screen.setBlackPixel(x, y) else bitblt24(x, 1, y, 1, BLT_OR, BLT_NONE);
 }
-inline fn setWhitePixel(x: u32, y: u32) void {
+fn setWhitePixel(x: u32, y: u32) void {
     if (comptime dmcp_build) frontier_screen.setWhitePixel(x, y) else bitblt24(x, 1, y, 1, BLT_ANDN, BLT_NONE);
 }
 extern fn _Buzz(a: u32, b: u32) void;
@@ -813,83 +813,83 @@ extern fn decNumberSubtract(res: *real_t, a: *const real_t, b: *const real_t, ct
 extern fn decNumberFromInt32(r: *real_t, v: i32) *real_t;
 extern fn decNumberCopy(dst: *real_t, src: *const real_t) *real_t;
 
-inline fn stringToReal(str: [*c]const u8, r: *real_t, ctx: *realContext_t) void {
+fn stringToReal(str: [*c]const u8, r: *real_t, ctx: *realContext_t) void {
     _ = decNumberFromString(r, str, ctx);
 }
 extern fn printRealToConsole(value: *const real_t, before: [*:0]const u8, after: [*:0]const u8) void;
-inline fn realDivide(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn realDivide(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberDivide(res, a, b, ctx);
 }
-inline fn realMultiply(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn realMultiply(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberMultiply(res, a, b, ctx);
 }
-inline fn realAdd(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn realAdd(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberAdd(res, a, b, ctx);
 }
-inline fn realSubtract(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn realSubtract(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberSubtract(res, a, b, ctx);
 }
-inline fn int32ToReal(v: i32, r: *real_t) void {
+fn int32ToReal(v: i32, r: *real_t) void {
     _ = decNumberFromInt32(r, v);
 }
-inline fn realCopy(source_: *const real_t, destination: *real_t) void {
+fn realCopy(source_: *const real_t, destination: *real_t) void {
     destination.* = source_.*;
 }
-inline fn realCopyAbs(source_: *const real_t, destination: *real_t) void {
+fn realCopyAbs(source_: *const real_t, destination: *real_t) void {
     destination.* = source_.*;
     destination.bits &= 0x7F;
 }
 
 // real34 wrappers (realType.h macros)
-inline fn real34ToReal(source_: *const real34_t, destination: *real_t) void {
+fn real34ToReal(source_: *const real34_t, destination: *real_t) void {
     _ = decimal128ToNumber(source_, destination);
 }
-inline fn realToReal34(source_: *const real_t, destination: *real34_t) void {
+fn realToReal34(source_: *const real_t, destination: *real34_t) void {
     _ = decimal128FromNumber(destination, source_, &ctxtReal34);
 }
-inline fn real34Copy(source_: *const real34_t, destination: *real34_t) void {
+fn real34Copy(source_: *const real34_t, destination: *real34_t) void {
     _ = decQuadCopy(destination, source_);
 }
-inline fn real34SetZero(destination: *real34_t) void {
+fn real34SetZero(destination: *real34_t) void {
     _ = decQuadZero(destination);
 }
-inline fn real34IsZero(source_: *const real34_t) bool {
+fn real34IsZero(source_: *const real34_t) bool {
     return decQuadIsZero(source_) != 0;
 }
-inline fn real34ToString(source_: *const real34_t, destination: [*c]u8) void {
+fn real34ToString(source_: *const real34_t, destination: [*c]u8) void {
     _ = decQuadToString(source_, destination);
 }
-inline fn real34IsNegative(source_: *const real34_t) bool {
+fn real34IsNegative(source_: *const real34_t) bool {
     return (source_.bytes[15] & 0x80) == 0x80;
 }
-inline fn real34IsPositive(source_: *const real34_t) bool {
+fn real34IsPositive(source_: *const real34_t) bool {
     return (source_.bytes[15] & 0x80) == 0;
 }
-inline fn real34SetPositiveSign(operand: *real34_t) void {
+fn real34SetPositiveSign(operand: *real34_t) void {
     operand.bytes[15] &= 0x7F;
 }
-inline fn real34ChangeSign(operand: *real34_t) void {
+fn real34ChangeSign(operand: *real34_t) void {
     operand.bytes[15] ^= 0x80;
 }
-inline fn real34Add(a: *const real34_t, b: *const real34_t, res: *real34_t) void {
+fn real34Add(a: *const real34_t, b: *const real34_t, res: *real34_t) void {
     _ = decQuadAdd(res, a, b, &ctxtReal34);
 }
-inline fn real34Subtract(a: *const real34_t, b: *const real34_t, res: *real34_t) void {
+fn real34Subtract(a: *const real34_t, b: *const real34_t, res: *real34_t) void {
     _ = decQuadSubtract(res, a, b, &ctxtReal34);
 }
-inline fn real34Multiply(a: *const real34_t, b: *const real34_t, res: *real34_t) void {
+fn real34Multiply(a: *const real34_t, b: *const real34_t, res: *real34_t) void {
     _ = decQuadMultiply(res, a, b, &ctxtReal34);
 }
-inline fn real34Divide(a: *const real34_t, b: *const real34_t, res: *real34_t) void {
+fn real34Divide(a: *const real34_t, b: *const real34_t, res: *real34_t) void {
     _ = decQuadDivide(res, a, b, &ctxtReal34);
 }
-inline fn real34DivideRemainder(a: *const real34_t, b: *const real34_t, res: *real34_t) void {
+fn real34DivideRemainder(a: *const real34_t, b: *const real34_t, res: *real34_t) void {
     _ = decQuadRemainder(res, a, b, &ctxtReal34);
 }
-inline fn real34ToIntegralValue(a: *const real34_t, res: *real34_t, round: c_int) void {
+fn real34ToIntegralValue(a: *const real34_t, res: *real34_t, round: c_int) void {
     _ = decQuadToIntegralValue(res, a, &ctxtReal34, round);
 }
-inline fn int32ToReal34(v: i32, res: *real34_t) void {
+fn int32ToReal34(v: i32, res: *real34_t) void {
     var tmp: real_t = undefined;
     int32ToReal(v, &tmp);
     realToReal34(&tmp, res);
@@ -901,16 +901,16 @@ extern fn real34CompareGreaterEqual(a: *const real34_t, b: *const real34_t) bool
 extern fn real34CompareAbsLessThan(a: *const real34_t, b: *const real34_t) bool_t;
 
 // longInteger wrappers
-inline fn longIntegerInit(op: *longInteger_t) void {
+fn longIntegerInit(op: *longInteger_t) void {
     __gmpz_init(&op[0]);
 }
-inline fn longIntegerFree(op: *longInteger_t) void {
+fn longIntegerFree(op: *longInteger_t) void {
     __gmpz_clear(&op[0]);
 }
-inline fn longIntegerIsNegative(op: *const longInteger_t) bool {
+fn longIntegerIsNegative(op: *const longInteger_t) bool {
     return op[0]._mp_size < 0;
 }
-inline fn longIntegerIsPositiveOrZero(op: *const longInteger_t) bool {
+fn longIntegerIsPositiveOrZero(op: *const longInteger_t) bool {
     return op[0]._mp_size >= 0;
 }
 extern fn __gmpz_init(op: [*c]mpz_struct) void;
@@ -920,31 +920,31 @@ extern fn __gmpz_clear(op: [*c]mpz_struct) void;
 // runtime macros over globals
 // ===========================================================================
 const checkHP = frontier_screen.checkHPMode;
-inline fn isR47FAM() bool {
+fn isR47FAM() bool {
     return calcModel == USER_R47f_g or calcModel == USER_R47bk_fg or calcModel == USER_R47fg_bk or calcModel == USER_R47fg_g;
 }
 const registerIsNoAngle = abi.registers.registerIsNoAngle;
-inline fn registerIsAngle(r: calcRegister_t) bool {
+fn registerIsAngle(r: calcRegister_t) bool {
     return getRegisterDataType(r) == dtReal34 and !registerIsNoAngle(r);
 }
-inline fn getRegisterAngularMode(reg: calcRegister_t) angularMode_t {
+fn getRegisterAngularMode(reg: calcRegister_t) angularMode_t {
     return @intCast(getRegisterTag(reg) & amAngleMask);
 }
-inline fn getComplexRegisterAngularMode(reg: calcRegister_t) u16 {
+fn getComplexRegisterAngularMode(reg: calcRegister_t) u16 {
     return @intCast(getRegisterTag(reg) & amAngleMask);
 }
-inline fn getComplexRegisterPolarMode(reg: calcRegister_t) u16 {
+fn getComplexRegisterPolarMode(reg: calcRegister_t) u16 {
     return @intCast(getRegisterTag(reg) & amPolar);
 }
 // extra-info hint (host only, gated like siblings).
-inline fn moreInfoOnErr(where: [*c]const u8, hint: [*c]const u8) void {
+fn moreInfoOnErr(where: [*c]const u8, hint: [*c]const u8) void {
     if (comptime extra_info) {
         if (comptime !dmcp_build) {
             moreInfoOnError(where, hint, null, null);
         }
     }
 }
-inline fn stringByteLength(str: [*c]const u8) i32 {
+fn stringByteLength(str: [*c]const u8) i32 {
     return @intCast(strlen(str));
 }
 // defines.h errorf(a): a yellow "error:" line carrying the message, then the
@@ -955,7 +955,7 @@ inline fn stringByteLength(str: [*c]const u8) i32 {
 // rather than through `stderr`: `stderr` is not a plain linkable symbol on
 // every host target, and flushing every stream keeps the line in order with
 // the printf telltales around it.
-inline fn errorf(message: [*:0]const u8, src: std.lang.SourceLocation) void {
+fn errorf(message: [*:0]const u8, src: std.lang.SourceLocation) void {
     _ = printf(
         "\x1b[1;33merror:%s \x1b[0m \x1b[1;36m(%s %s:%d)\x1b[0m\n",
         message,
@@ -974,14 +974,14 @@ const regShortInteger = abi.registerShortInteger;
 const regMatrixHeader = abi.registerMatrixHeader;
 // VARIABLE_REAL34_DATA(a)=((real34_t*)(a)); VARIABLE_IMAG34_DATA(a)=((real34_t*)(a)+1)
 // matrixElements[i]: the real and imaginary halves of one complex34_t element.
-inline fn varReal34(elems: ?[*]complex34_t, i: usize) *real34_t {
+fn varReal34(elems: ?[*]complex34_t, i: usize) *real34_t {
     return &elems.?[i].real;
 }
-inline fn varImag34(elems: ?[*]complex34_t, i: usize) *real34_t {
+fn varImag34(elems: ?[*]complex34_t, i: usize) *real34_t {
     return &elems.?[i].imag;
 }
 // real matrix element accessor (matrixElements is [*c]real34_t = allowzero).
-inline fn mxRe34(elems: [*c]real34_t, i: usize) *real34_t {
+fn mxRe34(elems: [*c]real34_t, i: usize) *real34_t {
     const p: [*]real34_t = elems;
     return &p[i];
 }
@@ -989,10 +989,10 @@ inline fn mxRe34(elems: [*c]real34_t, i: usize) *real34_t {
 // vector register macros
 const isRegisterMatrix2dVector = abi.registers.isRegisterMatrix2dVector;
 const isRegisterMatrix3dVector = abi.registers.isRegisterMatrix3dVector;
-inline fn getVectorRegisterAngularMode(reg: calcRegister_t) u32 {
+fn getVectorRegisterAngularMode(reg: calcRegister_t) u32 {
     return if (getRegisterDataType(reg) == dtReal34Matrix) (getRegisterTag(reg) & amAngleMask) & amAngleMask else @as(u32, @intCast(amNone));
 }
-inline fn setVectorRegisterAngularMode(reg: calcRegister_t, am: u32) void {
+fn setVectorRegisterAngularMode(reg: calcRegister_t, am: u32) void {
     setRegisterTag(reg, (am & amAngleMask) | (getRegisterTag(reg) & amPolar));
 }
 const getVectorRegisterPolarMode = abi.registers.getVectorRegisterPolarMode;
@@ -1711,7 +1711,7 @@ fn editPemNonLiteral(func_in: i16, opParam_in: u8, opParam2_in: u8, opParam3: u8
 // ===========================================================================
 const LcdFillRectFn = *const fn (u32, u32, u32, u32, c_int) callconv(.c) void;
 const c_lcd_fill_rect = @extern(LcdFillRectFn, .{ .name = "lcd_fill_rect" });
-inline fn lcd_fill_rect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void {
+fn lcd_fill_rect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void {
     // On firmware this is a ROM function-table entry; on host the linkable symbol exists
     // (see frontier_status_bar_owned), so the CB background-clear works on PC too.
     if (comptime dmcp_build) {
@@ -2306,7 +2306,7 @@ pub export fn fnExchangeStkToMx(opType: u16) callconv(.c) void {
 }
 
 // EXTRA_INFO invalid-data-type hint (uses getRegisterDataTypeName).
-inline fn invalidDataTypeHint(where: [*c]const u8) void {
+fn invalidDataTypeHint(where: [*c]const u8) void {
     if (comptime extra_info) {
         if (comptime !dmcp_build) {
             abi.fmtBufZ(errorMessage[0..512], "invalid data type {s} and {s}", .{ std.mem.span(frontier_debug.getRegisterDataTypeName(REGISTER_Y, true, false)), std.mem.span(frontier_debug.getRegisterDataTypeName(REGISTER_X, true, false)) });
@@ -2757,7 +2757,7 @@ pub export fn exponentToUnitDisplayString(exponent: i32, flag2To10: bool_t, disp
 
 // PRODUCT_SIGN runtime macro
 extern var systemFlags0: u64;
-inline fn productSign() [*c]const u8 {
+fn productSign() [*c]const u8 {
     return if (getSystemFlag(FLAG_MULTx) != 0) STD_CROSS else STD_DOT;
 }
 const FLAG_MULTx: c_int = 32795; // 0x801b
@@ -3827,7 +3827,7 @@ pub export fn mm(id: i16) callconv(.c) i16 {
 // ===========================================================================
 // EXTRA DRAWINGS FOR RADIO_BUTTON / CHECK_BOX / MB_MACRO
 // ===========================================================================
-inline fn drawPixelArray(xx: u32, yy: u32, coords: [*]const [2]u8, count: u8, white: bool) void {
+fn drawPixelArray(xx: u32, yy: u32, coords: [*]const [2]u8, count: u8, white: bool) void {
     var i: u8 = 0;
     while (i < count) : (i += 1) {
         if (white) {

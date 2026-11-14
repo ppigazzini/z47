@@ -59,11 +59,11 @@ fn bufPrintZ(buffer: []u8, comptime format: []const u8, args: anytype) ![:0]u8 {
 }
 
 // real34Subtract / real34ChangeSign are C macros over decQuad; reproduced inline.
-inline fn real34Subtract(operand1: *const runtime.real34_t, operand2: *const runtime.real34_t, res: *runtime.real34_t) void {
+fn real34Subtract(operand1: *const runtime.real34_t, operand2: *const runtime.real34_t, res: *runtime.real34_t) void {
     runtime.real34SubtractMacro(operand1, operand2, res);
 }
 
-inline fn real34ChangeSign(operand: *runtime.real34_t) void {
+fn real34ChangeSign(operand: *runtime.real34_t) void {
     operand.bytes[15] ^= 0x80;
 }
 

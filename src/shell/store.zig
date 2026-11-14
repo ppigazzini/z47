@@ -246,37 +246,37 @@ extern fn getSingleDimension(reg: calcRegister_t, d: *u32) bool;
 // ---------------------------------------------------------------------------
 // Inline wrappers (the C macros)
 // ---------------------------------------------------------------------------
-inline fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8) void {
+fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8) void {
     if (comptime extra_info) c_moreInfoOnError(m1, m2, m3, null);
 }
 const reg34 = abi.registerReal34;
 const regImag34 = abi.registerImag34;
 const regShortInt = abi.registerShortInteger;
-inline fn regConfig(reg: calcRegister_t) *align(4) dtConfigDescriptor_t {
+fn regConfig(reg: calcRegister_t) *align(4) dtConfigDescriptor_t {
     return abi.registerConfig(reg);
 }
-inline fn getStackTop() calcRegister_t {
+fn getStackTop() calcRegister_t {
     return if (getSystemFlag(FLAG_SSIZE8)) REGISTER_D else REGISTER_T;
 }
-inline fn currentNumberOfLocalRegisters() u16 {
+fn currentNumberOfLocalRegisters() u16 {
     return currentSubroutineLevelData.?.numberOfLocalRegisters;
 }
-inline fn real34Copy(src: *const real34_t, dst: *real34_t) void {
+fn real34Copy(src: *const real34_t, dst: *real34_t) void {
     dst.* = src.*;
 }
-inline fn real34SetZero(dst: *real34_t) void {
+fn real34SetZero(dst: *real34_t) void {
     var tmp: real34_t = undefined;
     _ = decQuadZero(&tmp);
     dst.* = tmp;
 }
-inline fn longIntegerCompareInt(op: *const mpz_struct, sint: i32) i32 {
+fn longIntegerCompareInt(op: *const mpz_struct, sint: i32) i32 {
     return __gmpz_cmp_si(op, sint);
 }
 // VARIABLE_REAL34_DATA / VARIABLE_IMAG34_DATA on a complex34_t element.
-inline fn variableReal34(elem: *complex34_t) *real34_t {
+fn variableReal34(elem: *complex34_t) *real34_t {
     return &elem.real;
 }
-inline fn variableImag34(elem: *complex34_t) *real34_t {
+fn variableImag34(elem: *complex34_t) *real34_t {
     return &elem.imag;
 }
 
@@ -458,7 +458,7 @@ fn storeIjComplex(matrix: *complex34Matrix_t) callconv(.c) bool {
 const real34IsSpecial = abi.real34IsSpecial;
 
 /// The four reserved variables holding the plot window bounds.
-inline fn isPlotRangeVariable(regist: u16) bool {
+fn isPlotRangeVariable(regist: u16) bool {
     return regist == RESERVED_VARIABLE_UX or regist == RESERVED_VARIABLE_LX or
         regist == RESERVED_VARIABLE_UY or regist == RESERVED_VARIABLE_LY;
 }

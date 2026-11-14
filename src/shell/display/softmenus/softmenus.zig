@@ -649,7 +649,7 @@ const RADIX34_MARK_CHAR_DOT: u8 = '.';
 // ---------------------------------------------------------------------------
 const LcdFillRectFn = *const fn (x: u32, y: u32, dx: u32, dy: u32, val: c_int) callconv(.c) void;
 const c_lcd_fill_rect = @extern(LcdFillRectFn, .{ .name = "lcd_fill_rect" });
-inline fn lcd_fill_rect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void {
+fn lcd_fill_rect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void {
     if (comptime dmcp_build) {
         rom.lcd_fill_rect(x, y, dx, dy, val);
     } else {
@@ -659,7 +659,7 @@ inline fn lcd_fill_rect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void {
 
 const Bitblt24Fn = *const fn (x: u32, dx: u32, y: u32, val: u32, blt_op: c_int, fill: c_int) callconv(.c) void;
 const c_bitblt24 = @extern(Bitblt24Fn, .{ .name = "bitblt24" });
-inline fn bitblt24(x: u32, dx: u32, y: u32, val: u32, blt_op: c_int, fill: c_int) void {
+fn bitblt24(x: u32, dx: u32, y: u32, val: u32, blt_op: c_int, fill: c_int) void {
     if (comptime dmcp_build) {
         rom.bitblt24(x, dx, y, val, blt_op, fill);
     } else {
@@ -671,10 +671,10 @@ const BLT_ANDN: c_int = 1;
 const BLT_NONE: c_int = 0;
 const BLT_SET: c_int = 1;
 // hal/lcd.h: on the DMCP firmware the pixel routines are written once, in screen.c.
-inline fn setBlackPixel(x: u32, y: u32) void {
+fn setBlackPixel(x: u32, y: u32) void {
     if (comptime dmcp_build) frontier_screen.setBlackPixel(x, y) else bitblt24(x, 1, y, 1, BLT_OR, BLT_NONE);
 }
-inline fn setWhitePixel(x: u32, y: u32) void {
+fn setWhitePixel(x: u32, y: u32) void {
     if (comptime dmcp_build) frontier_screen.setWhitePixel(x, y) else bitblt24(x, 1, y, 1, BLT_ANDN, BLT_NONE);
 }
 
@@ -761,7 +761,7 @@ const USER_R47f_g: u8 = 61;
 const USER_R47bk_fg: u8 = 62;
 const USER_R47fg_bk: u8 = 63;
 const USER_R47fg_g: u8 = 64;
-inline fn isR47FAM() bool {
+fn isR47FAM() bool {
     return calcModel == USER_R47f_g or calcModel == USER_R47bk_fg or calcModel == USER_R47fg_bk or calcModel == USER_R47fg_g;
 }
 extern var yCursor: u32;
@@ -796,25 +796,25 @@ extern fn getSystemFlag(sf: c_int) bool_t;
 extern fn setSystemFlag(sf: c_uint) void;
 extern fn clearSystemFlag(sf: c_uint) void;
 // isSystemFlagWriteProtected(sf) = (sf & 0x4000) != 0 (macro).
-inline fn isSystemFlagWriteProtected(sf: c_int) bool_t {
+fn isSystemFlagWriteProtected(sf: c_int) bool_t {
     return @intFromBool((sf & 0x4000) != 0);
 }
 // stringByteLength(str) = (int32_t)strlen(str) (macro).
-inline fn stringByteLength(str: [*c]const u8) i32 {
+fn stringByteLength(str: [*c]const u8) i32 {
     return @intCast(strlen(str));
 }
 extern fn getRegisterTag(regist: calcRegister_t) u32;
 // getRegisterAngularMode(reg) = getRegisterTag(reg) & amAngleMask (macro).
 const amAngleMask: u32 = 15;
 // stringCopy is a macro for stpcpy (returns pointer to terminating NUL of dst).
-inline fn stringCopy(dst: [*c]u8, src: [*c]const u8) [*c]u8 {
+fn stringCopy(dst: [*c]u8, src: [*c]const u8) [*c]u8 {
     return frontier_char_string.stringCopy(dst, src);
 }
 extern fn moreInfoOnError(m1: [*c]const u8, m2: [*c]const u8, m3: [*c]const u8, m4: [*c]const u8) void;
 extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) bool;
 extern fn getRegisterDataPointer(regist: calcRegister_t) [*c]align(4) u8;
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
-inline fn getRegisterAngularMode(reg: calcRegister_t) c_int {
+fn getRegisterAngularMode(reg: calcRegister_t) c_int {
     return @intCast(getRegisterTag(reg) & amAngleMask);
 }
 extern fn fnUndo(p: u16) void;
@@ -828,7 +828,7 @@ extern fn showEquation(equationId: u16, startAt: u16, cursorAt: u16, dryRun: boo
 extern fn isMatrixIndexed() bool_t;
 // real34ToReal(s,d) = decQuadToNumber = decimal128ToNumber (macro).
 extern fn decimal128ToNumber(d: *const real34_t, dn: *real_t) *real_t;
-inline fn real34ToReal(x: *const real34_t, r: *real_t) void {
+fn real34ToReal(x: *const real34_t, r: *real_t) void {
     _ = decimal128ToNumber(x, r);
 }
 const realIsZero = abi.realIsZero;
@@ -1339,32 +1339,32 @@ const VAR_PPERonA = 1198;
 // ---------------------------------------------------------------------------
 // Small C-macro helpers reproduced inline.
 // ---------------------------------------------------------------------------
-inline fn TO_BLOCKS(n: i32) u16 {
+fn TO_BLOCKS(n: i32) u16 {
     return softmenu_math.toBlocks(n);
 }
-inline fn cmod(n: i32, d: i32) i32 {
+fn cmod(n: i32, d: i32) i32 {
     return softmenu_math.cmod(n, d);
 }
-inline fn modulo(n: i32, d: i32) i32 {
+fn modulo(n: i32, d: i32) i32 {
     return softmenu_math.modulo(n, d);
 }
-inline fn maxI(a: i32, b: i32) i32 {
+fn maxI(a: i32, b: i32) i32 {
     return softmenu_math.maxI(a, b);
 }
-inline fn minI(a: i32, b: i32) i32 {
+fn minI(a: i32, b: i32) i32 {
     return softmenu_math.minI(a, b);
 }
-inline fn REGISTER_REAL34_DATA(a: calcRegister_t) *real34_t {
+fn REGISTER_REAL34_DATA(a: calcRegister_t) *real34_t {
     return abi.registerReal34Aligned(a);
 }
 const REGISTER_STRING_DATA = abi.registerString;
-inline fn IS_BASEBLANK_(menuId: i16) bool {
+fn IS_BASEBLANK_(menuId: i16) bool {
     return menuId == 0 and getSystemFlag(FLAG_BASE_MYM) == 0 and getSystemFlag(FLAG_BASE_HOME) == 0;
 }
-inline fn GRAPHMODE() bool {
+fn GRAPHMODE() bool {
     return calcMode == CM_PLOT_STAT or calcMode == CM_GRAPH;
 }
-inline fn BLOCK_DOUBLEPRESS_MENU(m: i16, x: i32, y: i32) bool {
+fn BLOCK_DOUBLEPRESS_MENU(m: i16, x: i32, y: i32) bool {
     return (m == -MNU_ALPHA and y == 0 and (x == 4 or x == 5)) or
         (m == -MNU_M_EDIT and y == 0 and (x == 4 or x == 5)) or
         (m == -MNU_EQ_EDIT and y == 0 and (x == 4 or x == 5)) or
@@ -1478,7 +1478,7 @@ pub export fn fnOpenMenu(menuArg: u16) callconv(.c) void {
     }
     menuPageNumber = 1;
 }
-inline fn menuPageNumberU() u16 {
+fn menuPageNumberU() u16 {
     return @bitCast(menuPageNumber);
 }
 
@@ -1790,7 +1790,7 @@ fn _dynmenuConstructMVars(mIdx: i16) void {
 // The label a user menu slot shows: its argument name when it has one, nothing for the
 // clearing ITM_NULL, else the item's catalog name, or its softmenu name where the catalog
 // name is empty or the item is one of the j/a operator pairs.
-inline fn _dynmenuLbl(menuData: *allowzero const userMenuItem_t) [*c]const u8 {
+fn _dynmenuLbl(menuData: *allowzero const userMenuItem_t) [*c]const u8 {
     const itemId: i16 = menuData.item;
     if (menuData.argumentName[0] != 0) {
         return &menuData.argumentName;
@@ -1835,7 +1835,7 @@ fn _dynmenuConstructUser(mIdx: i16) void {
     }
     dynamicSoftmenu[@intCast(mIdx)].numItems = if (numberOfBytes <= 19) 0 else 18;
 }
-inline fn cabs(x: i16) i16 {
+fn cabs(x: i16) i16 {
     return if (x < 0) -x else x;
 }
 
@@ -2488,7 +2488,7 @@ fn placeSubscript(itemNr: i16, flt: bool_t, tmpF: f32, itemName: [*c]u8, tmpS: [
     // tmpS, not tmpSS: the short-number case above prefixed it with a space.
     _ = stringCopy(showText + @as(usize, @intCast(stringByteLength(showText))), tmpS);
 }
-inline fn cmodNonNeg(n: i32, d: i32) i32 {
+fn cmodNonNeg(n: i32, d: i32) i32 {
     return softmenu_math.cmodNonNeg(n, d);
 }
 // concat2: build a small comptime-known concatenation of two byte strings on a
@@ -2506,7 +2506,7 @@ fn concat2(comptime a: anytype, comptime b: anytype) [*c]const u8 {
     return joined.ptr;
 }
 extern fn strlen(s: [*c]const u8) usize;
-inline fn strlenc(s: [*c]const u8) usize {
+fn strlenc(s: [*c]const u8) usize {
     return strlen(s);
 }
 
@@ -3533,12 +3533,12 @@ pub export fn showSoftmenuCurrentPart() callconv(.c) void {
         showShiftState();
     }
 }
-inline fn sixZero(m: i16, item: i16) bool {
+fn sixZero(m: i16, item: i16) bool {
     const si = softmenu[@intCast(m)].softkeyItem;
     const i: usize = @intCast(item);
     return si[i] == 0 and si[i + 1] == 0 and si[i + 2] == 0 and si[i + 3] == 0 and si[i + 4] == 0 and si[i + 5] == 0;
 }
-inline fn funcIsGetSystemFlag(func: ?*const fn (u16) callconv(.c) void) bool {
+fn funcIsGetSystemFlag(func: ?*const fn (u16) callconv(.c) void) bool {
     return func == @as(?*const fn (u16) callconv(.c) void, &fnGetSystemFlag);
 }
 

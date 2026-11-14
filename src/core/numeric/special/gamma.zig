@@ -54,26 +54,26 @@ const FLAG_SPCRES: i32 = 0x8017;
 const FLAG_CPXRES: u16 = 0x8004;
 
 // Runtime const accessors.
-inline fn const_0() *const real_t {
+fn const_0() *const real_t {
     return runtime.z47_math_wrappers_const_0();
 }
-inline fn const_1() *const real_t {
+fn const_1() *const real_t {
     return runtime.z47_math_wrappers_const_1();
 }
-inline fn const_2() *const real_t {
+fn const_2() *const real_t {
     return runtime.z47_math_wrappers_const_2();
 }
-inline fn const_1on2() *const real_t {
+fn const_1on2() *const real_t {
     return runtime.z47_math_wrappers_const_1on2();
 }
-inline fn const75_pi() *const real_t {
+fn const75_pi() *const real_t {
     return runtime.z47_math_wrappers_const75_pi();
 }
-inline fn const_plusInfinity() *const real_t {
+fn const_plusInfinity() *const real_t {
     return runtime.z47_math_wrappers_const_plus_infinity();
 }
 
-inline fn realCopy(source: *const real_t, destination: *real_t) void {
+fn realCopy(source: *const real_t, destination: *real_t) void {
     destination.* = source.*;
 }
 

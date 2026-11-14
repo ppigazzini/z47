@@ -133,57 +133,57 @@ extern fn __gmpz_get_si(op: *const mpz_struct) c_long;
 // ---------------------------------------------------------------------------
 // Inline wrappers (the C macros / static inlines)
 // ---------------------------------------------------------------------------
-inline fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8) void {
+fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8) void {
     if (comptime extra_info) c_moreInfoOnError(m1, m2, null, null);
 }
 const regString = abi.registerString;
 const reg34 = abi.registerReal34;
-inline fn getStackTop() calcRegister_t {
+fn getStackTop() calcRegister_t {
     return if (getSystemFlag(FLAG_SSIZE8)) REGISTER_D else REGISTER_T;
 }
-inline fn stringByteLength(str: [*c]const u8) i32 {
+fn stringByteLength(str: [*c]const u8) i32 {
     return @truncate(@as(isize, @bitCast(strlen(str))));
 }
-inline fn longIntegerInit(lg: *mpz_struct) void {
+fn longIntegerInit(lg: *mpz_struct) void {
     __gmpz_init(lg);
 }
-inline fn longIntegerFree(lg: *mpz_struct) void {
+fn longIntegerFree(lg: *mpz_struct) void {
     __gmpz_clear(lg);
 }
-inline fn uInt32ToLongInteger(source: u32, destination: *mpz_struct) void {
+fn uInt32ToLongInteger(source: u32, destination: *mpz_struct) void {
     __gmpz_set_ui(destination, source);
 }
-inline fn int32ToLongInteger(source: i32, destination: *mpz_struct) void {
+fn int32ToLongInteger(source: i32, destination: *mpz_struct) void {
     __gmpz_set_si(destination, source);
 }
-inline fn longIntegerAddUInt(op: *const mpz_struct, uint: u32, result: *mpz_struct) void {
+fn longIntegerAddUInt(op: *const mpz_struct, uint: u32, result: *mpz_struct) void {
     __gmpz_add_ui(result, op, uint);
 }
-inline fn longIntegerMultiplyUInt(op: *const mpz_struct, uint: u32, result: *mpz_struct) void {
+fn longIntegerMultiplyUInt(op: *const mpz_struct, uint: u32, result: *mpz_struct) void {
     __gmpz_mul_ui(result, op, uint);
 }
-inline fn longIntegerModuloUInt(op: *const mpz_struct, uint: u32) u32 {
+fn longIntegerModuloUInt(op: *const mpz_struct, uint: u32) u32 {
     return @truncate(__gmpz_fdiv_ui(op, uint));
 }
-inline fn longIntegerCompareUInt(op: *const mpz_struct, uint: u32) i32 {
+fn longIntegerCompareUInt(op: *const mpz_struct, uint: u32) i32 {
     return __gmpz_cmp_ui(op, uint);
 }
-inline fn longIntegerCompareInt(op: *const mpz_struct, sint: i32) i32 {
+fn longIntegerCompareInt(op: *const mpz_struct, sint: i32) i32 {
     return __gmpz_cmp_si(op, sint);
 }
-inline fn longIntegerIsZero(op: *const mpz_struct) bool {
+fn longIntegerIsZero(op: *const mpz_struct) bool {
     return op._mp_size == 0;
 }
-inline fn longIntegerSetPositiveSign(op: *mpz_struct) void {
+fn longIntegerSetPositiveSign(op: *mpz_struct) void {
     op._mp_size = if (op._mp_size < 0) -op._mp_size else op._mp_size;
 }
-inline fn real34ToReal(src: *const real34_t, dst: *real_t) void {
+fn real34ToReal(src: *const real34_t, dst: *real_t) void {
     _ = decimal128ToNumber(src, dst);
 }
-inline fn int32ToReal(src: i32, dst: *real_t) void {
+fn int32ToReal(src: i32, dst: *real_t) void {
     _ = decNumberFromInt32(dst, src);
 }
-inline fn realSetPositiveSign(v: *real_t) void {
+fn realSetPositiveSign(v: *real_t) void {
     v.bits &= 0x7f;
 }
 
@@ -804,7 +804,7 @@ pub export fn fn42Xtoa(unusedButMandatoryParameter: u16) callconv(.c) void {
     truncateAlphaRegisterTo44Char();
 }
 
-inline fn longIntegerIsNegative(lg: *const mpz_struct) bool {
+fn longIntegerIsNegative(lg: *const mpz_struct) bool {
     return lg._mp_size < 0;
 }
 
@@ -906,7 +906,7 @@ const LAST_SPARE_REGISTERS_IN_KS_CODE: u8 = 224;
 const FIRST_LOCAL_REGISTER_IN_KS_CODE: i16 = 112;
 const LAST_LOCAL_REGISTER_IN_KS_CODE: i16 = 210;
 
-inline fn regKStoC(regKS: u8) i16 {
+fn regKStoC(regKS: u8) i16 {
     return ks_register_remap.regKStoC(regKS, .{
         .first_stat = FIRST_STAT_REGISTER_IN_KS_CODE,
         .last_spare = LAST_SPARE_REGISTERS_IN_KS_CODE,
@@ -917,7 +917,7 @@ inline fn regKStoC(regKS: u8) i16 {
     });
 }
 
-inline fn regCtoKS(regC: i16) u8 {
+fn regCtoKS(regC: i16) u8 {
     return ks_register_remap.regCtoKS(regC, .{
         .first_stat = FIRST_STAT_REGISTER,
         .last_spare = @intCast(LAST_SPARE_REGISTER),
@@ -928,7 +928,7 @@ inline fn regCtoKS(regC: i16) u8 {
     });
 }
 
-inline fn isNamedVariable(regist: u16) bool {
+fn isNamedVariable(regist: u16) bool {
     return regist >= FIRST_NAMED_VARIABLE and regist < FIRST_NAMED_VARIABLE + numberOfNamedVariables;
 }
 
@@ -1039,7 +1039,7 @@ const LAST_TEMP_REGISTER: calcRegister_t = 136;
 // TO_BLOCKS reinterprets its int32_t byte count as uint32_t, rounds up to the
 // next 4-byte block and hands the uint32_t result to reallocateRegister's
 // uint16_t block-count parameter, which keeps only the low 16 bits.
-inline fn TO_BLOCKS(n: i32) u16 {
+fn TO_BLOCKS(n: i32) u16 {
     return @truncate((@as(u32, @bitCast(n)) +% 3) >> 2); // BYTES_PER_BLOCK = 4
 }
 
@@ -1161,10 +1161,10 @@ extern fn decQuadGetExponent(source: *const real34_t) i32;
 extern fn decQuadDigits(source: *const real34_t) u32;
 extern fn decQuadIsZero(source: *const real34_t) u32;
 const real34IsSpecial = abi.real34IsSpecial;
-inline fn real34IsZero(v: *const real34_t) bool {
+fn real34IsZero(v: *const real34_t) bool {
     return decQuadIsZero(v) != 0;
 }
-inline fn real34IsNegative(v: *const real34_t) bool {
+fn real34IsNegative(v: *const real34_t) bool {
     return (v.bytes[15] & 0x80) == 0x80;
 }
 
@@ -1239,13 +1239,13 @@ extern const numericFont: abi.Font;
 // display.c converters reached by _readDestinationRegister.
 
 const reg34c = abi.registerComplex34;
-inline fn getRegisterAngularMode(reg: calcRegister_t) u32 {
+fn getRegisterAngularMode(reg: calcRegister_t) u32 {
     return getRegisterTag(reg) & amAngleMask;
 }
-inline fn getComplexRegisterAngularMode(reg: calcRegister_t) u32 {
+fn getComplexRegisterAngularMode(reg: calcRegister_t) u32 {
     return getRegisterTag(reg) & amAngleMask;
 }
-inline fn getComplexRegisterPolarMode(reg: calcRegister_t) u32 {
+fn getComplexRegisterPolarMode(reg: calcRegister_t) u32 {
     return getRegisterTag(reg) & amPolar;
 }
 

@@ -262,10 +262,10 @@ extern fn abs(x: c_int) c_int;
 // ---------------------------------------------------------------------------
 // Inline wrappers (the C macros)
 // ---------------------------------------------------------------------------
-inline fn stringByteLength(str: [*c]const u8) i32 {
+fn stringByteLength(str: [*c]const u8) i32 {
     return @intCast(strlen(str));
 }
-inline fn stringCopy(dest: [*c]u8, source: [*c]const u8) [*c]u8 {
+fn stringCopy(dest: [*c]u8, source: [*c]const u8) [*c]u8 {
     // stpcpy semantics: copy incl. NUL, return pointer to dest's NUL.
     var d = dest;
     var s = source;
@@ -278,16 +278,16 @@ inline fn stringCopy(dest: [*c]u8, source: [*c]const u8) [*c]u8 {
     return d;
 }
 const reg34 = abi.registerReal34;
-inline fn stringToReal34(source: [*c]const u8, destination: *real34_t) void {
+fn stringToReal34(source: [*c]const u8, destination: *real34_t) void {
     _ = decQuadFromString(destination, source, &ctxtReal34);
 }
-inline fn toBytes(n: u16) u32 {
+fn toBytes(n: u16) u32 {
     return @as(u32, n) << 2;
 }
-inline fn productSign() [*c]const u8 {
+fn productSign() [*c]const u8 {
     return if (getSystemFlag(FLAG_MULTx)) STD_CROSS else STD_DOT;
 }
-inline fn complexUnit() [*c]const u8 {
+fn complexUnit() [*c]const u8 {
     return if (getSystemFlag(FLAG_CPXj)) STD_op_j else STD_op_i;
 }
 
@@ -295,16 +295,16 @@ inline fn complexUnit() [*c]const u8 {
 const gapChar1Left = frontier_display.getGapChar1Left;
 const gapChar1Right = frontier_display.getGapChar1Right;
 const radix34MarkChar = frontier_display.getRadix34MarkChar;
-inline fn groupWidthLeft() u8 {
+fn groupWidthLeft() u8 {
     return grpGroupingLeft;
 }
-inline fn groupWidthRight() u8 {
+fn groupWidthRight() u8 {
     return grpGroupingRight;
 }
-inline fn groupLeftDisabled() bool {
+fn groupLeftDisabled() bool {
     return grpGroupingLeft == 0 or gapItemLeft == 0;
 }
-inline fn groupRightDisabled() bool {
+fn groupRightDisabled() bool {
     return grpGroupingRight == 0 or gapItemRight == 0;
 }
 

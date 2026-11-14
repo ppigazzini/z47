@@ -239,63 +239,63 @@ const regImag34 = abi.registerImag34Aligned;
 const regShortInt = abi.registerShortInteger;
 
 const realIsZero = abi.realIsZero;
-inline fn realIsPositive(x: *const real_t) bool {
+fn realIsPositive(x: *const real_t) bool {
     return (x.bits & DECNEG) == 0 and !realIsZero(x);
 }
-inline fn realAdd(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn realAdd(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberAdd(res, a, b, ctx);
 }
-inline fn realSubtract(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn realSubtract(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberSubtract(res, a, b, ctx);
 }
-inline fn realMultiply(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn realMultiply(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberMultiply(res, a, b, ctx);
 }
-inline fn realCompare(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn realCompare(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberCompare(res, a, b, ctx);
 }
-inline fn real34Copy(src: *const real34_t, dst: *real34_t) void {
+fn real34Copy(src: *const real34_t, dst: *real34_t) void {
     dst.* = src.*;
 }
-inline fn real34IsInfinite(src: *const real34_t) bool {
+fn real34IsInfinite(src: *const real34_t) bool {
     return decQuadIsInfinite(src) != 0;
 }
 // realType.h reads the sign bit of the encoding directly, so a negative zero is
 // not positive and an infinity answers by its sign alone.
-inline fn real34IsPositive(src: *const real34_t) bool {
+fn real34IsPositive(src: *const real34_t) bool {
     return (src.bytes[15] & 0x80) == 0x00;
 }
-inline fn int32ToReal34(src: i32, dst: *real34_t) void {
+fn int32ToReal34(src: i32, dst: *real34_t) void {
     _ = decQuadFromInt32(dst, src);
 }
-inline fn longIntegerInit(op: *mpz_struct) void {
+fn longIntegerInit(op: *mpz_struct) void {
     __gmpz_init(op);
 }
-inline fn longIntegerFree(op: *mpz_struct) void {
+fn longIntegerFree(op: *mpz_struct) void {
     __gmpz_clear(op);
 }
-inline fn int32ToLongInteger(src: i32, dst: *mpz_struct) void {
+fn int32ToLongInteger(src: i32, dst: *mpz_struct) void {
     __gmpz_set_si(dst, src);
 }
-inline fn getRegisterShortIntegerBase(reg: calcRegister_t) u32 {
+fn getRegisterShortIntegerBase(reg: calcRegister_t) u32 {
     return getRegisterTag(reg);
 }
-inline fn currentNumberOfLocalRegisters() u16 {
+fn currentNumberOfLocalRegisters() u16 {
     return currentSubroutineLevelData.?.numberOfLocalRegisters;
 }
-inline fn currentSubroutineLevel() u16 {
+fn currentSubroutineLevel() u16 {
     return currentSubroutineLevelData.?.subroutineLevel;
 }
-inline fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void {
+fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void {
     if (comptime extra_info) c_moreInfoOnError(m1, m2, m3, m4);
 }
-inline fn programBytesAvailable(address: [*c]const u8, numberOfBytes: u16) bool {
+fn programBytesAvailable(address: [*c]const u8, numberOfBytes: u16) bool {
     return programBytesAvailableC(address, numberOfBytes) != 0;
 }
-inline fn isAtEndOfPrograms(step: [*c]const u8) bool {
+fn isAtEndOfPrograms(step: [*c]const u8) bool {
     return program_step_opcode.isAtEndOfPrograms(step);
 }
-inline fn isAtEndOfProgram(step: [*c]const u8) bool {
+fn isAtEndOfProgram(step: [*c]const u8) bool {
     return program_step_opcode.checkOpCodeOfStep(step, 1458); // ITM_END
 }
 
@@ -514,7 +514,7 @@ fn structNumberMissing(structureNumber: u16) bool {
 // The local step number a label-list entry stands at, in the arithmetic the C does:
 // the entry's step is stored negated, and the program's own first step is taken off
 // it. Both narrow to uint16_t, as the C locals do.
-inline fn structLabelLocalStep(label: u16, programStep: u16) u16 {
+fn structLabelLocalStep(label: u16, programStep: u16) u16 {
     return @truncate(@as(u32, @bitCast((0 -% labelList[label].step) -% @as(i32, programStep) +% 1)));
 }
 
@@ -1525,7 +1525,7 @@ fn structReportFault(localStepNumber: u16, err: u8) void {
     displayCalcErrorMessage(err, ERR_REGISTER_LINE);
 }
 
-inline fn faultDetail(localStepNumber: u16, detail: [*:0]const u8) void {
+fn faultDetail(localStepNumber: u16, detail: [*:0]const u8) void {
     if (comptime extra_info) {
         _ = sprintf(errorMessage, "step %u:", @as(c_uint, localStepNumber));
         moreInfoOnError("In function structWalkProgram:", errorMessage, detail, null);

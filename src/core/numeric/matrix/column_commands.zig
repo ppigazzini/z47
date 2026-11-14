@@ -27,10 +27,10 @@ const FLAG_ASLIFT: i32 = 0xc023;
 const REAL34_SIZE_IN_BYTES: u16 = 16;
 
 const cstR = consts.cstRAligned;
-inline fn const_minusInfinity() *const real_t {
+fn const_minusInfinity() *const real_t {
     return consts.c1684();
 }
-inline fn const_plusInfinity() *const real_t {
+fn const_plusInfinity() *const real_t {
     return consts.c1696();
 }
 
@@ -41,11 +41,11 @@ extern fn __gmpz_set_ui(op: *runtime.mpz_struct, value: c_ulong) void;
 extern fn __gmpz_clear(op: *runtime.mpz_struct) void;
 extern fn convertLongIntegerRegisterToReal34(regist: calcRegister_t, r: *real34_t) void;
 
-inline fn rmEl(m: *const real34Matrix_t, i: usize) *real34_t {
+fn rmEl(m: *const real34Matrix_t, i: usize) *real34_t {
     const e: [*]real34_t = m.matrixElements;
     return &e[i];
 }
-inline fn cmEl(m: *const complex34Matrix_t, i: usize) *complex34_t {
+fn cmEl(m: *const complex34Matrix_t, i: usize) *complex34_t {
     const e: [*]complex34_t = m.matrixElements;
     return &e[i];
 }

@@ -39,16 +39,16 @@ const complexElems = abi.matrixComplexElems;
 
 const constComplexElems = abi.matrixConstComplexElems;
 
-inline fn real34SetZero(destination: *real34_t) void {
+fn real34SetZero(destination: *real34_t) void {
     _ = decQuadZero(destination);
 }
 
-inline fn real34SetOne(destination: *real34_t) void {
+fn real34SetOne(destination: *real34_t) void {
     _ = decQuadFromInt32(destination, 1);
 }
 
 // real34Copy / complex34Copy upstream are raw element copies (defines.h).
-inline fn real34Copy(source: *const real34_t, destination: *real34_t) void {
+fn real34Copy(source: *const real34_t, destination: *real34_t) void {
     destination.* = source.*;
 }
 

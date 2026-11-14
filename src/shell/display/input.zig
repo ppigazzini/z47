@@ -175,16 +175,16 @@ extern fn g_timeout_add(interval: c_uint, function: GSourceFunc, data: gpointer)
 const rom = @import("dmcp_rom");
 
 // DMCP status-bit accessors over the fixed-address sdb.calc_state word.
-inline fn calcState() *volatile u32 {
+fn calcState() *volatile u32 {
     return &rom.sdb().calc_state;
 }
-inline fn stSet(bit: u32) void {
+fn stSet(bit: u32) void {
     calcState().* |= bit;
 }
-inline fn stClr(bit: u32) void {
+fn stClr(bit: u32) void {
     calcState().* &= ~bit;
 }
-inline fn stVal(bit: u32) bool {
+fn stVal(bit: u32) bool {
     return (calcState().* & bit) != 0;
 }
 
@@ -192,23 +192,23 @@ inline fn stVal(bit: u32) bool {
 // Inline wrappers (the C macros)
 // ---------------------------------------------------------------------------
 const reg34 = abi.registerReal34;
-inline fn getRegisterAngularMode(reg: calcRegister_t) u32 {
+fn getRegisterAngularMode(reg: calcRegister_t) u32 {
     return getRegisterTag(reg) & amAngleMask;
 }
-inline fn real34ToIntegralValue(source: *const real34_t, destination: *real34_t, mode: c_int) void {
+fn real34ToIntegralValue(source: *const real34_t, destination: *real34_t, mode: c_int) void {
     _ = decQuadToIntegralValue(destination, source, &ctxtReal34, mode);
 }
-inline fn real34ToUInt32(source: *const real34_t) u32 {
+fn real34ToUInt32(source: *const real34_t) u32 {
     return decQuadToUInt32(source, &ctxtReal34, DEC_ROUND_DOWN);
 }
-inline fn runningOnSimOrUSB() bool {
+fn runningOnSimOrUSB() bool {
     if (comptime dmcp_build) {
         return getSystemFlag(FLAG_USB);
     } else {
         return true;
     }
 }
-inline fn moreInfoOnErr(where: [*:0]const u8, hint: [*:0]const u8) void {
+fn moreInfoOnErr(where: [*:0]const u8, hint: [*:0]const u8) void {
     if (comptime extra_info) {
         if (comptime !dmcp_build) {
             moreInfoOnError(where, hint, null, null);

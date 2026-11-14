@@ -17,16 +17,16 @@ const abi = @import("abi");
 
 /// A real_t is flagged negative by the DECNEG bit of its `bits` byte; positive
 /// (or zero/NaN) otherwise. Mirrors the decNumber sign convention.
-pub inline fn realIsPositive(source: *const abi.Real) bool {
+pub fn realIsPositive(source: *const abi.Real) bool {
     return (source.bits & abi.DECNEG) == 0;
 }
 
-pub inline fn realIsNegative(source: *const abi.Real) bool {
+pub fn realIsNegative(source: *const abi.Real) bool {
     return (source.bits & abi.DECNEG) != 0;
 }
 
 /// A real_t carries a special (Inf/NaN/sNaN) encoding in the top nibble of `bits`.
-pub inline fn realIsSpecial(source: *const abi.Real) bool {
+pub fn realIsSpecial(source: *const abi.Real) bool {
     return (source.bits & abi.DECSPECIAL) != 0;
 }
 
@@ -37,12 +37,12 @@ pub const realIsZero = abi.realIsZero;
 
 /// A real_t is an infinity when the DECINF bit is set (NaN bits distinguish the
 /// other special encodings).
-pub inline fn realIsInfinite(source: *const abi.Real) bool {
+pub fn realIsInfinite(source: *const abi.Real) bool {
     return (source.bits & abi.DECINF) != 0;
 }
 
 /// A real_t is a (quiet or signalling) NaN when either NaN bit is set.
-pub inline fn realIsNaN(source: *const abi.Real) bool {
+pub fn realIsNaN(source: *const abi.Real) bool {
     return (source.bits & (abi.DECNAN | abi.DECSNAN)) != 0;
 }
 
@@ -52,20 +52,20 @@ pub inline fn realIsNaN(source: *const abi.Real) bool {
 /// `DFISSIGNED && !DFISZERO && !DFISNAN` and so answers false for -0 and for a
 /// sign-set NaN. c43 calls decQuadIsNegative nowhere, so no ported owner wants
 /// those semantics; runtime.real34IsNegative is this same test.
-pub inline fn real34IsNegative(source: *const abi.Real34) bool {
+pub fn real34IsNegative(source: *const abi.Real34) bool {
     return (source.bytes[15] & 0x80) == 0x80;
 }
 
 /// GMP mpz sign lives in `_mp_size`: negative size is a negative value, 0 is zero.
-pub inline fn longIntegerIsNegative(op: *const abi.Mpz) bool {
+pub fn longIntegerIsNegative(op: *const abi.Mpz) bool {
     return op._mp_size < 0;
 }
 
-pub inline fn longIntegerIsZero(op: *const abi.Mpz) bool {
+pub fn longIntegerIsZero(op: *const abi.Mpz) bool {
     return op._mp_size == 0;
 }
 
-pub inline fn longIntegerIsNegativeOrZero(op: *const abi.Mpz) bool {
+pub fn longIntegerIsNegativeOrZero(op: *const abi.Mpz) bool {
     return op._mp_size <= 0;
 }
 
@@ -74,12 +74,12 @@ pub inline fn longIntegerIsNegativeOrZero(op: *const abi.Mpz) bool {
 /// zero or negative, and a normalized mpz with two or more limbs necessarily
 /// exceeds any single-limb bound. `bound` must fit in one limb (all callers use
 /// small dimension caps). Equivalent to `!(sgn<=0) and mpz_cmp_ui(op,bound)<=0`.
-pub inline fn longIntegerIsPositiveAtMost(op: *const abi.Mpz, bound: abi.MpLimb) bool {
+pub fn longIntegerIsPositiveAtMost(op: *const abi.Mpz, bound: abi.MpLimb) bool {
     return op._mp_size == 1 and op._mp_d[0] <= bound;
 }
 
 /// Two pointers alias the same address (guards in-place matrix/vector ops).
-pub inline fn samePtr(a: anytype, b: anytype) bool {
+pub fn samePtr(a: anytype, b: anytype) bool {
     return @intFromPtr(a) == @intFromPtr(b);
 }
 

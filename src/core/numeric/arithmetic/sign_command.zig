@@ -48,7 +48,7 @@ fn signLonI() callconv(.c) void {
 }
 
 // real34ChangeSign is a decQuad macro over the sign bit.
-inline fn real34ChangeSign(value: *runtime.real34_t) void {
+fn real34ChangeSign(value: *runtime.real34_t) void {
     value.bytes[15] ^= runtime.DECNEG;
 }
 

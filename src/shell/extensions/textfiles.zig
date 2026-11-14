@@ -88,7 +88,7 @@ extern fn strlen(s: [*c]const u8) usize;
 // ---------------------------------------------------------------------------
 // REGISTER_MATRIX_HEADER(a) == (matrixHeader_t *)getRegisterDataPointer(a).
 const regMatrixHeader = abi.registerMatrixHeader;
-inline fn stringByteLength(str: [*c]const u8) i32 {
+fn stringByteLength(str: [*c]const u8) i32 {
     return @intCast(strlen(str));
 }
 
@@ -110,7 +110,7 @@ const ClipBoardMsg linksection(code_data_section) = [NUMBER_OF_CLIPBOARD_MSG][SI
     clipRow("Alpha buffer: "), // 5
 };
 
-inline fn clipMsg(n: usize) [*c]const u8 {
+fn clipMsg(n: usize) [*c]const u8 {
     return &ClipBoardMsg[n];
 }
 

@@ -219,36 +219,36 @@ extern fn decQuadReduce(r: *real34_t, op: *const real34_t, ctx: *realContext_t) 
 extern fn decQuadToString(dq: *const real34_t, str: [*c]u8) [*c]u8;
 extern fn decNumberToString(r: *const real_t, str: [*c]u8) [*c]u8;
 
-inline fn real34Reduce(operand: *const real34_t, res: *real34_t) void {
+fn real34Reduce(operand: *const real34_t, res: *real34_t) void {
     _ = decQuadReduce(res, operand, &ctxtReal34);
 }
-inline fn real34ToString(source: *const real34_t, destination: [*c]u8) void {
+fn real34ToString(source: *const real34_t, destination: [*c]u8) void {
     _ = decQuadToString(source, destination);
 }
 // real34IsNegative / real34SetPositiveSign are byte-level macros on bytes[15].
-inline fn real34IsNegative(source: *const real34_t) bool {
+fn real34IsNegative(source: *const real34_t) bool {
     return (source.bytes[15] & 0x80) == 0x80;
 }
-inline fn real34SetPositiveSign(operand: *real34_t) void {
+fn real34SetPositiveSign(operand: *real34_t) void {
     operand.bytes[15] &= 0x7F;
 }
-inline fn realToString(source: *const real_t, destination: [*c]u8) void {
+fn realToString(source: *const real_t, destination: [*c]u8) void {
     _ = decNumberToString(source, destination);
 }
-inline fn getRegisterAngularMode(reg: calcRegister_t) u32 {
+fn getRegisterAngularMode(reg: calcRegister_t) u32 {
     return getRegisterTag(reg) & amAngleMask;
 }
-inline fn getRegisterShortIntegerBase(reg: calcRegister_t) u32 {
+fn getRegisterShortIntegerBase(reg: calcRegister_t) u32 {
     return getRegisterTag(reg);
 }
-inline fn longIntegerFree(op: *mpz_struct) void {
+fn longIntegerFree(op: *mpz_struct) void {
     __gmpz_clear(op);
 }
-inline fn stringByteLength(s: [*c]const u8) i32 {
+fn stringByteLength(s: [*c]const u8) i32 {
     return @intCast(strlen(s));
 }
 // COMPLEX_UNIT: STD_op_j when FLAG_CPXj is set, else STD_op_i.
-inline fn complexUnit() [*:0]const u8 {
+fn complexUnit() [*:0]const u8 {
     return if (getSystemFlag(FLAG_CPXj) != 0) STD_op_j else STD_op_i;
 }
 
@@ -256,10 +256,10 @@ inline fn complexUnit() [*:0]const u8 {
 const regReal34 = abi.registerReal34Aligned;
 const regImag34 = abi.registerImag34Aligned;
 const regMatrixHeader = abi.registerMatrixHeaderAligned;
-inline fn regReal34MatrixElems(reg: calcRegister_t) [*]real34_t {
+fn regReal34MatrixElems(reg: calcRegister_t) [*]real34_t {
     return abi.registerReal34MatrixElements(reg);
 }
-inline fn regComplex34MatrixElems(reg: calcRegister_t) [*]complex34_t {
+fn regComplex34MatrixElems(reg: calcRegister_t) [*]complex34_t {
     return abi.registerComplex34MatrixElements(reg);
 }
 const regStringData = abi.registerString;
@@ -512,7 +512,7 @@ pub export fn copyRegisterToClipboardString(regist: calcRegister_t, clipboardStr
 // unmapped page (SIGSEGV) while also rendering garbage. See drawScreen.
 const screenDataPtr = if (!dmcp_build) @extern(*[*c]u32, .{ .name = "screenData" }) else {};
 const screenStride = if (!dmcp_build) @extern(*i16, .{ .name = "screenStride" }) else {};
-inline fn screenData() [*c]u32 {
+fn screenData() [*c]u32 {
     return screenDataPtr.*;
 }
 
@@ -531,14 +531,14 @@ extern fn gtk_clipboard_set_text(clipboard: ?*anyopaque, text: [*c]const u8, len
 extern fn gtk_clipboard_set_image(clipboard: ?*anyopaque, pixbuf: ?*anyopaque) void;
 extern fn gdk_pixbuf_get_from_surface(surface: ?*anyopaque, src_x: c_int, src_y: c_int, width: c_int, height: c_int) ?*anyopaque;
 
-inline fn stride4() c_int {
+fn stride4() c_int {
     return @as(c_int, screenStride.*) * 4;
 }
 // A cairo surface over the top `height` rows of the LCD framebuffer.
-inline fn screenSurface(height: c_int) ?*anyopaque {
+fn screenSurface(height: c_int) ?*anyopaque {
     return cairo_image_surface_create_for_data(screenData(), CAIRO_FORMAT_RGB24, SCREEN_WIDTH, height, stride4());
 }
-inline fn clipboardForClear() ?*anyopaque {
+fn clipboardForClear() ?*anyopaque {
     const clipboard = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
     gtk_clipboard_clear(clipboard);
     gtk_clipboard_set_text(clipboard, "", 0);
@@ -747,6 +747,6 @@ pub export fn copyAllRegistersToClipboard() callconv(.c) void {
 // currentNumberOfLocalRegisters: currentSubroutineLevelData->numberOfLocalRegisters.
 const subroutineLevelHeader_t = abi.SubroutineLevelHeader;
 extern var currentSubroutineLevelData: [*c]subroutineLevelHeader_t;
-inline fn currentNumberOfLocalRegisters() u8 {
+fn currentNumberOfLocalRegisters() u8 {
     return currentSubroutineLevelData[0].numberOfLocalRegisters;
 }

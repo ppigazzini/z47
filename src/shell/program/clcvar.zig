@@ -162,17 +162,17 @@ extern fn sprintf(buffer: [*c]u8, format: [*c]const u8, ...) c_int;
 // ---------------------------------------------------------------------------
 // Inline wrappers (the C macros / static inlines)
 // ---------------------------------------------------------------------------
-inline fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*]const u8, m4: ?[*:0]const u8) void {
+fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*]const u8, m4: ?[*:0]const u8) void {
     if (comptime extra_info) c_moreInfoOnError(m1, m2, m3, m4);
 }
-inline fn real34SetZero(dst: *real34_t) void {
+fn real34SetZero(dst: *real34_t) void {
     _ = decQuadZero(dst);
 }
 const reg34 = abi.registerReal34;
 const regImag34 = abi.registerImag34;
 // regKStoC (static inline, defines.h): the band remap has one implementation,
 // in ks_register_remap, so a change to the KS band layout has one place to go.
-inline fn regKStoC(regKS: u8) i16 {
+fn regKStoC(regKS: u8) i16 {
     return ks_register_remap.regKStoC(regKS, .{
         .first_stat = FIRST_STAT_REGISTER_IN_KS_CODE,
         .last_spare = LAST_SPARE_REGISTERS_IN_KS_CODE,

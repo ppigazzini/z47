@@ -84,7 +84,7 @@ fn registerConfigData(reg: calcRegister_t) [*]const u8 {
     return abi.registerBytes(reg);
 }
 
-inline fn realCompare(
+fn realCompare(
     operand1: *const runtime.real_t,
     operand2: *const runtime.real_t,
     res: *runtime.real_t,

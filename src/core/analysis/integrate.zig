@@ -194,56 +194,56 @@ extern fn decNumberFromInt32(res: *real_t, source: i32) *real_t;
 extern fn decNumberFromUInt32(res: *real_t, source: u32) *real_t;
 extern fn decNumberNextToward(res: *real_t, from: *const real_t, toward: *const real_t, ctxt: *realContext_t) *real_t;
 
-inline fn realCopy(source: *const real_t, destination: *real_t) void {
+fn realCopy(source: *const real_t, destination: *real_t) void {
     _ = decNumberCopy(destination, source);
 }
-inline fn realCopyAbs(source: *const real_t, destination: *real_t) *real_t {
+fn realCopyAbs(source: *const real_t, destination: *real_t) *real_t {
     return decNumberCopyAbs(destination, source);
 }
-inline fn realAdd(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) *real_t {
+fn realAdd(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) *real_t {
     return decNumberAdd(res, op1, op2, ctxt);
 }
-inline fn realSubtract(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) *real_t {
+fn realSubtract(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) *real_t {
     return decNumberSubtract(res, op1, op2, ctxt);
 }
-inline fn realMultiply(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) *real_t {
+fn realMultiply(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) *real_t {
     return decNumberMultiply(res, op1, op2, ctxt);
 }
-inline fn realDivide(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) *real_t {
+fn realDivide(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) *real_t {
     return decNumberDivide(res, op1, op2, ctxt);
 }
-inline fn realFMA(f1: *const real_t, f2: *const real_t, term: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+fn realFMA(f1: *const real_t, f2: *const real_t, term: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberFMA(res, f1, f2, term, ctxt);
 }
-inline fn realMinus(operand: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+fn realMinus(operand: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberMinus(res, operand, ctxt);
 }
-inline fn int32ToReal(source: i32, destination: *real_t) void {
+fn int32ToReal(source: i32, destination: *real_t) void {
     _ = decNumberFromInt32(destination, source);
 }
-inline fn uInt32ToReal(source: u32, destination: *real_t) void {
+fn uInt32ToReal(source: u32, destination: *real_t) void {
     _ = decNumberFromUInt32(destination, source);
 }
-inline fn realNextToward(from: *const real_t, toward: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+fn realNextToward(from: *const real_t, toward: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberNextToward(res, from, toward, ctxt);
 }
-inline fn realChangeSign(operand: *real_t) void {
+fn realChangeSign(operand: *real_t) void {
     operand.bits ^= 0x80;
 }
-inline fn realSetPositiveSign(operand: *real_t) void {
+fn realSetPositiveSign(operand: *real_t) void {
     operand.bits &= 0x7F;
 }
-inline fn realGetSign(source: *const real_t) u8 {
+fn realGetSign(source: *const real_t) u8 {
     return source.bits & 0x80;
 }
 const realIsZero = abi.realIsZero;
-inline fn realIsSpecial(source: *const real_t) bool {
+fn realIsSpecial(source: *const real_t) bool {
     return (source.bits & 0x70) != 0;
 }
-inline fn realIsInfinite(source: *const real_t) bool {
+fn realIsInfinite(source: *const real_t) bool {
     return (source.bits & 0x40) != 0;
 }
-inline fn realIsNaN(source: *const real_t) bool {
+fn realIsNaN(source: *const real_t) bool {
     return (source.bits & 0x30) != 0;
 }
 
@@ -265,13 +265,13 @@ extern fn WP34S_SinhCosh(x: *const real_t, sinOut: ?*real_t, cosOut: ?*real_t, c
 // ---------------------------------------------------------------------------
 extern fn decimal128ToNumber(source: *const real34_t, destination: *real_t) *real_t;
 extern fn decimal128FromNumber(dest: *real34_t, src: *const real_t, ctxt: *realContext_t) *real34_t;
-inline fn real34ToReal(source: *const real34_t, destination: *real_t) void {
+fn real34ToReal(source: *const real34_t, destination: *real_t) void {
     _ = decimal128ToNumber(source, destination);
 }
-inline fn realToReal34(source: *const real_t, destination: *real34_t) void {
+fn realToReal34(source: *const real_t, destination: *real34_t) void {
     _ = decimal128FromNumber(destination, source, &ctxtReal34);
 }
-inline fn real34Copy(source: *const real34_t, destination: *real34_t) void {
+fn real34Copy(source: *const real34_t, destination: *real34_t) void {
     destination.* = source.*;
 }
 extern fn real34CompareEqual(number1: *const real34_t, number2: *const real34_t) bool;
@@ -291,7 +291,7 @@ const DECQUAD_Pmax: i32 = 34;
 const DECQUAD_Emin: i32 = -6143;
 const DECQUAD_Emax: i32 = 6144;
 // realType.h realAdjustExponent(destination, adjustment).
-inline fn realAdjustExponent(destination: *real_t, adjustment: i32) void {
+fn realAdjustExponent(destination: *real_t, adjustment: i32) void {
     destination.exponent += adjustment;
 }
 extern fn reallocateRegister(regist: calcRegister_t, data_type: u32, data_len: u16, tag: u32) bool;
@@ -446,10 +446,10 @@ fn _fnIntegrate(labelOrVariable: u16, XY: bool_t) linksection(runtime.code_secti
 
 extern fn adjustResult(res: calcRegister_t, drop_y: bool, set_cpx_res: bool, op1: calcRegister_t, op2: calcRegister_t, op3: calcRegister_t) void;
 
-inline fn max_i32(a: i32, b: i32) i32 {
+fn max_i32(a: i32, b: i32) i32 {
     return if (a > b) a else b;
 }
-inline fn min_i32(a: i32, b: i32) i32 {
+fn min_i32(a: i32, b: i32) i32 {
     return if (a < b) a else b;
 }
 
@@ -579,10 +579,10 @@ fn DEI_xeq_user_adr(regist: calcRegister_t, a: *const real_t, d: *const real_t, 
     _ = realSubtract(fl, fr, h, realContext); // h = fl - fr
 }
 
-inline fn IS_INFINITE(x: *const real_t) bool {
+fn IS_INFINITE(x: *const real_t) bool {
     return realIsInfinite(x) or realIsNaN(x);
 }
-inline fn IS_FINITE(x: *const real_t) bool {
+fn IS_FINITE(x: *const real_t) bool {
     return !(realIsInfinite(x) or realIsNaN(x));
 }
 

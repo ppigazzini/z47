@@ -20,7 +20,7 @@ const complex34Matrix_t = runtime.complex34Matrix_t;
 const constRealElems = abi.matrixConstRealElems;
 const constComplexElems = abi.matrixConstComplexElems;
 
-inline fn realCopy(source: *const real_t, destination: *real_t) void {
+fn realCopy(source: *const real_t, destination: *real_t) void {
     destination.* = source.*;
 }
 

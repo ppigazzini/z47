@@ -96,10 +96,10 @@ extern fn exit(code: c_int) noreturn;
 
 // checkHP / HPFONT macros.
 const checkHP = frontier_screen.checkHPMode;
-inline fn hpFont() bool {
+fn hpFont() bool {
     return if (checkHP()) HPFONT1 else false;
 }
-inline fn doublingNumeric(font: *const font_t) u16 {
+fn doublingNumeric(font: *const font_t) u16 {
     // DOUBLING (numericFont) vs DOUBLINGBASEX selection in _calculateStringWidth.
     if (font == &numericFont and temporaryInformation == TI_NO_INFO and checkHP()) {
         return if (checkHP()) DOUBLING_A else 6;
@@ -108,7 +108,7 @@ inline fn doublingNumeric(font: *const font_t) u16 {
     }
 }
 
-inline fn stringByteLength(s: [*c]const u8) i32 {
+fn stringByteLength(s: [*c]const u8) i32 {
     return @truncate(@as(isize, @bitCast(strlen(s))));
 }
 

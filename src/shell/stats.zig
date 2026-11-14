@@ -239,59 +239,59 @@ extern fn decQuadZero(r: *real34_t) *real34_t;
 // ---------------------------------------------------------------------------
 // Inline wrappers (the C macros)
 // ---------------------------------------------------------------------------
-inline fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8) void {
+fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8) void {
     if (comptime extra_info) c_moreInfoOnError(m1, m2, null, null);
 }
-inline fn sigma(sum: usize) *real_t {
+fn sigma(sum: usize) *real_t {
     return &statisticalSumsPointer.?[sum];
 }
-inline fn realIsSpecial(v: *const real_t) bool {
+fn realIsSpecial(v: *const real_t) bool {
     return (v.bits & DECSPECIAL) != 0;
 }
-inline fn realCopy(src: *const real_t, dst: *real_t) void {
+fn realCopy(src: *const real_t, dst: *real_t) void {
     _ = decNumberCopy(dst, src);
 }
-inline fn realAdd(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn realAdd(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberAdd(res, a, b, ctx);
 }
-inline fn realSubtract(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn realSubtract(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberSubtract(res, a, b, ctx);
 }
-inline fn realMultiply(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn realMultiply(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberMultiply(res, a, b, ctx);
 }
-inline fn realDivide(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn realDivide(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberDivide(res, a, b, ctx);
 }
-inline fn realSquareRoot(operand: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn realSquareRoot(operand: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberSquareRoot(res, operand, ctx);
 }
-inline fn realFMA(a: *const real_t, b: *const real_t, c: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn realFMA(a: *const real_t, b: *const real_t, c: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberFMA(res, a, b, c, ctx);
 }
 const realIsZero = abi.realIsZero;
-inline fn realIsNegative(v: *const real_t) bool {
+fn realIsNegative(v: *const real_t) bool {
     return (v.bits & DECNEG) != 0;
 }
-inline fn real34Copy(src: *const real34_t, dst: *real34_t) void {
+fn real34Copy(src: *const real34_t, dst: *real34_t) void {
     dst.* = src.*;
 }
-inline fn real34ToReal(src: *const real34_t, dst: *real_t) void {
+fn real34ToReal(src: *const real34_t, dst: *real_t) void {
     _ = decimal128ToNumber(src, dst);
 }
-inline fn realToReal34(src: *const real_t, dst: *real34_t) void {
+fn realToReal34(src: *const real_t, dst: *real34_t) void {
     _ = decimal128FromNumber(dst, src, &ctxtReal34);
 }
-inline fn real34ToInt32(src: *const real34_t) i32 {
+fn real34ToInt32(src: *const real34_t) i32 {
     return decQuadToInt32(src, &ctxtReal34, DEC_ROUND_DOWN);
 }
-inline fn real34Add(a: *const real34_t, b: *const real34_t, res: *real34_t) void {
+fn real34Add(a: *const real34_t, b: *const real34_t, res: *real34_t) void {
     _ = decQuadAdd(res, a, b, &ctxtReal34);
 }
-inline fn real34SetZero(dst: *real34_t) void {
+fn real34SetZero(dst: *real34_t) void {
     _ = decQuadZero(dst);
 }
-inline fn int32ToReal(src: i32, dst: *real_t) void {
+fn int32ToReal(src: i32, dst: *real_t) void {
     _ = decNumberFromInt32(dst, src);
 }
 extern fn decNumberFromInt32(r: *real_t, v: i32) *real_t;
@@ -723,7 +723,7 @@ pub export fn calcSigma(maxOffset: u16) callconv(.c) void {
 // element block. The two sites below carry no guard for that case, so the row
 // address is derived the way C derives it rather than letting a narrow
 // subtraction turn a bounded access into a wild one.
-inline fn lastRowOfStats(elements: [*]real34_t, rows: u16, cols: u16) [*]real34_t {
+fn lastRowOfStats(elements: [*]real34_t, rows: u16, cols: u16) [*]real34_t {
     if (rows == 0) {
         return elements - @as(usize, cols);
     }

@@ -199,7 +199,7 @@ extern fn decQuadGetExponent(src: *const real34_t) i32;
 // lcd_fill_rect — DMCP ROM function-table entry on firmware; real symbol on host.
 const LcdFillRectFn = *const fn (x: u32, y: u32, dx: u32, dy: u32, val: c_int) callconv(.c) void;
 const c_lcd_fill_rect = @extern(LcdFillRectFn, .{ .name = "lcd_fill_rect" });
-inline fn lcdFillRect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void {
+fn lcdFillRect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void {
     if (comptime dmcp_build) {
         rom.lcd_fill_rect(x, y, dx, dy, val);
     } else {
@@ -211,26 +211,26 @@ inline fn lcdFillRect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void {
 // Inline wrappers (the C macros)
 // ---------------------------------------------------------------------------
 const reg34 = abi.registerReal34;
-inline fn real34IsInfinite(src: *const real34_t) bool {
+fn real34IsInfinite(src: *const real34_t) bool {
     return decQuadIsInfinite(src) != 0;
 }
-inline fn real34NextPlus(operand: *const real34_t, res: *real34_t) void {
+fn real34NextPlus(operand: *const real34_t, res: *real34_t) void {
     _ = decQuadNextPlus(res, operand, &ctxtReal34);
 }
-inline fn real34NextMinus(operand: *const real34_t, res: *real34_t) void {
+fn real34NextMinus(operand: *const real34_t, res: *real34_t) void {
     _ = decQuadNextMinus(res, operand, &ctxtReal34);
 }
-inline fn real34Subtract(op1: *const real34_t, op2: *const real34_t, res: *real34_t) void {
+fn real34Subtract(op1: *const real34_t, op2: *const real34_t, res: *real34_t) void {
     _ = decQuadSubtract(res, op1, op2, &ctxtReal34);
 }
-inline fn real34GetExponent(src: *const real34_t) i32 {
+fn real34GetExponent(src: *const real34_t) i32 {
     return decQuadGetExponent(src);
 }
-inline fn minI(a: i16, b: i16) i16 {
+fn minI(a: i16, b: i16) i16 {
     return if (a < b) a else b;
 }
 // tmpString + CHARS_PER_LINE * n  (C pointer arithmetic on char*).
-inline fn lineStr(n: i32) [*c]u8 {
+fn lineStr(n: i32) [*c]u8 {
     return tmpString + @as(usize, @intCast(CHARS_PER_LINE * n));
 }
 
@@ -498,9 +498,9 @@ pub export fn flagBrowser(init: u16) callconv(.c) void {
 // ---------------------------------------------------------------------------
 // currentNumberOfLocalFlags / currentNumberOfLocalRegisters macros.
 // ---------------------------------------------------------------------------
-inline fn currentNumberOfLocalFlags() u8 {
+fn currentNumberOfLocalFlags() u8 {
     return currentSubroutineLevelData.numberOfLocalFlags;
 }
-inline fn currentNumberOfLocalRegisters() u8 {
+fn currentNumberOfLocalRegisters() u8 {
     return currentSubroutineLevelData.numberOfLocalRegisters;
 }

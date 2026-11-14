@@ -53,258 +53,258 @@ pub const amMultPi = runtime.amMultPi;
 // ---------------------------------------------------------------------------
 const cstR = consts.cstR;
 
-pub inline fn const_0() *const real_t {
+pub fn const_0() *const real_t {
     return consts.c1708();
 }
-pub inline fn const_1() *const real_t {
+pub fn const_1() *const real_t {
     return consts.c4856();
 }
-pub inline fn const_2() *const real_t {
+pub fn const_2() *const real_t {
     return consts.c4928();
 }
-inline fn const_3() *const real_t {
+fn const_3() *const real_t {
     return consts.c5012();
 }
-inline fn const__1() *const real_t {
+fn const__1() *const real_t {
     return consts.c4376();
 }
-pub inline fn const_1on2() *const real_t {
+pub fn const_1on2() *const real_t {
     return consts.c4580();
 }
-pub inline fn const_1on4() *const real_t {
+pub fn const_1on4() *const real_t {
     return consts.c4532();
 }
-pub inline fn const_1on10() *const real_t {
+pub fn const_1on10() *const real_t {
     return consts.c4520();
 }
-inline fn const_6() *const real_t {
+fn const_6() *const real_t {
     return consts.const_6();
 }
-inline fn const_3on2() *const real_t {
+fn const_3on2() *const real_t {
     return consts.const_3on2();
 }
-pub inline fn const_30() *const real_t {
+pub fn const_30() *const real_t {
     return consts.const_30();
 }
-inline fn const_29() *const real_t {
+fn const_29() *const real_t {
     return consts.c5180();
 }
-pub inline fn const_45() *const real_t {
+pub fn const_45() *const real_t {
     return consts.c7628();
 }
-inline fn const_47() *const real_t {
+fn const_47() *const real_t {
     return consts.c5236();
 }
-pub inline fn const_50() *const real_t {
+pub fn const_50() *const real_t {
     return consts.c7616();
 }
-pub inline fn const_90() *const real_t {
+pub fn const_90() *const real_t {
     return consts.c7544();
 }
-pub inline fn const_100() *const real_t {
+pub fn const_100() *const real_t {
     return consts.c7532();
 }
-pub inline fn const_180() *const real_t {
+pub fn const_180() *const real_t {
     return consts.c7460();
 }
-pub inline fn const_200() *const real_t {
+pub fn const_200() *const real_t {
     return consts.c7448();
 }
-inline fn const_205() *const real_t {
+fn const_205() *const real_t {
     return consts.c5344();
 }
-pub inline fn const_360() *const real_t {
+pub fn const_360() *const real_t {
     return consts.c5356();
 }
-pub inline fn const_400() *const real_t {
+pub fn const_400() *const real_t {
     return consts.c5368();
 }
-inline fn const_9000() *const real_t {
+fn const_9000() *const real_t {
     return consts.c5460();
 }
-inline fn const_995on1000() *const real_t {
+fn const_995on1000() *const real_t {
     return consts.c5696();
 }
-inline fn const_1e_10000() *const real_t {
+fn const_1e_10000() *const real_t {
     return consts.c5684();
 }
-inline fn const_1e_24() *const real_t {
+fn const_1e_24() *const real_t {
     return consts.c4472();
 }
-inline fn const_1e_37() *const real_t {
+fn const_1e_37() *const real_t {
     return consts.c4436();
 }
-inline fn const_1e_49() *const real_t {
+fn const_1e_49() *const real_t {
     return consts.c4424();
 }
-inline fn const_gammaR() *const real_t {
+fn const_gammaR() *const real_t {
     return consts.c5192();
 }
-inline fn const_NaN() *const real_t {
+fn const_NaN() *const real_t {
     return consts.c812();
 }
-inline fn const_minusInfinity() *const real_t {
+fn const_minusInfinity() *const real_t {
     return consts.c1684();
 }
-pub inline fn const39_pi() *const real_t {
+pub fn const39_pi() *const real_t {
     return consts.c1848();
 }
-inline fn const39_2pi() *const real_t {
+fn const39_2pi() *const real_t {
     return consts.c1812();
 }
-pub inline fn const39_piOn2() *const real_t {
+pub fn const39_piOn2() *const real_t {
     return consts.c4880();
 }
-pub inline fn const39_piOn4() *const real_t {
+pub fn const39_piOn4() *const real_t {
     return consts.c4736();
 }
-pub inline fn const39_3piOn4() *const real_t {
+pub fn const39_3piOn4() *const real_t {
     return consts.c4976();
 }
-inline fn const39_ln2() *const real_t {
+fn const39_ln2() *const real_t {
     return consts.c4628();
 }
-inline fn const39_ln10() *const real_t {
+fn const39_ln10() *const real_t {
     return consts.c4940();
 }
-pub inline fn const39_root2on2() *const real_t {
+pub fn const39_root2on2() *const real_t {
     return consts.c4700();
 }
-inline fn const39_egamma() *const real_t {
+fn const39_egamma() *const real_t {
     return consts.c4592();
 }
-inline fn const39_eE() *const real_t {
+fn const39_eE() *const real_t {
     return consts.c176();
 }
-pub inline fn const39_1on3() *const real_t {
+pub fn const39_1on3() *const real_t {
     return consts.c4544();
 }
-pub inline fn const_1on5() *const real_t {
+pub fn const_1on5() *const real_t {
     return consts.const_1on5();
 }
-pub inline fn const39_1on7() *const real_t {
+pub fn const39_1on7() *const real_t {
     return consts.const39_1on7();
 }
-pub inline fn const39_1on9() *const real_t {
+pub fn const39_1on9() *const real_t {
     return consts.const39_1on9();
 }
-pub inline fn const39_1on11() *const real_t {
+pub fn const39_1on11() *const real_t {
     return consts.const39_1on11();
 }
-pub inline fn const39_1on13() *const real_t {
+pub fn const39_1on13() *const real_t {
     return consts.const39_1on13();
 }
-pub inline fn const39_1on15() *const real_t {
+pub fn const39_1on15() *const real_t {
     return consts.const39_1on15();
 }
-pub inline fn const39_atan1on10() *const real_t {
+pub fn const39_atan1on10() *const real_t {
     return consts.const39_atan1on10();
 }
-pub inline fn const39_atan2on10() *const real_t {
+pub fn const39_atan2on10() *const real_t {
     return consts.const39_atan2on10();
 }
-pub inline fn const39_atan3on10() *const real_t {
+pub fn const39_atan3on10() *const real_t {
     return consts.const39_atan3on10();
 }
-pub inline fn const39_atan4on10() *const real_t {
+pub fn const39_atan4on10() *const real_t {
     return consts.const39_atan4on10();
 }
-pub inline fn const39_atan5on10() *const real_t {
+pub fn const39_atan5on10() *const real_t {
     return consts.const39_atan5on10();
 }
-pub inline fn const39_atan6on10() *const real_t {
+pub fn const39_atan6on10() *const real_t {
     return consts.const39_atan6on10();
 }
-pub inline fn const39_atan7on10() *const real_t {
+pub fn const39_atan7on10() *const real_t {
     return consts.const39_atan7on10();
 }
-pub inline fn const39_atan8on10() *const real_t {
+pub fn const39_atan8on10() *const real_t {
     return consts.const39_atan8on10();
 }
-pub inline fn const39_atan9on10() *const real_t {
+pub fn const39_atan9on10() *const real_t {
     return consts.const39_atan9on10();
 }
-pub inline fn const39_atanP08() *const real_t {
+pub fn const39_atanP08() *const real_t {
     return consts.const39_atanP08();
 }
-pub inline fn const39_atanP09() *const real_t {
+pub fn const39_atanP09() *const real_t {
     return consts.const39_atanP09();
 }
-pub inline fn const39_atanP10() *const real_t {
+pub fn const39_atanP10() *const real_t {
     return consts.const39_atanP10();
 }
-pub inline fn const39_atanP11() *const real_t {
+pub fn const39_atanP11() *const real_t {
     return consts.const39_atanP11();
 }
-pub inline fn const39_atanP12() *const real_t {
+pub fn const39_atanP12() *const real_t {
     return consts.const39_atanP12();
 }
-pub inline fn const75_pi() *const real_t {
+pub fn const75_pi() *const real_t {
     return consts.c7388();
 }
-pub inline fn const75_piOn2() *const real_t {
+pub fn const75_piOn2() *const real_t {
     return consts.c7472();
 }
-pub inline fn const75_piOn4() *const real_t {
+pub fn const75_piOn4() *const real_t {
     return consts.c7556();
 }
-pub inline fn const75_3piOn4() *const real_t {
+pub fn const75_3piOn4() *const real_t {
     return consts.c7700();
 }
-pub inline fn const1071_pi() *const real_t {
+pub fn const1071_pi() *const real_t {
     return consts.c9932();
 }
-pub inline fn const1071_piOn2() *const real_t {
+pub fn const1071_piOn2() *const real_t {
     return consts.c9208();
 }
-pub inline fn const1071_piOn4() *const real_t {
+pub fn const1071_piOn4() *const real_t {
     return consts.c8484();
 }
-pub inline fn const1071_3piOn4() *const real_t {
+pub fn const1071_3piOn4() *const real_t {
     return consts.c7760();
 }
-inline fn const75_gammaC00() *const real_t {
+fn const75_gammaC00() *const real_t {
     return consts.const75_gammaC00();
 }
-inline fn const75_gammaC01(k: u32) *const real_t {
+fn const75_gammaC01(k: u32) *const real_t {
     return consts.gammaC75(k);
 }
-pub inline fn const_4() *const real_t {
+pub fn const_4() *const real_t {
     return consts.const_4();
 }
-pub inline fn const_8() *const real_t {
+pub fn const_8() *const real_t {
     return consts.const_8();
 }
-inline fn const_10() *const real_t {
+fn const_10() *const real_t {
     return consts.const_10();
 }
-inline fn const_1e_6() *const real_t {
+fn const_1e_6() *const real_t {
     return consts.const_1e_6();
 }
-inline fn const_1e_34() *const real_t {
+fn const_1e_34() *const real_t {
     return consts.const_1e_34();
 }
-inline fn const_plusInfinity() *const real_t {
+fn const_plusInfinity() *const real_t {
     return consts.c1696();
 }
-inline fn const75_ln2() *const real_t {
+fn const75_ln2() *const real_t {
     return consts.const75_ln2();
 }
-inline fn const75_ln10() *const real_t {
+fn const75_ln10() *const real_t {
     return consts.const75_ln10();
 }
-inline fn const75_2pi() *const real_t {
+fn const75_2pi() *const real_t {
     return consts.const75_2pi();
 }
-inline fn const39_root2() *const real_t {
+fn const39_root2() *const real_t {
     return consts.const39_root2();
 }
-inline fn const_1on40000() *const real_t {
+fn const_1on40000() *const real_t {
     return consts.const_1on40000();
 }
 // RADIAN_REDUCTION_2PI: the DM42 reduces with the 2139-digit 2pi, since the
 // 12321-digit one NaNs on the DM42 decNumber at the 2139 context.
-pub inline fn radianReduction2Pi() *const real_t {
+pub fn radianReduction2Pi() *const real_t {
     return if (comptime runtime.wp34s_mod_small_buffers) consts.const2139_2pi() else consts.const12321_2pi();
 }
 
@@ -374,94 +374,94 @@ pub const TaylorIterationMax: i32 = 1000;
 // real_t op helpers mirroring the realType.h macro argument order. Operands are
 // *const real_t so blob constants and stack scratch both work.
 // ---------------------------------------------------------------------------
-pub inline fn realCopy(source: *const real_t, destination: *real_t) void {
+pub fn realCopy(source: *const real_t, destination: *real_t) void {
     _ = decNumberCopy(destination, source);
 }
-pub inline fn realCopyAbs(source: *const real_t, destination: *real_t) void {
+pub fn realCopyAbs(source: *const real_t, destination: *real_t) void {
     _ = decNumberCopyAbs(destination, source);
 }
-pub inline fn realPlus(operand: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+pub fn realPlus(operand: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberPlus(res, operand, ctxt);
 }
-pub inline fn realMinus(operand: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+pub fn realMinus(operand: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberMinus(res, operand, ctxt);
 }
-pub inline fn realAdd(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+pub fn realAdd(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberAdd(res, op1, op2, ctxt);
 }
-pub inline fn realSubtract(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+pub fn realSubtract(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberSubtract(res, op1, op2, ctxt);
 }
-pub inline fn realMultiply(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+pub fn realMultiply(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberMultiply(res, op1, op2, ctxt);
 }
-pub inline fn realDivide(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+pub fn realDivide(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberDivide(res, op1, op2, ctxt);
 }
-pub inline fn realSquareRoot(operand: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+pub fn realSquareRoot(operand: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberSquareRoot(res, operand, ctxt);
 }
-inline fn realPower(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+fn realPower(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberPower(res, op1, op2, ctxt);
 }
-pub inline fn realCompare(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+pub fn realCompare(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberCompare(res, op1, op2, ctxt);
 }
-inline fn realNextToward(from: *const real_t, toward: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+fn realNextToward(from: *const real_t, toward: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberNextToward(res, from, toward, ctxt);
 }
-pub inline fn realDivideRemainder(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+pub fn realDivideRemainder(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberRemainder(res, op1, op2, ctxt);
 }
-inline fn realFMA(factor1: *const real_t, factor2: *const real_t, term: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+fn realFMA(factor1: *const real_t, factor2: *const real_t, term: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberFMA(res, factor1, factor2, term, ctxt);
 }
-inline fn realExp(x: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+fn realExp(x: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     math_command_wrappers.realExp(x, res, ctxt);
 }
-pub inline fn stringToReal(source: [*:0]const u8, destination: *real_t, ctxt: *realContext_t) void {
+pub fn stringToReal(source: [*:0]const u8, destination: *real_t, ctxt: *realContext_t) void {
     _ = decNumberFromString(destination, source, ctxt);
 }
-inline fn int32ToReal(source: i32, destination: *real_t) void {
+fn int32ToReal(source: i32, destination: *real_t) void {
     _ = decNumberFromInt32(destination, source);
 }
-pub inline fn uInt32ToReal(source: u32, destination: *real_t) void {
+pub fn uInt32ToReal(source: u32, destination: *real_t) void {
     _ = decNumberFromUInt32(destination, source);
 }
 
-pub inline fn realSetOne(r: *real_t) void {
+pub fn realSetOne(r: *real_t) void {
     _ = decNumberFromInt32(r, 1);
 }
-pub inline fn realSetNegativeOne(r: *real_t) void {
+pub fn realSetNegativeOne(r: *real_t) void {
     _ = decNumberFromInt32(r, -1);
 }
-pub inline fn realSetZero(r: *real_t) void {
+pub fn realSetZero(r: *real_t) void {
     _ = decNumberFromInt32(r, 0);
 }
 pub const realIsNegative = math_real_predicates.realIsNegative;
 pub const realIsPositive = math_real_predicates.realIsPositive;
 pub const realIsZero = math_real_predicates.realIsZero;
 const realIsSpecial = math_real_predicates.realIsSpecial;
-pub inline fn realIsInfinite(source: *const real_t) bool {
+pub fn realIsInfinite(source: *const real_t) bool {
     return (source.bits & 0x40) != 0;
 }
-pub inline fn realIsNaN(source: *const real_t) bool {
+pub fn realIsNaN(source: *const real_t) bool {
     return (source.bits & (0x20 | 0x10)) != 0;
 }
-pub inline fn realChangeSign(operand: *real_t) void {
+pub fn realChangeSign(operand: *real_t) void {
     operand.bits ^= 0x80;
 }
-pub inline fn realSetNegativeSign(operand: *real_t) void {
+pub fn realSetNegativeSign(operand: *real_t) void {
     operand.bits |= 0x80;
 }
-pub inline fn realSetPositiveSign(operand: *real_t) void {
+pub fn realSetPositiveSign(operand: *real_t) void {
     operand.bits &= 0x7F;
 }
-pub inline fn realGetExponent(source: *const real_t) i32 {
+pub fn realGetExponent(source: *const real_t) i32 {
     return source.digits + source.exponent - 1;
 }
 
-pub inline fn maxI32(a: i32, b: i32) i32 {
+pub fn maxI32(a: i32, b: i32) i32 {
     return if (a > b) a else b;
 }
 
@@ -481,7 +481,7 @@ pub fn BigReal(comptime digits: u32) type {
     return extern union {
         real: real_t,
         storage: [realSizeInBytes(digits) / 4]u32,
-        pub inline fn ptr(self: *@This()) *real_t {
+        pub fn ptr(self: *@This()) *real_t {
             return &self.real;
         }
     };
@@ -506,7 +506,7 @@ pub inline fn mallocBigReal(comptime digits: u32) ?*real_t {
     return realAt(malloc(realSizeInBytes(digits)) orelse return null);
 }
 
-pub inline fn freeBigReal(ptr: ?*real_t) void {
+pub fn freeBigReal(ptr: ?*real_t) void {
     free(ptr);
 }
 

@@ -92,7 +92,7 @@ const real34Subtract = runtime.real34Subtract;
 const real34Add = runtime.real34Add;
 const real34Multiply = runtime.real34Multiply;
 // real34Copy (realType.h macro): copy the two u64 halves of the 16-byte value.
-inline fn real34Copy(source: *const real34_t, destination: *real34_t) void {
+fn real34Copy(source: *const real34_t, destination: *real34_t) void {
     destination.bytes = source.bytes;
 }
 const displayCalcErrorMessage = runtime.displayCalcErrorMessage;
@@ -105,42 +105,42 @@ extern fn decQuadIsZero(value: *const real34_t) u32;
 extern fn decQuadIsNegative(value: *const real34_t) u32;
 extern fn decQuadCompare(res: *real34_t, lhs: *const real34_t, rhs: *const real34_t, context: *realContext_t) *real34_t;
 // realType.h real34Compare: the decQuad comparison result, -1, 0, 1 or NaN, as a real34.
-inline fn real34Compare(lhs: *const real34_t, rhs: *const real34_t, res: *real34_t) void {
+fn real34Compare(lhs: *const real34_t, rhs: *const real34_t, res: *real34_t) void {
     _ = decQuadCompare(res, lhs, rhs, &runtime.ctxtReal34);
 }
-inline fn real34SetZero(destination: *real34_t) void {
+fn real34SetZero(destination: *real34_t) void {
     _ = decQuadZero(destination);
 }
-inline fn real34SetOne(destination: *real34_t) void {
+fn real34SetOne(destination: *real34_t) void {
     _ = decQuadFromInt32(destination, 1);
 }
-inline fn real34IsZero(source: *const real34_t) bool {
+fn real34IsZero(source: *const real34_t) bool {
     return decQuadIsZero(source) != 0;
 }
 const real34IsNegative = math_real_predicates.real34IsNegative;
-inline fn real34SetPositiveSign(operand: *real34_t) void {
+fn real34SetPositiveSign(operand: *real34_t) void {
     operand.bytes[15] &= 0x7F;
 }
 const real34SetNegativeSign = abi.real34SetNegativeSign;
 
-inline fn getRegisterAngularMode(reg: calcRegister_t) u32 {
+fn getRegisterAngularMode(reg: calcRegister_t) u32 {
     return getRegisterTag(reg) & amAngleMask;
 }
 
 const registerReal34Data = abi.registerReal34Aligned;
 
-inline fn SET_TI_TRUE_FALSE(condition: bool) void {
+fn SET_TI_TRUE_FALSE(condition: bool) void {
     runtime.temporaryInformation = TI_FALSE + @as(u8, @intFromBool(condition));
 }
 
 // Blob constants (real34) routed through the abi typed accessors.
-inline fn const34_1() *const real34_t {
+fn const34_1() *const real34_t {
     return consts.q16312();
 }
-inline fn const34_100() *const real34_t {
+fn const34_100() *const real34_t {
     return consts.q16552();
 }
-inline fn const34_1000() *const real34_t {
+fn const34_1000() *const real34_t {
     return consts.q16632();
 }
 

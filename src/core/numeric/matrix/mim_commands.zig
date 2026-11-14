@@ -47,7 +47,7 @@ extern var openMatrixMIMPointer: any34Matrix_t;
 extern fn getIRegisterAsInt(asArrayPointer: bool) i16;
 extern fn getJRegisterAsInt(asArrayPointer: bool) i16;
 // realCopy / realIsPositive are decNumber macros (not linkable symbols).
-inline fn realCopy(source: *const real_t, destination: *real_t) void {
+fn realCopy(source: *const real_t, destination: *real_t) void {
     destination.* = source.*;
 }
 // realType.h's realIsPositive is `(bits & DECNEG) == 0`: sign bit clear,
@@ -55,7 +55,7 @@ inline fn realCopy(source: *const real_t, destination: *real_t) void {
 // and sizes. The shared predicate keeps that convention.
 const realIsPositive = math_real_predicates.realIsPositive;
 
-inline fn rmEl(m: *const real34Matrix_t, i: usize) *real34_t {
+fn rmEl(m: *const real34Matrix_t, i: usize) *real34_t {
     const e: [*]real34_t = m.matrixElements;
     return &e[i];
 }
@@ -65,24 +65,24 @@ inline fn rmEl(m: *const real34Matrix_t, i: usize) *real34_t {
 // signed arithmetic and lets the pointer run before the array; these helpers
 // step the element pointer back for a negative index, so the out-of-range case
 // lands where C lands rather than trapping on a negative-to-unsigned cast.
-inline fn subIndex(r: usize, i: i16, cols: usize, c: usize, j: i16) isize {
+fn subIndex(r: usize, i: i16, cols: usize, c: usize, j: i16) isize {
     return (@as(isize, @intCast(r)) + i) * @as(isize, @intCast(cols)) + @as(isize, @intCast(c)) + j;
 }
 inline fn elementAt(comptime T: type, elements: [*]T, index: isize) *T {
     const from: [*]T = if (index < 0) elements - @abs(index) else elements + @as(usize, @intCast(index));
     return &from[0];
 }
-inline fn rmElAt(m: *const real34Matrix_t, index: isize) *real34_t {
+fn rmElAt(m: *const real34Matrix_t, index: isize) *real34_t {
     return elementAt(real34_t, m.matrixElements, index);
 }
-inline fn cmElAt(m: *const complex34Matrix_t, index: isize) *complex34_t {
+fn cmElAt(m: *const complex34Matrix_t, index: isize) *complex34_t {
     return elementAt(complex34_t, m.matrixElements, index);
 }
-inline fn cmEl(m: *const complex34Matrix_t, i: usize) *complex34_t {
+fn cmEl(m: *const complex34Matrix_t, i: usize) *complex34_t {
     const e: [*]complex34_t = m.matrixElements;
     return &e[i];
 }
-inline fn truncToU16(v: i32) u16 {
+fn truncToU16(v: i32) u16 {
     return math_mim_util.truncToU16(v);
 }
 
@@ -566,7 +566,7 @@ fn _row_columnNorm(pParam: u16) void {
     runtime.adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
 }
 
-inline fn numEl(h: *const matrixHeader_t) usize {
+fn numEl(h: *const matrixHeader_t) usize {
     return math_mim_util.numEl(h.matrixRows, h.matrixColumns);
 }
 fn writeNnz(nnzi: u32) void {

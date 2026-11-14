@@ -317,17 +317,17 @@ extern fn snprintf(buf: [*c]u8, n: usize, fmt: [*:0]const u8, ...) c_int;
 // ---------------------------------------------------------------------------
 // Inline wrappers (the C macros)
 // ---------------------------------------------------------------------------
-inline fn stringCopy(dest: [*c]u8, source: [*c]const u8) [*c]u8 {
+fn stringCopy(dest: [*c]u8, source: [*c]const u8) [*c]u8 {
     return frontier_char_string.stringCopy(dest, source);
 }
-inline fn stringByteLength(s: [*c]const u8) i32 {
+fn stringByteLength(s: [*c]const u8) i32 {
     return @intCast(strlen(s));
 }
-inline fn orOrtho(a: u16) u16 {
+fn orOrtho(a: u16) u16 {
     return if (a == 0) CF_ORTHOGONAL_FITTING else a;
 }
 // shortIntegerModeValue() == (mode==SIM_2COMPL?2:(mode==SIM_1COMPL?1:(mode==SIM_UNSIGN?0:-1)))
-inline fn shortIntegerModeValue() i16 {
+fn shortIntegerModeValue() i16 {
     const SIM_1COMPL: u8 = 1;
     return if (shortIntegerMode == SIM_2COMPL) 2 else if (shortIntegerMode == SIM_1COMPL) 1 else if (shortIntegerMode == SIM_UNSIGN) 0 else -1;
 }
@@ -911,7 +911,7 @@ pub export fn fnItemShowValue(item: i16) callconv(.c) i16 {
 }
 
 // regCtoKS (defines.h static inline)
-inline fn regCtoKS(regC: i16) u8 {
+fn regCtoKS(regC: i16) u8 {
     return ks_register_remap.regCtoKS(regC, .{
         .first_stat = FIRST_STAT_REGISTER,
         .last_spare = LAST_SPARE_REGISTER,

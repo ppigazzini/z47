@@ -119,7 +119,7 @@ extern var ctxtReal34: realContext_t;
 var ctxtTvm42: realContext_t = std.mem.zeroes(realContext_t);
 const std = @import("std");
 const solve_owned = @import("solve_owned.zig");
-inline fn ensureTvmContext() void {
+fn ensureTvmContext() void {
     if (ctxtTvm42.digits == 0) {
         ctxtTvm42 = ctxtReal39;
         ctxtTvm42.digits = 42;
@@ -127,16 +127,16 @@ inline fn ensureTvmContext() void {
 }
 
 // Context selection: DMCP DM42 firmware vs. everything else.
-inline fn ctxtTvm() *realContext_t {
+fn ctxtTvm() *realContext_t {
     return if (dmcp_dm42) &ctxtReal39 else &ctxtReal51;
 }
-inline fn ctxtTvmHi() *realContext_t {
+fn ctxtTvmHi() *realContext_t {
     return if (dmcp_dm42) &ctxtTvm42 else &ctxtReal51;
 }
-inline fn ctxtSolverTvmHi() *realContext_t {
+fn ctxtSolverTvmHi() *realContext_t {
     return if (dmcp_dm42) &ctxtTvm42 else &ctxtReal51;
 }
-inline fn ctxtSolverTvmInv() *realContext_t {
+fn ctxtSolverTvmInv() *realContext_t {
     return &ctxtReal51;
 }
 
@@ -146,56 +146,56 @@ inline fn ctxtSolverTvmInv() *realContext_t {
 const cstR = consts.cstR;
 const cst34 = consts.cst34;
 
-inline fn const_0() *const real_t {
+fn const_0() *const real_t {
     return consts.c1708();
 }
-inline fn const__1() *const real_t {
+fn const__1() *const real_t {
     return consts.c4376();
 }
-inline fn const_1e_37() *const real_t {
+fn const_1e_37() *const real_t {
     return consts.c4436();
 }
-inline fn const_1on10() *const real_t {
+fn const_1on10() *const real_t {
     return consts.c4520();
 }
-inline fn const_1on2() *const real_t {
+fn const_1on2() *const real_t {
     return consts.c4580();
 }
-inline fn const_1() *const real_t {
+fn const_1() *const real_t {
     return consts.c4856();
 }
-inline fn const_100() *const real_t {
+fn const_100() *const real_t {
     return consts.c7532();
 }
 
-inline fn const34_0() *const real34_t {
+fn const34_0() *const real34_t {
     return consts.q16200();
 }
-inline fn const34_1e_4() *const real34_t {
+fn const34_1e_4() *const real34_t {
     return consts.q16264();
 }
-inline fn const34_1on10() *const real34_t {
+fn const34_1on10() *const real34_t {
     return consts.q16280();
 }
-inline fn const34_1on2() *const real34_t {
+fn const34_1on2() *const real34_t {
     return consts.q16296();
 }
-inline fn const34_1() *const real34_t {
+fn const34_1() *const real34_t {
     return consts.q16312();
 }
-inline fn const34_2() *const real34_t {
+fn const34_2() *const real34_t {
     return consts.q16328();
 }
-inline fn const34_3() *const real34_t {
+fn const34_3() *const real34_t {
     return consts.q16344();
 }
-inline fn const34_7() *const real34_t {
+fn const34_7() *const real34_t {
     return consts.q16392();
 }
-inline fn const34_9() *const real34_t {
+fn const34_9() *const real34_t {
     return consts.q16408();
 }
-inline fn const34_24() *const real34_t {
+fn const34_24() *const real34_t {
     return consts.q16472();
 }
 
@@ -214,38 +214,38 @@ extern fn decNumberFromUInt32(res: *real_t, source: u32) *real_t;
 extern fn decNumberFromString(res: *real_t, source: [*:0]const u8, ctxt: *realContext_t) *real_t;
 extern fn realToIntegralValue(source: *const real_t, destination: *real_t, mode: c_int, ctxt: *realContext_t) void;
 
-inline fn realCopy(source: *const real_t, destination: *real_t) void {
+fn realCopy(source: *const real_t, destination: *real_t) void {
     _ = decNumberCopy(destination, source);
 }
-inline fn realAdd(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+fn realAdd(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberAdd(res, op1, op2, ctxt);
 }
-inline fn realSubtract(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+fn realSubtract(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberSubtract(res, op1, op2, ctxt);
 }
-inline fn realMultiply(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+fn realMultiply(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberMultiply(res, op1, op2, ctxt);
 }
-inline fn realDivide(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+fn realDivide(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberDivide(res, op1, op2, ctxt);
 }
-inline fn realFMA(f1: *const real_t, f2: *const real_t, term: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+fn realFMA(f1: *const real_t, f2: *const real_t, term: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberFMA(res, f1, f2, term, ctxt);
 }
-inline fn realChangeSign(operand: *real_t) void {
+fn realChangeSign(operand: *real_t) void {
     operand.bits ^= 0x80;
 }
 const realIsZero = abi.realIsZero;
-inline fn realIsPositive(source: *const real_t) bool {
+fn realIsPositive(source: *const real_t) bool {
     return (source.bits & 0x80) == 0x00;
 }
-inline fn int32ToReal(source: i32, destination: *real_t) void {
+fn int32ToReal(source: i32, destination: *real_t) void {
     _ = decNumberFromInt32(destination, source);
 }
-inline fn uInt32ToReal(source: u32, destination: *real_t) void {
+fn uInt32ToReal(source: u32, destination: *real_t) void {
     _ = decNumberFromUInt32(destination, source);
 }
-inline fn stringToReal(source: [*:0]const u8, destination: *real_t, ctxt: *realContext_t) void {
+fn stringToReal(source: [*:0]const u8, destination: *real_t, ctxt: *realContext_t) void {
     _ = decNumberFromString(destination, source, ctxt);
 }
 
@@ -281,40 +281,40 @@ extern fn decQuadToUInt32(source: *const real34_t, ctxt: *realContext_t, mode: u
 
 const DEC_ROUND_DOWN: u32 = 5;
 
-inline fn real34ToReal(source: *const real34_t, destination: *real_t) void {
+fn real34ToReal(source: *const real34_t, destination: *real_t) void {
     _ = decimal128ToNumber(source, destination);
 }
-inline fn realToReal34(source: *const real_t, destination: *real34_t) void {
+fn realToReal34(source: *const real_t, destination: *real34_t) void {
     _ = decimal128FromNumber(destination, source, &ctxtReal34);
 }
-inline fn real34Copy(source: *const real34_t, destination: *real34_t) void {
+fn real34Copy(source: *const real34_t, destination: *real34_t) void {
     destination.* = source.*;
 }
-inline fn real34Multiply(op1: *const real34_t, op2: *const real34_t, res: *real34_t) void {
+fn real34Multiply(op1: *const real34_t, op2: *const real34_t, res: *real34_t) void {
     _ = decQuadMultiply(res, op1, op2, &ctxtReal34);
 }
-inline fn real34Add(op1: *const real34_t, op2: *const real34_t, res: *real34_t) void {
+fn real34Add(op1: *const real34_t, op2: *const real34_t, res: *real34_t) void {
     _ = decQuadAdd(res, op1, op2, &ctxtReal34);
 }
-inline fn real34Subtract(op1: *const real34_t, op2: *const real34_t, res: *real34_t) void {
+fn real34Subtract(op1: *const real34_t, op2: *const real34_t, res: *real34_t) void {
     _ = decQuadSubtract(res, op1, op2, &ctxtReal34);
 }
-inline fn real34SetZero(destination: *real34_t) void {
+fn real34SetZero(destination: *real34_t) void {
     _ = decQuadZero(destination);
 }
-inline fn real34SetOne(destination: *real34_t) void {
+fn real34SetOne(destination: *real34_t) void {
     _ = decQuadFromInt32(destination, 1);
 }
-inline fn real34IsZero(source: *const real34_t) bool {
+fn real34IsZero(source: *const real34_t) bool {
     return decQuadIsZero(source);
 }
-inline fn real34IsNegative(source: *const real34_t) bool {
+fn real34IsNegative(source: *const real34_t) bool {
     return (source.bytes[15] & 0x80) == 0x80;
 }
-inline fn real34ChangeSign(operand: *real34_t) void {
+fn real34ChangeSign(operand: *real34_t) void {
     operand.bytes[15] ^= 0x80;
 }
-inline fn real34ToUInt32(source: *const real34_t) u32 {
+fn real34ToUInt32(source: *const real34_t) u32 {
     return decQuadToUInt32(source, &ctxtReal34, DEC_ROUND_DOWN);
 }
 
@@ -328,7 +328,7 @@ extern fn real34CompareAbsLessThan(number1: *const real34_t, number2: *const rea
 extern fn getRegisterDataPointer(reg: calcRegister_t) ?*align(4) anyopaque;
 // Accepts either the i16 register id or a u16 RESERVED_VARIABLE_* tag (the C
 // macro implicitly narrows the uint16_t argument to calcRegister_t).
-inline fn registerReal34Ptr(reg: anytype) *real34_t {
+fn registerReal34Ptr(reg: anytype) *real34_t {
     const r: calcRegister_t = @bitCast(@as(u16, @intCast(reg)));
     return abi.registerReal34(r);
 }

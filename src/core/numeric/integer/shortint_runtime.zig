@@ -99,13 +99,13 @@ extern fn __gmpz_clear(op: *abi.Mpz) void;
 extern fn __gmpz_set_ui(op: *abi.Mpz, value: c_ulong) void;
 pub extern fn convertLongIntegerToLongIntegerRegister(op: *const abi.Mpz, destination: calcRegister_t) void;
 
-pub inline fn longIntegerInit(op: *abi.Mpz) void {
+pub fn longIntegerInit(op: *abi.Mpz) void {
     __gmpz_init(op);
 }
-pub inline fn longIntegerFree(op: *abi.Mpz) void {
+pub fn longIntegerFree(op: *abi.Mpz) void {
     __gmpz_clear(op);
 }
-pub inline fn uInt32ToLongInteger(value: u32, op: *abi.Mpz) void {
+pub fn uInt32ToLongInteger(value: u32, op: *abi.Mpz) void {
     __gmpz_set_ui(op, value);
 }
 

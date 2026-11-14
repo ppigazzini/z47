@@ -271,7 +271,7 @@ extern var statMx: [8]u8;
 extern const standardFont: font_t;
 
 // SIGMA_N = statisticalSumsPointer[0]  (defines.h)
-inline fn SIGMA_N() *const real_t {
+fn SIGMA_N() *const real_t {
     return &statisticalSumsPointer.?[0];
 }
 
@@ -301,43 +301,43 @@ const DEC_NAN_BITS: u8 = 0x20 | 0x10;
 const DEC_INF_BIT: u8 = 0x40;
 const DEC_SPECIAL_BITS: u8 = DEC_INF_BIT | DEC_NAN_BITS;
 
-inline fn real34ToReal(src: *const real34_t, dst: *real_t) void {
+fn real34ToReal(src: *const real34_t, dst: *real_t) void {
     _ = decimal128ToNumber(src, dst);
 }
-inline fn real34IsZero(src: *const real34_t) bool_t {
+fn real34IsZero(src: *const real34_t) bool_t {
     return decQuadIsZero(src);
 }
-inline fn realToReal34(src: *const real_t, dst: *real34_t) void {
+fn realToReal34(src: *const real_t, dst: *real34_t) void {
     // realToReal34 macro uses &ctxtReal34; decimal128FromNumber needs a ctxt.
     _ = decimal128FromNumber(dst, src, &ctxtReal34);
 }
 extern var ctxtReal34: realContext_t;
-inline fn stringToReal(src: [*c]const u8, dst: *real_t, ctxt: *realContext_t) void {
+fn stringToReal(src: [*c]const u8, dst: *real_t, ctxt: *realContext_t) void {
     _ = decNumberFromString(dst, src, ctxt);
 }
-inline fn realIsNaN(src: *const real_t) bool_t {
+fn realIsNaN(src: *const real_t) bool_t {
     // decNumberIsNaN is a macro: ((dn->bits & (DECNAN|DECSNAN)) != 0).
     return (src.bits & DEC_NAN_BITS) != 0;
 }
-inline fn realIsNegative(src: *const real_t) bool_t {
+fn realIsNegative(src: *const real_t) bool_t {
     return (src.bits & 0x80) == 0x80;
 }
-inline fn realIsInfinite(src: *const real_t) bool_t {
+fn realIsInfinite(src: *const real_t) bool_t {
     // decNumberIsInfinite is a macro: ((dn->bits & DECINF) != 0).
     return (src.bits & DEC_INF_BIT) != 0;
 }
-inline fn realIsSpecial(src: *const real_t) bool_t {
+fn realIsSpecial(src: *const real_t) bool_t {
     // decNumberIsSpecial is a macro: ((dn->bits & DECSPECIAL) != 0).
     return (src.bits & DEC_SPECIAL_BITS) != 0;
 }
-inline fn realMultiply(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+fn realMultiply(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberMultiply(res, op1, op2, ctxt);
 }
 extern fn decNumberSquareRoot(res: *real_t, rhs: *const real_t, ctx: *realContext_t) *real_t;
-inline fn realSquareRoot(op: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+fn realSquareRoot(op: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberSquareRoot(res, op, ctxt);
 }
-inline fn realSetPositiveSign(v: *real_t) void {
+fn realSetPositiveSign(v: *real_t) void {
     v.bits &= 0x7F;
 }
 // Additional real_t primitives for the decimal range flow / screen mapping.
@@ -351,31 +351,31 @@ extern fn realSetZero(v: *real_t) void;
 extern fn realSetOne(v: *real_t) void;
 extern fn realCompareLessThan(a: *const real_t, b: *const real_t) bool_t;
 extern fn realToInt32C47(r: *const real_t, err: ?*bool_t) i32;
-inline fn realCopy(src: *const real_t, dst: *real_t) void {
+fn realCopy(src: *const real_t, dst: *real_t) void {
     _ = decNumberCopy(dst, src);
 }
-inline fn realCopyAbs(src: *const real_t, dst: *real_t) void {
+fn realCopyAbs(src: *const real_t, dst: *real_t) void {
     _ = decNumberCopyAbs(dst, src);
 }
-inline fn realAdd(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn realAdd(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberAdd(res, a, b, ctx);
 }
-inline fn realSubtract(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn realSubtract(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberSubtract(res, a, b, ctx);
 }
-inline fn realDivide(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn realDivide(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberDivide(res, a, b, ctx);
 }
-inline fn int32ToReal(source: i32, dst: *real_t) void {
+fn int32ToReal(source: i32, dst: *real_t) void {
     _ = decNumberFromInt32(dst, source);
 }
 extern fn realToDouble(vv: *const real_t, v: *f64) void;
-inline fn realToDoubleVal(v: *const real_t) f64 {
+fn realToDoubleVal(v: *const real_t) f64 {
     var d: f64 = 0;
     realToDouble(v, &d);
     return d;
 }
-inline fn convertDoubleToReal(x: f64, dst: *real_t, ctx: *realContext_t) void {
+fn convertDoubleToReal(x: f64, dst: *real_t, ctx: *realContext_t) void {
     frontier_register_value_conversions.convertDoubleToReal(x, dst, ctx);
 }
 
@@ -472,7 +472,7 @@ extern fn fnMinExpStdDev(unused: u16) void;
 
 // int32ToReal34 is a macro -> decQuadFromInt32; reproduce via the decQuad fn.
 extern fn decQuadFromInt32(dst: *real34_t, src: i32) *real34_t;
-inline fn int32ToReal34(source: i32, destination: *real34_t) void {
+fn int32ToReal34(source: i32, destination: *real34_t) void {
     _ = decQuadFromInt32(destination, source);
 }
 const REGISTER_REAL34_DATA = abi.registerReal34;
@@ -481,7 +481,7 @@ const REGISTER_REAL34_DATA = abi.registerReal34;
 extern fn printf(fmt: [*:0]const u8, ...) c_int;
 // A `%u` conversion of an int16_t operand: C integer-promotes it to int and
 // printf reinterprets those bits as unsigned.
-inline fn uArg(v: i16) c_uint {
+fn uArg(v: i16) c_uint {
     return @bitCast(@as(c_int, v));
 }
 extern fn strcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8;
@@ -498,7 +498,7 @@ extern fn time(t: ?*time_t) time_t;
 extern fn fabs(x: f64) f64;
 extern fn sqrtf(x: f32) f32;
 
-inline fn stringByteLength(s: [*c]const u8) i32 {
+fn stringByteLength(s: [*c]const u8) i32 {
     return @intCast(strlen(s));
 }
 
@@ -509,7 +509,7 @@ inline fn stringByteLength(s: [*c]const u8) i32 {
 // ---------------------------------------------------------------------------
 const LcdFillRectFn = *const fn (x: u32, y: u32, dx: u32, dy: u32, val: c_int) callconv(.c) void;
 const c_lcd_fill_rect = @extern(LcdFillRectFn, .{ .name = "lcd_fill_rect" });
-inline fn lcd_fill_rect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void {
+fn lcd_fill_rect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void {
     if (comptime dmcp_build) {
         rom.lcd_fill_rect(x, y, dx, dy, val);
     } else {
@@ -519,7 +519,7 @@ inline fn lcd_fill_rect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void {
 
 const Bitblt24Fn = *const fn (x: u32, dx: u32, y: u32, val: u32, blt_op: c_int, fill: c_int) callconv(.c) void;
 const c_bitblt24 = @extern(Bitblt24Fn, .{ .name = "bitblt24" });
-inline fn bitblt24(x: u32, dx: u32, y: u32, val: u32, blt_op: c_int, fill: c_int) void {
+fn bitblt24(x: u32, dx: u32, y: u32, val: u32, blt_op: c_int, fill: c_int) void {
     if (comptime dmcp_build) {
         rom.bitblt24(x, dx, y, val, blt_op, fill);
     } else {
@@ -530,28 +530,28 @@ const BLT_OR: c_int = 0;
 const BLT_ANDN: c_int = 1;
 const BLT_NONE: c_int = 0;
 // hal/lcd.h: on the DMCP firmware the pixel routines are written once, in screen.c.
-inline fn setBlackPixel(x: u32, y: u32) void {
+fn setBlackPixel(x: u32, y: u32) void {
     if (comptime dmcp_build) frontier_screen.setBlackPixel(x, y) else bitblt24(x, 1, y, 1, BLT_OR, BLT_NONE);
 }
-inline fn setWhitePixel(x: u32, y: u32) void {
+fn setWhitePixel(x: u32, y: u32) void {
     if (comptime dmcp_build) frontier_screen.setWhitePixel(x, y) else bitblt24(x, 1, y, 1, BLT_ANDN, BLT_NONE);
 }
 
 // ---------------------------------------------------------------------------
 // max/min macros (defines.h).  Operate at i32 (C int) precision then narrow.
 // ---------------------------------------------------------------------------
-inline fn maxI(a: i32, b: i32) i32 {
+fn maxI(a: i32, b: i32) i32 {
     return if (a > b) a else b;
 }
-inline fn minI(a: i32, b: i32) i32 {
+fn minI(a: i32, b: i32) i32 {
     return if (a < b) a else b;
 }
-inline fn maxF(a: f32, b: f32) f32 {
+fn maxF(a: f32, b: f32) f32 {
     return if (a > b) a else b;
 }
 
 // moreInfoOnError helper (host-only console hint).
-inline fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void {
+fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void {
     c_moreInfoOnError(m1, m2, m3, m4);
 }
 
@@ -714,7 +714,7 @@ pub export fn clearScreenPixels() callconv(.c) void {
 // (C uses max((int16_t)..,0): i16-narrowed operand then int max -> reproduce
 // by narrowing the subtraction to i16 then promoting back to i32 for max.)
 // ===========================================================================
-inline fn i16w(v: i32) i16 {
+fn i16w(v: i32) i16 {
     return @truncate(v);
 }
 
@@ -1295,7 +1295,7 @@ pub export fn plotPointGeneric(xn: i16, yn: i16, xo: i16, yo: i16, PLOT_CROSS: b
 }
 
 // int32 plot-point count narrowed to the uint16 the C stores it in.
-inline fn pointCount(n: i32) u16 {
+fn pointCount(n: i32) u16 {
     return @truncate(@as(u32, @bitCast(n)));
 }
 
@@ -1599,7 +1599,7 @@ pub fn z47_frontier_plot_report_no_data() void {
     }
 }
 
-inline fn yLine(off: i32) u32 {
+fn yLine(off: i32) u32 {
     return @bitCast(Y_POSITION_OF_REGISTER_Z_LINE + off);
 }
 
@@ -1607,7 +1607,7 @@ inline fn yLine(off: i32) u32 {
 // subtracting the measured string width from a fixed column, which goes negative
 // as soon as the number is wider than the anchor; C converts that int to
 // uint32_t modularly and the text simply lands off-screen. Wrap, never trap.
-inline fn showX(x: i32) u32 {
+fn showX(x: i32) u32 {
     return @bitCast(x);
 }
 
@@ -1681,7 +1681,7 @@ pub export fn graphDrawLRline(selection: u16) callconv(.c) void {
 }
 
 // orOrtho(a) ((a)==0 ? CF_ORTHOGONAL_FITTING : a)
-inline fn orOrtho(a: u16) u16 {
+fn orOrtho(a: u16) u16 {
     return if (a == 0) CF_ORTHOGONAL_FITTING else a;
 }
 
@@ -1953,7 +1953,7 @@ fn drawline(selection: u16, RR: *real_t, SMI: *real_t, aa0: *real_t, aa1: *real_
 }
 
 // isnan(float) faithfully (C isnan macro).
-inline fn isnanF(v: f32) bool {
+fn isnanF(v: f32) bool {
     return v != v;
 }
 
@@ -1962,7 +1962,7 @@ const softmenu_t = abi.Softmenu;
 const softmenuStack_t = abi.SoftmenuStack;
 const softmenu = @extern([*c]const softmenu_t, .{ .name = "softmenu" });
 extern var softmenuStack: [8]softmenuStack_t;
-inline fn softmenuMenuItem0() i16 {
+fn softmenuMenuItem0() i16 {
     return softmenu[@intCast(softmenuStack[0].softmenuId)].menuItem;
 }
 
@@ -2008,6 +2008,6 @@ const CM_NORMAL: u8 = 0;
 const CM_PLOT_STAT: u8 = 8;
 const CM_GRAPH: u8 = 15;
 extern var calcMode: u8;
-inline fn GRAPHMODE() bool {
+fn GRAPHMODE() bool {
     return calcMode == CM_PLOT_STAT or calcMode == CM_GRAPH;
 }

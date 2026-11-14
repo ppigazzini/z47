@@ -24,11 +24,11 @@ const complexElems = abi.matrixComplexElems;
 
 // real34Copy / complex34Copy upstream are raw element copies (defines.h);
 // real34Copy(const34_0, dst) zero-fills, equivalent to decQuadZero.
-inline fn real34Copy(source: *const real34_t, destination: *real34_t) void {
+fn real34Copy(source: *const real34_t, destination: *real34_t) void {
     destination.* = source.*;
 }
 const complex34Copy = abi.complex34Copy;
-inline fn real34SetZero(destination: *real34_t) void {
+fn real34SetZero(destination: *real34_t) void {
     _ = decQuadZero(destination);
 }
 

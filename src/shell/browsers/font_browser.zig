@@ -30,7 +30,7 @@ const videoMode_t = c_int;
 // rest matters for the element stride of the glyphs[] array.
 const glyph_t = abi.Glyph;
 const font_t = abi.Font;
-inline fn glyphsOf(font: *const font_t) [*]const glyph_t {
+fn glyphsOf(font: *const font_t) [*]const glyph_t {
     return &font.glyphs;
 }
 
@@ -90,7 +90,7 @@ extern fn clearSystemFlag(flag: c_uint) void;
 // ---------------------------------------------------------------------------
 // Inline wrappers (the C macros)
 // ---------------------------------------------------------------------------
-inline fn minU16(a: u16, b: u16) u16 {
+fn minU16(a: u16, b: u16) u16 {
     return if (a < b) a else b;
 }
 

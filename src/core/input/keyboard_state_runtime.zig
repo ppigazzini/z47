@@ -155,7 +155,7 @@ extern fn z47_keyboard_state_fnKeyDotD(unused_but_mandatory_parameter: u16) void
 // lets the user set calcModel to a foreign model on any build, and upstream
 // answers with its own model's table, not the foreign one.
 extern fn getKbdStd() *const [37]calcKey_t;
-pub inline fn kbdStdAt(index: usize) calcKey_t {
+pub fn kbdStdAt(index: usize) calcKey_t {
     const selected: *const [37]calcKey_t = if (comptime is_dmcp_build) getKbdStd() else switch (calcModel) {
         USER_C47 => &kbd_std_C47,
         USER_DM42 => &kbd_std_DM42,
@@ -172,7 +172,7 @@ pub inline fn kbdStdAt(index: usize) calcKey_t {
     return selected[index];
 }
 
-pub inline fn maxAbs(item: i16) u16 {
+pub fn maxAbs(item: i16) u16 {
     if (item < 0) {
         return @intCast(-item);
     }
@@ -266,7 +266,7 @@ pub extern fn pemAddNumber(item: i16, do_insert_in_program: bool_t) void;
 pub extern fn getDataTypeName(dt: u16, article: bool_t, pad_with_blanks: bool_t) [*c]const u8;
 pub extern fn getRegisterTagName(regist: i16, pad_with_blanks: bool_t) [*c]const u8;
 pub extern fn moreInfoOnError(m1: [*c]const u8, m2: [*c]const u8, m3: [*c]const u8, m4: [*c]const u8) void;
-pub inline fn getRegisterAngularMode(regist: i16) u32 {
+pub fn getRegisterAngularMode(regist: i16) u32 {
     return getRegisterTag(regist) & amAngleMask;
 }
 
@@ -510,10 +510,10 @@ pub fn menuDown() void {
     doRefreshSoftMenu = true;
 }
 
-pub inline fn softmenuItemAt(index: i16) i16 {
+pub fn softmenuItemAt(index: i16) i16 {
     return softmenu[@intCast(index)].menuItem;
 }
-pub inline fn currentNumberOfLocalRegisters() u8 {
+pub fn currentNumberOfLocalRegisters() u8 {
     return currentSubroutineLevelData.*.numberOfLocalRegisters;
 }
 // modulo(n, d) macro (defines.h, valid for d > 0): C truncated remainder lifted
@@ -572,13 +572,13 @@ pub extern fn reallocateRegister(regist: i16, data_type: u32, data_size_without_
 pub extern fn xcopy(dest: [*c]u8, source: [*c]const u8, n: u32) [*c]u8;
 
 // TO_BLOCKS(n): bytes -> 4-byte blocks (BYTES_PER_BLOCK = 4, BPB = 2).
-pub inline fn toBlocks(n: u32) u16 {
+pub fn toBlocks(n: u32) u16 {
     return block_math.toBlocks(u16, n);
 }
 // REGISTER_STRING_DATA(reg): skip the 4-byte string/long-int header.
 pub const registerStringData = abi.registerString;
 // TO_PCMEMPTR(p): block number -> RAM pointer, or null for the C47_NULL sentinel.
-pub inline fn toPcMemPtr(p: u16) ?[*]u8 {
+pub fn toPcMemPtr(p: u16) ?[*]u8 {
     if (p == C47_NULL) return null;
     return std.mem.asBytes(&ram[p]);
 }
@@ -635,7 +635,7 @@ pub extern var BASE_OVERRIDEONCE: bool_t;
 // Upstream keeps errorMessages[][] in a static pool reached via this accessor
 // (error.c), with no array symbol. errorMessageOf(code) -> message pointer.
 pub extern fn errorMessageOf(errorCode: u8) [*c]const u8;
-pub inline fn errorMessageAt(row: usize) [*c]const u8 {
+pub fn errorMessageAt(row: usize) [*c]const u8 {
     return errorMessageOf(@intCast(row));
 }
 
@@ -666,7 +666,7 @@ pub extern fn isAlphaSubmenu(n: u8) bool_t;
 const rom = @import("dmcp_rom");
 const LcdFillRectFn = *const fn (x: u32, y: u32, dx: u32, dy: u32, val: c_int) callconv(.c) void;
 const c_lcd_fill_rect = if (!is_dmcp_build) @extern(LcdFillRectFn, .{ .name = "lcd_fill_rect" }) else {};
-pub inline fn lcd_fill_rect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void {
+pub fn lcd_fill_rect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void {
     if (comptime is_dmcp_build) {
         rom.lcd_fill_rect(x, y, dx, dy, val);
     } else {
@@ -678,7 +678,7 @@ fn jmShowCalcStateNoop(comment: [*c]const u8) callconv(.c) void {
     _ = comment; // host-only telltale; no-op on firmware
 }
 const jm_show_calc_state_impl: JmShowCalcStateFn = if (is_dmcp_build) &jmShowCalcStateNoop else @extern(JmShowCalcStateFn, .{ .name = "jm_show_calc_state" });
-pub inline fn jm_show_calc_state(comment: [*c]const u8) void {
+pub fn jm_show_calc_state(comment: [*c]const u8) void {
     jm_show_calc_state_impl(comment);
 }
 pub fn stayInAIM() void {
@@ -733,11 +733,11 @@ pub extern fn showHideAlphaMode() void;
 const CalcModeGuiFn = *const fn () callconv(.c) void;
 fn calcModeGuiNoop() callconv(.c) void {}
 const calcModeAimGui_impl: CalcModeGuiFn = if (is_dmcp_build) &calcModeGuiNoop else @extern(CalcModeGuiFn, .{ .name = "calcModeAimGui" });
-pub inline fn calcModeAimGui() void {
+pub fn calcModeAimGui() void {
     calcModeAimGui_impl();
 }
 const calcModeNormalGui_impl: CalcModeGuiFn = if (is_dmcp_build) &calcModeGuiNoop else @extern(CalcModeGuiFn, .{ .name = "calcModeNormalGui" });
-pub inline fn calcModeNormalGui() void {
+pub fn calcModeNormalGui() void {
     calcModeNormalGui_impl();
 }
 
@@ -1344,28 +1344,28 @@ pub extern fn showAlphaModeonGui() void;
 // real externs.
 const LcdRefreshFn = *const fn () callconv(.c) void;
 const c_lcd_refresh = if (!is_dmcp_build) @extern(LcdRefreshFn, .{ .name = "lcd_refresh" }) else {};
-pub inline fn lcd_refresh() void {
+pub fn lcd_refresh() void {
     if (comptime is_dmcp_build) {
         rom.lcd_refresh();
     } else c_lcd_refresh();
 }
 const KeyPopFn = *const fn () callconv(.c) c_int;
 const c_key_pop = if (!is_dmcp_build) @extern(KeyPopFn, .{ .name = "key_pop" }) else {};
-pub inline fn key_pop() c_int {
+pub fn key_pop() c_int {
     if (comptime is_dmcp_build) {
         return rom.key_pop();
     } else return c_key_pop();
 }
 const KeyPushFn = *const fn (k1: c_int) callconv(.c) c_int;
 const c_key_push = if (!is_dmcp_build) @extern(KeyPushFn, .{ .name = "key_push" }) else {};
-pub inline fn key_push(k1: c_int) c_int {
+pub fn key_push(k1: c_int) c_int {
     if (comptime is_dmcp_build) {
         return rom.key_push(k1);
     } else return c_key_push(k1);
 }
 const WaitForKeyReleaseFn = *const fn (tout: c_int) callconv(.c) void;
 const c_wait_for_key_release = if (!is_dmcp_build) @extern(WaitForKeyReleaseFn, .{ .name = "wait_for_key_release" }) else {};
-pub inline fn wait_for_key_release(tout: c_int) void {
+pub fn wait_for_key_release(tout: c_int) void {
     if (comptime is_dmcp_build) {
         rom.wait_for_key_release(tout);
     } else c_wait_for_key_release(tout);

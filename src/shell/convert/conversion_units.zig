@@ -64,39 +64,39 @@ extern fn realPower10(x: *const real_t, res: *real_t, ctx: *realContext_t) void;
 // so cstR hands out an aligned real_t, as the C macros' (real_t *) casts assume.
 const cst = consts.cstR;
 const realIsZero = abi.realIsZero;
-inline fn realIsNegative(r: *const real_t) bool {
+fn realIsNegative(r: *const real_t) bool {
     return (r.bits & 0x80) != 0;
 }
-inline fn rMul(a: *const real_t, b: *const real_t, res: *real_t) void {
+fn rMul(a: *const real_t, b: *const real_t, res: *real_t) void {
     _ = decNumberMultiply(res, a, b, &ctxtReal39);
 }
-inline fn rDiv(a: *const real_t, b: *const real_t, res: *real_t) void {
+fn rDiv(a: *const real_t, b: *const real_t, res: *real_t) void {
     _ = decNumberDivide(res, a, b, &ctxtReal39);
 }
-inline fn rAdd(a: *const real_t, b: *const real_t, res: *real_t) void {
+fn rAdd(a: *const real_t, b: *const real_t, res: *real_t) void {
     _ = decNumberAdd(res, a, b, &ctxtReal39);
 }
-inline fn rSub(a: *const real_t, b: *const real_t, res: *real_t) void {
+fn rSub(a: *const real_t, b: *const real_t, res: *real_t) void {
     _ = decNumberSubtract(res, a, b, &ctxtReal39);
 }
 // The same four at a caller-chosen context: a conversion that ends in one
 // operation rounds it once, at the Real34 context the result takes.
-inline fn rMulCtx(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn rMulCtx(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberMultiply(res, a, b, ctx);
 }
-inline fn rDivCtx(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn rDivCtx(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberDivide(res, a, b, ctx);
 }
-inline fn rAddCtx(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn rAddCtx(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberAdd(res, a, b, ctx);
 }
-inline fn rSubCtx(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn rSubCtx(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberSubtract(res, a, b, ctx);
 }
-inline fn getRegisterAngularMode(reg: i16) c_int {
+fn getRegisterAngularMode(reg: i16) c_int {
     return @intCast(getRegisterTag(reg) & amAngleMask);
 }
-inline fn setRegisterAngularMode(reg: i16, am: u32) void {
+fn setRegisterAngularMode(reg: i16, am: u32) void {
     setRegisterTag(reg, am);
 }
 
@@ -384,7 +384,7 @@ pub export fn fnCvtTemp(ix: u16) callconv(.c) void {
     adjustResult(REGISTER_X, false, false, -1, -1, -1);
 }
 
-inline fn cvtAngle(reg_mode_a: c_int, reg_mode_b: c_int, multiply_divide: u16, coeff_offset: u32) void {
+fn cvtAngle(reg_mode_a: c_int, reg_mode_b: c_int, multiply_divide: u16, coeff_offset: u32) void {
     if (getRegisterDataType(REGISTER_X) == dtReal34 and
         ((getRegisterAngularMode(REGISTER_X) == reg_mode_a and multiply_divide == divide) or
             (getRegisterAngularMode(REGISTER_X) == reg_mode_b and multiply_divide == multiply)))
@@ -914,11 +914,11 @@ const STD_RIGHT_ARROW: [*:0]const u8 = "\xa1\x92";
 const STD_LEFT_ARROW: [*:0]const u8 = "\xa1\x90";
 
 extern fn strlen(s: [*c]const u8) usize;
-inline fn stringByteLength(str: [*c]const u8) i32 {
+fn stringByteLength(str: [*c]const u8) i32 {
     return @intCast(strlen(str));
 }
 // stringCopy is a macro for stpcpy (returns pointer to dst's terminating NUL).
-inline fn stringCopy(dst: [*c]u8, src: [*c]const u8) [*c]u8 {
+fn stringCopy(dst: [*c]u8, src: [*c]const u8) [*c]u8 {
     return frontier_char_string.stringCopy(dst, src);
 }
 fn truncateAtArrow(label: [*c]u8) void {

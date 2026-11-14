@@ -875,7 +875,7 @@ extern fn printf(fmt: [*:0]const u8, ...) c_int;
 // moreInfoOnError, reached through the EXTRA_INFO_ON_CALC_ERROR gate upstream puts
 // around each of its call sites.
 const c_moreInfoOnError = @extern(*const fn (m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) callconv(.c) void, .{ .name = "moreInfoOnError" });
-inline fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8) void {
+fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8) void {
     if (comptime extra_info) c_moreInfoOnError(m1, m2, null, null);
 }
 
@@ -956,10 +956,10 @@ extern fn SetSetting(jmConfig: u16) void;
 // ---------------------------------------------------------------------------
 // Inline helpers mirroring c47.h macros.
 // ---------------------------------------------------------------------------
-inline fn toBlocks(n: u32) u32 {
+fn toBlocks(n: u32) u32 {
     return abi.block_math.toBlocks(u32, n);
 }
-inline fn toBytes(n: u32) u32 {
+fn toBytes(n: u32) u32 {
     return abi.block_math.toBytes(u32, n);
 }
 // TO_PCMEMPTR(p): (p==C47_NULL)?NULL:ram+p  (p is a 16-bit block index)
@@ -970,30 +970,30 @@ inline fn toPcMemPtr(comptime T: type, p: u32) ?*align(4) T {
     return std.mem.bytesAsValue(T, std.mem.sliceAsBytes(words[p..][0..@divExact(@sizeOf(T), 4)]));
 }
 // TO_C47MEMPTR(p): (p==NULL)?C47_NULL:(uint16_t)((uint32_t*)p - ram)
-inline fn toC47MemPtr(p: ?*const anyopaque) u16 {
+fn toC47MemPtr(p: ?*const anyopaque) u16 {
     if (p == null) return C47_NULL;
     return @intCast((@intFromPtr(p) - @intFromPtr(ram)) / @sizeOf(u32));
 }
 // int32ToReal(s,d) / realToReal34(s,d) / real34SetZero(d)
-inline fn int32ToReal(source: i32, destination: *real_t) void {
+fn int32ToReal(source: i32, destination: *real_t) void {
     _ = decNumberFromInt32(destination, source);
 }
-inline fn realCopy(source: *const real_t, destination: *real_t) void {
+fn realCopy(source: *const real_t, destination: *real_t) void {
     _ = decNumberCopy(destination, source);
 }
-inline fn realToReal34(source: *const real_t, destination: *real34_t) void {
+fn realToReal34(source: *const real_t, destination: *real34_t) void {
     _ = decimal128FromNumber(destination, source, &ctxtReal34);
 }
-inline fn real34SetZero(destination: *real34_t) void {
+fn real34SetZero(destination: *real34_t) void {
     _ = decQuadZero(destination);
 }
-inline fn int32ToReal34(source: i32, destination: *real34_t) void {
+fn int32ToReal34(source: i32, destination: *real34_t) void {
     _ = decQuadFromInt32(destination, source);
 }
 // REGISTER_REAL34_DATA(a)
 const reg34 = abi.registerReal34Aligned;
 // reserved-variable register data pointer (4-byte block aligned).
-inline fn reservedReal34(varNo: usize) *align(4) real34_t {
+fn reservedReal34(varNo: usize) *align(4) real34_t {
     const blk = allReservedVariables[varNo].header.descriptor & 0xFFFF;
     return toPcMemPtr(real34_t, blk).?;
 }
@@ -1001,15 +1001,15 @@ inline fn reservedReal34(varNo: usize) *align(4) real34_t {
 const FLAG_SSIZE8: i32 = 32792;
 const REGISTER_D: calcRegister_t = 107;
 const REGISTER_T: calcRegister_t = 103;
-inline fn getStackTop() calcRegister_t {
+fn getStackTop() calcRegister_t {
     return if (getSystemFlag(FLAG_SSIZE8)) REGISTER_D else REGISTER_T;
 }
 // shortIntegerModeValue()
-inline fn shortIntegerModeValue() i32 {
+fn shortIntegerModeValue() i32 {
     return if (shortIntegerMode == SIM_2COMPL) 2 else if (shortIntegerMode == SIM_1COMPL) 1 else if (shortIntegerMode == SIM_UNSIGN) 0 else -1;
 }
 // isR47FAM macro
-inline fn isR47FAM() bool_t {
+fn isR47FAM() bool_t {
     return calcModel == USER_R47f_g or calcModel == USER_R47bk_fg or calcModel == USER_R47fg_bk or calcModel == USER_R47fg_g;
 }
 // checkHP macro, which screen.c defines as checkHPMode.
@@ -1022,7 +1022,7 @@ const normKey00Key = frontier_assign.getNormKey00Key;
 const normKey00ItemInLayout = frontier_assign.getNormKey00ItemInLayout;
 
 // SET_ST(STAT_PGM_END): set the bit in the fixed-address sdb.calc_state word.
-inline fn setStatPgmEnd() void {
+fn setStatPgmEnd() void {
     rom.sdb().calc_state |= STAT_PGM_END;
 }
 
@@ -1895,12 +1895,12 @@ pub export fn initSimEqMatABX() callconv(.c) void {
     real34SetZero(matrixElementsAfterHeader(matrixHeader));
 }
 // matrixHeader bit-fields: matrixRows:12, matrixColumns:12, mtag:6, notUsed:2.
-inline fn setMatrixDims(h: *matrixHeader_t, rows: u32, cols: u32) void {
+fn setMatrixDims(h: *matrixHeader_t, rows: u32, cols: u32) void {
     h.matrixRows = @truncate(rows);
     h.matrixColumns = @truncate(cols);
 }
 // REAL34_MATRIX_ELEMENTS_AFTER_MATRIX_HEADER(ptr): (real34_t*)((matrixHeader_t*)ptr + 1)
-inline fn matrixElementsAfterHeader(h: *align(4) matrixHeader_t) *align(4) real34_t {
+fn matrixElementsAfterHeader(h: *align(4) matrixHeader_t) *align(4) real34_t {
     const bytes: [*]align(4) u8 = std.mem.asBytes(h);
     return std.mem.bytesAsValue(real34_t, bytes[@sizeOf(matrixHeader_t)..][0..@sizeOf(real34_t)]);
 }
@@ -2664,33 +2664,33 @@ extern var deadKey: u32;
 
 const tamState_t = abi.TamState;
 extern var tam: tamState_t;
-inline fn tam_alpha_set(v: bool_t) void {
+fn tam_alpha_set(v: bool_t) void {
     tam.alpha = v;
 }
-inline fn tam_mode_set(v: u16) void {
+fn tam_mode_set(v: u16) void {
     tam.mode = v;
 }
 
 const printerState_t = abi.PrinterState;
 extern var printerState: printerState_t;
-inline fn printerState_print_on(v: bool_t) void {
+fn printerState_print_on(v: bool_t) void {
     printerState.print_on = v;
 }
-inline fn printerState_print_blank_line(v: u8) void {
+fn printerState_print_blank_line(v: u8) void {
     printerState.print_blank_line = v;
 }
-inline fn printerState_print_mode(v: abi.CEnum) void {
+fn printerState_print_mode(v: abi.CEnum) void {
     printerState.print_mode = v;
 }
-inline fn printerState_printer_model(v: abi.CEnum) void {
+fn printerState_printer_model(v: abi.CEnum) void {
     printerState.printer_model = v;
 }
-inline fn printerState_delay(v: u32) void {
+fn printerState_delay(v: u32) void {
     printerState.delay = @truncate(v);
 }
 
 // freeMemoryRegions[0] — array on host/new_hw, pointer-target on old_hw.
-inline fn freeRegion0() *freeMemoryRegion_t {
+fn freeRegion0() *freeMemoryRegion_t {
     if (comptime globalRegister_is_array) {
         const p: [*]freeMemoryRegion_t = freeMemoryRegions_array;
         return &p[0];
@@ -2704,14 +2704,14 @@ const SCREEN_WIDTH: u32 = 400;
 const LCD_SET_VALUE: c_int = 0;
 const LcdFillRectFn = *const fn (x: u32, y: u32, dx: u32, dy: u32, val: c_int) callconv(.c) void;
 const c_lcd_fill_rect = if (!dmcp_build) @extern(LcdFillRectFn, .{ .name = "lcd_fill_rect" }) else {};
-inline fn lcdFillRect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void {
+fn lcdFillRect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void {
     if (comptime dmcp_build) {
         rom.lcd_fill_rect(x, y, dx, dy, val);
     } else {
         c_lcd_fill_rect(x, y, dx, dy, val);
     }
 }
-inline fn clearScreen(cnt: u16) void {
+fn clearScreen(cnt: u16) void {
     _ = cnt;
     lcdFillRect(0, 0, SCREEN_WIDTH, 240, LCD_SET_VALUE);
     frontier_status_bar.forceSBupdate();
@@ -2842,7 +2842,7 @@ fn checkBattery_impl() callconv(.c) void {
 const FLAG_LOWBAT_i: i32 = 49173;
 
 // firmware-internal call from doFnReset.
-inline fn checkBatteryFw() void {
+fn checkBatteryFw() void {
     if (comptime dmcp_build) checkBattery_impl();
 }
 

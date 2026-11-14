@@ -48,16 +48,16 @@ pub const Complex = extern struct {
     Real: Real,
     Imag: Real,
 
-    pub inline fn mag(self: *Complex) *Real {
+    pub fn mag(self: *Complex) *Real {
         return &self.Real;
     }
-    pub inline fn arg(self: *Complex) *Real {
+    pub fn arg(self: *Complex) *Real {
         return &self.Imag;
     }
-    pub inline fn constMag(self: *const Complex) *const Real {
+    pub fn constMag(self: *const Complex) *const Real {
         return &self.Real;
     }
-    pub inline fn constArg(self: *const Complex) *const Real {
+    pub fn constArg(self: *const Complex) *const Real {
         return &self.Imag;
     }
 };

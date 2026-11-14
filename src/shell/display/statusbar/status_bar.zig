@@ -315,7 +315,7 @@ extern fn printf(fmt: [*:0]const u8, ...) c_int;
 // ---------------------------------------------------------------------------
 const LcdFillRectFn = *const fn (x: u32, y: u32, dx: u32, dy: u32, val: c_int) callconv(.c) void;
 const c_lcd_fill_rect = @extern(LcdFillRectFn, .{ .name = "lcd_fill_rect" });
-inline fn lcd_fill_rect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void {
+fn lcd_fill_rect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void {
     if (comptime dmcp_build) {
         rom.lcd_fill_rect(x, y, dx, dy, val);
     } else {
@@ -325,7 +325,7 @@ inline fn lcd_fill_rect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void {
 
 const Bitblt24Fn = *const fn (x: u32, dx: u32, y: u32, val: u32, blt_op: c_int, fill: c_int) callconv(.c) void;
 const c_bitblt24 = @extern(Bitblt24Fn, .{ .name = "bitblt24" });
-inline fn bitblt24(x: u32, dx: u32, y: u32, val: u32, blt_op: c_int, fill: c_int) void {
+fn bitblt24(x: u32, dx: u32, y: u32, val: u32, blt_op: c_int, fill: c_int) void {
     if (comptime dmcp_build) {
         rom.bitblt24(x, dx, y, val, blt_op, fill);
     } else {
@@ -336,10 +336,10 @@ const BLT_OR: c_int = 0;
 const BLT_ANDN: c_int = 1;
 const BLT_NONE: c_int = 0;
 // hal/lcd.h: on the DMCP firmware the pixel routines are written once, in screen.c.
-inline fn setBlackPixel(x: u32, y: u32) void {
+fn setBlackPixel(x: u32, y: u32) void {
     if (comptime dmcp_build) frontier_screen.setBlackPixel(x, y) else bitblt24(x, 1, y, 1, BLT_OR, BLT_NONE);
 }
-inline fn setWhitePixel(x: u32, y: u32) void {
+fn setWhitePixel(x: u32, y: u32) void {
     if (comptime dmcp_build) frontier_screen.setWhitePixel(x, y) else bitblt24(x, 1, y, 1, BLT_ANDN, BLT_NONE);
 }
 
@@ -351,74 +351,74 @@ extern fn updateVbatIntegrated(minutePulse: bool_t) c_int;
 // ---------------------------------------------------------------------------
 // max/min helpers (C macros).
 // ---------------------------------------------------------------------------
-inline fn maxI(a: i32, b: i32) i32 {
+fn maxI(a: i32, b: i32) i32 {
     return if (a > b) a else b;
 }
-inline fn minI(a: i32, b: i32) i32 {
+fn minI(a: i32, b: i32) i32 {
     return if (a < b) a else b;
 }
 
 // SBARUPD_* macro helpers.
-inline fn sbDate() bool {
+fn sbDate() bool {
     return getSystemFlag(FLAG_SBdate);
 }
-inline fn sbTime() bool {
+fn sbTime() bool {
     return getSystemFlag(FLAG_SBtime);
 }
-inline fn sbWoY() bool {
+fn sbWoY() bool {
     return getSystemFlag(FLAG_SBwoy);
 }
-inline fn sbComplexResult() bool {
+fn sbComplexResult() bool {
     return getSystemFlag(FLAG_SBcr);
 }
-inline fn sbComplexMode() bool {
+fn sbComplexMode() bool {
     return getSystemFlag(FLAG_SBcpx);
 }
-inline fn sbAngularModeBasic() bool {
+fn sbAngularModeBasic() bool {
     return getSystemFlag(FLAG_SBang);
 }
-inline fn sbAngularMode() bool {
+fn sbAngularMode() bool {
     return getSystemFlag(FLAG_SBadm);
 }
 // The angular-mode display is optional only in degree mode: any other mode
 // always shows, so the reading is never ambiguous.
-inline fn actualSbAngularMode() bool {
+fn actualSbAngularMode() bool {
     return sbAngularMode() or currentAngularMode != amDegree;
 }
-inline fn sbFractionModeAndBaseMode() bool {
+fn sbFractionModeAndBaseMode() bool {
     return getSystemFlag(FLAG_SBfrac);
 }
-inline fn sbIntegerMode() bool {
+fn sbIntegerMode() bool {
     return getSystemFlag(FLAG_SBint);
 }
-inline fn sbMatrixMode() bool {
+fn sbMatrixMode() bool {
     return getSystemFlag(FLAG_SBmx);
 }
-inline fn sbTVMMode() bool {
+fn sbTVMMode() bool {
     return getSystemFlag(FLAG_SBtvm);
 }
-inline fn sbOCCarryMode() bool {
+fn sbOCCarryMode() bool {
     return getSystemFlag(FLAG_SBoc);
 }
-inline fn sbStackSize() bool {
+fn sbStackSize() bool {
     return getSystemFlag(FLAG_SBss);
 }
-inline fn sbStopWatch() bool {
+fn sbStopWatch() bool {
     return getSystemFlag(FLAG_SBstpw);
 }
-inline fn sbSerialIO() bool {
+fn sbSerialIO() bool {
     return getSystemFlag(FLAG_SBser);
 }
-inline fn sbPrinter() bool {
+fn sbPrinter() bool {
     return getSystemFlag(FLAG_SBprn);
 }
-inline fn sbBatVoltage() bool {
+fn sbBatVoltage() bool {
     return getSystemFlag(FLAG_SBbatV);
 }
-inline fn sbarShift() bool {
+fn sbarShift() bool {
     return getSystemFlag(FLAG_SBshfR);
 }
-inline fn graphMode() bool {
+fn graphMode() bool {
     return calcMode == CM_PLOT_STAT or calcMode == CM_GRAPH;
 }
 // plainTextMode / labelText macros (defines.h).
@@ -430,32 +430,32 @@ const TM_LABEL: u16 = 10009;
 const TM_LBLONLY: u16 = 10018;
 const TM_SOLVE: u16 = 10010;
 const TM_STORCL: u16 = 10006;
-inline fn plainTextMode() bool {
+fn plainTextMode() bool {
     return calcMode == CM_AIM or ((calcMode == CM_PEM or calcMode == CM_ASSIGN) and getSystemFlag(FLAG_ALPHA_SB));
 }
-inline fn labelText() bool {
+fn labelText() bool {
     return (tam.mode == TM_MENU or tam.mode == TM_LABEL or tam.mode == TM_LBLONLY or tam.mode == TM_SOLVE or tam.mode == TM_STORCL or tam.alpha) and getSystemFlag(FLAG_ALPHA_SB);
 }
 // X_DATE = (SBARUPD_Time || SBARUPD_WoY) ? 1 : 25
-inline fn xDate() i32 {
+fn xDate() i32 {
     return status_bar_geometry.xDate(sbTime(), sbWoY());
 }
 // X_SHIFT
-inline fn xShift() i32 {
+fn xShift() i32 {
     return status_bar_geometry.xShift(getSystemFlag(FLAG_SBshfR), X_SHIFT_R, X_SHIFT_L);
 }
 // Y_SHIFT
 // Where the status bar keeps the date and the time, the shift indicator goes on the T
 // line; the screen owner works that out from the flags.
-inline fn shiftOnTline() bool {
+fn shiftOnTline() bool {
     return frontier_screen.shiftOnTline != 0;
 }
 
-inline fn yShift() i32 {
+fn yShift() i32 {
     return status_bar_geometry.yShift(sbDate(), sbTime(), sbWoY(), sbarShift(), Y_SHIFT_LO);
 }
 // lowerUnderLine
-inline fn lowerUnderLine() i32 {
+fn lowerUnderLine() i32 {
     return status_bar_geometry.lowerUnderLine(calcMode == CM_REGISTER_BROWSER or calcMode == CM_FLAG_BROWSER);
 }
 
@@ -691,10 +691,10 @@ fn showBaseMode() bool_t {
 
 // showString takes uint32_t y in the C prototype, but statusBar passes negative y
 // (e.g. -4) which wraps in the unsigned arg. Reproduce with a 2's-complement cast.
-inline fn showStringY(str: [*c]const u8, font: *const font_t, x: u32, y: i32, video: videoMode_t, lead: bool_t, end_: bool_t) u32 {
+fn showStringY(str: [*c]const u8, font: *const font_t, x: u32, y: i32, video: videoMode_t, lead: bool_t, end_: bool_t) u32 {
     return frontier_screen.showString(str, font, x, @bitCast(y), video, @intFromBool(lead), @intFromBool(end_));
 }
-inline fn showGlyphY(ch: [*c]const u8, font: *const font_t, x: u32, y: i32, video: videoMode_t, lead: bool_t, end_: bool_t, npc: bool_t) u32 {
+fn showGlyphY(ch: [*c]const u8, font: *const font_t, x: u32, y: i32, video: videoMode_t, lead: bool_t, end_: bool_t, npc: bool_t) u32 {
     return frontier_screen.showGlyph(ch, font, x, @bitCast(y), video, @intFromBool(lead), @intFromBool(end_), @intFromBool(npc));
 }
 
@@ -897,7 +897,7 @@ fn showIntegerMode() bool_t {
         return false;
     }
 }
-inline fn strlenZ(s: [*c]const u8) usize {
+fn strlenZ(s: [*c]const u8) usize {
     var i: usize = 0;
     while (s[i] != 0) : (i += 1) {}
     return i;
@@ -936,7 +936,7 @@ fn clearINT_MX_TVM_MODE() void {
 }
 
 // SETT_AlphaMode macro.
-inline fn settAlphaMode() u16 {
+fn settAlphaMode() u16 {
     return @as(u16, nextChar) +%
         (@as(u16, scrLock) << 10) +%
         (@as(u16, alphaCase) << 12) +%

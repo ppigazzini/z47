@@ -199,13 +199,13 @@ extern fn decQuadZero(r: *real34_t) *real34_t;
 // on-screen keyboard) they are real functions. Call them only on the host;
 // no-op on firmware to match the C macro expansion.
 const VoidFn = *const fn () callconv(.c) void;
-inline fn calcModeNormalGui() void {
+fn calcModeNormalGui() void {
     if (comptime !dmcp_build) @extern(VoidFn, .{ .name = "calcModeNormalGui" })();
 }
-inline fn calcModeAimGui() void {
+fn calcModeAimGui() void {
     if (comptime !dmcp_build) @extern(VoidFn, .{ .name = "calcModeAimGui" })();
 }
-inline fn calcModeTamGui() void {
+fn calcModeTamGui() void {
     if (comptime !dmcp_build) @extern(VoidFn, .{ .name = "calcModeTamGui" })();
 }
 
@@ -227,15 +227,15 @@ extern var shiftG: bool_t;
 // Inline wrappers (the C macros)
 // ---------------------------------------------------------------------------
 const reg34 = abi.registerReal34Aligned;
-inline fn real34SetZero(destination: *real34_t) void {
+fn real34SetZero(destination: *real34_t) void {
     _ = decQuadZero(destination);
 }
-inline fn setRegisterAngularMode(reg: calcRegister_t, am: angularMode_t) void {
+fn setRegisterAngularMode(reg: calcRegister_t, am: angularMode_t) void {
     setRegisterTag(reg, @bitCast(am));
 }
 
 // SET_ST(STAT_PGM_END): set a bit in the fixed-address sdb.calc_state word.
-inline fn setStatPgmEnd() void {
+fn setStatPgmEnd() void {
     rom.sdb().calc_state |= STAT_PGM_END;
 }
 

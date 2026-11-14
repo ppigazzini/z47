@@ -673,16 +673,16 @@ pub fn C47_WP34S_Atan(x: *const real_t, angle: *real_t, realContext: *realContex
 }
 
 // pi-family selectors used by doAtan2 (the _pi/_piOn2/... macros).
-inline fn pi_d(d: i32) *const real_t {
+fn pi_d(d: i32) *const real_t {
     return if (d > 51) (if (d > 75) const1071_pi() else const75_pi()) else const39_pi();
 }
-inline fn piOn2_d(d: i32) *const real_t {
+fn piOn2_d(d: i32) *const real_t {
     return if (d > 51) (if (d > 75) const1071_piOn2() else const75_piOn2()) else const39_piOn2();
 }
-inline fn piOn4_d(d: i32) *const real_t {
+fn piOn4_d(d: i32) *const real_t {
     return if (d > 51) (if (d > 75) const1071_piOn4() else const75_piOn4()) else const39_piOn4();
 }
-inline fn threePiOn4_d(d: i32) *const real_t {
+fn threePiOn4_d(d: i32) *const real_t {
     return if (d > 51) (if (d > 75) const1071_3piOn4() else const75_3piOn4()) else const39_3piOn4();
 }
 

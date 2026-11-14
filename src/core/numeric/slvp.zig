@@ -78,10 +78,10 @@ const realSetZero = runtime.realSetZero;
 const realChangeSign = runtime.realChangeSign;
 const realCompareEqual = runtime.realCompareEqual;
 
-inline fn realCopy(source: *const real_t, destination: *real_t) void {
+fn realCopy(source: *const real_t, destination: *real_t) void {
     destination.* = source.*;
 }
-inline fn realGetExponent(source: *const real_t) i32 {
+fn realGetExponent(source: *const real_t) i32 {
     return source.digits + source.exponent - 1;
 }
 

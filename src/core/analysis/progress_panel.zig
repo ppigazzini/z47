@@ -13,7 +13,7 @@ const consts = abi.constants;
 const real_t = abi.Real;
 const real34_t = abi.Real34;
 
-inline fn const34_0() *const real34_t {
+fn const34_0() *const real34_t {
     return consts.q16200();
 }
 const calcRegister_t = runtime.calcRegister_t;
@@ -41,10 +41,10 @@ const force: u8 = 1;
 const REAL34_SIGN_BIT: u8 = 0x80;
 
 const real34IsSpecial = abi.real34IsSpecial;
-inline fn real34IsZero(v: *const real34_t) bool {
+fn real34IsZero(v: *const real34_t) bool {
     return runtime.decQuadIsZero(v) != 0;
 }
-inline fn real34IsNegative(v: *const real34_t) bool {
+fn real34IsNegative(v: *const real34_t) bool {
     return (v.bytes[15] & REAL34_SIGN_BIT) != 0;
 }
 

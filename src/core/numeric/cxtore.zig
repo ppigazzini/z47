@@ -34,7 +34,7 @@ const TI_THETA_RADIUS: u8 = 3;
 const TI_RE_IM: u8 = 6;
 
 // real34Copy(source, destination): copy the 16 raw bytes.
-inline fn real34Copy(source: *const real34_t, destination: *real34_t) void {
+fn real34Copy(source: *const real34_t, destination: *real34_t) void {
     destination.* = source.*;
 }
 
@@ -63,27 +63,27 @@ fn rectangularToPolar34InUnit(
 const displayCalcErrorMessage = runtime.displayCalcErrorMessage;
 const moreInfoOnError = runtime.moreInfoOnError;
 
-inline fn REGISTER_REAL34_DATA(reg: calcRegister_t) *real34_t {
+fn REGISTER_REAL34_DATA(reg: calcRegister_t) *real34_t {
     return runtime.registerReal34Ptr(reg);
 }
-inline fn REGISTER_IMAG34_DATA(reg: calcRegister_t) *real34_t {
+fn REGISTER_IMAG34_DATA(reg: calcRegister_t) *real34_t {
     return runtime.registerImag34Ptr(reg);
 }
-inline fn VARIABLE_REAL34_DATA(elem: *runtime.complex34_t) *real34_t {
+fn VARIABLE_REAL34_DATA(elem: *runtime.complex34_t) *real34_t {
     return &elem.real;
 }
-inline fn VARIABLE_IMAG34_DATA(elem: *runtime.complex34_t) *real34_t {
+fn VARIABLE_IMAG34_DATA(elem: *runtime.complex34_t) *real34_t {
     return &elem.imag;
 }
 
-inline fn complexMatrixElements(mat: *complex34Matrix_t) [*]runtime.complex34_t {
+fn complexMatrixElements(mat: *complex34Matrix_t) [*]runtime.complex34_t {
     if (runtime.harness_surface_is_fake) {
         return &mat.matrixElements;
     } else {
         return mat.matrixElements;
     }
 }
-inline fn realMatrixElements(mat: *real34Matrix_t) [*]real34_t {
+fn realMatrixElements(mat: *real34Matrix_t) [*]real34_t {
     if (runtime.harness_surface_is_fake) {
         return &mat.matrixElements;
     } else {

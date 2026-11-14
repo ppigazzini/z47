@@ -325,11 +325,11 @@ pub export fn complexMagnitude(a: *const cplx_t, c: *real_t, real_context: *real
 }
 
 // real34ChangeSign and real34Copy are realType.h macros over the 16 decQuad bytes.
-inline fn real34ChangeSign(value: *real34_t) void {
+fn real34ChangeSign(value: *real34_t) void {
     value.bytes[15] ^= 0x80;
 }
 
-inline fn real34Copy(source: *const real34_t, destination: *real34_t) void {
+fn real34Copy(source: *const real34_t, destination: *real34_t) void {
     destination.bytes = source.bytes;
 }
 

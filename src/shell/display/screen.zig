@@ -209,13 +209,13 @@ const DOUBLINGBASEX: u16 = 8;
 const REDUCT_A1: c_int = 4;
 const REDUCT_B1: c_int = 4;
 const REDUCT_OFFSET1: c_int = 0;
-inline fn REDUCT_A() c_int {
+fn REDUCT_A() c_int {
     return if (checkHP()) REDUCT_A1 else 3;
 }
-inline fn REDUCT_B() c_int {
+fn REDUCT_B() c_int {
     return if (checkHP()) REDUCT_B1 else 4;
 }
-inline fn REDUCT_OFF() c_int {
+fn REDUCT_OFF() c_int {
     return if (checkHP()) REDUCT_OFFSET1 else 3;
 }
 
@@ -824,11 +824,11 @@ const commonBugScreenMessages = @extern([*c]const [100]u8, .{ .name = "commonBug
 // A NUL-terminated view of an error message for std.fmt {s}. errorMessageOf
 // answers a [*c] pointer, which inherits `allowzero` and so is rejected by {s};
 // one localized cast here yields the plain [:0]const u8 the formatter wants.
-inline fn errMsgRow(idx: anytype) [:0]const u8 {
+fn errMsgRow(idx: anytype) [:0]const u8 {
     return std.mem.sliceTo(@as([*:0]const u8, errMsg(idx)), 0);
 }
 // errorMessageOf (error.c): the message for one error/status code.
-inline fn errMsg(idx: anytype) [*c]const u8 {
+fn errMsg(idx: anytype) [*c]const u8 {
     return frontier_error.errorMessageOf(@intCast(idx));
 }
 const baseDigits = @extern([*c]const u8, .{ .name = "baseDigits" });
@@ -839,7 +839,7 @@ const kbd_usr = @extern([*c]const calcKey_t, .{ .name = "kbd_usr" });
 // the data segment -> SIGSEGV on the R47 f/g underline path (same class as
 // screenData). Bind the pointer's storage and deref.
 const lcd_bufferPtr = @extern(*[*c]u8, .{ .name = "lcd_buffer" });
-inline fn lcd_buffer() [*c]u8 {
+fn lcd_buffer() [*c]u8 {
     return lcd_bufferPtr.*;
 }
 
@@ -967,11 +967,11 @@ var lastShowStringY: u32 = 0;
 var aTextLineHeight: u8 = 20;
 var aTextBold: bool = false;
 
-inline fn gramodInShowString() bool {
+fn gramodInShowString() bool {
     return option_atext and allowGramodInShowString;
 }
 
-inline fn numericBold() bool {
+fn numericBold() bool {
     return if (option_atext_fonts and allowGramodInShowString) aTextBold else getSystemFlag(FLAG_BOLD) != 0;
 }
 pub export var displaymode: u8 = stdNoEnlarge;
@@ -1095,7 +1095,7 @@ extern var current_cursor_y: u16;
 extern var alphaCursor: i16;
 
 const SIGMA_N = struct {
-    inline fn ptr() *const real_t {
+    fn ptr() *const real_t {
         return statisticalSumsPointer;
     }
 };
@@ -1103,17 +1103,17 @@ const SIGMA_N = struct {
 // ---------------------------------------------------------------------------
 // min/max/mod (C macros). C int-promotes; we operate in i32 then narrow.
 // ---------------------------------------------------------------------------
-inline fn minI(a: i32, b: i32) i32 {
+fn minI(a: i32, b: i32) i32 {
     return if (a < b) a else b;
 }
-inline fn maxI(a: i32, b: i32) i32 {
+fn maxI(a: i32, b: i32) i32 {
     return if (a > b) a else b;
 }
-inline fn absI(a: i32) i32 {
+fn absI(a: i32) i32 {
     return if (a < 0) -a else a;
 }
 // mod(n,d) = (((n%d)+d)%d)
-inline fn mod(n: i32, d: i32) i32 {
+fn mod(n: i32, d: i32) i32 {
     return @rem(@rem(n, d) + d, d);
 }
 
@@ -1125,7 +1125,7 @@ const rom = @import("dmcp_rom");
 
 const LcdFillRectFn = *const fn (x: u32, y: u32, dx: u32, dy: u32, val: c_int) callconv(.c) void;
 const c_lcd_fill_rect = @extern(LcdFillRectFn, .{ .name = "lcd_fill_rect" });
-inline fn lcd_fill_rect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void {
+fn lcd_fill_rect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void {
     if (comptime dmcp_build) {
         rom.lcd_fill_rect(x, y, dx, dy, val);
     } else {
@@ -1135,7 +1135,7 @@ inline fn lcd_fill_rect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void {
 
 const LcdRefreshFn = *const fn () callconv(.c) void;
 const c_lcd_refresh = @extern(LcdRefreshFn, .{ .name = "lcd_refresh" });
-inline fn lcd_refresh() void {
+fn lcd_refresh() void {
     if (comptime dmcp_build) {
         rom.lcd_refresh();
     } else {
@@ -1145,7 +1145,7 @@ inline fn lcd_refresh() void {
 
 const LcdRefreshLinesFn = *const fn (ln: c_int, cnt: c_int) callconv(.c) void;
 const c_lcd_refresh_lines = @extern(LcdRefreshLinesFn, .{ .name = "lcd_refresh_lines" });
-inline fn lcd_refresh_lines(ln: c_int, cnt: c_int) void {
+fn lcd_refresh_lines(ln: c_int, cnt: c_int) void {
     if (comptime dmcp_build) {
         rom.lcd_refresh_lines(ln, cnt);
     } else {
@@ -1155,7 +1155,7 @@ inline fn lcd_refresh_lines(ln: c_int, cnt: c_int) void {
 
 const LcdRefreshDmaFn = *const fn () callconv(.c) void;
 const c_lcd_refresh_dma = @extern(LcdRefreshDmaFn, .{ .name = "lcd_refresh_dma" });
-inline fn lcd_refresh_dma() void {
+fn lcd_refresh_dma() void {
     if (comptime dmcp_build) {
         rom.lcd_refresh_dma();
     } else {
@@ -1165,7 +1165,7 @@ inline fn lcd_refresh_dma() void {
 
 const LcdWriteLineFn = *const fn (buf: [*c]u8) callconv(.c) void;
 const c_LCD_write_line = @extern(LcdWriteLineFn, .{ .name = "LCD_write_line" });
-inline fn LCD_write_line(buf: [*c]u8) void {
+fn LCD_write_line(buf: [*c]u8) void {
     if (comptime dmcp_build) {
         rom.LCD_write_line(buf);
     } else {
@@ -1175,7 +1175,7 @@ inline fn LCD_write_line(buf: [*c]u8) void {
 
 const Bitblt24Fn = *const fn (x: u32, dx: u32, y: u32, val: u32, blt_op: c_int, fill: c_int) callconv(.c) void;
 const c_bitblt24 = @extern(Bitblt24Fn, .{ .name = "bitblt24" });
-inline fn bitblt24(x: u32, dx: u32, y: u32, val: u32, blt_op: c_int, fill: c_int) void {
+fn bitblt24(x: u32, dx: u32, y: u32, val: u32, blt_op: c_int, fill: c_int) void {
     if (comptime dmcp_build) {
         rom.bitblt24(x, dx, y, val, blt_op, fill);
     } else {
@@ -1208,10 +1208,10 @@ pub fn flipPixel(x: u32, y: u32) void {
 // SNAP_REGISTERS_OK / SNAP_MENUS_OK (defines.h): the X register and menu captures
 // are valid in any mode bar a SHOW page; the full screen capture is valid in
 // every mode.
-pub inline fn snapRegistersOk() bool {
+pub fn snapRegistersOk() bool {
     return frontier_softmenus.currentMenu() != -MNU_SHOW;
 }
-pub inline fn snapMenusOk() bool {
+pub fn snapMenusOk() bool {
     return frontier_softmenus.currentMenu() != -MNU_SHOW;
 }
 // ---------------------------------------------------------------------------
@@ -1230,7 +1230,7 @@ extern var lastKeyItemDetermined: i16;
 const addItemToBufferPtr = @extern(*const fn (u16) callconv(.c) void, .{ .name = "addItemToBuffer" });
 // calcModeAimGui: no-op macro on DMCP; real GTK symbol on host sim.
 const calcModeAimGuiExtern = if (!dmcp_build) @extern(*const fn () callconv(.c) void, .{ .name = "calcModeAimGui" }) else {};
-inline fn calcModeAimGui() void {
+fn calcModeAimGui() void {
     if (comptime !dmcp_build) {
         calcModeAimGuiExtern();
     }
@@ -1265,14 +1265,14 @@ extern fn fnTimerStart(nr: u8, param: u16, time: u32) void;
 // lcd_refresh_lines(0, 20); on host they are real first-party symbols.
 const c__lcdRefresh = if (!dmcp_build) @extern(*const fn () callconv(.c) void, .{ .name = "_lcdRefresh" }) else {};
 const c__lcdSBRefresh = if (!dmcp_build) @extern(*const fn () callconv(.c) void, .{ .name = "_lcdSBRefresh" }) else {};
-inline fn _lcdRefresh() void {
+fn _lcdRefresh() void {
     if (comptime dmcp_build) {
         lcd_refresh();
     } else {
         c__lcdRefresh();
     }
 }
-inline fn _lcdSBRefresh() void {
+fn _lcdSBRefresh() void {
     if (comptime dmcp_build) {
         lcd_refresh_lines(0, 20);
     } else {
@@ -1283,7 +1283,7 @@ inline fn _lcdSBRefresh() void {
 // DMCP ROM function-table entry on firmware, the HAL's own symbol on host.
 const LcdLineAddrFn = *const fn (row: c_int) callconv(.c) [*c]u8;
 const c_lcd_line_addr = if (!dmcp_build) @extern(LcdLineAddrFn, .{ .name = "lcd_line_addr" }) else {};
-inline fn lcd_line_addr(row: c_int) [*c]u8 {
+fn lcd_line_addr(row: c_int) [*c]u8 {
     if (comptime dmcp_build) {
         return rom.lcd_line_addr(row);
     } else {
@@ -1356,41 +1356,41 @@ extern fn __gmpz_clear(op: [*c]mpz_struct) void;
 // ---------------------------------------------------------------------------
 // realType.h / longIntegerType.h inline wrappers.
 // ---------------------------------------------------------------------------
-inline fn real34Reduce(operand: *const real34_t, res: *real34_t) void {
+fn real34Reduce(operand: *const real34_t, res: *real34_t) void {
     _ = decQuadReduce(res, operand, &ctxtReal34);
 }
-inline fn real34ToString(source_: *const real34_t, destination: [*c]u8) void {
+fn real34ToString(source_: *const real34_t, destination: [*c]u8) void {
     _ = decQuadToString(source_, destination);
 }
-inline fn real34IsZero(source_: *const real34_t) bool {
+fn real34IsZero(source_: *const real34_t) bool {
     return decQuadIsZero(source_) != 0;
 }
-inline fn real34IsNegative(source_: *const real34_t) bool {
+fn real34IsNegative(source_: *const real34_t) bool {
     return (source_.bytes[15] & 0x80) == 0x80;
 }
-inline fn real34SetPositiveSign(operand: *real34_t) void {
+fn real34SetPositiveSign(operand: *real34_t) void {
     operand.bytes[15] &= 0x7F;
 }
-inline fn realToReal34(source_: *const real_t, destination: *real34_t) void {
+fn realToReal34(source_: *const real_t, destination: *real34_t) void {
     _ = decimal128FromNumber(destination, source_, &ctxtReal34);
 }
-inline fn realMultiply(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn realMultiply(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberMultiply(res, a, b, ctx);
 }
-inline fn realAdd(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn realAdd(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberAdd(res, a, b, ctx);
 }
-inline fn realToString(r: *const real_t, str: [*c]u8) void {
+fn realToString(r: *const real_t, str: [*c]u8) void {
     _ = decNumberToString(r, str);
 }
-inline fn longIntegerInit(op: *longInteger_t) void {
+fn longIntegerInit(op: *longInteger_t) void {
     __gmpz_init(&op[0]);
 }
-inline fn longIntegerFree(op: *longInteger_t) void {
+fn longIntegerFree(op: *longInteger_t) void {
     __gmpz_clear(&op[0]);
 }
 
-inline fn stringByteLength(str: [*c]const u8) i32 {
+fn stringByteLength(str: [*c]const u8) i32 {
     return @intCast(strlen(str));
 }
 
@@ -1404,52 +1404,52 @@ extern fn __gmpz_cmp_ui(op: [*c]const mpz_struct, v: c_ulong) c_int;
 extern fn __gmpz_cmp_si(op: [*c]const mpz_struct, v: c_long) c_int;
 const DEC_ROUND_DOWN: c_int = 5;
 
-inline fn stringCopy(dest: [*c]u8, source: [*c]const u8) [*c]u8 {
+fn stringCopy(dest: [*c]u8, source: [*c]const u8) [*c]u8 {
     return frontier_char_string.stringCopy(dest, source);
 }
-inline fn getRegisterShortIntegerBase(reg: calcRegister_t) u32 {
+fn getRegisterShortIntegerBase(reg: calcRegister_t) u32 {
     return getRegisterTag(reg);
 }
-inline fn int32ToReal34(source_: i32, destination: *real34_t) void {
+fn int32ToReal34(source_: i32, destination: *real34_t) void {
     _ = decQuadFromInt32(destination, source_);
 }
-inline fn uInt32ToReal34(source_: u32, destination: *real34_t) void {
+fn uInt32ToReal34(source_: u32, destination: *real34_t) void {
     _ = decQuadFromUInt32(destination, source_);
 }
-inline fn real34ToInt32(source_: *const real34_t) i32 {
+fn real34ToInt32(source_: *const real34_t) i32 {
     return decQuadToInt32(source_, &ctxtReal34, DEC_ROUND_DOWN);
 }
 // decNumberIsSpecial(dn) = (dn->bits & DECSPECIAL) != 0; DECSPECIAL = 0x70.
-inline fn realIsSpecial(source_: *const real_t) bool_t {
+fn realIsSpecial(source_: *const real_t) bool_t {
     return @intFromBool((source_.bits & 0x70) != 0);
 }
-inline fn longIntegerToInt32(op: *longInteger_t, dst: *i32) void {
+fn longIntegerToInt32(op: *longInteger_t, dst: *i32) void {
     dst.* = @truncate(__gmpz_get_si(&op[0]));
 }
-inline fn longIntegerToUInt32(op: *longInteger_t, dst: *u32) void {
+fn longIntegerToUInt32(op: *longInteger_t, dst: *u32) void {
     dst.* = @intCast(__gmpz_get_ui(&op[0]));
 }
-inline fn longIntegerCompareUInt(op: [*c]const mpz_struct, v: u32) i32 {
+fn longIntegerCompareUInt(op: [*c]const mpz_struct, v: u32) i32 {
     return __gmpz_cmp_ui(op, v);
 }
-inline fn longIntegerCompareInt(op: [*c]const mpz_struct, v: i32) i32 {
+fn longIntegerCompareInt(op: [*c]const mpz_struct, v: i32) i32 {
     return __gmpz_cmp_si(op, v);
 }
 // isR47FAM (defines.h)
 const USER_R47f_g: u8 = 61;
-inline fn isR47FAM() bool {
+fn isR47FAM() bool {
     return calcModel == USER_R47f_g or calcModel == USER_R47bk_fg or calcModel == USER_R47fg_bk or calcModel == USER_R47fg_g;
 }
-inline fn isArrowUp(code: u8) bool_t {
+fn isArrowUp(code: u8) bool_t {
     return @intFromBool((isR47FAM() and code == 22) or (!isR47FAM() and code == 17));
 }
-inline fn isArrowDown(code: u8) bool_t {
+fn isArrowDown(code: u8) bool_t {
     return @intFromBool((isR47FAM() and code == 27) or (!isR47FAM() and code == 22));
 }
-inline fn isShift(code: u8) bool_t {
+fn isShift(code: u8) bool_t {
     return @intFromBool((isR47FAM() and code == 10) or (isR47FAM() and code == 11) or (!isR47FAM() and code == 27));
 }
-inline fn orOrtho(a: u16) u16 {
+fn orOrtho(a: u16) u16 {
     return if (a == 0) CF_ORTHOGONAL_FITTING else a;
 }
 const isRegisterMatrix3dVector = abi.registers.isRegisterMatrix3dVector;
@@ -1462,18 +1462,18 @@ const REGISTER_REAL34_DATA = abi.registerReal34;
 const REGISTER_COMPLEX34_DATA = abi.registerComplex34;
 const SIZEOF_STR_LG_INT_HEADER: usize = 4;
 const REGISTER_STRING_DATA = abi.registerString;
-inline fn getRegisterAngularMode(reg: calcRegister_t) angularMode_t {
+fn getRegisterAngularMode(reg: calcRegister_t) angularMode_t {
     return @intCast(getRegisterTag(reg) & amAngleMask);
 }
-inline fn getComplexRegisterAngularMode(reg: calcRegister_t) angularMode_t {
+fn getComplexRegisterAngularMode(reg: calcRegister_t) angularMode_t {
     return @intCast(getRegisterTag(reg) & amAngleMask);
 }
-inline fn getComplexRegisterPolarMode(reg: calcRegister_t) u32 {
+fn getComplexRegisterPolarMode(reg: calcRegister_t) u32 {
     return getRegisterTag(reg) & amPolar;
 }
 // COPY_REGISTER_STRING_TO(dest, regist) from registers.h: skips the copy when
 // the register data pointer is NULL.
-inline fn COPY_REGISTER_STRING_TO(dest: [*c]u8, regist: calcRegister_t) void {
+fn COPY_REGISTER_STRING_TO(dest: [*c]u8, regist: calcRegister_t) void {
     const regData: [*c]u8 = getRegisterDataPointer(regist);
     if (regData != null) {
         const src: [*c]u8 = regData + SIZEOF_STR_LG_INT_HEADER;
@@ -1488,42 +1488,42 @@ extern var significantDigits: u8;
 extern var exponentLimit: i16;
 extern var Input_Default: u8;
 const checkHP = checkHPMode;
-inline fn HPFONT() bool {
+fn HPFONT() bool {
     return checkHP() and HPFONT1;
 }
 // HPFONT1 is true on host and the relevant builds; the #if guard reduces to
 // HPFONT1==true everywhere HPFONT is reached on z47 targets.
 const HPFONT1 = true;
-inline fn checkHPoffset() i32 {
+fn checkHPoffset() i32 {
     return if (checkHP() and temporaryInformation == TI_NO_INFO) 50 else 0;
 }
-inline fn runningOnSimOrUSB() bool {
+fn runningOnSimOrUSB() bool {
     if (comptime dmcp_build) {
         return getSystemFlag(FLAG_USB) != 0;
     } else {
         return true;
     }
 }
-inline fn GRAPHMODE() bool {
+fn GRAPHMODE() bool {
     return calcMode == CM_PLOT_STAT or calcMode == CM_GRAPH;
 }
 const SHOWMODE = showModeActive;
-inline fn PROBMENU() bool {
+fn PROBMENU() bool {
     return showingProbMenu() != 0;
 }
-inline fn menuItemOfTop() i16 {
+fn menuItemOfTop() i16 {
     return softmenu[@intCast(softmenuStack[0].softmenuId)].menuItem;
 }
 const BASEMODEACTIVE = baseModeActive;
-inline fn XXFNMODEACTIVE() bool {
+fn XXFNMODEACTIVE() bool {
     return !SHOWMODE() and !GRAPHMODE() and menuItemOfTop() == -MNU_XXFCNS and calcMode != CM_NIM and
         ((getRegisterDataType(REGISTER_X) == dtReal34 or getRegisterDataType(REGISTER_X) == dtLongInteger) or
             (getRegisterDataType(REGISTER_T) == dtReal34 or getRegisterDataType(REGISTER_T) == dtLongInteger));
 }
-inline fn DBASEMODE() bool {
+fn DBASEMODE() bool {
     return !SHOWMODE() and !GRAPHMODE() and !PROBMENU() and !XXFNMODEACTIVE() and dispBase >= 2;
 }
-inline fn BASEMODEREGISTERX() bool {
+fn BASEMODEREGISTERX() bool {
     return BASEMODEACTIVE() and displayStackSHOIDISP != 0 and
         ((calcMode == CM_NORMAL and getRegisterDataType(REGISTER_X) == dtShortInteger) or
             (calcMode == CM_NIM and getRegisterDataType(REGISTER_Y) == dtShortInteger) or
@@ -1533,10 +1533,10 @@ const isXFNregisterValid3r = abi.registers.isXFNregisterValid3r;
 // X_SHIFT / Y_SHIFT
 // X_SHIFT_L=0, X_SHIFT_R = X_PRINTER-1 = 361 (status-bar layout constant).
 const X_SHIFT_R: i32 = 361;
-inline fn X_SHIFT() i32 {
+fn X_SHIFT() i32 {
     return if (getSystemFlag(FLAG_SBshfR) != 0) X_SHIFT_R else 0;
 }
-inline fn Y_SHIFT() i32 {
+fn Y_SHIFT() i32 {
     const sbarShift = getSystemFlag(FLAG_SBshfR) != 0;
     const sbarupdDate = getSystemFlag(FLAG_SBdate) != 0;
     const sbarupdTime = getSystemFlag(FLAG_SBtime) != 0;
@@ -1548,10 +1548,10 @@ inline fn Y_SHIFT() i32 {
     return if (sbarShift) 0 else Y_POSITION_OF_REGISTER_T_LINE;
 }
 // PRODUCT_SIGN / COMPLEX_UNIT
-inline fn PRODUCT_SIGN() [*c]const u8 {
+fn PRODUCT_SIGN() [*c]const u8 {
     return if (getSystemFlag(FLAG_MULTx) != 0) STD_CROSS else STD_DOT;
 }
-inline fn COMPLEX_UNIT() [*c]const u8 {
+fn COMPLEX_UNIT() [*c]const u8 {
     return if (getSystemFlag(FLAG_CPXj) != 0) STD_op_j else STD_op_i;
 }
 
@@ -1576,11 +1576,11 @@ pub export fn updateShiftOnTline() callconv(.c) void {
     shiftOnTline = @intFromBool(Y_SHIFT() != 0);
 }
 
-inline fn funcNameOffset_x() i32 {
+fn funcNameOffset_x() i32 {
     return if (shiftOnTline != 0) shiftOffset else noShiftOffset;
 }
 // Where a line's text starts.
-inline fn lineIndent(regist: calcRegister_t) i16 {
+fn lineIndent(regist: calcRegister_t) i16 {
     return if (shiftOnTline != 0 and regist == REGISTER_T) shiftOffset else noShiftOffset;
 }
 
@@ -1592,7 +1592,7 @@ inline fn lineIndent(regist: calcRegister_t) i16 {
 const FUNC_FRAME_MIN_WIDTH: u16 = 80;
 
 // letteredRegisterName uses registerFlagLetters[regist - FIRST_LETTERED_REGISTER]
-inline fn letteredRegisterName(regist: calcRegister_t) u8 {
+fn letteredRegisterName(regist: calcRegister_t) u8 {
     return registerFlagLetters[@intCast(regist - FIRST_LETTERED_REGISTER)];
 }
 
@@ -1684,7 +1684,7 @@ pub export fn clear_fg_jm() callconv(.c) void {
     }
 }
 
-inline fn getLine_buffer_bit(x: i32) u16 {
+fn getLine_buffer_bit(x: i32) u16 {
     // C: `uint16_t getLine_buffer_bit(int x){ return 415-x; }` -- the signed
     // result is implicitly truncated to uint16_t (it wraps when x > 415, which
     // happens on the R47 f/g underline path). @intCast would panic; reproduce
@@ -1705,18 +1705,18 @@ fn lineLoad(row: u16) void {
     @memcpy(lcdLineBuf[0..52], (lcd_buffer() + 52 * @as(usize, row))[0..52]); // 52 and not LCD_LINE_BUF_SIZE: the two bytes beyond are the next line's header
 }
 
-inline fn lineFlush() void {
+fn lineFlush() void {
     LCD_write_line(&lcdLineBuf);
 }
 
-inline fn lineSetBlackPixel(x: u16) void {
+fn lineSetBlackPixel(x: u16) void {
     if (x < SCREEN_WIDTH) {
         const b = getLine_buffer_bit(x);
         lcdLineBuf[b >> 3] &= ~(@as(u8, 1) << @intCast(b & 7));
     }
 }
 
-inline fn lineSetPixelBit(x: u16, bit: bool) void { // writes a bit value, not a colour: for a pattern defined against the pixels already there
+fn lineSetPixelBit(x: u16, bit: bool) void { // writes a bit value, not a colour: for a pattern defined against the pixels already there
     if (x < SCREEN_WIDTH) {
         const b = getLine_buffer_bit(x);
         if (bit) {
@@ -1918,7 +1918,7 @@ pub export fn FN_handler_StepToNOP() callconv(.c) void {
 // IS_BASEBLANK_(menuId) (defines.h:2341): menuId==0 && !FLAG_BASE_MYM && !FLAG_BASE_HOME.
 // (NOT softmenu[id].menuItem==-MNU_BASE — that is the BASEMODEACTIVE idiom; an earlier
 // port misread the macro, mis-gating FN_handler's longpress shift cycle.)
-inline fn IS_BASEBLANK_(menuId: i16) bool {
+fn IS_BASEBLANK_(menuId: i16) bool {
     return menuId == 0 and getSystemFlag(FLAG_BASE_MYM) == 0 and getSystemFlag(FLAG_BASE_HOME) == 0;
 }
 
@@ -3756,22 +3756,22 @@ pub export fn _displayIJ(regist: calcRegister_t, prefix: [*c]u8, prefixWidth: *i
 
 // OPTION_VECTOR vector-component TI (gated).
 const compact: bool_t = 1;
-inline fn e0() [*c]const u8 {
+fn e0() [*c]const u8 {
     return if (getSystemFlag(FLAG_3DXYZ) != 0) "x" else "i";
 }
-inline fn e1() [*c]const u8 {
+fn e1() [*c]const u8 {
     return if (getSystemFlag(FLAG_3DXYZ) != 0) "y" else "j";
 }
-inline fn e2() [*c]const u8 {
+fn e2() [*c]const u8 {
     return if (getSystemFlag(FLAG_3DXYZ) != 0) "z" else "k";
 }
-inline fn _e0() [*c]const u8 {
+fn _e0() [*c]const u8 {
     return if (getSystemFlag(FLAG_3DXYZ) != 0) STD_SUB_x else STD_SUB_i;
 }
-inline fn _e1() [*c]const u8 {
+fn _e1() [*c]const u8 {
     return if (getSystemFlag(FLAG_3DXYZ) != 0) STD_SUB_y else STD_SUB_j;
 }
-inline fn _e2() [*c]const u8 {
+fn _e2() [*c]const u8 {
     return if (getSystemFlag(FLAG_3DXYZ) != 0) STD_SUB_z else STD_SUB_k;
 }
 const interspace = STD_SPACE_HAIR;
@@ -5992,15 +5992,15 @@ pub export fn clearTamBuffer() callconv(.c) void {
 }
 
 // useSmallShifts / displayF / displayG runtime macros.
-inline fn useSmallShifts() bool {
+fn useSmallShifts() bool {
     return shiftOnTline != 0 and !SHOWMODE() and calcMode == CM_NORMAL and
         (((!BASEMODEACTIVE() or displayStackSHOIDISP == 0) and getRegisterDataType(REGISTER_T) == dtShortInteger and getRegisterShortIntegerBase(REGISTER_T) < 4) or
             ((dispBase > 0) and (getRegisterDataType(REGISTER_X) == dtShortInteger or getRegisterDataType(REGISTER_X) == dtLongInteger)));
 }
-inline fn displayF() [*c]const u8 {
+fn displayF() [*c]const u8 {
     return if (useSmallShifts()) STD_f else STD_MODE_F;
 }
-inline fn displayG() [*c]const u8 {
+fn displayG() [*c]const u8 {
     return if (useSmallShifts()) STD_g else STD_MODE_G;
 }
 
@@ -6118,12 +6118,12 @@ fn _selectiveClearScreen() void {
 }
 
 // clearScreen / clearScreenStatusBar runtime macros (screen.h).
-inline fn clearScreen(cnt: u16) void {
+fn clearScreen(cnt: u16) void {
     _ = cnt;
     lcd_fill_rect(0, 0, SCREEN_WIDTH, 240, LCD_SET_VALUE);
     frontier_status_bar.forceSBupdate();
 }
-inline fn clearScreenStatusBar(cnt: u16) void {
+fn clearScreenStatusBar(cnt: u16) void {
     _ = cnt;
     lcd_fill_rect(0, 0, if (GRAPHMODE()) widthGraphInfoBox else @as(u32, @intCast(SCREEN_WIDTH)), 20, LCD_SET_VALUE);
     frontier_status_bar.forceSBupdate();
@@ -6131,7 +6131,7 @@ inline fn clearScreenStatusBar(cnt: u16) void {
 
 // screen.h's clearScreenExcludingStatusBar(cnt): everything below the status bar, the
 // count being the debug trace's only.
-inline fn clearScreenExcludingStatusBar(cnt: u16) void {
+fn clearScreenExcludingStatusBar(cnt: u16) void {
     _ = cnt;
     lcd_fill_rect(0, 20, SCREEN_WIDTH, 220, LCD_SET_VALUE);
 }

@@ -89,140 +89,140 @@ extern fn longIntegerSquare(op: *mpz_struct, result: *mpz_struct) void;
 // ---------------------------------------------------------------------------
 // longInteger* helper wrappers (longIntegerType.h inlines / macros).
 // ---------------------------------------------------------------------------
-inline fn longIntegerInit(op: *mpz_struct) void {
+fn longIntegerInit(op: *mpz_struct) void {
     __gmpz_init(op);
 }
-inline fn longIntegerFree(op: *mpz_struct) void {
+fn longIntegerFree(op: *mpz_struct) void {
     __gmpz_clear(op);
 }
-inline fn longIntegerCopy(source: *const mpz_struct, destination: *mpz_struct) void {
+fn longIntegerCopy(source: *const mpz_struct, destination: *mpz_struct) void {
     __gmpz_set(destination, source);
 }
-inline fn uInt32ToLongInteger(source: u32, destination: *mpz_struct) void {
+fn uInt32ToLongInteger(source: u32, destination: *mpz_struct) void {
     __gmpz_set_ui(destination, source);
 }
-inline fn int32ToLongInteger(source: i32, destination: *mpz_struct) void {
+fn int32ToLongInteger(source: i32, destination: *mpz_struct) void {
     __gmpz_set_si(destination, source);
 }
-inline fn stringToLongInteger(source: [*:0]const u8, radix: i32, destination: *mpz_struct) i32 {
+fn stringToLongInteger(source: [*:0]const u8, radix: i32, destination: *mpz_struct) i32 {
     return __gmpz_set_str(destination, source, radix);
 }
-inline fn longIntegerToUInt32(op: *const mpz_struct) u32 {
+fn longIntegerToUInt32(op: *const mpz_struct) u32 {
     // __gmpz_get_ui returns c_ulong (32-bit on Win64 LLP64, 64-bit elsewhere);
     // truncate the low 32 bits directly. @bitCast to a fixed-width usize would
     // size-mismatch against the 32-bit c_ulong on Win64.
     return @truncate(__gmpz_get_ui(op));
 }
-inline fn longIntegerToInt32(op: *const mpz_struct) i32 {
+fn longIntegerToInt32(op: *const mpz_struct) i32 {
     return @truncate(__gmpz_get_si(op));
 }
-inline fn longIntegerChangeSign(op: *mpz_struct) void {
+fn longIntegerChangeSign(op: *mpz_struct) void {
     op._mp_size = -op._mp_size;
 }
-inline fn longIntegerSetPositiveSign(op: *mpz_struct) void {
+fn longIntegerSetPositiveSign(op: *mpz_struct) void {
     op._mp_size = if (op._mp_size < 0) -op._mp_size else op._mp_size;
 }
 const longIntegerIsZero = math_real_predicates.longIntegerIsZero;
-inline fn longIntegerIsPositive(op: *const mpz_struct) bool {
+fn longIntegerIsPositive(op: *const mpz_struct) bool {
     return op._mp_size > 0;
 }
 const longIntegerIsNegative = math_real_predicates.longIntegerIsNegative;
-inline fn longIntegerIsEven(op: *const mpz_struct) bool {
+fn longIntegerIsEven(op: *const mpz_struct) bool {
     // mpz_even_p: size==0 || (low limb & 1)==0
     return op._mp_size == 0 or (op._mp_d[0] & 1) == 0;
 }
-inline fn longIntegerSign(op: *const mpz_struct) i32 {
+fn longIntegerSign(op: *const mpz_struct) i32 {
     return if (op._mp_size < 0) -1 else if (op._mp_size > 0) 1 else 0;
 }
-inline fn longIntegerCompare(op1: *const mpz_struct, op2: *const mpz_struct) i32 {
+fn longIntegerCompare(op1: *const mpz_struct, op2: *const mpz_struct) i32 {
     return __gmpz_cmp(op1, op2);
 }
-inline fn longIntegerCompareUInt(op: *const mpz_struct, u: u32) i32 {
+fn longIntegerCompareUInt(op: *const mpz_struct, u: u32) i32 {
     return __gmpz_cmp_ui(op, u);
 }
-inline fn longIntegerDivide(op1: *const mpz_struct, op2: *const mpz_struct, result: *mpz_struct) void {
+fn longIntegerDivide(op1: *const mpz_struct, op2: *const mpz_struct, result: *mpz_struct) void {
     __gmpz_tdiv_q(result, op1, op2);
 }
-inline fn longIntegerDivideUInt(op: *const mpz_struct, u: u32, result: *mpz_struct) void {
+fn longIntegerDivideUInt(op: *const mpz_struct, u: u32, result: *mpz_struct) void {
     _ = __gmpz_tdiv_q_ui(result, op, u);
 }
-inline fn longIntegerModulo(op1: *const mpz_struct, op2: *const mpz_struct, result: *mpz_struct) void {
+fn longIntegerModulo(op1: *const mpz_struct, op2: *const mpz_struct, result: *mpz_struct) void {
     __gmpz_mod(result, op1, op2);
 }
-inline fn longIntegerModuloUInt(op: *const mpz_struct, u: u32) u32 {
+fn longIntegerModuloUInt(op: *const mpz_struct, u: u32) u32 {
     return @truncate(__gmpz_fdiv_ui(op, u));
 }
-inline fn longIntegerSquareRoot(op: *const mpz_struct, result: *mpz_struct) void {
+fn longIntegerSquareRoot(op: *const mpz_struct, result: *mpz_struct) void {
     __gmpz_sqrt(result, op);
 }
-inline fn longIntegerPerfectSquare(op: *const mpz_struct) i32 {
+fn longIntegerPerfectSquare(op: *const mpz_struct) i32 {
     return __gmpz_perfect_square_p(op);
 }
-inline fn longIntegerMultiplyUInt(op: *const mpz_struct, u: u32, result: *mpz_struct) void {
+fn longIntegerMultiplyUInt(op: *const mpz_struct, u: u32, result: *mpz_struct) void {
     __gmpz_mul_ui(result, op, u);
 }
-inline fn longIntegerAddUInt(op: *const mpz_struct, u: u32, result: *mpz_struct) void {
+fn longIntegerAddUInt(op: *const mpz_struct, u: u32, result: *mpz_struct) void {
     __gmpz_add_ui(result, op, u);
 }
-inline fn longIntegerSubtractUInt(op: *const mpz_struct, u: u32, result: *mpz_struct) void {
+fn longIntegerSubtractUInt(op: *const mpz_struct, u: u32, result: *mpz_struct) void {
     __gmpz_sub_ui(result, op, u);
 }
-inline fn longIntegerPowerUIntUInt(base: u32, exponent: u32, result: *mpz_struct) void {
+fn longIntegerPowerUIntUInt(base: u32, exponent: u32, result: *mpz_struct) void {
     __gmpz_ui_pow_ui(result, base, exponent);
 }
-inline fn longIntegerGcd(op1: *const mpz_struct, op2: *const mpz_struct, result: *mpz_struct) void {
+fn longIntegerGcd(op1: *const mpz_struct, op2: *const mpz_struct, result: *mpz_struct) void {
     __gmpz_gcd(result, op1, op2);
 }
-inline fn longIntegerProbabPrime(op: *const mpz_struct) i32 {
+fn longIntegerProbabPrime(op: *const mpz_struct) i32 {
     return __gmpz_probab_prime_p(op, 25);
 }
-inline fn longIntegerIsPrime(op: *const mpz_struct) i32 {
+fn longIntegerIsPrime(op: *const mpz_struct) i32 {
     return __gmpz_probab_prime_p(op, 25);
 }
 
 // longIntegerPower (power.c): result = base ^ exponent (overflow-guarded).
 
 // The mpz_* names used directly by prime.c.
-inline fn mpz_fits_uint_p(op: *const mpz_struct) bool {
+fn mpz_fits_uint_p(op: *const mpz_struct) bool {
     return __gmpz_fits_uint_p(op) != 0;
 }
-inline fn mpz_fits_ulong_p(op: *const mpz_struct) bool {
+fn mpz_fits_ulong_p(op: *const mpz_struct) bool {
     return __gmpz_fits_ulong_p(op) != 0;
 }
-inline fn mpz_get_ui(op: *const mpz_struct) c_ulong {
+fn mpz_get_ui(op: *const mpz_struct) c_ulong {
     return __gmpz_get_ui(op);
 }
-inline fn mpz_divisible_ui_p(op: *const mpz_struct, d: c_ulong) bool {
+fn mpz_divisible_ui_p(op: *const mpz_struct, d: c_ulong) bool {
     return __gmpz_divisible_ui_p(op, d) != 0;
 }
-inline fn mpz_divexact_ui(q: *mpz_struct, n: *const mpz_struct, d: c_ulong) void {
+fn mpz_divexact_ui(q: *mpz_struct, n: *const mpz_struct, d: c_ulong) void {
     __gmpz_divexact_ui(q, n, d);
 }
-inline fn mpz_divexact(q: *mpz_struct, n: *const mpz_struct, d: *const mpz_struct) void {
+fn mpz_divexact(q: *mpz_struct, n: *const mpz_struct, d: *const mpz_struct) void {
     __gmpz_divexact(q, n, d);
 }
-inline fn mpz_gcd_ui(rop: *mpz_struct, op: *const mpz_struct, d: c_ulong) void {
+fn mpz_gcd_ui(rop: *mpz_struct, op: *const mpz_struct, d: c_ulong) void {
     _ = __gmpz_gcd_ui(rop, op, d);
 }
-inline fn mpz_abs(rop: *mpz_struct, op: *const mpz_struct) void {
+fn mpz_abs(rop: *mpz_struct, op: *const mpz_struct) void {
     __gmpz_abs(rop, op);
 }
-inline fn mpz_mul_2exp(rop: *mpz_struct, op: *const mpz_struct, v: c_ulong) void {
+fn mpz_mul_2exp(rop: *mpz_struct, op: *const mpz_struct, v: c_ulong) void {
     __gmpz_mul_2exp(rop, op, v);
 }
-inline fn mpz_add_ui(rop: *mpz_struct, op: *const mpz_struct, v: c_ulong) void {
+fn mpz_add_ui(rop: *mpz_struct, op: *const mpz_struct, v: c_ulong) void {
     __gmpz_add_ui(rop, op, v);
 }
-inline fn mpz_init(op: *mpz_struct) void {
+fn mpz_init(op: *mpz_struct) void {
     __gmpz_init(op);
 }
-inline fn mpz_clear(op: *mpz_struct) void {
+fn mpz_clear(op: *mpz_struct) void {
     __gmpz_clear(op);
 }
-inline fn mpz_mod(rop: *mpz_struct, n: *const mpz_struct, d: *const mpz_struct) void {
+fn mpz_mod(rop: *mpz_struct, n: *const mpz_struct, d: *const mpz_struct) void {
     __gmpz_mod(rop, n, d);
 }
-inline fn mpz_sizeinbase(op: *const mpz_struct, base: c_int) usize {
+fn mpz_sizeinbase(op: *const mpz_struct, base: c_int) usize {
     return __gmpz_sizeinbase(op, base);
 }
 
@@ -230,23 +230,23 @@ inline fn mpz_sizeinbase(op: *const mpz_struct, base: c_int) usize {
 // real_t / real34_t helpers and constants
 // ---------------------------------------------------------------------------
 // real_t constants: use the runtime accessors (properly-aligned *const real_t).
-inline fn const_0() *const real_t {
+fn const_0() *const real_t {
     return runtime.z47_math_wrappers_const_0();
 }
-inline fn const__1() *const real_t {
+fn const__1() *const real_t {
     return runtime.z47_math_wrappers_const_minus_1();
 }
-inline fn const_1() *const real_t {
+fn const_1() *const real_t {
     return runtime.z47_math_wrappers_const_1();
 }
 
 // real34Copy(source, destination): copy the 16 raw bytes.
-inline fn real34Copy(source: *const real34_t, destination: *real34_t) void {
+fn real34Copy(source: *const real34_t, destination: *real34_t) void {
     destination.* = source.*;
 }
 extern fn convertLongIntegerToReal34(source: *mpz_struct, destination: *real34_t) void;
 extern fn decQuadFromUInt32(destination: *real34_t, source: u32) *real34_t;
-inline fn uInt32ToReal34Impl(source: u32, destination: *real34_t) void {
+fn uInt32ToReal34Impl(source: u32, destination: *real34_t) void {
     _ = decQuadFromUInt32(destination, source);
 }
 extern fn convertReal34ToLongInteger(real34: *const real34_t, lgInt: *mpz_struct, mode: c_int) void;
@@ -254,14 +254,14 @@ extern fn convertLongIntegerToReal(source: *mpz_struct, destination: *real_t, ct
 
 // real34SetZero(destination) => decQuadZero(destination)
 extern fn decQuadZero(destination: *real34_t) *real34_t; // lastAdded is naturally aligned
-inline fn real34SetZero(destination: *real34_t) void {
+fn real34SetZero(destination: *real34_t) void {
     _ = decQuadZero(destination);
 }
 
 // roundingMode / roundingModeTable
 extern var roundingMode: u8;
 const roundingModeTable = @extern([*]const c_int, .{ .name = "roundingModeTable" });
-inline fn currentRoundingMode() c_int {
+fn currentRoundingMode() c_int {
     return roundingModeTable[roundingMode];
 }
 
@@ -379,11 +379,11 @@ fn moreInfoOnErrorFormat(function_name: [*:0]const u8, comptime format: []const 
 
 // realIsNegative / realMultiply / real34ToReal are C macros; reproduce them.
 const realIsNegative = math_real_predicates.realIsNegative;
-inline fn realMultiply(operand1: *const real_t, operand2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+fn realMultiply(operand1: *const real_t, operand2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = runtime.decNumberMultiply(res, operand1, operand2, ctxt);
 }
 extern fn decimal128ToNumber(source: *const real34_t, destination: *real_t) *real_t;
-inline fn real34ToReal(source: *const real34_t, destination: *real_t) void {
+fn real34ToReal(source: *const real34_t, destination: *real_t) void {
     _ = decimal128ToNumber(source, destination);
 }
 
@@ -489,7 +489,7 @@ const pollard_t = struct {
 
 const max_iterations: c_int = 1000000;
 const max_attempts: c_int = 1000;
-inline fn maxIter(self: *const pollard_t) c_int {
+fn maxIter(self: *const pollard_t) c_int {
     return if (self.attempt <= 25) @divTrunc(max_iterations, 10) else (if (self.attempt <= 50) max_iterations else max_iterations * 4);
 }
 
@@ -571,7 +571,7 @@ pub export fn fnIsPrime(unused_but_mandatory_parameter: u16) callconv(.c) void {
     setTiTrueFalse(longIntegerIsPositive(&primeCandidate) and longIntegerIsPrime(&primeCandidate) != 0);
 }
 
-inline fn setTiTrueFalse(condition: bool) void {
+fn setTiTrueFalse(condition: bool) void {
     temporaryInformation = TI_FALSE + @as(u8, @intFromBool(condition));
 }
 
@@ -630,7 +630,7 @@ pub export fn fnNextPrime(unused_but_mandatory_parameter: u16) callconv(.c) void
     }
 }
 
-inline fn getRegisterShortIntegerBase(reg: calcRegister_t) u32 {
+fn getRegisterShortIntegerBase(reg: calcRegister_t) u32 {
     return getRegisterTag(reg);
 }
 
@@ -905,7 +905,7 @@ fn doDomainAbort() void {
     refreshScreen(253);
 }
 
-inline fn matrixElementsPtr(matrix: *real34Matrix_t) [*]real34_t {
+fn matrixElementsPtr(matrix: *real34Matrix_t) [*]real34_t {
     if (runtime.harness_surface_is_fake) {
         return &matrix.matrixElements;
     } else {
@@ -1614,13 +1614,13 @@ fn delCol1RealMatrixX() bool {
     return true;
 }
 
-inline fn matHeaderRows(mat: *real34Matrix_t) u16 {
+fn matHeaderRows(mat: *real34Matrix_t) u16 {
     return mat.header.matrixRows;
 }
-inline fn matHeaderCols(mat: *real34Matrix_t) u16 {
+fn matHeaderCols(mat: *real34Matrix_t) u16 {
     return mat.header.matrixColumns;
 }
-inline fn matIsNull(mat: *real34Matrix_t) bool {
+fn matIsNull(mat: *real34Matrix_t) bool {
     if (runtime.harness_surface_is_fake) {
         return false;
     } else {

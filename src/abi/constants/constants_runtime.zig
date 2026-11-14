@@ -57,7 +57,7 @@ pub fn registerReal34Ptr(reg: calcRegister_t) *real34_t {
 /// unchecked read would panic on the safety-checked lanes and load a garbage
 /// function pointer in `small` mode, so the two builds would disagree and
 /// neither would match the C. Only the message text follows the macro.
-pub inline fn validateConstant(constant: u16) bool {
+pub fn validateConstant(constant: u16) bool {
     if (constant >= NOUC) {
         if (build_options.extra_info_on_calc_error) {
             const message = bufPrintZ(
@@ -73,18 +73,18 @@ pub inline fn validateConstant(constant: u16) bool {
     return true;
 }
 
-pub inline fn storeConstantInX(constant: u16) void {
+pub fn storeConstantInX(constant: u16) void {
     _ = reallocateRegister(REGISTER_X, dtReal34, 0, @as(u32, @intCast(amNone)));
     realToReal34(realtConstants[constant], registerReal34Ptr(REGISTER_X));
 }
 
-pub inline fn storePiInX() void {
+pub fn storePiInX() void {
     // fnPi names const39_pi, it does not index realtConstants: the generated
     // blob's order is not a contract, and inserting a constant ahead of pi would
     // silently repoint an index into it.
     convertRealToResultRegister(abi.constants.const39_pi(), REGISTER_X, amNone);
 }
 
-pub inline fn setLastIntegerBaseToZero() void {
+pub fn setLastIntegerBaseToZero() void {
     setLastintegerBasetoZero();
 }

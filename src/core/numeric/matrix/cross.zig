@@ -36,7 +36,7 @@ fn reportRamFull(comptime function_name: [*:0]const u8) void {
 // real34ToReal of the upstream "elements >= n ? ptr : const34_0" reads the
 // element when present and otherwise yields +0; realSetZero produces the same
 // +0 element without needing the const34_0 pointer.
-inline fn loadOrZero(present: bool, src: *const real34_t, dst: *real_t) void {
+fn loadOrZero(present: bool, src: *const real34_t, dst: *real_t) void {
     if (present) {
         runtime.real34ToReal(src, dst);
     } else {

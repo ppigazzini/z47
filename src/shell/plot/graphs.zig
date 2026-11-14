@@ -329,33 +329,33 @@ extern fn snprintf(buf: [*c]u8, size: usize, fmt: [*:0]const u8, ...) c_int;
 // ---------------------------------------------------------------------------
 const LcdFillRectFn = *const fn (x: u32, y: u32, dx: u32, dy: u32, val: c_int) callconv(.c) void;
 const c_lcd_fill_rect = @extern(LcdFillRectFn, .{ .name = "lcd_fill_rect" });
-inline fn lcd_fill_rect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void {
+fn lcd_fill_rect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void {
     if (comptime dmcp_build) {
         rom.lcd_fill_rect(x, y, dx, dy, val);
     } else {
         c_lcd_fill_rect(x, y, dx, dy, val);
     }
 }
-pub inline fn lcd_refresh() void {
+pub fn lcd_refresh() void {
     if (comptime dmcp_build) {
         rom.lcd_refresh();
     }
 }
 
 // clearScreen(cnt) macro: lcd_fill_rect(0,0,SCREEN_WIDTH,240,LCD_SET_VALUE); frontier_status_bar.forceSBupdate();
-inline fn clearScreen() void {
+fn clearScreen() void {
     lcd_fill_rect(0, 0, @intCast(SCREEN_WIDTH), 240, LCD_SET_VALUE);
     frontier_status_bar.forceSBupdate();
 }
 
 // real34 macro helpers
-inline fn REGISTER_REAL34_DATA(a: calcRegister_t) *real34_t {
+fn REGISTER_REAL34_DATA(a: calcRegister_t) *real34_t {
     return abi.registerReal34Aligned(a);
 }
-inline fn real34SetZero(d: *real34_t) void {
+fn real34SetZero(d: *real34_t) void {
     _ = decQuadZero(d);
 }
-inline fn real34IsZero(s: *real34_t) bool {
+fn real34IsZero(s: *real34_t) bool {
     return decQuadIsZero(s) != 0;
 }
 
@@ -384,67 +384,67 @@ extern fn realToInt32C47(r: *const real_t, err: ?*bool_t) i32;
 extern fn realToDouble(vv: *const real_t, v: *f64) void;
 extern fn decimal128ToNumber(src: *const real34_t, dst: *real_t) *real_t;
 
-inline fn realCopy(src: *const real_t, dst: *real_t) void {
+fn realCopy(src: *const real_t, dst: *real_t) void {
     _ = decNumberCopy(dst, src);
 }
-inline fn realCopyAbs(src: *const real_t, dst: *real_t) void {
+fn realCopyAbs(src: *const real_t, dst: *real_t) void {
     _ = decNumberCopyAbs(dst, src);
 }
-inline fn realAdd(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn realAdd(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberAdd(res, a, b, ctx);
 }
-inline fn realSubtract(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn realSubtract(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberSubtract(res, a, b, ctx);
 }
-inline fn realMultiply(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn realMultiply(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberMultiply(res, a, b, ctx);
 }
-inline fn realDivide(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn realDivide(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberDivide(res, a, b, ctx);
 }
-inline fn stringToReal(s: [*c]const u8, dst: *real_t, ctx: *realContext_t) void {
+fn stringToReal(s: [*c]const u8, dst: *real_t, ctx: *realContext_t) void {
     _ = decNumberFromString(dst, s, ctx);
 }
-inline fn int32ToReal(source: i32, dst: *real_t) void {
+fn int32ToReal(source: i32, dst: *real_t) void {
     _ = decNumberFromInt32(dst, source);
 }
 const realIsZero = abi.realIsZero;
-inline fn realIsNegative(v: *const real_t) bool {
+fn realIsNegative(v: *const real_t) bool {
     return (v.bits & 0x80) == 0x80;
 }
-inline fn realSetPositiveSign(v: *real_t) void {
+fn realSetPositiveSign(v: *real_t) void {
     v.bits &= 0x7F;
 }
-inline fn real34ToReal(src: *const real34_t, dst: *real_t) void {
+fn real34ToReal(src: *const real34_t, dst: *real_t) void {
     _ = decimal128ToNumber(src, dst);
 }
 const real34IsSpecial = abi.real34IsSpecial;
-inline fn convertDoubleToReal(x: f64, dst: *real_t, ctx: *realContext_t) void {
+fn convertDoubleToReal(x: f64, dst: *real_t, ctx: *realContext_t) void {
     frontier_register_value_conversions.convertDoubleToReal(x, dst, ctx);
 }
-inline fn realToDoubleVal(r: *const real_t) f64 {
+fn realToDoubleVal(r: *const real_t) f64 {
     var d: f64 = undefined;
     realToDouble(r, &d);
     return d;
 }
 
 // GRAPHMODE macro (calcMode comparison)
-inline fn GRAPHMODE() bool {
+fn GRAPHMODE() bool {
     return calcMode == CM_PLOT_STAT or calcMode == CM_GRAPH;
 }
 
 // stringByteLength(str) == (int32_t)strlen(str)
-inline fn stringByteLength(str: [*c]const u8) i32 {
+fn stringByteLength(str: [*c]const u8) i32 {
     var i: i32 = 0;
     while (str[@intCast(i)] != 0) : (i += 1) {}
     return i;
 }
 
 // C math macros operating on f32: min/max/fabs/sqrt promote to float semantics.
-inline fn fminf(a: f32, b: f32) f32 {
+fn fminf(a: f32, b: f32) f32 {
     return if (a < b) a else b;
 }
-inline fn fmaxf(a: f32, b: f32) f32 {
+fn fmaxf(a: f32, b: f32) f32 {
     return if (a > b) a else b;
 }
 
@@ -794,7 +794,7 @@ fn plotarrow(xo: i16, yo: i16, xn: i16, yn: i16) void {
 }
 // The C adds the offset to the endpoint as a float and truncates the sum at the
 // call, not the offset before it.
-inline fn fToI16(v: f32) i16 {
+fn fToI16(v: f32) i16 {
     return @trunc(v);
 }
 
@@ -803,7 +803,7 @@ inline fn fToI16(v: f32) i16 {
 /// from screen_window_y_nolimit_r, which itself wraps out of the int16 range, so
 /// a row of -32768 makes the distance 32768 and it must wrap back to -32768 here
 /// rather than trap on the safety-checked builds.
-inline fn absToI16(v: i32) i16 {
+fn absToI16(v: i32) i16 {
     return @truncate(if (v < 0) -%v else v);
 }
 
@@ -851,7 +851,7 @@ const tabDelta linksection(code_data_section) = [_]plotdeltas{
 /// A pixel offset as placePixel receives it. The C adds in `int` and converts to
 /// the uint32_t parameter, so an off-screen negative arrives as a large value
 /// that placePixel's range test rejects; that conversion is the bounds check.
-inline fn pixelCoord(base: i16, delta: i8) u32 {
+fn pixelCoord(base: i16, delta: i8) u32 {
     return @bitCast(@as(i32, base) + @as(i32, delta));
 }
 
@@ -1219,7 +1219,7 @@ pub export fn graph_Include0(mode: bool_t, statnum: u16) linksection(code_sectio
 /// True when sample `i` has a non-finite x or y. Such a point cannot be scaled or
 /// formatted, so the autoscale and accumulation loops step over it instead of
 /// folding it into the plot window.
-inline fn isSpecialSample(i: u16) bool {
+fn isSpecialSample(i: u16) bool {
     return abi.sci_format.doubleSpecialLabel(@as(f64, frontier_plotstat.grf_x(@intCast(i)))) != null or
         abi.sci_format.doubleSpecialLabel(@as(f64, frontier_plotstat.grf_y(@intCast(i)))) != null;
 }
@@ -1897,13 +1897,13 @@ pub export fn fnStatList() callconv(.c) void {
     }
 }
 // min(a,b) macro for i16 operands (fnStatList).
-inline fn minI(a: i16, b: i16) i16 {
+fn minI(a: i16, b: i16) i16 {
     return if (a < b) a else b;
 }
 
 // The precision half of fnStatList's "%14.32s": at most 32 bytes of the value
 // reach the line, and the min-width 14 comes from the format spec.
-inline fn precision32(s: [*:0]const u8) []const u8 {
+fn precision32(s: [*:0]const u8) []const u8 {
     const span = std.mem.span(s);
     return span[0..@min(span.len, 32)];
 }

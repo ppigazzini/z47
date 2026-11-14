@@ -22,11 +22,11 @@ const real_size_in_blocks: usize = (@sizeOf(real_t) + 3) >> 2;
 
 const realElems = abi.matrixRealElems;
 
-inline fn realCopy(source: *const real_t, destination: *real_t) void {
+fn realCopy(source: *const real_t, destination: *real_t) void {
     destination.* = source.*;
 }
 // realCopyAbs == decNumberCopyAbs: copy then force a positive sign.
-inline fn realCopyAbs(source: *const real_t, destination: *real_t) void {
+fn realCopyAbs(source: *const real_t, destination: *real_t) void {
     destination.* = source.*;
     runtime.realSetPositiveSign(destination);
 }

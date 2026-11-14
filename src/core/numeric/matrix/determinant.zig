@@ -37,11 +37,11 @@ extern fn freeC47Blocks(ptr: ?*anyopaque, size_in_blocks: usize) callconv(.c) vo
 const constRealElems = abi.matrixConstRealElems;
 const constComplexElems = abi.matrixConstComplexElems;
 
-inline fn realCopy(source: *const real_t, destination: *real_t) void {
+fn realCopy(source: *const real_t, destination: *real_t) void {
     destination.* = source.*;
 }
 
-inline fn real34Copy(source: *const real34_t, destination: *real34_t) void {
+fn real34Copy(source: *const real34_t, destination: *real34_t) void {
     destination.* = source.*;
 }
 

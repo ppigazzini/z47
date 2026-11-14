@@ -83,53 +83,53 @@ extern var errorMessage: [*c]u8;
 const ERROR_MESSAGE_LENGTH: usize = 512;
 const cst = consts.cstR;
 const reg34 = abi.registerReal34Aligned;
-inline fn getRegisterAngularMode(reg: calcRegister_t) angularMode_t {
+fn getRegisterAngularMode(reg: calcRegister_t) angularMode_t {
     return @intCast(getRegisterTag(reg) & amAngleMask);
 }
-inline fn setRegisterAngularMode(reg: calcRegister_t, mode: angularMode_t) void {
+fn setRegisterAngularMode(reg: calcRegister_t, mode: angularMode_t) void {
     setRegisterTag(reg, @intCast(mode));
 }
-inline fn realMul(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn realMul(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberMultiply(res, a, b, ctx);
 }
-inline fn realDiv(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn realDiv(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberDivide(res, a, b, ctx);
 }
-inline fn realAddOp(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn realAddOp(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberAdd(res, a, b, ctx);
 }
-inline fn realSubOp(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn realSubOp(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberSubtract(res, a, b, ctx);
 }
-inline fn realGreaterEqual(a: *const real_t, b: *const real_t) bool {
+fn realGreaterEqual(a: *const real_t, b: *const real_t) bool {
     return realCompareGreaterThan(a, b) or realCompareEqual(a, b);
 }
-inline fn realIsNegative(v: *const real_t) bool {
+fn realIsNegative(v: *const real_t) bool {
     return (v.bits & 0x80) != 0;
 }
-inline fn realIsPositive(v: *const real_t) bool {
+fn realIsPositive(v: *const real_t) bool {
     return (v.bits & 0x80) == 0;
 }
-inline fn realIsInfinite(v: *const real_t) bool {
+fn realIsInfinite(v: *const real_t) bool {
     return (v.bits & 0x40) != 0;
 }
-inline fn realIsSpecial(v: *const real_t) bool {
+fn realIsSpecial(v: *const real_t) bool {
     return (v.bits & 0x70) != 0;
 }
 const cplx_t = abi.Complex;
-inline fn realSetPositiveSign(v: *real_t) void {
+fn realSetPositiveSign(v: *real_t) void {
     v.bits &= 0x7f;
 }
-inline fn realSetNegativeSign(v: *real_t) void {
+fn realSetNegativeSign(v: *real_t) void {
     v.bits |= 0x80;
 }
-inline fn real34ToReal(src: *const real34_t, dst: *real_t) void {
+fn real34ToReal(src: *const real34_t, dst: *real_t) void {
     _ = decimal128ToNumber(src, dst);
 }
-inline fn realToReal34(src: *const real_t, dst: *real34_t) void {
+fn realToReal34(src: *const real_t, dst: *real34_t) void {
     _ = decimal128FromNumber(dst, src, &ctxtReal34);
 }
-inline fn real34IsNegative(v: *const real34_t) bool {
+fn real34IsNegative(v: *const real34_t) bool {
     return (v.bytes[15] & 0x80) == 0x80;
 }
 

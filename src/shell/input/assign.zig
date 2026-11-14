@@ -161,7 +161,7 @@ const CM_NORMAL: u8 = 0;
 
 const BPB: u5 = 2;
 const BYTES_PER_BLOCK: usize = 4;
-inline fn TO_BLOCKS(n: usize) usize {
+fn TO_BLOCKS(n: usize) usize {
     return (n + (BYTES_PER_BLOCK - 1)) >> BPB;
 }
 const SIZEOF_USERMENU: usize = @sizeOf(userMenu_t);
@@ -249,23 +249,23 @@ extern fn abort() noreturn;
 extern fn fprintf(stream: ?*anyopaque, fmt: [*:0]const u8, ...) c_int;
 
 // stringCopy is `#define stringCopy(d,s) frontier_char_string.stringCopy(d,s)` (non-MINGW64 builds).
-inline fn stringCopy(dest: [*c]u8, source: [*c]const u8) [*c]u8 {
+fn stringCopy(dest: [*c]u8, source: [*c]const u8) [*c]u8 {
     return frontier_char_string.stringCopy(dest, source);
 }
-inline fn stringByteLength(s: [*c]const u8) i32 {
+fn stringByteLength(s: [*c]const u8) i32 {
     return @intCast(strlen(s));
 }
-inline fn moreInfoOnErr2(where: [*:0]const u8, m2: [*:0]const u8) void {
+fn moreInfoOnErr2(where: [*:0]const u8, m2: [*:0]const u8) void {
     if (comptime extra_info) {
         if (comptime !dmcp_build) moreInfoOnError(where, m2, null, null);
     }
 }
-inline fn moreInfoOnErr3(where: [*:0]const u8, m2: [*:0]const u8, m3: ?[*:0]const u8) void {
+fn moreInfoOnErr3(where: [*:0]const u8, m2: [*:0]const u8, m3: ?[*:0]const u8) void {
     if (comptime extra_info) {
         if (comptime !dmcp_build) moreInfoOnError(where, m2, m3, null);
     }
 }
-inline fn moreInfoOnErr4(where: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void {
+fn moreInfoOnErr4(where: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void {
     if (comptime extra_info) {
         if (comptime !dmcp_build) moreInfoOnError(where, m2, m3, m4);
     }
@@ -1338,7 +1338,7 @@ pub export fn getUserKeyLabelString(n: i16) callconv(.c) [*c]const u8 {
     }
     return frontier_softmenus.getNthString(userKeyLabel, n);
 }
-inline fn TO_BYTES(n: usize) usize {
+fn TO_BYTES(n: usize) usize {
     return n << BPB;
 }
 

@@ -236,10 +236,10 @@ extern fn decNumberAdd(res: *real_t, a: *const real_t, b: *const real_t, ctx: *r
 extern fn decNumberFromInt32(res: *real_t, value: i32) *real_t;
 extern fn realCompareLessThan(a: *const real_t, b: *const real_t) bool;
 const real34IsSpecial = abi.real34IsSpecial;
-inline fn realAdd(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn realAdd(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberAdd(res, a, b, ctx);
 }
-inline fn int32ToReal(value: i32, res: *real_t) void {
+fn int32ToReal(value: i32, res: *real_t) void {
     _ = decNumberFromInt32(res, value);
 }
 
@@ -257,7 +257,7 @@ extern fn __gmpz_clear(p: *mpz_struct) void;
 extern fn __gmpz_set_ui(p: *mpz_struct, v: c_ulong) void;
 const longIntegerInit = __gmpz_init;
 const longIntegerFree = __gmpz_clear;
-inline fn uInt32ToLongInteger(v: u32, p: *mpz_struct) void {
+fn uInt32ToLongInteger(v: u32, p: *mpz_struct) void {
     __gmpz_set_ui(p, v);
 }
 
@@ -277,7 +277,7 @@ extern fn strcat(dst: [*]u8, src: [*c]const u8) [*c]u8;
 // ---------------------------------------------------------------------------
 // Inline wrappers (the C macros)
 // ---------------------------------------------------------------------------
-inline fn moreInfoOnError(m1: [*:0]const u8, m2: [*c]const u8) void {
+fn moreInfoOnError(m1: [*:0]const u8, m2: [*c]const u8) void {
     if (comptime extra_info) c_moreInfoOnError(m1, m2, null, null);
 }
 // sprintf(errorMessage, fmt, getRegisterDataTypeName(regist, false, false)) —
@@ -287,86 +287,86 @@ inline fn errorMessageWithDataTypeOf(comptime fmt: []const u8, regist: calcRegis
     abi.fmtBufZ(errorMessage[0..ERROR_MESSAGE_LENGTH], fmt, .{std.mem.span(frontier_debug.getRegisterDataTypeName(regist, false, false))});
 }
 const reg34 = abi.registerReal34;
-inline fn getRegisterAngularMode(reg: calcRegister_t) angularMode_t {
+fn getRegisterAngularMode(reg: calcRegister_t) angularMode_t {
     return @intCast(getRegisterTag(reg) & amAngleMask);
 }
 
 // real34 bit macros.
-inline fn real34IsNegative(v: *const real34_t) bool {
+fn real34IsNegative(v: *const real34_t) bool {
     return (v.bytes[15] & 0x80) == 0x80;
 }
 const real34SetNegativeSign = abi.real34SetNegativeSign;
-inline fn real34Copy(src: *const real34_t, dst: *real34_t) void {
+fn real34Copy(src: *const real34_t, dst: *real34_t) void {
     dst.* = src.*;
 }
-inline fn real34IsZero(v: *const real34_t) bool {
+fn real34IsZero(v: *const real34_t) bool {
     return decQuadIsZero(v) != 0;
 }
-inline fn real34IsNaN(v: *const real34_t) bool {
+fn real34IsNaN(v: *const real34_t) bool {
     return decQuadIsNaN(v) != 0;
 }
 
 // real34 ops (use &ctxtReal34).
-inline fn uInt32ToReal34(src: u32, dst: *real34_t) void {
+fn uInt32ToReal34(src: u32, dst: *real34_t) void {
     _ = decQuadFromUInt32(dst, src);
 }
-inline fn int32ToReal34(src: i32, dst: *real34_t) void {
+fn int32ToReal34(src: i32, dst: *real34_t) void {
     _ = decQuadFromInt32(dst, src);
 }
-inline fn real34Add(a: *const real34_t, b: *const real34_t, res: *real34_t) void {
+fn real34Add(a: *const real34_t, b: *const real34_t, res: *real34_t) void {
     _ = decQuadAdd(res, a, b, &ctxtReal34);
 }
-inline fn real34Subtract(a: *const real34_t, b: *const real34_t, res: *real34_t) void {
+fn real34Subtract(a: *const real34_t, b: *const real34_t, res: *real34_t) void {
     _ = decQuadSubtract(res, a, b, &ctxtReal34);
 }
-inline fn real34Multiply(a: *const real34_t, b: *const real34_t, res: *real34_t) void {
+fn real34Multiply(a: *const real34_t, b: *const real34_t, res: *real34_t) void {
     _ = decQuadMultiply(res, a, b, &ctxtReal34);
 }
-inline fn real34Divide(a: *const real34_t, b: *const real34_t, res: *real34_t) void {
+fn real34Divide(a: *const real34_t, b: *const real34_t, res: *real34_t) void {
     _ = decQuadDivide(res, a, b, &ctxtReal34);
 }
-inline fn real34CopyAbs(src: *const real34_t, dst: *real34_t) void {
+fn real34CopyAbs(src: *const real34_t, dst: *real34_t) void {
     _ = decQuadCopyAbs(dst, src);
 }
-inline fn real34ToIntegralValue(src: *const real34_t, dst: *real34_t, mode: c_int) void {
+fn real34ToIntegralValue(src: *const real34_t, dst: *real34_t, mode: c_int) void {
     _ = decQuadToIntegralValue(dst, src, &ctxtReal34, mode);
 }
-inline fn real34Compare(a: *const real34_t, b: *const real34_t, res: *real34_t) void {
+fn real34Compare(a: *const real34_t, b: *const real34_t, res: *real34_t) void {
     _ = decQuadCompare(res, a, b, &ctxtReal34);
 }
-inline fn real34ToInt32(src: *const real34_t) i32 {
+fn real34ToInt32(src: *const real34_t) i32 {
     return decQuadToInt32(src, &ctxtReal34, DEC_ROUND_DOWN);
 }
-inline fn real34ToUInt32(src: *const real34_t) u32 {
+fn real34ToUInt32(src: *const real34_t) u32 {
     return decQuadToUInt32(src, &ctxtReal34, DEC_ROUND_DOWN);
 }
 extern fn decimal128FromNumber(dst: *real34_t, src: *const real_t, ctx: *realContext_t) *real34_t;
-inline fn realToReal34(src: *const real_t, dst: *real34_t) void {
+fn realToReal34(src: *const real_t, dst: *real34_t) void {
     _ = decimal128FromNumber(dst, src, &ctxtReal34);
 }
-inline fn real34ToReal(src: *const real34_t, dst: *real_t) void {
+fn real34ToReal(src: *const real34_t, dst: *real_t) void {
     _ = decimal128ToNumber(src, dst);
 }
 
 // real ops.
-inline fn realSubtract(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn realSubtract(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberSubtract(res, a, b, ctx);
 }
-inline fn realMultiply(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn realMultiply(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberMultiply(res, a, b, ctx);
 }
-inline fn realDivide(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn realDivide(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberDivide(res, a, b, ctx);
 }
 
 // modulo(n, d) macro: this version works only if d > 0.
 //   ((n)%(d)<0 ? (n)%(d)+(d) : (n)%(d))
-inline fn modulo(n: i32, d: i32) i32 {
+fn modulo(n: i32, d: i32) i32 {
     const r = @rem(n, d);
     return if (r < 0) r + d else r;
 }
 
-inline fn SET_TI_TRUE_FALSE(condition: bool) void {
+fn SET_TI_TRUE_FALSE(condition: bool) void {
     temporaryInformation = TI_FALSE + @as(u8, @intFromBool(condition));
 }
 

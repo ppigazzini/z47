@@ -503,13 +503,13 @@ const dmcp = struct {
     const STAT_CLK_WKUP_FLAG = bit(12);
     const STAT_POWER_CHANGE = bit(15);
 
-    inline fn ST(x: u32) u32 {
+    fn ST(x: u32) u32 {
         return calc_state_ptr.* & x;
     }
-    inline fn SET_ST(x: u32) void {
+    fn SET_ST(x: u32) void {
         calc_state_ptr.* |= x;
     }
-    inline fn CLR_ST(x: u32) void {
+    fn CLR_ST(x: u32) void {
         calc_state_ptr.* &= ~x;
     }
 
@@ -593,7 +593,7 @@ const dmcp = struct {
     const mp_set_memory_functions = __gmp_set_memory_functions;
     extern fn sprintf(buf: [*]u8, fmt: [*:0]const u8, ...) c_int;
 
-    inline fn min(a: u32, b: u32) u32 {
+    fn min(a: u32, b: u32) u32 {
         return if (a < b) a else b;
     }
 
@@ -616,7 +616,7 @@ const dmcp = struct {
         "@VWXY" ++
         "@Z,? ";
 
-    inline fn lcd_putsAt(ds: ?*rom.disp_stat_t, ln: c_int, str: [*]const u8) void {
+    fn lcd_putsAt(ds: ?*rom.disp_stat_t, ln: c_int, str: [*]const u8) void {
         rom.lcd_setLine(ds, ln);
         rom.lcd_writeText(ds, str);
     }

@@ -252,7 +252,7 @@ pub extern fn convertRealToResultRegister(real: *const real_t, dest: calcRegiste
 pub extern fn adjustResult(res: calcRegister_t, drop_y: bool, set_cpx_res: bool, op1: calcRegister_t, op2: calcRegister_t, op3: calcRegister_t) void;
 pub extern fn displayDomainErrorMessage(error_code: u8, err_message_register_line: calcRegister_t) void;
 const c_moreInfoOnError = @extern(*const fn (msg1: [*:0]const u8, msg2: ?[*:0]const u8, msg3: ?[*:0]const u8, msg4: ?[*:0]const u8) callconv(.c) void, .{ .name = "moreInfoOnError" });
-pub inline fn moreInfoOnError(msg1: [*:0]const u8, msg2: ?[*:0]const u8, msg3: ?[*:0]const u8, msg4: ?[*:0]const u8) void {
+pub fn moreInfoOnError(msg1: [*:0]const u8, msg2: ?[*:0]const u8, msg3: ?[*:0]const u8, msg4: ?[*:0]const u8) void {
     if (comptime extra_info_on_calc_error) c_moreInfoOnError(msg1, msg2, msg3, msg4);
 }
 
@@ -269,57 +269,57 @@ pub inline fn stagedMessage(comptime text: [:0]const u8) [*:0]const u8 {
 }
 pub extern fn getSystemFlag(flag: i32) bool;
 
-pub inline fn realMultiply(lhs: *const real_t, rhs: *const real_t, result: *real_t, real_context: *realContext_t) void {
+pub fn realMultiply(lhs: *const real_t, rhs: *const real_t, result: *real_t, real_context: *realContext_t) void {
     _ = decNumberMultiply(result, lhs, rhs, real_context);
 }
-pub inline fn realDivide(lhs: *const real_t, rhs: *const real_t, result: *real_t, real_context: *realContext_t) void {
+pub fn realDivide(lhs: *const real_t, rhs: *const real_t, result: *real_t, real_context: *realContext_t) void {
     _ = decNumberDivide(result, lhs, rhs, real_context);
 }
-pub inline fn realAdd(lhs: *const real_t, rhs: *const real_t, result: *real_t, real_context: *realContext_t) void {
+pub fn realAdd(lhs: *const real_t, rhs: *const real_t, result: *real_t, real_context: *realContext_t) void {
     _ = decNumberAdd(result, lhs, rhs, real_context);
 }
-pub inline fn realSubtract(lhs: *const real_t, rhs: *const real_t, result: *real_t, real_context: *realContext_t) void {
+pub fn realSubtract(lhs: *const real_t, rhs: *const real_t, result: *real_t, real_context: *realContext_t) void {
     _ = decNumberSubtract(result, lhs, rhs, real_context);
 }
-pub inline fn realMinus(operand: *const real_t, result: *real_t, real_context: *realContext_t) void {
+pub fn realMinus(operand: *const real_t, result: *real_t, real_context: *realContext_t) void {
     _ = decNumberMinus(result, operand, real_context);
 }
-pub inline fn realCopy(source: *const real_t, destination: *real_t) void {
+pub fn realCopy(source: *const real_t, destination: *real_t) void {
     _ = decNumberCopy(destination, source);
 }
-pub inline fn realPow(base: *const real_t, exponent: *const real_t, result: *real_t, real_context: *realContext_t) void {
+pub fn realPow(base: *const real_t, exponent: *const real_t, result: *real_t, real_context: *realContext_t) void {
     realPower(base, exponent, result, real_context);
 }
-pub inline fn realExponential(x: *const real_t, res: *real_t, real_context: *realContext_t) void {
+pub fn realExponential(x: *const real_t, res: *real_t, real_context: *realContext_t) void {
     realExp(x, res, real_context);
 }
-pub inline fn realSquareRoot(operand: *const real_t, res: *real_t, real_context: *realContext_t) void {
+pub fn realSquareRoot(operand: *const real_t, res: *real_t, real_context: *realContext_t) void {
     _ = decNumberSquareRoot(res, operand, real_context);
 }
-pub inline fn int32ToReal(source: i32, destination: *real_t) void {
+pub fn int32ToReal(source: i32, destination: *real_t) void {
     _ = decNumberFromInt32(destination, source);
 }
-pub inline fn realCopyAbs(source: *const real_t, destination: *real_t) void {
+pub fn realCopyAbs(source: *const real_t, destination: *real_t) void {
     _ = decNumberCopyAbs(destination, source);
 }
-pub inline fn realSetPositiveSign(operand: *real_t) void {
+pub fn realSetPositiveSign(operand: *real_t) void {
     operand.bits &= 0x7f;
 }
-pub inline fn realSetNegativeSign(operand: *real_t) void {
+pub fn realSetNegativeSign(operand: *real_t) void {
     operand.bits |= 0x80;
 }
-pub inline fn realExpM1(x: *const real_t, res: *real_t, real_context: *realContext_t) void {
+pub fn realExpM1(x: *const real_t, res: *real_t, real_context: *realContext_t) void {
     WP34S_ExpM1(x, res, real_context); // c47 realExpM1 forwards straight to WP34S_ExpM1
 }
-pub inline fn realFMA(factor1: *const real_t, factor2: *const real_t, term: *const real_t, result: *real_t, real_context: *realContext_t) void {
+pub fn realFMA(factor1: *const real_t, factor2: *const real_t, term: *const real_t, result: *real_t, real_context: *realContext_t) void {
     _ = decNumberFMA(result, factor1, factor2, term, real_context); // result = factor1*factor2 + term
 }
-pub inline fn realNextToward(x: *const real_t, toward: *const real_t, result: *real_t, real_context: *realContext_t) void {
+pub fn realNextToward(x: *const real_t, toward: *const real_t, result: *real_t, real_context: *realContext_t) void {
     _ = decNumberNextToward(result, x, toward, real_context);
 }
 /// realPlus: the value rounded to the context, which is how a wide working real
 /// is shortened into a result.
-pub inline fn realPlus(operand: *const real_t, result: *real_t, real_context: *realContext_t) void {
+pub fn realPlus(operand: *const real_t, result: *real_t, real_context: *realContext_t) void {
     _ = decNumberPlus(result, operand, real_context);
 }
 
@@ -328,57 +328,57 @@ pub inline fn realPlus(operand: *const real_t, result: *real_t, real_context: *r
 /// context-sized working real (REAL_T_PTR(name, realContext->digits)) is one of
 /// these too, since 159 is the widest context the distributions work at.
 pub const Real159 = abi.Real159;
-pub inline fn powerReal(y: *const real_t, x: *const real_t, result: *real_t, real_context: *realContext_t) void {
+pub fn powerReal(y: *const real_t, x: *const real_t, result: *real_t, real_context: *realContext_t) void {
     PowerReal(y, x, result, real_context);
 }
-pub inline fn setZero(value: *real_t) void {
+pub fn setZero(value: *real_t) void {
     realSetZero(value);
 }
-pub inline fn setOne(value: *real_t) void {
+pub fn setOne(value: *real_t) void {
     realSetOne(value);
 }
-pub inline fn setPlusInfinity(value: *real_t) void {
+pub fn setPlusInfinity(value: *real_t) void {
     realSetPlusInfinity(value);
 }
-pub inline fn setNaN(value: *real_t) void {
+pub fn setNaN(value: *real_t) void {
     realSetNaN(value);
 }
 
-pub inline fn realIsSpecial(value: *const real_t) bool {
+pub fn realIsSpecial(value: *const real_t) bool {
     return (value.bits & DECSPECIAL) != 0;
 }
-pub inline fn realIsNaN(value: *const real_t) bool {
+pub fn realIsNaN(value: *const real_t) bool {
     return (value.bits & (DECNAN | DECSNAN)) != 0;
 }
-pub inline fn realIsNegative(value: *const real_t) bool {
+pub fn realIsNegative(value: *const real_t) bool {
     return (value.bits & DECNEG) != 0;
 }
 pub const realIsZero = abi.realIsZero;
-pub inline fn realIsInfinite(value: *const real_t) bool {
+pub fn realIsInfinite(value: *const real_t) bool {
     return (value.bits & DECINF) != 0;
 }
-pub inline fn realIsPositive(value: *const real_t) bool {
+pub fn realIsPositive(value: *const real_t) bool {
     return (value.bits & DECNEG) == 0; // upstream realIsPositive: sign bit clear
 }
-pub inline fn realChangeSign(value: *real_t) void {
+pub fn realChangeSign(value: *real_t) void {
     value.bits ^= 0x80;
 }
-pub inline fn realLessThan(lhs: *const real_t, rhs: *const real_t) bool {
+pub fn realLessThan(lhs: *const real_t, rhs: *const real_t) bool {
     return realCompareLessThan(lhs, rhs);
 }
-pub inline fn realEqual(lhs: *const real_t, rhs: *const real_t) bool {
+pub fn realEqual(lhs: *const real_t, rhs: *const real_t) bool {
     return realCompareEqual(lhs, rhs);
 }
-pub inline fn realGreaterThan(lhs: *const real_t, rhs: *const real_t) bool {
+pub fn realGreaterThan(lhs: *const real_t, rhs: *const real_t) bool {
     return realCompareGreaterThan(lhs, rhs);
 }
-pub inline fn isAnInteger(value: *const real_t) bool {
+pub fn isAnInteger(value: *const real_t) bool {
     return realIsAnInteger(value);
 }
-pub inline fn toIntegralValue(source: *const real_t, destination: *real_t, mode: c_int, real_context: *realContext_t) void {
+pub fn toIntegralValue(source: *const real_t, destination: *real_t, mode: c_int, real_context: *realContext_t) void {
     realToIntegralValue(source, destination, mode, real_context);
 }
-pub inline fn linearInterpolate(a: *const real_t, b: *const real_t, p: *const real_t, res: *real_t) void {
+pub fn linearInterpolate(a: *const real_t, b: *const real_t, p: *const real_t, res: *real_t) void {
     linpol(a, b, p, res);
 }
 // comparisonReals.c's own functions, not re-derived from LessThan and Equal.

@@ -143,7 +143,7 @@ const c_moreInfoOnError = @extern(*const fn (m1: [*:0]const u8, m2: ?[*:0]const 
 /// call site stays the single line it is in C. refuseWriteProtected needs the
 /// test spelled out as well, because upstream's guard there also covers the
 /// errorMessage formatting that builds the hint's third argument.
-inline fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void {
+fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void {
     if (comptime extra_info) c_moreInfoOnError(m1, m2, m3, m4);
 }
 

@@ -25,7 +25,7 @@ const real_size_in_blocks: usize = (@sizeOf(real_t) + 3) >> 2;
 
 extern var displayFormatDigits: u8;
 
-inline fn realCopy(source: *const real_t, destination: *real_t) void {
+fn realCopy(source: *const real_t, destination: *real_t) void {
     destination.* = source.*;
 }
 

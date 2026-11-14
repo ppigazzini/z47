@@ -334,7 +334,7 @@ fn btnPressedBody(not_used: ?*anyopaque, event: ?*const GdkEventButton, data: [*
 /// is cut off by the narrowing, and ARM's LSL by 218 yields 0 outright. The
 /// count is masked and the shift done in 32 bits so the result is that same 0
 /// rather than a bit that C never sets.
-inline fn softkeyUnderlineMask(key: i16) u16 {
+fn softkeyUnderlineMask(key: i16) u16 {
     const count: u5 = @truncate(@as(u32, @bitCast(@as(i32, key) - 38)));
     return @truncate(@as(u32, 1) << count);
 }
