@@ -2000,7 +2000,7 @@ fn truncateAtArrow(label: [*c]u8) void {
     label_truncate.truncateAtArrow(label, STD_RIGHT_ARROW, STD_LEFT_ARROW);
 }
 
-fn showSoftkey(label: [*c]const u8, xSoftkey: i16, ySoftKey: i16, videoMode: videoMode_t, topLine: bool_t, bottomLine: bool_t, showCb: i8, showValue: i16, showText: [*c]const u8) void {
+fn showSoftkey(label: [*c]const u8, xSoftkey: i16, ySoftKey: i16, videoMode: videoMode_t, showCb: i8, showValue: i16, showText: [*c]const u8) void {
     var x1: i16 = undefined;
     var y1: i16 = undefined;
     var x2: i16 = undefined;
@@ -2008,10 +2008,10 @@ fn showSoftkey(label: [*c]const u8, xSoftkey: i16, ySoftKey: i16, videoMode: vid
     if (initSoftkeyCoordinates(label, xSoftkey, ySoftKey, &x1, &x2, &y1, &y2) == 0) {
         return;
     }
-    showKey(label, x1, x2, y1, y2, videoMode, topLine, bottomLine, showCb, showValue, showText);
+    showKey(label, x1, x2, y1, y2, videoMode, 1, showCb, showValue, showText);
 }
 
-fn showSoftkey2(valid: bool_t, labelSM1: [*c]const u8, xSoftkey: i16, ySoftKey: i16, videoMode: videoMode_t, topLine: bool_t, bottomLine: bool_t, showCb: i8, showValue: i16, showText: [*c]const u8, doubleMidLine: bool_t) void {
+fn showSoftkey2(valid: bool_t, labelSM1: [*c]const u8, xSoftkey: i16, ySoftKey: i16, videoMode: videoMode_t, showCb: i8, showValue: i16, showText: [*c]const u8, doubleMidLine: bool_t) void {
     var x1: i16 = undefined;
     var y1: i16 = undefined;
     var x2: i16 = undefined;
@@ -2035,16 +2035,16 @@ fn showSoftkey2(valid: bool_t, labelSM1: [*c]const u8, xSoftkey: i16, ySoftKey: 
         _ = stringCopy(&label1[@intCast(stringByteLength(&label1))], labelSM1);
         frontier_char_string.compressConversionName(&label1);
         truncateAtArrow(&label1);
-        showKey2(&label0, &label1, xx1, x2, y1, y2, videoMode, topLine, bottomLine, showCb, showValue, showText, doubleMidLine);
+        showKey2(&label0, &label1, xx1, x2, y1, y2, videoMode, showCb, showValue, showText, doubleMidLine);
     }
 }
 
 // The checkerboard frame and the key face in one pass: each screen row of the key
 // is 24 columns of chequer with the interior columns overwritten by the face, so a
 // row costs one bitblt24 per 24-column group instead of one call per grey pixel.
-fn drawKeyFrame(x1: i16, x2: i16, y1: i16, y2: i16, videoMode: videoMode_t, topLine: bool_t, bottomLine: bool_t) void {
+fn drawKeyFrame(x1: i16, x2: i16, y1: i16, y2: i16, videoMode: videoMode_t, topLine: bool_t) void {
     const grx1: i16 = @intCast(maxI(0, x1));
-    const gry1: i16 = y1 + @as(i16, @intFromBool(bottomLine == 0));
+    const gry1: i16 = y1;
     const grx2: i16 = @intCast(minI(@as(i32, x2) + 1, SCREEN_WIDTH));
     const gry2: i16 = @intCast(minI(@as(i32, y2) + @intFromBool(topLine != 0), SCREEN_HEIGHT));
     var col: i16 = grx1;
@@ -2103,7 +2103,7 @@ fn showPanelledView(x1: i16, x2: i16, y1: i16, videoMode: videoMode_t) void {
         }
     }
 }
-fn showKey2(label0in: [*c]const u8, label1in: [*c]const u8, x1: i16, x2: i16, y1: i16, y2: i16, videoMode: videoMode_t, topLine: bool_t, bottomLine: bool_t, showCb: i8, showValue: i16, showText: [*c]const u8, doubleMidLine: bool_t) void {
+fn showKey2(label0in: [*c]const u8, label1in: [*c]const u8, x1: i16, x2: i16, y1: i16, y2: i16, videoMode: videoMode_t, showCb: i8, showValue: i16, showText: [*c]const u8, doubleMidLine: bool_t) void {
     _ = showValue;
     _ = showCb;
     _ = showText;
@@ -2201,7 +2201,7 @@ fn showKey2(label0in: [*c]const u8, label1in: [*c]const u8, x1: i16, x2: i16, y1
         Text1 = @trunc(@as(f32, @floatFromInt(x2)) - space - @as(f32, @floatFromInt(widths[3])));
     }
 
-    drawKeyFrame(x1, x2, y1, y2, videoMode, topLine, bottomLine);
+    drawKeyFrame(x1, x2, y1, y2, videoMode, 1);
 
     const xpos = [4]i16{ Text0, Arr0, Text1, Arr1 };
     {
@@ -2327,12 +2327,12 @@ fn trimKey(itemName: [*c]u8, x: i16) u32 {
     return w;
 }
 
-pub export fn showKey(label: [*c]const u8, x1: i16, x2: i16, y1: i16, y2: i16, videoMode: videoMode_t, topLine: bool_t, bottomLine: bool_t, showCb: i8, showValue: i16, showText: [*c]const u8) callconv(.c) void {
+pub export fn showKey(label: [*c]const u8, x1: i16, x2: i16, y1: i16, y2: i16, videoMode: videoMode_t, topLine: bool_t, showCb: i8, showValue: i16, showText: [*c]const u8) callconv(.c) void {
     var w: i16 = undefined;
     var l: [50]u8 = undefined;
     var ll: [50]u8 = undefined;
 
-    drawKeyFrame(x1, x2, y1, y2, videoMode, topLine, bottomLine);
+    drawKeyFrame(x1, x2, y1, y2, videoMode, topLine);
 
     _ = frontier_char_string.xcopy(&l, label, @intCast(stringByteLength(label) + 1));
 
@@ -2430,10 +2430,9 @@ const modeNames = [_]mstr{
 };
 
 fn placeSubscript(itemNr: i16, flt: bool_t, tmpF: f32, itemName: [*c]u8, tmpS: [*c]u8, tmpSS: [*c]u8, showText: [*c]u8) void {
-    const itemMod: i32 = cmodNonNeg(@as(i32, itemNr), 10000);
     if (flt != 0 and tmpF == @as(f32, @floatFromInt(@as(i32, @trunc(tmpF)))) and
-        ((tmpF >= 0 and tmpF < (if (itemMod == VAR_NPPER or itemMod == VAR_PMT) @as(f32, 100000.0) else @as(f32, 1000000.0))) or
-            (tmpF < 0 and -tmpF < (if (itemMod == VAR_NPPER or itemMod == VAR_PMT) @as(f32, 10000.0) else @as(f32, 100000.0)))))
+        ((tmpF >= 0 and tmpF < (if (itemNr == VAR_NPPER or itemNr == VAR_PMT) @as(f32, 100000.0) else @as(f32, 1000000.0))) or
+            (tmpF < 0 and -tmpF < (if (itemNr == VAR_NPPER or itemNr == VAR_PMT) @as(f32, 10000.0) else @as(f32, 100000.0)))))
     {
         abi.fmtCStr(tmpS, "{d}", .{@as(c_int, @trunc(tmpF))});
     } else {
@@ -2450,9 +2449,9 @@ fn placeSubscript(itemNr: i16, flt: bool_t, tmpF: f32, itemName: [*c]u8, tmpS: [
             var tmpBuf: [100]u8 = undefined;
             // 400 / 6 is the key. trimKey cuts the right hand side, the value, off any drawn string of 66 px or more, and the narrowest key takes one column of frame inside
             // that, so 65 is the limit. Measured over 576 keys, the subscript form drawn is never wider than the string tested here.
-            _ = strcpy(tmpS, frontier_plotstat.formatDoubleWidth(REGISTER_REAL34_DATA(@intCast(indexOfItems[@intCast(itemMod)].param)), 4, itemName, &convertedRealPerfectly, 400 / 6 - 1, &tmpBuf, 60));
+            _ = strcpy(tmpS, frontier_plotstat.formatDoubleWidth(REGISTER_REAL34_DATA(@intCast(indexOfItems[@intCast(itemNr)].param)), 4, itemName, &convertedRealPerfectly, 400 / 6 - 1, &tmpBuf, 60));
             if (tmpS[0] == '?' or strchr(tmpS, 'E') != null) {
-                switch (itemMod) {
+                switch (itemNr) {
                     VAR_ULIM, VAR_LLIM, VAR_UEST, VAR_LEST => {
                         _ = stringCopy(itemName + 3, STD_SPACE_4_PER_EM);
                     },
@@ -2470,7 +2469,7 @@ fn placeSubscript(itemNr: i16, flt: bool_t, tmpF: f32, itemName: [*c]u8, tmpS: [
                     },
                     else => {},
                 }
-                _ = strcpy(tmpS, frontier_plotstat.formatDoubleWidth(REGISTER_REAL34_DATA(@intCast(indexOfItems[@intCast(itemMod)].param)), 4, itemName, &convertedRealPerfectly, 400 / 6 - 1, &tmpBuf, 60));
+                _ = strcpy(tmpS, frontier_plotstat.formatDoubleWidth(REGISTER_REAL34_DATA(@intCast(indexOfItems[@intCast(itemNr)].param)), 4, itemName, &convertedRealPerfectly, 400 / 6 - 1, &tmpBuf, 60));
             }
         }
     }
@@ -2487,9 +2486,6 @@ fn placeSubscript(itemNr: i16, flt: bool_t, tmpF: f32, itemName: [*c]u8, tmpS: [
     }
     // tmpS, not tmpSS: the short-number case above prefixed it with a space.
     _ = stringCopy(showText + @as(usize, @intCast(stringByteLength(showText))), tmpS);
-}
-fn cmodNonNeg(n: i32, d: i32) i32 {
-    return softmenu_math.cmodNonNeg(n, d);
 }
 // concat2: build a small comptime-known concatenation of two byte strings on a
 // scratch buffer. Used to reproduce C string-literal concatenation (e.g.
@@ -2555,8 +2551,7 @@ fn changeSoftKey(menuNr: i16, itemNr: i16, itemName: [*c]u8, vm: *videoMode_t, s
     var tmpS: [30]u8 = undefined;
     var tmpSS: [20]u8 = undefined;
     var tmpR: real_t = undefined;
-    const itemMod: i32 = @rem(@as(i32, itemNr), 10000);
-    vm.* = if ((itemNr < 0) or (isFunctionItemAMenu(@intCast(itemMod)) != 0)) vmReverse else vmNormal;
+    vm.* = if ((itemNr < 0) or (isFunctionItemAMenu(@intCast(itemNr)) != 0)) vmReverse else vmNormal;
     showCb.* = NOVAL;
     showValue.* = NOVAL;
     showText[0] = 0;
@@ -2564,10 +2559,10 @@ fn changeSoftKey(menuNr: i16, itemNr: i16, itemName: [*c]u8, vm: *videoMode_t, s
     showText[0] = 0;
 
     if (itemNr > 0) {
-        showCb.* = frontier_radio_button_catalog.fnCbIsSet(@intCast(itemMod));
-        showValue.* = frontier_radio_button_catalog.fnItemShowValue(@intCast(itemMod));
+        showCb.* = frontier_radio_button_catalog.fnCbIsSet(@intCast(itemNr));
+        showValue.* = frontier_radio_button_catalog.fnItemShowValue(@intCast(itemNr));
 
-        switch (itemMod) {
+        switch (itemNr) {
             VAR_ACC => {
                 real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_ACC), &tmpR);
                 if (realIsZero(&tmpR)) {
@@ -2608,18 +2603,18 @@ fn changeSoftKey(menuNr: i16, itemNr: i16, itemName: [*c]u8, vm: *videoMode_t, s
                 }
             },
             VAR_ULIM, VAR_LLIM, VAR_UX, VAR_LX, VAR_UEST, VAR_LEST, VAR_UY, VAR_LY, ITM_STORCL_FV, ITM_STORCL_IPonA, ITM_STORCL_IP, ITM_STORCL_NPPER, ITM_STORCL_PPERonA, ITM_STORCL_CPERonA, ITM_STORCL_PMT, ITM_STORCL_PV, VAR_IPonA, VAR_Ip, VAR_NPPER, VAR_PPERonA, VAR_CPERonA, VAR_PV, VAR_FV, VAR_PMT => {
-                _ = stringCopy(itemName, &indexOfItems[@intCast(itemMod)].itemSoftmenuName);
+                _ = stringCopy(itemName, &indexOfItems[@intCast(itemNr)].itemSoftmenuName);
                 placeSubscript(itemNr, 0, tmpF, itemName, &tmpS, &tmpSS, showText);
                 return;
             },
             ITM_AMORT_P1 => {
-                _ = stringCopy(itemName, &indexOfItems[@intCast(itemMod)].itemSoftmenuName);
+                _ = stringCopy(itemName, &indexOfItems[@intCast(itemNr)].itemSoftmenuName);
                 tmpF = @floatFromInt(amortP1);
                 placeSubscript(itemNr, 1, tmpF, itemName, &tmpS, &tmpSS, showText);
                 return;
             },
             ITM_AMORT_P2 => {
-                _ = stringCopy(itemName, &indexOfItems[@intCast(itemMod)].itemSoftmenuName);
+                _ = stringCopy(itemName, &indexOfItems[@intCast(itemNr)].itemSoftmenuName);
                 tmpF = @floatFromInt(amortP2);
                 placeSubscript(itemNr, 1, tmpF, itemName, &tmpS, &tmpSS, showText);
                 return;
@@ -2646,7 +2641,7 @@ fn changeSoftKey(menuNr: i16, itemNr: i16, itemName: [*c]u8, vm: *videoMode_t, s
                     NC_SUBSCRIPT => {
                         _ = stringCopy(showText + @as(usize, @intCast(stringByteLength(showText))), if (alphaCase == AC_LOWER) concat3(STD_SUB_s, STD_SUB_u, STD_SUB_b) else if (alphaCase == AC_UPPER) concat3(STD_SUB_S, STD_SUB_U, STD_SUB_B) else "");
                         showValue.* = NOVAL;
-                        _ = stringCopy(itemName, &indexOfItems[@intCast(itemMod)].itemSoftmenuName);
+                        _ = stringCopy(itemName, &indexOfItems[@intCast(itemNr)].itemSoftmenuName);
                         itemName[0] = STD_alpha[0];
                         itemName[1] = STD_alpha[1];
                         itemName[2] = 0;
@@ -2655,7 +2650,7 @@ fn changeSoftKey(menuNr: i16, itemNr: i16, itemName: [*c]u8, vm: *videoMode_t, s
                     NC_SUPERSCRIPT => {
                         _ = stringCopy(showText + @as(usize, @intCast(stringByteLength(showText))), if (alphaCase == AC_LOWER) concat3(STD_SUP_s, STD_SUP_u, STD_SUP_p) else if (alphaCase == AC_UPPER) concat3(STD_SUP_S, STD_SUP_U, STD_SUP_P) else "");
                         showValue.* = NOVAL;
-                        _ = stringCopy(itemName, &indexOfItems[@intCast(itemMod)].itemSoftmenuName);
+                        _ = stringCopy(itemName, &indexOfItems[@intCast(itemNr)].itemSoftmenuName);
                         itemName[0] = STD_alpha[0];
                         itemName[1] = STD_alpha[1];
                         itemName[2] = 0;
@@ -2737,20 +2732,20 @@ fn changeSoftKey(menuNr: i16, itemNr: i16, itemName: [*c]u8, vm: *videoMode_t, s
                     abi.fmtCStr(showText + @as(usize, @intCast(stringByteLength(showText))), "{s}", .{@as([*:0]const u8, frontier_radio_button_catalog.stringToSub(&registerLetter[alphaRegister - FIRST_LETTERED_REGISTER]))});
                     showValue.* = NOVAL;
                 } else if (FIRST_NAMED_VARIABLE <= alphaRegister and alphaRegister <= LAST_NAMED_VARIABLE) {
-                    abi.fmtCStr(showText + @as(usize, @intCast(stringByteLength(showText))), "{s}", .{@as([*:0]const u8, frontier_radio_button_catalog.stringToSub(if (itemMod == ITM_SET_42ALPHA) "var" else "vr"))});
+                    abi.fmtCStr(showText + @as(usize, @intCast(stringByteLength(showText))), "{s}", .{@as([*:0]const u8, frontier_radio_button_catalog.stringToSub(if (itemNr == ITM_SET_42ALPHA) "var" else "vr"))});
                     showValue.* = NOVAL;
                 }
             },
             else => {},
         }
 
-        if (itemMod == 9999) {
+        if (itemNr == 9999) {
             _ = stringCopy(itemName, &indexOfItems[@intCast(if (getSystemFlag(FLAG_MULTx) == 0) @as(i16, ITM_DOT) else @as(i16, ITM_CROSS))].itemSoftmenuName);
             return;
-        } else if ((indexOfItems[@intCast(itemMod)].status & CAT_STATUS) == CAT_CNST) {
-            _ = stringCopy(itemName, &indexOfItems[@intCast(itemMod)].itemCatalogName);
+        } else if ((indexOfItems[@intCast(itemNr)].status & CAT_STATUS) == CAT_CNST) {
+            _ = stringCopy(itemName, &indexOfItems[@intCast(itemNr)].itemCatalogName);
         } else {
-            _ = stringCopy(itemName, changeDotAndIJ(itemNr, &indexOfItems[@intCast(itemMod)].itemSoftmenuName));
+            _ = stringCopy(itemName, changeDotAndIJ(itemNr, &indexOfItems[@intCast(itemNr)].itemSoftmenuName));
             return;
         }
     } else if (itemNr < 0) {
@@ -2768,7 +2763,7 @@ fn changeSoftKey(menuNr: i16, itemNr: i16, itemName: [*c]u8, vm: *videoMode_t, s
                 else => {},
             }
         }
-        _ = stringCopy(itemName, &indexOfItems[@intCast(@rem(-%itemNr, 10000))].itemSoftmenuName);
+        _ = stringCopy(itemName, &indexOfItems[@intCast(-%itemNr)].itemSoftmenuName);
         return;
     }
 }
@@ -2988,13 +2983,13 @@ pub export fn fnStrikeOutIfNotCoded(itemNr: i16, x: i16, y: i16) callconv(.c) vo
     var strike: i16 = 0;
     if (itemNr > 0) {
         // C compares indexOfItems[i].func to the itemToBeCoded FUNCTION address.
-        if (indexOfItems[@intCast(@rem(@as(i32, itemNr), 10000))].func == @as(?*const fn (u16) callconv(.c) void, &frontier_items.itemToBeCoded) or savedspace(itemNr) != 0) {
+        if (indexOfItems[@intCast(itemNr)].func == @as(?*const fn (u16) callconv(.c) void, &frontier_items.itemToBeCoded) or savedspace(itemNr) != 0) {
             strike = 1;
         }
     } else if (itemNr < 0) {
         var m: i16 = 0;
         while (softmenu[@intCast(m)].menuItem != 0) {
-            if (softmenu[@intCast(m)].menuItem == @as(i16, @intCast(@rem(@as(i32, itemNr), 10000)))) {
+            if (softmenu[@intCast(m)].menuItem == @as(i16, @intCast(itemNr))) {
                 break;
             }
             m += 1;
@@ -3155,7 +3150,7 @@ pub export fn showSoftmenuCurrentPart() callconv(.c) void {
                     } else {
                         tmp1[0] = @intCast(48 + 1 + x + y * 6);
                     }
-                    showSoftkey(&tmp1, x, y, vmReverse, 1, 1, NOVAL, NOVAL, NOTEXT);
+                    showSoftkey(&tmp1, x, y, vmReverse, NOVAL, NOVAL, NOTEXT);
                 }
             }
             return;
@@ -3221,7 +3216,7 @@ pub export fn showSoftmenuCurrentPart() callconv(.c) void {
             if (numberOfItems == 0) {
                 x = 0;
                 while (x < 6) : (x += 1) {
-                    showSoftkey("", x, 0, vmNormal, 1, 1, NOVAL, NOVAL, NOTEXT);
+                    showSoftkey("", x, 0, vmNormal, NOVAL, NOVAL, NOTEXT);
                 }
             } else {
                 var ptr: [*c]u8 = getNthString(dynamicSoftmenu[@intCast(m)].menuContent, currentFirstItem);
@@ -3328,7 +3323,7 @@ pub export fn showSoftmenuCurrentPart() callconv(.c) void {
                                         if (getSystemFlag(FLAG_HPCONV) != 0) {
                                             changeSoftKey(softmenu[@intCast(m)].menuItem, frontier_conversion_pairs.conversionPartner(itemNrPair, null, null, null), &itemName, &vm, &showCb, &showValue, &showText);
                                         }
-                                        showSoftkey2(@intFromBool(cond), &itemName, x, y, vm, 1, 1, showCb, showValue, &showText, @intFromBool(flag));
+                                        showSoftkey2(@intFromBool(cond), &itemName, x, y, vm, showCb, showValue, &showText, @intFromBool(flag));
                                     } else {
                                         // A single softkey on a user menu.
                                         if (frontier_conversion_pairs.isItemConversion(itemNr)) {
@@ -3346,10 +3341,10 @@ pub export fn showSoftmenuCurrentPart() callconv(.c) void {
                                             // unit normally on the face of the key dominates.
                                             _ = trimKey(&itemName, @intCast(getSystemFlag(FLAG_HPCONV)));
                                         }
-                                        showSoftkey(&itemName, x, y, vm, 1, 1, showCb, showValue, &showText);
+                                        showSoftkey(&itemName, x, y, vm, showCb, showValue, &showText);
                                     }
                                 } else { // non-user menus
-                                    showSoftkey(&itemName, x, y, vm, 1, 1, showCb, showValue, &showText);
+                                    showSoftkey(&itemName, x, y, vm, showCb, showValue, &showText);
                                 }
                                 fnStrikeOutIfNotCoded(itemNr, x, y);
                                 fnStrikeThroughIfNA(itemNr, x, y);
@@ -3389,59 +3384,56 @@ pub export fn showSoftmenuCurrentPart() callconv(.c) void {
                         }
 
                         if (item == -%@as(i16, MNU_ASN_N) and calcModel == USER_C47 and !(softmenu[@intCast(m)].menuItem == -%@as(i16, MNU_MENU) or softmenu[@intCast(m)].menuItem == -%@as(i16, MNU_MENUS))) {
-                            showSoftkey(concat2(STD_SIGMA, "+ KEY"), x, y - @as(i16, @intCast(@divTrunc(currentFirstItem, 6))), vmReverse, 1, 1, NOVAL, NOVAL, NOTEXT);
+                            showSoftkey(concat2(STD_SIGMA, "+ KEY"), x, y - @as(i16, @intCast(@divTrunc(currentFirstItem, 6))), vmReverse, NOVAL, NOVAL, NOTEXT);
                         } else if (item == -%@as(i16, MNU_ASN_N) and isR47FAM() and !(softmenu[@intCast(m)].menuItem == -%@as(i16, MNU_MENU) or softmenu[@intCast(m)].menuItem == -%@as(i16, MNU_MENUS))) {
-                            showSoftkey(concat2(STD_BOX, " KEY"), x, y - @as(i16, @intCast(@divTrunc(currentFirstItem, 6))), vmReverse, 1, 1, NOVAL, NOVAL, NOTEXT);
+                            showSoftkey(concat2(STD_BOX, " KEY"), x, y - @as(i16, @intCast(@divTrunc(currentFirstItem, 6))), vmReverse, NOVAL, NOVAL, NOTEXT);
                         } else if (item == -%@as(i16, MNU_HOME) or item == -%@as(i16, MNU_PFN)) {
-                            showSoftkey(&indexOfItems[@intCast(-%item)].itemSoftmenuName, x, y - @as(i16, @intCast(@divTrunc(currentFirstItem, 6))), vmReverse, 1, 1, NOVAL, NOVAL, NOTEXT);
+                            showSoftkey(&indexOfItems[@intCast(-%item)].itemSoftmenuName, x, y - @as(i16, @intCast(@divTrunc(currentFirstItem, 6))), vmReverse, NOVAL, NOVAL, NOTEXT);
                         } else if (softmenu[@intCast(m)].menuItem == -%@as(i16, MNU_MENU) or softmenu[@intCast(m)].menuItem == -%@as(i16, MNU_MENUS)) {
-                            showSoftkey(&indexOfItems[@intCast(-%item)].itemCatalogName, x, y - @as(i16, @intCast(@divTrunc(currentFirstItem, 6))), vmReverse, 1, 1, NOVAL, NOVAL, NOTEXT);
+                            showSoftkey(&indexOfItems[@intCast(-%item)].itemCatalogName, x, y - @as(i16, @intCast(@divTrunc(currentFirstItem, 6))), vmReverse, NOVAL, NOVAL, NOTEXT);
                         } else if (softmenu[@intCast(menuLocal)].menuItem == 0) {
                             abi.fmtBufZ(errorMessage[0..512], "In function showSoftmenuCurrentPart: softmenu ID {d} not found!", .{@as(i32, item)});
                             frontier_error.displayBugScreen(errorMessage);
                         } else if (softmenu[@intCast(menuLocal)].menuItem == -%@as(i16, MNU_ALPHA_OMEGA) and alphaCase == AC_UPPER) {
-                            showSoftkey(&indexOfItems[@intCast(MNU_ALPHA_OMEGA)].itemSoftmenuName, x, y - @as(i16, @intCast(@divTrunc(currentFirstItem, 6))), vmReverse, 1, 1, NOVAL, NOVAL, NOTEXT);
+                            showSoftkey(&indexOfItems[@intCast(MNU_ALPHA_OMEGA)].itemSoftmenuName, x, y - @as(i16, @intCast(@divTrunc(currentFirstItem, 6))), vmReverse, NOVAL, NOVAL, NOTEXT);
                         } else if (softmenu[@intCast(menuLocal)].menuItem == -%@as(i16, MNU_ALPHA_OMEGA) and alphaCase == AC_LOWER) {
-                            showSoftkey(&indexOfItems[@intCast(MNU_alpha_omega)].itemSoftmenuName, x, y - @as(i16, @intCast(@divTrunc(currentFirstItem, 6))), vmReverse, 1, 1, NOVAL, NOVAL, NOTEXT);
+                            showSoftkey(&indexOfItems[@intCast(MNU_alpha_omega)].itemSoftmenuName, x, y - @as(i16, @intCast(@divTrunc(currentFirstItem, 6))), vmReverse, NOVAL, NOVAL, NOTEXT);
                         } else if (softmenu[@intCast(menuLocal)].menuItem == -%@as(i16, MNU_ALPHAINTL) and alphaCase == AC_UPPER) {
-                            showSoftkey(&indexOfItems[@intCast(MNU_ALPHAINTL)].itemSoftmenuName, x, y - @as(i16, @intCast(@divTrunc(currentFirstItem, 6))), vmReverse, 1, 1, NOVAL, NOVAL, NOTEXT);
+                            showSoftkey(&indexOfItems[@intCast(MNU_ALPHAINTL)].itemSoftmenuName, x, y - @as(i16, @intCast(@divTrunc(currentFirstItem, 6))), vmReverse, NOVAL, NOVAL, NOTEXT);
                         } else if (softmenu[@intCast(menuLocal)].menuItem == -%@as(i16, MNU_ALPHAINTL) and alphaCase == AC_LOWER) {
-                            showSoftkey(&indexOfItems[@intCast(MNU_ALPHAintl)].itemSoftmenuName, x, y - @as(i16, @intCast(@divTrunc(currentFirstItem, 6))), vmReverse, 1, 1, NOVAL, NOVAL, NOTEXT);
+                            showSoftkey(&indexOfItems[@intCast(MNU_ALPHAintl)].itemSoftmenuName, x, y - @as(i16, @intCast(@divTrunc(currentFirstItem, 6))), vmReverse, NOVAL, NOVAL, NOTEXT);
                         } else if (softmenu[@intCast(menuLocal)].menuItem == -%@as(i16, MNU_PRINTER)) {
-                            showSoftkey(&indexOfItems[@intCast(MNU_PRINTER)].itemSoftmenuName, x, y - @as(i16, @intCast(@divTrunc(currentFirstItem, 6))), vmReverse, 1, 1, NOVAL, NOVAL, &showText);
+                            showSoftkey(&indexOfItems[@intCast(MNU_PRINTER)].itemSoftmenuName, x, y - @as(i16, @intCast(@divTrunc(currentFirstItem, 6))), vmReverse, NOVAL, NOVAL, &showText);
                         } else {
                             // INLINE_TEST is off -> only the main softmenu display arm.
-                            showSoftkey(&indexOfItems[@intCast(-%softmenu[@intCast(menuLocal)].menuItem)].itemSoftmenuName, x, y - @as(i16, @intCast(@divTrunc(currentFirstItem, 6))), vmReverse, 1, 1, NOVAL, NOVAL, NOTEXT);
+                            showSoftkey(&indexOfItems[@intCast(-%softmenu[@intCast(menuLocal)].menuItem)].itemSoftmenuName, x, y - @as(i16, @intCast(@divTrunc(currentFirstItem, 6))), vmReverse, NOVAL, NOVAL, NOTEXT);
                         }
                     } else if (softmenu[@intCast(m)].menuItem == -%@as(i16, MNU_SYSFL)) {
-                        if (indexOfItems[@intCast(@rem(@as(i32, item), 10000))].itemCatalogName[0] != 0) {
-                            if (isSystemFlagWriteProtected(@intCast(indexOfItems[@intCast(@rem(@as(i32, item), 10000))].param)) != 0) {
-                                showSoftkey(changeDotAndIJ(item, &indexOfItems[@intCast(@rem(@as(i32, item), 10000))].itemCatalogName), x, y - @as(i16, @intCast(@divTrunc(currentFirstItem, 6))), vmNormal, @intFromBool(@divTrunc(@as(i32, item), 10000) == 0 or @divTrunc(@as(i32, item), 10000) == 2), @intFromBool(@divTrunc(@as(i32, item), 10000) == 0 or @divTrunc(@as(i32, item), 10000) == 1), showCb, if (getSystemFlag(@intCast(indexOfItems[@intCast(@rem(@as(i32, item), 10000))].param)) != 0) 1 else 0, NOTEXT);
+                        if (indexOfItems[@intCast(item)].itemCatalogName[0] != 0) {
+                            if (isSystemFlagWriteProtected(@intCast(indexOfItems[@intCast(item)].param)) != 0) {
+                                showSoftkey(changeDotAndIJ(item, &indexOfItems[@intCast(item)].itemCatalogName), x, y - @as(i16, @intCast(@divTrunc(currentFirstItem, 6))), vmNormal, showCb, getSystemFlag(@intCast(indexOfItems[@intCast(item)].param)), NOTEXT);
                             } else {
-                                showSoftkey(changeDotAndIJ(item, &indexOfItems[@intCast(@rem(@as(i32, item), 10000))].itemCatalogName), x, y - @as(i16, @intCast(@divTrunc(currentFirstItem, 6))), vmNormal, @intFromBool(@divTrunc(@as(i32, item), 10000) == 0 or @divTrunc(@as(i32, item), 10000) == 2), @intFromBool(@divTrunc(@as(i32, item), 10000) == 0 or @divTrunc(@as(i32, item), 10000) == 1), if (getSystemFlag(@intCast(indexOfItems[@intCast(@rem(@as(i32, item), 10000))].param)) != 0) CB_TRUE else CB_FALSE, NOVAL, NOTEXT);
+                                showSoftkey(changeDotAndIJ(item, &indexOfItems[@intCast(item)].itemCatalogName), x, y - @as(i16, @intCast(@divTrunc(currentFirstItem, 6))), vmNormal, if (getSystemFlag(@intCast(indexOfItems[@intCast(item)].param)) != 0) CB_TRUE else CB_FALSE, NOVAL, NOTEXT);
                             }
                         }
-                    } else if (softmenu[@intCast(m)].menuItem == -%@as(i16, MNU_TAMFLAG) and indexOfItems[@intCast(@rem(@as(i32, item), 10000))].itemCatalogName[0] != 0 and funcIsGetSystemFlag(indexOfItems[@intCast(@rem(@as(i32, item), 10000))].func)) {
-                        showSoftkey(&indexOfItems[@intCast(@rem(@as(i32, item), 10000))].itemCatalogName, x, y - @as(i16, @intCast(@divTrunc(currentFirstItem, 6))), vmNormal, @intFromBool(@divTrunc(@as(i32, item), 10000) == 0 or @divTrunc(@as(i32, item), 10000) == 2), @intFromBool(@divTrunc(@as(i32, item), 10000) == 0 or @divTrunc(@as(i32, item), 10000) == 1), if (getSystemFlag(@intCast(indexOfItems[@intCast(@rem(@as(i32, item), 10000))].param)) != 0) CB_TRUE else CB_FALSE, NOVAL, NOTEXT);
-                    } else if (softmenu[@intCast(m)].menuItem == -%@as(i16, MNU_ALPHA) and calcMode == CM_PEM and @rem(@as(i32, item), 10000) == ITM_ASSIGN) {
+                    } else if (softmenu[@intCast(m)].menuItem == -%@as(i16, MNU_TAMFLAG) and indexOfItems[@intCast(item)].itemCatalogName[0] != 0 and funcIsGetSystemFlag(indexOfItems[@intCast(item)].func)) {
+                        showSoftkey(&indexOfItems[@intCast(item)].itemCatalogName, x, y - @as(i16, @intCast(@divTrunc(currentFirstItem, 6))), vmNormal, if (getSystemFlag(@intCast(indexOfItems[@intCast(item)].param)) != 0) CB_TRUE else CB_FALSE, NOVAL, NOTEXT);
+                    } else if (softmenu[@intCast(m)].menuItem == -%@as(i16, MNU_ALPHA) and calcMode == CM_PEM and item == ITM_ASSIGN) {
                         // do nothing
-                    } else if (item > 0 and indexOfItems[@intCast(@rem(@as(i32, item), 10000))].itemSoftmenuName[0] != 0) {
-                        // The whole item, not item % 10000: an item carrying a
-                        // line-suppression offset is deliberately not a member of
-                        // the conversion-pair table and renders as a plain key.
+                    } else if (item > 0 and indexOfItems[@intCast(item)].itemSoftmenuName[0] != 0) {
                         if (frontier_conversion_units.isItemConversion(item)) {
                             // The softkey text for a fixed-menu conversion pair, including the
                             // HPCONV swap. indexOfItems does not carry the second text part.
                             var www: [64]u8 = undefined;
                             frontier_conversion_units.fullConvSoftMenuItemNameInclHPCONV(item, &www);
-                            showSoftkey2(1, &www, x, y - @as(i16, @intCast(@divTrunc(currentFirstItem, 6))), vmNormal, @intFromBool(@divTrunc(@as(i32, item), 10000) == 0 or @divTrunc(@as(i32, item), 10000) == 2), @intFromBool(@divTrunc(@as(i32, item), 10000) == 0 or @divTrunc(@as(i32, item), 10000) == 1), showCb, showValue, &showText, 0);
+                            showSoftkey2(1, &www, x, y - @as(i16, @intCast(@divTrunc(currentFirstItem, 6))), vmNormal, showCb, showValue, &showText, 0);
                         } else {
                             if ((softmenu[@intCast(m)].menuItem == -%@as(i16, MNU_FCNS) or softmenu[@intCast(m)].menuItem == -%@as(i16, MNU_FCNS_EIM) or softmenu[@intCast(m)].menuItem == -%@as(i16, MNU_CONST)) or
                                 ((softmenu[@intCast(m)].menuItem == -%@as(i16, MNU_IO) or softmenu[@intCast(m)].menuItem == -%@as(i16, MNU_PFN)) and (item == ITM_STOCFG or item == ITM_RCLCFG)))
                             {
-                                _ = stringCopy(&itemName2, changeDotAndIJ(item, &indexOfItems[@intCast(@rem(@as(i32, item), 10000))].itemCatalogName));
+                                _ = stringCopy(&itemName2, changeDotAndIJ(item, &indexOfItems[@intCast(item)].itemCatalogName));
                             }
-                            showSoftkey(&itemName2, x, y - @as(i16, @intCast(@divTrunc(currentFirstItem, 6))), vm, @intFromBool(@divTrunc(@as(i32, item), 10000) == 0 or @divTrunc(@as(i32, item), 10000) == 2), @intFromBool(@divTrunc(@as(i32, item), 10000) == 0 or @divTrunc(@as(i32, item), 10000) == 1), showCb, showValue, &showText);
+                            showSoftkey(&itemName2, x, y - @as(i16, @intCast(@divTrunc(currentFirstItem, 6))), vm, showCb, showValue, &showText);
                         }
 
                         if ((getSystemFlag(FLAG_G_DOUBLETAP) != 0 and (BLOCK_DOUBLEPRESS_MENU(softmenu[@intCast(m)].menuItem, x, y))) or
@@ -3472,13 +3464,13 @@ pub export fn showSoftmenuCurrentPart() callconv(.c) void {
                         var x2: i16 = undefined;
                         var y2: i16 = undefined;
                         if (initSoftkeyCoordinates(&tmpq, x, 2, &x1, &x2, &y1, &y2) != 0) {
-                            showKey(&tmpq, x1, x2, y1, y2, vmNormal, 0, 1, NOVAL, NOVAL, &tmpp);
+                            showKey(&tmpq, x1, x2, y1, y2, vmNormal, 0, NOVAL, NOVAL, &tmpp);
                             diagonalsOnTop(x1, x2, y1, y2, vmNormal);
                         }
                     }
 
-                    fnStrikeOutIfNotCoded(@intCast(@rem(@as(i32, item), 10000)), x, y - @as(i16, @intCast(@divTrunc(currentFirstItem, 6))));
-                    fnStrikeThroughIfNA(@intCast(@rem(@as(i32, item), 10000)), x, y - @as(i16, @intCast(@divTrunc(currentFirstItem, 6))));
+                    fnStrikeOutIfNotCoded(@intCast(item), x, y - @as(i16, @intCast(@divTrunc(currentFirstItem, 6))));
+                    fnStrikeThroughIfNA(@intCast(item), x, y - @as(i16, @intCast(@divTrunc(currentFirstItem, 6))));
                 }
             }
 

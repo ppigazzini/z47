@@ -415,7 +415,6 @@ pub export var numberOfUserMenus: u16 = 0;
 pub export var currentUserMenu: u16 = 0;
 pub export var userKeyLabelSize: u16 = 0;
 pub export var currentInputVariable: u16 = INVALID_VARIABLE;
-// REAL34_WIDTH_TEST == 0: largeur skipped.
 
 pub export var numberOfFreeMemoryRegions: i32 = 0;
 

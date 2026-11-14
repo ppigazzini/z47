@@ -26,7 +26,7 @@ const frontier_screen_snap = @import("screen_snap.zig");
 //   * option_vector gates the OPTION_VECTOR vector-component TI helpers (tiVector,
 //     the e0/e1/e2 element-name helpers). ON for host/dmcp5, OFF for dmcp pkg1/2/4.
 //   * extra_info / ir_printing as the siblings.
-//   * Dead/omitted: DISCRIMINANT, GENERATE_CATALOGS, REAL34_WIDTH_TEST==0,
+//   * Dead/omitted: DISCRIMINANT, GENERATE_CATALOGS,
 //     VERBOSE_SCREEN/MONITOR_*/ANALYSE_REFRESH/FN_TIME_DEBUG1/DEBUG_SHOWNAME
 //     (DEBUGSFN=false)/INLINE_TEST. The #if PC_BUILD clipboard/cairo helpers and
 //     the GTK refreshLcd are host-only (comptime !dmcp_build); drawScreen / the

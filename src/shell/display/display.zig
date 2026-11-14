@@ -29,7 +29,7 @@ const std = @import("std");
 //     referenced under that guard.
 //   * EXTRA_INFO_ON_CALC_ERROR: the moreInfoOnError console hints are 1 on host,
 //     0 on DMCP/testSuite; gated on the extra_info build option like the siblings.
-//   * REAL34_WIDTH_TEST==0, PC_BUILD_TELLTALE undef, VERBOSE_SCREEN/MONITOR_*
+//   * PC_BUILD_TELLTALE undef, VERBOSE_SCREEN/MONITOR_*
 //     undef, DEBUGUNDO undef, SIG_VARIABLE_JUMP undef: those branches are dead and
 //     omitted (the #else / non-defined arm is ported).
 //

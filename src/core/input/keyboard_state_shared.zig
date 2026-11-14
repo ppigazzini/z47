@@ -800,7 +800,7 @@ pub fn implementation(comptime runtime: type) type {
             const sm = &runtime.softmenu[@intCast(menuId)];
             const row: i32 = @min(@as(i32, 3), @divTrunc(@as(i32, sm.numItems) + runtime.modulo(firstItem - sm.numItems, 6), 6) - @divTrunc(@as(i32, firstItem), 6)) - 1;
             if (@divTrunc(@as(i32, itemShift), 6) <= row and firstItem + itemShift + fn_ < sm.numItems) {
-                item = @rem(sm.softkeyItem[@intCast(firstItem + itemShift + fn_)], 10000);
+                item = sm.softkeyItem[@intCast(firstItem + itemShift + fn_)];
                 if (item == runtime.ITM_PROD_SIGN) {
                     item = if (runtime.getSystemFlag(runtime.FLAG_MULTx)) runtime.ITM_DOT else runtime.ITM_CROSS;
                 }

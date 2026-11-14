@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //! Small integer-math helpers -- the pure cores of frontier_softmenus'
-//! TO_BLOCKS / cmod / modulo / maxI / minI / cmodNonNeg.
+//! TO_BLOCKS / cmod / modulo / maxI / minI.
 //!
 //! These are the block-rounding and modulo/min/max primitives the softmenu layout
 //! math uses. All are pure scalar arithmetic with no globals. Lift them here for
@@ -32,11 +32,6 @@ pub fn minI(a: i32, b: i32) i32 {
     return if (a < b) a else b;
 }
 
-/// Plain truncating remainder.
-pub fn cmodNonNeg(n: i32, d: i32) i32 {
-    return @rem(n, d);
-}
-
 test "toBlocks rounds up to 4-byte blocks" {
     try std.testing.expectEqual(@as(u16, 0), toBlocks(0));
     try std.testing.expectEqual(@as(u16, 1), toBlocks(1));
@@ -51,8 +46,7 @@ test "cmod and modulo give non-negative results for positive d" {
     try std.testing.expectEqual(@as(i32, 1), modulo(7, 3));
 }
 
-test "maxI / minI / cmodNonNeg" {
+test "maxI / minI" {
     try std.testing.expectEqual(@as(i32, 5), maxI(3, 5));
     try std.testing.expectEqual(@as(i32, 3), minI(3, 5));
-    try std.testing.expectEqual(@as(i32, -1), cmodNonNeg(-7, 3));
 }

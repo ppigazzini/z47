@@ -237,7 +237,6 @@ const STD_USER_MODE = "\xa4\x2c";
 const STD_USB_SYMBOL = "\xa4\x34";
 const STD_BATTERY = "\xa4\x2a";
 const STD_NEG_EXCLAMATION_MARK = "\xa4\x2f";
-const STD_SPACE_HAIR = "\xa0\x0a";
 const STD_P = "\x50";
 const STD_HOURGLASS_WH = "\xa9\xd6";
 const STD_CROSS = "\x80\xd7";
@@ -469,7 +468,8 @@ var SBasmShown: u8 = 0xFF; // what the ASM area last drew: 0 blank, 1 the buffer
 var SBasmTextShown: [asmBuffer.len]u8 = @splat(0);
 // C file-scope .bss globals -> zero-initialized. `= undefined` left garbage that
 // could read as a set flag before the first write.
-pub export var SBhourglassShown: [2]u8 = .{ 0, 0 };
+/// The glyph the hourglass area last drew: "" for blank, null when not known.
+pub export var SBhourglassShown: ?[*:0]const u8 = null;
 pub export var alphaOutput: [3]u8 = .{ 0, 0, 0 };
 pub export var reInstateIntegerModeDisplay: bool_t = false;
 pub export var reInstateOCModeDisplay: bool_t = false;
@@ -483,8 +483,7 @@ pub export fn forceSBupdate() callconv(.c) void {
     SBlastIntegerBaseShown = 0xFF;
     SBAlphaModeLastShown = 0xFFFF;
     SBasmShown = 0xFF;
-    SBhourglassShown[0] = 0xFF;
-    SBhourglassShown[1] = 0xFF;
+    SBhourglassShown = null;
     oldTime[0] = 0;
     alphaOutput[0] = 0xFF;
     alphaOutput[1] = 0xFF;
@@ -1114,42 +1113,39 @@ pub export fn showHideHourGlass() callconv(.c) void {
         }
     }
 
-    var statusMessage: [4]u8 = undefined;
-    statusMessage[0] = 0;
-    statusMessage[1] = 0;
-    statusMessage[2] = 0;
-    statusMessage[3] = 0;
-    var offs: i32 = 0;
-    var yoffs: i32 = 0;
+    var glyph: [*:0]const u8 = "";
+    var offs: u32 = 0;
+    var yoffs: u32 = 0;
     switch (programRunStop) {
-        PGM_WAITING => {
-            _ = strcpy(&statusMessage, STD_NEG_EXCLAMATION_MARK);
-            offs = 0;
-        },
+        PGM_WAITING => glyph = STD_NEG_EXCLAMATION_MARK,
         PGM_RUNNING => {
-            abi.fmtBufZ(&statusMessage, STD_SPACE_HAIR ++ STD_P, .{});
-            offs = 1;
+            glyph = STD_P;
+            offs = 2;
         },
         else => {
             if (hourGlassIconEnabled) {
-                _ = strcpy(&statusMessage, STD_HOURGLASS_WH);
+                glyph = STD_HOURGLASS_WH;
                 offs = 1;
                 yoffs = 5;
             }
         },
     }
-    // XX  = GRAPHMODE ? X_HOURGLASS_GRAPHS : X_HOURGLASS
-    // XXX = GRAPHMODE ? (SBARUPD_ComplexResult ? X_COMPLEX_MODE : X_COMPLEX_MODE+X_COMPLEX_MODE_ADJ) : X_SSIZE_BEGIN
-    const xx: i32 = if (graphMode()) X_HOURGLASS_GRAPHS else X_HOURGLASS;
-    const xxx: i32 = if (graphMode()) (if (sbComplexResult()) X_COMPLEX_MODE else X_COMPLEX_MODE + X_COMPLEX_MODE_ADJ) else X_SSIZE_BEGIN;
-    if (SBhourglassShown[0] != statusMessage[0] or SBhourglassShown[1] != statusMessage[1]) {
-        SBhourglassShown[0] = statusMessage[0];
-        SBhourglassShown[1] = statusMessage[1];
-        // xxx - xx is negative in graph mode (X_COMPLEX_MODE+ADJ < X_HOURGLASS_GRAPHS);
-        // the C passes it to a uint32_t dx, wrapping to a large value that
-        // lcd_fill_rect clamps to the screen. @bitCast reproduces that wrap;
-        // @intCast would reject the negative value.
-        _ = showStringAndClear(&statusMessage, &standardFont, @intCast(xx + offs), yoffs, @bitCast(xxx - xx), 20, vmNormal, false, false);
+    // The glyphs are constants, so the pointer says which one was drawn.
+    if (SBhourglassShown != glyph) {
+        var x: u32 = X_HOURGLASS;
+        var xEnd: u32 = X_SSIZE_BEGIN;
+        if (graphMode()) {
+            x = X_HOURGLASS_GRAPHS;
+            xEnd = if (sbComplexResult()) X_COMPLEX_MODE else X_COMPLEX_MODE + X_COMPLEX_MODE_ADJ;
+        }
+        SBhourglassShown = glyph;
+        // In graph mode with no complex result xEnd lies left of x. The C width is
+        // a uint32_t that wraps to a large value, and lcd_fill_rect clamps it to
+        // the screen; -% wraps the same way.
+        lcd_fill_rect(x, 0, xEnd -% x, 20, LCD_SET_VALUE);
+        if (glyph[0] != 0) {
+            _ = frontier_screen.showGlyph(glyph, &standardFont, x + offs, yoffs, vmNormal, @intFromBool(false), @intFromBool(false), @intFromBool(false));
+        }
         frontier_screen.force_SBrefresh(force);
     }
 }

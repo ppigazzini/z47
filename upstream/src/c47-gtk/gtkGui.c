@@ -3277,7 +3277,7 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
   else {
     //stringToUtf8(indexOfItems[max(key->primary, -key->primary)].itemSoftmenuName, lbl);
     char sstmp[16];
-    strcpy(sstmp, indexOfItems[max(key->primary, -key->primary)].itemSoftmenuName); 
+    strcpy(sstmp, indexOfItems[max(key->primary, -key->primary)].itemSoftmenuName);
     if((key->primary == ITM_op_j || key->primary == ITM_op_j_pol) && getSystemFlag(FLAG_CPXj)) {
       sstmp[1]++;
     }
@@ -5582,11 +5582,7 @@ gboolean onUIActivity(GtkWidget *w, GdkEvent *event, gpointer data) {
         gtk_window_set_default_size(GTK_WINDOW(frmCalc), 1000, 540);
       }
       else {
-        #if NARROW_SCREEN == 0
-          gtk_window_set_default_size(GTK_WINDOW(frmCalc),  526, 980);
-        #else // NARROW_SCREEN != 0 --> 400x1280 raspberry screen
-          gtk_window_set_default_size(GTK_WINDOW(frmCalc),  400, 862);
-        #endif // NARROW_SCREEN == 0
+        gtk_window_set_default_size(GTK_WINDOW(frmCalc),  526, 980);
       }
 
       gtk_widget_set_name(frmCalc, "mainWindow");
@@ -5608,10 +5604,10 @@ gboolean onUIActivity(GtkWidget *w, GdkEvent *event, gpointer data) {
       g_signal_connect(frmCalc, "focus-in-event", G_CALLBACK(onUIActivity), NULL);
       g_signal_connect(frmCalc, "focus-out-event", G_CALLBACK(onUIActivity), NULL);
 
-      #if (BIG_SCREEN_COEF > 1) || NARROW_SCREEN
+      #if (BIG_SCREEN_COEF > 1)
         gtk_window_set_decorated(GTK_WINDOW(frmCalc), FALSE);
         gtk_window_set_position(GTK_WINDOW(frmCalc), GTK_WIN_POS_CENTER);
-      #endif // BIG_SCREEN_COEF > 1 || NARROW_SCREEN
+      #endif // BIG_SCREEN_COEF > 1
 
       gtk_widget_add_events(GTK_WIDGET(frmCalc), GDK_CONFIGURE);
 
@@ -5638,17 +5634,8 @@ gboolean onUIActivity(GtkWidget *w, GdkEvent *event, gpointer data) {
         strcpy(modelString,modelString2);
       }
 
-
-      // Backround image
-      #if NARROW_SCREEN == 0
-        backgroundImage = gtk_image_new_from_file(modelString);
-        gtk_fixed_put(GTK_FIXED(grid), backgroundImage, 0, 0);
-      #else // NARROW_SCREEN != 0 --> 400x1280 raspberry screen
-        backgroundImage = gtk_image_new_from_file("res/dm42l_L1_narrow_screen.png");
-        gtk_fixed_put(GTK_FIXED(grid), backgroundImage, 0, 240);
-      #endif // NARROW_SCREEN == 0
-
-
+      backgroundImage = gtk_image_new_from_file(modelString);
+      gtk_fixed_put(GTK_FIXED(grid), backgroundImage, 0, 0);
 
 
       // Frame around the f key
@@ -5711,11 +5698,7 @@ gboolean onUIActivity(GtkWidget *w, GdkEvent *event, gpointer data) {
       screen = gtk_drawing_area_new();
       gtk_widget_set_size_request(screen, SCREEN_WIDTH, SCREEN_HEIGHT);
       gtk_widget_set_tooltip_text(GTK_WIDGET(screen), "Copy to file/clipboard:\n CTRL+a: All Registers WVU…X R99…R00\n CTRL+c/x: X Register\n CTRL+d: Lettered Registers WVU…X\n CTRL+h: Screen image\n CTRL+m: Menu image\n CTRL+n: Menu image to disk\n CTRL+k: X register image to clipboard\n CTRL+j: X register image to disk\n CTRL+p: Print-out window\n CTRL+s: SNAP\n");  //JM
-      #if NARROW_SCREEN == 0
-        gtk_fixed_put(GTK_FIXED(grid), screen, 63, 72);
-      #else // NARROW_SCREEN != 0 --> 400x1280 raspberry screen
-        gtk_fixed_put(GTK_FIXED(grid), screen, 0, 0);
-      #endif // NARROW_SCREEN == 0
+      gtk_fixed_put(GTK_FIXED(grid), screen, 63, 72);
       screenStride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, SCREEN_WIDTH)/4;
       numBytes = screenStride * SCREEN_HEIGHT * 4;
       screenData = malloc(numBytes);

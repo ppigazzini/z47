@@ -44,7 +44,6 @@ const GTK_WINDOW_TOPLEVEL: c_int = 0;
 const GTK_WIN_POS_CENTER: c_int = 1;
 const GDK_CONFIGURE: c_int = 13;
 const BIG_SCREEN_COEF: c_int = 1;
-const NARROW_SCREEN: bool = false;
 const CAIRO_FORMAT_RGB24: c_int = 1;
 const SCREEN_WIDTH: c_int = 400;
 const SCREEN_HEIGHT: c_int = 240;
@@ -141,8 +140,6 @@ pub fn configureWindowLayout() void {
     frmCalc = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     if (calcLandscape) {
         gtk_window_set_default_size(frmCalc, 1000, 540);
-    } else if (NARROW_SCREEN) {
-        gtk_window_set_default_size(frmCalc, 400, 862);
     } else {
         gtk_window_set_default_size(frmCalc, 526, 980);
     }
@@ -159,7 +156,7 @@ pub fn configureWindowLayout() void {
     _ = g_signal_connect_data(frmCalc, "focus-in-event", &z47_onUIActivity, null, null, 0);
     _ = g_signal_connect_data(frmCalc, "focus-out-event", &z47_onUIActivity, null, null, 0);
 
-    if (BIG_SCREEN_COEF > 1 or NARROW_SCREEN) {
+    if (BIG_SCREEN_COEF > 1) {
         gtk_window_set_decorated(frmCalc, 0);
         gtk_window_set_position(frmCalc, GTK_WIN_POS_CENTER);
     }
@@ -172,13 +169,8 @@ pub fn configureWindowLayout() void {
 pub fn setupBackgroundImage() void {
     const path_len = ensureModelString();
 
-    if (!NARROW_SCREEN) {
-        backgroundImage = gtk_image_new_from_file(modelString[0..path_len :0]);
-        gtk_fixed_put(grid, backgroundImage, 0, 0);
-    } else {
-        backgroundImage = gtk_image_new_from_file("res/dm42l_L1_narrow_screen.png");
-        gtk_fixed_put(grid, backgroundImage, 0, 240);
-    }
+    backgroundImage = gtk_image_new_from_file(modelString[0..path_len :0]);
+    gtk_fixed_put(grid, backgroundImage, 0, 0);
 }
 
 pub fn setupSoftkeyLabels() void {
@@ -201,11 +193,7 @@ pub fn setupScreenBuffer() void {
     screen = gtk_drawing_area_new();
     gtk_widget_set_size_request(screen, SCREEN_WIDTH, SCREEN_HEIGHT);
     gtk_widget_set_tooltip_text(screen, "Copy to file/clipboard:\n CTRL+a: All Registers WVU…X R99…R00\n CTRL+c/x: X Register\n CTRL+d: Lettered Registers WVU…X\n CTRL+h: Screen image\n CTRL+m: Menu image\n CTRL+n: Menu image to disk\n CTRL+k: X register image to clipboard\n CTRL+j: X register image to disk\n CTRL+p: Print-out window\n CTRL+s: SNAP\n");
-    if (!NARROW_SCREEN) {
-        gtk_fixed_put(grid, screen, 63, 72);
-    } else {
-        gtk_fixed_put(grid, screen, 0, 0);
-    }
+    gtk_fixed_put(grid, screen, 63, 72);
 
     screenStride = @intCast(@divTrunc(cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, SCREEN_WIDTH), 4));
     const num_bytes: usize = @as(usize, @intCast(screenStride)) * SCREEN_HEIGHT * 4;
