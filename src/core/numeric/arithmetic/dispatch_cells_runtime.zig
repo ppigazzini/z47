@@ -65,14 +65,14 @@ pub const displayBugScreen = abi.host.showBugScreen; // routed through the host-
 pub extern fn getDataTypeName(dt: u16, article: bool, pad_with_blanks: bool) [*:0]const u8;
 
 // registerValueConversions.c
-pub extern fn convertShortIntegerRegisterToReal34Register(source: calcRegister_t, destination: calcRegister_t) void;
+pub const convertShortIntegerRegisterToReal34Register = runtime.convertShortIntegerRegisterToReal34Register;
 pub extern fn convertShortIntegerRegisterToLongIntegerRegister(source: calcRegister_t, destination: calcRegister_t) void;
-pub extern fn convertLongIntegerToReal34(source: *const mpz_struct, destination: *real34_t) void;
+pub const convertLongIntegerToReal34 = runtime.convertLongIntegerToReal34;
 
 // integers.c (range-checked long integer arithmetic helpers)
-pub extern fn longIntegerMultiply(op_y: *const mpz_struct, op_x: *const mpz_struct, result: *mpz_struct) void;
-pub extern fn longIntegerAdd(op_y: *const mpz_struct, op_x: *const mpz_struct, result: *mpz_struct) void;
-pub extern fn longIntegerSubtract(op_y: *const mpz_struct, op_x: *const mpz_struct, result: *mpz_struct) void;
+pub const longIntegerMultiply = runtime.longIntegerMultiply;
+pub const longIntegerAdd = runtime.longIntegerAdd;
+pub const longIntegerSubtract = runtime.longIntegerSubtract;
 
 // GMP entry points for longIntegerType.h inline helpers.
 pub extern fn __gmpz_tdiv_q(quotient: *mpz_struct, dividend: *const mpz_struct, divisor: *const mpz_struct) void;
@@ -96,11 +96,11 @@ pub extern fn _divideComplexMatrix(matrix: *const complex34Matrix_t, x: *const c
 pub extern fn divideByComplexMatrix(yr: *const real34_t, yi: *const real34_t, matrix: *const complex34Matrix_t, res: *complex34Matrix_t) void;
 pub extern fn _divideByComplexMatrix(y: *const cplx_t, matrix: *const complex34Matrix_t, res: *complex34Matrix_t, real_context: *realContext_t) void;
 pub extern fn divideComplexMatrices(y: *const complex34Matrix_t, x: *const complex34Matrix_t, res: *complex34Matrix_t) void;
-pub extern fn elementwiseRema(f: VoidCallback) void;
+pub const elementwiseRema = runtime.elementwiseRema;
 pub extern fn elementwiseCxma(f: VoidCallback) void;
-pub extern fn elementwiseRealRema(f: VoidCallback) void;
-pub extern fn elementwiseCxmaReal(f: VoidCallback) void;
-pub extern fn elementwiseRealCxma(f: VoidCallback) void;
+pub const elementwiseRealRema = runtime.elementwiseRealRema;
+pub const elementwiseCxmaReal = runtime.elementwiseCxmaReal;
+pub const elementwiseRealCxma = runtime.elementwiseRealCxma;
 
 // screen.c / display globals used by round.c
 pub extern fn refreshRegisterLine(regist: calcRegister_t) void;
@@ -113,7 +113,7 @@ pub extern const roundingModeTable: [7]c_int;
 
 // decNumber / decQuad library entry points behind upstream macros.
 pub extern fn decNumberCopy(destination: *real_t, source: *const real_t) *real_t;
-pub extern fn decQuadZero(result: *real34_t) *real34_t;
-pub extern fn decQuadFromInt32(result: *real34_t, source: i32) *real34_t;
+pub const decQuadZero = runtime.decQuadZero;
+pub const decQuadFromInt32 = runtime.decQuadFromInt32;
 pub extern fn decQuadScaleB(result: *real34_t, source: *const real34_t, shift: *const real34_t, context: *realContext_t) *real34_t;
-pub extern fn decQuadFromString(result: *real34_t, source: [*:0]const u8, context: *realContext_t) *real34_t;
+pub const decQuadFromString = runtime.decQuadFromString;

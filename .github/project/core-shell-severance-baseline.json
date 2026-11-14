@@ -1,4 +1,4 @@
 {
-  "extern_edges": 935,
+  "extern_edges": 932,
   "note": "extern_edges is a ceiling, not a target: distinct (src/core file, symbol) pairs where the core file declares an extern whose only first-party pub export is under src/shell. It may not rise; --update re-pins it when it falls. Raise it by hand only when a resync ports upstream code that adds the coupling, and name the symbol in that commit. A core @import of a shell source is capped at 0 by the script, not here."
 }
