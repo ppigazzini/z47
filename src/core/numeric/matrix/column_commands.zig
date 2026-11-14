@@ -49,6 +49,11 @@ inline fn cmEl(m: *const complex34Matrix_t, i: usize) *complex34_t {
     return &e[i];
 }
 
+/// An int16_t printed through PRIu16, as the host's C library prints it.
+fn priU16(value: i16) u32 {
+    return if (@import("builtin").target.os.tag == .macos) @as(u16, @bitCast(value)) else @bitCast(@as(i32, value));
+}
+
 fn columnMinMaxReal(matrix: *real34Matrix_t, calcMax: bool) bool {
     const i = getIRegisterAsInt(true);
     const j = getJRegisterAsInt(true);
@@ -87,9 +92,11 @@ fn columnMinMaxReal(matrix: *real34Matrix_t, calcMax: bool) bool {
         runtime.displayCalcErrorMessage(runtime.ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
         if (runtime.extra_info_on_calc_error) {
             var buf: [64]u8 = undefined;
-            // PRIu16 on an int16_t: a negative index, which is the branch this
-            // is, prints as its unsigned 16-bit image.
-            const m = runtime.bufPrintZ(&buf, "rows {d} and/or {d} out of range.", .{ @as(u16, @bitCast(i)), @as(u16, @bitCast(j)) }) catch "out of range";
+            // PRIu16 on an int16_t: glibc and MinGW spell it "u", so the index
+            // promotes to int and a negative one, which is the branch this is,
+            // prints as its unsigned 32-bit image; macOS's "hu" narrows it to
+            // 16 bits.
+            const m = runtime.bufPrintZ(&buf, "rows {d} and/or {d} out of range.", .{ priU16(i), priU16(j) }) catch "out of range";
             runtime.moreInfoOnError("In function columnMinMaxReal:", m, null, null);
         }
         return false;
