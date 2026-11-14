@@ -543,8 +543,9 @@ pub export fn forceSystemFlag(sf: u32, set: c_int) void {
     }
 }
 
-/// Reads any flag id: system, global, local, or the extra M..W global bank.
-/// Compiled the same way for every target — flags.c gates nothing here.
+/// Reads any flag id: system, global, local, or the extra M..W global bank. An
+/// id in no band reads false; on a PC_BUILD flags.c also writes the sentence
+/// naming the end of the range into tmpString first, without printing it.
 pub export fn getFlag(flag: u16) bool {
     if ((flag & 0x8000) != 0) {
         return getSystemFlag(@as(i32, @intCast(flag)));
@@ -576,6 +577,14 @@ pub export fn getFlag(flag: u16) bool {
         const index: usize = @intCast(extra_flag / 16);
         const shift: u4 = @intCast(extra_flag % 16);
         return (runtime.globalFlags[index] & (@as(u16, 1) << shift)) != 0;
+    }
+
+    if (comptime builtin.target.os.tag != .freestanding) {
+        if (flag < runtime.FLAG_M) {
+            abi.fmtCStr(runtime.tmpString, "there is no local flag above .31 ({d})", .{flag});
+        } else {
+            abi.fmtCStr(runtime.tmpString, "there is no flag beyond FLAG_W ({d})", .{flag});
+        }
     }
 
     return false;
