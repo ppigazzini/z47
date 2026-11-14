@@ -400,8 +400,10 @@ type-checks from Linux.
 Among the ceilings `bash .github/project/check-idiom-ratchet.sh` prints and
 holds, three count casts: `ptrcast_sites` (`@ptrCast` and `@alignCast`),
 `constcast_sites` (`@constCast` and `@volatileCast`) and `ptr_from_int_sites`
-(`@ptrFromInt`). A ceiling only moves down: lower it with `--bump` in the commit
-that removes a site.
+(`@ptrFromInt`), over `src/`; the same three, prefixed `build_`, count the product
+Zig under `build/` (the GTK host shell, the firmware runtime objects and the
+build tools), leaving out the harnesses in `build/tests/`. A ceiling only moves
+down: lower it with `--bump` in the commit that removes a site.
 
 ### What To Write Instead
 

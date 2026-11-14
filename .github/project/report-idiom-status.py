@@ -150,6 +150,9 @@ PATTERNS = [
 ]
 
 
+BUILD_CAST_LABELS = ("ptrcast_sites", "constcast_sites", "ptr_from_int_sites")
+
+
 def scan(repo_root: Path) -> dict:
     zig_root = repo_root / "src"
     files = sorted(p for p in zig_root.rglob("*.zig"))
@@ -191,7 +194,20 @@ def scan(repo_root: Path) -> dict:
         if any(row.values()):
             per_owner[rel] = row
 
+    # The pointer-cast rule (docs/50, Pointer Casts) binds the product Zig under
+    # build/ too -- the GTK host shell and the firmware runtime objects -- so its
+    # casts are held at their own ceilings. build/tests/ is harness code.
+    build_casts = {f"build_{label}": 0 for label in BUILD_CAST_LABELS}
+    for path in sorted((repo_root / "build").rglob("*.zig")):
+        if path.relative_to(repo_root).as_posix().startswith("build/tests/"):
+            continue
+        code = strip_comments(path.read_text(encoding="utf-8", errors="ignore"))
+        for label, rx, _ in PATTERNS:
+            if label in BUILD_CAST_LABELS:
+                build_casts[f"build_{label}"] += len(rx.findall(code))
+
     return {
+        "build_casts": build_casts,
         "file_count": len(files),
         "owner_count": owner_count,
         "seam_file_count": seam_file_count,
@@ -251,8 +267,9 @@ def main() -> int:
         return 1
 
     if args.check:
-        baseline = json.loads((repo_root / BASELINE_PATH).read_text(encoding="utf-8"))["totals"]
-        cur = result["totals"]
+        recorded = json.loads((repo_root / BASELINE_PATH).read_text(encoding="utf-8"))
+        baseline = {**recorded["totals"], **recorded.get("build_casts", {})}
+        cur = {**result["totals"], **result["build_casts"]}
         rc = 0
         for key in sorted(set(cur) - set(baseline)):
             print(
@@ -280,6 +297,7 @@ def main() -> int:
     if args.write_baseline:
         baseline = {
             "totals": result["totals"],
+            "build_casts": result["build_casts"],
             "owner_count": result["owner_count"],
             "seam_totals": result["seam_totals"],
             "seam_file_count": result["seam_file_count"],

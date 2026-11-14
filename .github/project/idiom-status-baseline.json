@@ -18,6 +18,11 @@
     "dmcp_board_address_sites": 0,
     "has_decl_sites": 0
   },
+  "build_casts": {
+    "build_ptrcast_sites": 0,
+    "build_constcast_sites": 0,
+    "build_ptr_from_int_sites": 1
+  },
   "owner_count": 417,
   "seam_totals": {
     "extern_struct_files": 2,
