@@ -1,6 +1,6 @@
 const std = @import("std");
 const runtime = @import("../command_wrappers/runtime.zig");
-const legacy = runtime.legacy;
+const bodies = @import("../command_bodies.zig");
 
 pub const Mode = enum(u8) {
     less_than = 0x1,
@@ -28,20 +28,20 @@ fn isOwnedStackRegister(regist: runtime.calcRegister_t) bool {
 
 fn callLegacyCompare(mode: Mode, parameter: u16) void {
     switch (mode) {
-        .less_than => legacy.fnXLessThan(parameter),
-        .equal => legacy.fnXEqualsTo(parameter),
-        .less_equal => legacy.fnXLessEqual(parameter),
-        .greater_than => legacy.fnXGreaterThan(parameter),
-        .not_equal => legacy.fnXNotEqual(parameter),
-        .greater_equal => legacy.fnXGreaterEqual(parameter),
+        .less_than => bodies.fnXLessThan(parameter),
+        .equal => bodies.fnXEqualsTo(parameter),
+        .less_equal => bodies.fnXLessEqual(parameter),
+        .greater_than => bodies.fnXGreaterThan(parameter),
+        .not_equal => bodies.fnXNotEqual(parameter),
+        .greater_equal => bodies.fnXGreaterEqual(parameter),
     }
 }
 
 fn runCompare(parameter: u16, mode: Mode) void {
     const regist = registFromParameter(parameter);
     // The owned fast path only covers integer/real/complex scalars. Anything
-    // else (e.g. dtTime, which the legacy compareRegisters normalizes by
-    // dividing seconds by const_3600) must defer to the legacy machinery.
+    // else (e.g. dtTime, which upstream's compareRegisters normalizes by
+    // dividing seconds by const_3600) must defer to the command body.
     const type_x = runtime.getRegisterDataType(runtime.REGISTER_X);
     const type_r = runtime.getRegisterDataType(regist);
     // An integer against an integer is compared exactly, through the long-integer
@@ -262,5 +262,5 @@ pub fn fnXAlmostEqual(unused_but_mandatory_parameter: u16) callconv(.c) void {
     // compareRegisters. Rounding an integer pair into a real instead would
     // call two values equal as soon as they agree to the context's digit
     // count, and a long integer carries far more digits than that.
-    legacy.fnXAlmostEqual(unused_but_mandatory_parameter);
+    bodies.fnXAlmostEqual(unused_but_mandatory_parameter);
 }

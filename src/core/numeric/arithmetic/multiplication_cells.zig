@@ -111,7 +111,7 @@ pub export fn mulError() linksection(runtime.code_section) callconv(.c) void {
     runtime.moreInfoOnError("In function fnMultiply:", message1, message2, null);
 }
 
-pub export fn z47_math_wrappers_legacy_fnMultiply(unused_but_mandatory_parameter: u16) linksection(runtime.code_section) callconv(.c) void {
+pub noinline fn fnMultiply(unused_but_mandatory_parameter: u16) linksection(runtime.code_section) void {
     _ = unused_but_mandatory_parameter;
 
     if (!runtime.saveLastX()) {

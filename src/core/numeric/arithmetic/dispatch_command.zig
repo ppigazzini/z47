@@ -1,4 +1,5 @@
 const runtime = @import("../command_wrappers/runtime.zig");
+const bodies = @import("../command_bodies.zig");
 const selectors_coordinator = @import("dispatch_selectors_coordinator.zig");
 const arithmetic_scalar = @import("dispatch_scalar.zig");
 const arithmetic_integer = @import("dispatch_integer.zig");
@@ -16,7 +17,7 @@ pub fn fnAdd(unused_but_mandatory_parameter: u16) callconv(.c) void {
         return;
     }
 
-    runtime.legacy.fnAdd(unused_but_mandatory_parameter);
+    bodies.fnAdd(unused_but_mandatory_parameter);
 }
 
 pub fn fnSubtract(unused_but_mandatory_parameter: u16) callconv(.c) void {
@@ -32,7 +33,7 @@ pub fn fnSubtract(unused_but_mandatory_parameter: u16) callconv(.c) void {
         return;
     }
 
-    runtime.legacy.fnSubtract(unused_but_mandatory_parameter);
+    bodies.fnSubtract(unused_but_mandatory_parameter);
 }
 
 pub fn fnMultiply(unused_but_mandatory_parameter: u16) callconv(.c) void {
@@ -48,7 +49,7 @@ pub fn fnMultiply(unused_but_mandatory_parameter: u16) callconv(.c) void {
         return;
     }
 
-    runtime.legacy.fnMultiply(unused_but_mandatory_parameter);
+    bodies.fnMultiply(unused_but_mandatory_parameter);
 }
 
 pub fn fnDivide(unused_but_mandatory_parameter: u16) callconv(.c) void {
@@ -60,7 +61,7 @@ pub fn fnDivide(unused_but_mandatory_parameter: u16) callconv(.c) void {
         return;
     }
 
-    runtime.legacy.fnDivide(unused_but_mandatory_parameter);
+    bodies.fnDivide(unused_but_mandatory_parameter);
 }
 
 pub fn fnIDiv(unused_but_mandatory_parameter: u16) callconv(.c) void {
@@ -68,7 +69,7 @@ pub fn fnIDiv(unused_but_mandatory_parameter: u16) callconv(.c) void {
         return;
     }
 
-    runtime.legacy.fnIDiv(unused_but_mandatory_parameter);
+    bodies.fnIDiv(unused_but_mandatory_parameter);
 }
 
 pub fn fnIDivR(unused_but_mandatory_parameter: u16) callconv(.c) void {
@@ -76,5 +77,5 @@ pub fn fnIDivR(unused_but_mandatory_parameter: u16) callconv(.c) void {
         return;
     }
 
-    runtime.legacy.fnIDivR(unused_but_mandatory_parameter);
+    bodies.fnIDivR(unused_but_mandatory_parameter);
 }

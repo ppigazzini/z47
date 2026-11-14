@@ -5,10 +5,9 @@
 // function, subDateDate and the subComplex helpers. The cells a subtraction
 // shares with an addition call the bodies the addition owner exports with the
 // subtract operation. Faithful, line-by-line port of the C; upstream symbol
-// names are kept at the export boundary. The
-// legacy C fnSubtract body lives on as z47_math_wrappers_legacy_fnSubtract,
-// the fallback the Zig fnSubtract wrapper uses for the error cells not
-// handled natively.
+// names are kept at the export boundary. fnSubtract is upstream's command
+// body, which the fnSubtract front reaches through command_bodies.zig for the
+// error cells it does not handle itself.
 //
 // The `subtraction` table is TO_QSPI in C; it goes to the executable QSPI
 // region on the flash-limited DM42 old_hw firmware via linksection while the
@@ -124,10 +123,10 @@ pub export fn subError() callconv(.c) void {
     runtime.moreInfoOnError("In function fnSubtract:", message, second, null);
 }
 
-/// The legacy C fnSubtract body: saveLastX, matrix dispatch, adjustResult.
-/// The Zig fnSubtract wrapper calls this for the
-/// cells it does not handle natively (the error cells).
-pub export fn z47_math_wrappers_legacy_fnSubtract(unused_but_mandatory_parameter: u16) callconv(.c) void {
+/// Upstream's fnSubtract body: saveLastX, matrix dispatch, adjustResult. The
+/// fnSubtract front calls it for the cells it does not handle itself (the error
+/// cells).
+pub noinline fn fnSubtract(unused_but_mandatory_parameter: u16) void {
     _ = unused_but_mandatory_parameter;
 
     if (!runtime.saveLastX()) {

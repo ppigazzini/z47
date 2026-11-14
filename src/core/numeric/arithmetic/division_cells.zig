@@ -100,7 +100,7 @@ pub export fn divError() linksection(runtime.code_section) callconv(.c) void {
     runtime.moreInfoOnError("In function fnDivide:", message1, message2, null);
 }
 
-pub export fn z47_math_wrappers_legacy_fnDivide(unused_but_mandatory_parameter: u16) linksection(runtime.code_section) callconv(.c) void {
+pub noinline fn fnDivide(unused_but_mandatory_parameter: u16) linksection(runtime.code_section) void {
     _ = unused_but_mandatory_parameter;
 
     runtime.copySourceRegisterToDestRegister(REGISTER_X, REGISTER_L);
