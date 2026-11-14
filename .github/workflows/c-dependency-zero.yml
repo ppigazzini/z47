@@ -9,7 +9,7 @@ permissions:
 jobs:
   zig-c-boundary-guard:
     name: Verify curated Zig/C boundaries
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Enforce approved Zig/C boundary files
@@ -20,7 +20,7 @@ jobs:
 
   c-dependency-zero:
     name: Verify zero first-party C dependencies
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     needs:
       - zig-c-boundary-guard
     steps:

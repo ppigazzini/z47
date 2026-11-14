@@ -26,6 +26,10 @@ every run completes so each pushed commit gets its own verdict;
 `c-dependency-zero.yml` has no concurrency group. The main matrix runs with
 `permissions: contents: read` only.
 
+Every job names its runner image (`ubuntu-26.04`, `macos-26`, `windows-2025`)
+rather than a `-latest` label, so a move to a new image is a commit that CI
+judges, not a change GitHub makes underneath a green history.
+
 ## Workflow Graph
 
 `upstream-oracle.yml` starts every job as soon as `validate-toolchain` passes, the
@@ -199,7 +203,7 @@ carries the Arm GCC dependency that `linux-host-parity` deliberately omits.
 
 ### `macos-host-build` (macOS dedicated runner build, test, generated outputs, app smoke run)
 
-Runs on `macos-latest`. It deliberately runs only the macOS-specific subset:
+Runs on `macos-26` (arm64). It deliberately runs only the macOS-specific subset:
 `zig build constants`, `abi-layout-parity`, `test:unit`, `both`, `test`, and
 `generated`. The platform-independent value oracles and header-constant audits
 already run on the blocking Linux lane and compute identical values on every
@@ -212,7 +216,7 @@ stay idempotent.
 
 ### `windows-host-build` (Windows dedicated runner build, test, generated outputs, app smoke run)
 
-Runs on `windows-latest` under MSYS2 UCRT64 with the same trimmed lane as macOS:
+Runs on `windows-2025` under MSYS2 UCRT64 with the same trimmed lane as macOS:
 `zig build constants`, `abi-layout-parity`, `test:unit`, `both`, `test`, and
 `generated`, then a `-Doptimize=fast` rebuild, a direct smoke launch, and a
 relocatable Windows package (GTK runtime assets, launcher files, runtime caches,

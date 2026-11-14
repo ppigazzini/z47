@@ -18,7 +18,7 @@ permissions:
 jobs:
   zig-c-boundary-guard:
     name: Verify curated Zig/C boundaries
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Enforce approved Zig/C boundary files
@@ -29,7 +29,7 @@ jobs:
 
   coverage-ratchet:
     name: Coverage ratchet (differential + harness floors)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Enforce monotonic coverage floors
@@ -39,7 +39,7 @@ jobs:
           bash .github/project/check-coverage-ratchet.sh
 
   drift:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     needs:
       - zig-c-boundary-guard
     steps:

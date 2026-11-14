@@ -32,7 +32,7 @@ permissions:
 jobs:
   validate-toolchain:
     name: Validate pinned Zig toolchain
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -63,7 +63,7 @@ jobs:
 
   zig-fmt-check:
     name: Enforce zig fmt on z47-owned Zig
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -98,7 +98,7 @@ jobs:
 
   zig-native-unit-tests:
     name: Native Zig unit tests (no C oracle)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -136,7 +136,7 @@ jobs:
   zig-master-compatibility:
     name: Zig master compatibility monitor
     continue-on-error: true
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -232,7 +232,7 @@ jobs:
 
   source-manifest:
     name: Verify imported upstream pin and source manifest
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -276,7 +276,7 @@ jobs:
 
   source-ownership-guard:
     name: Verify tracked source ownership
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -296,7 +296,7 @@ jobs:
 
   upstream-port-ledger-guard:
     name: Verify tracked upstream port ledger
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -327,7 +327,7 @@ jobs:
 
   correspondence-guard:
     name: Verify upstream<->owner correspondence manifest
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -343,7 +343,7 @@ jobs:
 
   zig-c-boundary-guard:
     name: Verify curated Zig/C boundaries
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -355,7 +355,7 @@ jobs:
 
   idiom-ratchet-guard:
     name: Enforce idiomatic-Zig ratchet (no transliteration-debt regressions)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -372,7 +372,7 @@ jobs:
 
   core-shell-severance-guard:
     name: Enforce headless-core severance (core must not reach into shell)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -612,7 +612,7 @@ jobs:
 
   c-dependency-policy:
     name: Verify Phase I C dependency policy
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -624,7 +624,7 @@ jobs:
 
   portable-int-width-guard:
     name: Guard against the Windows LLP64 integer-width trap
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -655,7 +655,7 @@ jobs:
 
   workflow-imported-root-guard:
     name: Verify workflow imported-root vocabulary
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -667,7 +667,7 @@ jobs:
 
   workflow-locality-guard:
     name: Verify workflow script locality
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -708,7 +708,7 @@ jobs:
     name: Linux host parity, ASAN, generated outputs, and host package
     needs:
       - validate-toolchain
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -1054,7 +1054,7 @@ jobs:
     name: Linux docs surface
     needs:
       - validate-toolchain
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -1124,7 +1124,7 @@ jobs:
     name: Linux firmware validation and publication
     needs:
       - validate-toolchain
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -1288,7 +1288,7 @@ jobs:
     name: macOS dedicated runner build, test, generated outputs, app smoke run
     needs:
       - validate-toolchain
-    runs-on: macos-latest
+    runs-on: macos-26
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -1535,7 +1535,7 @@ jobs:
     name: Windows dedicated runner build, test, generated outputs, app smoke run
     needs:
       - validate-toolchain
-    runs-on: windows-latest
+    runs-on: windows-2025
     timeout-minutes: 45
     steps:
       - name: Disable automatic CRLF conversion
@@ -2025,7 +2025,7 @@ jobs:
     name: Linux testSuite under valgrind memcheck
     needs:
       - validate-toolchain
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 120
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -2099,7 +2099,7 @@ jobs:
       - macos-host-build
       - windows-host-build
       - linux-testsuite-memcheck
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 5
     steps:
       - name: Fail when a required job failed, was cancelled or was skipped
