@@ -8,8 +8,9 @@ same SHA and version everywhere, so updating one use and forgetting another
 fails here. mlugg/setup-zig is pinned twice by design, once in the workflows
 and once as SETUP_ZIG_ACTION_REF in zig-toolchain.env, and the two must agree.
 
-The check reads only the repository; whether a SHA really is the tag its
-comment names is for the person who moves the pin to verify.
+The check reads only the repository. Whether a SHA really is the tag its
+comment names is checked online by the actions-lock workflow, against
+.github/workflows/actions.lock.
 
 Usage:
     check-action-pins.py [--repo-root .]
