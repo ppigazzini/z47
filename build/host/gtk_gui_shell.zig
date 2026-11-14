@@ -1,5 +1,6 @@
 const gtk_decls = @import("gtk_gui_host_decls.zig");
 const GtkWidget = gtk_decls.GtkWidget;
+const GdkEventKey = gtk_decls.GdkEventKey;
 const gtk_window_new = gtk_decls.gtk_window_new;
 const gtk_window_set_default_size = gtk_decls.gtk_window_set_default_size;
 const gtk_window_set_decorated = gtk_decls.gtk_window_set_decorated;
@@ -29,47 +30,47 @@ extern var screenStride: i16;
 extern var screenData: [*]u32;
 
 extern fn z47_destroyCalc(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) c_int;
-extern fn z47_keyPressed_wrapper(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) c_int;
-extern fn z47_keyReleased_wrapper(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) c_int;
+extern fn z47_keyPressed_wrapper(widget: ?*anyopaque, event: ?*GdkEventKey, data: ?*anyopaque) c_int;
+extern fn z47_keyReleased_wrapper(widget: ?*anyopaque, event: ?*GdkEventKey, data: ?*anyopaque) c_int;
 extern fn z47_drawScreen_wrapper(widget: ?*anyopaque, cr: ?*anyopaque, data: ?*anyopaque) c_int;
 extern fn cairo_format_stride_for_width(format: c_int, width: c_int) c_int;
-extern fn malloc(size: usize) ?*anyopaque;
+// C's malloc, read as the RGB24 pixels screenData holds: its result is aligned
+// for any object.
+extern fn malloc(size: usize) ?[*]u32;
 extern fn exit(code: c_int) noreturn;
 extern fn moreInfoOnError(prefix: [*:0]const u8, message: [*:0]const u8, third: ?[*:0]const u8, fourth: ?[*:0]const u8) void;
 
 pub fn setupShellWindow() void {
     frmCalc = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    gtk_window_set_default_size(@ptrCast(frmCalc), SCREEN_WIDTH * BIG_SCREEN_COEF, SCREEN_HEIGHT * BIG_SCREEN_COEF);
-    gtk_window_set_decorated(@ptrCast(frmCalc), 0);
-    gtk_window_set_position(@ptrCast(frmCalc), GTK_WIN_POS_CENTER);
+    gtk_window_set_default_size(frmCalc, SCREEN_WIDTH * BIG_SCREEN_COEF, SCREEN_HEIGHT * BIG_SCREEN_COEF);
+    gtk_window_set_decorated(frmCalc, 0);
+    gtk_window_set_position(frmCalc, GTK_WIN_POS_CENTER);
 
     gtk_widget_set_name(frmCalc, "mainWindow");
-    gtk_window_set_resizable(@ptrCast(frmCalc), 0);
+    gtk_window_set_resizable(frmCalc, 0);
 }
 
 pub fn wireShellEvents() void {
-    _ = g_signal_connect_data(frmCalc, "destroy", @ptrCast(&z47_destroyCalc), null, null, 0);
-    _ = g_signal_connect_data(frmCalc, "key_press_event", @ptrCast(&z47_keyPressed_wrapper), null, null, 0);
-    _ = g_signal_connect_data(frmCalc, "key_release_event", @ptrCast(&z47_keyReleased_wrapper), null, null, 0);
+    _ = g_signal_connect_data(frmCalc, "destroy", &z47_destroyCalc, null, null, 0);
+    _ = g_signal_connect_data(frmCalc, "key_press_event", &z47_keyPressed_wrapper, null, null, 0);
+    _ = g_signal_connect_data(frmCalc, "key_release_event", &z47_keyReleased_wrapper, null, null, 0);
     gtk_widget_add_events(frmCalc, GDK_CONFIGURE);
 }
 
 pub fn setupShellScreen() void {
     grid = gtk_fixed_new();
-    gtk_container_add(@ptrCast(frmCalc), grid);
+    gtk_container_add(frmCalc, grid);
 
     screen = gtk_drawing_area_new();
     gtk_widget_set_size_request(screen, SCREEN_WIDTH * BIG_SCREEN_COEF, SCREEN_HEIGHT * BIG_SCREEN_COEF);
-    gtk_fixed_put(@ptrCast(grid), screen, 0, 0);
+    gtk_fixed_put(grid, screen, 0, 0);
 
     screenStride = @intCast(@divTrunc(cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, SCREEN_WIDTH), 4));
     const num_bytes: usize = @as(usize, @intCast(screenStride)) * SCREEN_HEIGHT * 4;
-    const raw = malloc(num_bytes);
-    if (raw == null) {
+    screenData = malloc(num_bytes) orelse {
         moreInfoOnError("In function setupUI:", "error allocating screenData", null, null);
         exit(1);
-    }
-    screenData = @ptrCast(@alignCast(raw.?));
+    };
 
-    _ = g_signal_connect_data(screen, "draw", @ptrCast(&z47_drawScreen_wrapper), null, null, 0);
+    _ = g_signal_connect_data(screen, "draw", &z47_drawScreen_wrapper, null, null, 0);
 }

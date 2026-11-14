@@ -173,6 +173,13 @@ const max_real_digits_rounded = ((max_real_digits + 2) / 6) * 6 + 3;
 const max_real_bytes = 10 + @sizeOf(c.decNumberUnit) * (max_real_digits_rounded / dec_digits_per_unit);
 const max_real_words = (max_real_bytes + 3) / 4;
 
+// A real_t overlaid on storage for max_real_digits digits, never less than a
+// whole real_t: decNumber writes past the units real_t declares.
+const BigReal = extern union {
+    real: real_t,
+    words: [max_real_words]u32,
+};
+
 const Generator = struct {
     allocator: std.mem.Allocator,
     external_declarations: std.ArrayList(u8),
@@ -246,8 +253,8 @@ const Generator = struct {
     fn emitRealConstant(self: *Generator, spec: RealConstant, ctxt_real: *realContext_t) !void {
         const max_digits = ((spec.digits + 2) / 6) * 6 + 3;
         const len_in_bytes = 10 + @sizeOf(c.decNumberUnit) * (max_digits / dec_digits_per_unit);
-        var storage: [max_real_words]u32 = @splat(0);
-        const real_ptr: *real_t = @ptrCast(&storage[0]);
+        var storage: BigReal = .{ .words = @splat(0) };
+        const real_ptr = &storage.real;
 
         ctxt_real.digits = @intCast(max_digits);
         const c_value = try self.allocator.dupeSentinel(u8, spec.value, 0);
@@ -645,11 +652,13 @@ fn readFileAlloc(allocator: std.mem.Allocator, path: []const u8) ![]u8 {
     return buffer;
 }
 
-pub export fn xcopy(dest: ?*anyopaque, source: ?*const anyopaque, n: u32) ?*anyopaque {
+// The C `void *xcopy(void *dest, const void *source, int n)`, bound at the bytes
+// it copies.
+pub export fn xcopy(dest: ?[*]u8, source: ?[*]const u8, n: u32) ?[*]u8 {
     if (dest == null or source == null or n == 0) return dest;
 
-    const dest_bytes: [*]u8 = @ptrCast(dest.?);
-    const source_bytes: [*]const u8 = @ptrCast(source.?);
+    const dest_bytes = dest.?;
+    const source_bytes = source.?;
 
     if (@intFromPtr(source_bytes) > @intFromPtr(dest_bytes)) {
         var index: usize = 0;

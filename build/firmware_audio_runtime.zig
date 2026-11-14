@@ -49,7 +49,8 @@ extern fn convertUInt64ToShortIntegerRegister(sign: i16, value: u64, base: u32, 
 extern fn convertShortIntegerRegisterToLongIntegerRegister(source: i16, destination: i16) void;
 extern fn getRegisterAsLongIntQuiet(reg: i16, val: [*c]GmpInt, fractional: ?*bool) c_int;
 extern fn getRegisterDataType(regist: i16) u32;
-extern fn getRegisterDataPointer(regist: i16) ?*align(4) anyopaque;
+// The register's data block, as the 4-aligned pool bytes it points at.
+extern fn getRegisterDataPointer(regist: i16) ?[*]align(4) u8;
 extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: i16) void;
 extern var screenUpdatingMode: u8;
 extern fn __gmpz_init(x: [*c]GmpInt) void;
@@ -111,9 +112,8 @@ fn real34ToUInt32(value: [*c]const DecQuad) u32 {
 fn registerToUInt32(reg: i16) ?u32 {
     const data_type = getRegisterDataType(reg);
     if (data_type == DT_REAL34) {
-        const raw_ptr = getRegisterDataPointer(reg) orelse return null;
-        const real_ptr: [*c]const DecQuad = @ptrCast(@alignCast(raw_ptr));
-        return real34ToUInt32(real_ptr);
+        const block = getRegisterDataPointer(reg) orelse return null;
+        return real34ToUInt32(std.mem.bytesAsValue(DecQuad, block[0..@sizeOf(DecQuad)]));
     }
 
     if (data_type != DT_LONG_INTEGER) {

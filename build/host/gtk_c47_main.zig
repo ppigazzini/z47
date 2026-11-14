@@ -97,7 +97,7 @@ extern var screenUpdatingMode: u8;
 const TimerFn = ?*const fn (u16) callconv(.c) void;
 const GSourceFunc = ?*const fn (?*anyopaque) callconv(.c) c_int;
 
-extern fn z47_startup_init_ui(argc: *c_int, argv: [*]?[*:0]u8) void;
+extern fn z47_startup_init_ui(argc: *c_int, argv: *[*][*:0]u8) void;
 extern fn z47_startup_enter_mainloop() void;
 extern fn restoreCalc() void;
 extern fn fnC47Show(fnShow_param: u16) void;
@@ -209,9 +209,12 @@ const win_console = struct {
     const FILE_TYPE_UNKNOWN: u32 = 0x0000;
     extern "kernel32" fn AttachConsole(dwProcessId: u32) callconv(.winapi) c_int;
     extern "kernel32" fn FreeConsole() callconv(.winapi) c_int;
-    extern "kernel32" fn GetFileType(hFile: *anyopaque) callconv(.winapi) u32;
+    extern "kernel32" fn GetFileType(hFile: ?*anyopaque) callconv(.winapi) u32;
     extern fn _fileno(stream: ?*anyopaque) c_int;
-    extern fn _get_osfhandle(fd: c_int) isize;
+    // The CRT returns the descriptor's HANDLE as an intptr_t, which every
+    // Windows ABI returns as it returns a pointer, so it is bound at the HANDLE
+    // GetFileType takes.
+    extern fn _get_osfhandle(fd: c_int) ?*anyopaque;
     extern fn freopen(path: [*:0]const u8, mode: [*:0]const u8, stream: ?*anyopaque) ?*anyopaque;
     // mingw-w64 resolves stdout/stderr through __acrt_iob_func(n). The FILE* is
     // opaque here because nothing dereferences it.
@@ -231,7 +234,7 @@ fn attachParentConsole() void {
 
     const fd = win_console._fileno(win_console.stdoutFile());
     const already_redirected = fd >= 0 and
-        win_console.GetFileType(@ptrFromInt(@as(usize, @bitCast(win_console._get_osfhandle(fd))))) != win_console.FILE_TYPE_UNKNOWN;
+        win_console.GetFileType(win_console._get_osfhandle(fd)) != win_console.FILE_TYPE_UNKNOWN;
     if (already_redirected) return;
 
     _ = win_console.freopen("CONOUT$", "w", win_console.stdoutFile());
@@ -541,7 +544,11 @@ pub export fn main(argc: c_int, argv: [*][*:0]u8) callconv(.c) c_int {
         _ = printf("calcModel A re-set to %d\n", @as(c_int, calcModelNew));
     }
 
-    z47_startup_init_ui(@constCast(&argc), @ptrCast(@constCast(&argv)));
+    // gtk_init takes main's argc and argv by address and may remove the options
+    // it consumes; nothing below reads either again.
+    var gtk_argc = argc;
+    var gtk_argv = argv;
+    z47_startup_init_ui(&gtk_argc, &gtk_argv);
 
     if (factoryReset) { // --reset: factory defaults, backup.cfg deliberately not loaded
         fnReset(CONFIRMED);

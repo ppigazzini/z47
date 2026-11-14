@@ -139,14 +139,14 @@ pub fn checkNormal(key_nr: i16, item: i16) bool {
     return ss == item;
 }
 
-pub fn btnClickedNU(widget: ?*anyopaque, data: ?*anyopaque) void {
+pub fn btnClickedNU(widget: ?*anyopaque, data: ?[*:0]const u8) void {
     const num_lock_mem = getSystemFlag(FLAG_NUMLOCK);
 
     clearSystemFlag(FLAG_NUMLOCK);
     shiftF = false;
     shiftG = true;
-    if (data) |raw_data| {
-        btnClicked(widget, @as([*:0]const u8, @ptrCast(raw_data)));
+    if (data) |key| {
+        btnClicked(widget, key);
     }
 
     if (num_lock_mem) {

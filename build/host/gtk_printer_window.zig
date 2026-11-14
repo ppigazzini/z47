@@ -275,17 +275,7 @@ const CairoPattern = opaque {};
 const GtkAdjustment = opaque {};
 const GtkClipboard = opaque {};
 const GdkPixbuf = opaque {};
-
-// The leading fields of GdkEventKey, as far as keyval: the handler reads the
-// event through GTK's pointer and never copies it.
-const GdkEventKey = extern struct {
-    type: c_int,
-    window: ?*anyopaque,
-    send_event: i8,
-    time: u32,
-    state: c_uint,
-    keyval: c_uint,
-};
+const GdkEventKey = gtk_decls.GdkEventKey;
 
 const GTK_WINDOW_TOPLEVEL: c_int = 0;
 const GTK_ORIENTATION_HORIZONTAL: c_int = 0;
@@ -573,7 +563,8 @@ fn paintLines(cr: ?*CairoContext, first: i32, last: i32, x: f64, y: f64, dot_sca
     const last_line: usize = @intCast(last);
     for (lines.items[first_line..last_line], 0..) |*line, line_offset| {
         for (0..rows) |row| {
-            const pixels: [*]u32 = @ptrCast(@alignCast(data + (line_offset * rows + row) * stride));
+            // An RGB24 pixel is one native-order u32.
+            const pixels = std.mem.bytesAsSlice(u32, (data + (line_offset * rows + row) * stride)[0 .. columns * 4]);
             const bit: u3 = @intCast(row);
             for (line, 0..) |dots, col| {
                 pixels[col] = if (((dots >> bit) & 0x01) != 0) 0x000000 else 0xFFFFFF;
@@ -756,9 +747,10 @@ fn keyPressed(widget: ?*GtkWidget, event: *const GdkEventKey, data: ?*anyopaque)
     return TRUE;
 }
 
-// g_signal_connect(): GTK calls every handler through a generic pointer.
+// g_signal_connect(): GTK calls every handler through a generic pointer, to which
+// any function pointer coerces.
 fn connect(instance: ?*GtkWidget, signal: [*:0]const u8, handler: anytype) void {
-    _ = g_signal_connect_data(instance, signal, @ptrCast(handler), null, null, 0);
+    _ = g_signal_connect_data(instance, signal, handler, null, null, 0);
 }
 
 fn addButton(buttons: ?*GtkWidget, label: [*:0]const u8, tooltip: [*:0]const u8, handler: *const fn (?*GtkWidget, ?*anyopaque) callconv(.c) void) void {

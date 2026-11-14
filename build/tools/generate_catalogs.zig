@@ -217,8 +217,8 @@ fn cString(bytes: *const [16]u8) []const u8 {
     return bytes.*[0..len];
 }
 
-fn cStringZ(bytes: *const [16]u8) [*:0]const u8 {
-    return @ptrCast(&bytes.*[0]);
+fn cStringZ(bytes: *const [16]u8) [:0]const u8 {
+    return bytes[0..cString(bytes).len :0];
 }
 
 fn writePaddedInt(file: *c.FILE, value: i32, width: usize) !void {

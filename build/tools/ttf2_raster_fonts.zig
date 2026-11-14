@@ -89,14 +89,14 @@ fn loadGlyphRanks(allocator: std.mem.Allocator, fonts_path: []const u8) Generato
     defer _ = c.fclose(file);
 
     var line_buffer: [4096:0]u8 = @splat(0);
-    if (c.fgets(@ptrCast(&line_buffer), line_buffer.len, file) == null) {
+    if (c.fgets(&line_buffer, line_buffer.len, file) == null) {
         return error.InvalidCsv;
     }
 
     var ranks = try std.ArrayList(GlyphRank).initCapacity(allocator, 0);
     errdefer ranks.deinit(allocator);
 
-    while (c.fgets(@ptrCast(&line_buffer), line_buffer.len, file) != null) {
+    while (c.fgets(&line_buffer, line_buffer.len, file) != null) {
         const line = trimLineEnding(std.mem.sliceTo(&line_buffer, 0));
         if (line.len == 0) continue;
         try ranks.append(allocator, try parseGlyphRankLine(line));
@@ -200,7 +200,7 @@ fn exportFont(
         }
 
         var glyph_name: [100:0]u8 = @splat(0);
-        _ = c.FT_Get_Glyph_Name(face, glyph_index, @ptrCast(&glyph_name), glyph_name.len);
+        _ = c.FT_Get_Glyph_Name(face, glyph_index, &glyph_name, glyph_name.len);
         const glyph_name_slice = std.mem.sliceTo(&glyph_name, 0);
 
         if (c.FT_Load_Glyph(face, glyph_index, c.FT_LOAD_RENDER) != c.FT_Err_Ok) {
@@ -289,7 +289,7 @@ fn writeGlyphData(output_file: *c.FILE, glyph_slot: c.FT_GlyphSlot, rows_glyph: 
     if (rows_glyph <= 0 or cols_glyph <= 0) return;
 
     const bitmap_width: usize = @intCast(glyph_slot.*.bitmap.width);
-    const buffer = @as([*]const u8, @ptrCast(glyph_slot.*.bitmap.buffer));
+    const buffer: [*]const u8 = glyph_slot.*.bitmap.buffer;
     const rows: usize = @intCast(rows_glyph);
     const cols: usize = @intCast(cols_glyph);
 

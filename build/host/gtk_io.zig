@@ -60,13 +60,11 @@ const SAVE_FILE_R47 = "R47.sav";
 const AUTO_SAVE_FILE_C47 = "C47auto.sav";
 const AUTO_SAVE_FILE_R47 = "R47auto.sav";
 
-const GtkWidget = opaque {};
-const GtkWindow = opaque {};
-const GtkDialog = opaque {};
+const gtk_decls = @import("gtk_gui_host_decls.zig");
+const GtkWidget = gtk_decls.GtkWidget;
+const gtk_window_set_title = gtk_decls.gtk_window_set_title;
 const GtkFileChooserNative = opaque {};
-const GtkFileChooser = opaque {};
 const GtkFileFilter = opaque {};
-const GtkNativeDialog = opaque {};
 
 extern fn fopen(filename: [*c]const u8, mode: [*c]const u8) ?*anyopaque;
 extern fn fwrite(ptr: ?*const anyopaque, size: usize, nitems: usize, stream: ?*anyopaque) usize;
@@ -83,40 +81,42 @@ extern fn g_free(mem: ?*anyopaque) void;
 extern fn g_object_unref(object: ?*anyopaque) void;
 extern fn stringToASCII(str: [*c]const u8, ascii: [*c]u8) void;
 
+// GTK's GTK_FILE_CHOOSER, GTK_NATIVE_DIALOG, GTK_WINDOW and GTK_DIALOG casts
+// hand back the pointer they are given, so each function is bound at the object
+// this owner passes it: the GtkFileChooserNative it creates, or the GtkWidget
+// that frmCalc and the message dialog are.
 extern fn gtk_file_chooser_native_new(
     title: [*c]const u8,
-    parent: ?*GtkWindow,
+    parent: ?*GtkWidget,
     action: c_int,
     accept_label: [*c]const u8,
     cancel_label: [*c]const u8,
 ) ?*GtkFileChooserNative;
-extern fn gtk_file_chooser_set_do_overwrite_confirmation(chooser: ?*GtkFileChooser, do_overwrite_confirmation: c_int) void;
-extern fn gtk_file_chooser_set_current_folder(chooser: ?*GtkFileChooser, folder: [*c]const u8) c_int;
-extern fn gtk_file_chooser_set_current_name(chooser: ?*GtkFileChooser, name: [*c]const u8) void;
+extern fn gtk_file_chooser_set_do_overwrite_confirmation(chooser: *GtkFileChooserNative, do_overwrite_confirmation: c_int) void;
+extern fn gtk_file_chooser_set_current_folder(chooser: *GtkFileChooserNative, folder: [*c]const u8) c_int;
+extern fn gtk_file_chooser_set_current_name(chooser: *GtkFileChooserNative, name: [*c]const u8) void;
 extern fn gtk_file_filter_new() ?*GtkFileFilter;
 extern fn gtk_file_filter_add_pattern(filter: ?*GtkFileFilter, pattern: [*c]const u8) void;
-extern fn gtk_file_chooser_add_filter(chooser: ?*GtkFileChooser, filter: ?*GtkFileFilter) void;
-extern fn gtk_native_dialog_run(dialog: ?*GtkNativeDialog) c_int;
-extern fn gtk_file_chooser_get_filename(chooser: ?*GtkFileChooser) [*c]u8;
+extern fn gtk_file_chooser_add_filter(chooser: *GtkFileChooserNative, filter: ?*GtkFileFilter) void;
+extern fn gtk_native_dialog_run(dialog: *GtkFileChooserNative) c_int;
+extern fn gtk_file_chooser_get_filename(chooser: *GtkFileChooserNative) [*c]u8;
 extern fn gtk_message_dialog_new(
-    parent: ?*GtkWindow,
+    parent: ?*GtkWidget,
     flags: c_int,
     message_type: c_int,
     buttons: c_int,
     message_format: [*c]const u8,
     ...,
 ) ?*GtkWidget;
-extern fn gtk_window_set_title(window: ?*GtkWindow, title: [*c]const u8) void;
-extern fn gtk_dialog_run(dialog: ?*GtkDialog) c_int;
+extern fn gtk_dialog_run(dialog: ?*GtkWidget) c_int;
 extern fn gtk_widget_destroy(widget: ?*GtkWidget) void;
 
 extern var fileNameSelected: [STATE_FILE_NAME_VAR_LENGTH]u8;
 extern var frmCalc: ?*GtkWidget;
 extern var tmpStringLabelOrVariableName: [*c]u8;
 
-fn createDir(path: [*c]const u8) c_int {
-    const zpath: [*:0]const u8 = @ptrCast(path);
-    switch (std.posix.errno(std.posix.system.mkdir(zpath, 0o775))) {
+fn createDir(path: [*:0]const u8) c_int {
+    switch (std.posix.errno(std.posix.system.mkdir(path, 0o775))) {
         .SUCCESS, .EXIST => return 0,
         else => return -1,
     }
@@ -129,10 +129,6 @@ fn createDir(path: [*c]const u8) c_int {
 // recursive create.
 pub export fn create_dir(dir: [*c]u8) callconv(.c) c_int {
     return createDir(dir);
-}
-
-fn parentWindow() ?*anyopaque {
-    return if (frmCalc) |window| @ptrCast(window) else null;
 }
 
 fn populateProgramBaseDir(base_dir: [*c]u8, dir_name: [*c]const u8) c_int {
@@ -198,47 +194,43 @@ pub fn fileSelectionScreen(
     ext: [*c]const u8,
     disp_save: c_int,
     overwrite_check: c_int,
-    data: ?*anyopaque,
+    data: ?[*]u8,
 ) c_int {
-    const data_buffer = data orelse return FILE_ERROR;
-    const filename: [*c]u8 = @ptrCast(data_buffer);
+    const filename: [*c]u8 = data orelse return FILE_ERROR;
     var untitled: [DEFAULT_SAVE_NAME_BUFFER_LENGTH]u8 = @splat(0);
 
     _ = strcpy(&untitled, filename);
 
     const native = gtk_file_chooser_native_new(
         title,
-        @ptrCast(parentWindow()),
+        frmCalc,
         if (disp_save != 0) GTK_FILE_CHOOSER_ACTION_SAVE else GTK_FILE_CHOOSER_ACTION_OPEN,
         if (disp_save != 0) "_Save" else "_Load",
         "_Cancel",
     ) orelse return FILE_ERROR;
-    defer g_object_unref(@ptrCast(native));
-
-    const chooser: ?*GtkFileChooser = @ptrCast(native);
-    const dialog: ?*GtkNativeDialog = @ptrCast(native);
+    defer g_object_unref(native);
 
     if (overwrite_check != 0) {
-        gtk_file_chooser_set_do_overwrite_confirmation(chooser, 1);
+        gtk_file_chooser_set_do_overwrite_confirmation(native, 1);
     }
 
-    _ = gtk_file_chooser_set_current_folder(chooser, base_dir);
+    _ = gtk_file_chooser_set_current_folder(native, base_dir);
     if (disp_save != 0) {
-        gtk_file_chooser_set_current_name(chooser, &untitled);
+        gtk_file_chooser_set_current_name(native, &untitled);
     }
 
     const filter = gtk_file_filter_new();
     if (filter != null) {
         gtk_file_filter_add_pattern(filter, ext);
-        gtk_file_chooser_add_filter(chooser, filter);
+        gtk_file_chooser_add_filter(native, filter);
     }
 
-    const response = gtk_native_dialog_run(dialog);
+    const response = gtk_native_dialog_run(native);
     if (response != GTK_RESPONSE_ACCEPT) {
         return FILE_CANCEL;
     }
 
-    const selected_filename = gtk_file_chooser_get_filename(chooser);
+    const selected_filename = gtk_file_chooser_get_filename(native);
     if (selected_filename == null) {
         return FILE_ERROR;
     }
@@ -418,14 +410,14 @@ pub fn ioEof(handle: ?*anyopaque) c_int {
 
 pub fn showWarning(string: [*c]u8) void {
     const dialog = gtk_message_dialog_new(
-        @ptrCast(parentWindow()),
+        frmCalc,
         GTK_DIALOG_DESTROY_WITH_PARENT,
         GTK_MESSAGE_WARNING,
         GTK_BUTTONS_OK,
         "%s",
         string,
     ) orelse return;
-    gtk_window_set_title(@ptrCast(dialog), "Warning");
-    _ = gtk_dialog_run(@ptrCast(dialog));
+    gtk_window_set_title(dialog, "Warning");
+    _ = gtk_dialog_run(dialog);
     gtk_widget_destroy(dialog);
 }

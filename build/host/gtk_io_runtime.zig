@@ -17,7 +17,7 @@ pub export fn file_selection_screen(
     ext: [*c]const u8,
     disp_save: c_int,
     overwrite_check: c_int,
-    data: ?*anyopaque,
+    data: ?[*]u8,
 ) callconv(.c) c_int {
     return gtk_io_owned.fileSelectionScreen(title, base_dir, ext, disp_save, overwrite_check, data);
 }

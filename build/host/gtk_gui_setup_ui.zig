@@ -6,6 +6,7 @@
 // check_all_btn_widgets_for_consistency stays in C and is called via extern.
 
 const display = @import("gtk_gui_display.zig");
+const g_signal_connect_data = @import("gtk_gui_host_decls.zig").g_signal_connect_data;
 const CSSFILE = "res/c47_pre.css";
 const SCREEN_WIDTH = 400;
 const SCREEN_HEIGHT = 240;
@@ -30,11 +31,13 @@ const USER_R47bk_fg = 62;
 const USER_R47fg_bk = 63;
 const USER_R47fg_g = 64;
 
+// Each tooltip is a C string in 16 bytes, so its type carries the terminator and
+// a field is handed to GTK as it is.
 const shortCut_t = extern struct {
-    C47: [16]u8,
-    C47A: [16]u8,
-    R47: [16]u8,
-    R47A: [16]u8,
+    C47: [15:0]u8,
+    C47A: [15:0]u8,
+    R47: [15:0]u8,
+    R47A: [15:0]u8,
 };
 
 extern var grid: ?*anyopaque;
@@ -45,8 +48,8 @@ extern var calcLandscape: bool;
 extern var enableFunctionKeysDisplay: bool;
 extern var calcModel: u8;
 
-fn s16(comptime str: []const u8) [16]u8 {
-    var a: [16]u8 = @splat(0);
+fn s16(comptime str: []const u8) [15:0]u8 {
+    var a: [15:0]u8 = @splat(0);
     @memcpy(a[0..str.len], str);
     return a;
 }
@@ -366,7 +369,6 @@ extern fn gtk_widget_set_focus_on_click(widget: ?*anyopaque, focus_on_click: c_i
 extern fn gtk_fixed_put(fixed: ?*anyopaque, widget: ?*anyopaque, x: c_int, y: c_int) void;
 extern fn gtk_fixed_move(fixed: ?*anyopaque, widget: ?*anyopaque, x: c_int, y: c_int) void;
 extern fn gtk_widget_show_all(widget: ?*anyopaque) void;
-extern fn g_signal_connect_data(instance: ?*anyopaque, detailed_signal: [*:0]const u8, c_handler: ?*const anyopaque, data: ?*anyopaque, destroy_data: ?*const anyopaque, connect_flags: c_int) c_ulong;
 extern fn gtk_css_provider_new() ?*anyopaque;
 extern fn gdk_display_get_default() ?*anyopaque;
 extern fn gdk_display_get_default_screen(display: ?*anyopaque) ?*anyopaque;
@@ -374,7 +376,8 @@ extern fn gtk_style_context_add_provider_for_screen(screen: ?*anyopaque, provide
 extern fn gtk_css_provider_load_from_data(provider: ?*anyopaque, data: [*c]const u8, length: c_long, err: *?*anyopaque) c_int;
 extern fn g_object_unref(object: ?*anyopaque) void;
 extern fn free(ptr: ?*anyopaque) void;
-extern fn malloc(size: usize) ?*anyopaque;
+// C's malloc, read as the bytes lcd_buffer points into.
+extern fn malloc(size: usize) [*c]u8;
 extern fn exit(code: c_int) noreturn;
 extern fn moreInfoOnError(m1: [*:0]const u8, m2: [*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void;
 extern fn lcd_clear_buf() void;
@@ -403,13 +406,13 @@ fn isR47FAM() bool {
 }
 
 fn sig(w: ?*anyopaque, ev: [*:0]const u8, cb: ?*const anyopaque, data: [*:0]const u8) void {
-    _ = g_signal_connect_data(w, ev, cb, @ptrCast(@constCast(data)), null, 0);
+    _ = g_signal_connect_data(w, ev, cb, data, null, 0);
 }
 
 // Connected ahead of btnPressed / btnReleased, so the key is marked held before
 // the press rebuilds the keyboard.
 fn holdArrowKey(w: ?*anyopaque, ev: [*:0]const u8) void {
-    _ = g_signal_connect_data(w, ev, @ptrCast(&display.arrowKeyHoldTrack), null, null, 0);
+    _ = g_signal_connect_data(w, ev, &display.arrowKeyHoldTrack, null, null, 0);
 }
 
 pub fn setupUI() void {
@@ -432,7 +435,7 @@ pub fn setupUI() void {
         exit(1);
     }
     g_object_unref(cssProvider);
-    free(@ptrCast(cssData));
+    free(cssData);
 
     z47_setupUI_preamble();
 
@@ -469,18 +472,18 @@ pub fn setupUI() void {
     gtk_widget_set_name(btn14, "calcKey");
     gtk_widget_set_name(btn15, "calcKey");
     gtk_widget_set_name(btn16, "calcKey");
-    sig(btn11, "button-press-event", @ptrCast(&z47_btnFnPressed_wrapper), "1");
-    sig(btn12, "button-press-event", @ptrCast(&z47_btnFnPressed_wrapper), "2");
-    sig(btn13, "button-press-event", @ptrCast(&z47_btnFnPressed_wrapper), "3");
-    sig(btn14, "button-press-event", @ptrCast(&z47_btnFnPressed_wrapper), "4");
-    sig(btn15, "button-press-event", @ptrCast(&z47_btnFnPressed_wrapper), "5");
-    sig(btn16, "button-press-event", @ptrCast(&z47_btnFnPressed_wrapper), "6");
-    sig(btn11, "button-release-event", @ptrCast(&z47_btnFnReleased_wrapper), "1");
-    sig(btn12, "button-release-event", @ptrCast(&z47_btnFnReleased_wrapper), "2");
-    sig(btn13, "button-release-event", @ptrCast(&z47_btnFnReleased_wrapper), "3");
-    sig(btn14, "button-release-event", @ptrCast(&z47_btnFnReleased_wrapper), "4");
-    sig(btn15, "button-release-event", @ptrCast(&z47_btnFnReleased_wrapper), "5");
-    sig(btn16, "button-release-event", @ptrCast(&z47_btnFnReleased_wrapper), "6");
+    sig(btn11, "button-press-event", &z47_btnFnPressed_wrapper, "1");
+    sig(btn12, "button-press-event", &z47_btnFnPressed_wrapper, "2");
+    sig(btn13, "button-press-event", &z47_btnFnPressed_wrapper, "3");
+    sig(btn14, "button-press-event", &z47_btnFnPressed_wrapper, "4");
+    sig(btn15, "button-press-event", &z47_btnFnPressed_wrapper, "5");
+    sig(btn16, "button-press-event", &z47_btnFnPressed_wrapper, "6");
+    sig(btn11, "button-release-event", &z47_btnFnReleased_wrapper, "1");
+    sig(btn12, "button-release-event", &z47_btnFnReleased_wrapper, "2");
+    sig(btn13, "button-release-event", &z47_btnFnReleased_wrapper, "3");
+    sig(btn14, "button-release-event", &z47_btnFnReleased_wrapper, "4");
+    sig(btn15, "button-release-event", &z47_btnFnReleased_wrapper, "5");
+    sig(btn16, "button-release-event", &z47_btnFnReleased_wrapper, "6");
     gtk_widget_set_focus_on_click(btn11, 0);
     gtk_widget_set_focus_on_click(btn12, 0);
     gtk_widget_set_focus_on_click(btn13, 0);
@@ -506,17 +509,17 @@ pub fn setupUI() void {
     btn24 = gtk_button_new();
     btn25 = gtk_button_new();
     btn26 = gtk_button_new();
-    gtk_widget_set_tooltip_text(btn21, @ptrCast(if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47));
+    gtk_widget_set_tooltip_text(btn21, if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47);
     keyCnt += 1;
-    gtk_widget_set_tooltip_text(btn22, @ptrCast(if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47));
+    gtk_widget_set_tooltip_text(btn22, if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47);
     keyCnt += 1;
-    gtk_widget_set_tooltip_text(btn23, @ptrCast(if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47));
+    gtk_widget_set_tooltip_text(btn23, if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47);
     keyCnt += 1;
-    gtk_widget_set_tooltip_text(btn24, @ptrCast(if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47));
+    gtk_widget_set_tooltip_text(btn24, if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47);
     keyCnt += 1;
-    gtk_widget_set_tooltip_text(btn25, @ptrCast(if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47));
+    gtk_widget_set_tooltip_text(btn25, if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47);
     keyCnt += 1;
-    gtk_widget_set_tooltip_text(btn26, @ptrCast(if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47));
+    gtk_widget_set_tooltip_text(btn26, if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47);
     keyCnt += 1;
     btn21A = gtk_button_new();
     btn22A = gtk_button_new();
@@ -524,17 +527,17 @@ pub fn setupUI() void {
     btn24A = gtk_button_new();
     btn25A = gtk_button_new();
     btn26A = gtk_button_new();
-    gtk_widget_set_tooltip_text(btn21A, @ptrCast(if (isR47FAM()) &shortCutString[keyCntA].R47A else &shortCutString[keyCntA].C47A));
+    gtk_widget_set_tooltip_text(btn21A, if (isR47FAM()) &shortCutString[keyCntA].R47A else &shortCutString[keyCntA].C47A);
     keyCntA += 1;
-    gtk_widget_set_tooltip_text(btn22A, @ptrCast(if (isR47FAM()) &shortCutString[keyCntA].R47A else &shortCutString[keyCntA].C47A));
+    gtk_widget_set_tooltip_text(btn22A, if (isR47FAM()) &shortCutString[keyCntA].R47A else &shortCutString[keyCntA].C47A);
     keyCntA += 1;
-    gtk_widget_set_tooltip_text(btn23A, @ptrCast(if (isR47FAM()) &shortCutString[keyCntA].R47A else &shortCutString[keyCntA].C47A));
+    gtk_widget_set_tooltip_text(btn23A, if (isR47FAM()) &shortCutString[keyCntA].R47A else &shortCutString[keyCntA].C47A);
     keyCntA += 1;
-    gtk_widget_set_tooltip_text(btn24A, @ptrCast(if (isR47FAM()) &shortCutString[keyCntA].R47A else &shortCutString[keyCntA].C47A));
+    gtk_widget_set_tooltip_text(btn24A, if (isR47FAM()) &shortCutString[keyCntA].R47A else &shortCutString[keyCntA].C47A);
     keyCntA += 1;
-    gtk_widget_set_tooltip_text(btn25A, @ptrCast(if (isR47FAM()) &shortCutString[keyCntA].R47A else &shortCutString[keyCntA].C47A));
+    gtk_widget_set_tooltip_text(btn25A, if (isR47FAM()) &shortCutString[keyCntA].R47A else &shortCutString[keyCntA].C47A);
     keyCntA += 1;
-    gtk_widget_set_tooltip_text(btn26A, @ptrCast(if (isR47FAM()) &shortCutString[keyCntA].R47A else &shortCutString[keyCntA].C47A));
+    gtk_widget_set_tooltip_text(btn26A, if (isR47FAM()) &shortCutString[keyCntA].R47A else &shortCutString[keyCntA].C47A);
     keyCntA += 1;
     lbl21F = gtk_label_new("");
     lbl22F = gtk_label_new("");
@@ -578,30 +581,30 @@ pub fn setupUI() void {
     gtk_widget_set_size_request(btn24A, KEY_WIDTH_1, 0);
     gtk_widget_set_size_request(btn25A, KEY_WIDTH_1, 0);
     gtk_widget_set_size_request(btn26A, KEY_WIDTH_1, 0);
-    sig(btn21, "button-press-event", @ptrCast(&z47_btnPressed_signal), "00");
-    sig(btn22, "button-press-event", @ptrCast(&z47_btnPressed_signal), "01");
-    sig(btn23, "button-press-event", @ptrCast(&z47_btnPressed_signal), "02");
-    sig(btn24, "button-press-event", @ptrCast(&z47_btnPressed_signal), "03");
-    sig(btn25, "button-press-event", @ptrCast(&z47_btnPressed_signal), "04");
-    sig(btn26, "button-press-event", @ptrCast(&z47_btnPressed_signal), "05");
-    sig(btn21, "button-release-event", @ptrCast(&z47_btnReleased_signal), "00");
-    sig(btn22, "button-release-event", @ptrCast(&z47_btnReleased_signal), "01");
-    sig(btn23, "button-release-event", @ptrCast(&z47_btnReleased_signal), "02");
-    sig(btn24, "button-release-event", @ptrCast(&z47_btnReleased_signal), "03");
-    sig(btn25, "button-release-event", @ptrCast(&z47_btnReleased_signal), "04");
-    sig(btn26, "button-release-event", @ptrCast(&z47_btnReleased_signal), "05");
-    sig(btn21A, "button-press-event", @ptrCast(&z47_btnPressed_signal), "00");
-    sig(btn22A, "button-press-event", @ptrCast(&z47_btnPressed_signal), "01");
-    sig(btn23A, "button-press-event", @ptrCast(&z47_btnPressed_signal), "02");
-    sig(btn24A, "button-press-event", @ptrCast(&z47_btnPressed_signal), "03");
-    sig(btn25A, "button-press-event", @ptrCast(&z47_btnPressed_signal), "04");
-    sig(btn26A, "button-press-event", @ptrCast(&z47_btnPressed_signal), "05");
-    sig(btn21A, "button-release-event", @ptrCast(&z47_btnReleased_signal), "00");
-    sig(btn22A, "button-release-event", @ptrCast(&z47_btnReleased_signal), "01");
-    sig(btn23A, "button-release-event", @ptrCast(&z47_btnReleased_signal), "02");
-    sig(btn24A, "button-release-event", @ptrCast(&z47_btnReleased_signal), "03");
-    sig(btn25A, "button-release-event", @ptrCast(&z47_btnReleased_signal), "04");
-    sig(btn26A, "button-release-event", @ptrCast(&z47_btnReleased_signal), "05");
+    sig(btn21, "button-press-event", &z47_btnPressed_signal, "00");
+    sig(btn22, "button-press-event", &z47_btnPressed_signal, "01");
+    sig(btn23, "button-press-event", &z47_btnPressed_signal, "02");
+    sig(btn24, "button-press-event", &z47_btnPressed_signal, "03");
+    sig(btn25, "button-press-event", &z47_btnPressed_signal, "04");
+    sig(btn26, "button-press-event", &z47_btnPressed_signal, "05");
+    sig(btn21, "button-release-event", &z47_btnReleased_signal, "00");
+    sig(btn22, "button-release-event", &z47_btnReleased_signal, "01");
+    sig(btn23, "button-release-event", &z47_btnReleased_signal, "02");
+    sig(btn24, "button-release-event", &z47_btnReleased_signal, "03");
+    sig(btn25, "button-release-event", &z47_btnReleased_signal, "04");
+    sig(btn26, "button-release-event", &z47_btnReleased_signal, "05");
+    sig(btn21A, "button-press-event", &z47_btnPressed_signal, "00");
+    sig(btn22A, "button-press-event", &z47_btnPressed_signal, "01");
+    sig(btn23A, "button-press-event", &z47_btnPressed_signal, "02");
+    sig(btn24A, "button-press-event", &z47_btnPressed_signal, "03");
+    sig(btn25A, "button-press-event", &z47_btnPressed_signal, "04");
+    sig(btn26A, "button-press-event", &z47_btnPressed_signal, "05");
+    sig(btn21A, "button-release-event", &z47_btnReleased_signal, "00");
+    sig(btn22A, "button-release-event", &z47_btnReleased_signal, "01");
+    sig(btn23A, "button-release-event", &z47_btnReleased_signal, "02");
+    sig(btn24A, "button-release-event", &z47_btnReleased_signal, "03");
+    sig(btn25A, "button-release-event", &z47_btnReleased_signal, "04");
+    sig(btn26A, "button-release-event", &z47_btnReleased_signal, "05");
     gtk_fixed_put(grid, lbl21F, 0, 0);
     gtk_fixed_put(grid, lbl22F, 0, 0);
     gtk_fixed_put(grid, lbl23F, 0, 0);
@@ -662,17 +665,17 @@ pub fn setupUI() void {
     btn34 = gtk_button_new();
     btn35 = gtk_button_new();
     btn36 = gtk_button_new();
-    gtk_widget_set_tooltip_text(btn31, @ptrCast(if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47));
+    gtk_widget_set_tooltip_text(btn31, if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47);
     keyCnt += 1;
-    gtk_widget_set_tooltip_text(btn32, @ptrCast(if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47));
+    gtk_widget_set_tooltip_text(btn32, if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47);
     keyCnt += 1;
-    gtk_widget_set_tooltip_text(btn33, @ptrCast(if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47));
+    gtk_widget_set_tooltip_text(btn33, if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47);
     keyCnt += 1;
-    gtk_widget_set_tooltip_text(btn34, @ptrCast(if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47));
+    gtk_widget_set_tooltip_text(btn34, if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47);
     keyCnt += 1;
-    gtk_widget_set_tooltip_text(btn35, @ptrCast(if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47));
+    gtk_widget_set_tooltip_text(btn35, if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47);
     keyCnt += 1;
-    gtk_widget_set_tooltip_text(btn36, @ptrCast(if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47));
+    gtk_widget_set_tooltip_text(btn36, if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47);
     keyCnt += 1;
     btn31A = gtk_button_new();
     btn32A = gtk_button_new();
@@ -680,17 +683,17 @@ pub fn setupUI() void {
     btn34A = gtk_button_new();
     btn35A = gtk_button_new();
     btn36A = gtk_button_new();
-    gtk_widget_set_tooltip_text(btn31A, @ptrCast(if (isR47FAM()) &shortCutString[keyCntA].R47A else &shortCutString[keyCntA].C47A));
+    gtk_widget_set_tooltip_text(btn31A, if (isR47FAM()) &shortCutString[keyCntA].R47A else &shortCutString[keyCntA].C47A);
     keyCntA += 1;
-    gtk_widget_set_tooltip_text(btn32A, @ptrCast(if (isR47FAM()) &shortCutString[keyCntA].R47A else &shortCutString[keyCntA].C47A));
+    gtk_widget_set_tooltip_text(btn32A, if (isR47FAM()) &shortCutString[keyCntA].R47A else &shortCutString[keyCntA].C47A);
     keyCntA += 1;
-    gtk_widget_set_tooltip_text(btn33A, @ptrCast(if (isR47FAM()) &shortCutString[keyCntA].R47A else &shortCutString[keyCntA].C47A));
+    gtk_widget_set_tooltip_text(btn33A, if (isR47FAM()) &shortCutString[keyCntA].R47A else &shortCutString[keyCntA].C47A);
     keyCntA += 1;
-    gtk_widget_set_tooltip_text(btn34A, @ptrCast(if (isR47FAM()) &shortCutString[keyCntA].R47A else &shortCutString[keyCntA].C47A));
+    gtk_widget_set_tooltip_text(btn34A, if (isR47FAM()) &shortCutString[keyCntA].R47A else &shortCutString[keyCntA].C47A);
     keyCntA += 1;
-    gtk_widget_set_tooltip_text(btn35A, @ptrCast(if (isR47FAM()) &shortCutString[keyCntA].R47A else &shortCutString[keyCntA].C47A));
+    gtk_widget_set_tooltip_text(btn35A, if (isR47FAM()) &shortCutString[keyCntA].R47A else &shortCutString[keyCntA].C47A);
     keyCntA += 1;
-    gtk_widget_set_tooltip_text(btn36A, @ptrCast(if (isR47FAM()) &shortCutString[keyCntA].R47A else &shortCutString[keyCntA].C47A));
+    gtk_widget_set_tooltip_text(btn36A, if (isR47FAM()) &shortCutString[keyCntA].R47A else &shortCutString[keyCntA].C47A);
     keyCntA += 1;
     lbl31F = gtk_label_new("");
     lbl32F = gtk_label_new("");
@@ -734,30 +737,30 @@ pub fn setupUI() void {
     gtk_widget_set_size_request(btn34A, KEY_WIDTH_1, 0);
     gtk_widget_set_size_request(btn35A, KEY_WIDTH_1, 0);
     gtk_widget_set_size_request(btn36A, KEY_WIDTH_1, 0);
-    sig(btn31, "button-press-event", @ptrCast(&z47_btnPressed_signal), "06");
-    sig(btn32, "button-press-event", @ptrCast(&z47_btnPressed_signal), "07");
-    sig(btn33, "button-press-event", @ptrCast(&z47_btnPressed_signal), "08");
-    sig(btn34, "button-press-event", @ptrCast(&z47_btnPressed_signal), "09");
-    sig(btn35, "button-press-event", @ptrCast(&z47_btnPressed_signal), "10");
-    sig(btn36, "button-press-event", @ptrCast(&z47_btnPressed_signal), "11");
-    sig(btn31, "button-release-event", @ptrCast(&z47_btnReleased_signal), "06");
-    sig(btn32, "button-release-event", @ptrCast(&z47_btnReleased_signal), "07");
-    sig(btn33, "button-release-event", @ptrCast(&z47_btnReleased_signal), "08");
-    sig(btn34, "button-release-event", @ptrCast(&z47_btnReleased_signal), "09");
-    sig(btn35, "button-release-event", @ptrCast(&z47_btnReleased_signal), "10");
-    sig(btn36, "button-release-event", @ptrCast(&z47_btnReleased_signal), "11");
-    sig(btn31A, "button-press-event", @ptrCast(&z47_btnPressed_signal), "06");
-    sig(btn32A, "button-press-event", @ptrCast(&z47_btnPressed_signal), "07");
-    sig(btn33A, "button-press-event", @ptrCast(&z47_btnPressed_signal), "08");
-    sig(btn34A, "button-press-event", @ptrCast(&z47_btnPressed_signal), "09");
-    sig(btn35A, "button-press-event", @ptrCast(&z47_btnPressed_signal), "10");
-    sig(btn36A, "button-press-event", @ptrCast(&z47_btnPressed_signal), "11");
-    sig(btn31A, "button-release-event", @ptrCast(&z47_btnReleased_signal), "06");
-    sig(btn32A, "button-release-event", @ptrCast(&z47_btnReleased_signal), "07");
-    sig(btn33A, "button-release-event", @ptrCast(&z47_btnReleased_signal), "08");
-    sig(btn34A, "button-release-event", @ptrCast(&z47_btnReleased_signal), "09");
-    sig(btn35A, "button-release-event", @ptrCast(&z47_btnReleased_signal), "10");
-    sig(btn36A, "button-release-event", @ptrCast(&z47_btnReleased_signal), "11");
+    sig(btn31, "button-press-event", &z47_btnPressed_signal, "06");
+    sig(btn32, "button-press-event", &z47_btnPressed_signal, "07");
+    sig(btn33, "button-press-event", &z47_btnPressed_signal, "08");
+    sig(btn34, "button-press-event", &z47_btnPressed_signal, "09");
+    sig(btn35, "button-press-event", &z47_btnPressed_signal, "10");
+    sig(btn36, "button-press-event", &z47_btnPressed_signal, "11");
+    sig(btn31, "button-release-event", &z47_btnReleased_signal, "06");
+    sig(btn32, "button-release-event", &z47_btnReleased_signal, "07");
+    sig(btn33, "button-release-event", &z47_btnReleased_signal, "08");
+    sig(btn34, "button-release-event", &z47_btnReleased_signal, "09");
+    sig(btn35, "button-release-event", &z47_btnReleased_signal, "10");
+    sig(btn36, "button-release-event", &z47_btnReleased_signal, "11");
+    sig(btn31A, "button-press-event", &z47_btnPressed_signal, "06");
+    sig(btn32A, "button-press-event", &z47_btnPressed_signal, "07");
+    sig(btn33A, "button-press-event", &z47_btnPressed_signal, "08");
+    sig(btn34A, "button-press-event", &z47_btnPressed_signal, "09");
+    sig(btn35A, "button-press-event", &z47_btnPressed_signal, "10");
+    sig(btn36A, "button-press-event", &z47_btnPressed_signal, "11");
+    sig(btn31A, "button-release-event", &z47_btnReleased_signal, "06");
+    sig(btn32A, "button-release-event", &z47_btnReleased_signal, "07");
+    sig(btn33A, "button-release-event", &z47_btnReleased_signal, "08");
+    sig(btn34A, "button-release-event", &z47_btnReleased_signal, "09");
+    sig(btn35A, "button-release-event", &z47_btnReleased_signal, "10");
+    sig(btn36A, "button-release-event", &z47_btnReleased_signal, "11");
     gtk_fixed_put(grid, lbl31F, 0, 0);
     gtk_fixed_put(grid, lbl32F, 0, 0);
     gtk_fixed_put(grid, lbl33F, 0, 0);
@@ -812,25 +815,25 @@ pub fn setupUI() void {
     btn43 = gtk_button_new();
     btn44 = gtk_button_new();
     btn45 = gtk_button_new();
-    gtk_widget_set_tooltip_text(btn41, @ptrCast(if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47));
+    gtk_widget_set_tooltip_text(btn41, if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47);
     keyCnt += 1;
-    gtk_widget_set_tooltip_text(btn42, @ptrCast(if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47));
+    gtk_widget_set_tooltip_text(btn42, if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47);
     keyCnt += 1;
-    gtk_widget_set_tooltip_text(btn43, @ptrCast(if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47));
+    gtk_widget_set_tooltip_text(btn43, if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47);
     keyCnt += 1;
-    gtk_widget_set_tooltip_text(btn44, @ptrCast(if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47));
+    gtk_widget_set_tooltip_text(btn44, if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47);
     keyCnt += 1;
-    gtk_widget_set_tooltip_text(btn45, @ptrCast(if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47));
+    gtk_widget_set_tooltip_text(btn45, if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47);
     keyCnt += 1;
     btn42A = gtk_button_new();
     btn43A = gtk_button_new();
     btn44A = gtk_button_new();
     keyCntA += 1;
-    gtk_widget_set_tooltip_text(btn42A, @ptrCast(if (isR47FAM()) &shortCutString[keyCntA].R47A else &shortCutString[keyCntA].C47A));
+    gtk_widget_set_tooltip_text(btn42A, if (isR47FAM()) &shortCutString[keyCntA].R47A else &shortCutString[keyCntA].C47A);
     keyCntA += 1;
-    gtk_widget_set_tooltip_text(btn43A, @ptrCast(if (isR47FAM()) &shortCutString[keyCntA].R47A else &shortCutString[keyCntA].C47A));
+    gtk_widget_set_tooltip_text(btn43A, if (isR47FAM()) &shortCutString[keyCntA].R47A else &shortCutString[keyCntA].C47A);
     keyCntA += 1;
-    gtk_widget_set_tooltip_text(btn44A, @ptrCast(if (isR47FAM()) &shortCutString[keyCntA].R47A else &shortCutString[keyCntA].C47A));
+    gtk_widget_set_tooltip_text(btn44A, if (isR47FAM()) &shortCutString[keyCntA].R47A else &shortCutString[keyCntA].C47A);
     keyCntA += 1;
     keyCntA += 1;
     lbl41F = gtk_label_new("");
@@ -866,22 +869,22 @@ pub fn setupUI() void {
     gtk_widget_set_size_request(btn42A, KEY_WIDTH_1, 0);
     gtk_widget_set_size_request(btn43A, KEY_WIDTH_1, 0);
     gtk_widget_set_size_request(btn44A, KEY_WIDTH_1, 0);
-    sig(btn41, "button-press-event", @ptrCast(&z47_btnPressed_signal), "12");
-    sig(btn42, "button-press-event", @ptrCast(&z47_btnPressed_signal), "13");
-    sig(btn43, "button-press-event", @ptrCast(&z47_btnPressed_signal), "14");
-    sig(btn44, "button-press-event", @ptrCast(&z47_btnPressed_signal), "15");
-    sig(btn45, "button-press-event", @ptrCast(&z47_btnPressed_signal), "16");
-    sig(btn41, "button-release-event", @ptrCast(&z47_btnReleased_signal), "12");
-    sig(btn42, "button-release-event", @ptrCast(&z47_btnReleased_signal), "13");
-    sig(btn43, "button-release-event", @ptrCast(&z47_btnReleased_signal), "14");
-    sig(btn44, "button-release-event", @ptrCast(&z47_btnReleased_signal), "15");
-    sig(btn45, "button-release-event", @ptrCast(&z47_btnReleased_signal), "16");
-    sig(btn42A, "button-press-event", @ptrCast(&z47_btnPressed_signal), "13");
-    sig(btn43A, "button-press-event", @ptrCast(&z47_btnPressed_signal), "14");
-    sig(btn44A, "button-press-event", @ptrCast(&z47_btnPressed_signal), "15");
-    sig(btn42A, "button-release-event", @ptrCast(&z47_btnReleased_signal), "13");
-    sig(btn43A, "button-release-event", @ptrCast(&z47_btnReleased_signal), "14");
-    sig(btn44A, "button-release-event", @ptrCast(&z47_btnReleased_signal), "15");
+    sig(btn41, "button-press-event", &z47_btnPressed_signal, "12");
+    sig(btn42, "button-press-event", &z47_btnPressed_signal, "13");
+    sig(btn43, "button-press-event", &z47_btnPressed_signal, "14");
+    sig(btn44, "button-press-event", &z47_btnPressed_signal, "15");
+    sig(btn45, "button-press-event", &z47_btnPressed_signal, "16");
+    sig(btn41, "button-release-event", &z47_btnReleased_signal, "12");
+    sig(btn42, "button-release-event", &z47_btnReleased_signal, "13");
+    sig(btn43, "button-release-event", &z47_btnReleased_signal, "14");
+    sig(btn44, "button-release-event", &z47_btnReleased_signal, "15");
+    sig(btn45, "button-release-event", &z47_btnReleased_signal, "16");
+    sig(btn42A, "button-press-event", &z47_btnPressed_signal, "13");
+    sig(btn43A, "button-press-event", &z47_btnPressed_signal, "14");
+    sig(btn44A, "button-press-event", &z47_btnPressed_signal, "15");
+    sig(btn42A, "button-release-event", &z47_btnReleased_signal, "13");
+    sig(btn43A, "button-release-event", &z47_btnReleased_signal, "14");
+    sig(btn44A, "button-release-event", &z47_btnReleased_signal, "15");
     gtk_fixed_put(grid, lbl41F, 0, 0);
     gtk_fixed_put(grid, lbl42F, 0, 0);
     gtk_fixed_put(grid, lbl43F, 0, 0);
@@ -926,28 +929,28 @@ pub fn setupUI() void {
     btn53 = gtk_button_new();
     btn54 = gtk_button_new();
     btn55 = gtk_button_new();
-    gtk_widget_set_tooltip_text(btn51, @ptrCast(if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47));
+    gtk_widget_set_tooltip_text(btn51, if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47);
     keyCnt += 1;
-    gtk_widget_set_tooltip_text(btn52, @ptrCast(if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47));
+    gtk_widget_set_tooltip_text(btn52, if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47);
     keyCnt += 1;
-    gtk_widget_set_tooltip_text(btn53, @ptrCast(if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47));
+    gtk_widget_set_tooltip_text(btn53, if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47);
     keyCnt += 1;
-    gtk_widget_set_tooltip_text(btn54, @ptrCast(if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47));
+    gtk_widget_set_tooltip_text(btn54, if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47);
     keyCnt += 1;
-    gtk_widget_set_tooltip_text(btn55, @ptrCast(if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47));
+    gtk_widget_set_tooltip_text(btn55, if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47);
     keyCnt += 1;
     btn52A = gtk_button_new();
     btn53A = gtk_button_new();
     btn54A = gtk_button_new();
     btn55A = gtk_button_new();
     keyCntA += 1;
-    gtk_widget_set_tooltip_text(btn52A, @ptrCast(if (isR47FAM()) &shortCutString[keyCntA].R47A else &shortCutString[keyCntA].C47A));
+    gtk_widget_set_tooltip_text(btn52A, if (isR47FAM()) &shortCutString[keyCntA].R47A else &shortCutString[keyCntA].C47A);
     keyCntA += 1;
-    gtk_widget_set_tooltip_text(btn53A, @ptrCast(if (isR47FAM()) &shortCutString[keyCntA].R47A else &shortCutString[keyCntA].C47A));
+    gtk_widget_set_tooltip_text(btn53A, if (isR47FAM()) &shortCutString[keyCntA].R47A else &shortCutString[keyCntA].C47A);
     keyCntA += 1;
-    gtk_widget_set_tooltip_text(btn54A, @ptrCast(if (isR47FAM()) &shortCutString[keyCntA].R47A else &shortCutString[keyCntA].C47A));
+    gtk_widget_set_tooltip_text(btn54A, if (isR47FAM()) &shortCutString[keyCntA].R47A else &shortCutString[keyCntA].C47A);
     keyCntA += 1;
-    gtk_widget_set_tooltip_text(btn55A, @ptrCast(if (isR47FAM()) &shortCutString[keyCntA].R47A else &shortCutString[keyCntA].C47A));
+    gtk_widget_set_tooltip_text(btn55A, if (isR47FAM()) &shortCutString[keyCntA].R47A else &shortCutString[keyCntA].C47A);
     keyCntA += 1;
     lbl51F = gtk_label_new("");
     lbl52F = gtk_label_new("");
@@ -986,27 +989,27 @@ pub fn setupUI() void {
     if (!isR47FAM()) {
         holdArrowKey(btn51, "button-press-event"); // btn51 is the arrow key on C47/DM42 only
     }
-    sig(btn51, "button-press-event", @ptrCast(&z47_btnPressed_signal), "17");
-    sig(btn52, "button-press-event", @ptrCast(&z47_btnPressed_signal), "18");
-    sig(btn53, "button-press-event", @ptrCast(&z47_btnPressed_signal), "19");
-    sig(btn54, "button-press-event", @ptrCast(&z47_btnPressed_signal), "20");
-    sig(btn55, "button-press-event", @ptrCast(&z47_btnPressed_signal), "21");
+    sig(btn51, "button-press-event", &z47_btnPressed_signal, "17");
+    sig(btn52, "button-press-event", &z47_btnPressed_signal, "18");
+    sig(btn53, "button-press-event", &z47_btnPressed_signal, "19");
+    sig(btn54, "button-press-event", &z47_btnPressed_signal, "20");
+    sig(btn55, "button-press-event", &z47_btnPressed_signal, "21");
     if (!isR47FAM()) {
         holdArrowKey(btn51, "button-release-event"); // btn51 is the arrow key on C47/DM42 only
     }
-    sig(btn51, "button-release-event", @ptrCast(&z47_btnReleased_signal), "17");
-    sig(btn52, "button-release-event", @ptrCast(&z47_btnReleased_signal), "18");
-    sig(btn53, "button-release-event", @ptrCast(&z47_btnReleased_signal), "19");
-    sig(btn54, "button-release-event", @ptrCast(&z47_btnReleased_signal), "20");
-    sig(btn55, "button-release-event", @ptrCast(&z47_btnReleased_signal), "21");
-    sig(btn52A, "button-press-event", @ptrCast(&z47_btnPressed_signal), "18");
-    sig(btn53A, "button-press-event", @ptrCast(&z47_btnPressed_signal), "19");
-    sig(btn54A, "button-press-event", @ptrCast(&z47_btnPressed_signal), "20");
-    sig(btn55A, "button-press-event", @ptrCast(&z47_btnPressed_signal), "21");
-    sig(btn52A, "button-release-event", @ptrCast(&z47_btnReleased_signal), "18");
-    sig(btn53A, "button-release-event", @ptrCast(&z47_btnReleased_signal), "19");
-    sig(btn54A, "button-release-event", @ptrCast(&z47_btnReleased_signal), "20");
-    sig(btn55A, "button-release-event", @ptrCast(&z47_btnReleased_signal), "21");
+    sig(btn51, "button-release-event", &z47_btnReleased_signal, "17");
+    sig(btn52, "button-release-event", &z47_btnReleased_signal, "18");
+    sig(btn53, "button-release-event", &z47_btnReleased_signal, "19");
+    sig(btn54, "button-release-event", &z47_btnReleased_signal, "20");
+    sig(btn55, "button-release-event", &z47_btnReleased_signal, "21");
+    sig(btn52A, "button-press-event", &z47_btnPressed_signal, "18");
+    sig(btn53A, "button-press-event", &z47_btnPressed_signal, "19");
+    sig(btn54A, "button-press-event", &z47_btnPressed_signal, "20");
+    sig(btn55A, "button-press-event", &z47_btnPressed_signal, "21");
+    sig(btn52A, "button-release-event", &z47_btnReleased_signal, "18");
+    sig(btn53A, "button-release-event", &z47_btnReleased_signal, "19");
+    sig(btn54A, "button-release-event", &z47_btnReleased_signal, "20");
+    sig(btn55A, "button-release-event", &z47_btnReleased_signal, "21");
     gtk_fixed_put(grid, lbl51F, 0, 0);
     gtk_fixed_put(grid, lbl52F, 0, 0);
     gtk_fixed_put(grid, lbl53F, 0, 0);
@@ -1051,28 +1054,28 @@ pub fn setupUI() void {
     btn63 = gtk_button_new();
     btn64 = gtk_button_new();
     btn65 = gtk_button_new();
-    gtk_widget_set_tooltip_text(btn61, @ptrCast(if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47));
+    gtk_widget_set_tooltip_text(btn61, if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47);
     keyCnt += 1;
-    gtk_widget_set_tooltip_text(btn62, @ptrCast(if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47));
+    gtk_widget_set_tooltip_text(btn62, if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47);
     keyCnt += 1;
-    gtk_widget_set_tooltip_text(btn63, @ptrCast(if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47));
+    gtk_widget_set_tooltip_text(btn63, if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47);
     keyCnt += 1;
-    gtk_widget_set_tooltip_text(btn64, @ptrCast(if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47));
+    gtk_widget_set_tooltip_text(btn64, if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47);
     keyCnt += 1;
-    gtk_widget_set_tooltip_text(btn65, @ptrCast(if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47));
+    gtk_widget_set_tooltip_text(btn65, if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47);
     keyCnt += 1;
     btn62A = gtk_button_new();
     btn63A = gtk_button_new();
     btn64A = gtk_button_new();
     btn65A = gtk_button_new();
     keyCntA += 1;
-    gtk_widget_set_tooltip_text(btn62A, @ptrCast(if (isR47FAM()) &shortCutString[keyCntA].R47A else &shortCutString[keyCntA].C47A));
+    gtk_widget_set_tooltip_text(btn62A, if (isR47FAM()) &shortCutString[keyCntA].R47A else &shortCutString[keyCntA].C47A);
     keyCntA += 1;
-    gtk_widget_set_tooltip_text(btn63A, @ptrCast(if (isR47FAM()) &shortCutString[keyCntA].R47A else &shortCutString[keyCntA].C47A));
+    gtk_widget_set_tooltip_text(btn63A, if (isR47FAM()) &shortCutString[keyCntA].R47A else &shortCutString[keyCntA].C47A);
     keyCntA += 1;
-    gtk_widget_set_tooltip_text(btn64A, @ptrCast(if (isR47FAM()) &shortCutString[keyCntA].R47A else &shortCutString[keyCntA].C47A));
+    gtk_widget_set_tooltip_text(btn64A, if (isR47FAM()) &shortCutString[keyCntA].R47A else &shortCutString[keyCntA].C47A);
     keyCntA += 1;
-    gtk_widget_set_tooltip_text(btn65A, @ptrCast(if (isR47FAM()) &shortCutString[keyCntA].R47A else &shortCutString[keyCntA].C47A));
+    gtk_widget_set_tooltip_text(btn65A, if (isR47FAM()) &shortCutString[keyCntA].R47A else &shortCutString[keyCntA].C47A);
     keyCntA += 1;
     lbl61F = gtk_label_new("");
     lbl62F = gtk_label_new("");
@@ -1109,25 +1112,25 @@ pub fn setupUI() void {
     gtk_widget_set_size_request(btn64A, KEY_WIDTH_2, 0);
     gtk_widget_set_size_request(btn65A, KEY_WIDTH_2, 0);
     holdArrowKey(btn61, "button-press-event"); // mark held before btnPressed rebuilds the keyboard
-    sig(btn61, "button-press-event", @ptrCast(&z47_btnPressed_signal), "22");
-    sig(btn62, "button-press-event", @ptrCast(&z47_btnPressed_signal), "23");
-    sig(btn63, "button-press-event", @ptrCast(&z47_btnPressed_signal), "24");
-    sig(btn64, "button-press-event", @ptrCast(&z47_btnPressed_signal), "25");
-    sig(btn65, "button-press-event", @ptrCast(&z47_btnPressed_signal), "26");
+    sig(btn61, "button-press-event", &z47_btnPressed_signal, "22");
+    sig(btn62, "button-press-event", &z47_btnPressed_signal, "23");
+    sig(btn63, "button-press-event", &z47_btnPressed_signal, "24");
+    sig(btn64, "button-press-event", &z47_btnPressed_signal, "25");
+    sig(btn65, "button-press-event", &z47_btnPressed_signal, "26");
     holdArrowKey(btn61, "button-release-event"); // clear held on release
-    sig(btn61, "button-release-event", @ptrCast(&z47_btnReleased_signal), "22");
-    sig(btn62, "button-release-event", @ptrCast(&z47_btnReleased_signal), "23");
-    sig(btn63, "button-release-event", @ptrCast(&z47_btnReleased_signal), "24");
-    sig(btn64, "button-release-event", @ptrCast(&z47_btnReleased_signal), "25");
-    sig(btn65, "button-release-event", @ptrCast(&z47_btnReleased_signal), "26");
-    sig(btn62A, "button-press-event", @ptrCast(&z47_btnPressed_signal), "23");
-    sig(btn63A, "button-press-event", @ptrCast(&z47_btnPressed_signal), "24");
-    sig(btn64A, "button-press-event", @ptrCast(&z47_btnPressed_signal), "25");
-    sig(btn65A, "button-press-event", @ptrCast(&z47_btnPressed_signal), "26");
-    sig(btn62A, "button-release-event", @ptrCast(&z47_btnReleased_signal), "23");
-    sig(btn63A, "button-release-event", @ptrCast(&z47_btnReleased_signal), "24");
-    sig(btn64A, "button-release-event", @ptrCast(&z47_btnReleased_signal), "25");
-    sig(btn65A, "button-release-event", @ptrCast(&z47_btnReleased_signal), "26");
+    sig(btn61, "button-release-event", &z47_btnReleased_signal, "22");
+    sig(btn62, "button-release-event", &z47_btnReleased_signal, "23");
+    sig(btn63, "button-release-event", &z47_btnReleased_signal, "24");
+    sig(btn64, "button-release-event", &z47_btnReleased_signal, "25");
+    sig(btn65, "button-release-event", &z47_btnReleased_signal, "26");
+    sig(btn62A, "button-press-event", &z47_btnPressed_signal, "23");
+    sig(btn63A, "button-press-event", &z47_btnPressed_signal, "24");
+    sig(btn64A, "button-press-event", &z47_btnPressed_signal, "25");
+    sig(btn65A, "button-press-event", &z47_btnPressed_signal, "26");
+    sig(btn62A, "button-release-event", &z47_btnReleased_signal, "23");
+    sig(btn63A, "button-release-event", &z47_btnReleased_signal, "24");
+    sig(btn64A, "button-release-event", &z47_btnReleased_signal, "25");
+    sig(btn65A, "button-release-event", &z47_btnReleased_signal, "26");
     gtk_fixed_put(grid, lbl61F, 0, 0);
     gtk_fixed_put(grid, lbl62F, 0, 0);
     gtk_fixed_put(grid, lbl63F, 0, 0);
@@ -1172,30 +1175,30 @@ pub fn setupUI() void {
     btn73 = gtk_button_new();
     btn74 = gtk_button_new();
     btn75 = gtk_button_new();
-    gtk_widget_set_tooltip_text(btn71, @ptrCast(if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47));
+    gtk_widget_set_tooltip_text(btn71, if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47);
     keyCnt += 1;
-    gtk_widget_set_tooltip_text(btn72, @ptrCast(if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47));
+    gtk_widget_set_tooltip_text(btn72, if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47);
     keyCnt += 1;
-    gtk_widget_set_tooltip_text(btn73, @ptrCast(if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47));
+    gtk_widget_set_tooltip_text(btn73, if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47);
     keyCnt += 1;
-    gtk_widget_set_tooltip_text(btn74, @ptrCast(if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47));
+    gtk_widget_set_tooltip_text(btn74, if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47);
     keyCnt += 1;
-    gtk_widget_set_tooltip_text(btn75, @ptrCast(if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47));
+    gtk_widget_set_tooltip_text(btn75, if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47);
     keyCnt += 1;
     btn71A = gtk_button_new();
     btn72A = gtk_button_new();
     btn73A = gtk_button_new();
     btn74A = gtk_button_new();
     btn75A = gtk_button_new();
-    gtk_widget_set_tooltip_text(btn71A, @ptrCast(if (isR47FAM()) &shortCutString[keyCntA].R47A else &shortCutString[keyCntA].C47A));
+    gtk_widget_set_tooltip_text(btn71A, if (isR47FAM()) &shortCutString[keyCntA].R47A else &shortCutString[keyCntA].C47A);
     keyCntA += 1;
-    gtk_widget_set_tooltip_text(btn72A, @ptrCast(if (isR47FAM()) &shortCutString[keyCntA].R47A else &shortCutString[keyCntA].C47A));
+    gtk_widget_set_tooltip_text(btn72A, if (isR47FAM()) &shortCutString[keyCntA].R47A else &shortCutString[keyCntA].C47A);
     keyCntA += 1;
-    gtk_widget_set_tooltip_text(btn73A, @ptrCast(if (isR47FAM()) &shortCutString[keyCntA].R47A else &shortCutString[keyCntA].C47A));
+    gtk_widget_set_tooltip_text(btn73A, if (isR47FAM()) &shortCutString[keyCntA].R47A else &shortCutString[keyCntA].C47A);
     keyCntA += 1;
-    gtk_widget_set_tooltip_text(btn74A, @ptrCast(if (isR47FAM()) &shortCutString[keyCntA].R47A else &shortCutString[keyCntA].C47A));
+    gtk_widget_set_tooltip_text(btn74A, if (isR47FAM()) &shortCutString[keyCntA].R47A else &shortCutString[keyCntA].C47A);
     keyCntA += 1;
-    gtk_widget_set_tooltip_text(btn75A, @ptrCast(if (isR47FAM()) &shortCutString[keyCntA].R47A else &shortCutString[keyCntA].C47A));
+    gtk_widget_set_tooltip_text(btn75A, if (isR47FAM()) &shortCutString[keyCntA].R47A else &shortCutString[keyCntA].C47A);
     keyCntA += 1;
     lbl71F = gtk_label_new("");
     lbl72F = gtk_label_new("");
@@ -1232,32 +1235,32 @@ pub fn setupUI() void {
     gtk_widget_set_size_request(btn73A, KEY_WIDTH_2, 0);
     gtk_widget_set_size_request(btn74A, KEY_WIDTH_2, 0);
     gtk_widget_set_size_request(btn75A, KEY_WIDTH_2, 0);
-    sig(btn71, "button-press-event", @ptrCast(&z47_btnPressed_signal), "27");
-    sig(btn72, "button-press-event", @ptrCast(&z47_btnPressed_signal), "28");
-    sig(btn73, "button-press-event", @ptrCast(&z47_btnPressed_signal), "29");
-    sig(btn74, "button-press-event", @ptrCast(&z47_btnPressed_signal), "30");
-    sig(btn75, "button-press-event", @ptrCast(&z47_btnPressed_signal), "31");
-    sig(btn71, "button-release-event", @ptrCast(&z47_btnReleased_signal), "27");
-    sig(btn72, "button-release-event", @ptrCast(&z47_btnReleased_signal), "28");
-    sig(btn73, "button-release-event", @ptrCast(&z47_btnReleased_signal), "29");
-    sig(btn74, "button-release-event", @ptrCast(&z47_btnReleased_signal), "30");
-    sig(btn75, "button-release-event", @ptrCast(&z47_btnReleased_signal), "31");
+    sig(btn71, "button-press-event", &z47_btnPressed_signal, "27");
+    sig(btn72, "button-press-event", &z47_btnPressed_signal, "28");
+    sig(btn73, "button-press-event", &z47_btnPressed_signal, "29");
+    sig(btn74, "button-press-event", &z47_btnPressed_signal, "30");
+    sig(btn75, "button-press-event", &z47_btnPressed_signal, "31");
+    sig(btn71, "button-release-event", &z47_btnReleased_signal, "27");
+    sig(btn72, "button-release-event", &z47_btnReleased_signal, "28");
+    sig(btn73, "button-release-event", &z47_btnReleased_signal, "29");
+    sig(btn74, "button-release-event", &z47_btnReleased_signal, "30");
+    sig(btn75, "button-release-event", &z47_btnReleased_signal, "31");
     if (isR47FAM()) {
         holdArrowKey(btn71A, "button-press-event"); // btn71A is the AIM arrow key on R47 only
     }
-    sig(btn71A, "button-press-event", @ptrCast(&z47_btnPressed_signal), "27");
-    sig(btn72A, "button-press-event", @ptrCast(&z47_btnPressed_signal), "28");
-    sig(btn73A, "button-press-event", @ptrCast(&z47_btnPressed_signal), "29");
-    sig(btn74A, "button-press-event", @ptrCast(&z47_btnPressed_signal), "30");
-    sig(btn75A, "button-press-event", @ptrCast(&z47_btnPressed_signal), "31");
+    sig(btn71A, "button-press-event", &z47_btnPressed_signal, "27");
+    sig(btn72A, "button-press-event", &z47_btnPressed_signal, "28");
+    sig(btn73A, "button-press-event", &z47_btnPressed_signal, "29");
+    sig(btn74A, "button-press-event", &z47_btnPressed_signal, "30");
+    sig(btn75A, "button-press-event", &z47_btnPressed_signal, "31");
     if (isR47FAM()) {
         holdArrowKey(btn71A, "button-release-event"); // btn71A is the AIM arrow key on R47 only
     }
-    sig(btn71A, "button-release-event", @ptrCast(&z47_btnReleased_signal), "27");
-    sig(btn72A, "button-release-event", @ptrCast(&z47_btnReleased_signal), "28");
-    sig(btn73A, "button-release-event", @ptrCast(&z47_btnReleased_signal), "29");
-    sig(btn74A, "button-release-event", @ptrCast(&z47_btnReleased_signal), "30");
-    sig(btn75A, "button-release-event", @ptrCast(&z47_btnReleased_signal), "31");
+    sig(btn71A, "button-release-event", &z47_btnReleased_signal, "27");
+    sig(btn72A, "button-release-event", &z47_btnReleased_signal, "28");
+    sig(btn73A, "button-release-event", &z47_btnReleased_signal, "29");
+    sig(btn74A, "button-release-event", &z47_btnReleased_signal, "30");
+    sig(btn75A, "button-release-event", &z47_btnReleased_signal, "31");
     gtk_fixed_put(grid, lbl71F, 0, 0);
     gtk_fixed_put(grid, lbl72F, 0, 0);
     gtk_fixed_put(grid, lbl73F, 0, 0);
@@ -1303,28 +1306,28 @@ pub fn setupUI() void {
     btn83 = gtk_button_new();
     btn84 = gtk_button_new();
     btn85 = gtk_button_new();
-    gtk_widget_set_tooltip_text(btn81, @ptrCast(if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47));
+    gtk_widget_set_tooltip_text(btn81, if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47);
     keyCnt += 1;
-    gtk_widget_set_tooltip_text(btn82, @ptrCast(if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47));
+    gtk_widget_set_tooltip_text(btn82, if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47);
     keyCnt += 1;
-    gtk_widget_set_tooltip_text(btn83, @ptrCast(if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47));
+    gtk_widget_set_tooltip_text(btn83, if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47);
     keyCnt += 1;
-    gtk_widget_set_tooltip_text(btn84, @ptrCast(if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47));
+    gtk_widget_set_tooltip_text(btn84, if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47);
     keyCnt += 1;
-    gtk_widget_set_tooltip_text(btn85, @ptrCast(if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47));
+    gtk_widget_set_tooltip_text(btn85, if (isR47FAM()) &shortCutString[keyCnt].R47 else &shortCutString[keyCnt].C47);
     keyCnt += 1;
     btn82A = gtk_button_new();
     btn83A = gtk_button_new();
     btn84A = gtk_button_new();
     btn85A = gtk_button_new();
     keyCntA += 1;
-    gtk_widget_set_tooltip_text(btn82A, @ptrCast(if (isR47FAM()) &shortCutString[keyCntA].R47A else &shortCutString[keyCntA].C47A));
+    gtk_widget_set_tooltip_text(btn82A, if (isR47FAM()) &shortCutString[keyCntA].R47A else &shortCutString[keyCntA].C47A);
     keyCntA += 1;
-    gtk_widget_set_tooltip_text(btn83A, @ptrCast(if (isR47FAM()) &shortCutString[keyCntA].R47A else &shortCutString[keyCntA].C47A));
+    gtk_widget_set_tooltip_text(btn83A, if (isR47FAM()) &shortCutString[keyCntA].R47A else &shortCutString[keyCntA].C47A);
     keyCntA += 1;
-    gtk_widget_set_tooltip_text(btn84A, @ptrCast(if (isR47FAM()) &shortCutString[keyCntA].R47A else &shortCutString[keyCntA].C47A));
+    gtk_widget_set_tooltip_text(btn84A, if (isR47FAM()) &shortCutString[keyCntA].R47A else &shortCutString[keyCntA].C47A);
     keyCntA += 1;
-    gtk_widget_set_tooltip_text(btn85A, @ptrCast(if (isR47FAM()) &shortCutString[keyCntA].R47A else &shortCutString[keyCntA].C47A));
+    gtk_widget_set_tooltip_text(btn85A, if (isR47FAM()) &shortCutString[keyCntA].R47A else &shortCutString[keyCntA].C47A);
     keyCntA += 1;
     lbl81F = gtk_label_new("");
     lbl82F = gtk_label_new("");
@@ -1359,24 +1362,24 @@ pub fn setupUI() void {
     gtk_widget_set_size_request(btn83A, KEY_WIDTH_2, 0);
     gtk_widget_set_size_request(btn84A, KEY_WIDTH_2, 0);
     gtk_widget_set_size_request(btn85A, KEY_WIDTH_2, 0);
-    sig(btn81, "button-press-event", @ptrCast(&z47_btnPressed_signal), "32");
-    sig(btn82, "button-press-event", @ptrCast(&z47_btnPressed_signal), "33");
-    sig(btn83, "button-press-event", @ptrCast(&z47_btnPressed_signal), "34");
-    sig(btn84, "button-press-event", @ptrCast(&z47_btnPressed_signal), "35");
-    sig(btn85, "button-press-event", @ptrCast(&z47_btnPressed_signal), "36");
-    sig(btn81, "button-release-event", @ptrCast(&z47_btnReleased_signal), "32");
-    sig(btn82, "button-release-event", @ptrCast(&z47_btnReleased_signal), "33");
-    sig(btn83, "button-release-event", @ptrCast(&z47_btnReleased_signal), "34");
-    sig(btn84, "button-release-event", @ptrCast(&z47_btnReleased_signal), "35");
-    sig(btn85, "button-release-event", @ptrCast(&z47_btnReleased_signal), "36");
-    sig(btn82A, "button-press-event", @ptrCast(&z47_btnPressed_signal), "33");
-    sig(btn83A, "button-press-event", @ptrCast(&z47_btnPressed_signal), "34");
-    sig(btn84A, "button-press-event", @ptrCast(&z47_btnPressed_signal), "35");
-    sig(btn85A, "button-press-event", @ptrCast(&z47_btnPressed_signal), "36");
-    sig(btn82A, "button-release-event", @ptrCast(&z47_btnReleased_signal), "33");
-    sig(btn83A, "button-release-event", @ptrCast(&z47_btnReleased_signal), "34");
-    sig(btn84A, "button-release-event", @ptrCast(&z47_btnReleased_signal), "35");
-    sig(btn85A, "button-release-event", @ptrCast(&z47_btnReleased_signal), "36");
+    sig(btn81, "button-press-event", &z47_btnPressed_signal, "32");
+    sig(btn82, "button-press-event", &z47_btnPressed_signal, "33");
+    sig(btn83, "button-press-event", &z47_btnPressed_signal, "34");
+    sig(btn84, "button-press-event", &z47_btnPressed_signal, "35");
+    sig(btn85, "button-press-event", &z47_btnPressed_signal, "36");
+    sig(btn81, "button-release-event", &z47_btnReleased_signal, "32");
+    sig(btn82, "button-release-event", &z47_btnReleased_signal, "33");
+    sig(btn83, "button-release-event", &z47_btnReleased_signal, "34");
+    sig(btn84, "button-release-event", &z47_btnReleased_signal, "35");
+    sig(btn85, "button-release-event", &z47_btnReleased_signal, "36");
+    sig(btn82A, "button-press-event", &z47_btnPressed_signal, "33");
+    sig(btn83A, "button-press-event", &z47_btnPressed_signal, "34");
+    sig(btn84A, "button-press-event", &z47_btnPressed_signal, "35");
+    sig(btn85A, "button-press-event", &z47_btnPressed_signal, "36");
+    sig(btn82A, "button-release-event", &z47_btnReleased_signal, "33");
+    sig(btn83A, "button-release-event", &z47_btnReleased_signal, "34");
+    sig(btn84A, "button-release-event", &z47_btnReleased_signal, "35");
+    sig(btn85A, "button-release-event", &z47_btnReleased_signal, "36");
     gtk_fixed_put(grid, lbl81F, 0, 0);
     gtk_fixed_put(grid, lbl82F, 0, 0);
     gtk_fixed_put(grid, lbl83F, 0, 0);
@@ -1419,7 +1422,7 @@ pub fn setupUI() void {
 
     gtk_widget_show_all(frmCalc);
 
-    lcd_buffer = @as([*c]u8, @ptrCast(malloc(SCREEN_HEIGHT * (SCREEN_WIDTH / 8 + 2) + 2))) + 2;
+    lcd_buffer = malloc(SCREEN_HEIGHT * (SCREEN_WIDTH / 8 + 2) + 2) + 2;
     lcd_clear_buf();
 
     checkAllBtnWidgetsForConsistency();

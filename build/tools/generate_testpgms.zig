@@ -1255,11 +1255,11 @@ fn writeAll(file: *c.FILE, contents: []const u8) !void {
     if (c.fwrite(contents.ptr, 1, contents.len, file) != contents.len) return error.FileWriteFailed;
 }
 
-pub export fn xcopy(dest: ?*anyopaque, source: ?*const anyopaque, n: u32) ?*anyopaque {
-    const out_ptr = dest orelse return dest;
-    const src_ptr = source orelse return dest;
-    const out = @as([*]u8, @ptrCast(out_ptr));
-    const src = @as([*]const u8, @ptrCast(src_ptr));
+// The C `void *xcopy(void *dest, const void *source, int n)`, bound at the bytes
+// it copies.
+pub export fn xcopy(dest: ?[*]u8, source: ?[*]const u8, n: u32) ?[*]u8 {
+    const out = dest orelse return dest;
+    const src = source orelse return dest;
 
     if (@intFromPtr(src) > @intFromPtr(out)) {
         var index: usize = 0;
