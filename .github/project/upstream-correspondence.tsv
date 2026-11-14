@@ -93,7 +93,7 @@ mathematics/cubeRoot	core/numeric/transform/transform_complex_helpers;core/numer
 mathematics/cxToRe	core/numeric/cxtore	port	symbol
 mathematics/dblDivision	core/numeric/arithmetic/integer_division_cells	port	symbol
 mathematics/dblMultiplication	core/numeric/arithmetic/integer_division_cells	port	symbol
-mathematics/decomp	core/numeric/arithmetic/integer_division_cells;core/numeric/arithmetic/scalar_integer_decomp_command	port	symbol
+mathematics/decomp	core/numeric/arithmetic/integer_division_cells	port	symbol
 mathematics/deltaPercent	core/numeric/arithmetic/percent_extended	port	symbol
 mathematics/deltaPercentXmean	core/numeric/statistics/deltaPercentXmean	port	symbol
 mathematics/division	core/numeric/arithmetic/division_cells	port	symbol
