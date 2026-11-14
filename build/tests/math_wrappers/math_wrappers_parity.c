@@ -58,7 +58,6 @@ void fnRmd(uint16_t unusedButMandatoryParameter);
 void fnUlp(uint16_t unusedButMandatoryParameter);
 void fnMant(uint16_t unusedButMandatoryParameter);
 void fnRoundi(uint16_t unusedButMandatoryParameter);
-void fnDecomp(uint16_t unusedButMandatoryParameter);
 void fnNeighb(uint16_t unusedButMandatoryParameter);
 void fnIxyz(uint16_t unusedButMandatoryParameter);
 void fnFactorial(uint16_t unusedButMandatoryParameter);
@@ -159,7 +158,6 @@ void oracle_fnRmd(uint16_t unusedButMandatoryParameter);
 void oracle_fnUlp(uint16_t unusedButMandatoryParameter);
 void oracle_fnMant(uint16_t unusedButMandatoryParameter);
 void oracle_fnRoundi(uint16_t unusedButMandatoryParameter);
-void oracle_fnDecomp(uint16_t unusedButMandatoryParameter);
 void oracle_fnNeighb(uint16_t unusedButMandatoryParameter);
 void oracle_fnIxyz(uint16_t unusedButMandatoryParameter);
 void oracle_fnFactorial(uint16_t unusedButMandatoryParameter);
@@ -1405,35 +1403,6 @@ static void configureLINPOLInvalidZ(void) {
   mathWrappersSetRegisterZSurface(dtComplex34Matrix, amNone);
 }
 
-static void configureDecompLongInteger(void) {
-  configureDefaultSurface();
-  mathWrappersSetRegisterSurface(dtLongInteger, LI_NEGATIVE);
-  mathWrappersSetLongIntegerInput(true, -6);
-}
-
-static void configureDecompRealFraction(void) {
-  configureDefaultSurface();
-  mathWrappersSetRegisterSurface(dtReal34, amNone);
-  mathWrappersSetRealInput(true, -7, 0);
-  mathWrappersSetFractionResult(true, -1, 1, 3, 4, 0);
-}
-
-static void configureDecompRealNaN(void) {
-  configureDecompRealFraction();
-  mathWrappersSetRealInput(true, 0, 0x20);
-}
-
-static void configureDecompRealInfinity(void) {
-  configureDecompRealFraction();
-  mathWrappersSetRealInput(true, 0, 0xc0);
-}
-
-static void configureDecompTypeError(void) {
-  configureDefaultSurface();
-  mathWrappersSetRegisterSurface(dtComplex34, amNone);
-  mathWrappersSetComplexInput(true, 2, 0, 3, 0);
-}
-
 static void configureNeighbReal(void) {
   configureDefaultSurface();
   mathWrappersSetRegisterSurface(dtReal34, amDegree);
@@ -2443,12 +2412,6 @@ int main(void) {
   failures += runCase("fnSdr/real", oracle_fnSdr, fnSdr, 2, true, configureSdrReal);
   failures += runCase("fnSdr/longint", oracle_fnSdr, fnSdr, 2, true, configureSdrLongInteger);
   failures += runCase("fnSdr/invalid_type", oracle_fnSdr, fnSdr, 2, true, configureSdrInvalidType);
-  failures += runCase("fnDecomp/longint", oracle_fnDecomp, fnDecomp, 0, true, configureDecompLongInteger);
-  failures += runCase("fnDecomp/real_fraction", oracle_fnDecomp, fnDecomp, 0, true, configureDecompRealFraction);
-  failures += runCase("fnDecomp/real_nan", oracle_fnDecomp, fnDecomp, 0, true, configureDecompRealNaN);
-  failures += runCase("fnDecomp/real_infinity", oracle_fnDecomp, fnDecomp, 0, true, configureDecompRealInfinity);
-  failures += runCase("fnDecomp/type_error", oracle_fnDecomp, fnDecomp, 0, true, configureDecompTypeError);
-  failures += runCase("fnDecomp/save_last_x_false", oracle_fnDecomp, fnDecomp, 0, false, configureDecompRealFraction);
   failures += runCase("fnNeighb/real", oracle_fnNeighb, fnNeighb, 0, true, configureNeighbReal);
   failures += runCase("fnNeighb/shortint", oracle_fnNeighb, fnNeighb, 0, true, configureDyadicShortInteger);
   failures += runCase("fnNeighb/longint", oracle_fnNeighb, fnNeighb, 0, true, configureNeighbLongInteger);

@@ -13,7 +13,6 @@ const random_real_owned = @import("random/random_real.zig");
 const random_integer_owned = @import("random/random_integer.zig");
 const random_seed_owned = @import("random/random_seed.zig");
 const special_algebraic_command_owned = @import("special/special_algebraic_command.zig");
-const decomp_owned = @import("arithmetic/scalar_integer_decomp_command.zig");
 const precision_owned = @import("rounding/scalar_integer_precision.zig");
 const trig_complex_primitives_owned = @import("trig/trig_complex_primitives.zig");
 const logxy_command_owned = @import("powerlog/logxy_command.zig");
@@ -891,10 +890,6 @@ pub export fn fnPercent(unused_but_mandatory_parameter: u16) callconv(.c) void {
 
 pub export fn fnCheckInteger(mode: u16) callconv(.c) void {
     check_value_owned.checkInteger(mode);
-}
-
-pub export fn fnDecomp(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    decomp_owned.decomp(unused_but_mandatory_parameter);
 }
 
 pub export fn fnIsConverged(unused_but_mandatory_parameter: u16) callconv(.c) void {

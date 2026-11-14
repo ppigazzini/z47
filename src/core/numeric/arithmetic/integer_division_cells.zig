@@ -1020,7 +1020,7 @@ pub export fn decompError() linksection(runtime.code_section) callconv(.c) void 
     runtime.moreInfoOnError("In function fnDecomp:", message, null, null);
 }
 
-pub fn fnDecomp(unused_but_mandatory_parameter: u16) linksection(runtime.code_section) void {
+pub export fn fnDecomp(unused_but_mandatory_parameter: u16) linksection(runtime.code_section) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
 
     if (!runtime.saveLastX()) {
