@@ -1,12 +1,25 @@
-const pointer_owned = @import("program_serialization_pointer.zig");
+const abi = @import("abi");
+const block_math = abi.block_math;
 const runtime = @import("program_serialization_runtime.zig");
+
+pub fn toBlocks(byte_count: usize) u16 {
+    return block_math.toBlocks(u16, byte_count);
+}
+
+pub fn toBytes(block_count: usize) usize {
+    return block_math.toBytes(usize, block_count);
+}
+
+pub fn offsetPointer(ptr: [*c]u8, delta: isize) [*c]u8 {
+    return if (delta < 0) ptr - @abs(delta) else ptr + @as(usize, @intCast(delta));
+}
 
 pub fn addSpaceAfterPrograms(size: u16) void {
     if (runtime.freeProgramBytes < size) {
         const old_begin_of_program_memory = runtime.beginOfProgramMemory;
         const program_size_in_blocks: usize = runtime.getRamSizeInBlocks() - runtime.toC47MemPtr(runtime.beginOfProgramMemory);
-        const new_program_size_in_blocks = pointer_owned.toBlocks(pointer_owned.toBytes(program_size_in_blocks) - runtime.freeProgramBytes + size);
-        const grow_bytes = pointer_owned.toBytes(new_program_size_in_blocks - program_size_in_blocks);
+        const new_program_size_in_blocks = toBlocks(toBytes(program_size_in_blocks) - runtime.freeProgramBytes + size);
+        const grow_bytes = toBytes(new_program_size_in_blocks - program_size_in_blocks);
 
         // freeProgramBytes is a uint16_t: a 65536-byte growth adds 0 in the C by
         // silent modular conversion, and fnLoadProgram admits a size that
@@ -14,13 +27,13 @@ pub fn addSpaceAfterPrograms(size: u16) void {
         runtime.freeProgramBytes +%= @truncate(grow_bytes);
         runtime.resizeProgramMemory(new_program_size_in_blocks);
         const delta: isize = @intCast(@as(i64, @intCast(@intFromPtr(runtime.beginOfProgramMemory))) - @as(i64, @intCast(@intFromPtr(old_begin_of_program_memory))));
-        runtime.currentStep = pointer_owned.offsetPointer(runtime.currentStep, delta);
-        runtime.firstDisplayedStep = pointer_owned.offsetPointer(runtime.firstDisplayedStep, delta);
-        runtime.beginOfCurrentProgram = pointer_owned.offsetPointer(runtime.beginOfCurrentProgram, delta);
-        runtime.endOfCurrentProgram = pointer_owned.offsetPointer(runtime.endOfCurrentProgram, delta);
+        runtime.currentStep = offsetPointer(runtime.currentStep, delta);
+        runtime.firstDisplayedStep = offsetPointer(runtime.firstDisplayedStep, delta);
+        runtime.beginOfCurrentProgram = offsetPointer(runtime.beginOfCurrentProgram, delta);
+        runtime.endOfCurrentProgram = offsetPointer(runtime.endOfCurrentProgram, delta);
     }
 
-    runtime.firstFreeProgramByte = pointer_owned.offsetPointer(runtime.firstFreeProgramByte, @intCast(size));
+    runtime.firstFreeProgramByte = offsetPointer(runtime.firstFreeProgramByte, @intCast(size));
     runtime.freeProgramBytes -%= size;
 }
 

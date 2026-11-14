@@ -1,4 +1,3 @@
-const pointer_owned = @import("program_serialization_pointer.zig");
 const runtime = @import("program_serialization_runtime.zig");
 const space_owned = @import("program_serialization_space.zig");
 
@@ -22,7 +21,7 @@ pub fn applyLoadedProgram(program_size_in_bytes: u32) void {
     }
 
     space_owned.addSpaceAfterPrograms(@intCast(program_size_in_bytes));
-    const start_of_program = pointer_owned.offsetPointer(runtime.firstFreeProgramByte, -@as(isize, @intCast(program_size_in_bytes)));
+    const start_of_program = space_owned.offsetPointer(runtime.firstFreeProgramByte, -@as(isize, @intCast(program_size_in_bytes)));
     var index: u32 = 0;
     while (index < program_size_in_bytes) : (index += 1) {
         runtime.readLine(value_buffer[0..]);
