@@ -30,7 +30,9 @@ const frontier_screen_snap = @import("screen_snap.zig");
 //     VERBOSE_SCREEN/MONITOR_*/ANALYSE_REFRESH/FN_TIME_DEBUG1/DEBUG_SHOWNAME
 //     (DEBUGSFN=false)/INLINE_TEST. The #if PC_BUILD clipboard/cairo helpers and
 //     the GTK refreshLcd are host-only (comptime !dmcp_build); drawScreen / the
-//     copy*ToClipboard / get_binary_bits / refreshLcd are PC-only exports.
+//     copy*ToClipboard / get_binary_bits / refreshLcd are PC-only exports. The
+//     VERBOSE_MINIMUM refresh trace is host-only and excluded from the testSuite,
+//     which undefines that macro.
 //
 // DMCP ROM function-table entries, reached only under dmcp_build: lcd_fill_rect,
 // lcd_refresh, lcd_refresh_lines, lcd_refresh_dma, LCD_write_line, bitblt24 (via
@@ -70,7 +72,7 @@ const option_xfn_1000: bool = frontier_build_options.option_xfn_1000;
 const option_drg_cfg: bool = frontier_build_options.option_drg_cfg;
 const option_eex_prefix: bool = frontier_build_options.option_eex_prefix;
 // The relation x->POLY recovered, rendered as x^3 - x - 1 (algdep.h). Empty until a search succeeded.
-extern fn algdepPolynomialString() callconv(.c) [*:0]const u8;
+extern fn algdepPolynomialString() [*:0]const u8;
 
 // ---------------------------------------------------------------------------
 // Types
@@ -1023,6 +1025,8 @@ extern var T_cursorPos: i16;
 extern var xMultiLineEdOffset: u8;
 extern var yMultiLineEdOffset: u8;
 extern var last_CM: u8;
+extern var alphaCase: u8;
+const AC_LOWER: u8 = 1;
 extern var currentSolverVariable: u16;
 extern var currentSolverStatus: u16;
 extern var currentMvarLabel: u16;
@@ -1238,7 +1242,6 @@ extern fn linkToComplexMatrixRegister(regist: calcRegister_t, matrix: *complex34
 extern fn real34CompareLessThan(a: *const real34_t, b: *const real34_t) bool_t;
 extern fn real34CompareLessEqual(a: *const real34_t, b: *const real34_t) bool_t;
 extern fn real34CompareAbsLessThan(a: *const real34_t, b: *const real34_t) bool_t;
-extern fn real34IsAnInteger(x: *const real34_t) bool_t;
 extern fn realIsAnInteger(r: *const real_t) bool_t;
 extern fn findNamedVariable(name: [*c]const u8) calcRegister_t;
 extern fn processKeyAction(item: i16) void;
@@ -1303,10 +1306,7 @@ const menuHeightInclBorder: u32 = 69;
 extern fn strlen(s: [*c]const u8) usize;
 extern fn strcat(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn strcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8;
-extern fn strchr(s: [*c]const u8, c: c_int) [*c]u8;
-extern fn strstr(h: [*c]const u8, n: [*c]const u8) [*c]u8;
 extern fn memcpy(d: ?*anyopaque, s: ?*const anyopaque, n: usize) ?*anyopaque;
-extern fn memmove(d: ?*anyopaque, s: ?*const anyopaque, n: usize) ?*anyopaque;
 
 // GTK event-loop pumping (host only; referenced under !dmcp_build).
 const gtk_events_pending = if (!dmcp_build) @extern(*const fn () callconv(.c) c_int, .{ .name = "gtk_events_pending" }) else {};
@@ -1329,6 +1329,7 @@ extern var _ioFileNameOverride: [1024]u8;
 extern fn fwrite(ptr: ?*const anyopaque, size: usize, nmemb: usize, stream: ?*FILE) usize;
 extern fn fclose(stream: ?*FILE) c_int;
 extern fn printf(fmt: [*c]const u8, ...) c_int;
+extern fn fflush(stream: ?*FILE) c_int;
 // defines.h C47_PATH_MAX, the sim's capture-name width. The C macro takes the
 // host's PATH_MAX/MAX_PATH when one is visible and 1024 otherwise; 1024 is the
 // width _ioFileNameOverride is already bound at above, and both ends of the
@@ -1339,7 +1340,6 @@ const C47_PATH_MAX = 1024;
 extern fn decQuadReduce(r: *real34_t, a: *const real34_t, ctx: *realContext_t) *real34_t;
 extern fn decQuadToString(d: *const real34_t, str: [*c]u8) [*c]u8;
 extern fn decQuadIsZero(d: *const real34_t) u32;
-extern fn decimal128ToNumber(d: *const real34_t, dn: *real_t) *real_t;
 extern fn decimal128FromNumber(d: *real34_t, dn: *const real_t, set: *realContext_t) *real34_t;
 extern fn decNumberMultiply(res: *real_t, a: *const real_t, b: *const real_t, ctx: *realContext_t) *real_t;
 extern fn decNumberAdd(res: *real_t, a: *const real_t, b: *const real_t, ctx: *realContext_t) *real_t;
@@ -4539,6 +4539,11 @@ fn refreshRegisterMainBranch(regist_p: *calcRegister_t, restoreRegisterT: bool_t
     var regist = regist_p.*;
     prefixWidth_p.* = 0;
     const baseY: i16 = @intCast(@as(i32, Y_POSITION_OF_REGISTER_X_LINE) - @as(i32, REGISTER_LINE_HEIGHT) * @as(i32, regist - REGISTER_X + (if (restoreRegisterT == RESTORE_T) @as(calcRegister_t, 0) else (if (temporaryInformation == TI_VIEW_REGISTER and regist == REGISTER_T) @as(calcRegister_t, 0) else (if (getRegisterDataType(REGISTER_X) == dtReal34Matrix or getRegisterDataType(REGISTER_X) == dtComplex34Matrix) @as(calcRegister_t, @intCast(4 - @as(i32, displayStack))) else 0)))));
+    if (comptime !dmcp_build) {
+        if (baseY < 0 and lastErrorCode != 0) {
+            _ = printf("ILLEGAL BASE VALUE baseY<0 : baseY=%i regist=%u regist-REGISTER_X=%u cachedDisplayStack=%u displayStack=%u\n", @as(c_int, baseY), @as(c_int, regist), @as(c_int, regist - REGISTER_X), @as(c_int, cachedDisplayStack), @as(c_int, displayStack));
+        }
+    }
     const origRegist: calcRegister_t = regist;
     const indent: i16 = if (SHOWMODE()) noShiftOffset else lineIndent(origRegist); // the T line leaves room for the shift indicator, except under a SHOW screen, drawn over it
     if (temporaryInformation == TI_VIEW_REGISTER and regist == REGISTER_T) {
@@ -6392,8 +6397,68 @@ fn _refreshNormalScreen() void {
     screenUpdatingMode |= SCRUPD_MANUAL_STATUSBAR | SCRUPD_MANUAL_STACK | SCRUPD_MANUAL_MENU;
 }
 
+// get_binary_bits: n's low `bits` bits as '0'/'1' characters, MSB first, a space
+// after every fourth from the right. The result lives in one static buffer, so
+// each call overwrites the last. NULL for a bit count outside 1..64. Host only,
+// as the C is.
+var binaryBitsBuffer: [80]u8 = undefined; // 64 bits + 15 spaces + the terminator
+fn getBinaryBits(n: u64, bits: c_int) callconv(.c) [*c]u8 {
+    if (bits <= 0 or bits > 64) {
+        return null;
+    }
+    var pos: usize = 0;
+    var i: i32 = bits - 1;
+    while (i >= 0) : (i -= 1) {
+        binaryBitsBuffer[pos] = if (n & (@as(u64, 1) << @intCast(i)) != 0) '1' else '0';
+        pos += 1;
+        if (@rem(i, 4) == 0 and i != 0) {
+            binaryBitsBuffer[pos] = ' ';
+            pos += 1;
+        }
+    }
+    binaryBitsBuffer[pos] = 0;
+    return &binaryBitsBuffer;
+}
+comptime {
+    if (!dmcp_build) {
+        @export(&getBinaryBits, .{ .name = "get_binary_bits", .linkage = .strong });
+    }
+}
+
+// The simulator's one-line trace of each refresh: its source, the update mode
+// in binary and spelled out, the calc mode, the TI, the alpha case, the TAM
+// mode and the menu. The binary form goes through TEMP_REGISTER_1, which the
+// trace overwrites. PC_BUILD && VERBOSE_MINIMUM, which the testSuite undefines.
+fn refreshScreenTrace(source: u16) void {
+    var ttt: [500]u8 = @splat(0);
+    var sss: [500]u8 = @splat(0);
+    _ = strcpy(&sss, getBinaryBits(screenUpdatingMode, 8));
+    frontier_register_value_conversions.convertUInt64ToShortIntegerRegister(0, screenUpdatingMode, 2, TEMP_REGISTER_1);
+    frontier_display.shortIntegerToDisplayString(TEMP_REGISTER_1, &ttt, 0, noBaseOverride, SCREEN_WIDTH);
+    frontier_char_string.stringToASCII(&ttt, &sss);
+    ttt[0] = 0;
+    if (screenUpdatingMode == 0) {
+        _ = strcat(&ttt, "AUTO ");
+    } else {
+        if ((screenUpdatingMode & 0x40) != 0) _ = strcat(&ttt, "SkpMEN ");
+        if ((screenUpdatingMode & 0x20) != 0) _ = strcat(&ttt, "SkpSTK ");
+
+        if ((screenUpdatingMode & 0x08) == 0) _ = strcat(&ttt, "SHFT ");
+        if ((screenUpdatingMode & 0x04) == 0) _ = strcat(&ttt, "MENU ");
+        if ((screenUpdatingMode & 0x02) == 0) _ = strcat(&ttt, "STK ");
+        if ((screenUpdatingMode & 0x01) == 0) _ = strcat(&ttt, "STS ");
+    }
+    const m: i16 = softmenuStack[0].softmenuId;
+    var uuu: [100]u8 = undefined;
+    const menu = frontier_softmenus.currentMenu();
+    frontier_char_string.stringToASCII(&indexOfItems[@intCast(if (menu > 0) menu else -menu)].itemSoftmenuName, &uuu);
+    const counter = refreshScreenCounter;
+    refreshScreenCounter +%= 1;
+    _ = printf("   refrsh(%5u): Cnt=%3d %s CM=%2d scr..upd:%3d=%12s=>%26s TI=%4u CL=%s tam:%5i MENUid=%2d:%4i:%s\n", @as(c_uint, source), @as(c_int, counter), @as([*:0]const u8, if (last_CM != calcMode) "OVR" else "   "), @as(c_int, calcMode), @as(c_int, screenUpdatingMode), &sss, &ttt, @as(c_uint, temporaryInformation), @as([*:0]const u8, if (alphaCase == AC_LOWER) "LO" else "UP"), @as(c_int, tam.mode), @as(c_int, m), @as(c_int, menu), &uuu);
+    _ = fflush(null);
+}
+
 pub export fn refreshScreen(source: u16) callconv(.c) void {
-    _ = source;
     updateShiftOnTline(); // LOADST, a reset and UNDO put the flags back without going through setSystemFlag
     xxfnActive = XXFNMODEACTIVE();
     screenHoldsDrawnPixels = false; // this repaint is what destroys anything CLLCD, PIXEL, POINT or AGRAPH drew
@@ -6403,6 +6468,10 @@ pub export fn refreshScreen(source: u16) callconv(.c) void {
         if (last_CM == 240) {
             last_CM = calcMode;
         }
+    }
+
+    if (comptime !dmcp_build and !testsuite_build) {
+        refreshScreenTrace(source);
     }
 
     switch (frontier_softmenus.currentMenu()) {
@@ -6517,7 +6586,6 @@ pub export fn refreshScreen(source: u16) callconv(.c) void {
 // refreshLcd: host = GTK timer cb (gboolean(*)(gpointer)); dmcp = void(void).
 // Both are exported (called by refreshScreen and the main loop / GTK).
 const cursorCycle: i8 = 3;
-extern fn showDateTimeExtern() bool_t; // (showDateTime already externed above)
 
 pub export fn refreshLcd(unusedData: ?*anyopaque) callconv(.c) c_int {
     if (comptime !dmcp_build) {
@@ -6597,6 +6665,16 @@ pub export fn fnScreenDump(unusedButMandatoryParameter: u16) callconv(.c) void {
         frontier_status_bar.paintDateTimeForCapture();
         // Holds whatever _ioFileNameOverride holds; fnMenuDump uses 1024 for the same job.
         var bmpFileName: [C47_PATH_MAX]u8 = undefined;
+        // The band this capture writes, taken before the reset that follows, so
+        // every fwrite here uses the one pair of rows. The reset comes before the
+        // file is opened: a capture whose file cannot be opened still consumes
+        // the band, so the next one is the whole screen.
+        const yFirst = snapRowFirst;
+        const yLast = snapRowLast;
+        const yRows: u32 = @intCast(yLast - yFirst + 1);
+        snapRowFirst = 0;
+        snapRowLast = SCREEN_HEIGHT - 1;
+
         var rawTime: time_t = undefined;
         _ = c_time(&rawTime);
         const timeInfo = localtime(&rawTime);
@@ -6628,14 +6706,6 @@ pub export fn fnScreenDump(unusedButMandatoryParameter: u16) callconv(.c) void {
         }
 
         _ = fwrite("BM", 1, 2, bmp);
-
-        // The band this capture writes, taken before the reset below, so every
-        // fwrite here uses the one pair of rows.
-        const yFirst = snapRowFirst;
-        const yLast = snapRowLast;
-        const yRows: u32 = @intCast(yLast - yFirst + 1);
-        snapRowFirst = 0;
-        snapRowLast = SCREEN_HEIGHT - 1;
 
         var uint32: u32 = ((@as(u32, @intCast(SCREEN_WIDTH)) / 8 + 2) * yRows) + 0x82;
         _ = fwrite(&uint32, 1, 4, bmp);
@@ -7060,6 +7130,9 @@ pub export fn fnSNAP(unused_but_mandatory_parameter: u16) callconv(.c) void {
     // as well and is not one, and neither is a screen a program drew.
     const showPage = frontier_softmenus.currentMenu() == -MNU_SHOW and temporaryInformation != TI_WHO and !screenHoldsDrawnPixels;
 
+    if (comptime !dmcp_build) {
+        _ = printf("fnSNAP!\n");
+    }
     // f or g would otherwise show top left of the capture; the host's
     // --snapkeepshift keeps the shift and its glyph in it.
     if (comptime dmcp_build) {
