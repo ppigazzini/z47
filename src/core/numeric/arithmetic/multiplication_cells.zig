@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
-// Zig port of src/c47/mathematics/multiplication.c (dispatch matrix and cells).
+// Zig port of src/c47/mathematics/multiplication.c (dispatch matrix, cells and
+// fnMultiply).
 
 const std = @import("std");
 const abi = @import("abi");
@@ -111,7 +112,7 @@ pub export fn mulError() linksection(runtime.code_section) callconv(.c) void {
     runtime.moreInfoOnError("In function fnMultiply:", message1, message2, null);
 }
 
-pub noinline fn fnMultiply(unused_but_mandatory_parameter: u16) linksection(runtime.code_section) void {
+pub export fn fnMultiply(unused_but_mandatory_parameter: u16) linksection(runtime.code_section) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
 
     if (!runtime.saveLastX()) {

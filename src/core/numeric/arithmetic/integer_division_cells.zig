@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // Zig port of src/c47/mathematics/idiv.c, idivr.c, dblMultiplication.c,
-// dblDivision.c, round.c and decomp.c (dispatch tables, cells and the
-// retained legacy entry points still reachable from the Zig wrappers).
+// dblDivision.c, round.c and decomp.c: the dispatch tables and cells, and the
+// IDIV, IDIVR, DBL and ROUND commands.
 
 const std = @import("std");
 const abi = @import("abi");
@@ -95,7 +95,7 @@ pub export fn idivError() linksection(runtime.code_section) callconv(.c) void {
     runtime.moreInfoOnError("In function fnIDiv:", message1, message2, null);
 }
 
-pub noinline fn fnIDiv(unused_but_mandatory_parameter: u16) linksection(runtime.code_section) void {
+pub export fn fnIDiv(unused_but_mandatory_parameter: u16) linksection(runtime.code_section) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
 
     if (!runtime.saveLastX()) {
@@ -324,7 +324,7 @@ pub export fn idivrError() linksection(runtime.code_section) callconv(.c) void {
     runtime.moreInfoOnError("In function fnIDivR:", message1, message2, null);
 }
 
-pub noinline fn fnIDivR(unused_but_mandatory_parameter: u16) linksection(runtime.code_section) void {
+pub export fn fnIDivR(unused_but_mandatory_parameter: u16) linksection(runtime.code_section) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
 
     if (!runtime.saveLastX()) {
@@ -532,7 +532,7 @@ fn dblTypeError(comptime function_name: [:0]const u8, comptime operator_glyph: [
     runtime.moreInfoOnError(function_name, message, null, null);
 }
 
-pub noinline fn fnDblMultiply(unused_but_mandatory_parameter: u16) linksection(runtime.code_section) void {
+pub export fn fnDblMultiply(unused_but_mandatory_parameter: u16) linksection(runtime.code_section) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
 
     const sim = runtime.shortIntegerMode;
@@ -728,12 +728,12 @@ pub export fn dblDivide(remainder_mode: bool) linksection(runtime.code_section) 
     dblDivideImpl(remainder_mode);
 }
 
-pub noinline fn fnDblDivide(unused_but_mandatory_parameter: u16) linksection(runtime.code_section) void {
+pub export fn fnDblDivide(unused_but_mandatory_parameter: u16) linksection(runtime.code_section) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
     dblDivideImpl(false);
 }
 
-pub noinline fn fnDblDivideRemainder(unused_but_mandatory_parameter: u16) linksection(runtime.code_section) void {
+pub export fn fnDblDivideRemainder(unused_but_mandatory_parameter: u16) linksection(runtime.code_section) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
     dblDivideImpl(true);
 }
@@ -779,7 +779,7 @@ pub export fn roundError() linksection(runtime.code_section) callconv(.c) void {
     runtime.moreInfoOnError("In function roundError:", message, null, null);
 }
 
-pub noinline fn fnRound(unused_but_mandatory_parameter: u16) linksection(runtime.code_section) void {
+pub export fn fnRound(unused_but_mandatory_parameter: u16) linksection(runtime.code_section) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
 
     if (!runtime.saveLastX()) {

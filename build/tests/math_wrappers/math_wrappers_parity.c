@@ -55,12 +55,8 @@ void fnGcd(uint16_t unusedButMandatoryParameter);
 void fnLcm(uint16_t unusedButMandatoryParameter);
 void fnMod(uint16_t unusedButMandatoryParameter);
 void fnRmd(uint16_t unusedButMandatoryParameter);
-void fnDblMultiply(uint16_t unusedButMandatoryParameter);
-void fnDblDivide(uint16_t unusedButMandatoryParameter);
-void fnDblDivideRemainder(uint16_t unusedButMandatoryParameter);
 void fnUlp(uint16_t unusedButMandatoryParameter);
 void fnMant(uint16_t unusedButMandatoryParameter);
-void fnRound(uint16_t unusedButMandatoryParameter);
 void fnRoundi(uint16_t unusedButMandatoryParameter);
 void fnDecomp(uint16_t unusedButMandatoryParameter);
 void fnNeighb(uint16_t unusedButMandatoryParameter);
@@ -68,13 +64,6 @@ void fnIxyz(uint16_t unusedButMandatoryParameter);
 void fnFactorial(uint16_t unusedButMandatoryParameter);
 void fnRandomI(uint16_t unusedButMandatoryParameter);
 void fnIsConverged(uint16_t unusedButMandatoryParameter);
-void fnXLessThan(uint16_t unusedButMandatoryParameter);
-void fnXLessEqual(uint16_t unusedButMandatoryParameter);
-void fnXGreaterThan(uint16_t unusedButMandatoryParameter);
-void fnXGreaterEqual(uint16_t unusedButMandatoryParameter);
-void fnXEqualsTo(uint16_t unusedButMandatoryParameter);
-void fnXNotEqual(uint16_t unusedButMandatoryParameter);
-void fnXAlmostEqual(uint16_t unusedButMandatoryParameter);
 
 static void setMatrixReal34(real34_t *value, int32_t signedValue, uint8_t bits);
 void fnCheckInteger(uint16_t unusedButMandatoryParameter);
@@ -86,8 +75,6 @@ void fnCheckNumber(uint16_t unusedButMandatoryParameter);
 void fnCheckNaN(uint16_t unusedButMandatoryParameter);
 void fnCheckInfinite(uint16_t unusedButMandatoryParameter);
 void fnCheckSpecial(uint16_t unusedButMandatoryParameter);
-void fnDec(uint16_t unusedButMandatoryParameter);
-void fnInc(uint16_t unusedButMandatoryParameter);
 void fnCheckPlusZero(uint16_t unusedButMandatoryParameter);
 void fnCheckMinusZero(uint16_t unusedButMandatoryParameter);
 void fnCheckMatrixSquare(uint16_t unusedButMandatoryParameter);
@@ -103,12 +90,6 @@ void fnAtan2(uint16_t unusedButMandatoryParameter);
 void fnSquare(uint16_t unusedButMandatoryParameter);
 void fnCube(uint16_t unusedButMandatoryParameter);
 void fnPercent(uint16_t unusedButMandatoryParameter);
-void fnDivide(uint16_t unusedButMandatoryParameter);
-void fnAdd(uint16_t unusedButMandatoryParameter);
-void fnSubtract(uint16_t unusedButMandatoryParameter);
-void fnMultiply(uint16_t unusedButMandatoryParameter);
-void fnIDiv(uint16_t unusedButMandatoryParameter);
-void fnIDivR(uint16_t unusedButMandatoryParameter);
 void fnToPolar2(uint16_t unusedButMandatoryParameter);
 void fnToRect2(uint16_t unusedButMandatoryParameter);
 void fnParallel(uint16_t unusedButMandatoryParameter);
@@ -175,9 +156,6 @@ void oracle_fnGcd(uint16_t unusedButMandatoryParameter);
 void oracle_fnLcm(uint16_t unusedButMandatoryParameter);
 void oracle_fnMod(uint16_t unusedButMandatoryParameter);
 void oracle_fnRmd(uint16_t unusedButMandatoryParameter);
-void oracle_fnDblMultiply(uint16_t unusedButMandatoryParameter);
-void oracle_fnDblDivide(uint16_t unusedButMandatoryParameter);
-void oracle_fnDblDivideRemainder(uint16_t unusedButMandatoryParameter);
 void oracle_fnUlp(uint16_t unusedButMandatoryParameter);
 void oracle_fnMant(uint16_t unusedButMandatoryParameter);
 void oracle_fnRoundi(uint16_t unusedButMandatoryParameter);
@@ -186,8 +164,6 @@ void oracle_fnNeighb(uint16_t unusedButMandatoryParameter);
 void oracle_fnIxyz(uint16_t unusedButMandatoryParameter);
 void oracle_fnFactorial(uint16_t unusedButMandatoryParameter);
 void oracle_fnRandomI(uint16_t unusedButMandatoryParameter);
-void oracle_fnDec(uint16_t unusedButMandatoryParameter);
-void oracle_fnInc(uint16_t unusedButMandatoryParameter);
 void oracle_fnRealPart(uint16_t unusedButMandatoryParameter);
 void oracle_fnImaginaryPart(uint16_t unusedButMandatoryParameter);
 void oracle_fnArg(uint16_t unusedButMandatoryParameter);
@@ -195,10 +171,6 @@ void oracle_fnMagnitude(uint16_t unusedButMandatoryParameter);
 void oracle_fnSquare(uint16_t unusedButMandatoryParameter);
 void oracle_fnCube(uint16_t unusedButMandatoryParameter);
 void oracle_fnPercent(uint16_t unusedButMandatoryParameter);
-void oracle_full_fnDivide(uint16_t unusedButMandatoryParameter);
-void oracle_full_fnAdd(uint16_t unusedButMandatoryParameter);
-void oracle_full_fnSubtract(uint16_t unusedButMandatoryParameter);
-void oracle_full_fnMultiply(uint16_t unusedButMandatoryParameter);
 void oracle_fnParallel(uint16_t unusedButMandatoryParameter);
 void oracle_fnCross(uint16_t unusedButMandatoryParameter);
 void oracle_fnDot(uint16_t unusedButMandatoryParameter);
@@ -428,13 +400,6 @@ static void normalizeRegisterMetadataGetterCounts(math_wrappers_snapshot_t *snap
   snapshot->get_register_data_pointer_calls = 0;
 }
 
-static bool_t isDyadicArithmeticCase(const char *name) {
-  return strncmp(name, "fnAdd/", 6) == 0 ||
-         strncmp(name, "fnSubtract/", 11) == 0 ||
-         strncmp(name, "fnMultiply/", 11) == 0 ||
-         strncmp(name, "fnDivide/", 9) == 0;
-}
-
 static bool_t isCrossDotCase(const char *name) {
   return strncmp(name, "fnCross/", 8) == 0 ||
          strncmp(name, "fnDot/", 6) == 0;
@@ -493,41 +458,6 @@ static void normalizeCrossDotSnapshot(math_wrappers_snapshot_t *snapshot) {
   }
 }
 
-static void normalizeDyadicArithmeticSnapshot(math_wrappers_snapshot_t *snapshot) {
-  math_wrappers_snapshot_t normalized;
-
-  memset(&normalized, 0, sizeof(normalized));
-  normalized.save_last_x_calls = snapshot->save_last_x_calls;
-  normalized.save_last_x_result = snapshot->save_last_x_result;
-  normalized.display_calc_error_calls = snapshot->display_calc_error_calls;
-  normalized.display_calc_error_last_code = snapshot->display_calc_error_last_code;
-  normalized.display_calc_error_last_message_reg_line = snapshot->display_calc_error_last_message_reg_line;
-  normalized.more_info_calls = snapshot->more_info_calls;
-  normalized.final_register_data_type = snapshot->final_register_data_type;
-  normalized.final_register_tag = snapshot->final_register_tag;
-  normalized.final_register_real34_value = snapshot->final_register_real34_value;
-  normalized.final_register_real34_bits = snapshot->final_register_real34_bits;
-  normalized.final_register_complex_real_value = snapshot->final_register_complex_real_value;
-  normalized.final_register_complex_real_bits = snapshot->final_register_complex_real_bits;
-  normalized.final_register_complex_imag_value = snapshot->final_register_complex_imag_value;
-  normalized.final_register_complex_imag_bits = snapshot->final_register_complex_imag_bits;
-  normalized.final_register_shortint_raw = snapshot->final_register_shortint_raw;
-  normalized.final_register_longint_value = snapshot->final_register_longint_value;
-  normalized.final_real_matrix_rows = snapshot->final_real_matrix_rows;
-  normalized.final_real_matrix_columns = snapshot->final_real_matrix_columns;
-  memcpy(normalized.final_real_matrix_values, snapshot->final_real_matrix_values, sizeof(normalized.final_real_matrix_values));
-  memcpy(normalized.final_real_matrix_bits, snapshot->final_real_matrix_bits, sizeof(normalized.final_real_matrix_bits));
-  normalized.final_complex_matrix_rows = snapshot->final_complex_matrix_rows;
-  normalized.final_complex_matrix_columns = snapshot->final_complex_matrix_columns;
-  memcpy(normalized.final_complex_matrix_real_values, snapshot->final_complex_matrix_real_values, sizeof(normalized.final_complex_matrix_real_values));
-  memcpy(normalized.final_complex_matrix_real_bits, snapshot->final_complex_matrix_real_bits, sizeof(normalized.final_complex_matrix_real_bits));
-  memcpy(normalized.final_complex_matrix_imag_values, snapshot->final_complex_matrix_imag_values, sizeof(normalized.final_complex_matrix_imag_values));
-  memcpy(normalized.final_complex_matrix_imag_bits, snapshot->final_complex_matrix_imag_bits, sizeof(normalized.final_complex_matrix_imag_bits));
-  normalized.final_overflow_flag = snapshot->final_overflow_flag;
-  normalized.final_carry_flag = snapshot->final_carry_flag;
-  *snapshot = normalized;
-}
-
 static int runCase(const char *name,
                    math_wrapper_fn oracle_fn,
                    math_wrapper_fn zig_fn,
@@ -555,10 +485,7 @@ static int runCase(const char *name,
 
   normalizeRegisterMetadataGetterCounts(&expected);
   normalizeRegisterMetadataGetterCounts(&actual);
-  if(isDyadicArithmeticCase(name)) {
-    normalizeDyadicArithmeticSnapshot(&expected);
-    normalizeDyadicArithmeticSnapshot(&actual);
-  } else if(isCrossDotCase(name)) {
+  if(isCrossDotCase(name)) {
     normalizeCrossDotSnapshot(&expected);
     normalizeCrossDotSnapshot(&actual);
   }
@@ -958,80 +885,6 @@ static void configureModuloShortInteger(void) {
   mathWrappersSetLongIntegerYInput(true, 9);
 }
 
-static void configureDblMultiplyLowWord(void) {
-  configureDefaultSurface();
-  mathWrappersSetRegisterSurface(dtShortInteger, 16);
-  mathWrappersSetShortIntegerInput(7);
-  mathWrappersSetShortIntegerYInput(9);
-  mathWrappersSetFlagOverflow(true);
-}
-
-static void configureDblMultiplyHighWord(void) {
-  configureDefaultSurface();
-  mathWrappersSetRegisterSurface(dtShortInteger, 16);
-  mathWrappersSetShortIntegerInput(((int64_t)1) << 32);
-  mathWrappersSetShortIntegerYInput(((int64_t)1) << 32);
-  mathWrappersSetFlagOverflow(true);
-}
-
-static void configureDblMultiplyTypeError(void) {
-  configureDefaultSurface();
-  mathWrappersSetRegisterSurface(dtReal34, amNone);
-}
-
-static void configureDblDivideQuotient(void) {
-  configureDefaultSurface();
-  mathWrappersSetRegisterSurface(dtShortInteger, 16);
-  mathWrappersSetShortIntegerInput(3);
-  mathWrappersSetShortIntegerYInput(0);
-  mathWrappersSetShortIntegerZInput(10);
-  mathWrappersSetFlagCarry(false);
-  mathWrappersSetFlagOverflow(true);
-}
-
-static void configureDblDivideExact(void) {
-  configureDefaultSurface();
-  mathWrappersSetRegisterSurface(dtShortInteger, 16);
-  mathWrappersSetShortIntegerInput(3);
-  mathWrappersSetShortIntegerYInput(0);
-  mathWrappersSetShortIntegerZInput(12);
-  mathWrappersSetFlagCarry(true);
-  mathWrappersSetFlagOverflow(true);
-}
-
-static void configureDblDivideRemainderMode(void) {
-  configureDefaultSurface();
-  mathWrappersSetRegisterSurface(dtShortInteger, 16);
-  mathWrappersSetShortIntegerInput(3);
-  mathWrappersSetShortIntegerYInput(0);
-  mathWrappersSetShortIntegerZInput(10);
-  mathWrappersSetFlagCarry(true);
-  mathWrappersSetFlagOverflow(true);
-}
-
-static void configureDblDivideByZero(void) {
-  configureDefaultSurface();
-  mathWrappersSetRegisterSurface(dtShortInteger, 16);
-  mathWrappersSetShortIntegerInput(0);
-  mathWrappersSetShortIntegerYInput(0);
-  mathWrappersSetShortIntegerZInput(10);
-}
-
-static void configureDblDivideOverflow(void) {
-  configureDefaultSurface();
-  mathWrappersSetRegisterSurface(dtShortInteger, 16);
-  mathWrappersSetShortIntegerInput(2);
-  mathWrappersSetShortIntegerYInput(1);
-  mathWrappersSetShortIntegerZInput(0);
-  mathWrappersSetFlagCarry(true);
-  mathWrappersSetFlagOverflow(false);
-}
-
-static void configureDblDivideTypeError(void) {
-  configureDefaultSurface();
-  mathWrappersSetRegisterSurface(dtReal34, amNone);
-}
-
 static void configureRmdReal(void) {
   configureModuloReal();
 }
@@ -1178,22 +1031,6 @@ static void configureParallelComplex(void) {
   mathWrappersSetComplexInput(true, 2, 0, 3, 0);
   mathWrappersSetRealYInput(true, 5, 0);
 }
-
-static void seedRealMatrixRegister(calcRegister_t reg,
-                                   int32_t a,
-                                   int32_t b,
-                                   int32_t c,
-                                   int32_t d);
-
-static void seedComplexMatrixRegister(calcRegister_t reg,
-                                      int32_t ar,
-                                      int32_t ai,
-                                      int32_t br,
-                                      int32_t bi,
-                                      int32_t cr,
-                                      int32_t ci,
-                                      int32_t dr,
-                                      int32_t di);
 
 static void seedRealVectorRegister(calcRegister_t reg,
                                    int32_t a,
@@ -1461,90 +1298,6 @@ static void configureCubeRootLongInteger(void) {
   configureDefaultSurface();
   mathWrappersSetRegisterSurface(dtLongInteger, LI_POSITIVE);
   mathWrappersSetLongIntegerInput(true, 27);
-}
-
-static void configureIncDecReal(void) {
-  configureDefaultSurface();
-  mathWrappersSetRegisterSurface(dtReal34, amNone);
-  mathWrappersSetRealInput(true, 10, 0);
-}
-
-static void configureIncDecComplex(void) {
-  configureDefaultSurface();
-  mathWrappersSetRegisterSurface(dtComplex34, amNone);
-  mathWrappersSetComplexInput(true, 3, 0, 4, 0);
-}
-
-static void configureIncDecShortInteger(void) {
-  configureDefaultSurface();
-  mathWrappersSetRegisterSurface(dtShortInteger, 16);
-  mathWrappersSetShortIntegerInput(5);
-}
-
-static void configureIncDecLongInteger(void) {
-  configureDefaultSurface();
-  mathWrappersSetRegisterSurface(dtLongInteger, LI_POSITIVE);
-  mathWrappersSetLongIntegerInput(true, 10);
-}
-
-static void configureIncDecRealY(void) {
-  configureDefaultSurface();
-  mathWrappersSetRealYInput(true, 10, 0);
-}
-
-static void configureIncDecComplexY(void) {
-  configureDefaultSurface();
-  mathWrappersSetComplexYInput(true, 3, 0, 4, 0);
-}
-
-static void configureIncDecShortIntegerY(void) {
-  configureDefaultSurface();
-  mathWrappersSetShortIntegerYInput(5);
-}
-
-static void configureIncDecLongIntegerY(void) {
-  configureDefaultSurface();
-  mathWrappersSetLongIntegerYInput(true, 10);
-}
-
-static void configureIncDecRealZ(void) {
-  configureDefaultSurface();
-  mathWrappersSetRealZInput(true, 10, 0);
-}
-
-static void configureIncDecComplexZ(void) {
-  configureDefaultSurface();
-  mathWrappersSetComplexZInput(true, 3, 0, 4, 0);
-}
-
-static void configureIncDecShortIntegerZ(void) {
-  configureDefaultSurface();
-  mathWrappersSetShortIntegerZInput(5);
-}
-
-static void configureIncDecLongIntegerZ(void) {
-  configureDefaultSurface();
-  mathWrappersSetLongIntegerZInput(true, 10);
-}
-
-static void configureIncDecRealT(void) {
-  configureDefaultSurface();
-  mathWrappersSetRealTInput(true, 10, 0);
-}
-
-static void configureIncDecComplexT(void) {
-  configureDefaultSurface();
-  mathWrappersSetComplexTInput(true, 3, 0, 4, 0);
-}
-
-static void configureIncDecShortIntegerT(void) {
-  configureDefaultSurface();
-  mathWrappersSetShortIntegerTInput(5);
-}
-
-static void configureIncDecLongIntegerT(void) {
-  configureDefaultSurface();
-  mathWrappersSetLongIntegerTInput(true, 10);
 }
 
 static void configureFibReal(void) {
@@ -2418,365 +2171,6 @@ static void configurePercentReal(void) {
   mathWrappersSetComplexInput(false, 0, 0, 0, 0);
 }
 
-static void configureDivideLongIntegerReal(void) {
-  configureDefaultSurface();
-  mathWrappersSetRegisterSurface(dtReal34, amNone);
-  mathWrappersSetRealInput(true, 2, 0);
-  mathWrappersSetLongIntegerYInput(true, 9);
-}
-
-static void configureDivideShortIntegerReal(void) {
-  configureDefaultSurface();
-  mathWrappersSetRegisterSurface(dtReal34, amNone);
-  mathWrappersSetRealInput(true, 2, 0);
-  mathWrappersSetShortIntegerYInput(9);
-}
-
-static void configureDivideLongIntegerRealZeroError(void) {
-  configureDefaultSurface();
-  mathWrappersSetRegisterSurface(dtReal34, amNone);
-  mathWrappersSetRealInput(true, 0, 0);
-  mathWrappersSetLongIntegerYInput(true, 9);
-}
-
-static void configureDivideShortIntegerRealZeroZeroSpcRes(void) {
-  configureDefaultSurface();
-  mathWrappersSetRegisterSurface(dtReal34, amNone);
-  mathWrappersSetRealInput(true, 0, 0);
-  mathWrappersSetShortIntegerYInput(0);
-  setSystemFlag(FLAG_SPCRES);
-}
-
-static void configureDivideShortIntegerRealZeroNegativeSpcRes(void) {
-  configureDefaultSurface();
-  mathWrappersSetRegisterSurface(dtReal34, amNone);
-  mathWrappersSetRealInput(true, 0, 0);
-  mathWrappersSetShortIntegerYInput(-9);
-  setSystemFlag(FLAG_SPCRES);
-}
-
-static void configureDivideRealLongInteger(void) {
-  configureDefaultSurface();
-  mathWrappersSetRegisterSurface(dtLongInteger, LI_POSITIVE);
-  mathWrappersSetLongIntegerInput(true, 2);
-  mathWrappersSetRealYInput(true, 9, 0);
-}
-
-static void configureDivideRealLongIntegerAngle(void) {
-  configureDefaultSurface();
-  mathWrappersSetRegisterSurface(dtLongInteger, LI_POSITIVE);
-  mathWrappersSetLongIntegerInput(true, 2);
-  mathWrappersSetRealYInput(true, 90, 0);
-  setRegisterAngularMode(REGISTER_Y, amDegree);
-  mathWrappersSetCurrentAngularMode(amRadian);
-}
-
-static void configureDivideRealShortInteger(void) {
-  configureDefaultSurface();
-  mathWrappersSetRegisterSurface(dtShortInteger, SIM_SIGNMT);
-  mathWrappersSetShortIntegerInput(2);
-  mathWrappersSetRealYInput(true, 9, 0);
-}
-
-static void configureDivideRealReal(void) {
-  configureDefaultSurface();
-  mathWrappersSetRegisterSurface(dtReal34, amNone);
-  mathWrappersSetRealInput(true, 2, 0);
-  mathWrappersSetRealYInput(true, 9, 0);
-}
-
-static void configureDivideRealRealAngleOverReal(void) {
-  configureDefaultSurface();
-  mathWrappersSetRegisterSurface(dtReal34, amNone);
-  mathWrappersSetRealInput(true, 2, 0);
-  mathWrappersSetRealYInput(true, 90, 0);
-  setRegisterAngularMode(REGISTER_Y, amDegree);
-  mathWrappersSetCurrentAngularMode(amRadian);
-}
-
-static void configureDivideRealRealAngleOverAngle(void) {
-  configureDefaultSurface();
-  mathWrappersSetRegisterSurface(dtReal34, amDegree);
-  mathWrappersSetRealInput(true, 2, 0);
-  mathWrappersSetRealYInput(true, 90, 0);
-  setRegisterAngularMode(REGISTER_Y, amDegree);
-}
-
-static void configureDivideRealRealZeroError(void) {
-  configureDefaultSurface();
-  mathWrappersSetRegisterSurface(dtReal34, amNone);
-  mathWrappersSetRealInput(true, 0, 0);
-  mathWrappersSetRealYInput(true, 9, 0);
-}
-
-static void configureDivideRealRealZeroZeroSpcRes(void) {
-  configureDefaultSurface();
-  mathWrappersSetRegisterSurface(dtReal34, amNone);
-  mathWrappersSetRealInput(true, 0, 0);
-  mathWrappersSetRealYInput(true, 0, 0);
-  setSystemFlag(FLAG_SPCRES);
-}
-
-static void configureDivideRealRealZeroNegativeSpcRes(void) {
-  configureDefaultSurface();
-  mathWrappersSetRegisterSurface(dtReal34, amNone);
-  mathWrappersSetRealInput(true, 0, 0);
-  mathWrappersSetRealYInput(true, -9, 0);
-  setSystemFlag(FLAG_SPCRES);
-}
-
-static void configureScalarLongIntegerReal(void) {
-  configureDefaultSurface();
-  mathWrappersSetRegisterSurface(dtReal34, amNone);
-  mathWrappersSetRealInput(true, 2, 0);
-  mathWrappersSetLongIntegerYInput(true, 9);
-}
-
-static void configureScalarLongIntegerRealAngle(void) {
-  configureDefaultSurface();
-  mathWrappersSetRegisterSurface(dtReal34, amDegree);
-  mathWrappersSetRealInput(true, 2, 0);
-  mathWrappersSetLongIntegerYInput(true, 9);
-  mathWrappersSetCurrentAngularMode(amRadian);
-}
-
-static void configureScalarRealLongIntegerAngle(void) {
-  configureDefaultSurface();
-  mathWrappersSetRegisterSurface(dtLongInteger, LI_POSITIVE);
-  mathWrappersSetLongIntegerInput(true, 2);
-  mathWrappersSetRealYInput(true, 90, 0);
-  setRegisterAngularMode(REGISTER_Y, amDegree);
-  mathWrappersSetCurrentAngularMode(amRadian);
-}
-
-static void configureScalarShortIntegerReal(void) {
-  configureDefaultSurface();
-  mathWrappersSetRegisterSurface(dtReal34, amNone);
-  mathWrappersSetRealInput(true, 2, 0);
-  mathWrappersSetShortIntegerYInput(9);
-}
-
-static void configureScalarRealShortInteger(void) {
-  configureDefaultSurface();
-  mathWrappersSetRegisterSurface(dtShortInteger, SIM_SIGNMT);
-  mathWrappersSetShortIntegerInput(2);
-  mathWrappersSetRealYInput(true, 9, 0);
-}
-
-static void configureScalarRealReal(void) {
-  configureDefaultSurface();
-  mathWrappersSetRegisterSurface(dtReal34, amNone);
-  mathWrappersSetRealInput(true, 2, 0);
-  mathWrappersSetRealYInput(true, 9, 0);
-}
-
-static void configureScalarRealRealAngleOverReal(void) {
-  configureDefaultSurface();
-  mathWrappersSetRegisterSurface(dtReal34, amNone);
-  mathWrappersSetRealInput(true, 2, 0);
-  mathWrappersSetRealYInput(true, 90, 0);
-  setRegisterAngularMode(REGISTER_Y, amDegree);
-  mathWrappersSetCurrentAngularMode(amRadian);
-}
-
-static void configureScalarRealRealAngleOverAngle(void) {
-  configureDefaultSurface();
-  mathWrappersSetRegisterSurface(dtReal34, amDegree);
-  mathWrappersSetRealInput(true, 2, 0);
-  mathWrappersSetRealYInput(true, 90, 0);
-  setRegisterAngularMode(REGISTER_Y, amDegree);
-}
-
-static void configureAddLongIntegerLongInteger(void) {
-  configureDefaultSurface();
-  mathWrappersSetRegisterSurface(dtLongInteger, LI_POSITIVE);
-  mathWrappersSetLongIntegerInput(true, 7);
-  mathWrappersSetLongIntegerYInput(true, 5);
-}
-
-static void configureAddLongIntegerShortInteger(void) {
-  configureDefaultSurface();
-  mathWrappersSetRegisterSurface(dtShortInteger, 16);
-  mathWrappersSetShortIntegerInput(7);
-  mathWrappersSetLongIntegerYInput(true, 5);
-}
-
-static void configureAddShortIntegerLongInteger(void) {
-  configureDefaultSurface();
-  mathWrappersSetRegisterSurface(dtLongInteger, LI_POSITIVE);
-  mathWrappersSetLongIntegerInput(true, 7);
-  mathWrappersSetShortIntegerYInput(5);
-}
-
-static void configureAddShortIntegerShortInteger(void) {
-  configureDefaultSurface();
-  mathWrappersSetRegisterSurface(dtShortInteger, 16);
-  mathWrappersSetShortIntegerInput(7);
-  mathWrappersSetShortIntegerYInput(5);
-}
-
-static void configureAddLongIntegerSaveLastXFailure(void) {
-  configureAddLongIntegerLongInteger();
-  mathWrappersSetSaveLastXResult(false);
-}
-
-static void configureSubtractLongIntegerLongInteger(void) {
-  configureDefaultSurface();
-  mathWrappersSetRegisterSurface(dtLongInteger, LI_POSITIVE);
-  mathWrappersSetLongIntegerInput(true, 4);
-  mathWrappersSetLongIntegerYInput(true, 9);
-}
-
-static void configureSubtractLongIntegerShortInteger(void) {
-  configureDefaultSurface();
-  mathWrappersSetRegisterSurface(dtShortInteger, 16);
-  mathWrappersSetShortIntegerInput(4);
-  mathWrappersSetLongIntegerYInput(true, 9);
-}
-
-static void configureSubtractShortIntegerLongIntegerNegative(void) {
-  configureDefaultSurface();
-  mathWrappersSetRegisterSurface(dtLongInteger, LI_POSITIVE);
-  mathWrappersSetLongIntegerInput(true, 9);
-  mathWrappersSetShortIntegerYInput(4);
-}
-
-static void configureSubtractShortIntegerShortInteger(void) {
-  configureDefaultSurface();
-  mathWrappersSetRegisterSurface(dtShortInteger, 16);
-  mathWrappersSetShortIntegerInput(4);
-  mathWrappersSetShortIntegerYInput(9);
-}
-
-static void configureSubtractLongIntegerSaveLastXFailure(void) {
-  configureSubtractLongIntegerLongInteger();
-  mathWrappersSetSaveLastXResult(false);
-}
-
-static void configureMultiplyLongIntegerLongInteger(void) {
-  configureDefaultSurface();
-  mathWrappersSetRegisterSurface(dtLongInteger, LI_POSITIVE);
-  mathWrappersSetLongIntegerInput(true, 4);
-  mathWrappersSetLongIntegerYInput(true, 9);
-}
-
-static void configureMultiplyLongIntegerShortInteger(void) {
-  configureDefaultSurface();
-  mathWrappersSetRegisterSurface(dtShortInteger, 16);
-  mathWrappersSetShortIntegerInput(4);
-  mathWrappersSetLongIntegerYInput(true, 9);
-}
-
-static void configureMultiplyShortIntegerLongInteger(void) {
-  configureDefaultSurface();
-  mathWrappersSetRegisterSurface(dtLongInteger, LI_POSITIVE);
-  mathWrappersSetLongIntegerInput(true, 4);
-  mathWrappersSetShortIntegerYInput(9);
-}
-
-static void configureMultiplyShortIntegerShortInteger(void) {
-  configureDefaultSurface();
-  mathWrappersSetRegisterSurface(dtShortInteger, 16);
-  mathWrappersSetShortIntegerInput(4);
-  mathWrappersSetShortIntegerYInput(9);
-}
-
-static void configureMultiplyLongIntegerSaveLastXFailure(void) {
-  configureMultiplyLongIntegerLongInteger();
-  mathWrappersSetSaveLastXResult(false);
-}
-
-static void setXAsRealValue(int32_t value) {
-  mathWrappersSetRegisterSurface(dtReal34, amNone);
-  mathWrappersSetRealInput(true, value, 0);
-}
-
-static void setYAsRealValue(int32_t value) {
-  mathWrappersSetRealYInput(true, value, 0);
-}
-
-static void setXAsTimeValue(int32_t value) {
-  mathWrappersSetTimeInput(true, value, 0);
-}
-
-static void setYAsTimeValue(int32_t value) {
-  mathWrappersSetRealYInput(true, value, 0);
-  reallocateRegister(REGISTER_Y, dtTime, 0, amNone);
-}
-
-static void setXAsDateValue(int32_t value) {
-  mathWrappersSetRegisterSurface(dtDate, amNone);
-  mathWrappersSetRealInput(true, value, 0);
-}
-
-static void setYAsDateValue(int32_t value) {
-  mathWrappersSetRealYInput(true, value, 0);
-  reallocateRegister(REGISTER_Y, dtDate, 0, amNone);
-}
-
-static void setXAsComplexValue(int32_t realValue, int32_t imagValue) {
-  mathWrappersSetRegisterSurface(dtComplex34, amNone);
-  mathWrappersSetRealInput(false, 0, 0);
-  mathWrappersSetComplexInput(true, realValue, 0, imagValue, 0);
-}
-
-static void setYAsComplexValue(int32_t realValue, int32_t imagValue) {
-  mathWrappersSetComplexYInput(true, realValue, 0, imagValue, 0);
-}
-
-static void setXAsLongIntegerValue(int32_t value) {
-  mathWrappersSetRegisterSurface(dtLongInteger, value < 0 ? LI_NEGATIVE : LI_POSITIVE);
-  mathWrappersSetLongIntegerInput(true, value);
-}
-
-static void setYAsLongIntegerValue(int32_t value) {
-  mathWrappersSetLongIntegerYInput(true, value);
-}
-
-static void setYAsShortIntegerValue(int32_t value) {
-  mathWrappersSetShortIntegerYInput(value);
-}
-
-static void seedRealMatrixRegister(calcRegister_t reg,
-                                   int32_t a,
-                                   int32_t b,
-                                   int32_t c,
-                                   int32_t d) {
-  real34Matrix_t matrix;
-
-  realMatrixInit(&matrix, 2, 2);
-  setMatrixReal34(&matrix.matrixElements[0], a, 0);
-  setMatrixReal34(&matrix.matrixElements[1], b, 0);
-  setMatrixReal34(&matrix.matrixElements[2], c, 0);
-  setMatrixReal34(&matrix.matrixElements[3], d, 0);
-  convertReal34MatrixToReal34MatrixRegister(&matrix, reg);
-  realMatrixFree(&matrix);
-}
-
-static void seedComplexMatrixRegister(calcRegister_t reg,
-                                      int32_t ar,
-                                      int32_t ai,
-                                      int32_t br,
-                                      int32_t bi,
-                                      int32_t cr,
-                                      int32_t ci,
-                                      int32_t dr,
-                                      int32_t di) {
-  complex34Matrix_t matrix;
-
-  complexMatrixInit(&matrix, 2, 2);
-  setMatrixReal34(&matrix.matrixElements[0].real, ar, 0);
-  setMatrixReal34(&matrix.matrixElements[0].imag, ai, 0);
-  setMatrixReal34(&matrix.matrixElements[1].real, br, 0);
-  setMatrixReal34(&matrix.matrixElements[1].imag, bi, 0);
-  setMatrixReal34(&matrix.matrixElements[2].real, cr, 0);
-  setMatrixReal34(&matrix.matrixElements[2].imag, ci, 0);
-  setMatrixReal34(&matrix.matrixElements[3].real, dr, 0);
-  setMatrixReal34(&matrix.matrixElements[3].imag, di, 0);
-  convertComplex34MatrixToComplex34MatrixRegister(&matrix, reg);
-  complexMatrixFree(&matrix);
-}
-
 static void seedRealVectorRegister(calcRegister_t reg,
                                    int32_t a,
                                    int32_t b,
@@ -2809,234 +2203,6 @@ static void seedComplexVectorRegister(calcRegister_t reg,
   setMatrixReal34(&matrix.matrixElements[2].imag, ci, 0);
   convertComplex34MatrixToComplex34MatrixRegister(&matrix, reg);
   complexMatrixFree(&matrix);
-}
-
-static void configureAddLongIntegerTime(void) {
-  configureDefaultSurface();
-  setXAsTimeValue(40);
-  setYAsLongIntegerValue(6);
-}
-
-static void configureAddRealDate(void) {
-  configureDefaultSurface();
-  setXAsDateValue(120);
-  setYAsRealValue(3);
-}
-
-static void configureAddLongIntegerComplex(void) {
-  configureDefaultSurface();
-  setXAsComplexValue(4, -1);
-  setYAsLongIntegerValue(5);
-}
-
-static void configureAddComplexComplex(void) {
-  configureDefaultSurface();
-  setXAsComplexValue(4, -1);
-  setYAsComplexValue(2, 3);
-}
-
-static void configureAddRealMatrixLongInteger(void) {
-  configureDefaultSurface();
-  setXAsLongIntegerValue(2);
-  seedRealMatrixRegister(REGISTER_Y, 1, 2, 3, 5);
-}
-
-static void configureAddRealMatrixReal(void) {
-  configureDefaultSurface();
-  setXAsRealValue(3);
-  seedRealMatrixRegister(REGISTER_Y, 1, 2, 3, 5);
-}
-
-static void configureAddRealMatrixRealMatrix(void) {
-  configureDefaultSurface();
-  seedRealMatrixRegister(REGISTER_X, 2, 1, 1, 3);
-  seedRealMatrixRegister(REGISTER_Y, 1, 2, 3, 5);
-}
-
-static void configureAddComplexMatrixReal(void) {
-  configureDefaultSurface();
-  setXAsRealValue(2);
-  seedComplexMatrixRegister(REGISTER_Y, 1, 1, 0, 0, 0, 0, 2, -1);
-}
-
-static void configureAddRealComplexMatrix(void) {
-  configureDefaultSurface();
-  seedComplexMatrixRegister(REGISTER_X, 1, 1, 0, 0, 0, 0, 2, -1);
-  setYAsRealValue(3);
-}
-
-static void configureAddComplexMatrixComplexMatrix(void) {
-  configureDefaultSurface();
-  seedComplexMatrixRegister(REGISTER_X, 2, 0, 0, 0, 0, 0, 1, 1);
-  seedComplexMatrixRegister(REGISTER_Y, 1, 1, 0, 0, 0, 0, 2, -1);
-}
-
-static void configureSubtractDateDate(void) {
-  configureDefaultSurface();
-  setXAsDateValue(120);
-  setYAsDateValue(125);
-}
-
-static void configureSubtractTimeLongInteger(void) {
-  configureDefaultSurface();
-  setXAsLongIntegerValue(6);
-  setYAsTimeValue(40);
-}
-
-static void configureSubtractRealComplex(void) {
-  configureDefaultSurface();
-  setXAsComplexValue(4, -1);
-  setYAsRealValue(9);
-}
-
-static void configureSubtractRealMatrixLongInteger(void) {
-  configureDefaultSurface();
-  setXAsLongIntegerValue(2);
-  seedRealMatrixRegister(REGISTER_Y, 5, 4, 3, 1);
-}
-
-static void configureSubtractRealMatrixReal(void) {
-  configureDefaultSurface();
-  setXAsRealValue(2);
-  seedRealMatrixRegister(REGISTER_Y, 5, 4, 3, 1);
-}
-
-static void configureSubtractRealMatrixRealMatrix(void) {
-  configureDefaultSurface();
-  seedRealMatrixRegister(REGISTER_X, 2, 1, 1, 3);
-  seedRealMatrixRegister(REGISTER_Y, 5, 4, 3, 1);
-}
-
-static void configureSubtractComplexMatrixReal(void) {
-  configureDefaultSurface();
-  setXAsRealValue(2);
-  seedComplexMatrixRegister(REGISTER_Y, 3, 1, 0, 0, 0, 0, 2, -1);
-}
-
-static void configureSubtractRealComplexMatrix(void) {
-  configureDefaultSurface();
-  seedComplexMatrixRegister(REGISTER_X, 3, 1, 0, 0, 0, 0, 2, -1);
-  setYAsRealValue(9);
-}
-
-static void configureSubtractComplexMatrixComplexMatrix(void) {
-  configureDefaultSurface();
-  seedComplexMatrixRegister(REGISTER_X, 2, 0, 0, 0, 0, 0, 1, 1);
-  seedComplexMatrixRegister(REGISTER_Y, 3, 1, 0, 0, 0, 0, 2, -1);
-}
-
-static void configureMultiplyLongIntegerTime(void) {
-  configureDefaultSurface();
-  setXAsTimeValue(12);
-  setYAsLongIntegerValue(4);
-}
-
-static void configureMultiplyTimeReal(void) {
-  configureDefaultSurface();
-  setXAsRealValue(3);
-  setYAsTimeValue(12);
-}
-
-static void configureMultiplyShortIntegerComplex(void) {
-  configureDefaultSurface();
-  setXAsComplexValue(2, -1);
-  setYAsShortIntegerValue(3);
-}
-
-static void configureMultiplyComplexComplex(void) {
-  configureDefaultSurface();
-  setXAsComplexValue(2, -1);
-  setYAsComplexValue(1, 4);
-}
-
-static void configureMultiplyRealMatrixReal(void) {
-  configureDefaultSurface();
-  setXAsRealValue(3);
-  seedRealMatrixRegister(REGISTER_Y, 1, 2, 3, 5);
-}
-
-static void configureMultiplyRealMatrixRealMatrix(void) {
-  configureDefaultSurface();
-  seedRealMatrixRegister(REGISTER_X, 2, 1, 1, 3);
-  seedRealMatrixRegister(REGISTER_Y, 1, 2, 3, 5);
-}
-
-static void configureMultiplyComplexMatrixReal(void) {
-  configureDefaultSurface();
-  setXAsRealValue(2);
-  seedComplexMatrixRegister(REGISTER_Y, 1, 1, 0, 0, 0, 0, 2, -1);
-}
-
-static void configureMultiplyRealComplexMatrix(void) {
-  configureDefaultSurface();
-  seedComplexMatrixRegister(REGISTER_X, 1, 1, 0, 0, 0, 0, 2, -1);
-  setYAsRealValue(2);
-}
-
-static void configureMultiplyComplexMatrixComplexMatrix(void) {
-  configureDefaultSurface();
-  seedComplexMatrixRegister(REGISTER_X, 2, 0, 0, 0, 0, 0, 1, 1);
-  seedComplexMatrixRegister(REGISTER_Y, 1, 1, 0, 0, 0, 0, 2, -1);
-}
-
-static void configureDivideTimeTime(void) {
-  configureDefaultSurface();
-  setXAsTimeValue(5);
-  setYAsTimeValue(40);
-}
-
-static void configureDivideRealTime(void) {
-  configureDefaultSurface();
-  setXAsTimeValue(5);
-  setYAsRealValue(20);
-}
-
-static void configureDivideRealComplex(void) {
-  configureDefaultSurface();
-  setXAsComplexValue(2, -1);
-  setYAsRealValue(10);
-}
-
-static void configureDivideComplexComplex(void) {
-  configureDefaultSurface();
-  setXAsComplexValue(2, -1);
-  setYAsComplexValue(4, 3);
-}
-
-static void configureDivideRealMatrixReal(void) {
-  configureDefaultSurface();
-  setXAsRealValue(2);
-  seedRealMatrixRegister(REGISTER_Y, 2, 4, 6, 8);
-}
-
-static void configureDivideRealOverRealMatrix(void) {
-  configureDefaultSurface();
-  seedRealMatrixRegister(REGISTER_X, 2, 1, 1, 3);
-  setYAsRealValue(8);
-}
-
-static void configureDivideRealMatrixRealMatrix(void) {
-  configureDefaultSurface();
-  seedRealMatrixRegister(REGISTER_X, 2, 1, 1, 3);
-  seedRealMatrixRegister(REGISTER_Y, 1, 2, 3, 5);
-}
-
-static void configureDivideComplexMatrixReal(void) {
-  configureDefaultSurface();
-  setXAsRealValue(2);
-  seedComplexMatrixRegister(REGISTER_Y, 2, 2, 0, 0, 0, 0, 4, -2);
-}
-
-static void configureDivideRealOverComplexMatrix(void) {
-  configureDefaultSurface();
-  seedComplexMatrixRegister(REGISTER_X, 2, 0, 0, 0, 0, 0, 1, 1);
-  setYAsRealValue(6);
-}
-
-static void configureDivideComplexMatrixComplexMatrix(void) {
-  configureDefaultSurface();
-  seedComplexMatrixRegister(REGISTER_X, 2, 0, 0, 0, 0, 0, 1, 1);
-  seedComplexMatrixRegister(REGISTER_Y, 1, 1, 0, 0, 0, 0, 2, -1);
 }
 
 int main(void) {
@@ -3203,18 +2369,6 @@ int main(void) {
   failures += runCase("fnRmd/real", oracle_fnRmd, fnRmd, 0, true, configureRmdReal);
   failures += runCase("fnRmd/shortint", oracle_fnRmd, fnRmd, 0, true, configureModuloShortInteger);
   failures += runCase("fnRmd/longint", oracle_fnRmd, fnRmd, 0, true, configureRmdLongInteger);
-  failures += runCase("fnDblMultiply/low_word", oracle_fnDblMultiply, fnDblMultiply, 0, true, configureDblMultiplyLowWord);
-  failures += runCase("fnDblMultiply/high_word", oracle_fnDblMultiply, fnDblMultiply, 0, true, configureDblMultiplyHighWord);
-  failures += runCase("fnDblMultiply/save_last_x_false", oracle_fnDblMultiply, fnDblMultiply, 0, false, configureDblMultiplyLowWord);
-  failures += runCase("fnDblMultiply/type_error", oracle_fnDblMultiply, fnDblMultiply, 0, true, configureDblMultiplyTypeError);
-  failures += runCase("fnDblDivide/quotient", oracle_fnDblDivide, fnDblDivide, 0, true, configureDblDivideQuotient);
-  failures += runCase("fnDblDivide/exact", oracle_fnDblDivide, fnDblDivide, 0, true, configureDblDivideExact);
-  failures += runCase("fnDblDivide/save_last_x_false", oracle_fnDblDivide, fnDblDivide, 0, false, configureDblDivideQuotient);
-  failures += runCase("fnDblDivide/divide_by_zero", oracle_fnDblDivide, fnDblDivide, 0, true, configureDblDivideByZero);
-  failures += runCase("fnDblDivide/overflow", oracle_fnDblDivide, fnDblDivide, 0, true, configureDblDivideOverflow);
-  failures += runCase("fnDblDivide/type_error", oracle_fnDblDivide, fnDblDivide, 0, true, configureDblDivideTypeError);
-  failures += runCase("fnDblDivideRemainder/remainder", oracle_fnDblDivideRemainder, fnDblDivideRemainder, 0, true, configureDblDivideRemainderMode);
-  failures += runCase("fnDblDivideRemainder/save_last_x_false", oracle_fnDblDivideRemainder, fnDblDivideRemainder, 0, false, configureDblDivideRemainderMode);
   failures += runCase("fnUlp/real", oracle_fnUlp, fnUlp, 0, true, configureUlpReal);
   failures += runCase("fnUlp/longint", oracle_fnUlp, fnUlp, 0, true, configureUlpLongInteger);
   failures += runCase("fnUlp/shortint", oracle_fnUlp, fnUlp, 0, true, configureUlpShortInteger);
@@ -3283,38 +2437,6 @@ int main(void) {
   failures += runCase("fnLINPOL/yz_mismatch", oracle_fnLINPOL, fnLINPOL, 0, true, configureLINPOLDifferingYZ);
   failures += runCase("fnLINPOL/y_invalid", oracle_fnLINPOL, fnLINPOL, 0, true, configureLINPOLInvalidY);
   failures += runCase("fnLINPOL/z_invalid", oracle_fnLINPOL, fnLINPOL, 0, true, configureLINPOLInvalidZ);
-  failures += runCase("fnDec/real_x", oracle_fnDec, fnDec, REGISTER_X, true, configureIncDecReal);
-  failures += runCase("fnDec/complex_x", oracle_fnDec, fnDec, REGISTER_X, true, configureIncDecComplex);
-  failures += runCase("fnDec/shortint_x", oracle_fnDec, fnDec, REGISTER_X, true, configureIncDecShortInteger);
-  failures += runCase("fnDec/longint_x", oracle_fnDec, fnDec, REGISTER_X, true, configureIncDecLongInteger);
-  failures += runCase("fnInc/real_x", oracle_fnInc, fnInc, REGISTER_X, true, configureIncDecReal);
-  failures += runCase("fnInc/complex_x", oracle_fnInc, fnInc, REGISTER_X, true, configureIncDecComplex);
-  failures += runCase("fnInc/shortint_x", oracle_fnInc, fnInc, REGISTER_X, true, configureIncDecShortInteger);
-  failures += runCase("fnInc/longint_x", oracle_fnInc, fnInc, REGISTER_X, true, configureIncDecLongInteger);
-  failures += runCase("fnDec/real_y", oracle_fnDec, fnDec, REGISTER_Y, true, configureIncDecRealY);
-  failures += runCase("fnDec/complex_y", oracle_fnDec, fnDec, REGISTER_Y, true, configureIncDecComplexY);
-  failures += runCase("fnDec/shortint_y", oracle_fnDec, fnDec, REGISTER_Y, true, configureIncDecShortIntegerY);
-  failures += runCase("fnDec/longint_y", oracle_fnDec, fnDec, REGISTER_Y, true, configureIncDecLongIntegerY);
-  failures += runCase("fnInc/real_y", oracle_fnInc, fnInc, REGISTER_Y, true, configureIncDecRealY);
-  failures += runCase("fnInc/complex_y", oracle_fnInc, fnInc, REGISTER_Y, true, configureIncDecComplexY);
-  failures += runCase("fnInc/shortint_y", oracle_fnInc, fnInc, REGISTER_Y, true, configureIncDecShortIntegerY);
-  failures += runCase("fnInc/longint_y", oracle_fnInc, fnInc, REGISTER_Y, true, configureIncDecLongIntegerY);
-  failures += runCase("fnDec/real_z", oracle_fnDec, fnDec, REGISTER_Z, true, configureIncDecRealZ);
-  failures += runCase("fnDec/complex_z", oracle_fnDec, fnDec, REGISTER_Z, true, configureIncDecComplexZ);
-  failures += runCase("fnDec/shortint_z", oracle_fnDec, fnDec, REGISTER_Z, true, configureIncDecShortIntegerZ);
-  failures += runCase("fnDec/longint_z", oracle_fnDec, fnDec, REGISTER_Z, true, configureIncDecLongIntegerZ);
-  failures += runCase("fnInc/real_z", oracle_fnInc, fnInc, REGISTER_Z, true, configureIncDecRealZ);
-  failures += runCase("fnInc/complex_z", oracle_fnInc, fnInc, REGISTER_Z, true, configureIncDecComplexZ);
-  failures += runCase("fnInc/shortint_z", oracle_fnInc, fnInc, REGISTER_Z, true, configureIncDecShortIntegerZ);
-  failures += runCase("fnInc/longint_z", oracle_fnInc, fnInc, REGISTER_Z, true, configureIncDecLongIntegerZ);
-  failures += runCase("fnDec/real_t", oracle_fnDec, fnDec, REGISTER_T, true, configureIncDecRealT);
-  failures += runCase("fnDec/complex_t", oracle_fnDec, fnDec, REGISTER_T, true, configureIncDecComplexT);
-  failures += runCase("fnDec/shortint_t", oracle_fnDec, fnDec, REGISTER_T, true, configureIncDecShortIntegerT);
-  failures += runCase("fnDec/longint_t", oracle_fnDec, fnDec, REGISTER_T, true, configureIncDecLongIntegerT);
-  failures += runCase("fnInc/real_t", oracle_fnInc, fnInc, REGISTER_T, true, configureIncDecRealT);
-  failures += runCase("fnInc/complex_t", oracle_fnInc, fnInc, REGISTER_T, true, configureIncDecComplexT);
-  failures += runCase("fnInc/shortint_t", oracle_fnInc, fnInc, REGISTER_T, true, configureIncDecShortIntegerT);
-  failures += runCase("fnInc/longint_t", oracle_fnInc, fnInc, REGISTER_T, true, configureIncDecLongIntegerT);
   failures += runCase("fnSdl/real", oracle_fnSdl, fnSdl, 2, true, configureSdlReal);
   failures += runCase("fnSdl/longint", oracle_fnSdl, fnSdl, 2, true, configureSdlLongInteger);
   failures += runCase("fnSdl/invalid_type", oracle_fnSdl, fnSdl, 2, true, configureSdlInvalidType);
@@ -3386,93 +2508,6 @@ int main(void) {
   failures += runCase("fnCube/shortint", oracle_fnCube, fnCube, 0, true, configureCubeShortInteger);
   failures += runCase("fnCube/longint", oracle_fnCube, fnCube, 0, true, configureCubeLongInteger);
   failures += runCase("fnPercent/real", oracle_fnPercent, fnPercent, 0, true, configurePercentReal);
-  failures += runCase("fnDivide/longint_real", oracle_full_fnDivide, fnDivide, 0, true, configureDivideLongIntegerReal);
-  failures += runCase("fnDivide/shortint_real", oracle_full_fnDivide, fnDivide, 0, true, configureDivideShortIntegerReal);
-  failures += runCase("fnDivide/longint_real_zero_error", oracle_full_fnDivide, fnDivide, 0, true, configureDivideLongIntegerRealZeroError);
-  failures += runCase("fnDivide/shortint_real_zero_zero_spcres", oracle_full_fnDivide, fnDivide, 0, true, configureDivideShortIntegerRealZeroZeroSpcRes);
-  failures += runCase("fnDivide/shortint_real_zero_negative_spcres", oracle_full_fnDivide, fnDivide, 0, true, configureDivideShortIntegerRealZeroNegativeSpcRes);
-  failures += runCase("fnDivide/real_longint", oracle_full_fnDivide, fnDivide, 0, true, configureDivideRealLongInteger);
-  failures += runCase("fnDivide/real_longint_angle", oracle_full_fnDivide, fnDivide, 0, true, configureDivideRealLongIntegerAngle);
-  failures += runCase("fnDivide/real_shortint", oracle_full_fnDivide, fnDivide, 0, true, configureDivideRealShortInteger);
-  failures += runCase("fnDivide/real_real", oracle_full_fnDivide, fnDivide, 0, true, configureDivideRealReal);
-  failures += runCase("fnDivide/real_real_angle_over_real", oracle_full_fnDivide, fnDivide, 0, true, configureDivideRealRealAngleOverReal);
-  failures += runCase("fnDivide/real_real_angle_over_angle", oracle_full_fnDivide, fnDivide, 0, true, configureDivideRealRealAngleOverAngle);
-  failures += runCase("fnDivide/real_real_zero_error", oracle_full_fnDivide, fnDivide, 0, true, configureDivideRealRealZeroError);
-  failures += runCase("fnDivide/real_real_zero_zero_spcres", oracle_full_fnDivide, fnDivide, 0, true, configureDivideRealRealZeroZeroSpcRes);
-  failures += runCase("fnDivide/real_real_zero_negative_spcres", oracle_full_fnDivide, fnDivide, 0, true, configureDivideRealRealZeroNegativeSpcRes);
-  failures += runCase("fnDivide/time_time", oracle_full_fnDivide, fnDivide, 0, true, configureDivideTimeTime);
-  failures += runCase("fnDivide/real_time", oracle_full_fnDivide, fnDivide, 0, true, configureDivideRealTime);
-  failures += runCase("fnDivide/real_complex", oracle_full_fnDivide, fnDivide, 0, true, configureDivideRealComplex);
-  failures += runCase("fnDivide/complex_complex", oracle_full_fnDivide, fnDivide, 0, true, configureDivideComplexComplex);
-  failures += runCase("fnDivide/rema_real", oracle_full_fnDivide, fnDivide, 0, true, configureDivideRealMatrixReal);
-  failures += runCase("fnDivide/real_rema", oracle_full_fnDivide, fnDivide, 0, true, configureDivideRealOverRealMatrix);
-  failures += runCase("fnDivide/rema_rema", oracle_full_fnDivide, fnDivide, 0, true, configureDivideRealMatrixRealMatrix);
-  failures += runCase("fnDivide/cxma_real", oracle_full_fnDivide, fnDivide, 0, true, configureDivideComplexMatrixReal);
-  failures += runCase("fnDivide/real_cxma", oracle_full_fnDivide, fnDivide, 0, true, configureDivideRealOverComplexMatrix);
-  failures += runCase("fnDivide/cxma_cxma", oracle_full_fnDivide, fnDivide, 0, true, configureDivideComplexMatrixComplexMatrix);
-  failures += runCase("fnAdd/longint_real", oracle_full_fnAdd, fnAdd, 0, true, configureScalarLongIntegerReal);
-  failures += runCase("fnAdd/real_longint_angle", oracle_full_fnAdd, fnAdd, 0, true, configureScalarRealLongIntegerAngle);
-  failures += runCase("fnAdd/shortint_real", oracle_full_fnAdd, fnAdd, 0, true, configureScalarShortIntegerReal);
-  failures += runCase("fnAdd/real_shortint", oracle_full_fnAdd, fnAdd, 0, true, configureScalarRealShortInteger);
-  failures += runCase("fnAdd/real_real", oracle_full_fnAdd, fnAdd, 0, true, configureScalarRealReal);
-  failures += runCase("fnAdd/real_real_angle", oracle_full_fnAdd, fnAdd, 0, true, configureScalarRealRealAngleOverReal);
-  failures += runCase("fnAdd/longint_longint", oracle_full_fnAdd, fnAdd, 0, true, configureAddLongIntegerLongInteger);
-  failures += runCase("fnAdd/longint_shortint", oracle_full_fnAdd, fnAdd, 0, true, configureAddLongIntegerShortInteger);
-  failures += runCase("fnAdd/shortint_longint", oracle_full_fnAdd, fnAdd, 0, true, configureAddShortIntegerLongInteger);
-  failures += runCase("fnAdd/shortint_shortint", oracle_full_fnAdd, fnAdd, 0, true, configureAddShortIntegerShortInteger);
-  failures += runCase("fnAdd/save_last_x_false", oracle_full_fnAdd, fnAdd, 0, true, configureAddLongIntegerSaveLastXFailure);
-  failures += runCase("fnAdd/longint_time", oracle_full_fnAdd, fnAdd, 0, true, configureAddLongIntegerTime);
-  failures += runCase("fnAdd/real_date", oracle_full_fnAdd, fnAdd, 0, true, configureAddRealDate);
-  failures += runCase("fnAdd/longint_complex", oracle_full_fnAdd, fnAdd, 0, true, configureAddLongIntegerComplex);
-  failures += runCase("fnAdd/complex_complex", oracle_full_fnAdd, fnAdd, 0, true, configureAddComplexComplex);
-  failures += runCase("fnAdd/rema_longint", oracle_full_fnAdd, fnAdd, 0, true, configureAddRealMatrixLongInteger);
-  failures += runCase("fnAdd/rema_real", oracle_full_fnAdd, fnAdd, 0, true, configureAddRealMatrixReal);
-  failures += runCase("fnAdd/rema_rema", oracle_full_fnAdd, fnAdd, 0, true, configureAddRealMatrixRealMatrix);
-  failures += runCase("fnAdd/cxma_real", oracle_full_fnAdd, fnAdd, 0, true, configureAddComplexMatrixReal);
-  failures += runCase("fnAdd/real_cxma", oracle_full_fnAdd, fnAdd, 0, true, configureAddRealComplexMatrix);
-  failures += runCase("fnAdd/cxma_cxma", oracle_full_fnAdd, fnAdd, 0, true, configureAddComplexMatrixComplexMatrix);
-  failures += runCase("fnSubtract/longint_real", oracle_full_fnSubtract, fnSubtract, 0, true, configureScalarLongIntegerReal);
-  failures += runCase("fnSubtract/real_longint_angle", oracle_full_fnSubtract, fnSubtract, 0, true, configureScalarRealLongIntegerAngle);
-  failures += runCase("fnSubtract/shortint_real", oracle_full_fnSubtract, fnSubtract, 0, true, configureScalarShortIntegerReal);
-  failures += runCase("fnSubtract/real_shortint", oracle_full_fnSubtract, fnSubtract, 0, true, configureScalarRealShortInteger);
-  failures += runCase("fnSubtract/real_real", oracle_full_fnSubtract, fnSubtract, 0, true, configureScalarRealReal);
-  failures += runCase("fnSubtract/real_real_angle", oracle_full_fnSubtract, fnSubtract, 0, true, configureScalarRealRealAngleOverReal);
-  failures += runCase("fnSubtract/longint_longint", oracle_full_fnSubtract, fnSubtract, 0, true, configureSubtractLongIntegerLongInteger);
-  failures += runCase("fnSubtract/longint_shortint", oracle_full_fnSubtract, fnSubtract, 0, true, configureSubtractLongIntegerShortInteger);
-  failures += runCase("fnSubtract/shortint_longint_negative", oracle_full_fnSubtract, fnSubtract, 0, true, configureSubtractShortIntegerLongIntegerNegative);
-  failures += runCase("fnSubtract/shortint_shortint", oracle_full_fnSubtract, fnSubtract, 0, true, configureSubtractShortIntegerShortInteger);
-  failures += runCase("fnSubtract/save_last_x_false", oracle_full_fnSubtract, fnSubtract, 0, true, configureSubtractLongIntegerSaveLastXFailure);
-  failures += runCase("fnSubtract/date_date", oracle_full_fnSubtract, fnSubtract, 0, true, configureSubtractDateDate);
-  failures += runCase("fnSubtract/time_longint", oracle_full_fnSubtract, fnSubtract, 0, true, configureSubtractTimeLongInteger);
-  failures += runCase("fnSubtract/real_complex", oracle_full_fnSubtract, fnSubtract, 0, true, configureSubtractRealComplex);
-  failures += runCase("fnSubtract/rema_longint", oracle_full_fnSubtract, fnSubtract, 0, true, configureSubtractRealMatrixLongInteger);
-  failures += runCase("fnSubtract/rema_real", oracle_full_fnSubtract, fnSubtract, 0, true, configureSubtractRealMatrixReal);
-  failures += runCase("fnSubtract/rema_rema", oracle_full_fnSubtract, fnSubtract, 0, true, configureSubtractRealMatrixRealMatrix);
-  failures += runCase("fnSubtract/cxma_real", oracle_full_fnSubtract, fnSubtract, 0, true, configureSubtractComplexMatrixReal);
-  failures += runCase("fnSubtract/real_cxma", oracle_full_fnSubtract, fnSubtract, 0, true, configureSubtractRealComplexMatrix);
-  failures += runCase("fnSubtract/cxma_cxma", oracle_full_fnSubtract, fnSubtract, 0, true, configureSubtractComplexMatrixComplexMatrix);
-  failures += runCase("fnMultiply/longint_real", oracle_full_fnMultiply, fnMultiply, 0, true, configureScalarLongIntegerReal);
-  failures += runCase("fnMultiply/longint_real_angle", oracle_full_fnMultiply, fnMultiply, 0, true, configureScalarLongIntegerRealAngle);
-  failures += runCase("fnMultiply/real_longint_angle", oracle_full_fnMultiply, fnMultiply, 0, true, configureScalarRealLongIntegerAngle);
-  failures += runCase("fnMultiply/shortint_real", oracle_full_fnMultiply, fnMultiply, 0, true, configureScalarShortIntegerReal);
-  failures += runCase("fnMultiply/real_shortint", oracle_full_fnMultiply, fnMultiply, 0, true, configureScalarRealShortInteger);
-  failures += runCase("fnMultiply/real_real", oracle_full_fnMultiply, fnMultiply, 0, true, configureScalarRealReal);
-  failures += runCase("fnMultiply/real_real_angle_over_real", oracle_full_fnMultiply, fnMultiply, 0, true, configureScalarRealRealAngleOverReal);
-  failures += runCase("fnMultiply/real_real_angle_over_angle", oracle_full_fnMultiply, fnMultiply, 0, true, configureScalarRealRealAngleOverAngle);
-  failures += runCase("fnMultiply/longint_longint", oracle_full_fnMultiply, fnMultiply, 0, true, configureMultiplyLongIntegerLongInteger);
-  failures += runCase("fnMultiply/longint_shortint", oracle_full_fnMultiply, fnMultiply, 0, true, configureMultiplyLongIntegerShortInteger);
-  failures += runCase("fnMultiply/shortint_longint", oracle_full_fnMultiply, fnMultiply, 0, true, configureMultiplyShortIntegerLongInteger);
-  failures += runCase("fnMultiply/shortint_shortint", oracle_full_fnMultiply, fnMultiply, 0, true, configureMultiplyShortIntegerShortInteger);
-  failures += runCase("fnMultiply/save_last_x_false", oracle_full_fnMultiply, fnMultiply, 0, true, configureMultiplyLongIntegerSaveLastXFailure);
-  failures += runCase("fnMultiply/longint_time", oracle_full_fnMultiply, fnMultiply, 0, true, configureMultiplyLongIntegerTime);
-  failures += runCase("fnMultiply/time_real", oracle_full_fnMultiply, fnMultiply, 0, true, configureMultiplyTimeReal);
-  failures += runCase("fnMultiply/shortint_complex", oracle_full_fnMultiply, fnMultiply, 0, true, configureMultiplyShortIntegerComplex);
-  failures += runCase("fnMultiply/complex_complex", oracle_full_fnMultiply, fnMultiply, 0, true, configureMultiplyComplexComplex);
-  failures += runCase("fnMultiply/rema_real", oracle_full_fnMultiply, fnMultiply, 0, true, configureMultiplyRealMatrixReal);
-  failures += runCase("fnMultiply/rema_rema", oracle_full_fnMultiply, fnMultiply, 0, true, configureMultiplyRealMatrixRealMatrix);
-  failures += runCase("fnMultiply/cxma_real", oracle_full_fnMultiply, fnMultiply, 0, true, configureMultiplyComplexMatrixReal);
-  failures += runCase("fnMultiply/real_cxma", oracle_full_fnMultiply, fnMultiply, 0, true, configureMultiplyRealComplexMatrix);
-  failures += runCase("fnMultiply/cxma_cxma", oracle_full_fnMultiply, fnMultiply, 0, true, configureMultiplyComplexMatrixComplexMatrix);
 
   if(failures != 0) {
     fprintf(stderr, "%d math-command-wrapper parity checks failed\n", failures);

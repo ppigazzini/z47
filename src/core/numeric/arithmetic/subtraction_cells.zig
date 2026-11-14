@@ -4,10 +4,8 @@
 // matrix (`subtraction`, consumed by store.c and recall.c) plus every cell
 // function, subDateDate and the subComplex helpers. The cells a subtraction
 // shares with an addition call the bodies the addition owner exports with the
-// subtract operation. Faithful, line-by-line port of the C; upstream symbol
-// names are kept at the export boundary. fnSubtract is upstream's command
-// body, which the fnSubtract front reaches through command_bodies.zig for the
-// error cells it does not handle itself.
+// subtract operation. Faithful, line-by-line port of the C, the fnSubtract
+// command included; upstream symbol names are kept at the export boundary.
 //
 // The `subtraction` table is TO_QSPI in C; it goes to the executable QSPI
 // region on the flash-limited DM42 old_hw firmware via linksection while the
@@ -123,10 +121,7 @@ pub export fn subError() callconv(.c) void {
     runtime.moreInfoOnError("In function fnSubtract:", message, second, null);
 }
 
-/// Upstream's fnSubtract body: saveLastX, matrix dispatch, adjustResult. The
-/// fnSubtract front calls it for the cells it does not handle itself (the error
-/// cells).
-pub noinline fn fnSubtract(unused_but_mandatory_parameter: u16) void {
+pub export fn fnSubtract(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
 
     if (!runtime.saveLastX()) {
