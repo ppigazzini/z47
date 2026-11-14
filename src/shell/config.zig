@@ -2679,10 +2679,10 @@ inline fn printerState_print_on(v: bool_t) void {
 inline fn printerState_print_blank_line(v: u8) void {
     printerState.print_blank_line = v;
 }
-inline fn printerState_print_mode(v: c_int) void {
+inline fn printerState_print_mode(v: abi.CEnum) void {
     printerState.print_mode = v;
 }
-inline fn printerState_printer_model(v: c_int) void {
+inline fn printerState_printer_model(v: abi.CEnum) void {
     printerState.printer_model = v;
 }
 inline fn printerState_delay(v: u32) void {
