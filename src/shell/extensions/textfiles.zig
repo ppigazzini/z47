@@ -159,7 +159,7 @@ pub export fn copyRegisterToClipboardString2(regist: calcRegister_t, clipboardSt
 // ===========================================================================
 // stackregister_csv_out  (USING tmpString !!)
 // ===========================================================================
-extern fn malloc(size: usize) ?*anyopaque;
+extern fn malloc(size: usize) ?[*]u8;
 extern fn free(ptr: ?*anyopaque) void;
 
 pub export fn stackregister_csv_out(reg_b: i16, reg_e: i16, oneLine: bool_t) callconv(.c) void {
@@ -167,7 +167,7 @@ pub export fn stackregister_csv_out(reg_b: i16, reg_e: i16, oneLine: bool_t) cal
     var tmp_e: [100]u8 = undefined;
     // Off the stack: this calls copyRegisterToClipboardString, and the pair
     // overran the DM42 stack grant.
-    const tmpString2: [*c]u8 = @ptrCast(malloc(TMP_STR_LENGTH) orelse return);
+    const tmpString2: [*c]u8 = malloc(TMP_STR_LENGTH) orelse return;
     defer free(tmpString2);
 
     var ix: i16 = reg_b;

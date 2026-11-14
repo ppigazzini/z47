@@ -1,3 +1,4 @@
+const std = @import("std");
 const abi = @import("abi");
 const frontier_calc_mode = @import("../calc_mode.zig");
 const frontier_char_string = @import("../display/text/char_string.zig");
@@ -62,7 +63,7 @@ const NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS = 10;
 // ---------------------------------------------------------------------------
 // Globals
 // ---------------------------------------------------------------------------
-extern fn malloc(size: usize) ?*anyopaque;
+extern fn malloc(size: usize) ?[*]u8;
 extern fn free(ptr: ?*anyopaque) void;
 extern var calcMode: u8;
 extern var aimBuffer: [*c]u8;
@@ -118,7 +119,7 @@ inline fn toBlocks(n: i32) u16 {
 // TO_PCMEMPTR: byte pointer for a block index, or null for C47_NULL.
 inline fn TO_PCMEMPTR(p: u16) [*c]u8 {
     if (p == C47_NULL) return null;
-    return @ptrCast(ram + p);
+    return std.mem.asBytes(&ram[p]);
 }
 
 // ===========================================================================
@@ -237,7 +238,7 @@ pub export fn fnXSWAP(mode: u16) callconv(.c) void {
         // Off the stack: this branch runs inside fnXSWAP, whose frame was 2600
         // bytes of the DM42's stack grant. Freed before the recursive call, so
         // only one of the two frames ever holds the buffer.
-        const line1: [*c]u8 = @ptrCast(malloc(TMP_STR_LENGTH) orelse return);
+        const line1: [*c]u8 = malloc(TMP_STR_LENGTH) orelse return;
         line1[0] = 0;
         _ = strcpy(line1, " ");
         const len: i16 = @intCast(stringByteLength(line1));

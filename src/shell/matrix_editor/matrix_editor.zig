@@ -2220,15 +2220,27 @@ pub fn z47_frontier_matrix_reload_open_matrix_from_register() void {
 
 // callByIndexedMatrix dispatch (matrixEditor.c static). The inc/dec real/complex
 // helpers are file-local.
-fn incIReal(matrix: *real34Matrix_t) callconv(.c) bool {
+// I+, I- and J- read only the header, which a real and a complex matrix share.
+fn incI(header: *const matrixHeader_t) bool {
     setIRegisterAsInt(true, getIRegisterAsInt(true) + 1);
-    _ = wrapIJImpl(matrix.header.matrixRows, matrix.header.matrixColumns);
+    _ = wrapIJImpl(header.matrixRows, header.matrixColumns);
     return false;
 }
-fn decIReal(matrix: *real34Matrix_t) callconv(.c) bool {
+fn decI(header: *const matrixHeader_t) bool {
     setIRegisterAsInt(true, getIRegisterAsInt(true) - 1);
-    _ = wrapIJImpl(matrix.header.matrixRows, matrix.header.matrixColumns);
+    _ = wrapIJImpl(header.matrixRows, header.matrixColumns);
     return false;
+}
+fn decJ(header: *const matrixHeader_t) bool {
+    setJRegisterAsInt(true, getJRegisterAsInt(true) - 1);
+    _ = wrapIJImpl(header.matrixRows, header.matrixColumns);
+    return false;
+}
+fn incIReal(matrix: *real34Matrix_t) callconv(.c) bool {
+    return incI(&matrix.header);
+}
+fn decIReal(matrix: *real34Matrix_t) callconv(.c) bool {
+    return decI(&matrix.header);
 }
 fn incJReal(matrix: *real34Matrix_t) callconv(.c) bool {
     setJRegisterAsInt(true, getJRegisterAsInt(true) + 1);
@@ -2239,9 +2251,7 @@ fn incJReal(matrix: *real34Matrix_t) callconv(.c) bool {
     return false;
 }
 fn decJReal(matrix: *real34Matrix_t) callconv(.c) bool {
-    setJRegisterAsInt(true, getJRegisterAsInt(true) - 1);
-    _ = wrapIJImpl(matrix.header.matrixRows, matrix.header.matrixColumns);
-    return false;
+    return decJ(&matrix.header);
 }
 fn incJComplex(matrix: *complex34Matrix_t) callconv(.c) bool {
     setJRegisterAsInt(true, getJRegisterAsInt(true) + 1);
@@ -2258,13 +2268,13 @@ fn incJComplex(matrix: *complex34Matrix_t) callconv(.c) bool {
 // instead would only work with the editor open, and I+/J+/STOSEQ/RCLSEQ run outside it.
 extern fn callByIndexedMatrix(real_f: ?*const fn (*real34Matrix_t) callconv(.c) bool, complex_f: ?*const fn (*complex34Matrix_t) callconv(.c) bool) void;
 fn incIComplex(matrix: *complex34Matrix_t) callconv(.c) bool {
-    return incIReal(@ptrCast(matrix));
+    return incI(&matrix.header);
 }
 fn decIComplex(matrix: *complex34Matrix_t) callconv(.c) bool {
-    return decIReal(@ptrCast(matrix));
+    return decI(&matrix.header);
 }
 fn decJComplex(matrix: *complex34Matrix_t) callconv(.c) bool {
-    return decJReal(@ptrCast(matrix));
+    return decJ(&matrix.header);
 }
 
 pub fn z47_frontier_matrix_inc_dec_i(mode: u16) void {

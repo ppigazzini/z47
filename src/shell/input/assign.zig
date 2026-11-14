@@ -738,7 +738,7 @@ pub export fn removeUserItemAssignments(userItem: i16, userItemName: [*c]u8) cal
                 if ((userMenus[i].menuItem[j].item == userItem) and (userMenus[i].menuItem[j].argumentName[0] != 0) and
                     (deleteAllItems or (frontier_sort.compareString(&userMenus[i].menuItem[j].argumentName, userItemName, CMP_NAME) == 0)))
                 {
-                    _assignItem(@ptrCast(&userMenus[i].menuItem[j]));
+                    _assignItem(&@as([*]userMenu_t, userMenus)[i].menuItem[j]);
                 }
             }
         }
@@ -995,7 +995,7 @@ pub export fn assignToMyAlpha(position: u16) callconv(.c) void {
 // ===========================================================================
 pub export fn assignToUserMenu(position: u16) callconv(.c) void {
     if (position < 18) {
-        _assignItem(@ptrCast(&userMenus[currentUserMenu].menuItem[position]));
+        _assignItem(&@as([*]userMenu_t, userMenus)[currentUserMenu].menuItem[position]);
     }
     cachedDynamicMenu = 0;
     if (!bulkAssign) { // a whole menu being filled repaints once at the end, from the caller that filled it, instead of once for every position written

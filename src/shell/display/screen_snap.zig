@@ -517,7 +517,8 @@ inline fn screenData() [*c]u32 {
 }
 
 extern var headlessMode: bool; // c47.c global; --dumpMenus and friends run with no GTK widget to draw
-extern fn cairo_image_surface_create_for_data(data: [*c]u8, format: c_int, width: c_int, height: c_int, stride: c_int) ?*anyopaque;
+// The data is the LCD framebuffer's words, which cairo reads as their bytes.
+extern fn cairo_image_surface_create_for_data(data: [*c]u32, format: c_int, width: c_int, height: c_int, stride: c_int) ?*anyopaque;
 extern fn cairo_set_source_surface(cr: ?*anyopaque, surface: ?*anyopaque, x: f64, y: f64) void;
 extern fn cairo_surface_mark_dirty(surface: ?*anyopaque) void;
 extern fn cairo_get_source(cr: ?*anyopaque) ?*anyopaque;
@@ -535,7 +536,7 @@ inline fn stride4() c_int {
 }
 // A cairo surface over the top `height` rows of the LCD framebuffer.
 inline fn screenSurface(height: c_int) ?*anyopaque {
-    return cairo_image_surface_create_for_data(@ptrCast(screenData()), CAIRO_FORMAT_RGB24, SCREEN_WIDTH, height, stride4());
+    return cairo_image_surface_create_for_data(screenData(), CAIRO_FORMAT_RGB24, SCREEN_WIDTH, height, stride4());
 }
 inline fn clipboardForClear() ?*anyopaque {
     const clipboard = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);

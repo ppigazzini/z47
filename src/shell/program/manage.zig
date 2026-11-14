@@ -383,9 +383,9 @@ extern var beginOfCurrentProgram: [*c]u8; // uint8_t *beginOfCurrentProgram;
 extern var endOfCurrentProgram: [*c]u8; // uint8_t *endOfCurrentProgram;
 // labelList/programList point into the C block allocator, which guarantees only
 // 4-byte (BYTES_PER_BLOCK) alignment. On the 64-bit host the structs' [*c]u8
-// fields would otherwise demand 8-byte alignment, tripping Zig's @alignCast
-// safety check (the firmware is 32-bit so pointers are 4 bytes and this is a
-// non-issue there). Declare the element alignment as 4 to match the allocator
+// fields would otherwise demand 8-byte alignment, which a pool block does not
+// give (the firmware is 32-bit so pointers are 4 bytes and this is a non-issue
+// there). Declare the element alignment as 4 to match the allocator
 // and the C semantics (a plain void*->T* cast).
 extern var labelList: [*c]align(4) labelList_t; // labelList_t *labelList;
 extern var programList: [*c]align(4) programList_t; // programList_t *programList;
@@ -552,12 +552,11 @@ inline fn toBytes(n: u32) u32 {
 // TO_C47MEMPTR(p): (p==NULL)?C47_NULL:(uint16_t)((uint32_t *)p - ram)
 inline fn toC47MemPtr(p: [*c]u8) u16 {
     if (p == null) return C47_NULL;
-    const pu: [*c]u32 = @ptrCast(@alignCast(p));
-    return @intCast((@intFromPtr(pu) - @intFromPtr(ram)) / @sizeOf(u32));
+    return @intCast((@intFromPtr(p) - @intFromPtr(ram)) / @sizeOf(u32));
 }
 // (uint8_t *)(ram + RAM_SIZE_IN_BLOCKS)
 inline fn ramEnd() [*c]u8 {
-    return @ptrCast(ram + RAM_SIZE_IN_BLOCKS);
+    return std.mem.asBytes(&ram[RAM_SIZE_IN_BLOCKS]);
 }
 
 // regCtoKS (defines.h static inline)
@@ -1848,7 +1847,7 @@ pub export fn pemCloseNumberInput() callconv(.c) void {
                             val +%= (c - 'a' + 10);
                         }
                     }
-                    const valBytes: [*]const u8 = @ptrCast(&val);
+                    const valBytes: [*]const u8 = std.mem.asBytes(&val);
                     var j: u32 = 0;
                     while (j < @sizeOf(u64)) : (j += 1) {
                         tmpPtr[0] = valBytes[j];
@@ -1875,7 +1874,7 @@ pub export fn pemCloseNumberInput() callconv(.c) void {
                     } else {
                         stringToReal34(numBuffer, &val);
                     }
-                    const valBytes: [*]const u8 = @ptrCast(&val);
+                    const valBytes: [*]const u8 = std.mem.asBytes(&val);
                     var i: u32 = 0;
                     while (i < REAL34_SIZE_IN_BYTES) : (i += 1) {
                         tmpPtr[0] = valBytes[i];
@@ -1921,13 +1920,13 @@ pub export fn pemCloseNumberInput() callconv(.c) void {
 
                     tmpPtr[0] = BINARY_COMPLEX34;
                     tmpPtr += 1;
-                    const reBytes: [*]const u8 = @ptrCast(&re);
+                    const reBytes: [*]const u8 = std.mem.asBytes(&re);
                     var i: u32 = 0;
                     while (i < REAL34_SIZE_IN_BYTES) : (i += 1) {
                         tmpPtr[0] = reBytes[i];
                         tmpPtr += 1;
                     }
-                    const imBytes: [*]const u8 = @ptrCast(&im);
+                    const imBytes: [*]const u8 = std.mem.asBytes(&im);
                     var k: u32 = 0;
                     while (k < REAL34_SIZE_IN_BYTES) : (k += 1) {
                         tmpPtr[0] = imBytes[k];

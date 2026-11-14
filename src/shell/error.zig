@@ -663,7 +663,7 @@ pub export fn displayBugScreen(msg: [*:0]const u8) callconv(.c) void {
         // The width of STD_SPACE_PUNCTUATION in standardFont.
         const SEP_WIDTH: i16 = 4;
         var part: [3]?[*:0]const u8 = undefined;
-        var word: [100]u8 = undefined;
+        var word: [100:0]u8 = undefined;
 
         previousCalcMode = calcMode;
         calcMode = CM_BUG_ON_SCREEN;
@@ -689,7 +689,7 @@ pub export fn displayBugScreen(msg: [*:0]const u8) callconv(.c) void {
         var pos: i16 = 0;
         var x: i16 = 1;
 
-        const wordZ: [*:0]const u8 = @ptrCast(&word);
+        const wordZ: [*:0]const u8 = &word;
         while (nextWord(&part, &p, &pos, &word)) {
             const w: i16 = frontier_char_string.stringWidth(wordZ, &standardFont, true, true);
 

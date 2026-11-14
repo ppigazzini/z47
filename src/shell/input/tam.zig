@@ -404,7 +404,7 @@ const STD_CURSOR = "\xa4\x27";
 extern fn strcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn strlen(s: [*c]const u8) usize;
 extern fn strchr(s: [*c]const u8, c: c_int) [*c]u8;
-extern fn sprintf(buf: [*c]u8, fmt: [*:0]const u8, ...) c_int;
+extern fn sprintf(buf: [*c]u8, fmt: [*c]const u8, ...) c_int;
 extern fn printf(fmt: [*:0]const u8, ...) c_int;
 
 extern fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void;
@@ -1638,7 +1638,7 @@ pub export fn tamEnterMode(funcIn: i16) callconv(.c) void {
             screenUpdatingMode &= ~@as(u8, SCRUPD_MANUAL_MENU);
         },
         else => {
-            _ = sprintf(errorMessage, @ptrCast(&commonBugScreenMessages[bugMsgValueFor]), "tamEnterMode", @as(c_int, @intCast(tam.mode)), "tam.mode");
+            _ = sprintf(errorMessage, &commonBugScreenMessages[bugMsgValueFor], "tamEnterMode", @as(c_int, @intCast(tam.mode)), "tam.mode");
             frontier_error.displayBugScreen(errorMessage);
             return;
         },

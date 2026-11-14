@@ -91,11 +91,11 @@ extern fn strlen(s: [*c]const u8) usize;
 extern fn strcat(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn strcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn strstr(haystack: [*c]const u8, needle: [*c]const u8) [*c]u8;
-extern fn sprintf(buf: [*c]u8, fmt: [*:0]const u8, ...) c_int;
+extern fn sprintf(buf: [*c]u8, fmt: [*c]const u8, ...) c_int;
 
 // host-only libc (referenced under !dmcp_build by strReplace and debug_utf8_string).
 extern fn printf(fmt: [*:0]const u8, ...) c_int;
-extern fn malloc(n: usize) ?*anyopaque;
+extern fn malloc(n: usize) ?[*]u8;
 extern fn free(p: ?*anyopaque) void;
 extern fn exit(code: c_int) noreturn;
 
@@ -324,7 +324,7 @@ fn calculateStringWidth(str: [*c]const u8, font: *const font_t, withLeadingEmpty
             if (glyph == null) {
                 // Format from the shared table, so an edit to that message reaches
                 // this call site the way it reaches the others.
-                _ = sprintf(errorMessage, @ptrCast(&commonBugScreenMessages[bugMsgValueReturnedByFindGlyph]), "_calculateStringWidth", @as(c_int, glyphId));
+                _ = sprintf(errorMessage, &commonBugScreenMessages[bugMsgValueReturnedByFindGlyph], "_calculateStringWidth", @as(c_int, glyphId));
                 frontier_error.displayBugScreen(errorMessage);
                 width.* = 0;
                 return;
@@ -1062,7 +1062,7 @@ fn strReplaceImpl(haystack: [*c]u8, needle: [*c]const u8, newNeedle: [*c]const u
     while (strstr(haystack, needle) != null) {
         const needleLg: c_int = @intCast(strlen(needle));
         const needleLocation = strstr(haystack, needle);
-        const str: [*c]u8 = @ptrCast(malloc(strlen(needleLocation + @as(usize, @intCast(needleLg))) + 1));
+        const str: [*c]u8 = malloc(strlen(needleLocation + @as(usize, @intCast(needleLg))) + 1);
         if (str == null) {
             _ = printf("In function strReplace: error allocating memory for str!\n");
             exit(1);

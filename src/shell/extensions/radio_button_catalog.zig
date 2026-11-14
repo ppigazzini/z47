@@ -298,7 +298,7 @@ extern var timerCraAndDeciseconds: u8;
 extern var Norm_Key_00: normKey_t;
 extern var printerState: printerState_t;
 extern var alphaRegister: u16;
-extern var statisticalSumsPointer: ?*anyopaque;
+extern var statisticalSumsPointer: ?[*]abi.Real;
 // `indexOfItems` is a C ARRAY (const item_t indexOfItems[]); bind its address
 // with @extern, not a pointer-typed extern (which loads the data as an address).
 const indexOfItems = @extern([*c]const item_t, .{ .name = "indexOfItems" });
@@ -902,7 +902,7 @@ pub export fn fnItemShowValue(item: i16) callconv(.c) i16 {
         ITM_HASH_JM => if (lastIntegerBase != 0) {
             result = @intCast(lastIntegerBase);
         },
-        ITM_TIMER_SIGMA_L, ITM_TIMER_SIGMA_T => result = if (statisticalSumsPointer == null) 0 else @intCast(frontier_real_type.realToUint32C47(@ptrCast(@alignCast(statisticalSumsPointer.?)), null)),
+        ITM_TIMER_SIGMA_L, ITM_TIMER_SIGMA_T => result = if (statisticalSumsPointer == null) 0 else @intCast(frontier_real_type.realToUint32C47(&statisticalSumsPointer.?[0], null)),
         ITM_TIMER_R_L, ITM_TIMER_R_T => result = timerCraAndDeciseconds & 0x7F,
         ITM_VOL, ITM_VOLPLUS, ITM_VOLMINUS => result = @intCast(getBeepVolume()),
         ITM_PRINTERDLAY => result = @intCast(printerState.delay),
