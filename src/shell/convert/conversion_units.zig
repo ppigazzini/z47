@@ -903,7 +903,7 @@ pub export fn runConversionFromSI(itemNr: i16) callconv(.c) void {
     frontier_items.runFunction(entry.partner); // inverse of the user's choice
 }
 
-// ─── conversion-name slice: softmenu-name helpers (conversionUnits.c:778+) ───
+// ─── conversion-name slice: softmenu-name helpers (conversionUnits.c) ───
 // item_t / indexOfItems: exact layout copied from items.zig /
 // softmenus.zig (must match src/c47 typeDefinitions.h item_t).
 const item_t = abi.Item;

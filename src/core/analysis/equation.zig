@@ -12,8 +12,10 @@ const consts = abi.constants;
 // deleteEquation, showEquation, parseEquation, isDyadicFunction. The static
 // helpers stay private.
 //
-// EXTRA_INFO_ON_CALC_ERROR sprintf hints are stripped under TESTSUITE/DMCP and
-// omitted. The host-only display in showEquation is reproduced faithfully (it is
+// The EXTRA_INFO_ON_CALC_ERROR hints are called unconditionally, with the C's
+// text and arguments; moreInfoOnError itself is the no-op on the builds where
+// the macro is 0 (firmware and testSuite). The host-only display in
+// showEquation is reproduced faithfully (it is
 // a public command; the glyph layout has no effect on register results but the
 // cursorShown/rightEllipsis out-params and tmpString contents are preserved).
 

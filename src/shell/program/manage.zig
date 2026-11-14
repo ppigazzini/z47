@@ -769,7 +769,7 @@ pub export fn scanLabelsAndPrograms() callconv(.c) void {
 
     // The following 2 lines added to address the FFFFFFFF issue in old state files
     firstFreeProgramByte = step;
-    // @truncate, not @intCast, and wrapping subtraction. Upstream manage.c:210 is
+    // @truncate, not @intCast, and wrapping subtraction. Upstream manage.c is
     //   freeProgramBytes = (((uint8_t *)(ram + RAM_SIZE_IN_BLOCKS)) - firstFreeProgramByte) - 2;
     // which assigns a ptrdiff_t to `uint16_t freeProgramBytes`, so C narrows
     // implicitly and that is defined. The scan above walks `step` from a
@@ -830,7 +830,7 @@ fn _removeLabelsAssignments() void {
 // fnClPAll is NOT defined here; the canonical fnClPAll is exported by
 // program_clear.zig (a faithful copy of manage.c's fnClPAll body).
 // The internal callers below must use that CANONICAL fnClPAll, because the
-// confirmation system (config.c:1013) compares the registered confirmedFunction
+// confirmation system in config.c compares the registered confirmedFunction
 // against indexOfItems[ITM_DELPALL].func, which is the canonical fnClPAll. So we
 // call it through the `program_clear` import, not a local copy.
 

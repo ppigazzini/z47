@@ -2,10 +2,11 @@
 //
 // Zig owner for src/c47/browsers/asnBrowser.c: fnAsnViewer (the assign-browser
 // application entry) and its static renderer fnAsnDisplay. This is a faithful,
-// line-by-line port of the C. The OPTION_ASNBROWSER guard (asnBrowser.c:13/:141)
-// compiles the renderer (and the KEY_X_5 table) out of the old-HW single-file
-// DM42 build; it is defined for every package z47 ships (defines.h:260), so the
-// code is always present here. The kbd_std model-selection macro is reproduced
+// line-by-line port of the C. asnBrowser.c's two OPTION_ASNBROWSER guards
+// compile the renderer, the KEY_X_5 table and fnAsnViewer's body out of the
+// old-HW single-file DM42 build. defines.h leaves the option defined for every
+// target z47 builds (the host, DMCP5 and the DMCP packages), so the code is
+// always present here. The kbd_std model-selection macro is reproduced
 // inline, with the same three arms the preprocessor picks between. lcd_fill_rect
 // and bitblt24 are DMCP ROM function-table entries on firmware and linkable
 // symbols on host, wrapped like the sibling owners.
