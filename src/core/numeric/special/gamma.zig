@@ -80,13 +80,16 @@ inline fn realCopy(source: *const real_t, destination: *real_t) void {
 const displayCalcErrorMessage = runtime.displayCalcErrorMessage;
 const moreInfoOnError = runtime.moreInfoOnError;
 
+const STD_PLUS_MINUS = "\x80\xb1"; // fonts.h
+const STD_INFINITY = "\xa2\x1e"; // fonts.h
+
 fn checkGammaDomain(xReal: *const real_t, out: *real_t) i32 {
     if (realIsSpecial(xReal)) {
         if (realIsNaN(xReal)) {
             realSetNaN(out);
         } else if (!runtime.getSystemFlag(FLAG_SPCRES)) {
             displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
-            moreInfoOnError("In function checkGammaDomain:", "cannot use +-Infinity as X input of gamma when flag SPCRES is not set", null, null);
+            moreInfoOnError("In function checkGammaDomain:", "cannot use " ++ STD_PLUS_MINUS ++ STD_INFINITY ++ " as X input of gamma when flag SPCRES is not set", null, null);
         } else {
             realCopy(if (realIsPositive(xReal)) const_plusInfinity() else const_NaN(), out);
         }

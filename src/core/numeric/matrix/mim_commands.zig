@@ -49,10 +49,9 @@ extern fn getJRegisterAsInt(asArrayPointer: bool) i16;
 inline fn realCopy(source: *const real_t, destination: *real_t) void {
     destination.* = source.*;
 }
-// C realType.h:140: #define realIsPositive(x) (((bits) & 0x80) == 0x00) — sign bit
-// clear, INCLUDING +0 (do NOT exclude zero; that diverged from C and made MIM
-// swap/get/put range guards reject zero-valued indices/sizes at edges). The shared
-// predicate keeps that convention.
+// realType.h's realIsPositive is `(bits & DECNEG) == 0`: sign bit clear,
+// INCLUDING +0, so the MIM swap/get/put range guards accept zero-valued indices
+// and sizes. The shared predicate keeps that convention.
 const realIsPositive = math_real_predicates.realIsPositive;
 
 inline fn rmEl(m: *const real34Matrix_t, i: usize) *real34_t {
@@ -461,6 +460,12 @@ fn rowColSumRamFull(tag: [*:0]const u8) void {
 fn _row_columnNorm(pParam: u16) void {
     if (pParam != pNorm_inf_RNORM and pParam != pNorm_1_CNORM and pParam != pNorm_0_NNZ) {
         runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
+        if (runtime.extra_info_on_calc_error) {
+            var buf: [32]u8 = undefined;
+            const m = runtime.bufPrintZ(&buf, "pParam {d}", .{pParam}) catch "";
+            // The empty fourth argument selects moreInfoOnError's four-line branch.
+            runtime.moreInfoOnError("In function _row_columnNorm:", m, "incorrect operating option.", "");
+        }
         return;
     }
 

@@ -54,9 +54,9 @@ inline fn real34Copy(source: *const real34_t, destination: *real34_t) void {
 
 const complex34Copy = abi.complex34Copy;
 
-fn reportRamFullInfo(comptime function_name: [*:0]const u8) void {
+fn reportRamFullInfo(comptime function_name: [*:0]const u8, comptime info: [*:0]const u8) void {
     if (runtime.extra_info_on_calc_error) {
-        runtime.moreInfoOnError(function_name, "Ram full", null, null);
+        runtime.moreInfoOnError(function_name, info, null, null);
     }
 }
 
@@ -74,7 +74,7 @@ pub export fn realMatrixInit(matrix: *real34Matrix_t, rows: u16, cols: u16) call
         matrix.header.matrixColumns = 0;
         matrix.header.matrixRows = 0;
         matrix.matrixElements = null;
-        reportRamFullInfo("In function realMatrixInit:");
+        reportRamFullInfo("In function realMatrixInit:", "Ram full");
         return false;
     }
     matrix.matrixElements = abi.allocC47BlocksAs(real34_t, needed_size);
@@ -85,7 +85,7 @@ pub export fn realMatrixInit(matrix: *real34Matrix_t, rows: u16, cols: u16) call
     if (matrix.matrixElements == null) { // alloc can fail even when isMemoryBlockAvailable said yes
         matrix.header.matrixColumns = 0;
         matrix.header.matrixRows = 0;
-        reportRamFullInfo("In function realMatrixInit:");
+        reportRamFullInfo("In function realMatrixInit:", "Ram full");
         return false;
     }
 
@@ -125,7 +125,7 @@ pub export fn complexMatrixInit(matrix: *complex34Matrix_t, rows: u16, cols: u16
         matrix.header.matrixColumns = 0;
         matrix.header.matrixRows = 0;
         matrix.matrixElements = null;
-        reportRamFullInfo("In function complexMatrixInit:");
+        reportRamFullInfo("In function complexMatrixInit:", "Ram full 01");
         return false;
     }
     matrix.matrixElements = abi.allocC47BlocksAs(complex34_t, needed_size);
@@ -135,7 +135,7 @@ pub export fn complexMatrixInit(matrix: *complex34Matrix_t, rows: u16, cols: u16
     if (matrix.matrixElements == null) { // alloc can fail even when isMemoryBlockAvailable said yes
         matrix.header.matrixColumns = 0;
         matrix.header.matrixRows = 0;
-        reportRamFullInfo("In function complexMatrixInit:");
+        reportRamFullInfo("In function complexMatrixInit:", "Ram full 02");
         return false;
     }
 
