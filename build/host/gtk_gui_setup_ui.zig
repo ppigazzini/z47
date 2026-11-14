@@ -373,7 +373,9 @@ extern fn gtk_css_provider_new() ?*anyopaque;
 extern fn gdk_display_get_default() ?*anyopaque;
 extern fn gdk_display_get_default_screen(display: ?*anyopaque) ?*anyopaque;
 extern fn gtk_style_context_add_provider_for_screen(screen: ?*anyopaque, provider: ?*anyopaque, priority: c_uint) void;
-extern fn gtk_css_provider_load_from_data(provider: ?*anyopaque, data: [*c]const u8, length: c_long, err: *?*anyopaque) c_int;
+// GLib's gssize is the signed pointer-sized integer on every target, where a
+// C long is 32 bits on Windows.
+extern fn gtk_css_provider_load_from_data(provider: ?*anyopaque, data: [*c]const u8, length: isize, err: *?*anyopaque) c_int;
 extern fn g_object_unref(object: ?*anyopaque) void;
 extern fn free(ptr: ?*anyopaque) void;
 // C's malloc, read as the bytes lcd_buffer points into.
