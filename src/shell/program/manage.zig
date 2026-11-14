@@ -2412,7 +2412,7 @@ pub export fn insertStepInProgram(newFunc: i16) callconv(.c) void {
 // ===========================================================================
 // insertUserItemInProgram (public)
 // ===========================================================================
-pub export fn insertUserItemInProgram(func: i16, funcParam: [*c]u8) callconv(.c) void {
+pub export fn insertUserItemInProgram(func: i16, funcParam: [*c]const u8) callconv(.c) void {
     var opBytes: usize = 0;
     const nameLength: u16 = @intCast(stringByteLength(funcParam));
 

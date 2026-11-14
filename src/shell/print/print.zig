@@ -1360,8 +1360,8 @@ fn printRegImpl(regist: u16, label: [*c]const u8, eq: bool_t, where: print_area_
                     abi.fmtBufZ(tmpString[0..2560], "{d}:{d}=", .{ @as(u32, i + 1), @as(u32, jj + 1) });
                     printLineImpl(tmpString, 0);
                     const elem: [*c]const complex34_t = matrix.matrixElements.? + (i * cols + jj);
-                    const real34 = @constCast(varReal34(elem));
-                    const imag34 = @constCast(varImag34(elem));
+                    const real34 = varReal34(elem);
+                    const imag34 = varImag34(elem);
                     _complex34ToPrintString(real34, imag34, tagAngle, tagPolar, tmpString);
                     printJustifiedImpl(tmpString);
                 }

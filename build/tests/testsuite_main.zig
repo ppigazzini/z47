@@ -42,7 +42,7 @@ extern fn reportBugError(errorCode: u8, errMessageRegisterLine: i16) callconv(.c
 extern fn checkHalfSec() callconv(.c) bool_t;
 extern fn progressHalfSecUpdate_Integer(
     mode: u8,
-    txt: [*c]u8,
+    txt: [*c]const u8,
     loop: i32,
     clearZ: bool_t,
     clearT: bool_t,

@@ -107,10 +107,10 @@ pub fn checkHalfSec() bool {
 // keeps the shell
 // owner's C-ABI shape (char* label, byte booleans); the forwarder exposes an
 // idiomatic sentinel-string / bool signature to the callers.
-const progress_half_sec_hook = Slot(*const fn (u8, [*c]u8, i32, bool_t, bool_t, bool_t) callconv(.c) bool_t, "z47HostProgressHalfSecHook");
+const progress_half_sec_hook = Slot(*const fn (u8, [*c]const u8, i32, bool_t, bool_t, bool_t) callconv(.c) bool_t, "z47HostProgressHalfSecHook");
 
 /// Install the shell's progress-line refresh implementation.
-pub fn installProgressHalfSec(hook: *const fn (u8, [*c]u8, i32, bool_t, bool_t, bool_t) callconv(.c) bool_t) void {
+pub fn installProgressHalfSec(hook: *const fn (u8, [*c]const u8, i32, bool_t, bool_t, bool_t) callconv(.c) bool_t) void {
     if (binds_shell_at_link) return; // bound at link time; there is no slot to fill
     progress_half_sec_hook.install(hook);
 }
@@ -119,11 +119,11 @@ pub fn installProgressHalfSec(hook: *const fn (u8, [*c]u8, i32, bool_t, bool_t, 
 /// false (no interrupt) when the core runs headless (no hook installed).
 pub fn progressHalfSecUpdate_Integer(mode: u8, txt: [*:0]const u8, loop: i32, clearZ: bool, clearT: bool, disp: bool) bool {
     if (binds_shell_at_link) {
-        const shell = shellFn(fn (u8, [*c]u8, i32, bool_t, bool_t, bool_t) callconv(.c) bool_t, "progressHalfSecUpdate_Integer");
-        return shell(mode, @constCast(txt), loop, @intFromBool(clearZ), @intFromBool(clearT), @intFromBool(disp)) != 0;
+        const shell = shellFn(fn (u8, [*c]const u8, i32, bool_t, bool_t, bool_t) callconv(.c) bool_t, "progressHalfSecUpdate_Integer");
+        return shell(mode, txt, loop, @intFromBool(clearZ), @intFromBool(clearT), @intFromBool(disp)) != 0;
     }
     const hook = progress_half_sec_hook.get() orelse return false;
-    return hook(mode, @constCast(txt), loop, @intFromBool(clearZ), @intFromBool(clearT), @intFromBool(disp)) != 0;
+    return hook(mode, txt, loop, @intFromBool(clearZ), @intFromBool(clearT), @intFromBool(disp)) != 0;
 }
 
 // requestRefresh (refreshScreen): the core signals the shell that the display is

@@ -596,9 +596,9 @@ pub export fn indirectionType(func: u16) callconv(.c) u16 {
     }
 }
 
-const empty_str: [*c]u8 = @constCast("");
+const empty_str: [*:0]const u8 = "";
 
-pub export fn lastFuncCatalogName() callconv(.c) [*c]u8 {
+pub export fn lastFuncCatalogName() callconv(.c) [*c]const u8 {
     if (lastFunc == ITM_VERS or lastFunc == NOPARAM) {
         return empty_str;
     }
@@ -615,7 +615,7 @@ pub export fn lastFuncCatalogName() callconv(.c) [*c]u8 {
     return lastTemp;
 }
 
-pub export fn lastFuncSoftmenuName() callconv(.c) [*c]u8 {
+pub export fn lastFuncSoftmenuName() callconv(.c) [*c]const u8 {
     if (lastFunc == ITM_VERS or lastFunc == NOPARAM) {
         return empty_str;
     }
@@ -640,10 +640,10 @@ pub export fn lastFuncNo() callconv(.c) i16 {
     return lastFunc;
 }
 
-pub export fn getItemCatalogName(itemNr: i16) callconv(.c) [*c]u8 {
-    var itemName: [*c]u8 = undefined;
+pub export fn getItemCatalogName(itemNr: i16) callconv(.c) [*c]const u8 {
+    var itemName: [*c]const u8 = undefined;
     if (cabs16(itemNr) <= LAST_ITEM) { // Predefined item
-        itemName = @constCast(&indexOfItems[@intCast(cabs16(itemNr))].itemCatalogName);
+        itemName = &indexOfItems[@intCast(cabs16(itemNr))].itemCatalogName;
     } else if (itemNr >= ASSIGN_LABELS) { // User program
         var lblPtr: [*c]u8 = labelList[@intCast(itemNr - ASSIGN_LABELS)].labelPointer;
         const count: u32 = lblPtr[0];
@@ -658,7 +658,7 @@ pub export fn getItemCatalogName(itemNr: i16) callconv(.c) [*c]u8 {
         tbPtr[0] = 0;
         itemName = tmpStringLabelOrVariableName;
     } else if (itemNr >= ASSIGN_RESERVED_VARIABLES) { // Reserved variable
-        itemName = @constCast(&allReservedVariables[@intCast(itemNr - ASSIGN_RESERVED_VARIABLES)].reservedVariableName[1]);
+        itemName = &allReservedVariables[@intCast(itemNr - ASSIGN_RESERVED_VARIABLES)].reservedVariableName[1];
     } else if (itemNr >= ASSIGN_NAMED_VARIABLES) { // User variable
         itemName = &allNamedVariables[@intCast(itemNr - ASSIGN_NAMED_VARIABLES)].variableName[1];
     } else if (itemNr <= ASSIGN_USER_MENU) { // User menu

@@ -705,7 +705,7 @@ pub export fn fnAssign(mode: u16) callconv(.c) void {
 // ===========================================================================
 // removeUserItemAssignments
 // ===========================================================================
-pub export fn removeUserItemAssignments(userItem: i16, userItemName: [*c]u8) callconv(.c) void {
+pub export fn removeUserItemAssignments(userItem: i16, userItemName: [*c]const u8) callconv(.c) void {
     var deleteAllItems: bool_t = false;
 
     itemToBeAssigned = ITM_NULL;
@@ -823,7 +823,7 @@ pub export fn fnDeleteUserMenus(confirmation: u16) callconv(.c) void {
     if ((confirmation == NOT_CONFIRMED) and (programRunStop != PGM_RUNNING)) {
         frontier_config.setConfirmationMode(&fnDeleteUserMenus);
     } else {
-        removeUserItemAssignments(-MNU_DYNAMIC, @constCast(""));
+        removeUserItemAssignments(-MNU_DYNAMIC, "");
         frontier_softmenus.removeUserMenuFromStack(@intCast(numberOfUserMenus));
         freeC47Blocks(userMenus, TO_BLOCKS(SIZEOF_USERMENU) * numberOfUserMenus);
         userMenus = null;
@@ -1336,9 +1336,9 @@ pub export fn initUserKeyArgument() callconv(.c) void {
 // unassigned key, which is what an empty label always meant.
 // ===========================================================================
 const emptyUserKeyLabel: [1]u8 = .{0};
-pub export fn getUserKeyLabelString(n: i16) callconv(.c) [*c]u8 {
+pub export fn getUserKeyLabelString(n: i16) callconv(.c) [*c]const u8 {
     if (userKeyLabel == null) {
-        return @constCast(&emptyUserKeyLabel);
+        return &emptyUserKeyLabel;
     }
     return frontier_softmenus.getNthString(userKeyLabel, n);
 }

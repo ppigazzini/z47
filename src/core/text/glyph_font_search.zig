@@ -74,7 +74,7 @@ fn makeFont(buf: *align(@alignOf(Font)) [FONT_BUF]u8, id: i8, codes: []const u16
     const font: *Font = std.mem.bytesAsValue(Font, buf[0..@sizeOf(Font)]);
     font.id = id;
     font.numberOfGlyphs = @intCast(codes.len);
-    const glyphs = @constCast(font.glyphsPtr());
+    const glyphs: [*]Glyph = &font.glyphs;
     for (codes, 0..) |cc, i| glyphs[i].charCode = cc;
     return font;
 }

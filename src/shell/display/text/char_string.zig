@@ -375,11 +375,13 @@ pub export fn stringWidth(str: [*c]const u8, font: *const font_t, withLeadingEmp
 // ---------------------------------------------------------------------------
 // stringAfterPixels
 // ---------------------------------------------------------------------------
-pub export fn stringAfterPixels(str: [*c]const u8, font: *const font_t, widthIn: i16, withLeadingEmptyRows: bool_t, withEndingEmptyRows: bool_t) callconv(.c) [*c]u8 {
+pub export fn stringAfterPixels(str: [*c]u8, font: *const font_t, widthIn: i16, withLeadingEmptyRows: bool_t, withEndingEmptyRows: bool_t) callconv(.c) [*c]u8 {
     var resultStr: [*c]const u8 = str;
     var width = widthIn;
     calculateStringWidth(str, font, withLeadingEmptyRows, withEndingEmptyRows, &width, &resultStr);
-    return @constCast(resultStr);
+    // The scan reports where in `str` it stopped; the caller cuts its own
+    // buffer there, so the result is that offset into the writable `str`.
+    return str + @as(usize, @intCast(resultStr - str));
 }
 
 // ---------------------------------------------------------------------------
