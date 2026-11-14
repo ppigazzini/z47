@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
-// Zig port of src/c47/mathematics/division.c (dispatch matrix and cells).
+// Zig port of src/c47/mathematics/division.c (dispatch matrix, cells and
+// fnDivide).
 
 const std = @import("std");
 const abi = @import("abi");
@@ -100,7 +101,7 @@ pub export fn divError() linksection(runtime.code_section) callconv(.c) void {
     runtime.moreInfoOnError("In function fnDivide:", message1, message2, null);
 }
 
-pub noinline fn fnDivide(unused_but_mandatory_parameter: u16) linksection(runtime.code_section) void {
+pub export fn fnDivide(unused_but_mandatory_parameter: u16) linksection(runtime.code_section) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
 
     runtime.copySourceRegisterToDestRegister(REGISTER_X, REGISTER_L);

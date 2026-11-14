@@ -1,15 +1,11 @@
 const check_value_owned = @import("compare/check_value.zig");
 const build_options = @import("math_command_wrappers_build_options");
-const compare_owned = @import("compare/compare.zig");
 const convergence_owned = @import("convergence.zig");
 const integer_part_owned = @import("rounding/integer_part.zig");
 const runtime = @import("command_wrappers/runtime.zig");
-const command_bodies = @import("command_bodies.zig");
 const get_type_owned = @import("compare/get_type.zig");
 const projection_owned = @import("projection.zig");
-const arithmetic_dispatch_command_owned = @import("arithmetic/dispatch_command.zig");
 const atan2_command_owned = @import("trig/atan2_command.zig");
-const double_width_command_owned = @import("arithmetic/double_width_command.zig");
 const percent_base_owned = @import("arithmetic/percent_base.zig");
 const percent_extended_owned = @import("arithmetic/percent_extended.zig");
 const random_primitives_owned = @import("random/random_primitives.zig");
@@ -17,7 +13,6 @@ const random_real_owned = @import("random/random_real.zig");
 const random_integer_owned = @import("random/random_integer.zig");
 const random_seed_owned = @import("random/random_seed.zig");
 const special_algebraic_command_owned = @import("special/special_algebraic_command.zig");
-const increment_decrement_command_owned = @import("arithmetic/increment_decrement_command.zig");
 const decomp_owned = @import("arithmetic/scalar_integer_decomp_command.zig");
 const precision_owned = @import("rounding/scalar_integer_precision.zig");
 const trig_complex_primitives_owned = @import("trig/trig_complex_primitives.zig");
@@ -73,21 +68,18 @@ comptime {
         // (sqrtComplex, realRectangularToPolar, ...) that the parity harness
         // already gets from math_wrappers_fake_runtime.c.
         _ = @import("transform/transform_complex_helpers.zig");
-        // The compare/incDec cluster owners hold the fnX*/fnDec/fnInc command
-        // bodies that command_bodies.zig hands the fronts.
+        // The compare/incDec cluster owners export the fnX* comparisons,
+        // fnXAlmostEqual, fnDec and fnInc.
         _ = @import("compare/comparison_reals.zig");
         _ = @import("compare/register_compare.zig");
-        // The addition/subtraction cell owners export the dispatch matrices
-        // and every add*/sub* cell plus the fnAdd and fnSubtract command
-        // bodies; the parity harness keeps its oracle copies instead.
+        // The addition/subtraction cell owners export the dispatch matrices,
+        // every add*/sub* cell, fnAdd and fnSubtract.
         _ = @import("arithmetic/addition_cells.zig");
         _ = @import("arithmetic/subtraction_cells.zig");
         // The multiplication/division/integer-division cell owners export the
-        // remaining arithmetic dispatch matrices and every mul*/div*/idiv*/
-        // dbl*/round/decomp cell plus the fnMultiply, fnDivide, fnIDiv,
-        // fnIDivR, fnDblMultiply, fnDblDivide, fnDblDivideRemainder and
-        // fnRound command bodies; the parity harness keeps its oracle copies
-        // instead.
+        // remaining arithmetic dispatch matrices, every mul*/div*/idiv*/
+        // dbl*/round/decomp cell, and fnMultiply, fnDivide, fnIDiv, fnIDivR,
+        // fnDblMultiply, fnDblDivide, fnDblDivideRemainder and fnRound.
         _ = @import("arithmetic/multiplication_cells.zig");
         _ = @import("arithmetic/division_cells.zig");
         _ = @import("arithmetic/integer_division_cells.zig");
@@ -247,7 +239,6 @@ comptime {
 }
 
 const PowRealFn = powlog_power_owned.PowRealFn;
-const no_register = @as(runtime.calcRegister_t, -1);
 
 pub export fn z47_math_wrappers_owned_C47_WP34S_Atan2(
     y: *const runtime.real_t,
@@ -898,91 +889,12 @@ pub export fn fnPercent(unused_but_mandatory_parameter: u16) callconv(.c) void {
     percent_base_owned.percent(unused_but_mandatory_parameter);
 }
 
-pub export fn fnAdd(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    arithmetic_dispatch_command_owned.fnAdd(unused_but_mandatory_parameter);
-}
-
-pub export fn fnSubtract(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    arithmetic_dispatch_command_owned.fnSubtract(unused_but_mandatory_parameter);
-}
-
-pub export fn fnMultiply(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    arithmetic_dispatch_command_owned.fnMultiply(unused_but_mandatory_parameter);
-}
-
-pub export fn fnDivide(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    arithmetic_dispatch_command_owned.fnDivide(unused_but_mandatory_parameter);
-}
-
-pub export fn fnIDiv(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    arithmetic_dispatch_command_owned.fnIDiv(unused_but_mandatory_parameter);
-}
-
-pub export fn fnIDivR(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    arithmetic_dispatch_command_owned.fnIDivR(unused_but_mandatory_parameter);
-}
-
-pub export fn fnDblMultiply(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    double_width_command_owned.dblMultiply(unused_but_mandatory_parameter);
-}
-
-pub export fn fnRound(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    const register_data_type = runtime.getRegisterDataType(runtime.REGISTER_X);
-
-    if (register_data_type != runtime.dtLongInteger and register_data_type != runtime.dtShortInteger) {
-        command_bodies.fnRound(unused_but_mandatory_parameter);
-        return;
-    }
-
-    if (!runtime.saveLastX()) {
-        return;
-    }
-
-    runtime.adjustResult(runtime.REGISTER_X, false, false, runtime.REGISTER_X, no_register, no_register);
-}
-
 pub export fn fnCheckInteger(mode: u16) callconv(.c) void {
     check_value_owned.checkInteger(mode);
 }
 
 pub export fn fnDecomp(unused_but_mandatory_parameter: u16) callconv(.c) void {
     decomp_owned.decomp(unused_but_mandatory_parameter);
-}
-
-pub export fn fnDec(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    increment_decrement_command_owned.dec(unused_but_mandatory_parameter);
-}
-
-pub export fn fnInc(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    increment_decrement_command_owned.inc(unused_but_mandatory_parameter);
-}
-
-pub export fn fnXLessThan(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    compare_owned.fnXLessThan(unused_but_mandatory_parameter);
-}
-
-pub export fn fnXLessEqual(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    compare_owned.fnXLessEqual(unused_but_mandatory_parameter);
-}
-
-pub export fn fnXGreaterThan(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    compare_owned.fnXGreaterThan(unused_but_mandatory_parameter);
-}
-
-pub export fn fnXGreaterEqual(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    compare_owned.fnXGreaterEqual(unused_but_mandatory_parameter);
-}
-
-pub export fn fnXEqualsTo(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    compare_owned.fnXEqualsTo(unused_but_mandatory_parameter);
-}
-
-pub export fn fnXNotEqual(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    compare_owned.fnXNotEqual(unused_but_mandatory_parameter);
-}
-
-pub export fn fnXAlmostEqual(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    compare_owned.fnXAlmostEqual(unused_but_mandatory_parameter);
 }
 
 pub export fn fnIsConverged(unused_but_mandatory_parameter: u16) callconv(.c) void {
@@ -1070,14 +982,6 @@ pub export fn fnCheckGreaterEqualPlusZero(unused_but_mandatory_parameter: u16) c
 pub export fn fnGetType(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
     get_type_owned.getType();
-}
-
-pub export fn fnDblDivide(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    double_width_command_owned.dblDivide(unused_but_mandatory_parameter);
-}
-
-pub export fn fnDblDivideRemainder(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    double_width_command_owned.dblDivideRemainder(unused_but_mandatory_parameter);
 }
 
 pub export fn fnToPolar2(unused_but_mandatory_parameter: u16) callconv(.c) void {

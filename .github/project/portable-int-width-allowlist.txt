@@ -13,8 +13,6 @@
 # by trimmed source-line content (edit-stable); changing the code re-triggers review.
 # Lines starting with '#' and blank lines are ignored.
 
-# Double-width shift exponent: bounded by 2 * shortIntegerWordSize (<= 128).
-runtime.__gmpz_mul_2exp(result, result, @as(c_ulong, @intCast(exponent)));
 
 # longInteger2Pow exponent: shortIntegerWordSize <= 64, so the products are <= 128.
 longInteger2Pow(@as(c_ulong, runtime.shortIntegerWordSize) * 2 - 1, &wd[0]);

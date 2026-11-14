@@ -330,18 +330,6 @@ bool_t oracle_mixedIntegerRealRemainder(bool_t modulo);
 #undef mixedIntegerRealRemainder
 #undef integerRemainder
 
-#define fnDblMultiply oracle_fnDblMultiply
-#include "../../../upstream/src/c47/mathematics/dblMultiplication.c"
-#undef fnDblMultiply
-
-#define dblDivide oracle_dblDivide
-#define fnDblDivide oracle_fnDblDivide
-#define fnDblDivideRemainder oracle_fnDblDivideRemainder
-#include "../../../upstream/src/c47/mathematics/dblDivision.c"
-#undef fnDblDivideRemainder
-#undef fnDblDivide
-#undef dblDivide
-
 #define fnUlp oracle_fnUlp
 #include "../../../upstream/src/c47/mathematics/ulp.c"
 #undef fnUlp
@@ -415,48 +403,19 @@ void oracle_decompReal(void);
 #undef fnRandom
 #undef realRandomU01
 
-// HAND-WRITTEN, and the only hand-written reference body left in this file. It
-// reimplements checkValue.c's fnCheckReal rather than compiling it, so it cannot
-// see c43 move -- the defect this whole lane exists to catch, one level down.
-// c43's own body is compiled and compared in the full-core differential.
-#define fnAdd oracle_full_fnAdd
+// addition.c is compiled for addComplex, which expMOne.c above and the Zig
+// expM1 owner both reach. fnAdd itself is not driven on this lane.
+#define fnAdd oracle_fnAdd
 #if defined(__clang__)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wtautological-pointer-compare"
 #endif
 #include "../../../upstream/src/c47/mathematics/addition.h"
 #include "../../../upstream/src/c47/mathematics/addition.c"
-#undef fnAdd
-
-#define fnSubtract oracle_full_fnSubtract
-#include "../../../upstream/src/c47/mathematics/subtraction.h"
-#include "../../../upstream/src/c47/mathematics/subtraction.c"
-#undef fnSubtract
-
-#define fnMultiply oracle_full_fnMultiply
-#define mulComplexi oracle_mulComplexi
-#define mulComplexComplex oracle_mulComplexComplex
-#define mulComplexReal oracle_mulComplexReal
-#include "../../../upstream/src/c47/mathematics/multiplication.h"
-#include "../../../upstream/src/c47/mathematics/multiplication.c"
-#undef mulComplexReal
-#undef mulComplexComplex
-#undef mulComplexi
-#undef fnMultiply
-
-#define fnDivide oracle_full_fnDivide
-#define divRealComplex oracle_divRealComplex
-#define divComplexComplex oracle_divComplexComplex
-#define divComplexReal oracle_divComplexReal
-#include "../../../upstream/src/c47/mathematics/division.h"
-#include "../../../upstream/src/c47/mathematics/division.c"
-#undef divComplexReal
-#undef divComplexComplex
-#undef divRealComplex
-#undef fnDivide
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
+#undef fnAdd
 
 #define fnRealPart oracle_fnRealPart
 #include "../../../upstream/src/c47/mathematics/realPart.c"
@@ -490,11 +449,11 @@ void oracle_decompReal(void);
 // vocabulary -- the functions its headers declare AND the statics only its .c
 // files define. The way the last ones went is worth knowing before adding another.
 //
-// Every reference here is c43's own code: either an `#include` of the c43 file
-// under `oracle_` renames, or a compiled `oracle_full_*` body. The wrappers that
-// once had a hand-written mirror -- the check predicates, the comparisons, the
-// integer-division and rounding families, the vector/complex families, fnCheckReal
-// and fnToRect -- moved to build/tests/math_wrappers_full_core/, which compiles
+// Every reference here is c43's own code: an `#include` of the c43 file under
+// `oracle_` renames. The wrappers that once had a hand-written mirror -- the
+// check predicates, the comparisons, the integer-division and rounding families,
+// the vector/complex families, fnCheckReal and fnToRect -- moved to
+// build/tests/math_wrappers_full_core/, which compiles
 // c43's own mathematics/*.c beside the Zig owners on real decNumber and compares
 // the state each leaves behind.
 //
@@ -509,14 +468,16 @@ void oracle_decompReal(void);
 // getRegisterAsComplexOrAnyRealQuiet, isMatrix2dVector and the ITM_IS* items are
 // not declared in this lane's c47.h. Do not repeat any of the three experiments.
 //
-// WHAT THIS LANE IS FOR NOW, and why it is not deleted. It still drives 430 cases
-// over 86 wrappers the full-core differential does not cover -- fnAdd, the
+// WHAT THIS LANE IS FOR NOW, and why it is not deleted. It still drives the
 // trigonometric and hyperbolic families, the logarithms, the Bernoulli numbers and
-// the rest -- against references that ARE c43's own bodies. What it compares is
+// the rest (`grep -c 'runCase(' build/tests/math_wrappers/math_wrappers_parity.c`
+// counts the cases) against references that ARE c43's own bodies. What it compares is
 // control flow over a fake numeric core, which is real coverage of dispatch and
 // error paths and is not a substitute for comparing results. A wrapper wants both
 // lanes: this one for the paths it takes, the full-core one for the answers it
-// produces.
+// produces. The arithmetic, comparison, rounding, double-width and INC/DEC
+// commands are upstream's bodies alone, which this lane's fake surface does not
+// build, so the full-core differential is the only lane that drives them.
 
 #define fnSwapRealImaginary oracle_fnSwapRealImaginary_legacy
 #include "../../../upstream/src/c47/mathematics/swapRealImaginary.c"
@@ -653,38 +614,6 @@ void oracle_curtReal_impl(void);
 #include "../../../upstream/src/c47/mathematics/linpol.c"
 #undef fnLINPOL
 #undef linpol
-
-#define FIRST_LOCAL_REGISTER REGISTER_X
-#define currentNumberOfLocalRegisters 4
-#define INC_FLAG 0
-#define DEC_FLAG 1
-#define fnDec oracle_fnDec
-#define fnInc oracle_fnInc
-#define incDecError oracle_incDecError
-#define incDecLonI oracle_incDecLonI
-#define incDecReal oracle_incDecReal
-#define incDecCplx oracle_incDecCplx
-#define incDecShoI oracle_incDecShoI
-#define incDecTime oracle_incDecTime
-void oracle_incDecError(uint16_t regist, uint8_t flag);
-void oracle_incDecLonI(uint16_t regist, uint8_t flag);
-void oracle_incDecReal(uint16_t regist, uint8_t flag);
-void oracle_incDecCplx(uint16_t regist, uint8_t flag);
-void oracle_incDecShoI(uint16_t regist, uint8_t flag);
-void oracle_incDecTime(uint16_t regist, uint8_t flag);
-#include "../../../upstream/src/c47/mathematics/incDec.c"
-#undef incDecTime
-#undef incDecShoI
-#undef incDecCplx
-#undef incDecReal
-#undef incDecLonI
-#undef incDecError
-#undef fnInc
-#undef fnDec
-#undef DEC_FLAG
-#undef INC_FLAG
-#undef currentNumberOfLocalRegisters
-#undef FIRST_LOCAL_REGISTER
 
 #define fnPercentMRR oracle_fnPercentMRR
 #include "../../../upstream/src/c47/mathematics/percentMRR.c"

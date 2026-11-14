@@ -2,17 +2,14 @@
 // Zig owner for src/c47/mathematics/compare.c and incDec.c.
 //
 // Canonical exports kept at the C boundary:
+//   - fnXLessThan ... fnXNotEqual, fnXAlmostEqual (compare.c)
 //   - registerCmp / registerMax / registerMin    (compare.c)
+//   - fnDec / fnInc                              (incDec.c)
 //   - incDecLonI / incDecReal / incDecShoI       (incDec.c, used by iteration.c)
-// fnX*, fnXAlmostEqual, fnDec and fnInc are upstream's command bodies. The
-// exported commands are the fronts in command_wrappers.zig, which handle the
-// scalar cases themselves and reach these bodies through command_bodies.zig for
-// the rest, so the full compareRegisters/almostEqual/incDec machinery is ported
-// here.
 //
-// This file must only be analyzed in product builds (command_wrappers.zig and
-// command_bodies.zig import it only off the fake harness surface): the parity
-// fake runtime defines registerMin/registerMax/realCompare* itself.
+// This file must only be analyzed in product builds (command_wrappers.zig
+// imports it only off the fake harness surface): the parity fake runtime
+// defines registerMin/registerMax/realCompare* itself.
 
 const std = @import("std");
 const abi = @import("abi");
@@ -624,27 +621,27 @@ fn compareRegisters(regist: u16, mode: u8) void {
     }
 }
 
-pub noinline fn fnXLessThan(regist: u16) void {
+pub export fn fnXLessThan(regist: u16) callconv(.c) void {
     compareRegisters(regist, COMPARE_MODE_LESS_THAN);
 }
 
-pub noinline fn fnXLessEqual(regist: u16) void {
+pub export fn fnXLessEqual(regist: u16) callconv(.c) void {
     compareRegisters(regist, COMPARE_MODE_LESS_EQUAL);
 }
 
-pub noinline fn fnXGreaterThan(regist: u16) void {
+pub export fn fnXGreaterThan(regist: u16) callconv(.c) void {
     compareRegisters(regist, COMPARE_MODE_GREATER_THAN);
 }
 
-pub noinline fn fnXGreaterEqual(regist: u16) void {
+pub export fn fnXGreaterEqual(regist: u16) callconv(.c) void {
     compareRegisters(regist, COMPARE_MODE_GREATER_EQUAL);
 }
 
-pub noinline fn fnXEqualsTo(regist: u16) void {
+pub export fn fnXEqualsTo(regist: u16) callconv(.c) void {
     compareRegisters(regist, COMPARE_MODE_EQUAL);
 }
 
-pub noinline fn fnXNotEqual(regist: u16) void {
+pub export fn fnXNotEqual(regist: u16) callconv(.c) void {
     compareRegisters(regist, COMPARE_MODE_NOT_EQUAL);
 }
 
@@ -901,7 +898,7 @@ fn almostEqualScalar(regist: u16, type_pair: u16) void {
     restoreRegisterSnapshot(asRegister(regist), &snap2);
 }
 
-pub noinline fn fnXAlmostEqual(regist: u16) void {
+pub export fn fnXAlmostEqual(regist: u16) callconv(.c) void {
     const x_type = runtime.getRegisterDataType(runtime.REGISTER_X);
     const r_type = runtime.getRegisterDataType(asRegister(regist));
     const type_pair = typePair(x_type, r_type);
@@ -1039,10 +1036,10 @@ fn retainedIncDec(regist: u16, flag: u8, comptime function_name: [:0]const u8) v
     }
 }
 
-pub noinline fn fnDec(regist: u16) void {
+pub export fn fnDec(regist: u16) callconv(.c) void {
     retainedIncDec(regist, DEC_FLAG, "fnDec");
 }
 
-pub noinline fn fnInc(regist: u16) void {
+pub export fn fnInc(regist: u16) callconv(.c) void {
     retainedIncDec(regist, INC_FLAG, "fnInc");
 }

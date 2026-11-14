@@ -5,8 +5,8 @@
     "ptrcast_sites": 1,
     "constcast_sites": 1,
     "ptr_from_int_sites": 68,
-    "callconv_c_sites": 3225,
-    "extern_fn_sites": 4002,
+    "callconv_c_sites": 3208,
+    "extern_fn_sites": 3861,
     "printf_family_files": 55,
     "anyopaque_files": 79,
     "off_offset_sites": 73,
@@ -23,7 +23,7 @@
     "build_constcast_sites": 0,
     "build_ptr_from_int_sites": 1
   },
-  "owner_count": 417,
+  "owner_count": 407,
   "seam_totals": {
     "extern_struct_files": 2,
     "cptr_files": 0,
