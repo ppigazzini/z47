@@ -918,8 +918,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          mapfile -t generated_artifacts < <(bash .github/project/workflow-imported-root-paths.sh generated-artifacts)
-          git diff --exit-code -- "${generated_artifacts[@]}"
+          mapfile -t tracked_artifacts < <(bash .github/project/workflow-imported-root-paths.sh tracked-generated-artifacts)
+          git diff --exit-code -- "${tracked_artifacts[@]}"
       - name: Hash golden artifacts
         shell: bash
         run: |

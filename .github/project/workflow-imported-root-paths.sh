@@ -142,6 +142,18 @@ list_generated_artifacts() {
     done
 }
 
+# The generated artifacts git tracks, which is all a `git diff` can judge: the
+# imported-tree outputs are gitignored. Fails if a path here is not tracked.
+list_tracked_generated_artifacts() {
+    local relative_path
+
+    for relative_path in "${z47_generated_artifact_paths[@]}"; do
+        git ls-files --error-unmatch -- "$relative_path" >/dev/null 2>&1 \
+            || fail "$relative_path is listed as a tracked generated artifact but git does not track it"
+        printf '%s\n' "$relative_path"
+    done
+}
+
 stage_host_package_common() {
     local stage_dir="$1"
 
@@ -197,6 +209,7 @@ usage() {
 usage:
   workflow-imported-root-paths.sh docs-requirements
   workflow-imported-root-paths.sh generated-artifacts
+  workflow-imported-root-paths.sh tracked-generated-artifacts
   workflow-imported-root-paths.sh stage-host-package-common <stage-dir>
   workflow-imported-root-paths.sh stage-host-package-windows <stage-dir>
   workflow-imported-root-paths.sh check-workflow
@@ -212,6 +225,9 @@ main() {
             ;;
         generated-artifacts)
             list_generated_artifacts
+            ;;
+        tracked-generated-artifacts)
+            list_tracked_generated_artifacts
             ;;
         stage-host-package-common)
             [[ $# -eq 2 ]] || fail "stage-host-package-common requires <stage-dir>"
