@@ -657,20 +657,17 @@ pub extern fn printStatus(row: u8, line1: [*c]const u8, forced: u8) void;
 pub extern fn restoreStats() void;
 pub extern fn forceSBupdate() void;
 pub extern fn isAlphaSubmenu(n: u8) bool_t;
-// lcd_fill_rect is a DMCP ROM function-table macro on firmware (lft_ifc.h:61,
-// LIBRARY_FN_BASE + 60) and a real GTK-layer symbol on host. jm_show_calc_state is
-// a host-only telltale (no-op unless PC_BUILD_TELLTALE) -> no-op on firmware. Both
-// are reconstructed lane-aware here so handlers that reach clearScreen / the
-// telltale (keyExit, keyBackspace) can run on the DMCP lanes. This mirrors the
-// established, build/link-verified frontier ROM-trampoline pattern (cf.
-// shell/display/statusbar/status_bar.zig, same +60 offset and LIBRARY_FN_BASE).
-const LIBRARY_FN_BASE: usize = keyboard_state_build_options.library_fn_base;
+// lcd_fill_rect is a DMCP ROM function-table entry on firmware and a real GTK-layer
+// symbol on host. jm_show_calc_state is a host-only telltale (no-op unless
+// PC_BUILD_TELLTALE) -> no-op on firmware. Both are reconstructed lane-aware here
+// so handlers that reach clearScreen / the telltale (keyExit, keyBackspace) can
+// run on the DMCP lanes.
+const rom = @import("dmcp_rom");
 const LcdFillRectFn = *const fn (x: u32, y: u32, dx: u32, dy: u32, val: c_int) callconv(.c) void;
 const c_lcd_fill_rect = if (!is_dmcp_build) @extern(LcdFillRectFn, .{ .name = "lcd_fill_rect" }) else {};
 pub inline fn lcd_fill_rect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void {
     if (comptime is_dmcp_build) {
-        const f: LcdFillRectFn = @ptrFromInt(LIBRARY_FN_BASE + 60);
-        f(x, y, dx, dy, val);
+        rom.lcd_fill_rect(x, y, dx, dy, val);
     } else {
         c_lcd_fill_rect(x, y, dx, dy, val);
     }
@@ -1341,39 +1338,34 @@ pub extern fn showAlphaModeonGui() void;
 // is_dmcp_build branches of host-exported (PC_BUILD-only) owners, so on the
 // dmcp lane the referencing code is dead-stripped before link — same pattern
 // as lcd_fill_rect above.
-// DMCP key-queue + LCD-refresh ROM function-table macros (lft_ifc.h): lane-aware
-// trampolines so the firmware processKeyAction key-buffering path links and runs.
-// Offsets verified against lft_ifc.h (lcd_refresh+48, key_push+384, key_pop+392,
-// wait_for_key_release+420); host keeps the real externs.
+// DMCP key-queue + LCD-refresh ROM function-table entries: lane-aware wrappers so
+// the firmware processKeyAction key-buffering path links and runs; host keeps the
+// real externs.
 const LcdRefreshFn = *const fn () callconv(.c) void;
 const c_lcd_refresh = if (!is_dmcp_build) @extern(LcdRefreshFn, .{ .name = "lcd_refresh" }) else {};
 pub inline fn lcd_refresh() void {
     if (comptime is_dmcp_build) {
-        const f: LcdRefreshFn = @ptrFromInt(LIBRARY_FN_BASE + 48);
-        f();
+        rom.lcd_refresh();
     } else c_lcd_refresh();
 }
 const KeyPopFn = *const fn () callconv(.c) c_int;
 const c_key_pop = if (!is_dmcp_build) @extern(KeyPopFn, .{ .name = "key_pop" }) else {};
 pub inline fn key_pop() c_int {
     if (comptime is_dmcp_build) {
-        const f: KeyPopFn = @ptrFromInt(LIBRARY_FN_BASE + 392);
-        return f();
+        return rom.key_pop();
     } else return c_key_pop();
 }
 const KeyPushFn = *const fn (k1: c_int) callconv(.c) c_int;
 const c_key_push = if (!is_dmcp_build) @extern(KeyPushFn, .{ .name = "key_push" }) else {};
 pub inline fn key_push(k1: c_int) c_int {
     if (comptime is_dmcp_build) {
-        const f: KeyPushFn = @ptrFromInt(LIBRARY_FN_BASE + 384);
-        return f(k1);
+        return rom.key_push(k1);
     } else return c_key_push(k1);
 }
 const WaitForKeyReleaseFn = *const fn (tout: c_int) callconv(.c) void;
 const c_wait_for_key_release = if (!is_dmcp_build) @extern(WaitForKeyReleaseFn, .{ .name = "wait_for_key_release" }) else {};
 pub inline fn wait_for_key_release(tout: c_int) void {
     if (comptime is_dmcp_build) {
-        const f: WaitForKeyReleaseFn = @ptrFromInt(LIBRARY_FN_BASE + 420);
-        f(tout);
+        rom.wait_for_key_release(tout);
     } else c_wait_for_key_release(tout);
 }

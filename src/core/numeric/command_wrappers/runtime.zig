@@ -324,14 +324,13 @@ pub extern fn fnRefreshState() void;
 
 // The integer-check commands push the LCD out before answering, which is a
 // screen refresh, not a state refresh. On the firmware it is a DMCP ROM
-// jump-table call rather than a link symbol.
+// function-table entry rather than a link symbol.
 const is_dmcp_build = @import("builtin").target.os.tag == .freestanding;
-const refresh_library_fn_base: usize = build_options.library_fn_base;
+const rom = @import("dmcp_rom");
 extern fn refreshLcd(unused_data: ?*anyopaque) c_int; // gboolean refreshLcd(gpointer) on the host
 pub inline fn refreshScreenNow() void {
     if (comptime is_dmcp_build) {
-        const lcd_refresh: *const fn () callconv(.c) void = @ptrFromInt(refresh_library_fn_base + 48);
-        lcd_refresh();
+        rom.lcd_refresh();
     } else {
         _ = refreshLcd(null);
     }

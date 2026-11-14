@@ -25,8 +25,7 @@ const print_register = @import("print_register.zig");
 // can restate, so it is read from the build option.
 // On the dead branch print.c's `#else` stubs are reproduced. The DMCP-ROM functions (printer_advance_buf / printer_busy_for /
 // sys_timer_* / sys_sleep / lcd_line_addr / start_buzzer_freq / stop_buzzer /
-// sys_delay) are fixed-address jump-table
-// calls (LIBRARY_FN_BASE + verified offset from lft_ifc.h), only referenced
+// sys_delay) are entries of the DMCP ROM function table, only referenced
 // under `if (comptime dmcp_build)`. sendByteIR / getLineDelay / setLineDelay are
 // provided by the firmware/host runtime layer and are externed here.
 //
@@ -47,7 +46,7 @@ const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 // OPTION_IR_PRINTING: on for host and dmcp5, and per package on the DM42.
 pub const ir_printing: bool = frontier_build_options.ir_printing;
 
-const LIBRARY_FN_BASE: usize = frontier_build_options.library_fn_base;
+const rom = @import("dmcp_rom");
 
 // ---------------------------------------------------------------------------
 // Types
@@ -572,44 +571,8 @@ inline fn numberOfDisplayRealContextDigits() i32 {
 const showMode = frontier_screen.showModeActive;
 
 // ---------------------------------------------------------------------------
-// DMCP-ROM trampolines (fixed-address on firmware; only used under dmcp_build).
+// DMCP buzzer and key helpers over the ROM function table (firmware only).
 // ---------------------------------------------------------------------------
-inline fn lcd_line_addr(y: c_int) [*c]u8 {
-    const f: *const fn (c_int) callconv(.c) [*c]u8 = @ptrFromInt(LIBRARY_FN_BASE + 40);
-    return f(y);
-}
-inline fn printer_advance_buf(what: c_int) void {
-    const f: *const fn (c_int) callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 312);
-    f(what);
-}
-inline fn printer_busy_for(what: c_int) c_int {
-    const f: *const fn (c_int) callconv(.c) c_int = @ptrFromInt(LIBRARY_FN_BASE + 316);
-    return f(what);
-}
-inline fn sys_timer_start(timer_ix: c_int, ms_value: u32) void {
-    const f: *const fn (c_int, u32) callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 504);
-    f(timer_ix, ms_value);
-}
-inline fn sys_timer_disable(timer_ix: c_int) void {
-    const f: *const fn (c_int) callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 500);
-    f(timer_ix);
-}
-inline fn sys_sleep() void {
-    const f: *const fn () callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 536);
-    f();
-}
-inline fn start_buzzer_freq(freq: u32) void {
-    const f: *const fn (u32) callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 244);
-    f(freq);
-}
-inline fn stop_buzzer() void {
-    const f: *const fn () callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 248);
-    f();
-}
-inline fn sys_delay(ms_delay: u32) void {
-    const f: *const fn (u32) callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 516);
-    f(ms_delay);
-}
 // beep(freq, len) macro (DMCP-only), defines.h.
 //
 // The macro has two forms, selected by OUT_VOL_MAX -- "sound output raises the
@@ -626,16 +589,15 @@ pub inline fn beep(frequence: u32, length: u32) void {
     if (getSystemFlag(FLAG_QUIET)) {
         return;
     }
-    start_buzzer_freq(frequence * 1000);
-    sys_delay(length);
-    stop_buzzer();
+    rom.start_buzzer_freq(frequence * 1000);
+    rom.sys_delay(length);
+    rom.stop_buzzer();
 }
 
 // key handling on DMCP uses the key_pop / key_pop_all ROM macros.
 inline fn key_pop() c_int {
     if (comptime dmcp_build) {
-        const f: *const fn () callconv(.c) c_int = @ptrFromInt(LIBRARY_FN_BASE + 392);
-        return f();
+        return rom.key_pop();
     }
     return 0;
 }
@@ -809,11 +771,11 @@ fn prepareNewLine() void {
     if (comptime dmcp_build) {
         var i: c_int = 0;
         clearSystemFlag(FLAG_PRTACT);
-        printer_advance_buf(PRINT_GRA_LN);
-        while (printer_busy_for(PRINT_GRA_LN) != 0 and i < 50) {
-            sys_timer_start(0, 100);
-            sys_sleep();
-            sys_timer_disable(0);
+        rom.printer_advance_buf(PRINT_GRA_LN);
+        while (rom.printer_busy_for(PRINT_GRA_LN) != 0 and i < 50) {
+            rom.sys_timer_start(0, 100);
+            rom.sys_sleep();
+            rom.sys_timer_disable(0);
             i += 1;
         }
         setSystemFlag(@intCast(FLAG_PRTACT));
@@ -1515,7 +1477,7 @@ fn printLcd() void {
         var y: i32 = SCREEN_HEIGHT - 1;
         while (y >= 0) : (y -= 1) {
             if (comptime dmcp_build) {
-                line_addr = lcd_line_addr(y);
+                line_addr = rom.lcd_line_addr(y);
             }
             var i: i16 = 2;
             while (i >= 0) : (i -= 1) {

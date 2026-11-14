@@ -14,9 +14,9 @@ const consts = abi.constants;
 // This is a faithful, line-by-line port of the C. It re-declares the shared
 // patterns from the registerValueConversions owner (the constants blob with
 // cst34()/cstR() accessors, the real34/real op wrappers, reg34(), the
-// dt_t/tm_t structs, the fixed-address RTC SDK idiom, extra_info-gated
-// moreInfoOnError) — that owner is a sibling whose private decls cannot be
-// imported, so they are repeated here with identical definitions.
+// dt_t/tm_t structs, extra_info-gated moreInfoOnError) — that owner is a sibling
+// whose private decls cannot be imported, so they are repeated here with
+// identical definitions.
 //
 // The helpers composeJulianDay/decomposeJulianDay/isValidDay/internalDateToJulianDay
 // are exported with C linkage and exact ABI because the registerValueConversions
@@ -273,19 +273,6 @@ extern fn strftime(buf: [*]u8, max: usize, fmt: [*:0]const u8, tm: *const Tm) us
 extern fn sprintf(buf: [*]u8, fmt: [*:0]const u8, ...) c_int;
 extern fn strcpy(dst: [*]u8, src: [*c]const u8) [*c]u8;
 extern fn strcat(dst: [*]u8, src: [*c]const u8) [*c]u8;
-
-// rtc_read/rtc_write are DMCP-ROM jump-table entries (lft_ifc.h,
-// LIBRARY_FN_BASE + 204 / + 208). The table base differs per board; the build
-// reads it from the board's lft_ifc.h.
-const LIBRARY_FN_BASE: usize = frontier_build_options.library_fn_base;
-const rtc_read: *const fn (*tm_t, *dt_t) callconv(.c) void = if (dmcp_build)
-    @ptrFromInt(LIBRARY_FN_BASE + 204)
-else
-    undefined;
-const rtc_write: *const fn (*tm_t, *dt_t) callconv(.c) void = if (dmcp_build)
-    @ptrFromInt(LIBRARY_FN_BASE + 208)
-else
-    undefined;
 
 // ---------------------------------------------------------------------------
 // Inline wrappers (the C macros)
@@ -1367,7 +1354,7 @@ pub export fn fnDate(unusedButMandatoryParameter: u16) linksection(code_section)
         var timeInfo: tm_t = undefined;
         var dateInfo: dt_t = undefined;
 
-        rtc_read(&timeInfo, &dateInfo);
+        rom.rtc_read(&timeInfo, &dateInfo);
         uInt32ToReal34(dateInfo.year, &y);
         uInt32ToReal34(dateInfo.month, &m);
         uInt32ToReal34(dateInfo.day, &d);
@@ -1396,7 +1383,7 @@ pub export fn fnTime(unusedButMandatoryParameter: u16) linksection(code_section)
         var timeInfo: tm_t = undefined;
         var dateInfo: dt_t = undefined;
 
-        rtc_read(&timeInfo, &dateInfo);
+        rom.rtc_read(&timeInfo, &dateInfo);
         centiseconds = ((@as(u32, timeInfo.hour) * 60 + timeInfo.min) * 60 + timeInfo.sec) * 100 + timeInfo.csec;
     } else {
         // One sample of the clock carries both halves: the hour, minute and second
@@ -1430,12 +1417,12 @@ pub export fn fnSetDate(unusedButMandatoryParameter: u16) linksection(code_secti
         var d: real34_t = undefined;
 
         if (checkDateArgument(REGISTER_X, &j)) {
-            rtc_read(&timeInfo, &dateInfo);
+            rom.rtc_read(&timeInfo, &dateInfo);
             decomposeJulianDay(&j, &y, &m, &d);
             dateInfo.year = @intCast(real34ToUInt32(&y));
             dateInfo.month = @intCast(real34ToUInt32(&m));
             dateInfo.day = @intCast(real34ToUInt32(&d));
-            rtc_write(&timeInfo, &dateInfo);
+            rom.rtc_write(&timeInfo, &dateInfo);
         }
     }
 }
@@ -1453,7 +1440,7 @@ pub export fn fnSetTime(unusedButMandatoryParameter: u16) linksection(code_secti
             if (real34IsNegative(reg34(REGISTER_X)) or real34IsNaN(reg34(REGISTER_X)) or real34CompareGreaterEqual(reg34(REGISTER_X), const34_86400)) {
                 frontier_error.displayCalcErrorMessage(ERROR_BAD_TIME_OR_DATE_INPUT, ERR_REGISTER_LINE);
             } else {
-                rtc_read(&timeInfo, &dateInfo);
+                rom.rtc_read(&timeInfo, &dateInfo);
                 real34Multiply(reg34(REGISTER_X), const34_100, &time34);
                 real34ToIntegralValue(&time34, &time34, DEC_ROUND_DOWN);
                 timeVal = real34ToInt32(&time34);
@@ -1464,13 +1451,13 @@ pub export fn fnSetTime(unusedButMandatoryParameter: u16) linksection(code_secti
                 timeInfo.min = @intCast(@mod(timeVal, 60));
                 timeVal = @divTrunc(timeVal, 60);
                 timeInfo.hour = @intCast(timeVal);
-                rtc_write(&timeInfo, &dateInfo);
+                rom.rtc_write(&timeInfo, &dateInfo);
             }
         } else if (getRegisterDataType(REGISTER_X) == dtReal34) {
             if (real34IsNegative(reg34(REGISTER_X)) or real34IsNaN(reg34(REGISTER_X)) or real34CompareGreaterEqual(reg34(REGISTER_X), const34_24)) {
                 frontier_error.displayCalcErrorMessage(ERROR_BAD_TIME_OR_DATE_INPUT, ERR_REGISTER_LINE);
             } else {
-                rtc_read(&timeInfo, &dateInfo);
+                rom.rtc_read(&timeInfo, &dateInfo);
                 real34Multiply(reg34(REGISTER_X), const34_1e6, &time34);
                 real34ToIntegralValue(&time34, &time34, DEC_ROUND_DOWN);
                 timeVal = real34ToInt32(&time34);
@@ -1482,7 +1469,7 @@ pub export fn fnSetTime(unusedButMandatoryParameter: u16) linksection(code_secti
                 timeVal = @divTrunc(timeVal, 100);
                 timeInfo.hour = @intCast(timeVal);
                 if (timeInfo.sec <= 59 and timeInfo.min <= 59 and timeInfo.hour <= 23) {
-                    rtc_write(&timeInfo, &dateInfo);
+                    rom.rtc_write(&timeInfo, &dateInfo);
                 } else {
                     frontier_error.displayCalcErrorMessage(ERROR_BAD_TIME_OR_DATE_INPUT, ERR_REGISTER_LINE);
                 }
@@ -1573,7 +1560,7 @@ pub export fn getDateString(dateString: [*]u8) linksection(code_section) callcon
         var timeInfo: tm_t = undefined;
         var dateInfo: dt_t = undefined;
 
-        rtc_read(&timeInfo, &dateInfo);
+        rom.rtc_read(&timeInfo, &dateInfo);
         if (!getSystemFlag(FLAG_TDM24)) { // 2 digit year
             if (getSystemFlag(FLAG_DMY)) {
                 abi.fmtBufZ(dateString[0..11], "{d:0>2}.{d:0>2}.{d:0>2}", .{ @as(u32, @intCast(dateInfo.day)), @as(u32, @intCast(dateInfo.month)), @as(u32, @intCast(dateInfo.year % 100)) });
@@ -1629,7 +1616,7 @@ pub export fn getTimeString(timeString: [*]u8) linksection(code_section) callcon
         var timeInfo: tm_t = undefined;
         var dateInfo: dt_t = undefined;
 
-        rtc_read(&timeInfo, &dateInfo);
+        rom.rtc_read(&timeInfo, &dateInfo);
         if (!getSystemFlag(FLAG_TDM24)) {
             abi.fmtBufZ(timeString[0..8], "{d:0>2}:{d:0>2}", .{ @as(u32, @intCast(if ((timeInfo.hour % 12) == 0) 12 else timeInfo.hour % 12)), @as(u32, @intCast(timeInfo.min)) });
             if (timeInfo.hour >= 12) {
@@ -1668,7 +1655,7 @@ pub export fn getWeekOfYearString(weekOfYearString: [*]u8) linksection(code_sect
         var timeInfo: tm_t = undefined;
         var dateInfo: dt_t = undefined;
 
-        rtc_read(&timeInfo, &dateInfo);
+        rom.rtc_read(&timeInfo, &dateInfo);
         uInt32ToReal34(dateInfo.year, &y);
         uInt32ToReal34(dateInfo.month, &m);
         uInt32ToReal34(dateInfo.day, &d);

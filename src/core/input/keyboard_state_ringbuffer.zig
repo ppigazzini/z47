@@ -10,11 +10,9 @@
 // paths are all compiled out. Verified against the actual DMCP preprocessor.
 // kb_buffer_t therefore reduces to { data[8], read, write } with BUFFER_SIZE 8.
 //
-// keyBuffer_pop (the key_pop() drain, with its CALCMODEL==USER_R47 convertKeyCode
-// remap) is intentionally NOT here yet: it needs the ROM key_pop trampoline and a
-// per-model build signal, which is wired when the keyboard-state firmware object
-// is split per calc model. The pure buffer mechanics below carry the whole
-// risk surface (index wrap, full/empty edges, duplicate suppression) and are
+// keyBuffer_pop drains the ROM's key_pop into the buffer, through the R47
+// convertKeyCode remap on R47 builds. The pure buffer mechanics below carry the
+// whole risk surface (index wrap, full/empty edges, duplicate suppression) and are
 // covered by the embedded tests (`zig build keyboard_ringbuffer_test`).
 const std = @import("std");
 const builtin = @import("builtin");
@@ -29,13 +27,12 @@ const is_dmcp_build = builtin.target.os.tag == .freestanding;
 const build_options = @import("keyboard_state_build_options");
 pub const built_for_r47: bool = build_options.is_r47;
 
-// key_pop is a DMCP ROM function-table macro (lft_ifc.h, LIBRARY_FN_BASE + 392);
-// keyBuffer_pop drains it on firmware only. convertKeyCode is the (Zig-owned,
-// frontier-exported) DM42 key remap, applied before buffering on R47 builds.
-const LIBRARY_FN_BASE: usize = build_options.library_fn_base;
+// key_pop is a DMCP ROM function-table entry; keyBuffer_pop drains it on firmware
+// only. convertKeyCode is the (Zig-owned, frontier-exported) DM42 key remap,
+// applied before buffering on R47 builds.
+const rom = @import("dmcp_rom");
 fn romKeyPop() c_int {
-    const f: *const fn () callconv(.c) c_int = @ptrFromInt(LIBRARY_FN_BASE + 392);
-    return f();
+    return rom.key_pop();
 }
 extern fn convertKeyCode(key: c_int) c_int;
 

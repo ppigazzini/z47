@@ -40,10 +40,10 @@ Facts, verified from `../build/firmware.zig`:
   object rather than built separately: it defines the console entry points that
   DMCP hardware does not have, which is what keeps newlib's buffered stdio -- and
   the `FILE` array `findfp.o` would place in SRAM2 -- out of the image. The DMCP
-  ROM trampolines and the system-data-block flag functions are
-  `../src/core/hal/dmcp_rom.zig`, which the frontier, calc-state, memory and
-  program-serialization objects import as the `dmcp_rom` module rather than
-  link as an object of their own.
+  ROM function table, one typed entry per `lft_ifc.h` function an owner calls,
+  and the system-data-block flag functions are
+  `../src/core/hal/dmcp_rom.zig`, which every object whose owners reach the ROM
+  imports as the `dmcp_rom` module rather than link as an object of their own.
 - Retained C still compiled into the firmware: the vendored
   `../upstream/dep/decNumberICU` sources, the SwissMicros SDK `pgm_syscalls.c` and
   `startup_pgm.s`, the generated constant-pointer and raster-font C, and a

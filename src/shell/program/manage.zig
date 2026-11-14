@@ -21,8 +21,8 @@
 // EXTRA_INFO_ON_CALC_ERROR console hint in fnClP is gated on extra_info && !dmcp_build
 // and reduced to the host moreInfoOnError call as in the sibling owners. The PC-only
 // printf trace in insertStepInProgram (GTOP) is host-only. clearScreen expands to
-// lcd_fill_rect(...) + frontier_status_bar.forceSBupdate(); lcd_fill_rect is the DMCP fixed-address ROM
-// call (LIBRARY_FN_BASE+60) on firmware and a real symbol on host (idiom copied from
+// lcd_fill_rect(...) + frontier_status_bar.forceSBupdate(); lcd_fill_rect is a DMCP ROM
+// function-table entry on firmware and a real symbol on host (idiom copied from
 // the error owner). IR_PRINTING/DEBUG_PGM/MONITOR_CLRSCR are never defined here.
 
 const std = @import("std");
@@ -32,8 +32,8 @@ const builtin = @import("builtin");
 const frontier_build_options = @import("frontier_build_options");
 const dmcp_build: bool = frontier_build_options.dmcp_build;
 const old_hw: bool = frontier_build_options.old_hw;
-// LIBRARY_FN_BASE (lft_ifc.h): the ROM function table of the board's SDK.
-const LIBRARY_FN_BASE: usize = frontier_build_options.library_fn_base;
+// The DMCP ROM function table of the board's SDK.
+const rom = @import("dmcp_rom");
 const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 const option_structured_pgm: bool = frontier_build_options.option_structured_pgm;
 // OPTION_DRG_CFG: DRG during number entry chooses the unit of the literal, and a
@@ -572,8 +572,7 @@ const c_lcd_fill_rect = @extern(LcdFillRectFn, .{ .name = "lcd_fill_rect" });
 
 inline fn lcdFillRect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void {
     if (comptime dmcp_build) {
-        const f: LcdFillRectFn = @ptrFromInt(LIBRARY_FN_BASE + 60);
-        f(x, y, dx, dy, val);
+        rom.lcd_fill_rect(x, y, dx, dy, val);
     } else {
         c_lcd_fill_rect(x, y, dx, dy, val);
     }
@@ -1342,11 +1341,9 @@ inline fn setCurrentInputVariableInvalid() void {
 
 // DMCP-only helpers for the fnPem battery skip guard.
 extern fn emptyKeyBuffer() bool_t;
-const KeyEmptyFn = *const fn () callconv(.c) c_int;
 inline fn keyEmpty() c_int {
     if (comptime dmcp_build) {
-        const f: KeyEmptyFn = @ptrFromInt(LIBRARY_FN_BASE + 380);
-        return f();
+        return rom.key_empty();
     } else {
         return 1;
     }

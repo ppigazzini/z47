@@ -32,14 +32,9 @@ const frontier_screen_snap = @import("screen_snap.zig");
 //     the GTK refreshLcd are host-only (comptime !dmcp_build); drawScreen / the
 //     copy*ToClipboard / get_binary_bits / refreshLcd are PC-only exports.
 //
-// DMCP-ROM trampolines (only under dmcp_build; LIBRARY_FN_BASE is read from the
-// board's lft_ifc.h by the build):
-//   lcd_fill_rect      +60  (lft_ifc.h:61)
-//   lcd_refresh        +48  (lft_ifc.h:58)
-//   lcd_refresh_lines  +56  (lft_ifc.h:60)
-//   lcd_refresh_dma    +644 (lft_ifc.h:207)
-//   LCD_write_line     +32  (lft_ifc.h:54)
-//   bitblt24           +36  (lft_ifc.h:55)  [via setBlackPixel/setWhitePixel/flipPixel]
+// DMCP ROM function-table entries, reached only under dmcp_build: lcd_fill_rect,
+// lcd_refresh, lcd_refresh_lines, lcd_refresh_dma, LCD_write_line, bitblt24 (via
+// setBlackPixel/setWhitePixel/flipPixel), lcd_line_addr, key_empty and key_tail.
 // lcd_buffer is a C47-side uint8_t* global (not ROM). placePixel is first-party.
 //
 // fnSNAP IS owned here; the z47_frontier_snap_* backup helpers it calls are owned
@@ -1119,16 +1114,16 @@ inline fn mod(n: i32, d: i32) i32 {
 }
 
 // ---------------------------------------------------------------------------
-// DMCP-ROM trampolines (only under dmcp_build; from lft_ifc.h).
+// DMCP ROM function-table entries (only under dmcp_build), each beside the host
+// symbol it stands for.
 // ---------------------------------------------------------------------------
-const LIBRARY_FN_BASE: usize = frontier_build_options.library_fn_base;
+const rom = @import("dmcp_rom");
 
 const LcdFillRectFn = *const fn (x: u32, y: u32, dx: u32, dy: u32, val: c_int) callconv(.c) void;
 const c_lcd_fill_rect = @extern(LcdFillRectFn, .{ .name = "lcd_fill_rect" });
 inline fn lcd_fill_rect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void {
     if (comptime dmcp_build) {
-        const f: LcdFillRectFn = @ptrFromInt(LIBRARY_FN_BASE + 60);
-        f(x, y, dx, dy, val);
+        rom.lcd_fill_rect(x, y, dx, dy, val);
     } else {
         c_lcd_fill_rect(x, y, dx, dy, val);
     }
@@ -1138,8 +1133,7 @@ const LcdRefreshFn = *const fn () callconv(.c) void;
 const c_lcd_refresh = @extern(LcdRefreshFn, .{ .name = "lcd_refresh" });
 inline fn lcd_refresh() void {
     if (comptime dmcp_build) {
-        const f: LcdRefreshFn = @ptrFromInt(LIBRARY_FN_BASE + 48);
-        f();
+        rom.lcd_refresh();
     } else {
         c_lcd_refresh();
     }
@@ -1149,8 +1143,7 @@ const LcdRefreshLinesFn = *const fn (ln: c_int, cnt: c_int) callconv(.c) void;
 const c_lcd_refresh_lines = @extern(LcdRefreshLinesFn, .{ .name = "lcd_refresh_lines" });
 inline fn lcd_refresh_lines(ln: c_int, cnt: c_int) void {
     if (comptime dmcp_build) {
-        const f: LcdRefreshLinesFn = @ptrFromInt(LIBRARY_FN_BASE + 56);
-        f(ln, cnt);
+        rom.lcd_refresh_lines(ln, cnt);
     } else {
         c_lcd_refresh_lines(ln, cnt);
     }
@@ -1160,8 +1153,7 @@ const LcdRefreshDmaFn = *const fn () callconv(.c) void;
 const c_lcd_refresh_dma = @extern(LcdRefreshDmaFn, .{ .name = "lcd_refresh_dma" });
 inline fn lcd_refresh_dma() void {
     if (comptime dmcp_build) {
-        const f: LcdRefreshDmaFn = @ptrFromInt(LIBRARY_FN_BASE + 644);
-        f();
+        rom.lcd_refresh_dma();
     } else {
         c_lcd_refresh_dma();
     }
@@ -1171,8 +1163,7 @@ const LcdWriteLineFn = *const fn (buf: [*c]u8) callconv(.c) void;
 const c_LCD_write_line = @extern(LcdWriteLineFn, .{ .name = "LCD_write_line" });
 inline fn LCD_write_line(buf: [*c]u8) void {
     if (comptime dmcp_build) {
-        const f: LcdWriteLineFn = @ptrFromInt(LIBRARY_FN_BASE + 32);
-        f(buf);
+        rom.LCD_write_line(buf);
     } else {
         c_LCD_write_line(buf);
     }
@@ -1182,8 +1173,7 @@ const Bitblt24Fn = *const fn (x: u32, dx: u32, y: u32, val: u32, blt_op: c_int, 
 const c_bitblt24 = @extern(Bitblt24Fn, .{ .name = "bitblt24" });
 inline fn bitblt24(x: u32, dx: u32, y: u32, val: u32, blt_op: c_int, fill: c_int) void {
     if (comptime dmcp_build) {
-        const f: Bitblt24Fn = @ptrFromInt(LIBRARY_FN_BASE + 36);
-        f(x, dx, y, val, blt_op, fill);
+        rom.bitblt24(x, dx, y, val, blt_op, fill);
     } else {
         c_bitblt24(x, dx, y, val, blt_op, fill);
     }
@@ -1286,32 +1276,19 @@ inline fn _lcdSBRefresh() void {
         c__lcdSBRefresh();
     }
 }
-// lcd_line_addr marks a line of lcd_buffer dirty and returns its pixel bytes: DMCP
-// ROM (LIBRARY_FN_BASE+40) on firmware, the HAL's own symbol on host.
+// lcd_line_addr marks a line of lcd_buffer dirty and returns its pixel bytes: a
+// DMCP ROM function-table entry on firmware, the HAL's own symbol on host.
 const LcdLineAddrFn = *const fn (row: c_int) callconv(.c) [*c]u8;
 const c_lcd_line_addr = if (!dmcp_build) @extern(LcdLineAddrFn, .{ .name = "lcd_line_addr" }) else {};
 inline fn lcd_line_addr(row: c_int) [*c]u8 {
     if (comptime dmcp_build) {
-        const f: LcdLineAddrFn = @ptrFromInt(LIBRARY_FN_BASE + 40);
-        return f(row);
+        return rom.lcd_line_addr(row);
     } else {
         return c_lcd_line_addr(row);
     }
 }
 extern fn keyBuffer_pop() void;
 extern fn emptyKeyBuffer() bool_t;
-// key_empty: DMCP ROM (LIBRARY_FN_BASE+380, lft_ifc.h:141); only called under
-// dmcp_build (the battery-power skip path).
-inline fn key_empty() c_int {
-    const f: *const fn () callconv(.c) c_int = @ptrFromInt(LIBRARY_FN_BASE + 380);
-    return f();
-}
-// key_tail: DMCP ROM (LIBRARY_FN_BASE+388, lft_ifc.h:143); only called under
-// dmcp_build (the battery-power skip path).
-inline fn key_tail() c_int {
-    const f: *const fn () callconv(.c) c_int = @ptrFromInt(LIBRARY_FN_BASE + 388);
-    return f();
-}
 
 // GraphInfo box / menu layout constants (defines.h status-bar geometry).
 const LeftGraphInfoX: u32 = 0;
@@ -4261,7 +4238,7 @@ fn _refreshRegisterLine(regist_in: calcRegister_t, restoreRegisterT: bool_t) voi
     var lastBase: [20]u8 = undefined;
 
     if (comptime dmcp_build) {
-        const pendingKey = key_tail(); // peek the DMCP buffer before the pop empties it: >0 a press, 0 a release, -1 nothing
+        const pendingKey = rom.key_tail(); // peek the DMCP buffer before the pop empties it: >0 a press, 0 a release, -1 nothing
         keyBuffer_pop();
         if (!(skippedStackLines != 0) and (calcMode == CM_NORMAL or calcMode == CM_MIM) and
             !(regist == REGISTER_X) and
@@ -4272,7 +4249,7 @@ fn _refreshRegisterLine(regist_in: calcRegister_t, restoreRegisterT: bool_t) voi
             // closed it, and deferring a line does nothing for a release.
             pendingKey > 0 and
             !(emptyKeyBuffer() != 0) and
-            key_empty() == 1)
+            rom.key_empty() == 1)
         {
             skippedStackLines = 1;
             return;
@@ -6199,7 +6176,7 @@ fn _refreshPemScreen() void {
     skippedStackLines = 0;
     if (comptime dmcp_build) {
         keyBuffer_pop();
-        if (!runningOnSimOrUSB() and !(emptyKeyBuffer() != 0) and key_empty() == 1) {
+        if (!runningOnSimOrUSB() and !(emptyKeyBuffer() != 0) and rom.key_empty() == 1) {
             skippedStackLines = 1;
             return;
         }

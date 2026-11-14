@@ -20,8 +20,8 @@ const std = @import("std");
 // VERBOSE_LEVEL is -1 for every z47 build, so all the
 // VERBOSE_LEVEL>=1/2 print_inlinestr/printf diagnostic blocks are dead and
 // omitted. The DMCP-ROM FatFs/sys/check_create_dir/make_date_filename calls are
-// fixed-address jump-table calls (LIBRARY_FN_BASE + verified offset); the host
-// stdio path uses libc, only referenced under !dmcp_build.
+// entries of the DMCP ROM function table; the host stdio path uses libc, only
+// referenced under !dmcp_build.
 //
 // graphText.c is not reachable from the testSuite; verification is by build/link
 // across every target plus the boundary gates.
@@ -39,7 +39,7 @@ const frontier_timer = @import("../timer.zig");
 const dmcp_build: bool = frontier_build_options.dmcp_build;
 const old_hw: bool = frontier_build_options.old_hw;
 
-const LIBRARY_FN_BASE: usize = frontier_build_options.library_fn_base;
+const rom = @import("dmcp_rom");
 
 // ---------------------------------------------------------------------------
 // Types
@@ -77,9 +77,7 @@ const timed: u8 = 0;
 const EOF: c_int = -1;
 
 // FatFs (ff_ifc.h)
-// FRESULT (ff_ifc.h) is an enum with no negative value, which GCC lays out as
-// unsigned int.
-const FRESULT = u32;
+const FRESULT = rom.FRESULT;
 const FR_OK: FRESULT = 0;
 const FA_READ: u8 = 0x01;
 const FA_WRITE: u8 = 0x02;
@@ -203,7 +201,7 @@ pub export fn print_linestr(line1: [*c]const u8, line_init: bool_t) callconv(.c)
     }
     frontier_screen.force_refresh(timed);
     if (comptime dmcp_build) {
-        lcd_refresh_wait();
+        rom.lcd_refresh_wait();
     }
 }
 
@@ -229,7 +227,7 @@ pub export fn print_numberstr(line1: [*c]const u8, line_init: bool_t) callconv(.
     g_line_x = 0;
     frontier_screen.force_refresh(timed);
     if (comptime dmcp_build) {
-        lcd_refresh_wait();
+        rom.lcd_refresh_wait();
     }
 }
 
@@ -256,7 +254,7 @@ pub export fn print_inlinestr(line1: [*c]const u8, endline: bool_t) callconv(.c)
     }
     frontier_screen.force_refresh(force);
     if (comptime dmcp_build) {
-        lcd_refresh_wait();
+        rom.lcd_refresh_wait();
     }
 }
 
@@ -282,9 +280,9 @@ pub export fn create_filename(fn_arg: [*c]const u8) callconv(.c) void {
     if (comptime dmcp_build) {
         const tmp__32: u32 = frontier_timer.getUptimeMs();
         if (cancelFilename or (mem__32 == 0) or (tmp__32 > mem__32 + 120000) or (stringByteLength(&filename_csv) > 10 and frontier_sort.compareString(&filename_csv[@intCast(stringByteLength(&filename_csv) - 9)], fn_arg, CMP_NAME) != 0)) {
-            _ = check_create_dir("DATA");
-            make_date_filename(&filename_csv, "DATA\\", fn_arg);
-            _ = check_create_dir("DATA");
+            _ = rom.check_create_dir("DATA");
+            rom.make_date_filename(&filename_csv, "DATA\\", fn_arg);
+            _ = rom.check_create_dir("DATA");
         }
         mem__32 = tmp__32;
         cancelFilename = false;
@@ -317,7 +315,7 @@ pub export fn export_string_to_filename(line1: [*c]const u8, mode: u8, dirname: 
         _ = strcat(&dirfile, filename);
 
         abi.fmtBufZ(tmpString[0..2560], "{s}" ++ CSV_NEWLINE, .{std.mem.span(line1)});
-        _ = check_create_dir(dirname);
+        _ = rom.check_create_dir(dirname);
         if (export_append_string_to_file(tmpString, mode, &dirfile) != 0) {
             return 1;
         }
@@ -374,24 +372,24 @@ pub export fn import_string_from_filename(line1: [*c]u8, dirname: [*c]u8, filena
         var fil: FIL = undefined;
         var fr: c_int = undefined;
 
-        _ = check_create_dir(dirname);
+        _ = rom.check_create_dir(dirname);
 
         _ = strcpy(&dirfile, dirname);
         _ = strcat(&dirfile, "\\");
         _ = strcat(&dirfile, filename_short);
 
-        fr = @intCast(f_open(&fil, &dirfile, FA_READ));
+        fr = @intCast(rom.f_open(&fil, &dirfile, FA_READ));
         if (fr != FR_OK) {
-            _ = f_close(&fil);
+            _ = rom.f_close(&fil);
 
             if (filename[0] != 0) {
                 _ = strcpy(&dirfile, dirname);
                 _ = strcat(&dirfile, "\\");
                 _ = strcat(&dirfile, filename);
 
-                fr = @intCast(f_open(&fil, &dirfile, FA_READ));
+                fr = @intCast(rom.f_open(&fil, &dirfile, FA_READ));
                 if (fr != FR_OK) {
-                    _ = f_close(&fil);
+                    _ = rom.f_close(&fil);
                     _ = strcpy(line1, fallback);
                     return 1;
                 }
@@ -403,7 +401,7 @@ pub export fn import_string_from_filename(line1: [*c]u8, dirname: [*c]u8, filena
 
         line1[0] = 0;
         _ = f_getsline(line1, if (scanning) @min(@as(c_int, 100), @as(c_int, @intCast(TMP_STR_LENGTH))) else @as(c_int, @intCast(TMP_STR_LENGTH)), &fil);
-        _ = f_close(&fil);
+        _ = rom.f_close(&fil);
 
         if (stringByteLength(line1) >= TMP_STR_LENGTH - 1) {
             _ = strcpy(line1, fallback);
@@ -574,84 +572,14 @@ pub export fn export_xy_to_file(x: f32, y: f32) callconv(.c) i16 {
 // ===========================================================================
 // DMCP-only FatFs layer. Everything below is compiled only on firmware.
 // ===========================================================================
-const WORD = u16;
 const DWORD = u32;
-const FSIZE_t = DWORD;
-const UINT = c_uint;
+const FSIZE_t = rom.FSIZE_t;
+const UINT = rom.UINT;
 const BYTE = u8;
 const TCHAR = u8;
-const FATFS = opaque {};
-const _FDID = extern struct {
-    fs: ?*FATFS,
-    id: WORD,
-    attr: BYTE,
-    stat: BYTE,
-    sclust: DWORD,
-    objsize: FSIZE_t,
-    lockid: UINT,
-};
-const FIL = extern struct {
-    obj: _FDID,
-    flag: BYTE,
-    err: BYTE,
-    fptr: FSIZE_t,
-    clust: DWORD,
-    sect: DWORD,
-    dir_sect: DWORD,
-    dir_ptr: [*c]BYTE,
-    cltbl: [*c]DWORD,
-    buf: [512]BYTE,
-};
+const FIL = rom.FIL;
 inline fn f_size(fp: *FIL) FSIZE_t {
     return fp.obj.objsize;
-}
-
-// DMCP-ROM trampolines (fixed-address on firmware; verified in lft_ifc.h).
-inline fn check_create_dir(dir: [*c]const u8) c_int {
-    const f: *const fn ([*c]const u8) callconv(.c) c_int = @ptrFromInt(LIBRARY_FN_BASE + 464);
-    return f(dir);
-}
-inline fn make_date_filename(str: [*c]u8, dir: [*c]const u8, ext: [*c]const u8) void {
-    const f: *const fn ([*c]u8, [*c]const u8, [*c]const u8) callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 604);
-    f(str, dir, ext);
-}
-inline fn sys_disk_write_enable(val: c_int) c_int {
-    const f: *const fn (c_int) callconv(.c) c_int = @ptrFromInt(LIBRARY_FN_BASE + 480);
-    return f(val);
-}
-inline fn sys_is_disk_write_enable() c_int {
-    const f: *const fn () callconv(.c) c_int = @ptrFromInt(LIBRARY_FN_BASE + 488);
-    return f();
-}
-inline fn f_open(fp: *FIL, path: [*c]const u8, mode: u8) FRESULT {
-    const f: *const fn (*FIL, [*c]const u8, u8) callconv(.c) FRESULT = @ptrFromInt(LIBRARY_FN_BASE + 564);
-    return f(fp, path, mode);
-}
-inline fn f_close(fp: *FIL) FRESULT {
-    const f: *const fn (*FIL) callconv(.c) FRESULT = @ptrFromInt(LIBRARY_FN_BASE + 568);
-    return f(fp);
-}
-inline fn f_read(fp: *FIL, buff: ?*anyopaque, btr: UINT, br: *UINT) FRESULT {
-    const f: *const fn (*FIL, ?*anyopaque, UINT, *UINT) callconv(.c) FRESULT = @ptrFromInt(LIBRARY_FN_BASE + 572);
-    return f(fp, buff, btr, br);
-}
-inline fn f_write(fp: *FIL, buff: ?*const anyopaque, btw: UINT, bw: *UINT) FRESULT {
-    const f: *const fn (*FIL, ?*const anyopaque, UINT, *UINT) callconv(.c) FRESULT = @ptrFromInt(LIBRARY_FN_BASE + 576);
-    return f(fp, buff, btw, bw);
-}
-inline fn f_lseek(fp: *FIL, ofs: FSIZE_t) FRESULT {
-    const f: *const fn (*FIL, FSIZE_t) callconv(.c) FRESULT = @ptrFromInt(LIBRARY_FN_BASE + 580);
-    return f(fp, ofs);
-}
-// lcd_refresh_wait is a fixed-address ROM jump-table call on firmware
-// (LIBRARY_FN_BASE + 648, lft_ifc.h:208), not a linkable symbol there. It is
-// only ever invoked under `if (comptime dmcp_build)` at the call sites, so the
-// host body is unreachable.
-fn lcd_refresh_wait() void {
-    if (comptime dmcp_build) {
-        const f: *const fn () callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 648);
-        f();
-    }
 }
 
 // IOMsgs[] (DMCP-only TO_QSPI table). Only .itemName is read; .count is unused.
@@ -689,7 +617,7 @@ fn f_gets(buff: [*c]TCHAR, lenIn: c_int, fp: *FIL) [*c]TCHAR {
     // Byte-by-byte read without any conversion (ANSI/OEM API)
     const len = lenIn - 1; // Make a room for the terminator
     while (nc < len) {
-        _ = f_read(fp, &s, 1, &rc); // Get a byte
+        _ = rom.f_read(fp, &s, 1, &rc); // Get a byte
         if (rc != 1) break; // EOF?
         dc = s[0];
         if (dc == '\r') continue;
@@ -712,7 +640,7 @@ fn f_getsline(buff: [*c]TCHAR, lenIn: c_int, fp: *FIL) [*c]TCHAR {
     s[1] = 0;
     const len = lenIn - 1; // Make a room for the terminator
     while (nc < len) {
-        _ = f_read(fp, &s, 1, &rc); // Get a byte
+        _ = rom.f_read(fp, &s, 1, &rc); // Get a byte
         if (rc != 1) break; // EOF?
         sc = s[0];
         p[0] = sc;
@@ -743,7 +671,7 @@ fn putc_bfd(pb: *putbuff, c: TCHAR) void {
     pb.buf[@intCast(i)] = @intCast(c);
     i += 1;
     if (i >= @as(c_int, @intCast(@sizeOf(@TypeOf(pb.buf)))) - 4) { // Write buffered characters
-        _ = f_write(pb.fp.?, &pb.buf, @intCast(i), &n);
+        _ = rom.f_write(pb.fp.?, &pb.buf, @intCast(i), &n);
         i = if (n == @as(UINT, @intCast(i))) 0 else -1;
     }
     pb.idx = i;
@@ -751,7 +679,7 @@ fn putc_bfd(pb: *putbuff, c: TCHAR) void {
 }
 fn putc_flush(pb: *putbuff) c_int {
     var nw: UINT = undefined;
-    if (pb.idx >= 0 and f_write(pb.fp.?, &pb.buf, @intCast(pb.idx), &nw) == FR_OK and @as(UINT, @intCast(pb.idx)) == nw) {
+    if (pb.idx >= 0 and rom.f_write(pb.fp.?, &pb.buf, @intCast(pb.idx), &nw) == FR_OK and @as(UINT, @intCast(pb.idx)) == nw) {
         return pb.nchr;
     }
     return EOF;
@@ -787,36 +715,36 @@ fn export_append_string_to_file(line1: [*c]const u8, mode: u8, filedir: [*c]cons
     var fil: FIL = undefined;
     var fr: c_int = undefined;
 
-    _ = sys_disk_write_enable(1);
-    fr = sys_is_disk_write_enable();
+    _ = rom.sys_disk_write_enable(1);
+    fr = rom.sys_is_disk_write_enable();
     if (fr == 0) {
         abi.fmtBufZ(&line, "{s}{d}    \n", .{ std.mem.sliceTo(&IOMsgs[1].itemName, 0), fr });
         print_linestr(&line, true);
-        _ = f_close(&fil);
-        _ = sys_disk_write_enable(0);
+        _ = rom.f_close(&fil);
+        _ = rom.sys_disk_write_enable(0);
         return fr;
     }
 
     if (mode == APPEND) {
-        fr = @intCast(f_open(&fil, filedir, FA_OPEN_APPEND | FA_WRITE));
+        fr = @intCast(rom.f_open(&fil, filedir, FA_OPEN_APPEND | FA_WRITE));
     } else {
-        fr = @intCast(f_open(&fil, filedir, FA_WRITE | FA_CREATE_ALWAYS));
+        fr = @intCast(rom.f_open(&fil, filedir, FA_WRITE | FA_CREATE_ALWAYS));
     }
     if (fr != 0) {
         abi.fmtBufZ(&line, "{s}{d}    \n", .{ std.mem.sliceTo(&IOMsgs[2].itemName, 0), fr });
         print_linestr(&line, false);
-        _ = f_close(&fil);
-        _ = sys_disk_write_enable(0);
+        _ = rom.f_close(&fil);
+        _ = rom.sys_disk_write_enable(0);
         return fr;
     }
 
     if (mode == APPEND) {
-        fr = @intCast(f_lseek(&fil, f_size(&fil)));
+        fr = @intCast(rom.f_lseek(&fil, f_size(&fil)));
         if (fr != 0) {
             abi.fmtBufZ(&line, "{s}{d}    \n", .{ std.mem.sliceTo(&IOMsgs[3].itemName, 0), fr });
             print_linestr(&line, false);
-            _ = f_close(&fil);
-            _ = sys_disk_write_enable(0);
+            _ = rom.f_close(&fil);
+            _ = rom.sys_disk_write_enable(0);
             return fr;
         }
     }
@@ -825,21 +753,21 @@ fn export_append_string_to_file(line1: [*c]const u8, mode: u8, filedir: [*c]cons
     if (fr == EOF) {
         abi.fmtBufZ(&line, "{s}{d}    \n", .{ std.mem.sliceTo(&IOMsgs[4].itemName, 0), fr });
         print_linestr(&line, false);
-        _ = f_close(&fil);
-        _ = sys_disk_write_enable(0);
+        _ = rom.f_close(&fil);
+        _ = rom.sys_disk_write_enable(0);
         return fr;
     }
 
-    fr = @intCast(f_close(&fil));
+    fr = @intCast(rom.f_close(&fil));
     if (fr != 0) {
         abi.fmtBufZ(&line, "{s}{d}    \n", .{ std.mem.sliceTo(&IOMsgs[4].itemName, 0), fr });
         print_linestr(&line, false);
-        _ = f_close(&fil);
-        _ = sys_disk_write_enable(0);
+        _ = rom.f_close(&fil);
+        _ = rom.sys_disk_write_enable(0);
         return fr;
     }
 
-    _ = sys_disk_write_enable(0);
+    _ = rom.sys_disk_write_enable(0);
     return 0;
 }
 
@@ -851,34 +779,34 @@ fn export_append_string_to_file_n(line1: [*c]const u8, mode: u8, filedir: [*c]co
 
     switch (mode) {
         OPEN, APPEND => {
-            _ = sys_disk_write_enable(1);
-            fr = sys_is_disk_write_enable();
+            _ = rom.sys_disk_write_enable(1);
+            fr = rom.sys_is_disk_write_enable();
             if (fr == 0) {
                 abi.fmtBufZ(&line, "{s}{d}    \n", .{ std.mem.sliceTo(&IOMsgs[1].itemName, 0), fr });
                 print_linestr(&line, true);
-                _ = f_close(&eastfn_fil);
-                _ = sys_disk_write_enable(0);
+                _ = rom.f_close(&eastfn_fil);
+                _ = rom.sys_disk_write_enable(0);
                 return fr;
             }
             if (mode == APPEND) {
-                fr = @intCast(f_open(&eastfn_fil, filedir, FA_OPEN_APPEND | FA_WRITE));
+                fr = @intCast(rom.f_open(&eastfn_fil, filedir, FA_OPEN_APPEND | FA_WRITE));
             } else {
-                fr = @intCast(f_open(&eastfn_fil, filedir, FA_WRITE | FA_CREATE_ALWAYS));
+                fr = @intCast(rom.f_open(&eastfn_fil, filedir, FA_WRITE | FA_CREATE_ALWAYS));
             }
             if (fr != 0) {
                 abi.fmtBufZ(&line, "{s}{d}    \n", .{ std.mem.sliceTo(&IOMsgs[2].itemName, 0), fr });
                 print_linestr(&line, false);
-                _ = f_close(&eastfn_fil);
-                _ = sys_disk_write_enable(0);
+                _ = rom.f_close(&eastfn_fil);
+                _ = rom.sys_disk_write_enable(0);
                 return fr;
             }
             if (mode == APPEND) {
-                fr = @intCast(f_lseek(&eastfn_fil, f_size(&eastfn_fil)));
+                fr = @intCast(rom.f_lseek(&eastfn_fil, f_size(&eastfn_fil)));
                 if (fr != 0) {
                     abi.fmtBufZ(&line, "{s}{d}    \n", .{ std.mem.sliceTo(&IOMsgs[3].itemName, 0), fr });
                     print_linestr(&line, false);
-                    _ = f_close(&eastfn_fil);
-                    _ = sys_disk_write_enable(0);
+                    _ = rom.f_close(&eastfn_fil);
+                    _ = rom.sys_disk_write_enable(0);
                     return fr;
                 }
             }
@@ -888,21 +816,21 @@ fn export_append_string_to_file_n(line1: [*c]const u8, mode: u8, filedir: [*c]co
             if (fr == EOF) {
                 abi.fmtBufZ(&line, "{s}{d}    \n", .{ std.mem.sliceTo(&IOMsgs[4].itemName, 0), fr });
                 print_linestr(&line, false);
-                _ = f_close(&eastfn_fil);
-                _ = sys_disk_write_enable(0);
+                _ = rom.f_close(&eastfn_fil);
+                _ = rom.sys_disk_write_enable(0);
                 return fr;
             }
         },
         CLOSE => {
-            fr = @intCast(f_close(&eastfn_fil));
+            fr = @intCast(rom.f_close(&eastfn_fil));
             if (fr != 0) {
                 abi.fmtBufZ(&line, "{s}{d}    \n", .{ std.mem.sliceTo(&IOMsgs[5].itemName, 0), fr });
                 print_linestr(&line, false);
-                _ = f_close(&eastfn_fil);
-                _ = sys_disk_write_enable(0);
+                _ = rom.f_close(&eastfn_fil);
+                _ = rom.sys_disk_write_enable(0);
                 return fr;
             }
-            _ = sys_disk_write_enable(0);
+            _ = rom.sys_disk_write_enable(0);
         },
         else => {},
     }
@@ -913,7 +841,7 @@ fn export_append_string_to_file_n(line1: [*c]const u8, mode: u8, filedir: [*c]co
 fn open_textImpl(dirname: [*c]const u8, dirfile: [*c]const u8) callconv(.c) i16 {
     var rr: [2]u8 = undefined;
     rr[0] = 0;
-    _ = check_create_dir(dirname);
+    _ = rom.check_create_dir(dirname);
     if (export_append_string_to_file_n(&rr, OPEN, dirfile) != 0) {
         return 1;
     }
@@ -974,31 +902,31 @@ fn export_append_line_short(inputstring: [*c]const u8) c_int {
     var fil: FIL = undefined;
     var fr: c_int = undefined;
 
-    _ = sys_disk_write_enable(1);
-    fr = sys_is_disk_write_enable();
+    _ = rom.sys_disk_write_enable(1);
+    fr = rom.sys_is_disk_write_enable();
     if (fr == 0) {
         abi.fmtBufZ(&line, "{s}{d}    \n", .{ std.mem.sliceTo(&IOMsgs[4].itemName, 0), fr });
         print_linestr(&line, false);
-        _ = f_close(&fil);
-        _ = sys_disk_write_enable(0);
+        _ = rom.f_close(&fil);
+        _ = rom.sys_disk_write_enable(0);
         return fr;
     }
 
-    fr = @intCast(f_open(&fil, &filename_csv, FA_OPEN_APPEND | FA_WRITE));
+    fr = @intCast(rom.f_open(&fil, &filename_csv, FA_OPEN_APPEND | FA_WRITE));
     if (fr != 0) {
         abi.fmtBufZ(&line, "{s}{d}    \n", .{ std.mem.sliceTo(&IOMsgs[2].itemName, 0), fr });
         print_linestr(&line, false);
-        _ = f_close(&fil);
-        _ = sys_disk_write_enable(0);
+        _ = rom.f_close(&fil);
+        _ = rom.sys_disk_write_enable(0);
         return fr;
     }
 
-    fr = @intCast(f_lseek(&fil, f_size(&fil)));
+    fr = @intCast(rom.f_lseek(&fil, f_size(&fil)));
     if (fr != 0) {
         abi.fmtBufZ(&line, "{s}{d}    \n", .{ std.mem.sliceTo(&IOMsgs[3].itemName, 0), fr });
         print_linestr(&line, false);
-        _ = f_close(&fil);
-        _ = sys_disk_write_enable(0);
+        _ = rom.f_close(&fil);
+        _ = rom.sys_disk_write_enable(0);
         return fr;
     }
 
@@ -1007,21 +935,21 @@ fn export_append_line_short(inputstring: [*c]const u8) c_int {
     if (fr == 0) {
         abi.fmtBufZ(&line, "{s}{d}    \n", .{ std.mem.sliceTo(&IOMsgs[4].itemName, 0), fr });
         print_linestr(&line, false);
-        _ = f_close(&fil);
-        _ = sys_disk_write_enable(0);
+        _ = rom.f_close(&fil);
+        _ = rom.sys_disk_write_enable(0);
         return fr;
     }
 
-    fr = @intCast(f_close(&fil));
+    fr = @intCast(rom.f_close(&fil));
     if (fr != 0) {
         abi.fmtBufZ(&line, "{s}{d}    \n", .{ std.mem.sliceTo(&IOMsgs[5].itemName, 0), fr });
         print_linestr(&line, false);
-        _ = f_close(&fil);
-        _ = sys_disk_write_enable(0);
+        _ = rom.f_close(&fil);
+        _ = rom.sys_disk_write_enable(0);
         return fr;
     }
 
-    _ = sys_disk_write_enable(0);
+    _ = rom.sys_disk_write_enable(0);
     return 0;
 }
 

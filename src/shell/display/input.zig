@@ -8,8 +8,8 @@ const consts = abi.constants;
 // fnPause and fnKey have fully distinct PC_BUILD and DMCP_BUILD bodies, both
 // reproduced and gated on dmcp_build. On firmware the DMCP-ROM functions
 // (lcd_refresh / wait_for_key_release / key_pop / key_empty / sys_current_ms /
-// sys_delay / sys_sleep / sys_timer_start / sys_timer_disable) are fixed-address
-// jump-table calls (LIBRARY_FN_BASE + verified offset); on host the equivalent
+// sys_delay / sys_sleep / sys_timer_start / sys_timer_disable) are entries of the
+// DMCP ROM function table; on host the equivalent
 // path uses the linkable GTK helpers (g_timeout_add / g_main_context_iteration /
 // g_source_remove / gtk_events_pending / gtk_main_iteration / refreshLcd), only
 // referenced under !dmcp_build. The DMCP status-bit macros (CLR_ST/SET_ST/ST) are
@@ -28,9 +28,6 @@ const printInputPrompt = if (ir_printing) @extern(*const fn (func: u16, regist: 
 const ITM_INPUT: u16 = 43;
 // CALCMODEL == USER_R47 (66); the C47 family is 46.
 const is_r47: bool = frontier_build_options.calcmodel == 66;
-
-const LIBRARY_FN_BASE: usize = frontier_build_options.library_fn_base;
-const SDB_BASE: usize = frontier_build_options.sdb_base;
 
 // ---------------------------------------------------------------------------
 // Types
@@ -175,50 +172,13 @@ extern fn g_main_context_iteration(context: ?*anyopaque, may_block: c_int) c_int
 extern fn g_timeout_add(interval: c_uint, function: GSourceFunc, data: gpointer) c_uint;
 
 // ---------------------------------------------------------------------------
-// DMCP-ROM trampolines (fixed-address on firmware; never referenced on host).
+// The DMCP ROM function table (firmware only; never referenced on host).
 // ---------------------------------------------------------------------------
-fn romCall0v(comptime offset: usize) void {
-    const f: *const fn () callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + offset);
-    f();
-}
-inline fn lcd_refresh() void {
-    romCall0v(48);
-}
-inline fn sys_sleep() void {
-    romCall0v(536);
-}
-inline fn wait_for_key_release(tout: c_int) void {
-    const f: *const fn (c_int) callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 420);
-    f(tout);
-}
-inline fn key_pop() c_int {
-    const f: *const fn () callconv(.c) c_int = @ptrFromInt(LIBRARY_FN_BASE + 392);
-    return f();
-}
-inline fn key_empty() c_int {
-    const f: *const fn () callconv(.c) c_int = @ptrFromInt(LIBRARY_FN_BASE + 380);
-    return f();
-}
-inline fn sys_current_ms() u32 {
-    const f: *const fn () callconv(.c) u32 = @ptrFromInt(LIBRARY_FN_BASE + 524);
-    return f();
-}
-inline fn sys_delay(ms: u32) void {
-    const f: *const fn (u32) callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 516);
-    f(ms);
-}
-inline fn sys_timer_start(timer_ix: c_int, ms_value: u32) void {
-    const f: *const fn (c_int, u32) callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 504);
-    f(timer_ix, ms_value);
-}
-inline fn sys_timer_disable(timer_ix: c_int) void {
-    const f: *const fn (c_int) callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 500);
-    f(timer_ix);
-}
+const rom = @import("dmcp_rom");
 
 // DMCP status-bit accessors over the fixed-address sdb.calc_state word.
 inline fn calcState() *volatile u32 {
-    return @ptrFromInt(SDB_BASE);
+    return &rom.sdb().calc_state;
 }
 inline fn stSet(bit: u32) void {
     calcState().* |= bit;
@@ -285,7 +245,7 @@ pub export fn fnInput(regist: u16) callconv(.c) void {
         frontier_recall.fnRecall(regist);
         frontier_screen.refreshScreen(10);
         if (comptime dmcp_build) {
-            lcd_refresh();
+            rom.lcd_refresh();
         } else {
             _ = frontier_screen.refreshLcd(null);
         }
@@ -357,20 +317,20 @@ fn goToSleepForMs(sleepTime: u32) void {
         return;
     }
     if (sleepTime > 1) {
-        sys_timer_start(TIMER_IDX_REFRESH_SLEEP, sleepTime);
+        rom.sys_timer_start(TIMER_IDX_REFRESH_SLEEP, sleepTime);
     }
     stClr(STAT_RUNNING);
     stClr(STAT_KEYUP_WAIT);
     stSet(STAT_SUSPENDED);
     while (true) {
-        sys_sleep();
-        if (!(!stVal(STAT_PGM_END) and key_empty() != 0 and emptyKeyBuffer() and !stVal(STAT_CLK_WKUP_FLAG))) break;
+        rom.sys_sleep();
+        if (!(!stVal(STAT_PGM_END) and rom.key_empty() != 0 and emptyKeyBuffer() and !stVal(STAT_CLK_WKUP_FLAG))) break;
     }
     stClr(STAT_CLK_WKUP_FLAG);
     stClr(STAT_SUSPENDED);
     stSet(STAT_RUNNING);
     if (sleepTime > 1) {
-        sys_timer_disable(TIMER_IDX_REFRESH_SLEEP);
+        rom.sys_timer_disable(TIMER_IDX_REFRESH_SLEEP);
     }
 }
 
@@ -381,8 +341,8 @@ fn pauseKeyExit(key: c_int, prevStop: *u8) bool_t {
     }
     setLastKeyCode(key);
     fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, PROGRAM_KB_ACTV);
-    wait_for_key_release(0);
-    _ = key_pop();
+    rom.wait_for_key_release(0);
+    _ = rom.key_pop();
     return true;
 }
 
@@ -414,17 +374,17 @@ pub export fn fnPause(dur: u16) callconv(.c) void {
             screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
             frontier_screen.refreshScreen(12);
         }
-        lcd_refresh();
-        wait_for_key_release(0);
-        _ = key_pop();
-        const targetMs: u32 = sys_current_ms() +% @as(u32, @intCast(duration)) *% 10;
+        rom.lcd_refresh();
+        rom.wait_for_key_release(0);
+        _ = rom.key_pop();
+        const targetMs: u32 = rom.sys_current_ms() +% @as(u32, @intCast(duration)) *% 10;
         var i: i32 = 0;
         while ((if (dur == 99) true else i < duration) and (programRunStop == PGM_PAUSED or programRunStop == PGM_KEY_PRESSED_WHILE_PAUSED)) : (i += 1) {
-            var key: c_int = key_pop();
+            var key: c_int = rom.key_pop();
             key = convertKeyCode(key);
             if (key > 0) {
                 if (key == 28 or key == 11) { // f key on C47 and R47
-                    wait_for_key_release(0);
+                    rom.wait_for_key_release(0);
                     continue;
                 }
                 if (key == 99) { // spurious screen-dump code
@@ -437,14 +397,14 @@ pub export fn fnPause(dur: u16) callconv(.c) void {
                     resetShiftState();
                     resetKeytimers();
                     stClr(STAT_KEYUP_WAIT);
-                    wait_for_key_release(0);
+                    rom.wait_for_key_release(0);
 
                     var outKey: u8 = undefined;
                     while (!emptyKeyBuffer()) {
                         _ = outKeyBuffer(&outKey);
                     }
 
-                    _ = key_pop();
+                    _ = rom.key_pop();
                     continue;
                 }
                 if (pauseKeyExit(key, &previousProgramRunStop)) {
@@ -452,7 +412,7 @@ pub export fn fnPause(dur: u16) callconv(.c) void {
                 }
             }
             if (dur == 99) {
-                if (sys_current_ms() >= targetMs and !runningOnSimOrUSB()) {
+                if (rom.sys_current_ms() >= targetMs and !runningOnSimOrUSB()) {
                     break;
                 }
                 dmcpResetAutoOff();
@@ -460,13 +420,13 @@ pub export fn fnPause(dur: u16) callconv(.c) void {
             } else {
                 dmcpResetAutoOff();
                 fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, if (programRunStop == PGM_RUNNING) PROGRAM_KB_ACTV else TO_KB_ACTV_MEDIUM);
-                sys_delay(100);
+                rom.sys_delay(100);
             }
         }
         if (dur != 0 and previousProgramRunStop != PGM_RUNNING) {
             screenUpdatingMode = SCRUPD_AUTO;
             frontier_screen.refreshScreen(1201);
-            lcd_refresh();
+            rom.lcd_refresh();
         }
     } else { // PC_BUILD
         if (gTimerId != 0) {
@@ -504,7 +464,7 @@ pub export fn fnPause(dur: u16) callconv(.c) void {
         screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
         frontier_screen.refreshScreen(13);
         if (comptime dmcp_build) {
-            lcd_refresh();
+            rom.lcd_refresh();
         } else {
             _ = frontier_screen.refreshLcd(null);
         }

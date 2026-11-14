@@ -94,8 +94,8 @@ extern fn fnClearFlag(flag: u16) void;
 extern fn printf(fmt: [*:0]const u8, ...) c_int;
 const refreshScreen = abi.host.requestRefresh; // routed through the host-callback boundary
 
-// power_check_screen / sys_timer_* are DMCP function-table macros, not link
-// symbols; route through the Zig ROM-HAL trampolines (no-op on host).
+// power_check_screen / sys_timer_* are DMCP function-table entries, not link
+// symbols; dmcp_rom holds them, and its powerCheckScreen answers on host too.
 const rom = @import("dmcp_rom");
 const calc_state = @import("calc_state.zig"); // intra-object Zig-to-Zig
 extern fn fnTimerStart(nr: u8, param: u16, time: u32) void;
@@ -117,7 +117,7 @@ pub fn restoreCalc() void {
 // power_check_screen paints its own screen on DMCP and leaves the composition
 // manual, so the mode goes back to automatic whether or not the power is low.
 pub fn checkPower() bool {
-    const low_power = rom.power_check_screen();
+    const low_power = rom.powerCheckScreen();
     if (comptime is_dmcp_build) {
         screenUpdatingMode = SCRUPD_AUTO;
     }

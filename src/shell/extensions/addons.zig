@@ -5,7 +5,7 @@
 //   - fnEdit (the EDIT command: data-type-dispatch NIM editor + the CM_PEM
 //     program-step editor that drives tam-state / pemAddNumber / tamProcessInput);
 //   - standardScreenDump (DMCP), anyKeyWaiting / exitKeyWaiting / C47PopKeyNoBuffer
-//     (platform key-buffer helpers reaching DMCP ROM trampolines on firmware);
+//     (platform key-buffer helpers reaching the DMCP ROM on firmware);
 //   - fnShoiXRepeats, fnFrom_ymd, fnFrom_ms, fnTo_ms, addzeroes, fnMultiplySI,
 //     the fn_cnst_* complex/matrix constant pushers, the OPTION_VECTOR stk<->mx
 //     converters (fnExchangeStkToMx / fnConvertStkToMx / fnConvertMxToStk + the
@@ -38,7 +38,7 @@
 //     Both are build options; the converters need (option_vector OR option_elec).
 //     fnExchangeStkToMx is OPTION_VECTOR-only.
 //   * DMCP_BUILD gates standardScreenDump and the DMCP arms of the key helpers
-//     (the ROM trampolines). PC_BUILD arms run on host.
+//     (the ROM calls). PC_BUILD arms run on host.
 //   * EXTRA_INFO_ON_CALC_ERROR moreInfoOnError hints: host only, gated on extra_info.
 //   * PC_BUILD-only printf telltales are host-only (gated on !dmcp_build).
 //
@@ -55,7 +55,7 @@
 // inline, and registers.c's vector queries (isRegisterMatrix*dVector,
 // get/setVectorRegisterPolarMode) are reached through abi.registers. The DMCP ROM
 // screen/key calls are reached only under
-// `if (comptime dmcp_build)` via LIBRARY_FN_BASE trampolines.
+// `if (comptime dmcp_build)`, through the dmcp_rom function table.
 
 const std = @import("std");
 const matrix_editor_entry = @import("../matrix_editor/matrix_editor_entry.zig");
@@ -78,8 +78,8 @@ const DRG_NIM_BIT: u3 = 5;
 const DRG_AUTO_ADM_BIT: u3 = 6;
 const WRITE_BUFFER_LEN: i32 = 4096;
 
-// DMCP ROM trampoline base (lft_ifc.h offsets; base differs old_hw / new_hw).
-const LIBRARY_FN_BASE: usize = frontier_build_options.library_fn_base;
+// The DMCP ROM function table.
+const rom = @import("dmcp_rom");
 
 const code_section = abi.codeSection(dmcp_build and old_hw);
 
@@ -750,13 +750,12 @@ inline fn realSetNegativeSign(operand: *real_t) void {
 
 // glyph painters runtime. setBlackPixel/setWhitePixel are static inline over
 // bitblt24 (screen.h); placePixel is a real function. On firmware bitblt24 is a
-// DMCP ROM trampoline (lft_ifc.h, LIBRARY_FN_BASE+36); on host it is linkable.
+// DMCP ROM function-table entry; on host it is linkable.
 const Bitblt24Fn = *const fn (x: u32, dx: u32, y: u32, val: u32, blt_op: c_int, fill: c_int) callconv(.c) void;
 const c_bitblt24 = if (!dmcp_build) @extern(Bitblt24Fn, .{ .name = "bitblt24" }) else {};
 inline fn bitblt24(x: u32, dx: u32, y: u32, val: u32, blt_op: c_int, fill: c_int) void {
     if (comptime dmcp_build) {
-        const f: Bitblt24Fn = @ptrFromInt(LIBRARY_FN_BASE + 36);
-        f(x, dx, y, val, blt_op, fill);
+        rom.bitblt24(x, dx, y, val, blt_op, fill);
     } else {
         c_bitblt24(x, dx, y, val, blt_op, fill);
     }
@@ -1708,50 +1707,18 @@ fn editPemNonLiteral(func_in: i16, opParam_in: u8, opParam2_in: u8, opParam3: u8
 }
 
 // ===========================================================================
-// DMCP ROM trampolines (lft_ifc.h offsets; reached only under dmcp_build).
+// lcd_fill_rect: a DMCP ROM function-table entry on firmware.
 // ===========================================================================
 const LcdFillRectFn = *const fn (u32, u32, u32, u32, c_int) callconv(.c) void;
-const CreateScreenshotFn = *const fn (c_int) callconv(.c) c_int;
-const KeyEmptyFn = *const fn () callconv(.c) c_int;
-const KeyTailFn = *const fn () callconv(.c) c_int;
-const KeyPopFn = *const fn () callconv(.c) c_int;
-const KeyPopAllFn = *const fn () callconv(.c) void;
-const WaitForKeyReleaseFn = *const fn (c_int) callconv(.c) void;
-
 const c_lcd_fill_rect = @extern(LcdFillRectFn, .{ .name = "lcd_fill_rect" });
 inline fn lcd_fill_rect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void {
-    // On firmware this is a ROM trampoline; on host the linkable symbol exists
+    // On firmware this is a ROM function-table entry; on host the linkable symbol exists
     // (see frontier_status_bar_owned), so the CB background-clear works on PC too.
     if (comptime dmcp_build) {
-        const f: LcdFillRectFn = @ptrFromInt(LIBRARY_FN_BASE + 60);
-        f(x, y, dx, dy, val);
+        rom.lcd_fill_rect(x, y, dx, dy, val);
     } else {
         c_lcd_fill_rect(x, y, dx, dy, val);
     }
-}
-inline fn create_screenshot(a: c_int) c_int {
-    const f: CreateScreenshotFn = @ptrFromInt(LIBRARY_FN_BASE + 376);
-    return f(a);
-}
-inline fn key_empty() c_int {
-    const f: KeyEmptyFn = @ptrFromInt(LIBRARY_FN_BASE + 380);
-    return f();
-}
-inline fn key_tail() c_int {
-    const f: KeyTailFn = @ptrFromInt(LIBRARY_FN_BASE + 388);
-    return f();
-}
-inline fn key_pop() c_int {
-    const f: KeyPopFn = @ptrFromInt(LIBRARY_FN_BASE + 392);
-    return f();
-}
-inline fn key_pop_all() void {
-    const f: KeyPopAllFn = @ptrFromInt(LIBRARY_FN_BASE + 400);
-    f();
-}
-inline fn wait_for_key_release(a: c_int) void {
-    const f: WaitForKeyReleaseFn = @ptrFromInt(LIBRARY_FN_BASE + 420);
-    f(a);
 }
 
 const force: u8 = 1;
@@ -1775,7 +1742,7 @@ fn standardScreenDump() void {
     // play at whatever volume the user set and the volume is never touched.
     _Buzz(100, 5);
     _ = frontier_char_string.xcopy(saved, errorMessage, BACKED_UP_BUFFER_BYTES);
-    _ = create_screenshot(0);
+    _ = rom.create_screenshot(0);
     _ = frontier_char_string.xcopy(errorMessage, saved, BACKED_UP_BUFFER_BYTES);
     _Buzz(100, 5);
 }
@@ -1791,7 +1758,7 @@ fn standardScreenDumpExport() callconv(.c) void {
 
 pub export fn anyKeyWaiting() callconv(.c) bool_t {
     if (comptime dmcp_build) {
-        return @intFromBool(key_empty() == 0 or key_tail() != -1);
+        return @intFromBool(rom.key_empty() == 0 or rom.key_tail() != -1);
     } else {
         return @intFromBool(currentKeyCode == 32);
     }
@@ -1807,7 +1774,7 @@ pub export fn exitKeyWaiting() callconv(.c) bool_t {
         const ringInterrupt = interruptKeyInBuffer();
         const checkKey: bool_t = @intFromBool((interruptKey == 32 or interruptKey == 35) or ringInterrupt);
         if (checkKey == 0) {
-            key_pop_all();
+            rom.key_pop_all();
             clearKeyBuffer();
         } else if (ringInterrupt) {
             // Consume the ring-buffer key so a queued R/S cannot later relaunch
@@ -1849,13 +1816,13 @@ pub export fn C47PopKeyNoBuffer(displayWaitForRelease: bool_t) callconv(.c) c_in
         if (displayWaitForRelease != 0) {
             frontier_screen.force_refresh(force);
         }
-        wait_for_key_release(0);
+        rom.wait_for_key_release(0);
         var signalToDoScreenDump: bool = false;
         var signalToDoEXIT: bool = false;
         var signalToDoRS: bool = false;
         var tmpz: c_int = -1;
         while (anyKeyWaiting() != 0) {
-            tmpz = key_pop();
+            tmpz = rom.key_pop();
             if (tmpz > 0) {
                 tmpf = tmpz;
             }

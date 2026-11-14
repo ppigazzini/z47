@@ -958,7 +958,7 @@ pub export fn reallyRunFunction(func: i16, param: u16) callconv(.c) void {
         // resumably between steps like an R/S press and the calculator powers down in an orderly manner.
         // Keep the threshold in sync with checkBattery().
         const vbat = updateVbatIntegrated(0);
-        if (programRunStop == PGM_RUNNING and (vbat < BAT_MINIMUM or vbatVIntegrated < BAT_MINIMUM) and usb_powered() != 1) {
+        if (programRunStop == PGM_RUNNING and (vbat < BAT_MINIMUM or vbatVIntegrated < BAT_MINIMUM) and rom.usb_powered() != 1) {
             setSystemFlag(FLAG_LOWBAT);
             programRunStop = PGM_WAITING;
             setStatPgmEnd();
@@ -1004,20 +1004,13 @@ extern var vbatVIntegrated: c_int;
 const FLAG_LOWBAT: c_uint = 0xc015;
 const BAT_MINIMUM: c_int = 2100;
 
-// DMCP ROM trampoline (firmware only); offset from dep/DMCP_SDK/dmcp/lft_ifc.h.
-const UsbPoweredFn = *const fn () callconv(.c) c_int;
-const LIBRARY_FN_BASE: usize = frontier_build_options.library_fn_base;
-inline fn usb_powered() c_int {
-    const f: UsbPoweredFn = @ptrFromInt(LIBRARY_FN_BASE + 288);
-    return f();
-}
+// The DMCP ROM function table (firmware only).
+const rom = @import("dmcp_rom");
 
 // SET_ST(STAT_PGM_END): set a bit in the fixed-address sdb.calc_state word.
-const SDB_BASE: usize = frontier_build_options.sdb_base;
 const STAT_PGM_END: u32 = 1 << 9;
 inline fn setStatPgmEnd() void {
-    const calc_state: *volatile u32 = @ptrFromInt(SDB_BASE);
-    calc_state.* |= STAT_PGM_END;
+    rom.sdb().calc_state |= STAT_PGM_END;
 }
 
 // host-only (PC_BUILD)

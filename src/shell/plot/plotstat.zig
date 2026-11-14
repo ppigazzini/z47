@@ -42,8 +42,8 @@ const const_1 = consts.const_1;
 // DMCP/PC split: the only direct ROM macros plotstat.c uses are lcd_fill_rect
 // (clearScreenPixels, graphAxisDraw) and setBlackPixel/setWhitePixel (static
 // inline in hal/lcd.h -> bitblt24). lcd_refresh appears only inside fnPlotStat
-// which is provided elsewhere. All are fixed-address jump-table calls
-// (LIBRARY_FN_BASE + verified offset) on firmware, real GTK symbols on host.
+// which is provided elsewhere. All are DMCP ROM function-table entries on
+// firmware, real GTK symbols on host.
 //
 // plotstat.c is not reachable from the testSuite; verification is build/link
 // across every target plus the boundary gates.
@@ -55,7 +55,7 @@ const dmcp_build: bool = frontier_build_options.dmcp_build;
 const old_hw: bool = frontier_build_options.old_hw;
 const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 
-const LIBRARY_FN_BASE: usize = frontier_build_options.library_fn_base;
+const rom = @import("dmcp_rom");
 
 // ---------------------------------------------------------------------------
 // Types
@@ -503,9 +503,7 @@ inline fn stringByteLength(s: [*c]const u8) i32 {
 }
 
 // ---------------------------------------------------------------------------
-// DMCP-ROM trampolines (fixed-address on firmware; verified in lft_ifc.h).
-//   lcd_fill_rect: LIBRARY_FN_BASE + 60 (lft_ifc.h:61)
-//   bitblt24:      LIBRARY_FN_BASE + 36 (lft_ifc.h:55)
+// lcd_fill_rect and bitblt24: DMCP ROM function-table entries on firmware.
 // setBlackPixel/setWhitePixel are static inline in hal/lcd.h -> bitblt24.
 // On host these resolve to real GTK-layer symbols.
 // ---------------------------------------------------------------------------
@@ -513,8 +511,7 @@ const LcdFillRectFn = *const fn (x: u32, y: u32, dx: u32, dy: u32, val: c_int) c
 const c_lcd_fill_rect = @extern(LcdFillRectFn, .{ .name = "lcd_fill_rect" });
 inline fn lcd_fill_rect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void {
     if (comptime dmcp_build) {
-        const f: LcdFillRectFn = @ptrFromInt(LIBRARY_FN_BASE + 60);
-        f(x, y, dx, dy, val);
+        rom.lcd_fill_rect(x, y, dx, dy, val);
     } else {
         c_lcd_fill_rect(x, y, dx, dy, val);
     }
@@ -524,8 +521,7 @@ const Bitblt24Fn = *const fn (x: u32, dx: u32, y: u32, val: u32, blt_op: c_int, 
 const c_bitblt24 = @extern(Bitblt24Fn, .{ .name = "bitblt24" });
 inline fn bitblt24(x: u32, dx: u32, y: u32, val: u32, blt_op: c_int, fill: c_int) void {
     if (comptime dmcp_build) {
-        const f: Bitblt24Fn = @ptrFromInt(LIBRARY_FN_BASE + 36);
-        f(x, dx, y, val, blt_op, fill);
+        rom.bitblt24(x, dx, y, val, blt_op, fill);
     } else {
         c_bitblt24(x, dx, y, val, blt_op, fill);
     }

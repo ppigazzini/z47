@@ -28,15 +28,15 @@ const const34_1e6 = consts.const34_1e6;
 // This is a faithful, line-by-line port of the C. Numeric constants come from the
 // shared `constants` blob by byte offset through the word-aligned cst34()/cstR()
 // accessors. real34 ops go through decQuad/decimal128 externs; long integers go
-// straight to mpz_*; the firmware RTC path uses the fixed-address SDK call.
+// straight to mpz_*; the firmware RTC path reads the DMCP ROM's rtc_read.
 
 const builtin = @import("builtin");
 const std = @import("std");
 const frontier_build_options = @import("frontier_build_options");
 const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 const dmcp_build: bool = frontier_build_options.dmcp_build;
-// LIBRARY_FN_BASE (lft_ifc.h): the ROM function table of the board's SDK.
-const LIBRARY_FN_BASE: usize = frontier_build_options.library_fn_base;
+// The DMCP ROM function table of the board's SDK.
+const rom = @import("dmcp_rom");
 
 // ---------------------------------------------------------------------------
 // Types
@@ -516,11 +516,6 @@ pub export fn convertDateRegisterToReal34Register(source: calcRegister_t, destin
     }
 }
 
-const rtc_read: *const fn (*tm_t, *dt_t) callconv(.c) void = if (dmcp_build)
-    @ptrFromInt(LIBRARY_FN_BASE + 204)
-else
-    undefined;
-
 pub export fn convertReal34RegisterToDateRegister(source: calcRegister_t, destination: calcRegister_t, handleYY: bool) callconv(.c) void {
     var part1: real34_t = undefined;
     var part2: real34_t = undefined;
@@ -574,7 +569,7 @@ pub export fn convertReal34RegisterToDateRegister(source: calcRegister_t, destin
             if (comptime dmcp_build) {
                 var timeInfo: tm_t = undefined;
                 var dateInfo: dt_t = undefined;
-                rtc_read(&timeInfo, &dateInfo);
+                rom.rtc_read(&timeInfo, &dateInfo);
                 pcYear = dateInfo.year;
             } else {
                 const epoch: i64 = time(null);

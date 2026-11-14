@@ -114,8 +114,8 @@ extern fn readLine(line: [*c]u8, maxLen: usize) void;
 extern fn ioFileSeek(position: u32) void;
 extern fn getFreeRamMemory() u32;
 
-// power_check_screen is a DMCP function-table macro, not a link symbol; the Zig
-// ROM-HAL trampoline (no-op on host) supplies it.
+// power_check_screen is a DMCP function-table entry, not a link symbol;
+// dmcp_rom's powerCheckScreen calls it on firmware and answers on host.
 const rom = @import("dmcp_rom");
 
 fn cStringLength(text: [*c]const u8) usize {
@@ -137,7 +137,7 @@ const SCRUPD_AUTO: u8 = 0x00;
 // power_check_screen paints its own screen on DMCP and leaves the composition
 // manual, so the mode goes back to automatic whether or not the power is low.
 pub fn checkPower() bool {
-    const low_power = rom.power_check_screen();
+    const low_power = rom.powerCheckScreen();
     if (comptime is_dmcp_build) {
         screenUpdatingMode = SCRUPD_AUTO;
     }

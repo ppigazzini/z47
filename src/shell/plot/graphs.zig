@@ -32,12 +32,12 @@ const std = @import("std");
 // linksection(code_section) (pure-byte -> code_section is correct; gotcha D's
 // pointer-bearing tables do not apply).
 //
-// PLATFORM SPLIT: fnPlotSQ's screen kick is `lcd_refresh()` on DMCP (fixed-
-// address ROM trampoline LIBRARY_FN_BASE + 48, lft_ifc.h:58) vs `frontier_screen.refreshLcd(NULL)`
-// on host (a real linkable symbol). clearScreen(1) in fnStatList is a host/
-// firmware macro -> lcd_fill_rect(0,0,SCREEN_WIDTH,240,LCD_SET_VALUE)+frontier_status_bar.forceSBupdate();
-// lcd_fill_rect is the ROM trampoline LIBRARY_FN_BASE + 60 (lft_ifc.h:61) on
-// firmware and a real GTK symbol on host.
+// PLATFORM SPLIT: fnPlotSQ's screen kick is `lcd_refresh()` on DMCP (a ROM
+// function-table entry) vs `frontier_screen.refreshLcd(NULL)` on host (a real
+// linkable symbol). clearScreen(1) in fnStatList is a host/firmware macro ->
+// lcd_fill_rect(0,0,SCREEN_WIDTH,240,LCD_SET_VALUE)+frontier_status_bar.forceSBupdate();
+// lcd_fill_rect is a ROM function-table entry on firmware and a real GTK symbol
+// on host.
 //
 // BUILD-CONFIG (probed in src/c47/defines.h for the standard frontier build):
 //   * OPTION_MOREGRAPHICS IS defined -> the whole body of graph_plotmem, plus
@@ -64,7 +64,7 @@ const frontier_build_options = @import("frontier_build_options");
 const dmcp_build: bool = frontier_build_options.dmcp_build;
 const old_hw: bool = frontier_build_options.old_hw;
 const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
-const LIBRARY_FN_BASE: usize = frontier_build_options.library_fn_base;
+const rom = @import("dmcp_rom");
 const code_section = abi.codeSection(dmcp_build and old_hw);
 const code_data_section = abi.codeDataSection(dmcp_build and old_hw);
 
@@ -323,24 +323,22 @@ extern fn snprintf(buf: [*c]u8, size: usize, fmt: [*:0]const u8, ...) c_int;
 // host-only screen refresh (referenced under !dmcp_build).
 
 // ---------------------------------------------------------------------------
-// DMCP-ROM trampolines (fixed-address on firmware; verified in lft_ifc.h).
-// lcd_refresh:   LIBRARY_FN_BASE + 48 (lft_ifc.h:58) — only under dmcp_build.
-// lcd_fill_rect: LIBRARY_FN_BASE + 60 (lft_ifc.h:61) — real GTK symbol on host.
+// DMCP ROM function-table entries on firmware.
+// lcd_refresh:   only under dmcp_build.
+// lcd_fill_rect: real GTK symbol on host.
 // ---------------------------------------------------------------------------
 const LcdFillRectFn = *const fn (x: u32, y: u32, dx: u32, dy: u32, val: c_int) callconv(.c) void;
 const c_lcd_fill_rect = @extern(LcdFillRectFn, .{ .name = "lcd_fill_rect" });
 inline fn lcd_fill_rect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void {
     if (comptime dmcp_build) {
-        const f: LcdFillRectFn = @ptrFromInt(LIBRARY_FN_BASE + 60);
-        f(x, y, dx, dy, val);
+        rom.lcd_fill_rect(x, y, dx, dy, val);
     } else {
         c_lcd_fill_rect(x, y, dx, dy, val);
     }
 }
 pub inline fn lcd_refresh() void {
     if (comptime dmcp_build) {
-        const f: *const fn () callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 48);
-        f();
+        rom.lcd_refresh();
     }
 }
 

@@ -39,9 +39,9 @@ const display_format = @import("display/display_format.zig");
 // host a pool block promises no more than that.
 //
 // Firmware-only (DMCP_BUILD) code is gated on comptime dmcp_build; DMCP ROM
-// functions are reached through @ptrFromInt(LIBRARY_FN_BASE + offset) trampolines
-// (offsets from dep/DMCP_SDK/dmcp/lft_ifc.h). SET_ST(STAT_PGM_END) writes the
-// fixed-address sdb.calc_state word (SDB_BASE). PC_BUILD-only code is host-only.
+// functions are reached through the dmcp_rom function table. SET_ST(STAT_PGM_END)
+// writes the fixed-address sdb.calc_state word. PC_BUILD-only code is
+// host-only.
 // Dead code (VERBOSE_LEVEL == -1 printf blocks, /* */-commented bodies,
 // MONITOR_VOLTAGE_INTEGRATOR) is skipped. defines.h defines OPTION_HP35 and
 // OPTION_DEVPROFILES for every z47 build -- host and DMCP alike, since every DMCP
@@ -66,9 +66,7 @@ const code_section = abi.codeSection(dmcp_build and old_hw);
 
 const code_data_section = abi.codeDataSection(dmcp_build and old_hw);
 
-// DMCP ROM trampoline base + the fixed sdb.calc_state address.
-const LIBRARY_FN_BASE: usize = frontier_build_options.library_fn_base;
-const SDB_BASE: usize = frontier_build_options.sdb_base;
+// The fixed sdb.calc_state address.
 const STAT_PGM_END: u32 = 1 << 9;
 
 // ---------------------------------------------------------------------------
@@ -1027,8 +1025,7 @@ const normKey00ItemInLayout = frontier_assign.getNormKey00ItemInLayout;
 
 // SET_ST(STAT_PGM_END): set the bit in the fixed-address sdb.calc_state word.
 inline fn setStatPgmEnd() void {
-    const calc_state: *volatile u32 = @ptrFromInt(SDB_BASE);
-    calc_state.* |= STAT_PGM_END;
+    rom.sdb().calc_state |= STAT_PGM_END;
 }
 
 // ===========================================================================
@@ -1600,7 +1597,7 @@ pub export fn fnBatteryVoltage(unusedButMandatoryParameter: u16) callconv(.c) vo
     if (comptime !dmcp_build) {
         int32ToReal(3100, &value);
     } else {
-        const tmpVbat = romGetVbat();
+        const tmpVbat = rom.get_vbat();
         if (tmpVbat < vbatVIntegrated) {
             // BATT# read outside the sampling schedule pulls the integrator down;
             // every opportunity to keep it down counts, not just the schedule.
@@ -2183,22 +2180,22 @@ fn addTestPrograms() void {
     firstDisplayedLocalStepNumber = 0;
 
     if (comptime dmcp_build) {
-        const sdb_ppgm_fp: *?*anyopaque = @ptrFromInt(SDB_BASE + SDB_PPGM_FP_OFF);
-        if (romFOpen(sdb_ppgm_fp.*, "testPgms.bin", FA_READ) != FR_OK) {
+        const ppgm_fp = rom.sdb().ppgm_fp;
+        if (rom.f_open(ppgm_fp, "testPgms.bin", FA_READ) != FR_OK) {
             markNoTestPrograms(numberOfBytesForTheTestPrograms);
         } else {
             var bytesRead: c_uint = 0;
-            _ = romFRead(sdb_ppgm_fp.*, &numberOfBytesUsed, @sizeOf(@TypeOf(numberOfBytesUsed)), &bytesRead);
+            _ = rom.f_read(ppgm_fp, &numberOfBytesUsed, @sizeOf(@TypeOf(numberOfBytesUsed)), &bytesRead);
             const header_read = bytesRead == @sizeOf(@TypeOf(numberOfBytesUsed));
             if (!header_read or !testProgramsSizeIsUsable(numberOfBytesUsed, numberOfBytesForTheTestPrograms)) {
                 // The size the file claims does not fit the region, or the file is
                 // too short to even state one. Take the same path a missing file
                 // takes rather than reading a length the region cannot hold.
-                _ = romFClose(sdb_ppgm_fp.*);
+                _ = rom.f_close(ppgm_fp);
                 markNoTestPrograms(numberOfBytesForTheTestPrograms);
             } else {
-                _ = romFRead(sdb_ppgm_fp.*, beginOfProgramMemory, numberOfBytesUsed, &bytesRead);
-                _ = romFClose(sdb_ppgm_fp.*);
+                _ = rom.f_read(ppgm_fp, beginOfProgramMemory, numberOfBytesUsed, &bytesRead);
+                _ = rom.f_close(ppgm_fp);
 
                 if (bytesRead != numberOfBytesUsed) {
                     // A short read leaves the tail of the program area holding
@@ -2254,12 +2251,8 @@ fn addTestPrograms() void {
     }
 }
 const FA_READ: u8 = 0x01;
-// FRESULT (ff_ifc.h) is an enum with no negative value, which GCC lays out as
-// unsigned int.
-const FRESULT = u32;
+const FRESULT = rom.FRESULT;
 const FR_OK: FRESULT = 0;
-// sdb layout: volatile uint32_t calc_state; FIL *ppgm_fp; ... -> ppgm_fp at +4.
-const SDB_PPGM_FP_OFF: usize = 4;
 extern fn fopen(path: [*:0]const u8, mode: [*:0]const u8) ?*anyopaque;
 extern fn fread(ptr: *anyopaque, size: usize, nmemb: usize, stream: *anyopaque) usize;
 extern fn fclose(stream: *anyopaque) c_int;
@@ -2314,8 +2307,8 @@ pub export fn doFnReset(confirmation: u16, autoSav: bool_t) callconv(.c) void {
 
         if (tmpString == null) {
             if (comptime dmcp_build) {
-                tmpString = romAuxBufPtr();
-                errorMessage = romWriteBufPtr();
+                tmpString = rom.aux_buf_ptr();
+                errorMessage = rom.write_buf_ptr();
             } else {
                 tmpString = malloc(TMP_STR_LENGTH);
                 errorMessage = malloc(WRITE_BUFFER_LEN);
@@ -2661,7 +2654,7 @@ pub export fn doFnReset(confirmation: u16, autoSav: bool_t) callconv(.c) void {
 }
 
 // ---------------------------------------------------------------------------
-// doFnReset support: externs, helpers, ROM trampolines.
+// doFnReset support: externs and helpers.
 // ---------------------------------------------------------------------------
 const NO_SCREEN: u8 = 0;
 const PMODE_DEFAULT: c_int = 0;
@@ -2715,8 +2708,7 @@ const LcdFillRectFn = *const fn (x: u32, y: u32, dx: u32, dy: u32, val: c_int) c
 const c_lcd_fill_rect = if (!dmcp_build) @extern(LcdFillRectFn, .{ .name = "lcd_fill_rect" }) else {};
 inline fn lcdFillRect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void {
     if (comptime dmcp_build) {
-        const f: LcdFillRectFn = @ptrFromInt(LIBRARY_FN_BASE + 60);
-        f(x, y, dx, dy, val);
+        rom.lcd_fill_rect(x, y, dx, dy, val);
     } else {
         c_lcd_fill_rect(x, y, dx, dy, val);
     }
@@ -2732,59 +2724,6 @@ extern fn getLineDelay() u32;
 
 // host: fnLoadAuto only referenced under dmcp_build. checkBattery firmware-only.
 extern fn fnLoadAuto() void;
-
-// DMCP ROM trampolines (firmware only).
-const GetVbatFn = *const fn () callconv(.c) c_int;
-const UsbPoweredFn = *const fn () callconv(.c) c_int;
-const KeyEmptyFn = *const fn () callconv(.c) c_int;
-const ResetAutoOffFn = *const fn () callconv(.c) void;
-const RunMenuItemSysFn = *const fn (line_id: u8) callconv(.c) c_int;
-const AuxBufPtrFn = *const fn () callconv(.c) [*c]align(4) u8;
-const WriteBufPtrFn = *const fn () callconv(.c) [*c]u8;
-const FOpenFn = *const fn (fp: ?*anyopaque, path: [*:0]const u8, mode: u8) callconv(.c) FRESULT;
-const FCloseFn = *const fn (fp: ?*anyopaque) callconv(.c) FRESULT;
-const FReadFn = *const fn (fp: ?*anyopaque, buff: ?*anyopaque, btr: c_uint, br: *c_uint) callconv(.c) FRESULT;
-
-inline fn romGetVbat() c_int {
-    const f: GetVbatFn = @ptrFromInt(LIBRARY_FN_BASE + 240);
-    return f();
-}
-inline fn romUsbPowered() c_int {
-    const f: UsbPoweredFn = @ptrFromInt(LIBRARY_FN_BASE + 288);
-    return f();
-}
-inline fn romKeyEmpty() c_int {
-    const f: KeyEmptyFn = @ptrFromInt(LIBRARY_FN_BASE + 380);
-    return f();
-}
-inline fn romResetAutoOff() void {
-    const f: ResetAutoOffFn = @ptrFromInt(LIBRARY_FN_BASE + 440);
-    f();
-}
-inline fn romRunMenuItemSys(line_id: u8) c_int {
-    const f: RunMenuItemSysFn = @ptrFromInt(LIBRARY_FN_BASE + 728);
-    return f(line_id);
-}
-inline fn romAuxBufPtr() [*c]align(4) u8 {
-    const f: AuxBufPtrFn = @ptrFromInt(LIBRARY_FN_BASE + 292);
-    return f();
-}
-inline fn romWriteBufPtr() [*c]u8 {
-    const f: WriteBufPtrFn = @ptrFromInt(LIBRARY_FN_BASE + 296);
-    return f();
-}
-inline fn romFOpen(fp: ?*anyopaque, path: [*:0]const u8, mode: u8) FRESULT {
-    const f: FOpenFn = @ptrFromInt(LIBRARY_FN_BASE + 564);
-    return f(fp, path, mode);
-}
-inline fn romFClose(fp: ?*anyopaque) FRESULT {
-    const f: FCloseFn = @ptrFromInt(LIBRARY_FN_BASE + 568);
-    return f(fp);
-}
-inline fn romFRead(fp: ?*anyopaque, buff: ?*anyopaque, btr: c_uint, br: *c_uint) FRESULT {
-    const f: FReadFn = @ptrFromInt(LIBRARY_FN_BASE + 572);
-    return f(fp, buff, btr, br);
-}
 
 // vbatVIntegrated / nextTimerRefresh / backToDMCP (firmware globals).
 extern var vbatVIntegrated: c_int;
@@ -2818,8 +2757,8 @@ var loopVar: i16 = 0;
 var loop2Var: i16 = 0;
 
 fn dmcpResetAutoOff_impl() callconv(.c) void {
-    if (romKeyEmpty() == 0 or !emptyKeyBuffer() or ((calcMode == CM_TIMER) and timerStartTime != TIMER_APP_STOPPED) or !getSystemFlag(FLAG_AUTOFF_i) or getSystemFlag(FLAG_RUNTIM_i) or programRunStop == PGM_RUNNING_v or (nextTimerRefresh != 0)) {
-        romResetAutoOff();
+    if (rom.key_empty() == 0 or !emptyKeyBuffer() or ((calcMode == CM_TIMER) and timerStartTime != TIMER_APP_STOPPED) or !getSystemFlag(FLAG_AUTOFF_i) or getSystemFlag(FLAG_RUNTIM_i) or programRunStop == PGM_RUNNING_v or (nextTimerRefresh != 0)) {
+        rom.reset_auto_off();
     }
 }
 const FLAG_AUTOFF_i: i32 = 32798;
@@ -2857,7 +2796,7 @@ fn updateVbatIntegrated_impl(minutePulse: bool_t) callconv(.c) c_int {
     }
     vbatSampledAt = now;
 
-    const tmpVbat = romGetVbat();
+    const tmpVbat = rom.get_vbat();
     vbatSample = tmpVbat;
     const r = vbat_integrator.integrate(vbatVIntegrated, tmpVbat, minutePulse);
     vbatVIntegrated = r.integrated;
@@ -2868,7 +2807,7 @@ fn updateVbatIntegrated_impl(minutePulse: bool_t) callconv(.c) c_int {
 }
 
 fn checkBattery_impl() callconv(.c) void {
-    if (romUsbPowered() == 1) {
+    if (rom.usb_powered() == 1) {
         if (!getSystemFlag(FLAG_USB_i)) {
             setSystemFlag(FLAG_USB_c);
             clearSystemFlag(FLAG_LOWBAT_c);
@@ -2933,7 +2872,7 @@ pub export fn runDMCPmenu(confirmation: u16) callconv(.c) void {
             setConfirmationMode(&runDMCPmenu);
         } else {
             cancelFilename = true;
-            _ = romRunMenuItemSys(MI_DMCP_MENU);
+            _ = rom.run_menu_item_sys(MI_DMCP_MENU);
 
             // Sync TDM24 flag with DMCP clk24
             if (rom.is_flag_clk24()) {
@@ -2971,7 +2910,7 @@ pub export fn activateUSBdisk(confirmation: u16) callconv(.c) void {
             setConfirmationMode(&activateUSBdisk);
         } else {
             cancelFilename = true;
-            _ = romRunMenuItemSys(MI_MSC);
+            _ = rom.run_menu_item_sys(MI_MSC);
             clearScreen(201);
             screenUpdatingMode = SCRUPD_AUTO;
         }

@@ -7,8 +7,8 @@
 // DM42 build; it is defined for every package z47 ships (defines.h:260), so the
 // code is always present here. The kbd_std model-selection macro is reproduced
 // inline, with the same three arms the preprocessor picks between. lcd_fill_rect
-// and bitblt24 are DMCP-ROM fixed-address calls on firmware and linkable symbols
-// on host, trampolined like the sibling owners.
+// and bitblt24 are DMCP ROM function-table entries on firmware and linkable
+// symbols on host, wrapped like the sibling owners.
 //
 // asnBrowser.c is not reachable from the testSuite; verification is by
 // build/link across every target plus the boundary gates.
@@ -17,7 +17,7 @@ const frontier_assign = @import("../input/assign.zig");
 const frontier_build_options = @import("frontier_build_options");
 const dmcp_build: bool = frontier_build_options.dmcp_build;
 const old_hw: bool = frontier_build_options.old_hw;
-const LIBRARY_FN_BASE: usize = frontier_build_options.library_fn_base;
+const rom = @import("dmcp_rom");
 
 // ---------------------------------------------------------------------------
 // Types
@@ -112,14 +112,13 @@ fn stringCopy(dest: [*c]u8, source: [*c]const u8) [*c]u8 {
     return dest + l;
 }
 
-// lcd_fill_rect / bitblt24 are DMCP SDK fixed-address library calls on firmware
-// (LIBRARY_FN_BASE + offset); on host they are real symbols.
+// lcd_fill_rect / bitblt24 are DMCP ROM function-table entries on firmware; on
+// host they are real symbols.
 const LcdFillRectFn = *const fn (x: u32, y: u32, dx: u32, dy: u32, val: c_int) callconv(.c) void;
 const c_lcd_fill_rect = @extern(LcdFillRectFn, .{ .name = "lcd_fill_rect" });
 inline fn lcdFillRect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void {
     if (comptime dmcp_build) {
-        const f: LcdFillRectFn = @ptrFromInt(LIBRARY_FN_BASE + 60);
-        f(x, y, dx, dy, val);
+        rom.lcd_fill_rect(x, y, dx, dy, val);
     } else {
         c_lcd_fill_rect(x, y, dx, dy, val);
     }
@@ -128,8 +127,7 @@ const Bitblt24Fn = *const fn (x: u32, dx: u32, y: u32, val: u32, blt_op: c_int, 
 const c_bitblt24 = @extern(Bitblt24Fn, .{ .name = "bitblt24" });
 inline fn bitblt24(x: u32, dx: u32, y: u32, val: u32, blt_op: c_int, fill: c_int) void {
     if (comptime dmcp_build) {
-        const f: Bitblt24Fn = @ptrFromInt(LIBRARY_FN_BASE + 36);
-        f(x, dx, y, val, blt_op, fill);
+        rom.bitblt24(x, dx, y, val, blt_op, fill);
     } else {
         c_bitblt24(x, dx, y, val, blt_op, fill);
     }
