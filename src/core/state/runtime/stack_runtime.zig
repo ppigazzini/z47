@@ -135,7 +135,7 @@ pub extern fn flipSystemFlag(sf: u32) void;
 pub extern fn allocC47Blocks(size_in_blocks: usize) ?[*]align(4) u8;
 pub extern fn freeC47Blocks(ptr: ?*anyopaque, size_in_blocks: usize) void;
 pub extern fn getRegisterFullSizeInBlocks(reg: calcRegister_t) u16;
-pub extern fn getRegisterDataPointer(reg: calcRegister_t) ?*align(4) anyopaque;
+pub extern fn getRegisterDataPointer(reg: calcRegister_t) ?[*]align(4) u8;
 pub extern fn setRegisterDataPointer(reg: calcRegister_t, mem_ptr: ?*const anyopaque) void;
 pub extern fn getRegisterDataType(reg: calcRegister_t) u32;
 pub extern fn getRegisterTag(reg: calcRegister_t) u32;

@@ -10,11 +10,9 @@ const memory_owned = @import("../runtime/register_memory.zig");
 // with room in the pool; it differs only on the RAM-full path, where upstream
 // corrupts the pool and the caller reads a register it never wrote.
 
-fn complexImagPointer(data_ptr: ?*anyopaque) ?*anyopaque {
+fn complexImagPointer(data_ptr: ?[*]u8) ?[*]u8 {
     const ptr = data_ptr orelse return null;
-    const bytes: [*]align(1) u8 = @ptrCast(ptr);
-    const imag_offset: usize = @intCast(memory_owned.bytesFromBlocks(runtime.real34SizeInBlocks()));
-    return bytes + imag_offset;
+    return ptr + memory_owned.bytesFromBlocks(runtime.real34SizeInBlocks());
 }
 
 fn clearRange(start: runtime.calcRegister_t, end: runtime.calcRegister_t) void {

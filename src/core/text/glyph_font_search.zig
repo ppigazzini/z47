@@ -68,11 +68,10 @@ const testing = std.testing;
 const Glyph = abi.Glyph;
 const FONT_BUF = @sizeOf(Font) + 8 * @sizeOf(Glyph);
 
-// The one pointer reinterpret in the module: an already-Font-aligned byte buffer
-// viewed as an abi.Font.
+// A Font-aligned byte buffer viewed as an abi.Font.
 fn makeFont(buf: *align(@alignOf(Font)) [FONT_BUF]u8, id: i8, codes: []const u16) *Font {
     @memset(buf, 0);
-    const font: *Font = @ptrCast(buf);
+    const font: *Font = std.mem.bytesAsValue(Font, buf[0..@sizeOf(Font)]);
     font.id = id;
     font.numberOfGlyphs = @intCast(codes.len);
     const glyphs = @constCast(font.glyphsPtr());

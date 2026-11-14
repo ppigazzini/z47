@@ -319,11 +319,12 @@ fn isMatrix3dVector(rows: u16, cols: u16) bool {
 }
 
 // null for a register that is not a real matrix
-fn realMatrixHeader(regist: runtime.calcRegister_t) ?*align(1) const abi.MatrixHeader {
+fn realMatrixHeader(regist: runtime.calcRegister_t) ?*align(4) const abi.MatrixHeader {
     if (getRegisterDataType(regist) != runtime.dtReal34Matrix) {
         return null;
     }
-    return @ptrCast(getRegisterDataPointer(regist).?);
+    const data = getRegisterDataPointer(regist).?;
+    return std.mem.bytesAsValue(abi.MatrixHeader, data[0..@sizeOf(abi.MatrixHeader)]);
 }
 
 pub fn isRegisterMatrix3dVector(regist: runtime.calcRegister_t) bool {

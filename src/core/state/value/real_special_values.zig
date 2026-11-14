@@ -69,10 +69,10 @@ pub export fn realSetMinusInfinity(r: *real_t) callconv(.c) void {
     r.lsu[0] = 0;
 }
 
-// The real part and the imaginary part of a complex34, which upstream addresses
-// as two consecutive real34_t.
-pub export fn copyComplex34(source: *const [2]real34_t, destination: *[2]real34_t) void {
-    abi.complex34Copy(@ptrCast(source), @ptrCast(destination));
+// The real part and the imaginary part of a complex34. Upstream passes a pointer
+// to the first of its two real34_t, which is the complex34's address.
+pub export fn copyComplex34(source: *const abi.Complex34, destination: *abi.Complex34) void {
+    abi.complex34Copy(source, destination);
 }
 
 pub export fn setReal34NegativeSign(r: *real34_t) void {
