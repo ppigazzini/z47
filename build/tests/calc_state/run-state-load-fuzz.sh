@@ -15,7 +15,9 @@
 # here rather than wrapping silently as it would in the firmware, built `small`.
 # That is the detector this lane actually depends on -- the C is UBSan-
 # instrumented too, but there is no AddressSanitizer anywhere in this
-# tree, so an overrun INSIDE the `ram` pool is still invisible. See
+# tree, so this lane alone cannot see an overrun INSIDE the `ram` pool.
+# `zig build memcheck_suite` runs the same corpus under valgrind, where the
+# pool's free blocks and per-allocation guard blocks are no-access. See
 # docs/75-debugging.md.
 #
 # Usage: run-state-load-fuzz.sh <harness> <corpus-dir>
@@ -48,9 +50,6 @@ python3 "$corpus/generate_corpus.py" >/dev/null || {
   exit 1
 }
 
-# abort_on_error=0 so a sanitizer prints its report and exits with the code below
-# rather than dying on a signal we would report less precisely.
-export ASAN_OPTIONS="detect_leaks=0:abort_on_error=0:exitcode=86:handle_segv=1"
 export UBSAN_OPTIONS="halt_on_error=1:print_stacktrace=1"
 
 total=0
@@ -90,16 +89,13 @@ for f in "$corpus"/*.sav; do
     echo "FAIL (memcheck caught a bug): $label"
     printf '%s\n' "$out" | grep -E "^==[0-9]+==" | head -12
     fail=$((fail + 1))
-  elif printf '%s' "$out" | grep -qE "ERROR: AddressSanitizer|SUMMARY: AddressSanitizer|runtime error:"; then
-    echo "FAIL (the sanitizer caught a bug): $label"
-    printf '%s\n' "$out" | grep -E "AddressSanitizer|runtime error:|#[0-9]+ 0x" | head -6
+  elif printf '%s' "$out" | grep -q "runtime error:"; then
+    echo "FAIL (UBSan caught a bug): $label"
+    printf '%s\n' "$out" | grep -E "runtime error:|#[0-9]+ 0x" | head -6
     fail=$((fail + 1))
   elif printf '%s' "$out" | grep -qE "^thread [0-9]+ panic:"; then
     echo "FAIL (Zig safety check tripped on malformed input): $label"
     printf '%s\n' "$out" | grep -E "panic:|\.zig:[0-9]+" | head -6
-    fail=$((fail + 1))
-  elif [ "$rc" -eq 86 ]; then
-    echo "FAIL (sanitizer exitcode): $label"
     fail=$((fail + 1))
   elif [ "$rc" -eq 87 ]; then
     # The pool poison detector: something wrote past its allocation into free

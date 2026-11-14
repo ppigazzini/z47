@@ -3,8 +3,9 @@
 # Generate a malformed .p47 corpus that stresses the
 # program-load parser's header/length/offset math -- the OOB class upstream fixes
 # on the state/program-load path (577 statefile overflow, decode-literal-base-oob).
-# The corpus is run through the REAL load path (fnLoadProgram) under AddressSanitizer
-# by `zig build pgm_load_fuzz`; a clean/graceful reject passes, an ASAN abort fails.
+# The corpus is run through the REAL load path (fnLoadProgram) under UBSan and Zig's
+# safety checks by `zig build pgm_load_fuzz`, and under valgrind by
+# `zig build memcheck_suite`; a clean/graceful reject passes, any report fails.
 # Deterministic (no RNG) so CI is reproducible. Run from repo root:
 #   python3 build/tests/pgm_run/malformed/generate_corpus.py
 import pathlib
