@@ -15,10 +15,6 @@ extern decQuad *decQuadNextPlus(decQuad *result, const decQuad *rhs, decContext 
 extern decQuad *decQuadNextMinus(decQuad *result, const decQuad *rhs, decContext *set);
 extern decQuad *decQuadSubtract(decQuad *result, const decQuad *lhs, const decQuad *rhs, decContext *set);
 
-double z47_math_wrappers_log(double value) {
-  return value > 0.0 ? value : 0.0;
-}
-
 static void z47_math_wrappers_long_integer_gcd(longInteger_t liY, longInteger_t liX, longInteger_t liA) {
   if(longIntegerIsZero(liY) && longIntegerIsZero(liX)) {
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
@@ -1048,7 +1044,7 @@ void z47_math_wrappers_report_arctanh_real_domain_error(void) {
 void z47_math_wrappers_report_int_pow_real_domain_error(void) {
   displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE);
 #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-  moreInfoOnError("In function intPowReal:", "cannot use " STD_PLUS_MINUS STD_INFINITY " as X input of 10^x when flag SPCRES is not set", NULL, NULL);
+  moreInfoOnError("In function intPowReal:", "cannot use " STD_PLUS_MINUS STD_INFINITY " as X input of 10" STD_SUP_BOLD_x " when flag SPCRES is not set", NULL, NULL);
 #endif
 }
 

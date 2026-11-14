@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <inttypes.h>
+#include <math.h>
 #include <stdint.h>
 #include <string.h>
 
@@ -249,13 +250,14 @@ enum {
 
 #define PCG32_INITIALIZER { 0x853c49e6748fea9bULL, 0xda3e39cb94b95bdbULL }
 
-#define STD_PLUS_MINUS "+/-"
-#define STD_INFINITY "inf"
-#define STD_DEGREE "deg"
-#define STD_LESS_EQUAL "<="
-#define STD_CROSS "x"
-#define STD_DIVIDE "/"
-#define STD_SUP_BOLD_x "^x"
+// fonts.h's glyph bytes, so a message the harness builds is the one upstream prints.
+#define STD_PLUS_MINUS "\x80\xb1"
+#define STD_INFINITY "\xa2\x1e"
+#define STD_DEGREE "\x80\xb0"
+#define STD_LESS_EQUAL "\xa2\x64"
+#define STD_CROSS "\x80\xd7"
+#define STD_DIVIDE "\x80\xf7"
+#define STD_SUP_BOLD_x "\x82\xE3"
 
 #define REGISTER_X ((calcRegister_t)100)
 #define REGISTER_Y ((calcRegister_t)101)
@@ -840,7 +842,6 @@ void crossComplexVectors(const complex34Matrix_t *y, const complex34Matrix_t *x,
 void setLastintegerBasetoZero(void);
 void fnInvertMatrix(uint16_t unusedButMandatoryParameter);
 void convertRealToReal34ResultRegister(const real_t *real, calcRegister_t dest);
-double z47_math_wrappers_log(double value);
 
 extern char *errorMessage;
 extern char *tmpString;
