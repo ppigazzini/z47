@@ -18,7 +18,7 @@ extern fn fseek(stream: ?*anyopaque, offset: c_long, whence: c_int) c_int;
 extern fn ftell(stream: ?*anyopaque) c_long;
 extern fn fread(ptr: ?*anyopaque, size: usize, nmemb: usize, stream: ?*anyopaque) usize;
 extern fn fclose(stream: ?*anyopaque) c_int;
-extern fn malloc(size: usize) ?*anyopaque;
+extern fn malloc(size: usize) ?[*]u8;
 extern fn strstr(haystack: [*c]const u8, needle: [*c]const u8) [*c]u8;
 extern fn strReplace(haystack: [*c]u8, needle: [*c]const u8, new_needle: [*c]const u8) void;
 extern fn moreInfoOnError(m1: [*c]const u8, m2: [*c]const u8, m3: [*c]const u8, m4: [*c]const u8) void;
@@ -36,10 +36,10 @@ pub fn prepareCssData() void {
     const file_lg: usize = @intCast(ftell(css_file));
     _ = fseek(css_file, 0, SEEK_SET);
 
-    cssData = @ptrCast(malloc(2 * file_lg) orelse { // To be sure there is enough space
+    cssData = malloc(2 * file_lg) orelse { // To be sure there is enough space
         moreInfoOnError("In function prepareCssData:", "error allocating 10000 bytes for CSS data", null, null);
         exit(1);
-    });
+    };
 
     _ = fread(cssData, 1, file_lg, css_file);
     _ = fclose(css_file);

@@ -33,19 +33,7 @@ const tamState_t = extern struct {
     keyInputFinished: bool,
 };
 
-const GdkEventKey = extern struct {
-    type: c_int,
-    window: ?*anyopaque,
-    send_event: c_int,
-    time: c_uint,
-    state: c_uint,
-    keyval: c_uint,
-    length: c_int,
-    string: ?[*:0]u8,
-    hardware_keycode: c_uint,
-    group: c_uint,
-    is_modifier: c_uint,
-};
+const GdkEventKey = @import("gtk_gui_host_decls.zig").GdkEventKey;
 
 const KEY_fg: i16 = 1893;
 const ITM_SHIFTf: i16 = 1731;
@@ -100,7 +88,7 @@ extern fn btnFnPressed(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaqu
 extern fn btnFnReleased(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) void;
 extern fn refreshStatusBar() void;
 extern fn showShiftState() void;
-extern fn z47_keyPressed_c_impl(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) c_int;
+extern fn z47_keyPressed_c_impl(widget: ?*anyopaque, event: ?*GdkEventKey, data: ?*anyopaque) c_int;
 extern fn fnStopTimerApp() void;
 extern fn saveCalc() void;
 extern fn gtk_main_quit() void;
@@ -133,10 +121,8 @@ pub fn btnFnReleasedWrapper(widget: ?*anyopaque, event: ?*anyopaque, data: ?*any
     return 0;
 }
 
-pub fn keyPressedImpl(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) c_int {
-    if (event == null) return z47_keyPressed_c_impl(widget, event, data);
-
-    const key_event: *GdkEventKey = @ptrCast(@alignCast(event.?));
+pub fn keyPressedImpl(widget: ?*anyopaque, event: ?*GdkEventKey, data: ?*anyopaque) c_int {
+    const key_event = event orelse return z47_keyPressed_c_impl(widget, event, data);
     // Ctrl+P is read from the event state, not from CTRL_State: the print-out
     // window takes the focus, so a Control press often goes to it and CTRL_State
     // stays 0. This prologue and the keypress body each keep a CTRL_State, and
@@ -233,10 +219,10 @@ pub fn keyPressedImpl(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque
     return z47_keyPressed_c_impl(widget, event, data);
 }
 
-pub fn keyReleasedImpl(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) c_int {
+pub fn keyReleasedImpl(widget: ?*anyopaque, event: ?*GdkEventKey, data: ?*anyopaque) c_int {
     _ = data;
 
-    const key_event: *GdkEventKey = @ptrCast(@alignCast(event.?));
+    const key_event = event.?;
 
     if (event_keyval == key_event.keyval + CTRL_State) {
         event_keyval = 99999999;

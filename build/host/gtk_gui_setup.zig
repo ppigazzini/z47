@@ -1,5 +1,6 @@
 const gtk_decls = @import("gtk_gui_host_decls.zig");
 const GtkWidget = gtk_decls.GtkWidget;
+const GdkEventKey = gtk_decls.GdkEventKey;
 const GdkRectangle = gtk_decls.GdkRectangle;
 const gdk_display_get_default = gtk_decls.gdk_display_get_default;
 const gdk_display_get_monitor = gtk_decls.gdk_display_get_monitor;
@@ -66,12 +67,14 @@ extern var screenStride: i16;
 extern var screenData: [*]u32;
 
 extern fn z47_destroyCalc(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) c_int;
-extern fn z47_keyPressed_wrapper(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) c_int;
-extern fn z47_keyReleased_wrapper(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) c_int;
+extern fn z47_keyPressed_wrapper(widget: ?*anyopaque, event: ?*GdkEventKey, data: ?*anyopaque) c_int;
+extern fn z47_keyReleased_wrapper(widget: ?*anyopaque, event: ?*GdkEventKey, data: ?*anyopaque) c_int;
 extern fn z47_onConfigureEvent(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) c_int;
 extern fn z47_onUIActivity(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) c_int;
 extern fn cairo_format_stride_for_width(format: c_int, width: c_int) c_int;
-extern fn malloc(size: usize) ?*anyopaque;
+// C's malloc, read as the RGB24 pixels screenData holds: its result is aligned
+// for any object.
+extern fn malloc(size: usize) ?[*]u32;
 extern fn exit(code: c_int) noreturn;
 extern fn moreInfoOnError(prefix: [*:0]const u8, message: [*:0]const u8, third: ?[*:0]const u8, fourth: ?[*:0]const u8) void;
 extern fn z47_drawScreen_wrapper(widget: ?*anyopaque, cr: ?*anyopaque, data: ?*anyopaque) c_int;
@@ -80,7 +83,9 @@ fn isR47FAM() bool {
     return calcModel == USER_R47f_g or calcModel == USER_R47bk_fg or calcModel == USER_R47fg_bk or calcModel == USER_R47fg_g;
 }
 
-fn ensureModelString() void {
+// Writes the background image's path to modelString and returns its length, the
+// index of the terminator it writes.
+fn ensureModelString() usize {
     if (modelString[0] == 0) {
         const base = if (isR47FAM()) "R47" else "C47";
         var idx: usize = 0;
@@ -107,6 +112,7 @@ fn ensureModelString() void {
             }
         }
         modelString[idx] = 0;
+        return idx;
     } else {
         const prefix = "res/";
         var idx: usize = 0;
@@ -120,6 +126,7 @@ fn ensureModelString() void {
             idx += 1;
         }
         modelString[idx] = 0;
+        return idx;
     }
 }
 
@@ -132,44 +139,44 @@ pub fn configureWindowLayout() void {
 
     frmCalc = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     if (calcLandscape) {
-        gtk_window_set_default_size(@ptrCast(frmCalc), 1000, 540);
+        gtk_window_set_default_size(frmCalc, 1000, 540);
     } else if (NARROW_SCREEN) {
-        gtk_window_set_default_size(@ptrCast(frmCalc), 400, 862);
+        gtk_window_set_default_size(frmCalc, 400, 862);
     } else {
-        gtk_window_set_default_size(@ptrCast(frmCalc), 526, 980);
+        gtk_window_set_default_size(frmCalc, 526, 980);
     }
 
     gtk_widget_set_name(frmCalc, "mainWindow");
-    gtk_window_set_resizable(@ptrCast(frmCalc), 0);
-    gtk_window_set_title(@ptrCast(frmCalc), if (isR47FAM()) "R47" else "C47");
-    _ = g_signal_connect_data(frmCalc, "destroy", @ptrCast(&z47_destroyCalc), null, null, 0);
-    _ = g_signal_connect_data(frmCalc, "key_press_event", @ptrCast(&z47_keyPressed_wrapper), null, null, 0);
-    _ = g_signal_connect_data(frmCalc, "key_release_event", @ptrCast(&z47_keyReleased_wrapper), null, null, 0);
-    _ = g_signal_connect_data(frmCalc, "configure-event", @ptrCast(&z47_onConfigureEvent), null, null, 0);
-    _ = g_signal_connect_data(frmCalc, "configure-event", @ptrCast(&z47_onUIActivity), null, null, 0);
-    _ = g_signal_connect_data(frmCalc, "button-press-event", @ptrCast(&z47_onUIActivity), null, null, 0);
-    _ = g_signal_connect_data(frmCalc, "focus-in-event", @ptrCast(&z47_onUIActivity), null, null, 0);
-    _ = g_signal_connect_data(frmCalc, "focus-out-event", @ptrCast(&z47_onUIActivity), null, null, 0);
+    gtk_window_set_resizable(frmCalc, 0);
+    gtk_window_set_title(frmCalc, if (isR47FAM()) "R47" else "C47");
+    _ = g_signal_connect_data(frmCalc, "destroy", &z47_destroyCalc, null, null, 0);
+    _ = g_signal_connect_data(frmCalc, "key_press_event", &z47_keyPressed_wrapper, null, null, 0);
+    _ = g_signal_connect_data(frmCalc, "key_release_event", &z47_keyReleased_wrapper, null, null, 0);
+    _ = g_signal_connect_data(frmCalc, "configure-event", &z47_onConfigureEvent, null, null, 0);
+    _ = g_signal_connect_data(frmCalc, "configure-event", &z47_onUIActivity, null, null, 0);
+    _ = g_signal_connect_data(frmCalc, "button-press-event", &z47_onUIActivity, null, null, 0);
+    _ = g_signal_connect_data(frmCalc, "focus-in-event", &z47_onUIActivity, null, null, 0);
+    _ = g_signal_connect_data(frmCalc, "focus-out-event", &z47_onUIActivity, null, null, 0);
 
     if (BIG_SCREEN_COEF > 1 or NARROW_SCREEN) {
-        gtk_window_set_decorated(@ptrCast(frmCalc), 0);
-        gtk_window_set_position(@ptrCast(frmCalc), GTK_WIN_POS_CENTER);
+        gtk_window_set_decorated(frmCalc, 0);
+        gtk_window_set_position(frmCalc, GTK_WIN_POS_CENTER);
     }
 
     gtk_widget_add_events(frmCalc, GDK_CONFIGURE);
     grid = gtk_fixed_new();
-    gtk_container_add(@ptrCast(frmCalc), grid);
+    gtk_container_add(frmCalc, grid);
 }
 
 pub fn setupBackgroundImage() void {
-    ensureModelString();
+    const path_len = ensureModelString();
 
     if (!NARROW_SCREEN) {
-        backgroundImage = gtk_image_new_from_file(@as([*:0]const u8, @ptrCast(&modelString[0])));
-        gtk_fixed_put(@ptrCast(grid), backgroundImage, 0, 0);
+        backgroundImage = gtk_image_new_from_file(modelString[0..path_len :0]);
+        gtk_fixed_put(grid, backgroundImage, 0, 0);
     } else {
         backgroundImage = gtk_image_new_from_file("res/dm42l_L1_narrow_screen.png");
-        gtk_fixed_put(@ptrCast(grid), backgroundImage, 0, 240);
+        gtk_fixed_put(grid, backgroundImage, 0, 240);
     }
 }
 
@@ -178,14 +185,14 @@ pub fn setupSoftkeyLabels() void {
     gtk_widget_set_name(lblFKey2, "fSoftkeyArea");
     if (kbd_usr[10].primary == ITM_SHIFTf) {
         gtk_widget_set_size_request(lblFKey2, 61 - 8 - 2 - 2, 5 - 2);
-        gtk_fixed_put(@ptrCast(grid), lblFKey2, 350 + 4 + 2, 563 - 1);
+        gtk_fixed_put(grid, lblFKey2, 350 + 4 + 2, 563 - 1);
     }
 
     lblGKey2 = gtk_label_new("");
     gtk_widget_set_name(lblGKey2, "gSoftkeyArea");
     if (kbd_usr[11].primary == ITM_SHIFTg) {
         gtk_widget_set_size_request(lblGKey2, 61 - 8 - 2 - 2, 5 - 2);
-        gtk_fixed_put(@ptrCast(grid), lblGKey2, 350 + 4 + 2 + DELTA_KEYS_X, 563 - 1);
+        gtk_fixed_put(grid, lblGKey2, 350 + 4 + 2 + DELTA_KEYS_X, 563 - 1);
     }
 }
 
@@ -194,24 +201,22 @@ pub fn setupScreenBuffer() void {
     gtk_widget_set_size_request(screen, SCREEN_WIDTH, SCREEN_HEIGHT);
     gtk_widget_set_tooltip_text(screen, "Copy to file/clipboard:\n CTRL+a: All Registers WVU…X R99…R00\n CTRL+c/x: X Register\n CTRL+d: Lettered Registers WVU…X\n CTRL+h: Screen image\n CTRL+m: Menu image\n CTRL+n: Menu image to disk\n CTRL+k: X register image to clipboard\n CTRL+j: X register image to disk\n CTRL+p: Print-out window\n CTRL+s: SNAP\n");
     if (!NARROW_SCREEN) {
-        gtk_fixed_put(@ptrCast(grid), screen, 63, 72);
+        gtk_fixed_put(grid, screen, 63, 72);
     } else {
-        gtk_fixed_put(@ptrCast(grid), screen, 0, 0);
+        gtk_fixed_put(grid, screen, 0, 0);
     }
 
     screenStride = @intCast(@divTrunc(cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, SCREEN_WIDTH), 4));
     const num_bytes: usize = @as(usize, @intCast(screenStride)) * SCREEN_HEIGHT * 4;
-    const raw = malloc(num_bytes);
-    if (raw == null) {
+    screenData = malloc(num_bytes) orelse {
         moreInfoOnError("In function setupUI:", "error allocating screenData", null, null);
         exit(1);
-    }
-    screenData = @ptrCast(@alignCast(raw.?));
+    };
     // Initialize to the LCD "off" colour. screenData is malloc'd (uninitialised)
     // and the first "draw" can fire before the calculator's startup screen
     // render has run LCD_write_line over every row, so any not-yet-written
     // pixels would otherwise show raw heap garbage. C gets away without this on
     // most setups; on WSLg/Wayland the first paint is reliably uninitialised.
     @memset(screenData[0 .. @as(usize, @intCast(screenStride)) * SCREEN_HEIGHT], OFF_PIXEL);
-    _ = g_signal_connect_data(screen, "draw", @ptrCast(&z47_drawScreen_wrapper), null, null, 0);
+    _ = g_signal_connect_data(screen, "draw", &z47_drawScreen_wrapper, null, null, 0);
 }

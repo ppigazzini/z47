@@ -49,19 +49,7 @@ const softmenuStack_t = extern struct {
     calcMode: u8,
 };
 
-const GdkEventKey = extern struct {
-    type: c_int,
-    window: ?*anyopaque,
-    send_event: c_int,
-    time: c_uint,
-    state: c_uint,
-    keyval: c_uint,
-    length: c_int,
-    string: ?[*:0]u8,
-    hardware_keycode: c_uint,
-    group: c_uint,
-    is_modifier: c_uint,
-};
+const GdkEventKey = @import("gtk_gui_host_decls.zig").GdkEventKey;
 
 // --- constants the macros/switches need (kept untyped so they coerce to
 // c_int / u16 / i16 at each use site) ---
@@ -394,12 +382,12 @@ fn isSimArrowAllowedInMenu(menu: i16, key: u32) bool {
 }
 
 fn nu(widget: ?*anyopaque, s: [*:0]const u8) void {
-    shortcut_owned.btnClickedNU(widget, @ptrCast(@constCast(s)));
+    shortcut_owned.btnClickedNU(widget, s);
 }
 
-pub fn keyPressedCImpl(w: ?*anyopaque, event_opaque: ?*anyopaque, data: ?*anyopaque) c_int {
+pub fn keyPressedCImpl(w: ?*anyopaque, key_event: ?*GdkEventKey, data: ?*anyopaque) c_int {
     _ = data;
-    const event: *GdkEventKey = @ptrCast(@alignCast(event_opaque.?));
+    const event = key_event.?;
     const shortCutCommand = shortcut_owned.shortCutCommand;
     const shortCutFNCommand = shortcut_owned.shortCutFNCommand;
     const shortcutProfile = shortcut_owned.shortcutProfileValue();

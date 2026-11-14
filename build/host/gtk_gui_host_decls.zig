@@ -9,6 +9,17 @@ pub const GdkRectangle = extern struct {
     height: c_int,
 };
 
+// The leading fields of GdkEventKey, as far as keyval: the key handlers read the
+// event through GTK's pointer and never copy it.
+pub const GdkEventKey = extern struct {
+    type: c_int,
+    window: ?*anyopaque,
+    send_event: i8,
+    time: u32,
+    state: c_uint,
+    keyval: c_uint,
+};
+
 pub extern fn gdk_display_get_default() ?*GtkDisplay;
 pub extern fn gdk_display_get_monitor(display: ?*GtkDisplay, monitor_num: c_int) ?*GdkMonitor;
 pub extern fn gdk_monitor_get_geometry(monitor: ?*GdkMonitor, geometry: *GdkRectangle) void;
@@ -31,4 +42,7 @@ pub extern fn gtk_widget_set_size_request(widget: ?*GtkWidget, width: c_int, hei
 pub extern fn gtk_drawing_area_new() ?*GtkWidget;
 pub extern fn gtk_widget_set_tooltip_text(widget: ?*GtkWidget, text: [*:0]const u8) void;
 
-pub extern fn g_signal_connect_data(instance: ?*anyopaque, detailed_signal: [*:0]const u8, c_handler: ?*const anyopaque, data: ?*anyopaque, destroy_data: ?*const anyopaque, connect_flags: c_int) c_ulong;
+// GLib never writes through `data`, only hands it back to the handler, so it is
+// bound const and takes the key strings the keyboard connects. Any function
+// pointer coerces to `c_handler`.
+pub extern fn g_signal_connect_data(instance: ?*anyopaque, detailed_signal: [*:0]const u8, c_handler: ?*const anyopaque, data: ?*const anyopaque, destroy_data: ?*const anyopaque, connect_flags: c_int) c_ulong;

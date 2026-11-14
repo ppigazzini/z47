@@ -16,7 +16,11 @@ comptime {
     _ = @import("gtk_printer_window.zig");
 }
 
-extern fn gtk_init(argc: *c_int, argv: [*]?[*:0]u8) void;
+const GdkEventKey = @import("gtk_gui_host_decls.zig").GdkEventKey;
+
+// gtk_init(int *argc, char ***argv): GTK removes the options it consumes from
+// main's argument vector.
+extern fn gtk_init(argc: *c_int, argv: *[*][*:0]u8) void;
 extern fn gtk_main() void;
 extern fn drawScreen(widget: ?*anyopaque, cr: ?*anyopaque, data: ?*anyopaque) c_int;
 // c47-gtk.c global: set for the headless `--writeexportall` lane.
@@ -52,7 +56,7 @@ pub export fn z47_setupUI_no_keyboard_shell() callconv(.c) void {
     shell_owned.setupShellScreen();
 }
 
-pub export fn z47_startup_init_ui(argc: *c_int, argv: [*]?[*:0]u8) callconv(.c) void {
+pub export fn z47_startup_init_ui(argc: *c_int, argv: *[*][*:0]u8) callconv(.c) void {
     gtk_init(argc, argv);
     setupUI();
     // c47-gtk.c guards the settle pass with !headlessMode: with no interface up
@@ -140,7 +144,7 @@ pub export fn z47_btnReleased_signal(widget: ?*anyopaque, event: ?*anyopaque, da
     return 0;
 }
 
-pub export fn btnClicked_NU(widget: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {
+pub export fn btnClicked_NU(widget: ?*anyopaque, data: ?[*:0]const u8) callconv(.c) void {
     shortcut_owned.btnClickedNU(widget, data);
 }
 
@@ -214,19 +218,19 @@ pub export fn z47_btnFnReleased_wrapper(widget: ?*anyopaque, event: ?*anyopaque,
     return events_owned.btnFnReleasedWrapper(widget, event, data);
 }
 
-pub export fn z47_keyPressed_wrapper(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
+pub export fn z47_keyPressed_wrapper(widget: ?*anyopaque, event: ?*GdkEventKey, data: ?*anyopaque) callconv(.c) c_int {
     return events_owned.keyPressedImpl(widget, event, data);
 }
 
-pub export fn z47_keyReleased_wrapper(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
+pub export fn z47_keyReleased_wrapper(widget: ?*anyopaque, event: ?*GdkEventKey, data: ?*anyopaque) callconv(.c) c_int {
     return events_owned.keyReleasedImpl(widget, event, data);
 }
 
-pub export fn z47_keyPressed_impl(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
+pub export fn z47_keyPressed_impl(widget: ?*anyopaque, event: ?*GdkEventKey, data: ?*anyopaque) callconv(.c) c_int {
     return events_owned.keyPressedImpl(widget, event, data);
 }
 
-pub export fn z47_keyPressed_c_impl(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
+pub export fn z47_keyPressed_c_impl(widget: ?*anyopaque, event: ?*GdkEventKey, data: ?*anyopaque) callconv(.c) c_int {
     return keypress_owned.keyPressedCImpl(widget, event, data);
 }
 
@@ -234,7 +238,7 @@ pub export fn setupUI() callconv(.c) void {
     setup_ui_owned.setupUI();
 }
 
-pub export fn z47_keyReleased_impl(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
+pub export fn z47_keyReleased_impl(widget: ?*anyopaque, event: ?*GdkEventKey, data: ?*anyopaque) callconv(.c) c_int {
     return events_owned.keyReleasedImpl(widget, event, data);
 }
 
