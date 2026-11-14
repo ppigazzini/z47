@@ -408,9 +408,11 @@ fn moreInfoOnErrorStub(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8
 }
 
 // The C symbol `moreInfoOnError` exists on every target: the real popup where the
-// hints are compiled in, a no-op stub everywhere else. Upstream guards every call
-// site with EXTRA_INFO_ON_CALC_ERROR, which is 0 on firmware AND in the testSuite;
+// hints are compiled in, a no-op stub everywhere else. Upstream guards its call
+// sites with EXTRA_INFO_ON_CALC_ERROR, which is 0 on firmware AND in the testSuite;
 // owners here call it unconditionally, so the gate lives on the symbol instead.
+// The few sites upstream guards with PC_BUILD instead, in print.c, print on the
+// testSuite too, and reach moreInfoOnErrorImpl directly.
 comptime {
     @export(if (dmcp_build or !extra_info) &moreInfoOnErrorStub else &moreInfoOnErrorImpl, .{ .name = "moreInfoOnError", .linkage = .strong });
 }
