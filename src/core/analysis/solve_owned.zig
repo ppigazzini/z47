@@ -324,10 +324,7 @@ inline fn realToReal34(source: *const real_t, destination: *real34_t) void {
     _ = decimal128FromNumber(destination, source, &ctxtReal34);
 }
 inline fn real34Copy(source: *const real34_t, destination: *real34_t) void {
-    const src: *align(1) const [2]u64 = @ptrCast(source);
-    const dst: *align(1) [2]u64 = @ptrCast(destination);
-    dst[0] = src[0];
-    dst[1] = src[1];
+    destination.* = source.*;
 }
 inline fn real34Subtract(op1: *const real34_t, op2: *const real34_t, res: *real34_t) void {
     _ = decQuadSubtract(res, op1, op2, &ctxtReal34);
@@ -1097,7 +1094,7 @@ pub export fn solver(variable: calcRegister_t, y: *const real34_t, x: *const rea
                     // progressHalfSecUpdate_Integer takes a C string.
                     ssbuf[0..7].* = "Iter: \x00".*;
                     ssbuf[4] = if (currentMethod == SOLVER_METHOD_BRENT) ':' else '=';
-                    if (progressHalfSecUpdate_Integer(timed, @ptrCast(&ssbuf[0]), loop, halfSec_clearZ, halfSec_clearT, halfSec_disp)) {
+                    if (progressHalfSecUpdate_Integer(timed, ssbuf[0..6 :0].ptr, loop, halfSec_clearZ, halfSec_clearT, halfSec_disp)) {
                         var a34: real34_t = undefined;
                         var b34: real34_t = undefined;
                         var fa34: real34_t = undefined;

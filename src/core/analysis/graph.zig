@@ -35,6 +35,7 @@ const is_dmcp_build: bool = solve_build_options.is_dmcp_build;
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
+const std = @import("std");
 const abi = @import("abi"); // shared ABI bindings
 const equation = @import("equation.zig");
 const solve_owned = @import("solve_owned.zig");
@@ -1298,10 +1299,11 @@ const GraphWork = extern struct {
     asymptotes: [MAX_ASYMPTOTES]AsymptoteInfo,
 };
 fn allocGraphWork() ?*GraphWork {
-    return @ptrCast(malloc(@sizeOf(GraphWork)));
+    const bytes = malloc(@sizeOf(GraphWork)) orelse return null;
+    return std.mem.bytesAsValue(GraphWork, bytes[0..@sizeOf(GraphWork)]);
 }
 fn freeGraphWork(w: *GraphWork) void {
-    free(@ptrCast(w));
+    free(w);
 }
 
 fn graph_eqn(mode: u16) void {
@@ -1990,11 +1992,12 @@ fn printComplexToConsole(z: *const cplx_t, before: [*:0]const u8, after: [*:0]co
 // CPLX_T_ALLOC/CPLX_T_FREE (realType.h), which is plain malloc/free. A cplx_t is
 // two full reals and takes no digits, so it cannot be shortened the way a real_t
 // can.
-extern fn malloc(size: usize) ?*cplx_t;
-extern fn free(ptr: ?*cplx_t) void;
+extern fn malloc(size: usize) ?[*]align(8) u8;
+extern fn free(ptr: ?*const anyopaque) void;
 
 inline fn mallocCplx() ?*cplx_t {
-    return malloc(@sizeOf(cplx_t));
+    const bytes = malloc(@sizeOf(cplx_t)) orelse return null;
+    return std.mem.bytesAsValue(cplx_t, bytes[0..@sizeOf(cplx_t)]);
 }
 
 inline fn freeCplx(ptr: ?*cplx_t) void {
