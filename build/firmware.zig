@@ -1033,9 +1033,7 @@ fn addFirmwarePrintIrRuntimeObject(
         .omit_frame_pointer = options.omit_frame_pointer,
         .error_tracing = options.error_tracing,
     });
-    const build_options = b.addOptions();
-    build_options.addOption(usize, "library_fn_base", build_common.libraryFnBase(b, ownerBoard(board)));
-    module.addOptions("firmware_print_ir_build_options", build_options);
+    module.addImport("dmcp_rom", build_common.addDmcpRomModule(b, target, optimize, ownerBoard(board)));
 
     return b.addObject(.{
         .name = b.fmt("{s}-firmware-print-ir-runtime", .{name_prefix}),
@@ -1062,9 +1060,7 @@ fn addFirmwareAudioRuntimeObject(
         .omit_frame_pointer = options.omit_frame_pointer,
         .error_tracing = options.error_tracing,
     });
-    const build_options = b.addOptions();
-    build_options.addOption(usize, "library_fn_base", build_common.libraryFnBase(b, ownerBoard(board)));
-    module.addOptions("firmware_audio_build_options", build_options);
+    module.addImport("dmcp_rom", build_common.addDmcpRomModule(b, target, optimize, ownerBoard(board)));
 
     return b.addObject(.{
         .name = b.fmt("{s}-firmware-audio-runtime", .{name_prefix}),
@@ -1093,11 +1089,10 @@ fn addFirmwareIoRuntimeObject(
         .error_tracing = options.error_tracing,
     });
     const build_options = b.addOptions();
-    build_options.addOption(usize, "library_fn_base", build_common.libraryFnBase(b, ownerBoard(board)));
-    build_options.addOption(usize, "sdb_base", build_common.systemDataBlockBase(b, ownerBoard(board)));
     build_options.addOption(u8, "calcmodel", calcmodel);
     build_options.addOption(bool, "dm42_board", board == .dmcp);
     module.addOptions("firmware_io_build_options", build_options);
+    module.addImport("dmcp_rom", build_common.addDmcpRomModule(b, target, optimize, ownerBoard(board)));
 
     return b.addObject(.{
         .name = b.fmt("{s}-firmware-io-runtime", .{name_prefix}),

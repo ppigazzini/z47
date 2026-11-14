@@ -27,8 +27,29 @@ const dmcp_rom_build_options = @import("dmcp_rom_build_options");
 const is_dmcp_build = builtin.target.os.tag == .freestanding;
 const LIBRARY_FN_BASE: usize = dmcp_rom_build_options.library_fn_base;
 
-// The SDK's display state (dmcp.h disp_stat_t), only ever handed back to the ROM.
-pub const disp_stat_t = opaque {};
+// The SDK's text display state (dmcp.h disp_stat_t).
+pub const disp_stat_t = extern struct {
+    f: ?*const anyopaque, // line_font_t
+    x: i16,
+    y: i16,
+    ln_offs: i16,
+    y_top_grd: i16,
+    ya: i8,
+    yb: i8,
+    xspc: i8,
+    xoffs: i8,
+    fixed: u8,
+    inv: u8,
+    bgfill: u8,
+    lnfill: u8,
+    newln: u8,
+    post_offs: ?[*]const u8,
+};
+
+// file_sel_fn_t (dmcp.h): what file_selection_screen calls with the chosen file.
+// `data` is the void * the program handed file_selection_screen, bound at what
+// z47 hands it: the buffer the chosen path is copied into.
+pub const file_sel_fn_t = fn (fpath: [*:0]const u8, fname: [*:0]const u8, data: ?[*]u8) callconv(.c) c_int;
 
 // FatFs (ff_ifc.h). FRESULT is an enum with no negative value, which GCC lays out
 // as unsigned int.
@@ -79,13 +100,22 @@ pub const rtc_wakeup_delay: *const fn () callconv(.c) void = @ptrFromInt(LIBRARY
 pub const get_vbat: *const fn () callconv(.c) c_int = @ptrFromInt(LIBRARY_FN_BASE + 240);
 pub const start_buzzer_freq: *const fn (freq: u32) callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 244);
 pub const stop_buzzer: *const fn () callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 248);
+pub const beep_volume_up: *const fn () callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 252);
+pub const beep_volume_down: *const fn () callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 256);
+pub const get_beep_volume: *const fn () callconv(.c) c_int = @ptrFromInt(LIBRARY_FN_BASE + 260);
+pub const set_reset_state_file: *const fn (str: [*]const u8) callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 284);
 pub const usb_powered: *const fn () callconv(.c) c_int = @ptrFromInt(LIBRARY_FN_BASE + 288);
 // The auxiliary buffer is the firmware's tmpString, which every owner reads
 // 4-byte aligned.
 pub const aux_buf_ptr: *const fn () callconv(.c) [*]align(4) u8 = @ptrFromInt(LIBRARY_FN_BASE + 292);
 pub const write_buf_ptr: *const fn () callconv(.c) [*]u8 = @ptrFromInt(LIBRARY_FN_BASE + 296);
+pub const print_byte: *const fn (b: u8) callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 300);
+pub const printer_get_delay: *const fn () callconv(.c) c_uint = @ptrFromInt(LIBRARY_FN_BASE + 304);
+pub const printer_set_delay: *const fn (val: c_uint) callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 308);
 pub const printer_advance_buf: *const fn (what: c_int) callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 312);
 pub const printer_busy_for: *const fn (what: c_int) callconv(.c) c_int = @ptrFromInt(LIBRARY_FN_BASE + 316);
+pub const disp_disk_info: *const fn (hdr: [*]const u8) callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 332);
+pub const file_selection_screen: *const fn (title: [*]const u8, base_dir: [*]const u8, ext: [*]const u8, sel_fn: ?*const file_sel_fn_t, disp_new: c_int, overwrite_check: c_int, data: ?[*]u8) callconv(.c) c_int = @ptrFromInt(LIBRARY_FN_BASE + 336);
 pub const power_check_screen: *const fn () callconv(.c) c_int = @ptrFromInt(LIBRARY_FN_BASE + 340);
 pub const create_screenshot: *const fn (report_error: c_int) callconv(.c) c_int = @ptrFromInt(LIBRARY_FN_BASE + 376);
 pub const key_empty: *const fn () callconv(.c) c_int = @ptrFromInt(LIBRARY_FN_BASE + 380);
@@ -94,8 +124,10 @@ pub const key_tail: *const fn () callconv(.c) c_int = @ptrFromInt(LIBRARY_FN_BAS
 pub const key_pop: *const fn () callconv(.c) c_int = @ptrFromInt(LIBRARY_FN_BASE + 392);
 pub const key_pop_all: *const fn () callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 400);
 pub const wait_for_key_press: *const fn () callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 408);
+pub const runner_get_key: *const fn (repeat: ?*c_int) callconv(.c) c_int = @ptrFromInt(LIBRARY_FN_BASE + 412);
 pub const wait_for_key_release: *const fn (tout: c_int) callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 420);
 pub const reset_auto_off: *const fn () callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 440);
+pub const is_menu_auto_off: *const fn () callconv(.c) c_int = @ptrFromInt(LIBRARY_FN_BASE + 448);
 pub const check_create_dir: *const fn (dir: [*]const u8) callconv(.c) c_int = @ptrFromInt(LIBRARY_FN_BASE + 464);
 pub const sys_disk_write_enable: *const fn (val: c_int) callconv(.c) c_int = @ptrFromInt(LIBRARY_FN_BASE + 480);
 pub const sys_is_disk_write_enable: *const fn () callconv(.c) c_int = @ptrFromInt(LIBRARY_FN_BASE + 488);
