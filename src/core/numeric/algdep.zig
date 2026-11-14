@@ -237,7 +237,12 @@ const Lattice = extern struct {
 // pass initialises and clears them all.
 const ALGDEP_MPZ_COUNT: usize = @offsetOf(Lattice, "n") / @sizeOf(mpz_struct);
 
-var algdepPoly: [ALGDEP_POLY_LEN]u8 = @splat(0);
+fn latticeMembers(lattice: *Lattice) []mpz_struct {
+    return std.mem.bytesAsSlice(mpz_struct, std.mem.asBytes(lattice)[0 .. ALGDEP_MPZ_COUNT * @sizeOf(mpz_struct)]);
+}
+
+// buildPolynomialString stops short of the last byte, which stays the terminator.
+var algdepPoly: [ALGDEP_POLY_LEN - 1:0]u8 = @splat(0);
 
 // The recovered relation rendered as x^3 - x - 1, for the temporary information
 // line. Empty until a search succeeds.
@@ -245,7 +250,7 @@ pub export fn algdepPolynomialString() linksection(runtime.code_section) callcon
     if (comptime !option_algdep) {
         return "";
     }
-    return @ptrCast(&algdepPoly);
+    return &algdepPoly;
 }
 
 // ------------------------------------------------------------ lattice lifetime
@@ -272,8 +277,7 @@ fn latticeAlloc() ?LatticeFrame {
         return null;
     };
     const lattice: *Lattice = @ptrFromInt(std.mem.alignForward(usize, @intFromPtr(raw), @alignOf(Lattice)));
-    const members: [*]mpz_struct = @ptrCast(lattice);
-    for (members[0..ALGDEP_MPZ_COUNT]) |*member| {
+    for (latticeMembers(lattice)) |*member| {
         longIntegerInit(member);
     }
     return .{ .raw = raw, .lattice = lattice };
@@ -282,8 +286,7 @@ fn latticeAlloc() ?LatticeFrame {
 // Every mpz_init above needs its mpz_clear on every exit path: the test suite
 // fails the run on a GMP leak through gmpMemInBytes.
 fn latticeFree(frame: LatticeFrame) void {
-    const members: [*]mpz_struct = @ptrCast(frame.lattice);
-    for (members[0..ALGDEP_MPZ_COUNT]) |*member| {
+    for (latticeMembers(frame.lattice)) |*member| {
         longIntegerFree(member);
     }
     runtime.freeC47Blocks(frame.raw, lattice_blocks);
@@ -491,7 +494,7 @@ fn realToScaledInteger(x: *const real_t, n: *mpz_struct, k: *i32) bool {
         expo *= expSign;
     }
 
-    stringToLongInteger(@ptrCast(&digits), n);
+    stringToLongInteger(digits[0..di :0].ptr, n);
     if (neg) {
         longIntegerChangeSign(n);
     }
