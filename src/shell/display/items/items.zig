@@ -33,15 +33,18 @@
 // status@44 (u16).
 //
 // Dead code skipped: the GENERATE_CATALOGS / GENERATE_TESTPGMS stub block (those
-// macros are never defined), VERBOSE_*/DEBUG_*/DEBUGUNDO/INLINE_TEST diagnostics
-// (#undef'd upstream), /* */-commented bodies. PC_BUILD-only printf/jm_show_*
-// telltale is host-only (gated on !dmcp_build). EXTRA_INFO_ON_CALC_ERROR
-// moreInfoOnError hints use the extra_info build option.
+// macros are never defined), the VERBOSE_LEVEL/DEBUG_*/DEBUGUNDO/INLINE_TEST
+// diagnostics (#undef'd upstream), /* */-commented bodies. PC_BUILD-only
+// printf/jm_show_* telltale is host-only (gated on !dmcp_build); the
+// VERBOSE_MINIMUM block also excludes the testSuite, which undefines that macro.
+// EXTRA_INFO_ON_CALC_ERROR moreInfoOnError hints use the extra_info build option.
 
 const std = @import("std");
 const builtin = @import("builtin");
 const frontier_build_options = @import("frontier_build_options");
 const dmcp_build: bool = frontier_build_options.dmcp_build;
+// TESTSUITE_BUILD undefines VERBOSE_MINIMUM but leaves MONITOR_IRPRINT defined.
+const is_testsuite_build: bool = frontier_build_options.is_testsuite_build;
 const old_hw: bool = frontier_build_options.old_hw;
 const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 const ir_printing: bool = frontier_build_options.ir_printing;
@@ -419,8 +422,11 @@ extern fn resetKeytimers() void;
 
 // libc
 extern fn strcpy(dest: [*c]u8, src: [*c]const u8) [*c]u8;
-extern fn strcat(dest: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn strcmp(a: [*c]const u8, b: [*c]const u8) c_int;
+// host-only console output (PC_BUILD); fflush(NULL) flushes stdout with the rest.
+const FILE = opaque {};
+extern fn printf(fmt: [*c]const u8, ...) c_int;
+extern fn fflush(stream: ?*FILE) c_int;
 
 inline fn cabs16(v: i16) i16 {
     return if (v < 0) -v else v;
@@ -780,6 +786,19 @@ pub export fn reallyRunFunction(func: i16, param: u16) callconv(.c) void {
         }
     }
 
+    // PC_BUILD && VERBOSE_MINIMUM: defined for the simulator, undefined for the
+    // testSuite. Both names are decoded to ASCII, which reports a glyph the
+    // decoder cannot name, and stdout is flushed; the decoded text itself is not
+    // printed. The C buffers are 30 bytes; nothing reads them, so these are sized
+    // for the longest expansion a 16-byte name can take instead.
+    if (comptime !dmcp_build and !is_testsuite_build) {
+        var ss1: [512]u8 = undefined;
+        var ss2: [512]u8 = undefined;
+        frontier_char_string.stringToASCII(&indexOfItems[@intCast(@abs(func))].itemCatalogName, &ss1);
+        frontier_char_string.stringToASCII(&indexOfItems[@intCast(@abs(func))].itemSoftmenuName, &ss2);
+        _ = fflush(null);
+    }
+
     if ((programRunStop != PGM_RUNNING and func != ITM_LASTT) or func == ITM_XEQ or timeLastOp0 == 0) {
         frontier_timer.LastOpTimerReStart(@bitCast(func));
     } else if (programRunStop == PGM_RUNNING and func == ITM_LASTT) {
@@ -815,6 +834,12 @@ pub export fn reallyRunFunction(func: i16, param: u16) callconv(.c) void {
         if (comptime ir_printing) {
             ext_printTraceTI();
             if (getSystemFlag(@intCast(FLAG_TRACE)) != 0 and (indexOfItems[@intCast(func)].status & RESULT_IN_X) != 0) {
+                // PC_BUILD && MONITOR_IRPRINT: both are defined for the simulator
+                // and for the testSuite.
+                if (comptime !dmcp_build) {
+                    _ = printf("**[DL]** reallyRunFunction printTraceX func %d\n", @as(c_int, func));
+                    _ = fflush(null);
+                }
                 if (func != ITM_dotD) {
                     ext_printTraceX(LINE_FULL);
                 }

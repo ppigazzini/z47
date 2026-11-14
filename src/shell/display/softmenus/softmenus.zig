@@ -45,6 +45,8 @@ const builtin = @import("builtin");
 const frontier_display = @import("../display.zig");
 const frontier_build_options = @import("frontier_build_options");
 const dmcp_build: bool = frontier_build_options.dmcp_build;
+// TESTSUITE_BUILD undefines VERBOSE_MINIMUM.
+const is_testsuite_build: bool = frontier_build_options.is_testsuite_build;
 // CALCMODEL: the model the image is built for, which every target passes; the
 // board does not imply it (the C47 firmware is a DMCP build, the R47 sim is not).
 const built_for_r47: bool = frontier_build_options.calcmodel == USER_R47;
@@ -3659,6 +3661,11 @@ pub export fn createHOME() callconv(.c) bool_t {
             return 0;
         }
     }
+    // PC_BUILD && VERBOSE_MINIMUM: defined for the simulator, undefined for the
+    // testSuite.
+    if (comptime !dmcp_build and !is_testsuite_build) {
+        _ = printf("----------- ############################ CREATING HOME #########################\n");
+    }
     bulkAssign = 1;
     var ii: u16 = 0;
     while (ii < 18) : (ii += 1) {
@@ -3688,6 +3695,11 @@ pub export fn createPFN() callconv(.c) bool_t {
             itemToBeAssigned = itemToBeAssignedMeM;
             return 0;
         }
+    }
+    // PC_BUILD && VERBOSE_MINIMUM: defined for the simulator, undefined for the
+    // testSuite.
+    if (comptime !dmcp_build and !is_testsuite_build) {
+        _ = printf("----------- ############################ CREATING PFN #########################\n");
     }
     bulkAssign = 1;
     var ii: u16 = 0;
