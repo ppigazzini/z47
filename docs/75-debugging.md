@@ -33,7 +33,7 @@ Last verified: 2026-10-23, Zig `0.17.0` stable. The upstream pin is
 | C undefined behaviour in retained C (signed overflow, bad shift, bad cast, invalid enum) | `zig build test_asan` -- **UBSan** | the corpus, the parity lanes |
 | heap overflow / use-after-free in retained C | on the paths they drive only, `zig build memcheck_suite` -- Valgrind's memcheck over both malformed-load corpora and the save/load round-trip -- and `zig build test_memcheck`, the whole testSuite under memcheck (Linux host, CI only). Everywhere else **nothing**: there is no AddressSanitizer here and Zig cannot link one -- see *What The Sanitizer Lanes Actually Run* below | every other lane in this tree |
 | a write into FREE pool space inside `ram` | the pool-poison audit in `zig build state_load_fuzz` (`../src/shell/pool_poison.zig`, host only), once the load returns; `zig build memcheck_suite` and `zig build test_memcheck` at the faulting instruction, for a read as well as a write, because the pool marks its free blocks no-access for memcheck | every other lane |
-| **one C47 block overrunning a live neighbour inside `ram`** | **nothing.** No ASan exists here -- see below. The last known instance, an unported matrix-capacity guard, was found by reading the upstream C against the owner; `state_load_fuzz` now reproduces it, but only because the under-allocation trips a Zig safety check first | ASan, which sees `ram` as one allocation; Zig's checks, which never see `[*c]` pointer arithmetic; the pool-poison audit and memcheck, which see only free space |
+| **one C47 block overrunning a live neighbour inside `ram`** | `zig build test_memcheck` and `zig build memcheck_suite`, at the faulting instruction: under valgrind every allocation carries a no-access guard block (`../src/shell/free_list.zig`). Only on the paths those lanes drive, and not for a block that has lived through a save or a load, whose guard the backup's whole-pool image opens | ASan, which sees `ram` as one allocation; Zig's checks, which never see `[*c]` pointer arithmetic; the pool-poison audit, which sees only free space; every lane that does not run under valgrind |
 | malformed `.p47` program file | `zig build pgm_load_fuzz`, now genuinely UBSan-instrumented | the corpus, which only round-trips valid files |
 | malformed `.sav` state file (`.d47` data-file import has no malformed-input lane) | `zig build state_load_fuzz` -- a generated corpus through the real `doLoad` at four load modes, checked under UBSan for crash/hang/safety-panic. **Read the caveat in [70](70-tests-and-verification.md): only the files the generator pins with `expect_version` have an expected outcome, so for the rest a green run means "did not crash", not "was rejected correctly"** | `saveload_roundtrip` (round-trip plus golden snapshot), which loads valid files only; and the silent wrong-accept, for any file with no pinned expectation |
 | ABI drift after a pin advance (struct layout, constant blob, item table) | `check-constant-offsets.py`, `audit-constant-parity.py`, `audit-item-table-parity.py`, `abi-layout-parity`; for an item row whose function or parameter changed, `check-item-seam-drift.py` | the corpus, which passes until the drift is reached; and the item-table audit, which checks the table against the C and passes while the row's owner is stale |
@@ -181,9 +181,18 @@ runtime linked into the binary:
   lets valgrind decode it: a binary built for the native CPU can die of SIGILL on
   an instruction valgrind does not know.
 
-An overrun from one live block into another stays invisible to both, because both
-blocks are addressable; per-allocation redzones would change the pool layout and
-so the firmware. See gap 3 in
+Two claimed blocks side by side are one addressable run, so an overrun from one
+live block into the next would be invisible to memcheck too. Under valgrind the
+allocator therefore takes one block more than asked for and marks it no-access
+(`../src/shell/free_list.zig`), and the first byte written past an
+allocation's end stops at the instruction. The guard is decided at run time by
+`std.valgrind.runningOnValgrind()`: every lane that is not under valgrind keeps
+upstream's pool layout, which is what the testSuite measures, and the firmware
+compiles the layer out. Two limits follow from the design. A request that fits a
+free region exactly is served unguarded, so filling the pool to its last block
+behaves as it does upstream. A block that lives through a save or a load is
+unguarded until it is freed, because the backup reads and writes the pool as one
+image and marks all of it addressable. See gap 3 in
 [50-zig-c-boundaries-and-rewrite-policy.md](50-zig-c-boundaries-and-rewrite-policy.md).
 
 ## The C-vs-Zig Differential

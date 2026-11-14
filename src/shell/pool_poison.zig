@@ -30,8 +30,9 @@
 //!
 //! WHAT THIS CANNOT SEE, stated here so no caller assumes otherwise: an overrun
 //! from one LIVE allocation into another live allocation. Only free space carries
-//! the pattern. Bounding that class needs per-allocation redzones, which would
-//! change the pool layout and therefore the firmware.
+//! the pattern. That class is memcheck's: under valgrind every allocation carries
+//! a no-access guard block (free_list.zig, "Guard blocks"), which the
+//! `test_memcheck` and `memcheck_suite` lanes run with.
 
 const std = @import("std");
 

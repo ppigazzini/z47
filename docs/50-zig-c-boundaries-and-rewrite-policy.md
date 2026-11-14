@@ -282,10 +282,12 @@ as live rather than closed.
    are covered by a poison pattern that needs no sanitizer runtime
    (`../src/shell/pool_poison.zig`, armed by `zig build state_load_fuzz`, host
    only), and reads and writes of free blocks by Valgrind's memcheck, which the
-   free list keeps informed (`zig build memcheck_suite` and `test_memcheck`, CI only). An overrun from
-   one live block into another live block stays invisible;
-   reaching it needs per-allocation redzones, which would change the pool layout
-   and so the firmware.
+   free list keeps informed (`zig build memcheck_suite` and `test_memcheck`, CI
+   only). Under valgrind each allocation also carries a no-access guard block
+   (`../src/shell/free_list.zig`), so an overrun from one live block
+   into the next stops at the instruction in those two lanes. The guard is chosen
+   at run time, so no other lane and no firmware sees a changed pool layout, and
+   a lane that is not under valgrind still cannot see this class.
 4. **The narrowing population is split and ratcheted on the load owners, but the
    rest of the tree is still one undifferentiated number.** Each site is either
    (a) provably in range, where `@intCast` is correct and says something true;
