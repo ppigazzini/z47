@@ -68,7 +68,7 @@ fn unitVectorComplex() void {
 // linkTo*MatrixRegister aliases the register's own storage, so both workers below
 // edit it in place and unitVector.c's unitVectorRema and unitVectorCxma end at
 // their loops. No write-back: convert*MatrixTo*MatrixRegister sets the header's
-// mtag to amNone (matrix.c:2255), which DESTROYS the angular mode a polar vector
+// mtag to amNone (matrix.c), which DESTROYS the angular mode a polar vector
 // carries -- c43 leaves it standing.
 fn unitVectorRema() void {
     var matrix: runtime.real34Matrix_t = undefined;

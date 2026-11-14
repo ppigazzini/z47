@@ -52,7 +52,7 @@ extern fn convertComplex34MatrixRegisterToComplex34Matrix(regist: calcRegister_t
 extern fn fnSwapX(regist: u16) void;
 extern fn decQuadZero(result: *runtime.real34_t) *runtime.real34_t;
 // Upstream macro currentNumberOfLocalRegisters expands to
-// currentSubroutineLevelData->numberOfLocalRegisters (defines.h:2281); the
+// currentSubroutineLevelData->numberOfLocalRegisters (defines.h); the
 // struct layout is abi.SubroutineLevelHeader, shared with
 // src/core/state/register_metadata/register_metadata_local_registers.zig.
 const subroutine_level_header_t = abi.SubroutineLevelHeader;

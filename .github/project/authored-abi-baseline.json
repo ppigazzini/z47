@@ -78,7 +78,6 @@
   "z47_math_wrappers_integer_part_short_integer",
   "z47_math_wrappers_lcm_int",
   "z47_math_wrappers_lcm_short_integer",
-  "z47_math_wrappers_log",
   "z47_math_wrappers_long_integer_fibonacci",
   "z47_math_wrappers_mod_long_integer",
   "z47_math_wrappers_mod_real",
