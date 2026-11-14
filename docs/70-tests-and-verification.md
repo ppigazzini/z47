@@ -116,6 +116,10 @@ other two are held by a rule rather than a gate:
   differential goes in the harness, which knows what it is measuring, never in
   `ulimit` or a shell `timeout` around it: a differential killed from outside
   executes the defect it should have reported.
+  `../build/tests/common/harness_resource_budget.h` is that budget. Installing
+  it gives a lane a GMP byte ceiling and, on POSIX, a wall clock over the whole
+  lane. A lane that names its cases with `harnessBudgetSetCase` also gets a
+  per-case clock, and its breach then names the case.
 - **A lane that reads an untracked file passes locally and fails in CI.** CI
   checks out only tracked files, so stage a new test input before gating.
 
