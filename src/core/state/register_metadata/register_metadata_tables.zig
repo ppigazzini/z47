@@ -60,11 +60,11 @@ pub fn reservedDataTypeDescriptor(reg: calcRegister_t) register_descriptor_t {
     return allReservedVariables[@intCast(index)].header.descriptor;
 }
 
-pub fn toPcMemPtr(mem_ptr: u16) ?*align(4) anyopaque {
+pub fn toPcMemPtr(mem_ptr: u16) ?[*]align(4) u8 {
     if (mem_ptr == C47_NULL) {
         return null;
     }
-    return &ram[mem_ptr];
+    return std.mem.asBytes(&ram[mem_ptr]);
 }
 
 /// The `T` stored at a pool block index, or null for C47_NULL. A pool block is

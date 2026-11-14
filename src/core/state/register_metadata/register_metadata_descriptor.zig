@@ -29,7 +29,7 @@ fn withPointer(descriptor: runtime.register_descriptor_t, mem_ptr: u16) runtime.
     return codec.withPointer(descriptor, mem_ptr);
 }
 
-pub fn dataPointerFromDescriptor(descriptor: runtime.register_descriptor_t) ?*align(4) anyopaque {
+pub fn dataPointerFromDescriptor(descriptor: runtime.register_descriptor_t) ?[*]align(4) u8 {
     return runtime.toPcMemPtr(descriptorPointer(descriptor));
 }
 
@@ -73,7 +73,7 @@ pub fn getRegisterDataType(reg: runtime.calcRegister_t) u32 {
     return invalid_data_type;
 }
 
-pub fn getRegisterDataPointer(reg: runtime.calcRegister_t) ?*align(4) anyopaque {
+pub fn getRegisterDataPointer(reg: runtime.calcRegister_t) ?[*]align(4) u8 {
     var descriptor: runtime.register_descriptor_t = 0;
 
     if (reg <= runtime.LAST_GLOBAL_REGISTER) {
@@ -115,12 +115,14 @@ pub fn getRegisterDataPointer(reg: runtime.calcRegister_t) ?*align(4) anyopaque 
 }
 
 // The register's string, terminator included. A register with no data block
-// copies nothing, which is the case GCC's flags on the Windows build.
+// copies nothing, which is the case GCC's flags on the Windows build. The
+// terminator lies inside the payload the header records.
 pub fn copyRegisterStringTo(dest: [*]u8, regist: runtime.calcRegister_t) void {
     const reg_data = getRegisterDataPointer(regist) orelse return;
-    const reg_str: [*:0]const u8 = @ptrCast(@as([*]const u8, @ptrCast(reg_data)) + @sizeOf(abi.StrLgIntHeader));
-    const len = std.mem.len(reg_str) + 1;
-    @memmove(dest[0..len], reg_str[0..len]);
+    const header = std.mem.bytesToValue(abi.StrLgIntHeader, reg_data[0..@sizeOf(abi.StrLgIntHeader)]);
+    const payload = reg_data[@sizeOf(abi.StrLgIntHeader)..][0 .. @as(usize, header.dataMaxLengthInBlocks) * 4];
+    const len = std.mem.findScalar(u8, payload, 0).? + 1;
+    @memmove(dest[0..len], payload[0..len]);
 }
 
 pub fn getRegisterTag(reg: runtime.calcRegister_t) u32 {
