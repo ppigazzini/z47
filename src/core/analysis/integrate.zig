@@ -31,14 +31,16 @@ const const_1e_6143 = consts.const_1e_6143;
 // fnIntegrate / fnIntegrateYX are exported here as z47_solver_fnIntegrate /
 // z47_solver_fnIntegrateYX (the symbols solve.zig's dispatcher calls), but
 // solve.zig owns fnPgmInt itself (its own Zig impl), so no z47_solver_fnPgmInt
-// is defined here; _fnIntegrate calls the real fnPgmInt (extern, owned by
-// solve.zig). The real-name public symbols
-// fnIntVar and integrate are exported here. The non-static _fnIntegrate /
+// is defined here; _fnIntegrate calls it through solve.zig. The real-name public
+// symbols fnIntVar and integrate are exported here. The non-static _fnIntegrate /
 // _showProgress are only referenced internally and become private (the
 // _showProgress paints through the shared progress-panel owner;
 // the surrounding interrupt control flow is preserved). ENABLE_INTEGRATOR_FILE_
-// OUTPUT==0 and INTEGRATION_TWO_STAGE_EXIT undefined; the sprintf/radixProcess
-// display string building is reduced to a fixed literal (no effect on result).
+// OUTPUT==0 and INTEGRATION_TWO_STAGE_EXIT undefined. The half-second progress
+// line carries the level the C formats into it, and the host prints it to the
+// console as the C's PC_BUILD block does. The countdown line and its
+// radixProcess sit behind interruptedLoop, which nothing sets once
+// INTEGRATION_TWO_STAGE_EXIT is undefined, so they are never reached.
 
 const runtime = @import("solve_runtime.zig");
 const progress_panel = @import("progress_panel.zig");
@@ -83,7 +85,7 @@ const PGM_WAITING: u8 = 2;
 const solve_build_options = @import("solve_build_options");
 const dmcp_build: bool = solve_build_options.is_dmcp_build;
 // PC_BUILD: on for the host simulator and the testSuite, off on the firmware.
-const pc_build: bool = @import("builtin").target.os.tag != .freestanding;
+const pc_build: bool = !dmcp_build;
 extern fn printf(fmt: [*:0]const u8, ...) c_int;
 const old_hw: bool = solve_build_options.is_old_hw;
 // Total PLOT, INT and SOLVE engines that may run at once, in any combination, counted by
@@ -122,6 +124,16 @@ const MNU_Sfdx: i16 = 3118;
 const MNU_Sf_TOOL: i16 = 3117;
 
 const maxlevel: c_int = 7;
+
+/// The progress line dbl_exp_int_new hands the half-second update:
+/// `sprintf(tmps, "Level: %i/%i Iter: ", (int16_t)k, (int16_t)maxlevel)`. The
+/// int16_t casts truncate, and the longest result is 27 bytes, which the
+/// 64-byte buffer upstream gives it always holds.
+fn levelProgressLabel(buffer: *[64]u8, level: c_int) linksection(runtime.code_section) [:0]const u8 {
+    const shown_level: i16 = @truncate(level);
+    const shown_max: i16 = @truncate(maxlevel);
+    return runtime.bufPrintZ(buffer, "Level: {d}/{d} Iter: ", .{ shown_level, shown_max }) catch unreachable;
+}
 
 // ---------------------------------------------------------------------------
 // Globals
@@ -900,7 +912,12 @@ fn dbl_exp_int_new(regist: calcRegister_t, a: *const real_t, b: *const real_t, e
                 }
                 loop += 1;
                 if (checkHalfSec()) {
-                    if (progressHalfSecUpdate_Integer(timed, "Level: ", loop, !(interruptedLoop != 0), !(interruptedLoop != 0), !(interruptedLoop != 0))) {
+                    var tmps: [64]u8 = undefined;
+                    const label = levelProgressLabel(&tmps, k);
+                    if (progressHalfSecUpdate_Integer(timed, label, loop, !(interruptedLoop != 0), !(interruptedLoop != 0), !(interruptedLoop != 0))) {
+                        if (pc_build) {
+                            _ = printf("%s %i\n", label.ptr, loop);
+                        }
                         _showProgress(result, const_1(), const_1(), errorp, const_0(), const_1(), realContext);
                         if (interruptedLoop == 0 and exitSignalled) { // First EXIT press
                             // INTEGRATION_TWO_STAGE_EXIT undefined:
@@ -972,7 +989,12 @@ fn dbl_exp_int_new(regist: calcRegister_t, a: *const real_t, b: *const real_t, e
                 }
                 loop += 1;
                 if (checkHalfSec()) {
-                    if (progressHalfSecUpdate_Integer(timed, "Level: ", loop, !(interruptedLoop != 0), !(interruptedLoop != 0), !(interruptedLoop != 0))) {
+                    var tmps: [64]u8 = undefined;
+                    const label = levelProgressLabel(&tmps, k);
+                    if (progressHalfSecUpdate_Integer(timed, label, loop, !(interruptedLoop != 0), !(interruptedLoop != 0), !(interruptedLoop != 0))) {
+                        if (pc_build) {
+                            _ = printf("%s %i\n", label.ptr, loop);
+                        }
                         _showProgress(result, const_1(), const_1(), errorp, const_0(), const_1(), realContext);
                         if (interruptedLoop == 0 and exitSignalled) { // First EXIT press
                             displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE);
