@@ -160,17 +160,17 @@ pub fn reservedDataTypeDescriptor(reg: calcRegister_t) register_descriptor_t {
     return tables_owned.reservedDataTypeDescriptor(reg);
 }
 
-pub fn dataMaxLengthInBlocks(data_ptr: ?*const anyopaque) u16 {
+pub fn dataMaxLengthInBlocks(data_ptr: ?[*]const u8) u16 {
     return payload_bytes_owned.copyBytesToValue(strLgIntHeader_t, data_ptr).dataMaxLengthInBlocks;
 }
 
-pub fn setDataMaxLengthInBlocks(data_ptr: ?*anyopaque, max_data_len: u16) void {
+pub fn setDataMaxLengthInBlocks(data_ptr: ?[*]u8, max_data_len: u16) void {
     var header = payload_bytes_owned.copyBytesToValue(strLgIntHeader_t, data_ptr);
     header.dataMaxLengthInBlocks = max_data_len;
     payload_bytes_owned.copyValueToBytes(strLgIntHeader_t, data_ptr, &header);
 }
 
-pub fn matrixPayloadSizeInBlocks(data_ptr: ?*const anyopaque, element_size_in_blocks: u16) u16 {
+pub fn matrixPayloadSizeInBlocks(data_ptr: ?[*]const u8, element_size_in_blocks: u16) u16 {
     return @intCast(
         @as(u32, payload_bytes_owned.matrixRows(data_ptr)) *
             @as(u32, payload_bytes_owned.matrixColumns(data_ptr)) *
@@ -210,11 +210,11 @@ pub fn alignLongIntegerBlocks(size_in_blocks: u16) u16 {
     return size_owned.alignLongIntegerBlocks(size_in_blocks);
 }
 
-pub fn initializeMatrixHeader1x1(data_ptr: ?*anyopaque) void {
+pub fn initializeMatrixHeader1x1(data_ptr: ?[*]u8) void {
     size_owned.initializeMatrixHeader1x1(data_ptr);
 }
 
-pub fn initializeMatrixRegisterHeader1x1(data_ptr: ?*anyopaque) void {
+pub fn initializeMatrixRegisterHeader1x1(data_ptr: ?[*]u8) void {
     size_owned.initializeMatrixRegisterHeader1x1(data_ptr);
 }
 
@@ -273,7 +273,7 @@ pub fn reportNamedVariableTableFull(capacity: u16) void {
     error_owned.reportNamedVariableTableFull(capacity);
 }
 
-pub fn toPcMemPtr(mem_ptr: u16) ?*align(4) anyopaque {
+pub fn toPcMemPtr(mem_ptr: u16) ?[*]align(4) u8 {
     return tables_owned.toPcMemPtr(mem_ptr);
 }
 

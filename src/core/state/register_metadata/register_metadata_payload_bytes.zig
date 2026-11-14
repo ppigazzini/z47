@@ -22,35 +22,29 @@ pub fn toBlocks(bytes: usize) u16 {
     return @intCast((bytes + (bytesPerBlock() - 1)) / bytesPerBlock());
 }
 
-pub fn copyBytesToValue(comptime T: type, data_ptr: ?*const anyopaque) T {
-    var value = std.mem.zeroes(T);
-    const ptr = data_ptr orelse return value;
-    const src: [*]const u8 = @ptrCast(ptr);
-    const dst: [*]u8 = @ptrCast(&value);
-    @memcpy(dst[0..@sizeOf(T)], src[0..@sizeOf(T)]);
-    return value;
+pub fn copyBytesToValue(comptime T: type, data_ptr: ?[*]const u8) T {
+    const ptr = data_ptr orelse return std.mem.zeroes(T);
+    return std.mem.bytesToValue(T, ptr[0..@sizeOf(T)]);
 }
 
-pub fn copyValueToBytes(comptime T: type, data_ptr: ?*anyopaque, value: *const T) void {
+pub fn copyValueToBytes(comptime T: type, data_ptr: ?[*]u8, value: *const T) void {
     const ptr = data_ptr orelse return;
-    const src: [*]const u8 = @ptrCast(value);
-    const dst: [*]u8 = @ptrCast(ptr);
-    @memcpy(dst[0..@sizeOf(T)], src[0..@sizeOf(T)]);
+    @memcpy(ptr[0..@sizeOf(T)], std.mem.asBytes(value));
 }
 
-pub fn readMatrixHeaderDescriptor(data_ptr: ?*const anyopaque) u32 {
+pub fn readMatrixHeaderDescriptor(data_ptr: ?[*]const u8) u32 {
     return copyBytesToValue(u32, data_ptr);
 }
 
-pub fn matrixRows(data_ptr: ?*const anyopaque) u16 {
+pub fn matrixRows(data_ptr: ?[*]const u8) u16 {
     return @intCast((readMatrixHeaderDescriptor(data_ptr) & Z47_LOCAL_MATRIX_ROWS_MASK) >> Z47_LOCAL_MATRIX_ROWS_SHIFT);
 }
 
-pub fn matrixColumns(data_ptr: ?*const anyopaque) u16 {
+pub fn matrixColumns(data_ptr: ?[*]const u8) u16 {
     return @intCast((readMatrixHeaderDescriptor(data_ptr) & Z47_LOCAL_MATRIX_COLUMNS_MASK) >> Z47_LOCAL_MATRIX_COLUMNS_SHIFT);
 }
 
-pub fn setMatrixRowsColumns(data_ptr: ?*anyopaque, rows: u16, columns: u16) void {
+pub fn setMatrixRowsColumns(data_ptr: ?[*]u8, rows: u16, columns: u16) void {
     var descriptor = readMatrixHeaderDescriptor(data_ptr);
     descriptor &= ~(Z47_LOCAL_MATRIX_ROWS_MASK | Z47_LOCAL_MATRIX_COLUMNS_MASK);
     descriptor |= (@as(u32, rows) & 0x0fff) << Z47_LOCAL_MATRIX_ROWS_SHIFT;
@@ -58,7 +52,7 @@ pub fn setMatrixRowsColumns(data_ptr: ?*anyopaque, rows: u16, columns: u16) void
     copyValueToBytes(u32, data_ptr, &descriptor);
 }
 
-pub fn setMatrixTag(data_ptr: ?*anyopaque, tag: u16) void {
+pub fn setMatrixTag(data_ptr: ?[*]u8, tag: u16) void {
     var descriptor = readMatrixHeaderDescriptor(data_ptr);
     descriptor &= ~Z47_LOCAL_MATRIX_TAG_MASK;
     descriptor |= (@as(u32, tag) & 0x3f) << Z47_LOCAL_MATRIX_TAG_SHIFT;
@@ -77,18 +71,19 @@ test "toBlocks and byte-value roundtrip" {
     try testing.expectEqual(@as(u16, 2), toBlocks(8));
     var buf: u32 = 0;
     const v: u32 = 0xDEADBEEF;
-    copyValueToBytes(u32, &buf, &v);
-    try testing.expectEqual(@as(u32, 0xDEADBEEF), copyBytesToValue(u32, &buf));
+    copyValueToBytes(u32, std.mem.asBytes(&buf), &v);
+    try testing.expectEqual(@as(u32, 0xDEADBEEF), copyBytesToValue(u32, std.mem.asBytes(&buf)));
     try testing.expectEqual(@as(u32, 0), copyBytesToValue(u32, null));
 }
 
 test "matrix header rows/columns pack-unpack" {
     var desc: u32 = 0xAA000000; // high byte lives outside the row/col fields
-    setMatrixRowsColumns(&desc, 3, 5);
-    try testing.expectEqual(@as(u16, 3), matrixRows(&desc));
-    try testing.expectEqual(@as(u16, 5), matrixColumns(&desc));
+    const desc_bytes = std.mem.asBytes(&desc);
+    setMatrixRowsColumns(desc_bytes, 3, 5);
+    try testing.expectEqual(@as(u16, 3), matrixRows(desc_bytes));
+    try testing.expectEqual(@as(u16, 5), matrixColumns(desc_bytes));
     try testing.expectEqual(@as(u32, 0xAA000000), desc & 0xff000000); // preserved
-    setMatrixRowsColumns(&desc, 0xFFF, 0xFFF);
-    try testing.expectEqual(@as(u16, 0xFFF), matrixRows(&desc));
-    try testing.expectEqual(@as(u16, 0xFFF), matrixColumns(&desc));
+    setMatrixRowsColumns(desc_bytes, 0xFFF, 0xFFF);
+    try testing.expectEqual(@as(u16, 0xFFF), matrixRows(desc_bytes));
+    try testing.expectEqual(@as(u16, 0xFFF), matrixColumns(desc_bytes));
 }

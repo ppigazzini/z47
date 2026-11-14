@@ -132,7 +132,7 @@ pub extern fn clearRegister(reg: calcRegister_t) void;
 pub extern fn getSystemFlag(sf: i32) bool;
 pub extern fn setSystemFlag(sf: u32) void;
 pub extern fn flipSystemFlag(sf: u32) void;
-pub extern fn allocC47Blocks(size_in_blocks: usize) ?*anyopaque;
+pub extern fn allocC47Blocks(size_in_blocks: usize) ?[*]align(4) u8;
 pub extern fn freeC47Blocks(ptr: ?*anyopaque, size_in_blocks: usize) void;
 pub extern fn getRegisterFullSizeInBlocks(reg: calcRegister_t) u16;
 pub extern fn getRegisterDataPointer(reg: calcRegister_t) ?*align(4) anyopaque;

@@ -2,7 +2,7 @@ const descriptor_owned = @import("register_metadata_descriptor.zig");
 const runtime = @import("register_metadata_runtime.zig");
 const stack_runtime = @import("../runtime/stack_runtime.zig");
 
-pub fn tryGetDataPointerForMaxLengthGet(reg: runtime.calcRegister_t, data_ptr: *?*anyopaque) bool {
+pub fn tryGetDataPointerForMaxLengthGet(reg: runtime.calcRegister_t, data_ptr: *?[*]align(4) u8) bool {
     var descriptor: runtime.register_descriptor_t = 0;
 
     if (reg <= runtime.LAST_GLOBAL_REGISTER) {
@@ -33,7 +33,7 @@ pub fn tryGetDataPointerForMaxLengthGet(reg: runtime.calcRegister_t, data_ptr: *
     return false;
 }
 
-pub fn tryGetDataPointerForFullSize(reg: runtime.calcRegister_t, data_ptr: *?*anyopaque) bool {
+pub fn tryGetDataPointerForFullSize(reg: runtime.calcRegister_t, data_ptr: *?[*]align(4) u8) bool {
     var descriptor: runtime.register_descriptor_t = 0;
 
     if (reg <= runtime.LAST_GLOBAL_REGISTER) {
@@ -64,7 +64,7 @@ pub fn tryGetDataPointerForFullSize(reg: runtime.calcRegister_t, data_ptr: *?*an
     return false;
 }
 
-pub fn tryGetDataPointerForMaxLengthSet(reg: runtime.calcRegister_t, data_ptr: *?*anyopaque) bool {
+pub fn tryGetDataPointerForMaxLengthSet(reg: runtime.calcRegister_t, data_ptr: *?[*]align(4) u8) bool {
     var descriptor: runtime.register_descriptor_t = 0;
 
     if (reg <= runtime.LAST_GLOBAL_REGISTER) {
@@ -94,7 +94,7 @@ pub fn tryGetDataPointerForMaxLengthSet(reg: runtime.calcRegister_t, data_ptr: *
     return false;
 }
 
-fn matrixMaxLengthInBlocks(data_ptr: ?*const anyopaque, data_type: u32) u16 {
+fn matrixMaxLengthInBlocks(data_ptr: ?[*]const u8, data_type: u32) u16 {
     return runtime.matrixPayloadSizeInBlocks(
         data_ptr,
         if (data_type == runtime.dtReal34Matrix) runtime.real34SizeInBlocks() else runtime.complex34SizeInBlocks(),
@@ -167,7 +167,7 @@ pub fn allocationSizeInBlocks(data_type: u32, payload_size_in_blocks: u16) u16 {
 }
 
 fn getVariableFullSizeInBlocks(reg: runtime.calcRegister_t, data_type: u32) u16 {
-    var data_ptr: ?*anyopaque = null;
+    var data_ptr: ?[*]align(4) u8 = null;
 
     if (!tryGetDataPointerForFullSize(reg, &data_ptr)) {
         return 0;
@@ -181,7 +181,7 @@ fn getVariableFullSizeInBlocks(reg: runtime.calcRegister_t, data_type: u32) u16 
 }
 
 pub fn setRegisterMaxDataLengthInBlocks(reg: runtime.calcRegister_t, max_data_len: u16) void {
-    var data_ptr: ?*anyopaque = null;
+    var data_ptr: ?[*]align(4) u8 = null;
     var descriptor: runtime.register_descriptor_t = 0;
 
     if (tryGetDataPointerForMaxLengthSet(reg, &data_ptr)) {
@@ -240,7 +240,7 @@ pub fn setRegisterMaxDataLengthInBlocks(reg: runtime.calcRegister_t, max_data_le
 }
 
 pub fn getRegisterMaxDataLengthInBlocks(reg: runtime.calcRegister_t) u16 {
-    var data_ptr: ?*anyopaque = null;
+    var data_ptr: ?[*]align(4) u8 = null;
     // Read here: the branches below reduce `reg` into an index off its band's
     // boundary, so the data type has to be taken from the register as named.
     const data_type = descriptor_owned.getRegisterDataType(reg);
