@@ -96,6 +96,14 @@ PATTERNS = [
     ("extern_struct_files", re.compile(r"extern struct"), "file"),
     ("cptr_files", re.compile(r"\[\*c\]"), "file"),
     ("ptrcast_sites", re.compile(r"@(?:ptrCast|alignCast)\("), "site"),
+    # A cast that drops const or volatile. Writing through it into a string
+    # literal is illegal behaviour; a parameter that is only read is declared
+    # const instead.
+    ("constcast_sites", re.compile(r"@(?:constCast|volatileCast)\("), "site"),
+    # A pointer made from an integer. An address the platform defines (the DMCP
+    # ROM function table and system data block, a GDK atom) needs one; pointer
+    # arithmetic routed through @intFromPtr does not.
+    ("ptr_from_int_sites", re.compile(r"@ptrFromInt\("), "site"),
     ("callconv_c_sites", re.compile(r"callconv\(\.c\)"), "site"),
     # Zig-to-Zig `extern fn` redeclarations are transliteration debt: an owner
     # calling another owner's Zig-defined symbol through an untyped C-ABI extern
