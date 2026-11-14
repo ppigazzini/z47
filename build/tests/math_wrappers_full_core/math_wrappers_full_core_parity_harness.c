@@ -732,6 +732,36 @@ static void seedRealOutOfDomainNoResults(void) {
 // fnToRect2 -- so the clear side was reached all along and the SET side by
 // nothing. fnToPolar2, fnToRect2 and fnToRect are all driven here, so this gates
 // real computation in this lane rather than display.
+// The magnitude of a short integer and the exponent range of a real, the same
+// question integerMagnitude asks of a long integer. Every short integer fixture
+// above is 0xDEADBEEF in a 64-bit word, so no case reached the word's own bounds,
+// where the carry and overflow flags and the two's-complement minimum live. Every
+// real fixture is within a few digits of 1, so nothing reached the ends of
+// real34's exponent range: the largest finite value, the smallest normal one and
+// a subnormal, where rounding, overflow to infinity and underflow to zero happen.
+static void seedShortIntegerWordMax(void) {
+  convertUInt64ToShortIntegerRegister(0, 0x7FFFFFFFFFFFFFFFULL, 16, REGISTER_X);
+}
+
+static void seedShortIntegerWordMin(void) {
+  convertUInt64ToShortIntegerRegister(1, 0x8000000000000000ULL, 16, REGISTER_X);
+}
+
+static void seedRealNearOverflow(void) {
+  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+  stringToReal34("9.999999999999999999999999999999999E6144", REGISTER_REAL34_DATA(REGISTER_X));
+}
+
+static void seedRealNearUnderflow(void) {
+  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+  stringToReal34("1E-6143", REGISTER_REAL34_DATA(REGISTER_X));
+}
+
+static void seedRealSubnormal(void) {
+  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+  stringToReal34("1E-6170", REGISTER_REAL34_DATA(REGISTER_X));
+}
+
 static void seedRealHprp(void) {
   reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
   int32ToReal34(3, REGISTER_REAL34_DATA(REGISTER_X));
@@ -784,6 +814,13 @@ static const fixture_t FIXTURES[] = {
   { "outOfDomainNoComplex",   seedRealOutOfDomainNoComplex },
   { "outOfDomainNoResults",   seedRealOutOfDomainNoResults },
   { "realHprp",               seedRealHprp                 },
+
+  // The ends of the short integer word and of real34's exponent range.
+  { "shortIntegerWordMax",    seedShortIntegerWordMax      },
+  { "shortIntegerWordMin",    seedShortIntegerWordMin      },
+  { "realNearOverflow",       seedRealNearOverflow         },
+  { "realNearUnderflow",      seedRealNearUnderflow        },
+  { "realSubnormal",          seedRealSubnormal            },
 };
 
 // ---------------------------------------------------------------------------
@@ -922,6 +959,19 @@ static const partitionClass_t PARTITION_PROPERTIES[] = {
   { "integerMagnitude", "small",       "longIntegerSmall" },
   { "integerMagnitude", "typical",     "longInteger"      },
   { "integerMagnitude", "nearOverflow", "longIntegerWide" },
+
+  // The same question of a short integer: the word's own bounds, where the carry
+  // and overflow flags and the two's-complement minimum are decided.
+  { "shortIntegerMagnitude", "typical",  "shortInteger"        },
+  { "shortIntegerMagnitude", "wordMax",  "shortIntegerWordMax" },
+  { "shortIntegerMagnitude", "wordMin",  "shortIntegerWordMin" },
+
+  // And of a real: the ends of real34's exponent range, where results overflow to
+  // infinity, underflow to zero or lose digits as subnormals.
+  { "realExponentRange", "typical",       "realPositive"      },
+  { "realExponentRange", "nearOverflow",  "realNearOverflow"  },
+  { "realExponentRange", "nearUnderflow", "realNearUnderflow" },
+  { "realExponentRange", "subnormal",     "realSubnormal"     },
 
   { "spcres", "set",   "realPositive"          },
   { "spcres", "clear", "complexMatrixImagZero" },
@@ -1149,6 +1199,14 @@ static void secondLongIntegerWideNegative(void) { char digits[1005]; longInteger
                                        longIntegerInit(li); stringToLongInteger(digits, 10, li);
                                        convertLongIntegerToLongIntegerRegister(li, REGISTER_Y);
                                        convertLongIntegerToLongIntegerRegister(li, REGISTER_Z); longIntegerFree(li); }
+static void secondRealNearOverflow(void) { reallocateRegister(REGISTER_Y, dtReal34, 0, amNone); stringToReal34("9.999999999999999999999999999999999E6144", REGISTER_REAL34_DATA(REGISTER_Y));
+                                       reallocateRegister(REGISTER_Z, dtReal34, 0, amNone); stringToReal34("9.999999999999999999999999999999999E6144", REGISTER_REAL34_DATA(REGISTER_Z)); }
+static void secondRealNearUnderflow(void) { reallocateRegister(REGISTER_Y, dtReal34, 0, amNone); stringToReal34("1E-6143", REGISTER_REAL34_DATA(REGISTER_Y));
+                                       reallocateRegister(REGISTER_Z, dtReal34, 0, amNone); stringToReal34("1E-6143", REGISTER_REAL34_DATA(REGISTER_Z)); }
+static void secondShortIntegerWordMax(void) { convertUInt64ToShortIntegerRegister(0, 0x7FFFFFFFFFFFFFFFULL, 16, REGISTER_Y);
+                                       convertUInt64ToShortIntegerRegister(0, 0x7FFFFFFFFFFFFFFFULL, 16, REGISTER_Z); }
+static void secondShortIntegerWordMin(void) { convertUInt64ToShortIntegerRegister(1, 0x8000000000000000ULL, 16, REGISTER_Y);
+                                       convertUInt64ToShortIntegerRegister(1, 0x8000000000000000ULL, 16, REGISTER_Z); }
 static void secondShortIntegerNegative(void) { convertUInt64ToShortIntegerRegister(1, 0x1FULL, 16, REGISTER_Y);
                                        convertUInt64ToShortIntegerRegister(1, 0x1FULL, 16, REGISTER_Z); }
 static void secondMatrix2x3(void)    { initMatrixRegister(REGISTER_Y, 2, 3, false); for(int e = 0; e < 6; ++e) { int32ToReal34(e + 1, REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_Y) + e); }
@@ -1310,6 +1368,19 @@ static const pair_t PAIRS[] = {
   { "negative:negative",      seedRealNegative,          secondRealMinus1234       },
   { "minusInfinity:-infinity", seedRealNegativeInfinity, secondRealMinusInfinity   },
   { "shortIntNegative:shortIntNeg", seedShortIntegerNegative, secondShortIntegerNegative },
+
+  // The ends of the ranges, in pairs, because overflow is a property of the
+  // combination: the largest real34 plus or times itself overflows to infinity,
+  // the smallest normal times itself underflows to zero, and the word's maximum
+  // plus itself or its minimum minus the maximum sets carry and overflow.
+  { "realNearOverflow:nearOverflow",   seedRealNearOverflow,    secondRealNearOverflow    },
+  { "realNearOverflow:-1234",          seedRealNearOverflow,    secondRealMinus1234       },
+  { "realNearUnderflow:nearUnderflow", seedRealNearUnderflow,   secondRealNearUnderflow   },
+  { "realNearUnderflow:real7",         seedRealNearUnderflow,   secondReal7               },
+  { "realSubnormal:real7",             seedRealSubnormal,       secondReal7               },
+  { "shortIntWordMax:wordMax",         seedShortIntegerWordMax, secondShortIntegerWordMax },
+  { "shortIntWordMin:wordMax",         seedShortIntegerWordMin, secondShortIntegerWordMax },
+  { "shortIntWordMin:wordMin",         seedShortIntegerWordMin, secondShortIntegerWordMin },
 
   // Divide-by-zero with a SIGNED dividend. Each division cell checks a different
   // register for the zero, so covering the +-Infinity results needs the zero and
