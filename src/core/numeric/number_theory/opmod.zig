@@ -7,9 +7,11 @@
 // and mpz operation (mulmod.txt / expmod.txt / idiv.txt / idivr.txt check
 // results to the last ULP). Exports the opmod.h commands with C linkage; only
 // opModError stays externally visible besides the fn* commands and the two
-// longInteger_* helpers. The EXTRA_INFO_ON_CALC_ERROR sprintf hints become
-// fixed moreInfoOnError strings (no-op under TESTSUITE / DMCP).
+// longInteger_* helpers. The EXTRA_INFO_ON_CALC_ERROR hints carry upstream's
+// text and the register type names it sprintf's into them, and compile out
+// under TESTSUITE / DMCP.
 
+const std = @import("std");
 const runtime = @import("../command_wrappers/runtime.zig");
 
 const abi = @import("abi");
@@ -32,6 +34,8 @@ const dtLongInteger = runtime.dtLongInteger;
 const dtShortInteger = runtime.dtShortInteger;
 const DEC_ROUND_FLOOR = runtime.DEC_ROUND_FLOOR;
 const NOPARAM: u16 = 9876;
+// ERROR_MESSAGE_LENGTH (defines.h): the shared errorMessage buffer.
+const ERROR_MESSAGE_LENGTH = 512;
 
 const OPMOD_MULTIPLY: u16 = 0;
 const OPMOD_POWER: u16 = 1;
@@ -184,9 +188,18 @@ extern fn longIntegerAdd(opY: *mpz_struct, opX: *mpz_struct, result: *mpz_struct
 // opModError / opModOutOfDomain
 // ===========================================================================
 pub export fn opModError(mode: u16) linksection(runtime.code_section) callconv(.c) void {
-    _ = mode;
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
-    moreInfoOnError("In function fnOpMod:", "cannot MOD", null, null);
+    if (runtime.extra_info_on_calc_error) {
+        // Upstream formats the two lines into the halves of errorMessage.
+        var operation_buffer: [ERROR_MESSAGE_LENGTH / 2]u8 = undefined;
+        var divisor_buffer: [ERROR_MESSAGE_LENGTH / 2]u8 = undefined;
+        const z_name = std.mem.span(runtime.getRegisterDataTypeName(REGISTER_Z, true, false));
+        const y_name = std.mem.span(runtime.getRegisterDataTypeName(REGISTER_Y, true, false));
+        const x_name = std.mem.span(runtime.getRegisterDataTypeName(REGISTER_X, true, false));
+        const operation = runtime.bufPrintZ(&operation_buffer, "cannot MOD {s} {s} {s}", .{ z_name, if (mode == OPMOD_POWER) "^" else "*", y_name }) catch "";
+        const divisor = runtime.bufPrintZ(&divisor_buffer, "by {s}", .{x_name}) catch "";
+        moreInfoOnError("In function fnOpMod:", operation, divisor, null);
+    }
 }
 
 fn opModOutOfDomain(mode: u16) linksection(runtime.code_section) void {

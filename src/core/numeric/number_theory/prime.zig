@@ -15,9 +15,9 @@ const const34_1 = consts.const34_1;
 // Faithful line-by-line translation of prime.c. C unsigned arithmetic that
 // wraps is written with the wrapping operators (+% -% *%). The
 // MONITOR_FACTORS debug blocks are #undef'd in the C and are omitted here.
-// EXTRA_INFO_ON_CALC_ERROR sprintf hints become fixed moreInfoOnError strings
-// (matching the sibling owners; under TESTSUITE/DMCP builds moreInfoOnError is
-// a no-op).
+// EXTRA_INFO_ON_CALC_ERROR hints carry upstream's text and the operands it
+// sprintf's into them; the formatted ones go through moreInfoOnErrorFormat,
+// which compiles out with the option on TESTSUITE and DMCP builds.
 
 const runtime = @import("../command_wrappers/runtime.zig");
 const math_command_wrappers = @import("../command_wrappers.zig");
@@ -299,7 +299,7 @@ const ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX: u8 = 39;
 const ERROR_SOLVER_ABORT: u8 = 60;
 
 const FLAG_CPXRES: i32 = 0x8004;
-const FLAG_ASLIFT: i32 = 0xc023; // defines.h:853 (was 0x8019 = FLAG_QUIET)
+const FLAG_ASLIFT: i32 = 0xc023; // defines.h
 
 const NOPARAM: u16 = 9876;
 const PRN_TMP: u16 = 8;
@@ -309,6 +309,8 @@ const PGM_WAITING: u8 = 2;
 const SCRUPD_MANUAL_STACK: u8 = 0x02;
 const SCRUPD_SKIP_STACK_ONE_TIME: u8 = 0x20;
 const TI_FALSE: u8 = 12;
+const STD_CROSS = "\x80\xd7"; // fonts.h
+const STD_UP_ARROW = "\xa1\x91"; // fonts.h
 
 // prime.h parameter constants
 const M_SIGMA_0: u16 = 0;
@@ -358,6 +360,22 @@ extern fn setSystemFlag(sf: c_uint) void;
 extern fn realSetOne(r: *real_t) void;
 extern fn realSetZero(r: *real_t) void;
 extern fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void;
+
+// ERROR_MESSAGE_LENGTH (defines.h): the shared errorMessage buffer upstream's
+// sprintf hints are formatted into.
+const ERROR_MESSAGE_LENGTH = 512;
+
+// An EXTRA_INFO_ON_CALC_ERROR hint whose text upstream sprintf's from the
+// operands, the matrix shapes the factor engine refused. Compiled out with
+// the option, as upstream's #if block is.
+fn moreInfoOnErrorFormat(function_name: [*:0]const u8, comptime format: []const u8, args: anytype) void {
+    if (!runtime.extra_info_on_calc_error) {
+        return;
+    }
+    var buffer: [ERROR_MESSAGE_LENGTH]u8 = undefined;
+    const message = runtime.bufPrintZ(&buffer, format, args) catch "";
+    moreInfoOnError(function_name, message, null, null);
+}
 
 // realIsNegative / realMultiply / real34ToReal are C macros; reproduce them.
 const realIsNegative = math_real_predicates.realIsNegative;
@@ -863,14 +881,14 @@ fn _doFnEvPFacts(param: u16) void {
             adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
         } else {
             displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
-            moreInfoOnError("In function _doFnEvPFacts:", "Only 2xn matrix supported", null, null);
+            moreInfoOnErrorFormat("In function _doFnEvPFacts:", "Only 2" ++ STD_CROSS ++ "n matrix supported: {d}" ++ STD_CROSS ++ "{d} matrix", .{ rows, cols });
             // goto return10
             refreshScreen(253);
             return;
         }
     } else {
         displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
-        moreInfoOnError("In function _doFnEvPFacts:", "2xn matrix required.", null, null);
+        moreInfoOnError("In function _doFnEvPFacts:", "2" ++ STD_CROSS ++ "n matrix required.", null, null);
         // goto return10
         refreshScreen(253);
         return;
@@ -1365,7 +1383,7 @@ fn SQUFOF(result: *mpz_struct, N: *const mpz_struct, lastAdded: real34_t) void {
                     loopp += 1;
                     if (checkHalfSec()) {
                         keepFileNameAlive();
-                        if (progressHalfSecUpdate_Integer(halfSec_timed, "Factors: Shanks/Pollard n =", loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) {
+                        if (progressHalfSecUpdate_Integer(halfSec_timed, "Factors: Shanks/Pollard" ++ STD_UP_ARROW ++ " n =", loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) {
                             _showProgress(&lastAdded, &n);
                             force_refresh(halfSec_force);
                         }
@@ -1445,7 +1463,7 @@ fn SQUFOF(result: *mpz_struct, N: *const mpz_struct, lastAdded: real34_t) void {
                     loopp += 1;
                     if (checkHalfSec()) {
                         keepFileNameAlive();
-                        if (progressHalfSecUpdate_Integer(halfSec_timed, "Factors: Shanks/Pollard n =", loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) {
+                        if (progressHalfSecUpdate_Integer(halfSec_timed, "Factors: Shanks/Pollard" ++ STD_UP_ARROW ++ " n =", loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) {
                             _showProgress(&lastAdded, &n);
                             force_refresh(halfSec_force);
                         }
@@ -1628,7 +1646,7 @@ fn dumpExponents(regist: calcRegister_t, faddr: *FactorAdder_t, dumpForFewerThan
 
     if (faddr.nExpons != cols or rows != 2 or getRegisterDataType(REGISTER_X) != dtReal34Matrix) {
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
-        moreInfoOnError("In function dumpExponents:", "Incorrect matrix counters vs. array", null, null);
+        moreInfoOnErrorFormat("In function dumpExponents:", "Incorrect matrix counters {d}" ++ STD_CROSS ++ "{d} matrix vs. array {d}", .{ rows, cols, faddr.nExpons });
         return;
     }
     const elems = registerReal34MatrixElements(regist);
@@ -1661,16 +1679,23 @@ fn addFactor(factor: *mpz_struct, regist: calcRegister_t, lastAdded: *real34_t, 
                 return addFactorReturnFalse();
             }
             displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE);
-            moreInfoOnError("In function addFactor 001:", "Not enough memory for a new matrix", null, null);
+            if (runtime.extra_info_on_calc_error) {
+                const cols_: u16 = registerMatrixHeader(regist).matrixColumns;
+                const rows_: u16 = registerMatrixHeader(regist).matrixRows;
+                moreInfoOnErrorFormat("In function addFactor 001:", "Not enough memory for a rows:{d}" ++ STD_CROSS ++ " cols:{d} matrix", .{ rows_, cols_ });
+            }
             return addFactorReturnFalse();
         }
         adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
     }
 
     const rows: u16 = registerMatrixHeader(regist).matrixRows;
+    // Read here, before either redim, as upstream reads it: the hints below
+    // report the column count the matrix had on entry.
+    const cols: u16 = registerMatrixHeader(regist).matrixColumns;
     if (rows > 2) {
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
-        moreInfoOnError("In function addFactor:", "Incorrect matrix dimensions", null, null);
+        moreInfoOnErrorFormat("In function addFactor:", "Incorrect matrix dimensions {d}" ++ STD_CROSS ++ "{d} matrix", .{ rows, cols });
         return addFactorReturnFalse();
     }
 
@@ -1684,7 +1709,7 @@ fn addFactor(factor: *mpz_struct, regist: calcRegister_t, lastAdded: *real34_t, 
             return addFactorReturnFalse();
         }
         displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE);
-        moreInfoOnError("In function addFactor 002:", "Not enough memory for a matrix", null, null);
+        moreInfoOnErrorFormat("In function addFactor 002:", "Not enough memory for a {d}" ++ STD_CROSS ++ "{d} matrix", .{ rows, cols });
         return addFactorReturnFalse();
     }
 
@@ -1714,7 +1739,7 @@ fn addFactor(factor: *mpz_struct, regist: calcRegister_t, lastAdded: *real34_t, 
                 faddr.nExpons += 1;
             } else {
                 displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
-                moreInfoOnError("In function addFactor 003:", "Maximum number of factors exceeded", null, null);
+                moreInfoOnErrorFormat("In function addFactor 003:", "Maximum number of factors exceeded {d}" ++ STD_CROSS ++ "{d} matrix", .{ rows, cols });
                 return addFactorReturnFalse();
             }
 
@@ -1725,7 +1750,7 @@ fn addFactor(factor: *mpz_struct, regist: calcRegister_t, lastAdded: *real34_t, 
                     return addFactorReturnFalse();
                 }
                 displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE);
-                moreInfoOnError("In function addFactor 004", "Not enough memory for a matrix", null, null);
+                moreInfoOnErrorFormat("In function addFactor 004", "Not enough memory for a {d}" ++ STD_CROSS ++ "{d} matrix", .{ rows, cols });
                 return addFactorReturnFalse();
             }
         }
@@ -2013,7 +2038,7 @@ fn performPrimeFactorization(doSaveLastX: bool) bool {
                             break;
                         }
                         displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE);
-                        moreInfoOnError("In function performPrimeFactorization:  Queue overflow:", "Not enough memory for a matrix", null, null);
+                        moreInfoOnError("In function performPrimeFactorization:  Queue overflow:", "Not enough memory for a 1" ++ STD_CROSS ++ "1 matrix", null, null);
                         break;
                     }
                 }

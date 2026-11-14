@@ -13,9 +13,11 @@ const const_1on4 = consts.const_1on4;
 // (power_real / power_complex / power_longInteger / square / cube tests check
 // results to the last ULP). The static powReal / powCplx / powShoI / powLonI
 // helpers stay private; PowerReal / PowerComplex / longIntegerPower / fnPower
-// keep C linkage. The EXTRA_INFO_ON_CALC_ERROR sprintf hints become fixed
-// moreInfoOnError strings (no-op under TESTSUITE / DMCP).
+// keep C linkage. The EXTRA_INFO_ON_CALC_ERROR hints carry upstream's text and
+// the register type names it sprintf's into them, and compile out under
+// TESTSUITE / DMCP.
 
+const std = @import("std");
 const runtime = @import("../command_wrappers/runtime.zig");
 const math_command_wrappers = @import("../command_wrappers.zig");
 const math_comparison_reals = @import("../compare/comparison_reals.zig");
@@ -65,6 +67,8 @@ const amNone = runtime.amNone;
 const FLAG_CPXRES: u16 = 0x8004;
 const dtLongInteger = runtime.dtLongInteger;
 const dtReal34 = runtime.dtReal34;
+// ERROR_MESSAGE_LENGTH (defines.h): the shared errorMessage buffer.
+const ERROR_MESSAGE_LENGTH = 512;
 
 const displayCalcErrorMessage = runtime.displayCalcErrorMessage;
 const moreInfoOnError = runtime.moreInfoOnError;
@@ -704,7 +708,16 @@ fn powCplx() linksection(runtime.code_section) callconv(.c) void {
 
     if (errorCode != ERROR_NONE) {
         displayCalcErrorMessage(errorCode, ERR_REGISTER_LINE);
-        moreInfoOnError("In function powCplx:", "cannot raise", "to", null);
+        if (runtime.extra_info_on_calc_error) {
+            // Upstream formats the two lines into the halves of errorMessage.
+            var raise_buffer: [ERROR_MESSAGE_LENGTH / 2]u8 = undefined;
+            var to_buffer: [ERROR_MESSAGE_LENGTH / 2]u8 = undefined;
+            const y_name = std.mem.span(runtime.getRegisterDataTypeName(REGISTER_Y, true, false));
+            const x_name = std.mem.span(runtime.getRegisterDataTypeName(REGISTER_X, true, false));
+            const raise = runtime.bufPrintZ(&raise_buffer, "cannot raise {s}", .{y_name}) catch "";
+            const to = runtime.bufPrintZ(&to_buffer, "to {s}", .{x_name}) catch "";
+            moreInfoOnError("In function powCplx:", raise, to, null);
+        }
     } else {
         runtime.convertComplexToResultRegister(&r, REGISTER_X);
     }
