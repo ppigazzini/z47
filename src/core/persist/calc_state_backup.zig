@@ -344,8 +344,9 @@ extern var firstFreeProgramByte: [*c]u8;
 extern var firstDisplayedStep: [*c]u8;
 extern var currentStep: [*c]u8;
 
-fn geometry() progmem.Geometry {
-    return .{ .ram_base = @intFromPtr(ram), .ram_size_in_blocks = build_options.ram_size_in_blocks, .old_hw = state_old_hw };
+/// The RAM pool at this build's geometry.
+fn pool() progmem.Ram {
+    return progmem.Ram.of(ram, build_options.ram_size_in_blocks, state_old_hw);
 }
 fn streq(a: [*c]const u8, b: [*c]const u8) bool {
     return strcmp(a, b) == 0;
@@ -468,10 +469,10 @@ fn sv(buffer: [*]const u8, size: u32, name: [*c]const u8, type_str: [*c]const u8
     }
 }
 fn c47ptr(p: [*c]const u8) u32 {
-    return progmem.toC47memptr(geometry(), @intFromPtr(p));
+    return pool().toC47memptr(p);
 }
 fn offWithin(p: [*c]const u8) u32 {
-    return progmem.offsetWithinBlock(geometry(), @intFromPtr(p));
+    return pool().offsetWithinBlock(p);
 }
 
 pub fn saveCalc() void {
@@ -486,7 +487,7 @@ pub fn saveCalc() void {
     }
     var bv: u32 = BACKUP_VERSION;
     sv(std.mem.asBytes(&bv), 4, "backupVersion", "uint32");
-    var rsib: u32 = geometry().ram_size_in_blocks;
+    var rsib: u32 = pool().size_in_blocks;
     sv(std.mem.asBytes(&rsib), 4, "ramSizeInBlocks", "uint32");
     sv(std.mem.asBytes(&numberOfFreeMemoryRegions), 4, "numberOfFreeMemoryRegions", "int32");
     sv(std.mem.asBytes(&freeMemoryRegions.?[0]), FREE_MEM_REGION_SIZE * @as(u32, @bitCast(numberOfFreeMemoryRegions)), "freeMemoryRegions", "hexDump");
@@ -802,7 +803,7 @@ pub fn saveCalc() void {
     // claimed one included, which memcheck holds as no-access or undefined (see
     // free_list.zig). It is the one reader entitled to those bytes.
     std.valgrind.memcheck.makeMemDefined(poolBytes());
-    sv(poolBytes().ptr, (geometry().ram_size_in_blocks) << 2, "ram", "hexDump");
+    sv(poolBytes().ptr, (pool().size_in_blocks) << 2, "ram", "hexDump");
     closeFreeRegions();
 
     sv(std.mem.asBytes(&graMod), 1, "graMod", "uint8");
@@ -843,7 +844,7 @@ const DEC_REJECTED: u32 = DEC_Conversion_syntax | DEC_Overflow | DEC_Underflow |
 
 /// The whole pool as bytes, the image both directions of the backup carry.
 fn poolBytes() []u8 {
-    return std.mem.sliceAsBytes(ram[0..geometry().ram_size_in_blocks]);
+    return pool().bytes();
 }
 
 /// Marks every free region no-access for memcheck, as the free list keeps it
@@ -851,11 +852,11 @@ fn poolBytes() []u8 {
 /// image, so each hands the free regions back to memcheck after it.
 fn closeFreeRegions() void {
     const regions = freeMemoryRegions orelse return;
-    const pool = poolBytes();
+    const image = poolBytes();
     var i: usize = 0;
     while (i < @as(usize, @intCast(@max(numberOfFreeMemoryRegions, 0)))) : (i += 1) {
         const start = @as(usize, regions[i].blockAddress) << 2;
-        std.valgrind.memcheck.makeMemNoAccess(pool[start..][0 .. @as(usize, regions[i].sizeInBlocks) << 2]);
+        std.valgrind.memcheck.makeMemNoAccess(image[start..][0 .. @as(usize, regions[i].sizeInBlocks) << 2]);
     }
 }
 
@@ -1088,7 +1089,7 @@ fn oldFloatValue(valueName: [*c]const u8) ?f64 {
     return if (std.math.isFinite(d)) d else 0;
 }
 fn toPcmem(blk: u32) [*c]u8 {
-    return @ptrFromInt(progmem.toPcmemptr(geometry(), @intCast(blk)));
+    return pool().toPcmemptr(@intCast(blk));
 }
 const C47_NULL: u32 = 65535;
 const MAX_FREE_REGIONS: u32 = if (state_old_hw) 50 else 200;
@@ -1114,9 +1115,9 @@ fn restoredRegionCountIsUsable(count: i32, ceiling: u32) bool {
 // Out of range clears poolPointersInRange, which makes the caller refuse the file, and returns null rather
 // than a pointer the caller might still use. C47_NULL is the file's own null and stays legal.
 fn restoredPoolPointer(current: [*c]u8, valueName: [*c]const u8, offsetValueName: ?[*c]const u8, poolPointersInRange: *bool) [*c]u8 {
-    const geo = geometry();
-    var blockAddress: u32 = progmem.toC47memptr(geo, @intFromPtr(current));
-    var byteOffset: u32 = if (current == null) 0 else progmem.offsetWithinBlock(geo, @intFromPtr(current));
+    const geo = pool();
+    var blockAddress: u32 = geo.toC47memptr(current);
+    var byteOffset: u32 = if (current == null) 0 else geo.offsetWithinBlock(current);
 
     rv(std.mem.asBytes(&blockAddress), 4, valueName, "c47Ptr");
     if (offsetValueName) |ovn| {
@@ -1130,11 +1131,11 @@ fn restoredPoolPointer(current: [*c]u8, valueName: [*c]const u8, offsetValueName
     // saveCalc() splits a pointer with TO_C47MEMPTR(), which divides by the block size, and stores the
     // remainder as the offset, so an offset is never one block or more. The result is required to be
     // strictly inside the pool: a block index of ram_size_in_blocks is the one-past-the-end position.
-    if (blockAddress >= geo.ram_size_in_blocks or byteOffset >= 4) {
+    if (blockAddress >= geo.size_in_blocks or byteOffset >= 4) {
         poolPointersInRange.* = false;
         return null;
     }
-    return @ptrFromInt(progmem.toPcmemptr(geo, @intCast(blockAddress)) + byteOffset);
+    return geo.at(@as(usize, blockAddress) * 4 + byteOffset);
 }
 fn rdU16(p: [*c]const u8) u16 {
     return @as(u16, p[0]) | (@as(u16, p[1]) << 8);
@@ -1160,7 +1161,7 @@ pub fn restoreCalc() void {
     rv(std.mem.asBytes(&backupVersion), 4, "backupVersion", "uint32");
     var ramSizeInBlocks: u32 = 0;
     rv(std.mem.asBytes(&ramSizeInBlocks), 4, "ramSizeInBlocks", "uint32");
-    if (ramSizeInBlocks != geometry().ram_size_in_blocks) {
+    if (ramSizeInBlocks != pool().size_in_blocks) {
         backupFreeParams();
         return;
     }
@@ -1188,7 +1189,7 @@ pub fn restoreCalc() void {
     // The raw pool image lands over blocks memcheck may hold as no-access (see
     // free_list.zig); it is ordinary memory until the free list is read back below.
     std.valgrind.memcheck.makeMemUndefined(poolBytes());
-    rv(poolBytes().ptr, (geometry().ram_size_in_blocks) << 2, "ram", "hexDump");
+    rv(poolBytes().ptr, (pool().size_in_blocks) << 2, "ram", "hexDump");
 
     graMod = 0;
     if (backupVersion >= 1020) {
@@ -1196,13 +1197,13 @@ pub fn restoreCalc() void {
     } else {
         // Pre-1020 backups: GRAMOD as a long integer reserved variable in the ram
         // image, block 36. Take its value over, convert, then clear the slot.
-        const gramodSlot = progmem.toPcmemptr(geometry(), 36);
-        const oldGramod: u32 = @as(*align(4) const u32, @ptrFromInt(gramodSlot + @sizeOf(StrLgIntHeader))).*;
+        const gramodSlot = pool().bytes()[36 * 4 ..];
+        const oldGramod = std.mem.readInt(u32, gramodSlot[@sizeOf(StrLgIntHeader)..][0..4], .native);
         graMod = if (oldGramod <= 3) @intCast(oldGramod) else 0;
-        @memset(@as([*]u8, @ptrFromInt(gramodSlot))[0..REAL34_SIZE_IN_BYTES], 0);
+        @memset(gramodSlot[0..REAL34_SIZE_IN_BYTES], 0);
         // Block 36 is now i%. A memset leaves bytes a decQuad does not read as zero,
         // so encode a real zero there, then derive i% from the restored I%/a.
-        _ = decQuadZero(@ptrFromInt(gramodSlot));
+        _ = decQuadZero(gramodSlot.ptr);
         tvmSyncIp(RESERVED_VARIABLE_IPONA);
     }
     if (comptime option_atext_fonts) {
