@@ -55,6 +55,12 @@ fn addRuntimeObject(
     // The DMCP ROM function table the firmware display refresh goes through.
     const dmcp_rom_module = build_common.addDmcpRomModule(b, target, optimize, options.board);
     module.addImport("dmcp_rom", dmcp_rom_module);
+    // DMCP_BUILD and OLD_HW, from the board: the firmware refresh path and the
+    // old_hw DM42's TO_QSPI placement of the frequency table.
+    const build_options = b.addOptions();
+    build_options.addOption(bool, "dmcp_build", options.board.isDmcp());
+    build_options.addOption(bool, "old_hw", options.board.isOldHw());
+    module.addOptions("tone_build_options", build_options);
 
     return b.addObject(.{
         .name = b.fmt("{s}-ui-tone", .{name_prefix}),

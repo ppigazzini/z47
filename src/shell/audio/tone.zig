@@ -1,8 +1,10 @@
+const abi = @import("abi");
+const build_options = @import("tone_build_options");
 const runtime = @import("tone_runtime.zig");
 
 // Not static upstream: the symbol is part of the C surface, so it is exported
 // under its own name rather than kept module-local.
-pub export const frequency: [10]u32 = .{ 164814, 220000, 246942, 277183, 293665, 329628, 369995, 415305, 440000, 554365 };
+pub export const frequency: [10]u32 linksection(abi.codeDataSection(build_options.dmcp_build and build_options.old_hw)) = .{ 164814, 220000, 246942, 277183, 293665, 329628, 369995, 415305, 440000, 554365 };
 
 fn tonePlay(tone_num: u16) void {
     if (runtime.getSystemFlag(runtime.FLAG_QUIET)) {
