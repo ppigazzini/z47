@@ -31,8 +31,8 @@ Last verified: 2026-10-23, Zig `0.17.0` stable. The upstream pin is
 | wrong value in one owner | that owner's parity lane, `zig build <owner>_parity` | the corpus, if no case reaches it |
 | out-of-bounds index, integer overflow, bad cast in Zig | Zig's own safety checks in a `debug` or `safe` build -- they panic with a stack trace | ASan, which never sees a checked access; **and the shipped firmware, built `small`, where the same access is silent unless the function opts in with `@setRuntimeSafety(true)` -- only the load-path functions do, and `check-idiom-ratchet.sh` prints how many as `untrusted_fns`** |
 | C undefined behaviour in retained C (signed overflow, bad shift, bad cast, invalid enum) | `zig build test_asan` -- **UBSan** | the corpus, the parity lanes |
-| heap overflow / use-after-free in retained C | on the paths it drives only, `zig build memcheck_suite` -- Valgrind's memcheck over both malformed-load corpora and the save/load round-trip (Linux host, CI only). Everywhere else **nothing**: there is no AddressSanitizer here and Zig cannot link one -- see *What The Sanitizer Lanes Actually Run* below | every other lane in this tree |
-| a write into FREE pool space inside `ram` | the pool-poison audit in `zig build state_load_fuzz` (`../src/shell/pool_poison.zig`, host only), once the load returns; `zig build memcheck_suite` at the faulting instruction, for a read as well as a write, because the pool marks its free blocks no-access for memcheck | every other lane |
+| heap overflow / use-after-free in retained C | on the paths they drive only, `zig build memcheck_suite` -- Valgrind's memcheck over both malformed-load corpora and the save/load round-trip -- and `zig build test_memcheck`, the whole testSuite under memcheck (Linux host, CI only). Everywhere else **nothing**: there is no AddressSanitizer here and Zig cannot link one -- see *What The Sanitizer Lanes Actually Run* below | every other lane in this tree |
+| a write into FREE pool space inside `ram` | the pool-poison audit in `zig build state_load_fuzz` (`../src/shell/pool_poison.zig`, host only), once the load returns; `zig build memcheck_suite` and `zig build test_memcheck` at the faulting instruction, for a read as well as a write, because the pool marks its free blocks no-access for memcheck | every other lane |
 | **one C47 block overrunning a live neighbour inside `ram`** | **nothing.** No ASan exists here -- see below. The last known instance, an unported matrix-capacity guard, was found by reading the upstream C against the owner; `state_load_fuzz` now reproduces it, but only because the under-allocation trips a Zig safety check first | ASan, which sees `ram` as one allocation; Zig's checks, which never see `[*c]` pointer arithmetic; the pool-poison audit and memcheck, which see only free space |
 | malformed `.p47` program file | `zig build pgm_load_fuzz`, now genuinely UBSan-instrumented | the corpus, which only round-trips valid files |
 | malformed `.sav` state file (`.d47` data-file import has no malformed-input lane) | `zig build state_load_fuzz` -- a generated corpus through the real `doLoad` at four load modes, checked under UBSan for crash/hang/safety-panic. **Read the caveat in [70](70-tests-and-verification.md): only the files the generator pins with `expect_version` have an expected outcome, so for the rest a green run means "did not crash", not "was rejected correctly"** | `saveload_roundtrip` (round-trip plus golden snapshot), which loads valid files only; and the silent wrong-accept, for any file with no pinned expectation |
@@ -78,9 +78,9 @@ not AddressSanitizer. The `*_asan` names are historical and wrong.
 and Zig 0.17 ships no ASan runtime, so `-fsanitize=address` compiles and then
 fails to link (`undefined symbol: __asan_report_store1`). Reaching real ASan means
 linking the host's `libclang_rt.asan`, a new host-toolchain dependency for a
-deliberately Zig-only project. Until someone takes that decision, **the only lane here that
-detects a heap overflow or a use-after-free is `memcheck_suite`**, and only on
-the paths it drives; see the end of the next section.
+deliberately Zig-only project. Until someone takes that decision, **the only lanes here that
+detect a heap overflow or a use-after-free are `memcheck_suite` and
+`test_memcheck`**, and only on the paths they drive; see the end of the next section.
 
 What UBSan does catch is live now and was not before: signed overflow, bad shifts,
 out-of-range casts, invalid enum values, null-pointer arithmetic and the rest of
@@ -172,8 +172,12 @@ runtime linked into the binary:
   corpora and the save/load round-trip under memcheck, so a read or write of a
   free block, or a branch on bytes nothing wrote, stops at the instruction. The
   backup's whole-pool dump is the one reader entitled to free and unwritten
-  bytes, and lifts the marking for its own read. It needs `valgrind` on the host and
-  runs in CI only. The host build targets a baseline x86-64 CPU, which is what
+  bytes, and lifts the marking for its own read. `zig build test_memcheck` runs
+  the whole testSuite the same way. Both need `valgrind` on the host and run in
+  CI only. A host binary whose `.text` is writable gets no symbols from valgrind,
+  so every frame prints as `???`; `abi.codeSection` and `abi.codeDataSection`
+  keep constant tables out of it, and `readelf -SW <binary> | grep ' \.text '`
+  shows `AX` when it is right. The host build targets a baseline x86-64 CPU, which is what
   lets valgrind decode it: a binary built for the native CPU can die of SIGILL on
   an instruction valgrind does not know.
 

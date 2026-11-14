@@ -61,6 +61,7 @@ flowchart TD
     R[linux-firmware-artifacts]
     S[macos-host-build]
     T[windows-host-build]
+    U[linux-testsuite-memcheck]
   end
 
   A --> E[zig-master-compatibility: monitor only]
@@ -221,6 +222,16 @@ packages install in the cached `setup-msys2` step (`release: false`,
 over the staged runtime tree. This is the lane that finally adjudicates the
 Windows LLP64 integer-width behavior the `portable-int-width-guard` only
 approximates.
+
+### `linux-testsuite-memcheck` (Linux testSuite under valgrind memcheck)
+
+Runs `zig build test_memcheck`: the whole imported testSuite list under
+Valgrind's memcheck, failing on any report. It is its own job because memcheck
+slows the suite by an order of magnitude, and it installs only the testSuite's
+host libraries and `valgrind`. The step's comment in `../build/host/steps.zig`
+gives the two exemptions: decNumber's word scans past its last digit, suppressed
+line by line from the decNumber source, and the compiler's stack probes below
+the stack pointer.
 
 ### `required` (Every required job passed)
 

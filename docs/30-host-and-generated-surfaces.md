@@ -80,10 +80,10 @@ parity reference; they are not compiled.
 ## Host Regression And Parity Lanes
 
 The host build graph also registers the grouped regression lanes (`test`,
-`test_asan`, `repeattest`) and the per-owner parity and oracle lanes;
+`test_asan`, `test_memcheck`, `repeattest`) and the per-owner parity and oracle lanes;
 `../build.zig` registers the native Zig unit lane (`test:unit`).
 
-`test`, `test_asan`, and `repeattest` run the imported upstream corpus list
+`test`, `test_asan`, `test_memcheck` and `repeattest` run the imported upstream corpus list
 `../upstream/src/testSuite/tests/testSuiteList.txt` and no z47 list. That is the
 point: the shared testSuite is the measuring instrument, so z47 runs it
 unmodified and never appends to it. z47's own focused coverage goes in its own

@@ -2021,6 +2021,60 @@ jobs:
   # as soon as the toolchain is validated, so a red guard no longer hides the
   # platform lanes behind it, and this job fails when any of them failed or was
   # cancelled. The Zig master monitor is non-blocking and stays out of it.
+  linux-testsuite-memcheck:
+    name: Linux testSuite under valgrind memcheck
+    needs:
+      - validate-toolchain
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          submodules: recursive
+      - id: toolchain
+        name: Load pinned Zig metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          . ./.github/zig-toolchain.env
+          echo "version=$ZIG_VERSION" >> "$GITHUB_OUTPUT"
+      - name: Install pinned Zig
+        uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2.2.1
+        with:
+          version: ${{ steps.toolchain.outputs.version }}
+      - name: Verify resolved Zig version
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(zig version)" = "${{ steps.toolchain.outputs.version }}"
+      - id: zig-build-cache
+        name: Restore Linux memcheck Zig build caches
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            .zig-cache
+          key: zig-build-linux-memcheck-${{ runner.os }}-${{ runner.arch }}-${{ steps.toolchain.outputs.version }}-${{ env.ZIG_BUILD_CACHE_VERSION }}-${{ github.ref_name }}
+          restore-keys: |
+            zig-build-linux-memcheck-${{ runner.os }}-${{ runner.arch }}-${{ steps.toolchain.outputs.version }}-${{ env.ZIG_BUILD_CACHE_VERSION }}-${{ github.ref_name }}-
+            zig-build-linux-memcheck-${{ runner.os }}-${{ runner.arch }}-${{ steps.toolchain.outputs.version }}-${{ env.ZIG_BUILD_CACHE_VERSION }}-
+      - name: Install the testSuite's host libraries and valgrind
+        shell: bash
+        run: |
+          set -euo pipefail
+          # See linux-host-parity: the preconfigured Microsoft/azure-cli apt
+          # repos intermittently fail signature checks and abort apt-get update.
+          sudo rm -f /etc/apt/sources.list.d/*microsoft*.list /etc/apt/sources.list.d/*azure*.list || true
+          sudo apt-get update -qq
+          sudo apt-get install -qq -y pkgconf libfreetype6-dev libgmp-dev libgtk-3-dev valgrind
+      - name: Run the testSuite under memcheck
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Every test file under valgrind's memcheck, failing on any report
+          # (exit 97): a read through a freed pool block, or a decision on bytes
+          # nothing wrote. build/host/steps.zig documents the suppressions.
+          zig build test_memcheck
+
   required:
     name: Every required job passed
     if: always()
@@ -2044,6 +2098,7 @@ jobs:
       - linux-firmware-artifacts
       - macos-host-build
       - windows-host-build
+      - linux-testsuite-memcheck
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
