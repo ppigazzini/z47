@@ -555,9 +555,13 @@ inline fn currentNumberOfLocalRegisters() u8 {
 inline fn cMax(comptime T: type, a: T, b: T) T {
     return if (a > b) a else b;
 }
-inline fn moreInfoOnErr(where: [*:0]const u8, hint1: ?[*:0]const u8, hint2: ?[*:0]const u8, hint3: ?[*:0]const u8) void {
+// The `#if defined(PC_BUILD)` console hints. Upstream's testSuite is a PC_BUILD,
+// so these print there too, unlike the EXTRA_INFO_ON_CALC_ERROR ones; the
+// `moreInfoOnError` symbol is the no-op stub wherever EXTRA_INFO is off, so they
+// go to the popup body directly, as in the sibling print owners.
+inline fn pcBuildHint(where: [*:0]const u8, hint1: ?[*:0]const u8, hint2: ?[*:0]const u8, hint3: ?[*:0]const u8) void {
     if (comptime !dmcp_build) {
-        moreInfoOnError(where, hint1, hint2, hint3);
+        frontier_error.moreInfoOnErrorImpl(where, hint1, hint2, hint3);
     }
 }
 
@@ -1410,7 +1414,7 @@ fn cmdPrintImpl(arg: u16, op: printArgument_t) void {
             frontier_error.displayCalcErrorMessage(ERROR_PRINTING_DISABLED, ERR_REGISTER_LINE);
             if (comptime !dmcp_build) {
                 abi.fmtBufZ(errorMessage[0..512], "Printing is disabled", .{});
-                moreInfoOnError("In function cmdPrint:", errorMessage, null, null);
+                pcBuildHint("In function cmdPrint:", errorMessage, null, null);
             }
         }
         return;
@@ -1555,7 +1559,7 @@ fn _getUnicodeValue(regist: calcRegister_t) u16 {
             if (comptime !dmcp_build) {
                 _ = real34ToString(reg34(regist), errorMessage);
                 abi.fmtBufZ(tmpString[0..2560], "x {d} = {s}:", .{ @as(i32, regist), std.mem.span(@as([*:0]const u8, errorMessage)) });
-                moreInfoOnError("In function _getPositionFromRegister:", tmpString, "this value is negative or too big!", null);
+                pcBuildHint("In function _getPositionFromRegister:", tmpString, "this value is negative or too big!", null);
             }
             return @bitCast(@as(i16, -1));
         }
@@ -1568,7 +1572,7 @@ fn _getUnicodeValue(regist: calcRegister_t) u16 {
             if (comptime !dmcp_build) {
                 longIntegerToAllocatedString(&lgInt[0], errorMessage, @intCast(ERROR_MESSAGE_LENGTH));
                 abi.fmtBufZ(tmpString[0..2560], "register {d} = {s}:", .{ @as(i32, regist), std.mem.span(@as([*:0]const u8, errorMessage)) });
-                moreInfoOnError("In function _getPositionFromRegister:", tmpString, "this value is negative or too big!", null);
+                pcBuildHint("In function _getPositionFromRegister:", tmpString, "this value is negative or too big!", null);
             }
             longIntegerFree(&lgInt[0]);
             return @bitCast(@as(i16, -1));
@@ -1585,7 +1589,7 @@ fn _getUnicodeValue(regist: calcRegister_t) u16 {
         frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE);
         if (comptime !dmcp_build) {
             abi.fmtBufZ(errorMessage[0..512], "register {d} is {s}:", .{ @as(i32, regist), std.mem.span(frontier_debug.getRegisterDataTypeName(regist, true, false)) });
-            moreInfoOnError("In function _getPositionFromRegister:", errorMessage, "not suited for addressing!", null);
+            pcBuildHint("In function _getPositionFromRegister:", errorMessage, "not suited for addressing!", null);
         }
         return @bitCast(@as(i16, -1));
     }
