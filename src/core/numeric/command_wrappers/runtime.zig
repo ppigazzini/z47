@@ -167,7 +167,7 @@ pub const FLAG_PROPFR: i32 = 0x8008;
 pub const FLAG_CARRY: i32 = 0x800b;
 pub const FLAG_OVERFLOW: i32 = 0x800c;
 pub const FLAG_SPCRES: i32 = 0x8017;
-pub const FLAG_ASLIFT: i32 = 0xc023; // defines.h:935
+pub const FLAG_ASLIFT: i32 = 0xc023; // defines.h
 pub const FLAG_HPRP: i32 = 0x802b;
 
 pub const SIM_UNSIGN: u8 = 0;
@@ -760,7 +760,7 @@ pub extern fn decNumberMinus(result: *real_t, rhs: *const real_t, real_context: 
 /// quotient. sinc reduces its argument with it before the pi-multiple test.
 pub extern fn decNumberRemainder(result: *real_t, lhs: *const real_t, rhs: *const real_t, real_context: *realContext_t) *real_t;
 
-/// realType.h:157 -- `decNumberMinus(res, operand, ctxt)`, an ARITHMETIC negation
+/// realType.h -- `decNumberMinus(res, operand, ctxt)`, an ARITHMETIC negation
 /// (0 - x under the context's rules). NOT the same as realChangeSign, which is a
 /// raw `bits ^= 0x80`: the two agree on every finite value and disagree on NaN,
 /// where the arithmetic form canonicalises the result positive and the bit flip
@@ -778,7 +778,7 @@ pub extern fn realCompareAbsLessThan(number1: *const real_t, number2: *const rea
 pub extern fn longIntegerToAllocatedString(lgInt: *const mpz_struct, str: [*c]u8, strLen: i32) void;
 // f.c's beta-pair routine, which ixyz.c reads for the regularised incomplete beta.
 pub extern fn distributionBetaPair(a: *const real_t, b: *const real_t, y: *const real_t, z: *const real_t, logit: *const real_t, lower: *real_t, upper: *real_t, real_context: *realContext_t) bool;
-/// comparisonReals.c:215-241. Each is `realCompare` (decNumberCompare) followed by
+/// comparisonReals.c. Each is `realCompare` (decNumberCompare) followed by
 /// a SIGN-BIT test on the result, and that is why a NaN operand does not answer
 /// what intuition expects: comparing with a NaN yields a NaN, whose sign bit is
 /// clear, so `realIsPositive` of it is TRUE. c43 therefore answers TRUE from
@@ -1111,7 +1111,7 @@ pub inline fn real34IsZero(value: *const real34_t) bool {
     return decQuadIsZero(value) != 0;
 }
 
-// realType.h:105 -- `(bytes[15] & 0x80) == 0x80`, a raw sign-bit test. NOT
+// realType.h -- `decQuadIsSigned`, a raw sign-bit test. NOT
 // decQuadIsNegative, which decBasic.c defines as
 // `DFISSIGNED && !DFISZERO && !DFISNAN` and which therefore answers false for -0
 // and for a sign-set NaN. c43 never calls decQuadIsNegative anywhere, so every

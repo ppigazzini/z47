@@ -47,7 +47,7 @@ pub inline fn realIsNaN(source: *const abi.Real) bool {
 }
 
 /// The raw sign bit of a decQuad (real34_t): the top bit of the last byte of the
-/// 16-byte big-endian blob, which is what realType.h:105 tests. It differs from
+/// 16-byte big-endian blob, which is what realType.h tests. It differs from
 /// decNumber's own decQuadIsNegative, which is
 /// `DFISSIGNED && !DFISZERO && !DFISNAN` and so answers false for -0 and for a
 /// sign-set NaN. c43 calls decQuadIsNegative nowhere, so no ported owner wants

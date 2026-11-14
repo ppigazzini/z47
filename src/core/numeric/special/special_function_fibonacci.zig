@@ -6,9 +6,9 @@ const cplx_t = runtime.cplx_t;
 const realContext_t = runtime.realContext_t;
 
 // defines.h values.
-const ERROR_MESSAGE_LENGTH: i32 = 512; // defines.h:2501
-const TMP_STR_LENGTH: usize = 2560; // defines.h:2499
-const SCREEN_WIDTH: i16 = 400; // defines.h:1504
+const ERROR_MESSAGE_LENGTH: i32 = 512; // defines.h
+const TMP_STR_LENGTH: usize = 2560; // defines.h
+const SCREEN_WIDTH: i16 = 400; // defines.h
 
 fn copyReal(destination: *real_t, source: *const real_t) void {
     destination.* = source.*;

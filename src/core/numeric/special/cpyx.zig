@@ -43,7 +43,7 @@ const amNone = runtime.amNone;
 const displayCalcErrorMessage = runtime.displayCalcErrorMessage;
 const moreInfoOnError = runtime.moreInfoOnError;
 
-// defines.h:1855-1856
+// defines.h
 const CP_PERMUTATION: u16 = 0;
 const CP_COMBINATION: u16 = 1;
 

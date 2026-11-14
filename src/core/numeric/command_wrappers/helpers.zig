@@ -17,10 +17,10 @@ const mpz_struct = runtime.mpz_struct;
 const longInteger_t = runtime.longInteger_t;
 
 // defines.h values (verified against src/c47/defines.h).
-const MAX_FACTORIAL: u32 = 450; // defines.h:578
-const ERROR_MESSAGE_LENGTH: i32 = 512; // defines.h:2501
+const MAX_FACTORIAL: u32 = 450; // defines.h
+const ERROR_MESSAGE_LENGTH: i32 = 512; // defines.h
 const TMP_STR_LENGTH: usize = 2560; // defines.h
-const SCREEN_WIDTH: i16 = 400; // defines.h:1504
+const SCREEN_WIDTH: i16 = 400; // defines.h
 
 // ---------------------------------------------------------------------------
 // decNumber / decQuad entry points. The upstream realXxx/real34Xxx names are
@@ -419,14 +419,6 @@ fn longIntegerIsOdd(op: *const mpz_struct) bool {
 // ---------------------------------------------------------------------------
 // Helper API.
 // ---------------------------------------------------------------------------
-// libm's log(), for the C parity oracle: it compiles factorial.c with `log`
-// redirected here, and factLonI's mpz_init2 size hint is
-// 1 + (n*log(n) - n)/log(2). Anything but the real natural logarithm makes the
-// differential's comparison of that expression vacuous.
-pub export fn z47_math_wrappers_log(value: f64) linksection(runtime.code_section) callconv(.c) f64 {
-    return @log(value);
-}
-
 fn longIntegerGcdChecked(li_y: *const mpz_struct, li_x: *const mpz_struct, li_a: *mpz_struct) linksection(runtime.code_section) void {
     if (longIntegerIsZero(li_y) and longIntegerIsZero(li_x)) {
         runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE);

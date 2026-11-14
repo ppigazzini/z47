@@ -343,7 +343,7 @@ extern fn realSetMinusInfinity(value: *real_t) void;
 // Higher-level real ops / transcendentals from elsewhere in the tree.
 pub extern fn convertAngleFromTo(angle: *real_t, from: angularMode_t, to: angularMode_t, ctxt: *realContext_t) void;
 
-// Orthogonal polynomial kind constants (defines.h:2043 — order matters; the C
+// Orthogonal polynomial kind constants (defines.h — order matters; the C
 // caller in ortho_polynom.c passes these exact values to switch on).
 const ORTHOPOLY_HERMITE_H: u16 = 0;
 const ORTHOPOLY_HERMITE_HE: u16 = 1;

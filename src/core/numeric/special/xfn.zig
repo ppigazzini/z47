@@ -55,10 +55,10 @@ const REGISTER_X = runtime.REGISTER_X;
 const REGISTER_Y = runtime.REGISTER_Y;
 const REGISTER_Z = runtime.REGISTER_Z;
 const ERR_REGISTER_LINE = runtime.ERR_REGISTER_LINE;
-const ERROR_INPUT_DATA_TYPE_NOT_MATCHING: u8 = 31; // defines.h 31
+const ERROR_INPUT_DATA_TYPE_NOT_MATCHING: u8 = 31; // defines.h
 const ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN = runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN;
-const ERROR_UNDEF_SOURCE_VAR: u8 = 36; // defines.h:704 (was 6 = ERROR_LABEL_NOT_FOUND)
-const ERROR_UNDEFINED_OPCODE: u8 = 3; // defines.h 3
+const ERROR_UNDEF_SOURCE_VAR: u8 = 36; // defines.h
+const ERROR_UNDEFINED_OPCODE: u8 = 3; // defines.h
 
 const dtLongInteger = runtime.dtLongInteger;
 const dtReal34 = runtime.dtReal34;
@@ -124,14 +124,14 @@ pub const FT_EXTERNAL: c_int = 104;
 const NOANG: c_int = 200;
 const FORCEANG: c_int = 201;
 
-// use1071 / context-digit policy. Unconditional at the source: X.FN is the
-// extended-precision engine, and a build that carries it carries it at full
-// width. Narrowing it on firmware computed at 75 digits and refused exponents
-// past 68 rather than 1000.
 // ERROR_MESSAGE_LENGTH is 512 (defines.h); upstream formats these hints into
 // the shared errorMessage buffer of that size.
 const ERROR_MESSAGE_LENGTH = 512;
 
+// use1071 / context-digit policy. Unconditional at the source: X.FN is the
+// extended-precision engine, and a build that carries it carries it at full
+// width. A narrower context would compute at 75 digits and refuse exponents
+// past 68 rather than 1000.
 const use1071: bool = true;
 const maxAllowedDigits: i32 = if (use1071) 1000 else 68;
 const maxContextDigits: i32 = if (use1071) 1071 else 75;
@@ -1249,7 +1249,7 @@ pub export fn processResultantLongReal(
         convertRealToResultRegister(&tmpR, REGISTER_Z, amNone);
     }
 
-    // Step 6: drop T, A, B for a successful dyadic function (C xfn.c:794-799)
+    // Step 6: drop T, A, B for a successful dyadic function (C xfn.c)
     if (lastErrorCode == 0 and functionType == FT_DYADIC) {
         fnDropT(NOPARAM);
         fnDropT(NOPARAM);
