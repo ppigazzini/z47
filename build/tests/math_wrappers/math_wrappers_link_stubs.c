@@ -27,11 +27,11 @@ void *decQuadFromUInt32(void *res, uint32_t value) {
     return res;
 }
 
-// real34SetZero is decNumber's decQuadZero in c43, and this lane links no
-// decNumber. The imaginary part of a real matrix reaches it once per element,
-// through the Zig owner, while the oracle's copy of imaginaryPart.c expands the
-// mock header's real34SetZero to sixteen zero bytes. So this writes those same
-// sixteen bytes, which is the zero both sides of this lane share.
+// real34SetZero is decNumber's decQuadZero in c43 and in this lane's c47.h, and
+// this lane links no decNumber. The imaginary part of a real matrix reaches it
+// once per element, from the Zig owner and from the oracle's copy of
+// imaginaryPart.c alike. This lane's real34 is a small integer in sixteen
+// bytes, so its zero is sixteen zero bytes, the value both sides share.
 void *decQuadZero(void *res) {
     memset(res, 0, 16);
     return res;

@@ -1674,14 +1674,20 @@ void real34NextMinus(const real34_t *source, real34_t *destination) {
   setRegisterReal34((uint8_t *)destination, fakeReal34Value(source) - 1, source->bytes[15] & 0x70);
 }
 
-// The owner calls decNumberMinus directly now, because realType.h's realMinus is
-// that call and the two are NOT interchangeable with a sign-bit flip on NaN. This
-// lane models real_t as a small integer and cannot represent that distinction, so
-// the shim matches c47.h's own realMinus macro above: the lane keeps comparing
-// control flow, and the NaN behaviour is the full-core lane's to check.
+// realType.h spells realCopy and realMinus as decNumberCopy and decNumberMinus,
+// and so do this lane's c47.h and the Zig owner. This lane models real_t as a
+// small integer in a fixed-size struct, so a copy is a struct copy and a minus is
+// a sign-bit flip. decNumberMinus is NOT that on NaN or zero, and the model
+// cannot represent the difference: the lane keeps comparing control flow, and
+// the NaN and signed-zero behaviour is the full-core lane's to check.
+decNumber *decNumberCopy(decNumber *result, const decNumber *rhs) {
+  *result = *rhs;
+  return result;
+}
+
 real_t *decNumberMinus(real_t *result, const real_t *rhs, realContext_t *realContext) {
   (void)realContext;
-  realCopy(rhs, result);
+  *result = *rhs;
   realChangeSign(result);
   return result;
 }
@@ -3738,10 +3744,6 @@ void saveForUndo(void) {
   snapshot.save_for_undo_calls++;
 }
 
-void longIntegerFibonacci(uint32_t n, longInteger_t result) {
-  __gmpz_set_ui(result, n + 100);
-}
-
 void convertTimeRegisterToReal34Register(calcRegister_t source, calcRegister_t destination) {
   (void)source;
 
@@ -4061,14 +4063,6 @@ void longIntegerSubtract(longInteger_t opY, longInteger_t opX, longInteger_t res
     displayCalcErrorMessage(mpz_sgn(opY) == 0 ? ERROR_OVERFLOW_PLUS_INF : ERROR_OVERFLOW_MINUS_INF,
                             ERR_REGISTER_LINE);
   }
-}
-
-void longInteger2Pow(unsigned long exponent, longInteger_t result) {
-  mpz_ui_pow_ui(result, 2, (unsigned long)exponent);
-}
-
-void longIntegerDivideQuotientRemainder(const longInteger_t dividend, const longInteger_t divisor, longInteger_t quotient, longInteger_t remainder) {
-  mpz_tdiv_qr(quotient, remainder, dividend, divisor);
 }
 
 const real_t *z47_math_wrappers_const_4(void) {

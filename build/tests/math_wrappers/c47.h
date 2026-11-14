@@ -11,6 +11,7 @@
 #include <math.h>
 #include <stdint.h>
 #include <string.h>
+#include <stdlib.h>
 
 // Master addition.c null-checks `matrixHeader_t.matrixElements`, a pointer in
 // the real ABI. This mock declares it as an inline array (below) so the oracle
@@ -235,11 +236,11 @@ enum {
   dtConfig = 9,
 };
 
-enum {
+typedef enum {
   LI_ZERO = 0,
   LI_NEGATIVE = 1,
   LI_POSITIVE = 2,
-};
+} longIntegerSign_t;
 
 #define DECINF 0x40
 #define DECNAN 0x20
@@ -320,37 +321,10 @@ real34_t *decQuadMultiply(real34_t *res, const real34_t *operand1, const real34_
 
 #define ifLongIntegerDoAngleReduction true
 
-#define longIntegerInit(op) mpz_init(op)
-#define uInt32ToLongInteger(source, destination) mpz_set_ui((destination), (source))
-#define int32ToLongInteger(source, destination) mpz_set_si((destination), (source))
-#define longIntegerSetPositiveSign(op) do { if(mpz_sgn((op)) < 0) mpz_neg((op), (op)); } while(0)
-#define longIntegerSetNegativeSign(op) do { if(mpz_sgn((op)) > 0) mpz_neg((op), (op)); } while(0)
-#define longIntegerSign(op) mpz_sgn(op)
-#define longIntegerIsNegative(op) (mpz_sgn(op) < 0)
-#define longIntegerIsZero(op) (mpz_sgn(op) == 0)
-#define longIntegerIsEven(op) mpz_even_p(op)
-#define longIntegerIsOdd(op) mpz_odd_p(op)
-#define longIntegerChangeSign(op) ((op)->_mp_size = -((op)->_mp_size))
-#define longIntegerFree(op) mpz_clear(op)
-#define longIntegerSetZero(op) mpz_set_ui((op), 0)
-#define longIntegerInitSizeInBits(op, bits) mpz_init2((op), (bits))
-#define longIntegerDivideUInt(op, divisor, result) mpz_fdiv_q_ui((result), (op), (divisor))
-#define longIntegerMultiplyUInt(lhs, rhs, result) mpz_mul_ui((result), (lhs), (rhs))
-#define longIntegerPowerUIntUInt(base, exponent, result) mpz_ui_pow_ui((result), (base), (exponent))
-#define longIntegerBase10Digits(op) mpz_sizeinbase((op), 10)
-#define longIntegerCompare(lhs, rhs) mpz_cmp((lhs), (rhs))
-#define longIntegerCopy(source, destination) mpz_set((destination), (source))
-#define longIntegerSubtractUInt(lhs, rhs, result) mpz_sub_ui((result), (lhs), (rhs))
-#define longIntegerCompareUInt(lhs, rhs) mpz_cmp_ui((lhs), (rhs))
-#define longIntegerToUInt32(source, destination) ((destination) = (uint32_t)mpz_get_ui((source)))
-#define longIntegerAddUInt(lhs, rhs, result) mpz_add_ui((result), (lhs), (rhs))
-#define longIntegerIsPositive(op) (mpz_sgn(op) > 0)
-#define longIntegerCompareAbs(lhs, rhs) mpz_cmpabs((lhs), (rhs))
-#define longIntegerAddUnbounded(lhs, rhs, result) mpz_add((result), (lhs), (rhs))
-#define longIntegerSubtractUnbounded(lhs, rhs, result) mpz_sub((result), (lhs), (rhs))
-#define longIntegerMultiplyUnbounded(lhs, rhs, result) mpz_mul((result), (lhs), (rhs))
-#define longIntegerRoot(op, n, result) mpz_root((result), (op), (n))
-#define longIntegerBits(op) mpz_sizeinbase((op), 2)
+// The long-integer helpers are upstream's own static inlines over GMP, included
+// rather than copied: a hand-typed copy here once halved with mpz_fdiv_q_ui where
+// upstream truncates, and the oracle computed with the copy.
+#include "../../../upstream/src/c47/longIntegerType.h"
 void longIntegerToAllocatedString(const longInteger_t lgInt, char *str, int32_t strLen);
 
 // The four overflow-checked operators are FUNCTIONS, not macros over mpz_. c43
@@ -363,11 +337,6 @@ void longIntegerMultiply(longInteger_t opY, longInteger_t opX, longInteger_t res
 void longIntegerSquare(longInteger_t op, longInteger_t result);
 void longIntegerAdd(longInteger_t opY, longInteger_t opX, longInteger_t result);
 void longIntegerSubtract(longInteger_t opY, longInteger_t opX, longInteger_t result);
-#define longIntegerGcd(lhs, rhs, result) mpz_gcd((result), (lhs), (rhs))
-#define longIntegerLcm(lhs, rhs, result) mpz_lcm((result), (lhs), (rhs))
-#define longIntegerDivide(lhs, rhs, result) mpz_tdiv_q((result), (lhs), (rhs))
-#define longIntegerDivideRemainder(dividend, divisor, remainder) mpz_tdiv_r((remainder), (dividend), (divisor))
-#define longIntegerModulo(lhs, rhs, result) mpz_mod((result), (lhs), (rhs))
 #define DECNEG 0x80
 
 #define RM_UP 3
@@ -398,7 +367,7 @@ void longIntegerSubtract(longInteger_t opY, longInteger_t opX, longInteger_t res
 #define realIsNaN(source) (((source)->bits & (DECNAN | DECSNAN)) != 0)
 #define realIsNegative(source) (((source)->bits & 0x80) != 0)
 #define realIsPositive(source) (!realIsNegative(source))
-#define realGetSign(source) (realIsNegative(source) ? -1 : 1)
+#define realGetSign(source) ((source)->bits & DECNEG)
 // Functions in realType.c, so functions here: a #define of an upstream
 // function changes what c43's compiled code calls. The fake runtime defines
 // them over this model's encoding.
@@ -406,8 +375,8 @@ bool_t realIsZero(const real_t *r);
 #define realGetExponent(source) ((source)->digits + (source)->exponent - 1)
 #define realGetUnadjustedExponent(source) ((source)->exponent)
 #define realStoredDigits(source) ((source)->digits)
-#define realCopy(source, destination) (*(destination) = *(source))
-#define realMinus(operand, res, ctxt) do { (void)(ctxt); realCopy((operand), (res)); realChangeSign((res)); } while(0)
+#define realCopy(source, destination) decNumberCopy((destination), (source))
+#define realMinus(operand, res, ctxt) decNumberMinus((res), (operand), (ctxt))
 #define realMultiply(operand1, operand2, res, ctxt) decNumberMultiply((res), (operand1), (operand2), (ctxt))
 #define realDivide(operand1, operand2, res, ctxt) decNumberDivide((res), (operand1), (operand2), (ctxt))
 #define realAdd(operand1, operand2, res, ctxt) decNumberAdd((res), (operand1), (operand2), (ctxt))
@@ -516,7 +485,7 @@ void WP34S_BigMod(const real_t *x, const real_t *y, real_t *res, realContext_t *
 #define EXTRA_INFO_MESSAGE(function, msg) do { moreInfoOnError((function), (msg), NULL, NULL); } while(0)
 #define real34Copy(source, destination) (*(destination) = *(source))
 #define complex34Copy(source, destination) (*(destination) = *(source))
-#define real34SetZero(destination) memset((destination), 0, sizeof(real34_t))
+#define real34SetZero(destination) decQuadZero((destination))
 #define setRegisterLongIntegerSign(reg, sign) setRegisterTag((reg), (sign))
 #define VARIABLE_REAL34_DATA(variable) (&((variable)->real))
 #define VARIABLE_IMAG34_DATA(variable) (&((variable)->imag))
@@ -724,8 +693,11 @@ decNumber *decNumberFromUInt32(decNumber *result, uint32_t source);
 decNumber *decNumberPlus(decNumber *result, const decNumber *rhs, decContext *real_context);
 decNumber *decNumberRescale(decNumber *result, const decNumber *lhs, const decNumber *rhs, decContext *real_context);
 decNumber *decNumberCopyAbs(decNumber *result, const decNumber *rhs);
+decNumber *decNumberCopy(decNumber *result, const decNumber *rhs);
+decNumber *decNumberMinus(decNumber *result, const decNumber *rhs, decContext *real_context);
 decNumber *decNumberReduce(decNumber *result, const decNumber *rhs, decContext *real_context);
 real34_t *decQuadCopyAbs(real34_t *result, const real34_t *rhs);
+real34_t *decQuadZero(real34_t *result);
 real34_t *decQuadFromString(real34_t *result, const char *string, realContext_t *context);
 bool_t realIntegerPowerExact(const real_t *x, const real_t *n, real_t *res);
 bool_t realExactRoot(const real_t *x, const real_t *n, real_t *root);
@@ -893,8 +865,6 @@ void z47_math_wrappers_integer_part_short_integer(void);
 void z47_math_wrappers_fractional_part_long_integer(void);
 void z47_math_wrappers_fractional_part_short_integer(void);
 void z47_math_wrappers_fractional_part_real(void);
-void longInteger2Pow(unsigned long exponent, longInteger_t result);
-void longIntegerDivideQuotientRemainder(const longInteger_t dividend, const longInteger_t divisor, longInteger_t quotient, longInteger_t remainder);
 void z47_math_wrappers_report_int_pow_real_domain_error(void);
 void z47_math_wrappers_report_exp_real_domain_error(void);
 void z47_math_wrappers_report_eulers_formula_complex_domain_error(void);
@@ -959,7 +929,6 @@ void realRandomU01(real_t *res);
 
 void z47_math_wrappers_seed_defaults(uint64_t *seed, uint64_t *seq);
 void z47_math_wrappers_do_int_random_i(void);
-void longIntegerFibonacci(uint32_t n, longInteger_t result);
 void convertTimeRegisterToReal34Register(calcRegister_t source, calcRegister_t destination);
 void convertReal34RegisterToTimeRegister(calcRegister_t source, calcRegister_t destination);
 void internalDateToJulianDay(const real34_t *source, real34_t *destination);
