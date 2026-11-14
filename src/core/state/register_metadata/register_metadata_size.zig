@@ -5,7 +5,6 @@ const stack_runtime = @import("../runtime/stack_runtime.zig");
 // compatibility contract; the record is explicitly padded to that length.
 const CONFIG_DESCRIPTOR_SIZE_IN_BYTES: usize = 840;
 
-extern fn z47_register_metadata_config_size_in_blocks() u16;
 extern fn isMemoryBlockAvailable(size_in_blocks: usize, num_blocks: u16, extra_fraction: f32) bool;
 
 fn bytesPerBlock() comptime_int {

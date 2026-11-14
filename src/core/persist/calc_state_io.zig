@@ -47,10 +47,6 @@ const TIMER_IDX_REFRESH_SLEEP: c_int = 0;
 const TO_KB_ACTV: u16 = 10;
 const TO_KB_ACTV_ZERO: u32 = 0;
 
-// defines.h: 129 rows of 45 bytes each (longest message is 44 bytes plus the
-// terminator). The stride is what indexes SAVING_STATE_FILE / LOADING_STATE_FILE
-// onto their rows, so it has to match the definition exactly.
-
 const calcKey_t = abi.CalcKey;
 
 const abi = @import("abi"); // shared ABI bindings

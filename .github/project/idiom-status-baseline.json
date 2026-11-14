@@ -6,7 +6,7 @@
     "constcast_sites": 1,
     "ptr_from_int_sites": 68,
     "callconv_c_sites": 3207,
-    "extern_fn_sites": 3861,
+    "extern_fn_sites": 3860,
     "printf_family_files": 55,
     "anyopaque_files": 79,
     "off_offset_sites": 73,

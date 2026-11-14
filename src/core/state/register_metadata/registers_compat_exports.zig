@@ -292,9 +292,8 @@ pub export const varDescr: [reserved_variable_count]reserved_variable_desc_t = .
 // .bss. Every consumer already binds it as `extern const`.
 // 0-25 are the LETTERED reserved variables. Their pointerToRegisterData is
 // C47_NULL, not 0: registers.c reads it as "this entry owns no payload", and
-// reservedAllowsDataTypeWrite refuses a data-type write on exactly that test. z47
-// wrote 0 here until the differential against c43's own table --
-// which made every lettered reserved variable look writable, and made block 0 of
+// reservedAllowsDataTypeWrite refuses a data-type write on exactly that test. A 0
+// here would make every lettered reserved variable look writable, and block 0 of
 // the RAM slab look like its payload.
 pub const allReservedVariables: [reserved_variable_count]reserved_variable_header_t = .{
     makeReserved(C47_NULL, 0, 0, 0, 0, regName(1, 'X', 0, 0, 0, 0, 0, 0)),
@@ -326,10 +325,7 @@ pub const allReservedVariables: [reserved_variable_count]reserved_variable_heade
     // 26-30: c43's RESERVED_VARIABLE_SPARE1..5 -- removed variables kept as
     // placeholders so the named block below never moves. `notUsed = 1` and an
     // empty name are what make them unreachable by name lookup and unwritable.
-    // z47 carried live ADM / D.MAX / ISM / REALDF / #DEC entries here until
-    // Those five names left the reserved-variable block for the
-    // config block upstream, so keeping them made "ADM" resolve to a reserved
-    // register in z47 and to nothing in c43.
+    // registers.c names none of the five, so no name lookup lands on one.
     makeReserved(C47_NULL, 0, 0, 0, 1, regName(0, 0, 0, 0, 0, 0, 0, 0)),
     makeReserved(C47_NULL, 0, 0, 0, 1, regName(0, 0, 0, 0, 0, 0, 0, 0)),
     makeReserved(C47_NULL, 0, 0, 0, 1, regName(0, 0, 0, 0, 0, 0, 0, 0)),
