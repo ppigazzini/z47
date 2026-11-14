@@ -845,6 +845,30 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.l
         // job with a different owner.
         .flags = &.{ "-DCALCMODEL=USER_C47", "-Wno-date-time", "-fno-sanitize=undefined" },
     });
+    const matrix_editor_parity_harness = host_builders.addFullCoreHarness(
+        b,
+        context.host_target,
+        "matrixEditorParity",
+        "build/tests/matrix_editor/matrix_editor_parity_harness.c",
+        optimize,
+        context.core_sources,
+        context.test_sources,
+        context.common,
+        context.version_headers_dir,
+        context.generated,
+        context.testsuite_objects,
+        null,
+        false,
+    );
+    matrix_editor_parity_harness.root_module.addCSourceFile(.{
+        .file = b.path("build/tests/matrix_editor/matrix_editor_oracle.c"),
+        .flags = &.{ "-Wno-date-time", "-fno-sanitize=undefined" },
+    });
+    const run_matrix_editor_parity = b.addRunArtifact(matrix_editor_parity_harness);
+    run_matrix_editor_parity.setCwd(upstreamCwd(b));
+    const matrix_editor_parity_step = b.step("matrix_editor_parity", "Run the matrix-editor differential against c43's own matrixEditor.c");
+    matrix_editor_parity_step.dependOn(&run_matrix_editor_parity.step);
+
     const run_calc_state_parity = b.addRunArtifact(calc_state_parity_harness);
     run_calc_state_parity.setCwd(upstreamCwd(b));
     const calc_state_parity_step = b.step("calc_state_parity", "Run the calc-state differential against c43's own saveRestoreCalcState.c");

@@ -41,6 +41,8 @@ build/tests/math_wrappers/math_wrappers_runtime_helpers.c
 build/tests/math_wrappers/random_fake_runtime_helpers.c
 build/tests/math_wrappers_full_core/math_wrappers_full_core_oracle.c
 build/tests/math_wrappers_full_core/math_wrappers_full_core_parity_harness.c
+build/tests/matrix_editor/matrix_editor_oracle.c
+build/tests/matrix_editor/matrix_editor_parity_harness.c
 build/tests/memory/memory_fake_runtime.c
 build/tests/memory/memory_oracle.c
 build/tests/memory/memory_parity.c

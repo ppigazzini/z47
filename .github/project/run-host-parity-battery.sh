@@ -28,6 +28,9 @@ zig build flags_parity
 zig build memory_parity
 zig build program_serialization_parity
 zig build calc_state_parity
+# The matrix-editor differential: c43's own ui/matrixEditor.c beside the Zig
+# owners in a full core, compared on the editor's state.
+zig build matrix_editor_parity
 # Save/load golden + round-trip harness. It existed but was wired into no
 # battery, so its golden silently rotted out of date; run it here.
 zig build saveload_roundtrip
