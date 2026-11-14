@@ -696,7 +696,12 @@ pub export fn getJulianDayOfWeek(regist: calcRegister_t) linksection(code_sectio
 pub export fn checkDateRange(date34: *const real34_t) linksection(code_section) callconv(.c) void {
     if (real34IsNaN(date34) or real34CompareGreaterEqual(date34, const34_maxDate) or real34IsNegative(date34)) {
         frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
-        moreInfoOnError("In function checkDateRange:", "value of date type is too large");
+        // The C formats the text into errorMessage first, and that buffer is
+        // part of the saved backup state, so the write is kept.
+        if (comptime extra_info) {
+            abi.fmtBufZ(errorMessage[0..ERROR_MESSAGE_LENGTH], "value of date type is too large", .{});
+            c_moreInfoOnError("In function checkDateRange:", errorMessage, null, null);
+        }
         return;
     }
 }
@@ -750,7 +755,12 @@ pub export fn checkTimeRange(time34: *const real34_t) linksection(code_section) 
     real34CopyAbs(time34, &t);
     if (real34IsNaN(&t) or real34CompareGreaterEqual(&t, const34_maxTime)) {
         frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
-        moreInfoOnError("In function checkTimeRange:", "value of time type is too large");
+        // The C formats the text into errorMessage first, and that buffer is
+        // part of the saved backup state, so the write is kept.
+        if (comptime extra_info) {
+            abi.fmtBufZ(errorMessage[0..ERROR_MESSAGE_LENGTH], "value of time type is too large", .{});
+            c_moreInfoOnError("In function checkTimeRange:", errorMessage, null, null);
+        }
         return;
     }
 }
