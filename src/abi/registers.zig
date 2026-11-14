@@ -141,21 +141,25 @@ inline fn elementsAreInline(comptime Matrix: type) bool {
     };
     return @typeInfo(@FieldType(Child, "matrixElements")) == .array;
 }
+//
+// A pointer field may be the C `[*c]` or the nullable `?[*]`; either way the view
+// is of a matrix that has its storage, so a null pointer stops here rather than
+// at the first element read.
 pub inline fn matrixRealElems(matrix: anytype) [*]Real34 {
     if (comptime elementsAreInline(@TypeOf(matrix))) return &matrix.matrixElements;
-    return matrix.matrixElements;
+    return @as(?[*]Real34, matrix.matrixElements).?;
 }
 pub inline fn matrixConstRealElems(matrix: anytype) [*]const Real34 {
     if (comptime elementsAreInline(@TypeOf(matrix))) return &matrix.matrixElements;
-    return matrix.matrixElements;
+    return @as(?[*]const Real34, matrix.matrixElements).?;
 }
 pub inline fn matrixComplexElems(matrix: anytype) [*]Complex34 {
     if (comptime elementsAreInline(@TypeOf(matrix))) return &matrix.matrixElements;
-    return matrix.matrixElements;
+    return @as(?[*]Complex34, matrix.matrixElements).?;
 }
 pub inline fn matrixConstComplexElems(matrix: anytype) [*]const Complex34 {
     if (comptime elementsAreInline(@TypeOf(matrix))) return &matrix.matrixElements;
-    return @ptrCast(matrix.matrixElements);
+    return @as(?[*]const Complex34, matrix.matrixElements).?;
 }
 /// Whether a matrix has element storage: false after a failed allocation, the
 /// C `matrix.matrixElements != NULL`. Inline storage always has it.

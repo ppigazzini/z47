@@ -36,22 +36,19 @@ pub const Pcg32Random = primitives.Pcg32Random;
 /// task converts.
 pub const RealBlob = extern struct { bytes: [60]u8 align(4) };
 
-/// 159-digit decNumber storage (upstream `REAL_T_PTR(name, 159)`): the same
-/// decNumber header as `Real` but a 53-unit lsu, so `REAL_SIZE_IN_BYTES(159) ==
-/// 116`. The math owners (cubic / eigen 159-digit internal paths) stack-allocate
-/// one and view it as a `real_t`; `ptr`/`constPtr` provide that view. Centralized
-/// here to replace the three identical per-owner re-mirrors.
-pub const Real159 = extern struct {
-    digits: i32,
-    exponent: i32,
-    bits: u8,
-    lsu: [53]u16,
+/// A real with room for 159 digits: upstream's anonymous union of a `real_t` and
+/// `REAL_SIZE_IN_BYTES(159)` bytes of storage (cplx159_t, typeDefinitions.h). The
+/// decNumber routines take the `real_t` and write as many units past its lsu as
+/// the context's digits need, which the storage holds.
+pub const Real159 = extern union {
+    real: Real,
+    storage: [116 / 4]u32,
 
     pub inline fn ptr(self: *Real159) *Real {
-        return @ptrCast(self);
+        return &self.real;
     }
     pub inline fn constPtr(self: *const Real159) *const Real {
-        return @ptrCast(self);
+        return &self.real;
     }
 };
 

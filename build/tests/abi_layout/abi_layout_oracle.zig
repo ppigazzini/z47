@@ -120,7 +120,6 @@ const SIZE_PAIRS = .{
 const LAYOUT_EXEMPT = .{
     .{ "Tm", "the host's struct tm, larger on purpose: glibc's tm_gmtoff and tm_zone are absent from other C libraries, and a callee filling a smaller struct tm writes inside it" },
     .{ "RealBlob", "an opaque handle owners only pass to C; its size and alignment are Real's, asserted below" },
-    .{ "Real159", "a 159-digit decNumber that upstream declares through REAL_T_PTR rather than a named type; its header is Real's, asserted below" },
 };
 
 // Structs the tests above check by hand rather than through a table.
@@ -153,9 +152,12 @@ test "every abi extern struct is checked against C or exempted with a reason" {
 test "the exempt real views share Real's header" {
     try testing.expectEqual(@sizeOf(abi.Real), @sizeOf(abi.RealBlob));
     try testing.expectEqual(@alignOf(abi.Real), @alignOf(abi.RealBlob));
-    inline for (.{ "digits", "exponent", "bits", "lsu" }) |field| {
-        try testing.expectEqual(@offsetOf(abi.Real, field), @offsetOf(abi.Real159, field));
-    }
+}
+
+// Every member of an extern union sits at its start, so the Real is too.
+test "a 159-digit real is a Real overlaid on one part of cplx159_t" {
+    try testing.expectEqual(@sizeOf(c.cplx159_t) / 2, @sizeOf(abi.Real159));
+    try testing.expectEqual(@alignOf(c.cplx159_t), @alignOf(abi.Real159));
 }
 
 test "abi calc structs match upstream C size and alignment" {
