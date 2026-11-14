@@ -1,5 +1,5 @@
 const std = @import("std");
-const build_options = @import("firmware_audio_build_options");
+const rom = @import("dmcp_rom");
 
 const KEY_EXIT: c_int = 33;
 
@@ -23,16 +23,6 @@ const DT_LONG_INTEGER: u32 = 0;
 const DT_REAL34: u32 = 1;
 const DT_REAL34_MATRIX: u32 = 6;
 const DEC_ROUND_DOWN: c_int = 5;
-
-const start_buzzer_freq_offset: usize = 244;
-const stop_buzzer_offset: usize = 248;
-const beep_volume_up_offset: usize = 252;
-const beep_volume_down_offset: usize = 256;
-const get_beep_volume_offset: usize = 260;
-const key_empty_offset: usize = 380;
-const key_pop_offset: usize = 392;
-const key_pop_all_offset: usize = 400;
-const sys_delay_offset: usize = 516;
 
 const GmpInt = extern struct {
     mp_alloc: c_int,
@@ -69,60 +59,41 @@ extern fn linkToRealMatrixRegister(regist: i16, linked_matrix: [*c]Real34Matrix)
 extern fn decQuadToUInt32(source: [*c]const DecQuad, context: *DecContext, round: c_int) u32;
 extern var ctxtReal34: DecContext;
 
-const StartBuzzerFn = *const fn (u32) callconv(.c) void;
-const StopBuzzerFn = *const fn () callconv(.c) void;
-const VolumeUpFn = *const fn () callconv(.c) void;
-const VolumeDownFn = *const fn () callconv(.c) void;
-const GetVolumeFn = *const fn () callconv(.c) c_int;
-const KeyEmptyFn = *const fn () callconv(.c) c_int;
-const KeyPopFn = *const fn () callconv(.c) c_int;
-const KeyPopAllFn = *const fn () callconv(.c) void;
-const SysDelayFn = *const fn (u32) callconv(.c) void;
-
 fn startBuzzerFrequency(frequency: u32) void {
-    const function: StartBuzzerFn = @ptrFromInt(build_options.library_fn_base + start_buzzer_freq_offset);
-    function(frequency);
+    rom.start_buzzer_freq(frequency);
 }
 
 fn stopBuzzer() void {
-    const function: StopBuzzerFn = @ptrFromInt(build_options.library_fn_base + stop_buzzer_offset);
-    function();
+    rom.stop_buzzer();
 }
 
 fn volumeUp() void {
-    const function: VolumeUpFn = @ptrFromInt(build_options.library_fn_base + beep_volume_up_offset);
-    function();
+    rom.beep_volume_up();
 }
 
 fn volumeDown() void {
-    const function: VolumeDownFn = @ptrFromInt(build_options.library_fn_base + beep_volume_down_offset);
-    function();
+    rom.beep_volume_down();
 }
 
 fn getBeepVolumeRaw() u16 {
-    const function: GetVolumeFn = @ptrFromInt(build_options.library_fn_base + get_beep_volume_offset);
     // C converts the int to uint16_t modulo 2^16.
-    return @truncate(@as(c_uint, @bitCast(function())));
+    return @truncate(@as(c_uint, @bitCast(rom.get_beep_volume())));
 }
 
 fn keyQueueEmpty() c_int {
-    const function: KeyEmptyFn = @ptrFromInt(build_options.library_fn_base + key_empty_offset);
-    return function();
+    return rom.key_empty();
 }
 
 fn popKey() c_int {
-    const function: KeyPopFn = @ptrFromInt(build_options.library_fn_base + key_pop_offset);
-    return function();
+    return rom.key_pop();
 }
 
 fn clearKeyQueue() void {
-    const function: KeyPopAllFn = @ptrFromInt(build_options.library_fn_base + key_pop_all_offset);
-    function();
+    rom.key_pop_all();
 }
 
 fn delayMilliseconds(ms: u32) void {
-    const function: SysDelayFn = @ptrFromInt(build_options.library_fn_base + sys_delay_offset);
-    function(ms);
+    rom.sys_delay(ms);
 }
 
 fn matrixRows(header_raw: u32) u16 {

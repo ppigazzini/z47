@@ -1,4 +1,5 @@
 const build_options = @import("firmware_io_build_options");
+const rom = @import("dmcp_rom");
 
 // Console sinks (upstream's hal/console.c). Carried here rather than given
 // their own build object because they are firmware-only io and this object is
@@ -74,174 +75,48 @@ const IO_MODE_UPDATE: c_int = 2;
 
 const STATE_FILE_NAME_VAR_LENGTH: usize = 20;
 
-const lcd_clear_buf_offset: usize = 44;
-const lcd_refresh_offset: usize = 48;
-const lcd_fill_rect_offset: usize = 60;
-const lcd_set_line_offset: usize = 104;
-const lcd_write_text_offset: usize = 124;
-const set_reset_state_file_offset: usize = 284;
-const disp_disk_info_offset: usize = 332;
-const file_selection_screen_offset: usize = 336;
-const wait_for_key_press_offset: usize = 408;
-const runner_get_key_offset: usize = 412;
-const wait_for_key_release_offset: usize = 420;
-const is_menu_auto_off_offset: usize = 448;
-const check_create_dir_offset: usize = 464;
-const sys_disk_write_enable_offset: usize = 480;
-const f_open_offset: usize = 564;
-const f_close_offset: usize = 568;
-const f_read_offset: usize = 572;
-const f_write_offset: usize = 576;
-const f_lseek_offset: usize = 580;
-const lcd_refresh_wait_offset: usize = 648;
-const f_unlink_offset: usize = 768;
-
 var io_write_enabled: c_int = 0;
 var io_read_enabled: c_int = 0;
-
-const DispStat = extern struct {
-    f: ?*const anyopaque,
-    x: i16,
-    y: i16,
-    ln_offs: i16,
-    y_top_grd: i16,
-    ya: i8,
-    yb: i8,
-    xspc: i8,
-    xoffs: i8,
-    fixed: u8,
-    inv: u8,
-    bgfill: u8,
-    lnfill: u8,
-    newln: u8,
-    post_offs: [*c]const u8,
-};
-
-const Fdid = extern struct {
-    fs: ?*anyopaque,
-    id: u16,
-    attr: u8,
-    stat: u8,
-    sclust: u32,
-    objsize: c_ulong,
-    lockid: c_uint,
-};
-
-const Fil = extern struct {
-    obj: Fdid,
-    flag: u8,
-    err: u8,
-    fptr: c_ulong,
-    clust: u32,
-    sect: u32,
-    dir_sect: u32,
-    dir_ptr: [*c]u8,
-    cltbl: [*c]u32,
-    buf: [512]u8,
-};
-
-const SysSdb = extern struct {
-    calc_state: u32,
-    // dmcp.h declares this `FIL *ppgm_fp`, so bind it at its real type rather
-    // than as ?*anyopaque -- the handle is then usable without a cast.
-    ppgm_fp: ?*Fil,
-    key_to_alpha_table: [*c]const u8,
-    run_menu_item_app: ?*const anyopaque,
-    menu_line_str_app: ?*const anyopaque,
-    after_fat_format: ?*const anyopaque,
-    get_flag_dmy: ?*const anyopaque,
-    set_flag_dmy: ?*const anyopaque,
-    is_flag_clk24: ?*const anyopaque,
-    set_flag_clk24: ?*const anyopaque,
-    is_beep_mute: ?*const anyopaque,
-    set_beep_mute: ?*const anyopaque,
-    pds_t20: ?*DispStat,
-    pds_t24: ?*DispStat,
-    pds_fReg: ?*DispStat,
-};
 
 extern var fileNameSelected: [STATE_FILE_NAME_VAR_LENGTH]u8;
 extern fn strtok(str: [*c]u8, delim: [*c]const u8) [*c]u8;
 
-const LcdSetLineFn = *const fn (*DispStat, c_int) callconv(.c) void;
-const LcdWriteTextFn = *const fn (*DispStat, [*c]const u8) callconv(.c) void;
-const VoidFn = *const fn () callconv(.c) void;
-const SetResetStateFileFn = *const fn ([*c]const u8) callconv(.c) void;
-const StringFn = *const fn ([*c]const u8) callconv(.c) void;
-const CheckCreateDirFn = *const fn ([*c]const u8) callconv(.c) c_int;
-const FileSelectionScreenFn = *const fn ([*c]const u8, [*c]const u8, [*c]const u8, ?*const anyopaque, c_int, c_int, ?*anyopaque) callconv(.c) c_int;
-const RunnerGetKeyFn = *const fn (?*anyopaque) callconv(.c) c_int;
-const WaitForKeyReleaseFn = *const fn (c_int) callconv(.c) void;
-const IsMenuAutoOffFn = *const fn () callconv(.c) c_int;
-const DiskWriteEnableFn = *const fn (c_int) callconv(.c) c_int;
-const FileOpenFn = *const fn (?*anyopaque, [*c]const u8, u8) callconv(.c) c_uint;
-const FileCloseFn = *const fn (?*anyopaque) callconv(.c) c_uint;
-const FileReadFn = *const fn (?*anyopaque, ?*anyopaque, u32, [*c]u32) callconv(.c) c_uint;
-const FileWriteFn = *const fn (?*anyopaque, ?*const anyopaque, u32, [*c]u32) callconv(.c) c_uint;
-const FileSeekFn = *const fn (?*anyopaque, u32) callconv(.c) c_uint;
-const FileUnlinkFn = *const fn ([*c]const u8) callconv(.c) c_uint;
-
-/// The DMCP system data block, at the fixed address the SDK publishes. Sole
-/// materialisation of that pointer, so the address literal is spelled once.
-fn sdb() *const SysSdb {
-    return @ptrFromInt(build_options.sdb_base);
-}
-
-fn menuDisplay() ?*DispStat {
-    return sdb().pds_t24;
+fn menuDisplay() ?*rom.disp_stat_t {
+    return rom.sdb().pds_t24;
 }
 
 // The file handle is DMCP's, not ours: upstream's hal/io.c passes the SDK's
 // `ppgm_fp` (dmcp.h: `#define ppgm_fp (sdb.ppgm_fp)`) to every f_open/f_read/
 // f_write, so the FIL -- and its 512-byte FatFS sector buffer -- lives in DMCP's
-// memory. Owning a private Fil here both diverged from that shared handle and
+// memory. Owning a private FIL here both diverged from that shared handle and
 // spent 564 bytes of the DM42's 8Kb .data+.bss budget below the system data
 // block, which the linker script asserts.
-fn programFile() ?*Fil {
-    return sdb().ppgm_fp;
+fn programFile() ?*rom.FIL {
+    return rom.sdb().ppgm_fp;
 }
 
-fn programFileHandle() ?*anyopaque {
-    return programFile();
+fn lcdSetLine(display: *rom.disp_stat_t, line: c_int) void {
+    rom.lcd_setLine(display, line);
 }
 
-/// The DMCP-owned handle, for the two callers that read its FatFS fields.
-/// DMCP populates sdb.ppgm_fp before handing control to the program, so a null
-/// here means the system block is not what the SDK promises; treat that as
-/// "no file" rather than faulting.
-fn programFileStruct() ?*Fil {
-    return programFile();
-}
-
-fn lcdSetLine(display: *DispStat, line: c_int) void {
-    const function: LcdSetLineFn = @ptrFromInt(build_options.library_fn_base + lcd_set_line_offset);
-    function(display, line);
-}
-
-fn lcdWriteText(display: *DispStat, text: [*c]const u8) void {
-    const function: LcdWriteTextFn = @ptrFromInt(build_options.library_fn_base + lcd_write_text_offset);
-    function(display, text);
+fn lcdWriteText(display: *rom.disp_stat_t, text: [*c]const u8) void {
+    rom.lcd_writeText(display, text);
 }
 
 fn lcdRefresh() void {
-    const function: VoidFn = @ptrFromInt(build_options.library_fn_base + lcd_refresh_offset);
-    function();
+    rom.lcd_refresh();
 }
 
 fn lcdRefreshWait() void {
-    const function: VoidFn = @ptrFromInt(build_options.library_fn_base + lcd_refresh_wait_offset);
-    function();
+    rom.lcd_refresh_wait();
 }
 
 fn lcdClearBuffer() void {
-    const function: VoidFn = @ptrFromInt(build_options.library_fn_base + lcd_clear_buf_offset);
-    function();
+    rom.lcd_clear_buf();
 }
 
-const LcdFillRectFn = *const fn (x: u32, y: u32, dx: u32, dy: u32, val: c_int) callconv(.c) void;
 fn lcdFillRect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void {
-    const function: LcdFillRectFn = @ptrFromInt(build_options.library_fn_base + lcd_fill_rect_offset);
-    function(x, y, dx, dy, val);
+    rom.lcd_fill_rect(x, y, dx, dy, val);
 }
 
 inline fn graphMode() bool {
@@ -258,78 +133,63 @@ fn clearScreenStatusBar(cnt: u16) void {
 }
 
 fn setResetStateFile(path: [*c]const u8) void {
-    const function: SetResetStateFileFn = @ptrFromInt(build_options.library_fn_base + set_reset_state_file_offset);
-    function(path);
+    rom.set_reset_state_file(path);
 }
 
 fn displayDiskInfo(title: [*c]const u8) void {
-    const function: StringFn = @ptrFromInt(build_options.library_fn_base + disp_disk_info_offset);
-    function(title);
+    rom.disp_disk_info(title);
 }
 
 fn checkCreateDir(path: [*c]const u8) void {
-    const function: CheckCreateDirFn = @ptrFromInt(build_options.library_fn_base + check_create_dir_offset);
-    _ = function(path);
+    _ = rom.check_create_dir(path);
 }
 
-fn fileSelectionScreen(title: [*c]const u8, base_dir: [*c]const u8, ext: [*c]const u8, callback: ?*const anyopaque, disp_save: c_int, overwrite_check: c_int, data: ?*anyopaque) c_int {
-    const function: FileSelectionScreenFn = @ptrFromInt(build_options.library_fn_base + file_selection_screen_offset);
-    return function(title, base_dir, ext, callback, disp_save, overwrite_check, data);
+fn fileSelectionScreen(title: [*c]const u8, base_dir: [*c]const u8, ext: [*c]const u8, callback: ?*const rom.file_sel_fn_t, disp_save: c_int, overwrite_check: c_int, data: ?[*]u8) c_int {
+    return rom.file_selection_screen(title, base_dir, ext, callback, disp_save, overwrite_check, data);
 }
 
 fn waitForKeyPress() void {
-    const function: VoidFn = @ptrFromInt(build_options.library_fn_base + wait_for_key_press_offset);
-    function();
+    rom.wait_for_key_press();
 }
 
-fn runnerGetKey(arg: ?*anyopaque) c_int {
-    const function: RunnerGetKeyFn = @ptrFromInt(build_options.library_fn_base + runner_get_key_offset);
-    return function(arg);
+fn runnerGetKey(arg: ?*c_int) c_int {
+    return rom.runner_get_key(arg);
 }
 
 fn waitForKeyRelease(timeout: c_int) void {
-    const function: WaitForKeyReleaseFn = @ptrFromInt(build_options.library_fn_base + wait_for_key_release_offset);
-    function(timeout);
+    rom.wait_for_key_release(timeout);
 }
 
 fn isMenuAutoOff() c_int {
-    const function: IsMenuAutoOffFn = @ptrFromInt(build_options.library_fn_base + is_menu_auto_off_offset);
-    return function();
+    return rom.is_menu_auto_off();
 }
 
 fn sysDiskWriteEnable(enabled: c_int) void {
-    const function: DiskWriteEnableFn = @ptrFromInt(build_options.library_fn_base + sys_disk_write_enable_offset);
-    _ = function(enabled);
+    _ = rom.sys_disk_write_enable(enabled);
 }
 
-fn fileOpen(file: ?*anyopaque, path: [*c]const u8, mode: u8) c_uint {
-    const function: FileOpenFn = @ptrFromInt(build_options.library_fn_base + f_open_offset);
-    return function(file, path, mode);
+fn fileOpen(file: ?*rom.FIL, path: [*c]const u8, mode: u8) c_uint {
+    return rom.f_open(file, path, mode);
 }
 
-fn fileClose(file: ?*anyopaque) c_uint {
-    const function: FileCloseFn = @ptrFromInt(build_options.library_fn_base + f_close_offset);
-    return function(file);
+fn fileClose(file: ?*rom.FIL) c_uint {
+    return rom.f_close(file);
 }
 
-fn fileRead(file: ?*anyopaque, buffer: ?*anyopaque, size: u32, read: [*c]u32) c_uint {
-    const function: FileReadFn = @ptrFromInt(build_options.library_fn_base + f_read_offset);
-    return function(file, buffer, size, read);
+fn fileRead(file: ?*rom.FIL, buffer: ?*anyopaque, size: u32, read: *rom.UINT) c_uint {
+    return rom.f_read(file, buffer, size, read);
 }
 
-fn fileWrite(file: ?*anyopaque, buffer: ?*const anyopaque, size: u32, written: [*c]u32) c_uint {
-    const function: FileWriteFn = @ptrFromInt(build_options.library_fn_base + f_write_offset);
-    return function(file, buffer, size, written);
+fn fileWrite(file: ?*rom.FIL, buffer: ?*const anyopaque, size: u32, written: *rom.UINT) c_uint {
+    return rom.f_write(file, buffer, size, written);
 }
 
-fn fileSeek(file: ?*anyopaque, position: u32) c_uint {
-    const function: FileSeekFn = @ptrFromInt(build_options.library_fn_base + f_lseek_offset);
-    return function(file, position);
+fn fileSeek(file: ?*rom.FIL, position: u32) c_uint {
+    return rom.f_lseek(file, position);
 }
 
 fn fileUnlink(path: [*c]const u8) c_uint {
-    const function: FileUnlinkFn = @ptrFromInt(build_options.library_fn_base + f_unlink_offset);
-    return function(path);
+    return rom.f_unlink(path);
 }
 
 fn isExitKey(key: c_int) bool {
@@ -376,7 +236,7 @@ fn lcdPutsRAt(line: c_int, text: [*c]const u8) void {
 // One file selection screen: the directory is created first, the DMCP menu
 // takes the screen, and afterwards the status bar strip it drew over is
 // blanked and the screen update mode put back to automatic.
-fn fileSelectionHelper(title: [*c]const u8, base_dir: [*c]const u8, ext: [*c]const u8, sel_fn: ?*const anyopaque, is_save: c_int, filename: [*c]u8) c_int {
+fn fileSelectionHelper(title: [*c]const u8, base_dir: [*c]const u8, ext: [*c]const u8, sel_fn: ?*const rom.file_sel_fn_t, is_save: c_int, filename: [*c]u8) c_int {
     checkCreateDir(base_dir);
     const ret = fileSelectionScreen(title, base_dir, ext, sel_fn, is_save, is_save, filename);
     clearScreenStatusBar(204);
@@ -413,13 +273,13 @@ pub export fn _ioFileNameFromFilePath(path: c_int, filename: [*c]u8) callconv(.c
             return FILE_OK;
         },
         IO_PATH_REG_DUMP => return FILE_OK,
-        IO_PATH_REG_EXPORT => return fileSelectionHelper("Export Register/Flag Data File", DATA_DIR, DATA_EXT, @ptrCast(&save_datafile), 1, filename),
-        IO_PATH_REG_IMPORT => return fileSelectionHelper("Import Register/Flag Data File", DATA_DIR, DATA_EXT, @ptrCast(&load_datafile), 0, filename),
-        IO_PATH_SAVE_STATE_FILE => return fileSelectionHelper("Save Calculator State", STATE_DIR, STATE_EXT, @ptrCast(&save_statefile), 1, filename),
-        IO_PATH_LOAD_STATE_FILE => return fileSelectionHelper("Load Calculator State", STATE_DIR, STATE_EXT, @ptrCast(&load_statefile), 0, filename),
-        IO_PATH_SAVE_PROGRAM => return fileSelectionHelper("Save Program", PROGRAMS_DIR, PRGM_EXT, @ptrCast(&save_programfile), 1, filename),
-        IO_PATH_EXPORT_RTF_PROGRAM => return fileSelectionHelper("Export Program RTF", PROGRAMS_DIR, RTF_EXT, @ptrCast(&save_programfile), 1, filename),
-        IO_PATH_LOAD_PROGRAM => return fileSelectionHelper("Load Program", PROGRAMS_DIR, PRGM_EXT, @ptrCast(&load_programfile), 0, filename),
+        IO_PATH_REG_EXPORT => return fileSelectionHelper("Export Register/Flag Data File", DATA_DIR, DATA_EXT, &save_datafile, 1, filename),
+        IO_PATH_REG_IMPORT => return fileSelectionHelper("Import Register/Flag Data File", DATA_DIR, DATA_EXT, &load_datafile, 0, filename),
+        IO_PATH_SAVE_STATE_FILE => return fileSelectionHelper("Save Calculator State", STATE_DIR, STATE_EXT, &save_statefile, 1, filename),
+        IO_PATH_LOAD_STATE_FILE => return fileSelectionHelper("Load Calculator State", STATE_DIR, STATE_EXT, &load_statefile, 0, filename),
+        IO_PATH_SAVE_PROGRAM => return fileSelectionHelper("Save Program", PROGRAMS_DIR, PRGM_EXT, &save_programfile, 1, filename),
+        IO_PATH_EXPORT_RTF_PROGRAM => return fileSelectionHelper("Export Program RTF", PROGRAMS_DIR, RTF_EXT, &save_programfile, 1, filename),
+        IO_PATH_LOAD_PROGRAM => return fileSelectionHelper("Load Program", PROGRAMS_DIR, PRGM_EXT, &load_programfile, 0, filename),
         else => return FILE_ERROR,
     }
 }
@@ -454,7 +314,7 @@ pub export fn ioFileOpen(path: c_int, mode: c_int) callconv(.c) c_int {
         sysDiskWriteEnable(1);
     }
 
-    const result = fileOpen(programFileHandle(), &filename, filemode);
+    const result = fileOpen(programFile(), &filename, filemode);
     if (result != 0) {
         if (mode != IO_MODE_READ) {
             sysDiskWriteEnable(0);
@@ -475,29 +335,29 @@ pub export fn ioFileOpen(path: c_int, mode: c_int) callconv(.c) c_int {
                 break;
             }
         }
-        copyCStringBounded(fileNameSelected[0..], @ptrCast((&filename)[@intCast(jj)..].ptr));
+        copyCStringBounded(fileNameSelected[0..], filename[@intCast(jj)..].ptr);
     }
 
     return FILE_OK;
 }
 
 pub export fn ioFileWrite(buffer: ?*const anyopaque, size: u32) callconv(.c) void {
-    var bytes_written: u32 = 0;
-    _ = fileWrite(programFileHandle(), buffer, size, &bytes_written);
+    var bytes_written: rom.UINT = 0;
+    _ = fileWrite(programFile(), buffer, size, &bytes_written);
 }
 
 pub export fn ioFileRead(buffer: ?*anyopaque, size: u32) callconv(.c) u32 {
-    var bytes_read: u32 = 0;
-    _ = fileRead(programFileHandle(), buffer, size, &bytes_read);
+    var bytes_read: rom.UINT = 0;
+    _ = fileRead(programFile(), buffer, size, &bytes_read);
     return bytes_read;
 }
 
 pub export fn ioFileSeek(position: u32) callconv(.c) void {
-    _ = fileSeek(programFileHandle(), position);
+    _ = fileSeek(programFile(), position);
 }
 
 pub export fn ioFileClose() callconv(.c) void {
-    _ = fileClose(programFileHandle());
+    _ = fileClose(programFile());
     if (io_write_enabled != 0) {
         sysDiskWriteEnable(0);
     }
@@ -506,23 +366,23 @@ pub export fn ioFileClose() callconv(.c) void {
 }
 
 pub export fn ioEof() callconv(.c) c_int {
-    const file = programFileStruct() orelse return 1;
+    const file = programFile() orelse return 1;
     return @intFromBool(file.fptr == file.obj.objsize);
 }
 
-pub export fn save_statefile(fpath: [*c]const u8, fname: [*c]const u8, data: ?*anyopaque) callconv(.c) c_int {
+pub export fn save_statefile(fpath: [*:0]const u8, fname: [*:0]const u8, data: ?[*]u8) callconv(.c) c_int {
     lcdPuts("Saving state ...");
     lcdPuts(fname);
     lcdRefresh();
 
     if (data != null) {
-        copyCString(@ptrCast(data.?), fpath);
+        copyCString(data.?, fpath);
     }
     setResetStateFile(fpath);
     return MRET_SAVESTATE;
 }
 
-pub export fn load_statefile(fpath: [*c]const u8, fname: [*c]const u8, data: ?*anyopaque) callconv(.c) c_int {
+pub export fn load_statefile(fpath: [*:0]const u8, fname: [*:0]const u8, data: ?[*]u8) callconv(.c) c_int {
     _ = fname;
 
     lcdPuts("");
@@ -552,54 +412,54 @@ pub export fn load_statefile(fpath: [*c]const u8, fname: [*c]const u8, data: ?*a
     lcdRefreshWait();
 
     if (data != null) {
-        copyCString(@ptrCast(data.?), fpath);
+        copyCString(data.?, fpath);
     }
     setResetStateFile(fpath);
     return MRET_LOADSTATE;
 }
 
-pub export fn save_datafile(fpath: [*c]const u8, fname: [*c]const u8, data: ?*anyopaque) callconv(.c) c_int {
+pub export fn save_datafile(fpath: [*:0]const u8, fname: [*:0]const u8, data: ?[*]u8) callconv(.c) c_int {
     lcdPuts("Saving register(s) ...");
     lcdPuts(fname);
     lcdRefresh();
 
     if (data != null) {
-        copyCString(@ptrCast(data.?), fpath);
+        copyCString(data.?, fpath);
     }
     return MRET_SAVESTATE;
 }
 
-pub export fn load_datafile(fpath: [*c]const u8, fname: [*c]const u8, data: ?*anyopaque) callconv(.c) c_int {
+pub export fn load_datafile(fpath: [*:0]const u8, fname: [*:0]const u8, data: ?[*]u8) callconv(.c) c_int {
     _ = fname;
 
     lcdPutsRAt(6, "  Loading ...");
     lcdRefreshWait();
 
     if (data != null) {
-        copyCString(@ptrCast(data.?), fpath);
+        copyCString(data.?, fpath);
     }
     return MRET_LOADSTATE;
 }
 
-pub export fn save_programfile(fpath: [*c]const u8, fname: [*c]const u8, data: ?*anyopaque) callconv(.c) c_int {
+pub export fn save_programfile(fpath: [*:0]const u8, fname: [*:0]const u8, data: ?[*]u8) callconv(.c) c_int {
     lcdPuts("Saving program ...");
     lcdPuts(fname);
     lcdRefresh();
 
     if (data != null) {
-        copyCString(@ptrCast(data.?), fpath);
+        copyCString(data.?, fpath);
     }
     return MRET_SAVESTATE;
 }
 
-pub export fn load_programfile(fpath: [*c]const u8, fname: [*c]const u8, data: ?*anyopaque) callconv(.c) c_int {
+pub export fn load_programfile(fpath: [*:0]const u8, fname: [*:0]const u8, data: ?[*]u8) callconv(.c) c_int {
     _ = fname;
 
     lcdPutsRAt(6, "  Loading ...");
     lcdRefreshWait();
 
     if (data != null) {
-        copyCString(@ptrCast(data.?), fpath);
+        copyCString(data.?, fpath);
     }
     return MRET_LOADSTATE;
 }

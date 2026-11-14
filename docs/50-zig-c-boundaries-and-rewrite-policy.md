@@ -425,7 +425,7 @@ that removes a site.
 | A pool pointer from a block index, or the reverse | `progmem.Ram` in `calc_state_progmem.zig`: block indices and byte offsets against the typed `ram` base, and back to a pointer by adding the offset. |
 | A frame that needs more alignment than the pool gives | `std.mem.alignInBytes` over the block's bytes, then `std.mem.bytesAsValue`, as `latticeAlloc` in `algdep.zig` does. |
 | An element before the start of an array, which upstream reaches with a negative index | `elements - @abs(index)` on a many-item pointer, as `elementAt` in `mim_commands.zig` does. |
-| An address the platform defines | `@ptrFromInt` of the SDK's constant: the DMCP ROM function table, the DMCP system data block, a GDK atom. Pointer arithmetic is not one: `p + n` on a many-item pointer or a typed view replaces `@ptrFromInt(@intFromPtr(p) + n)`. |
+| An address the platform defines | `@ptrFromInt` of the SDK's constant, declared once: every DMCP ROM entry and the system data block in `../src/core/hal/dmcp_rom.zig`, which each object that calls the ROM imports; a GDK atom. Pointer arithmetic is not one: `p + n` on a many-item pointer or a typed view replaces `@ptrFromInt(@intFromPtr(p) + n)`. |
 | A value read at another type of the same size | `@bitCast`, which the compiler checks for size. It reinterprets a value, not memory, and is how C's signed-to-unsigned conversions are ported. |
 
 ### The Exception
