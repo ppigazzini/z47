@@ -160,15 +160,6 @@ REVIEWED: dict[str, str] = {
         " which is what an equivalent mutant looks like. c43's integers.c:409 read is"
         " inside a `never used` comment block."
     ),
-    "FLAG_WRAPEDG": (
-        "The FLAG_ASLIFT verdict in a different owner. Set and cleared by the MATRIX"
-        " EDITOR (matrix_nav.zig, matrix_editor.zig, mirroring ui/matrixEditor.c) and"
-        " cleared by fnIndexMatrix; the only reads in the whole of c43 are the WRPEDG"
-        " and WRPEND catalog items dispatching fnGetSystemFlag. No math wrapper reads"
-        " either, so this lane would be partitioning another owner's output. It is the"
-        " matrix-editor differential's property."
-    ),
-    "FLAG_WRAPEND": "The same, and set at the same four sites. See FLAG_WRAPEDG.",
     "FLAG_PROPFR": "Proper-fraction DISPLAY mode.",
     "dtConfigDescriptor_t": "A type name, not a register data type -- the scan sees the typedef.",
     "dtRealMatrix": "A spelling that appears only in comments; the register type is dtReal34Matrix.",
@@ -200,6 +191,25 @@ COVERED: dict[str, dict[str, object]] = {
             " is real. It was listed OPEN here for a pass because this report reads"
             " one lane's fixtures and spoke as though it had read the tree."
         ),
+    },
+    "FLAG_WRAPEDG": {
+        "lane": "matrix_editor_parity",
+        "evidence": "build/tests/matrix_editor/matrix_editor_parity_harness.c",
+        "needle": "flags->wrapEdge ? setSystemFlag(FLAG_WRAPEDG) : clearSystemFlag(FLAG_WRAPEDG);",
+        "fake": False,
+        "why": (
+            "Set and cleared by the MATRIX EDITOR and cleared by fnIndexMatrix; no math"
+            " wrapper reads it, so this lane would be partitioning another owner's output."
+            " The matrix-editor differential seeds it on and off in every flag set and"
+            " compares the system flags against c43's own matrixEditor.c in a full core."
+        ),
+    },
+    "FLAG_WRAPEND": {
+        "lane": "matrix_editor_parity",
+        "evidence": "build/tests/matrix_editor/matrix_editor_parity_harness.c",
+        "needle": "flags->wrapEnd  ? setSystemFlag(FLAG_WRAPEND) : clearSystemFlag(FLAG_WRAPEND);",
+        "fake": False,
+        "why": "The same owner and the same lane as FLAG_WRAPEDG.",
     },
 }
 
