@@ -923,8 +923,8 @@ extern var asmBuffer: [5]u8;
 
 // const_0 / const39_pi / const34_0 are NOT symbols: they are
 // constantPointers.h macros over the shared `constants` blob, by byte offset.
-// Named constants via the oracle-gated abi accessors (offsets verified by
-// .github/project/check-constant-offsets.py) instead of raw blob @ptrCast.
+// The abi accessors read them at the offsets
+// .github/project/check-constant-offsets.py verifies against the oracle.
 const const_0 = abi.constants.const_0();
 const const39_pi = abi.constants.const39_pi();
 const const34_0 = abi.constants.const34_0();
@@ -1075,7 +1075,7 @@ inline fn getRegisterAngularMode(reg: calcRegister_t) angularMode_t {
 inline fn setRegisterAngularMode(reg: calcRegister_t, am: angularMode_t) void {
     setRegisterTag(reg, @intCast(am));
 }
-// Typed register views centralized in abi (single @ptrCast per shape).
+// Typed register views, declared once in abi.
 const reg34 = abi.registerReal34;
 const regImag34 = abi.registerImag34;
 const regShortInteger = abi.registerShortInteger;

@@ -61,8 +61,11 @@ const PLOT_REAL_MAX_DIGITS = ((PLOT_DIGITS + 2) / 6) * 6 + 3;
 const PLOT_REAL_SIZE_IN_BYTES = 10 + @sizeOf(u16) * (PLOT_REAL_MAX_DIGITS / 3);
 
 /// REAL_T_PTR(name, PLOT_DIGITS): the storage is the short array, and every user
-/// takes a real_t pointer to it. Nothing writes more digits than
-/// ctxtGraphsLocal's, which is what keeps a value inside the array.
+/// reads it through the real_t pointer r() returns. That pointer is a cast,
+/// because a union with a real_t member, which is how a larger REAL_T_PTR is
+/// stored, is as large as a real_t and would undo the saving above. Nothing
+/// writes more digits than ctxtGraphsLocal's, which is what keeps every access
+/// inside the array.
 const PlotReal = extern struct {
     data: [PLOT_REAL_SIZE_IN_BYTES / 4]u32,
 
