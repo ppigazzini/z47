@@ -718,7 +718,6 @@ pub extern fn __gmpz_gcd(result: *mpz_struct, lhs: *const mpz_struct, rhs: *cons
 pub extern fn __gmpz_lcm(result: *mpz_struct, lhs: *const mpz_struct, rhs: *const mpz_struct) void;
 pub extern fn __gmpz_tdiv_qr(quotient: *mpz_struct, remainder: *mpz_struct, dividend: *const mpz_struct, divisor: *const mpz_struct) void;
 pub extern fn __gmpz_tdiv_r(result: *mpz_struct, dividend: *const mpz_struct, divisor: *const mpz_struct) void;
-pub extern fn __gmpz_fdiv_q_ui(result: *mpz_struct, op: *const mpz_struct, divisor: c_ulong) c_ulong;
 pub extern fn __gmpz_rootrem(root: *mpz_struct, rem: *mpz_struct, op: *const mpz_struct, n: c_ulong) void;
 
 // The longIntegerType.h inline wrappers the owners read as named operations.
