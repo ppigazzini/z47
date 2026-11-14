@@ -11,7 +11,7 @@ extern var numberOfNamedVariables: u16;
 extern var userMenus: [*c]userMenu_t;
 extern var numberOfUserMenus: u16;
 extern var allNamedVariables: ?[*]named_variable_header_t;
-extern fn removeUserItemAssignments(item: i16, user_item_name: [*c]u8) void;
+extern fn removeUserItemAssignments(item: i16, user_item_name: [*c]const u8) void;
 
 pub fn userMenuCount() u32 {
     return numberOfUserMenus;

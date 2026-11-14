@@ -79,7 +79,7 @@ extern var temporaryInformation: u8;
 extern var hourGlassIconEnabled: bool_t;
 extern var userKeyLabel: [*c]u8;
 // assign.c's NULL-tolerant reader for userKeyLabel.
-extern fn getUserKeyLabelString(n: i16) [*c]u8;
+extern fn getUserKeyLabelString(n: i16) [*c]const u8;
 extern var tam: tamState_t;
 extern var Norm_Key_00: normKey_t;
 
@@ -262,7 +262,7 @@ fn fnAsnDisplay(page: u8) void {
                 _ = strcpy(&Name, &Norm_Key_00.funcParam); // name of a user menu, program or variable assigned to the Norm key
             }
         } else {
-            const funcParam: [*c]u8 = getUserKeyLabelString(key * 6 + (@as(i16, page) - 1));
+            const funcParam: [*c]const u8 = getUserKeyLabelString(key * 6 + (@as(i16, page) - 1));
             if ((funcParam[0] != 0) and ((strcmp(&Name, "DYNMNU") == 0) or (strcmp(&Name, "XEQ") == 0) or (strcmp(&Name, "RCL") == 0))) {
                 _ = strcpy(&Name, getUserKeyLabelString(key * 6 + (@as(i16, page) - 1))); // name of a user menu, program or variable assigned to a key
             }

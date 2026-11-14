@@ -1077,7 +1077,7 @@ extern var tam: tamState_t;
 extern var statisticalSumsPointer: [*c]real_t;
 extern var openMatrixMIMPointer: any34Matrix_t;
 // owned by c47.zig
-extern var showFunctionNameArg: [*c]u8;
+extern var showFunctionNameArg: [*c]const u8;
 extern var showFunctionNameItem: i16;
 extern var showFunctionNameCounter: i16;
 extern var lineTWidth: i16;
@@ -1090,7 +1090,7 @@ extern var tamBuffer: [*c]u8;
 extern var nimBufferDisplay: [*c]u8;
 extern var userKeyLabel: [*c]u8;
 // assign.c's NULL-tolerant reader for userKeyLabel.
-extern fn getUserKeyLabelString(n: i16) [*c]u8;
+extern fn getUserKeyLabelString(n: i16) [*c]const u8;
 extern var current_cursor_x: u16;
 extern var current_cursor_y: u16;
 extern var alphaCursor: i16;
@@ -1996,7 +1996,7 @@ pub export fn _executeItem(item: i16, keyCode: c_int) callconv(.c) void {
         const variable = findNamedVariable(funcParam);
         if (variable != INVALID_VARIABLE) {
             if (calcMode == CM_PEM) {
-                frontier_manage.insertUserItemInProgram(item, @constCast(funcParam));
+                frontier_manage.insertUserItemInProgram(item, funcParam);
             } else {
                 frontier_items.reallyRunFunction(item, @intCast(variable));
             }
@@ -2011,7 +2011,7 @@ pub export fn _executeItem(item: i16, keyCode: c_int) callconv(.c) void {
         const label = frontier_manage.findNamedLabel(funcParam, frontier_manage.GLOBAL_LABELS);
         if (label != INVALID_VARIABLE) {
             if (calcMode == CM_PEM) {
-                frontier_manage.insertUserItemInProgram(item, @constCast(funcParam));
+                frontier_manage.insertUserItemInProgram(item, funcParam);
             } else {
                 frontier_items.reallyRunFunction(item, @intCast(label));
             }
@@ -2076,7 +2076,7 @@ pub export fn Shft_handler() callconv(.c) void {
                             var funcParam: [*c]const u8 = "";
                             keyStateCode = @intCast((if (getSystemFlag(FLAG_ALPHA) != 0) @as(c_int, 3) else 0) + 2);
                             funcParam = getUserKeyLabelString(@intCast(keyCode * 6 + @as(c_int, keyStateCode)));
-                            _ = frontier_softmenus.setCurrentUserMenu(item, @constCast(funcParam));
+                            _ = frontier_softmenus.setCurrentUserMenu(item, funcParam);
                             if (shiftF != 0) {
                                 if (getSystemFlag(FLAG_ALPHA) != 0 and ((frontier_softmenus.currentMenu() == -MNU_MyAlpha) or (frontier_softmenus.currentMenu() == -MNU_AIMCATALOG) or frontier_softmenus.isAlphabeticSoftmenu() != 0)) {
                                     frontier_softmenus.popSoftmenu();
@@ -2518,7 +2518,7 @@ noinline fn getStringBoundsImpl(string: [*c]const u8, font: *const font_t, col: 
     }
 }
 
-noinline fn _doShowString(string: [*c]const u8, font: *const font_t, x_in: u32, y_in: u32, resStr: ?*[*c]u8, width: u32, videoMode: videoMode_t, showLeadingCols: bool_t, showEndingCols: bool_t, LF: bool_t) u32 {
+noinline fn _doShowString(string: [*c]const u8, font: *const font_t, x_in: u32, y_in: u32, resStr: ?*[*c]const u8, width: u32, videoMode: videoMode_t, showLeadingCols: bool_t, showEndingCols: bool_t, LF: bool_t) u32 {
     var x = x_in;
     var y = y_in;
     var ch: u16 = undefined;
@@ -2566,13 +2566,13 @@ noinline fn _doShowString(string: [*c]const u8, font: *const font_t, x_in: u32, 
                     ch = @intCast(rs.* - string);
                     x = showGlyphCode(frontier_char_string.charCodeFromString(string, &ch), font, prevX, y -% raiseString, videoMode, 1, 0, 0) -% compressString;
                     if (x <= width) {
-                        rs.* = @constCast(string + ch);
+                        rs.* = string + ch;
                     }
                     x = tmpX;
                 }
                 break;
             } else {
-                rs.* = @constCast(string + ch);
+                rs.* = string + ch;
                 prevX = x;
             }
         }
@@ -2615,14 +2615,15 @@ noinline fn showStringImpl(string: [*c]const u8, font: *const font_t, x: u32, y:
     return _doShowString(string, font, x, y, null, 0, videoMode, showLeadingCols, showEndingCols, NO_LF);
 }
 
-fn _stringAfterPixels(string: [*c]const u8, font: *const font_t, width: u32, showLeadingCols: bool_t, showEndingCols: bool_t) [*c]u8 {
-    var resStr: [*c]u8 = @constCast(string);
+/// The byte offset in `string` of the first glyph that does not fit in `width`.
+fn _stringAfterPixels(string: [*c]const u8, font: *const font_t, width: u32, showLeadingCols: bool_t, showEndingCols: bool_t) usize {
+    var resStr: [*c]const u8 = string;
     _ = _doShowString(string, font, 0, 0, &resStr, width, vmNormal, showLeadingCols, showEndingCols, NO_LF);
-    return resStr;
+    return @intCast(resStr - string);
 }
 
 fn _showStringWithLimit(string: [*c]const u8, font: *const font_t, limitWidth: u32, showLeadingCols: bool_t, showEndingCols: bool_t) u32 {
-    var resStr: [*c]u8 = @constCast(string);
+    var resStr: [*c]const u8 = string;
     return _doShowString(string, font, 0, 0, &resStr, limitWidth, vmNormal, showLeadingCols, showEndingCols, NO_LF);
 }
 
@@ -2695,10 +2696,10 @@ pub export fn showStringC47(string: [*c]const u8, mode_in: c_int, comp: c_int, x
     return x;
 }
 
-pub export fn stringAfterPixelsC47(string: [*c]const u8, mode_in: c_int, comp: c_int, width: u32, withLeadingEmptyRows: bool_t, withEndingEmptyRows: bool_t) callconv(.c) [*c]u8 {
+pub export fn stringAfterPixelsC47(string: [*c]u8, mode_in: c_int, comp: c_int, width: u32, withLeadingEmptyRows: bool_t, withEndingEmptyRows: bool_t) callconv(.c) [*c]u8 {
     var mode = mode_in;
     const combinationFontsM: c_int = combinationFonts;
-    var resStr: [*c]u8 = @constCast(string);
+    var resStr: [*c]u8 = string;
     if (combinationFontsDefault == 0) {
         mode = stdNoEnlarge;
     }
@@ -2707,9 +2708,9 @@ pub export fn stringAfterPixelsC47(string: [*c]const u8, mode_in: c_int, comp: c
     noShow = 1;
     _setStringMode(mode, comp, &font);
     if (font) |f| {
-        resStr = _stringAfterPixels(string, f, width, withLeadingEmptyRows, withEndingEmptyRows);
+        resStr = string + _stringAfterPixels(string, f, width, withLeadingEmptyRows, withEndingEmptyRows);
     } else {
-        resStr = @constCast(string);
+        resStr = string;
     }
 
     combinationFonts = @intCast(combinationFontsM);
@@ -3013,7 +3014,7 @@ pub export fn force_SBrefresh(modeArg: u8) callconv(.c) void {
     }
 }
 
-fn _printHalfSecUpdate_Integer(modeArg: u8, txt: [*c]u8, loop: i32, clearZ: bool_t, clearT: bool_t, disp: bool_t) bool_t {
+fn _printHalfSecUpdate_Integer(modeArg: u8, txt: [*c]const u8, loop: i32, clearZ: bool_t, clearT: bool_t, disp: bool_t) bool_t {
     var tmps: [100]u8 = undefined;
     var ret_value: bool_t = 0;
 
@@ -3045,7 +3046,7 @@ fn _printHalfSecUpdate_Integer(modeArg: u8, txt: [*c]u8, loop: i32, clearZ: bool
     return ret_value;
 }
 
-pub export fn progressHalfSecUpdate_Integer(modeArg: u8, txt: [*c]u8, loop: i32, clearZ: bool_t, clearT: bool_t, disp: bool_t) callconv(.c) bool_t {
+pub export fn progressHalfSecUpdate_Integer(modeArg: u8, txt: [*c]const u8, loop: i32, clearZ: bool_t, clearT: bool_t, disp: bool_t) callconv(.c) bool_t {
     if (getSystemFlag(FLAG_MONIT) == 0) {
         return 0;
     }
@@ -3088,7 +3089,7 @@ pub export fn monitorExit(loop: *i32, str: [*c]u8) callconv(.c) bool_t {
         if (progressHalfSecUpdate_Integer(timed, str, loop.*, halfSec_clearZ, halfSec_clearT, halfSec_disp) != 0) {}
     }
     if (frontier_addons.exitKeyWaiting() != 0) {
-        _ = progressHalfSecUpdate_Integer(force + 1, @constCast("Interrupted: "), loop.*, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+        _ = progressHalfSecUpdate_Integer(force + 1, "Interrupted: ", loop.*, halfSec_clearZ, halfSec_clearT, halfSec_disp);
         return 1;
     }
     return 0;
@@ -3187,7 +3188,7 @@ pub export fn showFunctionName(itm: i16, delayInMs: i16, arg: [*c]const u8) call
         if (arg != null) {
             _ = stringCopy(&functionName, arg);
         }
-        showFunctionNameArg = @constCast(arg);
+        showFunctionNameArg = arg;
         if (functionName[0] == 0) {
             _ = stringCopy(&functionName, &indexOfItems[@intCast(absI(item))].itemCatalogName);
         }
@@ -3195,7 +3196,7 @@ pub export fn showFunctionName(itm: i16, delayInMs: i16, arg: [*c]const u8) call
         if (arg != null) {
             _ = stringCopy(&functionName, arg);
         }
-        showFunctionNameArg = @constCast(arg);
+        showFunctionNameArg = arg;
     } else if (item >= FIRST_CONSTANT and item <= LAST_CONSTANT) {
         _ = stringCopy(&functionName, pickValidItemFromItems(item, PRIORITY_itemSoftmenuName));
     } else if (frontier_conversion_units.isItemConversion(item)) {

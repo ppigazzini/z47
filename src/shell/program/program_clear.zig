@@ -60,7 +60,7 @@ pub fn run(confirmation: u16) void {
         return;
     }
 
-    frontier_assign.removeUserItemAssignments(3, @constCast(""));
+    frontier_assign.removeUserItemAssignments(3, "");
 
     const was_in_ram = frontier_manage.z47_frontier_program_current_program_in_ram();
     resizeProgramMemory(1);

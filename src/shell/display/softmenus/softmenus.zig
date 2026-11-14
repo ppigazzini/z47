@@ -2414,7 +2414,7 @@ pub export fn isFunctionItemAMenu(item: i16) callconv(.c) bool_t {
 }
 
 var FF: [16]u8 = undefined;
-fn changeDotAndIJ(item: i16, itemN: [*c]const u8) [*c]u8 {
+fn changeDotAndIJ(item: i16, itemN: [*c]const u8) [*c]const u8 {
     if ((item == ITM_DREAL or item == SFL_DREAL) and itemN[3] == '.') {
         _ = stringCopy(&FF, itemN);
         FF[3] = RADIX34_MARK_CHAR();
@@ -2429,7 +2429,7 @@ fn changeDotAndIJ(item: i16, itemN: [*c]const u8) [*c]u8 {
         }
         return &FF;
     }
-    return @constCast(itemN);
+    return itemN;
 }
 
 const mstr = struct { modeName: [5]u8 };
@@ -3652,7 +3652,7 @@ pub export fn popSoftmenu() callconv(.c) void {
     }
 }
 
-pub export fn setCurrentUserMenu(item: i16, funcParam: [*c]u8) callconv(.c) bool_t {
+pub export fn setCurrentUserMenu(item: i16, funcParam: [*c]const u8) callconv(.c) bool_t {
     if (item == -%@as(i16, MNU_DYNAMIC)) {
         var i: u32 = 0;
         while (i < numberOfUserMenus) : (i += 1) {
@@ -3667,9 +3667,9 @@ pub export fn setCurrentUserMenu(item: i16, funcParam: [*c]u8) callconv(.c) bool
 
 pub export fn createHOME() callconv(.c) bool_t {
     const itemToBeAssignedMeM: i16 = itemToBeAssigned;
-    if (setCurrentUserMenu(-%@as(i16, MNU_DYNAMIC), @constCast("HOME")) == 0) {
+    if (setCurrentUserMenu(-%@as(i16, MNU_DYNAMIC), "HOME") == 0) {
         frontier_assign.createMenu("HOME");
-        if (setCurrentUserMenu(-%@as(i16, MNU_DYNAMIC), @constCast("HOME")) == 0) {
+        if (setCurrentUserMenu(-%@as(i16, MNU_DYNAMIC), "HOME") == 0) {
             itemToBeAssigned = itemToBeAssignedMeM;
             return 0;
         }
@@ -3697,9 +3697,9 @@ pub export fn createHOME() callconv(.c) bool_t {
 
 pub export fn createPFN() callconv(.c) bool_t {
     const itemToBeAssignedMeM: i16 = itemToBeAssigned;
-    if (setCurrentUserMenu(-%@as(i16, MNU_DYNAMIC), @constCast("P.FN")) == 0) {
+    if (setCurrentUserMenu(-%@as(i16, MNU_DYNAMIC), "P.FN") == 0) {
         frontier_assign.createMenu("P.FN");
-        if (setCurrentUserMenu(-%@as(i16, MNU_DYNAMIC), @constCast("P.FN")) == 0) {
+        if (setCurrentUserMenu(-%@as(i16, MNU_DYNAMIC), "P.FN") == 0) {
             itemToBeAssigned = itemToBeAssignedMeM;
             return 0;
         }
@@ -3726,12 +3726,12 @@ pub export fn createPFN() callconv(.c) bool_t {
 }
 
 fn changeToHOME() void {
-    if (setCurrentUserMenu(-%@as(i16, MNU_DYNAMIC), @constCast("HOME")) == 0) {
+    if (setCurrentUserMenu(-%@as(i16, MNU_DYNAMIC), "HOME") == 0) {
         showSoftmenu(-%@as(i16, MNU_HOME));
     }
 }
 fn changeToPFN() void {
-    if (setCurrentUserMenu(-%@as(i16, MNU_DYNAMIC), @constCast("P.FN")) == 0) {
+    if (setCurrentUserMenu(-%@as(i16, MNU_DYNAMIC), "P.FN") == 0) {
         showSoftmenu(-%@as(i16, MNU_PFN));
     }
 }
@@ -3812,6 +3812,10 @@ pub export fn extractPFNMenus() callconv(.c) void {
 // printTrace is IR-printing only.
 const c_printTrace = if (ir_printing) @extern(*const fn (func: i16, param: u16) callconv(.c) void, .{ .name = "printTrace" }) else {};
 
+// The MVAR variable list showSoftmenu falls back to when the menu is missing:
+// no names, just the empty string that ends a list.
+var no_variables: [2]u8 = .{ 0, 0 };
+
 pub export fn showSoftmenu(id_in: i16) callconv(.c) void {
     var id: i16 = id_in;
     var m: i16 = undefined;
@@ -3831,14 +3835,14 @@ pub export fn showSoftmenu(id_in: i16) callconv(.c) void {
     setScreenUpdateFromMenu(id, openMenu);
 
     if (id == -%@as(i16, MNU_HOME)) {
-        if (setCurrentUserMenu(-%@as(i16, MNU_DYNAMIC), @constCast("HOME")) == 0) {
+        if (setCurrentUserMenu(-%@as(i16, MNU_DYNAMIC), "HOME") == 0) {
             if (createHOME() == 0) {
                 return;
             }
         }
         id = -%@as(i16, MNU_DYNAMIC);
     } else if (id == -%@as(i16, MNU_PFN)) {
-        if (setCurrentUserMenu(-%@as(i16, MNU_DYNAMIC), @constCast("P.FN")) == 0) {
+        if (setCurrentUserMenu(-%@as(i16, MNU_DYNAMIC), "P.FN") == 0) {
             if (createPFN() == 0) {
                 return;
             }
@@ -3916,7 +3920,7 @@ pub export fn showSoftmenu(id_in: i16) callconv(.c) void {
             }
             if (varList == null) {
                 frontier_error.displayBugScreen("In function showSoftmenu: MVAR not found!");
-                varList = @constCast("\x00");
+                varList = &no_variables;
             }
         } else {
             // MVAR: use the scratch area at the end of tmpString (as _dynmenuConstructMVars
@@ -4073,6 +4077,10 @@ pub export fn currentDynamicSoftmenu() callconv(.c) ?*dynamicSoftmenu_t {
     return null;
 }
 
+// What a dynamic-menu lookup hands back when there is no menu or no such item:
+// an empty label, in a buffer as writable as the menu content it stands in for.
+var no_label: [1]u8 = .{0};
+
 pub export fn dynmenuGetLabelWithDup(menuitem_in: i16, dupNum: ?*i16) callconv(.c) [*c]u8 {
     var menuitem = menuitem_in;
     const dynamic = currentDynamicSoftmenu();
@@ -4080,7 +4088,7 @@ pub export fn dynmenuGetLabelWithDup(menuitem_in: i16, dupNum: ?*i16) callconv(.
         dn.* = 0;
     }
     if (dynamic == null or menuitem < 0 or menuitem >= dynamic.?.numItems) {
-        return @constCast("");
+        return &no_label;
     }
     var labelName: [*c]u8 = dynamic.?.menuContent;
     var prevLabelName: [*c]u8 = labelName;

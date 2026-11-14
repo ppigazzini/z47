@@ -661,7 +661,7 @@ fn btnReleasedHost(not_used: ?*anyopaque, event: ?*const GdkEventButton, data: [
 
             const Norm_Key_00_released = !runtime.getSystemFlag(runtime.FLAG_USER) and (runtime.keyStateCode == 0) and (@as(i16, runtime.currentKeyCode) == runtime.normKey00Key()) and runtime.Norm_Key_00.used and !(runtime.lastIntegerBase >= 2 and runtime.getSystemFlag(runtime.FLAG_TOPHEX));
 
-            var funcParam: [*c]u8 = if (Norm_Key_00_released) &runtime.Norm_Key_00.funcParam else runtime.getUserKeyLabelString(@intCast(keyCode * 6 + runtime.keyStateCode));
+            var funcParam: [*c]const u8 = if (Norm_Key_00_released) &runtime.Norm_Key_00.funcParam else runtime.getUserKeyLabelString(@intCast(keyCode * 6 + runtime.keyStateCode));
             if (runtime.showFunctionNameArg != null) {
                 funcParam = runtime.showFunctionNameArg;
             }
@@ -914,7 +914,7 @@ pub export fn fnSHIFTfg(unused_but_mandatory_parameter: u16) callconv(.c) void {
     if (is_dmcp_build) {
         runtime.btnClickedDmcpOverlay(null, key27);
     } else {
-        runtime.btnClickedHostOverlay(null, @constCast(key27));
+        runtime.btnClickedHostOverlay(null, key27);
     }
 }
 

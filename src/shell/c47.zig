@@ -335,7 +335,7 @@ pub export var lastKeyItemDetermined: i16 = 0;
 pub export var lastUserMode: bool_t = false;
 pub export var lastItem: i16 = 0;
 pub export var showFunctionNameItem: i16 = 0;
-pub export var showFunctionNameArg: ?[*]u8 = null;
+pub export var showFunctionNameArg: ?[*]const u8 = null;
 
 pub export var displayStackSHOIDISP: u8 = 0;
 pub export var scrLock: u8 = 0;
@@ -592,8 +592,8 @@ const dmcp = struct {
     extern fn execTimerApp(timerType: u16) void;
     extern fn btnFnPressed(data: ?*anyopaque) void;
     extern fn btnFnReleased(data: ?*anyopaque) void;
-    extern fn btnPressed(data: ?*anyopaque) void;
-    extern fn btnReleased(data: ?*anyopaque) void;
+    extern fn btnPressed(data: [*c]const u8) void;
+    extern fn btnReleased(data: [*c]const u8) void;
     extern fn resetShiftState() void;
     extern fn resetKeytimers() void;
     extern fn dmcpResetAutoOff() void;

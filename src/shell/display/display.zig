@@ -1456,7 +1456,10 @@ fn renderEngFixed(bcd: [*c]const u8, firstDigit: i16, lastDigit: i16, exponent: 
 }
 
 fn real34ToDisplayString2(real34_in: *const real34_t, displayString: [*c]u8, displayHasNDigits: i16, limitExponent: bool_t, noFix: bool_t, frontSpace: bool_t, complex: bool_t, limitIrfrac: irfracOption_t) void {
-    // real34 is passed const but the 2TO10/UN path mutates *real34 then restores it.
+    // The 2TO10/UN path rescales the caller's value in place and restores it only
+    // on the paths that reach the end of this function, as upstream does; a value
+    // shown through one of the early returns stays rescaled. Parity needs that
+    // write to land in the caller's object, which upstream declares const.
     const real34: *real34_t = @constCast(real34_in);
     const exponentUNlimit1024max: i32 = if (getSystemFlag(FLAG_PFX_ALL) != 0) 7 else 5;
     // TRL0: when set, DF_SF and DF_ALL keep trailing significant zeros (and DF_SF
@@ -2356,7 +2359,7 @@ fn strPrepend_strlen16(p: [*c]const u8) i16 {
     return n;
 }
 
-pub export fn strPrepend(dest: [*c]u8, prefix: [*c]u8) callconv(.c) void {
+pub export fn strPrepend(dest: [*c]u8, prefix: [*c]const u8) callconv(.c) void {
     const plen: i16 = strPrepend_strlen16(prefix);
     if (plen == 0 or plen > 20) {
         return;
@@ -2443,7 +2446,7 @@ fn complex34ToDisplayString2(complex34: *const complex34_t, displayString: [*c]u
             displayString[@intCast(imagOffset)] = STD_NOCHAR;
             displayString[@intCast(imagOffset + 1)] = STD_NOCHAR;
             if (strncmp(displayString, STD_ALMOST_EQUAL, 2) != 0) {
-                strPrepend(displayString, @constCast(STD_ALMOST_EQUAL));
+                strPrepend(displayString, STD_ALMOST_EQUAL);
             }
         }
 

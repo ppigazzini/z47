@@ -210,13 +210,13 @@ pub fn keyDotDRetained(unused_but_mandatory_parameter: u16) void {
     z47_keyboard_state_fnKeyDotD(unused_but_mandatory_parameter);
 }
 
-pub fn btnClickedHostOverlay(not_used: ?*anyopaque, data: ?*anyopaque) void {
+pub fn btnClickedHostOverlay(not_used: ?*anyopaque, data: [*c]const u8) void {
     // Resolves to the Zig host btnClicked export (keyboard_state.zig btnClickedHost),
     // which itself runs btnPressed + btnReleased on a synthetic left-click event.
     // The release tail is the last writer of screenUpdatingMode, as in C.
     btnClicked(not_used, data);
 }
-extern fn btnClicked(not_used: ?*anyopaque, data: ?*anyopaque) void;
+extern fn btnClicked(not_used: ?*anyopaque, data: [*c]const u8) void;
 
 pub fn btnPressedDmcpOverlay(data: [*c]const u8) void {
     btnPressed(data);
@@ -816,10 +816,10 @@ pub fn indexOfItemsSoftmenuName(item: i16) [*c]const u8 {
 pub extern var delayCloseNim: bool_t;
 pub extern var userKeyLabel: [*c]u8;
 // assign.c's NULL-tolerant reader for userKeyLabel.
-pub extern fn getUserKeyLabelString(n: i16) [*c]u8;
+pub extern fn getUserKeyLabelString(n: i16) [*c]const u8;
 pub extern fn isAlphabeticSoftmenu() bool_t;
 pub extern fn getNthString(ptr: [*c]u8, n: i16) [*c]u8;
-pub extern fn setCurrentUserMenu(item: i16, func_param: [*c]u8) bool_t;
+pub extern fn setCurrentUserMenu(item: i16, func_param: [*c]const u8) bool_t;
 pub extern fn fnExitAllMenus(unused: u16) void;
 pub extern fn showSoftmenuCurrentPart() void;
 pub extern fn _executeItem(item: i16, key_code: c_int) void;
@@ -998,9 +998,9 @@ pub const ERROR_RESERVED_VARIABLE_NAME: u8 = 61;
 pub const ITM_GTO: i16 = 2;
 pub const ITM_BASEMENU: i16 = 1334;
 pub extern var JM_auto_longpress_enabled: i16;
-pub extern var showFunctionNameArg: [*c]u8;
+pub extern var showFunctionNameArg: [*c]const u8;
 pub extern fn hideFunctionName() void;
-pub extern fn insertUserItemInProgram(func: i16, func_param: [*c]u8) void;
+pub extern fn insertUserItemInProgram(func: i16, func_param: [*c]const u8) void;
 pub extern fn runProgram(single_step: bool_t, menu_label: u16) void;
 pub extern fn showingProbMenu() bool_t; // PROBMENU macro
 

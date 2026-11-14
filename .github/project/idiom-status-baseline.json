@@ -3,7 +3,7 @@
     "extern_struct_files": 17,
     "cptr_files": 106,
     "ptrcast_sites": 1,
-    "constcast_sites": 49,
+    "constcast_sites": 1,
     "ptr_from_int_sites": 109,
     "callconv_c_sites": 3274,
     "extern_fn_sites": 4002,

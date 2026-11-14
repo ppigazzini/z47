@@ -700,4 +700,4 @@ pub export fn fnEntryQ(unusedButMandatoryParameter: u16) callconv(.c) void {
 // the host (it dispatches through the GTK button handlers); on firmware these are
 // never referenced, but the C symbol is declared GtkWidget*/gpointer.
 extern fn btnFnClicked(notUsed: ?*anyopaque, data: ?*anyopaque) void;
-extern fn btnClicked(notUsed: ?*anyopaque, data: ?*anyopaque) void;
+extern fn btnClicked(notUsed: ?*anyopaque, data: [*c]const u8) void;

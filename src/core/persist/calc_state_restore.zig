@@ -1411,21 +1411,21 @@ fn applyConfigField(loaded_version: u32, allow_user_keys: bool, saved_calc_model
         configCommon(CFG_DFLT);
         grpGroupingLeft = text.toUint8(tmpString);
         grpGroupingRight = grpGroupingLeft;
-    } else if (text.strcmp2(ab, @constCast("gapItemLeft")) == 0) {
+    } else if (text.strcmp2(ab, "gapItemLeft") == 0) {
         gapItemLeft = text.toUint16(tmpString);
-    } else if (text.strcmp2(ab, @constCast("gapItemRight")) == 0) {
+    } else if (text.strcmp2(ab, "gapItemRight") == 0) {
         gapItemRight = text.toUint16(tmpString);
-    } else if (text.strcmp2(ab, @constCast("gapItemRadix")) == 0) {
+    } else if (text.strcmp2(ab, "gapItemRadix") == 0) {
         gapItemRadix = text.toUint16(tmpString);
-    } else if (text.strcmp2(ab, @constCast("lastCenturyHighUsed")) == 0) {
+    } else if (text.strcmp2(ab, "lastCenturyHighUsed") == 0) {
         lastCenturyHighUsed = text.toUint16(tmpString);
-    } else if (text.strcmp2(ab, @constCast("grpGroupingLeft")) == 0) {
+    } else if (text.strcmp2(ab, "grpGroupingLeft") == 0) {
         grpGroupingLeft = text.toUint8(tmpString);
-    } else if (text.strcmp2(ab, @constCast("grpGroupingGr1LeftOverflow")) == 0) {
+    } else if (text.strcmp2(ab, "grpGroupingGr1LeftOverflow") == 0) {
         grpGroupingGr1LeftOverflow = text.toUint8(tmpString);
-    } else if (text.strcmp2(ab, @constCast("grpGroupingGr1Left")) == 0) {
+    } else if (text.strcmp2(ab, "grpGroupingGr1Left") == 0) {
         grpGroupingGr1Left = text.toUint8(tmpString);
-    } else if (text.strcmp2(ab, @constCast("grpGroupingRight")) == 0) {
+    } else if (text.strcmp2(ab, "grpGroupingRight") == 0) {
         grpGroupingRight = text.toUint8(tmpString);
     } else if (cmpName(ab, "grpGroupingHex")) {
         grpGroupingHex = text.toUint8(tmpString);

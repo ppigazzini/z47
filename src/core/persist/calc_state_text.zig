@@ -67,7 +67,7 @@ pub fn toInt16NextWord(s: [*c]u8, val: *i16) [*c]u8 {
 
 // Special comparison tolerating an erroneous leading-space separator in version
 // 10000005-6 save files (stringByteLength is (int32_t)strlen).
-pub fn strcmp2(in_str: [*c]u8, in2_str: [*c]u8) u16 {
+pub fn strcmp2(in_str: [*c]const u8, in2_str: [*c]const u8) u16 {
     if (strcmp(in_str, in2_str) == 0) return 0;
     const li: i64 = @intCast(strlen(in_str));
     const l2: i64 = @intCast(strlen(in2_str));

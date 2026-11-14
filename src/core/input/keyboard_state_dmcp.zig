@@ -23,7 +23,7 @@ extern var shiftG: bool_t;
 extern var screenUpdatingMode: u8;
 extern fn sprintf(buf: [*c]u8, fmt: [*:0]const u8, ...) c_int;
 extern fn fnTimerStart(nr: u8, param: u16, time: u32) void;
-extern fn btnClicked(unused: ?*anyopaque, data: ?*anyopaque) void;
+extern fn btnClicked(unused: ?*anyopaque, data: [*c]const u8) void;
 
 // refreshLcd is `void refreshLcd(void)` on DMCP (screen.c); the keyboard runtime
 // binds the divergent PC_BUILD signature (gboolean refreshLcd(gpointer)), so bind

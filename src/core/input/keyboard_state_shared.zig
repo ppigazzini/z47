@@ -538,14 +538,14 @@ pub fn implementation(comptime runtime: type) type {
                         break :end_true;
                     },
                     runtime.MNU_HOME => {
-                        if (!runtime.setCurrentUserMenu(-runtime.MNU_DYNAMIC, @constCast("HOME"))) {
+                        if (!runtime.setCurrentUserMenu(-runtime.MNU_DYNAMIC, "HOME")) {
                             return false;
                         }
                         runtime.assignToUserMenu(position);
                         break :end_true;
                     },
                     runtime.MNU_PFN => {
-                        if (!runtime.setCurrentUserMenu(-runtime.MNU_DYNAMIC, @constCast("P.FN"))) {
+                        if (!runtime.setCurrentUserMenu(-runtime.MNU_DYNAMIC, "P.FN")) {
                             return false;
                         }
                         runtime.assignToUserMenu(position);

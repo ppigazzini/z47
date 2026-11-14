@@ -650,7 +650,7 @@ extern var currentLocalFlags: [*c]abi.LocalFlags;
 extern var currentLocalRegisters: [*c]abi.RegisterHeader;
 extern var userKeyLabel: [*c]u8;
 // assign.c's NULL-tolerant reader for userKeyLabel.
-extern fn getUserKeyLabelString(n: i16) [*c]u8;
+extern fn getUserKeyLabelString(n: i16) [*c]const u8;
 extern var savedStatisticalSumsPointer: ?*anyopaque;
 extern var statisticalSumsPointer: [*c]abi.Real;
 extern var userMenus: [*c]abi.UserMenu;
@@ -2632,7 +2632,7 @@ pub export fn doFnReset(confirmation: u16, autoSav: bool_t) callconv(.c) void {
                 if (indexOfStrings[i].itemType == 0) {
                     frontier_addons.fnStrtoX(indexOfStrings[i].itemName);
                 } else if (indexOfStrings[i].itemType == 1) {
-                    frontier_addons.fnStrInputLongint(@constCast(indexOfStrings[i].itemName));
+                    frontier_addons.fnStrInputLongint(indexOfStrings[i].itemName);
                 }
                 frontier_store.fnStore(indexOfStrings[i].count);
                 fnDrop(NOPARAM);
