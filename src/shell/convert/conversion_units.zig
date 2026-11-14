@@ -506,7 +506,7 @@ const UT_ACCELERATION: unitType_t = 17;
 const UT_DENSITY: unitType_t = 18;
 const UT_LINEAR_FORCE_DENSITY: unitType_t = 19;
 
-const MimFunctionsType3Conv = [NUM_CONVERT_PAIRS]fInMim_t{
+pub const MimFunctionsType3Conv = [NUM_CONVERT_PAIRS]fInMim_t{
     .{ .itemNr = 220 },
     .{ .itemNr = 221 },
     .{ .itemNr = 222 },
@@ -1000,8 +1000,4 @@ pub export fn executionConversionPartner(item: i16, itemNrPair: ?*i16, pairName:
             fullConvSoftMenuItemNameInclHPCONV(item, pairName); // delegate the standard-pair name
         }
     }
-}
-
-comptime { // keep MimFunctionsType3Conv referenced until fType==3 dispatch lands
-    _ = &MimFunctionsType3Conv;
 }
