@@ -1857,7 +1857,7 @@ pub export fn graph_plotmem() linksection(code_section) callconv(.c) void {
 fn formatStatValue(value: f64, buf: []u8) [*:0]const u8 {
     if (abi.sci_format.doubleSpecialLabel(value)) |special| {
         abi.fmtBufZ(buf, "{s}", .{special});
-        return @ptrCast(buf.ptr);
+        return buf[0..std.mem.findScalar(u8, buf, 0).? :0].ptr;
     }
     return frontier_plotstat.formatCore(value, 10, false, buf.ptr, @intCast(buf.len));
 }

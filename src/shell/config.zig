@@ -35,8 +35,8 @@ const display_format = @import("display/display_format.zig");
 // kbd_usr, and the calcModel-dependent kbd_std_* layout tables.
 //
 // align(4): reserved-variable register data comes from the 4-byte block allocator
-// (TO_PCMEMPTR / allocC47Blocks), so real34/strLgIntHeader casts of those pointers
-// use align(4) to avoid Zig's @alignCast safety panic on the 64-bit host.
+// (TO_PCMEMPTR / allocC47Blocks), so every view of it is align(4): on the 64-bit
+// host a pool block promises no more than that.
 //
 // Firmware-only (DMCP_BUILD) code is gated on comptime dmcp_build; DMCP ROM
 // functions are reached through @ptrFromInt(LIBRARY_FN_BASE + offset) trampolines
@@ -668,10 +668,10 @@ const freeMemoryRegions_array = if (globalRegister_is_array)
 else {};
 // Pointer form (host + new_hw firmware): freeMemoryRegions is a freeMemoryRegion_t*.
 const globalRegister_ptr = if (!globalRegister_is_array)
-    @extern(*?*anyopaque, .{ .name = "globalRegister" })
+    @extern(*?[*]registerHeader_t, .{ .name = "globalRegister" })
 else {};
 const freeMemoryRegions_ptr = if (!globalRegister_is_array)
-    @extern(*?*anyopaque, .{ .name = "freeMemoryRegions" })
+    @extern(*?[*]freeMemoryRegion_t, .{ .name = "freeMemoryRegions" })
 else {};
 
 // C ARRAYS bound by address.
@@ -873,9 +873,14 @@ extern fn memset(s: ?*anyopaque, c: c_int, n: usize) ?*anyopaque;
 /// C's malloc, read as the bytes this owner asks it for: its result is aligned
 /// for any object, which is at least 8 on every target z47 builds.
 extern fn malloc(n: usize) ?[*]align(8) u8;
+// malloc(n * sizeof(T)) assigned to a T *, as the C does.
+fn mallocArray(comptime T: type, n: usize) ?[*]T {
+    const bytes = malloc(n * @sizeOf(T)) orelse return null;
+    return std.mem.bytesAsSlice(T, bytes[0 .. n * @sizeOf(T)]).ptr;
+}
 extern fn strcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn strcat(dst: [*c]u8, src: [*c]const u8) [*c]u8;
-extern fn sprintf(buf: [*c]u8, fmt: [*:0]const u8, ...) c_int;
+extern fn sprintf(buf: [*c]u8, fmt: [*c]const u8, ...) c_int;
 extern fn printf(fmt: [*:0]const u8, ...) c_int;
 
 // moreInfoOnError, reached through the EXTRA_INFO_ON_CALC_ERROR gate upstream puts
@@ -918,7 +923,7 @@ extern fn setRegisterDataPointer(regist: calcRegister_t, memPtr: *const anyopaqu
 extern fn clearRegister(regist: calcRegister_t) void;
 extern fn allocateNamedVariable(variableName: [*c]const u8, dataType: u32, fullDataSizeInBlocks: u16) void;
 extern fn allocateLocalRegisters(numberOfRegistersToAllocate: u16) void;
-extern fn allocC47Blocks(sizeInBlocks: usize) ?*anyopaque;
+extern fn allocC47Blocks(sizeInBlocks: usize) ?[*]align(4) u8;
 extern fn freeC47Blocks(pcMemPtr: ?*anyopaque, sizeInBlocks: usize) void;
 extern fn resizeProgramMemory(newSizeInBlocks: u16) void;
 
@@ -972,15 +977,16 @@ inline fn toBytes(n: u32) u32 {
     return abi.block_math.toBytes(u32, n);
 }
 // TO_PCMEMPTR(p): (p==C47_NULL)?NULL:ram+p  (p is a 16-bit block index)
-inline fn toPcMemPtr(p: u32) ?*anyopaque {
+// read as the T stored there; a pool block is 4-aligned.
+inline fn toPcMemPtr(comptime T: type, p: u32) ?*align(4) T {
     if (p == C47_NULL) return null;
-    return ram + p;
+    const words: [*]u32 = ram;
+    return std.mem.bytesAsValue(T, std.mem.sliceAsBytes(words[p..][0..@divExact(@sizeOf(T), 4)]));
 }
 // TO_C47MEMPTR(p): (p==NULL)?C47_NULL:(uint16_t)((uint32_t*)p - ram)
-inline fn toC47MemPtr(p: ?*anyopaque) u16 {
+inline fn toC47MemPtr(p: ?*const anyopaque) u16 {
     if (p == null) return C47_NULL;
-    const pu: [*c]u32 = @ptrCast(@alignCast(p));
-    return @intCast((@intFromPtr(pu) - @intFromPtr(ram)) / @sizeOf(u32));
+    return @intCast((@intFromPtr(p) - @intFromPtr(ram)) / @sizeOf(u32));
 }
 // int32ToReal(s,d) / realToReal34(s,d) / real34SetZero(d)
 inline fn int32ToReal(source: i32, destination: *real_t) void {
@@ -1003,7 +1009,7 @@ const reg34 = abi.registerReal34Aligned;
 // reserved-variable register data pointer (4-byte block aligned).
 inline fn reservedReal34(varNo: usize) *align(4) real34_t {
     const blk = allReservedVariables[varNo].header.descriptor & 0xFFFF;
-    return @ptrCast(@alignCast(toPcMemPtr(blk).?));
+    return toPcMemPtr(real34_t, blk).?;
 }
 // getStackTop(): FLAG_SSIZE8 ? REGISTER_D : REGISTER_T
 const FLAG_SSIZE8: i32 = 32792;
@@ -1465,7 +1471,7 @@ const roundingModeName = [7]RoundingModeName{
 /// The text of a rounding mode: the display glyphs when abbreviated, else the full name.
 pub export fn getRoundModeName(RM: u16, abbreviated: bool_t) callconv(.c) [*:0]const u8 {
     if (RM >= roundingModeName.len) {
-        _ = sprintf(errorMessage, @ptrCast(&commonBugScreenMessages[bugMsgNotDefinedMustBe]), "getRoundModeName", "rounding mode", @as(c_int, RM), @as(c_int, roundingModeName.len - 1));
+        _ = sprintf(errorMessage, &commonBugScreenMessages[bugMsgNotDefinedMustBe], "getRoundModeName", "rounding mode", @as(c_int, RM), @as(c_int, roundingModeName.len - 1));
         frontier_error.displayBugScreen(errorMessage);
         return "???";
     }
@@ -1577,13 +1583,11 @@ pub export fn fnSetWordSize(WS_in: u16) callconv(.c) void {
         while (regist <= top) : (regist += 1) {
             if (getRegisterDataType(regist) == dtShortInteger) {
                 // Register data is only 4-byte (block) aligned on the 64-bit host.
-                const p: *align(4) u64 = @ptrCast(getRegisterDataPointer(regist));
-                p.* &= shortIntegerMask;
+                abi.registerShortInteger(regist).* &= shortIntegerMask;
             }
         }
         if (getRegisterDataType(REGISTER_L) == dtShortInteger) {
-            const p: *align(4) u64 = @ptrCast(getRegisterDataPointer(REGISTER_L));
-            p.* &= shortIntegerMask;
+            abi.registerShortInteger(REGISTER_L).* &= shortIntegerMask;
         }
     }
 
@@ -1911,9 +1915,9 @@ inline fn setMatrixDims(h: *matrixHeader_t, rows: u32, cols: u32) void {
     h.matrixColumns = @truncate(cols);
 }
 // REAL34_MATRIX_ELEMENTS_AFTER_MATRIX_HEADER(ptr): (real34_t*)((matrixHeader_t*)ptr + 1)
-inline fn matrixElementsAfterHeader(h: *matrixHeader_t) *real34_t {
-    const p: [*]matrixHeader_t = @ptrCast(h);
-    return @ptrCast(p + 1);
+inline fn matrixElementsAfterHeader(h: *align(4) matrixHeader_t) *align(4) real34_t {
+    const bytes: [*]align(4) u8 = std.mem.asBytes(h);
+    return std.mem.bytesAsValue(real34_t, bytes[@sizeOf(matrixHeader_t)..][0..@sizeOf(real34_t)]);
 }
 
 // ===========================================================================
@@ -2283,10 +2287,10 @@ pub export fn doFnReset(confirmation: u16, autoSav: bool_t) callconv(.c) void {
     if (confirmation == NOT_CONFIRMED) {
         setConfirmationMode(&fnReset);
     } else {
-        var memPtr: ?*anyopaque = undefined;
+        var memPtr: ?[*]align(4) u8 = undefined;
 
         if (ram == null) {
-            ram = @ptrCast(malloc(toBytes(RAM_SIZE_IN_BLOCKS)));
+            ram = mallocArray(u32, RAM_SIZE_IN_BLOCKS);
         }
         // A reset can follow a session whose freed blocks memcheck holds as
         // no-access; the whole pool is ordinary memory again until it is re-formed.
@@ -2298,8 +2302,8 @@ pub export fn doFnReset(confirmation: u16, autoSav: bool_t) callconv(.c) void {
         // globalRegister/freeMemoryRegions (host + new_hw firmware).
         if (comptime !globalRegister_is_array) {
             if (globalRegister_ptr.* == null) {
-                globalRegister_ptr.* = malloc(@sizeOf(registerHeader_t) * NUMBER_OF_GLOBAL_REGISTERS);
-                freeMemoryRegions_ptr.* = malloc(@sizeOf(freeMemoryRegion_t) * MAX_FREE_REGIONS);
+                globalRegister_ptr.* = mallocArray(registerHeader_t, NUMBER_OF_GLOBAL_REGISTERS);
+                freeMemoryRegions_ptr.* = mallocArray(freeMemoryRegion_t, MAX_FREE_REGIONS);
             }
         }
 
@@ -2321,7 +2325,7 @@ pub export fn doFnReset(confirmation: u16, autoSav: bool_t) callconv(.c) void {
         if (tmpString == null) {
             if (comptime dmcp_build) {
                 tmpString = romAuxBufPtr();
-                errorMessage = @ptrCast(romWriteBufPtr());
+                errorMessage = romWriteBufPtr();
             } else {
                 tmpString = malloc(TMP_STR_LENGTH);
                 errorMessage = malloc(WRITE_BUFFER_LEN);
@@ -2338,7 +2342,7 @@ pub export fn doFnReset(confirmation: u16, autoSav: bool_t) callconv(.c) void {
         _ = memset(nimBufferDisplay, 0, NIM_BUFFER_LENGTH);
         _ = memset(tamBuffer, 0, TAM_BUFFER_LENGTH);
 
-        beginOfProgramMemory = @ptrCast(ram + (RAM_SIZE_IN_BLOCKS - 1));
+        beginOfProgramMemory = std.mem.asBytes(&ram[RAM_SIZE_IN_BLOCKS - 1]);
         currentStep = beginOfProgramMemory;
         firstFreeProgramByte = beginOfProgramMemory + 2;
         firstDisplayedStep = beginOfProgramMemory;
@@ -2387,7 +2391,7 @@ pub export fn doFnReset(confirmation: u16, autoSav: bool_t) callconv(.c) void {
                 setRegisterDataType(regist, dtReal34, amNone);
                 memPtr = allocC47Blocks(REAL34_SIZE_IN_BLOCKS);
                 setRegisterDataPointer(regist, memPtr.?);
-                real34SetZero(@ptrCast(@alignCast(memPtr.?)));
+                real34SetZero(std.mem.bytesAsValue(real34_t, memPtr.?[0..@sizeOf(real34_t)]));
             }
         }
 
@@ -2710,8 +2714,7 @@ inline fn freeRegion0() *freeMemoryRegion_t {
         const p: [*]freeMemoryRegion_t = freeMemoryRegions_array;
         return &p[0];
     } else {
-        const p: [*]freeMemoryRegion_t = @ptrCast(@alignCast(freeMemoryRegions_ptr.*));
-        return &p[0];
+        return &freeMemoryRegions_ptr.*.?[0];
     }
 }
 
@@ -2747,7 +2750,7 @@ const KeyEmptyFn = *const fn () callconv(.c) c_int;
 const ResetAutoOffFn = *const fn () callconv(.c) void;
 const RunMenuItemSysFn = *const fn (line_id: u8) callconv(.c) c_int;
 const AuxBufPtrFn = *const fn () callconv(.c) [*c]align(4) u8;
-const WriteBufPtrFn = *const fn () callconv(.c) ?*anyopaque;
+const WriteBufPtrFn = *const fn () callconv(.c) [*c]u8;
 const FOpenFn = *const fn (fp: ?*anyopaque, path: [*:0]const u8, mode: u8) callconv(.c) FRESULT;
 const FCloseFn = *const fn (fp: ?*anyopaque) callconv(.c) FRESULT;
 const FReadFn = *const fn (fp: ?*anyopaque, buff: ?*anyopaque, btr: c_uint, br: *c_uint) callconv(.c) FRESULT;
@@ -2776,7 +2779,7 @@ inline fn romAuxBufPtr() [*c]align(4) u8 {
     const f: AuxBufPtrFn = @ptrFromInt(LIBRARY_FN_BASE + 292);
     return f();
 }
-inline fn romWriteBufPtr() ?*anyopaque {
+inline fn romWriteBufPtr() [*c]u8 {
     const f: WriteBufPtrFn = @ptrFromInt(LIBRARY_FN_BASE + 296);
     return f();
 }

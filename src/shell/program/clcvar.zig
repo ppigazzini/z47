@@ -154,7 +154,7 @@ extern fn linkToRealMatrixRegister(regist: calcRegister_t, linkedMatrix: *real34
 extern fn linkToComplexMatrixRegister(regist: calcRegister_t, linkedMatrix: *complex34Matrix_t) void;
 extern fn findOrAllocateNamedVariable(variableName: [*c]const u8) calcRegister_t;
 
-const c_moreInfoOnError = @extern(*const fn (m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) callconv(.c) void, .{ .name = "moreInfoOnError" });
+const c_moreInfoOnError = @extern(*const fn (m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*]const u8, m4: ?[*:0]const u8) callconv(.c) void, .{ .name = "moreInfoOnError" });
 
 extern fn decQuadZero(r: *real34_t) *real34_t;
 extern fn sprintf(buffer: [*c]u8, format: [*c]const u8, ...) c_int;
@@ -162,7 +162,7 @@ extern fn sprintf(buffer: [*c]u8, format: [*c]const u8, ...) c_int;
 // ---------------------------------------------------------------------------
 // Inline wrappers (the C macros / static inlines)
 // ---------------------------------------------------------------------------
-inline fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void {
+inline fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*]const u8, m4: ?[*:0]const u8) void {
     if (comptime extra_info) c_moreInfoOnError(m1, m2, m3, m4);
 }
 inline fn real34SetZero(dst: *real34_t) void {
@@ -411,7 +411,7 @@ fn _processOneStep(step_arg: [*c]u8) bool {
 
             PTP_DISABLED => {
                 frontier_error.displayCalcErrorMessage(ERROR_NON_PROGRAMMABLE_COMMAND, ERR_REGISTER_LINE);
-                moreInfoOnError("In function _processOneStep:", "non-programmable function", @ptrCast(&indexOfItems[op].itemCatalogName), "appeared in the program!");
+                moreInfoOnError("In function _processOneStep:", "non-programmable function", &indexOfItems[op].itemCatalogName, "appeared in the program!");
                 return false;
             },
 

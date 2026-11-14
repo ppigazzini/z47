@@ -279,10 +279,7 @@ inline fn realIsNegative(v: *const real_t) bool {
     return (v.bits & DECNEG) != 0;
 }
 inline fn real34Copy(src: *const real34_t, dst: *real34_t) void {
-    const s: *align(1) const [2]u64 = @ptrCast(src);
-    const d: *align(1) [2]u64 = @ptrCast(dst);
-    d[0] = s[0];
-    d[1] = s[1];
+    dst.* = src.*;
 }
 inline fn real34ToReal(src: *const real34_t, dst: *real_t) void {
     _ = decimal128ToNumber(src, dst);

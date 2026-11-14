@@ -414,11 +414,12 @@ fn storeElementComplex(matrix: *complex34Matrix_t) callconv(.c) bool {
     return true;
 }
 
-fn storeIjReal(matrix: *real34Matrix_t) callconv(.c) bool {
+// A real and a complex matrix share the header, which is all the store reads.
+fn storeIj(header: *const matrixHeader_t) bool {
     var rows: u32 = undefined;
     var cols: u32 = undefined;
     if (getDimensionArg(&rows, &cols)) {
-        if (rows > 0 and rows <= @as(u32, @as(u16, matrix.header.matrixRows)) and cols > 0 and cols <= @as(u32, @as(u16, matrix.header.matrixColumns))) {
+        if (rows > 0 and rows <= @as(u32, @as(u16, header.matrixRows)) and cols > 0 and cols <= @as(u32, @as(u16, header.matrixColumns))) {
             copySourceRegisterToDestRegister(REGISTER_Y, REGISTER_I);
             copySourceRegisterToDestRegister(REGISTER_X, REGISTER_J);
             return true;
@@ -441,8 +442,12 @@ fn storeIjReal(matrix: *real34Matrix_t) callconv(.c) bool {
     return false;
 }
 
+fn storeIjReal(matrix: *real34Matrix_t) callconv(.c) bool {
+    return storeIj(&matrix.header);
+}
+
 fn storeIjComplex(matrix: *complex34Matrix_t) callconv(.c) bool {
-    return storeIjReal(@ptrCast(matrix));
+    return storeIj(&matrix.header);
 }
 
 // ===========================================================================
@@ -882,9 +887,9 @@ fn registerToElement(r: calcRegister_t, ix: u16) bool {
     const sourceType = getRegisterDataType(r);
     if (sourceType == dtReal34) {
         if (getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {
-            const halves: [*]real34_t = @ptrCast(&abi.registerComplex34MatrixElements(REGISTER_X)[idx]);
-            real34Copy(abi.registerReal34(r), &halves[0]);
-            real34SetZero(&halves[1]);
+            const element = &abi.registerComplex34MatrixElements(REGISTER_X)[idx];
+            real34Copy(abi.registerReal34(r), &element.real);
+            real34SetZero(&element.imag);
         } else {
             real34Copy(abi.registerReal34(r), &abi.registerReal34MatrixElements(REGISTER_X)[idx]);
         }
@@ -919,9 +924,9 @@ fn registerToElement(r: calcRegister_t, ix: u16) bool {
     if (getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {
         // VARIABLE_REAL34_DATA / VARIABLE_IMAG34_DATA: the two real34 halves of
         // the complex element.
-        const halves: [*]real34_t = @ptrCast(&abi.registerComplex34MatrixElements(REGISTER_X)[idx]);
-        realToReal34(&z.Real, &halves[0]);
-        realToReal34(&z.Imag, &halves[1]);
+        const element = &abi.registerComplex34MatrixElements(REGISTER_X)[idx];
+        realToReal34(&z.Real, &element.real);
+        realToReal34(&z.Imag, &element.imag);
     } else {
         realToReal34(&z.Real, &abi.registerReal34MatrixElements(REGISTER_X)[idx]);
     }

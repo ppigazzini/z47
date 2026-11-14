@@ -2283,8 +2283,8 @@ pub export fn showGlyphCode(charCode_in: u16, font_in: *const font_t, x_in: u32,
     var xGlyph: u32 = undefined;
     var endingCols: u32 = undefined;
     var glyphId: i32 = undefined;
-    var byte: i8 = undefined;
-    var data: [*c]const i8 = undefined;
+    var byte: u8 = undefined;
+    var data: [*c]const u8 = undefined;
     var glyph: ?*const glyph_t = undefined;
 
     if (charCode == STD_NOCHAR) {
@@ -2361,7 +2361,7 @@ pub export fn showGlyphCode(charCode_in: u16, font_in: *const font_t, x_in: u32,
     const g = glyph.?;
 
     const yy: i32 = @bitCast(y); // negative-as-unsigned back to signed
-    data = @ptrCast(g.data);
+    data = g.data;
     const y0: u32 = y;
     xGlyph = if (showLeadingCols != 0) g.colsBeforeGlyph else 0;
     endingCols = if (showEndingCols != 0) g.colsAfterGlyph else 0;
@@ -2423,7 +2423,7 @@ pub export fn showGlyphCode(charCode_in: u16, font_in: *const font_t, x_in: u32,
                 while (col < g.colsGlyph) : (col += 8) {
                     byte = data[0];
                     data += 1;
-                    bits |= @as(u32, @as(u8, @bitCast(byte))) << @intCast(24 - col);
+                    bits |= @as(u32, byte) << @intCast(24 - col);
                 }
                 if (numDouble) {
                     bits >>= @intCast(xGlyph);
@@ -3607,12 +3607,12 @@ pub export fn updateMatrixHeightCache() callconv(.c) void {
         var smallFont: bool_t = @intFromBool(rows >= 5);
         var dummyVal: [MATRIX_MAX_COLUMNS * (MATRIX_MAX_ROWS_ON_SHOW + 1) + 1]i16 = @splat(0);
 
-        var allElementsInColAreIntegers: [MATRIX_MAX_COLUMNS]bool_t = @splat(0);
+        var allElementsInColAreIntegers: [MATRIX_MAX_COLUMNS]bool = @splat(false);
         // The same rule showRealMatrix applies, or the height cache reserves stack
         // lines for a width the viewer does not draw.
-        frontier_matrix_editor.getRealMatrixIntegerColumns(&matrix, displayFormat, @intCast(cols), 0, 0, @intCast(rows), @intCast(@min(cols, MATRIX_MAX_COLUMNS)), @ptrCast(&allElementsInColAreIntegers));
+        frontier_matrix_editor.getRealMatrixIntegerColumns(&matrix, displayFormat, @intCast(cols), 0, 0, @intCast(rows), @intCast(@min(cols, MATRIX_MAX_COLUMNS)), &allElementsInColAreIntegers);
 
-        const mtxWidth = frontier_matrix_editor.getRealMatrixColumnWidths(&matrix, prefixWidth, true, &numericFont, &dummyVal, dummyVal[MATRIX_MAX_COLUMNS..].ptr, &dummyVal[(MATRIX_MAX_ROWS_ON_SHOW + 1) * MATRIX_MAX_COLUMNS], if (cols > MATRIX_MAX_COLUMNS) MATRIX_MAX_COLUMNS else cols, @ptrCast(&allElementsInColAreIntegers));
+        const mtxWidth = frontier_matrix_editor.getRealMatrixColumnWidths(&matrix, prefixWidth, true, &numericFont, &dummyVal, dummyVal[MATRIX_MAX_COLUMNS..].ptr, &dummyVal[(MATRIX_MAX_ROWS_ON_SHOW + 1) * MATRIX_MAX_COLUMNS], if (cols > MATRIX_MAX_COLUMNS) MATRIX_MAX_COLUMNS else cols, &allElementsInColAreIntegers);
         if (absI(mtxWidth) > MATRIX_LINE_WIDTH) {
             smallFont = 1;
         }

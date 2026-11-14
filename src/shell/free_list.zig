@@ -87,8 +87,8 @@ fn poisonReleased(pcMemPtr: ?*anyopaque, sizeInBlocks: usize) void {
 }
 
 fn poolBytes(e: pool_poison.Extent) []u8 {
-    const base: [*]u8 = @ptrCast(ram);
-    return base[toBytes(e.start)..][0..toBytes(e.blocks)];
+    const words: [*]u32 = ram;
+    return std.mem.sliceAsBytes(words[e.start..][0..e.blocks]);
 }
 
 // Memcheck's view of the pool. Under valgrind a block on the free list is

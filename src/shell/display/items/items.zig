@@ -1134,7 +1134,7 @@ pub export fn runFunction(func: i16) callconv(.c) void {
     if (funcOK == 0) {
         frontier_error.displayCalcErrorMessage(@intCast(ERROR_ITEM_TO_BE_CODED), ERR_REGISTER_LINE);
         if (comptime extra_info) {
-            abi.fmtBufZ(errorMessage[0..ERROR_MESSAGE_LENGTH], "{d} = {s}", .{ func, std.mem.sliceTo(@as([*:0]const u8, @ptrCast(&indexOfItems[@intCast(func)].itemCatalogName)), 0) });
+            abi.fmtBufZ(errorMessage[0..ERROR_MESSAGE_LENGTH], "{d} = {s}", .{ func, std.mem.sliceTo(&indexOfItems[@intCast(func)].itemCatalogName, 0) });
             moreInfoOnError("In function runFunction:", "Item not implemented", errorMessage, "to be coded");
         }
     }

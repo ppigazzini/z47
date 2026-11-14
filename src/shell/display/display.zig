@@ -3446,7 +3446,7 @@ pub export fn longIntegerToDisplayString(lgInt: [*c]mpz_struct, displayString: [
     var shiftRemainder: u32 = 0;
     var maxWidth: i16 = undefined;
 
-    const lg: *longInteger_t = @ptrCast(lgInt);
+    const lg: *longInteger_t = lgInt[0..1];
     if (longIntegerIsNegative(lg)) {
         maxWidth = max_Width;
     } else {
@@ -3970,10 +3970,10 @@ pub export fn mimShowElement() callconv(.c) void {
     const cols = openMatrixMIMPointer.realMatrix.header.matrixColumns;
     const elemIdx: usize = @intCast(@as(i32, i) * @as(i32, cols) + @as(i32, j));
     if (getRegisterDataType(@intCast(matrixIndex)) == dtReal34Matrix) {
-        const elems: [*]real34_t = @ptrCast(openMatrixMIMPointer.realMatrix.matrixElements);
+        const elems = abi.matrixRealElems(&openMatrixMIMPointer.realMatrix);
         real34ToDisplayString(&elems[elemIdx], amNone, tmpString, &standardFont, 2000, 34, @intFromBool(LIMITEXP == 0), @intFromBool(FRONTSPACE == 0), NOIRFRAC);
     } else {
-        const celems: [*]complex34_t = @ptrCast(openMatrixMIMPointer.complexMatrix.matrixElements);
+        const celems = abi.matrixComplexElems(&openMatrixMIMPointer.complexMatrix);
         _complex34ToShowTmpString(varReal34(&celems[elemIdx]), varImag34(&celems[elemIdx]));
     }
 

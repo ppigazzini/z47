@@ -517,7 +517,7 @@ inline fn SEPARATOR_RIGHT() [*c]const u8 {
 // ===========================================================================
 // const_* / const34_* / const39_* : constantPointers.h macros over `constants`.
 // ===========================================================================
-// blob accessors via abi (single @ptrCast site) instead of a local @extern.
+// blob accessors via abi instead of a local @extern.
 const constR = abi.constants.cstRAligned;
 const constR34 = abi.constants.cst34;
 const const_0 = constR(1708);
@@ -545,8 +545,8 @@ const baseDigits = @extern([*c]const u8, .{ .name = "baseDigits" });
 const commonBugScreenMessages = @extern([*c]const [100]u8, .{ .name = "commonBugScreenMessages" });
 const softmenu = @extern([*c]const softmenu_t, .{ .name = "softmenu" });
 const softmenuStack = @extern([*c]const softmenuStack_t, .{ .name = "softmenuStack" });
-const userMenuItems = @extern([*c]userMenuItem_t, .{ .name = "userMenuItems" });
-const userAlphaItems = @extern([*c]userMenuItem_t, .{ .name = "userAlphaItems" });
+const userMenuItems = @extern(*[18]userMenuItem_t, .{ .name = "userMenuItems" });
+const userAlphaItems = @extern(*[18]userMenuItem_t, .{ .name = "userAlphaItems" });
 
 const bugMsgValueFor: usize = 0;
 const bugMsgCalcModeWhileProcKey: usize = 1;
@@ -615,7 +615,7 @@ extern var gapItemLeft: u16;
 // ===========================================================================
 // Function externs (cross-owner / runtime / libc / decNumber / GMP).
 // ===========================================================================
-extern fn sprintf(buf: [*c]u8, fmt: [*:0]const u8, ...) c_int;
+extern fn sprintf(buf: [*c]u8, fmt: [*c]const u8, ...) c_int;
 extern fn getSystemFlag(sf: c_int) bool_t;
 extern fn real34ToDisplayString(real34: *const real34_t, tag: u32, displayString: [*c]u8, font: *const font_t, maxWidth: i16, displayHasNDigits: i16, limitExponent: bool_t, frontSpace: bool_t, limitIrfrac: c_int) void;
 extern fn setSystemFlag(sf: c_uint) void;
@@ -631,7 +631,7 @@ extern fn setRegisterTag(regist: calcRegister_t, tag: u32) void;
 extern fn setRegisterDataType(regist: calcRegister_t, dataType: u16, tag: u32) void;
 // freeRegisterData is a macro = freeC47Blocks(ptr, getRegisterFullSizeInBlocks).
 extern fn freeC47Blocks(pcMemPtr: ?*anyopaque, sizeInBlocks: usize) void;
-extern fn malloc(size: usize) ?*anyopaque;
+extern fn malloc(size: usize) ?[*]u8;
 extern fn free(ptr: ?*anyopaque) void;
 extern fn getRegisterFullSizeInBlocks(regist: calcRegister_t) u16;
 inline fn freeRegisterData(regist: calcRegister_t) void {
@@ -984,14 +984,12 @@ const regString = abi.registerString;
 const regShortInteger = abi.registerShortInteger;
 const regMatrixHeader = abi.registerMatrixHeader;
 // VARIABLE_REAL34_DATA(a)=((real34_t*)(a)); VARIABLE_IMAG34_DATA(a)=((real34_t*)(a)+1)
-// matrixElements[i] : index a [*c]complex34_t element and return its real/imag halves.
-inline fn varReal34(elems: [*c]complex34_t, i: usize) *real34_t {
-    const p: [*]real34_t = @ptrCast(&elems[i]);
-    return &p[0];
+// matrixElements[i]: the real and imaginary halves of one complex34_t element.
+inline fn varReal34(elems: ?[*]complex34_t, i: usize) *real34_t {
+    return &elems.?[i].real;
 }
-inline fn varImag34(elems: [*c]complex34_t, i: usize) *real34_t {
-    const p: [*]real34_t = @ptrCast(&elems[i]);
-    return &p[1];
+inline fn varImag34(elems: ?[*]complex34_t, i: usize) *real34_t {
+    return &elems.?[i].imag;
 }
 // real matrix element accessor (matrixElements is [*c]real34_t = allowzero).
 inline fn mxRe34(elems: [*c]real34_t, i: usize) *real34_t {
@@ -1050,7 +1048,7 @@ fn _shortIntegerToString(regist: calcRegister_t, displayString: [*c]u8) callconv
     number = regShortInteger(regist).*;
 
     if (base <= 1 or base >= 17) {
-        _ = sprintf(errorMessage, @ptrCast(&commonBugScreenMessages[bugMsgValueFor]), "_shortIntegerToString", @as(c_int, base), "base");
+        _ = sprintf(errorMessage, &commonBugScreenMessages[bugMsgValueFor], "_shortIntegerToString", @as(c_int, base), "base");
         frontier_error.displayBugScreen(errorMessage);
         base = 10;
     }
@@ -1070,7 +1068,7 @@ fn _shortIntegerToString(regist: calcRegister_t, displayString: [*c]u8) callconv
         } else if (shortIntegerMode == SIM_SIGNMT) {
             number &= ~shortIntegerSignBit;
         } else {
-            _ = sprintf(errorMessage, @ptrCast(&commonBugScreenMessages[bugMsgValueFor]), "_shortIntegerToString", @as(c_int, shortIntegerMode), "shortIntegerMode");
+            _ = sprintf(errorMessage, &commonBugScreenMessages[bugMsgValueFor], "_shortIntegerToString", @as(c_int, shortIntegerMode), "shortIntegerMode");
             frontier_error.displayBugScreen(errorMessage);
         }
         number &= shortIntegerMask;
@@ -1780,7 +1778,7 @@ fn standardScreenDump() void {
     // On the heap: tmpString is DMCP's own aux buffer, so it is not a safe place
     // to hold a backup across create_screenshot -- the screenshot writes through
     // it and the restore would copy that back over the four real buffers.
-    const saved: [*c]u8 = @ptrCast(malloc(BACKED_UP_BUFFER_BYTES) orelse return);
+    const saved: [*c]u8 = malloc(BACKED_UP_BUFFER_BYTES) orelse return;
     defer free(saved);
 
     // OUT_VOL_MAX is #define'd and immediately #undef'd upstream, so the marks
@@ -1993,7 +1991,7 @@ fn fnFrom_msRegisterImpl(regist: i16) void {
             stringToReal34(&tmpString100_OUT, reg34(regist));
             if (comptime extra_info) {
                 if (comptime !dmcp_build) {
-                    _ = printf("\n ------- 003 >>>%s<<<\n", @as([*:0]const u8, @ptrCast(&tmpString100_OUT)));
+                    _ = printf("\n ------- 003 >>>%s<<<\n", &tmpString100_OUT);
                 }
             }
         }
@@ -2045,7 +2043,7 @@ pub export fn fnTo_ms(unusedButMandatoryParameter: u16) callconv(.c) void {
         },
         CM_REGISTER_BROWSER, CM_ASN_BROWSER, CM_FLAG_BROWSER, CM_FONT_BROWSER, CM_PLOT_STAT, CM_LISTXY, CM_GRAPH => {},
         else => {
-            _ = sprintf(errorMessage, @ptrCast(&commonBugScreenMessages[bugMsgCalcModeWhileProcKey]), "fnTo_ms", @as(c_uint, calcMode), ".ms");
+            _ = sprintf(errorMessage, &commonBugScreenMessages[bugMsgCalcModeWhileProcKey], "fnTo_ms", @as(c_uint, calcMode), ".ms");
             frontier_error.displayBugScreen(errorMessage);
         },
     }
@@ -2295,9 +2293,9 @@ const vecCreate linksection(code_section) = [10]vecCreate_t{
     .{ .rows = 1, .cols = 4, .x = 0, .y = 1, .z = 2, .t = 3, .xdef = V_COPY, .ydef = V_COPY, .zdef = V_COPY, .tdef = V_COPY }, // [9] tzyx
 };
 
-fn processDefaultVector(regist: calcRegister_t, p: u8, d: u8, xarr: [*]cplx_t, complexCoefs: *bool_t) bool_t {
+fn processDefaultVector(regist: calcRegister_t, p: u8, d: u8, xarr: [*]cplx_t, complexCoefs: *bool) bool_t {
     if (d == V_COPY) {
-        if (!frontier_register_value_conversions.getRegisterAsComplexOrReal(regist, &xarr[p], @ptrCast(complexCoefs))) {
+        if (!frontier_register_value_conversions.getRegisterAsComplexOrReal(regist, &xarr[p], complexCoefs)) {
             return 0;
         }
     } else if (d <= V_D1) {
@@ -2365,7 +2363,7 @@ inline fn invalidDataTypeHint(where: [*c]const u8) void {
 // coefficient vector in the slvc owner and do not come through here.
 pub export fn fnConvertStkToMx(constVector1: u16) callconv(.c) void {
     if (comptime !vector_or_elec) return;
-    var complexCoefs: bool_t = 0;
+    var complexCoefs: bool = false;
     var x: [4]cplx_t = undefined;
     var matrix: real34Matrix_t = undefined;
     var matrixC: complex34Matrix_t = undefined;
@@ -2418,7 +2416,7 @@ pub export fn fnConvertStkToMx(constVector1: u16) callconv(.c) void {
     var valid3DRInput: bool_t = 0;
 
     if (comptime vector_or_elec) {
-        if (complexCoefs != 0) {
+        if (complexCoefs) {
             // A complex is a value, never a vector angle: its polar tag does not
             // make a SPH or CYL input, so the reading stays plain rectangular.
             valid3DRInput = 1;
@@ -2449,7 +2447,7 @@ pub export fn fnConvertStkToMx(constVector1: u16) callconv(.c) void {
     }
 
     if (getRegisterDataType(REGISTER_X) != dtReal34Matrix and getRegisterDataType(REGISTER_X) != dtComplex34Matrix) {
-        if (initMatrixRegister(REGISTER_X, vc.rows, vc.cols, complexCoefs) != 0) {} else {
+        if (initMatrixRegister(REGISTER_X, vc.rows, vc.cols, @intFromBool(complexCoefs)) != 0) {} else {
             frontier_error.displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE);
             moreInfoOnErr("In function fnConvertStkToMx:", "Not enough memory for a 1\x80\xd7" ++ "1 matrix");
             return;
@@ -2458,7 +2456,7 @@ pub export fn fnConvertStkToMx(constVector1: u16) callconv(.c) void {
     }
 
     var matrixRegisterLoaded: bool = false;
-    if (complexCoefs != 0) {
+    if (complexCoefs) {
         linkToComplexMatrixRegister(REGISTER_X, &matrixC);
     } else {
         linkToRealMatrixRegister(REGISTER_X, &matrix);
@@ -2485,7 +2483,7 @@ pub export fn fnConvertStkToMx(constVector1: u16) callconv(.c) void {
     if (!matrixRegisterLoaded) {
         var i: usize = 0;
         while (i < elements) : (i += 1) {
-            if (complexCoefs != 0) {
+            if (complexCoefs) {
                 realToReal34(&x[elements - 1 - i].Real, varReal34(matrixC.matrixElements, i));
                 realToReal34(&x[elements - 1 - i].Imag, varImag34(matrixC.matrixElements, i));
             } else {
@@ -2497,7 +2495,7 @@ pub export fn fnConvertStkToMx(constVector1: u16) callconv(.c) void {
     if (constVector1 == M_CR_zyx) {
         // ELEC M is the 3x1 column, the transpose of the vector row.
         const h = regMatrixHeader(REGISTER_X);
-        if (complexCoefs != 0) {
+        if (complexCoefs) {
             transposeComplexMatrix(&matrixC, &matrixC);
             h.matrixRows = matrixC.header.matrixRows;
             h.matrixColumns = matrixC.header.matrixColumns;
@@ -3766,14 +3764,14 @@ pub export fn fnSafeReset(unusedButMandatoryParameter: u16) callconv(.c) void {
 // ===========================================================================
 fn assignToMyMenu_(position: u16) void {
     if (position < 18) {
-        frontier_assign._assignItem(@ptrCast(&userMenuItems[position]));
+        frontier_assign._assignItem(&userMenuItems[position]);
     }
     cachedDynamicMenu = 0;
 }
 
 fn assignToMyAlpha_(position: u16) void {
     if (position < 18) {
-        frontier_assign._assignItem(@ptrCast(&userAlphaItems[position]));
+        frontier_assign._assignItem(&userAlphaItems[position]);
     }
     cachedDynamicMenu = 0;
 }

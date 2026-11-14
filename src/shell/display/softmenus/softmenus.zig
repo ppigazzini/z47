@@ -853,7 +853,7 @@ extern fn showShiftState() void;
 extern fn malloc(n: usize) [*c]u8;
 extern fn free(p: ?*anyopaque) void;
 extern fn memset(s: ?*anyopaque, c: c_int, n: usize) ?*anyopaque;
-extern fn qsort(base: ?*anyopaque, n: usize, size: usize, cmp: *const fn (?*const anyopaque, ?*const anyopaque) callconv(.c) c_int) void;
+extern fn qsort(base: ?*anyopaque, n: usize, size: usize, cmp: *const fn ([*c]const u8, [*c]const u8) callconv(.c) c_int) void;
 extern fn strcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn strcat(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn strchr(s: [*c]const u8, c: c_int) [*c]u8;
@@ -1655,8 +1655,8 @@ fn slotsEqual(a: [*c]const u8, b: [*c]const u8) bool {
     }
 }
 
-fn sortMenu(a: ?*const anyopaque, b: ?*const anyopaque) callconv(.c) c_int {
-    return frontier_sort.compareString(@ptrCast(a), @ptrCast(b), CMP_EXTENSIVE);
+fn sortMenu(a: [*c]const u8, b: [*c]const u8) callconv(.c) c_int {
+    return frontier_sort.compareString(a, b, CMP_EXTENSIVE);
 }
 
 fn _filterDataType(regist: calcRegister_t, typeFilter: dataType_t, isAngular: bool_t) bool_t {
@@ -2459,11 +2459,11 @@ fn placeSubscript(itemNr: i16, flt: bool_t, tmpF: f32, itemName: [*c]u8, tmpS: [
         } else if (tmpF < -1.0e34) {
             _ = strcpy(tmpS, concat2(STD_GAUSS_WHITE_L, STD_GAUSS_WHITE_L));
         } else {
-            var convertedRealPerfectly: bool_t = undefined;
+            var convertedRealPerfectly: bool = undefined;
             var tmpBuf: [100]u8 = undefined;
             // 400 / 6 is the key. trimKey cuts the right hand side, the value, off any drawn string of 66 px or more, and the narrowest key takes one column of frame inside
             // that, so 65 is the limit. Measured over 576 keys, the subscript form drawn is never wider than the string tested here.
-            _ = strcpy(tmpS, frontier_plotstat.formatDoubleWidth(REGISTER_REAL34_DATA(@intCast(indexOfItems[@intCast(itemMod)].param)), 4, itemName, @ptrCast(&convertedRealPerfectly), 400 / 6 - 1, &tmpBuf, 60));
+            _ = strcpy(tmpS, frontier_plotstat.formatDoubleWidth(REGISTER_REAL34_DATA(@intCast(indexOfItems[@intCast(itemMod)].param)), 4, itemName, &convertedRealPerfectly, 400 / 6 - 1, &tmpBuf, 60));
             if (tmpS[0] == '?' or strchr(tmpS, 'E') != null) {
                 switch (itemMod) {
                     VAR_ULIM, VAR_LLIM, VAR_UEST, VAR_LEST => {
@@ -2483,7 +2483,7 @@ fn placeSubscript(itemNr: i16, flt: bool_t, tmpF: f32, itemName: [*c]u8, tmpS: [
                     },
                     else => {},
                 }
-                _ = strcpy(tmpS, frontier_plotstat.formatDoubleWidth(REGISTER_REAL34_DATA(@intCast(indexOfItems[@intCast(itemMod)].param)), 4, itemName, @ptrCast(&convertedRealPerfectly), 400 / 6 - 1, &tmpBuf, 60));
+                _ = strcpy(tmpS, frontier_plotstat.formatDoubleWidth(REGISTER_REAL34_DATA(@intCast(indexOfItems[@intCast(itemMod)].param)), 4, itemName, &convertedRealPerfectly, 400 / 6 - 1, &tmpBuf, 60));
             }
         }
     }

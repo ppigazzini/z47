@@ -108,7 +108,8 @@ extern fn strlen(s: [*c]const u8) usize;
 // stringCopy (charString.c): stpcpy semantics — copy incl. NUL, return ptr to NUL.
 fn stringCopy(dest: [*c]u8, source: [*c]const u8) [*c]u8 {
     const l: u32 = @intCast(strlen(source));
-    return @as([*c]u8, @ptrCast(frontier_char_string.xcopy(dest, source, l + 1))) + l;
+    _ = frontier_char_string.xcopy(dest, source, l + 1); // xcopy returns dest
+    return dest + l;
 }
 
 // lcd_fill_rect / bitblt24 are DMCP SDK fixed-address library calls on firmware
