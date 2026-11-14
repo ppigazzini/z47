@@ -104,6 +104,9 @@ PATTERNS = [
     # ROM function table and system data block, a GDK atom) needs one; pointer
     # arithmetic routed through @intFromPtr does not.
     ("ptr_from_int_sites", re.compile(r"@ptrFromInt\("), "site"),
+    # Forced inlining: only a comptime parameter or a comptime-known result needs
+    # it (docs/50, Rules For New Code); elsewhere the optimizer decides.
+    ("inline_fn_sites", re.compile(r"\binline fn\b"), "site"),
     ("callconv_c_sites", re.compile(r"callconv\(\.c\)"), "site"),
     # Zig-to-Zig `extern fn` redeclarations are transliteration debt: an owner
     # calling another owner's Zig-defined symbol through an untyped C-ABI extern
