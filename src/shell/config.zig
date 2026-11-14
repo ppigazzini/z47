@@ -12,21 +12,22 @@ const display_format = @import("display/display_format.zig");
 // run at every calculator reset, so this owner is test-reachable: zig build test
 // exercises it through the reset path.
 //
-// Some functions that config.c defines are owned by OTHER owners here
-// (frontend_settings/clear_all/keys_management; frontier.zig delegates to them).
-// They are NOT exported here; we declare them extern and call the
-// canonical symbols: fnSetGapChar, fnSettingsDispFormat{GrpL,Grp1Lo,Grp1L,GrpR},
-// fnMenuGap{L,RX,R}, fnIntegerMode, fnWho, fnVersion, fnSetRoundingMode,
-// fnSetSignificantDigits, fnSetBaseNr, fnSetFractionDigits, fnAngularMode,
-// fnFractionType, fnRange, fnHide, fnConfirmationYes, fnConfirmationNo, fnGetRange,
-// fnGetHide, fnGetLastErr, fnClAll, fnKeysManagement.
+// Some functions that config.c defines are owned by OTHER owners
+// (frontend_settings, clear_all and keys_management; frontier.zig exports most of
+// the frontend_settings commands under their C names): fnSetGapChar,
+// fnSettingsDispFormat{GrpL,Grp1Lo,Grp1L,GrpR}, fnMenuGap{L,RX,R}, fnIntegerMode,
+// fnWho, fnVersion,
+// fnSetRoundingMode, fnSetSignificantDigits, fnSetBaseNr, fnSetFractionDigits,
+// fnAngularMode, fnFractionType, fnRange, fnHide, fnConfirmationYes,
+// fnConfirmationNo, fnGetRange, fnGetHide, fnGetLastErr, fnClAll and
+// fnKeysManagement. This owner reaches the ones it calls by importing them.
 //
 // Three keys helper functions and three small cross-owner helpers
 // (z47_frontier_keys_to_user_case,
 // z47_frontier_keys_from_user_case, z47_frontier_keys_user_layout_reset_case,
 // z47_frontier_push_u32_to_x, z47_frontier_release_saved_statistical_sums,
-// z47_frontier_is_r47_fam) are defined here as pub export fn, because other
-// owners (keys_management, clear_all, frontend_settings) extern them.
+// z47_frontier_is_r47_fam) are defined here as pub fn for the owners that
+// import this one (keys_management, clear_all, frontend_settings).
 //
 // C ARRAYS are bound by address via @extern([*c]const T, ...) — never via a
 // pointer-typed extern (which would load the first element as a pointer and SEGV):
@@ -947,9 +948,6 @@ extern var alphaRegister: u16;
 extern var varMenu42: bool;
 extern fn liftStack() void;
 extern fn getFreeRamMemory() u32;
-
-// Cross-owner canonical symbols (owned by
-// frontend_settings / clear_all / keys_management) -> extern, called by name.
 
 // Engine functions config.c calls (owned elsewhere, not by this file).
 
