@@ -231,7 +231,7 @@ pub fn setRegisterMaxDataLengthInBlocks(reg: runtime.calcRegister_t, max_data_le
 
     if (reg <= runtime.LAST_LOCAL_REGISTER and reg > runtime.LAST_RESERVED_VARIABLE and !runtime.tryGetLocalDescriptor(reg, &descriptor)) {
         if (runtime.noLocalRegisterFrame()) {
-            runtime.moreInfoOnError("In function setRegisterMaxDataLengthInBlocks:", "no local registers defined!", "", "");
+            runtime.moreInfoOnError("In function setRegisterMaxDataLengthInBlocks:", "no local registers defined!", null, null);
         } else {
             runtime.reportLocalRegisterNotDefinedTwoPart("In function setRegisterMaxDataLengthInBlocks:", reg);
         }
