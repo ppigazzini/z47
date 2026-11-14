@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 // Zig port of the column-reduction / search commands of
 // src/c47/mathematics/matrix.c: fnColumnMin / fnColumnMax (min/max of the
 // indexed column, with the row index returned in Y) and fnMatrixFind (locate a

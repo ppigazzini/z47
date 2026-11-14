@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const runtime = @import("constants_runtime.zig");
 
 const no_register = @as(runtime.calcRegister_t, -1);

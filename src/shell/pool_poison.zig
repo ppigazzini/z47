@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 //! Extent arithmetic for the free-pool poison detector.
 //!
 //! WHY THIS EXISTS. Registers, variables, programs, formulae, menus and the GMP

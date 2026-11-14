@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const std = @import("std");
 const abi = @import("abi");
 const is_dmcp_build = @import("builtin").target.os.tag == .freestanding;

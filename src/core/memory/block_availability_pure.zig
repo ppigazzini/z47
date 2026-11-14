@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 //! Free-memory bin-packing predicate -- the pure core of
 //! memory_block_availability's isMemoryBlockAvailable.
 //!

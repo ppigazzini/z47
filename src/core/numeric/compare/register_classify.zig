@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 //! Register address-band classification -- the pure core of the predicates in
 //! register_compare.zig.
 //!

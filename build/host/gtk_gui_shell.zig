@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const gtk_decls = @import("gtk_gui_host_decls.zig");
 const GtkWidget = gtk_decls.GtkWidget;
 const GdkEventKey = gtk_decls.GdkEventKey;

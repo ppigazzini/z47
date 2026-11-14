@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 // Pure, parameterized program-memory pointer arithmetic shared by the save and
 // restore owners. This is the ONLY part of the save/load codec whose result
 // depends on the hardware RAM geometry (RAM_SIZE_IN_BLOCKS) and on the

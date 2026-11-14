@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const abi = @import("abi");
 const block_math = abi.block_math;
 const runtime = @import("program_serialization_runtime.zig");

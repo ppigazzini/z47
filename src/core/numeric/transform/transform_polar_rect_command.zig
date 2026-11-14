@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const std = @import("std");
 const rectangular_to_polar_owned = @import("rectangular_to_polar.zig");
 const runtime = @import("../command_wrappers/runtime.zig");

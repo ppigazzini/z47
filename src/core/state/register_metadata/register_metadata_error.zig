@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const abi = @import("abi");
 const build_options = @import("register_metadata_build_options");
 const stack_runtime = @import("../runtime/stack_runtime.zig");

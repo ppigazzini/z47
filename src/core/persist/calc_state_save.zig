@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 // SAVE-side serialization of the calculator state file (c47.sav text format).
 //
 // This is a faithful Zig port of saveRestoreCalcState.c doSave()'s section

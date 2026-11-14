@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const calcKey_t = @import("gtk_gui_label.zig").calcKey_t;
 
 const tamState_t = extern struct {

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 //! Integer thousands-separator insertion -- the pure core of frontier_display's
 //! insertSepsIntoIntegerText.
 //!

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const program_clear = @import("program_clear.zig");
 const frontier_assign = @import("../input/assign.zig");
 const frontier_config = @import("../config.zig");

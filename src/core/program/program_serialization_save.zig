@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const export_owned = @import("program_serialization_export.zig");
 const runtime = @import("program_serialization_runtime.zig");
 

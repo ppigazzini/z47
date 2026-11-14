@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: GPL-3.0-only
 #
 # Drive a sanitizer-instrumented pgm_run harness over a corpus
 # of MALFORMED .p47 files. The load path (fnLoadProgram) is the empirical memory-bug

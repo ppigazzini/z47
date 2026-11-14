@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 // LR / orthogonal-fit curve-selection dispatch (src/c47/statistics plotstat.c).
 // The pure 10-bit selection state machine lives in the tested
 // plot_regression_selection module; this owner is the thin runtime shim that

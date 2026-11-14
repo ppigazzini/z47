@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const descriptor_owned = @import("register_metadata_descriptor.zig");
 const reserved_register = @import("reserved_register.zig"); // std-only reserved-register predicates
 const payload_owned = @import("register_metadata_payload.zig");

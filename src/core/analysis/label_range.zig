@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 //! Solver label/register band predicates -- the pure core of solve_runtime's
 //! isLabel / isStackRegister / isInvalidVariable / labelToProgram.
 //!

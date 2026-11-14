@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const build_options = @import("stack_state_build_options");
 const descriptor_storage = @import("register_descriptor_storage.zig");
 const long_integer_owned = @import("stack_runtime_long_integer.zig");

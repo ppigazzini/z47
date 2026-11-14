@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const std = @import("std");
 const build_options = @import("constants_build_options");
 const use_fake_harness_surface = build_options.use_fake_harness_surface;

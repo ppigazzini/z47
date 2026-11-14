@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const runtime = @import("memory_runtime.zig");
 
 pub fn allocC47Blocks(sizeInBlocks: usize) ?*anyopaque {

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 //! real34 sign-byte operations -- the pure core of stack_result's
 //! real34IsNegative / real34SetPositiveSign.
 //!

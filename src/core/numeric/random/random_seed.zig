@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const std = @import("std");
 const random_primitives_owned = @import("random_primitives.zig");
 const runtime = @import("../command_wrappers/runtime.zig");

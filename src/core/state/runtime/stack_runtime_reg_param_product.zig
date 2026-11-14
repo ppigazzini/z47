@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const abi = @import("abi");
 const build_options = @import("stack_state_build_options");
 const product_real_owned = @import("stack_runtime_product_real.zig");

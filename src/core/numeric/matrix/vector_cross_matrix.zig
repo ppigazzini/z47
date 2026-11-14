@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const runtime = @import("../command_wrappers/runtime.zig");
 const validation_owned = @import("vector_validation.zig");
 

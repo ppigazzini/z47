@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 //! Matrix editor I/J cursor wrap -- the pure core of frontier_matrix_editor's
 //! wrapIJImpl.
 //!

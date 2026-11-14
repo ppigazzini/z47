@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const runtime = @import("../command_wrappers/runtime.zig");
 
 // Store the interpolation in X with the type and tag of Y. `exact_result`, when

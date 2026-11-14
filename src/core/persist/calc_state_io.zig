@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const builtin = @import("builtin");
 const backup_owned = @import("calc_state_backup.zig");
 const build_options = @import("calc_state_build_options");

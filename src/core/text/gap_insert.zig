@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 //! Digit-group gap insertion -- the pure core of frontier_bufferize's
 //! insertGapIP / insertGapFP.
 //!

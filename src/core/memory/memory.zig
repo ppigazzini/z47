@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const availability_pure = @import("block_availability_pure.zig"); // std-only bin-packing predicate
 const c47_alloc_owned = @import("memory_c47_alloc.zig");
 const abi = @import("abi");

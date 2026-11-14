@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const inverse_trig_command_owned = @import("inverse_trig_command.zig");
 const runtime = @import("../command_wrappers/runtime.zig");
 

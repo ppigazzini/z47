@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 //! Whitespace word scanners -- the pure core of calc_state_text's skip/next-word
 //! navigators.
 //!

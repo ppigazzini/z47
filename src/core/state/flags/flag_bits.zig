@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 //! User-flag bit location -- the pure core shared by flags.zig's setUserFlag /
 //! clearUserFlag / flipUserFlag.
 //!

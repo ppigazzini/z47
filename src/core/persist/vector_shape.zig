@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 //! Matrix shape predicates and the register-capacity clamp -- the pure core
 //! shared by the register codec and the matrix editor.
 //!

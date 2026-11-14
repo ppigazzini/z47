@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 //! KS-code to C register index remap -- the pure core of frontier_lbl_gto_xeq's
 //! regKStoC.
 //!

@@ -154,7 +154,9 @@ change are in [CONTRIBUTING.md](CONTRIBUTING.md).
 ## License
 
 z47 is **GPL-3.0-only**, the same terms as the C47 work it derives from. The full
-text is in [COPYING](COPYING) and covers every z47 source; `git grep -L
-SPDX-License-Identifier -- src build` lists the files that do not yet carry the
-`GPL-3.0-only` tag. The vendored tree under `upstream/`
+text is in [COPYING](COPYING) and covers every z47 file. Every hand-written source file under `src/` and `build/`
+carries the `GPL-3.0-only` SPDX tag; `git grep -L SPDX-License-Identifier -- src
+build` lists the rest: an oracle extracted verbatim from upstream's C, and data
+-- the test corpora, the golden state file, generated program bytes and source
+lists. The vendored tree under `upstream/`
 remains under its own upstream copyright and ships the same license text.

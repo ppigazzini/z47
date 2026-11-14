@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 //! HP82240 printer character reverse lookup -- the pure core of frontier_print's
 //! charMap.
 //!

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const descriptor_owned = @import("register_metadata_descriptor.zig");
 const runtime = @import("register_metadata_runtime.zig");
 const stack_runtime = @import("../runtime/stack_runtime.zig");

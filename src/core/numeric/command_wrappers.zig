@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const check_value_owned = @import("compare/check_value.zig");
 const build_options = @import("math_command_wrappers_build_options");
 const convergence_owned = @import("convergence.zig");

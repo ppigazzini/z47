@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const logxy_owned = @import("logxy.zig");
 const powlog_power_owned = @import("powlog_power.zig");
 const runtime = @import("../command_wrappers/runtime.zig");

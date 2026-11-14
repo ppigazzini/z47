@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const std = @import("std");
 const abi = @import("abi");
 const runtime = @import("../command_wrappers/runtime.zig");

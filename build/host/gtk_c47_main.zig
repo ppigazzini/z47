@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 // Zig port of src/c47-gtk/c47-gtk.c -- the GTK desktop simulator entry point
 // (PC_BUILD). Owns the program globals that c47-gtk.c defined and the main()
 // that parses CLI args, seeds the calc model, runs the UI startup (the Zig

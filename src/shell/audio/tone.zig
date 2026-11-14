@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const abi = @import("abi");
 const build_options = @import("tone_build_options");
 const runtime = @import("tone_runtime.zig");

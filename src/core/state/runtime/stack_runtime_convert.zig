@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 // The differential harness's surface for fnToReal and adjustResult.
 //
 // This file is NOT a second implementation of either. The shipping bodies are

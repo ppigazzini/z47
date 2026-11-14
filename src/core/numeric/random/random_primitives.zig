@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const runtime = @import("../command_wrappers/runtime.zig");
 const abi = @import("abi"); // std-only PCG32 kernels (math owners keep abi private via runtime)
 

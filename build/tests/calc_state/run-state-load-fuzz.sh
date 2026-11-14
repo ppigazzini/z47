@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: GPL-3.0-only
 #
 # Drive a corpus of MALFORMED state files through the real
 # restore path (fnLoad -> doLoad -> restoreOneSection -> restoreRegister).

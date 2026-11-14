@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const std = @import("std");
 const math_type_encode = @import("type_encode.zig"); // std-only type-report encoders
 const runtime = @import("../command_wrappers/runtime.zig");

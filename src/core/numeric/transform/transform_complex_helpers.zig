@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 //! Zig owners for the transform/complex helper symbols ported from the upstream
 //! C47 sources src/c47/mathematics/toPolar.c, toRect.c, squareRoot.c,
 //! cubeRoot.c, and unitVector.c.

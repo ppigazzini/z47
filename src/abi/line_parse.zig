@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 //! Header-line matching and integer parsing -- the ONE implementation shared by
 //! both file families.
 //!

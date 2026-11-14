@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 // Zig port of the simultaneous-linear-equation cluster of
 // src/c47/mathematics/matrix.c: the SIMQ command + the Mat_A/Mat_B/Mat_X editor
 // commands, and the real/complex linear-equation solvers (Ax=b via the shared

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const runtime = @import("../command_wrappers/runtime.zig");
 
 // decNumber's +Infinity: a zero coefficient with the infinity bit set.

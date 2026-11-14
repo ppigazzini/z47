@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 //! Numeral -> display-string formatter -- the pure core of frontier_decode's
 //! _decodeNumeral.
 //!

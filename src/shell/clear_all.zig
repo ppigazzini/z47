@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const keys_management = @import("program/keys_management.zig");
 const program_clear = @import("program/program_clear.zig");
 const clear_all = @import("clear_all.zig");

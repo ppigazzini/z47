@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const frontier_config = @import("config.zig");
 const frontier_radio_button_catalog = @import("extensions/radio_button_catalog.zig");
 const frontier_softmenus = @import("display/softmenus/softmenus.zig");

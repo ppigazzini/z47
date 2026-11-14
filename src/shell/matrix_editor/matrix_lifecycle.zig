@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const frontier_matrix_editor = @import("matrix_editor.zig");
 const INVALID_VARIABLE: u16 = 2199;
 

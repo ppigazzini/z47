@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 // Zig port of the element-wise matrix dispatch family of
 // src/c47/mathematics/matrix.c. These apply a scalar command (passed as a C
 // function pointer that reads/writes REGISTER_X / REGISTER_Y) to every element

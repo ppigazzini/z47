@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const circular_trig_owned = @import("circular_trig.zig");
 const real_trig_owned = @import("real_trig.zig");
 const runtime = @import("../command_wrappers/runtime.zig");

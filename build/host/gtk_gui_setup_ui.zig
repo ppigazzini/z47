@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 // Owner module for setupUI (ported from src/c47-gtk/gtkGui.c). Host-sim only
 // (PC_BUILD / SIMULATOR_ON_SCREEN_KEYBOARD == 1). Builds the GTK on-screen
 // keyboard: creates the ~260 button/label widgets, sets their tooltips/sizes/

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 //! Glyph decoding and case conversion -- the pure core of frontier_string_funcs'
 //! _getGlyphCode / _isSameGlyph / _toUpperOrLowerCase.
 //!

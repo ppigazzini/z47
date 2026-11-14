@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const atan_owned = @import("atan.zig");
 const inverse_trig_complex_command_owned = @import("inverse_trig_complex_command.zig");
 const inverse_trig_command_owned = @import("inverse_trig_command.zig");

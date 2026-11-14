@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: GPL-3.0-only
 # Cross-build GMP 6.2.1 for a DMCP board, as build/firmware.zig's
 # addArmGmpBuild runs it:
 #

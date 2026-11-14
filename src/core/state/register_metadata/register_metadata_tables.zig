@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 // The read-only tables the register-metadata owners consult: the reserved
 // variable block, the RAM block-number <-> pointer mapping, and the built-in
 // item catalog rows a menu name can resolve to.

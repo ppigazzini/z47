@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 // RESTORE-side parser of the calculator state file (c47.sav text format).
 //
 // Faithful Zig port of saveRestoreCalcState.c restoreOneSection() (lines

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const frontier_matrix_editor = @import("matrix_editor.zig");
 const FLAG_WRAPEND: c_uint = 0xc01a;
 const FLAG_WRAPEDG: c_uint = 0xc03f;

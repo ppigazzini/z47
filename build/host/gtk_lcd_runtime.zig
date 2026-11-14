@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const std = @import("std");
 
 // lcd_buffer holds one bit per pixel with the DMCP polarity: a set bit is a

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 //! Store-path register-range validity -- the pure core of frontier_store's
 //! isRegInRange.
 //!

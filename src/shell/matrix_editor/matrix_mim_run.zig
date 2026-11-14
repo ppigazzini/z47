@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const matrix_lifecycle = @import("matrix_lifecycle.zig");
 const frontier_matrix_editor = @import("matrix_editor.zig");
 const frontier_screen = @import("../display/screen.zig");

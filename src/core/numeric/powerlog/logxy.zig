@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const build_options = @import("math_command_wrappers_build_options");
 const ln_complex_owned = @import("../ln_complex.zig");
 const runtime = @import("../command_wrappers/runtime.zig");

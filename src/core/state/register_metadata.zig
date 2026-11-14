@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const descriptor_owned = @import("register_metadata/register_metadata_descriptor.zig");
 fn isValidRegisterId(reg: i32, last_global: i32, first_named: i32, last_reserved: i32, first_local: i32, last_local: i32) bool {
     if (reg < 0) return false;

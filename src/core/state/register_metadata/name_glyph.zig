@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 //! Variable-name glyph decoding -- the pure core of register_metadata_variables'
 //! validateName glyph helpers.
 //!
