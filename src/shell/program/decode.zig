@@ -1078,7 +1078,7 @@ fn listProgramsImpl() callconv(.c) void {
         if (nextStep != null) {
             const numberOfBytesInStep: u16 = @truncate(@intFromPtr(nextStep) -% @intFromPtr(step));
             const lastByteIndex: i32 = @as(i32, numberOfBytesInStep) - 1; // C promotes the uint16_t before the -1
-            stepNumber += 1;
+            stepNumber +%= 1; // a uint16_t in C, which wraps past 65535 steps
             _ = printf("\n%02d  %4d  ", @as(c_int, programNumber), @as(c_int, stepNumber) - programList[programNumber - 1].step + 1);
             _ = fflush(null);
 

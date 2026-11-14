@@ -602,7 +602,7 @@ pub export fn goToGlobalStep(step_arg: i32) callconv(.c) void {
     if (currentLocalStepNumber >= 3) {
         firstDisplayedLocalStepNumber = currentLocalStepNumber - 3;
         const numberOfSteps: u16 = frontier_manage.getNumberOfSteps();
-        if (firstDisplayedLocalStepNumber + 6 > numberOfSteps) {
+        if (@as(i32, firstDisplayedLocalStepNumber) + 6 > numberOfSteps) { // C adds in int
             var i: i32 = 3 + @as(i32, currentLocalStepNumber) - @as(i32, numberOfSteps);
             while (i > 0) : (i -= 1) {
                 if (firstDisplayedLocalStepNumber > 0) {
