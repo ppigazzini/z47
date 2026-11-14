@@ -15,11 +15,13 @@ const consts = abi.constants;
 // _inverseQuadraticInterpolation, _showProgress) stay private; execSolverProgram,
 // the stacked program run _executeSolver shares with graph.c's RPN grapher, is pub.
 //
-// SOLVERDEBUG/SOLVERDEBUG2 and the PC_BUILD printf blocks are #undef'd under
-// TESTSUITE_BUILD and omitted. _showProgress paints the bracket panel through
-// the shared progress-panel owner.
-// EXTRA_INFO_ON_CALC_ERROR sprintf hints are stripped under TESTSUITE/DMCP and
-// omitted. ctxtSolver/ctxtSolverHi == ctxtReal39; solverTvmTol=34, solverTvmZer=35.
+// Every PC_BUILD printf in solve.c also needs SOLVERDEBUG or SOLVERDEBUG2, which
+// the file #undefs on every build, so none is ported. _showProgress paints the
+// bracket panel through the shared progress-panel owner.
+// The EXTRA_INFO_ON_CALC_ERROR hints are called unconditionally, with the C's
+// text and arguments; moreInfoOnError itself is the no-op on the builds where
+// the macro is 0 (firmware and testSuite).
+// ctxtSolver/ctxtSolverHi == ctxtReal39; solverTvmTol=34, solverTvmZer=35.
 
 const runtime = @import("solve_runtime.zig");
 const progress_panel = @import("progress_panel.zig");

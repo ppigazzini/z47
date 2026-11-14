@@ -13,10 +13,11 @@ const consts = abi.constants;
 // linkable), so they are reproduced verbatim here. The `desc` field of each
 // stencil is only used inside dead `#if 0` blocks and is dropped.
 //
-// EXTRA_INFO_ON_CALC_ERROR sprintf hints are stripped under TESTSUITE/DMCP
-// (EXTRA_INFO_ON_CALC_ERROR == 0) so they are omitted. The errorMessage TI
-// string built at the end of calcDeriv is reproduced (display only; no effect
-// on the computed result).
+// The EXTRA_INFO_ON_CALC_ERROR hints are called unconditionally, with the C's
+// text and arguments; moreInfoOnError itself is the no-op on the builds where
+// the macro is 0 (firmware and testSuite). The errorMessage TI string built at
+// the end of calcDeriv is reproduced (display only; no effect on the computed
+// result).
 
 const runtime = @import("solve_runtime.zig");
 

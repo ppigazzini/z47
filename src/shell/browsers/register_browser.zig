@@ -2,10 +2,11 @@
 //
 // Zig owner for src/c47/browsers/registerBrowser.c: registerBrowser (the register
 // browser application) and its two file-static helpers _showRegisterInRbr and
-// registerName. This is a faithful, line-by-line port of the C. The
-// OPTION_REGBROWSER guard (registerBrowser.c:12/:161) compiles the whole file
-// out of the old-HW single-file DM42 build; it is defined for every package z47
-// ships (defines.h:258), so the code is always present here. The
+// registerName. This is a faithful, line-by-line port of the C.
+// registerBrowser.c's two OPTION_REGBROWSER guards compile both helpers and
+// registerBrowser's body out of the old-HW single-file DM42 build. defines.h leaves the option defined for
+// every target z47 builds (the host, DMCP5 and the DMCP packages), so the code
+// is always present here. The
 // modulo()/min()/max() macros and the register-data pointer macros are
 // reproduced inline; showString returns uint32_t in C and is truncated to
 // int16_t exactly as the implicit assignment does.
