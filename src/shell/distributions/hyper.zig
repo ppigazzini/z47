@@ -20,7 +20,7 @@ fn checkDomain(registers_valid: bool, x: *real_t, first: ?*real_t, second: ?*rea
     _ = parameter;
     if (!registers_valid) {
         dr.displayDomainErrorMessage(dr.ERROR_INVALID_DATA_TYPE_FOR_OP, dr.ERR_REGISTER_LINE);
-        dr.moreInfoOnError("In function hyperCheckDomain:", "Values in register X, I, J and K must be of the real or long integer type", null, null);
+        dr.moreInfoOnError("In function hyperCheckDomain:", dr.stagedMessage("Values in register X, I, J and K must be of the real or long integer type"), null, null);
         return false;
     }
     const i = first.?;
