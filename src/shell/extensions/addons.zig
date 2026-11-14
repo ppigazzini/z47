@@ -999,7 +999,7 @@ const getVectorRegisterPolarMode = abi.registers.getVectorRegisterPolarMode;
 const setVectorRegisterPolarMode = abi.registers.setVectorRegisterPolarMode;
 
 // ===========================================================================
-// OPTION_EDIT_X-gated helpers (file-static in C).
+// OPTION_EDIT_X-gated helpers (non-static in C, declared in no header).
 // ===========================================================================
 
 // Both this and _shortIntegerToString sit inside the OPTION_EDIT_X block, which
