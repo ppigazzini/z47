@@ -345,6 +345,10 @@ as live rather than closed.
 
 - Do not cast a pointer. [Pointer Casts](#pointer-casts) gives the typed
   replacement for each need and the conditions an exception must meet.
+- Write `inline fn` only where the semantics need it: a comptime parameter, or a
+  result a caller must have at compile time. Elsewhere a plain `fn`; the
+  optimizer inlines where it pays, and forcing it everywhere cost the DM42 image
+  3.8 KB of flash. `check-idiom-ratchet.sh` holds `inline_fn_sites` at a ceiling.
 - Prefer `[]T` / `[N]T` over `[*c]` at z47-owned leaves and on the load owners
   where a length is known, but never on the transliterated spine, where matching
   upstream shape keeps re-sync cheap. On a file-backed region this is not cosmetic:
