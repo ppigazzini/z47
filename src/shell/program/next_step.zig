@@ -343,7 +343,7 @@ fn _showStep() void {
 // ===========================================================================
 fn _bstInPem() void {
     if (currentLocalStepNumber > 1) {
-        if (firstDisplayedLocalStepNumber > 0 and currentLocalStepNumber <= firstDisplayedLocalStepNumber + 3) {
+        if (firstDisplayedLocalStepNumber > 0 and currentLocalStepNumber <= @as(i32, firstDisplayedLocalStepNumber) + 3) { // C adds in int
             firstDisplayedLocalStepNumber -= 1;
         }
         currentLocalStepNumber -= 1;
@@ -415,7 +415,7 @@ fn _sstInPem() void {
             }
         }
 
-        if (firstDisplayedLocalStepNumber + 7 > numberOfSteps) {
+        if (@as(i32, firstDisplayedLocalStepNumber) + 7 > numberOfSteps) { // C adds in int
             if (numberOfSteps <= 6) {
                 firstDisplayedLocalStepNumber = 0;
             } else {
