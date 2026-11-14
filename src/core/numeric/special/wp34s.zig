@@ -475,11 +475,14 @@ inline fn realMaxDigits(comptime digits: u32) u32 {
 inline fn realSizeInBytes(comptime digits: u32) u32 {
     return 10 + 2 * (realMaxDigits(digits) / 3);
 }
+// REAL_T_PTR(name, digits): a real_t overlaid on storage for that many digits,
+// never less than a whole real_t.
 pub fn BigReal(comptime digits: u32) type {
-    return struct {
-        buf: [realSizeInBytes(digits)]u8 align(4) = undefined,
+    return extern union {
+        real: real_t,
+        storage: [realSizeInBytes(digits) / 4]u32,
         pub inline fn ptr(self: *@This()) *real_t {
-            return @ptrCast(&self.buf);
+            return &self.real;
         }
     };
 }
@@ -1182,7 +1185,7 @@ pub fn formatEminusD(buf: *[16]u8, d: i32) [*:0]const u8 {
         idx += 1;
     }
     buf[idx] = 0;
-    return @ptrCast(buf);
+    return buf[0..idx :0].ptr;
 }
 
 // ===========================================================================
@@ -1924,12 +1927,12 @@ fn doMod(x: *const real_t, y: *const real_t, res: *real_t, realContext: *realCon
 /// modular arithmetic: the divisor's power of ten is applied by repeated squaring
 /// of 10 mod |y| rather than by forming the shifted dividend.
 pub export fn WP34S_Real34Remainder(x: *const real_t, y: *const real_t, res: *real_t) callconv(.c) void {
-    var a_buf: BigReal(34) = .{};
-    var b_buf: BigReal(34) = .{};
-    var comparison_buf: BigReal(1) = .{};
-    var factor_buf: BigReal(34) = .{};
-    var product_buf: BigReal(68) = .{};
-    var remainder_buf: BigReal(34) = .{};
+    var a_buf: BigReal(34) = undefined;
+    var b_buf: BigReal(34) = undefined;
+    var comparison_buf: BigReal(1) = undefined;
+    var factor_buf: BigReal(34) = undefined;
+    var product_buf: BigReal(68) = undefined;
+    var remainder_buf: BigReal(34) = undefined;
     const a = a_buf.ptr();
     const b = b_buf.ptr();
     const comparison = comparison_buf.ptr();

@@ -426,7 +426,7 @@ fn doTaylorIterations(
             var ss: [100]u8 = undefined;
             abi.fmtBufZ(&ss, "Taylor Iter: {d}/{d}; Dig: {d}/", .{ i, TaylorIterationMax, -@as(i16, @truncate(tExp)) });
             ss[40] = 0; // hard limit to what the screen shows
-            _ = progressHalfSecUpdate_Integer(halfSec_timed, @ptrCast(&ss[0]), epsilonDigits, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+            _ = progressHalfSecUpdate_Integer(halfSec_timed, ss[0..40 :0].ptr, epsilonDigits, halfSec_clearZ, halfSec_clearT, halfSec_disp);
         }
         // Firmware only: the host build runs the Taylor loop to completion.
         if (comptime is_dmcp_build) {

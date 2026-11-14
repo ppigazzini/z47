@@ -60,7 +60,7 @@ fn realDivideBy2(operand: *real_t, real_context: *runtime.realContext_t) void {
 const Real159 = abi.Real159;
 
 fn real159(storage: *Real159) *real_t {
-    return @ptrCast(storage);
+    return storage.ptr();
 }
 
 // ----------------------------------------------------------------------------

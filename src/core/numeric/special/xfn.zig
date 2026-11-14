@@ -158,7 +158,7 @@ extern fn fnDropT(unusedButMandatoryParameter: u16) void;
 extern var currentAngularMode: angularMode_t;
 extern var lastErrorCode: u8;
 extern var explicitTaylorIterVisibilitySelection: bool;
-extern var tmpString: [*]u8;
+extern var tmpString: [*:0]u8;
 
 inline fn getRegisterAngularMode(reg: calcRegister_t) angularMode_t {
     return @intCast(getRegisterTag(reg) & amAngleMask);
@@ -351,11 +351,13 @@ inline fn realMaxDigits(comptime digits: u32) u32 {
 inline fn realSizeInBytes(comptime digits: u32) u32 {
     return 10 + 2 * (realMaxDigits(digits) / 3);
 }
+// REAL_T_PTR(name, digits): a real_t overlaid on storage for that many digits.
 fn BigReal(comptime digits: u32) type {
-    return struct {
-        buf: [realSizeInBytes(digits)]u8 align(4) = undefined,
+    return extern union {
+        real: real_t,
+        storage: [realSizeInBytes(digits) / 4]u32,
         inline fn ptr(self: *@This()) *real_t {
-            return @ptrCast(&self.buf);
+            return &self.real;
         }
     };
 }
@@ -399,7 +401,7 @@ fn decomposeReal(x: *const real_t, integerPart: *mpz_struct, fractionalPart: *re
     }
 
     // normalize using realPlus() and re-check if it fits
-    var mantissa_b = BigReal(1071){};
+    var mantissa_b: BigReal(1071) = undefined;
     const mantissa = mantissa_b.ptr();
     realPlus(x, mantissa, c);
     var actualDigits: i32 = realGetDigits(mantissa);
@@ -435,13 +437,13 @@ fn decomposeReal(x: *const real_t, integerPart: *mpz_struct, fractionalPart: *re
         _ = strcpy(tmpString, "0");
     }
 
-    _ = stringToLongInteger(@ptrCast(tmpString), 10, integerPart);
+    _ = stringToLongInteger(tmpString, 10, integerPart);
     if (longIntegerIsZero(integerPart)) {
         uInt32ToLongInteger(1, integerPart);
         realCopy(x, fractionalPart);
         return;
     }
-    var integerAsReal_b = BigReal(1071){};
+    var integerAsReal_b: BigReal(1071) = undefined;
     const integerAsReal = integerAsReal_b.ptr();
     convertLongIntegerToReal(integerPart, integerAsReal, c);
     realDivide(x, integerAsReal, fractionalPart, c);
@@ -523,7 +525,7 @@ fn getLongintegerRegisterAsReal1071(registerNo: calcRegister_t, result: *real_t,
         if (getRegisterAsLongInt(registerNo, &lint, &frac)) {
             longIntegerToString(&lint, 10, tmpString);
             longIntegerFree(&lint);
-            stringToReal(@ptrCast(tmpString), result, c);
+            stringToReal(tmpString, result, c);
             return true;
         }
         longIntegerFree(&lint);
@@ -585,7 +587,7 @@ fn validateExponent(x: *const real_t) linksection(runtime.code_section) bool {
 // readThreeRegisters
 // ===========================================================================
 fn readThreeRegisters(registerNo: calcRegister_t, result: *real_t, temporary: *real_t, c: *realContext_t) linksection(runtime.code_section) bool {
-    var addend_b = BigReal(1071){};
+    var addend_b: BigReal(1071) = undefined;
     const addend = addend_b.ptr();
     var full: realContext_t = c.*;
     full.digits = maxContextDigits; // the registers are read at the full width, so the fused multiply-add is the one rounding to the digits of c
@@ -671,8 +673,8 @@ fn getSingleParameter(registerNo: calcRegister_t, combined: *real_t, angleMode: 
 pub export fn registerFMAOutputString(regist: calcRegister_t, prefix: [*:0]const u8, displayString: [*]u8) linksection(runtime.code_section) callconv(.c) bool {
     if (comptime !runtime.option_xfn_1000) return false;
     var angle: angularMode_t = undefined;
-    var tmp1_b = BigReal(1071){};
-    var tmp2_b = BigReal(1071){};
+    var tmp1_b: BigReal(1071) = undefined;
+    var tmp2_b: BigReal(1071) = undefined;
     const tmp1 = tmp1_b.ptr();
     const tmp2 = tmp2_b.ptr();
     var c: realContext_t = runtime.ctxtReal75;
@@ -701,8 +703,8 @@ pub export fn registerFMAOutputPlainString(regist: calcRegister_t, prefix: [*:0]
     // answers the sibling stub's `false`.
     if (comptime !runtime.option_xfn_1000) return false;
     var angle: angularMode_t = undefined;
-    var tmp1_b = BigReal(1071){};
-    var tmp2_b = BigReal(1071){};
+    var tmp1_b: BigReal(1071) = undefined;
+    var tmp2_b: BigReal(1071) = undefined;
     const tmp1 = tmp1_b.ptr();
     const tmp2 = tmp2_b.ptr();
     var c: realContext_t = runtime.ctxtReal75;
@@ -733,8 +735,8 @@ pub export fn registerFMAOutputPlainString(regist: calcRegister_t, prefix: [*:0]
 /// real34. The XFN view line and registerFMA take their value from here.
 pub export fn registerMultiplyAddToReal34(regist: calcRegister_t, result: *real34_t, c: *realContext_t) linksection(runtime.code_section) callconv(.c) bool {
     if (comptime !runtime.option_xfn_1000) return false;
-    var tmp1_b = BigReal(1071){};
-    var tmp2_b = BigReal(1071){};
+    var tmp1_b: BigReal(1071) = undefined;
+    var tmp2_b: BigReal(1071) = undefined;
     const tmp1 = tmp1_b.ptr();
     const tmp2 = tmp2_b.ptr();
     if (readThreeRegisters(regist, tmp1, tmp2, c)) { // X x Y + Z rounded once to the digits of c
@@ -943,9 +945,9 @@ fn doXfn(registerNo: calcRegister_t, function: c_int, functionType: c_int, funct
         return;
     }
 
-    var paramX_b = BigReal(1071){};
-    var paramY_b = BigReal(1071){};
-    var paramTemp_b = BigReal(1071){};
+    var paramX_b: BigReal(1071) = undefined;
+    var paramY_b: BigReal(1071) = undefined;
+    var paramTemp_b: BigReal(1071) = undefined;
     const paramX = paramX_b.ptr();
     const paramY = paramY_b.ptr();
     const paramTemp = paramTemp_b.ptr();
@@ -1030,8 +1032,8 @@ fn doXfn(registerNo: calcRegister_t, function: c_int, functionType: c_int, funct
                 }
             },
             ITM_sin_XFN, ITM_cos_XFN, ITM_tan_XFN => {
-                var aa_b = BigReal(1071){};
-                var bb_b = BigReal(1071){};
+                var aa_b: BigReal(1071) = undefined;
+                var bb_b: BigReal(1071) = undefined;
                 const aa = aa_b.ptr();
                 const bb = bb_b.ptr();
                 realSetZero(aa);

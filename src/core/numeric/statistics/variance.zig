@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
+const std = @import("std");
 const abi = @import("abi");
 const consts = abi.constants;
 const const__1 = consts.const__1;
@@ -170,7 +171,7 @@ inline fn SIGMA_XY() *real_t {
 }
 
 inline fn statMxName() [*:0]const u8 {
-    return @ptrCast(&statMx);
+    return statMx[0..std.mem.findScalar(u8, &statMx, 0).? :0].ptr;
 }
 
 // The observation component a centred sum is taken over, with its transformation.

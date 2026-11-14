@@ -278,7 +278,7 @@ pub export fn fnSlvp(unused_but_mandatory_parameter: u16) linksection(runtime.co
                 // Monic companion matrix through the EIGEN QR solver.
                 const dz: usize = d;
                 const bulkSize: usize = real_size_in_blocks_75 * (dz * dz * 2 * 2 + dz * 7);
-                const bulkRaw = runtime.allocC47Blocks(bulkSize) orelse {
+                const bulk = abi.allocC47BlocksAs(cplx_t, bulkSize) orelse {
                     runtime.freeC47Blocks(coef, wsSize);
                     displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE);
                     if (runtime.extra_info_on_calc_error) {
@@ -286,7 +286,6 @@ pub export fn fnSlvp(unused_but_mandatory_parameter: u16) linksection(runtime.co
                     }
                     return;
                 };
-                const bulk: [*]cplx_t = @ptrCast(@alignCast(bulkRaw));
                 const a = bulk;
                 const eig = bulk + dz * dz;
                 const scratch = bulk + dz * dz * 2;
@@ -318,7 +317,7 @@ pub export fn fnSlvp(unused_but_mandatory_parameter: u16) linksection(runtime.co
                 math_matrix_eigen.calculateEigenvalues(a, scratch, eig, d, true, true, ctxtReal75);
                 if (runtime.lastErrorCode != runtime.ERROR_NONE) {
                     // Abort or refusal: write nothing, the central undo puts X and L back.
-                    runtime.freeC47Blocks(bulkRaw, bulkSize);
+                    runtime.freeC47Blocks(bulk, bulkSize);
                     runtime.freeC47Blocks(coef, wsSize);
                     return;
                 }
@@ -358,7 +357,7 @@ pub export fn fnSlvp(unused_but_mandatory_parameter: u16) linksection(runtime.co
                         }
                     }
                 }
-                runtime.freeC47Blocks(bulkRaw, bulkSize);
+                runtime.freeC47Blocks(bulk, bulkSize);
             }
         }
     }

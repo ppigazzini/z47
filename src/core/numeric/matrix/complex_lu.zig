@@ -50,8 +50,7 @@ pub export fn complex_LU_decomposition(matrix: *const complex34Matrix_t, lu: *co
     }
 
     const blocks = @as(usize, m) * n * real_size_in_blocks * 2;
-    if (runtime.allocC47Blocks(blocks)) |tmp_raw| {
-        const tmp_mat: [*]cplx_t = @ptrCast(@alignCast(tmp_raw));
+    if (abi.allocC47BlocksAs(cplx_t, blocks)) |tmp_mat| {
         if (!samePtr(matrix, lu)) {
             runtime.copyComplexMatrix(matrix, lu);
         }
@@ -78,7 +77,7 @@ pub export fn complex_LU_decomposition(matrix: *const complex34Matrix_t, lu: *co
             reportRamFull("Ram full, 1m");
         }
 
-        runtime.freeC47Blocks(tmp_raw, blocks);
+        runtime.freeC47Blocks(tmp_mat, blocks);
     } else {
         clearNonSquare(matrix, lu);
         reportRamFull("Ram full, 2n");

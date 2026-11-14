@@ -55,7 +55,7 @@ pub extern fn saveLastX() bool;
 pub extern fn liftStack() void;
 pub extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: calcRegister_t) void;
 pub extern fn reallocateRegister(regist: calcRegister_t, data_type: u32, data_size_without_data_len_blocks: u16, tag: u32) bool;
-pub extern fn getRegisterDataPointer(regist: calcRegister_t) ?*align(4) anyopaque;
+pub extern fn getRegisterDataPointer(regist: calcRegister_t) ?[*]align(4) u8;
 pub extern fn getRegisterTag(regist: calcRegister_t) u32;
 pub extern fn setRegisterTag(regist: calcRegister_t, tag: u32) void;
 pub extern fn getSystemFlag(sf: i32) bool;
@@ -186,5 +186,5 @@ pub fn wordSizeError(function_name: [*:0]const u8, operation_name: []const u8, r
 fn bufPrintZ(buffer: []u8, comptime format: []const u8, args: anytype) [*:0]const u8 {
     const text = std.mem.print(buffer[0 .. buffer.len - 1], format, args) catch buffer[0..0];
     buffer[text.len] = 0;
-    return @ptrCast(buffer.ptr);
+    return buffer[0..text.len :0].ptr;
 }

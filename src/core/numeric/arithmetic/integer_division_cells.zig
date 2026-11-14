@@ -879,9 +879,11 @@ pub export fn roundCxma() linksection(runtime.code_section) callconv(.c) void {
     support.elementwiseCxma(&roundCplx);
 }
 
+// The text of displayValueX from offset on, up to the terminator the display
+// writes inside the array.
 fn displayValueXCString(offset: i32) [*:0]const u8 {
-    const base: [*]u8 = &support.displayValueX;
-    return @ptrCast(base + @as(usize, @intCast(offset)));
+    const text = support.displayValueX[@intCast(offset)..];
+    return text[0..std.mem.findScalar(u8, text, 0).? :0].ptr;
 }
 
 pub export fn roundReal() linksection(runtime.code_section) callconv(.c) void {

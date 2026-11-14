@@ -22,7 +22,7 @@ pub const VoidCallback = runtime.VoidCallback;
 pub const real159_t = abi.Real159;
 
 pub fn asReal(big: *real159_t) *real_t {
-    return @ptrCast(big);
+    return big.ptr();
 }
 
 pub fn asConstReal(big: *const real159_t) *const real_t {
