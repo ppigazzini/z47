@@ -1964,13 +1964,20 @@ pub export fn check_osc(new: *real_t, old: *real_t, ii: *u8) callconv(.c) bool {
 }
 
 // PC_BUILD console result dump (host sim and testSuite are PC_BUILD).
+// Upstream prints REGISTER_IMAG34_DATA(REGISTER_X) whatever X holds. When the
+// solver leaves a real in X that reads the sixteen bytes after the register's
+// payload, which belong to the next pool allocation, and prints them as the
+// imaginary part. A real X prints a zero imaginary part here instead; nothing
+// but this console line reads the value.
 fn printSolverResult(iterationCounter: c_int) void {
     if (comptime !is_dmcp_build) {
         var str: [200]u8 = undefined;
         _ = decQuadToString(reg34(REGISTER_X), &str);
         _ = printf("\n\n\x1b[1m%2u: %-36s ", @as(c_uint, significantDigits), @as([*c]const u8, &str));
-        _ = decQuadToString(regImag34(REGISTER_X), &str);
-        if (real34IsNegative(regImag34(REGISTER_X))) {
+        var zero_imag: real34_t = undefined;
+        const imag: *const real34_t = if (getRegisterDataType(REGISTER_X) == dtComplex34) regImag34(REGISTER_X) else decQuadZero(&zero_imag);
+        _ = decQuadToString(imag, &str);
+        if (real34IsNegative(imag)) {
             _ = printf("- ix%-36s", @as([*c]const u8, &str) + 1);
         } else {
             _ = printf("+ ix%-36s", @as([*c]const u8, &str));
