@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 //! The object manifest: the build naming its own product object set.
 //!
 //! WHAT THIS IS FOR. z47 has two dependency graphs and they are orthogonal. The

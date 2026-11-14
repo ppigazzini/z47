@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const inverse_trig_complex_command_owned = @import("inverse_trig_complex_command.zig");
 const inverse_trig_real_command_owned = @import("inverse_trig_real_command.zig");
 const real_trig_owned = @import("real_trig.zig");

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const stack_runtime = @import("../runtime/stack_runtime.zig");
 
 pub const FLAG_BCD: u16 = 0x8059;

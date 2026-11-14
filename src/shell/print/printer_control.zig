@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const abi = @import("abi");
 const screen = @import("../display/screen.zig");
 const frontier_print = @import("print.zig");

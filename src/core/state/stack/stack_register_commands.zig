@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const abi = @import("abi");
 const runtime = @import("../runtime/stack_runtime.zig");
 const register_range_ops = @import("register_range_ops.zig"); // std-only register-range geometry

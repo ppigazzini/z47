@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 //! Matrix operand kinds and vector-size validity -- the pure core of
 //! math_matrix_vector_validation.
 //!

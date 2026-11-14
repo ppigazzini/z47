@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 //! Scratch-buffer string concatenation -- the pure core of frontier_softmenus'
 //! concat2 / concat3.
 //!

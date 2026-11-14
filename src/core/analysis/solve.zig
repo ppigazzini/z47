@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const runtime = @import("solve_runtime.zig");
 // sumprod is in this object, so fnProgrammableSumInf is reached through the module
 // graph rather than a new exported symbol: the compiler checks the call, and z47's

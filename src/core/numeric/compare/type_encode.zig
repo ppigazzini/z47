@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 //! Type-report encoders -- pure cores of math_get_type's matrixVectorShape and
 //! angleCode.
 //!

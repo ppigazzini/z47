@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 // SAVE side of the backup.cfg raw RAM dump (saveRestoreCalcState.c saveCalc,
 // ~403-731). Generated faithful port: drives the ~200-field dump sequence in Zig,
 // calling the Zig typed value serializer (saveStateValue, below) + the progmem

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 //! Matrix-input small helpers -- the pure cores of math_matrix_mim_commands'
 //! truncToU16 and numEl.
 //!

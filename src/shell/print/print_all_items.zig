@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const std = @import("std");
 const frontier_print = @import("print.zig");
 fn bufPrintZ(buffer: []u8, comptime format: []const u8, args: anytype) ![:0]u8 {

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const runtime = @import("program_serialization_runtime.zig");
 const space_owned = @import("program_serialization_space.zig");
 

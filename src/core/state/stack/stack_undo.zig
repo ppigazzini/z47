@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const runtime = @import("../runtime/stack_runtime.zig");
 
 fn savedRegisterFor(reg: runtime.calcRegister_t) runtime.calcRegister_t {

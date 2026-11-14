@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const runtime = @import("shortint_runtime.zig");
 
 fn logicalOpResult(res: bool, xtype: u32, ytype: u32) void {

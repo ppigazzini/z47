@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const std = @import("std");
 const name_glyph = @import("name_glyph.zig"); // std-only variable-name glyph decoding
 const abi = @import("abi");

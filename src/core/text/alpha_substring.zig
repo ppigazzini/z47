@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 //! Alpha MID substring extraction -- the pure core of frontier_string_funcs'
 //! _alphaMid.
 //!

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const runtime = @import("shortint_runtime.zig");
 const shortint_core = @import("core.zig");
 

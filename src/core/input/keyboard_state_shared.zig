@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 pub fn implementation(comptime runtime: type) type {
     return struct {
         fn isGraphMode() bool {

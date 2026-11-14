@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 //! Small integer-math helpers -- the pure cores of frontier_softmenus'
 //! TO_BLOCKS / cmod / modulo / maxI / minI / cmodNonNeg.
 //!

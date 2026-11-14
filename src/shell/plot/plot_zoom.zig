@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 //! Plot viewport zoom -- the pure core of frontier_graphs' multiplyZoomFactors.
 //!
 //! Zooming the plot pans the min/max bounds outward by dx/dy * zoomfactor, then

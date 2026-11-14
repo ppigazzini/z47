@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 // Register value codec shared by the save/restore owners: the per-register
 // value <-> text conversion that was registerToSaveString / restoreRegister /
 // textTag (file-static in saveRestoreCalcState.c). The scalar type paths

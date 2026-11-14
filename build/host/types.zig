@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const std = @import("std");
 const build_common = @import("../common.zig");
 const keyboard_state = @import("../state/keyboard_state.zig");

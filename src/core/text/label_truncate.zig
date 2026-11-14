@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 //! Softmenu/catalog label truncation -- the pure core shared by
 //! frontier_softmenus and frontier_conversion_units (which carried byte-identical
 //! private copies of this pair).

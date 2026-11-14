@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const frontier_build_options = @import("frontier_build_options");
 const dmcp_build: bool = frontier_build_options.dmcp_build;
 const plot_regression = @import("plot_regression.zig");

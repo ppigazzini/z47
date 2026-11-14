@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 //! Reserved-register predicates -- the pure core of
 //! register_metadata_reallocate's reserved-register helpers.
 //!

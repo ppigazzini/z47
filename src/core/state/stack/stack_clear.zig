@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const runtime = @import("../runtime/stack_runtime.zig");
 const memory_owned = @import("../runtime/register_memory.zig");
 

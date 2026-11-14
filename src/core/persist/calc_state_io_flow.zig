@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const abi = @import("abi");
 const std = @import("std");
 const header_owned = @import("calc_state_header.zig");

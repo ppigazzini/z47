@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-3.0-only
 # Generate a malformed state-file corpus that stresses the
 # restore parser's dimension/length math -- the OOB class upstream guards against
 # in saveRestoreCalcState.c and z47 had never ported.

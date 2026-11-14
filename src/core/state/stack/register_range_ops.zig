@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 //! Register-range command geometry -- the pure core of stack_register_commands'
 //! regSwap / regCopy.
 //!

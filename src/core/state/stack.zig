@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const descriptor_owned = @import("stack/stack_descriptor.zig");
 const clear_owned = @import("stack/stack_clear.zig");
 const register_commands_owned = @import("stack/stack_register_commands.zig");

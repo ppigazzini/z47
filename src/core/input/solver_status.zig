@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 //! Solver equation-mode predicates -- the pure core of keyboard_state_runtime's
 //! isEqnIntegrate / isEqn1stDer / isEqn2ndDer.
 //!

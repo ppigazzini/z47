@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const build_options = @import("tone_build_options");
 const rom = @import("dmcp_rom");
 

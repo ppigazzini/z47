@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const std = @import("std");
 const register_storage_owned = @import("runtime_register_storage.zig");
 const real_owned = @import("runtime_real.zig");

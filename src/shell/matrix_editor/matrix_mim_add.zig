@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const frontier_matrix_editor = @import("matrix_editor.zig");
 const frontier_build_options = @import("frontier_build_options");
 // OPTION_DRG_CFG: DRG chooses the angular unit of a complex element being entered.

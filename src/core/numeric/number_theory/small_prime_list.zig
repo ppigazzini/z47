@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 //! The small-prime lookup list -- the pure core behind prime.zig.
 //!
 //! prime.zig enumerates the first 169 primes for trial division, the

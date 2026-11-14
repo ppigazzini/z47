@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const payload_bytes_owned = @import("register_metadata_payload_bytes.zig");
 const stack_runtime = @import("../runtime/stack_runtime.zig");
 

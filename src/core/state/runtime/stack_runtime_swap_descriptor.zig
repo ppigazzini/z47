@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 // _swapRegs' target resolution. stack.c holds the target in a uint16_t and
 // tests only the UPPER bound of each band -- `regist < FIRST_NAMED_VARIABLE +
 // numberOfNamedVariables` with no lower bound -- so a target in the 137..255 gap

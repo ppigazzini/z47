@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 //! Data-file byte transforms -- the pure cores of calc_state_register_codec's
 //! hexVal and dataFileCommaToPeriod.
 //!

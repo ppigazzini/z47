@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 // Shared text primitives for the calc-state save/restore owners: the small
 // number/word parse helpers and the uint64->hex formatter that were file-static
 // in saveRestoreCalcState.c (toInt16/toUint8/toUint16/toUint32, the skip_*/

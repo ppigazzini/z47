@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const std = @import("std");
 
 pub fn maskLeft(word_size: u8, mask: u64, number_of_bits: u16) u64 {

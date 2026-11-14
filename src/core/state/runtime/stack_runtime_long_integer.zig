@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const abi = @import("abi");
 const mpz_struct = abi.Mpz;
 

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const abi = @import("abi");
 const builtin = @import("builtin");
 const build_options = @import("flags_state_build_options");

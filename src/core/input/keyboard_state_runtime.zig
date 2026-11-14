@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const keyboard_state_build_options = @import("keyboard_state_build_options");
 const state_old_hw = keyboard_state_build_options.state_old_hw;
 // EXTRA_INFO_ON_CALC_ERROR: guards the console hints that accompany a

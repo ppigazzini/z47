@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const abi = @import("abi");
 const frontier_build_options = @import("frontier_build_options");
 const matrix_editor_refresh = @import("matrix_editor_refresh.zig");

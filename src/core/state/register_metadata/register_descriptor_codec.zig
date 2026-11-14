@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 //! Register descriptor bit-field codec -- the pure core of
 //! register_metadata_descriptor.zig.
 //!

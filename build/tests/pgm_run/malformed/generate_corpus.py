@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-3.0-only
 # Generate a malformed .p47 corpus that stresses the
 # program-load parser's header/length/offset math -- the OOB class upstream fixes
 # on the state/program-load path (577 statefile overflow, decode-literal-base-oob).

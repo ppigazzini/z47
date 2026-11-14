@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const diagnostics_owned = @import("vector_linpol_diagnostics.zig");
 const compute_owned = @import("vector_linpol_compute.zig");
 const io_owned = @import("vector_linpol_io.zig");

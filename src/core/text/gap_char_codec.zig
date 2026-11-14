@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 //! Digit-group gap-character normalization -- the pure core of display.c's
 //! getGapChar1Left / getGapChar1Right / getGapChar1Radix.
 //!

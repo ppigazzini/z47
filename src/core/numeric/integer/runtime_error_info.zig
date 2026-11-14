@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 pub const calcRegister_t = i16;
 
 pub fn setTemporaryInformation(temporary_information: *u8, ti_false: u8, condition: bool) void {

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 //! The panic namespace the load-path object roots install, so that raising
 //! `@setRuntimeSafety(true)` over an untrusted parse costs the firmware almost
 //! nothing.

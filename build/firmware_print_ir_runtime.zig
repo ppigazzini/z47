@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const rom = @import("dmcp_rom");
 
 const FLAG_PRTACT: u16 = 0xc020;

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const build_options = @import("state_descriptor_storage_build_options");
 
 /// Index of `reg` inside a band that starts at `first` and holds `count` entries,

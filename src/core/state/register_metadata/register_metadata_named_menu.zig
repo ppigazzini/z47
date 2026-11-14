@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const ITM_RCL: u16 = 51;
 
 const abi = @import("abi"); // shared ABI bindings

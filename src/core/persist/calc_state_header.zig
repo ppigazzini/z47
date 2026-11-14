@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const runtime = @import("calc_state_runtime.zig");
 
 pub const HeaderInfo = struct {

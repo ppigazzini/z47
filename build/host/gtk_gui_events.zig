@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const shortcut_owned = @import("gtk_gui_shortcut.zig");
 const keypress_owned = @import("gtk_gui_keypress.zig");
 const printer_window = @import("gtk_printer_window.zig");

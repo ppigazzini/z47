@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 //! Digit-group separator placement -- the pure core of frontier_display's
 //! IS_SEPARATOR_ family.
 //!

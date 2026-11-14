@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 //! Writes its object-path arguments to a file, one per line.
 //!
 //! This is how the build DECLARES the object set it links, so a gate can consume

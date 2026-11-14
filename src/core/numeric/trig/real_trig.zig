@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const atan2_owned = @import("atan2.zig");
 const build_options = @import("math_command_wrappers_build_options");
 const runtime = @import("../command_wrappers/runtime.zig");

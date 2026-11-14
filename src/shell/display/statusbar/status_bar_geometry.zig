@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 //! Status-bar layout coordinates -- the pure core of frontier_status_bar's
 //! xDate / xShift / yShift / lowerUnderLine.
 //!

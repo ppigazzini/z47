@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 //! Short-integer word-size resolution -- the pure core of fnSetWordSize.
 //!
 //! config.zig's fnSetWordSize takes a requested word size and derives

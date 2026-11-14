@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 // Zig port of the MIM-routed matrix commands of src/c47/mathematics/matrix.c:
 // fnGetMatrix / fnPutMatrix / fnSwapRows / fnSwapColumns (dispatched through the
 // indexed-element dispatcher callByIndexedMatrix), the standalone fnRowColSum

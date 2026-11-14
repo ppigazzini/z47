@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const matrix_nav = @import("matrix_nav.zig");
 const frontier_matrix_editor = @import("matrix_editor.zig");
 const Geometry = struct {

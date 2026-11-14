@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const builtin = @import("builtin");
 const keyboard_hit_test = @import("keyboard_hit_test.zig"); // std-only click hit-test
 const runtime = @import("keyboard_state_runtime.zig");

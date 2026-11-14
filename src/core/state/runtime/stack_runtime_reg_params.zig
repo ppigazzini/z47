@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 pub fn getRegClrRange(
     comptime use_fake_stack_state_harness_surface: bool,
     s: *u16,

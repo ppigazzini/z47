@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const std = @import("std");
 const atan2_owned = @import("atan2.zig");
 const abi = @import("abi");

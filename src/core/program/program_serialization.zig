@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const abi = @import("abi");
 const header_owned = @import("program_serialization_header.zig");
 const load_apply_owned = @import("program_serialization_load_apply.zig");

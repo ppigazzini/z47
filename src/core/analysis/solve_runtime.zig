@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const std = @import("std");
 const solve_build_options = @import("solve_build_options");
 const abi = @import("abi");

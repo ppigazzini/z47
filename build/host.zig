@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const std = @import("std");
 const host_context = @import("host/context.zig");
 const host_steps = @import("host/steps.zig");

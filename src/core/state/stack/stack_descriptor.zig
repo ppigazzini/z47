@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const runtime = @import("../runtime/stack_runtime.zig");
 fn shuffleOrder(regist_order: u16) [4]u16 {
     var out: [4]u16 = undefined;

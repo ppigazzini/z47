@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const std = @import("std");
 const real34_sign = @import("real34_sign.zig"); // std-only real34 sign-byte ops
 

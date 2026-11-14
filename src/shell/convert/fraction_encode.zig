@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 //! Fraction numerator/denominator glyph encoding -- the pure core shared by
 //! the display owner's _numerator and _denominator.
 //!

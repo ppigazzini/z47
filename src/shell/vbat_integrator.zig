@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 //! Battery-voltage integrator -- the pure core of config.zig's
 //! updateVbatIntegrated_impl.
 //!

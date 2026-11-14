@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-3.0-only */
 /* z47-owned supplementary linker fragment, applied before the upstream
  * stm32_program.ld via an additional -T.
  *

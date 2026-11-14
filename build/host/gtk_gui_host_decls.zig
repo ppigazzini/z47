@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 pub const GtkWidget = opaque {};
 pub const GtkDisplay = opaque {};
 pub const GdkMonitor = opaque {};

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const entrypoints_owned = @import("calc_state_entrypoints.zig");
 const io_flow_owned = @import("calc_state_io_flow.zig");
 const runtime = @import("calc_state_runtime.zig");

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const descriptor_storage = @import("../runtime/register_descriptor_storage.zig");
 const named_menu_owned = @import("register_metadata_named_menu.zig");
 const size_owned = @import("register_metadata_size.zig");

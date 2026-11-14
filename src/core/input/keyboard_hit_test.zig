@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 //! Click-coordinate to key hit-test -- the pure core of keyboard_state's
 //! convertXYToKey.
 //!

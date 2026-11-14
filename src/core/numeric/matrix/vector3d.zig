@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 // Zig port of the residual OPTION_VECTOR command surface of
 // src/c47/mathematics/matrix.c: is_2D3D_Register_Ready (classifies the X/Y/Z
 // stack as polar/2D-rect/spherical/cylindrical/3D-rect input) and the

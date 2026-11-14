@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const frontier_addons = @import("../extensions/addons.zig");
 const frontier_config = @import("../config.zig");
 const frontier_softmenus = @import("../display/softmenus/softmenus.zig");

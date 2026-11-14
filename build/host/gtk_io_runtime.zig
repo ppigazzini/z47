@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const gtk_io_owned = @import("gtk_io.zig");
 
 const STATE_FILE_NAME_VAR_LENGTH: usize = 20;

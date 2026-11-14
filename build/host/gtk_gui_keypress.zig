@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 // Owner module for z47_keyPressed_c_impl (ported from src/c47-gtk/gtkGui.c
 // keyPressed handler). Host-sim only (PC_BUILD / on-screen keyboard). The full
 // C body is reproduced here faithfully; control flow that used C goto/return is

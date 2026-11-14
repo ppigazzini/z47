@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 const std = @import("std");
 const build_common = @import("../common.zig");
 const abi_host = @import("../abi_host.zig");

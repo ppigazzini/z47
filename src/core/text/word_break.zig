@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 //! Display word-break trim -- the pure core of frontier_display's checkAndEat.
 //!
 //! When a display line must break, checkAndEat walks back up to 16 bytes from the
