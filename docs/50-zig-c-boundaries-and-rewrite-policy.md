@@ -223,7 +223,7 @@ closing a real hazard.
 | Rule | How this tree holds it | Gate |
 | --- | --- | --- |
 | **Confine `[*c]` to the C-ABI declaration surface on the load owners, and never let a helper take a pointer where the caller had a length.** A many-item pointer carries no length, so neither producer nor consumer can check one -- and a caller that writes `.ptr` is throwing away a bound it already held. | The four state-file owners (`calc_state_restore` / `_register_codec` / `_save` / `_backup`) carry `[*c]` tokens (`grep -o '\[\*c\]' src/core/persist/calc_state_{restore,register_codec,save,backup}.zig \| wc -l` counts them), most of them on the `extern` declarations for the C globals and libc functions they reach. `calc_state_load.zig`, `calc_state_policy.zig`, `calc_state_runtime.zig`, `calc_state_header.zig` and `program_serialization.zig`, `_header`, `_load_apply`, `_save`, `_screen` and `_export` are `[*c]`-free; the header-line helpers take `[]const u8` and their walks are bounded by `std.mem.sliceTo` rather than by a NUL another function promises. | `check-idiom-ratchet.sh` (`cptr_files` ceiling), `zig build test:unit` |
-| **Do not cast a pointer.** A cast asserts an alignment and a size the compiler then trusts, and on a 64-bit host a pool block promises only 4 bytes of alignment, so a cast that is harmless on the device traps or lies on the host. | Every C pointer is bound at the type the owner stores in it, and every byte buffer is read through `std.mem`. [Pointer Casts](#pointer-casts) lists the replacement for each need and the one exception, the graph engine's `PlotReal`. | `check-idiom-ratchet.sh` (`ptrcast_sites`, `constcast_sites` and `ptr_from_int_sites` ceilings), the cross-target object check in [75-debugging.md](75-debugging.md) |
+| **Do not cast a pointer.** A cast asserts an alignment and a size the compiler then trusts, and on a 64-bit host a pool block promises only 4 bytes of alignment, so a cast that is harmless on the device traps or lies on the host. | Every C pointer is bound at the type the owner stores in it, and every byte buffer is read through `std.mem`. [Pointer Casts](#pointer-casts) lists the replacement for each need and the two exceptions, the graph engine's `PlotReal` and the UN display's in-place rescale. | `check-idiom-ratchet.sh` (`ptrcast_sites`, `constcast_sites` and `ptr_from_int_sites` ceilings), the cross-target object check in [75-debugging.md](75-debugging.md) |
 | **Bound every count the file names, at the write and not at the loop.** A parser must keep reading one line per claimed entry to stay aligned with the stream; what must be checked is the index before it reaches the array. | `31fb6f755` -- `kbd_usr[37]`, `userMenuItems[18]`, `userAlphaItems[18]`, `userMenus[].menuItem[18]` and the 28 statistical sums; plus an empty `readLine()` treated as end of file, so a lying count cannot make one section parse the next section's header as its data. | `zig build state_load_fuzz` (the count mutations and overfill cases), `zig build test` -- the run prints its own case count; **and see the corpus note in [70](70-tests-and-verification.md)** |
 | **Bound what a file's dimensions IMPLY, in a width that cannot wrap.** A count the file states is not the hazard; the size it multiplies out to is. Do the capacity arithmetic wider than the field it will be stored in, or the product wraps before the test and the comparison is against a number the file never claimed. | `vector_shape.clampToRegisterCapacity` computes `rows * cols * element_blocks + header` in u64 and refuses anything past a u16 block count, which is what `reallocateRegister` takes. All three sites that turn file dimensions into a register go through it -- the `Rema` and `Cxma` branches of `restoreRegister` and `skipMatrixData` -- so the restore and skip sides cannot disagree on the element count. | `zig build test:unit` (the boundary is swept exhaustively for both element widths), `saveload_roundtrip` |
 | **A refused allocation is not a NULL to write through.** | `initUserKeyArgument`, `setUserKeyArgument`, `createMenu` and the EQUATIONS section check the result; `freeListAlloc` checks the region table's bound BEFORE the store, since past it the store is itself the overrun. | `zig build test`, `memory_parity` |
@@ -420,6 +420,11 @@ that removes a site.
 | An element of a `[*c]T` global | Index `@as([*]T, global)`. That is a coercion, which a safety-checked build checks for null. |
 | A C callback that receives `const void *` | Bind the function that takes the callback at the parameter types the callback reads, as `softmenus.zig` binds `qsort` for `sortMenu`. |
 | A pointer to C that is only read | A `const` parameter, not `@constCast` at the call. |
+| A pointer into its argument that the caller writes through, as `strchr` returns | A mutable parameter, and the result formed from it: `stringAfterPixels` returns `str` plus the offset its width scan stopped at. |
+| An empty result from a function whose other results are writable | A static writable buffer holding the empty value, as `dynmenuGetLabelWithDup`'s `no_label`, not a cast string literal. |
+| A pool pointer from a block index, or the reverse | `progmem.Ram` in `calc_state_progmem.zig`: block indices and byte offsets against the typed `ram` base, and back to a pointer by adding the offset. |
+| A frame that needs more alignment than the pool gives | `std.mem.alignInBytes` over the block's bytes, then `std.mem.bytesAsValue`, as `latticeAlloc` in `algdep.zig` does. |
+| An element before the start of an array, which upstream reaches with a negative index | `elements - @abs(index)` on a many-item pointer, as `elementAt` in `mim_commands.zig` does. |
 | An address the platform defines | `@ptrFromInt` of the SDK's constant: the DMCP ROM function table, the DMCP system data block, a GDK atom. Pointer arithmetic is not one: `p + n` on a many-item pointer or a typed view replaces `@ptrFromInt(@intFromPtr(p) + n)`. |
 | A value read at another type of the same size | `@bitCast`, which the compiler checks for size. It reinterprets a value, not memory, and is how C's signed-to-unsigned conversions are ported. |
 
@@ -435,8 +440,8 @@ when all of these hold:
   nothing reaches the storage another way.
 - The comment on the storage says why no union or typed view can express it, and
   which invariant keeps every access inside it.
-- The commit that adds it raises the `ptrcast_sites` ceiling, says why in its
-  body, and names the cast in this section.
+- The commit that adds it raises the cast's ceiling, says why in its body, and
+  names the cast in this section.
 
 The graph engine's `PlotReal`, in `../src/core/analysis/graph.zig`, is the one
 pointer cast in the tree. Upstream sizes every graph value for `PLOT_DIGITS`
@@ -452,10 +457,17 @@ a union with a `real_t` member is as large as a `real_t`. `PlotReal.r()` is the
 accessor. Nothing writes more digits than `ctxtGraphsLocal` allows, which is
 what keeps every access inside the 24 bytes.
 
-`@ptrFromInt` and `@constCast` have no exception beyond the platform addresses
-the table names. Every other site is debt the ratchet stops from growing, and
-the table gives its replacement; `grep -rn '@constCast\|@ptrFromInt' src
---include='*.zig'` lists them.
+`real34ToDisplayString2`, in `../src/shell/display/display.zig`, is the one
+`@constCast`. On the 2TO10 path of the UN display format, upstream rescales the
+caller's value in place through a `const` pointer. It restores the value only
+on the paths that reach the end of the function, so a value shown through one
+of the early returns stays rescaled. Parity needs that write to land in the
+caller's object. A local copy would not reproduce it, and a mutable parameter
+would make every caller of `real34ToDisplayString` claim a write that only this
+one path makes.
+
+`@ptrFromInt` has no exception beyond the platform addresses the table names.
+`grep -rn '@constCast\|@ptrFromInt' src --include='*.zig'` lists every site.
 
 ## `translate-c` Policy
 

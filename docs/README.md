@@ -73,8 +73,8 @@ flowchart TD
   DMCP5 firmware targets, package variants, and host-package rules
 - [50-zig-c-boundaries-and-rewrite-policy.md](50-zig-c-boundaries-and-rewrite-policy.md):
   the seam-and-core architecture, retained C surfaces, approved boundaries, the
-  rules for adding a new Zig or C seam, and the pointer-cast rule and its one
-  exception
+  rules for adding a new Zig or C seam, and the pointer-cast rule and its two
+  exceptions
 - [60-ci-and-release-workflow.md](60-ci-and-release-workflow.md): GitHub Actions
   lane split, governance guards, artifacts, and local reproduction map
 - [70-tests-and-verification.md](70-tests-and-verification.md): the one-command
