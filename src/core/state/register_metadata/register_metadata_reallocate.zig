@@ -27,10 +27,10 @@ fn needsReallocate(reg: runtime.calcRegister_t, data_type: u32, payload_size_in_
 }
 
 pub fn copySourceRegisterToDestRegister(source_register: runtime.calcRegister_t, dest_register: runtime.calcRegister_t) void {
-    // No early return for 2026-2030 here: c43's copySourceRegisterToDestRegister
-    // has none. Those five slots were z47's stale ADM/DENMAX/ISM/REALDF/NDEC and
-    // are c43's RESERVED_VARIABLE_SPARE placeholders, which normalizeLettered-
-    // Reserved now maps onto the global block exactly as c43 does.
+    // No early return for 2026-2030 here: registers.c's copy has none. Those five
+    // slots are the RESERVED_VARIABLE_SPARE placeholders, which
+    // normalizeLetteredReserved maps onto the global block exactly as upstream
+    // does.
     const normalized_source = normalizeLetteredReservedRegister(source_register);
     const normalized_dest = normalizeLetteredReservedRegister(dest_register);
     const source_type = descriptor_owned.getRegisterDataType(normalized_source);

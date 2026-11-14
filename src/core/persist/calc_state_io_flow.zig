@@ -116,8 +116,7 @@ pub fn doLoad(load_mode: u16, s: u16, n: u16, d: u16, load_type: u16) void {
         // file stores neither mask, so rederive both from the loaded word size
         // (config.c updateShortIntegerMasks) before any later short-integer op,
         // then clamp every short-integer register to it so no out-of-range bits
-        // survive the load. c43 calls the PAIR here; the clamp was missing until
-        // The oracle conversion left its symbol undefined.
+        // survive the load. Upstream calls the two together here.
         runtime.updateShortIntegerMasks();
         clampShortIntegerRegistersToWordSize();
     }

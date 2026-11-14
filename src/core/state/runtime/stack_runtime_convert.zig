@@ -6,13 +6,6 @@
 // `if (use_fake_stack_state_harness_surface)`, which is comptime-false in every
 // product build, so the calls below exist purely to hand each step to the
 // counting stub the parity runner links.
-//
-// It did carry a full second copy of both functions, reached from nowhere and
-// analysed by nothing. Being unanalysed, it had drifted: the complex-matrix
-// element loop addressed `.re` and `.im`, fields complex34_t does not have, so
-// the body could not have compiled if any configuration had asked it to. That is
-// what a divergent twin costs -- it looks like the implementation, and it is not
-// even valid code.
 
 const calcRegister_t = i16;
 
