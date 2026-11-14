@@ -34,12 +34,7 @@ const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 // TO_QSPI: read-only data lives in QSPI flash on the old_hw two-file firmware.
 // Pointer-bearing const goes to __DATA_CONST on macOS, where a __TEXT placement
 // faults on relocation.
-const code_data_section = if (frontier_build_options.dmcp_build and frontier_build_options.old_hw)
-    ".qspi_data"
-else if (builtin.target.os.tag == .macos)
-    "__DATA_CONST,__const"
-else
-    ".rodata";
+const code_data_section = abi.codeDataSection(frontier_build_options.dmcp_build and frontier_build_options.old_hw);
 
 // ---------------------------------------------------------------------------
 // Types

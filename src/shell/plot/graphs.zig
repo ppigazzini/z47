@@ -65,7 +65,8 @@ const dmcp_build: bool = frontier_build_options.dmcp_build;
 const old_hw: bool = frontier_build_options.old_hw;
 const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 const LIBRARY_FN_BASE: usize = frontier_build_options.library_fn_base;
-const code_section = if (dmcp_build and old_hw) ".qspi_data" else if (builtin.target.os.tag == .macos) "__TEXT,__text" else ".text";
+const code_section = abi.codeSection(dmcp_build and old_hw);
+const code_data_section = abi.codeDataSection(dmcp_build and old_hw);
 
 // ---------------------------------------------------------------------------
 // Types
@@ -819,7 +820,7 @@ const plotdeltas = struct {
     yd2: i8,
 };
 
-const tabDeltaBig linksection(code_section) = [_]plotdeltas{
+const tabDeltaBig linksection(code_data_section) = [_]plotdeltas{
     .{ .valid = 1, .xd1 = 0, .yd1 = -2, .xd2 = 5, .yd2 = 6 },
     .{ .valid = 1, .xd1 = 5, .yd1 = 6, .xd2 = -5, .yd2 = 6 },
     .{ .valid = 1, .xd1 = -5, .yd1 = 6, .xd2 = 0, .yd2 = -2 },
@@ -834,7 +835,7 @@ fn plotdeltabig(xn: i16, yn: i16) void {
     }
 }
 
-const tabDelta linksection(code_section) = [_]plotdeltas{
+const tabDelta linksection(code_data_section) = [_]plotdeltas{
     .{ .valid = 1, .xd1 = 0, .yd1 = -2, .xd2 = 0, .yd2 = 0 },
     .{ .valid = 1, .xd1 = -1, .yd1 = -1, .xd2 = 0, .yd2 = 0 },
     .{ .valid = 1, .xd1 = -1, .yd1 = 0, .xd2 = 0, .yd2 = 0 },
@@ -865,7 +866,7 @@ fn plotdelta(xn: i16, yn: i16) void {
     }
 }
 
-const tabDeltaIntBig linksection(code_section) = [_]plotdeltas{
+const tabDeltaIntBig linksection(code_data_section) = [_]plotdeltas{
     .{ .valid = 1, .xd1 = 0, .yd1 = -2, .xd2 = 3, .yd2 = -2 },
     .{ .valid = 1, .xd1 = 0, .yd1 = -1, .xd2 = 3, .yd2 = -1 },
     .{ .valid = 1, .xd1 = -3, .yd1 = 6, .xd2 = 0, .yd2 = 6 },
@@ -883,7 +884,7 @@ fn plotintbig(xn: i16, yn: i16) void {
     }
 }
 
-const tabDeltaInt linksection(code_section) = [_]plotdeltas{
+const tabDeltaInt linksection(code_data_section) = [_]plotdeltas{
     .{ .valid = 1, .xd1 = 0, .yd1 = 0, .xd2 = 0, .yd2 = 0 },
     .{ .valid = 1, .xd1 = 0, .yd1 = -1, .xd2 = 0, .yd2 = 0 },
     .{ .valid = 1, .xd1 = 0, .yd1 = -2, .xd2 = 0, .yd2 = 0 },
@@ -902,7 +903,7 @@ fn plotint(xn: i16, yn: i16) void {
     }
 }
 
-const tabDeltaRms linksection(code_section) = [_]plotdeltas{
+const tabDeltaRms linksection(code_data_section) = [_]plotdeltas{
     .{ .valid = 1, .xd1 = 1, .yd1 = -1, .xd2 = 0, .yd2 = 0 },
     .{ .valid = 1, .xd1 = -1, .yd1 = -1, .xd2 = 0, .yd2 = 0 },
     .{ .valid = 1, .xd1 = 0, .yd1 = -1, .xd2 = 0, .yd2 = 0 },

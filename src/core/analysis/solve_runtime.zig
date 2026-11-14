@@ -26,12 +26,8 @@ pub const option_tvm_newton = solve_build_options.option_tvm_newton;
 /// defines.h's OPTION_TVM_AMORT: the AMORT half of tvm.c. Without it the five
 /// AMORT commands are empty.
 pub const option_tvm_amort = solve_build_options.option_tvm_amort;
-pub const code_section = if (dm42_pkg_xip)
-    ".qspi_data"
-else if (@import("builtin").target.os.tag == .macos)
-    "__TEXT,__text"
-else
-    ".text";
+pub const code_section = abi.codeSection(dm42_pkg_xip);
+pub const code_data_section = abi.codeDataSection(dm42_pkg_xip);
 
 pub const bool_t = bool;
 pub const calcRegister_t = i16;

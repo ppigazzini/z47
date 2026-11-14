@@ -63,6 +63,15 @@ fn buildRootFromUpstreamCwd(b: *std.Build) []const u8 {
     return b.pathJoin(parts.items);
 }
 
+/// A copy of `artifact` without its debug sections, symbol table kept, for a
+/// lane that starts it under valgrind once per input. GNU objcopy, because
+/// `zig objcopy --strip-debug` does not handle these executables.
+fn withoutDebugSections(b: *std.Build, artifact: *std.Build.Step.Compile, name: []const u8) std.Build.LazyPath {
+    const strip = b.addSystemCommand(&.{ "objcopy", "--strip-debug" });
+    strip.addArtifactArg(artifact);
+    return strip.addOutputFileArg(name);
+}
+
 fn addTestSuiteRun(b: *std.Build, test_suite: *std.Build.Step.Compile, list_path: []const u8) *std.Build.Step.Run {
     const run_test_suite = b.addRunArtifact(test_suite);
     run_test_suite.setCwd(upstreamCwd(b));
@@ -1135,15 +1144,20 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.l
     // block, or a decision taken on bytes nothing wrote, is reported at the
     // instruction; every run fails on any memcheck report. The runs share one
     // working directory and its c47.sav, so they are chained, not parallel.
-    const memcheck_args = [_][]const u8{ "valgrind", "--quiet", "--error-exitcode=97", "--exit-on-first-error=yes" };
-    const memcheck_wrapper = "valgrind --quiet --error-exitcode=97 --exit-on-first-error=yes";
+    // The corpora start valgrind once per file and load mode, and reading a
+    // harness's DWARF at every start costs more than the run itself, so they run
+    // copies stripped of debug sections; the symbol table stays, and a report
+    // still names its functions. The single round-trip run keeps the debug
+    // information and skips only the inlining records.
+    const memcheck_args = [_][]const u8{ "valgrind", "--quiet", "--read-inline-info=no", "--error-exitcode=97", "--exit-on-first-error=yes" };
+    const memcheck_wrapper = "valgrind --quiet --read-inline-info=no --error-exitcode=97 --exit-on-first-error=yes";
     const pgm_load_valgrind_cmd = b.addSystemCommand(&.{ "bash", "build/tests/pgm_run/run-pgm-load-fuzz.sh" });
-    pgm_load_valgrind_cmd.addArtifactArg2(pgm_run_asan, .{});
+    pgm_load_valgrind_cmd.addFileArg2(withoutDebugSections(b, pgm_run_asan, "pgmRunAsan"), .{});
     pgm_load_valgrind_cmd.addArg("build/tests/pgm_run/malformed");
     pgm_load_valgrind_cmd.setCwd(b.path("."));
     pgm_load_valgrind_cmd.setEnvironmentVariable("HARNESS_WRAPPER", memcheck_wrapper);
     const state_load_valgrind_cmd = b.addSystemCommand(&.{ "bash", "build/tests/calc_state/run-state-load-fuzz.sh" });
-    state_load_valgrind_cmd.addArtifactArg2(state_load_harness, .{});
+    state_load_valgrind_cmd.addFileArg2(withoutDebugSections(b, state_load_harness, "stateLoadFuzz"), .{});
     state_load_valgrind_cmd.addArg("build/tests/calc_state/malformed");
     state_load_valgrind_cmd.setCwd(b.path("."));
     state_load_valgrind_cmd.setEnvironmentVariable("HARNESS_WRAPPER", memcheck_wrapper);

@@ -9,18 +9,11 @@
 // Pure 8-row printer-font glyph data, exported with C linkage and
 // force-included by frontier.zig; consumed by the IR printing path.
 
-const builtin = @import("builtin");
 const abi = @import("abi");
 const build_options = @import("frontier_build_options");
 
-// Upstream marks the table TO_QSPI: .qspi on old_hw DMCP, platform read-only
-// data section otherwise (mach-o needs SEG,sect form; ELF uses .rodata).
-const pf8_section = if (build_options.dmcp_build and build_options.old_hw)
-    ".qspi_data"
-else if (builtin.target.os.tag == .macos)
-    "__TEXT,__const"
-else
-    ".rodata";
+// Upstream marks the table TO_QSPI: .qspi on old_hw DMCP.
+const pf8_section = abi.codeDataSection(build_options.dmcp_build and build_options.old_hw);
 
 const PrinterFont8 = extern struct {
     numberOfGlyphs: u16,

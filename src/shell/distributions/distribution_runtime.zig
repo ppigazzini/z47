@@ -16,12 +16,8 @@ const extra_info_on_calc_error: bool = frontier_build_options.extra_info_on_calc
 // old_hw DM42 their code lives in the executable QSPI region (XIP) to free the
 // 704 KB main FLASH. Host and DMCP5 keep the normal code section (mach-o needs a
 // SEG,sect form). Owners tag their fn declarations `linksection(dr.code_section)`.
-pub const code_section = if (frontier_build_options.dmcp_build and frontier_build_options.old_hw)
-    ".qspi_data"
-else if (builtin.target.os.tag == .macos)
-    "__TEXT,__text"
-else
-    ".text";
+pub const code_section = abi.codeSection(frontier_build_options.dmcp_build and frontier_build_options.old_hw);
+pub const code_data_section = abi.codeDataSection(frontier_build_options.dmcp_build and frontier_build_options.old_hw);
 
 const DECNEG: u8 = 0x80;
 const DECNAN: u8 = 0x20;

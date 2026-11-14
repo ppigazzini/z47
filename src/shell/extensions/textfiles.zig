@@ -17,12 +17,8 @@ const frontier_build_options = @import("frontier_build_options");
 
 // The TO_QSPI string table goes to the executable QSPI region on the
 // flash-limited old_hw DM42, matching the sibling owners' code_section.
-const code_section = if (frontier_build_options.dmcp_build and frontier_build_options.old_hw)
-    ".qspi_data"
-else if (builtin.target.os.tag == .macos)
-    "__TEXT,__text"
-else
-    ".text";
+const code_section = abi.codeSection(frontier_build_options.dmcp_build and frontier_build_options.old_hw);
+const code_data_section = abi.codeDataSection(frontier_build_options.dmcp_build and frontier_build_options.old_hw);
 
 // ---------------------------------------------------------------------------
 // Types
@@ -105,7 +101,7 @@ fn clipRow(comptime s: []const u8) [SIZE_OF_EACH_CLIPBOARD_MSG]u8 {
     return row;
 }
 
-const ClipBoardMsg linksection(code_section) = [NUMBER_OF_CLIPBOARD_MSG][SIZE_OF_EACH_CLIPBOARD_MSG]u8{
+const ClipBoardMsg linksection(code_data_section) = [NUMBER_OF_CLIPBOARD_MSG][SIZE_OF_EACH_CLIPBOARD_MSG]u8{
     clipRow("Real matrix "), // 0
     clipRow(" too large for transfer"), // 1
     clipRow("Complex matrix "), // 2

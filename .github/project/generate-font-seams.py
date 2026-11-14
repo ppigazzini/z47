@@ -118,20 +118,13 @@ def render_zig(count: int, glyphs: list[tuple[int, list[int]]], spec: dict) -> s
     lines.append(f"// Pure {spec['title']} glyph data, exported with C linkage and")
     lines.append("// force-included by frontier.zig; consumed by the IR printing path.")
     lines.append("")
-    lines.append('const builtin = @import("builtin");')
     lines.append('const abi = @import("abi");')
     lines.append('const build_options = @import("frontier_build_options");')
     lines.append("")
-    lines.append("// Upstream marks the table TO_QSPI: .qspi on old_hw DMCP, platform read-only")
-    lines.append("// data section otherwise (mach-o needs SEG,sect form; ELF uses .rodata).")
+    lines.append("// Upstream marks the table TO_QSPI: .qspi on old_hw DMCP.")
     lines.append(
-        f"const {spec['section_const']} = if (build_options.dmcp_build and build_options.old_hw)"
+        f"const {spec['section_const']} = abi.codeDataSection(build_options.dmcp_build and build_options.old_hw);"
     )
-    lines.append('    ".qspi_data"')
-    lines.append("else if (builtin.target.os.tag == .macos)")
-    lines.append('    "__TEXT,__const"')
-    lines.append("else")
-    lines.append('    ".rodata";')
     lines.append("")
     lines.append(f"const {spec['struct_name']} = extern struct {{")
     lines.append("    numberOfGlyphs: u16,")

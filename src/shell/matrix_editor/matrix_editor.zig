@@ -56,12 +56,7 @@ const old_hw: bool = frontier_build_options.old_hw;
 
 const LIBRARY_FN_BASE: usize = frontier_build_options.library_fn_base;
 
-const code_section = if (dmcp_build and old_hw)
-    ".qspi_data"
-else if (builtin.target.os.tag == .macos)
-    "__TEXT,__text"
-else
-    ".text";
+const code_section = abi.codeSection(dmcp_build and old_hw);
 
 // ===========================================================================
 // Types (reused verbatim from calc_mode.zig so the union/struct

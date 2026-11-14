@@ -81,19 +81,9 @@ const WRITE_BUFFER_LEN: i32 = 4096;
 // DMCP ROM trampoline base (lft_ifc.h offsets; base differs old_hw / new_hw).
 const LIBRARY_FN_BASE: usize = frontier_build_options.library_fn_base;
 
-const code_section = if (dmcp_build and old_hw)
-    ".qspi_data"
-else if (builtin.target.os.tag == .macos)
-    "__TEXT,__text"
-else
-    ".text";
+const code_section = abi.codeSection(dmcp_build and old_hw);
 
-const code_data_section = if (dmcp_build and old_hw)
-    ".qspi_data"
-else if (builtin.target.os.tag == .macos)
-    "__DATA_CONST,__const"
-else
-    ".rodata";
+const code_data_section = abi.codeDataSection(dmcp_build and old_hw);
 
 // ===========================================================================
 // Types (matching the C build's layout, mirrored from sibling owners)
@@ -2280,7 +2270,7 @@ const vecCreate_t = struct {
 };
 // index: AUT=0,zxy=1,zyx=2,100=3,010=4,001=5,yx=6,10=7,01=8,tzyx=9.
 // [0] is the designated-initialiser hole upstream leaves zeroed.
-const vecCreate linksection(code_section) = [10]vecCreate_t{
+const vecCreate linksection(code_data_section) = [10]vecCreate_t{
     .{ .rows = 0, .cols = 0, .x = 0, .y = 0, .z = 0, .t = 0, .xdef = 0, .ydef = 0, .zdef = 0, .tdef = 0 }, // [0] AUT (unused slot)
     .{ .rows = 1, .cols = 3, .x = 0, .y = 1, .z = 2, .t = 3, .xdef = V_COPY, .ydef = V_COPY, .zdef = V_COPY, .tdef = V_NANA }, // [1] zxy
     .{ .rows = 1, .cols = 3, .x = 0, .y = 1, .z = 2, .t = 3, .xdef = V_COPY, .ydef = V_COPY, .zdef = V_COPY, .tdef = V_NANA }, // [2] zyx
@@ -2751,8 +2741,8 @@ pub export fn fnJM_2SI(unusedButMandatoryParameter: u16) callconv(.c) void {
 // ===========================================================================
 // exponentToUnitDisplayString : JM UNIT
 // ===========================================================================
-const SIprefixes linksection(code_section) = "q  r  y  z  a  f  p  n  u  m     k  M  G  T  P  E  Z  Y  R  Q  ".*;
-const ITSIprefixes linksection(code_section) = "K  M  G  T  P  E  Z  ".*;
+const SIprefixes linksection(code_data_section) = "q  r  y  z  a  f  p  n  u  m     k  M  G  T  P  E  Z  Y  R  Q  ".*;
+const ITSIprefixes linksection(code_data_section) = "K  M  G  T  P  E  Z  ".*;
 
 pub export fn exponentToUnitDisplayString(exponent: i32, flag2To10: bool_t, displayString_in: [*c]u8, displayValueString_in: [*c]u8, nimMode: bool_t) callconv(.c) void {
     var displayString = displayString_in;
@@ -2883,7 +2873,7 @@ pub export fn fnAngularModeJM(AMODE: u16) callconv(.c) void {
 // The unit after each angularMode_t when DRG steps. With the DRG menu it is the
 // menu's order, D, R, G, D.MS, MULπ and back to D; without it R, G, D, and D.MS
 // goes to D and MULπ to R.
-const drgNextUnit linksection(code_section) = if (option_drg_cfg)
+const drgNextUnit linksection(code_data_section) = if (option_drg_cfg)
     [_]u8{ amGrad, amDMS, amRadian, amMultPi, amDegree }
 else
     [_]u8{ amGrad, amDegree, amRadian, amDegree, amRadian };
@@ -3354,7 +3344,7 @@ pub export fn fnTimeTo(unusedButMandatoryParameter: u16) callconv(.c) void {
     }
 }
 
-pub export const toTimeParamReg linksection(code_section) = [3]calcRegister_t{ REGISTER_Z, REGISTER_Y, REGISTER_X };
+pub export const toTimeParamReg linksection(code_data_section) = [3]calcRegister_t{ REGISTER_Z, REGISTER_Y, REGISTER_X };
 
 pub export fn fnToTime(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
@@ -3777,7 +3767,7 @@ fn assignToMyAlpha_(position: u16) void {
 }
 
 // ribbonMappings: TO_QSPI static const int16_t[][7] -> pure-int table, code_section.
-const ribbonMappings linksection(code_section) = [_][7]i16{
+const ribbonMappings linksection(code_data_section) = [_][7]i16{
     .{ ITM_RIBBON_ENG_C47, -MNU_CPX, -MNU_MATX, ITM_CONSTpi, ITM_op_j, ITM_EXP, -MNU_TRG_C47 },
     .{ ITM_RIBBON_ENG_R47, ITM_op_j, -MNU_CPX, ITM_CONSTpi, -MNU_MATX, -MNU_TRG_R47, ITM_EXP },
 
@@ -3881,7 +3871,7 @@ inline fn drawPixelArray(xx: u32, yy: u32, coords: [*]const [2]u8, count: u8, wh
     }
 }
 
-const rbCheckedBlack linksection(code_section) = [_][2]u8{
+const rbCheckedBlack linksection(code_data_section) = [_][2]u8{
     .{ 1, 3 }, .{ 1, 4 }, .{ 1, 5 }, .{ 1, 6 }, .{ 1, 7 },
     .{ 2, 2 }, .{ 2, 3 }, .{ 2, 4 }, .{ 2, 5 }, .{ 2, 6 },
     .{ 2, 7 }, .{ 2, 8 }, .{ 3, 1 }, .{ 3, 2 }, .{ 3, 3 },
@@ -3895,7 +3885,7 @@ const rbCheckedBlack linksection(code_section) = [_][2]u8{
     .{ 8, 7 }, .{ 8, 8 }, .{ 9, 3 }, .{ 9, 4 }, .{ 9, 5 },
     .{ 9, 6 }, .{ 9, 7 },
 };
-const rbCheckedWhite linksection(code_section) = [_][2]u8{
+const rbCheckedWhite linksection(code_data_section) = [_][2]u8{
     .{ 0, 2 },  .{ 0, 3 },  .{ 0, 4 },  .{ 0, 5 }, .{ 0, 6 },  .{ 0, 7 },  .{ 0, 8 },
     .{ 1, 1 },  .{ 1, 8 },  .{ 1, 9 },  .{ 2, 0 }, .{ 2, 1 },  .{ 2, 9 },  .{ 2, 10 },
     .{ 3, 0 },  .{ 3, 4 },  .{ 3, 5 },  .{ 3, 6 }, .{ 3, 10 }, .{ 4, 0 },  .{ 4, 3 },
@@ -3910,7 +3900,7 @@ pub export fn RB_CHECKED(xx: u32, yy: u32) callconv(.c) void {
     drawPixelArray(xx, yy, &rbCheckedWhite, rbCheckedWhite.len, true);
 }
 
-const rbUncheckedBlack linksection(code_section) = [_][2]u8{
+const rbUncheckedBlack linksection(code_data_section) = [_][2]u8{
     .{ 1, 3 }, .{ 1, 4 }, .{ 1, 5 }, .{ 1, 6 }, .{ 1, 7 },
     .{ 2, 2 }, .{ 2, 3 }, .{ 2, 7 }, .{ 2, 8 }, .{ 3, 1 },
     .{ 3, 2 }, .{ 3, 8 }, .{ 3, 9 }, .{ 4, 1 }, .{ 4, 9 },
@@ -3919,7 +3909,7 @@ const rbUncheckedBlack linksection(code_section) = [_][2]u8{
     .{ 8, 7 }, .{ 8, 8 }, .{ 9, 3 }, .{ 9, 4 }, .{ 9, 5 },
     .{ 9, 6 }, .{ 9, 7 },
 };
-const rbUncheckedWhite linksection(code_section) = [_][2]u8{
+const rbUncheckedWhite linksection(code_data_section) = [_][2]u8{
     .{ 0, 2 },  .{ 0, 3 },  .{ 0, 4 },  .{ 0, 5 },  .{ 0, 6 }, .{ 0, 7 },  .{ 0, 8 },
     .{ 1, 1 },  .{ 1, 8 },  .{ 1, 9 },  .{ 2, 0 },  .{ 2, 1 }, .{ 2, 9 },  .{ 2, 10 },
     .{ 3, 0 },  .{ 3, 10 }, .{ 4, 0 },  .{ 4, 10 }, .{ 5, 0 }, .{ 5, 10 }, .{ 6, 0 },
@@ -3932,7 +3922,7 @@ pub export fn RB_UNCHECKED(xx: u32, yy: u32) callconv(.c) void {
     drawPixelArray(xx, yy, &rbUncheckedWhite, rbUncheckedWhite.len, true);
 }
 
-const cbCheckedBlack linksection(code_section) = [_][2]u8{
+const cbCheckedBlack linksection(code_data_section) = [_][2]u8{
     .{ 1, 1 }, .{ 1, 2 }, .{ 1, 3 }, .{ 1, 4 }, .{ 1, 5 }, .{ 1, 6 }, .{ 1, 7 }, .{ 1, 8 }, .{ 1, 9 },
     .{ 2, 1 }, .{ 2, 2 }, .{ 2, 3 }, .{ 2, 4 }, .{ 2, 5 }, .{ 2, 6 }, .{ 2, 7 }, .{ 2, 8 }, .{ 2, 9 },
     .{ 3, 1 }, .{ 3, 2 }, .{ 3, 8 }, .{ 3, 9 }, .{ 4, 1 }, .{ 4, 2 }, .{ 4, 4 }, .{ 4, 5 }, .{ 4, 6 },
@@ -3942,7 +3932,7 @@ const cbCheckedBlack linksection(code_section) = [_][2]u8{
     .{ 8, 8 }, .{ 8, 9 }, .{ 9, 1 }, .{ 9, 2 }, .{ 9, 3 }, .{ 9, 4 }, .{ 9, 5 }, .{ 9, 6 }, .{ 9, 7 },
     .{ 9, 8 }, .{ 9, 9 },
 };
-const cbCheckedWhite linksection(code_section) = [_][2]u8{
+const cbCheckedWhite linksection(code_data_section) = [_][2]u8{
     .{ 0, 0 },  .{ 0, 1 },  .{ 0, 2 }, .{ 0, 3 },  .{ 0, 4 }, .{ 0, 5 }, .{ 0, 6 }, .{ 0, 7 },  .{ 0, 8 }, .{ 0, 9 },  .{ 0, 10 },
     .{ 1, 0 },  .{ 1, 10 }, .{ 2, 0 }, .{ 2, 10 }, .{ 3, 0 }, .{ 3, 3 }, .{ 3, 4 }, .{ 3, 5 },  .{ 3, 6 }, .{ 3, 7 },  .{ 3, 10 },
     .{ 4, 0 },  .{ 4, 3 },  .{ 4, 7 }, .{ 4, 10 }, .{ 5, 0 }, .{ 5, 3 }, .{ 5, 7 }, .{ 5, 10 }, .{ 6, 0 }, .{ 6, 3 },  .{ 6, 7 },
@@ -3956,13 +3946,13 @@ pub export fn CB_CHECKED(xx: u32, yy: u32) callconv(.c) void {
     drawPixelArray(xx, yy, &cbCheckedWhite, cbCheckedWhite.len, true);
 }
 
-const cbUncheckedBlack linksection(code_section) = [_][2]u8{
+const cbUncheckedBlack linksection(code_data_section) = [_][2]u8{
     .{ 1, 1 }, .{ 1, 2 }, .{ 1, 3 }, .{ 1, 4 }, .{ 1, 5 }, .{ 1, 6 }, .{ 1, 7 }, .{ 1, 8 }, .{ 1, 9 },
     .{ 2, 1 }, .{ 2, 9 }, .{ 3, 1 }, .{ 3, 9 }, .{ 4, 1 }, .{ 4, 9 }, .{ 5, 1 }, .{ 5, 9 }, .{ 6, 1 },
     .{ 6, 9 }, .{ 7, 1 }, .{ 7, 9 }, .{ 8, 1 }, .{ 8, 9 }, .{ 9, 1 }, .{ 9, 2 }, .{ 9, 3 }, .{ 9, 4 },
     .{ 9, 5 }, .{ 9, 6 }, .{ 9, 7 }, .{ 9, 8 }, .{ 9, 9 },
 };
-const cbUncheckedWhite linksection(code_section) = [_][2]u8{
+const cbUncheckedWhite linksection(code_data_section) = [_][2]u8{
     .{ 0, 0 },  .{ 0, 1 },  .{ 0, 2 },  .{ 0, 3 },  .{ 0, 4 },  .{ 0, 5 },  .{ 0, 6 },  .{ 0, 7 },  .{ 0, 8 }, .{ 0, 9 },  .{ 0, 10 },
     .{ 1, 0 },  .{ 1, 10 }, .{ 2, 0 },  .{ 2, 10 }, .{ 3, 0 },  .{ 3, 10 }, .{ 4, 0 },  .{ 4, 10 }, .{ 5, 0 }, .{ 5, 10 }, .{ 6, 0 },
     .{ 6, 10 }, .{ 7, 0 },  .{ 7, 10 }, .{ 8, 0 },  .{ 8, 10 }, .{ 9, 0 },  .{ 9, 10 },
@@ -3974,7 +3964,7 @@ pub export fn CB_UNCHECKED(xx: u32, yy: u32) callconv(.c) void {
     drawPixelArray(xx, yy, &cbUncheckedWhite, cbUncheckedWhite.len, true);
 }
 
-const mbDiamond linksection(code_section) = [_][2]u8{
+const mbDiamond linksection(code_data_section) = [_][2]u8{
     .{ 5, 0 },
     .{ 4, 1 },
     .{ 6, 1 },
@@ -4007,7 +3997,7 @@ pub export fn MB_MACRO(xx: u32, yy: u32) callconv(.c) void {
     }
 }
 
-const mbDiamondFill linksection(code_section) = [_][2]u8{
+const mbDiamondFill linksection(code_data_section) = [_][2]u8{
     .{ 5, 3 },
     .{ 4, 4 },
     .{ 5, 4 },

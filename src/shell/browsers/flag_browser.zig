@@ -23,12 +23,7 @@ const LIBRARY_FN_BASE: usize = frontier_build_options.library_fn_base;
 
 // The TO_QSPI letteredFlagDisplay table goes to the executable QSPI region on the
 // flash-limited old_hw DM42, matching the sibling owners' code_section.
-const code_section = if (frontier_build_options.dmcp_build and frontier_build_options.old_hw)
-    ".qspi_data"
-else if (builtin.target.os.tag == .macos)
-    "__TEXT,__text"
-else
-    ".text";
+const code_section = abi.codeSection(frontier_build_options.dmcp_build and frontier_build_options.old_hw);
 
 // Relocatable read-only DATA (constants whose contents are pointers, e.g.
 // letteredFlagDisplay's txt string pointers) cannot live in the truly
@@ -36,12 +31,7 @@ else
 // embedded pointers at load time and faults writing the read-only page
 // (EXC_BAD_ACCESS code=2). Route such constants to a rebase-capable section.
 // QSPI/XIP and ELF .text resolve the pointers at link time, so keep those.
-const code_data_section = if (frontier_build_options.dmcp_build and frontier_build_options.old_hw)
-    ".qspi_data"
-else if (builtin.target.os.tag == .macos)
-    "__DATA_CONST,__const"
-else
-    ".text";
+const code_data_section = abi.codeDataSection(frontier_build_options.dmcp_build and frontier_build_options.old_hw);
 
 // ---------------------------------------------------------------------------
 // Types

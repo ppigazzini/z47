@@ -6,19 +6,12 @@
 // force-included by frontier.zig. findGlyph is exercised pervasively by the
 // testSuite via character display.
 
-const builtin = @import("builtin");
 const abi = @import("abi");
 const build_options = @import("frontier_build_options");
 
 // Upstream marks hexaFont TO_QSPI: the .qspi section only on old_hw DMCP
-// (DMCP_BUILD + TWO_FILE_PGM); host and DMCP5 use the platform's read-only data
-// section (mach-o needs SEG,sect form; ELF uses .rodata).
-const hexa_font_section = if (build_options.dmcp_build and build_options.old_hw)
-    ".qspi_data"
-else if (builtin.target.os.tag == .macos)
-    "__TEXT,__const"
-else
-    ".rodata";
+// (DMCP_BUILD + TWO_FILE_PGM). Its glyphs point at their bitmaps.
+const hexa_font_section = abi.codeDataSection(build_options.dmcp_build and build_options.old_hw);
 
 const glyph_t = abi.Glyph;
 

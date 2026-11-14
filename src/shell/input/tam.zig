@@ -29,12 +29,8 @@ const dmcp_build: bool = frontier_build_options.dmcp_build;
 const old_hw: bool = frontier_build_options.old_hw;
 const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 
-const code_section = if (dmcp_build and old_hw)
-    ".qspi_data"
-else if (builtin.target.os.tag == .macos)
-    "__TEXT,__text"
-else
-    ".text";
+const code_section = abi.codeSection(dmcp_build and old_hw);
+const code_data_section = abi.codeDataSection(dmcp_build and old_hw);
 
 // ---------------------------------------------------------------------------
 // Types
@@ -473,7 +469,7 @@ inline fn traceTamNameFailure(name: [*c]const u8) void {
 // ---------------------------------------------------------------------------
 // Operation tables (TO_QSPI const int16_t[][2]).
 // ---------------------------------------------------------------------------
-const StoOperations linksection(code_section) = [_][2]i16{
+const StoOperations linksection(code_data_section) = [_][2]i16{
     .{ ITM_ADD, ITM_STOADD },
     .{ ITM_SUB, ITM_STOSUB },
     .{ ITM_MULT, ITM_STOMULT },
@@ -490,7 +486,7 @@ const StoOperations linksection(code_section) = [_][2]i16{
     .{ ITM_dddVEL3, ITM_STOVEL3 },
     .{ ITM_dddIX, ITM_INDEX },
 };
-const RclOperations linksection(code_section) = [_][2]i16{
+const RclOperations linksection(code_data_section) = [_][2]i16{
     .{ ITM_ADD, ITM_RCLADD },
     .{ ITM_SUB, ITM_RCLSUB },
     .{ ITM_MULT, ITM_RCLMULT },
@@ -506,7 +502,7 @@ const RclOperations linksection(code_section) = [_][2]i16{
     .{ ITM_dddVEL3, ITM_RCLVEL3 },
     .{ ITM_dddVEL, ITM_RCLVEL },
 };
-const DelitmOperations linksection(code_section) = [_][2]i16{
+const DelitmOperations linksection(code_data_section) = [_][2]i16{
     .{ MNU_PROGS, ITM_DELITM_PROG },
     .{ MNU_USRMENUS, ITM_DELITM_MENU },
 };
@@ -703,7 +699,7 @@ fn _tamHandleShuffle(item: u16) void {
 // Indexed by (param - FIRST_LETTERED_REGISTER); {char, ALPHA_LABEL(1)/LOCAL_LABEL(0)}.
 const LOCAL_LABEL: i16 = 0;
 const ALPHA_LABEL: i16 = 1;
-const registerLookup linksection(code_section) = [_][2]i16{
+const registerLookup linksection(code_data_section) = [_][2]i16{
     .{ 88, 1 },
     .{ 89, 1 },
     .{ 90, 1 },

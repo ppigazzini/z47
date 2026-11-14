@@ -250,17 +250,17 @@ pub export var DXI: u8 = 0;
 pub export var DYI: u8 = 0;
 
 // Three possible templates for asymptotes (TO_QSPI tables in the C).
-pub export const asymptote_offsets_both linksection(runtime.code_section) = [3]PointOffset{
+pub export const asymptote_offsets_both linksection(runtime.code_data_section) = [3]PointOffset{
     .{ .dx = -1, .dy = -1 }, // (x - offset, -height)
     .{ .dx = -1, .dy = 1 }, // (x - offset, +height)
     .{ .dx = 1, .dy = 1 }, // (x + offset, +height)
 };
-pub export const asymptote_offsets_positive linksection(runtime.code_section) = [3]PointOffset{
+pub export const asymptote_offsets_positive linksection(runtime.code_data_section) = [3]PointOffset{
     .{ .dx = -1, .dy = 0 }, // (x - offset, 0)
     .{ .dx = -1, .dy = 1 }, // (x - offset, +height)
     .{ .dx = 1, .dy = 1 }, // (x + offset, +height)
 };
-pub export const asymptote_offsets_negative linksection(runtime.code_section) = [3]PointOffset{
+pub export const asymptote_offsets_negative linksection(runtime.code_data_section) = [3]PointOffset{
     .{ .dx = -1, .dy = 0 }, // (x - offset, 0)
     .{ .dx = -1, .dy = -1 }, // (x - offset, -height)
     .{ .dx = 1, .dy = -1 }, // (x + offset, -height)

@@ -29,12 +29,8 @@ const old_hw: bool = frontier_build_options.old_hw;
 const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 
 // Pure int16 tables: executable QSPI region on flash-limited old_hw DM42.
-const code_section = if (dmcp_build and old_hw)
-    ".qspi_data"
-else if (builtin.target.os.tag == .macos)
-    "__TEXT,__text"
-else
-    ".text";
+const code_section = abi.codeSection(dmcp_build and old_hw);
+const code_data_section = abi.codeDataSection(dmcp_build and old_hw);
 
 // ---------------------------------------------------------------------------
 // Types
@@ -279,7 +275,7 @@ inline fn moreInfoOnErr4(where: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]con
 // Keyboard layout tables (TO_QSPI const calcKey_t[37]).
 // C47 / DM42 / R47* are unconditional; E47/V47/N47/D47 are host-only (#if PC_BUILD).
 // ===========================================================================
-pub export const kbd_std_C47 linksection(code_section) = [37]calcKey_t{
+pub export const kbd_std_C47 linksection(code_data_section) = [37]calcKey_t{
     .{ .keyId = 21, .primary = 433, .fShifted = 1871, .gShifted = 1422, .keyLblAim = 0, .primaryAim = 550, .fShiftedAim = 576, .gShiftedAim = 620, .primaryTam = 531 },
     .{ .keyId = 22, .primary = 73, .fShifted = 60, .gShifted = 1872, .keyLblAim = 809, .primaryAim = 551, .fShiftedAim = 577, .gShiftedAim = 832, .primaryTam = 532 },
     .{ .keyId = 23, .primary = 61, .fShifted = 58, .gShifted = 1909, .keyLblAim = 1000, .primaryAim = 552, .fShiftedAim = 578, .gShiftedAim = 1000, .primaryTam = 533 },
@@ -319,7 +315,7 @@ pub export const kbd_std_C47 linksection(code_section) = [37]calcKey_t{
     .{ .keyId = 85, .primary = 95, .fShifted = -3022, .gShifted = -3027, .keyLblAim = 817, .primaryAim = 806, .fShiftedAim = -3001, .gShiftedAim = 817, .primaryTam = 95 },
 };
 
-const kbd_std_E47_data linksection(code_section) = [37]calcKey_t{
+const kbd_std_E47_data linksection(code_data_section) = [37]calcKey_t{
     .{ .keyId = 21, .primary = 44, .fShifted = 1871, .gShifted = 1422, .keyLblAim = 0, .primaryAim = 550, .fShiftedAim = 576, .gShiftedAim = 0, .primaryTam = 531 },
     .{ .keyId = 22, .primary = 51, .fShifted = 63, .gShifted = 1872, .keyLblAim = 809, .primaryAim = 551, .fShiftedAim = 577, .gShiftedAim = 0, .primaryTam = 532 },
     .{ .keyId = 23, .primary = 73, .fShifted = 60, .gShifted = 1909, .keyLblAim = 0, .primaryAim = 552, .fShiftedAim = 578, .gShiftedAim = 0, .primaryTam = 533 },
@@ -359,7 +355,7 @@ const kbd_std_E47_data linksection(code_section) = [37]calcKey_t{
     .{ .keyId = 85, .primary = 95, .fShifted = -3022, .gShifted = -3027, .keyLblAim = 817, .primaryAim = 806, .fShiftedAim = 817, .gShiftedAim = 817, .primaryTam = 95 },
 };
 
-const kbd_std_V47_data linksection(code_section) = [37]calcKey_t{
+const kbd_std_V47_data linksection(code_data_section) = [37]calcKey_t{
     .{ .keyId = 21, .primary = 73, .fShifted = 60, .gShifted = 1422, .keyLblAim = 0, .primaryAim = 550, .fShiftedAim = 576, .gShiftedAim = 832, .primaryTam = 531 },
     .{ .keyId = 22, .primary = 61, .fShifted = 58, .gShifted = 1872, .keyLblAim = 1000, .primaryAim = 551, .fShiftedAim = 577, .gShiftedAim = 1000, .primaryTam = 532 },
     .{ .keyId = 23, .primary = 71, .fShifted = 67, .gShifted = 1909, .keyLblAim = 0, .primaryAim = 552, .fShiftedAim = 578, .gShiftedAim = 2069, .primaryTam = 533 },
@@ -399,7 +395,7 @@ const kbd_std_V47_data linksection(code_section) = [37]calcKey_t{
     .{ .keyId = 85, .primary = 1737, .fShifted = 1543, .gShifted = 1405, .keyLblAim = 1737, .primaryAim = 1737, .fShiftedAim = 1543, .gShiftedAim = 1405, .primaryTam = 1737 },
 };
 
-const kbd_std_N47_data linksection(code_section) = [37]calcKey_t{
+const kbd_std_N47_data linksection(code_data_section) = [37]calcKey_t{
     .{ .keyId = 21, .primary = 76, .fShifted = 83, .gShifted = 1422, .keyLblAim = 0, .primaryAim = 550, .fShiftedAim = 576, .gShiftedAim = 2071, .primaryTam = 531 },
     .{ .keyId = 22, .primary = 74, .fShifted = 81, .gShifted = 1872, .keyLblAim = 809, .primaryAim = 551, .fShiftedAim = 577, .gShiftedAim = 2072, .primaryTam = 532 },
     .{ .keyId = 23, .primary = 79, .fShifted = 85, .gShifted = 1909, .keyLblAim = 0, .primaryAim = 552, .fShiftedAim = 578, .gShiftedAim = 2073, .primaryTam = 533 },
@@ -439,7 +435,7 @@ const kbd_std_N47_data linksection(code_section) = [37]calcKey_t{
     .{ .keyId = 85, .primary = 95, .fShifted = -3022, .gShifted = -3027, .keyLblAim = 817, .primaryAim = 806, .fShiftedAim = 817, .gShiftedAim = 817, .primaryTam = 95 },
 };
 
-const kbd_std_D47_data linksection(code_section) = [37]calcKey_t{
+const kbd_std_D47_data linksection(code_data_section) = [37]calcKey_t{
     .{ .keyId = 21, .primary = 69, .fShifted = 65, .gShifted = 1422, .keyLblAim = 0, .primaryAim = 550, .fShiftedAim = 576, .gShiftedAim = 2070, .primaryTam = 531 },
     .{ .keyId = 22, .primary = 71, .fShifted = 67, .gShifted = 1872, .keyLblAim = 809, .primaryAim = 551, .fShiftedAim = 577, .gShiftedAim = 2069, .primaryTam = 532 },
     .{ .keyId = 23, .primary = 61, .fShifted = 58, .gShifted = 1909, .keyLblAim = 1000, .primaryAim = 552, .fShiftedAim = 578, .gShiftedAim = 1000, .primaryTam = 533 },
@@ -479,7 +475,7 @@ const kbd_std_D47_data linksection(code_section) = [37]calcKey_t{
     .{ .keyId = 85, .primary = 95, .fShifted = -3022, .gShifted = -3027, .keyLblAim = 817, .primaryAim = 806, .fShiftedAim = 817, .gShiftedAim = 817, .primaryTam = 95 },
 };
 
-pub export const kbd_std_DM42 linksection(code_section) = [37]calcKey_t{
+pub export const kbd_std_DM42 linksection(code_data_section) = [37]calcKey_t{
     .{ .keyId = 21, .primary = 433, .fShifted = 434, .gShifted = 1422, .keyLblAim = 0, .primaryAim = 550, .fShiftedAim = 576, .gShiftedAim = 620, .primaryTam = 531 },
     .{ .keyId = 22, .primary = 73, .fShifted = 60, .gShifted = 1872, .keyLblAim = 809, .primaryAim = 551, .fShiftedAim = 577, .gShiftedAim = 832, .primaryTam = 532 },
     .{ .keyId = 23, .primary = 61, .fShifted = 58, .gShifted = 1909, .keyLblAim = 1000, .primaryAim = 552, .fShiftedAim = 578, .gShiftedAim = 1000, .primaryTam = 533 },
@@ -519,7 +515,7 @@ pub export const kbd_std_DM42 linksection(code_section) = [37]calcKey_t{
     .{ .keyId = 85, .primary = 95, .fShifted = -3022, .gShifted = -3027, .keyLblAim = 817, .primaryAim = 806, .fShiftedAim = -3001, .gShiftedAim = 817, .primaryTam = 95 },
 };
 
-pub export const kbd_std_R47f_g linksection(code_section) = [37]calcKey_t{
+pub export const kbd_std_R47f_g linksection(code_data_section) = [37]calcKey_t{
     .{ .keyId = 21, .primary = 58, .fShifted = 1830, .gShifted = 1850, .keyLblAim = 0, .primaryAim = 550, .fShiftedAim = 576, .gShiftedAim = 1159, .primaryTam = 531 },
     .{ .keyId = 22, .primary = 61, .fShifted = 1795, .gShifted = 1849, .keyLblAim = 1000, .primaryAim = 551, .fShiftedAim = 577, .gShiftedAim = 1000, .primaryTam = 532 },
     .{ .keyId = 23, .primary = 73, .fShifted = 108, .gShifted = 1909, .keyLblAim = 0, .primaryAim = 552, .fShiftedAim = 578, .gShiftedAim = 807, .primaryTam = 533 },
@@ -559,7 +555,7 @@ pub export const kbd_std_R47f_g linksection(code_section) = [37]calcKey_t{
     .{ .keyId = 85, .primary = 95, .fShifted = -3022, .gShifted = -3027, .keyLblAim = 817, .primaryAim = 806, .fShiftedAim = -3001, .gShiftedAim = 817, .primaryTam = 95 },
 };
 
-pub export const kbd_std_R47bk_fg linksection(code_section) = [37]calcKey_t{
+pub export const kbd_std_R47bk_fg linksection(code_data_section) = [37]calcKey_t{
     .{ .keyId = 21, .primary = 58, .fShifted = 1830, .gShifted = 1850, .keyLblAim = 0, .primaryAim = 550, .fShiftedAim = 576, .gShiftedAim = 1159, .primaryTam = 531 },
     .{ .keyId = 22, .primary = 61, .fShifted = 1795, .gShifted = 1849, .keyLblAim = 1000, .primaryAim = 551, .fShiftedAim = 577, .gShiftedAim = 1000, .primaryTam = 532 },
     .{ .keyId = 23, .primary = 73, .fShifted = 108, .gShifted = 1909, .keyLblAim = 0, .primaryAim = 552, .fShiftedAim = 578, .gShiftedAim = 807, .primaryTam = 533 },
@@ -599,7 +595,7 @@ pub export const kbd_std_R47bk_fg linksection(code_section) = [37]calcKey_t{
     .{ .keyId = 85, .primary = 95, .fShifted = -3022, .gShifted = -3027, .keyLblAim = 817, .primaryAim = 806, .fShiftedAim = -3001, .gShiftedAim = 817, .primaryTam = 95 },
 };
 
-pub export const kbd_std_R47fg_bk linksection(code_section) = [37]calcKey_t{
+pub export const kbd_std_R47fg_bk linksection(code_data_section) = [37]calcKey_t{
     .{ .keyId = 21, .primary = 58, .fShifted = 1830, .gShifted = 1850, .keyLblAim = 0, .primaryAim = 550, .fShiftedAim = 576, .gShiftedAim = 1159, .primaryTam = 531 },
     .{ .keyId = 22, .primary = 61, .fShifted = 1795, .gShifted = 1849, .keyLblAim = 1000, .primaryAim = 551, .fShiftedAim = 577, .gShiftedAim = 1000, .primaryTam = 532 },
     .{ .keyId = 23, .primary = 73, .fShifted = 108, .gShifted = 1909, .keyLblAim = 0, .primaryAim = 552, .fShiftedAim = 578, .gShiftedAim = 807, .primaryTam = 533 },
@@ -639,7 +635,7 @@ pub export const kbd_std_R47fg_bk linksection(code_section) = [37]calcKey_t{
     .{ .keyId = 85, .primary = 95, .fShifted = -3022, .gShifted = -3027, .keyLblAim = 817, .primaryAim = 806, .fShiftedAim = -3001, .gShiftedAim = 817, .primaryTam = 95 },
 };
 
-pub export const kbd_std_R47fg_g linksection(code_section) = [37]calcKey_t{
+pub export const kbd_std_R47fg_g linksection(code_data_section) = [37]calcKey_t{
     .{ .keyId = 21, .primary = 58, .fShifted = 1830, .gShifted = 1850, .keyLblAim = 0, .primaryAim = 550, .fShiftedAim = 576, .gShiftedAim = 1159, .primaryTam = 531 },
     .{ .keyId = 22, .primary = 61, .fShifted = 1795, .gShifted = 1849, .keyLblAim = 1000, .primaryAim = 551, .fShiftedAim = 577, .gShiftedAim = 1000, .primaryTam = 532 },
     .{ .keyId = 23, .primary = 73, .fShifted = 108, .gShifted = 1909, .keyLblAim = 0, .primaryAim = 552, .fShiftedAim = 578, .gShiftedAim = 807, .primaryTam = 533 },

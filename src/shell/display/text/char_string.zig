@@ -46,12 +46,7 @@ const dmcp_build: bool = frontier_build_options.dmcp_build;
 const old_hw: bool = frontier_build_options.old_hw;
 
 // Pointer-bearing const tables must avoid __TEXT on macOS (dyld rebase -> SIGBUS).
-const code_data_section = if (dmcp_build and old_hw)
-    ".qspi_data"
-else if (builtin.target.os.tag == .macos)
-    "__DATA_CONST,__const"
-else
-    ".text";
+const code_data_section = abi.codeDataSection(dmcp_build and old_hw);
 
 // ---------------------------------------------------------------------------
 // Types
