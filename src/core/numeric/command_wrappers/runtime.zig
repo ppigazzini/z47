@@ -74,12 +74,7 @@ pub const option_slvp_poly = build_options.option_slvp_poly;
 /// packages 1-4 (3896 bytes of flash), so DMCP5 and host keep it and no DM42
 /// package does; the two items exist there and refuse cleanly.
 pub const option_algdep = build_options.option_algdep;
-pub const code_section = if (dm42_pkg_xip)
-    ".qspi_data"
-else if (@import("builtin").target.os.tag == .macos)
-    "__TEXT,__text"
-else
-    ".text";
+pub const code_section = abi.codeSection(dm42_pkg_xip);
 
 // Relocatable read-only DATA (constants whose contents are pointers, e.g. the
 // add/sub cell dispatch tables of function pointers) must NOT share the truly
@@ -89,12 +84,7 @@ else
 // rebase-capable section (__DATA_CONST,__const, made read-only after fixup).
 // QSPI/XIP firmware and ELF .text resolve the pointers at link time (no runtime
 // rebase), so those targets keep the code section.
-pub const code_data_section = if (dm42_pkg_xip)
-    ".qspi_data"
-else if (@import("builtin").target.os.tag == .macos)
-    "__DATA_CONST,__const"
-else
-    ".text";
+pub const code_data_section = abi.codeDataSection(dm42_pkg_xip);
 
 // Mirrors EXTRA_INFO_ON_CALC_ERROR (src/c47/defines.h): the console
 // extra-error-info path is compiled out under TESTSUITE_BUILD and on DMCP

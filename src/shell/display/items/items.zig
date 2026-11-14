@@ -71,12 +71,7 @@ const option_atext_fonts: bool = frontier_build_options.option_atext_fonts;
 // bind itemToBeCoded and drop to CAT_NONE. Every target z47 builds defines it.
 const option_drg_cfg: bool = frontier_build_options.option_drg_cfg;
 
-const code_data_section = if (dmcp_build and old_hw)
-    ".qspi_data"
-else if (builtin.target.os.tag == .macos)
-    "__DATA_CONST,__const"
-else
-    ".rodata";
+const code_data_section = abi.codeDataSection(dmcp_build and old_hw);
 
 // ---------------------------------------------------------------------------
 // Types

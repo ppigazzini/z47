@@ -47,12 +47,7 @@ const option_struct_indent: bool = option_structured_pgm;
 const PEM_STRUCT_INDENT: i32 = 2; // spaces a structure indents its body by in the editor
 const PEM_MAX_STRUCT_LEVELS: i8 = 4; // levels the editor indents; deeper structures all share that column, the 400 pixel screen being the limit
 
-const code_section = if (dmcp_build and old_hw)
-    ".qspi_data"
-else if (builtin.target.os.tag == .macos)
-    "__TEXT,__text"
-else
-    ".text";
+const code_section = abi.codeSection(dmcp_build and old_hw);
 
 // ---------------------------------------------------------------------------
 // Types

@@ -30,12 +30,7 @@ const frontier_build_options = @import("frontier_build_options");
 // Cold date/time code (interactive, infrequent) runs from executable QSPI on
 // the flash-limited old_hw DM42 (XIP), keeping pkg1 main FLASH free for
 // always-on owners. Host/dmcp5/macos use the normal section (no-op there).
-const code_section = if (frontier_build_options.dmcp_build and frontier_build_options.old_hw)
-    ".qspi_data"
-else if (builtin.target.os.tag == .macos)
-    "__TEXT,__text"
-else
-    ".text";
+const code_section = abi.codeSection(frontier_build_options.dmcp_build and frontier_build_options.old_hw);
 const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 const dmcp_build: bool = frontier_build_options.dmcp_build;
 const old_hw: bool = frontier_build_options.old_hw;

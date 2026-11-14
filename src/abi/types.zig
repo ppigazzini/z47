@@ -678,6 +678,27 @@ pub const block_math = @import("block_math.zig");
 // file -- `std.lang` reads `root.panic` and ignores it anywhere else.
 pub const trap_panic = @import("trap_panic.zig");
 
+/// TO_QSPI (defines.h) for code: where an owner places its functions and its
+/// constants that hold no pointers. A DM42 image executes them from QSPI.
+pub fn codeSection(comptime qspi: bool) []const u8 {
+    if (qspi) return ".qspi_data";
+    return if (@import("builtin").target.ofmt == .macho) "__TEXT,__text" else ".text";
+}
+
+/// TO_QSPI for constant tables that hold pointers. LLVM emits such a table as
+/// data with relocations, in a writable section: named `.text` or `.rodata` on
+/// a hosted target, it made that whole output section writable, and `.text`
+/// writable and executable. Hosted targets get the section each object format makes
+/// read-only once relocations are applied; firmware links `.rodata` into flash.
+pub fn codeDataSection(comptime qspi: bool) []const u8 {
+    if (qspi) return ".qspi_data";
+    return switch (@import("builtin").target.ofmt) {
+        .macho => "__DATA_CONST,__const",
+        .coff => ".rdata",
+        else => if (@import("builtin").target.os.tag == .freestanding) ".rodata" else ".data.rel.ro",
+    };
+}
+
 // Shared std-only header-line match / integer parse, used by BOTH file families
 // (`core/persist` and `core/program`). Reachable as `abi.line_parse.*`. One
 // implementation on purpose: the per-family copies it replaced drifted apart.

@@ -35,12 +35,8 @@ const old_hw: bool = frontier_build_options.old_hw;
 const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 const option_structured_pgm: bool = frontier_build_options.option_structured_pgm;
 
-const code_section = if (dmcp_build and old_hw)
-    ".qspi_data"
-else if (builtin.target.os.tag == .macos)
-    "__TEXT,__text"
-else
-    ".text";
+const code_section = abi.codeSection(dmcp_build and old_hw);
+const code_data_section = abi.codeDataSection(dmcp_build and old_hw);
 
 // The three program owners this file works with all call back into it, so they are
 // reached by their C-ABI symbols rather than by @import: importing them would put
@@ -1495,7 +1491,7 @@ fn structGoToLocalStep(localStepNumber: u16) void {
 // WHILE reads. They are every item a program can hold whose function leaves
 // temporaryInformation at TI_TRUE or TI_FALSE. A new test command has to be added here as
 // well.
-const structTest linksection(code_section) = [_]i16{
+const structTest linksection(code_data_section) = [_]i16{
     5,    6,    7,    8,    9,    10,
     11,   12,   13,   14,   15,   16,
     17,   18,   19,   2850, 2851, 20,

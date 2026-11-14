@@ -62,19 +62,9 @@ const option_drg_cfg: bool = frontier_build_options.option_drg_cfg;
 const DRG_CONFIG_DEFAULT: u8 = (1 << 0) | (1 << 1) | (1 << 2);
 const option_atext_fonts: bool = frontier_build_options.option_atext_fonts;
 
-const code_section = if (dmcp_build and old_hw)
-    ".qspi_data"
-else if (builtin.target.os.tag == .macos)
-    "__TEXT,__text"
-else
-    ".text";
+const code_section = abi.codeSection(dmcp_build and old_hw);
 
-const code_data_section = if (dmcp_build and old_hw)
-    ".qspi_data"
-else if (builtin.target.os.tag == .macos)
-    "__DATA_CONST,__const"
-else
-    ".rodata";
+const code_data_section = abi.codeDataSection(dmcp_build and old_hw);
 
 // DMCP ROM trampoline base + the fixed sdb.calc_state address.
 const LIBRARY_FN_BASE: usize = frontier_build_options.library_fn_base;

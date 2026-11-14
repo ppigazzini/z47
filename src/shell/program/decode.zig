@@ -26,12 +26,8 @@ const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 const ir_printing: bool = frontier_build_options.ir_printing;
 
 // TO_QSPI data tables go to the executable QSPI region on old_hw DM42.
-const code_section = if (frontier_build_options.dmcp_build and frontier_build_options.old_hw)
-    ".qspi_data"
-else if (builtin.target.os.tag == .macos)
-    "__TEXT,__text"
-else
-    ".text";
+const code_section = abi.codeSection(frontier_build_options.dmcp_build and frontier_build_options.old_hw);
+const code_data_section = abi.codeDataSection(frontier_build_options.dmcp_build and frontier_build_options.old_hw);
 
 // ---------------------------------------------------------------------------
 // Types
@@ -194,15 +190,15 @@ const STD_op_j = "\xa1\x49";
 // TO_QSPI data tables (exported: print.c uses shuffleReg, manage.c uses
 // baseChars/angleChars).
 // ---------------------------------------------------------------------------
-pub export const shuffleReg linksection(code_section) = [4]u8{ 'x', 'y', 'z', 't' };
+pub export const shuffleReg linksection(code_data_section) = [4]u8{ 'x', 'y', 'z', 't' };
 // STD_SUP_0 .. STD_SUP_9 ("\xa1\x60" .. "\xa1\x69").
-pub export const supDigit linksection(code_section) = [24]u8{
+pub export const supDigit linksection(code_data_section) = [24]u8{
     0xa1, 0x60, 0xa1, 0x61, 0xa1, 0x62, 0xa1, 0x63, 0xa1, 0x64,
     0xa1, 0x65, 0xa1, 0x66, 0xa1, 0x67, 0xa1, 0x68, 0xa1, 0x69,
     0,    0,    0,    0,
 };
 // "??" then STD_BASE_1 .. STD_BASE_16 ("\xa4\x60" .. "\xa4\x6f").
-pub export const baseChars linksection(code_section) = [36]u8{
+pub export const baseChars linksection(code_data_section) = [36]u8{
     '?',  '?',
     0xa4, 0x60,
     0xa4, 0x61,
@@ -223,7 +219,7 @@ pub export const baseChars linksection(code_section) = [36]u8{
     0,    0,
 };
 // STD_SUP_r STD_SUP_g STD_DEGREE "??" STD_SUP_pir.
-pub export const angleChars linksection(code_section) = [12]u8{
+pub export const angleChars linksection(code_data_section) = [12]u8{
     0xa4, 0x93, 0xa4, 0x88, 0x80, 0xb0, '?', '?', 0xac, 0x66, 0, 0,
 };
 

@@ -30,12 +30,8 @@ const dmcp_build: bool = frontier_build_options.dmcp_build;
 // Rarely-hot bug-screen code and the two TO_QSPI string tables go to the
 // executable QSPI region on the flash-limited old_hw DM42 (matches the sibling
 // distribution owners' code_section).
-const code_section = if (frontier_build_options.dmcp_build and frontier_build_options.old_hw)
-    ".qspi_data"
-else if (builtin.target.os.tag == .macos)
-    "__TEXT,__text"
-else
-    ".text";
+const code_section = abi.codeSection(frontier_build_options.dmcp_build and frontier_build_options.old_hw);
+const code_data_section = abi.codeDataSection(frontier_build_options.dmcp_build and frontier_build_options.old_hw);
 
 // ---------------------------------------------------------------------------
 // Types
@@ -191,7 +187,7 @@ const STD_DELTA = "\x83\x94";
 const STD_GREATER_EQUAL = "\xa2\x65";
 
 // PRIu8 -> u, PRId16 -> d, PRIu32 -> u, PRIu16 -> u (preprocessor expansion).
-pub export const commonBugScreenMessages linksection(code_section) = [NUMBER_OF_BUG_SCREEN_MESSAGES][SIZE_OF_EACH_BUG_SCREEN_MESSAGE]u8{
+pub export const commonBugScreenMessages linksection(code_data_section) = [NUMBER_OF_BUG_SCREEN_MESSAGES][SIZE_OF_EACH_BUG_SCREEN_MESSAGE]u8{
     bugRow("In function %s:%d is an unexpected value for %s!"),
     bugRow("In function %s: unexpected calcMode value (%u) while processing key %s!"),
     bugRow("In function %s: no named variables defined!"),
@@ -348,7 +344,7 @@ const errorMessagePoolSize = blk: {
     break :blk size;
 };
 
-const errorMessagePool linksection(code_section) = blk: {
+const errorMessagePool linksection(code_data_section) = blk: {
     var pool: [errorMessagePoolSize]u8 = undefined;
     var at: usize = 0;
     for (errorMessageTexts) |text| {
@@ -359,7 +355,7 @@ const errorMessagePool linksection(code_section) = blk: {
     break :blk pool;
 };
 
-const errorMessageOffset linksection(code_section) = blk: {
+const errorMessageOffset linksection(code_data_section) = blk: {
     var offsets: [NUMBER_OF_ERROR_CODES]u16 = undefined;
     var at: u16 = 0;
     for (errorMessageTexts, 0..) |text, code| {

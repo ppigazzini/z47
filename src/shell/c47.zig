@@ -111,12 +111,13 @@ const pcg32_random_t = abi.Pcg32Random; // size 16 align 8
 // macos / .text else). These hold no pointers.
 // ---------------------------------------------------------------------------
 const code_section = dr.code_section;
+const code_data_section = dr.code_data_section;
 
-pub export const baseDigits: [63]u8 linksection(code_section) =
+pub export const baseDigits: [63]u8 linksection(code_data_section) =
     ("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz" ++ "\x00").*;
-pub export const registerFlagLetters: [27]u8 linksection(code_section) =
+pub export const registerFlagLetters: [27]u8 linksection(code_data_section) =
     ("XYZTABCDLIJKMNPQRSEFGHOUVW" ++ "\x00").*;
-pub export const KEY_X: [7]c_int linksection(code_section) =
+pub export const KEY_X: [7]c_int linksection(code_data_section) =
     .{ -1, 66, 133, 200, 267, 333, 400 };
 
 // ---------------------------------------------------------------------------
@@ -664,7 +665,7 @@ const dmcp = struct {
     // keeps internal: .rodata.str1.1 is placed in QSPI, where a stale image
     // garbles it.
     const pair_tag = build_options.version_str ++ "|" ++ build_options.compile_date ++ "\x00";
-    const qspiPairTag: [pair_tag.len]u8 linksection(code_section) = pair_tag.*;
+    const qspiPairTag: [pair_tag.len]u8 linksection(code_data_section) = pair_tag.*;
     const flashPairTag: [pair_tag.len]u8 linksection(".rodata.flashPairTag") = pair_tag.*;
     const qspiPairMsg: [4][29]u8 linksection(".rodata.qspiPairMsg") = .{
         "C47: this QSPI image is from\x00".*,
