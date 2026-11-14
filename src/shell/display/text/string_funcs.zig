@@ -441,8 +441,8 @@ pub export fn fnAlphaPos(regist: u16) callconv(.c) void {
     if (frontier_char_string.stringGlyphLength(regString(@intCast(regist))) != 0 and frontier_char_string.stringGlyphLength(regString(REGISTER_X)) != 0) {
         const ptrTarget: [*c]u8 = regString(REGISTER_X);
         const ptrRegist: [*c]u8 = regString(@intCast(regist));
-        const lgTarget: i16 = @intCast(stringByteLength(ptrTarget));
-        const lgRegist: i16 = @intCast(stringByteLength(ptrRegist));
+        const lgTarget: i16 = @truncate(stringByteLength(ptrTarget)); // int16_t in C
+        const lgRegist: i16 = @truncate(stringByteLength(ptrRegist));
         position = substringPosition(ptrRegist, lgRegist, ptrTarget, lgTarget);
     }
     int32ToLongInteger(position, &lgInt[0]);
