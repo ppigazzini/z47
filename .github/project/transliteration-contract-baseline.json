@@ -5,104 +5,134 @@
     {
       "c": "src/c47/items.c",
       "zig": "src/shell/display/items/items.zig",
-      "upstream_commits_2yr": 551,
-      "ratio": 0.993
+      "upstream_commits_2yr": 661,
+      "ratio": 0.998
     },
     {
       "c": "src/c47/softmenus.c",
       "zig": "src/shell/display/softmenus/softmenus.zig",
-      "upstream_commits_2yr": 424,
-      "ratio": 0.836
+      "upstream_commits_2yr": 543,
+      "ratio": 0.928
     },
     {
       "c": "src/c47/screen.c",
       "zig": "src/shell/display/screen.zig",
-      "upstream_commits_2yr": 345,
-      "ratio": 0.956
+      "upstream_commits_2yr": 485,
+      "ratio": 0.981
     },
     {
       "c": "src/c47/c47Extensions/addons.c",
       "zig": "src/shell/extensions/addons.zig",
-      "upstream_commits_2yr": 198,
+      "upstream_commits_2yr": 238,
       "ratio": 1.118
     },
     {
       "c": "src/c47/config.c",
       "zig": "src/shell/config.zig",
-      "upstream_commits_2yr": 170,
-      "ratio": 1.158
+      "upstream_commits_2yr": 226,
+      "ratio": 1.134
     },
     {
       "c": "src/c47/display.c",
       "zig": "src/shell/display/display.zig",
-      "upstream_commits_2yr": 154,
-      "ratio": 1.132
-    },
-    {
-      "c": "src/c47/solver/graph.c",
-      "zig": "src/core/analysis/graph.zig",
-      "upstream_commits_2yr": 104,
-      "ratio": 0.861
-    },
-    {
-      "c": "src/c47/c47.c",
-      "zig": "src/shell/c47.zig",
-      "upstream_commits_2yr": 102,
-      "ratio": 0.699
+      "upstream_commits_2yr": 218,
+      "ratio": 1.082
     },
     {
       "c": "src/c47/bufferize.c",
       "zig": "src/shell/display/bufferize.zig",
-      "upstream_commits_2yr": 98,
-      "ratio": 1.362
+      "upstream_commits_2yr": 137,
+      "ratio": 1.125
     },
     {
-      "c": "src/c47/ui/tam.c",
-      "zig": "src/shell/input/tam.zig",
-      "upstream_commits_2yr": 91,
-      "ratio": 1.203
+      "c": "src/c47/c47.c",
+      "zig": "src/shell/c47.zig",
+      "upstream_commits_2yr": 133,
+      "ratio": 0.698
     },
     {
-      "c": "src/c47/mathematics/prime.c",
-      "zig": "src/core/numeric/number_theory/prime.zig",
-      "upstream_commits_2yr": 86,
-      "ratio": 0.884
+      "c": "src/c47/solver/graph.c",
+      "zig": "src/core/analysis/graph.zig",
+      "upstream_commits_2yr": 129,
+      "ratio": 0.894
     },
     {
       "c": "src/c47/programming/manage.c",
       "zig": "src/shell/program/manage.zig",
-      "upstream_commits_2yr": 76,
-      "ratio": 1.211
-    },
-    {
-      "c": "src/c47/flags.c",
-      "zig": "src/core/state/flags.zig",
-      "upstream_commits_2yr": 74,
-      "ratio": 0.666
-    },
-    {
-      "c": "src/c47/solver/tvm.c",
-      "zig": "src/core/analysis/tvm.zig",
-      "upstream_commits_2yr": 61,
-      "ratio": 1.035
-    },
-    {
-      "c": "src/c47/c47Extensions/graphs.c",
-      "zig": "src/shell/plot/graphs.zig",
-      "upstream_commits_2yr": 59,
-      "ratio": 1.118
-    },
-    {
-      "c": "src/c47/plotstat.c",
-      "zig": "src/shell/plot/plotstat.zig",
-      "upstream_commits_2yr": 56,
-      "ratio": 0.851
+      "upstream_commits_2yr": 120,
+      "ratio": 1.225
     },
     {
       "c": "src/c47/mathematics/wp34s.c",
       "zig": "src/core/numeric/special/wp34s.zig",
-      "upstream_commits_2yr": 51,
-      "ratio": 0.789
+      "upstream_commits_2yr": 114,
+      "ratio": 0.786
+    },
+    {
+      "c": "src/c47/ui/tam.c",
+      "zig": "src/shell/input/tam.zig",
+      "upstream_commits_2yr": 101,
+      "ratio": 1.219
+    },
+    {
+      "c": "src/c47/mathematics/prime.c",
+      "zig": "src/core/numeric/number_theory/prime.zig",
+      "upstream_commits_2yr": 96,
+      "ratio": 0.917
+    },
+    {
+      "c": "src/c47/flags.c",
+      "zig": "src/core/state/flags.zig",
+      "upstream_commits_2yr": 83,
+      "ratio": 0.924
+    },
+    {
+      "c": "src/c47/solver/tvm.c",
+      "zig": "src/core/analysis/tvm.zig",
+      "upstream_commits_2yr": 73,
+      "ratio": 1.067
+    },
+    {
+      "c": "src/c47/plotstat.c",
+      "zig": "src/shell/plot/plotstat.zig",
+      "upstream_commits_2yr": 73,
+      "ratio": 0.918
+    },
+    {
+      "c": "src/c47/c47Extensions/graphs.c",
+      "zig": "src/shell/plot/graphs.zig",
+      "upstream_commits_2yr": 71,
+      "ratio": 1.182
+    },
+    {
+      "c": "src/c47/recall.c",
+      "zig": "src/shell/recall.zig",
+      "upstream_commits_2yr": 64,
+      "ratio": 1.526
+    },
+    {
+      "c": "src/c47/store.c",
+      "zig": "src/shell/store.zig",
+      "upstream_commits_2yr": 64,
+      "ratio": 1.46
+    },
+    {
+      "c": "src/c47/solver/integrate.c",
+      "zig": "src/core/analysis/integrate.zig",
+      "upstream_commits_2yr": 57,
+      "ratio": 0.64
+    },
+    {
+      "c": "src/c47/programming/decode.c",
+      "zig": "src/shell/program/decode.zig",
+      "upstream_commits_2yr": 52,
+      "ratio": 1.223
+    },
+    {
+      "c": "src/c47/assign.c",
+      "zig": "src/shell/input/assign.zig",
+      "upstream_commits_2yr": 50,
+      "ratio": 1.153
     }
   ]
 }
