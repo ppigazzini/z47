@@ -5,7 +5,7 @@
 # of MALFORMED .p47 files. The load path (fnLoadProgram) is the empirical memory-bug
 # surface upstream keeps fixing (577 statefile overflow, decode-literal-base-oob); the
 # existing cov tests only exercise VALID round-trips, so this fills the malformed-input
-# gap using the AddressSanitizer lane z47 already builds.
+# gap using the UBSan-instrumented harness z47 already builds.
 #
 # PASS: every malformed file is handled with a clean exit or a graceful load-failure
 #       (the harness returns 1 on "no labels"). FAIL: any sanitizer report, any crash
@@ -25,10 +25,7 @@ read -r -a wrapper <<<"${HARNESS_WRAPPER:-}"
 # raising SIGABRT; the marker grep is the primary signal either way.
 export PGM_LOAD_ONLY=1
 # The lane is instrumented with UBSan, not AddressSanitizer: Zig's `sanitize_c`
-# is the UBSan knob and Zig ships no ASan runtime at all. ASAN_OPTIONS
-# is kept because it costs nothing and would apply if a real ASan is ever linked;
-# UBSAN_OPTIONS is the one that takes effect today.
-export ASAN_OPTIONS="detect_leaks=0:abort_on_error=0:exitcode=86:handle_segv=1"
+# is the UBSan knob and Zig ships no ASan runtime at all.
 export UBSAN_OPTIONS="halt_on_error=1:print_stacktrace=1"
 
 total=0
@@ -45,12 +42,9 @@ for f in "$corpus"/*.p47; do
     echo "FAIL (memcheck caught a bug): $f"
     printf '%s\n' "$out" | grep -E "^==[0-9]+==" | head -12
     fail=$((fail + 1))
-  elif printf '%s' "$out" | grep -qE "ERROR: AddressSanitizer|SUMMARY: AddressSanitizer|runtime error:"; then
-    echo "FAIL (the sanitizer caught a bug): $f"
-    printf '%s\n' "$out" | grep -E "AddressSanitizer|runtime error:|#[0-9]+ 0x" | head -6
-    fail=$((fail + 1))
-  elif [ "$rc" -eq 86 ]; then
-    echo "FAIL (sanitizer exitcode): $f"
+  elif printf '%s' "$out" | grep -q "runtime error:"; then
+    echo "FAIL (UBSan caught a bug): $f"
+    printf '%s\n' "$out" | grep -E "runtime error:|#[0-9]+ 0x" | head -6
     fail=$((fail + 1))
   elif printf '%s' "$out" | grep -q "BUDGET EXCEEDED"; then
     echo "FAIL (unbounded on malformed input -- the harness budget stopped it): $f"

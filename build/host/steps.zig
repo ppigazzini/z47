@@ -1082,12 +1082,12 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.l
     const pgm_run_step = b.step("pgm_run", "Load and XEQ a .p47 program on the full core (-Dpgm=<file.p47>)");
     pgm_run_step.dependOn(&run_pgm_run.step);
 
-    // Run a corpus of MALFORMED .p47 files through the real
-    // program-load path under AddressSanitizer. This is the one justified memory-
-    // correctness task -- the load path is the empirical bug surface (upstream 577
-    // statefile overflow, decode-literal-base-oob), and the existing cov tests only
-    // exercise VALID round-trips. A graceful reject (no labels -> exit 1) passes; an
-    // OOB read/write on a malformed file aborts ASAN -> the driver fails the build.
+    // Run a corpus of MALFORMED .p47 files through the real program-load path
+    // under UBSan and Zig's safety checks. The load path is the empirical bug
+    // surface (upstream 577 statefile overflow, decode-literal-base-oob), and the
+    // existing cov tests only exercise VALID round-trips. A graceful reject (no
+    // labels -> exit 1) passes; an undefined access or a tripped safety check
+    // fails the driver.
     const pgm_run_asan = host_builders.addFullCoreHarness(
         b,
         context.host_target,
