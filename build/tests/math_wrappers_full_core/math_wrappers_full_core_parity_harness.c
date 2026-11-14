@@ -69,6 +69,7 @@ void oracle_fnCheckSpecial(uint16_t unusedButMandatoryParameter);
 void oracle_fnCheckType(uint16_t type);
 void oracle_fnGetType(uint16_t unusedButMandatoryParameter);
 void oracle_fnRound(uint16_t unusedButMandatoryParameter);
+void oracle_fnDecomp(uint16_t unusedButMandatoryParameter);
 void oracle_fnSquareRoot(uint16_t unusedButMandatoryParameter);
 void oracle_fnCubeRoot(uint16_t unusedButMandatoryParameter);
 void oracle_fnArcsin(uint16_t unusedButMandatoryParameter);
@@ -985,6 +986,7 @@ static const predicate_t PREDICATES[] = {
   // stack, so the register file and the RAM slab carry the verdict, not just
   // temporaryInformation.
   { "fnRound",                  fnRound,             oracle_fnRound,             0                  },
+  { "fnDecomp",                 fnDecomp,            oracle_fnDecomp,            0                  },
 
   // squareRoot.c and cubeRoot.c were compiled into the oracle for the leaves they
   // give the families above, and their own entry points were never driven.

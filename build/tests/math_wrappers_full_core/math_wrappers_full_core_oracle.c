@@ -631,6 +631,19 @@
 #include "../../../upstream/src/c47/mathematics/idiv.c"
 #include "../../../upstream/src/c47/mathematics/idivr.c"
 #include "../../../upstream/src/c47/mathematics/round.c"
+
+// decomp.c's decompError reduces to typeError here, as the note above says.
+void oracle_decompLonI(void);
+void oracle_decompReal(void);
+#define Decomp oracle_Decomp
+#define decompLonI oracle_decompLonI
+#define decompReal oracle_decompReal
+#define fnDecomp oracle_fnDecomp
+#include "../../../upstream/src/c47/mathematics/decomp.c"
+#undef fnDecomp
+#undef decompReal
+#undef decompLonI
+#undef Decomp
 #include "../../../upstream/src/c47/mathematics/toPolar.c"
 #include "../../../upstream/src/c47/mathematics/toRect.c"
 #include "../../../upstream/src/c47/mathematics/squareRoot.c"
