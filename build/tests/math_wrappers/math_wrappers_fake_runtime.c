@@ -82,13 +82,6 @@ static struct {
 
 static struct {
   bool_t enabled;
-  int32_t error_code;
-  bool_t fractional;
-  int32_t value;
-} longint_quiet_result;
-
-static struct {
-  bool_t enabled;
   real_t sin_value;
   real_t cos_value;
   real_t tan_value;
@@ -592,10 +585,6 @@ void mathWrappersReset(void) {
   fraction_result.denom = 4;
   fraction_result.less_equal_greater = 0;
 
-  longint_quiet_result.enabled = false;
-  longint_quiet_result.error_code = ERROR_NONE;
-  longint_quiet_result.fractional = false;
-  longint_quiet_result.value = 0;
 
   trig_outputs.enabled = false;
   spcres_flag = false;
@@ -837,13 +826,6 @@ void mathWrappersSetRealZInput(bool_t available, int32_t value, uint8_t bits) {
   current_register_z_tag = amNone;
 }
 
-void mathWrappersSetRealTInput(bool_t available, int32_t value, uint8_t bits) {
-  real_t_input.available = available;
-  setFakeReal(&real_t_input.value, value, bits);
-  setRegisterReal34(register_t_slot, value, bits);
-  current_register_t_data_type = dtReal34;
-  current_register_t_tag = amNone;
-}
 
 void mathWrappersSetTimeInput(bool_t available, int32_t value, uint8_t bits) {
   register_scalar_available = available;
@@ -884,15 +866,6 @@ void mathWrappersSetComplexZInput(bool_t available, int32_t real_value, uint8_t 
   current_register_z_tag = amNone;
 }
 
-void mathWrappersSetComplexTInput(bool_t available, int32_t real_value, uint8_t real_bits, int32_t imag_value, uint8_t imag_bits) {
-  complex_t_input.available = available;
-  setFakeReal(&complex_t_input.real, real_value, real_bits);
-  setFakeReal(&complex_t_input.imag, imag_value, imag_bits);
-  setRegisterReal34(register_t_slot, real_value, real_bits);
-  setRegisterReal34(register_t_slot + sizeof(real34_t), imag_value, imag_bits);
-  current_register_t_data_type = dtComplex34;
-  current_register_t_tag = amNone;
-}
 
 void mathWrappersSetShortIntegerInput(int64_t value) {
   *shortIntegerSlot(REGISTER_X) = encodeShortInteger(value);
@@ -904,17 +877,7 @@ void mathWrappersSetShortIntegerYInput(int64_t value) {
   current_register_y_tag = value < 0 ? LI_NEGATIVE : value > 0 ? LI_POSITIVE : LI_ZERO;
 }
 
-void mathWrappersSetShortIntegerZInput(int64_t value) {
-  *shortIntegerSlot(REGISTER_Z) = encodeShortInteger(value);
-  current_register_z_data_type = dtShortInteger;
-  current_register_z_tag = value < 0 ? LI_NEGATIVE : value > 0 ? LI_POSITIVE : LI_ZERO;
-}
 
-void mathWrappersSetShortIntegerTInput(int64_t value) {
-  *shortIntegerSlot(REGISTER_T) = encodeShortInteger(value);
-  current_register_t_data_type = dtShortInteger;
-  current_register_t_tag = value < 0 ? LI_NEGATIVE : value > 0 ? LI_POSITIVE : LI_ZERO;
-}
 
 void mathWrappersSetShortIntegerMode(uint8_t mode) {
   shortIntegerMode = mode;
@@ -939,44 +902,13 @@ void mathWrappersSetLongIntegerZInput(bool_t available, int32_t value) {
   current_register_z_tag = value < 0 ? LI_NEGATIVE : value > 0 ? LI_POSITIVE : LI_ZERO;
 }
 
-void mathWrappersSetLongIntegerTInput(bool_t available, int32_t value) {
-  longint_t_input.available = available;
-  longint_t_input.value = value;
-  current_register_t_data_type = dtLongInteger;
-  current_register_t_tag = value < 0 ? LI_NEGATIVE : value > 0 ? LI_POSITIVE : LI_ZERO;
-}
 
-void mathWrappersSetLongIntegerQuietResult(bool_t enabled,
-                                           int32_t error_code,
-                                           bool_t fractional,
-                                           int32_t value) {
-  longint_quiet_result.enabled = enabled;
-  longint_quiet_result.error_code = error_code;
-  longint_quiet_result.fractional = fractional;
-  longint_quiet_result.value = value;
-}
 
-void mathWrappersSetFractionResult(bool_t result,
-                                   int16_t sign,
-                                   uint64_t int_part,
-                                   uint64_t numer,
-                                   uint64_t denom,
-                                   int16_t less_equal_greater) {
-  fraction_result.result = result;
-  fraction_result.sign = sign;
-  fraction_result.int_part = int_part;
-  fraction_result.numer = numer;
-  fraction_result.denom = denom;
-  fraction_result.less_equal_greater = less_equal_greater;
-}
 
 void mathWrappersSetFlagCpxRes(bool_t enabled) {
   cpxres_flag = enabled;
 }
 
-void mathWrappersSetFlagCarry(bool_t enabled) {
-  carry_flag = enabled;
-}
 
 void mathWrappersSetFlagOverflow(bool_t enabled) {
   overflow_flag = enabled;
@@ -1493,46 +1425,36 @@ int getRegisterAsLongIntQuiet(calcRegister_t reg, longInteger_t val, bool_t *fra
   snapshot.get_register_as_longint_quiet_calls++;
   mpz_init(val);
 
-  if(longint_quiet_result.enabled) {
-    error_code = (uint8_t)longint_quiet_result.error_code;
-    has_fractional = longint_quiet_result.fractional;
-    value = longint_quiet_result.value;
-    if(error_code == ERROR_NONE) {
+  switch(current_register_data_type) {
+    case dtLongInteger:
+      value = reg == REGISTER_Y ? longint_y_input.value : reg == REGISTER_Z ? longint_z_input.value : longint_input.value;
       mpz_set_si(val, value);
+      break;
+
+    case dtShortInteger: {
+      longInteger_t tmp;
+
+      convertShortIntegerRegisterToLongInteger(reg, tmp);
+      value = (int32_t)mpz_get_si(tmp);
+      mpz_set(val, tmp);
+      mpz_clear(tmp);
+      break;
     }
-  }
-  else {
-    switch(current_register_data_type) {
-      case dtLongInteger:
-        value = reg == REGISTER_Y ? longint_y_input.value : reg == REGISTER_Z ? longint_z_input.value : longint_input.value;
-        mpz_set_si(val, value);
-        break;
 
-      case dtShortInteger: {
-        longInteger_t tmp;
-
-        convertShortIntegerRegisterToLongInteger(reg, tmp);
-        value = (int32_t)mpz_get_si(tmp);
-        mpz_set(val, tmp);
-        mpz_clear(tmp);
-        break;
+    case dtComplex34:
+    case dtReal34:
+      if(realIsSpecial(&real_input.value)) {
+        error_code = ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN;
       }
+      else {
+        value = fakeRealValue(&real_input.value);
+        mpz_set_si(val, value);
+      }
+      break;
 
-      case dtComplex34:
-      case dtReal34:
-        if(realIsSpecial(&real_input.value)) {
-          error_code = ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN;
-        }
-        else {
-          value = fakeRealValue(&real_input.value);
-          mpz_set_si(val, value);
-        }
-        break;
-
-      default:
-        error_code = ERROR_INVALID_DATA_TYPE_FOR_OP;
-        break;
-    }
+    default:
+      error_code = ERROR_INVALID_DATA_TYPE_FOR_OP;
+      break;
   }
 
   snapshot.get_register_as_longint_quiet_error = error_code;
