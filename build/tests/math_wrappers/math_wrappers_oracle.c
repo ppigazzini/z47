@@ -2,15 +2,6 @@
 
 #include "c47.h"
 
-void z47_math_wrappers_legacy_fnXAlmostEqual(uint16_t regist);
-void z47_math_wrappers_legacy_fnRound(uint16_t unusedButMandatoryParameter);
-void z47_math_wrappers_legacy_fnDivide(uint16_t unusedButMandatoryParameter);
-void z47_math_wrappers_legacy_fnAdd(uint16_t unusedButMandatoryParameter);
-void z47_math_wrappers_legacy_fnSubtract(uint16_t unusedButMandatoryParameter);
-void z47_math_wrappers_legacy_fnMultiply(uint16_t unusedButMandatoryParameter);
-void z47_math_wrappers_legacy_fnIDiv(uint16_t unusedButMandatoryParameter);
-void z47_math_wrappers_legacy_fnIDivR(uint16_t unusedButMandatoryParameter);
-
 #define fnMin oracle_fnMin
 #include "../../../upstream/src/c47/mathematics/min.c"
 #undef fnMin

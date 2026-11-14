@@ -31,7 +31,7 @@ build/tests/math_wrappers/math_wrappers_circular_trig_diff.c
 build/tests/math_wrappers/math_wrappers_eigen_diff.c
 build/tests/math_wrappers/math_wrappers_eigen_link_stubs.c
 build/tests/math_wrappers/math_wrappers_fake_runtime.c
-build/tests/math_wrappers/math_wrappers_legacy_link_stubs.c
+build/tests/math_wrappers/math_wrappers_link_stubs.c
 build/tests/math_wrappers/math_wrappers_ln_complex_diff.c
 build/tests/math_wrappers/math_wrappers_oracle.c
 build/tests/math_wrappers/math_wrappers_parity.c
