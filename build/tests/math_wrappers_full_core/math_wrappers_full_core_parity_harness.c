@@ -125,6 +125,11 @@ void oracle_fnMultiply(uint16_t unusedButMandatoryParameter);
 void oracle_fnDivide(uint16_t unusedButMandatoryParameter);
 void oracle_fnIDiv(uint16_t unusedButMandatoryParameter);
 void oracle_fnIDivR(uint16_t unusedButMandatoryParameter);
+void oracle_fnDblMultiply(uint16_t unusedButMandatoryParameter);
+void oracle_fnDblDivide(uint16_t unusedButMandatoryParameter);
+void oracle_fnDblDivideRemainder(uint16_t unusedButMandatoryParameter);
+void oracle_fnDec(uint16_t regist);
+void oracle_fnInc(uint16_t regist);
 void oracle_fnXAlmostEqual(uint16_t regist);
 void oracle_fnXEqualsTo(uint16_t regist);
 void oracle_fnXGreaterEqual(uint16_t regist);
@@ -214,6 +219,9 @@ typedef struct {
   uint8_t          temporaryInformation;
   uint64_t         systemFlags0;
   uint64_t         systemFlags1;
+  // The double-width commands switch the integer mode while they compute and
+  // must hand the caller's back.
+  uint8_t          shortIntegerMode;
   uint32_t         freeMemoryBlocks;
   uint8_t          ram[RAM_SIZE_IN_BLOCKS * 4];
 } snapshot_t;
@@ -310,6 +318,7 @@ static void takeSnapshot(snapshot_t *out) {
   out->temporaryInformation = temporaryInformation;
   out->systemFlags0 = systemFlags0;
   out->systemFlags1 = systemFlags1;
+  out->shortIntegerMode = shortIntegerMode;
   out->freeMemoryBlocks = getFreeRamMemory();
   memcpy(out->ram, ram, sizeof(out->ram));
   keepOnlyLiveRegisterBytes(out);
@@ -346,6 +355,10 @@ static int reportSnapshotMismatch(const char *caseName) {
     fail("%s: systemFlags z47=%016llx/%016llx c43=%016llx/%016llx", caseName,
          (unsigned long long)snapshotA.systemFlags0, (unsigned long long)snapshotA.systemFlags1,
          (unsigned long long)snapshotB.systemFlags0, (unsigned long long)snapshotB.systemFlags1);
+  }
+  if(snapshotA.shortIntegerMode != snapshotB.shortIntegerMode) {
+    fail("%s: shortIntegerMode z47=%u c43=%u", caseName,
+         snapshotA.shortIntegerMode, snapshotB.shortIntegerMode);
   }
   if(snapshotA.freeMemoryBlocks != snapshotB.freeMemoryBlocks) {
     fail("%s: freeMemoryBlocks z47=%u c43=%u", caseName,
@@ -1141,6 +1154,67 @@ static void secondMatrix2x3(void)    { initMatrixRegister(REGISTER_Y, 2, 3, fals
 static void secondTime(void)         { reallocateRegister(REGISTER_Y, dtTime, 0, amNone);
                                        reallocateRegister(REGISTER_Z, dtTime, 0, amNone); }
 
+// ---------------------------------------------------------------------------
+// The operand classes the arithmetic dispatchers' own cells branch on.
+//
+// fnAdd, fnSubtract, fnMultiply and fnDivide pick a cell from the (X, Y) type
+// pair, and the cell then branches on the angular modes, the signs, a zero
+// divisor and SPCRES. The shapes below reach the cells and branches the rows
+// above leave alone: two long integers of ordinary width, an integer against the
+// other integer kind, time against time, dates, a tagged angle under a different
+// ADM, a zero divisor with special results off, a short-integer zero dividend, a
+// square or complex matrix in Y, and a RAM too full to take a copy of X in LASTx.
+// ---------------------------------------------------------------------------
+
+// A date register holds 86400 * JD + 43200 seconds: Julian days 2460000 and 2455000.
+static void seedDate(void) {
+  reallocateRegister(REGISTER_X, dtDate, 0, amNone);
+  stringToReal34("212544043200", REGISTER_REAL34_DATA(REGISTER_X));
+}
+
+static void seedRealPlusZeroNoSpecialResults(void) {
+  seedRealPlusZero();
+  clearSystemFlag(FLAG_SPCRES);
+}
+
+static void secondDate(void)         { reallocateRegister(REGISTER_Y, dtDate, 0, amNone); stringToReal34("212112043200", REGISTER_REAL34_DATA(REGISTER_Y));
+                                       reallocateRegister(REGISTER_Z, dtDate, 0, amNone); stringToReal34("212112043200", REGISTER_REAL34_DATA(REGISTER_Z)); }
+static void secondTimeHours(void)    { reallocateRegister(REGISTER_Y, dtTime, 0, amNone); int32ToReal34(7200, REGISTER_REAL34_DATA(REGISTER_Y));
+                                       reallocateRegister(REGISTER_Z, dtTime, 0, amNone); int32ToReal34(7200, REGISTER_REAL34_DATA(REGISTER_Z)); }
+static void secondShortIntegerZero(void) { convertUInt64ToShortIntegerRegister(0, 0, 16, REGISTER_Y);
+                                       convertUInt64ToShortIntegerRegister(0, 0, 16, REGISTER_Z); }
+// A tagged angle in Y while ADM is a different unit, so the cell converts it.
+static void secondDegreesUnderRadians(void) { reallocateRegister(REGISTER_Y, dtReal34, 0, amDegree); int32ToReal34(90, REGISTER_REAL34_DATA(REGISTER_Y));
+                                       reallocateRegister(REGISTER_Z, dtReal34, 0, amDegree); int32ToReal34(90, REGISTER_REAL34_DATA(REGISTER_Z));
+                                       currentAngularMode = amRadian; }
+// An untagged Y while ADM is radians, against a tagged X in degrees.
+static void secondLongIntegerUnderRadians(void) { secondLongIntegerNegative(); currentAngularMode = amRadian; }
+static void secondMatrixSquare(void) { initMatrixRegister(REGISTER_Y, 2, 2, false); for(int e = 0; e < 4; ++e) { int32ToReal34(4 - e, REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_Y) + e); }
+                                       initMatrixRegister(REGISTER_Z, 2, 2, false); for(int e = 0; e < 4; ++e) { int32ToReal34(4 - e, REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_Z) + e); } }
+static void secondComplexMatrix(void) {
+  initMatrixRegister(REGISTER_Y, 2, 2, true);
+  initMatrixRegister(REGISTER_Z, 2, 2, true);
+  for(int e = 0; e < 4; ++e) {
+    int32ToReal34(4 - e, VARIABLE_REAL34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(REGISTER_Y) + e));
+    int32ToReal34(e + 1, VARIABLE_IMAG34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(REGISTER_Y) + e));
+    int32ToReal34(4 - e, VARIABLE_REAL34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(REGISTER_Z) + e));
+    int32ToReal34(e + 1, VARIABLE_IMAG34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(REGISTER_Z) + e));
+  }
+}
+
+// Takes every free block, so the copy of X that saveLastX makes into LASTx fails
+// with ERROR_RAM_FULL. The blocks belong to no register, so the snapshot masks
+// them out, and the next fnReset rebuilds the free list.
+static void exhaustRam(void) {
+  while(numberOfFreeMemoryRegions > 0) {
+    if(allocC47Blocks(freeMemoryRegions[0].sizeInBlocks) == NULL) {
+      return;
+    }
+  }
+}
+
+static void secondLongIntegerRamFull(void) { secondLongIntegerNegative(); exhaustRam(); }
+
 static const pair_t PAIRS[] = {
   { "real1234:real1234",   seedRealPositive,  secondReal1234     }, // equal
   { "real1234:real7",      seedRealPositive,  secondReal7        }, // greater
@@ -1250,13 +1324,31 @@ static const pair_t PAIRS[] = {
   { "outOfDomainNoRes:real7", seedRealOutOfDomainNoResults, secondReal7            },
   { "spcresClear:real7",      seedComplexMatrixImagZero, secondReal7               },
 
-  // STILL UNREACHED, and recorded rather than chased. All nine minus-infinity
-  // results in division_cells.zig can be turned into plus-infinity with every case
-  // here agreeing, and making divLonIReal return immediately changes nothing --
-  // while making divRealReal return immediately is noticed by exactly one case.
-  // So fnDivide is not routing through those cells for the operand pairs above.
-  // That is a question about the owner's dispatch, not about these fixtures, and
-  // adding more pairs will not answer it.
+  // The arithmetic dispatchers' own cells, from the shapes defined just above.
+  { "longInteger:longIntNeg",   seedLongInteger,          secondLongIntegerNegative     }, // both long, ordinary width
+  { "shortInteger:longIntNeg",  seedShortInteger,         secondLongIntegerNegative     }, // short X, long Y
+  { "longInteger:shortInteger", seedLongInteger,          secondShortInteger            }, // long X, short Y
+  { "complex:longIntNeg",       seedComplex,              secondLongIntegerNegative     },
+  { "complex:shortIntNeg",      seedComplex,              secondShortIntegerNegative    },
+  { "longIntSmall:matrix2x3",   seedLongIntegerSmall,     secondMatrix2x3               },
+  { "time:time",                seedTime,                 secondTimeHours               },
+  { "longIntSmall:time",        seedLongIntegerSmall,     secondTimeHours               },
+  { "time:longIntNeg",          seedTime,                 secondLongIntegerNegative     },
+  { "date:real7",               seedDate,                 secondReal7                   },
+  { "date:date",                seedDate,                 secondDate                    },
+  { "longInteger:degUnderRad",  seedLongInteger,          secondDegreesUnderRadians     }, // tagged Y, ADM another unit
+  { "real1234:degUnderRad",     seedRealPositive,         secondDegreesUnderRadians     },
+  { "realWithAngle:degUnderRad", seedRealWithAngle,       secondDegreesUnderRadians     }, // both tagged
+  { "realWithAngle:longIntRad", seedRealWithAngle,        secondLongIntegerUnderRadians }, // tagged X, ADM another unit
+  { "zeroNoSpcres:real7",       seedRealPlusZeroNoSpecialResults, secondReal7           }, // x/0 refused
+  { "zeroNoSpcres:longIntNeg",  seedRealPlusZeroNoSpecialResults, secondLongIntegerNegative },
+  { "zeroNoSpcres:shortIntNeg", seedRealPlusZeroNoSpecialResults, secondShortIntegerNegative },
+  { "zero:shortIntZero",        seedRealPlusZero,         secondShortIntegerZero        }, // 0/0 under SPCRES
+  { "zero:shortIntNeg",         seedRealPlusZero,         secondShortIntegerNegative    },
+  { "matrixSquare:matrixSquare", seedMatrixSquare,        secondMatrixSquare            }, // conformable product and quotient
+  { "real1234:complexMatrix",   seedRealPositive,         secondComplexMatrix           },
+  { "complexMatrix:complexMatrix", seedComplexMatrix,     secondComplexMatrix           },
+  { "longInteger:ramFull",      seedLongInteger,          secondLongIntegerRamFull      }, // saveLastX refused
 };
 
 static const predicate_t BINARY[] = {
@@ -1269,6 +1361,13 @@ static const predicate_t BINARY[] = {
 
   { "fnIDiv",                 fnIDiv,          oracle_fnIDiv,          0            },
   { "fnIDivR",                fnIDivR,         oracle_fnIDivR,         0            },
+
+  // The double-width pair reads X and Y, and DBL/ and DBLR Z as well, as short
+  // integers; every other shape reaches its type checks. DOUBLE_WIDTH below
+  // drives the arithmetic.
+  { "fnDblMultiply",          fnDblMultiply,        oracle_fnDblMultiply,        0 },
+  { "fnDblDivide",            fnDblDivide,          oracle_fnDblDivide,          0 },
+  { "fnDblDivideRemainder",   fnDblDivideRemainder, oracle_fnDblDivideRemainder, 0 },
 
   { "fnXLessThan/Y",          fnXLessThan,     oracle_fnXLessThan,     REGISTER_Y   },
   { "fnXLessEqual/Y",         fnXLessEqual,    oracle_fnXLessEqual,    REGISTER_Y   },
@@ -1300,6 +1399,114 @@ static const predicate_t BINARY[] = {
   // real, so they belong in the pair sweep as well as the unary one.
   { "fnToPolar2/pair",        fnToPolar2,      oracle_fnToPolar2,      0            },
   { "fnToRect2/pair",         fnToRect2,       oracle_fnToRect2,       0            },
+};
+
+// ---------------------------------------------------------------------------
+// The double-width commands. DBLx multiplies X by Y into a double word; DBL/ and
+// DBLR divide the double word Y:Z by X. All three branch on the integer mode --
+// one's complement and sign-magnitude carry their own sign corrections, and the
+// quotient-overflow bound depends on it -- so every operand set runs under each
+// of the four modes, and under two word sizes, since the double word's halves and
+// that bound are powers of the word size.
+// ---------------------------------------------------------------------------
+static uint8_t  doubleWidthMode;
+static uint16_t doubleWidthWordSize;
+
+static void seedShortIntegerValue(calcRegister_t reg, int64_t value) {
+  convertUInt64ToShortIntegerRegister(value < 0 ? 1 : 0, value < 0 ? (uint64_t)(-value) : (uint64_t)value, 16, reg);
+}
+
+static void seedDoubleWidth(int64_t x, int64_t y, int64_t z) {
+  shortIntegerMode = doubleWidthMode;
+  fnSetWordSize(doubleWidthWordSize);
+  seedShortIntegerValue(REGISTER_X, x);
+  seedShortIntegerValue(REGISTER_Y, y);
+  seedShortIntegerValue(REGISTER_Z, z);
+}
+
+static void seedRealValue(calcRegister_t reg, int32_t value) {
+  reallocateRegister(reg, dtReal34, 0, amNone);
+  int32ToReal34(value, REGISTER_REAL34_DATA(reg));
+}
+
+static void doubleWidthLowWord(void)  { seedDoubleWidth(7, 9, 10); setSystemFlag(FLAG_OVERFLOW); }
+static void doubleWidthHighWord(void) { seedDoubleWidth(INT64_C(1) << 32, INT64_C(1) << 32, 0); setSystemFlag(FLAG_OVERFLOW); }
+static void doubleWidthQuotient(void) { seedDoubleWidth(3, 0, 10); clearSystemFlag(FLAG_CARRY); setSystemFlag(FLAG_OVERFLOW); }
+static void doubleWidthExact(void)    { seedDoubleWidth(3, 0, 12); setSystemFlag(FLAG_CARRY); setSystemFlag(FLAG_OVERFLOW); }
+static void doubleWidthByZero(void)   { seedDoubleWidth(0, 0, 10); }
+static void doubleWidthQuotientOverflow(void) { seedDoubleWidth(2, 1, 0); setSystemFlag(FLAG_CARRY); clearSystemFlag(FLAG_OVERFLOW); }
+static void doubleWidthNegative(void) { seedDoubleWidth(-3, -1, -10); }
+static void doubleWidthMixedSigns(void) { seedDoubleWidth(-7, 9, 10); }
+static void doubleWidthXNotShort(void) { seedDoubleWidth(3, 0, 10); seedRealValue(REGISTER_X, 3); }
+static void doubleWidthYNotShort(void) { seedDoubleWidth(3, 0, 10); seedRealValue(REGISTER_Y, 0); }
+static void doubleWidthZNotShort(void) { seedDoubleWidth(3, 0, 10); seedRealValue(REGISTER_Z, 10); }
+static void doubleWidthRamFull(void)  { seedDoubleWidth(3, 0, 10); exhaustRam(); }
+
+static const fixture_t DOUBLE_WIDTH_OPERANDS[] = {
+  { "lowWord",          doubleWidthLowWord          },
+  { "highWord",         doubleWidthHighWord         },
+  { "quotient",         doubleWidthQuotient         },
+  { "exact",            doubleWidthExact            },
+  { "byZero",           doubleWidthByZero           },
+  { "quotientOverflow", doubleWidthQuotientOverflow },
+  { "negative",         doubleWidthNegative         },
+  { "mixedSigns",       doubleWidthMixedSigns       },
+  { "xNotShort",        doubleWidthXNotShort        },
+  { "yNotShort",        doubleWidthYNotShort        },
+  { "zNotShort",        doubleWidthZNotShort        },
+  { "ramFull",          doubleWidthRamFull          }, // saveLastX refused
+};
+
+typedef struct {
+  const char *name;
+  uint8_t     mode;
+} integerMode_t;
+
+static const integerMode_t SHORT_INTEGER_MODES[] = {
+  { "unsigned",      SIM_UNSIGN },
+  { "1compl",        SIM_1COMPL },
+  { "2compl",        SIM_2COMPL },
+  { "signMagnitude", SIM_SIGNMT },
+};
+
+static const uint16_t DOUBLE_WIDTH_WORD_SIZES[] = { 64, 16 };
+
+static const predicate_t DOUBLE_WIDTH[] = {
+  { "fnDblMultiply",        fnDblMultiply,        oracle_fnDblMultiply,        0 },
+  { "fnDblDivide",          fnDblDivide,          oracle_fnDblDivide,          0 },
+  { "fnDblDivideRemainder", fnDblDivideRemainder, oracle_fnDblDivideRemainder, 0 },
+};
+
+// ---------------------------------------------------------------------------
+// INC and DEC step the register their parameter names. Every shape runs in each
+// stack register, in a numbered register and in a local register that does not
+// exist: the shape is seeded in X and copied to the register under test.
+// ---------------------------------------------------------------------------
+static calcRegister_t incDecTarget;
+
+static void copyXToIncDecTarget(void) {
+  if(incDecTarget != REGISTER_X && incDecTarget < FIRST_LOCAL_REGISTER) {
+    copySourceRegisterToDestRegister(REGISTER_X, incDecTarget);
+  }
+}
+
+typedef struct {
+  const char    *name;
+  calcRegister_t reg;
+} incDecTarget_t;
+
+static const incDecTarget_t INC_DEC_TARGETS[] = {
+  { "X",              REGISTER_X           },
+  { "Y",              REGISTER_Y           },
+  { "Z",              REGISTER_Z           },
+  { "T",              REGISTER_T           },
+  { "R00",            0                    },
+  { "undefinedLocal", FIRST_LOCAL_REGISTER },
+};
+
+static const predicate_t INC_DEC[] = {
+  { "fnInc", fnInc, oracle_fnInc, 0 },
+  { "fnDec", fnDec, oracle_fnDec, 0 },
 };
 
 // (wrapper, shape) pairs that NEITHER implementation returns from.
@@ -1475,6 +1682,40 @@ int main(void) {
     }
   }
 
+  for(size_t p = 0; p < sizeof(DOUBLE_WIDTH) / sizeof(DOUBLE_WIDTH[0]); p++) {
+    for(size_t w = 0; w < sizeof(DOUBLE_WIDTH_WORD_SIZES) / sizeof(DOUBLE_WIDTH_WORD_SIZES[0]); w++) {
+      for(size_t m = 0; m < sizeof(SHORT_INTEGER_MODES) / sizeof(SHORT_INTEGER_MODES[0]); m++) {
+        for(size_t f = 0; f < sizeof(DOUBLE_WIDTH_OPERANDS) / sizeof(DOUBLE_WIDTH_OPERANDS[0]); f++) {
+          char caseName[128];
+          snprintf(caseName, sizeof(caseName), "%s/ws%u/%s/%s", DOUBLE_WIDTH[p].name, DOUBLE_WIDTH_WORD_SIZES[w],
+                   SHORT_INTEGER_MODES[m].name, DOUBLE_WIDTH_OPERANDS[f].name);
+
+          doubleWidthMode = SHORT_INTEGER_MODES[m].mode;
+          doubleWidthWordSize = DOUBLE_WIDTH_WORD_SIZES[w];
+          runSide(DOUBLE_WIDTH_OPERANDS[f].seed, NULL, DOUBLE_WIDTH[p].owner, DOUBLE_WIDTH[p].param, &snapshotA, caseName, "owner");
+          runSide(DOUBLE_WIDTH_OPERANDS[f].seed, NULL, DOUBLE_WIDTH[p].oracle, DOUBLE_WIDTH[p].param, &snapshotB, caseName, "oracle");
+          reportSnapshotMismatch(caseName);
+          cases++;
+        }
+      }
+    }
+  }
+
+  for(size_t p = 0; p < sizeof(INC_DEC) / sizeof(INC_DEC[0]); p++) {
+    for(size_t t = 0; t < sizeof(INC_DEC_TARGETS) / sizeof(INC_DEC_TARGETS[0]); t++) {
+      for(size_t f = 0; f < sizeof(FIXTURES) / sizeof(FIXTURES[0]); f++) {
+        char caseName[128];
+        snprintf(caseName, sizeof(caseName), "%s/%s/%s", INC_DEC[p].name, INC_DEC_TARGETS[t].name, FIXTURES[f].name);
+
+        incDecTarget = INC_DEC_TARGETS[t].reg;
+        runSide(FIXTURES[f].seed, copyXToIncDecTarget, INC_DEC[p].owner, (uint16_t)incDecTarget, &snapshotA, caseName, "owner");
+        runSide(FIXTURES[f].seed, copyXToIncDecTarget, INC_DEC[p].oracle, (uint16_t)incDecTarget, &snapshotB, caseName, "oracle");
+        reportSnapshotMismatch(caseName);
+        cases++;
+      }
+    }
+  }
+
   if(failures) {
     printf("MATH-WRAPPER FULL-CORE PARITY: %d failure(s) over %d cases\n", failures, cases);
     return 1;
@@ -1482,8 +1723,15 @@ int main(void) {
   if(skipped) {
     printf("math-wrappers full-core: %d case(s) SKIPPED as non-terminating in BOTH implementations\n", skipped);
   }
-  printf("math-wrappers full-core: %d cases agree (%zu unary x %zu shapes, %zu binary x %zu pairs)\n",
+  printf("math-wrappers full-core: %d cases agree (%zu unary x %zu shapes, %zu binary x %zu pairs,"
+         " %zu double-width x %zu operand sets x %zu modes x %zu word sizes,"
+         " %zu inc/dec x %zu registers x %zu shapes)\n",
          cases, sizeof(PREDICATES) / sizeof(PREDICATES[0]), sizeof(FIXTURES) / sizeof(FIXTURES[0]),
-         sizeof(BINARY) / sizeof(BINARY[0]), sizeof(PAIRS) / sizeof(PAIRS[0]));
+         sizeof(BINARY) / sizeof(BINARY[0]), sizeof(PAIRS) / sizeof(PAIRS[0]),
+         sizeof(DOUBLE_WIDTH) / sizeof(DOUBLE_WIDTH[0]), sizeof(DOUBLE_WIDTH_OPERANDS) / sizeof(DOUBLE_WIDTH_OPERANDS[0]),
+         sizeof(SHORT_INTEGER_MODES) / sizeof(SHORT_INTEGER_MODES[0]),
+         sizeof(DOUBLE_WIDTH_WORD_SIZES) / sizeof(DOUBLE_WIDTH_WORD_SIZES[0]),
+         sizeof(INC_DEC) / sizeof(INC_DEC[0]), sizeof(INC_DEC_TARGETS) / sizeof(INC_DEC_TARGETS[0]),
+         sizeof(FIXTURES) / sizeof(FIXTURES[0]));
   return 0;
 }
