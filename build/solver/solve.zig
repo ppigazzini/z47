@@ -81,6 +81,10 @@ fn addRuntimeObject(
         .optimize = optimize,
     });
     module.addImport("abi", abi_module);
+    // The DMCP ROM function table the graph and progress panels refresh the LCD
+    // through.
+    const dmcp_rom_module = build_common.addDmcpRomModule(b, target, optimize, options.board);
+    module.addImport("dmcp_rom", dmcp_rom_module);
     const build_options = b.addOptions();
     // The flash-limited DM42 runs the heavy, cold solver owners (tvm, sumprod)
     // from executable QSPI (XIP) to keep main FLASH free; the mathematics owners
@@ -100,8 +104,6 @@ fn addRuntimeObject(
     // (MAX_ENGINE_NESTING_DEPTH / PLOT_NESTING_ALLOWED) is hardware-tier-specific,
     // and HARDWARE_MODEL == HWM_DM42 selects TVM's working precision.
     build_options.addOption(bool, "is_old_hw", options.board.isOldHw());
-    // LIBRARY_FN_BASE, from the board's SDK: the ROM function table.
-    build_options.addOption(usize, "library_fn_base", build_common.libraryFnBase(b, options.board));
     build_options.addOption(bool, "option_infsums", options.option_infsums);
     build_options.addOption(bool, "option_slvp_poly", options.option_slvp_poly);
     build_options.addOption(bool, "option_tvm_formulas", options.option_tvm_formulas);

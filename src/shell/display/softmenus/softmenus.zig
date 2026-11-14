@@ -30,9 +30,9 @@
 // cross-owner helpers (z47_frontier_dynamic_menu_softmenu_id / _item) that read its inputs,
 // softmenuStack[0].softmenuId and dynamicMenuItem.
 //
-// DMCP ROM trampolines (lcd_fill_rect, bitblt24 behind setBlackPixel/setWhitePixel)
-// are fixed-address jump-table calls on firmware (LIBRARY_FN_BASE + offset from
-// lft_ifc.h) and real host symbols otherwise. Mirrors the status-bar owner.
+// lcd_fill_rect and bitblt24 (behind setBlackPixel/setWhitePixel) are DMCP ROM
+// function-table entries on firmware and real host symbols otherwise. Mirrors the
+// status-bar owner.
 //
 // Dead code skipped: VERBOSE_LEVEL == -1 diag blocks, PC_BUILD printf/jm_show_*
 // telltale (host-only, kept under !dmcp_build where they have observable effect
@@ -98,7 +98,7 @@ const code_section = abi.codeSection(dmcp_build and old_hw);
 
 const code_data_section = abi.codeDataSection(dmcp_build and old_hw);
 
-const LIBRARY_FN_BASE: usize = frontier_build_options.library_fn_base;
+const rom = @import("dmcp_rom");
 
 // ---------------------------------------------------------------------------
 // Types (C-ABI layouts aliased from abi; local-only helpers are plain structs).
@@ -642,18 +642,14 @@ const STD_op_i: [*:0]const u8 = "\xa1\x48";
 const RADIX34_MARK_CHAR_DOT: u8 = '.';
 
 // ---------------------------------------------------------------------------
-// DMCP-ROM trampolines (fixed-address on firmware; verified in lft_ifc.h).
-// lcd_fill_rect: LIBRARY_FN_BASE+60 (lft_ifc.h:61)
-// bitblt24:      LIBRARY_FN_BASE+36 (lft_ifc.h:55)
-// On host these are real symbols (GTK / screen layer). Mirrors the status-bar
-// owner verbatim.
+// lcd_fill_rect and bitblt24: DMCP ROM function-table entries on firmware, real
+// symbols (GTK / screen layer) on host. Mirrors the status-bar owner verbatim.
 // ---------------------------------------------------------------------------
 const LcdFillRectFn = *const fn (x: u32, y: u32, dx: u32, dy: u32, val: c_int) callconv(.c) void;
 const c_lcd_fill_rect = @extern(LcdFillRectFn, .{ .name = "lcd_fill_rect" });
 inline fn lcd_fill_rect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void {
     if (comptime dmcp_build) {
-        const f: LcdFillRectFn = @ptrFromInt(LIBRARY_FN_BASE + 60);
-        f(x, y, dx, dy, val);
+        rom.lcd_fill_rect(x, y, dx, dy, val);
     } else {
         c_lcd_fill_rect(x, y, dx, dy, val);
     }
@@ -663,8 +659,7 @@ const Bitblt24Fn = *const fn (x: u32, dx: u32, y: u32, val: u32, blt_op: c_int, 
 const c_bitblt24 = @extern(Bitblt24Fn, .{ .name = "bitblt24" });
 inline fn bitblt24(x: u32, dx: u32, y: u32, val: u32, blt_op: c_int, fill: c_int) void {
     if (comptime dmcp_build) {
-        const f: Bitblt24Fn = @ptrFromInt(LIBRARY_FN_BASE + 36);
-        f(x, dx, y, val, blt_op, fill);
+        rom.bitblt24(x, dx, y, val, blt_op, fill);
     } else {
         c_bitblt24(x, dx, y, val, blt_op, fill);
     }

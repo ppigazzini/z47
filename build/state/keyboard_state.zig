@@ -112,6 +112,10 @@ fn addRuntimeObjectWithIncludeDir(
         .optimize = optimize,
     });
     module.addImport("abi", abi_module);
+    // The DMCP ROM function table the key-queue and LCD wrappers reach on
+    // firmware.
+    const dmcp_rom_module = build_common.addDmcpRomModule(b, target, optimize, options.board);
+    module.addImport("dmcp_rom", dmcp_rom_module);
 
     addBuildOptions(b, module, options);
 
@@ -182,8 +186,6 @@ pub fn addBuildOptions(b: *std.Build, module: *std.Build.Module, options: Runtim
     kb_build_options.addOption(bool, "state_old_hw", options.board.isOldHw());
     // RAM_SIZE_IN_BLOCKS, from defines.h.
     kb_build_options.addOption(u16, "ram_size_in_blocks", build_common.ramSizeInBlocks(b, options.board));
-    // LIBRARY_FN_BASE, from the board's SDK: the ROM function table.
-    kb_build_options.addOption(usize, "library_fn_base", build_common.libraryFnBase(b, options.board));
     kb_build_options.addOption(bool, "option_structured_pgm", options.option_structured_pgm);
     kb_build_options.addOption(bool, "ir_printing", options.ir_printing);
     kb_build_options.addOption(bool, "option_drg_cfg", options.option_drg_cfg);

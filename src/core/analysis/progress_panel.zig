@@ -102,15 +102,14 @@ pub fn showSolverBracket(a_in: *const real34_t, b_in: *const real34_t, fa_in: *c
 
 /// The solver and integrator panels refresh the whole LCD rather than going
 /// through force_refresh, and only on the firmware. lcd_refresh is a DMCP ROM
-/// jump-table call there, not a link symbol.
+/// function-table entry there, not a link symbol.
 const solve_build_options = @import("solve_build_options");
 const is_dmcp_build = @import("builtin").target.os.tag == .freestanding;
 const dm42_pkg_xip = solve_build_options.dm42_pkg_xip;
-const library_fn_base: usize = solve_build_options.library_fn_base;
+const rom = @import("dmcp_rom");
 fn lcdRefreshOnFirmware() void {
     if (comptime is_dmcp_build) {
-        const f: *const fn () callconv(.c) void = @ptrFromInt(library_fn_base + 48);
-        f();
+        rom.lcd_refresh();
     }
 }
 

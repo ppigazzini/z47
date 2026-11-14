@@ -20,9 +20,8 @@ const frontier_build_options = @import("frontier_build_options");
 const dmcp_build: bool = frontier_build_options.dmcp_build;
 const old_hw: bool = frontier_build_options.old_hw;
 
-// DMCP sys_sdb_t base address (dmcp.h: #define sdb (*((sys_sdb_t*)BASE))).
-// calc_state is the first field (volatile uint32_t at offset 0).
-const SDB_BASE: usize = frontier_build_options.sdb_base;
+// The DMCP ROM table and system data block (firmware only).
+const rom = @import("dmcp_rom");
 
 // ---------------------------------------------------------------------------
 // Types
@@ -237,8 +236,7 @@ inline fn setRegisterAngularMode(reg: calcRegister_t, am: angularMode_t) void {
 
 // SET_ST(STAT_PGM_END): set a bit in the fixed-address sdb.calc_state word.
 inline fn setStatPgmEnd() void {
-    const calc_state: *volatile u32 = @ptrFromInt(SDB_BASE);
-    calc_state.* |= STAT_PGM_END;
+    rom.sdb().calc_state |= STAT_PGM_END;
 }
 
 // ===========================================================================

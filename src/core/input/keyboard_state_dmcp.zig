@@ -8,7 +8,7 @@
 const abi = @import("abi");
 const std = @import("std");
 const builtin = @import("builtin");
-const keyboard_state_build_options = @import("keyboard_state_build_options");
+const rom = @import("dmcp_rom");
 
 const is_dmcp_build = builtin.target.os.tag == .freestanding;
 const bool_t = bool;
@@ -28,13 +28,8 @@ extern fn btnClicked(unused: ?*anyopaque, data: [*c]const u8) void;
 // refreshLcd is `void refreshLcd(void)` on DMCP (screen.c); the keyboard runtime
 // binds the divergent PC_BUILD signature (gboolean refreshLcd(gpointer)), so bind
 // the DMCP view here by symbol name. lcd_refresh_dma is a DMCP ROM function-table
-// macro (lft_ifc.h, LIBRARY_FN_BASE + 644).
+// entry.
 const refreshLcd = @extern(*const fn (?*anyopaque) callconv(.c) c_int, .{ .name = "refreshLcd" });
-const LIBRARY_FN_BASE: usize = keyboard_state_build_options.library_fn_base;
-fn lcdRefreshDma() void {
-    const f: *const fn () callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 644);
-    f();
-}
 
 // keyboard.c execAutoRepeat (the #if DMCP_BUILD body): on the auto-repeat timer,
 // re-fire the held key through btnClicked, preserving the f/g shift state and the
@@ -53,7 +48,7 @@ fn execAutoRepeat(key: u16) callconv(.c) void {
     shiftF = f;
     shiftG = g;
     _ = refreshLcd(null);
-    lcdRefreshDma();
+    rom.lcd_refresh_dma();
 }
 
 comptime {

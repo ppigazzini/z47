@@ -5,8 +5,8 @@
 // of the C. The OPTION_FLAGBROWSER guard (flagBrowser.c:58/:349) compiles the
 // body out of the old-HW single-file DM42 build; it is defined for every package
 // z47 ships (defines.h:259), so the code is always present here. lcd_fill_rect
-// is a DMCP-ROM fixed-address call on firmware (LIBRARY_FN_BASE+60) and a
-// linkable symbol on host, trampolined like the sibling owners. The static
+// is a DMCP ROM function-table entry on firmware and a linkable symbol on host,
+// wrapped like the sibling owners. The static
 // `line` is reproduced as a module-level var. C integer promotion of int16_t
 // arithmetic is reproduced with explicit i32 math.
 //
@@ -19,7 +19,7 @@ const frontier_build_options = @import("frontier_build_options");
 const dmcp_build: bool = frontier_build_options.dmcp_build;
 const old_hw: bool = frontier_build_options.old_hw;
 
-const LIBRARY_FN_BASE: usize = frontier_build_options.library_fn_base;
+const rom = @import("dmcp_rom");
 
 // The TO_QSPI letteredFlagDisplay table goes to the executable QSPI region on the
 // flash-limited old_hw DM42, matching the sibling owners' code_section.
@@ -195,13 +195,12 @@ extern fn decQuadNextMinus(res: *real34_t, operand: *const real34_t, ctx: *realC
 extern fn decQuadSubtract(res: *real34_t, op1: *const real34_t, op2: *const real34_t, ctx: *realContext_t) *real34_t;
 extern fn decQuadGetExponent(src: *const real34_t) i32;
 
-// lcd_fill_rect — DMCP-ROM fixed-address call on firmware; real symbol on host.
+// lcd_fill_rect — DMCP ROM function-table entry on firmware; real symbol on host.
 const LcdFillRectFn = *const fn (x: u32, y: u32, dx: u32, dy: u32, val: c_int) callconv(.c) void;
 const c_lcd_fill_rect = @extern(LcdFillRectFn, .{ .name = "lcd_fill_rect" });
 inline fn lcdFillRect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void {
     if (comptime dmcp_build) {
-        const f: LcdFillRectFn = @ptrFromInt(LIBRARY_FN_BASE + 60);
-        f(x, y, dx, dy, val);
+        rom.lcd_fill_rect(x, y, dx, dy, val);
     } else {
         c_lcd_fill_rect(x, y, dx, dy, val);
     }

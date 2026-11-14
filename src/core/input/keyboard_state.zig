@@ -18,7 +18,7 @@ const is_dmcp_build = builtin.target.os.tag == .freestanding;
 // branches are faithful ports of the upstream `#if defined(DMCP_BUILD)` snippets
 // (keyboard.c 2722-2729 key_pop/key_push/wait_for_key_release around
 // addItemToBuffer, and 2795-2799 lcd_refresh), which are pure key-queue / LCD
-// I/O now backed by the runtime ROM trampolines. Verified by faithful-port
+// I/O backed by the runtime's lane-aware ROM wrappers. Verified by faithful-port
 // review + dmcp/dmcp5 link+fit (a calc-state diff harness would not cover these
 // I/O side effects).
 pub export fn processKeyAction(item: i16) callconv(.c) void {
@@ -62,7 +62,7 @@ pub export fn fnKeyEnter(unused_but_mandatory_parameter: u16) callconv(.c) void 
 
 // keyExit + keyBackspace are exported for ALL lanes. Both are divergence-free;
 // they reach clearScreen -> lcd_fill_rect and jm_show_calc_state, which are
-// lane-aware ROM trampolines / no-ops in the runtime, so they link and run on the
+// lane-aware ROM wrappers / no-ops in the runtime, so they link and run on the
 // DMCP lanes.
 pub export fn fnKeyExit(unused_but_mandatory_parameter: u16) callconv(.c) void {
     shared.keyExit(unused_but_mandatory_parameter);

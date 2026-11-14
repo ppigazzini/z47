@@ -14,9 +14,9 @@
 // showHideUsbLowBattery is firmware-only (#if DMCP_BUILD); showHideStackLift and
 // mockupSB are host-only (#if !DMCP_BUILD / #if PC_BUILD). The DEBUG_INSTEAD_STATUS_BAR
 // (==0) and ANALYSE_REFRESH / BATTERYTEST (#undef'd) branches are dead and omitted.
-// On firmware the DMCP-ROM screen calls (lcd_fill_rect, bitblt24 behind
-// setBlackPixel/setWhitePixel, get_vbat) are fixed-address jump-table calls
-// (LIBRARY_FN_BASE + verified offset); on host they are real GTK-layer symbols.
+// On firmware the DMCP ROM screen calls (lcd_fill_rect, bitblt24 behind
+// setBlackPixel/setWhitePixel) are function-table entries; on host they are real
+// GTK-layer symbols.
 //
 // statusBar.c is not reachable from the testSuite; verification is by build/link
 // across every target plus the boundary gates.
@@ -27,7 +27,7 @@ const frontier_build_options = @import("frontier_build_options");
 const dmcp_build: bool = frontier_build_options.dmcp_build;
 const old_hw: bool = frontier_build_options.old_hw;
 
-const LIBRARY_FN_BASE: usize = frontier_build_options.library_fn_base;
+const rom = @import("dmcp_rom");
 
 // ---------------------------------------------------------------------------
 // Types
@@ -310,18 +310,14 @@ extern fn sprintf(buf: [*c]u8, fmt: [*:0]const u8, ...) c_int;
 extern fn printf(fmt: [*:0]const u8, ...) c_int;
 
 // ---------------------------------------------------------------------------
-// DMCP-ROM trampolines (fixed-address on firmware; verified in lft_ifc.h).
-// lcd_fill_rect: LIBRARY_FN_BASE+60 (lft_ifc.h:61)
-// bitblt24:      LIBRARY_FN_BASE+36 (lft_ifc.h:55)
-// get_vbat:      LIBRARY_FN_BASE+240 (lft_ifc.h:106)
-// On host these are real symbols (GTK / screen layer).
+// lcd_fill_rect and bitblt24: DMCP ROM function-table entries on firmware, real
+// symbols (GTK / screen layer) on host.
 // ---------------------------------------------------------------------------
 const LcdFillRectFn = *const fn (x: u32, y: u32, dx: u32, dy: u32, val: c_int) callconv(.c) void;
 const c_lcd_fill_rect = @extern(LcdFillRectFn, .{ .name = "lcd_fill_rect" });
 inline fn lcd_fill_rect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void {
     if (comptime dmcp_build) {
-        const f: LcdFillRectFn = @ptrFromInt(LIBRARY_FN_BASE + 60);
-        f(x, y, dx, dy, val);
+        rom.lcd_fill_rect(x, y, dx, dy, val);
     } else {
         c_lcd_fill_rect(x, y, dx, dy, val);
     }
@@ -331,8 +327,7 @@ const Bitblt24Fn = *const fn (x: u32, dx: u32, y: u32, val: u32, blt_op: c_int, 
 const c_bitblt24 = @extern(Bitblt24Fn, .{ .name = "bitblt24" });
 inline fn bitblt24(x: u32, dx: u32, y: u32, val: u32, blt_op: c_int, fill: c_int) void {
     if (comptime dmcp_build) {
-        const f: Bitblt24Fn = @ptrFromInt(LIBRARY_FN_BASE + 36);
-        f(x, dx, y, val, blt_op, fill);
+        rom.bitblt24(x, dx, y, val, blt_op, fill);
     } else {
         c_bitblt24(x, dx, y, val, blt_op, fill);
     }

@@ -1,106 +1,137 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
-// DMCP ROM function-table shims for the state save/restore owners
-// (calc_state_io_owned, program_serialization_io_owned), the memory owner's GMP
-// allocator, and the date, time and settings owners. power_check_screen,
-// sys_timer_disable, sys_timer_start, lcd_refresh, wait_for_key_press and
-// sys_reset are DMCP library function-table macros (lft_ifc.h), and
-// get_flag_dmy, set_flag_dmy, is_flag_clk24 and set_flag_clk24 are function
-// pointers in the system data block (dmcp.h), none of them a linkable symbol, so
-// a Zig extern cannot resolve them on firmware. This module reconstructs them as
-// lane-aware ROM trampolines. On host (no power button / DMCP timers / DMCP LCD /
-// system data block) they are trivial no-ops.
+// The DMCP ROM function table, the one place a build object declares it. Every
+// lft_ifc.h macro an owner calls is one entry below, named as the SDK names it
+// and typed by its dmcp.h or ff_ifc.h prototype: lcd_refresh, for one, is the
+// function at LIBRARY_FN_BASE + 48. None of them is a linkable symbol, so a Zig
+// extern cannot resolve them on firmware. LIBRARY_FN_BASE and the system data
+// block address come from the board's SDK headers, through the build options;
+// both are 0 on host, which has neither.
 //
-// Offsets verified against lft_ifc.h: lcd_refresh LIBRARY_FN_BASE+48,
-// power_check_screen +340, wait_for_key_press +408, sys_disk_write_enable +480,
-// sys_timer_disable +500, sys_timer_start +504, sys_reset +544, f_unlink +768.
-// LIBRARY_FN_BASE and the system data block address come from the board's SDK
-// headers, through the build options. These shims are not testSuite-reachable.
-const std = @import("std");
+// An entry points into a ROM only the calculator has, so only firmware code may
+// call one: an owner reaches the table from inside its
+// `if (comptime dmcp_build)`-style branch, and keeps its own host path beside it.
+// powerCheckScreen wraps power_check_screen with a host answer, for the state
+// owners that call it on both lanes.
+//
+// get_flag_dmy, set_flag_dmy, is_flag_clk24 and set_flag_clk24 are not in the
+// table: they are function pointers in the system data block (dmcp.h), read here
+// on firmware and no-ops on host.
+//
+// rtc_read and rtc_write take abi's dt_t and tm_t, so an object whose owners
+// call them gives this module its `abi` import.
+const abi = @import("abi");
 const builtin = @import("builtin");
 const dmcp_rom_build_options = @import("dmcp_rom_build_options");
 
 const is_dmcp_build = builtin.target.os.tag == .freestanding;
 const LIBRARY_FN_BASE: usize = dmcp_rom_build_options.library_fn_base;
 
-const PowerCheckScreenFn = *const fn () callconv(.c) c_int;
-const SysTimerDisableFn = *const fn (timer_ix: c_int) callconv(.c) void;
-const SysTimerStartFn = *const fn (timer_ix: c_int, ms_value: u32) callconv(.c) void;
-const SysDiskWriteEnableFn = *const fn (val: c_int) callconv(.c) c_int;
-const FUnlinkFn = *const fn (path: [*:0]const u8) callconv(.c) c_uint;
-const VoidFn = *const fn () callconv(.c) void;
+// The SDK's display state (dmcp.h disp_stat_t), only ever handed back to the ROM.
+pub const disp_stat_t = opaque {};
 
-fn powerCheckScreenNoop() callconv(.c) c_int {
-    return 0;
-}
-fn sysTimerDisableNoop(timer_ix: c_int) callconv(.c) void {
-    _ = timer_ix;
-}
-fn sysTimerStartNoop(timer_ix: c_int, ms_value: u32) callconv(.c) void {
-    _ = timer_ix;
-    _ = ms_value;
-}
-fn sysDiskWriteEnableNoop(val: c_int) callconv(.c) c_int {
-    _ = val;
-    return 0;
-}
-fn fUnlinkNoop(path: [*:0]const u8) callconv(.c) c_uint {
-    _ = path;
-    return 0;
+// FatFs (ff_ifc.h). FRESULT is an enum with no negative value, which GCC lays out
+// as unsigned int.
+pub const FRESULT = u32;
+pub const UINT = c_uint;
+pub const FSIZE_t = u32;
+const FATFS = opaque {};
+const _FDID = extern struct {
+    fs: ?*FATFS,
+    id: u16,
+    attr: u8,
+    stat: u8,
+    sclust: u32,
+    objsize: FSIZE_t,
+    lockid: UINT,
+};
+pub const FIL = extern struct {
+    obj: _FDID,
+    flag: u8,
+    err: u8,
+    fptr: FSIZE_t,
+    clust: u32,
+    sect: u32,
+    dir_sect: u32,
+    dir_ptr: ?[*]u8,
+    cltbl: ?[*]u32,
+    buf: [512]u8,
+};
+
+// lft_ifc.h, in table order.
+pub const LCD_power_on: *const fn () callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 24);
+pub const LCD_power_off: *const fn (clear: c_int) callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 28);
+pub const LCD_write_line: *const fn (buf: [*]u8) callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 32);
+pub const bitblt24: *const fn (x: u32, dx: u32, y: u32, val: u32, blt_op: c_int, fill: c_int) callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 36);
+pub const lcd_line_addr: *const fn (y: c_int) callconv(.c) [*]u8 = @ptrFromInt(LIBRARY_FN_BASE + 40);
+pub const lcd_clear_buf: *const fn () callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 44);
+pub const lcd_refresh: *const fn () callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 48);
+pub const lcd_forced_refresh: *const fn () callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 52);
+pub const lcd_refresh_lines: *const fn (ln: c_int, cnt: c_int) callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 56);
+pub const lcd_fill_rect: *const fn (x: u32, y: u32, dx: u32, dy: u32, val: c_int) callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 60);
+pub const lcd_set_buf_cleared: *const fn (val: c_int) callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 84);
+pub const lcd_get_buf_cleared: *const fn () callconv(.c) c_int = @ptrFromInt(LIBRARY_FN_BASE + 88);
+pub const lcd_setLine: *const fn (ds: ?*disp_stat_t, ln_nr: c_int) callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 104);
+pub const lcd_writeText: *const fn (ds: ?*disp_stat_t, text: [*]const u8) callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 124);
+pub const rtc_read: *const fn (tm: *abi.TimeShort, dt: *abi.DateShort) callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 204);
+pub const rtc_write: *const fn (tm: *abi.TimeShort, dt: *abi.DateShort) callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 208);
+pub const rtc_wakeup_delay: *const fn () callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 228);
+pub const get_vbat: *const fn () callconv(.c) c_int = @ptrFromInt(LIBRARY_FN_BASE + 240);
+pub const start_buzzer_freq: *const fn (freq: u32) callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 244);
+pub const stop_buzzer: *const fn () callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 248);
+pub const usb_powered: *const fn () callconv(.c) c_int = @ptrFromInt(LIBRARY_FN_BASE + 288);
+// The auxiliary buffer is the firmware's tmpString, which every owner reads
+// 4-byte aligned.
+pub const aux_buf_ptr: *const fn () callconv(.c) [*]align(4) u8 = @ptrFromInt(LIBRARY_FN_BASE + 292);
+pub const write_buf_ptr: *const fn () callconv(.c) [*]u8 = @ptrFromInt(LIBRARY_FN_BASE + 296);
+pub const printer_advance_buf: *const fn (what: c_int) callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 312);
+pub const printer_busy_for: *const fn (what: c_int) callconv(.c) c_int = @ptrFromInt(LIBRARY_FN_BASE + 316);
+pub const power_check_screen: *const fn () callconv(.c) c_int = @ptrFromInt(LIBRARY_FN_BASE + 340);
+pub const create_screenshot: *const fn (report_error: c_int) callconv(.c) c_int = @ptrFromInt(LIBRARY_FN_BASE + 376);
+pub const key_empty: *const fn () callconv(.c) c_int = @ptrFromInt(LIBRARY_FN_BASE + 380);
+pub const key_push: *const fn (k1: c_int) callconv(.c) c_int = @ptrFromInt(LIBRARY_FN_BASE + 384);
+pub const key_tail: *const fn () callconv(.c) c_int = @ptrFromInt(LIBRARY_FN_BASE + 388);
+pub const key_pop: *const fn () callconv(.c) c_int = @ptrFromInt(LIBRARY_FN_BASE + 392);
+pub const key_pop_all: *const fn () callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 400);
+pub const wait_for_key_press: *const fn () callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 408);
+pub const wait_for_key_release: *const fn (tout: c_int) callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 420);
+pub const reset_auto_off: *const fn () callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 440);
+pub const check_create_dir: *const fn (dir: [*]const u8) callconv(.c) c_int = @ptrFromInt(LIBRARY_FN_BASE + 464);
+pub const sys_disk_write_enable: *const fn (val: c_int) callconv(.c) c_int = @ptrFromInt(LIBRARY_FN_BASE + 480);
+pub const sys_is_disk_write_enable: *const fn () callconv(.c) c_int = @ptrFromInt(LIBRARY_FN_BASE + 488);
+pub const sys_timer_disable: *const fn (timer_ix: c_int) callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 500);
+pub const sys_timer_start: *const fn (timer_ix: c_int, ms_value: u32) callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 504);
+pub const sys_delay: *const fn (ms_delay: u32) callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 516);
+pub const sys_current_ms: *const fn () callconv(.c) u32 = @ptrFromInt(LIBRARY_FN_BASE + 524);
+pub const sys_sleep: *const fn () callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 536);
+pub const sys_reset: *const fn () callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 544);
+pub const draw_power_off_image: *const fn (allow_errors: c_int) callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 556);
+pub const f_open: *const fn (fp: ?*FIL, path: [*]const u8, mode: u8) callconv(.c) FRESULT = @ptrFromInt(LIBRARY_FN_BASE + 564);
+pub const f_close: *const fn (fp: ?*FIL) callconv(.c) FRESULT = @ptrFromInt(LIBRARY_FN_BASE + 568);
+pub const f_read: *const fn (fp: ?*FIL, buff: ?*anyopaque, btr: UINT, br: *UINT) callconv(.c) FRESULT = @ptrFromInt(LIBRARY_FN_BASE + 572);
+pub const f_write: *const fn (fp: ?*FIL, buff: ?*const anyopaque, btw: UINT, bw: *UINT) callconv(.c) FRESULT = @ptrFromInt(LIBRARY_FN_BASE + 576);
+pub const f_lseek: *const fn (fp: ?*FIL, ofs: FSIZE_t) callconv(.c) FRESULT = @ptrFromInt(LIBRARY_FN_BASE + 580);
+pub const make_date_filename: *const fn (str: [*]u8, dir: [*]const u8, ext: [*]const u8) callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 604);
+pub const lcd_refresh_dma: *const fn () callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 644);
+pub const lcd_refresh_wait: *const fn () callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 648);
+pub const run_menu_item_sys: *const fn (line_id: u8) callconv(.c) c_int = @ptrFromInt(LIBRARY_FN_BASE + 728);
+pub const f_unlink: *const fn (path: [*]const u8) callconv(.c) FRESULT = @ptrFromInt(LIBRARY_FN_BASE + 768);
+
+// power_check_screen paints the low-battery screen and reports whether the power
+// is low; host has no battery, so it is never low there.
+pub fn powerCheckScreen() bool {
+    return is_dmcp_build and power_check_screen() != 0;
 }
 
-// Function-pointer defaults keep the firmware/host split to a single comptime
-// `if`, with no parameter discard in the trampoline bodies (which the comptime
-// branches would otherwise flag as pointless).
-const power_check_screen_impl: PowerCheckScreenFn = if (is_dmcp_build) @ptrFromInt(LIBRARY_FN_BASE + 340) else &powerCheckScreenNoop;
-const sys_timer_disable_impl: SysTimerDisableFn = if (is_dmcp_build) @ptrFromInt(LIBRARY_FN_BASE + 500) else &sysTimerDisableNoop;
-const sys_timer_start_impl: SysTimerStartFn = if (is_dmcp_build) @ptrFromInt(LIBRARY_FN_BASE + 504) else &sysTimerStartNoop;
-const sys_disk_write_enable_impl: SysDiskWriteEnableFn = if (is_dmcp_build) @ptrFromInt(LIBRARY_FN_BASE + 480) else &sysDiskWriteEnableNoop;
-const f_unlink_impl: FUnlinkFn = if (is_dmcp_build) @ptrFromInt(LIBRARY_FN_BASE + 768) else &fUnlinkNoop;
-
-// The three entries that take nothing and return nothing are a no-op on host
-// with no default to point at.
-fn romVoid(comptime offset: usize) void {
-    if (is_dmcp_build) {
-        const f: VoidFn = @ptrFromInt(LIBRARY_FN_BASE + offset);
-        f();
-    }
-}
-
-pub fn power_check_screen() bool {
-    return power_check_screen_impl() != 0;
-}
-pub fn sys_timer_disable(timer_ix: c_int) void {
-    sys_timer_disable_impl(timer_ix);
-}
-pub fn sys_timer_start(timer_ix: c_int, ms_value: u32) void {
-    sys_timer_start_impl(timer_ix, ms_value);
-}
-pub fn sys_disk_write_enable(val: c_int) c_int {
-    return sys_disk_write_enable_impl(val);
-}
-pub fn f_unlink(path: [*:0]const u8) c_uint {
-    return f_unlink_impl(path);
-}
-pub fn lcd_refresh() void {
-    romVoid(48);
-}
-pub fn wait_for_key_press() void {
-    romVoid(408);
-}
-pub fn sys_reset() void {
-    romVoid(544);
-}
-
-// sys_sdb_t (dmcp.h), up to the four DMCP settings flags. The block sits at a
-// fixed address on each board.
+// sys_sdb_t (dmcp.h), the system data block. It sits at a fixed address on each
+// board, and only firmware code may reach it.
 const SDB_BASE: usize = dmcp_rom_build_options.sdb_base;
 const GetFlagFn = *const fn () callconv(.c) c_int;
 const SetFlagFn = *const fn (val: c_int) callconv(.c) void;
-const SysSdb = extern struct {
+pub const SysSdb = extern struct {
     calc_state: u32,
-    ppgm_fp: ?*anyopaque,
-    key_to_alpha_table: ?[*]const u8,
+    ppgm_fp: ?*FIL,
+    key_to_alpha_table: ?[*:0]const u8,
     run_menu_item_app: ?*const anyopaque,
     menu_line_str_app: ?*const anyopaque,
     after_fat_format: ?*const anyopaque,
@@ -108,8 +139,22 @@ const SysSdb = extern struct {
     set_flag_dmy: SetFlagFn,
     is_flag_clk24: GetFlagFn,
     set_flag_clk24: SetFlagFn,
+    is_beep_mute: GetFlagFn,
+    set_beep_mute: SetFlagFn,
+    pds_t20: ?*disp_stat_t,
+    pds_t24: ?*disp_stat_t,
+    pds_fReg: ?*disp_stat_t,
+    timer2_counter: ?*u32,
+    timer3_counter: ?*u32,
+    msc_end_cb: ?*const fn () callconv(.c) void,
 };
-fn sdb() *const SysSdb {
+comptime {
+    // dmcp.h's layout on the 32-bit boards, where the block exists.
+    if (@sizeOf(usize) == 4 and @offsetOf(SysSdb, "pds_t24") != 52) @compileError("sys_sdb_t layout");
+}
+
+/// `sdb` (dmcp.h).
+pub fn sdb() *volatile SysSdb {
     return @ptrFromInt(SDB_BASE);
 }
 

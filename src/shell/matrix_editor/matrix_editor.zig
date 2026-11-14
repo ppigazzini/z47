@@ -54,7 +54,7 @@ const frontier_build_options = @import("frontier_build_options");
 const dmcp_build: bool = frontier_build_options.dmcp_build;
 const old_hw: bool = frontier_build_options.old_hw;
 
-const LIBRARY_FN_BASE: usize = frontier_build_options.library_fn_base;
+const rom = @import("dmcp_rom");
 
 const code_section = abi.codeSection(dmcp_build and old_hw);
 
@@ -432,14 +432,13 @@ extern fn strcat(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn strstr(haystack: [*c]const u8, needle: [*c]const u8) [*c]u8;
 extern fn sprintf(buf: [*c]u8, fmt: [*c]const u8, ...) c_int;
 
-// lcd_fill_rect — DMCP SDK fixed-address library call on firmware
-// (LIBRARY_FN_BASE + 60); real symbol on host. (Mirrors asn_browser owner.)
+// lcd_fill_rect — DMCP ROM function-table entry on firmware; real symbol on
+// host. (Mirrors asn_browser owner.)
 const LcdFillRectFn = *const fn (x: u32, y: u32, dx: u32, dy: u32, val: c_int) callconv(.c) void;
 const c_lcd_fill_rect = @extern(LcdFillRectFn, .{ .name = "lcd_fill_rect" });
 inline fn lcdFillRect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void {
     if (comptime dmcp_build) {
-        const f: LcdFillRectFn = @ptrFromInt(LIBRARY_FN_BASE + 60);
-        f(x, y, dx, dy, val);
+        rom.lcd_fill_rect(x, y, dx, dy, val);
     } else {
         c_lcd_fill_rect(x, y, dx, dy, val);
     }

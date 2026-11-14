@@ -430,14 +430,12 @@ extern var graphAccActive: bool;
 // hand side instead of evaluating both sides.
 extern var eqnDrawLhsOnly: bool;
 
-// DMCP firmware: lcd_refresh is a ROM jump-table call (matches the lblGtoXeq
-// owner trampoline; offset 48 in both lft_ifc.h files).
+// DMCP firmware: lcd_refresh is a ROM function-table entry, not a link symbol.
 const dm42_pkg_xip: bool = solve_build_options.dm42_pkg_xip;
-const library_fn_base: usize = solve_build_options.library_fn_base;
+const rom = @import("dmcp_rom");
 inline fn lcdRefresh() void {
     if (comptime is_dmcp_build) {
-        const f: *const fn () callconv(.c) void = @ptrFromInt(library_fn_base + 48);
-        f();
+        rom.lcd_refresh();
     } else {
         _ = refreshLcd(null);
     }

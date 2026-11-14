@@ -11,8 +11,8 @@ const consts = abi.constants;
 // layout itself differs (timer_will_expire is gint64 on PC, uint32_t on
 // DMCP), as does timerLastCalled, and mutexRefreshTimer exists only on DMCP -
 // modelled with comptime-selected types. On firmware the DMCP-ROM functions
-// (sys_current_ms / rtc_read) are fixed-address jump-table calls (LIBRARY_FN_BASE
-// + verified offset); on host the glib helpers (g_get_monotonic_time /
+// (sys_current_ms / rtc_read / lcd_refresh) are entries of the DMCP ROM function
+// table; on host the glib helpers (g_get_monotonic_time /
 // g_get_real_time) are used, only referenced under !dmcp_build. calcModeNormalGui
 // is a no-op macro on firmware (and would be on a keyboard-less sim) and a real
 // extern on the GTK sim, so it is gated. OPTION_STOPWATCH is defined for every
@@ -41,7 +41,7 @@ const TO_FN_EXEC: u8 = 4;
 extern var longPressFactor: i16;
 extern var doublePressFactor: i16;
 
-const LIBRARY_FN_BASE: usize = frontier_build_options.library_fn_base;
+const rom = @import("dmcp_rom");
 
 // ---------------------------------------------------------------------------
 // Types
@@ -217,25 +217,11 @@ extern fn g_get_real_time() i64;
 extern fn calcModeNormalGui() void;
 
 // ---------------------------------------------------------------------------
-// DMCP-ROM trampolines (fixed-address on firmware).
+// The RTC's time and date (dmcp.h tm_t, dt_t), and the refresh binding.
 // ---------------------------------------------------------------------------
 const gpointer = ?*anyopaque;
 const tm_t = abi.TimeShort;
 const dt_t = abi.DateShort;
-inline fn sys_current_ms() u32 {
-    const f: *const fn () callconv(.c) u32 = @ptrFromInt(LIBRARY_FN_BASE + 524);
-    return f();
-}
-inline fn rtc_read(tm: *tm_t, dt: *dt_t) void {
-    const f: *const fn (*tm_t, *dt_t) callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 204);
-    f(tm, dt);
-}
-// lcd_refresh is a fixed-address ROM call on firmware (LIBRARY_FN_BASE+48),
-// only referenced under dmcp_build.
-inline fn lcd_refresh() void {
-    const f: *const fn () callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 48);
-    f();
-}
 // refreshLcd is the same C symbol on both builds but with different signatures:
 // DMCP `void refreshLcd(void)`, host `gboolean refreshLcd(gpointer)`. Bind it
 // once with the signature matching the build being compiled.
@@ -315,7 +301,7 @@ pub export var remainingMsecCountdown: u32 = 0;
 // ===========================================================================
 pub export fn getUptimeMs() callconv(.c) u32 {
     if (comptime dmcp_build) {
-        return sys_current_ms();
+        return rom.sys_current_ms();
     } else {
         // Microseconds since boot; past ~49.7 days of host uptime the millisecond
         // count no longer fits, and the conversion to uint32_t keeps the low 32
@@ -432,7 +418,7 @@ fn refreshTimerPc(data: gpointer) callconv(.c) c_int {
 }
 
 fn refreshTimerDmcp() callconv(.c) void {
-    const now: u32 = sys_current_ms();
+    const now: u32 = rom.sys_current_ms();
     if (now < timerLastCalled) {
         var i: usize = 0;
         while (i < TMR_NUMBER) : (i += 1) {
@@ -531,7 +517,7 @@ pub export fn fnTimerStartImpl(nr: u8, param: u16, delay: u32) callconv(.c) void
         else => delay,
     } else delay;
     if (comptime dmcp_build) {
-        const now: u32 = sys_current_ms();
+        const now: u32 = rom.sys_current_ms();
         if (nr < TMR_NUMBER) {
             timer[nr].param = param;
             timer[nr].timer_will_expire = now +% time;
@@ -614,7 +600,7 @@ fn currentTime() u32 {
     if (comptime dmcp_build) {
         var timeInfo: tm_t = undefined;
         var dateInfo: dt_t = undefined;
-        rtc_read(&timeInfo, &dateInfo);
+        rom.rtc_read(&timeInfo, &dateInfo);
         return @as(u32, timeInfo.hour) * 3600000 +
             @as(u32, timeInfo.min) * 60000 +
             @as(u32, timeInfo.sec) * 1000 +
@@ -907,7 +893,7 @@ pub export fn fnUpdateTimerApp() callconv(.c) void {
         frontier_screen.displayShiftAndTamBuffer();
         if (comptime dmcp_build) {
             refreshLcd();
-            lcd_refresh();
+            rom.lcd_refresh();
         } else {
             _ = refreshLcd(null);
         }

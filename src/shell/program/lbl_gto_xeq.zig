@@ -360,37 +360,19 @@ extern fn fnTimerStart(nr: u8, param: u16, time: u32) void;
 extern fn setLastKeyCode(key: c_int) void;
 
 // DMCP SDK functions. On firmware these live in the calculator ROM and are
-// reached through the fixed library-function jump table (LIBRARY_FN_BASE +
-// offset), matching the sibling owners (error.c's lcd_fill_rect, dateTime's
-// rtc_read) and the firmware_io_runtime offsets. On the host they are real
-// linkable symbols (gtk_lcd_runtime). They are only called inside dmcp_build
-// comptime blocks (lcd_refresh has a host call too, so keep the host extern).
+// reached through its function table. On the host they are real linkable
+// symbols (gtk_lcd_runtime). They are only called inside dmcp_build comptime
+// blocks (lcd_refresh has a host call too, so keep the host extern).
 const old_hw: bool = frontier_build_options.old_hw;
-const library_fn_base: usize = frontier_build_options.library_fn_base;
-const lcd_refresh_offset: usize = 48;
-const wait_for_key_release_offset: usize = 420;
-const key_pop_offset: usize = 392;
+const rom = @import("dmcp_rom");
 
-const VoidFn = *const fn () callconv(.c) void;
-const WaitForKeyReleaseFn = *const fn (tout: c_int) callconv(.c) void;
-const KeyPopFn = *const fn () callconv(.c) c_int;
-
-extern fn lcd_refresh() void; // host symbol; firmware path uses the trampoline.
+extern fn lcd_refresh() void; // host symbol; firmware path uses the ROM entry.
 inline fn lcdRefresh() void {
     if (comptime dmcp_build) {
-        const f: VoidFn = @ptrFromInt(library_fn_base + lcd_refresh_offset);
-        f();
+        rom.lcd_refresh();
     } else {
         lcd_refresh();
     }
-}
-inline fn waitForKeyRelease(tout: c_int) void {
-    const f: WaitForKeyReleaseFn = @ptrFromInt(library_fn_base + wait_for_key_release_offset);
-    f(tout);
-}
-inline fn keyPop() c_int {
-    const f: KeyPopFn = @ptrFromInt(library_fn_base + key_pop_offset);
-    return f();
 }
 
 // ---------------------------------------------------------------------------
@@ -1476,8 +1458,8 @@ pub export fn runProgram(singleStep: bool_t, menuLabel: u16) callconv(.c) void {
                         frontier_screen.refreshScreen(1);
                         lcdRefresh();
                         fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, PROGRAM_KB_ACTV);
-                        waitForKeyRelease(0);
-                        _ = keyPop();
+                        rom.wait_for_key_release(0);
+                        _ = rom.key_pop();
                         break;
                     } else if (key > 0) {
                         setLastKeyCode(key);

@@ -490,10 +490,7 @@ const dmcp = struct {
     var wp43KbdLayout: bool_t = false;
 
     // ---- DMCP SDK constants ----
-    const LIBRARY_FN_BASE: usize = build_options.library_fn_base;
-    const SDB_ADDR: usize = build_options.sdb_base;
-    // calc_state is the volatile u32 at offset 0 of sys_sdb_t.
-    const calc_state_ptr: *volatile u32 = @ptrFromInt(SDB_ADDR);
+    const calc_state_ptr: *volatile u32 = &rom.sdb().calc_state;
 
     fn bit(comptime n: u5) u32 {
         return @as(u32, 1) << n;
@@ -546,32 +543,8 @@ const dmcp = struct {
 
     const BUFFER_SUCCESS: u8 = 1;
 
-    // ---- ROM (LIBRARY_FN_BASE) trampolines ----
-    fn rom(comptime T: type, comptime off: usize) T {
-        return @ptrFromInt(LIBRARY_FN_BASE + off);
-    }
-    // offsets from dep/DMCP_SDK/dmcp/lft_ifc.h
-    const lcd_line_addr = rom(*const fn (c_int) callconv(.c) [*c]u8, 40);
-    const lcd_clear_buf = rom(*const fn () callconv(.c) void, 44);
-    const lcd_refresh = rom(*const fn () callconv(.c) void, 48);
-    const lcd_forced_refresh = rom(*const fn () callconv(.c) void, 52);
-    const LCD_power_on = rom(*const fn () callconv(.c) void, 24);
-    const LCD_power_off = rom(*const fn (c_int) callconv(.c) void, 28);
-    const lcd_set_buf_cleared = rom(*const fn (c_int) callconv(.c) void, 84);
-    const lcd_get_buf_cleared = rom(*const fn () callconv(.c) c_int, 88);
-    const key_empty = rom(*const fn () callconv(.c) c_int, 380);
-    const key_pop = rom(*const fn () callconv(.c) c_int, 392);
-    const lcd_setLine = rom(*const fn (?*anyopaque, c_int) callconv(.c) void, 104);
-    const lcd_writeText = rom(*const fn (?*anyopaque, [*]const u8) callconv(.c) void, 124);
-    const wait_for_key_release = rom(*const fn (c_int) callconv(.c) void, 420);
-    const rtc_wakeup_delay = rom(*const fn () callconv(.c) void, 228);
-    const sys_timer_disable = rom(*const fn (c_int) callconv(.c) void, 500);
-    const sys_timer_start = rom(*const fn (c_int, u32) callconv(.c) void, 504);
-    const sys_current_ms = rom(*const fn () callconv(.c) u32, 524);
-    const sys_sleep = rom(*const fn () callconv(.c) void, 536);
-    const draw_power_off_image = rom(*const fn (c_int) callconv(.c) void, 556);
-    const lcd_refresh_dma = rom(*const fn () callconv(.c) void, 644);
-    const lcd_refresh_wait = rom(*const fn () callconv(.c) void, 648);
+    // ---- The DMCP ROM function table ----
+    const rom = @import("dmcp_rom");
 
     // ---- Runtime C symbols (resolved at firmware link) ----
     extern fn doFnReset(confirmation: u16, autoSav: bool_t) void;
@@ -642,15 +615,10 @@ const dmcp = struct {
         "@RSTU" ++
         "@VWXY" ++
         "@Z,? ";
-    // sys_sdb_t.key_to_alpha_table: calc_state (uint32_t) then ppgm_fp (pointer).
-    const key_to_alpha_table: *[*:0]const u8 = @ptrFromInt(SDB_ADDR + 8);
-    // sys_sdb_t.pds_t24, the 24-pixel text display state: offset 52, after
-    // calc_state, the eleven pointers that follow it and pds_t20.
-    const t24: *const ?*anyopaque = @ptrFromInt(SDB_ADDR + 52);
 
-    inline fn lcd_putsAt(ds: ?*anyopaque, ln: c_int, str: [*]const u8) void {
-        lcd_setLine(ds, ln);
-        lcd_writeText(ds, str);
+    inline fn lcd_putsAt(ds: ?*rom.disp_stat_t, ln: c_int, str: [*]const u8) void {
+        rom.lcd_setLine(ds, ln);
+        rom.lcd_writeText(ds, str);
     }
 
     // The DM42 runs TWO_FILE_PGM: the image is split into the .pgm and a QSPI
@@ -704,12 +672,12 @@ const dmcp = struct {
         if (comptime CALCMODEL == USER_R47) {
             // Remap the alpha keyboard layout DMCP's own dialogs read. The F keys
             // carry no alpha character on this layout, so the table stops at 37.
-            key_to_alpha_table.* = alpha_upper_transl;
+            rom.sdb().key_to_alpha_table = alpha_upper_transl;
         }
 
         // initialize lcd_buffer mainly used in hal/lcd.c
-        lcd_buffer = lcd_line_addr(0) - 2;
-        lcd_clear_buf();
+        lcd_buffer = rom.lcd_line_addr(0) - 2;
+        rom.lcd_clear_buf();
 
         // Runs before any dispatch through QSPI-resident pointers. The guard
         // refuses a program/QSPI pair from two different builds with a message
@@ -718,13 +686,13 @@ const dmcp = struct {
         if (comptime old_hw) {
             if (!qspiPairsWithProgram()) {
                 for (&qspiPairMsg, 2..) |*line, row| {
-                    lcd_putsAt(t24.*, @intCast(row), line);
+                    lcd_putsAt(rom.sdb().pds_t24, @intCast(row), line);
                 }
-                lcd_refresh();
+                rom.lcd_refresh();
                 key = -1;
                 while (key == -1) {
-                    sys_sleep();
-                    key = key_pop();
+                    rom.sys_sleep();
+                    key = rom.key_pop();
                 }
                 return;
             }
@@ -734,8 +702,8 @@ const dmcp = struct {
 
         backToDMCP = false;
 
-        lcd_forced_refresh();
-        nextScreenRefresh = sys_current_ms() + SCREEN_REFRESH_PERIOD;
+        rom.lcd_forced_refresh();
+        nextScreenRefresh = rom.sys_current_ms() + SCREEN_REFRESH_PERIOD;
 
         fnTimerReset();
         fnTimerConfig(TO_FG_LONG, refreshFn, TO_FG_LONG);
@@ -757,14 +725,14 @@ const dmcp = struct {
         while (backToDMCP == false) {
             if (ST(STAT_PGM_END) != 0 and ST(STAT_SUSPENDED) != 0) { // Already off and suspended
                 CLR_ST(STAT_RUNNING);
-                sys_sleep();
-            } else if (ST(STAT_PGM_END) == 0 and key_empty() != 0 and emptyKeyBuffer()) { // Just wait if no keys available.
+                rom.sys_sleep();
+            } else if (ST(STAT_PGM_END) == 0 and rom.key_empty() != 0 and emptyKeyBuffer()) { // Just wait if no keys available.
                 CLR_ST(STAT_RUNNING);
 
                 if (nextTimerRefresh == 0) { // no timeout available
-                    sys_sleep();
+                    rom.sys_sleep();
                 } else { // timeout available
-                    var timeoutTime: u32 = sys_current_ms();
+                    var timeoutTime: u32 = rom.sys_current_ms();
                     if (nextTimerRefresh > timeoutTime) {
                         timeoutTime = nextTimerRefresh - timeoutTime;
                     } else {
@@ -783,10 +751,10 @@ const dmcp = struct {
 
                     var sleepTime: u32 = SCREEN_REFRESH_PERIOD;
                     sleepTime = min(sleepTime, timeoutTime);
-                    sys_timer_start(TIMER_IDX_REFRESH_SLEEP, @max(sleepTime, 1)); // wake up for screen refresh
+                    rom.sys_timer_start(TIMER_IDX_REFRESH_SLEEP, @max(sleepTime, 1)); // wake up for screen refresh
 
-                    sys_sleep();
-                    sys_timer_disable(TIMER_IDX_REFRESH_SLEEP);
+                    rom.sys_sleep();
+                    rom.sys_timer_disable(TIMER_IDX_REFRESH_SLEEP);
                 }
             }
 
@@ -796,7 +764,7 @@ const dmcp = struct {
                 if (ST(STAT_OFF) == 0 and (nextTimerRefresh == 0)) {
                     _ = updateVbatIntegrated(true);
                     _ = refreshLcd(null);
-                    lcd_refresh_wait();
+                    rom.lcd_refresh_wait();
                 }
                 CLR_ST(STAT_CLK_WKUP_FLAG);
                 continue;
@@ -804,7 +772,7 @@ const dmcp = struct {
             if (ST(STAT_POWER_CHANGE) != 0) {
                 showHideUsbLowBattery();
                 _ = refreshLcd(null);
-                lcd_refresh_wait();
+                rom.lcd_refresh_wait();
                 if (ST(STAT_OFF) == 0 and (fnTimerGetStatus(TO_KB_ACTV) != TMR_RUNNING)) {
                     fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, 40);
                 }
@@ -816,10 +784,10 @@ const dmcp = struct {
             if (ST(STAT_PGM_END) != 0 or ST(STAT_SUSPENDED) != 0) {
                 if (ST(STAT_SUSPENDED) == 0) {
                     // Going to off mode
-                    lcd_set_buf_cleared(0); // Mark no buffer change region
-                    draw_power_off_image(1);
+                    rom.lcd_set_buf_cleared(0); // Mark no buffer change region
+                    rom.draw_power_off_image(1);
 
-                    LCD_power_off(0);
+                    rom.LCD_power_off(0);
                     SET_ST(STAT_SUSPENDED);
                     SET_ST(STAT_OFF);
                 }
@@ -835,13 +803,13 @@ const dmcp = struct {
 
             // Get up from OFF state
             if (ST(STAT_OFF) != 0) {
-                LCD_power_on();
-                rtc_wakeup_delay(); // Ensure that RTC readings after power off will be OK
+                rom.LCD_power_on();
+                rom.rtc_wakeup_delay(); // Ensure that RTC readings after power off will be OK
 
                 CLR_ST(STAT_OFF);
 
-                if (lcd_get_buf_cleared() == 0) {
-                    lcd_forced_refresh(); // Just redraw from LCD buffer
+                if (rom.lcd_get_buf_cleared() == 0) {
+                    rom.lcd_forced_refresh(); // Just redraw from LCD buffer
                 }
 
                 if (getSystemFlag(FLAG_AUTXEQ)) { // Run the program if AUTXEQ is set
@@ -867,7 +835,7 @@ const dmcp = struct {
 
             if (key == 44) { // DISP for special SCREEN DUMP key code.
                 standardScreenDump();
-                wait_for_key_release(0);
+                rom.wait_for_key_release(0);
                 charKey[0] = 0;
                 charKey[1] = 0;
                 resetShiftState();
@@ -905,7 +873,7 @@ const dmcp = struct {
             }
 
             if (key >= 0) {
-                lcd_refresh_dma();
+                rom.lcd_refresh_dma();
                 if (key > 0) {
                     fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, TO_KB_ACTV_MEDIUM); // Key pressed
                 } else if (cursorEnabled == 1) {
@@ -915,12 +883,12 @@ const dmcp = struct {
                 }
             }
 
-            var now: u32 = sys_current_ms();
+            var now: u32 = rom.sys_current_ms();
 
             if (nextTimerRefresh != 0 and nextTimerRefresh <= now) {
                 refreshTimer(); // Executes pending timer jobs
             }
-            now = sys_current_ms();
+            now = rom.sys_current_ms();
             if (nextScreenRefresh <= now) {
                 nextScreenRefresh += SCREEN_REFRESH_PERIOD;
                 if (nextScreenRefresh < now) {
@@ -929,9 +897,9 @@ const dmcp = struct {
                 if ((calcMode != CM_TIMER_v) or (fnTimerGetStatus(TO_TIMER_APP) != TMR_RUNNING)) {
                     _ = refreshLcd(null);
                     if (key >= 0) {
-                        lcd_refresh();
+                        rom.lcd_refresh();
                     } else {
-                        lcd_refresh_wait();
+                        rom.lcd_refresh_wait();
                     }
                 }
             }

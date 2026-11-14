@@ -52,9 +52,9 @@ fn addRuntimeObject(
         .optimize = optimize,
     });
     module.addImport("abi", abi_module);
-    const build_options = b.addOptions();
-    build_options.addOption(usize, "library_fn_base", build_common.libraryFnBase(b, options.board));
-    module.addOptions("tone_build_options", build_options);
+    // The DMCP ROM function table the firmware display refresh goes through.
+    const dmcp_rom_module = build_common.addDmcpRomModule(b, target, optimize, options.board);
+    module.addImport("dmcp_rom", dmcp_rom_module);
 
     return b.addObject(.{
         .name = b.fmt("{s}-ui-tone", .{name_prefix}),
