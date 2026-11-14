@@ -64,7 +64,6 @@ const CONFIG_DESCRIPTOR_SIZE: usize = 840; // sizeof(dtConfigDescriptor_t)
 // 32-bit bitfield: rows:12, columns:12, mtag:6, notUsed:2.
 const REAL34_SIZE_IN_BLOCKS: u32 = 4;
 const COMPLEX34_SIZE_IN_BLOCKS: u32 = 8;
-const OpaqueCtx = opaque {};
 
 const matrixHeader_t = abi.MatrixHeader;
 const MpzStruct = abi.Mpz;
@@ -182,7 +181,7 @@ fn getVectorRegisterAngularMode(regist: i16) u8 {
 
 // restore-side core helpers
 extern fn reallocateRegister(regist: i16, data_type: u32, data_size: u16, tag: u32) bool;
-extern fn decQuadFromString(dst: [*c]u8, src: [*c]const u8, ctx: *OpaqueCtx) [*c]u8;
+extern fn decQuadFromString(dst: [*c]u8, src: [*c]const u8, ctx: *abi.RealContext) [*c]u8;
 extern fn convertLongIntegerToLongIntegerRegister(li: *const MpzStruct, regist: i16) void;
 extern fn convertUInt64ToShortIntegerRegister(sign: i16, value: u64, base: u32, regist: i16) void;
 extern fn utf8ToStringWithLength(utf8: [*c]const u8, str: [*c]u8, maxBytes: usize) void;
@@ -190,9 +189,9 @@ extern fn xcopy(dst: ?*anyopaque, src: ?*const anyopaque, nbytes: u32) ?*anyopaq
 const displayBugScreen = abi.host.showBugScreen; // routed through the host-callback boundary
 extern fn __gmpz_init(li: *MpzStruct) void;
 extern fn __gmpz_set_str(li: *MpzStruct, str: [*c]const u8, base: c_int) c_int;
-extern fn decNumberToString(src: [*c]const u8, dst: [*c]u8) [*c]u8;
-extern fn decNumberFromString(dst: [*c]u8, src: [*c]const u8, ctx: *OpaqueCtx) [*c]u8;
-extern var ctxtReal34: OpaqueCtx;
+extern fn decNumberToString(src: *const abi.Real, dst: [*c]u8) [*c]u8;
+extern fn decNumberFromString(dst: [*]u8, src: [*c]const u8, ctx: *abi.RealContext) [*c]u8;
+extern var ctxtReal34: abi.RealContext;
 // Typed, not opaque: the RXFN branch copies it and narrows `digits` to 1034, as
 // c43's restoreRegister does. Every other use passes it straight to C, so it is
 // cast back to the opaque form there.
@@ -243,10 +242,8 @@ fn BigReal(comptime digits: u32) type {
         }
     };
 }
-extern var statisticalSumsPointer: ?*anyopaque; // real_t*
+extern var statisticalSumsPointer: ?[*]abi.Real;
 extern var errorMessage: [*c]u8;
-
-const REAL_SIZE_IN_BYTES: usize = 60; // sizeof(real_t)
 
 extern var tmpString: [*c]u8;
 extern var aimBuffer1: [calc_state.AIM_BUFFER_1_LENGTH]u8;
@@ -653,7 +650,7 @@ pub fn restoreRegister(regist: i16, type_str: [*c]u8, value_in: [*c]u8, loaded_v
         var tmpAngle: c_int = undefined;
 
         if (dataFileMode) dataFileCommaToPeriod(value);
-        _ = decNumberFromString(paramX_b.bytes(), value, @ptrCast(&c));
+        _ = decNumberFromString(paramX_b.bytes(), value, &c);
 
         processResultantLongReal(@bitCast(REGISTER_X), 0, FT_EXTERNAL, paramX_b.bytes(), paramY_b.bytes(), paramTemp_b.bytes(), &angleMode, &tmpAngle);
     } else if (strcmpEq(type_str, "Time")) {
@@ -914,16 +911,14 @@ fn skipMatrixElements(elements: u32, is_complex: bool) void {
 }
 
 // ===================== statistical sums =====================
-// Each statistical sum is a real_t (75-digit). statisticalSumsPointer is the
-// real_t array base. (Unexercised by the host harness: no stats accumulated.)
+// Each statistical sum is a real_t (75-digit); statisticalSumsPointer is the
+// array of them. (Unexercised by the host harness: no stats accumulated.)
 
 pub fn statSumToString(i: u16) void {
-    const base: [*c]u8 = @ptrCast(statisticalSumsPointer);
-    _ = decNumberToString(base + @as(usize, i) * REAL_SIZE_IN_BYTES, regValueBuf());
+    _ = decNumberToString(&statisticalSumsPointer.?[i], regValueBuf());
 }
 
 pub fn loadStatSum(str: [*c]const u8, i: u16) void {
     @setRuntimeSafety(true); // untrusted file input -- see calc_state.zig's panic decl
-    const base: [*c]u8 = @ptrCast(statisticalSumsPointer);
-    _ = decNumberFromString(base + @as(usize, i) * REAL_SIZE_IN_BYTES, str, @ptrCast(&ctxtReal75));
+    _ = decNumberFromString(std.mem.asBytes(&statisticalSumsPointer.?[i]), str, &ctxtReal75);
 }

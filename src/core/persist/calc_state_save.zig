@@ -427,10 +427,10 @@ pub fn writeSaveSections() void {
     saveLine("{d}\n", .{cu(freeProgramBytes)});
     save(b());
     {
-        const progWords: [*c]u32 = @ptrCast(@alignCast(beginOfProgramMemory));
         var i: u16 = 0;
         while (i < currentSizeInBlocks) : (i += 1) {
-            saveLine("{d}\n", .{cu(progWords[i])});
+            const word = std.mem.readInt(u32, beginOfProgramMemory[@as(usize, i) * 4 ..][0..4], .native);
+            saveLine("{d}\n", .{cu(word)});
             save(b());
         }
     }
@@ -547,7 +547,7 @@ pub fn writeSaveSections() void {
     }
 
     {
-        const pdelay = @as(*const u16, @ptrCast(@alignCast(&printerState[12]))).*;
+        const pdelay = std.mem.readInt(u16, printerState[12..14], .native);
         saveField("printerOn", "%u\n", .{cu(printerState[0])});
         saveField("printerModel", "%u\n", .{cu(printerState[8])});
         saveField("printerLineDelay", "%u\n", .{cu(pdelay)});

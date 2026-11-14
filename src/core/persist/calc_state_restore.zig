@@ -508,9 +508,10 @@ fn convertOldMenuItems(items: []userMenuItem_t) void {
 
 fn convertOldMenuKeyboard(keys: []calcKey_t, norm_func: *i16) void {
     for (keys) |*key| {
-        // keyId comes first and is a key number, never an item.
-        const fields: *[8]i16 = @ptrCast(&key.primary);
-        for (fields) |*field| field.* = convertOldMenuLink(field.*);
+        // Every field but keyId, which is a key number and never an item.
+        inline for (.{ "primary", "fShifted", "gShifted", "keyLblAim", "primaryAim", "fShiftedAim", "gShiftedAim", "primaryTam" }) |name| {
+            @field(key, name) = convertOldMenuLink(@field(key, name));
+        }
     }
     // The Norm key is written back into kbd_usr on the next TO_USER, so it converts too.
     norm_func.* = convertOldMenuLink(norm_func.*);
@@ -615,7 +616,7 @@ fn setPrinterModel(v: u8) void {
     printerState[8] = v;
 }
 fn setPrinterDelay(v: u16) void {
-    @as(*u16, @ptrCast(@alignCast(&printerState[12]))).* = v;
+    std.mem.writeInt(u16, printerState[12..14], v, .native);
 }
 
 fn cmpName(line: [*c]const u8, name: [*c]const u8) bool {
@@ -1306,7 +1307,6 @@ fn restoreProgramsSection(load_mode: u16) void {
         }
     }
 
-    const progWords: [*c]u32 = @ptrCast(@alignCast(beginOfProgramMemory));
     // i32, where upstream's loop counter is the enclosing function's `int16_t i`
     // (saveRestoreCalcState.c:1602). numberOfBlocks is a uint16_t and program
     // memory legitimately reaches RAM_SIZE_IN_BLOCKS (65534), so an int16_t
@@ -1321,7 +1321,7 @@ fn restoreProgramsSection(load_mode: u16) void {
     while (i < numberOfBlocks) : (i += 1) {
         calc_state.readLine(tmpString, TMP_STR_LENGTH);
         if (programsLoadMode == LM_ALL) {
-            progWords[@intCast(i)] = text.toUint32(tmpString);
+            std.mem.writeInt(u32, beginOfProgramMemory[@as(usize, @intCast(i)) * 4 ..][0..4], text.toUint32(tmpString), .native);
         } else if (programsLoadMode == LM_PROGRAMS) {
             var tmpBlock: u32 = text.toUint32(tmpString);
             _ = xcopy(oldFirstFreeProgramByte + TO_BYTES(i), &tmpBlock, 4);
