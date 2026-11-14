@@ -579,7 +579,7 @@ pub const registerStringData = abi.registerString;
 // TO_PCMEMPTR(p): block number -> RAM pointer, or null for the C47_NULL sentinel.
 pub inline fn toPcMemPtr(p: u16) ?[*]u8 {
     if (p == C47_NULL) return null;
-    return @ptrCast(ram + p);
+    return std.mem.asBytes(&ram[p]);
 }
 
 // --- fnKeyExit dependencies -------------------------------------------------
