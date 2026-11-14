@@ -193,8 +193,6 @@ extern var nimNumberPart: [1]u8;
 extern var displayStack: [1]u8;
 extern var hexDigits: [1]u8;
 extern var errorMessageRegisterLine: [2]u8;
-extern var shortIntegerMask: [8]u8;
-extern var shortIntegerSignBit: [8]u8;
 extern var temporaryInformation: [1]u8;
 extern var funcOK: [1]u8;
 extern var screenChange: [1]u8;
@@ -583,8 +581,6 @@ pub fn saveCalc() void {
     sv(std.mem.asBytes(&displayStack[0]), 1, "displayStack", "uint8");
     sv(std.mem.asBytes(&hexDigits[0]), 1, "hexDigits", "uint8");
     sv(std.mem.asBytes(&errorMessageRegisterLine[0]), 2, "errorMessageRegisterLine", "int16");
-    sv(std.mem.asBytes(&shortIntegerMask[0]), 8, "shortIntegerMask", "uint64");
-    sv(std.mem.asBytes(&shortIntegerSignBit[0]), 8, "shortIntegerSignBit", "uint64");
     sv(std.mem.asBytes(&temporaryInformation[0]), 1, "temporaryInformation", "uint8");
     sv(std.mem.asBytes(&funcOK[0]), 1, "funcOK", "bool");
     sv(std.mem.asBytes(&screenChange[0]), 1, "screenChange", "bool");
