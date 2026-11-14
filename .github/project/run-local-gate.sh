@@ -207,8 +207,13 @@ step "[8/11] workflow script locality and action pins"
 bash .github/project/check-ci-no-local-dev-scripts.sh
 quiet python3 .github/project/check-action-pins.py --self-test
 python3 .github/project/check-action-pins.py --repo-root .
+bash .github/project/workflow-imported-root-paths.sh check-workflow
 step "[9/11] portable integer widths (Windows LLP64 trap)"
 bash .github/project/check-portable-int-widths.sh
+bash .github/project/check-c-type-alias-widths.sh
+python3 .github/project/check-extern-var-widths.py
+step "[9a/11] generated font seams match their upstream tables"
+python3 .github/project/generate-font-seams.py --repo-root . --check
 step "[9b/11] extern declarations match their definitions"
 # Owners reach each other through the C ABI, which no compiler checks across
 # objects: a declaration claiming void over a bool, or u16 over u32, links and
@@ -282,8 +287,8 @@ step "[10b/11] firmware link for every DMCP package variant"
 zig build dmcp_pkgs_all --summary none
 
 step "[11/11] tracked generated artifacts unchanged"
-mapfile -t generated_artifacts < <(bash .github/project/workflow-imported-root-paths.sh generated-artifacts)
-git diff --exit-code -- "${generated_artifacts[@]}"
+mapfile -t tracked_artifacts < <(bash .github/project/workflow-imported-root-paths.sh tracked-generated-artifacts)
+git diff --exit-code -- "${tracked_artifacts[@]}"
 
 printf '\n\033[1;32mLOCAL GATE PASSED\033[0m — the Linux governance, host-parity and firmware-link lanes.\n'
-printf 'Still CI-only: the UBSan lanes (both_asan, test_asan), the memcheck lane (memcheck_suite), the coverage floor, the docs build, the dmcp, dmcpr47, dmcp5 and dmcp5r47 links and all packaging, the font-seam, C-type-alias, extern-var-width and workflow-vocabulary checks, and the Windows (LLP64) and macOS host lanes.\n'
+printf 'Still CI-only: the UBSan lanes (both_asan, test_asan), the memcheck lane (memcheck_suite), the coverage floor, the docs build, the dmcp, dmcpr47, dmcp5 and dmcp5r47 links and all packaging, and the Windows (LLP64) and macOS host lanes.\n'
