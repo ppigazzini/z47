@@ -426,9 +426,10 @@ fn storeIj(header: *const matrixHeader_t) bool {
         } else {
             frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
             if (comptime extra_info) {
-                // The uint32_t values go through a PRIu16 conversion, which
-                // renders only their low 16 bits.
-                abi.fmtBufZ(errorMessage[0..512], "({d}, {d}) out of range", .{ @as(u16, @truncate(rows)), @as(u16, @truncate(cols)) });
+                // C prints the uint32_t values through PRIu16; getDimensionArg
+                // has bounded both to 1..4096, so they print whole whichever
+                // length modifier the host's PRIu16 carries.
+                abi.fmtBufZ(errorMessage[0..512], "({d}, {d}) out of range", .{ rows, cols });
                 moreInfoOnError("In function storeIjReal:", errorMessage, null);
             }
         }

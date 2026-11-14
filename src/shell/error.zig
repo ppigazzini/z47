@@ -12,15 +12,14 @@ const consts = abi.constants;
 //
 // Faithful, line-by-line port. The IR_PRINTING tail of displayCalcErrorMessage
 // lives here as printErrorTrace, which the engine's entry point calls once it
-// has recorded the error status. moreInfoOnError is
-// PC-only (gated on !dmcp_build); the EXTRA_INFO sprintf register-type hints in
-// fnErrorMessage are host-only and reduced to a fixed moreInfoOnError() string as
-// in the sibling owners. typeError is exported unconditionally: upstream defines
-// it whenever EXTRA_INFO_ON_CALC_ERROR != 1, which is true for both the firmware
-// and testSuite C builds; the frontier object is compiled once with
-// extra_info_on_calc_error = true (host default) yet the testSuite C consumers are
-// compiled with TESTSUITE_BUILD (EXTRA_INFO == 0) and reference typeError, so it
-// must always be present. error.c is the only definer, so no duplicate-symbol risk.
+// has recorded the error status. moreInfoOnError prints only where
+// extra_info_on_calc_error is set, on host builds outside the testSuite, and is
+// a no-op stub on firmware and in the testSuite; fnErrorMessage's EXTRA_INFO
+// hints compose the
+// register data-type name and the error-code limit into errorMessage as C's
+// sprintf does. typeError is exported on every build: upstream defines it
+// wherever EXTRA_INFO_ON_CALC_ERROR != 1, which covers the firmware and the
+// testSuite C consumers that call it, and error.c is its only definer.
 
 const builtin = @import("builtin");
 const frontier_build_options = @import("frontier_build_options");
@@ -54,7 +53,7 @@ const angularMode_t = c_int;
 // ---------------------------------------------------------------------------
 // Constants / enum values (defines.h / typeDefinitions.h)
 // ---------------------------------------------------------------------------
-const NUMBER_OF_ERROR_CODES: u8 = 129; // defines.h: 129 (not 127); error 128 = ERROR_TI_UNDO_FAILED. The bounds check below rejected codes 127/128 when this was 127.
+const NUMBER_OF_ERROR_CODES: u8 = 129; // defines.h; the last code, 128, is ERROR_TI_UNDO_FAILED
 const NUMBER_OF_BUG_SCREEN_MESSAGES: usize = 10;
 const SIZE_OF_EACH_BUG_SCREEN_MESSAGE: usize = 100;
 
