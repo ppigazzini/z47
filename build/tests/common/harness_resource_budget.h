@@ -33,10 +33,11 @@
 // and compiles to nothing on Windows, where a hung case still hangs. Say so
 // rather than letting the Windows lane read as equally protected.
 //
-// THE BYTE CEILING ALSO NEEDS NOTHING FROM THE LANE. Installing it is the whole
-// wiring. The wall-clock budget is armed by harnessBudgetSetCase, so a lane that
-// does not name its cases gets the ceiling and not the clock -- and its breach
-// message says which lane rather than which case, because that is all it knows.
+// NEITHER BUDGET NEEDS ANYTHING FROM THE LANE. Installing them is the whole
+// wiring: the byte ceiling, and a wall clock over the whole lane. A lane that
+// names its cases with harnessBudgetSetCase gets the tighter per-case clock as
+// well, and a breach then names the case rather than only the lane; between
+// named cases the lane clock runs again.
 
 #ifndef HARNESS_RESOURCE_BUDGET_H
 #define HARNESS_RESOURCE_BUDGET_H
@@ -70,6 +71,13 @@
   #define HARNESS_CASE_BUDGET_IN_SECONDS 60u
 #endif
 
+// The clock for a lane that does not name its cases, and for the stretch between
+// two named cases. Every converted lane finishes in seconds; ten minutes leaves
+// room for valgrind and a slow runner and still ends a hang the same session.
+#ifndef HARNESS_LANE_BUDGET_IN_SECONDS
+  #define HARNESS_LANE_BUDGET_IN_SECONDS 600u
+#endif
+
 // c43 keeps this running total for its own leak reporting; the allocator below
 // maintains it exactly as `allocGmp` does, so installing a budget does not blind
 // a lane that reads it.
@@ -79,6 +87,10 @@ static const char *harnessBudgetLane = "harness";
 static char        harnessBudgetCase[192] = "<this lane does not name its cases>";
 static size_t      harnessGmpLiveBytes;
 static size_t      harnessGmpPeakBytes;
+#if HARNESS_HAS_CASE_TIME_BUDGET
+// The clock now armed, for the breach message.
+static unsigned    harnessBudgetSeconds = HARNESS_LANE_BUDGET_IN_SECONDS;
+#endif
 
 // The case name is the only thing that makes a breach actionable, so it is set by
 // the harness immediately before each side of each case runs. It is COPIED: a
@@ -87,13 +99,18 @@ static size_t      harnessGmpPeakBytes;
 static inline void harnessBudgetSetCase(const char *caseName) {
   snprintf(harnessBudgetCase, sizeof(harnessBudgetCase), "%s", caseName);
 #if HARNESS_HAS_CASE_TIME_BUDGET
+  harnessBudgetSeconds = HARNESS_CASE_BUDGET_IN_SECONDS;
   alarm(HARNESS_CASE_BUDGET_IN_SECONDS);
 #endif
 }
 
 static inline void harnessBudgetCaseFinished(void) {
+  char finished[sizeof(harnessBudgetCase)];
+  memcpy(finished, harnessBudgetCase, sizeof(finished));
+  snprintf(harnessBudgetCase, sizeof(harnessBudgetCase), "<after %s>", finished);
 #if HARNESS_HAS_CASE_TIME_BUDGET
-  alarm(0);
+  harnessBudgetSeconds = HARNESS_LANE_BUDGET_IN_SECONDS;
+  alarm(HARNESS_LANE_BUDGET_IN_SECONDS);
 #endif
 }
 
@@ -138,7 +155,7 @@ static void harnessFreeGmp(void *pcMemPtr, size_t sizeInBytes) {
 #if HARNESS_HAS_CASE_TIME_BUDGET
 static void harnessBudgetAlarm(int signalNumber) {
   (void)signalNumber;
-  harnessBudgetStop("no result after", HARNESS_CASE_BUDGET_IN_SECONDS, "seconds");
+  harnessBudgetStop("no result after", harnessBudgetSeconds, "seconds");
 }
 #endif
 
@@ -170,6 +187,7 @@ static void harnessInstallResourceBudget(const char *laneName) {
   atexit(harnessReportResourceUse);
 #if HARNESS_HAS_CASE_TIME_BUDGET
   signal(SIGALRM, harnessBudgetAlarm);
+  alarm(HARNESS_LANE_BUDGET_IN_SECONDS);
 #endif
 }
 
