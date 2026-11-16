@@ -135,6 +135,12 @@ jobs:
 
   zig-master-compatibility:
     name: Zig master compatibility monitor
+    # Informational: Zig master breaks z47 through no fault of z47's. A job that
+    # fails is a failed check run on the commit even under a job-level
+    # continue-on-error, so the steps that depend on master carry it instead and
+    # the job stays green; a failed step is reported by the warning annotation
+    # and the step summary below. The job-level flag only keeps an
+    # infrastructure failure (apt, cache) from failing the workflow run.
     continue-on-error: true
     runs-on: ubuntu-26.04
     timeout-minutes: 20
@@ -147,11 +153,16 @@ jobs:
           set -euo pipefail
           . ./.github/zig-toolchain.env
           echo "version=$ZIG_MASTER_VERSION" >> "$GITHUB_OUTPUT"
-      - name: Install monitored Zig master snapshot
+      - id: install_master
+        name: Install monitored Zig master snapshot
+        continue-on-error: true
         uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2.2.1
         with:
           version: ${{ steps.master_toolchain.outputs.version }}
-      - name: Verify resolved monitored Zig version
+      - id: verify_master
+        name: Verify resolved monitored Zig version
+        if: steps.install_master.outcome == 'success'
+        continue-on-error: true
         shell: bash
         run: |
           set -euo pipefail
@@ -208,15 +219,17 @@ jobs:
         run: |
           set -euo pipefail
           sudo apt-get install -qq -y libfreetype6-dev libgmp-dev libgtk-3-dev libpulse-dev
-      - name: Probe build graph and generator-backed host lane under monitored Zig master
+      - id: probe_master
+        name: Probe build graph and generator-backed host lane under monitored Zig master
+        if: steps.verify_master.outcome == 'success'
+        continue-on-error: true
         shell: bash
         run: |
           set -euo pipefail
           export PATH="$RUNNER_TEMP/xlsxio-prefix/bin:$PATH"
           export LD_LIBRARY_PATH="$RUNNER_TEMP/xlsxio-prefix/lib:$RUNNER_TEMP/xlsxio-prefix/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
-          # The job is continue-on-error, so its tick says nothing; the summary
-          # names each probe's result, and every probe runs whatever the one
-          # before it did.
+          # The job's tick is green whatever master does; the summary names each
+          # probe's result, and every probe runs whatever the one before it did.
           status=0
           {
             echo "### Zig master monitor: $(zig version)"
@@ -229,6 +242,17 @@ jobs:
             echo "| \`zig build $probe\` | $result |" >> "$GITHUB_STEP_SUMMARY"
           done
           exit "$status"
+      - name: Report Zig master drift
+        if: steps.install_master.outcome != 'success' || steps.verify_master.outcome != 'success' || steps.probe_master.outcome != 'success'
+        shell: bash
+        env:
+          MASTER_VERSION: ${{ steps.master_toolchain.outputs.version }}
+          INSTALL_OUTCOME: ${{ steps.install_master.outcome }}
+          VERIFY_OUTCOME: ${{ steps.verify_master.outcome }}
+          PROBE_OUTCOME: ${{ steps.probe_master.outcome }}
+        run: |
+          set -euo pipefail
+          echo "::warning title=Zig master monitor::Zig $MASTER_VERSION: install $INSTALL_OUTCOME, version check $VERIFY_OUTCOME, probes $PROBE_OUTCOME. The step summary lists each probe."
 
   source-manifest:
     name: Verify imported upstream pin and source manifest
