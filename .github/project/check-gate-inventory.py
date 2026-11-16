@@ -102,6 +102,11 @@ NOT_A_GATE: dict[str, str] = {
         "Generator: writes upstream-correspondence.tsv, which"
         " check-upstream-correspondence.py then enforces in CI."
     ),
+    "import-upstream-pin.py": (
+        "Resync tool: three-way merges a new upstream pin into the imported tree and"
+        " moves the pin; run by hand at the start of a sync. check-imported-tree-pin.py"
+        " gates its result in CI."
+    ),
     "move-owners.py": "Refactoring tool: moves owners and rewrites their references.",
     "rename-owner.sh": "Refactoring tool: renames one owner and its build references.",
     "run-local-gate.sh": "Runner: the local pre-push battery this inventory classifies against.",

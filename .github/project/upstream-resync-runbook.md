@@ -9,18 +9,33 @@ below as guardrails so the next resync is a checklist, not a rediscovery.
 
 - We track upstream **`master`** only. Feature/WIP branches ahead of master are NOT
   the mainline — do not import them.
-- Import **only the changed paths that already exist in z47**:
-  `git diff --name-only <oldpin>..<newpin>` intersected with the tracked tree.
-  A whole-tree diff vs the new pin clobbers z47's own divergences (removed files,
-  patched `tools/size.py`, etc.).
+- **Import with the script, never by hand.** Fetch the new pin into this
+  repository, look first, then import:
+
+  ```bash
+  git fetch upstream master
+  python3 .github/project/import-upstream-pin.py <newpin> --dry-run
+  python3 .github/project/import-upstream-pin.py <newpin>
+  ```
+
+  It takes the old pin and the new pin, each minus the `[not-carried]` paths
+  of `imported-tree-divergences.txt`, and three-way merges the difference into
+  `upstream/` with `git merge-tree`. So it brings every added, changed,
+  renamed and deleted path of the range, leaves every not-carried path out, and
+  keeps a `[patched]` file's divergence. A patch that collides with upstream's
+  change stops the import as a conflict, with nothing changed. It then stages
+  the result and moves `UPSTREAM_COMMIT` and `UPSTREAM_PIN_UPDATED`. It does
+  not commit: the import and the Zig port land together as the resync commit,
+  on a linear history. It refuses a dirty tracked tree, and an imported tree
+  that is not at its current pin. It names the changed upstream `.gitignore`,
+  `.gitattributes` or `.gitmodules`, whose rules z47 mirrors by hand in its own
+  root copies.
 - z47's imported tree is a SNAPSHOT, not a git descendant of the pin: the pin is
   never an ancestor of `HEAD`, so the ownership and pin checks diff against the
   pin itself.
-- **Paths need the `upstream/` hop.** The imported tree is mounted at
-  `UPSTREAM_ROOT` (`upstream/`), but a diff taken against an upstream ref emits
-  upstream-relative paths. `src/c47/foo.c` in the diff is
-  `upstream/src/c47/foo.c` here; apply with `git apply --directory=upstream`, or
-  copy into `"$(bash .github/project/check-source-ownership.sh list-imported-roots)/"`.
+- **Paths outside the script need the `upstream/` hop.** A diff taken against an
+  upstream ref emits upstream-relative paths: `src/c47/foo.c` in
+  `report-resync-worklist.py`'s output is `upstream/src/c47/foo.c` here.
   Ledgers, baselines, and correspondence TSVs stay upstream-relative — do NOT
   rewrite them to add the prefix (see `.github/project/upstream_paths.py`).
 - **`docs/appnotes/` is deliberately NOT carried.** It was 101 MiB — two thirds of

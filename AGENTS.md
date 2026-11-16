@@ -75,10 +75,10 @@ boundaries.
 Advancing the pin is the dominant workflow and the runbook owns the procedure.
 What agents get wrong before reading it:
 
-Import only the paths that changed between the two pins. A whole-tree diff against
-the new pin silently reverts every divergence z47 deliberately holds, and that
-includes `.gitignore`, `.gitattributes` and `.gitmodules`, which have to be
-reconciled by hand rather than taken whole.
+Import with `.github/project/import-upstream-pin.py <newpin>`, never by hand: a
+whole-tree copy reverts every divergence z47 holds, and the script keeps them. It
+leaves upstream's `.gitignore`, `.gitattributes` and `.gitmodules` out and names
+them when the range changes them, since z47's root copies are reconciled by hand.
 
 Read the range, not the log. A merge makes older commits newly reachable, so the
 subjects can promise changes whose files are byte-identical across the range. Diff
