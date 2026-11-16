@@ -12,7 +12,7 @@ Last verified: 2026-10-23, Zig `0.17.0` stable. The upstream pin is
 
 ## CI At A Glance
 
-Four tracked workflow files live under `../.github/workflows/`:
+Five tracked workflow files live under `../.github/workflows/`:
 
 | Workflow file | Trigger | Purpose |
 | --- | --- | --- |
@@ -20,6 +20,7 @@ Four tracked workflow files live under `../.github/workflows/`:
 | `upstream-drift.yml` (display name `upstream-drift`) | daily schedule `0 5 * * *`, plus manual dispatch | report whether the pinned upstream commit still matches upstream HEAD (warn-only), plus the enforcing coverage-ratchet and Zig/C boundary jobs; never edits the pin |
 | `c-dependency-zero.yml` (display name `c-dependency-zero`) | manual dispatch only | on-demand proof that the product build carries zero first-party calculator C |
 | `actions-lock.yml` (display name `actions-lock`) | push and pull request touching `.github/**`, weekly schedule `23 6 * * 1`, plus manual dispatch | verify `actions.lock`: every action and every action it uses is locked to the recorded commit, and each commit still resolves upstream |
+| `zizmor.yml` (display name `zizmor`) | push and pull request touching `.github/**`, weekly schedule `41 6 * * 1`, plus manual dispatch | audit every workflow with zizmor 1.32.0 at its default severity and confidence, online audits included (template injection, persisted credentials, permissions, unpinned or advisory-listed actions); a finding is fixed or suppressed on its line with `# zizmor: ignore[<audit>]` and a reason |
 
 `upstream-oracle.yml` cancels a superseded run on any branch but `main`, where
 every run completes so each pushed commit gets its own verdict;

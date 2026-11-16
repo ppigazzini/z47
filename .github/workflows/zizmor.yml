@@ -1,0 +1,55 @@
+# Static analysis of the workflows themselves with zizmor: template injection,
+# credential persistence, over-broad permissions, unpinned actions, and (online
+# audits, through the job token) actions with a published advisory.
+#
+# The workflows pass at zizmor's default severity and confidence. Keep it so:
+# fix a finding, or suppress it on its line with `# zizmor: ignore[<audit>]`
+# and the reason it does not apply.
+#
+# The weekly run catches an action that gains an advisory with no push to
+# trigger it.
+name: zizmor
+
+on:
+  push:
+    branches: [main, github_ci]
+    paths: ['.github/**']
+  pull_request:
+    branches: [main]
+    paths: ['.github/**']
+  schedule:
+    - cron: '41 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: zizmor-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    name: Audit the workflows with zizmor
+    runs-on: ubuntu-26.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          version: '0.13.6'
+          checksum: 'f29c3e94ffabd7e6f3ba521dba169a9b7ec12100bf3257087f0f24f6123f3645'
+          enable-cache: false
+
+      - name: Run zizmor
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          uvx zizmor==1.32.0 .github/
