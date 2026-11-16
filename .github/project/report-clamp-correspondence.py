@@ -40,7 +40,7 @@ expands once, because the call graph is cyclic and a deeper walk dilutes the
 evidence until everything looks covered.
 
 CALIBRATION. `--calibrate` reproduces the matrix-clamp miss: run against a worktree of
-`75dbb6034^` and the matrix clamp must appear. An earlier tree does not work: before
+`35c1f0026^` and the matrix clamp must appear. An earlier tree does not work: before
 `restoreRegister` was ported to Zig there was no owner for the guard to be missing
 FROM, so the first tree where the miss is expressible is the parent of the commit
 that fixed it.
