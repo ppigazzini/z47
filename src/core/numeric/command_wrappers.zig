@@ -217,6 +217,7 @@ comptime {
         _ = @import("special/gammaX.zig");
         _ = @import("powerlog/power.zig");
         _ = @import("powerlog/xthroot.zig");
+        _ = @import("powerlog/eml.zig");
         _ = @import("number_theory/opmod.zig");
         _ = @import("special/bessel.zig");
         _ = @import("special/elliptic.zig");

@@ -1,0 +1,42 @@
+;*************************************************************
+;*************************************************************
+;**                                                         **
+;**                          eml                            **
+;**                                                         **
+;*************************************************************
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+Func: fnEML
+
+
+;=======================================
+; exp(Real) --> Real / Cplx
+;=======================================
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"1" RX=Real:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"2.7182818284590452353602874713526624977572470936999595749669676"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=1 FL_SPCRES=1 RY=Real:"-inf" RX=Real:"1"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RY=Real:"-inf" RX=Real:"1"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RY=Real:"-inf" RX=Real:"1"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"-inf" RX=Real:"-5"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RY=Real:"-inf" RX=Real:"-5"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RY=Real:"-inf" RX=Real:"-5"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-5" RX=Real:"NaN"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RY=Real:"inf" RX=Real:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"inf"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=1 FL_SPCRES=1 RY=Real:"2" RX=Real:"-2"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Real:"-2" RX=Cplx:"6.695908918370704917813195339116831 i -3.141592653589793238462643383279503"
+
+;=======================================
+; exp(Cplx) --> Cplx
+;=======================================
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=1 FL_SPCRES=1 RY=Cplx:"2 i 3" RX=Cplx:"-2 i -1"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"-2 i -1" RX=Cplx:"-8.119829051118152704786915817663883 i 3.720688700824891536349891092280841"

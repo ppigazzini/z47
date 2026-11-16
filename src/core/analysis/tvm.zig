@@ -192,12 +192,6 @@ fn const34_3() *const real34_t {
 fn const34_7() *const real34_t {
     return consts.q16392();
 }
-fn const34_9() *const real34_t {
-    return consts.q16408();
-}
-fn const34_24() *const real34_t {
-    return consts.q16472();
-}
 
 // ---------------------------------------------------------------------------
 // decNumber primitives / real_t macro reproductions (realType.h)
@@ -238,6 +232,15 @@ fn realChangeSign(operand: *real_t) void {
 const realIsZero = abi.realIsZero;
 fn realIsPositive(source: *const real_t) bool {
     return (source.bits & 0x80) == 0x00;
+}
+fn realIsNegative(source: *const real_t) bool {
+    return (source.bits & 0x80) == 0x80;
+}
+fn realIsSpecial(source: *const real_t) bool {
+    return (source.bits & 0x70) != 0;
+}
+fn realSetPositiveSign(operand: *real_t) void {
+    operand.bits &= 0x7F;
 }
 fn int32ToReal(source: i32, destination: *real_t) void {
     _ = decNumberFromInt32(destination, source);
@@ -304,6 +307,9 @@ fn real34SetZero(destination: *real34_t) void {
 }
 fn real34SetOne(destination: *real34_t) void {
     _ = decQuadFromInt32(destination, 1);
+}
+fn int32ToReal34(source: i32, destination: *real34_t) void {
+    _ = decQuadFromInt32(destination, source);
 }
 fn real34IsZero(source: *const real34_t) bool {
     return decQuadIsZero(source);
@@ -924,6 +930,10 @@ fn solveTvmVariable51(variable: u16) linksection(runtime.code_section) c_int {
 // ===========================================================================
 const bugScreenNotForTvm: [*:0]const u8 = "In function fnTvmVar: this variable is not intended for TVM application!";
 
+// Root guard for cp/a and pp/a: after the solve the converged value is accepted only where the balance changes sign across a wide probe and is the smallest there; a shelf keeps one sign, a pole is a peak.
+// tvmRootGuardOtherModes extends the guard to other solves and stays off by default.
+const tvmRootGuardOtherModes: bool = false;
+
 pub export fn fnTvmVar(variable: u16) linksection(runtime.code_section) callconv(.c) void {
     ensureTvmContext();
 
@@ -948,7 +958,7 @@ pub export fn fnTvmVar(variable: u16) linksection(runtime.code_section) callconv
                 tvmIKnown = false;
 
                 if (option_tvm_formulas) {
-                    if (variable != RESERVED_VARIABLE_IPONA) {
+                    if (variable != RESERVED_VARIABLE_IPONA and variable != RESERVED_VARIABLE_CPERONA and variable != RESERVED_VARIABLE_PPERONA) { // cp/a and pp/a go to the general solver, seeded with a wide bracket below
                         const errv = solveTvmVariable51(variable);
                         if (errv == 0) {
                             // Analytic solution found; nothing else to do.
@@ -1007,10 +1017,8 @@ pub export fn fnTvmVar(variable: u16) linksection(runtime.code_section) callconv
                         }
                     },
                     RESERVED_VARIABLE_CPERONA, RESERVED_VARIABLE_PPERONA => {
-                        if (real34CompareLessThan(registerReal34Ptr(variable), const34_3())) {
-                            real34Copy(const34_24(), &y);
-                            real34Copy(const34_9(), &x);
-                        }
+                        int32ToReal34(1000000, &y); // a two-sided seed straddling the cp/a or pp/a root, 1e-4 below and 1e6 above, so the solver brackets the
+                        real34Copy(const34_1e_4(), &x); // single root at once instead of marching one way from a register-scaled start into the rate asymptote
                     },
                     RESERVED_VARIABLE_PMT => {},
                     else => {},
@@ -1079,6 +1087,34 @@ pub export fn fnTvmVar(variable: u16) linksection(runtime.code_section) callconv
                         displayCalcErrorMessage(ERROR_NO_ROOT_FOUND, ERR_REGISTER_LINE);
                     }
                     moreInfoOnError("In function fnTvmVar:", "cannot compute TVM equation", "with current parameters", null);
+                }
+
+                if ((variable == RESERVED_VARIABLE_CPERONA or variable == RESERVED_VARIABLE_PPERONA or tvmRootGuardOtherModes) and lastErrorCode == ERROR_NONE) {
+                    // accept the converged value only where the balance changes sign across it and is smallest there; a shelf keeps one sign, a pole peaks there
+                    var xval: real_t = undefined;
+                    var fM: real_t = undefined;
+                    var fL: real_t = undefined;
+                    var fR: real_t = undefined;
+                    var hstep: real_t = undefined;
+                    real34ToReal(registerReal34Ptr(REGISTER_X), &xval);
+                    if (!realIsZero(&xval)) {
+                        realCopy(&xval, &hstep);
+                        realSetPositiveSign(&hstep);
+                        hstep.exponent -= 1; // a step of |value| times 0.1 either side: wide enough to leave a pole's spike, so a root is a valley of |balance| and a pole a peak
+                        realCopy(&xval, &fM);
+                        tvmEquation(@intCast(variable), &fM, null); // balance at the returned value
+                        realSubtract(&xval, &hstep, &fL, ctxtTvm());
+                        tvmEquation(@intCast(variable), &fL, null); // balance a step below
+                        realAdd(&xval, &hstep, &fR, ctxtTvm());
+                        tvmEquation(@intCast(variable), &fR, null); // balance a step above
+                        if (realIsSpecial(&fM) or realIsSpecial(&fL) or realIsSpecial(&fR)) {
+                            displayCalcErrorMessage(ERROR_NO_ROOT_FOUND, ERR_REGISTER_LINE);
+                        } else if (realIsNegative(&fL) == realIsNegative(&fR)) { // no sign change across the value: a shelf or an asymptote, not a root
+                            displayCalcErrorMessage(ERROR_NO_ROOT_FOUND, ERR_REGISTER_LINE);
+                        } else if (realCompareAbsLessThan(&fL, &fM) or realCompareAbsLessThan(&fR, &fM)) { // the value is not the smallest of the three: a peak of |balance|, a pole whose terms are out of range, not a zero crossing
+                            displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE);
+                        }
+                    }
                 }
 
                 adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);

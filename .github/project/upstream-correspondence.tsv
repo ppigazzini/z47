@@ -100,6 +100,7 @@ mathematics/division	core/numeric/arithmetic/division_cells	port	symbol
 mathematics/dot	core/numeric/command_wrappers;core/numeric/matrix/vector_dot_scalar	port	symbol
 mathematics/elec	shell/elec;shell/extensions/jm	port	symbol
 mathematics/elliptic	core/numeric/special/elliptic	port	symbol
+mathematics/eml	core/numeric/powerlog/eml	port	symbol
 mathematics/erf	core/numeric/special/special_function_erf	port	symbol
 mathematics/erfc	core/numeric/command_wrappers;core/numeric/special/special_function_erf	port	symbol
 mathematics/eulersFormula	core/numeric/special/special_algebraic_command	port	symbol

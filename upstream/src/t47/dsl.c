@@ -261,7 +261,8 @@ static int runCatalogFunctionByName(Jim_Interp *interp, const char *fnName, int 
     item_t item = indexOfItems[i];
     const char *catName = item.itemCatalogName;
     // Match strictness: CMP_NAME strict (exact spelling & space), CMP_COMMAND relax (exact spelling, any space), CMP_CLEANED_STRING_ONLY loose (rank1 equiv., beware not tested)
-    if((item.status & CAT_STATUS) == CAT_FNCT && compareString(internalName, catName, CMP_COMMAND) == 0) {
+    const uint16_t itemCategory = item.status & CAT_STATUS;
+    if((itemCategory == CAT_FNCT || (itemCategory == CAT_RVAR && (item.status & PTP_STATUS) == PTP_NONE)) && compareString(internalName, catName, CMP_COMMAND) == 0) { // a reserved variable that is a program step, the TVM variables, answers to its name too
       return runCatalogItem(interp, (int16_t)i, argArgc, argArgv, cmdName) == JIM_OK ? CATFN_OK : CATFN_ERROR;
     }
   }
@@ -1437,7 +1438,8 @@ void initDSL(void) {
   }
   for(int i = 0; i < LAST_ITEM; ++i) {
     item_t item = indexOfItems[i];
-    if((item.status & CAT_STATUS) == CAT_FNCT) {
+    const uint16_t itemCategory = item.status & CAT_STATUS;
+    if(itemCategory == CAT_FNCT || (itemCategory == CAT_RVAR && (item.status & PTP_STATUS) == PTP_NONE)) { // a reserved variable that is a program step, the TVM variables, registers as a command alongside the functions
       ++total;
       void *idx = (void *)(intptr_t)i;
       char catName[64];

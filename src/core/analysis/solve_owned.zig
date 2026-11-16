@@ -65,6 +65,8 @@ const RESERVED_VARIABLE_IPONA: u16 = 2035;
 const RESERVED_VARIABLE_NPPER: u16 = 2036;
 const RESERVED_VARIABLE_PMT: u16 = 2038;
 const RESERVED_VARIABLE_PV: u16 = 2039;
+const RESERVED_VARIABLE_PPERONA: calcRegister_t = 2037;
+const RESERVED_VARIABLE_CPERONA: calcRegister_t = 2043;
 const FIRST_RESERVED_VARIABLE: u16 = 2000; // = LAST_NAMED_VARIABLE(1999)+1; 2029 was RESERVED_VARIABLE_SPARE4
 
 const ERROR_NONE: u8 = 0;
@@ -253,6 +255,7 @@ extern fn decNumberMultiply(res: *real_t, op1: *const real_t, op2: *const real_t
 extern fn decNumberDivide(res: *real_t, op1: *const real_t, op2: *const real_t, ctxt: *realContext_t) *real_t;
 extern fn decNumberFMA(res: *real_t, f1: *const real_t, f2: *const real_t, term: *const real_t, ctxt: *realContext_t) *real_t;
 extern fn decNumberFromString(res: *real_t, source: [*:0]const u8, ctxt: *realContext_t) *real_t;
+const decNumberFromInt32 = runtime.decNumberFromInt32;
 
 fn realCopy(source: *const real_t, destination: *real_t) void {
     _ = decNumberCopy(destination, source);
@@ -274,6 +277,9 @@ fn realFMA(f1: *const real_t, f2: *const real_t, term: *const real_t, res: *real
 }
 fn stringToReal(source: [*:0]const u8, destination: *real_t, ctxt: *realContext_t) void {
     _ = decNumberFromString(destination, source, ctxt);
+}
+fn int32ToReal(source: i32, destination: *real_t) void {
+    _ = decNumberFromInt32(destination, source);
 }
 fn realChangeSign(operand: *real_t) void {
     operand.bits ^= 0x80;
@@ -761,6 +767,27 @@ fn newtonReal(p: ?*real_t) *real_t {
     return if (option_tvm_newton) p.? else undefined;
 }
 
+// cp/a and pp/a solves run the inward seed scan below when both seeds take the same sign, so Brent gets a bracket instead of marching the top end onto the asymptote;
+// tvmScanOtherModes extends the scan to other solver variables and stays off, because their roots can take a negative value the positive inward step cannot reach.
+const tvmScanOtherModes: bool_t = false;
+
+// The staged scan's integer schedule. Each row is {step numerator, step denominator, start numerator, start denominator, limit exponent}.
+// The step is the ratio a sample moves by, the start the ratio pp/a is first divided (low bound) or multiplied (high bound) by, and the limit 10^exponent where a stage stops.
+// The two schedules are separate so they can differ later; for now the upper is the lower inverted, so both bounds take the step and start ratios of the lower row and their own limit.
+const ScanStage = [5]i32;
+const tvmScanLower = [3]ScanStage{
+    .{ 200, 100, 110, 100, -6 }, // step /2.00, first sample pp/a / 1.1 , descend to 1e-6
+    .{ 110, 100, 101, 100, -3 }, // step /1.10, first sample pp/a / 1.01, descend to 1e-3
+    .{ 1000, 100, 101, 100, -10 }, // step /10.0, first sample pp/a / 1.01, descend to 1e-10
+};
+const tvmScanUpper = [3]ScanStage{
+    .{ 200, 100, 110, 100, 6 }, // step *2.00, first sample pp/a * 1.1 , ascend to 1e6
+    .{ 110, 100, 101, 100, 3 }, // step *1.10, first sample pp/a * 1.01, ascend to 1e3
+    .{ 1000, 100, 101, 100, 10 }, // step *10.0, first sample pp/a * 1.01, ascend to 1e10
+};
+// The whole bracket search gives up after this many samples; a cp/a or pp/a solve with no bracket by then has no root to iterate on.
+const scanSampleLimit: i32 = 100;
+
 pub export fn solver(variable: calcRegister_t, y: *const real34_t, x: *const real34_t, resZ: *real34_t, resY: *real34_t, resX: *real34_t) linksection(runtime.code_section) callconv(.c) c_int {
     currentKeyCode = 255;
     const userRoundingMode = roundingMode;
@@ -920,6 +947,9 @@ pub export fn solver(variable: calcRegister_t, y: *const real34_t, x: *const rea
     var getOutOfLevel: i16 = 17;
     var fbIsAlmostZero: bool_t = false;
     var zeroSampled: bool_t = false;
+    // Set by the cp/a and pp/a bracket scan inside the retry loop, which starts it
+    // over at false on every pass, and read again after the loop.
+    var scanBracketed: bool_t = false;
 
     if ((currentSolverStatus & SOLVER_STATUS_TVM_APPLICATION) != 0) {
         realSetOne(tol);
@@ -1027,6 +1057,167 @@ pub export fn solver(variable: calcRegister_t, y: *const real34_t, x: *const rea
             extendRange = true;
         }
 
+        // Staged scan for cp/a and pp/a, driven by the tvmScanLower/tvmScanUpper schedule.
+        // Each stage advances both bounds outward from pp/a together, the low bound down and the high bound up, one sample each per round on one shared budget, and brackets at the
+        // first sign change between two consecutive defined samples on either bound, f at pp/a the first.  A sample whose rate term is undefined is skipped and the previous one dropped.
+        // ss, scanPrev, scanFprev and scanLimit are the low bound's sample, previous sample, its value and its floor; scanHiPos, scanHiPrev, scanHiFprev and scanHiLimit are the high bound's.
+        // mm, tmp, smb, bracketWidth, scanCentre and scanFcentre are scratch here.
+        scanBracketed = false;
+        {
+            // The scan allocates no reals of its own.  It runs before the iteration, so the iteration's work reals, each written before it is read below, are free here and the scan
+            // borrows them under its own names.  tmp and smb are free inside the while once the stage ratios are built, so they take the two stage limits.  The names end with this block.
+            const scanCentre = secantSlopeA;
+            const scanFcentre = secantSlopeB;
+            const scanPrev = deltaB;
+            const scanFprev = fbp1;
+            const scanLimit = tmp;
+            const scanHiPos = tol1;
+            const scanHiPrev = resXr;
+            const scanHiFprev = resZr;
+            const scanHiLimit = smb;
+            var scanAborted: bool_t = false; // the EXIT key, or a nested engine that already aborted, stops the bracket search; the solve then returns through the no-root exit below
+            var scanSamples: i32 = 0;
+            if (variable == RESERVED_VARIABLE_CPERONA or variable == RESERVED_VARIABLE_PPERONA or tvmScanOtherModes) {
+                real34ToReal(registerReal34Ptr(RESERVED_VARIABLE_PPERONA), scanCentre); // the user's pp/a, the scan centre
+                if (!realIsNegative(scanCentre) and !realIsZero(scanCentre)) {
+                    _executeSolverReal(variable, scanCentre, scanFcentre, null); // f at pp/a, the first sample each arm compares against
+                    scanSamples += 1;
+                    const centreDefined: bool_t = lastErrorCode == ERROR_NONE and !realIsSpecial(scanFcentre);
+                    if (lastErrorCode != ERROR_NONE) {
+                        lastErrorCode = ERROR_NONE;
+                    }
+                    // Straddle of the user's pp/a takes priority: samples a 1.1 step either side of pp/a with opposite signs bracket the root between them before either arm sweeps outward.
+                    int32ToReal(110, tmp);
+                    int32ToReal(100, smb);
+                    realDivide(tmp, smb, bracketWidth, ctxtSolver()); // 1.1
+                    realDivide(scanCentre, bracketWidth, ss, ctxtSolver()); // pp/a / 1.1, the lower end
+                    realMultiply(scanCentre, bracketWidth, scanPrev, ctxtSolver()); // pp/a * 1.1, the upper end
+                    _executeSolverReal(variable, ss, mm, null); // f at the lower end
+                    scanSamples += 1;
+                    if (lastErrorCode != ERROR_NONE) {
+                        lastErrorCode = ERROR_NONE;
+                        realSetNaN(mm);
+                    }
+                    _executeSolverReal(variable, scanPrev, scanFprev, null); // f at the upper end
+                    scanSamples += 1;
+                    if (lastErrorCode != ERROR_NONE) {
+                        lastErrorCode = ERROR_NONE;
+                        realSetNaN(scanFprev);
+                    }
+                    if (!realIsSpecial(mm) and !realIsSpecial(scanFprev) and (realIsNegative(mm) != realIsNegative(scanFprev))) {
+                        realCopy(ss, bb);
+                        realCopy(mm, fbb);
+                        realCopy(scanPrev, aa);
+                        realCopy(scanFprev, faa);
+                        realCopy(aa, bb1);
+                        realCopy(faa, fbb1);
+                        extendRange = false;
+                        scanBracketed = true;
+                    }
+                    for (tvmScanLower, tvmScanUpper) |lower, upper| {
+                        if (scanBracketed or scanAborted or scanSamples >= scanSampleLimit) {
+                            break;
+                        }
+                        int32ToReal(lower[0], tmp);
+                        int32ToReal(lower[1], smb);
+                        realDivide(tmp, smb, bracketWidth, ctxtSolver()); // the stage step ratio, shared by both bounds
+                        int32ToReal(lower[2], tmp);
+                        int32ToReal(lower[3], smb);
+                        realDivide(tmp, smb, mm, ctxtSolver()); // the stage start ratio, shared by both bounds
+                        realDivide(scanCentre, mm, ss, ctxtSolver()); // low bound first sample is pp/a / start ratio
+                        realMultiply(scanCentre, mm, scanHiPos, ctxtSolver()); // high bound first sample is pp/a * start ratio
+                        realSetOne(scanLimit);
+                        scanLimit.exponent = lower[4]; // 10^exponent, the low floor
+                        realSetOne(scanHiLimit);
+                        scanHiLimit.exponent = upper[4]; // 10^exponent, the high ceiling
+                        realCopy(scanCentre, scanPrev); // each bound's previous sample starts at pp/a
+                        realCopy(scanFcentre, scanFprev);
+                        realCopy(scanCentre, scanHiPrev);
+                        realCopy(scanFcentre, scanHiFprev);
+                        var loPrevDefined: bool_t = centreDefined;
+                        var hiPrevDefined: bool_t = centreDefined;
+                        var loDone: bool_t = false;
+                        var hiDone: bool_t = false;
+                        while (scanSamples < scanSampleLimit and !scanBracketed and !scanAborted and !(loDone and hiDone)) {
+                            if (checkHalfSec()) {
+                                _ = progressHalfSecUpdate_Integer(timed, "Scan: ", scanSamples, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+                            }
+                            if (exitKeyWaiting() or programRunStop == PGM_WAITING) { // EXIT key, or a nested engine already aborted: stop the search the same way the iteration below does
+                                _ = progressHalfSecUpdate_Integer(force + 1, "Interrupted Scan:", scanSamples, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+                                programRunStop = PGM_WAITING;
+                                displayCalcErrorMessage(ERROR_SOLVER_ABORT, REGISTER_T);
+                                scanAborted = true;
+                                break;
+                            }
+                            if (!loDone) {
+                                if (!runtime.realCompareLessThan(scanLimit, ss)) { // low bound reached the floor
+                                    loDone = true;
+                                } else {
+                                    _executeSolverReal(variable, ss, mm, null); // f at the low bound
+                                    scanSamples += 1;
+                                    if (lastErrorCode == ERROR_NONE and !realIsSpecial(mm)) {
+                                        if (loPrevDefined and (realIsNegative(mm) != realIsNegative(scanFprev))) {
+                                            realCopy(ss, bb); // the current sample is the lower end of the bracket
+                                            realCopy(mm, fbb);
+                                            realCopy(scanPrev, aa);
+                                            realCopy(scanFprev, faa);
+                                            realCopy(aa, bb1);
+                                            realCopy(faa, fbb1);
+                                            extendRange = false;
+                                            scanBracketed = true;
+                                        } else {
+                                            realCopy(ss, scanPrev); // the current sample becomes the previous sample
+                                            realCopy(mm, scanFprev);
+                                            loPrevDefined = true;
+                                        }
+                                    } else {
+                                        lastErrorCode = ERROR_NONE;
+                                        loPrevDefined = false;
+                                    }
+                                    realDivide(ss, bracketWidth, ss, ctxtSolver()); // the low bound descends by the stage step
+                                }
+                            }
+                            if (!hiDone and !scanBracketed and scanSamples < scanSampleLimit) {
+                                if (!runtime.realCompareLessThan(scanHiPos, scanHiLimit)) { // high bound reached the ceiling
+                                    hiDone = true;
+                                } else {
+                                    _executeSolverReal(variable, scanHiPos, mm, null); // f at the high bound
+                                    scanSamples += 1;
+                                    if (lastErrorCode == ERROR_NONE and !realIsSpecial(mm)) {
+                                        if (hiPrevDefined and (realIsNegative(mm) != realIsNegative(scanHiFprev))) {
+                                            realCopy(scanHiPrev, bb); // the previous sample is the lower end of the bracket
+                                            realCopy(scanHiFprev, fbb);
+                                            realCopy(scanHiPos, aa);
+                                            realCopy(mm, faa);
+                                            realCopy(aa, bb1);
+                                            realCopy(faa, fbb1);
+                                            extendRange = false;
+                                            scanBracketed = true;
+                                        } else {
+                                            realCopy(scanHiPos, scanHiPrev); // the current sample becomes the previous sample
+                                            realCopy(mm, scanHiFprev);
+                                            hiPrevDefined = true;
+                                        }
+                                    } else {
+                                        lastErrorCode = ERROR_NONE;
+                                        hiPrevDefined = false;
+                                    }
+                                    realMultiply(scanHiPos, bracketWidth, scanHiPos, ctxtSolver()); // the high bound ascends by the stage step
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        realSetOne(tol1); // the scan used tol1 for its high bound: back to 1e-120 for the iteration
+        tol1.exponent = -120;
+
+        if (scanBracketed) {
+            result = SOLVER_RESULT_NORMAL;
+        }
+
         if (result == SOLVER_RESULT_BAD_GUESS) {
             realToReal34(fbb, resZ);
             realToReal34(bb1, resY);
@@ -1081,6 +1272,24 @@ pub export fn solver(variable: calcRegister_t, y: *const real34_t, x: *const rea
         copySourceRegisterToDestRegister(REGISTER_X, variable);
 
         return SOLVER_RESULT_NORMAL;
+    }
+
+    if ((variable == RESERVED_VARIABLE_CPERONA or variable == RESERVED_VARIABLE_PPERONA) and !scanBracketed) { // the bracket search found no sign change within its sample budget: no root, so return without running the iteration
+        engineNestingDepth -= 1;
+        currentSolverNestingDepth -= 1;
+        if (currentSolverNestingDepth == 0) {
+            clearSystemFlag(FLAG_SOLVING);
+        } else if (was_inting) {
+            clearSystemFlag(FLAG_SOLVING);
+            setSystemFlag(FLAG_INTING);
+        }
+        realToReal34(fbb, resZ);
+        realToReal34(bb1, resY);
+        realToReal34(bb, resX);
+        _ = reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+        real34Copy(resX, registerReal34Ptr(REGISTER_X));
+        copySourceRegisterToDestRegister(REGISTER_X, variable);
+        return SOLVER_RESULT_OTHER_FAILURE;
     }
 
     // result of the iteration is delivered via labeled blocks that emulate the

@@ -83,6 +83,8 @@ src/c47/distributions/uniform.h
 src/c47/hal/print_ir.h
 src/c47/mathematics/elec.c
 src/c47/mathematics/elec.h
+src/c47/mathematics/eml.c
+src/c47/mathematics/eml.h
 src/c47/mathematics/slvp.c
 src/c47/mathematics/slvp.h
 src/c47/printing
@@ -139,6 +141,7 @@ src/testSuite/tests/drm_unit2_cov.txt
 src/testSuite/tests/drm_unit_cov.txt
 src/testSuite/tests/drm_xfn_cov.txt
 src/testSuite/tests/elec.txt
+src/testSuite/tests/eml.txt
 src/testSuite/tests/eq_cov.txt
 src/testSuite/tests/eqslv_cov.txt
 src/testSuite/tests/error_cov.txt

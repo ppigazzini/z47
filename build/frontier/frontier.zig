@@ -127,6 +127,10 @@ pub const RuntimeObjectOptions = struct {
     // product stay either way. Every target z47 builds defines it: the block
     // common to the DM42 packages keeps it. Defaults true (host).
     option_infsums: bool = true,
+    // OPTION_EML gates EML, e^Y - Ln X: without it the item binds itemToBeCoded and
+    // carries CAT_NONE. Every target z47 builds defines it: the block common to the
+    // DM42 packages keeps it. Defaults true (host).
+    option_eml: bool = true,
     // OPTION_STRUCTURED_PGM gates the STRUCT programming set: IF/ELSE/ENDIF,
     // DO/WHILE/ENDDO, REPEAT/UNTIL, FOR/NEXT, VALID and CLSTRUC. It is set per DM42
     // package, from build/firmware.zig's dm42Package table: the items exist in
@@ -301,6 +305,7 @@ pub fn addBuildOptions(
     build_options.addOption(bool, "option_xfn_1000", options.option_xfn_1000);
     build_options.addOption(bool, "option_slvp_poly", options.option_slvp_poly);
     build_options.addOption(bool, "option_infsums", options.option_infsums);
+    build_options.addOption(bool, "option_eml", options.option_eml);
     build_options.addOption(bool, "option_structured_pgm", options.option_structured_pgm);
     build_options.addOption(bool, "option_algdep", options.option_algdep);
     build_options.addOption(bool, "option_tvm_amort", options.option_tvm_amort);

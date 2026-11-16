@@ -1,5 +1,9 @@
 C47__ManualFont change log:
 
+12. Missing glyph for the C47 SST legend
+- U+21cb (STD_SST) copied from C47__StandardFont
+- avoids the ⇋ harpoons from Latin Modern Math on the C47 keyboard map, as f3ae2237b did for U+21cc
+
 11. \menuArrows, \catArrows
 - Added 4 glyphs not existing in C47__StandardFont
   - small black up (U+25b4) and down (U+25be) triangles, for the menus arrow navigation

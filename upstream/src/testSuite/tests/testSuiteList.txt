@@ -198,6 +198,7 @@ ln
 lnPOne
 eulersFormula
 eulersphi
+eml
 
 arccos
 arcsin

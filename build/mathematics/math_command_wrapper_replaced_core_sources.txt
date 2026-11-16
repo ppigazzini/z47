@@ -103,6 +103,7 @@ mathematics/cpyx.c
 mathematics/cxToRe.c
 mathematics/deltaPercentXmean.c
 mathematics/elliptic.c
+mathematics/eml.c
 mathematics/gamma.c
 mathematics/gammaX.c
 mathematics/gd.c

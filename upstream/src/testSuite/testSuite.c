@@ -508,6 +508,7 @@ const funcTest_t funcTestNoParam[] = {
   {"fnExp",                      fnExp                          },
   {"fnExpM1",                    fnExpM1                        },
   {"fnExpMod",                   fnExpMod                       },
+  {"fnEML",                      fnEML                          },
   {"fnExponentialI",             fnExponentialI                 },
   {"fnExponentialL",             fnExponentialL                 },
   {"fnExponentialP",             fnExponentialP                 },

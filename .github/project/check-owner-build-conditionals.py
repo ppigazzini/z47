@@ -107,6 +107,7 @@ ALLOWED: dict[str, str] = {
     "option_cubic_159": "OPTION_CUBIC_159",
     "option_eigen_159": "OPTION_EIGEN_159",
     "option_infsums": "OPTION_INFSUMS",
+    "option_eml": "OPTION_EML",
     "option_structured_pgm": "OPTION_STRUCTURED_PGM",
     "option_struct_indent": "OPTION_STRUCT_INDENT -- structured.h defines it inside the OPTION_STRUCTURED_PGM guard, so it is that option under its display name",
     "option_tvm_formulas": "OPTION_TVM_FORMULAS",

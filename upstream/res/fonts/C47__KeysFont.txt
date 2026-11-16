@@ -1,5 +1,9 @@
 C47__KeysFont change log:
 
+6. Docs(manual): Arrows centred in their key
+- arrowup, arrowdown: width 600 -> 500, the ink 0..500 now centred in the advance
+- arrowleft, arrowright: moved down 100, ink 0..500, so the box TeX centres is the ink
+
 5. Docs(manual): Simplify C47__xxxFonts with fallbacks
 - Remove all glyphs from LMSans10-Regular, except (built from parts):
   - superscript 2
