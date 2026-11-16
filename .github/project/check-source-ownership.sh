@@ -202,11 +202,11 @@ check_added_imported_paths() {
         exit 1
     fi
 
-    local diff_base
-    if ! diff_base="$(git merge-base "$UPSTREAM_COMMIT" HEAD)"; then
-        printf 'Unable to resolve a merge base between HEAD and pinned upstream commit %s.\n' "$UPSTREAM_COMMIT" >&2
-        exit 1
-    fi
+    # The base is the pin itself. The imported tree is a snapshot of that commit, not
+    # a git descendant of it, so a merge base would be some older upstream commit
+    # (or none at all), and every file upstream added since then would read as a
+    # z47 addition. Against the pin, an added path is exactly one z47 put there.
+    local diff_base="$UPSTREAM_COMMIT"
 
     # Compare the pin's ROOT tree against the imported SUBTREE, not HEAD limited by
     # a pathspec. The imported tree is mounted under UPSTREAM_ROOT, so every

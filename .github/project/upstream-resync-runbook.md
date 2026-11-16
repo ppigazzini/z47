@@ -13,9 +13,9 @@ below as guardrails so the next resync is a checklist, not a rediscovery.
   `git diff --name-only <oldpin>..<newpin>` intersected with the tracked tree.
   A whole-tree diff vs the new pin clobbers z47's own divergences (removed files,
   patched `tools/size.py`, etc.).
-- z47's imported tree is a SNAPSHOT, not a git descendant of the pin —
-  `merge-base(pin, HEAD)` is an old ancestor, so ownership/ledger diffs use the
-  pin as the base.
+- z47's imported tree is a SNAPSHOT, not a git descendant of the pin: the pin is
+  never an ancestor of `HEAD`, so the ownership and pin checks diff against the
+  pin itself.
 - **Paths need the `upstream/` hop.** The imported tree is mounted at
   `UPSTREAM_ROOT` (`upstream/`), but a diff taken against an upstream ref emits
   upstream-relative paths. `src/c47/foo.c` in the diff is
