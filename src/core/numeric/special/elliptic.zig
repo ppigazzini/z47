@@ -46,8 +46,8 @@ extern fn decNumberCopySign(res: *real_t, source: *const real_t, sign_source: *c
 extern fn decNumberMinus(res: *real_t, operand: *const real_t, ctxt: *realContext_t) *real_t;
 extern fn decNumberPlus(res: *real_t, operand: *const real_t, ctxt: *realContext_t) *real_t;
 extern fn decNumberRemainder(res: *real_t, lhs: *const real_t, rhs: *const real_t, ctxt: *realContext_t) *real_t;
-extern fn realSetPlusInfinity(value: *real_t) void;
-extern fn realSetMinusInfinity(value: *real_t) void;
+const realSetPlusInfinity = runtime.realSetPlusInfinity;
+const realSetMinusInfinity = runtime.realSetMinusInfinity;
 
 fn realAdd(lhs: *const real_t, rhs: *const real_t, result: *real_t, ctxt: *realContext_t) void {
     _ = decNumberAdd(result, lhs, rhs, ctxt);

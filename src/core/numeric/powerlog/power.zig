@@ -90,7 +90,7 @@ fn const_minusInfinity() *const real_t {
 }
 
 // real ops / predicates / copy. Some are C macros; reproduce them.
-extern fn realSetPlusInfinity(value: *real_t) void;
+const realSetPlusInfinity = runtime.realSetPlusInfinity;
 extern fn decNumberCopy(res: *real_t, source: *const real_t) *real_t;
 extern fn decNumberCopyAbs(res: *real_t, source: *const real_t) *real_t;
 extern fn decNumberRemainder(res: *real_t, lhs: *const real_t, rhs: *const real_t, ctxt: *realContext_t) *real_t;

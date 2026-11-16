@@ -190,7 +190,7 @@ extern fn decNumberMultiply(res: *real_t, op1: *const real_t, op2: *const real_t
 extern fn decNumberDivide(res: *real_t, op1: *const real_t, op2: *const real_t, ctxt: *realContext_t) *real_t;
 extern fn decNumberFMA(res: *real_t, f1: *const real_t, f2: *const real_t, term: *const real_t, ctxt: *realContext_t) *real_t;
 extern fn decNumberMinus(res: *real_t, operand: *const real_t, ctxt: *realContext_t) *real_t;
-extern fn decNumberFromInt32(res: *real_t, source: i32) *real_t;
+const decNumberFromInt32 = runtime.decNumberFromInt32;
 extern fn decNumberFromUInt32(res: *real_t, source: u32) *real_t;
 extern fn decNumberNextToward(res: *real_t, from: *const real_t, toward: *const real_t, ctxt: *realContext_t) *real_t;
 

@@ -796,6 +796,9 @@ pub extern fn realSetNaN(value: *real_t) void;
 pub extern fn realSetZero(value: *real_t) void;
 pub extern fn realSetOne(value: *real_t) void;
 pub extern fn realSetNegativeOne(value: *real_t) void;
+// realType.c's two infinity setters, declared once for the whole math object.
+pub extern fn realSetPlusInfinity(value: *real_t) void;
+pub extern fn realSetMinusInfinity(value: *real_t) void;
 pub extern fn realPower(base: *const real_t, exponent: *const real_t, result: *real_t, real_context: *realContext_t) void;
 pub extern fn PowerReal(base: *const real_t, exponent: *const real_t, result: *real_t, real_context: *realContext_t) void;
 pub extern fn PowerComplex(y: *const cplx_t, x: *const cplx_t, r: *cplx_t, real_context: *realContext_t) u8;

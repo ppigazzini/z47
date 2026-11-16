@@ -100,8 +100,8 @@ const const39_3piOn4 = consts.const39_3piOn4;
 const const75_3piOn4 = consts.const75_3piOn4;
 
 // real ops / predicates / copy. Some are C macros; reproduce them.
-extern fn realSetPlusInfinity(value: *real_t) void;
-extern fn realSetMinusInfinity(value: *real_t) void;
+const realSetPlusInfinity = runtime.realSetPlusInfinity;
+const realSetMinusInfinity = runtime.realSetMinusInfinity;
 extern fn decNumberCopy(res: *real_t, source: *const real_t) *real_t;
 extern fn decNumberRemainder(res: *real_t, lhs: *const real_t, rhs: *const real_t, ctxt: *realContext_t) *real_t;
 extern fn decNumberCopyAbs(res: *real_t, source: *const real_t) *real_t;

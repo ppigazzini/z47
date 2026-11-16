@@ -337,8 +337,8 @@ extern fn decNumberFromUInt32(res: *real_t, source: u32) *real_t;
 
 // real* setters / predicates.
 pub extern fn realSetNaN(value: *real_t) void;
-extern fn realSetPlusInfinity(value: *real_t) void;
-extern fn realSetMinusInfinity(value: *real_t) void;
+const realSetPlusInfinity = runtime.realSetPlusInfinity;
+const realSetMinusInfinity = runtime.realSetMinusInfinity;
 
 // Higher-level real ops / transcendentals from elsewhere in the tree.
 pub extern fn convertAngleFromTo(angle: *real_t, from: angularMode_t, to: angularMode_t, ctxt: *realContext_t) void;

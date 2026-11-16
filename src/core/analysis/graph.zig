@@ -417,7 +417,7 @@ extern fn decNumberDivide(r: *real_t, a: *const real_t, b: *const real_t, ctx: *
 extern fn decNumberFMA(r: *real_t, f1: *const real_t, f2: *const real_t, term: *const real_t, ctx: *realContext_t) *real_t;
 extern fn decNumberPlus(r: *real_t, a: *const real_t, ctx: *realContext_t) *real_t;
 extern fn decNumberCopyAbs(r: *real_t, src: *const real_t) *real_t;
-extern fn decNumberFromInt32(r: *real_t, source: i32) *real_t;
+const decNumberFromInt32 = runtime.decNumberFromInt32;
 extern fn decQuadZero(v: *real34_t) *real34_t;
 extern fn realCompareGreaterEqual(a: *const real_t, b: *const real_t) bool;
 extern fn getRegisterAsRealQuiet(reg: calcRegister_t, val: *real_t) bool;

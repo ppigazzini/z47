@@ -246,3 +246,6 @@ pub fn freeReal(ptr: ?*abi.Real) void {
 // for the signatures to drift apart against one C definition.
 pub extern fn realCompareLessThan(number1: *const abi.Real, number2: *const abi.Real) bool;
 pub extern fn realCompareGreaterThan(number1: *const abi.Real, number2: *const abi.Real) bool;
+// decNumber's int32 conversion, the body of realType.h's int32ToReal macro, declared
+// once for the whole solver object.
+pub extern fn decNumberFromInt32(res: *abi.Real, source: i32) *abi.Real;

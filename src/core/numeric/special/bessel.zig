@@ -996,4 +996,4 @@ fn WP34S_BesselY(alpha: *const real_t, x: *const real_t, res: *real_t, realConte
     }
 }
 
-extern fn realSetMinusInfinity(value: *real_t) void;
+const realSetMinusInfinity = runtime.realSetMinusInfinity;

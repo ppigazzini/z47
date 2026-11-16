@@ -29,8 +29,8 @@ const cplx159_t = runtime.cplx159_t;
 const arm_159 = runtime.option_cubic_159 or runtime.option_eigen_159;
 
 // Upstream realType.c functions (canonical symbols in the product link).
-extern fn realSetPlusInfinity(value: *real_t) void;
-extern fn realSetMinusInfinity(value: *real_t) void;
+const realSetPlusInfinity = runtime.realSetPlusInfinity;
+const realSetMinusInfinity = runtime.realSetMinusInfinity;
 // decNumber functions behind the upstream realCopy/realMinus macros
 // (src/c47/realType.h: realCopy -> decNumberCopy, realMinus -> decNumberMinus).
 extern fn decNumberCopy(destination: *real_t, source: *const real_t) *real_t;
