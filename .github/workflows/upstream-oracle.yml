@@ -36,6 +36,8 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - id: toolchain
         name: Load pinned Zig metadata
         shell: bash
@@ -49,8 +51,11 @@ jobs:
         run: |
           set -euo pipefail
           curl -fsSL https://ziglang.org/download/index.json -o zig-index.json
-          grep -F "\"${{ steps.toolchain.outputs.version }}\"" zig-index.json
-          grep -F "\"${{ steps.toolchain.outputs.linux_sha256 }}\"" zig-index.json
+          grep -F "\"${STEPS_TOOLCHAIN_OUTPUTS_VERSION}\"" zig-index.json
+          grep -F "\"${STEPS_TOOLCHAIN_OUTPUTS_LINUX_SHA256}\"" zig-index.json
+        env:
+          STEPS_TOOLCHAIN_OUTPUTS_VERSION: ${{ steps.toolchain.outputs.version }}
+          STEPS_TOOLCHAIN_OUTPUTS_LINUX_SHA256: ${{ steps.toolchain.outputs.linux_sha256 }}
       - name: Install pinned Zig
         uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2.2.1
         with:
@@ -59,7 +64,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test "$(zig version)" = "${{ steps.toolchain.outputs.version }}"
+          test "$(zig version)" = "${STEPS_TOOLCHAIN_OUTPUTS_VERSION}"
+        env:
+          STEPS_TOOLCHAIN_OUTPUTS_VERSION: ${{ steps.toolchain.outputs.version }}
 
   zig-fmt-check:
     name: Enforce zig fmt on z47-owned Zig
@@ -67,6 +74,8 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - id: toolchain
         name: Load pinned Zig metadata
         shell: bash
@@ -102,6 +111,8 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - id: toolchain
         name: Load pinned Zig metadata
         shell: bash
@@ -146,6 +157,8 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - id: master_toolchain
         name: Load monitored Zig master metadata
         shell: bash
@@ -166,7 +179,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test "$(zig version)" = "${{ steps.master_toolchain.outputs.version }}"
+          test "$(zig version)" = "${STEPS_MASTER_TOOLCHAIN_OUTPUTS_VERSION}"
+        env:
+          STEPS_MASTER_TOOLCHAIN_OUTPUTS_VERSION: ${{ steps.master_toolchain.outputs.version }}
       - id: xlsxio-ref
         name: Record the pinned xlsxio commit
         shell: bash
@@ -263,6 +278,7 @@ jobs:
         with:
           fetch-depth: 0
           submodules: recursive
+          persist-credentials: false
       - name: Verify pinned upstream commit is on upstream/master
         shell: bash
         run: |
@@ -306,6 +322,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+          persist-credentials: false
       - name: Fetch pinned upstream history for ownership diff base
         shell: bash
         run: |
@@ -326,6 +343,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+          persist-credentials: false
       - id: diff_base
         name: Resolve diff base for upstream ledger checks
         shell: bash
@@ -344,10 +362,12 @@ jobs:
         run: |
           set -euo pipefail
           args=( --repo-root . )
-          if [[ -n "${{ steps.diff_base.outputs.value }}" ]]; then
-            args+=( --diff-base "${{ steps.diff_base.outputs.value }}" )
+          if [[ -n "${STEPS_DIFF_BASE_OUTPUTS_VALUE}" ]]; then
+            args+=( --diff-base "${STEPS_DIFF_BASE_OUTPUTS_VALUE}" )
           fi
           python3 .github/project/check-upstream-port-ledger.py "${args[@]}"
+        env:
+          STEPS_DIFF_BASE_OUTPUTS_VALUE: ${{ steps.diff_base.outputs.value }}
 
   correspondence-guard:
     name: Verify upstream<->owner correspondence manifest
@@ -355,6 +375,8 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Enforce the symbol-join correspondence is current
         shell: bash
         run: |
@@ -371,6 +393,8 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Enforce approved Zig/C boundary files
         shell: bash
         run: |
@@ -383,6 +407,8 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Enforce monotonic idiom ratchet
         shell: bash
         run: |
@@ -400,6 +426,8 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - id: toolchain
         name: Load pinned Zig metadata
         shell: bash
@@ -640,6 +668,8 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Enforce Phase I dependency policy
         shell: bash
         run: |
@@ -655,6 +685,7 @@ jobs:
         with:
           # The extern-signature check reads lft_ifc.h and dmcp.h from both SDKs.
           submodules: recursive
+          persist-credentials: false
       - name: Enforce portable integer widths (no value-carrying c_long/c_ulong)
         shell: bash
         run: |
@@ -683,6 +714,8 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Enforce shared workflow imported-root paths
         shell: bash
         run: |
@@ -695,6 +728,8 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Enforce no __DEV script references in CI workflows
         shell: bash
         run: |
@@ -738,6 +773,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           submodules: recursive
+          persist-credentials: false
       - id: toolchain
         name: Load pinned Zig metadata
         shell: bash
@@ -753,7 +789,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test "$(zig version)" = "${{ steps.toolchain.outputs.version }}"
+          test "$(zig version)" = "${STEPS_TOOLCHAIN_OUTPUTS_VERSION}"
+        env:
+          STEPS_TOOLCHAIN_OUTPUTS_VERSION: ${{ steps.toolchain.outputs.version }}
       - id: zig-build-cache
         name: Restore Linux host Zig build caches
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
@@ -974,15 +1012,15 @@ jobs:
           python3 .github/project/generate-simulator-notice-artifacts.py \
             --platform linux \
             --package-dir "$package_dir" \
-            --upstream-source-repository-url "${{ steps.linux_package_meta.outputs.upstream_url }}" \
-            --upstream-source-commit "${{ steps.linux_package_meta.outputs.upstream_commit }}" \
+            --upstream-source-repository-url "${STEPS_LINUX_PACKAGE_META_OUTPUTS_UPSTREAM_URL}" \
+            --upstream-source-commit "${STEPS_LINUX_PACKAGE_META_OUTPUTS_UPSTREAM_COMMIT}" \
             --xlsxio-source-repository-url https://github.com/brechtsanders/xlsxio.git \
-            --xlsxio-source-commit "${{ steps.xlsxio-ref.outputs.sha }}"
+            --xlsxio-source-commit "${STEPS_XLSXIO_REF_OUTPUTS_SHA}"
 
           cat >> "$package_dir/SOURCE" <<EOF
-          z47_repository_url=https://github.com/${{ github.repository }}
+          z47_repository_url=https://github.com/${GITHUB_REPOSITORY}
           z47_commit=${GITHUB_SHA}
-          zig_version=${{ steps.toolchain.outputs.version }}
+          zig_version=${STEPS_TOOLCHAIN_OUTPUTS_VERSION}
           runner_os=${RUNNER_OS}
           runner_arch=${RUNNER_ARCH}
           created_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)
@@ -994,12 +1032,12 @@ jobs:
           sha=${GITHUB_SHA}
           run_id=${GITHUB_RUN_ID}
           run_attempt=${GITHUB_RUN_ATTEMPT}
-          upstream_url=${{ steps.linux_package_meta.outputs.upstream_url }}
-          upstream_commit=${{ steps.linux_package_meta.outputs.upstream_commit }}
+          upstream_url=${STEPS_LINUX_PACKAGE_META_OUTPUTS_UPSTREAM_URL}
+          upstream_commit=${STEPS_LINUX_PACKAGE_META_OUTPUTS_UPSTREAM_COMMIT}
           upstream_license_file=COPYING
           source_manifest_file=SOURCE
           xlsxio_url=https://github.com/brechtsanders/xlsxio.git
-          xlsxio_commit=${{ steps.xlsxio-ref.outputs.sha }}
+          xlsxio_commit=${STEPS_XLSXIO_REF_OUTPUTS_SHA}
           xlsxio_license_file=LICENSE.txt
           spdx_inventory_file=THIRD-PARTY.spdx.json
           third_party_inventory_file=THIRD-PARTY.spdx.json
@@ -1008,12 +1046,18 @@ jobs:
           linux_runtime_notice_summary_file=repo-notices/linux/LINUX-LIBRARY-NOTICES.txt
           linux_runtime_notice_dir=repo-notices/linux/licenses
           host_optimize=fast
-          zig_version=${{ steps.toolchain.outputs.version }}
+          zig_version=${STEPS_TOOLCHAIN_OUTPUTS_VERSION}
           runner_os=${RUNNER_OS}
           runner_arch=${RUNNER_ARCH}
           package_dir=$(basename "$package_dir")
-          artifact_name=${{ steps.linux_package_meta.outputs.artifact_name }}
+          artifact_name=${STEPS_LINUX_PACKAGE_META_OUTPUTS_ARTIFACT_NAME}
           EOF
+        env:
+          STEPS_LINUX_PACKAGE_META_OUTPUTS_UPSTREAM_URL: ${{ steps.linux_package_meta.outputs.upstream_url }}
+          STEPS_LINUX_PACKAGE_META_OUTPUTS_UPSTREAM_COMMIT: ${{ steps.linux_package_meta.outputs.upstream_commit }}
+          STEPS_XLSXIO_REF_OUTPUTS_SHA: ${{ steps.xlsxio-ref.outputs.sha }}
+          STEPS_TOOLCHAIN_OUTPUTS_VERSION: ${{ steps.toolchain.outputs.version }}
+          STEPS_LINUX_PACKAGE_META_OUTPUTS_ARTIFACT_NAME: ${{ steps.linux_package_meta.outputs.artifact_name }}
       - name: Stage generated-artifact proof
         shell: bash
         run: |
@@ -1082,6 +1126,8 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - id: toolchain
         name: Load pinned Zig metadata
         shell: bash
@@ -1097,7 +1143,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test "$(zig version)" = "${{ steps.toolchain.outputs.version }}"
+          test "$(zig version)" = "${STEPS_TOOLCHAIN_OUTPUTS_VERSION}"
+        env:
+          STEPS_TOOLCHAIN_OUTPUTS_VERSION: ${{ steps.toolchain.outputs.version }}
       - id: zig-build-cache
         name: Restore Linux docs Zig build caches
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
@@ -1154,6 +1202,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           submodules: recursive
+          persist-credentials: false
       - id: toolchain
         name: Load pinned Zig metadata
         shell: bash
@@ -1169,7 +1218,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test "$(zig version)" = "${{ steps.toolchain.outputs.version }}"
+          test "$(zig version)" = "${STEPS_TOOLCHAIN_OUTPUTS_VERSION}"
+        env:
+          STEPS_TOOLCHAIN_OUTPUTS_VERSION: ${{ steps.toolchain.outputs.version }}
       - id: zig-build-cache
         name: Restore Linux firmware Zig build caches
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
@@ -1277,11 +1328,15 @@ jobs:
           sha=${GITHUB_SHA}
           run_id=${GITHUB_RUN_ID}
           run_attempt=${GITHUB_RUN_ATTEMPT}
-          upstream_url=${{ steps.linux_firmware_meta.outputs.upstream_url }}
-          upstream_commit=${{ steps.linux_firmware_meta.outputs.upstream_commit }}
+          upstream_url=${STEPS_LINUX_FIRMWARE_META_OUTPUTS_UPSTREAM_URL}
+          upstream_commit=${STEPS_LINUX_FIRMWARE_META_OUTPUTS_UPSTREAM_COMMIT}
           firmware_archives=c47-dmcp.zip,c47-dmcp-pkg1.zip,c47-dmcp-pkg2.zip,c47-dmcp-pkg3.zip,c47-dmcp5.zip
-          artifact_name=${{ steps.linux_firmware_meta.outputs.artifact_name }}
+          artifact_name=${STEPS_LINUX_FIRMWARE_META_OUTPUTS_ARTIFACT_NAME}
           EOF
+        env:
+          STEPS_LINUX_FIRMWARE_META_OUTPUTS_UPSTREAM_URL: ${{ steps.linux_firmware_meta.outputs.upstream_url }}
+          STEPS_LINUX_FIRMWARE_META_OUTPUTS_UPSTREAM_COMMIT: ${{ steps.linux_firmware_meta.outputs.upstream_commit }}
+          STEPS_LINUX_FIRMWARE_META_OUTPUTS_ARTIFACT_NAME: ${{ steps.linux_firmware_meta.outputs.artifact_name }}
       - id: upload_linux_firmware
         # An artifact-service failure is not a verdict on this job: it lands after
         # every build, test and parity step has already passed. Tolerate the first
@@ -1318,6 +1373,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           submodules: recursive
+          persist-credentials: false
       - id: toolchain
         name: Load pinned Zig metadata
         shell: bash
@@ -1333,7 +1389,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test "$(zig version)" = "${{ steps.toolchain.outputs.version }}"
+          test "$(zig version)" = "${STEPS_TOOLCHAIN_OUTPUTS_VERSION}"
+        env:
+          STEPS_TOOLCHAIN_OUTPUTS_VERSION: ${{ steps.toolchain.outputs.version }}
       - id: zig-build-cache
         name: Restore macOS host Zig build caches
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
@@ -1489,15 +1547,15 @@ jobs:
           python3 .github/project/generate-simulator-notice-artifacts.py \
             --platform macos \
             --package-dir "$package_dir" \
-            --upstream-source-repository-url "${{ steps.macos_package_meta.outputs.upstream_url }}" \
-            --upstream-source-commit "${{ steps.macos_package_meta.outputs.upstream_commit }}" \
+            --upstream-source-repository-url "${STEPS_MACOS_PACKAGE_META_OUTPUTS_UPSTREAM_URL}" \
+            --upstream-source-commit "${STEPS_MACOS_PACKAGE_META_OUTPUTS_UPSTREAM_COMMIT}" \
             --xlsxio-source-repository-url https://github.com/brechtsanders/xlsxio.git \
-            --xlsxio-source-commit "${{ steps.xlsxio-ref.outputs.sha }}"
+            --xlsxio-source-commit "${STEPS_XLSXIO_REF_OUTPUTS_SHA}"
 
           cat >> "$package_dir/SOURCE" <<EOF
-          z47_repository_url=https://github.com/${{ github.repository }}
+          z47_repository_url=https://github.com/${GITHUB_REPOSITORY}
           z47_commit=${GITHUB_SHA}
-          zig_version=${{ steps.toolchain.outputs.version }}
+          zig_version=${STEPS_TOOLCHAIN_OUTPUTS_VERSION}
           runner_os=${RUNNER_OS}
           runner_arch=${RUNNER_ARCH}
           created_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)
@@ -1509,12 +1567,12 @@ jobs:
           sha=${GITHUB_SHA}
           run_id=${GITHUB_RUN_ID}
           run_attempt=${GITHUB_RUN_ATTEMPT}
-          upstream_url=${{ steps.macos_package_meta.outputs.upstream_url }}
-          upstream_commit=${{ steps.macos_package_meta.outputs.upstream_commit }}
+          upstream_url=${STEPS_MACOS_PACKAGE_META_OUTPUTS_UPSTREAM_URL}
+          upstream_commit=${STEPS_MACOS_PACKAGE_META_OUTPUTS_UPSTREAM_COMMIT}
           upstream_license_file=COPYING
           source_manifest_file=SOURCE
           xlsxio_url=https://github.com/brechtsanders/xlsxio.git
-          xlsxio_commit=${{ steps.xlsxio-ref.outputs.sha }}
+          xlsxio_commit=${STEPS_XLSXIO_REF_OUTPUTS_SHA}
           xlsxio_license_file=LICENSE.txt
           spdx_inventory_file=THIRD-PARTY.spdx.json
           third_party_inventory_file=THIRD-PARTY.spdx.json
@@ -1523,12 +1581,18 @@ jobs:
           macos_runtime_notice_summary_file=repo-notices/macos/MACOS-LIBRARY-NOTICES.txt
           macos_runtime_notice_dir=repo-notices/macos/licenses
           host_optimize=fast
-          zig_version=${{ steps.toolchain.outputs.version }}
+          zig_version=${STEPS_TOOLCHAIN_OUTPUTS_VERSION}
           runner_os=${RUNNER_OS}
           runner_arch=${RUNNER_ARCH}
           package_dir=$(basename "$package_dir")
-          artifact_name=${{ steps.macos_package_meta.outputs.artifact_name }}
+          artifact_name=${STEPS_MACOS_PACKAGE_META_OUTPUTS_ARTIFACT_NAME}
           EOF
+        env:
+          STEPS_MACOS_PACKAGE_META_OUTPUTS_UPSTREAM_URL: ${{ steps.macos_package_meta.outputs.upstream_url }}
+          STEPS_MACOS_PACKAGE_META_OUTPUTS_UPSTREAM_COMMIT: ${{ steps.macos_package_meta.outputs.upstream_commit }}
+          STEPS_XLSXIO_REF_OUTPUTS_SHA: ${{ steps.xlsxio-ref.outputs.sha }}
+          STEPS_TOOLCHAIN_OUTPUTS_VERSION: ${{ steps.toolchain.outputs.version }}
+          STEPS_MACOS_PACKAGE_META_OUTPUTS_ARTIFACT_NAME: ${{ steps.macos_package_meta.outputs.artifact_name }}
       - id: upload_macos_release
         # An artifact-service failure is not a verdict on this job: it lands after
         # every build, test and parity step has already passed. Tolerate the first
@@ -1570,6 +1634,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           submodules: recursive
+          persist-credentials: false
       - uses: msys2/setup-msys2@ec48f7c5447b3140e2b088413ae3a55687bccb6e # v2.33.0
         with:
           msystem: UCRT64
@@ -1606,7 +1671,9 @@ jobs:
         shell: msys2 {0}
         run: |
           set -euo pipefail
-          test "$(zig version)" = "${{ steps.toolchain.outputs.version }}"
+          test "$(zig version)" = "${STEPS_TOOLCHAIN_OUTPUTS_VERSION}"
+        env:
+          STEPS_TOOLCHAIN_OUTPUTS_VERSION: ${{ steps.toolchain.outputs.version }}
       - id: zig-build-cache
         name: Restore Windows host Zig build caches
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
@@ -1908,15 +1975,15 @@ jobs:
           python3 .github/project/generate-simulator-notice-artifacts.py \
             --platform windows \
             --package-dir "$package_dir" \
-            --upstream-source-repository-url "${{ steps.windows_package_meta.outputs.upstream_url }}" \
-            --upstream-source-commit "${{ steps.windows_package_meta.outputs.upstream_commit }}" \
+            --upstream-source-repository-url "${STEPS_WINDOWS_PACKAGE_META_OUTPUTS_UPSTREAM_URL}" \
+            --upstream-source-commit "${STEPS_WINDOWS_PACKAGE_META_OUTPUTS_UPSTREAM_COMMIT}" \
             --xlsxio-source-repository-url https://github.com/brechtsanders/xlsxio.git \
-            --xlsxio-source-commit "${{ steps.xlsxio-ref.outputs.sha }}"
+            --xlsxio-source-commit "${STEPS_XLSXIO_REF_OUTPUTS_SHA}"
 
           cat >> "$package_dir/SOURCE" <<EOF
-          z47_repository_url=https://github.com/${{ github.repository }}
+          z47_repository_url=https://github.com/${GITHUB_REPOSITORY}
           z47_commit=${GITHUB_SHA}
-          zig_version=${{ steps.toolchain.outputs.version }}
+          zig_version=${STEPS_TOOLCHAIN_OUTPUTS_VERSION}
           runner_os=${RUNNER_OS}
           runner_arch=${RUNNER_ARCH}
           created_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)
@@ -1928,12 +1995,12 @@ jobs:
           sha=${GITHUB_SHA}
           run_id=${GITHUB_RUN_ID}
           run_attempt=${GITHUB_RUN_ATTEMPT}
-          upstream_url=${{ steps.windows_package_meta.outputs.upstream_url }}
-          upstream_commit=${{ steps.windows_package_meta.outputs.upstream_commit }}
+          upstream_url=${STEPS_WINDOWS_PACKAGE_META_OUTPUTS_UPSTREAM_URL}
+          upstream_commit=${STEPS_WINDOWS_PACKAGE_META_OUTPUTS_UPSTREAM_COMMIT}
           upstream_license_file=COPYING
           source_manifest_file=SOURCE
           xlsxio_url=https://github.com/brechtsanders/xlsxio.git
-          xlsxio_commit=${{ steps.xlsxio-ref.outputs.sha }}
+          xlsxio_commit=${STEPS_XLSXIO_REF_OUTPUTS_SHA}
           xlsxio_license_file=LICENSE.txt
           spdx_inventory_file=THIRD-PARTY.spdx.json
           third_party_inventory_file=THIRD-PARTY.spdx.json
@@ -1945,12 +2012,18 @@ jobs:
           windows_dll_notice_summary_file=repo-notices/windows/WINDOWS-DLL-NOTICES.txt
           windows_dll_notice_dir=repo-notices/windows/licenses
           host_optimize=fast
-          zig_version=${{ steps.toolchain.outputs.version }}
+          zig_version=${STEPS_TOOLCHAIN_OUTPUTS_VERSION}
           runner_os=${RUNNER_OS}
           runner_arch=${RUNNER_ARCH}
           package_dir=$(basename "$package_dir")
-          artifact_name=${{ steps.windows_package_meta.outputs.artifact_name }}
+          artifact_name=${STEPS_WINDOWS_PACKAGE_META_OUTPUTS_ARTIFACT_NAME}
           EOF
+        env:
+          STEPS_WINDOWS_PACKAGE_META_OUTPUTS_UPSTREAM_URL: ${{ steps.windows_package_meta.outputs.upstream_url }}
+          STEPS_WINDOWS_PACKAGE_META_OUTPUTS_UPSTREAM_COMMIT: ${{ steps.windows_package_meta.outputs.upstream_commit }}
+          STEPS_XLSXIO_REF_OUTPUTS_SHA: ${{ steps.xlsxio-ref.outputs.sha }}
+          STEPS_TOOLCHAIN_OUTPUTS_VERSION: ${{ steps.toolchain.outputs.version }}
+          STEPS_WINDOWS_PACKAGE_META_OUTPUTS_ARTIFACT_NAME: ${{ steps.windows_package_meta.outputs.artifact_name }}
       - name: Inspect packaged Windows simulator imports
         shell: msys2 {0}
         run: |
@@ -2055,6 +2128,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           submodules: recursive
+          persist-credentials: false
       - id: toolchain
         name: Load pinned Zig metadata
         shell: bash
@@ -2070,7 +2144,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test "$(zig version)" = "${{ steps.toolchain.outputs.version }}"
+          test "$(zig version)" = "${STEPS_TOOLCHAIN_OUTPUTS_VERSION}"
+        env:
+          STEPS_TOOLCHAIN_OUTPUTS_VERSION: ${{ steps.toolchain.outputs.version }}
       - id: zig-build-cache
         name: Restore Linux memcheck Zig build caches
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0

@@ -21,6 +21,8 @@ jobs:
     runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Enforce approved Zig/C boundary files
         shell: bash
         run: |
@@ -32,6 +34,8 @@ jobs:
     runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Enforce monotonic coverage floors
         shell: bash
         run: |
@@ -44,6 +48,8 @@ jobs:
       - zig-c-boundary-guard
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Report pinned upstream drift
         shell: bash
         run: |
