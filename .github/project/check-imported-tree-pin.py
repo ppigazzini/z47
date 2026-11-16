@@ -25,50 +25,9 @@ import subprocess
 import sys
 from pathlib import Path
 
-from upstream_paths import upstream_root
-
-DIVERGENCES = ".github/project/imported-tree-divergences.txt"
-PIN = ".github/project/upstream-pin.env"
-
-
-def read_pin(repo: Path) -> dict[str, str]:
-    out: dict[str, str] = {}
-    for raw in (repo / PIN).read_text(encoding="utf-8").splitlines():
-        line = raw.strip()
-        if line and not line.startswith("#") and "=" in line:
-            k, _, v = line.partition("=")
-            out[k.strip()] = v.strip()
-    return out
-
-
-def read_divergences(repo: Path) -> tuple[list[str], list[str]]:
-    not_carried: list[str] = []
-    patched: list[str] = []
-    section = None
-    for raw in (repo / DIVERGENCES).read_text(encoding="utf-8").splitlines():
-        line = raw.split("#", 1)[0].strip()
-        if not line:
-            continue
-        if line == "[not-carried]":
-            section = not_carried
-            continue
-        if line == "[patched]":
-            section = patched
-            continue
-        if line.startswith("["):
-            section = None
-            continue
-        if section is None:
-            raise SystemExit(f"entry outside a known section in {DIVERGENCES}: {line}")
-        section.append(line)
-    return not_carried, patched
-
-
-def covered(path: str, allowed: list[str], matched: set[str] | None = None) -> bool:
-    hit = [a for a in allowed if path == a or path.startswith(a + "/")]
-    if matched is not None:
-        matched.update(hit)
-    return bool(hit)
+from upstream_paths import DIVERGENCES_FILE_RELATIVE as DIVERGENCES
+from upstream_paths import PIN_FILE_RELATIVE as PIN
+from upstream_paths import covered, read_divergences, read_pin, upstream_root
 
 
 def main() -> int:
@@ -111,6 +70,29 @@ def main() -> int:
     not_carried, patched = read_divergences(repo)
     if not not_carried and not patched:
         print(f"check-imported-tree-pin: BROKEN -- read no entries from {DIVERGENCES}.")
+        return 1
+
+    # A [not-carried] path is not imported AT ALL. The diff below cannot see a file
+    # under one that is present and identical to the pin, and a partial re-import
+    # still leaves the entry matching the files that stayed out, so presence is
+    # checked on its own.
+    listing = subprocess.run(
+        ["git", "-C", str(repo), "-c", "core.quotepath=off", "ls-tree", "-r", "--name-only", tree],
+        capture_output=True,
+        text=True,
+    )
+    if listing.returncode:
+        print(f"check-imported-tree-pin: BROKEN -- cannot list {tree}.")
+        print(listing.stderr.strip())
+        return 1
+    carried_anyway = [p for p in listing.stdout.splitlines() if covered(p, not_carried)]
+    if carried_anyway:
+        print("FILES UNDER [not-carried] PATHS ARE PRESENT IN THE IMPORTED TREE:")
+        for p in carried_anyway:
+            print(f"  {p}")
+        print()
+        print(f"{DIVERGENCES} says z47 does not import these paths at all. Remove the")
+        print("files, or move the path out of [not-carried] with the reason.")
         return 1
 
     undeclared: list[str] = []

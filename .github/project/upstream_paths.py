@@ -25,8 +25,60 @@ from __future__ import annotations
 from pathlib import Path
 
 PIN_FILE_RELATIVE = ".github/project/upstream-pin.env"
+DIVERGENCES_FILE_RELATIVE = ".github/project/imported-tree-divergences.txt"
 
 _KEY = "UPSTREAM_ROOT"
+
+
+def read_pin(repo_root: Path | str) -> dict[str, str]:
+    """Every ``KEY=value`` pair in ``upstream-pin.env``."""
+    out: dict[str, str] = {}
+    pin_file = Path(repo_root) / PIN_FILE_RELATIVE
+    for raw in pin_file.read_text(encoding="utf-8").splitlines():
+        line = raw.strip()
+        if line and not line.startswith("#") and "=" in line:
+            key, _, value = line.partition("=")
+            out[key.strip()] = value.strip()
+    return out
+
+
+def read_divergences(repo_root: Path | str) -> tuple[list[str], list[str]]:
+    """The ``[not-carried]`` and ``[patched]`` entries, upstream-relative."""
+    not_carried: list[str] = []
+    patched: list[str] = []
+    section: list[str] | None = None
+    divergences = Path(repo_root) / DIVERGENCES_FILE_RELATIVE
+    for raw in divergences.read_text(encoding="utf-8").splitlines():
+        line = raw.split("#", 1)[0].strip()
+        if not line:
+            continue
+        if line == "[not-carried]":
+            section = not_carried
+            continue
+        if line == "[patched]":
+            section = patched
+            continue
+        if line.startswith("["):
+            section = None
+            continue
+        if section is None:
+            raise SystemExit(
+                f"entry outside a known section in {DIVERGENCES_FILE_RELATIVE}: {line}"
+            )
+        section.append(line)
+    return not_carried, patched
+
+
+def covered(path: str, entries: list[str], matched: set[str] | None = None) -> bool:
+    """Whether ``path`` is one of ``entries`` or lies under one of them.
+
+    Every entry it falls under is added to ``matched``, so a caller can report
+    the entries that cover nothing.
+    """
+    hit = [e for e in entries if path == e or path.startswith(e + "/")]
+    if matched is not None:
+        matched.update(hit)
+    return bool(hit)
 
 
 def _read_pin_value(pin_file: Path, key: str) -> str:

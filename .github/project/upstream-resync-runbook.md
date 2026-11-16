@@ -29,9 +29,10 @@ below as guardrails so the next resync is a checklist, not a rediscovery.
   copy here was also a drifted partial mirror: 79 of upstream's 109 files already
   pruned, several documents present twice under different spellings, and four
   blobs that were older revisions of notes upstream now ships newer. Read them in
-  the upstream repo. **Do not re-add the directory on a resync**; the ownership
-  gate enforces this, because `docs/appnotes` is no longer an approved addition,
-  so any re-imported appnote fails `check-source-ownership.sh`.
+  the upstream repo. **Do not re-add the directory on a resync**: it is
+  `[not-carried]`, so the import script never brings it, and
+  `check-imported-tree-pin.py` fails on any file present under a `[not-carried]`
+  path.
 
 ## 1. Import + seam re-sync (mostly "free")
 
