@@ -256,11 +256,15 @@ def main() -> int:
     by_hand = [p for p in skipped if p in _RECONCILED_BY_HAND]
 
     print(
-        f"import-upstream-pin: {old_pin[:12]} -> {new_pin[:12]}, {len(lines)} paths under {root}/:"
+        f"import-upstream-pin: {old_pin[:12]} -> {new_pin[:12]}, "
+        f"{len(lines)} path{'' if len(lines) == 1 else 's'} under {root}/:"
     )
     for line in lines:
         print(f"  {line}")
-    print(f"{len(skipped)} changed upstream paths are [not-carried] and were left out.")
+    print(
+        f"{len(skipped)} changed upstream "
+        f"{'path is' if len(skipped) == 1 else 'paths are'} [not-carried] and left out."
+    )
     for p in by_hand:
         print(f"  {p} changed upstream: reconcile z47's own root {p} by hand.")
 
